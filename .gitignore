@@ -1,0 +1,13 @@
+# Large third-party art references (Git LFS / local mirrors — do not commit)
+references/piratenation-art/
+references/piratenation-art-full/
+references/piratenation-art.*/
+references/_*.sh
+references/_*.py
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
