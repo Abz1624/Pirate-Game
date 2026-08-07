@@ -1,0 +1,220 @@
+{
+  "images": [
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAA8UlEQVR42u2YDQqEIBBGvaOH6A7eor3wLhu4yKCpWa4678EH/SH10ho127a9ZZxzR177/kvsOmvtEbkfi2/Ht52L6cWZgDCtAkofHAFaBOSkDCcgljsEpM4vL2C6IfBUD1ApIDwmtxkCCOgsIFbp1QrwbSwjQL7Z73U9BIT30F1AeOwJAbXFlvknpQJavjW5KhMBowoIp8itf5uzIGA0AbAqqTn+lW4ue86wxQ8CCgRcGf8ImFGALEYQoFVAao6vTsCdBRQCEIAABCBAs4Da5fbpBdQsg8WWxBCwuoAhl8HUCwAAAAAAAAAAAAAAAADQwQfltHhlHgz4aQAAAABJRU5ErkJggg=="},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAb0lEQVR42u3YQQrAMAhFwX//S7c3CF1IiToP3MsgBJIkz6XzWwAAAAAAAAAAAAAAnJcZD3BCGQ3w5SpSsCQAAAB6A2hqlafY8ukDAAAAAAAAapYAAAAAAAAAFgO0/AQBAGA5gCRJkiRJkiRJkrSgF39AsXmCs5HFAAAAAElFTkSuQmCC"}
+  ],
+  "accessors": [
+    {
+      "componentType": 5126,
+      "min": [
+        -2.499999761581421,
+        -9,
+        -5.999999523162842
+      ],
+      "byteOffset": 0,
+      "bufferView": 0,
+      "max": [
+        2.499999761581421,
+        9,
+        5.999999523162842
+      ],
+      "count": 84,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 1,
+      "count": 84,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 84,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 84,
+      "type": "VEC2"
+    }
+  ],
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 1,
+      "sampler": 0
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 1008,
+      "uri": "data:application/octet-stream;base64,//8fwAAAEMH//79A//8fwAAA4MD//79A//8fwAAA4MD//7/A//8fwAAA4MD//7/A//8fwAAAEMH//7/A//8fwAAAEMH//79AAADAvwAA4MD+/59AAADAvwAAEEH+/59AAADAvwAAEEH//5/AAADAvwAAEEH//5/AAADAvwAA4MD//5/AAADAvwAA4MD+/59A/v+/PwAA4MD//5/A/v+/PwAAEEH//5/A/v+/PwAAEEH+/59A/v+/PwAAEEH+/59A/v+/PwAA4MD+/59A/v+/PwAA4MD//5/A//8fQAAAEMH//7/A//8fQAAA4MD//7/A//8fQAAA4MD//79A//8fQAAA4MD//79A//8fQAAAEMH//79A//8fQAAAEMH//7/A//8fwAAAEMH//7/A//8fQAAAEMH//7/A//8fQAAAEMH//79A//8fQAAAEMH//79A//8fwAAAEMH//79A//8fwAAAEMH//7/A/v+/PwAA4MD//79A//8fQAAA4MD//79A//8fQAAA4MD//7/A//8fQAAA4MD//7/A/v+/PwAA4MD//7/A/v+/PwAA4MD//79A//8fwAAA4MD//79AAADAvwAA4MD//79AAADAvwAA4MD//5/AAADAvwAA4MD//5/A//8fwAAA4MD//5/A//8fwAAA4MD//79A//8fwAAA4MD//5/A/v+/PwAA4MD//5/A/v+/PwAA4MD//7/A/v+/PwAA4MD//7/A//8fwAAA4MD//7/A//8fwAAA4MD//5/AAADAvwAA4MD//79A/v+/PwAA4MD//79A/v+/PwAA4MD+/59A/v+/PwAA4MD+/59AAADAvwAA4MD+/59AAADAvwAA4MD//79AAADAvwAAEEH+/59A/v+/PwAAEEH+/59A/v+/PwAAEEH//5/A/v+/PwAAEEH//5/AAADAvwAAEEH//5/AAADAvwAAEEH+/59A//8fwAAA4MD//7/A//8fQAAA4MD//7/A//8fQAAAEMH//7/A//8fQAAAEMH//7/A//8fwAAAEMH//7/A//8fwAAA4MD//7/AAADAvwAAEEH//5/A/v+/PwAAEEH//5/A/v+/PwAA4MD//5/A/v+/PwAA4MD//5/AAADAvwAA4MD//5/AAADAvwAAEEH//5/AAADAvwAA4MD+/59A/v+/PwAA4MD+/59A/v+/PwAAEEH+/59A/v+/PwAAEEH+/59AAADAvwAAEEH+/59AAADAvwAA4MD+/59A//8fwAAAEMH//79A//8fQAAAEMH//79A//8fQAAA4MD//79A//8fQAAA4MD//79A//8fwAAA4MD//79A//8fwAAAEMH//79A"
+    },
+    {
+      "byteLength": 1008,
+      "uri": "data:application/octet-stream;base64,AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/"
+    },
+    {
+      "byteLength": 672,
+      "uri": "data:application/octet-stream;base64,AACgPgAAAD8AALA+AAAAPwAAsD4AAKA+AACwPgAAoD4AAKA+AACgPgAAoD4AAAA/AAAIPwAAED8AAAg/AACgPgAAwD4AAKA+AADAPgAAoD4AAMA+AAAQPwAACD8AABA/AADYPgAAgD4AANg+AAAAAAAAFD8AAAAAAAAUPwAAAAAAABQ/AACAPgAA2D4AAIA+AACAPgAAAAAAAJA+AAAAAAAAkD4AAEA+AACQPgAAQD4AAIA+AABAPgAAgD4AAAAAAACgPgAAAAAAAMg+AAAAAAAAyD4AAEA+AADIPgAAQD4AAKA+AABAPgAAoD4AAAAAAAAAAAAAQD4AAIA8AABAPgAAgDwAAAAAAACAPAAAAAAAAAAAAAAAAAAAAAAAAEA+AABAPQAAMD4AAIA9AAAwPgAAgD0AAAAAAACAPQAAAAAAAEA9AAAAAAAAQD0AADA+AACAPAAAgD0AAIA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAPQAAgDwAAIA9AACAPAAAQD0AAIA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAPQAAgDwAAEA9AADAPQAAID4AABA+AAAgPgAAED4AAAAAAAAQPgAAAAAAAMA9AAAAAAAAwD0AACA+AAAAPgAAiD4AAAA+AABAPgAAwD0AAEA+AADAPQAAQD4AAMA9AACIPgAAAD4AAIg+AAAwPgAAgD4AAGA+AACAPgAAYD4AAAAAAABgPgAAAAAAADA+AAAAAAAAMD4AAIA+AAAAAAAAoD4AAEA9AACgPgAAQD0AABA/AABAPQAAED8AAAAAAAAQPwAAAAAAAKA+AACgPQAAyD4AAKA9AACgPgAA4D0AAKA+AADgPQAAoD4AAOA9AADIPgAAoD0AAMg+"
+    }
+  ],
+  "bufferViews": [
+    {
+      "byteOffset": 0,
+      "byteLength": 1008,
+      "buffer": 0,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 1008,
+      "buffer": 1,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 672,
+      "buffer": 2,
+      "byteStride": 8,
+      "target": 34962
+    }
+  ],
+  "samplers": [{
+    "minFilter": 9728,
+    "wrapT": 33071,
+    "wrapS": 33071,
+    "magFilter": 9728
+  }],
+  "scene": 0,
+  "nodes": [
+    {
+      "children": [
+        1,
+        2
+      ],
+      "rotation": [
+        0,
+        -1,
+        0,
+        -4.371138828673793E-8
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "Root-Global",
+      "scale": [
+        -1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "Root-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "children": [3],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "tombstone01-Global",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        9,
+        0
+      ],
+      "name": "tombstone01-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "mesh": 0
+    }
+  ],
+  "materials": [{
+    "name": "tombstone01-Material",
+    "emissiveTexture": {
+      "index": 1,
+      "texCoord": 1
+    },
+    "pbrMetallicRoughness": {
+      "baseColorTexture": {"index": 0},
+      "metallicFactor": 0,
+      "roughnessFactor": 1
+    },
+    "emissiveFactor": [
+      1,
+      1,
+      1
+    ]
+  }],
+  "animations": [],
+  "scenes": [{"nodes": [0]}],
+  "asset": {
+    "generator": "VoxEdit Beta 3548043e",
+    "version": "2.0"
+  },
+  "meshes": [{
+    "primitives": [{
+      "mode": 4,
+      "material": 0,
+      "attributes": {
+        "POSITION": 0,
+        "TEXCOORD_1": 3,
+        "TEXCOORD_0": 2,
+        "NORMAL": 1
+      }
+    }],
+    "name": "tombstone01-Mesh"
+  }]
+}

@@ -1,0 +1,220 @@
+{
+  "images": [
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAAACXBIWXMAAA9hAAAPYQGoP6dpAAAEh0lEQVR4Xu2aQW7UQBBFORcXQCzYcggOwJITcAQ4ASsOgWDHCg6BuENQSfmjP4/qthNrOt1OPamUiV3Vqu7/257YefHl06+7VhCef/HEsD/n7ev3m5HNUSjnw7uvl5/6rN9nWYdDaGJZkJ/f/lwFxxqN9xZCfP74Y1dIuJgDYW4WXj/DOhyCu8KDzGwA9curFIWLvOidBtDxyBMU3vOepQEIxxqN96LLc0/8COXFMTeA1wvWt/LY11Lwst+7BRCONRrvZWvnZ+eyWwBzVP/7+9//cgT7WgqKvqIBKDLFa51rGaBX7yHY11Lwsr/qLSATmIL5cRng1cs3V7m9eoZgX0vBXb/iFSCQeEEmHkV1XPReXgv2tRTc9ateAXri8bibhbXM2wP7WgqKvqIBWuL5zt+iVb/HDOxrKR4iOOFYo1EfLfH2CC+y+lbQVOxrKc5igJZIPO7n+FcA87JQ7WkMYPN/MBxrNOojxAgD6wmdi0TxlPcYA/i4ZYC7p5+49xJ/tYS4PfEjlBfH3ADK889ZvcYtA9w9/cTZD3doK1xs1VHwTHweE+xrKS6zeAQcazTeC/+CUWjH69lG6/uO30IotMLzTmMATthjC441GvYjuOMZml/rZVAmvtbDbzWCfS0Fd4zHFhxrNN6L70wa2Q3tO12PgjMoPjfEszBALI4H4Vij8b58Z1J4F9DzsncBEZn4jDLABBNXXy4GhaIBRMsADxU/YF9LQdE9tuBYo1EfPbEonIe+A/B4bzydd9jXUlD0sxqA4vYMwFofI4N9LQVFP6MBMnFbBmAtx8hgX0tB0c9mgJa4boD4dy+eZy7HcNjXUlD0ngFiwTw41mi8N4rWEs7PuQEimNMbQ/UzrMMhfBFXNkBAgTLhKGDQMkBvjFMaYItVDNATzs/LAF7LnN4Ys6zDIWz9NlnBAHuEywwQV7z4nTmsV14ZYIKJs7+ecC6sPrsBtl4nq4ZPEmdYh0PY+m0yswF8Z1I4icc8N0Dg4vfCDTTDOhziagU24KJyrNF4b9nbPBdfBuAO3gO/HEfEOLOswyE42R4zXwECCu/iywCCBmBuLzT2LOtwCFuTB8OxRqM+XJSW+MxxA8Tv2S2EtYF/WRTs6zRcZtiA+aNRHxSX4rXOywDxmbeQrDY43T+E9FjpdTDFzQRkjhuAedkxoXOCfZ2GFQ2wR3w3AOtb4vPcTOtwM1YzwF7x3QCB57Zqe7Cv08CJEuaPRn1Q+ExARmaAXm0P9nUaOFHC/NGwn56ADBqgV5udc9jXabiaZQLzR8N+BAXMIjMAc5SXnXPY12m4mmUC80fDfgTFYkhUGSB7Fex5PE7Y12ngRPXka5YnYN4bRepFZgCaoCW+n59lHW6GL3AwswH8CV0rPM8NwHqJnxmA9TOsw824rM49MxuAT/IYIRjz3AB7Xgdn9TOsw824rM49MxvAcRE9HBpAtwHWZPUyxCzrcDMuM8bEFcwfDfsjfIXL0K7u1WjHx0991u+zrMPN4OKUAZ6ZAYqiKIqiKIqiKIqiKIqiKIqiKIqiKIqiKIr1+Afn4Uy3SUsfhgAAAABJRU5ErkJggg=="},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAAACXBIWXMAAA9hAAAPYQGoP6dpAAABdklEQVR4Xu3PMQ4DQBDCwPv/p5PeHUrhsGIk9/Dee58fsnGPVTWeSbJxj1U1nkmycY9VNZ5JsnGPVTWeSbJxj1U1nkmycY9VNZ5JsnGPVTWeSbJxj1U1nkmycY9VNZ5JsnGPVTWeSbJxj1U1nkmycY9VNZ5JsnGPVTWeSbJxj1U1nkmycY9VNZ5JsnGPVTWeSbJxj1U1nkmycY9VNZ5JsnGPVTWeSbJxj1U1nkmycY9VNZ5JsnGPVTWeSbJxj1U1nkmycY9VNZ5JsnGPVTWeSbJxj1U1nkmycY9VNZ5JsnGPVTWeSbJxj1U1nkmycY9VNZ5JsnGPVTWeSbJxj1U1nkmycY/VWTzKbNxjdRaPMhv3WJ3Fo8zGPVZn8SizcY/VWTzKbNxjdRaPMhv3WJ3Fo8zGPVZn8SizcY/VWTzKbNxjdRaPMhv3WJ3Fo8zGPVZn8SizcY/VWTzKbNxjdRaPMhv3WM3MzMzMzMzMzMzMzMzMzMzM/IcvbZ+U3PyUGl4AAAAASUVORK5CYII="}
+  ],
+  "accessors": [
+    {
+      "componentType": 5126,
+      "min": [
+        -23,
+        -16,
+        -1
+      ],
+      "byteOffset": 0,
+      "bufferView": 0,
+      "max": [
+        23,
+        16,
+        1
+      ],
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 1,
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 36,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 36,
+      "type": "VEC2"
+    }
+  ],
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 1,
+      "sampler": 0
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AAC4wQAAgMEAAIA/AAC4wQAAgEEAAIA/AAC4wQAAgEEAAIC/AAC4wQAAgEEAAIC/AAC4wQAAgMEAAIC/AAC4wQAAgMEAAIA/AAC4QQAAgMEAAIC/AAC4QQAAgEEAAIC/AAC4QQAAgEEAAIA/AAC4QQAAgEEAAIA/AAC4QQAAgMEAAIA/AAC4QQAAgMEAAIC/AAC4wQAAgMEAAIC/AAC4QQAAgMEAAIC/AAC4QQAAgMEAAIA/AAC4QQAAgMEAAIA/AAC4wQAAgMEAAIA/AAC4wQAAgMEAAIC/AAC4wQAAgEEAAIA/AAC4QQAAgEEAAIA/AAC4QQAAgEEAAIC/AAC4QQAAgEEAAIC/AAC4wQAAgEEAAIC/AAC4wQAAgEEAAIA/AAC4wQAAgEEAAIC/AAC4QQAAgEEAAIC/AAC4QQAAgMEAAIC/AAC4QQAAgMEAAIC/AAC4wQAAgMEAAIC/AAC4wQAAgEEAAIC/AAC4wQAAgMEAAIA/AAC4QQAAgMEAAIA/AAC4QQAAgEEAAIA/AAC4QQAAgEEAAIA/AAC4wQAAgEEAAIA/AAC4wQAAgMEAAIA/"
+    },
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/"
+    },
+    {
+      "byteLength": 288,
+      "uri": "data:application/octet-stream;base64,AACAPAAAAD8AAIA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPwAAgDwAAAA/AAAAPQAAAD8AAAA9AAAAAAAAQD0AAAAAAABAPQAAAAAAAEA9AAAAPwAAAD0AAAA/AACAPQAAOD8AAIA9AAAAAAAAoD0AAAAAAACgPQAAAAAAAKA9AAA4PwAAgD0AADg/AADgPQAAOD8AAOA9AAAAAAAAwD0AAAAAAADAPQAAAAAAAMA9AAA4PwAA4D0AADg/AAAgPwAAOD8AACA/AAAAAAAAwD4AAAAAAADAPgAAAAAAAMA+AAA4PwAAID8AADg/AADAPgAAOD8AAMA+AAAAAAAAID8AAAAAAAAgPwAAAAAAACA/AAA4PwAAwD4AADg/"
+    }
+  ],
+  "bufferViews": [
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 0,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 1,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 288,
+      "buffer": 2,
+      "byteStride": 8,
+      "target": 34962
+    }
+  ],
+  "samplers": [{
+    "minFilter": 9728,
+    "wrapT": 33071,
+    "wrapS": 33071,
+    "magFilter": 9728
+  }],
+  "scene": 0,
+  "nodes": [
+    {
+      "children": [
+        1,
+        2
+      ],
+      "rotation": [
+        0,
+        -1,
+        0,
+        -4.371138828673793E-8
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "World-Global",
+      "scale": [
+        -1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "World-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "children": [3],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "iocn-Global",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        6.999999523162842,
+        16,
+        0
+      ],
+      "name": "iocn-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "mesh": 0
+    }
+  ],
+  "materials": [{
+    "name": "iconiron-Material",
+    "emissiveTexture": {
+      "index": 1,
+      "texCoord": 1
+    },
+    "pbrMetallicRoughness": {
+      "baseColorTexture": {"index": 0},
+      "metallicFactor": 0,
+      "roughnessFactor": 1
+    },
+    "emissiveFactor": [
+      1,
+      1,
+      1
+    ]
+  }],
+  "animations": [],
+  "scenes": [{"nodes": [0]}],
+  "asset": {
+    "generator": "VoxEdit Beta a9422c20",
+    "version": "2.0"
+  },
+  "meshes": [{
+    "primitives": [{
+      "mode": 4,
+      "material": 0,
+      "attributes": {
+        "POSITION": 0,
+        "TEXCOORD_1": 3,
+        "TEXCOORD_0": 2,
+        "NORMAL": 1
+      }
+    }],
+    "name": "iconiron-Mesh"
+  }]
+}

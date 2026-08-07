@@ -1,0 +1,682 @@
+{
+  "images": [
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAfklEQVR42mOwcXX8D8PWTvb/kfkw7ODjDsfI4gzUALgcAGLD8IA7AF0NDFPdAbgsoqkDkIOVmBBgoDYgJhESSpAj0wHI0URxGsDmG0IOobkDkBMhoRxBlVyAbhjdQgCXYbgspVk2xOcABlqCAXfAKBgFo2AUjIJRMApGwYgHAH+ZUQpZPL7+AAAAAElFTkSuQmCC"},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAPUlEQVR42u3TsQ0AMAgDQe+/NCyQKpgglD/JDdU3SFIUZkHAugC7MIwAa8BNGAFPA9rf8HRvNR4AAADwtwTIHL9B4LPP7gAAAABJRU5ErkJggg=="},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAICAYAAADwdn+XAAAAOUlEQVR42mNw8HH/D8I2ro7/rZ3swZgBCmByIMyAC8A008QAmDgIk2UAjI8sRn0DkBURVEwTAygFAHqYV+MjudIwAAAAAElFTkSuQmCC"},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAICAYAAADwdn+XAAAAH0lEQVR42mNgYGD4jwXDADYxDDBqAH4DiAIUG0ARAABPMDHP3r6MvgAAAABJRU5ErkJggg=="},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAHklEQVR42mOwdrL/D8IOPu5gzIAOiFYAwwOhgGIAAEy+KeXrlrQNAAAAAElFTkSuQmCC"},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAFUlEQVR42mNgYGD4j4YxwJBQQBkAAAXkF+nlFPinAAAAAElFTkSuQmCC"},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAICAYAAADwdn+XAAAAJ0lEQVR42mNw8HH/D8LWTvZwzAAEMHEQZsAHkDVS1QB0/hA0YOgAAPndTpjy4FsjAAAAAElFTkSuQmCC"},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAICAYAAADwdn+XAAAAGklEQVR42mNgYGD4jwUzYOHjBKMG4DZgiAAAPyQs1LSe+TgAAAAASUVORK5CYII="}
+  ],
+  "accessors": [
+    {
+      "componentType": 5126,
+      "min": [
+        -6.5,
+        -0.5,
+        -8
+      ],
+      "byteOffset": 0,
+      "bufferView": 0,
+      "max": [
+        5.5,
+        0.5,
+        6
+      ],
+      "count": 96,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 1,
+      "count": 96,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 96,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 96,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "min": [
+        -3,
+        -0.5,
+        -2
+      ],
+      "byteOffset": 0,
+      "bufferView": 3,
+      "max": [
+        3,
+        0.5,
+        2
+      ],
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 4,
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 5,
+      "count": 36,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 5,
+      "count": 36,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "min": [
+        -1.4999998807907104,
+        -0.5,
+        -2.5
+      ],
+      "byteOffset": 0,
+      "bufferView": 6,
+      "max": [
+        1.4999998807907104,
+        0.5,
+        2.5
+      ],
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 7,
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 8,
+      "count": 36,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 8,
+      "count": 36,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "min": [
+        -2.5,
+        -0.5,
+        -2
+      ],
+      "byteOffset": 0,
+      "bufferView": 9,
+      "max": [
+        2.5,
+        0.5,
+        2
+      ],
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 10,
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 11,
+      "count": 36,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 11,
+      "count": 36,
+      "type": "VEC2"
+    }
+  ],
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 1,
+      "sampler": 0
+    },
+    {
+      "source": 2,
+      "sampler": 0
+    },
+    {
+      "source": 3,
+      "sampler": 0
+    },
+    {
+      "source": 4,
+      "sampler": 0
+    },
+    {
+      "source": 5,
+      "sampler": 0
+    },
+    {
+      "source": 6,
+      "sampler": 0
+    },
+    {
+      "source": 7,
+      "sampler": 0
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 1152,
+      "uri": "data:application/octet-stream;base64,AADQwAAAAL8AAMBAAADQwAAAAD8AAMBAAADQwAAAAD8AAIC/AADQwAAAAD8AAIC/AADQwAAAAL8AAIC/AADQwAAAAL8AAMBAAADAPwAAAL8AAKDAAADAPwAAAD8AAKDAAADAPwAAAD8AAADBAADAPwAAAD8AAADBAADAPwAAAL8AAADBAADAPwAAAL8AAKDAAADAvwAAAL8AAIBAAADAvwAAAD8AAIBAAADAvwAAAD8AAMBAAADAvwAAAD8AAMBAAADAvwAAAL8AAMBAAADAvwAAAL8AAIBAAAAAPwAAAL8AAIC/AAAAPwAAAD8AAIC/AAAAPwAAAD8AAIBAAAAAPwAAAD8AAIBAAAAAPwAAAL8AAIBAAAAAPwAAAL8AAIC/AACwQAAAAL8AAADBAACwQAAAAD8AAADBAACwQAAAAD8AAKDAAACwQAAAAD8AAKDAAACwQAAAAL8AAKDAAACwQAAAAL8AAADBAADQwAAAAL8AAIC/AAAAPwAAAL8AAIC/AAAAPwAAAL8AAIBAAAAAPwAAAL8AAIBAAADQwAAAAL8AAIBAAADQwAAAAL8AAIC/AADAPwAAAL8AAADBAACwQAAAAL8AAADBAACwQAAAAL8AAKDAAACwQAAAAL8AAKDAAADAPwAAAL8AAKDAAADAPwAAAL8AAADBAADQwAAAAL8AAIBAAADAvwAAAL8AAIBAAADAvwAAAL8AAMBAAADAvwAAAL8AAMBAAADQwAAAAL8AAMBAAADQwAAAAL8AAIBAAADQwAAAAD8AAIBAAAAAPwAAAD8AAIBAAAAAPwAAAD8AAIC/AAAAPwAAAD8AAIC/AADQwAAAAD8AAIC/AADQwAAAAD8AAIBAAADAPwAAAD8AAKDAAACwQAAAAD8AAKDAAACwQAAAAD8AAADBAACwQAAAAD8AAADBAADAPwAAAD8AAADBAADAPwAAAD8AAKDAAADQwAAAAD8AAMBAAADAvwAAAD8AAMBAAADAvwAAAD8AAIBAAADAvwAAAD8AAIBAAADQwAAAAD8AAIBAAADQwAAAAD8AAMBAAADAPwAAAD8AAADBAACwQAAAAD8AAADBAACwQAAAAL8AAADBAACwQAAAAL8AAADBAADAPwAAAL8AAADBAADAPwAAAD8AAADBAADQwAAAAD8AAIC/AAAAPwAAAD8AAIC/AAAAPwAAAL8AAIC/AAAAPwAAAL8AAIC/AADQwAAAAL8AAIC/AADQwAAAAD8AAIC/AADAPwAAAL8AAKDAAACwQAAAAL8AAKDAAACwQAAAAD8AAKDAAACwQAAAAD8AAKDAAADAPwAAAD8AAKDAAADAPwAAAL8AAKDAAADAvwAAAL8AAIBAAAAAPwAAAL8AAIBAAAAAPwAAAD8AAIBAAAAAPwAAAD8AAIBAAADAvwAAAD8AAIBAAADAvwAAAL8AAIBAAADQwAAAAL8AAMBAAADAvwAAAL8AAMBAAADAvwAAAD8AAMBAAADAvwAAAD8AAMBAAADQwAAAAD8AAMBAAADQwAAAAL8AAMBA"
+    },
+    {
+      "byteLength": 1152,
+      "uri": "data:application/octet-stream;base64,AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/"
+    },
+    {
+      "byteLength": 768,
+      "uri": "data:application/octet-stream;base64,AABgPgAA0D4AAIA+AADQPgAAgD4AAEA+AACAPgAAQD4AAGA+AABAPgAAYD4AANA+AADQPgAAwD0AAOA+AADAPQAA4D4AAAAAAADgPgAAAAAAANA+AAAAAAAA0D4AAMA9AAAAAAAAAAAAAAA9AAAAAAAAAD0AAIA9AAAAPQAAgD0AAAAAAACAPQAAAAAAAAAAAACgPgAAQD4AALA+AABAPgAAsD4AALA+AACwPgAAsD4AAKA+AACwPgAAoD4AAEA+AACgPgAAAAAAALA+AAAAAAAAsD4AAMA9AACwPgAAwD0AAKA+AADAPQAAoD4AAAAAAAAAAAAAYD4AAAAAAAAAAAAAID4AAAAAAAAgPgAAAAAAACA+AABgPgAAAAAAAGA+AADQPgAAoD4AANA+AABAPgAAAD8AAEA+AAAAPwAAQD4AAAA/AACgPgAA0D4AAKA+AAAAPQAAID4AAAA9AAAAAAAAwD0AAAAAAADAPQAAAAAAAMA9AAAgPgAAAD0AACA+AAAgPgAAYD4AACA+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgPgAAID4AAGA+AADAPQAA0D4AAMA9AACQPgAAAAAAAJA+AAAAAAAAkD4AAAAAAADQPgAAwD0AANA+AADAPQAAID4AAMA9AAAAAAAAAD0AAAAAAAAAPQAAAAAAAAA9AAAgPgAAwD0AACA+AACwPgAAAD4AALA+AAAAAAAAoD4AAAAAAACgPgAAAAAAAKA+AAAAPgAAsD4AAAA+AAAAPQAAYD4AAAA9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgPgAAAD0AAGA+AABgPgAAAD4AAGA+AAAAAAAAgD4AAAAAAACAPgAAAAAAAIA+AAAAPgAAYD4AAAA+AAAAAAAAgD0AAAAAAAAAAAAAAD0AAAAAAAAAPQAAAAAAAAA9AACAPQAAAAAAAIA9AAAAPQAAID4AAAA9AAAAAAAAgD0AAAAAAACAPQAAAAAAAIA9AAAgPgAAAD0AACA+"
+    },
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AABAwAAAAL8AAABAAABAwAAAAD8AAABAAABAwAAAAD8AAADAAABAwAAAAD8AAADAAABAwAAAAL8AAADAAABAwAAAAL8AAABAAABAQAAAAL8AAADAAABAQAAAAD8AAADAAABAQAAAAD8AAABAAABAQAAAAD8AAABAAABAQAAAAL8AAABAAABAQAAAAL8AAADAAABAwAAAAL8AAADAAABAQAAAAL8AAADAAABAQAAAAL8AAABAAABAQAAAAL8AAABAAABAwAAAAL8AAABAAABAwAAAAL8AAADAAABAwAAAAD8AAABAAABAQAAAAD8AAABAAABAQAAAAD8AAADAAABAQAAAAD8AAADAAABAwAAAAD8AAADAAABAwAAAAD8AAABAAABAwAAAAD8AAADAAABAQAAAAD8AAADAAABAQAAAAL8AAADAAABAQAAAAL8AAADAAABAwAAAAL8AAADAAABAwAAAAD8AAADAAABAwAAAAL8AAABAAABAQAAAAL8AAABAAABAQAAAAD8AAABAAABAQAAAAD8AAABAAABAwAAAAD8AAABAAABAwAAAAL8AAABA"
+    },
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/"
+    },
+    {
+      "byteLength": 288,
+      "uri": "data:application/octet-stream;base64,AABAPgAAAD8AAIA+AAAAPwAAgD4AAAAAAACAPgAAAAAAAEA+AAAAAAAAQD4AAAA/AAAAPwAAAAAAABA/AAAAAAAAED8AAAA/AAAQPwAAAD8AAAA/AAAAPwAAAD8AAAAAAAAAAAAAQD8AAAAAAAAAAAAAgD4AAAAAAACAPgAAAAAAAIA+AABAPwAAAAAAAEA/AACAPgAAQD8AAIA+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAPwAAgD4AAEA/AACAPQAAQD8AAIA9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAPwAAgD0AAEA/AABAPgAAQD8AAEA+AAAAAAAAgD4AAAAAAACAPgAAAAAAAIA+AABAPwAAQD4AAEA/"
+    },
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,//+/vwAAAL8AACBA//+/vwAAAD8AACBA//+/vwAAAD8AACDA//+/vwAAAD8AACDA//+/vwAAAL8AACDA//+/vwAAAL8AACBA//+/PwAAAL8AACDA//+/PwAAAD8AACDA//+/PwAAAD8AACBA//+/PwAAAD8AACBA//+/PwAAAL8AACBA//+/PwAAAL8AACDA//+/vwAAAL8AACDA//+/PwAAAL8AACDA//+/PwAAAL8AACBA//+/PwAAAL8AACBA//+/vwAAAL8AACBA//+/vwAAAL8AACDA//+/vwAAAD8AACBA//+/PwAAAD8AACBA//+/PwAAAD8AACDA//+/PwAAAD8AACDA//+/vwAAAD8AACDA//+/vwAAAD8AACBA//+/vwAAAD8AACDA//+/PwAAAD8AACDA//+/PwAAAL8AACDA//+/PwAAAL8AACDA//+/vwAAAL8AACDA//+/vwAAAD8AACDA//+/vwAAAL8AACBA//+/PwAAAL8AACBA//+/PwAAAD8AACBA//+/PwAAAD8AACBA//+/vwAAAD8AACBA//+/vwAAAL8AACBA"
+    },
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/"
+    },
+    {
+      "byteLength": 288,
+      "uri": "data:application/octet-stream;base64,AAAAAAAAID8AAAA+AAAgPwAAAD4AAAAAAAAAPgAAAAAAAAAAAAAAAAAAAAAAACA/AACAPgAAAAAAAMA+AAAAAAAAwD4AACA/AADAPgAAID8AAIA+AAAgPwAAgD4AAAAAAAAAAAAAAAAAAMA+AAAAAAAAwD4AACA/AADAPgAAID8AAAAAAAAgPwAAAAAAAAAAAAAAAAAAID8AAMA+AAAgPwAAwD4AAAAAAADAPgAAAAAAAAAAAAAAAAAAAAAAACA/AADAPgAAAD8AAMA+AAAAPgAAgD4AAAA+AACAPgAAAD4AAIA+AAAAPwAAwD4AAAA/AAAAAAAAwD4AAAAAAAAAAAAAAD4AAAAAAAAAPgAAAAAAAAA+AADAPgAAAAAAAMA+"
+    },
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AAAgwAAAAL8AAABAAAAgwAAAAD8AAABAAAAgwAAAAD8AAADAAAAgwAAAAD8AAADAAAAgwAAAAL8AAADAAAAgwAAAAL8AAABAAAAgQAAAAL8AAADAAAAgQAAAAD8AAADAAAAgQAAAAD8AAABAAAAgQAAAAD8AAABAAAAgQAAAAL8AAABAAAAgQAAAAL8AAADAAAAgwAAAAL8AAADAAAAgQAAAAL8AAADAAAAgQAAAAL8AAABAAAAgQAAAAL8AAABAAAAgwAAAAL8AAABAAAAgwAAAAL8AAADAAAAgwAAAAD8AAABAAAAgQAAAAD8AAABAAAAgQAAAAD8AAADAAAAgQAAAAD8AAADAAAAgwAAAAD8AAADAAAAgwAAAAD8AAABAAAAgwAAAAD8AAADAAAAgQAAAAD8AAADAAAAgQAAAAL8AAADAAAAgQAAAAL8AAADAAAAgwAAAAL8AAADAAAAgwAAAAD8AAADAAAAgwAAAAL8AAABAAAAgQAAAAL8AAABAAAAgQAAAAD8AAABAAAAgQAAAAD8AAABAAAAgwAAAAD8AAABAAAAgwAAAAL8AAABA"
+    },
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/"
+    },
+    {
+      "byteLength": 288,
+      "uri": "data:application/octet-stream;base64,AAAAPgAAAD8AAEA+AAAAPwAAQD4AAAAAAABAPgAAAAAAAAA+AAAAAAAAAD4AAAA/AADgPgAAAAAAAAA/AAAAAAAAAD8AAAA/AAAAPwAAAD8AAOA+AAAAPwAA4D4AAAAAAAAAAAAAID8AAAAAAAAAAAAAgD4AAAAAAACAPgAAAAAAAIA+AAAgPwAAAAAAACA/AACAPgAAID8AAIA+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgPwAAgD4AACA/AACAPQAAID8AAIA9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgPwAAgD0AACA/AAAAPgAAID8AAAA+AAAAAAAAQD4AAAAAAABAPgAAAAAAAEA+AAAgPwAAAD4AACA/"
+    }
+  ],
+  "bufferViews": [
+    {
+      "byteOffset": 0,
+      "byteLength": 1152,
+      "buffer": 0,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 1152,
+      "buffer": 1,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 768,
+      "buffer": 2,
+      "byteStride": 8,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 3,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 4,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 288,
+      "buffer": 5,
+      "byteStride": 8,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 6,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 7,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 288,
+      "buffer": 8,
+      "byteStride": 8,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 9,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 10,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 288,
+      "buffer": 11,
+      "byteStride": 8,
+      "target": 34962
+    }
+  ],
+  "samplers": [{
+    "minFilter": 9728,
+    "wrapT": 33071,
+    "wrapS": 33071,
+    "magFilter": 9728
+  }],
+  "scene": 0,
+  "nodes": [
+    {
+      "children": [
+        1,
+        2
+      ],
+      "rotation": [
+        0,
+        -1,
+        0,
+        -4.371138828673793E-8
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "Root-Global",
+      "scale": [
+        -1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "Root-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "children": [
+        3,
+        4,
+        6,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "8$$(1)-Global",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0.5,
+        0
+      ],
+      "name": "8$$(1)-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "mesh": 0
+    },
+    {
+      "children": [5],
+      "rotation": [
+        0,
+        0.9961947202682495,
+        0,
+        0.08715580403804779
+      ],
+      "translation": [
+        -3.3424158096313477,
+        -1.9073486328125E-6,
+        -5.07156229019165
+      ],
+      "name": "P2-Global",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0.5,
+        0
+      ],
+      "name": "P2-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "mesh": 1
+    },
+    {
+      "children": [7],
+      "rotation": [
+        0,
+        -0.10503683984279633,
+        0,
+        0.9944683313369751
+      ],
+      "translation": [
+        3.969038486480713,
+        0,
+        4.5756940841674805
+      ],
+      "name": "p3-Global",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0.5,
+        0
+      ],
+      "name": "p3-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "mesh": 2
+    },
+    {
+      "children": [9],
+      "rotation": [
+        0,
+        0.021431345492601395,
+        0,
+        0.9997703433036804
+      ],
+      "translation": [
+        -0.6886234283447266,
+        0,
+        -0.14553171396255493
+      ],
+      "name": "P4-Global",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        5,
+        0.5,
+        -1
+      ],
+      "name": "P4-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "mesh": 3
+    }
+  ],
+  "materials": [
+    {
+      "name": "pathhaunted-Material",
+      "emissiveTexture": {
+        "index": 1,
+        "texCoord": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {"index": 0},
+        "metallicFactor": 0,
+        "roughnessFactor": 1
+      },
+      "emissiveFactor": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "P2-Material",
+      "emissiveTexture": {
+        "index": 3,
+        "texCoord": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {"index": 2},
+        "metallicFactor": 0,
+        "roughnessFactor": 1
+      },
+      "emissiveFactor": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "P3-Material",
+      "emissiveTexture": {
+        "index": 5,
+        "texCoord": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {"index": 4},
+        "metallicFactor": 0,
+        "roughnessFactor": 1
+      },
+      "emissiveFactor": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "P4-Material",
+      "emissiveTexture": {
+        "index": 7,
+        "texCoord": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {"index": 6},
+        "metallicFactor": 0,
+        "roughnessFactor": 1
+      },
+      "emissiveFactor": [
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "animations": [],
+  "scenes": [{"nodes": [0]}],
+  "asset": {
+    "generator": "VoxEdit Beta 3548043e",
+    "version": "2.0"
+  },
+  "meshes": [
+    {
+      "primitives": [{
+        "mode": 4,
+        "material": 0,
+        "attributes": {
+          "POSITION": 0,
+          "TEXCOORD_1": 3,
+          "TEXCOORD_0": 2,
+          "NORMAL": 1
+        }
+      }],
+      "name": "pathhaunted-Mesh"
+    },
+    {
+      "primitives": [{
+        "mode": 4,
+        "material": 1,
+        "attributes": {
+          "POSITION": 4,
+          "TEXCOORD_1": 7,
+          "TEXCOORD_0": 6,
+          "NORMAL": 5
+        }
+      }],
+      "name": "P2-Mesh"
+    },
+    {
+      "primitives": [{
+        "mode": 4,
+        "material": 2,
+        "attributes": {
+          "POSITION": 8,
+          "TEXCOORD_1": 11,
+          "TEXCOORD_0": 10,
+          "NORMAL": 9
+        }
+      }],
+      "name": "P3-Mesh"
+    },
+    {
+      "primitives": [{
+        "mode": 4,
+        "material": 3,
+        "attributes": {
+          "POSITION": 12,
+          "TEXCOORD_1": 15,
+          "TEXCOORD_0": 14,
+          "NORMAL": 13
+        }
+      }],
+      "name": "P4-Mesh"
+    }
+  ]
+}

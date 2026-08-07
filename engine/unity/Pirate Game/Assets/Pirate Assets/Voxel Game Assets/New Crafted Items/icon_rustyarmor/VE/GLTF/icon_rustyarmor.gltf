@@ -1,0 +1,220 @@
+{
+  "images": [
+    {"uri": "data:image/png;base64,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"},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAA9hAAAPYQGoP6dpAAACTElEQVR4Xu3RMWpAUQzEwH//Sye9SGNSiH1oQL0Xf9/3/fwjG++xmsYxl2y8x2oax1yy8R6raRxzycZ7rKZxzCUb77GaxjGXbLzHahrHXLLxHqtpHHPJxnuspnHMJRvvsZrGMZdsvMdqGsdcsvEeq2kcc8nGe6ymccwlG++xmsYxl2y8x2oax1yy8R6raRxzycZ7rKZxzCUb77GaxjGXbLzHahrHXLLxHqtpHHPJxnuspnHMJRvvsZrGMZdsvMdqGsdcsvEeq2kcc8nGe6ymccwlG++xmsYxl2y8x2oax1yy8R6raRxzycZ7rKZxzCUb77GaxjGXbLzHahrHXLLxHqtpHHPJxnuspnHMJRvvsXoWhzIb77F6FocyG++xehaHMhvvsXoWhzIb77F6FocyG++xehaHMhvvsXoWhzIb77F6FocyG++xehaHMhvvsXoWhzIb77F6FocyG++xehaHMhvvsXoWhzIb77F6FocyG++xmsYxRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGEfEZRhHxGUYR8RlGSZIkSZIkSZIkSZIkSZIkSZIkSZIkSZIkSf7yC0LevwaNC+eFAAAAAElFTkSuQmCC"}
+  ],
+  "accessors": [
+    {
+      "componentType": 5126,
+      "min": [
+        -23,
+        -16,
+        -1
+      ],
+      "byteOffset": 0,
+      "bufferView": 0,
+      "max": [
+        23,
+        16,
+        1
+      ],
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 1,
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 36,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 36,
+      "type": "VEC2"
+    }
+  ],
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 1,
+      "sampler": 0
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AAC4wQAAgMEAAIA/AAC4wQAAgEEAAIA/AAC4wQAAgEEAAIC/AAC4wQAAgEEAAIC/AAC4wQAAgMEAAIC/AAC4wQAAgMEAAIA/AAC4QQAAgMEAAIC/AAC4QQAAgEEAAIC/AAC4QQAAgEEAAIA/AAC4QQAAgEEAAIA/AAC4QQAAgMEAAIA/AAC4QQAAgMEAAIC/AAC4wQAAgMEAAIC/AAC4QQAAgMEAAIC/AAC4QQAAgMEAAIA/AAC4QQAAgMEAAIA/AAC4wQAAgMEAAIA/AAC4wQAAgMEAAIC/AAC4wQAAgEEAAIA/AAC4QQAAgEEAAIA/AAC4QQAAgEEAAIC/AAC4QQAAgEEAAIC/AAC4wQAAgEEAAIC/AAC4wQAAgEEAAIA/AAC4wQAAgEEAAIC/AAC4QQAAgEEAAIC/AAC4QQAAgMEAAIC/AAC4QQAAgMEAAIC/AAC4wQAAgMEAAIC/AAC4wQAAgEEAAIC/AAC4wQAAgMEAAIA/AAC4QQAAgMEAAIA/AAC4QQAAgEEAAIA/AAC4QQAAgEEAAIA/AAC4wQAAgEEAAIA/AAC4wQAAgMEAAIA/"
+    },
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/"
+    },
+    {
+      "byteLength": 288,
+      "uri": "data:application/octet-stream;base64,AACAPAAAgD4AAIA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAPgAAgDwAAIA+AAAAPQAAgD4AAAA9AAAAAAAAQD0AAAAAAABAPQAAAAAAAEA9AACAPgAAAD0AAIA+AACAPQAAuD4AAIA9AAAAAAAAoD0AAAAAAACgPQAAAAAAAKA9AAC4PgAAgD0AALg+AADgPQAAuD4AAOA9AAAAAAAAwD0AAAAAAADAPQAAAAAAAMA9AAC4PgAA4D0AALg+AAAgPwAAuD4AACA/AAAAAAAAwD4AAAAAAADAPgAAAAAAAMA+AAC4PgAAID8AALg+AAAAAAAAPD8AAAAAAADAPgAAgD4AAMA+AACAPgAAwD4AAIA+AAA8PwAAAAAAADw/"
+    }
+  ],
+  "bufferViews": [
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 0,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 1,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 288,
+      "buffer": 2,
+      "byteStride": 8,
+      "target": 34962
+    }
+  ],
+  "samplers": [{
+    "minFilter": 9728,
+    "wrapT": 33071,
+    "wrapS": 33071,
+    "magFilter": 9728
+  }],
+  "scene": 0,
+  "nodes": [
+    {
+      "children": [
+        1,
+        2
+      ],
+      "rotation": [
+        0,
+        -1,
+        0,
+        -4.371138828673793E-8
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "World-Global",
+      "scale": [
+        -1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "World-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "children": [3],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "iocn-Global",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        6.999999523162842,
+        16,
+        0
+      ],
+      "name": "iocn-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "mesh": 0
+    }
+  ],
+  "materials": [{
+    "name": "iconiron-Material",
+    "emissiveTexture": {
+      "index": 1,
+      "texCoord": 1
+    },
+    "pbrMetallicRoughness": {
+      "baseColorTexture": {"index": 0},
+      "metallicFactor": 0,
+      "roughnessFactor": 1
+    },
+    "emissiveFactor": [
+      1,
+      1,
+      1
+    ]
+  }],
+  "animations": [],
+  "scenes": [{"nodes": [0]}],
+  "asset": {
+    "generator": "VoxEdit Beta a9422c20",
+    "version": "2.0"
+  },
+  "meshes": [{
+    "primitives": [{
+      "mode": 4,
+      "material": 0,
+      "attributes": {
+        "POSITION": 0,
+        "TEXCOORD_1": 3,
+        "TEXCOORD_0": 2,
+        "NORMAL": 1
+      }
+    }],
+    "name": "iconiron-Mesh"
+  }]
+}

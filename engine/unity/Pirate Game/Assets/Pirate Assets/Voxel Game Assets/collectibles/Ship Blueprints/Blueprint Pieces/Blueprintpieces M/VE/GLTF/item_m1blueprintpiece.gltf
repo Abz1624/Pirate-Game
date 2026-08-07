@@ -1,0 +1,155 @@
+{
+  "images": [
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAAAyUlEQVR42mOQje76TyvMgARoaTZFAJvh608/pgjjCwBamE2TAICxXRJR5QjxiQkAbGxKzB4NAFoEAMhycjCpAUANs0dTwHAIAGIKvhGXAtDlR1QZgE1u2KQAbMl70KWA0TJgtB1AuzIAGROb/4dlOwCXWTA1w74dQC2zh2QA1M3fBdYLopGzHbrZA1YI0rIMgHkcmcZXCwzrMmDQpgB6ZYHRMgCaAkZUO4DaZo9Wg6MBMDoqTN0AGPHzAiMqAEbBKBgFo2AUjGAAAE7n8KtQ8P1DAAAAAElFTkSuQmCC"},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAAAQklEQVR42u3QIQ4AAAgDsf3/02DxBEUvmZ1oktThZpffqwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN4ASJK+1plxWd/5kFhsAAAAAElFTkSuQmCC"}
+  ],
+  "accessors": [
+    {
+      "componentType": 5126,
+      "min": [
+        -1,
+        -9,
+        -12.5
+      ],
+      "byteOffset": 0,
+      "bufferView": 0,
+      "max": [
+        1,
+        9,
+        12.5
+      ],
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 1,
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 36,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 36,
+      "type": "VEC2"
+    }
+  ],
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 1,
+      "sampler": 0
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AACAvwAAEMEAAEhBAACAvwAAEEEAAEhBAACAvwAAEEEAAEjBAACAvwAAEEEAAEjBAACAvwAAEMEAAEjBAACAvwAAEMEAAEhBAACAPwAAEMEAAEjBAACAPwAAEEEAAEjBAACAPwAAEEEAAEhBAACAPwAAEEEAAEhBAACAPwAAEMEAAEhBAACAPwAAEMEAAEjBAACAvwAAEMEAAEjBAACAPwAAEMEAAEjBAACAPwAAEMEAAEhBAACAPwAAEMEAAEhBAACAvwAAEMEAAEhBAACAvwAAEMEAAEjBAACAvwAAEEEAAEhBAACAPwAAEEEAAEhBAACAPwAAEEEAAEjBAACAPwAAEEEAAEjBAACAvwAAEEEAAEjBAACAvwAAEEEAAEhBAACAvwAAEEEAAEjBAACAPwAAEEEAAEjBAACAPwAAEMEAAEjBAACAPwAAEMEAAEjBAACAvwAAEMEAAEjBAACAvwAAEEEAAEjBAACAvwAAEMEAAEhBAACAPwAAEMEAAEhBAACAPwAAEEEAAEhBAACAPwAAEEEAAEhBAACAvwAAEEEAAEhBAACAvwAAEMEAAEhB"
+    },
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/"
+    },
+    {
+      "byteLength": 288,
+      "uri": "data:application/octet-stream;base64,AACAPQAASD8AALA+AABIPwAAsD4AAAAAAACwPgAAAAAAAIA9AAAAAAAAgD0AAEg/AADYPgAAAAAAADQ/AAAAAAAAND8AAEg/AAA0PwAASD8AANg+AABIPwAA2D4AAAAAAAAAAAAAAAAAAAA9AAAAAAAAAD0AAEg/AAAAPQAASD8AAAAAAABIPwAAAAAAAAAAAAAAAAAASD8AAAA9AABIPwAAAD0AAAAAAAAAPQAAAAAAAAAAAAAAAAAAAAAAAEg/AAAAAAAAED8AAAA9AAAQPwAAAD0AAAAAAAAAPQAAAAAAAAAAAAAAAAAAAAAAABA/AAAAAAAAAAAAAAA9AAAAAAAAAD0AABA/AAAAPQAAED8AAAAAAAAQPwAAAAAAAAAA"
+    }
+  ],
+  "bufferViews": [
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 0,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 1,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 288,
+      "buffer": 2,
+      "byteStride": 8,
+      "target": 34962
+    }
+  ],
+  "samplers": [{
+    "minFilter": 9728,
+    "wrapT": 33071,
+    "wrapS": 33071,
+    "magFilter": 9728
+  }],
+  "scene": 0,
+  "nodes": [{
+    "rotation": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "translation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      -1,
+      1,
+      1
+    ],
+    "mesh": 0
+  }],
+  "materials": [{
+    "name": "pn_chest_gold-Material",
+    "emissiveTexture": {
+      "index": 1,
+      "texCoord": 1
+    },
+    "pbrMetallicRoughness": {
+      "baseColorTexture": {"index": 0},
+      "metallicFactor": 0,
+      "roughnessFactor": 1
+    },
+    "emissiveFactor": [
+      1,
+      1,
+      1
+    ]
+  }],
+  "animations": [],
+  "scenes": [{"nodes": [0]}],
+  "asset": {
+    "generator": "VoxEdit Beta e2de1723",
+    "version": "2.0"
+  },
+  "meshes": [{
+    "primitives": [{
+      "mode": 4,
+      "material": 0,
+      "attributes": {
+        "POSITION": 0,
+        "TEXCOORD_1": 3,
+        "TEXCOORD_0": 2,
+        "NORMAL": 1
+      }
+    }],
+    "name": "pn_chest_gold-Mesh"
+  }]
+}

@@ -1,0 +1,304 @@
+{
+  "images": [
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAUklEQVR42mP4/PD0f3yYAQkQUouunihAjgNkJcTheNQBA+IAqqYBQoYPSgdQNQpGHUDNBDs0HTCgPhp1wKgDRh0w6oBRBwwKB4yCUTAKRsFAAwAj4n8y/ocbyAAAAABJRU5ErkJggg=="},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAPklEQVR42u3SQQoAIAgAQf//abt2syCwaBa8hYxQREQWM5eb75cCAKiWA/wDOPFh3wS0XgQAAAAAcAVAkloblTkCDacOmXwAAAAASUVORK5CYII="}
+  ],
+  "accessors": [
+    {
+      "componentType": 5126,
+      "min": [
+        -5,
+        -5,
+        -2
+      ],
+      "byteOffset": 0,
+      "bufferView": 0,
+      "max": [
+        5,
+        5,
+        2
+      ],
+      "count": 108,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 1,
+      "count": 108,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 108,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 108,
+      "type": "VEC2"
+    }
+  ],
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 1,
+      "sampler": 0
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 1296,
+      "uri": "data:application/octet-stream;base64,AACgwAAAQMAAAABAAACgwAEAgEAAAABAAACgwAEAgEAAAADAAACgwAEAgEAAAADAAACgwAAAQMAAAADAAACgwAAAQMAAAABAAACAwAEAgEAAAABAAACAwAAAoEAAAABAAACAwAAAoEAAAADAAACAwAAAoEAAAADAAACAwAEAgEAAAADAAACAwAEAgEAAAABAAABAwAAAoMAAAABAAABAwAAAQMAAAABAAABAwAAAQMAAAADAAABAwAAAQMAAAADAAABAwAAAoMAAAADAAABAwAAAoMAAAABAAABAQAAAoMAAAADAAABAQAAAQMAAAADAAABAQAAAQMAAAABAAABAQAAAQMAAAABAAABAQAAAoMAAAABAAABAQAAAoMAAAADAAQCAQAEAgEAAAADAAQCAQAAAoEAAAADAAQCAQAAAoEAAAABAAQCAQAAAoEAAAABAAQCAQAEAgEAAAABAAQCAQAEAgEAAAADAAACgQAAAQMAAAADAAACgQAEAgEAAAADAAACgQAEAgEAAAABAAACgQAEAgEAAAABAAACgQAAAQMAAAABAAACgQAAAQMAAAADAAABAwAAAoMAAAADAAABAQAAAoMAAAADAAABAQAAAoMAAAABAAABAQAAAoMAAAABAAABAwAAAoMAAAABAAABAwAAAoMAAAADAAACgwAAAQMAAAADAAABAwAAAQMAAAADAAABAwAAAQMAAAABAAABAwAAAQMAAAABAAACgwAAAQMAAAABAAACgwAAAQMAAAADAAABAQAAAQMAAAADAAACgQAAAQMAAAADAAACgQAAAQMAAAABAAACgQAAAQMAAAABAAABAQAAAQMAAAABAAABAQAAAQMAAAADAAACgwAEAgEAAAABAAACAwAEAgEAAAABAAACAwAEAgEAAAADAAACAwAEAgEAAAADAAACgwAEAgEAAAADAAACgwAEAgEAAAABAAQCAQAEAgEAAAABAAACgQAEAgEAAAABAAACgQAEAgEAAAADAAACgQAEAgEAAAADAAQCAQAEAgEAAAADAAQCAQAEAgEAAAABAAACAwAAAoEAAAABAAQCAQAAAoEAAAABAAQCAQAAAoEAAAADAAQCAQAAAoEAAAADAAACAwAAAoEAAAADAAACAwAAAoEAAAABAAACgwAEAgEAAAADAAACgQAEAgEAAAADAAACgQAAAQMAAAADAAACgQAAAQMAAAADAAACgwAAAQMAAAADAAACgwAEAgEAAAADAAABAwAAAQMAAAADAAABAQAAAQMAAAADAAABAQAAAoMAAAADAAABAQAAAoMAAAADAAABAwAAAoMAAAADAAABAwAAAQMAAAADAAACAwAAAoEAAAADAAQCAQAAAoEAAAADAAQCAQAEAgEAAAADAAQCAQAEAgEAAAADAAACAwAEAgEAAAADAAACAwAAAoEAAAADAAACgwAAAQMAAAABAAACgQAAAQMAAAABAAACgQAEAgEAAAABAAACgQAEAgEAAAABAAACgwAEAgEAAAABAAACgwAAAQMAAAABAAABAwAAAoMAAAABAAABAQAAAoMAAAABAAABAQAAAQMAAAABAAABAQAAAQMAAAABAAABAwAAAQMAAAABAAABAwAAAoMAAAABAAACAwAEAgEAAAABAAQCAQAEAgEAAAABAAQCAQAAAoEAAAABAAQCAQAAAoEAAAABAAACAwAAAoEAAAABAAACAwAEAgEAAAABA"
+    },
+    {
+      "byteLength": 1296,
+      "uri": "data:application/octet-stream;base64,AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/"
+    },
+    {
+      "byteLength": 864,
+      "uri": "data:application/octet-stream;base64,AABgPgAAYD4AAGA+AAAAAAAAwD0AAAAAAADAPQAAAAAAAMA9AABgPgAAYD4AAGA+AAAAAAAAAD4AAAA9AAAAPgAAAD0AAAAAAAAAPQAAAAAAAAAAAAAAAAAAAAAAAAA+AADAPQAAAD4AACA+AAAAPgAAID4AAAAAAAAgPgAAAAAAAMA9AAAAAAAAwD0AAAA+AADAPQAAAAAAACA+AAAAAAAAID4AAAA+AAAgPgAAAD4AAMA9AAAAPgAAwD0AAAAAAAAAAAAAAAAAAAA9AAAAAAAAAD0AAAA+AAAAPQAAAD4AAAAAAAAAPgAAAAAAAAAAAADAPQAAYD4AAMA9AAAAAAAAYD4AAAAAAABgPgAAAAAAAGA+AABgPgAAwD0AAGA+AADAPQAAQD4AAMA9AAAAAAAAYD4AAAAAAABgPgAAAAAAAGA+AABAPgAAwD0AAEA+AADAPQAAAAAAACA+AAAAAAAAID4AAAA+AAAgPgAAAD4AAMA9AAAAPgAAwD0AAAAAAADAPQAAAAAAACA+AAAAAAAAID4AAAA+AAAgPgAAAD4AAMA9AAAAPgAAwD0AAAAAAAAAAAAAAD4AAAA9AAAAPgAAAD0AAAAAAAAAPQAAAAAAAAAAAAAAAAAAAAAAAAA+AAAAAAAAAD4AAAA9AAAAPgAAAD0AAAAAAAAAPQAAAAAAAAAAAAAAAAAAAAAAAAA+AABgPgAAgD4AAGA+AAAAAAAAwD0AAAAAAADAPQAAAAAAAMA9AACAPgAAYD4AAIA+AABgPgAAMD8AAGA+AADAPgAAAAAAAMA+AAAAAAAAwD4AAAAAAAAwPwAAYD4AADA/AAAgPgAAQD4AACA+AAAAAAAAwD0AAAAAAADAPQAAAAAAAMA9AABAPgAAID4AAEA+AAAAPgAAgD4AAAA+AAAAAAAAwD0AAAAAAADAPQAAAAAAAMA9AACAPgAAAD4AAIA+AADAPgAAoD4AAMA+AAAAAAAAGD8AAAAAAAAYPwAAAAAAABg/AACgPgAAwD4AAKA+AADAPQAAQD4AAMA9AAAAAAAAID4AAAAAAAAgPgAAAAAAACA+AABAPgAAwD0AAEA+AADAPQAAgD4AAMA9AAAAAAAAAD4AAAAAAAAAPgAAAAAAAAA+AACAPgAAwD0AAIA+"
+    }
+  ],
+  "bufferViews": [
+    {
+      "byteOffset": 0,
+      "byteLength": 1296,
+      "buffer": 0,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 1296,
+      "buffer": 1,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 864,
+      "buffer": 2,
+      "byteStride": 8,
+      "target": 34962
+    }
+  ],
+  "samplers": [{
+    "minFilter": 9728,
+    "wrapT": 33071,
+    "wrapS": 33071,
+    "magFilter": 9728
+  }],
+  "scene": 0,
+  "nodes": [
+    {
+      "children": [
+        1,
+        2
+      ],
+      "rotation": [
+        0,
+        -1,
+        0,
+        -4.371138828673793E-8
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "Root-Global",
+      "scale": [
+        -1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "Root-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "children": [
+        3,
+        4
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "Controler-Global",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "Controler-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "children": [
+        5,
+        6
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        -6,
+        5
+      ],
+      "name": "Footer1-Global",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "name": "Footer1-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "children": [7],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        -2,
+        0
+      ],
+      "name": "Skull1_1-Global",
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translation": [
+        0,
+        5,
+        2
+      ],
+      "name": "Skull1_1-Local",
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "mesh": 0
+    }
+  ],
+  "materials": [{
+    "name": "Skull-Material",
+    "emissiveTexture": {
+      "index": 1,
+      "texCoord": 1
+    },
+    "pbrMetallicRoughness": {
+      "baseColorTexture": {"index": 0},
+      "metallicFactor": 0,
+      "roughnessFactor": 1
+    },
+    "emissiveFactor": [
+      1,
+      1,
+      1
+    ]
+  }],
+  "animations": [],
+  "scenes": [{"nodes": [0]}],
+  "asset": {
+    "generator": "VoxEdit Beta 3548043e",
+    "version": "2.0"
+  },
+  "meshes": [{
+    "primitives": [{
+      "mode": 4,
+      "material": 0,
+      "attributes": {
+        "POSITION": 0,
+        "TEXCOORD_1": 3,
+        "TEXCOORD_0": 2,
+        "NORMAL": 1
+      }
+    }],
+    "name": "Skull-Mesh"
+  }]
+}

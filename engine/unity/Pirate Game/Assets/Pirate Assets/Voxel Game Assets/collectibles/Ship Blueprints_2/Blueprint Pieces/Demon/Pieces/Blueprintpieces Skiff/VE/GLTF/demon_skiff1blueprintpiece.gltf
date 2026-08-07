@@ -1,0 +1,155 @@
+{
+  "images": [
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAAAuklEQVR42u1Z0QqAIAyU+v+P6C36lT7K6EFY4jJzC9vuYKQVJx3XOSqsU4haFQg0ubtQIo/L1lV3AmhwqwiQxvt8vVabPxGgNO7hhgAaApyLv6lWASS44QALAtRCz4UA1Ob53HwG0Aemx/ycCQeULD6cA5AB6AP0MoAWx+GiD+C40j3m+wAp7l8KwKV+zm2yD+D2fa5MZ8CwDvjqFUAGNKxlKgMkubENQgB8FZYVwP1/AVcCAAAAAI5xAHcrrsswrmPZAAAAAElFTkSuQmCC"},
+    {"uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAAAQklEQVR42u3QIQ4AAAgDsf3/02DxBEUvmZ1oktThZpffqwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN4ASJK+1plxWd/5kFhsAAAAAElFTkSuQmCC"}
+  ],
+  "accessors": [
+    {
+      "componentType": 5126,
+      "min": [
+        -12.5,
+        -9,
+        -1
+      ],
+      "byteOffset": 0,
+      "bufferView": 0,
+      "max": [
+        12.5,
+        9,
+        1
+      ],
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 1,
+      "count": 36,
+      "type": "VEC3"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 36,
+      "type": "VEC2"
+    },
+    {
+      "componentType": 5126,
+      "byteOffset": 0,
+      "bufferView": 2,
+      "count": 36,
+      "type": "VEC2"
+    }
+  ],
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 1,
+      "sampler": 0
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AABIwQAAEMEAAIA/AABIwQAAEEEAAIA/AABIwQAAEEEAAIC/AABIwQAAEEEAAIC/AABIwQAAEMEAAIC/AABIwQAAEMEAAIA/AABIQQAAEMEAAIC/AABIQQAAEEEAAIC/AABIQQAAEEEAAIA/AABIQQAAEEEAAIA/AABIQQAAEMEAAIA/AABIQQAAEMEAAIC/AABIwQAAEMEAAIC/AABIQQAAEMEAAIC/AABIQQAAEMEAAIA/AABIQQAAEMEAAIA/AABIwQAAEMEAAIA/AABIwQAAEMEAAIC/AABIwQAAEEEAAIA/AABIQQAAEEEAAIA/AABIQQAAEEEAAIC/AABIQQAAEEEAAIC/AABIwQAAEEEAAIC/AABIwQAAEEEAAIA/AABIwQAAEEEAAIC/AABIQQAAEEEAAIC/AABIQQAAEMEAAIC/AABIQQAAEMEAAIC/AABIwQAAEMEAAIC/AABIwQAAEEEAAIC/AABIwQAAEMEAAIA/AABIQQAAEMEAAIA/AABIQQAAEEEAAIA/AABIQQAAEEEAAIA/AABIwQAAEEEAAIA/AABIwQAAEMEAAIA/"
+    },
+    {
+      "byteLength": 432,
+      "uri": "data:application/octet-stream;base64,AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/"
+    },
+    {
+      "byteLength": 288,
+      "uri": "data:application/octet-stream;base64,AAAAPQAAED8AAAA9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQPwAAAD0AABA/AAAAAAAAED8AAAAAAAAAAAAAAD0AAAAAAAAAPQAAAAAAAAA9AAAQPwAAAAAAABA/AAAAAAAASD8AAAAAAAAAAAAAAD0AAAAAAAAAPQAAAAAAAAA9AABIPwAAAAAAAEg/AAAAPQAASD8AAAA9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABIPwAAAD0AAEg/AACwPgAASD8AALA+AAAAAAAAgD0AAAAAAACAPQAAAAAAAIA9AABIPwAAsD4AAEg/AADYPgAASD8AANg+AAAAAAAAND8AAAAAAAA0PwAAAAAAADQ/AABIPwAA2D4AAEg/"
+    }
+  ],
+  "bufferViews": [
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 0,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 432,
+      "buffer": 1,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "byteOffset": 0,
+      "byteLength": 288,
+      "buffer": 2,
+      "byteStride": 8,
+      "target": 34962
+    }
+  ],
+  "samplers": [{
+    "minFilter": 9728,
+    "wrapT": 33071,
+    "wrapS": 33071,
+    "magFilter": 9728
+  }],
+  "scene": 0,
+  "nodes": [{
+    "rotation": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "translation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      -1,
+      1,
+      1
+    ],
+    "mesh": 0
+  }],
+  "materials": [{
+    "name": "demon_skiff1blueprintpiece-Material",
+    "emissiveTexture": {
+      "index": 1,
+      "texCoord": 1
+    },
+    "pbrMetallicRoughness": {
+      "baseColorTexture": {"index": 0},
+      "metallicFactor": 0,
+      "roughnessFactor": 1
+    },
+    "emissiveFactor": [
+      1,
+      1,
+      1
+    ]
+  }],
+  "animations": [],
+  "scenes": [{"nodes": [0]}],
+  "asset": {
+    "generator": "VoxEdit Beta 3548043e",
+    "version": "2.0"
+  },
+  "meshes": [{
+    "primitives": [{
+      "mode": 4,
+      "material": 0,
+      "attributes": {
+        "POSITION": 0,
+        "TEXCOORD_1": 3,
+        "TEXCOORD_0": 2,
+        "NORMAL": 1
+      }
+    }],
+    "name": "demon_skiff1blueprintpiece-Mesh"
+  }]
+}
