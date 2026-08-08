@@ -20,7 +20,7 @@
 #>
 param(
     [string]$SourceRoot = (Join-Path $PSScriptRoot "..\references\piratenation-art-full"),
-    [string]$DestRoot   = (Join-Path $PSScriptRoot "..\engine\unity\Pirate Game\Assets\Pirate Assets"),
+    [string]$DestRoot   = (Join-Path $PSScriptRoot "..\Pirate Game Unity\Assets\Pirate Assets"),
     [switch]$Force
 )
 

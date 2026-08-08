@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 64442be8fb508f5428aaec340a798469
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 360808
+  packageName: Stylized Character Pack
+  packageVersion: 1.0
+  assetPath: Assets/StylizedCharacterPack/Materials/Characters/Leopard_Material.mat
+  uploadId: 861256

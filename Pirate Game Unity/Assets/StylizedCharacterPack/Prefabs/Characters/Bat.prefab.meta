@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0af7b29eec352f54abcf9396dd154464
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 360808
+  packageName: Stylized Character Pack
+  packageVersion: 1.0
+  assetPath: Assets/StylizedCharacterPack/Prefabs/Characters/Bat.prefab
+  uploadId: 861256

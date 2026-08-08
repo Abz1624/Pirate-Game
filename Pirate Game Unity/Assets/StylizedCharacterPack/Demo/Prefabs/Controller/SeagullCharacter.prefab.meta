@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 68da7ba5eb0554dcb9890958d3718350
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 360808
+  packageName: Stylized Character Pack
+  packageVersion: 1.0
+  assetPath: Assets/StylizedCharacterPack/Demo/Prefabs/Controller/SeagullCharacter.prefab
+  uploadId: 861256

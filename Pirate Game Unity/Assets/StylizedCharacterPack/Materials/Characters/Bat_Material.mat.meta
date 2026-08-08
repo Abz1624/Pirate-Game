@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a08427f62c47f7847bd237a7bdb0c1b5
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 360808
+  packageName: Stylized Character Pack
+  packageVersion: 1.0
+  assetPath: Assets/StylizedCharacterPack/Materials/Characters/Bat_Material.mat
+  uploadId: 861256

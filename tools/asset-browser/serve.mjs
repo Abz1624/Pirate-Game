@@ -14,9 +14,13 @@ const STATIC = path.join(__dirname, "static");
 const HOST = "127.0.0.1";
 const PORT = 8765;
 
-/** Prefer the full local copy, then WSL full clone, then partial Windows checkout. */
+/**
+ * Prefer curated Pirate Assets under references/, then full art clone,
+ * then WSL clone, then partial Windows checkout.
+ */
 function resolveAssetsRoot() {
   const candidates = [
+    path.join(ROOT, "references", "Pirate Assets"),
     path.join(ROOT, "references", "piratenation-art-full"),
     "\\\\wsl$\\Ubuntu\\home\\kshitij\\piratenation-refs\\piratenation-art",
     path.join(ROOT, "references", "piratenation-art"),
@@ -28,7 +32,7 @@ function resolveAssetsRoot() {
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) return candidate;
   }
-  return candidates[candidates.length - 1];
+  return candidates[0];
 }
 
 const ASSETS = resolveAssetsRoot();
@@ -94,12 +98,25 @@ async function walk(dir, out) {
             : "image",
     };
 
-    // Founders 3D models pair with numbered voxel PNG previews when present.
-    if (item.kind === "model" && /Founder's Pirate NFT\/model3d\/\d+\.gltf$/i.test(rel)) {
-      const id = path.basename(entry.name, ".gltf");
-      const previewRel = `Founder's Pirate NFT/voxel/${id}.png`;
-      if (fs.existsSync(path.join(ASSETS, previewRel))) {
-        item.preview = previewRel;
+    if (item.kind === "model") {
+      // Founders 3D models pair with numbered voxel PNG previews when present.
+      if (/Founder's Pirate NFT\/model3d\/\d+\.gltf$/i.test(rel)) {
+        const id = path.basename(entry.name, ".gltf");
+        const previewRel = `Founder's Pirate NFT/voxel/${id}.png`;
+        if (fs.existsSync(path.join(ASSETS, previewRel))) {
+          item.preview = previewRel;
+        }
+      }
+      // Unity import layout: .../<asset>/GLTF/model.gltf + .../<asset>/Images/thumbnail.png
+      if (!item.preview && /\/GLTF\/[^/]+\.gltf$/i.test(rel)) {
+        const assetDir = path.posix.dirname(path.posix.dirname(rel));
+        for (const name of ["thumbnail.png", "thumbnail.jpg", "preview.png"]) {
+          const previewRel = `${assetDir}/Images/${name}`;
+          if (fs.existsSync(path.join(ASSETS, previewRel))) {
+            item.preview = previewRel;
+            break;
+          }
+        }
       }
     }
 

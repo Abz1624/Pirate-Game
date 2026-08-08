@@ -18,7 +18,7 @@
   Report what would be deleted without deleting.
 #>
 param(
-    [string]$AssetsRoot = (Join-Path $PSScriptRoot "..\engine\unity\Pirate Game\Assets\Pirate Assets"),
+    [string]$AssetsRoot = (Join-Path $PSScriptRoot "..\Pirate Game Unity\Assets\Pirate Assets"),
     [switch]$WhatIf
 )
 
