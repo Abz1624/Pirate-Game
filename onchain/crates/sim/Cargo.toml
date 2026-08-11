@@ -1,0 +1,20 @@
+[package]
+name = "pirate-sim"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Pure fixed-point combat simulation for Pirate Game co-op"
+
+[lib]
+name = "pirate_sim"
+path = "src/lib.rs"
+
+[features]
+default = []
+bench = []
+
+[dev-dependencies]
+serde_json = "1"
+
+[dependencies]
+bitflags = "2"

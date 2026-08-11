@@ -1,0 +1,21 @@
+[package]
+name = "pirate_coop"
+version.workspace = true
+description = "Pirate Game co-op match program with MagicBlock ER delegation"
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "pirate_coop"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.30.1"
+ephemeral-rollups-sdk = { version = "0.2", features = ["anchor"] }

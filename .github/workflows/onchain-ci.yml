@@ -1,0 +1,38 @@
+name: onchain-ci
+
+on:
+  push:
+    paths:
+      - 'onchain/**'
+  pull_request:
+    paths:
+      - 'onchain/**'
+
+jobs:
+  cu-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: CU budget tests (sim crate)
+        working-directory: onchain
+        run: |
+          cargo test -p pirate-sim stress_4_players_under_budget -- --nocapture
+          cargo test -p pirate-sim stress_12_players_under_budget -- --nocapture
+          cargo run -p pirate-simcli -- stress-cu --capacity 4
+          cargo run -p pirate-simcli -- stress-cu --capacity 12
+
+  anchor-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Install Anchor
+        run: cargo install --git https://github.com/coral-xyz/anchor anchor-cli --locked --force
+      - name: Build
+        working-directory: onchain
+        run: anchor build

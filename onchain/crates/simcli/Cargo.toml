@@ -1,0 +1,15 @@
+[package]
+name = "pirate-simcli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Headless match runner and balance sweeper for Pirate Game"
+
+[[bin]]
+name = "simcli"
+path = "src/main.rs"
+
+[dependencies]
+pirate-sim = { path = "../sim" }
+clap = { version = "4", features = ["derive"] }
+csv = "1"

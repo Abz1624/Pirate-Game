@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00000000000000000000000000000000, type: 3}
+  m_Name: BlockchainConfig
+  m_EditorClassIdentifier: 
+  mode: 0
+  localBaseRpc: http://localhost:8899
+  localBaseWs: ws://localhost:8900
+  localErRpc: http://localhost:7799
+  localErWs: ws://localhost:7800
+  localErValidator: mAGicPQYBMvcYveUZA5F5UNNwyHvfYh5xkLS2Fr1mev
+  devnetBaseRpc: https://api.devnet.solana.com
+  devnetErRpc: https://devnet-as.magicblock.app
+  devnetErWs: wss://devnet-as.magicblock.app
+  devnetErValidator: MAS1Dt9qreoRMQ14YQuhg8UTZMMzDdKhmkZMECCzk57
+  programId: PirCoop11111111111111111111111111111111111
+  defaultLobbyCapacity: 4
+  tickHz: 10
+  predictionSmoothTime: 0.15

@@ -1,5 +1,7 @@
 # 08 — Engine and Technology
 
+> **Update (MagicBlock integration):** Co-op multiplayer now uses **MagicBlock Ephemeral Rollups** as the authoritative match server. Combat runs in the Rust `pirate-sim` crate (10Hz tick) inside the `pirate_coop` Anchor program on the ER. Unity handles rendering, local ship prediction, and VFX only. Default lobby capacity is **4 players** (configurable to 12). Development targets the **local ER stack** (`localhost:7799`); devnet is the release target. See [`onchain/README.md`](../onchain/README.md). This supersedes the Photon Quantum + SpacetimeDB recommendation below for co-op; PvPvE may still revisit deterministic client sim if needed at 8–12 players.
+
 The engine is unresolved. This document lays out the requirements, the candidates, and the two decisions that have consequences beyond engineering.
 
 Two things make this choice larger than it looks:

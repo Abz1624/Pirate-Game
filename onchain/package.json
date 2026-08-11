@@ -1,0 +1,21 @@
+{
+  "name": "pirate-co-op-onchain",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "anchor test --skip-local-validator",
+    "test:cu": "cargo test -p pirate-sim stress -- --nocapture",
+    "sim:run": "cargo run -p pirate-simcli -- run",
+    "sim:stress": "cargo run -p pirate-simcli -- stress-cu --capacity 4",
+    "sim:sweep": "cargo run -p pirate-simcli -- sweep --runs 10 --output sweep.csv"
+  },
+  "devDependencies": {
+    "@coral-xyz/anchor": "^0.30.1",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "chai": "^4.3.10",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.3.3"
+  }
+}
