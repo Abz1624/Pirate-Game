@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: bfab287161ee99a43a0434a1243ffeb0
+AssetOrigin:
+  serializedVersion: 1
+  productId: 360808
+  packageName: Stylized Character Pack
+  packageVersion: 1.0
+  assetPath: Assets/StylizedCharacterPack/Models/Environment/Rock_Small.fbx
+  uploadId: 861256
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -33,7 +40,7 @@ ModelImporter:
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 1
+    globalScale: 100
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
@@ -108,10 +115,3 @@ ModelImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 360808
-  packageName: Stylized Character Pack
-  packageVersion: 1.0
-  assetPath: Assets/StylizedCharacterPack/Models/Environment/Rock_Small.fbx
-  uploadId: 861256
