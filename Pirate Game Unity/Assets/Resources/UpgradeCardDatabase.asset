@@ -1,0 +1,105 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0580cb0c2428dd7458e2f52ed3caeae4, type: 3}
+  m_Name: UpgradeCardDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Progression.UpgradeCardDatabase
+  cards:
+  - id: Card_Art_Scatter_Shot
+    displayName: Scatter Shot
+    family: 1
+    effect: 3
+    magnitude: 1
+    icon: {fileID: 21300000, guid: 8a91b02ac9660f5429a6e7eb6ba23f9f, type: 3}
+  - id: Card_Art_Carronade
+    displayName: Carronade
+    family: 1
+    effect: 0
+    magnitude: 0.2
+    icon: {fileID: 21300000, guid: 9d121776b23ee1440b04f42774288711, type: 3}
+  - id: Card_Art_Double_Barrel
+    displayName: Double Barrel
+    family: 1
+    effect: 2
+    magnitude: 1
+    icon: {fileID: 21300000, guid: 9baf6574075e5f648aff5e6ad08804a1, type: 3}
+  - id: Card_Art_Storm_of_Iron
+    displayName: Storm of Iron
+    family: 1
+    effect: 1
+    magnitude: 0.25
+    icon: {fileID: 21300000, guid: 42e9a6a8a4eaf1c4d8eed956d2b413bf, type: 3}
+  - id: Card_Art_Broadside
+    displayName: Broadside
+    family: 1
+    effect: 0
+    magnitude: 0.15
+    icon: {fileID: 21300000, guid: 3d96f7a2eb1c49348b3409d550bdc779, type: 3}
+  - id: Card_Art_Long_9s
+    displayName: Long Nines
+    family: 1
+    effect: 4
+    magnitude: 0.2
+    icon: {fileID: 21300000, guid: c85d1341cb37a024bad87139df13b779, type: 3}
+  - id: Card_Art_Bombardment
+    displayName: Bombardment
+    family: 3
+    effect: 1
+    magnitude: 0.18
+    icon: {fileID: 21300000, guid: 5cd2e2661d0408041b59e458bbcbfe67, type: 3}
+  - id: Card_Art_Tail_Sweep
+    displayName: Tail Sweep
+    family: 3
+    effect: 0
+    magnitude: 0.12
+    icon: {fileID: 21300000, guid: 3caa76b3691f7c249905cee666c2db73, type: 3}
+  - id: Card_Art_Reload
+    displayName: Reload
+    family: 0
+    effect: 1
+    magnitude: 0.15
+    icon: {fileID: 21300000, guid: 2a12897c6db2ef248ad45772342b155c, type: 3}
+  - id: Card_Art_Swift_Course
+    displayName: Swift Course
+    family: 0
+    effect: 7
+    magnitude: 0.15
+    icon: {fileID: 21300000, guid: 44a5282b74cb8c5448c9f58260354cbe, type: 3}
+  - id: Card_Art_Fleetfoot
+    displayName: Fleetfoot
+    family: 0
+    effect: 6
+    magnitude: 0.12
+    icon: {fileID: 21300000, guid: 53aa7356bfc6a724192377b7c3c4952f, type: 3}
+  - id: Card_Art_Fortitude
+    displayName: Fortitude
+    family: 0
+    effect: 5
+    magnitude: 0.2
+    icon: {fileID: 21300000, guid: 5089bf4402d98eb4aa4485abe70fc2a0, type: 3}
+  - id: Card_Art_Continuous_Repairs
+    displayName: Continuous Repairs
+    family: 0
+    effect: 8
+    magnitude: 2
+    icon: {fileID: 21300000, guid: 15626be2815710c4cacadbec707c7bc1, type: 3}
+  - id: Card_Art_Iron_Fangs
+    displayName: Iron Fangs
+    family: 0
+    effect: 0
+    magnitude: 0.1
+    icon: {fileID: 21300000, guid: 4f93f5e3bc4e019419daf71d0fcbe82d, type: 3}
+  - id: Card_Art_Stack_The_Deck
+    displayName: Stack the Deck
+    family: 0
+    effect: 9
+    magnitude: 0.25
+    icon: {fileID: 21300000, guid: 476785d6431d091478e8f0ed6e912b2d, type: 3}

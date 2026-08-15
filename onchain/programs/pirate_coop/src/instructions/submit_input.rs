@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::errors::PirateCoopError;
-use crate::state::{MatchAccount, MatchState, SnapshotAccount};
 use crate::instructions::tick::{run_tick_phases, SimBuffers};
+use crate::state::{MatchAccount, MatchState, SnapshotAccount};
 
 #[derive(Accounts)]
 pub struct SubmitInput<'info> {
@@ -11,7 +11,7 @@ pub struct SubmitInput<'info> {
     #[account(mut, constraint = snapshot.load()?.match_key == match_account.key())]
     pub snapshot: AccountLoader<'info, SnapshotAccount>,
     #[account(seeds = [b"config"], bump)]
-    pub config: Account<'info, crate::state::GameConfigAccount>,
+    pub config: AccountLoader<'info, crate::state::GameConfigAccount>,
 }
 
 pub fn handler(ctx: Context<SubmitInput>, throttle: i8, steer: i8, buttons: u8) -> Result<()> {
@@ -26,16 +26,14 @@ pub fn handler(ctx: Context<SubmitInput>, throttle: i8, steer: i8, buttons: u8) 
         }
     }
     require!(slot_idx.is_some(), PirateCoopError::NotPlayer);
-    let _ = (throttle, steer, buttons, slot_idx);
+    let _ = buttons;
 
-    // Input-driven tick advance
     let mut buffers = SimBuffers::default();
     buffers.set_input(slot_idx.unwrap() as u8, throttle, steer);
-    run_tick_phases(
-        &mut m,
-        &mut ctx.accounts.snapshot.load_mut()?,
-        &ctx.accounts.config,
-        &mut buffers,
-    )?;
+    let cfg = ctx.accounts.config.load()?;
+
+    let snapshot_info = ctx.accounts.snapshot.to_account_info();
+    let mut data = snapshot_info.try_borrow_mut_data()?;
+    run_tick_phases(&mut m, &mut data, &cfg, &mut buffers)?;
     Ok(())
 }

@@ -2,6 +2,36 @@
 
 Durations assume a small team: two to three engineers, one designer, one artist, plus contracted audio and VFX. They are relative sizing, not commitments.
 
+## Shelved: on-chain co-op ship sync (2026-08)
+
+Multiplayer ship position sync via MagicBlock ER is **paused** until single-player combat is fun.
+
+### What works today
+
+- Lobby flow: create / join / ready / start / delegate on local stack (`:8899` / `:7799`)
+- `submit_input` transactions succeed; snapshot tick advances
+- Local dual mode (K) can drive two wallets from one editor
+
+### Known blockers (do not revisit until M5)
+
+| Issue | Symptom | Likely cause |
+| --- | --- | --- |
+| Slot-1 spawn | `p1=(0,0)` instead of `(-2,0)` | `start_match` spawn not written for slot 1 on delegated snapshot; redeploy + spawn fallback |
+| ER tick rate | `p1 z` jumps thousands per minute | Config PDA missing on ER → `tick_hz` defaults to 1 |
+| Display sync | Stutter / snap-back | Prediction vs 10 Hz chain reconcile fighting; needs snapshot-only display or locked-step sim |
+| Per-slot ticks | `p0` frozen when only slot 1 submits | By design: one input per `submit_input` tick |
+
+### Resume checklist (M5)
+
+1. Rebuild + redeploy `pirate_coop.so` with `spawn_player` fallback and ER config init
+2. Anchor integration test: 2-player spawns + movement on ER after delegate
+3. Unity: one ship per editor via `RemoteShipView`; no local dual reconcile
+4. ParrelSync validation with Run In Background on both editors
+
+Code remains in `Assets/Scripts/Net/` and `onchain/` — disabled at runtime by `SoloRunBootstrap`.
+
+---
+
 ## Sequencing principles
 
 **Validate the hook before building anything.** Broadside Doctrine is the one genuinely novel thing in this design ([03](03-core-combat-and-progression.md#broadside-doctrine)). If turning to aim is not fun, the entire project is a Vampire Survivors clone with pirate art and should be reconsidered rather than continued. Three days of prototyping answers this. Do it before the engine is chosen.
@@ -59,15 +89,16 @@ Run the economy simulation from [07](07-economy-simulation-spec.md) in parallel.
 
 **Gate:** 600 enemies at 60fps on target hardware, real assets loading through the manifest, and a written stack decision with its reasoning.
 
-### M2 — Vertical slice (8–10 weeks)
+### M2 — Vertical slice (8–10 weeks) — **current focus**
 
-One complete, polished run. Narrow and deep.
+Single-player survivor loop first: one ship, wave director, broadside combat feel.
 
 | Scope | Amount |
 | --- | --- |
 | Hulls | 1 (Sloop) |
 | Biome | 1 (Shallows) |
 | Enemies | 8, across all six behaviour archetypes |
+| Waves | `WaveDirector` timeline (trickle → burst → ramp → calm → swarm) |
 | Elements | All 5, plus the affinity wheel |
 | Bosses | 1 (Megalodon) |
 | Weapons | 8 |
@@ -76,6 +107,7 @@ One complete, polished run. Narrow and deep.
 | Cards drafted from | ~20 |
 | Tide Levels | 1–3 |
 | Meta | None. Results screen only. |
+| Co-op / ER ship sync | **Shelved** — see above |
 
 **Every item on the feel checklist** in [03](03-core-combat-and-progression.md#feel-checklist) must pass. This is the milestone's real purpose. A vertical slice with correct systems and bad feel has proven nothing.
 
@@ -113,7 +145,9 @@ Limited region, real players, real telemetry.
 
 The shadow ledger is the highest-leverage item in the entire roadmap. It converts the economy from an argument into a measurement, months before a token exists.
 
-### M5 — Co-op (6–8 weeks)
+### M5 — Co-op (6–8 weeks) — **blocked on shelved ER ship sync**
+
+Resume when the checklist in [Shelved: on-chain co-op ship sync](#shelved-on-chain-co-op-ship-sync-2026-08) is complete.
 
 - Networked 2–4 player Dungeon Hunt
 - Party scaling curves from [04](04-modes-solo-and-coop.md#party-scaling)

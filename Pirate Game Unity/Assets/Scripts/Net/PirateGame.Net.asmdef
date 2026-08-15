@@ -1,7 +1,10 @@
 {
     "name": "PirateGame.Net",
     "rootNamespace": "PirateGame.Net",
-    "references": [],
+    "references": [
+        "com.solana.unity_sdk",
+        "Unity.InputSystem"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

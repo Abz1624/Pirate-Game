@@ -1,22 +1,8 @@
 use anchor_lang::prelude::*;
-use ephemeral_rollups_sdk::anchor::{commit, delegate};
-use ephemeral_rollups_sdk::cpi::DelegateConfig;
-use ephemeral_rollups_sdk::ephem::MagicIntentBundleBuilder;
+use ephemeral_rollups_sdk::cpi::{delegate_account, DelegateAccounts, DelegateConfig};
+use ephemeral_rollups_sdk::ephem::commit_and_undelegate_accounts;
 
-use crate::state::{MatchAccount, SnapshotAccount};
 use crate::{UndelegateCallback, LOCAL_ER_VALIDATOR};
-
-pub const UNDELEGATE_DISCRIMINATOR: [u8; 8] = [196, 28, 41, 206, 48, 37, 51, 167];
-
-#[delegate]
-#[derive(Accounts)]
-pub struct DelegateMatchAccounts<'info> {
-    pub payer: Signer<'info>,
-    #[account(mut, del)]
-    pub match_account: AccountLoader<'info, MatchAccount>,
-    #[account(mut, del)]
-    pub snapshot: AccountLoader<'info, SnapshotAccount>,
-}
 
 pub fn delegate_config() -> DelegateConfig {
     DelegateConfig {
@@ -25,16 +11,47 @@ pub fn delegate_config() -> DelegateConfig {
     }
 }
 
-pub fn commit_and_undelegate_match<'info>(
-    payer: AccountInfo<'info>,
-    magic_context: AccountInfo<'info>,
-    magic_program: AccountInfo<'info>,
-    match_account: AccountInfo<'info>,
-    snapshot: AccountInfo<'info>,
+pub fn delegate_pda<'info>(
+    payer: &AccountInfo<'info>,
+    pda: &AccountInfo<'info>,
+    owner_program: &AccountInfo<'info>,
+    buffer: &AccountInfo<'info>,
+    delegation_record: &AccountInfo<'info>,
+    delegation_metadata: &AccountInfo<'info>,
+    delegation_program: &AccountInfo<'info>,
+    system_program: &AccountInfo<'info>,
+    pda_seeds: &[&[u8]],
 ) -> Result<()> {
-    MagicIntentBundleBuilder::new(payer, magic_context, magic_program)
-        .commit_and_undelegate(&[match_account, snapshot])
-        .build_and_invoke()?;
+    delegate_account(
+        DelegateAccounts {
+            payer,
+            pda,
+            owner_program,
+            buffer,
+            delegation_record,
+            delegation_metadata,
+            delegation_program,
+            system_program,
+        },
+        pda_seeds,
+        delegate_config(),
+    )?;
+    Ok(())
+}
+
+pub fn commit_and_undelegate_match<'info>(
+    payer: &AccountInfo<'info>,
+    magic_context: &AccountInfo<'info>,
+    magic_program: &AccountInfo<'info>,
+    match_account: &AccountInfo<'info>,
+    snapshot: &AccountInfo<'info>,
+) -> Result<()> {
+    commit_and_undelegate_accounts(
+        payer,
+        vec![match_account, snapshot],
+        magic_context,
+        magic_program,
+    )?;
     Ok(())
 }
 

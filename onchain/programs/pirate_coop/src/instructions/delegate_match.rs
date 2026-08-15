@@ -1,25 +1,106 @@
 use anchor_lang::prelude::*;
-use crate::delegation::{delegate_config, DelegateMatchAccounts};
-use crate::state::MatchAccount;
+use crate::delegation::delegate_pda;
+use crate::errors::PirateCoopError;
+use crate::state::MatchState;
+use crate::ID;
 
+/// Match and snapshot must be `UncheckedAccount`, not `AccountLoader`.
+/// After `delegate_account` the PDAs are owned by the delegation program;
+/// `AccountLoader::exit` still writes the 8-byte discriminator and that
+/// store faults (`Access violation in input section ... size 8`).
 #[derive(Accounts)]
 pub struct DelegateMatch<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+    /// CHECK: match PDA; mutated then delegated via CPI
     #[account(mut)]
-    pub match_account: AccountLoader<'info, MatchAccount>,
+    pub match_account: UncheckedAccount<'info>,
+    /// CHECK: snapshot PDA; delegated via CPI
     #[account(mut)]
-    pub snapshot: AccountLoader<'info, SnapshotAccount>,
+    pub snapshot: UncheckedAccount<'info>,
+    /// CHECK: pirate_coop program id (PDA owner before delegation)
+    #[account(address = ID)]
+    pub owner_program: UncheckedAccount<'info>,
+    /// CHECK: ["buffer", match] PDA, owned by pirate_coop
+    #[account(mut)]
+    pub match_buffer: UncheckedAccount<'info>,
+    /// CHECK: ["delegation", match] PDA on the MagicBlock delegation program
+    #[account(mut)]
+    pub match_delegation_record: UncheckedAccount<'info>,
+    /// CHECK: ["delegation-metadata", match]
+    #[account(mut)]
+    pub match_delegation_metadata: UncheckedAccount<'info>,
+    /// CHECK: ["buffer", snapshot] PDA, owned by pirate_coop
+    #[account(mut)]
+    pub snapshot_buffer: UncheckedAccount<'info>,
+    /// CHECK: ["delegation", snapshot]
+    #[account(mut)]
+    pub snapshot_delegation_record: UncheckedAccount<'info>,
+    /// CHECK: ["delegation-metadata", snapshot]
+    #[account(mut)]
+    pub snapshot_delegation_metadata: UncheckedAccount<'info>,
+    /// CHECK: MagicBlock delegation program
+    #[account(address = ephemeral_rollups_sdk::id())]
+    pub delegation_program: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
 }
 
-use crate::state::SnapshotAccount;
-
 pub fn handler(ctx: Context<DelegateMatch>) -> Result<()> {
-    let mut m = ctx.accounts.match_account.load_mut()?;
-    m.delegated = 1;
-    // Delegation CPI via ephemeral-rollups-sdk delegate macro on dedicated instruction
-    // Full CPI wired when ER stack is running; marks account delegated for ER routing.
-    let _ = delegate_config();
-    let _ = ctx.accounts.payer.key();
+    require_keys_eq!(*ctx.accounts.match_account.owner, ID);
+    require_keys_eq!(*ctx.accounts.snapshot.owner, ID);
+
+    let match_key = ctx.accounts.match_account.key();
+    let (authority, seed) = {
+        let mut data = ctx.accounts.match_account.try_borrow_mut_data()?;
+        require!(data.len() >= 58, PirateCoopError::NotRunning);
+        require!(
+            data[51] == MatchState::Running as u8,
+            PirateCoopError::NotRunning
+        );
+        data[57] = 1; // MatchAccount.delegated (disc + offset 49)
+        let authority = Pubkey::new_from_array(data[8..40].try_into().unwrap());
+        let seed = u64::from_le_bytes(data[40..48].try_into().unwrap());
+        (authority, seed)
+    };
+
+    let match_info = ctx.accounts.match_account.to_account_info();
+    let snapshot_info = ctx.accounts.snapshot.to_account_info();
+
+    let payer = ctx.accounts.payer.to_account_info();
+    let owner_program = ctx.accounts.owner_program.to_account_info();
+    let delegation_program = ctx.accounts.delegation_program.to_account_info();
+    let system_program = ctx.accounts.system_program.to_account_info();
+    let match_buffer = ctx.accounts.match_buffer.to_account_info();
+    let match_record = ctx.accounts.match_delegation_record.to_account_info();
+    let match_metadata = ctx.accounts.match_delegation_metadata.to_account_info();
+    let snapshot_buffer = ctx.accounts.snapshot_buffer.to_account_info();
+    let snapshot_record = ctx.accounts.snapshot_delegation_record.to_account_info();
+    let snapshot_metadata = ctx.accounts.snapshot_delegation_metadata.to_account_info();
+
+    let seed_bytes = seed.to_le_bytes();
+    delegate_pda(
+        &payer,
+        &match_info,
+        &owner_program,
+        &match_buffer,
+        &match_record,
+        &match_metadata,
+        &delegation_program,
+        &system_program,
+        &[b"match", authority.as_ref(), seed_bytes.as_ref()],
+    )?;
+
+    delegate_pda(
+        &payer,
+        &snapshot_info,
+        &owner_program,
+        &snapshot_buffer,
+        &snapshot_record,
+        &snapshot_metadata,
+        &delegation_program,
+        &system_program,
+        &[b"snapshot", match_key.as_ref()],
+    )?;
+
     Ok(())
 }

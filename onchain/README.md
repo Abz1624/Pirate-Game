@@ -5,10 +5,27 @@ Authoritative combat simulation on MagicBlock Ephemeral Rollups.
 ## Prerequisites
 
 - Rust 1.75+
-- Solana CLI 1.18+
-- Anchor 0.30.1
+- Agave/Solana CLI 2.1+
+- Anchor 0.31.1 (via `avm`)
+- `cargo install cargo-build-sbf` (v4.x; uses platform-tools v1.54)
 - Node 18+
 - `npm install -g @magicblock-labs/ephemeral-validator@latest`
+
+### WSL setup (recommended on Windows)
+
+Full guide: [docs/SETUP_WSL.md](docs/SETUP_WSL.md)
+
+```bash
+# From PowerShell / CMD:
+wsl -u root -e bash /mnt/c/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/onchain/scripts/setup-wsl-root.sh
+wsl -e bash /mnt/c/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/onchain/scripts/setup-wsl-user.sh
+wsl -e bash -lc 'source $HOME/.cargo/env; cargo install cargo-build-sbf --locked'
+
+# Verify:
+wsl -e bash /mnt/c/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/onchain/scripts/verify-wsl.sh
+```
+
+Or open an Ubuntu terminal and run the same scripts from the repo path under `/mnt/c/...`.
 
 ## Local development (default)
 

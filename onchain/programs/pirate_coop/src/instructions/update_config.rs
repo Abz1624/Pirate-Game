@@ -5,8 +5,8 @@ use crate::state::GameConfigAccount;
 #[derive(Accounts)]
 pub struct UpdateConfig<'info> {
     pub authority: Signer<'info>,
-    #[account(mut, seeds = [b"config"], bump, has_one = authority)]
-    pub config: Account<'info, GameConfigAccount>,
+    #[account(mut, seeds = [b"config"], bump)]
+    pub config: AccountLoader<'info, GameConfigAccount>,
 }
 
 pub fn handler(ctx: Context<UpdateConfig>, data: Vec<u8>) -> Result<()> {
@@ -14,7 +14,8 @@ pub fn handler(ctx: Context<UpdateConfig>, data: Vec<u8>) -> Result<()> {
         data.len() <= crate::state::MAX_CONFIG_BYTES,
         PirateCoopError::ConfigTooLarge
     );
-    let cfg = &mut ctx.accounts.config;
+    let mut cfg = ctx.accounts.config.load_mut()?;
+    require_keys_eq!(cfg.authority, ctx.accounts.authority.key());
     cfg.data[..data.len()].copy_from_slice(&data);
     cfg.data_len = data.len() as u16;
     Ok(())

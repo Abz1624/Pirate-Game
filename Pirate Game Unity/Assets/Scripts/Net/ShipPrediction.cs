@@ -30,6 +30,8 @@ namespace PirateGame.Net
             public float turnSpeed;
             public float waterDrag;
             public float brakeDrag;
+            /// <summary>Ship art faces -Z; match ShipMovement.modelForwardIsNegativeZ.</summary>
+            public bool modelForwardIsNegativeZ;
         }
 
         public static readonly ShipParams DefaultParams = new()
@@ -40,13 +42,15 @@ namespace PirateGame.Net
             reverseAcceleration = 4f,
             turnSpeed = 800f,
             waterDrag = 3f,
-            brakeDrag = 6f
+            brakeDrag = 6f,
+            modelForwardIsNegativeZ = true
         };
 
         /// <summary>One fixed timestep integration — must match Rust sim tick.</summary>
         public static ShipState Integrate(ShipState state, ShipInput input, ShipParams p, float dt)
         {
-            var forward = Quaternion.Euler(0f, state.headingDeg, 0f) * Vector3.forward;
+            var axis = p.modelForwardIsNegativeZ ? -Vector3.forward : Vector3.forward;
+            var forward = Quaternion.Euler(0f, state.headingDeg, 0f) * axis;
             var forwardSpeed = Vector3.Dot(state.velocity, forward);
             var turnRef = forwardSpeed >= 0f ? p.maxSpeed : p.reverseMaxSpeed;
             var turnEffectiveness = turnRef > 0f ? Mathf.Clamp01(Mathf.Abs(forwardSpeed) / turnRef) : 0f;
@@ -96,9 +100,11 @@ namespace PirateGame.Net
             };
         }
 
-        public void ApplyInput(ShipPredictor.ShipInput input, float dt)
+        public void ApplyInput(ShipPredictor.ShipInput input, float dt, bool modelForwardIsNegativeZ = true)
         {
-            predicted = ShipPredictor.Integrate(predicted, input, ShipPredictor.DefaultParams, dt);
+            var p = ShipPredictor.DefaultParams;
+            p.modelForwardIsNegativeZ = modelForwardIsNegativeZ;
+            predicted = ShipPredictor.Integrate(predicted, input, p, dt);
         }
 
         public void Reconcile(Vector3 authoritativePosition, float authoritativeHeading)

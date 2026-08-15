@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d80e8f5d335b894dbadd02b353fada0, type: 3}
+  m_Name: PickupCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Progression.PickupCatalog
+  prefabs:
+  - {fileID: 1092622605003649420, guid: 890dcf1c7864a6b45b5b80e55d55a736, type: 3}
+  - {fileID: 6687611661847947293, guid: 87185d8b5423a3342b802f411a03d660, type: 3}
+  - {fileID: 7884394392554346108, guid: 9efc85e6a470864438a7657384bb9b1b, type: 3}
+  - {fileID: 696784875350561584, guid: e2a7cc32176423f43be074f96a856d7d, type: 3}
+  - {fileID: 5873895916556410051, guid: 0418f7bbc3b2b884580109f6b962cf99, type: 3}
+  - {fileID: 5173023550511640745, guid: ef9ecdcfaceaa814cadcf52189aa3e25, type: 3}
+  - {fileID: 803827538284316461, guid: 4f659c819cf015e4e9da38de820398c6, type: 3}

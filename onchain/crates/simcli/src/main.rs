@@ -69,9 +69,11 @@ fn run_match(seed: u64, players: u8, tide: u8, ticks: u32) {
     }
     let start = Instant::now();
     for t in 0..ticks {
-        for (i, input) in bot_input(t, i as u8) {
-            if (i as usize) < world.pending_inputs.len() {
-                world.pending_inputs[i as usize] = input;
+        for slot in 0..players {
+            for (i, input) in bot_input(t, slot) {
+                if (i as usize) < world.pending_inputs.len() {
+                    world.pending_inputs[i as usize] = input;
+                }
             }
         }
         run_full_tick(&mut world, &config);
@@ -107,8 +109,10 @@ fn sweep(runs: u32, output: &str) {
         }
         let ticks = 6000u32; // ~10 min at 10Hz
         for t in 0..ticks {
-            for (i, input) in bot_input(t, i) {
-                world.pending_inputs[i as usize] = input;
+            for slot in 0..4u8 {
+                for (i, input) in bot_input(t, slot) {
+                    world.pending_inputs[i as usize] = input;
+                }
             }
             run_full_tick(&mut world, &config);
         }

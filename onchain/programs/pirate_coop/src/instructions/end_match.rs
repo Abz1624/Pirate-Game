@@ -22,11 +22,11 @@ pub fn handler(ctx: Context<EndMatch>) -> Result<()> {
 
     if m.delegated == 1 {
         commit_and_undelegate_match(
-            ctx.accounts.payer.to_account_info(),
-            ctx.accounts.magic_context.to_account_info(),
-            ctx.accounts.magic_program.to_account_info(),
-            ctx.accounts.match_account.to_account_info(),
-            ctx.accounts.snapshot.to_account_info(),
+            &ctx.accounts.payer.to_account_info(),
+            &ctx.accounts.magic_context.to_account_info(),
+            &ctx.accounts.magic_program.to_account_info(),
+            &ctx.accounts.match_account.to_account_info(),
+            &ctx.accounts.snapshot.to_account_info(),
         )?;
         m.delegated = 0;
     }

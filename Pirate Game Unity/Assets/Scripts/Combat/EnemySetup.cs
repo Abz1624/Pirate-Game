@@ -9,6 +9,10 @@ namespace PirateGame.Combat
     [DisallowMultipleComponent]
     public class EnemySetup : MonoBehaviour
     {
+        [SerializeField] float minWorldWidth = 1.2f;
+        [SerializeField] float minWorldHeight = 0.9f;
+        [SerializeField] float minWorldDepth = 1.2f;
+
         void Reset()
         {
             tag = "Enemy";
@@ -25,12 +29,11 @@ namespace PirateGame.Combat
 
         void EnsureCollider()
         {
-            if (GetComponent<Collider>() != null) return;
-
             var renderers = GetComponentsInChildren<Renderer>();
             if (renderers.Length == 0)
             {
-                gameObject.AddComponent<BoxCollider>();
+                if (GetComponent<Collider>() == null)
+                    gameObject.AddComponent<BoxCollider>();
                 return;
             }
 
@@ -38,9 +41,22 @@ namespace PirateGame.Combat
             for (var i = 1; i < renderers.Length; i++)
                 bounds.Encapsulate(renderers[i].bounds);
 
-            var box = gameObject.AddComponent<BoxCollider>();
+            bounds.size = new Vector3(
+                Mathf.Max(bounds.size.x, minWorldWidth),
+                Mathf.Max(bounds.size.y, minWorldHeight),
+                Mathf.Max(bounds.size.z, minWorldDepth));
+
+            var box = GetComponent<BoxCollider>();
+            if (box == null)
+                box = gameObject.AddComponent<BoxCollider>();
+
+            var lossy = transform.lossyScale;
             box.center = transform.InverseTransformPoint(bounds.center);
-            box.size = Vector3.Max(bounds.size, new Vector3(0.5f, 0.5f, 0.5f));
+            box.size = new Vector3(
+                bounds.size.x / Mathf.Max(0.001f, lossy.x),
+                bounds.size.y / Mathf.Max(0.001f, lossy.y),
+                bounds.size.z / Mathf.Max(0.001f, lossy.z));
+            box.isTrigger = false;
         }
     }
 }

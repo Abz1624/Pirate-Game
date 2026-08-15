@@ -215,7 +215,7 @@ impl MatchWorld {
         let mut h = self.tick as u64 ^ self.seed;
         for (i, p) in self.players.iter().enumerate() {
             if p.active {
-                h ^= (i as u64 + 1) * p.position.x.0 as u64;
+                h ^= (i as u64 + 1).wrapping_mul(p.position.x.0 as u64);
                 h ^= p.hp as u64;
             }
         }

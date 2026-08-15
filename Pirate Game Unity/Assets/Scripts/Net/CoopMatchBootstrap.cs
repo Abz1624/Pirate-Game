@@ -16,7 +16,12 @@ namespace PirateGame.Net
             if (config == null)
                 config = Resources.Load<BlockchainConfig>("BlockchainConfig");
 
-            Debug.Log($"[Coop] Boot — mode={config?.mode} ER={config?.ErRpc}");
+            // Older setups deactivated RemoteShip; inactive objects never run Awake/OnEnable.
+            var remote = GameObject.Find("RemoteShip");
+            if (remote != null && !remote.activeSelf)
+                remote.SetActive(true);
+
+            Debug.Log($"[Coop] Boot — networking scaffold present (use SoloRunBootstrap for local survivor mode).");
         }
 
         void Start()

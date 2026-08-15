@@ -21,7 +21,7 @@ namespace PirateGame.Enemies
 
         [Min(0f)]
         [Tooltip("Chase speed in units per second.")]
-        public float moveSpeed = 4f;
+        public float moveSpeed = 2f;
 
         [Min(0f)]
         [Tooltip("Relative chance to be picked when the spawner chooses a random type.")]

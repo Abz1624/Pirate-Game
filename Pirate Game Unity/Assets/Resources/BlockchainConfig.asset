@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00000000000000000000000000000000, type: 3}
+  m_Script: {fileID: 11500000, guid: 531c5b152c688a84a83c949ff0231c43, type: 3}
   m_Name: BlockchainConfig
   m_EditorClassIdentifier: 
   mode: 0
@@ -22,7 +22,10 @@ MonoBehaviour:
   devnetErRpc: https://devnet-as.magicblock.app
   devnetErWs: wss://devnet-as.magicblock.app
   devnetErValidator: MAS1Dt9qreoRMQ14YQuhg8UTZMMzDdKhmkZMECCzk57
-  programId: PirCoop11111111111111111111111111111111111
+  programId: EeWGiecEDWgBB3eUxgQfTLjQJcZnLRYsXvbCcYfxP6pC
+  localPayerKeypairPath: \\wsl$\Ubuntu\home\shara\.config\solana\id.json
+  localClientPayerKeypairPath: \\wsl$\Ubuntu\home\shara\.config\solana\player2.json
+  sessionKeyPrefsId: host
   defaultLobbyCapacity: 4
   tickHz: 10
   predictionSmoothTime: 0.15

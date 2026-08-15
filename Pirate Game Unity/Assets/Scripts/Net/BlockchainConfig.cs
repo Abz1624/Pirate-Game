@@ -28,7 +28,17 @@ namespace PirateGame.Net
         public string devnetErValidator = "MAS1Dt9qreoRMQ14YQuhg8UTZMMzDdKhmkZMECCzk57";
 
         [Header("Program")]
-        public string programId = "PirCoop11111111111111111111111111111111111";
+        public string programId = "EeWGiecEDWgBB3eUxgQfTLjQJcZnLRYsXvbCcYfxP6pC";
+
+        [Header("Local payer")]
+        [Tooltip("Solana CLI id.json (64-byte JSON array). Leave empty to use ~/.config/solana/id.json or a logged-in Solana.Unity wallet.")]
+        public string localPayerKeypairPath = "";
+        [Tooltip("Second local wallet for ParrelSync clone (player2.json). Used automatically in clone editors.")]
+        public string localClientPayerKeypairPath = "";
+
+        [Header("ParrelSync co-op")]
+        [Tooltip("PlayerPrefs suffix for ER session keys. Clone editors use 'clone' automatically.")]
+        public string sessionKeyPrefsId = "host";
 
         [Header("Gameplay")]
         [Range(1, 12)] public int defaultLobbyCapacity = 4;

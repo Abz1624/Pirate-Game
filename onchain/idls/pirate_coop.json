@@ -1,0 +1,155 @@
+{
+  "address": "EeWGiecEDWgBB3eUxgQfTLjQJcZnLRYsXvbCcYfxP6pC",
+  "metadata": {
+    "name": "pirate_coop",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Pirate Game co-op match program with MagicBlock ER delegation"
+  },
+  "instructions": [
+    {
+      "name": "initialize_config",
+      "discriminator": [208, 127, 21, 1, 194, 190, 196, 70],
+      "accounts": [
+        { "name": "authority", "writable": true, "signer": true },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [{ "kind": "const", "value": [99, 111, 110, 102, 105, 103] }]
+          }
+        },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [{ "name": "version", "type": "u32" }]
+    },
+    {
+      "name": "create_match",
+      "discriminator": [107, 2, 184, 145, 70, 142, 17, 165],
+      "accounts": [
+        { "name": "authority", "writable": true, "signer": true },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [{ "kind": "const", "value": [99, 111, 110, 102, 105, 103] }]
+          }
+        },
+        { "name": "match_account", "writable": true },
+        { "name": "snapshot", "writable": true },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [
+        { "name": "seed", "type": "u64" },
+        { "name": "tide", "type": "u8" },
+        { "name": "capacity", "type": "u8" }
+      ]
+    },
+    {
+      "name": "join_match",
+      "discriminator": [244, 8, 47, 130, 192, 59, 179, 44],
+      "accounts": [
+        { "name": "owner", "signer": true },
+        { "name": "match_account", "writable": true }
+      ],
+      "args": [{ "name": "session_key", "type": "pubkey" }]
+    },
+    {
+      "name": "set_ready",
+      "discriminator": [105, 78, 7, 162, 181, 167, 186, 43],
+      "accounts": [
+        { "name": "player", "signer": true },
+        { "name": "match_account", "writable": true }
+      ],
+      "args": [{ "name": "ready", "type": "bool" }]
+    },
+    {
+      "name": "start_match",
+      "discriminator": [100, 246, 223, 181, 176, 101, 255, 19],
+      "accounts": [
+        { "name": "authority", "signer": true },
+        { "name": "match_account", "writable": true },
+        { "name": "snapshot", "writable": true }
+      ],
+      "args": []
+    },
+    {
+      "name": "delegate_match",
+      "discriminator": [30, 116, 9, 69, 147, 61, 133, 238],
+      "accounts": [
+        { "name": "payer", "writable": true, "signer": true },
+        { "name": "match_account", "writable": true },
+        { "name": "snapshot", "writable": true },
+        { "name": "owner_program", "address": "EeWGiecEDWgBB3eUxgQfTLjQJcZnLRYsXvbCcYfxP6pC" },
+        { "name": "match_buffer", "writable": true },
+        { "name": "match_delegation_record", "writable": true },
+        { "name": "match_delegation_metadata", "writable": true },
+        { "name": "snapshot_buffer", "writable": true },
+        { "name": "snapshot_delegation_record", "writable": true },
+        { "name": "snapshot_delegation_metadata", "writable": true },
+        { "name": "delegation_program", "address": "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh" },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": []
+    },
+    {
+      "name": "submit_input",
+      "discriminator": [56, 184, 154, 91, 173, 63, 21, 138],
+      "accounts": [
+        { "name": "player", "signer": true },
+        { "name": "match_account", "writable": true },
+        { "name": "snapshot", "writable": true },
+        { "name": "config" }
+      ],
+      "args": [
+        { "name": "throttle", "type": "i8" },
+        { "name": "steer", "type": "i8" },
+        { "name": "buttons", "type": "u8" }
+      ]
+    },
+    {
+      "name": "tick_phase1",
+      "discriminator": [124, 150, 59, 60, 76, 150, 102, 88],
+      "accounts": [
+        { "name": "match_account", "writable": true },
+        { "name": "snapshot", "writable": true },
+        { "name": "config" }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "GameConfigAccount",
+      "discriminator": [10, 255, 244, 212, 240, 238, 211, 53]
+    }
+  ],
+  "events": [],
+  "errors": [
+    { "code": 6000, "name": "MatchFull", "msg": "Match is full" },
+    { "code": 6001, "name": "NotInLobby", "msg": "Match not in lobby" },
+    { "code": 6002, "name": "NotRunning", "msg": "Match not running" },
+    { "code": 6003, "name": "NotPlayer", "msg": "Not a player in this match" },
+    { "code": 6004, "name": "InvalidCapacity", "msg": "Invalid capacity" },
+    { "code": 6005, "name": "TickFailed", "msg": "Tick phase failed" },
+    { "code": 6006, "name": "ConfigTooLarge", "msg": "Config data too large" }
+  ],
+  "types": [
+    {
+      "name": "GameConfigAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "authority", "type": "pubkey" },
+          { "name": "version", "type": "u32" },
+          { "name": "lobby_capacity_default", "type": "u8" },
+          { "name": "tick_hz", "type": "u8" },
+          { "name": "convoy_buff_cap_pct", "type": "u8" },
+          { "name": "_pad", "type": "u8" },
+          { "name": "data_len", "type": "u16" },
+          { "name": "data", "type": { "array": ["u8", 8192] } }
+        ]
+      }
+    }
+  ],
+  "constants": []
+}

@@ -1,14 +1,16 @@
 use anchor_lang::prelude::*;
-use ephemeral_rollups_sdk::anchor::{commit, delegate, ephemeral};
+use ephemeral_rollups_sdk::anchor::ephemeral;
 
 pub mod delegation;
 pub mod errors;
 pub mod instructions;
+pub mod ship_sim;
+pub mod snapshot_tail;
 pub mod state;
 
 use instructions::*;
 
-declare_id!("PirCoop11111111111111111111111111111111111");
+declare_id!("EeWGiecEDWgBB3eUxgQfTLjQJcZnLRYsXvbCcYfxP6pC");
 
 /// Local ER validator identity (MagicBlock localnet).
 pub const LOCAL_ER_VALIDATOR: Pubkey = pubkey!("mAGicPQYBMvcYveUZA5F5UNNwyHvfYh5xkLS2Fr1mev");

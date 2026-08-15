@@ -1,6 +1,7 @@
 target/
 .anchor/
 test-ledger/
+magicblock-test-storage/
 node_modules/
 **/*.so
 .DS_Store

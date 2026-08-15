@@ -4,16 +4,21 @@ pub const MAX_PLAYERS: usize = 12;
 pub const MAX_CONFIG_BYTES: usize = 8192;
 pub const EVENT_RING: usize = 32;
 
-#[account]
-#[derive(InitSpace)]
+#[account(zero_copy(unsafe))]
+#[repr(C)]
 pub struct GameConfigAccount {
     pub authority: Pubkey,
     pub version: u32,
     pub lobby_capacity_default: u8,
     pub tick_hz: u8,
     pub convoy_buff_cap_pct: u8,
+    pub _pad: u8,
     pub data_len: u16,
     pub data: [u8; MAX_CONFIG_BYTES],
+}
+
+impl GameConfigAccount {
+    pub const LEN: usize = 8 + core::mem::size_of::<GameConfigAccount>();
 }
 
 #[account]
@@ -25,6 +30,14 @@ pub struct PlayerProfile {
     pub runs_completed: u32,
     pub hull_unlocked: u64,
     pub bump: u8,
+}
+
+/// Per-player velocity state (centi-units/s). Positions live in snapshot tail.
+#[derive(Clone, Copy, Default)]
+#[repr(C)]
+pub struct ShipSimSlot {
+    pub vel_x: i32,
+    pub vel_z: i32,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, InitSpace)]
@@ -63,6 +76,7 @@ pub struct MatchAccount {
     pub delegated: u8,
     pub vrf_pending: u8,
     pub players: [PlayerSlot; MAX_PLAYERS],
+    pub ship_sim: [ShipSimSlot; MAX_PLAYERS],
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, InitSpace)]

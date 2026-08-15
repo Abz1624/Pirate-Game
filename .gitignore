@@ -41,3 +41,9 @@ sysinfo.txt
 *.aab
 *.unitypackage
 crashlytics-build.properties
+
+# ParrelSync clone projects (sibling to Pirate Game Unity/)
+*_clone_*/
+
+# Co-op test handshake (match pubkey written by host editor)
+.coop-match

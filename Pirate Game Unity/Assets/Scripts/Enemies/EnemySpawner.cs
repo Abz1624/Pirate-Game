@@ -26,7 +26,7 @@ namespace PirateGame.Enemies
             public float maxHealth = 30f;
 
             [Min(0f)]
-            public float moveSpeed = 4f;
+            public float moveSpeed = 2f;
 
             [Min(0f)]
             public float spawnWeight = 1f;
@@ -81,28 +81,41 @@ namespace PirateGame.Enemies
         [SerializeField] Transform player;
 
         [Header("Timing")]
-        [SerializeField] bool spawnOnStart = true;
+        [SerializeField] bool spawnOnStart;
         [SerializeField] bool autoSpawn = true;
         [SerializeField] float spawnInterval = 3f;
         [SerializeField] int enemiesPerSpawn = 1;
-        [SerializeField] int maxAlive = 20;
+        [SerializeField] int maxAlive = 30;
 
         [Header("Placement")]
         [Tooltip("Optional fixed points. If empty, enemies spawn on a ring around the player (or this transform).")]
         [SerializeField] Transform[] spawnPoints;
-        [SerializeField] float minSpawnRadius = 25f;
-        [SerializeField] float maxSpawnRadius = 40f;
+        [Tooltip("Spawn ring radius around the player.")]
+        [SerializeField] float spawnRadius = 14f;
+        [Tooltip("When > 0, spawns use spawnRadius exactly. When 0, min/max radius band is used.")]
+        [SerializeField] float spawnRadiusJitter = 0f;
+        [SerializeField] float minSpawnRadius = 14f;
+        [SerializeField] float maxSpawnRadius = 14f;
         [SerializeField] float spawnHeight = 0f;
 
         [Header("Scaling")]
         [Tooltip("Multiplies every spawned enemy's health (tide / difficulty).")]
         [SerializeField] float healthMultiplier = 1f;
 
+        [Header("Bosses")]
+        [Tooltip("Boss prefabs keyed by model name (boss_kraken, etc.).")]
+        [SerializeField] List<SpawnType> bossTypes = new List<SpawnType>();
+
+        [Header("Pickups")]
+        [SerializeField] GameObject[] pickupPrefabs = System.Array.Empty<GameObject>();
+
         [Header("Debug")]
         [SerializeField] bool logSpawns;
 
         readonly List<GameObject> aliveEnemies = new List<GameObject>();
         float spawnTimer;
+        bool autoSpawnEnabled = true;
+        int unlockedEnemyCount = -1;
 
         public int AliveCount
         {
@@ -115,6 +128,104 @@ namespace PirateGame.Enemies
 
         public IReadOnlyList<SpawnType> EnemyTypes => enemyTypes;
 
+        public int EnemyTypeCount => enemyTypes.Count;
+
+        public int MaxAlive
+        {
+            get => maxAlive;
+            set => maxAlive = Mathf.Max(1, value);
+        }
+
+        public float HealthMultiplier
+        {
+            get => healthMultiplier;
+            set => healthMultiplier = Mathf.Max(0.01f, value);
+        }
+
+        public void SetAutoSpawn(bool enabled)
+        {
+            autoSpawn = enabled;
+            autoSpawnEnabled = enabled;
+        }
+
+        public void SetSpawnOnStart(bool enabled) => spawnOnStart = enabled;
+
+        public void SetUnlockedEnemyCount(int count)
+        {
+            unlockedEnemyCount = count <= 0 ? -1 : count;
+        }
+
+        public void SpawnCrystalDrops(Vector3 origin, int count, float xpEach, float scatterRadius, Color spawnColor)
+        {
+            EnsurePickupPrefabs();
+            count = Mathf.Max(1, count);
+
+            for (var i = 0; i < count; i++)
+            {
+                var angle = Random.Range(0f, Mathf.PI * 2f);
+                var radius = Random.Range(scatterRadius * 0.35f, scatterRadius);
+                var position = origin + new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+
+                if (pickupPrefabs == null || pickupPrefabs.Length == 0)
+                {
+                    CreateFallbackPickup(position, xpEach, spawnColor);
+                    continue;
+                }
+
+                var prefab = pickupPrefabs[Random.Range(0, pickupPrefabs.Length)];
+                if (prefab == null)
+                {
+                    CreateFallbackPickup(position, xpEach, spawnColor);
+                    continue;
+                }
+
+                var instance = Instantiate(prefab, position, Quaternion.identity);
+                var pickup = instance.GetComponent<Progression.PickupItem>();
+                if (pickup != null)
+                {
+                    pickup.Initialize(Progression.PickupKind.Xp, xpEach);
+                    pickup.PlaySpawnPop(position, spawnColor);
+                }
+            }
+        }
+
+        void Awake()
+        {
+            EnsurePickupPrefabs();
+        }
+
+        public void EnsurePickupPrefabs()
+        {
+            if (pickupPrefabs != null && pickupPrefabs.Length > 0) return;
+
+            var catalog = Resources.Load<Progression.PickupCatalog>("PickupCatalog");
+            if (catalog != null && catalog.prefabs != null && catalog.prefabs.Length > 0)
+                pickupPrefabs = catalog.prefabs;
+        }
+
+        static void CreateFallbackPickup(Vector3 position, float xpEach, Color spawnColor)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            go.name = "CrystalPickup";
+            go.transform.position = position;
+            go.transform.localScale = Vector3.one * 0.1f;
+            Object.Destroy(go.GetComponent<Collider>());
+            var col = go.AddComponent<SphereCollider>();
+            col.isTrigger = true;
+            col.radius = 0.8f;
+
+            var renderer = go.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+                renderer.material = new Material(shader) { color = spawnColor };
+            }
+
+            var pickup = go.AddComponent<Progression.PickupItem>();
+            pickup.Initialize(Progression.PickupKind.Xp, xpEach);
+            pickup.PlaySpawnPop(position, spawnColor);
+        }
+
         void Start()
         {
             ResolvePlayer();
@@ -126,7 +237,7 @@ namespace PirateGame.Enemies
 
         void Update()
         {
-            if (!autoSpawn) return;
+            if (!autoSpawn || !autoSpawnEnabled) return;
 
             spawnTimer -= Time.deltaTime;
             if (spawnTimer > 0f) return;
@@ -197,6 +308,44 @@ namespace PirateGame.Enemies
             return instance;
         }
 
+        public GameObject SpawnBoss(string bossKey)
+        {
+            if (string.IsNullOrEmpty(bossKey)) return null;
+
+            SpawnType type = null;
+            foreach (var boss in bossTypes)
+            {
+                if (boss?.prefab != null && boss.prefab.name.Equals(bossKey, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    type = boss;
+                    break;
+                }
+            }
+
+            if (type == null)
+            {
+                Debug.LogWarning($"{nameof(EnemySpawner)}: no boss prefab for '{bossKey}'.", this);
+                return null;
+            }
+
+            PruneDead();
+            ResolvePlayer();
+            var position = GetSpawnPosition();
+            var rotation = GetSpawnRotation(position);
+            if (!type.TryResolve(out var prefab, out var health, out var speed, out _))
+                return null;
+
+            var instance = Instantiate(prefab, position, rotation);
+            instance.name = bossKey;
+            ConfigureInstance(instance, health * healthMultiplier * 8f, speed * 0.65f, isBoss: true);
+            aliveEnemies.Add(instance);
+
+            if (logSpawns)
+                Debug.Log($"Spawned BOSS {bossKey} at {position}", instance);
+
+            return instance;
+        }
+
         public void ClearAliveEnemies()
         {
             PruneDead();
@@ -209,7 +358,7 @@ namespace PirateGame.Enemies
             aliveEnemies.Clear();
         }
 
-        void ConfigureInstance(GameObject instance, float health, float speed)
+        void ConfigureInstance(GameObject instance, float health, float speed, bool isBoss = false)
         {
             if (!instance.CompareTag("Enemy"))
                 instance.tag = "Enemy";
@@ -231,13 +380,33 @@ namespace PirateGame.Enemies
                 chase.Initialize(player, speed);
             else
                 chase.MoveSpeed = speed;
+
+            var combat = instance.GetComponent<EnemyCombatBehavior>();
+            if (combat == null)
+                combat = instance.AddComponent<EnemyCombatBehavior>();
+            combat.ConfigureFromName(instance.name, isBoss);
+            if (player != null)
+                combat.SetTarget(player);
+
+            var loot = instance.GetComponent<Progression.EnemyLootDropper>();
+            if (loot == null)
+                loot = instance.AddComponent<Progression.EnemyLootDropper>();
+
+            var contact = instance.GetComponent<EnemyContactDamage>();
+            if (contact == null)
+                contact = instance.AddComponent<EnemyContactDamage>();
+            contact.Configure(player, isBoss);
         }
 
         bool TryPickType(out SpawnType picked)
         {
             picked = null;
             var totalWeight = 0f;
-            for (var i = 0; i < enemyTypes.Count; i++)
+            var limit = unlockedEnemyCount > 0
+                ? Mathf.Min(unlockedEnemyCount, enemyTypes.Count)
+                : enemyTypes.Count;
+
+            for (var i = 0; i < limit; i++)
             {
                 if (enemyTypes[i] != null && enemyTypes[i].TryResolve(out _, out _, out _, out var weight))
                     totalWeight += weight;
@@ -252,7 +421,7 @@ namespace PirateGame.Enemies
 
             var roll = Random.Range(0f, totalWeight);
             var cumulative = 0f;
-            for (var i = 0; i < enemyTypes.Count; i++)
+            for (var i = 0; i < limit; i++)
             {
                 var type = enemyTypes[i];
                 if (type == null || !type.TryResolve(out _, out _, out _, out var weight))
@@ -266,7 +435,7 @@ namespace PirateGame.Enemies
                 }
             }
 
-            picked = enemyTypes[enemyTypes.Count - 1];
+            picked = enemyTypes[Mathf.Min(limit, enemyTypes.Count) - 1];
             return picked != null;
         }
 
@@ -285,7 +454,14 @@ namespace PirateGame.Enemies
 
             var origin = player != null ? player.position : transform.position;
             var angle = Random.Range(0f, Mathf.PI * 2f);
-            var radius = Random.Range(minSpawnRadius, Mathf.Max(minSpawnRadius, maxSpawnRadius));
+            var radius = spawnRadius;
+            if (spawnRadiusJitter > 0f)
+                radius += Random.Range(-spawnRadiusJitter, spawnRadiusJitter);
+            else if (maxSpawnRadius > minSpawnRadius)
+                radius = Random.Range(minSpawnRadius, maxSpawnRadius);
+            else
+                radius = Mathf.Max(1f, spawnRadius > 0f ? spawnRadius : minSpawnRadius);
+
             return new Vector3(
                 origin.x + Mathf.Cos(angle) * radius,
                 spawnHeight,
@@ -302,7 +478,7 @@ namespace PirateGame.Enemies
             if (toPlayer.sqrMagnitude < 0.001f)
                 return Quaternion.identity;
 
-            return Quaternion.LookRotation(toPlayer.normalized, Vector3.up);
+            return EnemyChase.RotationToward(toPlayer.normalized, modelForwardIsNegativeZ: true);
         }
 
         void ResolvePlayer()
@@ -329,9 +505,13 @@ namespace PirateGame.Enemies
             origin.y = spawnHeight;
 
             Gizmos.color = new Color(1f, 0.4f, 0.2f, 0.35f);
-            Gizmos.DrawWireSphere(origin, minSpawnRadius);
-            Gizmos.color = new Color(1f, 0.2f, 0.1f, 0.6f);
-            Gizmos.DrawWireSphere(origin, maxSpawnRadius);
+            var drawRadius = spawnRadius > 0f ? spawnRadius : minSpawnRadius;
+            Gizmos.DrawWireSphere(origin, drawRadius);
+            if (maxSpawnRadius > minSpawnRadius && spawnRadiusJitter <= 0f)
+            {
+                Gizmos.color = new Color(1f, 0.2f, 0.1f, 0.6f);
+                Gizmos.DrawWireSphere(origin, maxSpawnRadius);
+            }
 
             if (spawnPoints == null) return;
             Gizmos.color = Color.yellow;

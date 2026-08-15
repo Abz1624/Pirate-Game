@@ -8,7 +8,7 @@ pub struct CreateMatch<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
     #[account(seeds = [b"config"], bump)]
-    pub config: Account<'info, GameConfigAccount>,
+    pub config: AccountLoader<'info, GameConfigAccount>,
     #[account(
         init,
         payer = authority,
@@ -34,7 +34,7 @@ fn tide_enemy_cap(tide: u8) -> u16 {
 
 pub fn handler(ctx: Context<CreateMatch>, seed: u64, tide: u8, capacity: u8) -> Result<()> {
     let cap = if capacity == 0 {
-        ctx.accounts.config.lobby_capacity_default
+        ctx.accounts.config.load()?.lobby_capacity_default
     } else {
         capacity
     };
