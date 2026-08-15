@@ -84,7 +84,7 @@ Material:
     - _WaterColorShallow: {r: 0.16783732, g: 1.0516056, b: 1.1486983, a: 1}
     - _WaveColor: {r: 0, g: 0.21957612, b: 0.28246924, a: 1}
     - _WaveDirections: {r: 0, g: 0.475, b: 0.075, a: 0.33}
-    - _WaveVisuals: {r: 0.08, g: 6.2, b: 1.85, a: 0}
+    - _WaveVisuals: {r: 0.017, g: 6.2, b: 1.85, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &3884871068361501984
