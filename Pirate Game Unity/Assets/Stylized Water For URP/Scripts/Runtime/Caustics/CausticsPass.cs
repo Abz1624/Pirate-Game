@@ -6,6 +6,7 @@
 #if UNIVERSAL_RENDERER
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
 
 namespace StylizedWater
@@ -20,9 +21,51 @@ namespace StylizedWater
 
         private const float BIAS = 0.1f;
 
+        class PassData
+        {
+            public Material material;
+            public Mesh mesh;
+            public Matrix4x4 matrix;
+            public Matrix4x4 sunMatrix;
+        }
+
         public CausticsPass(float waterLevel)
         {
             this.waterLevel = waterLevel;
+        }
+
+        public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
+        {
+            if (!causticsMaterial) return;
+
+            var cameraData = frameData.Get<UniversalCameraData>();
+            var cam = cameraData.camera;
+            if (cam.cameraType == CameraType.Preview) return;
+
+            using var builder = renderGraph.AddUnsafePass<PassData>(profilerTag, out var passData);
+            var resourceData = frameData.Get<UniversalResourceData>();
+            builder.UseTexture(resourceData.activeColorTexture, AccessFlags.ReadWrite);
+            builder.UseTexture(resourceData.activeDepthTexture, AccessFlags.Read);
+
+            if (!mesh) mesh = GenerateQuad(1000f);
+
+            var position = cam.transform.position;
+            position.y = cam.transform.position.y > waterLevel ? waterLevel : cam.transform.position.y - BIAS;
+
+            passData.material = causticsMaterial;
+            passData.mesh = mesh;
+            passData.matrix = Matrix4x4.TRS(position, Quaternion.identity, Vector3.one);
+            passData.sunMatrix = RenderSettings.sun != null
+                ? RenderSettings.sun.transform.localToWorldMatrix
+                : Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(-45f, 45f, 0f), Vector3.one);
+
+            builder.SetRenderFunc(static (PassData data, UnsafeGraphContext context) =>
+            {
+                if (!data.material || !data.mesh) return;
+
+                data.material.SetMatrix("_MainLightDirection", data.sunMatrix);
+                context.cmd.DrawMesh(data.mesh, data.matrix, data.material, 0, 0);
+            });
         }
 
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)

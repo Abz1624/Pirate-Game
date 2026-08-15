@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -12,7 +13,14 @@ using UnityEngine;
 public static class PirateGltfImporter
 {
     const string PirateAssetsRoot = "Assets/Pirate Assets";
-    const float DefaultScale = 1f;
+    const string GameModelsRoot = "Assets/3D Models";
+    static readonly string[] GltfShaderNames =
+    {
+        "Shader Graphs/glTF-pbrMetallicRoughness",
+        "Shader Graphs/glTF-unlit",
+        "glTF/PbrMetallicRoughness",
+        "Universal Render Pipeline/Lit"
+    };
 
     static PirateGltfImporter()
     {
@@ -32,19 +40,116 @@ public static class PirateGltfImporter
     }
 
     [MenuItem("Pirate Game/GLTF/Reimport All Pirate GLTFs")]
-    static void ReimportAllGltfs()
+    static void ReimportAllGltfs() => ReimportGltfsUnder(PirateAssetsRoot);
+
+    [MenuItem("Pirate Game/GLTF/Reimport All Game GLTFs")]
+    static void ReimportAllGameGltfs()
     {
-        var guids = AssetDatabase.FindAssets("t:DefaultAsset", new[] { PirateAssetsRoot });
-        var count = 0;
-        foreach (var guid in guids)
+        EnsureGltfShadersIncluded();
+        ReimportGltfsUnder(GameModelsRoot);
+    }
+
+    [MenuItem("Pirate Game/GLTF/Add glTFast Shaders To Graphics Settings")]
+    static void AddGltfShadersToGraphicsSettings()
+    {
+        var added = EnsureGltfShadersIncluded();
+        if (added > 0)
+            Debug.Log($"[Pirate Game] Added {added} glTFast shader(s) to Always Included Shaders.");
+        else
+            Debug.Log("[Pirate Game] glTFast shaders were already included, or their shader assets were not found yet.");
+    }
+
+    static void ReimportGltfsUnder(string root)
+    {
+        if (!AssetDatabase.IsValidFolder(root))
         {
-            var path = AssetDatabase.GUIDToAssetPath(guid);
-            if (!IsGltfPath(path)) continue;
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-            count++;
+            Debug.LogWarning($"[Pirate Game] Folder not found: {root}");
+            return;
         }
 
-        Debug.Log($"[Pirate Game] Reimported {count} GLTF files under {PirateAssetsRoot}.");
+        var paths = FindGltfAssetPaths(root).ToList();
+        if (paths.Count == 0)
+        {
+            Debug.LogWarning($"[Pirate Game] No .gltf/.glb files found under {root}.");
+            return;
+        }
+
+        AssetDatabase.StartAssetEditing();
+        try
+        {
+            foreach (var path in paths)
+                AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+        }
+        finally
+        {
+            AssetDatabase.StopAssetEditing();
+        }
+
+        Debug.Log($"[Pirate Game] Reimported {paths.Count} GLTF files under {root}.");
+    }
+
+    static IEnumerable<string> FindGltfAssetPaths(string assetsRoot)
+    {
+        var diskRoot = Path.Combine(Application.dataPath, assetsRoot["Assets/".Length..]);
+        if (!Directory.Exists(diskRoot)) yield break;
+
+        foreach (var ext in new[] { "*.gltf", "*.glb" })
+        {
+            foreach (var file in Directory.GetFiles(diskRoot, ext, SearchOption.AllDirectories))
+            {
+                var path = "Assets" + file[Application.dataPath.Length..].Replace('\\', '/');
+                yield return path;
+            }
+        }
+    }
+
+    static int EnsureGltfShadersIncluded()
+    {
+        var graphicsSettings = Unsupported.GetSerializedAssetInterfaceSingleton("UnityEngine.Rendering.GraphicsSettings");
+        if (graphicsSettings == null)
+        {
+            Debug.LogWarning("[Pirate Game] Could not access GraphicsSettings.");
+            return 0;
+        }
+
+        var serialized = new SerializedObject(graphicsSettings);
+        var shadersProp = serialized.FindProperty("m_AlwaysIncludedShaders");
+        if (shadersProp == null)
+        {
+            Debug.LogWarning("[Pirate Game] Could not find m_AlwaysIncludedShaders on GraphicsSettings.");
+            return 0;
+        }
+
+        var added = 0;
+        foreach (var shaderName in GltfShaderNames)
+        {
+            var shader = Shader.Find(shaderName);
+            if (shader == null) continue;
+            if (ShaderAlreadyIncluded(shadersProp, shader)) continue;
+
+            shadersProp.InsertArrayElementAtIndex(shadersProp.arraySize);
+            shadersProp.GetArrayElementAtIndex(shadersProp.arraySize - 1).objectReferenceValue = shader;
+            added++;
+        }
+
+        if (added > 0)
+        {
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.SaveAssets();
+        }
+
+        return added;
+    }
+
+    static bool ShaderAlreadyIncluded(SerializedProperty shadersProp, Shader shader)
+    {
+        for (var i = 0; i < shadersProp.arraySize; i++)
+        {
+            if (shadersProp.GetArrayElementAtIndex(i).objectReferenceValue == shader)
+                return true;
+        }
+
+        return false;
     }
 
     [MenuItem("Pirate Game/GLTF/Instantiate Selected In Scene %#g")]
@@ -183,7 +288,8 @@ public class PirateGltfImportPostprocessor : AssetPostprocessor
 {
     void OnPreprocessAsset()
     {
-        if (!assetPath.StartsWith("Assets/Pirate Assets/", StringComparison.OrdinalIgnoreCase)) return;
+        if (!assetPath.StartsWith("Assets/Pirate Assets/", StringComparison.OrdinalIgnoreCase) &&
+            !assetPath.StartsWith("Assets/3D Models/", StringComparison.OrdinalIgnoreCase)) return;
         if (!assetPath.EndsWith(".gltf", StringComparison.OrdinalIgnoreCase) &&
             !assetPath.EndsWith(".glb", StringComparison.OrdinalIgnoreCase)) return;
 
