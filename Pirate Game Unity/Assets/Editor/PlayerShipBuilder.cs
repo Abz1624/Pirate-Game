@@ -79,6 +79,16 @@ public static class PlayerShipBuilder
         body.constraints = RigidbodyConstraints.FreezePositionY |
                            RigidbodyConstraints.FreezeRotationX |
                            RigidbodyConstraints.FreezeRotationZ;
+        body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+
+        var hullCollider = shipRoot.GetComponent<CapsuleCollider>();
+        if (hullCollider == null)
+            hullCollider = Undo.AddComponent<CapsuleCollider>(shipRoot);
+
+        hullCollider.center = Vector3.zero;
+        hullCollider.radius = 3.5f;
+        hullCollider.height = 14f;
+        hullCollider.direction = 2;
 
         if (shipRoot.GetComponent<ShipMovement>() == null)
             Undo.AddComponent<ShipMovement>(shipRoot);

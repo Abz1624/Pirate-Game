@@ -522,7 +522,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5082633173578634581, guid: c18281189789442d29ecfd51f19690b3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1725161148}
   m_SourcePrefab: {fileID: 100100000, guid: c18281189789442d29ecfd51f19690b3, type: 3}
 --- !u!1 &93124881
 GameObject:
@@ -1053,7 +1056,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 874588631}
   m_SourcePrefab: {fileID: 100100000, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
 --- !u!1 &198557710
 GameObject:
@@ -1223,7 +1229,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 823465501}
   m_SourcePrefab: {fileID: 100100000, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
 --- !u!1 &216319242
 GameObject:
@@ -1489,6 +1498,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 263323364}
   m_Mesh: {fileID: -1008373245347971261, guid: 2bf01a405cb005844904618f2e5eb128, type: 3}
+--- !u!1 &266107786 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7030402447856333425, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
+  m_PrefabInstance: {fileID: 1291546702}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &268207084
 GameObject:
   m_ObjectHideFlags: 0
@@ -1669,6 +1683,46 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 344457101}
   m_Mesh: {fileID: 712561124423464764, guid: 2bf01a405cb005844904618f2e5eb128, type: 3}
+--- !u!1 &379021275 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+  m_PrefabInstance: {fileID: 467156008}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &379021280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379021275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
+--- !u!1 &392204515 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+  m_PrefabInstance: {fileID: 1817716815}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &392204520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 392204515}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &409490430
 GameObject:
   m_ObjectHideFlags: 0
@@ -1979,7 +2033,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 379021280}
   m_SourcePrefab: {fileID: 100100000, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
 --- !u!1 &479279119
 GameObject:
@@ -2421,7 +2478,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5082633173578634581, guid: c18281189789442d29ecfd51f19690b3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 765287578}
   m_SourcePrefab: {fileID: 100100000, guid: c18281189789442d29ecfd51f19690b3, type: 3}
 --- !u!1 &561159796
 GameObject:
@@ -2527,7 +2587,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1356754945}
   m_SourcePrefab: {fileID: 100100000, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
 --- !u!1 &601945722
 GameObject:
@@ -2641,7 +2704,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1232569455}
   m_SourcePrefab: {fileID: 100100000, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
 --- !u!1 &654401097
 GameObject:
@@ -2797,6 +2863,11 @@ Transform:
   - {fileID: 1934812834}
   m_Father: {fileID: 1285249267}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &731143546 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4361909316056197648, guid: 801c5c5432c56b7448112a2b1dae172b, type: 3}
+  m_PrefabInstance: {fileID: 1141817364}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &745932412
 GameObject:
   m_ObjectHideFlags: 0
@@ -2951,6 +3022,26 @@ Transform:
   - {fileID: 836252333}
   m_Father: {fileID: 1285249267}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &765287576 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5082633173578634581, guid: c18281189789442d29ecfd51f19690b3, type: 3}
+  m_PrefabInstance: {fileID: 554156988}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &765287578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765287576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &814231958
 GameObject:
   m_ObjectHideFlags: 0
@@ -3041,6 +3132,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 814231958}
   m_Mesh: {fileID: 6777693234166384892, guid: 2bf01a405cb005844904618f2e5eb128, type: 3}
+--- !u!1 &823465496 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+  m_PrefabInstance: {fileID: 214748891}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &823465501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 823465496}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &836252332
 GameObject:
   m_ObjectHideFlags: 0
@@ -3131,6 +3242,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 836252332}
   m_Mesh: {fileID: 7124750559931854366, guid: 2bf01a405cb005844904618f2e5eb128, type: 3}
+--- !u!1 &874588626 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+  m_PrefabInstance: {fileID: 193509078}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &874588631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874588626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &883543722
 GameObject:
   m_ObjectHideFlags: 0
@@ -3333,6 +3464,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &970476904 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8348511066914142513, guid: 7d425c282fedb4ece811fe26ba678ce3, type: 3}
+  m_PrefabInstance: {fileID: 1524000785}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &970476906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 970476904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &972874068
 GameObject:
   m_ObjectHideFlags: 0
@@ -3527,7 +3678,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1134972473}
   m_SourcePrefab: {fileID: 100100000, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
 --- !u!1 &987111970
 GameObject:
@@ -3879,6 +4033,11 @@ MonoBehaviour:
   positionSmoothing: 6
   rotationSmoothing: 6
   snapOnStart: 1
+--- !u!1 &1039735122 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7030402447856333425, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
+  m_PrefabInstance: {fileID: 1394553051}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1046645825
 GameObject:
   m_ObjectHideFlags: 0
@@ -4068,6 +4227,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
+      propertyPath: material
+      value: 
+      objectReference: {fileID: 2100000, guid: b7c2d4e6f8094a1c9e3f5a7b8c0d1e2f, type: 2}
+    - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: shoreFade
       value: 1.22
       objectReference: {fileID: 0}
@@ -4093,15 +4256,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: deepColor.r
-      value: 0.080167286
+      value: 0.08016684
       objectReference: {fileID: 0}
     - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: waveColor.b
-      value: 0.28246933
+      value: 0.28246874
       objectReference: {fileID: 0}
     - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: waveColor.g
-      value: 0.21957621
+      value: 0.21957561
       objectReference: {fileID: 0}
     - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: shoreColor.a
@@ -4109,7 +4272,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: shoreColor.b
-      value: 0.30702794
+      value: 0.30702734
       objectReference: {fileID: 0}
     - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: shoreStrength
@@ -4133,7 +4296,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: horizonColor.g
-      value: 0.32443333
+      value: 0.32443273
       objectReference: {fileID: 0}
     - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: horizonColor.r
@@ -4153,7 +4316,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: shallowColor.r
-      value: 0.16783741
+      value: 0.16783684
       objectReference: {fileID: 0}
     - target: {fileID: 4116252390263242837, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: horizonDistance
@@ -4227,6 +4390,22 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6461884272158048803, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: b7c2d4e6f8094a1c9e3f5a7b8c0d1e2f, type: 2}
+    - target: {fileID: 8631912116689749228, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631912116689749228, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631912116689749228, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 8631912116689749228, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -4265,6 +4444,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8631912116689749228, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631912116689749228, guid: d1a87658e7cd315438ddef4749540b48, type: 3}
+      propertyPath: m_ConstrainProportionsScale
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -4463,6 +4646,26 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1110696624}
   m_Mesh: {fileID: -2100252402744116110, guid: 2bf01a405cb005844904618f2e5eb128, type: 3}
+--- !u!1 &1134972468 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+  m_PrefabInstance: {fileID: 983396951}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1134972473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1134972468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1001 &1141817364
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4518,13 +4721,31 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4361909316056197648, guid: 801c5c5432c56b7448112a2b1dae172b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1141817369}
   m_SourcePrefab: {fileID: 100100000, guid: 801c5c5432c56b7448112a2b1dae172b, type: 3}
 --- !u!4 &1141817365 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4018140801171157162, guid: 801c5c5432c56b7448112a2b1dae172b, type: 3}
   m_PrefabInstance: {fileID: 1141817364}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1141817369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 731143546}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &1144009624
 GameObject:
   m_ObjectHideFlags: 0
@@ -4769,6 +4990,31 @@ Transform:
   - {fileID: 22132193}
   m_Father: {fileID: 1423451440}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1199074868 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7030402447856333425, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
+  m_PrefabInstance: {fileID: 1407234854}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1232569450 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+  m_PrefabInstance: {fileID: 604572404}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1232569455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1232569450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1001 &1264020305
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4836,7 +5082,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1837933611}
   m_SourcePrefab: {fileID: 100100000, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
 --- !u!1 &1285249266
 GameObject:
@@ -4948,13 +5197,31 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7030402447856333425, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1291546707}
   m_SourcePrefab: {fileID: 100100000, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
 --- !u!4 &1291546703 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7699696772820707531, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
   m_PrefabInstance: {fileID: 1291546702}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1291546707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 266107786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &1314985963
 GameObject:
   m_ObjectHideFlags: 0
@@ -5351,6 +5618,9 @@ MonoBehaviour:
   modelForwardIsNegativeZ: 1
   clampToArena: 0
   arenaRadius: 80
+  collideWithIslands: 1
+  hullRadius: 3.5
+  hullHeight: 14
   visualModel: {fileID: 0}
   maxRollAngle: 26
   rollSmoothing: 12
@@ -5421,6 +5691,26 @@ Transform:
   - {fileID: 1459920789}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1356754940 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+  m_PrefabInstance: {fileID: 581436618}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1356754945
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1356754940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &1360498068
 GameObject:
   m_ObjectHideFlags: 0
@@ -5508,13 +5798,31 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7030402447856333425, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1394553056}
   m_SourcePrefab: {fileID: 100100000, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
 --- !u!4 &1394553052 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7699696772820707531, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
   m_PrefabInstance: {fileID: 1394553051}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1394553056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1039735122}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1001 &1407234854
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5570,13 +5878,31 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7030402447856333425, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1407234859}
   m_SourcePrefab: {fileID: 100100000, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
 --- !u!4 &1407234855 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7699696772820707531, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
   m_PrefabInstance: {fileID: 1407234854}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1407234859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1199074868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &1409500616
 GameObject:
   m_ObjectHideFlags: 0
@@ -5827,6 +6153,11 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &1453693906 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4361909316056197648, guid: 801c5c5432c56b7448112a2b1dae172b, type: 3}
+  m_PrefabInstance: {fileID: 1632380536}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1454346586
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5898,7 +6229,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1847738409}
   m_SourcePrefab: {fileID: 100100000, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
 --- !u!1 &1459920788
 GameObject:
@@ -6086,7 +6420,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7030402447856333425, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2005029577}
   m_SourcePrefab: {fileID: 100100000, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
 --- !u!4 &1474232911 stripped
 Transform:
@@ -6270,7 +6607,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8348511066914142513, guid: 7d425c282fedb4ece811fe26ba678ce3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 970476906}
   m_SourcePrefab: {fileID: 100100000, guid: 7d425c282fedb4ece811fe26ba678ce3, type: 3}
 --- !u!1 &1535484501
 GameObject:
@@ -6360,7 +6700,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5082633173578634581, guid: c18281189789442d29ecfd51f19690b3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1756822493}
   m_SourcePrefab: {fileID: 100100000, guid: c18281189789442d29ecfd51f19690b3, type: 3}
 --- !u!1 &1580451325
 GameObject:
@@ -6551,13 +6894,31 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4361909316056197648, guid: 801c5c5432c56b7448112a2b1dae172b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1632380541}
   m_SourcePrefab: {fileID: 100100000, guid: 801c5c5432c56b7448112a2b1dae172b, type: 3}
 --- !u!4 &1632380537 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4018140801171157162, guid: 801c5c5432c56b7448112a2b1dae172b, type: 3}
   m_PrefabInstance: {fileID: 1632380536}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1632380541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1453693906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &1704690111
 GameObject:
   m_ObjectHideFlags: 0
@@ -6623,6 +6984,26 @@ Transform:
   - {fileID: 1186728257}
   m_Father: {fileID: 1285249267}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1725161146 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5082633173578634581, guid: c18281189789442d29ecfd51f19690b3, type: 3}
+  m_PrefabInstance: {fileID: 52493442}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1725161148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725161146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &1731924527
 GameObject:
   m_ObjectHideFlags: 0
@@ -6868,6 +7249,26 @@ Transform:
   - {fileID: 344457102}
   m_Father: {fileID: 1285249267}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1756822491 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5082633173578634581, guid: c18281189789442d29ecfd51f19690b3, type: 3}
+  m_PrefabInstance: {fileID: 1536277416}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1756822493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1756822491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &1787187630
 GameObject:
   m_ObjectHideFlags: 0
@@ -7020,8 +7421,31 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 392204520}
   m_SourcePrefab: {fileID: 100100000, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+--- !u!1 &1837933606 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+  m_PrefabInstance: {fileID: 1264020305}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1837933611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837933606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &1838632959
 GameObject:
   m_ObjectHideFlags: 0
@@ -7202,6 +7626,46 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1847294969}
   m_Mesh: {fileID: 7224680583570836550, guid: 2bf01a405cb005844904618f2e5eb128, type: 3}
+--- !u!1 &1847738404 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+  m_PrefabInstance: {fileID: 1454346586}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1847738409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1847738404}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
+--- !u!1 &1861675734 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+  m_PrefabInstance: {fileID: 1935481947}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1861675739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1861675734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &1889169930
 GameObject:
   m_ObjectHideFlags: 0
@@ -7396,7 +7860,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1861675739}
   m_SourcePrefab: {fileID: 100100000, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
 --- !u!1 &1944763338
 GameObject:
@@ -7522,6 +7989,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2005029573 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7030402447856333425, guid: 576e19dd3e8749548b0309a4f1c1db0e, type: 3}
+  m_PrefabInstance: {fileID: 1474232910}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2005029577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2005029573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1 &2033049432
 GameObject:
   m_ObjectHideFlags: 0
@@ -8027,6 +8514,7 @@ GameObject:
   - component: {fileID: 9184433482501349502}
   - component: {fileID: 6381986457650894004}
   - component: {fileID: 8503516953698439446}
+  - component: {fileID: 9184433482501349503}
   m_Layer: 0
   m_Name: Ground_Sand_Small
   m_TagString: Untagged
@@ -8189,6 +8677,7 @@ GameObject:
   - component: {fileID: 5449914623029812269}
   - component: {fileID: 7801654231952713959}
   - component: {fileID: 4816277041070566725}
+  - component: {fileID: 8939126208430936969}
   m_Layer: 0
   m_Name: Ground_Sand_Small (1)
   m_TagString: Untagged
@@ -8211,6 +8700,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8939126208430936969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8594547319588342066}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!33 &9184433482501349502
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -8219,6 +8723,21 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4868851542772233569}
   m_Mesh: {fileID: 91200311003237937, guid: 5fd19324190e82f429b9421744afd274, type: 3}
+--- !u!114 &9184433482501349503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4868851542772233569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7474ca64cd444c469ce9d898fa6965f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Environment.IslandObstacle
+  addTreeColliderIfMissing: 1
+  treeColliderRadius: 0.35
+  treeColliderHeight: 2.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 using PirateGame.Combat;
 using PirateGame.Enemies;
+using PirateGame.Environment;
 using PirateGame.Net;
 using PirateGame.Progression;
 using PirateGame.Ship;
@@ -24,6 +25,7 @@ namespace PirateGame
             if (!soloMode) return;
 
             DisableNetworkingUi();
+            IslandObstacle.ConfigureScene();
             ConfigurePlayerShip();
             ConfigureCamera();
             ConfigurePlayerProgression();

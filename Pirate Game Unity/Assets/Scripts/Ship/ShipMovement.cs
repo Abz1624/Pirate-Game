@@ -1,3 +1,4 @@
+using PirateGame.Environment;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -25,6 +26,11 @@ namespace PirateGame.Ship
         [SerializeField] bool clampToArena;
         [SerializeField] float arenaRadius = 80f;
 
+        [Header("Island Collision")]
+        [SerializeField] bool collideWithIslands = true;
+        [SerializeField] float hullRadius = 3.5f;
+        [SerializeField] float hullHeight = 14f;
+
         [Header("Visual Tilt")]
         [Tooltip("Tilts the whole ship model when turning. Auto-built from child meshes if empty.")]
         [SerializeField] Transform visualModel;
@@ -34,6 +40,7 @@ namespace PirateGame.Ship
         [SerializeField] float bankSpeedExponent = 1f;
 
         Rigidbody body;
+        CapsuleCollider hullCollider;
         Vector3 velocity;
         float moveSpeedMultiplier = 1f;
         float turnRateMultiplier = 1f;
@@ -71,6 +78,7 @@ namespace PirateGame.Ship
                                RigidbodyConstraints.FreezeRotationX |
                                RigidbodyConstraints.FreezeRotationZ;
             body.interpolation = RigidbodyInterpolation.Interpolate;
+            EnsureHullCollider();
 
             if (visualModel == null)
                 visualModel = EnsureVisualPivot();
@@ -131,7 +139,23 @@ namespace PirateGame.Ship
             velocity *= Mathf.Max(0f, 1f - waterDrag * dt);
             velocity = ClampSpeed(velocity, forward);
 
-            var nextPosition = body.position + velocity * dt;
+            var delta = velocity * dt;
+            var nextPosition = body.position;
+
+            if (collideWithIslands && IslandObstacles.IsAvailable)
+            {
+                nextPosition = IslandObstacles.ResolveCapsuleMovement(
+                    body.position,
+                    delta,
+                    GetHullWorldRadius(),
+                    GetHullWorldHeight(),
+                    ref velocity);
+            }
+            else
+            {
+                nextPosition += delta;
+            }
+
             nextPosition.y = body.position.y;
 
             if (clampToArena)
@@ -204,6 +228,34 @@ namespace PirateGame.Ship
         {
             public float throttle;
             public float steer;
+        }
+
+        void EnsureHullCollider()
+        {
+            hullCollider = GetComponent<CapsuleCollider>();
+            if (hullCollider == null)
+            {
+                hullCollider = gameObject.AddComponent<CapsuleCollider>();
+                hullCollider.center = Vector3.zero;
+                hullCollider.radius = hullRadius;
+                hullCollider.height = hullHeight;
+                hullCollider.direction = 2;
+            }
+
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        }
+
+        float GetHullWorldRadius()
+        {
+            var scale = Mathf.Max(
+                Mathf.Abs(transform.lossyScale.x),
+                Mathf.Abs(transform.lossyScale.z));
+            return hullCollider.radius * scale;
+        }
+
+        float GetHullWorldHeight()
+        {
+            return hullCollider.height * Mathf.Abs(transform.lossyScale.y);
         }
 
         Transform EnsureVisualPivot()

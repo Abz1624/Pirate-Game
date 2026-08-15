@@ -23,6 +23,8 @@ public static class SoloSceneSetup
             EditorSceneManager.OpenScene(SoloScenePath);
 
         EnsureBootstrap();
+        IslandObstacleSetup.EnsureIslandLayer();
+        IslandObstacleSetup.SetupIslandCollidersInScene();
         var systems = EnsureGameSystems();
         var player = PlayerShipBuilder.EnsurePlayerShipInScene(new Vector3(0f, 0.2f, 0f));
         PlayerShipBuilder.SetupCamera(player.transform);

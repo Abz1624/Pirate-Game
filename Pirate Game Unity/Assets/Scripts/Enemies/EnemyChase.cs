@@ -1,3 +1,4 @@
+using PirateGame.Environment;
 using UnityEngine;
 
 namespace PirateGame.Enemies
@@ -12,6 +13,12 @@ namespace PirateGame.Enemies
         [SerializeField] float turnSpeed = 8f;
         [Tooltip("Voxel mob models usually face -Z like the player ships.")]
         [SerializeField] bool modelForwardIsNegativeZ = true;
+
+        [Header("Island Avoidance")]
+        [SerializeField] bool avoidIslands = true;
+        [SerializeField] float avoidanceRadius = 0.45f;
+        [SerializeField] float lookAheadDistance = 2.5f;
+        [SerializeField] float steerWeight = 2.5f;
 
         Transform target;
 
@@ -41,7 +48,34 @@ namespace PirateGame.Enemies
             if (toTarget.sqrMagnitude < 0.0001f) return;
 
             var direction = toTarget.normalized;
-            transform.position += direction * (moveSpeed * Time.deltaTime);
+            if (avoidIslands && IslandObstacles.IsAvailable)
+                direction = IslandObstacles.SteerAroundObstacles(
+                    transform.position,
+                    direction,
+                    avoidanceRadius,
+                    lookAheadDistance,
+                    steerWeight);
+
+            var step = direction * (moveSpeed * Time.deltaTime);
+            var nextPosition = transform.position;
+
+            if (avoidIslands && IslandObstacles.IsAvailable)
+            {
+                var velocity = step / Mathf.Max(Time.deltaTime, 0.0001f);
+                nextPosition = IslandObstacles.ResolveCapsuleMovement(
+                    transform.position,
+                    step,
+                    avoidanceRadius,
+                    1.2f,
+                    ref velocity);
+            }
+            else
+            {
+                nextPosition += step;
+            }
+
+            nextPosition.y = transform.position.y;
+            transform.position = nextPosition;
 
             var lookRotation = Quaternion.LookRotation(direction, Vector3.up);
             if (modelForwardIsNegativeZ)
