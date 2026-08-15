@@ -1,0 +1,102 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: WindwakerWaves
+  m_Shader: {fileID: -6465566751694194690, guid: f8e4c3b2a1904d6e8f7a5b4c3d2e1f01, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - INTERSECTION_EFFECTS_ON
+  - SURFACE_FOAM_ON
+  - WORLD_SPACE_UV_ON
+  m_InvalidKeywords:
+  - FOAM_SHADOWS_ON
+  - WATER_LIGHTING_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses:
+  - MOTIONVECTORS
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _IntersectionFoamTexture:
+        m_Texture: {fileID: 2800000, guid: 772031b03d9d46e4ab03e15c8e17718c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SurfaceFoamTexture:
+        m_Texture: {fileID: 2800000, guid: ab507ff7ff37d954da98b07bf0bb152e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - INTERSECTION_EFFECTS: 1
+    - REFRACTION: 0
+    - SURFACE_FOAM: 1
+    - WORLD_SPACE_UV: 1
+    - _IntersectionFoamBlend: 1
+    - _IntersectionFoamDepth: 0.21
+    - _IntersectionFoamScale: 0.17
+    - _IntersectionWaterBlend: 1
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _RefractionStrength: 10.69
+    - _ShoreBlend: 0
+    - _ShoreDepth: 0
+    - _ShoreFade: 1.22
+    - _SurfaceFoamBlend: 1
+    - _WaterColorDepth: 0.72
+    - _WaterColorHorizonDistance: 0.2
+    m_Colors:
+    - _IntersectionFoamColor: {r: 1, g: 1, b: 1, a: 1}
+    - _IntersectionFoamMovement: {r: 0.486, g: 0, b: 0, a: 0}
+    - _IntersectionFoamSampling: {r: 0.499, g: 1.36, b: 0, a: 0}
+    - _NormalsMovement: {r: 0.028, g: 0.82, b: 0, a: 0}
+    - _ShoreColor: {r: 0, g: 1, b: 0.30702785, a: 0}
+    - _SurfaceFoamColor1: {r: 1, g: 1, b: 1, a: 0.105882354}
+    - _SurfaceFoamColor2: {r: 1, g: 1, b: 1, a: 0.16470589}
+    - _SurfaceFoamMovement: {r: 0.33, g: 0.01, b: 0.47, a: 0.03}
+    - _SurfaceFoamSampling: {r: 0.203, g: 0, b: 0, a: 0}
+    - _SurfaceFoamTilingAndOffset: {r: 0.213, g: -1, b: 1.85, a: 0.74}
+    - _WaterColorDeep: {r: 0.08016723, g: 0.70198107, b: 1, a: 0.6745098}
+    - _WaterColorHorizon: {r: 0.003921569, g: 0.32443324, b: 0.5019608, a: 1}
+    - _WaterColorShallow: {r: 0.16783732, g: 1.0516056, b: 1.1486983, a: 1}
+    - _WaveColor: {r: 0, g: 0.21957612, b: 0.28246924, a: 1}
+    - _WaveDirections: {r: 0, g: 0.475, b: 0.075, a: 0.33}
+    - _WaveVisuals: {r: 0.08, g: 6.2, b: 1.85, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
+--- !u!114 &3884871068361501984
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 10
