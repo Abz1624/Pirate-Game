@@ -60,10 +60,10 @@ pub fn knockback_velocity(
 ) -> (Fix, Fix) {
     let dx = to_x - from_x;
     let dz = to_z - from_z;
-    let len_sq = dx.0 as i64 * dx.0 as i64 + dz.0 as i64 * dz.0 as i64;
-    if len_sq == 0 {
+    let len_sq = dx.mul_fix(dx) + dz.mul_fix(dz);
+    if len_sq.0 == 0 {
         return (Fix::ZERO, Fix::ZERO);
     }
-    let len = Fix(len_sq as i32).sqrt().max(Fix::from_int(1));
+    let len = len_sq.sqrt().max(Fix::from_int(1));
     (dx.div_fix(len).mul_fix(strength), dz.div_fix(len).mul_fix(strength))
 }

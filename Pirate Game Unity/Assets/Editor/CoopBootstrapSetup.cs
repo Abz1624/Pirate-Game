@@ -1,7 +1,11 @@
 using PirateGame.Net;
 using PirateGame.Ship;
+using PirateGame.UI;
+using PirateGame.View;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// One-click local ER co-op wiring for Main / SampleScene.
@@ -10,25 +14,48 @@ using UnityEngine;
 public static class CoopBootstrapSetup
 {
     const string ConfigPath = "Assets/Resources/BlockchainConfig.asset";
+    const string SolanaTestScenePath = "Assets/Scenes/Solana Test Scene.unity";
     const string WslKeypairPath = @"\\wsl$\Ubuntu\home\shara\.config\solana\id.json";
+
+    [MenuItem("Pirate Game/Co-op/Setup Solana Test Scene")]
+    static void SetupSolanaTestScene()
+    {
+        if (!System.IO.File.Exists(SolanaTestScenePath))
+        {
+            EditorUtility.DisplayDialog("Solana Test", $"Scene not found: {SolanaTestScenePath}", "OK");
+            return;
+        }
+
+        if (EditorSceneManager.GetActiveScene().path != SolanaTestScenePath)
+            EditorSceneManager.OpenScene(SolanaTestScenePath);
+
+        EnsureSceneInBuildSettings(SolanaTestScenePath);
+        SetupCore();
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+
+        EditorUtility.DisplayDialog(
+            "Solana Test Scene",
+            "Solana Test Scene is wired for on-chain MagicBlock ER playtest.\n\n" +
+            "Prerequisites (WSL):\n" +
+            "  cd onchain && ./scripts/start-local-stack.sh\n" +
+            "  (validator :8899, ER :7799 — both should be running)\n\n" +
+            "In Unity:\n" +
+            "  1. Save scene (Ctrl+S)\n" +
+            "  2. Press Play\n" +
+            "  3. K = local 2-player | I = solo quick match | U = host lobby\n" +
+            "  4. Watch Console for [ER] / [Coop] logs\n\n" +
+            "Solo.unity is offline-only (no Solana).",
+            "OK");
+    }
 
     [MenuItem("Pirate Game/Co-op/Setup Local ER Bootstrap")]
     static void Setup()
     {
-        var config = EnsureConfig();
-        var root = EnsureRoot(config);
-        WirePlayerShip(root.GetComponent<ErClient>());
-        WireRemoteShip(root.GetComponent<ErClient>(), root.GetComponent<LobbyManager>());
-        var remote = Object.FindFirstObjectByType<RemoteShipView>();
-        if (remote != null)
-            WireDualShipComponents(remote.gameObject);
-        Selection.activeGameObject = root;
-        EditorGUIUtility.PingObject(root);
-
+        var config = SetupCore();
         EditorUtility.DisplayDialog(
             "Local ER Bootstrap",
             "Created / updated CoopBootstrap in the open scene.\n\n" +
-            "Components: ErClient, LobbyManager, CoopMatchBootstrap, CoopLocalHotkeys\n" +
+            "Components: ErClient, LobbyManager, CoopMatchBootstrap, CoopLocalHotkeys, PvPMatchHud, PvPDraftUI\n" +
             $"Payer keypair: {config.localPayerKeypairPath}\n" +
             "Mode: Local (8899 / 7799)\n\n" +
             "1. Save the scene (Ctrl+S)\n" +
@@ -36,6 +63,21 @@ public static class CoopBootstrapSetup
             "3. Press K for local 2-player (WASD + arrow keys), I for solo, or ParrelSync co-op\n" +
             "4. Steer with WASD — Console should show [ER] submit_input",
             "OK");
+    }
+
+    static BlockchainConfig SetupCore()
+    {
+        var config = EnsureConfig();
+        var root = EnsureRoot(config);
+        WirePlayerShip(root.GetComponent<ErClient>());
+        WireRemoteShip(root.GetComponent<ErClient>(), root.GetComponent<LobbyManager>());
+        EnsurePvPViews(root);
+        var remote = Object.FindFirstObjectByType<RemoteShipView>();
+        if (remote != null)
+            WireDualShipComponents(remote.gameObject);
+        Selection.activeGameObject = root;
+        EditorGUIUtility.PingObject(root);
+        return config;
     }
 
     [MenuItem("Pirate Game/Co-op/Point BlockchainConfig At WSL Keypair")]
@@ -110,6 +152,36 @@ public static class CoopBootstrapSetup
         return root;
     }
 
+    static void EnsurePvPViews(GameObject root)
+    {
+        var hud = root.GetComponent<PvPMatchHud>() ?? Undo.AddComponent<PvPMatchHud>(root);
+        var draft = root.GetComponent<PvPDraftUI>() ?? Undo.AddComponent<PvPDraftUI>(root);
+        var viewsGo = GameObject.Find("MatchViews");
+        if (viewsGo == null)
+        {
+            viewsGo = new GameObject("MatchViews");
+            Undo.RegisterCreatedObjectUndo(viewsGo, "Create MatchViews");
+        }
+
+        var buffer = viewsGo.GetComponent<SnapshotBuffer>() ?? Undo.AddComponent<SnapshotBuffer>(viewsGo);
+        var interp = viewsGo.GetComponent<SnapshotInterpolator>() ?? Undo.AddComponent<SnapshotInterpolator>(viewsGo);
+        var pool = viewsGo.GetComponent<EntityViewPool>() ?? Undo.AddComponent<EntityViewPool>(viewsGo);
+        var pump = viewsGo.GetComponent<GameEventPump>() ?? Undo.AddComponent<GameEventPump>(viewsGo);
+        var matchView = viewsGo.GetComponent<MatchViewController>() ?? Undo.AddComponent<MatchViewController>(viewsGo);
+
+        AssignSerialized(interp, "buffer", buffer);
+        AssignSerialized(matchView, "erClient", root.GetComponent<ErClient>());
+        AssignSerialized(matchView, "lobbyManager", root.GetComponent<LobbyManager>());
+        AssignSerialized(matchView, "interpolator", interp);
+        AssignSerialized(matchView, "entityPool", pool);
+        AssignSerialized(matchView, "eventPump", pump);
+        AssignSerialized(hud, "erClient", root.GetComponent<ErClient>());
+        AssignSerialized(hud, "lobbyManager", root.GetComponent<LobbyManager>());
+        AssignSerialized(draft, "erClient", root.GetComponent<ErClient>());
+        AssignSerialized(draft, "lobbyManager", root.GetComponent<LobbyManager>());
+        EditorUtility.SetDirty(viewsGo);
+    }
+
     static void WirePlayerShip(ErClient er)
     {
         var movement = Object.FindFirstObjectByType<ShipMovement>();
@@ -130,9 +202,13 @@ public static class CoopBootstrapSetup
             net = Undo.AddComponent<NetworkedShipController>(ship);
 
         AssignSerialized(net, "erClient", er);
+        AssignSerialized(net, "lobbyManager", Object.FindFirstObjectByType<LobbyManager>());
 
         // Avoid double-driving the rigidbody while ER inputs are live.
         movement.enabled = false;
+        var rb = ship.GetComponent<Rigidbody>();
+        if (rb != null)
+            rb.isKinematic = true;
         EditorUtility.SetDirty(ship);
         Debug.Log($"[Coop] Networked ship wired on {ship.name}; ShipMovement disabled.");
     }
@@ -207,6 +283,13 @@ public static class CoopBootstrapSetup
 
         if (remote.GetComponent<LocalDualShipController>() == null)
             Undo.AddComponent<LocalDualShipController>(remote);
+        if (remote.GetComponent<ShipPredictionReconciler>() == null)
+            Undo.AddComponent<ShipPredictionReconciler>(remote);
+
+        var er = Object.FindFirstObjectByType<ErClient>();
+        var dual = remote.GetComponent<LocalDualShipController>();
+        if (dual != null && er != null)
+            AssignSerialized(dual, "erClient", er);
     }
 
     static void AssignSerialized(Object target, string fieldName, Object value)
@@ -221,5 +304,23 @@ public static class CoopBootstrapSetup
         prop.objectReferenceValue = value;
         so.ApplyModifiedProperties();
         EditorUtility.SetDirty(target);
+    }
+
+    static void EnsureSceneInBuildSettings(string scenePath)
+    {
+        var scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+        for (var i = 0; i < scenes.Count; i++)
+        {
+            if (scenes[i].path != scenePath) continue;
+            if (!scenes[i].enabled)
+            {
+                scenes[i] = new EditorBuildSettingsScene(scenePath, true);
+                EditorBuildSettings.scenes = scenes.ToArray();
+            }
+            return;
+        }
+
+        scenes.Insert(0, new EditorBuildSettingsScene(scenePath, true));
+        EditorBuildSettings.scenes = scenes.ToArray();
     }
 }

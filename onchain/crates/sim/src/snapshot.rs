@@ -21,6 +21,7 @@ pub enum GameEventKind {
     Revive = 6,
     SpawnEnemy = 7,
     BossTelegraph = 8,
+    PlayerKill = 9,
 }
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -43,6 +44,8 @@ pub struct SnapshotPlayer {
     pub hp_pct: u8,
     pub level: u8,
     pub downed: bool,
+    pub bank: u32,
+    pub kills: u16,
 }
 
 #[derive(Clone, Copy, Debug, Default)]

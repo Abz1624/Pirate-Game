@@ -22,6 +22,40 @@ namespace PirateGame.Net
             TransactionInstruction instruction,
             uint? computeUnitLimit = null)
         {
+            return await SendAsync(rpc, signer, new[] { instruction }, computeUnitLimit);
+        }
+
+        public static async Task<string> SendAsync(
+            IRpcClient rpc,
+            Account signer,
+            IReadOnlyList<TransactionInstruction> instructions,
+            uint? computeUnitLimit = null)
+        {
+            var blockhash = await FetchBlockhashAsync(rpc);
+            var builder = new TransactionBuilder()
+                .SetRecentBlockHash(blockhash)
+                .SetFeePayer(signer.PublicKey);
+            if (computeUnitLimit.HasValue)
+                builder.AddInstruction(ComputeBudgetProgram.SetComputeUnitLimit(computeUnitLimit.Value));
+            foreach (var ix in instructions)
+                builder.AddInstruction(ix);
+
+            var tx = builder.Build(signer);
+            var result = await rpc.SendTransactionAsync(tx, false, Commitment.Confirmed);
+            if (!result.WasSuccessful)
+                throw new InvalidOperationException($"{result.Reason} {result.RawRpcResponse}");
+
+            await ConfirmSignatureAsync(rpc, result.Result);
+            return result.Result;
+        }
+
+        /// <summary>Submit without waiting for confirmation (inputs / crank).</summary>
+        public static async Task SendFireAndForgetAsync(
+            IRpcClient rpc,
+            Account signer,
+            TransactionInstruction instruction,
+            uint? computeUnitLimit = null)
+        {
             var blockhash = await FetchBlockhashAsync(rpc);
             var builder = new TransactionBuilder()
                 .SetRecentBlockHash(blockhash)
@@ -31,12 +65,14 @@ namespace PirateGame.Net
             builder.AddInstruction(instruction);
 
             var tx = builder.Build(signer);
-            var result = await rpc.SendTransactionAsync(tx, false, Commitment.Confirmed);
+            var result = await rpc.SendTransactionAsync(tx, skipPreflight: true, commitment: Commitment.Processed);
             if (!result.WasSuccessful)
+            {
+                var response = result.RawRpcResponse ?? result.Reason ?? "";
+                if (response.IndexOf("already been processed", StringComparison.OrdinalIgnoreCase) >= 0)
+                    return;
                 throw new InvalidOperationException($"{result.Reason} {result.RawRpcResponse}");
-
-            await ConfirmSignatureAsync(rpc, result.Result);
-            return result.Result;
+            }
         }
 
         /// <summary>
@@ -120,7 +156,9 @@ namespace PirateGame.Net
         {
             try
             {
-                await rpc.RequestAirdropAsync(pubkey, lamports);
+                var result = await rpc.RequestAirdropAsync(pubkey, lamports);
+                if (result.WasSuccessful && !string.IsNullOrEmpty(result.Result))
+                    await ConfirmSignatureAsync(rpc, result.Result);
             }
             catch (Exception ex)
             {

@@ -69,6 +69,7 @@ pub struct MatchAccount {
     pub seed: u64,
     pub tide: u8,
     pub capacity: u8,
+    pub mode: u8,
     pub player_count: u8,
     pub state: u8,
     pub tick: u32,
@@ -88,6 +89,8 @@ pub struct SnapshotPlayer {
     pub hp_pct: u8,
     pub level: u8,
     pub flags: u8,
+    pub bank: u32,
+    pub kills: u16,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, InitSpace)]
@@ -132,6 +135,9 @@ pub struct SnapshotAccount {
     pub event_head: u8,
     pub max_enemies: u16,
     pub max_players: u8,
+    pub storm_radius_pct: u8,
+    pub match_timer_sec: u16,
+    pub orb_count: u8,
     pub bump: u8,
     // Variable tail: players[max_players], enemies[max_enemies], projectiles[64], events[32]
     // Stored in remaining bytes allocated at init.
@@ -141,10 +147,18 @@ impl MatchAccount {
     pub const LEN: usize = 8 + std::mem::size_of::<MatchAccount>();
 }
 
+pub fn world_space() -> usize {
+    8 + pirate_sim::WORLD_STATE_LEN
+}
+
 pub fn snapshot_space(capacity: u8, max_enemies: u16) -> usize {
     let players = capacity as usize * std::mem::size_of::<SnapshotPlayer>();
     let enemies = max_enemies as usize * std::mem::size_of::<SnapshotEnemy>();
     let projectiles = 64 * std::mem::size_of::<SnapshotProjectile>();
+    let orbs = pirate_sim::modes::PVP_MAX_ORBS * SNAPSHOT_ORB_PACKED_LEN;
     let events = EVENT_RING * std::mem::size_of::<GameEvent>();
-    8 + std::mem::size_of::<SnapshotAccount>() + players + enemies + projectiles + events
+    8 + std::mem::size_of::<SnapshotAccount>() + players + enemies + projectiles + orbs + events
 }
+
+/// Serialized orb tail entry (id + x + z + value).
+pub const SNAPSHOT_ORB_PACKED_LEN: usize = 10;

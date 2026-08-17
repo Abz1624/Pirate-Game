@@ -12,26 +12,24 @@ namespace PirateGame.Ship
         const byte SlotIndex = 1;
 
         [SerializeField] ErClient erClient;
-        [SerializeField] RemoteShipView remoteView;
-        [SerializeField] float positionSmoothTime = 0.08f;
-        [SerializeField] float rotationSmoothTime = 0.08f;
+        [SerializeField] ShipPredictionReconciler reconciler;
         [SerializeField] float snapDistance = 8f;
 
         Renderer[] renderers;
         bool loggedReady;
         uint lastSnapshotTick;
-        Vector3 targetPosition;
-        float targetHeadingDeg;
-        Vector3 positionVelocity;
-        float rotationVelocity;
         bool hasTarget;
+        Rigidbody body;
 
         void Awake()
         {
+            body = GetComponent<Rigidbody>();
             if (erClient == null)
                 erClient = FindFirstObjectByType<ErClient>();
-            if (remoteView == null)
-                remoteView = GetComponent<RemoteShipView>();
+            if (reconciler == null)
+                reconciler = GetComponent<ShipPredictionReconciler>();
+            if (reconciler == null)
+                reconciler = gameObject.AddComponent<ShipPredictionReconciler>();
             renderers = GetComponentsInChildren<Renderer>(true);
         }
 
@@ -51,6 +49,8 @@ namespace PirateGame.Ship
                 lobby.OnMatchStarted -= OnMatchStarted;
             if (erClient != null)
                 erClient.OnSnapshotReceived -= OnSnapshot;
+
+            var remoteView = GetComponent<RemoteShipView>();
             if (remoteView != null)
                 remoteView.enabled = true;
         }
@@ -60,50 +60,38 @@ namespace PirateGame.Ship
             loggedReady = false;
             lastSnapshotTick = 0;
             hasTarget = false;
-            positionVelocity = Vector3.zero;
-            rotationVelocity = 0f;
+            PrepareRigidbodyForNetworkDrive();
 
             if (!IsActiveMode()) return;
 
+            var remoteView = GetComponent<RemoteShipView>();
             if (remoteView != null)
                 remoteView.enabled = false;
 
-            var spawn = new Vector3(-2f, 0f, 0f);
-            transform.SetPositionAndRotation(spawn, Quaternion.identity);
-            targetPosition = spawn;
             SetVisualsVisible(true);
-            Debug.Log($"[Coop] Local dual ship2 active at {spawn} — arrow keys, slot 1");
+            Debug.Log("[Coop] Local dual ship2 active — arrow keys, slot 1");
+        }
+
+        void PrepareRigidbodyForNetworkDrive()
+        {
+            if (body == null) return;
+            if (!body.isKinematic)
+            {
+                body.linearVelocity = Vector3.zero;
+                body.angularVelocity = Vector3.zero;
+            }
+            body.isKinematic = true;
         }
 
         void Update()
         {
-            var active = IsActiveMode();
-            if (remoteView != null && active && remoteView.enabled)
-                remoteView.enabled = false;
-
-            if (!active)
-            {
-                if (remoteView != null && erClient != null && erClient.MatchLive)
-                    remoteView.enabled = true;
-                return;
-            }
+            if (!IsActiveMode()) return;
 
             SetVisualsVisible(true);
 
-            if (!hasTarget) return;
-
-            transform.position = Vector3.SmoothDamp(
-                transform.position,
-                targetPosition,
-                ref positionVelocity,
-                positionSmoothTime);
-
-            var smoothedY = Mathf.SmoothDampAngle(
-                transform.eulerAngles.y,
-                targetHeadingDeg,
-                ref rotationVelocity,
-                rotationSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, smoothedY, 0f);
+            var pos = reconciler.GetDisplayPosition();
+            var rot = Quaternion.Euler(0f, reconciler.GetDisplayHeading(), 0f);
+            transform.SetPositionAndRotation(pos, rot);
         }
 
         void FixedUpdate()
@@ -111,14 +99,15 @@ namespace PirateGame.Ship
             if (!IsActiveMode()) return;
 
             var input = ReadInput();
-            if (Mathf.Abs(input.throttle) > 0.01f || Mathf.Abs(input.steer) > 0.01f)
+            if (reconciler.TryAdvanceSimulationTick(Time.fixedDeltaTime))
+                reconciler.QueueInput(input);
+
+            erClient.SubmitSecondaryInput(input.throttle / 127f, input.steer / 127f);
+
+            if ((input.throttle != 0 || input.steer != 0) && !loggedReady)
             {
-                erClient.SubmitSecondaryInput(input.throttle, input.steer);
-                if (!loggedReady)
-                {
-                    Debug.Log("[Coop] Ship2 steering — arrows submit to slot 1");
-                    loggedReady = true;
-                }
+                Debug.Log("[Coop] Ship2 steering — arrows submit to slot 1");
+                loggedReady = true;
             }
         }
 
@@ -131,23 +120,36 @@ namespace PirateGame.Ship
             if (!SnapshotDecoder.IsPlayerSlotPopulated(p)) return;
             if (snap.tick < lastSnapshotTick) return;
 
-            var newPos = new Vector3(p.x, 0f, p.z);
-            var newHeading = p.heading / 1024f * 360f;
-
-            if (!hasTarget || snap.tick > lastSnapshotTick + 1 ||
-                Vector3.Distance(transform.position, newPos) > snapDistance)
+            if (!hasTarget)
             {
-                transform.SetPositionAndRotation(
-                    newPos,
-                    Quaternion.Euler(0f, newHeading, 0f));
-                positionVelocity = Vector3.zero;
-                rotationVelocity = 0f;
+                reconciler.SyncToServerTick(snap.tick, p.x, p.z, p.heading);
+                ApplyTransform(p.x, p.z, p.heading);
+                hasTarget = true;
+                lastSnapshotTick = snap.tick;
+                return;
             }
 
-            targetPosition = newPos;
-            targetHeadingDeg = newHeading;
-            hasTarget = true;
+            if (snap.tick <= lastSnapshotTick) return;
+
+            var newPos = new Vector3(p.x, 0f, p.z);
+            if (Vector3.Distance(transform.position, newPos) > snapDistance)
+            {
+                reconciler.SyncToServerTick(snap.tick, p.x, p.z, p.heading);
+                ApplyTransform(p.x, p.z, p.heading);
+            }
+            else
+            {
+                reconciler.Reconcile(snap.tick, p.x, p.z, p.heading);
+            }
+
             lastSnapshotTick = snap.tick;
+        }
+
+        void ApplyTransform(short x, short z, ushort heading)
+        {
+            var pos = new Vector3(x, 0f, z);
+            var rot = Quaternion.Euler(0f, heading / 1024f * 360f, 0f);
+            transform.SetPositionAndRotation(pos, rot);
         }
 
         bool IsActiveMode()
@@ -172,18 +174,17 @@ namespace PirateGame.Ship
             var kb = Keyboard.current;
             if (kb == null) return input;
 
-            if (kb.upArrowKey.isPressed)
-                input.throttle += 1f;
-            if (kb.downArrowKey.isPressed)
-                input.throttle -= 1f;
-            if (kb.leftArrowKey.isPressed)
-                input.steer -= 1f;
-            if (kb.rightArrowKey.isPressed)
-                input.steer += 1f;
+            float throttle = 0f;
+            float steer = 0f;
+            if (kb.upArrowKey.isPressed) throttle += 1f;
+            if (kb.downArrowKey.isPressed) throttle -= 1f;
+            if (kb.leftArrowKey.isPressed) steer -= 1f;
+            if (kb.rightArrowKey.isPressed) steer += 1f;
 
-            input.throttle = Mathf.Clamp(input.throttle, -1f, 1f);
-            input.steer = Mathf.Clamp(input.steer, -1f, 1f);
+            input.throttle = (sbyte)Mathf.RoundToInt(Mathf.Clamp(throttle, -1f, 1f) * 127f);
+            input.steer = (sbyte)Mathf.RoundToInt(Mathf.Clamp(steer, -1f, 1f) * 127f);
             return input;
         }
     }
 }
+

@@ -16,10 +16,10 @@ pub struct ExecutorContext<'a> {
 }
 
 pub fn tick_weapons(ctx: &mut ExecutorContext) {
-    let player_count = ctx.world.player_count as usize;
+    let player_count = ctx.world.player_count() as usize;
     for slot in 0..player_count {
         let weapons: Vec<(u8, u8)> = {
-            let p = &ctx.world.players[slot];
+            let p = &ctx.world.players_mut()[slot];
             p.weapon_slots
                 .iter()
                 .enumerate()
@@ -38,13 +38,13 @@ pub fn tick_weapons(ctx: &mut ExecutorContext) {
             if row.executor == ExecutorKind::None {
                 continue;
             }
-            let mut fire_cd = ctx.world.players[slot].weapon_cooldowns[weapon_slot as usize];
+            let mut fire_cd = ctx.world.players_mut()[slot].weapon_cooldowns[weapon_slot as usize];
             if fire_cd > 0 {
-                ctx.world.players[slot].weapon_cooldowns[weapon_slot as usize] = fire_cd - 1;
+                ctx.world.players_mut()[slot].weapon_cooldowns[weapon_slot as usize] = fire_cd - 1;
                 continue;
             }
             if try_fire_weapon(ctx, slot as u8, weapon_slot, &row) {
-                ctx.world.players[slot].weapon_cooldowns[weapon_slot as usize] =
+                ctx.world.players_mut()[slot].weapon_cooldowns[weapon_slot as usize] =
                     row.fire_interval_ticks.max(1);
             }
         }
@@ -59,8 +59,8 @@ fn try_fire_weapon(
     row: &WeaponRow,
 ) -> bool {
     let slot = player_slot as usize;
-    let heading = ctx.world.players[slot].heading;
-    let pos = ctx.world.players[slot].position;
+    let heading = ctx.world.players_mut()[slot].heading;
+    let pos = ctx.world.players_mut()[slot].position;
     match row.executor {
         ExecutorKind::Projectile | ExecutorKind::Chain => fire_projectile(ctx, slot, row, heading, pos),
         ExecutorKind::InstantArc => fire_instant_arc(ctx, slot, row, heading, pos),
@@ -83,8 +83,9 @@ fn fire_projectile(
     if dir_x.0 == 0 && dir_z.0 == 0 {
         return false;
     }
+    let tick = ctx.world.tick();
     for _ in 0..row.projectile_count.max(1) {
-        if let Some(id) = ctx.world.projectiles.spawn(ctx.world.tick) {
+        if let Some(id) = ctx.world.projectiles_mut().spawn(tick) {
             let p = ProjectileState {
                 owner_slot: slot as u8,
                 weapon_id: row.id,
@@ -96,10 +97,10 @@ fn fire_projectile(
                 element: row.element,
                 from_player: true,
             };
-            ctx.world.projectiles.slots[id as usize] = p;
+            ctx.world.projectiles_mut().slots[id as usize] = p;
             ctx.world.snapshot.push_event(GameEvent {
                 kind: GameEventKind::Fire,
-                tick: ctx.world.tick,
+                tick: ctx.world.tick(),
                 actor: slot as u16,
                 x: crate::snapshot::quantize_pos(pos.x),
                 z: crate::snapshot::quantize_pos(pos.z),
@@ -120,7 +121,7 @@ fn fire_instant_arc(
     let (dir_x, dir_z) = arc_direction(row.arc_family, heading, row.arc_width_deg);
     let mut hit_any = false;
     let mut hits: Vec<EntityId> = Vec::new();
-    ctx.world.enemies.for_each_alive(|eid, enemy| {
+    ctx.world.enemies_mut().for_each_alive(|eid, enemy| {
         let to_enemy = Vec2::new(enemy.position.x - pos.x, enemy.position.z - pos.z);
         if in_arc(dir_x, dir_z, to_enemy, row.range) {
             hits.push(eid);
@@ -134,14 +135,16 @@ fn fire_instant_arc(
 }
 
 fn fire_area(ctx: &mut ExecutorContext, slot: usize, row: &WeaponRow, pos: Vec2) -> bool {
-    if let Some(aid) = ctx.world.areas.spawn(ctx.world.tick) {
-        ctx.world.areas.slots[aid as usize] = crate::world::AreaState {
+    let tick = ctx.world.tick();
+    if let Some(aid) = ctx.world.areas_mut().spawn(tick) {
+        ctx.world.areas_mut().slots[aid as usize] = crate::world::AreaState {
             position: pos,
             radius: row.radius,
             damage: row.damage,
             element: row.element,
             ttl_ticks: 30,
             owner_slot: slot as u8,
+            hits_players: false,
         };
     }
     true
@@ -154,7 +157,7 @@ fn fire_trail(ctx: &mut ExecutorContext, slot: usize, row: &WeaponRow, pos: Vec2
 fn fire_aura(ctx: &mut ExecutorContext, slot: usize, row: &WeaponRow, pos: Vec2) -> bool {
     let radius_sq = row.radius.mul_fix(row.radius).0 as i64;
     let mut hits: Vec<EntityId> = Vec::new();
-    ctx.world.enemies.for_each_alive(|eid, enemy| {
+    ctx.world.enemies_mut().for_each_alive(|eid, enemy| {
         if enemy.position.dist_sq(pos) <= radius_sq {
             hits.push(eid);
         }
@@ -166,13 +169,13 @@ fn fire_aura(ctx: &mut ExecutorContext, slot: usize, row: &WeaponRow, pos: Vec2)
 }
 
 fn integrate_projectiles(ctx: &mut ExecutorContext) {
-    let tick = ctx.world.tick;
+    let tick = ctx.world.tick();
     let dt = Fix::from_int(1) / Fix::from_int(ctx.config.tick_hz as i32);
     let mut to_despawn = Vec::new();
     let mut hits: Vec<(EntityId, EntityId, u16, Vec2)> = Vec::new();
     let mut updates: Vec<(EntityId, ProjectileState)> = Vec::new();
 
-    ctx.world.projectiles.for_each_alive(|pid, proj| {
+    ctx.world.projectiles_mut().for_each_alive(|pid, proj| {
         let mut p = *proj;
         p.position.x = p.position.x + p.velocity.x.mul_fix(dt);
         p.position.z = p.position.z + p.velocity.z.mul_fix(dt);
@@ -181,44 +184,61 @@ fn integrate_projectiles(ctx: &mut ExecutorContext) {
             to_despawn.push(pid);
             return;
         }
-        if p.from_player {
-            ctx.world.grid.query_radius(p.position.x, p.position.z, 1, |entry| {
-                if entry.kind == EntityKind::Enemy {
-                    hits.push((pid, entry.id, p.damage, p.position));
-                }
-            });
-        }
         updates.push((pid, p));
     });
 
+    {
+        let grid = &ctx.world.grid;
+        for (pid, p) in &updates {
+            if !p.from_player {
+                continue;
+            }
+            grid.query_radius(p.position.x, p.position.z, 1, |entry| {
+                if entry.kind == EntityKind::Enemy {
+                    hits.push((*pid, entry.id, p.damage, p.position));
+                }
+            });
+        }
+    }
+
     for (pid, p) in updates {
-        ctx.world.projectiles.slots[pid as usize] = p;
+        ctx.world.projectiles_mut().slots[pid as usize] = p;
     }
 
     for (pid, eid, damage, hit_pos) in hits {
-        let owner = ctx.world.projectiles.get(pid).map(|p| p.owner_slot).unwrap_or(0);
-        let element = ctx.world.projectiles.get(pid).map(|p| p.element).unwrap_or_default();
-        if let Some(enemy) = ctx.world.enemies.get_mut(eid) {
+        let (owner, element) = {
+            let proj = ctx.world.projectiles_mut().get(pid);
+            (
+                proj.map(|p| p.owner_slot).unwrap_or(0),
+                proj.map(|p| p.element).unwrap_or_default(),
+            )
+        };
+        let (actual, killed) = if let Some(enemy) = ctx.world.enemies_mut().get_mut(eid) {
             let mult = crate::config::affinity_multiplier(element, enemy.element);
             let dmg = ((damage as u32 * mult.0 as u32) >> 16) as u16;
             let actual = enemy.status.apply_damage(dmg);
             enemy.hp = enemy.hp.saturating_sub(actual);
-            ctx.world.players[owner as usize].damage_dealt += actual as u32;
-            if enemy.hp == 0 {
-                ctx.world.players[owner as usize].kills += 1;
+            (actual, enemy.hp == 0)
+        } else {
+            (0, false)
+        };
+        if actual > 0 {
+            ctx.world.players_mut()[owner as usize].damage_dealt += actual as u32;
+            if killed {
+                ctx.world.players_mut()[owner as usize].kills += 1;
                 ctx.world.snapshot.push_event(GameEvent {
                     kind: GameEventKind::Death,
-                    tick: ctx.world.tick,
+                    tick: ctx.world.tick(),
                     actor: owner as u16,
                     target: eid,
                     value: actual,
                     ..Default::default()
                 });
-                ctx.world.enemies.despawn(eid);
+                ctx.world.enemies_mut().despawn(eid);
             } else {
                 ctx.world.snapshot.push_event(GameEvent {
                     kind: GameEventKind::Hit,
-                    tick: ctx.world.tick,
+                    tick: ctx.world.tick(),
                     actor: owner as u16,
                     target: eid,
                     value: actual,
@@ -226,7 +246,7 @@ fn integrate_projectiles(ctx: &mut ExecutorContext) {
                 });
             }
         }
-        if let Some(proj) = ctx.world.projectiles.get_mut(pid) {
+        if let Some(proj) = ctx.world.projectiles_mut().get_mut(pid) {
             if proj.pierce_left == 0 {
                 to_despawn.push(pid);
             } else {
@@ -237,7 +257,7 @@ fn integrate_projectiles(ctx: &mut ExecutorContext) {
     }
 
     for pid in to_despawn {
-        ctx.world.projectiles.despawn(pid);
+        ctx.world.projectiles_mut().despawn(pid);
     }
     let _ = tick;
 }
@@ -252,7 +272,7 @@ fn apply_damage_to_enemy(
     from_pos: Vec2,
 ) {
     let (actual, killed) = {
-        let Some(enemy) = ctx.world.enemies.get_mut(eid) else {
+        let Some(enemy) = ctx.world.enemies_mut().get_mut(eid) else {
             return;
         };
         let mult = crate::config::affinity_multiplier(element, enemy.element);
@@ -265,9 +285,9 @@ fn apply_damage_to_enemy(
         enemy.velocity.z = enemy.velocity.z + kz;
         (actual, enemy.hp == 0)
     };
-    ctx.world.players[player_slot].damage_dealt += actual as u32;
+    ctx.world.players_mut()[player_slot].damage_dealt += actual as u32;
     if killed {
-        ctx.world.players[player_slot].kills += 1;
+        ctx.world.players_mut()[player_slot].kills += 1;
     }
     ctx.world.snapshot.push_event(GameEvent {
         kind: if killed {
@@ -275,14 +295,14 @@ fn apply_damage_to_enemy(
         } else {
             GameEventKind::Hit
         },
-        tick: ctx.world.tick,
+        tick: ctx.world.tick(),
         actor: player_slot as u16,
         target: eid,
         value: actual,
         ..Default::default()
     });
     if killed {
-        ctx.world.enemies.despawn(eid);
+        ctx.world.enemies_mut().despawn(eid);
     }
 }
 
@@ -290,10 +310,10 @@ fn arc_direction(family: ArcFamily, heading: u16, arc_width: u8) -> (Fix, Fix) {
     let (fx, fz) = sin_cos(heading);
     match family {
         ArcFamily::Broadside => (fz, -fx), // port
-        ArcFamily::Chaser => (fx, fz),
-        ArcFamily::Deck => (fx, fz),
-        ArcFamily::Trailing => (-fx, -fz),
-        ArcFamily::Orbital => (fx, fz),
+        ArcFamily::Chaser => (-fx, -fz),
+        ArcFamily::Deck => (-fx, -fz),
+        ArcFamily::Trailing => (fx, fz),
+        ArcFamily::Orbital => (-fx, -fz),
     }
 }
 

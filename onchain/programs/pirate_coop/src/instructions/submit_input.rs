@@ -1,21 +1,20 @@
 use anchor_lang::prelude::*;
+use pirate_sim::{world_from_bytes_mut, ShipInput};
 use crate::errors::PirateCoopError;
-use crate::instructions::tick::{run_tick_phases, SimBuffers};
-use crate::state::{MatchAccount, MatchState, SnapshotAccount};
+use crate::state::{MatchAccount, MatchState};
 
 #[derive(Accounts)]
 pub struct SubmitInput<'info> {
     pub player: Signer<'info>,
     #[account(mut)]
     pub match_account: AccountLoader<'info, MatchAccount>,
-    #[account(mut, constraint = snapshot.load()?.match_key == match_account.key())]
-    pub snapshot: AccountLoader<'info, SnapshotAccount>,
-    #[account(seeds = [b"config"], bump)]
-    pub config: AccountLoader<'info, crate::state::GameConfigAccount>,
+    /// CHECK: world PDA
+    #[account(mut)]
+    pub world: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<SubmitInput>, throttle: i8, steer: i8, buttons: u8) -> Result<()> {
-    let mut m = ctx.accounts.match_account.load_mut()?;
+    let m = ctx.accounts.match_account.load()?;
     require!(m.state == MatchState::Running as u8, PirateCoopError::NotRunning);
     let key = ctx.accounts.player.key();
     let mut slot_idx = None;
@@ -28,12 +27,16 @@ pub fn handler(ctx: Context<SubmitInput>, throttle: i8, steer: i8, buttons: u8) 
     require!(slot_idx.is_some(), PirateCoopError::NotPlayer);
     let _ = buttons;
 
-    let mut buffers = SimBuffers::default();
-    buffers.set_input(slot_idx.unwrap() as u8, throttle, steer);
-    let cfg = ctx.accounts.config.load()?;
-
-    let snapshot_info = ctx.accounts.snapshot.to_account_info();
-    let mut data = snapshot_info.try_borrow_mut_data()?;
-    run_tick_phases(&mut m, &mut data, &cfg, &mut buffers)?;
+    let mut world_data = ctx.accounts.world.try_borrow_mut_data()?;
+    let world_bytes = &mut world_data[8..8 + pirate_sim::WORLD_STATE_LEN];
+    let world = world_from_bytes_mut(world_bytes).ok_or(PirateCoopError::InvalidCapacity)?;
+    world.set_input(
+        slot_idx.unwrap() as u8,
+        ShipInput {
+            throttle,
+            steer,
+            buttons,
+        },
+    );
     Ok(())
 }

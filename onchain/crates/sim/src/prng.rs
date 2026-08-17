@@ -49,4 +49,12 @@ impl Prng {
     pub fn range_fix(&mut self, min: crate::fix::Fix, max: crate::fix::Fix) -> crate::fix::Fix {
         crate::fix::Fix(self.range_i32(min.0, max.0))
     }
+
+    pub fn state(&self) -> [u32; 4] {
+        self.state
+    }
+
+    pub fn from_state(state: [u32; 4]) -> Self {
+        Self { state }
+    }
 }

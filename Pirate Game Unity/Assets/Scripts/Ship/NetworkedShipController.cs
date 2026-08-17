@@ -5,29 +5,31 @@ using PirateGame.Net;
 namespace PirateGame.Ship
 {
     /// <summary>
-    /// Networked ship: submit input to ER, display smoothed on-chain snapshot position.
+    /// Local ship: client-side fixed-point prediction + on-chain reconciliation.
     /// </summary>
     public class NetworkedShipController : MonoBehaviour
     {
         [SerializeField] ErClient erClient;
         [SerializeField] LobbyManager lobbyManager;
-        [SerializeField] float positionSmoothTime = 0.08f;
-        [SerializeField] float rotationSmoothTime = 0.08f;
+        [SerializeField] ShipPredictionReconciler reconciler;
         [SerializeField] float snapDistance = 8f;
 
         byte localSlot;
         uint lastSnapshotTick;
-        Vector3 targetPosition;
-        float targetHeadingDeg;
-        Vector3 positionVelocity;
-        float rotationVelocity;
-        bool hasTarget;
+        bool hasSnapshot;
+        Rigidbody body;
 
         void Awake()
         {
+            body = GetComponent<Rigidbody>();
             EnsureLobby();
             if (erClient == null)
                 erClient = FindFirstObjectByType<ErClient>();
+            if (reconciler == null)
+                reconciler = GetComponent<ShipPredictionReconciler>();
+            if (reconciler == null)
+                reconciler = gameObject.AddComponent<ShipPredictionReconciler>();
+
             if (lobbyManager != null)
             {
                 lobbyManager.OnMatchStarted += OnMatchStarted;
@@ -57,37 +59,39 @@ namespace PirateGame.Ship
             if (lobbyManager != null)
                 localSlot = lobbyManager.LocalPlayerSlot;
             lastSnapshotTick = 0;
-            hasTarget = false;
-            positionVelocity = Vector3.zero;
-            rotationVelocity = 0f;
+            hasSnapshot = false;
+            PrepareRigidbodyForNetworkDrive();
+        }
+
+        void PrepareRigidbodyForNetworkDrive()
+        {
+            if (body == null) return;
+            if (!body.isKinematic)
+            {
+                body.linearVelocity = Vector3.zero;
+                body.angularVelocity = Vector3.zero;
+            }
+            body.isKinematic = true;
         }
 
         void FixedUpdate()
         {
             if (erClient == null || !erClient.MatchLive) return;
 
-            var dualMode = erClient.HasSecondarySession;
-            var input = ReadInput(dualMode);
-            if (Mathf.Abs(input.throttle) > 0.01f || Mathf.Abs(input.steer) > 0.01f)
-                erClient.SubmitInput(input.throttle, input.steer, 0);
+            var input = ReadInput(erClient.HasSecondarySession);
+            if (reconciler.TryAdvanceSimulationTick(Time.fixedDeltaTime))
+                reconciler.QueueInput(input);
+
+            erClient.SubmitInput(input.throttle / 127f, input.steer / 127f, 0);
         }
 
         void Update()
         {
-            if (!hasTarget) return;
+            if (erClient == null || !erClient.MatchLive) return;
 
-            transform.position = Vector3.SmoothDamp(
-                transform.position,
-                targetPosition,
-                ref positionVelocity,
-                positionSmoothTime);
-
-            var smoothedY = Mathf.SmoothDampAngle(
-                transform.eulerAngles.y,
-                targetHeadingDeg,
-                ref rotationVelocity,
-                rotationSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, smoothedY, 0f);
+            var pos = reconciler.GetDisplayPosition();
+            var rot = Quaternion.Euler(0f, reconciler.GetDisplayHeading(), 0f);
+            transform.SetPositionAndRotation(pos, rot);
         }
 
         void OnSnapshot(MatchSnapshot snap)
@@ -98,60 +102,69 @@ namespace PirateGame.Ship
             if (!SnapshotDecoder.IsPlayerSlotPopulated(p)) return;
             if (snap.tick < lastSnapshotTick) return;
 
-            var newPos = new Vector3(p.x, 0f, p.z);
-            var newHeading = p.heading / 1024f * 360f;
-
-            if (!hasTarget || snap.tick > lastSnapshotTick + 1 ||
-                Vector3.Distance(transform.position, newPos) > snapDistance)
+            if (!hasSnapshot)
             {
-                transform.SetPositionAndRotation(
-                    newPos,
-                    Quaternion.Euler(0f, newHeading, 0f));
-                positionVelocity = Vector3.zero;
-                rotationVelocity = 0f;
+                reconciler.SyncToServerTick(snap.tick, p.x, p.z, p.heading);
+                ApplyTransform(p.x, p.z, p.heading);
+                hasSnapshot = true;
+                lastSnapshotTick = snap.tick;
+                return;
             }
 
-            targetPosition = newPos;
-            targetHeadingDeg = newHeading;
-            hasTarget = true;
+            if (snap.tick <= lastSnapshotTick) return;
+
+            if (Vector3.Distance(transform.position, new Vector3(p.x, 0f, p.z)) > snapDistance)
+            {
+                reconciler.SyncToServerTick(snap.tick, p.x, p.z, p.heading);
+                ApplyTransform(p.x, p.z, p.heading);
+            }
+            else
+            {
+                reconciler.Reconcile(snap.tick, p.x, p.z, p.heading);
+            }
+
             lastSnapshotTick = snap.tick;
+        }
+
+        void ApplyTransform(short x, short z, ushort heading)
+        {
+            var pos = new Vector3(x, 0f, z);
+            var rot = Quaternion.Euler(0f, heading / 1024f * 360f, 0f);
+            transform.SetPositionAndRotation(pos, rot);
         }
 
         static ShipPredictor.ShipInput ReadInput(bool dualMode)
         {
             var input = new ShipPredictor.ShipInput();
+            float throttle = 0f;
+            float steer = 0f;
+
             if (Gamepad.current != null)
             {
                 var stick = Gamepad.current.leftStick.ReadValue();
-                input.throttle += stick.y;
-                input.steer += stick.x;
+                throttle += stick.y;
+                steer += stick.x;
             }
             if (Keyboard.current != null)
             {
-                if (Keyboard.current.wKey.isPressed)
-                    input.throttle += 1f;
-                if (Keyboard.current.sKey.isPressed)
-                    input.throttle -= 1f;
-                if (Keyboard.current.aKey.isPressed)
-                    input.steer -= 1f;
-                if (Keyboard.current.dKey.isPressed)
-                    input.steer += 1f;
+                if (Keyboard.current.wKey.isPressed) throttle += 1f;
+                if (Keyboard.current.sKey.isPressed) throttle -= 1f;
+                if (Keyboard.current.aKey.isPressed) steer -= 1f;
+                if (Keyboard.current.dKey.isPressed) steer += 1f;
 
                 if (!dualMode)
                 {
-                    if (Keyboard.current.upArrowKey.isPressed)
-                        input.throttle += 1f;
-                    if (Keyboard.current.downArrowKey.isPressed)
-                        input.throttle -= 1f;
-                    if (Keyboard.current.leftArrowKey.isPressed)
-                        input.steer -= 1f;
-                    if (Keyboard.current.rightArrowKey.isPressed)
-                        input.steer += 1f;
+                    if (Keyboard.current.upArrowKey.isPressed) throttle += 1f;
+                    if (Keyboard.current.downArrowKey.isPressed) throttle -= 1f;
+                    if (Keyboard.current.leftArrowKey.isPressed) steer -= 1f;
+                    if (Keyboard.current.rightArrowKey.isPressed) steer += 1f;
                 }
             }
-            input.throttle = Mathf.Clamp(input.throttle, -1f, 1f);
-            input.steer = Mathf.Clamp(input.steer, -1f, 1f);
+
+            input.throttle = (sbyte)Mathf.RoundToInt(Mathf.Clamp(throttle, -1f, 1f) * 127f);
+            input.steer = (sbyte)Mathf.RoundToInt(Mathf.Clamp(steer, -1f, 1f) * 127f);
             return input;
         }
     }
 }
+

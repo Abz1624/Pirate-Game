@@ -65,11 +65,13 @@ impl Fix {
         if self.0 <= 0 {
             return Fix::ZERO;
         }
-        let mut x = self.0 as u32;
+        // Q16.16 sqrt: sqrt(raw / 2^16) * 2^16 = sqrt(raw * 2^16).
+        let n = (self.0 as u64) << 16;
+        let mut x = n;
         let mut y = (x + 1) >> 1;
         while y < x {
             x = y;
-            y = (x + self.0 as u32 / x) >> 1;
+            y = (x + n / x) >> 1;
         }
         Fix(x as i32)
     }

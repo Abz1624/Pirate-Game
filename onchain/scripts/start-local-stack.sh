@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# mb-test-validator shells out to solana-test-validator; ensure Solana CLI is on PATH.
+export PATH="${HOME}/.local/share/solana/install/active_release/bin:${HOME}/.npm-global/bin:${PATH}"
+
 # Solana validators create a Unix socket (test-ledger/admin.rpc). That cannot
 # live on /mnt/c (Windows/DrvFs), so run the ledger on the Linux filesystem.
 LEDGER_DIR="${PIRATE_LEDGER_DIR:-$HOME/.pirate-game/local-stack}"
@@ -29,6 +32,7 @@ done
 
 echo "Starting ephemeral-validator on :7799 ..."
 RUST_LOG=info ephemeral-validator \
+  --no-tui \
   --remotes "http://localhost:8899" \
   --remotes "ws://localhost:8900" \
   -l "7799" \

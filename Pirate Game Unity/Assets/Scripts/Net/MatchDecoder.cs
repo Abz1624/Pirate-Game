@@ -6,9 +6,9 @@ namespace PirateGame.Net
     public static class MatchDecoder
     {
         const int Discriminator = 8;
-        const int PlayerCountOffset = Discriminator + 42;
-        public const int StateOffset = Discriminator + 43;
-        public const int DelegatedOffset = Discriminator + 49;
+        const int PlayerCountOffset = Discriminator + 43;
+        public const int StateOffset = Discriminator + 44;
+        public const int DelegatedOffset = Discriminator + 53;
 
         public const byte MatchStateLobby = 0;
         public const byte MatchStateRunning = 1;
@@ -16,7 +16,8 @@ namespace PirateGame.Net
 
         /// <summary>repr(C) PlayerSlot on-chain (32+32+1+1+4+4+4+2+4 + alignment padding).</summary>
         public const int PlayerSlotLen = 88;
-        public const int PlayersOffset = Discriminator + 32 + 8 + 1 + 1 + 1 + 1 + 4 + 1 + 1 + 1;
+        /// <summary>MatchAccount header is 56 bytes before the players array (repr(C) padding).</summary>
+        public const int PlayersOffset = Discriminator + 56;
 
         public static byte ReadPlayerCount(ReadOnlySpan<byte> data)
         {

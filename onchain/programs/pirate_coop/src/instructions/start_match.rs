@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
+use pirate_sim::{init_world_for_match, world_from_bytes_mut};
 use crate::errors::PirateCoopError;
-use crate::snapshot_tail::{header_mut, spawn_player, write_player};
+use crate::snapshot_tail::{header_mut, write_snapshot_from_sim};
 use crate::state::{MatchAccount, MatchState, SnapshotAccount};
 
 #[derive(Accounts)]
@@ -10,6 +11,9 @@ pub struct StartMatch<'info> {
     pub match_account: AccountLoader<'info, MatchAccount>,
     #[account(mut, constraint = snapshot.load()?.match_key == match_account.key())]
     pub snapshot: AccountLoader<'info, SnapshotAccount>,
+    /// CHECK: world PDA
+    #[account(mut)]
+    pub world: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<StartMatch>) -> Result<()> {
@@ -20,25 +24,25 @@ pub fn handler(ctx: Context<StartMatch>) -> Result<()> {
         require!(m.players[i].ready == 1, PirateCoopError::NotInLobby);
     }
 
-    let snapshot_info = ctx.accounts.snapshot.to_account_info();
-    let mut data = snapshot_info.try_borrow_mut_data()?;
-
-    for slot in 0..m.player_count as usize {
-        m.ship_sim[slot] = Default::default();
-        let spawn_x = ((slot as i16) * 4 - 6).clamp(-20, 20);
-        let mut player = spawn_player(slot);
-        player.x = spawn_x;
-        write_player(&mut data, slot, &player);
-    }
+    let mut world_data = ctx.accounts.world.try_borrow_mut_data()?;
+    let world_bytes = &mut world_data[8..8 + pirate_sim::WORLD_STATE_LEN];
+    let world = world_from_bytes_mut(world_bytes).ok_or(PirateCoopError::InvalidCapacity)?;
+    init_world_for_match(world, m.player_count, m.mode);
 
     m.state = MatchState::Running as u8;
     m.tick = 0;
+
+    let snapshot_info = ctx.accounts.snapshot.to_account_info();
+    let mut data = snapshot_info.try_borrow_mut_data()?;
+    write_snapshot_from_sim(&mut data, &pirate_sim::snapshot::Snapshot::with_capacity(m.player_count as usize, 96), world, m.player_count);
 
     if let Some(s) = header_mut(&mut data) {
         s.tick = 0;
         s.player_count = m.player_count;
         s.enemy_count = 0;
         s.projectile_count = 0;
+        s.storm_radius_pct = 100;
+        s.match_timer_sec = 0;
     }
 
     Ok(())

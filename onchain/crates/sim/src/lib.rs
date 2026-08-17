@@ -3,9 +3,13 @@
 
 pub mod config;
 pub mod enemies;
+pub mod engine;
 pub mod executors;
 pub mod fix;
+pub mod fixed_pool;
+pub mod gameplay;
 pub mod grid;
+pub mod modes;
 pub mod pools;
 pub mod prng;
 pub mod snapshot;
@@ -13,11 +17,17 @@ pub mod status;
 pub mod tick;
 pub mod trig;
 pub mod world;
+pub mod world_state;
 
 pub use config::*;
+pub use engine::{
+    apply_draft_pick_world, init_world_for_match, run_world_tick, world_from_bytes,
+    world_from_bytes_mut,
+};
 pub use fix::Fix;
 pub use tick::{TickPhase, TickResult};
-pub use world::MatchWorld;
+pub use world::{MatchWorld, ShipInput};
+pub use world_state::{WorldState, WORLD_STATE_LEN};
 
 /// Default simulation tick rate (Hz).
 pub const DEFAULT_TICK_HZ: u8 = 10;

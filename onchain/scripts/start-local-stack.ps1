@@ -4,6 +4,8 @@
 
 $ErrorActionPreference = "Stop"
 
+$env:PATH = "$env:USERPROFILE\.local\share\solana\install\active_release\bin;$env:USERPROFILE\.npm-global\bin;$env:PATH"
+
 Write-Host "Starting mb-test-validator on :8899 ..."
 Start-Process -NoNewWindow mb-test-validator -ArgumentList "--reset"
 
@@ -12,6 +14,7 @@ Start-Sleep -Seconds 5
 Write-Host "Starting ephemeral-validator on :7799 ..."
 $env:RUST_LOG = "info"
 Start-Process -NoNewWindow ephemeral-validator -ArgumentList @(
+    "--no-tui",
     "--remotes", "http://localhost:8899",
     "--remotes", "ws://localhost:8900",
     "-l", "7799",

@@ -18,6 +18,9 @@ pub struct DelegateMatch<'info> {
     /// CHECK: snapshot PDA; delegated via CPI
     #[account(mut)]
     pub snapshot: UncheckedAccount<'info>,
+    /// CHECK: world PDA; delegated via CPI
+    #[account(mut)]
+    pub world: UncheckedAccount<'info>,
     /// CHECK: pirate_coop program id (PDA owner before delegation)
     #[account(address = ID)]
     pub owner_program: UncheckedAccount<'info>,
@@ -39,6 +42,15 @@ pub struct DelegateMatch<'info> {
     /// CHECK: ["delegation-metadata", snapshot]
     #[account(mut)]
     pub snapshot_delegation_metadata: UncheckedAccount<'info>,
+    /// CHECK: ["buffer", world] PDA, owned by pirate_coop
+    #[account(mut)]
+    pub world_buffer: UncheckedAccount<'info>,
+    /// CHECK: ["delegation", world]
+    #[account(mut)]
+    pub world_delegation_record: UncheckedAccount<'info>,
+    /// CHECK: ["delegation-metadata", world]
+    #[account(mut)]
+    pub world_delegation_metadata: UncheckedAccount<'info>,
     /// CHECK: MagicBlock delegation program
     #[account(address = ephemeral_rollups_sdk::id())]
     pub delegation_program: UncheckedAccount<'info>,
@@ -48,16 +60,19 @@ pub struct DelegateMatch<'info> {
 pub fn handler(ctx: Context<DelegateMatch>) -> Result<()> {
     require_keys_eq!(*ctx.accounts.match_account.owner, ID);
     require_keys_eq!(*ctx.accounts.snapshot.owner, ID);
+    require_keys_eq!(*ctx.accounts.world.owner, ID);
 
     let match_key = ctx.accounts.match_account.key();
-    let (authority, seed) = {
+        let (authority, seed) = {
         let mut data = ctx.accounts.match_account.try_borrow_mut_data()?;
-        require!(data.len() >= 58, PirateCoopError::NotRunning);
+        const STATE_OFFSET: usize = 8 + 44;
+        const DELEGATED_OFFSET: usize = 8 + 53;
+        require!(data.len() > DELEGATED_OFFSET, PirateCoopError::NotRunning);
         require!(
-            data[51] == MatchState::Running as u8,
+            data[STATE_OFFSET] == MatchState::Running as u8,
             PirateCoopError::NotRunning
         );
-        data[57] = 1; // MatchAccount.delegated (disc + offset 49)
+        data[DELEGATED_OFFSET] = 1;
         let authority = Pubkey::new_from_array(data[8..40].try_into().unwrap());
         let seed = u64::from_le_bytes(data[40..48].try_into().unwrap());
         (authority, seed)
@@ -65,6 +80,7 @@ pub fn handler(ctx: Context<DelegateMatch>) -> Result<()> {
 
     let match_info = ctx.accounts.match_account.to_account_info();
     let snapshot_info = ctx.accounts.snapshot.to_account_info();
+    let world_info = ctx.accounts.world.to_account_info();
 
     let payer = ctx.accounts.payer.to_account_info();
     let owner_program = ctx.accounts.owner_program.to_account_info();
@@ -76,6 +92,9 @@ pub fn handler(ctx: Context<DelegateMatch>) -> Result<()> {
     let snapshot_buffer = ctx.accounts.snapshot_buffer.to_account_info();
     let snapshot_record = ctx.accounts.snapshot_delegation_record.to_account_info();
     let snapshot_metadata = ctx.accounts.snapshot_delegation_metadata.to_account_info();
+    let world_buffer = ctx.accounts.world_buffer.to_account_info();
+    let world_record = ctx.accounts.world_delegation_record.to_account_info();
+    let world_metadata = ctx.accounts.world_delegation_metadata.to_account_info();
 
     let seed_bytes = seed.to_le_bytes();
     delegate_pda(
@@ -100,6 +119,18 @@ pub fn handler(ctx: Context<DelegateMatch>) -> Result<()> {
         &delegation_program,
         &system_program,
         &[b"snapshot", match_key.as_ref()],
+    )?;
+
+    delegate_pda(
+        &payer,
+        &world_info,
+        &owner_program,
+        &world_buffer,
+        &world_record,
+        &world_metadata,
+        &delegation_program,
+        &system_program,
+        &[b"world", match_key.as_ref()],
     )?;
 
     Ok(())

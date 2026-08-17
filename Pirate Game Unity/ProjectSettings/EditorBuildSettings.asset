@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Solana Test Scene.unity
+    guid: 9ac1c973dc1307d479093cdafae71c5a
+  - enabled: 1
     path: Assets/Scenes/Solo.unity
     guid: de0c4a2000ef82c41bb9af2be5c1738a
   - enabled: 0

@@ -45,10 +45,11 @@ pub fn commit_and_undelegate_match<'info>(
     magic_program: &AccountInfo<'info>,
     match_account: &AccountInfo<'info>,
     snapshot: &AccountInfo<'info>,
+    world: &AccountInfo<'info>,
 ) -> Result<()> {
     commit_and_undelegate_accounts(
         payer,
-        vec![match_account, snapshot],
+        vec![match_account, snapshot, world],
         magic_context,
         magic_program,
     )?;

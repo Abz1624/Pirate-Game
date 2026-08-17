@@ -52,6 +52,7 @@ namespace PirateGame.Net
         PublicKey configPda;
         PublicKey currentMatch;
         PublicKey currentSnapshot;
+        PublicKey currentWorld;
         bool busy;
 
         public string CurrentMatchAddress => currentMatch?.Key ?? "";
@@ -144,15 +145,19 @@ namespace PirateGame.Net
                 var seed = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 currentMatch = PirateCoopProgram.MatchPda(payer.PublicKey, seed);
                 currentSnapshot = PirateCoopProgram.SnapshotPda(currentMatch);
+                currentWorld = PirateCoopProgram.WorldPda(currentMatch);
 
-                Debug.Log($"[Lobby] create_match seed={seed} tide={tide} cap={capacity} match={currentMatch}");
+                Debug.Log($"[Lobby] create_match seed={seed} tide={tide} cap={capacity} mode=PvPvE match={currentMatch}");
 
                 await SolanaTx.SendAsync(baseRpc, payer,
                     PirateCoopProgram.CreateMatch(
-                        payer.PublicKey, configPda, currentMatch, currentSnapshot, seed, tide, capacity));
+                        payer.PublicKey, configPda, currentMatch, currentSnapshot,
+                        seed, tide, capacity, PirateCoopProgram.MatchModePvPvE));
 
                 await SolanaTx.WaitForProgramAccountAsync(
                     baseRpc, currentMatch, PirateCoopProgram.ProgramId);
+
+                await EnsureWorldAccountAsync();
 
                 await JoinCurrentAsync();
                 await SendReadyAsync(true);
@@ -179,6 +184,7 @@ namespace PirateGame.Net
                 EnsurePayer();
                 currentMatch = matchPda;
                 currentSnapshot = PirateCoopProgram.SnapshotPda(matchPda);
+                currentWorld = PirateCoopProgram.WorldPda(matchPda);
                 await JoinCurrentAsync();
                 await SendReadyAsync(true);
                 Debug.Log("[Lobby] joined lobby — waiting for host to start + delegate…");
@@ -276,21 +282,26 @@ namespace PirateGame.Net
                 var seed = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 currentMatch = PirateCoopProgram.MatchPda(payer.PublicKey, seed);
                 currentSnapshot = PirateCoopProgram.SnapshotPda(currentMatch);
+                currentWorld = PirateCoopProgram.WorldPda(currentMatch);
 
                 Debug.Log($"[Lobby] local dual match seed={seed} tide={tide} cap={capacity} match={currentMatch}");
 
                 await SolanaTx.SendAsync(baseRpc, payer,
                     PirateCoopProgram.CreateMatch(
-                        payer.PublicKey, configPda, currentMatch, currentSnapshot, seed, tide, capacity));
+                        payer.PublicKey, configPda, currentMatch, currentSnapshot,
+                        seed, tide, capacity, PirateCoopProgram.MatchModePvPvE));
 
                 await SolanaTx.WaitForProgramAccountAsync(
                     baseRpc, currentMatch, PirateCoopProgram.ProgramId);
+
+                await EnsureWorldAccountAsync();
 
                 await JoinCurrentAsync();
                 await WaitForPlayerCountAsync(1);
                 await SendReadyAsync(true);
 
                 var payer2 = SolanaTx.LoadSecondaryPayer(config);
+                await SolanaTx.AirdropAsync(baseRpc, payer2.PublicKey);
                 var session2 = SolanaTx.LoadOrCreateSession(config, "pirate_session_key_client");
                 erClient.BindSecondarySession(session2);
 
@@ -321,12 +332,16 @@ namespace PirateGame.Net
                 Debug.LogWarning("[Lobby] only 1 player in match — press P after your co-op partner joins (O)");
 
             await SolanaTx.SendAsync(baseRpc, payer,
-                PirateCoopProgram.StartMatch(payer.PublicKey, currentMatch, currentSnapshot));
+                PirateCoopProgram.StartMatch(payer.PublicKey, currentMatch, currentSnapshot, currentWorld));
 
+            const uint delegateCu = 250_000;
             await SolanaTx.SendAsync(baseRpc, payer,
-                PirateCoopProgram.DelegateMatch(payer.PublicKey, currentMatch, currentSnapshot),
-                400_000);
-            Debug.Log($"[Lobby] delegate_match {currentMatch}");
+                PirateCoopProgram.DelegateMatchAccount(payer.PublicKey, currentMatch), delegateCu);
+            await SolanaTx.SendAsync(baseRpc, payer,
+                PirateCoopProgram.DelegateSnapshotAccount(payer.PublicKey, currentMatch, currentSnapshot), delegateCu);
+            await SolanaTx.SendAsync(baseRpc, payer,
+                PirateCoopProgram.DelegateWorldAccount(payer.PublicKey, currentMatch, currentWorld), delegateCu);
+            Debug.Log($"[Lobby] delegate_match (3 txs) {currentMatch}");
 
             await WaitForDelegationAsync();
             await BindErAsync();
@@ -338,7 +353,7 @@ namespace PirateGame.Net
             await SolanaTx.AirdropAsync(erRpc, erClient.SessionAccount.PublicKey);
             if (erClient.HasSecondarySession && erClient.SecondarySessionPublicKey != null)
                 await SolanaTx.AirdropAsync(erRpc, erClient.SecondarySessionPublicKey);
-            erClient.BindMatch(currentMatch, currentSnapshot);
+            erClient.BindMatch(currentMatch, currentSnapshot, currentWorld);
             await erClient.RefreshMatchAndSnapshotAsync();
         }
 
@@ -364,6 +379,45 @@ namespace PirateGame.Net
             }
             throw new TimeoutException(
                 $"Match {currentMatch} not delegated+running on {config.ErRpc} within 90s (host must press P)");
+        }
+
+        async Task EnsureWorldAccountAsync()
+        {
+            if (currentMatch == null || currentWorld == null)
+                throw new InvalidOperationException("match/world PDA not set");
+
+            if (!await SolanaTx.AccountExistsAsync(baseRpc, currentWorld))
+            {
+                Debug.Log($"[Lobby] init_world {currentWorld}");
+                await SolanaTx.SendAsync(baseRpc, payer,
+                    PirateCoopProgram.InitWorld(payer.PublicKey, currentMatch, currentWorld));
+                await SolanaTx.WaitForProgramAccountAsync(
+                    baseRpc, currentWorld, PirateCoopProgram.ProgramId);
+            }
+
+            await SolanaTx.AirdropAsync(baseRpc, payer.PublicKey);
+
+            var target = PirateCoopProgram.WorldAccountTotalBytes;
+            for (var round = 0; round < 8; round++)
+            {
+                var data = await SolanaTx.GetAccountDataAsync(baseRpc, currentWorld);
+                var len = data?.Length ?? 0;
+                if (len >= target)
+                    break;
+
+                Debug.Log($"[Lobby] extend_world {currentWorld} len={len} target={target}");
+                await SolanaTx.SendAsync(baseRpc, payer,
+                    PirateCoopProgram.ExtendWorld(payer.PublicKey, currentMatch, currentWorld));
+
+                var after = await SolanaTx.GetAccountDataAsync(baseRpc, currentWorld);
+                if ((after?.Length ?? 0) <= len)
+                    break;
+            }
+
+            var finalData = await SolanaTx.GetAccountDataAsync(baseRpc, currentWorld);
+            if (finalData == null || finalData.Length < target)
+                throw new InvalidOperationException(
+                    $"world account too small ({finalData?.Length ?? 0} bytes, need {target})");
         }
 
         async Task EnsureConfigAsync()

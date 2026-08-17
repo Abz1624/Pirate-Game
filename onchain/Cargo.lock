@@ -1446,6 +1446,7 @@ name = "pirate-sim"
 version = "0.1.0"
 dependencies = [
  "bitflags",
+ "bytemuck",
  "serde_json",
 ]
 
@@ -1464,6 +1465,7 @@ version = "0.1.0"
 dependencies = [
  "anchor-lang",
  "ephemeral-rollups-sdk",
+ "pirate-sim",
 ]
 
 [[package]]

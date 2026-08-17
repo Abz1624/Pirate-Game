@@ -3,7 +3,7 @@ use crate::errors::PirateCoopError;
 use crate::state::{snapshot_space, GameConfigAccount, MatchAccount, MatchState, SnapshotAccount};
 
 #[derive(Accounts)]
-#[instruction(seed: u64, tide: u8, capacity: u8)]
+#[instruction(seed: u64, tide: u8, capacity: u8, mode: u8)]
 pub struct CreateMatch<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -29,10 +29,16 @@ pub struct CreateMatch<'info> {
 }
 
 fn tide_enemy_cap(tide: u8) -> u16 {
-    (60 + tide as u16 * 20).min(200)
+    (60 + tide as u16 * 20).min(96)
 }
 
-pub fn handler(ctx: Context<CreateMatch>, seed: u64, tide: u8, capacity: u8) -> Result<()> {
+pub fn handler(
+    ctx: Context<CreateMatch>,
+    seed: u64,
+    tide: u8,
+    capacity: u8,
+    mode: u8,
+) -> Result<()> {
     let cap = if capacity == 0 {
         ctx.accounts.config.load()?.lobby_capacity_default
     } else {
@@ -45,6 +51,7 @@ pub fn handler(ctx: Context<CreateMatch>, seed: u64, tide: u8, capacity: u8) -> 
     m.seed = seed;
     m.tide = tide;
     m.capacity = cap;
+    m.mode = mode;
     m.player_count = 0;
     m.state = MatchState::Lobby as u8;
     m.tick = 0;
@@ -61,6 +68,9 @@ pub fn handler(ctx: Context<CreateMatch>, seed: u64, tide: u8, capacity: u8) -> 
     s.enemy_count = 0;
     s.projectile_count = 0;
     s.event_head = 0;
+    s.storm_radius_pct = 100;
+    s.match_timer_sec = 0;
+    s.orb_count = 0;
 
     Ok(())
 }
