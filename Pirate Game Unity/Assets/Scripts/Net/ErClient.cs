@@ -46,8 +46,8 @@ namespace PirateGame.Net
         bool matchLive;
         SnapshotWsSubscriber wsSubscriber;
 
-        const float InputKeepaliveSec = 0.5f;
-        const float StaleSnapshotCrankSec = 0.35f;
+        const float InputKeepaliveSec = 0.09f;
+        const float StaleSnapshotCrankSec = 0.2f;
 
         public event Action<MatchSnapshot> OnSnapshotReceived;
         public MatchSnapshot LatestSnapshot => latestSnapshot;
@@ -142,6 +142,7 @@ namespace PirateGame.Net
             wsSubscriber.Start();
 
             _ = RefreshMatchAndSnapshotAsync();
+            _ = InitialCrankBurstAsync();
         }
 
         public void UnbindMatch()
@@ -155,19 +156,19 @@ namespace PirateGame.Net
             matchPlayerCount = 0;
         }
 
-        public void SubmitInput(float throttle, float steer, byte buttons = 0)
+        public void SubmitInput(float throttle, float steer, byte buttons = 0, bool force = false)
         {
             var t = (sbyte)Mathf.RoundToInt(Mathf.Clamp(throttle, -1f, 1f) * 127f);
             var s = (sbyte)Mathf.RoundToInt(Mathf.Clamp(steer, -1f, 1f) * 127f);
-            SendInputIfChanged(t, s, buttons);
+            SendInputIfChanged(t, s, buttons, force);
         }
 
-        public void SubmitSecondaryInput(float throttle, float steer, byte buttons = 0)
+        public void SubmitSecondaryInput(float throttle, float steer, byte buttons = 0, bool force = false)
         {
             if (secondarySession == null) return;
             var t = (sbyte)Mathf.RoundToInt(Mathf.Clamp(throttle, -1f, 1f) * 127f);
             var s = (sbyte)Mathf.RoundToInt(Mathf.Clamp(steer, -1f, 1f) * 127f);
-            SendSecondaryInputIfChanged(t, s, buttons);
+            SendSecondaryInputIfChanged(t, s, buttons, force);
         }
 
         void SendInputIfChanged(sbyte throttle, sbyte steer, byte buttons, bool force = false)
@@ -226,6 +227,15 @@ namespace PirateGame.Net
             var data = await SolanaTx.GetAccountDataAsync(erRpc, snapshotPda);
             if (data != null)
                 ApplySnapshotBytes(data);
+        }
+
+        async Task InitialCrankBurstAsync()
+        {
+            for (var i = 0; i < 5 && MatchLive; i++)
+            {
+                await CrankTickWorldAsync();
+                await Task.Delay(120);
+            }
         }
 
         async Task CrankTickWorldAsync()

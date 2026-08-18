@@ -61,6 +61,18 @@ namespace PirateGame.Ship
             lastSnapshotTick = 0;
             hasSnapshot = false;
             PrepareRigidbodyForNetworkDrive();
+            TrySyncSpawnSnapshot(erClient?.LatestSnapshot);
+        }
+
+        void TrySyncSpawnSnapshot(MatchSnapshot snap)
+        {
+            if (snap?.players == null || snap.players.Length <= localSlot) return;
+
+            var p = snap.players[localSlot];
+            reconciler.SyncToServerTick(snap.tick, p.x, p.z, p.heading);
+            ApplyTransform(p.x, p.z, p.heading);
+            hasSnapshot = true;
+            lastSnapshotTick = snap.tick;
         }
 
         void PrepareRigidbodyForNetworkDrive()
@@ -76,18 +88,19 @@ namespace PirateGame.Ship
 
         void FixedUpdate()
         {
-            if (erClient == null || !erClient.MatchLive) return;
+            if (erClient == null || !erClient.MatchLive || !hasSnapshot) return;
 
             var input = ReadInput(erClient.HasSecondarySession);
-            if (reconciler.TryAdvanceSimulationTick(Time.fixedDeltaTime))
+            var advanced = reconciler.TryAdvanceSimulationTick(Time.fixedDeltaTime);
+            if (advanced)
                 reconciler.QueueInput(input);
 
-            erClient.SubmitInput(input.throttle / 127f, input.steer / 127f, 0);
+            erClient.SubmitInput(input.throttle / 127f, input.steer / 127f, 0, force: advanced);
         }
 
-        void Update()
+        void LateUpdate()
         {
-            if (erClient == null || !erClient.MatchLive) return;
+            if (erClient == null || !erClient.MatchLive || !hasSnapshot) return;
 
             var pos = reconciler.GetDisplayPosition();
             var rot = Quaternion.Euler(0f, reconciler.GetDisplayHeading(), 0f);
@@ -99,7 +112,6 @@ namespace PirateGame.Ship
             if (snap?.players == null || snap.players.Length <= localSlot) return;
 
             var p = snap.players[localSlot];
-            if (!SnapshotDecoder.IsPlayerSlotPopulated(p)) return;
             if (snap.tick < lastSnapshotTick) return;
 
             if (!hasSnapshot)

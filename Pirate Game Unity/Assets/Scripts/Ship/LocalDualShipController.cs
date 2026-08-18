@@ -62,14 +62,26 @@ namespace PirateGame.Ship
             hasTarget = false;
             PrepareRigidbodyForNetworkDrive();
 
-            if (!IsActiveMode()) return;
+            if (erClient == null || !erClient.HasSecondarySession) return;
 
             var remoteView = GetComponent<RemoteShipView>();
             if (remoteView != null)
                 remoteView.enabled = false;
 
             SetVisualsVisible(true);
+            TrySyncSpawnSnapshot(erClient.LatestSnapshot);
             Debug.Log("[Coop] Local dual ship2 active — arrow keys, slot 1");
+        }
+
+        void TrySyncSpawnSnapshot(MatchSnapshot snap)
+        {
+            if (snap?.players == null || snap.players.Length <= SlotIndex) return;
+
+            var p = snap.players[SlotIndex];
+            reconciler.SyncToServerTick(snap.tick, p.x, p.z, p.heading);
+            ApplyTransform(p.x, p.z, p.heading);
+            hasTarget = true;
+            lastSnapshotTick = snap.tick;
         }
 
         void PrepareRigidbodyForNetworkDrive()
@@ -83,9 +95,9 @@ namespace PirateGame.Ship
             body.isKinematic = true;
         }
 
-        void Update()
+        void LateUpdate()
         {
-            if (!IsActiveMode()) return;
+            if (!IsActiveMode() || !hasTarget) return;
 
             SetVisualsVisible(true);
 
@@ -96,13 +108,14 @@ namespace PirateGame.Ship
 
         void FixedUpdate()
         {
-            if (!IsActiveMode()) return;
+            if (!IsActiveMode() || !hasTarget) return;
 
             var input = ReadInput();
-            if (reconciler.TryAdvanceSimulationTick(Time.fixedDeltaTime))
+            var advanced = reconciler.TryAdvanceSimulationTick(Time.fixedDeltaTime);
+            if (advanced)
                 reconciler.QueueInput(input);
 
-            erClient.SubmitSecondaryInput(input.throttle / 127f, input.steer / 127f);
+            erClient.SubmitSecondaryInput(input.throttle / 127f, input.steer / 127f, force: advanced);
 
             if ((input.throttle != 0 || input.steer != 0) && !loggedReady)
             {
@@ -117,7 +130,6 @@ namespace PirateGame.Ship
                 return;
 
             var p = snap.players[SlotIndex];
-            if (!SnapshotDecoder.IsPlayerSlotPopulated(p)) return;
             if (snap.tick < lastSnapshotTick) return;
 
             if (!hasTarget)

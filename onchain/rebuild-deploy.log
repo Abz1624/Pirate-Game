@@ -1,0 +1,541 @@
+=== Toolchain (must NOT be 1.18.17 for BPF) ===
+solana-cli 2.1.21 (src:8a085eeb; feat:1416569292, client:Agave)
+cargo-build-sbf 4.1.0
+platform-tools v1.54
+rustc 1.89.0
+=== cargo-build-sbf arch help ===
+            `--arch v3`
+
+        --arch <arch>
+            Build for the given target architecture [default: v0] [possible values: v0, v1, v2, v3,
+            v4]
+
+=== cargo-build-sbf (platform-tools v1.54, arch v0 for Agave 2.1 verifier) ===
+   Compiling pirate-sim v0.1.0 (/mnt/c/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/onchain/crates/sim)
+warning: unused import: `crate::config::GameConfig`
+ --> crates/sim/src/enemies.rs:3:5
+  |
+3 | use crate::config::GameConfig;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `atan2`
+ --> crates/sim/src/executors.rs:9:19
+  |
+9 | use crate::trig::{atan2, sin_cos};
+  |                   ^^^^^
+
+warning: unused imports: `EnemyState` and `PlayerState`
+  --> crates/sim/src/executors.rs:10:20
+   |
+10 | use crate::world::{EnemyState, MatchWorld, PlayerState, ProjectileState};
+   |                    ^^^^^^^^^^              ^^^^^^^^^^^
+
+warning: unused import: `INVALID_ID`
+ --> crates/sim/src/fixed_pool.rs:3:30
+  |
+3 | use crate::pools::{EntityId, INVALID_ID};
+  |                              ^^^^^^^^^^
+
+warning: unused import: `crate::executors::ExecutorContext`
+ --> crates/sim/src/gameplay.rs:4:5
+  |
+4 | use crate::executors::ExecutorContext;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `FIX_ONE`
+ --> crates/sim/src/trig.rs:3:23
+  |
+3 | use crate::fix::{Fix, FIX_ONE};
+  |                       ^^^^^^^
+
+warning: unused imports: `EntityId` and `EntityKind`
+  --> crates/sim/src/world.rs:10:20
+   |
+10 | use crate::pools::{EntityId, EntityKind, Vec2};
+   |                    ^^^^^^^^  ^^^^^^^^^^
+
+warning: unused import: `crate::ARENA_RADIUS`
+  --> crates/sim/src/world.rs:15:5
+   |
+15 | use crate::ARENA_RADIUS;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::config::Element`
+ --> crates/sim/src/world_state.rs:3:5
+  |
+3 | use crate::config::Element;
+  |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::status::StatusState`
+  --> crates/sim/src/world_state.rs:12:5
+   |
+12 | use crate::status::StatusState;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `player_count`
+  --> crates/sim/src/enemies.rs:15:9
+   |
+15 |     let player_count = ctx.world.player_count() as usize;
+   |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_player_count`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: value assigned to `alive` is never read
+   --> crates/sim/src/enemies.rs:106:9
+    |
+106 |         alive = alive_now + 1;
+    |         ^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: unused variable: `dt`
+   --> crates/sim/src/enemies.rs:154:67
+    |
+154 | fn steer_toward(vel: &mut Vec2, from: Vec2, to: Vec2, speed: i32, dt: Fix) {
+    |                                                                   ^^ help: if this is intentional, prefix it with an underscore: `_dt`
+
+warning: variable does not need to be mutable
+  --> crates/sim/src/executors.rs:41:17
+   |
+41 |             let mut fire_cd = ctx.world.players_mut()[slot].weapon_cooldowns[weapon_slot as usize];
+   |                 ----^^^^^^^
+   |                 |
+   |                 help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `arc_width`
+   --> crates/sim/src/executors.rs:309:51
+    |
+309 | fn arc_direction(family: ArcFamily, heading: u16, arc_width: u8) -> (Fix, Fix) {
+    |                                                   ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_arc_width`
+
+warning: variable does not need to be mutable
+  --> crates/sim/src/prng.rs:10:13
+   |
+10 |         let mut s = [
+   |             ----^
+   |             |
+   |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+  --> crates/sim/src/trig.rs:55:9
+   |
+55 |     let mut a = if ax == 0 {
+   |         ----^
+   |         |
+   |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> crates/sim/src/world_state.rs:165:13
+    |
+165 |         let mut prng = self.prng();
+    |             ----^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: constant `TABLE_BITS` is never used
+ --> crates/sim/src/trig.rs:5:7
+  |
+5 | const TABLE_BITS: u16 = 256;
+  |       ^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` on by default
+
+Error: Function _ZN10pirate_sim6engine14run_world_tick17hb20aaae2056cca0fE overflows the maximum allowed frame space by accessing an offset 146176 bytes greater than the maximum of 4096. Please, minimize large stack variables. Estimated function frame size: 150272 bytes. Exceeding the maximum stack offset may cause undefined behavior during execution.
+
+Error: Function _ZN10pirate_sim6engine22apply_draft_pick_world17h7db2fd5ae0871490E overflows the maximum allowed frame space by accessing an offset 89856 bytes greater than the maximum of 4096. Please, minimize large stack variables. Estimated function frame size: 93952 bytes. Exceeding the maximum stack offset may cause undefined behavior during execution.
+
+Error: Function _ZN72_$LT$pirate_sim..grid..SpatialGrid$u20$as$u20$core..default..Default$GT$7default17hbff3dfba9e9ed234E overflows the maximum allowed frame space by accessing an offset 61440 bytes greater than the maximum of 4096. Please, minimize large stack variables. Estimated function frame size: 65536 bytes. Exceeding the maximum stack offset may cause undefined behavior during execution.
+
+Error: Function _ZN10pirate_sim4tick11stress_tick17h334514e4c5f617bdE overflows the maximum allowed frame space by accessing an offset 72192 bytes greater than the maximum of 4096. Please, minimize large stack variables. Estimated function frame size: 76288 bytes. Exceeding the maximum stack offset may cause undefined behavior during execution.
+
+Error: Function _ZN10pirate_sim5world10MatchWorld3new17h6f918e73d20b8b87E overflows the maximum allowed frame space by accessing an offset 70912 bytes greater than the maximum of 4096. Please, minimize large stack variables. Estimated function frame size: 75008 bytes. Exceeding the maximum stack offset may cause undefined behavior during execution.
+
+Error: Function _ZN10pirate_sim11world_state10WorldState3new17h1ca5d0930ecc4fcfE overflows the maximum allowed frame space by accessing an offset 8128 bytes greater than the maximum of 4096. Please, minimize large stack variables. Estimated function frame size: 12224 bytes. Exceeding the maximum stack offset may cause undefined behavior during execution.
+
+warning: `pirate-sim` (lib) generated 19 warnings (run `cargo fix --lib -p pirate-sim` to apply 14 suggestions)
+   Compiling pirate_coop v0.1.0 (/mnt/c/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/onchain/programs/pirate_coop)
+warning: unexpected `cfg` condition value: `custom-heap`
+  --> programs/pirate_coop/src/lib.rs:19:1
+   |
+19 | #[program]
+   | ^^^^^^^^^^
+   |
+   = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+   = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+   = help: try referring to `$crate::custom_heap_default` crate for guidance on how handle this unexpected cfg
+   = help: the macro `$crate::custom_heap_default` may come from an old version of the `solana_program` crate, try updating your dependency with `cargo update -p solana_program`
+   = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+   = note: `#[warn(unexpected_cfgs)]` on by default
+   = note: this warning originates in the macro `$crate::custom_heap_default` which comes from the expansion of the attribute macro `program` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `custom-panic`
+  --> programs/pirate_coop/src/lib.rs:19:1
+   |
+19 | #[program]
+   | ^^^^^^^^^^
+   |
+   = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+   = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+   = help: try referring to `$crate::custom_panic_default` crate for guidance on how handle this unexpected cfg
+   = help: the macro `$crate::custom_panic_default` may come from an old version of the `solana_program` crate, try updating your dependency with `cargo update -p solana_program`
+   = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+   = note: this warning originates in the macro `$crate::custom_panic_default` which comes from the expansion of the attribute macro `program` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused import: `anchor_lang::prelude::*`
+ --> programs/pirate_coop/src/instructions/mod.rs:1:5
+  |
+1 | use anchor_lang::prelude::*;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/create_match.rs:5:10
+  |
+5 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/extend_world.rs:8:10
+  |
+8 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/init_world.rs:8:10
+  |
+8 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/credit_profile.rs:4:10
+  |
+4 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+  --> programs/pirate_coop/src/instructions/delegate_match.rs:11:10
+   |
+11 | #[derive(Accounts)]
+   |          ^^^^^^^^
+   |
+   = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+   = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+   = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+   = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+   = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+   = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/delegate_parts.rs:8:10
+  |
+8 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+  --> programs/pirate_coop/src/instructions/delegate_parts.rs:67:10
+   |
+67 | #[derive(Accounts)]
+   |          ^^^^^^^^
+   |
+   = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+   = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+   = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+   = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+   = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+   = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+   --> programs/pirate_coop/src/instructions/delegate_parts.rs:107:10
+    |
+107 | #[derive(Accounts)]
+    |          ^^^^^^^^
+    |
+    = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+    = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+    = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/draft.rs:6:10
+  |
+6 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/end_match.rs:6:10
+  |
+6 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/initialize_config.rs:4:10
+  |
+4 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused import: `PlayerSlot`
+ --> programs/pirate_coop/src/instructions/join_match.rs:3:46
+  |
+3 | use crate::state::{MatchAccount, MatchState, PlayerSlot};
+  |                                              ^^^^^^^^^^
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/join_match.rs:5:10
+  |
+5 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/set_ready.rs:5:10
+  |
+5 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/start_match.rs:7:10
+  |
+7 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/submit_input.rs:6:10
+  |
+6 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/tick.rs:7:10
+  |
+7 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/tick_world.rs:9:10
+  |
+9 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+ --> programs/pirate_coop/src/instructions/update_config.rs:5:10
+  |
+5 | #[derive(Accounts)]
+  |          ^^^^^^^^
+  |
+  = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+  = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+  = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: ambiguous glob re-exports
+  --> programs/pirate_coop/src/instructions/mod.rs:20:9
+   |
+20 | pub use create_match::*;
+   |         ^^^^^^^^^^^^^^^ the name `handler` in the value namespace is first re-exported here
+...
+35 | pub use update_config::*;
+   |         ---------------- but the name `handler` in the value namespace is also re-exported here
+   |
+   = note: `#[warn(ambiguous_glob_reexports)]` on by default
+
+warning: unused imports: `SnapshotEnemy` and `SnapshotProjectile`
+ --> programs/pirate_coop/src/snapshot_tail.rs:1:37
+  |
+1 | use crate::state::{SnapshotAccount, SnapshotEnemy, SnapshotPlayer, SnapshotProjectile, EVENT_RING, SNAPSHOT_ORB_PACKED_LEN};
+  |                                     ^^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^^^
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+  --> programs/pirate_coop/src/lib.rs:19:1
+   |
+19 | #[program]
+   | ^^^^^^^^^^
+   |
+   = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+   = note: using a cfg inside a attribute macro will use the cfgs from the destination crate and not the ones from the defining crate
+   = help: try referring to `program` crate for guidance on how handle this unexpected cfg
+   = help: the attribute macro `program` may come from an old version of the `anchor_attribute_program` crate, try updating your dependency with `cargo update -p anchor_attribute_program`
+   = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+   = note: this warning originates in the attribute macro `program` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+  --> programs/pirate_coop/src/lib.rs:19:1
+   |
+19 | #[program]
+   | ^^^^^^^^^^
+   |
+   = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+   = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+   = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+   = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+   = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+   = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+  --> programs/pirate_coop/src/lib.rs:18:1
+   |
+18 | #[ephemeral]
+   | ^^^^^^^^^^^^
+   |
+   = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+   = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+   = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+   = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+   = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+   = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `anchor-debug`
+   --> programs/pirate_coop/src/lib.rs:124:10
+    |
+124 | #[derive(Accounts)]
+    |          ^^^^^^^^
+    |
+    = note: expected values for `feature` are: `cpi`, `default`, `idl-build`, `no-entrypoint`, `no-idl`, and `no-log-ix-name`
+    = note: using a cfg inside a derive macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `Accounts` crate for guidance on how handle this unexpected cfg
+    = help: the derive macro `Accounts` may come from an old version of the `anchor_derive_accounts` crate, try updating your dependency with `cargo update -p anchor_derive_accounts`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: `pirate_coop` (lib) generated 33 warnings (5 duplicates) (run `cargo fix --lib -p pirate_coop` to apply 3 suggestions)
+    Finished `release` profile [optimized] target(s) in 19.03s
+=== BUILD OK ===
+73183493944785589    468 -rwxrwxrwx   1 shara    shara      475160 Aug 17 21:20 /mnt/c/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/onchain/target/deploy/pirate_coop.so
+ 3096224746600956    584 -rwxrwxrwx   2 shara    shara      596232 Aug 17 21:20 /mnt/c/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/onchain/target/sbpf-solana-solana/release/deps/pirate_coop.so
+ 3096224746600956    584 -rwxrwxrwx   2 shara    shara      596232 Aug 17 21:20 /mnt/c/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/onchain/target/sbpf-solana-solana/release/pirate_coop.so
+65865144550378813    380 -rwxrwxrwx   2 shara    shara      386400 Aug 14 04:56 /mnt/c/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/onchain/target/sbpfv1-solana-solana/release/deps/pirate_coop.so
+65865144550378813    380 -rwxrwxrwx   2 shara    shara      386400 Aug 14 04:56 /mnt/c/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/onchain/target/sbpfv1-solana-solana/release/pirate_coop.so
+total 468
+drwxrwxrwx 1 shara shara    512 Aug 17 21:20 .
+drwxrwxrwx 1 shara shara    512 Aug 15 00:19 ..
+-rwxrwxrwx 1 shara shara    231 Aug 11 22:01 pirate_coop-keypair.json
+-rwxrwxrwx 1 shara shara 475160 Aug 17 21:20 pirate_coop.so
+=== Install stub IDL for anchor test log streamer ===
+total 8
+drwxrwxrwx 1 shara shara  512 Aug 14 06:56 .
+drwxrwxrwx 1 shara shara  512 Aug 15 00:19 ..
+-rwxrwxrwx 1 shara shara 5542 Aug 17 21:20 pirate_coop.json
+Config File: /home/shara/.config/solana/cli/config.yml
+RPC URL: http://localhost:8899 
+WebSocket URL: ws://localhost:8900/ (computed)
+Keypair Path: /home/shara/.config/solana/id.json 
+Commitment: confirmed 
+Program Id: EeWGiecEDWgBB3eUxgQfTLjQJcZnLRYsXvbCcYfxP6pC
+
+Signature: 5Bq5ByUcsHyVz8GDT8LVRtmmSN27Sg4ikpE189ybkvu1ibDxqNA2LSam2kL9M7ivuNCy38NuEbNwtrTK7TdPQiKu
+
+
+Program Id: EeWGiecEDWgBB3eUxgQfTLjQJcZnLRYsXvbCcYfxP6pC
+Owner: BPFLoaderUpgradeab1e11111111111111111111111
+ProgramData Address: 6LtUsntHgnoTRnhoLnXHUFqnV2uSrTmp5d1qKd9PUR4N
+Authority: 2vN2CzctXyfGiyfEQcppmnkPsCX4ScY3w7aHat8ShsfY
+Last Deployed In Slot: 109603
+Data Length: 485816 (0x769b8) bytes
+Balance: 3.38248344 SOL
+

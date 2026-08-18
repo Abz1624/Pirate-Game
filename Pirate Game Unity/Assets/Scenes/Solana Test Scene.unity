@@ -11418,7 +11418,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd8b1d96f7d93e0409d34e98aec15016, type: 3}
   m_Name: 
   m_EditorClassIdentifier: PirateGame.Net::PirateGame.Net.ShipPredictionReconciler
-  snapThreshold: 3
+  snapThreshold: 16
   tickHz: 10
 --- !u!1 &1728224766
 GameObject:

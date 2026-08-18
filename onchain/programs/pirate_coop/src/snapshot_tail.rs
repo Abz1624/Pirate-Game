@@ -1,5 +1,6 @@
 use crate::state::{SnapshotAccount, SnapshotEnemy, SnapshotPlayer, SnapshotProjectile, EVENT_RING, SNAPSHOT_ORB_PACKED_LEN};
-use pirate_sim::snapshot::Snapshot;
+use pirate_sim::snapshot::{hp_pct, quantize_pos, Snapshot};
+use pirate_sim::status::StatusFlags;
 use pirate_sim::WorldState;
 
 pub const SNAPSHOT_HEADER_LEN: usize = 8 + core::mem::size_of::<SnapshotAccount>();
@@ -100,6 +101,23 @@ pub fn write_snapshot_from_sim(
                 flags: if p.downed { 1 } else { 0 },
                 bank: p.bank,
                 kills: p.kills,
+            });
+        } else if i < world.players.len() {
+            let wp = &world.players[i];
+            write_player(data, i, &SnapshotPlayer {
+                slot: i as u8,
+                x: quantize_pos(wp.position.x),
+                z: quantize_pos(wp.position.z),
+                heading: wp.heading,
+                hp_pct: hp_pct(wp.hp, wp.max_hp),
+                level: wp.level,
+                flags: if wp.status.flags.contains(StatusFlags::DOWNED) {
+                    1
+                } else {
+                    0
+                },
+                bank: wp.bank,
+                kills: wp.player_kills,
             });
         }
     }
