@@ -19,15 +19,30 @@ public static class CoopParrelSyncSetup
     const string WslClientKey = @"\\wsl$\Ubuntu\home\shara\.config\solana\player2.json";
     const string SetupScript = "onchain/scripts/setup-parrelsync-client.sh";
 
-    [MenuItem("Pirate Game/Co-op/ParrelSync/1. Setup Wallets + Config")]
-    static void SetupWalletsAndConfig()
+    [MenuItem("Pirate Game/Co-op/ParrelSync/1. Setup Wallets + Config (Local)")]
+    static void SetupWalletsAndConfigLocal()
     {
-        RunWslSetupScript();
-        var config = EnsureConfig();
+        RunWslSetupScript(BlockchainConfig.NetworkMode.Local);
+        var config = EnsureConfig(BlockchainConfig.NetworkMode.Local);
+        ShowWalletDialog(config, "Local");
+    }
+
+    [MenuItem("Pirate Game/Co-op/ParrelSync/1b. Setup Wallets + Config (Devnet)")]
+    static void SetupWalletsAndConfigDevnet()
+    {
+        RunWslSetupScript(BlockchainConfig.NetworkMode.Devnet);
+        var config = EnsureConfig(BlockchainConfig.NetworkMode.Devnet);
+        ShowWalletDialog(config, "Devnet");
+    }
+
+    static void ShowWalletDialog(BlockchainConfig config, string networkLabel)
+    {
         EditorUtility.DisplayDialog(
-            "ParrelSync wallets",
+            $"ParrelSync wallets ({networkLabel})",
             "Host wallet: id.json\n" +
             "Client wallet: player2.json\n\n" +
+            $"Network: {config.mode}\n" +
+            $"Base RPC: {config.BaseRpc}\n\n" +
             $"Host path:\n{config.localPayerKeypairPath}\n\n" +
             $"Client path:\n{config.localClientPayerKeypairPath}\n\n" +
             "Next: Pirate Game → Co-op → ParrelSync → 2. Create Clone Project",
@@ -43,7 +58,7 @@ public static class CoopParrelSyncSetup
             return;
         }
 
-        SetupWalletsAndConfigSilent();
+        SetupWalletsAndConfigSilent(BlockchainConfig.NetworkMode.Local);
         var clone = ClonesManager.CreateCloneFromCurrent();
         if (clone == null)
         {
@@ -94,27 +109,28 @@ public static class CoopParrelSyncSetup
         EditorUtility.DisplayDialog(
             "ParrelSync co-op test",
             "Prerequisites:\n" +
-            "• Local stack running (mb-test-validator + ephemeral-validator)\n" +
-            "• pirate_coop deployed on localnet\n" +
-            "• Scene has CoopBootstrap (Pirate Game → Co-op → Setup Local ER Bootstrap)\n\n" +
-            "Steps:\n" +
-            "1. Original editor (Host): Play → press U to open lobby\n" +
-            "2. Clone editor (Client): Play → press O to join (auto-reads .coop-match)\n" +
-            "3. Host: press P to start + delegate\n" +
-            "4. Both: WASD to steer; each ship uses its own wallet\n\n" +
-            "Solo: Host press I for instant match.\n" +
-            "Hotkeys: U host | I solo | O join | P start",
+            "• BlockchainConfig wallets set (menu 1 or 1b)\n" +
+            "• Devnet: both id.json + player2.json funded on devnet\n" +
+            "• Local: mb-test-validator + ephemeral-validator running\n" +
+            "• Solana Test Scene has CoopBootstrap\n\n" +
+            "Steps (lobby UI):\n" +
+            "1. ORIGINAL editor (Host): Play → Host Room → Copy Room Code\n" +
+            "2. CLONE editor (Client): Play → Join Host Room\n" +
+            "   (auto-reads .coop-match at repo root)\n" +
+            "3. Host: Start Match when 2 players joined\n" +
+            "4. Both steer with WASD (each wallet = one ship)\n\n" +
+            "Keyboard fallback: U host | O join | P start",
             "OK");
     }
 
-    static BlockchainConfig EnsureConfig()
+    static BlockchainConfig EnsureConfig(BlockchainConfig.NetworkMode mode)
     {
         var config = AssetDatabase.LoadAssetAtPath<BlockchainConfig>(ConfigPath);
         if (config == null)
             throw new InvalidOperationException($"Missing {ConfigPath}");
 
         Undo.RecordObject(config, "Configure ParrelSync wallets");
-        config.mode = BlockchainConfig.NetworkMode.Local;
+        config.mode = mode;
         config.localPayerKeypairPath = WslHostKey;
         config.localClientPayerKeypairPath = WslClientKey;
         config.sessionKeyPrefsId = "host";
@@ -123,14 +139,19 @@ public static class CoopParrelSyncSetup
         return config;
     }
 
-    static void SetupWalletsAndConfigSilent()
+    static void SetupWalletsAndConfigSilent(BlockchainConfig.NetworkMode mode)
     {
-        RunWslSetupScript();
-        EnsureConfig();
+        var config = AssetDatabase.LoadAssetAtPath<BlockchainConfig>(ConfigPath);
+        RunWslSetupScript(mode, config);
+        EnsureConfig(mode);
     }
 
-    static void RunWslSetupScript()
+    static void RunWslSetupScript(BlockchainConfig.NetworkMode mode, BlockchainConfig config = null)
     {
+        config ??= AssetDatabase.LoadAssetAtPath<BlockchainConfig>(ConfigPath);
+        var rpc = mode == BlockchainConfig.NetworkMode.Devnet
+            ? (string.IsNullOrWhiteSpace(config?.devnetBaseRpc) ? "https://api.devnet.solana.com" : config.devnetBaseRpc)
+            : "http://localhost:8899";
         var repoRoot = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
         var script = Path.Combine(repoRoot, SetupScript.Replace('/', Path.DirectorySeparatorChar));
         if (!File.Exists(script))
@@ -140,8 +161,8 @@ public static class CoopParrelSyncSetup
         }
 
         var wslScript = ToWslPath(script);
-        Debug.Log($"[Coop] Running: wsl bash \"{wslScript}\"");
-        var psi = new ProcessStartInfo("wsl", $"bash \"{wslScript}\"")
+        Debug.Log($"[Coop] Running: wsl bash \"{wslScript}\" (RPC={rpc})");
+        var psi = new ProcessStartInfo("wsl", $"bash -lc \"export SOLANA_URL='{rpc}'; bash \\\"{wslScript}\\\"\"")
         {
             UseShellExecute = false,
             RedirectStandardOutput = true,

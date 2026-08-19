@@ -219,5 +219,33 @@ namespace PirateGame.Net
             if (p.hpPct > 0) return true;
             return p.x != 0 || p.z != 0 || p.heading != 0 || p.level > 0;
         }
+
+        public static bool TryGetPlayerBySlot(MatchSnapshot snap, byte slot, out SnapshotPlayerState player)
+        {
+            player = default;
+            if (snap?.players == null) return false;
+            foreach (var p in snap.players)
+            {
+                if (p.slot == slot)
+                {
+                    player = p;
+                    return true;
+                }
+            }
+
+            if (slot < snap.players.Length)
+            {
+                player = snap.players[slot];
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsRemotePlayerVisible(in SnapshotPlayerState p, byte expectedPlayers)
+        {
+            if (IsPlayerSlotPopulated(p)) return true;
+            return expectedPlayers > 1;
+        }
     }
 }

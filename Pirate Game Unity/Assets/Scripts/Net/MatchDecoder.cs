@@ -6,6 +6,8 @@ namespace PirateGame.Net
     public static class MatchDecoder
     {
         const int Discriminator = 8;
+        const int TideOffset = Discriminator + 40;
+        const int CapacityOffset = Discriminator + 41;
         const int PlayerCountOffset = Discriminator + 43;
         public const int StateOffset = Discriminator + 44;
         public const int DelegatedOffset = Discriminator + 53;
@@ -18,6 +20,38 @@ namespace PirateGame.Net
         public const int PlayerSlotLen = 88;
         /// <summary>MatchAccount header is 56 bytes before the players array (repr(C) padding).</summary>
         public const int PlayersOffset = Discriminator + 56;
+        public const int MinAccountBytes = PlayersOffset + 12 * PlayerSlotLen;
+
+        public static byte ReadTide(ReadOnlySpan<byte> data)
+        {
+            if (data.Length <= TideOffset) return 0;
+            return data[TideOffset];
+        }
+
+        public static byte ReadCapacity(ReadOnlySpan<byte> data)
+        {
+            if (data.Length <= CapacityOffset) return 0;
+            return data[CapacityOffset];
+        }
+
+        public static string ReadAuthority(ReadOnlySpan<byte> data)
+        {
+            if (data.Length < Discriminator + 32) return "";
+            return new PublicKey(data.Slice(Discriminator, 32).ToArray()).Key;
+        }
+
+        public static bool IsOpenLobby(ReadOnlySpan<byte> data)
+        {
+            if (data.Length < MinAccountBytes)
+                return false;
+            if (ReadState(data) != MatchStateLobby)
+                return false;
+            if (ReadDelegated(data) != 0)
+                return false;
+            var count = ReadPlayerCount(data);
+            var cap = ReadCapacity(data);
+            return cap > 0 && count < cap;
+        }
 
         public static byte ReadPlayerCount(ReadOnlySpan<byte> data)
         {

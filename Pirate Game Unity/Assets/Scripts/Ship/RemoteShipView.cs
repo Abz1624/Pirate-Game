@@ -14,8 +14,10 @@ namespace PirateGame.Ship
         [SerializeField] float positionSmoothTime = 0.08f;
         [SerializeField] float rotationSmoothTime = 0.08f;
         [SerializeField] float snapDistance = 6f;
+        [SerializeField] Color remoteTint = new(0.55f, 0.78f, 1f, 1f);
 
         byte localSlot;
+        byte trackedRemoteSlot = byte.MaxValue;
         Vector3 targetPosition;
         float targetHeadingDeg;
         Vector3 positionVelocity;
@@ -23,11 +25,14 @@ namespace PirateGame.Ship
         bool hasTarget;
         bool loggedRemote;
         bool loggedEmpty;
+        bool appliedTint;
         Renderer[] renderers;
+        MaterialPropertyBlock tintBlock;
 
         void Awake()
         {
             renderers = GetComponentsInChildren<Renderer>(true);
+            tintBlock = new MaterialPropertyBlock();
             SetVisualsVisible(false);
             EnsureDualComponents();
             EnsureReferences();
@@ -38,15 +43,20 @@ namespace PirateGame.Ship
             foreach (var net in GetComponentsInChildren<NetworkedShipController>(true))
                 Destroy(net);
 
-            if (GetComponent<LocalDualShipController>() == null)
-                gameObject.AddComponent<LocalDualShipController>();
+            var dual = GetComponent<LocalDualShipController>();
+            if (dual == null)
+                dual = gameObject.AddComponent<LocalDualShipController>();
+            dual.enabled = false;
         }
 
         void OnEnable()
         {
             EnsureReferences();
             if (lobbyManager != null)
+            {
                 lobbyManager.OnMatchStarted += OnMatchStarted;
+                lobbyManager.OnJoinedLobby += OnJoinedLobby;
+            }
             if (erClient != null)
                 erClient.OnSnapshotReceived += OnSnapshot;
         }
@@ -54,7 +64,10 @@ namespace PirateGame.Ship
         void OnDisable()
         {
             if (lobbyManager != null)
+            {
                 lobbyManager.OnMatchStarted -= OnMatchStarted;
+                lobbyManager.OnJoinedLobby -= OnJoinedLobby;
+            }
             if (erClient != null)
                 erClient.OnSnapshotReceived -= OnSnapshot;
         }
@@ -68,10 +81,15 @@ namespace PirateGame.Ship
             RefreshLocalSlot();
         }
 
+        void OnJoinedLobby() => RefreshLocalSlot();
+
         async void OnMatchStarted()
         {
             loggedRemote = false;
             loggedEmpty = false;
+            hasTarget = false;
+            trackedRemoteSlot = byte.MaxValue;
+            appliedTint = false;
             RefreshLocalSlot();
             if (erClient != null)
             {
@@ -92,8 +110,11 @@ namespace PirateGame.Ship
                 return;
 
             RefreshLocalSlot();
-            var playerCount = snap?.players?.Length ?? 0;
-            if (playerCount == 0)
+            var expectedPlayers = erClient != null
+                ? System.Math.Max((int)erClient.MatchPlayerCount, snap?.players?.Length ?? 0)
+                : snap?.players?.Length ?? 0;
+
+            if (snap?.players == null || snap.players.Length == 0)
             {
                 if (!loggedEmpty && erClient != null && erClient.MatchLive)
                 {
@@ -104,42 +125,60 @@ namespace PirateGame.Ship
             }
 
             loggedEmpty = false;
-            for (var i = 0; i < playerCount; i++)
+            if (!TryFindRemotePlayer(snap, localSlot, (byte)expectedPlayers, out var remote))
             {
-                if (i == localSlot) continue;
-
-                var p = snap.players[i];
-                if (!SnapshotDecoder.IsPlayerSlotPopulated(p)) continue;
-
-                var newPos = new Vector3(p.x, 0f, p.z);
-                var newHeading = p.heading / 1024f * 360f;
-
-                if (!hasTarget || Vector3.Distance(transform.position, newPos) > snapDistance)
-                {
-                    transform.SetPositionAndRotation(
-                        newPos,
-                        Quaternion.Euler(0f, newHeading, 0f));
-                    positionVelocity = Vector3.zero;
-                    rotationVelocity = 0f;
-                }
-
-                targetPosition = newPos;
-                targetHeadingDeg = newHeading;
-                hasTarget = true;
-
-                if (!loggedRemote)
-                {
-                    Debug.Log(
-                        $"[RemoteShip] Tracking index {i} slot={p.slot} at ({p.x},{p.z}) localSlot={localSlot} players={playerCount} tick={snap.tick}");
-                    loggedRemote = true;
-                }
-
-                SetVisualsVisible(true);
+                hasTarget = false;
+                SetVisualsVisible(false);
                 return;
             }
 
-            hasTarget = false;
-            SetVisualsVisible(false);
+            var newPos = new Vector3(remote.x, 0f, remote.z);
+            var newHeading = remote.heading / 1024f * 360f;
+
+            if (!hasTarget || trackedRemoteSlot != remote.slot ||
+                Vector3.Distance(transform.position, newPos) > snapDistance)
+            {
+                transform.SetPositionAndRotation(
+                    newPos,
+                    Quaternion.Euler(0f, newHeading, 0f));
+                positionVelocity = Vector3.zero;
+                rotationVelocity = 0f;
+            }
+
+            targetPosition = newPos;
+            targetHeadingDeg = newHeading;
+            trackedRemoteSlot = remote.slot;
+            hasTarget = true;
+
+            if (!loggedRemote)
+            {
+                Debug.Log(
+                    $"[RemoteShip] Tracking slot={remote.slot} at ({remote.x},{remote.z}) " +
+                    $"localSlot={localSlot} players={snap.players.Length} expected={expectedPlayers} tick={snap.tick}");
+                loggedRemote = true;
+            }
+
+            SetVisualsVisible(true);
+        }
+
+        static bool TryFindRemotePlayer(
+            MatchSnapshot snap,
+            byte localSlot,
+            byte expectedPlayers,
+            out SnapshotPlayerState remote)
+        {
+            remote = default;
+            if (snap?.players == null) return false;
+
+            foreach (var p in snap.players)
+            {
+                if (p.slot == localSlot) continue;
+                if (!SnapshotDecoder.IsRemotePlayerVisible(p, expectedPlayers)) continue;
+                remote = p;
+                return true;
+            }
+
+            return false;
         }
 
         void SetVisualsVisible(bool visible)
@@ -151,10 +190,31 @@ namespace PirateGame.Ship
                 if (r != null)
                     r.enabled = visible;
             }
+
+            if (visible && !appliedTint)
+            {
+                ApplyRemoteTint();
+                appliedTint = true;
+            }
         }
 
-        void Update()
+        void ApplyRemoteTint()
         {
+            foreach (var r in renderers)
+            {
+                if (r == null) continue;
+                r.GetPropertyBlock(tintBlock);
+                tintBlock.SetColor("_Color", remoteTint);
+                tintBlock.SetColor("_BaseColor", remoteTint);
+                r.SetPropertyBlock(tintBlock);
+            }
+        }
+
+        void LateUpdate()
+        {
+            if (erClient != null && erClient.MatchLive && !hasTarget && erClient.LatestSnapshot != null)
+                OnSnapshot(erClient.LatestSnapshot);
+
             if (!hasTarget) return;
 
             transform.position = Vector3.SmoothDamp(

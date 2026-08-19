@@ -23,23 +23,6 @@ namespace PirateGame.Net
         Task<IReadOnlyList<LobbyInfo>> ListOpenLobbiesAsync();
     }
 
-    public class RpcLobbyListService : ILobbyListService
-    {
-        readonly BlockchainConfig config;
-
-        public RpcLobbyListService(BlockchainConfig config)
-        {
-            this.config = config;
-        }
-
-        public async Task<IReadOnlyList<LobbyInfo>> ListOpenLobbiesAsync()
-        {
-            await Task.Delay(10);
-            Debug.Log($"[Lobby] Listing lobbies via {config.ErRpc} (not yet indexed)");
-            return Array.Empty<LobbyInfo>();
-        }
-    }
-
     public class LobbyManager : MonoBehaviour
     {
         [SerializeField] BlockchainConfig config;
@@ -58,10 +41,14 @@ namespace PirateGame.Net
         public string CurrentMatchAddress => currentMatch?.Key ?? "";
         public byte LocalPlayerSlot { get; private set; }
         public bool HasActiveMatch => currentMatch != null;
+        public bool IsBusy => busy;
+        public bool IsHost { get; private set; }
 
         public event Action<IReadOnlyList<LobbyInfo>> OnLobbyListUpdated;
         public event Action OnJoinedLobby;
         public event Action OnMatchStarted;
+        public event Action<string> OnStatusChanged;
+        public event Action<string> OnLobbyFailed;
 
         void Awake()
         {
@@ -73,6 +60,7 @@ namespace PirateGame.Net
             configPda = PirateCoopProgram.ConfigPda();
             baseRpc = SolanaTx.Client(config.BaseRpc);
             erRpc = SolanaTx.Client(config.ErRpc);
+            Debug.Log($"[Lobby] Network={config.mode} baseRpc={config.BaseRpc} erRpc={config.ErRpc}");
         }
 
         public async void RefreshLobbyList()
@@ -112,7 +100,34 @@ namespace PirateGame.Net
 
         public void JoinMatch(string matchPubkey)
         {
-            _ = JoinExistingAsync(new PublicKey(matchPubkey));
+            if (string.IsNullOrWhiteSpace(matchPubkey))
+            {
+                ReportFailure("Enter a match address to join.");
+                return;
+            }
+
+            try
+            {
+                _ = JoinExistingAsync(new PublicKey(matchPubkey.Trim()));
+            }
+            catch (Exception ex)
+            {
+                ReportFailure($"Invalid match address: {ex.Message}");
+            }
+        }
+
+        public async void RefreshLobbyPlayerCount()
+        {
+            var count = await GetLobbyPlayerCountAsync();
+            OnStatusChanged?.Invoke($"Players in room: {count}");
+        }
+
+        public async Task<byte> GetLobbyPlayerCountAsync()
+        {
+            if (currentMatch == null)
+                return 0;
+            var data = await SolanaTx.GetAccountDataAsync(baseRpc, currentMatch);
+            return data != null ? MatchDecoder.ReadPlayerCount(data) : (byte)0;
         }
 
         public void SetReady(bool ready)
@@ -136,9 +151,11 @@ namespace PirateGame.Net
             if (!Begin()) return;
             try
             {
+                IsHost = true;
                 erClient?.ClearSecondarySession();
                 erClient?.UnbindMatch();
 
+                SetStatus("Creating room on-chain…");
                 EnsurePayer();
                 await EnsureConfigAsync();
 
@@ -166,12 +183,13 @@ namespace PirateGame.Net
                 else
                 {
                     CoopParrelSync.PublishMatchAddress(currentMatch.Key);
+                    SetStatus($"Room ready — share address: {currentMatch.Key}");
                     Debug.Log($"[Lobby] lobby open — share match address: {currentMatch}");
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[Lobby] create failed: {ex.Message}");
+                ReportFailure($"Create room failed: {ex.Message}");
             }
             finally { busy = false; }
         }
@@ -181,12 +199,15 @@ namespace PirateGame.Net
             if (!Begin()) return;
             try
             {
+                IsHost = false;
+                SetStatus("Joining room…");
                 EnsurePayer();
                 currentMatch = matchPda;
                 currentSnapshot = PirateCoopProgram.SnapshotPda(matchPda);
                 currentWorld = PirateCoopProgram.WorldPda(matchPda);
                 await JoinCurrentAsync();
                 await SendReadyAsync(true);
+                SetStatus("Joined — waiting for host to start the match…");
                 Debug.Log("[Lobby] joined lobby — waiting for host to start + delegate…");
                 await WaitForDelegationAsync();
                 await BindErAsync();
@@ -194,7 +215,7 @@ namespace PirateGame.Net
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[Lobby] join failed: {ex.Message}");
+                ReportFailure($"Join failed: {ex.Message}");
             }
             finally { busy = false; }
         }
@@ -215,18 +236,33 @@ namespace PirateGame.Net
 
         async Task<byte> ResolveLocalSlotAsync(Account owner, PublicKey session)
         {
-            var matchData = await WaitForMatchAccountAsync();
-            if (matchData != null)
+            for (var attempt = 0; attempt < 24; attempt++)
             {
-                if (!MatchDecoder.TryFindPlayerSlot(matchData, owner.PublicKey, session, out var slot))
+                var matchData = await SolanaTx.GetAccountDataAsync(baseRpc, currentMatch);
+                if (matchData != null && matchData.Length > MatchDecoder.PlayersOffset + MatchDecoder.PlayerSlotLen)
                 {
+                    if (MatchDecoder.TryFindPlayerSlot(matchData, owner.PublicKey, session, out var slot))
+                        return slot;
+
                     var count = MatchDecoder.ReadPlayerCount(matchData);
-                    slot = count > 0 ? (byte)(count - 1) : (byte)0;
-                    Debug.LogWarning($"[Lobby] slot decode fallback → {slot} (player_count={count})");
+                    if (count > 0 && attempt >= 8)
+                    {
+                        var fallback = (byte)(count - 1);
+                        Debug.LogWarning(
+                            $"[Lobby] slot decode fallback → {fallback} (player_count={count}, attempt={attempt})");
+                        return fallback;
+                    }
                 }
-                return slot;
+
+                await Task.Delay(250);
             }
-            return 0;
+
+            var latest = await SolanaTx.GetAccountDataAsync(baseRpc, currentMatch);
+            if (latest != null && MatchDecoder.TryFindPlayerSlot(latest, owner.PublicKey, session, out var resolved))
+                return resolved;
+
+            var finalCount = latest != null ? MatchDecoder.ReadPlayerCount(latest) : (byte)0;
+            return finalCount > 0 ? (byte)(finalCount - 1) : (byte)0;
         }
 
         async Task<byte[]> WaitForMatchAccountAsync()
@@ -324,6 +360,7 @@ namespace PirateGame.Net
         {
             if (currentMatch == null) return;
             EnsurePayer();
+            SetStatus("Starting match and delegating to MagicBlock ER…");
 
             var preStart = await SolanaTx.GetAccountDataAsync(baseRpc, currentMatch);
             var preCount = preStart != null ? MatchDecoder.ReadPlayerCount(preStart) : (byte)0;
@@ -447,11 +484,25 @@ namespace PirateGame.Net
         {
             if (busy)
             {
-                Debug.LogWarning("[Lobby] already sending a transaction");
+                SetStatus("Please wait — transaction in progress…");
                 return false;
             }
             busy = true;
             return true;
+        }
+
+        void SetStatus(string message)
+        {
+            if (!string.IsNullOrEmpty(message))
+                Debug.Log($"[Lobby] {message}");
+            OnStatusChanged?.Invoke(message);
+        }
+
+        void ReportFailure(string message)
+        {
+            Debug.LogError($"[Lobby] {message}");
+            OnLobbyFailed?.Invoke(message);
+            OnStatusChanged?.Invoke(message);
         }
     }
 }

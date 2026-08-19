@@ -42,8 +42,8 @@ public static class CoopBootstrapSetup
             "In Unity:\n" +
             "  1. Save scene (Ctrl+S)\n" +
             "  2. Press Play\n" +
-            "  3. K = local 2-player | I = solo quick match | U = host lobby\n" +
-            "  4. Watch Console for [ER] / [Coop] logs\n\n" +
+            "  3. Connect wallet → Host Room or Join Room\n" +
+            "  4. Dev shortcuts still work: K/I/U/O/P when lobby UI is hidden\n\n" +
             "Solo.unity is offline-only (no Solana).",
             "OK");
     }
@@ -55,7 +55,7 @@ public static class CoopBootstrapSetup
         EditorUtility.DisplayDialog(
             "Local ER Bootstrap",
             "Created / updated CoopBootstrap in the open scene.\n\n" +
-            "Components: ErClient, LobbyManager, CoopMatchBootstrap, CoopLocalHotkeys, PvPMatchHud, PvPDraftUI\n" +
+            "Components: ErClient, LobbyManager, CoopMatchBootstrap, CoopLocalHotkeys, WalletBootstrap, CoopLobbyUI, PvPMatchHud, PvPDraftUI\n" +
             $"Payer keypair: {config.localPayerKeypairPath}\n" +
             "Mode: Local (8899 / 7799)\n\n" +
             "1. Save the scene (Ctrl+S)\n" +
@@ -139,6 +139,8 @@ public static class CoopBootstrapSetup
         var lobby = root.GetComponent<LobbyManager>() ?? Undo.AddComponent<LobbyManager>(root);
         var boot = root.GetComponent<CoopMatchBootstrap>() ?? Undo.AddComponent<CoopMatchBootstrap>(root);
         var hotkeys = root.GetComponent<CoopLocalHotkeys>() ?? Undo.AddComponent<CoopLocalHotkeys>(root);
+        var wallet = root.GetComponent<WalletBootstrap>() ?? Undo.AddComponent<WalletBootstrap>(root);
+        var lobbyUi = root.GetComponent<CoopLobbyUI>() ?? Undo.AddComponent<CoopLobbyUI>(root);
 
         AssignSerialized(er, "config", config);
         AssignSerialized(lobby, "config", config);
@@ -147,6 +149,11 @@ public static class CoopBootstrapSetup
         AssignSerialized(boot, "erClient", er);
         AssignSerialized(boot, "lobbyManager", lobby);
         AssignSerialized(hotkeys, "lobbyManager", lobby);
+        AssignSerialized(wallet, "config", config);
+        AssignSerialized(lobbyUi, "lobbyManager", lobby);
+        AssignSerialized(lobbyUi, "erClient", er);
+        AssignSerialized(lobbyUi, "walletBootstrap", wallet);
+        AssignSerialized(lobbyUi, "config", config);
 
         EditorUtility.SetDirty(root);
         return root;
@@ -254,6 +261,11 @@ public static class CoopBootstrapSetup
         var rb = remote.GetComponent<Rigidbody>();
         if (rb != null)
             rb.isKinematic = true;
+
+        foreach (var cannon in remote.GetComponentsInChildren<PirateGame.Combat.CannonAutoFire>(true))
+            cannon.enabled = false;
+        foreach (var magnet in remote.GetComponentsInChildren<PirateGame.Progression.PickupMagnet>(true))
+            magnet.enabled = false;
 
         var view = Undo.AddComponent<RemoteShipView>(remote);
         WireDualShipComponents(remote);

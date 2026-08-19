@@ -24,13 +24,28 @@ namespace PirateGame.View
             if (erClient != null)
                 erClient.OnSnapshotReceived += OnSnapshot;
             if (lobbyManager != null)
+            {
+                lobbyManager.OnMatchStarted += RefreshLocalSlot;
+                lobbyManager.OnJoinedLobby += RefreshLocalSlot;
                 localPlayerSlot = lobbyManager.LocalPlayerSlot;
+            }
         }
 
         void OnDisable()
         {
             if (erClient != null)
                 erClient.OnSnapshotReceived -= OnSnapshot;
+            if (lobbyManager != null)
+            {
+                lobbyManager.OnMatchStarted -= RefreshLocalSlot;
+                lobbyManager.OnJoinedLobby -= RefreshLocalSlot;
+            }
+        }
+
+        void RefreshLocalSlot()
+        {
+            if (lobbyManager != null)
+                localPlayerSlot = lobbyManager.LocalPlayerSlot;
         }
 
         void OnSnapshot(Net.MatchSnapshot snap)

@@ -14,6 +14,7 @@ namespace PirateGame.View
         [SerializeField] GameObject rosterPanel;
         [SerializeField] Button readyButton;
         [SerializeField] Button startButton;
+        [SerializeField] bool hostAndWaitForPlayers = true;
 
         void Start()
         {
@@ -24,14 +25,23 @@ namespace PirateGame.View
             createButton?.onClick.AddListener(OnCreate);
             refreshButton?.onClick.AddListener(() => lobbyManager.RefreshLobbyList());
             readyButton?.onClick.AddListener(() => lobbyManager.SetReady(true));
-            startButton?.onClick.AddListener(() => lobbyManager.StartMatch());
+            startButton?.onClick.AddListener(() =>
+            {
+                if (hostAndWaitForPlayers)
+                    lobbyManager.StartHostedMatch();
+                else
+                    lobbyManager.StartMatch();
+            });
             lobbyManager.RefreshLobbyList();
         }
 
         void OnCreate()
         {
             var tide = (byte)(tideDropdown != null ? tideDropdown.value + 1 : 1);
-            lobbyManager.CreateMatch(tide);
+            if (hostAndWaitForPlayers)
+                lobbyManager.CreateLobby(tide);
+            else
+                lobbyManager.CreateMatch(tide);
         }
 
         void RefreshList(System.Collections.Generic.IReadOnlyList<Net.LobbyInfo> lobbies)

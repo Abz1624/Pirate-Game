@@ -40,6 +40,10 @@ namespace PirateGame.Net
         [Tooltip("PlayerPrefs suffix for ER session keys. Clone editors use 'clone' automatically.")]
         public string sessionKeyPrefsId = "host";
 
+        [Header("WebGL lobby")]
+        [Tooltip("Base URL for share links (e.g. https://yourgame.com). Empty = current page URL on WebGL builds.")]
+        public string webLobbyBaseUrl = "";
+
         [Header("Gameplay")]
         [Range(1, 12)] public int defaultLobbyCapacity = 4;
         [Range(5, 20)] public int tickHz = 10;

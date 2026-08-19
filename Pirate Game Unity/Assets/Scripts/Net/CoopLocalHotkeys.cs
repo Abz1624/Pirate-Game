@@ -80,6 +80,9 @@ namespace PirateGame.Net
 
         void OnGUI()
         {
+            if (LobbyUiState.LobbyScreenVisible)
+                return;
+
             const float pad = 10f;
             var match = lobbyManager != null ? lobbyManager.CurrentMatchAddress : "";
             var shared = CoopParrelSync.ReadSharedMatchAddress();

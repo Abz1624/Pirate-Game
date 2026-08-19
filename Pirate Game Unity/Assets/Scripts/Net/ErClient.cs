@@ -44,6 +44,7 @@ namespace PirateGame.Net
         uint lastSnapshotTick;
         float lastSnapshotReceiveTime;
         bool matchLive;
+        bool loggedMultiPlayerSnapshot;
         SnapshotWsSubscriber wsSubscriber;
 
         const float InputKeepaliveSec = 0.09f;
@@ -132,6 +133,7 @@ namespace PirateGame.Net
             worldPda = world ?? PirateCoopProgram.WorldPda(match);
             matchLive = true;
             matchPlayerCount = 0;
+            loggedMultiPlayerSnapshot = false;
             lastSnapshotTick = 0;
             lastSnapshotReceiveTime = Time.realtimeSinceStartup;
             hasSentInput = false;
@@ -302,6 +304,16 @@ namespace PirateGame.Net
             lastSnapshotReceiveTime = Time.realtimeSinceStartup;
             if (decoded.tick >= lastSnapshotTick)
                 lastSnapshotTick = decoded.tick;
+
+            if (decoded.players.Length >= 2 && matchLive && !loggedMultiPlayerSnapshot)
+            {
+                var p0 = decoded.players[0];
+                var p1 = decoded.players[1];
+                Debug.Log(
+                    $"[ER] snapshot players={decoded.players.Length} " +
+                    $"p0(slot={p0.slot},{p0.x},{p0.z}) p1(slot={p1.slot},{p1.x},{p1.z}) tick={decoded.tick}");
+                loggedMultiPlayerSnapshot = true;
+            }
 
             MainThreadDispatcher.Enqueue(() => OnSnapshotReceived?.Invoke(decoded));
         }

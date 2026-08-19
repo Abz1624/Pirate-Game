@@ -66,9 +66,8 @@ namespace PirateGame.Ship
 
         void TrySyncSpawnSnapshot(MatchSnapshot snap)
         {
-            if (snap?.players == null || snap.players.Length <= localSlot) return;
+            if (!SnapshotDecoder.TryGetPlayerBySlot(snap, localSlot, out var p)) return;
 
-            var p = snap.players[localSlot];
             reconciler.SyncToServerTick(snap.tick, p.x, p.z, p.heading);
             ApplyTransform(p.x, p.z, p.heading);
             hasSnapshot = true;
@@ -109,9 +108,7 @@ namespace PirateGame.Ship
 
         void OnSnapshot(MatchSnapshot snap)
         {
-            if (snap?.players == null || snap.players.Length <= localSlot) return;
-
-            var p = snap.players[localSlot];
+            if (!SnapshotDecoder.TryGetPlayerBySlot(snap, localSlot, out var p)) return;
             if (snap.tick < lastSnapshotTick) return;
 
             if (!hasSnapshot)

@@ -12,20 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 531c5b152c688a84a83c949ff0231c43, type: 3}
   m_Name: BlockchainConfig
   m_EditorClassIdentifier: 
-  mode: 0
+  mode: 1
   localBaseRpc: http://localhost:8899
   localBaseWs: ws://localhost:8900
   localErRpc: http://localhost:7799
   localErWs: ws://localhost:7800
   localErValidator: mAGicPQYBMvcYveUZA5F5UNNwyHvfYh5xkLS2Fr1mev
-  devnetBaseRpc: https://api.devnet.solana.com
+  devnetBaseRpc: https://solana-devnet.g.alchemy.com/v2/YOUR_API_KEY
   devnetErRpc: https://devnet-as.magicblock.app
   devnetErWs: wss://devnet-as.magicblock.app
   devnetErValidator: MAS1Dt9qreoRMQ14YQuhg8UTZMMzDdKhmkZMECCzk57
   programId: EeWGiecEDWgBB3eUxgQfTLjQJcZnLRYsXvbCcYfxP6pC
-  localPayerKeypairPath: \\wsl$\Ubuntu\home\shara\.config\solana\id.json
-  localClientPayerKeypairPath: \\wsl$\Ubuntu\home\shara\.config\solana\player2.json
+  localPayerKeypairPath: 
+  localClientPayerKeypairPath: 
   sessionKeyPrefsId: host
+  webLobbyBaseUrl: https://your-game-url.example.com
   defaultLobbyCapacity: 4
   tickHz: 10
   predictionSmoothTime: 0.15

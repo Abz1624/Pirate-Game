@@ -893,6 +893,8 @@ GameObject:
   - component: {fileID: 132456612}
   - component: {fileID: 132456611}
   - component: {fileID: 132456610}
+  - component: {fileID: 132456616}
+  - component: {fileID: 132456615}
   m_Layer: 0
   m_Name: CoopBootstrap
   m_TagString: Untagged
@@ -1001,6 +1003,36 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &132456615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 132456607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec2d81a2963c2fa4ba1b6a357d1bfdf3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.UI.CoopLobbyUI
+  lobbyManager: {fileID: 132456608}
+  erClient: {fileID: 132456609}
+  walletBootstrap: {fileID: 132456616}
+  config: {fileID: 11400000, guid: 2f9b3a78515521d468e5c5c9b5a7013e, type: 2}
+  defaultTide: 1
+--- !u!114 &132456616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 132456607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00020d8742630dd499bdd2b3d3f17b5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PirateGame.UI.WalletBootstrap
+  config: {fileID: 11400000, guid: 2f9b3a78515521d468e5c5c9b5a7013e, type: 2}
 --- !u!1 &136086235
 GameObject:
   m_ObjectHideFlags: 0
@@ -2990,21 +3022,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 389491672}
   m_Mesh: {fileID: 471086435275619017, guid: 2bf01a405cb005844904618f2e5eb128, type: 3}
---- !u!115 &391854605
-MonoScript:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 7
-  m_DefaultReferences: {}
-  m_Icon: {fileID: 0}
-  m_Type: 0
-  m_ExecutionOrder: 0
-  m_ClassName: ShipPredictionReconciler
-  m_Namespace: PirateGame.Net
-  m_AssemblyName: PirateGame.Net
 --- !u!1 &396261081
 GameObject:
   m_ObjectHideFlags: 0
@@ -5125,6 +5142,10 @@ GameObject:
   - component: {fileID: 738775942}
   - component: {fileID: 738775941}
   - component: {fileID: 738775940}
+  - component: {fileID: 738775947}
+  - component: {fileID: 738775946}
+  - component: {fileID: 738775949}
+  - component: {fileID: 738775948}
   m_Layer: 0
   m_Name: MatchViews
   m_TagString: Untagged
@@ -5147,8 +5168,8 @@ MonoBehaviour:
   erClient: {fileID: 132456609}
   lobbyManager: {fileID: 132456608}
   interpolator: {fileID: 738775943}
-  entityPool: {fileID: 738775942}
-  eventPump: {fileID: 738775941}
+  entityPool: {fileID: 738775949}
+  eventPump: {fileID: 738775948}
 --- !u!114 &738775941
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5161,6 +5182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 248b139b138707842a44ba5a96c8a94a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: PirateGame.View::PirateGame.View.GameEventPump
+  buffer: {fileID: 0}
 --- !u!114 &738775942
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5173,13 +5195,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 248b139b138707842a44ba5a96c8a94a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: PirateGame.View::PirateGame.View.EntityViewPool
-  shipPrefab: {fileID: 0}
-  enemyPrefab: {fileID: 0}
-  krakenPrefab: {fileID: 0}
-  enemyProjectilePrefab: {fileID: 0}
-  orbPrefab: {fileID: 0}
-  stormRing: {fileID: 0}
-  arenaRadius: 80
+  buffer: {fileID: 0}
 --- !u!114 &738775943
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5223,6 +5239,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &738775946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 738775939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 248b139b138707842a44ba5a96c8a94a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PirateGame.View::PirateGame.View.GameEventPump
+  buffer: {fileID: 0}
+--- !u!114 &738775947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 738775939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 248b139b138707842a44ba5a96c8a94a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PirateGame.View::PirateGame.View.EntityViewPool
+  buffer: {fileID: 0}
+--- !u!114 &738775948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 738775939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1081660498}
+  m_Name: 
+  m_EditorClassIdentifier: PirateGame.View::PirateGame.View.GameEventPump
+--- !u!114 &738775949
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 738775939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1959072850}
+  m_Name: 
+  m_EditorClassIdentifier: PirateGame.View::PirateGame.View.EntityViewPool
+  shipPrefab: {fileID: 0}
+  enemyPrefab: {fileID: 0}
+  krakenPrefab: {fileID: 0}
+  enemyProjectilePrefab: {fileID: 0}
+  orbPrefab: {fileID: 0}
+  stormRing: {fileID: 0}
+  arenaRadius: 80
 --- !u!1 &766178113
 GameObject:
   m_ObjectHideFlags: 0
@@ -7245,6 +7318,21 @@ Transform:
   - {fileID: 1425721460}
   m_Father: {fileID: 1087223494}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!115 &1081660498
+MonoScript:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 7
+  m_DefaultReferences: {}
+  m_Icon: {fileID: 0}
+  m_Type: 0
+  m_ExecutionOrder: 0
+  m_ClassName: GameEventPump
+  m_Namespace: PirateGame.View
+  m_AssemblyName: PirateGame.View
 --- !u!1 &1082962938
 GameObject:
   m_ObjectHideFlags: 0
@@ -7896,21 +7984,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Combat.CannonMount
   enabled: 1
---- !u!115 &1189329676
-MonoScript:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 7
-  m_DefaultReferences: {}
-  m_Icon: {fileID: 0}
-  m_Type: 0
-  m_ExecutionOrder: 0
-  m_ClassName: GameEventPump
-  m_Namespace: PirateGame.View
-  m_AssemblyName: PirateGame.View
 --- !u!1 &1205688717
 GameObject:
   m_ObjectHideFlags: 0
@@ -10114,21 +10187,6 @@ MonoBehaviour:
   addTreeColliderIfMissing: 1
   treeColliderRadius: 0.35
   treeColliderHeight: 2.5
---- !u!115 &1516421396
-MonoScript:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 7
-  m_DefaultReferences: {}
-  m_Icon: {fileID: 0}
-  m_Type: 0
-  m_ExecutionOrder: 0
-  m_ClassName: EntityViewPool
-  m_Namespace: PirateGame.View
-  m_AssemblyName: PirateGame.View
 --- !u!1001 &1538150442
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11347,7 +11405,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 84
   m_CollisionDetection: 0
@@ -11403,7 +11461,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Ship.NetworkedShipController
   erClient: {fileID: 132456609}
-  lobbyManager: {fileID: 0}
+  lobbyManager: {fileID: 132456608}
   reconciler: {fileID: 0}
   snapDistance: 8
 --- !u!114 &1723515524
@@ -11420,6 +11478,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: PirateGame.Net::PirateGame.Net.ShipPredictionReconciler
   snapThreshold: 16
   tickHz: 10
+  reconcileBlend: 0.15
 --- !u!1 &1728224766
 GameObject:
   m_ObjectHideFlags: 0
@@ -12887,6 +12946,21 @@ Transform:
   - {fileID: 221140114}
   m_Father: {fileID: 1997333595}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!115 &1959072850
+MonoScript:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 7
+  m_DefaultReferences: {}
+  m_Icon: {fileID: 0}
+  m_Type: 0
+  m_ExecutionOrder: 0
+  m_ClassName: EntityViewPool
+  m_Namespace: PirateGame.View
+  m_AssemblyName: PirateGame.View
 --- !u!1 &1987036823
 GameObject:
   m_ObjectHideFlags: 0
@@ -13113,6 +13187,7 @@ GameObject:
   - component: {fileID: 2010633257}
   - component: {fileID: 2010633256}
   - component: {fileID: 2010633255}
+  - component: {fileID: 2010633264}
   m_Layer: 0
   m_Name: RemoteShip
   m_TagString: Untagged
@@ -13132,10 +13207,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d3715e5f3019b646acd3a02432dc7cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PirateGame.Ship.LocalDualShipController
-  erClient: {fileID: 0}
-  remoteView: {fileID: 0}
-  positionSmoothTime: 0.08
-  rotationSmoothTime: 0.08
+  erClient: {fileID: 132456609}
+  reconciler: {fileID: 0}
   snapDistance: 8
 --- !u!114 &2010633256
 MonoBehaviour:
@@ -13154,6 +13227,7 @@ MonoBehaviour:
   positionSmoothTime: 0.08
   rotationSmoothTime: 0.08
   snapDistance: 6
+  remoteTint: {r: 0.55, g: 0.78, b: 1, a: 1}
 --- !u!114 &2010633257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13293,6 +13367,21 @@ Transform:
   - {fileID: 1213968053}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2010633264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2010633254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd8b1d96f7d93e0409d34e98aec15016, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PirateGame.Net::PirateGame.Net.ShipPredictionReconciler
+  snapThreshold: 16
+  tickHz: 10
+  reconcileBlend: 0.15
 --- !u!1 &2052210317
 GameObject:
   m_ObjectHideFlags: 0

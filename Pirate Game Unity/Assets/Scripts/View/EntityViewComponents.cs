@@ -64,6 +64,7 @@ namespace PirateGame.View
             foreach (var p in snap.players)
             {
                 if (p.slot == localSlot) continue;
+                if (shipPrefab == null) continue;
                 if (!ships.TryGetValue(p.slot, out var go))
                 {
                     go = Instantiate(shipPrefab);
