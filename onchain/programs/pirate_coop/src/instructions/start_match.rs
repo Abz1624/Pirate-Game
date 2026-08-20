@@ -34,7 +34,8 @@ pub fn handler(ctx: Context<StartMatch>) -> Result<()> {
 
     let snapshot_info = ctx.accounts.snapshot.to_account_info();
     let mut data = snapshot_info.try_borrow_mut_data()?;
-    write_snapshot_from_sim(&mut data, &pirate_sim::snapshot::Snapshot::with_capacity(m.player_count as usize, 96), world, m.player_count);
+    // Empty sim snapshot forces write_snapshot_from_sim to seed player tails from world spawn.
+    write_snapshot_from_sim(&mut data, &pirate_sim::snapshot::Snapshot::default(), world, m.player_count);
 
     if let Some(s) = header_mut(&mut data) {
         s.tick = 0;

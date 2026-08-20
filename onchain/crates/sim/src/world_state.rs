@@ -16,6 +16,25 @@ use crate::world::{
 };
 use crate::ARENA_RADIUS;
 
+/// Deterministic spawn X/Z in world units (quantized integers).
+pub fn spawn_xy_for_slot(slot: usize, player_count: u8) -> (i32, i32) {
+    let n = player_count.max(1) as usize;
+    if n == 2 {
+        return if slot == 0 { (35, 0) } else { (-35, 0) };
+    }
+    if n <= 4 {
+        const CORNERS: [(i32, i32); 4] = [(35, 0), (-35, 0), (0, 35), (0, -35)];
+        return CORNERS[slot % 4];
+    }
+    let angle = (slot as u32 * 256 / n as u32) as u16;
+    let (sx, sz) = crate::trig::sin_cos(angle);
+    let dist = Fix::from_int(35);
+    (
+        crate::snapshot::quantize_pos(sx.mul_fix(dist)) as i32,
+        crate::snapshot::quantize_pos(sz.mul_fix(dist)) as i32,
+    )
+}
+
 /// Serialized world header.
 #[derive(Clone, Copy, Debug, Default)]
 #[repr(C)]
@@ -164,12 +183,13 @@ impl WorldState {
         self.set_phase(MatchPhase::Running);
         let mut prng = self.prng();
         for slot in 0..self.header.player_count as usize {
-            let angle = (slot as u32 * 256 / self.header.player_count.max(1) as u32) as u16;
-            let (sx, sz) = crate::trig::sin_cos(angle);
-            let dist = Fix::from_int(35);
-            self.players[slot].position = Vec2::new(sx.mul_fix(dist), sz.mul_fix(dist));
+            // Use integer spawn offsets — the 256-entry sin table underestimates cos(0)
+            // and produced positions like (0,8) instead of (35,0).
+            let (px, pz) = spawn_xy_for_slot(slot, self.header.player_count);
+            self.players[slot].position = Vec2::new(Fix::from_int(px), Fix::from_int(pz));
             self.players[slot].velocity = Vec2::default();
-            self.players[slot].heading = angle;
+            self.players[slot].heading =
+                (slot as u32 * 256 / self.header.player_count.max(1) as u32) as u16;
             self.players[slot].hp = self.players[slot].max_hp;
             self.players[slot].active = true;
             self.players[slot].bank = 0;

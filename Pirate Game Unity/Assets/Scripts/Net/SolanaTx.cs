@@ -54,25 +54,45 @@ namespace PirateGame.Net
             IRpcClient rpc,
             Account signer,
             TransactionInstruction instruction,
-            uint? computeUnitLimit = null)
+            uint? computeUnitLimit = null,
+            bool skipPreflight = true)
         {
-            var blockhash = await FetchBlockhashAsync(rpc);
-            var builder = new TransactionBuilder()
-                .SetRecentBlockHash(blockhash)
-                .SetFeePayer(signer.PublicKey);
-            if (computeUnitLimit.HasValue)
-                builder.AddInstruction(ComputeBudgetProgram.SetComputeUnitLimit(computeUnitLimit.Value));
-            builder.AddInstruction(instruction);
-
-            var tx = builder.Build(signer);
-            var result = await rpc.SendTransactionAsync(tx, skipPreflight: true, commitment: Commitment.Processed);
-            if (!result.WasSuccessful)
+            const int maxAttempts = 3;
+            for (var attempt = 0; attempt < maxAttempts; attempt++)
             {
+                var blockhash = await FetchBlockhashAsync(rpc);
+                var builder = new TransactionBuilder()
+                    .SetRecentBlockHash(blockhash)
+                    .SetFeePayer(signer.PublicKey);
+                if (computeUnitLimit.HasValue)
+                    builder.AddInstruction(ComputeBudgetProgram.SetComputeUnitLimit(computeUnitLimit.Value));
+                builder.AddInstruction(instruction);
+
+                var tx = builder.Build(signer);
+                var result = await rpc.SendTransactionAsync(
+                    tx,
+                    skipPreflight: skipPreflight,
+                    commitment: Commitment.Processed);
+                if (result.WasSuccessful)
+                    return;
+
                 var response = result.RawRpcResponse ?? result.Reason ?? "";
                 if (response.IndexOf("already been processed", StringComparison.OrdinalIgnoreCase) >= 0)
                     return;
+
+                if (IsBlockhashNotFound(response) && attempt < maxAttempts - 1)
+                {
+                    await Task.Delay(80);
+                    continue;
+                }
+
                 throw new InvalidOperationException($"{result.Reason} {result.RawRpcResponse}");
             }
+        }
+
+        static bool IsBlockhashNotFound(string response)
+        {
+            return response.IndexOf("Blockhash not found", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         /// <summary>
@@ -231,16 +251,20 @@ namespace PirateGame.Net
         static async Task<string> FetchBlockhashAsync(IRpcClient rpc)
         {
             // Agave 2.x removed getRecentBlockhash — prefer getLatestBlockhash.
-            try
+            // Processed is fresher on MagicBlock ER and reduces "Blockhash not found" on crank txs.
+            foreach (var commitment in new[] { Commitment.Processed, Commitment.Confirmed })
             {
-                var latest = await rpc.GetLatestBlockHashAsync(Commitment.Confirmed);
-                if (latest.WasSuccessful && latest.Result?.Value != null)
-                    return latest.Result.Value.Blockhash;
-                Debug.LogWarning($"[Solana] getLatestBlockhash: {latest.Reason}");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning($"[Solana] getLatestBlockhash threw: {ex.Message}");
+                try
+                {
+                    var latest = await rpc.GetLatestBlockHashAsync(commitment);
+                    if (latest.WasSuccessful && latest.Result?.Value != null)
+                        return latest.Result.Value.Blockhash;
+                    Debug.LogWarning($"[Solana] getLatestBlockhash({commitment}): {latest.Reason}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"[Solana] getLatestBlockhash({commitment}) threw: {ex.Message}");
+                }
             }
 
             var recent = await rpc.GetRecentBlockHashAsync();

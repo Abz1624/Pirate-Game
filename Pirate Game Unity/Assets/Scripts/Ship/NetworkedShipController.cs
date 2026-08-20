@@ -60,6 +60,8 @@ namespace PirateGame.Ship
                 localSlot = lobbyManager.LocalPlayerSlot;
             lastSnapshotTick = 0;
             hasSnapshot = false;
+            lastPublishedThrottle = 0;
+            lastPublishedSteer = 0;
             PrepareRigidbodyForNetworkDrive();
             TrySyncSpawnSnapshot(erClient?.LatestSnapshot);
         }
@@ -85,6 +87,9 @@ namespace PirateGame.Ship
             body.isKinematic = true;
         }
 
+        sbyte lastPublishedThrottle;
+        sbyte lastPublishedSteer;
+
         void FixedUpdate()
         {
             if (erClient == null || !erClient.MatchLive || !hasSnapshot) return;
@@ -94,7 +99,24 @@ namespace PirateGame.Ship
             if (advanced)
                 reconciler.QueueInput(input);
 
-            erClient.SubmitInput(input.throttle / 127f, input.steer / 127f, 0, force: advanced);
+            PublishInputIfChanged(input.throttle, input.steer);
+        }
+
+        void Update()
+        {
+            if (erClient == null || !erClient.MatchLive || !hasSnapshot) return;
+            var input = ReadInput(erClient.HasSecondarySession);
+            PublishInputIfChanged(input.throttle, input.steer);
+        }
+
+        void PublishInputIfChanged(sbyte throttle, sbyte steer)
+        {
+            if (throttle == lastPublishedThrottle && steer == lastPublishedSteer)
+                return;
+
+            lastPublishedThrottle = throttle;
+            lastPublishedSteer = steer;
+            erClient.PublishLocalInput(localSlot, throttle, steer);
         }
 
         void LateUpdate()

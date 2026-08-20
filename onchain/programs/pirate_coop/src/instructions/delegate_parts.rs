@@ -30,7 +30,10 @@ pub struct DelegateMatchAccount<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler_match_account(ctx: Context<DelegateMatchAccount>) -> Result<()> {
+pub fn handler_match_account(
+    ctx: Context<DelegateMatchAccount>,
+    validator: Pubkey,
+) -> Result<()> {
     require_keys_eq!(*ctx.accounts.match_account.owner, ID);
 
     let (authority, seed) = {
@@ -59,6 +62,7 @@ pub fn handler_match_account(ctx: Context<DelegateMatchAccount>) -> Result<()> {
         &ctx.accounts.delegation_program.to_account_info(),
         &ctx.accounts.system_program.to_account_info(),
         &[b"match", authority.as_ref(), seed_bytes.as_ref()],
+        validator,
     )?;
     Ok(())
 }
@@ -86,7 +90,10 @@ pub struct DelegateSnapshotAccount<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler_snapshot_account(ctx: Context<DelegateSnapshotAccount>) -> Result<()> {
+pub fn handler_snapshot_account(
+    ctx: Context<DelegateSnapshotAccount>,
+    validator: Pubkey,
+) -> Result<()> {
     require_keys_eq!(*ctx.accounts.snapshot.owner, ID);
     let match_key = ctx.accounts.match_account.key();
     delegate_pda(
@@ -99,6 +106,7 @@ pub fn handler_snapshot_account(ctx: Context<DelegateSnapshotAccount>) -> Result
         &ctx.accounts.delegation_program.to_account_info(),
         &ctx.accounts.system_program.to_account_info(),
         &[b"snapshot", match_key.as_ref()],
+        validator,
     )?;
     Ok(())
 }
@@ -126,7 +134,10 @@ pub struct DelegateWorldAccount<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler_world_account(ctx: Context<DelegateWorldAccount>) -> Result<()> {
+pub fn handler_world_account(
+    ctx: Context<DelegateWorldAccount>,
+    validator: Pubkey,
+) -> Result<()> {
     require_keys_eq!(*ctx.accounts.world.owner, ID);
     let match_key = ctx.accounts.match_account.key();
     delegate_pda(
@@ -139,6 +150,7 @@ pub fn handler_world_account(ctx: Context<DelegateWorldAccount>) -> Result<()> {
         &ctx.accounts.delegation_program.to_account_info(),
         &ctx.accounts.system_program.to_account_info(),
         &[b"world", match_key.as_ref()],
+        validator,
     )?;
     Ok(())
 }

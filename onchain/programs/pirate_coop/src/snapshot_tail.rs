@@ -5,15 +5,16 @@ use pirate_sim::WorldState;
 
 pub const SNAPSHOT_HEADER_LEN: usize = 8 + core::mem::size_of::<SnapshotAccount>();
 /// Serialized player tail bytes (slot + x + z + heading + hp + level + flags + bank + kills).
-pub const SNAPSHOT_PLAYER_PACKED_LEN: usize = 18;
+pub const SNAPSHOT_PLAYER_PACKED_LEN: usize = 16;
 /// Stride between player slots in the snapshot tail (includes struct padding).
 pub const SNAPSHOT_PLAYER_LEN: usize = core::mem::size_of::<SnapshotPlayer>();
 
 pub fn spawn_player(slot: usize) -> SnapshotPlayer {
+    let (x, z) = pirate_sim::world_state::spawn_xy_for_slot(slot, 2);
     SnapshotPlayer {
         slot: slot as u8,
-        x: ((slot as i16) * 4 - 6).clamp(-20, 20),
-        z: 0,
+        x: x as i16,
+        z: z as i16,
         heading: 0,
         hp_pct: 255,
         level: 1,
@@ -91,18 +92,23 @@ pub fn write_snapshot_from_sim(
     for i in 0..player_count as usize {
         if i < snap.players.len() {
             let p = snap.players[i];
-            write_player(data, i, &SnapshotPlayer {
-                slot: p.slot,
-                x: p.x,
-                z: p.z,
-                heading: p.heading,
-                hp_pct: p.hp_pct,
-                level: p.level,
-                flags: if p.downed { 1 } else { 0 },
-                bank: p.bank,
-                kills: p.kills,
-            });
-        } else if i < world.players.len() {
+            let populated = p.hp_pct > 0 || p.x != 0 || p.z != 0 || p.heading != 0;
+            if populated {
+                write_player(data, i, &SnapshotPlayer {
+                    slot: i as u8,
+                    x: p.x,
+                    z: p.z,
+                    heading: p.heading,
+                    hp_pct: p.hp_pct,
+                    level: p.level,
+                    flags: if p.downed { 1 } else { 0 },
+                    bank: p.bank,
+                    kills: p.kills,
+                });
+                continue;
+            }
+        }
+        if i < world.players.len() {
             let wp = &world.players[i];
             write_player(data, i, &SnapshotPlayer {
                 slot: i as u8,

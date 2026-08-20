@@ -57,7 +57,7 @@ pub struct DelegateMatch<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<DelegateMatch>) -> Result<()> {
+pub fn handler(ctx: Context<DelegateMatch>, validator: Pubkey) -> Result<()> {
     require_keys_eq!(*ctx.accounts.match_account.owner, ID);
     require_keys_eq!(*ctx.accounts.snapshot.owner, ID);
     require_keys_eq!(*ctx.accounts.world.owner, ID);
@@ -107,6 +107,7 @@ pub fn handler(ctx: Context<DelegateMatch>) -> Result<()> {
         &delegation_program,
         &system_program,
         &[b"match", authority.as_ref(), seed_bytes.as_ref()],
+        validator,
     )?;
 
     delegate_pda(
@@ -119,6 +120,7 @@ pub fn handler(ctx: Context<DelegateMatch>) -> Result<()> {
         &delegation_program,
         &system_program,
         &[b"snapshot", match_key.as_ref()],
+        validator,
     )?;
 
     delegate_pda(
@@ -131,6 +133,7 @@ pub fn handler(ctx: Context<DelegateMatch>) -> Result<()> {
         &delegation_program,
         &system_program,
         &[b"world", match_key.as_ref()],
+        validator,
     )?;
 
     Ok(())

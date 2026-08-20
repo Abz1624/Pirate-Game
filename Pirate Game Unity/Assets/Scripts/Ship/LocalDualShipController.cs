@@ -115,7 +115,7 @@ namespace PirateGame.Ship
             if (advanced)
                 reconciler.QueueInput(input);
 
-            erClient.SubmitSecondaryInput(input.throttle / 127f, input.steer / 127f, force: advanced);
+            erClient.PublishLocalInput(SlotIndex, input.throttle, input.steer);
 
             if ((input.throttle != 0 || input.steer != 0) && !loggedReady)
             {

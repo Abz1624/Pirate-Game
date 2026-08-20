@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using PirateGame.Net.Generated;
 using Solana.Unity.Rpc;
+using Solana.Unity.Rpc.Models;
 using Solana.Unity.Wallet;
 using UnityEngine;
 
@@ -17,7 +18,9 @@ namespace PirateGame.Net
         [SerializeField] BlockchainConfig config;
 
         Account session;
+        Account gameplaySigner;
         Account secondarySession;
+        Account secondaryGameplaySigner;
         IRpcClient erRpc;
         PublicKey matchPda;
         PublicKey snapshotPda;
@@ -43,12 +46,19 @@ namespace PirateGame.Net
         bool crankInFlight;
         uint lastSnapshotTick;
         float lastSnapshotReceiveTime;
+        float lastSnapshotAdvanceTime;
         bool matchLive;
+        bool crankTicks = true;
+        byte localPlayerSlot;
         bool loggedMultiPlayerSnapshot;
+        bool loggedCrankInputs;
+        int crankWithInputCount;
+        int submitInputFailCount;
         SnapshotWsSubscriber wsSubscriber;
 
         const float InputKeepaliveSec = 0.09f;
         const float StaleSnapshotCrankSec = 0.2f;
+        const int SnapshotFallbackPollMs = 500;
 
         public event Action<MatchSnapshot> OnSnapshotReceived;
         public MatchSnapshot LatestSnapshot => latestSnapshot;
@@ -76,8 +86,22 @@ namespace PirateGame.Net
             if (config == null)
                 config = Resources.Load<BlockchainConfig>("BlockchainConfig");
             session = SolanaTx.LoadOrCreateSession(config);
+            gameplaySigner = TryLoadGameplaySigner(config);
             erRpc = SolanaTx.Client(config.ErRpc);
             configPda = PirateCoopProgram.ConfigPda();
+        }
+
+        static Account TryLoadGameplaySigner(BlockchainConfig cfg = null)
+        {
+            try
+            {
+                return SolanaTx.LoadPayer(cfg);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[ER] No local payer keypair for gameplay txs — using session key ({ex.Message})");
+                return null;
+            }
         }
 
         void OnEnable()
@@ -93,6 +117,28 @@ namespace PirateGame.Net
             cts?.Dispose();
         }
 
+        async void OnApplicationFocus(bool hasFocus)
+        {
+            if (!hasFocus || !MatchLive) return;
+            try
+            {
+                await RefreshMatchAndSnapshotAsync();
+                if (crankTicks)
+                    await CrankTickWorldAsync();
+                Debug.Log($"[ER] Focus restored — refreshed snapshot tick={lastSnapshotTick}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[ER] Focus refresh failed: {ex.Message}");
+            }
+        }
+
+        void OnApplicationPause(bool paused)
+        {
+            if (!paused)
+                OnApplicationFocus(true);
+        }
+
         void Update()
         {
             if (!MatchLive) return;
@@ -100,44 +146,53 @@ namespace PirateGame.Net
             var now = Time.realtimeSinceStartup;
             var crankInterval = 1f / Mathf.Max(1, config.tickHz);
 
-            if (lastCrankTime < 0f || now - lastCrankTime >= crankInterval)
-                _ = CrankTickWorldAsync();
-            else if (now - lastSnapshotReceiveTime > StaleSnapshotCrankSec && !crankInFlight)
-                _ = CrankTickWorldAsync();
-
-            if (hasSentInput && lastKeepaliveTime >= 0f && now - lastKeepaliveTime >= InputKeepaliveSec)
-                SendInputIfChanged(lastSentThrottle, lastSentSteer, lastSentButtons, force: true);
-
-            if (hasSentSecondaryInput && lastSecondaryKeepaliveTime >= 0f &&
-                now - lastSecondaryKeepaliveTime >= InputKeepaliveSec)
-                SendSecondaryInputIfChanged(lastSecondaryThrottle, lastSecondarySteer, lastSecondaryButtons, force: true);
+            if (crankTicks)
+            {
+                if (lastCrankTime < 0f || now - lastCrankTime >= crankInterval)
+                    _ = CrankTickWorldAsync();
+                else if (now - lastSnapshotAdvanceTime > StaleSnapshotCrankSec && !crankInFlight)
+                    _ = CrankTickWorldAsync();
+            }
         }
 
-        public void BindSecondarySession(Account sessionKey)
+        public void BindSecondarySession(Account sessionKey, Account ownerSigner = null)
         {
             secondarySession = sessionKey;
+            secondaryGameplaySigner = ownerSigner ?? TryLoadGameplaySigner(config);
             Debug.Log($"[ER] Secondary session bound {sessionKey.PublicKey}");
         }
 
         public void ClearSecondarySession()
         {
             secondarySession = null;
+            secondaryGameplaySigner = null;
             hasSentSecondaryInput = false;
             lastSecondaryKeepaliveTime = -1f;
         }
 
-        public void BindMatch(PublicKey match, PublicKey snapshot, PublicKey world = null)
+        public void SetLocalPlayerSlot(byte slot) => localPlayerSlot = slot;
+
+        public void BindMatch(PublicKey match, PublicKey snapshot, PublicKey world = null, bool crankTicks = true)
         {
             matchPda = match;
             snapshotPda = snapshot;
             worldPda = world ?? PirateCoopProgram.WorldPda(match);
             matchLive = true;
+            this.crankTicks = crankTicks;
             matchPlayerCount = 0;
             loggedMultiPlayerSnapshot = false;
+            loggedCrankInputs = false;
+            crankWithInputCount = 0;
+            submitInputFailCount = 0;
             lastSnapshotTick = 0;
             lastSnapshotReceiveTime = Time.realtimeSinceStartup;
+            lastSnapshotAdvanceTime = lastSnapshotReceiveTime;
             hasSentInput = false;
-            Debug.Log($"[ER] Bound match={match} snapshot={snapshot} world={worldPda} rpc={config.ErRpc}");
+            CoopInputRelay.Clear();
+            var signer = ResolveGameplaySigner();
+            Debug.Log(
+                $"[ER] Bound match={match} snapshot={snapshot} world={worldPda} rpc={config.ErRpc} " +
+                $"signer={signer.PublicKey} crank={(crankTicks ? "host" : "off")}");
 
             wsSubscriber?.Stop();
             wsSubscriber = new SnapshotWsSubscriber(config.ErWs, snapshotPda, ApplySnapshotBytes);
@@ -156,13 +211,23 @@ namespace PirateGame.Net
             worldPda = null;
             matchLive = false;
             matchPlayerCount = 0;
+            CoopInputRelay.Clear();
+        }
+
+        /// <summary>
+        /// Publish local input to the ParrelSync relay file. The host crank embeds all
+        /// player inputs in tick_world because delegated world accounts are not writable
+        /// by non-host wallets on MagicBlock ER.
+        /// </summary>
+        public void PublishLocalInput(byte slot, sbyte throttle, sbyte steer)
+        {
+            if (!MatchLive) return;
+            CoopInputRelay.Publish(slot, throttle, steer);
         }
 
         public void SubmitInput(float throttle, float steer, byte buttons = 0, bool force = false)
         {
-            var t = (sbyte)Mathf.RoundToInt(Mathf.Clamp(throttle, -1f, 1f) * 127f);
-            var s = (sbyte)Mathf.RoundToInt(Mathf.Clamp(steer, -1f, 1f) * 127f);
-            SendInputIfChanged(t, s, buttons, force);
+            // Kept for API compatibility; ship controllers should call PublishLocalInput with slot.
         }
 
         public void SubmitSecondaryInput(float throttle, float steer, byte buttons = 0, bool force = false)
@@ -171,6 +236,11 @@ namespace PirateGame.Net
             var t = (sbyte)Mathf.RoundToInt(Mathf.Clamp(throttle, -1f, 1f) * 127f);
             var s = (sbyte)Mathf.RoundToInt(Mathf.Clamp(steer, -1f, 1f) * 127f);
             SendSecondaryInputIfChanged(t, s, buttons, force);
+        }
+
+        Account ResolveGameplaySigner(Account sessionFallback = null, Account ownerFallback = null)
+        {
+            return ownerFallback ?? gameplaySigner ?? sessionFallback ?? SessionAccount;
         }
 
         void SendInputIfChanged(sbyte throttle, sbyte steer, byte buttons, bool force = false)
@@ -186,9 +256,10 @@ namespace PirateGame.Net
             lastInputSendTime = Time.realtimeSinceStartup;
             lastKeepaliveTime = lastInputSendTime;
 
+            var signer = ResolveGameplaySigner();
             var ix = PirateCoopProgram.SubmitInput(
-                SessionAccount.PublicKey, matchPda, worldPda, throttle, steer, buttons);
-            _ = SolanaTx.SendFireAndForgetAsync(erRpc, SessionAccount, ix);
+                signer.PublicKey, matchPda, worldPda, throttle, steer, buttons);
+            _ = SendInputAsync(signer, ix, isSecondary: false);
         }
 
         void SendSecondaryInputIfChanged(sbyte throttle, sbyte steer, byte buttons, bool force = false)
@@ -204,9 +275,34 @@ namespace PirateGame.Net
             hasSentSecondaryInput = true;
             lastSecondaryKeepaliveTime = Time.realtimeSinceStartup;
 
+            var signer = ResolveGameplaySigner(secondarySession, secondaryGameplaySigner);
             var ix = PirateCoopProgram.SubmitInput(
-                secondarySession.PublicKey, matchPda, worldPda, throttle, steer, buttons);
-            _ = SolanaTx.SendFireAndForgetAsync(erRpc, secondarySession, ix);
+                signer.PublicKey, matchPda, worldPda, throttle, steer, buttons);
+            _ = SendInputAsync(signer, ix, isSecondary: true);
+        }
+
+        async Task SendInputAsync(Account signer, TransactionInstruction ix, bool isSecondary)
+        {
+            try
+            {
+                await SolanaTx.SendFireAndForgetAsync(
+                    erRpc,
+                    signer,
+                    ix,
+                    skipPreflight: false);
+            }
+            catch (Exception ex)
+            {
+                if (isSecondary)
+                    return;
+
+                submitInputFailCount++;
+                if (submitInputFailCount <= 5 || submitInputFailCount % 25 == 0)
+                {
+                    Debug.LogWarning(
+                        $"[ER] submit_input failed ({submitInputFailCount}x) signer={signer.PublicKey}: {ex.Message}");
+                }
+            }
         }
 
         public async Task RefreshMatchAndSnapshotAsync()
@@ -233,23 +329,44 @@ namespace PirateGame.Net
 
         async Task InitialCrankBurstAsync()
         {
-            for (var i = 0; i < 5 && MatchLive; i++)
+            if (!crankTicks) return;
+            for (var i = 0; i < 3 && MatchLive; i++)
             {
                 await CrankTickWorldAsync();
-                await Task.Delay(120);
+                await Task.Delay(200);
             }
         }
 
         async Task CrankTickWorldAsync()
         {
-            if (!MatchLive || worldPda == null || crankInFlight) return;
+            if (!MatchLive || !crankTicks || worldPda == null || crankInFlight) return;
             crankInFlight = true;
             lastCrankTime = Time.realtimeSinceStartup;
             try
             {
+                var throttles = new sbyte[CoopInputRelay.MaxSlots];
+                var steers = new sbyte[CoopInputRelay.MaxSlots];
+                var inputCount = Math.Max(matchPlayerCount, (byte)2);
+                CoopInputRelay.ReadInto(throttles, steers, inputCount);
+                LogCrankInputsIfNeeded(throttles, steers, inputCount);
+
+                var signer = ResolveGameplaySigner();
                 var ix = PirateCoopProgram.TickWorld(
-                    SessionAccount.PublicKey, matchPda, snapshotPda, worldPda, configPda, 1);
-                await SolanaTx.SendFireAndForgetAsync(erRpc, SessionAccount, ix, 1_400_000);
+                    signer.PublicKey,
+                    matchPda,
+                    snapshotPda,
+                    worldPda,
+                    configPda,
+                    1,
+                    inputCount,
+                    throttles,
+                    steers);
+                await SolanaTx.SendFireAndForgetAsync(
+                    erRpc,
+                    signer,
+                    ix,
+                    1_400_000,
+                    skipPreflight: false);
                 _ = RefreshSnapshotAsync();
             }
             catch (Exception ex)
@@ -273,13 +390,44 @@ namespace PirateGame.Net
             return msg.IndexOf("already been processed", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
+        void LogCrankInputsIfNeeded(sbyte[] throttles, sbyte[] steers, byte inputCount)
+        {
+            var hasInput = false;
+            for (var i = 0; i < inputCount && i < throttles.Length; i++)
+            {
+                if (throttles[i] != 0 || steers[i] != 0)
+                {
+                    hasInput = true;
+                    break;
+                }
+            }
+
+            if (!hasInput)
+                return;
+
+            crankWithInputCount++;
+            if (loggedCrankInputs && crankWithInputCount % 30 != 1)
+                return;
+
+            loggedCrankInputs = true;
+            var t0 = inputCount > 0 ? throttles[0] : (sbyte)0;
+            var s0 = inputCount > 0 ? steers[0] : (sbyte)0;
+            var t1 = inputCount > 1 ? throttles[1] : (sbyte)0;
+            var s1 = inputCount > 1 ? steers[1] : (sbyte)0;
+            Debug.Log(
+                $"[ER] crank inputs count={inputCount} localSlot={localPlayerSlot} " +
+                $"p0(t={t0},s={s0}) p1(t={t1},s={s1})");
+        }
+
         async Task SnapshotPollLoop(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    if (snapshotPda != null && (wsSubscriber == null || !wsSubscriber.IsConnected))
+                    // Poll periodically even with a connected WebSocket. This recovers from
+                    // suspended editors and subscriptions that remain connected but go stale.
+                    if (MatchLive && snapshotPda != null)
                         await RefreshSnapshotAsync();
                 }
                 catch (OperationCanceledException) { break; }
@@ -288,8 +436,7 @@ namespace PirateGame.Net
                     Debug.LogWarning($"[ER] snapshot poll: {ex.Message}");
                 }
 
-                var delay = 1000 / Mathf.Max(1, config?.tickHz ?? 10);
-                try { await Task.Delay(delay, token); }
+                try { await Task.Delay(SnapshotFallbackPollMs, token); }
                 catch (OperationCanceledException) { break; }
             }
         }
@@ -300,19 +447,28 @@ namespace PirateGame.Net
                 matchPlayerCount = Math.Max(matchPlayerCount, data[44]);
 
             var decoded = SnapshotDecoder.Decode(data, matchPlayerCount);
+            if (decoded.tick < lastSnapshotTick)
+                return;
+
+            var prevTick = lastSnapshotTick;
             latestSnapshot = decoded;
             lastSnapshotReceiveTime = Time.realtimeSinceStartup;
-            if (decoded.tick >= lastSnapshotTick)
+            if (decoded.tick > lastSnapshotTick)
+            {
                 lastSnapshotTick = decoded.tick;
+                lastSnapshotAdvanceTime = lastSnapshotReceiveTime;
+            }
 
-            if (decoded.players.Length >= 2 && matchLive && !loggedMultiPlayerSnapshot)
+            if (decoded.players.Length >= 2 && matchLive &&
+                (!loggedMultiPlayerSnapshot || decoded.tick != prevTick))
             {
                 var p0 = decoded.players[0];
                 var p1 = decoded.players[1];
                 Debug.Log(
                     $"[ER] snapshot players={decoded.players.Length} " +
-                    $"p0(slot={p0.slot},{p0.x},{p0.z}) p1(slot={p1.slot},{p1.x},{p1.z}) tick={decoded.tick}");
-                loggedMultiPlayerSnapshot = true;
+                    $"p0(idx={p0.slot},{p0.x},{p0.z}) p1(idx={p1.slot},{p1.x},{p1.z}) tick={decoded.tick}");
+                if (decoded.tick > 0)
+                    loggedMultiPlayerSnapshot = true;
             }
 
             MainThreadDispatcher.Enqueue(() => OnSnapshotReceived?.Invoke(decoded));

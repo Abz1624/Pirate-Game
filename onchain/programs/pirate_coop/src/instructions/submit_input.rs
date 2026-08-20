@@ -6,10 +6,13 @@ use crate::state::{MatchAccount, MatchState};
 #[derive(Accounts)]
 pub struct SubmitInput<'info> {
     pub player: Signer<'info>,
-    #[account(mut)]
     pub match_account: AccountLoader<'info, MatchAccount>,
-    /// CHECK: world PDA
-    #[account(mut)]
+    /// CHECK: world PDA — must match match_account
+    #[account(
+        mut,
+        seeds = [b"world", match_account.key().as_ref()],
+        bump,
+    )]
     pub world: UncheckedAccount<'info>,
 }
 

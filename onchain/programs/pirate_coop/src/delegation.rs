@@ -2,11 +2,11 @@ use anchor_lang::prelude::*;
 use ephemeral_rollups_sdk::cpi::{delegate_account, DelegateAccounts, DelegateConfig};
 use ephemeral_rollups_sdk::ephem::commit_and_undelegate_accounts;
 
-use crate::{UndelegateCallback, LOCAL_ER_VALIDATOR};
+use crate::UndelegateCallback;
 
-pub fn delegate_config() -> DelegateConfig {
+pub fn delegate_config(validator: Pubkey) -> DelegateConfig {
     DelegateConfig {
-        validator: Some(LOCAL_ER_VALIDATOR),
+        validator: Some(validator),
         ..Default::default()
     }
 }
@@ -21,6 +21,7 @@ pub fn delegate_pda<'info>(
     delegation_program: &AccountInfo<'info>,
     system_program: &AccountInfo<'info>,
     pda_seeds: &[&[u8]],
+    validator: Pubkey,
 ) -> Result<()> {
     delegate_account(
         DelegateAccounts {
@@ -34,7 +35,7 @@ pub fn delegate_pda<'info>(
             system_program,
         },
         pda_seeds,
-        delegate_config(),
+        delegate_config(validator),
     )?;
     Ok(())
 }

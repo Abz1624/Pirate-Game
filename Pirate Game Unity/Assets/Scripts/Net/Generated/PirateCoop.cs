@@ -178,9 +178,13 @@ namespace PirateGame.Net.Generated
             PublicKey payer,
             PublicKey matchAccount,
             PublicKey snapshot,
-            PublicKey world)
+            PublicKey world,
+            PublicKey validator)
         {
-            return Ix(DiscriminatorDelegateMatch,
+            var data = new byte[40];
+            DiscriminatorDelegateMatch.CopyTo(data, 0);
+            validator.KeyBytes.CopyTo(data, 8);
+            return Ix(data,
                 AccountMeta.Writable(payer, true),
                 AccountMeta.Writable(matchAccount, false),
                 AccountMeta.Writable(snapshot, false),
@@ -200,9 +204,15 @@ namespace PirateGame.Net.Generated
         }
 
         /// <summary>Split delegation (one account per tx) to stay under BPF heap limits.</summary>
-        public static TransactionInstruction DelegateMatchAccount(PublicKey payer, PublicKey matchAccount)
+        public static TransactionInstruction DelegateMatchAccount(
+            PublicKey payer,
+            PublicKey matchAccount,
+            PublicKey validator)
         {
-            return Ix(DiscriminatorDelegateMatchAccount,
+            var data = new byte[40];
+            DiscriminatorDelegateMatchAccount.CopyTo(data, 0);
+            validator.KeyBytes.CopyTo(data, 8);
+            return Ix(data,
                 AccountMeta.Writable(payer, true),
                 AccountMeta.Writable(matchAccount, false),
                 AccountMeta.ReadOnly(ProgramId, false),
@@ -216,9 +226,13 @@ namespace PirateGame.Net.Generated
         public static TransactionInstruction DelegateSnapshotAccount(
             PublicKey payer,
             PublicKey matchAccount,
-            PublicKey snapshot)
+            PublicKey snapshot,
+            PublicKey validator)
         {
-            return Ix(DiscriminatorDelegateSnapshotAccount,
+            var data = new byte[40];
+            DiscriminatorDelegateSnapshotAccount.CopyTo(data, 0);
+            validator.KeyBytes.CopyTo(data, 8);
+            return Ix(data,
                 AccountMeta.Writable(payer, true),
                 AccountMeta.ReadOnly(matchAccount, false),
                 AccountMeta.Writable(snapshot, false),
@@ -233,9 +247,13 @@ namespace PirateGame.Net.Generated
         public static TransactionInstruction DelegateWorldAccount(
             PublicKey payer,
             PublicKey matchAccount,
-            PublicKey world)
+            PublicKey world,
+            PublicKey validator)
         {
-            return Ix(DiscriminatorDelegateWorldAccount,
+            var data = new byte[40];
+            DiscriminatorDelegateWorldAccount.CopyTo(data, 0);
+            validator.KeyBytes.CopyTo(data, 8);
+            return Ix(data,
                 AccountMeta.Writable(payer, true),
                 AccountMeta.ReadOnly(matchAccount, false),
                 AccountMeta.Writable(world, false),
@@ -262,8 +280,38 @@ namespace PirateGame.Net.Generated
             data[10] = buttons;
             return Ix(data,
                 AccountMeta.ReadOnly(player, true),
-                AccountMeta.Writable(matchAccount, false),
+                AccountMeta.ReadOnly(matchAccount, false),
                 AccountMeta.Writable(world, false));
+        }
+
+        public static TransactionInstruction TickWorld(
+            PublicKey payer,
+            PublicKey matchAccount,
+            PublicKey snapshot,
+            PublicKey world,
+            PublicKey config,
+            byte maxTicks,
+            byte inputCount,
+            ReadOnlySpan<sbyte> throttles,
+            ReadOnlySpan<sbyte> steers)
+        {
+            const int maxPlayers = 12;
+            // 8-byte discriminator + max_ticks + input_count + throttles + steers
+            var data = new byte[10 + maxPlayers + maxPlayers];
+            DiscriminatorTickWorld.CopyTo(data, 0);
+            data[8] = maxTicks;
+            data[9] = inputCount;
+            for (var i = 0; i < maxPlayers; i++)
+            {
+                data[10 + i] = (byte)(i < throttles.Length ? throttles[i] : (sbyte)0);
+                data[10 + maxPlayers + i] = (byte)(i < steers.Length ? steers[i] : (sbyte)0);
+            }
+            return Ix(data,
+                AccountMeta.Writable(payer, true),
+                AccountMeta.ReadOnly(matchAccount, false),
+                AccountMeta.Writable(snapshot, false),
+                AccountMeta.Writable(world, false),
+                AccountMeta.ReadOnly(config, false));
         }
 
         public static TransactionInstruction TickWorld(
@@ -274,15 +322,8 @@ namespace PirateGame.Net.Generated
             PublicKey config,
             byte maxTicks = 1)
         {
-            var data = new byte[9];
-            DiscriminatorTickWorld.CopyTo(data, 0);
-            data[8] = maxTicks;
-            return Ix(data,
-                AccountMeta.Writable(payer, true),
-                AccountMeta.Writable(matchAccount, false),
-                AccountMeta.Writable(snapshot, false),
-                AccountMeta.Writable(world, false),
-                AccountMeta.ReadOnly(config, false));
+            Span<sbyte> zero = stackalloc sbyte[12];
+            return TickWorld(payer, matchAccount, snapshot, world, config, maxTicks, 0, zero, zero);
         }
 
         public static TransactionInstruction DraftPick(

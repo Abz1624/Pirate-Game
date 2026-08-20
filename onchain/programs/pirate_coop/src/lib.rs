@@ -46,20 +46,29 @@ pub mod pirate_coop {
         instructions::extend_world::handler(ctx)
     }
 
-    pub fn delegate_match(ctx: Context<DelegateMatch>) -> Result<()> {
-        instructions::delegate_match::handler(ctx)
+    pub fn delegate_match(ctx: Context<DelegateMatch>, validator: Pubkey) -> Result<()> {
+        instructions::delegate_match::handler(ctx, validator)
     }
 
-    pub fn delegate_match_account(ctx: Context<DelegateMatchAccount>) -> Result<()> {
-        instructions::delegate_parts::handler_match_account(ctx)
+    pub fn delegate_match_account(
+        ctx: Context<DelegateMatchAccount>,
+        validator: Pubkey,
+    ) -> Result<()> {
+        instructions::delegate_parts::handler_match_account(ctx, validator)
     }
 
-    pub fn delegate_snapshot_account(ctx: Context<DelegateSnapshotAccount>) -> Result<()> {
-        instructions::delegate_parts::handler_snapshot_account(ctx)
+    pub fn delegate_snapshot_account(
+        ctx: Context<DelegateSnapshotAccount>,
+        validator: Pubkey,
+    ) -> Result<()> {
+        instructions::delegate_parts::handler_snapshot_account(ctx, validator)
     }
 
-    pub fn delegate_world_account(ctx: Context<DelegateWorldAccount>) -> Result<()> {
-        instructions::delegate_parts::handler_world_account(ctx)
+    pub fn delegate_world_account(
+        ctx: Context<DelegateWorldAccount>,
+        validator: Pubkey,
+    ) -> Result<()> {
+        instructions::delegate_parts::handler_world_account(ctx, validator)
     }
 
     pub fn join_match(ctx: Context<JoinMatch>, session_key: Pubkey) -> Result<()> {
@@ -83,8 +92,14 @@ pub mod pirate_coop {
         instructions::submit_input::handler(ctx, throttle, steer, buttons)
     }
 
-    pub fn tick_world(ctx: Context<TickWorld>, max_ticks: u8) -> Result<()> {
-        instructions::tick_world::handler(ctx, max_ticks)
+    pub fn tick_world(
+        ctx: Context<TickWorld>,
+        max_ticks: u8,
+        input_count: u8,
+        throttles: [i8; 12],
+        steers: [i8; 12],
+    ) -> Result<()> {
+        instructions::tick_world::handler(ctx, max_ticks, input_count, throttles, steers)
     }
 
     pub fn tick_phase1(ctx: Context<TickPhase>) -> Result<()> {

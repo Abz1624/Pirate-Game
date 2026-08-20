@@ -91,8 +91,11 @@ namespace PirateGame.Net
     {
         /// <summary>8-byte disc + SnapshotAccount header (repr C, 48 bytes).</summary>
         public const int HeaderLen = 56;
-        /// <summary>Stride between SnapshotPlayer tail entries (includes struct padding).</summary>
-        public const int PlayerStride = 18;
+        /// <summary>
+        /// Stride between SnapshotPlayer tail entries. The on-chain Rust struct is 16 bytes;
+        /// its writer uses bytes 0..15 with no trailing padding.
+        /// </summary>
+        public const int PlayerStride = 16;
         public const int EnemyStride = 10;
         public const int ProjectileStride = 10;
         public const int OrbStride = 10;
@@ -183,12 +186,10 @@ namespace PirateGame.Net
 
         static SnapshotPlayerState ReadPlayer(ReadOnlySpan<byte> data, int offset, byte index)
         {
-            var slot = data[offset];
-            if (slot > 11)
-                slot = index;
+            // Player tail is indexed by array position; on-chain slot byte may be unset on tick 0.
             return new SnapshotPlayerState
             {
-                slot = slot,
+                slot = index,
                 x = BitConverter.ToInt16(data.Slice(offset + 1, 2)),
                 z = BitConverter.ToInt16(data.Slice(offset + 3, 2)),
                 heading = BitConverter.ToUInt16(data.Slice(offset + 5, 2)),
@@ -224,18 +225,18 @@ namespace PirateGame.Net
         {
             player = default;
             if (snap?.players == null) return false;
-            foreach (var p in snap.players)
-            {
-                if (p.slot == slot)
-                {
-                    player = p;
-                    return true;
-                }
-            }
 
             if (slot < snap.players.Length)
             {
                 player = snap.players[slot];
+                player.slot = slot;
+                return true;
+            }
+
+            foreach (var p in snap.players)
+            {
+                if (p.slot != slot) continue;
+                player = p;
                 return true;
             }
 

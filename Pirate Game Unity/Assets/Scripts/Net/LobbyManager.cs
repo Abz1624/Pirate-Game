@@ -202,6 +202,7 @@ namespace PirateGame.Net
                 IsHost = false;
                 SetStatus("Joining room…");
                 EnsurePayer();
+                await EnsureConfigAsync();
                 currentMatch = matchPda;
                 currentSnapshot = PirateCoopProgram.SnapshotPda(matchPda);
                 currentWorld = PirateCoopProgram.WorldPda(matchPda);
@@ -339,7 +340,7 @@ namespace PirateGame.Net
                 var payer2 = SolanaTx.LoadSecondaryPayer(config);
                 await SolanaTx.AirdropAsync(baseRpc, payer2.PublicKey);
                 var session2 = SolanaTx.LoadOrCreateSession(config, "pirate_session_key_client");
-                erClient.BindSecondarySession(session2);
+                erClient.BindSecondarySession(session2, payer2);
 
                 await JoinAsAsync(payer2, session2.PublicKey);
                 await WaitForPlayerCountAsync(2);
@@ -372,13 +373,17 @@ namespace PirateGame.Net
                 PirateCoopProgram.StartMatch(payer.PublicKey, currentMatch, currentSnapshot, currentWorld));
 
             const uint delegateCu = 250_000;
+            var erValidator = new PublicKey(config.ErValidator);
             await SolanaTx.SendAsync(baseRpc, payer,
-                PirateCoopProgram.DelegateMatchAccount(payer.PublicKey, currentMatch), delegateCu);
+                PirateCoopProgram.DelegateMatchAccount(
+                    payer.PublicKey, currentMatch, erValidator), delegateCu);
             await SolanaTx.SendAsync(baseRpc, payer,
-                PirateCoopProgram.DelegateSnapshotAccount(payer.PublicKey, currentMatch, currentSnapshot), delegateCu);
+                PirateCoopProgram.DelegateSnapshotAccount(
+                    payer.PublicKey, currentMatch, currentSnapshot, erValidator), delegateCu);
             await SolanaTx.SendAsync(baseRpc, payer,
-                PirateCoopProgram.DelegateWorldAccount(payer.PublicKey, currentMatch, currentWorld), delegateCu);
-            Debug.Log($"[Lobby] delegate_match (3 txs) {currentMatch}");
+                PirateCoopProgram.DelegateWorldAccount(
+                    payer.PublicKey, currentMatch, currentWorld, erValidator), delegateCu);
+            Debug.Log($"[Lobby] delegate_match (3 txs) {currentMatch} validator={erValidator}");
 
             await WaitForDelegationAsync();
             await BindErAsync();
@@ -388,10 +393,26 @@ namespace PirateGame.Net
         async Task BindErAsync()
         {
             await SolanaTx.AirdropAsync(erRpc, erClient.SessionAccount.PublicKey);
+            var gameplaySigner = ResolveGameplaySignerForAirdrop();
+            if (gameplaySigner != null && gameplaySigner.PublicKey != erClient.SessionAccount.PublicKey)
+                await SolanaTx.AirdropAsync(erRpc, gameplaySigner.PublicKey);
             if (erClient.HasSecondarySession && erClient.SecondarySessionPublicKey != null)
                 await SolanaTx.AirdropAsync(erRpc, erClient.SecondarySessionPublicKey);
-            erClient.BindMatch(currentMatch, currentSnapshot, currentWorld);
+            erClient.SetLocalPlayerSlot(LocalPlayerSlot);
+            erClient.BindMatch(currentMatch, currentSnapshot, currentWorld, crankTicks: IsHost);
             await erClient.RefreshMatchAndSnapshotAsync();
+        }
+
+        Account ResolveGameplaySignerForAirdrop()
+        {
+            try
+            {
+                return SolanaTx.LoadPayer(config);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         async Task WaitForDelegationAsync()

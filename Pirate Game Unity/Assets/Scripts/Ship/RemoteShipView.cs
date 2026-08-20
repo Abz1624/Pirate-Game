@@ -25,6 +25,7 @@ namespace PirateGame.Ship
         bool hasTarget;
         bool loggedRemote;
         bool loggedEmpty;
+        uint lastTrackedTick;
         bool appliedTint;
         Renderer[] renderers;
         MaterialPropertyBlock tintBlock;
@@ -150,12 +151,13 @@ namespace PirateGame.Ship
             trackedRemoteSlot = remote.slot;
             hasTarget = true;
 
-            if (!loggedRemote)
+            if (!loggedRemote || snap.tick > lastTrackedTick)
             {
                 Debug.Log(
                     $"[RemoteShip] Tracking slot={remote.slot} at ({remote.x},{remote.z}) " +
                     $"localSlot={localSlot} players={snap.players.Length} expected={expectedPlayers} tick={snap.tick}");
                 loggedRemote = true;
+                lastTrackedTick = snap.tick;
             }
 
             SetVisualsVisible(true);
@@ -170,11 +172,13 @@ namespace PirateGame.Ship
             remote = default;
             if (snap?.players == null) return false;
 
-            foreach (var p in snap.players)
+            for (byte i = 0; i < snap.players.Length; i++)
             {
-                if (p.slot == localSlot) continue;
+                if (i == localSlot) continue;
+                var p = snap.players[i];
                 if (!SnapshotDecoder.IsRemotePlayerVisible(p, expectedPlayers)) continue;
                 remote = p;
+                remote.slot = i;
                 return true;
             }
 
