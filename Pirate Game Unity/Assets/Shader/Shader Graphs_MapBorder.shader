@@ -9,58 +9,72 @@ Shader "Shader Graphs/MapBorder" {
 		[HideInInspector] [NoScaleOffset] unity_LightmapsInd ("unity_LightmapsInd", 2DArray) = "" {}
 		[HideInInspector] [NoScaleOffset] unity_ShadowMasks ("unity_ShadowMasks", 2DArray) = "" {}
 	}
-	//DummyShaderTextExporter
-	SubShader{
-		Tags { "RenderType"="Opaque" }
+
+	SubShader {
+		Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline" "IgnoreProjector"="True" }
 		LOD 200
 
-		Pass
-		{
+		Pass {
+			Name "ForwardUnlit"
+			Tags { "LightMode"="UniversalForward" }
+
+			Blend SrcAlpha OneMinusSrcAlpha
+			ZWrite Off
+			ZTest LEqual
+			Cull Off
+
 			HLSLPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
+			#pragma multi_compile_instancing
 
-			float4x4 unity_ObjectToWorld;
-			float4x4 unity_MatrixVP;
-			float4 _MainTex_ST;
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-			struct Vertex_Stage_Input
-			{
-				float4 pos : POSITION;
+			TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
+
+			CBUFFER_START(UnityPerMaterial)
+				float4 _Speed;
+				float4 _Color;
+				float4 _MainTex_ST;
+			CBUFFER_END
+
+			struct Attributes {
+				float4 positionOS : POSITION;
 				float2 uv : TEXCOORD0;
+				float4 color : COLOR;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
-			struct Vertex_Stage_Output
-			{
+			struct Varyings {
+				float4 positionHCS : SV_POSITION;
 				float2 uv : TEXCOORD0;
-				float4 pos : SV_POSITION;
+				float4 color : COLOR;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
-			Vertex_Stage_Output vert(Vertex_Stage_Input input)
-			{
-				Vertex_Stage_Output output;
-				output.uv = (input.uv.xy * _MainTex_ST.xy) + _MainTex_ST.zw;
-				output.pos = mul(unity_MatrixVP, mul(unity_ObjectToWorld, input.pos));
-				return output;
+			Varyings vert(Attributes IN) {
+				Varyings OUT = (Varyings)0;
+				UNITY_SETUP_INSTANCE_ID(IN);
+				UNITY_TRANSFER_INSTANCE_ID(IN, OUT);
+				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+
+				VertexPositionInputs vpi = GetVertexPositionInputs(IN.positionOS.xyz);
+				OUT.positionHCS = vpi.positionCS;
+				OUT.uv = (IN.uv.xy * _MainTex_ST.xy) + _MainTex_ST.zw + (_Speed.xy * _Time.y);
+				OUT.color = IN.color;
+				return OUT;
 			}
 
-			Texture2D<float4> _MainTex;
-			SamplerState sampler_MainTex;
-			float4 _Color;
-
-			struct Fragment_Stage_Input
-			{
-				float2 uv : TEXCOORD0;
-			};
-
-			float4 frag(Fragment_Stage_Input input) : SV_TARGET
-			{
-				return _MainTex.Sample(sampler_MainTex, input.uv.xy) * _Color;
+			half4 frag(Varyings IN) : SV_Target {
+				UNITY_SETUP_INSTANCE_ID(IN);
+				half4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv);
+				half4 col = tex * _Color * IN.color;
+				clip(col.a - 0.001);
+				return col;
 			}
-
 			ENDHLSL
 		}
 	}
 	Fallback "Hidden/Shader Graph/FallbackError"
-	//CustomEditor "UnityEditor.ShaderGraph.GenericShaderGraphMaterialGUI"
 }
