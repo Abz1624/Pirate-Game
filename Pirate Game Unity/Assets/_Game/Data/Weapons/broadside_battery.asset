@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0042c8fbd3f13d7498562ae346e23b5d, type: 3}
+  m_Name: broadside_battery
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.WeaponDefinition
+  id: broadside_battery
+  displayName: Broadside Battery
+  pattern: 1
+  targeting: 2
+  tags: []
+  baseDamage: 8
+  baseCooldown: 1.5
+  range: 14
+  baseQuantity: 1
+  projectileSpeed: 16
+  duration: 2
+  size: 1
+  knockback: 1
+  maxLevel: 12
+  validUpgradeAxes: 000000000100000002000000
+  procCoefficient: 1
+  projectileColor: {r: 0.7, g: 0.7, b: 0.8, a: 1}

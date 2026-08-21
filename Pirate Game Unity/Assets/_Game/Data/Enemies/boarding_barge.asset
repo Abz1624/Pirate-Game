@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d165e405d987a6b4a9eef8b11a2f7a8e, type: 3}
+  m_Name: boarding_barge
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.EnemyDefinition
+  id: boarding_barge
+  biomeTag: emerald
+  baseHP: 40
+  baseDamage: 12
+  moveSpeed: 3
+  radius: 1
+  threatCost: 6
+  xpValue: 7
+  goldValue: 1
+  behavior: 5
+  attackCooldown: 1.5
+  preferredRange: 8
+  tags: []
+  placeholderColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  isBoss: 0
+  isMiniboss: 0

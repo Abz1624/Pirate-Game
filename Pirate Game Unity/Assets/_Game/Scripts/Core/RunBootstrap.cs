@@ -1,0 +1,97 @@
+using HighSeas.Combat;
+using HighSeas.Core;
+using HighSeas.Data;
+using HighSeas.Enemies;
+using HighSeas.Meta;
+using HighSeas.Pickups;
+using HighSeas.Player;
+using HighSeas.POI;
+using HighSeas.UI;
+using HighSeas.Weapons;
+using HighSeas.World;
+using UnityEngine;
+
+namespace HighSeas.Core
+{
+    [DefaultExecutionOrder(-100)]
+    public sealed class RunBootstrap : MonoBehaviour
+    {
+        [SerializeField] GameDatabase database;
+        [SerializeField] StageBuilder stageBuilder;
+        [SerializeField] PlayerShipController player;
+        [SerializeField] int runSeed;
+
+        StageLayout _layout;
+
+        void Awake()
+        {
+            AppRoot.EnsureInitialized();
+            if (database == null || !GameDatabaseLoader.IsValid(database))
+                database = GameDatabaseLoader.Load();
+        }
+
+        void Start()
+        {
+            if (database == null)
+            {
+                Debug.LogError("RunBootstrap: GameDatabase is missing. Run HighSeas/Bootstrap Project in the editor.");
+                return;
+            }
+
+            if (RunManager.Instance == null)
+            {
+                gameObject.AddComponent<RunManager>();
+            }
+
+            var seed = runSeed != 0 ? runSeed : Random.Range(1, int.MaxValue);
+            RunManager.Instance.BeginRun(seed);
+            _layout = stageBuilder != null ? stageBuilder.Build(seed, 0) : null;
+
+            var poi = FindFirstObjectByType<POIManager>();
+            poi?.Initialize(_layout, database);
+
+            var enemyWorld = FindFirstObjectByType<EnemyWorld>();
+            enemyWorld?.SetDefinitions(database.enemies);
+
+            var startingWeapon = database.ships[0].startingWeaponId;
+            var weapons = FindFirstObjectByType<WeaponController>();
+            weapons?.Initialize(database, startingWeapon);
+
+            LevelSystem.Instance?.Initialize(database, startingWeapon);
+
+            if (player == null)
+                player = FindFirstObjectByType<PlayerShipController>();
+
+            if (player != null && _layout != null)
+                player.transform.position = _layout.playerSpawn;
+
+            player?.InitializeFromRun(RunManager.Instance.Stats.MaxHull);
+
+            if (player != null)
+            {
+                player.Damage.Died += OnPlayerDied;
+                if (TriggerBus.Instance != null)
+                    TriggerBus.Instance.DamageTaken += _ => { };
+            }
+
+            RunManager.Instance.EnterPlaying();
+        }
+
+        void Update()
+        {
+            if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
+            var dt = Time.deltaTime;
+            var playerPos = player != null ? player.Position : Vector3.zero;
+            FindFirstObjectByType<EnemyWorld>()?.Tick(dt, playerPos, player?.Damage);
+            FindFirstObjectByType<ProjectileWorld>()?.Tick(dt, FindFirstObjectByType<EnemyWorld>());
+            FindFirstObjectByType<PickupWorld>()?.Tick(dt, playerPos, RunManager.Instance.Stats.PickupRadius);
+            FindFirstObjectByType<StatusController>()?.Tick(dt, FindFirstObjectByType<EnemyWorld>());
+        }
+
+        void OnPlayerDied()
+        {
+            RunManager.Instance.SetState(RunState.PlayerDead);
+            RunManager.Instance.CompleteRun(false);
+        }
+    }
+}

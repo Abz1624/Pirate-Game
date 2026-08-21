@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="8" result="Passed" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.0683493">
+  <test-suite type="TestSuite" id="1000" name="Pirate Game" fullname="Pirate Game" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.068349" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1010" name="HighSeas.Tests.EditMode.dll" fullname="C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Library/ScriptAssemblies/HighSeas.Tests.EditMode.dll" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.059577" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="16916" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1011" name="HighSeas" fullname="HighSeas" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.058962" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1012" name="Tests" fullname="HighSeas.Tests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.058704" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="GameMathTests" fullname="HighSeas.Tests.GameMathTests" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.057379" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1005" name="ChestCost_Increases" fullname="HighSeas.Tests.GameMathTests.ChestCost_Increases" methodname="ChestCost_Increases" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="2124593588" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.017692" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="DamageFormula_MatchesGoldenVector" fullname="HighSeas.Tests.GameMathTests.DamageFormula_MatchesGoldenVector" methodname="DamageFormula_MatchesGoldenVector" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="582349151" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.004305" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1002" name="DiagonalMovementNormalization_IsWithinOnePercent" fullname="HighSeas.Tests.GameMathTests.DiagonalMovementNormalization_IsWithinOnePercent" methodname="DiagonalMovementNormalization_IsWithinOnePercent" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="60348406" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.000482" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1006" name="RarityRoll_LegendaryProbabilityCapped" fullname="HighSeas.Tests.GameMathTests.RarityRoll_LegendaryProbabilityCapped" methodname="RarityRoll_LegendaryProbabilityCapped" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="2126716331" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.004760" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1009" name="SaveMigration_DefaultsMissingFields" fullname="HighSeas.Tests.GameMathTests.SaveMigration_DefaultsMissingFields" methodname="SaveMigration_DefaultsMissingFields" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="545056543" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.002776" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1008" name="StageGenerator_ReachabilityPasses" fullname="HighSeas.Tests.GameMathTests.StageGenerator_ReachabilityPasses" methodname="StageGenerator_ReachabilityPasses" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="81563039" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.006567" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1007" name="ThreatPerSecond_GrowsWithTime" fullname="HighSeas.Tests.GameMathTests.ThreatPerSecond_GrowsWithTime" methodname="ThreatPerSecond_GrowsWithTime" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="614570742" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.000380" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1004" name="XPToNext_IsMonotonic" fullname="HighSeas.Tests.GameMathTests.XPToNext_IsMonotonic" methodname="XPToNext_IsMonotonic" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="713036870" result="Passed" start-time="2026-08-21 01:46:37Z" end-time="2026-08-21 01:46:37Z" duration="0.000335" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: C:/Users/shara/AppData/LocalLow/DefaultCompany/Pirate Game\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -1,0 +1,21 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.3/staging' branch; Version is '6000.3.11f1 (3000ef702840) revision 3145967'; Using compiler version '194234433'; Build Type 'Release'
+OS: 'Windows 11  (10.0.26200) CoreSingleLanguage' Language: 'en' Physical Memory: 16068 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-shara" at "2026-08-21T02:29:09.4844943Z"
+System  architecture: x64
+Process architecture: x64
+Date: 2026-08-21T02:29:09Z
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.3.11f1\Editor\Unity.exe
+-batchmode
+-projectPath
+c:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\Pirate Game Unity
+-executeMethod
+HighSeas.Editor.HighSeasBootstrap.BootstrapAll
+-logFile
+c:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\tools\bootstrap-fix.log
+Successfully changed project path to: c:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\Pirate Game Unity
+C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity
+Exiting without the bug reporter. Application will terminate with return code 1
