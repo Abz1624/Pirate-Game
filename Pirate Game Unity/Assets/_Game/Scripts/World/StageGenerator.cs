@@ -170,7 +170,8 @@ namespace HighSeas.World
                     var origin = -Vector3.one * (GameConstants.MapSizeMeters * 0.5f);
                     go.transform.position = origin + new Vector3(x * GameConstants.CellSizeMeters, 0f, z * GameConstants.CellSizeMeters);
                     go.transform.localScale = new Vector3(GameConstants.CellSizeMeters * 0.9f, 2f, GameConstants.CellSizeMeters * 0.9f);
-                    go.layer = LayerMask.NameToLayer("Default");
+                    var islandLayer = LayerMask.NameToLayer(IslandObstacles.LayerName);
+                    go.layer = islandLayer >= 0 ? islandLayer : LayerMask.NameToLayer("Default");
                     if (islandMaterial != null) go.GetComponent<Renderer>().material = islandMaterial;
                 }
             }

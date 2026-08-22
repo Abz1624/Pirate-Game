@@ -10,6 +10,70 @@ namespace HighSeas.Platform
         Vector2 ReadMove();
     }
 
+    /// <summary>
+    /// Ship controls: x = steer, y = throttle. Axes are independent (no diagonal normalization).
+    /// </summary>
+    public interface IShipSteerInput
+    {
+        Vector2 ReadSteerThrottle();
+    }
+
+    public sealed class CompositeShipSteerInput : IShipSteerInput
+    {
+        readonly ShipKeyboardInput _keyboard = new();
+        readonly VirtualJoystick _joystick;
+
+        public CompositeShipSteerInput(VirtualJoystick joystick)
+        {
+            _joystick = joystick;
+        }
+
+        public Vector2 ReadSteerThrottle()
+        {
+            var kb = _keyboard.ReadSteerThrottle();
+            if (Mathf.Abs(kb.x) > 0.01f || Mathf.Abs(kb.y) > 0.01f)
+                return kb;
+
+            if (_joystick == null)
+                return Vector2.zero;
+
+            var stick = _joystick.ReadMove();
+            return new Vector2(
+                Mathf.Clamp(stick.x, -1f, 1f),
+                Mathf.Clamp(stick.y, -1f, 1f));
+        }
+    }
+
+    public sealed class ShipKeyboardInput : IShipSteerInput
+    {
+        public Vector2 ReadSteerThrottle()
+        {
+#if ENABLE_INPUT_SYSTEM
+            var kb = Keyboard.current;
+            if (kb == null) return Vector2.zero;
+            var steer = 0f;
+            var throttle = 0f;
+            if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) steer -= 1f;
+            if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) steer += 1f;
+            if (kb.wKey.isPressed || kb.upArrowKey.isPressed) throttle += 1f;
+            if (kb.sKey.isPressed || kb.downArrowKey.isPressed) throttle -= 1f;
+            return new Vector2(
+                Mathf.Clamp(steer, -1f, 1f),
+                Mathf.Clamp(throttle, -1f, 1f));
+#else
+            var steer = 0f;
+            var throttle = 0f;
+            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) steer -= 1f;
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) steer += 1f;
+            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) throttle += 1f;
+            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow)) throttle -= 1f;
+            return new Vector2(
+                Mathf.Clamp(steer, -1f, 1f),
+                Mathf.Clamp(throttle, -1f, 1f));
+#endif
+        }
+    }
+
     public sealed class CompositeMoveInput : IMoveInput
     {
         readonly KeyboardMoveInput _keyboard = new();

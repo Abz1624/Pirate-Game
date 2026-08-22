@@ -31,8 +31,8 @@ namespace HighSeas.Core
         public const int DefaultLogbookSlots = 2;
         public const int MaxWeaponLevel = 12;
         public const int MaxLogbookLevel = 10;
-        public const float CameraPitch = 42f;
-        public const float CameraFov = 50f;
+        public const float CameraPitch = 52f;
+        public const float CameraFov = 55f;
         public const float SmoothDampTime = 0.10f;
         public const float VisualYawLerp = 12f;
         public const float MapSizeMeters = 220f;

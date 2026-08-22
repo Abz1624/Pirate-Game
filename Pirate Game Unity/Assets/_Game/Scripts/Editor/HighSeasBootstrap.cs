@@ -349,17 +349,7 @@ namespace HighSeas.Editor
             var stageBuilder = systems.GetComponent<StageBuilder>();
             SetPrivateField(stageBuilder, "islandRoot", islandRoot.transform);
 
-            var player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            player.name = "PlayerShip";
-            player.tag = "Player";
-            player.transform.localScale = new Vector3(1.2f, 0.8f, 2f);
-            Object.DestroyImmediate(player.GetComponent<Collider>());
-            var col = player.AddComponent<CapsuleCollider>();
-            col.height = 2f;
-            col.radius = 0.8f;
-            player.AddComponent<Rigidbody>().isKinematic = true;
-            player.AddComponent<PlayerShipController>();
-            player.AddComponent<DamageReceiver>();
+            var player = CreatePlayerShip(db);
 
             var bootstrap = systems.GetComponent<RunBootstrap>();
             SetPrivateField(bootstrap, "database", db);
@@ -385,6 +375,18 @@ namespace HighSeas.Editor
             SetPrivateField(level, "database", db);
 
             SaveScene(Root + "/Scenes/Run.unity");
+        }
+
+        static GameObject CreatePlayerShip(GameDatabase db)
+        {
+            var player = new GameObject("PlayerShip");
+            player.tag = "Player";
+            player.AddComponent<PlayerShipController>();
+            player.AddComponent<DamageReceiver>();
+
+            var controller = player.GetComponent<PlayerShipController>();
+            PlayerShipSceneSetup.SetupPlayer(controller);
+            return player;
         }
 
         static void BuildRunHud(Canvas canvas)

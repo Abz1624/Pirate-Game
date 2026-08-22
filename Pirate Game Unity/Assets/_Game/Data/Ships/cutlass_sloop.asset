@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.ShipDefinition
   id: 
   displayName: 
-  visualPrefab: {fileID: 0}
+  visualPrefab: {fileID: 8666331001818569078, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
   baseHull: 100
   baseMoveSpeed: 6.2
   baseArmor: 0
