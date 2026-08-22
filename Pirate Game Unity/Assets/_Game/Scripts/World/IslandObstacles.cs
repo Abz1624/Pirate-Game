@@ -3,7 +3,7 @@ using UnityEngine;
 namespace HighSeas.World
 {
     /// <summary>
-    /// Capsule-based movement resolution against island geometry on the Island layer.
+    /// Capsule-based movement resolution against island colliders on the Island layer (ground mesh or fallback capsule).
     /// </summary>
     public static class IslandObstacles
     {

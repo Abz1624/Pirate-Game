@@ -1,4 +1,5 @@
 using HighSeas.Core;
+using HighSeas.World;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -77,9 +78,53 @@ namespace HighSeas.Tests
         public void StageGenerator_ReachabilityPasses()
         {
             var gen = new World.StageGenerator();
-            var layout = gen.Generate(42, 0);
+            var layout = gen.Generate(42, 0, ProceduralIslandSettings.Default);
             Assert.That(layout.pois.Count, Is.GreaterThan(0));
             Assert.That(layout.playerSpawn, Is.Not.EqualTo(Vector3.zero));
+        }
+
+        [Test]
+        public void StageGenerator_SpawnsOnWaterPlane()
+        {
+            var settings = ProceduralIslandSettings.Default;
+            var layout = new StageGenerator().Generate(GameConstants.DemoRunSeed, 0, settings);
+            Assert.That(layout.playerSpawn.y, Is.EqualTo(0f).Within(0.001f));
+            Assert.That(layout.islandCenters.Count, Is.GreaterThan(0));
+            for (var i = 0; i < layout.islandCenters.Count; i++)
+                Assert.That(layout.islandCenters[i].y, Is.EqualTo(0f).Within(0.001f));
+        }
+
+        [Test]
+        public void StageGenerator_IslandsDoNotOverlap()
+        {
+            var settings = ProceduralIslandSettings.Default;
+            var layout = new StageGenerator().Generate(12345, 0, settings);
+            var minDist = settings.minSeparationMeters * 0.95f;
+            for (var i = 0; i < layout.islandCenters.Count; i++)
+            {
+                for (var j = i + 1; j < layout.islandCenters.Count; j++)
+                {
+                    var delta = layout.islandCenters[i] - layout.islandCenters[j];
+                    delta.y = 0f;
+                    Assert.That(delta.magnitude, Is.GreaterThanOrEqualTo(minDist));
+                }
+            }
+        }
+
+        [Test]
+        public void StageGenerator_HighCountSettings_PlacesNearTarget()
+        {
+            var settings = new ProceduralIslandSettings
+            {
+                countMin = 50,
+                countMax = 75,
+                islandDiameterMeters = 4f,
+                minSeparationMeters = 6f,
+                maxPlacementAttempts = 8000
+            };
+            var layout = new StageGenerator().Generate(GameConstants.DemoRunSeed, 0, settings);
+            Assert.That(layout.islandCenters.Count, Is.GreaterThanOrEqualTo(50));
+            Assert.That(layout.islandCenters.Count, Is.LessThanOrEqualTo(75));
         }
 
         [Test]

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12ca31f6931596c4a8da2a4051215214, type: 3}
+  m_Name: IslandVisualLibrary
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.IslandVisualLibrary
+  groundTile: {fileID: 1893812454772189619, guid: 4d569fedf0eaf474ba0c0db485cd02e9, type: 3}
+  rocks:
+  - {fileID: 3571200142489072580, guid: d82bd5c313c074c448cd49526e4267be, type: 3}
+  - {fileID: 8329366941297514852, guid: cd37023bbdb5f75418cd3f35ced9cc98, type: 3}
+  - {fileID: 299564714296829301, guid: e7d6f614f2443144f882ce31e517a516, type: 3}
+  trees:
+  - {fileID: 8348511066914142513, guid: 7d425c282fedb4ece811fe26ba678ce3, type: 3}
+  - {fileID: 5082633173578634581, guid: c18281189789442d29ecfd51f19690b3, type: 3}
+  fallbackIslandMaterial: {fileID: 0}
+  groundScale: 1
+  groundYOffset: 0

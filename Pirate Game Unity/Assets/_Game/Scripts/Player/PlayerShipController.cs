@@ -197,8 +197,11 @@ namespace HighSeas.Player
 
             nextPosition.y = _body.position.y;
             _body.MovePosition(nextPosition);
-            _body.linearVelocity = Vector3.zero;
-            _body.angularVelocity = Vector3.zero;
+            if (!_body.isKinematic)
+            {
+                _body.linearVelocity = Vector3.zero;
+                _body.angularVelocity = Vector3.zero;
+            }
         }
 
         void LateUpdate()

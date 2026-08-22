@@ -11,6 +11,7 @@ namespace HighSeas.World
         public Vector3 playerSpawn;
         public Vector3 bossBeacon;
         public List<POISlot> pois = new();
+        public List<Vector3> islandCenters = new();
     }
 
     public struct POISlot
@@ -22,8 +23,9 @@ namespace HighSeas.World
 
     public sealed class StageGenerator
     {
-        public StageLayout Generate(int seed, int stageIndex)
+        public StageLayout Generate(int seed, int stageIndex, ProceduralIslandSettings islandSettings)
         {
+            var settings = islandSettings.Clamped();
             var rng = new RunRng(seed + stageIndex * 991);
             var layout = new StageLayout
             {
@@ -35,7 +37,9 @@ namespace HighSeas.World
             while (salt < 20)
             {
                 layout.occupancy = new bool[GameConstants.GridCells, GameConstants.GridCells];
-                PlaceIslands(layout, rng);
+                layout.islandCenters.Clear();
+                PlaceIslands(layout, rng, settings);
+                RasterizeIslandsToGrid(layout, settings.islandDiameterMeters * 0.5f);
                 CarveBackbone(layout);
                 if (ValidateReachability(layout)) break;
                 salt++;
@@ -48,17 +52,92 @@ namespace HighSeas.World
             return layout;
         }
 
-        static void PlaceIslands(StageLayout layout, RunRng rng)
+        static void PlaceIslands(StageLayout layout, RunRng rng, ProceduralIslandSettings settings)
         {
-            var targetCells = rng.MapInt(30, 45);
-            var placed = 0;
-            while (placed < targetCells)
+            var target = rng.MapInt(settings.countMin, settings.countMax + 1);
+            var radius = settings.islandDiameterMeters * 0.5f;
+            var margin = radius + 4f;
+            var halfMap = GameConstants.MapSizeMeters * 0.5f - margin;
+            var spacing = settings.minSeparationMeters;
+            var minDistSq = spacing * spacing;
+
+            var candidates = new List<Vector3>(512);
+            for (var x = -halfMap; x <= halfMap + 0.01f; x += spacing)
             {
-                var x = rng.MapInt(1, GameConstants.GridCells - 1);
-                var z = rng.MapInt(1, GameConstants.GridCells - 1);
-                if (layout.occupancy[x, z]) continue;
-                layout.occupancy[x, z] = true;
-                placed++;
+                for (var z = -halfMap; z <= halfMap + 0.01f; z += spacing)
+                    candidates.Add(new Vector3(x, 0f, z));
+            }
+
+            for (var i = candidates.Count - 1; i > 0; i--)
+            {
+                var j = rng.MapInt(0, i + 1);
+                (candidates[i], candidates[j]) = (candidates[j], candidates[i]);
+            }
+
+            var attempts = 0;
+            for (var i = 0; i < candidates.Count && layout.islandCenters.Count < target; i++)
+            {
+                attempts++;
+                var candidate = candidates[i];
+                if (!IsFarEnough(layout.islandCenters, candidate, minDistSq))
+                    continue;
+
+                layout.islandCenters.Add(candidate);
+            }
+
+            while (layout.islandCenters.Count < target && attempts < settings.maxPlacementAttempts)
+            {
+                attempts++;
+                var candidate = new Vector3(
+                    rng.MapFloat() * 2f * halfMap - halfMap,
+                    0f,
+                    rng.MapFloat() * 2f * halfMap - halfMap);
+
+                if (!IsFarEnough(layout.islandCenters, candidate, minDistSq))
+                    continue;
+
+                layout.islandCenters.Add(candidate);
+            }
+
+            if (layout.islandCenters.Count < target)
+            {
+                Debug.LogWarning(
+                    $"StageGenerator: placed {layout.islandCenters.Count}/{target} islands " +
+                    $"(sep {spacing:F0}m, dia {settings.islandDiameterMeters:F0}m, attempts {attempts}).");
+            }
+        }
+
+        static bool IsFarEnough(List<Vector3> placed, Vector3 candidate, float minDistSq)
+        {
+            for (var i = 0; i < placed.Count; i++)
+            {
+                var delta = candidate - placed[i];
+                delta.y = 0f;
+                if (delta.sqrMagnitude < minDistSq)
+                    return false;
+            }
+            return true;
+        }
+
+        static void RasterizeIslandsToGrid(StageLayout layout, float islandRadius)
+        {
+            var radiusSq = islandRadius * islandRadius;
+            for (var x = 0; x < GameConstants.GridCells; x++)
+            {
+                for (var z = 0; z < GameConstants.GridCells; z++)
+                {
+                    var cellCenter = CellToWorld(x, z);
+                    for (var i = 0; i < layout.islandCenters.Count; i++)
+                    {
+                        var delta = layout.islandCenters[i] - cellCenter;
+                        delta.y = 0f;
+                        if (delta.sqrMagnitude <= radiusSq)
+                        {
+                            layout.occupancy[x, z] = true;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -99,11 +178,14 @@ namespace HighSeas.World
             q.Enqueue(c);
         }
 
-        static Vector3 CellToWorld(int x, int z)
+        public static Vector3 CellToWorld(int x, int z)
         {
-            var origin = -Vector3.one * (GameConstants.MapSizeMeters * 0.5f);
-            return origin + new Vector3(x * GameConstants.CellSizeMeters + GameConstants.CellSizeMeters * 0.5f, 0f,
-                z * GameConstants.CellSizeMeters + GameConstants.CellSizeMeters * 0.5f);
+            var halfMap = GameConstants.MapSizeMeters * 0.5f;
+            var cell = GameConstants.CellSizeMeters;
+            return new Vector3(
+                -halfMap + x * cell + cell * 0.5f,
+                0f,
+                -halfMap + z * cell + cell * 0.5f);
         }
 
         static Vector3 FindFarthestOpen(StageLayout layout, Vector3 from)
@@ -142,40 +224,6 @@ namespace HighSeas.World
                 placed++;
             }
             layout.pois.Add(new POISlot { type = POIType.BossBeacon, position = layout.bossBeacon });
-        }
-    }
-
-    public sealed class StageBuilder : MonoBehaviour
-    {
-        [SerializeField] Transform islandRoot;
-        [SerializeField] Material islandMaterial;
-
-        public StageLayout Build(int seed, int stageIndex)
-        {
-            var gen = new StageGenerator();
-            var layout = gen.Generate(seed, stageIndex);
-            if (islandRoot != null)
-            {
-                for (var i = islandRoot.childCount - 1; i >= 0; i--)
-                    Destroy(islandRoot.GetChild(i).gameObject);
-            }
-            for (var x = 0; x < GameConstants.GridCells; x++)
-            {
-                for (var z = 0; z < GameConstants.GridCells; z++)
-                {
-                    if (!layout.occupancy[x, z]) continue;
-                    var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    go.name = $"Island_{x}_{z}";
-                    go.transform.SetParent(islandRoot != null ? islandRoot : transform, false);
-                    var origin = -Vector3.one * (GameConstants.MapSizeMeters * 0.5f);
-                    go.transform.position = origin + new Vector3(x * GameConstants.CellSizeMeters, 0f, z * GameConstants.CellSizeMeters);
-                    go.transform.localScale = new Vector3(GameConstants.CellSizeMeters * 0.9f, 2f, GameConstants.CellSizeMeters * 0.9f);
-                    var islandLayer = LayerMask.NameToLayer(IslandObstacles.LayerName);
-                    go.layer = islandLayer >= 0 ? islandLayer : LayerMask.NameToLayer("Default");
-                    if (islandMaterial != null) go.GetComponent<Renderer>().material = islandMaterial;
-                }
-            }
-            return layout;
         }
     }
 }

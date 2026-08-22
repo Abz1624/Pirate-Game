@@ -37,6 +37,7 @@ namespace HighSeas.Editor
                 Debug.LogError("Bootstrap aborted: GameDatabase could not be created. Wait for scripts to compile, then try again.");
                 return;
             }
+            HighSeasIslandSetup.EnsureLibraryAsset();
             CreateScenes(db);
             ConfigurePlayerSettings();
             AssetDatabase.SaveAssets();
@@ -347,7 +348,10 @@ namespace HighSeas.Editor
 
             var islandRoot = new GameObject("IslandRoot");
             var stageBuilder = systems.GetComponent<StageBuilder>();
+            var islandLibrary = HighSeasIslandSetup.EnsureLibraryAsset();
             SetPrivateField(stageBuilder, "islandRoot", islandRoot.transform);
+            SetPrivateField(stageBuilder, "visuals", islandLibrary);
+            SetPrivateField(stageBuilder, "useVisualPrefabs", true);
 
             var player = CreatePlayerShip(db);
 
@@ -355,6 +359,7 @@ namespace HighSeas.Editor
             SetPrivateField(bootstrap, "database", db);
             SetPrivateField(bootstrap, "stageBuilder", stageBuilder);
             SetPrivateField(bootstrap, "player", player.GetComponent<PlayerShipController>());
+            SetPrivateField(bootstrap, "runSeed", GameConstants.DemoRunSeed);
 
             var canvas = CreateCanvas("RunCanvas");
             BuildRunHud(canvas);
@@ -615,6 +620,20 @@ namespace HighSeas.Editor
         {
             var so = new SerializedObject(target);
             so.FindProperty(field).floatValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void SetPrivateField(Object target, string field, int value)
+        {
+            var so = new SerializedObject(target);
+            so.FindProperty(field).intValue = value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void SetPrivateField(Object target, string field, bool value)
+        {
+            var so = new SerializedObject(target);
+            so.FindProperty(field).boolValue = value;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
     }

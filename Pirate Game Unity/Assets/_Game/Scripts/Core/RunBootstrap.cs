@@ -19,7 +19,7 @@ namespace HighSeas.Core
         [SerializeField] GameDatabase database;
         [SerializeField] StageBuilder stageBuilder;
         [SerializeField] PlayerShipController player;
-        [SerializeField] int runSeed;
+        [SerializeField] int runSeed = GameConstants.DemoRunSeed;
 
         StageLayout _layout;
 
@@ -43,9 +43,21 @@ namespace HighSeas.Core
                 gameObject.AddComponent<RunManager>();
             }
 
-            var seed = runSeed != 0 ? runSeed : Random.Range(1, int.MaxValue);
+            if (stageBuilder == null)
+                stageBuilder = FindFirstObjectByType<StageBuilder>();
+
+            if (stageBuilder == null)
+            {
+                var systems = GameObject.Find("Systems");
+                if (systems != null)
+                    stageBuilder = systems.GetComponent<StageBuilder>();
+            }
+
+            var seed = runSeed != 0 ? runSeed : GameConstants.DemoRunSeed;
             RunManager.Instance.BeginRun(seed);
             _layout = stageBuilder != null ? stageBuilder.Build(seed, 0) : null;
+            if (_layout == null)
+                Debug.LogWarning("RunBootstrap: no StageBuilder found — islands and POIs were not generated.");
 
             var poi = FindFirstObjectByType<POIManager>();
             poi?.Initialize(_layout, database);
