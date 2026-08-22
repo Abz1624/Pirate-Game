@@ -3964,7 +3964,7 @@ MonoBehaviour:
   rotationMode: 0
   rotationEuler: {x: 56, y: 0, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
-  positionSmoothing: 6
+  positionSmoothing: 8
   rotationSmoothing: 6
   snapOnStart: 1
 --- !u!81 &1960317720
@@ -4185,7 +4185,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 1
   m_Constraints: 84
   m_CollisionDetection: 2
@@ -4309,10 +4309,10 @@ MonoBehaviour:
   shallowColor: {r: 0.513725, g: 0.74509805, b: 0.70980394, a: 1}
   deepColor: {r: 0, g: 0, b: 0, a: 0.95}
   colorDepth: 1.2
-  horizonColor: {r: 0.019607844, g: 0.3960023, b: 0.5607843, a: 1}
+  horizonColor: {r: 0.019607844, g: 0.39600185, b: 0.5607843, a: 1}
   horizonDistance: 0.23
   shoreFade: 0.023
-  shoreColor: {r: 0.22345328, g: 0.6666667, b: 0.6784314, a: 0}
+  shoreColor: {r: 0.22345284, g: 0.6666667, b: 0.6784314, a: 0}
   shoreStrength: 0
   shoreBlend: 0
   shoreDepth: 0

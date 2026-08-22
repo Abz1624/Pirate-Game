@@ -110,7 +110,7 @@ namespace HighSeas.Editor
                 rb = player.AddComponent<Rigidbody>();
 
             rb.useGravity = false;
-            rb.isKinematic = false;
+            rb.isKinematic = true;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
             rb.constraints = RigidbodyConstraints.FreezePositionY |
                              RigidbodyConstraints.FreezeRotationX |

@@ -74,6 +74,7 @@ namespace HighSeas.Player
             _damage = GetComponent<DamageReceiver>();
             _body = GetComponent<Rigidbody>();
             _body.useGravity = false;
+            _body.isKinematic = true;
             _body.constraints = RigidbodyConstraints.FreezePositionY |
                                RigidbodyConstraints.FreezeRotationX |
                                RigidbodyConstraints.FreezeRotationZ;
@@ -150,7 +151,10 @@ namespace HighSeas.Player
                 : 0f;
 
             if (Mathf.Abs(input.steer) > 0.01f && turnEffectiveness > 0f)
-                transform.Rotate(0f, input.steer * turnSpeed * _turnRateMultiplier * turnEffectiveness * dt, 0f);
+            {
+                var deltaYaw = input.steer * turnSpeed * _turnRateMultiplier * turnEffectiveness * dt;
+                _body.MoveRotation(_body.rotation * Quaternion.Euler(0f, deltaYaw, 0f));
+            }
 
             var bankForward = GetShipForward();
             var bankForwardSpeed = Vector3.Dot(_velocity, bankForward);
@@ -193,6 +197,8 @@ namespace HighSeas.Player
 
             nextPosition.y = _body.position.y;
             _body.MovePosition(nextPosition);
+            _body.linearVelocity = Vector3.zero;
+            _body.angularVelocity = Vector3.zero;
         }
 
         void LateUpdate()
@@ -220,7 +226,9 @@ namespace HighSeas.Player
 
         Vector3 GetShipForward()
         {
-            var forward = transform.forward;
+            var forward = _body != null
+                ? _body.rotation * Vector3.forward
+                : transform.forward;
             if (modelForwardIsNegativeZ)
                 forward = -forward;
 
@@ -283,7 +291,7 @@ namespace HighSeas.Player
                 _hullCollider.direction = 2;
             }
 
-            _body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            _body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
         }
 
         float GetHullWorldRadius()
