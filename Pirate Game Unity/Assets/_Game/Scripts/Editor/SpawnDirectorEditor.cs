@@ -113,14 +113,32 @@ namespace HighSeas.Editor
                 {
                     enemyId = def.id,
                     spawnEnabled = !def.isBoss && !def.isMiniboss,
-                    weight = def.id == "swordfish" ? 0.35f : 1f,
-                    maxConcurrent = def.id == "swordfish" ? 10 : 0,
-                    speedMultiplier = 1f,
+                    weight = def.id switch
+                    {
+                        "swordfish" => 0.9f,
+                        "hammerhead" => 1f,
+                        "kraken_spawn" => 0.85f,
+                        _ => 1f
+                    },
+                    maxConcurrent = def.id switch
+                    {
+                        "swordfish" => 14,
+                        "kraken_spawn" => 6,
+                        _ => 0
+                    },
+                    speedMultiplier = def.id switch
+                    {
+                        "swordfish" => 1.2f,
+                        "shark" => 1.1f,
+                        "cannonboat" => 1.05f,
+                        "hammerhead" => 1.05f,
+                        "kraken_spawn" => 0.95f,
+                        _ => 1f
+                    },
                     availableAfterMinutes = def.id switch
                     {
-                        "swordfish" => 1f,
-                        "hammerhead" => 1.5f,
-                        "kraken_spawn" => 3f,
+                        "hammerhead" => 1f,
+                        "kraken_spawn" => 2.5f,
                         _ => 0f
                     }
                 });

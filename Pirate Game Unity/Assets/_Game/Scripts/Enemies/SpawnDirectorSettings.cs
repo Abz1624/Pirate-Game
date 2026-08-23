@@ -137,18 +137,20 @@ namespace HighSeas.Enemies
         public static SpawnWaveDefinition[] CreateDefaultWaveScript() =>
             new[]
             {
-                Wave("1 — Cannonboats", 3f, 50f, 3.8f,
-                    Entry("cannonboat", 3)),
-                Wave("2 — Swordfish", 15f, 55f, 3.4f,
-                    Entry("swordfish", 4)),
-                Wave("3 — Cannonboats + Sharks", 15f, 60f, 3.6f,
-                    Entry("cannonboat", 2), Entry("shark", 2)),
-                Wave("4 — Swordfish + Sharks", 15f, 65f, 3.4f,
-                    Entry("swordfish", 3), Entry("shark", 2)),
-                Wave("5 — Hammerhead + Sharks", 18f, 70f, 3.6f,
-                    Entry("hammerhead", 2), Entry("shark", 3)),
-                Wave("6 — Kraken", 20f, 40f, 4.5f,
-                    Entry("kraken_spawn", 2))
+                Wave("1 — Cannonboats + Swarm", 2f, 48f, 2.4f,
+                    Entry("cannonboat", 5), Entry("swordfish", 2)),
+                Wave("2 — Swordfish Rush", 10f, 52f, 2.2f,
+                    Entry("swordfish", 6), Entry("shark", 2)),
+                Wave("3 — Mixed Ships", 12f, 58f, 2.3f,
+                    Entry("cannonboat", 4), Entry("shark", 4)),
+                Wave("4 — Shark Pack", 12f, 60f, 2.1f,
+                    Entry("swordfish", 5), Entry("shark", 4)),
+                Wave("5 — Hammerheads", 14f, 62f, 2.2f,
+                    Entry("hammerhead", 4), Entry("shark", 5)),
+                Wave("6 — Kraken Tide", 16f, 50f, 2.6f,
+                    Entry("kraken_spawn", 3), Entry("swordfish", 4)),
+                Wave("7 — Full Assault", 18f, 70f, 2f,
+                    Entry("cannonboat", 3), Entry("shark", 3), Entry("swordfish", 3), Entry("hammerhead", 2))
             };
 
         static SpawnWaveDefinition Wave(string name, float delay, float duration, float gap, params SpawnWaveEntry[] spawns) =>
@@ -168,13 +170,13 @@ namespace HighSeas.Enemies
         public static EnemySpawnTuning[] CreateDefaultEnemyTuning() =>
             new[]
             {
-                Tuning("cannonboat", 1f, 0, 1f),
-                Tuning("shark", 1f, 0, 1f),
-                Tuning("swordfish", 0.5f, 8, 1.1f),
-                Tuning("hammerhead", 0.8f, 0, 0.95f),
-                Tuning("kraken_spawn", 0.7f, 4, 0.85f),
-                Tuning("reef_crab_miniboss", 1f, 0, 1f, false),
-                Tuning("barnacle_king", 1f, 0, 1f, false)
+                Tuning("cannonboat", 1f, 0, 1.05f, 0f),
+                Tuning("shark", 1f, 0, 1.1f, 0f),
+                Tuning("swordfish", 0.9f, 14, 1.2f, 0f),
+                Tuning("hammerhead", 1f, 0, 1.05f, 1f),
+                Tuning("kraken_spawn", 0.85f, 6, 0.95f, 2.5f),
+                Tuning("reef_crab_miniboss", 1f, 0, 1f, 0f, false),
+                Tuning("barnacle_king", 1f, 0, 1f, 0f, false)
             };
 
         static EnemySpawnTuning Tuning(
@@ -182,6 +184,7 @@ namespace HighSeas.Enemies
             float weight,
             int maxConcurrent,
             float speed,
+            float availableAfterMinutes,
             bool enabled = true) =>
             new()
             {
@@ -189,7 +192,8 @@ namespace HighSeas.Enemies
                 spawnEnabled = enabled,
                 weight = weight,
                 maxConcurrent = maxConcurrent,
-                speedMultiplier = speed
+                speedMultiplier = speed,
+                availableAfterMinutes = availableAfterMinutes
             };
 
         static EnemySpawnTuning DefaultTuning(string enemyId) =>

@@ -14364,9 +14364,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78c31716260cf6e48a2938ec25047099, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Player.PlayerShipController
-  maxSpeed: 50
+  maxSpeed: 75
   reverseMaxSpeed: 15
-  acceleration: 12.5
+  acceleration: 15
   reverseAcceleration: 10
   turnSpeed: 50
   waterDrag: 2

@@ -12,83 +12,103 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 613c5aeb7ea979a4abaf92506108c322, type: 3}
   m_Name: SpawnDirectorSettings
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.SpawnDirectorSettings
-  timingMode: 0
-  gracePeriodSeconds: 2
-  minSecondsBetweenSpawns: 0.55
-  spawnIntervalSeconds: 2.5
-  waveSize: 4
+  timingMode: 3
+  gracePeriodSeconds: 1.5
+  minSecondsBetweenSpawns: 0.35
+  spawnIntervalSeconds: 1.8
+  waveSize: 6
   waves:
-  - waveName: "1 \u2014 Cannonboats"
-    delayBeforeWaveSeconds: 3
-    waveDurationSeconds: 50
-    spawnGapSeconds: 3.8
+  - waveName: "1 \u2014 Cannonboats + Swarm"
+    delayBeforeWaveSeconds: 2
+    waveDurationSeconds: 48
+    spawnGapSeconds: 2.4
     loopComposition: 1
     spawns:
     - enemyId: cannonboat
-      count: 3
-  - waveName: "2 \u2014 Swordfish"
-    delayBeforeWaveSeconds: 15
-    waveDurationSeconds: 55
-    spawnGapSeconds: 3.4
+      count: 5
+    - enemyId: swordfish
+      count: 2
+  - waveName: "2 \u2014 Swordfish Rush"
+    delayBeforeWaveSeconds: 10
+    waveDurationSeconds: 52
+    spawnGapSeconds: 2.2
     loopComposition: 1
     spawns:
     - enemyId: swordfish
+      count: 6
+    - enemyId: shark
+      count: 2
+  - waveName: "3 \u2014 Mixed Ships"
+    delayBeforeWaveSeconds: 12
+    waveDurationSeconds: 58
+    spawnGapSeconds: 2.3
+    loopComposition: 1
+    spawns:
+    - enemyId: cannonboat
       count: 4
-  - waveName: "3 \u2014 Cannonboats + Sharks"
-    delayBeforeWaveSeconds: 15
-    waveDurationSeconds: 60
-    spawnGapSeconds: 3.6
-    loopComposition: 1
-    spawns:
-    - enemyId: cannonboat
-      count: 2
     - enemyId: shark
-      count: 2
-  - waveName: "4 \u2014 Swordfish + Sharks"
-    delayBeforeWaveSeconds: 15
-    waveDurationSeconds: 65
-    spawnGapSeconds: 3.4
+      count: 4
+  - waveName: "4 \u2014 Shark Pack"
+    delayBeforeWaveSeconds: 12
+    waveDurationSeconds: 60
+    spawnGapSeconds: 2.1
     loopComposition: 1
     spawns:
     - enemyId: swordfish
-      count: 3
+      count: 5
     - enemyId: shark
-      count: 2
-  - waveName: "5 \u2014 Hammerhead + Sharks"
-    delayBeforeWaveSeconds: 18
-    waveDurationSeconds: 70
-    spawnGapSeconds: 3.6
+      count: 4
+  - waveName: "5 \u2014 Hammerheads"
+    delayBeforeWaveSeconds: 14
+    waveDurationSeconds: 62
+    spawnGapSeconds: 2.2
     loopComposition: 1
     spawns:
     - enemyId: hammerhead
-      count: 2
+      count: 4
     - enemyId: shark
-      count: 3
-  - waveName: "6 \u2014 Kraken"
-    delayBeforeWaveSeconds: 20
-    waveDurationSeconds: 40
-    spawnGapSeconds: 4.5
+      count: 5
+  - waveName: "6 \u2014 Kraken Tide"
+    delayBeforeWaveSeconds: 16
+    waveDurationSeconds: 50
+    spawnGapSeconds: 2.6
     loopComposition: 1
     spawns:
     - enemyId: kraken_spawn
+      count: 3
+    - enemyId: swordfish
+      count: 4
+  - waveName: "7 \u2014 Full Assault"
+    delayBeforeWaveSeconds: 18
+    waveDurationSeconds: 70
+    spawnGapSeconds: 2
+    loopComposition: 1
+    spawns:
+    - enemyId: cannonboat
+      count: 3
+    - enemyId: shark
+      count: 3
+    - enemyId: swordfish
+      count: 3
+    - enemyId: hammerhead
       count: 2
   afterScriptedWaves: 2
-  globalSpeedMultiplier: 0.8
-  threatMultiplier: 0.7
-  budgetCapMultiplier: 3.5
-  maxActiveEnemies: 0
+  globalSpeedMultiplier: 1.05
+  threatMultiplier: 0.92
+  budgetCapMultiplier: 4.2
+  maxActiveEnemies: 110
   eliteChanceMultiplier: 1
-  creatureChanceAtStart: 0.2
-  creatureChanceAtLateGame: 0.5
-  creatureChanceRampMinutes: 6
+  creatureChanceAtStart: 0.35
+  creatureChanceAtLateGame: 0.65
+  creatureChanceRampMinutes: 5
   spawnPlacement: 2
-  spawnDistanceMin: 9
-  spawnDistanceMax: 15
+  spawnDistanceMin: 11
+  spawnDistanceMax: 18
   spawnArcDegrees: 360
   spawnArcYawOffset: 0
   spawnOutsideCameraView: 1
   cameraViewportMargin: 0.05
-  spawnPositionAttempts: 16
+  spawnPositionAttempts: 20
   enemies:
   - enemyId: cannonboat
     spawnEnabled: 1
@@ -96,35 +116,35 @@ MonoBehaviour:
     maxConcurrent: 0
     availableAfterMinutes: 0
     availableUntilMinutes: 0
-    speedMultiplier: 1
+    speedMultiplier: 1.05
   - enemyId: shark
     spawnEnabled: 1
     weight: 1
     maxConcurrent: 0
     availableAfterMinutes: 0
     availableUntilMinutes: 0
-    speedMultiplier: 1
+    speedMultiplier: 1.1
   - enemyId: swordfish
     spawnEnabled: 1
-    weight: 0.5
-    maxConcurrent: 8
+    weight: 0.9
+    maxConcurrent: 14
     availableAfterMinutes: 0
     availableUntilMinutes: 0
-    speedMultiplier: 1.1
+    speedMultiplier: 1.2
   - enemyId: hammerhead
     spawnEnabled: 1
-    weight: 0.8
+    weight: 1
     maxConcurrent: 0
-    availableAfterMinutes: 0
+    availableAfterMinutes: 1
     availableUntilMinutes: 0
-    speedMultiplier: 0.95
+    speedMultiplier: 1.05
   - enemyId: kraken_spawn
     spawnEnabled: 1
-    weight: 0.7
-    maxConcurrent: 4
-    availableAfterMinutes: 0
+    weight: 0.85
+    maxConcurrent: 6
+    availableAfterMinutes: 2.5
     availableUntilMinutes: 0
-    speedMultiplier: 0.85
+    speedMultiplier: 0.95
   - enemyId: reef_crab_miniboss
     spawnEnabled: 0
     weight: 1
