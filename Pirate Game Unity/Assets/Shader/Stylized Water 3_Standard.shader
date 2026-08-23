@@ -259,14 +259,32 @@ Shader "Stylized Water 3/Standard" {
 
 				Light mainLight = GetMainLight();
 				half ndotl = saturate(dot(bumpedNormalWS, mainLight.direction));
-				half3 diffuse = waterColor * (0.55 + 0.45 * ndotl) * mainLight.color;
+				// Wider 0.4-1.0 range (was 0.55-1.0) so wave-driven normal variation reads as visible
+				// light/shadow banding on the surface instead of a near-flat wash.
+				half lightMul = saturate(0.4 + 0.6 * ndotl);
+				half3 lightColorClamped = saturate(mainLight.color); // avoid HDR light intensity stacking with HDR water color
+				half3 diffuse = waterColor * lightMul * lightColorClamped;
 
 				float3 halfDir = normalize(mainLight.direction + viewDirWS);
 				half spec = pow(saturate(dot(bumpedNormalWS, halfDir)), lerp(256.0, 4.0, saturate(_SunReflectionSize)));
-				half3 sunHighlight = mainLight.color * spec * _SunReflectionStrength;
+				half3 sunHighlight = lightColorClamped * spec * _SunReflectionStrength;
 
-				half fresnel = pow(1.0 - saturate(dot(viewDirWS, bumpedNormalWS)), max(_ReflectionFresnel, 0.01));
-				half3 withReflection = lerp(diffuse, _HorizonColor.rgb, fresnel * saturate(_ReflectionStrength));
+				// _ReflectionFresnel is authored (e.g. 0.1) for the original curvature-mask technique, not a
+				// plain pow() exponent - used directly, tiny values push fresnel to ~1 across almost the whole
+				// visible plane at typical low camera angles, drowning out depth/wave detail under a flat wash.
+				// Floor the exponent so the highlight stays a grazing-angle rim instead of a full-surface tint,
+				// and only lightly blend it in - per design priority this is a rim accent, not the main read.
+				half fresnelExp = max(_ReflectionFresnel * 20.0, 4.0);
+				half fresnel = pow(1.0 - saturate(dot(viewDirWS, bumpedNormalWS)), fresnelExp);
+
+				// The horizon color is an intentionally bright HDR tint (for a glinting skyline rim) but with
+				// no tonemapping in this scene it was clipping to flat white; normalize its peak to 1 so it
+				// still reads as a bright cyan accent instead of blown-out white.
+				half3 horizonRGB = _HorizonColor.rgb;
+				half horizonPeak = max(horizonRGB.r, max(horizonRGB.g, horizonRGB.b));
+				horizonRGB = horizonPeak > 1.0 ? horizonRGB / horizonPeak : horizonRGB;
+				half reflectionWeight = saturate(_ReflectionStrength) * fresnel * 0.4; // de-emphasized per design priority
+				half3 withReflection = lerp(diffuse, horizonRGB, reflectionWeight);
 
 				float2 foamUvA = IN.positionWS.xz * _FoamTiling.xy + panDir * _FoamSpeed * _Time.y;
 				float2 foamUvB = IN.positionWS.xz * _FoamTiling.xy * _FoamSubTiling + panDir * _FoamSubSpeed * _Time.y;
@@ -274,11 +292,18 @@ Shader "Stylized Water 3/Standard" {
 				half foamB = SAMPLE_TEXTURE2D(_FoamTex, sampler_FoamTex, foamUvB).r;
 				half foamNoise = saturate(foamA * 0.6 + foamB * 0.4);
 
-				half shoreProximity = 1.0 - depthFactor;
-				half foamMask = saturate((shoreProximity + _FoamBaseAmount - _FoamClipping) * _FoamStrength);
+				// Foam should hug the actual coastline (where depthDiff -> 0), not the whole shallow-water
+				// zone out to _DepthVertical - the previous version used overall shore proximity, so any
+				// broad shallow reef (tightly packed islands, big depthVertical) got whited out entirely.
+				half foamBandWidth = max(_DepthVertical * 0.15, 0.5);
+				half shoreEdge = 1.0 - saturate(depthDiff / foamBandWidth);
+				half foamMask = saturate((shoreEdge + _FoamBaseAmount * 0.3 - _FoamClipping) * _FoamStrength);
 				half foamAmount = saturate(foamNoise * foamMask);
 
 				half3 finalColor = lerp(withReflection, _FoamColor.rgb, foamAmount) + sunHighlight;
+				// Soft-knee highlight compression: keeps HDR accents (shallow glow, foam, rim) looking bright
+				// without hard-clipping to flat white when a few bright terms stack on one pixel.
+				finalColor = finalColor / (1.0 + max(0.0, finalColor - 1.0));
 				half finalAlpha = saturate(waterAlpha + foamAmount + spec * 0.5);
 
 				return half4(finalColor, finalAlpha);
