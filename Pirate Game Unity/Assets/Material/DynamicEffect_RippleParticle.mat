@@ -19,31 +19,32 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties:
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-      _BaseMap:
+    - _BaseMap:
         m_Texture: {fileID: 2800000, guid: 6a83f061e34e4644393e15cdb61b20df, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-      _MaskMap:
+    - _MaskMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: {}
+    m_Ints: []
     m_Floats:
-      _BlendOp: 0
-      _Cull: 0
-      _FoamStrength: 0
-      _Height: 0.26
-      _HeightScale: 1
-      _NormalStrength: 1
-      _RemapDisplacement: 0
+    - _BlendOp: 0
+    - _Cull: 2
+    - _FoamStrength: 0
+    - _Height: 0.26
+    - _HeightScale: 1
+    - _NormalStrength: 1
+    - _RemapDisplacement: 0
     m_Colors:
-      _AnimationSpeed: {r: 0, g: 0, b: 0, a: 0}
-      _MaskAnimationSpeed: {r: 0, g: 0, b: 0, a: 0}
-      _Params: {r: 0.1, g: 1, b: 5, a: 1}
-      _Speed: {r: 0, g: 0, b: 0, a: 0}
+    - _AnimationSpeed: {r: 0, g: 0, b: 0, a: 0}
+    - _FoamColor: {r: 0.504717, g: 1, b: 0.994894, a: 1}
+    - _MaskAnimationSpeed: {r: 0, g: 0, b: 0, a: 0}
+    - _Params: {r: 0.1, g: 1, b: 5, a: 1}
+    - _Speed: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 0
