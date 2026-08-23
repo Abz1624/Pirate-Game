@@ -134,45 +134,157 @@ Shader "Stylized Water 3/Standard" {
 		[HideInInspector] [NoScaleOffset] unity_LightmapsInd ("unity_LightmapsInd", 2DArray) = "" {}
 		[HideInInspector] [NoScaleOffset] unity_ShadowMasks ("unity_ShadowMasks", 2DArray) = "" {}
 	}
-	//DummyShaderTextExporter
+
 	SubShader{
-		Tags { "RenderType" = "Opaque" }
+		Tags { "RenderType"="Transparent" "RenderPipeline"="UniversalPipeline" "Queue"="Transparent" }
 		LOD 200
 
 		Pass
 		{
+			Name "ForwardWater"
+			Tags { "LightMode"="UniversalForward" }
+			Cull [_Cull]
+			ZWrite [_ZWrite]
+			Blend SrcAlpha OneMinusSrcAlpha
+
 			HLSLPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
 
-			float4x4 unity_ObjectToWorld;
-			float4x4 unity_MatrixVP;
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 
-			struct Vertex_Stage_Input
+			struct Attributes
 			{
-				float4 pos : POSITION;
+				float4 positionOS : POSITION;
+				float3 normalOS : NORMAL;
+				float2 uv : TEXCOORD0;
+				float4 color : COLOR;
 			};
 
-			struct Vertex_Stage_Output
+			struct Varyings
 			{
-				float4 pos : SV_POSITION;
+				float4 positionHCS : SV_POSITION;
+				float4 screenPos : TEXCOORD0;
+				float3 positionWS : TEXCOORD1;
+				float3 normalWS : TEXCOORD2;
+				float4 color : TEXCOORD3;
 			};
 
-			Vertex_Stage_Output vert(Vertex_Stage_Input input)
+			TEXTURE2D(_BumpMap); SAMPLER(sampler_BumpMap);
+			TEXTURE2D(_FoamTex); SAMPLER(sampler_FoamTex);
+
+			CBUFFER_START(UnityPerMaterial)
+				float4 _Direction;
+				float _Speed;
+				float4 _BaseColor;
+				float4 _ShallowColor;
+				float _ColorAbsorption;
+				float _DepthVertical;
+				float _EdgeFade;
+
+				float4 _NormalTiling;
+				float _NormalSubTiling;
+				float _NormalStrength;
+				float _NormalSpeed;
+				float _NormalSubSpeed;
+
+				float4 _FoamColor;
+				float4 _FoamTiling;
+				float _FoamSubTiling;
+				float _FoamSpeed;
+				float _FoamSubSpeed;
+				float _FoamStrength;
+				float _FoamClipping;
+				float _FoamBaseAmount;
+
+				float _SunReflectionSize;
+				float _SunReflectionStrength;
+				float _SunReflectionDistortion;
+				float _ReflectionStrength;
+				float _ReflectionFresnel;
+				float4 _HorizonColor;
+			CBUFFER_END
+
+			Varyings vert (Attributes IN)
 			{
-				Vertex_Stage_Output output;
-				output.pos = mul(unity_MatrixVP, mul(unity_ObjectToWorld, input.pos));
-				return output;
+				Varyings OUT;
+				OUT.positionWS = TransformObjectToWorld(IN.positionOS.xyz);
+				OUT.positionHCS = TransformWorldToHClip(OUT.positionWS);
+				OUT.screenPos = ComputeScreenPos(OUT.positionHCS);
+				OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
+				OUT.color = IN.color;
+				return OUT;
 			}
 
-			float4 frag(Vertex_Stage_Output input) : SV_TARGET
+			// Real replacement for a DummyShaderTextExporter stub (baked to flat white). Approximates the
+			// Stylized Water 3 "Standard" surface: depth-based deep/shallow color gradient (via the camera
+			// depth texture), a dual-panning normal map for surface motion, a Blinn-Phong sun highlight,
+			// fresnel-tinted horizon reflection, and a foam texture blended in near shorelines. This is a
+			// hand-authored stand-in, not the original Shader Graph, so it won't have every feature (caustics,
+			// refraction, planar reflections, wave displacement) of the real asset — but it renders real water
+			// instead of solid white.
+			half4 frag (Varyings IN) : SV_Target
 			{
-				return float4(1.0, 1.0, 1.0, 1.0); // RGBA
-			}
+				float2 screenUV = IN.screenPos.xy / IN.screenPos.w;
+				float rawDepth = SampleSceneDepth(screenUV);
+				float sceneEyeDepth = LinearEyeDepth(rawDepth, _ZBufferParams);
+				float waterEyeDepth = IN.screenPos.w;
+				float depthDiff = max(sceneEyeDepth - waterEyeDepth, 0.0);
+				float depthFactor = saturate(depthDiff / max(_DepthVertical, 0.001));
+				depthFactor = pow(depthFactor, lerp(1.0, 3.0, saturate(_ColorAbsorption)));
 
+				float3 normalWS = normalize(IN.normalWS);
+				float3 tangentWS = normalize(cross(normalWS, float3(0,0,1)));
+				float3 bitangentWS = normalize(cross(normalWS, tangentWS));
+
+				float2 panDir = _Direction.xy;
+				float2 uvA = IN.positionWS.xz * _NormalTiling.xy + panDir * _NormalSpeed * _Time.y;
+				float2 uvB = IN.positionWS.xz * _NormalTiling.xy * _NormalSubTiling + panDir * _NormalSubSpeed * _Time.y;
+
+				half3 nA = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, uvA), _NormalStrength);
+				half3 nB = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, uvB), _NormalStrength);
+				half3 normalTS = normalize(half3(nA.xy + nB.xy, nA.z * nB.z));
+
+				float3 bumpedNormalWS = normalize(
+					tangentWS * normalTS.x +
+					bitangentWS * normalTS.y +
+					normalWS * normalTS.z);
+
+				float3 viewDirWS = normalize(GetCameraPositionWS() - IN.positionWS);
+
+				half3 waterColor = lerp(_ShallowColor.rgb, _BaseColor.rgb, depthFactor);
+				half waterAlpha = lerp(_ShallowColor.a, _BaseColor.a, depthFactor);
+
+				Light mainLight = GetMainLight();
+				half ndotl = saturate(dot(bumpedNormalWS, mainLight.direction));
+				half3 diffuse = waterColor * (0.55 + 0.45 * ndotl) * mainLight.color;
+
+				float3 halfDir = normalize(mainLight.direction + viewDirWS);
+				half spec = pow(saturate(dot(bumpedNormalWS, halfDir)), lerp(256.0, 4.0, saturate(_SunReflectionSize)));
+				half3 sunHighlight = mainLight.color * spec * _SunReflectionStrength;
+
+				half fresnel = pow(1.0 - saturate(dot(viewDirWS, bumpedNormalWS)), max(_ReflectionFresnel, 0.01));
+				half3 withReflection = lerp(diffuse, _HorizonColor.rgb, fresnel * saturate(_ReflectionStrength));
+
+				float2 foamUvA = IN.positionWS.xz * _FoamTiling.xy + panDir * _FoamSpeed * _Time.y;
+				float2 foamUvB = IN.positionWS.xz * _FoamTiling.xy * _FoamSubTiling + panDir * _FoamSubSpeed * _Time.y;
+				half foamA = SAMPLE_TEXTURE2D(_FoamTex, sampler_FoamTex, foamUvA).r;
+				half foamB = SAMPLE_TEXTURE2D(_FoamTex, sampler_FoamTex, foamUvB).r;
+				half foamNoise = saturate(foamA * 0.6 + foamB * 0.4);
+
+				half shoreProximity = 1.0 - depthFactor;
+				half foamMask = saturate((shoreProximity + _FoamBaseAmount - _FoamClipping) * _FoamStrength);
+				half foamAmount = saturate(foamNoise * foamMask);
+
+				half3 finalColor = lerp(withReflection, _FoamColor.rgb, foamAmount) + sunHighlight;
+				half finalAlpha = saturate(waterAlpha + foamAmount + spec * 0.5);
+
+				return half4(finalColor, finalAlpha);
+			}
 			ENDHLSL
 		}
 	}
-	Fallback "Hidden/Universal Render Pipeline/FallbackError"
-	//CustomEditor "StylizedWater3.MaterialUI"
+	Fallback Off
 }
