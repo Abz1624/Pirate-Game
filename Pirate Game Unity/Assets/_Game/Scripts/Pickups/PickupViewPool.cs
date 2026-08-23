@@ -17,17 +17,11 @@ namespace HighSeas.Pickups
             _settings = settings;
         }
 
-        public Transform Acquire(PickupType type, Vector3 position)
+        public Transform Acquire(PickupType type, Vector3 position, int value = 1)
         {
-            var prefab = type == PickupType.Gold
-                ? _settings?.goldPickupPrefab
-                : _settings?.infamyPickupPrefab;
-            var scale = type == PickupType.Gold
-                ? _settings?.goldPickupScale ?? 0.38f
-                : _settings?.infamyPickupScale ?? 0.42f;
-            var color = type == PickupType.Gold
-                ? _settings?.goldColor ?? Color.yellow
-                : _settings?.infamyColor ?? Color.cyan;
+            var prefab = GetPrefab(type, value);
+            var scale = GetScale(type, value);
+            var color = GetColor(type);
 
             if (prefab != null)
             {
@@ -60,14 +54,11 @@ namespace HighSeas.Pickups
             return CreatePrimitive(position, color, scale);
         }
 
-        public void Release(Transform view, PickupType type)
+        public void Release(Transform view, PickupType type, int value = 1)
         {
             if (view == null) return;
 
-            var prefab = type == PickupType.Gold
-                ? _settings?.goldPickupPrefab
-                : _settings?.infamyPickupPrefab;
-
+            var prefab = GetPrefab(type, value);
             if (prefab != null && view.name == prefab.name)
             {
                 view.gameObject.SetActive(false);
@@ -85,6 +76,39 @@ namespace HighSeas.Pickups
 
             Object.Destroy(view.gameObject);
         }
+
+        GameObject GetPrefab(PickupType type, int value)
+        {
+            if (_settings == null) return null;
+            return type switch
+            {
+                PickupType.Gold when value >= _settings.goldBarrelMinValue && _settings.goldBarrelPickupPrefab != null
+                    => _settings.goldBarrelPickupPrefab,
+                PickupType.Gold => _settings.goldPickupPrefab,
+                PickupType.Powerup => _settings.healthPickupPrefab,
+                _ => _settings.infamyPickupPrefab
+            };
+        }
+
+        float GetScale(PickupType type, int value)
+        {
+            if (_settings == null) return 0.4f;
+            return type switch
+            {
+                PickupType.Gold when value >= _settings.goldBarrelMinValue && _settings.goldBarrelPickupPrefab != null
+                    => _settings.goldBarrelPickupScale,
+                PickupType.Gold => _settings.goldPickupScale,
+                PickupType.Powerup => _settings.healthPickupScale,
+                _ => _settings.infamyPickupScale
+            };
+        }
+
+        static Color GetColor(PickupType type) => type switch
+        {
+            PickupType.Gold => new Color(1f, 0.85f, 0.15f),
+            PickupType.Powerup => new Color(0.35f, 1f, 0.45f),
+            _ => new Color(0.2f, 0.95f, 1f)
+        };
 
         Transform CreatePrimitive(Vector3 position, Color color, float scale)
         {

@@ -36,6 +36,10 @@ namespace HighSeas.VFX
             autoReturn.Play(lifetime, go => Release(prefab, go));
         }
 
+        public GameObject AcquirePublic(GameObject prefab) => Acquire(prefab);
+
+        public void ReleasePublic(GameObject prefab, GameObject instance) => Release(prefab, instance);
+
         GameObject Acquire(GameObject prefab)
         {
             var key = prefab.GetInstanceID();

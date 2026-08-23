@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using HighSeas.Data;
+using HighSeas.UI;
 using HighSeas.VFX;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -14,34 +15,133 @@ namespace HighSeas.Editor
         const string JuiceResourcesPath = "Assets/_Game/Resources/DemoJuiceSettings.asset";
         const string PacingPath = "Assets/_Game/Data/DemoPacingSettings.asset";
         const string PacingResourcesPath = "Assets/_Game/Resources/DemoPacingSettings.asset";
+        const string LevelUpPath = "Assets/_Game/Data/LevelUpSettings.asset";
+        const string LevelUpResourcesPath = "Assets/_Game/Resources/LevelUpSettings.asset";
+        const string VfxRoot = "Assets/Prefabs/VFX";
 
-        const string ExplosionPath = "Assets/GameObject/Explosion_Simple.prefab";
-        const string ChestPath = "Assets/StylizedCharacterPack/Prefabs/Props/Chest_Wood.prefab";
-        const string BarrelPath = "Assets/StylizedCharacterPack/Prefabs/Props/Barrel_Wood.prefab";
-        const string RockPath = "Assets/3D Models/Rocks/Rock_Meduim.prefab";
+        static void EnsureLevelUpUiInScene()
+        {
+            var scene = SceneManager.GetActiveScene();
+            if (!scene.IsValid() || !scene.path.Contains("Run.unity")) return;
+
+            var canvas = Object.FindFirstObjectByType<Canvas>();
+            if (canvas == null) return;
+
+            var modals = Object.FindObjectsByType<LevelUpModal>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            LevelUpModal keeper = null;
+            for (var i = 0; i < modals.Length; i++)
+            {
+                var modal = modals[i];
+                if (modal.transform.childCount == 0 && modal.GetComponent<RectTransform>() == null)
+                {
+                    Object.DestroyImmediate(modal.gameObject);
+                    continue;
+                }
+
+                if (keeper == null || modal.transform.childCount > keeper.transform.childCount)
+                    keeper = modal;
+            }
+
+            if (keeper == null)
+            {
+                var panel = new GameObject("LevelUpPanel", typeof(RectTransform), typeof(UnityEngine.UI.Image));
+                panel.transform.SetParent(canvas.transform, false);
+                keeper = panel.AddComponent<LevelUpModal>();
+            }
+
+            if (canvas.GetComponentInChildren<WeaponLevelStripHud>(true) == null)
+            {
+                var strip = new GameObject("WeaponLevelStrip");
+                strip.transform.SetParent(canvas.transform, false);
+                strip.AddComponent<WeaponLevelStripHud>();
+            }
+
+            var levelSystem = Object.FindFirstObjectByType<LevelSystem>();
+            if (levelSystem != null)
+            {
+                var so = new SerializedObject(levelSystem);
+                if (so.FindProperty("levelUpSettings").objectReferenceValue == null)
+                {
+                    so.FindProperty("levelUpSettings").objectReferenceValue =
+                        AssetDatabase.LoadAssetAtPath<LevelUpSettings>(LevelUpPath);
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
+
+            EditorSceneManager.MarkSceneDirty(scene);
+        }
+
+        [MenuItem("HighSeas/Setup Level Up UI")]
+        public static void SetupLevelUpUi()
+        {
+            EnsureFolder("Assets/_Game/Data");
+            EnsureFolder("Assets/_Game/Resources");
+            WireLevelUpSettings();
+            PopulateWeaponUpgradeAxes();
+            EnsureLevelUpUiInScene();
+            AssetDatabase.SaveAssets();
+            Debug.Log("Level-up settings and weapon upgrade axes configured.");
+        }
 
         [MenuItem("HighSeas/Setup Demo Juice (Phases 6-9)")]
         public static void SetupDemoJuice()
         {
             EnsureFolder("Assets/_Game/Data");
             EnsureFolder("Assets/_Game/Resources");
-            EnsureFolder("Assets/_Game/Prefabs/VFX");
+            WireJuiceSettings();
+            WirePacingSettings();
+            WireLevelUpSettings();
+            TuneDeckCannons();
+            EnsureJuiceSystemsInScene();
+            AssetDatabase.SaveAssets();
+            Debug.Log("Demo juice configured with artist VFX prefabs from Assets/Prefabs/VFX.");
+        }
 
+        [MenuItem("HighSeas/Integrate Artist VFX")]
+        public static void IntegrateArtistVfx() => SetupDemoJuice();
+
+        public static void WireJuiceSettings()
+        {
             var juice = LoadOrCreate<DemoJuiceSettings>(JuicePath);
-            var explosion = LoadPrefab(ExplosionPath);
-            juice.killExplosionPrefab = explosion;
-            juice.eliteKillExplosionPrefab = explosion;
-            juice.bossKillExplosionPrefab = explosion;
-            juice.hitSparkPrefab = explosion;
-            juice.levelUpBurstPrefab = explosion;
-            juice.salvageChestPrefab = LoadPrefab(ChestPath);
-            juice.trialBuoyPrefab = LoadPrefab(BarrelPath);
-            juice.lighthousePrefab = LoadPrefab(RockPath);
-            juice.bossBeaconPrefab = null;
+
+            juice.enemyHitPrefab = LoadPrefab($"{VfxRoot}/02_FishEnemy_DamageVFX.prefab");
+            juice.enemyKillPrefab = juice.enemyHitPrefab;
+            juice.eliteKillExplosionPrefab = juice.enemyHitPrefab;
+            juice.bossKillExplosionPrefab = juice.enemyHitPrefab;
+            juice.critHitPrefab = juice.enemyHitPrefab;
+            juice.levelUpBurstPrefab = juice.enemyHitPrefab;
+            juice.waterImpactSplashPrefab = LoadPrefab($"{VfxRoot}/19_WaterImpactSplash.prefab");
+            juice.damageHighlightPrefab = LoadPrefab($"{VfxRoot}/06_DamageHighlightShader.prefab");
+
+            juice.projectilePrefab = LoadPrefab($"{VfxRoot}/01_Cannonball_ShootingVFX.prefab");
+            juice.shootingVfxPrefab = juice.projectilePrefab;
+
+            juice.mineBarrelPrefab = LoadPrefab($"{VfxRoot}/09_MineBarrel_GlowRing.prefab");
+            juice.lightningStrikePrefab = LoadPrefab($"{VfxRoot}/13_LightningStrike_VFX.prefab");
+            juice.burningTrailPrefab = LoadPrefab($"{VfxRoot}/14_BurningTrail_VFX.prefab");
+            juice.flamethrowerPrefab = LoadPrefab($"{VfxRoot}/10_Flamethrower_VFX.prefab");
+            juice.cutlassPrefab = LoadPrefab($"{VfxRoot}/12_CutlassSword.prefab");
+            juice.seaFoamTrailPrefab = LoadPrefab($"{VfxRoot}/11_SeaFoamTrail.prefab");
+
+            juice.infamyPickupPrefab = LoadPrefab($"{VfxRoot}/04_XPCrystal.prefab");
+            juice.goldPickupPrefab = LoadPrefab($"{VfxRoot}/03_GoldCoin.prefab");
+            juice.healthPickupPrefab = LoadPrefab($"{VfxRoot}/07_HealthPickupBarrel.prefab");
+            juice.goldBarrelPickupPrefab = LoadPrefab($"{VfxRoot}/08_GoldPickupBarrel.prefab");
+
+            juice.enemyHealthBarPrefab = LoadPrefab($"{VfxRoot}/05_EnemyHealthIndicator.prefab");
+
+            juice.salvageChestPrefab = LoadPrefab($"{VfxRoot}/15_SalvageChest.prefab");
+            juice.lighthousePrefab = LoadPrefab($"{VfxRoot}/16_Lighthouse.prefab");
+            juice.trialBuoyPrefab = LoadPrefab($"{VfxRoot}/17_TrialBuoy.prefab");
+            juice.bossBeaconPrefab = LoadPrefab($"{VfxRoot}/18_BossBeacon.prefab");
+            juice.bossTelegraphRingPrefab = juice.mineBarrelPrefab;
 
             EditorUtility.SetDirty(juice);
             CopyAsset(JuicePath, JuiceResourcesPath);
+        }
 
+        static void WirePacingSettings()
+        {
             var pacing = LoadOrCreate<DemoPacingSettings>(PacingPath);
             pacing.earlyLevelXpMultiplier = 0.62f;
             pacing.earlyLevelCap = 6;
@@ -54,12 +154,43 @@ namespace HighSeas.Editor
             pacing.postScriptedThreatMultiplier = 0.75f;
             EditorUtility.SetDirty(pacing);
             CopyAsset(PacingPath, PacingResourcesPath);
+        }
 
-            TuneDeckCannons();
-            EnsureCombatVfxInScene();
+        static void WireLevelUpSettings()
+        {
+            var settings = LoadOrCreate<LevelUpSettings>(LevelUpPath);
+            settings.cardsPerLevel = 3;
+            settings.weaponOfferWeight = 0.55f;
+            settings.newWeaponWeightMultiplier = 2.5f;
+            settings.excludeMaxedWeapons = true;
+            settings.preventDuplicateCards = true;
+            settings.scriptFirstLevelUp = true;
+            settings.startingWeaponId = "deck_cannons";
+            settings.commonStatLines = 1;
+            settings.uncommonStatLines = 1;
+            settings.rareStatLines = 2;
+            settings.epicStatLines = 2;
+            settings.legendaryStatLines = 3;
+            settings.upgradePowerMultiplier = 1.2f;
+            EditorUtility.SetDirty(settings);
+            CopyAsset(LevelUpPath, LevelUpResourcesPath);
+        }
 
-            AssetDatabase.SaveAssets();
-            Debug.Log("Demo juice + pacing configured. Explosion on kill, brighter projectiles, POI props, and demo pacing are ready.");
+        static void PopulateWeaponUpgradeAxes()
+        {
+            var guids = AssetDatabase.FindAssets("t:WeaponDefinition", new[] { "Assets/_Game/Data/Weapons" });
+            for (var i = 0; i < guids.Length; i++)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                var weapon = AssetDatabase.LoadAssetAtPath<WeaponDefinition>(path);
+                if (weapon == null) continue;
+                weapon.upgradeAxisConfigs = null;
+                var defaults = weapon.GetUpgradeConfigs();
+                weapon.upgradeAxisConfigs = new WeaponUpgradeAxisConfig[defaults.Count];
+                for (var j = 0; j < defaults.Count; j++)
+                    weapon.upgradeAxisConfigs[j] = defaults[j];
+                EditorUtility.SetDirty(weapon);
+            }
         }
 
         static void TuneDeckCannons()
@@ -73,19 +204,44 @@ namespace HighSeas.Editor
             EditorUtility.SetDirty(weapon);
         }
 
-        static void EnsureCombatVfxInScene()
+        static void EnsureJuiceSystemsInScene()
         {
             var scene = SceneManager.GetActiveScene();
             if (!scene.IsValid() || !scene.path.Contains("Run.unity"))
             {
-                Debug.Log("CombatVfxController will be added automatically at runtime. Open Run.unity to bake it into the scene.");
+                Debug.Log("Juice systems auto-spawn at runtime. Open Run.unity and run HighSeas/Integrate Artist VFX to bake scene components.");
                 return;
             }
 
             var systems = GameObject.Find("Systems");
             if (systems == null) return;
+
+            if (systems.GetComponent<JuiceVfxBroker>() == null)
+                systems.AddComponent<JuiceVfxBroker>();
             if (systems.GetComponent<CombatVfxController>() == null)
                 systems.AddComponent<CombatVfxController>();
+            if (systems.GetComponent<WeaponJuiceController>() == null)
+                systems.AddComponent<WeaponJuiceController>();
+            if (systems.GetComponent<PlayerJuiceController>() == null)
+                systems.AddComponent<PlayerJuiceController>();
+
+            var vfxRoot = GameObject.Find("VFXRoot");
+            if (vfxRoot == null)
+            {
+                vfxRoot = new GameObject("VFXRoot");
+                vfxRoot.transform.SetParent(systems.transform, false);
+            }
+
+            var broker = systems.GetComponent<JuiceVfxBroker>();
+            if (broker != null)
+            {
+                var so = new SerializedObject(broker);
+                so.FindProperty("vfxRoot").objectReferenceValue = vfxRoot.transform;
+                so.FindProperty("settings").objectReferenceValue =
+                    AssetDatabase.LoadAssetAtPath<DemoJuiceSettings>(JuicePath);
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+
             EditorSceneManager.MarkSceneDirty(scene);
         }
 

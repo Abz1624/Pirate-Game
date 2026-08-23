@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using HighSeas.Core;
+using HighSeas.Data;
+using HighSeas.VFX;
 using HighSeas.World;
 using UnityEngine;
 
@@ -24,6 +26,7 @@ namespace HighSeas.Enemies
         public bool isElite;
         public bool isBoss;
         public Transform view;
+        public Transform healthBar;
     }
 
     public sealed class SpatialHash
@@ -83,6 +86,7 @@ namespace HighSeas.Enemies
         [SerializeField] float islandCollisionPadding = 0.35f;
         [SerializeField] float shipCollisionPadding = 0.55f;
         [SerializeField] float enemySeparationPadding = 0.2f;
+        [SerializeField] DemoJuiceSettings juiceSettings;
 
         readonly SpatialHash _hash = new(4f);
         EnemyAgent[] _agents;
@@ -99,6 +103,8 @@ namespace HighSeas.Enemies
             var cap = Platform.QualityProfile.Current.enemyCap;
             _agents = new EnemyAgent[cap];
             _viewPool = new EnemyViewPool(enemyRoot != null ? enemyRoot : transform);
+            if (juiceSettings == null)
+                juiceSettings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
         }
 
         public void SetDefinitions(Data.EnemyDefinition[] defs) => definitions = defs;
@@ -172,7 +178,23 @@ namespace HighSeas.Enemies
             }
 
             _activeCount++;
+            AttachHealthBar(slot, def, view, affix != EliteAffix.None);
             return slot;
+        }
+
+        void AttachHealthBar(int slot, Data.EnemyDefinition def, Transform view, bool elite)
+        {
+            if (juiceSettings?.enemyHealthBarPrefab == null || view == null) return;
+            var showBar = !juiceSettings.showHealthOnElitesOnly || elite || def.isBoss || def.isMiniboss;
+            if (!showBar) return;
+
+            var barGo = Object.Instantiate(juiceSettings.enemyHealthBarPrefab);
+            var bar = barGo.GetComponent<WorldHealthBar>();
+            if (bar == null)
+                bar = barGo.AddComponent<WorldHealthBar>();
+            bar.Bind(view, juiceSettings.enemyHealthBarHeight);
+            bar.SetFill(1f);
+            _agents[slot].healthBar = barGo.transform;
         }
 
         Transform CreateView(Data.EnemyDefinition def, Vector3 position, float scale, bool elite)
@@ -207,6 +229,12 @@ namespace HighSeas.Enemies
                     _viewPool.Release(_agents[index].view, def.visualPrefab);
                 else
                     Destroy(_agents[index].view.gameObject);
+            }
+
+            if (_agents[index].healthBar != null)
+            {
+                Destroy(_agents[index].healthBar.gameObject);
+                _agents[index].healthBar = null;
             }
 
             _agents[index].active = false;
@@ -484,6 +512,18 @@ namespace HighSeas.Enemies
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
             ref var e = ref _agents[index];
             e.hp -= damage;
+
+            if (e.healthBar != null)
+            {
+                var bar = e.healthBar.GetComponent<WorldHealthBar>();
+                bar?.SetFill(e.maxHp > 0f ? e.hp / e.maxHp : 0f);
+            }
+
+            if (e.view != null)
+                JuiceVfxBroker.Instance?.PlayDamageHighlight(e.view);
+
+            Meta.TriggerBus.Instance?.RaiseHit(damage, isCrit, e.position);
+
             if (e.hp <= 0f)
             {
                 var def = definitions[e.definitionIndex];

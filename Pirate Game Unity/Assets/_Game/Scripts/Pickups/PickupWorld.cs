@@ -58,7 +58,7 @@ namespace HighSeas.Pickups
             if (slot < 0) return;
 
             pos.y = 0.35f;
-            var view = _viewPool.Acquire(type, pos);
+            var view = _viewPool.Acquire(type, pos, value);
             _pool[slot] = new PickupAgent
             {
                 active = true,
@@ -124,9 +124,14 @@ namespace HighSeas.Pickups
                 UI.LevelSystem.Instance?.AddXP(Mathf.RoundToInt(p.value * (RunManager.Instance?.Stats.XPGain ?? 1f)));
             else if (p.type == PickupType.Gold)
                 RunManager.Instance?.AddGold(Mathf.RoundToInt(p.value * (RunManager.Instance?.Stats.GoldGain ?? 1f)));
+            else if (p.type == PickupType.Powerup)
+            {
+                var player = Object.FindFirstObjectByType<Player.PlayerShipController>();
+                player?.Damage.Heal(p.value);
+            }
 
             if (p.view != null)
-                _viewPool.Release(p.view, p.type);
+                _viewPool.Release(p.view, p.type, p.value);
             p.active = false;
             _active--;
         }

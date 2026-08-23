@@ -404,6 +404,8 @@ namespace HighSeas.Editor
 
             var level = systems.GetComponent<LevelSystem>();
             SetPrivateField(level, "database", db);
+            SetPrivateField(level, "levelUpSettings",
+                AssetDatabase.LoadAssetAtPath<LevelUpSettings>("Assets/_Game/Data/LevelUpSettings.asset"));
 
             SaveScene(Root + "/Scenes/Run.unity");
         }
@@ -437,6 +439,16 @@ namespace HighSeas.Editor
             SetPrivateField(hud, "timerText", timerText);
             SetPrivateField(hud, "goldText", goldText);
             SetPrivateField(hud, "levelText", levelText);
+
+            var strip = new GameObject("WeaponLevelStrip");
+            strip.transform.SetParent(canvas.transform, false);
+            var stripRt = strip.AddComponent<RectTransform>();
+            stripRt.anchorMin = new Vector2(0.5f, 0f);
+            stripRt.anchorMax = new Vector2(0.5f, 0f);
+            stripRt.pivot = new Vector2(0.5f, 0f);
+            stripRt.anchoredPosition = new Vector2(0f, 24f);
+            stripRt.sizeDelta = new Vector2(420f, 48f);
+            strip.AddComponent<WeaponLevelStripHud>();
         }
 
         static void BuildLevelUpModal(Canvas canvas)
@@ -444,23 +456,39 @@ namespace HighSeas.Editor
             var panel = new GameObject("LevelUpPanel");
             panel.transform.SetParent(canvas.transform, false);
             var rt = panel.AddComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(900, 400);
+            rt.sizeDelta = new Vector2(980, 460);
             var img = panel.AddComponent<Image>();
             img.color = new Color(0, 0, 0, 0.85f);
             var modal = panel.AddComponent<LevelUpModal>();
             var buttons = new Button[3];
+            var frames = new Image[3];
+            var categories = new TextMeshProUGUI[3];
             var titles = new TextMeshProUGUI[3];
+            var levels = new TextMeshProUGUI[3];
+            var rarities = new TextMeshProUGUI[3];
             var descs = new TextMeshProUGUI[3];
+            var hotkeys = new TextMeshProUGUI[3];
             for (var i = 0; i < 3; i++)
             {
-                buttons[i] = CreateButton(panel.transform, $"Card{i}", $"Offer {i + 1}", new Vector2(-250 + i * 250, 0), null);
-                titles[i] = buttons[i].GetComponentInChildren<TextMeshProUGUI>();
-                descs[i] = CreateText(buttons[i].transform, "Desc", "", new Vector2(0, -40), 16);
+                buttons[i] = CreateButton(panel.transform, $"Card{i}", "", new Vector2(-280 + i * 280, 0), null);
+                buttons[i].GetComponent<RectTransform>().sizeDelta = new Vector2(240, 320);
+                frames[i] = buttons[i].GetComponent<Image>();
+                categories[i] = CreateText(buttons[i].transform, "Category", "Category", new Vector2(0, 120), 14);
+                titles[i] = CreateText(buttons[i].transform, "Label", "Offer", new Vector2(0, 90), 22);
+                levels[i] = CreateText(buttons[i].transform, "Level", "Lv 1 → 2", new Vector2(0, 60), 16);
+                rarities[i] = CreateText(buttons[i].transform, "Rarity", "Common", new Vector2(0, 35), 14);
+                descs[i] = CreateText(buttons[i].transform, "Desc", "", new Vector2(0, -20), 15);
+                hotkeys[i] = CreateText(buttons[i].transform, "Hotkey", $"[{i + 1}]", new Vector2(0, -120), 16);
             }
             SetPrivateField(modal, "panel", panel);
             SetPrivateField(modal, "cardButtons", buttons);
+            SetPrivateField(modal, "cardFrames", frames);
+            SetPrivateField(modal, "cardCategories", categories);
             SetPrivateField(modal, "cardTitles", titles);
+            SetPrivateField(modal, "cardLevels", levels);
+            SetPrivateField(modal, "cardRarities", rarities);
             SetPrivateField(modal, "cardDescriptions", descs);
+            SetPrivateField(modal, "cardHotkeys", hotkeys);
             panel.SetActive(false);
         }
 

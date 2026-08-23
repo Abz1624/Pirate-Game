@@ -10,17 +10,15 @@ namespace HighSeas.VFX
     public sealed class CombatVfxController : MonoBehaviour
     {
         [SerializeField] DemoJuiceSettings settings;
-        [SerializeField] Transform vfxRoot;
 
-        VfxPool _pool;
         PlayerDamageFlash _playerFlash;
+        JuiceVfxBroker _broker;
 
         void Awake()
         {
             if (settings == null)
                 settings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
-
-            _pool = new VfxPool(vfxRoot != null ? vfxRoot : transform);
+            _broker = JuiceVfxBroker.Instance;
         }
 
         void Start()
@@ -70,56 +68,35 @@ namespace HighSeas.VFX
 
         void OnHit(float damage, bool crit, Vector3 position)
         {
-            if (!crit || settings == null || settings.hitSparkPrefab == null) return;
-            _pool.Play(
-                settings.hitSparkPrefab,
-                position + Vector3.up * 0.35f,
-                Quaternion.identity,
-                settings.hitSparkScale);
+            if (_broker == null) _broker = JuiceVfxBroker.Instance;
+            _broker?.PlayHit(position, crit);
         }
 
         void OnKill(bool elite, bool boss, Vector3 position)
         {
-            if (settings == null) return;
-
-            if (boss)
-            {
-                var prefab = settings.bossKillExplosionPrefab != null
-                    ? settings.bossKillExplosionPrefab
-                    : settings.killExplosionPrefab;
-                var scale = settings.bossKillExplosionScale;
-                var count = Mathf.Max(1, settings.bossDeathBurstCount);
-                for (var i = 0; i < count; i++)
-                {
-                    var offset = Random.insideUnitSphere * 1.5f;
-                    offset.y = Mathf.Abs(offset.y) * 0.5f;
-                    _pool.Play(prefab, position + offset, Quaternion.identity, scale * (0.85f + i * 0.15f));
-                }
-
-                return;
-            }
-
-            var explosion = elite && settings.eliteKillExplosionPrefab != null
-                ? settings.eliteKillExplosionPrefab
-                : settings.killExplosionPrefab;
-            if (explosion == null) return;
-
-            var explosionScale = elite ? settings.eliteKillExplosionScale : settings.killExplosionScale;
-            _pool.Play(explosion, position + Vector3.up * 0.25f, Quaternion.identity, explosionScale);
+            if (_broker == null) _broker = JuiceVfxBroker.Instance;
+            _broker?.PlayKill(position, elite, boss);
         }
 
         void OnDamageTaken(float amount)
         {
             if (amount <= 0f) return;
             _playerFlash?.Flash();
+            var player = FindFirstObjectByType<PlayerShipController>();
+            if (player != null)
+            {
+                if (_broker == null) _broker = JuiceVfxBroker.Instance;
+                _broker?.PlayDamageHighlight(player.transform);
+            }
         }
 
         void OnLevelChanged(int level)
         {
             if (settings == null || settings.levelUpBurstPrefab == null) return;
+            if (_broker == null) _broker = JuiceVfxBroker.Instance;
             var player = FindFirstObjectByType<PlayerShipController>();
             if (player == null) return;
-            _pool.Play(
+            _broker.Play(
                 settings.levelUpBurstPrefab,
                 player.Position + Vector3.up * 0.5f,
                 Quaternion.identity,

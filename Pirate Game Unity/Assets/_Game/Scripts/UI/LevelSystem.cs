@@ -12,6 +12,7 @@ namespace HighSeas.UI
         public static LevelSystem Instance { get; private set; }
 
         [SerializeField] GameDatabase database;
+        [SerializeField] LevelUpSettings levelUpSettings;
         [SerializeField] int weaponSlots = 2;
         [SerializeField] int logbookSlots = 2;
         [SerializeField] DemoPacingSettings demoPacing;
@@ -20,13 +21,18 @@ namespace HighSeas.UI
         public float CurrentXP { get; private set; }
         public float XPToNext { get; private set; }
         public int PendingLevelUps { get; private set; }
+        public IReadOnlyList<string> OwnedWeapons => _ownedWeapons;
+        public IReadOnlyList<string> OwnedLogbooks => _ownedLogbooks;
 
         readonly List<string> _ownedWeapons = new();
         readonly List<string> _ownedLogbooks = new();
-        readonly HashSet<string> _banished = new();
+        readonly Dictionary<string, int> _weaponLevels = new();
+        readonly Dictionary<string, int> _logbookLevels = new();
+        int _completedLevelUps;
 
         public event Action<int> LevelChanged;
         public event Action OffersReady;
+        public event Action LoadoutChanged;
 
         void Awake()
         {
@@ -35,6 +41,8 @@ namespace HighSeas.UI
                 database = GameDatabaseLoader.Load();
             if (demoPacing == null)
                 demoPacing = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
+            if (levelUpSettings == null)
+                levelUpSettings = Resources.Load<LevelUpSettings>("LevelUpSettings");
             RefreshXpToNext();
         }
 
@@ -43,11 +51,25 @@ namespace HighSeas.UI
             database = db;
             _ownedWeapons.Clear();
             _ownedLogbooks.Clear();
+            _weaponLevels.Clear();
+            _logbookLevels.Clear();
+            _completedLevelUps = 0;
             _ownedWeapons.Add(startingWeapon);
+            _weaponLevels[startingWeapon] = 1;
             Level = 1;
             CurrentXP = 0f;
             PendingLevelUps = 0;
             RefreshXpToNext();
+        }
+
+        public int GetWeaponLevel(string weaponId)
+        {
+            return _weaponLevels.TryGetValue(weaponId, out var level) ? level : 0;
+        }
+
+        public int GetLogbookLevel(string logbookId)
+        {
+            return _logbookLevels.TryGetValue(logbookId, out var level) ? level : 0;
         }
 
         void RefreshXpToNext() => XPToNext = GameMath.XPToNext(Level, demoPacing);
@@ -69,116 +91,90 @@ namespace HighSeas.UI
 
         void ShowLevelUp()
         {
-            var offers = GenerateOffers(3);
+            var offers = GenerateOffers();
             var modal = LevelUpModal.Instance;
             if (modal != null && modal.TryShow(offers, OnOfferSelected))
             {
+                Debug.Log($"Level-up modal shown with {offers.Count} offers.");
                 RunManager.Instance?.SetPause(PauseReason.LevelUp);
                 RunManager.Instance?.SetState(RunState.LevelUpPaused);
                 return;
             }
 
             Debug.LogWarning("Level-up UI unavailable; auto-selecting first offer.");
-            OnOfferSelected(offers[0]);
+            if (offers.Count > 0)
+                OnOfferSelected(offers[0]);
+            else
+                ResumeAfterLevelUp();
         }
 
-        public struct LevelOffer
+        List<LevelOffer> GenerateOffers()
         {
-            public string id;
-            public string title;
-            public string description;
-            public Rarity rarity;
-            public bool isWeapon;
-            public bool isNew;
-        }
-
-        List<LevelOffer> GenerateOffers(int count)
-        {
-            var result = new List<LevelOffer>(count);
             var rng = RunManager.Instance.Rng;
             var luck = RunManager.Instance.Stats.Luck;
-
-            for (var i = 0; i < count; i++)
-            {
-                var pickWeapon = rng.LootFloat() < 0.55f && _ownedWeapons.Count < weaponSlots;
-                if (pickWeapon)
-                {
-                    var w = database.weapons[rng.LootInt(0, database.weapons.Length)];
-                    var owned = _ownedWeapons.Contains(w.id);
-                    result.Add(new LevelOffer
-                    {
-                        id = w.id,
-                        title = owned ? $"{w.displayName} +" : w.displayName,
-                        description = owned ? "Upgrade weapon" : "New weapon",
-                        rarity = rng.RollRarity(luck),
-                        isWeapon = true,
-                        isNew = !owned
-                    });
-                }
-                else
-                {
-                    var l = database.logbooks[rng.LootInt(0, database.logbooks.Length)];
-                    result.Add(new LevelOffer
-                    {
-                        id = l.id,
-                        title = l.displayName,
-                        description = $"+{l.perLevelAdditive * 100f:0}% {l.primaryStat}",
-                        rarity = rng.RollRarity(luck),
-                        isWeapon = false
-                    });
-                }
-            }
+            var offers = LevelOfferGenerator.Generate(
+                database,
+                levelUpSettings,
+                demoPacing,
+                rng,
+                luck,
+                _ownedWeapons,
+                _weaponLevels,
+                _ownedLogbooks,
+                _logbookLevels,
+                weaponSlots,
+                logbookSlots,
+                _completedLevelUps == 0);
             OffersReady?.Invoke();
-            return result;
+            return offers;
         }
 
         void OnOfferSelected(LevelOffer offer)
         {
             PendingLevelUps = Mathf.Max(0, PendingLevelUps - 1);
             ApplyOffer(offer);
+            _completedLevelUps++;
+            LoadoutChanged?.Invoke();
             if (PendingLevelUps > 0) ShowLevelUp();
-            else
-            {
-                RunManager.Instance?.SetPause(PauseReason.None);
-                RunManager.Instance?.EnterPlaying();
-            }
+            else ResumeAfterLevelUp();
         }
 
-        void ApplyOffer(WeaponController weapons, LevelOffer offer)
+        void ResumeAfterLevelUp()
         {
+            RunManager.Instance?.SetPause(PauseReason.None);
+            RunManager.Instance?.EnterPlaying();
+        }
+
+        void ApplyOffer(LevelOffer offer)
+        {
+            var weapons = FindFirstObjectByType<WeaponController>();
             if (offer.isWeapon)
             {
-                var idx = _ownedWeapons.IndexOf(offer.id);
-                if (idx < 0 && _ownedWeapons.Count < weaponSlots)
+                var owned = _ownedWeapons.Contains(offer.id);
+                if (!owned && _ownedWeapons.Count < weaponSlots)
                 {
                     _ownedWeapons.Add(offer.id);
-                    weapons.EquipWeapon(offer.id);
+                    _weaponLevels[offer.id] = 1;
+                    weapons?.EquipWeapon(offer.id);
                 }
-                else
+                else if (owned)
                 {
-                    idx = FindWeaponIndex(weapons, offer.id);
-                    if (idx >= 0) weapons.UpgradeWeapon(idx, offer.rarity);
+                    var idx = weapons != null ? weapons.FindWeaponIndex(offer.id) : -1;
+                    if (idx >= 0)
+                    {
+                        weapons.ApplyUpgradePackage(idx, offer.upgradeLines);
+                        _weaponLevels[offer.id] = weapons.Weapons[idx].level;
+                    }
                 }
             }
             else
             {
                 if (!_ownedLogbooks.Contains(offer.id) && _ownedLogbooks.Count < logbookSlots)
                     _ownedLogbooks.Add(offer.id);
+                _logbookLevels.TryGetValue(offer.id, out var level);
+                _logbookLevels[offer.id] = level + 1;
                 ApplyLogbook(offer);
             }
-        }
-
-        void ApplyOffer(LevelOffer offer)
-        {
-            var weapons = FindFirstObjectByType<WeaponController>();
-            ApplyOffer(weapons, offer);
-        }
-
-        static int FindWeaponIndex(WeaponController wc, string id)
-        {
-            for (var i = 0; i < wc.Weapons.Count; i++)
-                if (wc.Weapons[i].def.id == id) return i;
-            return -1;
         }
 
         void ApplyLogbook(LevelOffer offer)

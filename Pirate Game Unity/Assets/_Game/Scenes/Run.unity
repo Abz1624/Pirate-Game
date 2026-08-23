@@ -830,6 +830,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6914067091188069710, guid: 7d425c282fedb4ece811fe26ba678ce3, type: 3}
   m_PrefabInstance: {fileID: 147237730}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &149490257
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 149490258}
+  m_Layer: 0
+  m_Name: VFXRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &149490258
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 149490257}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 658786995}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &157292539
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3439,6 +3470,10 @@ GameObject:
   - component: {fileID: 658786983}
   - component: {fileID: 658786982}
   - component: {fileID: 658786981}
+  - component: {fileID: 658786999}
+  - component: {fileID: 658786998}
+  - component: {fileID: 658786997}
+  - component: {fileID: 658786996}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -3485,6 +3520,9 @@ MonoBehaviour:
   database: {fileID: 0}
   loot: {fileID: 0}
   director: {fileID: 658786991}
+  juiceSettings: {fileID: 0}
+  pacingSettings: {fileID: 0}
+  poiRoot: {fileID: 0}
 --- !u!114 &658786983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3546,8 +3584,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.LevelSystem
   database: {fileID: 0}
+  levelUpSettings: {fileID: 11400000, guid: ebbefd794b9b26b4cabb689438a25625, type: 2}
   weaponSlots: 2
   logbookSlots: 2
+  demoPacing: {fileID: 0}
 --- !u!114 &658786988
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3562,6 +3602,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Weapons.WeaponController
   database: {fileID: 0}
   maxSlots: 2
+  demoPacing: {fileID: 0}
 --- !u!114 &658786989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3575,6 +3616,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Pickups.PickupWorld
   root: {fileID: 0}
+  juiceSettings: {fileID: 0}
+  pacingSettings: {fileID: 0}
 --- !u!114 &658786990
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3588,6 +3631,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Weapons.ProjectileWorld
   root: {fileID: 0}
+  juiceSettings: {fileID: 0}
 --- !u!114 &658786991
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3603,6 +3647,7 @@ MonoBehaviour:
   enemyWorld: {fileID: 0}
   player: {fileID: 0}
   settings: {fileID: 11400000, guid: df4dfc0e507780241ba5b50d9863315c, type: 2}
+  spawnCamera: {fileID: 0}
 --- !u!114 &658786992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3617,6 +3662,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.EnemyWorld
   enemyRoot: {fileID: 0}
   definitions: []
+  collideWithIslands: 1
+  islandAvoidanceProbeDistance: 6
+  islandCollisionPadding: 0.35
+  shipCollisionPadding: 0.55
+  enemySeparationPadding: 0.2
+  juiceSettings: {fileID: 0}
 --- !u!114 &658786993
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3657,9 +3708,64 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 149490258}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &658786996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aceb8a524413baa458a5a8d31d33637c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.PlayerJuiceController
+  settings: {fileID: 0}
+--- !u!114 &658786997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d503021e1cbb8d4fac1f88623166e7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.WeaponJuiceController
+  settings: {fileID: 0}
+  effectRoot: {fileID: 0}
+--- !u!114 &658786998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66fab8b65389a664d9885b182fc7f6e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.CombatVfxController
+  settings: {fileID: 0}
+--- !u!114 &658786999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9c7d19062ce6b743bc74868c8198fab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.JuiceVfxBroker
+  settings: {fileID: 11400000, guid: 46f32d0fc5f591f4d9779fa985f59983, type: 2}
+  vfxRoot: {fileID: 149490258}
 --- !u!1 &676974001
 GameObject:
   m_ObjectHideFlags: 0
@@ -7351,6 +7457,7 @@ RectTransform:
   - {fileID: 1257118563}
   - {fileID: 613376440}
   - {fileID: 296369489}
+  - {fileID: 1296785611}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -7407,6 +7514,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!115 &1161930585
+MonoScript:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 7
+  m_DefaultReferences: {}
+  m_Icon: {fileID: 0}
+  m_Type: 0
+  m_ExecutionOrder: 0
+  m_ClassName: WeaponLevelStripHud
+  m_Namespace: HighSeas.UI
+  m_AssemblyName: HighSeas.Runtime
 --- !u!1001 &1187168732
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8405,22 +8527,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1257118562}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb0d90258f01a874da08919ffde7c4d7, type: 3}
+  m_Script: {fileID: 11500000, guid: c3d4e5f6a7b84901b2c3d4e5f6789012, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.LevelUpModal
   panel: {fileID: 1257118562}
-  cardButtons:
-  - {fileID: 1597248573}
-  - {fileID: 303098870}
-  - {fileID: 1917119774}
-  cardTitles:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  cardDescriptions:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  cardButtons: []
+  cardFrames: []
+  cardCategories: []
+  cardTitles: []
+  cardLevels: []
+  cardRarities: []
+  cardDescriptions: []
+  cardHotkeys: []
 --- !u!114 &1257118565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8759,6 +8877,54 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6914067091188069710, guid: 7d425c282fedb4ece811fe26ba678ce3, type: 3}
   m_PrefabInstance: {fileID: 1282114327}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1296785610
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1296785611}
+  - component: {fileID: 1296785612}
+  m_Layer: 0
+  m_Name: WeaponLevelStrip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1296785611
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1296785610}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1146000356}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1296785612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1296785610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1161930585}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.WeaponLevelStripHud
+  stripRoot: {fileID: 0}
+  slotLabels:
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!1001 &1312785773
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13915,11 +14081,11 @@ MonoBehaviour:
   colorGradientTexture: {fileID: 0}
   shallowColor: {r: 0.513725, g: 0.74509805, b: 0.70980394, a: 1}
   deepColor: {r: 0, g: 0, b: 0, a: 0.95}
-  colorDepth: 1.2
-  horizonColor: {r: 0.019607844, g: 0.39599168, b: 0.5607843, a: 1}
-  horizonDistance: 0.23
+  colorDepth: 0.49
+  horizonColor: {r: 0.019607844, g: 0.39597365, b: 0.5607843, a: 1}
+  horizonDistance: 0.1
   shoreFade: 0.023
-  shoreColor: {r: 0.2234427, g: 0.6666667, b: 0.6784314, a: 0}
+  shoreColor: {r: 0.22342464, g: 0.6666667, b: 0.6784314, a: 0}
   shoreStrength: 0
   shoreBlend: 0
   shoreDepth: 0

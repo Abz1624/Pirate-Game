@@ -1,6 +1,7 @@
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Meta;
+using HighSeas.Pickups;
 using HighSeas.Player;
 using UnityEngine;
 
@@ -136,6 +137,7 @@ namespace HighSeas.POI
                     break;
                 case POIType.TrialBuoy:
                     RunManager.Instance.AddGold(40);
+                    PickupWorld.Instance?.Spawn(PickupType.Powerup, 25, player.Position + Vector3.right * 2f);
                     break;
                 case POIType.BossBeacon:
                     SummonBoss(player);

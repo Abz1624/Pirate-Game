@@ -71,6 +71,7 @@ namespace HighSeas.Core
             weapons?.Initialize(database, startingWeapon);
 
             LevelSystem.Instance?.Initialize(database, startingWeapon);
+            EnsureWeaponStripHud();
 
             if (player == null)
                 player = FindFirstObjectByType<PlayerShipController>();
@@ -105,12 +106,29 @@ namespace HighSeas.Core
 
         void OnPlayerDamaged(float amount, bool _) => TriggerBus.Instance?.RaiseDamageTaken(amount);
 
+        void EnsureWeaponStripHud()
+        {
+            if (FindFirstObjectByType<WeaponLevelStripHud>() != null) return;
+            var canvas = FindFirstObjectByType<Canvas>();
+            if (canvas == null) return;
+            var strip = new GameObject("WeaponLevelStrip");
+            strip.transform.SetParent(canvas.transform, false);
+            strip.AddComponent<WeaponLevelStripHud>();
+        }
+
         void EnsureCombatVfx()
         {
             var systems = GameObject.Find("Systems");
             if (systems == null) return;
-            if (systems.GetComponent<CombatVfxController>() != null) return;
-            systems.AddComponent<CombatVfxController>();
+
+            if (systems.GetComponent<JuiceVfxBroker>() == null)
+                systems.AddComponent<JuiceVfxBroker>();
+            if (systems.GetComponent<CombatVfxController>() == null)
+                systems.AddComponent<CombatVfxController>();
+            if (systems.GetComponent<WeaponJuiceController>() == null)
+                systems.AddComponent<WeaponJuiceController>();
+            if (systems.GetComponent<PlayerJuiceController>() == null)
+                systems.AddComponent<PlayerJuiceController>();
         }
 
         void OnPlayerDied()

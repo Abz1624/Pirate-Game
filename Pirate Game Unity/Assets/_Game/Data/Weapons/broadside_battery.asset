@@ -27,5 +27,26 @@ MonoBehaviour:
   knockback: 1
   maxLevel: 12
   validUpgradeAxes: 000000000100000002000000
+  upgradeAxisConfigs:
+  - axis: 0
+    baseIncrement: 0.07
+    offerWeight: 1.1
+    maxAccumulated: 1.8
+    displayFormat: 
+  - axis: 1
+    baseIncrement: 0.05
+    offerWeight: 1
+    maxAccumulated: 0.6
+    displayFormat: 
+  - axis: 2
+    baseIncrement: 1
+    offerWeight: 1.2
+    maxAccumulated: 5
+    displayFormat: 
+  - axis: 4
+    baseIncrement: 0.06
+    offerWeight: 0.8
+    maxAccumulated: 1.5
+    displayFormat: 
   procCoefficient: 1
   projectileColor: {r: 0.7, g: 0.7, b: 0.8, a: 1}

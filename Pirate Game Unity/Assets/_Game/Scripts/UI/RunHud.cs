@@ -1,135 +1,13 @@
-using System;
-using System.Collections.Generic;
 using HighSeas.Core;
+using HighSeas.Weapons;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace HighSeas.UI
 {
-    public sealed class LevelUpModal : MonoBehaviour
-    {
-        public static LevelUpModal Instance { get; private set; }
-
-        [SerializeField] GameObject panel;
-        [SerializeField] Button[] cardButtons;
-        [SerializeField] TextMeshProUGUI[] cardTitles;
-        [SerializeField] TextMeshProUGUI[] cardDescriptions;
-
-        Action<LevelSystem.LevelOffer> _callback;
-        List<LevelSystem.LevelOffer> _offers;
-
-        void Awake()
-        {
-            Instance = this;
-            EnsureWired();
-            if (panel != null) panel.SetActive(false);
-        }
-
-        void Update()
-        {
-            if (panel == null || !panel.activeSelf || _offers == null) return;
-            if (Input.GetKeyDown(KeyCode.Alpha1)) Pick(0);
-            if (Input.GetKeyDown(KeyCode.Alpha2)) Pick(1);
-            if (Input.GetKeyDown(KeyCode.Alpha3)) Pick(2);
-        }
-
-        public bool TryShow(List<LevelSystem.LevelOffer> offers, Action<LevelSystem.LevelOffer> callback)
-        {
-            EnsureWired();
-            if (!HasUsableCards())
-                return false;
-
-            Show(offers, callback);
-            return true;
-        }
-
-        public void Show(List<LevelSystem.LevelOffer> offers, Action<LevelSystem.LevelOffer> callback)
-        {
-            EnsureWired();
-            _offers = offers;
-            _callback = callback;
-            if (panel != null) panel.SetActive(true);
-            if (cardButtons == null) return;
-
-            for (var i = 0; i < cardButtons.Length; i++)
-            {
-                var idx = i;
-                if (cardTitles != null && i < cardTitles.Length && i < offers.Count && cardTitles[i] != null)
-                    cardTitles[i].text = offers[i].title;
-                if (cardDescriptions != null && i < cardDescriptions.Length && i < offers.Count && cardDescriptions[i] != null)
-                    cardDescriptions[i].text = offers[i].description;
-                if (i < cardButtons.Length && cardButtons[i] != null)
-                {
-                    cardButtons[i].gameObject.SetActive(i < offers.Count);
-                    cardButtons[i].onClick.RemoveAllListeners();
-                    cardButtons[i].onClick.AddListener(() => Pick(idx));
-                }
-            }
-        }
-
-        void EnsureWired()
-        {
-            if (panel == null)
-                panel = gameObject;
-
-            if (cardButtons != null && cardButtons.Length > 0 && cardButtons[0] != null)
-                return;
-
-            var buttons = new Button[3];
-            var titles = new TextMeshProUGUI[3];
-            var descs = new TextMeshProUGUI[3];
-
-            for (var i = 0; i < 3; i++)
-            {
-                var card = transform.Find($"Card{i}");
-                if (card == null) continue;
-
-                buttons[i] = card.GetComponent<Button>();
-                var texts = card.GetComponentsInChildren<TextMeshProUGUI>(true);
-                if (texts.Length > 0)
-                    titles[i] = texts[0];
-
-                for (var t = 0; t < texts.Length; t++)
-                {
-                    if (texts[t].gameObject.name == "Desc")
-                    {
-                        descs[i] = texts[t];
-                        break;
-                    }
-                }
-
-                if (descs[i] == null && texts.Length > 1)
-                    descs[i] = texts[1];
-            }
-
-            cardButtons = buttons;
-            cardTitles = titles;
-            cardDescriptions = descs;
-        }
-
-        bool HasUsableCards()
-        {
-            if (cardButtons == null) return false;
-            for (var i = 0; i < cardButtons.Length; i++)
-            {
-                if (cardButtons[i] != null)
-                    return true;
-            }
-            return false;
-        }
-
-        void Pick(int index)
-        {
-            if (_offers == null || index < 0 || index >= _offers.Count) return;
-            if (panel != null) panel.SetActive(false);
-            _callback?.Invoke(_offers[index]);
-        }
-    }
-
     public sealed class RunHud : MonoBehaviour
-    {
-        [SerializeField] TextMeshProUGUI hullText;
+    {        [SerializeField] TextMeshProUGUI hullText;
         [SerializeField] TextMeshProUGUI xpText;
         [SerializeField] TextMeshProUGUI timerText;
         [SerializeField] TextMeshProUGUI goldText;
@@ -181,6 +59,91 @@ namespace HighSeas.UI
                 {
                     hullSlider.maxValue = _player.Damage.MaxHP;
                     hullSlider.value = _player.Damage.CurrentHP;
+                }
+            }
+        }
+    }
+
+    public sealed class WeaponLevelStripHud : MonoBehaviour
+    {
+        [SerializeField] RectTransform stripRoot;
+        [SerializeField] TextMeshProUGUI[] slotLabels = new TextMeshProUGUI[2];
+
+        WeaponController _weapons;
+        LevelSystem _levels;
+
+        void Start()
+        {
+            _weapons = FindFirstObjectByType<WeaponController>();
+            _levels = LevelSystem.Instance;
+            if (_levels != null)
+                _levels.LoadoutChanged += Refresh;
+            EnsureWired();
+            Refresh();
+        }
+
+        void OnDestroy()
+        {
+            if (_levels != null)
+                _levels.LoadoutChanged -= Refresh;
+        }
+
+        void Update() => Refresh();
+
+        void EnsureWired()
+        {
+            if (stripRoot != null && slotLabels != null && slotLabels.Length > 0 && slotLabels[0] != null)
+                return;
+
+            stripRoot = GetComponent<RectTransform>();
+            if (stripRoot == null)
+                stripRoot = gameObject.AddComponent<RectTransform>();
+
+            stripRoot.anchorMin = new Vector2(0.5f, 0f);
+            stripRoot.anchorMax = new Vector2(0.5f, 0f);
+            stripRoot.pivot = new Vector2(0.5f, 0f);
+            stripRoot.anchoredPosition = new Vector2(0f, 24f);
+            stripRoot.sizeDelta = new Vector2(420f, 48f);
+
+            slotLabels = new TextMeshProUGUI[2];
+            for (var i = 0; i < slotLabels.Length; i++)
+            {
+                var child = transform.Find($"WeaponSlot{i}");
+                TextMeshProUGUI label;
+                if (child != null)
+                {
+                    label = child.GetComponent<TextMeshProUGUI>();
+                }
+                else
+                {
+                    var go = new GameObject($"WeaponSlot{i}", typeof(RectTransform));
+                    go.transform.SetParent(transform, false);
+                    var rt = go.GetComponent<RectTransform>();
+                    rt.sizeDelta = new Vector2(180f, 36f);
+                    rt.anchoredPosition = new Vector2(-95f + i * 190f, 0f);
+                    label = go.AddComponent<TextMeshProUGUI>();
+                    label.fontSize = 18f;
+                    label.alignment = TextAlignmentOptions.Center;
+                }
+                slotLabels[i] = label;
+            }
+        }
+
+        void Refresh()
+        {
+            if (_weapons == null || slotLabels == null) return;
+            for (var i = 0; i < slotLabels.Length; i++)
+            {
+                if (slotLabels[i] == null) continue;
+                if (i < _weapons.Weapons.Count)
+                {
+                    var w = _weapons.Weapons[i];
+                    slotLabels[i].text = $"{w.def.displayName} Lv {w.level}";
+                    slotLabels[i].gameObject.SetActive(true);
+                }
+                else
+                {
+                    slotLabels[i].gameObject.SetActive(false);
                 }
             }
         }

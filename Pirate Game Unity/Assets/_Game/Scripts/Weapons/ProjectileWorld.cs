@@ -1,6 +1,7 @@
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Enemies;
+using HighSeas.VFX;
 using UnityEngine;
 
 namespace HighSeas.Weapons
@@ -73,7 +74,12 @@ namespace HighSeas.Weapons
                 ref var p = ref _pool[i];
                 p.position += p.velocity * dt;
                 p.life -= dt;
-                if (p.view != null) p.view.position = p.position;
+                if (p.view != null)
+                {
+                    p.view.position = p.position;
+                    if (p.velocity.sqrMagnitude > 0.01f)
+                        p.view.rotation = Quaternion.LookRotation(p.velocity.normalized, Vector3.up);
+                }
 
                 if (enemies != null)
                 {
@@ -84,7 +90,6 @@ namespace HighSeas.Weapons
                         var d = Vector3.Distance(p.position, list[ei].position);
                         if (d > p.radius + list[ei].radius) continue;
                         enemies.ApplyDamage(ei, p.damage, p.isCrit);
-                        Meta.TriggerBus.Instance?.RaiseHit(p.damage, p.isCrit, list[ei].position);
                         p.pierceLeft--;
                         if (p.pierceLeft < 0) break;
                     }
@@ -98,10 +103,12 @@ namespace HighSeas.Weapons
         void Despawn(int i)
         {
             if (!_pool[i].active) return;
+            var position = _pool[i].position;
             if (_pool[i].view != null)
                 _viewPool.Release(_pool[i].view);
             _pool[i].active = false;
             _active--;
+            JuiceVfxBroker.Instance?.PlayWaterSplash(position);
         }
     }
 }
