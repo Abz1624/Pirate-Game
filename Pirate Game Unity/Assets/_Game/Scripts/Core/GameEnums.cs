@@ -70,6 +70,12 @@ namespace HighSeas.Core
         Pierce
     }
 
+    public enum EnemyCategory
+    {
+        Ship,
+        Creature
+    }
+
     public enum EnemyBehavior
     {
         DirectChaser,

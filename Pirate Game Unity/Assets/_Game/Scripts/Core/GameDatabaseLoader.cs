@@ -118,30 +118,45 @@ namespace HighSeas.Core
         {
             return new[]
             {
-                MakeEnemy("deckhand_dinghy", 12f, 6f, 4f, 1, EnemyBehavior.DirectChaser),
-                MakeEnemy("cutthroat_skiff", 16f, 7f, 4.5f, 2, EnemyBehavior.FlankingChaser),
-                MakeEnemy("rammer_raft", 22f, 10f, 5f, 3, EnemyBehavior.TelegraphedCharge),
-                MakeEnemy("gunner_cog", 14f, 6f, 3.5f, 4, EnemyBehavior.MaintainRange),
-                MakeEnemy("bomb_boat", 10f, 14f, 6f, 3, EnemyBehavior.SuicideApproach),
-                MakeEnemy("boarding_barge", 40f, 12f, 3f, 6, EnemyBehavior.TankChaser),
-                MakeEnemy("reef_crab_miniboss", 120f, 14f, 2f, 8, EnemyBehavior.StationaryTurret, isMiniboss: true),
-                MakeEnemy("barnacle_king", 800f, 18f, 2.5f, 9, EnemyBehavior.TankChaser, isBoss: true)
+                MakeEnemy("cannonboat", EnemyCategory.Ship, 18f, 8f, 3.8f, 3, 1.2f, EnemyBehavior.DirectChaser),
+                MakeEnemy("shark", EnemyCategory.Creature, 16f, 9f, 5f, 4, 1.1f, EnemyBehavior.DirectChaser),
+                MakeEnemy("swordfish", EnemyCategory.Creature, 10f, 6f, 6.5f, 2, 0.9f, EnemyBehavior.FastSwarm),
+                MakeEnemy("hammerhead", EnemyCategory.Creature, 14f, 7f, 5f, 3, 1.1f, EnemyBehavior.FlankingChaser),
+                MakeEnemy("kraken_spawn", EnemyCategory.Creature, 28f, 11f, 2.5f, 6, 1.6f, EnemyBehavior.TankChaser),
+                MakeEnemy("reef_crab_miniboss", EnemyCategory.Creature, 120f, 14f, 2f, 8, 2.2f, EnemyBehavior.MaintainRange, isMiniboss: true),
+                MakeEnemy("barnacle_king", EnemyCategory.Creature, 800f, 18f, 2.5f, 9, 2.8f, EnemyBehavior.TankChaser, isBoss: true)
             };
         }
 
-        static EnemyDefinition MakeEnemy(string id, float hp, float dmg, float speed, int threat, EnemyBehavior behavior, bool isBoss = false, bool isMiniboss = false)
+        static EnemyDefinition MakeEnemy(
+            string id,
+            EnemyCategory category,
+            float hp,
+            float dmg,
+            float speed,
+            int threat,
+            float radius,
+            EnemyBehavior behavior,
+            bool isBoss = false,
+            bool isMiniboss = false)
         {
             var e = ScriptableObject.CreateInstance<EnemyDefinition>();
             e.id = id;
+            e.displayName = id.Replace('_', ' ');
+            e.category = category;
             e.baseHP = hp;
             e.baseDamage = dmg;
             e.moveSpeed = speed;
             e.threatCost = threat;
+            e.radius = radius;
             e.behavior = behavior;
             e.isBoss = isBoss;
             e.isMiniboss = isMiniboss;
             e.xpValue = isBoss ? 100 : isMiniboss ? 35 : threat + 1;
             e.goldValue = isBoss ? 150 : isMiniboss ? 50 : 1;
+            e.placeholderColor = category == EnemyCategory.Ship
+                ? new Color(0.75f, 0.45f, 0.2f)
+                : new Color(0.2f, 0.65f, 0.85f);
             return e;
         }
     }

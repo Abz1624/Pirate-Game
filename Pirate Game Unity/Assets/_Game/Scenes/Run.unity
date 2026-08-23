@@ -3602,6 +3602,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.SpawnDirector
   enemyWorld: {fileID: 0}
   player: {fileID: 0}
+  settings: {fileID: 11400000, guid: df4dfc0e507780241ba5b50d9863315c, type: 2}
 --- !u!114 &658786992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7390,7 +7391,7 @@ MonoBehaviour:
   priority: 0
   blendDistance: 0
   weight: 1
-  sharedProfile: {fileID: 11400000, guid: e0d9cdc16d580492e8e185946cbbb238, type: 2}
+  sharedProfile: {fileID: 11400000, guid: 10fc4df2da32a41aaa32d77bc913491c, type: 2}
 --- !u!4 &1152553520
 Transform:
   m_ObjectHideFlags: 0
@@ -13909,10 +13910,10 @@ MonoBehaviour:
   shallowColor: {r: 0.513725, g: 0.74509805, b: 0.70980394, a: 1}
   deepColor: {r: 0, g: 0, b: 0, a: 0.95}
   colorDepth: 1.2
-  horizonColor: {r: 0.019607844, g: 0.39599195, b: 0.5607843, a: 1}
+  horizonColor: {r: 0.019607844, g: 0.39599168, b: 0.5607843, a: 1}
   horizonDistance: 0.23
   shoreFade: 0.023
-  shoreColor: {r: 0.22344294, g: 0.6666667, b: 0.6784314, a: 0}
+  shoreColor: {r: 0.2234427, g: 0.6666667, b: 0.6784314, a: 0}
   shoreStrength: 0
   shoreBlend: 0
   shoreDepth: 0

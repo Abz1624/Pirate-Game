@@ -13,18 +13,23 @@ MonoBehaviour:
   m_Name: reef_crab_miniboss
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.EnemyDefinition
   id: reef_crab_miniboss
+  displayName: Reef Kraken
+  category: 1
+  visualPrefab: {fileID: 1709254077376921, guid: 6a9df2862da9b8a4b83dbe0882d132eb, type: 3}
+  visualScale: 1.15
+  visualYawOffset: 0
   biomeTag: emerald
   baseHP: 120
   baseDamage: 14
   moveSpeed: 2
-  radius: 1
+  radius: 2.2
   threatCost: 8
   xpValue: 35
   goldValue: 50
-  behavior: 11
+  behavior: 3
   attackCooldown: 1.5
   preferredRange: 8
   tags: []
-  placeholderColor: {r: 0.4, g: 0.3, b: 0.2, a: 1}
+  placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
   isBoss: 0
   isMiniboss: 1

@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using HighSeas.Core;
+using HighSeas.World;
 using UnityEngine;
 
 namespace HighSeas.Enemies
@@ -58,7 +58,6 @@ namespace HighSeas.Enemies
             var rCells = Mathf.CeilToInt(radius / _cellSize);
             var cx = Mathf.FloorToInt(center.x / _cellSize);
             var cz = Mathf.FloorToInt(center.z / _cellSize);
-            var rSq = radius * radius;
             for (var dx = -rCells; dx <= rCells; dx++)
             {
                 for (var dz = -rCells; dz <= rCells; dz++)
@@ -79,12 +78,15 @@ namespace HighSeas.Enemies
     {
         [SerializeField] Transform enemyRoot;
         [SerializeField] Data.EnemyDefinition[] definitions;
+        [SerializeField] bool collideWithIslands = true;
+        [SerializeField] float islandAvoidanceProbeDistance = 6f;
+        [SerializeField] float islandCollisionPadding = 0.3f;
 
         readonly SpatialHash _hash = new(4f);
         EnemyAgent[] _agents;
+        EnemyViewPool _viewPool;
         int _activeCount;
         int _nextId = 1;
-        readonly List<int> _scratch = new(32);
 
         public int ActiveCount => _activeCount;
         public EnemyAgent[] Agents => _agents;
@@ -94,11 +96,23 @@ namespace HighSeas.Enemies
         {
             var cap = Platform.QualityProfile.Current.enemyCap;
             _agents = new EnemyAgent[cap];
+            _viewPool = new EnemyViewPool(enemyRoot != null ? enemyRoot : transform);
         }
 
         public void SetDefinitions(Data.EnemyDefinition[] defs) => definitions = defs;
 
-        public int Spawn(int definitionIndex, Vector3 position, EliteAffix affix = EliteAffix.None)
+        public int CountActiveByDefinition(int definitionIndex)
+        {
+            var count = 0;
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                if (_agents[i].active && _agents[i].definitionIndex == definitionIndex)
+                    count++;
+            }
+            return count;
+        }
+
+        public int Spawn(int definitionIndex, Vector3 position, EliteAffix affix = EliteAffix.None, float speedMultiplier = 1f)
         {
             if (definitions == null || definitionIndex < 0 || definitionIndex >= definitions.Length) return -1;
             var def = definitions[definitionIndex];
@@ -118,12 +132,15 @@ namespace HighSeas.Enemies
             var stage = RunManager.Instance?.StageIndex ?? 0;
             var hp = GameMath.EnemyHP(def.baseHP, minute, tier, stage);
             var dmg = GameMath.EnemyDamage(def.baseDamage, minute, tier, stage);
-            if (affix == EliteAffix.Armored) { hp *= 1.8f; }
-            if (affix == EliteAffix.Swift) { hp *= 0.9f; }
+            if (affix == EliteAffix.Armored) hp *= 1.8f;
+            if (affix == EliteAffix.Swift) hp *= 0.9f;
             if (affix == EliteAffix.Rich) hp *= 1.25f;
 
-            var view = CreateView(def, affix != EliteAffix.None);
-            view.position = position;
+            var visualScale = def.visualScale * (affix != EliteAffix.None ? 1.12f : 1f);
+            var view = CreateView(def, position, visualScale, affix != EliteAffix.None);
+
+            var baseSpeed = def.moveSpeed * Mathf.Max(0.1f, speedMultiplier);
+            if (affix == EliteAffix.Swift) baseSpeed *= 1.35f;
 
             _agents[slot] = new EnemyAgent
             {
@@ -133,38 +150,53 @@ namespace HighSeas.Enemies
                 hp = hp,
                 maxHp = hp,
                 damage = dmg,
-                moveSpeed = def.moveSpeed,
+                moveSpeed = baseSpeed,
                 radius = def.radius,
                 definitionIndex = definitionIndex,
                 affix = affix,
                 isElite = affix != EliteAffix.None,
                 isBoss = def.isBoss,
+                chargeTimer = 2f,
                 view = view
             };
             _activeCount++;
             return slot;
         }
 
-        Transform CreateView(Data.EnemyDefinition def, bool elite)
+        Transform CreateView(Data.EnemyDefinition def, Vector3 position, float scale, bool elite)
         {
+            if (def.visualPrefab != null)
+            {
+                var yaw = Quaternion.Euler(0f, def.visualYawOffset, 0f);
+                return _viewPool.Acquire(def.visualPrefab, position, yaw, scale);
+            }
+
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = def.id;
+            go.name = string.IsNullOrEmpty(def.displayName) ? def.id : def.displayName;
             go.transform.SetParent(enemyRoot != null ? enemyRoot : transform, false);
+            go.transform.position = position;
             go.transform.localScale = Vector3.one * (def.radius * 2f);
             var col = go.GetComponent<Collider>();
             if (col != null) Destroy(col);
             var rend = go.GetComponent<Renderer>();
             if (rend != null)
-            {
                 rend.material.color = elite ? Color.magenta : def.placeholderColor;
-            }
             return go.transform;
         }
 
         public void Despawn(int index)
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
-            if (_agents[index].view != null) Destroy(_agents[index].view.gameObject);
+
+            var def = definitions[_agents[index].definitionIndex];
+            if (_agents[index].view != null)
+            {
+                if (def.visualPrefab != null)
+                    _viewPool.Release(_agents[index].view, def.visualPrefab);
+                else
+                    Destroy(_agents[index].view.gameObject);
+            }
+
             _agents[index].active = false;
             _activeCount--;
         }
@@ -182,9 +214,9 @@ namespace HighSeas.Enemies
                 if (!_agents[i].active) continue;
                 ref var e = ref _agents[i];
                 var def = definitions[e.definitionIndex];
-                TickBehavior(ref e, def, dt, playerPos);
-                e.position += e.velocity * dt;
-                if (e.view != null) e.view.position = e.position;
+                var desiredVelocity = TickBehavior(i, ref e, def, dt, playerPos);
+                MoveAgent(ref e, dt, desiredVelocity);
+                UpdateView(ref e, def, dt, playerPos);
 
                 var dist = Vector3.Distance(e.position, playerPos);
                 if (dist < e.radius + 1f && e.contactCooldown <= 0f)
@@ -196,62 +228,169 @@ namespace HighSeas.Enemies
             }
         }
 
-        void TickBehavior(ref EnemyAgent e, Data.EnemyDefinition def, float dt, Vector3 playerPos)
+        void MoveAgent(ref EnemyAgent e, float dt, Vector3 desiredVelocity)
+        {
+            var delta = e.velocity * dt;
+            if (!collideWithIslands || !IslandObstacles.IsAvailable)
+            {
+                e.position += delta;
+                return;
+            }
+
+            var collisionRadius = e.radius + islandCollisionPadding;
+            var preferredDirection = desiredVelocity;
+            preferredDirection.y = 0f;
+
+            e.velocity = IslandObstacles.ApplyAvoidanceSteering(
+                e.position,
+                e.velocity,
+                preferredDirection,
+                collisionRadius,
+                islandAvoidanceProbeDistance);
+
+            delta = e.velocity * dt;
+            var height = Mathf.Max(collisionRadius * 2.5f, 1.25f);
+            e.position = IslandObstacles.ResolveCapsuleMovement(
+                e.position,
+                delta,
+                collisionRadius,
+                height,
+                ref e.velocity,
+                preferredDirection);
+
+            e.position = IslandObstacles.Depenetrate(e.position, collisionRadius, height);
+        }
+
+        void UpdateView(ref EnemyAgent e, Data.EnemyDefinition def, float dt, Vector3 playerPos)
+        {
+            if (e.view == null) return;
+
+            e.view.position = e.position;
+
+            Vector3 faceDirection;
+            if (e.velocity.sqrMagnitude >= 0.01f)
+                faceDirection = e.velocity;
+            else if (def.behavior == EnemyBehavior.TelegraphedCharge)
+            {
+                faceDirection = playerPos - e.position;
+                faceDirection.y = 0f;
+                if (faceDirection.sqrMagnitude < 0.01f)
+                    return;
+            }
+            else
+            {
+                return;
+            }
+
+            var facing = Quaternion.LookRotation(faceDirection.normalized, Vector3.up);
+            if (Mathf.Abs(def.visualYawOffset) > 0.01f)
+                facing *= Quaternion.Euler(0f, def.visualYawOffset, 0f);
+
+            e.view.rotation = Quaternion.Slerp(e.view.rotation, facing, 1f - Mathf.Exp(-12f * dt));
+        }
+
+        Vector3 TickBehavior(int agentIndex, ref EnemyAgent e, Data.EnemyDefinition def, float dt, Vector3 playerPos)
         {
             var toPlayer = playerPos - e.position;
             toPlayer.y = 0f;
             var dist = toPlayer.magnitude;
             var dir = dist > 0.01f ? toPlayer / dist : Vector3.forward;
+            Vector3 behaviorVelocity;
 
             switch (def.behavior)
             {
                 case EnemyBehavior.DirectChaser:
                 case EnemyBehavior.TankChaser:
-                    e.velocity = dir * e.moveSpeed;
+                case EnemyBehavior.DiveLunge:
+                    behaviorVelocity = dir * e.moveSpeed;
                     break;
                 case EnemyBehavior.FlankingChaser:
                 {
-                    var flank = Vector3.Cross(Vector3.up, dir);
-                    e.velocity = (dir + flank * 0.35f).normalized * e.moveSpeed;
+                    var flankSign = (e.id & 1) == 0 ? 1f : -1f;
+                    var flank = Vector3.Cross(Vector3.up, dir) * flankSign;
+                    behaviorVelocity = (dir + flank * 0.35f).normalized * e.moveSpeed;
                     break;
                 }
                 case EnemyBehavior.TelegraphedCharge:
                     e.chargeTimer -= dt;
                     if (e.chargeTimer <= 0f)
-                    {
-                        e.velocity = dir * (e.moveSpeed * 2.5f);
-                        e.chargeTimer = 2f;
-                    }
+                        behaviorVelocity = dir * (e.moveSpeed * 2.5f);
                     else if (e.chargeTimer > 1.5f)
-                    {
-                        e.velocity = dir * (e.moveSpeed * 0.2f);
-                    }
+                        behaviorVelocity = dir * (e.moveSpeed * 0.2f);
+                    else
+                        behaviorVelocity = Vector3.zero;
+                    if (e.chargeTimer <= -0.35f)
+                        e.chargeTimer = 2f;
                     break;
                 case EnemyBehavior.MaintainRange:
                 case EnemyBehavior.FormationRanged:
-                    if (dist < def.preferredRange) e.velocity = -dir * e.moveSpeed;
-                    else if (dist > def.preferredRange + 2f) e.velocity = dir * e.moveSpeed;
-                    else e.velocity = Vector3.zero;
+                    if (dist < def.preferredRange) behaviorVelocity = -dir * e.moveSpeed;
+                    else if (dist > def.preferredRange + 2f) behaviorVelocity = dir * e.moveSpeed;
+                    else behaviorVelocity = Vector3.zero;
                     break;
                 case EnemyBehavior.SuicideApproach:
-                    e.velocity = dir * (e.moveSpeed * 1.4f);
+                    behaviorVelocity = dir * (e.moveSpeed * 1.4f);
                     break;
                 case EnemyBehavior.StrafeBurst:
                 {
                     var tangent = Vector3.Cross(Vector3.up, dir);
-                    e.velocity = tangent * e.moveSpeed;
+                    behaviorVelocity = tangent * e.moveSpeed + dir * (e.moveSpeed * 0.25f);
                     e.attackCooldown -= dt;
                     break;
                 }
                 case EnemyBehavior.FastSwarm:
-                    e.velocity = dir * (e.moveSpeed * 1.2f);
+                    behaviorVelocity = dir * (e.moveSpeed * 1.2f);
+                    break;
+                case EnemyBehavior.DriftPulse:
+                    behaviorVelocity = dir * (e.moveSpeed * 0.45f);
+                    e.attackCooldown -= dt;
+                    break;
+                case EnemyBehavior.StationaryTurret:
+                    behaviorVelocity = Vector3.zero;
                     break;
                 default:
-                    e.velocity = dir * e.moveSpeed;
+                    behaviorVelocity = dir * e.moveSpeed;
                     break;
             }
 
-            e.velocity = Vector3.ClampMagnitude(e.velocity, e.moveSpeed * 1.5f);
+            var intent = behaviorVelocity;
+            behaviorVelocity = ApplySeparation(agentIndex, behaviorVelocity, ref e, intent);
+            e.velocity = Vector3.ClampMagnitude(behaviorVelocity, e.moveSpeed * 1.5f);
+            return intent;
+        }
+
+        Vector3 ApplySeparation(int agentIndex, Vector3 velocity, ref EnemyAgent self, Vector3 preferredDirection)
+        {
+            var nearby = _hash.Query(self.position, self.radius + 1.5f, 8);
+            var push = Vector3.zero;
+            var count = 0;
+            for (var i = 0; i < nearby.Count; i++)
+            {
+                var index = nearby[i];
+                if (index == agentIndex || !_agents[index].active) continue;
+                var delta = self.position - _agents[index].position;
+                delta.y = 0f;
+                var dist = delta.magnitude;
+                if (dist < 0.01f || dist > self.radius + _agents[index].radius + 1.5f) continue;
+                push += delta.normalized * (1f - dist / (self.radius + _agents[index].radius + 1.5f));
+                count++;
+            }
+
+            if (count == 0) return velocity;
+            push /= count;
+
+            var separated = velocity + push * 2.5f;
+            if (preferredDirection.sqrMagnitude < 0.01f)
+                return separated;
+
+            preferredDirection.y = 0f;
+            preferredDirection.Normalize();
+            var forwardAmount = Vector3.Dot(separated, preferredDirection);
+            if (forwardAmount >= 0f)
+                return separated;
+
+            var slide = Vector3.ProjectOnPlane(separated, preferredDirection);
+            return slide.sqrMagnitude > 0.01f ? slide : velocity;
         }
 
         public bool TryGetNearest(Vector3 from, float range, out int index, bool preferElite = false)

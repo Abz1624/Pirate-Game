@@ -7,6 +7,13 @@ namespace HighSeas.Data
     public sealed class EnemyDefinition : ScriptableObject
     {
         public string id;
+        public string displayName;
+        public EnemyCategory category = EnemyCategory.Creature;
+        public GameObject visualPrefab;
+        [Tooltip("Uniform scale applied to the visual prefab root.")]
+        public float visualScale = 1f;
+        [Tooltip("Extra yaw applied so the model faces its movement direction.")]
+        public float visualYawOffset;
         public string biomeTag = "emerald";
         public float baseHP = 20f;
         public float baseDamage = 8f;

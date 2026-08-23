@@ -38,6 +38,7 @@ namespace HighSeas.Editor
                 return;
             }
             HighSeasIslandSetup.EnsureLibraryAsset();
+            HighSeasEnemySetup.SetupEnemyVisuals();
             CreateScenes(db);
             ConfigurePlayerSettings();
             AssetDatabase.SaveAssets();
@@ -231,25 +232,39 @@ namespace HighSeas.Editor
         {
             return new[]
             {
-                MakeEnemy("deckhand_dinghy", "Deckhand Dinghy", 12f, 6f, 4f, 1, EnemyBehavior.DirectChaser, Color.green),
-                MakeEnemy("cutthroat_skiff", "Cutthroat Skiff", 16f, 7f, 4.5f, 2, EnemyBehavior.FlankingChaser, Color.yellow),
-                MakeEnemy("rammer_raft", "Rammer Raft", 22f, 10f, 5f, 3, EnemyBehavior.TelegraphedCharge, Color.red),
-                MakeEnemy("gunner_cog", "Gunner Cog", 14f, 6f, 3.5f, 4, EnemyBehavior.MaintainRange, Color.blue),
-                MakeEnemy("bomb_boat", "Bomb Boat", 10f, 14f, 6f, 3, EnemyBehavior.SuicideApproach, new Color(1f, 0.5f, 0f)),
-                MakeEnemy("boarding_barge", "Boarding Barge", 40f, 12f, 3f, 6, EnemyBehavior.TankChaser, Color.gray),
-                MakeEnemy("reef_crab_miniboss", "Reef Crab", 120f, 14f, 2f, 8, EnemyBehavior.StationaryTurret, new Color(0.4f, 0.3f, 0.2f), isMiniboss: true),
-                MakeEnemy("barnacle_king", "Barnacle King", 800f, 18f, 2.5f, 9, EnemyBehavior.TankChaser, new Color(0.2f, 0.5f, 0.3f), isBoss: true)
+                MakeEnemy("cannonboat", "Cannonboat", EnemyCategory.Ship, 18f, 8f, 3.8f, 3, 1.2f, EnemyBehavior.DirectChaser, new Color(0.75f, 0.45f, 0.2f)),
+                MakeEnemy("shark", "Shark", EnemyCategory.Creature, 16f, 9f, 5f, 4, 1.1f, EnemyBehavior.DirectChaser, new Color(0.35f, 0.55f, 0.9f)),
+                MakeEnemy("swordfish", "Swordfish", EnemyCategory.Creature, 10f, 6f, 6.5f, 2, 0.9f, EnemyBehavior.FastSwarm, new Color(0.2f, 0.7f, 0.95f)),
+                MakeEnemy("hammerhead", "Hammerhead", EnemyCategory.Creature, 14f, 7f, 5f, 3, 1.1f, EnemyBehavior.FlankingChaser, new Color(0.25f, 0.6f, 0.85f)),
+                MakeEnemy("kraken_spawn", "Kraken Spawn", EnemyCategory.Creature, 28f, 11f, 2.5f, 6, 1.6f, EnemyBehavior.TankChaser, new Color(0.45f, 0.2f, 0.65f)),
+                MakeEnemy("reef_crab_miniboss", "Reef Kraken", EnemyCategory.Creature, 120f, 14f, 2f, 8, 2.2f, EnemyBehavior.MaintainRange, new Color(0.4f, 0.3f, 0.55f), isMiniboss: true),
+                MakeEnemy("barnacle_king", "Barnacle Kraken", EnemyCategory.Creature, 800f, 18f, 2.5f, 9, 2.8f, EnemyBehavior.TankChaser, new Color(0.2f, 0.5f, 0.35f), isBoss: true)
             };
         }
 
-        static EnemyDefinition MakeEnemy(string id, string name, float hp, float dmg, float speed, int threat, EnemyBehavior behavior, Color color, bool isBoss = false, bool isMiniboss = false) =>
+        static EnemyDefinition MakeEnemy(
+            string id,
+            string name,
+            EnemyCategory category,
+            float hp,
+            float dmg,
+            float speed,
+            int threat,
+            float radius,
+            EnemyBehavior behavior,
+            Color color,
+            bool isBoss = false,
+            bool isMiniboss = false) =>
             SaveDefinition<EnemyDefinition>("Enemies", id, e =>
             {
                 e.id = id;
+                e.displayName = name;
+                e.category = category;
                 e.baseHP = hp;
                 e.baseDamage = dmg;
                 e.moveSpeed = speed;
                 e.threatCost = threat;
+                e.radius = radius;
                 e.behavior = behavior;
                 e.placeholderColor = color;
                 e.isBoss = isBoss;

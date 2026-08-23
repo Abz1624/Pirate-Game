@@ -13,11 +13,16 @@ MonoBehaviour:
   m_Name: barnacle_king
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.EnemyDefinition
   id: barnacle_king
+  displayName: Barnacle Kraken
+  category: 1
+  visualPrefab: {fileID: 1709254077376921, guid: 6a9df2862da9b8a4b83dbe0882d132eb, type: 3}
+  visualScale: 1.75
+  visualYawOffset: 0
   biomeTag: emerald
   baseHP: 800
   baseDamage: 18
   moveSpeed: 2.5
-  radius: 1
+  radius: 2.8
   threatCost: 9
   xpValue: 100
   goldValue: 150
@@ -25,6 +30,6 @@ MonoBehaviour:
   attackCooldown: 1.5
   preferredRange: 8
   tags: []
-  placeholderColor: {r: 0.2, g: 0.5, b: 0.3, a: 1}
+  placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
   isBoss: 1
   isMiniboss: 0
