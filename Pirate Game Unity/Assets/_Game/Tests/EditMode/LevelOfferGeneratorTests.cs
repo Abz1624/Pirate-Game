@@ -26,9 +26,6 @@ namespace HighSeas.Tests
             {
                 MakeWeapon("deck_cannons", "Deck Cannons", WeaponPattern.AutoProjectile),
                 MakeWeapon("broadside_battery", "Broadside Battery", WeaponPattern.FanVolley),
-                MakeWeapon("powder_kegs", "Powder Kegs", WeaponPattern.MineDrop),
-                MakeWeapon("lightning_mast", "Lightning Mast", WeaponPattern.ChainLightning),
-                MakeWeapon("flying_cutlasses", "Flying Cutlasses", WeaponPattern.Orbit),
                 MakeWeapon("burning_oil", "Burning Oil", WeaponPattern.TrailZone)
             };
             _db.logbooks = new[]
@@ -136,7 +133,7 @@ namespace HighSeas.Tests
             Assert.That(_db.GetWeapon("deck_cannons").GetUpgradeConfigs().Count, Is.GreaterThanOrEqualTo(4));
             Assert.That(_db.GetWeapon("burning_oil").GetUpgradeConfigs().Count, Is.EqualTo(3));
             Assert.That(ContainsAxis(_db.GetWeapon("burning_oil"), UpgradeAxis.Duration), Is.True);
-            Assert.That(ContainsAxis(_db.GetWeapon("lightning_mast"), UpgradeAxis.Quantity), Is.True);
+            Assert.That(ContainsAxis(_db.GetWeapon("broadside_battery"), UpgradeAxis.Size), Is.True);
         }
 
         static bool ContainsAxis(WeaponDefinition weapon, UpgradeAxis axis)

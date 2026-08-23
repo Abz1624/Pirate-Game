@@ -72,6 +72,13 @@ namespace HighSeas.VFX
                 settings.lightningStrikeScale);
         }
 
+        public void OnBurningOilDropped(Vector3 position, float radius)
+        {
+            if (settings.burningTrailPrefab == null) return;
+            var scale = settings.burningTrailScale * Mathf.Clamp(radius / 2.8f, 0.75f, 1.6f);
+            _broker?.Play(settings.burningTrailPrefab, position, Quaternion.identity, scale, 1.6f);
+        }
+
         void SyncCutlasses()
         {
             var hasCutlasses = false;
@@ -158,16 +165,15 @@ namespace HighSeas.VFX
                 return;
             }
 
-            if (_player.Velocity.sqrMagnitude < 0.5f) return;
+            if (_player.Velocity.sqrMagnitude < 0.1f) return;
 
             _burningTimer -= Time.deltaTime;
             if (_burningTimer > 0f) return;
-            _burningTimer = 0.18f;
+            _burningTimer = 0.12f;
 
             var trailPos = _player.Position - _player.MovementForward * 1.2f;
             trailPos.y = 0.2f;
-            if (settings.burningTrailPrefab != null)
-                _broker?.Play(settings.burningTrailPrefab, trailPos, Quaternion.identity, settings.burningTrailScale, 1.2f);
+            OnBurningOilDropped(trailPos, 2.8f);
         }
 
         void TickFlamethrower()
@@ -201,7 +207,7 @@ namespace HighSeas.VFX
 
             if (_flamethrower == null) return;
 
-            _flamethrower.position = _player.Position + Vector3.up * 0.6f;
+            _flamethrower.position = _player.Position - _player.MovementForward * 0.9f + Vector3.up * 0.35f;
             _flamethrower.rotation = Quaternion.LookRotation(_player.MovementForward, Vector3.up);
             _flameTimer -= Time.deltaTime;
             if (_flameTimer > 0f) return;

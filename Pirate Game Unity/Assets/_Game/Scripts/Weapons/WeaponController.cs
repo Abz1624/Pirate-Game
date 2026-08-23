@@ -251,12 +251,31 @@ namespace HighSeas.Weapons
 
         void FireTrail(ref WeaponInstance w, PlayerStats stats, RunRng rng)
         {
-            var radius = 3f * w.sizeMult * stats.Size;
-            if (_enemies.TryGetNearest(_player.Position, radius, out var target, false))
+            var back = _player.Velocity.sqrMagnitude > 0.01f
+                ? -_player.Velocity.normalized
+                : -_player.MovementForward;
+            var pos = _player.Position + back * 1.4f;
+            pos.y = 0.2f;
+
+            var radius = 2.8f * w.sizeMult * stats.Size;
+            var burnDuration = w.def.duration * w.durationMult * stats.Duration;
+            _juice?.OnBurningOilDropped(pos, radius);
+
+            var agents = _enemies.Agents;
+            for (var i = 0; i < agents.Length; i++)
             {
-                var dmg = DamageSystem.RollDamage(w.def.baseDamage * 0.5f, w.damageBonus, stats, _enemies.Agents[target].isElite, 0f, rng, w.def.procCoefficient);
-                _enemies.ApplyDamage(target, dmg, false);
-                Combat.StatusController.Instance?.ApplyStatus(target, Core.StatusType.Burn, w.def.duration * w.durationMult);
+                if (!agents[i].active) continue;
+                if (Vector3.Distance(agents[i].position, pos) > radius) continue;
+                var dmg = DamageSystem.RollDamage(
+                    w.def.baseDamage * 0.65f,
+                    w.damageBonus,
+                    stats,
+                    agents[i].isElite,
+                    0f,
+                    rng,
+                    w.def.procCoefficient);
+                _enemies.ApplyDamage(i, dmg, false);
+                Combat.StatusController.Instance?.ApplyStatus(i, Core.StatusType.Burn, burnDuration);
             }
         }
 

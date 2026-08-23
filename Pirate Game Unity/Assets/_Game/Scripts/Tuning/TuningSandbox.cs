@@ -21,9 +21,6 @@ namespace HighSeas.Tuning
         {
             "deck_cannons",
             "broadside_battery",
-            "powder_kegs",
-            "lightning_mast",
-            "flying_cutlasses",
             "burning_oil"
         };
 
@@ -79,9 +76,6 @@ namespace HighSeas.Tuning
             if (keyboard.f1Key.wasPressedThisFrame) EquipWeapon(0, keyboard.shiftKey.isPressed);
             if (keyboard.f2Key.wasPressedThisFrame) EquipWeapon(1, keyboard.shiftKey.isPressed);
             if (keyboard.f3Key.wasPressedThisFrame) EquipWeapon(2, keyboard.shiftKey.isPressed);
-            if (keyboard.f4Key.wasPressedThisFrame) EquipWeapon(3, keyboard.shiftKey.isPressed);
-            if (keyboard.f5Key.wasPressedThisFrame) EquipWeapon(4, keyboard.shiftKey.isPressed);
-            if (keyboard.f6Key.wasPressedThisFrame) EquipWeapon(5, keyboard.shiftKey.isPressed);
 
             if (keyboard.lKey.wasPressedThisFrame) ForceLevelUp();
             if (keyboard.eKey.wasPressedThisFrame) SpawnEnemyCluster();

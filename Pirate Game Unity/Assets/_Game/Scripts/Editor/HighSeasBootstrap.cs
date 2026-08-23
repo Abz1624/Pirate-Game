@@ -166,9 +166,6 @@ namespace HighSeas.Editor
             {
                 MakeWeapon("deck_cannons", "Deck Cannons", WeaponPattern.AutoProjectile, TargetingMode.Nearest, 10f, 1.2f, Color.gray),
                 MakeWeapon("broadside_battery", "Broadside Battery", WeaponPattern.FanVolley, TargetingMode.DensestCluster, 8f, 1.5f, new Color(0.7f, 0.7f, 0.8f)),
-                MakeWeapon("powder_kegs", "Powder Kegs", WeaponPattern.MineDrop, TargetingMode.PlayerTrail, 20f, 2.2f, Color.red),
-                MakeWeapon("lightning_mast", "Lightning Mast", WeaponPattern.ChainLightning, TargetingMode.Nearest, 14f, 1.8f, Color.cyan),
-                MakeWeapon("flying_cutlasses", "Flying Cutlasses", WeaponPattern.Orbit, TargetingMode.AreaAroundShip, 7f, 1.0f, Color.white),
                 MakeWeapon("burning_oil", "Burning Oil", WeaponPattern.TrailZone, TargetingMode.PlayerTrail, 6f, 0.8f, new Color(1f, 0.4f, 0f))
             };
         }
