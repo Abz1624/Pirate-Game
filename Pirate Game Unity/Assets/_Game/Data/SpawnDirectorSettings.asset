@@ -13,66 +13,82 @@ MonoBehaviour:
   m_Name: SpawnDirectorSettings
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.SpawnDirectorSettings
   timingMode: 3
-  gracePeriodSeconds: 5
-  minSecondsBetweenSpawns: 0.35
+  gracePeriodSeconds: 2
+  minSecondsBetweenSpawns: 0.55
   spawnIntervalSeconds: 2.5
   waveSize: 4
   waves:
   - waveName: "1 \u2014 Cannonboats"
-    delayBeforeWaveSeconds: 0
-    spawnGapSeconds: 0.5
+    delayBeforeWaveSeconds: 3
+    waveDurationSeconds: 50
+    spawnGapSeconds: 3.8
+    loopComposition: 1
     spawns:
     - enemyId: cannonboat
-      count: 4
+      count: 3
   - waveName: "2 \u2014 Swordfish"
-    delayBeforeWaveSeconds: 10
-    spawnGapSeconds: 0.35
-    spawns:
-    - enemyId: swordfish
-      count: 6
-  - waveName: "3 \u2014 Cannonboats + Sharks"
-    delayBeforeWaveSeconds: 10
-    spawnGapSeconds: 0.45
-    spawns:
-    - enemyId: cannonboat
-      count: 3
-    - enemyId: shark
-      count: 3
-  - waveName: "4 \u2014 Swordfish + Sharks"
-    delayBeforeWaveSeconds: 10
-    spawnGapSeconds: 0.4
+    delayBeforeWaveSeconds: 15
+    waveDurationSeconds: 55
+    spawnGapSeconds: 3.4
+    loopComposition: 1
     spawns:
     - enemyId: swordfish
       count: 4
+  - waveName: "3 \u2014 Cannonboats + Sharks"
+    delayBeforeWaveSeconds: 15
+    waveDurationSeconds: 60
+    spawnGapSeconds: 3.6
+    loopComposition: 1
+    spawns:
+    - enemyId: cannonboat
+      count: 2
     - enemyId: shark
+      count: 2
+  - waveName: "4 \u2014 Swordfish + Sharks"
+    delayBeforeWaveSeconds: 15
+    waveDurationSeconds: 65
+    spawnGapSeconds: 3.4
+    loopComposition: 1
+    spawns:
+    - enemyId: swordfish
       count: 3
+    - enemyId: shark
+      count: 2
   - waveName: "5 \u2014 Hammerhead + Sharks"
-    delayBeforeWaveSeconds: 12
-    spawnGapSeconds: 0.45
+    delayBeforeWaveSeconds: 18
+    waveDurationSeconds: 70
+    spawnGapSeconds: 3.6
+    loopComposition: 1
     spawns:
     - enemyId: hammerhead
       count: 2
     - enemyId: shark
-      count: 4
+      count: 3
   - waveName: "6 \u2014 Kraken"
-    delayBeforeWaveSeconds: 14
-    spawnGapSeconds: 0.8
+    delayBeforeWaveSeconds: 20
+    waveDurationSeconds: 40
+    spawnGapSeconds: 4.5
+    loopComposition: 1
     spawns:
     - enemyId: kraken_spawn
       count: 2
   afterScriptedWaves: 2
   globalSpeedMultiplier: 0.8
-  threatMultiplier: 0.85
+  threatMultiplier: 0.7
   budgetCapMultiplier: 3.5
   maxActiveEnemies: 0
   eliteChanceMultiplier: 1
   creatureChanceAtStart: 0.2
   creatureChanceAtLateGame: 0.5
   creatureChanceRampMinutes: 6
-  spawnDistanceMin: 13
-  spawnDistanceMax: 22
+  spawnPlacement: 2
+  spawnDistanceMin: 9
+  spawnDistanceMax: 15
   spawnArcDegrees: 360
   spawnArcYawOffset: 0
+  spawnOutsideCameraView: 1
+  cameraViewportMargin: 0.05
+  spawnPositionAttempts: 16
   enemies:
   - enemyId: cannonboat
     spawnEnabled: 1

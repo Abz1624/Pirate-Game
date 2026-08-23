@@ -80,7 +80,9 @@ namespace HighSeas.Enemies
         [SerializeField] Data.EnemyDefinition[] definitions;
         [SerializeField] bool collideWithIslands = true;
         [SerializeField] float islandAvoidanceProbeDistance = 6f;
-        [SerializeField] float islandCollisionPadding = 0.3f;
+        [SerializeField] float islandCollisionPadding = 0.35f;
+        [SerializeField] float shipCollisionPadding = 0.55f;
+        [SerializeField] float enemySeparationPadding = 0.2f;
 
         readonly SpatialHash _hash = new(4f);
         EnemyAgent[] _agents;
@@ -159,6 +161,16 @@ namespace HighSeas.Enemies
                 chargeTimer = 2f,
                 view = view
             };
+
+            if (collideWithIslands && IslandObstacles.IsAvailable)
+            {
+                var collisionRadius = GetCollisionRadius(def);
+                var height = IslandObstacles.GetCollisionHeight(collisionRadius);
+                _agents[slot].position = IslandObstacles.Depenetrate(position, collisionRadius, height);
+                if (view != null)
+                    view.position = _agents[slot].position;
+            }
+
             _activeCount++;
             return slot;
         }
@@ -215,7 +227,7 @@ namespace HighSeas.Enemies
                 ref var e = ref _agents[i];
                 var def = definitions[e.definitionIndex];
                 var desiredVelocity = TickBehavior(i, ref e, def, dt, playerPos);
-                MoveAgent(ref e, dt, desiredVelocity);
+                MoveAgent(ref e, dt, desiredVelocity, def);
                 UpdateView(ref e, def, dt, playerPos);
 
                 var dist = Vector3.Distance(e.position, playerPos);
@@ -226,9 +238,51 @@ namespace HighSeas.Enemies
                 }
                 if (e.contactCooldown > 0f) e.contactCooldown -= dt;
             }
+
+            ResolveAgentOverlaps();
         }
 
-        void MoveAgent(ref EnemyAgent e, float dt, Vector3 desiredVelocity)
+        float GetCollisionRadius(Data.EnemyDefinition def)
+        {
+            var padding = def.category == EnemyCategory.Ship ? shipCollisionPadding : islandCollisionPadding;
+            return def.radius + padding;
+        }
+
+        void ResolveAgentOverlaps()
+        {
+            for (var pass = 0; pass < 2; pass++)
+            {
+                for (var i = 0; i < _agents.Length; i++)
+                {
+                    if (!_agents[i].active) continue;
+                    ref var self = ref _agents[i];
+
+                    for (var j = i + 1; j < _agents.Length; j++)
+                    {
+                        if (!_agents[j].active) continue;
+                        ref var other = ref _agents[j];
+
+                        var delta = self.position - other.position;
+                        delta.y = 0f;
+                        var minDist = self.radius + other.radius + enemySeparationPadding;
+                        var dist = delta.magnitude;
+                        if (dist >= minDist)
+                            continue;
+
+                        Vector3 push;
+                        if (dist > 0.001f)
+                            push = delta.normalized * ((minDist - dist) * 0.5f);
+                        else
+                            push = new Vector3((self.id % 2 == 0 ? 1f : -1f) * minDist * 0.5f, 0f, 0f);
+
+                        self.position += push;
+                        other.position -= push;
+                    }
+                }
+            }
+        }
+
+        void MoveAgent(ref EnemyAgent e, float dt, Vector3 desiredVelocity, Data.EnemyDefinition def)
         {
             var delta = e.velocity * dt;
             if (!collideWithIslands || !IslandObstacles.IsAvailable)
@@ -237,7 +291,7 @@ namespace HighSeas.Enemies
                 return;
             }
 
-            var collisionRadius = e.radius + islandCollisionPadding;
+            var collisionRadius = GetCollisionRadius(def);
             var preferredDirection = desiredVelocity;
             preferredDirection.y = 0f;
 
@@ -249,7 +303,7 @@ namespace HighSeas.Enemies
                 islandAvoidanceProbeDistance);
 
             delta = e.velocity * dt;
-            var height = Mathf.Max(collisionRadius * 2.5f, 1.25f);
+            var height = IslandObstacles.GetCollisionHeight(collisionRadius);
             e.position = IslandObstacles.ResolveCapsuleMovement(
                 e.position,
                 delta,
@@ -379,7 +433,7 @@ namespace HighSeas.Enemies
             if (count == 0) return velocity;
             push /= count;
 
-            var separated = velocity + push * 2.5f;
+            var separated = velocity + push * 3f;
             if (preferredDirection.sqrMagnitude < 0.01f)
                 return separated;
 

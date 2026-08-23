@@ -29,6 +29,7 @@ namespace HighSeas.Enemies
             if (stack.Count > 0)
             {
                 view = stack.Pop();
+                StripNavMeshComponents(view.gameObject);
                 view.gameObject.SetActive(true);
             }
             else
@@ -36,6 +37,7 @@ namespace HighSeas.Enemies
                 var instance = Object.Instantiate(prefab, _root);
                 instance.name = prefab.name;
                 StripPhysics(instance);
+                StripNavMeshComponents(instance);
                 view = instance.transform;
             }
 
@@ -49,6 +51,7 @@ namespace HighSeas.Enemies
             if (view == null)
                 return;
 
+            StripNavMeshComponents(view.gameObject);
             view.gameObject.SetActive(false);
             view.SetParent(_root, false);
 
@@ -90,6 +93,27 @@ namespace HighSeas.Enemies
                 else
 #endif
                     Object.Destroy(rigidbodies[i]);
+            }
+        }
+
+        static void StripNavMeshComponents(GameObject root)
+        {
+            var components = root.GetComponentsInChildren<Component>(true);
+            for (var i = 0; i < components.Length; i++)
+            {
+                var component = components[i];
+                if (component == null) continue;
+
+                var typeName = component.GetType().Name;
+                if (typeName is not ("NavMeshAgent" or "NavMeshObstacle"))
+                    continue;
+
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                    Object.DestroyImmediate(component);
+                else
+#endif
+                    Object.Destroy(component);
             }
         }
     }

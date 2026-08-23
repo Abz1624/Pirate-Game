@@ -10,10 +10,10 @@ namespace HighSeas.World
         public const string LayerName = "Island";
         const float Skin = 0.05f;
         const int MaxResolveIterations = 5;
-        const int MaxDepenetrateIterations = 6;
+        const int MaxDepenetrateIterations = 8;
 
         static int? _cachedLayer;
-        static readonly Collider[] OverlapBuffer = new Collider[12];
+        static readonly Collider[] OverlapBuffer = new Collider[16];
 
         public static int Layer
         {
@@ -27,6 +27,23 @@ namespace HighSeas.World
 
         public static int Mask => Layer >= 0 ? 1 << Layer : 0;
         public static bool IsAvailable => Layer >= 0;
+
+        public static bool IsPositionBlocked(Vector3 position, float radius, float height = 0f)
+        {
+            if (Mask == 0)
+                return false;
+
+            if (height <= 0f)
+                height = GetCollisionHeight(radius);
+
+            GetCapsulePoints(position, radius, height, out var pointA, out var pointB);
+            return Physics.CheckCapsule(
+                pointA,
+                pointB,
+                GetCastRadius(radius),
+                Mask,
+                QueryTriggerInteraction.Ignore);
+        }
 
         public static Vector3 ApplyAvoidanceSteering(
             Vector3 position,
@@ -100,7 +117,7 @@ namespace HighSeas.World
             if (mask == 0 || delta.sqrMagnitude < 1e-8f)
                 return position + delta;
 
-            var maxStep = Mathf.Max(radius * 0.35f, 0.2f);
+            var maxStep = Mathf.Max(radius * 0.3f, 0.15f);
             var stepCount = Mathf.Max(1, Mathf.CeilToInt(delta.magnitude / maxStep));
             var stepDelta = delta / stepCount;
             var result = position;
@@ -193,22 +210,7 @@ namespace HighSeas.World
                 {
                     var collider = OverlapBuffer[i];
                     if (collider == null) continue;
-
-                    var closest = collider.ClosestPoint(result);
-                    var away = result - closest;
-                    away.y = 0f;
-                    var dist = away.magnitude;
-                    if (dist < 0.001f)
-                    {
-                        away = result - collider.bounds.center;
-                        away.y = 0f;
-                        if (away.sqrMagnitude < 0.001f)
-                            away = Vector3.forward;
-                    }
-
-                    var penetration = radius - dist;
-                    if (penetration > 0f)
-                        push += away.normalized * (penetration + Skin);
+                    push += GetDepenetrationVector(collider, result, radius);
                 }
 
                 if (push.sqrMagnitude < 1e-8f)
@@ -219,6 +221,57 @@ namespace HighSeas.World
             }
 
             return result;
+        }
+
+        static Vector3 GetDepenetrationVector(Collider collider, Vector3 position, float radius)
+        {
+            if (collider is MeshCollider { convex: false })
+                return PushOutOfBounds(collider.bounds, position, radius);
+
+            var closest = collider.ClosestPoint(position);
+            var away = position - closest;
+            away.y = 0f;
+            var dist = away.magnitude;
+            if (dist < 0.001f)
+            {
+                away = position - collider.bounds.center;
+                away.y = 0f;
+                if (away.sqrMagnitude < 0.001f)
+                    away = Vector3.forward;
+            }
+
+            var penetration = radius - dist;
+            return penetration > 0f ? away.normalized * (penetration + Skin) : Vector3.zero;
+        }
+
+        static Vector3 PushOutOfBounds(Bounds bounds, Vector3 position, float radius)
+        {
+            var push = Vector3.zero;
+            var min = bounds.min;
+            var max = bounds.max;
+
+            if (position.x < min.x)
+                push.x += min.x - position.x + radius + Skin;
+            else if (position.x > max.x)
+                push.x -= position.x - max.x + radius + Skin;
+
+            if (position.z < min.z)
+                push.z += min.z - position.z + radius + Skin;
+            else if (position.z > max.z)
+                push.z -= position.z - max.z + radius + Skin;
+
+            if (push.sqrMagnitude < 1e-8f)
+            {
+                var center = bounds.center;
+                var away = position - center;
+                away.y = 0f;
+                if (away.sqrMagnitude < 0.001f)
+                    away = Vector3.forward;
+                push = away.normalized * (radius + Skin);
+            }
+
+            push.y = 0f;
+            return push;
         }
 
         static Vector3 PreservePreferredDirection(Vector3 velocity, Vector3 preferredDirection, float speed)
@@ -250,7 +303,7 @@ namespace HighSeas.World
 
         static float GetCastRadius(float radius) => Mathf.Max(0.15f, radius * 0.92f);
 
-        static float GetCollisionHeight(float radius) => Mathf.Max(radius * 2.5f, 1.25f);
+        public static float GetCollisionHeight(float radius) => Mathf.Max(radius * 2.5f, 1.25f);
 
         static void GetCapsulePoints(Vector3 position, float radius, float height, out Vector3 pointA, out Vector3 pointB)
         {

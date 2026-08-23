@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HighSeas.Core;
+using HighSeas.World;
 using UnityEngine;
 
 namespace HighSeas.Enemies
@@ -35,7 +36,8 @@ namespace HighSeas.Enemies
         ScriptedPhase _scriptedPhase = ScriptedPhase.WaitingToStart;
         int _scriptedWaveIndex;
         float _scriptedTimer;
-        readonly List<string> _scriptedQueue = new(32);
+        float _scriptedWaveElapsed;
+        readonly List<string> _scriptedQueue = new(64);
 
         void Awake()
         {
@@ -67,6 +69,7 @@ namespace HighSeas.Enemies
             _scriptedPhase = ScriptedPhase.WaitingToStart;
             _scriptedWaveIndex = 0;
             _scriptedTimer = 0f;
+            _scriptedWaveElapsed = 0f;
             _scriptedQueue.Clear();
         }
 
@@ -140,22 +143,43 @@ namespace HighSeas.Enemies
                 return;
             }
 
-            if (_spawnCooldown > 0f)
-                return;
-
-            if (_scriptedQueue.Count == 0)
+            if (_scriptedPhase == ScriptedPhase.Spawning)
             {
-                FinishCurrentScriptedWave();
-                return;
+                var wave = GetScriptedWave(_scriptedWaveIndex);
+                if (wave == null)
+                {
+                    _scriptedPhase = ScriptedPhase.Finished;
+                    return;
+                }
+
+                _scriptedWaveElapsed += dt;
+                if (_scriptedWaveElapsed >= wave.waveDurationSeconds)
+                {
+                    FinishCurrentScriptedWave();
+                    return;
+                }
+
+                if (_spawnCooldown > 0f)
+                    return;
+
+                if (_scriptedQueue.Count == 0)
+                {
+                    if (wave.loopComposition)
+                        BuildScriptedQueue(wave, _scriptedQueue);
+                    else
+                        return;
+                }
+
+                if (_scriptedQueue.Count == 0)
+                    return;
+
+                var enemyId = _scriptedQueue[0];
+                if (!TrySpawnEnemyId(enemyId))
+                    return;
+
+                _scriptedQueue.RemoveAt(0);
+                _spawnCooldown = wave.spawnGapSeconds;
             }
-
-            var enemyId = _scriptedQueue[0];
-            if (!TrySpawnEnemyId(enemyId))
-                return;
-
-            _scriptedQueue.RemoveAt(0);
-            var wave = GetScriptedWave(_scriptedWaveIndex);
-            _spawnCooldown = wave != null ? wave.spawnGapSeconds : GetMinSpawnGap();
         }
 
         void HandleScriptedWavesFinished(float dt)
@@ -182,6 +206,7 @@ namespace HighSeas.Enemies
             }
 
             _scriptedWaveIndex = waveIndex;
+            _scriptedWaveElapsed = 0f;
             _scriptedQueue.Clear();
             BuildScriptedQueue(wave, _scriptedQueue);
 
@@ -353,9 +378,34 @@ namespace HighSeas.Enemies
                 affix = (EliteAffix)RunManager.Instance.Rng.DirectorInt(1, 5);
 
             var speedMult = settings != null ? settings.GetSpeedMultiplier(def.id) : 1f;
-            enemyWorld.Spawn(defIndex, PickSpawnPosition(), affix, speedMult);
+            if (!TrySpawnAtValidPosition(defIndex, affix, speedMult))
+                return false;
+
             return true;
         }
+
+        bool TrySpawnAtValidPosition(int defIndex, EliteAffix affix, float speedMult)
+        {
+            var def = enemyWorld.Definitions[defIndex];
+            var attempts = settings != null ? settings.spawnPositionAttempts : 16;
+            var spawnRadius = def.radius + 0.35f;
+
+            for (var i = 0; i < attempts; i++)
+            {
+                var position = PickSpawnPosition();
+                if (IslandObstacles.IsAvailable && IslandObstacles.IsPositionBlocked(position, spawnRadius))
+                    continue;
+
+                enemyWorld.Spawn(defIndex, position, affix, speedMult);
+                return true;
+            }
+
+            enemyWorld.Spawn(defIndex, PickSpawnPositionInArc(GetSpawnDistanceMin(), GetSpawnDistanceMax(), RunManager.Instance.Rng), affix, speedMult);
+            return true;
+        }
+
+        float GetSpawnDistanceMin() => settings != null ? settings.spawnDistanceMin : GameConstants.SpawnAnnulusMin;
+        float GetSpawnDistanceMax() => settings != null ? settings.spawnDistanceMax : GameConstants.SpawnAnnulusMax;
 
         float GetGracePeriod() => settings != null ? settings.gracePeriodSeconds : 0f;
         float GetMinSpawnGap() => settings != null ? settings.minSecondsBetweenSpawns : 0.35f;
@@ -478,7 +528,7 @@ namespace HighSeas.Enemies
             {
                 if (!defs[i].isMiniboss) continue;
                 var speedMult = settings != null ? settings.GetSpeedMultiplier(defs[i].id) : 1f;
-                enemyWorld.Spawn(i, PickSpawnPosition(), EliteAffix.Rich, speedMult);
+                TrySpawnAtValidPosition(i, EliteAffix.Rich, speedMult);
                 break;
             }
         }
@@ -486,14 +536,118 @@ namespace HighSeas.Enemies
         Vector3 PickSpawnPosition()
         {
             var rng = RunManager.Instance.Rng;
-            var minDist = settings != null ? settings.spawnDistanceMin : GameConstants.SpawnAnnulusMin;
-            var maxDist = settings != null ? settings.spawnDistanceMax : GameConstants.SpawnAnnulusMax;
-            var outsideFov = settings == null || settings.spawnOutsideCameraView;
+            var minDist = GetSpawnDistanceMin();
+            var maxDist = GetSpawnDistanceMax();
+            var mode = GetSpawnPlacementMode();
 
-            if (outsideFov)
-                return PickSpawnPositionOutsideCameraView(minDist, maxDist, rng);
+            return mode switch
+            {
+                SpawnPlacementMode.ScreenEdge => PickSpawnAtScreenEdge(minDist, maxDist, rng),
+                SpawnPlacementMode.OffCamera => PickSpawnPositionOutsideCameraView(minDist, maxDist, rng),
+                _ => PickSpawnPositionInArc(minDist, maxDist, rng)
+            };
+        }
+
+        SpawnPlacementMode GetSpawnPlacementMode()
+        {
+            if (settings == null)
+                return SpawnPlacementMode.ScreenEdge;
+
+            if (settings.spawnPlacement != SpawnPlacementMode.Annulus)
+                return settings.spawnPlacement;
+
+            return settings.spawnOutsideCameraView
+                ? SpawnPlacementMode.OffCamera
+                : SpawnPlacementMode.Annulus;
+        }
+
+        Vector3 PickSpawnAtScreenEdge(float minDist, float maxDist, Core.RunRng rng)
+        {
+            var cam = GetSpawnCamera();
+            var attempts = settings != null ? settings.spawnPositionAttempts : 16;
+            var margin = settings != null ? settings.cameraViewportMargin : 0.05f;
+            var planeY = player.position.y;
+
+            if (cam != null)
+            {
+                for (var i = 0; i < attempts; i++)
+                {
+                    var edge = rng.DirectorFloat();
+                    var u = rng.DirectorFloat();
+                    float vx;
+                    float vy;
+                    if (edge < 0.25f)
+                    {
+                        vx = u;
+                        vy = -margin;
+                    }
+                    else if (edge < 0.5f)
+                    {
+                        vx = 1f + margin;
+                        vy = u;
+                    }
+                    else if (edge < 0.75f)
+                    {
+                        vx = u;
+                        vy = 1f + margin;
+                    }
+                    else
+                    {
+                        vx = -margin;
+                        vy = u;
+                    }
+
+                    var ray = cam.ViewportPointToRay(new Vector3(vx, vy, 0f));
+                    if (!TryIntersectWaterPlane(ray, planeY, out var hitPoint))
+                        continue;
+
+                    hitPoint = ClampSpawnDistance(hitPoint, minDist, maxDist, planeY);
+                    if (IsSpawnCandidateValid(hitPoint, 1.1f))
+                        return hitPoint;
+                }
+            }
 
             return PickSpawnPositionInArc(minDist, maxDist, rng);
+        }
+
+        static bool TryIntersectWaterPlane(Ray ray, float planeY, out Vector3 hitPoint)
+        {
+            hitPoint = default;
+            if (Mathf.Abs(ray.direction.y) < 0.0001f)
+                return false;
+
+            var t = (planeY - ray.origin.y) / ray.direction.y;
+            if (t < 0f)
+                return false;
+
+            hitPoint = ray.origin + ray.direction * t;
+            hitPoint.y = planeY;
+            return true;
+        }
+
+        Vector3 ClampSpawnDistance(Vector3 point, float minDist, float maxDist, float planeY)
+        {
+            var offset = point - player.position;
+            offset.y = 0f;
+            var dist = offset.magnitude;
+            if (dist < 0.01f)
+                return player.position + Vector3.forward * minDist;
+
+            if (dist >= minDist && dist <= maxDist)
+                return point;
+
+            var clamped = Mathf.Clamp(dist, minDist, maxDist);
+            var result = player.position + offset.normalized * clamped;
+            result.y = planeY;
+            return result;
+        }
+
+        bool IsSpawnCandidateValid(Vector3 point, float radius)
+        {
+            if (!IslandObstacles.IsAvailable)
+                return true;
+
+            return !IslandObstacles.IsPositionBlocked(point, radius);
         }
 
         Vector3 PickSpawnPositionOutsideCameraView(float minDist, float maxDist, Core.RunRng rng)

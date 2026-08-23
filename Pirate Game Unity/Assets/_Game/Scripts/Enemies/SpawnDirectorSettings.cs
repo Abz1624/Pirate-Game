@@ -3,6 +3,13 @@ using UnityEngine;
 
 namespace HighSeas.Enemies
 {
+    public enum SpawnPlacementMode
+    {
+        Annulus = 0,
+        OffCamera = 1,
+        ScreenEdge = 2
+    }
+
     public enum SpawnTimingMode
     {
         ContinuousThreat = 0,
@@ -29,10 +36,14 @@ namespace HighSeas.Enemies
     public sealed class SpawnWaveDefinition
     {
         public string waveName = "Wave";
-        [Tooltip("Seconds to wait after the previous wave finishes before this one starts.")]
-        [Min(0f)] public float delayBeforeWaveSeconds = 8f;
+        [Tooltip("Seconds to wait after the previous wave ends before this one starts.")]
+        [Min(0f)] public float delayBeforeWaveSeconds = 15f;
+        [Tooltip("Megabonk-style: how long this wave keeps spawning enemies.")]
+        [Min(5f)] public float waveDurationSeconds = 50f;
         [Tooltip("Gap between each enemy spawn inside this wave.")]
-        [Min(0.05f)] public float spawnGapSeconds = 0.45f;
+        [Min(0.05f)] public float spawnGapSeconds = 2f;
+        [Tooltip("Repeat the composition roster until the wave duration ends.")]
+        public bool loopComposition = true;
         public SpawnWaveEntry[] spawns;
     }
 
@@ -54,8 +65,8 @@ namespace HighSeas.Enemies
     {
         [Header("Timing Pattern")]
         public SpawnTimingMode timingMode = SpawnTimingMode.ScriptedWaves;
-        [Min(0f)] public float gracePeriodSeconds = 5f;
-        [Min(0f)] public float minSecondsBetweenSpawns = 0.35f;
+        [Min(0f)] public float gracePeriodSeconds = 2f;
+        [Min(0f)] public float minSecondsBetweenSpawns = 0.55f;
         [Min(0.1f)] public float spawnIntervalSeconds = 2.5f;
         [Min(1)] public int waveSize = 4;
 
@@ -68,7 +79,7 @@ namespace HighSeas.Enemies
         [Range(0.1f, 3f)] public float globalSpeedMultiplier = 1f;
 
         [Header("Global Pressure")]
-        [Range(0.1f, 2f)] public float threatMultiplier = 0.85f;
+        [Range(0.1f, 2f)] public float threatMultiplier = 0.7f;
         [Range(0.5f, 6f)] public float budgetCapMultiplier = 3.5f;
         [Min(0)] public int maxActiveEnemies;
         [Range(0f, 2f)] public float eliteChanceMultiplier = 1f;
@@ -79,16 +90,16 @@ namespace HighSeas.Enemies
         [Min(0.5f)] public float creatureChanceRampMinutes = 6f;
 
         [Header("Spawn Position")]
-        [Min(0f)] public float spawnDistanceMin = 13f;
-        [Min(0f)] public float spawnDistanceMax = 22f;
-        [Tooltip("When Spawn Outside Camera View is off: 360 = anywhere around the player.")]
+        public SpawnPlacementMode spawnPlacement = SpawnPlacementMode.ScreenEdge;
+        [Min(0f)] public float spawnDistanceMin = 9f;
+        [Min(0f)] public float spawnDistanceMax = 15f;
+        [Tooltip("Annulus / Off-camera only: 360 = anywhere around the player.")]
         [Range(30f, 360f)] public float spawnArcDegrees = 360f;
         [Range(-180f, 180f)] public float spawnArcYawOffset;
-        [Tooltip("Prefer spawn points that are not visible on the main camera.")]
+        [Tooltip("Legacy toggle kept for older assets. Screen Edge is recommended.")]
         public bool spawnOutsideCameraView = true;
-        [Tooltip("Viewport padding used when testing visibility. Higher = stricter off-screen spawning.")]
-        [Range(0f, 0.35f)] public float cameraViewportMargin = 0.08f;
-        [Min(1)] public int spawnPositionAttempts = 12;
+        [Range(0f, 0.35f)] public float cameraViewportMargin = 0.05f;
+        [Min(1)] public int spawnPositionAttempts = 16;
 
         [Header("Per-enemy")]
         public EnemySpawnTuning[] enemies;
@@ -126,26 +137,28 @@ namespace HighSeas.Enemies
         public static SpawnWaveDefinition[] CreateDefaultWaveScript() =>
             new[]
             {
-                Wave("1 — Cannonboats", 0f, 0.5f,
-                    Entry("cannonboat", 4)),
-                Wave("2 — Swordfish", 10f, 0.35f,
-                    Entry("swordfish", 6)),
-                Wave("3 — Cannonboats + Sharks", 10f, 0.45f,
-                    Entry("cannonboat", 3), Entry("shark", 3)),
-                Wave("4 — Swordfish + Sharks", 10f, 0.4f,
-                    Entry("swordfish", 4), Entry("shark", 3)),
-                Wave("5 — Hammerhead + Sharks", 12f, 0.45f,
-                    Entry("hammerhead", 2), Entry("shark", 4)),
-                Wave("6 — Kraken", 14f, 0.8f,
+                Wave("1 — Cannonboats", 3f, 50f, 3.8f,
+                    Entry("cannonboat", 3)),
+                Wave("2 — Swordfish", 15f, 55f, 3.4f,
+                    Entry("swordfish", 4)),
+                Wave("3 — Cannonboats + Sharks", 15f, 60f, 3.6f,
+                    Entry("cannonboat", 2), Entry("shark", 2)),
+                Wave("4 — Swordfish + Sharks", 15f, 65f, 3.4f,
+                    Entry("swordfish", 3), Entry("shark", 2)),
+                Wave("5 — Hammerhead + Sharks", 18f, 70f, 3.6f,
+                    Entry("hammerhead", 2), Entry("shark", 3)),
+                Wave("6 — Kraken", 20f, 40f, 4.5f,
                     Entry("kraken_spawn", 2))
             };
 
-        static SpawnWaveDefinition Wave(string name, float delay, float gap, params SpawnWaveEntry[] spawns) =>
+        static SpawnWaveDefinition Wave(string name, float delay, float duration, float gap, params SpawnWaveEntry[] spawns) =>
             new()
             {
                 waveName = name,
                 delayBeforeWaveSeconds = delay,
+                waveDurationSeconds = duration,
                 spawnGapSeconds = gap,
+                loopComposition = true,
                 spawns = spawns
             };
 
