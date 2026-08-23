@@ -216,9 +216,13 @@ namespace HighSeas.Weapons
             var baseDir = (enemy.position - _player.Position).normalized;
             var speed = w.def.projectileSpeed * w.speedMult * stats.ProjectileSpeed;
             var size = 0.25f * w.sizeMult * stats.Size;
+            var spread = w.def.fanSpreadDegrees;
+            var halfSpread = spread * 0.5f;
             for (var i = 0; i < pellets; i++)
             {
-                var angle = -25f + (50f / Mathf.Max(1, pellets - 1)) * i;
+                var angle = pellets <= 1
+                    ? 0f
+                    : -halfSpread + (spread / (pellets - 1)) * i;
                 var dir = Quaternion.Euler(0f, angle, 0f) * baseDir;
                 var dmg = DamageSystem.RollDamage(w.def.baseDamage * 0.6f, w.damageBonus, stats, enemy.isElite, 0f, rng, w.def.procCoefficient);
                 var origin = _player.Position + Vector3.up * 0.35f;

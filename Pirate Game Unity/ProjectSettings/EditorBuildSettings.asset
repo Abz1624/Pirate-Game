@@ -20,6 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Game/Scenes/Tests/Test_Performance.unity
     guid: c0b7868b1121ff14e9a4e3613da41650
+  - enabled: 1
+    path: Assets/_Game/Scenes/Tests/Test_Tuning.unity
+    guid: afe82dd1113a92f40bbe910db0d0fc85
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

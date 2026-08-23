@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 613c5aeb7ea979a4abaf92506108c322, type: 3}
   m_Name: SpawnDirectorSettings
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.SpawnDirectorSettings
-  timingMode: 3
+  timingMode: 0
   gracePeriodSeconds: 2
   minSecondsBetweenSpawns: 0.55
   spawnIntervalSeconds: 2.5

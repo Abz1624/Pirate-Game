@@ -39,28 +39,32 @@ namespace HighSeas.Editor
 
         static void CreateOrSelectSettings(SerializedProperty settingsProp)
         {
-            const string path = "Assets/_Game/Data/SpawnDirectorSettings.asset";
-            var existing = AssetDatabase.LoadAssetAtPath<Enemies.SpawnDirectorSettings>(path);
-            if (existing == null)
-            {
-                existing = ScriptableObject.CreateInstance<Enemies.SpawnDirectorSettings>();
-                existing.timingMode = Enemies.SpawnTimingMode.ScriptedWaves;
-                existing.threatMultiplier = 0.85f;
-                existing.creatureChanceAtLateGame = 0.5f;
-                existing.waves = Enemies.SpawnDirectorSettings.CreateDefaultWaveScript();
-                existing.enemies = Enemies.SpawnDirectorSettings.CreateDefaultEnemyTuning();
-                AssetDatabase.CreateAsset(existing, path);
-                AssetDatabase.SaveAssets();
-                Debug.Log($"Created {path}");
-            }
-
+            CreateOrSelectSettingsAsset("Assets/_Game/Data/SpawnDirectorSettings.asset");
+            var existing = AssetDatabase.LoadAssetAtPath<Enemies.SpawnDirectorSettings>(
+                "Assets/_Game/Data/SpawnDirectorSettings.asset");
             settingsProp.objectReferenceValue = existing;
             settingsProp.serializedObject.ApplyModifiedProperties();
             Selection.activeObject = existing;
             EditorGUIUtility.PingObject(existing);
         }
 
-        static void ResetDefaultWaves(Enemies.SpawnDirectorSettings settings)
+        public static void CreateOrSelectSettingsAsset(string path = "Assets/_Game/Data/SpawnDirectorSettings.asset")
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<Enemies.SpawnDirectorSettings>(path);
+            if (existing != null) return;
+
+            existing = ScriptableObject.CreateInstance<Enemies.SpawnDirectorSettings>();
+            existing.timingMode = Enemies.SpawnTimingMode.ScriptedWaves;
+            existing.threatMultiplier = 0.85f;
+            existing.creatureChanceAtLateGame = 0.5f;
+            existing.waves = Enemies.SpawnDirectorSettings.CreateDefaultWaveScript();
+            existing.enemies = Enemies.SpawnDirectorSettings.CreateDefaultEnemyTuning();
+            AssetDatabase.CreateAsset(existing, path);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"Created {path}");
+        }
+
+        public static void ResetDefaultWaves(Enemies.SpawnDirectorSettings settings)
         {
             settings.timingMode = Enemies.SpawnTimingMode.ScriptedWaves;
             settings.spawnPlacement = Enemies.SpawnPlacementMode.ScreenEdge;
@@ -74,7 +78,7 @@ namespace HighSeas.Editor
             Debug.Log("Reset scripted wave sequence and default enemy speed tuning.");
         }
 
-        static void SyncEnemyList(Enemies.SpawnDirectorSettings settings)
+        public static void SyncEnemyList(Enemies.SpawnDirectorSettings settings)
         {
             var database = AssetDatabase.LoadAssetAtPath<GameDatabase>("Assets/_Game/Data/GameDatabase.asset");
             if (database == null || database.enemies == null)

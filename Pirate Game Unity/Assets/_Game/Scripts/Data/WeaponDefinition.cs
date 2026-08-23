@@ -20,6 +20,8 @@ namespace HighSeas.Data
         public float duration = 2f;
         public float size = 1f;
         public float knockback = 1f;
+        [Tooltip("Total yaw arc in degrees for FanVolley weapons (e.g. Broadside Battery).")]
+        [Range(4f, 90f)] public float fanSpreadDegrees = 50f;
         public int maxLevel = 12;
         public UpgradeAxis[] validUpgradeAxes;
         public WeaponUpgradeAxisConfig[] upgradeAxisConfigs;

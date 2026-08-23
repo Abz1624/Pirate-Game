@@ -20,18 +20,18 @@ MonoBehaviour:
   levelUpBurstPrefab: {fileID: 2249966750753480693, guid: 9cd33b2ac3a2845abb7d9b3eeaaab27a, type: 3}
   waterImpactSplashPrefab: {fileID: 7117905026468385747, guid: 9bf6488282dca46eda70d6338c3d982f, type: 3}
   damageHighlightPrefab: {fileID: 108369408499265073, guid: 2a77dae8a16f1438484981feaa46221d, type: 3}
-  enemyHitScale: 0.55
-  enemyKillScale: 1
-  eliteKillExplosionScale: 1.35
-  bossKillExplosionScale: 2.2
-  critHitScale: 0.75
-  levelUpBurstScale: 1.6
+  enemyHitScale: 0.1
+  enemyKillScale: 0.2
+  eliteKillExplosionScale: 0.25
+  bossKillExplosionScale: 0.25
+  critHitScale: 0.15
+  levelUpBurstScale: 0
   waterImpactSplashScale: 0.85
-  damageHighlightScale: 1.15
+  damageHighlightScale: 0.5
   bossDeathBurstCount: 3
   projectilePrefab: {fileID: 7836255817071307116, guid: 541a9fda95320481e8a147ad8b0966e4, type: 3}
   shootingVfxPrefab: {fileID: 7836255817071307116, guid: 541a9fda95320481e8a147ad8b0966e4, type: 3}
-  projectileSizeMultiplier: 1
+  projectileSizeMultiplier: 0.5
   projectileRadiusMultiplier: 1
   shootingVfxScale: 0.35
   mineBarrelPrefab: {fileID: 1105679691474038168, guid: 855dd556424204fa4a29877f701c380a, type: 3}
@@ -45,12 +45,12 @@ MonoBehaviour:
   flamethrowerScale: 1
   cutlassScale: 0.45
   seaFoamTrailPrefab: {fileID: 1338987784596019399, guid: f1dc39013527e4588855efaa452b4e7b, type: 3}
-  seaFoamTrailScale: 1
+  seaFoamTrailScale: 2
   infamyPickupPrefab: {fileID: 1642442580476454169, guid: c5ab5d6ce59f64acfb78d6e0031fb059, type: 3}
   goldPickupPrefab: {fileID: 263643296654351893, guid: e8bf09f96ed974ce39a728db0f8f33b2, type: 3}
   healthPickupPrefab: {fileID: 7594942214642804130, guid: c0f37cb0f063f4e0590917662269a3bb, type: 3}
   goldBarrelPickupPrefab: {fileID: 7834809957994119764, guid: 5f2204b6d1bda43d8acd38896a3e5f56, type: 3}
-  infamyPickupScale: 1
+  infamyPickupScale: 0.1
   goldPickupScale: 1
   healthPickupScale: 0.65
   goldBarrelPickupScale: 0.7

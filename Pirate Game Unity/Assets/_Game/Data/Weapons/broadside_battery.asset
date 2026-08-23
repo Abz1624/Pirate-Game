@@ -25,6 +25,7 @@ MonoBehaviour:
   duration: 2
   size: 1
   knockback: 1
+  fanSpreadDegrees: 12
   maxLevel: 12
   validUpgradeAxes: 000000000100000002000000
   upgradeAxisConfigs:
