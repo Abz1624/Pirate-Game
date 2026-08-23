@@ -21,3 +21,5 @@ MonoBehaviour:
   bossTelegraphSeconds: 0.7
   firstChestDiscount: 0.5
   postScriptedThreatMultiplier: 0.75
+  goldXpAutoPickupRadius: 2.5
+  powerupTouchRadius: 0.8

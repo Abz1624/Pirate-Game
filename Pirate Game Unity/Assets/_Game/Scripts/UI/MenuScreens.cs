@@ -88,7 +88,7 @@ namespace HighSeas.UI
             _shown = true;
             panel.SetActive(true);
             if (body != null)
-                body.text = "MOVE with WASD or joystick.\nWeapons AUTO-FIRE.\nPick upgrades on LEVEL UP.";
+                body.text = "MOVE with WASD.\nWeapons AUTO-FIRE.\nPick upgrades on LEVEL UP.";
             Invoke(nameof(Hide), 8f);
         }
 

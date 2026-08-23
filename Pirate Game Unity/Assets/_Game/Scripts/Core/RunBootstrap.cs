@@ -29,6 +29,14 @@ namespace HighSeas.Core
             AppRoot.EnsureInitialized();
             if (database == null || !GameDatabaseLoader.IsValid(database))
                 database = GameDatabaseLoader.Load();
+            DisableTouchJoystick();
+        }
+
+        static void DisableTouchJoystick()
+        {
+            var joystick = GameObject.Find("JoystickBG");
+            if (joystick != null)
+                joystick.SetActive(false);
         }
 
         void Start()

@@ -391,7 +391,6 @@ namespace HighSeas.Editor
             BuildRunHud(canvas);
             BuildLevelUpModal(canvas);
             BuildRunEnd(canvas);
-            BuildJoystick(canvas);
             canvas.gameObject.AddComponent<TutorialOverlay>();
 
             var poi = systems.GetComponent<POIManager>();

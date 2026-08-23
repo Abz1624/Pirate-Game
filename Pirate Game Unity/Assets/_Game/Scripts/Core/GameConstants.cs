@@ -22,7 +22,7 @@ namespace HighSeas.Core
     {
         public const float DefaultMoveSpeed = 6.2f;
         public const float DefaultHull = 100f;
-        public const float DefaultPickupRadius = 2.25f;
+        public const float DefaultPickupRadius = 3.5f;
         public const float ContactIFrame = 0.20f;
         public const float EnemyContactCooldown = 0.8f;
         public const float StageDurationSeconds = 600f;

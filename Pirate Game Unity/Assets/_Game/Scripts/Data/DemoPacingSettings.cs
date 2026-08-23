@@ -22,5 +22,11 @@ namespace HighSeas.Data
 
         [Header("Spawn Pressure")]
         [Range(0.1f, 2f)] public float postScriptedThreatMultiplier = 0.75f;
+
+        [Header("Pickups")]
+        [Tooltip("Gold and XP pickups are collected automatically within this range.")]
+        [Min(0.5f)] public float goldXpAutoPickupRadius = 2.5f;
+        [Tooltip("Health/powerup pickups still require sailing close to collect.")]
+        [Min(0.3f)] public float powerupTouchRadius = 0.8f;
     }
 }

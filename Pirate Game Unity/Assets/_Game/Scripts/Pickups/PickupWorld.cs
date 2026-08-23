@@ -88,6 +88,9 @@ namespace HighSeas.Pickups
         public void Tick(float dt, Vector3 playerPos, float pickupRadius)
         {
             _time += dt;
+            var autoPickupRadius = pacingSettings != null ? pacingSettings.goldXpAutoPickupRadius : 2.5f;
+            var powerupRadius = pacingSettings != null ? pacingSettings.powerupTouchRadius : 0.8f;
+
             for (var i = 0; i < _pool.Length; i++)
             {
                 if (!_pool[i].active) continue;
@@ -95,6 +98,13 @@ namespace HighSeas.Pickups
                 var toPlayer = playerPos - p.position;
                 toPlayer.y = 0f;
                 var dist = toPlayer.magnitude;
+
+                if (IsAutoPickupType(p.type) && dist <= autoPickupRadius)
+                {
+                    Collect(i);
+                    continue;
+                }
+
                 if (dist < pickupRadius)
                 {
                     var speed = Mathf.Lerp(4f, 18f, 1f - dist / pickupRadius);
@@ -113,9 +123,13 @@ namespace HighSeas.Pickups
                     p.view.Rotate(0f, 180f * dt, 0f, Space.World);
                 }
 
-                if (dist < 0.6f) Collect(i);
+                if (p.type == PickupType.Powerup && dist <= powerupRadius)
+                    Collect(i);
             }
         }
+
+        static bool IsAutoPickupType(PickupType type) =>
+            type == PickupType.Infamy || type == PickupType.Gold;
 
         void Collect(int i)
         {
