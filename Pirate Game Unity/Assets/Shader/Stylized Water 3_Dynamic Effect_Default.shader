@@ -86,7 +86,10 @@ Shader "Stylized Water 3/Dynamic Effect/Default"
 
                 half3 albedo = baseTex.rgb * _FoamColor.rgb;
                 half shape = baseTex.a * maskTex.r;
-                half alpha = saturate(shape * _FoamStrength) * IN.color.a;
+                // _FoamStrength is authored per-material and can legitimately be 0 (e.g. the ripple splash
+                // material), which must NOT zero out visibility entirely - only ever boost the shape's alpha.
+                half alphaBoost = max(_FoamStrength, 1.0);
+                half alpha = saturate(shape * alphaBoost) * IN.color.a;
 
                 return half4(albedo, alpha);
             }
