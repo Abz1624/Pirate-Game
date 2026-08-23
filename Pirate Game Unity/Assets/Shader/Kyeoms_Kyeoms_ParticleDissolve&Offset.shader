@@ -1,77 +1,82 @@
-Shader "Kyeoms/Kyeoms_ParticleDissolve&Offset" {
-	Properties {
-		[NoScaleOffset] Texture2D_F593E37E ("MainTex", 2D) = "white" {}
-		[NoScaleOffset] _MainTex_UV ("MainTex_UV", 2D) = "white" {}
-		[ToggleUI] Boolean_2FAC1FE4 ("Use SoftParticleFactor?", Float) = 1
-		[HideInInspector] _CastShadows ("_CastShadows", Float) = 0
-		[HideInInspector] _Surface ("_Surface", Float) = 1
-		[HideInInspector] _Blend ("_Blend", Float) = 0
-		[HideInInspector] _AlphaClip ("_AlphaClip", Float) = 0
-		[HideInInspector] _SrcBlend ("_SrcBlend", Float) = 1
-		[HideInInspector] _DstBlend ("_DstBlend", Float) = 0
-		[HideInInspector] _SrcBlendAlpha ("_SrcBlendAlpha", Float) = 1
-		[HideInInspector] _DstBlendAlpha ("_DstBlendAlpha", Float) = 0
-		[ToggleUI] [HideInInspector] _ZWrite ("_ZWrite", Float) = 0
-		[HideInInspector] _ZWriteControl ("_ZWriteControl", Float) = 0
-		[HideInInspector] _ZTest ("_ZTest", Float) = 4
-		[HideInInspector] _Cull ("_Cull", Float) = 0
-		[HideInInspector] _AlphaToMask ("_AlphaToMask", Float) = 0
-		[HideInInspector] _QueueOffset ("_QueueOffset", Float) = 0
-		[HideInInspector] _QueueControl ("_QueueControl", Float) = -1
-		[HideInInspector] [NoScaleOffset] unity_Lightmaps ("unity_Lightmaps", 2DArray) = "" {}
-		[HideInInspector] [NoScaleOffset] unity_LightmapsInd ("unity_LightmapsInd", 2DArray) = "" {}
-		[HideInInspector] [NoScaleOffset] unity_ShadowMasks ("unity_ShadowMasks", 2DArray) = "" {}
-		[HideInInspector] _BUILTIN_Surface ("Float", Float) = 1
-		[HideInInspector] _BUILTIN_Blend ("Float", Float) = 0
-		[HideInInspector] _BUILTIN_AlphaClip ("Float", Float) = 0
-		[HideInInspector] _BUILTIN_SrcBlend ("Float", Float) = 1
-		[HideInInspector] _BUILTIN_DstBlend ("Float", Float) = 0
-		[HideInInspector] _BUILTIN_ZWrite ("Float", Float) = 0
-		[HideInInspector] _BUILTIN_ZWriteControl ("Float", Float) = 0
-		[HideInInspector] _BUILTIN_ZTest ("Float", Float) = 4
-		[HideInInspector] _BUILTIN_CullMode ("Float", Float) = 0
-		[HideInInspector] _BUILTIN_QueueOffset ("Float", Float) = 0
-		[HideInInspector] _BUILTIN_QueueControl ("Float", Float) = -1
-	}
-	//DummyShaderTextExporter
-	SubShader{
-		Tags { "RenderType" = "Opaque" }
-		LOD 200
+Shader "Kyeoms/Kyeoms_ParticleDissolve&Offset"
+{
+    Properties
+    {
+        [NoScaleOffset] Texture2D_F593E37E ("MainTex", 2D) = "white" {}
+        [NoScaleOffset] _MainTex_UV ("MainTex_UV", 2D) = "white" {}
+        [ToggleUI] Boolean_2FAC1FE4 ("Use SoftParticleFactor?", Float) = 1
+        _DissolveSoftness ("Dissolve Edge Softness", Range(0.01, 0.5)) = 0.12
+        [HDR] _EdgeColor ("Dissolve Edge Glow Color", Color) = (1.6, 0.9, 0.5, 1)
+    }
+    SubShader
+    {
+        Tags { "RenderType"="Transparent" "RenderPipeline"="UniversalPipeline" "Queue"="Transparent" }
+        LOD 200
 
-		Pass
-		{
-			HLSLPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
+        Pass
+        {
+            Name "ForwardUnlit"
+            Tags { "LightMode"="UniversalForward" }
+            Blend SrcAlpha OneMinusSrcAlpha
+            ZWrite Off
+            Cull Off
 
-			float4x4 unity_ObjectToWorld;
-			float4x4 unity_MatrixVP;
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
 
-			struct Vertex_Stage_Input
-			{
-				float4 pos : POSITION;
-			};
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
-			struct Vertex_Stage_Output
-			{
-				float4 pos : SV_POSITION;
-			};
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float2 uv : TEXCOORD0;
+                float4 color : COLOR;
+            };
 
-			Vertex_Stage_Output vert(Vertex_Stage_Input input)
-			{
-				Vertex_Stage_Output output;
-				output.pos = mul(unity_MatrixVP, mul(unity_ObjectToWorld, input.pos));
-				return output;
-			}
+            struct Varyings
+            {
+                float4 positionHCS : SV_POSITION;
+                float2 uv : TEXCOORD0;
+                float4 color : COLOR;
+            };
 
-			float4 frag(Vertex_Stage_Output input) : SV_TARGET
-			{
-				return float4(1.0, 1.0, 1.0, 1.0); // RGBA
-			}
+            TEXTURE2D(Texture2D_F593E37E); SAMPLER(samplerTexture2D_F593E37E);
+            TEXTURE2D(_MainTex_UV); SAMPLER(sampler_MainTex_UV);
 
-			ENDHLSL
-		}
-	}
-	Fallback "Hidden/Shader Graph/FallbackError"
-	//CustomEditor "UnityEditor.ShaderGraph.GenericShaderGraphMaterialGUI"
+            CBUFFER_START(UnityPerMaterial)
+                float _DissolveSoftness;
+                float4 _EdgeColor;
+            CBUFFER_END
+
+            Varyings vert (Attributes IN)
+            {
+                Varyings OUT;
+                OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+                OUT.uv = IN.uv;
+                OUT.color = IN.color;
+                return OUT;
+            }
+
+            half4 frag (Varyings IN) : SV_Target
+            {
+                half4 baseTex = SAMPLE_TEXTURE2D(Texture2D_F593E37E, samplerTexture2D_F593E37E, IN.uv);
+                half4 offsetTex = SAMPLE_TEXTURE2D(_MainTex_UV, sampler_MainTex_UV, IN.uv);
+
+                half dissolveMask = offsetTex.r;
+                half threshold = 1.0 - IN.color.a;
+                half edge = smoothstep(threshold, threshold + _DissolveSoftness, dissolveMask);
+                half edgeGlow = 1.0 - smoothstep(threshold, threshold + _DissolveSoftness * 2.0, dissolveMask);
+
+                half3 albedo = baseTex.rgb * IN.color.rgb;
+                half3 finalColor = lerp(albedo, _EdgeColor.rgb, edgeGlow * edge);
+                half alpha = baseTex.a * edge * IN.color.a;
+
+                return half4(finalColor, alpha);
+            }
+            ENDHLSL
+        }
+    }
+    FallBack Off
 }
