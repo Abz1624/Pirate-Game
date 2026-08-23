@@ -22,28 +22,101 @@ namespace HighSeas.UI
         void Awake()
         {
             Instance = this;
+            EnsureWired();
             if (panel != null) panel.SetActive(false);
+        }
+
+        void Update()
+        {
+            if (panel == null || !panel.activeSelf || _offers == null) return;
+            if (Input.GetKeyDown(KeyCode.Alpha1)) Pick(0);
+            if (Input.GetKeyDown(KeyCode.Alpha2)) Pick(1);
+            if (Input.GetKeyDown(KeyCode.Alpha3)) Pick(2);
+        }
+
+        public bool TryShow(List<LevelSystem.LevelOffer> offers, Action<LevelSystem.LevelOffer> callback)
+        {
+            EnsureWired();
+            if (!HasUsableCards())
+                return false;
+
+            Show(offers, callback);
+            return true;
         }
 
         public void Show(List<LevelSystem.LevelOffer> offers, Action<LevelSystem.LevelOffer> callback)
         {
+            EnsureWired();
             _offers = offers;
             _callback = callback;
             if (panel != null) panel.SetActive(true);
+            if (cardButtons == null) return;
+
             for (var i = 0; i < cardButtons.Length; i++)
             {
                 var idx = i;
-                if (cardTitles != null && i < cardTitles.Length && i < offers.Count)
+                if (cardTitles != null && i < cardTitles.Length && i < offers.Count && cardTitles[i] != null)
                     cardTitles[i].text = offers[i].title;
-                if (cardDescriptions != null && i < cardDescriptions.Length && i < offers.Count)
+                if (cardDescriptions != null && i < cardDescriptions.Length && i < offers.Count && cardDescriptions[i] != null)
                     cardDescriptions[i].text = offers[i].description;
-                if (cardButtons != null && i < cardButtons.Length)
+                if (i < cardButtons.Length && cardButtons[i] != null)
                 {
                     cardButtons[i].gameObject.SetActive(i < offers.Count);
                     cardButtons[i].onClick.RemoveAllListeners();
                     cardButtons[i].onClick.AddListener(() => Pick(idx));
                 }
             }
+        }
+
+        void EnsureWired()
+        {
+            if (panel == null)
+                panel = gameObject;
+
+            if (cardButtons != null && cardButtons.Length > 0 && cardButtons[0] != null)
+                return;
+
+            var buttons = new Button[3];
+            var titles = new TextMeshProUGUI[3];
+            var descs = new TextMeshProUGUI[3];
+
+            for (var i = 0; i < 3; i++)
+            {
+                var card = transform.Find($"Card{i}");
+                if (card == null) continue;
+
+                buttons[i] = card.GetComponent<Button>();
+                var texts = card.GetComponentsInChildren<TextMeshProUGUI>(true);
+                if (texts.Length > 0)
+                    titles[i] = texts[0];
+
+                for (var t = 0; t < texts.Length; t++)
+                {
+                    if (texts[t].gameObject.name == "Desc")
+                    {
+                        descs[i] = texts[t];
+                        break;
+                    }
+                }
+
+                if (descs[i] == null && texts.Length > 1)
+                    descs[i] = texts[1];
+            }
+
+            cardButtons = buttons;
+            cardTitles = titles;
+            cardDescriptions = descs;
+        }
+
+        bool HasUsableCards()
+        {
+            if (cardButtons == null) return false;
+            for (var i = 0; i < cardButtons.Length; i++)
+            {
+                if (cardButtons[i] != null)
+                    return true;
+            }
+            return false;
         }
 
         void Pick(int index)

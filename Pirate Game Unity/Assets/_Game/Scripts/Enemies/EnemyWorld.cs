@@ -489,7 +489,7 @@ namespace HighSeas.Enemies
                 var def = definitions[e.definitionIndex];
                 RunManager.Instance?.RegisterKill(e.isBoss);
                 Pickups.PickupWorld.Instance?.SpawnFromEnemy(e.position, def.xpValue, def.goldValue, e.affix == EliteAffix.Rich);
-                Meta.TriggerBus.Instance?.RaiseKill(e.isElite, e.isBoss);
+                Meta.TriggerBus.Instance?.RaiseKill(e.isElite, e.isBoss, e.position);
                 Despawn(index);
             }
         }

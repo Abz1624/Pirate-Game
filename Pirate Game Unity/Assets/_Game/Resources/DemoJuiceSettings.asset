@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f142fd00426a4943b384970062a3fe7, type: 3}
+  m_Name: DemoJuiceSettings
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.DemoJuiceSettings
+  killExplosionPrefab: {fileID: 1709254077376921, guid: ad6f4880fc3bdca4e82b6a457384055c, type: 3}
+  eliteKillExplosionPrefab: {fileID: 1709254077376921, guid: ad6f4880fc3bdca4e82b6a457384055c, type: 3}
+  bossKillExplosionPrefab: {fileID: 1709254077376921, guid: ad6f4880fc3bdca4e82b6a457384055c, type: 3}
+  hitSparkPrefab: {fileID: 1709254077376921, guid: ad6f4880fc3bdca4e82b6a457384055c, type: 3}
+  levelUpBurstPrefab: {fileID: 1709254077376921, guid: ad6f4880fc3bdca4e82b6a457384055c, type: 3}
+  killExplosionScale: 1
+  eliteKillExplosionScale: 1.35
+  bossKillExplosionScale: 2.2
+  hitSparkScale: 0.45
+  levelUpBurstScale: 1.6
+  bossDeathBurstCount: 3
+  projectilePrefab: {fileID: 0}
+  projectileSizeMultiplier: 1.3
+  projectileRadiusMultiplier: 1.2
+  infamyPickupPrefab: {fileID: 0}
+  goldPickupPrefab: {fileID: 0}
+  infamyPickupScale: 0.42
+  goldPickupScale: 0.38
+  infamyColor: {r: 0.2, g: 0.95, b: 1, a: 1}
+  goldColor: {r: 1, g: 0.85, b: 0.15, a: 1}
+  salvageChestPrefab: {fileID: 4407610472142162157, guid: 9848d10ca2d58f745a077ec09bf9322b, type: 3}
+  lighthousePrefab: {fileID: 8329366941297514852, guid: cd37023bbdb5f75418cd3f35ced9cc98, type: 3}
+  trialBuoyPrefab: {fileID: 4362048224233766462, guid: c900088ab3eedda469163dae1e00e854, type: 3}
+  bossBeaconPrefab: {fileID: 0}
+  bossTelegraphRingPrefab: {fileID: 0}
+  salvageChestScale: 0.55
+  lighthouseScale: 0.7
+  trialBuoyScale: 0.5
+  bossBeaconScale: 1.1
+  bossTelegraphScale: 2.4
+  playerDamageFlashColor: {r: 1, g: 0.25, b: 0.2, a: 1}
+  playerDamageFlashDuration: 0.12

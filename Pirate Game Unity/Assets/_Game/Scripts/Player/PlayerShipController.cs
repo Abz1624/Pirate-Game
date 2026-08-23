@@ -149,6 +149,8 @@ namespace HighSeas.Player
             var turnEffectiveness = turnReferenceSpeed > 0f
                 ? Mathf.Clamp01(Mathf.Abs(forwardSpeed) / turnReferenceSpeed)
                 : 0f;
+            if (turnEffectiveness <= 0f && Mathf.Abs(input.steer) > 0.01f)
+                turnEffectiveness = 0.35f;
 
             if (Mathf.Abs(input.steer) > 0.01f && turnEffectiveness > 0f)
             {

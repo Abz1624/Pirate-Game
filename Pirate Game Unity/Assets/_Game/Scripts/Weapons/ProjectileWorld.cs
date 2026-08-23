@@ -1,5 +1,5 @@
-using System;
 using HighSeas.Core;
+using HighSeas.Data;
 using HighSeas.Enemies;
 using UnityEngine;
 
@@ -23,13 +23,19 @@ namespace HighSeas.Weapons
         public static ProjectileWorld Instance { get; private set; }
 
         [SerializeField] Transform root;
+        [SerializeField] DemoJuiceSettings juiceSettings;
+
         Projectile[] _pool;
+        ProjectileViewPool _viewPool;
         int _active;
 
         void Awake()
         {
             Instance = this;
             _pool = new Projectile[Platform.QualityProfile.Current.projectileCap];
+            if (juiceSettings == null)
+                juiceSettings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
+            _viewPool = new ProjectileViewPool(root != null ? root : transform, juiceSettings);
         }
 
         public bool TrySpawn(Vector3 pos, Vector3 dir, float speed, float damage, float life, float radius, int pierce, bool isCrit, Color color)
@@ -42,8 +48,7 @@ namespace HighSeas.Weapons
             }
             if (slot < 0) return false;
 
-            var view = CreateView(color, radius);
-            view.position = pos;
+            var view = _viewPool.Acquire(pos, color, radius);
             _pool[slot] = new Projectile
             {
                 active = true,
@@ -58,17 +63,6 @@ namespace HighSeas.Weapons
             };
             _active++;
             return true;
-        }
-
-        Transform CreateView(Color color, float radius)
-        {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            go.transform.SetParent(root != null ? root : transform, false);
-            go.transform.localScale = Vector3.one * radius * 2f;
-            var col = go.GetComponent<Collider>();
-            if (col != null) Destroy(col);
-            go.GetComponent<Renderer>().material.color = color;
-            return go.transform;
         }
 
         public void Tick(float dt, EnemyWorld enemies)
@@ -90,23 +84,22 @@ namespace HighSeas.Weapons
                         var d = Vector3.Distance(p.position, list[ei].position);
                         if (d > p.radius + list[ei].radius) continue;
                         enemies.ApplyDamage(ei, p.damage, p.isCrit);
-                        Meta.TriggerBus.Instance?.RaiseHit(p.damage, p.isCrit);
+                        Meta.TriggerBus.Instance?.RaiseHit(p.damage, p.isCrit, list[ei].position);
                         p.pierceLeft--;
                         if (p.pierceLeft < 0) break;
                     }
                 }
 
                 if (p.life <= 0f || p.pierceLeft < 0)
-                {
                     Despawn(i);
-                }
             }
         }
 
         void Despawn(int i)
         {
             if (!_pool[i].active) return;
-            if (_pool[i].view != null) Destroy(_pool[i].view.gameObject);
+            if (_pool[i].view != null)
+                _viewPool.Release(_pool[i].view);
             _pool[i].active = false;
             _active--;
         }

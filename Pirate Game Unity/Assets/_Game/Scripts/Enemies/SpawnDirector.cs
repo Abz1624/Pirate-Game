@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HighSeas.Core;
+using HighSeas.Data;
 using HighSeas.World;
 using UnityEngine;
 
@@ -39,6 +40,8 @@ namespace HighSeas.Enemies
         float _scriptedWaveElapsed;
         readonly List<string> _scriptedQueue = new(64);
 
+        DemoPacingSettings _pacingSettings;
+
         void Awake()
         {
             if (enemyWorld == null) enemyWorld = FindFirstObjectByType<EnemyWorld>();
@@ -52,6 +55,7 @@ namespace HighSeas.Enemies
                 settings = Resources.Load<SpawnDirectorSettings>("SpawnDirectorSettings");
 
             _cachedSpawnCamera = spawnCamera != null ? spawnCamera : Camera.main;
+            _pacingSettings = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
             ResetTimingState();
         }
 
@@ -259,7 +263,10 @@ namespace HighSeas.Enemies
 
         void TickContinuousThreat(float dt)
         {
+            var pacing = _pacingSettings;
             var threatMult = settings != null ? settings.threatMultiplier : 1f;
+            if (pacing != null)
+                threatMult *= pacing.postScriptedThreatMultiplier;
             var budgetCapMult = settings != null ? settings.budgetCapMultiplier : 3.5f;
             var threatPerSec = RunManager.Instance.ThreatPerSecond * threatMult;
             _budget += threatPerSec * dt;

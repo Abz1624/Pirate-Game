@@ -8,6 +8,7 @@ using HighSeas.Player;
 using HighSeas.POI;
 using HighSeas.UI;
 using HighSeas.Weapons;
+using HighSeas.VFX;
 using HighSeas.World;
 using UnityEngine;
 
@@ -83,8 +84,10 @@ namespace HighSeas.Core
             {
                 player.Damage.Died += OnPlayerDied;
                 if (TriggerBus.Instance != null)
-                    TriggerBus.Instance.DamageTaken += _ => { };
+                    player.Damage.Damaged += OnPlayerDamaged;
             }
+
+            EnsureCombatVfx();
 
             RunManager.Instance.EnterPlaying();
         }
@@ -98,6 +101,16 @@ namespace HighSeas.Core
             FindFirstObjectByType<ProjectileWorld>()?.Tick(dt, FindFirstObjectByType<EnemyWorld>());
             FindFirstObjectByType<PickupWorld>()?.Tick(dt, playerPos, RunManager.Instance.Stats.PickupRadius);
             FindFirstObjectByType<StatusController>()?.Tick(dt, FindFirstObjectByType<EnemyWorld>());
+        }
+
+        void OnPlayerDamaged(float amount, bool _) => TriggerBus.Instance?.RaiseDamageTaken(amount);
+
+        void EnsureCombatVfx()
+        {
+            var systems = GameObject.Find("Systems");
+            if (systems == null) return;
+            if (systems.GetComponent<CombatVfxController>() != null) return;
+            systems.AddComponent<CombatVfxController>();
         }
 
         void OnPlayerDied()

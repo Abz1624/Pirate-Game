@@ -17,15 +17,15 @@ MonoBehaviour:
   pattern: 0
   targeting: 0
   tags: []
-  baseDamage: 10
-  baseCooldown: 1.2
+  baseDamage: 11
+  baseCooldown: 1.05
   range: 14
   baseQuantity: 1
   projectileSpeed: 16
   duration: 2
-  size: 1
+  size: 1.15
   knockback: 1
   maxLevel: 12
   validUpgradeAxes: 000000000100000002000000
   procCoefficient: 1
-  projectileColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  projectileColor: {r: 1, g: 0.82, b: 0.25, a: 1}

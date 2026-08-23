@@ -14,6 +14,7 @@ namespace HighSeas.UI
         [SerializeField] GameDatabase database;
         [SerializeField] int weaponSlots = 2;
         [SerializeField] int logbookSlots = 2;
+        [SerializeField] DemoPacingSettings demoPacing;
 
         public int Level { get; private set; } = 1;
         public float CurrentXP { get; private set; }
@@ -30,9 +31,11 @@ namespace HighSeas.UI
         void Awake()
         {
             Instance = this;
-            XPToNext = GameMath.XPToNext(Level);
             if (database == null || !GameDatabaseLoader.IsValid(database))
                 database = GameDatabaseLoader.Load();
+            if (demoPacing == null)
+                demoPacing = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
+            RefreshXpToNext();
         }
 
         public void Initialize(GameDatabase db, string startingWeapon)
@@ -44,8 +47,10 @@ namespace HighSeas.UI
             Level = 1;
             CurrentXP = 0f;
             PendingLevelUps = 0;
-            XPToNext = GameMath.XPToNext(Level);
+            RefreshXpToNext();
         }
+
+        void RefreshXpToNext() => XPToNext = GameMath.XPToNext(Level, demoPacing);
 
         public void AddXP(int amount)
         {
@@ -56,7 +61,7 @@ namespace HighSeas.UI
                 CurrentXP -= XPToNext;
                 Level++;
                 PendingLevelUps++;
-                XPToNext = GameMath.XPToNext(Level);
+                RefreshXpToNext();
                 LevelChanged?.Invoke(Level);
             }
             if (PendingLevelUps > 0) ShowLevelUp();
@@ -64,10 +69,17 @@ namespace HighSeas.UI
 
         void ShowLevelUp()
         {
-            RunManager.Instance?.SetPause(PauseReason.LevelUp);
-            RunManager.Instance?.SetState(RunState.LevelUpPaused);
             var offers = GenerateOffers(3);
-            LevelUpModal.Instance?.Show(offers, OnOfferSelected);
+            var modal = LevelUpModal.Instance;
+            if (modal != null && modal.TryShow(offers, OnOfferSelected))
+            {
+                RunManager.Instance?.SetPause(PauseReason.LevelUp);
+                RunManager.Instance?.SetState(RunState.LevelUpPaused);
+                return;
+            }
+
+            Debug.LogWarning("Level-up UI unavailable; auto-selecting first offer.");
+            OnOfferSelected(offers[0]);
         }
 
         public struct LevelOffer

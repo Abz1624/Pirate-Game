@@ -24,6 +24,7 @@ namespace HighSeas.Weapons
     {
         [SerializeField] GameDatabase database;
         [SerializeField] int maxSlots = 2;
+        [SerializeField] DemoPacingSettings demoPacing;
 
         readonly List<WeaponInstance> _weapons = new();
         PlayerShipController _player;
@@ -37,6 +38,8 @@ namespace HighSeas.Weapons
             _player = FindFirstObjectByType<PlayerShipController>();
             _enemies = FindFirstObjectByType<EnemyWorld>();
             _projectiles = FindFirstObjectByType<ProjectileWorld>();
+            if (demoPacing == null)
+                demoPacing = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
         }
 
         public void Initialize(GameDatabase db, string startingWeaponId)
@@ -51,7 +54,12 @@ namespace HighSeas.Weapons
             if (_weapons.Count >= maxSlots) return false;
             var def = database.GetWeapon(weaponId);
             if (def == null) return false;
-            _weapons.Add(new WeaponInstance { def = def, level = 1 });
+            _weapons.Add(new WeaponInstance
+            {
+                def = def,
+                level = 1,
+                damageBonus = demoPacing != null ? demoPacing.startingDamageMultiplier : 1f
+            });
             return true;
         }
 
@@ -62,7 +70,8 @@ namespace HighSeas.Weapons
             if (w.level >= w.def.maxLevel) return;
             w.level++;
             var mult = GameConstants.RarityMultipliers[(int)rarity];
-            w.damageBonus *= 1f + 0.08f * mult;
+            var upgradeMult = demoPacing != null ? demoPacing.upgradePowerMultiplier : 1f;
+            w.damageBonus *= 1f + 0.08f * mult * upgradeMult;
             w.quantityBonus += w.level % 2 == 0 ? 1 : 0;
             w.cooldownMult *= 1f - 0.05f * mult;
             _weapons[index] = w;

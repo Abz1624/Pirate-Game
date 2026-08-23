@@ -1,5 +1,5 @@
-using System;
 using HighSeas.Core;
+using HighSeas.Data;
 using UnityEngine;
 
 namespace HighSeas.Pickups
@@ -10,6 +10,8 @@ namespace HighSeas.Pickups
         public PickupType type;
         public int value;
         public Vector3 position;
+        public Vector3 basePosition;
+        public float bobPhase;
         public Transform view;
     }
 
@@ -18,20 +20,31 @@ namespace HighSeas.Pickups
         public static PickupWorld Instance { get; private set; }
 
         [SerializeField] Transform root;
+        [SerializeField] DemoJuiceSettings juiceSettings;
+        [SerializeField] DemoPacingSettings pacingSettings;
+
         PickupAgent[] _pool;
+        PickupViewPool _viewPool;
         int _active;
+        float _time;
 
         void Awake()
         {
             Instance = this;
             _pool = new PickupAgent[Platform.QualityProfile.Current.pickupCap];
+            if (juiceSettings == null)
+                juiceSettings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
+            if (pacingSettings == null)
+                pacingSettings = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
+            _viewPool = new PickupViewPool(root != null ? root : transform, juiceSettings);
         }
 
         public void SpawnFromEnemy(Vector3 pos, int xp, int gold, bool rich)
         {
-            Spawn(PickupType.Infamy, Mathf.Max(1, xp), pos + UnityEngine.Random.insideUnitSphere * 0.5f);
+            var xpMult = pacingSettings != null ? pacingSettings.xpDropMultiplier : 1f;
+            Spawn(PickupType.Infamy, Mathf.Max(1, Mathf.RoundToInt(xp * xpMult)), pos + Random.insideUnitSphere * 0.5f);
             if (gold > 0)
-                Spawn(PickupType.Gold, rich ? gold * 2 : gold, pos + UnityEngine.Random.insideUnitSphere * 0.5f);
+                Spawn(PickupType.Gold, rich ? gold * 2 : gold, pos + Random.insideUnitSphere * 0.5f);
         }
 
         public void Spawn(PickupType type, int value, Vector3 pos)
@@ -44,15 +57,16 @@ namespace HighSeas.Pickups
             }
             if (slot < 0) return;
 
-            var color = type == PickupType.Gold ? Color.yellow : Color.cyan;
-            var view = CreateView(color);
-            view.position = pos;
+            pos.y = 0.35f;
+            var view = _viewPool.Acquire(type, pos);
             _pool[slot] = new PickupAgent
             {
                 active = true,
                 type = type,
                 value = value,
                 position = pos,
+                basePosition = pos,
+                bobPhase = Random.Range(0f, Mathf.PI * 2f),
                 view = view
             };
             _active++;
@@ -71,18 +85,9 @@ namespace HighSeas.Pickups
             }
         }
 
-        Transform CreateView(Color color)
-        {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            go.transform.SetParent(root != null ? root : transform, false);
-            go.transform.localScale = Vector3.one * 0.4f;
-            Destroy(go.GetComponent<Collider>());
-            go.GetComponent<Renderer>().material.color = color;
-            return go.transform;
-        }
-
         public void Tick(float dt, Vector3 playerPos, float pickupRadius)
         {
+            _time += dt;
             for (var i = 0; i < _pool.Length; i++)
             {
                 if (!_pool[i].active) continue;
@@ -94,8 +99,20 @@ namespace HighSeas.Pickups
                 {
                     var speed = Mathf.Lerp(4f, 18f, 1f - dist / pickupRadius);
                     p.position += toPlayer.normalized * speed * dt;
+                    p.basePosition = p.position;
                 }
-                if (p.view != null) p.view.position = p.position;
+                else
+                {
+                    var bob = Mathf.Sin(_time * 3.5f + p.bobPhase) * 0.12f;
+                    p.position = p.basePosition + Vector3.up * bob;
+                }
+
+                if (p.view != null)
+                {
+                    p.view.position = p.position;
+                    p.view.Rotate(0f, 180f * dt, 0f, Space.World);
+                }
+
                 if (dist < 0.6f) Collect(i);
             }
         }
@@ -108,7 +125,8 @@ namespace HighSeas.Pickups
             else if (p.type == PickupType.Gold)
                 RunManager.Instance?.AddGold(Mathf.RoundToInt(p.value * (RunManager.Instance?.Stats.GoldGain ?? 1f)));
 
-            if (p.view != null) Destroy(p.view.gameObject);
+            if (p.view != null)
+                _viewPool.Release(p.view, p.type);
             p.active = false;
             _active--;
         }

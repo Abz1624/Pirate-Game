@@ -8408,13 +8408,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb0d90258f01a874da08919ffde7c4d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.LevelUpModal
-  hullText: {fileID: 0}
-  xpText: {fileID: 0}
-  timerText: {fileID: 0}
-  goldText: {fileID: 0}
-  levelText: {fileID: 0}
-  hullSlider: {fileID: 0}
-  xpSlider: {fileID: 0}
+  panel: {fileID: 1257118562}
+  cardButtons:
+  - {fileID: 1597248573}
+  - {fileID: 303098870}
+  - {fileID: 1917119774}
+  cardTitles:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  cardDescriptions:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!114 &1257118565
 MonoBehaviour:
   m_ObjectHideFlags: 0

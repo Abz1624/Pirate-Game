@@ -9,6 +9,7 @@ using HighSeas.Pickups;
 using HighSeas.Player;
 using HighSeas.POI;
 using HighSeas.UI;
+using HighSeas.VFX;
 using HighSeas.Weapons;
 using HighSeas.World;
 using TMPro;
@@ -17,6 +18,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -44,6 +46,14 @@ namespace HighSeas.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("High Seas bootstrap complete.");
+        }
+
+        [MenuItem("HighSeas/Fix URP Pipeline")]
+        public static void FixUrpPipelineMenu()
+        {
+            AssignProjectRenderPipelines();
+            EnableUrpCompatibilityMode();
+            Debug.Log("Assigned PC/Mobile URP assets and enabled compatibility mode.");
         }
 
         [MenuItem("HighSeas/Run EditMode Tests")]
@@ -356,6 +366,7 @@ namespace HighSeas.Editor
             systems.AddComponent<LevelSystem>();
             systems.AddComponent<StatusController>();
             systems.AddComponent<TriggerBus>();
+            systems.AddComponent<CombatVfxController>();
             systems.AddComponent<LootService>();
             systems.AddComponent<QuestService>();
             systems.AddComponent<POIManager>();
@@ -591,7 +602,28 @@ namespace HighSeas.Editor
             PlayerSettings.allowedAutorotateToLandscapeRight = true;
             PlayerSettings.allowedAutorotateToPortrait = false;
             PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+            AssignProjectRenderPipelines();
             EnableUrpCompatibilityMode();
+        }
+
+        static void AssignProjectRenderPipelines()
+        {
+            const string pcPipelinePath = "Assets/Settings/PC_RPAsset.asset";
+            const string mobilePipelinePath = "Assets/Settings/Mobile_RPAsset.asset";
+            var pcPipeline = AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(pcPipelinePath);
+            var mobilePipeline = AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(mobilePipelinePath);
+            if (pcPipeline == null || mobilePipeline == null)
+            {
+                Debug.LogWarning("HighSeas: PC or Mobile URP asset missing; pipeline assignment skipped.");
+                return;
+            }
+
+            GraphicsSettings.defaultRenderPipeline = pcPipeline;
+            QualitySettings.SetQualityLevel(1, applyExpensiveChanges: false);
+            QualitySettings.renderPipeline = pcPipeline;
+            QualitySettings.SetQualityLevel(0, applyExpensiveChanges: false);
+            QualitySettings.renderPipeline = mobilePipeline;
+            QualitySettings.SetQualityLevel(1, applyExpensiveChanges: false);
         }
 
         static void EnableUrpCompatibilityMode()

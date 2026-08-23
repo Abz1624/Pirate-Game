@@ -49,8 +49,13 @@ namespace HighSeas.Core
 
     public static class GameMath
     {
-        public static float XPToNext(int level) =>
-            Mathf.Round(12f + 5.5f * level + 1.35f * Mathf.Pow(level, 1.32f));
+        public static float XPToNext(int level, Data.DemoPacingSettings pacing = null)
+        {
+            var xp = Mathf.Round(12f + 5.5f * level + 1.35f * Mathf.Pow(level, 1.32f));
+            if (pacing != null && level <= pacing.earlyLevelCap)
+                xp = Mathf.Max(8f, xp * pacing.earlyLevelXpMultiplier);
+            return xp;
+        }
 
         public static float ChestCost(int paidChestIndex) =>
             Mathf.Round(25f + 34f * (paidChestIndex - 1) + 4.5f * Mathf.Pow(paidChestIndex - 1, 2));
