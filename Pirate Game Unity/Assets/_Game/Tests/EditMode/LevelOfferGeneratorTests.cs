@@ -25,8 +25,7 @@ namespace HighSeas.Tests
             _db.weapons = new[]
             {
                 MakeWeapon("deck_cannons", "Deck Cannons", WeaponPattern.AutoProjectile),
-                MakeWeapon("broadside_battery", "Broadside Battery", WeaponPattern.FanVolley),
-                MakeWeapon("burning_oil", "Burning Oil", WeaponPattern.TrailZone)
+                MakeWeapon("broadside_battery", "Broadside Battery", WeaponPattern.FanVolley)
             };
             _db.logbooks = new[]
             {
@@ -74,11 +73,11 @@ namespace HighSeas.Tests
         [Test]
         public void Generate_ExcludesMaxedWeapons()
         {
-            var ownedWeapons = new List<string> { "deck_cannons", "burning_oil" };
+            var ownedWeapons = new List<string> { "deck_cannons", "broadside_battery" };
             var weaponLevels = new Dictionary<string, int>
             {
                 ["deck_cannons"] = 12,
-                ["burning_oil"] = 12
+                ["broadside_battery"] = 12
             };
 
             for (var i = 0; i < 30; i++)
@@ -91,7 +90,7 @@ namespace HighSeas.Tests
                 {
                     if (offers[c].kind != LevelOfferKind.WeaponUpgrade) continue;
                     Assert.That(offers[c].id, Is.Not.EqualTo("deck_cannons"));
-                    Assert.That(offers[c].id, Is.Not.EqualTo("burning_oil"));
+                    Assert.That(offers[c].id, Is.Not.EqualTo("broadside_battery"));
                 }
             }
         }
@@ -99,11 +98,11 @@ namespace HighSeas.Tests
         [Test]
         public void Generate_WithFullWeaponSlots_DoesNotOfferNewWeapons()
         {
-            var ownedWeapons = new List<string> { "deck_cannons", "burning_oil" };
+            var ownedWeapons = new List<string> { "deck_cannons", "broadside_battery" };
             var weaponLevels = new Dictionary<string, int>
             {
                 ["deck_cannons"] = 2,
-                ["burning_oil"] = 2
+                ["broadside_battery"] = 2
             };
 
             for (var i = 0; i < 30; i++)
@@ -131,8 +130,7 @@ namespace HighSeas.Tests
         public void WeaponDefinitions_ExposePatternSpecificAxes()
         {
             Assert.That(_db.GetWeapon("deck_cannons").GetUpgradeConfigs().Count, Is.GreaterThanOrEqualTo(4));
-            Assert.That(_db.GetWeapon("burning_oil").GetUpgradeConfigs().Count, Is.EqualTo(3));
-            Assert.That(ContainsAxis(_db.GetWeapon("burning_oil"), UpgradeAxis.Duration), Is.True);
+            Assert.That(_db.GetWeapon("broadside_battery").GetUpgradeConfigs().Count, Is.GreaterThanOrEqualTo(3));
             Assert.That(ContainsAxis(_db.GetWeapon("broadside_battery"), UpgradeAxis.Size), Is.True);
         }
 

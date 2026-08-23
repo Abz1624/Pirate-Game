@@ -165,7 +165,7 @@ namespace HighSeas.Editor
             settings.excludeMaxedWeapons = true;
             settings.preventDuplicateCards = true;
             settings.scriptFirstLevelUp = true;
-            settings.startingWeaponId = "deck_cannons";
+            settings.startingWeaponId = "broadside_battery";
             settings.commonStatLines = 1;
             settings.uncommonStatLines = 1;
             settings.rareStatLines = 2;

@@ -18,7 +18,7 @@ MonoBehaviour:
   excludeMaxedWeapons: 1
   preventDuplicateCards: 1
   scriptFirstLevelUp: 1
-  startingWeaponId: deck_cannons
+  startingWeaponId: broadside_battery
   commonStatLines: 1
   uncommonStatLines: 1
   rareStatLines: 2

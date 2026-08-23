@@ -19,7 +19,7 @@ MonoBehaviour:
   baseMoveSpeed: 6.2
   baseArmor: 0
   baseEvasion: 0
-  startingWeaponId: deck_cannons
+  startingWeaponId: broadside_battery
   passiveId: 
   unlockQuestId: 
   unlockDoubloonCost: 0

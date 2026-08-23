@@ -157,7 +157,7 @@ namespace HighSeas.Editor
                 ship.displayName = "Cutlass Sloop";
                 ship.baseHull = 100f;
                 ship.baseMoveSpeed = 6.2f;
-                ship.startingWeaponId = "deck_cannons";
+                ship.startingWeaponId = "broadside_battery";
             });
 
         static WeaponDefinition[] CreateWeapons()
@@ -165,8 +165,7 @@ namespace HighSeas.Editor
             return new[]
             {
                 MakeWeapon("deck_cannons", "Deck Cannons", WeaponPattern.AutoProjectile, TargetingMode.Nearest, 10f, 1.2f, Color.gray),
-                MakeWeapon("broadside_battery", "Broadside Battery", WeaponPattern.FanVolley, TargetingMode.DensestCluster, 8f, 1.5f, new Color(0.7f, 0.7f, 0.8f)),
-                MakeWeapon("burning_oil", "Burning Oil", WeaponPattern.TrailZone, TargetingMode.PlayerTrail, 6f, 0.8f, new Color(1f, 0.4f, 0f))
+                MakeWeapon("broadside_battery", "Broadside Battery", WeaponPattern.FanVolley, TargetingMode.DensestCluster, 8f, 1.5f, new Color(0.7f, 0.7f, 0.8f))
             };
         }
 

@@ -51,7 +51,7 @@ namespace HighSeas.Tuning
                 "Window: HighSeas → Tuning Window\n" +
                 "Sync: Apply to Play (in window) or Sync Tuning To Runtime\n\n" +
                 "<b>Weapons</b>\n" +
-                "F1 Deck Cannons | F2 Broadside | F3 Burning Oil\n" +
+                "F1 Deck Cannons | F2 Broadside\n" +
                 "Shift+F# adds 2nd slot without clearing\n\n" +
                 "<b>Combat</b>\n" +
                 "E spawn cluster | [ ] or N/P cycle enemy | X clear\n" +

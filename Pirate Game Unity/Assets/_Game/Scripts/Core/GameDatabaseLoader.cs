@@ -49,7 +49,7 @@ namespace HighSeas.Core
             ship.displayName = "Cutlass Sloop";
             ship.baseHull = 100f;
             ship.baseMoveSpeed = 6.2f;
-            ship.startingWeaponId = "deck_cannons";
+            ship.startingWeaponId = "broadside_battery";
             return ship;
         }
 
@@ -58,8 +58,7 @@ namespace HighSeas.Core
             return new[]
             {
                 MakeWeapon("deck_cannons", WeaponPattern.AutoProjectile, TargetingMode.Nearest),
-                MakeWeapon("broadside_battery", WeaponPattern.FanVolley, TargetingMode.DensestCluster),
-                MakeWeapon("burning_oil", WeaponPattern.TrailZone, TargetingMode.PlayerTrail)
+                MakeWeapon("broadside_battery", WeaponPattern.FanVolley, TargetingMode.DensestCluster)
             };
         }
 

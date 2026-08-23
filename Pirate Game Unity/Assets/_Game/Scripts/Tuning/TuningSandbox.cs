@@ -20,8 +20,7 @@ namespace HighSeas.Tuning
         static readonly string[] WeaponIds =
         {
             "deck_cannons",
-            "broadside_battery",
-            "burning_oil"
+            "broadside_battery"
         };
 
         GameDatabase _database;
@@ -75,7 +74,6 @@ namespace HighSeas.Tuning
 
             if (keyboard.f1Key.wasPressedThisFrame) EquipWeapon(0, keyboard.shiftKey.isPressed);
             if (keyboard.f2Key.wasPressedThisFrame) EquipWeapon(1, keyboard.shiftKey.isPressed);
-            if (keyboard.f3Key.wasPressedThisFrame) EquipWeapon(2, keyboard.shiftKey.isPressed);
 
             if (keyboard.lKey.wasPressedThisFrame) ForceLevelUp();
             if (keyboard.eKey.wasPressedThisFrame) SpawnEnemyCluster();
