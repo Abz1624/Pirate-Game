@@ -1,8 +1,10 @@
 ﻿<Solution>
-  <Project Path="MCPForUnity.Runtime.csproj" />
-  <Project Path="MCPForUnity.Editor.csproj" />
+  <Project Path="HighSeas.Runtime.csproj" />
+  <Project Path="HighSeas.Editor.csproj" />
+  <Project Path="HighSeas.Tests.PlayMode.csproj" />
   <Project Path="StylizedWaterForURP.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="StylizedWaterForURPEditor.csproj" />
+  <Project Path="HighSeas.Tests.EditMode.csproj" />
 </Solution>
