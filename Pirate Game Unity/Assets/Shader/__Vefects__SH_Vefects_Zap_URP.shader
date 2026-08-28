@@ -82,10 +82,13 @@ Shader "/_Vefects_/SH_Vefects_Zap_URP" {
 				return OUT;
 			}
 
-			// Real replacement for a DummyShaderTextExporter stub (baked to flat white). Recovered as a
-			// classic dissolve+LUT "energy zap" shader: the zap noise texture drives both an eroding
+			// Classic dissolve+LUT "energy zap" shader: the zap noise texture drives both an eroding
 			// alpha edge (LUTErosion/Offset/Smoothness) and a lookup into a 1D color ramp (_LUT) for the
 			// bolt's core-to-edge color gradient, boosted by _EmissiveIntensity for glow.
+			// Bright zapValue = bolt core, so alpha must rise WITH zapValue past the erosion threshold
+			// (bolt visible, background transparent). Previously inverted (1 - smoothstep), which made
+			// the bolt transparent and the background opaque, and made "erosion" grow solid over time
+			// instead of dissolving away.
 			half4 frag (Varyings IN) : SV_Target
 			{
 				half4 zapTex = SAMPLE_TEXTURE2D(_ZapTexture, sampler_ZapTexture, IN.uv);
@@ -93,7 +96,7 @@ Shader "/_Vefects_/SH_Vefects_Zap_URP" {
 
 				half erosionThreshold = _LUTErosion + _LUTErosionOffset;
 				half smoothness = max(_LUTErosionSmoothness, 0.0001);
-				half alpha = 1.0 - smoothstep(erosionThreshold, erosionThreshold + smoothness, zapValue);
+				half alpha = smoothstep(erosionThreshold, erosionThreshold + smoothness, zapValue);
 
 				half lutU = saturate(zapValue * _LUTAmplitude + _LUTOffset);
 				half4 lutColor = SAMPLE_TEXTURE2D(_LUT, sampler_LUT, half2(lutU, 0.5));
