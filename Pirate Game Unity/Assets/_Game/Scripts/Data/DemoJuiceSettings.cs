@@ -43,6 +43,8 @@ namespace HighSeas.Data
         public float lightningStrikeScale = 1f;
         public float burningTrailScale = 1f;
         public float flamethrowerScale = 1f;
+        [Tooltip("Scale when flamethrower VFX is attached to burning enemies.")]
+        public float enemyBurnVfxScale = 0.42f;
         public float cutlassScale = 0.325f;
 
         [Header("Player VFX")]

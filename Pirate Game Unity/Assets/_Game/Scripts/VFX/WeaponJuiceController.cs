@@ -19,8 +19,11 @@ namespace HighSeas.VFX
 
         readonly Dictionary<string, Transform> _cutlasses = new();
         readonly List<CutlassHitSphere> _cutlassHits = new();
-        Transform _flamethrower;
+        Transform _flamethrowerPort;
         float _flameTimer;
+
+        const float FlamethrowerForwardOffset = 0.8f;
+        const float FlamethrowerSideOffset = 1.12f;
 
         public struct CutlassHitSphere
         {
@@ -145,13 +148,18 @@ namespace HighSeas.VFX
             Destroy(instance, lifetime);
         }
 
-        public void OnFlamethrowerBurst(Vector3 origin, Vector3 forward)
+        public void OnFlamethrowerBurst(Vector3 origin, Vector3 aim)
         {
-            if (_flamethrower == null) return;
-            _flamethrower.position = origin + Vector3.up * 0.45f;
-            _flamethrower.rotation = Quaternion.LookRotation(forward.normalized, Vector3.up);
+            if (_flamethrowerPort == null) return;
+            _flamethrowerPort.position = origin + Vector3.up * 0.45f;
+            _flamethrowerPort.rotation = Quaternion.LookRotation(aim.normalized, Vector3.up);
+            PlayFlamethrowerParticles(_flamethrowerPort);
+        }
 
-            var particles = _flamethrower.GetComponentsInChildren<ParticleSystem>(true);
+        static void PlayFlamethrowerParticles(Transform mount)
+        {
+            if (mount == null) return;
+            var particles = mount.GetComponentsInChildren<ParticleSystem>(true);
             for (var i = 0; i < particles.Length; i++)
                 particles[i].Play(true);
         }
@@ -261,37 +269,46 @@ namespace HighSeas.VFX
 
             if (!hasFlamethrower)
             {
-                if (_flamethrower != null)
-                {
-                    Destroy(_flamethrower.gameObject);
-                    _flamethrower = null;
-                }
-
+                DestroyFlamethrowerMount(ref _flamethrowerPort);
                 return;
             }
 
-            if (_flamethrower == null && settings.flamethrowerPrefab != null)
-            {
-                var instance = Instantiate(settings.flamethrowerPrefab, _root);
-                instance.transform.localScale = Vector3.one * settings.flamethrowerScale;
-                StripPhysics(instance);
-                _flamethrower = instance.transform;
-            }
-
-            if (_flamethrower == null) return;
+            EnsureFlamethrowerMount(ref _flamethrowerPort);
+            if (_flamethrowerPort == null) return;
 
             var forward = _player.MovementForward;
             var right = Vector3.Cross(Vector3.up, forward).normalized;
-            _flamethrower.position = _player.Position + forward * 0.8f + right * 1.4f + Vector3.up * 0.45f;
-            _flamethrower.rotation = Quaternion.LookRotation(right, Vector3.up);
+            SetFlamethrowerPose(_flamethrowerPort, forward, right, -1f);
 
             _flameTimer -= Time.deltaTime;
             if (_flameTimer > 0f) return;
             _flameTimer = 0.35f;
 
-            var particles = _flamethrower.GetComponentsInChildren<ParticleSystem>(true);
-            for (var i = 0; i < particles.Length; i++)
-                particles[i].Play(true);
+            PlayFlamethrowerParticles(_flamethrowerPort);
+        }
+
+        void EnsureFlamethrowerMount(ref Transform mount)
+        {
+            if (mount != null || settings.flamethrowerPrefab == null) return;
+            var instance = Instantiate(settings.flamethrowerPrefab, _root);
+            instance.transform.localScale = Vector3.one * settings.flamethrowerScale;
+            StripPhysics(instance);
+            mount = instance.transform;
+        }
+
+        static void DestroyFlamethrowerMount(ref Transform mount)
+        {
+            if (mount == null) return;
+            Destroy(mount.gameObject);
+            mount = null;
+        }
+
+        void SetFlamethrowerPose(Transform mount, Vector3 forward, Vector3 right, float sideSign)
+        {
+            if (mount == null) return;
+            var side = right * (FlamethrowerSideOffset * sideSign);
+            mount.position = _player.Position + forward * FlamethrowerForwardOffset + side + Vector3.up * 0.45f;
+            mount.rotation = Quaternion.LookRotation(side.normalized, Vector3.up);
         }
 
 

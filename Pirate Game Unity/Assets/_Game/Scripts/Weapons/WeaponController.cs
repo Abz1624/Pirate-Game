@@ -29,7 +29,7 @@ namespace HighSeas.Weapons
     public sealed class WeaponController : MonoBehaviour
     {
         [SerializeField] GameDatabase database;
-        [SerializeField] int maxSlots = 2;
+        [SerializeField] int maxSlots = GameConstants.DefaultWeaponSlots;
         [SerializeField] DemoPacingSettings demoPacing;
 
         readonly List<WeaponInstance> _weapons = new();
@@ -58,6 +58,7 @@ namespace HighSeas.Weapons
 
         void Awake()
         {
+            maxSlots = GameConstants.DefaultWeaponSlots;
             _player = FindFirstObjectByType<PlayerShipController>();
             _enemies = FindFirstObjectByType<EnemyWorld>();
             _projectiles = FindFirstObjectByType<ProjectileWorld>();
@@ -78,14 +79,25 @@ namespace HighSeas.Weapons
             if (_weapons.Count >= maxSlots) return false;
             var def = database.GetWeapon(weaponId);
             if (def == null) return false;
-            _weapons.Add(new WeaponInstance
-            {
-                def = def,
-                level = 1,
-                damageBonus = demoPacing != null ? demoPacing.startingDamageMultiplier : 1f
-            });
+            _weapons.Add(CreateWeaponInstance(def));
             return true;
         }
+
+        public bool ReplaceWeapon(int index, string weaponId)
+        {
+            if (index < 0 || index >= _weapons.Count) return false;
+            var def = database.GetWeapon(weaponId);
+            if (def == null) return false;
+            _weapons[index] = CreateWeaponInstance(def);
+            return true;
+        }
+
+        WeaponInstance CreateWeaponInstance(WeaponDefinition def) => new()
+        {
+            def = def,
+            level = 1,
+            damageBonus = demoPacing != null ? demoPacing.startingDamageMultiplier : 1f
+        };
 
         public int FindWeaponIndex(string weaponId)
         {
@@ -313,11 +325,14 @@ namespace HighSeas.Weapons
         {
             var forward = _player.MovementForward;
             var right = Vector3.Cross(Vector3.up, forward).normalized;
-            var origin = _player.Position + forward * 0.8f + right * 1.4f;
+            const float forwardOffset = 0.8f;
+            const float sideOffset = 1.12f;
+            var aim = -right;
+            var origin = _player.Position + forward * forwardOffset + aim * sideOffset;
             var range = w.def.range * 0.65f * w.sizeMult * stats.Size;
-            var halfAngle = 22f;
+            const float halfAngle = 22f;
             var burnDuration = w.def.duration * w.durationMult * stats.Duration;
-            _juice?.OnFlamethrowerBurst(origin, right);
+            _juice?.OnFlamethrowerBurst(origin, aim);
 
             var agents = _enemies.Agents;
             for (var i = 0; i < agents.Length; i++)
@@ -327,7 +342,7 @@ namespace HighSeas.Weapons
                 toEnemy.y = 0f;
                 if (toEnemy.sqrMagnitude < 0.01f) continue;
                 if (toEnemy.magnitude > range) continue;
-                if (Vector3.Angle(right, toEnemy) > halfAngle) continue;
+                if (Vector3.Angle(aim, toEnemy) > halfAngle) continue;
 
                 var dmg = DamageSystem.RollDamage(
                     w.def.baseDamage,

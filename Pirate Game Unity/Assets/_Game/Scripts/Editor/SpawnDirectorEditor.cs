@@ -69,8 +69,8 @@ namespace HighSeas.Editor
             settings.timingMode = Enemies.SpawnTimingMode.ScriptedWaves;
             settings.spawnPlacement = Enemies.SpawnPlacementMode.ScreenEdge;
             settings.gracePeriodSeconds = 2f;
-            settings.spawnDistanceMin = 9f;
-            settings.spawnDistanceMax = 15f;
+            settings.spawnDistanceMin = 10.8f;
+            settings.spawnDistanceMax = 18f;
             settings.waves = Enemies.SpawnDirectorSettings.CreateDefaultWaveScript();
             settings.enemies = Enemies.SpawnDirectorSettings.CreateDefaultEnemyTuning();
             EditorUtility.SetDirty(settings);

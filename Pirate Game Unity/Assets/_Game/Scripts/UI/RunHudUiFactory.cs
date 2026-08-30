@@ -27,7 +27,7 @@ namespace HighSeas.UI
         const float PanelHeight = 108f;
         const float TimerWidth = 176f;
         const float TimerHeight = 68f;
-        const float StripWidth = 500f;
+        const float StripWidth = 720f;
 
         static readonly string[] LegacyElementNames =
         {

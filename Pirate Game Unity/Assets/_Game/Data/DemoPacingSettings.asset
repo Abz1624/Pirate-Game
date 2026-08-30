@@ -25,3 +25,4 @@ MonoBehaviour:
   goldAutoPickupRadius: 26
   barrelTouchRadius: 5
   healthDropChance: 0.12
+  firstMinibossSeconds: 90

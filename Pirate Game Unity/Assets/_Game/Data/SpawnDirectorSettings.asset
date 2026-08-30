@@ -19,57 +19,57 @@ MonoBehaviour:
   waveSize: 6
   waves:
   - waveName: 1 - Cannonboats
-    delayBeforeWaveSeconds: 1
-    waveDurationSeconds: 9
-    spawnGapSeconds: 1.1
+    delayBeforeWaveSeconds: 2
+    waveDurationSeconds: 14
+    spawnGapSeconds: 1
     loopComposition: 1
     spawns:
     - enemyId: cannonboat
-      count: 5
+      count: 6
   - waveName: 2 - Swordfish
-    delayBeforeWaveSeconds: 1.5
-    waveDurationSeconds: 9
-    spawnGapSeconds: 1.1
+    delayBeforeWaveSeconds: 3
+    waveDurationSeconds: 14
+    spawnGapSeconds: 1
     loopComposition: 1
     spawns:
     - enemyId: swordfish
-      count: 6
+      count: 7
   - waveName: 3 - Manta Rays
-    delayBeforeWaveSeconds: 1.5
-    waveDurationSeconds: 9
-    spawnGapSeconds: 1.2
+    delayBeforeWaveSeconds: 3
+    waveDurationSeconds: 15
+    spawnGapSeconds: 1.1
     loopComposition: 1
     spawns:
     - enemyId: manta_ray
-      count: 4
+      count: 5
   - waveName: 4 - Sharks
-    delayBeforeWaveSeconds: 1.5
-    waveDurationSeconds: 9
-    spawnGapSeconds: 1.2
+    delayBeforeWaveSeconds: 3
+    waveDurationSeconds: 15
+    spawnGapSeconds: 1.1
     loopComposition: 1
     spawns:
     - enemyId: shark
-      count: 5
+      count: 6
   - waveName: 5 - Hammerheads
-    delayBeforeWaveSeconds: 1.5
-    waveDurationSeconds: 9
+    delayBeforeWaveSeconds: 3
+    waveDurationSeconds: 16
+    spawnGapSeconds: 1.2
+    loopComposition: 1
+    spawns:
+    - enemyId: hammerhead
+      count: 5
+  - waveName: 6 - Kraken
+    delayBeforeWaveSeconds: 3
+    waveDurationSeconds: 16
     spawnGapSeconds: 1.3
     loopComposition: 1
     spawns:
-    - enemyId: hammerhead
-      count: 4
-  - waveName: 6 - Kraken
-    delayBeforeWaveSeconds: 1.5
-    waveDurationSeconds: 9
-    spawnGapSeconds: 1.5
-    loopComposition: 1
-    spawns:
     - enemyId: kraken_spawn
-      count: 3
+      count: 4
   - waveName: 7 - Full Assault
-    delayBeforeWaveSeconds: 1.5
-    waveDurationSeconds: 10
-    spawnGapSeconds: 1.2
+    delayBeforeWaveSeconds: 3
+    waveDurationSeconds: 18
+    spawnGapSeconds: 1.1
     loopComposition: 1
     spawns:
     - enemyId: cannonboat
@@ -84,7 +84,7 @@ MonoBehaviour:
       count: 1
     - enemyId: kraken_spawn
       count: 1
-  afterScriptedWaves: 0
+  afterScriptedWaves: 2
   globalSpeedMultiplier: 1
   threatMultiplier: 0.85
   budgetCapMultiplier: 3.5
@@ -94,8 +94,8 @@ MonoBehaviour:
   creatureChanceAtLateGame: 0.5
   creatureChanceRampMinutes: 1
   spawnPlacement: 2
-  spawnDistanceMin: 9
-  spawnDistanceMax: 15
+  spawnDistanceMin: 10.8
+  spawnDistanceMax: 18
   spawnArcDegrees: 360
   spawnArcYawOffset: 0
   spawnOutsideCameraView: 1
@@ -122,7 +122,7 @@ MonoBehaviour:
     maxConcurrent: 12
     availableAfterMinutes: 0
     availableUntilMinutes: 0
-    speedMultiplier: 1.15
+    speedMultiplier: 1.035
   - enemyId: hammerhead
     spawnEnabled: 1
     weight: 1

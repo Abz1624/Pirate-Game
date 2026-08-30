@@ -16,6 +16,10 @@ namespace HighSeas.Data
         public bool scriptFirstLevelUp = true;
         public string startingWeaponId = "deck_cannons";
 
+        [Header("Demo")]
+        [Tooltip("When enabled, every level-up includes a new weapon card if any unowned weapons remain.")]
+        public bool alwaysIncludeNewWeapon = true;
+
         [Header("Upgrade Package Size By Rarity")]
         [Min(1)] public int commonStatLines = 1;
         [Min(1)] public int uncommonStatLines = 1;

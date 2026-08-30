@@ -22,6 +22,8 @@ namespace HighSeas.Data
 
         [Header("Spawn Pressure")]
         [Range(0.1f, 2f)] public float postScriptedThreatMultiplier = 0.75f;
+        [Tooltip("Seconds into the run before the first reef crab miniboss spawns.")]
+        [Min(0f)] public float firstMinibossSeconds = 90f;
 
         [Header("Pickups")]
         [Tooltip("XP crystals auto-collect within this range.")]

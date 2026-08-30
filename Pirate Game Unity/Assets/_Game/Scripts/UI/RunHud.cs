@@ -132,15 +132,22 @@ namespace HighSeas.UI
 
     public sealed class WeaponLevelStripHud : MonoBehaviour
     {
+        const float SlotWidth = 112f;
+        const float SlotHeight = 48f;
+
         [SerializeField] RectTransform stripRoot;
-        [SerializeField] TextMeshProUGUI[] slotLabels = new TextMeshProUGUI[2];
-        [SerializeField] TextMeshProUGUI[] slotLevels = new TextMeshProUGUI[2];
-        [SerializeField] Image[] slotBorders = new Image[2];
+        [SerializeField] TextMeshProUGUI[] slotLabels;
+        [SerializeField] TextMeshProUGUI[] slotLevels;
+        [SerializeField] Image[] slotBorders;
 
         static readonly Color[] SlotAccents =
         {
             new(0.35f, 0.72f, 1f, 1f),
-            new(1f, 0.72f, 0.32f, 1f)
+            new(1f, 0.72f, 0.32f, 1f),
+            new(0.62f, 0.92f, 0.48f, 1f),
+            new(0.82f, 0.52f, 1f, 1f),
+            new(1f, 0.48f, 0.42f, 1f),
+            new(0.48f, 0.88f, 0.95f, 1f)
         };
 
         WeaponController _weapons;
@@ -192,27 +199,28 @@ namespace HighSeas.UI
                 }
             }
 
-            slotLabels = new TextMeshProUGUI[2];
-            slotLevels = new TextMeshProUGUI[2];
-            slotBorders = new Image[2];
+            slotLabels = new TextMeshProUGUI[GameConstants.DefaultWeaponSlots];
+            slotLevels = new TextMeshProUGUI[GameConstants.DefaultWeaponSlots];
+            slotBorders = new Image[GameConstants.DefaultWeaponSlots];
 
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < GameConstants.DefaultWeaponSlots; i++)
             {
                 var slot = new GameObject($"WeaponSlot{i}", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
                 slot.transform.SetParent(parent, false);
                 var layout = slot.GetComponent<LayoutElement>();
-                layout.preferredWidth = 220f;
-                layout.preferredHeight = 48f;
+                layout.preferredWidth = SlotWidth;
+                layout.preferredHeight = SlotHeight;
 
                 var rt = slot.GetComponent<RectTransform>();
-                rt.sizeDelta = new Vector2(220f, 48f);
+                rt.sizeDelta = new Vector2(SlotWidth, SlotHeight);
 
+                var accent = SlotAccents[i % SlotAccents.Length];
                 var border = new GameObject("Border", typeof(RectTransform), typeof(Image));
                 border.transform.SetParent(slot.transform, false);
                 var borderRt = border.GetComponent<RectTransform>();
-                borderRt.sizeDelta = new Vector2(224f, 52f);
+                borderRt.sizeDelta = new Vector2(SlotWidth + 4f, SlotHeight + 4f);
                 slotBorders[i] = border.GetComponent<Image>();
-                slotBorders[i].color = SlotAccents[i];
+                slotBorders[i].color = accent;
 
                 var fill = slot.GetComponent<Image>();
                 fill.color = RunHudTheme.SlotFill;
@@ -223,10 +231,10 @@ namespace HighSeas.UI
                 nameRt.anchorMin = new Vector2(0f, 0.5f);
                 nameRt.anchorMax = new Vector2(1f, 0.5f);
                 nameRt.pivot = new Vector2(0f, 0.5f);
-                nameRt.anchoredPosition = new Vector2(10f, 8f);
-                nameRt.sizeDelta = new Vector2(-78f, 22f);
+                nameRt.anchoredPosition = new Vector2(8f, 6f);
+                nameRt.sizeDelta = new Vector2(-16f, 20f);
                 slotLabels[i] = name.AddComponent<TextMeshProUGUI>();
-                slotLabels[i].fontSize = 15f;
+                slotLabels[i].fontSize = 12f;
                 slotLabels[i].fontStyle = FontStyles.Bold;
                 slotLabels[i].alignment = TextAlignmentOptions.MidlineLeft;
                 slotLabels[i].color = RunHudTheme.Value;
@@ -235,31 +243,17 @@ namespace HighSeas.UI
                 var level = new GameObject("Level", typeof(RectTransform));
                 level.transform.SetParent(slot.transform, false);
                 var levelRt = level.GetComponent<RectTransform>();
-                levelRt.anchorMin = new Vector2(1f, 0.5f);
-                levelRt.anchorMax = new Vector2(1f, 0.5f);
-                levelRt.pivot = new Vector2(1f, 0.5f);
-                levelRt.anchoredPosition = new Vector2(-10f, 8f);
-                levelRt.sizeDelta = new Vector2(56f, 22f);
+                levelRt.anchorMin = new Vector2(0f, 0f);
+                levelRt.anchorMax = new Vector2(1f, 0f);
+                levelRt.pivot = new Vector2(0f, 0f);
+                levelRt.anchoredPosition = new Vector2(8f, 5f);
+                levelRt.sizeDelta = new Vector2(-16f, 16f);
                 slotLevels[i] = level.AddComponent<TextMeshProUGUI>();
-                slotLevels[i].fontSize = 14f;
+                slotLevels[i].fontSize = 10f;
                 slotLevels[i].fontStyle = FontStyles.Bold;
-                slotLevels[i].alignment = TextAlignmentOptions.MidlineRight;
-                slotLevels[i].color = SlotAccents[i];
-
-                var tag = new GameObject("SlotTag", typeof(RectTransform));
-                tag.transform.SetParent(slot.transform, false);
-                var tagRt = tag.GetComponent<RectTransform>();
-                tagRt.anchorMin = new Vector2(0f, 0f);
-                tagRt.anchorMax = new Vector2(1f, 0f);
-                tagRt.pivot = new Vector2(0f, 0f);
-                tagRt.anchoredPosition = new Vector2(10f, 6f);
-                tagRt.sizeDelta = new Vector2(-12f, 16f);
-                var tagText = tag.AddComponent<TextMeshProUGUI>();
-                tagText.text = i == 0 ? "PRIMARY" : "SECONDARY";
-                tagText.fontSize = 9f;
-                tagText.fontStyle = FontStyles.Bold;
-                tagText.alignment = TextAlignmentOptions.MidlineLeft;
-                tagText.color = RunHudTheme.Label;
+                slotLevels[i].alignment = TextAlignmentOptions.MidlineLeft;
+                slotLevels[i].color = accent;
+                slot.gameObject.SetActive(false);
             }
         }
 

@@ -91,8 +91,8 @@ namespace HighSeas.Enemies
 
         [Header("Spawn Position")]
         public SpawnPlacementMode spawnPlacement = SpawnPlacementMode.ScreenEdge;
-        [Min(0f)] public float spawnDistanceMin = 9f;
-        [Min(0f)] public float spawnDistanceMax = 15f;
+        [Min(0f)] public float spawnDistanceMin = 10.8f;
+        [Min(0f)] public float spawnDistanceMax = 18f;
         [Tooltip("Annulus / Off-camera only: 360 = anywhere around the player.")]
         [Range(30f, 360f)] public float spawnArcDegrees = 360f;
         [Range(-180f, 180f)] public float spawnArcYawOffset;
@@ -172,7 +172,7 @@ namespace HighSeas.Enemies
             {
                 Tuning("cannonboat", 1f, 0, 1.05f, 0f),
                 Tuning("shark", 1f, 0, 1.1f, 0f),
-                Tuning("swordfish", 0.9f, 14, 1.2f, 0f),
+                Tuning("swordfish", 0.9f, 14, 1.08f, 0f),
                 Tuning("hammerhead", 1f, 0, 1.05f, 1f),
                 Tuning("kraken_spawn", 0.85f, 6, 0.95f, 2.5f),
                 Tuning("reef_crab_miniboss", 1f, 0, 1f, 0f, false),

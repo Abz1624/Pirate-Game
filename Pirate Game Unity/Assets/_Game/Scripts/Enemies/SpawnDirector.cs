@@ -31,7 +31,7 @@ namespace HighSeas.Enemies
         float _waveTimer;
         int _waveSpawnRemaining;
         int _paidChestIndex = 1;
-        bool _miniboss30;
+        bool _firstMinibossSpawned;
         bool _miniboss72;
 
         ScriptedPhase _scriptedPhase = ScriptedPhase.WaitingToStart;
@@ -516,9 +516,10 @@ namespace HighSeas.Enemies
         {
             var elapsed = RunManager.Instance.ElapsedSeconds;
             var stageDuration = GameConstants.StageDurationSeconds;
-            if (!_miniboss30 && elapsed >= stageDuration * 0.30f)
+            var firstMinibossAt = _pacingSettings != null ? _pacingSettings.firstMinibossSeconds : 90f;
+            if (!_firstMinibossSpawned && elapsed >= firstMinibossAt)
             {
-                _miniboss30 = true;
+                _firstMinibossSpawned = true;
                 SpawnMiniboss();
             }
             if (!_miniboss72 && elapsed >= stageDuration * 0.72f)

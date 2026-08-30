@@ -61,7 +61,51 @@ namespace HighSeas.UI
                 }
             }
 
-            return PadOrTrim(result, count);
+            return PadOrTrim(EnsureDemoNewWeaponOffer(
+                result,
+                database,
+                settings,
+                ownedWeapons,
+                weaponLevels,
+                rng,
+                count), count);
+        }
+
+        static List<LevelOffer> EnsureDemoNewWeaponOffer(
+            List<LevelOffer> offers,
+            GameDatabase database,
+            LevelUpSettings settings,
+            IReadOnlyList<string> ownedWeapons,
+            IReadOnlyDictionary<string, int> weaponLevels,
+            RunRng rng,
+            int count)
+        {
+            if (settings == null || !settings.alwaysIncludeNewWeapon) return offers;
+            if (!HasUnownedWeapon(database, ownedWeapons)) return offers;
+
+            for (var i = 0; i < offers.Count; i++)
+            {
+                if (offers[i].kind == LevelOfferKind.NewWeapon)
+                    return offers;
+            }
+
+            var def = PickNewWeapon(database, settings, ownedWeapons, weaponLevels, rng);
+            if (def == null) return offers;
+
+            var offer = BuildNewWeaponOffer(def);
+            for (var i = offers.Count - 1; i >= 0; i--)
+            {
+                if (offers[i].kind == LevelOfferKind.NewWeapon) continue;
+                offers[i] = offer;
+                return offers;
+            }
+
+            if (offers.Count < count)
+                offers.Add(offer);
+            else if (offers.Count > 0)
+                offers[offers.Count - 1] = offer;
+
+            return offers;
         }
 
         static void AddFirstLevelOffers(

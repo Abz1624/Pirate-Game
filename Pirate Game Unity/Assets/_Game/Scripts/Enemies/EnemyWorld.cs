@@ -239,6 +239,7 @@ namespace HighSeas.Enemies
 
             _agents[index].active = false;
             _activeCount--;
+            Combat.StatusController.Instance?.ClearIndex(index);
         }
 
         public void Tick(float dt, Vector3 playerPos, Combat.DamageReceiver playerDamage)

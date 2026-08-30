@@ -32,6 +32,7 @@ namespace HighSeas.Tests
                 MakeLogbook("log_damage", StatId.Damage),
                 MakeLogbook("log_speed", StatId.AttackSpeed)
             };
+            _settings.alwaysIncludeNewWeapon = false;
         }
 
         [Test]
@@ -92,6 +93,33 @@ namespace HighSeas.Tests
                     Assert.That(offers[c].id, Is.Not.EqualTo("deck_cannons"));
                     Assert.That(offers[c].id, Is.Not.EqualTo("broadside_battery"));
                 }
+            }
+        }
+
+        [Test]
+        public void Generate_WithDemoFlag_AlwaysIncludesNewWeaponWhenUnownedRemain()
+        {
+            _settings.alwaysIncludeNewWeapon = true;
+            _db.weapons = new[]
+            {
+                MakeWeapon("deck_cannons", "Deck Cannons", WeaponPattern.AutoProjectile),
+                MakeWeapon("broadside_battery", "Broadside Battery", WeaponPattern.FanVolley),
+                MakeWeapon("powder_kegs", "Powder Kegs", WeaponPattern.MineDrop)
+            };
+            var ownedWeapons = new List<string> { "deck_cannons", "broadside_battery" };
+            var weaponLevels = new Dictionary<string, int>
+            {
+                ["deck_cannons"] = 2,
+                ["broadside_battery"] = 2
+            };
+
+            for (var i = 0; i < 20; i++)
+            {
+                var offers = LevelOfferGenerator.Generate(
+                    _db, _settings, _pacing, new RunRng(1000 + i), 0f,
+                    ownedWeapons, weaponLevels, new List<string>(), new Dictionary<string, int>(),
+                    2, 2, isFirstLevelUp: false);
+                Assert.That(HasNewWeapon(offers), Is.True, $"Seed {1000 + i} missing new weapon offer.");
             }
         }
 

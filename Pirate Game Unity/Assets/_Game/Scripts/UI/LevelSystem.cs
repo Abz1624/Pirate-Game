@@ -13,7 +13,7 @@ namespace HighSeas.UI
 
         [SerializeField] GameDatabase database;
         [SerializeField] LevelUpSettings levelUpSettings;
-        [SerializeField] int weaponSlots = 2;
+        [SerializeField] int weaponSlots = GameConstants.DefaultWeaponSlots;
         [SerializeField] int logbookSlots = 2;
         [SerializeField] DemoPacingSettings demoPacing;
 
@@ -37,6 +37,7 @@ namespace HighSeas.UI
         void Awake()
         {
             Instance = this;
+            weaponSlots = GameConstants.DefaultWeaponSlots;
             if (database == null || !GameDatabaseLoader.IsValid(database))
                 database = GameDatabaseLoader.Load();
             if (demoPacing == null)

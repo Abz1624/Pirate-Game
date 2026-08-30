@@ -43,6 +43,7 @@ MonoBehaviour:
   lightningStrikeScale: 1
   burningTrailScale: 1
   flamethrowerScale: 1
+  enemyBurnVfxScale: 0.42
   cutlassScale: 0.325
   seaFoamTrailPrefab: {fileID: 1338987784596019399, guid: f1dc39013527e4588855efaa452b4e7b, type: 3}
   seaFoamTrailScale: 2

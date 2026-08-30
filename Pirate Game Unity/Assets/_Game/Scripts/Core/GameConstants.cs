@@ -27,7 +27,7 @@ namespace HighSeas.Core
         public const float EnemyContactCooldown = 0.8f;
         public const float StageDurationSeconds = 600f;
         public const float StageBaseThreat = 2.6f;
-        public const int DefaultWeaponSlots = 2;
+        public const int DefaultWeaponSlots = 6;
         public const int DefaultLogbookSlots = 2;
         public const int MaxWeaponLevel = 12;
         public const int MaxLogbookLevel = 10;

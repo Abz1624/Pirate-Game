@@ -19,6 +19,7 @@ MonoBehaviour:
   preventDuplicateCards: 1
   scriptFirstLevelUp: 1
   startingWeaponId: broadside_battery
+  alwaysIncludeNewWeapon: 1
   commonStatLines: 1
   uncommonStatLines: 1
   rareStatLines: 2
