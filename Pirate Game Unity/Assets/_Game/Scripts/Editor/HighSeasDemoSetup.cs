@@ -158,6 +158,7 @@ namespace HighSeas.Editor
 
             juice.infamyPickupScale = 1f;
             juice.eliteKillExplosionScale = 0.35f;
+            juice.powderKegExplosionScale = 0.525f;
             juice.bossKillExplosionScale = 0.45f;
 
             juice.enemyHealthBarPrefab = LoadPrefab($"{VfxRoot}/05_EnemyHealthIndicator.prefab");

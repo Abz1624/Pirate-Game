@@ -40,6 +40,7 @@ MonoBehaviour:
   flamethrowerPrefab: {fileID: 7948998522927659192, guid: 1fa2108acffea4538a73b4370c3967ff, type: 3}
   cutlassPrefab: {fileID: 3274285418519690880, guid: 40c11425a6ba14eaa956d55df4a6092f, type: 3}
   mineBarrelScale: 1
+  powderKegExplosionScale: 0.525
   lightningStrikeScale: 1
   burningTrailScale: 1
   flamethrowerScale: 1

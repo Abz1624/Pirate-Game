@@ -223,6 +223,7 @@ namespace HighSeas.Enemies
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
 
             var def = definitions[_agents[index].definitionIndex];
+            EnemyBurnFlash.SetBurning(_agents[index].view, false);
             if (_agents[index].view != null)
             {
                 if (def.visualPrefab != null)
@@ -508,7 +509,10 @@ namespace HighSeas.Enemies
             return best;
         }
 
-        public void ApplyDamage(int index, float damage, bool isCrit)
+        public void SetBurnVisual(int index, bool burning) =>
+            EnemyBurnFlash.SetBurning(index >= 0 && index < _agents.Length ? _agents[index].view : null, burning);
+
+        public void ApplyDamage(int index, float damage, bool isCrit, bool showHitFeedback = true)
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
             ref var e = ref _agents[index];
@@ -520,7 +524,7 @@ namespace HighSeas.Enemies
                 bar?.SetFill(e.maxHp > 0f ? e.hp / e.maxHp : 0f);
             }
 
-            if (e.view != null)
+            if (showHitFeedback && e.view != null)
                 JuiceVfxBroker.Instance?.PlayDamageHighlight(e.view);
 
             Meta.TriggerBus.Instance?.RaiseHit(damage, isCrit, e.position);

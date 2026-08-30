@@ -80,7 +80,7 @@ namespace HighSeas.VFX
                 : settings.enemyKillPrefab;
             if (prefab == null) return;
 
-            var scale = settings.eliteKillExplosionScale * Mathf.Clamp(blastRadius / 2.8f, 0.85f, 1.4f);
+            var scale = settings.powderKegExplosionScale * Mathf.Clamp(blastRadius / 2.8f, 0.85f, 1.4f);
             PlayVfx(prefab, position + Vector3.up * 0.35f, Quaternion.identity, scale, 2f);
         }
 

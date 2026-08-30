@@ -40,6 +40,7 @@ namespace HighSeas.Data
         public GameObject flamethrowerPrefab;
         public GameObject cutlassPrefab;
         public float mineBarrelScale = 0.55f;
+        public float powderKegExplosionScale = 0.525f;
         public float lightningStrikeScale = 1f;
         public float burningTrailScale = 1f;
         public float flamethrowerScale = 1f;
