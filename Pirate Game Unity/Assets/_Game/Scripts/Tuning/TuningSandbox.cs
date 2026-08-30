@@ -20,7 +20,11 @@ namespace HighSeas.Tuning
         static readonly string[] WeaponIds =
         {
             "deck_cannons",
-            "broadside_battery"
+            "broadside_battery",
+            "powder_kegs",
+            "lightning_mast",
+            "flying_cutlasses",
+            "burning_oil"
         };
 
         GameDatabase _database;
@@ -74,6 +78,10 @@ namespace HighSeas.Tuning
 
             if (keyboard.f1Key.wasPressedThisFrame) EquipWeapon(0, keyboard.shiftKey.isPressed);
             if (keyboard.f2Key.wasPressedThisFrame) EquipWeapon(1, keyboard.shiftKey.isPressed);
+            if (keyboard.f3Key.wasPressedThisFrame) EquipWeapon(2, keyboard.shiftKey.isPressed);
+            if (keyboard.f4Key.wasPressedThisFrame) EquipWeapon(3, keyboard.shiftKey.isPressed);
+            if (keyboard.f5Key.wasPressedThisFrame) EquipWeapon(4, keyboard.shiftKey.isPressed);
+            if (keyboard.f6Key.wasPressedThisFrame) EquipWeapon(5, keyboard.shiftKey.isPressed);
 
             if (keyboard.lKey.wasPressedThisFrame) ForceLevelUp();
             if (keyboard.eKey.wasPressedThisFrame) SpawnEnemyCluster();
@@ -81,6 +89,7 @@ namespace HighSeas.Tuning
             if (keyboard.pKey.wasPressedThisFrame || keyboard.leftBracketKey.wasPressedThisFrame) CycleEnemy(-1);
             if (keyboard.xKey.wasPressedThisFrame) ClearEnemies();
             if (keyboard.gKey.wasPressedThisFrame) SpawnXpPickup();
+            if (keyboard.cKey.wasPressedThisFrame) SpawnGoldPickup();
             if (keyboard.rKey.wasPressedThisFrame) RefillHull();
             if (keyboard.minusKey.wasPressedThisFrame) AdjustFanSpread(-2f);
             if (keyboard.equalsKey.wasPressedThisFrame) AdjustFanSpread(2f);
@@ -149,8 +158,17 @@ namespace HighSeas.Tuning
         void SpawnXpPickup()
         {
             if (_player == null) return;
-            PickupWorld.Instance?.Spawn(PickupType.Infamy, 25, _player.Position + Vector3.right * 2f);
-            SetStatus("Spawned XP crystal.");
+            var pos = _player.Position + _player.MovementForward * 4f + Vector3.right * 2f;
+            PickupWorld.Instance?.Spawn(PickupType.Infamy, 25, pos);
+            SetStatus("Spawned XP crystal ahead.");
+        }
+
+        void SpawnGoldPickup()
+        {
+            if (_player == null) return;
+            var pos = _player.Position + _player.MovementForward * 4f + Vector3.left * 2f;
+            PickupWorld.Instance?.Spawn(PickupType.GoldBarrel, 12, pos);
+            SetStatus("Spawned gold barrel ahead.");
         }
 
         void RefillHull()

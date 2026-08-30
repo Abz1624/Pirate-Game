@@ -65,7 +65,7 @@ namespace HighSeas.Data
         [Header("Enemy UI")]
         public GameObject enemyHealthBarPrefab;
         public float enemyHealthBarHeight = 2.2f;
-        public bool showHealthOnElitesOnly = true;
+        public bool showHealthOnElitesOnly = false;
 
         [Header("POI Visuals")]
         public GameObject salvageChestPrefab;

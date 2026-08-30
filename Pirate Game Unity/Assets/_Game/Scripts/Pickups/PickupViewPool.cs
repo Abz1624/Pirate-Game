@@ -82,9 +82,10 @@ namespace HighSeas.Pickups
             if (_settings == null) return null;
             return type switch
             {
-                PickupType.Gold when value >= _settings.goldBarrelMinValue && _settings.goldBarrelPickupPrefab != null
-                    => _settings.goldBarrelPickupPrefab,
-                PickupType.Gold => _settings.goldPickupPrefab,
+                PickupType.GoldBarrel => _settings.goldBarrelPickupPrefab != null
+                    ? _settings.goldBarrelPickupPrefab
+                    : _settings.goldPickupPrefab,
+                PickupType.Gold or PickupType.FlyingGold => _settings.goldPickupPrefab,
                 PickupType.Powerup => _settings.healthPickupPrefab,
                 _ => _settings.infamyPickupPrefab
             };
@@ -95,9 +96,8 @@ namespace HighSeas.Pickups
             if (_settings == null) return 0.4f;
             return type switch
             {
-                PickupType.Gold when value >= _settings.goldBarrelMinValue && _settings.goldBarrelPickupPrefab != null
-                    => _settings.goldBarrelPickupScale,
-                PickupType.Gold => _settings.goldPickupScale,
+                PickupType.GoldBarrel => _settings.goldBarrelPickupScale,
+                PickupType.Gold or PickupType.FlyingGold => _settings.goldPickupScale * 0.85f,
                 PickupType.Powerup => _settings.healthPickupScale,
                 _ => _settings.infamyPickupScale
             };
@@ -105,7 +105,7 @@ namespace HighSeas.Pickups
 
         static Color GetColor(PickupType type) => type switch
         {
-            PickupType.Gold => new Color(1f, 0.85f, 0.15f),
+            PickupType.Gold or PickupType.GoldBarrel or PickupType.FlyingGold => new Color(1f, 0.85f, 0.15f),
             PickupType.Powerup => new Color(0.35f, 1f, 0.45f),
             _ => new Color(0.2f, 0.95f, 1f)
         };

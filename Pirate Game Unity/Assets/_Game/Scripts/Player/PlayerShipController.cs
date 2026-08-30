@@ -32,6 +32,7 @@ namespace HighSeas.Player
         [SerializeField] Transform visualModel;
         [SerializeField] float maxRollAngle = 26f;
         [SerializeField] float rollSmoothing = 12f;
+        [SerializeField] float rollTargetSmoothing = 3.5f;
         [SerializeField] float bankSpeedExponent = 1f;
 
         [Header("Island Collision")]
@@ -165,7 +166,8 @@ namespace HighSeas.Player
                 : 0f;
             if (bankSpeedExponent != 1f)
                 speedRatio = Mathf.Pow(speedRatio, bankSpeedExponent);
-            _targetRoll = -input.steer * maxRollAngle * speedRatio;
+            var desiredRoll = -input.steer * maxRollAngle * speedRatio;
+            _targetRoll = Mathf.Lerp(_targetRoll, desiredRoll, 1f - Mathf.Exp(-rollTargetSmoothing * dt));
 
             if (Mathf.Abs(input.throttle) > 0.01f)
             {

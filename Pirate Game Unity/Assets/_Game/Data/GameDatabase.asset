@@ -17,6 +17,10 @@ MonoBehaviour:
   weapons:
   - {fileID: 11400000, guid: 84ac3cf33cb9b314f958dd7d565373d0, type: 2}
   - {fileID: 11400000, guid: 74b64600fc8144443b67a1e2bcb951bf, type: 2}
+  - {fileID: 11400000, guid: a8bb9f617da55314dbd6c054450b7921, type: 2}
+  - {fileID: 11400000, guid: b1c526572bf37234682f2e966afdcacf, type: 2}
+  - {fileID: 11400000, guid: 00991039ee74b8548b4b65fbcee71958, type: 2}
+  - {fileID: 11400000, guid: 71d78f615978922418316aa457302955, type: 2}
   logbooks:
   - {fileID: 11400000, guid: be6da316ecff67542955c3009066c1d7, type: 2}
   - {fileID: 11400000, guid: 757d2a2837db6494eafb240ae660c6fd, type: 2}
@@ -45,5 +49,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: df38e0a06e9258148bc029f222e05d29, type: 2}
   - {fileID: 11400000, guid: c81c41a06c314ad43a77f3f5a476a182, type: 2}
   - {fileID: 11400000, guid: 7e9880821eb1cce42a43dc4f502c115c, type: 2}
+  - {fileID: 11400000, guid: a3f8c21d9e4b5678a1c2d3e4f5b67890, type: 2}
   - {fileID: 11400000, guid: 80c50bdbc91d3894d88cbec2fe44ba15, type: 2}
   - {fileID: 11400000, guid: 88f3f7385e4edec4ebf5c31aaf6bf246, type: 2}

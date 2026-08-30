@@ -14,16 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.DemoJuiceSettings
   enemyHitPrefab: {fileID: 2249966750753480693, guid: 9cd33b2ac3a2845abb7d9b3eeaaab27a, type: 3}
   enemyKillPrefab: {fileID: 2249966750753480693, guid: 9cd33b2ac3a2845abb7d9b3eeaaab27a, type: 3}
-  eliteKillExplosionPrefab: {fileID: 2249966750753480693, guid: 9cd33b2ac3a2845abb7d9b3eeaaab27a, type: 3}
-  bossKillExplosionPrefab: {fileID: 2249966750753480693, guid: 9cd33b2ac3a2845abb7d9b3eeaaab27a, type: 3}
+  eliteKillExplosionPrefab: {fileID: 1709254077376921, guid: 41b6455556b7f324aa6e146c7fd138c3, type: 3}
+  bossKillExplosionPrefab: {fileID: 1709254077376921, guid: 41b6455556b7f324aa6e146c7fd138c3, type: 3}
   critHitPrefab: {fileID: 2249966750753480693, guid: 9cd33b2ac3a2845abb7d9b3eeaaab27a, type: 3}
   levelUpBurstPrefab: {fileID: 2249966750753480693, guid: 9cd33b2ac3a2845abb7d9b3eeaaab27a, type: 3}
   waterImpactSplashPrefab: {fileID: 7117905026468385747, guid: 9bf6488282dca46eda70d6338c3d982f, type: 3}
   damageHighlightPrefab: {fileID: 108369408499265073, guid: 2a77dae8a16f1438484981feaa46221d, type: 3}
   enemyHitScale: 0.1
   enemyKillScale: 0.2
-  eliteKillExplosionScale: 0.25
-  bossKillExplosionScale: 0.25
+  eliteKillExplosionScale: 0.35
+  bossKillExplosionScale: 0.45
   critHitScale: 0.15
   levelUpBurstScale: 0
   waterImpactSplashScale: 0.85
@@ -50,7 +50,7 @@ MonoBehaviour:
   goldPickupPrefab: {fileID: 263643296654351893, guid: e8bf09f96ed974ce39a728db0f8f33b2, type: 3}
   healthPickupPrefab: {fileID: 7594942214642804130, guid: c0f37cb0f063f4e0590917662269a3bb, type: 3}
   goldBarrelPickupPrefab: {fileID: 7834809957994119764, guid: 5f2204b6d1bda43d8acd38896a3e5f56, type: 3}
-  infamyPickupScale: 0.1
+  infamyPickupScale: 0.5
   goldPickupScale: 1
   healthPickupScale: 0.65
   goldBarrelPickupScale: 0.7
@@ -59,7 +59,7 @@ MonoBehaviour:
   goldBarrelMinValue: 12
   enemyHealthBarPrefab: {fileID: 9127664349637473069, guid: 398c917994b504cd98c09160c6aeaf7c, type: 3}
   enemyHealthBarHeight: 2.2
-  showHealthOnElitesOnly: 1
+  showHealthOnElitesOnly: 0
   salvageChestPrefab: {fileID: 815871759973327284, guid: 43eb2b458fe094c84b7307475af1c4f5, type: 3}
   lighthousePrefab: {fileID: 8566692806509818879, guid: 3474afa68addb4a23ab3b6e1b1bb164d, type: 3}
   trialBuoyPrefab: {fileID: 4037768348685628337, guid: 2f694d24f3dfc41efb3621ab070c12eb, type: 3}

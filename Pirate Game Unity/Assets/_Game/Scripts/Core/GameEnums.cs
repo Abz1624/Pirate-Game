@@ -119,7 +119,9 @@ namespace HighSeas.Core
     {
         Infamy,
         Gold,
-        Powerup
+        GoldBarrel,
+        Powerup,
+        FlyingGold
     }
 
     public enum POIType

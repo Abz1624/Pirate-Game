@@ -106,8 +106,9 @@ namespace HighSeas.Editor
 
             juice.enemyHitPrefab = LoadPrefab($"{VfxRoot}/02_FishEnemy_DamageVFX.prefab");
             juice.enemyKillPrefab = juice.enemyHitPrefab;
-            juice.eliteKillExplosionPrefab = juice.enemyHitPrefab;
-            juice.bossKillExplosionPrefab = juice.enemyHitPrefab;
+            var explosionLarge = LoadPrefab("Assets/GameObject/Explosion_Large.prefab");
+            juice.eliteKillExplosionPrefab = explosionLarge != null ? explosionLarge : juice.enemyHitPrefab;
+            juice.bossKillExplosionPrefab = explosionLarge != null ? explosionLarge : juice.enemyHitPrefab;
             juice.critHitPrefab = juice.enemyHitPrefab;
             juice.levelUpBurstPrefab = juice.enemyHitPrefab;
             juice.waterImpactSplashPrefab = LoadPrefab($"{VfxRoot}/19_WaterImpactSplash.prefab");
@@ -127,6 +128,10 @@ namespace HighSeas.Editor
             juice.goldPickupPrefab = LoadPrefab($"{VfxRoot}/03_GoldCoin.prefab");
             juice.healthPickupPrefab = LoadPrefab($"{VfxRoot}/07_HealthPickupBarrel.prefab");
             juice.goldBarrelPickupPrefab = LoadPrefab($"{VfxRoot}/08_GoldPickupBarrel.prefab");
+
+            juice.infamyPickupScale = 1f;
+            juice.eliteKillExplosionScale = 0.35f;
+            juice.bossKillExplosionScale = 0.45f;
 
             juice.enemyHealthBarPrefab = LoadPrefab($"{VfxRoot}/05_EnemyHealthIndicator.prefab");
 
@@ -206,12 +211,14 @@ namespace HighSeas.Editor
 
         static void EnsureJuiceSystemsInScene()
         {
+            EnsureJuiceSystemsInActiveScene();
+        }
+
+        public static void EnsureJuiceSystemsInActiveScene()
+        {
             var scene = SceneManager.GetActiveScene();
-            if (!scene.IsValid() || !scene.path.Contains("Run.unity"))
-            {
-                Debug.Log("Juice systems auto-spawn at runtime. Open Run.unity and run HighSeas/Integrate Artist VFX to bake scene components.");
+            if (!scene.IsValid())
                 return;
-            }
 
             var systems = GameObject.Find("Systems");
             if (systems == null) return;

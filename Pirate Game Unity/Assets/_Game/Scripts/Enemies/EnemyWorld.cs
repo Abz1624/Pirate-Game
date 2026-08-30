@@ -82,7 +82,7 @@ namespace HighSeas.Enemies
         [SerializeField] Transform enemyRoot;
         [SerializeField] Data.EnemyDefinition[] definitions;
         [SerializeField] bool collideWithIslands = true;
-        [SerializeField] float islandAvoidanceProbeDistance = 6f;
+        [SerializeField] float islandAvoidanceProbeDistance = 10f;
         [SerializeField] float islandCollisionPadding = 0.35f;
         [SerializeField] float shipCollisionPadding = 0.55f;
         [SerializeField] float enemySeparationPadding = 0.2f;
@@ -135,6 +135,8 @@ namespace HighSeas.Enemies
             }
             if (slot < 0) return -1;
 
+            position.y = def.visualHeightOffset;
+
             var minute = RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds / 60f : 0f;
             var tier = RunManager.Instance?.Tier ?? 1;
             var stage = RunManager.Instance?.StageIndex ?? 0;
@@ -185,8 +187,6 @@ namespace HighSeas.Enemies
         void AttachHealthBar(int slot, Data.EnemyDefinition def, Transform view, bool elite)
         {
             if (juiceSettings?.enemyHealthBarPrefab == null || view == null) return;
-            var showBar = !juiceSettings.showHealthOnElitesOnly || elite || def.isBoss || def.isMiniboss;
-            if (!showBar) return;
 
             var barGo = Object.Instantiate(juiceSettings.enemyHealthBarPrefab);
             var bar = barGo.GetComponent<WorldHealthBar>();
@@ -256,6 +256,7 @@ namespace HighSeas.Enemies
                 var def = definitions[e.definitionIndex];
                 var desiredVelocity = TickBehavior(i, ref e, def, dt, playerPos);
                 MoveAgent(ref e, dt, desiredVelocity, def);
+                e.position.y = def.visualHeightOffset;
                 UpdateView(ref e, def, dt, playerPos);
 
                 var dist = Vector3.Distance(e.position, playerPos);
@@ -406,9 +407,7 @@ namespace HighSeas.Enemies
                     break;
                 case EnemyBehavior.MaintainRange:
                 case EnemyBehavior.FormationRanged:
-                    if (dist < def.preferredRange) behaviorVelocity = -dir * e.moveSpeed;
-                    else if (dist > def.preferredRange + 2f) behaviorVelocity = dir * e.moveSpeed;
-                    else behaviorVelocity = Vector3.zero;
+                    behaviorVelocity = dir * e.moveSpeed;
                     break;
                 case EnemyBehavior.SuicideApproach:
                     behaviorVelocity = dir * (e.moveSpeed * 1.4f);
@@ -424,7 +423,7 @@ namespace HighSeas.Enemies
                     behaviorVelocity = dir * (e.moveSpeed * 1.2f);
                     break;
                 case EnemyBehavior.DriftPulse:
-                    behaviorVelocity = dir * (e.moveSpeed * 0.45f);
+                    behaviorVelocity = dir * e.moveSpeed;
                     e.attackCooldown -= dt;
                     break;
                 case EnemyBehavior.StationaryTurret:

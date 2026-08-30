@@ -30,6 +30,17 @@ namespace HighSeas.Core
             if (database == null || !GameDatabaseLoader.IsValid(database))
                 database = GameDatabaseLoader.Load();
             DisableTouchJoystick();
+            EnsureGameplayBootstrapComponents();
+        }
+
+        static void EnsureGameplayBootstrapComponents()
+        {
+            var systems = GameObject.Find("Systems");
+            if (systems == null)
+                return;
+
+            if (systems.GetComponent<PlayerShipVisualBootstrap>() == null)
+                systems.AddComponent<PlayerShipVisualBootstrap>();
         }
 
         static void DisableTouchJoystick()
@@ -88,6 +99,7 @@ namespace HighSeas.Core
                 player.transform.position = _layout.playerSpawn;
 
             player?.InitializeFromRun(RunManager.Instance.Stats.MaxHull);
+            EnsurePlayerHealthBar(player);
 
             if (player != null)
             {
@@ -124,6 +136,13 @@ namespace HighSeas.Core
             strip.AddComponent<WeaponLevelStripHud>();
         }
 
+        void EnsurePlayerHealthBar(PlayerShipController player)
+        {
+            if (player == null) return;
+            if (player.GetComponent<PlayerHealthBarBinder>() == null)
+                player.gameObject.AddComponent<PlayerHealthBarBinder>();
+        }
+
         void EnsureCombatVfx()
         {
             var systems = GameObject.Find("Systems");
@@ -137,6 +156,21 @@ namespace HighSeas.Core
                 systems.AddComponent<WeaponJuiceController>();
             if (systems.GetComponent<PlayerJuiceController>() == null)
                 systems.AddComponent<PlayerJuiceController>();
+
+            var vfxRoot = systems.transform.Find("VFXRoot");
+            if (vfxRoot == null)
+            {
+                var go = new GameObject("VFXRoot");
+                go.transform.SetParent(systems.transform, false);
+                vfxRoot = go.transform;
+            }
+
+            var broker = systems.GetComponent<JuiceVfxBroker>();
+            if (broker != null)
+            {
+                var settings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
+                broker.Configure(settings, vfxRoot);
+            }
         }
 
         void OnPlayerDied()

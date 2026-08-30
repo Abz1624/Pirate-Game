@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: reef_crab_miniboss
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.EnemyDefinition
   id: reef_crab_miniboss
-  displayName: Reef Kraken
+  displayName: Reef Crab
   category: 1
-  visualPrefab: {fileID: 1709254077376921, guid: 6a9df2862da9b8a4b83dbe0882d132eb, type: 3}
-  visualScale: 1.15
+  visualPrefab: {fileID: 1709254077376921, guid: a954b4e7ac63bf946a8fe2f1c4b4f146, type: 3}
+  visualScale: 1
   visualYawOffset: 0
   biomeTag: emerald
   baseHP: 120

@@ -19,6 +19,7 @@ namespace HighSeas.Data
         public float baseDamage = 8f;
         public float moveSpeed = 4f;
         public float radius = 1f;
+        public float visualHeightOffset;
         public int threatCost = 1;
         public int xpValue = 2;
         public int goldValue = 1;

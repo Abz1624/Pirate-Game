@@ -19,6 +19,9 @@ namespace HighSeas.Editor
         const string SwordfishPrefabPath = "Assets/GameObject/SwordFish.prefab";
         const string HammerheadPrefabPath = "Assets/GameObject/HammerHead.prefab";
         const string KrakenPrefabPath = "Assets/GameObject/Kraken.prefab";
+        const string CrabPrefabPath = "Assets/GameObject/Crab.prefab";
+        const string CrabElitePrefabPath = "Assets/GameObject/CrabElite.prefab";
+        const string MantaRayPrefabPath = "Assets/GameObject/MantaRay.prefab";
 
         [MenuItem("HighSeas/Setup Enemy Visuals")]
         public static void SetupEnemyVisuals()
@@ -30,6 +33,9 @@ namespace HighSeas.Editor
             var swordfish = LoadPrefab(SwordfishPrefabPath);
             var hammerhead = LoadPrefab(HammerheadPrefabPath);
             var kraken = LoadPrefab(KrakenPrefabPath);
+            var crab = LoadPrefab(CrabPrefabPath);
+            var crabElite = LoadPrefab(CrabElitePrefabPath);
+            var mantaRay = LoadPrefab(MantaRayPrefabPath);
 
             var enemies = new[]
             {
@@ -54,12 +60,17 @@ namespace HighSeas.Editor
                     hp: 28f, dmg: 11f, speed: 2.5f, threat: 6, radius: 1.6f, scale: 0.65f, yaw: 0f,
                     behavior: EnemyBehavior.TankChaser, xp: 6, gold: 2),
                 MakeEnemy(
-                    "reef_crab_miniboss", "Reef Kraken", EnemyCategory.Creature, kraken,
-                    hp: 120f, dmg: 14f, speed: 2f, threat: 8, radius: 2.2f, scale: 1.15f, yaw: 0f,
+                    "manta_ray", "Manta Ray", EnemyCategory.Creature, mantaRay,
+                    hp: 22f, dmg: 8f, speed: 4.5f, threat: 4, radius: 1.4f, scale: 1.05f, yaw: 0f,
+                    behavior: EnemyBehavior.FlankingChaser, xp: 5, gold: 2, heightOffset: 0.82f),
+                MakeEnemy(
+                    "reef_crab_miniboss", "Reef Crab", EnemyCategory.Creature, crab,
+                    hp: 120f, dmg: 14f, speed: 2f, threat: 8, radius: 2.2f, scale: 1f, yaw: 0f,
                     behavior: EnemyBehavior.MaintainRange, xp: 35, gold: 50, isMiniboss: true),
                 MakeEnemy(
-                    "barnacle_king", "Barnacle Kraken", EnemyCategory.Creature, kraken,
-                    hp: 800f, dmg: 18f, speed: 2.5f, threat: 9, radius: 2.8f, scale: 1.75f, yaw: 0f,
+                    "barnacle_king", "Barnacle King", EnemyCategory.Creature,
+                    crabElite != null ? crabElite : crab,
+                    hp: 800f, dmg: 18f, speed: 2.5f, threat: 9, radius: 2.8f, scale: 2.4f, yaw: 0f,
                     behavior: EnemyBehavior.TankChaser, xp: 100, gold: 150, isBoss: true)
             };
 
@@ -74,8 +85,8 @@ namespace HighSeas.Editor
             EditorUtility.SetDirty(database);
             AssetDatabase.SaveAssets();
             Debug.Log(
-                "Enemy visuals configured: 1 ship (Cannonboat) + 4 sea creatures + miniboss/boss. " +
-                "Play Run scene to verify spawns.");
+                "Enemy visuals configured: ship + sea creatures + manta ray + reef crab miniboss/boss. " +
+                "Play Run or test scenes to verify spawns.");
             SetupSpawnSettings();
         }
 
@@ -94,6 +105,7 @@ namespace HighSeas.Editor
             EnemyBehavior behavior,
             int xp,
             int gold,
+            float heightOffset = 0f,
             bool isBoss = false,
             bool isMiniboss = false)
         {
@@ -115,6 +127,7 @@ namespace HighSeas.Editor
             enemy.baseDamage = dmg;
             enemy.moveSpeed = speed;
             enemy.radius = radius;
+            enemy.visualHeightOffset = heightOffset;
             enemy.threatCost = threat;
             enemy.behavior = behavior;
             enemy.xpValue = xp;

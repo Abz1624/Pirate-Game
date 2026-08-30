@@ -72,7 +72,7 @@ namespace HighSeas.Editor
             }
         }
 
-        static void MinimizeIslands()
+        public static void MinimizeIslands()
         {
             var stageBuilder = Object.FindFirstObjectByType<StageBuilder>();
             if (stageBuilder == null) return;

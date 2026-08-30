@@ -23,8 +23,9 @@ MonoBehaviour:
   baseQuantity: 1
   projectileSpeed: 16
   duration: 2
-  size: 0.1
+  size: 1.15
   knockback: 1
+  fanSpreadDegrees: 50
   maxLevel: 12
   validUpgradeAxes: 000000000100000002000000
   upgradeAxisConfigs:

@@ -58,7 +58,11 @@ namespace HighSeas.Core
             return new[]
             {
                 MakeWeapon("deck_cannons", WeaponPattern.AutoProjectile, TargetingMode.Nearest),
-                MakeWeapon("broadside_battery", WeaponPattern.FanVolley, TargetingMode.DensestCluster)
+                MakeWeapon("broadside_battery", WeaponPattern.FanVolley, TargetingMode.DensestCluster),
+                MakeWeapon("powder_kegs", WeaponPattern.MineDrop, TargetingMode.PlayerTrail),
+                MakeWeapon("lightning_mast", WeaponPattern.ChainLightning, TargetingMode.Nearest),
+                MakeWeapon("flying_cutlasses", WeaponPattern.Orbit, TargetingMode.AreaAroundShip),
+                MakeWeapon("burning_oil", WeaponPattern.TrailZone, TargetingMode.PlayerTrail)
             };
         }
 
@@ -119,6 +123,7 @@ namespace HighSeas.Core
                 MakeEnemy("swordfish", EnemyCategory.Creature, 10f, 6f, 6.5f, 2, 0.9f, EnemyBehavior.FastSwarm),
                 MakeEnemy("hammerhead", EnemyCategory.Creature, 14f, 7f, 5f, 3, 1.1f, EnemyBehavior.FlankingChaser),
                 MakeEnemy("kraken_spawn", EnemyCategory.Creature, 28f, 11f, 2.5f, 6, 1.6f, EnemyBehavior.TankChaser),
+                MakeEnemy("manta_ray", EnemyCategory.Creature, 22f, 8f, 4.5f, 4, 1.4f, EnemyBehavior.FlankingChaser),
                 MakeEnemy("reef_crab_miniboss", EnemyCategory.Creature, 120f, 14f, 2f, 8, 2.2f, EnemyBehavior.MaintainRange, isMiniboss: true),
                 MakeEnemy("barnacle_king", EnemyCategory.Creature, 800f, 18f, 2.5f, 9, 2.8f, EnemyBehavior.TankChaser, isBoss: true)
             };

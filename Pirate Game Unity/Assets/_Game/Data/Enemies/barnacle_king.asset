@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: barnacle_king
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.EnemyDefinition
   id: barnacle_king
-  displayName: Barnacle Kraken
+  displayName: Barnacle King
   category: 1
-  visualPrefab: {fileID: 1709254077376921, guid: 6a9df2862da9b8a4b83dbe0882d132eb, type: 3}
-  visualScale: 1.75
+  visualPrefab: {fileID: 1709254077376921, guid: 572d88ba1570e65438b5fef6059db2d5, type: 3}
+  visualScale: 2.4
   visualYawOffset: 0
   biomeTag: emerald
   baseHP: 800

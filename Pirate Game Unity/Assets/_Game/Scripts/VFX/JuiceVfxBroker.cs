@@ -35,6 +35,15 @@ namespace HighSeas.VFX
                 Instance = null;
         }
 
+        public void Configure(DemoJuiceSettings settings, Transform root)
+        {
+            if (settings != null)
+                this.settings = settings;
+            if (root != null)
+                vfxRoot = root;
+            _pool = new VfxPool(vfxRoot != null ? vfxRoot : transform);
+        }
+
         public void Play(GameObject prefab, Vector3 position, Quaternion rotation, float scale, float lifetimeOverride = 0f)
         {
             if (prefab == null) return;

@@ -3532,6 +3532,7 @@ GameObject:
   - component: {fileID: 658786997}
   - component: {fileID: 658786996}
   - component: {fileID: 658787000}
+  - component: {fileID: 658787001}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -3551,7 +3552,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61306dca8d63a514a8f7190774ca866c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.World.StageBuilder
-  islandRoot: {fileID: 987888399}
+  islandRoot: {fileID: 0}
   visuals: {fileID: 11400000, guid: 73f83e03a3ca2a44e9ee9171a535bc84, type: 2}
   islandMaterial: {fileID: 0}
   useVisualPrefabs: 1
@@ -3839,6 +3840,18 @@ MonoBehaviour:
   disableAutoSpawn: 1
   spawnRingDistance: 12
   enemiesPerSpawn: 3
+--- !u!114 &658787001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa17349babc925c49944f534db9a6a0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Player.PlayerShipVisualBootstrap
 --- !u!1 &676974001
 GameObject:
   m_ObjectHideFlags: 0
@@ -14263,10 +14276,10 @@ MonoBehaviour:
   shallowColor: {r: 0.513725, g: 0.74509805, b: 0.70980394, a: 1}
   deepColor: {r: 0, g: 0, b: 0, a: 0.95}
   colorDepth: 0.49
-  horizonColor: {r: 0.019607844, g: 0.39597124, b: 0.5607843, a: 1}
+  horizonColor: {r: 0.019607844, g: 0.39597216, b: 0.5607843, a: 1}
   horizonDistance: 0.1
   shoreFade: 0.023
-  shoreColor: {r: 0.22342223, g: 0.6666667, b: 0.6784314, a: 0}
+  shoreColor: {r: 0.22342318, g: 0.6666667, b: 0.6784314, a: 0}
   shoreStrength: 0
   shoreBlend: 0
   shoreDepth: 0

@@ -79,6 +79,11 @@ namespace HighSeas.World
                 return velocity;
             }
 
+            var left = Quaternion.Euler(0f, -35f, 0f) * direction;
+            var right = Quaternion.Euler(0f, 35f, 0f) * direction;
+            var leftClear = !Physics.CapsuleCast(pointA, pointB, castRadius, left, probeDistance * 0.85f, Mask, QueryTriggerInteraction.Ignore);
+            var rightClear = !Physics.CapsuleCast(pointA, pointB, castRadius, right, probeDistance * 0.85f, Mask, QueryTriggerInteraction.Ignore);
+
             var tangent = Vector3.Cross(Vector3.up, hit.normal);
             if (tangent.sqrMagnitude < 0.0001f)
                 return velocity;
@@ -90,9 +95,14 @@ namespace HighSeas.World
             if (preferred.sqrMagnitude > 0.01f)
             {
                 preferred.Normalize();
-                tangent = Vector3.Dot(tangent, preferred) >= Vector3.Dot(tangentAlt, preferred)
-                    ? tangent
-                    : tangentAlt;
+                if (leftClear && !rightClear)
+                    tangent = Vector3.Cross(Vector3.up, preferred).normalized;
+                else if (rightClear && !leftClear)
+                    tangent = -Vector3.Cross(Vector3.up, preferred).normalized;
+                else
+                    tangent = Vector3.Dot(tangent, preferred) >= Vector3.Dot(tangentAlt, preferred)
+                        ? tangent
+                        : tangentAlt;
             }
             else if (Vector3.Dot(tangent, direction) < 0f)
             {
@@ -296,7 +306,7 @@ namespace HighSeas.World
                     slide = -slide;
             }
 
-            slide = slide.normalized * Mathf.Max(speed * 0.35f, flatVelocity.magnitude);
+            slide = slide.normalized * Mathf.Max(speed * 0.85f, flatVelocity.magnitude);
             slide.y = 0f;
             return slide;
         }

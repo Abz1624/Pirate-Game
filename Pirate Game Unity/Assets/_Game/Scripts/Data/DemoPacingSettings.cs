@@ -25,8 +25,9 @@ namespace HighSeas.Data
 
         [Header("Pickups")]
         [Tooltip("Gold and XP pickups are collected automatically within this range.")]
-        [Min(0.5f)] public float goldXpAutoPickupRadius = 2.5f;
-        [Tooltip("Health/powerup pickups still require sailing close to collect.")]
-        [Min(0.3f)] public float powerupTouchRadius = 0.8f;
+        [Min(0.5f)] public float goldXpAutoPickupRadius = 4.5f;
+        [Tooltip("Health barrels and gold barrels require sailing this close to collect.")]
+        [Min(0.3f)] public float powerupTouchRadius = 1.2f;
+        [Range(0f, 1f)] public float healthDropChance = 0.12f;
     }
 }

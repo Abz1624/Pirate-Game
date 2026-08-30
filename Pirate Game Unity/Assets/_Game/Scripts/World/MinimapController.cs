@@ -27,15 +27,33 @@ namespace HighSeas.World
         [SerializeField] EnemyWorld enemyWorld;
         [SerializeField] int spawnBurst = 50;
 
+        void Awake()
+        {
+            if (enemyWorld == null)
+                enemyWorld = FindFirstObjectByType<EnemyWorld>();
+        }
+
         void Update()
         {
             if (!Input.GetKeyDown(KeyCode.F9)) return;
+            if (enemyWorld == null)
+            {
+                enemyWorld = FindFirstObjectByType<EnemyWorld>();
+                if (enemyWorld == null) return;
+            }
+
+            var center = transform.position;
+            var player = FindFirstObjectByType<Player.PlayerShipController>();
+            if (player != null)
+                center = player.Position;
+
             for (var i = 0; i < spawnBurst; i++)
             {
                 var angle = Random.Range(0f, Mathf.PI * 2f);
                 var dist = Random.Range(10f, 20f);
-                var pos = transform.position + new Vector3(Mathf.Cos(angle) * dist, 0f, Mathf.Sin(angle) * dist);
-                enemyWorld?.Spawn(0, pos);
+                var pos = center + new Vector3(Mathf.Cos(angle) * dist, 0f, Mathf.Sin(angle) * dist);
+                var defIndex = i % Mathf.Max(1, enemyWorld.Definitions?.Length ?? 1);
+                enemyWorld.Spawn(defIndex, pos);
             }
         }
     }

@@ -165,7 +165,11 @@ namespace HighSeas.Editor
             return new[]
             {
                 MakeWeapon("deck_cannons", "Deck Cannons", WeaponPattern.AutoProjectile, TargetingMode.Nearest, 10f, 1.2f, Color.gray),
-                MakeWeapon("broadside_battery", "Broadside Battery", WeaponPattern.FanVolley, TargetingMode.DensestCluster, 8f, 1.5f, new Color(0.7f, 0.7f, 0.8f))
+                MakeWeapon("broadside_battery", "Broadside Battery", WeaponPattern.FanVolley, TargetingMode.DensestCluster, 8f, 1.5f, new Color(0.7f, 0.7f, 0.8f)),
+                MakeWeapon("powder_kegs", "Powder Kegs", WeaponPattern.MineDrop, TargetingMode.PlayerTrail, 20f, 2.2f, Color.red),
+                MakeWeapon("lightning_mast", "Lightning Mast", WeaponPattern.ChainLightning, TargetingMode.Nearest, 14f, 1.8f, Color.cyan),
+                MakeWeapon("flying_cutlasses", "Flying Cutlasses", WeaponPattern.Orbit, TargetingMode.AreaAroundShip, 7f, 1f, Color.white),
+                MakeWeapon("burning_oil", "Burning Oil", WeaponPattern.TrailZone, TargetingMode.PlayerTrail, 6f, 0.8f, new Color(1f, 0.4f, 0f))
             };
         }
 
@@ -243,8 +247,9 @@ namespace HighSeas.Editor
                 MakeEnemy("swordfish", "Swordfish", EnemyCategory.Creature, 10f, 6f, 6.5f, 2, 0.9f, EnemyBehavior.FastSwarm, new Color(0.2f, 0.7f, 0.95f)),
                 MakeEnemy("hammerhead", "Hammerhead", EnemyCategory.Creature, 14f, 7f, 5f, 3, 1.1f, EnemyBehavior.FlankingChaser, new Color(0.25f, 0.6f, 0.85f)),
                 MakeEnemy("kraken_spawn", "Kraken Spawn", EnemyCategory.Creature, 28f, 11f, 2.5f, 6, 1.6f, EnemyBehavior.TankChaser, new Color(0.45f, 0.2f, 0.65f)),
-                MakeEnemy("reef_crab_miniboss", "Reef Kraken", EnemyCategory.Creature, 120f, 14f, 2f, 8, 2.2f, EnemyBehavior.MaintainRange, new Color(0.4f, 0.3f, 0.55f), isMiniboss: true),
-                MakeEnemy("barnacle_king", "Barnacle Kraken", EnemyCategory.Creature, 800f, 18f, 2.5f, 9, 2.8f, EnemyBehavior.TankChaser, new Color(0.2f, 0.5f, 0.35f), isBoss: true)
+                MakeEnemy("manta_ray", "Manta Ray", EnemyCategory.Creature, 22f, 8f, 4.5f, 4, 1.4f, EnemyBehavior.FlankingChaser, new Color(0.3f, 0.55f, 0.9f)),
+                MakeEnemy("reef_crab_miniboss", "Reef Crab", EnemyCategory.Creature, 120f, 14f, 2f, 8, 2.2f, EnemyBehavior.MaintainRange, new Color(0.4f, 0.3f, 0.55f), isMiniboss: true),
+                MakeEnemy("barnacle_king", "Barnacle King", EnemyCategory.Creature, 800f, 18f, 2.5f, 9, 2.8f, EnemyBehavior.TankChaser, new Color(0.2f, 0.5f, 0.35f), isBoss: true)
             };
         }
 

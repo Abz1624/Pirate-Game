@@ -306,6 +306,37 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 220, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &88686466
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 88686467}
+  m_Layer: 0
+  m_Name: VFXRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &88686467
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 88686466}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 658786995}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &175293509
 GameObject:
   m_ObjectHideFlags: 0
@@ -1058,6 +1089,56 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 501893942}
   m_CullTransparentMesh: 1
+--- !u!1 &580247029
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 580247030}
+  - component: {fileID: 580247031}
+  m_Layer: 0
+  m_Name: TuningSandboxHud
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &580247030
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 580247029}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1146000356}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &580247031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 580247029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8b9c0d1e2f35467a890bcdef1234567, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Tuning.TuningSandboxHud
+  label: {fileID: 0}
+  sandbox: {fileID: 0}
 --- !u!1 &613376439
 GameObject:
   m_ObjectHideFlags: 0
@@ -1174,6 +1255,12 @@ GameObject:
   - component: {fileID: 658786983}
   - component: {fileID: 658786982}
   - component: {fileID: 658786981}
+  - component: {fileID: 658787001}
+  - component: {fileID: 658787000}
+  - component: {fileID: 658786999}
+  - component: {fileID: 658786998}
+  - component: {fileID: 658786997}
+  - component: {fileID: 658786996}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -1193,8 +1280,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61306dca8d63a514a8f7190774ca866c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.World.StageBuilder
-  islandRoot: {fileID: 987888399}
+  islandRoot: {fileID: 0}
+  visuals: {fileID: 11400000, guid: 73f83e03a3ca2a44e9ee9171a535bc84, type: 2}
   islandMaterial: {fileID: 0}
+  useVisualPrefabs: 1
+  usePredefinedLayout: 1
+  predefinedLayout: {fileID: 11400000, guid: c0a03a174a8ffac4c83f679bff9f9287, type: 2}
+  proceduralIslands:
+    countMin: 45
+    countMax: 50
+    islandDiameterMeters: 4
+    minSeparationMeters: 6
+    maxPlacementAttempts: 8000
 --- !u!114 &658786982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1210,6 +1307,9 @@ MonoBehaviour:
   database: {fileID: 0}
   loot: {fileID: 658786984}
   director: {fileID: 658786991}
+  juiceSettings: {fileID: 0}
+  pacingSettings: {fileID: 0}
+  poiRoot: {fileID: 0}
 --- !u!114 &658786983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1272,8 +1372,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.LevelSystem
   database: {fileID: 0}
+  levelUpSettings: {fileID: 0}
   weaponSlots: 2
   logbookSlots: 2
+  demoPacing: {fileID: 0}
 --- !u!114 &658786988
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1288,6 +1390,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Weapons.WeaponController
   database: {fileID: 0}
   maxSlots: 2
+  demoPacing: {fileID: 0}
 --- !u!114 &658786989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1301,6 +1404,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Pickups.PickupWorld
   root: {fileID: 0}
+  juiceSettings: {fileID: 0}
+  pacingSettings: {fileID: 0}
 --- !u!114 &658786990
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1314,6 +1419,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Weapons.ProjectileWorld
   root: {fileID: 0}
+  juiceSettings: {fileID: 0}
 --- !u!114 &658786991
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1328,6 +1434,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.SpawnDirector
   enemyWorld: {fileID: 0}
   player: {fileID: 0}
+  settings: {fileID: 11400000, guid: df4dfc0e507780241ba5b50d9863315c, type: 2}
+  spawnCamera: {fileID: 0}
 --- !u!114 &658786992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1342,6 +1450,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.EnemyWorld
   enemyRoot: {fileID: 0}
   definitions: []
+  collideWithIslands: 1
+  islandAvoidanceProbeDistance: 6
+  islandCollisionPadding: 0.35
+  shipCollisionPadding: 0.55
+  enemySeparationPadding: 0.2
+  juiceSettings: {fileID: 0}
 --- !u!114 &658786993
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1382,9 +1496,91 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 88686467}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &658786996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7a8b9c0d1e24356f7890abcdef01234, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Tuning.TuningSandbox
+  disableAutoSpawn: 0
+  spawnRingDistance: 12
+  enemiesPerSpawn: 3
+--- !u!114 &658786997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa17349babc925c49944f534db9a6a0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Player.PlayerShipVisualBootstrap
+--- !u!114 &658786998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aceb8a524413baa458a5a8d31d33637c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.PlayerJuiceController
+  settings: {fileID: 0}
+--- !u!114 &658786999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d503021e1cbb8d4fac1f88623166e7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.WeaponJuiceController
+  settings: {fileID: 0}
+  effectRoot: {fileID: 0}
+--- !u!114 &658787000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66fab8b65389a664d9885b182fc7f6e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.CombatVfxController
+  settings: {fileID: 0}
+--- !u!114 &658787001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9c7d19062ce6b743bc74868c8198fab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.JuiceVfxBroker
+  settings: {fileID: 11400000, guid: 46f32d0fc5f591f4d9779fa985f59983, type: 2}
+  vfxRoot: {fileID: 88686467}
 --- !u!1 &704620840
 GameObject:
   m_ObjectHideFlags: 0
@@ -2407,6 +2603,72 @@ RectTransform:
   m_AnchoredPosition: {x: -400, y: 190}
   m_SizeDelta: {x: 220, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1001 &1114253380
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1706650671}
+    m_Modifications:
+    - target: {fileID: 1663011832085934562, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8666331001818569078, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_Name
+      value: CutlassSloop
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+--- !u!4 &1114253381 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+  m_PrefabInstance: {fileID: 1114253380}
+  m_PrefabAsset: {fileID: 0}
 --- !u!115 &1137434216
 MonoScript:
   m_ObjectHideFlags: 0
@@ -2561,6 +2823,7 @@ RectTransform:
   - {fileID: 1257118563}
   - {fileID: 613376440}
   - {fileID: 296369489}
+  - {fileID: 580247030}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2939,14 +3202,19 @@ MonoBehaviour:
   - {fileID: 1597248573}
   - {fileID: 303098870}
   - {fileID: 1917119774}
+  cardFrames: []
+  cardCategories: []
   cardTitles:
   - {fileID: 398812892}
   - {fileID: 1928808914}
   - {fileID: 765047747}
+  cardLevels: []
+  cardRarities: []
   cardDescriptions:
   - {fileID: 1198114985}
   - {fileID: 11143884}
   - {fileID: 889779429}
+  cardHotkeys: []
 --- !u!114 &1257118565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3460,6 +3728,38 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1678737627}
   m_CullTransparentMesh: 1
+--- !u!1 &1706650670
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1706650671}
+  m_Layer: 0
+  m_Name: VisualTiltPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1706650671
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1706650670}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1114253381}
+  m_Father: {fileID: 2131002244}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1745209314
 GameObject:
   m_ObjectHideFlags: 0
@@ -4041,8 +4341,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Player.FollowCamera
   target: {fileID: 0}
   offset: {x: 0, y: 18, z: -14}
-  smoothTime: 0.15
-  lookAheadMax: 0.8
+  followShipRotation: 0
+  lookAtOffset: {x: 0, y: 0, z: 0}
+  rotationMode: 0
+  rotationEuler: {x: 56, y: 0, z: 0}
+  rotationOffset: {x: 0, y: 0, z: 0}
+  positionSmoothing: 0
+  rotationSmoothing: 6
+  snapOnStart: 1
 --- !u!81 &1960317720
 AudioListener:
   m_ObjectHideFlags: 0
@@ -4117,21 +4423,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!115 &2088778330
-MonoScript:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 7
-  m_DefaultReferences: {}
-  m_Icon: {fileID: 0}
-  m_Type: 0
-  m_ExecutionOrder: 0
-  m_ClassName: StageBuilder
-  m_Namespace: HighSeas.World
-  m_AssemblyName: HighSeas.Runtime
 --- !u!1 &2131002237
 GameObject:
   m_ObjectHideFlags: 0
@@ -4141,8 +4432,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2131002244}
-  - component: {fileID: 2131002243}
-  - component: {fileID: 2131002242}
   - component: {fileID: 2131002241}
   - component: {fileID: 2131002240}
   - component: {fileID: 2131002239}
@@ -4181,10 +4470,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78c31716260cf6e48a2938ec25047099, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Player.PlayerShipController
-  visualRoot: {fileID: 0}
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 0
+  maxSpeed: 50
+  reverseMaxSpeed: 15
+  acceleration: 15
+  reverseAcceleration: 4
+  turnSpeed: 800
+  waterDrag: 3
+  brakeDrag: 6
+  modelForwardIsNegativeZ: 1
+  visualModel: {fileID: 1706650671}
+  maxRollAngle: 26
+  rollSmoothing: 12
+  bankSpeedExponent: 1
+  collideWithIslands: 1
+  hullRadius: 1.15
+  hullHeight: 4.5
 --- !u!54 &2131002240
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4207,10 +4507,10 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
+  m_Interpolate: 1
+  m_Constraints: 84
   m_CollisionDetection: 0
 --- !u!136 &2131002241
 CapsuleCollider:
@@ -4231,67 +4531,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.8
-  m_Height: 2
-  m_Direction: 1
+  m_Radius: 1.15
+  m_Height: 4.5
+  m_Direction: 2
   m_Center: {x: 0, y: 0, z: 0}
---- !u!23 &2131002242
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2131002237}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 1
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &2131002243
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2131002237}
-  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &2131002244
 Transform:
   m_ObjectHideFlags: 0
@@ -4302,9 +4545,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.2, y: 0.8, z: 2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1706650671}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
