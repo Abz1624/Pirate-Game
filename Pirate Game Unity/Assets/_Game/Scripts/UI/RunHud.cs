@@ -7,16 +7,25 @@ using UnityEngine.UI;
 namespace HighSeas.UI
 {
     public sealed class RunHud : MonoBehaviour
-    {        [SerializeField] TextMeshProUGUI hullText;
+    {
+        [SerializeField] TextMeshProUGUI hullText;
         [SerializeField] TextMeshProUGUI xpText;
         [SerializeField] TextMeshProUGUI timerText;
+        [SerializeField] TextMeshProUGUI timerCaption;
         [SerializeField] TextMeshProUGUI goldText;
         [SerializeField] TextMeshProUGUI levelText;
         [SerializeField] Slider hullSlider;
         [SerializeField] Slider xpSlider;
+        [SerializeField] Image hullFill;
+        [SerializeField] Image xpFill;
 
         Player.PlayerShipController _player;
         LevelSystem _levels;
+
+        void Awake()
+        {
+            EnsureWired();
+        }
 
         void Start()
         {
@@ -26,39 +35,96 @@ namespace HighSeas.UI
                 RunManager.Instance.GoldChanged += _ => Refresh();
         }
 
+        public void RebuildUiLayout()
+        {
+            ApplyWiring(RunHudUiFactory.Rebuild(transform));
+        }
+
+        void EnsureWired()
+        {
+            UiCanvasConfigurator.ConfigureFromComponent(this);
+            if (NeedsModernRebuild())
+                ApplyWiring(RunHudUiFactory.Rebuild(transform));
+        }
+
+        bool NeedsModernRebuild()
+        {
+            var root = transform.Find(RunHudUiFactory.RootName);
+            if (root == null) return true;
+            if (root.Find("LeftHudPanel/HullRow") == null) return true;
+            if (hullSlider == null || xpSlider == null || timerText == null) return true;
+            return hullText == null || goldText == null || levelText == null;
+        }
+
+        void ApplyWiring(RunHudUiFactory.HudWiring wiring)
+        {
+            hullText = wiring.hullText;
+            xpText = wiring.xpText;
+            timerText = wiring.timerText;
+            timerCaption = wiring.timerCaption;
+            goldText = wiring.goldText;
+            levelText = wiring.levelText;
+            hullSlider = wiring.hullSlider;
+            xpSlider = wiring.xpSlider;
+            hullFill = wiring.hullFill;
+            xpFill = wiring.xpFill;
+        }
+
         void Update() => Refresh();
 
         void Refresh()
         {
             if (RunManager.Instance == null) return;
+
             var elapsed = RunManager.Instance.ElapsedSeconds;
             var mins = Mathf.FloorToInt(elapsed / 60f);
             var secs = Mathf.FloorToInt(elapsed % 60f);
+            var overtime = RunManager.Instance.IsOvertime;
+
+            if (timerCaption != null)
+                timerCaption.text = overtime ? "DREAD TIDE" : "SURVIVE";
             if (timerText != null)
             {
-                timerText.text = RunManager.Instance.IsOvertime
-                    ? $"DREAD TIDE {mins:00}:{secs:00}"
-                    : $"{mins:00}:{secs:00}";
-                timerText.color = RunManager.Instance.IsOvertime ? Color.red : Color.white;
+                timerText.text = $"{mins:00}:{secs:00}";
+                timerText.color = overtime ? RunHudTheme.TimerOvertime : RunHudTheme.Value;
             }
-            if (goldText != null) goldText.text = $"Gold: {RunManager.Instance.Gold}";
+
+            if (goldText != null)
+                goldText.text = RunManager.Instance.Gold.ToString("N0");
+
             if (_levels != null)
             {
-                if (levelText != null) levelText.text = $"Lv {_levels.Level}";
-                if (xpText != null) xpText.text = $"{Mathf.FloorToInt(_levels.CurrentXP)}/{Mathf.FloorToInt(_levels.XPToNext)}";
+                if (levelText != null)
+                    levelText.text = $"LV {_levels.Level}";
+                if (xpText != null)
+                    xpText.text = $"{Mathf.FloorToInt(_levels.CurrentXP)} / {Mathf.FloorToInt(_levels.XPToNext)}";
                 if (xpSlider != null)
                 {
                     xpSlider.maxValue = _levels.XPToNext;
                     xpSlider.value = _levels.CurrentXP;
                 }
+                if (xpFill != null)
+                    xpFill.color = RunHudTheme.XpFill;
             }
+
             if (_player != null && _player.Damage != null)
             {
-                if (hullText != null) hullText.text = $"Hull {Mathf.CeilToInt(_player.Damage.CurrentHP)}/{Mathf.CeilToInt(_player.Damage.MaxHP)}";
+                var hp = _player.Damage.CurrentHP;
+                var maxHp = _player.Damage.MaxHP;
+                if (hullText != null)
+                    hullText.text = $"{Mathf.CeilToInt(hp)} / {Mathf.CeilToInt(maxHp)}";
                 if (hullSlider != null)
                 {
-                    hullSlider.maxValue = _player.Damage.MaxHP;
-                    hullSlider.value = _player.Damage.CurrentHP;
+                    hullSlider.maxValue = maxHp;
+                    hullSlider.value = hp;
+                }
+
+                if (hullFill != null)
+                {
+                    var pct = maxHp > 0f ? hp / maxHp : 1f;
+                    hullFill.color = pct <= 0.25f
+                        ? Color.Lerp(RunHudTheme.HullDanger, RunHudTheme.HullFill, Mathf.PingPong(Time.time * 3f, 1f))
+                        : RunHudTheme.HullFill;
                 }
             }
         }
@@ -68,9 +134,27 @@ namespace HighSeas.UI
     {
         [SerializeField] RectTransform stripRoot;
         [SerializeField] TextMeshProUGUI[] slotLabels = new TextMeshProUGUI[2];
+        [SerializeField] TextMeshProUGUI[] slotLevels = new TextMeshProUGUI[2];
+        [SerializeField] Image[] slotBorders = new Image[2];
+
+        static readonly Color[] SlotAccents =
+        {
+            new(0.35f, 0.72f, 1f, 1f),
+            new(1f, 0.72f, 0.32f, 1f)
+        };
 
         WeaponController _weapons;
         LevelSystem _levels;
+        bool _slotsBuilt;
+
+        void Awake()
+        {
+            if (transform is not RectTransform)
+            {
+                Destroy(gameObject);
+                return;
+            }
+        }
 
         void Start()
         {
@@ -78,7 +162,8 @@ namespace HighSeas.UI
             _levels = LevelSystem.Instance;
             if (_levels != null)
                 _levels.LoadoutChanged += Refresh;
-            EnsureWired();
+            if (!_slotsBuilt && (slotLabels == null || slotLabels.Length == 0 || slotLabels[0] == null))
+                BuildSlots(transform);
             Refresh();
         }
 
@@ -90,42 +175,91 @@ namespace HighSeas.UI
 
         void Update() => Refresh();
 
-        void EnsureWired()
+        public void BuildSlots(Transform parent)
         {
-            if (stripRoot != null && slotLabels != null && slotLabels.Length > 0 && slotLabels[0] != null)
-                return;
-
-            stripRoot = GetComponent<RectTransform>();
+            _slotsBuilt = true;
+            stripRoot = parent as RectTransform;
             if (stripRoot == null)
-                stripRoot = gameObject.AddComponent<RectTransform>();
+                stripRoot = parent.GetComponent<RectTransform>();
 
-            stripRoot.anchorMin = new Vector2(0.5f, 0f);
-            stripRoot.anchorMax = new Vector2(0.5f, 0f);
-            stripRoot.pivot = new Vector2(0.5f, 0f);
-            stripRoot.anchoredPosition = new Vector2(0f, 24f);
-            stripRoot.sizeDelta = new Vector2(420f, 48f);
+            for (var i = parent.childCount - 1; i >= 0; i--)
+            {
+                var child = parent.GetChild(i);
+                if (child.name.StartsWith("WeaponSlot"))
+                {
+                    if (Application.isPlaying) Destroy(child.gameObject);
+                    else DestroyImmediate(child.gameObject);
+                }
+            }
 
             slotLabels = new TextMeshProUGUI[2];
-            for (var i = 0; i < slotLabels.Length; i++)
+            slotLevels = new TextMeshProUGUI[2];
+            slotBorders = new Image[2];
+
+            for (var i = 0; i < 2; i++)
             {
-                var child = transform.Find($"WeaponSlot{i}");
-                TextMeshProUGUI label;
-                if (child != null)
-                {
-                    label = child.GetComponent<TextMeshProUGUI>();
-                }
-                else
-                {
-                    var go = new GameObject($"WeaponSlot{i}", typeof(RectTransform));
-                    go.transform.SetParent(transform, false);
-                    var rt = go.GetComponent<RectTransform>();
-                    rt.sizeDelta = new Vector2(180f, 36f);
-                    rt.anchoredPosition = new Vector2(-95f + i * 190f, 0f);
-                    label = go.AddComponent<TextMeshProUGUI>();
-                    label.fontSize = 18f;
-                    label.alignment = TextAlignmentOptions.Center;
-                }
-                slotLabels[i] = label;
+                var slot = new GameObject($"WeaponSlot{i}", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+                slot.transform.SetParent(parent, false);
+                var layout = slot.GetComponent<LayoutElement>();
+                layout.preferredWidth = 220f;
+                layout.preferredHeight = 48f;
+
+                var rt = slot.GetComponent<RectTransform>();
+                rt.sizeDelta = new Vector2(220f, 48f);
+
+                var border = new GameObject("Border", typeof(RectTransform), typeof(Image));
+                border.transform.SetParent(slot.transform, false);
+                var borderRt = border.GetComponent<RectTransform>();
+                borderRt.sizeDelta = new Vector2(224f, 52f);
+                slotBorders[i] = border.GetComponent<Image>();
+                slotBorders[i].color = SlotAccents[i];
+
+                var fill = slot.GetComponent<Image>();
+                fill.color = RunHudTheme.SlotFill;
+
+                var name = new GameObject("Name", typeof(RectTransform));
+                name.transform.SetParent(slot.transform, false);
+                var nameRt = name.GetComponent<RectTransform>();
+                nameRt.anchorMin = new Vector2(0f, 0.5f);
+                nameRt.anchorMax = new Vector2(1f, 0.5f);
+                nameRt.pivot = new Vector2(0f, 0.5f);
+                nameRt.anchoredPosition = new Vector2(10f, 8f);
+                nameRt.sizeDelta = new Vector2(-78f, 22f);
+                slotLabels[i] = name.AddComponent<TextMeshProUGUI>();
+                slotLabels[i].fontSize = 15f;
+                slotLabels[i].fontStyle = FontStyles.Bold;
+                slotLabels[i].alignment = TextAlignmentOptions.MidlineLeft;
+                slotLabels[i].color = RunHudTheme.Value;
+                slotLabels[i].overflowMode = TextOverflowModes.Ellipsis;
+
+                var level = new GameObject("Level", typeof(RectTransform));
+                level.transform.SetParent(slot.transform, false);
+                var levelRt = level.GetComponent<RectTransform>();
+                levelRt.anchorMin = new Vector2(1f, 0.5f);
+                levelRt.anchorMax = new Vector2(1f, 0.5f);
+                levelRt.pivot = new Vector2(1f, 0.5f);
+                levelRt.anchoredPosition = new Vector2(-10f, 8f);
+                levelRt.sizeDelta = new Vector2(56f, 22f);
+                slotLevels[i] = level.AddComponent<TextMeshProUGUI>();
+                slotLevels[i].fontSize = 14f;
+                slotLevels[i].fontStyle = FontStyles.Bold;
+                slotLevels[i].alignment = TextAlignmentOptions.MidlineRight;
+                slotLevels[i].color = SlotAccents[i];
+
+                var tag = new GameObject("SlotTag", typeof(RectTransform));
+                tag.transform.SetParent(slot.transform, false);
+                var tagRt = tag.GetComponent<RectTransform>();
+                tagRt.anchorMin = new Vector2(0f, 0f);
+                tagRt.anchorMax = new Vector2(1f, 0f);
+                tagRt.pivot = new Vector2(0f, 0f);
+                tagRt.anchoredPosition = new Vector2(10f, 6f);
+                tagRt.sizeDelta = new Vector2(-12f, 16f);
+                var tagText = tag.AddComponent<TextMeshProUGUI>();
+                tagText.text = i == 0 ? "PRIMARY" : "SECONDARY";
+                tagText.fontSize = 9f;
+                tagText.fontStyle = FontStyles.Bold;
+                tagText.alignment = TextAlignmentOptions.MidlineLeft;
+                tagText.color = RunHudTheme.Label;
             }
         }
 
@@ -135,15 +269,18 @@ namespace HighSeas.UI
             for (var i = 0; i < slotLabels.Length; i++)
             {
                 if (slotLabels[i] == null) continue;
+                var slotRoot = slotLabels[i].transform.parent;
                 if (i < _weapons.Weapons.Count)
                 {
                     var w = _weapons.Weapons[i];
-                    slotLabels[i].text = $"{w.def.displayName} Lv {w.level}";
-                    slotLabels[i].gameObject.SetActive(true);
+                    slotLabels[i].text = w.def.displayName;
+                    if (slotLevels != null && i < slotLevels.Length && slotLevels[i] != null)
+                        slotLevels[i].text = $"LV {w.level}";
+                    slotRoot.gameObject.SetActive(true);
                 }
                 else
                 {
-                    slotLabels[i].gameObject.SetActive(false);
+                    slotRoot.gameObject.SetActive(false);
                 }
             }
         }

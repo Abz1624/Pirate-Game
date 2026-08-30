@@ -90,7 +90,7 @@ namespace HighSeas.Core
             weapons?.Initialize(database, startingWeapon);
 
             LevelSystem.Instance?.Initialize(database, startingWeapon);
-            EnsureWeaponStripHud();
+            EnsureRunHud();
 
             if (player == null)
                 player = FindFirstObjectByType<PlayerShipController>();
@@ -126,14 +126,14 @@ namespace HighSeas.Core
 
         void OnPlayerDamaged(float amount, bool _) => TriggerBus.Instance?.RaiseDamageTaken(amount);
 
-        void EnsureWeaponStripHud()
+        void EnsureRunHud()
         {
-            if (FindFirstObjectByType<WeaponLevelStripHud>() != null) return;
             var canvas = FindFirstObjectByType<Canvas>();
             if (canvas == null) return;
-            var strip = new GameObject("WeaponLevelStrip");
-            strip.transform.SetParent(canvas.transform, false);
-            strip.AddComponent<WeaponLevelStripHud>();
+
+            var hud = canvas.GetComponent<RunHud>();
+            if (hud == null)
+                hud = canvas.gameObject.AddComponent<RunHud>();
         }
 
         void EnsurePlayerHealthBar(PlayerShipController player)

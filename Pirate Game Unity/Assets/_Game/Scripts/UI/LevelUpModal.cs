@@ -16,13 +16,13 @@ namespace HighSeas.UI
 
         [SerializeField] GameObject panel;
         [SerializeField] Button[] cardButtons;
+        [SerializeField] LevelUpCardView[] cardViews;
         [SerializeField] Image[] cardFrames;
         [SerializeField] TextMeshProUGUI[] cardCategories;
         [SerializeField] TextMeshProUGUI[] cardTitles;
         [SerializeField] TextMeshProUGUI[] cardLevels;
         [SerializeField] TextMeshProUGUI[] cardRarities;
         [SerializeField] TextMeshProUGUI[] cardDescriptions;
-        [SerializeField] TextMeshProUGUI[] cardHotkeys;
 
         Action<LevelOffer> _callback;
         List<LevelOffer> _offers;
@@ -58,6 +58,11 @@ namespace HighSeas.UI
             var score = 0;
             if (GetComponent<RectTransform>() != null) score += 4;
             if (transform.childCount > 0) score += transform.childCount;
+            if (cardViews != null)
+            {
+                for (var i = 0; i < cardViews.Length; i++)
+                    if (cardViews[i] != null) score += 20;
+            }
             if (cardButtons != null)
             {
                 for (var i = 0; i < cardButtons.Length; i++)
@@ -81,6 +86,13 @@ namespace HighSeas.UI
             if (keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame) Pick(0);
             if (keyboard.digit2Key.wasPressedThisFrame || keyboard.numpad2Key.wasPressedThisFrame) Pick(1);
             if (keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame) Pick(2);
+        }
+
+        public void RebuildUiLayout()
+        {
+            if (panel == null) panel = gameObject;
+            EnsurePanelRectTransform();
+            ApplyWiring(LevelUpUiFactory.Rebuild(transform));
         }
 
         public bool TryShow(List<LevelOffer> offers, Action<LevelOffer> callback)
@@ -122,7 +134,15 @@ namespace HighSeas.UI
                 }
 
                 if (!hasOffer) continue;
+
                 var offer = offers[i];
+                if (cardViews != null && i < cardViews.Length && cardViews[i] != null)
+                {
+                    cardViews[i].Bind(offer, i);
+                    cardViews[i].PlayReveal(i * 0.07f);
+                    continue;
+                }
+
                 if (cardCategories != null && i < cardCategories.Length && cardCategories[i] != null)
                     cardCategories[i].text = offer.categoryLabel;
                 if (cardTitles != null && i < cardTitles.Length && cardTitles[i] != null)
@@ -133,8 +153,6 @@ namespace HighSeas.UI
                     cardRarities[i].text = offer.rarity.ToString();
                 if (cardDescriptions != null && i < cardDescriptions.Length && cardDescriptions[i] != null)
                     cardDescriptions[i].text = offer.description;
-                if (cardHotkeys != null && i < cardHotkeys.Length && cardHotkeys[i] != null)
-                    cardHotkeys[i].text = $"[{i + 1}]";
                 if (cardFrames != null && i < cardFrames.Length && cardFrames[i] != null)
                     cardFrames[i].color = LevelUpRarityColors.ForRarity(offer.rarity);
             }
@@ -165,48 +183,76 @@ namespace HighSeas.UI
 
         void EnsureWired()
         {
+            UiCanvasConfigurator.ConfigureFromComponent(this);
+
             if (panel == null)
                 panel = gameObject;
 
             EnsurePanelRectTransform();
-            WireExistingCards();
-            if (!HasUsableCards())
-                BuildRuntimeCards();
+
+            if (NeedsModernRebuild())
+                ApplyWiring(LevelUpUiFactory.Rebuild(transform));
+            else
+                WireExistingCards();
+        }
+
+        bool NeedsModernRebuild()
+        {
+            if (!HasUsableCards()) return true;
+            if (transform.Find("CardRow") == null) return true;
+
+            var card0 = transform.Find("CardRow/Card0") ?? transform.Find("Card0");
+            if (card0 == null) return true;
+            if (card0.Find("HotkeyBadge") != null) return true;
+            if (card0.GetComponent<LevelUpCardView>() == null) return true;
+
+            var rt = card0 as RectTransform;
+            return rt != null && rt.sizeDelta.y < 300f;
         }
 
         void EnsurePanelRectTransform()
         {
-            if (GetComponent<RectTransform>() != null) return;
-            var canvas = GetComponentInParent<Canvas>();
-            if (canvas == null) return;
-
-            var rt = gameObject.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(980f, 460f);
-            rt.anchoredPosition = Vector2.zero;
-
-            if (GetComponent<Image>() == null)
+            var rt = GetComponent<RectTransform>();
+            if (rt == null)
             {
-                var img = gameObject.AddComponent<Image>();
-                img.color = new Color(0f, 0f, 0f, 0.85f);
+                var canvas = GetComponentInParent<Canvas>();
+                if (canvas == null) return;
+                rt = gameObject.AddComponent<RectTransform>();
             }
+
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+        }
+
+        void ApplyWiring(LevelUpUiFactory.ModalWiring wiring)
+        {
+            cardButtons = wiring.cardButtons;
+            cardViews = wiring.cardViews;
+            cardFrames = wiring.cardFrames;
+            cardCategories = wiring.cardCategories;
+            cardTitles = wiring.cardTitles;
+            cardLevels = wiring.cardLevels;
+            cardRarities = wiring.cardRarities;
+            cardDescriptions = wiring.cardDescriptions;
         }
 
         void WireExistingCards()
         {
-            if (cardButtons != null && cardButtons.Length > 0 && cardButtons[0] != null)
+            if (cardButtons != null && cardButtons.Length > 0 && cardButtons[0] != null
+                && cardViews != null && cardViews.Length > 0 && cardViews[0] != null)
                 return;
 
             cardButtons = new Button[3];
+            cardViews = new LevelUpCardView[3];
             cardFrames = new Image[3];
             cardCategories = new TextMeshProUGUI[3];
             cardTitles = new TextMeshProUGUI[3];
             cardLevels = new TextMeshProUGUI[3];
             cardRarities = new TextMeshProUGUI[3];
             cardDescriptions = new TextMeshProUGUI[3];
-            cardHotkeys = new TextMeshProUGUI[3];
 
             for (var i = 0; i < 3; i++)
             {
@@ -214,6 +260,7 @@ namespace HighSeas.UI
                 if (card == null) continue;
 
                 cardButtons[i] = card.GetComponent<Button>();
+                cardViews[i] = card.GetComponent<LevelUpCardView>();
                 cardFrames[i] = card.GetComponent<Image>();
                 var texts = card.GetComponentsInChildren<TextMeshProUGUI>(true);
                 for (var t = 0; t < texts.Length; t++)
@@ -235,9 +282,6 @@ namespace HighSeas.UI
                         case "Desc":
                             cardDescriptions[i] = texts[t];
                             break;
-                        case "Hotkey":
-                            cardHotkeys[i] = texts[t];
-                            break;
                     }
                 }
 
@@ -246,51 +290,6 @@ namespace HighSeas.UI
                 if (cardDescriptions[i] == null && texts.Length > 1)
                     cardDescriptions[i] = texts[1];
             }
-        }
-
-        void BuildRuntimeCards()
-        {
-            if (HasUsableCards()) return;
-
-            for (var i = 0; i < 3; i++)
-            {
-                if (transform.Find($"Card{i}") != null) continue;
-                CreateCard(i);
-            }
-
-            WireExistingCards();
-        }
-
-        void CreateCard(int index)
-        {
-            var cardGo = new GameObject($"Card{index}", typeof(RectTransform), typeof(Image), typeof(Button));
-            cardGo.transform.SetParent(transform, false);
-            var rt = cardGo.GetComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(240f, 320f);
-            rt.anchoredPosition = new Vector2(-280f + index * 280f, 0f);
-            cardGo.GetComponent<Image>().color = new Color(0.25f, 0.25f, 0.3f, 1f);
-
-            CreateLabel(cardGo.transform, "Category", "Category", new Vector2(0f, 120f), 14f);
-            CreateLabel(cardGo.transform, "Label", "Offer", new Vector2(0f, 90f), 22f);
-            CreateLabel(cardGo.transform, "Level", "Lv 1 → 2", new Vector2(0f, 60f), 16f);
-            CreateLabel(cardGo.transform, "Rarity", "Common", new Vector2(0f, 35f), 14f);
-            CreateLabel(cardGo.transform, "Desc", "", new Vector2(0f, -20f), 15f);
-            CreateLabel(cardGo.transform, "Hotkey", $"[{index + 1}]", new Vector2(0f, -120f), 16f);
-        }
-
-        static TextMeshProUGUI CreateLabel(Transform parent, string name, string text, Vector2 pos, float size)
-        {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var rt = go.GetComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(220f, 40f);
-            rt.anchoredPosition = pos;
-            var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.text = text;
-            tmp.fontSize = size;
-            tmp.alignment = TextAlignmentOptions.Center;
-            tmp.color = Color.white;
-            return tmp;
         }
 
         static Transform FindChildRecursive(Transform parent, string childName)
@@ -322,17 +321,5 @@ namespace HighSeas.UI
             if (panel != null) panel.SetActive(false);
             _callback?.Invoke(_offers[index]);
         }
-    }
-
-    public static class LevelUpRarityColors
-    {
-        public static Color ForRarity(Rarity rarity) => rarity switch
-        {
-            Rarity.Uncommon => new Color(0.2f, 0.55f, 0.35f, 1f),
-            Rarity.Rare => new Color(0.2f, 0.45f, 0.75f, 1f),
-            Rarity.Epic => new Color(0.45f, 0.25f, 0.7f, 1f),
-            Rarity.Legendary => new Color(0.75f, 0.5f, 0.15f, 1f),
-            _ => new Color(0.25f, 0.25f, 0.3f, 1f)
-        };
     }
 }

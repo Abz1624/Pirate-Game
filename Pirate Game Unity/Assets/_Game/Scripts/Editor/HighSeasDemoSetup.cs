@@ -49,12 +49,12 @@ namespace HighSeas.Editor
                 keeper = panel.AddComponent<LevelUpModal>();
             }
 
-            if (canvas.GetComponentInChildren<WeaponLevelStripHud>(true) == null)
-            {
-                var strip = new GameObject("WeaponLevelStrip");
-                strip.transform.SetParent(canvas.transform, false);
-                strip.AddComponent<WeaponLevelStripHud>();
-            }
+            keeper.RebuildUiLayout();
+
+            var runHud = canvas.GetComponent<RunHud>();
+            if (runHud == null)
+                runHud = canvas.gameObject.AddComponent<RunHud>();
+            runHud.RebuildUiLayout();
 
             var levelSystem = Object.FindFirstObjectByType<LevelSystem>();
             if (levelSystem != null)
@@ -69,6 +69,31 @@ namespace HighSeas.Editor
             }
 
             EditorSceneManager.MarkSceneDirty(scene);
+        }
+
+        [MenuItem("HighSeas/Setup Run HUD")]
+        public static void SetupRunHud()
+        {
+            var canvas = Object.FindFirstObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogWarning("No Canvas found in the active scene.");
+                return;
+            }
+
+            UiCanvasConfigurator.Configure(canvas);
+
+            var hud = canvas.GetComponent<RunHud>();
+            if (hud == null)
+                hud = canvas.gameObject.AddComponent<RunHud>();
+
+            hud.RebuildUiLayout();
+
+            var modal = Object.FindFirstObjectByType<LevelUpModal>(FindObjectsInactive.Include);
+            modal?.RebuildUiLayout();
+
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            Debug.Log("Run HUD and canvas scaling rebuilt.");
         }
 
         [MenuItem("HighSeas/Setup Level Up UI")]

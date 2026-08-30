@@ -425,30 +425,7 @@ namespace HighSeas.Editor
         static void BuildRunHud(Canvas canvas)
         {
             var hud = canvas.gameObject.AddComponent<RunHud>();
-            var hullSlider = CreateSlider(canvas.transform, "HullSlider", new Vector2(-400, 220));
-            var xpSlider = CreateSlider(canvas.transform, "XpSlider", new Vector2(-400, 190));
-            var hullText = CreateText(canvas.transform, "HullText", "Hull", new Vector2(-400, 250), 18);
-            var xpText = CreateText(canvas.transform, "XpText", "XP", new Vector2(-400, 160), 18);
-            var timerText = CreateText(canvas.transform, "TimerText", "00:00", new Vector2(0, 250), 28);
-            var goldText = CreateText(canvas.transform, "GoldText", "Gold: 0", new Vector2(400, 250), 22);
-            var levelText = CreateText(canvas.transform, "LevelText", "Lv 1", new Vector2(-400, 130), 18);
-            SetPrivateField(hud, "hullSlider", hullSlider);
-            SetPrivateField(hud, "xpSlider", xpSlider);
-            SetPrivateField(hud, "hullText", hullText);
-            SetPrivateField(hud, "xpText", xpText);
-            SetPrivateField(hud, "timerText", timerText);
-            SetPrivateField(hud, "goldText", goldText);
-            SetPrivateField(hud, "levelText", levelText);
-
-            var strip = new GameObject("WeaponLevelStrip");
-            strip.transform.SetParent(canvas.transform, false);
-            var stripRt = strip.AddComponent<RectTransform>();
-            stripRt.anchorMin = new Vector2(0.5f, 0f);
-            stripRt.anchorMax = new Vector2(0.5f, 0f);
-            stripRt.pivot = new Vector2(0.5f, 0f);
-            stripRt.anchoredPosition = new Vector2(0f, 24f);
-            stripRt.sizeDelta = new Vector2(420f, 48f);
-            strip.AddComponent<WeaponLevelStripHud>();
+            hud.RebuildUiLayout();
         }
 
         static void BuildLevelUpModal(Canvas canvas)
@@ -456,39 +433,13 @@ namespace HighSeas.Editor
             var panel = new GameObject("LevelUpPanel");
             panel.transform.SetParent(canvas.transform, false);
             var rt = panel.AddComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(980, 460);
-            var img = panel.AddComponent<Image>();
-            img.color = new Color(0, 0, 0, 0.85f);
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
             var modal = panel.AddComponent<LevelUpModal>();
-            var buttons = new Button[3];
-            var frames = new Image[3];
-            var categories = new TextMeshProUGUI[3];
-            var titles = new TextMeshProUGUI[3];
-            var levels = new TextMeshProUGUI[3];
-            var rarities = new TextMeshProUGUI[3];
-            var descs = new TextMeshProUGUI[3];
-            var hotkeys = new TextMeshProUGUI[3];
-            for (var i = 0; i < 3; i++)
-            {
-                buttons[i] = CreateButton(panel.transform, $"Card{i}", "", new Vector2(-280 + i * 280, 0), null);
-                buttons[i].GetComponent<RectTransform>().sizeDelta = new Vector2(240, 320);
-                frames[i] = buttons[i].GetComponent<Image>();
-                categories[i] = CreateText(buttons[i].transform, "Category", "Category", new Vector2(0, 120), 14);
-                titles[i] = CreateText(buttons[i].transform, "Label", "Offer", new Vector2(0, 90), 22);
-                levels[i] = CreateText(buttons[i].transform, "Level", "Lv 1 → 2", new Vector2(0, 60), 16);
-                rarities[i] = CreateText(buttons[i].transform, "Rarity", "Common", new Vector2(0, 35), 14);
-                descs[i] = CreateText(buttons[i].transform, "Desc", "", new Vector2(0, -20), 15);
-                hotkeys[i] = CreateText(buttons[i].transform, "Hotkey", $"[{i + 1}]", new Vector2(0, -120), 16);
-            }
             SetPrivateField(modal, "panel", panel);
-            SetPrivateField(modal, "cardButtons", buttons);
-            SetPrivateField(modal, "cardFrames", frames);
-            SetPrivateField(modal, "cardCategories", categories);
-            SetPrivateField(modal, "cardTitles", titles);
-            SetPrivateField(modal, "cardLevels", levels);
-            SetPrivateField(modal, "cardRarities", rarities);
-            SetPrivateField(modal, "cardDescriptions", descs);
-            SetPrivateField(modal, "cardHotkeys", hotkeys);
+            modal.RebuildUiLayout();
             panel.SetActive(false);
         }
 
@@ -547,7 +498,7 @@ namespace HighSeas.Editor
             var go = new GameObject(name);
             var canvas = go.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            go.AddComponent<CanvasScaler>().scaleFactor = 1f;
+            UiCanvasConfigurator.Configure(canvas);
             go.AddComponent<GraphicRaycaster>();
             return canvas;
         }
