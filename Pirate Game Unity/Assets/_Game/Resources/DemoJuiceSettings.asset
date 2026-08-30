@@ -34,31 +34,37 @@ MonoBehaviour:
   projectileSizeMultiplier: 0.5
   projectileRadiusMultiplier: 1
   shootingVfxScale: 0.35
-  mineBarrelPrefab: {fileID: 1105679691474038168, guid: 855dd556424204fa4a29877f701c380a, type: 3}
+  mineBarrelPrefab: {fileID: 6082082769354253251, guid: a601f9e261b424f68a4c1fe3a48195ca, type: 3}
   lightningStrikePrefab: {fileID: 4226950201948866840, guid: 813a29d1d93b645a298297b6d7275e6a, type: 3}
   burningTrailPrefab: {fileID: 7977084466623704616, guid: ec643342415b744718ca32f617d5c8c0, type: 3}
   flamethrowerPrefab: {fileID: 7948998522927659192, guid: 1fa2108acffea4538a73b4370c3967ff, type: 3}
   cutlassPrefab: {fileID: 3274285418519690880, guid: 40c11425a6ba14eaa956d55df4a6092f, type: 3}
-  mineBarrelScale: 0.55
+  mineBarrelScale: 1
   lightningStrikeScale: 1
   burningTrailScale: 1
   flamethrowerScale: 1
-  cutlassScale: 0.45
+  cutlassScale: 0.325
   seaFoamTrailPrefab: {fileID: 1338987784596019399, guid: f1dc39013527e4588855efaa452b4e7b, type: 3}
   seaFoamTrailScale: 2
   infamyPickupPrefab: {fileID: 1642442580476454169, guid: c5ab5d6ce59f64acfb78d6e0031fb059, type: 3}
   goldPickupPrefab: {fileID: 263643296654351893, guid: e8bf09f96ed974ce39a728db0f8f33b2, type: 3}
+  goldCoinMeshPrefab: {fileID: 0}
   healthPickupPrefab: {fileID: 7594942214642804130, guid: c0f37cb0f063f4e0590917662269a3bb, type: 3}
   goldBarrelPickupPrefab: {fileID: 7834809957994119764, guid: 5f2204b6d1bda43d8acd38896a3e5f56, type: 3}
   infamyPickupScale: 0.5
-  goldPickupScale: 1
+  goldPickupScale: 1.8
+  goldFlyingCoinScale: 0.85
   healthPickupScale: 0.65
+  healthFlyingPickupScale: 0.85
+  healthBurstMaterial: {fileID: 2100000, guid: d3358af038cf7764eb41cdfd4c05b2ce, type: 2}
+  healthBurstColor: {r: 0.18431373, g: 1, b: 0.41960785, a: 1}
   goldBarrelPickupScale: 0.7
   infamyColor: {r: 0.2, g: 0.95, b: 1, a: 1}
   goldColor: {r: 1, g: 0.85, b: 0.15, a: 1}
   goldBarrelMinValue: 12
   enemyHealthBarPrefab: {fileID: 9127664349637473069, guid: 398c917994b504cd98c09160c6aeaf7c, type: 3}
   enemyHealthBarHeight: 2.2
+  playerHealthBarHeight: 6
   showHealthOnElitesOnly: 0
   salvageChestPrefab: {fileID: 815871759973327284, guid: 43eb2b458fe094c84b7307475af1c4f5, type: 3}
   lighthousePrefab: {fileID: 8566692806509818879, guid: 3474afa68addb4a23ab3b6e1b1bb164d, type: 3}

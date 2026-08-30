@@ -50,7 +50,8 @@ namespace HighSeas.World
             Vector3 velocity,
             Vector3 preferredDirection,
             float agentRadius,
-            float probeDistance = 5f)
+            float probeDistance = 5f,
+            int steerBias = 0)
         {
             if (Mask == 0)
                 return velocity;
@@ -79,40 +80,52 @@ namespace HighSeas.World
                 return velocity;
             }
 
-            var left = Quaternion.Euler(0f, -35f, 0f) * direction;
-            var right = Quaternion.Euler(0f, 35f, 0f) * direction;
-            var leftClear = !Physics.CapsuleCast(pointA, pointB, castRadius, left, probeDistance * 0.85f, Mask, QueryTriggerInteraction.Ignore);
-            var rightClear = !Physics.CapsuleCast(pointA, pointB, castRadius, right, probeDistance * 0.85f, Mask, QueryTriggerInteraction.Ignore);
+            var left = Quaternion.Euler(0f, -40f, 0f) * direction;
+            var right = Quaternion.Euler(0f, 40f, 0f) * direction;
+            var leftClear = !Physics.CapsuleCast(pointA, pointB, castRadius, left, probeDistance * 0.9f, Mask, QueryTriggerInteraction.Ignore);
+            var rightClear = !Physics.CapsuleCast(pointA, pointB, castRadius, right, probeDistance * 0.9f, Mask, QueryTriggerInteraction.Ignore);
 
-            var tangent = Vector3.Cross(Vector3.up, hit.normal);
-            if (tangent.sqrMagnitude < 0.0001f)
+            var normal = hit.normal;
+            normal.y = 0f;
+            if (normal.sqrMagnitude < 0.0001f)
                 return velocity;
+            normal.Normalize();
 
-            tangent.Normalize();
+            var tangent = Vector3.Cross(Vector3.up, normal).normalized;
             var tangentAlt = -tangent;
+
             var preferred = preferredDirection;
             preferred.y = 0f;
             if (preferred.sqrMagnitude > 0.01f)
             {
                 preferred.Normalize();
+                var dotA = Vector3.Dot(tangent, preferred);
+                var dotB = Vector3.Dot(tangentAlt, preferred);
+                var useAlt = dotB > dotA;
+                if (Mathf.Abs(dotA - dotB) < 0.12f)
+                    useAlt = (steerBias & 1) != 0;
+                tangent = useAlt ? tangentAlt : tangent;
+
                 if (leftClear && !rightClear)
-                    tangent = Vector3.Cross(Vector3.up, preferred).normalized;
+                    tangent = Vector3.Dot(tangent, Vector3.Cross(Vector3.up, preferred)) < 0f ? tangentAlt : tangent;
                 else if (rightClear && !leftClear)
-                    tangent = -Vector3.Cross(Vector3.up, preferred).normalized;
-                else
-                    tangent = Vector3.Dot(tangent, preferred) >= Vector3.Dot(tangentAlt, preferred)
-                        ? tangent
-                        : tangentAlt;
+                    tangent = Vector3.Dot(tangent, Vector3.Cross(Vector3.up, preferred)) > 0f ? tangentAlt : tangent;
             }
             else if (Vector3.Dot(tangent, direction) < 0f)
             {
                 tangent = tangentAlt;
             }
 
+            if (Physics.CapsuleCast(pointA, pointB, castRadius, tangent, probeDistance * 0.75f, Mask, QueryTriggerInteraction.Ignore)
+                && !Physics.CapsuleCast(pointA, pointB, castRadius, tangentAlt, probeDistance * 0.75f, Mask, QueryTriggerInteraction.Ignore))
+            {
+                tangent = tangentAlt;
+            }
+
             var steerStrength = 1f - Mathf.Clamp01(hit.distance / probeDistance);
-            var steered = Vector3.Lerp(direction, tangent, steerStrength * 0.85f).normalized * speed;
+            var steered = Vector3.Slerp(direction, tangent, steerStrength * 0.75f).normalized * speed;
             steered.y = 0f;
-            return PreservePreferredDirection(steered, preferredDirection, speed);
+            return steered;
         }
 
         public static Vector3 ResolveCapsuleMovement(
@@ -295,7 +308,7 @@ namespace HighSeas.World
             var flatVelocity = velocity;
             flatVelocity.y = 0f;
             var forwardAmount = Vector3.Dot(flatVelocity, preferred);
-            if (forwardAmount >= 0f)
+            if (forwardAmount >= -0.2f)
                 return velocity;
 
             var slide = Vector3.ProjectOnPlane(flatVelocity, preferred);

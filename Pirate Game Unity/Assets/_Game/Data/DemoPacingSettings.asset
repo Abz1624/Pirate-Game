@@ -21,6 +21,7 @@ MonoBehaviour:
   bossTelegraphSeconds: 0.7
   firstChestDiscount: 0.5
   postScriptedThreatMultiplier: 0.75
-  goldXpAutoPickupRadius: 4.5
-  powerupTouchRadius: 1.2
+  xpAutoPickupRadius: 4.25
+  goldAutoPickupRadius: 26
+  barrelTouchRadius: 5
   healthDropChance: 0.12

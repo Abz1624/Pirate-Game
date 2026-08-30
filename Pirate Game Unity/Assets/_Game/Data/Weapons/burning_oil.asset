@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0042c8fbd3f13d7498562ae346e23b5d, type: 3}
-  m_Name: burning_oil
+  m_Name: flamethrower
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.WeaponDefinition
-  id: burning_oil
-  displayName: Burning Oil
+  id: flamethrower
+  displayName: Flamethrower
   pattern: 3
   targeting: 4
   tags: []

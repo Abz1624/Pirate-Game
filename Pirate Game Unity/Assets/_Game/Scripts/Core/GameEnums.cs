@@ -121,7 +121,8 @@ namespace HighSeas.Core
         Gold,
         GoldBarrel,
         Powerup,
-        FlyingGold
+        FlyingGold,
+        FlyingHealth
     }
 
     public enum POIType

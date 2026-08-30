@@ -24,10 +24,12 @@ namespace HighSeas.Data
         [Range(0.1f, 2f)] public float postScriptedThreatMultiplier = 0.75f;
 
         [Header("Pickups")]
-        [Tooltip("Gold and XP pickups are collected automatically within this range.")]
-        [Min(0.5f)] public float goldXpAutoPickupRadius = 4.5f;
+        [Tooltip("XP crystals auto-collect within this range.")]
+        [Min(0.5f)] public float xpAutoPickupRadius = 4.25f;
+        [Tooltip("Loose gold coins auto-collect within this range.")]
+        [Min(0.5f)] public float goldAutoPickupRadius = 26f;
         [Tooltip("Health barrels and gold barrels require sailing this close to collect.")]
-        [Min(0.3f)] public float powerupTouchRadius = 1.2f;
+        [Min(0.3f)] public float barrelTouchRadius = 5f;
         [Range(0f, 1f)] public float healthDropChance = 0.12f;
     }
 }

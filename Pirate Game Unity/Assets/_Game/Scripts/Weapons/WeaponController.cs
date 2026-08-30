@@ -33,12 +33,28 @@ namespace HighSeas.Weapons
         [SerializeField] DemoPacingSettings demoPacing;
 
         readonly List<WeaponInstance> _weapons = new();
+        readonly List<PowderKeg> _powderKegs = new();
+        float _cutlassHitTimer;
         PlayerShipController _player;
         EnemyWorld _enemies;
         ProjectileWorld _projectiles;
         WeaponJuiceController _juice;
 
         public IReadOnlyList<WeaponInstance> Weapons => _weapons;
+
+        struct PowderKeg
+        {
+            public bool active;
+            public Vector3 position;
+            public float armTime;
+            public float lifeTime;
+            public float triggerRadius;
+            public float blastRadius;
+            public float baseDamage;
+            public float damageBonus;
+            public float procCoefficient;
+            public Transform visual;
+        }
 
         void Awake()
         {
@@ -147,12 +163,14 @@ namespace HighSeas.Weapons
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
             if (_player == null || _enemies == null || _projectiles == null) return;
             TickWeapons(Time.deltaTime);
+            TickCutlassDamage(Time.deltaTime);
         }
 
         public void TickWeapons(float dt)
         {
             var stats = RunManager.Instance.Stats;
             var rng = RunManager.Instance.Rng;
+            TickPowderKegs(dt, stats, rng);
             for (var wi = 0; wi < _weapons.Count; wi++)
             {
                 var w = _weapons[wi];
@@ -174,7 +192,10 @@ namespace HighSeas.Weapons
                         FireOrbit(ref w, stats, rng);
                         break;
                     case WeaponPattern.TrailZone:
-                        FireTrail(ref w, stats, rng);
+                        if (w.def.id == "flamethrower" || w.def.id == "burning_oil")
+                            FireFlamethrower(ref w, stats, rng);
+                        else
+                            FireTrail(ref w, stats, rng);
                         break;
                     case WeaponPattern.MineDrop:
                         FireMine(ref w, stats, rng);
@@ -233,19 +254,91 @@ namespace HighSeas.Weapons
 
         void FireOrbit(ref WeaponInstance w, PlayerStats stats, RunRng rng)
         {
-            w.orbitIndex++;
-            var count = 2 + w.quantityBonus;
-            var radius = 2.5f * w.sizeMult * stats.Size;
-            for (var i = 0; i < count; i++)
+            // Cutlass damage is applied continuously in TickCutlassDamage.
+        }
+
+        void TickCutlassDamage(float dt)
+        {
+            if (_juice == null || _enemies == null || RunManager.Instance == null) return;
+
+            var hits = _juice.CutlassHits;
+            if (hits.Count == 0) return;
+
+            WeaponInstance cutlassWeapon = null;
+            for (var wi = 0; wi < _weapons.Count; wi++)
             {
-                var angle = (w.orbitIndex * 20f + i * (360f / count)) * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * radius;
-                var pos = _player.Position + offset;
-                if (_enemies.TryGetNearest(pos, 2f * w.sizeMult, out var target, false))
+                if (_weapons[wi].def.id != "flying_cutlasses") continue;
+                cutlassWeapon = _weapons[wi];
+                break;
+            }
+
+            if (cutlassWeapon == null) return;
+
+            _cutlassHitTimer -= dt;
+            if (_cutlassHitTimer > 0f) return;
+            _cutlassHitTimer = 0.12f;
+
+            var w = cutlassWeapon;
+            var stats = RunManager.Instance.Stats;
+            var rng = RunManager.Instance.Rng;
+            var agents = _enemies.Agents;
+            var hitThisTick = new HashSet<int>();
+
+            for (var h = 0; h < hits.Count; h++)
+            {
+                var sphere = hits[h];
+                var radius = sphere.radius * w.sizeMult * stats.Size;
+                var radiusSq = radius * radius;
+                for (var i = 0; i < agents.Length; i++)
                 {
-                    var dmg = DamageSystem.RollDamage(w.def.baseDamage, w.damageBonus, stats, _enemies.Agents[target].isElite, 0f, rng, w.def.procCoefficient);
-                    _enemies.ApplyDamage(target, dmg, false);
+                    if (!agents[i].active || hitThisTick.Contains(i)) continue;
+                    var delta = agents[i].position - sphere.position;
+                    if (delta.sqrMagnitude > radiusSq) continue;
+
+                    hitThisTick.Add(i);
+                    var dmg = DamageSystem.RollDamage(
+                        w.def.baseDamage * 0.35f,
+                        w.damageBonus,
+                        stats,
+                        agents[i].isElite,
+                        0f,
+                        rng,
+                        w.def.procCoefficient);
+                    _enemies.ApplyDamage(i, dmg, false);
                 }
+            }
+        }
+
+        void FireFlamethrower(ref WeaponInstance w, PlayerStats stats, RunRng rng)
+        {
+            var forward = _player.MovementForward;
+            var right = Vector3.Cross(Vector3.up, forward).normalized;
+            var origin = _player.Position + forward * 0.8f + right * 1.4f;
+            var range = w.def.range * 0.65f * w.sizeMult * stats.Size;
+            var halfAngle = 22f;
+            var burnDuration = w.def.duration * w.durationMult * stats.Duration;
+            _juice?.OnFlamethrowerBurst(origin, right);
+
+            var agents = _enemies.Agents;
+            for (var i = 0; i < agents.Length; i++)
+            {
+                if (!agents[i].active) continue;
+                var toEnemy = agents[i].position - origin;
+                toEnemy.y = 0f;
+                if (toEnemy.sqrMagnitude < 0.01f) continue;
+                if (toEnemy.magnitude > range) continue;
+                if (Vector3.Angle(right, toEnemy) > halfAngle) continue;
+
+                var dmg = DamageSystem.RollDamage(
+                    w.def.baseDamage,
+                    w.damageBonus,
+                    stats,
+                    agents[i].isElite,
+                    0f,
+                    rng,
+                    w.def.procCoefficient);
+                _enemies.ApplyDamage(i, dmg, false);
+                StatusController.Instance?.ApplyStatus(i, StatusType.Burn, burnDuration);
             }
         }
 
@@ -285,39 +378,107 @@ namespace HighSeas.Weapons
                 ? -_player.Velocity.normalized
                 : -_player.MovementForward;
             var pos = _player.Position + back * 1.5f;
-            pos.y = 0.15f;
-            _juice?.OnMineDropped(pos);
-            if (_enemies.TryGetNearest(pos, 2.5f * w.sizeMult * stats.Size, out var target, false))
+            pos.y = 0.55f;
+            var visual = _juice?.OnMineDropped(pos);
+            _powderKegs.Add(new PowderKeg
             {
-                var dmg = DamageSystem.RollDamage(w.def.baseDamage * 1.5f, w.damageBonus, stats, _enemies.Agents[target].isElite, 0f, rng, w.def.procCoefficient);
-                _enemies.ApplyDamage(target, dmg, false);
+                active = true,
+                position = pos,
+                armTime = 0.2f,
+                lifeTime = 45f,
+                triggerRadius = 3f * w.sizeMult * stats.Size,
+                blastRadius = 2.8f * w.sizeMult * stats.Size,
+                baseDamage = w.def.baseDamage,
+                damageBonus = w.damageBonus,
+                procCoefficient = w.def.procCoefficient,
+                visual = visual
+            });
+        }
+
+        void TickPowderKegs(float dt, PlayerStats stats, RunRng rng)
+        {
+            if (_enemies == null) return;
+
+            for (var i = _powderKegs.Count - 1; i >= 0; i--)
+            {
+                var keg = _powderKegs[i];
+                if (!keg.active)
+                {
+                    _powderKegs.RemoveAt(i);
+                    continue;
+                }
+
+                keg.armTime -= dt;
+                keg.lifeTime -= dt;
+                if (keg.lifeTime <= 0f)
+                {
+                    if (keg.visual != null)
+                        Destroy(keg.visual.gameObject);
+                    _powderKegs.RemoveAt(i);
+                    continue;
+                }
+
+                if (keg.armTime > 0f)
+                {
+                    _powderKegs[i] = keg;
+                    continue;
+                }
+
+                var agents = _enemies.Agents;
+                var triggered = false;
+                for (var ai = 0; ai < agents.Length; ai++)
+                {
+                    if (!agents[ai].active) continue;
+                    if (Vector3.Distance(agents[ai].position, keg.position) > keg.triggerRadius) continue;
+                    triggered = true;
+                    break;
+                }
+
+                if (!triggered)
+                {
+                    _powderKegs[i] = keg;
+                    continue;
+                }
+
+                for (var ai = 0; ai < agents.Length; ai++)
+                {
+                    if (!agents[ai].active) continue;
+                    if (Vector3.Distance(agents[ai].position, keg.position) > keg.blastRadius) continue;
+                    var dmg = DamageSystem.RollDamage(
+                        keg.baseDamage * 1.5f,
+                        keg.damageBonus,
+                        stats,
+                        agents[ai].isElite,
+                        0f,
+                        rng,
+                        keg.procCoefficient);
+                    _enemies.ApplyDamage(ai, dmg, false);
+                }
+
+                _juice?.OnMineExploded(keg.position, keg.blastRadius);
+                if (keg.visual != null)
+                    Destroy(keg.visual.gameObject);
+                _powderKegs.RemoveAt(i);
             }
         }
 
         void FireLightning(ref WeaponInstance w, PlayerStats stats, RunRng rng)
         {
             if (!_enemies.TryGetNearest(_player.Position, w.def.range, out var target, false)) return;
-            var chains = 2 + w.quantityBonus;
-            var visited = new HashSet<int>();
-            var current = target;
-            for (var c = 0; c < chains; c++)
+
+            var strikePos = _enemies.Agents[target].position;
+            strikePos.y = 0f;
+            var radius = (3.5f + w.quantityBonus * 0.5f) * w.sizeMult * stats.Size;
+            _juice?.OnLightningStrike(strikePos, radius);
+
+            var agents = _enemies.Agents;
+            for (var i = 0; i < agents.Length; i++)
             {
-                if (current < 0 || visited.Contains(current)) break;
-                visited.Add(current);
-                var agent = _enemies.Agents[current];
-                _juice?.OnLightningStrike(agent.position);
-                var dmg = DamageSystem.RollDamage(w.def.baseDamage, w.damageBonus, stats, agent.isElite, 0f, rng, w.def.procCoefficient);
-                _enemies.ApplyDamage(current, dmg, false);
-                Combat.StatusController.Instance?.ApplyStatus(current, Core.StatusType.Shock, 0.5f * w.durationMult);
-                current = -1;
-                var list = _enemies.Agents;
-                var best = float.MaxValue;
-                for (var i = 0; i < list.Length; i++)
-                {
-                    if (!list[i].active || visited.Contains(i)) continue;
-                    var d = Vector3.Distance(agent.position, list[i].position);
-                    if (d < 6f && d < best) { best = d; current = i; }
-                }
+                if (!agents[i].active) continue;
+                if (Vector3.Distance(agents[i].position, strikePos) > radius) continue;
+                var dmg = DamageSystem.RollDamage(w.def.baseDamage, w.damageBonus, stats, agents[i].isElite, 0f, rng, w.def.procCoefficient);
+                _enemies.ApplyDamage(i, dmg, false);
+                StatusController.Instance?.ApplyStatus(i, StatusType.Shock, 0.5f * w.durationMult);
             }
         }
 

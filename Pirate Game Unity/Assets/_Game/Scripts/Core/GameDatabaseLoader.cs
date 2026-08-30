@@ -62,7 +62,7 @@ namespace HighSeas.Core
                 MakeWeapon("powder_kegs", WeaponPattern.MineDrop, TargetingMode.PlayerTrail),
                 MakeWeapon("lightning_mast", WeaponPattern.ChainLightning, TargetingMode.Nearest),
                 MakeWeapon("flying_cutlasses", WeaponPattern.Orbit, TargetingMode.AreaAroundShip),
-                MakeWeapon("burning_oil", WeaponPattern.TrailZone, TargetingMode.PlayerTrail)
+                MakeWeapon("flamethrower", WeaponPattern.TrailZone, TargetingMode.PlayerTrail)
             };
         }
 

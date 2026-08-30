@@ -24,7 +24,7 @@ namespace HighSeas.Tuning
             "powder_kegs",
             "lightning_mast",
             "flying_cutlasses",
-            "burning_oil"
+            "flamethrower"
         };
 
         GameDatabase _database;

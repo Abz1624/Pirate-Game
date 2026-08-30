@@ -329,7 +329,8 @@ namespace HighSeas.Enemies
                 e.velocity,
                 preferredDirection,
                 collisionRadius,
-                islandAvoidanceProbeDistance);
+                islandAvoidanceProbeDistance,
+                e.id);
 
             delta = e.velocity * dt;
             var height = IslandObstacles.GetCollisionHeight(collisionRadius);

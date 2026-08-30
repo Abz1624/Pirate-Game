@@ -10,6 +10,7 @@ namespace HighSeas.Pickups
         readonly Transform _root;
         readonly DemoJuiceSettings _settings;
         readonly Dictionary<int, Stack<Transform>> _pools = new();
+        readonly Stack<Transform> _flyingHealthPool = new();
 
         public PickupViewPool(Transform root, DemoJuiceSettings settings)
         {
@@ -19,6 +20,9 @@ namespace HighSeas.Pickups
 
         public Transform Acquire(PickupType type, Vector3 position, int value = 1)
         {
+            if (type == PickupType.FlyingHealth)
+                return AcquireFlyingHealth(position);
+
             var prefab = GetPrefab(type, value);
             var scale = GetScale(type, value);
             var color = GetColor(type);
@@ -48,6 +52,7 @@ namespace HighSeas.Pickups
 
                 view.position = position;
                 view.localScale = Vector3.one * scale;
+                PlayPickupParticles(view);
                 return view;
             }
 
@@ -57,6 +62,14 @@ namespace HighSeas.Pickups
         public void Release(Transform view, PickupType type, int value = 1)
         {
             if (view == null) return;
+
+            if (type == PickupType.FlyingHealth)
+            {
+                view.gameObject.SetActive(false);
+                view.SetParent(_root, false);
+                _flyingHealthPool.Push(view);
+                return;
+            }
 
             var prefab = GetPrefab(type, value);
             if (prefab != null && view.name == prefab.name)
@@ -75,6 +88,37 @@ namespace HighSeas.Pickups
             }
 
             Object.Destroy(view.gameObject);
+        }
+
+        Transform AcquireFlyingHealth(Vector3 position)
+        {
+            Transform view;
+            if (_flyingHealthPool.Count > 0)
+            {
+                view = _flyingHealthPool.Pop();
+                view.gameObject.SetActive(true);
+            }
+            else
+            {
+                var go = new GameObject("FlyingHealthPlus");
+                go.transform.SetParent(_root, false);
+                var billboard = go.AddComponent<FlyingHealthBillboard>();
+                if (_settings != null)
+                    billboard.Configure(_settings.healthBurstMaterial, _settings.healthBurstColor);
+                view = go.transform;
+            }
+
+            var billboardView = view.GetComponent<FlyingHealthBillboard>();
+            if (billboardView != null && _settings != null)
+            {
+                billboardView.Configure(_settings.healthBurstMaterial, _settings.healthBurstColor);
+                billboardView.ResetLifetime();
+            }
+
+            var scale = _settings != null ? _settings.healthFlyingPickupScale : 0.85f;
+            view.position = position;
+            view.localScale = Vector3.one * scale;
+            return view;
         }
 
         GameObject GetPrefab(PickupType type, int value)
@@ -97,7 +141,7 @@ namespace HighSeas.Pickups
             return type switch
             {
                 PickupType.GoldBarrel => _settings.goldBarrelPickupScale,
-                PickupType.Gold or PickupType.FlyingGold => _settings.goldPickupScale * 0.85f,
+                PickupType.Gold or PickupType.FlyingGold => _settings.goldFlyingCoinScale,
                 PickupType.Powerup => _settings.healthPickupScale,
                 _ => _settings.infamyPickupScale
             };
@@ -106,9 +150,19 @@ namespace HighSeas.Pickups
         static Color GetColor(PickupType type) => type switch
         {
             PickupType.Gold or PickupType.GoldBarrel or PickupType.FlyingGold => new Color(1f, 0.85f, 0.15f),
-            PickupType.Powerup => new Color(0.35f, 1f, 0.45f),
+            PickupType.Powerup or PickupType.FlyingHealth => new Color(0.184f, 1f, 0.42f),
             _ => new Color(0.2f, 0.95f, 1f)
         };
+
+        static void PlayPickupParticles(Transform view)
+        {
+            var particles = view.GetComponentsInChildren<ParticleSystem>(true);
+            for (var i = 0; i < particles.Length; i++)
+            {
+                particles[i].Clear(true);
+                particles[i].Play(true);
+            }
+        }
 
         Transform CreatePrimitive(Vector3 position, Color color, float scale)
         {

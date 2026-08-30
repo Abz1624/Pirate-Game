@@ -31,8 +31,7 @@ namespace HighSeas.Player
         [SerializeField] bool modelForwardIsNegativeZ = true;
         [SerializeField] Transform visualModel;
         [SerializeField] float maxRollAngle = 26f;
-        [SerializeField] float rollSmoothing = 12f;
-        [SerializeField] float rollTargetSmoothing = 3.5f;
+        [SerializeField] float maxRollDegreesPerSecond = 28f;
         [SerializeField] float bankSpeedExponent = 1f;
 
         [Header("Island Collision")]
@@ -167,7 +166,7 @@ namespace HighSeas.Player
             if (bankSpeedExponent != 1f)
                 speedRatio = Mathf.Pow(speedRatio, bankSpeedExponent);
             var desiredRoll = -input.steer * maxRollAngle * speedRatio;
-            _targetRoll = Mathf.Lerp(_targetRoll, desiredRoll, 1f - Mathf.Exp(-rollTargetSmoothing * dt));
+            _targetRoll = Mathf.MoveTowards(_targetRoll, desiredRoll, maxRollDegreesPerSecond * dt);
 
             if (Mathf.Abs(input.throttle) > 0.01f)
             {
@@ -212,7 +211,7 @@ namespace HighSeas.Player
         {
             if (visualModel == null) return;
 
-            _currentRoll = Mathf.Lerp(_currentRoll, _targetRoll, 1f - Mathf.Exp(-rollSmoothing * Time.deltaTime));
+            _currentRoll = Mathf.MoveTowards(_currentRoll, _targetRoll, maxRollDegreesPerSecond * Time.deltaTime);
             var rollAxis = modelForwardIsNegativeZ ? Vector3.back : Vector3.forward;
             visualModel.localRotation = _visualBaseLocalRotation * Quaternion.AngleAxis(_currentRoll, rollAxis);
         }

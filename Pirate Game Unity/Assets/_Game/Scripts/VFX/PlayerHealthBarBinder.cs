@@ -39,7 +39,7 @@ namespace HighSeas.VFX
             _bar = barGo.GetComponent<WorldHealthBar>();
             if (_bar == null)
                 _bar = barGo.AddComponent<WorldHealthBar>();
-            _bar.Bind(_anchor, _settings.enemyHealthBarHeight + 0.5f);
+            _bar.Bind(_anchor, _settings.playerHealthBarHeight);
             UpdateBar();
         }
 

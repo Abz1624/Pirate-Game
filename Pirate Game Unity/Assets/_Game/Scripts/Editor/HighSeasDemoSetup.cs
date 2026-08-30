@@ -117,7 +117,7 @@ namespace HighSeas.Editor
             juice.projectilePrefab = LoadPrefab($"{VfxRoot}/01_Cannonball_ShootingVFX.prefab");
             juice.shootingVfxPrefab = juice.projectilePrefab;
 
-            juice.mineBarrelPrefab = LoadPrefab($"{VfxRoot}/09_MineBarrel_GlowRing.prefab");
+            juice.mineBarrelPrefab = LoadPrefab($"{VfxRoot}/FireBarrel.prefab");
             juice.lightningStrikePrefab = LoadPrefab($"{VfxRoot}/13_LightningStrike_VFX.prefab");
             juice.burningTrailPrefab = LoadPrefab($"{VfxRoot}/14_BurningTrail_VFX.prefab");
             juice.flamethrowerPrefab = LoadPrefab($"{VfxRoot}/10_Flamethrower_VFX.prefab");
@@ -126,7 +126,9 @@ namespace HighSeas.Editor
 
             juice.infamyPickupPrefab = LoadPrefab($"{VfxRoot}/04_XPCrystal.prefab");
             juice.goldPickupPrefab = LoadPrefab($"{VfxRoot}/03_GoldCoin.prefab");
+            juice.goldCoinMeshPrefab = null;
             juice.healthPickupPrefab = LoadPrefab($"{VfxRoot}/07_HealthPickupBarrel.prefab");
+            juice.healthBurstMaterial = LoadMaterial("Assets/Material/HealthParticles.mat");
             juice.goldBarrelPickupPrefab = LoadPrefab($"{VfxRoot}/08_GoldPickupBarrel.prefab");
 
             juice.infamyPickupScale = 1f;
@@ -269,6 +271,8 @@ namespace HighSeas.Editor
         }
 
         static GameObject LoadPrefab(string path) => AssetDatabase.LoadAssetAtPath<GameObject>(path);
+
+        static Material LoadMaterial(string path) => AssetDatabase.LoadAssetAtPath<Material>(path);
 
         static void EnsureFolder(string path)
         {

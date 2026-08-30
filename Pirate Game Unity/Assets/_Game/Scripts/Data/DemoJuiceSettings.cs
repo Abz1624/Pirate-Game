@@ -43,7 +43,7 @@ namespace HighSeas.Data
         public float lightningStrikeScale = 1f;
         public float burningTrailScale = 1f;
         public float flamethrowerScale = 1f;
-        public float cutlassScale = 0.45f;
+        public float cutlassScale = 0.325f;
 
         [Header("Player VFX")]
         public GameObject seaFoamTrailPrefab;
@@ -52,11 +52,18 @@ namespace HighSeas.Data
         [Header("Pickups")]
         public GameObject infamyPickupPrefab;
         public GameObject goldPickupPrefab;
+        [Tooltip("3D mesh coin used for flying gold pickups. Falls back to goldPickupPrefab if unset.")]
+        public GameObject goldCoinMeshPrefab;
         public GameObject healthPickupPrefab;
         public GameObject goldBarrelPickupPrefab;
         public float infamyPickupScale = 1f;
-        public float goldPickupScale = 1f;
+        public float goldPickupScale = 1.8f;
+        [Tooltip("Scale for loose / barrel-burst gold coins.")]
+        public float goldFlyingCoinScale = 0.85f;
         public float healthPickupScale = 0.65f;
+        public float healthFlyingPickupScale = 0.85f;
+        public Material healthBurstMaterial;
+        public Color healthBurstColor = new(0.184f, 1f, 0.42f, 1f);
         public float goldBarrelPickupScale = 0.7f;
         public Color infamyColor = new(0.2f, 0.95f, 1f);
         public Color goldColor = new(1f, 0.85f, 0.15f);
@@ -65,6 +72,7 @@ namespace HighSeas.Data
         [Header("Enemy UI")]
         public GameObject enemyHealthBarPrefab;
         public float enemyHealthBarHeight = 2.2f;
+        public float playerHealthBarHeight = 6f;
         public bool showHealthOnElitesOnly = false;
 
         [Header("POI Visuals")]
