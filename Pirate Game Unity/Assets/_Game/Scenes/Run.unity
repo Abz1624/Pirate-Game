@@ -19793,16 +19793,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Player.PlayerShipController
   maxSpeed: 75
-  reverseMaxSpeed: 15
+  reverseMaxSpeed: 20
   acceleration: 15
   reverseAcceleration: 10
-  turnSpeed: 50
+  turnSpeed: 125
+  sternPivotDistance: 1.5
+  turnCommitTime: 1
+  minTurnRateFraction: 0.6
+  turnCommitDecay: 7
+  turnInertiaDecay: 4
+  turnReverseDelay: 0.14
+  lateralGrip: 14
   waterDrag: 2
   brakeDrag: 3
   modelForwardIsNegativeZ: 0
   visualModel: {fileID: 1813517532}
-  maxRollAngle: 26
-  maxRollDegreesPerSecond: 28
+  maxRollAngle: 15
+  maxRollDegreesPerSecond: 17
   bankSpeedExponent: 1
   collideWithIslands: 1
   hullRadius: 1.15

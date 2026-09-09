@@ -17,26 +17,55 @@ namespace HighSeas.Player
         const float ReferenceMaxSpeed = 50f;
 
         [Header("Handling")]
-        [SerializeField] float maxSpeed = 50f;
-        [SerializeField] float reverseMaxSpeed = 15f;
-        [SerializeField] float acceleration = 15f;
-        [SerializeField] float reverseAcceleration = 4f;
+        [Tooltip("Top forward speed in m/s (before run stat and slow multipliers).")]
+        [SerializeField] float maxSpeed = 75f;
+        [Tooltip("Top reverse speed in m/s (before run stat and slow multipliers).")]
+        [SerializeField] float reverseMaxSpeed = 20f;
+        [Tooltip("Forward acceleration in m/s².")]
+        [SerializeField] float acceleration = 15;
+        [Tooltip("Reverse acceleration in m/s².")]
+        [SerializeField] float reverseAcceleration = 10f;
         [FormerlySerializedAs("turnRate")]
-        [SerializeField] float turnSpeed = 800f;
-        [SerializeField] float waterDrag = 3f;
-        [SerializeField] float brakeDrag = 6f;
+        [Tooltip("Maximum yaw speed in degrees per second at full turn effectiveness.")]
+        [SerializeField] float turnSpeed = 125f;
+        [Tooltip("Distance from ship center to stern pivot used when rotating.")]
+        [SerializeField] float sternPivotDistance = 1.5f;
+        [Tooltip("Seconds of held steer input before reaching full turn rate.")]
+        [SerializeField] float turnCommitTime = 1f;
+        [Range(0.05f, 1f)]
+        [Tooltip("Turn rate fraction at the start of a new turn or after a direction flip.")]
+        [SerializeField] float minTurnRateFraction = 0.6f;
+        [Tooltip("How quickly turn commit resets after releasing steer input.")]
+        [SerializeField] float turnCommitDecay = 7f;
+        [Tooltip("How quickly residual turn rate fades after releasing steer input.")]
+        [SerializeField] float turnInertiaDecay = 4f;
+        [Tooltip("Pause after flipping steer (A to D or D to A) before the new turn direction applies.")]
+        [SerializeField] float turnReverseDelay = 0.14f;
+        [Tooltip("How quickly sideways velocity is pulled back in line with the hull.")]
+        [SerializeField] float lateralGrip = 14f;
+        [Tooltip("Passive water drag applied every physics frame.")]
+        [SerializeField] float waterDrag = 2f;
+        [Tooltip("Extra drag when braking against current travel direction.")]
+        [SerializeField] float brakeDrag = 3f;
 
         [Header("Model")]
         [Tooltip("Ship models face -Z instead of Unity +Z forward.")]
         [SerializeField] bool modelForwardIsNegativeZ = true;
+        [Tooltip("Visual root that receives roll/bank tilt.")]
         [SerializeField] Transform visualModel;
-        [SerializeField] float maxRollAngle = 26f;
-        [SerializeField] float maxRollDegreesPerSecond = 28f;
+        [Tooltip("Maximum visual roll angle while turning.")]
+        [SerializeField] float maxRollAngle = 15f;
+        [Tooltip("How fast the visual roll catches up to its target.")]
+        [SerializeField] float maxRollDegreesPerSecond = 17f;
+        [Tooltip("Curve applied to speed before banking. 1 = linear with speed.")]
         [SerializeField] float bankSpeedExponent = 1f;
 
         [Header("Island Collision")]
+        [Tooltip("Block movement through procedural island colliders.")]
         [SerializeField] bool collideWithIslands = true;
+        [Tooltip("Capsule radius used for island collision.")]
         [SerializeField] float hullRadius = 1.15f;
+        [Tooltip("Capsule height used for island collision.")]
         [SerializeField] float hullHeight = 4.5f;
 
         Rigidbody _body;
@@ -48,6 +77,10 @@ namespace HighSeas.Player
         float _slowTimer;
         float _targetRoll;
         float _currentRoll;
+        float _steerCommit;
+        float _lastSteerInput;
+        float _yawRate;
+        float _reverseTurnTimer;
         Quaternion _visualBaseLocalRotation = Quaternion.identity;
         DamageReceiver _damage;
 
@@ -57,12 +90,14 @@ namespace HighSeas.Player
         public Transform VisualModel => visualModel;
         public Vector3 MovementForward => GetShipForward();
 
+        /// <summary>Run-scaled forward speed multiplier from player Move Speed stat.</summary>
         public float MoveSpeedMultiplier
         {
             get => _moveSpeedMultiplier;
             set => _moveSpeedMultiplier = Mathf.Max(0.1f, value);
         }
 
+        /// <summary>Multiplier applied to yaw speed from upgrades and effects.</summary>
         public float TurnRateMultiplier
         {
             get => _turnRateMultiplier;
@@ -121,6 +156,10 @@ namespace HighSeas.Player
             _velocity = Vector3.zero;
             _targetRoll = 0f;
             _currentRoll = 0f;
+            _steerCommit = 0f;
+            _lastSteerInput = 0f;
+            _yawRate = 0f;
+            _reverseTurnTimer = 0f;
             if (_body != null)
             {
                 _body.position = transform.position;
@@ -152,13 +191,62 @@ namespace HighSeas.Player
             if (turnEffectiveness <= 0f && Mathf.Abs(input.steer) > 0.01f)
                 turnEffectiveness = 0.35f;
 
-            if (Mathf.Abs(input.steer) > 0.01f && turnEffectiveness > 0f)
+            var turnPositionDelta = Vector3.zero;
+            var hasSteerInput = Mathf.Abs(input.steer) > 0.01f;
+            var steerReversed = hasSteerInput &&
+                                Mathf.Sign(input.steer) != Mathf.Sign(_lastSteerInput) &&
+                                Mathf.Abs(_lastSteerInput) > 0.01f;
+
+            if (hasSteerInput && turnEffectiveness > 0f)
             {
-                var deltaYaw = input.steer * turnSpeed * _turnRateMultiplier * turnEffectiveness * dt;
-                _body.MoveRotation(_body.rotation * Quaternion.Euler(0f, deltaYaw, 0f));
+                if (steerReversed)
+                {
+                    _reverseTurnTimer = turnReverseDelay;
+                    _steerCommit = 0f;
+                    _yawRate = 0f;
+                }
+
+                if (_reverseTurnTimer > 0f)
+                {
+                    _reverseTurnTimer = Mathf.Max(0f, _reverseTurnTimer - dt);
+                    _yawRate = 0f;
+                }
+                else
+                {
+                    if (_steerCommit < 1f)
+                    {
+                        var commitRamp = turnCommitTime > 0.01f ? dt / turnCommitTime : 1f;
+                        _steerCommit = Mathf.MoveTowards(_steerCommit, 1f, commitRamp);
+                    }
+
+                    var commitMultiplier = Mathf.Lerp(minTurnRateFraction, 1f, _steerCommit);
+                    _yawRate = input.steer * turnSpeed * _turnRateMultiplier * turnEffectiveness * commitMultiplier;
+                }
+            }
+            else if (!hasSteerInput)
+            {
+                _reverseTurnTimer = 0f;
+                _steerCommit = Mathf.MoveTowards(_steerCommit, 0f, turnCommitDecay * dt);
+                _yawRate *= Mathf.Exp(-turnInertiaDecay * dt);
+                if (Mathf.Abs(_yawRate) < 0.12f)
+                    _yawRate = 0f;
+            }
+            else
+            {
+                _yawRate = 0f;
             }
 
-            var bankForward = GetShipForward();
+            if (Mathf.Abs(_yawRate) > 0.01f)
+            {
+                var coastScale = hasSteerInput ? 1f : Mathf.Lerp(0.6f, 1f, turnEffectiveness);
+                var deltaYaw = _yawRate * coastScale * dt;
+                turnPositionDelta = ApplyYawTurn(deltaYaw, forward);
+            }
+
+            _lastSteerInput = input.steer;
+
+            forward = GetShipForward();
+            var bankForward = forward;
             var bankForwardSpeed = Vector3.Dot(_velocity, bankForward);
             var speedRatio = effectiveMaxSpeed > 0.01f
                 ? Mathf.Clamp01(Mathf.Abs(bankForwardSpeed) / effectiveMaxSpeed)
@@ -180,22 +268,24 @@ namespace HighSeas.Player
 
             _velocity *= Mathf.Max(0f, 1f - waterDrag * dt);
             _velocity = ClampSpeed(_velocity, forward, effectiveMaxSpeed, effectiveReverseMaxSpeed);
+            _velocity = ApplyLateralGrip(_velocity, forward, dt);
 
             var delta = _velocity * dt;
-            var nextPosition = _body.position;
+            var movementDelta = turnPositionDelta + delta;
+            var nextPosition = _body.position + movementDelta;
 
             if (collideWithIslands && IslandObstacles.IsAvailable)
             {
                 nextPosition = IslandObstacles.ResolveCapsuleMovement(
                     _body.position,
-                    delta,
+                    movementDelta,
                     GetHullWorldRadius(),
                     GetHullWorldHeight(),
                     ref _velocity);
             }
             else
             {
-                nextPosition += delta;
+                nextPosition = _body.position + movementDelta;
             }
 
             nextPosition.y = _body.position.y;
@@ -228,6 +318,34 @@ namespace HighSeas.Player
             {
                 Time.fixedDeltaTime = wasFixed;
             }
+        }
+
+        Vector3 ApplyYawTurn(float deltaYaw, Vector3 forward)
+        {
+            if (Mathf.Abs(deltaYaw) < 0.00001f)
+                return Vector3.zero;
+
+            var turnQuat = Quaternion.Euler(0f, deltaYaw, 0f);
+            _velocity = turnQuat * _velocity;
+            _body.MoveRotation(_body.rotation * turnQuat);
+
+            if (sternPivotDistance <= 0.01f)
+                return Vector3.zero;
+
+            var pivot = _body.position - forward * sternPivotDistance;
+            var rotatedOffset = turnQuat * (_body.position - pivot);
+            return pivot + rotatedOffset - _body.position;
+        }
+
+        Vector3 ApplyLateralGrip(Vector3 velocity, Vector3 forward, float dt)
+        {
+            if (velocity.sqrMagnitude < 0.0001f || lateralGrip <= 0f)
+                return velocity;
+
+            var forwardSpeed = Vector3.Dot(velocity, forward);
+            var lateral = velocity - forward * forwardSpeed;
+            var grip = Mathf.Exp(-lateralGrip * dt);
+            return forward * forwardSpeed + lateral * grip;
         }
 
         Vector3 GetShipForward()
