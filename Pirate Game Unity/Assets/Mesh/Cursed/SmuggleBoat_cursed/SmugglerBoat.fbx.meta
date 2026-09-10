@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 79b9277c7cdc9d947b8435ef52ac9ba0
+guid: 5d2c96e4afc6e491b97ab9ae538e9796
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -7,17 +7,7 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: LootBarrelGlow
-    second: {fileID: 2100000, guid: a9f1116347f7d1641ae8decd2e67de29, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: SmugglerBoat
-    second: {fileID: 2100000, guid: 63d2d02859a42d34a8fde5132bb31d6b, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: SmugglerFlag
+      name: lambert1
     second: {fileID: 2100000, guid: 542b20d7abd30df419f68a1878532cd6, type: 2}
   materials:
     materialImportMode: 2
