@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "com.coplaydev.unity-mcp": "file:/Users/abhay/Downloads/unity-mcp-beta/MCPForUnity",
+    "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main",
     "com.unity.ai.navigation": "2.0.11",
-    "com.unity.cloud.gltfast": "6.10.3",
+    "com.unity.cloud.gltfast": "6.14.1",
     "com.unity.collab-proxy": "2.11.4",
     "com.unity.formats.fbx": "5.1.6",
     "com.unity.ide.rider": "3.0.39",
