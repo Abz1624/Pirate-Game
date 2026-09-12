@@ -15493,19 +15493,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 526393939589844252, guid: b0f869339bcdc43538f907295279a9bb, type: 3}
       propertyPath: m_LocalScale.x
-      value: 31.868
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 526393939589844252, guid: b0f869339bcdc43538f907295279a9bb, type: 3}
       propertyPath: m_LocalScale.y
-      value: 31.868
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 526393939589844252, guid: b0f869339bcdc43538f907295279a9bb, type: 3}
       propertyPath: m_LocalScale.z
-      value: 31.868
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 526393939589844252, guid: b0f869339bcdc43538f907295279a9bb, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8.7
+      value: 86
       objectReference: {fileID: 0}
     - target: {fileID: 526393939589844252, guid: b0f869339bcdc43538f907295279a9bb, type: 3}
       propertyPath: m_LocalPosition.y
@@ -15513,7 +15513,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 526393939589844252, guid: b0f869339bcdc43538f907295279a9bb, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 14
+      value: 22
       objectReference: {fileID: 0}
     - target: {fileID: 526393939589844252, guid: b0f869339bcdc43538f907295279a9bb, type: 3}
       propertyPath: m_LocalRotation.w
@@ -15542,6 +15542,10 @@ PrefabInstance:
     - target: {fileID: 526393939589844252, guid: b0f869339bcdc43538f907295279a9bb, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 526393939589844252, guid: b0f869339bcdc43538f907295279a9bb, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7028115330711505503, guid: b0f869339bcdc43538f907295279a9bb, type: 3}
       propertyPath: m_Name
@@ -19860,10 +19864,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 1.15
-  m_Height: 4.5
+  m_Radius: 0.97210586
+  m_Height: 5.842576
   m_Direction: 2
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.42662048, z: 0.042630672}
 --- !u!4 &2131002244
 Transform:
   m_ObjectHideFlags: 0
