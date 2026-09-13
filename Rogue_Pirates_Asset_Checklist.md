@@ -39,7 +39,7 @@ All paths below are relative links to files/folders in the workspace. Presence d
 ## Acceptance record for every production asset
 
 - [ ] Stable asset ID, role, milestone, owner and status.
-- [ ] Original editable source and export; author/vendor, rights evidence and attribution obligations. Partner assets include permission for continued display/trading after the event.
+- [ ] Original editable source and export; author/vendor, rights evidence and attribution obligations. Partner assets include permission for continued account-bound display after the event.
 - [ ] Dimensions/units, orientation, pivot, attachment sockets, rig and material dependencies.
 - [ ] Triangle/bone/material/texture/particle/audio budgets assigned after M0 profiling; measured imported size and memory recorded.
 - [ ] Visual comparison at real gameplay scale, light/dark water backgrounds and supported aspect ratios.
@@ -100,9 +100,9 @@ Need **48 distinct launch content icons** (six Weapons +14 Logbooks +28 Items), 
 - [ ] Epic Item icons: Storm in a Bottle, Devil's Match, Queen Anne's Fuse, Barnacle Crown, Jolly Roger.
 - [ ] Legendary Item icons: Leviathan Heart, Captain's Last Rum.
 - [ ] Captain portraits: Rook, Brine, Flint for slice; Vale, Cinder, Tempest after profile validation. Selected/locked portraits and passive symbols, no playable on-foot rigs.
-- [ ] Shared UI symbols: Gold/Rum, XP/Hull, Weapon/Logbook capacity, ranks/rarities, statuses, four powerups, RNG tools, POIs/Beacon/portal, navigation/hazards, shield, upgrade time, pending sync, report, favorite and trading locks.
+- [ ] Shared UI symbols: Gold/Rum, XP/Hull, Weapon/Logbook capacity, ranks/rarities, statuses, four powerups, RNG tools, POIs/Beacon/portal, navigation/hazards, shield, upgrade time, pending sync, report, favorite, ad reward and paid-entitlement status.
 - [ ] Defense cards: seven families, five patterns, two hazards and three boss-trait symbols, with compatible/locked state. Cosmetic rarity never implies defense power.
-- [ ] Mastery/profile awards: Quick on the Draw, Single Cannon Pennant, Steady Hands, overtime milestones and global weekly participation/top-10 badges. Titles are text records; only actual decoration awards create tradeable instances.
+- [ ] Mastery/profile awards: Quick on the Draw, Single Cannon Pennant, Steady Hands, overtime milestones and global weekly participation/top-10 badges. Titles and decorations are account-bound records.
 
 ## UI/UX screens and state coverage
 
@@ -126,7 +126,7 @@ All are **NEEDED as validated product flows**, even if some prefabs exist. Wiref
 - [ ] Crew search/create/profile/roster/application/invite preview; membership lock, queued leave/cancel, succession and moderation states.
 - [ ] Event hub/detail/enrollment: exact rules/prizes, dates/time zone, affiliation snapshot, complete-submission cutoff, verification pending, delivery history and appeal.
 - [ ] Ship & Cosmetics: filters/pagination, compatible slots, preview/equip/fallback, discrete duplicates, provenance and next-run loadout warning.
-- [ ] Resource cosmetic shop and purchase result; marketplace listing/whole-holding sale/sealed purchase/uncertain settlement only where approved.
+- [ ] Resource and paid cosmetic shop, product preview, purchase result, restoration/refund state, Captain's Chronicle track, Sponsored Cache, daily/weekly event panels and Gilding flow.
 - [ ] Conditional checkout/restoration/refund and channel-disabled commerce/link states; no active ads/paid revives implied.
 - [ ] Settings: audio, graphics/accessibility, language, controls, support/report and account/session management.
 - [ ] Internal operator UI: content/version preview, event schedule/eligibility/prizes, winner review/export, idempotent grant/retry, dispute trail and restricted access. Not a public partner builder.
@@ -155,7 +155,7 @@ No approved audio identified. Budget reusable event families with a few variatio
 - [ ] Marketing templates: logo/app icon, key art, store/portal capsules, screenshots, short gameplay trailer and vertical/square/landscape collaboration layouts. Obtain current per-channel export requirements when publishing.
 - [ ] Optional comics/reels: expressions, turnaround/pose library, storyboard/animatic template, caption-safe areas and music rights. Reuse approved world assets; distinguish cinematic scenes from actual gameplay.
 - [ ] Copy/localization: tutorial, effects with dynamic numbers, quest/rank/holding explanations, errors, support articles, store text and translated font coverage.
-- [ ] Operational materials: age/market decision, community rules, account recovery/refund/holding dispute flows, privacy/consent/reviewed event terms, manual QA and device matrix, analytics dictionary, restore/incident and prize-delivery runbooks. Assign owners before public use.
+- [ ] Operational materials: age/market decision, community rules, account recovery/refund/entitlement dispute flows, privacy/consent/reviewed event terms, manual QA and device matrix, analytics dictionary, restore/incident and prize-delivery runbooks. Assign owners before public use.
 
 ## Production order
 

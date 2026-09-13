@@ -6,24 +6,24 @@
 
 Owner-confirmed: Unity with 3D assets; Android and iOS native applications; desktop and mobile browsers; Steam, CrazyGames, Poki and other eligible free-to-play channels as distribution targets; account-based persistence in our database. Browser and mobile launch together. First-run wireframes are explicitly deferred to a backlog task.
 
-Owner-confirmed distribution fallback: ship without blockchain functionality on channels that prohibit it; include an external trading-hub link only when allowed, otherwise omit the link too. This authorizes channel-specific configurations, not an assumption of platform acceptance. Whether externally acquired/traded holdings may influence those builds must be reviewed separately before defining entitlement parity.
+Owner decision on 14 September 2026 removes player trading, blockchain inventory, wallet connection and the external trading hub from every build. Channel profiles still control ads, IAP providers, login and entitlement restoration.
 
 Recommended, not yet owner-selected: Unity 6 supported LTS patch pinned after compatibility testing, URP with a restrained mobile rendering configuration, a shared pure-C# simulation library, ASP.NET Core API and verification worker in portable containers, PostgreSQL as the authoritative database, Railway for initial application compute, and Cloudflare R2/CDN for assets and private replay storage. Hosting plans are selected only when deploying; this document purchases nothing.
 
 ## 2. Distribution gates
 
-One gameplay project does not imply identical account, purchase, advertising or trading capabilities on every channel. Maintain explicit build profiles and server-side channel capabilities. Capability settings implement approved rules; they are not a way to hide prohibited features from review.
+One gameplay project does not imply identical account, purchase or advertising capabilities on every channel. Maintain explicit build profiles and server-side channel capabilities.
 
 - **Direct browser:** Unity Web build, HTTPS, touch and desktop input, correctly configured compression/MIME/CORS, browser lifecycle handling, progressive content loading. Treat mobile Safari as an early test target, not a final port. Unity 6 documents mobile browser support, but that does not establish that our scenes meet memory/performance budgets. [Unity browser compatibility](https://docs.unity3d.com/6000.0/Documentation/Manual/webgl-browsercompatibility.html)
 - **Android/iOS:** native builds, safe areas, app suspension/resumption, platform account and purchase adapters, restoration, consent and release signing. iOS builds require the appropriate Apple toolchain/signing environment. Exact minimum OS/device versions remain performance-test outputs.
-- **Steam:** proposed first native desktop target is Windows; macOS/Linux/Steam Deck certification are not silently included. Steam's onboarding rules exclude applications built on blockchain technology issuing/exchanging cryptocurrency or NFTs, and advertising-based business models. Apply the owner's non-blockchain fallback and omit advertising monetization; link to the trading hub only with confirmed permission. Do not assume a web link or shared trading-derived inventory is eligible merely because wallet code is absent. [Steam onboarding](https://partner.steamgames.com/doc/gettingstarted/onboarding)
+- **Steam:** proposed first native desktop target is Windows; macOS/Linux/Steam Deck certification are not silently included. Omit ads, blockchain, wallets and external trading links. Use Steam-compatible paid cosmetic entitlements only after integration review. [Steam onboarding](https://partner.steamgames.com/doc/gettingstarted/onboarding)
 - **CrazyGames:** use its Unity SDK and verified platform identity mapped to our internal account. Permit guest play and follow the platform's login/linking flow instead of imposing our email sign-in screen. Its documentation allows a game's own backend with the User module. [Account requirements](https://docs.crazygames.com/requirements/account-integration/)
-- **Poki:** use its official Unity integration, loading/gameplay/ad lifecycle callbacks and approval process. Account integration, external resource access, purchases, prizes and trading require channel-specific confirmation before promising feature parity. The SDK's existence is not game acceptance. [Poki Unity SDK](https://developers.poki.com/guide/sdk-unity)
+- **Poki:** use its official Unity integration, loading/gameplay/ad lifecycle callbacks and approval process. Account integration, external resource access, purchases and prizes require channel-specific confirmation. The SDK's existence is not game acceptance. [Poki Unity SDK](https://developers.poki.com/guide/sdk-unity)
 - **Other portals:** onboard individually through the same adapter interfaces; no blanket compatibility promise.
 
-The previous revenue addendum records Apple/Google constraints. Native iOS Item NFTs that unlock gameplay remain an unresolved conflict. Preserve gameplay acquisition and the owner's trading goal in planning, but do not promise that all channels can share the same tradeable entitlements until reviewed.
+The v3.2 economy specification records the current ad and IAP design. All gameplay Items and cosmetics are ordinary account-bound database entitlements.
 
-Model capability fields explicitly: embedded blockchain, marketplace UI, external trading link, accepted entitlement classes, advertisements and purchase provider. Server enforces the approved channel policy as well as the client. An account can retain ownership records without every channel necessarily being permitted to activate every entitlement. Any needed inventory/gameplay differences require a visible product decision; do not silently delete assets or promise cross-channel combat parity prematurely.
+Model capability fields explicitly: advertisements, ad placement types, purchase provider, purchase catalogue, account login and entitlement restoration. The server enforces channel policy as well as the client.
 
 ## 3. Unity and simulation architecture
 
@@ -70,25 +70,27 @@ Core schema groups:
 - Raid quotes, theft settlements, protection/loss events and compensation receipts.
 - Crews, membership history, event membership locks, queued leaves and leadership state.
 - Events, prize periods, verified score references, standings versions, reward allocations and external delivery references.
-- Marketplace listings/settlements, operator audit trail and outbox jobs.
+- Ad reward receipts, purchase validation/restoration/refunds, LiveOps state, operator audit trail and outbox jobs.
 
-Every mutation has an authenticated actor, idempotency key and expected version where state can race. Lock affected records in consistent order; unique constraints enforce one boss theft, one allocation grant and one active run. A trade or raid cannot partially update two players. Money uses integers in specified smallest units; never binary floating point. Do not store combat snapshots as if they were wallet balances.
+Every mutation has an authenticated actor, idempotency key and expected version where state can race. Lock affected records in consistent order; unique constraints enforce one boss theft, one allocation grant, one ad claim index and one active run. A raid cannot partially update two players. Store payment money as integers in the provider's smallest units; never binary floating point.
 
 API responses distinguish success, pending, conflict, expired, unavailable and validation failure. Retry the same logical request ID after uncertainty. A new retry ID is not a substitute for reconciliation. The database is private; game clients never receive database credentials or write directly to account records.
 
 ## 6. Accounts, saves and recovery
 
-Internal account IDs remain stable across platforms. Map verified provider subject IDs, not mutable email/display names, to that identity. Direct builds can offer platform-appropriate sign-in; portals use their approved identity flow. Guest play gets a scoped guest identity and a clear recovery limitation. Do not require a wallet for first play.
+Internal account IDs remain stable across platforms. Map verified provider subject IDs, not mutable email/display names, to that identity. Direct builds can offer platform-appropriate sign-in; portals use their approved identity flow. Guest play gets a scoped guest identity and a clear recovery limitation. No wallet identity is used.
 
 Account linking requires proof of control of both identities and an explicit conflict screen. Do not automatically add two existing economies together, which could duplicate first-claim rewards. Proposed default: select the destination profile and escalate conflicting established holdings to a reviewed migration; no silent overwrite. Cross-channel linking must respect platform rules.
 
 The server is canonical for progression and inventory. Local cache accelerates loading and can hold unacknowledged input batches, but cannot restore spent assets. Save verified checkpoints at milestones and every ten active seconds; flush after safe pause boundaries when the environment permits. Mobile termination/browser unload is not guaranteed to deliver a final network request, so never rely on it for the only save.
 
-First reward-bearing version requires a connection at run start and milestone settlement. On lost connectivity, freeze at the last locally completed tick and attempt reconnect; recovery resumes from the server's acknowledged checkpoint plus a validated buffered input suffix. Unsupported or missing suffix rolls back only unacknowledged simulation, never applies a receipt twice. Offline free practice can be a later capability; it does not mint tradeable progress or submit competition scores.
+First reward-bearing version requires a connection at run start and milestone settlement. On lost connectivity, freeze at the last locally completed tick and attempt reconnect; recovery resumes from the server's acknowledged checkpoint plus a validated buffered input suffix. Unsupported or missing suffix rolls back only unacknowledged simulation, never applies a receipt twice. Offline free practice can be a later capability; it does not grant persistent progress, ad rewards or competition scores.
 
 Acquire a durable account-level run lease with a fencing version. Another device can view state; taking over a suspended run revokes the old device's write lease before resume. Never merge two divergent active runs. Access tokens are short-lived, refresh sessions revocable, native secrets stored in platform secure storage; browser strategy must be tested for portal iframe/cookie restrictions.
 
 ## 7. Low-cost hosting recommendation
+
+**14 September workload follow-up:** the [financial review](Rogue_Pirates_Economy_and_Revenue_Review.md) now derives CPU, requests, checkpoint writes, replay storage/operations, licenses and operating budgets from active players and simulation time. Use its [adjustable model](Rogue_Pirates_Financial_Model.html) for scenario budgeting. The small resource-footprint example below is not a traffic forecast. The latest Poki deal guide also makes non-exclusive recurring revenue an explicit commercial gate: [Poki deal types](https://developers.poki.com/guide/revenue-deal-types); do not assume its preferred web-exclusive revenue share can coexist with the planned other web channels.
 
 Pricing checked 13 September 2026. These are service rates and modeled examples, not measured Rogue Pirates bills.
 
@@ -137,6 +139,6 @@ Environment separation: development, staging and production with independent sec
 
 Monitor frame time/memory/download size, crashes, API latency/errors, verification lag/divergence, duplicate request rates, ledger imbalance, stale leases, daily/weekly event closure, failed manual grants and recovery attempts. Keep operator permissions narrower than database-admin access. Record manual prize exports and delivery references without exposing payout addresses publicly.
 
-Backups: proposed daily snapshots plus pre-migration backups, encrypted off-host copy, monthly restore exercise; establish required recovery-point/time objectives before public paid/tradeable operations. Use expand/migrate/contract schema changes so rollback does not require guessing old account state. Reward-distribution tools must support reconciliation and operator review.
+Backups: proposed daily snapshots plus pre-migration backups, encrypted off-host copy, monthly restore exercise; establish required recovery-point/time objectives before public paid operations. Use expand/migrate/contract schema changes so rollback does not require guessing old account state. Reward-distribution tools must support reconciliation and operator review.
 
 Success criteria before public event prizes: a valid run produces the same events on every supported runtime, forged inputs cannot create arbitrary rewards, retries never double-grant, interruption resumes correctly, and mobile-browser performance remains acceptable during the strongest tested swarm build.

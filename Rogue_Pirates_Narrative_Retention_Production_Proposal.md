@@ -1,5 +1,7 @@
 # Rogue Pirates — Narrative, Retention, Revenue and Production
 
+**Current-economy note:** [Economy, Ads, IAP and LiveOps v3.2](Rogue_Pirates_Economy_LiveOps_v3_2.md) supersedes the trading, ad, IAP and LiveOps proposals in this document. Player trading is removed and inventories are account-bound.
+
 Design discussion addendum • 13 September 2026
 
 Status: recommendations for owner review, not newly approved canon or tested balance. Read alongside [the current GDD](Rogue_Pirates_GDD_v3_1.md), [combat content](Rogue_Pirates_Combat_Content_v3_1.md), and [economy systems](Rogue_Pirates_Economy_Systems_v3_1.md). This addendum does not replace their accepted gameplay commitments. No implementation or repository review was performed for this proposal.

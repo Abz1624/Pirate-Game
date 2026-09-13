@@ -65,12 +65,12 @@ Challenges remain outside global and community Voyage kill boards. This matches 
 
 - **Finite chests/POIs:** no passive periodically creates exploration chests. The reference Hoarder-style character idea would conflict with this owner commitment.
 - **No guaranteed in-run build repair:** Microwave-style selected duplication and broad pool toggles remain deferred. Our existing permanent reforging, sale/reacquisition and minimum starter pool serve the collection model. [Microwave reference](https://megabonk.org/guides/mechanics/microwave/)
-- **Run gold is not treasury:** do not copy unlimited movement-to-currency generation into a game where earned currency buys tradeable assets. Movement-based combat identity can exist without a repeatable money fountain. [Movement-gold reference](https://megabonk.org/database/items/golden-sneakers)
+- **Run gold is not treasury until death:** movement-based combat identity can exist without an uncapped passive money fountain. The v3.2 economy banks all remaining run Gold at death and balances it through chest spending, storage, upgrades and account-bound vanity sinks. [Movement-gold reference](https://megabonk.org/database/items/golden-sneakers)
 - **No universal evasion, shield gate, poison, freeze or stun layer yet:** burn/bleed/shock/slow already support the selected Weapons. Copying every defensive/status system would multiply interaction work. Add one only when a concrete content need justifies it. [Status reference](https://megabonk.org/guides/mechanics/status-effects/)
 - **No overcrit yet:** maintain the current critical chance cap. Test revised offensive increments and Item links before adding another damage tier.
 - **Three Zones and one-to-three-stage tiers remain:** the reference shows how repeated stage depth supplies content reuse; it does not require us to copy every biome or increase stage count. [Maps](https://megabonk.org/guides/maps/)
 - **Our unlock economy remains ours:** retain Ledger gates and repeatable reacquisition instead of copying the reference quest-count/slot-purchase sequence. The useful lesson is a visible unlock route and explicit purchase step, not a universal numerical threshold. [Unlocks](https://megabonk.org/guides/unlocks/)
-- **No reference monetization or leaderboard economy is assumed:** Megabonk's single-player item acquisition is not validation of SOL trading, asynchronous theft or sponsor prizes.
+- **No reference monetization or leaderboard economy is assumed:** Megabonk's single-player item acquisition does not validate asynchronous theft, ads, IAP or sponsor prizes.
 
 ## 4. Six test builds, not guaranteed recipes
 

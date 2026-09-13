@@ -13,7 +13,7 @@ Start development with the [Cursor handoff](Rogue_Pirates_Cursor_Implementation.
 - [ ] Establish pure-C# simulation boundaries; prove deterministic movement/hit/RNG/event parity in Unity native, WebAssembly and server replay.
 - [ ] Record numeric precision/rounding/RNG contract and refine the existing top-down camera/40-by-30-meter baseline for orientation, aspect ratios and touch controls.
 - [ ] Benchmark verification CPU, peak memory and initial downloads; replace assumed infrastructure figures with measurements.
-- [ ] Resolve Steam blockchain/ads compatibility direction and portal account/monetization requirements before claiming channel parity.
+- [ ] Enforce no ads on Steam; resolve paid-cosmetic integration and portal account/ad lifecycle requirements before claiming channel parity.
 - [ ] Confirm desktop OS scope, minimum reference devices, target frame rate and build-signing resources.
 
 Exit: test builds run on all target classes; a replay fixture matches exactly; identified channel conflicts have an explicit decision or remain clearly gated. No live economy required.
@@ -75,8 +75,8 @@ Exit: run a complete simulated daily and weekly partner event; changing rosters 
 ## M6 — Channel integration and commerce gates
 
 - [ ] Complete Steam/mobile/portal adapter testing, lifecycle callbacks, signing and SDK review.
-- [ ] Approved cosmetic catalogue, purchase receipts/restoration, refunds and optional marketplace sandbox.
-- [ ] Resolve tradeable entitlement behavior per approved channel; preserve explicit product decisions rather than hidden workarounds.
+- [ ] Implement the approved account-bound cosmetic catalogue, purchase receipts/restoration/refunds, Captain's Chronicle and Gilding sandbox.
+- [ ] Implement channel ad capabilities, Sponsored Cache receipts/daily caps, portal interstitial limits, consent and age treatment.
 - [ ] Ads only where supported with approved rewards/placement; no assumption that Steam accepts an ad model.
 - [ ] Confirm audience, ratings, consent, licensing, support and manual prize operations for actual launch markets.
 
@@ -94,7 +94,7 @@ Exit: measurable performance/reliability criteria met, outstanding risks assigne
 
 ## Still requires an owner or technical decision
 
-- Owner-selected non-blockchain builds and optional permitted trading links: confirm acceptance and exact cross-channel entitlement behavior before promising parity.
+- All builds omit blockchain, wallets and trading links; confirm exact cross-channel paid-entitlement and ad behavior before promising parity.
 - Hosting/database recommendation approval before deployment; no need to purchase during planning.
 - Minimum devices and partner Crew sizes informed by M0 tests and partner needs.
 - Narrative proposal, launch cosmetic catalogue and audience age range.

@@ -167,13 +167,13 @@ All eight are eligible from the first-conquest pool; the initial equipped capaci
 
 Run Item chest rarity base weights: Common 65, Uncommon 25, Rare 8, Epic 1.8, Legendary 0.2. At stage depth `s` (1–3), multiply Rare/Epic/Legendary weights by `1 + 0.15(s-1)`. Multiply each non-Common weight further by `1 + Luck/100`; normalize the complete set to 100%.
 
-Luck never affects permanent reward chests, contracts, theft, or marketplace rewards. It affects level-up upgrade quality using the same non-Common weighting rule without the stage multiplier. Effects tagged “better chest rarity” modify weights, not guaranteed tier outcomes.
+Luck never affects permanent reward chests, contracts, theft, ads, IAP, or live-event rewards. It affects level-up upgrade quality using the same non-Common weighting rule without the stage multiplier. Effects tagged “better chest rarity” modify weights, not guaranteed tier outcomes.
 
 If a rolled rarity has no eligible owned content, downgrade to the nearest lower rarity with an eligible Item. Pick uniformly within it. Ownership rank and held progress do not affect selection probability. Current run stacks do not remove an Item from the pool unless its definition specifies a one-copy cap.
 
 ## 7. Item stacking and permanent ranks
 
-Each content type has a temporary run stack count `n`. Persistent rank `r` is 0–10 for tradeable holdings, with multiplier `q = 1 + 0.005r`; the maximum improvement is +5% to the named primary magnitude. Baseline nontradeable Items use q=1. Multiply only effects explicitly named “rank magnitude.” Do not improve multiple axes, discrete extra jumps, proc counts, or trigger frequency through permanent rank.
+Each content type has a temporary run stack count `n`. Persistent rank `r` is 0–10 for account-bound specialized holdings, with multiplier `q = 1 + 0.005r`; the maximum improvement is +5% to the named primary magnitude. Baseline Items use q=1. Multiply only effects explicitly named “rank magnitude.” Do not improve multiple axes, discrete extra jumps, proc counts, or trigger frequency through permanent rank.
 
 For chance Items, stack chance is `1 - (1-p)^n`, with p from the definition, then apply q and the stated cap. For linear scalar Items use `base × n × q`. Copies beyond a stated effect cap remain owned during the run but add no power; the UI says the effect is capped. Caps apply after all relevant modifications.
 
@@ -181,7 +181,7 @@ No run Item stack persists into a later run. Permanent holdings are rewarded thr
 
 ### 7.1 Common Items and baseline pool
 
-The eight Common Items below are the protected starter pool. They cannot be sold, permanently ranked, or banished from ownership. Their temporary copies still stack in runs.
+The eight Common Items below are the protected starter pool. They cannot be reforged away, permanently ranked, or banished from ownership. Their temporary copies still stack in runs.
 
 - **Lucky Doubloon:** +5 Luck per copy, global Luck cap 100. No extra effect. Test exact normalized rarity probabilities at 0/50/100 Luck.
 - **Spare Planks:** +8 base Hull per copy; heal by eight on pickup. Test removal/clamp on snapshot restoration and no repeated pickup receipt.
@@ -393,10 +393,10 @@ The owner requested Megabonk-style interactions with pirate presentation. Charge
 - **Smuggler's Oath (greed shrine):** one activation grants `60 * biome * depth` run Gold. In exchange add +10% enemy Hull for subsequently spawned enemies and +10% outgoing enemy damage for the rest of this stage, summed per named Oath bucket. Existing enemies' current/maximum Hull do not increase. Show both outcomes before commitment. Cannot convert treasury Gold or create permanent progress directly; remaining run Gold follows normal death banking.
 - **Davy Jones' Contract (boss-risk shrine):** before boss activation, one interaction adds +35% objective boss Hull and +15% boss damage for this stage. In exchange that boss yields one extra run Item chest using the existing boss chest rarity table if killed. One use, no boss clone, no extra account boss reward, theft or contract-clear credit. This deliberate adaptation preserves the one-boss performance/raid settlement framework. After activation/defeat, the POI is visibly unavailable rather than spawning a replacement.
 - **Salvage Bell (XP collection):** one use pulls existing uncollected XP toward the ship at normal pickup-travel speed. It creates no XP and does not credit pickups before arrival. Works only in the current stage; if no XP exists show that and do not consume it. Normal combat continues.
-- **Castaway Idol (random blessing):** one use grants one uniformly selected result: heal 25% max Hull; +20 Luck for 60 active seconds; +15% additive damage for 60 active seconds; or +15% move speed for 60 active seconds. Preview the possible effects, not the hidden result. Stage-start payload is saved; reconnect cannot reroll. No guaranteed Item/build repair or tradeable prize.
+- **Castaway Idol (random blessing):** one use grants one uniformly selected result: heal 25% max Hull; +20 Luck for 60 active seconds; +15% additive damage for 60 active seconds; or +15% move speed for 60 active seconds. Preview the possible effects, not the hidden result. Stage-start payload is saved; reconnect cannot reroll. No guaranteed Item/build repair or permanent prize.
 - **Treasure Chart:** reveals the nearest three unopened stage chests. If fewer exist, reveal the remainder. One use.
 
-No merchant/exchange guarantees a missing Item. Opening a chest costs `ceil(20 × 1.12^k)` run Gold, where k is paid chest openings in the entire run. Price hard cap 1,000 run Gold per chest; this is an economic bound, not a global currency cap. Smuggler's Ledger applies its +20% after this base cap. Interaction duration 0.4 seconds within two meters; pickups and combat continue afterward. Items drop physically but expire only on stage exit/death, not an arbitrary short timer.
+No merchant/exchange guarantees a missing Item. Opening a chest costs `ceil(min(1,200, 25 × 1.16^k))` run Gold, where k is paid chest openings in the entire run. Smuggler's Ledger applies its +20% after this base cap. Interaction duration 0.4 seconds within two meters; pickups and combat continue afterward. Items drop physically but expire only on stage exit/death, not an arbitrary short timer.
 
 Each boss grants one guaranteed run Item chest with Rare/Epic/Legendary weights 85/14/1 and normal owned-pool fallback, plus generated account rewards in the systems document. It is a one-time boss reward, not a replenishing exploration chest.
 
@@ -404,7 +404,7 @@ Unless a record overrides it, POI activation uses two-meter range and a 0.75-sec
 
 ### 11.1 Temporary floor powerups
 
-Powerups are distinct from run Items, permanent holdings, POIs and level-up choices. They occupy no inventory slot and cannot be traded or carried into another run. Proposed drop rule: each rewardable non-boss enemy killed by the player rolls a fixed 1% chance from a dedicated saved powerup stream; at most six powerups spawn per stage. Roll only after legitimate kill credit, never on retirement/zero-credit summons. Ordinary and overtime director enemies are eligible. Luck, Item ranks and permanent reward-chest modifiers do not alter this chance.
+Powerups are distinct from run Items, permanent holdings, POIs and level-up choices. They occupy no inventory slot and cannot be carried into another run. Proposed drop rule: each rewardable non-boss enemy killed by the player rolls a fixed 1% chance from a dedicated saved powerup stream; at most six powerups spawn per stage. Roll only after legitimate kill credit, never on retirement/zero-credit summons. Ordinary and overtime director enemies are eligible. Luck, Item ranks and permanent reward-chest modifiers do not alter this chance.
 
 On success, select one result by weights: Repair Supplies 35, Battle Signal 35, Tailwind 20, Salvage Chime 10. Spawn at a reachable point nearest the defeated enemy, validated against water/terrain; failed placement records no grant and does not reroll the effect. Six-spawn budget counts successful placement. Visible drops expire after 30 active seconds or stage exit/death; there is no respawn.
 

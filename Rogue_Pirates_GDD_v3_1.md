@@ -11,11 +11,13 @@ Rogue Pirates is a 3D ship-based bullet-heaven roguelite. Players conquer a perm
 
 ## How to use this specification
 
+Latest business analysis: [14 September economy, revenue and cost review](Rogue_Pirates_Economy_and_Revenue_Review.md) and [adjustable financial model](Rogue_Pirates_Financial_Model.html). These are discussion proposals and hypothetical scenarios, not approved balance changes or revenue forecasts.
+
 This edition replaces v3.0 as the current design. The unchanged v3.0 file remains a historical record. The following Markdown documents form the current specification and its explicitly marked proposals:
 
 - **This document:** product rules, world structure, activities, scope, interfaces, delivery order, and acceptance criteria.
 - [Combat and content specification](Rogue_Pirates_Combat_Content_v3_1.md): common combat math, all launch Weapons, Logbooks, Items, enemies, bosses, spawning, and progression curves; expansion Weapon definitions are included separately from launch scope.
-- [Economy and systems specification](Rogue_Pirates_Economy_Systems_v3_1.md): resources, Ledger upgrades, ownership/merging, contracts, raids, protection, trading, rewards, consumables, events, and persistent state.
+- [Economy, ads, IAP and LiveOps v3.2](Rogue_Pirates_Economy_LiveOps_v3_2.md): current authority for currency balance, 100% run-Gold banking, account-bound ownership, ads, paid products and live events. The older systems specification remains authoritative only where it does not conflict.
 - [Crews, events and ship skins](Rogue_Pirates_Crews_Events_Skins.md): newer owner-approved social/event requirements, event-duration membership locks, manual rewards and cosmetic inventory; detailed defaults remain labeled proposals.
 - [Narrative, retention and production proposal](Rogue_Pirates_Narrative_Retention_Production_Proposal.md): narrative/revenue recommendations, asset checklist and implementation-readiness review. Unapproved recommendations do not override settled mechanics.
 - [Unity technical design](Rogue_Pirates_Technical_Design.md): runtime, proposed backend/database/hosting, account saves, verified simulation, structured content and channel-specific integration.
@@ -41,11 +43,12 @@ If descriptions appear to overlap, this document controls product commitments, t
 8. The home Territory has a persistent concentric-square layout. Saltwind is central; Gravewater and Devil's Maw surround it.
 9. Raids rearrange that Territory's recognizable terrain sections with their attached decorations and authored encounters. Each attempt remains fixed after generation.
 10. Economic progression lives in the Captain's Ledger. There is no mandatory building placement system. One Treasury Beacon represents the raid treasury and summons the boss.
-11. Gold and Rum remain the only gameplay currencies. Fiat and SOL are payment rails; trading is optional, with no guaranteed resale price, buyback, or fixed Gold-to-SOL redemption.
-12. A persistent Item type has one combined holding. Its earned upgrade progress transfers with a whole-holding sale and adds to a buyer's existing progress. Ownership enables future random drops; it does not grant an equipped starting Item.
+11. Gold and Rum remain the only gameplay currencies. Player-to-player trading, marketplace settlement, wallet requirements and onchain inventory are removed.
+12. A persistent Item type has one account-bound combined holding. Earned duplicate progress adds to it. Ownership enables future random drops; it does not grant an equipped starting Item.
 13. Permanent Item upgrades provide a small total improvement. Run combinations create the dramatic power spikes.
-14. Baseline Items maintain playability. Random rewards and repeatable targeted contracts allow reacquisition without a marketplace purchase.
-15. Gold/Rum cosmetics can be displayed and traded for SOL. They do not affect combat or navigation.
+14. Baseline Items maintain playability. Random rewards and repeatable targeted contracts provide acquisition and specialization without trading.
+15. Gold/Rum, paid, earned and collaboration cosmetics are account-bound. They can be displayed but never affect combat or navigation.
+16. At valid run death, 100% of unspent run Gold becomes treasury Gold after chest spending. Ads and IAP follow the v3.2 economy specification.
 16. There is one weekly best-single-run Voyage kill leaderboard across all biomes, tiers, and account progression. Biome and depth advantages are accepted. Raids and home challenges are excluded.
 17. Raid theft settles once at boss defeat, followed immediately by applicable defender protection. The attacker can farm generated rewards afterward until death.
 
@@ -161,7 +164,7 @@ Application close is not a voluntary extraction. Resume policy and expiry settle
 
 ## 6. Captain's Ledger
 
-The home has five functional pages: Treasury, Trade Routes, Rum Supply, Defense Director, and Collection. Cosmetics and Marketplace are additional accessible pages. The former Shipyard/Armory/Archive/War Room names can appear as tab flavor, but do not require placed buildings.
+The home has five functional pages: Treasury, Trade Routes, Rum Supply, Defense Director, and Collection. Ship & Cosmetics and the Store are additional accessible pages. The former Shipyard/Armory/Archive/War Room names can appear as tab flavor, but do not require placed buildings.
 
 - Treasury: balances, capacities, exposed loot, protection, and capacity upgrades.
 - Trade Routes: Gold production, collection, and its upgrades.
@@ -193,7 +196,7 @@ Saltwind, one-stage runs, initial conquest, Deck Cannon/Broadside/Powder Kegs/Fl
 
 Six original Weapons, fourteen Logbooks, twenty-eight defined Items, seven enemy families with Gravewater/Devil's Maw variants, Siren and Fire Eel, two Drowned Pursuit overtime archetypes, eight pirate POI types, three boss families, all three Territory Zones, one-to-three-stage Voyages, three initial one-stage home mastery presets, Ledger, Defense Director, raids, one weekly Voyage board, holding progression and reacquisition, cosmetics, Crews/community events and ship inventory.
 
-First-party payment and public marketplace launch requires transaction and platform validation, but their ownership rules are part of this specification. Implement local/sandbox versions before live settlement. Six expansion Weapons are fully defined for future use; they are not required to prove the core loop.
+First-party paid cosmetics and the Captain's Chronicle require receipt, refund, restoration, catalogue and platform validation. Implement sandbox purchases before live checkout. Six expansion Weapons are fully defined for future use; they are not required to prove the core loop.
 
 ### 8.3 Optional later features
 
@@ -215,7 +218,7 @@ Baseline consumables in the systems specification are allowed only in unranked h
 
 ## 10. Presentation and accessibility
 
-Add Crew/event interfaces and a Ship & Cosmetics inventory with collaboration variants, loadout preview, discrete cosmetic copies and ownership/trading states. Cosmetics remain stat-free. Production assets, visibility constraints and lifecycle rules are defined in the [skin inventory extension](Rogue_Pirates_Crews_Events_Skins.md).
+Add Crew/event interfaces and a Ship & Cosmetics inventory with collaboration variants, loadout preview, account-bound ownership and source history. Cosmetics remain stat-free. Production assets, visibility constraints and lifecycle rules are defined in the [skin inventory extension](Rogue_Pirates_Crews_Events_Skins.md), as superseded by v3.2.
 
 Top-down perspective with a follow camera. Prototype visible gameplay footprint is approximately 40 by 30 meters at the default aspect ratio; other aspect ratios preserve equivalent visibility without changing simulation rules. WASD/arrows on desktop and a virtual joystick on Android control movement; auto-attacks operate continuously. Touch and keyboard have equivalent interact/upgrade functions. No manual aim is required. Menus must expose textual effect descriptions and next-upgrade changes.
 
@@ -227,7 +230,7 @@ The home overview is stable. Cosmetics attach to section sockets and follow thos
 
 ## 11. Logical data and interfaces
 
-These are engine-neutral contracts, not a prescribed framework or wire protocol. Use stable IDs and versioned data. Resolve authoritative state before awarding resources or marketplace assets.
+These are engine-neutral contracts, not a prescribed framework or wire protocol. Use stable IDs and versioned data. Resolve authoritative state before awarding resources, event progress, ad rewards or paid entitlements.
 
 - `ContentDefinition`: content ID, version, unlock rule, behavior ID, base values, level/rank curve, tags, compatible effects, and visual/audio references.
 - `Territory`: owner ID, canonical seed, owned Zone count, section instances, canonical transforms, decoration attachments, progression levels, and published defense version.
@@ -237,7 +240,9 @@ These are engine-neutral contracts, not a prescribed framework or wire protocol.
 - `CaptainDefinition` and `MasteryDefinition`: signature Weapon, base overrides, passive triggers/scaling/caps, unlock predicates, mode constraints and one-time rewards. RunSnapshot includes Captain/version, passive counters, mastery status, pressure-beat state and temporary powerup budget/RNG.
 - `RaidEntitlement`: defender/attacker, captured exposed-amount ceilings, fee split, quote timestamp, and settlement state. Prototype exploration does not reserve defender balances; the systems document defines live settlement.
 - `RewardReceipt`: unique source event, account, Gold/Rum amounts, permanent grants, overflow, and applied status.
-- `Trade`: listing/holding reservation, buyer/seller, quoted asset/progress, quote version, payment reference, settlement state, and applied receipt.
+- `PurchaseReceipt`: account, channel, product, displayed price/currency, provider transaction, validation/refund/restoration state, granted account-bound entitlements, and applied receipt.
+- `AdRewardReceipt`: account, UTC-day claim index, placement/provider confirmation, selected reward, capacity outcome, and applied receipt.
+- `LiveOpsProgress`: season/event/ruleset, account/Crew snapshot, qualifying run facts, milestone claims, pass ownership, and provisional/final status.
 
 Required logical commands: start/resume run; choose upgrade; activate Beacon; enter portal; settle death; claim passive income; start/finish Ledger upgrade; publish defense; start/settle raid; accept/claim contract; merge holding progress; list/cancel/buy holding; buy/equip/list cosmetic; submit verified score.
 
@@ -245,7 +250,7 @@ Mutations use idempotent command/event IDs. Repeated network delivery must not d
 
 ## 12. Technical boundaries
 
-Use server-authoritative reward and ownership validation. Gold/Rum, XP, RNG, enemy state, defense configurations, upgrades, and raid outcomes are ordinary game state. Optional onchain ownership/settlement can represent tradeable assets; no proprietary currency or routine SOL emissions are introduced.
+Use server-authoritative reward and ownership validation. Gold/Rum, XP, RNG, enemy state, defense configurations, upgrades, raid outcomes, account-bound cosmetics, ads and event progress are ordinary game state. No proprietary token, routine SOL emission or player marketplace is included.
 
 The first combat prototype may run locally for feel testing, but its results are not accepted into a public economy or leaderboard. Public raid scoring needs authoritative simulation or sufficiently complete verified replay; client-declared kills alone are insufficient.
 
@@ -253,7 +258,7 @@ Simulation timestep target is 30 Hz with rendering interpolated separately. Game
 
 Unity with 3D assets is owner-selected. The [technical design](Rogue_Pirates_Technical_Design.md) proposes a shared C# simulation, containerized C# backend/verifier, PostgreSQL, Railway compute and Cloudflare assets, pending prototype benchmarks and hosting selection. Save state is account-based in the server database. No source code or existing implementation constraints were inspected.
 
-On channels prohibiting blockchain, the owner selected a build without that functionality, with a trading-hub link only where permitted and no link otherwise. Platform acceptance and treatment of external trading-derived gameplay entitlements remain separate checks; see the technical design. Do not silently remove ownership or promise all-channel transaction parity.
+All launch builds omit blockchain, wallet and trading-hub functionality. Channel profiles still control advertising and store providers: Steam has no ads; portals use their approved lifecycle; native/direct builds use optional rewarded placements. See the technical design and v3.2 economy specification.
 
 ## 13. Acceptance criteria
 
@@ -280,10 +285,13 @@ The latest polish pass also requires tests for Captain/skin independence, minute
 
 - Each boss theft occurs once, and post-boss farming never deducts further defender resources.
 - Protected and reserved resources cannot be spent or stolen twice.
-- Whole-holding sale transfers conserved progress and removes seller eligibility for future runs.
-- Both random and targeted gameplay reacquisition work after a sale.
-- Max-rank progress never silently vanishes on a purchase.
+- Account-bound duplicate progress merges once and never duplicates through retry, restore, reconnect or cross-device sync.
+- Random and targeted gameplay acquisition work without a player marketplace.
+- Max-rank progress never silently vanishes on a duplicate grant or reforge.
 - Ledger upgrades work without placing any functional building.
+- Valid death banks all unspent run Gold exactly once.
+- Sponsored Cache claims respect the cross-device daily cap and never affect the completed run or score.
+- Paid products grant only the displayed account-bound cosmetic/pass entitlements; refund and restoration are idempotent.
 
 ### 13.4 Content and competition
 
@@ -291,6 +299,7 @@ The latest polish pass also requires tests for Captain/skin independence, minute
 - Proc chains terminate, damage can be attributed, and boss resistance rules are consistent.
 - One weekly Voyage board includes every supported biome/tier and rejects non-Voyage runs.
 - Poor builds can fail and extraordinary builds can survive longer without exceeding performance budgets.
+- Daily, weekly, Crew and Chronicle progress consume the same verified run facts without duplicating currency receipts.
 
 ## 14. Delivery sequence
 
@@ -311,7 +320,7 @@ Tune systems through playtests rather than treating the initial values as proven
 
 See the [narrative, retention, revenue and production proposal](Rogue_Pirates_Narrative_Retention_Production_Proposal.md) for the 13 September discussion addendum, non-code asset checklist and staged readiness review. Its new recommendations remain pending owner review and do not supersede accepted rules in this GDD.
 
-The companion specifications resolve prototype behavior for former open questions. Unity and platform targets are selected; the technical design proposes networking, account saves and hosting. Remaining production decisions include measured device floor and replay feasibility, vendor/plan selection before deployment, channel eligibility and entitlement behavior, wallet custody model, live fee pricing, naming moderation, support/recovery targets, and event-specific funding/delivery operations. Event rewards are owner-selected as flexible and manually/externally fulfilled.
+The companion specifications resolve prototype behavior for former open questions. Unity and platform targets are selected; the technical design proposes networking, account saves and hosting. Remaining production decisions include measured device floor and replay feasibility, vendor/plan selection, ad consent/age treatment, channel ad/IAP eligibility, receipt/refund support, catalogue production cadence, naming moderation, support/recovery targets, and event-specific funding/delivery operations. Event rewards are owner-selected as flexible and manually/externally fulfilled.
 
 Owner review is still needed for newly proposed defaults, especially consumable restrictions, retention percentages, raid fees/protection, account progression rates, and overtime reach. Implementation can prototype these values; a public launch should not imply they were individually agreed in conversation.
 

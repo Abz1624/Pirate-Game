@@ -113,23 +113,23 @@ Recommended first art system:
 - Preview rotation, thumbnails, in-run scale check and mobile/browser quality versions.
 - Name and partner attribution, source campaign, visual rarity/edition and acquisition history. Visual rarity never changes combat power.
 
-Per initial collaboration, budget one approved emblem, one standard palette, one winner palette, one sail/flag set, inventory/shop thumbnails and event banner. Reuse the base ship and animations. All names and logos need usage permission, including rules for continued display and trading after the collaboration ends.
+Per initial collaboration, budget one approved emblem, one standard palette, one winner palette, one sail/flag set, inventory/shop thumbnails and event banner. Reuse the base ship and animations. All names and logos need usage permission, including rules for continued account-bound display after the collaboration ends.
 
 ## 7. Cosmetic inventory
 
-Provide a dedicated **Ship & Cosmetics** view with owned/all filters, partner collection, slot, source, equipped state and trading status. Include preview, equip, unequip, favorite, compatible-slot indication and a transaction/acquisition history.
+Provide a dedicated **Ship & Cosmetics** view with owned/all filters, partner collection, slot, source and equipped state. Include preview, equip, unequip, favorite, compatible-slot indication and acquisition history.
 
 Unlike aggregated Item upgrade holdings, cosmetic copies are discrete instances. Two copies can be grouped visually in the inventory, but each has a unique asset ID. They do not merge into cosmetic levels. An account can equip one copy and list a spare.
 
-Keep the owner's tradeable-cosmetic objective: awarded or purchased ship cosmetics are intended to be transferable under the supported marketplace model. Trading availability still depends on the distribution/payment decisions; do not silently replace them with account-bound items. Crew/event affiliation and a profile achievement are records, not transferable membership rights.
+Owner decision on 14 September 2026: all awarded, earned and purchased ship cosmetics are account-bound. They cannot be listed, transferred or resold. Crew/event affiliation and profile achievements remain separate account records.
 
-Changing or leaving a Crew does not remove an owned collaboration skin. Buying a winner skin does not transfer the original player's achievement badge or claim that the buyer won. Asset provenance can identify its edition without misrepresenting current-owner performance.
+Changing or leaving a Crew does not remove an owned collaboration skin. A winner-only skin remains tied to the verified recipient; a separate supporter edition may be sold directly if the collaboration contract permits it. Asset provenance identifies the edition without misrepresenting performance.
 
-Use a default starter appearance that is always available. Proposed listing rule: listing an equipped cosmetic first unequips it and shows a preview of the fallback; listed instances cannot be equipped. Canceling restores availability, not automatic equipment. A sold instance leaves the seller inventory once settlement succeeds.
+Use a default starter appearance that is always available. Paid receipt refunds/revocations unequip only the affected entitlement and preview the default fallback; unrelated earned and purchased cosmetics remain intact.
 
-Freeze the equipped appearance at run start. For the first version, active-run cosmetic instances cannot be listed/transferred until that run ends or expires; unrelated cosmetics remain tradeable. This prevents one unique instance being used by seller and buyer simultaneously. UI must explain that changing the menu loadout affects the next run.
+Freeze the equipped appearance at run start. UI must explain that changing the menu loadout affects the next run. Cross-device synchronization uses the latest accepted loadout version without changing an active snapshot.
 
-Inventory has no arbitrary purchased slot limit in the initial design; use pagination/filtering rather than deleting rewards when many copies exist. Pending/failed grants, full cosmetic asset catalog loads, incompatible pieces, revoked fraudulent grants and marketplace unavailability need explicit UI states. Asset reversal behavior must follow the eventual published transaction policy.
+Inventory has no arbitrary purchased slot limit in the initial design; use pagination/filtering rather than deleting rewards. Pending/failed grants, unavailable catalogue assets, incompatible pieces, restored receipts and refunded/revoked paid grants need explicit UI states.
 
 ## 8. Data and UI additions
 
@@ -149,6 +149,6 @@ Before launch verify:
 - Best-run replacement, tied cutoffs, late death, pause expiry, empty roster and fewer-than-N contributors produce deterministic standings.
 - Join/leave/kick/name changes cannot steal or duplicate affiliation, scores or rewards. Verify pre-start switching, locking at start, joining mid-event, daily reset without unlock, exact event-end unlock, cancellation, kick/disband bypass prevention and late settlement after joining a new Crew.
 - Duplicate callbacks and payout retries do not duplicate skins or currency; daily and weekly grants remain distinct.
-- A sold skin removes seller access, preserves buyer ownership, and does not transfer a winner achievement.
+- A refunded/revoked paid skin removes only that entitlement and never removes a winner achievement or unrelated earned skin.
 - Skins preserve collision, readable attacks and equivalent performance across supported browser/mobile targets.
 - Event page states exact rewards, funding status where relevant, time zone, deadlines, eligibility and provisional results before a player enrolls.

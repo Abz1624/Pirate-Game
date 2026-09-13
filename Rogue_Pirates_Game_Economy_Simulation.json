@@ -1,0 +1,346 @@
+{
+  "generatedAt": "2026-09-14",
+  "status": "planning assumptions, not telemetry",
+  "balance": {
+    "days": 180,
+    "goldPerKill": 1.65,
+    "chestBase": 25,
+    "chestGrowth": 1.16,
+    "chestCap": 1200,
+    "adGold": 75,
+    "adRum": 5,
+    "adClaimsPerDayCap": 2,
+    "goldProduction": [
+      10,
+      15,
+      22,
+      32,
+      45,
+      60,
+      80,
+      105,
+      135
+    ],
+    "rumProduction": [
+      0.5,
+      0.75,
+      1.1,
+      1.6,
+      2.3,
+      3.2,
+      4.5,
+      6.2,
+      8
+    ],
+    "goldCapacity": [
+      2000,
+      4000,
+      8000,
+      16000,
+      32000,
+      75000,
+      150000,
+      300000,
+      500000
+    ],
+    "rumCapacity": [
+      600,
+      900,
+      1400,
+      2200,
+      3400,
+      5200,
+      8000,
+      12000,
+      18000
+    ],
+    "trackCosts": {
+      "goldProduction": [
+        400,
+        1200,
+        3500,
+        8000,
+        18000,
+        40000,
+        90000,
+        180000
+      ],
+      "rumProduction": [
+        400,
+        1200,
+        3500,
+        8000,
+        18000,
+        40000,
+        90000,
+        180000
+      ],
+      "goldCapacity": [
+        500,
+        1500,
+        4000,
+        9000,
+        20000,
+        45000,
+        100000,
+        200000
+      ],
+      "rumCapacity": [
+        500,
+        1500,
+        4000,
+        9000,
+        20000,
+        45000,
+        100000,
+        200000
+      ],
+      "defense": [
+        600,
+        1800,
+        5000,
+        12000,
+        26000,
+        60000,
+        130000,
+        250000
+      ]
+    },
+    "trackHours": [
+      0.08333333333333333,
+      0.5,
+      2,
+      6,
+      18,
+      48,
+      96,
+      168
+    ],
+    "liveOpsPer30": {
+      "gold": 4800,
+      "rum": 224
+    },
+    "finiteRumSinks": 11080,
+    "reforgeRum": 20
+  },
+  "cohorts": {
+    "Casual": {
+      "runsPerDay": 2,
+      "kills": 500,
+      "pickup": 0.82,
+      "goldBonus": 0.05,
+      "bossWin": 0.35,
+      "objectiveFactor": 1,
+      "chests": 6,
+      "claims": 1,
+      "adClaims": 0.35,
+      "adRumShare": 0.35,
+      "raidLoss": 0.003,
+      "goldCosmeticsPer30": 1000,
+      "prestigeGoldPer30": 0,
+      "rumCosmeticsPer30": 120,
+      "reforgesPerRun": 0.015,
+      "contractRumPerRun": 8
+    },
+    "Active": {
+      "runsPerDay": 6,
+      "kills": 1000,
+      "pickup": 0.9,
+      "goldBonus": 0.15,
+      "bossWin": 0.6,
+      "objectiveFactor": 1.6,
+      "chests": 9,
+      "claims": 2,
+      "adClaims": 0.8,
+      "adRumShare": 0.35,
+      "raidLoss": 0.008,
+      "goldCosmeticsPer30": 5000,
+      "prestigeGoldPer30": 120000,
+      "rumCosmeticsPer30": 400,
+      "reforgesPerRun": 0.03,
+      "contractRumPerRun": 30
+    },
+    "HighlyEngaged": {
+      "runsPerDay": 15,
+      "kills": 1600,
+      "pickup": 0.95,
+      "goldBonus": 0.25,
+      "bossWin": 0.78,
+      "objectiveFactor": 2.2,
+      "chests": 12,
+      "claims": 3,
+      "adClaims": 1.2,
+      "adRumShare": 0.3,
+      "raidLoss": 0.012,
+      "goldCosmeticsPer30": 15000,
+      "prestigeGoldPer30": 900000,
+      "rumCosmeticsPer30": 1000,
+      "reforgesPerRun": 0.05,
+      "contractRumPerRun": 60
+    }
+  },
+  "results": [
+    {
+      "profile": "Casual",
+      "days": 180,
+      "ranks": {
+        "goldProduction": 7,
+        "rumProduction": 7,
+        "goldCapacity": 6,
+        "rumCapacity": 6,
+        "defense": 6
+      },
+      "completedUpgrades": 27,
+      "ending": {
+        "gold": 24124.10204148781,
+        "rum": 0,
+        "finiteRumRemaining": 3319.7499999999786
+      },
+      "total": {
+        "runGoldGross": 255716.99999999927,
+        "chestGold": 81720,
+        "bossGold": 15120,
+        "passiveGold": 73792,
+        "liveOpsGold": 28800,
+        "adGold": 3071.25,
+        "upgradeGold": 257600,
+        "cosmeticGold": 5999.99999999999,
+        "prestigeGold": 0,
+        "raidGold": 6123.0676913488505,
+        "overflowGold": 1433.0802671633883,
+        "runRum": 5580,
+        "passiveRum": 4253.999999999993,
+        "liveOpsRum": 1344.0000000000025,
+        "adRum": 110.24999999999967,
+        "finiteRum": 7760.250000000009,
+        "reforgeRum": 107.99999999999969,
+        "contractRum": 2880,
+        "cosmeticRum": 720,
+        "overflowRum": 0
+      },
+      "goldSources": 294780.2499999993,
+      "rumSources": 11288.249999999995,
+      "adShareGold": 0.010418778055856887,
+      "adShareRum": 0.009766792904125948,
+      "overflowShareGold": 0.0048615206316006306,
+      "overflowShareRum": 0,
+      "per30": {
+        "goldSources": 49130.041666666555,
+        "rumSources": 1881.374999999999,
+        "bankedRunGold": 31519.49999999988,
+        "adGold": 511.875,
+        "adRum": 18.374999999999943,
+        "overflowGold": 238.84671119389805,
+        "overflowRum": 0
+      }
+    },
+    {
+      "profile": "Active",
+      "days": 180,
+      "ranks": {
+        "goldProduction": 8,
+        "rumProduction": 8,
+        "goldCapacity": 8,
+        "rumCapacity": 8,
+        "defense": 7
+      },
+      "completedUpgrades": 34,
+      "ending": {
+        "gold": 109341.09806557924,
+        "rum": 9944.79999999999,
+        "finiteRumRemaining": 0
+      },
+      "total": {
+        "runGoldGross": 1844369.9999999998,
+        "chestGold": 476280,
+        "bossGold": 124415.99999999964,
+        "passiveGold": 214048,
+        "liveOpsGold": 28800,
+        "adGold": 7020,
+        "upgradeGold": 787600,
+        "cosmeticGold": 30000.000000000076,
+        "prestigeGold": 720000,
+        "raidGold": 48967.614902953705,
+        "overflowGold": 46965.28703146662,
+        "runRum": 41904.000000000044,
+        "passiveRum": 12792.80000000003,
+        "liveOpsRum": 1344.0000000000025,
+        "adRum": 252.0000000000007,
+        "finiteRum": 11080.000000000015,
+        "reforgeRum": 648.0000000000022,
+        "contractRum": 32400,
+        "cosmeticRum": 2399.9999999999995,
+        "overflowRum": 0
+      },
+      "goldSources": 1742373.9999999993,
+      "rumSources": 56292.800000000076,
+      "adShareGold": 0.004028985740145343,
+      "adShareRum": 0.004476593809510282,
+      "overflowShareGold": 0.02695476805293619,
+      "overflowShareRum": 0,
+      "per30": {
+        "goldSources": 290395.66666666657,
+        "rumSources": 9382.133333333346,
+        "bankedRunGold": 248750.99999999985,
+        "adGold": 1170,
+        "adRum": 42.000000000000114,
+        "overflowGold": 7827.54783857777,
+        "overflowRum": 0
+      }
+    },
+    {
+      "profile": "HighlyEngaged",
+      "days": 180,
+      "ranks": {
+        "goldProduction": 9,
+        "rumProduction": 9,
+        "goldCapacity": 8,
+        "rumCapacity": 9,
+        "defense": 8
+      },
+      "completedUpgrades": 38,
+      "ending": {
+        "gold": 98290.26298679227,
+        "rum": 12795.4,
+        "finiteRumRemaining": 0
+      },
+      "total": {
+        "runGoldGross": 8464500,
+        "chestGold": 2095200,
+        "bossGold": 555983.9999999991,
+        "passiveGold": 370872,
+        "liveOpsGold": 28800,
+        "adGold": 11340,
+        "upgradeGold": 1477600,
+        "cosmeticGold": 90000,
+        "prestigeGold": 5400000,
+        "raidGold": 124041.47962561529,
+        "overflowGold": 146864.25738759286,
+        "runRum": 182196.00000000032,
+        "passiveRum": 22592.399999999972,
+        "liveOpsRum": 1344.0000000000025,
+        "adRum": 324.0000000000011,
+        "finiteRum": 11080.000000000013,
+        "reforgeRum": 2700,
+        "contractRum": 162000,
+        "cosmeticRum": 5999.99999999999,
+        "overflowRum": 12060.999999999998
+      },
+      "goldSources": 7336295.999999999,
+      "rumSources": 206456.40000000029,
+      "adShareGold": 0.001545739157743908,
+      "adShareRum": 0.0015693386109609615,
+      "overflowShareGold": 0.020018856571162463,
+      "overflowShareRum": 0.0584191141567904,
+      "per30": {
+        "goldSources": 1222716,
+        "rumSources": 34409.400000000045,
+        "bankedRunGold": 1154213.9999999998,
+        "adGold": 1890,
+        "adRum": 54.000000000000185,
+        "overflowGold": 24477.37623126548,
+        "overflowRum": 2010.1666666666663
+      }
+    }
+  ]
+}

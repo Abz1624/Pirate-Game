@@ -76,9 +76,9 @@ Recommended tunable prototype: exclude pairs that shared a Crew within the previ
 
 ### A08 — Revenue, entitlement and retention additions are still proposals — M6 gate
 
-Audience age range, launch markets, first paid catalogue, ads, wallet/payment/custody model and cross-channel activation of externally traded holdings remain open in the existing documents. Removing wallet UI does not answer how shared Item ownership affects a restricted build. These are already recorded questions, not newly discovered platform approval.
+Audience age range and launch markets remain open. Economy v3.2 now defines the prototype paid catalogue, ads, account-bound entitlements and removal of wallet/trading systems; real provider contracts, consent/age treatment and regional storefront configuration remain release gates.
 
-Recommended development scope: resource-funded cosmetics and sandbox transactions first; implement channel capability interfaces. Keep live ads, payments and marketplace settlement disabled until the product/provider/channel matrix is approved. Do not silently make the owner's tradeable cosmetics account-bound. Rotating bounties need an approved reward budget and refresh/acceptance rules before entering the live economy; existing quests, contracts and three mastery presets suffice for the first release test.
+Recommended development scope: resource-funded cosmetics and versioned economy simulation first; then sandbox account-bound purchases, Sponsored Cache receipts and live-event configuration. Keep live ads and payments disabled until provider/channel/consent review. Economy v3.2 supplies prototype bounty and pass budgets for closed testing.
 
 Close through concrete catalogue/channel decisions and sandbox recovery/refund tests. Obtain updated official provider guidance when integrating; this audit does not reissue legal or platform conclusions from earlier citations.
 

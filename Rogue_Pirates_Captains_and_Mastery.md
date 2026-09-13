@@ -6,7 +6,7 @@
 
 Select one unlocked Captain before a run. Captain changes are free between runs. Selection freezes in the RunSnapshot and appears in score/run summaries without creating Captain-specific leaderboard brackets. Captains command the existing ship; no on-foot character controller is added.
 
-Every Captain starts at player Level 0. Level-based passives reset with the run; no permanent Captain ranks, duplicate merging, stat purchases or trading are introduced. Ship skins remain cosmetic and work with every Captain sharing the rig/slot compatibility. A named NPC such as Mags can appear in narrative without being an additional playable character.
+Every Captain starts at player Level 0. Level-based passives reset with the run; no permanent Captain ranks, duplicate merging or stat purchases are introduced. Ship skins are account-bound cosmetics and work with every Captain sharing the rig/slot compatibility. A named NPC such as Mags can appear in narrative without being an additional playable character.
 
 Starting Weapon is fixed by Captain, consumes one normal Weapon slot, and starts at run rank 1. Later Weapons and Item drops use normal random pools with no Captain weighting. First conquest always uses Deck Cannon, overriding signature Weapon if necessary. Other Captain unlocks require the signature Weapon already licensed, so selection cannot bypass its purchase/unlock gate. Two starter Captains both use the default Cannon.
 
@@ -24,7 +24,7 @@ Default unlocked; Deck Cannon. Base Hull 110 instead of 100, speed 5.7 instead o
 
 ### Captain Vale — the Smuggler
 
-Unlock after licensing Broadside and opening 40 paid chests cumulatively; automatically grant the Captain license, no second Rum purchase. Broadside starting Weapon. Base Hull 90. **Heavy Pockets:** +0.5% run Gold pickup value per level, maximum +25%; additionally gain `min(0.30, unspent_run_gold / 2000)` additive damage. Thus 200 Gold gives +10% and 600 gives the +30% cap. Recalculate when Gold changes; treasury, passive production, pending raid theft and marketplace value do not count. The Gold bonus is additive with Quartermaster and respects +150% global cap. Portrait: polished buttons and far too many keys.
+Unlock after licensing Broadside and opening 40 paid chests cumulatively; automatically grant the Captain license, no second Rum purchase. Broadside starting Weapon. Base Hull 90. **Heavy Pockets:** +0.5% run Gold pickup value per level, maximum +25%; additionally gain `min(0.30, unspent_run_gold / 2000)` additive damage. Thus 200 Gold gives +10% and 600 gives the +30% cap. Recalculate when Gold changes; treasury, passive production and pending raid theft do not count. The Gold bonus is additive with Quartermaster and respects +150% global cap. Portrait: polished buttons and far too many keys.
 
 ### Captain Flint — the Powderrunner
 
@@ -58,7 +58,7 @@ Tier 1, one-stage objective. Defeat the boss by active stage time 6:00 inclusive
 
 ### Lightly Armed
 
-Tier 1, cap Weapon capacity at one for this run. Logbooks/Items remain normal. Defeat the objective boss. Requires first claim, no specific Captain. First completion: decorative **Single Cannon Pennant** plus 30 Rum. Skin/trophy instances follow ordinary cosmetic ownership rules; the achievement remains with the player if the decoration is sold.
+Tier 1, cap Weapon capacity at one for this run. Logbooks/Items remain normal. Defeat the objective boss. Requires first claim, no specific Captain. First completion: account-bound decorative **Single Cannon Pennant** plus 30 Rum. The achievement and decoration remain with the player.
 
 ### Steady Hands
 

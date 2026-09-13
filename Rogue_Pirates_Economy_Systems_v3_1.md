@@ -5,25 +5,27 @@
 **Combat definitions:** [Combat and content](Rogue_Pirates_Combat_Content_v3_1.md)  
 **Status:** concrete prototype defaults, not production balance or individually approved numerical rules.
 
+**Supersession:** [Economy, Ads, IAP and LiveOps v3.2](Rogue_Pirates_Economy_LiveOps_v3_2.md) is authoritative for player trading removal, account-bound inventory, 100% run-Gold banking, production/capacity/upgrade numbers, ads, IAP and live operations. Conflicting text below is historical and must not be implemented.
+
 ## 1. Resource accounts and invariants
 
 Gold and Rum are the only gameplay currencies. Both are nonnegative whole units. Item progress units and cosmetic assets are inventory entries, not spendable currencies. Run Gold is a separate balance of Gold for the active run, not a third currency.
 
-Account balances distinguish spendable treasury, passive uncollected production, protected Defense Chest receipts, and transaction reservations. The UI shows spendable and pending amounts separately. Never let a displayed spendable amount include a marketplace reservation or unapplied receipt.
+Account balances distinguish spendable treasury, passive uncollected production, protected Defense Chest receipts, and unapplied receipts. The UI shows spendable and pending amounts separately.
 
 No treasury Gold enters a run. Players cannot buy extra stage chests by transferring savings mid-run. Gold picked up in a run funds its chests; remaining Gold contributes to the death payout using the formula below.
 
-No automatic Gold/Rum conversion, no direct SOL redemption, and no guaranteed asset buyback. Player-to-player SOL trades transfer money between players; the studio earns a configured transaction fee, not a token emission.
+No automatic Gold/Rum conversion, direct SOL redemption, player-to-player transfer, or asset buyback. Gold, Rum, Items and cosmetics are account-bound.
 
 ## 2. New account and first-hour defaults
 
-Account creation grants Deck Cannon, the eight foundational Logbooks, the eight Common baseline Items, and two Weapon/two Logbook slots. It grants no initial spendable treasury or production before conquest. Baseline Items are not tradeable; they guarantee continued play and minimum pool breadth.
+Account creation grants Deck Cannon, the eight foundational Logbooks, the eight Common baseline Items, and two Weapon/two Logbook slots. It grants no initial spendable treasury or production before conquest. Baseline Items are permanent account-bound entries that guarantee continued play and minimum pool breadth.
 
 Conquering Saltwind activates Ledger rank 1 for Gold production, Rum production, Gold capacity, Rum capacity, and defense progression at no resource cost. One-time first-claim reward: 500 Gold and 180 Rum. Production starts at the boss event, not the later death screen. A 24-hour beginner shield starts then; no raid target listing before first claim. Outgoing raids are available after one guided defense setup, with Quick Setup sufficient.
 
 First claim also qualifies the third Weapon-slot purchase, priced at 150 Rum. The player can choose that purchase or save toward another unlock. No mandatory purchase blocks ordinary Voyages.
 
-The first results screen teaches Ledger upgrades, collection, and the next Voyage. Avoid opening all trading/social panels at once. Wallet connection is introduced only when a player intentionally uses a payment or trade feature.
+The first results screen teaches Ledger upgrades, collection, and the next Voyage. Store, ads, pass and Crew surfaces remain closed until their contextual unlocks; no wallet connection is used.
 
 ## 3. Captain's Ledger progression
 
@@ -41,29 +43,29 @@ An upgrade cannot be canceled in the prototype. Show cost and duration before co
 
 ### 3.2 Production
 
-Trade Routes Gold/hour by rank 1–9: **40, 60, 90, 140, 210, 310, 450, 650, 900**.
+Trade Routes Gold/hour by rank 1–9: **10, 15, 22, 32, 45, 60, 80, 105, 135**.
 
-Rum Supply Rum/hour by rank 1–9: **8, 12, 18, 28, 42, 62, 90, 130, 180**.
+Rum Supply Rum/hour by rank 1–9: **0.5, 0.75, 1.1, 1.6, 2.3, 3.2, 4.5, 6.2, 8**. Fractional accrual remains authoritative and only whole units transfer on collection.
 
 Each producer has an uncollected buffer equal to eight hours at its active rate, independent of treasury capacity. Fractional accrual is stored precisely; collection transfers whole units and retains the fractional remainder. When the buffer fills, production pauses until space becomes available. No offline catch-up beyond the buffer.
 
-Upgrade Gold costs to ranks 2–9: **150, 300, 700, 1,400, 2,600, 5,000, 8,000, 12,000** per production track. Times: **2, 5, 15, 30, 60, 120, 240, 360 minutes**. Both tracks spend Gold; Rum remains mainly a collection/combat resource.
+Upgrade Gold costs to ranks 2–9: **400, 1,200, 3,500, 8,000, 18,000, 40,000, 90,000, 180,000** per production track. Times: **5, 30, 120, 360, 1,080, 2,880, 5,760, 10,080 minutes**. Both tracks spend Gold; Rum remains mainly a collection/combat resource.
 
 On rank completion, accrue the old rate through completion time, then new rate afterward. The buffer's capacity increases; it is not automatically filled. Manual collection sends only what fits into treasury and leaves the remainder in the producer buffer.
 
 ### 3.3 Capacity
 
-Gold capacity by rank 1–9: **2,000, 3,000, 5,000, 8,000, 12,000, 18,000, 27,000, 40,000, 60,000**.
+Gold capacity by rank 1–9: **2,000, 4,000, 8,000, 16,000, 32,000, 75,000, 150,000, 300,000, 500,000**.
 
 Rum capacity by rank 1–9: **600, 900, 1,400, 2,200, 3,400, 5,200, 8,000, 12,000, 18,000**.
 
-Each capacity track costs Gold to reach ranks 2–9: **200, 400, 800, 1,600, 3,000, 5,000, 8,000, 12,000**. Times: **3, 8, 20, 45, 90, 180, 300, 480 minutes**. Every cost fits within a previous-rank Gold capacity, though a player may need to upgrade Gold capacity before an expensive Rum capacity rank.
+Each capacity track costs Gold to reach ranks 2–9: **500, 1,500, 4,000, 9,000, 20,000, 45,000, 100,000, 200,000**. Times use the common works schedule above. Every cost fits within the previous Gold-capacity rank.
 
 Capacity does not itself increase raid loss. Actual stored resources do. Uncollected production is included in exposed wealth under the raid formula.
 
 ### 3.4 Defense progression
 
-Defense Director rank costs to ranks 2–9: **250, 500, 1,000, 2,000, 3,500, 6,000, 9,000, 14,000 Gold**. Times: **3, 10, 20, 45, 90, 180, 300, 480 minutes**.
+Defense Director rank costs to ranks 2–9: **600, 1,800, 5,000, 12,000, 26,000, 60,000, 130,000, 250,000 Gold**. Times use the common works schedule above.
 
 A rank adds options/budget rather than a hidden universal enemy damage multiplier. Encounter power is calculated through content and explicit threat costs. See section 11 for slots, budgets, and card unlocks.
 
@@ -73,9 +75,11 @@ Slots: third Weapon 150 Rum after Saltwind; fourth Weapon 500 Rum and third Logb
 
 Weapon licenses: Broadside 120 Rum, Kegs 140, Cutlasses 160, Flamethrower 260, Lightning 300, after their combat-document quests. Logbook and initial specialized Item prices are in their content definitions. Completed quests alone do not automatically spend resources.
 
-RNG tools: complete 10 distinct quests to buy Refresh for 100 Rum (two uses/run); 20 to buy Skip for 150 Rum (two uses/run); 30 to buy Banish for 250 Rum (one use/run). Uses reset at new run only, never at stage transition. These are not tradeable and have no paid top-up during runs.
+RNG tools: complete 10 distinct quests to buy Refresh for 100 Rum (two uses/run); 20 to buy Skip for 150 Rum (two uses/run); 30 to buy Banish for 250 Rum (one use/run). Uses reset at new run only, never at stage transition. They are account-bound and have no paid top-up during runs.
 
 ## 4. Run payouts and permanent reward chests
+
+**14 September owner decision:** retain 100% of unspent run Gold at valid death. The v3.2 specification provides the corresponding chest, production, capacity, upgrade and repeatable-sink revisions.
 
 ### 4.1 Separate secured and generated rewards
 
@@ -85,7 +89,7 @@ At run start snapshot the account's Treasury capacity ranks and reward modifiers
 
 ### 4.2 Resource payout
 
-At death, bank **25% of unspent run Gold**, rounded down. The remaining run Gold is consumed by the run and is not permanent wealth. Meaningful failures use the same conversion, preserving the choice between chests and savings without making all earned Gold bankable.
+At death, bank **100% of unspent run Gold**, rounded down. Meaningful failures use the same conversion; chest purchases remain the in-run Gold sink. No additional death haircut applies.
 
 Generated boss rewards: `Gold = 120 × objective_biome × stage_depth`; `Rum = 30 × objective_biome × stage_depth`. Apply Plunderer if equipped at boss death. Grant once per objective boss per run. These are game-generated rewards, distinct from raid theft. Conquest one-time claim rewards are additional.
 
@@ -95,7 +99,7 @@ Home challenge recurring generated Gold/Rum is 50% of these formulas, rounded do
 
 These rates intentionally make active play valuable alongside modest early passive income. They require measured kill rates and session results before live release.
 
-Worked example, before storage clipping and with no reward modifiers: a Saltwind Tier-1 Voyage ends with 1,200 rewardable kills, 500 unspent run Gold, and its boss defeated. The account receives 125 converted Gold plus 120 boss Gold, and 12 kill-based Rum plus 30 boss Rum: 245 Gold and 42 Rum. Its chest grade is Silver if the boss point plus the 300-kill point are earned. Those kills and that balance are sample inputs, not predicted outcomes. A failure with the same kills/balance but no boss yields 125 Gold and 12 Rum, with the eligible chest graded from its actual encounter progress.
+Worked example, before storage clipping and with no reward modifiers: a Saltwind Tier-1 Voyage ends with 1,200 rewardable kills, 500 unspent run Gold, and its boss defeated. The account receives 500 banked Gold plus 120 boss Gold, and 12 kill-based Rum plus 30 boss Rum: 620 Gold and 42 Rum. Its chest grade is Silver if the boss point plus the 300-kill point are earned. A nonboss result with the same kills/balance yields 500 Gold and 12 Rum.
 
 ### 4.3 Reward chest eligibility and grade
 
@@ -105,7 +109,7 @@ Grade score = one point for each stage boss defeated (max three), one for reachi
 
 Every chest grants permanent holding progress from one qualified specialized Item: Bronze 1 unit, Silver 2, Gold 3. Roll Item rarity with Bronze weights Uncommon 80/Rare 18/Epic 1.8/Legendary 0.2; Silver 65/28/6/1; Gold 45/35/17/3. Pick uniformly among quest-qualified Items of the rolled rarity, downgrading to a qualified lower rarity if necessary.
 
-If no specialized Item is quest-qualified, grant 20 Rum instead. This replacement is capped by storage, displayed before collection, and never converted to SOL. The permanent reward stream is independent of currently owned holdings and run Luck; sold Items remain eligible.
+If no specialized Item is quest-qualified, grant 20 Rum instead. This replacement is capped by storage and displayed before collection. The permanent reward stream is independent of currently owned holdings and run Luck.
 
 Each chest additionally rolls one bonus: no extra 90%, random basic cosmetic 7%, home-challenge consumable 3%. The ordinary progress grant always occurs. Rare cosmetic variants can later replace some cosmetic outcomes after demand/content validation; they are not needed for the prototype.
 
@@ -121,13 +125,13 @@ One-time first-claim and expansion rewards may exceed capacity only up to the ac
 
 ## 5. Quests and targeted reacquisition
 
-The [Captain/mastery extension](Rogue_Pirates_Captains_and_Mastery.md) adds account-bound Captain licenses granted after explicit gameplay qualification and one-time home-mastery rewards. These are separate from tradeable Item holdings and cosmetic instances. Captain passive growth resets each run; no new premium currency, permanent Captain rank or repeatable resource multiplier is introduced. Mastery does not replace targeted Item reacquisition.
+The [Captain/mastery extension](Rogue_Pirates_Captains_and_Mastery.md) adds account-bound Captain licenses granted after explicit gameplay qualification and one-time home-mastery rewards. Captain passive growth resets each run; no new premium currency, permanent Captain rank or repeatable resource multiplier is introduced. Mastery does not replace targeted Item reacquisition.
 
-One-time content quests are listed in the combat document. Record progress from verified events; conditions specify cumulative versus single-run. A quest completion is permanent account history, even if an Item is sold.
+One-time content quests are listed in the combat document. Record progress from verified events; conditions specify cumulative versus single-run. A quest completion is permanent account history.
 
-Initial specialized Item purchase is allowed once after qualification and adds one ownership progress unit at rank 0. Subsequent copies come from post-run chests, contracts, or other players; the initial Rum purchase is not an unlimited vending source of tradeable progress.
+Initial specialized Item purchase is allowed once after qualification and adds one ownership progress unit at rank 0. Subsequent progress comes from post-run chests and contracts; the initial Rum purchase remains once per Item/account.
 
-The Contract page offers one chosen active reacquisition contract. Select any qualified specialized Item. Switching forfeits only that contract's unclaimed progress after a clear confirmation; it does not affect ownership. No daily reset or paid refresh is required.
+The Contract page offers one chosen active reacquisition contract. Select any qualified specialized Item. Acceptance costs 40/80/160/240 Rum for Uncommon/Rare/Epic/Legendary. Switching forfeits that contract's unclaimed progress after a clear confirmation; it does not affect ownership or refund its commission. No daily reset or paid refresh is required.
 
 Contract completion requires **two qualifying boss clears plus 300 rewardable kills** while active. At least one clear must be in a biome at or above the Item's access band: Uncommon Saltwind, Rare Gravewater, Epic/Legendary Devil's Maw. An Item qualified earlier remains eligible for random chest rediscovery; targeted high-rarity acquisition is intentionally harder.
 
@@ -145,67 +149,31 @@ Store total progress, never reconstruct it from displayed rank. A P=8 holding an
 
 ### 6.2 Application and costs
 
-Earned chest/contract progress is queued as a grant and immediately joins the same holding without a merge timer or resource fee. Recalculate rank once the grant applies. Whole-holding trades do the same on final settlement. This makes the aggregate model simple and avoids ambiguous partially applied ownership.
+Earned chest/contract progress is queued as a grant and immediately joins the same account-bound holding without a merge timer or resource fee. Recalculate rank once the grant applies.
 
-For an optional explicit **reforge**, consume three progress units from one owned specialized Item to add one unit to another owned or quest-qualified specialized Item of the same rarity, costing 20 Rum. The source can reach zero and lose future eligibility. A locked/listed holding cannot be used. Baseline Items are excluded. Show the exact source loss and destination gain before confirmation.
+For an optional explicit **reforge**, consume three progress units from one owned specialized Item to add one unit to another owned or quest-qualified specialized Item of the same rarity, costing 20 Rum. The source can reach zero and lose future eligibility. A holding frozen in an active-run snapshot cannot be modified until the run ends. Baseline Items are excluded. Show the exact source loss and destination gain before confirmation.
 
 This reforge is a permanent collection operation between runs, not a guaranteed in-run exchange. It destroys two progress units intentionally and does not create an additional material currency. Reforge is a proposed default implementing the discussed higher-quantity use of unwanted Items; ordinary merging/aggregation itself remains lossless.
 
 ### 6.3 Maximum rank and surplus
 
-P may exceed 111; combat rank remains 10. Preserve and display all surplus progress. No hidden overflow deletion. Whole-holding sale transfers every progress unit, including surplus. Reforge can use excess units while retaining the desired rank. A buyer can reject an oversized listing rather than being silently capped.
+P may exceed 111; combat rank remains 10. Preserve and display all surplus progress. No hidden overflow deletion. Reforge can use excess units while retaining the desired rank.
 
 Player-facing display: “Rank 3 / 10”, “14 total progress”, and “7 to next rank” are separate labels. Do not use an unexplained 3/10 counter for several meanings.
 
 ### 6.4 Ownership and run eligibility
 
-Eligible run Items = protected baseline plus all quest-qualified owned specialized holdings, with one entry per Item type. No extra drop weight from progress, price, or rank. No freely toggled permanent Item exclusions ship initially; selling/reforging the holding is how players narrow specialization, while eight baseline Items maintain breadth.
+Eligible run Items = protected baseline plus all quest-qualified owned specialized holdings, with one entry per Item type. No extra drop weight from progress, price, or rank. Reforging unwanted progress creates specialization while eight baseline Items maintain breadth; owned types remain eligible.
 
-At run creation freeze eligibility and rank for the run. For the first prototype, the account cannot list, sell, reforge, or buy Item holdings while a run is active; finishing by death or expiry releases that session restriction. Passive accrual continues. This avoids sharing an upgraded holding across concurrent live runs. It does not stop ordinary ledger reads or cosmetic viewing.
+At run creation freeze eligibility and rank for the run. Reforges and new grants affect the next run snapshot; they never rewrite an active run. Passive accrual and cosmetic viewing continue.
 
-### 6.5 Qualification on purchase
+## 7. Account-bound cosmetic economy
 
-Use Sealed ownership: a buyer may own an Item before its quest qualifies, but it contributes no run eligibility until that quest is complete. Progress and derived rank remain visible. Completing the quest unseals it automatically with no second license fee if a holding is already owned.
+All cosmetics are account-bound. Resource prices and paid product bands are defined in v3.2. Resource purchases are immediate, with no construction timer. Display slots remain two per section plus one main flag socket. One owned cosmetic entitlement may be equipped in every compatible cosmetic socket unless the asset definition forbids it for visual reasons.
 
-An initial ownership purchase after a quest is unavailable if the account already owns that Item, but the once-only entitlement remains until used or explicitly forfeited by first ownership from another route. Prototype rule: any first ownership grant consumes the one-time initial-purchase entitlement, preventing sale/rebuy loopholes.
+Cosmetics have no collision, cover, stealth effect, navigation change, defense effect, or stat bonus. Cosmetic variants share attachment rules. Gilding provides the repeatable Gold sink defined in v3.2 and changes only appearance/prestige display.
 
-## 7. Trading and cosmetic economy
-
-### 7.1 Cosmetic catalog baseline
-
-Launch basic cosmetics should reuse approved art where suitable. All `references/` assets are excluded by owner instruction; local Unity candidates are not automatically approved. See the asset checklist. Proposed catalogue:
-
-- Sail recolor: 300 Gold or 60 Rum.
-- Flag design: 500 Gold or 100 Rum.
-- Decorative wreck dressing: 1,200 Gold or 240 Rum.
-- Dock/reef ornament set: 2,500 Gold or 500 Rum.
-- Trophy pedestal appearance: 5,000 Gold or 1,000 Rum.
-
-Choose one listed resource payment route per purchase; no fractional mix. Every purchase creates one owned tradeable cosmetic instance, immediate with no construction timer. Display slots: two per section, plus one main flag socket. Only one instance occupies a socket; equipping the same instance in several locations is forbidden.
-
-Cosmetics have no collision, cover, stealth effect, or stat bonus. Cosmetic variants are art data sharing the same attachment rules. A cosmetic can be resold after purchase; no guaranteed buyer, floor price, refund-for-Gold scheme, or studio buyback exists.
-
-### 7.2 Whole-holding listings
-
-Listing reserves the entire current holding and its version. Prevent new grants from changing the advertised quantity: progress earned while that holding is listed is kept in pending grant receipts until cancellation or sale completes. There is still only one owned aggregate, not a second active holding.
-
-On listing cancellation, release it and apply pending grants. On sale, transfer the reserved aggregate exactly as quoted; then apply any separately earned pending grants to the seller as newly reacquired ownership. Explain this on the sale receipt. Without pending grants, seller P becomes zero.
-
-Buyer holdings merge through integer progress addition. Sealed status derives from buyer qualification, not the seller's status. Cosmetic listing unequips the instance from home sockets before publication so it cannot be sold and remain displayed as owned.
-
-### 7.3 Transaction flow
-
-Quote listing version and exact asset/progress, obtain payment authorization, reserve buyer/seller state, confirm settlement, then atomically issue transfer receipts and apply the seller payout/fee. Use a durable pending state to reconcile external payment confirmation; never retry a confirmed payment with a new logical transaction ID.
-
-Prototype marketplace fee is 3% of gross SOL proceeds, rounded down to the payment asset's smallest unit; seller receives the rest. No listing fee. Minimum transaction amount must be set with the actual provider before production; do not hardcode an invented network fee.
-
-If payment fails before finality, release reservations and retain the listing. If payment is confirmed but inventory update is delayed, keep settlement pending and reconcile from the same payment reference. Do not both refund and transfer without an explicit corrective transaction.
-
-Gold/Rum assets and SOL balances never share a ledger. Wallet setup happens only when trading or choosing SOL checkout. Payment provider, custody, account recovery, and marketplace infrastructure require separate production decisions.
-
-### 7.4 Supply principles
-
-Earned/purchased cosmetic supply and repeatable Item progress may outgrow demand. Cheap common assets and unsold listings are acceptable. Do not force asset expiry or increase power caps to defend resale prices. Reforging burns some progress, but ordinary accumulation and whole-holding merging conserve it.
+Paid entitlements use idempotent provider receipts, restoration and explicit refund/revocation state. They cannot be converted into Gold/Rum, transferred, resold, or used as Crew membership proof. Earned and collaboration cosmetics record their source for collection history without implying monetary value.
 
 ## 8. Raid quotes and once-only settlement
 
@@ -322,7 +290,7 @@ Include only two earned consumables initially, usable in home challenges and nev
 - **Survey Chart:** before the home run starts, reveal its first stage's fixed POI markers. Does not create POIs or reveal later stages. One use consumed only after successful run creation.
 - **Salvage Voucher:** the first ordinary paid chest in that home run offers two independently rolled eligible Items; choose one. No extra chest or guaranteed rarity. Consumed when the chest resolves, not if the run dies before opening it.
 
-At most one consumable equipped/run, inventory cap ten of each. Overflow chest bonus converts to 20 Rum subject to capacity. Not sold directly or traded in the prototype. These add value to chests without assuming unrestricted stockpiled advantages in competitive modes.
+At most one consumable equipped/run, inventory cap ten of each. Overflow chest bonus converts to 20 Rum subject to capacity. Consumables are account-bound and not sold directly. These add value to chests without assuming unrestricted stockpiled advantages in competitive modes.
 
 ## 13. Home challenge rewards
 
@@ -344,7 +312,7 @@ The practical distinction: choosing an upgrade stops the ship's fight clock, whi
 
 Save after every boss milestone, stage transition, permanent receipt, and every ten active seconds. Resume from last acknowledged state without replaying already-applied events. Client rewind must not duplicate chests or drops. Network architecture must support the intended state cadence.
 
-If a run is not resumed within 24 hours, mark it abandoned/expired. Do not award a successful extraction, pending survival chest, unbanked run Gold, or kill score. Keep previously secured boss milestones, boss receipts, theft, and quest completions. Apply no additional defender loss. Release active-session locks.
+If a run is not resumed within 24 hours, mark it abandoned/expired. Do not award a successful extraction, pending survival chest, unsecured run Gold, or kill score. Keep previously secured boss milestones, boss receipts, theft, and quest completions. Apply no additional defender loss. Release active-session locks.
 
 This expiry is an operational failure policy, not a gameplay Return Home feature. The UI warns about loss of unfinished rewards when leaving. If the player resumes normally, they continue until death.
 
@@ -352,7 +320,7 @@ This expiry is an operational failure policy, not a gameplay Return Home feature
 
 At run start assign the current Monday-00:00-UTC week ID and frozen content version. On verified death, eligible Voyages submit total score once. Keep the best kill count per account/week. Ties share rank. Stage count, biome, tier, duration, build, and content version accompany the score without creating separate boards.
 
-A started-before-reset run must be completely submitted through death by 24 hours after reset, subject to the separate interruption-expiry rules. Verification may finish later. Final weekly rewards wait until the submission window closes and all timely submissions that could affect standings have been resolved. Keep results provisional during backlog/review; do not grant an unverified score or reject a timely submission merely because verification is slow. For this prototype the weekly reward is a profile badge only, with participation and top-10 badges; no tradeable asset or SOL prize.
+A started-before-reset run must be completely submitted through death by 24 hours after reset, subject to the separate interruption-expiry rules. Verification may finish later. Final weekly rewards wait until the submission window closes and all timely submissions that could affect standings have been resolved. Keep results provisional during backlog/review; do not grant an unverified score or reject a timely submission merely because verification is slow. For this prototype the weekly reward is an account-bound profile badge only, with participation and top-10 badges; no cash/SOL prize.
 
 Deploy balance changes between weeks where possible. In an emergency invalidate affected exploit scores with a reason and preserve unaffected receipts. Do not silently compare a modified active run against the wrong ruleset.
 
@@ -372,13 +340,11 @@ Daily/weekly partner events and community leaderboards are planned release featu
 
 ## 17. Payment and timer acceleration boundaries
 
-Prototype implements a sandbox purchase interface with product ID, displayed price, currency, entitlement, and idempotent receipt. Real fiat/SOL providers and real prices are not fabricated in this design.
+Prototype implements a sandbox purchase interface with product ID, displayed price, currency, account-bound entitlement, and idempotent receipt. Real providers and regional prices are configured per approved channel.
 
-Eligible acceleration products finish a specific pending Ledger works upgrade. The quote identifies upgrade ID and remaining time; confirmation revalidates the quote. If the upgrade already finished, do not charge. Never bypass a Zone requirement, quest, boss victory, or purchase qualification.
+Launch products are known account-bound cosmetics and the cosmetic Captain's Chronicle. Do not sell works acceleration, Gold/Rum, random reward chests, rerolls, resurrection, raid protection, Item progress or score.
 
-Cosmetics may be sold for fiat/SOL directly as well as the resource-funded catalog if the business chooses, but production price/parity policy is not required to implement the core Gold/Rum shop. Earned reward chests require no payment. No paid reroll or resurrection is included.
-
-Public marketplace and payment release is blocked on provider integration, account recovery, transaction reconciliation, and platform validation. This does not block a playable offline or closed-server prototype.
+Public payment release is blocked on provider integration, receipt validation, restoration, refund/revocation behavior, account recovery and platform validation. This does not block a playable offline or closed-server prototype.
 
 ## 18. Required transaction tests
 
@@ -389,12 +355,11 @@ Public marketplace and payment release is blocked on provider integration, accou
 - Attacker full storage: actual theft is zero for that resource, defender loses zero, generated overflow is reported separately.
 - Partially filled attacker storage: transfer only available capacity, preserving total resources across both accounts.
 - Claim boss receipt then die/reconnect: no second grant or revoked victory.
-- Sell P=8 into buyer P=6: buyer P=14, seller P=0 absent pending grants, correct derived rank.
-- Earn progress while a listing is pending: advertised lot unchanged, pending units apply to seller after cancellation/sale as defined.
-- Buy above P=111: all progress preserved, rank remains 10, no probability increase.
+- Grant P=8 then P=6 to one account: P=14, rank 3, and only one Item type enters its eligible pool.
+- Grant above P=111: all progress preserved, rank remains 10, no probability increase.
 - Reforge three units: source loses three, destination gains one, 20 Rum charged once, zero source removes eligibility.
-- Sell an Item and then earn it through a chest/contract: ownership restored without repeating original quest.
-- Trade payment uncertain: pending state reconciles using the original transaction ID; never both duplicate transfer and duplicate refund.
+- Restore/refund a paid cosmetic receipt: entitlement applies or revokes once without touching unrelated earned assets.
+- Complete an ad twice with one provider callback ID: one Sponsored Cache claim only; cross-device daily cap remains two.
 - Expire interrupted run: milestones retained, no new survival payout/score, session restrictions released.
 - Weekly run spans reset: score belongs to start week and final badge processing waits for allowed completions.
 
@@ -402,10 +367,10 @@ Public marketplace and payment release is blocked on provider integration, accou
 
 Following the [Megabonk polish pass](Rogue_Pirates_Megabonk_Design_Review.md), also model larger Quartermaster/Cartographer increments, Captain Vale's Gold bonus, timed threat rewards, temporary pickup survival gains and the small one-time mastery grants. Improved survival can increase Gold/progress supply even when drop rates are unchanged. Do not assume the previous economy sample predicts the revised combat's payouts.
 
-Run at least three modeled cohorts before live tuning: low-frequency player (two runs/day), active player (six), and high-frequency player (fifteen). These are test inputs, not assumptions about the audience. Vary win rate, average kills, chest spending, raid losses, production claims, and trading participation.
+Run at least three modeled cohorts before live tuning: low-frequency player (two runs/day), active player (six), and high-frequency player (fifteen). These are stress inputs, not audience forecasts. Vary win rate, average kills, chest spending, raid losses, production claims, targeted contracts, vanity spending, ad completion and live-event completion.
 
 Observe whether each can afford the next meaningful choice, whether storage saturates while queues are busy, and whether defense investment improves saved resources. Compare the live-quote raid rule against player expectations; if it feels unfair, redesign it explicitly rather than quietly guaranteeing unaffordable loot.
 
-Check acquisition versus marketplace listing supply, Item-rank power advantage, common cosmetic prices, consumable overflow, and targeted-contract time. Do not optimize solely for higher playtime, purchases, or resale prices at the expense of enjoyable runs.
+Check Item acquisition, rank power advantage, cosmetic/Gilding adoption, consumable overflow, capacity loss and targeted-contract time. Do not optimize solely for higher playtime, purchases, ads, or IAP at the expense of enjoyable runs.
 
-All proposed formulas and prices should live in versioned data with telemetry labels. A numerical adjustment must not mutate already-finalized trades or secured run receipts.
+All proposed formulas and prices should live in versioned data with telemetry labels. A numerical adjustment must not mutate already-secured run, ad, event or purchase receipts.
