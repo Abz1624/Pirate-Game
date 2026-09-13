@@ -120,7 +120,13 @@ namespace HighSeas.Enemies
             return count;
         }
 
-        public int Spawn(int definitionIndex, Vector3 position, EliteAffix affix = EliteAffix.None, float speedMultiplier = 1f)
+        public int Spawn(
+            int definitionIndex,
+            Vector3 position,
+            EliteAffix affix = EliteAffix.None,
+            float speedMultiplier = 1f,
+            float hpMultiplier = 1f,
+            float damageMultiplier = 1f)
         {
             if (definitions == null || definitionIndex < 0 || definitionIndex >= definitions.Length) return -1;
             var def = definitions[definitionIndex];
@@ -145,6 +151,8 @@ namespace HighSeas.Enemies
             if (affix == EliteAffix.Armored) hp *= 1.8f;
             if (affix == EliteAffix.Swift) hp *= 0.9f;
             if (affix == EliteAffix.Rich) hp *= 1.25f;
+            hp *= Mathf.Max(0.1f, hpMultiplier);
+            dmg *= Mathf.Max(0.1f, damageMultiplier);
 
             var visualScale = def.visualScale * (affix != EliteAffix.None ? 1.12f : 1f);
             var view = CreateView(def, position, visualScale, affix != EliteAffix.None);
@@ -183,6 +191,10 @@ namespace HighSeas.Enemies
             AttachHealthBar(slot, def, view, affix != EliteAffix.None);
             return slot;
         }
+
+        /// <summary>Scheduled pressure-beat elite: 6× HP, 1.25× damage (combat spec §9).</summary>
+        public int SpawnPressureBeat(int definitionIndex, Vector3 position) =>
+            Spawn(definitionIndex, position, EliteAffix.Rich, 1f, 6f, 1.25f);
 
         void AttachHealthBar(int slot, Data.EnemyDefinition def, Transform view, bool elite)
         {

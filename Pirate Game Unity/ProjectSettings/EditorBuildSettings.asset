@@ -6,6 +6,15 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/_Game/Scenes/v3/V3SaltwindRun.unity
+    guid: d3962d2bec1f16e4cbf066776d0fec25
+  - enabled: 1
+    path: Assets/_Game/Scenes/v3/V3MainMenu.unity
+    guid: b4e7f21a6c2d49f0a8b3c5d91e0f7428
+  - enabled: 1
+    path: Assets/_Game/Scenes/v3/V3Boot.unity
+    guid: f8a2c1d94e3b4a6489f0e2d71c5a9031
+  - enabled: 1
     path: Assets/_Game/Scenes/Boot.unity
     guid: b2b75971f10f3604aad32d662c0b5971
   - enabled: 1

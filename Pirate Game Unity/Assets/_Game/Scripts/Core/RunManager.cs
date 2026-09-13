@@ -19,6 +19,8 @@ namespace HighSeas.Core
         public int Gold { get; private set; }
         public int KillCount { get; private set; }
         public int BossKills { get; private set; }
+        public bool ObjectiveSecured { get; private set; }
+        public int BankedRunGold { get; private set; }
         public bool IsOvertime => ElapsedSeconds > GameConstants.StageDurationSeconds;
         public bool IsPaused => PauseReason != PauseReason.None;
 
@@ -47,6 +49,8 @@ namespace HighSeas.Core
             Gold = 0;
             KillCount = 0;
             BossKills = 0;
+            ObjectiveSecured = false;
+            BankedRunGold = 0;
             ElapsedSeconds = 0f;
             SetState(RunState.StageIntro);
             SetPause(PauseReason.None);
@@ -100,11 +104,31 @@ namespace HighSeas.Core
         public float ThreatPerSecond => GameMath.ComputeThreatPerSecond(
             ElapsedSeconds, Tier, StageIndex, BountyLevel, IsOvertime);
 
+        public void SecureObjective()
+        {
+            if (ObjectiveSecured) return;
+            ObjectiveSecured = true;
+            BossKills = Mathf.Max(BossKills, 1);
+        }
+
+        /// <summary>V3: bank all unspent run gold once at death; then show results.</summary>
+        public void FinalizeRunOnDeath()
+        {
+            if (State == RunState.RunComplete) return;
+            BankedRunGold = Gold;
+            if (BankedRunGold > 0)
+                AppRoot.Instance?.Save.AddDoubloons(BankedRunGold);
+            SetState(RunState.RunComplete);
+        }
+
         public void CompleteRun(bool victory)
         {
+            if (victory)
+                SecureObjective();
             SetState(RunState.RunComplete);
             var payout = victory ? 25 + BossKills * 10 : 5 + KillCount / 20;
-            AppRoot.Instance?.Save.AddDoubloons(payout);
+            if (BankedRunGold <= 0)
+                AppRoot.Instance?.Save.AddDoubloons(payout);
         }
     }
 }

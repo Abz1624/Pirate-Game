@@ -36,6 +36,7 @@ namespace HighSeas.Enemies
             {
                 var instance = Object.Instantiate(prefab, _root);
                 instance.name = prefab.name;
+                instance.SetActive(false);
                 StripPhysics(instance);
                 StripNavMeshComponents(instance);
                 view = instance.transform;
@@ -43,6 +44,7 @@ namespace HighSeas.Enemies
 
             view.SetPositionAndRotation(position, rotation);
             view.localScale = Vector3.one * scale;
+            view.gameObject.SetActive(true);
             return view;
         }
 

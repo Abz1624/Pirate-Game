@@ -1,5 +1,6 @@
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.V3;
 using UnityEngine;
 
 namespace HighSeas.World
@@ -18,6 +19,16 @@ namespace HighSeas.World
         [Header("Procedural islands")]
         [SerializeField] ProceduralIslandSettings proceduralIslands = ProceduralIslandSettings.Default;
 
+        bool _useV3PoiLayout;
+
+        public void ConfigureV3Layout(IslandLayoutDefinition layout)
+        {
+            usePredefinedLayout = layout != null && layout.HasIslands;
+            predefinedLayout = layout;
+            useVisualPrefabs = false;
+            _useV3PoiLayout = true;
+        }
+
         void OnValidate() => proceduralIslands = proceduralIslands.Clamped();
 
         public StageLayout Build(int seed, int stageIndex)
@@ -34,6 +45,9 @@ namespace HighSeas.World
             {
                 if (demoLayout.overridePlayerSpawn)
                     layout.playerSpawn = demoLayout.playerSpawn;
+
+                if (_useV3PoiLayout)
+                    V3StagePoiPlacer.Place(layout, new RunRng(seed + 404), demoLayout);
 
                 var count = IslandLayoutSpawner.Spawn(demoLayout, islandRoot, seed);
                 Debug.Log($"StageBuilder: spawned {count} demo islands from layout (seed={seed}).");

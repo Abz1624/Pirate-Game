@@ -33,6 +33,9 @@ namespace HighSeas.Enemies
         int _paidChestIndex = 1;
         bool _firstMinibossSpawned;
         bool _miniboss72;
+        bool _v3PressureBeatsEnabled;
+        bool _v3PacingEnabled;
+        float _spawnRateMultiplier = 1f;
 
         ScriptedPhase _scriptedPhase = ScriptedPhase.WaitingToStart;
         int _scriptedWaveIndex;
@@ -91,15 +94,22 @@ namespace HighSeas.Enemies
                 return;
 
             var minute = RunManager.Instance.ElapsedSeconds / 60f;
-            var eliteMult = settings != null ? settings.eliteChanceMultiplier : 1f;
-            _eliteChance = Mathf.Min(0.18f, (0.02f + 0.008f * minute) * eliteMult);
+            if (_v3PacingEnabled)
+                _eliteChance = minute < 3f ? 0f : 0.02f;
+            else
+            {
+                var eliteMult = settings != null ? settings.eliteChanceMultiplier : 1f;
+                _eliteChance = Mathf.Min(0.18f, (0.02f + 0.008f * minute) * eliteMult);
+            }
 
             TrySpawnMinibosses();
 
             if (_spawnCooldown > 0f)
                 _spawnCooldown -= dt;
 
-            var mode = settings != null ? settings.timingMode : SpawnTimingMode.ContinuousThreat;
+            var mode = _v3PacingEnabled
+                ? SpawnTimingMode.ContinuousThreat
+                : settings != null ? settings.timingMode : SpawnTimingMode.ContinuousThreat;
             switch (mode)
             {
                 case SpawnTimingMode.SteadyInterval:
@@ -265,10 +275,12 @@ namespace HighSeas.Enemies
         {
             var pacing = _pacingSettings;
             var threatMult = settings != null ? settings.threatMultiplier : 1f;
-            if (pacing != null)
+            if (pacing != null && !_v3PacingEnabled)
                 threatMult *= pacing.postScriptedThreatMultiplier;
             var budgetCapMult = settings != null ? settings.budgetCapMultiplier : 3.5f;
-            var threatPerSec = RunManager.Instance.ThreatPerSecond * threatMult;
+            var threatPerSec = (_v3PacingEnabled
+                ? ComputeV3ThreatPerSecond()
+                : RunManager.Instance.ThreatPerSecond * threatMult) * _spawnRateMultiplier;
             _budget += threatPerSec * dt;
             var cap = threatPerSec * budgetCapMult;
             if (_budget > cap) _budget = cap;
@@ -512,8 +524,49 @@ namespace HighSeas.Enemies
             return (1f / Mathf.Max(1, def.threatCost)) * Mathf.Max(0f, weightMult);
         }
 
+        public void SetV3PressureBeatsEnabled(bool enabled) => _v3PressureBeatsEnabled = enabled;
+
+        public void ConfigureV3Pacing(bool enabled)
+        {
+            _v3PacingEnabled = enabled;
+            if (enabled)
+            {
+                _v3PressureBeatsEnabled = true;
+                ResetTimingState();
+            }
+        }
+
+        public void SetSpawnRateMultiplier(float multiplier) =>
+            _spawnRateMultiplier = Mathf.Max(0.1f, multiplier);
+
+        public bool TrySpawnPressureBeat(string enemyId)
+        {
+            if (enemyWorld == null || string.IsNullOrEmpty(enemyId))
+                return false;
+
+            var defIndex = FindDefinitionIndex(enemyId);
+            if (defIndex < 0)
+                return false;
+
+            var attempts = settings != null ? settings.spawnPositionAttempts : 16;
+            for (var i = 0; i < attempts; i++)
+            {
+                var pos = PickSpawnPosition();
+                if (!IsSpawnCandidateValid(pos, enemyWorld.Definitions[defIndex].radius + 0.35f))
+                    continue;
+
+                if (enemyWorld.SpawnPressureBeat(defIndex, pos) >= 0)
+                    return true;
+            }
+
+            return false;
+        }
+
         void TrySpawnMinibosses()
         {
+            if (_v3PressureBeatsEnabled)
+                return;
+
             var elapsed = RunManager.Instance.ElapsedSeconds;
             var stageDuration = GameConstants.StageDurationSeconds;
             var firstMinibossAt = _pacingSettings != null ? _pacingSettings.firstMinibossSeconds : 90f;
@@ -750,6 +803,17 @@ namespace HighSeas.Enemies
             var cost = GameMath.ChestCost(_paidChestIndex);
             _paidChestIndex++;
             return Mathf.RoundToInt(cost);
+        }
+
+        /// <summary>GDD combat spec §9: min(14, (2+0.5m)(1+0.25(d-1))) enemies/sec mapped to threat budget.</summary>
+        static float ComputeV3ThreatPerSecond()
+        {
+            if (RunManager.Instance == null) return GameConstants.StageBaseThreat;
+
+            var minute = Mathf.Min(10f, RunManager.Instance.ElapsedSeconds / 60f);
+            var depth = RunManager.Instance.StageIndex + 1;
+            var enemiesPerSec = Mathf.Min(14f, (2f + 0.5f * minute) * (1f + 0.25f * (depth - 1)));
+            return enemiesPerSec * 2.4f;
         }
     }
 }

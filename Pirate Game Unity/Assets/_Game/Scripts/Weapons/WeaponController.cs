@@ -235,7 +235,7 @@ namespace HighSeas.Weapons
             for (var i = 0; i < qty; i++)
             {
                 var spread = Quaternion.Euler(0f, (i - qty * 0.5f) * 4f, 0f) * dir;
-                var dmg = DamageSystem.RollDamage(w.def.baseDamage, w.damageBonus * w.level * 0.1f + 1f, stats, enemy.isElite, 0f, rng, w.def.procCoefficient);
+                var dmg = DamageSystem.RollDamage(w.def.baseDamage, w.damageBonus * w.level * 0.1f + 1f, stats, enemy.isElite, 0f, rng, w.def.procCoefficient, w.def.id);
                 var origin = _player.Position + Vector3.up * 0.35f;
                 _juice?.OnProjectileFired(origin, spread);
                 _projectiles.TrySpawn(origin, spread, speed, dmg, 3f, size, 0, dmg > w.def.baseDamage * 1.4f, w.def.projectileColor);
@@ -257,7 +257,7 @@ namespace HighSeas.Weapons
                     ? 0f
                     : -halfSpread + (spread / (pellets - 1)) * i;
                 var dir = Quaternion.Euler(0f, angle, 0f) * baseDir;
-                var dmg = DamageSystem.RollDamage(w.def.baseDamage * 0.6f, w.damageBonus, stats, enemy.isElite, 0f, rng, w.def.procCoefficient);
+                var dmg = DamageSystem.RollDamage(w.def.baseDamage * 0.6f, w.damageBonus, stats, enemy.isElite, 0f, rng, w.def.procCoefficient, w.def.id);
                 var origin = _player.Position + Vector3.up * 0.35f;
                 _juice?.OnProjectileFired(origin, dir);
                 _projectiles.TrySpawn(origin, dir, speed, dmg, 2.5f, size, 0, false, w.def.projectileColor);
@@ -315,7 +315,7 @@ namespace HighSeas.Weapons
                         agents[i].isElite,
                         0f,
                         rng,
-                        w.def.procCoefficient);
+                        w.def.procCoefficient, w.def.id);
                     _enemies.ApplyDamage(i, dmg, false);
                 }
             }
@@ -351,7 +351,7 @@ namespace HighSeas.Weapons
                     agents[i].isElite,
                     0f,
                     rng,
-                    w.def.procCoefficient);
+                    w.def.procCoefficient, w.def.id);
                 _enemies.ApplyDamage(i, dmg, false);
                 StatusController.Instance?.ApplyStatus(i, StatusType.Burn, burnDuration);
             }
@@ -381,7 +381,7 @@ namespace HighSeas.Weapons
                     agents[i].isElite,
                     0f,
                     rng,
-                    w.def.procCoefficient);
+                    w.def.procCoefficient, w.def.id);
                 _enemies.ApplyDamage(i, dmg, false);
                 Combat.StatusController.Instance?.ApplyStatus(i, Core.StatusType.Burn, burnDuration);
             }
@@ -466,7 +466,7 @@ namespace HighSeas.Weapons
                         agents[ai].isElite,
                         0f,
                         rng,
-                        keg.procCoefficient);
+                        keg.procCoefficient, "powder_kegs");
                     _enemies.ApplyDamage(ai, dmg, false);
                 }
 
@@ -491,7 +491,7 @@ namespace HighSeas.Weapons
             {
                 if (!agents[i].active) continue;
                 if (Vector3.Distance(agents[i].position, strikePos) > radius) continue;
-                var dmg = DamageSystem.RollDamage(w.def.baseDamage, w.damageBonus, stats, agents[i].isElite, 0f, rng, w.def.procCoefficient);
+                var dmg = DamageSystem.RollDamage(w.def.baseDamage, w.damageBonus, stats, agents[i].isElite, 0f, rng, w.def.procCoefficient, w.def.id);
                 _enemies.ApplyDamage(i, dmg, false);
                 StatusController.Instance?.ApplyStatus(i, StatusType.Shock, 0.5f * w.durationMult);
             }
@@ -505,7 +505,7 @@ namespace HighSeas.Weapons
             {
                 if (!list[i].active) continue;
                 if (Vector3.Distance(list[i].position, _player.Position) > radius) continue;
-                var dmg = DamageSystem.RollDamage(w.def.baseDamage * 0.35f, w.damageBonus, stats, list[i].isElite, 0f, rng, w.def.procCoefficient);
+                var dmg = DamageSystem.RollDamage(w.def.baseDamage * 0.35f, w.damageBonus, stats, list[i].isElite, 0f, rng, w.def.procCoefficient, w.def.id);
                 _enemies.ApplyDamage(i, dmg, false);
                 Combat.StatusController.Instance?.ApplyStatus(i, Core.StatusType.Curse, 0.4f * w.durationMult);
             }

@@ -1,0 +1,365 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b161c8dd2d3dc0e47b211db6c68b12bb, type: 3}
+  m_Name: V3SaltwindIslandLayout
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.IslandLayoutDefinition
+  overridePlayerSpawn: 1
+  playerSpawn: {x: 10, y: 0, z: -70}
+  clusters:
+  - clusterId: 0
+    anchorPosition: {x: -26.2, y: 0, z: -75.1}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 9b6371b6892875b4c8d3ff0bea693a2e, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 1
+    anchorPosition: {x: 22, y: 0, z: 4}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 458814b7c6933224988d2a2b5782506c, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 2
+    anchorPosition: {x: -20, y: 0, z: 59.4}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 35035871988a88a489c0eb5eba269e8b, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 3
+    anchorPosition: {x: 61.5, y: 0, z: 33.7}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 867f24641977bd84581621fe140f6917, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 4
+    anchorPosition: {x: -26, y: 0, z: -20}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: daa620c10ac38cb4c9ae4d670e0e79c5, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 7
+    anchorPosition: {x: 10, y: 0, z: -32}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: a40b3d9be5dd9524ca8bb5d047993e47, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 8
+    anchorPosition: {x: -86, y: 0, z: -32}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 05027bb3596478343a7c8a2ad1bc6bfb, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 9
+    anchorPosition: {x: 76.9, y: 0, z: -2}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: cd4239aa000b73147bad8bdbd897c6ce, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 11
+    anchorPosition: {x: 70.6, y: 0, z: 78.3}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 85fd59285dd9e544da9d57b09a09681f, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 13
+    anchorPosition: {x: 94.29, y: 0, z: -91.31}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: d502b8d5274fc4e4c9d04a4906f2413b, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 16
+    anchorPosition: {x: 88, y: 0, z: -86}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 9b6371b6892875b4c8d3ff0bea693a2e, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 18
+    anchorPosition: {x: -52.952408, y: 0, z: -3.6013293}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 458814b7c6933224988d2a2b5782506c, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 254.11295
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 21
+    anchorPosition: {x: 22, y: 0, z: 70}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 35035871988a88a489c0eb5eba269e8b, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 22
+    anchorPosition: {x: 70.8, y: 0, z: -60.8}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 867f24641977bd84581621fe140f6917, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 23
+    anchorPosition: {x: -86.1, y: 0, z: 28.7}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: daa620c10ac38cb4c9ae4d670e0e79c5, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 24
+    anchorPosition: {x: -54.7, y: 0, z: 81.3}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: a40b3d9be5dd9524ca8bb5d047993e47, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 26
+    anchorPosition: {x: 28, y: 0, z: 52}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 05027bb3596478343a7c8a2ad1bc6bfb, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 27
+    anchorPosition: {x: 60.35, y: 0, z: -21.62}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: cd4239aa000b73147bad8bdbd897c6ce, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 28
+    anchorPosition: {x: -52.3, y: 0, z: -49.8}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 85fd59285dd9e544da9d57b09a09681f, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 30
+    anchorPosition: {x: 4, y: 0, z: 10}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: d502b8d5274fc4e4c9d04a4906f2413b, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 31
+    anchorPosition: {x: -67.4, y: 0, z: -65.7}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 9b6371b6892875b4c8d3ff0bea693a2e, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 33
+    anchorPosition: {x: 81.7, y: 0, z: 65.3}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 458814b7c6933224988d2a2b5782506c, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 206.28926
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 34
+    anchorPosition: {x: 22, y: 0, z: -60.5}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 35035871988a88a489c0eb5eba269e8b, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 37
+    anchorPosition: {x: -31.2, y: 0, z: -99.2}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 867f24641977bd84581621fe140f6917, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 38
+    anchorPosition: {x: 95.27, y: 0, z: -80.62}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: daa620c10ac38cb4c9ae4d670e0e79c5, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 39
+    anchorPosition: {x: -8, y: 0, z: 16}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: a40b3d9be5dd9524ca8bb5d047993e47, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 41
+    anchorPosition: {x: 44.7, y: 0, z: 93.5}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 05027bb3596478343a7c8a2ad1bc6bfb, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 45
+    anchorPosition: {x: -14, y: 0, z: -26}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: cd4239aa000b73147bad8bdbd897c6ce, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14
+  - clusterId: 46
+    anchorPosition: {x: 60.5, y: 0, z: -96.5}
+    clusterJitterRadius: 0
+    islands:
+    - prefab: {fileID: 1709254077376921, guid: 85fd59285dd9e544da9d57b09a09681f, type: 3}
+      offsetFromAnchor: {x: 0, y: 0, z: 0}
+      yRotation: 0
+      scale: {x: 1, y: 1, z: 1}
+      positionJitter: 0
+      rotationJitter: 0
+      autoScaleToFootprint: 1
+      targetFootprintMeters: 14

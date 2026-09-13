@@ -3,12 +3,15 @@ using HighSeas.Data;
 using HighSeas.Meta;
 using HighSeas.Pickups;
 using HighSeas.Player;
+using HighSeas.V3;
 using UnityEngine;
 
 namespace HighSeas.POI
 {
     public sealed class POIManager : MonoBehaviour
     {
+        public const int V3SalvageChestCount = 12;
+
         [SerializeField] GameDatabase database;
         [SerializeField] LootService loot;
         [SerializeField] Enemies.SpawnDirector director;
@@ -20,6 +23,18 @@ namespace HighSeas.POI
         bool _bossSummoned;
         bool _bossDefeated;
         int _paidChestCount;
+        bool _continueAfterBossVictory;
+        bool _usePlaceholderVisuals;
+        bool _useV3ChestPricing;
+
+        public int PaidChestCount => _paidChestCount;
+
+        public void SetV3Options(bool continueAfterBossVictory, bool usePlaceholderVisuals, bool useV3ChestPricing = true)
+        {
+            _continueAfterBossVictory = continueAfterBossVictory;
+            _usePlaceholderVisuals = usePlaceholderVisuals;
+            _useV3ChestPricing = useV3ChestPricing;
+        }
 
         public void Initialize(World.StageLayout layout, GameDatabase db)
         {
@@ -47,9 +62,15 @@ namespace HighSeas.POI
 
         GameObject CreateMarker(POIType type, Vector3 position, Transform root)
         {
+            var spawnPos = position + Vector3.up * 0.15f;
+            if (_usePlaceholderVisuals)
+            {
+                var placeholder = V3PlaceholderFactory.CreatePoiMarker(type, spawnPos, root);
+                return placeholder;
+            }
+
             var prefab = GetPrefab(type);
             GameObject go;
-            var spawnPos = position + Vector3.up * 0.15f;
 
             if (prefab != null)
             {
@@ -123,8 +144,10 @@ namespace HighSeas.POI
             switch (type)
             {
                 case POIType.SalvageChest:
-                    var price = director != null ? director.GetChestPrice() : 25;
-                    if (_paidChestCount == 0 && pacingSettings != null)
+                    var price = _useV3ChestPricing
+                        ? V3Economy.GetChestPrice(_paidChestCount)
+                        : director != null ? director.GetChestPrice() : 25;
+                    if (!_useV3ChestPricing && _paidChestCount == 0 && pacingSettings != null)
                         price = Mathf.RoundToInt(price * (1f - pacingSettings.firstChestDiscount));
                     _paidChestCount++;
                     if (!RunManager.Instance.TrySpendGold(price)) return;
@@ -139,6 +162,15 @@ namespace HighSeas.POI
                     RunManager.Instance.AddGold(40);
                     PickupWorld.Instance?.Spawn(PickupType.Powerup, 25, player.Position + Vector3.right * 2f);
                     break;
+                case POIType.GildedWreck:
+                    player.Damage.Heal(RunManager.Instance.Stats.MaxHull * 0.25f);
+                    break;
+                case POIType.MerchantSkiff:
+                    SpawnPowderCacheFight(player);
+                    break;
+                case POIType.CursedIdol:
+                    RunManager.Instance.AddGold(60);
+                    break;
                 case POIType.BossBeacon:
                     SummonBoss(player);
                     break;
@@ -150,6 +182,32 @@ namespace HighSeas.POI
                 p.used = true;
                 _layout.pois[index] = p;
             }
+        }
+
+        void SpawnPowderCacheFight(PlayerShipController player)
+        {
+            var world = FindFirstObjectByType<Enemies.EnemyWorld>();
+            if (world == null || world.Definitions == null) return;
+
+            var spawnPos = player != null ? player.Position + player.MovementForward * 14f : Vector3.forward * 14f;
+            var ordinarySpawned = 0;
+            for (var i = 0; i < world.Definitions.Length && ordinarySpawned < 6; i++)
+            {
+                var def = world.Definitions[i];
+                if (def.isBoss || def.isMiniboss) continue;
+                var offset = Quaternion.Euler(0f, ordinarySpawned * 60f, 0f) * Vector3.forward * 8f;
+                world.Spawn(i, spawnPos + offset);
+                ordinarySpawned++;
+            }
+
+            for (var i = 0; i < world.Definitions.Length; i++)
+            {
+                if (!world.Definitions[i].isMiniboss) continue;
+                world.Spawn(i, spawnPos + Vector3.right * 6f, Core.EliteAffix.Rich);
+                break;
+            }
+
+            RunManager.Instance.AddGold(20);
         }
 
         void SummonBoss(PlayerShipController player)
@@ -172,6 +230,14 @@ namespace HighSeas.POI
         {
             if (_bossDefeated) return;
             _bossDefeated = true;
+            RunManager.Instance.SecureObjective();
+            V3.V3ToastHud.Instance?.Show("TERRITORY OBJECTIVE SECURED — survive or keep farming.", 5f);
+            if (_continueAfterBossVictory)
+            {
+                RunManager.Instance.SetState(RunState.Playing);
+                return;
+            }
+
             RunManager.Instance.SetState(RunState.BossDefeated);
             RunManager.Instance.CompleteRun(true);
         }

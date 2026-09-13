@@ -39,5 +39,9 @@ namespace HighSeas.Data
         public Vector3 scale = Vector3.one;
         public float positionJitter = 2.5f;
         public float rotationJitter = 12f;
+        [Tooltip("When true, scale is computed from prefab bounds to match target footprint.")]
+        public bool autoScaleToFootprint = true;
+        [Tooltip("Target XZ footprint diameter in meters when auto-scaling.")]
+        public float targetFootprintMeters = 20f;
     }
 }
