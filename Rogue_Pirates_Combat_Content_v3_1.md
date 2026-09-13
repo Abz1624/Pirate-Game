@@ -280,7 +280,17 @@ For Gravewater/Devil's Maw use themed replacements, taking eight weight points f
 
 ### 9.1 Overtime
 
-Let `o=max(0,m-10)`. Freeze normal minute scaling at m=10. Multiply Hull by `2^(o/2)`, damage by `1.45^(o/2)`, speed by `min(1.5,1+0.05o)`, and spawn rate by `min(2,1+0.15o)` subject to entity caps. Player debuffs do not reduce enemy speed below their applicable slow cap.
+Owner direction: at ten active minutes a distinct overtime enemy category arrives, inspired by Megabonk's swarm. This replaces the previous general overtime Hull-scaling rule. The exact fleet/stats below are proposed prototype data, not claimed Megabonk values.
+
+Let `o=max(0,m-10)`. At m=10 stop ordinary director spawning and start the **Drowned Pursuit** profile. Existing ordinary enemies retain their spawn-time Hull/damage/speed. The overtime population uses a distinct spectral silhouette, warning sound and minimap danger indication; biome color variants reuse its rigs.
+
+- **Drowned Pursuer:** base Hull 45, speed 5, contact 12, XP 1, Gold 1. Direct water-path pursuit and separation, ordinary contact immunity rules, no knockback immunity. Weight 80% for first two overtime minutes, then 60%.
+- **Drowned Harrier:** base Hull 70, speed 4, contact 10, ranged hit 18, XP 2, Gold 2. At 8–12 m, 0.8-second line warning, one 12 m/s projectile with two-second lifetime, two-second recovery; cannot shoot through terrain. Remaining roster weight. Reuse the Cannonboat attack framework with distinct art.
+- Both are ordinary-cap enemies with `overtime` tags, not elites or zero-credit boss summons. Each legitimate kill counts one. They continue to drop XP/Gold, but cannot generate new exploration objects.
+- Use biome/depth/tier normal multipliers at m=10. Overtime Hull multiplier `2^(o_spawn/2)` is fixed at spawn. Their damage uses current `1.45^(o/2)` and speed current `min(1.5,1+0.05o)`; already living overtime enemies update these two stats. Lock projectile damage at emission and charge speed at attack start so a warned attack does not change mid-flight. Their Hull never refills as time advances.
+- Overtime spawn rate is the m=10 normal rate multiplied by `min(2,1+0.15o)`, subject to the shared 180 ordinary-enemy cap. During boss fights apply the existing 40% rate modifier to this profile too.
+
+Cap protection: reserve at least 120 of the 180 ordinary slots for overtime enemies after transition. If more than 60 pre-overtime ordinary enemies remain, retire the excess deterministically, offscreen/farthest first, then oldest spawn ID. Give visible retirees a two-second retreat/fade warning; they can still be killed for normal credit during that warning. Cleanup itself grants no kill/XP/Gold, releases their uncompleted attacks and cannot count as a cleared authored encounter. Exclude finite POI/defense encounter members from retirement; count them toward the 60 retained slots (validated authored concurrency must fit that allocation). The boss and 12-elite cap remain separate. No new entity is spawned over cap while retirement is pending. This prevents preserving a full weak crowd from blocking the new fleet.
 
 At overtime minute four, add a visible pursuing storm front that reduces optional safe space by 5% of stage area per subsequent minute, down to 40% remaining. Its safe component must include the player and a navigable corridor to any opened portal. If that validation fails, skip that contraction and increase next minute's enemy damage multiplier by an additional 10% instead.
 
@@ -351,16 +361,40 @@ Counterplay: cross ring gaps, move against or sideways to currents, punish vulne
 
 Each Voyage/conquest stage starts with 12 ordinary chests and four POIs. Home stages use ten chests/four POIs. Raids use 12 + four per extra owned Zone chests and four + two per extra Zone POIs across the full map. Allocate 40% of raid exploration objects to highest Zone, distributing remaining ones evenly over lower Zones. Counts do not replenish after boss defeat.
 
-Four POI types are chosen once per stage with no duplicate type in that stage:
+Allocate raid chest and POI counts separately using whole integers: for one Zone assign all to it; otherwise assign `ceil(0.4 * total)` to the highest Zone, divide the remainder equally over lower Zones and assign remainder units in ascending Zone order. This replaces fractional interpretations of the 40% rule.
+
+Use eight pirate POI types. Four-object Voyage/home/conquest stages include one Repair Wreck and one Powder Cache, then draw two distinct remaining types with equal weights. Six/eight-object raids use the same guaranteed pair then draw without replacement from the other six. This resolves the former four-type/six-or-eight-object conflict while keeping the fixed start-only counts. The first slice can use Repair Wreck, Powder Cache, Signal Buoy and Treasure Chart; full release enables all eight. POI layout/payload randomization uses its own saved stream.
+
+The owner requested Megabonk-style interactions with pirate presentation. Charge, greed, boss-risk, challenge and XP-collection patterns inform the set; their following formulas are our own proposed adaptation. Exact commercial-game behavior is not copied from conflicting fan guides. Reference for the broad patterns: [Megabonk shrine guide, unofficial](https://megabonk.org/guides/mechanics/shrines/). Reliable Item exchanges remain deferred.
 
 - **Repair Wreck:** one-use heal 25% maximum Hull, no Gold fee.
 - **Powder Cache:** activate a marked finite fight of six ordinary enemies plus one elite; reward one random run Item and 20 run Gold on completion. All members have unique one-time reward IDs.
-- **Cursed Shrine:** one-use choice to accept +15% incoming enemy damage for 90 seconds in exchange for +20 Luck for the same period. It does not create a permanent reward or guaranteed Item.
+- **Signal Buoy (charge shrine):** remain within four meters for eight active seconds while enemies attack. Progress freezes outside the radius, does not reset, and never advances during pause. On completion pause for one choice: sample three distinct effects from +5% additive damage, +5% attack speed, +3% move speed, +10 maximum Hull, +10 Luck. One effect lasts for the run and respects existing caps/Hull rules. Stage-start 10% gilded variant multiplies offered increments by 2, shown before activation. One reward per buoy; no extra player level or refill of reroll charges.
+- **Smuggler's Oath (greed shrine):** one activation grants `60 * biome * depth` run Gold. In exchange add +10% enemy Hull for subsequently spawned enemies and +10% outgoing enemy damage for the rest of this stage, summed per named Oath bucket. Existing enemies' current/maximum Hull do not increase. Show both outcomes before commitment. Cannot convert treasury Gold or create permanent progress directly; remaining run Gold follows normal death banking.
+- **Davy Jones' Contract (boss-risk shrine):** before boss activation, one interaction adds +35% objective boss Hull and +15% boss damage for this stage. In exchange that boss yields one extra run Item chest using the existing boss chest rarity table if killed. One use, no boss clone, no extra account boss reward, theft or contract-clear credit. This deliberate adaptation preserves the one-boss performance/raid settlement framework. After activation/defeat, the POI is visibly unavailable rather than spawning a replacement.
+- **Salvage Bell (XP collection):** one use pulls existing uncollected XP toward the ship at normal pickup-travel speed. It creates no XP and does not credit pickups before arrival. Works only in the current stage; if no XP exists show that and do not consume it. Normal combat continues.
+- **Castaway Idol (random blessing):** one use grants one uniformly selected result: heal 25% max Hull; +20 Luck for 60 active seconds; +15% additive damage for 60 active seconds; or +15% move speed for 60 active seconds. Preview the possible effects, not the hidden result. Stage-start payload is saved; reconnect cannot reroll. No guaranteed Item/build repair or tradeable prize.
 - **Treasure Chart:** reveals the nearest three unopened stage chests. If fewer exist, reveal the remainder. One use.
 
 No merchant/exchange guarantees a missing Item. Opening a chest costs `ceil(20 × 1.12^k)` run Gold, where k is paid chest openings in the entire run. Price hard cap 1,000 run Gold per chest; this is an economic bound, not a global currency cap. Smuggler's Ledger applies its +20% after this base cap. Interaction duration 0.4 seconds within two meters; pickups and combat continue afterward. Items drop physically but expire only on stage exit/death, not an arbitrary short timer.
 
 Each boss grants one guaranteed run Item chest with Rare/Epic/Legendary weights 85/14/1 and normal owned-pool fallback, plus generated account rewards in the systems document. It is a one-time boss reward, not a replenishing exploration chest.
+
+Unless a record overrides it, POI activation uses two-meter range and a 0.75-second hold, interrupted by damage/movement. Consumed state and granted reward commit together. Signal Buoy uses its charge rule. Temporary buffs expire on their active-time deadline or stage exit; permanent run-stat choices carry stages. Powder Cache's original finite roster remains rewardable; later reinforcements are not added. The former Cursed Shrine risk/Luck effect is replaced by the above Oath/Idol split.
+
+### 11.1 Combat event ordering
+
+Owner-approved outcome: a valid same-tick boss/player double death counts as a boss victory and ends the run. Proposed deterministic order below implements it:
+
+1. At tick start, expire effects with endTick equal to this tick, apply previously committed choices, sample legal inputs, and advance movement/timers. A newly granted immunity lasts until its exclusive endTick.
+2. Apply healing pickups whose collection completes this tick before damage. Full-Hull pickups do not bank healing. Generate this tick's attack/contact/DOT events from eligible actors and stable IDs; valid already emitted projectiles can hit even if their owner dies this tick.
+3. Resolve queued damage by generation then stable source/attack/target/event IDs. Apply mitigation and existing hit-immunity rules. At a would-be fatal hit evaluate Captain's Last Rum if available, consume its once-run flag immediately, restore Hull and activate immunity before subsequent hits. Otherwise mark that target dead; later healing cannot revive it. Dread bypasses ordinary contact immunity, but respects Last Rum's explicitly granted damage immunity.
+4. Process bounded triggered effects and enemy deaths, awarding each legitimate kill once. Already generated valid boss/player attacks remain eligible even if their source was marked dead earlier in the tick. Do not create new attacks from a dead actor. Respect existing proc-depth/event budgets.
+5. Secure every valid objective boss death once, even if player death occurred in step 3. Conquest, portal unlock state, theft entitlement and reward receipts use that milestone; a visual boss death animation is not the trigger for losing a valid victory.
+6. If the player is dead after prevention, settle run death/results. Cancel pending interactions and choice menus; no same-tick level-up or portal escape rescues death. Newly dropped boss Items/XP remain uncollected; secured objective/account rewards persist. A pending extra boss-risk run chest is likewise not a posthumous equipped Item.
+7. For a surviving player, complete non-interrupted interactions, collectible grants and queued XP/POI choices. Open at most one modal at a time in event order. A portal transition waits for pending choices, revalidates interaction, and carries the resulting build; it cannot regenerate a spent POI.
+
+Tests must cover healing+fatal damage, two fatal hits with one prevention charge, boss/player double death, DOT boss death, lethal damage+portal completion, multiple XP levels, buoy+level-up on one tick, boss reward duplication on reconnect, and expiration boundary of Last Rum immunity. This order is our proposed specification, not an assertion about Megabonk internals.
 
 ## 12. Combat validation scenarios
 

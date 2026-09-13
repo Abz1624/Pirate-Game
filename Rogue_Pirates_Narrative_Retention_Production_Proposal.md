@@ -4,7 +4,7 @@ Design discussion addendum • 13 September 2026
 
 Status: recommendations for owner review, not newly approved canon or tested balance. Read alongside [the current GDD](Rogue_Pirates_GDD_v3_1.md), [combat content](Rogue_Pirates_Combat_Content_v3_1.md), and [economy systems](Rogue_Pirates_Economy_Systems_v3_1.md). This addendum does not replace their accepted gameplay commitments. No implementation or repository review was performed for this proposal.
 
-Owner clarification: browser and mobile launch together. The audience is roguelite and Clash-style base-building players; age range is not yet decided. Mobile operating systems and native-store versus browser delivery still need specification. Do not assume a children's audience from the comic tone.
+Owner clarification: browser and mobile launch together. The audience is roguelite and Clash-style base-building players; age range is not yet decided. Subsequent decisions specify Unity 3D, Android/iOS native, desktop/mobile browsers and target distribution through Steam, CrazyGames and Poki. See the technical design for channel-specific restrictions and fallbacks. Do not assume a children's audience from the comic tone.
 
 ## 1. A comic world with a small story
 
@@ -155,7 +155,7 @@ This is a scope checklist, not a requirement to finish every asset before protot
 - Modular water, shore, reefs, wrecks, ruins, connector transitions, outer boundaries, collision proxies and navigation masks.
 - Terrain section layouts: the GDD proposes four families with three variants. Distinguish reusable layout templates from biome art kits; do not commission every combination as a unique bespoke map.
 - Three biome kits and expansion-ring transitions; raid permutation seams and rotation-safe decoration sockets.
-- Treasury Beacon idle/discovered/activating/active/defeated states; portal locked/open/transition states; chests closed/opened; four POI types and consumed states.
+- Treasury Beacon idle/discovered/activating/active/defeated states; portal locked/open/transition states; chests closed/opened; eight POI types and consumed states (four in the first slice).
 - Initial ornament, flag and sail sets, thumbnails and shop previews. Decorations remain non-obstructive and recognizable after section rotation.
 - Backgrounds and framing for home viewing, results and marketing capture.
 
@@ -212,7 +212,7 @@ The current documents are detailed enough to begin a deliberately limited combat
 
 ### Before the first playable slice
 
-1. **Launch direction and device floor:** browser and mobile together is confirmed. Specify supported mobile operating systems, delivery channels, landscape/portrait, input, reference devices and performance targets. Measure the existing proposed enemy/projectile caps on those devices.
+1. **Launch direction and device floor:** browser and mobile together is confirmed, with Unity 3D, Android/iOS and the specified browser/portal/Steam targets. Still define orientation, reference devices and measured performance targets. Measure the proposed enemy/projectile caps on those devices.
 2. **Art/camera readability:** one ship, one enemy, one Weapon effect, one boss telegraph and one navigable section at actual play scale.
 3. **Run truth:** confirm stage versus whole-run timing, boss milestone persistence, death-only ending, pause/disconnect behavior and enemy credit rules in one concise state chart.
 4. **Scope:** use the existing Saltwind slice. Define what a successful playtest would show: players understand the objective, can read threats, enjoy a failed build enough to retry, and can survive briefly after a boss victory.
@@ -246,6 +246,8 @@ The current documents are detailed enough to begin a deliberately limited combat
 ## 6. Follow-up implementation-readiness review
 
 Reviewed against the current main, combat, economy and Crew specifications after the event-duration Crew-lock correction. No source code was inspected. Conclusion: enough design exists to begin the first combat slice; several precise rules and technical/UX decisions remain before production systems can be implemented consistently. Additional Weapons, bosses, currencies or retention systems are not prerequisites.
+
+Follow-up resolution: the five findings below are preserved as review history. Combat now defines eight themed POIs, a distinct Drowned Pursuit overtime fleet and same-tick resolution; economy defines pause/lifecycle clocks; Crew rules include the owner-approved queued exit. Unity/platform/save direction is selected; [technical design](Rogue_Pirates_Technical_Design.md) and [milestone backlog](Rogue_Pirates_Implementation_Backlog.md) provide the new handoff plan. Exact numerical defaults still require playtests. First-run wireframes are explicitly deferred by the owner, rather than treated as a blocker to the initial sandbox.
 
 ### Concrete specification gaps
 

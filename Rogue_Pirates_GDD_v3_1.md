@@ -3,7 +3,8 @@
 **Studio:** X2C  
 **Version:** 3.1  
 **Date:** 13 September 2026  
-**Platforms:** Browser and mobile, simultaneous launch; mobile operating systems and delivery channels remain to be confirmed  
+**Engine:** Unity, 3D assets  
+**Platforms:** Android, iOS, desktop/mobile browsers; Steam, CrazyGames, Poki and other eligible F2P channels. Browser/mobile launch together; individual channel approval remains required.  
 **Status:** implementation design baseline, not a claim of implemented or playtested behavior
 
 Rogue Pirates is a 3D ship-based bullet-heaven roguelite. Players conquer a permanent Territory, develop its economy through a Captain's Ledger, author defenses, raid rearranged versions of other players' Territories, and chase extraordinary builds through multi-stage Voyages. Boss victories secure objectives. Runs continue until death.
@@ -17,6 +18,8 @@ This edition replaces v3.0 as the current design. The unchanged v3.0 file remain
 - [Economy and systems specification](Rogue_Pirates_Economy_Systems_v3_1.md): resources, Ledger upgrades, ownership/merging, contracts, raids, protection, trading, rewards, consumables, events, and persistent state.
 - [Crews, events and ship skins](Rogue_Pirates_Crews_Events_Skins.md): newer owner-approved social/event requirements, event-duration membership locks, manual rewards and cosmetic inventory; detailed defaults remain labeled proposals.
 - [Narrative, retention and production proposal](Rogue_Pirates_Narrative_Retention_Production_Proposal.md): narrative/revenue recommendations, asset checklist and implementation-readiness review. Unapproved recommendations do not override settled mechanics.
+- [Unity technical design](Rogue_Pirates_Technical_Design.md): runtime, proposed backend/database/hosting, account saves, verified simulation, structured content and channel-specific integration.
+- [Implementation milestone backlog](Rogue_Pirates_Implementation_Backlog.md): ordered development tasks and acceptance gates; wireframes explicitly remain a deferred TODO.
 
 **Decision status:** owner-approved directions are identified as commitments below. All new numbers, algorithms, inventories, timings, and procedural rules in the linked specifications are **proposed prototype defaults**. They are concrete enough to implement without inventing missing rules, but have not been approved individually or established through playtesting. They are not production balance promises.
 
@@ -180,7 +183,7 @@ Saltwind, one-stage runs, initial conquest, Deck Cannon/Broadside/Powder Kegs/Fl
 
 ### 8.2 Core release target
 
-Six original Weapons, fourteen Logbooks, twenty-eight defined Items, seven enemy families with Gravewater/Devil's Maw variants, Siren and Fire Eel, three boss families, all three Territory Zones, one-to-three-stage Voyages/home challenges, Ledger, Defense Director, raids, one weekly Voyage board, holding progression and reacquisition, and cosmetics.
+Six original Weapons, fourteen Logbooks, twenty-eight defined Items, seven enemy families with Gravewater/Devil's Maw variants, Siren and Fire Eel, two Drowned Pursuit overtime archetypes, eight pirate POI types, three boss families, all three Territory Zones, one-to-three-stage Voyages/home challenges, Ledger, Defense Director, raids, one weekly Voyage board, holding progression and reacquisition, cosmetics, Crews/community events and ship inventory.
 
 First-party payment and public marketplace launch requires transaction and platform validation, but their ownership rules are part of this specification. Implement local/sandbox versions before live settlement. Six expansion Weapons are fully defined for future use; they are not required to prove the core loop.
 
@@ -239,7 +242,9 @@ The first combat prototype may run locally for feel testing, but its results are
 
 Simulation timestep target is 30 Hz with rendering interpolated separately. Game time and spawn rates must not depend on frame rate. Device presentation may cull distant VFX, never score-affecting enemies. Hard entity and effect budgets are defined in the combat specification.
 
-Frontend framework, engine, backend vendor, storage engine, wallet provider, deployment, and marketplace integration are intentionally not selected without inspecting implementation constraints. These do not prevent content/data and prototype work, but they must be resolved before production infrastructure work.
+Unity with 3D assets is owner-selected. The [technical design](Rogue_Pirates_Technical_Design.md) proposes a shared C# simulation, containerized C# backend/verifier, PostgreSQL, Railway compute and Cloudflare assets, pending prototype benchmarks and hosting selection. Save state is account-based in the server database. No source code or existing implementation constraints were inspected.
+
+On channels prohibiting blockchain, the owner selected a build without that functionality, with a trading-hub link only where permitted and no link otherwise. Platform acceptance and treatment of external trading-derived gameplay entitlements remain separate checks; see the technical design. Do not silently remove ownership or promise all-channel transaction parity.
 
 ## 13. Acceptance criteria
 
@@ -293,7 +298,7 @@ Tune systems through playtests rather than treating the initial values as proven
 
 See the [narrative, retention, revenue and production proposal](Rogue_Pirates_Narrative_Retention_Production_Proposal.md) for the 13 September discussion addendum, non-code asset checklist and staged readiness review. Its new recommendations remain pending owner review and do not supersede accepted rules in this GDD.
 
-The companion specifications resolve prototype behavior for former open questions. The following remain production decisions: target device floor, engine/network architecture, deployment vendors, payment/platform compliance, wallet custody model, live fee pricing, user-generated naming moderation, support/recovery policy, and externally funded event prizes.
+The companion specifications resolve prototype behavior for former open questions. Unity and platform targets are selected; the technical design proposes networking, account saves and hosting. Remaining production decisions include measured device floor and replay feasibility, vendor/plan selection before deployment, channel eligibility and entitlement behavior, wallet custody model, live fee pricing, naming moderation, support/recovery targets, and event-specific funding/delivery operations. Event rewards are owner-selected as flexible and manually/externally fulfilled.
 
 Owner review is still needed for newly proposed defaults, especially consumable restrictions, retention percentages, raid fees/protection, account progression rates, and overtime reach. Implementation can prototype these values; a public launch should not imply they were individually agreed in conversation.
 
