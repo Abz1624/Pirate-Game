@@ -4,11 +4,15 @@
 **Parent:** [Game Design Document](Rogue_Pirates_GDD_v3_1.md)  
 **Status:** concrete, unvalidated prototype defaults. All values below are proposed starting data, not measured balance.
 
+The 13 September Megabonk polish pass updates this specification in place. See [reference review](Rogue_Pirates_Megabonk_Design_Review.md) for sources/conflicts and [Captains and mastery](Rogue_Pirates_Captains_and_Mastery.md) for new character profiles. Treat the revised data as a new content-manifest version; never change a live run's values midway through its attempt.
+
 ## 1. Units and player baseline
 
 Distances are meters; time is active simulation seconds. Use 30 simulation ticks per second. Percentages are additive within their named stat bucket unless stated otherwise. Round damage to 0.01 internally; displayed damage rounds to integers. Death occurs at Hull <= 0 after fatal-hit prevention.
 
 Player: 100 maximum Hull, full starting Hull, 6 m/s movement, 0.8-meter collision radius, 3-meter pickup radius, 5% critical chance, 1.5 critical multiplier, zero armor, zero passive regeneration, and one rank-1 starting Weapon. Two Weapon and two Logbook slots are initially available; permanent capacity follows the parent GDD.
+
+This is the neutral baseline. Selected Captain applies only the base-stat/passive overrides listed in the Captain spec. Skins never supply these overrides. Passive level growth is temporary to the run, separate from permanent Item ranks.
 
 Movement uses direct directional steering without simulated sailing inertia. Acceleration is 30 m/s², braking 40 m/s², turning up to 720 degrees/s. Facing tracks the last nonzero movement direction; retain facing at rest. Diagonal movement is normalized. Obstacles slide the ship along their surface rather than stopping both axes.
 
@@ -29,6 +33,10 @@ Enemy elemental resistance is zero by default. Bosses take 50% of normal slow st
 ### 2.2 Hit categories
 
 Direct Weapon hits may crit and trigger eligible on-hit Items. DOT ticks, triggered Item damage, reflected/ram damage, environment damage, and boss adds' scripted self-destruction do not trigger generic on-hit effects or crit unless explicitly stated. Every damage event records source, target, parent event, and generation.
+
+Chance-based on-hit receivers use `effective_chance = clamp(base_stack_chance * source_proc_coefficient, 0, receiver_cap)`. Coefficients affect chance only, not damage, guaranteed intrinsic Weapon effects or kill credit. Weapon coefficients: Deck Cannon 1.0, each Broadside hit 0.5, each Keg blast target 0.5, each eligible Cutlass contact 0.3, Flamethrower tick 0.2, Lightning Mast chain target 0.5. Shared event/rate limits still apply.
+
+Explicit bridge whitelist: Grapeshot fragments (coefficient 0.5), Copper Conductor arcs (0.5), and Storm in a Bottle strikes (0.5) may attempt only Copper Conductor and Devil's Match's on-hit ignition. An effect ID already present in the ancestry cannot trigger itself again. Everything else remains non-proccing unless its own record already defines a bounded propagation rule. Emit a `LightningChainEvent` once for a Mast emission or a successful Conductor arc, not once per struck enemy; bottle descendants never charge the bottle. Proc RNG is a dedicated saved combat stream. This selectively connects builds without permitting arbitrary recursive Item damage.
 
 An enemy dying from a DOT or Item effect credits its originating player once. Noncombat hazards and enemies killing each other grant no player kill unless an explicit player effect caused the damage. Each enemy ID grants kill credit at most once.
 
@@ -57,6 +65,8 @@ At each level choose three distinct offer IDs where possible. Category weights: 
 Upgrade quality probabilities: Common 70%, Uncommon 22%, Rare 6.5%, Epic 1.3%, Legendary 0.2%. A quality multiplier of 1, 1.2, 1.5, 1.8, or 2.2 applies to that level-up's scalar increment. It never multiplies discrete projectile-count unlocks. Each new Weapon/Logbook starts at rank 1 regardless of card rarity.
 
 When fewer than three eligible offers remain, fill missing slots with distinct fallback cards: heal 10% maximum Hull; +2% additive damage for the run; +1% movement speed for the run. Repeated fallback stats respect global caps. Banish cannot remove baseline fallback availability.
+
+Do not offer a content upgrade when every changed stat is already capped and no unclaimed discrete milestone would change behavior. Keep partially useful upgrades and show their actual post-cap increment. If all fallback effects are currently useless, show a single Continue/no-upgrade action instead of forcing a misleading choice. This filtering affects level offers only; it does not remove capped Items from the owner's random chest pool.
 
 RNG streams are separate for level offers, stage layout, chests, enemies, and permanent rewards. Taking an extra combat shot must not manipulate permanent chest rolls. Save RNG state with run snapshots.
 
@@ -133,25 +143,25 @@ Logbooks max at run rank 40. Rank 1 grants one increment; each further rank gran
 
 ### 5.1 Foundational eight
 
-- **Gunner:** +4% additive damage per increment. Default.
-- **Powdermaster:** +3% attack speed. Total attack-speed cap +200%. Default.
-- **Navigator:** +2% movement speed. Total positive movement cap +80% before temporary bursts. Default.
-- **Carpenter:** +4% of base maximum Hull (four Hull) per increment; heals by the increase. Default.
-- **Lookout:** +1 percentage point crit chance per increment. Default.
-- **Quartermaster:** +4% run Gold pickup value per increment, capped at +150% from all Gold modifiers. Affects generated run Gold only, never theft, passive income, contracts, or market proceeds. Default.
-- **Scavenger:** +5% base pickup radius per increment, maximum radius 12 meters. Default.
-- **Cartographer:** +3% XP pickup value per increment, maximum +150% XP bonus. Default.
+- **Gunner:** +8% additive damage per increment. Default.
+- **Powdermaster:** +7.5% attack speed. Total attack-speed cap +200%. Default.
+- **Navigator:** +3% movement speed. Total positive movement cap +80% before temporary bursts. Default.
+- **Carpenter:** +10 maximum Hull per increment; heals by the increase. This flat increment is not multiplied by Captain starting-Hull modifiers. Default.
+- **Lookout:** +2 percentage points crit chance per increment. Default.
+- **Quartermaster:** +8% run Gold pickup value per increment, capped at +150% from all Gold modifiers. Affects generated run Gold only, never theft, passive income, contracts, or market proceeds. Default.
+- **Scavenger:** +10% neutral base pickup radius per increment, maximum radius 12 meters. Default.
+- **Cartographer:** +7% XP pickup value per increment, maximum +150% XP bonus. Default.
 
 All eight are eligible from the first-conquest pool; the initial equipped capacity stays two. The broader default pool is a prototype choice resolving the earlier four-versus-eight starter ambiguity.
 
 ### 5.2 Unlockable six
 
 - **Ironclad:** +2 armor per increment. Quest: survive 300 cumulative mitigated enemy damage; price 180 Rum. Damage qualification counts prevented damage at current armor, not self-inflicted boundary damage.
-- **Fortune:** +2 Luck points per increment; Luck caps at 100. Quest: open 30 stage chests; price 220 Rum.
-- **Tidecaller:** +3% effect duration per increment, capped +100%. Affects burn/bleed total duration at unchanged tick damage (therefore more total DOT), slows, ink, and active flame windows. Does not extend invulnerability, frenzy, projectile lifetime, or stage timer. Quest: apply 300 burn stacks; price 260 Rum.
+- **Fortune:** +5 Luck points per increment; Luck caps at 100. Quest: open 30 stage chests; price 220 Rum.
+- **Tidecaller:** +5% effect duration per increment, capped +100%. Affects burn/bleed total duration at unchanged tick damage (therefore more total DOT), slows, ink, and active flame windows. Does not extend invulnerability, frenzy, temporary floor powerups, projectile lifetime, or stage timer. Quest: apply 300 burn stacks; price 260 Rum.
 - **Admiral:** +3% damage to elites and bosses per increment, capped at +100%; its own conditional bucket. Quest: kill any objective boss within 90 seconds of activation; price 300 Rum.
 - **Plunderer:** +3% generated boss Gold/Rum reward per increment, capped at +60%. Does not modify theft or permanent progress drops. Quest: secure three raid boss victories; price 300 Rum.
-- **Chaos:** on each increment choose uniformly among +4% damage, +3% attack speed, +2% movement, +4 base Hull, +1 crit point, +2 armor. No extra quality roll after selection. Quest: secure any boss using three different Weapons; price 280 Rum.
+- **Chaos:** for each offered increment sample uniformly among currently useful +12% damage, +10% attack speed, +5% movement, +16 Hull, +3 crit points or +4 armor. Apply that offer's existing quality multiplier, with no second quality roll. Show and save the sampled result before the player accepts; reconnect cannot reroll it. The larger but unpredictable increment compensates for lack of stat targeting. All effects respect shared caps. Quest: secure any boss using three different Weapons; price 280 Rum.
 
 ## 6. Luck and chest rarity
 
@@ -187,11 +197,11 @@ The eight Common Items below are the protected starter pool. They cannot be sold
 Each entry lists quest qualification, immediate initial ownership price in Rum, effects, and rank magnitude.
 
 - **Skeleton Key:** open 25 paid chests; 160 Rum. Each chest opening has chance `1-0.94^n`, multiplied by q, cap 35%, to be free. Decide before charging; a free opening does not increment the chest purchase counter. Rank magnitude: chance. Test no roll on insufficient funds until the chest is actually interactable; repeated canceled interactions cannot reroll.
-- **Grapeshot Pouch:** reach Deck Cannon rank 6; 180 Rum. Cannon hit emits two fragments, each 20% × n × q of parent damage, cap 80%. Fragments travel five meters with zero pierce and no Item procs, cannot hit the parent target. Rank magnitude: fragment damage. Test fragments cannot spawn fragments.
+- **Grapeshot Pouch:** reach Deck Cannon rank 6; 180 Rum. Cannon hit emits two fragments, each 20% × n × q of parent damage, cap 80%. Fragments travel five meters with zero pierce, cannot hit the parent target, and use the coefficient-0.5 bridge whitelist. Rank magnitude: fragment damage. Fragments never emit more fragments. Test its permitted ignition/arc bridges and forbidden self-propagation separately.
 - **Double-Fuse Cord:** kill ten enemies within three seconds using Kegs; 180 Rum. Keg blasts trigger undetonated owner Kegs within `2 + 0.3(n-1)` meters, max four. Triggered Kegs deal +5% × n × q base damage, cap +30%. Rank magnitude: damage bonus, not chain reach. Test maximum once-per-keg activation and normal natural fuse cancellation.
 - **Serrated Scabbard:** kill 200 enemies with Cutlasses; 180 Rum. Cutlass hits apply bleed; each copy adds 3 percentage points to the base 12% DOT coefficient, cap 30%; q multiplies that coefficient. Rank magnitude: bleed damage. Test DOT ticks cannot apply bleed.
 - **Dragon's Breath Nozzle:** apply 500 burns; 200 Rum. Burn duration increases 10% per copy, cap +50%, before Tidecaller. Burn damage per tick gains 2% × n × q, cap +10%. Rank magnitude: tick bonus only. Test five-stack replacement and expiry.
-- **Copper Conductor:** hit three targets with one lightning chain 30 times; 200 Rum. Add one lightning jump, nonstacking; each copy adds 3 percentage points × q to jump retention, capped at 95% retention. Rank magnitude: falloff improvement only. Test no repeated target and no retention above 95%.
+- **Copper Conductor:** hit three targets with one lightning chain 30 times; 200 Rum. Add one Mast jump, nonstacking; each copy adds 3 percentage points × q to lightning jump retention, capped at 95%. Also, eligible hits have a fixed 15% base chance (before source coefficient) to launch a two-target lightning arc from the struck enemy toward distinct other enemies within six meters per jump. The first arc hit uses 30% of parent pre-armor resolved damage; the next retains `min(0.95,0.8+0.03*n*q)`. Apply target armor once; do not reapply parent generic damage/crit. Arc applies shock after damage, cannot revisit parent target and uses the bridge whitelist. No arc when there is no other target; it does not charge Storm in that case. Rank magnitude remains falloff improvement only, not chance or target count. Test native Mast plus arc events, chain attribution and ancestry prevention.
 - **Broadside Drum:** hit four enemies with one volley 20 times; 180 Rum. A qualifying volley subtracts `0.10 × n × q` seconds from remaining Broadside cooldown, cap 0.4 seconds; trigger once per volley. Cannot reduce next emission below 0.12 seconds since prior emission. Rank magnitude: subtraction. Test no recursive immediate volley.
 - **Hammerhead Helm:** kill 50 Hammerheads; 200 Rum. Reduce received knockback by 20% per copy, cap 80%. Moving above 5 m/s into an enemy already below full Hull deals `8 × n × q` damage, with a one-second cooldown per target. Rank magnitude: ram damage. Ram does not cancel incoming contact damage. Test no stationary ram and no on-hit procs.
 
@@ -205,15 +215,15 @@ Each entry lists quest qualification, immediate initial ownership price in Rum, 
 
 ### 7.4 Epic Items
 
-- **Storm in a Bottle:** perform 300 Lightning Mast chain events; 400 Rum. Every 20 chain events triggers five lightning strikes over one second, each at a distinct nearby enemy for `18 × (1+0.25(n-1)) × q` base damage, stack multiplier capped at 2. Ten-second trigger cooldown. Rank magnitude: strike damage. No crit/on-hit triggers; these strikes do not charge the bottle.
-- **Devil's Match:** secure Gravewater's boss after applying burn during the fight; 420 Rum. Burning enemy deaths create a 2.5-meter blast for `12 × n × q`, cap 60 before q. Rank magnitude: blast damage. Blasts do not apply burn; a blast-killed burning enemy can create one more blast but only up to generation 2 from the original kill. Test breadth cap and no indefinite propagation.
+- **Storm in a Bottle:** perform 300 Lightning Mast chain events; 400 Rum. Every 20 eligible Mast/Conductor chain events triggers five lightning strikes over one second, each at a distinct enemy within 18 meters for `18 × (1+0.25(n-1)) × q` base damage, stack multiplier capped at 2. Ten-second trigger cooldown. Charge stops at 20 during cooldown; after it ends, the next eligible chain triggers one burst, not accumulated bursts. Rank magnitude: strike damage. No crit, but strikes use the coefficient-0.5 bridge whitelist. Strikes and their descendants cannot charge the bottle. Fewer than five valid targets means fewer strikes, not repeated hits or stored charges. Test counter persistence, burst attribution and bounded proc volume.
+- **Devil's Match:** secure Gravewater's boss after applying burn during the fight; 420 Rum. Eligible hits have fixed 20% base chance before source coefficient to apply one standard burn. This ignition is independent of an intrinsic Weapon burn but still obeys the five-stack limit. Burning enemy deaths create a 2.5-meter blast for `12 × n × q`, cap 60 before q. Rank magnitude: blast damage only; copies do not increase ignition chance. Blasts do not ignite or use the bridge whitelist; a blast-killed burning enemy can create one more blast but only up to generation 2 from the original kill. Test whether an arc ignites, a blast does not re-ignite, and all propagation respects ancestry/budgets.
 - **Queen Anne's Fuse:** detonate five Kegs in one chain; 420 Rum. Natural Keg explosions create one secondary blast at the nearest other enemy within four meters after 0.2 seconds, dealing 25% × q parent damage. Copies add generations: min(n,3); each generation retains 50% of previous damage. Rank magnitude: first secondary coefficient. These blasts do not trigger Cord, Match, or another independent Fuse chain. Test generation and event caps.
 - **Barnacle Crown:** defeat Barnacle King after spending 20 seconds with at least four enemies within five meters; 400 Rum. While surrounded by four enemies, gain +2 armor and +2% damage per second up to `10 + 2(n-1)` stacks, cap 20. Decay two stacks/sec when not surrounded. q applies to damage per stack only. Test acquisition/loss and global armor cap.
 - **Jolly Roger:** kill 150 enemies without a heavy hit; 400 Rum. Every ten kills adds one streak stack granting `1% × q` damage, maximum `20 + 5(n-1)` stacks capped 40. A heavy hit removes half, rounded up. Rank magnitude: per-stack damage. Test DOT kills credit once and scripted summons do not farm streak.
 
 ### 7.5 Legendary Items
 
-- **Leviathan Heart:** conquer Devil's Maw; 650 Rum. Every 12 seconds target the densest cluster within 20 meters; after 0.6-second telegraph, deal `120 × (1+0.2(n-1)) × q` damage in five-meter radius, multiplier capped 2. Rank magnitude: damage. No Item procs; normal enemies knocked back 1.5 meters. Test single target fallback and obstacle-safe target selection.
+- **Leviathan Heart:** conquer Devil's Maw; 650 Rum. Every 12 seconds target the densest cluster within 20 meters; after 0.6-second telegraph, deal `(120 + min(120,0.2*maximum_Hull)) × min(2,1+0.2(n-1)) × q` base damage in five-meter radius. Snapshot Hull at pulse emission. Rank magnitude: pulse damage only. No Item procs; normal enemies knocked back 1.5 meters. This bounded Hull conversion links defensive investment to offense without an unlimited health/damage feedback loop. Test single target fallback, obstacle-safe target selection, cap and Hull changes before/after emission.
 - **Captain's Last Rum:** defeat any objective boss while below 20% Hull; 650 Rum. One active copy maximum. Once per run, replace a fatal enemy or Dread hit with restoration to 25% Hull, two seconds damage immunity, and +30% × q damage for eight seconds. Rank magnitude: frenzy bonus only. A second pickup after consumption does not recharge it. Before consumption, duplicate pickup gives a 10% Hull heal instead. Test one-use flag survives stage transition and reconnect.
 
 ### 7.6 Cross-effect guardrails
@@ -263,6 +273,16 @@ Apply Gravewater base multiplier from section 9, then one behavior change, not a
 - **Fire Eel:** 65 base Hull; speed 4.0; contact 8; line attack 14; XP 4; Gold 4. Every five seconds mark a six-meter line, wait one second, dash along it and leave a two-second hazard. Line path is fixed at telegraph start. Apply biome/time scaling.
 
 ## 9. Spawn director and difficulty
+
+### Stage pressure beats
+
+For ordinary Voyages, home challenges and conquest/expansion, schedule an elite threat at active 3:00 and 8:00, and a 20-second +25% director-rate pulse at 4:00 and 7:00. These times are reference-derived starting nodes; threat/reward magnitudes are original tuning. Each stage resets the schedule. No scheduled beat creates a chest or POI.
+
+Minute-3 threat uses the biome Hammerhead variant; minute-8 uses the biome Kraken Spawn variant. Apply 6× base Hull, 1.25× base damage, +10 armor and the existing normal time/biome/depth/tier multipliers once; do not also apply natural-elite multipliers. Preserve normal attack telegraphs. They consume one of the 12 elite slots, grant one kill, 15 XP and 12 run Gold before pickup modifiers, and do not count as objective bosses or contract boss clears. They are original director threats, not zero-credit summons.
+
+Use normal offscreen/safe spawning with a five-second HUD warning. If an objective boss is active or no valid elite slot/anchor exists, defer for at most 20 active seconds, then skip the beat with a recorded reason; never stack delayed threats or enlarge caps. A pulse still combines with the boss director-rate reduction and ordinary cap. Raids use the authored Defense Director and omit these automatic beats so owner defense budgets remain meaningful.
+
+These timing nodes change pressure, not the ten-minute soft timer. Defeating the boss early preserves later scheduled beats until stage exit or overtime. None is mandatory for portal travel.
 
 Stage depth d=1,2,3. Biome b=1 Saltwind, 2 Gravewater, 3 Devil's Maw. Active stage minute m is continuous elapsed seconds/60. Tier t=1,2,3 governs encounter profile and total stage count.
 
@@ -382,7 +402,20 @@ Each boss grants one guaranteed run Item chest with Rare/Epic/Legendary weights 
 
 Unless a record overrides it, POI activation uses two-meter range and a 0.75-second hold, interrupted by damage/movement. Consumed state and granted reward commit together. Signal Buoy uses its charge rule. Temporary buffs expire on their active-time deadline or stage exit; permanent run-stat choices carry stages. Powder Cache's original finite roster remains rewardable; later reinforcements are not added. The former Cursed Shrine risk/Luck effect is replaced by the above Oath/Idol split.
 
-### 11.1 Combat event ordering
+### 11.1 Temporary floor powerups
+
+Powerups are distinct from run Items, permanent holdings, POIs and level-up choices. They occupy no inventory slot and cannot be traded or carried into another run. Proposed drop rule: each rewardable non-boss enemy killed by the player rolls a fixed 1% chance from a dedicated saved powerup stream; at most six powerups spawn per stage. Roll only after legitimate kill credit, never on retirement/zero-credit summons. Ordinary and overtime director enemies are eligible. Luck, Item ranks and permanent reward-chest modifiers do not alter this chance.
+
+On success, select one result by weights: Repair Supplies 35, Battle Signal 35, Tailwind 20, Salvage Chime 10. Spawn at a reachable point nearest the defeated enemy, validated against water/terrain; failed placement records no grant and does not reroll the effect. Six-spawn budget counts successful placement. Visible drops expire after 30 active seconds or stage exit/death; there is no respawn.
+
+- **Repair Supplies:** heal 15 maximum-Hull percentage points on collection; cap at current maximum. This is immediate healing, not maximum-Hull growth.
+- **Battle Signal:** +25% additive damage for eight active seconds.
+- **Tailwind:** +20% movement speed for six active seconds. Temporary positive speed bursts share a +40% additive cap on neutral movement speed in addition to the normal +80% permanent-run speed bucket; do not multiply every burst together.
+- **Salvage Chime:** attract existing current-stage XP exactly like Salvage Bell; grants no new XP and consumes on collection even if there is none.
+
+Collect by passing within 1.5 meters, not the XP attraction radius; use distinct visuals so players can avoid a powerup if a later mastery objective forbids it. Duplicate temporary buffs refresh remaining duration to the base duration, never add magnitude or bank extra seconds. Tidecaller does not modify these effects. Temporary effects expire at stage exit. Pausing freezes pickup lifetime and buff duration. No invulnerability powerup is included initially.
+
+### 11.2 Combat event ordering
 
 Owner-approved outcome: a valid same-tick boss/player double death counts as a boss victory and ends the run. Proposed deterministic order below implements it:
 

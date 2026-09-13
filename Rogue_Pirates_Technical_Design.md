@@ -113,6 +113,8 @@ Scale by adding API replicas and independent worker capacity first, then tune da
 We already have most design values. What remains is expressing them consistently and filling the few policy fields each content record needs. This is data-authoring work, not a request for the owner to hand-write JSON.
 
 - **All records:** stable ID, schema/content version, display/localization keys, enabled modes/release phase, tags, dependencies, visual/audio references and validation cases.
+- **Captain:** signature Weapon/license prerequisites, neutral-stat overrides, run-level formula/cap, passive counters, reset/expiry rules, portrait and leaderboard metadata. Captain identity is not a ship skin asset.
+- **Powerup:** eligible drop sources, fixed probability/weights, per-stage spawn cap, pickup radius, ground lifetime, refresh/stack rules and effect expiry. Keep this separate from permanent reward loot tables.
 - **Weapon:** targeting rule, base damage, interval, range, projectile/area behavior, hit/crit/proc rules, rank increments, milestone unlocks, caps and quest.
 - **Item:** rarity, eligibility, run-stack formula/cap, permanent-rank axis, trigger conditions, cooldown, proc generation and reward source. Keep run stacks distinct from persistent progress.
 - **Logbook:** stat bucket, increment/quality behavior, maximum rank, cap and unlock.
@@ -124,6 +126,8 @@ We already have most design values. What remains is expressing them consistently
 - **Cosmetic:** definition/instance distinction, rig/slot compatibility, art variants, provenance, transfer state and channel capabilities.
 
 Export readable JSON plus a content manifest hash. Validate missing references, negative/invalid quantities, zero-total weights, unreachable unlocks, duplicate IDs, over-budget layouts, unbounded procs and incompatible cosmetic slots. Pin each run to a content version. Keep old versions available for resumption/verification; migrate persistent data separately from live run rules.
+
+The Megabonk polish pass requires proc ancestry/source coefficients, whitelisted receivers, capped perk counters, scheduled pressure-beat IDs, and separate powerup RNG/budget state in the simulation/checkpoint schema. Snapshot stat-conversion inputs at the defined attack boundary, so changed Hull or spent Gold cannot retroactively change an emitted attack. Report source-level damage and capped-effect telemetry without uploading an event per VFX particle.
 
 Example conceptual POI entry: `poi.signal_buoy`, schema 1, charge interaction, radius 4 m, charge 8 active seconds, uses 1, reward `shrine_stat_choice`, allowed modes from a named profile, and explicit depleted prefab/minimap icon. The full numerical behavior lives in the combat spec, not in duplicated UI text.
 

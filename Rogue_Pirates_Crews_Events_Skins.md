@@ -75,7 +75,7 @@ Community-versus-community standings, if used, follow the same published top-N f
 
 Proposed common clock: daily periods run 00:00–00:00 UTC; weekly periods start Monday 00:00 UTC. Show local time and an exact countdown. Campaigns define their start/end in advance and state whether partial opening days/weeks carry prizes.
 
-Assign a run to the period containing its start time. Score is posted only after verified death. Preserve the existing maximum 24-hour late settlement after a period closes, subject to the stricter active-run interruption rules. Thus a daily result can remain provisional during the following day; show this explicitly. Starting a run before the reset does not submit its score to the next period as well.
+Assign a run to the period containing its start time. Score is posted only after verified death. Owner-approved during the readiness audit: the server must receive the complete sequenced run through death by 24 hours after the period closes, subject to active-run interruption rules. Authoritative receipt time determines timeliness; a client timestamp or incomplete upload does not. Verification can finish later without disqualifying an otherwise eligible timely submission. Keep standings provisional until the window closes and all timely submissions affecting them are resolved. Thus a daily result can remain provisional into the following day or longer during verification review; show this explicitly. Starting a run before reset does not submit its score to the next period as well. Verification/reward delays never extend Crew membership locks.
 
 Equal kills share rank; timestamp/run ID order is display-only. Publish tie handling before enrollment:
 

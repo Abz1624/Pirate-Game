@@ -121,6 +121,8 @@ One-time first-claim and expansion rewards may exceed capacity only up to the ac
 
 ## 5. Quests and targeted reacquisition
 
+The [Captain/mastery extension](Rogue_Pirates_Captains_and_Mastery.md) adds account-bound Captain licenses granted after explicit gameplay qualification and one-time home-mastery rewards. These are separate from tradeable Item holdings and cosmetic instances. Captain passive growth resets each run; no new premium currency, permanent Captain rank or repeatable resource multiplier is introduced. Mastery does not replace targeted Item reacquisition.
+
 One-time content quests are listed in the combat document. Record progress from verified events; conditions specify cumulative versus single-run. A quest completion is permanent account history, even if an Item is sold.
 
 Initial specialized Item purchase is allowed once after qualification and adds one ownership progress unit at rank 0. Subsequent copies come from post-run chests, contracts, or other players; the initial Rum purchase is not an unlimited vending source of tradeable progress.
@@ -171,7 +173,7 @@ An initial ownership purchase after a quest is unavailable if the account alread
 
 ### 7.1 Cosmetic catalog baseline
 
-Launch basic cosmetics reuse existing assets:
+Launch basic cosmetics should reuse approved art where suitable. All `references/` assets are excluded by owner instruction; local Unity candidates are not automatically approved. See the asset checklist. Proposed catalogue:
 
 - Sail recolor: 300 Gold or 60 Rum.
 - Flag design: 500 Gold or 100 Rum.
@@ -324,9 +326,9 @@ At most one consumable equipped/run, inventory cap ten of each. Overflow chest b
 
 ## 13. Home challenge rewards
 
-Available challenge tiers follow the equivalent owned-biome Voyage tier unlocks. Standard mastery, no paid chests, two-Weapon limit, and timed boss objective each track first completion per biome/tier.
+Owner-selected initial catalogue: Fast Flag, Lightly Armed and Steady Hands from [Captains and mastery](Rogue_Pirates_Captains_and_Mastery.md), each one stage at Tier 1. These replace the older standard/no-chests/two-Weapon/timed catalogue and its per-biome/tier Gold/Rum/progress bonuses.
 
-First completion reward: `150 × biome × tier` Gold, `40 × biome × tier` Rum, and three progress units from a quest-qualified specialized Item using Silver permanent reward weights. Record once; dying after qualifying final boss clear does not revoke it.
+First completion is once per account and preset: Fast Flag grants Quick on the Draw title +30 Rum; Lightly Armed grants Single Cannon Pennant +30 Rum; Steady Hands grants Steady Hands title +30 Rum. Rum follows normal capacity/overflow rules. Record completion at its verified qualifying boss milestone; subsequent death does not revoke it. There is no additional first-clear Gold or specialized progress grant. Biome changes do not reset a preset's claim flag.
 
 Repeat completions use ordinary post-run reward-chest eligibility and 50% generated currency rates. Contract progress is permitted for qualifying bosses/kills; self-tests give none. Challenge rules are engine-provided and cannot be edited by the owner to lower requirements.
 
@@ -338,7 +340,7 @@ Pause on level-up and Signal Buoy choice. Manual pause, focus loss/browser backg
 
 Proposed competition rule: the existing 30-minute paused allowance now includes choice-screen time, manual pause, backgrounding, suspension and connectivity interruption, counted as a union of wall-time intervals (never double-count overlapping reasons). Trusted server-controlled loading/verification waits are excluded. Show allowance and warn before exhaustion; beyond it the attempt remains playable and reward-bearing but loses global and event score eligibility. This limit is a Rogue Pirates proposal, not a claimed Megabonk rule. A paused interval of 24 hours expires the unfinished run, including an abandoned choice screen; ordinary active simulation still has no hard survival timer. Never count client-supplied elapsed values as authoritative.
 
-The practical distinction: choosing an upgrade stops the ship's fight clock, while the real-world community event still ends at its advertised time. A run starting before reset belongs to its start period and must die/validate within the published 24-hour late-score cutoff. Missing that cutoff removes that period's score eligibility without ending live combat or erasing secured rewards. Pause remains a convenience, not a way to extend event deadlines. Exact Megabonk wall-time/leaderboard treatment was not established from primary documentation; this policy adapts the desired paused choice experience to our online events.
+The practical distinction: choosing an upgrade stops the ship's fight clock, while the real-world community event still ends at its advertised time. A run starting before reset belongs to its start period. Owner-approved deadline policy: the server must receive the complete sequenced submission through death by the published cutoff, 24 hours after that period ends. Store authoritative receipt time; client death timestamps alone are insufficient. A timely complete submission may finish verification afterward without losing eligibility because of our queue delay. Incomplete uploads at the cutoff are not timely complete submissions. Missing the cutoff removes that period's score eligibility without ending live combat or erasing secured rewards. Pause remains a convenience, not a way to extend event deadlines. Exact Megabonk wall-time/leaderboard treatment was not established from primary documentation; this policy adapts the desired paused choice experience to our online events.
 
 Save after every boss milestone, stage transition, permanent receipt, and every ten active seconds. Resume from last acknowledged state without replaying already-applied events. Client rewind must not duplicate chests or drops. Network architecture must support the intended state cadence.
 
@@ -350,7 +352,7 @@ This expiry is an operational failure policy, not a gameplay Return Home feature
 
 At run start assign the current Monday-00:00-UTC week ID and frozen content version. On verified death, eligible Voyages submit total score once. Keep the best kill count per account/week. Ties share rank. Stage count, biome, tier, duration, build, and content version accompany the score without creating separate boards.
 
-A started-before-reset run can settle into its assigned week for up to 24 hours after the reset, consistent with interruption expiry; final weekly rewards are delayed until that window closes. For this prototype the weekly reward is a profile badge only, with participation and top-10 badges; no tradeable asset or SOL prize.
+A started-before-reset run must be completely submitted through death by 24 hours after reset, subject to the separate interruption-expiry rules. Verification may finish later. Final weekly rewards wait until the submission window closes and all timely submissions that could affect standings have been resolved. Keep results provisional during backlog/review; do not grant an unverified score or reject a timely submission merely because verification is slow. For this prototype the weekly reward is a profile badge only, with participation and top-10 badges; no tradeable asset or SOL prize.
 
 Deploy balance changes between weeks where possible. In an emergency invalidate affected exploit scores with a reason and preserve unaffected receipts. Do not silently compare a modified active run against the wrong ruleset.
 
@@ -397,6 +399,8 @@ Public marketplace and payment release is blocked on provider integration, accou
 - Weekly run spans reset: score belongs to start week and final badge processing waits for allowed completions.
 
 ## 19. Economy tuning experiments
+
+Following the [Megabonk polish pass](Rogue_Pirates_Megabonk_Design_Review.md), also model larger Quartermaster/Cartographer increments, Captain Vale's Gold bonus, timed threat rewards, temporary pickup survival gains and the small one-time mastery grants. Improved survival can increase Gold/progress supply even when drop rates are unchanged. Do not assume the previous economy sample predicts the revised combat's payouts.
 
 Run at least three modeled cohorts before live tuning: low-frequency player (two runs/day), active player (six), and high-frequency player (fifteen). These are test inputs, not assumptions about the audience. Vary win rate, average kills, chest spending, raid losses, production claims, and trading participation.
 

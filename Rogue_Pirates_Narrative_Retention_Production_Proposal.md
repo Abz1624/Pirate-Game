@@ -161,6 +161,8 @@ This is a scope checklist, not a requirement to finish every asset before protot
 
 ### Combat models, rigs and animation
 
+- Megabonk polish additions: six original Captain portrait/pose sets (prototype three), four temporary pickup visuals/icons and timed elite warning treatments using existing enemy rigs. These add no on-foot character locomotion assets. Include the two previously specified Drowned Pursuit overtime archetypes.
+
 - Six launch Weapon visual kits: barrels, mounts or relevant ship attachments, projectiles and impact assets. Six future Weapons remain deferred even though their designs exist.
 - Seven enemy families with silhouettes, movement, attack windups, attack/recovery, hit and death states. Model variants should reuse rigs where possible.
 - Spectral/infernal treatment and the additional Siren and Fire Eel assets; check these against the content manifest to avoid missing non-base enemies.
@@ -171,6 +173,7 @@ This is a scope checklist, not a requirement to finish every asset before protot
 ### UI and UX
 
 - Wireframes and interaction prototypes: onboarding; mode selection; home; Captain's Ledger; upgrade queue; storage/production; defense cards/self-test; collection; whole-holding trade preview; contracts; leaderboard; cosmetic shop; settings; support.
+- Captain selection/passive preview, signature Weapon/unlock prerequisites, challenge selection/failed-versus-secured state, temporary buff duration indicators and source-based post-run build summaries. These extend the deferred wireframe TODO; they are not claimed completed screens.
 - Combat HUD: Hull, XP/level, Weapon/Logbook/Item slots, run Gold, stage/timer/overtime, kills, objective state, joystick and interaction prompt.
 - Minimap symbols: player, discovered Beacon, opened portal, available/consumed POIs, relevant hazards. Specify which icons are hidden until discovery.
 - Level-up choices, chest reveal, slot-full handling, pause/resume, portal transition, death, secured boss objective and final reward breakdown.
@@ -249,7 +252,7 @@ Reviewed against the current main, combat, economy and Crew specifications after
 
 Follow-up resolution: the five findings below are preserved as review history. Combat now defines eight themed POIs, a distinct Drowned Pursuit overtime fleet and same-tick resolution; economy defines pause/lifecycle clocks; Crew rules include the owner-approved queued exit. Unity/platform/save direction is selected; [technical design](Rogue_Pirates_Technical_Design.md) and [milestone backlog](Rogue_Pirates_Implementation_Backlog.md) provide the new handoff plan. Exact numerical defaults still require playtests. First-run wireframes are explicitly deferred by the owner, rather than treated as a blocker to the initial sandbox.
 
-### Concrete specification gaps
+### Resolved specification gaps — historical review text, not current implementation instructions
 
 - **POI count conflict:** combat section 11 allows raids six/eight POIs for two/three Zones, but offers only four types and forbids duplicate types per stage. Proposed resolution: require all four types once, then allow additional raid copies under a stated per-type cap. Exact type weighting and integer allocation of the 40% highest-Zone share need defining. Do not implement contradictory constraints.
 - **Overtime scaling of existing enemies:** combat section 9 gives scaling curves but does not state whether ordinary enemies already alive receive updated Hull/damage or only new spawns do. This affects difficulty, kiting and the entity cap. Define separately for each stat; preserve the explicit boss rule that Hull does not inflate repeatedly during its fight. Keep this as a design decision, not an inferred change to current balance.

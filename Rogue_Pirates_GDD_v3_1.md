@@ -20,8 +20,12 @@ This edition replaces v3.0 as the current design. The unchanged v3.0 file remain
 - [Narrative, retention and production proposal](Rogue_Pirates_Narrative_Retention_Production_Proposal.md): narrative/revenue recommendations, asset checklist and implementation-readiness review. Unapproved recommendations do not override settled mechanics.
 - [Unity technical design](Rogue_Pirates_Technical_Design.md): runtime, proposed backend/database/hosting, account saves, verified simulation, structured content and channel-specific integration.
 - [Implementation milestone backlog](Rogue_Pirates_Implementation_Backlog.md): ordered development tasks and acceptance gates; wireframes explicitly remain a deferred TODO.
+- [Megabonk reference review](Rogue_Pirates_Megabonk_Design_Review.md): researched polish decisions, explicit source conflicts, preserved constraints and validation priorities.
+- [Captains and mastery](Rogue_Pirates_Captains_and_Mastery.md): original character passives, unlocks, skin independence and repeatable home challenge presets; new values are prototype proposals.
 
-**Decision status:** owner-approved directions are identified as commitments below. All new numbers, algorithms, inventories, timings, and procedural rules in the linked specifications are **proposed prototype defaults**. They are concrete enough to implement without inventing missing rules, but have not been approved individually or established through playtesting. They are not production balance promises.
+**Decision status:** owner-approved directions are identified as commitments below. All new numbers, algorithms, inventories, timings, and procedural rules in the linked specifications are **proposed prototype defaults**. They support staged prototyping, but the readiness audit identifies remaining engineering details and release decisions. They have not been approved individually or established through playtesting and are not production balance promises.
+
+13 September audit outputs: [readiness audit](Rogue_Pirates_Readiness_Audit.md), [Cursor implementation handoff](Rogue_Pirates_Cursor_Implementation.md), and [asset production checklist](Rogue_Pirates_Asset_Checklist.md). The owner excluded all assets under `references/` from this plan. Their presence is not permission to import or ship them.
 
 If descriptions appear to overlap, this document controls product commitments, the combat document controls combat/content arithmetic, and the economy document controls transactions and resource arithmetic. The newer Crew extension controls Crew/event/skin rules, including its approved scope additions. A content definition does not expand launch scope by itself. No game source code or existing engine architecture was inspected.
 
@@ -53,6 +57,8 @@ The intended reaction to a weak run is “That combination did not work; I want 
 
 The player fantasy is ship-based throughout the initial release. On-foot ports, agents, and co-op do not block the core game.
 
+The Megabonk polish pass adds a selected Captain profile that supplies a signature starting Weapon and a run-level passive, represented through the existing ship and a portrait. Six profiles are defined; prototype Rook, Brine and Flint first. Captains have no permanent stat ranks and never derive power from collaboration skins. See the Captain specification for unlocks and baseline overrides.
+
 ## 3. Activities
 
 ### 3.1 Fresh-map Voyages
@@ -65,6 +71,8 @@ Prototype tier sequence per biome: Tier 1 has one stage, Tier 2 has two, Tier 3 
 
 Reserve a home seed for the account and start a one-stage Level-0 Saltwind run. Guarantee Deck Cannon for first-conquest attempts until the first claim. Teach combat, chests, minimap, Beacon interaction, and boss telegraphs through short contextual prompts.
 
+After first claim, Captain selection controls the starting Weapon as specified in the Captain document. All subsequent offers and Item pools remain randomized without Captain-specific weighting.
+
 Barnacle King defeat secures Saltwind, unlocks the Ledger and subsequent progression, and shows TERRITORY CLAIMED without stopping play. Continue until death. Retry a failed initial attempt on the same reserved home geometry, with new reward/encounter seeds; avoid forcing regeneration of a home identity on each failure.
 
 ### 3.3 Permanent expansion
@@ -75,11 +83,11 @@ Prototype access: claim the prior Zone, meet the Ledger rank requirement in the 
 
 ### 3.4 Home challenges
 
-Use the persistent home arrangement. Additional challenge stages reveal temporary outer square bands beyond the currently owned footprint, using the selected challenge biome palette. Their terrain is an expedition instance, not the future permanent expansion seed.
+Use the persistent home arrangement. Owner decision during the 13 September audit: the initial catalogue is the three presets in [Captains and mastery](Rogue_Pirates_Captains_and_Mastery.md): Fast Flag, Lightly Armed and Steady Hands. They replace the older four challenge families and their reward schedule; do not implement both.
 
-No temporary band produces income, enables permanent decoration placement, increases storage, or becomes raid territory. Each stage carries the build forward, has finite rewards, and permits continued post-boss survival.
+All three initial presets use one stage at Tier 1. Their first-completion grants occur once per account/preset, not once per biome/tier. Recurring home payouts still follow the economy specification. Losing a challenge condition does not end play; boss success and eventual death remain separate outcomes.
 
-Prototype challenge families: normal mastery, no paid chests, two-Weapon limit, and ten-minute boss-clear objective. Losing a bonus condition does not forcibly end play; its reward is lost, but survival can continue. Challenge boss success remains recorded after death.
+Multi-stage home challenges with temporary outer square bands remain a later extension, not part of these three presets. If added, temporary terrain must never change permanent ownership, production, storage, decoration sockets or future expansion seeds. Multi-stage Voyages remain in core scope.
 
 ### 3.5 Raids
 
@@ -183,7 +191,7 @@ Saltwind, one-stage runs, initial conquest, Deck Cannon/Broadside/Powder Kegs/Fl
 
 ### 8.2 Core release target
 
-Six original Weapons, fourteen Logbooks, twenty-eight defined Items, seven enemy families with Gravewater/Devil's Maw variants, Siren and Fire Eel, two Drowned Pursuit overtime archetypes, eight pirate POI types, three boss families, all three Territory Zones, one-to-three-stage Voyages/home challenges, Ledger, Defense Director, raids, one weekly Voyage board, holding progression and reacquisition, cosmetics, Crews/community events and ship inventory.
+Six original Weapons, fourteen Logbooks, twenty-eight defined Items, seven enemy families with Gravewater/Devil's Maw variants, Siren and Fire Eel, two Drowned Pursuit overtime archetypes, eight pirate POI types, three boss families, all three Territory Zones, one-to-three-stage Voyages, three initial one-stage home mastery presets, Ledger, Defense Director, raids, one weekly Voyage board, holding progression and reacquisition, cosmetics, Crews/community events and ship inventory.
 
 First-party payment and public marketplace launch requires transaction and platform validation, but their ownership rules are part of this specification. Implement local/sandbox versions before live settlement. Six expansion Weapons are fully defined for future use; they are not required to prove the core loop.
 
@@ -199,7 +207,7 @@ The owner has added daily and weekly Crew/community rankings and partner events 
 
 One weekly board ranks each account's best eligible Voyage run by total verified kills, including all stages and post-boss survival. No biome/tier or account-power brackets. Show biome, tier, stages, loadout, duration, and Item progression beside the score.
 
-Prototype tie policy: equal kills share rank. Display tied entries by score timestamp and run ID without awarding a higher competitive rank for that display order. Week begins Monday 00:00 UTC; an attempt belongs to its start week and must settle within the interruption policy. No cash/SOL leaderboard prize is assumed.
+Prototype tie policy: equal kills share rank. Display tied entries by score timestamp and run ID without awarding a higher competitive rank for that display order. Week begins Monday 00:00 UTC; an attempt belongs to its start week. Its complete submission through death must reach the server by 24 hours after period end; verification may finish later and standings remain provisional until timely submissions are resolved. Separate interruption-expiry rules still apply. No cash/SOL prize is assumed for the baseline global board; partner-event prizes are defined separately.
 
 Raids, home challenges, and self-tests never submit to the Voyage board. A later raid competition requires its own rules. Profile reputation rewards actual achievements and credible defenses; merely receiving attacks gives no points.
 
@@ -226,6 +234,7 @@ These are engine-neutral contracts, not a prescribed framework or wire protocol.
 - `RaidLayout`: run ID, layout seed, section transforms, spawn, Beacon, POIs, encounter placements, validation version, and defender snapshot reference.
 - `ItemHolding`: account, Item type, total earned progress units, derived rank, lock state, and version. One aggregate per account/type; unique transfer lots are temporary transaction records.
 - `RunSnapshot`: run/account IDs, mode, content version, RNG streams, start time, frozen eligible pools/ranks, stage, player build, timers, chest counts, rewards, objective flags, and interruption deadline.
+- `CaptainDefinition` and `MasteryDefinition`: signature Weapon, base overrides, passive triggers/scaling/caps, unlock predicates, mode constraints and one-time rewards. RunSnapshot includes Captain/version, passive counters, mastery status, pressure-beat state and temporary powerup budget/RNG.
 - `RaidEntitlement`: defender/attacker, captured exposed-amount ceilings, fee split, quote timestamp, and settlement state. Prototype exploration does not reserve defender balances; the systems document defines live settlement.
 - `RewardReceipt`: unique source event, account, Gold/Rum amounts, permanent grants, overflow, and applied status.
 - `Trade`: listing/holding reservation, buyer/seller, quoted asset/progress, quote version, payment reference, settlement state, and applied receipt.
@@ -247,6 +256,8 @@ Unity with 3D assets is owner-selected. The [technical design](Rogue_Pirates_Tec
 On channels prohibiting blockchain, the owner selected a build without that functionality, with a trading-hub link only where permitted and no link otherwise. Platform acceptance and treatment of external trading-derived gameplay entitlements remain separate checks; see the technical design. Do not silently remove ownership or promise all-channel transaction parity.
 
 ## 13. Acceptance criteria
+
+The latest polish pass also requires tests for Captain/skin independence, minute-3/4/7/8 pressure beats, useful level offers after caps, explicit proc bridges and temporary pickup limits. These are detailed in the combat, Captain and reference-review documents; performance and economy effects remain unvalidated.
 
 ### 13.1 World and layout
 
@@ -283,14 +294,16 @@ On channels prohibiting blockchain, the owner selected a build without that func
 
 ## 14. Delivery sequence
 
-1. Data-driven combat sandbox and first-conquest slice, including death after victory.
-2. Finite exploration, overtime, multi-stage carryover, and the complete six-Weapon baseline.
-3. Section-based stable homes and validated raid permutations with fixed attachments.
-4. Captain's Ledger, production/storage, ownership, contracts, and reward receipts.
-5. Defense Director and self-tests, then resource raids with atomic settlement/protection.
-6. Remaining biomes, enemies, bosses, home challenges, and one verified leaderboard.
-7. Cosmetics and marketplace/payment sandbox, followed by production integration once validated.
-8. Optional social events and later content according to observed replayability.
+Use the [milestone backlog](Rogue_Pirates_Implementation_Backlog.md) and [Cursor handoff](Rogue_Pirates_Cursor_Implementation.md) for detailed dependencies and acceptance:
+
+1. M0: platform/performance/replay feasibility and foundations.
+2. M1: small deterministic combat sandbox.
+3. M2: Saltwind slice, finite exploration, overtime and death after victory.
+4. M3: accounts, authoritative persistence, Ledger/holdings and reward integrity.
+5. M4: full run content and multi-stage Voyages, Territory expansion/permutations, three mastery presets and raids.
+6. M5: verified global/community competition, required Crews/events, skin inventory and manual reward operations.
+7. M6: validated channel integrations and sandbox commerce, with live features gated by approvals.
+8. M7: release validation, production assets, operational readiness and accepted channel launches.
 
 Tune systems through playtests rather than treating the initial values as proven. Keep numerical balance changes versioned; do not change a live run's rules mid-attempt.
 

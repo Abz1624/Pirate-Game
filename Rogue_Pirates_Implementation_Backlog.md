@@ -4,11 +4,14 @@
 
 Use with [technical design](Rogue_Pirates_Technical_Design.md) and the current GDD. Milestones describe internal development order, not separate browser/mobile release dates. Owner requested first-run wireframes as a later TODO. Do not block the initial movement sandbox on them; complete them before polished onboarding integration.
 
+Start development with the [Cursor handoff](Rogue_Pirates_Cursor_Implementation.md); use the [readiness audit](Rogue_Pirates_Readiness_Audit.md) for unresolved gates and the [asset checklist](Rogue_Pirates_Asset_Checklist.md) for production. All `references/` assets are excluded by owner instruction. The selected initial home catalogue is the newer three mastery presets. Score deadlines use receipt of a complete submission, with verification allowed afterward.
+
 ## M0 — Feasibility and foundations
 
 - [ ] Pin Unity supported LTS patch and packages after testing native Android/iOS and desktop/mobile Web builds.
 - [ ] Validate one representative 3D water scene, pooled swarm and projectile stress case on mobile Safari and Android Chrome as well as native builds.
 - [ ] Establish pure-C# simulation boundaries; prove deterministic movement/hit/RNG/event parity in Unity native, WebAssembly and server replay.
+- [ ] Record numeric precision/rounding/RNG contract and refine the existing top-down camera/40-by-30-meter baseline for orientation, aspect ratios and touch controls.
 - [ ] Benchmark verification CPU, peak memory and initial downloads; replace assumed infrastructure figures with measurements.
 - [ ] Resolve Steam blockchain/ads compatibility direction and portal account/monetization requirements before claiming channel parity.
 - [ ] Confirm desktop OS scope, minimum reference devices, target frame rate and build-signing resources.
@@ -22,6 +25,7 @@ Exit: test builds run on all target classes; a replay fixture matches exactly; i
 - [ ] Atomic combat tick ordering, lethal-hit prevention, simultaneous boss/player death fixture.
 - [ ] Pause reason stack, focus/suspend behavior and consistent active/wall-clock tracking.
 - [ ] Data authoring/export/validation pipeline and placeholder VFX/audio.
+- [ ] Revised Logbook increments, capped-offer filtering and explicit proc source/receiver whitelist from the Megabonk polish pass; preserve prior values only as a named comparison profile.
 
 Exit: combat is readable and responsive; frame rate does not alter outcomes; closing one pause layer cannot resume beneath another.
 
@@ -31,6 +35,7 @@ Exit: combat is readable and responsive; frame rate does not alter outcomes; clo
 - [ ] Finite chests/POIs with themed shrine interactions and complete allocation rules.
 - [ ] Beacon/minimap, ten-minute soft timer, distinct overtime enemy family and cap-safe spawn replacement.
 - [ ] Boss victory secured followed by survival until death and understandable results.
+- [ ] Rook/Brine/Flint Captain profiles, minute-3/4/7/8 pressure beats and four temporary powerups with stage limits.
 - [ ] First conquest and local home preview; temporary data is clearly separated from public accounts.
 - [ ] **TODO — first-run wireframes:** start, choice, chest, Beacon, boss victory, continuing survival, death, results and first home/upgrade. Owner explicitly deferred these; finish before final onboarding UI.
 
@@ -48,6 +53,8 @@ Exit: same account resumes safely across approved platforms; forged client balan
 ## M4 — Full run progression and Territory systems
 
 - [ ] Remaining launch Weapons/Logbooks/Items, three biomes/bosses and multi-stage carryover.
+- [ ] Resolve per-quest mode eligibility, trait/boss compatibility, Kraken stationary-versus-pursuit exception, home-preset biome/boss records and former-Crew raid exclusion duration before their dependent systems are accepted.
+- [ ] Remaining three Captain profiles if initial tests support them; three home mastery presets and personal overtime milestones.
 - [ ] Persistent concentric home expansion, section-bound decorations and valid raid permutations.
 - [ ] Defense authoring/self-tests; raid quotes, once-only theft/protection, concurrency and refund tests.
 - [ ] Economy cohorts, overflow, upgrade affordability and repeatable reacquisition playtests.
