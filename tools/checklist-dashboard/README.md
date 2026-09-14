@@ -33,7 +33,8 @@ Then open: **http://localhost:8080/tools/checklist-dashboard/**
 
 - Per-document stats: total, complete, in progress, needs fix
 - Milestone progress bars (integration checklist)
-- Filter by status and search by ID/text
+- Filter by status, **tag**, and search by ID/text/description
+- Tags and short descriptions on integration checklist rows
 - **Refresh** reloads `.md` files after you edit them in the repo
 
 ## Updating checklists

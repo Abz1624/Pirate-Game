@@ -312,10 +312,37 @@ button:hover { filter: brightness(1.05); }
   white-space: nowrap;
 }
 
+.item-description {
+  margin: 0.4rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+}
+
+.tag-chip {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(217, 164, 65, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(217, 164, 65, 0.28);
+}
+
 .item-title {
   margin: 0.35rem 0 0;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   line-height: 1.35;
+  color: var(--muted);
 }
 
 .item-meta {

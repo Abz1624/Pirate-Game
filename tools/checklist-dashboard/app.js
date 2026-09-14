@@ -38,6 +38,7 @@ const PROGRESS_STATUSES = new Set(["IMPLEMENTED_UNVERIFIED", "IN_PROGRESS"]);
 let activeDoc = SOURCES[0].id;
 let documents = {};
 let filterStatus = "";
+let filterTag = "";
 let searchQuery = "";
 
 const $ = (sel) => document.querySelector(sel);
@@ -65,61 +66,106 @@ function normalizeStatus(raw) {
   return cleaned.split(/[\s/]/)[0] || "UNKNOWN";
 }
 
+function columnIndex(headers, names) {
+  for (const name of names) {
+    const idx = headers.findIndex((h) => h.toLowerCase() === name.toLowerCase());
+    if (idx >= 0) return idx;
+  }
+  return -1;
+}
+
+function parseTags(raw) {
+  if (!raw) return [];
+  return raw
+    .replace(/`/g, "")
+    .split(/[,;]/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+}
+
 function parseIntegrationMarkdown(text, source) {
   const lines = text.split(/\r?\n/);
   const items = [];
   let currentMilestone = "General";
   let currentSection = "General";
-  let statusIdx = -1;
+  let columns = null;
 
   for (const line of lines) {
     const h2 = line.match(/^## (.+)$/);
     if (h2) {
       currentMilestone = h2[1].trim();
       currentSection = currentMilestone;
-      statusIdx = -1;
+      columns = null;
       continue;
     }
 
     const h3 = line.match(/^### (.+)$/);
     if (h3) {
       currentSection = h3[1].trim();
-      statusIdx = -1;
+      columns = null;
       continue;
     }
 
-    if (line.includes("|") && line.toLowerCase().includes("status")) {
+    if (line.includes("|") && line.toLowerCase().includes("| id |")) {
       const headers = parseTableRow(line);
       if (headers) {
-        statusIdx = headers.findIndex((h) => h.toLowerCase() === "status");
+        columns = {
+          id: columnIndex(headers, ["id"]),
+          tags: columnIndex(headers, ["tags", "tag"]),
+          description: columnIndex(headers, ["description", "desc"]),
+          status: columnIndex(headers, ["status"]),
+          evidence: columnIndex(headers, ["code evidence", "evidence"]),
+          acceptance: columnIndex(headers, ["acceptance test", "acceptance"]),
+          expected: columnIndex(headers, ["expected behavior", "expected"]),
+          issue: columnIndex(headers, ["issue"]),
+          notes: columnIndex(headers, ["notes"]),
+        };
       }
       continue;
     }
 
     const row = parseTableRow(line);
-    if (!row || statusIdx < 0) continue;
+    if (!row || !columns || columns.id < 0 || columns.status < 0) continue;
 
-    const id = row[0];
+    const id = row[columns.id];
     if (!/^(M\d|MX-|KI-)/.test(id)) continue;
 
-    const status = normalizeStatus(row[statusIdx]);
+    const status = normalizeStatus(row[columns.status]);
+    const tags = columns.tags >= 0 ? parseTags(row[columns.tags]) : [];
+    const description =
+      columns.description >= 0 ? row[columns.description] || "" : "";
     const title =
-      row.find((c, i) => i > 0 && i !== statusIdx && c && !c.startsWith("`plan")) ||
-      row[1] ||
+      (columns.expected >= 0 ? row[columns.expected] : "") ||
+      (columns.issue >= 0 ? row[columns.issue] : "") ||
+      (columns.notes >= 0 ? row[columns.notes] : "") ||
       "";
-    const evidence = row[statusIdx - 1] || "";
-    const acceptance = row[statusIdx + 1] || "";
+    const evidence =
+      columns.evidence >= 0 ? row[columns.evidence] || "" : "";
+    const acceptance =
+      columns.acceptance >= 0 ? row[columns.acceptance] || "" : "";
 
     items.push({
       id,
       status,
+      tags,
+      description,
       milestone: currentMilestone,
       section: currentSection,
       title,
       evidence,
       acceptance,
       source,
-      searchText: [id, status, title, evidence, acceptance, currentMilestone, currentSection]
+      searchText: [
+        id,
+        status,
+        tags.join(" "),
+        description,
+        title,
+        evidence,
+        acceptance,
+        currentMilestone,
+        currentSection,
+      ]
         .join(" ")
         .toLowerCase(),
     });
@@ -244,8 +290,19 @@ function groupItems(items) {
   return groups;
 }
 
+function collectTags(items) {
+  const counts = {};
+  for (const item of items) {
+    for (const tag of item.tags || []) {
+      counts[tag] = (counts[tag] || 0) + 1;
+    }
+  }
+  return counts;
+}
+
 function matchesFilters(item) {
   if (filterStatus && item.status !== filterStatus) return false;
+  if (filterTag && !(item.tags || []).includes(filterTag)) return false;
   if (searchQuery && !item.searchText.includes(searchQuery)) return false;
   return true;
 }
@@ -276,6 +333,21 @@ function renderStatusFilter(stats) {
     const opt = document.createElement("option");
     opt.value = status;
     opt.textContent = `${status} (${stats.byStatus[status]})`;
+    select.appendChild(opt);
+  }
+  select.value = current;
+}
+
+function renderTagFilter(items) {
+  const select = $("#tag-filter");
+  if (!select) return;
+  const current = select.value;
+  const tagCounts = collectTags(items);
+  select.innerHTML = '<option value="">All tags</option>';
+  for (const tag of Object.keys(tagCounts).sort()) {
+    const opt = document.createElement("option");
+    opt.value = tag;
+    opt.textContent = `${tag} (${tagCounts[tag]})`;
     select.appendChild(opt);
   }
   select.value = current;
@@ -361,12 +433,17 @@ function renderSections(items) {
     for (const item of sectionItems) {
       const row = document.createElement("article");
       row.className = `item-row${matchesFilters(item) ? "" : " hidden"}`;
+      const tagHtml = (item.tags || [])
+        .map((tag) => `<span class="tag-chip">${escapeHtml(tag)}</span>`)
+        .join("");
       row.innerHTML = `
         <div class="item-head">
           <span class="item-id">${item.id}</span>
           <span class="item-status ${statusClass(item.status)}">${item.status}</span>
         </div>
-        <p class="item-title">${escapeHtml(item.title)}</p>
+        ${item.description ? `<p class="item-description">${escapeHtml(item.description)}</p>` : ""}
+        ${tagHtml ? `<div class="item-tags">${tagHtml}</div>` : ""}
+        ${item.title ? `<p class="item-title">${escapeHtml(item.title)}</p>` : ""}
         <div class="item-meta">
           ${item.evidence ? `<div><strong>Evidence:</strong> ${escapeHtml(item.evidence)}</div>` : ""}
           ${item.acceptance ? `<div><strong>Acceptance:</strong> ${escapeHtml(item.acceptance)}</div>` : ""}
@@ -397,6 +474,7 @@ function render() {
   renderMilestoneBars(stats);
   renderCards(stats);
   renderStatusFilter(stats);
+  renderTagFilter(doc.items);
   renderLegend(Object.keys(stats.byStatus));
 
   const meta = $("#meta-line");
@@ -419,6 +497,11 @@ async function init() {
 
   $("#status-filter").addEventListener("change", (e) => {
     filterStatus = e.target.value;
+    render();
+  });
+
+  $("#tag-filter").addEventListener("change", (e) => {
+    filterTag = e.target.value;
     render();
   });
 
