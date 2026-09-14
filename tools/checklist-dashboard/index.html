@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rogue Pirates — Checklist Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>Rogue Pirates</h1>
+      <p class="subtitle">Checklist dashboard · local overview</p>
+    </div>
+    <div class="topbar-actions">
+      <label class="search-wrap">
+        <span class="sr-only">Search</span>
+        <input id="search" type="search" placeholder="Search ID, status, text…" autocomplete="off" />
+      </label>
+      <select id="status-filter" aria-label="Filter by status">
+        <option value="">All statuses</option>
+      </select>
+      <button id="refresh" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="doc-tabs" aria-label="Checklist documents"></nav>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <section class="panel">
+        <h2>Overview</h2>
+        <div id="summary-stats" class="stat-grid"></div>
+      </section>
+      <section class="panel">
+        <h2>By milestone</h2>
+        <div id="milestone-bars" class="milestone-bars"></div>
+      </section>
+      <section class="panel">
+        <h2>Status legend</h2>
+        <ul id="legend" class="legend"></ul>
+      </section>
+      <section class="panel meta">
+        <p id="meta-line">Loading…</p>
+        <p class="hint">Edit the <code>.md</code> files, then click <strong>Refresh</strong>.</p>
+      </section>
+    </aside>
+
+    <section class="content">
+      <div id="dashboard-cards" class="cards"></div>
+      <div id="sections" class="sections"></div>
+    </section>
+  </main>
+
+  <template id="row-template">
+    <article class="item-row">
+      <div class="item-head">
+        <span class="item-id"></span>
+        <span class="item-status"></span>
+      </div>
+      <p class="item-title"></p>
+      <div class="item-meta"></div>
+    </article>
+  </template>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
