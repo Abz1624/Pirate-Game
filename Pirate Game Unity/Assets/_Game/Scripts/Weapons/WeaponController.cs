@@ -67,6 +67,8 @@ namespace HighSeas.Weapons
                 demoPacing = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
         }
 
+        public void ConfigureV3() => maxSlots = 2;
+
         public void Initialize(GameDatabase db, string startingWeaponId)
         {
             database = db;

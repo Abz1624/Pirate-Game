@@ -148,9 +148,23 @@ namespace HighSeas.World
             for (var step = 0; step < stepCount; step++)
                 result = ResolveCapsuleStep(result, stepDelta, radius, height, ref velocity, mask);
 
-            result = Depenetrate(result, radius, height);
+            if (IsOverlapping(result, radius, height))
+                result = Depenetrate(result, radius, height);
+
             velocity = PreservePreferredDirection(velocity, preferredDirection, velocity.magnitude);
             return result;
+        }
+
+        static bool IsOverlapping(Vector3 position, float radius, float height)
+        {
+            if (Mask == 0) return false;
+            GetCapsulePoints(position, radius, height, out var pointA, out var pointB);
+            return Physics.CheckCapsule(
+                pointA,
+                pointB,
+                GetCastRadius(radius),
+                Mask,
+                QueryTriggerInteraction.Ignore);
         }
 
         static Vector3 ResolveCapsuleStep(

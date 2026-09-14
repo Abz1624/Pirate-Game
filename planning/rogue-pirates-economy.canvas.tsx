@@ -10,7 +10,7 @@ const sources = [
  ['Poki monetization','https://developers.poki.com/guide/how-monetization-works','SDK ads, no IAP. Recurring share requires compatible agreement.'],
  ['CrazyGames monetization','https://docs.crazygames.com/faq/','Ads and optional IAP documented, exact contractual share not verified. Model 50% developer share is a placeholder, NOT a quoted rate.'],
  ['Stripe US domestic cards','https://stripe.com/pricing','2.9% + $0.30 illustrative US domestic-card reference only. Other regions, FX, international cards and merchant-of-record services differ.'],
- ['Rewarded-ad restrictions','https://support.google.com/admob/answer/7313578?hl=en-GB','Non-transferable reward restriction includes indirect conversion to transferable items. No Gold/Rum/Item ad rewards assumed.'],
+ ['Rewarded-ad restrictions','https://support.google.com/admob/answer/7313578?hl=en-GB','Rewards must be non-transferable and cannot convert indirectly into transferable items. The model permits small Gold/Rum caches only while both currencies and everything they buy remain account-bound; revalidate the selected ad network before launch.'],
  ['Unity 2026 pricing','https://unity.com/products/pricing-updates','Pro $2,310/seat/year prepaid; Personal threshold up to $200,000 revenue/funding subject to terms. No Runtime Fee. Budgeted seats are editable.'],
  ['Apple enrollment','https://developer.apple.com/programs/enroll/','$99/year US reference; local prices vary.'],
  ['Google enrollment','https://support.google.com/googleplay/android-developer/answer/6112435','$25 one-time enrollment reference.'],

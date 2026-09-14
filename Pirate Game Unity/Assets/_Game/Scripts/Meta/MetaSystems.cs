@@ -76,14 +76,27 @@ namespace HighSeas.Meta
 
         public RelicDefinition RollRelic(RunRng rng, float luck)
         {
+            if (database?.relics == null || database.relics.Length == 0)
+                return null;
+
             var rarity = rng.RollRarity(luck);
-            RelicDefinition best = null;
-            for (var i = 0; i < database.relics.Length; i++)
+            for (var tier = (int)rarity; tier >= 0; tier--)
             {
-                var r = database.relics[i];
-                if (r.rarity == rarity) { best = r; break; }
+                var pool = new List<RelicDefinition>();
+                for (var i = 0; i < database.relics.Length; i++)
+                {
+                    var relic = database.relics[i];
+                    if (relic != null && (int)relic.rarity == tier)
+                        pool.Add(relic);
+                }
+
+                if (pool.Count == 0)
+                    continue;
+
+                return pool[rng.LootInt(0, pool.Count)];
             }
-            return best ?? database.relics[0];
+
+            return database.relics[rng.LootInt(0, database.relics.Length)];
         }
     }
 

@@ -26,7 +26,7 @@ namespace HighSeas.V3
             rect.anchorMin = new Vector2(1f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(1f, 1f);
-            rect.anchoredPosition = new Vector2(-16f, -16f);
+            rect.anchoredPosition = new Vector2(-16f, -140f);
             rect.sizeDelta = new Vector2(300f, 132f);
 
             var panel = root.AddComponent<UnityEngine.UI.Image>();
@@ -66,15 +66,21 @@ namespace HighSeas.V3
             if (_captainText != null)
                 _captainText.text = profile.DisplayName;
 
-            var minBeacon = _pacing != null ? _pacing.bossBeaconMinSeconds : 180f;
-            var beaconReady = RunManager.Instance.ElapsedSeconds >= minBeacon;
             if (_beaconText != null)
-                _beaconText.text = beaconReady ? "Beacon: READY" : $"Beacon: {FormatTime(minBeacon - RunManager.Instance.ElapsedSeconds)}";
+            {
+                var discovery = V3DiscoverySystem.Instance;
+                var beaconState = discovery != null ? discovery.BeaconState : BeaconRevealState.Hidden;
+                _beaconText.text = beaconState switch
+                {
+                    BeaconRevealState.Discovered => "Beacon: DISCOVERED",
+                    BeaconRevealState.ExactMarker => "Beacon: MARKED",
+                    BeaconRevealState.DirectionSector => "Beacon: NEARBY",
+                    _ => "Beacon: UNKNOWN"
+                };
+            }
 
-            var poi = FindFirstObjectByType<POIManager>();
-            var opened = poi != null ? poi.PaidChestCount : 0;
             if (_chestText != null)
-                _chestText.text = $"Chests: {opened} / {POIManager.V3SalvageChestCount}";
+                _chestText.text = string.Empty;
 
             if (_objectiveText != null)
             {

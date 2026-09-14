@@ -4055,7 +4055,7 @@
     [
       "Rewarded-ad restrictions",
       "https://support.google.com/admob/answer/7313578?hl=en-GB",
-      "Non-transferable reward restriction includes indirect conversion to transferable items. No Gold/Rum/Item ad rewards assumed."
+      "Rewards must be non-transferable and cannot convert indirectly into transferable items. The model permits small Gold/Rum caches only while both currencies and everything they buy remain account-bound; revalidate the selected ad network before launch."
     ],
     [
       "Unity 2026 pricing",

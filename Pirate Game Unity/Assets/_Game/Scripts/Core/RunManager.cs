@@ -23,6 +23,8 @@ namespace HighSeas.Core
         public int BankedRunGold { get; private set; }
         public bool IsOvertime => ElapsedSeconds > GameConstants.StageDurationSeconds;
         public bool IsPaused => PauseReason != PauseReason.None;
+        public bool IsRunEnded => State == RunState.PlayerDead || State == RunState.RunComplete;
+        public bool IsGameplayActive => State == RunState.Playing || State == RunState.BossFight;
 
         public event Action<RunState> StateChanged;
         public event Action<PauseReason> PauseChanged;
@@ -83,12 +85,14 @@ namespace HighSeas.Core
 
         public void AddGold(int amount)
         {
+            if (IsRunEnded || amount <= 0) return;
             Gold += amount;
             GoldChanged?.Invoke(Gold);
         }
 
         public bool TrySpendGold(int amount)
         {
+            if (IsRunEnded) return false;
             if (Gold < amount) return false;
             Gold -= amount;
             GoldChanged?.Invoke(Gold);

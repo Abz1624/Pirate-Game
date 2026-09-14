@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.V3;
 using HighSeas.Weapons;
 using UnityEngine;
 
@@ -29,6 +30,7 @@ namespace HighSeas.UI
         readonly Dictionary<string, int> _weaponLevels = new();
         readonly Dictionary<string, int> _logbookLevels = new();
         int _completedLevelUps;
+        bool _useV3Rules;
 
         public event Action<int> LevelChanged;
         public event Action OffersReady;
@@ -57,7 +59,7 @@ namespace HighSeas.UI
             _completedLevelUps = 0;
             _ownedWeapons.Add(startingWeapon);
             _weaponLevels[startingWeapon] = 1;
-            Level = 1;
+            Level = _useV3Rules ? 0 : 1;
             CurrentXP = 0f;
             PendingLevelUps = 0;
             RefreshXpToNext();
@@ -73,11 +75,20 @@ namespace HighSeas.UI
             return _logbookLevels.TryGetValue(logbookId, out var level) ? level : 0;
         }
 
-        void RefreshXpToNext() => XPToNext = GameMath.XPToNext(Level, demoPacing);
+        public void ConfigureV3()
+        {
+            _useV3Rules = true;
+            weaponSlots = 2;
+            logbookSlots = GameConstants.DefaultLogbookSlots;
+        }
+
+        void RefreshXpToNext() =>
+            XPToNext = _useV3Rules ? V3GameMath.XPToNext(Level) : GameMath.XPToNext(Level, demoPacing);
 
         public void AddXP(int amount)
         {
             if (amount <= 0) return;
+            if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
             CurrentXP += amount;
             while (CurrentXP >= XPToNext)
             {
@@ -90,8 +101,21 @@ namespace HighSeas.UI
             if (PendingLevelUps > 0) ShowLevelUp();
         }
 
+        public void CancelPendingLevelUps()
+        {
+            PendingLevelUps = 0;
+            LevelUpModal.Instance?.Hide();
+            RunManager.Instance?.SetPause(PauseReason.None);
+        }
+
         void ShowLevelUp()
         {
+            if (RunManager.Instance != null && RunManager.Instance.IsRunEnded)
+            {
+                PendingLevelUps = 0;
+                return;
+            }
+
             var offers = GenerateOffers();
             var modal = LevelUpModal.Instance;
             if (modal != null && modal.TryShow(offers, OnOfferSelected))
@@ -126,8 +150,144 @@ namespace HighSeas.UI
                 weaponSlots,
                 logbookSlots,
                 _completedLevelUps == 0);
+            if (_useV3Rules)
+                return GenerateV3Offers(rng, luck);
             OffersReady?.Invoke();
             return offers;
+        }
+
+        List<LevelOffer> GenerateV3Offers(RunRng rng, float luck)
+        {
+            var offers = new List<LevelOffer>(3);
+            var used = new HashSet<string>();
+
+            TryAddV3Offer(offers, used, RollV3LogbookOffer(rng, luck));
+            TryAddV3Offer(offers, used, RollV3WeaponOffer(rng, luck));
+            TryAddV3Offer(offers, used, RollV3WeaponOffer(rng, luck));
+
+            var attempts = 0;
+            while (offers.Count < 3 && attempts < 64)
+            {
+                attempts++;
+                var kind = attempts % 3;
+                var candidate = kind switch
+                {
+                    0 => RollV3LogbookOffer(rng, luck),
+                    1 => RollV3WeaponOffer(rng, luck),
+                    _ => RollSafeV3Offer(rng, luck)
+                };
+                TryAddV3Offer(offers, used, candidate);
+            }
+
+            OffersReady?.Invoke();
+            return offers;
+        }
+
+        void TryAddV3Offer(List<LevelOffer> offers, HashSet<string> used, LevelOffer offer)
+        {
+            if (offer.id == null || !IsV3OfferAllowed(offer)) return;
+            var key = $"{offer.kind}:{offer.id}";
+            if (used.Contains(key)) return;
+            used.Add(key);
+            offers.Add(offer);
+        }
+
+        LevelOffer RollV3LogbookOffer(RunRng rng, float luck)
+        {
+            if (database.logbooks == null || database.logbooks.Length == 0)
+                return default;
+
+            var start = rng.MapInt(0, database.logbooks.Length);
+            for (var i = 0; i < database.logbooks.Length; i++)
+            {
+                var lb = database.logbooks[(start + i) % database.logbooks.Length];
+                if (lb == null || !V3ContentUnlocks.IsLogbookUnlocked(lb.id)) continue;
+                if (!_ownedLogbooks.Contains(lb.id) && _ownedLogbooks.Count >= logbookSlots) continue;
+                _logbookLevels.TryGetValue(lb.id, out var lbLevel);
+                return LevelOfferGenerator.BuildLogbookOffer(lb, lbLevel, rng.RollRarity(luck));
+            }
+
+            return default;
+        }
+
+        LevelOffer RollV3WeaponOffer(RunRng rng, float luck)
+        {
+            if (_ownedWeapons.Count < weaponSlots)
+            {
+                for (var i = 0; i < database.weapons.Length; i++)
+                {
+                    var weapon = database.weapons[i];
+                    if (weapon == null || _ownedWeapons.Contains(weapon.id)) continue;
+                    if (!V3ContentUnlocks.IsWeaponUnlocked(weapon.id)) continue;
+                    if (rng.LootFloat() < 0.55f)
+                        return LevelOfferGenerator.BuildNewWeaponOffer(weapon);
+                    break;
+                }
+            }
+
+            for (var i = 0; i < _ownedWeapons.Count; i++)
+            {
+                var weaponId = _ownedWeapons[i];
+                var def = database.GetWeapon(weaponId);
+                if (def == null) continue;
+                _weaponLevels.TryGetValue(weaponId, out var level);
+                if (level <= 0) level = 1;
+                if (level >= def.maxLevel) continue;
+                return LevelOfferGenerator.BuildWeaponUpgradeOffer(
+                    def, level, rng.RollRarity(luck), levelUpSettings, demoPacing, rng);
+            }
+
+            return default;
+        }
+
+        bool IsV3OfferAllowed(LevelOffer offer)
+        {
+            if (offer.id == null) return false;
+            if (offer.isWeapon)
+            {
+                if (_ownedWeapons.Contains(offer.id))
+                    return true;
+                return V3ContentUnlocks.IsWeaponUnlocked(offer.id);
+            }
+
+            if (_ownedLogbooks.Contains(offer.id))
+                return true;
+            return V3ContentUnlocks.IsLogbookUnlocked(offer.id);
+        }
+
+        LevelOffer RollSafeV3Offer(RunRng rng, float luck)
+        {
+            for (var i = 0; i < _ownedWeapons.Count; i++)
+            {
+                var weaponId = _ownedWeapons[i];
+                var def = database.GetWeapon(weaponId);
+                if (def == null) continue;
+                _weaponLevels.TryGetValue(weaponId, out var level);
+                if (level <= 0) level = 1;
+                if (level >= def.maxLevel) continue;
+                return LevelOfferGenerator.BuildWeaponUpgradeOffer(
+                    def, level, rng.RollRarity(luck), levelUpSettings, demoPacing, rng);
+            }
+
+            for (var i = 0; i < database.logbooks.Length; i++)
+            {
+                var lb = database.logbooks[i];
+                if (lb == null || !V3ContentUnlocks.IsLogbookUnlocked(lb.id)) continue;
+                if (!_ownedLogbooks.Contains(lb.id) && _ownedLogbooks.Count >= logbookSlots) continue;
+                _logbookLevels.TryGetValue(lb.id, out var lbLevel);
+                return LevelOfferGenerator.BuildLogbookOffer(lb, lbLevel, rng.RollRarity(luck));
+            }
+
+            for (var i = 0; i < database.weapons.Length; i++)
+            {
+                var weapon = database.weapons[i];
+                if (weapon == null || _ownedWeapons.Contains(weapon.id)) continue;
+                if (!V3ContentUnlocks.IsWeaponUnlocked(weapon.id)) continue;
+                if (_ownedWeapons.Count >= weaponSlots) break;
+                return LevelOfferGenerator.BuildNewWeaponOffer(weapon);
+            }
+
+            return default;
         }
 
         void OnOfferSelected(LevelOffer offer)
@@ -148,6 +308,12 @@ namespace HighSeas.UI
 
         void ApplyOffer(LevelOffer offer)
         {
+            if (_useV3Rules && !IsV3OfferAllowed(offer))
+            {
+                Debug.LogWarning($"Blocked locked V3 offer: {offer.id}");
+                return;
+            }
+
             var weapons = FindFirstObjectByType<WeaponController>();
             if (offer.isWeapon)
             {

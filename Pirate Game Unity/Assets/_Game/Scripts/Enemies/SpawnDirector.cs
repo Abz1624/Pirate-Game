@@ -83,6 +83,7 @@ namespace HighSeas.Enemies
         void Update()
         {
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
+            if (RunManager.Instance.IsRunEnded) return;
             if (RunManager.Instance.State != RunState.Playing && RunManager.Instance.State != RunState.BossFight) return;
             Tick(Time.deltaTime);
         }
@@ -273,6 +274,9 @@ namespace HighSeas.Enemies
 
         void TickContinuousThreat(float dt)
         {
+            if (_v3PacingEnabled && RunManager.Instance.IsOvertime)
+                return;
+
             var pacing = _pacingSettings;
             var threatMult = settings != null ? settings.threatMultiplier : 1f;
             if (pacing != null && !_v3PacingEnabled)
@@ -419,21 +423,56 @@ namespace HighSeas.Enemies
                 return true;
             }
 
-            enemyWorld.Spawn(defIndex, PickSpawnPositionInArc(GetSpawnDistanceMin(), GetSpawnDistanceMax(), RunManager.Instance.Rng), affix, speedMult);
-            return true;
+            return false;
+        }
+
+        public bool TrySpawnOvertimeEnemy(string enemyId, float overtimeMinutes)
+        {
+            if (enemyWorld == null || !_v3PacingEnabled || !RunManager.Instance.IsOvertime)
+                return false;
+
+            var defIndex = FindDefinitionIndex(enemyId);
+            if (defIndex < 0)
+                return false;
+
+            var hpMult = Mathf.Pow(2f, overtimeMinutes * 0.5f);
+            var dmgMult = 1f + overtimeMinutes * 0.12f;
+            var attempts = settings != null ? settings.spawnPositionAttempts : 16;
+            var radius = enemyWorld.Definitions[defIndex].radius + 0.35f;
+
+            for (var i = 0; i < attempts; i++)
+            {
+                var pos = PickSpawnPosition();
+                if (!IsSpawnCandidateValid(pos, radius))
+                    continue;
+
+                enemyWorld.Spawn(defIndex, pos, EliteAffix.None, 1f, hpMult, dmgMult);
+                return true;
+            }
+
+            return false;
         }
 
         float GetSpawnDistanceMin() => settings != null ? settings.spawnDistanceMin : GameConstants.SpawnAnnulusMin;
         float GetSpawnDistanceMax() => settings != null ? settings.spawnDistanceMax : GameConstants.SpawnAnnulusMax;
 
         float GetGracePeriod() => settings != null ? settings.gracePeriodSeconds : 0f;
-        float GetMinSpawnGap() => settings != null ? settings.minSecondsBetweenSpawns : 0.35f;
+        float GetMinSpawnGap()
+        {
+            var gap = settings != null ? settings.minSecondsBetweenSpawns : 0.35f;
+            if (_v3PacingEnabled)
+                gap = Mathf.Max(gap, 0.65f);
+            return gap;
+        }
 
         int GetEnemyCap()
         {
-            if (settings != null && settings.maxActiveEnemies > 0)
-                return settings.maxActiveEnemies;
-            return Platform.QualityProfile.Current.enemyCap;
+            var cap = settings != null && settings.maxActiveEnemies > 0
+                ? settings.maxActiveEnemies
+                : Platform.QualityProfile.Current.enemyCap;
+            if (_v3PacingEnabled)
+                cap = Mathf.Min(cap, 36);
+            return cap;
         }
 
         bool CanSpawnDefinition(int definitionIndex, Data.EnemyDefinition def, bool scriptedSpawn = false)
@@ -541,18 +580,19 @@ namespace HighSeas.Enemies
 
         public bool TrySpawnPressureBeat(string enemyId)
         {
-            if (enemyWorld == null || string.IsNullOrEmpty(enemyId))
+            if (enemyWorld == null || string.IsNullOrEmpty(enemyId) || player == null)
                 return false;
 
             var defIndex = FindDefinitionIndex(enemyId);
             if (defIndex < 0)
                 return false;
 
+            var radius = enemyWorld.Definitions[defIndex].radius + 0.35f;
             var attempts = settings != null ? settings.spawnPositionAttempts : 16;
             for (var i = 0; i < attempts; i++)
             {
-                var pos = PickSpawnPosition();
-                if (!IsSpawnCandidateValid(pos, enemyWorld.Definitions[defIndex].radius + 0.35f))
+                var pos = PickPressureBeatPosition();
+                if (!IsSpawnCandidateValid(pos, radius))
                     continue;
 
                 if (enemyWorld.SpawnPressureBeat(defIndex, pos) >= 0)
@@ -560,6 +600,22 @@ namespace HighSeas.Enemies
             }
 
             return false;
+        }
+
+        Vector3 PickPressureBeatPosition()
+        {
+            var rng = RunManager.Instance.Rng;
+            for (var i = 0; i < 12; i++)
+            {
+                var angle = rng.DirectorFloat() * Mathf.PI * 2f;
+                var dist = Mathf.Lerp(14f, 24f, rng.DirectorFloat());
+                var pos = player.position + new Vector3(Mathf.Cos(angle) * dist, 0f, Mathf.Sin(angle) * dist);
+                pos = World.PlayBounds.Clamp(pos, 2f);
+                if (World.PlayBounds.IsOpenWater(pos, 2.5f))
+                    return pos;
+            }
+
+            return World.PlayBounds.Clamp(player.position + player.forward * 16f, 2f);
         }
 
         void TrySpawnMinibosses()
@@ -705,6 +761,9 @@ namespace HighSeas.Enemies
 
         bool IsSpawnCandidateValid(Vector3 point, float radius)
         {
+            if (!World.PlayBounds.IsInside(point, radius))
+                return false;
+
             if (!IslandObstacles.IsAvailable)
                 return true;
 
@@ -812,8 +871,8 @@ namespace HighSeas.Enemies
 
             var minute = Mathf.Min(10f, RunManager.Instance.ElapsedSeconds / 60f);
             var depth = RunManager.Instance.StageIndex + 1;
-            var enemiesPerSec = Mathf.Min(14f, (2f + 0.5f * minute) * (1f + 0.25f * (depth - 1)));
-            return enemiesPerSec * 2.4f;
+            var enemiesPerSec = Mathf.Min(7f, (0.9f + 0.22f * minute) * (1f + 0.15f * (depth - 1)));
+            return enemiesPerSec * 1.8f;
         }
     }
 }

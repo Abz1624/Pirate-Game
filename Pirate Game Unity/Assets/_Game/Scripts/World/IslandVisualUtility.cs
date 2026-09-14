@@ -29,8 +29,17 @@ namespace HighSeas.World
             }
             finally
             {
-                Object.Destroy(temp);
+                DestroyTemporary(temp);
             }
+        }
+
+        static void DestroyTemporary(Object obj)
+        {
+            if (obj == null) return;
+            if (Application.isPlaying)
+                Object.Destroy(obj);
+            else
+                Object.DestroyImmediate(obj);
         }
 
         public static float ComputeGroundUniformScale(GameObject groundPrefab, float targetDiameter, float libraryMultiplier)

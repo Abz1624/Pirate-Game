@@ -29,10 +29,36 @@ namespace HighSeas.UI
 
         void Start()
         {
-            _player = FindFirstObjectByType<Player.PlayerShipController>();
-            _levels = LevelSystem.Instance;
+            BindSystems();
             if (RunManager.Instance != null)
                 RunManager.Instance.GoldChanged += _ => Refresh();
+        }
+
+        void BindSystems()
+        {
+            if (_player == null)
+                _player = FindFirstObjectByType<Player.PlayerShipController>();
+            if (_levels == null)
+                _levels = LevelSystem.Instance;
+            if (_levels != null)
+            {
+                _levels.LevelChanged -= OnLevelChanged;
+                _levels.LevelChanged += OnLevelChanged;
+            }
+        }
+
+        void OnDestroy()
+        {
+            if (_levels != null)
+                _levels.LevelChanged -= OnLevelChanged;
+        }
+
+        void OnLevelChanged(int _) => Refresh();
+
+        public void ForceRefresh()
+        {
+            BindSystems();
+            Refresh();
         }
 
         public void RebuildUiLayout()
@@ -70,7 +96,12 @@ namespace HighSeas.UI
             xpFill = wiring.xpFill;
         }
 
-        void Update() => Refresh();
+        void Update()
+        {
+            if (_levels == null || _player == null)
+                BindSystems();
+            Refresh();
+        }
 
         void Refresh()
         {

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.V3;
 using HighSeas.Weapons;
 using UnityEngine;
 
@@ -343,7 +344,7 @@ namespace HighSeas.UI
             id = def.id,
             title = def.displayName,
             categoryLabel = "New Weapon",
-            description = DescribeWeapon(def),
+            description = V3ContentDescriptions.GetWeaponDescription(def),
             rarity = Rarity.Uncommon,
             currentLevel = 0,
             nextLevel = 1,
@@ -361,13 +362,14 @@ namespace HighSeas.UI
             RunRng rng)
         {
             var lines = RollUpgradePackage(def, rarity, settings, pacing, rng);
+            var upgradeText = string.Join("\n", System.Array.ConvertAll(lines, l => l.displayText));
             return new LevelOffer
             {
                 kind = LevelOfferKind.WeaponUpgrade,
                 id = def.id,
                 title = def.displayName,
                 categoryLabel = "Weapon Upgrade",
-                description = string.Join("\n", System.Array.ConvertAll(lines, l => l.displayText)),
+                description = $"{V3ContentDescriptions.GetWeaponDescription(def)}\n{upgradeText}",
                 rarity = rarity,
                 currentLevel = Mathf.Max(1, currentLevel),
                 nextLevel = Mathf.Max(1, currentLevel) + 1,
@@ -390,7 +392,7 @@ namespace HighSeas.UI
                 id = def.id,
                 title = def.displayName,
                 categoryLabel = currentLevel > 0 ? "Logbook Upgrade" : "New Logbook",
-                description = desc,
+                description = $"{V3ContentDescriptions.GetLogbookDescription(def)}\n{desc}",
                 rarity = rarity,
                 currentLevel = currentLevel,
                 nextLevel = currentLevel + 1,
@@ -459,16 +461,5 @@ namespace HighSeas.UI
             return null;
         }
 
-        static string DescribeWeapon(WeaponDefinition def) => def.pattern switch
-        {
-            WeaponPattern.AutoProjectile => "Reliable auto-target cannon fire.",
-            WeaponPattern.FanVolley => "Spread volley into enemy clusters.",
-            WeaponPattern.MineDrop => "Drop explosive kegs along your wake.",
-            WeaponPattern.ChainLightning => "Chain lightning between nearby foes.",
-            WeaponPattern.Orbit => "Orbiting blades strike nearby enemies.",
-            WeaponPattern.TrailZone => "Burning oil trail damages and ignites.",
-            WeaponPattern.AuraPulse => "Periodic curse aura around the ship.",
-            _ => "Automatic weapon."
-        };
     }
 }

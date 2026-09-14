@@ -14,22 +14,39 @@ namespace HighSeas.V3
         {
             EnsureEventSystem();
             var canvas = EnsureRunCanvas();
+            canvas.sortingOrder = 20;
             UiCanvasConfigurator.Configure(canvas);
 
             DisableLegacyRunEnd(canvas);
+
+            EnsureLevelSystem();
 
             var hud = canvas.GetComponent<RunHud>();
             if (hud == null)
                 hud = canvas.gameObject.AddComponent<RunHud>();
             hud.RebuildUiLayout();
+            hud.ForceRefresh();
 
             EnsureLevelUpModal(canvas);
             EnsureV3ResultsScreen(canvas);
             V3ObjectiveHud.Ensure(canvas.transform);
             V3MinimapHud.Ensure(canvas.transform, layout);
             V3ToastHud.Ensure(canvas.transform);
+            V3InteractionController.Ensure(canvas.transform);
+            V3DiscoverySystem.Ensure(layout);
+            V3RunLoadoutHud.Ensure(canvas.transform);
+            V3RunStatsHud.Ensure(canvas.transform);
+            V3RunTimerHud.Ensure(canvas.transform);
+            HideLegacyWeaponStrip(canvas);
 
             return canvas;
+        }
+
+        static void HideLegacyWeaponStrip(Canvas canvas)
+        {
+            var strips = canvas.GetComponentsInChildren<WeaponLevelStripHud>(true);
+            for (var i = 0; i < strips.Length; i++)
+                strips[i].gameObject.SetActive(false);
         }
 
         static void EnsureEventSystem()
@@ -43,6 +60,14 @@ namespace HighSeas.V3
 
         static Canvas EnsureRunCanvas()
         {
+            var runCanvasGo = GameObject.Find("RunCanvas");
+            if (runCanvasGo != null && runCanvasGo.TryGetComponent(out Canvas runCanvas))
+                return runCanvas;
+
+            var hudCanvas = Object.FindFirstObjectByType<RunHud>()?.GetComponentInParent<Canvas>();
+            if (hudCanvas != null)
+                return hudCanvas;
+
             var canvas = Object.FindFirstObjectByType<Canvas>();
             if (canvas != null) return canvas;
 
@@ -52,6 +77,16 @@ namespace HighSeas.V3
             canvas.sortingOrder = 0;
             go.AddComponent<GraphicRaycaster>();
             return canvas;
+        }
+
+        static void EnsureLevelSystem()
+        {
+            if (LevelSystem.Instance != null) return;
+
+            var systems = GameObject.Find("Systems");
+            if (systems == null) return;
+            if (systems.GetComponent<LevelSystem>() == null)
+                systems.AddComponent<LevelSystem>();
         }
 
         static void DisableLegacyRunEnd(Canvas canvas)

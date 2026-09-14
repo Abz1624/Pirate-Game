@@ -22,7 +22,7 @@ namespace HighSeas.V3
             rect.anchorMax = new Vector2(0.5f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
             rect.anchoredPosition = new Vector2(0f, -120f);
-            rect.sizeDelta = new Vector2(720f, 56f);
+            rect.sizeDelta = new Vector2(760f, 88f);
 
             var bg = root.AddComponent<UnityEngine.UI.Image>();
             bg.color = new Color(0.05f, 0.08f, 0.14f, 0.88f);
@@ -37,8 +37,10 @@ namespace HighSeas.V3
 
             var toast = root.AddComponent<V3ToastHud>();
             toast._text = textGo.AddComponent<TextMeshProUGUI>();
-            toast._text.fontSize = 24f;
+            toast._text.fontSize = 22f;
             toast._text.alignment = TextAlignmentOptions.Center;
+            toast._text.enableWordWrapping = true;
+            toast._text.richText = true;
             toast._text.color = V3PlaceholderFactory.UiAccent;
             root.SetActive(false);
             Instance = toast;

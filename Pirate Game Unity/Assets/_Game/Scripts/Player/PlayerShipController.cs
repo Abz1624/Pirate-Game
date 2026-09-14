@@ -1,5 +1,6 @@
 using HighSeas.Combat;
 using HighSeas.Core;
+using HighSeas.Platform;
 using HighSeas.World;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -75,6 +76,7 @@ namespace HighSeas.Player
         float _turnRateMultiplier = 1f;
         float _slowMultiplier = 1f;
         float _slowTimer;
+        bool _movementEnabled = true;
         float _targetRoll;
         float _currentRoll;
         float _steerCommit;
@@ -83,6 +85,7 @@ namespace HighSeas.Player
         float _reverseTurnTimer;
         Quaternion _visualBaseLocalRotation = Quaternion.identity;
         DamageReceiver _damage;
+        CompositeShipSteerInput _compositeInput;
 
         public Vector3 Position => transform.position;
         public Vector3 Velocity => _velocity;
@@ -116,6 +119,7 @@ namespace HighSeas.Player
             _body.interpolation = RigidbodyInterpolation.Interpolate;
 
             EnsureHullCollider();
+            IgnoreIslandPhysicsCollisions();
 
             if (visualModel == null)
                 visualModel = EnsureVisualPivot();
@@ -127,6 +131,10 @@ namespace HighSeas.Player
 
             SanitizeLegacyVisualComponents();
             SyncRunSpeedMultiplier();
+
+            var joystickRoot = GameObject.Find("JoystickBG");
+            var joystick = joystickRoot != null ? joystickRoot.GetComponent<VirtualJoystick>() : null;
+            _compositeInput = new CompositeShipSteerInput(joystick);
         }
 
         public void InitializeFromRun(float hull)
@@ -136,6 +144,8 @@ namespace HighSeas.Player
             ResetMotion();
             SyncRunSpeedMultiplier();
         }
+
+        public void SetMovementEnabled(bool enabled) => _movementEnabled = enabled;
 
         public void ApplySlow(float multiplier, float durationSeconds)
         {
@@ -167,8 +177,54 @@ namespace HighSeas.Player
             }
         }
 
+        public void SetWorldPosition(Vector3 position)
+        {
+            position = ResolveSpawnPosition(position);
+            transform.SetPositionAndRotation(position, transform.rotation);
+            if (_body != null)
+            {
+                _body.position = position;
+                _body.rotation = transform.rotation;
+            }
+
+            Physics.SyncTransforms();
+            ResetMotion();
+        }
+
+        static Vector3 ResolveSpawnPosition(Vector3 position)
+        {
+            if (!IslandObstacles.IsAvailable)
+                return position;
+
+            var radius = 1.15f;
+            var height = IslandObstacles.GetCollisionHeight(radius);
+            for (var i = 0; i < 12; i++)
+            {
+                if (!IslandObstacles.IsPositionBlocked(position, radius))
+                    return position;
+
+                position = IslandObstacles.Depenetrate(position, radius, height);
+            }
+
+            for (var ring = 1; ring <= 16; ring++)
+            {
+                for (var i = 0; i < 12; i++)
+                {
+                    var angle = (i / 12f) * Mathf.PI * 2f;
+                    var candidate = position + new Vector3(Mathf.Cos(angle) * ring * 2.5f, 0f, Mathf.Sin(angle) * ring * 2.5f);
+                    if (!IslandObstacles.IsPositionBlocked(candidate, radius))
+                        return candidate;
+                }
+            }
+
+            return position;
+        }
+
         void FixedUpdate()
         {
+            if (!_movementEnabled) return;
+            if (_damage != null && !_damage.IsAlive) return;
+            if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
             if (RunManager.Instance != null && RunManager.Instance.IsPaused) return;
 
             if (_slowTimer > 0f)
@@ -191,7 +247,6 @@ namespace HighSeas.Player
             if (turnEffectiveness <= 0f && Mathf.Abs(input.steer) > 0.01f)
                 turnEffectiveness = 0.35f;
 
-            var turnPositionDelta = Vector3.zero;
             var hasSteerInput = Mathf.Abs(input.steer) > 0.01f;
             var steerReversed = hasSteerInput &&
                                 Mathf.Sign(input.steer) != Mathf.Sign(_lastSteerInput) &&
@@ -240,7 +295,9 @@ namespace HighSeas.Player
             {
                 var coastScale = hasSteerInput ? 1f : Mathf.Lerp(0.6f, 1f, turnEffectiveness);
                 var deltaYaw = _yawRate * coastScale * dt;
-                turnPositionDelta = ApplyYawTurn(deltaYaw, forward);
+                var deltaRotation = Quaternion.Euler(0f, deltaYaw, 0f);
+                _velocity = deltaRotation * _velocity;
+                _body.MoveRotation(_body.rotation * deltaRotation);
             }
 
             _lastSteerInput = input.steer;
@@ -270,18 +327,27 @@ namespace HighSeas.Player
             _velocity = ClampSpeed(_velocity, forward, effectiveMaxSpeed, effectiveReverseMaxSpeed);
             _velocity = ApplyLateralGrip(_velocity, forward, dt);
 
-            var delta = _velocity * dt;
-            var movementDelta = turnPositionDelta + delta;
+            var movementDelta = _velocity * dt;
             var nextPosition = _body.position + movementDelta;
 
+            var hullRadius = GetHullWorldRadius();
+            var hullHeight = GetHullWorldHeight();
             if (collideWithIslands && IslandObstacles.IsAvailable)
             {
-                nextPosition = IslandObstacles.ResolveCapsuleMovement(
-                    _body.position,
-                    movementDelta,
-                    GetHullWorldRadius(),
-                    GetHullWorldHeight(),
-                    ref _velocity);
+                if (movementDelta.sqrMagnitude < 1e-8f &&
+                    IslandObstacles.IsPositionBlocked(_body.position, hullRadius, hullHeight))
+                {
+                    nextPosition = IslandObstacles.Depenetrate(_body.position, hullRadius, hullHeight);
+                }
+                else
+                {
+                    nextPosition = IslandObstacles.ResolveCapsuleMovement(
+                        _body.position,
+                        movementDelta,
+                        hullRadius,
+                        hullHeight,
+                        ref _velocity);
+                }
             }
             else
             {
@@ -289,6 +355,10 @@ namespace HighSeas.Player
             }
 
             nextPosition.y = _body.position.y;
+
+            if (V3.V3RunContext.IsActive)
+                nextPosition = PlayBounds.Clamp(nextPosition, GetHullWorldRadius() + 0.25f);
+
             _body.MovePosition(nextPosition);
             if (!_body.isKinematic)
             {
@@ -301,7 +371,7 @@ namespace HighSeas.Player
         {
             if (visualModel == null) return;
 
-            _currentRoll = Mathf.MoveTowards(_currentRoll, _targetRoll, maxRollDegreesPerSecond * Time.deltaTime);
+            _currentRoll = Mathf.Lerp(_currentRoll, _targetRoll, 1f - Mathf.Exp(-maxRollDegreesPerSecond * Time.deltaTime));
             var rollAxis = modelForwardIsNegativeZ ? Vector3.back : Vector3.forward;
             visualModel.localRotation = _visualBaseLocalRotation * Quaternion.AngleAxis(_currentRoll, rollAxis);
         }
@@ -320,23 +390,6 @@ namespace HighSeas.Player
             }
         }
 
-        Vector3 ApplyYawTurn(float deltaYaw, Vector3 forward)
-        {
-            if (Mathf.Abs(deltaYaw) < 0.00001f)
-                return Vector3.zero;
-
-            var turnQuat = Quaternion.Euler(0f, deltaYaw, 0f);
-            _velocity = turnQuat * _velocity;
-            _body.MoveRotation(_body.rotation * turnQuat);
-
-            if (sternPivotDistance <= 0.01f)
-                return Vector3.zero;
-
-            var pivot = _body.position - forward * sternPivotDistance;
-            var rotatedOffset = turnQuat * (_body.position - pivot);
-            return pivot + rotatedOffset - _body.position;
-        }
-
         Vector3 ApplyLateralGrip(Vector3 velocity, Vector3 forward, float dt)
         {
             if (velocity.sqrMagnitude < 0.0001f || lateralGrip <= 0f)
@@ -350,9 +403,7 @@ namespace HighSeas.Player
 
         Vector3 GetShipForward()
         {
-            var forward = _body != null
-                ? _body.rotation * Vector3.forward
-                : transform.forward;
+            var forward = _body != null ? _body.rotation * Vector3.forward : transform.forward;
             if (modelForwardIsNegativeZ)
                 forward = -forward;
 
@@ -375,32 +426,35 @@ namespace HighSeas.Player
             return currentVelocity / speed * maxAllowed;
         }
 
-        static ShipInput ReadShipInput()
+        ShipInput ReadShipInput()
         {
             var input = new ShipInput();
+            if (_compositeInput != null)
+            {
+                var composite = _compositeInput.ReadSteerThrottle();
+                input.steer = composite.x;
+                input.throttle = composite.y;
+            }
 
             if (Gamepad.current != null)
             {
                 var stick = Gamepad.current.leftStick.ReadValue();
-                input.throttle += stick.y;
-                input.steer += stick.x;
-            }
-
-            if (Keyboard.current != null)
-            {
-                if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed)
-                    input.throttle += 1f;
-                if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed)
-                    input.throttle -= 1f;
-                if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)
-                    input.steer -= 1f;
-                if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
-                    input.steer += 1f;
+                if (Mathf.Abs(stick.x) > Mathf.Abs(input.steer))
+                    input.steer = stick.x;
+                if (Mathf.Abs(stick.y) > Mathf.Abs(input.throttle))
+                    input.throttle = stick.y;
             }
 
             input.throttle = Mathf.Clamp(input.throttle, -1f, 1f);
             input.steer = Mathf.Clamp(input.steer, -1f, 1f);
             return input;
+        }
+
+        void IgnoreIslandPhysicsCollisions()
+        {
+            var islandLayer = IslandObstacles.Layer;
+            if (islandLayer < 0) return;
+            Physics.IgnoreLayerCollision(gameObject.layer, islandLayer, true);
         }
 
         void EnsureHullCollider()

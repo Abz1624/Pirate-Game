@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.VFX;
@@ -107,7 +108,13 @@ namespace HighSeas.Enemies
                 juiceSettings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
         }
 
-        public void SetDefinitions(Data.EnemyDefinition[] defs) => definitions = defs;
+        public void SetDefinitions(Data.EnemyDefinition[] defs)
+        {
+            definitions = defs;
+            if (defs == null) return;
+            for (var i = 0; i < defs.Length; i++)
+                EnemyViewPool.StripNavMeshFromPrefab(defs[i]?.visualPrefab);
+        }
 
         public int CountActiveByDefinition(int definitionIndex)
         {
@@ -141,6 +148,7 @@ namespace HighSeas.Enemies
             }
             if (slot < 0) return -1;
 
+            position = PlayBounds.Clamp(position, def.radius + 1f);
             position.y = def.visualHeightOffset;
 
             var minute = RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds / 60f : 0f;
@@ -154,7 +162,8 @@ namespace HighSeas.Enemies
             hp *= Mathf.Max(0.1f, hpMultiplier);
             dmg *= Mathf.Max(0.1f, damageMultiplier);
 
-            var visualScale = def.visualScale * (affix != EliteAffix.None ? 1.12f : 1f);
+            var v3Scale = V3.V3RunContext.IsActive ? V3.V3RunContext.EnemyVisualScale : 1f;
+            var visualScale = def.visualScale * v3Scale * (affix != EliteAffix.None ? 1.08f : 1f);
             var view = CreateView(def, position, visualScale, affix != EliteAffix.None);
 
             var baseSpeed = def.moveSpeed * Mathf.Max(0.1f, speedMultiplier);
@@ -175,6 +184,7 @@ namespace HighSeas.Enemies
                 isElite = affix != EliteAffix.None,
                 isBoss = def.isBoss,
                 chargeTimer = 2f,
+                attackCooldown = GetInitialAttackCooldown(def),
                 view = view
             };
 
@@ -274,6 +284,7 @@ namespace HighSeas.Enemies
                 UpdateView(ref e, def, dt, playerPos);
 
                 var dist = Vector3.Distance(e.position, playerPos);
+                TickRangedAttack(ref e, def, dt, playerPos, dist, playerDamage);
                 if (dist < e.radius + 1f && e.contactCooldown <= 0f)
                 {
                     playerDamage?.TakeDamage(e.damage, e.position, false);
@@ -422,8 +433,26 @@ namespace HighSeas.Enemies
                     break;
                 case EnemyBehavior.MaintainRange:
                 case EnemyBehavior.FormationRanged:
-                    behaviorVelocity = dir * e.moveSpeed;
+                {
+                    if (def.category == EnemyCategory.Ship && e.attackCooldown > 0f)
+                    {
+                        behaviorVelocity = Vector3.zero;
+                        break;
+                    }
+
+                    var preferred = def.preferredRange > 0f ? def.preferredRange : 10f;
+                    if (dist > preferred + 3f)
+                        behaviorVelocity = dir * (e.moveSpeed * 0.65f);
+                    else if (dist < preferred - 2f)
+                    {
+                        var strafeSign = (e.id & 1) == 0 ? 1f : -1f;
+                        var tangent = Vector3.Cross(Vector3.up, dir) * strafeSign;
+                        behaviorVelocity = tangent * (e.moveSpeed * 0.35f);
+                    }
+                    else
+                        behaviorVelocity = Vector3.zero;
                     break;
+                }
                 case EnemyBehavior.SuicideApproach:
                     behaviorVelocity = dir * (e.moveSpeed * 1.4f);
                     break;
@@ -453,6 +482,116 @@ namespace HighSeas.Enemies
             behaviorVelocity = ApplySeparation(agentIndex, behaviorVelocity, ref e, intent);
             e.velocity = Vector3.ClampMagnitude(behaviorVelocity, e.moveSpeed * 1.5f);
             return intent;
+        }
+
+        void TickRangedAttack(
+            ref EnemyAgent e,
+            Data.EnemyDefinition def,
+            float dt,
+            Vector3 playerPos,
+            float dist,
+            DamageReceiver playerDamage)
+        {
+            if (def.category != EnemyCategory.Ship &&
+                def.behavior != EnemyBehavior.MaintainRange &&
+                def.behavior != EnemyBehavior.FormationRanged)
+                return;
+
+            e.attackCooldown -= dt;
+            if (e.attackCooldown > 0f) return;
+
+            var preferred = def.preferredRange > 0f ? def.preferredRange : 12f;
+            var minRange = def.id == "cannonboat" ? preferred * 0.8f : preferred * 0.7f;
+            var maxRange = def.id == "cannonboat" ? preferred * 1.15f : preferred * 1.25f;
+            if (dist < minRange || dist > maxRange)
+                return;
+
+            var dir = playerPos - e.position;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.01f) return;
+
+            if (IslandObstacles.IsAvailable)
+            {
+                var origin = e.position + Vector3.up * 0.5f;
+                var target = playerPos + Vector3.up * 0.5f;
+                if (Physics.Linecast(origin, target, IslandObstacles.Mask, QueryTriggerInteraction.Ignore))
+                    return;
+            }
+
+            var hostiles = HostileProjectileWorld.Instance;
+            if (hostiles == null) return;
+
+            dir.Normalize();
+            var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
+            GetHostileShotProfile(def, out var speed, out var life, out var hitRadius, out var visualRadius);
+            if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius))
+                return;
+
+            e.attackCooldown = GetAttackRecovery(def);
+        }
+
+        static float GetInitialAttackCooldown(Data.EnemyDefinition def)
+        {
+            if (def.category != EnemyCategory.Ship &&
+                def.behavior != EnemyBehavior.MaintainRange &&
+                def.behavior != EnemyBehavior.FormationRanged)
+                return 0f;
+
+            return def.id switch
+            {
+                "cannonboat" => 1.1f,
+                "drowned_harrier" => 0.9f,
+                _ => def.attackCooldown > 0f ? def.attackCooldown * 0.5f : 1f
+            };
+        }
+
+        static float GetAttackRecovery(Data.EnemyDefinition def)
+        {
+            if (def.id == "cannonboat")
+                return 2f;
+
+            var recovery = def.attackCooldown > 0f ? def.attackCooldown : 2.4f;
+            if (def.category == EnemyCategory.Ship)
+                recovery = Mathf.Max(recovery, 2.5f);
+            return recovery;
+        }
+
+        static void GetHostileShotProfile(
+            Data.EnemyDefinition def,
+            out float speed,
+            out float life,
+            out float hitRadius,
+            out float visualRadius)
+        {
+            switch (def.id)
+            {
+                case "drowned_harrier":
+                    speed = 10f;
+                    life = 1.45f;
+                    hitRadius = 0.24f;
+                    visualRadius = 0.14f;
+                    return;
+                case "cannonboat":
+                    speed = 9f;
+                    life = 1.35f;
+                    hitRadius = 0.22f;
+                    visualRadius = 0.13f;
+                    return;
+            }
+
+            if (def.category == EnemyCategory.Ship)
+            {
+                speed = 9f;
+                life = 1.35f;
+                hitRadius = 0.22f;
+                visualRadius = 0.13f;
+                return;
+            }
+
+            speed = 9f;
+            life = 1.3f;
+            hitRadius = 0.22f;
+            visualRadius = 0.13f;
         }
 
         Vector3 ApplySeparation(int agentIndex, Vector3 velocity, ref EnemyAgent self, Vector3 preferredDirection)

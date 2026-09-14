@@ -43,13 +43,13 @@ namespace HighSeas.World
             var demoLayout = usePredefinedLayout ? IslandLayoutDefinition.LoadAssignedOrDefault(predefinedLayout) : null;
             if (demoLayout != null && demoLayout.HasIslands)
             {
-                if (demoLayout.overridePlayerSpawn)
-                    layout.playerSpawn = demoLayout.playerSpawn;
-
+                var count = IslandLayoutSpawner.Spawn(demoLayout, islandRoot, seed);
+                PlayBounds.ConfigureFromExclusionRegistry();
                 if (_useV3PoiLayout)
                     V3StagePoiPlacer.Place(layout, new RunRng(seed + 404), demoLayout);
+                else if (demoLayout.overridePlayerSpawn)
+                    layout.playerSpawn = demoLayout.playerSpawn;
 
-                var count = IslandLayoutSpawner.Spawn(demoLayout, islandRoot, seed);
                 Debug.Log($"StageBuilder: spawned {count} demo islands from layout (seed={seed}).");
                 return layout;
             }
@@ -101,6 +101,8 @@ namespace HighSeas.World
 
         void ClearIslands()
         {
+            IslandSpawnExclusionRegistry.Clear();
+            PlayBounds.ResetToDefaults();
             if (islandRoot == null) return;
             for (var i = islandRoot.childCount - 1; i >= 0; i--)
             {

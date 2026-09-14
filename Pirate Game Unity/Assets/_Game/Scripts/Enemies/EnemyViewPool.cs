@@ -5,6 +5,8 @@ namespace HighSeas.Enemies
 {
     public sealed class EnemyViewPool
     {
+        static readonly HashSet<int> StrippedPrefabIds = new();
+
         readonly Transform _root;
         readonly Dictionary<int, Stack<Transform>> _pools = new();
 
@@ -29,17 +31,24 @@ namespace HighSeas.Enemies
             if (stack.Count > 0)
             {
                 view = stack.Pop();
-                StripNavMeshComponents(view.gameObject);
+                StripNavMeshComponentsImmediate(view.gameObject);
                 view.gameObject.SetActive(true);
             }
             else
             {
+                var wasRootActive = _root.gameObject.activeSelf;
+                if (wasRootActive)
+                    _root.gameObject.SetActive(false);
+
                 var instance = Object.Instantiate(prefab, _root);
                 instance.name = prefab.name;
                 instance.SetActive(false);
                 StripPhysics(instance);
-                StripNavMeshComponents(instance);
+                StripNavMeshComponentsImmediate(instance);
                 view = instance.transform;
+
+                if (wasRootActive)
+                    _root.gameObject.SetActive(true);
             }
 
             view.SetPositionAndRotation(position, rotation);
@@ -53,7 +62,7 @@ namespace HighSeas.Enemies
             if (view == null)
                 return;
 
-            StripNavMeshComponents(view.gameObject);
+            StripNavMeshComponentsImmediate(view.gameObject);
             view.gameObject.SetActive(false);
             view.SetParent(_root, false);
 
@@ -98,8 +107,22 @@ namespace HighSeas.Enemies
             }
         }
 
-        static void StripNavMeshComponents(GameObject root)
+        public static void StripNavMeshFromPrefab(GameObject prefab)
         {
+            if (prefab == null) return;
+            // NavMesh components are stripped on runtime instances in Acquire/Release — never modify prefab assets.
+            StrippedPrefabIds.Add(prefab.GetInstanceID());
+        }
+
+        static void StripNavMeshComponentsImmediate(GameObject root)
+        {
+            if (root == null) return;
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying && UnityEditor.PrefabUtility.IsPartOfPrefabAsset(root))
+                return;
+#endif
+
             var components = root.GetComponentsInChildren<Component>(true);
             for (var i = 0; i < components.Length; i++)
             {
@@ -110,12 +133,10 @@ namespace HighSeas.Enemies
                 if (typeName is not ("NavMeshAgent" or "NavMeshObstacle"))
                     continue;
 
-#if UNITY_EDITOR
-                if (!Application.isPlaying)
-                    Object.DestroyImmediate(component);
-                else
-#endif
+                if (Application.isPlaying)
                     Object.Destroy(component);
+                else
+                    Object.DestroyImmediate(component, true);
             }
         }
     }

@@ -108,6 +108,14 @@ namespace HighSeas.UI
             return true;
         }
 
+        public void Hide()
+        {
+            if (panel != null)
+                panel.SetActive(false);
+            _offers = null;
+            _callback = null;
+        }
+
         public void Show(List<LevelOffer> offers, Action<LevelOffer> callback)
         {
             EnsureWired();

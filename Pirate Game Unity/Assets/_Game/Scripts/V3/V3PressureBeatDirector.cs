@@ -25,11 +25,11 @@ namespace HighSeas.V3
         bool _krakenDone;
         bool _firstPulseDone;
         bool _secondPulseDone;
+        bool _hammerheadWarned;
+        bool _krakenWarned;
         float _hammerheadDeferUntil;
         float _krakenDeferUntil;
         float _pulseTimer;
-        float _hammerheadWarnTimer = -1f;
-        float _krakenWarnTimer = -1f;
 
         public void Initialize(EnemyWorld world, SpawnDirector director, Transform playerTransform)
         {
@@ -46,18 +46,17 @@ namespace HighSeas.V3
                 return;
 
             var elapsed = RunManager.Instance.ElapsedSeconds;
-            TickBeat(ref _hammerheadDone, ref _hammerheadDeferUntil, ref _hammerheadWarnTimer,
-                HammerheadBeat, "hammerhead", "Hammerhead pressure");
-            TickBeat(ref _krakenDone, ref _krakenDeferUntil, ref _krakenWarnTimer,
-                KrakenBeat, "kraken_spawn", "Kraken Spawn pressure");
+            TickBeat(ref _hammerheadDone, ref _hammerheadDeferUntil, ref _hammerheadWarned,
+                HammerheadBeat, "hammerhead", "Hammerhead elite");
+            TickBeat(ref _krakenDone, ref _krakenDeferUntil, ref _krakenWarned,
+                KrakenBeat, "kraken_spawn", "Kraken Spawn elite");
             TickPulses(elapsed);
-            TickWarnings();
         }
 
         void TickBeat(
             ref bool done,
             ref float deferUntil,
-            ref float warnTimer,
+            ref bool warned,
             float beatTime,
             string enemyId,
             string label)
@@ -65,13 +64,13 @@ namespace HighSeas.V3
             if (done) return;
 
             var elapsed = RunManager.Instance.ElapsedSeconds;
+            if (!warned && elapsed >= beatTime - WarningSeconds)
+            {
+                warned = true;
+                V3ToastHud.Instance?.Show($"WARNING — {label} incoming!", 5f);
+            }
+
             if (elapsed < beatTime)
-                return;
-
-            if (warnTimer < 0f)
-                warnTimer = WarningSeconds;
-
-            if (warnTimer > 0f)
                 return;
 
             if (RunManager.Instance.State == RunState.BossFight)
@@ -89,7 +88,7 @@ namespace HighSeas.V3
             if (spawnDirector != null && spawnDirector.TrySpawnPressureBeat(enemyId))
             {
                 done = true;
-                V3ToastHud.Instance?.Show($"{label} incoming!", 4f);
+                V3ToastHud.Instance?.Show($"{label} has arrived!", 4f);
                 return;
             }
 
@@ -99,23 +98,6 @@ namespace HighSeas.V3
             {
                 done = true;
                 V3ToastHud.Instance?.Show($"{label} skipped — no spawn slot.", 3f);
-            }
-        }
-
-        void TickWarnings()
-        {
-            if (_hammerheadWarnTimer > 0f)
-            {
-                _hammerheadWarnTimer -= Time.deltaTime;
-                if (_hammerheadWarnTimer <= 0f)
-                    V3ToastHud.Instance?.Show("WARNING — Hammerhead elite at 3:00", 5f);
-            }
-
-            if (_krakenWarnTimer > 0f)
-            {
-                _krakenWarnTimer -= Time.deltaTime;
-                if (_krakenWarnTimer <= 0f)
-                    V3ToastHud.Instance?.Show("WARNING — Kraken Spawn elite at 8:00", 5f);
             }
         }
 

@@ -22,8 +22,22 @@ namespace HighSeas.V3
                 _ => ($"poi_{type.ToString().ToLowerInvariant()}", Color.gray, new Vector3(1.6f, 1.2f, 1.6f), $"POI placeholder for {type}.")
             };
 
-            return CreatePrimitiveMarker("poi", id, position, parent, PrimitiveType.Cylinder, color, scale, hint);
+            var marker = CreatePrimitiveMarker("poi", id, position, parent, PrimitiveType.Cylinder, color, scale, hint);
+            V3WorldBillboardLabel.Attach(marker, GetPoiDisplayName(type), hint);
+            return marker;
         }
+
+        public static string GetPoiDisplayName(POIType type) =>
+            type switch
+            {
+                POIType.SalvageChest => "Salvage Chest",
+                POIType.GildedWreck => "Repair Wreck",
+                POIType.MerchantSkiff => "Powder Cache",
+                POIType.TrialBuoy => "Signal Buoy",
+                POIType.CursedIdol => "Treasure Chart",
+                POIType.BossBeacon => "Treasury Beacon",
+                _ => type.ToString()
+            };
 
         public static GameObject CreateUiPanel(Transform parent, string id, Vector2 size, string hint)
         {

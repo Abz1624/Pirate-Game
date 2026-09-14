@@ -26,6 +26,7 @@ namespace HighSeas.V3
         [SerializeField] PlayerShipController player;
         [SerializeField] IslandLayoutDefinition islandLayout;
         [SerializeField] int runSeed = GameConstants.DemoRunSeed;
+        [SerializeField] bool forceInspectorSeed;
         [SerializeField] bool usePlaceholderPoiVisuals = true;
 
         StageLayout _layout;
@@ -35,7 +36,7 @@ namespace HighSeas.V3
             AppRoot.EnsureInitialized();
             if (database == null || !GameDatabaseLoader.IsValid(database))
                 database = GameDatabaseLoader.Load();
-            DisableTouchJoystick();
+            EnsureTouchJoystickActive();
             EnsureGameplayBootstrapComponents();
         }
 
@@ -47,11 +48,21 @@ namespace HighSeas.V3
                 systems.AddComponent<PlayerShipVisualBootstrap>();
         }
 
-        static void DisableTouchJoystick()
+        static void EnsureLevelSystem()
+        {
+            if (LevelSystem.Instance != null) return;
+
+            var systems = GameObject.Find("Systems");
+            if (systems == null) return;
+            if (systems.GetComponent<LevelSystem>() == null)
+                systems.AddComponent<LevelSystem>();
+        }
+
+        static void EnsureTouchJoystickActive()
         {
             var joystick = GameObject.Find("JoystickBG");
-            if (joystick != null)
-                joystick.SetActive(false);
+            if (joystick != null && !joystick.activeSelf)
+                joystick.SetActive(true);
         }
 
         void Start()
@@ -70,9 +81,13 @@ namespace HighSeas.V3
 
             ConfigureStageBuilder();
 
-            var seed = runSeed != 0 ? runSeed : GameConstants.DemoRunSeed;
+            V3RunContext.IsActive = true;
+            var seed = forceInspectorSeed && runSeed != 0
+                ? runSeed
+                : V3HomeSeed.ResolveRunSeed();
             RunManager.Instance.BeginRun(seed);
             _layout = stageBuilder != null ? stageBuilder.Build(seed, 0) : null;
+            V3StormEdgeVisual.Ensure();
             V3RunContext.Layout = _layout;
             V3RunContext.CaptainId = V3CaptainSelection.Selected;
 
@@ -89,19 +104,33 @@ namespace HighSeas.V3
             if (player == null)
                 player = FindFirstObjectByType<PlayerShipController>();
 
+            if (player != null && _layout != null)
+            {
+                var layoutDef = ResolveIslandLayout();
+                PlacePlayerAtSafeSpawn(player, layoutDef, seed);
+            }
+
             var captainId = V3CaptainSelection.Selected;
             var captainProfile = V3CaptainProfile.Get(captainId);
             EnsureCaptainController(captainId, player);
 
-            var startingWeapon = captainProfile.StartingWeaponId;
+            var startingWeapon = ResolveStartingWeapon(captainProfile);
             var weapons = FindFirstObjectByType<WeaponController>();
+            weapons?.ConfigureV3();
             weapons?.Initialize(database, startingWeapon);
 
+            EnsureLevelSystem();
+            LevelSystem.Instance?.ConfigureV3();
             LevelSystem.Instance?.Initialize(database, startingWeapon);
-            V3RunUiBootstrap.EnsureAll(_layout);
+            V3RunItemInventory.Ensure();
+            var runCanvas = V3RunUiBootstrap.EnsureAll(_layout);
+            runCanvas.GetComponent<RunHud>()?.ForceRefresh();
 
-            if (player != null && _layout != null)
-                player.transform.position = _layout.playerSpawn;
+            if (player != null)
+            {
+                V3StormEdgeDamage.Ensure(player);
+                EnsureHostileProjectiles();
+            }
 
             if (V3CaptainController.Instance == null)
                 player?.InitializeFromRun(RunManager.Instance.Stats.MaxHull);
@@ -117,6 +146,7 @@ namespace HighSeas.V3
             EnsureCombatVfx();
             ConfigureSpawnDirector();
             EnsurePressureBeats(enemyWorld, player);
+            EnsureOvertimeDirector(enemyWorld, player);
             RunManager.Instance.EnterPlaying();
             V3ToastHud.Instance?.Show(
                 "V3 Saltwind — explore 12 chests + 4 shrines, secure the Beacon. Death banks all run gold.",
@@ -127,6 +157,14 @@ namespace HighSeas.V3
         {
             var director = FindFirstObjectByType<SpawnDirector>();
             director?.ConfigureV3Pacing(true);
+        }
+
+        static void EnsureHostileProjectiles()
+        {
+            if (FindFirstObjectByType<HostileProjectileWorld>() != null) return;
+            var systems = GameObject.Find("Systems");
+            if (systems == null) return;
+            systems.AddComponent<HostileProjectileWorld>();
         }
 
         void EnsureCaptainController(V3CaptainId captainId, PlayerShipController ship)
@@ -155,6 +193,38 @@ namespace HighSeas.V3
             beats.Initialize(enemyWorld, director, ship != null ? ship.transform : null);
         }
 
+        void EnsureOvertimeDirector(EnemyWorld enemyWorld, PlayerShipController ship)
+        {
+            var director = FindFirstObjectByType<SpawnDirector>();
+            V3OvertimeDirector.Ensure(enemyWorld, director, ship);
+        }
+
+        static string ResolveStartingWeapon(V3CaptainProfile profile)
+        {
+            if (!PlayerPrefs.HasKey(V3ContentUnlocks.FirstConquestKey))
+                return "deck_cannons";
+            return profile.StartingWeaponId;
+        }
+
+        void PlacePlayerAtSafeSpawn(PlayerShipController ship, IslandLayoutDefinition layoutDef, int seed)
+        {
+            const float hullRadius = 1.15f;
+            Physics.SyncTransforms();
+            var spawn = V3SpawnAnchorValidator.ResolveRuntimeSpawn(_layout, layoutDef, seed, hullRadius);
+            if (IslandObstacles.IsAvailable)
+            {
+                var height = IslandObstacles.GetCollisionHeight(hullRadius);
+                for (var i = 0; i < 8; i++)
+                {
+                    if (!IslandObstacles.IsPositionBlocked(spawn, hullRadius))
+                        break;
+                    spawn = IslandObstacles.Depenetrate(spawn, hullRadius, height);
+                }
+            }
+
+            ship.SetWorldPosition(spawn);
+        }
+
         void ConfigureStageBuilder()
         {
             if (stageBuilder == null) return;
@@ -178,10 +248,12 @@ namespace HighSeas.V3
         void Update()
         {
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
+            if (RunManager.Instance.IsRunEnded) return;
             var dt = Time.deltaTime;
             var playerPos = player != null ? player.Position : Vector3.zero;
             FindFirstObjectByType<EnemyWorld>()?.Tick(dt, playerPos, player?.Damage);
             FindFirstObjectByType<ProjectileWorld>()?.Tick(dt, FindFirstObjectByType<EnemyWorld>());
+            FindFirstObjectByType<HostileProjectileWorld>()?.Tick(dt, player?.Damage);
             FindFirstObjectByType<PickupWorld>()?.Tick(dt, playerPos, RunManager.Instance.Stats.PickupRadius);
             FindFirstObjectByType<StatusController>()?.Tick(dt, FindFirstObjectByType<EnemyWorld>());
         }
@@ -190,6 +262,11 @@ namespace HighSeas.V3
 
         void OnPlayerDied()
         {
+            LevelSystem.Instance?.CancelPendingLevelUps();
+            if (player != null)
+                player.SetMovementEnabled(false);
+            if (RunManager.Instance.ObjectiveSecured)
+                PlayerPrefs.SetInt(V3ContentUnlocks.FirstConquestKey, 1);
             RunManager.Instance.SetState(RunState.PlayerDead);
             RunManager.Instance.FinalizeRunOnDeath();
             V3ToastHud.Instance?.Show("Run ended — gold banked at port.", 4f);

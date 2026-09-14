@@ -1,5 +1,6 @@
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.V3;
 using UnityEngine;
 
 namespace HighSeas.Pickups
@@ -136,6 +137,7 @@ namespace HighSeas.Pickups
 
         public void Tick(float dt, Vector3 playerPos, float pickupRadius)
         {
+            if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
             _time += dt;
             var xpPickupRadius = pacingSettings != null ? pacingSettings.xpAutoPickupRadius : 4.25f;
             var goldPickupRadius = pacingSettings != null ? pacingSettings.goldAutoPickupRadius : 26f;
@@ -205,16 +207,24 @@ namespace HighSeas.Pickups
             switch (p.type)
             {
                 case PickupType.Infamy:
-                    UI.LevelSystem.Instance?.AddXP(Mathf.RoundToInt(p.value * (RunManager.Instance?.Stats.XPGain ?? 1f)));
+                {
+                    if (RunManager.Instance == null || RunManager.Instance.IsRunEnded) break;
+                    var xp = p.value * (RunManager.Instance.Stats.XPGain);
+                    if (V3RunContext.IsActive)
+                        xp *= 0.35f;
+                    UI.LevelSystem.Instance?.AddXP(Mathf.Max(1, Mathf.RoundToInt(xp)));
                     break;
+                }
                 case PickupType.Gold:
                 case PickupType.FlyingGold:
                     GrantGold(p.value);
                     break;
                 case PickupType.FlyingHealth:
                 {
+                    if (RunManager.Instance == null || RunManager.Instance.IsRunEnded) break;
                     var player = Object.FindFirstObjectByType<Player.PlayerShipController>();
-                    player?.Damage.Heal(p.value);
+                    if (player?.Damage != null && player.Damage.IsAlive)
+                        player.Damage.Heal(p.value);
                     break;
                 }
             }

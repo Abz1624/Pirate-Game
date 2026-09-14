@@ -40,7 +40,34 @@ namespace HighSeas.World
                 }
             }
 
+            Physics.SyncTransforms();
             return count;
+        }
+
+        public static void RegisterPredictedZones(IslandLayoutDefinition layout, int seed)
+        {
+            if (layout == null || !layout.HasIslands) return;
+
+            var rng = new RunRng(seed);
+            for (var c = 0; c < layout.clusters.Length; c++)
+            {
+                var cluster = layout.clusters[c];
+                if (cluster.islands == null) continue;
+
+                var clusterJitter = RandomInCircle(rng, cluster.clusterJitterRadius);
+                var clusterOrigin = cluster.anchorPosition + new Vector3(clusterJitter.x, 0f, clusterJitter.y);
+
+                for (var i = 0; i < cluster.islands.Length; i++)
+                {
+                    var entry = cluster.islands[i];
+                    var localJitter = RandomInCircle(rng, entry.positionJitter);
+                    var position = clusterOrigin + entry.offsetFromAnchor + new Vector3(localJitter.x, 0f, localJitter.y);
+                    var footprint = entry.targetFootprintMeters > 0f ? entry.targetFootprintMeters : 20f;
+                    var scale = entry.scale.x > 0f ? Mathf.Max(entry.scale.x, entry.scale.z) : 1f;
+                    var radius = footprint * 1.5f * scale + entry.positionJitter + cluster.clusterJitterRadius + 12f;
+                    IslandSpawnExclusionRegistry.RegisterPredicted(position, radius);
+                }
+            }
         }
 
         static Vector2 RandomInCircle(RunRng rng, float radius)

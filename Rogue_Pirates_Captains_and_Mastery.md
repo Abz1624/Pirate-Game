@@ -42,7 +42,7 @@ Do not apply Cinder/Tempest's elemental bonuses twice to child hits whose damage
 
 ## 3. Unlock and run state
 
-Quest/license ownership is account progression, not Item holding ownership. Selling an Item does not remove a Captain, and unlocking a Captain does not grant its associated Items. Qualification checks after verified events; each grant has a unique receipt. Current runs retain their selected Captain even if another unlocks mid-run.
+Quest/license ownership is account progression, separate from Item progress. Item reforging does not remove a Captain, and unlocking a Captain does not grant its associated Items. Qualification checks after verified events; each grant has a unique receipt. Current runs retain their selected Captain even if another unlocks mid-run.
 
 Persist Captain ID/version, selected starting Weapon, near-miss timestamps, continuous movement duration, counted burn deaths and last threshold reward. Derived per-level bonuses need not be independently granted each reconnect; recompute from saved L once. Prevent repeated level/Hull grants when a snapshot is restored.
 

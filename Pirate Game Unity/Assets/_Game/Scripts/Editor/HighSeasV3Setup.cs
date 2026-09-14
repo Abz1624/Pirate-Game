@@ -223,6 +223,16 @@ namespace HighSeas.Editor
         static void CreateMainMenuScene()
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var cameraGo = new GameObject("Main Camera");
+            cameraGo.tag = "MainCamera";
+            var camera = cameraGo.AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = new Color(0.04f, 0.1f, 0.16f, 1f);
+            camera.orthographic = false;
+            cameraGo.AddComponent<AudioListener>();
+            cameraGo.transform.position = new Vector3(0f, 12f, -18f);
+            cameraGo.transform.rotation = Quaternion.Euler(24f, 0f, 0f);
+
             var menu = new GameObject("V3MainMenu");
             menu.AddComponent<V3MainMenuController>();
             SaveScene($"{ScenesV3Folder}/V3MainMenu.unity");
@@ -295,24 +305,31 @@ namespace HighSeas.Editor
                 V3SceneNames.SaltwindRunPath
             };
 
-            var existing = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+            var ordered = new List<EditorBuildSettingsScene>();
             foreach (var path in v3Scenes)
             {
                 if (!File.Exists(path)) continue;
-                var found = false;
-                for (var i = 0; i < existing.Count; i++)
-                {
-                    if (existing[i].path != path) continue;
-                    existing[i] = new EditorBuildSettingsScene(path, true);
-                    found = true;
-                    break;
-                }
-
-                if (!found)
-                    existing.Insert(0, new EditorBuildSettingsScene(path, true));
+                ordered.Add(new EditorBuildSettingsScene(path, true));
             }
 
-            EditorBuildSettings.scenes = existing.ToArray();
+            var existing = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+            foreach (var scene in existing)
+            {
+                var duplicate = false;
+                for (var i = 0; i < ordered.Count; i++)
+                {
+                    if (ordered[i].path == scene.path)
+                    {
+                        duplicate = true;
+                        break;
+                    }
+                }
+
+                if (!duplicate)
+                    ordered.Add(scene);
+            }
+
+            EditorBuildSettings.scenes = ordered.ToArray();
         }
 
         static void SaveScene(string path)

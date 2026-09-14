@@ -49,13 +49,17 @@ namespace HighSeas.V3
             if (summaryText != null && RunManager.Instance != null)
             {
                 var rm = RunManager.Instance;
+                var homePreview = rm.ObjectiveSecured
+                    ? "\nFirst-home preview: Ledger rank 1 (local prototype — not saved to account)."
+                    : "";
                 summaryText.text =
                     $"Seed: {rm.RunSeed}\n" +
                     $"Survived: {rm.ElapsedSeconds:0}s\n" +
                     $"Kills: {rm.KillCount}\n" +
                     $"Boss secured: {(rm.ObjectiveSecured ? "Yes" : "No")}\n" +
                     $"Run gold banked: {rm.BankedRunGold}\n" +
-                    $"Unspent run gold: {rm.Gold}";
+                    $"Unspent run gold: {rm.Gold}" +
+                    homePreview;
             }
         }
 
