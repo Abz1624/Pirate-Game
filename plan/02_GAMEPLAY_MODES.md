@@ -12,7 +12,7 @@
 
 ## Modes
 
-- **First conquest:** fixed reserved home geometry across retries; new encounter/reward seeds; Deck Cannon override; Barnacle King secures Saltwind, Ledger rank 1, 500 Gold, 180 Rum and 24-hour shield.
+- **First conquest:** random Saltwind geometry each run until Barnacle King is defeated; on first boss defeat lock that run's geography seed as the account home layout for all later attempts (local prototype: `V3HomeSeed`); separate encounter/reward seeds per retry remain follow-up work; Deck Cannon override; Barnacle King secures Saltwind, Ledger rank 1, 500 Gold, 180 Rum and 24-hour shield.
 - **Voyage:** free entry; player chooses unlocked biome and tier; fresh valid layout; Tier 1/2/3 has 1/2/3 stages; leaderboard eligible.
 - **Expansion:** requires prior Zone and Defense rank 2/4; reveal one persistent outer band; no fee; success saves immediately; failure loses no owned geography.
 - **Home mastery:** persistent home geometry, Tier 1 one-stage, no leaderboard. Fast Flag: boss by 6:00; Lightly Armed: one Weapon slot; Steady Hands: complete Signal Buoy charge without leaving, then boss.

@@ -4,8 +4,9 @@ using UnityEngine;
 namespace HighSeas.V3
 {
     /// <summary>
-    /// Saltwind geography: random each run until the first boss is defeated,
-    /// then locked to that run's seed for all future attempts.
+    /// Saltwind geography for the territory owner: random each run until Barnacle King
+    /// is defeated, then locked to that run's seed for all future attempts (local PlayerPrefs).
+    /// See plan/02_GAMEPLAY_MODES.md and Integration Checklist M2-029 / D-005.
     /// </summary>
     public static class V3HomeSeed
     {
