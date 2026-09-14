@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6723788257515857543}
   - component: {fileID: 5597042966036747139}
   - component: {fileID: 8599959141683620340}
-  - component: {fileID: 8245837572180060240}
   m_Layer: 0
   m_Name: Rock_2
   m_TagString: Untagged
@@ -91,28 +90,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &8245837572180060240
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 18288069332288622}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -1632635526193424973, guid: 08098e506de946e4d96b3a724e77def8, type: 3}
 --- !u!1 &830385598999074600
 GameObject:
   m_ObjectHideFlags: 0
@@ -124,7 +101,6 @@ GameObject:
   - component: {fileID: 7747728502141052452}
   - component: {fileID: 4111343733549429897}
   - component: {fileID: 272643419253879205}
-  - component: {fileID: 60545126080097367}
   m_Layer: 7
   m_Name: Ground
   m_TagString: Untagged
@@ -204,28 +180,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &60545126080097367
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 830385598999074600}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 91200311003237937, guid: 5fd19324190e82f429b9421744afd274, type: 3}
 --- !u!1 &927400444415916503
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,7 +191,6 @@ GameObject:
   - component: {fileID: 6112605552398830634}
   - component: {fileID: 5816962019772573282}
   - component: {fileID: 6551465384895089957}
-  - component: {fileID: 8091596342053490909}
   m_Layer: 0
   m_Name: Rock_1
   m_TagString: Untagged
@@ -317,28 +270,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &8091596342053490909
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 927400444415916503}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -7036766103457819185, guid: c5c18b7bea7edbb49a978360c9d9b55d, type: 3}
 --- !u!1 &2224067462429110943
 GameObject:
   m_ObjectHideFlags: 0
@@ -348,6 +279,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1050322219867236586}
+  - component: {fileID: 3358978977068429447}
   m_Layer: 0
   m_Name: Island_30
   m_TagString: Untagged
@@ -374,7 +306,52 @@ Transform:
   - {fileID: 6723788257515857543}
   - {fileID: 7784060285116523118}
   - {fileID: 7303073241462302210}
+  - {fileID: 7515713185274103764}
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3358978977068429447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2224067462429110943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67cae99f2e3b9854ab04af0431ece1c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.World.IslandCollisionAuthoring
+  useManualCollider: 1
+--- !u!1 &2507231984237517997
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7515713185274103764}
+  m_Layer: 0
+  m_Name: Collision
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7515713185274103764
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2507231984237517997}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1050322219867236586}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4751294634823458798
 GameObject:
@@ -509,7 +486,6 @@ GameObject:
   - component: {fileID: 7784060285116523118}
   - component: {fileID: 4344915736930717958}
   - component: {fileID: 9102045815722123271}
-  - component: {fileID: 724408544664057693}
   m_Layer: 0
   m_Name: Rock_2 (1)
   m_TagString: Untagged
@@ -589,28 +565,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &724408544664057693
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6607192679869552503}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -1632635526193424973, guid: 08098e506de946e4d96b3a724e77def8, type: 3}
 --- !u!1 &7714915864312742724
 GameObject:
   m_ObjectHideFlags: 0
@@ -622,7 +576,6 @@ GameObject:
   - component: {fileID: 6073046278348887458}
   - component: {fileID: 115531340880226672}
   - component: {fileID: 2297319766876826931}
-  - component: {fileID: 5979792123886310087}
   m_Layer: 0
   m_Name: Rock_0
   m_TagString: Untagged
@@ -702,25 +655,3 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &5979792123886310087
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7714915864312742724}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -7036766103457819185, guid: c5c18b7bea7edbb49a978360c9d9b55d, type: 3}

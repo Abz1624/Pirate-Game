@@ -239,7 +239,7 @@ namespace HighSeas.V3
             image.raycastTarget = false;
 
             var outline = borderGo.AddComponent<Outline>();
-            outline.effectColor = new Color(0.62f, 0.22f, 0.95f, 0.9f);
+            outline.effectColor = new Color(0.22f, 0.04f, 0.38f, 0.9f);
             outline.effectDistance = new Vector2(2f, -2f);
         }
     }

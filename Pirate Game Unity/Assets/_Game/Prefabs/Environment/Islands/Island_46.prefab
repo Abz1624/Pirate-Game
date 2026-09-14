@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 9218437669168239559}
   - component: {fileID: 8900653368059364494}
   - component: {fileID: 3221199062260503873}
-  - component: {fileID: 5784382892231760741}
   m_Layer: 0
   m_Name: Rock_0 (1)
   m_TagString: Untagged
@@ -91,28 +90,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &5784382892231760741
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1144291881281952838}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -1632635526193424973, guid: 08098e506de946e4d96b3a724e77def8, type: 3}
 --- !u!1 &1709066162818301612
 GameObject:
   m_ObjectHideFlags: 0
@@ -212,6 +189,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7415057392591782028}
+  - component: {fileID: 6610965677952643193}
   m_Layer: 0
   m_Name: Island_46
   m_TagString: Untagged
@@ -236,8 +214,22 @@ Transform:
   - {fileID: 6687599032635269739}
   - {fileID: 9218437669168239559}
   - {fileID: 9200412121467706295}
+  - {fileID: 6448089520762551663}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6610965677952643193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3106562923277141793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67cae99f2e3b9854ab04af0431ece1c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.World.IslandCollisionAuthoring
+  useManualCollider: 1
 --- !u!1 &4329961179514091564
 GameObject:
   m_ObjectHideFlags: 0
@@ -249,7 +241,6 @@ GameObject:
   - component: {fileID: 3894929900869525878}
   - component: {fileID: 5338407569524944464}
   - component: {fileID: 2669991334305679550}
-  - component: {fileID: 1077220576288266504}
   m_Layer: 7
   m_Name: Ground
   m_TagString: Untagged
@@ -329,28 +320,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &1077220576288266504
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4329961179514091564}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 91200311003237937, guid: 5fd19324190e82f429b9421744afd274, type: 3}
 --- !u!1 &4875544841515618010
 GameObject:
   m_ObjectHideFlags: 0
@@ -383,6 +352,37 @@ Transform:
   - {fileID: 3512449249516541496}
   m_Father: {fileID: 7415057392591782028}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5078615427922113365
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6448089520762551663}
+  m_Layer: 0
+  m_Name: Collision
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6448089520762551663
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5078615427922113365}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7415057392591782028}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7680205039722940574
 GameObject:
   m_ObjectHideFlags: 0
@@ -394,7 +394,6 @@ GameObject:
   - component: {fileID: 6687599032635269739}
   - component: {fileID: 190682733284738333}
   - component: {fileID: 2461465952873768938}
-  - component: {fileID: 741204384469049612}
   m_Layer: 0
   m_Name: Rock_0
   m_TagString: Untagged
@@ -474,25 +473,3 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &741204384469049612
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7680205039722940574}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -1632635526193424973, guid: 08098e506de946e4d96b3a724e77def8, type: 3}

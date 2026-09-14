@@ -43,7 +43,6 @@ GameObject:
   - component: {fileID: 9191875172389636186}
   - component: {fileID: 9145870263558216577}
   - component: {fileID: 4797314204953591114}
-  - component: {fileID: 4396315639556420602}
   m_Layer: 0
   m_Name: Rock_0
   m_TagString: Untagged
@@ -123,28 +122,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &4396315639556420602
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3896132915445545313}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 1019148272949569307, guid: bfab287161ee99a43a0434a1243ffeb0, type: 3}
 --- !u!1 &5503686724812696252
 GameObject:
   m_ObjectHideFlags: 0
@@ -156,7 +133,6 @@ GameObject:
   - component: {fileID: 4983180975345396683}
   - component: {fileID: 3060316524821334483}
   - component: {fileID: 4170961614099686329}
-  - component: {fileID: 3301001810288226963}
   m_Layer: 0
   m_Name: Ground
   m_TagString: Untagged
@@ -236,28 +212,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &3301001810288226963
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5503686724812696252}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 91200311003237937, guid: 5fd19324190e82f429b9421744afd274, type: 3}
 --- !u!1 &6999723300178812278
 GameObject:
   m_ObjectHideFlags: 0
@@ -269,6 +223,7 @@ GameObject:
   - component: {fileID: 8643969592614620058}
   - component: {fileID: 4066084102288121572}
   - component: {fileID: 8427728366451709203}
+  - component: {fileID: 3278288265670460198}
   m_Layer: 7
   m_Name: Island_C3_2
   m_TagString: Untagged
@@ -291,6 +246,7 @@ Transform:
   m_Children:
   - {fileID: 4983180975345396683}
   - {fileID: 1279886089765882655}
+  - {fileID: 8797706284747886743}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4066084102288121572
@@ -332,3 +288,47 @@ CapsuleCollider:
   m_Height: 4
   m_Direction: 1
   m_Center: {x: 0, y: 2, z: 0}
+--- !u!114 &3278288265670460198
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6999723300178812278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67cae99f2e3b9854ab04af0431ece1c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.World.IslandCollisionAuthoring
+  useManualCollider: 1
+--- !u!1 &7159113272082099720
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8797706284747886743}
+  m_Layer: 0
+  m_Name: Collision
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8797706284747886743
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7159113272082099720}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8643969592614620058}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6560227793967606910}
+  - component: {fileID: 4686376116972413056}
   m_Layer: 0
   m_Name: Island_16
   m_TagString: Untagged
@@ -32,8 +33,22 @@ Transform:
   - {fileID: 8185955485351849973}
   - {fileID: 6377451564835502606}
   - {fileID: 3494616756426804731}
+  - {fileID: 5172771210335461275}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4686376116972413056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 281568289508575126}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67cae99f2e3b9854ab04af0431ece1c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.World.IslandCollisionAuthoring
+  useManualCollider: 1
 --- !u!1 &619982886404913492
 GameObject:
   m_ObjectHideFlags: 0
@@ -45,7 +60,6 @@ GameObject:
   - component: {fileID: 8185955485351849973}
   - component: {fileID: 5706466507036989286}
   - component: {fileID: 8213076337736113575}
-  - component: {fileID: 6021593415852450813}
   m_Layer: 7
   m_Name: Ground
   m_TagString: Untagged
@@ -125,28 +139,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &6021593415852450813
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 619982886404913492}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 91200311003237937, guid: 5fd19324190e82f429b9421744afd274, type: 3}
 --- !u!1 &1823677927503824680
 GameObject:
   m_ObjectHideFlags: 0
@@ -280,7 +272,6 @@ GameObject:
   - component: {fileID: 6377451564835502606}
   - component: {fileID: 5840093321857560502}
   - component: {fileID: 8229197825631156368}
-  - component: {fileID: 5726962237576288585}
   m_Layer: 0
   m_Name: Rock_0
   m_TagString: Untagged
@@ -360,25 +351,34 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &5726962237576288585
-MeshCollider:
+--- !u!1 &8346746668743004940
+GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8197340515826382398}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 1019148272949569307, guid: bfab287161ee99a43a0434a1243ffeb0, type: 3}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5172771210335461275}
+  m_Layer: 0
+  m_Name: Collision
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5172771210335461275
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8346746668743004940}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6560227793967606910}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

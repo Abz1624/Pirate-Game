@@ -6,6 +6,9 @@ namespace HighSeas.V3
     /// <summary>World-space boundary rings that show playable water and storm edge.</summary>
     public sealed class V3StormEdgeVisual : MonoBehaviour
     {
+        static readonly Color PlayableEdgeColor = new(0.62f, 0.08f, 0.1f, 0.5f);
+        static readonly Color StormEdgeColor = new(0.22f, 0.04f, 0.38f, 0.78f);
+
         LineRenderer _playableRing;
         LineRenderer _stormRing;
         float _pulse;
@@ -25,8 +28,8 @@ namespace HighSeas.V3
 
         void Awake()
         {
-            _playableRing = CreateRing("PlayableWaterEdge", new Color(0.35f, 0.82f, 0.98f, 0.42f), 0.28f);
-            _stormRing = CreateRing("StormDamageEdge", new Color(0.62f, 0.22f, 0.95f, 0.72f), 0.42f);
+            _playableRing = CreateRing("PlayableWaterEdge", PlayableEdgeColor, 0.28f);
+            _stormRing = CreateRing("StormDamageEdge", StormEdgeColor, 0.42f);
             Refresh();
         }
 

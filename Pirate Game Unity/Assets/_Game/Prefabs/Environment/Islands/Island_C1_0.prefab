@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 3386466885489038822}
   - component: {fileID: 4074417506307686204}
   - component: {fileID: 6133718431549057674}
-  - component: {fileID: 701480251004032326}
   m_Layer: 0
   m_Name: Rock_0
   m_TagString: Untagged
@@ -91,28 +90,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &701480251004032326
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 595369566664271393}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 1019148272949569307, guid: bfab287161ee99a43a0434a1243ffeb0, type: 3}
 --- !u!1 &837100472750763066
 GameObject:
   m_ObjectHideFlags: 0
@@ -124,6 +101,7 @@ GameObject:
   - component: {fileID: 1992287598333192293}
   - component: {fileID: 4159865646842973173}
   - component: {fileID: 4204260631308733482}
+  - component: {fileID: 8468781518339557688}
   m_Layer: 7
   m_Name: Island_C1_0
   m_TagString: Untagged
@@ -146,6 +124,7 @@ Transform:
   m_Children:
   - {fileID: 599281220828364388}
   - {fileID: 6328206583674261366}
+  - {fileID: 8401447597416692656}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4159865646842973173
@@ -187,6 +166,19 @@ CapsuleCollider:
   m_Height: 4
   m_Direction: 1
   m_Center: {x: 0, y: 2, z: 0}
+--- !u!114 &8468781518339557688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 837100472750763066}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67cae99f2e3b9854ab04af0431ece1c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.World.IslandCollisionAuthoring
+  useManualCollider: 1
 --- !u!1 &1115268778141264818
 GameObject:
   m_ObjectHideFlags: 0
@@ -198,7 +190,6 @@ GameObject:
   - component: {fileID: 599281220828364388}
   - component: {fileID: 4500700272215126858}
   - component: {fileID: 5020353865744801202}
-  - component: {fileID: 9044484431425745650}
   m_Layer: 0
   m_Name: Ground
   m_TagString: Untagged
@@ -278,28 +269,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &9044484431425745650
-MeshCollider:
+--- !u!1 &3798529303715717275
+GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1115268778141264818}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 91200311003237937, guid: 5fd19324190e82f429b9421744afd274, type: 3}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8401447597416692656}
+  m_Layer: 0
+  m_Name: Collision
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8401447597416692656
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3798529303715717275}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1992287598333192293}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3861287143854657790
 GameObject:
   m_ObjectHideFlags: 0

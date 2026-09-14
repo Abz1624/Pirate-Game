@@ -1,6 +1,7 @@
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.Debugging;
 using HighSeas.Enemies;
 using HighSeas.Meta;
 using HighSeas.Pickups;
@@ -146,6 +147,7 @@ namespace HighSeas.V3
             }
 
             EnsureCombatVfx();
+            CollisionDebugOverlay.Ensure();
             ConfigureSpawnDirector();
             EnsurePressureBeats(enemyWorld, player);
             EnsureOvertimeDirector(enemyWorld, player);

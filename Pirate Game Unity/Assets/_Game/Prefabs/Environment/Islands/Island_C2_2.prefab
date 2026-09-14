@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6602265221106176624}
   - component: {fileID: 4575358684375596202}
   - component: {fileID: 5379156457530749434}
-  - component: {fileID: 1939836353721241849}
   m_Layer: 0
   m_Name: Rock_0
   m_TagString: Untagged
@@ -91,28 +90,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &1939836353721241849
-MeshCollider:
+--- !u!1 &3259671331405543268
+GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1798335677027070206}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 1019148272949569307, guid: bfab287161ee99a43a0434a1243ffeb0, type: 3}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6578852482608241007}
+  m_Layer: 0
+  m_Name: Collision
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6578852482608241007
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3259671331405543268}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3988425801414562429}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4603301048300152886
 GameObject:
   m_ObjectHideFlags: 0
@@ -124,7 +132,6 @@ GameObject:
   - component: {fileID: 6150653792284403832}
   - component: {fileID: 8603647456691982725}
   - component: {fileID: 1556867634407896766}
-  - component: {fileID: 2509122845806674313}
   m_Layer: 0
   m_Name: Ground
   m_TagString: Untagged
@@ -204,28 +211,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &2509122845806674313
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4603301048300152886}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 91200311003237937, guid: 5fd19324190e82f429b9421744afd274, type: 3}
 --- !u!1 &8831248383186123009
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,6 +222,7 @@ GameObject:
   - component: {fileID: 3988425801414562429}
   - component: {fileID: 1152619859205490792}
   - component: {fileID: 5747448848558156665}
+  - component: {fileID: 4811306901466671654}
   m_Layer: 7
   m_Name: Island_C2_2
   m_TagString: Untagged
@@ -259,6 +245,7 @@ Transform:
   m_Children:
   - {fileID: 6150653792284403832}
   - {fileID: 5798230498898146277}
+  - {fileID: 6578852482608241007}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1152619859205490792
@@ -300,6 +287,19 @@ CapsuleCollider:
   m_Height: 4
   m_Direction: 1
   m_Center: {x: 0, y: 2, z: 0}
+--- !u!114 &4811306901466671654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8831248383186123009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67cae99f2e3b9854ab04af0431ece1c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.World.IslandCollisionAuthoring
+  useManualCollider: 1
 --- !u!1 &9196201892866784046
 GameObject:
   m_ObjectHideFlags: 0

@@ -14745,7 +14745,8 @@ GameObject:
   - component: {fileID: 23985305603660343}
   - component: {fileID: 64977153420339851}
   - component: {fileID: 64336590748365959}
-  m_Layer: 8
+  - component: {fileID: 1199313360948093248}
+  m_Layer: 7
   m_Name: Island_Vulcano
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14877,6 +14878,20 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: 7aa58326351835e45a6f8dbfe3d7c91d, type: 2}
+--- !u!114 &1199313360948093248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1709254077376921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67cae99f2e3b9854ab04af0431ece1c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.World.IslandCollisionAuthoring
+  groundCollider: {fileID: 64977153420339851}
+  foliageCollider: {fileID: 64336590748365959}
 --- !u!1 &1709867586078768
 GameObject:
   m_ObjectHideFlags: 0

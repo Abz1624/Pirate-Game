@@ -3,7 +3,7 @@ using UnityEngine;
 namespace HighSeas.World
 {
     /// <summary>
-    /// Capsule-based movement resolution against island colliders on the Island layer (ground mesh or fallback capsule).
+    /// Movement resolution against island mesh colliders on the Island layer (convex ground + non-convex foliage).
     /// </summary>
     public static class IslandObstacles
     {
@@ -14,6 +14,7 @@ namespace HighSeas.World
 
         static int? _cachedLayer;
         static readonly Collider[] OverlapBuffer = new Collider[16];
+        static readonly Collider[] OverlapScratch = new Collider[16];
 
         public static int Layer
         {
@@ -37,10 +38,13 @@ namespace HighSeas.World
                 height = GetCollisionHeight(radius);
 
             GetCapsulePoints(position, radius, height, out var pointA, out var pointB);
-            return Physics.CheckCapsule(
-                pointA,
-                pointB,
-                GetCastRadius(radius),
+            var castRadius = GetCastRadius(radius);
+            if (Physics.CheckCapsule(pointA, pointB, castRadius, Mask, QueryTriggerInteraction.Ignore))
+                return true;
+
+            return Physics.CheckSphere(
+                GetSphereProbeCenter(position, height),
+                castRadius,
                 Mask,
                 QueryTriggerInteraction.Ignore);
         }
@@ -67,23 +71,13 @@ namespace HighSeas.World
             var castRadius = GetCastRadius(agentRadius);
             GetCapsulePoints(position, agentRadius, height, out var pointA, out var pointB);
 
-            if (!Physics.CapsuleCast(
-                    pointA,
-                    pointB,
-                    castRadius,
-                    direction,
-                    out var hit,
-                    probeDistance,
-                    Mask,
-                    QueryTriggerInteraction.Ignore))
-            {
+            if (!TryMovementCast(pointA, pointB, castRadius, direction, probeDistance, Mask, out var hit))
                 return velocity;
-            }
 
             var left = Quaternion.Euler(0f, -40f, 0f) * direction;
             var right = Quaternion.Euler(0f, 40f, 0f) * direction;
-            var leftClear = !Physics.CapsuleCast(pointA, pointB, castRadius, left, probeDistance * 0.9f, Mask, QueryTriggerInteraction.Ignore);
-            var rightClear = !Physics.CapsuleCast(pointA, pointB, castRadius, right, probeDistance * 0.9f, Mask, QueryTriggerInteraction.Ignore);
+            var leftClear = !TryMovementCast(pointA, pointB, castRadius, left, probeDistance * 0.9f, Mask, out _);
+            var rightClear = !TryMovementCast(pointA, pointB, castRadius, right, probeDistance * 0.9f, Mask, out _);
 
             var normal = hit.normal;
             normal.y = 0f;
@@ -116,8 +110,8 @@ namespace HighSeas.World
                 tangent = tangentAlt;
             }
 
-            if (Physics.CapsuleCast(pointA, pointB, castRadius, tangent, probeDistance * 0.75f, Mask, QueryTriggerInteraction.Ignore)
-                && !Physics.CapsuleCast(pointA, pointB, castRadius, tangentAlt, probeDistance * 0.75f, Mask, QueryTriggerInteraction.Ignore))
+            if (TryMovementCast(pointA, pointB, castRadius, tangent, probeDistance * 0.75f, Mask, out _)
+                && !TryMovementCast(pointA, pointB, castRadius, tangentAlt, probeDistance * 0.75f, Mask, out _))
             {
                 tangent = tangentAlt;
             }
@@ -158,13 +152,7 @@ namespace HighSeas.World
         static bool IsOverlapping(Vector3 position, float radius, float height)
         {
             if (Mask == 0) return false;
-            GetCapsulePoints(position, radius, height, out var pointA, out var pointB);
-            return Physics.CheckCapsule(
-                pointA,
-                pointB,
-                GetCastRadius(radius),
-                Mask,
-                QueryTriggerInteraction.Ignore);
+            return CollectBlockingColliders(position, radius, height, OverlapBuffer) > 0;
         }
 
         static Vector3 ResolveCapsuleStep(
@@ -188,15 +176,7 @@ namespace HighSeas.World
                 var direction = remaining / distance;
                 GetCapsulePoints(result, radius, height, out var pointA, out var pointB);
 
-                if (!Physics.CapsuleCast(
-                        pointA,
-                        pointB,
-                        castRadius,
-                        direction,
-                        out var hit,
-                        distance + Skin,
-                        mask,
-                        QueryTriggerInteraction.Ignore))
+                if (!TryMovementCast(pointA, pointB, castRadius, direction, distance + Skin, mask, out var hit))
                 {
                     result += remaining;
                     break;
@@ -230,15 +210,7 @@ namespace HighSeas.World
             var result = position;
             for (var attempt = 0; attempt < MaxDepenetrateIterations; attempt++)
             {
-                GetCapsulePoints(result, radius, height, out var pointA, out var pointB);
-                var overlapCount = Physics.OverlapCapsuleNonAlloc(
-                    pointA,
-                    pointB,
-                    GetCastRadius(radius),
-                    OverlapBuffer,
-                    Mask,
-                    QueryTriggerInteraction.Ignore);
-
+                var overlapCount = CollectBlockingColliders(result, radius, height, OverlapBuffer);
                 if (overlapCount == 0)
                     break;
 
@@ -262,9 +234,6 @@ namespace HighSeas.World
 
         static Vector3 GetDepenetrationVector(Collider collider, Vector3 position, float radius)
         {
-            if (collider is MeshCollider { convex: false })
-                return PushOutOfBounds(collider.bounds, position, radius);
-
             var closest = collider.ClosestPoint(position);
             var away = position - closest;
             away.y = 0f;
@@ -281,35 +250,83 @@ namespace HighSeas.World
             return penetration > 0f ? away.normalized * (penetration + Skin) : Vector3.zero;
         }
 
-        static Vector3 PushOutOfBounds(Bounds bounds, Vector3 position, float radius)
+        static bool TryMovementCast(
+            Vector3 pointA,
+            Vector3 pointB,
+            float castRadius,
+            Vector3 direction,
+            float distance,
+            int mask,
+            out RaycastHit hit)
         {
-            var push = Vector3.zero;
-            var min = bounds.min;
-            var max = bounds.max;
-
-            if (position.x < min.x)
-                push.x += min.x - position.x + radius + Skin;
-            else if (position.x > max.x)
-                push.x -= position.x - max.x + radius + Skin;
-
-            if (position.z < min.z)
-                push.z += min.z - position.z + radius + Skin;
-            else if (position.z > max.z)
-                push.z -= position.z - max.z + radius + Skin;
-
-            if (push.sqrMagnitude < 1e-8f)
+            if (Physics.CapsuleCast(
+                    pointA,
+                    pointB,
+                    castRadius,
+                    direction,
+                    out hit,
+                    distance,
+                    mask,
+                    QueryTriggerInteraction.Ignore))
             {
-                var center = bounds.center;
-                var away = position - center;
-                away.y = 0f;
-                if (away.sqrMagnitude < 0.001f)
-                    away = Vector3.forward;
-                push = away.normalized * (radius + Skin);
+                return true;
             }
 
-            push.y = 0f;
-            return push;
+            var sphereCenter = (pointA + pointB) * 0.5f;
+            return Physics.SphereCast(
+                sphereCenter,
+                castRadius,
+                direction,
+                out hit,
+                distance,
+                mask,
+                QueryTriggerInteraction.Ignore);
         }
+
+        static int CollectBlockingColliders(Vector3 position, float radius, float height, Collider[] buffer)
+        {
+            GetCapsulePoints(position, radius, height, out var pointA, out var pointB);
+            var castRadius = GetCastRadius(radius);
+            var count = Physics.OverlapCapsuleNonAlloc(
+                pointA,
+                pointB,
+                castRadius,
+                buffer,
+                Mask,
+                QueryTriggerInteraction.Ignore);
+
+            var sphereCount = Physics.OverlapSphereNonAlloc(
+                GetSphereProbeCenter(position, height),
+                castRadius,
+                OverlapScratch,
+                Mask,
+                QueryTriggerInteraction.Ignore);
+
+            for (var i = 0; i < sphereCount; i++)
+            {
+                if (count >= buffer.Length)
+                    break;
+                if (ContainsCollider(buffer, count, OverlapScratch[i]))
+                    continue;
+                buffer[count++] = OverlapScratch[i];
+            }
+
+            return count;
+        }
+
+        static bool ContainsCollider(Collider[] buffer, int count, Collider candidate)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                if (buffer[i] == candidate)
+                    return true;
+            }
+
+            return false;
+        }
+
+        static Vector3 GetSphereProbeCenter(Vector3 position, float height) =>
+            position + Vector3.up * Mathf.Max(0.75f, height * 0.25f);
 
         static Vector3 PreservePreferredDirection(Vector3 velocity, Vector3 preferredDirection, float speed)
         {

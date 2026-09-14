@@ -4,30 +4,96 @@ namespace HighSeas.World
 {
     public static class IslandColliderUtility
     {
-        const float CollisionShrink = 0.64f;
-
         public static void ConfigureIslandCollision(GameObject islandRoot, float fallbackRadius = 6f, float fallbackHeight = 3f)
         {
             if (islandRoot == null) return;
 
-            RemoveCollider<CapsuleCollider>(islandRoot);
-
-            var ground = FindGround(islandRoot.transform);
-            if (ground != null && TrySetupTightCollider(ground.gameObject, ground.gameObject))
-            {
-                DisableCollidersExcept(islandRoot, ground.gameObject);
-                RegisterExclusion(islandRoot);
-                return;
-            }
-
-            if (TrySetupTightCollider(islandRoot, islandRoot))
-            {
-                RegisterExclusion(islandRoot);
-                return;
-            }
-
-            SetupCapsuleCollider(islandRoot, fallbackRadius * CollisionShrink, fallbackHeight);
+            DisableCapsuleColliders(islandRoot);
+            ConfigureMeshColliders(islandRoot);
             RegisterExclusion(islandRoot);
+        }
+
+        static void ConfigureMeshColliders(GameObject islandRoot)
+        {
+            var authoring = islandRoot.GetComponent<IslandCollisionAuthoring>();
+            var ground = authoring != null ? authoring.groundCollider : null;
+            var foliage = authoring != null ? authoring.foliageCollider : null;
+            if (ground == null || foliage == null)
+                AutoDetectMeshColliders(islandRoot, ref ground, ref foliage);
+
+            var hasCollision = false;
+            if (EnableMeshCollider(ground, requireConvex: true))
+                hasCollision = true;
+            if (EnableMeshCollider(foliage, requireConvex: false))
+                hasCollision = true;
+
+            DisableExtraMeshColliders(islandRoot, ground, foliage);
+
+            if (!hasCollision)
+            {
+                Debug.LogWarning(
+                    $"Island '{islandRoot.name}' has no enabled mesh colliders. " +
+                    "Expected a convex ground mesh and a non-convex foliage mesh on the prefab.",
+                    islandRoot);
+            }
+        }
+
+        static void AutoDetectMeshColliders(GameObject islandRoot, ref MeshCollider ground, ref MeshCollider foliage)
+        {
+            var meshColliders = islandRoot.GetComponentsInChildren<MeshCollider>(true);
+            for (var i = 0; i < meshColliders.Length; i++)
+            {
+                var meshCollider = meshColliders[i];
+                if (meshCollider == null)
+                    continue;
+
+                if (meshCollider.convex && ground == null)
+                    ground = meshCollider;
+                else if (!meshCollider.convex && foliage == null)
+                    foliage = meshCollider;
+            }
+        }
+
+        static bool EnableMeshCollider(MeshCollider meshCollider, bool requireConvex)
+        {
+            if (meshCollider == null)
+                return false;
+
+            meshCollider.enabled = true;
+            if (requireConvex)
+                meshCollider.convex = true;
+
+            ApplyIslandLayer(meshCollider.gameObject);
+            return true;
+        }
+
+        static void DisableExtraMeshColliders(GameObject islandRoot, MeshCollider ground, MeshCollider foliage)
+        {
+            var meshColliders = islandRoot.GetComponentsInChildren<MeshCollider>(true);
+            for (var i = 0; i < meshColliders.Length; i++)
+            {
+                var meshCollider = meshColliders[i];
+                if (meshCollider == null || meshCollider == ground || meshCollider == foliage)
+                    continue;
+                meshCollider.enabled = false;
+            }
+        }
+
+        static void DisableCapsuleColliders(GameObject islandRoot)
+        {
+            if (islandRoot == null) return;
+
+            var colliders = islandRoot.GetComponentsInChildren<CapsuleCollider>(true);
+            for (var i = 0; i < colliders.Length; i++)
+            {
+                if (colliders[i] != null)
+                    colliders[i].enabled = false;
+            }
+        }
+
+        public static void DisableNonCapsuleColliders(GameObject islandRoot)
+        {
+            DisableCapsuleColliders(islandRoot);
         }
 
         static void RegisterExclusion(GameObject islandRoot)
@@ -48,45 +114,7 @@ namespace HighSeas.World
             }
         }
 
-        static bool TrySetupTightCollider(GameObject colliderHost, GameObject boundsRoot)
-        {
-            if (!TryGetGroundBounds(boundsRoot, out var bounds))
-                return false;
-
-            var radius = Mathf.Max(bounds.extents.x, bounds.extents.z) * CollisionShrink;
-            if (radius < 0.5f) return false;
-
-            RemoveCollider<MeshCollider>(colliderHost);
-            var collider = colliderHost.GetComponent<CapsuleCollider>();
-            if (collider == null)
-                collider = colliderHost.AddComponent<CapsuleCollider>();
-
-            collider.radius = radius;
-            collider.height = Mathf.Max(radius * 2f, bounds.size.y * CollisionShrink);
-            collider.direction = 1;
-            collider.center = colliderHost.transform.InverseTransformPoint(bounds.center);
-            collider.enabled = true;
-            ApplyIslandLayer(colliderHost);
-            return true;
-        }
-
-        static CapsuleCollider SetupCapsuleCollider(GameObject islandRoot, float radius, float height)
-        {
-            var collider = islandRoot.GetComponent<CapsuleCollider>();
-            if (collider == null)
-                collider = islandRoot.AddComponent<CapsuleCollider>();
-
-            collider.radius = radius;
-            collider.height = height;
-            collider.direction = 1;
-            collider.center = new Vector3(0f, height * 0.5f, 0f);
-            collider.enabled = true;
-
-            ApplyIslandLayer(islandRoot);
-            return collider;
-        }
-
-        static bool TryGetGroundBounds(GameObject boundsRoot, out Bounds bounds)
+        public static bool TryGetGroundBounds(GameObject boundsRoot, out Bounds bounds)
         {
             bounds = default;
             var hasBounds = false;
@@ -112,7 +140,7 @@ namespace HighSeas.World
             return hasBounds;
         }
 
-        static bool IsDecorationRenderer(Renderer renderer)
+        public static bool IsDecorationRenderer(Renderer renderer)
         {
             var name = renderer.gameObject.name;
             if (name == "Ground" || name == "FallbackMesh") return false;
@@ -124,41 +152,6 @@ namespace HighSeas.World
                    lower.Contains("bush") ||
                    lower.Contains("deco") ||
                    lower.Contains("prop");
-        }
-
-        static Transform FindGround(Transform islandRoot)
-        {
-            for (var i = 0; i < islandRoot.childCount; i++)
-            {
-                var child = islandRoot.GetChild(i);
-                if (child.name == "Ground" || child.name == "FallbackMesh")
-                    return child;
-            }
-
-            return null;
-        }
-
-        static void DisableCollidersExcept(GameObject islandRoot, GameObject keepColliderOn)
-        {
-            var colliders = islandRoot.GetComponentsInChildren<Collider>(true);
-            for (var i = 0; i < colliders.Length; i++)
-            {
-                var owner = colliders[i].gameObject;
-                colliders[i].enabled = owner == keepColliderOn;
-            }
-        }
-
-        static void RemoveCollider<T>(GameObject target) where T : Collider
-        {
-            var collider = target.GetComponent<T>();
-            if (collider == null) return;
-
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-                Object.DestroyImmediate(collider);
-            else
-#endif
-                Object.Destroy(collider);
         }
 
         static void ApplyIslandLayer(GameObject target)

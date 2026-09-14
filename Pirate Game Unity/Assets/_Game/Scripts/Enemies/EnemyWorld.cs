@@ -304,6 +304,13 @@ namespace HighSeas.Enemies
             return def.radius + padding;
         }
 
+        public float GetCollisionRadiusForAgent(in EnemyAgent agent)
+        {
+            if (definitions == null || agent.definitionIndex < 0 || agent.definitionIndex >= definitions.Length)
+                return agent.radius;
+            return GetCollisionRadius(definitions[agent.definitionIndex]);
+        }
+
         void ResolveAgentOverlaps()
         {
             for (var pass = 0; pass < 2; pass++)

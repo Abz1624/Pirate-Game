@@ -5605,6 +5605,7 @@ MonoBehaviour:
   player: {fileID: 2131002239}
   islandLayout: {fileID: 0}
   runSeed: 12345
+  forceInspectorSeed: 0
   usePlaceholderPoiVisuals: 1
 --- !u!114 &658786994
 MonoBehaviour:

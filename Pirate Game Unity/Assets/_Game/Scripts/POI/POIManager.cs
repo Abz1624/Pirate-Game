@@ -81,42 +81,67 @@ namespace HighSeas.POI
         GameObject CreateMarker(POIType type, Vector3 position, Transform root)
         {
             var spawnPos = position + Vector3.up * 0.15f;
-            if (_usePlaceholderVisuals)
-            {
-                var placeholder = V3PlaceholderFactory.CreatePoiMarker(type, spawnPos, root);
-                return placeholder;
-            }
-
             var prefab = GetPrefab(type);
+            if (prefab != null && (!_usePlaceholderVisuals || type == POIType.SalvageChest))
+                return CreatePrefabMarker(type, prefab, position, spawnPos, root);
+
+            if (_usePlaceholderVisuals)
+                return V3PlaceholderFactory.CreatePoiMarker(type, spawnPos, root);
+
             GameObject go;
-
             if (prefab != null)
-            {
-                go = Instantiate(prefab, spawnPos, Quaternion.identity, root);
-                go.name = type.ToString();
-                go.transform.localScale = Vector3.one * GetScale(type);
-            }
-            else
-            {
-                go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                go.name = type.ToString();
-                go.transform.SetParent(root, false);
-                go.transform.position = spawnPos + Vector3.up * 0.35f;
-                go.transform.localScale = GetFallbackScale(type);
-                var rend = go.GetComponent<Renderer>();
-                rend.material.color = type switch
-                {
-                    POIType.SalvageChest => new Color(0.8f, 0.6f, 0.2f),
-                    POIType.LighthouseOfFortune => Color.white,
-                    POIType.TrialBuoy => Color.red,
-                    POIType.BossBeacon => Color.magenta,
-                    _ => Color.gray
-                };
-            }
+                return CreatePrefabMarker(type, prefab, position, spawnPos, root);
 
-            var collider = go.GetComponent<Collider>();
-            if (collider != null) Destroy(collider);
+            go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            go.name = type.ToString();
+            go.transform.SetParent(root, false);
+            go.transform.position = spawnPos + Vector3.up * 0.35f;
+            go.transform.localScale = GetFallbackScale(type);
+            var rend = go.GetComponent<Renderer>();
+            rend.material.color = type switch
+            {
+                POIType.SalvageChest => new Color(0.8f, 0.6f, 0.2f),
+                POIType.LighthouseOfFortune => Color.white,
+                POIType.TrialBuoy => Color.red,
+                POIType.BossBeacon => Color.magenta,
+                _ => Color.gray
+            };
+
+            StripColliders(go);
             return go;
+        }
+
+        GameObject CreatePrefabMarker(POIType type, GameObject prefab, Vector3 waterPos, Vector3 spawnPos, Transform root)
+        {
+            var go = Instantiate(prefab, spawnPos, Quaternion.identity, root);
+            go.name = type.ToString();
+            go.transform.localScale *= GetScale(type);
+
+            if (type == POIType.SalvageChest)
+                AlignBottomToWater(go, waterPos.y + 0.05f);
+
+            StripColliders(go);
+            return go;
+        }
+
+        static void AlignBottomToWater(GameObject go, float waterY)
+        {
+            var renderers = go.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length == 0)
+                return;
+
+            var bounds = renderers[0].bounds;
+            for (var i = 1; i < renderers.Length; i++)
+                bounds.Encapsulate(renderers[i].bounds);
+
+            go.transform.position += Vector3.up * (waterY - bounds.min.y);
+        }
+
+        static void StripColliders(GameObject go)
+        {
+            var colliders = go.GetComponentsInChildren<Collider>(true);
+            for (var i = 0; i < colliders.Length; i++)
+                Destroy(colliders[i]);
         }
 
         GameObject GetPrefab(POIType type)

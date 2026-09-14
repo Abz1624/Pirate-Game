@@ -84,7 +84,8 @@ namespace HighSeas.Data
         public GameObject trialBuoyPrefab;
         public GameObject bossBeaconPrefab;
         public GameObject bossTelegraphRingPrefab;
-        public float salvageChestScale = 1f;
+        [Tooltip("Multiplier on top of the prefab's authored scale (~1.57). 1.5 ≈ 1.8 m footprint.")]
+        public float salvageChestScale = 1.5f;
         public float lighthouseScale = 1f;
         public float trialBuoyScale = 1f;
         public float bossBeaconScale = 1f;
