@@ -15,6 +15,8 @@ namespace HighSeas.V3
         const int WeaponSlotCount = 2;
         const int LogbookSlotCount = 2;
         const int ItemSlotCount = 4;
+        const float BarWidth = 1000f;
+        const float BarHeight = 128f;
 
         readonly List<SlotView> _weaponSlots = new();
         readonly List<SlotView> _logbookSlots = new();
@@ -44,10 +46,13 @@ namespace HighSeas.V3
             rect.anchorMax = new Vector2(0.5f, 0f);
             rect.pivot = new Vector2(0.5f, 0f);
             rect.anchoredPosition = new Vector2(0f, 18f);
-            rect.sizeDelta = new Vector2(920f, 128f);
+            rect.sizeDelta = new Vector2(BarWidth, BarHeight);
 
             var bg = root.AddComponent<Image>();
             bg.color = new Color(0.04f, 0.08f, 0.14f, 0.9f);
+
+            var fitter = root.AddComponent<UiScaleToFitParent>();
+            fitter.SetContentWidth(BarWidth);
 
             var hud = root.AddComponent<V3RunLoadoutHud>();
             hud.BuildLayout(root.transform);
@@ -56,18 +61,18 @@ namespace HighSeas.V3
 
         void BuildLayout(Transform root)
         {
-            var weaponsLabel = CreateSectionLabel(root, "WEAPONS", new Vector2(-300f, 42f));
-            var logbooksLabel = CreateSectionLabel(root, "LOGBOOKS", new Vector2(40f, 42f));
-            var itemsLabel = CreateSectionLabel(root, "ITEMS", new Vector2(300f, 42f));
+            CreateSectionLabel(root, "WEAPONS", new Vector2(-340f, 42f));
+            CreateSectionLabel(root, "LOGBOOKS", new Vector2(-10f, 42f));
+            CreateSectionLabel(root, "ITEMS", new Vector2(290f, 42f));
 
             for (var i = 0; i < WeaponSlotCount; i++)
-                _weaponSlots.Add(CreateSlot(root, $"WeaponSlot{i}", new Vector2(-360f + i * 128f, -12f), new Vector2(116f, 78f), new Color(0.35f, 0.72f, 1f)));
+                _weaponSlots.Add(CreateSlot(root, $"WeaponSlot{i}", new Vector2(-390f + i * 130f, -12f), new Vector2(116f, 78f), new Color(0.35f, 0.72f, 1f)));
 
             for (var i = 0; i < LogbookSlotCount; i++)
-                _logbookSlots.Add(CreateSlot(root, $"LogbookSlot{i}", new Vector2(-20f + i * 128f, -12f), new Vector2(116f, 78f), new Color(0.62f, 0.92f, 0.48f)));
+                _logbookSlots.Add(CreateSlot(root, $"LogbookSlot{i}", new Vector2(-60f + i * 130f, -12f), new Vector2(116f, 78f), new Color(0.62f, 0.92f, 0.48f)));
 
             for (var i = 0; i < ItemSlotCount; i++)
-                _itemSlots.Add(CreateSlot(root, $"ItemSlot{i}", new Vector2(236f + i * 84f, -12f), new Vector2(80f, 78f), new Color(0.85f, 0.65f, 0.2f)));
+                _itemSlots.Add(CreateSlot(root, $"ItemSlot{i}", new Vector2(210f + i * 76f, -12f), new Vector2(72f, 78f), new Color(0.85f, 0.65f, 0.2f)));
         }
 
         static TextMeshProUGUI CreateSectionLabel(Transform parent, string text, Vector2 pos)
@@ -107,6 +112,7 @@ namespace HighSeas.V3
 
             var fill = root.AddComponent<Image>();
             fill.color = RunHudTheme.SlotFill;
+            root.AddComponent<RectMask2D>();
 
             var titleGo = new GameObject("Title", typeof(RectTransform));
             titleGo.transform.SetParent(root.transform, false);
@@ -134,8 +140,9 @@ namespace HighSeas.V3
             subtitle.fontSize = 9f;
             subtitle.alignment = TextAlignmentOptions.TopLeft;
             subtitle.color = RunHudTheme.Label;
-            subtitle.enableWordWrapping = true;
+            subtitle.enableWordWrapping = false;
             subtitle.overflowMode = TextOverflowModes.Ellipsis;
+            subtitle.maxVisibleLines = 2;
 
             return new SlotView
             {
@@ -225,6 +232,7 @@ namespace HighSeas.V3
         void RefreshItemSlots()
         {
             var items = V3RunItemInventory.Instance?.Items;
+            var overflow = items != null ? Mathf.Max(0, items.Count - ItemSlotCount) : 0;
             for (var i = 0; i < _itemSlots.Count; i++)
             {
                 var slot = _itemSlots[i];
@@ -234,8 +242,9 @@ namespace HighSeas.V3
                     slot.root.SetActive(true);
                     slot.title.text = V3ContentDescriptions.GetItemName(id);
                     var stacks = V3RunItemInventory.Instance.GetStackCount(id);
-                    var stackLabel = stacks > 1 ? $"x{stacks} · " : string.Empty;
-                    slot.subtitle.text = $"{stackLabel}{V3ContentDescriptions.GetItemDescription(id)}";
+                    slot.subtitle.text = stacks > 1 ? $"x{stacks}" : "Equipped";
+                    if (i == ItemSlotCount - 1 && overflow > 0)
+                        slot.subtitle.text += $" · +{overflow}";
                 }
                 else
                 {

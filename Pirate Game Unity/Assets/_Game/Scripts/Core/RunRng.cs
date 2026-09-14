@@ -9,6 +9,7 @@ namespace HighSeas.Core
         readonly System.Random _loot;
         readonly System.Random _director;
         readonly System.Random _combat;
+        readonly System.Random _powerup;
 
         public int Seed { get; }
 
@@ -19,6 +20,7 @@ namespace HighSeas.Core
             _loot = new System.Random(unchecked(seed * 19349663));
             _director = new System.Random(unchecked(seed * 83492791));
             _combat = new System.Random(unchecked(seed * 50331653));
+            _powerup = new System.Random(unchecked(seed * 27182818));
         }
 
         public float MapFloat() => (float)_map.NextDouble();
@@ -28,6 +30,7 @@ namespace HighSeas.Core
         public float DirectorFloat() => (float)_director.NextDouble();
         public int DirectorInt(int min, int max) => _director.Next(min, max);
         public float CombatFloat() => (float)_combat.NextDouble();
+        public float PowerupFloat() => (float)_powerup.NextDouble();
 
         public Rarity RollRarity(float luck, bool clampLegendary = true)
         {

@@ -89,6 +89,8 @@ namespace HighSeas.UI
         {
             if (amount <= 0) return;
             if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
+            var player = UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>();
+            if (player?.Damage != null && !player.Damage.IsAlive) return;
             CurrentXP += amount;
             while (CurrentXP >= XPToNext)
             {
@@ -137,6 +139,10 @@ namespace HighSeas.UI
         {
             var rng = RunManager.Instance.Rng;
             var luck = RunManager.Instance.Stats.Luck;
+            var player = UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>();
+            var hull = player?.Damage;
+            if (_useV3Rules)
+                return GenerateV3Offers(rng, luck, hull);
             var offers = LevelOfferGenerator.Generate(
                 database,
                 levelUpSettings,
@@ -149,14 +155,15 @@ namespace HighSeas.UI
                 _logbookLevels,
                 weaponSlots,
                 logbookSlots,
-                _completedLevelUps == 0);
-            if (_useV3Rules)
-                return GenerateV3Offers(rng, luck);
+                _completedLevelUps == 0,
+                RunManager.Instance?.Stats,
+                hull?.CurrentHP ?? -1f,
+                hull?.MaxHP ?? -1f);
             OffersReady?.Invoke();
             return offers;
         }
 
-        List<LevelOffer> GenerateV3Offers(RunRng rng, float luck)
+        List<LevelOffer> GenerateV3Offers(RunRng rng, float luck, Combat.DamageReceiver hull)
         {
             var offers = new List<LevelOffer>(3);
             var used = new HashSet<string>();
@@ -180,7 +187,13 @@ namespace HighSeas.UI
             }
 
             OffersReady?.Invoke();
-            return offers;
+            return LevelOfferGenerator.FinalizeOffers(
+                offers,
+                3,
+                rng,
+                RunManager.Instance?.Stats,
+                hull?.CurrentHP ?? -1f,
+                hull?.MaxHP ?? -1f);
         }
 
         void TryAddV3Offer(List<LevelOffer> offers, HashSet<string> used, LevelOffer offer)
@@ -202,8 +215,10 @@ namespace HighSeas.UI
             {
                 var lb = database.logbooks[(start + i) % database.logbooks.Length];
                 if (lb == null || !V3ContentUnlocks.IsLogbookUnlocked(lb.id)) continue;
-                if (!_ownedLogbooks.Contains(lb.id) && _ownedLogbooks.Count >= logbookSlots) continue;
+                var owned = _ownedLogbooks.Contains(lb.id);
+                if (!owned && _ownedLogbooks.Count >= logbookSlots) continue;
                 _logbookLevels.TryGetValue(lb.id, out var lbLevel);
+                if (owned && lbLevel >= lb.maxLevel) continue;
                 return LevelOfferGenerator.BuildLogbookOffer(lb, lbLevel, rng.RollRarity(luck));
             }
 
@@ -273,8 +288,10 @@ namespace HighSeas.UI
             {
                 var lb = database.logbooks[i];
                 if (lb == null || !V3ContentUnlocks.IsLogbookUnlocked(lb.id)) continue;
-                if (!_ownedLogbooks.Contains(lb.id) && _ownedLogbooks.Count >= logbookSlots) continue;
+                var owned = _ownedLogbooks.Contains(lb.id);
+                if (!owned && _ownedLogbooks.Count >= logbookSlots) continue;
                 _logbookLevels.TryGetValue(lb.id, out var lbLevel);
+                if (owned && lbLevel >= lb.maxLevel) continue;
                 return LevelOfferGenerator.BuildLogbookOffer(lb, lbLevel, rng.RollRarity(luck));
             }
 
@@ -308,6 +325,32 @@ namespace HighSeas.UI
 
         void ApplyOffer(LevelOffer offer)
         {
+            if (offer.kind == LevelOfferKind.Continue)
+                return;
+
+            if (offer.kind == LevelOfferKind.FallbackHeal)
+            {
+                var player = UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>();
+                if (player?.Damage != null && player.Damage.IsAlive)
+                    player.Damage.Heal(player.Damage.MaxHP * GameConstants.LevelOfferFallbackHealFraction);
+                return;
+            }
+
+            if (offer.kind == LevelOfferKind.FallbackDamage)
+            {
+                RunManager.Instance?.Stats.AddModifier(
+                    new StatModifier(StatId.Damage, GameConstants.LevelOfferFallbackDamageBonus));
+                return;
+            }
+
+            if (offer.kind == LevelOfferKind.FallbackMoveSpeed)
+            {
+                RunManager.Instance?.Stats.AddModifier(
+                    new StatModifier(StatId.MoveSpeed, 0f, GameConstants.LevelOfferFallbackMoveSpeedMultiplier));
+                UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>()?.SyncRunSpeedMultiplier();
+                return;
+            }
+
             if (_useV3Rules && !IsV3OfferAllowed(offer))
             {
                 Debug.LogWarning($"Blocked locked V3 offer: {offer.id}");

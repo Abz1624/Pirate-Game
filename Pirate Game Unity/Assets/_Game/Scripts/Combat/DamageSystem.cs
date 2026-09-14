@@ -13,14 +13,16 @@ namespace HighSeas.Combat
             float targetArmor,
             RunRng rng,
             float procCoefficient = 1f,
-            string weaponId = null)
+            string weaponId = null,
+            DamageProcKind procKind = DamageProcKind.DirectWeapon)
         {
             var captain = V3CaptainController.Instance;
             var captainDamage = captain != null ? captain.GetAdditiveDamageBonus() : 0f;
             var captainWeaponMult = weaponId != null && captain != null
                 ? captain.GetWeaponDamageMultiplier(weaponId)
                 : 1f;
-            var isCrit = rng.CombatFloat() < stats.CritChance * procCoefficient;
+            var isCrit = DamageProcPolicy.AllowsCrit(procKind)
+                && rng.CombatFloat() < stats.CritChance * procCoefficient;
             return GameMath.ComputeDamage(
                 baseDamage,
                 weaponLevelMult,

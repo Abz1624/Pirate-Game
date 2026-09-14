@@ -27,6 +27,42 @@ namespace HighSeas.V3
             return marker;
         }
 
+        public static GameObject CreateFloorPowerup(V3FloorPowerupKind kind, Vector3 position, Transform parent)
+        {
+            var (id, color, scale, hint, primitive) = kind switch
+            {
+                V3FloorPowerupKind.RepairSupplies => (
+                    "floor_powerup_repair_supplies",
+                    new Color(0.2f, 0.85f, 0.45f),
+                    new Vector3(0.9f, 0.5f, 0.9f),
+                    "Repair Supplies kit — replace with green supply crate/VFX.",
+                    PrimitiveType.Cube),
+                V3FloorPowerupKind.BattleSignal => (
+                    "floor_powerup_battle_signal",
+                    new Color(0.95f, 0.35f, 0.2f),
+                    new Vector3(0.75f, 1.1f, 0.75f),
+                    "Battle Signal flare — replace with red signal flare mesh/VFX.",
+                    PrimitiveType.Cylinder),
+                V3FloorPowerupKind.Tailwind => (
+                    "floor_powerup_tailwind",
+                    new Color(0.35f, 0.75f, 1f),
+                    new Vector3(1.1f, 0.35f, 1.1f),
+                    "Tailwind gust pickup — replace with wind swirl mesh/VFX.",
+                    PrimitiveType.Sphere),
+                V3FloorPowerupKind.SalvageChime => (
+                    "floor_powerup_salvage_chime",
+                    new Color(0.95f, 0.85f, 0.25f),
+                    new Vector3(0.7f, 0.9f, 0.7f),
+                    "Salvage Chime bell — replace with chime/bell pickup mesh/SFX.",
+                    PrimitiveType.Capsule),
+                _ => ("floor_powerup_unknown", Color.gray, Vector3.one, "Unknown floor powerup.", PrimitiveType.Sphere)
+            };
+
+            var marker = CreatePrimitiveMarker("pickup", id, position, parent, primitive, color, scale, hint);
+            V3WorldBillboardLabel.Attach(marker, V3FloorPowerupWorld.GetDisplayName(kind), hint);
+            return marker;
+        }
+
         public static string GetPoiDisplayName(POIType type) =>
             type switch
             {

@@ -14,6 +14,7 @@ namespace HighSeas.Combat
         public float life;
         public float damage;
         public float radius;
+        public float gravity;
         public Transform view;
     }
 
@@ -21,6 +22,10 @@ namespace HighSeas.Combat
     public sealed class HostileProjectileWorld : MonoBehaviour
     {
         public static HostileProjectileWorld Instance { get; private set; }
+
+        const float PlayerHitRadius = 0.85f;
+        const float MaxVerticalHitSeparation = 3f;
+        const float WaterSurfaceY = 0.15f;
 
         static readonly Color HostileProjectileColor = new(0.42f, 0.22f, 0.1f);
 
@@ -68,15 +73,19 @@ namespace HighSeas.Combat
             if (visualRadius < 0f)
                 visualRadius = hitRadius;
 
+            var velocity = dir * speed;
+            velocity.y = Mathf.Clamp(speed * 0.3f, 1.6f, 3.2f);
+
             var view = _viewPool.Acquire(position, HostileProjectileColor, visualRadius);
             _pool[slot] = new HostileProjectile
             {
                 active = true,
                 position = position,
-                velocity = dir * speed,
+                velocity = velocity,
                 life = life,
                 damage = damage,
                 radius = hitRadius,
+                gravity = 7.5f,
                 view = view
             };
             _active++;
@@ -90,6 +99,7 @@ namespace HighSeas.Combat
                 if (!_pool[i].active) continue;
 
                 ref var shot = ref _pool[i];
+                shot.velocity.y -= shot.gravity * dt;
                 shot.position += shot.velocity * dt;
                 shot.life -= dt;
 
@@ -100,27 +110,41 @@ namespace HighSeas.Combat
                         shot.view.rotation = Quaternion.LookRotation(shot.velocity.normalized, Vector3.up);
                 }
 
+                if (shot.position.y < WaterSurfaceY && shot.velocity.y < 0f)
+                {
+                    Despawn(i, shot.position);
+                    continue;
+                }
+
                 if (IslandObstacles.IsAvailable && IslandObstacles.IsPositionBlocked(shot.position, shot.radius))
                 {
                     Despawn(i, shot.position);
                     continue;
                 }
 
-                if (player != null && player.IsAlive)
+                if (player != null && player.IsAlive && TryHitPlayer(ref shot, player))
                 {
-                    var playerPos = player.transform.position;
-                    var dist = Vector3.Distance(shot.position, playerPos);
-                    if (dist <= shot.radius + 0.85f)
-                    {
-                        player.TakeDamage(shot.damage, shot.position, false);
-                        Despawn(i, shot.position);
-                        continue;
-                    }
+                    player.TakeDamage(shot.damage, shot.position, false);
+                    Despawn(i, shot.position);
+                    continue;
                 }
 
                 if (shot.life <= 0f)
                     Despawn(i, shot.position);
             }
+        }
+
+        static bool TryHitPlayer(ref HostileProjectile shot, DamageReceiver player)
+        {
+            var playerPos = player.transform.position;
+            var flat = playerPos - shot.position;
+            flat.y = 0f;
+            var hitRadius = shot.radius + PlayerHitRadius;
+            if (flat.sqrMagnitude > hitRadius * hitRadius)
+                return false;
+
+            var verticalSeparation = Mathf.Abs(shot.position.y - playerPos.y);
+            return verticalSeparation <= MaxVerticalHitSeparation;
         }
 
         void Despawn(int index, Vector3 impactPosition)

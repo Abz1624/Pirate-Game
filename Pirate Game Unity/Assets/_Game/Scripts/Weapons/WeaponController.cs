@@ -468,7 +468,9 @@ namespace HighSeas.Weapons
                         agents[ai].isElite,
                         0f,
                         rng,
-                        keg.procCoefficient, "powder_kegs");
+                        keg.procCoefficient,
+                        "powder_kegs",
+                        DamageProcKind.TriggeredItem);
                     _enemies.ApplyDamage(ai, dmg, false);
                 }
 

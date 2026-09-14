@@ -88,14 +88,14 @@
 | M1-003 | Backlog §M1 | Atomic tick ordering, boss/player death | `RunManager`, `DamageSystem` | NEEDS_FIX | Same-tick fixture |
 | M1-004 | Backlog §M1 | Pause reason stack | `RunManager.SetPause` | IMPLEMENTED_UNVERIFIED | Choice under manual pause |
 | M1-005 | Backlog §M1 | Data export/validation pipeline | `GameDatabaseLoader` | IMPLEMENTED_UNVERIFIED | Missing ID rejection |
-| M1-006 | Backlog §M1 | Capped offers, proc whitelist | `LevelOfferGenerator` | NEEDS_FIX | Max-rank Continue only |
+| M1-006 | Backlog §M1 | Capped offers, proc whitelist | `LevelOfferGenerator`, `DamageProcPolicy` | IMPLEMENTED_UNVERIFIED | Max-rank Continue only |
 | M1-007 | Cursor §M1 | 30/60/120 FPS identical outcomes | — | NOT_STARTED | Automated hash test |
-| M1-008 | Cursor §M1 | Death same tick blocks level-up rescue | `LevelSystem` | NEEDS_FIX | Fatal + XP same tick |
+| M1-008 | Cursor §M1 | Death same tick blocks level-up rescue | `LevelSystem` | IMPLEMENTED_UNVERIFIED | Fatal + XP same tick |
 | M1-009 | Cursor §M1 | Checkpoint replay no duplicate XP | — | NOT_STARTED | Replay twice |
 | M1-010 | Audit A05 | Stable IDs + eligibility matrix | `GameDatabase` | IMPLEMENTED_UNVERIFIED | Export validation |
 | M1-011 | Cursor §M1 | Dev-only fake account adapters | V3 local meta | PASS | No production writes |
 
-**M1 exit gate:** `BLOCKED` on M1-003, M1-006–M1-009.
+**M1 exit gate:** `BLOCKED` on M1-003, M1-007–M1-009.
 
 ---
 
@@ -145,7 +145,7 @@ RP-ID map for all M2 rows: [`plan/12_TRACEABILITY_CHECKLIST.md` § M2 integratio
 |---|---|---|---|---|---|---|
 | M2-022 | RP-CONT-031 | `plan/04` | Rook/Brine/Flint profiles | `V3CaptainProfile`, `V3CaptainController` | IMPLEMENTED_UNVERIFIED | Passive scaling caps |
 | M2-023 | RP-CORE-013 | `plan/02` | First conquest Deck Cannon always | `V3RunBootstrap` first-run gate | IMPLEMENTED_UNVERIFIED | Flint still starts Deck Cannon |
-| M2-024 | RP-CONT-014 | `plan/04` | 4 floor powerups, max 6/stage | `PickupWorld` | NEEDS_FIX | Sixth blocks further |
+| M2-024 | RP-CONT-014 | `plan/04` | 4 floor powerups, max 6/stage | `V3FloorPowerupWorld`, `V3PlaceholderFactory` | IMPLEMENTED_UNVERIFIED | Sixth blocks further |
 | M2-025 | RP-UI-021 | `plan/07` | Minimap explored water + discovered objects | `V3MinimapHud`, `V3DiscoverySystem` | IMPLEMENTED_UNVERIFIED | Fog hides undiscovered |
 | M2-026 | RP-WORLD-042 | `plan/05` | Beacon summons boss at 40% rate | `POIManager.SummonBoss` | IMPLEMENTED_UNVERIFIED | Timer continues |
 
@@ -157,7 +157,7 @@ RP-ID map for all M2 rows: [`plan/12_TRACEABILITY_CHECKLIST.md` § M2 integratio
 | M2-028 | RP-CORE-001 | `plan/02` | Boss success saved before later death | `RunManager.SecureObjective` | IMPLEMENTED_UNVERIFIED | Results show both |
 | M2-029 | RP-CORE-014 | `plan/02` | Random map seed until first boss defeat; then lock home geometry locally | `V3HomeSeed`, `V3RunBootstrap`, `POIManager.NotifyBossDefeated` | IMPLEMENTED_UNVERIFIED | 2 pre-boss runs differ; post-boss runs match locked seed |
 | M2-030 | RP-CORE-014 | `plan/02` | Local home preview, no public accounts | `V3RunResultsScreen` | IMPLEMENTED_UNVERIFIED | Local-only label |
-| M2-031 | RP-SIM-027 | `plan/03` DEC-024 | Same-tick boss kill + player death | — | NEEDS_FIX | Fixture |
+| M2-031 | RP-SIM-027 | `plan/03` DEC-024 | Same-tick boss kill + player death | `POIManager`, `EnemyWorld`, `V3RunBootstrap` | IMPLEMENTED_UNVERIFIED | Fixture |
 | M2-032 | RP-OPS-011 | `plan/11` | Playtest exit criteria | — | NOT_STARTED | Structured playtest |
 | M2-033 | RP-UI-011 | `plan/07` | First-run wireframes | Placeholder UI flows | IMPLEMENTED_UNVERIFIED | Walkthrough |
 | M2-034 | RP-ASSET-011 | `plan/10` | M2 art placeholders (prototype OK; production assets required for G2 exit) | `V3PlaceholderFactory` | IMPLEMENTED_UNVERIFIED | Prototype: labels visible. G2 exit: licensed art per `plan/appendices/C_ASSET_CHECKLIST.md` |

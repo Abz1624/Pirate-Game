@@ -86,6 +86,8 @@ namespace HighSeas.V3
                 ? runSeed
                 : V3HomeSeed.ResolveRunSeed();
             RunManager.Instance.BeginRun(seed);
+            V3FloorPowerupWorld.Ensure();
+            V3FloorPowerupWorld.Instance?.ResetForRun();
             _layout = stageBuilder != null ? stageBuilder.Build(seed, 0) : null;
             V3StormEdgeVisual.Ensure();
             V3RunContext.Layout = _layout;
@@ -148,9 +150,11 @@ namespace HighSeas.V3
             EnsurePressureBeats(enemyWorld, player);
             EnsureOvertimeDirector(enemyWorld, player);
             RunManager.Instance.EnterPlaying();
+            var seedLabel = V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
             V3ToastHud.Instance?.Show(
-                "V3 Saltwind — explore 12 chests + 4 shrines, secure the Beacon. Death banks all run gold.",
-                7f);
+                $"Saltwind voyage ({seedLabel} seed {seed}).\nExplore 12 chests + 4 shrines, secure the Beacon.",
+                6f);
+            Debug.Log($"V3RunBootstrap: run seed={seed} ({seedLabel}), POI rng={seed + 404}.");
         }
 
         void ConfigureSpawnDirector()
@@ -255,7 +259,9 @@ namespace HighSeas.V3
             FindFirstObjectByType<ProjectileWorld>()?.Tick(dt, FindFirstObjectByType<EnemyWorld>());
             FindFirstObjectByType<HostileProjectileWorld>()?.Tick(dt, player?.Damage);
             FindFirstObjectByType<PickupWorld>()?.Tick(dt, playerPos, RunManager.Instance.Stats.PickupRadius);
+            V3FloorPowerupWorld.Instance?.Tick(dt, playerPos);
             FindFirstObjectByType<StatusController>()?.Tick(dt, FindFirstObjectByType<EnemyWorld>());
+            ResolveSameTickBossDeath();
         }
 
         void OnPlayerDamaged(float amount, bool _) => TriggerBus.Instance?.RaiseDamageTaken(amount);
@@ -265,11 +271,25 @@ namespace HighSeas.V3
             LevelSystem.Instance?.CancelPendingLevelUps();
             if (player != null)
                 player.SetMovementEnabled(false);
-            if (RunManager.Instance.ObjectiveSecured)
-                PlayerPrefs.SetInt(V3ContentUnlocks.FirstConquestKey, 1);
+            FindFirstObjectByType<POIManager>()?.TrySecureIfBossDead();
+            ApplyConquestUnlockIfSecured();
             RunManager.Instance.SetState(RunState.PlayerDead);
             RunManager.Instance.FinalizeRunOnDeath();
             V3ToastHud.Instance?.Show("Run ended — gold banked at port.", 4f);
+        }
+
+        void ResolveSameTickBossDeath()
+        {
+            if (RunManager.Instance == null || player == null || player.Damage.IsAlive) return;
+            if (!RunManager.Instance.IsRunEnded) return;
+            FindFirstObjectByType<POIManager>()?.TrySecureIfBossDead();
+            ApplyConquestUnlockIfSecured();
+        }
+
+        static void ApplyConquestUnlockIfSecured()
+        {
+            if (RunManager.Instance != null && RunManager.Instance.ObjectiveSecured)
+                PlayerPrefs.SetInt(V3ContentUnlocks.FirstConquestKey, 1);
         }
 
         void EnsurePlayerHealthBar(PlayerShipController ship)

@@ -39,6 +39,8 @@ namespace HighSeas.Core
 
         public void AddModifier(StatModifier mod) => _modifiers.Add(mod);
 
+        public bool RemoveModifier(StatModifier mod) => _modifiers.Remove(mod);
+
         public void ClearModifiers() => _modifiers.Clear();
 
         public float Get(StatId stat)

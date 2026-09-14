@@ -442,6 +442,30 @@ namespace HighSeas.POI
             }
         }
 
+        public bool IsBossDead()
+        {
+            if (_bossDefeated) return true;
+            if (!_bossSummoned) return false;
+
+            var world = FindFirstObjectByType<Enemies.EnemyWorld>();
+            if (world == null) return false;
+            for (var i = 0; i < world.Agents.Length; i++)
+            {
+                if (!world.Agents[i].active) continue;
+                if (world.Agents[i].isBoss) return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>DEC-024 / M2-031: secure boss objective even when player dies same simulation tick.</summary>
+        public void TrySecureIfBossDead()
+        {
+            if (_bossDefeated) return;
+            if (!IsBossDead()) return;
+            NotifyBossDefeated();
+        }
+
         public void NotifyBossDefeated()
         {
             if (_bossDefeated) return;
@@ -450,11 +474,14 @@ namespace HighSeas.POI
             if (_continueAfterBossVictory && RunManager.Instance != null)
                 V3HomeSeed.TryLockFromRun(RunManager.Instance.RunSeed);
             V3.V3ToastHud.Instance?.Show("TERRITORY OBJECTIVE SECURED — survive or keep farming.", 5f);
-            if (_continueAfterBossVictory)
+            if (_continueAfterBossVictory && RunManager.Instance != null && !RunManager.Instance.IsRunEnded)
             {
                 RunManager.Instance.SetState(RunState.Playing);
                 return;
             }
+
+            if (RunManager.Instance != null && RunManager.Instance.IsRunEnded)
+                return;
 
             RunManager.Instance.SetState(RunState.BossDefeated);
             RunManager.Instance.CompleteRun(true);

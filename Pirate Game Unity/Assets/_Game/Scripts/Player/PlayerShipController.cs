@@ -153,7 +153,7 @@ namespace HighSeas.Player
             _slowTimer = Mathf.Max(_slowTimer, durationSeconds);
         }
 
-        void SyncRunSpeedMultiplier()
+        public void SyncRunSpeedMultiplier()
         {
             var statSpeed = RunManager.Instance != null
                 ? RunManager.Instance.Stats.MoveSpeed

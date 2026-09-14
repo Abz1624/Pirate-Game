@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.UI;
@@ -152,6 +153,66 @@ namespace HighSeas.Tests
             var legendary = LevelOfferGenerator.BuildWeaponUpgradeOffer(weapon, 1, Rarity.Legendary, _settings, _pacing, _rng);
             Assert.That(common.upgradeLines.Length, Is.EqualTo(1));
             Assert.That(legendary.upgradeLines.Length, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void FinalizeOffers_AllCapped_ShowsSingleContinue()
+        {
+            var ownedWeapons = new List<string> { "deck_cannons", "broadside_battery" };
+            var weaponLevels = new Dictionary<string, int>
+            {
+                ["deck_cannons"] = 12,
+                ["broadside_battery"] = 12
+            };
+            var ownedLogbooks = new List<string> { "log_damage", "log_speed" };
+            var logbookLevels = new Dictionary<string, int>
+            {
+                ["log_damage"] = 10,
+                ["log_speed"] = 10
+            };
+            var stats = new PlayerStats();
+            stats.AddModifier(new StatModifier(StatId.Damage, GameConstants.MaxGlobalDamageMultiplier - 1f));
+            stats.AddModifier(new StatModifier(StatId.MoveSpeed, 0f, GameConstants.MaxMoveSpeed / GameConstants.DefaultMoveSpeed));
+
+            var offers = LevelOfferGenerator.Generate(
+                _db, _settings, _pacing, new RunRng(77), 0f,
+                ownedWeapons, weaponLevels, ownedLogbooks, logbookLevels,
+                2, 2, isFirstLevelUp: false,
+                stats, 100f, 100f);
+
+            Assert.That(offers.Count, Is.EqualTo(1));
+            Assert.That(offers[0].kind, Is.EqualTo(LevelOfferKind.Continue));
+        }
+
+        [Test]
+        public void FinalizeOffers_WhenNoContentEligible_FillsFallbackCards()
+        {
+            _db.logbooks = System.Array.Empty<LogbookDefinition>();
+            var ownedWeapons = new List<string> { "deck_cannons", "broadside_battery" };
+            var weaponLevels = new Dictionary<string, int>
+            {
+                ["deck_cannons"] = 12,
+                ["broadside_battery"] = 12
+            };
+            var stats = new PlayerStats();
+
+            var offers = LevelOfferGenerator.Generate(
+                _db, _settings, _pacing, new RunRng(88), 0f,
+                ownedWeapons, weaponLevels, new List<string>(), new Dictionary<string, int>(),
+                2, 2, isFirstLevelUp: false,
+                stats, 50f, 100f);
+
+            Assert.That(offers.Count, Is.EqualTo(3));
+            Assert.That(HasKind(offers, LevelOfferKind.FallbackHeal), Is.True);
+        }
+
+        [Test]
+        public void DamageProcPolicy_DotAndTriggeredItems_DoNotCrit()
+        {
+            Assert.That(DamageProcPolicy.AllowsCrit(DamageProcKind.DirectWeapon), Is.True);
+            Assert.That(DamageProcPolicy.AllowsCrit(DamageProcKind.WhitelistedBridge), Is.True);
+            Assert.That(DamageProcPolicy.AllowsCrit(DamageProcKind.Dot), Is.False);
+            Assert.That(DamageProcPolicy.AllowsCrit(DamageProcKind.TriggeredItem), Is.False);
         }
 
         [Test]

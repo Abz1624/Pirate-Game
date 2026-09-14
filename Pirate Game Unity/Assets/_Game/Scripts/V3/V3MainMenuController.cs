@@ -217,43 +217,58 @@ namespace HighSeas.V3
             captainDetailText.alignment = TextAlignmentOptions.TopLeft;
             captainDetailText.color = V3PlaceholderFactory.UiText;
 
+            var columnGo = new GameObject("PLACEHOLDER_v3_ui_main_menu_collection_column");
+            columnGo.transform.SetParent(menuCanvas.transform, false);
+            var columnRect = columnGo.AddComponent<RectTransform>();
+            columnRect.anchorMin = new Vector2(1f, 0f);
+            columnRect.anchorMax = new Vector2(1f, 1f);
+            columnRect.pivot = new Vector2(1f, 0.5f);
+            columnRect.anchoredPosition = new Vector2(-32f, 0f);
+            columnRect.sizeDelta = new Vector2(540f, -48f);
+
+            var columnLayout = columnGo.AddComponent<VerticalLayoutGroup>();
+            columnLayout.childAlignment = TextAnchor.UpperRight;
+            columnLayout.spacing = 10f;
+            columnLayout.padding = new RectOffset(0, 0, 24, 24);
+            columnLayout.childControlWidth = true;
+            columnLayout.childControlHeight = true;
+            columnLayout.childForceExpandWidth = true;
+            columnLayout.childForceExpandHeight = false;
+
+            var tabBarGo = new GameObject("PLACEHOLDER_v3_ui_main_menu_tab_bar");
+            tabBarGo.transform.SetParent(columnGo.transform, false);
+            tabBarGo.AddComponent<RectTransform>();
+            var tabBarLayout = tabBarGo.AddComponent<HorizontalLayoutGroup>();
+            tabBarLayout.spacing = 8f;
+            tabBarLayout.childAlignment = TextAnchor.MiddleRight;
+            tabBarLayout.childControlWidth = false;
+            tabBarLayout.childControlHeight = true;
+            tabBarLayout.childForceExpandWidth = false;
+            tabBarLayout.childForceExpandHeight = false;
+            var tabBarLayoutElement = tabBarGo.AddComponent<LayoutElement>();
+            tabBarLayoutElement.preferredHeight = 44f;
+
+            weaponsTabButton = CreateMenuTab(tabBarGo.transform, "main_menu_tab_weapons", "Weapons",
+                "Weapon collection tab.");
+            logbooksTabButton = CreateMenuTab(tabBarGo.transform, "main_menu_tab_logbooks", "Logbooks",
+                "Logbook collection tab.");
+            itemsTabButton = CreateMenuTab(tabBarGo.transform, "main_menu_tab_items", "Items",
+                "Item collection tab.");
+            questsTabButton = CreateMenuTab(tabBarGo.transform, "main_menu_tab_quests", "Quests",
+                "Quest collection tab.");
+
             var collectionGo = new GameObject("PLACEHOLDER_v3_ui_main_menu_collection");
-            collectionGo.transform.SetParent(menuCanvas.transform, false);
+            collectionGo.transform.SetParent(columnGo.transform, false);
             collectionPanel = collectionGo.AddComponent<RectTransform>();
-            collectionPanel.anchorMin = new Vector2(1f, 0.5f);
-            collectionPanel.anchorMax = new Vector2(1f, 0.5f);
-            collectionPanel.pivot = new Vector2(1f, 0.5f);
-            collectionPanel.anchoredPosition = new Vector2(-32f, 20f);
-            collectionPanel.sizeDelta = new Vector2(520f, 420f);
+            collectionPanel.anchorMin = Vector2.zero;
+            collectionPanel.anchorMax = Vector2.one;
+            collectionPanel.offsetMin = Vector2.zero;
+            collectionPanel.offsetMax = Vector2.zero;
+            var collectionLayoutElement = collectionGo.AddComponent<LayoutElement>();
+            collectionLayoutElement.minHeight = 640f;
+            collectionLayoutElement.flexibleHeight = 1f;
+            collectionLayoutElement.flexibleWidth = 1f;
             _collectionView = V3MainMenuCollectionView.Ensure(collectionPanel);
-
-            weaponsTabButton = V3PlaceholderFactory.CreateUiButton(menuCanvas.transform, "main_menu_tab_weapons", "Weapons",
-                new Vector2(120f, 40f), "Weapon collection tab.");
-            var weaponsTabRect = weaponsTabButton.GetComponent<RectTransform>();
-            weaponsTabRect.anchorMin = new Vector2(1f, 0.5f);
-            weaponsTabRect.anchorMax = new Vector2(1f, 0.5f);
-            weaponsTabRect.anchoredPosition = new Vector2(-460f, 220f);
-
-            logbooksTabButton = V3PlaceholderFactory.CreateUiButton(menuCanvas.transform, "main_menu_tab_logbooks", "Logbooks",
-                new Vector2(120f, 40f), "Logbook collection tab.");
-            var logbooksTabRect = logbooksTabButton.GetComponent<RectTransform>();
-            logbooksTabRect.anchorMin = new Vector2(1f, 0.5f);
-            logbooksTabRect.anchorMax = new Vector2(1f, 0.5f);
-            logbooksTabRect.anchoredPosition = new Vector2(-330f, 220f);
-
-            itemsTabButton = V3PlaceholderFactory.CreateUiButton(menuCanvas.transform, "main_menu_tab_items", "Items",
-                new Vector2(120f, 40f), "Item collection tab.");
-            var itemsTabRect = itemsTabButton.GetComponent<RectTransform>();
-            itemsTabRect.anchorMin = new Vector2(1f, 0.5f);
-            itemsTabRect.anchorMax = new Vector2(1f, 0.5f);
-            itemsTabRect.anchoredPosition = new Vector2(-200f, 220f);
-
-            questsTabButton = V3PlaceholderFactory.CreateUiButton(menuCanvas.transform, "main_menu_tab_quests", "Quests",
-                new Vector2(120f, 40f), "Quest collection tab.");
-            var questsTabRect = questsTabButton.GetComponent<RectTransform>();
-            questsTabRect.anchorMin = new Vector2(1f, 0.5f);
-            questsTabRect.anchorMax = new Vector2(1f, 0.5f);
-            questsTabRect.anchoredPosition = new Vector2(-70f, 220f);
 
             rookButton = V3PlaceholderFactory.CreateUiButton(menuCanvas.transform, "main_menu_captain_rook", "Rook",
                 new Vector2(140f, 48f), "Generalist starter captain.");
@@ -301,6 +316,15 @@ namespace HighSeas.V3
             versionText.fontSize = 18;
             versionText.alignment = TextAlignmentOptions.BottomRight;
             versionText.color = new Color(0.7f, 0.75f, 0.8f, 0.9f);
+        }
+
+        static Button CreateMenuTab(Transform parent, string id, string label, string hint)
+        {
+            var button = V3PlaceholderFactory.CreateUiButton(parent, id, label, new Vector2(118f, 40f), hint);
+            var layoutElement = button.gameObject.AddComponent<LayoutElement>();
+            layoutElement.preferredWidth = 118f;
+            layoutElement.preferredHeight = 40f;
+            return button;
         }
     }
 }

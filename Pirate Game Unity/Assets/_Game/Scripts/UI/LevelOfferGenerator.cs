@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HighSeas.Core;
 using HighSeas.Data;
@@ -21,7 +22,10 @@ namespace HighSeas.UI
             IReadOnlyDictionary<string, int> logbookLevels,
             int weaponSlots,
             int logbookSlots,
-            bool isFirstLevelUp)
+            bool isFirstLevelUp,
+            PlayerStats stats = null,
+            float currentHull = -1f,
+            float maxHull = -1f)
         {
             var count = settings != null ? settings.cardsPerLevel : 3;
             var result = new List<LevelOffer>(count);
@@ -29,7 +33,7 @@ namespace HighSeas.UI
             if (isFirstLevelUp && settings != null && settings.scriptFirstLevelUp)
             {
                 AddFirstLevelOffers(result, database, settings, rng, luck, ownedWeapons, weaponLevels, ownedLogbooks, logbookSlots, pacing);
-                return PadOrTrim(result, count);
+                return FinalizeOffers(result, count, rng, stats, currentHull, maxHull);
             }
 
             var usedKeys = new HashSet<string>();
@@ -62,15 +66,135 @@ namespace HighSeas.UI
                 }
             }
 
-            return PadOrTrim(EnsureDemoNewWeaponOffer(
+            return FinalizeOffers(EnsureDemoNewWeaponOffer(
                 result,
                 database,
                 settings,
                 ownedWeapons,
                 weaponLevels,
                 rng,
-                count), count);
+                count), count, rng, stats, currentHull, maxHull);
         }
+
+        public static List<LevelOffer> FinalizeOffers(
+            List<LevelOffer> offers,
+            int targetCount,
+            RunRng rng,
+            PlayerStats stats,
+            float currentHull,
+            float maxHull)
+        {
+            offers ??= new List<LevelOffer>();
+            var used = new HashSet<string>();
+            for (var i = 0; i < offers.Count; i++)
+            {
+                if (offers[i].id == null) continue;
+                used.Add(GetOfferKey(offers[i]));
+            }
+
+            var fallbacks = BuildFallbackPool(stats, currentHull, maxHull);
+            var fallbackIndex = 0;
+            while (offers.Count < targetCount && fallbackIndex < fallbacks.Count)
+            {
+                var fallback = fallbacks[fallbackIndex++];
+                var key = GetOfferKey(fallback);
+                if (used.Contains(key)) continue;
+                used.Add(key);
+                offers.Add(fallback);
+            }
+
+            if (offers.Count == 0)
+                return new List<LevelOffer> { BuildContinueOffer() };
+
+            return PadOrTrim(offers, targetCount);
+        }
+
+        static List<LevelOffer> BuildFallbackPool(PlayerStats stats, float currentHull, float maxHull)
+        {
+            var pool = new List<LevelOffer>(3);
+            if (IsFallbackHealUseful(currentHull, maxHull))
+                pool.Add(BuildFallbackHealOffer());
+            if (IsFallbackDamageUseful(stats))
+                pool.Add(BuildFallbackDamageOffer());
+            if (IsFallbackMoveSpeedUseful(stats))
+                pool.Add(BuildFallbackMoveSpeedOffer());
+            return pool;
+        }
+
+        public static bool IsFallbackHealUseful(float currentHull, float maxHull) =>
+            maxHull > 0f && currentHull >= 0f && currentHull < maxHull * 0.999f;
+
+        public static bool IsFallbackDamageUseful(PlayerStats stats) =>
+            stats == null
+            || stats.GlobalDamage + GameConstants.LevelOfferFallbackDamageBonus
+               <= GameConstants.MaxGlobalDamageMultiplier + 0.0001f;
+
+        public static bool IsFallbackMoveSpeedUseful(PlayerStats stats)
+        {
+            if (stats == null) return true;
+            var projected = stats.MoveSpeed * GameConstants.LevelOfferFallbackMoveSpeedMultiplier;
+            return projected <= GameConstants.MaxMoveSpeed + 0.0001f;
+        }
+
+        public static LevelOffer BuildContinueOffer() => new()
+        {
+            kind = LevelOfferKind.Continue,
+            id = "continue",
+            title = "Continue",
+            categoryLabel = "No Upgrade",
+            description = "Every upgrade is capped. Sail on without a level reward.",
+            rarity = Rarity.Common,
+            currentLevel = 0,
+            nextLevel = 0,
+            isWeapon = false,
+            isNew = false,
+            upgradeLines = Array.Empty<WeaponUpgradeLine>()
+        };
+
+        public static LevelOffer BuildFallbackHealOffer() => new()
+        {
+            kind = LevelOfferKind.FallbackHeal,
+            id = "fallback_heal",
+            title = "Patch the Hull",
+            categoryLabel = "Fallback",
+            description = $"Restore {GameConstants.LevelOfferFallbackHealFraction * 100f:0}% maximum Hull.",
+            rarity = Rarity.Common,
+            currentLevel = 0,
+            nextLevel = 0,
+            isWeapon = false,
+            isNew = false,
+            upgradeLines = Array.Empty<WeaponUpgradeLine>()
+        };
+
+        public static LevelOffer BuildFallbackDamageOffer() => new()
+        {
+            kind = LevelOfferKind.FallbackDamage,
+            id = "fallback_damage",
+            title = "Powder Reserve",
+            categoryLabel = "Fallback",
+            description = $"+{GameConstants.LevelOfferFallbackDamageBonus * 100f:0}% damage for this run.",
+            rarity = Rarity.Common,
+            currentLevel = 0,
+            nextLevel = 0,
+            isWeapon = false,
+            isNew = false,
+            upgradeLines = Array.Empty<WeaponUpgradeLine>()
+        };
+
+        public static LevelOffer BuildFallbackMoveSpeedOffer() => new()
+        {
+            kind = LevelOfferKind.FallbackMoveSpeed,
+            id = "fallback_move_speed",
+            title = "Fair Wind",
+            categoryLabel = "Fallback",
+            description = $"+{(GameConstants.LevelOfferFallbackMoveSpeedMultiplier - 1f) * 100f:0}% movement speed for this run.",
+            rarity = Rarity.Common,
+            currentLevel = 0,
+            nextLevel = 0,
+            isWeapon = false,
+            isNew = false,
+            upgradeLines = Array.Empty<WeaponUpgradeLine>()
+        };
 
         static List<LevelOffer> EnsureDemoNewWeaponOffer(
             List<LevelOffer> offers,

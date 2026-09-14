@@ -124,6 +124,45 @@ namespace HighSeas.Tests
         }
 
         [Test]
+        public void V3FloorPowerup_RollKind_UsesFourWaySplit()
+        {
+            var rng = new RunRng(9001);
+            var counts = new Dictionary<V3FloorPowerupKind, int>();
+            for (var i = 0; i < 10_000; i++)
+            {
+                var kind = V3FloorPowerupWorld.RollKind(rng);
+                counts.TryGetValue(kind, out var count);
+                counts[kind] = count + 1;
+            }
+
+            Assert.That(counts[V3FloorPowerupKind.RepairSupplies], Is.InRange(3_000, 4_000));
+            Assert.That(counts[V3FloorPowerupKind.BattleSignal], Is.InRange(3_000, 4_000));
+            Assert.That(counts[V3FloorPowerupKind.Tailwind], Is.InRange(1_500, 2_500));
+            Assert.That(counts[V3FloorPowerupKind.SalvageChime], Is.InRange(1_500, 2_500));
+        }
+
+        [Test]
+        public void V3FloorPowerup_Constants_MatchCombatAppendix()
+        {
+            Assert.That(V3FloorPowerupWorld.DropChance, Is.EqualTo(0.01f));
+            Assert.That(V3FloorPowerupWorld.MaxPerStage, Is.EqualTo(6));
+            Assert.That(V3FloorPowerupWorld.CollectRadius, Is.EqualTo(1.5f));
+            Assert.That(V3FloorPowerupWorld.LifetimeSeconds, Is.EqualTo(30f));
+        }
+
+        [Test]
+        public void DEC024_SecureObjective_PersistsThroughPlayerDeath()
+        {
+            var go = new GameObject("RunManagerTest");
+            var run = go.AddComponent<RunManager>();
+            run.BeginRun(123);
+            run.SecureObjective();
+            run.SetState(RunState.PlayerDead);
+            Assert.That(run.ObjectiveSecured, Is.True);
+            Object.DestroyImmediate(go);
+        }
+
+        [Test]
         public void V3DiscoverySystem_RevealChests_AddsIndices()
         {
             var layout = new StageLayout

@@ -135,6 +135,15 @@ namespace HighSeas.Pickups
             }
         }
 
+        public void AttractAllInfamy()
+        {
+            for (var i = 0; i < _pool.Length; i++)
+            {
+                if (!_pool[i].active || _pool[i].type != PickupType.Infamy) continue;
+                BeginHomingPickup(ref _pool[i]);
+            }
+        }
+
         public void Tick(float dt, Vector3 playerPos, float pickupRadius)
         {
             if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;

@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.POI;
+using HighSeas.V3;
 using HighSeas.VFX;
 using HighSeas.World;
 using UnityEngine;
@@ -573,9 +575,9 @@ namespace HighSeas.Enemies
                     return;
                 case "cannonboat":
                     speed = 9f;
-                    life = 1.35f;
-                    hitRadius = 0.22f;
-                    visualRadius = 0.13f;
+                    life = 1.55f;
+                    hitRadius = 0.38f;
+                    visualRadius = 0.16f;
                     return;
             }
 
@@ -685,6 +687,9 @@ namespace HighSeas.Enemies
                 var def = definitions[e.definitionIndex];
                 RunManager.Instance?.RegisterKill(e.isBoss);
                 Pickups.PickupWorld.Instance?.SpawnFromEnemy(e.position, def.xpValue, def.goldValue, e.affix == EliteAffix.Rich);
+                V3FloorPowerupWorld.Instance?.TryRollOnKill(e.position, e.isBoss);
+                if (e.isBoss)
+                    Object.FindFirstObjectByType<POIManager>()?.NotifyBossDefeated();
                 Meta.TriggerBus.Instance?.RaiseKill(e.isElite, e.isBoss, e.position);
                 Despawn(index);
             }

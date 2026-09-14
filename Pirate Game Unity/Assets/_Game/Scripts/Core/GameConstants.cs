@@ -31,6 +31,11 @@ namespace HighSeas.Core
         public const int DefaultLogbookSlots = 2;
         public const int MaxWeaponLevel = 12;
         public const int MaxLogbookLevel = 10;
+        public const float MaxGlobalDamageMultiplier = 11f;
+        public const float MaxMoveSpeed = 12f;
+        public const float LevelOfferFallbackHealFraction = 0.10f;
+        public const float LevelOfferFallbackDamageBonus = 0.02f;
+        public const float LevelOfferFallbackMoveSpeedMultiplier = 1.01f;
         public const float CameraPitch = 52f;
         public const float CameraFov = 55f;
         public const float SmoothDampTime = 0.10f;

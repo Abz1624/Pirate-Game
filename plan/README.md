@@ -28,6 +28,7 @@ When two subsystem documents conflict, stop the affected task, add a decision en
 - [10 — Art, VFX, audio and production assets](10_ASSET_PRODUCTION.md)
 - [11 — QA, analytics, operations and release](11_QA_RELEASE.md)
 - [12 — Traceability and delivery checklist](12_TRACEABILITY_CHECKLIST.md)
+- [13 — Prototype asset gap register (V3 placeholders)](13_PROTOTYPE_ASSET_GAPS.md)
 - [Appendix A — complete combat/content values](appendices/A_COMBAT_CONTENT_VALUES.md)
 - [Appendix B — detailed economy transactions](appendices/B_ECONOMY_TRANSACTION_DETAILS.md)
 - [Appendix C — detailed asset checklist](appendices/C_ASSET_CHECKLIST.md)

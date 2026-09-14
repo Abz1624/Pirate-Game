@@ -8,7 +8,11 @@ namespace HighSeas.UI
     {
         WeaponUpgrade,
         NewWeapon,
-        Logbook
+        Logbook,
+        FallbackHeal,
+        FallbackDamage,
+        FallbackMoveSpeed,
+        Continue
     }
 
     [Serializable]

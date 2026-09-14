@@ -43,7 +43,7 @@ namespace HighSeas.World
             var demoLayout = usePredefinedLayout ? IslandLayoutDefinition.LoadAssignedOrDefault(predefinedLayout) : null;
             if (demoLayout != null && demoLayout.HasIslands)
             {
-                var count = IslandLayoutSpawner.Spawn(demoLayout, islandRoot, seed);
+                var count = IslandLayoutSpawner.Spawn(demoLayout, islandRoot, seed, _useV3PoiLayout);
                 PlayBounds.ConfigureFromExclusionRegistry();
                 if (_useV3PoiLayout)
                     V3StagePoiPlacer.Place(layout, new RunRng(seed + 404), demoLayout);
