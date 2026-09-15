@@ -1,0 +1,7 @@
+[mcp_servers.unity]
+command = 'C:\Users\shara\AppData\Local\Unity\bin\unity.exe'
+args = [
+    "mcp",
+    "--project-path",
+    'c:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\Pirate Game Unity',
+]

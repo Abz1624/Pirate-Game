@@ -110,4 +110,4 @@
 4. Swap via prefab reference in the owning factory or scene.
 5. Remove `PlaceholderMarker` and update this table to `INTEGRATED`.
 
-Cross-reference: full production checklist in [Appendix C](appendices/C_ASSET_CHECKLIST.md). G2 exit requires licensed assets for all `NEEDED` rows above.
+Cross-reference: full production checklist in [Appendix C](appendices/C_ASSET_CHECKLIST.md). Machine-readable specs: [placeholder_registry.json](placeholder_registry.json). G2 exit requires licensed assets for all `NEEDED` rows above.

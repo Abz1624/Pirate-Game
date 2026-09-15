@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "activeProfile": "baseline_v1",
+  "profiles": {
+    "baseline_v1": {
+      "contentVersion": "2026-09-14",
+      "description": "Initial gauntlet baseline mirroring HighSeas GameConstants/GameMath",
+      "hypothesis": "Establish deterministic parity before tuning",
+      "targetMetrics": {
+        "firstConquestRate": 0.70,
+        "weakBuildRetryRate": 0.40,
+        "rulesComprehensionRate": 0.80,
+        "medianRunDurationMinutes": 12,
+        "medianKillsPerRun": 180
+      },
+      "tuning": {
+        "defaultMoveSpeed": 6.2,
+        "defaultHull": 100,
+        "stageDurationSeconds": 600,
+        "stageBaseThreat": 2.6,
+        "maxGlobalDamageMultiplier": 11,
+        "maxMoveSpeed": 12,
+        "legendaryRarityCap": 0.04
+      },
+      "rollbackValues": {}
+    },
+    "megabonk_comparison_v0": {
+      "contentVersion": "2026-09-14",
+      "description": "Named comparison profile only — not active production tuning",
+      "hypothesis": "Preserve prior logbook increment values for A/B comparison",
+      "targetMetrics": {},
+      "tuning": {
+        "note": "See Rogue_Pirates_Megabonk_Design_Review.md for deltas"
+      },
+      "rollbackValues": {}
+    }
+  },
+  "gateThresholds": {
+    "mandatoryPickRateMax": 0.65,
+    "deadOfferRateMax": 0.15,
+    "unavoidableDamageSeedCountMax": 0,
+    "duplicateGrantCountMax": 0,
+    "paidScoreAdvantageMax": 0.02
+  }
+}
