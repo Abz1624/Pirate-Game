@@ -9382,7 +9382,7 @@ GameObject:
   m_Component:
   - component: {fileID: 609334999227642573}
   m_Layer: 0
-  m_Name: 13_LightningStrike_VFX
+  m_Name: Lightning Mast
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
