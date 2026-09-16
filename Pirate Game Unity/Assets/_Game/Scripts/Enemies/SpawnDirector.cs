@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.World;
@@ -35,7 +36,10 @@ namespace HighSeas.Enemies
         bool _miniboss72;
         bool _v3PressureBeatsEnabled;
         bool _v3PacingEnabled;
+        bool _directorV2Enabled;
+        float _spawnDensityMultiplier = 1f;
         float _spawnRateMultiplier = 1f;
+        float _nextPackTime;
 
         ScriptedPhase _scriptedPhase = ScriptedPhase.WaitingToStart;
         int _scriptedWaveIndex;
@@ -104,6 +108,7 @@ namespace HighSeas.Enemies
             }
 
             TrySpawnMinibosses();
+            TrySpawnDirectorPack();
 
             if (_spawnCooldown > 0f)
                 _spawnCooldown -= dt;
@@ -470,6 +475,8 @@ namespace HighSeas.Enemies
             var cap = settings != null && settings.maxActiveEnemies > 0
                 ? settings.maxActiveEnemies
                 : Platform.QualityProfile.Current.enemyCap;
+            if (_directorV2Enabled)
+                return Mathf.Min(Mathf.Max(cap, 180), 180);
             if (_v3PacingEnabled)
                 cap = Mathf.Min(cap, 36);
             return cap;
@@ -560,7 +567,15 @@ namespace HighSeas.Enemies
                 return 0f;
 
             var weightMult = tuning != null ? tuning.weight : 1f;
-            return (1f / Mathf.Max(1, def.threatCost)) * Mathf.Max(0f, weightMult);
+            var baseWeight = (1f / Mathf.Max(1, def.threatCost)) * Mathf.Max(0f, weightMult);
+            if (_directorV2Enabled)
+            {
+                var phaseMult = CombatDirectorV2Composition.GetWeightMultiplier(def.id, RunManager.Instance.ElapsedSeconds / 60f);
+                if (phaseMult <= 0f) return 0f;
+                baseWeight *= phaseMult;
+            }
+
+            return baseWeight;
         }
 
         public void SetV3PressureBeatsEnabled(bool enabled) => _v3PressureBeatsEnabled = enabled;
@@ -572,6 +587,44 @@ namespace HighSeas.Enemies
             {
                 _v3PressureBeatsEnabled = true;
                 ResetTimingState();
+            }
+        }
+
+        public void ApplyCombatExperiment(CombatExperimentProfile profile)
+        {
+            profile ??= CombatExperimentContext.Active;
+            _directorV2Enabled = profile.directorV2Enabled;
+            _spawnDensityMultiplier = profile.spawnDensityMultiplier;
+            _nextPackTime = 120f;
+            if (_directorV2Enabled)
+                _scriptedPhase = ScriptedPhase.Finished;
+        }
+
+        void TrySpawnDirectorPack()
+        {
+            if (!_directorV2Enabled || RunManager.Instance == null) return;
+            var elapsed = RunManager.Instance.ElapsedSeconds;
+            if (elapsed < _nextPackTime) return;
+            if (enemyWorld.ActiveCount >= GetEnemyCap() - 4) return;
+
+            var minute = elapsed / 60f;
+            _nextPackTime = elapsed + (minute >= 6f ? 18f : 24f);
+            (string id, int count)[] pack = minute switch
+            {
+                >= 8f => new[] { ("hammerhead", 1), ("kraken_spawn", 1), ("cannonboat", 2), ("shark", 4) },
+                >= 6f => new[] { ("kraken_spawn", 1), ("manta_ray", 2), ("shark", 4) },
+                >= 4f => new[] { ("reef_crab_miniboss", 1), ("cannonboat", 2), ("shark", 4) },
+                >= 2f => new[] { ("swordfish", 2), ("cannonboat", 2), ("shark", 4) },
+                _ => new[] { ("shark", 8) }
+            };
+
+            for (var i = 0; i < pack.Length; i++)
+            {
+                for (var c = 0; c < pack[i].count; c++)
+                {
+                    if (enemyWorld.ActiveCount >= GetEnemyCap()) return;
+                    TrySpawnEnemyId(pack[i].id);
+                }
             }
         }
 
@@ -864,15 +917,26 @@ namespace HighSeas.Enemies
             return Mathf.RoundToInt(cost);
         }
 
-        /// <summary>GDD combat spec §9: min(14, (2+0.5m)(1+0.25(d-1))) enemies/sec mapped to threat budget.</summary>
+        /// <summary>GDD combat spec §9, plus combat redesign Director V2 density curve.</summary>
         static float ComputeV3ThreatPerSecond()
         {
             if (RunManager.Instance == null) return GameConstants.StageBaseThreat;
 
+            var profile = CombatExperimentContext.Active;
             var minute = Mathf.Min(10f, RunManager.Instance.ElapsedSeconds / 60f);
             var depth = RunManager.Instance.StageIndex + 1;
-            var enemiesPerSec = Mathf.Min(7f, (0.9f + 0.22f * minute) * (1f + 0.15f * (depth - 1)));
-            return enemiesPerSec * 1.8f;
+            if (profile.directorV2Enabled)
+            {
+                var enemiesPerSec = Mathf.Min(
+                    16f,
+                    (2.5f + 0.55f * minute + 0.025f * minute * minute)
+                    * (1f + 0.25f * (depth - 1))
+                    * profile.spawnDensityMultiplier);
+                return enemiesPerSec;
+            }
+
+            var legacyRate = Mathf.Min(7f, (0.9f + 0.22f * minute) * (1f + 0.15f * (depth - 1)));
+            return legacyRate * 1.8f;
         }
     }
 }

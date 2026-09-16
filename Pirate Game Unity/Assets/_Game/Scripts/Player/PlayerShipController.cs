@@ -76,6 +76,8 @@ namespace HighSeas.Player
         float _turnRateMultiplier = 1f;
         float _slowMultiplier = 1f;
         float _slowTimer;
+        float _moveEffectMultiplier = 1f;
+        float _moveEffectTimer;
         bool _movementEnabled = true;
         float _targetRoll;
         float _currentRoll;
@@ -151,6 +153,13 @@ namespace HighSeas.Player
         {
             _slowMultiplier = Mathf.Clamp(multiplier, 0.2f, 1f);
             _slowTimer = Mathf.Max(_slowTimer, durationSeconds);
+        }
+
+        /// <summary>Temporary move multiplier (0.2–1.5). Stacks with slow; values above 1 are speed boosts.</summary>
+        public void ApplyMoveEffect(float multiplier, float durationSeconds)
+        {
+            _moveEffectMultiplier = Mathf.Clamp(multiplier, 0.2f, 1.5f);
+            _moveEffectTimer = Mathf.Max(_moveEffectTimer, durationSeconds);
         }
 
         public void SyncRunSpeedMultiplier()
@@ -234,12 +243,20 @@ namespace HighSeas.Player
                     _slowMultiplier = 1f;
             }
 
+            if (_moveEffectTimer > 0f)
+            {
+                _moveEffectTimer -= Time.fixedDeltaTime;
+                if (_moveEffectTimer <= 0f)
+                    _moveEffectMultiplier = 1f;
+            }
+
+            var moveMult = _slowMultiplier * _moveEffectMultiplier;
             var dt = Time.fixedDeltaTime;
             var input = ReadShipInput();
             var forward = GetShipForward();
             var forwardSpeed = Vector3.Dot(_velocity, forward);
-            var effectiveMaxSpeed = maxSpeed * _moveSpeedMultiplier * _slowMultiplier;
-            var effectiveReverseMaxSpeed = reverseMaxSpeed * _moveSpeedMultiplier * _slowMultiplier;
+            var effectiveMaxSpeed = maxSpeed * _moveSpeedMultiplier * moveMult;
+            var effectiveReverseMaxSpeed = reverseMaxSpeed * _moveSpeedMultiplier * moveMult;
             var turnReferenceSpeed = forwardSpeed >= 0f ? effectiveMaxSpeed : effectiveReverseMaxSpeed;
             var turnEffectiveness = turnReferenceSpeed > 0f
                 ? Mathf.Clamp01(Mathf.Abs(forwardSpeed) / turnReferenceSpeed)
@@ -316,7 +333,7 @@ namespace HighSeas.Player
             if (Mathf.Abs(input.throttle) > 0.01f)
             {
                 var thrust = input.throttle > 0f ? acceleration : reverseAcceleration;
-                _velocity += forward * (input.throttle * thrust * _slowMultiplier * dt);
+                _velocity += forward * (input.throttle * thrust * moveMult * dt);
 
                 forwardSpeed = Vector3.Dot(_velocity, forward);
                 if (Mathf.Sign(input.throttle) != Mathf.Sign(forwardSpeed) && Mathf.Abs(forwardSpeed) > 0.1f)

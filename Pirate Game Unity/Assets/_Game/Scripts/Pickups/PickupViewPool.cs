@@ -129,27 +129,40 @@ namespace HighSeas.Pickups
                 PickupType.GoldBarrel => _settings.goldBarrelPickupPrefab != null
                     ? _settings.goldBarrelPickupPrefab
                     : _settings.goldPickupPrefab,
+                PickupType.XpBarrel => _settings.infamyPickupPrefab != null
+                    ? _settings.infamyPickupPrefab
+                    : _settings.goldBarrelPickupPrefab,
                 PickupType.Gold or PickupType.FlyingGold => _settings.goldPickupPrefab,
+                PickupType.FlyingXp or PickupType.Infamy => _settings.infamyPickupPrefab,
                 PickupType.Powerup => _settings.healthPickupPrefab,
                 _ => _settings.infamyPickupPrefab
             };
         }
 
+        public float GetXpCrystalVisualScale()
+        {
+            if (_settings == null) return 0.52f;
+            return _settings.infamyPickupScale;
+        }
+
         float GetScale(PickupType type, int value)
         {
-            if (_settings == null) return 0.4f;
+            if (_settings == null) return GetXpCrystalVisualScale();
             return type switch
             {
                 PickupType.GoldBarrel => _settings.goldBarrelPickupScale,
+                PickupType.XpBarrel => GetXpCrystalVisualScale() * 1.15f,
                 PickupType.Gold or PickupType.FlyingGold => _settings.goldFlyingCoinScale,
+                PickupType.FlyingXp or PickupType.Infamy => GetXpCrystalVisualScale(),
                 PickupType.Powerup => _settings.healthPickupScale,
-                _ => _settings.infamyPickupScale
+                _ => GetXpCrystalVisualScale()
             };
         }
 
         static Color GetColor(PickupType type) => type switch
         {
             PickupType.Gold or PickupType.GoldBarrel or PickupType.FlyingGold => new Color(1f, 0.85f, 0.15f),
+            PickupType.XpBarrel or PickupType.FlyingXp or PickupType.Infamy => new Color(0.2f, 0.95f, 1f),
             PickupType.Powerup or PickupType.FlyingHealth => new Color(0.184f, 1f, 0.42f),
             _ => new Color(0.2f, 0.95f, 1f)
         };

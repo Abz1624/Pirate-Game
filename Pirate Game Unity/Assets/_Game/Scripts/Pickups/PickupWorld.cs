@@ -100,6 +100,7 @@ namespace HighSeas.Pickups
 
             pos.y = GetPickupHeight(type);
             var view = _viewPool.Acquire(type, pos, value);
+            ApplyUniformPickupScale(type, view);
             _pool[slot] = new PickupAgent
             {
                 active = true,
@@ -116,9 +117,9 @@ namespace HighSeas.Pickups
 
         static float GetPickupHeight(PickupType type) => type switch
         {
-            PickupType.GoldBarrel => 2f,
+            PickupType.GoldBarrel or PickupType.XpBarrel => 2f,
             PickupType.Powerup => 2f,
-            PickupType.FlyingGold or PickupType.FlyingHealth => 0.45f,
+            PickupType.FlyingGold or PickupType.FlyingHealth or PickupType.FlyingXp => 0.45f,
             _ => 0.35f
         };
 
@@ -160,7 +161,7 @@ namespace HighSeas.Pickups
                 toPlayer.y = 0f;
                 var dist = toPlayer.magnitude;
 
-                if (p.homingToPlayer || p.type == PickupType.FlyingGold || p.type == PickupType.FlyingHealth)
+                if (p.homingToPlayer || p.type == PickupType.FlyingGold || p.type == PickupType.FlyingHealth || p.type == PickupType.FlyingXp)
                 {
                     if (p.flyDelay > 0f)
                     {
@@ -183,7 +184,7 @@ namespace HighSeas.Pickups
                 {
                     BeginHomingPickup(ref p);
                 }
-                else if ((p.type == PickupType.GoldBarrel || p.type == PickupType.Powerup) && dist <= barrelTouchRadius)
+                else if ((p.type == PickupType.GoldBarrel || p.type == PickupType.XpBarrel || p.type == PickupType.Powerup) && dist <= barrelTouchRadius)
                 {
                     Collect(i);
                     continue;
@@ -197,24 +198,46 @@ namespace HighSeas.Pickups
                 if (p.view != null)
                 {
                     p.view.position = p.position;
-                    if (!p.homingToPlayer && p.type != PickupType.GoldBarrel && p.type != PickupType.Powerup)
+                    if (p.type is PickupType.Infamy or PickupType.FlyingXp)
+                        ApplyUniformPickupScale(p.type, p.view);
+                    if (!p.homingToPlayer && p.type != PickupType.GoldBarrel && p.type != PickupType.XpBarrel && p.type != PickupType.Powerup)
                         p.view.Rotate(0f, 180f * dt, 0f, Space.World);
                 }
             }
+        }
+
+        void ApplyUniformPickupScale(PickupType type, Transform view)
+        {
+            if (view == null || _viewPool == null) return;
+            if (type is PickupType.Infamy or PickupType.FlyingXp)
+                view.localScale = Vector3.one * _viewPool.GetXpCrystalVisualScale();
         }
 
         void BeginHomingPickup(ref PickupAgent p)
         {
             p.homingToPlayer = true;
             p.flyDelay = 0f;
-            if ((p.type == PickupType.Gold || p.type == PickupType.FlyingGold) && p.view != null && juiceSettings != null)
-                p.view.localScale = Vector3.one * juiceSettings.goldFlyingCoinScale;
+            if ((p.type == PickupType.Gold || p.type == PickupType.FlyingGold || p.type == PickupType.FlyingXp) && p.view != null && juiceSettings != null)
+                p.view.localScale = Vector3.one * (p.type == PickupType.FlyingXp
+                    ? _viewPool.GetXpCrystalVisualScale()
+                    : juiceSettings.goldFlyingCoinScale);
+            else if (p.type == PickupType.Infamy && p.view != null)
+                ApplyUniformPickupScale(PickupType.Infamy, p.view);
         }
 
         void CompleteHomingPickup(ref PickupAgent p)
         {
             switch (p.type)
             {
+                case PickupType.FlyingXp:
+                {
+                    if (RunManager.Instance == null || RunManager.Instance.IsRunEnded) break;
+                    var xp = p.value * (RunManager.Instance.Stats.XPGain);
+                    if (V3RunContext.IsActive)
+                        xp *= 0.35f;
+                    UI.LevelSystem.Instance?.AddXP(Mathf.Max(1, Mathf.RoundToInt(xp)));
+                    break;
+                }
                 case PickupType.Infamy:
                 {
                     if (RunManager.Instance == null || RunManager.Instance.IsRunEnded) break;
@@ -250,10 +273,53 @@ namespace HighSeas.Pickups
                     BurstGoldCoins(p.position, p.value);
                     ReleasePickup(ref p);
                     break;
+                case PickupType.XpBarrel:
+                    BurstXpCrystals(p.position, p.value);
+                    ReleasePickup(ref p);
+                    break;
                 case PickupType.Powerup:
                     BurstHealthPluses(p.position, p.value);
                     ReleasePickup(ref p);
                     break;
+            }
+        }
+
+        void BurstXpCrystals(Vector3 origin, int totalXp)
+        {
+            var crystalCount = Random.Range(10, 21);
+            var perCrystal = Mathf.Max(1, totalXp / crystalCount);
+            var remainder = totalXp - perCrystal * crystalCount;
+
+            for (var c = 0; c < crystalCount; c++)
+            {
+                if (_active >= _pool.Length) break;
+                var slot = -1;
+                for (var i = 0; i < _pool.Length; i++)
+                {
+                    if (!_pool[i].active) { slot = i; break; }
+                }
+                if (slot < 0) break;
+
+                var scatter = Random.insideUnitSphere * 0.8f;
+                scatter.y = 0f;
+                var pos = origin + scatter;
+                pos.y = 0.45f;
+                var value = perCrystal + (c == 0 ? remainder : 0);
+                var view = _viewPool.Acquire(PickupType.FlyingXp, pos, value);
+                ApplyUniformPickupScale(PickupType.FlyingXp, view);
+                _pool[slot] = new PickupAgent
+                {
+                    active = true,
+                    homingToPlayer = true,
+                    type = PickupType.FlyingXp,
+                    value = value,
+                    position = pos,
+                    basePosition = pos,
+                    bobPhase = Random.Range(0f, Mathf.PI * 2f),
+                    flyDelay = Random.Range(0.05f, 0.25f) + c * 0.02f,
+                    view = view
+                };
+                _active++;
             }
         }
 

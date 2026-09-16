@@ -50,23 +50,49 @@ namespace HighSeas.V3
         void ApplyItemEffect(string itemId)
         {
             if (RunManager.Instance == null) return;
+            var stats = RunManager.Instance.Stats;
 
             switch (itemId)
             {
                 case "grapeshot_pouch":
-                    RunManager.Instance.Stats.AddModifier(new StatModifier(StatId.Damage, 0f, 1.06f));
+                    stats.AddModifier(new StatModifier(StatId.Damage, 0f, 1.06f));
                     break;
                 case "double_fuse_cord":
-                    RunManager.Instance.Stats.AddModifier(new StatModifier(StatId.AttackSpeed, 0f, 1.08f));
+                    stats.AddModifier(new StatModifier(StatId.AttackSpeed, 0f, 1.08f));
                     break;
                 case "serrated_scabbard":
-                    RunManager.Instance.Stats.AddModifier(new StatModifier(StatId.CritChance, 0.04f));
+                    stats.AddModifier(new StatModifier(StatId.CritChance, 0.04f));
                     break;
                 case "broadside_drum":
-                    RunManager.Instance.Stats.AddModifier(new StatModifier(StatId.Quantity, 1f));
+                    stats.AddModifier(new StatModifier(StatId.Quantity, 1f));
                     break;
+                case "dragons_breath_nozzle":
+                    stats.AddModifier(new StatModifier(StatId.Size, 0f, 1.08f));
+                    break;
+                case "copper_conductor":
+                    stats.AddModifier(new StatModifier(StatId.ProjectileSpeed, 0f, 1.1f));
+                    break;
+                case "cursed_compass":
+                    stats.AddModifier(new StatModifier(StatId.Luck, 0.08f));
+                    break;
+                case "golden_figurehead":
+                    stats.AddModifier(new StatModifier(StatId.GoldGain, 0f, 1.05f));
+                    break;
+                case "stormglass":
+                    stats.AddModifier(new StatModifier(StatId.Quantity, 0.5f));
+                    break;
+                case "black_powder_keg":
+                    stats.AddModifier(new StatModifier(StatId.CritDamage, 0f, 1.1f));
+                    break;
+                case "sea_witchs_eye":
+                    stats.AddModifier(new StatModifier(StatId.Luck, 0.04f));
+                    break;
+                case "admirals_ledger":
+                    stats.AddModifier(new StatModifier(StatId.Damage, 0f, 1.04f));
+                    break;
+                case "lucky_doubloon":
                 default:
-                    RunManager.Instance.Stats.AddModifier(new StatModifier(StatId.Luck, 0.03f));
+                    stats.AddModifier(new StatModifier(StatId.Luck, 0.03f));
                     break;
             }
         }
@@ -74,5 +100,7 @@ namespace HighSeas.V3
         public int GetStackCount(string itemId) =>
             _stacks.TryGetValue(itemId, out var count) ? count : 0;
 
+        public bool HasItem(string itemId) =>
+            !string.IsNullOrEmpty(itemId) && _items.Contains(itemId);
     }
 }

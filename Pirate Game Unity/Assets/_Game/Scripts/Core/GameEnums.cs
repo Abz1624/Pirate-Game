@@ -43,7 +43,9 @@ namespace HighSeas.Core
         TrailZone,
         ChainLightning,
         MineDrop,
-        AuraPulse
+        AuraPulse,
+        PredictedAoE,
+        SummonChase
     }
 
     public enum TargetingMode
@@ -53,7 +55,14 @@ namespace HighSeas.Core
         DensestCluster,
         RandomNearby,
         PlayerTrail,
-        AreaAroundShip
+        AreaAroundShip,
+        ForwardArc,
+        ForwardCone,
+        AftDeploy,
+        PortStarboard,
+        OmniClusterGround,
+        TetherTarget,
+        TrailZone
     }
 
     public enum UpgradeAxis
@@ -122,7 +131,9 @@ namespace HighSeas.Core
         GoldBarrel,
         Powerup,
         FlyingGold,
-        FlyingHealth
+        FlyingHealth,
+        XpBarrel,
+        FlyingXp
     }
 
     public enum POIType

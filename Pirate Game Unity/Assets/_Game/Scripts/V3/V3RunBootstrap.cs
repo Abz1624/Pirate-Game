@@ -1,4 +1,5 @@
 using HighSeas.Combat;
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Debugging;
@@ -83,6 +84,11 @@ namespace HighSeas.V3
             ConfigureStageBuilder();
 
             V3RunContext.IsActive = true;
+            var experimentProfile = CombatExperimentContext.Active;
+            CombatWeaponCatalog.ApplyToDatabase(database, experimentProfile);
+            WeaponDamageLedger.Reset();
+            WeaponEvolutionRuntime.Reset();
+            _ = new RunCombatTelemetry(experimentProfile);
             var seed = forceInspectorSeed && runSeed != 0
                 ? runSeed
                 : V3HomeSeed.ResolveRunSeed();
@@ -116,16 +122,20 @@ namespace HighSeas.V3
             var captainId = V3CaptainSelection.Selected;
             var captainProfile = V3CaptainProfile.Get(captainId);
             EnsureCaptainController(captainId, player);
+            EnsureCaptainActive(captainId, player);
 
             var startingWeapon = ResolveStartingWeapon(captainProfile);
             var weapons = FindFirstObjectByType<WeaponController>();
-            weapons?.ConfigureV3();
+            weapons?.ApplyCombatExperiment(experimentProfile);
             weapons?.Initialize(database, startingWeapon);
 
             EnsureLevelSystem();
             LevelSystem.Instance?.ConfigureV3();
+            LevelSystem.Instance?.ApplyCombatExperiment(experimentProfile);
             LevelSystem.Instance?.Initialize(database, startingWeapon);
             V3RunItemInventory.Ensure();
+            V3RunItemEffects.Ensure();
+            V3RunPlaytestHotkeys.Ensure();
             var runCanvas = V3RunUiBootstrap.EnsureAll(_layout);
             runCanvas.GetComponent<RunHud>()?.ForceRefresh();
 
@@ -148,10 +158,21 @@ namespace HighSeas.V3
 
             EnsureCombatVfx();
             CollisionDebugOverlay.Ensure();
-            ConfigureSpawnDirector();
+            EnsureCombatTelemetryDriver();
+            WeaponTargetingVisualizer.Ensure();
+            ConfigureSpawnDirector(experimentProfile);
             EnsurePressureBeats(enemyWorld, player);
             EnsureOvertimeDirector(enemyWorld, player);
             RunManager.Instance.EnterPlaying();
+            if (player != null)
+                V3RunOpeningXpScatter.ScatterNearPlayer(player.Position, seed);
+            LevelSystem.Instance?.TryShowOpeningWeaponDraft();
+            if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
+            {
+                V3ToastHud.Instance?.Show(
+                    "Playtest: press F8 for hotkeys — [ ] cycle solo weapons",
+                    5f);
+            }
             var seedLabel = V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
             V3ToastHud.Instance?.Show(
                 $"Saltwind voyage ({seedLabel} seed {seed}).\nExplore 12 chests + 4 shrines, secure the Beacon.",
@@ -159,10 +180,11 @@ namespace HighSeas.V3
             Debug.Log($"V3RunBootstrap: run seed={seed} ({seedLabel}), POI rng={seed + 404}.");
         }
 
-        void ConfigureSpawnDirector()
+        void ConfigureSpawnDirector(CombatExperimentProfile profile)
         {
             var director = FindFirstObjectByType<SpawnDirector>();
             director?.ConfigureV3Pacing(true);
+            director?.ApplyCombatExperiment(profile);
         }
 
         static void EnsureHostileProjectiles()
@@ -182,6 +204,18 @@ namespace HighSeas.V3
             if (controller == null)
                 controller = systems.AddComponent<V3CaptainController>();
             controller.Initialize(captainId, ship);
+        }
+
+        void EnsureCaptainActive(V3CaptainId captainId, PlayerShipController ship)
+        {
+            var systems = GameObject.Find("Systems");
+            if (systems == null) return;
+
+            var active = systems.GetComponent<V3CaptainActiveController>();
+            if (active == null)
+                active = systems.AddComponent<V3CaptainActiveController>();
+            active.Initialize(captainId);
+            HellfirePatchWorld.Ensure();
         }
 
         void EnsurePressureBeats(EnemyWorld enemyWorld, PlayerShipController ship)
@@ -207,7 +241,7 @@ namespace HighSeas.V3
 
         static string ResolveStartingWeapon(V3CaptainProfile profile)
         {
-            if (!PlayerPrefs.HasKey(V3ContentUnlocks.FirstConquestKey))
+            if (!V3PlaytestFlags.UnlockAllContent && !PlayerPrefs.HasKey(V3ContentUnlocks.FirstConquestKey))
                 return "deck_cannons";
             return profile.StartingWeaponId;
         }
@@ -329,6 +363,14 @@ namespace HighSeas.V3
                 var settings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
                 broker.Configure(settings, vfxRoot);
             }
+        }
+
+        static void EnsureCombatTelemetryDriver()
+        {
+            var systems = GameObject.Find("Systems");
+            if (systems == null) return;
+            if (systems.GetComponent<CombatTelemetryDriver>() == null)
+                systems.AddComponent<CombatTelemetryDriver>();
         }
     }
 }

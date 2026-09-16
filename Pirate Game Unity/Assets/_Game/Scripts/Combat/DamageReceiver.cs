@@ -1,5 +1,6 @@
 using System;
 using HighSeas.Core;
+using HighSeas.V3;
 using UnityEngine;
 
 namespace HighSeas.Combat
@@ -49,8 +50,14 @@ namespace HighSeas.Combat
         {
             if (!IsAlive) return;
             if (Time.time < _iframeUntil) return;
+            if (V3CaptainActiveController.Instance != null)
+                amount *= V3CaptainActiveController.Instance.IncomingDamageMultiplier;
+            var player = GetComponent<Player.PlayerShipController>();
+            if (V3RunItemEffects.Instance != null && player != null)
+                amount *= V3RunItemEffects.Instance.GetIncomingDamageMultiplier(player);
             _iframeUntil = Time.time + GameConstants.ContactIFrame;
             _currentHP = Mathf.Max(0f, _currentHP - amount);
+            V3RunItemEffects.Instance?.NotifyPlayerTookDamage();
             Damaged?.Invoke(amount, isCrit);
             if (_currentHP <= 0f) Died?.Invoke();
         }

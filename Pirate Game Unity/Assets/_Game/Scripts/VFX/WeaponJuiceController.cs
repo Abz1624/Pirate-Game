@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Player;
@@ -22,8 +23,8 @@ namespace HighSeas.VFX
         Transform _flamethrowerPort;
         float _flameTimer;
 
-        const float FlamethrowerForwardOffset = 0.8f;
-        const float FlamethrowerSideOffset = 1.12f;
+        const float FlamethrowerForwardOffset = 1.65f;
+        const float FlamethrowerVisualScaleMult = 1.35f;
 
         public struct CutlassHitSphere
         {
@@ -90,7 +91,7 @@ namespace HighSeas.VFX
             var strikePos = position;
             strikePos.y = 0.05f;
             var scale = settings.lightningStrikeScale * Mathf.Clamp(areaRadius / 3.5f, 0.85f, 1.35f);
-            PlayLightningStrike(settings.lightningStrikePrefab, strikePos, scale, 3f);
+            PlayLightningStrike(settings.lightningStrikePrefab, strikePos, scale, 1.15f);
         }
 
         void PlayLightningStrike(GameObject prefab, Vector3 position, float scale, float lifetime)
@@ -164,6 +165,29 @@ namespace HighSeas.VFX
                 particles[i].Play(true);
         }
 
+        public void OnMortarTelegraph(Vector3 position, float radius)
+        {
+            if (settings.burningTrailPrefab == null) return;
+            position.y = 0.2f;
+            var scale = settings.burningTrailScale * Mathf.Clamp(radius / 4.5f, 0.85f, 1.45f);
+            _broker?.Play(settings.burningTrailPrefab, position, Quaternion.identity, scale, 1.15f);
+        }
+
+        public void OnBroadsideSalvo(Vector3 shipPosition, Vector3 sideDirection)
+        {
+            if (settings.shootingVfxPrefab == null) return;
+            sideDirection.y = 0f;
+            if (sideDirection.sqrMagnitude < 0.0001f) return;
+            sideDirection.Normalize();
+            var forward = Vector3.Cross(Vector3.up, sideDirection).normalized;
+            for (var i = -1; i <= 1; i++)
+            {
+                var origin = shipPosition + sideDirection * 1.1f + forward * (i * 0.55f) + Vector3.up * 0.35f;
+                var rotation = Quaternion.LookRotation(sideDirection, Vector3.up);
+                _broker?.Play(settings.shootingVfxPrefab, origin, rotation, settings.shootingVfxScale * 1.15f, 0.4f);
+            }
+        }
+
         public void OnBurningOilDropped(Vector3 position, float radius)
         {
             if (settings.burningTrailPrefab == null) return;
@@ -228,12 +252,16 @@ namespace HighSeas.VFX
                 _cutlasses.Remove(lastKey);
             }
 
+            var orbitRadius = CutlassOrbitRadius;
+            if (WeaponEvolutionCatalog.GetBehaviorModifier("flying_cutlasses") == "bladed_tide")
+                orbitRadius *= 0.72f + 0.38f * (0.5f + 0.5f * Mathf.Sin(Time.time * 1.75f));
+
             var index = 0;
             var flatRotation = Quaternion.Euler(90f, 0f, 0f);
             foreach (var kv in _cutlasses)
             {
                 var angle = (Time.time * 180f + index * (360f / Mathf.Max(1, count))) * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Sin(angle), 0.35f, Mathf.Cos(angle)) * CutlassOrbitRadius;
+                var offset = new Vector3(Mathf.Sin(angle), 0.35f, Mathf.Cos(angle)) * orbitRadius;
                 var worldPos = _player.Position + offset;
                 kv.Value.position = worldPos;
                 kv.Value.rotation = Quaternion.LookRotation(_player.MovementForward, Vector3.up) * flatRotation;
@@ -277,8 +305,10 @@ namespace HighSeas.VFX
             if (_flamethrowerPort == null) return;
 
             var forward = _player.MovementForward;
-            var right = Vector3.Cross(Vector3.up, forward).normalized;
-            SetFlamethrowerPose(_flamethrowerPort, forward, right, -1f);
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.0001f) forward = _player.transform.forward;
+            forward.Normalize();
+            SetFlamethrowerPose(_flamethrowerPort, forward);
 
             _flameTimer -= Time.deltaTime;
             if (_flameTimer > 0f) return;
@@ -291,7 +321,7 @@ namespace HighSeas.VFX
         {
             if (mount != null || settings.flamethrowerPrefab == null) return;
             var instance = Instantiate(settings.flamethrowerPrefab, _root);
-            instance.transform.localScale = Vector3.one * settings.flamethrowerScale;
+            instance.transform.localScale = Vector3.one * settings.flamethrowerScale * FlamethrowerVisualScaleMult;
             StripPhysics(instance);
             mount = instance.transform;
         }
@@ -303,12 +333,11 @@ namespace HighSeas.VFX
             mount = null;
         }
 
-        void SetFlamethrowerPose(Transform mount, Vector3 forward, Vector3 right, float sideSign)
+        void SetFlamethrowerPose(Transform mount, Vector3 forward)
         {
             if (mount == null) return;
-            var side = right * (FlamethrowerSideOffset * sideSign);
-            mount.position = _player.Position + forward * FlamethrowerForwardOffset + side + Vector3.up * 0.45f;
-            mount.rotation = Quaternion.LookRotation(side.normalized, Vector3.up);
+            mount.position = _player.Position + forward * FlamethrowerForwardOffset + Vector3.up * 0.45f;
+            mount.rotation = Quaternion.LookRotation(forward, Vector3.up);
         }
 
 

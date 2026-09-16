@@ -9,10 +9,12 @@ namespace HighSeas.UI
         WeaponUpgrade,
         NewWeapon,
         Logbook,
+        NewRunItem,
         FallbackHeal,
         FallbackDamage,
         FallbackMoveSpeed,
-        Continue
+        Continue,
+        WeaponEvolution
     }
 
     [Serializable]
@@ -36,6 +38,7 @@ namespace HighSeas.UI
         public int nextLevel;
         public bool isWeapon;
         public bool isNew;
+        public string evolutionId;
         public WeaponUpgradeLine[] upgradeLines;
 
         public string LevelLabel =>
