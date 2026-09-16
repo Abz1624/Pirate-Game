@@ -20,6 +20,8 @@ namespace HighSeas.Player
 
         [Header("Position")]
         [SerializeField] Vector3 offset = new(0f, 18f, 12f);
+
+        public Vector3 WorldOffset => offset;
         [SerializeField] bool followShipRotation;
         [SerializeField] Vector3 lookAtOffset;
 

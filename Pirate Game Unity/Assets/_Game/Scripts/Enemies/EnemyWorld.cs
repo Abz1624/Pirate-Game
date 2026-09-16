@@ -208,6 +208,26 @@ namespace HighSeas.Enemies
         public int SpawnPressureBeat(int definitionIndex, Vector3 position) =>
             Spawn(definitionIndex, position, EliteAffix.Rich, 1f, 6f, 1.25f);
 
+        /// <summary>Orients active enemy visuals toward a world point (promo shots, paused tableau).</summary>
+        public void SnapAllActiveViewsToward(Vector3 worldTarget)
+        {
+            if (definitions == null) return;
+
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                if (!_agents[i].active || _agents[i].view == null) continue;
+                var def = definitions[_agents[i].definitionIndex];
+                var faceDirection = worldTarget - _agents[i].position;
+                faceDirection.y = 0f;
+                if (faceDirection.sqrMagnitude < 0.0001f) continue;
+
+                var facing = Quaternion.LookRotation(faceDirection.normalized, Vector3.up);
+                if (def != null && Mathf.Abs(def.visualYawOffset) > 0.01f)
+                    facing *= Quaternion.Euler(0f, def.visualYawOffset, 0f);
+                _agents[i].view.rotation = facing;
+            }
+        }
+
         void AttachHealthBar(int slot, Data.EnemyDefinition def, Transform view, bool elite)
         {
             if (juiceSettings?.enemyHealthBarPrefab == null || view == null) return;
@@ -309,6 +329,47 @@ namespace HighSeas.Enemies
             if (definitions == null || agent.definitionIndex < 0 || agent.definitionIndex >= definitions.Length)
                 return agent.radius;
             return GetCollisionRadius(definitions[agent.definitionIndex]);
+        }
+
+        public void ResetAllAgentsForPromo()
+        {
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                if (_agents[i].active)
+                    Despawn(i);
+            }
+
+            _activeCount = 0;
+            _viewPool?.DestroyAllPooledInstances();
+        }
+
+        public void ResolveSpawnOverlapsOnly(int passes = 3)
+        {
+            for (var pass = 0; pass < passes; pass++)
+                ResolveAgentOverlaps();
+        }
+
+        /// <summary>Push agents apart and off islands after promo / debug spawns (no simulation tick).</summary>
+        public void ResolveSpawnLayout(int overlapPasses = 4)
+        {
+            for (var pass = 0; pass < overlapPasses; pass++)
+            {
+                ResolveAgentOverlaps();
+                if (!collideWithIslands || !IslandObstacles.IsAvailable)
+                    continue;
+
+                for (var i = 0; i < _agents.Length; i++)
+                {
+                    if (!_agents[i].active) continue;
+                    ref var e = ref _agents[i];
+                    var def = definitions[e.definitionIndex];
+                    var collisionRadius = GetCollisionRadius(def);
+                    var height = IslandObstacles.GetCollisionHeight(collisionRadius);
+                    e.position = IslandObstacles.Depenetrate(e.position, collisionRadius, height);
+                    if (e.view != null)
+                        e.view.position = e.position;
+                }
+            }
         }
 
         void ResolveAgentOverlaps()
