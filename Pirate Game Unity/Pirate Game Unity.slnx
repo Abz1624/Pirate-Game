@@ -1,9 +1,15 @@
 ﻿<Solution>
   <Project Path="HighSeas.Runtime.csproj" />
+  <Project Path="RoguePirates.Tests.EditMode.csproj" />
+  <Project Path="RoguePirates.Simulation.csproj" />
   <Project Path="HighSeas.Editor.csproj" />
+  <Project Path="RoguePirates.PlatformAdapters.csproj" />
   <Project Path="HighSeas.Tests.PlayMode.csproj" />
   <Project Path="StylizedWaterForURP.csproj" />
+  <Project Path="RoguePirates.Presentation.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="RoguePirates.Content.csproj" />
+  <Project Path="RoguePirates.AccountClient.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="StylizedWaterForURPEditor.csproj" />
   <Project Path="HighSeas.Tests.EditMode.csproj" />
