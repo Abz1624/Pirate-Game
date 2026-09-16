@@ -7,20 +7,6 @@ namespace HighSeas.V3
     /// <summary>Rolls salvage-chest run Items with GDD rarity weights and uniform picks within tier.</summary>
     public static class V3ChestLoot
     {
-        struct PoolEntry
-        {
-            public string ItemId;
-            public Rarity Rarity;
-        }
-
-        static readonly PoolEntry[] SalvagePool =
-        {
-            new() { ItemId = "lucky_doubloon", Rarity = Rarity.Common },
-            new() { ItemId = "double_fuse_cord", Rarity = Rarity.Uncommon },
-            new() { ItemId = "serrated_scabbard", Rarity = Rarity.Uncommon },
-            new() { ItemId = "grapeshot_pouch", Rarity = Rarity.Uncommon }
-        };
-
         static readonly float[] BaseRarityWeights = { 35f, 45f, 12f, 2f, 0.2f };
 
         public static string RollSalvageItem(RunRng rng, float luck, int stageDepth = 1)
@@ -62,13 +48,14 @@ namespace HighSeas.V3
 
         static string PickUniformItem(RunRng rng, Rarity rarity)
         {
+            var pool = V3ItemCatalog.ChestPool;
             for (var tier = (int)rarity; tier >= 0; tier--)
             {
                 var candidates = new List<string>();
-                for (var i = 0; i < SalvagePool.Length; i++)
+                for (var i = 0; i < pool.Count; i++)
                 {
-                    if ((int)SalvagePool[i].Rarity == tier)
-                        candidates.Add(SalvagePool[i].ItemId);
+                    if ((int)pool[i].rarity == tier)
+                        candidates.Add(pool[i].id);
                 }
 
                 if (candidates.Count == 0)
@@ -77,7 +64,7 @@ namespace HighSeas.V3
                 return candidates[rng.LootInt(0, candidates.Count)];
             }
 
-            return SalvagePool[0].ItemId;
+            return pool[0].id;
         }
     }
 }

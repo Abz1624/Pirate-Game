@@ -1,3 +1,5 @@
+using System.Text;
+using HighSeas.Combat;
 using HighSeas.Core;
 using TMPro;
 using UnityEngine;
@@ -52,15 +54,40 @@ namespace HighSeas.V3
                 var homePreview = rm.ObjectiveSecured
                     ? "\nFirst-home preview: Ledger rank 1 (local prototype — not saved to account)."
                     : "";
+                var weaponReport = BuildWeaponContributionReport();
                 summaryText.text =
                     $"Seed: {rm.RunSeed}\n" +
+                    $"Profile: {CombatExperimentContext.Active.profileId}\n" +
                     $"Survived: {rm.ElapsedSeconds:0}s\n" +
                     $"Kills: {rm.KillCount}\n" +
                     $"Boss secured: {(rm.ObjectiveSecured ? "Yes" : "No")}\n" +
                     $"Run gold banked: {rm.BankedRunGold}\n" +
                     $"Unspent run gold: {rm.Gold}" +
+                    weaponReport +
                     homePreview;
+                RunCombatTelemetry.Instance?.WriteExportFile();
             }
+        }
+
+        static string BuildWeaponContributionReport()
+        {
+            var snapshot = WeaponDamageLedger.Snapshot();
+            if (snapshot.Count == 0) return string.Empty;
+
+            var total = 0f;
+            foreach (var pair in snapshot)
+                total += pair.Value.totalDamage;
+            if (total <= 0f) return string.Empty;
+
+            var sb = new StringBuilder("\n\nWeapon contribution:");
+            foreach (var pair in snapshot)
+            {
+                var pct = pair.Value.totalDamage / total * 100f;
+                sb.Append('\n').Append(pair.Key).Append(": ").Append(pct.ToString("0")).Append("% dmg");
+                if (pair.Value.controlApplications > 0)
+                    sb.Append(", ").Append(pair.Value.controlApplications).Append(" controls");
+            }
+            return sb.ToString();
         }
 
         void BuildPlaceholderUi()

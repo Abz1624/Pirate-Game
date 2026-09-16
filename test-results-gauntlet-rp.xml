@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="12" result="Passed" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.0503469">
+  <test-suite type="TestSuite" id="1000" name="Pirate Game" fullname="Pirate Game" runstate="Runnable" testcasecount="44" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.050347" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1054" name="RoguePirates.Tests.EditMode.dll" fullname="C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Library/ScriptAssemblies/RoguePirates.Tests.EditMode.dll" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.044634" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="14484" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1055" name="RoguePirates" fullname="RoguePirates" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.044151" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1056" name="Tests" fullname="RoguePirates.Tests" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.043867" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1040" name="BalanceGateTests" fullname="RoguePirates.Tests.BalanceGateTests" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.034460" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1042" name="BatchSimulation_NoRunawayKillsOnShortRuns" fullname="RoguePirates.Tests.BalanceGateTests.BatchSimulation_NoRunawayKillsOnShortRuns" methodname="BatchSimulation_NoRunawayKillsOnShortRuns" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="726238464" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.014463" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1041" name="ContentManifest_Validates" fullname="RoguePirates.Tests.BalanceGateTests.ContentManifest_Validates" methodname="ContentManifest_Validates" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="1759586511" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.002759" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1043" name="MandatoryPickGate_ThresholdEnforced" fullname="RoguePirates.Tests.BalanceGateTests.MandatoryPickGate_ThresholdEnforced" methodname="MandatoryPickGate_ThresholdEnforced" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="289802565" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.000700" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1045" name="RaidSettlement_IsIdempotent" fullname="RoguePirates.Tests.BalanceGateTests.RaidSettlement_IsIdempotent" methodname="RaidSettlement_IsIdempotent" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="842521089" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.003202" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1044" name="SoakSimulation_CompletesWithoutException" fullname="RoguePirates.Tests.BalanceGateTests.SoakSimulation_CompletesWithoutException" methodname="SoakSimulation_CompletesWithoutException" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="1886434732" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.002379" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1046" name="SimulationFixtureTests" fullname="RoguePirates.Tests.SimulationFixtureTests" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.008374" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1051" name="BossPlayerSameTick_SecuresObjectiveBeforeRunEnd" fullname="RoguePirates.Tests.SimulationFixtureTests.BossPlayerSameTick_SecuresObjectiveBeforeRunEnd" methodname="BossPlayerSameTick_SecuresObjectiveBeforeRunEnd" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="648335814" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.000912" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1050" name="LastRum_ConsumesOnceOnSameTickDoubleLethal" fullname="RoguePirates.Tests.SimulationFixtureTests.LastRum_ConsumesOnceOnSameTickDoubleLethal" methodname="LastRum_ConsumesOnceOnSameTickDoubleLethal" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="1918904456" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.000658" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1049" name="PauseSet_ClearingOneReason_DoesNotClearOthers" fullname="RoguePirates.Tests.SimulationFixtureTests.PauseSet_ClearingOneReason_DoesNotClearOthers" methodname="PauseSet_ClearingOneReason_DoesNotClearOthers" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="755112227" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.000162" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1048" name="RenderFps30_60_120_YieldsIdenticalOutcomes" fullname="RoguePirates.Tests.SimulationFixtureTests.RenderFps30_60_120_YieldsIdenticalOutcomes" methodname="RenderFps30_60_120_YieldsIdenticalOutcomes" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="1909834307" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.000813" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1047" name="SameSeed_ProducesStableStateHash" fullname="RoguePirates.Tests.SimulationFixtureTests.SameSeed_ProducesStableStateHash" methodname="SameSeed_ProducesStableStateHash" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="133964890" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.000919" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1053" name="SimMath_DamageMatchesGoldenVector" fullname="RoguePirates.Tests.SimulationFixtureTests.SimMath_DamageMatchesGoldenVector" methodname="SimMath_DamageMatchesGoldenVector" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="264163866" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.000546" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1052" name="SimRng_LegendaryRateCapped" fullname="RoguePirates.Tests.SimulationFixtureTests.SimRng_LegendaryRateCapped" methodname="SimRng_LegendaryRateCapped" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="1637508227" result="Passed" start-time="2026-09-14 16:29:43Z" end-time="2026-09-14 16:29:43Z" duration="0.002820" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/shara/AppData/LocalLow/DefaultCompany/Pirate Game\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

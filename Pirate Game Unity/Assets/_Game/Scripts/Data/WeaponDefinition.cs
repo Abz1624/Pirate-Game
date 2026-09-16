@@ -22,6 +22,10 @@ namespace HighSeas.Data
         public float knockback = 1f;
         [Tooltip("Total yaw arc in degrees for FanVolley weapons (e.g. Broadside Battery).")]
         [Range(4f, 90f)] public float fanSpreadDegrees = 50f;
+        [Tooltip("Forward/lateral arc used by directional targeting profiles.")]
+        [Range(0f, 360f)] public float targetArcDegrees = 120f;
+        public bool preferElite;
+        public bool preferHighestHull;
         public int maxLevel = 12;
         public UpgradeAxis[] validUpgradeAxes;
         public WeaponUpgradeAxisConfig[] upgradeAxisConfigs;

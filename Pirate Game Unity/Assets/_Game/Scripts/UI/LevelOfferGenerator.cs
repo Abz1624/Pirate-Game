@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.V3;
@@ -10,6 +11,37 @@ namespace HighSeas.UI
 {
     public static class LevelOfferGenerator
     {
+        struct OfferCategoryWeights
+        {
+            public float equippedWeaponUpgrade;
+            public float newWeapon;
+            public float equippedLogbookUpgrade;
+            public float newLogbook;
+            public float newRunItem;
+        }
+
+        public static List<LevelOffer> GenerateOpeningWeaponDraft(
+            GameDatabase database,
+            LevelUpSettings settings,
+            RunRng rng,
+            IReadOnlyList<string> ownedWeapons,
+            int weaponSlots,
+            int cardCount = 3)
+        {
+            var result = new List<LevelOffer>(cardCount);
+            var used = new HashSet<string>();
+            for (var i = 0; i < cardCount; i++)
+            {
+                var def = PickNewWeapon(database, settings, ownedWeapons, new Dictionary<string, int>(), rng, used);
+                if (def == null) break;
+                var offer = BuildNewWeaponOffer(def);
+                used.Add(def.id);
+                result.Add(offer);
+                Combat.RunCombatTelemetry.Instance?.RecordNewWeaponOfferShown();
+            }
+            return PadOrTrim(result, cardCount);
+        }
+
         public static List<LevelOffer> Generate(
             GameDatabase database,
             LevelUpSettings settings,
@@ -25,12 +57,14 @@ namespace HighSeas.UI
             bool isFirstLevelUp,
             PlayerStats stats = null,
             float currentHull = -1f,
-            float maxHull = -1f)
+            float maxHull = -1f,
+            int playerLevel = 1,
+            bool useFillStateWeighting = false)
         {
             var count = settings != null ? settings.cardsPerLevel : 3;
             var result = new List<LevelOffer>(count);
 
-            if (isFirstLevelUp && settings != null && settings.scriptFirstLevelUp)
+            if (isFirstLevelUp && settings != null && settings.scriptFirstLevelUp && !useFillStateWeighting)
             {
                 AddFirstLevelOffers(result, database, settings, rng, luck, ownedWeapons, weaponLevels, ownedLogbooks, logbookSlots, pacing);
                 return FinalizeOffers(result, count, rng, stats, currentHull, maxHull);
@@ -54,7 +88,8 @@ namespace HighSeas.UI
                         logbookLevels,
                         weaponSlots,
                         logbookSlots,
-                        usedKeys);
+                        usedKeys,
+                        useFillStateWeighting);
                     if (offer.id != null) break;
                 }
 
@@ -66,14 +101,19 @@ namespace HighSeas.UI
                 }
             }
 
-            return FinalizeOffers(EnsureDemoNewWeaponOffer(
-                result,
-                database,
-                settings,
-                ownedWeapons,
-                weaponLevels,
-                rng,
-                count), count, rng, stats, currentHull, maxHull);
+            if (useFillStateWeighting)
+                ApplyWeaponPityGuarantee(result, database, settings, rng, ownedWeapons, weaponLevels, weaponSlots, playerLevel, usedKeys);
+
+            return FinalizeOffers(useFillStateWeighting
+                ? result
+                : EnsureDemoNewWeaponOffer(
+                    result,
+                    database,
+                    settings,
+                    ownedWeapons,
+                    weaponLevels,
+                    rng,
+                    count), count, rng, stats, currentHull, maxHull);
         }
 
         public static List<LevelOffer> FinalizeOffers(
@@ -293,11 +333,57 @@ namespace HighSeas.UI
             IReadOnlyDictionary<string, int> logbookLevels,
             int weaponSlots,
             int logbookSlots,
-            HashSet<string> usedKeys)
+            HashSet<string> usedKeys,
+            bool useFillStateWeighting)
         {
             var canAddWeapon = ownedWeapons.Count < weaponSlots && HasUnownedWeapon(database, ownedWeapons);
             var canUpgradeWeapon = HasUpgradeableWeapon(database, settings, ownedWeapons, weaponLevels);
             var canOfferLogbook = database.logbooks != null && database.logbooks.Length > 0;
+            var canNewLogbook = CanOfferNewLogbook(ownedLogbooks, logbookSlots, database, logbookLevels);
+            var canUpgradeLogbook = CanOfferLogbookUpgrade(ownedLogbooks, database, logbookLevels);
+            var canRunItem = V3RunContext.IsActive && V3ItemCatalog.InteractionItemIds.Length > 0;
+
+            if (useFillStateWeighting)
+            {
+                var weights = GetFillStateWeights(ownedWeapons.Count);
+                var total = 0f;
+                if (canUpgradeWeapon) total += weights.equippedWeaponUpgrade;
+                if (canAddWeapon) total += weights.newWeapon;
+                if (canUpgradeLogbook) total += weights.equippedLogbookUpgrade;
+                if (canNewLogbook) total += weights.newLogbook;
+                if (canRunItem) total += weights.newRunItem;
+                if (total <= 0f) return default;
+
+                var roll = rng.LootFloat() * total;
+                var acc = 0f;
+                if (canUpgradeWeapon)
+                {
+                    acc += weights.equippedWeaponUpgrade;
+                    if (roll <= acc)
+                        return TryWeaponUpgradeOffer(database, settings, pacing, rng, luck, ownedWeapons, weaponLevels, usedKeys);
+                }
+                if (canAddWeapon)
+                {
+                    acc += weights.newWeapon;
+                    if (roll <= acc)
+                        return TryNewWeaponOffer(database, settings, ownedWeapons, weaponLevels, rng, usedKeys);
+                }
+                if (canUpgradeLogbook)
+                {
+                    acc += weights.equippedLogbookUpgrade;
+                    if (roll <= acc)
+                        return TryLogbookOffer(database, ownedLogbooks, logbookLevels, logbookSlots, rng, luck, usedKeys, newOnly: false);
+                }
+                if (canNewLogbook)
+                {
+                    acc += weights.newLogbook;
+                    if (roll <= acc)
+                        return TryLogbookOffer(database, ownedLogbooks, logbookLevels, logbookSlots, rng, luck, usedKeys, newOnly: true);
+                }
+                if (canRunItem)
+                    return TryRunItemOffer(rng, luck, usedKeys);
+                return default;
+            }
 
             var weaponWeight = settings != null ? settings.weaponOfferWeight : 0.55f;
             if (!canAddWeapon && !canUpgradeWeapon) weaponWeight = 0f;
@@ -307,42 +393,227 @@ namespace HighSeas.UI
             if (pickWeapon)
             {
                 if (canAddWeapon && (!canUpgradeWeapon || rng.LootFloat() < 0.45f))
-                {
-                    var def = PickNewWeapon(database, settings, ownedWeapons, weaponLevels, rng);
-                    if (def != null)
-                    {
-                        var offer = BuildNewWeaponOffer(def);
-                        if (!usedKeys.Contains(GetOfferKey(offer))) return offer;
-                    }
-                }
-
+                    return TryNewWeaponOffer(database, settings, ownedWeapons, weaponLevels, rng, usedKeys);
                 if (canUpgradeWeapon)
-                {
-                    var def = PickUpgradeWeapon(database, settings, ownedWeapons, weaponLevels, rng);
-                    if (def != null)
-                    {
-                        weaponLevels.TryGetValue(def.id, out var level);
-                        var offer = BuildWeaponUpgradeOffer(def, level, rng.RollRarity(luck), settings, pacing, rng);
-                        if (!usedKeys.Contains(GetOfferKey(offer))) return offer;
-                    }
-                }
+                    return TryWeaponUpgradeOffer(database, settings, pacing, rng, luck, ownedWeapons, weaponLevels, usedKeys);
             }
 
             if (canOfferLogbook)
+                return TryLogbookOffer(database, ownedLogbooks, logbookLevels, logbookSlots, rng, luck, usedKeys, newOnly: false);
+
+            return default;
+        }
+
+        static OfferCategoryWeights GetFillStateWeights(int equippedWeapons)
+        {
+            if (equippedWeapons <= 2) return new OfferCategoryWeights { equippedWeaponUpgrade = 23f, newWeapon = 42f, equippedLogbookUpgrade = 18f, newLogbook = 9f, newRunItem = 8f };
+            if (equippedWeapons == 3) return new OfferCategoryWeights { equippedWeaponUpgrade = 32f, newWeapon = 32f, equippedLogbookUpgrade = 18f, newLogbook = 9f, newRunItem = 9f };
+            if (equippedWeapons == 4) return new OfferCategoryWeights { equippedWeaponUpgrade = 38f, newWeapon = 26f, equippedLogbookUpgrade = 18f, newLogbook = 9f, newRunItem = 9f };
+            if (equippedWeapons == 5) return new OfferCategoryWeights { equippedWeaponUpgrade = 46f, newWeapon = 18f, equippedLogbookUpgrade = 18f, newLogbook = 9f, newRunItem = 9f };
+            return new OfferCategoryWeights { equippedWeaponUpgrade = 58f, newWeapon = 0f, equippedLogbookUpgrade = 22f, newLogbook = 9f, newRunItem = 11f };
+        }
+
+        static LevelOffer TryRunItemOffer(RunRng rng, float luck, HashSet<string> usedKeys)
+        {
+            var pool = V3ItemCatalog.InteractionItemIds;
+            if (pool.Length == 0) return default;
+            for (var attempt = 0; attempt < 8; attempt++)
             {
-                var lb = PickLogbook(database, ownedLogbooks, logbookLevels, logbookSlots, rng);
-                if (lb != null)
-                {
-                    logbookLevels.TryGetValue(lb.id, out var lbLevel);
-                    var offer = BuildLogbookOffer(lb, lbLevel, rng.RollRarity(luck));
-                    if (!usedKeys.Contains(GetOfferKey(offer))) return offer;
-                }
+                var id = pool[rng.LootInt(0, pool.Length)];
+                if (!V3ContentUnlocks.IsItemUnlocked(id)) continue;
+                var offer = BuildRunItemOffer(id, rng.RollRarity(luck));
+                if (usedKeys.Contains(GetOfferKey(offer))) continue;
+                return offer;
             }
 
             return default;
         }
 
-        static string GetOfferKey(LevelOffer offer) => $"{offer.kind}:{offer.id}";
+        public static LevelOffer BuildRunItemOffer(string itemId, Rarity rarity)
+        {
+            return new LevelOffer
+            {
+                kind = LevelOfferKind.NewRunItem,
+                id = itemId,
+                title = V3ItemCatalog.GetDisplayName(itemId),
+                categoryLabel = "Run Item",
+                description = V3ItemCatalog.GetDescription(itemId),
+                rarity = rarity,
+                currentLevel = 0,
+                nextLevel = 1,
+                isWeapon = false,
+                isNew = true,
+                upgradeLines = System.Array.Empty<WeaponUpgradeLine>()
+            };
+        }
+
+        static int GetPityTargetWeaponCount(int playerLevel)
+        {
+            if (playerLevel >= 16) return 6;
+            if (playerLevel >= 12) return 5;
+            if (playerLevel >= 8) return 4;
+            if (playerLevel >= 4) return 3;
+            return 0;
+        }
+
+        static void ApplyWeaponPityGuarantee(
+            List<LevelOffer> offers,
+            GameDatabase database,
+            LevelUpSettings settings,
+            RunRng rng,
+            IReadOnlyList<string> ownedWeapons,
+            IReadOnlyDictionary<string, int> weaponLevels,
+            int weaponSlots,
+            int playerLevel,
+            HashSet<string> usedKeys)
+        {
+            var target = GetPityTargetWeaponCount(playerLevel);
+            if (target <= 0 || ownedWeapons.Count >= target || ownedWeapons.Count >= weaponSlots) return;
+            for (var i = 0; i < offers.Count; i++)
+            {
+                if (offers[i].kind == LevelOfferKind.NewWeapon) return;
+            }
+
+            var def = PickNewWeapon(database, settings, ownedWeapons, weaponLevels, rng);
+            if (def == null) return;
+            var offer = BuildNewWeaponOffer(def);
+            if (offers.Count == 0)
+            {
+                offers.Add(offer);
+                return;
+            }
+
+            var replaceIndex = offers.Count - 1;
+            usedKeys.Remove(GetOfferKey(offers[replaceIndex]));
+            offers[replaceIndex] = offer;
+            usedKeys.Add(GetOfferKey(offer));
+        }
+
+        static LevelOffer TryNewWeaponOffer(
+            GameDatabase database,
+            LevelUpSettings settings,
+            IReadOnlyList<string> ownedWeapons,
+            IReadOnlyDictionary<string, int> weaponLevels,
+            RunRng rng,
+            HashSet<string> usedKeys)
+        {
+            var def = PickNewWeapon(database, settings, ownedWeapons, weaponLevels, rng);
+            if (def == null) return default;
+            var offer = BuildNewWeaponOffer(def);
+            return usedKeys.Contains(GetOfferKey(offer)) ? default : offer;
+        }
+
+        static LevelOffer TryWeaponUpgradeOffer(
+            GameDatabase database,
+            LevelUpSettings settings,
+            DemoPacingSettings pacing,
+            RunRng rng,
+            float luck,
+            IReadOnlyList<string> ownedWeapons,
+            IReadOnlyDictionary<string, int> weaponLevels,
+            HashSet<string> usedKeys)
+        {
+            if (CombatExperimentContext.Active.weaponEvolutionsEnabled)
+            {
+                var evolution = TryWeaponEvolutionOffer(ownedWeapons, weaponLevels, usedKeys);
+                if (evolution.id != null) return evolution;
+            }
+
+            var def = PickUpgradeWeapon(database, settings, ownedWeapons, weaponLevels, rng);
+            if (def == null) return default;
+            weaponLevels.TryGetValue(def.id, out var level);
+            if (level >= def.maxLevel) return default;
+            var offer = BuildWeaponUpgradeOffer(def, level, rng.RollRarity(luck), settings, pacing, rng);
+            return usedKeys.Contains(GetOfferKey(offer)) ? default : offer;
+        }
+
+        static LevelOffer TryWeaponEvolutionOffer(
+            IReadOnlyList<string> ownedWeapons,
+            IReadOnlyDictionary<string, int> weaponLevels,
+            HashSet<string> usedKeys)
+        {
+            for (var i = 0; i < ownedWeapons.Count; i++)
+            {
+                var weaponId = ownedWeapons[i];
+                weaponLevels.TryGetValue(weaponId, out var level);
+                if (!WeaponEvolutionCatalog.TryGetEligible(weaponId, level, out var evo)) continue;
+                var offer = BuildEvolutionOffer(evo, level);
+                if (usedKeys.Contains(GetOfferKey(offer))) continue;
+                return offer;
+            }
+
+            return default;
+        }
+
+        static LevelOffer BuildEvolutionOffer(WeaponEvolutionDefinition evo, int level) =>
+            new()
+            {
+                kind = LevelOfferKind.WeaponEvolution,
+                id = evo.baseWeaponId,
+                evolutionId = evo.evolutionId,
+                title = evo.displayName,
+                categoryLabel = "WEAPON EVOLUTION",
+                description = evo.description,
+                rarity = Rarity.Legendary,
+                currentLevel = level,
+                nextLevel = level,
+                isWeapon = true,
+                isNew = false
+            };
+
+        static LevelOffer TryLogbookOffer(
+            GameDatabase database,
+            IReadOnlyList<string> ownedLogbooks,
+            IReadOnlyDictionary<string, int> logbookLevels,
+            int logbookSlots,
+            RunRng rng,
+            float luck,
+            HashSet<string> usedKeys,
+            bool newOnly)
+        {
+            var lb = PickLogbook(database, ownedLogbooks, logbookLevels, logbookSlots, rng, newOnly);
+            if (lb == null) return default;
+            logbookLevels.TryGetValue(lb.id, out var lbLevel);
+            var offer = BuildLogbookOffer(lb, lbLevel, rng.RollRarity(luck));
+            return usedKeys.Contains(GetOfferKey(offer)) ? default : offer;
+        }
+
+        static bool CanOfferNewLogbook(
+            IReadOnlyList<string> ownedLogbooks,
+            int logbookSlots,
+            GameDatabase database,
+            IReadOnlyDictionary<string, int> logbookLevels)
+        {
+            if (ownedLogbooks.Count >= logbookSlots) return false;
+            if (database.logbooks == null) return false;
+            for (var i = 0; i < database.logbooks.Length; i++)
+            {
+                var lb = database.logbooks[i];
+                if (lb == null || ContainsId(ownedLogbooks, lb.id)) continue;
+                return true;
+            }
+            return false;
+        }
+
+        static bool CanOfferLogbookUpgrade(
+            IReadOnlyList<string> ownedLogbooks,
+            GameDatabase database,
+            IReadOnlyDictionary<string, int> logbookLevels)
+        {
+            for (var i = 0; i < ownedLogbooks.Count; i++)
+            {
+                var def = database.GetLogbook(ownedLogbooks[i]);
+                if (def == null) continue;
+                logbookLevels.TryGetValue(ownedLogbooks[i], out var level);
+                if (level < def.maxLevel) return true;
+            }
+            return false;
+        }
+
+        static string GetOfferKey(LevelOffer offer) =>
+            offer.kind == LevelOfferKind.WeaponEvolution
+                ? $"{offer.kind}:{offer.id}:{offer.evolutionId}"
+                : $"{offer.kind}:{offer.id}";
 
         static bool HasUnownedWeapon(GameDatabase database, IReadOnlyList<string> ownedWeapons)
         {
@@ -384,7 +655,8 @@ namespace HighSeas.UI
             LevelUpSettings settings,
             IReadOnlyList<string> ownedWeapons,
             IReadOnlyDictionary<string, int> weaponLevels,
-            RunRng rng)
+            RunRng rng,
+            HashSet<string> excludedIds = null)
         {
             var candidates = new List<WeaponDefinition>();
             var weights = new List<float>();
@@ -392,11 +664,19 @@ namespace HighSeas.UI
             {
                 var w = database.weapons[i];
                 if (w == null || ContainsId(ownedWeapons, w.id)) continue;
+                if (excludedIds != null && excludedIds.Contains(w.id)) continue;
+                if (!IsWeaponOfferEligible(w.id)) continue;
                 candidates.Add(w);
                 weights.Add(1f);
             }
 
             return WeightedPick(candidates, weights, rng);
+        }
+
+        static bool IsWeaponOfferEligible(string weaponId)
+        {
+            if (!V3.V3RunContext.IsActive) return true;
+            return V3.V3ContentUnlocks.IsWeaponUnlocked(weaponId);
         }
 
         static WeaponDefinition PickUpgradeWeapon(
@@ -428,7 +708,8 @@ namespace HighSeas.UI
             IReadOnlyList<string> ownedLogbooks,
             IReadOnlyDictionary<string, int> logbookLevels,
             int logbookSlots,
-            RunRng rng)
+            RunRng rng,
+            bool newOnly = false)
         {
             var candidates = new List<LogbookDefinition>();
             var weights = new List<float>();
@@ -438,6 +719,7 @@ namespace HighSeas.UI
                 if (lb == null) continue;
                 var owned = ContainsId(ownedLogbooks, lb.id);
                 logbookLevels.TryGetValue(lb.id, out var level);
+                if (newOnly && owned) continue;
                 if (!owned && ownedLogbooks.Count >= logbookSlots) continue;
                 if (owned && level >= lb.maxLevel) continue;
                 candidates.Add(lb);

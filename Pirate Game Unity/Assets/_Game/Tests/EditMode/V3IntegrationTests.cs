@@ -68,6 +68,12 @@ namespace HighSeas.Tests
         [Test]
         public void V3ContentUnlocks_BlocksFlyingCutlassesBeforeFirstConquest()
         {
+            if (V3PlaytestFlags.UnlockAllContent)
+            {
+                Assert.That(V3ContentUnlocks.IsWeaponUnlocked("flying_cutlasses"), Is.True);
+                return;
+            }
+
             PlayerPrefs.DeleteKey(V3ContentUnlocks.FirstConquestKey);
             Assert.That(V3ContentUnlocks.IsWeaponUnlocked("deck_cannons"), Is.True);
             Assert.That(V3ContentUnlocks.IsWeaponUnlocked("flying_cutlasses"), Is.False);

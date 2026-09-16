@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.UI;
@@ -12,11 +13,10 @@ namespace HighSeas.V3
     /// <summary>Megabonk-style bottom loadout bar: weapon slots, logbook slots, and run items.</summary>
     public sealed class V3RunLoadoutHud : MonoBehaviour
     {
-        const int WeaponSlotCount = 2;
         const int LogbookSlotCount = 2;
         const int ItemSlotCount = 4;
-        const float BarWidth = 1000f;
-        const float BarHeight = 128f;
+        const float BarWidth = 1420f;
+        const float BarHeight = 118f;
 
         readonly List<SlotView> _weaponSlots = new();
         readonly List<SlotView> _logbookSlots = new();
@@ -61,18 +61,32 @@ namespace HighSeas.V3
 
         void BuildLayout(Transform root)
         {
-            CreateSectionLabel(root, "WEAPONS", new Vector2(-340f, 42f));
-            CreateSectionLabel(root, "LOGBOOKS", new Vector2(-10f, 42f));
-            CreateSectionLabel(root, "ITEMS", new Vector2(290f, 42f));
+            var weaponSlotCount = CombatExperimentContext.Active.weaponSlotCap;
+            CreateSectionLabel(root, "WEAPONS", new Vector2(-470f, 40f));
+            CreateSectionLabel(root, "LOGBOOKS", new Vector2(70f, 40f));
+            CreateSectionLabel(root, "ITEMS", new Vector2(390f, 40f));
 
-            for (var i = 0; i < WeaponSlotCount; i++)
-                _weaponSlots.Add(CreateSlot(root, $"WeaponSlot{i}", new Vector2(-390f + i * 130f, -12f), new Vector2(116f, 78f), new Color(0.35f, 0.72f, 1f)));
+            var slotWidth = weaponSlotCount >= 6 ? 62f : 88f;
+            var slotHeight = 66f;
+            var slotSpacing = weaponSlotCount >= 6 ? 70f : 96f;
+            var weaponsSpan = (weaponSlotCount - 1) * slotSpacing;
+            var startX = -470f - weaponsSpan * 0.5f;
+            for (var i = 0; i < weaponSlotCount; i++)
+            {
+                var size = new Vector2(slotWidth, slotHeight);
+                _weaponSlots.Add(CreateSlot(
+                    root,
+                    $"WeaponSlot{i}",
+                    new Vector2(startX + i * slotSpacing, -10f),
+                    size,
+                    new Color(0.35f, 0.72f, 1f)));
+            }
 
             for (var i = 0; i < LogbookSlotCount; i++)
-                _logbookSlots.Add(CreateSlot(root, $"LogbookSlot{i}", new Vector2(-60f + i * 130f, -12f), new Vector2(116f, 78f), new Color(0.62f, 0.92f, 0.48f)));
+                _logbookSlots.Add(CreateSlot(root, $"LogbookSlot{i}", new Vector2(10f + i * 118f, -10f), new Vector2(108f, slotHeight), new Color(0.62f, 0.92f, 0.48f)));
 
             for (var i = 0; i < ItemSlotCount; i++)
-                _itemSlots.Add(CreateSlot(root, $"ItemSlot{i}", new Vector2(210f + i * 76f, -12f), new Vector2(72f, 78f), new Color(0.85f, 0.65f, 0.2f)));
+                _itemSlots.Add(CreateSlot(root, $"ItemSlot{i}", new Vector2(300f + i * 72f, -10f), new Vector2(66f, slotHeight), new Color(0.85f, 0.65f, 0.2f)));
         }
 
         static TextMeshProUGUI CreateSectionLabel(Transform parent, string text, Vector2 pos)
@@ -122,7 +136,7 @@ namespace HighSeas.V3
             titleRect.offsetMin = new Vector2(6f, 18f);
             titleRect.offsetMax = new Vector2(-6f, -6f);
             var title = titleGo.AddComponent<TextMeshProUGUI>();
-            title.fontSize = 11f;
+            title.fontSize = 10f;
             title.fontStyle = FontStyles.Bold;
             title.alignment = TextAlignmentOptions.TopLeft;
             title.color = RunHudTheme.Value;
@@ -137,7 +151,7 @@ namespace HighSeas.V3
             subRect.offsetMin = new Vector2(6f, 4f);
             subRect.offsetMax = new Vector2(-6f, -22f);
             var subtitle = subGo.AddComponent<TextMeshProUGUI>();
-            subtitle.fontSize = 9f;
+            subtitle.fontSize = 8f;
             subtitle.alignment = TextAlignmentOptions.TopLeft;
             subtitle.color = RunHudTheme.Label;
             subtitle.enableWordWrapping = false;
@@ -191,8 +205,8 @@ namespace HighSeas.V3
                 {
                     var weapon = _weapons.Weapons[i];
                     slot.root.SetActive(true);
-                    slot.title.text = weapon.def.displayName;
-                    slot.subtitle.text = $"LV {weapon.level} · {V3ContentDescriptions.GetWeaponDescription(weapon.def)}";
+                    slot.title.text = WeaponEvolutionRuntime.GetDisplayName(weapon.def.id, weapon.def.displayName);
+                    slot.subtitle.text = $"LV {weapon.level}";
                 }
                 else
                 {

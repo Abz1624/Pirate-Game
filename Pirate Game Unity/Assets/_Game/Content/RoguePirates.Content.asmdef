@@ -1,0 +1,16 @@
+{
+    "name": "RoguePirates.Content",
+    "rootNamespace": "RoguePirates.Content",
+    "references": [
+        "RoguePirates.Simulation"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

@@ -360,16 +360,9 @@ namespace HighSeas.POI
 
         static string RollPowderCacheItem()
         {
-            var pool = new[]
-            {
-                "grapeshot_pouch",
-                "double_fuse_cord",
-                "serrated_scabbard",
-                "broadside_drum",
-                "lucky_doubloon"
-            };
-            var idx = RunManager.Instance.Rng.MapInt(0, pool.Length);
-            return pool[idx];
+            var pool = V3ItemCatalog.ChestPool;
+            var idx = RunManager.Instance.Rng.MapInt(0, pool.Count);
+            return pool[idx].id;
         }
 
         Vector3 GetPoiPosition(int index)

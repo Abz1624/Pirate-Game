@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "events": [
+    { "name": "run_start", "fields": ["seed", "captainId", "contentVersion", "platform"] },
+    { "name": "run_end", "fields": ["durationSeconds", "kills", "objectiveSecured", "deathCause"] },
+    { "name": "death", "fields": ["sourceId", "damageType", "elapsedSeconds", "buildHash"] },
+    { "name": "level_offer", "fields": ["level", "offers", "picked", "skipped", "banished"] },
+    { "name": "chest_open", "fields": ["poiIndex", "cost", "rarity", "itemId"] },
+    { "name": "boss_attempt", "fields": ["bossId", "outcome", "elapsedSeconds"] },
+    { "name": "objective_secured", "fields": ["bossId", "elapsedSeconds"] },
+    { "name": "post_boss_survival", "fields": ["secondsAfterSecure", "killsAfterSecure"] },
+    { "name": "retry_intent", "fields": ["withinSession", "buildStrength"] },
+    { "name": "economy_flow", "fields": ["runGold", "bankedGold", "source", "sink"] },
+    { "name": "session_performance", "fields": ["avgFps", "platform", "qualityTier"] }
+  ],
+  "consent": {
+    "localDevelopmentDefault": true,
+    "productionRequiresOptIn": true,
+    "piiFields": []
+  }
+}

@@ -165,7 +165,7 @@ namespace HighSeas.Enemies
             dmg *= Mathf.Max(0.1f, damageMultiplier);
 
             var v3Scale = V3.V3RunContext.IsActive ? V3.V3RunContext.EnemyVisualScale : 1f;
-            var visualScale = def.visualScale * v3Scale * (affix != EliteAffix.None ? 1.08f : 1f);
+            var visualScale = def.visualScale * v3Scale * (affix != EliteAffix.None ? 1.38f : 1f);
             var view = CreateView(def, position, visualScale, affix != EliteAffix.None);
 
             var baseSpeed = def.moveSpeed * Mathf.Max(0.1f, speedMultiplier);
@@ -698,6 +698,7 @@ namespace HighSeas.Enemies
                 if (e.isBoss)
                     Object.FindFirstObjectByType<POIManager>()?.NotifyBossDefeated();
                 Meta.TriggerBus.Instance?.RaiseKill(e.isElite, e.isBoss, e.position);
+                V3.V3RunItemEffects.Instance?.NotifyKill();
                 Despawn(index);
             }
         }

@@ -120,6 +120,7 @@ namespace HighSeas.UI
         {
             LevelOfferKind.WeaponUpgrade => "WEAPON UPGRADE",
             LevelOfferKind.NewWeapon => "NEW WEAPON",
+            LevelOfferKind.WeaponEvolution => "WEAPON EVOLUTION",
             LevelOfferKind.FallbackHeal or LevelOfferKind.FallbackDamage or LevelOfferKind.FallbackMoveSpeed => "FALLBACK",
             LevelOfferKind.Continue => "NO UPGRADE",
             _ => "LOGBOOK"

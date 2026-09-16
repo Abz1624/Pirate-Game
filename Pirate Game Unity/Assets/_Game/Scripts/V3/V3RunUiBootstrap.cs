@@ -35,6 +35,7 @@ namespace HighSeas.V3
             V3InteractionController.Ensure(canvas.transform);
             V3DiscoverySystem.Ensure(layout);
             V3RunLoadoutHud.Ensure(canvas.transform);
+            V3RunCaptainActiveHud.Ensure(canvas.transform);
             V3RunStatsHud.Ensure(canvas.transform);
             V3RunTimerHud.Ensure(canvas.transform);
             HideLegacyWeaponStrip(canvas);

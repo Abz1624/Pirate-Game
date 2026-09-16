@@ -4,6 +4,9 @@ namespace HighSeas.V3
     {
         Rook,
         Brine,
-        Flint
+        Flint,
+        Richie,
+        Ember,
+        Roxie
     }
 }
