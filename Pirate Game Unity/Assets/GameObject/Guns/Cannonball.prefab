@@ -163,7 +163,7 @@ GameObject:
   - component: {fileID: 7442464067213123823}
   - component: {fileID: 6428302137519817344}
   m_Layer: 0
-  m_Name: 01_Cannonball_ShootingVFX
+  m_Name: Cannonball
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
