@@ -145,6 +145,17 @@ namespace HighSeas.Pickups
             }
         }
 
+        public void ClearAllActive()
+        {
+            for (var i = 0; i < _pool.Length; i++)
+            {
+                if (!_pool[i].active) continue;
+                var p = _pool[i];
+                ReleasePickup(ref p);
+                _pool[i] = p;
+            }
+        }
+
         public void Tick(float dt, Vector3 playerPos, float pickupRadius)
         {
             if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;

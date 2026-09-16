@@ -27,16 +27,24 @@ namespace HighSeas.Enemies
                 _pools[key] = stack;
             }
 
-            Transform view;
-            if (stack.Count > 0)
+            Transform view = null;
+            while (stack.Count > 0)
             {
-                view = stack.Pop();
+                var candidate = stack.Pop();
+                if (candidate == null)
+                    continue;
+                view = candidate;
+                break;
+            }
+
+            if (view != null)
+            {
                 StripNavMeshComponentsImmediate(view.gameObject);
                 view.gameObject.SetActive(true);
             }
             else
             {
-                var wasRootActive = _root.gameObject.activeSelf;
+                var wasRootActive = _root != null && _root.gameObject.activeSelf;
                 if (wasRootActive)
                     _root.gameObject.SetActive(false);
 
@@ -51,10 +59,28 @@ namespace HighSeas.Enemies
                     _root.gameObject.SetActive(true);
             }
 
+            if (view == null)
+                return null;
+
             view.SetPositionAndRotation(position, rotation);
             view.localScale = Vector3.one * scale;
             view.gameObject.SetActive(true);
             return view;
+        }
+
+        public void DestroyAllPooledInstances()
+        {
+            foreach (var stack in _pools.Values)
+            {
+                while (stack.Count > 0)
+                {
+                    var t = stack.Pop();
+                    if (t != null)
+                        Object.Destroy(t.gameObject);
+                }
+            }
+
+            _pools.Clear();
         }
 
         public void Release(Transform view, GameObject prefab)
