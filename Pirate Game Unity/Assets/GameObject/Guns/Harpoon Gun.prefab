@@ -814,7 +814,7 @@ GameObject:
   - component: {fileID: 4969106005120503}
   - component: {fileID: 95711914853252429}
   m_Layer: 6
-  m_Name: HarpoonLauncher
+  m_Name: Harpoon Gun
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
