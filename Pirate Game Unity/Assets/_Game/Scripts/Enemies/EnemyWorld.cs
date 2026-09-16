@@ -331,6 +331,23 @@ namespace HighSeas.Enemies
             return GetCollisionRadius(definitions[agent.definitionIndex]);
         }
 
+        public void EnsureAgentCapacity(int minimum)
+        {
+            minimum = Mathf.Max(64, minimum);
+            if (_agents != null && _agents.Length >= minimum)
+                return;
+
+            var resized = new EnemyAgent[minimum];
+            if (_agents != null)
+            {
+                var copy = Mathf.Min(_agents.Length, resized.Length);
+                for (var i = 0; i < copy; i++)
+                    resized[i] = _agents[i];
+            }
+
+            _agents = resized;
+        }
+
         public void ResetAllAgentsForPromo()
         {
             for (var i = 0; i < _agents.Length; i++)

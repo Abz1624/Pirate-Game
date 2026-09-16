@@ -32,6 +32,15 @@ namespace HighSeas.Editor
                     director.AdjustPlayerSpawnClearance(0.25f);
                 EditorGUILayout.EndHorizontal();
 
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("Dmg size −", GUILayout.Height(26)))
+                    director.AdjustDamageNumberSize(-1);
+                if (GUILayout.Button("Dmg size +", GUILayout.Height(26)))
+                    director.AdjustDamageNumberSize(1);
+                EditorGUILayout.EndHorizontal();
+                if (GUILayout.Button("Toggle flip damage numbers", GUILayout.Height(26)))
+                    director.ToggleDamageNumberFlip();
+
                 if (GUILayout.Button("Randomize islands", GUILayout.Height(28)))
                     director.RandomizeIslands();
                 if (GUILayout.Button("Randomize player position", GUILayout.Height(28)))

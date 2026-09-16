@@ -4570,123 +4570,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2218371018654926161, guid: c18281189789442d29ecfd51f19690b3, type: 3}
   m_PrefabInstance: {fileID: 576142476}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &577948393
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 577948395}
-  - component: {fileID: 577948394}
-  m_Layer: 0
-  m_Name: PromoTeaserDirector
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &577948394
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 577948393}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef5c8067cf51b034e86157bc39356fea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Promo.PromoTeaserDirector
-  enterPreviewOnPlay: 1
-  showRuntimeControls: 1
-  restartKey: 32
-  stageBuilder: {fileID: 0}
-  islandLayout: {fileID: 0}
-  layoutSeed: 90210
-  playerSpawnSalt: 31
-  swarmSeed: 404
-  enemyCount: 250
-  enemyCountStep: 50
-  enemyCountMin: 50
-  enemyCountMax: 750
-  playerSpawnClearance: 0.35
-  playerClearanceStep: 0.25
-  playerClearanceMin: 0.1
-  playerClearanceMax: 10
-  mapScatterFraction: 0.08
-  mapScatterMin: 20
-  mapScatterMax: 80
-  mapScatterMinDistFromPlayer: 28
-  openWaterFillFraction: 0.2
-  openWaterFillMin: 35
-  openWaterFillMax: 140
-  openWaterMinDistFromPlayer: 30
-  coreRadiusMin: 2.5
-  coreRadiusMax: 7
-  innerRingRadiusMin: 6.5
-  innerRingRadiusMax: 11
-  midRingRadiusMin: 11
-  midRingRadiusMax: 16
-  outerRingRadiusMin: 16
-  outerRingRadiusMax: 22
-  positionJitter: 0.45
-  spawnSeparationPadding: 0.38
-  islandSpawnClearance: 0.55
-  spawnAttemptsPerSlot: 32
-  skipBossesAndMinibosses: 1
-  hideEnemyHealthBars: 1
-  zoomDurationSeconds: 7.5
-  gameplayCameraOffset: {x: 0, y: 18, z: 12}
-  endCameraOffset: {x: 0, y: 10, z: 6.5}
-  startHeight: 76
-  startPullback: 54
-  zoomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  hideScreenSpaceUi: 1
-  freezeGameplayDuringShot: 1
-  releaseGameplayAfterShot: 0
-  disableSpawnDirector: 1
-  stripPoisAndPickups: 1
-  hideMapBoundaryVisuals: 1
---- !u!4 &577948395
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 577948393}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &583991420
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12788,7 +12671,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -6
+      value: -5.8
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.z
@@ -14375,7 +14258,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -6
+      value: -5.8
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.z
@@ -15032,7 +14915,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -6
+      value: -5.8
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.z
@@ -15157,6 +15040,132 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1108892839835025359, guid: e7d6f614f2443144f882ce31e517a516, type: 3}
   m_PrefabInstance: {fileID: 1478705817}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1496741339
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1496741341}
+  - component: {fileID: 1496741340}
+  m_Layer: 0
+  m_Name: PromoTeaserDirector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1496741340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1496741339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef5c8067cf51b034e86157bc39356fea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Promo.PromoTeaserDirector
+  enterPreviewOnPlay: 1
+  showRuntimeControls: 1
+  restartKey: 32
+  stageBuilder: {fileID: 0}
+  islandLayout: {fileID: 0}
+  layoutSeed: 90210
+  playerSpawnSalt: 31
+  swarmSeed: 404
+  enemyCount: 500
+  enemyCountStep: 50
+  enemyCountMin: 50
+  enemyCountMax: 750
+  playerSpawnClearance: 0.1
+  playerClearanceStep: 0.25
+  playerClearanceMin: 0.1
+  playerClearanceMax: 10
+  mapScatterFraction: 0.08
+  mapScatterMin: 20
+  mapScatterMax: 80
+  mapScatterMinDistFromPlayer: 28
+  openWaterFillFraction: 0.2
+  openWaterFillMin: 35
+  openWaterFillMax: 140
+  openWaterMinDistFromPlayer: 30
+  coreRadiusMin: 1.6
+  coreRadiusMax: 6.5
+  innerRingRadiusMin: 6.5
+  innerRingRadiusMax: 11
+  midRingRadiusMin: 11
+  midRingRadiusMax: 16
+  outerRingRadiusMin: 16
+  outerRingRadiusMax: 22
+  positionJitter: 0.45
+  spawnSeparationPadding: 0.32
+  spawnOverlapRelax: 0.48
+  promoAgentCapacity: 800
+  armadaClusterCount: 4
+  armadaClusterDistanceMin: 48
+  armadaClusterDistanceMax: 68
+  armadaClusterRadiusMin: 10
+  armadaClusterRadiusMax: 20
+  armadaBudgetFraction: 0.24
+  enableOverwhelmJuice: 1
+  islandSpawnClearance: 0.55
+  spawnAttemptsPerSlot: 32
+  skipBossesAndMinibosses: 1
+  hideEnemyHealthBars: 1
+  zoomDurationSeconds: 7.5
+  gameplayCameraOffset: {x: 0, y: 18, z: 12}
+  endCameraOffset: {x: 0, y: 10, z: 6.5}
+  startHeight: 76
+  startPullback: 54
+  zoomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  hideScreenSpaceUi: 1
+  freezeGameplayDuringShot: 1
+  releaseGameplayAfterShot: 0
+  disableSpawnDirector: 1
+  stripPoisAndPickups: 1
+  hideMapBoundaryVisuals: 1
+--- !u!4 &1496741341
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1496741339}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1500087447
 GameObject:
   m_ObjectHideFlags: 0
@@ -18907,7 +18916,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -6
+      value: -5.8
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.z
@@ -20454,4 +20463,4 @@ SceneRoots:
   - {fileID: 1261316770}
   - {fileID: 1387869491}
   - {fileID: 1987299516}
-  - {fileID: 577948395}
+  - {fileID: 1496741341}

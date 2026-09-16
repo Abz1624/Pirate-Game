@@ -43,11 +43,11 @@ namespace HighSeas.Promo
         [SerializeField] int swarmSeed = 404;
 
         [Header("Horde")]
-        [SerializeField] int enemyCount = 250;
+        [SerializeField] int enemyCount = 500;
         [SerializeField] int enemyCountStep = 50;
         [SerializeField] int enemyCountMin = 50;
         [SerializeField] int enemyCountMax = 750;
-        [SerializeField] float playerSpawnClearance = 0.35f;
+        [SerializeField] float playerSpawnClearance = 0.1f;
         [SerializeField] float playerClearanceStep = 0.25f;
         [SerializeField] float playerClearanceMin = 0.1f;
         [SerializeField] float playerClearanceMax = 10f;
@@ -59,8 +59,8 @@ namespace HighSeas.Promo
         [SerializeField] int openWaterFillMin = 35;
         [SerializeField] int openWaterFillMax = 140;
         [SerializeField] float openWaterMinDistFromPlayer = 30f;
-        [SerializeField] float coreRadiusMin = 2.5f;
-        [SerializeField] float coreRadiusMax = 7f;
+        [SerializeField] float coreRadiusMin = 1.6f;
+        [SerializeField] float coreRadiusMax = 6.5f;
         [SerializeField] float innerRingRadiusMin = 6.5f;
         [SerializeField] float innerRingRadiusMax = 11f;
         [SerializeField] float midRingRadiusMin = 11f;
@@ -68,7 +68,16 @@ namespace HighSeas.Promo
         [SerializeField] float outerRingRadiusMin = 16f;
         [SerializeField] float outerRingRadiusMax = 22f;
         [SerializeField] float positionJitter = 0.45f;
-        [SerializeField] float spawnSeparationPadding = 0.38f;
+        [SerializeField] float spawnSeparationPadding = 0.32f;
+        [SerializeField] float spawnOverlapRelax = 0.48f;
+        [SerializeField] int promoAgentCapacity = 800;
+        [SerializeField] int armadaClusterCount = 4;
+        [SerializeField] float armadaClusterDistanceMin = 48f;
+        [SerializeField] float armadaClusterDistanceMax = 68f;
+        [SerializeField] float armadaClusterRadiusMin = 10f;
+        [SerializeField] float armadaClusterRadiusMax = 20f;
+        [SerializeField] float armadaBudgetFraction = 0.24f;
+        [SerializeField] bool enableOverwhelmJuice = true;
         [SerializeField] float islandSpawnClearance = 0.55f;
         [SerializeField] int spawnAttemptsPerSlot = 32;
         [SerializeField] bool skipBossesAndMinibosses = true;
@@ -117,6 +126,7 @@ namespace HighSeas.Promo
         bool _poiManagerWasEnabled;
         bool _pickupWorldWasEnabled;
         int _spawnWarnings;
+        PromoTeaserOverwhelmJuice _overwhelmJuice;
 
         void Start()
         {
@@ -175,7 +185,7 @@ namespace HighSeas.Promo
             const int buttonWidth = 240;
             const int buttonHeight = 36;
             const int gap = 6;
-            const int rows = 8;
+            const int rows = 11;
             var totalHeight = rows * buttonHeight + (rows - 1) * gap;
             var y = Screen.height - totalHeight - 20;
             var x = (Screen.width - buttonWidth) / 2;
@@ -196,6 +206,19 @@ namespace HighSeas.Promo
             y += buttonHeight + gap;
             GUI.Label(new Rect(x, y, buttonWidth, buttonHeight),
                 $"Ship safety radius: {playerSpawnClearance:0.##} m", GUI.skin.box);
+            y += buttonHeight + gap;
+            EnsureOverwhelmJuice();
+            var flipLabel = _overwhelmJuice != null && _overwhelmJuice.FlipDamageFacing ? "ON" : "OFF";
+            if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), $"Flip damage numbers ({flipLabel})"))
+                ToggleDamageNumberFlip();
+            y += buttonHeight + gap;
+            if (GUI.Button(new Rect(x, y, halfWidth, buttonHeight), "Dmg size −"))
+                AdjustDamageNumberSize(-1);
+            if (GUI.Button(new Rect(x + halfWidth + gap, y, halfWidth, buttonHeight), "Dmg size +"))
+                AdjustDamageNumberSize(1);
+            y += buttonHeight + gap;
+            var dmgSize = _overwhelmJuice != null ? _overwhelmJuice.DamageCharacterSize : 0f;
+            GUI.Label(new Rect(x, y, buttonWidth, buttonHeight), $"Damage number size: {dmgSize:0.###}", GUI.skin.box);
             y += buttonHeight + gap;
             if (GUI.Button(new Rect(x, y, buttonWidth, buttonHeight), "Randomize islands"))
                 RandomizeIslands();
@@ -225,6 +248,18 @@ namespace HighSeas.Promo
                 playerClearanceMax);
             if (_hordeReady)
                 RandomizeSwarm();
+        }
+
+        public void ToggleDamageNumberFlip()
+        {
+            EnsureOverwhelmJuice();
+            _overwhelmJuice?.ToggleFlipDamageFacing();
+        }
+
+        public void AdjustDamageNumberSize(int steps)
+        {
+            EnsureOverwhelmJuice();
+            _overwhelmJuice?.AdjustDamageCharacterSizeBySteps(steps);
         }
 
         public void EnterPreviewMode()
@@ -368,11 +403,19 @@ namespace HighSeas.Promo
                 return;
 
             ClearHorde();
+            _enemyWorld.EnsureAgentCapacity(Mathf.Max(promoAgentCapacity, enemyCount + 64));
             var center = _player.Position;
+            var rng = new RunRng(swarmSeed);
             _spawnWarnings = 0;
-            SpawnHorde(center, new RunRng(swarmSeed));
-            _enemyWorld.ResolveSpawnOverlapsOnly(2);
+            SpawnHorde(center, rng);
+            _enemyWorld.ResolveSpawnOverlapsOnly(1);
             _enemyWorld.SnapAllActiveViewsToward(center);
+
+            if (enableOverwhelmJuice)
+            {
+                EnsureOverwhelmJuice();
+                _overwhelmJuice.Build(_player, _enemyWorld, new RunRng(swarmSeed ^ 0x7A31));
+            }
 
             if (hideEnemyHealthBars)
                 HideEnemyHealthBars();
@@ -387,9 +430,18 @@ namespace HighSeas.Promo
 
         void ClearHorde()
         {
+            _overwhelmJuice?.Clear();
             _enemyWorld?.ResetAllAgentsForPromo();
             _placedSpawns.Clear();
             _hordeReady = false;
+        }
+
+        void EnsureOverwhelmJuice()
+        {
+            if (_overwhelmJuice != null) return;
+            _overwhelmJuice = GetComponent<PromoTeaserOverwhelmJuice>();
+            if (_overwhelmJuice == null)
+                _overwhelmJuice = gameObject.AddComponent<PromoTeaserOverwhelmJuice>();
         }
 
         void StartCameraShot()
@@ -576,24 +628,61 @@ namespace HighSeas.Promo
             exteriorBudget = Mathf.Min(exteriorBudget, count / 2);
             scatterCount = Mathf.Min(scatterCount, exteriorBudget / 2 + exteriorBudget % 2);
             openWaterCount = exteriorBudget - scatterCount;
-            var ringCount = count - exteriorBudget;
+            var armadaBudget = Mathf.RoundToInt(count * armadaBudgetFraction);
+            var ringCount = count - exteriorBudget - armadaBudget;
 
-            var coreCount = Mathf.RoundToInt(ringCount * 0.54f);
-            var innerCount = Mathf.RoundToInt(ringCount * 0.36f);
-            var midCount = Mathf.RoundToInt(ringCount * 0.07f);
+            var coreCount = Mathf.RoundToInt(ringCount * 0.58f);
+            var innerCount = Mathf.RoundToInt(ringCount * 0.34f);
+            var midCount = Mathf.RoundToInt(ringCount * 0.05f);
             var outerCount = ringCount - coreCount - innerCount - midCount;
 
             var spawnIndex = 0;
             SpawnAnnulus(pool, center, defs, coreRadiusMin, coreRadiusMax, coreCount, ref spawnIndex, rng,
-                biasTowardInner: true, separationScale: 0.28f, innerBiasPower: 3.5f);
+                biasTowardInner: true, separationScale: 0.22f, innerBiasPower: 4f);
             SpawnAnnulus(pool, center, defs, innerRingRadiusMin, innerRingRadiusMax, innerCount, ref spawnIndex, rng,
-                biasTowardInner: true, separationScale: 0.4f, innerBiasPower: 3f);
+                biasTowardInner: true, separationScale: 0.32f, innerBiasPower: 3.5f);
             SpawnAnnulus(pool, center, defs, midRingRadiusMin, midRingRadiusMax, midCount, ref spawnIndex, rng,
-                biasTowardInner: false, separationScale: 0.65f, innerBiasPower: 1.5f);
+                biasTowardInner: false, separationScale: 0.55f, innerBiasPower: 1.5f);
             SpawnAnnulus(pool, center, defs, outerRingRadiusMin, outerRingRadiusMax, outerCount, ref spawnIndex, rng,
-                biasTowardInner: false, separationScale: 0.85f, innerBiasPower: 1f);
+                biasTowardInner: false, separationScale: 0.75f, innerBiasPower: 1f);
+            SpawnConvergingArmadas(pool, center, defs, armadaBudget, ref spawnIndex, rng);
             SpawnMapScatter(pool, defs, center, scatterCount, ref spawnIndex, rng);
             SpawnOpenWaterOutsideSwarm(pool, defs, center, openWaterCount, ref spawnIndex, rng);
+        }
+
+        void SpawnConvergingArmadas(
+            List<int> pool,
+            Vector3 playerCenter,
+            EnemyDefinition[] defs,
+            int totalCount,
+            ref int spawnIndex,
+            RunRng rng)
+        {
+            if (totalCount <= 0 || armadaClusterCount <= 0)
+                return;
+
+            var perCluster = Mathf.Max(1, totalCount / armadaClusterCount);
+            var angleStep = 360f / armadaClusterCount;
+            var baseAngle = rng.DirectorFloat() * 30f;
+
+            for (var c = 0; c < armadaClusterCount; c++)
+            {
+                var angle = (baseAngle + c * angleStep) * Mathf.Deg2Rad;
+                var dist = Mathf.Lerp(armadaClusterDistanceMin, armadaClusterDistanceMax, rng.DirectorFloat());
+                var clusterCenter = playerCenter + new Vector3(Mathf.Cos(angle) * dist, 0f, Mathf.Sin(angle) * dist);
+                SpawnAnnulus(
+                    pool,
+                    clusterCenter,
+                    defs,
+                    armadaClusterRadiusMin,
+                    armadaClusterRadiusMax,
+                    perCluster,
+                    ref spawnIndex,
+                    rng,
+                    biasTowardInner: true,
+                    separationScale: 0.35f,
+                    innerBiasPower: 3f);
+            }
         }
 
         static void Shuffle(List<int> list, RunRng rng)
@@ -805,7 +894,7 @@ namespace HighSeas.Promo
                 var other = _placedSpawns[i];
                 var delta = position - other.position;
                 delta.y = 0f;
-                var minDist = agentRadius + other.radius;
+                var minDist = (agentRadius + other.radius) * spawnOverlapRelax;
                 if (delta.sqrMagnitude < minDist * minDist)
                     return false;
             }
