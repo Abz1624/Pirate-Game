@@ -142,7 +142,7 @@ namespace HighSeas.Editor
             juice.projectilePrefab = LoadPrefab($"{VfxRoot}/01_Cannonball_ShootingVFX.prefab");
             juice.shootingVfxPrefab = juice.projectilePrefab;
 
-            juice.mineBarrelPrefab = LoadPrefab($"{VfxRoot}/FireBarrel.prefab");
+            juice.mineBarrelPrefab = LoadPrefab("Assets/GameObject/FireBarrel.prefab");
             juice.lightningStrikePrefab = LoadPrefab($"{VfxRoot}/13_LightningStrike_VFX.prefab");
             juice.burningTrailPrefab = LoadPrefab($"{VfxRoot}/14_BurningTrail_VFX.prefab");
             juice.flamethrowerPrefab = LoadPrefab($"{VfxRoot}/10_Flamethrower_VFX.prefab");

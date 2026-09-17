@@ -34,7 +34,7 @@ MonoBehaviour:
   projectileSizeMultiplier: 0.5
   projectileRadiusMultiplier: 1
   shootingVfxScale: 0.35
-  mineBarrelPrefab: {fileID: 6082082769354253251, guid: a601f9e261b424f68a4c1fe3a48195ca, type: 3}
+  mineBarrelPrefab: {fileID: 1709254077376921, guid: 17bfaca54656ede499058479fd3b75ac, type: 3}
   lightningStrikePrefab: {fileID: 4226950201948866840, guid: 813a29d1d93b645a298297b6d7275e6a, type: 3}
   burningTrailPrefab: {fileID: 7977084466623704616, guid: ec643342415b744718ca32f617d5c8c0, type: 3}
   flamethrowerPrefab: {fileID: 7948998522927659192, guid: 1fa2108acffea4538a73b4370c3967ff, type: 3}
