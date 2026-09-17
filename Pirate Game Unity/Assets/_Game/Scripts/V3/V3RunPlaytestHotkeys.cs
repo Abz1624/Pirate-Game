@@ -117,6 +117,12 @@ namespace HighSeas.V3
             if (_weaponIndex < 0) _weaponIndex += pool.Length;
 
             var id = pool[_weaponIndex];
+            if (V3RunSession.IsPvP && V3PvPWeaponLoadout.IsExcludedFromPvP(id))
+            {
+                CycleWeapon(delta);
+                return;
+            }
+
             _weapons.SetSoloWeapon(id);
             _levels?.SetPlaytestSoloWeapon(id);
             CombatExperimentContext.ShowAimVisuals = true;
@@ -207,6 +213,12 @@ namespace HighSeas.V3
 
         void GrantDemoGunneryLoadout()
         {
+            if (V3RunSession.IsPvP)
+            {
+                V3ToastHud.Instance?.Show("Y — gunnery loadout disabled in PvP (mortar off; duel uses Broadside Lv3).", 3f);
+                return;
+            }
+
             if (_weapons == null) _weapons = FindFirstObjectByType<WeaponController>();
             if (_weapons == null) return;
 
@@ -232,6 +244,9 @@ namespace HighSeas.V3
                 "B — summon treasury boss\n" +
                 "Y — gunnery loadout (6 weapons)\n" +
                 "K — co-op: random 6 weapons on all ships\n" +
+                "G — scatter random rarity weapon cards (pop-in)\n" +
+                "H — auto-scroll 50+ weapon cards (R→L)\n" +
+                "Esc — close card demos\n" +
                 "V — toggle aim overlays",
                 8f);
         }

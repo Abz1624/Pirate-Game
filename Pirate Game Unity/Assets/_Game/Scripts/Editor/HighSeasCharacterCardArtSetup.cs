@@ -19,12 +19,17 @@ namespace HighSeas.Editor
         [MenuItem("HighSeas/V3/Setup Character Card Art")]
         public static void SetupCharacterCardArt()
         {
-            EnsureSpriteImport($"{ArtRoot}/hank card.png");
-            EnsureSpriteImport($"{ArtRoot}/Hank card Selected.png");
-            EnsureSpriteImport($"{ArtRoot}/Rook card.png");
-            EnsureSpriteImport($"{ArtRoot}/Rook card selected.png");
-            EnsureSpriteImport($"{ArtRoot}/Richie Card.png");
-            EnsureSpriteImport($"{ArtRoot}/Character menu ref.png");
+            foreach (var file in new[]
+                     {
+                         "hank card.png", "Hank card Selected.png",
+                         "Rook card.png", "Rook card selected.png",
+                         "Richie Card.png", "Richie card select.png",
+                         "Sparky card.png", "Sparky Card Select.png",
+                         "ember card.png", "Ember Card select.png",
+                         "Roxie card.png", "Rocie Card select.png",
+                         "Character menu ref.png"
+                     })
+                EnsureSpriteImport($"{ArtRoot}/{file}");
 
             var settings = AssetDatabase.LoadAssetAtPath<V3CharacterCardArtSettings>(DataPath);
             if (settings == null)
@@ -33,16 +38,19 @@ namespace HighSeas.Editor
                 AssetDatabase.CreateAsset(settings, DataPath);
             }
 
-            settings.menuBackground = LoadSprite($"{ArtRoot}/Character menu ref.png");
-            settings.entries = new[]
+            var menuRef = LoadSprite($"{ArtRoot}/Character menu ref.png");
+            if (menuRef == null)
+                menuRef = LoadSprite($"{ArtRoot}/New folder/Character menu ref.png");
+            settings.menuBackground = menuRef;
+            settings.entries = MergeCardEntries(settings.entries, new[]
             {
                 Entry(V3CaptainId.Rook, "Rook card.png", "Rook card selected.png"),
                 Entry(V3CaptainId.Brine, "hank card.png", "Hank card Selected.png"),
-                Entry(V3CaptainId.Richie, "Richie Card.png", null),
-                Entry(V3CaptainId.Flint, null, null),
-                Entry(V3CaptainId.Ember, null, null),
-                Entry(V3CaptainId.Roxie, null, null)
-            };
+                Entry(V3CaptainId.Flint, "Sparky card.png", "Sparky Card Select.png"),
+                Entry(V3CaptainId.Richie, "Richie Card.png", "Richie card select.png"),
+                Entry(V3CaptainId.Ember, "ember card.png", "Ember Card select.png"),
+                Entry(V3CaptainId.Roxie, "Roxie card.png", "Rocie Card select.png")
+            });
 
             EditorUtility.SetDirty(settings);
 
@@ -180,6 +188,35 @@ namespace HighSeas.Editor
             Upsert(V3CaptainId.Flint, "Sparky.png", V3CaptainCatalog.GetMenuThemeColor(V3CaptainId.Flint));
             Upsert(V3CaptainId.Ember, "Amber.png", V3CaptainCatalog.GetMenuThemeColor(V3CaptainId.Ember));
             Upsert(V3CaptainId.Roxie, "Roxy.png", V3CaptainCatalog.GetMenuThemeColor(V3CaptainId.Roxie));
+
+            var order = V3CaptainCatalog.MenuOrder;
+            var list = new V3CharacterCardArtSettings.Entry[order.Length];
+            for (var i = 0; i < order.Length; i++)
+                list[i] = map.TryGetValue(order[i], out var e) ? e : new V3CharacterCardArtSettings.Entry { captain = order[i] };
+            return list;
+        }
+
+        static V3CharacterCardArtSettings.Entry[] MergeCardEntries(
+            V3CharacterCardArtSettings.Entry[] existing,
+            V3CharacterCardArtSettings.Entry[] cards)
+        {
+            var map = new System.Collections.Generic.Dictionary<V3CaptainId, V3CharacterCardArtSettings.Entry>();
+            if (existing != null)
+            {
+                for (var i = 0; i < existing.Length; i++)
+                    map[existing[i].captain] = existing[i];
+            }
+
+            for (var i = 0; i < cards.Length; i++)
+            {
+                map.TryGetValue(cards[i].captain, out var entry);
+                entry.captain = cards[i].captain;
+                if (cards[i].scrollCard != null)
+                    entry.scrollCard = cards[i].scrollCard;
+                if (cards[i].selectedCard != null)
+                    entry.selectedCard = cards[i].selectedCard;
+                map[cards[i].captain] = entry;
+            }
 
             var order = V3CaptainCatalog.MenuOrder;
             var list = new V3CharacterCardArtSettings.Entry[order.Length];

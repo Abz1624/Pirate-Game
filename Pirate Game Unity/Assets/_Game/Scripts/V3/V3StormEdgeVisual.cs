@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace HighSeas.V3
 {
-    /// <summary>World-space boundary rings that show playable water and storm edge.</summary>
+    /// <summary>Legacy world-space boundary rings (disabled in normal play).</summary>
     public sealed class V3StormEdgeVisual : MonoBehaviour
     {
         static readonly Color PlayableEdgeColor = new(0.62f, 0.08f, 0.1f, 0.5f);
@@ -15,15 +15,18 @@ namespace HighSeas.V3
 
         public static V3StormEdgeVisual Ensure()
         {
-            var existing = FindFirstObjectByType<V3StormEdgeVisual>();
-            if (existing != null)
-            {
-                existing.Refresh();
-                return existing;
-            }
+            DisableWorldRings();
+            return null;
+        }
 
-            var go = new GameObject("V3StormEdgeVisual");
-            return go.AddComponent<V3StormEdgeVisual>();
+        public static void DisableWorldRings()
+        {
+            var visuals = FindObjectsByType<V3StormEdgeVisual>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (var i = 0; i < visuals.Length; i++)
+            {
+                if (visuals[i] != null)
+                    visuals[i].gameObject.SetActive(false);
+            }
         }
 
         void Awake()
@@ -31,6 +34,7 @@ namespace HighSeas.V3
             _playableRing = CreateRing("PlayableWaterEdge", PlayableEdgeColor, 0.28f);
             _stormRing = CreateRing("StormDamageEdge", StormEdgeColor, 0.42f);
             Refresh();
+            gameObject.SetActive(false);
         }
 
         void Update()

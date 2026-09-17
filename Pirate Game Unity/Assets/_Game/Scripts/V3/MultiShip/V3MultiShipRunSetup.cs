@@ -55,17 +55,11 @@ namespace HighSeas.V3.MultiShip
             V3PvPRunDirector.ResetState();
             DisableAmbientPve();
 
-            var fullLoadout = V3PvPWeaponLoadout.GetAllPlaytestWeapons(database);
+            var duelLoadout = V3PvPWeaponLoadout.GetDuelLoadout(database);
+            var duelLevel = V3PvPWeaponLoadout.DuelWeaponLevel;
 
-            if (humanWeapons != null && fullLoadout.Length > 0)
-            {
-                humanWeapons.ApplyCombatExperiment(CombatExperimentContext.Active);
-                humanWeapons.EnsureWeaponSlotCapacity(fullLoadout.Length);
-                humanWeapons.Initialize(database, fullLoadout[0]);
-                humanWeapons.SetWeaponLoadout(fullLoadout);
-            }
-
-            LevelSystem.Instance?.SetPlaytestWeaponLoadout(fullLoadout);
+            V3MultiShipWeaponLoadouts.ApplyLoadout(humanPlayer, database, duelLoadout, duelLevel);
+            LevelSystem.Instance?.SetPlaytestWeapon(V3PvPWeaponLoadout.DuelWeaponId, duelLevel);
 
             var forward = humanPlayer.MovementForward;
             var right = Vector3.Cross(Vector3.up, forward).normalized;
@@ -82,15 +76,17 @@ namespace HighSeas.V3.MultiShip
                 V3ShipTeam.RivalBot,
                 localHuman: false,
                 database,
-                fullLoadout.Length > 0 ? fullLoadout[0] : "deck_cannons",
+                duelLoadout.Length > 0 ? duelLoadout[0] : "deck_cannons",
                 humanPlayer,
-                fullLoadout);
+                duelLoadout);
+
+            V3MultiShipWeaponLoadouts.ApplyLoadout(rival, database, duelLoadout, duelLevel);
 
             V3PvPRunDirector.Ensure(rival);
             V3ShipNameLabels.TagShips(humanPlayer, rival);
 
             V3ToastHud.Instance?.Show(
-                $"PvP duel — defeat the rival captain.\nFull arsenal equipped ({fullLoadout.Length} weapons each).",
+                $"PvP duel — defeat the rival captain.\nBroadside Battery Lv{duelLevel} (mortar disabled).",
                 5f);
         }
 

@@ -10,6 +10,26 @@ namespace HighSeas.V3.MultiShip
 {
     public static class V3MultiShipWeaponLoadouts
     {
+        public static PlayerShipController FindLocalHumanShip()
+        {
+            var ships = Object.FindObjectsByType<PlayerShipController>(FindObjectsSortMode.None);
+            for (var i = 0; i < ships.Length; i++)
+            {
+                if (ships[i] == null) continue;
+                var combatant = ships[i].GetComponent<V3ShipCombatant>();
+                if (combatant != null && combatant.IsLocalHuman)
+                    return ships[i];
+            }
+
+            return Object.FindFirstObjectByType<PlayerShipController>();
+        }
+
+        public static WeaponController FindLocalHumanWeaponController()
+        {
+            var human = FindLocalHumanShip();
+            return GetWeaponControllerForShip(human) ?? FindHumanWeaponController(human);
+        }
+
         public static WeaponController FindHumanWeaponController(PlayerShipController humanPlayer)
         {
             var all = Object.FindObjectsByType<WeaponController>(FindObjectsSortMode.None);
@@ -37,7 +57,11 @@ namespace HighSeas.V3.MultiShip
             return null;
         }
 
-        public static void ApplyLoadout(PlayerShipController ship, GameDatabase database, string[] loadout)
+        public static void ApplyLoadout(
+            PlayerShipController ship,
+            GameDatabase database,
+            string[] loadout,
+            int weaponLevel = 1)
         {
             if (ship == null || database == null || loadout == null || loadout.Length == 0)
                 return;
@@ -49,6 +73,16 @@ namespace HighSeas.V3.MultiShip
             weapons.EnsureWeaponSlotCapacity(loadout.Length);
             weapons.Initialize(database, loadout[0]);
             weapons.SetWeaponLoadout(loadout);
+
+            if (weaponLevel > 1)
+            {
+                for (var i = 0; i < loadout.Length; i++)
+                {
+                    var idx = weapons.FindWeaponIndex(loadout[i]);
+                    if (idx >= 0)
+                        weapons.RaiseWeaponToLevel(idx, weaponLevel);
+                }
+            }
         }
 
         /// <summary>Co-op: independent random 6-weapon loadouts for every player ship in the scene.</summary>

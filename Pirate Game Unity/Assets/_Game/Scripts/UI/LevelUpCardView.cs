@@ -145,6 +145,38 @@ namespace HighSeas.UI
             StartCoroutine(RevealRoutine(delay));
         }
 
+        public void PlayPopInFromZero(float delay, float duration = 0.32f)
+        {
+            StopAllCoroutines();
+            StartCoroutine(PopInFromZeroRoutine(delay, duration));
+        }
+
+        System.Collections.IEnumerator PopInFromZeroRoutine(float delay, float duration)
+        {
+            if (_rect == null) yield break;
+            transform.localScale = Vector3.zero;
+            var cg = GetComponent<CanvasGroup>();
+            if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+            cg.alpha = 0f;
+
+            if (delay > 0f) yield return new WaitForSecondsRealtime(delay);
+
+            var t = 0f;
+            while (t < duration)
+            {
+                t += Time.unscaledDeltaTime;
+                var u = Mathf.Clamp01(t / duration);
+                var eased = 1f - Mathf.Pow(1f - u, 3f);
+                var overshoot = 1f + Mathf.Sin(u * Mathf.PI) * 0.02f;
+                cg.alpha = eased;
+                transform.localScale = _baseScale * (eased * overshoot);
+                yield return null;
+            }
+
+            cg.alpha = 1f;
+            transform.localScale = _baseScale;
+        }
+
         System.Collections.IEnumerator RevealRoutine(float delay)
         {
             if (_rect == null) yield break;

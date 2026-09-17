@@ -287,14 +287,6 @@ namespace HighSeas.V3
             maxMapSize = Mathf.Max(minMapSize, maxMapSize);
             megabonkNormalZoom = Mathf.Max(1f, megabonkNormalZoom);
             megabonkFullMapZoom = Mathf.Max(1f, megabonkFullMapZoom);
-
-            if (!Application.isPlaying)
-                return;
-
-            var rect = transform as RectTransform;
-            if (rect != null)
-                ApplyTopRightLayout(rect);
-            RefreshMapSize();
         }
 
         void RefreshMapSize()

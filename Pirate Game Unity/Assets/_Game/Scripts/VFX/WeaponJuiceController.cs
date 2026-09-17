@@ -3,6 +3,7 @@ using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Player;
+using HighSeas.V3.MultiShip;
 using HighSeas.Weapons;
 using UnityEngine;
 
@@ -55,16 +56,21 @@ namespace HighSeas.VFX
             if (settings == null)
                 settings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
             _root = effectRoot != null ? effectRoot : transform;
-            _weapons = FindFirstObjectByType<WeaponController>();
-            _player = FindFirstObjectByType<PlayerShipController>();
+            ResolveHumanBindings();
             _broker = JuiceVfxBroker.Instance;
+        }
+
+        void ResolveHumanBindings()
+        {
+            _player = V3MultiShipWeaponLoadouts.FindLocalHumanShip();
+            _weapons = V3MultiShipWeaponLoadouts.FindLocalHumanWeaponController();
         }
 
         void Update()
         {
             if (RunManager.Instance != null && RunManager.Instance.IsPaused) return;
-            if (_player == null)
-                _player = FindFirstObjectByType<PlayerShipController>();
+            if (_player == null || _weapons == null)
+                ResolveHumanBindings();
             if (_player == null || _weapons == null || settings == null) return;
 
             SyncCutlasses();

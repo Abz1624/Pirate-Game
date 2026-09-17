@@ -120,6 +120,18 @@ namespace HighSeas.UI
             public TextMeshProUGUI description;
         }
 
+        public static LevelUpCardView CreateWeaponCard(Transform parent, int index, bool interactable = true)
+        {
+            var card = CreateCard(parent, index);
+            if (!interactable && card.button != null)
+            {
+                card.button.interactable = false;
+                card.button.enabled = false;
+            }
+
+            return card.view;
+        }
+
         static CardParts CreateCard(Transform parent, int index)
         {
             var root = new GameObject($"Card{index}", typeof(RectTransform), typeof(CanvasGroup));
