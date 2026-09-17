@@ -554,7 +554,8 @@ namespace HighSeas.Weapons
                     rng,
                     w.def.procCoefficient,
                     w.def.id);
-                _juice?.OnWeaponFired(w.def.id, origin, dir);
+                if (!isBroadside)
+                    _juice?.OnWeaponFired(w.def.id, origin, dir);
                 if (isBroadside && hitIndex >= 0)
                 {
                     ApplyWeaponDamage(hitIndex, w.def.id, dmg, isElite, _enemies.Agents[hitIndex].isBoss);
@@ -562,7 +563,7 @@ namespace HighSeas.Weapons
                 }
 
                 var projectileLife = isBroadside ? 0.55f : 2.5f;
-                if (_projectiles.TrySpawn(origin, dir, speed, isBroadside ? 0f : dmg.amount, projectileLife, size, 0, dmg.isCrit, w.def.projectileColor))
+                if (_projectiles.TrySpawn(origin, dir, speed, isBroadside ? 0f : dmg.amount, projectileLife, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id))
                 {
                     if (!isBroadside && hitIndex >= 0)
                         hits++;

@@ -11,6 +11,8 @@ namespace HighSeas.V3
             public V3CaptainId captain;
             public Sprite scrollCard;
             public Sprite selectedCard;
+            public Sprite menuPose;
+            public Color menuThemeColor;
         }
 
         public Sprite menuBackground;
@@ -24,6 +26,12 @@ namespace HighSeas.V3
                 return _cached;
             _cached = Resources.Load<V3CharacterCardArtSettings>("V3CharacterCardArtSettings");
             return _cached;
+        }
+
+        public static void Reload()
+        {
+            _cached = null;
+            Load();
         }
 
         public Sprite GetScrollCard(V3CaptainId captain)
@@ -52,6 +60,33 @@ namespace HighSeas.V3
             }
 
             return null;
+        }
+
+        public Sprite GetMenuPose(V3CaptainId captain)
+        {
+            if (entries == null)
+                return null;
+            for (var i = 0; i < entries.Length; i++)
+            {
+                if (entries[i].captain == captain)
+                    return entries[i].menuPose;
+            }
+
+            return null;
+        }
+
+        public Color GetMenuThemeColor(V3CaptainId captain)
+        {
+            if (entries != null)
+            {
+                for (var i = 0; i < entries.Length; i++)
+                {
+                    if (entries[i].captain == captain)
+                        return entries[i].menuThemeColor;
+                }
+            }
+
+            return V3CaptainCatalog.GetMenuThemeColor(captain);
         }
     }
 }

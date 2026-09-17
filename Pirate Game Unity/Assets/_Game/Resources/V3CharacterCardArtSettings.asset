@@ -17,18 +17,30 @@ MonoBehaviour:
   - captain: 0
     scrollCard: {fileID: 21300000, guid: 6d5576a1cea5c6e469ee45970b2b3d0d, type: 3}
     selectedCard: {fileID: 21300000, guid: 1666de91cfe25d2419ddc51be82fbaa0, type: 3}
+    menuPose: {fileID: 21300000, guid: 0a3b9e04a5cc47e40b723fe964873260, type: 3}
+    menuThemeColor: {r: 0.55, g: 0.32, b: 0.12, a: 1}
   - captain: 1
     scrollCard: {fileID: 21300000, guid: 2582bfcecf038c946884d5c8002f5443, type: 3}
     selectedCard: {fileID: 21300000, guid: 15f32b0ab032c134dba4719220f0d2b9, type: 3}
+    menuPose: {fileID: 21300000, guid: 9614b1a60d65be040a7dbed8b94a6829, type: 3}
+    menuThemeColor: {r: 0.12, g: 0.42, b: 0.34, a: 1}
   - captain: 3
     scrollCard: {fileID: 21300000, guid: cf6f2fb1ccd7ab64cb9bf2220e465d42, type: 3}
     selectedCard: {fileID: 0}
+    menuPose: {fileID: 21300000, guid: 29f64d207e241b243ae420e03fb33183, type: 3}
+    menuThemeColor: {r: 0.52, g: 0.38, b: 0.12, a: 1}
   - captain: 2
     scrollCard: {fileID: 0}
     selectedCard: {fileID: 0}
+    menuPose: {fileID: 21300000, guid: b297f8caf3412de458967b610728d7bf, type: 3}
+    menuThemeColor: {r: 0.38, g: 0.18, b: 0.48, a: 1}
   - captain: 4
     scrollCard: {fileID: 0}
     selectedCard: {fileID: 0}
+    menuPose: {fileID: 21300000, guid: 34f96734a0e6bc94dbd96fe6e31465c8, type: 3}
+    menuThemeColor: {r: 0.62, g: 0.22, b: 0.1, a: 1}
   - captain: 5
     scrollCard: {fileID: 0}
     selectedCard: {fileID: 0}
+    menuPose: {fileID: 21300000, guid: b9d36491b2f6bd54aa852d9b3caa1d52, type: 3}
+    menuThemeColor: {r: 0.14, g: 0.34, b: 0.58, a: 1}

@@ -15,6 +15,8 @@ namespace HighSeas.V3
     public sealed class V3AuthoredGameplayHud : MonoBehaviour
     {
         public const float DefaultTopInset = 24f;
+        const float ProfileExtraUp = 16f;
+        const float TimerExtraDown = 4f;
 
         public static bool IsActive { get; private set; }
 
@@ -152,7 +154,7 @@ namespace HighSeas.V3
                 _profileRect.anchorMin = new Vector2(0f, 1f);
                 _profileRect.anchorMax = new Vector2(0f, 1f);
                 _profileRect.pivot = new Vector2(0f, 1f);
-                _profileRect.anchoredPosition = new Vector2(inset, -inset);
+                _profileRect.anchoredPosition = new Vector2(inset, -inset + ProfileExtraUp);
             }
 
             if (_timerRect != null)
@@ -160,7 +162,7 @@ namespace HighSeas.V3
                 _timerRect.anchorMin = new Vector2(0.5f, 1f);
                 _timerRect.anchorMax = new Vector2(0.5f, 1f);
                 _timerRect.pivot = new Vector2(0.5f, 1f);
-                _timerRect.anchoredPosition = new Vector2(0f, -inset);
+                _timerRect.anchoredPosition = new Vector2(0f, -inset - TimerExtraDown);
             }
 
             if (_questRect != null && minimap != null)

@@ -177,7 +177,10 @@ namespace HighSeas.Editor
 
             juice.enemyHealthBarPrefab = LoadPrefab($"{VfxRoot}/05_EnemyHealthIndicator.prefab");
 
-            juice.salvageChestPrefab = LoadPrefab($"{VfxRoot}/15_SalvageChest.prefab");
+            juice.salvageChestPrefab = LoadPrefab("Assets/StylizedCharacterPack/Prefabs/Props/Chest_Wood.prefab")
+                ?? LoadPrefab($"{VfxRoot}/15_SalvageChest.prefab");
+            juice.salvageChestGlowPrefab = LoadPrefab("Assets/JMO Assets/Cartoon FX Remaster/CFXR Prefabs/Light/CFXR3 LightGlow A (Loop).prefab");
+            juice.salvageChestGlowScale = 0.55f;
             juice.lighthousePrefab = LoadPrefab($"{VfxRoot}/16_Lighthouse.prefab");
             juice.trialBuoyPrefab = LoadPrefab($"{VfxRoot}/17_TrialBuoy.prefab");
             juice.bossBeaconPrefab = LoadPrefab($"{VfxRoot}/18_BossBeacon.prefab");

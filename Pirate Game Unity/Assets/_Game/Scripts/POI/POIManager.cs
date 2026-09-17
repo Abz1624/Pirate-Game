@@ -118,7 +118,10 @@ namespace HighSeas.POI
             go.transform.localScale *= GetScale(type);
 
             if (type == POIType.SalvageChest)
+            {
                 AlignBottomToWater(go, waterPos.y + 0.05f);
+                SalvageChestTreasureGlow.Attach(go, juiceSettings);
+            }
 
             StripColliders(go);
             return go;

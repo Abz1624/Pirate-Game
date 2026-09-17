@@ -6,7 +6,7 @@ namespace HighSeas.V3
     /// <summary>Transient info toasts (chest costs, beats, objectives) above the lower HUD.</summary>
     public sealed class V3ToastHud : MonoBehaviour
     {
-        const float HeightFromBottom = 0.2f;
+        const float HeightFromBottom = 0.15f;
 
         public static V3ToastHud Instance { get; private set; }
 

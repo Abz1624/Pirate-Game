@@ -386,15 +386,11 @@ namespace HighSeas.VFX
             sideDirection.y = 0f;
             if (sideDirection.sqrMagnitude < 0.0001f) return;
             sideDirection.Normalize();
-            var forward = Vector3.Cross(Vector3.up, sideDirection).normalized;
-            for (var i = -1; i <= 1; i++)
-            {
-                var origin = shipPosition + sideDirection * 1.1f + forward * (i * 0.55f) + Vector3.up * 0.35f;
-                var rotation = Quaternion.LookRotation(sideDirection, Vector3.up);
-                var scale = settings.shootingVfxScale * 1.15f;
-                if (!TryPlayGunChildBurst(prefab, "CannonSmoke", origin, rotation, scale, 0.4f, null))
-                    _broker?.Play(prefab, origin, rotation, scale, 0.4f);
-            }
+            var origin = shipPosition + sideDirection * 1.1f + Vector3.up * 0.35f;
+            var rotation = Quaternion.LookRotation(sideDirection, Vector3.up);
+            var scale = settings.shootingVfxScale * 1.15f;
+            if (!TryPlayGunChildBurst(prefab, "CannonSmoke", origin, rotation, scale, 0.4f, null))
+                _broker?.Play(prefab, origin, rotation, scale, 0.4f);
         }
 
         public void OnBurningOilDropped(Vector3 position, float radius)

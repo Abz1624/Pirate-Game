@@ -16,6 +16,7 @@ namespace HighSeas.Weapons
         public float radius;
         public int pierceLeft;
         public bool isCrit;
+        public string weaponId;
         public Transform view;
     }
 
@@ -61,6 +62,7 @@ namespace HighSeas.Weapons
                 radius = radius,
                 pierceLeft = pierce,
                 isCrit = isCrit,
+                weaponId = weaponId,
                 view = view
             };
             _active++;
@@ -129,11 +131,16 @@ namespace HighSeas.Weapons
         {
             if (!_pool[i].active) return;
             var position = _pool[i].position;
+            var weaponId = _pool[i].weaponId;
             if (_pool[i].view != null)
                 _viewPool.Release(_pool[i].view);
             _pool[i].active = false;
             _active--;
-            JuiceVfxBroker.Instance?.PlayWaterSplash(position);
+            if (ShouldPlayWaterSplash(weaponId))
+                JuiceVfxBroker.Instance?.PlayWaterSplash(position);
         }
+
+        static bool ShouldPlayWaterSplash(string weaponId) =>
+            weaponId != "broadside_battery";
     }
 }

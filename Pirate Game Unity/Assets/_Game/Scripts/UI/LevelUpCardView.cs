@@ -87,8 +87,56 @@ namespace HighSeas.UI
                 descriptionText.color = new Color(0.82f, 0.87f, 0.93f, 1f);
             }
 
+            if (usedArt)
+                ApplyArtCardTextLayout();
+
             transform.localScale = _baseScale;
             _hoverT = 0f;
+        }
+
+        void ApplyArtCardTextLayout()
+        {
+            const float horizontalInset = 38f;
+            const float contentWidth = LevelUpUiFactory.CardWidth - horizontalInset * 2f;
+
+            ConfigureTextRect(categoryText, new Vector2(0f, 116f), new Vector2(contentWidth, 18f));
+            ConfigureTextRect(titleText, new Vector2(0f, 74f), new Vector2(contentWidth, 48f));
+            ConfigureTextRect(levelText, new Vector2(0f, 34f), new Vector2(contentWidth, 22f));
+            ConfigureTextRect(rarityText, new Vector2(0f, 4f), new Vector2(contentWidth, 22f));
+            ConfigureTextRect(descriptionText, new Vector2(0f, -78f), new Vector2(contentWidth, 82f));
+
+            if (titleText != null)
+            {
+                titleText.enableWordWrapping = true;
+                titleText.enableAutoSizing = true;
+                titleText.fontSizeMin = 14f;
+                titleText.fontSizeMax = 22f;
+                titleText.overflowMode = TextOverflowModes.Ellipsis;
+            }
+
+            if (descriptionText != null)
+            {
+                descriptionText.alignment = TextAlignmentOptions.Top;
+                descriptionText.enableWordWrapping = true;
+                descriptionText.enableAutoSizing = true;
+                descriptionText.fontSizeMin = 10f;
+                descriptionText.fontSizeMax = 12f;
+                descriptionText.overflowMode = TextOverflowModes.Truncate;
+                descriptionText.margin = new Vector4(2f, 2f, 2f, 2f);
+            }
+        }
+
+        static void ConfigureTextRect(TextMeshProUGUI text, Vector2 anchoredPos, Vector2 size)
+        {
+            if (text == null)
+                return;
+
+            var rect = text.rectTransform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = anchoredPos;
+            rect.sizeDelta = size;
         }
 
         public void PlayReveal(float delay)

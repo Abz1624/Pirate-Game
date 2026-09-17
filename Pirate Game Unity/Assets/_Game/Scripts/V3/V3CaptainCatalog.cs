@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace HighSeas.V3
 {
     /// <summary>Narrative captain roster (doc §9) mapped to playable V3CaptainId values.</summary>
@@ -38,6 +40,32 @@ namespace HighSeas.V3
             V3CaptainId.Ember => "Burn specialist · stronger flame pressure",
             V3CaptainId.Roxie => "High tempo · lightning-forward mobility",
             _ => "+0.5% damage per level (cap 25%)"
+        };
+
+        public static string GetMenuDescription(V3CaptainId id) => id switch
+        {
+            V3CaptainId.Brine =>
+                "A steady hand on the wheel and iron in the hull. Hank holds the line when the sea turns ugly, trading speed for survivability while his crew braces for the worst.",
+            V3CaptainId.Flint =>
+                "Sparky lives for the blast radius. Powder kegs, running fuses, and reckless acceleration—if it can explode, it belongs on his deck.",
+            V3CaptainId.Richie =>
+                "Richie chases gold and momentum. Pick up the haul, cut a sharp turn, and let the next broadside hit harder than the last.",
+            V3CaptainId.Ember =>
+                "Ember turns the deck into a furnace. She stacks burn pressure and stretches flame reach until nothing in the cone gets out clean.",
+            V3CaptainId.Roxie =>
+                "Roxie rides the storm. Lightning chains and burst speed let her dart in, crack hulls, and vanish before return fire finds her.",
+            _ =>
+                "Rook is the saltwind default—reliable broadsides and a captain who grows deadlier every level. A balanced start for any first conquest."
+        };
+
+        public static Color GetMenuThemeColor(V3CaptainId id) => id switch
+        {
+            V3CaptainId.Brine => new Color(0.12f, 0.42f, 0.34f, 1f),
+            V3CaptainId.Flint => new Color(0.38f, 0.18f, 0.48f, 1f),
+            V3CaptainId.Richie => new Color(0.52f, 0.38f, 0.12f, 1f),
+            V3CaptainId.Ember => new Color(0.62f, 0.22f, 0.1f, 1f),
+            V3CaptainId.Roxie => new Color(0.14f, 0.34f, 0.58f, 1f),
+            _ => new Color(0.55f, 0.32f, 0.12f, 1f)
         };
 
         public static string GetActiveSummary(V3CaptainId id) => id switch

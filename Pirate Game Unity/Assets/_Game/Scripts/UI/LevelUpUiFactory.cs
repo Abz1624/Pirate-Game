@@ -134,25 +134,26 @@ namespace HighSeas.UI
             var fill = CreateImage(root.transform, "Fill", Vector2.zero, new Vector2(CardWidth - 6f, CardHeight - 6f), new Color(0.1f, 0.12f, 0.16f, 0.96f));
             var stripe = CreateImage(root.transform, "TopStripe", new Vector2(0f, CardHeight * 0.5f - 16f), new Vector2(CardWidth - 6f, 8f), new Color(0.55f, 0.62f, 0.72f, 1f));
 
-            var category = CreateCenteredText(root.transform, "Category", "WEAPON", new Vector2(0f, 124f), new Vector2(CardWidth - 24f, 20f), 12f, FontStyles.Bold);
-            var title = CreateCenteredText(root.transform, "Label", "Offer Title", new Vector2(0f, 82f), new Vector2(CardWidth - 24f, 64f), 24f, FontStyles.Bold);
+            const float textWidth = CardWidth - 76f;
+            var category = CreateCenteredText(root.transform, "Category", "WEAPON", new Vector2(0f, 116f), new Vector2(textWidth, 18f), 11f, FontStyles.Bold);
+            var title = CreateCenteredText(root.transform, "Label", "Offer Title", new Vector2(0f, 74f), new Vector2(textWidth, 48f), 22f, FontStyles.Bold);
             title.enableWordWrapping = true;
             title.enableAutoSizing = true;
-            title.fontSizeMin = 16f;
-            title.fontSizeMax = 24f;
+            title.fontSizeMin = 14f;
+            title.fontSizeMax = 22f;
             title.overflowMode = TextOverflowModes.Ellipsis;
 
-            var level = CreateCenteredText(root.transform, "Level", "Lv 1 → 2", new Vector2(0f, 42f), new Vector2(CardWidth - 24f, 24f), 16f, FontStyles.Normal);
+            var level = CreateCenteredText(root.transform, "Level", "Lv 1 → 2", new Vector2(0f, 34f), new Vector2(textWidth, 22f), 15f, FontStyles.Normal);
             var rarityBadge = CreateImage(root.transform, "RarityBadge", new Vector2(0f, 10f), new Vector2(124f, 28f), new Color(0.55f, 0.62f, 0.72f, 1f));
-            var rarity = CreateCenteredText(root.transform, "Rarity", "COMMON", new Vector2(0f, 10f), new Vector2(124f, 24f), 13f, FontStyles.Bold);
+            var rarity = CreateCenteredText(root.transform, "Rarity", "COMMON", new Vector2(0f, 4f), new Vector2(textWidth, 22f), 12f, FontStyles.Bold);
 
-            var description = CreateCenteredText(root.transform, "Desc", "Description", new Vector2(0f, -88f), new Vector2(CardWidth - 28f, 120f), 14f, FontStyles.Normal);
+            var description = CreateCenteredText(root.transform, "Desc", "Description", new Vector2(0f, -78f), new Vector2(textWidth, 82f), 12f, FontStyles.Normal);
             description.alignment = TextAlignmentOptions.Top;
             description.enableWordWrapping = true;
-            description.overflowMode = TextOverflowModes.Ellipsis;
+            description.overflowMode = TextOverflowModes.Truncate;
             description.enableAutoSizing = true;
-            description.fontSizeMin = 12f;
-            description.fontSizeMax = 14f;
+            description.fontSizeMin = 10f;
+            description.fontSizeMax = 12f;
 
             var button = root.AddComponent<Button>();
             button.targetGraphic = border;

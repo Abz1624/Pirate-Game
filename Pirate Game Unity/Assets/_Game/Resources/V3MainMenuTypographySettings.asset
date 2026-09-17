@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20a374ae9ad82004e980b34087f86a2e, type: 3}
+  m_Name: V3MainMenuTypographySettings
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.V3.V3MainMenuTypographySettings
+  titleFont: {fileID: 11400000, guid: d3e8cd2c450c14e6c9830bda323945bc, type: 2}
+  bodyFont: {fileID: 11400000, guid: f7295b27a524b44b7ab29511e26c3e0b, type: 2}
