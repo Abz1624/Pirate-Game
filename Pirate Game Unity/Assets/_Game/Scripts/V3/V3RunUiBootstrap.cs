@@ -26,23 +26,55 @@ namespace HighSeas.V3
                 hud = canvas.gameObject.AddComponent<RunHud>();
             hud.RebuildUiLayout();
             hud.ForceRefresh();
+            V3PlayerInfoHudArtSettings.Reload();
 
             EnsureLevelUpModal(canvas);
             EnsureV3ResultsScreen(canvas);
-            V3ObjectiveHud.Ensure(canvas.transform);
+            V3DiscoverySystem.Ensure(layout);
             V3MinimapHud.Ensure(canvas.transform, layout);
             V3ToastHud.Ensure(canvas.transform);
             V3InteractionController.Ensure(canvas.transform);
-            V3DiscoverySystem.Ensure(layout);
-            V3RunLoadoutHud.Ensure(canvas.transform);
-            V3RunCaptainActiveHud.Ensure(canvas.transform);
-            V3RunStatsHud.Ensure(canvas.transform);
-            V3RunTimerHud.Ensure(canvas.transform);
-            V3PlayerInfoHud.Ensure(canvas.transform);
+
+            var authoredHud = V3AuthoredGameplayHud.EnsureInScene();
+            if (authoredHud == null)
+            {
+                V3ObjectiveHud.Ensure(canvas.transform);
+                V3RunLoadoutHud.Ensure(canvas.transform);
+                V3RunCaptainActiveHud.Ensure(canvas.transform);
+                V3RunStatsHud.Ensure(canvas.transform);
+                V3RunTimerHud.Ensure(canvas.transform);
+                V3PlayerInfoHud.Ensure(canvas.transform);
+            }
+            else
+            {
+                HideAuthoredPlaceholderDuplicates(canvas);
+            }
+
             HideLegacyRunHudPanels(canvas);
             HideLegacyWeaponStrip(canvas);
 
             return canvas;
+        }
+
+        static void HideAuthoredPlaceholderDuplicates(Canvas canvas)
+        {
+            HideChildPlaceholders<V3ObjectiveHud>(canvas.transform);
+            HideChildPlaceholders<V3RunLoadoutHud>(canvas.transform);
+            HideChildPlaceholders<V3RunCaptainActiveHud>(canvas.transform);
+            HideChildPlaceholders<V3RunStatsHud>(canvas.transform);
+            HideChildPlaceholders<V3RunTimerHud>(canvas.transform);
+            HideChildPlaceholders<V3PlayerInfoHud>(canvas.transform);
+        }
+
+        static void HideChildPlaceholders<T>(Transform canvas) where T : Component
+        {
+            var components = canvas.GetComponentsInChildren<T>(true);
+            for (var i = 0; i < components.Length; i++)
+            {
+                var go = components[i].gameObject;
+                if (go.name.StartsWith("PLACEHOLDER_"))
+                    go.SetActive(false);
+            }
         }
 
         static void HideLegacyRunHudPanels(Canvas canvas)

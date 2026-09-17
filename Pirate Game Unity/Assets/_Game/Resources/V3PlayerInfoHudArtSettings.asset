@@ -23,12 +23,12 @@ MonoBehaviour:
   - captain: 0
     icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}
   - captain: 1
-    icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}
-  - captain: 3
-    icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}
+    icon: {fileID: 21300000, guid: 1ac303dd8038d5849bf36157903b8e36, type: 3}
   - captain: 2
-    icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}
+    icon: {fileID: 21300000, guid: 162a154f31728b24181d9ea235602763, type: 3}
+  - captain: 3
+    icon: {fileID: 21300000, guid: 9de9474516e339d439904075ce6072e4, type: 3}
   - captain: 4
-    icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}
+    icon: {fileID: 21300000, guid: 3c1fe406753ed844eb41197256811344, type: 3}
   - captain: 5
-    icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}
+    icon: {fileID: 21300000, guid: 76585e380e3be774e855b85459aafe46, type: 3}

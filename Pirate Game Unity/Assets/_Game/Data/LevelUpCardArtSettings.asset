@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cca2bc9747929d47b0a5da566f07ffe, type: 3}
+  m_Name: LevelUpCardArtSettings
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.LevelUpCardArtSettings
+  rarityArt:
+  - rarity: 0
+    background: {fileID: 21300000, guid: 1729389ef0be56f4b9e43598b2cf8643, type: 3}
+    effectOverlay: {fileID: 21300000, guid: 21d680fd12013514487a2080288795d1, type: 3}
+  - rarity: 1
+    background: {fileID: 21300000, guid: 7d6ecfe0ed853ca42a20078282880eaa, type: 3}
+    effectOverlay: {fileID: 21300000, guid: c0c8006db2689be42a634b4a631c51a9, type: 3}
+  - rarity: 2
+    background: {fileID: 21300000, guid: 89495476531144241a33be6205b6030e, type: 3}
+    effectOverlay: {fileID: 21300000, guid: 88fd6cf0b58d14343ab6145743fc9f97, type: 3}
+  - rarity: 3
+    background: {fileID: 21300000, guid: 717716e1e37458b4cb1ca05c929772b9, type: 3}
+    effectOverlay: {fileID: 21300000, guid: 78864c5cbe94a0844978471d48bc5e6a, type: 3}
+  - rarity: 4
+    background: {fileID: 21300000, guid: 6e521e5e6684e71408b12d6ea761454e, type: 3}
+    effectOverlay: {fileID: 21300000, guid: 25d495015c8d3924da3a3591dbbcbd35, type: 3}

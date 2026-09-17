@@ -33,11 +33,27 @@ namespace HighSeas.UI
         public void Bind(LevelOffer offer, int hotkeyIndex = 0)
         {
             var style = LevelUpRarityStyles.For(offer.rarity);
-            if (glow != null) glow.color = style.glow;
-            if (border != null) border.color = style.panelBorder;
-            if (panelFill != null) panelFill.color = style.panelFill;
-            if (topStripe != null) topStripe.color = style.accent;
-            if (rarityBadge != null) rarityBadge.color = style.accent;
+            var usedArt = ApplyRarityArt(offer.rarity);
+            if (!usedArt)
+            {
+                if (glow != null) glow.color = style.glow;
+                if (border != null)
+                {
+                    border.enabled = true;
+                    border.color = style.panelBorder;
+                }
+                if (panelFill != null) panelFill.color = style.panelFill;
+                if (topStripe != null)
+                {
+                    topStripe.enabled = true;
+                    topStripe.color = style.accent;
+                }
+                if (rarityBadge != null)
+                {
+                    rarityBadge.enabled = true;
+                    rarityBadge.color = style.accent;
+                }
+            }
 
             if (categoryText != null)
             {
@@ -115,6 +131,69 @@ namespace HighSeas.UI
         public void OnPointerEnter(PointerEventData eventData) => _hoverT = 1f;
 
         public void OnPointerExit(PointerEventData eventData) => _hoverT = 0f;
+
+        bool ApplyRarityArt(Rarity rarity)
+        {
+            var settings = LevelUpCardArtSettings.Load();
+            if (settings == null || !settings.TryGet(rarity, out var background, out var effect))
+                return false;
+
+            if (panelFill != null && background != null)
+            {
+                panelFill.enabled = true;
+                panelFill.sprite = background;
+                panelFill.color = Color.white;
+                panelFill.type = Image.Type.Simple;
+                panelFill.preserveAspect = false;
+                Stretch(panelFill.rectTransform);
+            }
+
+            if (glow != null && effect != null)
+            {
+                glow.enabled = true;
+                glow.sprite = effect;
+                glow.color = Color.white;
+                glow.type = Image.Type.Simple;
+                glow.preserveAspect = false;
+                Stretch(glow.rectTransform);
+                if (panelFill != null)
+                    glow.transform.SetSiblingIndex(panelFill.transform.GetSiblingIndex() + 1);
+            }
+            else if (glow != null)
+            {
+                glow.sprite = null;
+                glow.color = styleFallbackGlow(rarity);
+            }
+
+            if (border != null)
+            {
+                border.enabled = false;
+                border.sprite = null;
+            }
+
+            if (topStripe != null)
+                topStripe.enabled = false;
+
+            if (rarityBadge != null)
+                rarityBadge.enabled = false;
+
+            var button = GetComponent<Button>();
+            if (button != null && panelFill != null)
+                button.targetGraphic = panelFill;
+
+            return background != null || effect != null;
+        }
+
+        static Color styleFallbackGlow(Rarity rarity) => LevelUpRarityStyles.For(rarity).glow;
+
+        static void Stretch(RectTransform rt)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.anchoredPosition = Vector2.zero;
+        }
 
         static string CategoryForKind(LevelOfferKind kind) => kind switch
         {
