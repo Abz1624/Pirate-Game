@@ -139,14 +139,25 @@ namespace HighSeas.Editor
             juice.waterImpactSplashPrefab = LoadPrefab($"{VfxRoot}/19_WaterImpactSplash.prefab");
             juice.damageHighlightPrefab = LoadPrefab($"{VfxRoot}/06_DamageHighlightShader.prefab");
 
-            juice.projectilePrefab = LoadPrefab($"{VfxRoot}/01_Cannonball_ShootingVFX.prefab");
+            juice.projectilePrefab = LoadPrefab("Assets/GameObject/Guns/Cannonball.prefab");
+            if (juice.projectilePrefab == null)
+                juice.projectilePrefab = LoadPrefab($"{VfxRoot}/01_Cannonball_ShootingVFX.prefab");
             juice.shootingVfxPrefab = juice.projectilePrefab;
+            juice.smallProjectilePrefab = LoadPrefab("Assets/GameObject/Guns/Cannonball small.prefab");
+
+            WireGunCombatVfx(juice);
 
             juice.mineBarrelPrefab = LoadPrefab("Assets/GameObject/FireBarrel.prefab");
-            juice.lightningStrikePrefab = LoadPrefab($"{VfxRoot}/13_LightningStrike_VFX.prefab");
+            juice.lightningStrikePrefab = LoadPrefab("Assets/GameObject/Guns/Lightning Mast.prefab");
+            if (juice.lightningStrikePrefab == null)
+                juice.lightningStrikePrefab = LoadPrefab($"{VfxRoot}/13_LightningStrike_VFX.prefab");
             juice.burningTrailPrefab = LoadPrefab($"{VfxRoot}/14_BurningTrail_VFX.prefab");
-            juice.flamethrowerPrefab = LoadPrefab($"{VfxRoot}/10_Flamethrower_VFX.prefab");
-            juice.cutlassPrefab = LoadPrefab($"{VfxRoot}/12_CutlassSword.prefab");
+            juice.flamethrowerPrefab = LoadPrefab("Assets/GameObject/Guns/Flamethrower.prefab");
+            if (juice.flamethrowerPrefab == null)
+                juice.flamethrowerPrefab = LoadPrefab($"{VfxRoot}/10_Flamethrower_VFX.prefab");
+            juice.cutlassPrefab = LoadPrefab("Assets/GameObject/Guns/Flying Cutlasses.prefab");
+            if (juice.cutlassPrefab == null)
+                juice.cutlassPrefab = LoadPrefab($"{VfxRoot}/12_CutlassSword.prefab");
             juice.seaFoamTrailPrefab = LoadPrefab($"{VfxRoot}/11_SeaFoamTrail.prefab");
 
             const string PickupBarrelRoot = "Assets/GameObject";
@@ -302,6 +313,20 @@ namespace HighSeas.Editor
         static GameObject LoadPrefab(string path) => AssetDatabase.LoadAssetAtPath<GameObject>(path);
 
         static Material LoadMaterial(string path) => AssetDatabase.LoadAssetAtPath<Material>(path);
+
+        static void WireGunCombatVfx(DemoJuiceSettings juice)
+        {
+            const string gunsRoot = "Assets/GameObject/Guns";
+            juice.laserBeamPrefab = LoadPrefab($"{gunsRoot}/LaserBeam.prefab");
+            juice.mortarTelegraphPrefab = LoadPrefab($"{gunsRoot}/Lightning Mast.prefab");
+            juice.weaponExplosionPrefab = LoadPrefab($"{gunsRoot}/Explosion_VFX.prefab");
+            juice.cannonMuzzleVfxPrefab = LoadPrefab($"{gunsRoot}/Deck Cannons.prefab");
+            juice.harpoonProjectilePrefab = LoadPrefab($"{gunsRoot}/Harpoon.prefab");
+            juice.swivelProjectileSizeMult = 0.55f;
+            juice.swivelDamageMult = 0.55f;
+            juice.swivelBetweenShotDelay = 0.18f;
+            juice.harpoonProjectileScale = 0.55f;
+        }
 
         static void EnsureFolder(string path)
         {

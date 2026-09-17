@@ -21,6 +21,7 @@ MonoBehaviour:
   bossTelegraphSeconds: 0.7
   firstChestDiscount: 0.5
   postScriptedThreatMultiplier: 0.75
+  firstMinibossSeconds: 90
   xpAutoPickupRadius: 4.25
   goldAutoPickupRadius: 26
   barrelTouchRadius: 5
@@ -28,4 +29,3 @@ MonoBehaviour:
   barrelBurstVisualMin: 6
   barrelBurstVisualMax: 10
   maxFlyingPickupSpawnsPerFrame: 18
-  firstMinibossSeconds: 90

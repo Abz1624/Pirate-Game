@@ -15,17 +15,20 @@ MonoBehaviour:
   id: deck_cannons
   displayName: Deck Cannons
   pattern: 0
-  targeting: 0
+  targeting: 6
   tags: []
   baseDamage: 11
   baseCooldown: 1.05
-  range: 14
+  range: 22
   baseQuantity: 1
   projectileSpeed: 16
   duration: 2
   size: 1.15
   knockback: 1
   fanSpreadDegrees: 50
+  targetArcDegrees: 120
+  preferElite: 0
+  preferHighestHull: 0
   maxLevel: 12
   validUpgradeAxes: 000000000100000002000000
   upgradeAxisConfigs:

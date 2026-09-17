@@ -29,20 +29,37 @@ MonoBehaviour:
   waterImpactSplashScale: 0.85
   damageHighlightScale: 0.5
   bossDeathBurstCount: 3
-  projectilePrefab: {fileID: 7836255817071307116, guid: 541a9fda95320481e8a147ad8b0966e4, type: 3}
-  shootingVfxPrefab: {fileID: 7836255817071307116, guid: 541a9fda95320481e8a147ad8b0966e4, type: 3}
+  projectilePrefab: {fileID: 7836255817071307116, guid: 00e79e7cf55e34082a44dbce82256ab6, type: 3}
+  shootingVfxPrefab: {fileID: 7836255817071307116, guid: 00e79e7cf55e34082a44dbce82256ab6, type: 3}
   projectileSizeMultiplier: 0.5
   projectileRadiusMultiplier: 1
   shootingVfxScale: 0.35
   mineBarrelPrefab: {fileID: 1709254077376921, guid: 17bfaca54656ede499058479fd3b75ac, type: 3}
-  lightningStrikePrefab: {fileID: 4226950201948866840, guid: 813a29d1d93b645a298297b6d7275e6a, type: 3}
+  lightningStrikePrefab: {fileID: 4226950201948866840, guid: f82bea9f28c814bbdbadc45e0fdcf75b, type: 3}
   burningTrailPrefab: {fileID: 7977084466623704616, guid: ec643342415b744718ca32f617d5c8c0, type: 3}
-  flamethrowerPrefab: {fileID: 7948998522927659192, guid: 1fa2108acffea4538a73b4370c3967ff, type: 3}
-  cutlassPrefab: {fileID: 3274285418519690880, guid: 40c11425a6ba14eaa956d55df4a6092f, type: 3}
+  flamethrowerPrefab: {fileID: 1709254077376921, guid: 44a694ebbcb2d42b388ecea7b26a9c7d, type: 3}
+  cutlassPrefab: {fileID: 3274285418519690880, guid: a56db32405bb24ee290e68352d967ccd, type: 3}
+  laserBeamPrefab: {fileID: 7580329650404731219, guid: b0b0ba8e4a253484cab13605543c8a4f, type: 3}
+  mortarTelegraphPrefab: {fileID: 4226950201948866840, guid: f82bea9f28c814bbdbadc45e0fdcf75b, type: 3}
+  weaponExplosionPrefab: {fileID: 5021453304944166231, guid: 16ed1534d282a4181ad050d614c4d8a2, type: 3}
+  cannonMuzzleVfxPrefab: {fileID: 1709254077376921, guid: 0e034d0fbfe6d4ac7b8b08201fc0a9fa, type: 3}
+  smallProjectilePrefab: {fileID: 7836255817071307116, guid: 96dd3998edea9449bb2665bc16f84ee5, type: 3}
+  harpoonProjectilePrefab: {fileID: 1709254077376921, guid: 1a44c40e34fd64925a9a70661f87e2d5, type: 3}
+  harpoonProjectileScale: 0.55
   mineBarrelScale: 1
   powderKegExplosionScale: 0.525
   lightningStrikeScale: 1
   burningTrailScale: 1
+  mortarTelegraphScale: 1
+  mortarTelegraphColor: {r: 0.92, g: 0.12, b: 0.08, a: 1}
+  mortarTelegraphTintSaturation: 0.19
+  mortarTelegraphTintAlpha: 0.21
+  weaponExplosionScale: 0.55
+  laserBeamDuration: 0.22
+  longNineBeamHalfWidth: 0.32
+  swivelProjectileSizeMult: 0.55
+  swivelDamageMult: 0.55
+  swivelBetweenShotDelay: 0.18
   flamethrowerScale: 1
   enemyBurnVfxScale: 0.42
   cutlassScale: 0.325
@@ -55,7 +72,7 @@ MonoBehaviour:
   goldBarrelPickupPrefab: {fileID: 1709254077376921, guid: 4b1631d1aa823574ebe0fca214b14f04, type: 3}
   xpBarrelPickupPrefab: {fileID: 1709254077376921, guid: 3a5ba49ba5fb440c3964918f23ea52b3, type: 3}
   xpFlyingGemPrefab: {fileID: 1642442580476454169, guid: c5ab5d6ce59f64acfb78d6e0031fb059, type: 3}
-  infamyPickupScale: 0.5
+  infamyPickupScale: 1
   goldPickupScale: 1.8
   goldFlyingCoinScale: 0.85
   healthPickupScale: 0.65
@@ -79,7 +96,7 @@ MonoBehaviour:
   lighthousePrefab: {fileID: 8566692806509818879, guid: 3474afa68addb4a23ab3b6e1b1bb164d, type: 3}
   trialBuoyPrefab: {fileID: 4037768348685628337, guid: 2f694d24f3dfc41efb3621ab070c12eb, type: 3}
   bossBeaconPrefab: {fileID: 1518445697085349005, guid: 20e3079d439b54598a1f24676715aaf3, type: 3}
-  bossTelegraphRingPrefab: {fileID: 1105679691474038168, guid: 855dd556424204fa4a29877f701c380a, type: 3}
+  bossTelegraphRingPrefab: {fileID: 1709254077376921, guid: 17bfaca54656ede499058479fd3b75ac, type: 3}
   salvageChestScale: 1.5
   lighthouseScale: 1
   trialBuoyScale: 1

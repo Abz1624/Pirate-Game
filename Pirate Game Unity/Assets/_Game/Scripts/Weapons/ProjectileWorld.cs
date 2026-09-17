@@ -39,7 +39,7 @@ namespace HighSeas.Weapons
             _viewPool = new ProjectileViewPool(root != null ? root : transform, juiceSettings);
         }
 
-        public bool TrySpawn(Vector3 pos, Vector3 dir, float speed, float damage, float life, float radius, int pierce, bool isCrit, Color color)
+        public bool TrySpawn(Vector3 pos, Vector3 dir, float speed, float damage, float life, float radius, int pierce, bool isCrit, Color color, string weaponId = null)
         {
             if (_active >= _pool.Length) return false;
             var slot = -1;
@@ -49,7 +49,8 @@ namespace HighSeas.Weapons
             }
             if (slot < 0) return false;
 
-            var view = _viewPool.Acquire(pos, color, radius);
+            ResolveProjectileVisual(weaponId, radius, out var prefab, out var scaleMult, out var visualRadius);
+            var view = _viewPool.Acquire(pos, color, visualRadius, prefab, scaleMult);
             _pool[slot] = new Projectile
             {
                 active = true,
@@ -64,6 +65,30 @@ namespace HighSeas.Weapons
             };
             _active++;
             return true;
+        }
+
+        void ResolveProjectileVisual(string weaponId, float radius, out GameObject prefab, out float scaleMult, out float visualRadius)
+        {
+            prefab = null;
+            scaleMult = 1f;
+            visualRadius = radius;
+            if (juiceSettings == null || string.IsNullOrEmpty(weaponId)) return;
+
+            if (weaponId == "swivel_guns")
+            {
+                prefab = juiceSettings.smallProjectilePrefab != null
+                    ? juiceSettings.smallProjectilePrefab
+                    : juiceSettings.projectilePrefab;
+                scaleMult = juiceSettings.swivelProjectileSizeMult;
+                visualRadius = radius * 0.85f;
+                return;
+            }
+
+            if (weaponId == "harpoon_gun" && juiceSettings.harpoonProjectilePrefab != null)
+            {
+                prefab = juiceSettings.harpoonProjectilePrefab;
+                scaleMult = juiceSettings.harpoonProjectileScale;
+            }
         }
 
         public void Tick(float dt, EnemyWorld enemies)

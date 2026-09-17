@@ -39,10 +39,34 @@ namespace HighSeas.Data
         public GameObject burningTrailPrefab;
         public GameObject flamethrowerPrefab;
         public GameObject cutlassPrefab;
+        [Tooltip("LineRenderer beam from Assets/GameObject/Guns/LaserBeam.prefab.")]
+        public GameObject laserBeamPrefab;
+        [Tooltip("Ground telegraph circles (Lightning Mast WaterReticle).")]
+        public GameObject mortarTelegraphPrefab;
+        [Tooltip("AoE burst from Assets/GameObject/Guns/Explosion_VFX.prefab.")]
+        public GameObject weaponExplosionPrefab;
+        [Tooltip("CannonSmoke burst shared by gunnery weapons.")]
+        public GameObject cannonMuzzleVfxPrefab;
+        [Tooltip("Optional smaller projectile mesh for rapid-fire guns.")]
+        public GameObject smallProjectilePrefab;
+        [Tooltip("Projectile mesh for harpoon_gun.")]
+        public GameObject harpoonProjectilePrefab;
+        public float harpoonProjectileScale = 0.55f;
         public float mineBarrelScale = 0.55f;
         public float powderKegExplosionScale = 0.525f;
         public float lightningStrikeScale = 1f;
         public float burningTrailScale = 1f;
+        public float mortarTelegraphScale = 1f;
+        [Tooltip("Tint for mortar ground telegraph (WaterReticle).")]
+        public Color mortarTelegraphColor = new(0.92f, 0.12f, 0.08f, 1f);
+        [Range(0f, 1f)] public float mortarTelegraphTintSaturation = 0.19f;
+        [Range(0f, 1f)] public float mortarTelegraphTintAlpha = 0.21f;
+        public float weaponExplosionScale = 0.55f;
+        public float laserBeamDuration = 0.22f;
+        public float longNineBeamHalfWidth = 0.32f;
+        public float swivelProjectileSizeMult = 0.55f;
+        public float swivelDamageMult = 0.55f;
+        public float swivelBetweenShotDelay = 0.18f;
         public float flamethrowerScale = 1f;
         [Tooltip("Scale when flamethrower VFX is attached to burning enemies.")]
         public float enemyBurnVfxScale = 0.42f;
