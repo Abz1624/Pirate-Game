@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: fd02bd833c967684eae73b6e1e28ead4
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 342630
+  packageName: 2D Laser
+  packageVersion: 1.0
+  assetPath: Assets/LineRendererShader/FreePack/Laser/Scripts/ChangePosEndLaser1.cs
+  uploadId: 812862

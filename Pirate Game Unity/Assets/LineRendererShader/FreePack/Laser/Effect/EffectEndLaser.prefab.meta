@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c38ea1f2048d6d142a3d9f439481cb6b
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 342630
+  packageName: 2D Laser
+  packageVersion: 1.0
+  assetPath: Assets/LineRendererShader/FreePack/Laser/Effect/EffectEndLaser.prefab
+  uploadId: 812862

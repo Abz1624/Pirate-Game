@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 33508aad2e3999c47828040dce3778af
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 342630
+  packageName: 2D Laser
+  packageVersion: 1.0
+  assetPath: Assets/LineRendererShader/FreePack/Laser/Scripts/ResetZPos2.cs
+  uploadId: 812862

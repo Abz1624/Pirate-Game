@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 9754fad67cb0d7845b9f2b06786aa94c
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 342630
+  packageName: 2D Laser
+  packageVersion: 1.0
+  assetPath: Assets/LineRendererShader/FreePack/Laser/Scene/Demo2.unity
+  uploadId: 812862

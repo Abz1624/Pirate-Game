@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 74903c26cbdf7134888de40238a51dac
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 342630
+  packageName: 2D Laser
+  packageVersion: 1.0
+  assetPath: Assets/LineRendererShader/FreePack/Laser/Docs/Laser.pdf
+  uploadId: 812862

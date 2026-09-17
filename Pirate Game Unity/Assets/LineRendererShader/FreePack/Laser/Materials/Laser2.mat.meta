@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 6e937c8d3789e704eb30fa3889ba813d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 342630
+  packageName: 2D Laser
+  packageVersion: 1.0
+  assetPath: Assets/LineRendererShader/FreePack/Laser/Materials/Laser2.mat
+  uploadId: 812862

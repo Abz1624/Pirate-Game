@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: dc4ca8be66e38ad44bc2a1f4c0e33175
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 342630
+  packageName: 2D Laser
+  packageVersion: 1.0
+  assetPath: Assets/LineRendererShader/FreePack/Laser/Shaders/LaserBeam1.shader
+  uploadId: 812862
