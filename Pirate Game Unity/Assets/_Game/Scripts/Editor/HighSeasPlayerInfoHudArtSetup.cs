@@ -25,6 +25,11 @@ namespace HighSeas.Editor
             EnsureSpriteImport($"{ArtRoot}/HP icon.png");
             EnsureSpriteImport($"{ArtRoot}/XP icon.png");
             EnsureSpriteImport($"{ArtRoot}/Rook Icon.png");
+            EnsureSpriteImport($"{ArtRoot}/hank icon.png");
+            EnsureSpriteImport($"{ArtRoot}/Sparky Icon.png");
+            EnsureSpriteImport($"{ArtRoot}/Richie icon.png");
+            EnsureSpriteImport($"{ArtRoot}/Ember Icon.png");
+            EnsureSpriteImport($"{ArtRoot}/Roxie Icon.png");
             EnsureSpriteImport($"{ArtRoot}/Level Indicator overlay.png");
             EnsureSpriteImport($"{ArtRoot}/Sheild overlay pattern.png");
 
@@ -46,15 +51,14 @@ namespace HighSeas.Editor
             settings.levelBadgeOverlay = LoadSprite($"{ArtRoot}/Level Indicator overlay.png");
             settings.shieldOverlayPattern = LoadSprite($"{ArtRoot}/Sheild overlay pattern.png");
 
-            var rookIcon = LoadSprite($"{ArtRoot}/Rook Icon.png");
             settings.captainPortraits = new[]
             {
-                Portrait(V3CaptainId.Rook, rookIcon),
-                Portrait(V3CaptainId.Brine, rookIcon),
-                Portrait(V3CaptainId.Richie, rookIcon),
-                Portrait(V3CaptainId.Flint, rookIcon),
-                Portrait(V3CaptainId.Ember, rookIcon),
-                Portrait(V3CaptainId.Roxie, rookIcon)
+                Portrait(V3CaptainId.Rook, LoadSprite($"{ArtRoot}/Rook Icon.png")),
+                Portrait(V3CaptainId.Brine, LoadSprite($"{ArtRoot}/hank icon.png")),
+                Portrait(V3CaptainId.Flint, LoadSprite($"{ArtRoot}/Sparky Icon.png")),
+                Portrait(V3CaptainId.Richie, LoadSprite($"{ArtRoot}/Richie icon.png")),
+                Portrait(V3CaptainId.Ember, LoadSprite($"{ArtRoot}/Ember Icon.png")),
+                Portrait(V3CaptainId.Roxie, LoadSprite($"{ArtRoot}/Roxie Icon.png"))
             };
 
             EditorUtility.SetDirty(settings);

@@ -25,10 +25,15 @@ namespace HighSeas.V3
 
         public static V3PlayerInfoHudArtSettings Load()
         {
-            if (_cached != null)
-                return _cached;
-            _cached = Resources.Load<V3PlayerInfoHudArtSettings>("V3PlayerInfoHudArtSettings");
+            if (_cached == null)
+                _cached = Resources.Load<V3PlayerInfoHudArtSettings>("V3PlayerInfoHudArtSettings");
             return _cached;
+        }
+
+        public static void Reload()
+        {
+            _cached = null;
+            Load();
         }
 
         public Sprite GetCaptainIcon(V3CaptainId captain)
