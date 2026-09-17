@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: StormOcean_Sky
+  m_Shader: {fileID: 4800000, guid: 1ef81de297e5e4ee5be53b404496ba17, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _CloudCoverageBias: 0.22
+    - _CloudDensity: 0.85
+    - _CloudDetail: 3.7
+    - _CloudHeightCenter: 0.35
+    - _CloudHeightSpread: 0.9
+    - _CloudScale: 0.02
+    - _CloudSpeed: 0.015
+    m_Colors:
+    - _CloudColorDark: {r: 0.05, g: 0.07, b: 0.09, a: 1}
+    - _CloudColorLit: {r: 0.5, g: 0.58, b: 0.64, a: 1}
+    - _SkyHorizonColor: {r: 0.18, g: 0.24, b: 0.28, a: 1}
+    - _SkyZenithColor: {r: 0.02, g: 0.03, b: 0.05, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

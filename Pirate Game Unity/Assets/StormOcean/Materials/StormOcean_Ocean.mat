@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: StormOcean_Ocean
+  m_Shader: {fileID: 4800000, guid: 73ff3962429284475b6203e96251be45, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _AmbientStrength: 1.1
+    - _CrestSharpness: 0.6
+    - _FoamAmount: 1.4
+    - _FoamBreakup: 0.6
+    - _FoamBreakupScale: 0.5
+    - _FoamBrightness: 0.9
+    - _FoamNoiseScale: 0.16
+    - _FoamSharpness: 0.6
+    - _FoamThreshold: 0.35
+    - _FresnelPower: 4.5
+    - _MicroNoiseScale: 0.6
+    - _MicroNoiseSpeed: 0.12
+    - _MicroNoiseStrength: 0.6
+    - _NormalStrength: 1.2
+    - _ReflectionStrength: 0.55
+    - _Smoothness: 0.85
+    - _SpecularStrength: 2.4
+    - _TroughDepth: 1
+    - _WaveTurbulence: 0.22
+    m_Colors:
+    - _DeepColor: {r: 0.014, g: 0.04, b: 0.07, a: 1}
+    - _FoamColor: {r: 0.9, g: 0.95, b: 0.97, a: 1}
+    - _FoamTransitionColor: {r: 0.55, g: 0.68, b: 0.78, a: 1}
+    - _HighlightColor: {r: 0.55, g: 0.75, b: 0.82, a: 1}
+    - _SurfaceColor: {r: 0.05, g: 0.12, b: 0.18, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
