@@ -59,6 +59,10 @@ namespace HighSeas.Data
         public GameObject goldCoinMeshPrefab;
         public GameObject healthPickupPrefab;
         public GameObject goldBarrelPickupPrefab;
+        [Tooltip("World XP barrel (gem barrel). Burst pickups use xpFlyingGemPrefab.")]
+        public GameObject xpBarrelPickupPrefab;
+        [Tooltip("Loose / barrel-burst XP gem mesh. Falls back to infamyPickupPrefab if unset.")]
+        public GameObject xpFlyingGemPrefab;
         public float infamyPickupScale = 1f;
         public float goldPickupScale = 1.8f;
         [Tooltip("Scale for loose / barrel-burst gold coins.")]
@@ -68,6 +72,17 @@ namespace HighSeas.Data
         public Material healthBurstMaterial;
         public Color healthBurstColor = new(0.184f, 1f, 0.42f, 1f);
         public float goldBarrelPickupScale = 0.7f;
+        [Range(0.25f, 1.5f)]
+        [Tooltip("Y scale multiplier for loot / health / XP barrels (1 = full height).")]
+        public float barrelVerticalScale = 0.75f;
+        [Tooltip("World Y of the water surface for floating pickups.")]
+        public float pickupWaterSurfaceY = 0f;
+        [Range(0f, 0.9f)]
+        [Tooltip("Fraction of barrel height below the water surface (0.15 = 15% submerged).")]
+        public float barrelSubmergedFraction = 0.15f;
+        public float xpBarrelPickupScale = 1.05f;
+        [Tooltip("Scale for gems that fly out of an XP barrel.")]
+        public float xpFlyingGemScale = 0.6375f;
         public Color infamyColor = new(0.2f, 0.95f, 1f);
         public Color goldColor = new(1f, 0.85f, 0.15f);
         [Min(1)] public int goldBarrelMinValue = 12;

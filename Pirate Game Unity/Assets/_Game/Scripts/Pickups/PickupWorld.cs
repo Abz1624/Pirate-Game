@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.V3;
@@ -18,6 +19,14 @@ namespace HighSeas.Pickups
         public Transform view;
     }
 
+    struct PendingFlyingPickup
+    {
+        public PickupType type;
+        public Vector3 position;
+        public int value;
+        public float flyDelay;
+    }
+
     public sealed class PickupWorld : MonoBehaviour
     {
         public static PickupWorld Instance { get; private set; }
@@ -30,7 +39,12 @@ namespace HighSeas.Pickups
 
         PickupAgent[] _pool;
         PickupViewPool _viewPool;
+        readonly Queue<PendingFlyingPickup> _pendingFlyingPickups = new();
+        Player.PlayerShipController _playerShip;
         int _active;
+        int _pendingXpGrant;
+        int _pendingGoldGrant;
+        int _pendingHealGrant;
         float _time;
 
         void Awake()
@@ -61,7 +75,7 @@ namespace HighSeas.Pickups
             if (xp > 0)
             {
                 Spawn(
-                    PickupType.Infamy,
+                    PickupType.XpBarrel,
                     Mathf.Max(1, Mathf.RoundToInt(xp * xpMult)),
                     basePos + GetKillDropOffset(dropIndex++, dropCount));
             }
@@ -101,6 +115,8 @@ namespace HighSeas.Pickups
             pos.y = GetPickupHeight(type);
             var view = _viewPool.Acquire(type, pos, value);
             ApplyUniformPickupScale(type, view);
+            if (IsBarrelPickup(type))
+                pos = AlignBarrelSubmerged(view);
             _pool[slot] = new PickupAgent
             {
                 active = true,
@@ -115,13 +131,104 @@ namespace HighSeas.Pickups
             _active++;
         }
 
+        static bool IsBarrelPickup(PickupType type) =>
+            type is PickupType.GoldBarrel or PickupType.XpBarrel or PickupType.Powerup;
+
         static float GetPickupHeight(PickupType type) => type switch
         {
-            PickupType.GoldBarrel or PickupType.XpBarrel => 2f,
-            PickupType.Powerup => 2f,
+            PickupType.GoldBarrel or PickupType.XpBarrel or PickupType.Powerup => 0f,
             PickupType.FlyingGold or PickupType.FlyingHealth or PickupType.FlyingXp => 0.45f,
             _ => 0.35f
         };
+
+        Vector3 AlignBarrelSubmerged(Transform view)
+        {
+            var submerged = juiceSettings != null ? juiceSettings.barrelSubmergedFraction : 0.15f;
+            var waterY = juiceSettings != null ? juiceSettings.pickupWaterSurfaceY : 0f;
+
+            if (!TryGetBarrelVisualBounds(view, out var bounds))
+                return view.position;
+
+            var height = bounds.size.y;
+            var targetMinY = waterY - submerged * height;
+            var aligned = view.position + Vector3.up * (targetMinY - bounds.min.y);
+            view.position = aligned;
+            return aligned;
+        }
+
+        static bool TryGetBarrelVisualBounds(Transform view, out Bounds bounds)
+        {
+            bounds = default;
+            var hasBounds = false;
+            var root = view.Find("Visuals");
+            if (root == null)
+                root = view;
+
+            var meshRenderers = root.GetComponentsInChildren<MeshRenderer>(true);
+            for (var i = 0; i < meshRenderers.Length; i++)
+            {
+                var rendererBounds = meshRenderers[i].bounds;
+                if (rendererBounds.size.sqrMagnitude < 0.0001f)
+                    continue;
+
+                if (!hasBounds)
+                {
+                    bounds = rendererBounds;
+                    hasBounds = true;
+                }
+                else
+                    bounds.Encapsulate(rendererBounds);
+            }
+
+            var skinnedRenderers = root.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            for (var i = 0; i < skinnedRenderers.Length; i++)
+            {
+                var rendererBounds = skinnedRenderers[i].bounds;
+                if (!hasBounds)
+                {
+                    bounds = rendererBounds;
+                    hasBounds = true;
+                }
+                else
+                    bounds.Encapsulate(rendererBounds);
+            }
+
+            if (hasBounds)
+                return true;
+
+            var meshFilters = root.GetComponentsInChildren<MeshFilter>(true);
+            for (var i = 0; i < meshFilters.Length; i++)
+            {
+                var mesh = meshFilters[i].sharedMesh;
+                if (mesh == null)
+                    continue;
+
+                var meshBounds = TransformMeshBounds(meshFilters[i].transform, mesh.bounds);
+                if (!hasBounds)
+                {
+                    bounds = meshBounds;
+                    hasBounds = true;
+                }
+                else
+                    bounds.Encapsulate(meshBounds);
+            }
+
+            return hasBounds;
+        }
+
+        static Bounds TransformMeshBounds(Transform transform, Bounds localBounds)
+        {
+            var center = transform.TransformPoint(localBounds.center);
+            var extents = localBounds.extents;
+            var axisX = transform.TransformVector(extents.x, 0f, 0f);
+            var axisY = transform.TransformVector(0f, extents.y, 0f);
+            var axisZ = transform.TransformVector(0f, 0f, extents.z);
+            var worldExtents = new Vector3(
+                Mathf.Abs(axisX.x) + Mathf.Abs(axisY.x) + Mathf.Abs(axisZ.x),
+                Mathf.Abs(axisX.y) + Mathf.Abs(axisY.y) + Mathf.Abs(axisZ.y),
+                Mathf.Abs(axisX.z) + Mathf.Abs(axisY.z) + Mathf.Abs(axisZ.z));
+            return new Bounds(center, worldExtents * 2f);
+        }
 
         void MergeNearby(PickupType type, int value, Vector3 pos)
         {
@@ -147,6 +254,10 @@ namespace HighSeas.Pickups
 
         public void ClearAllActive()
         {
+            _pendingFlyingPickups.Clear();
+            _pendingXpGrant = 0;
+            _pendingGoldGrant = 0;
+            _pendingHealGrant = 0;
             for (var i = 0; i < _pool.Length; i++)
             {
                 if (!_pool[i].active) continue;
@@ -159,6 +270,7 @@ namespace HighSeas.Pickups
         public void Tick(float dt, Vector3 playerPos, float pickupRadius)
         {
             if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
+            ProcessPendingFlyingPickups();
             _time += dt;
             var xpPickupRadius = pacingSettings != null ? pacingSettings.xpAutoPickupRadius : 4.25f;
             var goldPickupRadius = pacingSettings != null ? pacingSettings.goldAutoPickupRadius : 26f;
@@ -215,6 +327,8 @@ namespace HighSeas.Pickups
                         p.view.Rotate(0f, 180f * dt, 0f, Space.World);
                 }
             }
+
+            FlushPendingGrants();
         }
 
         void ApplyUniformPickupScale(PickupType type, Transform view)
@@ -230,7 +344,7 @@ namespace HighSeas.Pickups
             p.flyDelay = 0f;
             if ((p.type == PickupType.Gold || p.type == PickupType.FlyingGold || p.type == PickupType.FlyingXp) && p.view != null && juiceSettings != null)
                 p.view.localScale = Vector3.one * (p.type == PickupType.FlyingXp
-                    ? _viewPool.GetXpCrystalVisualScale()
+                    ? _viewPool.GetXpFlyingGemScale()
                     : juiceSettings.goldFlyingCoinScale);
             else if (p.type == PickupType.Infamy && p.view != null)
                 ApplyUniformPickupScale(PickupType.Infamy, p.view);
@@ -238,41 +352,69 @@ namespace HighSeas.Pickups
 
         void CompleteHomingPickup(ref PickupAgent p)
         {
+            if (RunManager.Instance == null || RunManager.Instance.IsRunEnded)
+            {
+                ReleasePickup(ref p);
+                return;
+            }
+
             switch (p.type)
             {
                 case PickupType.FlyingXp:
-                {
-                    if (RunManager.Instance == null || RunManager.Instance.IsRunEnded) break;
-                    var xp = p.value * (RunManager.Instance.Stats.XPGain);
-                    if (V3RunContext.IsActive)
-                        xp *= 0.35f;
-                    UI.LevelSystem.Instance?.AddXP(Mathf.Max(1, Mathf.RoundToInt(xp)));
-                    break;
-                }
                 case PickupType.Infamy:
-                {
-                    if (RunManager.Instance == null || RunManager.Instance.IsRunEnded) break;
-                    var xp = p.value * (RunManager.Instance.Stats.XPGain);
-                    if (V3RunContext.IsActive)
-                        xp *= 0.35f;
-                    UI.LevelSystem.Instance?.AddXP(Mathf.Max(1, Mathf.RoundToInt(xp)));
+                    _pendingXpGrant += ComputeXpGrant(p.value);
                     break;
-                }
                 case PickupType.Gold:
                 case PickupType.FlyingGold:
-                    GrantGold(p.value);
+                    _pendingGoldGrant += p.value;
                     break;
                 case PickupType.FlyingHealth:
-                {
-                    if (RunManager.Instance == null || RunManager.Instance.IsRunEnded) break;
-                    var player = Object.FindFirstObjectByType<Player.PlayerShipController>();
-                    if (player?.Damage != null && player.Damage.IsAlive)
-                        player.Damage.Heal(p.value);
+                    _pendingHealGrant += p.value;
                     break;
-                }
             }
 
             ReleasePickup(ref p);
+        }
+
+        int ComputeXpGrant(int value)
+        {
+            if (RunManager.Instance == null)
+                return 0;
+
+            var xp = value * RunManager.Instance.Stats.XPGain;
+            if (V3RunContext.IsActive)
+                xp *= 0.35f;
+            return Mathf.Max(1, Mathf.RoundToInt(xp));
+        }
+
+        void FlushPendingGrants()
+        {
+            if (_pendingXpGrant > 0)
+            {
+                UI.LevelSystem.Instance?.AddXP(_pendingXpGrant);
+                _pendingXpGrant = 0;
+            }
+
+            if (_pendingGoldGrant > 0)
+            {
+                GrantGold(_pendingGoldGrant);
+                _pendingGoldGrant = 0;
+            }
+
+            if (_pendingHealGrant > 0)
+            {
+                EnsurePlayerShip();
+                if (_playerShip?.Damage != null && _playerShip.Damage.IsAlive)
+                    _playerShip.Damage.Heal(_pendingHealGrant);
+                _pendingHealGrant = 0;
+            }
+        }
+
+        void EnsurePlayerShip()
+        {
+            if (_playerShip != null && _playerShip.Damage != null && _playerShip.Damage.IsAlive)
+                return;
+            _playerShip = Object.FindFirstObjectByType<Player.PlayerShipController>();
         }
 
         void Collect(int i)
@@ -295,118 +437,108 @@ namespace HighSeas.Pickups
             }
         }
 
-        void BurstXpCrystals(Vector3 origin, int totalXp)
+        void BurstXpCrystals(Vector3 origin, int totalXp) =>
+            EnqueueBarrelBurst(PickupType.FlyingXp, origin, totalXp);
+
+        void BurstGoldCoins(Vector3 origin, int totalGold) =>
+            EnqueueBarrelBurst(PickupType.FlyingGold, origin, totalGold);
+
+        void BurstHealthPluses(Vector3 origin, int totalHeal) =>
+            EnqueueBarrelBurst(PickupType.FlyingHealth, origin, totalHeal);
+
+        void EnqueueBarrelBurst(PickupType flyingType, Vector3 origin, int totalValue)
         {
-            var crystalCount = Random.Range(10, 21);
-            var perCrystal = Mathf.Max(1, totalXp / crystalCount);
-            var remainder = totalXp - perCrystal * crystalCount;
+            var visualCount = GetBurstVisualCount();
+            var perPiece = Mathf.Max(1, totalValue / visualCount);
+            var remainder = totalValue - perPiece * visualCount;
 
-            for (var c = 0; c < crystalCount; c++)
+            for (var c = 0; c < visualCount; c++)
             {
-                if (_active >= _pool.Length) break;
-                var slot = -1;
-                for (var i = 0; i < _pool.Length; i++)
-                {
-                    if (!_pool[i].active) { slot = i; break; }
-                }
-                if (slot < 0) break;
-
                 var scatter = Random.insideUnitSphere * 0.8f;
                 scatter.y = 0f;
                 var pos = origin + scatter;
                 pos.y = 0.45f;
-                var value = perCrystal + (c == 0 ? remainder : 0);
-                var view = _viewPool.Acquire(PickupType.FlyingXp, pos, value);
+                var value = perPiece + (c == 0 ? remainder : 0);
+                _pendingFlyingPickups.Enqueue(new PendingFlyingPickup
+                {
+                    type = flyingType,
+                    position = pos,
+                    value = value,
+                    flyDelay = Random.Range(0.05f, 0.25f) + c * 0.02f
+                });
+            }
+        }
+
+        int GetBurstVisualCount()
+        {
+            var min = pacingSettings != null ? pacingSettings.barrelBurstVisualMin : 6;
+            var max = pacingSettings != null ? pacingSettings.barrelBurstVisualMax : 10;
+            if (max < min)
+                max = min;
+
+            var count = Random.Range(min, max + 1);
+            var density = Platform.QualityProfile.Current.vfxDensity;
+            return Mathf.Max(3, Mathf.RoundToInt(count * density));
+        }
+
+        void ProcessPendingFlyingPickups()
+        {
+            var budget = pacingSettings != null ? pacingSettings.maxFlyingPickupSpawnsPerFrame : 18;
+            while (budget-- > 0 && _pendingFlyingPickups.Count > 0)
+            {
+                var pending = _pendingFlyingPickups.Dequeue();
+                if (!TrySpawnFlyingPickup(pending))
+                    GrantFlyingPickupValue(pending.type, pending.value);
+            }
+        }
+
+        bool TrySpawnFlyingPickup(PendingFlyingPickup pending)
+        {
+            if (_active >= _pool.Length)
+                return false;
+
+            var slot = -1;
+            for (var i = 0; i < _pool.Length; i++)
+            {
+                if (!_pool[i].active) { slot = i; break; }
+            }
+
+            if (slot < 0)
+                return false;
+
+            var view = _viewPool.Acquire(pending.type, pending.position, pending.value);
+            if (pending.type == PickupType.FlyingXp)
                 ApplyUniformPickupScale(PickupType.FlyingXp, view);
-                _pool[slot] = new PickupAgent
-                {
-                    active = true,
-                    homingToPlayer = true,
-                    type = PickupType.FlyingXp,
-                    value = value,
-                    position = pos,
-                    basePosition = pos,
-                    bobPhase = Random.Range(0f, Mathf.PI * 2f),
-                    flyDelay = Random.Range(0.05f, 0.25f) + c * 0.02f,
-                    view = view
-                };
-                _active++;
-            }
+
+            _pool[slot] = new PickupAgent
+            {
+                active = true,
+                homingToPlayer = true,
+                type = pending.type,
+                value = pending.value,
+                position = pending.position,
+                basePosition = pending.position,
+                bobPhase = Random.Range(0f, Mathf.PI * 2f),
+                flyDelay = pending.flyDelay,
+                view = view
+            };
+            _active++;
+            return true;
         }
 
-        void BurstGoldCoins(Vector3 origin, int totalGold)
+        void GrantFlyingPickupValue(PickupType type, int value)
         {
-            var coinCount = Random.Range(10, 21);
-            var perCoin = Mathf.Max(1, totalGold / coinCount);
-            var remainder = totalGold - perCoin * coinCount;
-
-            for (var c = 0; c < coinCount; c++)
+            switch (type)
             {
-                if (_active >= _pool.Length) break;
-                var slot = -1;
-                for (var i = 0; i < _pool.Length; i++)
-                {
-                    if (!_pool[i].active) { slot = i; break; }
-                }
-                if (slot < 0) break;
-
-                var scatter = Random.insideUnitSphere * 0.8f;
-                scatter.y = 0f;
-                var pos = origin + scatter;
-                pos.y = 0.45f;
-                var value = perCoin + (c == 0 ? remainder : 0);
-                var view = _viewPool.Acquire(PickupType.FlyingGold, pos, value);
-                _pool[slot] = new PickupAgent
-                {
-                    active = true,
-                    homingToPlayer = true,
-                    type = PickupType.FlyingGold,
-                    value = value,
-                    position = pos,
-                    basePosition = pos,
-                    bobPhase = Random.Range(0f, Mathf.PI * 2f),
-                    flyDelay = Random.Range(0.05f, 0.25f) + c * 0.02f,
-                    view = view
-                };
-                _active++;
-            }
-        }
-
-        void BurstHealthPluses(Vector3 origin, int totalHeal)
-        {
-            var plusCount = Random.Range(10, 21);
-            var perPlus = Mathf.Max(1, totalHeal / plusCount);
-            var remainder = totalHeal - perPlus * plusCount;
-
-            for (var c = 0; c < plusCount; c++)
-            {
-                if (_active >= _pool.Length) break;
-                var slot = -1;
-                for (var i = 0; i < _pool.Length; i++)
-                {
-                    if (!_pool[i].active) { slot = i; break; }
-                }
-                if (slot < 0) break;
-
-                var scatter = Random.insideUnitSphere * 0.8f;
-                scatter.y = 0f;
-                var pos = origin + scatter;
-                pos.y = 0.45f;
-                var value = perPlus + (c == 0 ? remainder : 0);
-                var view = _viewPool.Acquire(PickupType.FlyingHealth, pos, value);
-                _pool[slot] = new PickupAgent
-                {
-                    active = true,
-                    homingToPlayer = true,
-                    type = PickupType.FlyingHealth,
-                    value = value,
-                    position = pos,
-                    basePosition = pos,
-                    bobPhase = Random.Range(0f, Mathf.PI * 2f),
-                    flyDelay = Random.Range(0.05f, 0.25f) + c * 0.02f,
-                    view = view
-                };
-                _active++;
+                case PickupType.FlyingXp:
+                    _pendingXpGrant += ComputeXpGrant(value);
+                    break;
+                case PickupType.FlyingGold:
+                    _pendingGoldGrant += value;
+                    break;
+                case PickupType.FlyingHealth:
+                    _pendingHealGrant += value;
+                    break;
             }
         }
 

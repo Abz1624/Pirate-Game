@@ -11,6 +11,7 @@ namespace HighSeas.Pickups
         readonly DemoJuiceSettings _settings;
         readonly Dictionary<int, Stack<Transform>> _pools = new();
         readonly Stack<Transform> _flyingHealthPool = new();
+        Transform _flyingLootSparkleTemplate;
 
         public PickupViewPool(Transform root, DemoJuiceSettings settings)
         {
@@ -48,11 +49,16 @@ namespace HighSeas.Pickups
                     instance.name = prefab.name;
                     view = instance.transform;
                     StripPhysics(instance);
+                    if (IsFlyingBurstPickup(type) && instance.GetComponent<PickupViewVfxCache>() == null)
+                        instance.AddComponent<PickupViewVfxCache>();
                 }
 
                 view.position = position;
-                view.localScale = Vector3.one * scale;
-                PlayPickupParticles(view);
+                ApplyPickupViewScale(view, type, scale);
+                if (type is PickupType.FlyingXp or PickupType.Infamy)
+                    EnsureFlyingLootSparkle(view);
+                if (IsFlyingBurstPickup(type))
+                    PlayFlyingBurstVfx(view);
                 return view;
             }
 
@@ -121,6 +127,25 @@ namespace HighSeas.Pickups
             return view;
         }
 
+        void ApplyPickupViewScale(Transform view, PickupType type, float uniformScale)
+        {
+            if (IsBarrelPickup(type) && _settings != null)
+            {
+                var y = _settings.barrelVerticalScale;
+                view.localScale = new Vector3(uniformScale, uniformScale * y, uniformScale);
+                return;
+            }
+
+            view.localScale = Vector3.one * uniformScale;
+        }
+
+        static bool IsBarrelPickup(PickupType type) =>
+            type is PickupType.GoldBarrel or PickupType.XpBarrel or PickupType.Powerup;
+
+        static bool IsFlyingBurstPickup(PickupType type) =>
+            type is PickupType.FlyingGold or PickupType.FlyingXp or PickupType.FlyingHealth
+                or PickupType.Infamy or PickupType.Gold;
+
         GameObject GetPrefab(PickupType type, int value)
         {
             if (_settings == null) return null;
@@ -129,21 +154,31 @@ namespace HighSeas.Pickups
                 PickupType.GoldBarrel => _settings.goldBarrelPickupPrefab != null
                     ? _settings.goldBarrelPickupPrefab
                     : _settings.goldPickupPrefab,
-                PickupType.XpBarrel => _settings.infamyPickupPrefab != null
-                    ? _settings.infamyPickupPrefab
-                    : _settings.goldBarrelPickupPrefab,
+                PickupType.XpBarrel => _settings.xpBarrelPickupPrefab != null
+                    ? _settings.xpBarrelPickupPrefab
+                    : _settings.infamyPickupPrefab,
                 PickupType.Gold or PickupType.FlyingGold => _settings.goldPickupPrefab,
-                PickupType.FlyingXp or PickupType.Infamy => _settings.infamyPickupPrefab,
+                PickupType.FlyingXp or PickupType.Infamy => GetXpFlyingGemPrefab(),
                 PickupType.Powerup => _settings.healthPickupPrefab,
                 _ => _settings.infamyPickupPrefab
             };
         }
 
-        public float GetXpCrystalVisualScale()
+        GameObject GetXpFlyingGemPrefab()
         {
-            if (_settings == null) return 0.52f;
-            return _settings.infamyPickupScale;
+            if (_settings == null) return null;
+            return _settings.xpFlyingGemPrefab != null
+                ? _settings.xpFlyingGemPrefab
+                : _settings.infamyPickupPrefab;
         }
+
+        public float GetXpFlyingGemScale()
+        {
+            if (_settings == null) return 0.6375f;
+            return _settings.xpFlyingGemScale;
+        }
+
+        public float GetXpCrystalVisualScale() => GetXpFlyingGemScale();
 
         float GetScale(PickupType type, int value)
         {
@@ -151,9 +186,9 @@ namespace HighSeas.Pickups
             return type switch
             {
                 PickupType.GoldBarrel => _settings.goldBarrelPickupScale,
-                PickupType.XpBarrel => GetXpCrystalVisualScale() * 1.15f,
+                PickupType.XpBarrel => _settings.xpBarrelPickupScale,
                 PickupType.Gold or PickupType.FlyingGold => _settings.goldFlyingCoinScale,
-                PickupType.FlyingXp or PickupType.Infamy => GetXpCrystalVisualScale(),
+                PickupType.FlyingXp or PickupType.Infamy => GetXpFlyingGemScale(),
                 PickupType.Powerup => _settings.healthPickupScale,
                 _ => GetXpCrystalVisualScale()
             };
@@ -167,14 +202,48 @@ namespace HighSeas.Pickups
             _ => new Color(0.2f, 0.95f, 1f)
         };
 
-        static void PlayPickupParticles(Transform view)
+        void EnsureFlyingLootSparkle(Transform view)
         {
-            var particles = view.GetComponentsInChildren<ParticleSystem>(true);
-            for (var i = 0; i < particles.Length; i++)
+            if (view.Find("CollectSparkle") != null)
+                return;
+
+            var template = GetFlyingLootSparkleTemplate();
+            if (template == null)
+                return;
+
+            var sparkle = Object.Instantiate(template, view);
+            sparkle.name = "CollectSparkle";
+            sparkle.localPosition = Vector3.zero;
+            sparkle.localRotation = Quaternion.identity;
+            sparkle.localScale = Vector3.one;
+        }
+
+        Transform GetFlyingLootSparkleTemplate()
+        {
+            if (_flyingLootSparkleTemplate != null)
+                return _flyingLootSparkleTemplate;
+
+            if (_settings?.goldPickupPrefab == null)
+                return null;
+
+            _flyingLootSparkleTemplate = _settings.goldPickupPrefab.transform.Find("CollectSparkle");
+            return _flyingLootSparkleTemplate;
+        }
+
+        static void PlayFlyingBurstVfx(Transform view)
+        {
+            if (view == null)
+                return;
+
+            var cache = view.GetComponent<PickupViewVfxCache>();
+            if (cache != null)
             {
-                particles[i].Clear(true);
-                particles[i].Play(true);
+                cache.PlayBurstVfx();
+                return;
             }
+
+            cache = view.gameObject.AddComponent<PickupViewVfxCache>();
+            cache.PlayBurstVfx();
         }
 
         Transform CreatePrimitive(Vector3 position, Color color, float scale)

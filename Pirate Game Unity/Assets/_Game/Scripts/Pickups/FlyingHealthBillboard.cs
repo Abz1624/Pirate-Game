@@ -7,6 +7,9 @@ namespace HighSeas.Pickups
     {
         const float Lifetime = 1.2f;
 
+        static Camera _cachedCamera;
+        static float _nextCameraLookupTime;
+
         Renderer _renderer;
         Material _material;
         Color _baseColor;
@@ -54,11 +57,21 @@ namespace HighSeas.Pickups
             color.a = alpha;
             _material.SetColor("_BaseColor", color);
 
-            var cam = Camera.main;
+            var cam = GetCamera();
             if (cam == null) return;
             var toCam = transform.position - cam.transform.position;
             if (toCam.sqrMagnitude < 0.0001f) return;
             transform.rotation = Quaternion.LookRotation(toCam, Vector3.up);
+        }
+
+        static Camera GetCamera()
+        {
+            if (_cachedCamera != null && Time.unscaledTime < _nextCameraLookupTime)
+                return _cachedCamera;
+
+            _cachedCamera = Camera.main;
+            _nextCameraLookupTime = Time.unscaledTime + 0.5f;
+            return _cachedCamera;
         }
 
         static Mesh CreateQuadMesh()

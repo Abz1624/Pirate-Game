@@ -34,7 +34,7 @@ MonoBehaviour:
   projectileSizeMultiplier: 0.5
   projectileRadiusMultiplier: 1
   shootingVfxScale: 0.35
-  mineBarrelPrefab: {fileID: 6082082769354253251, guid: a601f9e261b424f68a4c1fe3a48195ca, type: 3}
+  mineBarrelPrefab: {fileID: 1709254077376921, guid: 17bfaca54656ede499058479fd3b75ac, type: 3}
   lightningStrikePrefab: {fileID: 4226950201948866840, guid: 813a29d1d93b645a298297b6d7275e6a, type: 3}
   burningTrailPrefab: {fileID: 7977084466623704616, guid: ec643342415b744718ca32f617d5c8c0, type: 3}
   flamethrowerPrefab: {fileID: 7948998522927659192, guid: 1fa2108acffea4538a73b4370c3967ff, type: 3}
@@ -51,8 +51,10 @@ MonoBehaviour:
   infamyPickupPrefab: {fileID: 1642442580476454169, guid: c5ab5d6ce59f64acfb78d6e0031fb059, type: 3}
   goldPickupPrefab: {fileID: 263643296654351893, guid: e8bf09f96ed974ce39a728db0f8f33b2, type: 3}
   goldCoinMeshPrefab: {fileID: 0}
-  healthPickupPrefab: {fileID: 7594942214642804130, guid: c0f37cb0f063f4e0590917662269a3bb, type: 3}
-  goldBarrelPickupPrefab: {fileID: 7834809957994119764, guid: 5f2204b6d1bda43d8acd38896a3e5f56, type: 3}
+  healthPickupPrefab: {fileID: 1709254077376921, guid: 774b4b344203f2f43a00324cd5badd11, type: 3}
+  goldBarrelPickupPrefab: {fileID: 1709254077376921, guid: 4b1631d1aa823574ebe0fca214b14f04, type: 3}
+  xpBarrelPickupPrefab: {fileID: 1709254077376921, guid: 3a5ba49ba5fb440c3964918f23ea52b3, type: 3}
+  xpFlyingGemPrefab: {fileID: 1642442580476454169, guid: c5ab5d6ce59f64acfb78d6e0031fb059, type: 3}
   infamyPickupScale: 0.5
   goldPickupScale: 1.8
   goldFlyingCoinScale: 0.85
@@ -61,6 +63,11 @@ MonoBehaviour:
   healthBurstMaterial: {fileID: 2100000, guid: d3358af038cf7764eb41cdfd4c05b2ce, type: 2}
   healthBurstColor: {r: 0.18431373, g: 1, b: 0.41960785, a: 1}
   goldBarrelPickupScale: 0.7
+  barrelVerticalScale: 0.75
+  pickupWaterSurfaceY: 0
+  barrelSubmergedFraction: 0.15
+  xpBarrelPickupScale: 1.05
+  xpFlyingGemScale: 0.6375
   infamyColor: {r: 0.2, g: 0.95, b: 1, a: 1}
   goldColor: {r: 1, g: 0.85, b: 0.15, a: 1}
   goldBarrelMinValue: 12

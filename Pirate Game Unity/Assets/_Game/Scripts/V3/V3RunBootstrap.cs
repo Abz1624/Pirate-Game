@@ -164,8 +164,6 @@ namespace HighSeas.V3
             EnsurePressureBeats(enemyWorld, player);
             EnsureOvertimeDirector(enemyWorld, player);
             RunManager.Instance.EnterPlaying();
-            if (player != null)
-                V3RunOpeningXpScatter.ScatterNearPlayer(player.Position, seed);
             LevelSystem.Instance?.TryShowOpeningWeaponDraft();
             if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
             {
