@@ -33,5 +33,10 @@ namespace HighSeas.Data
         [Tooltip("Health barrels and gold barrels require sailing this close to collect.")]
         [Min(0.3f)] public float barrelTouchRadius = 5f;
         [Range(0f, 1f)] public float healthDropChance = 0.12f;
+        [Tooltip("Visual flyers spawned when a barrel breaks (value is split across them).")]
+        [Min(3)] public int barrelBurstVisualMin = 6;
+        [Min(3)] public int barrelBurstVisualMax = 10;
+        [Tooltip("Caps flyer spawns per frame so multiple barrel collects do not hitch.")]
+        [Min(4)] public int maxFlyingPickupSpawnsPerFrame = 18;
     }
 }

@@ -39,6 +39,8 @@ namespace HighSeas.V3
         public BeaconRevealState BeaconState => _beaconState;
         public IReadOnlyCollection<int> DiscoveredPoiIndices => _discoveredPoiIndices;
         public IReadOnlyCollection<int> RevealedChestIndices => _revealedChestIndices;
+        /// <summary>Bumps when new exploration cells are revealed (minimap fog rebuild trigger).</summary>
+        public int ExplorationRevision { get; private set; }
 
         public static V3DiscoverySystem Ensure(StageLayout layout)
         {
@@ -61,6 +63,7 @@ namespace HighSeas.V3
             _discoveredPoiIndices.Clear();
             _revealedChestIndices.Clear();
             _beaconState = BeaconRevealState.Hidden;
+            ExplorationRevision = 0;
         }
 
         void Awake()
@@ -104,7 +107,8 @@ namespace HighSeas.V3
                     var dz = wz - worldPos.z;
                     if (dx * dx + dz * dz > radius * radius)
                         continue;
-                    _exploredCells.Add(PackCell(cx + x, cz + z));
+                    if (_exploredCells.Add(PackCell(cx + x, cz + z)))
+                        ExplorationRevision++;
                 }
             }
         }

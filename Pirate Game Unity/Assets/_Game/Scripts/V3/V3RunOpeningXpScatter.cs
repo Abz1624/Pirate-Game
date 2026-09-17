@@ -12,8 +12,7 @@ namespace HighSeas.V3
 
             var rng = new RunRng(runSeed ^ 0x58F0);
             const int barrels = 5;
-            const int looseClusters = 10;
-            const int crystalsPerCluster = 3;
+            const int looseBarrels = 10;
 
             for (var b = 0; b < barrels; b++)
             {
@@ -24,18 +23,13 @@ namespace HighSeas.V3
                 PickupWorld.Instance.Spawn(PickupType.XpBarrel, value, pos);
             }
 
-            for (var c = 0; c < looseClusters; c++)
+            for (var c = 0; c < looseBarrels; c++)
             {
                 var angle = rng.LootFloat() * Mathf.PI * 2f;
                 var radius = 3f + rng.LootFloat() * 7f;
-                var clusterCenter = center + new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
-                for (var k = 0; k < crystalsPerCluster; k++)
-                {
-                    var offsetAngle = rng.LootFloat() * Mathf.PI * 2f;
-                    var offsetRadius = 0.15f + rng.LootFloat() * 0.45f;
-                    var offset = new Vector3(Mathf.Cos(offsetAngle) * offsetRadius, 0f, Mathf.Sin(offsetAngle) * offsetRadius);
-                    PickupWorld.Instance.Spawn(PickupType.Infamy, 1, clusterCenter + offset);
-                }
+                var pos = center + new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+                var value = 3 + rng.DirectorInt(0, 4);
+                PickupWorld.Instance.Spawn(PickupType.XpBarrel, value, pos);
             }
         }
     }

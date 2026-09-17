@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using HighSeas.Core;
+using HighSeas.Enemies;
 using HighSeas.Player;
 using HighSeas.World;
 using UnityEngine;
@@ -6,18 +8,71 @@ using UnityEngine.UI;
 
 namespace HighSeas.V3
 {
-    /// <summary>Minimap-only fog-of-war and discovery-gated markers. The 3D world stays fully visible.</summary>
+    /// <summary>Top-right circular minimap with fog-of-war and abstract objective glyphs.</summary>
     public sealed class V3MinimapHud : MonoBehaviour
     {
-        const float MapScale = 0.42f;
-        const float MapSize = 168f;
+        [Header("Screen placement")]
+        [Tooltip("Logical pixels from top and right screen edges.")]
+        public float cornerInset = 24f;
 
+        [Tooltip("Widget size as a fraction of screen height.")]
+        [Range(0.08f, 0.35f)]
+        public float heightFraction = 0.18f;
+
+        public float minMapSize = 140f;
+        public float maxMapSize = 220f;
+
+        [Header("Frame mask")]
+        [Tooltip("Inset from widget edge to the circular clip (match overlay inner hole).")]
+        [Range(0.05f, 0.25f)]
+        public float ringInsetFraction = 0.135f;
+
+        [Header("Zoom (Megabonk ortho ratio)")]
+        [Tooltip("Lower = more zoomed in. Default minimap zoom in Megabonk mods.")]
+        public float megabonkNormalZoom = 100f;
+
+        [Tooltip("Full-map minimap zoom reference. Visible axis ≈ normal / full.")]
+        public float megabonkFullMapZoom = 300f;
+
+        [Header("Icons")]
+        [Tooltip("Extra Z rotation for the player heading arrow (degrees).")]
+        public float headingOffsetDegrees = 0f;
+
+        [Header("Fog of war")]
+        [Tooltip("Mask texels across playable width. GPU bilinear filtering keeps edges smooth.")]
+        [Range(64, 256)]
+        public int fogMaskResolution = 160;
+
+        public Color fogTint = new(0.1f, 0.16f, 0.26f, 0.88f);
+
+        [Tooltip("Fade width at explored borders (world meters).")]
+        [Range(2f, 24f)]
+        public float fogEdgeSoftnessWorld = 10f;
+
+        float VisibleWorldAxisFraction =>
+            megabonkFullMapZoom > 0.01f ? megabonkNormalZoom / megabonkFullMapZoom : 0.33f;
+
+        RectTransform _mapClip;
+        RectTransform _contentRoot;
         RectTransform _mapRoot;
         RectTransform _playerIcon;
         RectTransform _fogRoot;
+        RectTransform _threatRoot;
         RectTransform _beaconSector;
+        Image _overlayImage;
+        RawImage _fogRawImage;
+        Texture2D _fogTexture;
+        Color32[] _fogPixels;
+        int _lastFogRevision = -1;
+        int _lastFogMaskResolution;
+        float _lastFogEdgeSoftness;
+        Color _lastFogTint;
         PlayerShipController _player;
+        EnemyWorld _enemyWorld;
         StageLayout _layout;
+        readonly List<RectTransform> _threatIcons = new(8);
+        float _beaconPulse;
+        float _mapScale;
 
         public static V3MinimapHud Ensure(Transform canvas, StageLayout layout)
         {
@@ -25,81 +80,255 @@ namespace HighSeas.V3
             if (existing != null)
             {
                 existing._layout = layout;
+                existing.EnsureVisualShell();
                 existing.BuildMarkers(layout);
                 return existing;
             }
 
-            var root = new GameObject("PLACEHOLDER_v3_ui_minimap");
+            var root = new GameObject("v3_ui_minimap");
             root.transform.SetParent(canvas, false);
             var rect = root.AddComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(16f, -140f);
-            rect.sizeDelta = new Vector2(MapSize, MapSize);
-
-            var bg = root.AddComponent<Image>();
-            bg.color = new Color(0.02f, 0.06f, 0.1f, 0.95f);
-
-            var mapGo = new GameObject("MapRoot");
-            mapGo.transform.SetParent(root.transform, false);
-            var mapRect = mapGo.AddComponent<RectTransform>();
-            mapRect.anchorMin = Vector2.zero;
-            mapRect.anchorMax = Vector2.one;
-            mapRect.offsetMin = new Vector2(8f, 8f);
-            mapRect.offsetMax = new Vector2(-8f, -8f);
-
-            var fogGo = new GameObject("FogRoot");
-            fogGo.transform.SetParent(mapRect, false);
-            var fogRect = fogGo.AddComponent<RectTransform>();
-            fogRect.anchorMin = Vector2.zero;
-            fogRect.anchorMax = Vector2.one;
-            fogRect.offsetMin = Vector2.zero;
-            fogRect.offsetMax = Vector2.zero;
-
-            var playerGo = new GameObject("PlayerIcon");
-            playerGo.transform.SetParent(mapRect, false);
-            var playerRect = playerGo.AddComponent<RectTransform>();
-            playerRect.sizeDelta = new Vector2(10f, 14f);
-            var playerImg = playerGo.AddComponent<Image>();
-            playerImg.color = Color.white;
-
-            var sectorGo = new GameObject("BeaconSector");
-            sectorGo.transform.SetParent(mapRect, false);
-            var sectorRect = sectorGo.AddComponent<RectTransform>();
-            sectorRect.sizeDelta = new Vector2(40f, 40f);
-            var sectorImg = sectorGo.AddComponent<Image>();
-            sectorImg.color = new Color(0.85f, 0.25f, 0.95f, 0.25f);
-            sectorGo.SetActive(false);
-
-            CreateMapBorder(mapRect);
-
             var hud = root.AddComponent<V3MinimapHud>();
-            hud._mapRoot = mapRect;
-            hud._fogRoot = fogRect;
-            hud._playerIcon = playerRect;
-            hud._beaconSector = sectorRect;
+            hud.ApplyProjectSettings();
+            hud.ApplyTopRightLayout(rect);
+            hud.BuildChrome(rect);
             hud._layout = layout;
             hud.BuildMarkers(layout);
             return hud;
         }
 
-        void Start() => _player = FindFirstObjectByType<PlayerShipController>();
+        void Awake() => ApplyProjectSettings();
 
-        void Update()
+        void Start()
         {
+            _player = FindFirstObjectByType<PlayerShipController>();
+            _enemyWorld = FindFirstObjectByType<EnemyWorld>();
+        }
+
+        void OnDestroy() => DestroyFogTexture();
+
+        public void ApplyProjectSettings()
+        {
+            var settings = V3MinimapHudSettings.Load();
+            settings?.ApplyTo(this);
+        }
+
+        void LateUpdate()
+        {
+            SyncLayout();
+            RefreshMapSize();
             if (_player == null)
                 _player = FindFirstObjectByType<PlayerShipController>();
-            if (_player == null || _playerIcon == null) return;
+            if (_enemyWorld == null)
+                _enemyWorld = FindFirstObjectByType<EnemyWorld>();
+            if (_player == null || _playerIcon == null || _contentRoot == null) return;
+
+            _mapScale = ComputeMapScale();
 
             var pos = _player.Position;
-            _playerIcon.anchoredPosition = WorldToMap(pos);
-            var forward = _player.MovementForward;
-            _playerIcon.localRotation = Quaternion.Euler(0f, 0f, -Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg);
+            _contentRoot.anchoredPosition = -WorldToMap(pos);
+            _contentRoot.sizeDelta = new Vector2(
+                PlayBounds.HalfExtentX * _mapScale * 2.2f,
+                PlayBounds.HalfExtentZ * _mapScale * 2.2f);
 
-            RefreshFog();
+            var forward = GetPlayerHeading();
+            var headingDeg = Mathf.Atan2(forward.x, -forward.z) * Mathf.Rad2Deg + headingOffsetDegrees;
+            _playerIcon.localRotation = Quaternion.Euler(0f, 0f, headingDeg);
+
+            RefreshFog(pos);
             RefreshBeaconSector(pos);
+            RefreshMarkerPositions();
             RefreshMarkerVisibility();
+            RefreshThreatMarkers();
+            PulseBossBeacon();
+        }
+
+        void BuildChrome(RectTransform root)
+        {
+            var art = V3MinimapArtSettings.Load();
+
+            _mapClip = CreateChild(root, "MapClip");
+            Stretch(_mapClip);
+
+            var maskImage = _mapClip.gameObject.AddComponent<Image>();
+            maskImage.sprite = V3MinimapUiSprites.Circle;
+            maskImage.color = Color.white;
+            maskImage.raycastTarget = false;
+            var mask = _mapClip.gameObject.AddComponent<Mask>();
+            mask.showMaskGraphic = false;
+
+            _contentRoot = CreateChild(_mapClip, "ContentRoot");
+            _contentRoot.anchorMin = new Vector2(0.5f, 0.5f);
+            _contentRoot.anchorMax = new Vector2(0.5f, 0.5f);
+            _contentRoot.pivot = new Vector2(0.5f, 0.5f);
+            _contentRoot.sizeDelta = new Vector2(800f, 800f);
+
+            var ocean = CreateChild(_contentRoot, "OceanBackground");
+            Stretch(ocean);
+            var oceanImg = ocean.gameObject.AddComponent<Image>();
+            oceanImg.raycastTarget = false;
+            if (art?.background != null)
+            {
+                oceanImg.sprite = art.background;
+                oceanImg.type = Image.Type.Simple;
+                oceanImg.preserveAspect = false;
+            }
+            else
+                oceanImg.color = new Color(0.05f, 0.22f, 0.42f, 1f);
+
+            _fogRoot = CreateChild(_contentRoot, "FogRoot");
+            Stretch(_fogRoot);
+            EnsureFogMaskImage();
+
+            _mapRoot = CreateChild(_contentRoot, "MapRoot");
+            _mapRoot.anchorMin = new Vector2(0.5f, 0.5f);
+            _mapRoot.anchorMax = new Vector2(0.5f, 0.5f);
+            _mapRoot.pivot = new Vector2(0.5f, 0.5f);
+            _mapRoot.sizeDelta = Vector2.zero;
+
+            _threatRoot = CreateChild(_contentRoot, "ThreatRoot");
+            _threatRoot.anchorMin = new Vector2(0.5f, 0.5f);
+            _threatRoot.anchorMax = new Vector2(0.5f, 0.5f);
+            _threatRoot.pivot = new Vector2(0.5f, 0.5f);
+            _threatRoot.sizeDelta = Vector2.zero;
+            _threatRoot.SetAsLastSibling();
+
+            _beaconSector = CreateChild(_mapClip, "BeaconSector");
+            _beaconSector.anchorMin = new Vector2(0.5f, 0.5f);
+            _beaconSector.anchorMax = new Vector2(0.5f, 0.5f);
+            _beaconSector.pivot = new Vector2(0.5f, 0.5f);
+            _beaconSector.anchoredPosition = Vector2.zero;
+            _beaconSector.sizeDelta = new Vector2(52f, 52f);
+            var sectorImg = _beaconSector.gameObject.AddComponent<Image>();
+            sectorImg.sprite = V3MinimapUiSprites.Triangle;
+            sectorImg.color = new Color(0.85f, 0.25f, 0.95f, 0.22f);
+            sectorImg.raycastTarget = false;
+            _beaconSector.gameObject.SetActive(false);
+
+            _playerIcon = CreateChild(_mapClip, "PlayerIcon");
+            _playerIcon.anchorMin = new Vector2(0.5f, 0.5f);
+            _playerIcon.anchorMax = new Vector2(0.5f, 0.5f);
+            _playerIcon.pivot = new Vector2(0.5f, 0.5f);
+            _playerIcon.anchoredPosition = Vector2.zero;
+            _playerIcon.sizeDelta = new Vector2(16f, 16f);
+            V3MinimapMarkerGraphics.Apply(_playerIcon, V3MinimapMarkerGraphics.GlyphKind.Player);
+
+            var overlay = CreateChild(root, "FrameOverlay");
+            Stretch(overlay);
+            overlay.SetAsLastSibling();
+            _overlayImage = overlay.gameObject.AddComponent<Image>();
+            _overlayImage.raycastTarget = false;
+            if (art?.overlay != null)
+            {
+                _overlayImage.sprite = art.overlay;
+                _overlayImage.type = Image.Type.Simple;
+                _overlayImage.preserveAspect = false;
+            }
+            else
+                _overlayImage.color = new Color(0.85f, 0.7f, 0.25f, 0.85f);
+        }
+
+        void EnsureVisualShell()
+        {
+            var rect = transform as RectTransform;
+            if (rect != null)
+                ApplyTopRightLayout(rect);
+
+            if (transform.Find("MapClip/ContentRoot") != null)
+            {
+                WireReferences();
+                RefreshClipInsets(rect);
+                return;
+            }
+
+            for (var i = transform.childCount - 1; i >= 0; i--)
+                Destroy(transform.GetChild(i).gameObject);
+
+            _mapClip = null;
+            _contentRoot = null;
+            _mapRoot = null;
+            _fogRoot = null;
+            _threatRoot = null;
+            _playerIcon = null;
+            _beaconSector = null;
+            _threatIcons.Clear();
+            BuildChrome(rect);
+            WireReferences();
+            RefreshClipInsets(rect);
+        }
+
+        void WireReferences()
+        {
+            _mapClip = transform.Find("MapClip") as RectTransform;
+            if (_mapClip == null) return;
+            _contentRoot = _mapClip.Find("ContentRoot") as RectTransform;
+            if (_contentRoot == null) return;
+            _fogRoot = _contentRoot.Find("FogRoot") as RectTransform;
+            EnsureFogMaskImage();
+            _mapRoot = _contentRoot.Find("MapRoot") as RectTransform;
+            _threatRoot = _contentRoot.Find("ThreatRoot") as RectTransform;
+            _playerIcon = _mapClip.Find("PlayerIcon") as RectTransform;
+            _beaconSector = _mapClip.Find("BeaconSector") as RectTransform;
+            _overlayImage = transform.Find("FrameOverlay")?.GetComponent<Image>();
+        }
+
+        public void ApplyTopRightLayout(RectTransform rect)
+        {
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-cornerInset, -cornerInset);
+            rect.sizeDelta = new Vector2(maxMapSize, maxMapSize);
+        }
+
+        void OnValidate()
+        {
+            minMapSize = Mathf.Max(80f, minMapSize);
+            maxMapSize = Mathf.Max(minMapSize, maxMapSize);
+            megabonkNormalZoom = Mathf.Max(1f, megabonkNormalZoom);
+            megabonkFullMapZoom = Mathf.Max(1f, megabonkFullMapZoom);
+
+            if (!Application.isPlaying)
+                return;
+
+            var rect = transform as RectTransform;
+            if (rect != null)
+                ApplyTopRightLayout(rect);
+            RefreshMapSize();
+        }
+
+        void RefreshMapSize()
+        {
+            var rect = transform as RectTransform;
+            if (rect == null) return;
+
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas == null) return;
+
+            var logicalHeight = canvas.pixelRect.height / Mathf.Max(canvas.scaleFactor, 0.01f);
+            var size = Mathf.Clamp(logicalHeight * heightFraction, minMapSize, maxMapSize);
+            rect.sizeDelta = new Vector2(size, size);
+            RefreshClipInsets(rect);
+        }
+
+        void RefreshClipInsets(RectTransform root)
+        {
+            if (_mapClip == null || root == null) return;
+            var pad = Mathf.Max(8f, root.rect.width * ringInsetFraction);
+            _mapClip.offsetMin = new Vector2(pad, pad);
+            _mapClip.offsetMax = new Vector2(-pad, -pad);
+        }
+
+        float ComputeMapScale()
+        {
+            if (_mapClip == null) return 1f;
+            var innerHalf = Mathf.Min(_mapClip.rect.width, _mapClip.rect.height) * 0.5f;
+            if (innerHalf <= 1f) innerHalf = 60f;
+
+            var worldHalf = Mathf.Max(
+                32f,
+                Mathf.Max(PlayBounds.HalfExtentX, PlayBounds.HalfExtentZ) * VisibleWorldAxisFraction);
+            return innerHalf / worldHalf;
         }
 
         public void BuildMarkers(StageLayout layout)
@@ -107,58 +336,177 @@ namespace HighSeas.V3
             _layout = layout;
             if (_mapRoot == null || layout?.pois == null) return;
 
+            if (_mapScale <= 0.01f)
+                _mapScale = ComputeMapScale();
+
             for (var i = _mapRoot.childCount - 1; i >= 0; i--)
-            {
-                var child = _mapRoot.GetChild(i);
-                if (child == _playerIcon || child == _fogRoot || child == _beaconSector) continue;
-                Destroy(child.gameObject);
-            }
+                Destroy(_mapRoot.GetChild(i).gameObject);
 
             for (var i = 0; i < layout.pois.Count; i++)
             {
                 var poi = layout.pois[i];
-                var marker = new GameObject($"POI_{i}_{poi.type}");
-                marker.transform.SetParent(_mapRoot, false);
-                var rect = marker.AddComponent<RectTransform>();
-                rect.sizeDelta = GetMarkerSize(poi.type);
-                rect.anchoredPosition = WorldToMap(poi.position);
-                var img = marker.AddComponent<Image>();
-                img.color = GetMarkerColor(poi.type);
-                marker.AddComponent<CanvasGroup>();
+                var marker = CreateChild(_mapRoot, $"POI_{i}_{poi.type}");
+                marker.sizeDelta = new Vector2(20f, 20f);
+                marker.anchoredPosition = WorldToMap(poi.position);
+                V3MinimapMarkerGraphics.Apply(marker, V3MinimapMarkerGraphics.FromPoi(poi.type));
+                var group = marker.gameObject.AddComponent<CanvasGroup>();
+                group.blocksRaycasts = false;
+                group.interactable = false;
             }
         }
 
-        void RefreshFog()
+        void RefreshMarkerPositions()
         {
-            if (_fogRoot == null || V3DiscoverySystem.Instance == null) return;
+            if (_layout?.pois == null || _mapRoot == null) return;
 
-            for (var x = -10; x <= 10; x++)
+            for (var i = 0; i < _mapRoot.childCount; i++)
             {
-                for (var z = -10; z <= 10; z++)
+                var child = _mapRoot.GetChild(i);
+                if (!TryParsePoiKey(child.name, out var index)) continue;
+                if (index < 0 || index >= _layout.pois.Count) continue;
+                var rect = child as RectTransform;
+                if (rect != null)
+                    rect.anchoredPosition = WorldToMap(_layout.pois[index].position);
+            }
+        }
+
+        void RefreshFog(Vector3 playerPos)
+        {
+            if (_fogRawImage == null) return;
+            var discovery = V3DiscoverySystem.Instance;
+            if (discovery == null) return;
+
+            var revision = discovery.ExplorationRevision;
+            var settingsChanged = revision != _lastFogRevision
+                                  || fogMaskResolution != _lastFogMaskResolution
+                                  || !Mathf.Approximately(fogEdgeSoftnessWorld, _lastFogEdgeSoftness)
+                                  || _lastFogTint != fogTint;
+            if (!settingsChanged) return;
+
+            _lastFogRevision = revision;
+            _lastFogMaskResolution = fogMaskResolution;
+            _lastFogEdgeSoftness = fogEdgeSoftnessWorld;
+            _lastFogTint = fogTint;
+            EnsureFogTexture();
+            RebuildFogMask(discovery);
+        }
+
+        void EnsureFogMaskImage()
+        {
+            if (_fogRoot == null) return;
+
+            var existing = _fogRoot.Find("FogMask")?.GetComponent<RawImage>();
+            if (existing != null)
+            {
+                _fogRawImage = existing;
+                return;
+            }
+
+            for (var i = _fogRoot.childCount - 1; i >= 0; i--)
+                Destroy(_fogRoot.GetChild(i).gameObject);
+
+            var go = new GameObject("FogMask", typeof(RectTransform));
+            go.transform.SetParent(_fogRoot, false);
+            Stretch(go.GetComponent<RectTransform>());
+            _fogRawImage = go.AddComponent<RawImage>();
+            _fogRawImage.raycastTarget = false;
+            DestroyFogTexture();
+            _lastFogRevision = -1;
+        }
+
+        void EnsureFogTexture()
+        {
+            var width = Mathf.Clamp(fogMaskResolution, 64, 256);
+            var aspect = PlayBounds.HalfExtentZ / Mathf.Max(1f, PlayBounds.HalfExtentX);
+            var height = Mathf.Clamp(Mathf.RoundToInt(width * aspect), 64, 256);
+
+            if (_fogTexture != null && _fogTexture.width == width && _fogTexture.height == height)
+                return;
+
+            DestroyFogTexture();
+            _fogTexture = new Texture2D(width, height, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+            _fogPixels = new Color32[width * height];
+            _fogRawImage.texture = _fogTexture;
+        }
+
+        void RebuildFogMask(V3DiscoverySystem discovery)
+        {
+            if (_fogTexture == null || _fogPixels == null) return;
+
+            var width = _fogTexture.width;
+            var height = _fogTexture.height;
+            var center = PlayBounds.Center;
+            var halfX = Mathf.Max(1f, PlayBounds.HalfExtentX);
+            var halfZ = Mathf.Max(1f, PlayBounds.HalfExtentZ);
+            var r = (byte)Mathf.Clamp(Mathf.RoundToInt(fogTint.r * 255f), 0, 255);
+            var g = (byte)Mathf.Clamp(Mathf.RoundToInt(fogTint.g * 255f), 0, 255);
+            var b = (byte)Mathf.Clamp(Mathf.RoundToInt(fogTint.b * 255f), 0, 255);
+
+            for (var y = 0; y < height; y++)
+            {
+                var v = (y + 0.5f) / height;
+                var wz = center.z + (v * 2f - 1f) * halfZ;
+                for (var x = 0; x < width; x++)
                 {
-                    var world = new Vector3(x * V3DiscoverySystem.ExploreCellSize, 0f, z * V3DiscoverySystem.ExploreCellSize);
-                    var key = $"fog_{x}_{z}";
-                    var child = _fogRoot.Find(key);
-                    var explored = V3DiscoverySystem.Instance.IsCellExplored(world);
-                    if (!explored)
-                    {
-                        if (child == null)
-                        {
-                            var fog = new GameObject(key);
-                            fog.transform.SetParent(_fogRoot, false);
-                            var rect = fog.AddComponent<RectTransform>();
-                            rect.sizeDelta = new Vector2(8f, 8f);
-                            rect.anchoredPosition = WorldToMap(world);
-                            var img = fog.AddComponent<Image>();
-                            img.color = new Color(0.02f, 0.05f, 0.08f, 0.85f);
-                        }
-                    }
-                    else if (child != null)
-                    {
-                        Destroy(child.gameObject);
-                    }
+                    var u = (x + 0.5f) / width;
+                    var wx = center.x + (u * 2f - 1f) * halfX;
+                    var world = new Vector3(wx, 0f, wz);
+                    var alpha = ComputeFogAlpha(discovery, world);
+                    _fogPixels[y * width + x] = new Color32(r, g, b, (byte)Mathf.Clamp(Mathf.RoundToInt(alpha * 255f), 0, 255));
                 }
             }
+
+            _fogTexture.SetPixels32(_fogPixels);
+            _fogTexture.Apply(false);
+        }
+
+        float ComputeFogAlpha(V3DiscoverySystem discovery, Vector3 world)
+        {
+            if (discovery.IsCellExplored(world))
+                return 0f;
+
+            if (fogEdgeSoftnessWorld <= 0.01f)
+                return fogTint.a;
+
+            var cs = V3DiscoverySystem.ExploreCellSize;
+            var cx = Mathf.FloorToInt(world.x / cs);
+            var cz = Mathf.FloorToInt(world.z / cs);
+            var minDist = float.MaxValue;
+            for (var dx = -2; dx <= 2; dx++)
+            {
+                for (var dz = -2; dz <= 2; dz++)
+                {
+                    var cellCenter = new Vector3(
+                        (cx + dx) * cs + cs * 0.5f,
+                        0f,
+                        (cz + dz) * cs + cs * 0.5f);
+                    if (!discovery.IsCellExplored(cellCenter)) continue;
+                    var dist = Vector2.Distance(
+                        new Vector2(world.x, world.z),
+                        new Vector2(cellCenter.x, cellCenter.z));
+                    if (dist < minDist) minDist = dist;
+                }
+            }
+
+            if (minDist >= float.MaxValue * 0.5f)
+                return fogTint.a;
+
+            return fogTint.a * Mathf.SmoothStep(0f, 1f, minDist / fogEdgeSoftnessWorld);
+        }
+
+        void DestroyFogTexture()
+        {
+            if (_fogTexture == null) return;
+            if (Application.isPlaying) Destroy(_fogTexture);
+            else DestroyImmediate(_fogTexture);
+            _fogTexture = null;
+            _fogPixels = null;
+            if (_fogRawImage != null)
+                _fogRawImage.texture = null;
         }
 
         void RefreshBeaconSector(Vector3 playerPos)
@@ -168,79 +516,175 @@ namespace HighSeas.V3
             if (state == BeaconRevealState.DirectionSector)
             {
                 _beaconSector.gameObject.SetActive(true);
-                _beaconSector.anchoredPosition = WorldToMap(playerPos);
-                var bearing = V3DiscoverySystem.Instance.GetBeaconBearingDegrees(playerPos);
-                _beaconSector.localRotation = Quaternion.Euler(0f, 0f, -bearing);
+                _beaconSector.anchoredPosition = Vector2.zero;
+                var bearing = GetBeaconHeadingDegrees(playerPos);
+                _beaconSector.localRotation = Quaternion.Euler(0f, 0f, bearing + headingOffsetDegrees);
             }
             else
-            {
                 _beaconSector.gameObject.SetActive(false);
-            }
         }
 
         void RefreshMarkerVisibility()
         {
             if (_layout?.pois == null || V3DiscoverySystem.Instance == null) return;
-            var markerIndex = 0;
+
             for (var i = 0; i < _mapRoot.childCount; i++)
             {
                 var child = _mapRoot.GetChild(i);
-                if (child == _playerIcon || child == _fogRoot || child == _beaconSector) continue;
-                if (!child.name.StartsWith("POI_")) continue;
+                if (!TryParsePoiKey(child.name, out var markerIndex)) continue;
+                if (markerIndex < 0 || markerIndex >= _layout.pois.Count) continue;
 
-                var visible = V3DiscoverySystem.Instance.IsPoiVisible(markerIndex) ||
-                              V3DiscoverySystem.Instance.BeaconState >= BeaconRevealState.ExactMarker &&
-                              _layout.pois[markerIndex].type == POIType.BossBeacon;
+                var poi = _layout.pois[markerIndex];
+                if (poi.used)
+                {
+                    child.gameObject.SetActive(false);
+                    continue;
+                }
+
+                child.gameObject.SetActive(true);
+                var discovery = V3DiscoverySystem.Instance;
+                var discovered = discovery.IsPoiVisible(markerIndex);
+                var beaconHint = poi.type == POIType.BossBeacon &&
+                                 discovery.BeaconState >= BeaconRevealState.ExactMarker;
+                var exploredNearPoi = discovery.IsCellExplored(poi.position);
+                var nearPlayer = _player != null &&
+                                 Vector3.Distance(_player.Position, poi.position) <= V3DiscoverySystem.DiscoveryRadius;
+
+                var alpha = discovered || beaconHint ? 1f :
+                    exploredNearPoi || nearPlayer ? 0.92f : 0f;
+
                 var group = child.GetComponent<CanvasGroup>();
-                if (group == null) group = child.gameObject.AddComponent<CanvasGroup>();
-                group.alpha = visible ? 1f : 0f;
-                markerIndex++;
+                if (group == null)
+                {
+                    group = child.gameObject.AddComponent<CanvasGroup>();
+                    group.blocksRaycasts = false;
+                    group.interactable = false;
+                }
+
+                group.alpha = alpha;
             }
         }
 
-        static Vector2 GetMarkerSize(POIType type) =>
-            type switch
-            {
-                POIType.BossBeacon => new Vector2(12f, 12f),
-                POIType.SalvageChest => new Vector2(7f, 7f),
-                _ => new Vector2(9f, 9f)
-            };
+        void RefreshThreatMarkers()
+        {
+            if (_threatRoot == null || _enemyWorld == null) return;
+            var defs = _enemyWorld.Definitions;
+            if (defs == null || defs.Length == 0) return;
 
-        static Color GetMarkerColor(POIType type) =>
-            type switch
+            var write = 0;
+            var agents = _enemyWorld.Agents;
+            for (var i = 0; i < agents.Length; i++)
             {
-                POIType.SalvageChest => new Color(0.85f, 0.65f, 0.2f),
-                POIType.BossBeacon => new Color(0.85f, 0.25f, 0.95f),
-                POIType.GildedWreck => new Color(0.55f, 0.4f, 0.3f),
-                POIType.MerchantSkiff => new Color(0.9f, 0.55f, 0.2f),
-                POIType.TrialBuoy => new Color(0.2f, 0.7f, 0.95f),
-                POIType.CursedIdol => new Color(0.75f, 0.35f, 0.95f),
-                _ => Color.gray
-            };
+                var agent = agents[i];
+                if (!agent.active) continue;
+                if (agent.definitionIndex < 0 || agent.definitionIndex >= defs.Length) continue;
+
+                var def = defs[agent.definitionIndex];
+                if (!def.isBoss && !def.isMiniboss) continue;
+
+                if (V3DiscoverySystem.Instance != null && !V3DiscoverySystem.Instance.IsCellExplored(agent.position))
+                    continue;
+
+                var icon = GetThreatIcon(write);
+                write++;
+                icon.gameObject.SetActive(true);
+                icon.anchoredPosition = WorldToMap(agent.position);
+                V3MinimapMarkerGraphics.Apply(
+                    icon,
+                    def.isBoss ? V3MinimapMarkerGraphics.GlyphKind.Boss : V3MinimapMarkerGraphics.GlyphKind.Miniboss);
+            }
+
+            for (var i = write; i < _threatIcons.Count; i++)
+                _threatIcons[i].gameObject.SetActive(false);
+        }
+
+        RectTransform GetThreatIcon(int index)
+        {
+            while (_threatIcons.Count <= index)
+            {
+                var icon = CreateChild(_threatRoot, $"Threat_{_threatIcons.Count}");
+                icon.sizeDelta = new Vector2(18f, 18f);
+                _threatIcons.Add(icon);
+            }
+
+            return _threatIcons[index];
+        }
+
+        void PulseBossBeacon()
+        {
+            _beaconPulse += Time.unscaledDeltaTime * 3f;
+            if (_mapRoot == null) return;
+
+            for (var i = 0; i < _mapRoot.childCount; i++)
+            {
+                var child = _mapRoot.GetChild(i);
+                if (!child.name.Contains(nameof(POIType.BossBeacon))) continue;
+                var group = child.GetComponent<CanvasGroup>();
+                if (group != null && group.alpha < 0.5f) continue;
+                var scale = 1f + Mathf.Sin(_beaconPulse) * 0.08f;
+                child.localScale = new Vector3(scale, scale, 1f);
+            }
+        }
+
+        void SyncLayout()
+        {
+            if (V3RunContext.Layout != null)
+                _layout = V3RunContext.Layout;
+        }
+
+        float GetBeaconHeadingDegrees(Vector3 from)
+        {
+            var beacon = V3DiscoverySystem.Instance?.GetBeaconPosition();
+            if (!beacon.HasValue) return 0f;
+            var delta = beacon.Value - from;
+            delta.y = 0f;
+            return Mathf.Atan2(delta.x, -delta.z) * Mathf.Rad2Deg;
+        }
+
+        Vector3 GetPlayerHeading()
+        {
+            if (_player == null) return Vector3.forward;
+            var velocity = _player.Velocity;
+            velocity.y = 0f;
+            if (velocity.sqrMagnitude > 0.25f)
+                return velocity.normalized;
+            return _player.MovementForward;
+        }
+
+        static bool TryParsePoiKey(string name, out int index)
+        {
+            index = -1;
+            if (!name.StartsWith("POI_")) return false;
+            var end = name.IndexOf('_', 4);
+            if (end < 0) return false;
+            return int.TryParse(name.Substring(4, end - 4), out index);
+        }
 
         Vector2 WorldToMap(Vector3 world)
         {
+            if (_mapScale <= 0.01f)
+                _mapScale = ComputeMapScale();
             var local = world - PlayBounds.Center;
-            return new Vector2(local.x, local.z) * MapScale;
+            return new Vector2(local.x, local.z) * _mapScale;
         }
 
-        static void CreateMapBorder(RectTransform mapRoot)
+        static RectTransform CreateChild(RectTransform parent, string name)
         {
-            var borderGo = new GameObject("StormBorder");
-            borderGo.transform.SetParent(mapRoot, false);
-            var border = borderGo.AddComponent<RectTransform>();
-            border.anchorMin = Vector2.zero;
-            border.anchorMax = Vector2.one;
-            border.offsetMin = new Vector2(1f, 1f);
-            border.offsetMax = new Vector2(-1f, -1f);
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            return rt;
+        }
 
-            var image = borderGo.AddComponent<Image>();
-            image.color = new Color(0f, 0f, 0f, 0f);
-            image.raycastTarget = false;
-
-            var outline = borderGo.AddComponent<Outline>();
-            outline.effectColor = new Color(0.22f, 0.04f, 0.38f, 0.9f);
-            outline.effectDistance = new Vector2(2f, -2f);
+        static void Stretch(RectTransform rt)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
         }
     }
 }

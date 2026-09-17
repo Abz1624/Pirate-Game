@@ -149,12 +149,15 @@ namespace HighSeas.Editor
             juice.cutlassPrefab = LoadPrefab($"{VfxRoot}/12_CutlassSword.prefab");
             juice.seaFoamTrailPrefab = LoadPrefab($"{VfxRoot}/11_SeaFoamTrail.prefab");
 
-            juice.infamyPickupPrefab = LoadPrefab($"{VfxRoot}/04_XPCrystal.prefab");
+            const string PickupBarrelRoot = "Assets/GameObject";
+            juice.xpFlyingGemPrefab = LoadPrefab($"{VfxRoot}/04_XPCrystal.prefab");
+            juice.infamyPickupPrefab = juice.xpFlyingGemPrefab;
             juice.goldPickupPrefab = LoadPrefab($"{VfxRoot}/03_GoldCoin.prefab");
             juice.goldCoinMeshPrefab = null;
-            juice.healthPickupPrefab = LoadPrefab($"{VfxRoot}/07_HealthPickupBarrel.prefab");
+            juice.healthPickupPrefab = LoadPrefab($"{PickupBarrelRoot}/HealthBarrel.prefab");
             juice.healthBurstMaterial = LoadMaterial("Assets/Material/HealthParticles.mat");
-            juice.goldBarrelPickupPrefab = LoadPrefab($"{VfxRoot}/08_GoldPickupBarrel.prefab");
+            juice.goldBarrelPickupPrefab = LoadPrefab($"{PickupBarrelRoot}/LootBarrel.prefab");
+            juice.xpBarrelPickupPrefab = LoadPrefab($"{PickupBarrelRoot}/GemBarrel.prefab");
 
             juice.infamyPickupScale = 1f;
             juice.eliteKillExplosionScale = 0.35f;

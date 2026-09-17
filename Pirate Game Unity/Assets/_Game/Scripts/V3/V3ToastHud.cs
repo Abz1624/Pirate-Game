@@ -3,9 +3,11 @@ using UnityEngine;
 
 namespace HighSeas.V3
 {
-    /// <summary>Screen-center transient messages (chest costs, beats, objectives).</summary>
+    /// <summary>Transient info toasts (chest costs, beats, objectives) above the lower HUD.</summary>
     public sealed class V3ToastHud : MonoBehaviour
     {
+        const float HeightFromBottom = 0.2f;
+
         public static V3ToastHud Instance { get; private set; }
 
         TextMeshProUGUI _text;
@@ -13,15 +15,16 @@ namespace HighSeas.V3
 
         public static V3ToastHud Ensure(Transform canvas)
         {
-            if (Instance != null) return Instance;
+            if (Instance != null)
+            {
+                ApplyLayout(Instance.transform as RectTransform);
+                return Instance;
+            }
 
             var root = new GameObject("PLACEHOLDER_v3_ui_toast_hud");
             root.transform.SetParent(canvas, false);
             var rect = root.AddComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.5f, 0.5f);
-            rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = Vector2.zero;
+            ApplyLayout(rect);
             rect.sizeDelta = new Vector2(560f, 104f);
 
             var bg = root.AddComponent<UnityEngine.UI.Image>();
@@ -49,10 +52,21 @@ namespace HighSeas.V3
             return toast;
         }
 
+        void Awake() => ApplyLayout(transform as RectTransform);
+
         void OnDestroy()
         {
             if (Instance == this)
                 Instance = null;
+        }
+
+        static void ApplyLayout(RectTransform rect)
+        {
+            if (rect == null) return;
+            rect.anchorMin = new Vector2(0.5f, HeightFromBottom);
+            rect.anchorMax = new Vector2(0.5f, HeightFromBottom);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
         }
 
         public void Show(string message, float durationSeconds = 4f)

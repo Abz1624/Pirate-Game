@@ -25,4 +25,7 @@ MonoBehaviour:
   goldAutoPickupRadius: 26
   barrelTouchRadius: 5
   healthDropChance: 0.12
+  barrelBurstVisualMin: 6
+  barrelBurstVisualMax: 10
+  maxFlyingPickupSpawnsPerFrame: 18
   firstMinibossSeconds: 90
