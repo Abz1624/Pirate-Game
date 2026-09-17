@@ -7,6 +7,9 @@ namespace HighSeas.V3
     /// <summary>Abstract Megabonk-style minimap glyphs (shape + color, not world meshes).</summary>
     public static class V3MinimapMarkerGraphics
     {
+        static readonly Color TreasureChestColor = new Color(254f / 255f, 185f / 255f, 37f / 255f, 1f);
+        static readonly Color TreasureChestOutlineColor = new Color(0.62f, 0.45f, 0.08f, 0.95f);
+
         public enum GlyphKind
         {
             Player,
@@ -45,8 +48,8 @@ namespace HighSeas.V3
                     AddCircle(root, 5f, new Color(1f, 1f, 1f, 0.35f));
                     break;
                 case GlyphKind.SalvageChest:
-                    AddSquare(root, 9f, new Color(1f, 0.88f, 0.22f), 12f);
-                    AddOutlineSquare(root, 11f, new Color(0.72f, 0.52f, 0.08f, 0.95f));
+                    AddSquare(root, 4.5f, TreasureChestColor, 12f);
+                    AddOutlineSquare(root, 5.5f, TreasureChestOutlineColor);
                     break;
                 case GlyphKind.BossBeacon:
                     AddDiamond(root, 14f, new Color(0.92f, 0.35f, 1f), 0f);

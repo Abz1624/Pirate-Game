@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 943d8d43e5682504bad13d4bd8a52154, type: 3}
+  m_Name: V3PlayerInfoHudArtSettings
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.V3.V3PlayerInfoHudArtSettings
+  emptyBar: {fileID: 21300000, guid: 66967f76e15198d41a61f9536655b63a, type: 3}
+  fullHpBar: {fileID: 21300000, guid: 55938dcbdc87f374fb633e52ab534c92, type: 3}
+  fullXpBar: {fileID: 21300000, guid: c8f0c7027ed41624eaac4b03a4593446, type: 3}
+  hpIcon: {fileID: 21300000, guid: 53c23b0ed5d50794888dc4bfbd7ec3ae, type: 3}
+  xpIcon: {fileID: 21300000, guid: 7f87100992541214f9d962c060098752, type: 3}
+  levelBadgeOverlay: {fileID: 21300000, guid: 44212e40e39334c4dba9b56784828bb3, type: 3}
+  shieldOverlayPattern: {fileID: 21300000, guid: 84fdd32bb66ce584b8bb934e37af8c83, type: 3}
+  captainPortraits:
+  - captain: 0
+    icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}
+  - captain: 1
+    icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}
+  - captain: 3
+    icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}
+  - captain: 2
+    icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}
+  - captain: 4
+    icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}
+  - captain: 5
+    icon: {fileID: 21300000, guid: da8d9dcde71c5ac469739c5749c73ed6, type: 3}

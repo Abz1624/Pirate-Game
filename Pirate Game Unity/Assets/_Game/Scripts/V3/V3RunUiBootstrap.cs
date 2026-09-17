@@ -38,9 +38,22 @@ namespace HighSeas.V3
             V3RunCaptainActiveHud.Ensure(canvas.transform);
             V3RunStatsHud.Ensure(canvas.transform);
             V3RunTimerHud.Ensure(canvas.transform);
+            V3PlayerInfoHud.Ensure(canvas.transform);
+            HideLegacyRunHudPanels(canvas);
             HideLegacyWeaponStrip(canvas);
 
             return canvas;
+        }
+
+        static void HideLegacyRunHudPanels(Canvas canvas)
+        {
+            var root = canvas.transform.Find($"{RunHudUiFactory.RootName}");
+            if (root == null)
+                return;
+
+            var left = root.Find("LeftHudPanel");
+            if (left != null)
+                left.gameObject.SetActive(false);
         }
 
         static void HideLegacyWeaponStrip(Canvas canvas)
