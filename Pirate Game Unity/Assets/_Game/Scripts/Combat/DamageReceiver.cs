@@ -17,7 +17,7 @@ namespace HighSeas.Combat
 
     public sealed class DamageReceiver : MonoBehaviour, IDamageable
     {
-        [SerializeField] float maxHP = 100f;
+        [SerializeField] float maxHP = GameConstants.DefaultHull;
         [SerializeField] float armor;
         [SerializeField] bool isElite;
 

@@ -262,6 +262,16 @@ namespace HighSeas.Enemies
             return go.transform;
         }
 
+        public void DespawnAllActive()
+        {
+            if (_agents == null) return;
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                if (_agents[i].active)
+                    Despawn(i);
+            }
+        }
+
         public void Despawn(int index)
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;

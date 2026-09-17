@@ -4,6 +4,7 @@ using HighSeas.Data;
 using HighSeas.Player;
 using HighSeas.POI;
 using HighSeas.UI;
+using HighSeas.V3.MultiShip;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -263,6 +264,18 @@ namespace HighSeas.V3
         {
             if (_questLines.Count == 0 || RunManager.Instance == null)
                 return;
+
+            if (V3RunSession.IsPvP)
+            {
+                SetQuestLine(0, "PvP Duel");
+                SetQuestLine(1, "Defeat the rival captain");
+                SetQuestLine(2, V3PvPRunDirector.RivalDefeated
+                    ? "Victory — rival sunk"
+                    : RunManager.Instance.IsRunEnded
+                        ? "Defeated"
+                        : "Sink the rival ship");
+                return;
+            }
 
             var profile = V3CaptainProfile.Get(V3RunContext.CaptainId);
             var discovery = V3DiscoverySystem.Instance;

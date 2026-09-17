@@ -88,6 +88,8 @@ namespace HighSeas.Player
         Quaternion _visualBaseLocalRotation = Quaternion.identity;
         DamageReceiver _damage;
         CompositeShipSteerInput _compositeInput;
+        IShipSteerInput _botSteerInput;
+        bool _acceptHumanInput = true;
 
         public Vector3 Position => transform.position;
         public Vector3 Velocity => _velocity;
@@ -148,6 +150,12 @@ namespace HighSeas.Player
         }
 
         public void SetMovementEnabled(bool enabled) => _movementEnabled = enabled;
+
+        public void ConfigureBotControl(IShipSteerInput botInput)
+        {
+            _botSteerInput = botInput;
+            _acceptHumanInput = false;
+        }
 
         public void ApplySlow(float multiplier, float durationSeconds)
         {
@@ -446,20 +454,29 @@ namespace HighSeas.Player
         ShipInput ReadShipInput()
         {
             var input = new ShipInput();
-            if (_compositeInput != null)
+            if (_botSteerInput != null)
             {
-                var composite = _compositeInput.ReadSteerThrottle();
-                input.steer = composite.x;
-                input.throttle = composite.y;
+                var bot = _botSteerInput.ReadSteerThrottle();
+                input.steer = bot.x;
+                input.throttle = bot.y;
             }
-
-            if (Gamepad.current != null)
+            else if (_acceptHumanInput)
             {
-                var stick = Gamepad.current.leftStick.ReadValue();
-                if (Mathf.Abs(stick.x) > Mathf.Abs(input.steer))
-                    input.steer = stick.x;
-                if (Mathf.Abs(stick.y) > Mathf.Abs(input.throttle))
-                    input.throttle = stick.y;
+                if (_compositeInput != null)
+                {
+                    var composite = _compositeInput.ReadSteerThrottle();
+                    input.steer = composite.x;
+                    input.throttle = composite.y;
+                }
+
+                if (Gamepad.current != null)
+                {
+                    var stick = Gamepad.current.leftStick.ReadValue();
+                    if (Mathf.Abs(stick.x) > Mathf.Abs(input.steer))
+                        input.steer = stick.x;
+                    if (Mathf.Abs(stick.y) > Mathf.Abs(input.throttle))
+                        input.throttle = stick.y;
+                }
             }
 
             input.throttle = Mathf.Clamp(input.throttle, -1f, 1f);

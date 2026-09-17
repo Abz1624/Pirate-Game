@@ -1,6 +1,8 @@
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Enemies;
+using HighSeas.Player;
+using HighSeas.V3.MultiShip;
 using HighSeas.VFX;
 using UnityEngine;
 
@@ -17,6 +19,7 @@ namespace HighSeas.Weapons
         public int pierceLeft;
         public bool isCrit;
         public string weaponId;
+        public PlayerShipController firingShip;
         public Transform view;
     }
 
@@ -40,7 +43,18 @@ namespace HighSeas.Weapons
             _viewPool = new ProjectileViewPool(root != null ? root : transform, juiceSettings);
         }
 
-        public bool TrySpawn(Vector3 pos, Vector3 dir, float speed, float damage, float life, float radius, int pierce, bool isCrit, Color color, string weaponId = null)
+        public bool TrySpawn(
+            Vector3 pos,
+            Vector3 dir,
+            float speed,
+            float damage,
+            float life,
+            float radius,
+            int pierce,
+            bool isCrit,
+            Color color,
+            string weaponId = null,
+            PlayerShipController firingShip = null)
         {
             if (_active >= _pool.Length) return false;
             var slot = -1;
@@ -63,6 +77,7 @@ namespace HighSeas.Weapons
                 pierceLeft = pierce,
                 isCrit = isCrit,
                 weaponId = weaponId,
+                firingShip = firingShip,
                 view = view
             };
             _active++;
@@ -119,6 +134,16 @@ namespace HighSeas.Weapons
                         enemies.ApplyDamage(ei, p.damage, p.isCrit);
                         p.pierceLeft--;
                         if (p.pierceLeft < 0) break;
+                    }
+                }
+
+                if (p.pierceLeft >= 0 && V3RunSession.AllowShipVsShipCombat && p.firingShip != null)
+                {
+                    if (V3ShipCombatRegistry.TryProjectileHit(p.firingShip, p.position, p.radius, p.damage, p.isCrit))
+                    {
+                        p.pierceLeft--;
+                        if (p.pierceLeft < 0)
+                            Despawn(i);
                     }
                 }
 

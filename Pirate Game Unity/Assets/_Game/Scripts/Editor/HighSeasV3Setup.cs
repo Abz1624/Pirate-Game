@@ -29,6 +29,7 @@ namespace HighSeas.Editor
             CreateBootScene();
             CreateMainMenuScene();
             CreateSaltwindRunScene(layout);
+            HighSeasV3MultiShipSceneSetup.SetupMultiShipScenes();
             UpdateBuildSettings();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -302,7 +303,9 @@ namespace HighSeas.Editor
             {
                 $"{ScenesV3Folder}/V3Boot.unity",
                 $"{ScenesV3Folder}/V3MainMenu.unity",
-                V3SceneNames.SaltwindRunPath
+                V3SceneNames.SaltwindRunPath,
+                V3SceneNames.PvPBattlePath,
+                V3SceneNames.CoOpRunPath
             };
 
             var ordered = new List<EditorBuildSettingsScene>();

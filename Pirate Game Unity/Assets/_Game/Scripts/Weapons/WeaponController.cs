@@ -6,6 +6,7 @@ using HighSeas.Enemies;
 using HighSeas.Player;
 using HighSeas.UI;
 using HighSeas.V3;
+using HighSeas.V3.MultiShip;
 using HighSeas.VFX;
 using UnityEngine;
 
@@ -31,6 +32,7 @@ namespace HighSeas.Weapons
     public sealed class WeaponController : MonoBehaviour
     {
         [SerializeField] GameDatabase database;
+        [SerializeField] PlayerShipController ownerShip;
         [SerializeField] int maxSlots = GameConstants.DefaultWeaponSlots;
         [SerializeField] DemoPacingSettings demoPacing;
 
@@ -102,10 +104,16 @@ namespace HighSeas.Weapons
             public WeaponInstance weapon;
         }
 
+        public void BindOwner(PlayerShipController owner)
+        {
+            ownerShip = owner;
+            _player = owner;
+        }
+
         void Awake()
         {
             maxSlots = GameConstants.DefaultWeaponSlots;
-            _player = FindFirstObjectByType<PlayerShipController>();
+            _player = ownerShip != null ? ownerShip : FindFirstObjectByType<PlayerShipController>();
             _enemies = FindFirstObjectByType<EnemyWorld>();
             _projectiles = FindFirstObjectByType<ProjectileWorld>();
             _juice = FindFirstObjectByType<WeaponJuiceController>();
@@ -141,12 +149,26 @@ namespace HighSeas.Weapons
         public void SetSoloWeapon(string weaponId)
         {
             if (database == null || string.IsNullOrEmpty(weaponId)) return;
+            ClearWeaponsAndWorldState();
+            EquipWeapon(weaponId);
+        }
+
+        /// <summary>Playtest: replace loadout with the given weapons (up to <see cref="maxSlots"/>).</summary>
+        public void SetWeaponLoadout(IReadOnlyList<string> weaponIds)
+        {
+            if (database == null || weaponIds == null) return;
+            ClearWeaponsAndWorldState();
+            for (var i = 0; i < weaponIds.Count && _weapons.Count < maxSlots; i++)
+                EquipWeapon(weaponIds[i]);
+        }
+
+        void ClearWeaponsAndWorldState()
+        {
             _weapons.Clear();
             _powderKegs.Clear();
             _boardingSkiffs.Clear();
             _delayedStrikes.Clear();
             _pendingBroadsides.Clear();
-            EquipWeapon(weaponId);
         }
 
         public bool ReplaceWeapon(int index, string weaponId)
@@ -239,7 +261,8 @@ namespace HighSeas.Weapons
         void Update()
         {
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
-            if (_player == null || _enemies == null || _projectiles == null) return;
+            if (_player == null || _projectiles == null) return;
+            if (_enemies == null && !V3RunSession.AllowShipVsShipCombat) return;
             TickWeapons(Time.deltaTime);
             TickCutlassDamage(Time.deltaTime);
         }
@@ -450,8 +473,15 @@ namespace HighSeas.Weapons
 
         void FireProjectile(ref WeaponInstance w, PlayerStats stats, RunRng rng, int count)
         {
-            if (!WeaponTargeting.TryResolveTarget(_enemies, _player, w.def, out var target, out var dir))
+            var hasEnemyTarget = WeaponTargeting.TryResolveTarget(_enemies, _player, w.def, out var target, out var dir);
+            if (!hasEnemyTarget && !V3ShipCombatRegistry.TryResolveAim(_player, w.def, out _, out dir))
                 return;
+
+            if (!hasEnemyTarget)
+            {
+                FireProjectileVolley(ref w, stats, rng, dir, isElite: false);
+                return;
+            }
 
             if (w.def.id == "long_nine" || WeaponEvolutionCatalog.GetBehaviorModifier(w.def.id) == "stormshot_cannon")
             {
@@ -461,19 +491,24 @@ namespace HighSeas.Weapons
 
             var enemy = _enemies.Agents[target];
             NotifyFire(w.def, dir, target);
+            FireProjectileVolley(ref w, stats, rng, dir, enemy.isElite, target);
+        }
+
+        void FireProjectileVolley(ref WeaponInstance w, PlayerStats stats, RunRng rng, Vector3 dir, bool isElite, int tetherEnemyIndex = -1)
+        {
             var qty = w.def.baseQuantity + w.quantityBonus + Mathf.FloorToInt(stats.Get(StatId.Quantity));
             var speed = w.def.projectileSpeed * w.speedMult * stats.ProjectileSpeed;
             var size = 0.35f * w.sizeMult * stats.Size;
             for (var i = 0; i < qty; i++)
             {
                 var spread = Quaternion.Euler(0f, (i - qty * 0.5f) * 4f, 0f) * dir;
-                var dmg = DamageSystem.RollDamageDetailed(w.def.baseDamage, w.damageBonus * w.level * 0.1f + 1f, stats, enemy.isElite, 0f, rng, w.def.procCoefficient, w.def.id);
+                var dmg = DamageSystem.RollDamageDetailed(w.def.baseDamage, w.damageBonus * w.level * 0.1f + 1f, stats, isElite, 0f, rng, w.def.procCoefficient, w.def.id);
                 var origin = _player.Position + Vector3.up * 0.35f;
                 _juice?.OnWeaponFired(w.def.id, origin, spread);
-                _projectiles.TrySpawn(origin, spread, speed, dmg.amount, 3f, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id);
-                if (w.def.targeting == TargetingMode.TetherTarget)
+                _projectiles.TrySpawn(origin, spread, speed, dmg.amount, 3f, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id, _player);
+                if (w.def.targeting == TargetingMode.TetherTarget && tetherEnemyIndex >= 0)
                 {
-                    StatusController.Instance?.ApplyStatus(target, StatusType.Tarred, 1.2f * w.durationMult);
+                    StatusController.Instance?.ApplyStatus(tetherEnemyIndex, StatusType.Tarred, 1.2f * w.durationMult);
                     WeaponDamageLedger.RecordControl(w.def.id, 1.2f * w.durationMult);
                 }
             }
@@ -492,7 +527,8 @@ namespace HighSeas.Weapons
             int notifyTarget = -1;
             if (w.def.targeting == TargetingMode.PortStarboard)
             {
-                if (!WeaponTargeting.TryResolveTarget(_enemies, _player, w.def, out notifyTarget, out baseDir))
+                if (!WeaponTargeting.TryResolveTarget(_enemies, _player, w.def, out notifyTarget, out baseDir)
+                    && !V3ShipCombatRegistry.TryResolveAim(_player, w.def, out _, out baseDir))
                     return;
             }
             else if (w.def.targeting == TargetingMode.ForwardCone)
@@ -561,9 +597,15 @@ namespace HighSeas.Weapons
                     ApplyWeaponDamage(hitIndex, w.def.id, dmg, isElite, _enemies.Agents[hitIndex].isBoss);
                     hits++;
                 }
+                else if (isBroadside && V3ShipCombatRegistry.TrySegmentHit(_player, origin, end, hitRadius, out var shipHit))
+                {
+                    shipHit.Damage.TakeDamage(dmg.amount, shipHit.Ship.Position, dmg.isCrit);
+                    WeaponDamageLedger.RecordHit(w.def.id, dmg.amount, dmg.isCrit, false, false);
+                    hits++;
+                }
 
                 var projectileLife = isBroadside ? 0.55f : 2.5f;
-                if (_projectiles.TrySpawn(origin, dir, speed, isBroadside ? 0f : dmg.amount, projectileLife, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id))
+                if (_projectiles.TrySpawn(origin, dir, speed, isBroadside ? 0f : dmg.amount, projectileLife, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id, _player))
                 {
                     if (!isBroadside && hitIndex >= 0)
                         hits++;
@@ -1115,6 +1157,8 @@ namespace HighSeas.Weapons
                         DamageProcKind.TriggeredItem);
                     _enemies.ApplyDamage(ai, dmg, false);
                 }
+
+                V3ShipCombatRegistry.ApplyRadiusDamage(_player, keg.position, blastRadius, keg.baseDamage * 1.5f * keg.damageBonus, false, "powder_kegs");
 
                 _juice?.OnMineExploded(keg.position, blastRadius);
                 if (WeaponEvolutionCatalog.GetBehaviorModifier("powder_kegs") == "devils_wake")

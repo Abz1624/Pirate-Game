@@ -16,6 +16,16 @@ namespace HighSeas.V3
     {
         public static V3RunPlaytestHotkeys Instance { get; private set; }
 
+        static readonly string[] DemoGunneryLoadout =
+        {
+            "powder_kegs",
+            "lightning_mast",
+            "mortar",
+            "broadside_battery",
+            "long_nine",
+            "swivel_guns"
+        };
+
         int _weaponIndex;
         int _itemIndex;
         int _logbookIndex;
@@ -86,6 +96,9 @@ namespace HighSeas.V3
                 GrantNextItem(1);
             if (keyboard.oKey.wasPressedThisFrame)
                 GrantNextLogbook();
+
+            if (keyboard.yKey.wasPressedThisFrame)
+                GrantDemoGunneryLoadout();
         }
 
         void CycleWeapon(int delta)
@@ -171,6 +184,20 @@ namespace HighSeas.V3
             _levels.GrantPlaytestLogbookRank(pool[_logbookIndex]);
         }
 
+        void GrantDemoGunneryLoadout()
+        {
+            if (_weapons == null) _weapons = FindFirstObjectByType<WeaponController>();
+            if (_weapons == null) return;
+
+            _weapons.SetWeaponLoadout(DemoGunneryLoadout);
+            _levels?.SetPlaytestWeaponLoadout(DemoGunneryLoadout);
+            CombatExperimentContext.ShowAimVisuals = true;
+            V3ToastHud.Instance?.Show(
+                "Gunnery loadout equipped (Y)\n" +
+                "Powder Kegs · Lightning · Mortar · Broadside · Long Nine · Swivel Guns",
+                4f);
+        }
+
         static void ShowHelpToast()
         {
             V3ToastHud.Instance?.Show(
@@ -182,6 +209,7 @@ namespace HighSeas.V3
                 "I — grant next interaction item\n" +
                 "O — grant logbook rank\n" +
                 "B — summon treasury boss\n" +
+                "Y — gunnery loadout (6 weapons)\n" +
                 "V — toggle aim overlays",
                 8f);
         }

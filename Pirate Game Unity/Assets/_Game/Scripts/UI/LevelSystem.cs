@@ -96,6 +96,21 @@ namespace HighSeas.UI
             LoadoutChanged?.Invoke();
         }
 
+        public void SetPlaytestWeaponLoadout(IReadOnlyList<string> weaponIds)
+        {
+            if (weaponIds == null) return;
+            _ownedWeapons.Clear();
+            _weaponLevels.Clear();
+            for (var i = 0; i < weaponIds.Count; i++)
+            {
+                var id = weaponIds[i];
+                if (string.IsNullOrEmpty(id) || _ownedWeapons.Contains(id)) continue;
+                _ownedWeapons.Add(id);
+                _weaponLevels[id] = 1;
+            }
+            LoadoutChanged?.Invoke();
+        }
+
         public void GrantPlaytestLogbookRank(string logbookId)
         {
             if (string.IsNullOrEmpty(logbookId) || database == null) return;

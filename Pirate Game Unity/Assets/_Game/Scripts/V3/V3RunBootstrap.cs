@@ -9,6 +9,7 @@ using HighSeas.Pickups;
 using HighSeas.Player;
 using HighSeas.POI;
 using HighSeas.UI;
+using HighSeas.V3.MultiShip;
 using HighSeas.VFX;
 using HighSeas.Weapons;
 using HighSeas.World;
@@ -38,6 +39,9 @@ namespace HighSeas.V3
             AppRoot.EnsureInitialized();
             if (database == null || !GameDatabaseLoader.IsValid(database))
                 database = GameDatabaseLoader.Load();
+            var multiConfig = FindFirstObjectByType<V3MultiShipSceneConfig>();
+            if (multiConfig != null)
+                V3RunSession.Configure(multiConfig.SessionKind);
             EnsureTouchJoystickActive();
             EnsureGameplayBootstrapComponents();
         }
@@ -100,11 +104,21 @@ namespace HighSeas.V3
             V3RunContext.Layout = _layout;
             V3RunContext.CaptainId = V3CaptainSelection.Selected;
 
+            var multiShipConfig = FindFirstObjectByType<V3MultiShipSceneConfig>();
+            var isPvPScene = multiShipConfig != null && multiShipConfig.SessionKind == V3RunSessionKind.PvP;
+
             var poi = FindFirstObjectByType<POIManager>();
             if (poi != null)
             {
-                poi.SetV3Options(continueAfterBossVictory: true, usePlaceholderVisuals: usePlaceholderPoiVisuals, useV3ChestPricing: true);
-                poi.Initialize(_layout, database);
+                if (isPvPScene)
+                {
+                    poi.enabled = false;
+                }
+                else
+                {
+                    poi.SetV3Options(continueAfterBossVictory: true, usePlaceholderVisuals: usePlaceholderPoiVisuals, useV3ChestPricing: true);
+                    poi.Initialize(_layout, database);
+                }
             }
 
             var enemyWorld = FindFirstObjectByType<EnemyWorld>();
@@ -161,22 +175,39 @@ namespace HighSeas.V3
             CollisionDebugOverlay.Ensure();
             EnsureCombatTelemetryDriver();
             WeaponTargetingVisualizer.Ensure();
-            ConfigureSpawnDirector(experimentProfile);
-            EnsurePressureBeats(enemyWorld, player);
-            EnsureOvertimeDirector(enemyWorld, player);
-            RunManager.Instance.EnterPlaying();
-            LevelSystem.Instance?.TryShowOpeningWeaponDraft();
-            if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
+            if (!isPvPScene)
             {
-                V3ToastHud.Instance?.Show(
-                    "Playtest: press F8 for hotkeys — [ ] cycle solo weapons",
-                    5f);
+                ConfigureSpawnDirector(experimentProfile);
+                EnsurePressureBeats(enemyWorld, player);
+                EnsureOvertimeDirector(enemyWorld, player);
             }
-            var seedLabel = V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
-            V3ToastHud.Instance?.Show(
-                $"Saltwind voyage ({seedLabel} seed {seed}).\nExplore 12 chests + 4 shrines, secure the Beacon.",
-                6f);
-            Debug.Log($"V3RunBootstrap: run seed={seed} ({seedLabel}), POI rng={seed + 404}.");
+
+            RunManager.Instance.EnterPlaying();
+            if (!isPvPScene)
+            {
+                LevelSystem.Instance?.TryShowOpeningWeaponDraft();
+                if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
+                {
+                    V3ToastHud.Instance?.Show(
+                        "Playtest: press F8 for hotkeys — [ ] cycle solo weapons",
+                        5f);
+                }
+
+                var seedLabel = V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
+                V3ToastHud.Instance?.Show(
+                    $"Saltwind voyage ({seedLabel} seed {seed}).\nExplore 12 chests + 4 shrines, secure the Beacon.",
+                    6f);
+            }
+            if (multiShipConfig != null && multiShipConfig.SessionKind != V3RunSessionKind.SinglePlayer)
+                V3MultiShipRunSetup.ApplyAfterRunStart(
+                    multiShipConfig.SessionKind,
+                    player,
+                    database,
+                    startingWeapon,
+                    multiShipConfig.ShipSpacing);
+
+            var seedLabelLog = V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
+            Debug.Log($"V3RunBootstrap: run seed={seed} ({seedLabelLog}), POI rng={seed + 404}.");
         }
 
         void ConfigureSpawnDirector(CombatExperimentProfile profile)
@@ -306,6 +337,14 @@ namespace HighSeas.V3
             LevelSystem.Instance?.CancelPendingLevelUps();
             if (player != null)
                 player.SetMovementEnabled(false);
+            if (V3RunSession.IsPvP)
+            {
+                RunManager.Instance.SetState(RunState.PlayerDead);
+                RunManager.Instance.FinalizeRunOnDeath();
+                V3ToastHud.Instance?.Show("You were sunk — the rival wins.", 4f);
+                return;
+            }
+
             FindFirstObjectByType<POIManager>()?.TrySecureIfBossDead();
             ApplyConquestUnlockIfSecured();
             RunManager.Instance.SetState(RunState.PlayerDead);

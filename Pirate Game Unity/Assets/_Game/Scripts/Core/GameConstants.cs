@@ -21,7 +21,11 @@ namespace HighSeas.Core
     public static class GameConstants
     {
         public const float DefaultMoveSpeed = 6.2f;
-        public const float DefaultHull = 100f;
+        /// <summary>Prototype: player max hull in all run scenes (base design × multiplier).</summary>
+        public const float HullHealthMultiplier = 10f;
+        public const float DefaultHull = 100f * HullHealthMultiplier;
+
+        public static float ScaleHull(float designHull) => designHull * HullHealthMultiplier;
         public const float DefaultPickupRadius = 3.5f;
         public const float ContactIFrame = 0.20f;
         public const float EnemyContactCooldown = 0.8f;
