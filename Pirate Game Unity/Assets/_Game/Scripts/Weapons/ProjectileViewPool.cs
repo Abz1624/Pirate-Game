@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using HighSeas.Data;
+using HighSeas.VFX;
 using UnityEngine;
 
 namespace HighSeas.Weapons
@@ -16,15 +17,18 @@ namespace HighSeas.Weapons
             _settings = settings;
         }
 
-        public Transform Acquire(Vector3 position, Color color, float radius)
+        public Transform Acquire(Vector3 position, Color color, float radius, GameObject prefabOverride = null, float scaleMult = 1f)
         {
+            var prefab = prefabOverride != null ? prefabOverride : _settings?.projectilePrefab;
             var sizeMult = _settings != null ? _settings.projectileSizeMultiplier : 1.2f;
             var visualRadius = radius * (_settings != null ? _settings.projectileRadiusMultiplier : 1f);
-            var scale = Mathf.Max(0.2f, visualRadius * 2f * sizeMult);
+            var scale = Mathf.Max(0.2f, visualRadius * 2f * sizeMult * scaleMult);
+            var isHarpoon = prefab != null && _settings?.harpoonProjectilePrefab != null &&
+                            prefab == _settings.harpoonProjectilePrefab;
 
-            if (_settings?.projectilePrefab != null)
+            if (prefab != null)
             {
-                var key = _settings.projectilePrefab.GetInstanceID();
+                var key = prefab.GetInstanceID();
                 if (!_pools.TryGetValue(key, out var stack))
                 {
                     stack = new Stack<Transform>(32);
@@ -39,14 +43,26 @@ namespace HighSeas.Weapons
                 }
                 else
                 {
-                    var instance = Object.Instantiate(_settings.projectilePrefab, _root);
-                    instance.name = _settings.projectilePrefab.name;
+                    var instance = Object.Instantiate(prefab, _root);
+                    instance.name = prefab.name;
                     view = instance.transform;
                     StripPhysics(instance);
+                    if (isHarpoon)
+                        VfxParticleUtil.ConfigureHarpoonProjectile(instance);
                 }
+
+                if (isHarpoon)
+                    VfxParticleUtil.SetTrailEmitting(view.gameObject, false);
 
                 view.SetPositionAndRotation(position, Quaternion.identity);
                 view.localScale = Vector3.one * scale;
+
+                if (isHarpoon)
+                {
+                    VfxParticleUtil.ClearMotionTrails(view.gameObject);
+                    VfxParticleUtil.SetTrailEmitting(view.gameObject, true);
+                }
+
                 Tint(view, color);
                 return view;
             }
@@ -58,22 +74,34 @@ namespace HighSeas.Weapons
         {
             if (view == null) return;
 
-            if (_settings?.projectilePrefab != null && view.name == _settings.projectilePrefab.name)
-            {
-                view.gameObject.SetActive(false);
-                view.SetParent(_root, false);
-                var key = _settings.projectilePrefab.GetInstanceID();
-                if (!_pools.TryGetValue(key, out var stack))
-                {
-                    stack = new Stack<Transform>(32);
-                    _pools[key] = stack;
-                }
+            VfxParticleUtil.SetTrailEmitting(view.gameObject, false);
+            VfxParticleUtil.ClearMotionTrails(view.gameObject);
 
-                stack.Push(view);
-                return;
+            var matched = false;
+            if (_settings?.projectilePrefab != null && view.name == _settings.projectilePrefab.name)
+                matched = ReleaseToPool(view, _settings.projectilePrefab);
+            if (!matched && _settings?.smallProjectilePrefab != null && view.name == _settings.smallProjectilePrefab.name)
+                matched = ReleaseToPool(view, _settings.smallProjectilePrefab);
+            if (!matched && _settings?.harpoonProjectilePrefab != null && view.name == _settings.harpoonProjectilePrefab.name)
+                matched = ReleaseToPool(view, _settings.harpoonProjectilePrefab);
+
+            if (!matched)
+                Object.Destroy(view.gameObject);
+        }
+
+        bool ReleaseToPool(Transform view, GameObject prefab)
+        {
+            view.gameObject.SetActive(false);
+            view.SetParent(_root, false);
+            var key = prefab.GetInstanceID();
+            if (!_pools.TryGetValue(key, out var stack))
+            {
+                stack = new Stack<Transform>(32);
+                _pools[key] = stack;
             }
 
-            Object.Destroy(view.gameObject);
+            stack.Push(view);
+            return true;
         }
 
         Transform CreatePrimitive(Vector3 position, Color color, float scale)
@@ -114,6 +142,10 @@ namespace HighSeas.Weapons
 
         static void StripPhysics(GameObject root)
         {
+            var rigidbodies = root.GetComponentsInChildren<Rigidbody>(true);
+            for (var i = 0; i < rigidbodies.Length; i++)
+                Object.Destroy(rigidbodies[i]);
+
             var colliders = root.GetComponentsInChildren<Collider>(true);
             for (var i = 0; i < colliders.Length; i++)
                 Object.Destroy(colliders[i]);

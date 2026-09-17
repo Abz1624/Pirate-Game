@@ -25,6 +25,7 @@ namespace HighSeas.Weapons
         public float knockbackMult = 1f;
         public int orbitIndex;
         public readonly Dictionary<UpgradeAxis, float> axisAccumulated = new();
+        public bool swivelAwaitingSecond;
     }
 
     public sealed class WeaponController : MonoBehaviour
@@ -260,12 +261,26 @@ namespace HighSeas.Weapons
                 if (w.cooldownTimer > 0f) { _weapons[wi] = w; continue; }
 
                 var cd = w.def.baseCooldown * w.cooldownMult / (stats.AttackSpeed * itemAttackSpeed);
+
+                if (w.def.id == "swivel_guns" && w.swivelAwaitingSecond)
+                {
+                    FireSwivelShot(ref w, stats, rng);
+                    w.swivelAwaitingSecond = false;
+                    w.cooldownTimer = cd;
+                    WeaponDamageLedger.RecordEmission(w.def.id);
+                    _weapons[wi] = w;
+                    continue;
+                }
+
                 w.cooldownTimer = cd;
 
                 switch (w.def.pattern)
                 {
                     case WeaponPattern.AutoProjectile:
-                        FireProjectile(ref w, stats, rng, 1);
+                        if (w.def.id == "swivel_guns")
+                            BeginSwivelBurst(ref w, stats, rng);
+                        else
+                            FireProjectile(ref w, stats, rng, 1);
                         break;
                     case WeaponPattern.FanVolley:
                         FireFan(ref w, stats, rng, ResolveFanPelletCount(w));
@@ -298,6 +313,42 @@ namespace HighSeas.Weapons
                 WeaponDamageLedger.RecordEmission(w.def.id);
                 _weapons[wi] = w;
             }
+        }
+
+        void FireSwivelShot(ref WeaponInstance w, PlayerStats stats, RunRng rng)
+        {
+            if (!WeaponTargeting.TryResolveTarget(_enemies, _player, w.def, out var target, out var dir))
+                return;
+
+            var enemy = _enemies.Agents[target];
+            NotifyFire(w.def, dir, target);
+            var speed = w.def.projectileSpeed * w.speedMult * stats.ProjectileSpeed;
+            var settings = JuiceVfxBroker.Instance != null ? JuiceVfxBroker.Instance.Settings : null;
+            var sizeMult = settings != null ? settings.swivelProjectileSizeMult : 0.55f;
+            var size = 0.35f * w.sizeMult * stats.Size * sizeMult;
+            var damageMult = settings != null ? settings.swivelDamageMult : 0.55f;
+            var dmg = DamageSystem.RollDamageDetailed(
+                w.def.baseDamage * damageMult,
+                w.damageBonus * w.level * 0.1f + 1f,
+                stats,
+                enemy.isElite,
+                0f,
+                rng,
+                w.def.procCoefficient,
+                w.def.id);
+            var origin = _player.Position + Vector3.up * 0.35f;
+            _juice?.OnWeaponFired(w.def.id, origin, dir);
+            _projectiles.TrySpawn(origin, dir, speed, dmg.amount, 2.4f, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id);
+        }
+
+        void BeginSwivelBurst(ref WeaponInstance w, PlayerStats stats, RunRng rng)
+        {
+            FireSwivelShot(ref w, stats, rng);
+            var gap = JuiceVfxBroker.Instance?.Settings != null
+                ? JuiceVfxBroker.Instance.Settings.swivelBetweenShotDelay
+                : 0.18f;
+            w.swivelAwaitingSecond = true;
+            w.cooldownTimer = gap;
         }
 
         public void CaptainFireAllWeapons()
@@ -365,7 +416,10 @@ namespace HighSeas.Weapons
             switch (w.def.pattern)
             {
                 case WeaponPattern.AutoProjectile:
-                    FireProjectile(ref w, stats, rng, 1);
+                    if (w.def.id == "swivel_guns")
+                        BeginSwivelBurst(ref w, stats, rng);
+                    else
+                        FireProjectile(ref w, stats, rng, 1);
                     break;
                 case WeaponPattern.FanVolley:
                     FireFan(ref w, stats, rng, ResolveFanPelletCount(w));
@@ -415,8 +469,8 @@ namespace HighSeas.Weapons
                 var spread = Quaternion.Euler(0f, (i - qty * 0.5f) * 4f, 0f) * dir;
                 var dmg = DamageSystem.RollDamageDetailed(w.def.baseDamage, w.damageBonus * w.level * 0.1f + 1f, stats, enemy.isElite, 0f, rng, w.def.procCoefficient, w.def.id);
                 var origin = _player.Position + Vector3.up * 0.35f;
-                _juice?.OnProjectileFired(origin, spread);
-                _projectiles.TrySpawn(origin, spread, speed, dmg.amount, 3f, size, 0, dmg.isCrit, w.def.projectileColor);
+                _juice?.OnWeaponFired(w.def.id, origin, spread);
+                _projectiles.TrySpawn(origin, spread, speed, dmg.amount, 3f, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id);
                 if (w.def.targeting == TargetingMode.TetherTarget)
                 {
                     StatusController.Instance?.ApplyStatus(target, StatusType.Tarred, 1.2f * w.durationMult);
@@ -438,17 +492,8 @@ namespace HighSeas.Weapons
             int notifyTarget = -1;
             if (w.def.targeting == TargetingMode.PortStarboard)
             {
-                var forward = _player.MovementForward;
-                forward.y = 0f;
-                if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
-                forward.Normalize();
-                var right = Vector3.Cross(Vector3.up, forward).normalized;
-                baseDir = right;
-                if (WeaponTargeting.TryResolveTarget(_enemies, _player, w.def, out var bsTarget, out var resolvedDir))
-                {
-                    baseDir = resolvedDir;
-                    notifyTarget = bsTarget;
-                }
+                if (!WeaponTargeting.TryResolveTarget(_enemies, _player, w.def, out notifyTarget, out baseDir))
+                    return;
             }
             else if (w.def.targeting == TargetingMode.ForwardCone)
             {
@@ -475,15 +520,20 @@ namespace HighSeas.Weapons
             if (w.def.id == "broadside_battery")
                 _juice?.OnBroadsideSalvo(_player.Position, baseDir);
 
+            var isBroadside = w.def.id == "broadside_battery";
             var speed = w.def.projectileSpeed * w.speedMult * stats.ProjectileSpeed;
+            if (isBroadside)
+                speed = Mathf.Max(speed, 42f);
             var size = 0.25f * w.sizeMult * stats.Size;
             var spread = w.def.fanSpreadDegrees;
             var halfSpread = spread * 0.5f;
+            var shotBasis = baseDir;
+
             var hits = 0;
             for (var i = 0; i < pellets; i++)
             {
                 var angle = pellets <= 1 ? 0f : -halfSpread + (spread / (pellets - 1)) * i;
-                var dir = Quaternion.Euler(0f, angle, 0f) * baseDir;
+                var dir = Quaternion.Euler(0f, angle, 0f) * shotBasis;
                 var origin = _player.Position + Vector3.up * 0.35f;
                 if (w.def.targeting == TargetingMode.PortStarboard)
                 {
@@ -492,7 +542,8 @@ namespace HighSeas.Weapons
                 }
 
                 var end = origin + dir * w.def.range;
-                var hitIndex = FindFirstEnemyAlongRay(origin, end, 0.8f);
+                var hitRadius = isBroadside ? 1.05f : 0.8f;
+                var hitIndex = FindFirstEnemyAlongRay(origin, end, hitRadius);
                 var isElite = hitIndex >= 0 && _enemies.Agents[hitIndex].active && _enemies.Agents[hitIndex].isElite;
                 var dmg = DamageSystem.RollDamageDetailed(
                     w.def.baseDamage * 0.6f,
@@ -503,10 +554,17 @@ namespace HighSeas.Weapons
                     rng,
                     w.def.procCoefficient,
                     w.def.id);
-                _juice?.OnProjectileFired(origin, dir);
-                if (_projectiles.TrySpawn(origin, dir, speed, dmg.amount, 2.5f, size, 0, dmg.isCrit, w.def.projectileColor))
+                _juice?.OnWeaponFired(w.def.id, origin, dir);
+                if (isBroadside && hitIndex >= 0)
                 {
-                    if (hitIndex >= 0)
+                    ApplyWeaponDamage(hitIndex, w.def.id, dmg, isElite, _enemies.Agents[hitIndex].isBoss);
+                    hits++;
+                }
+
+                var projectileLife = isBroadside ? 0.55f : 2.5f;
+                if (_projectiles.TrySpawn(origin, dir, speed, isBroadside ? 0f : dmg.amount, projectileLife, size, 0, dmg.isCrit, w.def.projectileColor))
+                {
+                    if (!isBroadside && hitIndex >= 0)
                         hits++;
                 }
             }
@@ -523,7 +581,7 @@ namespace HighSeas.Weapons
                 _pendingBroadsides.Add(new PendingBroadside
                 {
                     active = true,
-                    timer = 0.35f,
+                    timer = 0.12f,
                     sideDirection = opposite,
                     weapon = w
                 });
@@ -535,8 +593,24 @@ namespace HighSeas.Weapons
             NotifyFire(w.def, dir, primaryTarget);
             var origin = _player.Position;
             origin.y = 0f;
-            var arc = WeaponTargeting.ResolveArcDegrees(w.def);
-            CollectEnemiesInForwardLane(origin, dir, w.def.range, arc, _laneIndexScratch);
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.0001f) return;
+            dir.Normalize();
+
+            var muzzle = _player.Position + Vector3.up * 0.35f;
+            if (w.def.id == "long_nine")
+            {
+                var halfWidth = (_juice != null ? _juice.LongNineBeamHalfWidthBase : 0.32f) * w.sizeMult * stats.Size;
+                CollectEnemiesInForwardBeam(origin, dir, w.def.range, halfWidth, _laneIndexScratch);
+                _juice?.OnWeaponFired(w.def.id, muzzle, dir);
+                _juice?.OnLongNineBeam(muzzle, dir, w.def.range, halfWidth);
+            }
+            else
+            {
+                var arc = WeaponTargeting.ResolveArcDegrees(w.def);
+                CollectEnemiesInForwardLane(origin, dir, w.def.range, arc, _laneIndexScratch);
+            }
+
             var agents = _enemies.Agents;
             var hitCount = 0;
             for (var i = 0; i < _laneIndexScratch.Count; i++)
@@ -554,13 +628,44 @@ namespace HighSeas.Weapons
                     w.def.procCoefficient,
                     w.def.id);
                 ApplyWeaponDamage(index, w.def.id, dmg, agents[index].isElite, agents[index].isBoss);
-                var burstOrigin = agents[index].position + Vector3.up * 0.35f;
-                _juice?.OnProjectileFired(burstOrigin, dir);
+                if (w.def.id != "long_nine")
+                {
+                    var burstOrigin = agents[index].position + Vector3.up * 0.35f;
+                    _juice?.OnWeaponFired(w.def.id, burstOrigin, dir);
+                }
+
                 if (i == 0 && WeaponEvolutionCatalog.GetBehaviorModifier(w.def.id) == "stormshot_cannon")
                     EmitStormshotBurst(ref w, stats, rng, agents[index].position, dir);
             }
 
             WeaponDamageLedger.RecordConcurrentTargets(w.def.id, hitCount);
+        }
+
+        void CollectEnemiesInForwardBeam(Vector3 origin, Vector3 forward, float range, float halfWidth, List<int> results)
+        {
+            results.Clear();
+            _laneHitScratch.Clear();
+            var agents = _enemies.Agents;
+            for (var i = 0; i < agents.Length; i++)
+            {
+                if (!agents[i].active) continue;
+                if (!WeaponBeamTargeting.IsInsideBeam(origin, forward, range, halfWidth, agents[i].position, agents[i].radius))
+                    continue;
+                results.Add(i);
+                _laneHitScratch.Add(agents[i].position);
+            }
+
+            for (var a = 0; a < results.Count - 1; a++)
+            {
+                for (var b = a + 1; b < results.Count; b++)
+                {
+                    var da = Vector3.Dot(_laneHitScratch[a] - origin, forward);
+                    var db = Vector3.Dot(_laneHitScratch[b] - origin, forward);
+                    if (da <= db) continue;
+                    (results[a], results[b]) = (results[b], results[a]);
+                    (_laneHitScratch[a], _laneHitScratch[b]) = (_laneHitScratch[b], _laneHitScratch[a]);
+                }
+            }
         }
 
         void EmitStormshotBurst(ref WeaponInstance w, PlayerStats stats, RunRng rng, Vector3 hitPoint, Vector3 forward)
@@ -1266,7 +1371,13 @@ namespace HighSeas.Weapons
                 for (var ai = 0; ai < agents.Length; ai++)
                 {
                     if (!agents[ai].active) continue;
-                    if (Vector3.Distance(agents[ai].position, strike.position) > strike.radius) continue;
+                    if (strike.weaponId == "mortar")
+                    {
+                        if (!WithinHorizontalRadius(strike.position, agents[ai].position, strike.radius))
+                            continue;
+                    }
+                    else if (Vector3.Distance(agents[ai].position, strike.position) > strike.radius)
+                        continue;
                     hits++;
                     var dmg = DamageSystem.RollDamageDetailed(
                         strike.baseDamage,
@@ -1280,11 +1391,22 @@ namespace HighSeas.Weapons
                     ApplyWeaponDamage(ai, strike.weaponId, dmg, agents[ai].isElite, agents[ai].isBoss);
                 }
                 WeaponDamageLedger.RecordConcurrentTargets(strike.weaponId, hits);
-                _juice?.OnMineExploded(strike.position, strike.radius);
                 if (strike.weaponId == "mortar")
+                {
+                    _juice?.OnMortarImpact(strike.position, strike.radius, rng);
                     JuiceVfxBroker.Instance?.PlayWaterSplash(strike.position);
+                }
+                else
+                    _juice?.OnMineExploded(strike.position, strike.radius);
                 _delayedStrikes.RemoveAt(i);
             }
+        }
+
+        static bool WithinHorizontalRadius(Vector3 center, Vector3 target, float radius)
+        {
+            var dx = target.x - center.x;
+            var dz = target.z - center.z;
+            return dx * dx + dz * dz <= radius * radius;
         }
 
         void ApplyWeaponDamage(int enemyIndex, string weaponId, DamageSystem.DamageRoll dmg, bool isElite, bool isBoss)

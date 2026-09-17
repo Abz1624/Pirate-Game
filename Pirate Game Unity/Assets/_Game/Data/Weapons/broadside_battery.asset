@@ -15,7 +15,7 @@ MonoBehaviour:
   id: broadside_battery
   displayName: Broadside Battery
   pattern: 1
-  targeting: 2
+  targeting: 9
   tags: []
   baseDamage: 8
   baseCooldown: 1.5

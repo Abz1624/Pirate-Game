@@ -217,6 +217,13 @@ namespace HighSeas.Combat
                 BuildFanMesh(set.area.sharedMesh, origin, aim, def.range * weapon.sizeMult, 38f);
                 showMarker = hasTarget;
             }
+            else if (def.id == "long_nine")
+            {
+                if (!CombatExperimentContext.Active.directionalWeaponTargetingEnabled)
+                    showArea = false;
+                else
+                    BuildFanMesh(set.area.sharedMesh, origin, forward, def.range * weapon.sizeMult, 8f);
+            }
             else if (def.id == "lightning_mast" || def.pattern == WeaponPattern.ChainLightning)
             {
                 if (hasTarget)
@@ -246,8 +253,16 @@ namespace HighSeas.Combat
                     else
                     {
                         var right = Vector3.Cross(Vector3.up, forward).normalized;
-                        var sideAim = hasTarget ? (targetPos - origin).normalized : right;
-                        BuildFanMesh(set.area.sharedMesh, origin, sideAim, def.range, WeaponTargeting.ResolveArcDegrees(def));
+                        var sideDir = right;
+                        if (hasTarget)
+                        {
+                            var toTarget = targetPos - origin;
+                            toTarget.y = 0f;
+                            if (toTarget.sqrMagnitude > 0.01f && Vector3.Dot(toTarget.normalized, right) < 0f)
+                                sideDir = -right;
+                        }
+
+                        BuildFanMesh(set.area.sharedMesh, origin, sideDir, def.range, 18f);
                         showMarker = hasTarget;
                     }
                     break;
@@ -266,7 +281,9 @@ namespace HighSeas.Combat
                     }
                     else if (def.pattern == WeaponPattern.Orbit)
                     {
-                        BuildRingMesh(set.area.sharedMesh, origin, 4.5f * weapon.sizeMult, 32, 0.55f);
+                        BuildRingMesh(set.area.sharedMesh, origin, 5f * weapon.sizeMult, 32, 0.55f);
+                        if (def.id == "flying_cutlasses")
+                            color = new Color(1f, 0.88f, 0.28f, color.a);
                     }
                     else if (def.targeting == TargetingMode.Nearest || def.pattern == WeaponPattern.AutoProjectile)
                     {
@@ -336,7 +353,7 @@ namespace HighSeas.Combat
         {
             var scaled = def.size * weapon.sizeMult;
             if (def.id == "mortar")
-                return Mathf.Max(4.5f, scaled);
+                return Mathf.Max(4f, scaled);
             return Mathf.Max(2f, scaled);
         }
 
