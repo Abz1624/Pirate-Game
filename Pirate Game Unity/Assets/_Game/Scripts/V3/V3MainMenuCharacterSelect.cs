@@ -11,14 +11,22 @@ namespace HighSeas.V3
     {
         const float TransitionSeconds = 0.38f;
         const float PoseSlidePixels = 480f;
+        const float DetailsPanelInset = 20f;
+        const float DetailsTextPadding = 28f;
 
         public event Action<V3CaptainId> CaptainChanged;
         public event Action PlayRequested;
 
         public Button PlayButton { get; private set; }
 
-        Image _bgFill;
+        Image _bgGradientTop;
+        Image _bgGradientBottom;
+        Image _bgVignette;
+        Image _bgAccentGlow;
+        Image _bgFlat;
+        Image _detailsPanelBg;
         Image _bgEmblem;
+        bool _usePolishedUi = true;
         RectTransform _poseStage;
         Image _poseA;
         Image _poseB;
@@ -34,8 +42,8 @@ namespace HighSeas.V3
         float _transitionT;
         int _transitionDirection;
         int _transitionTargetIndex;
-        Color _transitionFromColor;
-        Color _transitionToColor;
+        V3MainMenuVisuals.ThemeGradient _transitionFromGradient;
+        V3MainMenuVisuals.ThemeGradient _transitionToGradient;
         bool _uiBuilt;
 
         int CaptainCount => V3CaptainCatalog.MenuOrder.Length;
@@ -59,8 +67,8 @@ namespace HighSeas.V3
         void Awake()
         {
             V3CharacterCardArtSettings.Reload();
-            V3MainMenuTypographySettings.Reload();
             _art = V3CharacterCardArtSettings.Load();
+            _uiBuilt = false;
             BuildUi();
         }
 
@@ -85,22 +93,34 @@ namespace HighSeas.V3
             for (var i = transform.childCount - 1; i >= 0; i--)
                 Destroy(transform.GetChild(i).gameObject);
 
-            _bgFill = CreateStretchImage(transform, "theme_background", V3CaptainCatalog.GetMenuThemeColor(V3CaptainId.Rook));
+            if (_usePolishedUi)
+            {
+                var defaultGradient = V3MainMenuVisuals.BuildGradient(V3CaptainCatalog.GetMenuThemeColor(V3CaptainId.Rook));
+                _bgGradientBottom = V3MainMenuVisuals.CreateGradientBand(transform, "bg_gradient_bottom", Vector2.zero, new Vector2(1f, 0.58f));
+                _bgGradientTop = V3MainMenuVisuals.CreateGradientBand(transform, "bg_gradient_top", new Vector2(0f, 0.38f), Vector2.one);
+                _bgAccentGlow = V3MainMenuVisuals.CreateGradientBand(transform, "bg_accent_glow", new Vector2(0.52f, 0f), Vector2.one);
+                _bgVignette = CreateStretchImage(transform, "bg_vignette", new Color(0f, 0f, 0f, 0.38f));
+                V3MainMenuVisuals.ApplyBackground(_bgGradientTop, _bgGradientBottom, _bgVignette, _bgAccentGlow, defaultGradient);
 
-            var emblemGo = new GameObject("emblem", typeof(RectTransform), typeof(Image));
-            emblemGo.transform.SetParent(transform, false);
-            var emblemRect = emblemGo.GetComponent<RectTransform>();
-            emblemRect.anchorMin = new Vector2(0.38f, 0.5f);
-            emblemRect.anchorMax = new Vector2(0.38f, 0.5f);
-            emblemRect.pivot = new Vector2(0.5f, 0.5f);
-            emblemRect.sizeDelta = new Vector2(640f, 640f);
-            emblemRect.anchoredPosition = new Vector2(-80f, -24f);
-            emblemRect.localRotation = Quaternion.Euler(0f, 0f, 45f);
-            _bgEmblem = emblemGo.GetComponent<Image>();
-            _bgEmblem.color = new Color(0f, 0f, 0f, 0.14f);
-            _bgEmblem.raycastTarget = false;
+                var emblemGo = new GameObject("emblem", typeof(RectTransform), typeof(Image));
+                emblemGo.transform.SetParent(transform, false);
+                var emblemRect = emblemGo.GetComponent<RectTransform>();
+                emblemRect.anchorMin = new Vector2(0.38f, 0.5f);
+                emblemRect.anchorMax = new Vector2(0.38f, 0.5f);
+                emblemRect.pivot = new Vector2(0.5f, 0.5f);
+                emblemRect.sizeDelta = new Vector2(640f, 640f);
+                emblemRect.anchoredPosition = new Vector2(-80f, -24f);
+                emblemRect.localRotation = Quaternion.Euler(0f, 0f, 45f);
+                _bgEmblem = emblemGo.GetComponent<Image>();
+                _bgEmblem.color = new Color(0f, 0f, 0f, 0.14f);
+                _bgEmblem.raycastTarget = false;
+            }
+            else
+            {
+                _bgFlat = CreateStretchImage(transform, "theme_background_flat", V3CaptainCatalog.GetMenuThemeColor(V3CaptainId.Rook));
+            }
 
-            var header = CreateTmp(transform, "header", "SELECT YOUR CAPTAIN", 28, FontStyles.Bold, false);
+            var header = CreateTmp(transform, "header", "SELECT YOUR CAPTAIN", 28, FontStyles.Bold);
             var headerRect = header.rectTransform;
             headerRect.anchorMin = new Vector2(0.5f, 1f);
             headerRect.anchorMax = new Vector2(0.5f, 1f);
@@ -108,8 +128,10 @@ namespace HighSeas.V3
             headerRect.anchoredPosition = new Vector2(0f, -36f);
             headerRect.sizeDelta = new Vector2(900f, 40f);
             header.alignment = TextAlignmentOptions.Center;
-            header.color = new Color(1f, 1f, 1f, 0.5f);
+            header.color = new Color(1f, 1f, 1f, 0.65f);
             header.characterSpacing = 4f;
+            if (_usePolishedUi)
+                V3MainMenuVisuals.StyleHeader(header);
 
             var heroRow = new GameObject("hero_row", typeof(RectTransform));
             heroRow.transform.SetParent(transform, false);
@@ -118,6 +140,17 @@ namespace HighSeas.V3
             heroRect.anchorMax = new Vector2(1f, 0.88f);
             heroRect.offsetMin = Vector2.zero;
             heroRect.offsetMax = Vector2.zero;
+
+            if (_usePolishedUi)
+            {
+                var poseShadow = CreateStretchImage(heroRow.transform, "pose_drop_shadow", new Color(0f, 0f, 0f, 0.35f));
+                var poseShadowRect = poseShadow.rectTransform;
+                poseShadowRect.anchorMin = new Vector2(0.08f, 0f);
+                poseShadowRect.anchorMax = new Vector2(0.5f, 0.08f);
+                poseShadowRect.offsetMin = Vector2.zero;
+                poseShadowRect.offsetMax = Vector2.zero;
+                V3MainMenuVisuals.AddDropShadow(poseShadow, new Vector2(0f, -6f), new Color(0f, 0f, 0f, 0.55f));
+            }
 
             _poseStage = new GameObject("pose_stage", typeof(RectTransform)).GetComponent<RectTransform>();
             _poseStage.SetParent(heroRow.transform, false);
@@ -144,7 +177,27 @@ namespace HighSeas.V3
             panelRect.offsetMax = new Vector2(-80f, -16f);
             _detailsGroup = panel.GetComponent<CanvasGroup>();
 
-            _nameText = CreateTmp(panel.transform, "captain_name", "Captain", 72, FontStyles.Bold, true);
+            if (_usePolishedUi)
+            {
+                _detailsPanelBg = CreateStretchImage(panel.transform, "panel_glass", new Color(0f, 0f, 0f, 0.22f));
+                var glassRect = _detailsPanelBg.rectTransform;
+                glassRect.anchorMin = Vector2.zero;
+                glassRect.anchorMax = Vector2.one;
+                glassRect.offsetMin = new Vector2(DetailsPanelInset, DetailsPanelInset);
+                glassRect.offsetMax = new Vector2(-DetailsPanelInset, -DetailsPanelInset);
+                _detailsPanelBg.transform.SetAsFirstSibling();
+                V3MainMenuVisuals.AddDropShadow(_detailsPanelBg, new Vector2(6f, -6f), new Color(0f, 0f, 0f, 0.45f));
+            }
+
+            var textContent = new GameObject("text_content", typeof(RectTransform));
+            textContent.transform.SetParent(panel.transform, false);
+            var textContentRect = textContent.GetComponent<RectTransform>();
+            textContentRect.anchorMin = Vector2.zero;
+            textContentRect.anchorMax = Vector2.one;
+            textContentRect.offsetMin = new Vector2(DetailsTextPadding, DetailsTextPadding);
+            textContentRect.offsetMax = new Vector2(-DetailsTextPadding, -DetailsTextPadding);
+
+            _nameText = CreateTmp(textContent.transform, "captain_name", "Captain", 72, FontStyles.Bold);
             var nameRect = _nameText.rectTransform;
             nameRect.anchorMin = new Vector2(0f, 1f);
             nameRect.anchorMax = new Vector2(1f, 1f);
@@ -158,21 +211,25 @@ namespace HighSeas.V3
             _nameText.fontSizeMax = 72f;
             _nameText.characterSpacing = 2f;
 
-            _descText = CreateTmp(panel.transform, "description", "", 26, FontStyles.Normal, false);
+            _descText = CreateTmp(textContent.transform, "description", "", 26, FontStyles.Normal);
             var descRect = _descText.rectTransform;
             descRect.anchorMin = new Vector2(0f, 0f);
             descRect.anchorMax = new Vector2(1f, 1f);
             descRect.offsetMin = new Vector2(0f, 0f);
-            descRect.offsetMax = new Vector2(0f, -112f);
+            descRect.offsetMax = new Vector2(0f, -120f);
             _descText.alignment = TextAlignmentOptions.TopLeft;
             _descText.color = new Color(1f, 1f, 1f, 0.9f);
             _descText.lineSpacing = 6f;
             _descText.enableAutoSizing = true;
             _descText.fontSizeMin = 20f;
             _descText.fontSizeMax = 26f;
+            if (_usePolishedUi)
+                V3MainMenuVisuals.StyleBody(_descText);
 
             _lockBanner = CreateStretchImage(panel.transform, "lock_banner", new Color(0f, 0f, 0f, 0.72f));
-            var lockLabel = CreateTmp(_lockBanner.transform, "label", "Complete your first conquest to unlock Sparky", 22, FontStyles.Bold, false);
+            if (_usePolishedUi)
+                V3MainMenuVisuals.AddDropShadow(_lockBanner, new Vector2(0f, -3f), new Color(0f, 0f, 0f, 0.5f));
+            var lockLabel = CreateTmp(_lockBanner.transform, "label", "Complete your first conquest to unlock Sparky", 22, FontStyles.Bold);
             Stretch(lockLabel.rectTransform);
             lockLabel.alignment = TextAlignmentOptions.Center;
             lockLabel.color = new Color(1f, 0.85f, 0.55f, 1f);
@@ -219,8 +276,10 @@ namespace HighSeas.V3
 
             rect.sizeDelta = new Vector2(64f, 140f);
             var img = go.GetComponent<Image>();
-            img.color = new Color(0f, 0f, 0f, 0.22f);
-            var label = CreateTmp(go.transform, "glyph", prev ? "‹" : "›", 52, FontStyles.Bold, true);
+            img.color = new Color(0f, 0f, 0f, _usePolishedUi ? 0.32f : 0.22f);
+            if (_usePolishedUi)
+                V3MainMenuVisuals.AddDropShadow(img, new Vector2(2f, -3f), new Color(0f, 0f, 0f, 0.55f));
+            var label = CreateTmp(go.transform, "glyph", prev ? "‹" : "›", 52, FontStyles.Bold);
             Stretch(label.rectTransform);
             label.alignment = TextAlignmentOptions.Center;
             label.color = new Color(1f, 1f, 1f, 0.9f);
@@ -239,9 +298,18 @@ namespace HighSeas.V3
             rect.sizeDelta = new Vector2(380f, 84f);
 
             var img = go.GetComponent<Image>();
-            img.color = new Color(0.92f, 0.88f, 0.78f, 1f);
+            img.color = new Color(0.96f, 0.9f, 0.72f, 1f);
+            if (_usePolishedUi)
+            {
+                V3MainMenuVisuals.AddDropShadow(img, new Vector2(0f, -5f), new Color(0f, 0f, 0f, 0.55f));
+            }
 
-            var label = CreateTmp(go.transform, "label", "SET SAIL", 34, FontStyles.Bold, true);
+            var label = CreateTmp(go.transform, "label", "SET SAIL", 34, FontStyles.Bold);
+            if (_usePolishedUi)
+            {
+                V3MainMenuVisuals.StyleBody(label);
+                label.outlineWidth = 0.15f;
+            }
             Stretch(label.rectTransform);
             label.alignment = TextAlignmentOptions.Center;
             label.color = new Color(0.18f, 0.14f, 0.1f, 1f);
@@ -277,12 +345,21 @@ namespace HighSeas.V3
         void Update()
         {
             var keyboard = Keyboard.current;
-            if (keyboard != null && !_transitioning)
+            if (keyboard != null)
             {
-                if (keyboard.leftArrowKey.wasPressedThisFrame || keyboard.aKey.wasPressedThisFrame)
-                    Step(-1);
-                else if (keyboard.rightArrowKey.wasPressedThisFrame || keyboard.dKey.wasPressedThisFrame)
-                    Step(1);
+                if (keyboard.zKey.wasPressedThisFrame)
+                {
+                    ToggleUiStyle();
+                    return;
+                }
+
+                if (!_transitioning)
+                {
+                    if (keyboard.leftArrowKey.wasPressedThisFrame || keyboard.aKey.wasPressedThisFrame)
+                        Step(-1);
+                    else if (keyboard.rightArrowKey.wasPressedThisFrame || keyboard.dKey.wasPressedThisFrame)
+                        Step(1);
+                }
             }
 
             if (_transitioning)
@@ -306,8 +383,8 @@ namespace HighSeas.V3
             _transitionT = 0f;
             _transitionTargetIndex = targetIndex;
             _transitionDirection = direction >= 0 ? 1 : -1;
-            _transitionFromColor = ThemeColorFor(_index);
-            _transitionToColor = ThemeColorFor(targetIndex);
+            _transitionFromGradient = GradientFor(_index);
+            _transitionToGradient = GradientFor(targetIndex);
 
             var incomingCaptain = V3CaptainCatalog.MenuOrder[targetIndex];
             ApplyPoseSprite(_poseB, incomingCaptain);
@@ -324,8 +401,9 @@ namespace HighSeas.V3
             var t = Mathf.Clamp01(_transitionT);
             var eased = SmootherStep(t);
 
-            _bgFill.color = Color.Lerp(_transitionFromColor, _transitionToColor, eased);
-            _bgEmblem.color = new Color(0f, 0f, 0f, Mathf.Lerp(0.14f, 0.18f, eased));
+            ApplyBackgroundLerp(eased);
+            if (_usePolishedUi && _bgEmblem != null)
+                _bgEmblem.color = new Color(0f, 0f, 0f, Mathf.Lerp(0.14f, 0.2f, eased));
 
             var slide = PoseSlidePixels * eased;
             _poseA.rectTransform.anchoredPosition = new Vector2(-_transitionDirection * slide, 0f);
@@ -363,7 +441,7 @@ namespace HighSeas.V3
             var captain = CurrentCaptain();
             ApplyPoseSprite(_poseA, captain);
             _poseB.gameObject.SetActive(false);
-            _bgFill.color = ThemeColorFor(_index);
+            ApplyThemeBackground(_index);
             ApplyCaptainDetails(_index);
             NotifyCaptainIfNeeded(captain);
             UpdatePlayButton();
@@ -374,6 +452,15 @@ namespace HighSeas.V3
             var captain = V3CaptainCatalog.MenuOrder[index];
             _nameText.text = V3CaptainCatalog.GetMenuLabel(captain).ToUpperInvariant();
             _descText.text = V3CaptainCatalog.GetMenuDescription(captain);
+            ApplyNameTextStyle(index);
+            if (_usePolishedUi)
+                V3MainMenuVisuals.StyleBody(_descText);
+            else
+            {
+                _descText.outlineWidth = 0f;
+                _descText.color = new Color(1f, 1f, 1f, 0.9f);
+            }
+
             var locked = V3CaptainCatalog.IsLocked(captain);
             _lockBanner.gameObject.SetActive(locked);
             _poseA.color = locked ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
@@ -425,10 +512,76 @@ namespace HighSeas.V3
             rect.anchoredPosition = Vector2.zero;
         }
 
-        Color ThemeColorFor(int index)
+        Color ThemeColorFor(int index) =>
+            V3CaptainCatalog.GetMenuThemeColor(V3CaptainCatalog.MenuOrder[index]);
+
+        V3MainMenuVisuals.ThemeGradient GradientFor(int index) =>
+            V3MainMenuVisuals.BuildGradient(ThemeColorFor(index));
+
+        void ApplyThemeBackground(int index)
         {
-            var captain = V3CaptainCatalog.MenuOrder[index];
-            return _art != null ? _art.GetMenuThemeColor(captain) : V3CaptainCatalog.GetMenuThemeColor(captain);
+            if (_usePolishedUi)
+            {
+                V3MainMenuVisuals.ApplyBackground(
+                    _bgGradientTop,
+                    _bgGradientBottom,
+                    _bgVignette,
+                    _bgAccentGlow,
+                    GradientFor(index));
+                return;
+            }
+
+            if (_bgFlat != null)
+                _bgFlat.color = ThemeColorFor(index);
+        }
+
+        void ApplyBackgroundLerp(float eased)
+        {
+            if (_usePolishedUi)
+            {
+                V3MainMenuVisuals.ApplyBackground(
+                    _bgGradientTop,
+                    _bgGradientBottom,
+                    _bgVignette,
+                    _bgAccentGlow,
+                    V3MainMenuVisuals.Lerp(_transitionFromGradient, _transitionToGradient, eased));
+                return;
+            }
+
+            if (_bgFlat != null)
+                _bgFlat.color = Color.Lerp(ThemeColorFor(_index), ThemeColorFor(_transitionTargetIndex), eased);
+        }
+
+        void ApplyNameTextStyle(int index)
+        {
+            if (_usePolishedUi)
+            {
+                V3MainMenuVisuals.StyleCaptainName(_nameText, ThemeColorFor(index));
+                return;
+            }
+
+            _nameText.enableVertexGradient = false;
+            _nameText.outlineWidth = 0f;
+            _nameText.color = Color.white;
+        }
+
+        void ToggleUiStyle()
+        {
+            _usePolishedUi = !_usePolishedUi;
+            _uiBuilt = false;
+            _transitioning = false;
+            PlayButton = null;
+            _bgGradientTop = null;
+            _bgGradientBottom = null;
+            _bgVignette = null;
+            _bgAccentGlow = null;
+            _bgFlat = null;
+            _detailsPanelBg = null;
+            _bgEmblem = null;
+            BuildUi();
+            ApplyCaptainInstant(_index);
+            Canvas.ForceUpdateCanvases();
+            ApplyPoseSprite(_poseA, CurrentCaptain());
         }
 
         V3CaptainId CurrentCaptain() => V3CaptainCatalog.MenuOrder[_index];
@@ -478,13 +631,7 @@ namespace HighSeas.V3
             return img;
         }
 
-        static TextMeshProUGUI CreateTmp(
-            Transform parent,
-            string name,
-            string text,
-            float size,
-            FontStyles style,
-            bool title)
+        static TextMeshProUGUI CreateTmp(Transform parent, string name, string text, float size, FontStyles style)
         {
             var go = new GameObject(name, typeof(RectTransform));
             go.transform.SetParent(parent, false);
@@ -492,10 +639,7 @@ namespace HighSeas.V3
             tmp.text = text;
             tmp.fontSize = size;
             tmp.fontStyle = style;
-            if (title)
-                V3MainMenuTypography.ApplyTitle(tmp);
-            else
-                V3MainMenuTypography.ApplyBody(tmp);
+            V3MainMenuTypography.ApplyBody(tmp);
             return tmp;
         }
 

@@ -136,6 +136,7 @@ namespace HighSeas.V3
             V3RunItemInventory.Ensure();
             V3RunItemEffects.Ensure();
             V3RunPlaytestHotkeys.Ensure();
+            V3BossSummonHotkey.Ensure();
             var runCanvas = V3RunUiBootstrap.EnsureAll(_layout);
             runCanvas.GetComponent<RunHud>()?.ForceRefresh();
 

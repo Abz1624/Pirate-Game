@@ -41,6 +41,8 @@ namespace HighSeas.POI
         const float SignalBuoyRadius = 4f;
 
         public int PaidChestCount => _paidChestCount;
+        public bool BossSummoned => _bossSummoned;
+        public bool BossDefeated => _bossDefeated;
 
         public bool IsPoiConsumed(int index) =>
             _layout != null && index >= 0 && index < _layout.pois.Count && _layout.pois[index].used;
@@ -72,6 +74,8 @@ namespace HighSeas.POI
             for (var i = 0; i < _layout.pois.Count; i++)
             {
                 var poi = _layout.pois[i];
+                if (poi.type != POIType.SalvageChest)
+                    continue;
                 var marker = CreateMarker(poi.type, poi.position, root);
                 var trigger = marker.AddComponent<POIInteractable>();
                 trigger.Initialize(this, poi.type, i, juiceSettings, pacingSettings);
@@ -445,6 +449,29 @@ namespace HighSeas.POI
             _signalBuoyCharges[index] += Time.deltaTime;
             if (_signalBuoyCharges[index] >= SignalBuoyChargeSeconds)
                 TryCompleteSignalBuoy(player, index);
+        }
+
+        /// <summary>Summon the treasury boss (e.g. hotkey when no beacon POI is in the world).</summary>
+        public bool TrySummonBoss()
+        {
+            if (RunManager.Instance != null && RunManager.Instance.IsRunEnded)
+                return false;
+            if (_bossDefeated)
+            {
+                V3ToastHud.Instance?.Show("Objective already secured.", 2f);
+                return false;
+            }
+
+            if (_bossSummoned)
+            {
+                V3ToastHud.Instance?.Show("Boss already summoned.", 2f);
+                return false;
+            }
+
+            var player = FindFirstObjectByType<PlayerShipController>();
+            SummonBoss(player);
+            V3ToastHud.Instance?.Show("Treasury Beacon — boss incoming! (B)", 3f);
+            return true;
         }
 
         void SummonBoss(PlayerShipController player)

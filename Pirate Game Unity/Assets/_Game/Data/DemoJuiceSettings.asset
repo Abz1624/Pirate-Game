@@ -94,7 +94,7 @@ MonoBehaviour:
   showHealthOnElitesOnly: 0
   salvageChestPrefab: {fileID: 4407610472142162157, guid: 9848d10ca2d58f745a077ec09bf9322b, type: 3}
   salvageChestGlowPrefab: {fileID: 1590415177872986601, guid: acdb90624a404aa438447006f1026065, type: 3}
-  salvageChestGlowScale: 0.55
+  salvageChestGlowScale: 0.28
   lighthousePrefab: {fileID: 8566692806509818879, guid: 3474afa68addb4a23ab3b6e1b1bb164d, type: 3}
   trialBuoyPrefab: {fileID: 4037768348685628337, guid: 2f694d24f3dfc41efb3621ab070c12eb, type: 3}
   bossBeaconPrefab: {fileID: 1518445697085349005, guid: 20e3079d439b54598a1f24676715aaf3, type: 3}

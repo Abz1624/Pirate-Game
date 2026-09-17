@@ -181,6 +181,7 @@ namespace HighSeas.V3
                 "Shift+N — toggle auto spawn\n" +
                 "I — grant next interaction item\n" +
                 "O — grant logbook rank\n" +
+                "B — summon treasury boss\n" +
                 "V — toggle aim overlays",
                 8f);
         }

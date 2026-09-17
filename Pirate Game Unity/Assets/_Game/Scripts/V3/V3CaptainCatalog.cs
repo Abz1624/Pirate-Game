@@ -60,13 +60,20 @@ namespace HighSeas.V3
 
         public static Color GetMenuThemeColor(V3CaptainId id) => id switch
         {
-            V3CaptainId.Brine => new Color(0.12f, 0.42f, 0.34f, 1f),
-            V3CaptainId.Flint => new Color(0.38f, 0.18f, 0.48f, 1f),
-            V3CaptainId.Richie => new Color(0.52f, 0.38f, 0.12f, 1f),
-            V3CaptainId.Ember => new Color(0.62f, 0.22f, 0.1f, 1f),
-            V3CaptainId.Roxie => new Color(0.14f, 0.34f, 0.58f, 1f),
-            _ => new Color(0.55f, 0.32f, 0.12f, 1f)
+            V3CaptainId.Brine => HexColor("4a5e27"),
+            V3CaptainId.Flint => HexColor("bf1d2c"),
+            V3CaptainId.Richie => HexColor("75225e"),
+            V3CaptainId.Ember => HexColor("ffac5c"),
+            V3CaptainId.Roxie => HexColor("3485e4"),
+            _ => HexColor("033285")
         };
+
+        static Color HexColor(string hex)
+        {
+            if (ColorUtility.TryParseHtmlString("#" + hex, out var color))
+                return color;
+            return Color.white;
+        }
 
         public static string GetActiveSummary(V3CaptainId id) => id switch
         {

@@ -7,8 +7,8 @@ namespace HighSeas.POI
     /// <summary>Golden point light + optional loop VFX on salvage chest POIs.</summary>
     public sealed class SalvageChestTreasureGlow : MonoBehaviour
     {
-        static readonly Color GoldLight = new(1f, 0.82f, 0.32f);
-        static readonly Color GoldVfxTint = new(1f, 0.88f, 0.28f);
+        static readonly Color GoldLight = new(1f, 0.78f, 0.38f);
+        static readonly Color GoldVfxTint = new(1f, 0.85f, 0.35f);
 
         Light _pointLight;
         float _pulsePhase;
@@ -33,8 +33,8 @@ namespace HighSeas.POI
             _pointLight = anchor.AddComponent<Light>();
             _pointLight.type = LightType.Point;
             _pointLight.color = GoldLight;
-            _pointLight.intensity = 1.15f;
-            _pointLight.range = 2.8f;
+            _pointLight.intensity = 0.42f;
+            _pointLight.range = 1.65f;
             _pointLight.shadows = LightShadows.None;
 
             var glowPrefab = ResolveGlowPrefab(settings);
@@ -46,7 +46,7 @@ namespace HighSeas.POI
                 vfx.transform.localRotation = Quaternion.identity;
                 var scale = settings.salvageChestGlowScale;
                 vfx.transform.localScale = Vector3.one * scale;
-                VfxParticleUtil.ApplyTint(vfx, GoldVfxTint, 0.85f, 1f);
+                VfxParticleUtil.ApplyTint(vfx, GoldVfxTint, 0.32f, 0.55f);
                 VfxParticleUtil.RestartParticles(vfx);
             }
         }
@@ -74,7 +74,7 @@ namespace HighSeas.POI
                 return;
 
             _pulsePhase += Time.deltaTime * 2.2f;
-            _pointLight.intensity = 0.95f + Mathf.Sin(_pulsePhase) * 0.3f;
+            _pointLight.intensity = 0.36f + Mathf.Sin(_pulsePhase) * 0.08f;
         }
     }
 }

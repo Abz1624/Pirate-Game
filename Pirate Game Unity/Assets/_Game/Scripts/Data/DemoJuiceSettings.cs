@@ -120,7 +120,7 @@ namespace HighSeas.Data
         [Header("POI Visuals")]
         public GameObject salvageChestPrefab;
         public GameObject salvageChestGlowPrefab;
-        public float salvageChestGlowScale = 0.55f;
+        public float salvageChestGlowScale = 0.28f;
         public GameObject lighthousePrefab;
         public GameObject trialBuoyPrefab;
         public GameObject bossBeaconPrefab;

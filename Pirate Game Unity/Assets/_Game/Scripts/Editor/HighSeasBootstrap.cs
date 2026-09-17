@@ -243,11 +243,11 @@ namespace HighSeas.Editor
             return new[]
             {
                 MakeEnemy("cannonboat", "Cannonboat", EnemyCategory.Ship, 18f, 8f, 3.8f, 3, 1.2f, EnemyBehavior.DirectChaser, new Color(0.75f, 0.45f, 0.2f)),
-                MakeEnemy("shark", "Shark", EnemyCategory.Creature, 16f, 9f, 5f, 4, 1.1f, EnemyBehavior.DirectChaser, new Color(0.35f, 0.55f, 0.9f)),
-                MakeEnemy("swordfish", "Swordfish", EnemyCategory.Creature, 10f, 6f, 5.85f, 2, 0.9f, EnemyBehavior.FastSwarm, new Color(0.2f, 0.7f, 0.95f)),
-                MakeEnemy("hammerhead", "Hammerhead", EnemyCategory.Creature, 14f, 7f, 5f, 3, 1.1f, EnemyBehavior.FlankingChaser, new Color(0.25f, 0.6f, 0.85f)),
-                MakeEnemy("kraken_spawn", "Kraken Spawn", EnemyCategory.Creature, 28f, 11f, 2.5f, 6, 1.6f, EnemyBehavior.TankChaser, new Color(0.45f, 0.2f, 0.65f)),
-                MakeEnemy("manta_ray", "Manta Ray", EnemyCategory.Creature, 22f, 8f, 4.5f, 4, 1.4f, EnemyBehavior.FlankingChaser, new Color(0.3f, 0.55f, 0.9f)),
+                MakeEnemy("shark", "Shark", EnemyCategory.Creature, 16f, 9f, 4.75f, 4, 1.1f, EnemyBehavior.DirectChaser, new Color(0.35f, 0.55f, 0.9f)),
+                MakeEnemy("swordfish", "Swordfish", EnemyCategory.Creature, 10f, 6f, 5.56f, 2, 0.9f, EnemyBehavior.FastSwarm, new Color(0.2f, 0.7f, 0.95f)),
+                MakeEnemy("hammerhead", "Hammerhead", EnemyCategory.Creature, 14f, 7f, 4.75f, 3, 1.1f, EnemyBehavior.FlankingChaser, new Color(0.25f, 0.6f, 0.85f)),
+                MakeEnemy("kraken_spawn", "Kraken Spawn", EnemyCategory.Creature, 28f, 11f, 2.38f, 6, 1.6f, EnemyBehavior.TankChaser, new Color(0.45f, 0.2f, 0.65f)),
+                MakeEnemy("manta_ray", "Manta Ray", EnemyCategory.Creature, 22f, 8f, 4.28f, 4, 1.4f, EnemyBehavior.FlankingChaser, new Color(0.3f, 0.55f, 0.9f)),
                 MakeEnemy("reef_crab_miniboss", "Reef Crab", EnemyCategory.Creature, 120f, 14f, 2f, 8, 2.2f, EnemyBehavior.MaintainRange, new Color(0.4f, 0.3f, 0.55f), isMiniboss: true),
                 MakeEnemy("barnacle_king", "Barnacle King", EnemyCategory.Creature, 800f, 18f, 2.5f, 9, 2.8f, EnemyBehavior.TankChaser, new Color(0.2f, 0.5f, 0.35f), isBoss: true)
             };
