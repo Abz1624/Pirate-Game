@@ -210,15 +210,19 @@ namespace HighSeas.Player
 
         static Vector3 ResolveSpawnPosition(Vector3 position)
         {
+            const float radius = 1.15f;
             if (!IslandObstacles.IsAvailable)
+            {
+                if (V3.V3RunContext.IsActive)
+                    position = PlayBounds.Clamp(position, radius + 0.25f);
                 return position;
+            }
 
-            var radius = 1.15f;
             var height = IslandObstacles.GetCollisionHeight(radius);
             for (var i = 0; i < 12; i++)
             {
                 if (!IslandObstacles.IsPositionBlocked(position, radius))
-                    return position;
+                    return ClampV3PlayPosition(position, radius);
 
                 position = IslandObstacles.Depenetrate(position, radius, height);
             }
@@ -230,11 +234,18 @@ namespace HighSeas.Player
                     var angle = (i / 12f) * Mathf.PI * 2f;
                     var candidate = position + new Vector3(Mathf.Cos(angle) * ring * 2.5f, 0f, Mathf.Sin(angle) * ring * 2.5f);
                     if (!IslandObstacles.IsPositionBlocked(candidate, radius))
-                        return candidate;
+                        return ClampV3PlayPosition(candidate, radius);
                 }
             }
 
-            return position;
+            return ClampV3PlayPosition(position, radius);
+        }
+
+        static Vector3 ClampV3PlayPosition(Vector3 position, float radius)
+        {
+            if (!V3.V3RunContext.IsActive)
+                return position;
+            return PlayBounds.Clamp(position, radius + 0.25f);
         }
 
         void FixedUpdate()

@@ -32,5 +32,20 @@ namespace HighSeas.V3.MultiShip
 
             return result;
         }
+
+        public static string[] GetAllPlaytestWeapons(GameDatabase database)
+        {
+            if (database == null)
+                return System.Array.Empty<string>();
+
+            var result = new List<string>();
+            foreach (var id in V3WeaponPlaytestCatalog.All)
+            {
+                if (!string.IsNullOrEmpty(id) && database.GetWeapon(id) != null)
+                    result.Add(id);
+            }
+
+            return result.ToArray();
+        }
     }
 }

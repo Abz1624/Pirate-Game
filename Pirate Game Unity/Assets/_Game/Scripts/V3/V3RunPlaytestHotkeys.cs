@@ -4,6 +4,7 @@ using HighSeas.Data;
 using HighSeas.Enemies;
 using HighSeas.Player;
 using HighSeas.UI;
+using HighSeas.V3.MultiShip;
 using HighSeas.Weapons;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -99,6 +100,9 @@ namespace HighSeas.V3
 
             if (keyboard.yKey.wasPressedThisFrame)
                 GrantDemoGunneryLoadout();
+
+            if (keyboard.kKey.wasPressedThisFrame)
+                GrantCoOpPartyRandomWeapons();
         }
 
         void CycleWeapon(int delta)
@@ -184,6 +188,23 @@ namespace HighSeas.V3
             _levels.GrantPlaytestLogbookRank(pool[_logbookIndex]);
         }
 
+        void GrantCoOpPartyRandomWeapons()
+        {
+            if (!V3RunSession.IsCoOp)
+            {
+                V3ToastHud.Instance?.Show("K — co-op only: random 6 weapons for all player ships.", 2.5f);
+                return;
+            }
+
+            var database = GameDatabaseLoader.Load();
+            var armed = V3MultiShipWeaponLoadouts.RollAndApplyRandomLoadoutsToAllShips(database);
+            V3ToastHud.Instance?.Show(
+                armed > 0
+                    ? $"Co-op loadout (K): {armed} ships armed with 6 random weapons each."
+                    : "No player ships found to arm.",
+                4f);
+        }
+
         void GrantDemoGunneryLoadout()
         {
             if (_weapons == null) _weapons = FindFirstObjectByType<WeaponController>();
@@ -210,6 +231,7 @@ namespace HighSeas.V3
                 "O — grant logbook rank\n" +
                 "B — summon treasury boss\n" +
                 "Y — gunnery loadout (6 weapons)\n" +
+                "K — co-op: random 6 weapons on all ships\n" +
                 "V — toggle aim overlays",
                 8f);
         }

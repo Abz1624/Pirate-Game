@@ -23,7 +23,7 @@ namespace HighSeas.V3.MultiShip
             if (kind == V3RunSessionKind.SinglePlayer || humanPlayer == null || database == null)
                 return;
 
-            var systemsWeapon = FindHumanWeaponController(humanPlayer);
+            var systemsWeapon = V3MultiShipWeaponLoadouts.FindHumanWeaponController(humanPlayer);
             if (systemsWeapon != null)
                 systemsWeapon.BindOwner(humanPlayer);
 
@@ -55,24 +55,24 @@ namespace HighSeas.V3.MultiShip
             V3PvPRunDirector.ResetState();
             DisableAmbientPve();
 
-            var rng = RunManager.Instance != null ? RunManager.Instance.Rng : null;
-            var humanLoadout = V3PvPWeaponLoadout.RollRandomWeapons(database, rng);
-            var rivalLoadout = V3PvPWeaponLoadout.RollRandomWeapons(database, rng);
+            var fullLoadout = V3PvPWeaponLoadout.GetAllPlaytestWeapons(database);
 
-            if (humanWeapons != null && humanLoadout.Length > 0)
+            if (humanWeapons != null && fullLoadout.Length > 0)
             {
                 humanWeapons.ApplyCombatExperiment(CombatExperimentContext.Active);
-                humanWeapons.Initialize(database, humanLoadout[0]);
-                humanWeapons.SetWeaponLoadout(humanLoadout);
+                humanWeapons.EnsureWeaponSlotCapacity(fullLoadout.Length);
+                humanWeapons.Initialize(database, fullLoadout[0]);
+                humanWeapons.SetWeaponLoadout(fullLoadout);
             }
 
-            LevelSystem.Instance?.SetPlaytestWeaponLoadout(humanLoadout);
+            LevelSystem.Instance?.SetPlaytestWeaponLoadout(fullLoadout);
 
             var forward = humanPlayer.MovementForward;
             var right = Vector3.Cross(Vector3.up, forward).normalized;
-            var spawn = humanPlayer.Position + right * spacing;
-            spawn.y = 0f;
-            humanPlayer.SetWorldPosition(humanPlayer.Position - right * (spacing * 0.5f));
+            var humanPos = V3MultiShipSpawnUtil.ResolveSafeSpawn(
+                humanPlayer.Position - right * (spacing * 0.5f));
+            humanPlayer.SetWorldPosition(humanPos);
+            var spawn = V3MultiShipSpawnUtil.ResolveSafeSpawn(humanPos + right * spacing);
 
             var rival = PlayerShipFactory.SpawnFromTemplate(
                 humanPlayer,
@@ -82,29 +82,16 @@ namespace HighSeas.V3.MultiShip
                 V3ShipTeam.RivalBot,
                 localHuman: false,
                 database,
-                rivalLoadout.Length > 0 ? rivalLoadout[0] : "deck_cannons",
+                fullLoadout.Length > 0 ? fullLoadout[0] : "deck_cannons",
                 humanPlayer,
-                rivalLoadout);
+                fullLoadout);
 
             V3PvPRunDirector.Ensure(rival);
+            V3ShipNameLabels.TagShips(humanPlayer, rival);
 
             V3ToastHud.Instance?.Show(
-                "PvP duel — defeat the rival captain.\nYou and the rival each have 6 random weapons.",
+                $"PvP duel — defeat the rival captain.\nFull arsenal equipped ({fullLoadout.Length} weapons each).",
                 5f);
-        }
-
-        static WeaponController FindHumanWeaponController(PlayerShipController humanPlayer)
-        {
-            var all = Object.FindObjectsByType<WeaponController>(FindObjectsSortMode.None);
-            for (var i = 0; i < all.Length; i++)
-            {
-                if (all[i] == null) continue;
-                if (all[i].GetComponent<PlayerShipController>() != null)
-                    continue;
-                return all[i];
-            }
-
-            return humanPlayer != null ? humanPlayer.GetComponent<WeaponController>() : null;
         }
 
         static void ConfigureCoOp(
@@ -117,16 +104,19 @@ namespace HighSeas.V3.MultiShip
             var right = Vector3.Cross(Vector3.up, forward).normalized;
             var back = -forward;
 
-            var wingA = humanPlayer.Position + right * spacing * 0.85f + back * (spacing * 0.35f);
-            var wingB = humanPlayer.Position - right * spacing * 0.85f + back * (spacing * 0.35f);
-            wingA.y = wingB.y = 0f;
+            var wingA = V3MultiShipSpawnUtil.ResolveSafeSpawn(
+                humanPlayer.Position + right * spacing * 0.85f + back * (spacing * 0.35f));
+            var wingB = V3MultiShipSpawnUtil.ResolveSafeSpawn(
+                humanPlayer.Position - right * spacing * 0.85f + back * (spacing * 0.35f));
 
-            PlayerShipFactory.SpawnFromTemplate(
+            var allyA = PlayerShipFactory.SpawnFromTemplate(
                 humanPlayer, "AllyShip_A", wingA, humanPlayer.transform.rotation,
                 V3ShipTeam.AllyBot, false, database, startingWeaponId, humanPlayer);
-            PlayerShipFactory.SpawnFromTemplate(
+            var allyB = PlayerShipFactory.SpawnFromTemplate(
                 humanPlayer, "AllyShip_B", wingB, humanPlayer.transform.rotation,
                 V3ShipTeam.AllyBot, false, database, startingWeaponId, humanPlayer);
+
+            V3ShipNameLabels.TagShips(humanPlayer, allyA, allyB);
         }
 
         static void DisableAmbientPve()

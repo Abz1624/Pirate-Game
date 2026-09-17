@@ -129,6 +129,9 @@ namespace HighSeas.Weapons
             maxSlots = profile.weaponSlotCap;
         }
 
+        public void EnsureWeaponSlotCapacity(int requiredSlots) =>
+            maxSlots = Mathf.Max(maxSlots, Mathf.Max(1, requiredSlots));
+
         public void Initialize(GameDatabase db, string startingWeaponId)
         {
             database = db;

@@ -30,6 +30,7 @@ namespace HighSeas.V3
         {
             public GameObject root;
             public Image border;
+            public Image icon;
             public TextMeshProUGUI title;
             public TextMeshProUGUI subtitle;
         }
@@ -128,6 +129,18 @@ namespace HighSeas.V3
             fill.color = RunHudTheme.SlotFill;
             root.AddComponent<RectMask2D>();
 
+            var iconGo = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconGo.transform.SetParent(root.transform, false);
+            var iconRect = iconGo.GetComponent<RectTransform>();
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.anchoredPosition = new Vector2(0f, 6f);
+            iconRect.sizeDelta = new Vector2(size.x - 10f, size.y - 22f);
+            var icon = iconGo.GetComponent<Image>();
+            icon.preserveAspect = true;
+            icon.raycastTarget = false;
+
             var titleGo = new GameObject("Title", typeof(RectTransform));
             titleGo.transform.SetParent(root.transform, false);
             var titleRect = titleGo.GetComponent<RectTransform>();
@@ -162,6 +175,7 @@ namespace HighSeas.V3
             {
                 root = root,
                 border = borderImg,
+                icon = icon,
                 title = title,
                 subtitle = subtitle
             };
@@ -207,12 +221,23 @@ namespace HighSeas.V3
                     slot.root.SetActive(true);
                     slot.title.text = WeaponEvolutionRuntime.GetDisplayName(weapon.def.id, weapon.def.displayName);
                     slot.subtitle.text = $"LV {weapon.level}";
+                    if (slot.icon != null)
+                    {
+                        var sprite = V3RunHudIconResolver.GetWeaponIcon(weapon.def.id, weapon.def);
+                        slot.icon.sprite = sprite;
+                        slot.icon.enabled = sprite != null;
+                    }
                 }
                 else
                 {
                     slot.root.SetActive(true);
                     slot.title.text = "Empty";
                     slot.subtitle.text = "—";
+                    if (slot.icon != null)
+                    {
+                        slot.icon.sprite = null;
+                        slot.icon.enabled = false;
+                    }
                 }
             }
         }
@@ -257,6 +282,12 @@ namespace HighSeas.V3
                     slot.title.text = V3ContentDescriptions.GetItemName(id);
                     var stacks = V3RunItemInventory.Instance.GetStackCount(id);
                     slot.subtitle.text = stacks > 1 ? $"x{stacks}" : "Equipped";
+                    if (slot.icon != null)
+                    {
+                        var sprite = V3RunHudIconResolver.GetItemIcon(id);
+                        slot.icon.sprite = sprite;
+                        slot.icon.enabled = sprite != null;
+                    }
                     if (i == ItemSlotCount - 1 && overflow > 0)
                         slot.subtitle.text += $" · +{overflow}";
                 }
@@ -265,6 +296,11 @@ namespace HighSeas.V3
                     slot.root.SetActive(true);
                     slot.title.text = "—";
                     slot.subtitle.text = "EMPTY";
+                    if (slot.icon != null)
+                    {
+                        slot.icon.sprite = null;
+                        slot.icon.enabled = false;
+                    }
                 }
             }
         }
