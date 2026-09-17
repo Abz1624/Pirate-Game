@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.Platform;
 using HighSeas.Player;
 using HighSeas.VFX;
 using HighSeas.Weapons;
@@ -21,7 +22,9 @@ namespace HighSeas.V3.MultiShip
             GameDatabase database,
             string startingWeaponId,
             PlayerShipController followTarget,
-            IReadOnlyList<string> weaponLoadout = null)
+            IReadOnlyList<string> weaponLoadout = null,
+            ShipKeyboardBinding? keyboardBinding = null,
+            bool useBotBrain = true)
         {
             if (template == null) return null;
 
@@ -42,7 +45,16 @@ namespace HighSeas.V3.MultiShip
                 combatant = instance.AddComponent<V3ShipCombatant>();
             combatant.Configure(team, localHuman);
 
-            if (!localHuman)
+            if (localHuman && keyboardBinding.HasValue)
+                V3LocalShipInput.Bind(ship, keyboardBinding.Value);
+
+            if (localHuman)
+            {
+                AttachShipWeapons(ship, database, startingWeaponId, weaponLoadout);
+                if (instance.GetComponent<PlayerHealthBarBinder>() == null)
+                    instance.AddComponent<PlayerHealthBarBinder>();
+            }
+            else if (useBotBrain)
             {
                 var brain = instance.GetComponent<BotShipBrain>();
                 if (brain == null)
@@ -53,25 +65,37 @@ namespace HighSeas.V3.MultiShip
                 else if (team == V3ShipTeam.AllyBot && name == "AllyShip_B")
                     brain.SetFormationOffset(new Vector3(-8f, 0f, -5f));
 
-                var weapons = instance.GetComponent<WeaponController>();
-                if (weapons == null)
-                    weapons = instance.AddComponent<WeaponController>();
-                weapons.BindOwner(ship);
-                weapons.ApplyCombatExperiment(CombatExperimentContext.Active);
-                if (weaponLoadout != null && weaponLoadout.Count > 0)
-                {
-                    weapons.EnsureWeaponSlotCapacity(weaponLoadout.Count);
-                    weapons.Initialize(database, weaponLoadout[0]);
-                    weapons.SetWeaponLoadout(weaponLoadout);
-                }
-                else
-                    weapons.Initialize(database, startingWeaponId);
+                AttachShipWeapons(ship, database, startingWeaponId, weaponLoadout);
 
                 if (instance.GetComponent<PlayerHealthBarBinder>() == null)
                     instance.AddComponent<PlayerHealthBarBinder>();
             }
 
             return ship;
+        }
+
+        static void AttachShipWeapons(
+            PlayerShipController ship,
+            GameDatabase database,
+            string startingWeaponId,
+            IReadOnlyList<string> weaponLoadout)
+        {
+            if (ship == null || database == null)
+                return;
+
+            var weapons = ship.GetComponent<WeaponController>();
+            if (weapons == null)
+                weapons = ship.gameObject.AddComponent<WeaponController>();
+            weapons.BindOwner(ship);
+            weapons.ApplyCombatExperiment(CombatExperimentContext.Active);
+            if (weaponLoadout != null && weaponLoadout.Count > 0)
+            {
+                weapons.EnsureWeaponSlotCapacity(weaponLoadout.Count);
+                weapons.Initialize(database, weaponLoadout[0]);
+                weapons.SetWeaponLoadout(weaponLoadout);
+            }
+            else
+                weapons.Initialize(database, startingWeaponId);
         }
     }
 }

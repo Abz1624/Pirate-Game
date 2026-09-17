@@ -90,6 +90,7 @@ namespace HighSeas.Player
         DamageReceiver _damage;
         CompositeShipSteerInput _compositeInput;
         IShipSteerInput _botSteerInput;
+        IShipSteerInput _dedicatedSteerInput;
         bool _acceptHumanInput = true;
 
         public Vector3 Position => transform.position;
@@ -155,6 +156,14 @@ namespace HighSeas.Player
         public void ConfigureBotControl(IShipSteerInput botInput)
         {
             _botSteerInput = botInput;
+            _dedicatedSteerInput = null;
+            _acceptHumanInput = false;
+        }
+
+        public void ConfigureDedicatedSteerInput(IShipSteerInput steerInput)
+        {
+            _botSteerInput = null;
+            _dedicatedSteerInput = steerInput;
             _acceptHumanInput = false;
         }
 
@@ -480,7 +489,13 @@ namespace HighSeas.Player
         ShipInput ReadShipInput()
         {
             var input = new ShipInput();
-            if (_botSteerInput != null)
+            if (_dedicatedSteerInput != null)
+            {
+                var dedicated = _dedicatedSteerInput.ReadSteerThrottle();
+                input.steer = dedicated.x;
+                input.throttle = dedicated.y;
+            }
+            else if (_botSteerInput != null)
             {
                 var bot = _botSteerInput.ReadSteerThrottle();
                 input.steer = bot.x;

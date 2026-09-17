@@ -30,6 +30,8 @@ namespace HighSeas.V3
         [SerializeField] IslandLayoutDefinition islandLayout;
         [SerializeField] int runSeed = GameConstants.DemoRunSeed;
         [SerializeField] bool forceInspectorSeed;
+
+        public int EditorRunSeed => runSeed;
         [SerializeField] bool usePlaceholderPoiVisuals = true;
 
         StageLayout _layout;

@@ -28,6 +28,13 @@ namespace HighSeas.Editor
 
 
 
+        [MenuItem("HighSeas/V3/Open Split-Screen Co-op Scene")]
+
+        public static void OpenSplitScreenCoOpScene() =>
+            OpenPrototypeScene(V3SceneNames.SplitScreenCoOpRunPath, V3RunSessionKind.SplitScreenCoOp);
+
+
+
         [MenuItem("HighSeas/V3/Open PvP Scene (V3PvPBattle)")]
 
         public static void OpenPvPScene() => OpenPrototypeScene(V3SceneNames.PvPBattlePath, V3RunSessionKind.PvP);
@@ -74,6 +81,26 @@ namespace HighSeas.Editor
 
 
 
+        [MenuItem("HighSeas/V3/Setup Split-Screen Co-op Scene")]
+
+        public static void SetupSplitScreenCoOpSceneOnly()
+
+        {
+
+            if (!CreateOrUpdateScene(V3SceneNames.SplitScreenCoOpRunPath, V3RunSessionKind.SplitScreenCoOp))
+
+                return;
+
+            AppendScenesToBuildSettings();
+
+            AssetDatabase.SaveAssets();
+
+            Debug.Log($"Split-screen co-op scene ready at {V3SceneNames.SplitScreenCoOpRunPath}");
+
+        }
+
+
+
         [MenuItem("HighSeas/V3/Setup PvP + Co-op Scenes")]
 
         public static void SetupMultiShipScenes()
@@ -88,11 +115,15 @@ namespace HighSeas.Editor
 
                 return;
 
+            if (!CreateOrUpdateScene(V3SceneNames.SplitScreenCoOpRunPath, V3RunSessionKind.SplitScreenCoOp))
+
+                return;
+
             AppendScenesToBuildSettings();
 
             AssetDatabase.SaveAssets();
 
-            Debug.Log("V3 PvP and Co-op scenes ready (separate files under Assets/_Game/Scenes/v3/).");
+            Debug.Log("V3 PvP, Co-op, and Split-screen co-op scenes ready (under Assets/_Game/Scenes/v3/).");
 
         }
 
@@ -111,6 +142,10 @@ namespace HighSeas.Editor
                 if (kind == V3RunSessionKind.PvP)
 
                     SetupPvPSceneOnly();
+
+                else if (kind == V3RunSessionKind.SplitScreenCoOp)
+
+                    SetupSplitScreenCoOpSceneOnly();
 
                 else
 
@@ -300,7 +335,9 @@ namespace HighSeas.Editor
 
                 V3SceneNames.PvPBattlePath,
 
-                V3SceneNames.CoOpRunPath
+                V3SceneNames.CoOpRunPath,
+
+                V3SceneNames.SplitScreenCoOpRunPath
 
             };
 

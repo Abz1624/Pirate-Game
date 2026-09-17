@@ -4,6 +4,7 @@ namespace HighSeas.V3.MultiShip
     {
         SinglePlayer = 0,
         PvP = 1,
-        CoOp = 2
+        CoOp = 2,
+        SplitScreenCoOp = 3
     }
 }
