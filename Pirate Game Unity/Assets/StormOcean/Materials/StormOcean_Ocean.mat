@@ -28,15 +28,15 @@ Material:
     - _AmbientStrength: 1.1
     - _BreakingContrast: 0.6
     - _CrestSharpness: 0.6
-    - _FoamAmount: 1.4
-    - _FoamBreakup: 0.6
+    - _FoamAmount: 0.71
+    - _FoamBreakup: 0.517
     - _FoamBreakupScale: 0.5
     - _FoamBrightness: 0.9
     - _FoamHoleScale: 1.4
     - _FoamHoleStrength: 0.5
     - _FoamNoiseScale: 0.16
-    - _FoamSharpness: 0.6
-    - _FoamThreshold: 0.35
+    - _FoamSharpness: 0.64
+    - _FoamThreshold: 0
     - _FresnelPower: 4.5
     - _MicroDetail2Scale: 2.2
     - _MicroDetail2Strength: 0.5

@@ -264,8 +264,7 @@ Shader "StormOcean/Ocean"
                 disp.y += windRipple;
 
                 float3 worldPos = worldFlat + disp;
-                worldPos.y += 20.0; // TEMP DIAGNOSTIC - constant offset to verify vertex pipeline
-
+                
                 float3 tangent = normalize(float3(1.0 - dDxDx, 0.0, -dDxDz));
                 float3 binormal = normalize(float3(-dDxDz, 0.0, 1.0 - dDzDz));
                 float3 normal = normalize(cross(binormal, tangent));

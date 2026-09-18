@@ -285,15 +285,15 @@ public void ApplyMaterialParams()
             cachedWaveA = waveA;
             cachedWaveB = waveB;
 
-            if (mr == null) mr = GetComponent<MeshRenderer>();
-            if (mr != null)
-            {
-                var mpb = new MaterialPropertyBlock();
-                mr.GetPropertyBlock(mpb);
-                mpb.SetVectorArray(WaveAID, waveA);
-                mpb.SetVectorArray(WaveBID, waveB);
-                mr.SetPropertyBlock(mpb);
-            }
+            // _WaveA/_WaveB are declared OUTSIDE the UnityPerMaterial CBUFFER in the shader
+            // (SRP Batcher requires all per-material data to live inside that one CBUFFER;
+            // an array declared outside it is treated as a true shader-wide global, not a
+            // per-material property). MaterialPropertyBlock / Material.SetVectorArray only
+            // ever patch the per-material CBUFFER, so they are silently inert for these two
+            // arrays. Shader.SetGlobalVectorArray is the correct API for this layout - the
+            // ocean is a single mesh/material anyway, so a true global is fine here.
+            Shader.SetGlobalVectorArray(WaveAID, waveA);
+            Shader.SetGlobalVectorArray(WaveBID, waveB);
 
             oceanMaterial.SetFloat("_WaveTurbulence", waveTurbulence);
             oceanMaterial.SetFloat("_CrestSharpness", crestSharpness);
