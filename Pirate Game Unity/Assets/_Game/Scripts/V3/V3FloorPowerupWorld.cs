@@ -77,7 +77,7 @@ namespace HighSeas.V3
             var rng = RunManager.Instance?.Rng;
             if (rng == null || rng.PowerupFloat() >= DropChance) return;
 
-            var kind = RollKind(rng);
+            var kind = V3PowerupCatalog.RollKind(rng, V3PowerupCatalog.UseExpandedPool());
             if (!TrySpawn(kind, position))
                 return;
 
@@ -218,6 +218,21 @@ namespace HighSeas.V3
                 case V3FloorPowerupKind.SalvageChime:
                     Pickups.PickupWorld.Instance?.AttractAllInfamy();
                     break;
+                case V3FloorPowerupKind.FullSail:
+                    _tailwindTimer = 8f;
+                    ApplySpeedBuff(1.45f);
+                    break;
+                case V3FloorPowerupKind.PowderRush:
+                    FindFirstObjectByType<Weapons.WeaponController>()?.CaptainFireAllWeapons();
+                    _battleSignalTimer = 4f;
+                    ApplyDamageBuff(1.15f);
+                    break;
+                case V3FloorPowerupKind.MagneticTide:
+                    Pickups.PickupWorld.Instance?.AttractAllInfamy();
+                    break;
+                case V3FloorPowerupKind.DeadCalm:
+                    FindFirstObjectByType<Enemies.SpawnDirector>()?.SetSpawnRateMultiplier(0.55f);
+                    break;
             }
 
             V3ToastHud.Instance?.Show($"{GetDisplayName(kind)} collected.", 2f);
@@ -240,12 +255,12 @@ namespace HighSeas.V3
             }
         }
 
-        void ApplyDamageBuff()
+        void ApplyDamageBuff(float multiplier = BattleSignalDamageMultiplier)
         {
             var stats = RunManager.Instance?.Stats;
             if (stats == null) return;
             RemoveDamageBuff();
-            _damageModifier = new StatModifier(StatId.Damage, 0f, BattleSignalDamageMultiplier);
+            _damageModifier = new StatModifier(StatId.Damage, 0f, multiplier);
             stats.AddModifier(_damageModifier);
             _damageBuffActive = true;
         }
@@ -260,12 +275,12 @@ namespace HighSeas.V3
             _damageBuffActive = false;
         }
 
-        void ApplySpeedBuff()
+        void ApplySpeedBuff(float multiplier = TailwindSpeedMultiplier)
         {
             var stats = RunManager.Instance?.Stats;
             if (stats == null) return;
             RemoveSpeedBuff();
-            _speedModifier = new StatModifier(StatId.MoveSpeed, 0f, TailwindSpeedMultiplier);
+            _speedModifier = new StatModifier(StatId.MoveSpeed, 0f, multiplier);
             stats.AddModifier(_speedModifier);
             _speedBuffActive = true;
             FindFirstObjectByType<PlayerShipController>()?.SyncRunSpeedMultiplier();

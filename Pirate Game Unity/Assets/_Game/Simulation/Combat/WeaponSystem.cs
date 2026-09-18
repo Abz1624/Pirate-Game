@@ -30,6 +30,10 @@ namespace RoguePirates.Simulation.Combat
     public sealed class WeaponSystem
     {
         float _cooldown;
+        float _damageMultiplier = 1f;
+
+        public void SetDamageMultiplier(float multiplier) =>
+            _damageMultiplier = MathF.Max(0.1f, multiplier);
 
         public void Tick(float dt, SimActor player, List<SimProjectile> projectiles, ref int nextProjectileId, List<SimEvent> events, int tick)
         {
@@ -56,7 +60,7 @@ namespace RoguePirates.Simulation.Combat
                 Position = player.Position,
                 Velocity = vel,
                 Damage = SimMath.ComputeDamage(
-                    SimConstants.DeckCannonBaseDamage, 1f, 0f, 1f, false, 1.5f, false, 1f, 1f, 0f),
+                    SimConstants.DeckCannonBaseDamage, 1f, 0f, _damageMultiplier, false, 1.5f, false, 1f, 1f, 0f),
                 Radius = SimConstants.ProjectileRadiusMeters
             };
             projectiles.Add(proj);

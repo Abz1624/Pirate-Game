@@ -57,5 +57,16 @@ namespace RoguePirates.Simulation
             var hp = baseHp * (1f + 0.09f * minute + 0.018f * minute * minute) * tierMult * stageMult;
             return SimFixed.FromFloat(hp);
         }
+
+        /// <summary>Doc §7.3 Director V2 spawn rate (enemies/sec), capped at 16.</summary>
+        public static float ComputeV3SpawnRate(float minute, float densityMultiplier, bool directorV2Enabled)
+        {
+            var x = MathF.Min(minute, 10f);
+            var rate = (2.5f + 0.55f * x + 0.025f * x * x) * MathF.Max(0.1f, densityMultiplier);
+            rate = MathF.Min(16f, rate);
+            if (!directorV2Enabled)
+                rate *= 0.42f;
+            return rate;
+        }
     }
 }

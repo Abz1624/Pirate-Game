@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using RoguePirates.Simulation.Balance;
 using RoguePirates.Simulation.Combat;
 
 namespace RoguePirates.Simulation
 {
     public sealed class CombatSimulator
     {
+        const int MaxPressureEnemies = 28;
         readonly PauseReasonSet _pause = new();
         readonly SimClock _clock = new();
         readonly LastRumSystem _lastRum = new();
@@ -27,8 +29,12 @@ namespace RoguePirates.Simulation
         float _xp;
         int _level = 1;
         int _kills;
+        CombatExperimentSimConfig _experimentConfig = CombatExperimentSimConfig.FromProfileId("D_FULL_COMBAT_V2");
+        float _spawnBudget;
+        int _peakEnemyCount;
 
         public int Seed { get; }
+        public int PeakEnemyCount => _peakEnemyCount;
         public IReadOnlyList<SimEvent> Events => _events;
         public SimRunState State => _state;
         public bool ObjectiveSecured => _objectiveSecured;
@@ -36,6 +42,12 @@ namespace RoguePirates.Simulation
         public float SimSeconds => _clock.SimSeconds;
         public int Kills => _kills;
         public int Level => _level;
+
+        public void ApplyExperimentConfig(CombatExperimentSimConfig config)
+        {
+            _experimentConfig = config ?? CombatExperimentSimConfig.FromProfileId("D_FULL_COMBAT_V2");
+            _weapon.SetDamageMultiplier(_experimentConfig.WeaponDamageMultiplier);
+        }
 
         public CombatSimulator(int seed)
         {
@@ -63,13 +75,52 @@ namespace RoguePirates.Simulation
 
         void SpawnShark(SimVec2 pos)
         {
+            var minute = _clock.SimSeconds / 60f;
+            var hp = SimMath.EnemyHP(SimConstants.SharkBaseHp, minute, 1, 0).ToFloat()
+                     * MathF.Max(0.1f, _experimentConfig.EnemyHpMultiplier);
             _actors.Add(new SimActor
             {
                 Id = _nextActorId++,
                 Position = pos,
-                Hull = SimFixed.FromFloat(SimConstants.SharkBaseHp),
-                MaxHull = SimFixed.FromFloat(SimConstants.SharkBaseHp)
+                Hull = SimFixed.FromFloat(hp),
+                MaxHull = SimFixed.FromFloat(hp)
             });
+        }
+
+        void TickSpawnPressure(float dt)
+        {
+            if (!_experimentConfig.DirectorV2Enabled)
+                return;
+
+            var minute = _clock.SimSeconds / 60f;
+            var rate = SimMath.ComputeV3SpawnRate(
+                minute,
+                _experimentConfig.SpawnDensityMultiplier,
+                _experimentConfig.DirectorV2Enabled);
+            _spawnBudget += rate * dt;
+            while (_spawnBudget >= 1f && CountLivingEnemies() < MaxPressureEnemies)
+            {
+                _spawnBudget -= 1f;
+                var angle = _mapRng.NextFloat01() * MathF.PI * 2f;
+                var dist = 8f + _mapRng.NextFloat01() * 10f;
+                var offset = new SimVec2(
+                    SimFixed.FromFloat(MathF.Cos(angle) * dist),
+                    SimFixed.FromFloat(MathF.Sin(angle) * dist));
+                SpawnShark(_player.Position.Add(offset));
+            }
+
+            _peakEnemyCount = Math.Max(_peakEnemyCount, CountLivingEnemies());
+        }
+
+        int CountLivingEnemies()
+        {
+            var count = 0;
+            for (var i = 0; i < _actors.Count; i++)
+            {
+                var a = _actors[i];
+                if (!a.IsPlayer && !a.IsDead) count++;
+            }
+            return count;
         }
 
         void SpawnBoss()
@@ -115,6 +166,7 @@ namespace RoguePirates.Simulation
             AdvanceProjectiles(dt);
             ResolveContacts(dt);
             TickEnemies(dt);
+            TickSpawnPressure(dt);
 
             if (_clock.Tick == 600)
                 SpawnBoss();
@@ -208,7 +260,8 @@ namespace RoguePirates.Simulation
                 {
                     if (e.ContactCooldown <= 0f)
                     {
-                        var dmg = SimFixed.FromFloat(e.IsBoss ? 20f : SimConstants.SharkBaseDamage);
+                        var baseDmg = e.IsBoss ? 20f : SimConstants.SharkBaseDamage;
+                        var dmg = SimFixed.FromFloat(baseDmg * MathF.Max(0.1f, _experimentConfig.EnemyDamageMultiplier));
                         ApplyDamage(_player, dmg, e.Id);
                         e.ContactCooldown = SimConstants.EnemyContactCooldownSeconds;
                     }
@@ -267,8 +320,11 @@ namespace RoguePirates.Simulation
         /// <summary>Fixture: apply simultaneous lethal to player and boss on same tick.</summary>
         public void ApplySameTickLethalFixture()
         {
+            if (_actors.Find(a => a.IsBoss) == null)
+                SpawnBoss();
             var boss = _actors.Find(a => a.IsBoss);
             if (boss == null) return;
+            _player.Hull = SimFixed.FromFloat(SimConstants.DefaultHull);
             var lethal = SimFixed.FromFloat(9999f);
             ApplyDamage(boss, lethal, _player.Id);
             ApplyDamage(_player, lethal, boss.Id);

@@ -34,6 +34,8 @@ namespace HighSeas.Weapons
         ProjectileViewPool _viewPool;
         int _active;
 
+        public int ActiveProjectileCount => _active;
+
         void Awake()
         {
             Instance = this;
@@ -91,6 +93,13 @@ namespace HighSeas.Weapons
             visualRadius = radius;
             if (juiceSettings == null || string.IsNullOrEmpty(weaponId)) return;
 
+            if (juiceSettings.TryGetWeaponVfx(weaponId, out var binding) && binding.projectilePrefab != null)
+            {
+                prefab = binding.projectilePrefab;
+                scaleMult = binding.projectileScaleMult;
+                return;
+            }
+
             if (weaponId == "swivel_guns")
             {
                 prefab = juiceSettings.smallProjectilePrefab != null
@@ -131,7 +140,7 @@ namespace HighSeas.Weapons
                         if (!list[ei].active) continue;
                         var d = Vector3.Distance(p.position, list[ei].position);
                         if (d > p.radius + list[ei].radius) continue;
-                        enemies.ApplyDamage(ei, p.damage, p.isCrit);
+                        enemies.ApplyDamage(ei, p.damage, p.isCrit, weaponId: p.weaponId);
                         p.pierceLeft--;
                         if (p.pierceLeft < 0) break;
                     }

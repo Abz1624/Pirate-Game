@@ -1,3 +1,4 @@
+using HighSeas.Data;
 using UnityEngine;
 
 namespace HighSeas.VFX
@@ -80,6 +81,39 @@ namespace HighSeas.VFX
                 trails[i].emitting = emitting;
                 if (!emitting)
                     trails[i].Clear();
+            }
+        }
+
+        public static bool UsesCannonballTrail(GameObject prefab, DemoJuiceSettings settings)
+        {
+            if (prefab == null || settings == null) return false;
+            if (settings.harpoonProjectilePrefab != null && prefab == settings.harpoonProjectilePrefab)
+                return false;
+            if (prefab == settings.projectilePrefab || prefab == settings.smallProjectilePrefab)
+                return true;
+            if (prefab.name.IndexOf("Cannonball", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            if (settings.weaponVfxBindings == null) return false;
+            for (var i = 0; i < settings.weaponVfxBindings.Length; i++)
+            {
+                var binding = settings.weaponVfxBindings[i];
+                if (binding?.projectilePrefab == prefab)
+                    return binding.weaponId != "harpoon_gun";
+            }
+
+            return false;
+        }
+
+        public static void BoostCannonballTrails(GameObject root)
+        {
+            if (root == null) return;
+            PrepareProjectileVisual(root, true);
+            SetTrailEmitting(root, true);
+            var trails = root.GetComponentsInChildren<TrailRenderer>(true);
+            for (var i = 0; i < trails.Length; i++)
+            {
+                trails[i].time = Mathf.Max(trails[i].time, 0.38f);
+                trails[i].widthMultiplier = Mathf.Max(trails[i].widthMultiplier, 0.9f);
             }
         }
 

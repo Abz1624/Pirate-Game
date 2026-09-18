@@ -120,7 +120,7 @@ namespace HighSeas.Core
             {
                 MakeCannonboat(),
                 MakeEnemy("shark", EnemyCategory.Creature, 16f, 9f, 4.75f, 4, 1.1f, EnemyBehavior.DirectChaser),
-                MakeEnemy("swordfish", EnemyCategory.Creature, 10f, 6f, 5.56f, 2, 0.9f, EnemyBehavior.FastSwarm),
+                MakeEnemy("swordfish", EnemyCategory.Creature, 10f, 6f, 5.004f, 2, 0.9f, EnemyBehavior.FastSwarm),
                 MakeEnemy("hammerhead", EnemyCategory.Creature, 14f, 7f, 4.75f, 3, 1.1f, EnemyBehavior.FlankingChaser),
                 MakeEnemy("kraken_spawn", EnemyCategory.Creature, 28f, 11f, 2.38f, 6, 1.6f, EnemyBehavior.TankChaser),
                 MakeEnemy("manta_ray", EnemyCategory.Creature, 22f, 8f, 4.28f, 4, 1.4f, EnemyBehavior.FlankingChaser),

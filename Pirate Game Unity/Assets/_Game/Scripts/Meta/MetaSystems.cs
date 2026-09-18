@@ -10,8 +10,8 @@ namespace HighSeas.Meta
     {
         public static TriggerBus Instance { get; private set; }
 
-        public event Action<float, bool, Vector3> Hit;
-        public event Action<bool, bool, Vector3> Kill;
+        public event Action<float, bool, Vector3, string> Hit;
+        public event Action<bool, bool, Vector3, string> Kill;
         public event Action<float> DamageTaken;
         public event Action StatusApplied;
         public event Action ChestOpened;
@@ -20,8 +20,10 @@ namespace HighSeas.Meta
 
         void Awake() => Instance = this;
 
-        public void RaiseHit(float damage, bool crit, Vector3 worldPosition) => Hit?.Invoke(damage, crit, worldPosition);
-        public void RaiseKill(bool elite, bool boss, Vector3 worldPosition) => Kill?.Invoke(elite, boss, worldPosition);
+        public void RaiseHit(float damage, bool crit, Vector3 worldPosition, string weaponId = null) =>
+            Hit?.Invoke(damage, crit, worldPosition, weaponId);
+        public void RaiseKill(bool elite, bool boss, Vector3 worldPosition, string weaponId = null) =>
+            Kill?.Invoke(elite, boss, worldPosition, weaponId);
         public void RaiseDamageTaken(float amount) => DamageTaken?.Invoke(amount);
         public void RaiseStatusApplied(StatusType type) => StatusApplied?.Invoke();
         public void RaiseChestOpen() => ChestOpened?.Invoke();
@@ -49,7 +51,7 @@ namespace HighSeas.Meta
             switch (relic.effectId)
             {
                 case "gold_tax":
-                    Hit += (_, __, ___) => { /* handled in king's tax */ };
+                    Hit += (_, __, ___, ____) => { /* handled in king's tax */ };
                     break;
                 case "emergency_bilge":
                     DamageTaken += amt =>

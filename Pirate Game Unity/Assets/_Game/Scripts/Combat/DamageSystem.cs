@@ -30,6 +30,9 @@ namespace HighSeas.Combat
         {
             var captain = V3CaptainController.Instance;
             var captainDamage = captain != null ? captain.GetAdditiveDamageBonus() : 0f;
+            var active = V3CaptainActiveController.Instance;
+            if (active != null)
+                captainDamage += active.GetRichieActiveDamageBonus();
             var captainWeaponMult = weaponId != null && captain != null
                 ? captain.GetWeaponDamageMultiplier(weaponId)
                 : 1f;

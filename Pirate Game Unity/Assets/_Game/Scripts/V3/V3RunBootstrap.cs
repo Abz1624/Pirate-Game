@@ -12,6 +12,7 @@ using HighSeas.UI;
 using HighSeas.V3.MultiShip;
 using HighSeas.VFX;
 using HighSeas.Weapons;
+using HighSeas.Save;
 using HighSeas.World;
 using UnityEngine;
 
@@ -92,6 +93,7 @@ namespace HighSeas.V3
             V3RunContext.IsActive = true;
             var experimentProfile = CombatExperimentContext.Active;
             CombatWeaponCatalog.ApplyToDatabase(database, experimentProfile);
+            CombatSpecialistEnemyCatalog.ApplyToDatabase(database, experimentProfile);
             WeaponDamageLedger.Reset();
             WeaponEvolutionRuntime.Reset();
             _ = new RunCombatTelemetry(experimentProfile);
@@ -186,6 +188,7 @@ namespace HighSeas.V3
                 ConfigureSpawnDirector(experimentProfile);
                 EnsurePressureBeats(enemyWorld, player);
                 EnsureOvertimeDirector(enemyWorld, player);
+                V3RouteEventDirector.Ensure();
             }
 
             RunManager.Instance.EnterPlaying();
@@ -388,6 +391,10 @@ namespace HighSeas.V3
                 systems.AddComponent<JuiceVfxBroker>();
             if (systems.GetComponent<CombatVfxController>() == null)
                 systems.AddComponent<CombatVfxController>();
+            var damageNumbers = systems.GetComponent<FloatingDamageNumbers>();
+            if (damageNumbers == null)
+                damageNumbers = systems.AddComponent<FloatingDamageNumbers>();
+            damageNumbers.Rebind();
             if (systems.GetComponent<WeaponJuiceController>() == null)
                 systems.AddComponent<WeaponJuiceController>();
             if (systems.GetComponent<PlayerJuiceController>() == null)
@@ -401,12 +408,12 @@ namespace HighSeas.V3
                 vfxRoot = go.transform;
             }
 
+            var settings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
             var broker = systems.GetComponent<JuiceVfxBroker>();
             if (broker != null)
-            {
-                var settings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
                 broker.Configure(settings, vfxRoot);
-            }
+
+            systems.GetComponent<WeaponJuiceController>()?.Configure(settings, vfxRoot);
         }
 
         static void EnsureCombatTelemetryDriver()
@@ -415,6 +422,17 @@ namespace HighSeas.V3
             if (systems == null) return;
             if (systems.GetComponent<CombatTelemetryDriver>() == null)
                 systems.AddComponent<CombatTelemetryDriver>();
+        }
+
+        void OnApplicationPause(bool paused)
+        {
+            if (!paused || RunManager.Instance == null || RunManager.Instance.IsRunEnded) return;
+            if (LevelSystem.Instance == null) return;
+            var snapshot = RunSnapshotService.CaptureFromRun(
+                RunManager.Instance,
+                LevelSystem.Instance,
+                CombatExperimentContext.Active);
+            RunSnapshotService.Save(snapshot);
         }
     }
 }

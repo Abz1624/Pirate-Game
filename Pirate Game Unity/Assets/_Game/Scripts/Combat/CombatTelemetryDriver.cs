@@ -24,7 +24,10 @@ namespace HighSeas.V3
 
             var heading = Mathf.Repeat(_player.transform.eulerAngles.y, 360f);
             RunCombatTelemetry.Instance?.TickMovement(_player.Position, heading, Time.deltaTime);
-            RunCombatTelemetry.Instance?.SamplePerformance(0, FindFirstObjectByType<Enemies.EnemyWorld>()?.ActiveCount ?? 0);
+            var projectileCount = _projectiles != null ? _projectiles.ActiveProjectileCount : 0;
+            RunCombatTelemetry.Instance?.SamplePerformance(
+                projectileCount,
+                FindFirstObjectByType<Enemies.EnemyWorld>()?.ActiveCount ?? 0);
         }
     }
 }

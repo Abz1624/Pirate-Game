@@ -30,6 +30,7 @@ namespace HighSeas.Enemies
         public bool isBoss;
         public Transform view;
         public Transform healthBar;
+        public string lastHitWeaponId;
     }
 
     public sealed class SpatialHash
@@ -96,10 +97,18 @@ namespace HighSeas.Enemies
         EnemyViewPool _viewPool;
         int _activeCount;
         int _nextId = 1;
+        float _experimentHpMultiplier = 1f;
+        float _experimentDamageMultiplier = 1f;
 
         public int ActiveCount => _activeCount;
         public EnemyAgent[] Agents => _agents;
         public Data.EnemyDefinition[] Definitions => definitions;
+
+        public void SetExperimentMultipliers(float hpMultiplier, float damageMultiplier)
+        {
+            _experimentHpMultiplier = Mathf.Max(0.1f, hpMultiplier);
+            _experimentDamageMultiplier = Mathf.Max(0.1f, damageMultiplier);
+        }
 
         void Awake()
         {
@@ -161,8 +170,8 @@ namespace HighSeas.Enemies
             if (affix == EliteAffix.Armored) hp *= 1.8f;
             if (affix == EliteAffix.Swift) hp *= 0.9f;
             if (affix == EliteAffix.Rich) hp *= 1.25f;
-            hp *= Mathf.Max(0.1f, hpMultiplier);
-            dmg *= Mathf.Max(0.1f, damageMultiplier);
+            hp *= Mathf.Max(0.1f, hpMultiplier) * _experimentHpMultiplier;
+            dmg *= Mathf.Max(0.1f, damageMultiplier) * _experimentDamageMultiplier;
 
             var v3Scale = V3.V3RunContext.IsActive ? V3.V3RunContext.EnemyVisualScale : 1f;
             var visualScale = def.visualScale * v3Scale * (affix != EliteAffix.None ? 1.38f : 1f);
@@ -625,6 +634,13 @@ namespace HighSeas.Enemies
                 return;
 
             e.attackCooldown = GetAttackRecovery(def);
+
+            if (def.id == "manta_ray" || def.id == "manta")
+            {
+                var flank = Vector3.Cross(Vector3.up, dir);
+                hostiles.TrySpawn(muzzle, (dir + flank * 0.55f).normalized, speed, e.damage * 0.85f, life, hitRadius, visualRadius);
+                hostiles.TrySpawn(muzzle, (dir - flank * 0.55f).normalized, speed, e.damage * 0.85f, life, hitRadius, visualRadius);
+            }
         }
 
         static float GetInitialAttackCooldown(Data.EnemyDefinition def)
@@ -760,10 +776,12 @@ namespace HighSeas.Enemies
         public void SetBurnVisual(int index, bool burning) =>
             EnemyBurnFlash.SetBurning(index >= 0 && index < _agents.Length ? _agents[index].view : null, burning);
 
-        public void ApplyDamage(int index, float damage, bool isCrit, bool showHitFeedback = true)
+        public void ApplyDamage(int index, float damage, bool isCrit, bool showHitFeedback = true, string weaponId = null)
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
             ref var e = ref _agents[index];
+            if (!string.IsNullOrEmpty(weaponId))
+                e.lastHitWeaponId = weaponId;
             e.hp -= damage;
 
             if (e.healthBar != null)
@@ -772,10 +790,11 @@ namespace HighSeas.Enemies
                 bar?.SetFill(e.maxHp > 0f ? e.hp / e.maxHp : 0f);
             }
 
-            if (showHitFeedback && e.view != null)
+            if (showHitFeedback && e.view != null && weaponId != "powder_kegs")
                 JuiceVfxBroker.Instance?.PlayDamageHighlight(e.view);
 
-            Meta.TriggerBus.Instance?.RaiseHit(damage, isCrit, e.position);
+            Meta.TriggerBus.Instance?.RaiseHit(damage, isCrit, e.position, weaponId);
+            FloatingDamageNumbers.Instance?.ShowEnemyDamage(e.position, damage, isCrit);
 
             if (e.hp <= 0f)
             {
@@ -785,8 +804,10 @@ namespace HighSeas.Enemies
                 V3FloorPowerupWorld.Instance?.TryRollOnKill(e.position, e.isBoss);
                 if (e.isBoss)
                     Object.FindFirstObjectByType<POIManager>()?.NotifyBossDefeated();
-                Meta.TriggerBus.Instance?.RaiseKill(e.isElite, e.isBoss, e.position);
+                Meta.TriggerBus.Instance?.RaiseKill(e.isElite, e.isBoss, e.position, e.lastHitWeaponId);
                 V3.V3RunItemEffects.Instance?.NotifyKill();
+                if (!string.IsNullOrEmpty(e.lastHitWeaponId))
+                    WeaponDamageLedger.RecordKill(e.lastHitWeaponId);
                 Despawn(index);
             }
         }

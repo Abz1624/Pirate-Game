@@ -60,6 +60,22 @@ namespace HighSeas.VFX
             Play(prefab, position + Vector3.up * 0.35f, Quaternion.identity, scale);
         }
 
+        public void PlayCannonImpact(Vector3 position, bool crit)
+        {
+            if (settings == null) return;
+            var prefab = settings.cannonImpactPrefab != null
+                ? settings.cannonImpactPrefab
+                : settings.weaponExplosionPrefab;
+            if (prefab == null)
+            {
+                PlayHit(position, crit);
+                return;
+            }
+
+            var scale = settings.cannonImpactScale * (crit ? 1.12f : 1f);
+            Play(prefab, position + Vector3.up * 0.45f, Quaternion.identity, scale, 0.55f);
+        }
+
         public void PlayKill(Vector3 position, bool elite, bool boss)
         {
             if (settings == null) return;
@@ -88,12 +104,23 @@ namespace HighSeas.VFX
             Play(explosion, position + Vector3.up * 0.25f, Quaternion.identity, scale);
         }
 
+        static float _lastSplashTime = -10f;
+        static Vector3 _lastSplashPos;
+        const float SplashMergeRadius = 1.35f;
+        const float SplashMergeSeconds = 0.14f;
+
         public void PlayWaterSplash(Vector3 position)
         {
             if (settings?.waterImpactSplashPrefab == null) return;
+            if (Time.time - _lastSplashTime < SplashMergeSeconds
+                && (position - _lastSplashPos).sqrMagnitude < SplashMergeRadius * SplashMergeRadius)
+                return;
+
+            _lastSplashTime = Time.time;
+            _lastSplashPos = position;
             var splashPos = position;
             splashPos.y = 0.35f;
-            Play(settings.waterImpactSplashPrefab, splashPos, Quaternion.identity, settings.waterImpactSplashScale);
+            Play(settings.waterImpactSplashPrefab, splashPos, Quaternion.identity, settings.waterImpactSplashScale, 0.55f);
         }
 
         public void PlayDamageHighlight(Transform target)

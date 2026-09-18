@@ -27,6 +27,9 @@ namespace HighSeas.Weapons
         public int orbitIndex;
         public readonly Dictionary<UpgradeAxis, float> axisAccumulated = new();
         public bool swivelAwaitingSecond;
+        public float flameStreamRemaining;
+        public float flameRechargeRemaining;
+        public float flameTickTimer;
     }
 
     public sealed class WeaponController : MonoBehaviour
@@ -52,6 +55,26 @@ namespace HighSeas.Weapons
         WeaponJuiceController _juice;
 
         public IReadOnlyList<WeaponInstance> Weapons => _weapons;
+
+        const float FlamethrowerTickInterval = 0.08f;
+        const float FlamethrowerStreamSeconds = 2.75f;
+        const float FlamethrowerRechargeSeconds = 0.55f;
+
+        public bool IsFlamethrowerStreaming
+        {
+            get
+            {
+                for (var i = 0; i < _weapons.Count; i++)
+                {
+                    var id = _weapons[i].def.id;
+                    if (id != "flamethrower" && id != "burning_oil") continue;
+                    if (_weapons[i].flameStreamRemaining > 0f)
+                        return true;
+                }
+
+                return false;
+            }
+        }
 
         struct PowderKeg
         {
@@ -304,6 +327,13 @@ namespace HighSeas.Weapons
             for (var wi = 0; wi < _weapons.Count; wi++)
             {
                 var w = _weapons[wi];
+                if (w.def.id == "flamethrower" || w.def.id == "burning_oil")
+                {
+                    TickFlamethrowerWeapon(ref w, dt, stats, rng, itemAttackSpeed);
+                    _weapons[wi] = w;
+                    continue;
+                }
+
                 w.cooldownTimer -= dt * itemAttackSpeed;
                 if (w.cooldownTimer > 0f) { _weapons[wi] = w; continue; }
 
@@ -584,7 +614,7 @@ namespace HighSeas.Weapons
             var speed = w.def.projectileSpeed * w.speedMult * stats.ProjectileSpeed;
             if (isBroadside)
                 speed = Mathf.Max(speed, 42f);
-            var size = 0.25f * w.sizeMult * stats.Size;
+            var size = 0.38f * w.sizeMult * stats.Size;
             var spread = w.def.fanSpreadDegrees;
             var halfSpread = spread * 0.5f;
             var shotBasis = baseDir;
@@ -628,7 +658,11 @@ namespace HighSeas.Weapons
                     hits++;
                 }
 
-                var projectileLife = isBroadside ? 0.55f : 2.5f;
+                var projectileLife = isBroadside ? 1.2f : 2.5f;
+                if (isBroadside && JuiceVfxBroker.Instance?.Settings != null
+                    && JuiceVfxBroker.Instance.Settings.TryGetWeaponVfx(w.def.id, out var vfxBinding)
+                    && vfxBinding.projectileLifeMult > 0f)
+                    projectileLife *= vfxBinding.projectileLifeMult;
                 if (_projectiles.TrySpawn(origin, dir, speed, isBroadside ? 0f : dmg.amount, projectileLife, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id, _player))
                 {
                     if (!isBroadside && hitIndex >= 0)
@@ -1002,7 +1036,90 @@ namespace HighSeas.Weapons
             }
         }
 
-        void FireFlamethrower(ref WeaponInstance w, PlayerStats stats, RunRng rng)
+        void TickFlamethrowerWeapon(
+            ref WeaponInstance w,
+            float dt,
+            PlayerStats stats,
+            RunRng rng,
+            float itemAttackSpeed)
+        {
+            if (_enemies == null) return;
+
+            var attackSpeed = stats.AttackSpeed * itemAttackSpeed;
+            if (w.flameRechargeRemaining > 0f)
+            {
+                w.flameRechargeRemaining = Mathf.Max(0f, w.flameRechargeRemaining - dt * attackSpeed);
+                return;
+            }
+
+            if (w.flameStreamRemaining <= 0f)
+            {
+                if (!CanStartFlamethrowerStream(w, stats))
+                    return;
+
+                w.flameStreamRemaining = GetFlamethrowerStreamDuration(w, stats);
+                w.flameTickTimer = 0f;
+                WeaponDamageLedger.RecordEmission(w.def.id);
+                NotifyFire(w.def, _player.MovementForward);
+            }
+
+            w.flameStreamRemaining = Mathf.Max(0f, w.flameStreamRemaining - dt);
+            w.flameTickTimer += dt;
+
+            while (w.flameTickTimer >= FlamethrowerTickInterval)
+            {
+                w.flameTickTimer -= FlamethrowerTickInterval;
+                ApplyFlamethrowerTick(ref w, stats, rng, itemAttackSpeed, FlamethrowerTickInterval);
+            }
+
+            if (w.flameStreamRemaining <= 0f)
+                w.flameRechargeRemaining = GetFlamethrowerRechargeDuration(w, stats, itemAttackSpeed);
+        }
+
+        bool CanStartFlamethrowerStream(WeaponInstance w, PlayerStats stats)
+        {
+            var forward = _player.MovementForward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.0001f) return false;
+            forward.Normalize();
+
+            var range = w.def.range * w.sizeMult * stats.Size;
+            if (V3CaptainActiveController.Instance != null)
+                range *= V3CaptainActiveController.Instance.FlameRangeMultiplier;
+            var arc = WeaponTargeting.ResolveArcDegrees(w.def);
+            if (WeaponEvolutionCatalog.GetBehaviorModifier(w.def.id) == "hellfire_nozzle")
+                arc *= 1.2f;
+
+            return WeaponTargeting.HasEnemyInForwardArc(_enemies, _player.Position, forward, range, arc);
+        }
+
+        float GetFlamethrowerStreamDuration(WeaponInstance w, PlayerStats stats) =>
+            FlamethrowerStreamSeconds * w.durationMult * stats.Duration;
+
+        float GetFlamethrowerRechargeDuration(WeaponInstance w, PlayerStats stats, float itemAttackSpeed)
+        {
+            var cd = w.def.baseCooldown * w.cooldownMult / (stats.AttackSpeed * itemAttackSpeed);
+            return Mathf.Max(FlamethrowerRechargeSeconds, cd * 0.75f);
+        }
+
+        float GetFlamethrowerDamagePerTick(WeaponInstance w, PlayerStats stats, float itemAttackSpeed)
+        {
+            var stream = GetFlamethrowerStreamDuration(w, stats);
+            var recharge = GetFlamethrowerRechargeDuration(w, stats, itemAttackSpeed);
+            var effectiveCd = w.def.baseCooldown * w.cooldownMult / (stats.AttackSpeed * itemAttackSpeed);
+            var hitsInStream = stream / FlamethrowerTickInterval;
+            if (hitsInStream < 1f) return w.def.baseDamage;
+
+            var hitsPerCycleOld = (stream + recharge) / Mathf.Max(0.05f, effectiveCd);
+            return w.def.baseDamage * hitsPerCycleOld / hitsInStream;
+        }
+
+        void ApplyFlamethrowerTick(
+            ref WeaponInstance w,
+            PlayerStats stats,
+            RunRng rng,
+            float itemAttackSpeed,
+            float tickSeconds)
         {
             var forward = _player.MovementForward;
             forward.y = 0f;
@@ -1019,11 +1136,9 @@ namespace HighSeas.Weapons
                 arc *= 1.2f;
             var halfAngle = arc * 0.5f;
             var burnDuration = w.def.duration * w.durationMult * stats.Duration;
-            if (!WeaponTargeting.HasEnemyInForwardArc(_enemies, _player.Position, forward, range, arc))
-                return;
+            var damagePerTick = GetFlamethrowerDamagePerTick(w, stats, itemAttackSpeed);
 
             _juice?.OnFlamethrowerBurst(origin, forward);
-            NotifyFire(w.def, forward);
 
             var agents = _enemies.Agents;
             for (var i = 0; i < agents.Length; i++)
@@ -1038,13 +1153,13 @@ namespace HighSeas.Weapons
                 var hpBefore = agents[i].hp;
                 var killPos = agents[i].position;
                 var dmg = DamageSystem.RollDamage(
-                    w.def.baseDamage,
+                    damagePerTick,
                     w.damageBonus,
                     stats,
                     agents[i].isElite,
                     0f,
                     rng,
-                    w.def.procCoefficient, w.def.id);
+                    w.def.procCoefficient * (tickSeconds / FlamethrowerTickInterval), w.def.id);
                 if (V3CaptainActiveController.Instance != null)
                     dmg *= V3CaptainActiveController.Instance.BurnDamageMultiplier;
                 _enemies.ApplyDamage(i, dmg, false);
@@ -1052,6 +1167,17 @@ namespace HighSeas.Weapons
                     HellfirePatchWorld.TrySpawnOnDirectFlameKill(killPos, w.def.id);
                 StatusController.Instance?.ApplyStatus(i, StatusType.Burn, burnDuration);
             }
+        }
+
+        void FireFlamethrower(ref WeaponInstance w, PlayerStats stats, RunRng rng)
+        {
+            if (w.flameStreamRemaining <= 0f && w.flameRechargeRemaining <= 0f)
+            {
+                w.flameStreamRemaining = GetFlamethrowerStreamDuration(w, stats);
+                w.flameTickTimer = FlamethrowerTickInterval;
+            }
+
+            ApplyFlamethrowerTick(ref w, stats, rng, 1f, FlamethrowerTickInterval);
         }
 
         void FireTrail(ref WeaponInstance w, PlayerStats stats, RunRng rng)
@@ -1483,7 +1609,7 @@ namespace HighSeas.Weapons
         void ApplyWeaponDamage(int enemyIndex, string weaponId, DamageSystem.DamageRoll dmg, bool isElite, bool isBoss)
         {
             WeaponDamageLedger.RecordHit(weaponId, dmg.amount, dmg.isCrit, isElite, isBoss);
-            _enemies.ApplyDamage(enemyIndex, dmg.amount, dmg.isCrit);
+            _enemies.ApplyDamage(enemyIndex, dmg.amount, dmg.isCrit, weaponId: weaponId);
         }
 
         public int CountDistinctWeaponFamilies()

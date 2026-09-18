@@ -186,10 +186,9 @@ namespace HighSeas.UI
 
         void RefreshXpToNext()
         {
-            if (_useCombatExperimentOffers && demoPacing != null)
-                XPToNext = V3GameMath.XPToNext(Level, demoPacing);
-            else
-                XPToNext = _useV3Rules ? V3GameMath.XPToNext(Level) : GameMath.XPToNext(Level, demoPacing);
+            XPToNext = _useV3Rules
+                ? V3GameMath.XPToNext(Level, demoPacing)
+                : GameMath.XPToNext(Level, demoPacing);
         }
 
         public void AddXP(int amount)
@@ -248,7 +247,7 @@ namespace HighSeas.UI
             var luck = RunManager.Instance.Stats.Luck;
             var player = UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>();
             var hull = player?.Damage;
-            if (_useV3Rules && !_useCombatExperimentOffers)
+            if (_useV3Rules && !_useCombatExperimentOffers && weaponSlots < 6)
                 return GenerateV3Offers(rng, luck, hull);
             var offers = LevelOfferGenerator.Generate(
                 database,

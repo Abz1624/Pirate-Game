@@ -25,6 +25,7 @@ namespace HighSeas.Weapons
             var scale = Mathf.Max(0.2f, visualRadius * 2f * sizeMult * scaleMult);
             var isHarpoon = prefab != null && _settings?.harpoonProjectilePrefab != null &&
                             prefab == _settings.harpoonProjectilePrefab;
+            var useCannonballTrail = VfxParticleUtil.UsesCannonballTrail(prefab, _settings);
 
             if (prefab != null)
             {
@@ -40,6 +41,11 @@ namespace HighSeas.Weapons
                 {
                     view = stack.Pop();
                     view.gameObject.SetActive(true);
+                    if (useCannonballTrail)
+                    {
+                        VfxParticleUtil.ClearMotionTrails(view.gameObject);
+                        VfxParticleUtil.SetTrailEmitting(view.gameObject, true);
+                    }
                 }
                 else
                 {
@@ -56,6 +62,9 @@ namespace HighSeas.Weapons
 
                 view.SetPositionAndRotation(position, Quaternion.identity);
                 view.localScale = Vector3.one * scale;
+
+                if (useCannonballTrail)
+                    VfxParticleUtil.BoostCannonballTrails(view.gameObject);
 
                 if (isHarpoon)
                 {
@@ -78,12 +87,26 @@ namespace HighSeas.Weapons
             VfxParticleUtil.ClearMotionTrails(view.gameObject);
 
             var matched = false;
-            if (_settings?.projectilePrefab != null && view.name == _settings.projectilePrefab.name)
-                matched = ReleaseToPool(view, _settings.projectilePrefab);
-            if (!matched && _settings?.smallProjectilePrefab != null && view.name == _settings.smallProjectilePrefab.name)
-                matched = ReleaseToPool(view, _settings.smallProjectilePrefab);
-            if (!matched && _settings?.harpoonProjectilePrefab != null && view.name == _settings.harpoonProjectilePrefab.name)
-                matched = ReleaseToPool(view, _settings.harpoonProjectilePrefab);
+            if (_settings != null)
+            {
+                if (_settings.projectilePrefab != null && view.name == _settings.projectilePrefab.name)
+                    matched = ReleaseToPool(view, _settings.projectilePrefab);
+                if (!matched && _settings.smallProjectilePrefab != null && view.name == _settings.smallProjectilePrefab.name)
+                    matched = ReleaseToPool(view, _settings.smallProjectilePrefab);
+                if (!matched && _settings.harpoonProjectilePrefab != null && view.name == _settings.harpoonProjectilePrefab.name)
+                    matched = ReleaseToPool(view, _settings.harpoonProjectilePrefab);
+                if (!matched && _settings.weaponVfxBindings != null)
+                {
+                    for (var i = 0; i < _settings.weaponVfxBindings.Length; i++)
+                    {
+                        var binding = _settings.weaponVfxBindings[i];
+                        if (binding?.projectilePrefab == null || view.name != binding.projectilePrefab.name)
+                            continue;
+                        matched = ReleaseToPool(view, binding.projectilePrefab);
+                        if (matched) break;
+                    }
+                }
+            }
 
             if (!matched)
                 Object.Destroy(view.gameObject);

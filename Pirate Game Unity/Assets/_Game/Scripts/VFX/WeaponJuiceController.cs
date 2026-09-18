@@ -60,6 +60,17 @@ namespace HighSeas.VFX
             _broker = JuiceVfxBroker.Instance;
         }
 
+        public void Configure(DemoJuiceSettings juiceSettings, Transform root)
+        {
+            if (juiceSettings != null)
+                settings = juiceSettings;
+            if (root != null)
+            {
+                effectRoot = root;
+                _root = root;
+            }
+        }
+
         void ResolveHumanBindings()
         {
             _player = V3MultiShipWeaponLoadouts.FindLocalHumanShip();
@@ -88,7 +99,9 @@ namespace HighSeas.VFX
                 ? Quaternion.LookRotation(direction.normalized, Vector3.up)
                 : Quaternion.identity;
             var scale = settings.shootingVfxScale;
-            if (weaponId is "broadside_battery")
+            if (settings.TryGetWeaponVfx(weaponId, out var binding) && binding.muzzleScaleMult > 0f)
+                scale *= binding.muzzleScaleMult;
+            else if (weaponId is "broadside_battery")
                 scale *= 1.12f;
 
             if (TryPlayGunChildBurst(prefab, "CannonSmoke", origin, rotation, scale, 0.35f, null))
@@ -118,7 +131,10 @@ namespace HighSeas.VFX
         GameObject ResolveMuzzlePrefab(string weaponId)
         {
             if (settings == null) return null;
-            if (settings.cannonMuzzleVfxPrefab != null)
+            if (settings.TryGetWeaponVfx(weaponId, out var binding) && binding.muzzleVfxPrefab != null)
+                return binding.muzzleVfxPrefab;
+            if (settings.cannonMuzzleVfxPrefab != null
+                && weaponId is "long_nine" or "deck_cannons" or "broadside_battery" or "swivel_guns" or "grapeshot" or "mortar")
                 return settings.cannonMuzzleVfxPrefab;
             if (weaponId is "long_nine" or "deck_cannons" or "broadside_battery" or "swivel_guns" or "grapeshot" or "mortar")
                 return settings.shootingVfxPrefab;
@@ -136,13 +152,67 @@ namespace HighSeas.VFX
 
         public void OnMineExploded(Vector3 position, float blastRadius)
         {
-            var prefab = settings.eliteKillExplosionPrefab != null
-                ? settings.eliteKillExplosionPrefab
-                : settings.enemyKillPrefab;
+            var prefab = settings.powderKegExplosionPrefab != null
+                ? settings.powderKegExplosionPrefab
+                : settings.weaponExplosionPrefab;
             if (prefab == null) return;
 
-            var scale = settings.powderKegExplosionScale * Mathf.Clamp(blastRadius / 2.8f, 0.85f, 1.4f);
-            PlayVfx(prefab, position + Vector3.up * 0.35f, Quaternion.identity, scale, 2f);
+            var scaleMult = 1f;
+            if (settings.TryGetWeaponVfx("powder_kegs", out var binding) && binding.impactScaleMult > 0f)
+                scaleMult = binding.impactScaleMult;
+            var scale = Mathf.Max(1.15f,
+                settings.powderKegExplosionScale * 2.35f * scaleMult * Mathf.Clamp(blastRadius / 2.8f, 0.9f, 1.35f));
+            var burstPos = position + Vector3.up * 0.45f;
+            if (PlayFilteredExplosion(prefab, burstPos, scale, 1.5f))
+                return;
+
+            PlayVfx(prefab, burstPos, Quaternion.identity, scale * 0.65f, 1.35f);
+        }
+
+        static readonly string[] PowderKegExplosionChildNames = { "Impact small", "Ring", "Smoke" };
+
+        bool PlayFilteredExplosion(GameObject sourcePrefab, Vector3 position, float scale, float lifetime)
+        {
+            if (sourcePrefab == null) return false;
+
+            var instance = Instantiate(sourcePrefab, position, Quaternion.identity, _root);
+            instance.transform.localScale = Vector3.one * scale;
+            if (!EnableNamedExplosionChildren(instance.transform, PowderKegExplosionChildNames))
+            {
+                Destroy(instance);
+                return false;
+            }
+
+            VfxParticleUtil.RestartParticles(instance);
+            Destroy(instance, lifetime);
+            return true;
+        }
+
+        static bool EnableNamedExplosionChildren(Transform root, string[] keepNames)
+        {
+            var any = false;
+            for (var i = 0; i < root.childCount; i++)
+            {
+                var child = root.GetChild(i);
+                var keep = false;
+                for (var k = 0; k < keepNames.Length; k++)
+                {
+                    if (child.name == keepNames[k])
+                    {
+                        keep = true;
+                        break;
+                    }
+                }
+
+                child.gameObject.SetActive(keep);
+                if (!keep) continue;
+                any = true;
+                var renderers = child.GetComponentsInChildren<Renderer>(true);
+                for (var r = 0; r < renderers.Length; r++)
+                    renderers[r].enabled = true;
+            }
+
+            return any;
         }
 
         public void OnLightningStrike(Vector3 position, float areaRadius)
@@ -275,7 +345,10 @@ namespace HighSeas.VFX
 
         public void OnMortarImpact(Vector3 position, float radius, RunRng rng)
         {
-            if (settings.weaponExplosionPrefab == null)
+            var burstPrefab = settings.mortarExplosionPrefab != null
+                ? settings.mortarExplosionPrefab
+                : settings.weaponExplosionPrefab;
+            if (burstPrefab == null)
             {
                 OnMineExploded(position, radius);
                 return;
@@ -284,7 +357,11 @@ namespace HighSeas.VFX
             var burstCount = rng != null
                 ? 4 + Mathf.FloorToInt(rng.CombatFloat() * 3f)
                 : 4;
-            var smallScale = settings.weaponExplosionScale * Mathf.Clamp(radius / 11f, 0.18f, 0.34f);
+            var mortarScaleMult = settings.mortarExplosionScaleMult;
+            if (settings.TryGetWeaponVfx("mortar", out var binding) && binding.impactScaleMult > 0f)
+                mortarScaleMult *= binding.impactScaleMult;
+            var smallScale = settings.weaponExplosionScale * mortarScaleMult
+                * Mathf.Clamp(radius / 11f, 0.18f, 0.34f);
             // Keep bursts inside the visible telegraph ring (and away from the edge by VFX size).
             var ringRadius = MortarTelegraphScaleForRadius(radius, settings.mortarTelegraphScale)
                 * MortarReticleDiameterPerScale * 0.5f;
@@ -298,7 +375,7 @@ namespace HighSeas.VFX
                     : (i + 1f) / (burstCount + 1f));
                 var offset = new Vector3(Mathf.Cos(angle) * dist, 0f, Mathf.Sin(angle) * dist);
                 var burstPos = position + offset + Vector3.up * 0.3f;
-                PlayVfx(settings.weaponExplosionPrefab, burstPos, Quaternion.identity, smallScale, 1.05f);
+                PlayVfx(burstPrefab, burstPos, Quaternion.identity, smallScale, 1.05f);
             }
         }
 
@@ -387,7 +464,8 @@ namespace HighSeas.VFX
 
         public void OnBroadsideSalvo(Vector3 shipPosition, Vector3 sideDirection)
         {
-            var prefab = ResolveMuzzlePrefab("broadside_battery");
+            const string weaponId = "broadside_battery";
+            var prefab = ResolveMuzzlePrefab(weaponId);
             if (prefab == null) return;
             sideDirection.y = 0f;
             if (sideDirection.sqrMagnitude < 0.0001f) return;
@@ -395,6 +473,8 @@ namespace HighSeas.VFX
             var origin = shipPosition + sideDirection * 1.1f + Vector3.up * 0.35f;
             var rotation = Quaternion.LookRotation(sideDirection, Vector3.up);
             var scale = settings.shootingVfxScale * 1.15f;
+            if (settings.TryGetWeaponVfx(weaponId, out var binding) && binding.muzzleScaleMult > 0f)
+                scale *= binding.muzzleScaleMult;
             if (!TryPlayGunChildBurst(prefab, "CannonSmoke", origin, rotation, scale, 0.4f, null))
                 _broker?.Play(prefab, origin, rotation, scale, 0.4f);
         }
@@ -562,22 +642,56 @@ namespace HighSeas.VFX
             forward.Normalize();
             SetFlamethrowerPose(_flamethrowerPort, forward);
 
-            if (!_flamethrowerEmissionActive)
-            {
-                SetFlamethrowerEmission(_flamethrowerPort, true);
-                _flamethrowerEmissionActive = true;
-            }
+            var streaming = _weapons.IsFlamethrowerStreaming;
+            if (streaming)
+                MaintainFlamethrowerEmission(_flamethrowerPort);
+            else if (_flamethrowerEmissionActive)
+                SetFlamethrowerEmission(_flamethrowerPort, false);
+
+            _flamethrowerEmissionActive = streaming;
         }
 
         void EnsureFlamethrowerMount(ref Transform mount)
         {
-            if (mount != null || settings.flamethrowerPrefab == null) return;
-            var instance = Instantiate(settings.flamethrowerPrefab, _root);
+            var streamPrefab = settings.flamethrowerStreamPrefab != null
+                ? settings.flamethrowerStreamPrefab
+                : settings.flamethrowerPrefab;
+            if (mount != null || streamPrefab == null) return;
+            var instance = Instantiate(streamPrefab, _root);
             instance.transform.localScale = Vector3.one * settings.flamethrowerScale * FlamethrowerVisualScaleMult;
             StripPhysics(instance);
+            PrepareFlamethrowerStreamVisual(instance);
             mount = instance.transform;
-            SetFlamethrowerEmission(mount, true);
+            MaintainFlamethrowerEmission(mount);
             _flamethrowerEmissionActive = true;
+        }
+
+        static void PrepareFlamethrowerStreamVisual(GameObject root)
+        {
+            if (root == null) return;
+            var renderers = root.GetComponentsInChildren<Renderer>(true);
+            for (var i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i] is ParticleSystemRenderer) continue;
+                renderers[i].enabled = false;
+            }
+        }
+
+        static void MaintainFlamethrowerEmission(Transform mount)
+        {
+            if (mount == null) return;
+            var particles = mount.GetComponentsInChildren<ParticleSystem>(true);
+            for (var i = 0; i < particles.Length; i++)
+            {
+                var main = particles[i].main;
+                if (!main.loop)
+                    main.loop = true;
+                if (!particles[i].isPlaying)
+                {
+                    particles[i].Clear(true);
+                    particles[i].Play(true);
+                }
+            }
         }
 
         static void DestroyFlamethrowerMount(ref Transform mount)

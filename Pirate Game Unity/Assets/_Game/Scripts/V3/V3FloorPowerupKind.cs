@@ -6,6 +6,10 @@ namespace HighSeas.V3
         RepairSupplies,
         BattleSignal,
         Tailwind,
-        SalvageChime
+        SalvageChime,
+        FullSail,
+        PowderRush,
+        MagneticTide,
+        DeadCalm
     }
 }

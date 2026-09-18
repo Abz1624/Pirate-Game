@@ -120,7 +120,8 @@ namespace HighSeas.Combat
                     : 0f);
             AppendField(sb, "continuousOrbitSeconds", _orbitSeconds);
             AppendField(sb, "peakProjectileCount", _peakProjectiles);
-            AppendField(sb, "peakEnemyCount", _peakEnemies, false);
+            AppendField(sb, "peakEnemyCount", _peakEnemies);
+            AppendWeaponLedger(sb);
             sb.Append('}');
             return sb.ToString();
         }
@@ -151,6 +152,24 @@ namespace HighSeas.Combat
         {
             if (!first) sb.Append(',');
             sb.Append('"').Append(key).Append("\":").Append(value);
+        }
+
+        void AppendWeaponLedger(StringBuilder sb)
+        {
+            sb.Append(",\"weaponContribution\":{");
+            var snapshot = WeaponDamageLedger.Snapshot();
+            var first = true;
+            foreach (var kv in snapshot)
+            {
+                if (!first) sb.Append(',');
+                first = false;
+                sb.Append('"').Append(kv.Key).Append("\":{");
+                sb.Append("\"damage\":").Append(kv.Value.totalDamage.ToString("0.###"));
+                sb.Append(",\"kills\":").Append(kv.Value.kills);
+                sb.Append(",\"hits\":").Append(kv.Value.hits);
+                sb.Append('}');
+            }
+            sb.Append('}');
         }
     }
 }

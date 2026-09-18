@@ -146,6 +146,7 @@ namespace HighSeas.Editor
             juice.smallProjectilePrefab = LoadPrefab("Assets/GameObject/Guns/Cannonball small.prefab");
 
             WireGunCombatVfx(juice);
+            WireWeaponVfxBindings(juice);
 
             juice.mineBarrelPrefab = LoadPrefab("Assets/GameObject/FireBarrel.prefab");
             juice.lightningStrikePrefab = LoadPrefab("Assets/GameObject/Guns/Lightning Mast.prefab");
@@ -274,6 +275,8 @@ namespace HighSeas.Editor
                 systems.AddComponent<CombatVfxController>();
             if (systems.GetComponent<WeaponJuiceController>() == null)
                 systems.AddComponent<WeaponJuiceController>();
+            if (systems.GetComponent<FloatingDamageNumbers>() == null)
+                systems.AddComponent<FloatingDamageNumbers>();
             if (systems.GetComponent<PlayerJuiceController>() == null)
                 systems.AddComponent<PlayerJuiceController>();
 
@@ -320,16 +323,77 @@ namespace HighSeas.Editor
         static void WireGunCombatVfx(DemoJuiceSettings juice)
         {
             const string gunsRoot = "Assets/GameObject/Guns";
+            const string vfxRoot = gunsRoot + "/VFX";
             juice.laserBeamPrefab = LoadPrefab($"{gunsRoot}/LaserBeam.prefab");
             juice.mortarTelegraphPrefab = LoadPrefab($"{gunsRoot}/Lightning Mast.prefab");
             juice.weaponExplosionPrefab = LoadPrefab($"{gunsRoot}/Explosion_VFX.prefab");
+            juice.cannonImpactPrefab = LoadPrefab($"{vfxRoot}/PowderKeg_Explosion_VFX.prefab") ?? juice.weaponExplosionPrefab;
+            juice.cannonImpactScale = 0.22f;
             juice.cannonMuzzleVfxPrefab = LoadPrefab($"{gunsRoot}/Deck Cannons.prefab");
             juice.harpoonProjectilePrefab = LoadPrefab($"{gunsRoot}/Harpoon.prefab");
+            juice.powderKegExplosionPrefab = LoadPrefab($"{vfxRoot}/PowderKeg_Explosion_VFX.prefab");
+            juice.mortarExplosionPrefab = LoadPrefab($"{vfxRoot}/Mortar_Explosion_VFX.prefab");
+            juice.mortarExplosionScaleMult = 3f;
+            juice.flamethrowerStreamPrefab = LoadPrefab($"{vfxRoot}/Flamethrower_Stream_VFX.prefab");
             juice.swivelProjectileSizeMult = 0.55f;
             juice.swivelDamageMult = 0.55f;
             juice.swivelBetweenShotDelay = 0.18f;
             juice.harpoonProjectileScale = 0.55f;
         }
+
+        static void WireWeaponVfxBindings(DemoJuiceSettings juice)
+        {
+            const string gunsRoot = "Assets/GameObject/Guns";
+            const string vfxRoot = gunsRoot + "/VFX";
+            var cannonball = LoadPrefab($"{gunsRoot}/Cannonball.prefab");
+            var broadsideBall = LoadPrefab($"{vfxRoot}/Broadside_Cannonball_VFX.prefab");
+            var deckMuzzle = LoadPrefab($"{vfxRoot}/DeckCannons_Muzzle_VFX.prefab");
+            var broadsideMuzzle = LoadPrefab($"{vfxRoot}/Broadside_Muzzle_VFX.prefab");
+            var powderExplosion = LoadPrefab($"{vfxRoot}/PowderKeg_Explosion_VFX.prefab");
+            var mortarExplosion = LoadPrefab($"{vfxRoot}/Mortar_Explosion_VFX.prefab");
+            var smallBall = LoadPrefab($"{gunsRoot}/Cannonball small.prefab");
+            var harpoon = LoadPrefab($"{gunsRoot}/Harpoon.prefab");
+            var lightning = LoadPrefab($"{gunsRoot}/Lightning Mast.prefab");
+            var cutlass = LoadPrefab($"{gunsRoot}/Flying Cutlasses.prefab");
+            var longNine = LoadPrefab($"{gunsRoot}/Long Nine.prefab");
+            var swivel = LoadPrefab($"{gunsRoot}/Swivel Guns.prefab");
+            var mortarGun = LoadPrefab($"{gunsRoot}/Mortar.prefab");
+
+            juice.weaponVfxBindings = new[]
+            {
+                Binding("deck_cannons", cannonball, deckMuzzle, null, 1f, 1f, 1f, 1f),
+                Binding("broadside_battery", broadsideBall, broadsideMuzzle, null, 1.15f, 1.08f, 1f, 1f),
+                Binding("powder_kegs", null, null, powderExplosion, 1f, 1f, 1f, 1f),
+                Binding("flying_cutlasses", cutlass, null, null, 1f, 1f, 1f, 1f),
+                Binding("flamethrower", null, null, null, 1f, 1f, 1f, 1f),
+                Binding("lightning_mast", null, lightning, lightning, 1f, 1f, 1f, 1f),
+                Binding("long_nine", null, longNine, null, 1f, 1f, 1f, 1f),
+                Binding("swivel_guns", smallBall, swivel, null, 1f, 1f, 1f, 1f),
+                Binding("harpoon_gun", harpoon, null, null, 1f, 1f, 1f, 1f),
+                Binding("mortar", null, mortarGun, mortarExplosion, 1f, 1f, 1f, 1f),
+            };
+        }
+
+        static WeaponJuiceVfxBinding Binding(
+            string weaponId,
+            GameObject projectile,
+            GameObject muzzle,
+            GameObject impact,
+            float projectileScale,
+            float muzzleScale,
+            float impactScale,
+            float lifeMult) =>
+            new()
+            {
+                weaponId = weaponId,
+                projectilePrefab = projectile,
+                muzzleVfxPrefab = muzzle,
+                impactVfxPrefab = impact,
+                projectileScaleMult = projectileScale,
+                muzzleScaleMult = muzzleScale,
+                impactScaleMult = impactScale,
+                projectileLifeMult = lifeMult
+            };
 
         static void EnsureFolder(string path)
         {

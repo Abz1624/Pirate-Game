@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace HighSeas.Data
@@ -45,8 +46,21 @@ namespace HighSeas.Data
         public GameObject mortarTelegraphPrefab;
         [Tooltip("AoE burst from Assets/GameObject/Guns/Explosion_VFX.prefab.")]
         public GameObject weaponExplosionPrefab;
+        [Tooltip("Small burst on cannon projectile hits.")]
+        public GameObject cannonImpactPrefab;
+        public float cannonImpactScale = 0.22f;
         [Tooltip("CannonSmoke burst shared by gunnery weapons.")]
         public GameObject cannonMuzzleVfxPrefab;
+        [Tooltip("Dedicated powder keg detonation (single burst; not elite kill VFX).")]
+        public GameObject powderKegExplosionPrefab;
+        [Tooltip("Dedicated mortar impact burst prefab.")]
+        public GameObject mortarExplosionPrefab;
+        [Tooltip("Extra scale on mortar impact bursts (+200% = 3).")]
+        [Min(0.1f)] public float mortarExplosionScaleMult = 3f;
+        [Tooltip("Continuous flamethrower stream (particle-only; not the full gun rig).")]
+        public GameObject flamethrowerStreamPrefab;
+        [Tooltip("Per-weapon projectile / muzzle / impact prefabs for the playtest pool.")]
+        public WeaponJuiceVfxBinding[] weaponVfxBindings;
         [Tooltip("Optional smaller projectile mesh for rapid-fire guns.")]
         public GameObject smallProjectilePrefab;
         [Tooltip("Projectile mesh for harpoon_gun.")]
@@ -136,5 +150,23 @@ namespace HighSeas.Data
         public Color playerDamageFlashColor = new(1f, 0.25f, 0.2f, 1f);
         [Range(0.05f, 0.5f)] public float playerDamageFlashDuration = 0.12f;
         [Range(0.05f, 0.5f)] public float damageHighlightDuration = 0.14f;
+
+        public bool TryGetWeaponVfx(string weaponId, out WeaponJuiceVfxBinding binding)
+        {
+            binding = null;
+            if (string.IsNullOrEmpty(weaponId) || weaponVfxBindings == null)
+                return false;
+
+            for (var i = 0; i < weaponVfxBindings.Length; i++)
+            {
+                var entry = weaponVfxBindings[i];
+                if (entry == null || entry.weaponId != weaponId)
+                    continue;
+                binding = entry;
+                return true;
+            }
+
+            return false;
+        }
     }
 }

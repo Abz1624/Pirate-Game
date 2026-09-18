@@ -13,10 +13,8 @@ namespace HighSeas.V3
             "lightning_mast",
             "long_nine",
             "swivel_guns",
-            "grapeshot",
             "harpoon_gun",
-            "mortar",
-            "boarding_party"
+            "mortar"
         };
 
         public static string GetDisplayLabel(string weaponId) =>

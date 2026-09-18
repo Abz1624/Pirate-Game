@@ -165,6 +165,13 @@ namespace HighSeas.V3
             return 0.08f;
         }
 
+        public float GetSpawnDensityMultiplier()
+        {
+            if (V3RunItemInventory.Instance != null && V3RunItemInventory.Instance.HasItem("cursed_compass"))
+                return 1.18f;
+            return 1f;
+        }
+
         public float GetGlobalDamageMultiplier(WeaponController weapons)
         {
             var mult = 1f;
