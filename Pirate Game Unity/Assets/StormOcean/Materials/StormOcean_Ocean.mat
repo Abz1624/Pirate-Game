@@ -19,7 +19,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: _AmbientStrength
+  m_LockedProperties: _AmbientStrength _DeepColor _ReflectionBreakup
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -39,38 +39,49 @@ Material:
         m_Texture: {fileID: 2800000, guid: e3f7588b1fea92c4d9354b9512ce6d47, type: 3}
         m_Scale: {x: 0.01, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _WaterRefTex:
+        m_Texture: {fileID: 2800000, guid: 8a0c483f386fe42c48e02109c9447f65, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _AmbientStrength: 1.1
-    - _BreakingContrast: 0.6
-    - _CrestSharpness: 0.945
-    - _FoamAmount: 0.71
-    - _FoamBreakup: 0.517
+    - _BreakingContrast: 0
+    - _CrestSharpness: 0.547
+    - _DetailNormalStrength: 0.6
+    - _FoamAmount: 2
+    - _FoamBreakup: 0.714
     - _FoamBreakupScale: 0.5
-    - _FoamBrightness: 0.9
-    - _FoamHoleScale: 1.4
-    - _FoamHoleStrength: 0.5
-    - _FoamNoiseScale: 0.16
-    - _FoamSharpness: 0.64
+    - _FoamBrightness: 0.67
+    - _FoamContrast: 1.6
+    - _FoamHoleScale: 34.87
+    - _FoamHoleStrength: 1
+    - _FoamNoiseScale: 14.46
+    - _FoamOpacity: 0.9
+    - _FoamScale: 0.05
+    - _FoamScrollSpeed: 0.06
+    - _FoamSharpness: 0.843
+    - _FoamTextureStrength: 0.9
     - _FoamThreshold: 0
     - _FresnelPower: 4.5
+    - _MediumDetailStrength: 0.5
     - _MicroDetail2Scale: 2.2
-    - _MicroDetail2Strength: 0.5
+    - _MicroDetail2Strength: 0.444
     - _MicroNoiseScale: 0.6
     - _MicroNoiseSpeed: 0.12
     - _MicroNoiseStrength: 0.6
     - _NormalStrength: 1.2
     - _OceanColorTexScale: 0.05
     - _OceanColorTexSpeed: 0.02
-    - _OceanColorTexStrength: 0
+    - _OceanColorTexStrength: 1
     - _OceanColorTexTiling: 1
     - _OceanDetailScale: 0.1
     - _OceanDetailSpeed: 0.02
     - _OceanDetailStrength: 0
     - _OceanDetailTiling: 1
-    - _OceanFoamDetailScale: 0.3
+    - _OceanFoamDetailScale: 0.001
     - _OceanFoamDetailSpeed: 0.04
-    - _OceanFoamDetailStrength: 0
+    - _OceanFoamDetailStrength: 1
     - _OceanFoamDetailTiling: 1
     - _OceanNormalScale: 0.3
     - _OceanNormalSpeedX: 0.05
@@ -79,13 +90,25 @@ Material:
     - _OceanNormalTiling: 1
     - _ReflectionBreakup: 0.4
     - _ReflectionStrength: 0.55
+    - _RoughnessVariation: 0.5
+    - _SecondaryWaveStrength: 0.5
     - _Smoothness: 0.85
     - _SpecularStrength: 2.4
+    - _SpecularVariation: 0.5
+    - _TextureBrightness: 1.2
+    - _TextureContrast: 1.4
+    - _TextureDistortion: 0.8
+    - _TextureNormalStrength: 0.9
+    - _TextureScale: 0.045
+    - _TextureScrollSpeed: 0.035
+    - _TextureStrength: 1
+    - _TextureTiling: 1
     - _TroughDepth: 1
     - _WaveGroupiness: 0.85
-    - _WaveTurbulence: 0.22
+    - _WaveTurbulence: 0
+    - _WindWaveStrength: 0.4
     m_Colors:
-    - _DeepColor: {r: 0.014, g: 0.04, b: 0.07, a: 1}
+    - _DeepColor: {r: 0.33962262, g: 0.33962262, b: 0.33962262, a: 1}
     - _FoamColor: {r: 0.9, g: 0.95, b: 0.97, a: 1}
     - _FoamTransitionColor: {r: 0.55, g: 0.68, b: 0.78, a: 1}
     - _HighlightColor: {r: 0.55, g: 0.75, b: 0.82, a: 1}

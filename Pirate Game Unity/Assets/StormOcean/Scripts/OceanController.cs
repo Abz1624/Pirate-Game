@@ -154,6 +154,54 @@ namespace StormOcean
         public float oceanFoamDetailSpeed = 0.04f;
         public float oceanFoamDetailTiling = 1f;
 
+        [Header("Ocean Texture")]
+        [Tooltip("Real water-surface reference photo (turquoise turbulent ocean texture) used as the PRIMARY structural driver of surface look: base color variation, normal detail, roughness/specular breakup and foam structure. Sampled at multiple scales/rotations/scroll-speeds internally (see StormOcean.shader SampleWaterStructure) - this is not a flat decal or a single weak normal map.")]
+        public Texture2D waterReferenceTexture;
+        [Tooltip("Master strength for the reference-texture system. 0 = original procedural ocean, unchanged (fallback-safe). 0.5 = clearly visible, strongly integrated. 1 = very obvious resemblance to the reference texture while the large storm waves remain fully intact.")]
+        [Range(0f, 1f)] public float textureStrength = 0.6f;
+        [Tooltip("Base world-space tiling frequency of the texture's largest (coarsest) internal layer.")]
+        public float textureScale = 0.045f;
+        [Tooltip("Overall tiling multiplier applied on top of Texture Scale for all internal layers.")]
+        public float textureTiling = 1f;
+        [Tooltip("World-space scroll speed of the texture layers (each layer also scrolls in its own rotated direction, so they never slide together as one rigid image).")]
+        public float textureScrollSpeed = 0.035f;
+        [Tooltip("Domain-warp / UV-distortion strength that curls the texture layers into swirls and broken streaks instead of a static projected image.")]
+        [Range(0f, 2f)] public float textureDistortion = 0.8f;
+        [Tooltip("Contrast curve applied to the blended texture structure before it drives color/normal/foam - higher values punch up dark turbulent patches vs. bright flow highlights.")]
+        [Range(0.1f, 3f)] public float textureContrast = 1.4f;
+        [Tooltip("Brightness of the texture-driven cyan highlight contribution to base color.")]
+        [Range(0f, 3f)] public float textureBrightness = 1.2f;
+
+        [Header("Water Surface")]
+        [Tooltip("How strongly the reference texture's coarser layers perturb the water normal.")]
+        [Range(0f, 2f)] public float textureNormalStrength = 0.9f;
+        [Tooltip("How strongly the reference texture's finest layer perturbs the water normal, for close-up micro detail.")]
+        [Range(0f, 2f)] public float detailNormalStrength = 0.6f;
+        [Tooltip("How much the texture structure varies specular roughness/power across the surface.")]
+        [Range(0f, 1f)] public float roughnessVariation = 0.5f;
+        [Tooltip("How much the texture structure varies specular brightness across the surface, breaking up reflections into patches instead of one smooth glossy sheet.")]
+        [Range(0f, 1f)] public float specularVariation = 0.5f;
+        [Tooltip("Strength of a procedural, normal-only medium-scale bump layer (visual turbulent detail between the large Gerstner geometry and the fine micro-noise - no vertex displacement, so it costs nothing on the CPU/buoyancy side).")]
+        [Range(0f, 2f)] public float mediumDetailStrength = 0.5f;
+
+        [Header("Foam")]
+        [Tooltip("How strongly the reference texture's own bright flow-streak structure contributes to the foam mask, on top of the existing procedural crest/turbulence foam gating (large patches, medium streaks, tiny fragments).")]
+        [Range(0f, 2f)] public float foamTextureStrength = 0.9f;
+        [Tooltip("Contrast curve applied to the texture-driven foam structure - higher values turn broad bright patches into sharper, more fragmented streaks.")]
+        [Range(0.1f, 3f)] public float foamContrast = 1.6f;
+        [Tooltip("Overall opacity of the final foam blend over the water color.")]
+        [Range(0f, 1f)] public float foamOpacity = 0.9f;
+        [Tooltip("World-space tiling of the texture-driven foam layers (independent of Texture Scale).")]
+        public float foamScale = 0.05f;
+        [Tooltip("Scroll speed of the texture-driven foam layers.")]
+        public float foamScrollSpeed = 0.06f;
+
+        [Header("Wave")]
+        [Tooltip("Strength of an additional procedural medium-scale wave layer (turbulent secondary swell) riding on top of the 9 large/medium/small Gerstner waves. Real vertex displacement - mirrored in SampleSurfaceHeight so buoyancy stays in sync.")]
+        [Range(0f, 2f)] public float secondaryWaveStrength = 0.5f;
+        [Tooltip("Strength of a small, fast wind-driven ripple wave layer. Real vertex displacement - mirrored in SampleSurfaceHeight so buoyancy stays in sync.")]
+        [Range(0f, 2f)] public float windWaveStrength = 0.4f;
+
         public Material oceanMaterial;
 
         MeshFilter mf;
@@ -388,15 +436,46 @@ public void ApplyMaterialParams()
             oceanMaterial.SetFloat("_OceanFoamDetailScale", oceanFoamDetailScale);
             oceanMaterial.SetFloat("_OceanFoamDetailSpeed", oceanFoamDetailSpeed);
             oceanMaterial.SetFloat("_OceanFoamDetailTiling", oceanFoamDetailTiling);
+
+            // ---- Reference water texture: the primary, multi-layer structural driver
+            // added for the storm-ocean visual pass. Strength is forced to 0 whenever no
+            // texture is assigned so the material can never sample a missing texture and
+            // the ocean always falls back to the pure procedural look. ----
+            if (waterReferenceTexture != null) oceanMaterial.SetTexture("_WaterRefTex", waterReferenceTexture);
+            oceanMaterial.SetFloat("_TextureStrength", waterReferenceTexture != null ? textureStrength : 0f);
+            oceanMaterial.SetFloat("_TextureScale", textureScale);
+            oceanMaterial.SetFloat("_TextureTiling", textureTiling);
+            oceanMaterial.SetFloat("_TextureScrollSpeed", textureScrollSpeed);
+            oceanMaterial.SetFloat("_TextureDistortion", textureDistortion);
+            oceanMaterial.SetFloat("_TextureContrast", textureContrast);
+            oceanMaterial.SetFloat("_TextureBrightness", textureBrightness);
+
+            oceanMaterial.SetFloat("_TextureNormalStrength", textureNormalStrength);
+            oceanMaterial.SetFloat("_DetailNormalStrength", detailNormalStrength);
+            oceanMaterial.SetFloat("_RoughnessVariation", roughnessVariation);
+            oceanMaterial.SetFloat("_SpecularVariation", specularVariation);
+            oceanMaterial.SetFloat("_MediumDetailStrength", mediumDetailStrength);
+
+            oceanMaterial.SetFloat("_FoamTextureStrength", waterReferenceTexture != null ? foamTextureStrength : 0f);
+            oceanMaterial.SetFloat("_FoamContrast", foamContrast);
+            oceanMaterial.SetFloat("_FoamOpacity", foamOpacity);
+            oceanMaterial.SetFloat("_FoamScale", foamScale);
+            oceanMaterial.SetFloat("_FoamScrollSpeed", foamScrollSpeed);
+
+            oceanMaterial.SetFloat("_SecondaryWaveStrength", secondaryWaveStrength);
+            oceanMaterial.SetFloat("_WindWaveStrength", windWaveStrength);
         }
 
 
         /// <summary>
         /// CPU-side reproduction of the vertex shader's Gerstner-height + domain-warp +
-        /// trough-depth math (hash/noise functions ported 1:1 from StormOcean.shader),
-        /// so followers such as the camera height lock can track the true displaced
-        /// water surface instead of a naive sine approximation that drifts arbitrarily
-        /// far from reality once turbulence/crest-sharpening are applied.
+        /// trough-depth + secondary/wind-wave math (hash/noise functions ported 1:1 from
+        /// StormOcean.shader), so followers such as ship buoyancy and the camera height
+        /// lock can track the true displaced water surface instead of a naive sine
+        /// approximation that drifts arbitrarily far from reality once turbulence/crest-
+        /// sharpening/secondary waves are applied. Every term added to vert()'s geometric
+        /// displacement MUST be mirrored here exactly, or followers desync from the
+        /// rendered surface (this is the exact class of bug fixed earlier for the ship).
         /// </summary>
 public float SampleSurfaceHeight(float worldX, float worldZ, float t)
         {
@@ -441,6 +520,14 @@ public float SampleSurfaceHeight(float worldX, float worldZ, float t)
             float windPz = worldZ * 0.08f + windDir3.z * t * (0.6f + windStrength * 0.4f);
             float windRipple = (Fbm5(windPx, windPz) - 0.5f) * 0.18f * windStrength;
             height += windRipple;
+
+            // Secondary medium-scale procedural wave + fast wind-ripple wave layer -
+            // mirrors StormOcean.shader's vert() additions 1:1 (same waveX/waveZ, same
+            // fbm5/fbm2 evaluation points, same constants) so ship buoyancy tracks this
+            // exactly rather than drifting from the rendered surface.
+            float secWave = (Fbm5(waveX * 0.15f, waveZ * 0.15f) - 0.5f) * 2f * secondaryWaveStrength * 0.6f;
+            float windWave = (Fbm2(waveX * 0.35f + windDir3.x * t * 0.25f, waveZ * 0.35f + windDir3.z * t * 0.25f) - 0.5f) * 2f * windWaveStrength * 0.35f;
+            height += secWave + windWave;
 
             return height;
         }
