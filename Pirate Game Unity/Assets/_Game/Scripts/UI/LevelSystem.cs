@@ -5,6 +5,7 @@ using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.V3;
+using HighSeas.V3.MultiShip;
 using HighSeas.Weapons;
 using UnityEngine;
 
@@ -88,11 +89,16 @@ namespace HighSeas.UI
 
         public void SetPlaytestSoloWeapon(string weaponId)
         {
+            SetPlaytestWeapon(weaponId, 1);
+        }
+
+        public void SetPlaytestWeapon(string weaponId, int level)
+        {
             if (string.IsNullOrEmpty(weaponId)) return;
             _ownedWeapons.Clear();
-            _ownedWeapons.Add(weaponId);
             _weaponLevels.Clear();
-            _weaponLevels[weaponId] = 1;
+            _ownedWeapons.Add(weaponId);
+            _weaponLevels[weaponId] = Mathf.Max(1, level);
             LoadoutChanged?.Invoke();
         }
 
@@ -498,7 +504,7 @@ namespace HighSeas.UI
                 return;
             }
 
-            var weapons = FindFirstObjectByType<WeaponController>();
+            var weapons = ResolveHumanWeaponController();
             if (offer.isWeapon)
             {
                 var owned = _ownedWeapons.Contains(offer.id);
@@ -511,12 +517,18 @@ namespace HighSeas.UI
                 else if (owned)
                 {
                     var idx = weapons != null ? weapons.FindWeaponIndex(offer.id) : -1;
+                    if (idx < 0)
+                        weapons?.EquipWeapon(offer.id);
+
+                    idx = weapons != null ? weapons.FindWeaponIndex(offer.id) : -1;
                     if (idx >= 0)
                     {
                         weapons.ApplyUpgradePackage(idx, offer.upgradeLines);
                         _weaponLevels[offer.id] = weapons.Weapons[idx].level;
                     }
                 }
+
+                EnsureOwnedWeaponsOnController(weapons);
             }
             else
             {
@@ -525,6 +537,22 @@ namespace HighSeas.UI
                 _logbookLevels.TryGetValue(offer.id, out var level);
                 _logbookLevels[offer.id] = level + 1;
                 ApplyLogbook(offer);
+            }
+        }
+
+        static WeaponController ResolveHumanWeaponController() =>
+            V3MultiShipWeaponLoadouts.FindLocalHumanWeaponController();
+
+        void EnsureOwnedWeaponsOnController(WeaponController weapons)
+        {
+            if (weapons == null) return;
+            for (var i = 0; i < _ownedWeapons.Count; i++)
+            {
+                var id = _ownedWeapons[i];
+                if (weapons.FindWeaponIndex(id) >= 0) continue;
+                if (weapons.Weapons.Count >= weaponSlots) break;
+                if (weapons.EquipWeapon(id))
+                    _weaponLevels[id] = Mathf.Max(1, GetWeaponLevel(id));
             }
         }
 

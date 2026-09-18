@@ -30,6 +30,8 @@ namespace HighSeas.V3
         [SerializeField] IslandLayoutDefinition islandLayout;
         [SerializeField] int runSeed = GameConstants.DemoRunSeed;
         [SerializeField] bool forceInspectorSeed;
+
+        public int EditorRunSeed => runSeed;
         [SerializeField] bool usePlaceholderPoiVisuals = true;
 
         StageLayout _layout;
@@ -100,7 +102,7 @@ namespace HighSeas.V3
             V3FloorPowerupWorld.Ensure();
             V3FloorPowerupWorld.Instance?.ResetForRun();
             _layout = stageBuilder != null ? stageBuilder.Build(seed, 0) : null;
-            V3StormEdgeVisual.Ensure();
+            V3StormEdgeVisual.DisableWorldRings();
             V3RunContext.Layout = _layout;
             V3RunContext.CaptainId = V3CaptainSelection.Selected;
 
@@ -139,7 +141,10 @@ namespace HighSeas.V3
             EnsureCaptainActive(captainId, player);
 
             var startingWeapon = ResolveStartingWeapon(captainProfile);
-            var weapons = FindFirstObjectByType<WeaponController>();
+            var weapons = V3MultiShipWeaponLoadouts.FindLocalHumanWeaponController()
+                ?? FindFirstObjectByType<WeaponController>();
+            if (player != null)
+                weapons?.BindOwner(player);
             weapons?.ApplyCombatExperiment(experimentProfile);
             weapons?.Initialize(database, startingWeapon);
 
@@ -150,6 +155,8 @@ namespace HighSeas.V3
             V3RunItemInventory.Ensure();
             V3RunItemEffects.Ensure();
             V3RunPlaytestHotkeys.Ensure();
+            if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
+                WeaponCardAnimationDemo.Ensure();
             V3BossSummonHotkey.Ensure();
             var runCanvas = V3RunUiBootstrap.EnsureAll(_layout);
             runCanvas.GetComponent<RunHud>()?.ForceRefresh();
@@ -172,7 +179,6 @@ namespace HighSeas.V3
             }
 
             EnsureCombatVfx();
-            CollisionDebugOverlay.Ensure();
             EnsureCombatTelemetryDriver();
             WeaponTargetingVisualizer.Ensure();
             if (!isPvPScene)
@@ -189,7 +195,7 @@ namespace HighSeas.V3
                 if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
                 {
                     V3ToastHud.Instance?.Show(
-                        "Playtest: press F8 for hotkeys — [ ] cycle solo weapons",
+                        "Playtest: F8 hotkeys · G weapon card scatter · H card scroll",
                         5f);
                 }
 

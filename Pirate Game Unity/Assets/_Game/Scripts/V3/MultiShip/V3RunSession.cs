@@ -7,6 +7,11 @@ namespace HighSeas.V3.MultiShip
 
         public static bool IsPvP => Kind == V3RunSessionKind.PvP;
         public static bool IsCoOp => Kind == V3RunSessionKind.CoOp;
+        public static bool IsSplitScreenCoOp => Kind == V3RunSessionKind.SplitScreenCoOp;
+        public static bool IsLocalMultiplayer =>
+            Kind == V3RunSessionKind.PvP ||
+            Kind == V3RunSessionKind.CoOp ||
+            Kind == V3RunSessionKind.SplitScreenCoOp;
         public static bool IsMultiShip => Kind != V3RunSessionKind.SinglePlayer;
         public static bool AllowShipVsShipCombat => IsPvP;
 

@@ -113,6 +113,13 @@ namespace HighSeas.Weapons
         void Awake()
         {
             maxSlots = GameConstants.DefaultWeaponSlots;
+            ResolveOwnerAndServices();
+        }
+
+        void ResolveOwnerAndServices()
+        {
+            if (ownerShip == null && GetComponent<PlayerShipController>() == null)
+                ownerShip = V3MultiShipWeaponLoadouts.FindLocalHumanShip();
             _player = ownerShip != null ? ownerShip : FindFirstObjectByType<PlayerShipController>();
             _enemies = FindFirstObjectByType<EnemyWorld>();
             _projectiles = FindFirstObjectByType<ProjectileWorld>();
@@ -197,6 +204,18 @@ namespace HighSeas.Weapons
             return -1;
         }
 
+        public void RaiseWeaponToLevel(int index, int targetLevel)
+        {
+            if (index < 0 || index >= _weapons.Count || targetLevel <= 1) return;
+            while (true)
+            {
+                var w = _weapons[index];
+                if (w.level >= targetLevel || w.level >= w.def.maxLevel)
+                    break;
+                UpgradeWeapon(index, Rarity.Uncommon);
+            }
+        }
+
         public void UpgradeWeapon(int index, Rarity rarity)
         {
             if (index < 0 || index >= _weapons.Count) return;
@@ -264,6 +283,8 @@ namespace HighSeas.Weapons
         void Update()
         {
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
+            if (_player == null || GetComponent<PlayerShipController>() == null)
+                ResolveOwnerAndServices();
             if (_player == null || _projectiles == null) return;
             if (_enemies == null && !V3RunSession.AllowShipVsShipCombat) return;
             TickWeapons(Time.deltaTime);
@@ -1267,6 +1288,8 @@ namespace HighSeas.Weapons
 
         void FireMortar(ref WeaponInstance w, PlayerStats stats, RunRng rng)
         {
+            if (V3RunSession.IsPvP)
+                return;
             var target = WeaponTargeting.PredictClusterGround(_enemies, _player, w.def.range);
             target.y = 0.2f;
             NotifyFire(w.def, (target - _player.Position).normalized);

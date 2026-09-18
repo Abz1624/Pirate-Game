@@ -1,6 +1,7 @@
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Platform;
+using HighSeas.V3.MultiShip;
 using HighSeas.World;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -89,6 +90,7 @@ namespace HighSeas.Player
         DamageReceiver _damage;
         CompositeShipSteerInput _compositeInput;
         IShipSteerInput _botSteerInput;
+        IShipSteerInput _dedicatedSteerInput;
         bool _acceptHumanInput = true;
 
         public Vector3 Position => transform.position;
@@ -154,8 +156,20 @@ namespace HighSeas.Player
         public void ConfigureBotControl(IShipSteerInput botInput)
         {
             _botSteerInput = botInput;
+            _dedicatedSteerInput = null;
             _acceptHumanInput = false;
         }
+
+        public void ConfigureDedicatedSteerInput(IShipSteerInput steerInput)
+        {
+            _botSteerInput = null;
+            _dedicatedSteerInput = steerInput;
+            _acceptHumanInput = false;
+        }
+
+        public float IslandCollisionRadius => GetHullWorldRadius();
+
+        public float IslandCollisionHeight => GetHullWorldHeight();
 
         public void ApplySlow(float multiplier, float durationSeconds)
         {
@@ -196,7 +210,7 @@ namespace HighSeas.Player
 
         public void SetWorldPosition(Vector3 position)
         {
-            position = ResolveSpawnPosition(position);
+            position = ResolveSpawnPosition(position, GetHullWorldRadius());
             transform.SetPositionAndRotation(position, transform.rotation);
             if (_body != null)
             {
@@ -208,23 +222,18 @@ namespace HighSeas.Player
             ResetMotion();
         }
 
-        static Vector3 ResolveSpawnPosition(Vector3 position)
+        Vector3 ResolveSpawnPosition(Vector3 position, float hullRadius)
         {
-            const float radius = 1.15f;
             if (!IslandObstacles.IsAvailable)
-            {
-                if (V3.V3RunContext.IsActive)
-                    position = PlayBounds.Clamp(position, radius + 0.25f);
-                return position;
-            }
+                return ClampV3PlayPosition(position, hullRadius);
 
-            var height = IslandObstacles.GetCollisionHeight(radius);
+            var height = IslandObstacles.GetCollisionHeight(hullRadius);
             for (var i = 0; i < 12; i++)
             {
-                if (!IslandObstacles.IsPositionBlocked(position, radius))
-                    return ClampV3PlayPosition(position, radius);
+                if (!IslandObstacles.IsPositionBlocked(position, hullRadius))
+                    return ClampV3PlayPosition(position, hullRadius);
 
-                position = IslandObstacles.Depenetrate(position, radius, height);
+                position = IslandObstacles.Depenetrate(position, hullRadius, height);
             }
 
             for (var ring = 1; ring <= 16; ring++)
@@ -233,19 +242,34 @@ namespace HighSeas.Player
                 {
                     var angle = (i / 12f) * Mathf.PI * 2f;
                     var candidate = position + new Vector3(Mathf.Cos(angle) * ring * 2.5f, 0f, Mathf.Sin(angle) * ring * 2.5f);
-                    if (!IslandObstacles.IsPositionBlocked(candidate, radius))
-                        return ClampV3PlayPosition(candidate, radius);
+                    if (!IslandObstacles.IsPositionBlocked(candidate, hullRadius))
+                        return ClampV3PlayPosition(candidate, hullRadius);
                 }
             }
 
-            return ClampV3PlayPosition(position, radius);
+            return ClampV3PlayPosition(position, hullRadius);
         }
 
-        static Vector3 ClampV3PlayPosition(Vector3 position, float radius)
+        float GetPlayBoundsMargin(float hullRadius)
+        {
+            if (!V3.V3RunContext.IsActive)
+                return hullRadius + 0.25f;
+
+            if (V3RunSession.IsMultiShip)
+            {
+                var combatant = GetComponent<V3ShipCombatant>();
+                if (combatant != null && !combatant.IsLocalHuman)
+                    return V3MultiShipBotBounds.BotPlayMargin(hullRadius);
+            }
+
+            return hullRadius + 0.25f;
+        }
+
+        Vector3 ClampV3PlayPosition(Vector3 position, float hullRadius)
         {
             if (!V3.V3RunContext.IsActive)
                 return position;
-            return PlayBounds.Clamp(position, radius + 0.25f);
+            return PlayBounds.Clamp(position, GetPlayBoundsMargin(hullRadius));
         }
 
         void FixedUpdate()
@@ -393,7 +417,7 @@ namespace HighSeas.Player
             nextPosition.y = _body.position.y;
 
             if (V3.V3RunContext.IsActive)
-                nextPosition = PlayBounds.Clamp(nextPosition, GetHullWorldRadius() + 0.25f);
+                nextPosition = PlayBounds.Clamp(nextPosition, GetPlayBoundsMargin(GetHullWorldRadius()));
 
             _body.MovePosition(nextPosition);
             if (!_body.isKinematic)
@@ -465,7 +489,13 @@ namespace HighSeas.Player
         ShipInput ReadShipInput()
         {
             var input = new ShipInput();
-            if (_botSteerInput != null)
+            if (_dedicatedSteerInput != null)
+            {
+                var dedicated = _dedicatedSteerInput.ReadSteerThrottle();
+                input.steer = dedicated.x;
+                input.throttle = dedicated.y;
+            }
+            else if (_botSteerInput != null)
             {
                 var bot = _botSteerInput.ReadSteerThrottle();
                 input.steer = bot.x;

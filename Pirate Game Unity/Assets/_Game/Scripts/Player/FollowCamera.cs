@@ -184,6 +184,18 @@ namespace HighSeas.Player
             return Quaternion.LookRotation(direction, Vector3.up) * Quaternion.Euler(rotationOffset);
         }
 
+        public void SetTarget(Transform newTarget, bool snap = true)
+        {
+            target = newTarget;
+            _ship = newTarget != null ? newTarget.GetComponent<PlayerShipController>() : null;
+            _targetBody = null;
+            CacheTargetBody();
+            _snapped = false;
+            _anchorInitialized = false;
+            if (snap && target != null)
+                SnapToTarget();
+        }
+
         void TryFindPlayer()
         {
             _ship = FindFirstObjectByType<PlayerShipController>();

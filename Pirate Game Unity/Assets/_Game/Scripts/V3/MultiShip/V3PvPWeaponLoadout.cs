@@ -8,6 +8,18 @@ namespace HighSeas.V3.MultiShip
     public static class V3PvPWeaponLoadout
     {
         public const int WeaponCount = 6;
+        public const string DuelWeaponId = "broadside_battery";
+        public const int DuelWeaponLevel = 3;
+
+        public static bool IsExcludedFromPvP(string weaponId) =>
+            weaponId == "mortar";
+
+        public static string[] GetDuelLoadout(GameDatabase database)
+        {
+            if (database == null || database.GetWeapon(DuelWeaponId) == null)
+                return System.Array.Empty<string>();
+            return new[] { DuelWeaponId };
+        }
 
         public static string[] RollRandomWeapons(GameDatabase database, RunRng rng)
         {
@@ -17,6 +29,7 @@ namespace HighSeas.V3.MultiShip
             var pool = new List<string>();
             foreach (var id in V3WeaponPlaytestCatalog.All)
             {
+                if (IsExcludedFromPvP(id)) continue;
                 if (!string.IsNullOrEmpty(id) && database.GetWeapon(id) != null)
                     pool.Add(id);
             }
@@ -41,6 +54,7 @@ namespace HighSeas.V3.MultiShip
             var result = new List<string>();
             foreach (var id in V3WeaponPlaytestCatalog.All)
             {
+                if (IsExcludedFromPvP(id)) continue;
                 if (!string.IsNullOrEmpty(id) && database.GetWeapon(id) != null)
                     result.Add(id);
             }

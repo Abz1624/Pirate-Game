@@ -13,6 +13,28 @@ namespace HighSeas.Data
 
         public bool HasIslands => clusters != null && clusters.Length > 0;
 
+        public int CountSpawnableEntries()
+        {
+            if (clusters == null)
+                return 0;
+
+            var count = 0;
+            for (var c = 0; c < clusters.Length; c++)
+            {
+                var cluster = clusters[c];
+                if (cluster?.islands == null)
+                    continue;
+
+                for (var i = 0; i < cluster.islands.Length; i++)
+                {
+                    if (cluster.islands[i]?.prefab != null)
+                        count++;
+                }
+            }
+
+            return count;
+        }
+
         public static IslandLayoutDefinition LoadAssignedOrDefault(IslandLayoutDefinition assigned)
         {
             if (assigned != null && assigned.HasIslands)
