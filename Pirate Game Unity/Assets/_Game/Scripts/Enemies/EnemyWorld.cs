@@ -175,7 +175,8 @@ namespace HighSeas.Enemies
 
             var v3Scale = V3.V3RunContext.IsActive ? V3.V3RunContext.EnemyVisualScale : 1f;
             var visualScale = def.visualScale * v3Scale * (affix != EliteAffix.None ? 1.38f : 1f);
-            var view = CreateView(def, position, visualScale, affix != EliteAffix.None);
+            var enemyId = _nextId;
+            var view = CreateView(def, position, visualScale, affix != EliteAffix.None, enemyId);
 
             var baseSpeed = def.moveSpeed * Mathf.Max(0.1f, speedMultiplier);
             if (affix == EliteAffix.Swift) baseSpeed *= 1.35f;
@@ -250,12 +251,14 @@ namespace HighSeas.Enemies
             _agents[slot].healthBar = barGo.transform;
         }
 
-        Transform CreateView(Data.EnemyDefinition def, Vector3 position, float scale, bool elite)
+        Transform CreateView(Data.EnemyDefinition def, Vector3 position, float scale, bool elite, int animVariationSeed)
         {
             if (def.visualPrefab != null)
             {
                 var yaw = Quaternion.Euler(0f, def.visualYawOffset, 0f);
-                return _viewPool.Acquire(def.visualPrefab, position, yaw, scale);
+                var view = _viewPool.Acquire(def.visualPrefab, position, yaw, scale);
+                EnemyViewAnimation.ApplySpawnVariation(view, animVariationSeed);
+                return view;
             }
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -324,9 +327,10 @@ namespace HighSeas.Enemies
                 e.position.y = def.visualHeightOffset;
                 UpdateView(ref e, def, dt, playerPos);
 
-                var dist = Vector3.Distance(e.position, playerPos);
+                var dist = HorizontalDistance(e.position, playerPos);
                 TickRangedAttack(ref e, def, dt, playerPos, dist, playerDamage);
-                if (dist < e.radius + 1f && e.contactCooldown <= 0f)
+                var contactRange = e.radius + GetPlayerContactRadius(playerDamage);
+                if (dist < contactRange && e.contactCooldown <= 0f)
                 {
                     playerDamage?.TakeDamage(e.damage, e.position, false);
                     e.contactCooldown = GameConstants.EnemyContactCooldown;
@@ -335,6 +339,20 @@ namespace HighSeas.Enemies
             }
 
             ResolveAgentOverlaps();
+        }
+
+        static float HorizontalDistance(Vector3 a, Vector3 b)
+        {
+            var dx = a.x - b.x;
+            var dz = a.z - b.z;
+            return Mathf.Sqrt(dx * dx + dz * dz);
+        }
+
+        static float GetPlayerContactRadius(Combat.DamageReceiver playerDamage)
+        {
+            if (playerDamage == null) return 1.15f;
+            var ship = playerDamage.GetComponent<Player.PlayerShipController>();
+            return ship != null ? ship.IslandCollisionRadius : 1.15f;
         }
 
         float GetCollisionRadius(Data.EnemyDefinition def)

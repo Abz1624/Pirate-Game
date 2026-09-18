@@ -281,17 +281,26 @@ namespace HighSeas.VFX
 
         static void SetFlamethrowerEmission(Transform mount, bool active)
         {
+            SetFlamethrowerEmissionStrength(mount, active ? 1f : 0f);
+        }
+
+        static void SetFlamethrowerEmissionStrength(Transform mount, float strength)
+        {
             if (mount == null) return;
+            strength = Mathf.Clamp01(strength);
             var particles = mount.GetComponentsInChildren<ParticleSystem>(true);
             for (var i = 0; i < particles.Length; i++)
             {
-                if (active)
-                {
-                    if (!particles[i].isPlaying)
-                        particles[i].Play(true);
-                }
-                else if (particles[i].isPlaying)
-                    particles[i].Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                var ps = particles[i];
+                if (ps == null) continue;
+
+                ConfigureFlamethrowerParticleSystem(ps);
+                var emission = ps.emission;
+                emission.rateOverTimeMultiplier = strength;
+                emission.enabled = strength > 0.001f;
+
+                if (strength > 0.001f && !ps.isPlaying)
+                    ps.Play(true);
             }
         }
 
@@ -643,11 +652,7 @@ namespace HighSeas.VFX
             SetFlamethrowerPose(_flamethrowerPort, forward);
 
             var streaming = _weapons.IsFlamethrowerStreaming;
-            if (streaming)
-                MaintainFlamethrowerEmission(_flamethrowerPort);
-            else if (_flamethrowerEmissionActive)
-                SetFlamethrowerEmission(_flamethrowerPort, false);
-
+            SetFlamethrowerEmissionStrength(_flamethrowerPort, streaming ? 1f : 0f);
             _flamethrowerEmissionActive = streaming;
         }
 
@@ -662,8 +667,8 @@ namespace HighSeas.VFX
             StripPhysics(instance);
             PrepareFlamethrowerStreamVisual(instance);
             mount = instance.transform;
-            MaintainFlamethrowerEmission(mount);
-            _flamethrowerEmissionActive = true;
+            PrepareFlamethrowerStreamParticles(mount);
+            _flamethrowerEmissionActive = false;
         }
 
         static void PrepareFlamethrowerStreamVisual(GameObject root)
@@ -677,27 +682,34 @@ namespace HighSeas.VFX
             }
         }
 
-        static void MaintainFlamethrowerEmission(Transform mount)
+        static void PrepareFlamethrowerStreamParticles(Transform mount)
         {
             if (mount == null) return;
             var particles = mount.GetComponentsInChildren<ParticleSystem>(true);
             for (var i = 0; i < particles.Length; i++)
-            {
-                var main = particles[i].main;
-                if (!main.loop)
-                    main.loop = true;
-                if (!particles[i].isPlaying)
-                {
-                    particles[i].Clear(true);
-                    particles[i].Play(true);
-                }
-            }
+                ConfigureFlamethrowerParticleSystem(particles[i]);
+        }
+
+        static void ConfigureFlamethrowerParticleSystem(ParticleSystem ps)
+        {
+            if (ps == null) return;
+
+            var main = ps.main;
+            main.loop = true;
+            main.prewarm = true;
+            main.playOnAwake = false;
+
+            var emission = ps.emission;
+            emission.enabled = false;
+            emission.rateOverTimeMultiplier = 0f;
+            if (emission.burstCount > 0)
+                emission.SetBursts(System.Array.Empty<ParticleSystem.Burst>());
         }
 
         static void DestroyFlamethrowerMount(ref Transform mount)
         {
             if (mount == null) return;
-            SetFlamethrowerEmission(mount, false);
+            SetFlamethrowerEmissionStrength(mount, 0f);
             Destroy(mount.gameObject);
             mount = null;
         }
