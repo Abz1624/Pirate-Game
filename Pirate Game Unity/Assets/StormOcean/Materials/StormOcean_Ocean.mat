@@ -26,23 +26,30 @@ Material:
     m_Ints: []
     m_Floats:
     - _AmbientStrength: 1.1
+    - _BreakingContrast: 0.6
     - _CrestSharpness: 0.6
     - _FoamAmount: 1.4
     - _FoamBreakup: 0.6
     - _FoamBreakupScale: 0.5
     - _FoamBrightness: 0.9
+    - _FoamHoleScale: 1.4
+    - _FoamHoleStrength: 0.5
     - _FoamNoiseScale: 0.16
     - _FoamSharpness: 0.6
     - _FoamThreshold: 0.35
     - _FresnelPower: 4.5
+    - _MicroDetail2Scale: 2.2
+    - _MicroDetail2Strength: 0.5
     - _MicroNoiseScale: 0.6
     - _MicroNoiseSpeed: 0.12
     - _MicroNoiseStrength: 0.6
     - _NormalStrength: 1.2
+    - _ReflectionBreakup: 0.4
     - _ReflectionStrength: 0.55
     - _Smoothness: 0.85
     - _SpecularStrength: 2.4
     - _TroughDepth: 1
+    - _WaveGroupiness: 0.85
     - _WaveTurbulence: 0.22
     m_Colors:
     - _DeepColor: {r: 0.014, g: 0.04, b: 0.07, a: 1}

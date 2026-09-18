@@ -23,6 +23,21 @@ namespace StormOcean.Editor
         [MenuItem("Tools/Storm Ocean/Build Demo Scene")]
         public static void BuildScene()
         {
+            // Safety guard: a full rebuild does EditorSceneManager.NewScene(EmptyScene),
+            // which would silently destroy the user's live ship + buoyancy setup (added by
+            // hand, not by this builder, and explicitly protected - it must never be
+            // removed/recreated). If the currently open scene already has a ship with a
+            // ShipBuoyancy component, refuse and tell the user to work on the live scene
+            // directly (or use Force Rebuild (Destroys Ship) if they really mean to start over).
+            var existingBuoyancy = Object.FindObjectOfType<ShipBuoyancy>();
+            if (existingBuoyancy != null)
+            {
+                Debug.LogError("[StormOcean] Aborted: a ship with ShipBuoyancy ('" + existingBuoyancy.gameObject.name + "') already exists in the open scene. " +
+                    "Rebuilding would destroy it. Edit the ocean/shader/material directly on the live scene instead. " +
+                    "If you intentionally want a from-scratch scene, remove the ship GameObject first, then re-run this command.");
+                return;
+            }
+
             EnsureFolders();
 
             Material oceanMat = GetOrCreateMaterial(MaterialsFolder + "/StormOcean_Ocean.mat", "StormOcean/Ocean");
@@ -146,7 +161,7 @@ namespace StormOcean.Editor
             var volume = postGO.AddComponent<Volume>();
             volume.isGlobal = true;
             volume.priority = 0f;
-            volume.profile = GetOrCreatePostProcessProfile(GeneratedFolder + "/StormOcean_PostProcess.asset");
+            volume.sharedProfile = GetOrCreatePostProcessProfile(GeneratedFolder + "/StormOcean_PostProcess.asset");
 
             // Force everything to (re)push its parameters now that all references exist.
             oceanController.ApplyMaterialParams();

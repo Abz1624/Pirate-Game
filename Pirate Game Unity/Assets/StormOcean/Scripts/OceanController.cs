@@ -77,6 +77,8 @@ namespace StormOcean
         [Range(0.3f, 2f)] public float crestSharpness = 0.6f;
         [Tooltip(">1 pushes troughs further down than crests rise, for the classic shallow-crest/deep-trough storm profile.")]
         [Range(0.5f, 2f)] public float troughDepth = 1.0f;
+        [Tooltip("Low-frequency amplitude envelope applied to the 3 large wave layers only, so wave SETS surge unevenly (some patches tower, others go nearly flat) instead of every large wave carrying identical energy everywhere. 0 = perfectly uniform large waves.")]
+        [Range(0f, 2f)] public float waveGroupiness = 0.85f;
 
         [Header("Surface Micro Detail / Noise")]
         public float microNoiseScale = 0.6f;
@@ -84,6 +86,9 @@ namespace StormOcean
         public float microNoiseSpeed = 0.12f;
         [Tooltip("Global multiplier blending the geometric (Gerstner) normal back toward flat before micro-detail is added. 1 = full geometric normal.")]
         [Range(0f, 2f)] public float normalStrength = 1.2f;
+        [Tooltip("Scale of a second, higher-frequency micro-normal octave layered on top of the main micro detail, for fine wind-chop sparkle that breaks up specular/reflection.")]
+        public float microDetail2Scale = 2.2f;
+        [Range(0f, 2f)] public float microDetail2Strength = 0.5f;
 
         [Header("Foam")]
         [Range(0f, 2f)] public float foamAmount = 1.4f;
@@ -95,6 +100,11 @@ namespace StormOcean
         public float foamBreakupScale = 0.5f;
         [Range(0f, 3f)] public float foamBrightness = 0.9f;
         public Color foamTransitionColor = new Color(0.55f, 0.68f, 0.78f, 1f);
+        [Tooltip("Scale of a finer noise field that punches irregular holes/gaps/bubbles into foam patches so they don't read as a flat painted shape.")]
+        public float foamHoleScale = 1.4f;
+        [Range(0f, 1f)] public float foamHoleStrength = 0.5f;
+        [Tooltip("How strongly foam is suppressed outside of a currently-surging wave group (see waveGroupiness): only some waves break hard at any moment.")]
+        [Range(0f, 1f)] public float breakingContrast = 0.6f;
 
         [Header("Water Color")]
         public Color deepColor = new Color(0.014f, 0.04f, 0.07f, 1f);
@@ -108,6 +118,8 @@ namespace StormOcean
         [Range(0f, 2f)] public float reflectionStrength = 0.55f;
         [Range(0.5f, 8f)] public float fresnelPower = 4.5f;
         [Range(0f, 2f)] public float ambientStrength = 1.1f;
+        [Tooltip("Modulates grazing-angle reflectivity with low-frequency noise so reflections scatter unevenly across the chop instead of reading as one smooth glassy sheet.")]
+        [Range(0f, 1f)] public float reflectionBreakup = 0.4f;
 
         public Material oceanMaterial;
 
@@ -242,7 +254,7 @@ namespace StormOcean
             return mesh;
         }
 
-        public void ApplyMaterialParams()
+public void ApplyMaterialParams()
         {
             if (oceanMaterial == null) return;
 
@@ -258,8 +270,6 @@ namespace StormOcean
                 if (i < all.Count)
                 {
                     WaveLayer w = all[i];
-                    // Deterministic per-wave direction jitter (stable across frames/rebuilds)
-                    // so wave fronts don't all line up on the exact authored angles.
                     float jitter = (Mathf.PerlinNoise(i * 12.37f, 4.21f) - 0.5f) * 2f * waveDirectionVariation;
                     float rad = (w.directionDegrees + jitter) * Mathf.Deg2Rad;
                     waveA[i] = new Vector4(Mathf.Sin(rad), Mathf.Cos(rad), Mathf.Max(0.05f, w.wavelength), w.amplitude);
@@ -275,12 +285,6 @@ namespace StormOcean
             cachedWaveA = waveA;
             cachedWaveB = waveB;
 
-            
-// Vector arrays are not declared in the shader's Properties{} block (ShaderLab
-            // does not support array properties there), so Material.SetVectorArray silently
-            // fails to persist on the material's property sheet. A MaterialPropertyBlock on
-            // the renderer does support arbitrary CBUFFER-declared array names and is the
-            // correct way to push this data through.
             if (mr == null) mr = GetComponent<MeshRenderer>();
             if (mr != null)
             {
@@ -294,10 +298,13 @@ namespace StormOcean
             oceanMaterial.SetFloat("_WaveTurbulence", waveTurbulence);
             oceanMaterial.SetFloat("_CrestSharpness", crestSharpness);
             oceanMaterial.SetFloat("_TroughDepth", troughDepth);
+            oceanMaterial.SetFloat("_WaveGroupiness", waveGroupiness);
 
             oceanMaterial.SetFloat("_MicroNoiseScale", microNoiseScale);
             oceanMaterial.SetFloat("_MicroNoiseStrength", microNoiseStrength);
             oceanMaterial.SetFloat("_MicroNoiseSpeed", microNoiseSpeed);
+            oceanMaterial.SetFloat("_MicroDetail2Scale", microDetail2Scale);
+            oceanMaterial.SetFloat("_MicroDetail2Strength", microDetail2Strength);
             oceanMaterial.SetFloat("_NormalStrength", normalStrength);
 
             oceanMaterial.SetFloat("_FoamAmount", foamAmount);
@@ -307,6 +314,9 @@ namespace StormOcean
             oceanMaterial.SetFloat("_FoamBreakup", foamBreakup);
             oceanMaterial.SetFloat("_FoamBreakupScale", foamBreakupScale);
             oceanMaterial.SetFloat("_FoamBrightness", foamBrightness);
+            oceanMaterial.SetFloat("_FoamHoleScale", foamHoleScale);
+            oceanMaterial.SetFloat("_FoamHoleStrength", foamHoleStrength);
+            oceanMaterial.SetFloat("_BreakingContrast", breakingContrast);
             oceanMaterial.SetColor("_FoamTransitionColor", foamTransitionColor);
 
             oceanMaterial.SetColor("_DeepColor", deepColor);
@@ -319,6 +329,7 @@ namespace StormOcean
             oceanMaterial.SetFloat("_ReflectionStrength", reflectionStrength);
             oceanMaterial.SetFloat("_FresnelPower", fresnelPower);
             oceanMaterial.SetFloat("_AmbientStrength", ambientStrength);
+            oceanMaterial.SetFloat("_ReflectionBreakup", reflectionBreakup);
         }
 
 
@@ -329,7 +340,7 @@ namespace StormOcean
         /// water surface instead of a naive sine approximation that drifts arbitrarily
         /// far from reality once turbulence/crest-sharpening are applied.
         /// </summary>
-        public float SampleSurfaceHeight(float worldX, float worldZ, float t)
+public float SampleSurfaceHeight(float worldX, float worldZ, float t)
         {
             if (cachedWaveA == null || cachedWaveB == null) return 0f;
 
@@ -355,6 +366,11 @@ namespace StormOcean
                 float dirX = a.x, dirZ = a.y;
                 float speed = b.x;
                 float phaseOff = b.z;
+
+                if (i < 3)
+                {
+                    amp *= WaveEnvelope(i, worldX, worldZ, t, wavelength, windDir3);
+                }
 
                 float w = 6.2831853f / wavelength;
                 float phase = w * (dirX * waveX + dirZ * waveZ) + t * speed * w + phaseOff;
@@ -467,5 +483,32 @@ namespace StormOcean
             return v;
         }
 
-    }
+static float Fbm2(float px, float py)
+        {
+            float v = 0f;
+            float amp = 0.5f;
+            for (int i = 0; i < 2; i++)
+            {
+                v += amp * ValueNoise(px, py);
+                float nx = 1.6f * px + 1.2f * py;
+                float nz = -1.2f * px + 1.6f * py;
+                px = nx;
+                py = nz;
+                amp *= 0.5f;
+            }
+            return v;
+        }
+
+
+    
+
+float WaveEnvelope(int idx, float worldX, float worldZ, float t, float wavelength, Vector3 windDir3)
+        {
+            float scale = 1f / Mathf.Max(20f, wavelength * 3f);
+            float px = worldX * scale + windDir3.x * t * 0.015f + idx * 41.7f;
+            float py = worldZ * scale + windDir3.z * t * 0.015f;
+            float n = Fbm2(px, py);
+            return Mathf.Lerp(1f, 0.35f + 1.5f * n, Mathf.Clamp01(waveGroupiness));
+        }
+}
 }
