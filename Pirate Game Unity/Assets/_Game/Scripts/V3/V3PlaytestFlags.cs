@@ -5,5 +5,6 @@ namespace HighSeas.V3
     {
         public const bool UnlockAllContent = true;
         public const bool EnableRunPlaytestHotkeys = true;
+        public const bool EnableSpawnDirectorDebugUi = true;
     }
 }

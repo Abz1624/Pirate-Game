@@ -247,7 +247,8 @@ namespace HighSeas.V3
                 "G — scatter random rarity weapon cards (pop-in)\n" +
                 "H — auto-scroll 50+ weapon cards (R→L)\n" +
                 "Esc — close card demos\n" +
-                "V — toggle aim overlays",
+                "V — toggle aim overlays\n" +
+                "F9 — spawn director debug panel",
                 8f);
         }
     }

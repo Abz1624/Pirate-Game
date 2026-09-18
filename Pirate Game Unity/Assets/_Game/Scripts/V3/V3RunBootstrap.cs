@@ -157,6 +157,7 @@ namespace HighSeas.V3
             V3RunItemInventory.Ensure();
             V3RunItemEffects.Ensure();
             V3RunPlaytestHotkeys.Ensure();
+            SpawnDirectorDebugUI.Ensure();
             if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
                 WeaponCardAnimationDemo.Ensure();
             V3BossSummonHotkey.Ensure();

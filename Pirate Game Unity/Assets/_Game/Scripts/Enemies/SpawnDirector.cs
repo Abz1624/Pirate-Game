@@ -41,6 +41,7 @@ namespace HighSeas.Enemies
         float _enemyHpMultiplier = 1f;
         float _enemyDamageMultiplier = 1f;
         float _spawnRateMultiplier = 1f;
+        bool _settingsInstanced;
         float _nextPackTime;
         readonly List<string> _packSpawnQueue = new(32);
 
@@ -508,6 +509,8 @@ namespace HighSeas.Enemies
             return cap;
         }
 
+        public int GetEnemyCapForDebug() => GetEnemyCap();
+
         bool CanSpawnDefinition(int definitionIndex, Data.EnemyDefinition def, bool scriptedSpawn = false)
         {
             if (!scriptedSpawn)
@@ -660,6 +663,51 @@ namespace HighSeas.Enemies
 
         public void SetSpawnRateMultiplier(float multiplier) =>
             _spawnRateMultiplier = Mathf.Max(0.1f, multiplier);
+
+        public void SetSpawnDensityMultiplier(float multiplier) =>
+            _spawnDensityMultiplier = Mathf.Max(0.1f, multiplier);
+
+        public void SetEnemyCombatMultipliers(float hpMultiplier, float damageMultiplier)
+        {
+            _enemyHpMultiplier = Mathf.Max(0.1f, hpMultiplier);
+            _enemyDamageMultiplier = Mathf.Max(0.1f, damageMultiplier);
+            enemyWorld?.SetExperimentMultipliers(_enemyHpMultiplier, _enemyDamageMultiplier);
+        }
+
+        public SpawnDirectorSettings GetMutableSettings()
+        {
+            if (settings != null && !_settingsInstanced)
+            {
+                settings = Instantiate(settings);
+                settings.hideFlags = HideFlags.DontSave;
+                _settingsInstanced = true;
+            }
+
+            return settings;
+        }
+
+        public float DebugThreatBudget => _budget;
+        public float DebugEliteChance => _eliteChance;
+        public float DebugSpawnRateMultiplier => _spawnRateMultiplier;
+        public float DebugSpawnDensityMultiplier => _spawnDensityMultiplier;
+        public float DebugEnemyHpMultiplier => _enemyHpMultiplier;
+        public float DebugEnemyDamageMultiplier => _enemyDamageMultiplier;
+        public bool DebugV3PacingEnabled => _v3PacingEnabled;
+        public bool DebugDirectorV2Enabled => _directorV2Enabled;
+
+        public float GetEffectiveThreatPerSecond()
+        {
+            if (RunManager.Instance == null) return 0f;
+            if (_v3PacingEnabled)
+                return ComputeV3ThreatPerSecond() * _spawnRateMultiplier;
+
+            var threatMult = settings != null ? settings.threatMultiplier : 1f;
+            if (_pacingSettings != null && !_v3PacingEnabled)
+                threatMult *= _pacingSettings.postScriptedThreatMultiplier;
+            return RunManager.Instance.ThreatPerSecond * threatMult * _spawnRateMultiplier;
+        }
+
+        public void ClearThreatBudget() => _budget = 0f;
 
         public bool TrySpawnPressureBeat(string enemyId)
         {
@@ -988,7 +1036,7 @@ namespace HighSeas.Enemies
         }
 
         /// <summary>GDD combat spec §9, plus combat redesign Director V2 density curve.</summary>
-        static float ComputeV3ThreatPerSecond()
+        float ComputeV3ThreatPerSecond()
         {
             if (RunManager.Instance == null) return GameConstants.StageBaseThreat;
 
@@ -1003,6 +1051,7 @@ namespace HighSeas.Enemies
                     (2.5f + 0.55f * minute + 0.025f * minute * minute)
                     * (1f + 0.25f * (depth - 1))
                     * profile.spawnDensityMultiplier
+                    * _spawnDensityMultiplier
                     * itemDensity);
                 return enemiesPerSec;
             }
