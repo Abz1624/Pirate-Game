@@ -37,6 +37,31 @@ Shader "StormOcean/Ocean"
         _CrestSharpness("Crest Sharpness", Range(0.3,2)) = 1.15
         _TroughDepth("Trough Depth", Range(0.5,2)) = 1.3
         _WaveGroupiness("Wave Groupiness", Range(0,2)) = 0.85
+
+        _OceanColorTex("Ocean Color Texture", 2D) = "white" {}
+        _OceanColorTexStrength("Ocean Color Texture Strength", Range(0,1)) = 0
+        _OceanColorTexScale("Ocean Color Texture Scale", Float) = 0.05
+        _OceanColorTexSpeed("Ocean Color Texture Speed", Float) = 0.02
+        _OceanColorTexTiling("Ocean Color Texture Tiling", Float) = 1
+
+        _OceanNormalTex("Ocean Normal Texture", 2D) = "bump" {}
+        _OceanNormalStrength("Ocean Normal Strength", Range(0,2)) = 0
+        _OceanNormalScale("Ocean Normal Scale", Float) = 0.3
+        _OceanNormalSpeedX("Ocean Normal Speed X", Float) = 0.05
+        _OceanNormalSpeedY("Ocean Normal Speed Y", Float) = 0.03
+        _OceanNormalTiling("Ocean Normal Tiling", Float) = 1
+
+        _OceanDetailTex("Ocean Detail Mask", 2D) = "gray" {}
+        _OceanDetailStrength("Ocean Detail Strength", Range(0,1)) = 0
+        _OceanDetailScale("Ocean Detail Scale", Float) = 0.1
+        _OceanDetailSpeed("Ocean Detail Speed", Float) = 0.02
+        _OceanDetailTiling("Ocean Detail Tiling", Float) = 1
+
+        _OceanFoamDetailTex("Ocean Foam Detail Texture", 2D) = "white" {}
+        _OceanFoamDetailStrength("Ocean Foam Detail Strength", Range(0,1)) = 0
+        _OceanFoamDetailScale("Ocean Foam Detail Scale", Float) = 0.3
+        _OceanFoamDetailSpeed("Ocean Foam Detail Speed", Float) = 0.04
+        _OceanFoamDetailTiling("Ocean Foam Detail Tiling", Float) = 1
     }
 
     SubShader
@@ -104,6 +129,28 @@ Shader "StormOcean/Ocean"
                 float _CrestSharpness;
                 float _TroughDepth;
                 float _WaveGroupiness;
+
+                float4 _OceanColorTex_ST;
+                float _OceanColorTexStrength;
+                float _OceanColorTexScale;
+                float _OceanColorTexSpeed;
+                float _OceanColorTexTiling;
+
+                float _OceanNormalStrength;
+                float _OceanNormalScale;
+                float _OceanNormalSpeedX;
+                float _OceanNormalSpeedY;
+                float _OceanNormalTiling;
+
+                float _OceanDetailStrength;
+                float _OceanDetailScale;
+                float _OceanDetailSpeed;
+                float _OceanDetailTiling;
+
+                float _OceanFoamDetailStrength;
+                float _OceanFoamDetailScale;
+                float _OceanFoamDetailSpeed;
+                float _OceanFoamDetailTiling;
             CBUFFER_END
 
             float4 _WaveA[NUM_WAVES]; // dirX, dirZ, wavelength, amplitude
@@ -119,6 +166,11 @@ Shader "StormOcean/Ocean"
             float4 _StormAmbientColor;
             float4 _StormFogColor;
             float _StormHorizonFade;
+
+            TEXTURE2D(_OceanColorTex); SAMPLER(sampler_OceanColorTex);
+            TEXTURE2D(_OceanNormalTex); SAMPLER(sampler_OceanNormalTex);
+            TEXTURE2D(_OceanDetailTex); SAMPLER(sampler_OceanDetailTex);
+            TEXTURE2D(_OceanFoamDetailTex); SAMPLER(sampler_OceanFoamDetailTex);
 
             struct Attributes
             {
@@ -314,6 +366,28 @@ Shader "StormOcean/Ocean"
                 N.xz += microGrad2 * _MicroDetail2Strength * 0.035;
                 N = normalize(N);
 
+                // ---- Optional ocean normal texture: extra small ripples/fine detail layered
+                // on top of the procedural Gerstner+micro normal above. World-space UV so it
+                // stays locked to the ocean/world rather than swimming with the camera.
+                if (_OceanNormalStrength > 0.0001)
+                {
+                    float2 normalUV = IN.positionWS.xz * _OceanNormalScale * _OceanNormalTiling
+                        + float2(_Time.y * _OceanNormalSpeedX, _Time.y * _OceanNormalSpeedY);
+                    float3 texNormalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_OceanNormalTex, sampler_OceanNormalTex, normalUV), 1.0);
+                    N.xz += texNormalTS.xy * _OceanNormalStrength * 0.4;
+                    N = normalize(N);
+                }
+
+                // ---- Optional ocean detail/mask texture: subtle roughness + color + foam variation ----
+                float detailValue = 0.5;
+                if (_OceanDetailStrength > 0.0001)
+                {
+                    float2 detailUV = IN.positionWS.xz * _OceanDetailScale * _OceanDetailTiling
+                        + _StormWindDir.xz * _Time.y * _OceanDetailSpeed;
+                    detailValue = SAMPLE_TEXTURE2D(_OceanDetailTex, sampler_OceanDetailTex, detailUV).r;
+                }
+                float detailMix = _OceanDetailStrength;
+
                 float3 V = normalize(GetWorldSpaceViewDir(IN.positionWS));
 
                 float4 shadowCoord = TransformWorldToShadowCoord(IN.positionWS);
@@ -322,7 +396,7 @@ Shader "StormOcean/Ocean"
                 float NdotL = saturate(dot(N, mainLight.direction));
                 float3 H = normalize(mainLight.direction + V);
                 float NdotH = saturate(dot(N, H));
-                float specPower = exp2(2.0 + 10.0 * _Smoothness);
+                float specPower = exp2(2.0 + 10.0 * _Smoothness) * lerp(1.0, 0.6 + 0.8 * detailValue, detailMix);
                 float spec = pow(NdotH, specPower) * _SpecularStrength * mainLight.shadowAttenuation;
 
                 float fresnelNoise = fbm2(IN.positionWS.xz * 0.35 + _Time.y * 0.02);
@@ -335,6 +409,17 @@ Shader "StormOcean/Ocean"
                 float heightNorm = IN.foamWave.y;
                 float3 baseColor = lerp(_DeepColor.rgb, _SurfaceColor.rgb, saturate(heightNorm));
                 baseColor = lerp(baseColor, _HighlightColor.rgb, pow(NdotL, 3.0) * mainLight.shadowAttenuation * 0.4);
+
+                // ---- Optional ocean color/albedo texture: additional subtle layer only, never
+                // replaces the procedural water color, which stays the primary visual system. ----
+                if (_OceanColorTexStrength > 0.0001)
+                {
+                    float2 colorUV = IN.positionWS.xz * _OceanColorTexScale * _OceanColorTexTiling
+                        + _StormWindDir.xz * _Time.y * _OceanColorTexSpeed;
+                    float3 texColor = SAMPLE_TEXTURE2D(_OceanColorTex, sampler_OceanColorTex, colorUV).rgb;
+                    baseColor = lerp(baseColor, baseColor * (texColor * 1.6), _OceanColorTexStrength);
+                }
+                baseColor = lerp(baseColor, baseColor * (0.85 + 0.3 * detailValue), detailMix * 0.6);
 
                 float reflFactor = saturate(fresnel * _ReflectionStrength) * lerp(0.5, 1.0, saturate(N.y));
                 float3 waterColor = lerp(baseColor, skyRefl, reflFactor);
@@ -362,6 +447,18 @@ Shader "StormOcean/Ocean"
 
                 float holeNoise = fbm2(IN.positionWS.xz * _FoamHoleScale + 301.0 + _Time.y * 0.04);
                 foamMask *= lerp(1.0, smoothstep(0.15, 0.55, holeNoise), _FoamHoleStrength);
+
+                // ---- Optional ocean foam detail texture: breaks up the procedural foam so it
+                // never reads as a repeating tiled pattern. Final Foam = Procedural x TexDetail x
+                // Noise x Wave-Crest-Mask (procedural noise/crest gating already applied above). ----
+                if (_OceanFoamDetailStrength > 0.0001)
+                {
+                    float2 foamDetailUV = IN.positionWS.xz * _OceanFoamDetailScale * _OceanFoamDetailTiling
+                        + _StormWindDir.xz * _Time.y * _OceanFoamDetailSpeed;
+                    float foamDetailValue = SAMPLE_TEXTURE2D(_OceanFoamDetailTex, sampler_OceanFoamDetailTex, foamDetailUV).r;
+                    foamMask *= lerp(1.0, foamDetailValue, _OceanFoamDetailStrength);
+                }
+                foamMask *= lerp(1.0, 0.7 + 0.6 * detailValue, detailMix * 0.5);
 
                 foamMask = saturate(foamMask * _FoamAmount);
 

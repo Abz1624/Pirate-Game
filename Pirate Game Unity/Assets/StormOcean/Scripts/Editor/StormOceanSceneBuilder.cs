@@ -259,9 +259,7 @@ static GameObject SpawnShip(OceanController ocean)
             buoyancy.width = 4f;
             // Brigg's pivot sits near the keel already, so only a small positive offset
             // is needed to keep the hull riding on top of the surface, not buried in it.
-            buoyancy.heightOffset = 0.5f;
-            buoyancy.heaveSmoothing = 0.15f;
-            buoyancy.tiltSmoothing = 0.1f;
+            buoyancy.floatHeight = 0.5f;
             buoyancy.maxPitchDegrees = 15f;
             buoyancy.maxRollDegrees = 18f;
 

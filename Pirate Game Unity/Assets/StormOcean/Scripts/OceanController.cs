@@ -121,6 +121,39 @@ namespace StormOcean
         [Tooltip("Modulates grazing-angle reflectivity with low-frequency noise so reflections scatter unevenly across the chop instead of reading as one smooth glassy sheet.")]
         [Range(0f, 1f)] public float reflectionBreakup = 0.4f;
 
+        [Header("Ocean Textures - Color / Albedo (optional)")]
+        [Tooltip("Optional subtle color-variation layer. The procedural ocean color remains primary; this never replaces it.")]
+        public Texture2D oceanColorTexture;
+        [Range(0f, 1f)] public float oceanColorTextureStrength = 0f;
+        public float oceanColorTextureScale = 0.05f;
+        public float oceanColorTextureSpeed = 0.02f;
+        public float oceanColorTextureTiling = 1f;
+
+        [Header("Ocean Textures - Normal (optional)")]
+        [Tooltip("Optional fine-ripple normal map layered on top of the procedural Gerstner + micro-detail normal. Does NOT drive the major waves - those stay procedural geometry.")]
+        public Texture2D oceanNormalTexture;
+        [Range(0f, 2f)] public float oceanNormalStrength = 0f;
+        public float oceanNormalScale = 0.3f;
+        public float oceanNormalSpeedX = 0.05f;
+        public float oceanNormalSpeedY = 0.03f;
+        public float oceanNormalTiling = 1f;
+
+        [Header("Ocean Textures - Detail / Mask (optional)")]
+        [Tooltip("Optional grayscale mask adding extra roughness/color/foam-breakup variation.")]
+        public Texture2D oceanDetailTexture;
+        [Range(0f, 1f)] public float oceanDetailStrength = 0f;
+        public float oceanDetailScale = 0.1f;
+        public float oceanDetailSpeed = 0.02f;
+        public float oceanDetailTiling = 1f;
+
+        [Header("Ocean Textures - Foam Detail (optional)")]
+        [Tooltip("Optional texture breaking up the procedural foam so it never reads as a repeating tiled pattern.")]
+        public Texture2D oceanFoamDetailTexture;
+        [Range(0f, 1f)] public float oceanFoamDetailStrength = 0f;
+        public float oceanFoamDetailScale = 0.3f;
+        public float oceanFoamDetailSpeed = 0.04f;
+        public float oceanFoamDetailTiling = 1f;
+
         public Material oceanMaterial;
 
         MeshFilter mf;
@@ -330,6 +363,31 @@ public void ApplyMaterialParams()
             oceanMaterial.SetFloat("_FresnelPower", fresnelPower);
             oceanMaterial.SetFloat("_AmbientStrength", ambientStrength);
             oceanMaterial.SetFloat("_ReflectionBreakup", reflectionBreakup);
+
+            if (oceanColorTexture != null) oceanMaterial.SetTexture("_OceanColorTex", oceanColorTexture);
+            oceanMaterial.SetFloat("_OceanColorTexStrength", oceanColorTexture != null ? oceanColorTextureStrength : 0f);
+            oceanMaterial.SetFloat("_OceanColorTexScale", oceanColorTextureScale);
+            oceanMaterial.SetFloat("_OceanColorTexSpeed", oceanColorTextureSpeed);
+            oceanMaterial.SetFloat("_OceanColorTexTiling", oceanColorTextureTiling);
+
+            if (oceanNormalTexture != null) oceanMaterial.SetTexture("_OceanNormalTex", oceanNormalTexture);
+            oceanMaterial.SetFloat("_OceanNormalStrength", oceanNormalTexture != null ? oceanNormalStrength : 0f);
+            oceanMaterial.SetFloat("_OceanNormalScale", oceanNormalScale);
+            oceanMaterial.SetFloat("_OceanNormalSpeedX", oceanNormalSpeedX);
+            oceanMaterial.SetFloat("_OceanNormalSpeedY", oceanNormalSpeedY);
+            oceanMaterial.SetFloat("_OceanNormalTiling", oceanNormalTiling);
+
+            if (oceanDetailTexture != null) oceanMaterial.SetTexture("_OceanDetailTex", oceanDetailTexture);
+            oceanMaterial.SetFloat("_OceanDetailStrength", oceanDetailTexture != null ? oceanDetailStrength : 0f);
+            oceanMaterial.SetFloat("_OceanDetailScale", oceanDetailScale);
+            oceanMaterial.SetFloat("_OceanDetailSpeed", oceanDetailSpeed);
+            oceanMaterial.SetFloat("_OceanDetailTiling", oceanDetailTiling);
+
+            if (oceanFoamDetailTexture != null) oceanMaterial.SetTexture("_OceanFoamDetailTex", oceanFoamDetailTexture);
+            oceanMaterial.SetFloat("_OceanFoamDetailStrength", oceanFoamDetailTexture != null ? oceanFoamDetailStrength : 0f);
+            oceanMaterial.SetFloat("_OceanFoamDetailScale", oceanFoamDetailScale);
+            oceanMaterial.SetFloat("_OceanFoamDetailSpeed", oceanFoamDetailSpeed);
+            oceanMaterial.SetFloat("_OceanFoamDetailTiling", oceanFoamDetailTiling);
         }
 
 

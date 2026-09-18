@@ -19,15 +19,31 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: 
+  m_LockedProperties: _AmbientStrength
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _OceanColorTex:
+        m_Texture: {fileID: 2800000, guid: 911cfedbe8cac462a8cb86ec0e1fd7dd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OceanDetailTex:
+        m_Texture: {fileID: 2800000, guid: 772031b03d9d46e4ab03e15c8e17718c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OceanFoamDetailTex:
+        m_Texture: {fileID: 2800000, guid: fcabffd57a8d737448ad0269a9d3092d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OceanNormalTex:
+        m_Texture: {fileID: 2800000, guid: e3f7588b1fea92c4d9354b9512ce6d47, type: 3}
+        m_Scale: {x: 0.01, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _AmbientStrength: 1.1
     - _BreakingContrast: 0.6
-    - _CrestSharpness: 0.6
+    - _CrestSharpness: 0.945
     - _FoamAmount: 0.71
     - _FoamBreakup: 0.517
     - _FoamBreakupScale: 0.5
@@ -44,6 +60,23 @@ Material:
     - _MicroNoiseSpeed: 0.12
     - _MicroNoiseStrength: 0.6
     - _NormalStrength: 1.2
+    - _OceanColorTexScale: 0.05
+    - _OceanColorTexSpeed: 0.02
+    - _OceanColorTexStrength: 0
+    - _OceanColorTexTiling: 1
+    - _OceanDetailScale: 0.1
+    - _OceanDetailSpeed: 0.02
+    - _OceanDetailStrength: 0
+    - _OceanDetailTiling: 1
+    - _OceanFoamDetailScale: 0.3
+    - _OceanFoamDetailSpeed: 0.04
+    - _OceanFoamDetailStrength: 0
+    - _OceanFoamDetailTiling: 1
+    - _OceanNormalScale: 0.3
+    - _OceanNormalSpeedX: 0.05
+    - _OceanNormalSpeedY: 0.03
+    - _OceanNormalStrength: 0
+    - _OceanNormalTiling: 1
     - _ReflectionBreakup: 0.4
     - _ReflectionStrength: 0.55
     - _Smoothness: 0.85
