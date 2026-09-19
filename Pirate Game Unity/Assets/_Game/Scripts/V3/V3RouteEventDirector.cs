@@ -73,12 +73,12 @@ namespace HighSeas.V3
                 case 1:
                     _cursedChestActive = true;
                     V3ToastHud.Instance?.Show("Cursed Chest revealed — elites inbound!", 4f);
-                    SpawnEnemyRing("swordfish", 3);
-                    SpawnEnemyRing("cannonboat", 2);
+                    TriggerScheduleProfile("route_swordfish", 3);
+                    TriggerScheduleProfile("route_cannon", 2);
                     break;
                 case 2:
                     _bountyDensityTimer = 25f;
-                    FindFirstObjectByType<SpawnDirector>()?.SetSpawnRateMultiplier(1.35f);
+                    FindFirstObjectByType<EncounterSpawner>()?.SetSpawnRateMultiplier(1.35f);
                     V3ToastHud.Instance?.Show("Bounty Flag raised — higher enemy density!", 4f);
                     break;
                 default:
@@ -95,12 +95,25 @@ namespace HighSeas.V3
 
         void SpawnTreasureRaider()
         {
+            if (TriggerScheduleProfile("route_raider", 1))
+                return;
+
             if (enemyWorld == null || player == null) return;
             var index = FindDefinitionIndex("treasure_raider");
             if (index < 0) index = FindDefinitionIndex("deckhand_dinghy");
             if (index < 0) return;
             var offset = Quaternion.Euler(0f, Random.Range(-40f, 40f), 0f) * player.forward * 18f;
             enemyWorld.Spawn(index, player.position + offset);
+        }
+
+        bool TriggerScheduleProfile(string key, int count)
+        {
+            var spawner = EncounterSpawner.Instance ?? FindFirstObjectByType<EncounterSpawner>();
+            var profile = spawner?.GetScheduleProfile(key);
+            if (spawner == null || profile == null)
+                return false;
+            spawner.TriggerProfile(profile, count);
+            return true;
         }
 
         void SpawnEnemyRing(string enemyId, int count)

@@ -7,8 +7,7 @@ using UnityEngine.InputSystem;
 namespace HighSeas.Debugging
 {
     /// <summary>
-    /// In-run IMGUI panel to tweak <see cref="SpawnDirector"/> and spawn settings at runtime (F9).
-    /// Changes apply to a cloned <see cref="SpawnDirectorSettings"/> instance — asset files on disk are not modified.
+    /// In-run IMGUI panel to tweak <see cref="EncounterSpawner"/> at runtime (F9).
     /// </summary>
     public sealed class SpawnDirectorDebugUI : MonoBehaviour
     {
@@ -16,12 +15,12 @@ namespace HighSeas.Debugging
 
         static readonly GUILayoutOption[] LabelWidth = { GUILayout.Width(168f) };
 
-        SpawnDirector _director;
+        EncounterSpawner _spawner;
         EnemyWorld _enemyWorld;
         bool _visible;
-        bool _showPerEnemy;
+        bool _ambientEnabled = true;
         Vector2 _scroll;
-        Rect _panelRect = new(12f, 72f, PanelWidth, 520f);
+        Rect _panelRect = new(12f, 72f, PanelWidth, 360f);
 
         public static SpawnDirectorDebugUI Ensure()
         {
@@ -39,7 +38,7 @@ namespace HighSeas.Debugging
 
         void Awake()
         {
-            _director = FindFirstObjectByType<SpawnDirector>();
+            _spawner = FindFirstObjectByType<EncounterSpawner>();
             _enemyWorld = FindFirstObjectByType<EnemyWorld>();
         }
 
@@ -50,24 +49,24 @@ namespace HighSeas.Debugging
                 return;
 
             _visible = !_visible;
-            if (_director == null)
-                _director = FindFirstObjectByType<SpawnDirector>();
+            if (_spawner == null)
+                _spawner = FindFirstObjectByType<EncounterSpawner>();
 
-            var message = _visible ? "Spawn debug ON (F9)" : "Spawn debug OFF (F9)";
+            var message = _visible ? "Encounter spawn debug ON (F9)" : "Encounter spawn debug OFF (F9)";
             V3ToastHud.Instance?.Show(message, 2f);
             Debug.Log(message);
         }
 
         void OnGUI()
         {
-            if (!_visible || _director == null)
+            if (!_visible || _spawner == null)
                 return;
 
             _panelRect = GUI.Window(
                 GetInstanceID(),
                 _panelRect,
                 DrawWindow,
-                "Spawn Director (F9)");
+                "Encounter Spawner (F9)");
         }
 
         void DrawWindow(int id)
@@ -80,14 +79,7 @@ namespace HighSeas.Debugging
             GUILayout.Space(6f);
             DrawRuntimeMultipliers();
             GUILayout.Space(6f);
-
-            var settings = _director.GetMutableSettings();
-            if (settings != null)
-            {
-                DrawGlobalSettings(settings);
-                GUILayout.Space(6f);
-                DrawPerEnemySettings(settings);
-            }
+            DrawAmbientToggle();
 
             GUILayout.EndScrollView();
         }
@@ -99,19 +91,14 @@ namespace HighSeas.Debugging
             var elapsed = run != null ? run.ElapsedSeconds : 0f;
             var active = _enemyWorld != null ? _enemyWorld.ActiveCount : 0;
             GUILayout.Label($"Elapsed: {elapsed:F1}s ({elapsed / 60f:F1} min)");
-            GUILayout.Label($"Active enemies: {active} / cap {_director.GetEnemyCapForDebug()}");
-            GUILayout.Label($"Threat budget: {_director.DebugThreatBudget:F2}");
-            GUILayout.Label($"Threat / sec: {_director.GetEffectiveThreatPerSecond():F2}");
-            GUILayout.Label($"Elite chance: {_director.DebugEliteChance:P1}");
-            GUILayout.Label(
-                $"V3 pacing: {_director.DebugV3PacingEnabled} · Director V2: {_director.DebugDirectorV2Enabled}");
+            GUILayout.Label($"Active enemies: {active} / cap {_spawner.GetEnemyCapForDebug()}");
+            GUILayout.Label($"Effective threat / sec: {_spawner.GetEffectiveThreatPerSecond():F2}");
+            GUILayout.Label($"Ambient schedule: {_spawner.AmbientScheduleEnabled}");
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Clear budget"))
-                _director.ClearThreatBudget();
             if (GUILayout.Button("Refresh refs"))
             {
-                _director = FindFirstObjectByType<SpawnDirector>();
+                _spawner = FindFirstObjectByType<EncounterSpawner>();
                 _enemyWorld = FindFirstObjectByType<EnemyWorld>();
             }
             GUILayout.EndHorizontal();
@@ -121,86 +108,21 @@ namespace HighSeas.Debugging
         {
             GUILayout.Label("Runtime multipliers", GUI.skin.box);
 
-            var rate = _director.DebugSpawnRateMultiplier;
+            var rate = _spawner.DebugSpawnRateMultiplier;
             GUILayout.BeginHorizontal();
             GUILayout.Label("Spawn rate", LabelWidth);
             rate = GUILayout.HorizontalSlider(rate, 0.1f, 3f);
             GUILayout.Label($"{rate:F2}", GUILayout.Width(40f));
             GUILayout.EndHorizontal();
-            _director.SetSpawnRateMultiplier(rate);
-
-            var density = _director.DebugSpawnDensityMultiplier;
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Spawn density", LabelWidth);
-            density = GUILayout.HorizontalSlider(density, 0.1f, 3f);
-            GUILayout.Label($"{density:F2}", GUILayout.Width(40f));
-            GUILayout.EndHorizontal();
-            _director.SetSpawnDensityMultiplier(density);
-
-            var hp = _director.DebugEnemyHpMultiplier;
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Enemy HP", LabelWidth);
-            hp = GUILayout.HorizontalSlider(hp, 0.1f, 4f);
-            GUILayout.Label($"{hp:F2}", GUILayout.Width(40f));
-            GUILayout.EndHorizontal();
-
-            var dmg = _director.DebugEnemyDamageMultiplier;
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Enemy damage", LabelWidth);
-            dmg = GUILayout.HorizontalSlider(dmg, 0.1f, 4f);
-            GUILayout.Label($"{dmg:F2}", GUILayout.Width(40f));
-            GUILayout.EndHorizontal();
-            _director.SetEnemyCombatMultipliers(hp, dmg);
+            _spawner.SetSpawnRateMultiplier(rate);
         }
 
-        static void DrawGlobalSettings(SpawnDirectorSettings settings)
+        void DrawAmbientToggle()
         {
-            GUILayout.Label("SpawnDirectorSettings (runtime clone)", GUI.skin.box);
-
-            settings.gracePeriodSeconds = SliderField("Grace period (s)", settings.gracePeriodSeconds, 0f, 30f);
-            settings.minSecondsBetweenSpawns = SliderField("Min gap (s)", settings.minSecondsBetweenSpawns, 0.05f, 2f);
-            settings.threatMultiplier = SliderField("Threat mult", settings.threatMultiplier, 0.1f, 2f);
-            settings.budgetCapMultiplier = SliderField("Budget cap mult", settings.budgetCapMultiplier, 0.5f, 8f);
-            settings.maxActiveEnemies = Mathf.RoundToInt(SliderField("Max active", settings.maxActiveEnemies, 0f, 200f));
-            settings.eliteChanceMultiplier = SliderField("Elite chance mult", settings.eliteChanceMultiplier, 0f, 2f);
-            settings.globalSpeedMultiplier = SliderField("Global speed mult", settings.globalSpeedMultiplier, 0.1f, 3f);
-            settings.creatureChanceAtStart = SliderField("Creature mix (start)", settings.creatureChanceAtStart, 0f, 1f);
-            settings.creatureChanceAtLateGame = SliderField("Creature mix (late)", settings.creatureChanceAtLateGame, 0f, 1f);
-            settings.creatureChanceRampMinutes = SliderField("Creature ramp (min)", settings.creatureChanceRampMinutes, 0.5f, 12f);
-            settings.spawnDistanceMin = SliderField("Spawn dist min", settings.spawnDistanceMin, 4f, 30f);
-            settings.spawnDistanceMax = SliderField("Spawn dist max", settings.spawnDistanceMax, 6f, 40f);
-        }
-
-        void DrawPerEnemySettings(SpawnDirectorSettings settings)
-        {
-            _showPerEnemy = GUILayout.Toggle(_showPerEnemy, "Per-enemy tuning");
-            if (!_showPerEnemy || settings.enemies == null)
-                return;
-
-            for (var i = 0; i < settings.enemies.Length; i++)
-            {
-                var tuning = settings.enemies[i];
-                if (tuning == null || string.IsNullOrEmpty(tuning.enemyId))
-                    continue;
-
-                GUILayout.BeginVertical(GUI.skin.box);
-                tuning.spawnEnabled = GUILayout.Toggle(tuning.spawnEnabled, tuning.enemyId);
-                tuning.weight = SliderField("Weight", tuning.weight, 0f, 3f);
-                tuning.maxConcurrent = Mathf.RoundToInt(SliderField("Max concurrent", tuning.maxConcurrent, 0f, 40f));
-                tuning.speedMultiplier = SliderField("Speed mult", tuning.speedMultiplier, 0.1f, 3f);
-                tuning.availableAfterMinutes = SliderField("After min", tuning.availableAfterMinutes, 0f, 10f);
-                GUILayout.EndVertical();
-            }
-        }
-
-        static float SliderField(string label, float value, float min, float max)
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(label, LabelWidth);
-            value = GUILayout.HorizontalSlider(value, min, max);
-            GUILayout.Label($"{value:F2}", GUILayout.Width(40f));
-            GUILayout.EndHorizontal();
-            return value;
+            GUILayout.Label("Schedule", GUI.skin.box);
+            _ambientEnabled = GUILayout.Toggle(_ambientEnabled, "Ambient schedule entries");
+            if (_ambientEnabled != _spawner.AmbientScheduleEnabled)
+                _spawner.SetAmbientScheduleEnabled(_ambientEnabled);
         }
     }
 }

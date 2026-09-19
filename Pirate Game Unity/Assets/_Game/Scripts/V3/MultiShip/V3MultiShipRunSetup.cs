@@ -167,9 +167,9 @@ namespace HighSeas.V3.MultiShip
 
         static void DisableAmbientPve()
         {
-            var director = Object.FindFirstObjectByType<SpawnDirector>();
-            if (director != null)
-                director.enabled = false;
+            var spawner = Object.FindFirstObjectByType<EncounterSpawner>();
+            if (spawner != null)
+                spawner.SetAmbientScheduleEnabled(false);
 
             var beats = Object.FindFirstObjectByType<V3PressureBeatDirector>();
             if (beats != null)

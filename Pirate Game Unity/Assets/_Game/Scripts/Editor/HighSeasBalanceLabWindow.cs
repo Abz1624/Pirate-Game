@@ -34,7 +34,6 @@ namespace HighSeas.Editor
         int _enemyIndex;
         int _bossIndex;
         string _offerAnalysis;
-        SpawnDirectorSettings _spawnSettings;
         BalanceCalibrationReport _calibration;
         BalanceRegressionPreset _regressionPreset;
         string _analysisReport;
@@ -226,22 +225,18 @@ namespace HighSeas.Editor
         {
             if (_database == null)
                 _database = AssetDatabase.LoadAssetAtPath<GameDatabase>("Assets/_Game/Data/GameDatabase.asset");
-            if (_spawnSettings == null)
-                _spawnSettings = AssetDatabase.LoadAssetAtPath<SpawnDirectorSettings>("Assets/_Game/Data/SpawnDirectorSettings.asset");
         }
 
         void CopyDirectorSnapshot(string enemyId)
         {
-            if (_spawnSettings == null) return;
-            var tuning = _spawnSettings.GetOrDefault(enemyId);
-            _scenario.DirectorThreatMultiplier = _spawnSettings.threatMultiplier;
-            _scenario.DirectorMaxActiveEnemies = _spawnSettings.maxActiveEnemies > 0 ? _spawnSettings.maxActiveEnemies : 28;
-            _scenario.EnemySpawnWeight = tuning.weight;
-            _scenario.EnemySpawnEnabled = tuning.spawnEnabled;
-            _scenario.EnemySpawnMaxConcurrent = tuning.maxConcurrent;
-            _scenario.EnemyAvailableAfterSeconds = tuning.availableAfterMinutes * 60f;
-            _scenario.EnemyAvailableUntilSeconds = tuning.availableUntilMinutes * 60f;
-            _scenario.EnemyDirectorSpeedMultiplier = _spawnSettings.globalSpeedMultiplier * tuning.speedMultiplier;
+            _scenario.DirectorThreatMultiplier = 1f;
+            _scenario.DirectorMaxActiveEnemies = 28;
+            _scenario.EnemySpawnWeight = 1f;
+            _scenario.EnemySpawnEnabled = true;
+            _scenario.EnemySpawnMaxConcurrent = 0;
+            _scenario.EnemyAvailableAfterSeconds = 0f;
+            _scenario.EnemyAvailableUntilSeconds = 0f;
+            _scenario.EnemyDirectorSpeedMultiplier = 1f;
         }
 
         void SnapshotWeaponLoadout()
@@ -297,14 +292,12 @@ namespace HighSeas.Editor
             {
                 var enemy = _database.enemies[i];
                 if (enemy == null || enemy.isBoss) continue;
-                var tuning = _spawnSettings != null ? _spawnSettings.GetOrDefault(enemy.id) : null;
-                if (tuning != null && !tuning.spawnEnabled) continue;
                 _scenario.EnemyRoster.Add(new BalanceEnemyRosterEntry
                 {
-                    Id = enemy.id, Enabled = true, Weight = tuning?.weight ?? 1f,
-                    MaxConcurrent = tuning?.maxConcurrent ?? 0,
-                    AvailableAfterSeconds = (tuning?.availableAfterMinutes ?? 0f) * 60f,
-                    AvailableUntilSeconds = (tuning?.availableUntilMinutes ?? 0f) * 60f,
+                    Id = enemy.id, Enabled = true, Weight = 1f,
+                    MaxConcurrent = 0,
+                    AvailableAfterSeconds = 0f,
+                    AvailableUntilSeconds = 0f,
                     Hull = enemy.baseHP, Damage = enemy.baseDamage, MoveSpeed = enemy.moveSpeed,
                     AttackCooldown = enemy.attackCooldown, PreferredRange = enemy.preferredRange,
                     Xp = enemy.xpValue, Gold = enemy.goldValue, Behavior = MapBehavior(enemy.behavior)

@@ -1,6 +1,5 @@
 #if UNITY_EDITOR
 using HighSeas.Enemies;
-using HighSeas.Tuning;
 using HighSeas.VFX;
 using HighSeas.World;
 using UnityEditor;
@@ -16,15 +15,14 @@ namespace HighSeas.Editor
         const string RunScenePath = Root + "/Scenes/Run.unity";
         const string CombatScenePath = Root + "/Scenes/Tests/Test_Combat.unity";
         const string PerformanceScenePath = Root + "/Scenes/Tests/Test_Performance.unity";
-        const string TuningScenePath = Root + "/Scenes/Tests/Test_Tuning.unity";
 
         [MenuItem("HighSeas/Integrate Recent Assets")]
         public static void IntegrateRecentAssets()
         {
             HighSeasEnemySetup.SetupEnemyVisuals();
             HighSeasDemoSetup.SetupDemoJuice();
-            TuningAssetSync.SyncDataToResources(saveAssets: true);
-            Debug.Log("Integrated recent artist assets: enemy visuals, explosion VFX, crystal XP pickups, and synced Resources.");
+            HighSeasEncounterSpawnSetup.SyncScheduleToResources();
+            Debug.Log("Integrated recent artist assets: enemy visuals, explosion VFX, crystal XP pickups, and encounter schedule Resources sync.");
         }
 
         [MenuItem("HighSeas/Sync All Test Scenes")]
@@ -36,28 +34,22 @@ namespace HighSeas.Editor
                 return;
             }
 
-            WireTestScene(CombatScenePath, autoSpawn: true, addTuningSandbox: true, addPerformanceHarness: false);
-            WireTestScene(PerformanceScenePath, autoSpawn: false, addTuningSandbox: false, addPerformanceHarness: true);
-            WireTestScene(TuningScenePath, autoSpawn: false, addTuningSandbox: true, addPerformanceHarness: false, minimizeIslands: true);
+            WireTestScene(CombatScenePath, addPerformanceHarness: false);
+            WireTestScene(PerformanceScenePath, addPerformanceHarness: true);
 
             AssetDatabase.SaveAssets();
-            Debug.Log("All test scenes synced with Run mechanics, VFX, player ship visual, and scene-specific harnesses.");
+            Debug.Log("All test scenes synced with Run mechanics, VFX, and player ship visual.");
         }
 
         [MenuItem("HighSeas/Sync Test Combat Scene")]
         public static void SyncTestCombatScene() =>
-            WireTestScene(CombatScenePath, autoSpawn: true, addTuningSandbox: true, addPerformanceHarness: false);
+            WireTestScene(CombatScenePath, addPerformanceHarness: false);
 
         [MenuItem("HighSeas/Sync Test Performance Scene")]
         public static void SyncTestPerformanceScene() =>
-            WireTestScene(PerformanceScenePath, autoSpawn: false, addTuningSandbox: false, addPerformanceHarness: true);
+            WireTestScene(PerformanceScenePath, addPerformanceHarness: true);
 
-        static void WireTestScene(
-            string scenePath,
-            bool autoSpawn,
-            bool addTuningSandbox,
-            bool addPerformanceHarness,
-            bool minimizeIslands = false)
+        static void WireTestScene(string scenePath, bool addPerformanceHarness)
         {
             if (!System.IO.File.Exists(scenePath))
             {
@@ -76,26 +68,11 @@ namespace HighSeas.Editor
                 if (systems.GetComponent<Player.PlayerShipVisualBootstrap>() == null)
                     systems.AddComponent<Player.PlayerShipVisualBootstrap>();
 
-                if (addTuningSandbox)
-                {
-                    var sandbox = systems.GetComponent<TuningSandbox>();
-                    if (sandbox == null)
-                        sandbox = systems.AddComponent<TuningSandbox>();
-
-                    var so = new SerializedObject(sandbox);
-                    so.FindProperty("disableAutoSpawn").boolValue = !autoSpawn;
-                    so.ApplyModifiedPropertiesWithoutUndo();
-                    HighSeasTuningSetup.WireTuningComponents();
-                }
-
                 if (addPerformanceHarness)
                     EnsurePerformanceHarness(systems);
 
-                WireSpawnDirectorSettings(systems);
+                WireEncounterSpawnerSchedule(systems);
             }
-
-            if (minimizeIslands)
-                HighSeasTuningSetup.MinimizeIslands();
 
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
             EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
@@ -163,19 +140,19 @@ namespace HighSeas.Editor
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        static void WireSpawnDirectorSettings(GameObject systems)
+        static void WireEncounterSpawnerSchedule(GameObject systems)
         {
-            var director = systems.GetComponent<SpawnDirector>();
-            if (director == null)
+            var spawner = systems.GetComponent<EncounterSpawner>();
+            if (spawner == null)
                 return;
 
-            var settings = AssetDatabase.LoadAssetAtPath<SpawnDirectorSettings>(
-                Root + "/Data/SpawnDirectorSettings.asset");
-            if (settings == null)
+            var schedule = AssetDatabase.LoadAssetAtPath<EncounterSpawnSchedule>(
+                Root + "/Data/EncounterSpawnSchedule.asset");
+            if (schedule == null)
                 return;
 
-            var so = new SerializedObject(director);
-            so.FindProperty("settings").objectReferenceValue = settings;
+            var so = new SerializedObject(spawner);
+            so.FindProperty("schedule").objectReferenceValue = schedule;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
     }

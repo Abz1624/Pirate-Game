@@ -7,6 +7,7 @@ using HighSeas.Pickups;
 using HighSeas.Player;
 using HighSeas.V3;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace HighSeas.POI
 {
@@ -16,7 +17,8 @@ namespace HighSeas.POI
 
         [SerializeField] GameDatabase database;
         [SerializeField] LootService loot;
-        [SerializeField] Enemies.SpawnDirector director;
+        [FormerlySerializedAs("director")]
+        [SerializeField] Enemies.EncounterSpawner encounterSpawner;
         [SerializeField] DemoJuiceSettings juiceSettings;
         [SerializeField] DemoPacingSettings pacingSettings;
         [SerializeField] Transform poiRoot;
@@ -36,7 +38,6 @@ namespace HighSeas.POI
         readonly List<int> _pendingChestPoiIndices = new();
         int _chestProgressSpawnPaidIndex = -1;
         const int PowderCacheAmbushCount = 3;
-        const int PowderCacheMaxThreat = 4;
         const float PowderCacheTriggerRadius = 8f;
         readonly Dictionary<int, float> _signalBuoyCharges = new();
         readonly HashSet<int> _signalBuoysCompleted = new();
@@ -324,11 +325,15 @@ namespace HighSeas.POI
             return true;
         }
 
+        Enemies.EncounterSpawner ResolveEncounterSpawner() =>
+            encounterSpawner != null ? encounterSpawner : FindFirstObjectByType<Enemies.EncounterSpawner>();
+
         bool TryOpenSalvageChest(PlayerShipController player, int index)
         {
+            var spawner = ResolveEncounterSpawner();
             var price = _useV3ChestPricing
                 ? V3Economy.GetChestPrice(_paidChestCount)
-                : director != null ? director.GetChestPrice() : 25;
+                : spawner != null ? spawner.GetChestPrice() : 25;
             if (!_useV3ChestPricing && _paidChestCount == 0 && pacingSettings != null)
                 price = Mathf.RoundToInt(price * (1f - pacingSettings.firstChestDiscount));
 
@@ -404,11 +409,25 @@ namespace HighSeas.POI
 
         bool IsPowderCacheEncounterClear()
         {
-            if (_powderCacheEnemySlots.Count == 0)
-                return false;
-
+            var spawner = ResolveEncounterSpawner();
+            var profile = spawner?.GetScheduleProfile("powder_cache");
             var world = FindFirstObjectByType<Enemies.EnemyWorld>();
             if (world == null) return true;
+
+            if (profile != null)
+            {
+                for (var i = 0; i < world.Agents.Length; i++)
+                {
+                    var agent = world.Agents[i];
+                    if (agent.active && agent.spawnProfile == profile)
+                        return false;
+                }
+
+                return true;
+            }
+
+            if (_powderCacheEnemySlots.Count == 0)
+                return false;
 
             for (var i = 0; i < _powderCacheEnemySlots.Count; i++)
             {
@@ -493,46 +512,18 @@ namespace HighSeas.POI
 
         bool SpawnPowderCacheFight(Vector3 poiPosition)
         {
-            var world = FindFirstObjectByType<Enemies.EnemyWorld>();
-            if (world == null || world.Definitions == null) return false;
+            var spawner = ResolveEncounterSpawner();
+            var profile = spawner?.GetScheduleProfile("powder_cache");
+            if (spawner == null || profile == null)
+            {
+                Debug.LogWarning(
+                    "POIManager: Assign powderCacheAmbush on EncounterSpawnSchedule to spawn powder cache fights.");
+                return false;
+            }
 
             _powderCacheEnemySlots.Clear();
-            var spawnPos = World.PlayBounds.Clamp(poiPosition, 3f);
-            var candidates = new List<int>();
-            for (var i = 0; i < world.Definitions.Length; i++)
-            {
-                var def = world.Definitions[i];
-                if (def.isBoss || def.isMiniboss) continue;
-                if (def.threatCost > PowderCacheMaxThreat) continue;
-                candidates.Add(i);
-            }
-
-            if (candidates.Count == 0)
-            {
-                for (var i = 0; i < world.Definitions.Length; i++)
-                {
-                    if (!world.Definitions[i].isBoss && !world.Definitions[i].isMiniboss)
-                        candidates.Add(i);
-                }
-            }
-
-            var rng = RunManager.Instance?.Rng;
-            var spawned = 0;
-            while (spawned < PowderCacheAmbushCount && candidates.Count > 0)
-            {
-                var pick = rng != null ? rng.MapInt(0, candidates.Count) : spawned % candidates.Count;
-                var defIndex = candidates[pick];
-                var offset = Quaternion.Euler(0f, spawned * (360f / PowderCacheAmbushCount), 0f) * Vector3.forward * 9f;
-                var pos = World.PlayBounds.Clamp(spawnPos + offset, 2f);
-                if (!World.PlayBounds.IsOpenWater(pos, 2f))
-                    pos = spawnPos + offset.normalized * 6f;
-                var slot = world.Spawn(defIndex, pos);
-                if (slot >= 0)
-                    _powderCacheEnemySlots.Add(slot);
-                spawned++;
-            }
-
-            return _powderCacheEnemySlots.Count > 0;
+            spawner.TriggerProfile(profile, PowderCacheAmbushCount);
+            return true;
         }
 
         public void TickSignalBuoyCharge(PlayerShipController player, int index)
@@ -583,15 +574,17 @@ namespace HighSeas.POI
             if (_bossSummoned) return;
             _bossSummoned = true;
             RunManager.Instance.SetState(RunState.BossFight);
-            var world = FindFirstObjectByType<Enemies.EnemyWorld>();
-            if (world == null || world.Definitions == null) return;
-            for (var i = 0; i < world.Definitions.Length; i++)
+
+            var spawner = ResolveEncounterSpawner();
+            var profile = spawner?.GetScheduleProfile("boss");
+            if (spawner != null && profile != null)
             {
-                if (!world.Definitions[i].isBoss) continue;
-                var pos = player != null ? player.Position + player.MovementForward * 12f : Vector3.forward * 12f;
-                world.Spawn(i, pos, EliteAffix.Armored);
-                break;
+                spawner.TriggerProfile(profile, 1);
+                return;
             }
+
+            Debug.LogWarning(
+                "POIManager: Assign bossSummon on EncounterSpawnSchedule to spawn the treasury boss.");
         }
 
         public bool IsBossDead()

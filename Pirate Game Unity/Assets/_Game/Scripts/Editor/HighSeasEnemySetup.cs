@@ -87,7 +87,7 @@ namespace HighSeas.Editor
             Debug.Log(
                 "Enemy visuals configured: ship + sea creatures + manta ray + reef crab miniboss/boss. " +
                 "Play Run or test scenes to verify spawns.");
-            SetupSpawnSettings();
+            HighSeasEncounterSpawnSetup.SyncScheduleToResources();
         }
 
         static EnemyDefinition MakeEnemy(
@@ -147,51 +147,6 @@ namespace HighSeas.Editor
             if (prefab == null)
                 Debug.LogWarning($"Missing enemy prefab: {path}");
             return prefab;
-        }
-
-        [MenuItem("HighSeas/Setup Spawn Settings")]
-        public static void SetupSpawnSettings()
-        {
-            const string path = "Assets/_Game/Data/SpawnDirectorSettings.asset";
-            const string resourcesPath = "Assets/_Game/Resources/SpawnDirectorSettings.asset";
-
-            var settings = AssetDatabase.LoadAssetAtPath<Enemies.SpawnDirectorSettings>(path);
-            if (settings == null)
-            {
-                settings = ScriptableObject.CreateInstance<Enemies.SpawnDirectorSettings>();
-                settings.threatMultiplier = 0.85f;
-                settings.creatureChanceAtLateGame = 0.5f;
-                settings.enemies = Enemies.SpawnDirectorSettings.CreateDefaultEnemyTuning();
-                EnsureFolder("Assets/_Game/Data");
-                AssetDatabase.CreateAsset(settings, path);
-            }
-            else
-            {
-                settings.spawnPlacement = Enemies.SpawnPlacementMode.OffCamera;
-                settings.gracePeriodSeconds = 2f;
-                settings.spawnDistanceMin = 10.8f;
-                settings.spawnDistanceMax = 18f;
-                if (settings.enemies == null || settings.enemies.Length == 0)
-                    settings.enemies = Enemies.SpawnDirectorSettings.CreateDefaultEnemyTuning();
-                EditorUtility.SetDirty(settings);
-            }
-
-            EnsureFolder("Assets/_Game/Resources");
-            if (AssetDatabase.LoadAssetAtPath<Enemies.SpawnDirectorSettings>(resourcesPath) != null)
-                AssetDatabase.DeleteAsset(resourcesPath);
-            AssetDatabase.CopyAsset(path, resourcesPath);
-
-            var director = Object.FindFirstObjectByType<Enemies.SpawnDirector>();
-            if (director != null)
-            {
-                var so = new SerializedObject(director);
-                so.FindProperty("settings").objectReferenceValue = settings;
-                so.ApplyModifiedPropertiesWithoutUndo();
-                EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-            }
-
-            AssetDatabase.SaveAssets();
-            Debug.Log("Spawn settings configured. Select SpawnDirectorSettings to edit weights and enemy speed.");
         }
 
         static void EnsureFolder(string path)

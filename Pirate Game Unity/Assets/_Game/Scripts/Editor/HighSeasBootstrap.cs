@@ -360,7 +360,7 @@ namespace HighSeas.Editor
             systems.AddComponent<RunManager>();
             systems.AddComponent<RunBootstrap>();
             systems.AddComponent<EnemyWorld>();
-            systems.AddComponent<SpawnDirector>();
+            systems.AddComponent<EncounterSpawner>();
             systems.AddComponent<ProjectileWorld>();
             systems.AddComponent<PickupWorld>();
             systems.AddComponent<WeaponController>();
@@ -397,7 +397,7 @@ namespace HighSeas.Editor
             var poi = systems.GetComponent<POIManager>();
             SetPrivateField(poi, "database", db);
             SetPrivateField(poi, "loot", systems.GetComponent<LootService>());
-            SetPrivateField(poi, "director", systems.GetComponent<SpawnDirector>());
+            SetPrivateField(poi, "encounterSpawner", systems.GetComponent<EncounterSpawner>());
 
             var loot = systems.GetComponent<LootService>();
             SetPrivateField(loot, "database", db);

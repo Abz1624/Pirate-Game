@@ -231,7 +231,7 @@ namespace HighSeas.V3
                     Pickups.PickupWorld.Instance?.AttractAllInfamy();
                     break;
                 case V3FloorPowerupKind.DeadCalm:
-                    FindFirstObjectByType<Enemies.SpawnDirector>()?.SetSpawnRateMultiplier(0.55f);
+                    FindFirstObjectByType<Enemies.EncounterSpawner>()?.SetSpawnRateMultiplier(0.55f);
                     break;
             }
 

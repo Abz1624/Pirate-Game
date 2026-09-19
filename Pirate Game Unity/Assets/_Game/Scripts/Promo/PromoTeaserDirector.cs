@@ -14,6 +14,7 @@ using HighSeas.VFX;
 using HighSeas.Weapons;
 using HighSeas.World;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.InputSystem;
 
 namespace HighSeas.Promo
@@ -95,7 +96,8 @@ namespace HighSeas.Promo
         [SerializeField] bool hideScreenSpaceUi = true;
         [SerializeField] bool freezeGameplayDuringShot = true;
         [SerializeField] bool releaseGameplayAfterShot;
-        [SerializeField] bool disableSpawnDirector = true;
+        [FormerlySerializedAs("disableSpawnDirector")]
+        [SerializeField] bool disableEncounterSpawner = true;
         [SerializeField] bool stripPoisAndPickups = true;
         [SerializeField] bool hideMapBoundaryVisuals = true;
 
@@ -104,7 +106,7 @@ namespace HighSeas.Promo
         EnemyWorld _enemyWorld;
         PlayerShipController _player;
         FollowCamera _followCamera;
-        SpawnDirector _spawnDirector;
+        EncounterSpawner _encounterSpawner;
         WeaponController _weapons;
         ProjectileWorld _projectiles;
         Camera _camera;
@@ -122,7 +124,7 @@ namespace HighSeas.Promo
         readonly List<GameObject> _disabledUiRoots = new(8);
         readonly List<PlacedSpawn> _placedSpawns = new(800);
         readonly List<MonoBehaviour> _disabledGameplay = new(8);
-        bool _spawnDirectorWasEnabled;
+        bool _encounterSpawnerWasEnabled;
         bool _poiManagerWasEnabled;
         bool _pickupWorldWasEnabled;
         int _spawnWarnings;
@@ -494,10 +496,10 @@ namespace HighSeas.Promo
         {
             _disabledGameplay.Clear();
 
-            if (disableSpawnDirector && _spawnDirector != null)
+            if (disableEncounterSpawner && _encounterSpawner != null)
             {
-                _spawnDirectorWasEnabled = _spawnDirector.enabled;
-                _spawnDirector.enabled = false;
+                _encounterSpawnerWasEnabled = _encounterSpawner.enabled;
+                _encounterSpawner.enabled = false;
             }
 
             DisableIfPresent(_weapons);
@@ -552,7 +554,7 @@ namespace HighSeas.Promo
             _enemyWorld ??= FindFirstObjectByType<EnemyWorld>();
             _player ??= FindFirstObjectByType<PlayerShipController>();
             _followCamera ??= FindFirstObjectByType<FollowCamera>();
-            _spawnDirector ??= FindFirstObjectByType<SpawnDirector>();
+            _encounterSpawner ??= FindFirstObjectByType<EncounterSpawner>();
             _weapons ??= FindFirstObjectByType<WeaponController>();
             _projectiles ??= FindFirstObjectByType<ProjectileWorld>();
             _camera ??= Camera.main;
@@ -948,8 +950,8 @@ namespace HighSeas.Promo
 
         void OnDisable()
         {
-            if (_spawnDirector != null && disableSpawnDirector)
-                _spawnDirector.enabled = _spawnDirectorWasEnabled;
+            if (_encounterSpawner != null && disableEncounterSpawner)
+                _encounterSpawner.enabled = _encounterSpawnerWasEnabled;
 
             if (_poiManager != null && stripPoisAndPickups)
                 _poiManager.enabled = _poiManagerWasEnabled;
