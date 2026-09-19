@@ -534,6 +534,80 @@ public float SampleSurfaceHeight(float worldX, float worldZ, float t)
 
 
         /// <summary>
+        /// Buoyancy-target variant of SampleSurfaceHeight: identical Gerstner (large+
+        /// medium+small, with envelope) + turbulence-warp + trough-depth + windRipple
+        /// math, but deliberately WITHOUT the two finest procedural layers added for
+        /// the reference-texture pass (secWave, windWave). Those layers have
+        /// wavelengths short enough (comparable to or shorter than ShipBuoyancy's own
+        /// 6-point hull-corner spacing) that the fixed, cheap 6-point sampling
+        /// footprint can alias against them - by chance landing several corners near a
+        /// peak (or trough) of that fine layer simultaneously - which biases the
+        /// averaged heave target by meters away from the water directly under the hull.
+        /// That is the exact "ship floating above the ocean" bug: not a rendering
+        /// problem, a spatial-aliasing problem in a sparse CPU sample used to place a
+        /// rigid body.
+        ///
+        /// A real multi-meter hull's own mass/displacement physically low-pass-filters
+        /// chop shorter than itself anyway - the same reasoning SampleSwellHeight above
+        /// already applies for the camera. Excluding just these two finest layers from
+        /// the BUOYANCY target - while the ocean keeps rendering them at full strength
+        /// via the shader's vert() - is physically correct, not a visual downgrade: the
+        /// hull settles on the true broad wave shape it can actually resolve with 6
+        /// points, while the surface right next to it keeps its full fine-chop detail
+        /// and large waves are completely untouched. Still exactly 6 cheap point
+        /// samples per frame - no per-vertex/full-ocean CPU cost added.
+        /// </summary>
+        public float SampleBuoyancyHeight(float worldX, float worldZ, float t)
+        {
+            if (cachedWaveA == null || cachedWaveB == null) return 0f;
+
+            Vector3 windDir3 = Shader.GetGlobalVector("_StormWindDir");
+            float windStrength = Shader.GetGlobalFloat("_StormWindStrength");
+
+            float warpUVx = worldX * 0.012f + windDir3.x * t * 0.03f;
+            float warpUVz = worldZ * 0.012f + windDir3.z * t * 0.03f;
+            float warpX = (Fbm5(warpUVx, warpUVz) - 0.5f) * waveTurbulence * 14f;
+            float warpZ = (Fbm5(warpUVx + 19.7f, warpUVz + 19.7f) - 0.5f) * waveTurbulence * 14f;
+            float waveX = worldX + warpX;
+            float waveZ = worldZ + warpZ;
+
+            float height = 0f;
+            int count = Mathf.Min(cachedWaveA.Length, cachedWaveB.Length);
+            for (int i = 0; i < count; i++)
+            {
+                Vector4 a = cachedWaveA[i];
+                Vector4 b = cachedWaveB[i];
+                float amp = a.w;
+                if (amp <= 0f) continue;
+                float wavelength = Mathf.Max(0.05f, a.z);
+                float dirX = a.x, dirZ = a.y;
+                float speed = b.x;
+                float phaseOff = b.z;
+
+                if (i < 3)
+                {
+                    amp *= WaveEnvelope(i, worldX, worldZ, t, wavelength, windDir3);
+                }
+
+                float w = 6.2831853f / wavelength;
+                float phase = w * (dirX * waveX + dirZ * waveZ) + t * speed * w + phaseOff;
+                height += amp * Mathf.Sin(phase);
+            }
+
+            if (height < 0f) height *= troughDepth;
+
+            float windPx = worldX * 0.08f + windDir3.x * t * (0.6f + windStrength * 0.4f);
+            float windPz = worldZ * 0.08f + windDir3.z * t * (0.6f + windStrength * 0.4f);
+            float windRipple = (Fbm5(windPx, windPz) - 0.5f) * 0.18f * windStrength;
+            height += windRipple;
+
+            // Intentionally NOT adding secWave/windWave here - see doc comment above.
+            return height;
+        }
+
+
+
+        /// <summary>
         /// A smoother "broad swell" height estimate used for camera/rig placement:
         /// only the large + medium wave layers, no turbulence domain-warp, no
         /// trough-depth exaggeration and no small high-frequency ripple. Sampling the

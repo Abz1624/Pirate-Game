@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 355837454ac264a3b9c2f74cddf61da6
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 327177
+  packageName: Stylized Water Spell VFX
+  packageVersion: 1.1.0
+  assetPath: Assets/FlexUnit/WaterSpell/Demo/URP/WaterSpell_Demo.unity
+  uploadId: 830582
