@@ -24,6 +24,8 @@ namespace HighSeas.Enemies
         public float contactCooldown;
         public float chargeTimer;
         public float attackCooldown;
+        public float knockbackTimer;
+        public Vector3 knockbackDir;
         public int definitionIndex;
         public EliteAffix affix;
         public bool isElite;
@@ -31,6 +33,7 @@ namespace HighSeas.Enemies
         public Transform view;
         public Transform healthBar;
         public string lastHitWeaponId;
+        public bool swordfishSpringVisual;
     }
 
     public sealed class SpatialHash
@@ -195,8 +198,9 @@ namespace HighSeas.Enemies
                 affix = affix,
                 isElite = affix != EliteAffix.None,
                 isBoss = def.isBoss,
-                chargeTimer = 2f,
+                chargeTimer = def.id == "swordfish" ? 0f : 2f,
                 attackCooldown = GetInitialAttackCooldown(def),
+                swordfishSpringVisual = false,
                 view = view
             };
 
@@ -311,6 +315,7 @@ namespace HighSeas.Enemies
 
         public void Tick(float dt, Vector3 playerPos, Combat.DamageReceiver playerDamage)
         {
+            var playerVelocity = ResolvePlayerVelocity(playerDamage);
             _hash.Clear();
             for (var i = 0; i < _agents.Length; i++)
             {
@@ -322,23 +327,105 @@ namespace HighSeas.Enemies
                 if (!_agents[i].active) continue;
                 ref var e = ref _agents[i];
                 var def = definitions[e.definitionIndex];
-                var desiredVelocity = TickBehavior(i, ref e, def, dt, playerPos);
+                var desiredVelocity = TickBehavior(i, ref e, def, dt, playerPos, playerVelocity);
                 MoveAgent(ref e, dt, desiredVelocity, def);
                 e.position.y = def.visualHeightOffset;
                 UpdateView(ref e, def, dt, playerPos);
 
                 var dist = HorizontalDistance(e.position, playerPos);
                 TickRangedAttack(ref e, def, dt, playerPos, dist, playerDamage);
-                var contactRange = e.radius + GetPlayerContactRadius(playerDamage);
+                var playerRadius = GetPlayerContactRadius(playerDamage);
+                var contactRange = e.radius + playerRadius;
+                if (def.category == EnemyCategory.Creature && !def.isBoss && !def.isMiniboss)
+                    contactRange = GetMinimumCreatureHullDistance(playerRadius, e.radius);
+
                 if (dist < contactRange && e.contactCooldown <= 0f)
                 {
                     playerDamage?.TakeDamage(e.damage, e.position, false);
                     e.contactCooldown = GameConstants.EnemyContactCooldown;
+                    TryApplyCreatureContactKnockback(ref e, def, playerPos);
+                    PushCreatureOffHull(ref e, playerPos, playerRadius);
                 }
                 if (e.contactCooldown > 0f) e.contactCooldown -= dt;
             }
 
+            ResolvePlayerHullSeparation(playerPos, playerDamage);
             ResolveAgentOverlaps();
+        }
+
+        void ResolvePlayerHullSeparation(Vector3 playerPos, Combat.DamageReceiver playerDamage)
+        {
+            if (playerDamage == null) return;
+
+            var playerRadius = GetPlayerContactRadius(playerDamage);
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                if (!_agents[i].active) continue;
+                ref var agent = ref _agents[i];
+                var def = definitions[agent.definitionIndex];
+                if (def.category != EnemyCategory.Creature || def.isBoss || def.isMiniboss)
+                    continue;
+
+                var padding = GameConstants.CreatureHullSeparationPadding;
+                var required = playerRadius + agent.radius + padding;
+                var offset = agent.position - playerPos;
+                offset.y = 0f;
+                var dist = offset.magnitude;
+                if (dist >= required)
+                    continue;
+
+                if (dist < 0.001f)
+                    offset = new Vector3(agent.id % 2 == 0 ? 1f : -1f, 0f, 0.35f);
+
+                agent.position = playerPos + offset.normalized * required;
+                var toPlayer = playerPos - agent.position;
+                toPlayer.y = 0f;
+                if (toPlayer.sqrMagnitude > 0.01f)
+                {
+                    var approach = Vector3.Dot(agent.velocity, toPlayer.normalized);
+                    if (approach > 0f)
+                        agent.velocity -= toPlayer.normalized * approach;
+                }
+
+                if (agent.view != null)
+                    agent.view.position = agent.position;
+            }
+        }
+
+        static float GetMinimumCreatureHullDistance(float playerRadius, float enemyRadius) =>
+            playerRadius + enemyRadius + GameConstants.CreatureHullSeparationPadding;
+
+        static Vector3 ResolvePlayerVelocity(Combat.DamageReceiver playerDamage)
+        {
+            if (playerDamage == null) return Vector3.zero;
+            var ship = playerDamage.GetComponent<Player.PlayerShipController>();
+            if (ship == null) return Vector3.zero;
+            var velocity = ship.Velocity;
+            velocity.y = 0f;
+            return velocity;
+        }
+
+        static void TryApplyCreatureContactKnockback(ref EnemyAgent agent, Data.EnemyDefinition def, Vector3 playerPos)
+        {
+            if (def.category != EnemyCategory.Creature || def.isBoss || def.isMiniboss)
+                return;
+
+            var away = agent.position - playerPos;
+            away.y = 0f;
+            if (away.sqrMagnitude < 0.0001f)
+                away = new Vector3(agent.id % 2 == 0 ? 1f : -1f, 0f, 0.6f);
+            agent.knockbackDir = away.normalized;
+            agent.knockbackTimer = GameConstants.CreatureKnockbackSeconds;
+        }
+
+        static void PushCreatureOffHull(ref EnemyAgent agent, Vector3 playerPos, float playerRadius)
+        {
+            var required = GetMinimumCreatureHullDistance(playerRadius, agent.radius);
+            var offset = agent.position - playerPos;
+            offset.y = 0f;
+            if (offset.sqrMagnitude < 0.0001f)
+                offset = agent.knockbackDir.sqrMagnitude > 0.01f ? agent.knockbackDir : Vector3.forward;
+            agent.position = playerPos + offset.normalized * required;
         }
 
         static float HorizontalDistance(Vector3 a, Vector3 b)
@@ -500,6 +587,9 @@ namespace HighSeas.Enemies
 
             e.view.position = e.position;
 
+            if (def.id == "swordfish")
+                EnemyViewAnimation.TickSwordfish(e.view, ref e.swordfishSpringVisual, e.chargeTimer > 0f);
+
             Vector3 faceDirection;
             if (e.velocity.sqrMagnitude >= 0.01f)
                 faceDirection = e.velocity;
@@ -522,12 +612,27 @@ namespace HighSeas.Enemies
             e.view.rotation = Quaternion.Slerp(e.view.rotation, facing, 1f - Mathf.Exp(-12f * dt));
         }
 
-        Vector3 TickBehavior(int agentIndex, ref EnemyAgent e, Data.EnemyDefinition def, float dt, Vector3 playerPos)
+        Vector3 TickBehavior(int agentIndex, ref EnemyAgent e, Data.EnemyDefinition def, float dt, Vector3 playerPos, Vector3 playerVelocity)
         {
+            if (e.knockbackTimer > 0f)
+            {
+                e.knockbackTimer -= dt;
+                var fade = Mathf.Clamp01(e.knockbackTimer / GameConstants.CreatureKnockbackSeconds);
+                return e.knockbackDir * (e.moveSpeed * (1.6f + 0.9f * fade));
+            }
+
             var toPlayer = playerPos - e.position;
             toPlayer.y = 0f;
             var dist = toPlayer.magnitude;
             var dir = dist > 0.01f ? toPlayer / dist : Vector3.forward;
+            var usesCreatureIntercept = def.category == EnemyCategory.Creature && !def.isBoss && !def.isMiniboss;
+            var chaseDir = usesCreatureIntercept
+                ? GetCreatureInterceptDirection(e, playerPos, playerVelocity, dist, dir)
+                : GetEncircleChaseDirection(e.id, e.position, playerPos, dist, dir);
+
+            if (def.id == "swordfish")
+                return TickSwordfishBehavior(ref e, chaseDir, dir, dist, dt, playerPos, playerVelocity);
+
             Vector3 behaviorVelocity;
 
             switch (def.behavior)
@@ -535,13 +640,14 @@ namespace HighSeas.Enemies
                 case EnemyBehavior.DirectChaser:
                 case EnemyBehavior.TankChaser:
                 case EnemyBehavior.DiveLunge:
-                    behaviorVelocity = dir * e.moveSpeed;
+                    behaviorVelocity = chaseDir * e.moveSpeed;
                     break;
                 case EnemyBehavior.FlankingChaser:
                 {
+                    var aimDir = usesCreatureIntercept ? chaseDir : dir;
                     var flankSign = (e.id & 1) == 0 ? 1f : -1f;
-                    var flank = Vector3.Cross(Vector3.up, dir) * flankSign;
-                    behaviorVelocity = (dir + flank * 0.35f).normalized * e.moveSpeed;
+                    var flank = Vector3.Cross(Vector3.up, aimDir) * flankSign;
+                    behaviorVelocity = (aimDir + flank * 0.35f).normalized * e.moveSpeed;
                     break;
                 }
                 case EnemyBehavior.TelegraphedCharge:
@@ -578,7 +684,7 @@ namespace HighSeas.Enemies
                     break;
                 }
                 case EnemyBehavior.SuicideApproach:
-                    behaviorVelocity = dir * (e.moveSpeed * 1.4f);
+                    behaviorVelocity = chaseDir * (e.moveSpeed * 1.4f);
                     break;
                 case EnemyBehavior.StrafeBurst:
                 {
@@ -588,24 +694,135 @@ namespace HighSeas.Enemies
                     break;
                 }
                 case EnemyBehavior.FastSwarm:
-                    behaviorVelocity = dir * (e.moveSpeed * 1.2f);
+                    behaviorVelocity = chaseDir * (e.moveSpeed * 1.2f);
                     break;
                 case EnemyBehavior.DriftPulse:
-                    behaviorVelocity = dir * e.moveSpeed;
+                    behaviorVelocity = chaseDir * e.moveSpeed;
                     e.attackCooldown -= dt;
                     break;
                 case EnemyBehavior.StationaryTurret:
                     behaviorVelocity = Vector3.zero;
                     break;
                 default:
-                    behaviorVelocity = dir * e.moveSpeed;
+                    behaviorVelocity = chaseDir * e.moveSpeed;
                     break;
             }
 
             var intent = behaviorVelocity;
             behaviorVelocity = ApplySeparation(agentIndex, behaviorVelocity, ref e, intent);
-            e.velocity = Vector3.ClampMagnitude(behaviorVelocity, e.moveSpeed * 1.5f);
+            var maxSpeed = e.moveSpeed * 1.5f;
+            if (e.knockbackTimer > 0f)
+                maxSpeed = e.moveSpeed * 2.5f;
+            else if (def.id == "swordfish" && behaviorVelocity.sqrMagnitude > e.moveSpeed * e.moveSpeed * 2.1f)
+                maxSpeed = e.moveSpeed * 2.6f;
+            e.velocity = Vector3.ClampMagnitude(behaviorVelocity, maxSpeed);
             return intent;
+        }
+
+        static Vector3 GetCreatureInterceptDirection(
+            in EnemyAgent agent,
+            Vector3 playerPos,
+            Vector3 playerVelocity,
+            float distToPlayer,
+            Vector3 directDir)
+        {
+            playerVelocity.y = 0f;
+            var playerSpeed = playerVelocity.magnitude;
+            var leadTime = playerSpeed > 0.35f
+                ? Mathf.Clamp(distToPlayer / Mathf.Max(1f, agent.moveSpeed + playerSpeed * 0.65f), 0.12f, 2.2f)
+                : 0f;
+
+            var toEnemy = agent.position - playerPos;
+            toEnemy.y = 0f;
+            if (playerSpeed > 0.35f && toEnemy.sqrMagnitude > 0.01f)
+            {
+                var forward = playerVelocity / playerSpeed;
+                var alignment = Vector3.Dot(toEnemy.normalized, forward);
+                if (alignment > -0.35f)
+                    leadTime *= Mathf.Lerp(1.08f, 1.42f, Mathf.Clamp01(alignment));
+            }
+
+            var predicted = playerPos + playerVelocity * leadTime;
+            var toPredicted = predicted - agent.position;
+            toPredicted.y = 0f;
+            if (toPredicted.sqrMagnitude < 0.01f)
+                return GetEncircleChaseDirection(agent.id, agent.position, playerPos, distToPlayer, directDir);
+
+            var interceptDir = toPredicted.normalized;
+            var encircleDir = GetEncircleChaseDirection(agent.id, agent.position, playerPos, distToPlayer, directDir);
+            var interceptWeight = distToPlayer > 16f ? 0.38f : distToPlayer > 8f ? 0.65f : 0.9f;
+            if (playerSpeed > 0.75f && toEnemy.sqrMagnitude > 0.01f)
+            {
+                var alignment = Vector3.Dot(toEnemy.normalized, playerVelocity.normalized);
+                if (alignment > -0.25f)
+                    interceptWeight = Mathf.Min(0.96f, interceptWeight + 0.12f);
+            }
+
+            return Vector3.Slerp(encircleDir, interceptDir, interceptWeight).normalized;
+        }
+
+        static Vector3 TickSwordfishBehavior(
+            ref EnemyAgent agent,
+            Vector3 cruiseDir,
+            Vector3 directDir,
+            float dist,
+            float dt,
+            Vector3 playerPos,
+            Vector3 playerVelocity)
+        {
+            const float springRange = 9.5f;
+            const float springDuration = 0.42f;
+            const float springRetriggerCooldown = 1.35f;
+            const float springSpeedMult = 2.45f;
+            const float cruiseMult = 1.05f;
+
+            if (agent.chargeTimer > 0f)
+            {
+                agent.chargeTimer -= dt;
+                if (agent.chargeTimer <= 0f)
+                    agent.chargeTimer = -springRetriggerCooldown;
+
+                var springDir = GetCreatureInterceptDirection(agent, playerPos, playerVelocity, dist, directDir);
+                return springDir * (agent.moveSpeed * springSpeedMult);
+            }
+
+            if (agent.chargeTimer < 0f)
+            {
+                agent.chargeTimer += dt;
+                if (agent.chargeTimer > 0f)
+                    agent.chargeTimer = 0f;
+                return cruiseDir * (agent.moveSpeed * cruiseMult);
+            }
+
+            if (dist <= springRange)
+            {
+                agent.chargeTimer = springDuration;
+                var springDir = GetCreatureInterceptDirection(agent, playerPos, playerVelocity, dist, directDir);
+                return springDir * (agent.moveSpeed * springSpeedMult);
+            }
+
+            return cruiseDir * (agent.moveSpeed * cruiseMult);
+        }
+
+        /// <summary>Spread melee swarms around the player instead of stacking in a rear conga line.</summary>
+        static Vector3 GetEncircleChaseDirection(int agentId, Vector3 agentPos, Vector3 playerPos, float distToPlayer, Vector3 directDir)
+        {
+            if (distToPlayer < 0.01f)
+                return Vector3.forward;
+
+            var ringRadius = Mathf.Clamp(distToPlayer * 0.42f, 3.5f, 9f);
+            var slotAngle = agentId * 2.39996323f;
+            var slotOffset = new Vector3(Mathf.Cos(slotAngle), 0f, Mathf.Sin(slotAngle)) * ringRadius;
+            var slotTarget = playerPos + slotOffset;
+            var toSlot = slotTarget - agentPos;
+            toSlot.y = 0f;
+
+            if (toSlot.sqrMagnitude < 0.01f)
+                return directDir;
+
+            var encircleDir = toSlot.normalized;
+            var encircleWeight = distToPlayer > 14f ? 0.72f : distToPlayer > 7f ? 0.55f : 0.28f;
+            return Vector3.Slerp(directDir, encircleDir, encircleWeight).normalized;
         }
 
         void TickRangedAttack(
@@ -812,7 +1029,8 @@ namespace HighSeas.Enemies
                 JuiceVfxBroker.Instance?.PlayDamageHighlight(e.view);
 
             Meta.TriggerBus.Instance?.RaiseHit(damage, isCrit, e.position, weaponId);
-            FloatingDamageNumbers.Instance?.ShowEnemyDamage(e.position, damage, isCrit);
+            if (showHitFeedback && damage >= 0.5f)
+                FloatingDamageNumbers.Instance?.ShowEnemyDamage(e.position, damage, isCrit);
 
             if (e.hp <= 0f)
             {

@@ -573,13 +573,22 @@ namespace HighSeas.V3
 
 
 
+        public static void SyncBossBeaconPoi(StageLayout layout) => UpdateBeaconSlot(layout);
+
         static void UpdateBeaconSlot(StageLayout layout)
         {
             for (var i = layout.pois.Count - 1; i >= 0; i--)
             {
-                if (layout.pois[i].type == POIType.BossBeacon)
-                    layout.pois.RemoveAt(i);
+                if (layout.pois[i].type != POIType.BossBeacon)
+                    continue;
+
+                var slot = layout.pois[i];
+                slot.position = layout.bossBeacon;
+                layout.pois[i] = slot;
+                return;
             }
+
+            layout.pois.Add(new POISlot { type = POIType.BossBeacon, position = layout.bossBeacon });
         }
 
     }

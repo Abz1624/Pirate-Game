@@ -176,5 +176,14 @@ namespace HighSeas.Weapons
 
         static bool ShouldPlayWaterSplash(string weaponId) =>
             weaponId != "broadside_battery";
+
+        public void ClearAllActive()
+        {
+            for (var i = 0; i < _pool.Length; i++)
+            {
+                if (!_pool[i].active) continue;
+                Despawn(i);
+            }
+        }
     }
 }

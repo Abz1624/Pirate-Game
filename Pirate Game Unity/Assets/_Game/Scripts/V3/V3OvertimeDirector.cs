@@ -52,6 +52,7 @@ namespace HighSeas.V3
             if (!_overtimeAnnounced)
             {
                 _overtimeAnnounced = true;
+                RunCombatTelemetry.Instance?.Record("overtime_started", new System.Collections.Generic.Dictionary<string, object> { ["mode"] = "drowned_pursuit" });
                 V3ToastHud.Instance?.Show("DROWNED PURSUIT — spectral fleet incoming!", 4f);
             }
 
@@ -71,8 +72,10 @@ namespace HighSeas.V3
             var spawnPursuer = RunManager.Instance.Rng.DirectorFloat() < pursuerWeight;
             var enemyId = spawnPursuer ? "drowned_pursuer" : "drowned_harrier";
 
-            if (!_spawnDirector.TrySpawnOvertimeEnemy(enemyId, overtimeMinutes))
-                _spawnDirector.TrySpawnOvertimeEnemy(spawnPursuer ? "drowned_harrier" : "drowned_pursuer", overtimeMinutes);
+            if (_spawnDirector.TrySpawnOvertimeEnemy(enemyId, overtimeMinutes))
+                RunCombatTelemetry.Instance?.Record("overtime_enemy_spawned", new System.Collections.Generic.Dictionary<string, object> { ["enemyId"] = enemyId });
+            else if (_spawnDirector.TrySpawnOvertimeEnemy(spawnPursuer ? "drowned_harrier" : "drowned_pursuer", overtimeMinutes))
+                RunCombatTelemetry.Instance?.Record("overtime_enemy_spawned", new System.Collections.Generic.Dictionary<string, object> { ["enemyId"] = spawnPursuer ? "drowned_harrier" : "drowned_pursuer" });
 
             _spawnTimer = SpawnInterval;
         }
@@ -98,6 +101,7 @@ namespace HighSeas.V3
             var overflow = dist - safeRadius;
             var damage = DreadTideDamagePerSecond * (1f + overflow / 20f);
             _player.Damage?.TakeDamage(damage, _player.Position, false);
+            RunCombatTelemetry.Instance?.Record("dread_tide_damage", new System.Collections.Generic.Dictionary<string, object> { ["source"] = "storm_edge", ["amount"] = damage });
             V3ToastHud.Instance?.Show("DREAD TIDE — leave the storm edge!", 1.2f);
         }
     }

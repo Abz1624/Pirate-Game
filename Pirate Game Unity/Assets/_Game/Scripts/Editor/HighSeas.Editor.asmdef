@@ -3,6 +3,7 @@
     "rootNamespace": "HighSeas.Editor",
     "references": [
         "HighSeas.Runtime",
+        "RoguePirates.Simulation",
         "Unity.TextMeshPro",
         "Unity.InputSystem"
     ],

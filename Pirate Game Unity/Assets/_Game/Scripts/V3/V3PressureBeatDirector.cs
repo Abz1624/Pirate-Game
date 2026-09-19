@@ -1,3 +1,4 @@
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Enemies;
 using HighSeas.Player;
@@ -88,6 +89,7 @@ namespace HighSeas.V3
             if (spawnDirector != null && spawnDirector.TrySpawnPressureBeat(enemyId))
             {
                 done = true;
+                RunCombatTelemetry.Instance?.Record("pressure_elite_spawned", new System.Collections.Generic.Dictionary<string, object> { ["label"] = label });
                 V3ToastHud.Instance?.Show($"{label} has arrived!", 4f);
                 return;
             }
@@ -97,6 +99,7 @@ namespace HighSeas.V3
             if (elapsed >= deferUntil)
             {
                 done = true;
+                RunCombatTelemetry.Instance?.Record("pressure_elite_skipped", new System.Collections.Generic.Dictionary<string, object> { ["label"] = label });
                 V3ToastHud.Instance?.Show($"{label} skipped — no spawn slot.", 3f);
             }
         }
@@ -107,12 +110,14 @@ namespace HighSeas.V3
             {
                 _firstPulseDone = true;
                 _pulseTimer = PulseDuration;
+                RunCombatTelemetry.Instance?.Record("pressure_pulse_started", new System.Collections.Generic.Dictionary<string, object> { ["beat"] = "minute_4" });
                 V3ToastHud.Instance?.Show("SWARM PULSE — +25% spawn rate (4:00)", 4f);
             }
             else if (!_secondPulseDone && elapsed >= SecondPulseBeat)
             {
                 _secondPulseDone = true;
                 _pulseTimer = PulseDuration;
+                RunCombatTelemetry.Instance?.Record("pressure_pulse_started", new System.Collections.Generic.Dictionary<string, object> { ["beat"] = "minute_7" });
                 V3ToastHud.Instance?.Show("SWARM PULSE — +25% spawn rate (7:00)", 4f);
             }
 
@@ -128,10 +133,7 @@ namespace HighSeas.V3
         void OnDestroy()
         {
             if (spawnDirector != null)
-            {
-                spawnDirector.ConfigureV3Pacing(false);
                 spawnDirector.SetSpawnRateMultiplier(1f);
-            }
         }
     }
 }

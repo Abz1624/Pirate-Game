@@ -24,7 +24,7 @@ namespace HighSeas.V3
         void Start()
         {
             if (continueButton != null)
-                continueButton.onClick.AddListener(() => AppRoot.Instance?.LoadScene(V3SceneNames.MainMenu));
+                continueButton.onClick.AddListener(OnRestartClicked);
             if (RunManager.Instance != null)
                 RunManager.Instance.StateChanged += OnStateChanged;
             if (panel != null)
@@ -37,9 +37,18 @@ namespace HighSeas.V3
                 RunManager.Instance.StateChanged -= OnStateChanged;
         }
 
+        void OnRestartClicked()
+        {
+            HidePanel();
+            V3AuthoredGameplayHud.SetProfileVisible(true);
+            if (!V3RunBootstrap.TryRequestRestart())
+                AppRoot.Instance?.LoadScene(V3SceneNames.MainMenu);
+        }
+
         void OnStateChanged(RunState state)
         {
             if (state != RunState.RunComplete) return;
+            V3AuthoredGameplayHud.SetProfileVisible(false);
             if (panel != null) panel.SetActive(true);
             if (headlineText != null)
             {
@@ -57,7 +66,6 @@ namespace HighSeas.V3
                 var weaponReport = BuildWeaponContributionReport();
                 summaryText.text =
                     $"Seed: {rm.RunSeed}\n" +
-                    $"Profile: {CombatExperimentContext.Active.profileId}\n" +
                     $"Survived: {rm.ElapsedSeconds:0}s\n" +
                     $"Kills: {rm.KillCount}\n" +
                     $"Boss secured: {(rm.ObjectiveSecured ? "Yes" : "No")}\n" +
@@ -67,6 +75,12 @@ namespace HighSeas.V3
                     homePreview;
                 RunCombatTelemetry.Instance?.WriteExportFile();
             }
+        }
+
+        public void HidePanel()
+        {
+            if (panel != null)
+                panel.SetActive(false);
         }
 
         static string BuildWeaponContributionReport()
@@ -125,8 +139,8 @@ namespace HighSeas.V3
             summaryText.alignment = TextAlignmentOptions.TopLeft;
             summaryText.fontSize = 22;
 
-            continueButton = V3PlaceholderFactory.CreateUiButton(panel.transform, "run_results_continue", "Return to Port",
-                new Vector2(220f, 52f), "Main menu return button.");
+            continueButton = V3PlaceholderFactory.CreateUiButton(panel.transform, "run_results_restart", "Restart",
+                new Vector2(220f, 52f), "Start a new voyage with a fresh layout.");
             var btnRect = continueButton.GetComponent<RectTransform>();
             btnRect.anchorMin = new Vector2(0.5f, 0f);
             btnRect.anchorMax = new Vector2(0.5f, 0f);

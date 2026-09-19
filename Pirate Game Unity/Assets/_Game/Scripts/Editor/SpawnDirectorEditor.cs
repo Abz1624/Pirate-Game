@@ -23,15 +23,15 @@ namespace HighSeas.Editor
             if (settings.objectReferenceValue == null)
             {
                 EditorGUILayout.HelpBox(
-                    "Assign Spawn Director Settings to tune scripted waves, enemy speed, timing, and per-enemy weights.",
+                    "Assign Spawn Director Settings to tune continuous threat, enemy speed, and per-enemy weights.",
                     MessageType.Info);
                 return;
             }
 
             var settingsAsset = (Enemies.SpawnDirectorSettings)settings.objectReferenceValue;
 
-            if (GUILayout.Button("Reset Default Wave Script"))
-                ResetDefaultWaves(settingsAsset);
+            if (GUILayout.Button("Reset Default Spawn Tuning"))
+                ResetDefaultTuning(settingsAsset);
 
             if (GUILayout.Button("Sync Enemy List From Game Database"))
                 SyncEnemyList(settingsAsset);
@@ -54,28 +54,24 @@ namespace HighSeas.Editor
             if (existing != null) return;
 
             existing = ScriptableObject.CreateInstance<Enemies.SpawnDirectorSettings>();
-            existing.timingMode = Enemies.SpawnTimingMode.ScriptedWaves;
             existing.threatMultiplier = 0.85f;
             existing.creatureChanceAtLateGame = 0.5f;
-            existing.waves = Enemies.SpawnDirectorSettings.CreateDefaultWaveScript();
             existing.enemies = Enemies.SpawnDirectorSettings.CreateDefaultEnemyTuning();
             AssetDatabase.CreateAsset(existing, path);
             AssetDatabase.SaveAssets();
             Debug.Log($"Created {path}");
         }
 
-        public static void ResetDefaultWaves(Enemies.SpawnDirectorSettings settings)
+        public static void ResetDefaultTuning(Enemies.SpawnDirectorSettings settings)
         {
-            settings.timingMode = Enemies.SpawnTimingMode.ScriptedWaves;
-            settings.spawnPlacement = Enemies.SpawnPlacementMode.ScreenEdge;
+            settings.spawnPlacement = Enemies.SpawnPlacementMode.OffCamera;
             settings.gracePeriodSeconds = 2f;
             settings.spawnDistanceMin = 10.8f;
             settings.spawnDistanceMax = 18f;
-            settings.waves = Enemies.SpawnDirectorSettings.CreateDefaultWaveScript();
             settings.enemies = Enemies.SpawnDirectorSettings.CreateDefaultEnemyTuning();
             EditorUtility.SetDirty(settings);
             AssetDatabase.SaveAssets();
-            Debug.Log("Reset scripted wave sequence and default enemy speed tuning.");
+            Debug.Log("Reset default continuous-spawn tuning.");
         }
 
         public static void SyncEnemyList(Enemies.SpawnDirectorSettings settings)

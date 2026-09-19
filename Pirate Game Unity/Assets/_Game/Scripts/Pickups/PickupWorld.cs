@@ -82,7 +82,8 @@ namespace HighSeas.Pickups
 
             if (gold > 0)
             {
-                var goldValue = rich ? gold * 2 : gold;
+                var scaledGold = ScaleEnemyKillGold(gold);
+                var goldValue = rich ? scaledGold * 2 : scaledGold;
                 Spawn(PickupType.GoldBarrel, goldValue, basePos + GetKillDropOffset(dropIndex++, dropCount));
             }
 
@@ -100,6 +101,13 @@ namespace HighSeas.Pickups
             var angle = (index * (360f / count) + Random.Range(-15f, 15f)) * Mathf.Deg2Rad;
             var radius = KillDropSpreadRadius + Random.Range(-0.15f, 0.15f);
             return new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+        }
+
+        static int ScaleEnemyKillGold(int authoredGold)
+        {
+            if (authoredGold <= 0) return 0;
+            if (authoredGold >= 50) return authoredGold;
+            return authoredGold == 1 ? GameConstants.StandardEnemyKillGold : authoredGold * 10;
         }
 
         public void Spawn(PickupType type, int value, Vector3 pos)

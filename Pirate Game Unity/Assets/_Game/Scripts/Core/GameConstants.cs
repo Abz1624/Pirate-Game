@@ -29,6 +29,18 @@ namespace HighSeas.Core
         public const float DefaultPickupRadius = 3.5f;
         public const float ContactIFrame = 0.20f;
         public const float EnemyContactCooldown = 0.8f;
+        /// <summary>Director V2 continuous spawns only cannonboats during this window.</summary>
+        public const float CannonboatWarmupSeconds = 30f;
+        /// <summary>Threat budget accrual multiplier for the opening minute of a run.</summary>
+        public const float EarlySpawnThreatWindowSeconds = 60f;
+        public const float EarlySpawnThreatMultiplier = 0.5f;
+        /// <summary>Gold dropped by standard enemies (authored goldValue 1 in data).</summary>
+        public const int StandardEnemyKillGold = 10;
+        public const float V3ProgressiveChestInitialDelaySeconds = 20f;
+        public const float V3ProgressiveChestIntervalSeconds = 30f;
+        public const float CreatureKnockbackSeconds = 1f;
+        /// <summary>Extra gap kept between creature centers and the player hull.</summary>
+        public const float CreatureHullSeparationPadding = 0.55f;
         public const float StageDurationSeconds = 600f;
         public const float StageBaseThreat = 2.6f;
         public const int DefaultWeaponSlots = 6;

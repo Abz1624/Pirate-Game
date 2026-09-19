@@ -198,6 +198,7 @@ namespace HighSeas.V3
         {
             if (_layout == null) return;
 
+            var previous = _beaconState;
             var beaconDist = Vector3.Distance(playerPos, _layout.bossBeacon);
             if (_beaconState == BeaconRevealState.Hidden && beaconDist <= DiscoveryRadius)
                 _beaconState = BeaconRevealState.Discovered;
@@ -205,6 +206,18 @@ namespace HighSeas.V3
                 _beaconState = BeaconRevealState.ExactMarker;
             else if (_beaconState < BeaconRevealState.DirectionSector && minute >= SectorHintMinute)
                 _beaconState = BeaconRevealState.DirectionSector;
+
+            if (_beaconState != previous)
+            {
+                if (_beaconState == BeaconRevealState.Discovered &&
+                    previous == BeaconRevealState.Hidden &&
+                    beaconDist <= DiscoveryRadius)
+                {
+                    V3ToastHud.Instance?.Show("Treasury Beacon spotted — follow the guide.", 3.5f);
+                }
+
+                ExplorationRevision++;
+            }
         }
 
         static long PackCell(int x, int z) => ((long)x << 32) ^ (uint)z;

@@ -10,7 +10,7 @@ namespace HighSeas.Combat
     {
         public static void ApplyToDatabase(GameDatabase database, CombatExperimentProfile profile)
         {
-            if (database?.enemies == null || profile == null || !profile.directorV2Enabled)
+            if (database?.enemies == null || profile == null)
                 return;
 
             var list = new List<EnemyDefinition>(database.enemies);

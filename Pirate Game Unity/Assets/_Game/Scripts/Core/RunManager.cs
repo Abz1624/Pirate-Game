@@ -1,4 +1,5 @@
 using System;
+using HighSeas.Combat;
 using UnityEngine;
 
 namespace HighSeas.Core
@@ -87,6 +88,7 @@ namespace HighSeas.Core
         {
             if (IsRunEnded || amount <= 0) return;
             Gold += amount;
+            RunCombatTelemetry.Instance?.RecordGoldEarned(amount);
             GoldChanged?.Invoke(Gold);
         }
 
@@ -95,6 +97,7 @@ namespace HighSeas.Core
             if (IsRunEnded) return false;
             if (Gold < amount) return false;
             Gold -= amount;
+            RunCombatTelemetry.Instance?.RecordGoldSpent(amount);
             GoldChanged?.Invoke(Gold);
             return true;
         }

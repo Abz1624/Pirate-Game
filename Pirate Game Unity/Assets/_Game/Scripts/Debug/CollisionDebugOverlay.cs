@@ -159,14 +159,15 @@ namespace HighSeas.Debugging
             if (player == null)
                 return;
 
-            var collider = player.GetComponent<CapsuleCollider>();
-            if (collider != null && collider.enabled)
+            var meshCollider = player.GetComponentInChildren<MeshCollider>(true);
+            if (meshCollider != null && meshCollider.enabled)
             {
-                DrawCapsuleCollider(collider, PlayerColor);
+                var bounds = meshCollider.bounds;
+                DrawBoundsBox(bounds, PlayerColor);
                 return;
             }
 
-            var radius = 1.15f;
+            var radius = player.IslandCollisionRadius;
             var height = 4.5f;
             DrawVerticalCapsule(player.Position, radius, height, PlayerColor);
         }

@@ -17,37 +17,76 @@ namespace HighSeas.Player
         }
 
         [Header("Target")]
-        [SerializeField] Transform target;
+        public Transform target;
 
-        [Header("Position")]
-        [SerializeField] Vector3 offset = new(0f, 18f, 12f);
+        [Header("Top-down — press C to cycle here")]
+        public Vector3 offset = new(0f, 18f, 12f);
+        public Vector3 lookAtOffset;
+        public bool followShipRotation;
+        public RotationMode rotationMode = RotationMode.LookAtTarget;
+        public Vector3 rotationEuler = new(56f, 0f, 0f);
+        public Vector3 rotationOffset;
 
-        public Vector3 WorldOffset => offset;
-        [SerializeField] bool followShipRotation;
-        [SerializeField] Vector3 lookAtOffset;
+        public Vector3 WorldOffset => ActiveOffset;
 
-        [Header("Rotation")]
-        [SerializeField] RotationMode rotationMode = RotationMode.LookAtTarget;
-        [SerializeField] Vector3 rotationEuler = new(56f, 0f, 0f);
-        [SerializeField] Vector3 rotationOffset;
-
-        [Header("Smoothing")]
+        [Header("Top-down smoothing")]
         [Tooltip("0 = locked to ship. Higher = snappier follow (8 ≈ 0.125s lag).")]
-        [SerializeField] float positionSmoothing;
-        [SerializeField] float rotationSmoothing = 6f;
-        [SerializeField] bool snapOnStart = true;
+        public float positionSmoothing;
+        public float rotationSmoothing = 6f;
+        public bool snapOnStart = true;
 
-        [Header("Third person (C)")]
-        [SerializeField] Vector3 thirdPersonOffset = new(0f, 6f, -14f);
-        [SerializeField] Vector3 thirdPersonLookAtOffset = new(0f, 1.5f, 6f);
-        [SerializeField] float thirdPersonPositionSmoothing;
-        [SerializeField] float thirdPersonRotationSmoothing;
+        [Header("Third person — edit THESE while in third person (Play mode)")]
+        [Tooltip("Start runs in high third-person. Press C to cycle: High third person → Third person → Top-down.")]
+        public bool defaultThirdPerson = true;
 
-        bool _thirdPerson;
+        [Tooltip("Camera position in ship-local space when Follow Ship Rotation is on:\n" +
+                 "X = right (+) / left (-)\n" +
+                 "Y = height above anchor\n" +
+                 "Z = distance behind ship (sign ignored; 14 = 14m aft)")]
+        public Vector3 thirdPersonOffset = new(0f, 6f, 14f);
+
+        [Tooltip("Look-at point offset from ship anchor (ship-local when Follow Ship Rotation is on):\n" +
+                 "X = look right of ship\n" +
+                 "Y = look height\n" +
+                 "Z = look ahead of ship (+Z = further in front)")]
+        public Vector3 thirdPersonLookAtOffset = new(0f, 1.5f, 6f);
+
+        [Tooltip("When on, offset/look-at use ship movement forward (recommended for third person).")]
+        public bool thirdPersonFollowShipRotation = true;
+
+        [Tooltip("LookAtTarget: extra euler applied after aiming at look point. Manual: sets camera rotation directly.")]
+        public RotationMode thirdPersonRotationMode = RotationMode.LookAtTarget;
+
+        [Tooltip("Used when Third Person Rotation Mode is Manual.")]
+        public Vector3 thirdPersonRotationEuler = new(12f, 0f, 0f);
+
+        [Tooltip("Extra euler twist after look-at aim (pitch/yaw roll tweak).")]
+        public Vector3 thirdPersonRotationOffset;
+
+        public float thirdPersonPositionSmoothing;
+        public float thirdPersonRotationSmoothing = 6f;
+
+        [Header("Third person (high) — default run view; press C for standard third person")]
+        [Tooltip("Higher / farther rig. Used at run start when Default Third Person is enabled.")]
+        public Vector3 thirdPersonHighOffset = new(0f, 8f, -15f);
+
+        [Tooltip("Leave at (0,0,0) to reuse Third Person Look At Offset.")]
+        public Vector3 thirdPersonHighLookAtOffset;
+
+        enum CameraViewMode
+        {
+            TopDown,
+            ThirdPerson,
+            ThirdPersonHigh
+        }
+
+        CameraViewMode _viewMode = CameraViewMode.TopDown;
         Vector3 _savedOffset;
         Vector3 _savedLookAtOffset;
         bool _savedFollowShipRotation;
         RotationMode _savedRotationMode;
+        Vector3 _savedRotationEuler;
+        Vector3 _savedRotationOffset;
         float _savedPositionSmoothing;
         float _savedRotationSmoothing;
 
@@ -58,6 +97,48 @@ namespace HighSeas.Player
         Vector3 _smoothedAnchor;
         Vector3 _anchorVelocity;
 
+        Vector3 ActiveOffset => _viewMode switch
+        {
+            CameraViewMode.ThirdPersonHigh => thirdPersonHighOffset,
+            CameraViewMode.ThirdPerson => thirdPersonOffset,
+            _ => offset
+        };
+
+        Vector3 ActiveLookAtOffset => _viewMode switch
+        {
+            CameraViewMode.ThirdPersonHigh when thirdPersonHighLookAtOffset.sqrMagnitude > 0.0001f =>
+                thirdPersonHighLookAtOffset,
+            CameraViewMode.ThirdPersonHigh => thirdPersonLookAtOffset,
+            CameraViewMode.ThirdPerson => thirdPersonLookAtOffset,
+            _ => lookAtOffset
+        };
+
+        bool ActiveFollowShipRotation => _viewMode != CameraViewMode.TopDown
+            ? thirdPersonFollowShipRotation
+            : followShipRotation;
+
+        RotationMode ActiveRotationMode => _viewMode != CameraViewMode.TopDown
+            ? thirdPersonRotationMode
+            : rotationMode;
+
+        Vector3 ActiveRotationEuler => _viewMode != CameraViewMode.TopDown
+            ? thirdPersonRotationEuler
+            : rotationEuler;
+
+        Vector3 ActiveRotationOffset => _viewMode != CameraViewMode.TopDown
+            ? thirdPersonRotationOffset
+            : rotationOffset;
+
+        float ActivePositionSmoothing => _viewMode != CameraViewMode.TopDown
+            ? thirdPersonPositionSmoothing
+            : positionSmoothing;
+
+        float ActiveRotationSmoothing => _viewMode != CameraViewMode.TopDown
+            ? thirdPersonRotationSmoothing
+            : rotationSmoothing;
+
+        bool IsThirdPersonView => _viewMode != CameraViewMode.TopDown;
+
         void Start()
         {
             if (target == null)
@@ -66,14 +147,16 @@ namespace HighSeas.Player
             CacheTargetBody();
             CacheDefaultCameraSettings();
 
-            if (snapOnStart && target != null)
-                SnapToTarget();
+            if (defaultThirdPerson)
+                SetViewMode(CameraViewMode.ThirdPersonHigh);
+            else
+                SetViewMode(CameraViewMode.ThirdPerson);
         }
 
         void Update()
         {
             if (Keyboard.current != null && Keyboard.current.cKey.wasPressedThisFrame)
-                ToggleThirdPerson();
+                CycleViewMode();
         }
 
         void LateUpdate()
@@ -96,27 +179,27 @@ namespace HighSeas.Player
             }
 
             var anchorPosition = GetAnchorPosition();
-            if (_thirdPerson)
+            if (IsThirdPersonView)
             {
                 _smoothedAnchor = anchorPosition;
                 _anchorVelocity = Vector3.zero;
                 _anchorInitialized = true;
 
                 var thirdPersonPosition = GetDesiredPosition(anchorPosition);
-                if (thirdPersonPositionSmoothing > 0f)
+                if (ActivePositionSmoothing > 0f)
                 {
                     transform.position = Vector3.SmoothDamp(
                         transform.position,
                         thirdPersonPosition,
                         ref _anchorVelocity,
-                        1f / Mathf.Max(thirdPersonPositionSmoothing, 0.01f),
+                        1f / Mathf.Max(ActivePositionSmoothing, 0.01f),
                         Mathf.Infinity,
                         Time.deltaTime);
                 }
                 else
                     transform.position = thirdPersonPosition;
 
-                ApplyRotation(transform.position, smooth: thirdPersonRotationSmoothing > 0f);
+                ApplyRotation(transform.position, smooth: ActiveRotationSmoothing > 0f);
                 return;
             }
 
@@ -124,7 +207,7 @@ namespace HighSeas.Player
 
             var desiredPosition = GetDesiredPosition(_smoothedAnchor);
             transform.position = desiredPosition;
-            ApplyRotation(desiredPosition, smooth: rotationSmoothing > 0f);
+            ApplyRotation(desiredPosition, smooth: ActiveRotationSmoothing > 0f);
         }
 
         public void SnapToTarget()
@@ -145,7 +228,7 @@ namespace HighSeas.Player
 
         void UpdateSmoothedAnchor(Vector3 anchorPosition)
         {
-            if (positionSmoothing <= 0f)
+            if (ActivePositionSmoothing <= 0f)
             {
                 _smoothedAnchor = anchorPosition;
                 _anchorVelocity = Vector3.zero;
@@ -165,47 +248,71 @@ namespace HighSeas.Player
                 _smoothedAnchor,
                 anchorPosition,
                 ref _anchorVelocity,
-                GetPositionSmoothTime(),
+                1f / Mathf.Max(ActivePositionSmoothing, 0.01f),
                 Mathf.Infinity,
                 Time.deltaTime);
         }
 
-        float GetPositionSmoothTime() => 1f / Mathf.Max(positionSmoothing, 0.01f);
-
-        Vector3 GetAnchorPosition()
-        {
-            // In LateUpdate, transform holds the interpolated pose; rigidbody.position does not.
-            return target.position;
-        }
+        Vector3 GetAnchorPosition() => target.position;
 
         Vector3 GetDesiredPosition(Vector3 anchorPosition)
         {
             if (target == null)
                 return transform.position;
 
-            if (followShipRotation && TryGetMovementRelativeOffset(out var movementOffset))
+            var activeOffset = ActiveOffset;
+            if (ActiveFollowShipRotation && TryGetShipLocalCameraOffset(activeOffset, out var movementOffset))
                 return anchorPosition + movementOffset;
 
-            return followShipRotation
-                ? anchorPosition + target.rotation * offset
-                : anchorPosition + offset;
+            return ActiveFollowShipRotation
+                ? anchorPosition + target.rotation * activeOffset
+                : anchorPosition + activeOffset;
         }
 
-        bool TryGetMovementRelativeOffset(out Vector3 worldOffset)
+        /// <summary>Camera rig: X lateral, Y height, |Z| = distance aft of ship.</summary>
+        bool TryGetShipLocalCameraOffset(Vector3 shipLocalOffset, out Vector3 worldOffset)
         {
             worldOffset = default;
             if (_ship == null)
                 return false;
 
-            var forward = _ship.MovementForward;
-            worldOffset = Vector3.up * offset.y - forward * Mathf.Abs(offset.z);
+            GetShipBasis(out var forward, out var right);
+            var distanceAft = Mathf.Abs(shipLocalOffset.z);
+            worldOffset = right * shipLocalOffset.x + Vector3.up * shipLocalOffset.y - forward * distanceAft;
             return true;
+        }
+
+        /// <summary>Look target: X lateral, Y height, +Z = ahead of ship.</summary>
+        bool TryGetShipLocalLookOffset(Vector3 shipLocalOffset, out Vector3 worldOffset)
+        {
+            worldOffset = default;
+            if (_ship == null)
+                return false;
+
+            GetShipBasis(out var forward, out var right);
+            worldOffset = right * shipLocalOffset.x + Vector3.up * shipLocalOffset.y + forward * shipLocalOffset.z;
+            return true;
+        }
+
+        void GetShipBasis(out Vector3 forward, out Vector3 right)
+        {
+            forward = _ship != null ? _ship.MovementForward : target.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.0001f)
+                forward = Vector3.forward;
+            forward.Normalize();
+
+            right = Vector3.Cross(Vector3.up, forward);
+            if (right.sqrMagnitude < 0.0001f)
+                right = target.right;
+            right.y = 0f;
+            right.Normalize();
         }
 
         void ApplyRotation(Vector3 cameraPosition, bool smooth)
         {
             var desiredRotation = GetDesiredRotation(cameraPosition);
-            var rotSmoothing = _thirdPerson ? thirdPersonRotationSmoothing : rotationSmoothing;
+            var rotSmoothing = ActiveRotationSmoothing;
             transform.rotation = smooth && rotSmoothing > 0f
                 ? Quaternion.Slerp(transform.rotation, desiredRotation, SmoothFactor(rotSmoothing))
                 : desiredRotation;
@@ -213,22 +320,31 @@ namespace HighSeas.Player
 
         Quaternion GetDesiredRotation(Vector3 cameraPosition)
         {
-            if (rotationMode == RotationMode.Manual)
-                return Quaternion.Euler(rotationEuler);
+            if (ActiveRotationMode == RotationMode.Manual)
+                return Quaternion.Euler(ActiveRotationEuler);
 
             var lookPoint = _anchorInitialized ? _smoothedAnchor : GetAnchorPosition();
-            if (followShipRotation && _ship != null)
-                lookPoint += _ship.MovementForward * lookAtOffset.z + Vector3.up * lookAtOffset.y + target.right * lookAtOffset.x;
-            else if (followShipRotation)
-                lookPoint += target.rotation * lookAtOffset;
+            var lookOffset = ActiveLookAtOffset;
+
+            if (ActiveFollowShipRotation && _ship != null &&
+                TryGetShipLocalLookOffset(lookOffset, out var worldLookOffset))
+            {
+                lookPoint += worldLookOffset;
+            }
+            else if (ActiveFollowShipRotation)
+            {
+                lookPoint += target.rotation * lookOffset;
+            }
             else
-                lookPoint += lookAtOffset;
+            {
+                lookPoint += lookOffset;
+            }
 
             var direction = lookPoint - cameraPosition;
             if (direction.sqrMagnitude < 0.0001f)
-                return Quaternion.Euler(rotationEuler);
+                return Quaternion.Euler(ActiveRotationEuler);
 
-            return Quaternion.LookRotation(direction, Vector3.up) * Quaternion.Euler(rotationOffset);
+            return Quaternion.LookRotation(direction, Vector3.up) * Quaternion.Euler(ActiveRotationOffset);
         }
 
         public void SetTarget(Transform newTarget, bool snap = true)
@@ -243,14 +359,44 @@ namespace HighSeas.Player
                 SnapToTarget();
         }
 
-        public bool IsThirdPerson => _thirdPerson;
+        public bool IsThirdPerson => IsThirdPersonView;
 
-        public void ToggleThirdPerson()
+        public void ToggleThirdPerson() => CycleViewMode();
+
+        public void CycleViewMode()
         {
-            if (_thirdPerson)
-                ApplyDefaultCameraSettings();
-            else
-                ApplyThirdPersonCameraSettings();
+            var next = _viewMode switch
+            {
+                CameraViewMode.ThirdPersonHigh => CameraViewMode.ThirdPerson,
+                CameraViewMode.ThirdPerson => CameraViewMode.TopDown,
+                _ => CameraViewMode.ThirdPersonHigh
+            };
+
+            SetViewMode(next);
+        }
+
+        void SetViewMode(CameraViewMode mode)
+        {
+            if (mode != CameraViewMode.TopDown && _viewMode == CameraViewMode.TopDown)
+                CacheDefaultCameraSettings();
+
+            if (mode == CameraViewMode.TopDown && _viewMode != CameraViewMode.TopDown)
+                RestoreTopDownSettings();
+
+            _viewMode = mode;
+            SnapToTarget();
+        }
+
+        void RestoreTopDownSettings()
+        {
+            offset = _savedOffset;
+            lookAtOffset = _savedLookAtOffset;
+            followShipRotation = _savedFollowShipRotation;
+            rotationMode = _savedRotationMode;
+            rotationEuler = _savedRotationEuler;
+            rotationOffset = _savedRotationOffset;
+            positionSmoothing = _savedPositionSmoothing;
+            rotationSmoothing = _savedRotationSmoothing;
         }
 
         void CacheDefaultCameraSettings()
@@ -259,33 +405,10 @@ namespace HighSeas.Player
             _savedLookAtOffset = lookAtOffset;
             _savedFollowShipRotation = followShipRotation;
             _savedRotationMode = rotationMode;
+            _savedRotationEuler = rotationEuler;
+            _savedRotationOffset = rotationOffset;
             _savedPositionSmoothing = positionSmoothing;
             _savedRotationSmoothing = rotationSmoothing;
-        }
-
-        void ApplyDefaultCameraSettings()
-        {
-            _thirdPerson = false;
-            offset = _savedOffset;
-            lookAtOffset = _savedLookAtOffset;
-            followShipRotation = _savedFollowShipRotation;
-            rotationMode = _savedRotationMode;
-            positionSmoothing = _savedPositionSmoothing;
-            rotationSmoothing = _savedRotationSmoothing;
-            SnapToTarget();
-        }
-
-        void ApplyThirdPersonCameraSettings()
-        {
-            CacheDefaultCameraSettings();
-            _thirdPerson = true;
-            offset = thirdPersonOffset;
-            lookAtOffset = thirdPersonLookAtOffset;
-            followShipRotation = true;
-            rotationMode = RotationMode.LookAtTarget;
-            positionSmoothing = thirdPersonPositionSmoothing;
-            rotationSmoothing = thirdPersonRotationSmoothing;
-            SnapToTarget();
         }
 
         void TryFindPlayer()

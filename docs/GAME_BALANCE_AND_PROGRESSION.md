@@ -5,6 +5,18 @@
 
 All values are **prototype tuning**, not production balance.
 
+## Balance Lab (single-player)
+
+Open **HighSeas → Balance Lab** in the Unity Editor to run deterministic seeded batches without playing a live run. The lab persists a local scenario in Editor preferences and does **not** modify `Assets/_Game/Data/`. It reports objective and survival rates, average kills/level, and peak enemy count; raw runs can be exported to CSV.
+
+The **Authored content snapshot** controls read the selected Weapon and Enemy definitions from `GameDatabase` at run time. That means the model uses the same base damage, cooldown, range, projectile speed, hull, damage, speed, and XP values that are authored for the game, before any experiment multiplier is applied.
+
+Use **Analyze Offers** to run 200 seeded, 12-level offer sequences through the live `LevelOfferGenerator`. It compares greedy-DPS, survival, mobility, economy, and evolution-seeking choice policies, reporting the top cards shown and selected for each. Treat a card that is selected disproportionately often across several policies as a balance investigation: it may be overtuned, or its alternatives may be underpowered. Pattern output is estimated from the authored pattern, quantity, and duration so the fast combat model can distinguish projectile, fan, chain, mine, orbit, trail, aura, AoE, and summon families.
+
+The scenario exposes the current Rook/Brine/Flint/Richie/Ember/Roxie baseline hull and speed profiles plus player modifiers, expected weapon loadout and item effects, XP pacing, enemy/director/boss tuning, and the V3 POI route assumptions. The **Kite** movement policy approximates a cautious player by steering away from nearby threats; auto-targeting is represented as a guaranteed in-range hit. POIs are modeled as route rewards for this fast simulation; validate any candidate change in `V3Boot` afterwards because the live POI interactions, targeting, and map movement remain Unity runtime systems.
+
+V3 single-player places the enabled finite layout: 12 Salvage Chests, Repair Wreck, Powder Cache, Signal Buoy, Treasure Chart, and the Treasury Beacon. They are intentionally disabled only in PvP sessions.
+
 ---
 
 ## 1. Run structure
@@ -273,7 +285,22 @@ Overtime multiplies threat: `1.5 × 1.2^overtimeMinutes`.
 | Barrel touch radius | 5 m |
 | Health drop chance from barrels | 12% |
 
-POI: **12 chests + 4 shrines** on Saltwind layout; boss beacon not before **180 s** (`bossBeaconMinSeconds`).
+### Saltwind POI layout (V3 conquest)
+
+Placed by `V3StagePoiPlacer` after `V3SpawnAnchorValidator` resolves spawn + treasury beacon (RNG stream: **run seed + 404**). World markers are built for **every** entry in `StageLayout.pois` via `POIManager.BuildMarkers`.
+
+| Count | `POIType` | Player-facing name | Interaction / reward |
+|------:|-----------|-------------------|----------------------|
+| 12 | `SalvageChest` | Salvage Chest | Spend run gold (`V3Economy.GetChestPrice`); rolls a run **item** from `V3ChestLoot` |
+| 1 | `GildedWreck` | Repair Wreck | One-time **+25% max hull** heal |
+| 1 | `MerchantSkiff` | Powder Cache | Proximity **ambush** (3 enemies, threat ≤ 4); clear fight → random chest-pool **item** + **20** run gold |
+| 1 | `TrialBuoy` | Signal Buoy | Stand in **4 m** circle **8 s** to charge; reward: **+10% damage**, **+0.5 move speed**, or **+0.8 pickup radius** (random) |
+| 1 | `CursedIdol` | Treasure Chart | Reveals **3** nearest unopened salvage chests on the minimap |
+| 1 | `BossBeacon` | Treasury Beacon | Hold to telegraph (`bossTelegraphSeconds` **0.7 s**), then summon **Barnacle King**; secures objective on kill |
+
+**Beacon discovery timeline** (`V3DiscoverySystem` + `DemoPacingSettings.bossBeaconMinSeconds` = **180 s**): minimap reveal escalates from hidden → direction sector → exact marker → discovered as you sail and time advances; interaction is not time-gated once the POI exists in the world.
+
+**Legacy demo POI** (non–V3 `StageGenerator` only): `LighthouseOfFortune` grants **+8% damage** for the run — not part of the Saltwind 12+4+beacon set.
 
 ---
 

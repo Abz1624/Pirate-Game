@@ -65,13 +65,14 @@ namespace HighSeas.Player
         [Header("Island Collision")]
         [Tooltip("Block movement through procedural island colliders.")]
         [SerializeField] bool collideWithIslands = true;
-        [Tooltip("Capsule radius used for island collision.")]
+        [Tooltip("Approximate hull radius used for island collision.")]
         [SerializeField] float hullRadius = 1.15f;
-        [Tooltip("Capsule height used for island collision.")]
+        [Tooltip("Approximate hull height used for island capsule checks when mesh bounds are unavailable.")]
         [SerializeField] float hullHeight = 4.5f;
+        [SerializeField] float maxHullCollisionRadius = 2.25f;
 
         Rigidbody _body;
-        CapsuleCollider _hullCollider;
+        MeshCollider _hullMeshCollider;
         Vector3 _velocity;
         float _moveSpeedMultiplier = 1f;
         float _turnRateMultiplier = 1f;
@@ -124,9 +125,6 @@ namespace HighSeas.Player
                                RigidbodyConstraints.FreezeRotationZ;
             _body.interpolation = RigidbodyInterpolation.Interpolate;
 
-            EnsureHullCollider();
-            IgnoreIslandPhysicsCollisions();
-
             if (visualModel == null)
                 visualModel = EnsureVisualPivot();
             else if (transform.Find("VisualTiltPivot") == null)
@@ -136,6 +134,8 @@ namespace HighSeas.Player
                 _visualBaseLocalRotation = visualModel.localRotation;
 
             SanitizeLegacyVisualComponents();
+            EnsureHullCollider();
+            IgnoreIslandPhysicsCollisions();
             SyncRunSpeedMultiplier();
 
             var joystickRoot = GameObject.Find("JoystickBG");
@@ -392,7 +392,11 @@ namespace HighSeas.Player
                 if (movementDelta.sqrMagnitude < 1e-8f &&
                     IslandObstacles.IsPositionBlocked(_body.position, hullRadius, hullHeight))
                 {
-                    nextPosition = IslandObstacles.Depenetrate(_body.position, hullRadius, hullHeight);
+                    var corrected = IslandObstacles.Depenetrate(_body.position, hullRadius, hullHeight);
+                    var correction = corrected - _body.position;
+                    correction.y = 0f;
+                    if (correction.sqrMagnitude <= 0.25f * 0.25f)
+                        nextPosition = corrected;
                 }
                 else
                 {
@@ -526,27 +530,104 @@ namespace HighSeas.Player
 
         void EnsureHullCollider()
         {
-            _hullCollider = GetComponent<CapsuleCollider>();
-            if (_hullCollider == null)
+            foreach (var legacyCapsule in GetComponents<CapsuleCollider>())
+                Destroy(legacyCapsule);
+
+            if (_hullMeshCollider != null && _hullMeshCollider.gameObject != gameObject)
             {
-                _hullCollider = gameObject.AddComponent<CapsuleCollider>();
-                _hullCollider.center = Vector3.zero;
-                _hullCollider.radius = hullRadius;
-                _hullCollider.height = hullHeight;
-                _hullCollider.direction = 2;
+                var meshFilter = FindPrimaryHullMeshFilter();
+                if (meshFilter == null || _hullMeshCollider.gameObject != meshFilter.gameObject)
+                    Destroy(_hullMeshCollider);
+            }
+
+            var source = FindPrimaryHullMeshFilter();
+            if (source == null || source.sharedMesh == null)
+            {
+                _hullMeshCollider = GetComponent<MeshCollider>();
+                if (_hullMeshCollider == null)
+                    _hullMeshCollider = gameObject.AddComponent<MeshCollider>();
+            }
+            else
+            {
+                _hullMeshCollider = source.GetComponent<MeshCollider>();
+                if (_hullMeshCollider == null)
+                    _hullMeshCollider = source.gameObject.AddComponent<MeshCollider>();
+
+                _hullMeshCollider.sharedMesh = source.sharedMesh;
+                _hullMeshCollider.convex = true;
+            }
+
+            if (_hullMeshCollider != null)
+            {
+                // Trigger only: island blocking uses capsule math from mesh footprint, not rigidbody solver.
+                _hullMeshCollider.isTrigger = true;
+                ApplyHullPhysicsLayer();
             }
 
             _body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
         }
 
+        void ApplyHullPhysicsLayer()
+        {
+            if (_hullMeshCollider == null) return;
+            var layer = gameObject.layer;
+            _hullMeshCollider.gameObject.layer = layer;
+        }
+
+        MeshFilter FindPrimaryHullMeshFilter()
+        {
+            if (visualModel == null) return null;
+
+            var filters = visualModel.GetComponentsInChildren<MeshFilter>(true);
+            MeshFilter best = null;
+            var bestVolume = 0f;
+            for (var i = 0; i < filters.Length; i++)
+            {
+                var mesh = filters[i].sharedMesh;
+                if (mesh == null) continue;
+                var size = mesh.bounds.size;
+                var volume = size.x * size.y * size.z;
+                if (volume > bestVolume)
+                {
+                    bestVolume = volume;
+                    best = filters[i];
+                }
+            }
+
+            return best;
+        }
+
+        Mesh FindHullMesh() => FindPrimaryHullMeshFilter()?.sharedMesh;
+
         float GetHullWorldRadius()
         {
             var scale = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.z));
-            return _hullCollider.radius * scale;
+            var baseline = hullRadius * scale;
+            var filter = FindPrimaryHullMeshFilter();
+            if (filter == null || filter.sharedMesh == null)
+                return baseline;
+
+            var ext = filter.sharedMesh.bounds.extents;
+            var meshScale = filter.transform.lossyScale;
+            var horizontal = Mathf.Max(
+                ext.x * Mathf.Abs(meshScale.x),
+                ext.z * Mathf.Abs(meshScale.z));
+            var footprint = horizontal * 0.42f + 0.35f;
+            return Mathf.Clamp(footprint, baseline * 0.85f, maxHullCollisionRadius * scale);
         }
 
-        float GetHullWorldHeight() =>
-            _hullCollider.height * Mathf.Abs(transform.lossyScale.y);
+        float GetHullWorldHeight()
+        {
+            var filter = FindPrimaryHullMeshFilter();
+            if (filter != null && filter.sharedMesh != null)
+            {
+                var ext = filter.sharedMesh.bounds.extents;
+                var height = ext.y * 2f * Mathf.Abs(filter.transform.lossyScale.y);
+                return Mathf.Clamp(height, 1.5f, hullHeight * 1.35f);
+            }
+
+            return hullHeight * Mathf.Abs(transform.lossyScale.y);
+        }
 
         Transform EnsureVisualPivot()
         {
@@ -581,7 +662,7 @@ namespace HighSeas.Player
 
             foreach (var col in GetComponentsInChildren<Collider>(true))
             {
-                if (col == _hullCollider) continue;
+                if (col == _hullMeshCollider) continue;
                 col.enabled = false;
             }
 

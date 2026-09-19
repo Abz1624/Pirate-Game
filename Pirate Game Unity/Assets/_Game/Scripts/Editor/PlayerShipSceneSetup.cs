@@ -116,14 +116,42 @@ namespace HighSeas.Editor
                              RigidbodyConstraints.FreezeRotationX |
                              RigidbodyConstraints.FreezeRotationZ;
 
-            var hull = player.GetComponent<CapsuleCollider>();
-            if (hull == null)
-                hull = player.AddComponent<CapsuleCollider>();
+            foreach (var legacyCapsule in player.GetComponents<CapsuleCollider>())
+                Object.DestroyImmediate(legacyCapsule);
 
-            hull.radius = 1.15f;
-            hull.height = 4.5f;
-            hull.direction = 2;
-            hull.center = Vector3.zero;
+            var controller = player.GetComponent<PlayerShipController>();
+            MeshFilter hullFilter = null;
+            if (controller != null && controller.VisualModel != null)
+            {
+                var filters = controller.VisualModel.GetComponentsInChildren<MeshFilter>(true);
+                var bestVolume = 0f;
+                for (var i = 0; i < filters.Length; i++)
+                {
+                    var mesh = filters[i].sharedMesh;
+                    if (mesh == null) continue;
+                    var size = mesh.bounds.size;
+                    var volume = size.x * size.y * size.z;
+                    if (volume > bestVolume)
+                    {
+                        bestVolume = volume;
+                        hullFilter = filters[i];
+                    }
+                }
+            }
+
+            var hullHost = hullFilter != null ? hullFilter.gameObject : player;
+            var hull = hullHost.GetComponent<MeshCollider>();
+            if (hull == null)
+                hull = hullHost.AddComponent<MeshCollider>();
+
+            if (hullFilter != null && hullFilter.sharedMesh != null)
+            {
+                hull.sharedMesh = hullFilter.sharedMesh;
+                hull.convex = true;
+            }
+
+            hull.isTrigger = true;
+            hull.gameObject.layer = player.layer;
         }
 
         static void RemovePlaceholderMesh(GameObject player)

@@ -31,6 +31,13 @@ namespace HighSeas.Combat
         float _lastOrbitSign;
         float _peakProjectiles;
         float _peakEnemies;
+        float _damageTaken;
+        int _damageEvents;
+        int _itemsAcquired;
+        int _goldEarned;
+        int _goldSpent;
+        readonly Dictionary<string, int> _offerChoices = new();
+        readonly Dictionary<string, int> _poiChoices = new();
 
         public RunCombatTelemetry(CombatExperimentProfile profile)
         {
@@ -61,6 +68,26 @@ namespace HighSeas.Combat
 
         public void RecordNewWeaponOfferShown() => _newWeaponOffersShown++;
         public void RecordNewWeaponOfferAccepted() => _newWeaponOffersAccepted++;
+
+        public void RecordDamageTaken(float amount)
+        {
+            if (!_profile.telemetryEnabled || amount <= 0f) return;
+            _damageTaken += amount;
+            _damageEvents++;
+            Record("damage_taken", new Dictionary<string, object> { ["amount"] = amount });
+        }
+
+        public void RecordOfferChoice(string kind, string id) => RecordChoice(_offerChoices, (kind ?? "unknown") + ":" + (id ?? "unknown"));
+        public void RecordPoiInteraction(string poiType) => RecordChoice(_poiChoices, poiType ?? "unknown");
+        public void RecordItemAcquired(string itemId) { if (_profile.telemetryEnabled) _itemsAcquired++; Record("item_acquired", new Dictionary<string, object> { ["id"] = itemId }); }
+        public void RecordGoldEarned(int amount) { if (_profile.telemetryEnabled && amount > 0) _goldEarned += amount; }
+        public void RecordGoldSpent(int amount) { if (_profile.telemetryEnabled && amount > 0) _goldSpent += amount; }
+
+        void RecordChoice(Dictionary<string, int> counts, string key)
+        {
+            if (!_profile.telemetryEnabled) return;
+            counts[key] = counts.TryGetValue(key, out var value) ? value + 1 : 1;
+        }
 
         public void TickMovement(Vector3 position, float headingDegrees, float dt)
         {
@@ -121,7 +148,15 @@ namespace HighSeas.Combat
             AppendField(sb, "continuousOrbitSeconds", _orbitSeconds);
             AppendField(sb, "peakProjectileCount", _peakProjectiles);
             AppendField(sb, "peakEnemyCount", _peakEnemies);
+            AppendField(sb, "damageTaken", _damageTaken);
+            AppendField(sb, "damageEvents", _damageEvents);
+            AppendField(sb, "itemsAcquired", _itemsAcquired);
+            AppendField(sb, "goldEarned", _goldEarned);
+            AppendField(sb, "goldSpent", _goldSpent);
+            AppendCountMap(sb, "offerChoices", _offerChoices);
+            AppendCountMap(sb, "poiChoices", _poiChoices);
             AppendWeaponLedger(sb);
+            AppendEvents(sb);
             sb.Append('}');
             return sb.ToString();
         }
@@ -154,6 +189,19 @@ namespace HighSeas.Combat
             sb.Append('"').Append(key).Append("\":").Append(value);
         }
 
+        static void AppendCountMap(StringBuilder sb, string name, Dictionary<string, int> values)
+        {
+            sb.Append(",\"").Append(name).Append("\":{");
+            var first = true;
+            foreach (var pair in values)
+            {
+                if (!first) sb.Append(',');
+                first = false;
+                sb.Append('\"').Append(pair.Key).Append("\":").Append(pair.Value);
+            }
+            sb.Append('}');
+        }
+
         void AppendWeaponLedger(StringBuilder sb)
         {
             sb.Append(",\"weaponContribution\":{");
@@ -170,6 +218,28 @@ namespace HighSeas.Combat
                 sb.Append('}');
             }
             sb.Append('}');
+        }
+
+        void AppendEvents(StringBuilder sb)
+        {
+            sb.Append(",\"events\":[");
+            for (var i = 0; i < _events.Count; i++)
+            {
+                if (i > 0) sb.Append(',');
+                sb.Append('{');
+                var first = true;
+                foreach (var field in _events[i])
+                {
+                    if (!first) sb.Append(',');
+                    first = false;
+                    sb.Append('"').Append(field.Key).Append("\":");
+                    if (field.Value is string text) sb.Append('"').Append(text.Replace("\"", "\\\"")).Append('"');
+                    else if (field.Value is bool boolean) sb.Append(boolean ? "true" : "false");
+                    else sb.Append(System.Convert.ToString(field.Value, System.Globalization.CultureInfo.InvariantCulture));
+                }
+                sb.Append('}');
+            }
+            sb.Append(']');
         }
     }
 }

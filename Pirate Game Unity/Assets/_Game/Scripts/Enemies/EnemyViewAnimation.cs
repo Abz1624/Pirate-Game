@@ -19,16 +19,25 @@ namespace HighSeas.Enemies
                 if (animator == null) continue;
 
                 animator.speed = speed;
-                animator.Update(0f);
+                animator.ResetTrigger("Attack");
+                animator.ResetTrigger("WindUp");
+                animator.ResetTrigger("Swim");
 
-                var layerCount = animator.layerCount;
-                for (var layer = 0; layer < layerCount; layer++)
+                var swimHash = Animator.StringToHash("Armature_Swim");
+                var layerPhase = (phase + i * 0.137f) % 1f;
+                if (animator.HasState(0, swimHash))
+                    animator.Play(swimHash, 0, layerPhase);
+                else
                 {
-                    var state = animator.GetCurrentAnimatorStateInfo(layer);
-                    if (state.shortNameHash == 0) continue;
-
-                    var layerPhase = (phase + i * 0.137f + layer * 0.089f) % 1f;
-                    animator.Play(state.shortNameHash, layer, layerPhase);
+                    animator.Update(0f);
+                    var layerCount = animator.layerCount;
+                    for (var layer = 0; layer < layerCount; layer++)
+                    {
+                        var state = animator.GetCurrentAnimatorStateInfo(layer);
+                        if (state.shortNameHash == 0) continue;
+                        var p = (layerPhase + layer * 0.089f) % 1f;
+                        animator.Play(state.shortNameHash, layer, p);
+                    }
                 }
 
                 animator.Update(0f);
@@ -48,6 +57,33 @@ namespace HighSeas.Enemies
                 state.speed = speed;
                 animation.Play();
             }
+        }
+
+        public static void TickSwordfish(Transform view, ref bool wasSpringing, bool isSpringing)
+        {
+            if (view == null) return;
+            if (isSpringing == wasSpringing) return;
+
+            var animators = view.GetComponentsInChildren<Animator>(true);
+            for (var i = 0; i < animators.Length; i++)
+            {
+                var animator = animators[i];
+                if (animator == null) continue;
+
+                if (isSpringing)
+                {
+                    animator.ResetTrigger("Swim");
+                    animator.SetTrigger("WindUp");
+                }
+                else
+                {
+                    animator.ResetTrigger("WindUp");
+                    animator.ResetTrigger("Attack");
+                    animator.SetTrigger("Swim");
+                }
+            }
+
+            wasSpringing = isSpringing;
         }
 
         static float HashTo01(int seed)

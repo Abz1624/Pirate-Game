@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.Player;
 using HighSeas.World;
 using UnityEngine;
 
@@ -9,34 +10,19 @@ namespace HighSeas.Enemies
 {
     public sealed class SpawnDirector : MonoBehaviour
     {
-        enum ScriptedPhase
-        {
-            WaitingToStart,
-            DelayBeforeWave,
-            Spawning,
-            PauseAfterWave,
-            Finished
-        }
-
         [SerializeField] EnemyWorld enemyWorld;
         [SerializeField] Transform player;
         [SerializeField] SpawnDirectorSettings settings;
         [SerializeField] Camera spawnCamera;
 
         Camera _cachedSpawnCamera;
+        FollowCamera _cachedFollowCamera;
 
         float _budget;
         float _eliteChance;
         float _spawnCooldown;
-        float _intervalTimer;
-        float _waveTimer;
-        int _waveSpawnRemaining;
         int _paidChestIndex = 1;
-        bool _firstMinibossSpawned;
-        bool _miniboss72;
-        bool _v3PressureBeatsEnabled;
-        bool _v3PacingEnabled;
-        bool _directorV2Enabled;
+        bool _v3PressureBeatsEnabled = true;
         float _spawnDensityMultiplier = 1f;
         float _enemyHpMultiplier = 1f;
         float _enemyDamageMultiplier = 1f;
@@ -44,14 +30,6 @@ namespace HighSeas.Enemies
         bool _settingsInstanced;
         float _nextPackTime;
         readonly List<string> _packSpawnQueue = new(32);
-
-        ScriptedPhase _scriptedPhase = ScriptedPhase.WaitingToStart;
-        int _scriptedWaveIndex;
-        float _scriptedTimer;
-        float _scriptedWaveElapsed;
-        readonly List<string> _scriptedQueue = new(64);
-
-        DemoPacingSettings _pacingSettings;
 
         void Awake()
         {
@@ -66,27 +44,10 @@ namespace HighSeas.Enemies
                 settings = Resources.Load<SpawnDirectorSettings>("SpawnDirectorSettings");
 
             _cachedSpawnCamera = spawnCamera != null ? spawnCamera : Camera.main;
-            _pacingSettings = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
             ResetTimingState();
         }
 
-        void ResetTimingState()
-        {
-            _spawnCooldown = 0f;
-            _intervalTimer = 0f;
-            _waveTimer = settings != null ? settings.spawnIntervalSeconds : 2.5f;
-            _waveSpawnRemaining = 0;
-            ResetScriptedState();
-        }
-
-        void ResetScriptedState()
-        {
-            _scriptedPhase = ScriptedPhase.WaitingToStart;
-            _scriptedWaveIndex = 0;
-            _scriptedTimer = 0f;
-            _scriptedWaveElapsed = 0f;
-            _scriptedQueue.Clear();
-        }
+        void ResetTimingState() => _spawnCooldown = 0f;
 
         void Update()
         {
@@ -103,198 +64,31 @@ namespace HighSeas.Enemies
                 return;
 
             var minute = RunManager.Instance.ElapsedSeconds / 60f;
-            if (_v3PacingEnabled)
-                _eliteChance = minute < 3f ? 0f : 0.02f;
-            else
-            {
-                var eliteMult = settings != null ? settings.eliteChanceMultiplier : 1f;
-                _eliteChance = Mathf.Min(0.18f, (0.02f + 0.008f * minute) * eliteMult);
-            }
+            _eliteChance = minute < 3f ? 0f : 0.02f;
 
-            TrySpawnMinibosses();
             TickDirectorPackSpawns();
 
             if (_spawnCooldown > 0f)
                 _spawnCooldown -= dt;
 
-            var mode = _v3PacingEnabled
-                ? SpawnTimingMode.ContinuousThreat
-                : settings != null ? settings.timingMode : SpawnTimingMode.ContinuousThreat;
-            switch (mode)
-            {
-                case SpawnTimingMode.SteadyInterval:
-                    TickSteadyInterval(dt);
-                    break;
-                case SpawnTimingMode.BurstWaves:
-                    TickBurstWaves(dt);
-                    break;
-                case SpawnTimingMode.ScriptedWaves:
-                    TickScriptedWaves(dt);
-                    break;
-                default:
-                    TickContinuousThreat(dt);
-                    break;
-            }
+            TickContinuousThreat(dt);
         }
 
-        void TickScriptedWaves(float dt)
-        {
-            if (_scriptedPhase == ScriptedPhase.Finished)
-            {
-                HandleScriptedWavesFinished(dt);
-                return;
-            }
-
-            if (_scriptedPhase == ScriptedPhase.WaitingToStart)
-            {
-                BeginScriptedWave(0);
-                return;
-            }
-
-            if (_scriptedPhase == ScriptedPhase.DelayBeforeWave)
-            {
-                _scriptedTimer -= dt;
-                if (_scriptedTimer <= 0f)
-                    BeginScriptedWave(_scriptedWaveIndex);
-                return;
-            }
-
-            if (_scriptedPhase == ScriptedPhase.PauseAfterWave)
-            {
-                _scriptedTimer -= dt;
-                if (_scriptedTimer <= 0f)
-                    BeginScriptedWave(_scriptedWaveIndex + 1);
-                return;
-            }
-
-            if (_scriptedPhase == ScriptedPhase.Spawning)
-            {
-                var wave = GetScriptedWave(_scriptedWaveIndex);
-                if (wave == null)
-                {
-                    _scriptedPhase = ScriptedPhase.Finished;
-                    return;
-                }
-
-                _scriptedWaveElapsed += dt;
-                if (_scriptedWaveElapsed >= wave.waveDurationSeconds)
-                {
-                    FinishCurrentScriptedWave();
-                    return;
-                }
-
-                if (_spawnCooldown > 0f)
-                    return;
-
-                if (_scriptedQueue.Count == 0)
-                {
-                    if (wave.loopComposition)
-                        BuildScriptedQueue(wave, _scriptedQueue);
-                    else
-                        return;
-                }
-
-                if (_scriptedQueue.Count == 0)
-                    return;
-
-                var enemyId = _scriptedQueue[0];
-                if (!TrySpawnEnemyId(enemyId))
-                    return;
-
-                _scriptedQueue.RemoveAt(0);
-                _spawnCooldown = wave.spawnGapSeconds;
-            }
-        }
-
-        void HandleScriptedWavesFinished(float dt)
-        {
-            var endMode = settings != null ? settings.afterScriptedWaves : ScriptedWaveEndMode.ContinueThreat;
-            switch (endMode)
-            {
-                case ScriptedWaveEndMode.LoopWaves:
-                    ResetScriptedState();
-                    break;
-                case ScriptedWaveEndMode.ContinueThreat:
-                    TickContinuousThreat(dt);
-                    break;
-            }
-        }
-
-        void BeginScriptedWave(int waveIndex)
-        {
-            var wave = GetScriptedWave(waveIndex);
-            if (wave == null)
-            {
-                _scriptedPhase = ScriptedPhase.Finished;
-                return;
-            }
-
-            _scriptedWaveIndex = waveIndex;
-            _scriptedWaveElapsed = 0f;
-            _scriptedQueue.Clear();
-            BuildScriptedQueue(wave, _scriptedQueue);
-
-            if (_scriptedQueue.Count == 0)
-            {
-                _scriptedPhase = ScriptedPhase.PauseAfterWave;
-                _scriptedTimer = wave.delayBeforeWaveSeconds;
-                return;
-            }
-
-            _scriptedPhase = ScriptedPhase.Spawning;
-        }
-
-        void FinishCurrentScriptedWave()
-        {
-            var wave = GetScriptedWave(_scriptedWaveIndex);
-            var nextWave = GetScriptedWave(_scriptedWaveIndex + 1);
-            if (nextWave == null)
-            {
-                _scriptedPhase = ScriptedPhase.Finished;
-                return;
-            }
-
-            _scriptedPhase = ScriptedPhase.PauseAfterWave;
-            _scriptedTimer = nextWave.delayBeforeWaveSeconds;
-        }
-
-        SpawnWaveDefinition GetScriptedWave(int index)
-        {
-            if (settings?.waves == null || index < 0 || index >= settings.waves.Length)
-                return null;
-            return settings.waves[index];
-        }
-
-        static void BuildScriptedQueue(SpawnWaveDefinition wave, List<string> queue)
-        {
-            if (wave?.spawns == null)
-                return;
-
-            for (var i = 0; i < wave.spawns.Length; i++)
-            {
-                var entry = wave.spawns[i];
-                if (entry == null || string.IsNullOrEmpty(entry.enemyId) || entry.count <= 0)
-                    continue;
-
-                for (var c = 0; c < entry.count; c++)
-                    queue.Add(entry.enemyId);
-            }
-        }
+        static bool IsCannonboatWarmup() =>
+            RunManager.Instance != null
+            && RunManager.Instance.ElapsedSeconds < GameConstants.CannonboatWarmupSeconds;
 
         void TickContinuousThreat(float dt)
         {
-            if (_v3PacingEnabled && RunManager.Instance.IsOvertime)
+            if (RunManager.Instance.IsOvertime)
                 return;
 
-            var pacing = _pacingSettings;
-            var threatMult = settings != null ? settings.threatMultiplier : 1f;
-            if (pacing != null && !_v3PacingEnabled)
-                threatMult *= pacing.postScriptedThreatMultiplier;
             var budgetCapMult = settings != null ? settings.budgetCapMultiplier : 3.5f;
-            var threatPerSec = (_v3PacingEnabled
-                ? ComputeV3ThreatPerSecond()
-                : RunManager.Instance.ThreatPerSecond * threatMult) * _spawnRateMultiplier;
-            _budget += threatPerSec * dt;
+            var threatPerSec = ComputeThreatPerSecond() * _spawnRateMultiplier;
+            var earlyPace = RunManager.Instance.ElapsedSeconds < GameConstants.EarlySpawnThreatWindowSeconds
+                ? GameConstants.EarlySpawnThreatMultiplier
+                : 1f;
+            _budget += threatPerSec * dt * earlyPace;
             var cap = threatPerSec * budgetCapMult;
             if (_budget > cap) _budget = cap;
 
@@ -306,51 +100,6 @@ namespace HighSeas.Enemies
 
                 _spawnCooldown = GetMinSpawnGap();
             }
-        }
-
-        void TickSteadyInterval(float dt)
-        {
-            _intervalTimer -= dt;
-            if (_intervalTimer > 0f || _spawnCooldown > 0f)
-                return;
-
-            if (TrySpawnOne())
-            {
-                _intervalTimer = settings != null ? settings.spawnIntervalSeconds : 2.5f;
-                _spawnCooldown = GetMinSpawnGap();
-            }
-            else
-            {
-                _intervalTimer = 0.25f;
-            }
-        }
-
-        void TickBurstWaves(float dt)
-        {
-            if (_waveSpawnRemaining > 0)
-            {
-                if (_spawnCooldown > 0f)
-                    return;
-
-                if (TrySpawnOne())
-                {
-                    _waveSpawnRemaining--;
-                    _spawnCooldown = GetMinSpawnGap();
-                }
-                else
-                {
-                    _waveSpawnRemaining = 0;
-                }
-
-                return;
-            }
-
-            _waveTimer -= dt;
-            if (_waveTimer > 0f)
-                return;
-
-            _waveSpawnRemaining = settings != null ? settings.waveSize : 4;
-            _waveTimer = settings != null ? settings.spawnIntervalSeconds : 2.5f;
         }
 
         bool TrySpawnOne()
@@ -398,13 +147,11 @@ namespace HighSeas.Enemies
             if (!CanSpawnDefinition(defIndex, def, scripted))
                 return false;
 
-            var mode = GetThreatBudgetMode();
-            var budgetCost = GetThreatBudgetCost(def);
-            if (mode == SpawnTimingMode.ContinuousThreat && _budget < budgetCost)
+            var budgetCost = 1f;
+            if (_budget < budgetCost)
                 return false;
 
-            if (mode == SpawnTimingMode.ContinuousThreat)
-                _budget -= budgetCost;
+            _budget -= budgetCost;
 
             var affix = EliteAffix.None;
             if (RunManager.Instance.Rng.DirectorFloat() < _eliteChance)
@@ -440,7 +187,7 @@ namespace HighSeas.Enemies
 
         public bool TrySpawnOvertimeEnemy(string enemyId, float overtimeMinutes)
         {
-            if (enemyWorld == null || !_v3PacingEnabled || !RunManager.Instance.IsOvertime)
+            if (enemyWorld == null || !RunManager.Instance.IsOvertime)
                 return false;
 
             var defIndex = FindDefinitionIndex(enemyId);
@@ -475,26 +222,7 @@ namespace HighSeas.Enemies
         float GetMinSpawnGap()
         {
             var gap = settings != null ? settings.minSecondsBetweenSpawns : 0.35f;
-            if (_v3PacingEnabled)
-            {
-                var floor = _directorV2Enabled ? 0.4f : 0.65f;
-                gap = Mathf.Max(gap, floor);
-            }
-            return gap;
-        }
-
-        SpawnTimingMode GetThreatBudgetMode()
-        {
-            if (_v3PacingEnabled)
-                return SpawnTimingMode.ContinuousThreat;
-            return settings != null ? settings.timingMode : SpawnTimingMode.ContinuousThreat;
-        }
-
-        float GetThreatBudgetCost(Data.EnemyDefinition def)
-        {
-            if (_v3PacingEnabled && _directorV2Enabled)
-                return 1f;
-            return def.threatCost;
+            return Mathf.Max(gap, 0.4f);
         }
 
         int GetEnemyCap()
@@ -502,17 +230,16 @@ namespace HighSeas.Enemies
             var cap = settings != null && settings.maxActiveEnemies > 0
                 ? settings.maxActiveEnemies
                 : Platform.QualityProfile.Current.enemyCap;
-            if (_directorV2Enabled)
-                return Mathf.Min(Mathf.Max(cap, 180), 180);
-            if (_v3PacingEnabled)
-                cap = Mathf.Min(cap, 36);
-            return cap;
+            return Mathf.Min(Mathf.Max(cap, 180), 180);
         }
 
         public int GetEnemyCapForDebug() => GetEnemyCap();
 
         bool CanSpawnDefinition(int definitionIndex, Data.EnemyDefinition def, bool scriptedSpawn = false)
         {
+            if (!scriptedSpawn && IsCannonboatWarmup() && def.id != "cannonboat")
+                return false;
+
             if (!scriptedSpawn)
             {
                 var tuning = settings != null ? settings.GetOrDefault(def.id) : null;
@@ -532,6 +259,9 @@ namespace HighSeas.Enemies
         {
             var defs = enemyWorld.Definitions;
             if (defs == null || defs.Length == 0) return -1;
+
+            if (IsCannonboatWarmup())
+                return FindDefinitionIndex("cannonboat");
 
             var minute = RunManager.Instance.ElapsedSeconds / 60f;
             var creatureStart = settings != null ? settings.creatureChanceAtStart : 0.2f;
@@ -585,6 +315,9 @@ namespace HighSeas.Enemies
 
         float GetDefinitionWeight(int definitionIndex, Data.EnemyDefinition def)
         {
+            if (IsCannonboatWarmup())
+                return def.id == "cannonboat" ? 1f : 0f;
+
             if (settings != null && !settings.IsEnemyAvailable(def.id, RunManager.Instance.ElapsedSeconds / 60f))
                 return 0f;
 
@@ -597,21 +330,15 @@ namespace HighSeas.Enemies
 
             var weightMult = tuning != null ? tuning.weight : 1f;
             var baseWeight = (1f / Mathf.Max(1, def.threatCost)) * Mathf.Max(0f, weightMult);
-            if (_directorV2Enabled)
-            {
-                var phaseMult = CombatDirectorV2Composition.GetWeightMultiplier(def.id, RunManager.Instance.ElapsedSeconds / 60f);
-                if (phaseMult <= 0f) return 0f;
-                baseWeight *= phaseMult;
-            }
-
-            return baseWeight;
+            var phaseMult = CombatDirectorV2Composition.GetWeightMultiplier(def.id, RunManager.Instance.ElapsedSeconds / 60f);
+            if (phaseMult <= 0f) return 0f;
+            return baseWeight * phaseMult;
         }
 
         public void SetV3PressureBeatsEnabled(bool enabled) => _v3PressureBeatsEnabled = enabled;
 
         public void ConfigureV3Pacing(bool enabled)
         {
-            _v3PacingEnabled = enabled;
             if (enabled)
             {
                 _v3PressureBeatsEnabled = true;
@@ -619,17 +346,24 @@ namespace HighSeas.Enemies
             }
         }
 
+        public void ResetForNewRun()
+        {
+            ResetTimingState();
+            _budget = 0f;
+            _eliteChance = 0f;
+            _paidChestIndex = 1;
+            _nextPackTime = 120f;
+            _packSpawnQueue.Clear();
+        }
+
         public void ApplyCombatExperiment(CombatExperimentProfile profile)
         {
             profile ??= CombatExperimentContext.Active;
-            _directorV2Enabled = profile.directorV2Enabled;
             _spawnDensityMultiplier = profile.spawnDensityMultiplier;
             _enemyHpMultiplier = profile.enemyHpMultiplier;
             _enemyDamageMultiplier = profile.enemyDamageMultiplier;
             _nextPackTime = 120f;
             enemyWorld?.SetExperimentMultipliers(_enemyHpMultiplier, _enemyDamageMultiplier);
-            if (_directorV2Enabled)
-                _scriptedPhase = ScriptedPhase.Finished;
         }
 
         void TickDirectorPackSpawns()
@@ -646,8 +380,9 @@ namespace HighSeas.Enemies
                 return;
             }
 
-            if (!_directorV2Enabled || RunManager.Instance == null) return;
+            if (RunManager.Instance == null) return;
             var elapsed = RunManager.Instance.ElapsedSeconds;
+            if (elapsed < GameConstants.CannonboatWarmupSeconds) return;
             if (elapsed < _nextPackTime) return;
             if (enemyWorld.ActiveCount >= GetEnemyCap() - 4) return;
 
@@ -692,19 +427,13 @@ namespace HighSeas.Enemies
         public float DebugSpawnDensityMultiplier => _spawnDensityMultiplier;
         public float DebugEnemyHpMultiplier => _enemyHpMultiplier;
         public float DebugEnemyDamageMultiplier => _enemyDamageMultiplier;
-        public bool DebugV3PacingEnabled => _v3PacingEnabled;
-        public bool DebugDirectorV2Enabled => _directorV2Enabled;
+        public bool DebugV3PacingEnabled => true;
+        public bool DebugDirectorV2Enabled => true;
 
         public float GetEffectiveThreatPerSecond()
         {
             if (RunManager.Instance == null) return 0f;
-            if (_v3PacingEnabled)
-                return ComputeV3ThreatPerSecond() * _spawnRateMultiplier;
-
-            var threatMult = settings != null ? settings.threatMultiplier : 1f;
-            if (_pacingSettings != null && !_v3PacingEnabled)
-                threatMult *= _pacingSettings.postScriptedThreatMultiplier;
-            return RunManager.Instance.ThreatPerSecond * threatMult * _spawnRateMultiplier;
+            return ComputeThreatPerSecond() * _spawnRateMultiplier;
         }
 
         public void ClearThreatBudget() => _budget = 0f;
@@ -736,98 +465,39 @@ namespace HighSeas.Enemies
             return false;
         }
 
-        Vector3 PickPressureBeatPosition()
-        {
-            if (_v3PacingEnabled)
-                return PickSpawnPosition();
-
-            var rng = RunManager.Instance.Rng;
-            for (var i = 0; i < 12; i++)
-            {
-                var angle = rng.DirectorFloat() * Mathf.PI * 2f;
-                var dist = Mathf.Lerp(14f, 24f, rng.DirectorFloat());
-                var pos = player.position + new Vector3(Mathf.Cos(angle) * dist, 0f, Mathf.Sin(angle) * dist);
-                pos = World.PlayBounds.Clamp(pos, 2f);
-                if (World.PlayBounds.IsOpenWater(pos, 2.5f))
-                    return pos;
-            }
-
-            return World.PlayBounds.Clamp(player.position + player.forward * 16f, 2f);
-        }
-
-        void TrySpawnMinibosses()
-        {
-            if (_v3PressureBeatsEnabled)
-                return;
-
-            var elapsed = RunManager.Instance.ElapsedSeconds;
-            var stageDuration = GameConstants.StageDurationSeconds;
-            var firstMinibossAt = _pacingSettings != null ? _pacingSettings.firstMinibossSeconds : 90f;
-            if (!_firstMinibossSpawned && elapsed >= firstMinibossAt)
-            {
-                _firstMinibossSpawned = true;
-                SpawnMiniboss();
-            }
-            if (!_miniboss72 && elapsed >= stageDuration * 0.72f)
-            {
-                _miniboss72 = true;
-                SpawnMiniboss();
-            }
-        }
-
-        void SpawnMiniboss()
-        {
-            var defs = enemyWorld.Definitions;
-            for (var i = 0; i < defs.Length; i++)
-            {
-                if (!defs[i].isMiniboss) continue;
-                var speedMult = settings != null ? settings.GetSpeedMultiplier(defs[i].id) : 1f;
-                TrySpawnAtValidPosition(i, EliteAffix.Rich, speedMult);
-                break;
-            }
-        }
+        Vector3 PickPressureBeatPosition() => PickSpawnPosition();
 
         Vector3 PickSpawnPosition()
         {
             var rng = RunManager.Instance.Rng;
             var minDist = GetSpawnDistanceMin();
             var maxDist = GetSpawnDistanceMax();
-            var mode = GetSpawnPlacementMode();
+            return PickSpawnPositionUniformRing(minDist, maxDist, rng);
+        }
 
-            return mode switch
+        Vector3 PickSpawnPositionUniformRing(float minDist, float maxDist, Core.RunRng rng)
+        {
+            var attempts = settings != null ? settings.spawnPositionAttempts : 16;
+            for (var i = 0; i < attempts; i++)
             {
-                SpawnPlacementMode.ScreenEdge => PickSpawnAtScreenEdge(minDist, maxDist, rng),
-                SpawnPlacementMode.OffCamera => PickSpawnPositionOutsideCameraView(minDist, maxDist, rng),
-                _ => PickSpawnPositionInArc(minDist, maxDist, rng)
-            };
+                var dist = Mathf.Lerp(minDist, maxDist, rng.DirectorFloat());
+                var angle = rng.DirectorFloat() * Mathf.PI * 2f;
+                var offset = new Vector3(Mathf.Cos(angle) * dist, 0f, Mathf.Sin(angle) * dist);
+                var pos = player.position + offset;
+                if (IsSpawnCandidateValid(pos, 1.1f))
+                    return pos;
+            }
+
+            var fallbackAngle = rng.DirectorFloat() * Mathf.PI * 2f;
+            var fallbackDist = Mathf.Lerp(minDist, maxDist, rng.DirectorFloat());
+            return player.position + new Vector3(Mathf.Cos(fallbackAngle) * fallbackDist, 0f, Mathf.Sin(fallbackAngle) * fallbackDist);
         }
 
-        SpawnPlacementMode GetSpawnPlacementMode()
-        {
-            if (_v3PacingEnabled)
-                return SpawnPlacementMode.OffCamera;
+        SpawnPlacementMode GetSpawnPlacementMode() => SpawnPlacementMode.Annulus;
 
-            if (settings == null)
-                return SpawnPlacementMode.ScreenEdge;
+        bool UsesSurroundPlayerSpawns() => true;
 
-            if (settings.spawnOutsideCameraView)
-                return SpawnPlacementMode.OffCamera;
-
-            if (settings.spawnPlacement != SpawnPlacementMode.Annulus)
-                return settings.spawnPlacement;
-
-            return SpawnPlacementMode.Annulus;
-        }
-
-        bool IsOffScreenSpawnAllowed(Data.EnemyDefinition def, Vector3 position)
-        {
-            if (!_v3PacingEnabled || def.isBoss)
-                return true;
-
-            var cam = GetSpawnCamera();
-            var margin = settings != null ? settings.cameraViewportMargin : 0.08f;
-            return !IsWorldPositionVisible(position, cam, margin);
-        }
+        bool IsOffScreenSpawnAllowed(Data.EnemyDefinition def, Vector3 position) => true;
 
         Vector3 PickSpawnAtScreenEdge(float minDist, float maxDist, Core.RunRng rng)
         {
@@ -909,7 +579,7 @@ namespace HighSeas.Enemies
                 return result;
             }
 
-            if (dist > maxDist && !_v3PacingEnabled)
+            if (dist > maxDist)
             {
                 var result = player.position + offset.normalized * maxDist;
                 result.y = planeY;
@@ -954,7 +624,79 @@ namespace HighSeas.Enemies
                     return pos;
             }
 
-            return PickSpawnNearCameraSide(minDist, maxDist, rng);
+            return UsesSurroundPlayerSpawns()
+                ? PickSpawnPositionTacticalRing(minDist, maxDist, rng)
+                : PickSpawnPositionInArc(minDist, maxDist, rng);
+        }
+
+        Vector3 PickSpawnPositionTacticalRing(float minDist, float maxDist, Core.RunRng rng)
+        {
+            var attempts = settings != null ? settings.spawnPositionAttempts : 16;
+            for (var i = 0; i < attempts; i++)
+            {
+                var pos = SampleTacticalSpawnPoint(minDist, maxDist, rng);
+                if (IsSpawnCandidateValid(pos, 1.1f))
+                    return pos;
+            }
+
+            return SampleTacticalSpawnPoint(minDist, maxDist, rng);
+        }
+
+        Vector3 SampleTacticalSpawnPoint(float minDist, float maxDist, Core.RunRng rng)
+        {
+            var dist = Mathf.Lerp(minDist, maxDist, rng.DirectorFloat());
+            var relativeAngle = SampleTacticalRelativeAngle(rng);
+            var forward = GetPlayerMovementForward();
+            var baseAngle = Mathf.Atan2(forward.z, forward.x);
+            var angle = baseAngle + relativeAngle;
+            var offset = new Vector3(Mathf.Cos(angle) * dist, 0f, Mathf.Sin(angle) * dist);
+            return player.position + offset;
+        }
+
+        static float SampleTacticalRelativeAngle(Core.RunRng rng)
+        {
+            var roll = rng.DirectorFloat();
+            if (roll < 0.42f)
+                return (rng.DirectorFloat() * 2f - 1f) * 70f * Mathf.Deg2Rad;
+            if (roll < 0.86f)
+            {
+                var side = rng.DirectorFloat() < 0.5f ? -1f : 1f;
+                return side * Mathf.Lerp(70f, 135f, rng.DirectorFloat()) * Mathf.Deg2Rad;
+            }
+
+            var rearSide = rng.DirectorFloat() < 0.5f ? -1f : 1f;
+            return rearSide * Mathf.Lerp(135f, 168f, rng.DirectorFloat()) * Mathf.Deg2Rad;
+        }
+
+        Vector3 GetPlayerMovementForward()
+        {
+            if (player != null)
+            {
+                var ship = player.GetComponent<PlayerShipController>();
+                if (ship != null)
+                {
+                    var movement = ship.MovementForward;
+                    movement.y = 0f;
+                    if (movement.sqrMagnitude > 0.01f)
+                        return movement.normalized;
+                }
+
+                var forward = player.forward;
+                forward.y = 0f;
+                if (forward.sqrMagnitude > 0.01f)
+                    return forward.normalized;
+            }
+
+            var cam = GetSpawnCamera();
+            if (cam != null)
+            {
+                var camForward = cam.transform.forward;
+                camForward.y = 0f;
+                if (camForward.sqrMagnitude > 0.01f)
+                    return camForward.normalized;
+            }
+
+            return Vector3.forward;
         }
 
         Vector3 PickSpawnPositionInArc(float minDist, float maxDist, Core.RunRng rng)
@@ -1035,29 +777,22 @@ namespace HighSeas.Enemies
             return Mathf.RoundToInt(cost);
         }
 
-        /// <summary>GDD combat spec §9, plus combat redesign Director V2 density curve.</summary>
-        float ComputeV3ThreatPerSecond()
+        /// <summary>GDD combat spec §9 Director V2 density curve.</summary>
+        float ComputeThreatPerSecond()
         {
             if (RunManager.Instance == null) return GameConstants.StageBaseThreat;
 
             var profile = CombatExperimentContext.Active;
             var minute = Mathf.Min(10f, RunManager.Instance.ElapsedSeconds / 60f);
             var depth = RunManager.Instance.StageIndex + 1;
-            if (profile.directorV2Enabled)
-            {
-                var itemDensity = V3.V3RunItemEffects.Instance?.GetSpawnDensityMultiplier() ?? 1f;
-                var enemiesPerSec = Mathf.Min(
-                    16f,
-                    (2.5f + 0.55f * minute + 0.025f * minute * minute)
-                    * (1f + 0.25f * (depth - 1))
-                    * profile.spawnDensityMultiplier
-                    * _spawnDensityMultiplier
-                    * itemDensity);
-                return enemiesPerSec;
-            }
-
-            var legacyRate = Mathf.Min(7f, (0.9f + 0.22f * minute) * (1f + 0.15f * (depth - 1)));
-            return legacyRate * 1.8f;
+            var itemDensity = V3.V3RunItemEffects.Instance?.GetSpawnDensityMultiplier() ?? 1f;
+            return Mathf.Min(
+                16f,
+                (2.5f + 0.55f * minute + 0.025f * minute * minute)
+                * (1f + 0.25f * (depth - 1))
+                * profile.spawnDensityMultiplier
+                * _spawnDensityMultiplier
+                * itemDensity);
         }
     }
 }

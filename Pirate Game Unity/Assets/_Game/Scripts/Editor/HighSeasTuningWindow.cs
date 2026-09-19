@@ -133,9 +133,9 @@ namespace HighSeas.Editor
             EditorGUILayout.Space(8f);
             EditorGUILayout.LabelField("Spawn Utilities", EditorStyles.boldLabel);
 
-            if (GUILayout.Button("Reset Default Wave Script"))
+            if (GUILayout.Button("Reset Default Spawn Tuning"))
             {
-                SpawnDirectorEditor.ResetDefaultWaves(settings);
+                SpawnDirectorEditor.ResetDefaultTuning(settings);
                 RepaintInspector();
             }
 

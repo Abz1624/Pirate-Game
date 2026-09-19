@@ -159,23 +159,20 @@ namespace HighSeas.Editor
             if (settings == null)
             {
                 settings = ScriptableObject.CreateInstance<Enemies.SpawnDirectorSettings>();
-                settings.timingMode = Enemies.SpawnTimingMode.ScriptedWaves;
                 settings.threatMultiplier = 0.85f;
                 settings.creatureChanceAtLateGame = 0.5f;
-                settings.waves = Enemies.SpawnDirectorSettings.CreateDefaultWaveScript();
                 settings.enemies = Enemies.SpawnDirectorSettings.CreateDefaultEnemyTuning();
                 EnsureFolder("Assets/_Game/Data");
                 AssetDatabase.CreateAsset(settings, path);
             }
             else
             {
-                settings.timingMode = Enemies.SpawnTimingMode.ScriptedWaves;
-                settings.spawnPlacement = Enemies.SpawnPlacementMode.ScreenEdge;
+                settings.spawnPlacement = Enemies.SpawnPlacementMode.OffCamera;
                 settings.gracePeriodSeconds = 2f;
                 settings.spawnDistanceMin = 10.8f;
                 settings.spawnDistanceMax = 18f;
-                if (settings.waves == null || settings.waves.Length == 0 || settings.waves[0].waveDurationSeconds <= 0f)
-                    settings.waves = Enemies.SpawnDirectorSettings.CreateDefaultWaveScript();
+                if (settings.enemies == null || settings.enemies.Length == 0)
+                    settings.enemies = Enemies.SpawnDirectorSettings.CreateDefaultEnemyTuning();
                 EditorUtility.SetDirty(settings);
             }
 
@@ -194,7 +191,7 @@ namespace HighSeas.Editor
             }
 
             AssetDatabase.SaveAssets();
-            Debug.Log("Spawn settings configured. Select SpawnDirectorSettings to edit waves, counts, and enemy speed.");
+            Debug.Log("Spawn settings configured. Select SpawnDirectorSettings to edit weights and enemy speed.");
         }
 
         static void EnsureFolder(string path)

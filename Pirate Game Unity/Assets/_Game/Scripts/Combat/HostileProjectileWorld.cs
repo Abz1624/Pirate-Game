@@ -156,5 +156,14 @@ namespace HighSeas.Combat
             _active--;
             JuiceVfxBroker.Instance?.PlayWaterSplash(impactPosition);
         }
+
+        public void ClearAllActive()
+        {
+            for (var i = 0; i < _pool.Length; i++)
+            {
+                if (!_pool[i].active) continue;
+                Despawn(i, _pool[i].position);
+            }
+        }
     }
 }

@@ -89,6 +89,9 @@ namespace RoguePirates.Simulation.Balance
         {
             switch (policy)
             {
+                case SimInputPolicy.Kite:
+                    sim.SetKiteInput();
+                    break;
                 case SimInputPolicy.Orbit:
                 {
                     var phase = (tick + seed) * 0.05f;

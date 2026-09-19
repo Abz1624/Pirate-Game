@@ -42,11 +42,12 @@ namespace HighSeas.Tests
         public void TearDown() => CombatExperimentContext.ResetForTests();
 
         [Test]
-        public void ProfileA_UsesTwoWeaponSlots()
+        public void Profile_AlwaysUsesFullCombatV2()
         {
             var profile = CombatExperimentProfile.CreateBuiltIn("A_CURRENT");
-            Assert.That(profile.weaponSlotCap, Is.EqualTo(2));
-            Assert.That(profile.directorV2Enabled, Is.False);
+            Assert.That(profile.weaponSlotCap, Is.EqualTo(6));
+            Assert.That(profile.directorV2Enabled, Is.True);
+            Assert.That(profile.profileId, Is.EqualTo(CombatExperimentProfile.FullCombatV2Id));
         }
 
         [Test]

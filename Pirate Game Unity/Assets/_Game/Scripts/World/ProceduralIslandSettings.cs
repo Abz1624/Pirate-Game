@@ -28,8 +28,8 @@ namespace HighSeas.World
 
         public static ProceduralIslandSettings Default => new()
         {
-            countMin = 28,
-            countMax = 36,
+            countMin = 40,
+            countMax = 40,
             islandDiameterMeters = 12f,
             minSeparationMeters = 28f,
             maxPlacementAttempts = 8000

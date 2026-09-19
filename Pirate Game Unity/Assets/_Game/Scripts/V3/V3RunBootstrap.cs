@@ -36,9 +36,12 @@ namespace HighSeas.V3
         [SerializeField] bool usePlaceholderPoiVisuals = true;
 
         StageLayout _layout;
+        static V3RunBootstrap _active;
+        bool _runSystemsWired;
 
         void Awake()
         {
+            _active = this;
             AppRoot.EnsureInitialized();
             if (database == null || !GameDatabaseLoader.IsValid(database))
                 database = GameDatabaseLoader.Load();
@@ -74,6 +77,18 @@ namespace HighSeas.V3
                 joystick.SetActive(true);
         }
 
+        void OnDestroy()
+        {
+            if (_active == this) _active = null;
+        }
+
+        public static bool TryRequestRestart()
+        {
+            if (_active == null || V3RunSession.IsPvP) return false;
+            _active.RestartRun();
+            return true;
+        }
+
         void Start()
         {
             if (database == null)
@@ -89,22 +104,55 @@ namespace HighSeas.V3
                 stageBuilder = FindFirstObjectByType<StageBuilder>();
 
             ConfigureStageBuilder();
-
             V3RunContext.IsActive = true;
+            WireRunSystemsOnce();
+            BootstrapRun(ResolveStartingSeed(), firstRun: true);
+        }
+
+        int ResolveStartingSeed() =>
+            forceInspectorSeed && runSeed != 0 ? runSeed : V3HomeSeed.ResolveRunSeed();
+
+        void WireRunSystemsOnce()
+        {
+            if (_runSystemsWired) return;
+            _runSystemsWired = true;
+
+            if (player == null)
+                player = FindFirstObjectByType<PlayerShipController>();
+
+            if (player != null)
+            {
+                player.Damage.Died += OnPlayerDied;
+                if (TriggerBus.Instance != null)
+                    player.Damage.Damaged += OnPlayerDamaged;
+            }
+        }
+
+        void RestartRun()
+        {
+            BootstrapRun(Random.Range(1, int.MaxValue), firstRun: false);
+        }
+
+        void BootstrapRun(int seed, bool firstRun)
+        {
+            LevelSystem.Instance?.CancelPendingLevelUps();
+            LevelUpModal.Instance?.Hide();
+            RunManager.Instance?.SetPause(PauseReason.None);
+
             var experimentProfile = CombatExperimentContext.Active;
             CombatWeaponCatalog.ApplyToDatabase(database, experimentProfile);
             CombatSpecialistEnemyCatalog.ApplyToDatabase(database, experimentProfile);
             WeaponDamageLedger.Reset();
             WeaponEvolutionRuntime.Reset();
             _ = new RunCombatTelemetry(experimentProfile);
-            var seed = forceInspectorSeed && runSeed != 0
-                ? runSeed
-                : V3HomeSeed.ResolveRunSeed();
             RunManager.Instance.BeginRun(seed);
             V3FloorPowerupWorld.Ensure();
             V3FloorPowerupWorld.Instance?.ResetForRun();
+            V3RunItemInventory.Instance?.ClearForNewRun();
+
             _layout = stageBuilder != null ? stageBuilder.Build(seed, 0) : null;
             V3StormEdgeVisual.DisableWorldRings();
+            V3PlayBoundsWallVisual.Ensure();
             V3RunContext.Layout = _layout;
             V3RunContext.CaptainId = V3CaptainSelection.Selected;
 
@@ -115,15 +163,19 @@ namespace HighSeas.V3
             if (poi != null)
             {
                 if (isPvPScene)
-                {
                     poi.enabled = false;
-                }
                 else
                 {
+                    poi.enabled = true;
                     poi.SetV3Options(continueAfterBossVictory: true, usePlaceholderVisuals: usePlaceholderPoiVisuals, useV3ChestPricing: true);
                     poi.Initialize(_layout, database);
                 }
             }
+
+            FindFirstObjectByType<EnemyWorld>()?.ResetAllAgentsForPromo();
+            FindFirstObjectByType<PickupWorld>()?.ClearAllActive();
+            FindFirstObjectByType<ProjectileWorld>()?.ClearAllActive();
+            FindFirstObjectByType<HostileProjectileWorld>()?.ClearAllActive();
 
             var enemyWorld = FindFirstObjectByType<EnemyWorld>();
             enemyWorld?.SetDefinitions(database.enemies);
@@ -135,12 +187,14 @@ namespace HighSeas.V3
             {
                 var layoutDef = ResolveIslandLayout();
                 PlacePlayerAtSafeSpawn(player, layoutDef, seed);
+                player.SetMovementEnabled(true);
             }
 
             var captainId = V3CaptainSelection.Selected;
             var captainProfile = V3CaptainProfile.Get(captainId);
             EnsureCaptainController(captainId, player);
             EnsureCaptainActive(captainId, player);
+            V3CaptainActiveController.Instance?.ResetForNewRun();
 
             var startingWeapon = ResolveStartingWeapon(captainProfile);
             var weapons = V3MultiShipWeaponLoadouts.FindLocalHumanWeaponController()
@@ -153,61 +207,86 @@ namespace HighSeas.V3
             EnsureLevelSystem();
             LevelSystem.Instance?.ConfigureV3();
             LevelSystem.Instance?.ApplyCombatExperiment(experimentProfile);
-            LevelSystem.Instance?.Initialize(database, startingWeapon);
+            LevelSystem.Instance?.PrepareForNewRun(database, startingWeapon);
             V3RunItemInventory.Ensure();
             V3RunItemEffects.Ensure();
-            V3RunPlaytestHotkeys.Ensure();
-            SpawnDirectorDebugUI.Ensure();
-            if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
-                WeaponCardAnimationDemo.Ensure();
-            V3BossSummonHotkey.Ensure();
-            var runCanvas = V3RunUiBootstrap.EnsureAll(_layout);
-            runCanvas.GetComponent<RunHud>()?.ForceRefresh();
+
+            if (firstRun)
+            {
+                V3RunPlaytestHotkeys.Ensure();
+                SpawnDirectorDebugUI.Ensure();
+                if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
+                    WeaponCardAnimationDemo.Ensure();
+                V3BossSummonHotkey.Ensure();
+            }
+
+            Canvas runCanvas;
+            if (firstRun)
+                runCanvas = V3RunUiBootstrap.EnsureAll(_layout);
+            else
+            {
+                V3DiscoverySystem.Ensure(_layout);
+                runCanvas = FindFirstObjectByType<RunHud>()?.GetComponentInParent<Canvas>();
+                if (runCanvas != null)
+                    V3MinimapHud.Ensure(runCanvas.transform, _layout);
+            }
+
+            runCanvas?.GetComponent<RunHud>()?.ForceRefresh();
 
             if (player != null)
             {
-                V3StormEdgeDamage.Ensure(player);
-                EnsureHostileProjectiles();
+                if (firstRun)
+                {
+                    V3StormEdgeDamage.Ensure(player);
+                    EnsureHostileProjectiles();
+                }
+
+                if (V3CaptainController.Instance == null)
+                    player.InitializeFromRun(RunManager.Instance.Stats.MaxHull);
+                else
+                    V3CaptainController.Instance.Initialize(captainId, player);
+
+                EnsurePlayerHealthBar(player);
             }
 
-            if (V3CaptainController.Instance == null)
-                player?.InitializeFromRun(RunManager.Instance.Stats.MaxHull);
-            EnsurePlayerHealthBar(player);
-
-            if (player != null)
+            if (firstRun)
             {
-                player.Damage.Died += OnPlayerDied;
-                if (TriggerBus.Instance != null)
-                    player.Damage.Damaged += OnPlayerDamaged;
+                EnsureCombatVfx();
+                EnsureCombatTelemetryDriver();
+                WeaponTargetingVisualizer.Ensure();
             }
 
-            EnsureCombatVfx();
-            EnsureCombatTelemetryDriver();
-            WeaponTargetingVisualizer.Ensure();
             if (!isPvPScene)
             {
                 ConfigureSpawnDirector(experimentProfile);
-                EnsurePressureBeats(enemyWorld, player);
-                EnsureOvertimeDirector(enemyWorld, player);
-                V3RouteEventDirector.Ensure();
+                FindFirstObjectByType<SpawnDirector>()?.ResetForNewRun();
+                if (firstRun)
+                {
+                    EnsurePressureBeats(enemyWorld, player);
+                    EnsureOvertimeDirector(enemyWorld, player);
+                    V3RouteEventDirector.Ensure();
+                }
             }
 
             RunManager.Instance.EnterPlaying();
             if (!isPvPScene)
             {
                 LevelSystem.Instance?.TryShowOpeningWeaponDraft();
-                if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
+                if (firstRun && V3PlaytestFlags.EnableRunPlaytestHotkeys)
                 {
                     V3ToastHud.Instance?.Show(
                         "Playtest: F8 hotkeys · G weapon card scatter · H card scroll",
                         5f);
                 }
 
-                var seedLabel = V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
+                var seedLabel = firstRun && V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
                 V3ToastHud.Instance?.Show(
-                    $"Saltwind voyage ({seedLabel} seed {seed}).\nExplore 12 chests + 4 shrines, secure the Beacon.",
-                    6f);
+                    firstRun
+                        ? $"Saltwind voyage ({seedLabel} seed {seed}).\nExplore 12 chests + 4 shrines, secure the Beacon."
+                        : $"New voyage (seed {seed}).\nIslands, chests, and spawn rerolled.",
+                    firstRun ? 6f : 5f);
             }
+
             if (multiShipConfig != null && multiShipConfig.SessionKind != V3RunSessionKind.SinglePlayer)
                 V3MultiShipRunSetup.ApplyAfterRunStart(
                     multiShipConfig.SessionKind,
@@ -216,7 +295,7 @@ namespace HighSeas.V3
                     startingWeapon,
                     multiShipConfig.ShipSpacing);
 
-            var seedLabelLog = V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
+            var seedLabelLog = firstRun && V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
             Debug.Log($"V3RunBootstrap: run seed={seed} ({seedLabelLog}), POI rng={seed + 404}.");
         }
 
@@ -311,6 +390,16 @@ namespace HighSeas.V3
 
             var layout = ResolveIslandLayout();
             stageBuilder.ConfigureV3Layout(layout);
+
+            var islandSettings = ProceduralIslandSettings.Default.Clamped();
+            stageBuilder.SetProceduralIslandSettings(islandSettings);
+
+            var layoutEntries = layout != null ? layout.CountSpawnableEntries() : 0;
+            var targetIslands = (islandSettings.countMin + islandSettings.countMax) * 0.5f;
+            var density = layoutEntries > 0
+                ? Mathf.Max(1f, targetIslands / layoutEntries)
+                : 1f;
+            stageBuilder.SetIslandDensityMultiplier(density);
         }
 
         IslandLayoutDefinition ResolveIslandLayout()
@@ -340,7 +429,11 @@ namespace HighSeas.V3
             ResolveSameTickBossDeath();
         }
 
-        void OnPlayerDamaged(float amount, bool _) => TriggerBus.Instance?.RaiseDamageTaken(amount);
+        void OnPlayerDamaged(float amount, bool _)
+        {
+            TriggerBus.Instance?.RaiseDamageTaken(amount);
+            RunCombatTelemetry.Instance?.RecordDamageTaken(amount);
+        }
 
         void OnPlayerDied()
         {
@@ -359,7 +452,7 @@ namespace HighSeas.V3
             ApplyConquestUnlockIfSecured();
             RunManager.Instance.SetState(RunState.PlayerDead);
             RunManager.Instance.FinalizeRunOnDeath();
-            V3ToastHud.Instance?.Show("Run ended — gold banked at port.", 4f);
+            V3ToastHud.Instance?.Show("Run ended — gold banked.", 4f);
         }
 
         void ResolveSameTickBossDeath()

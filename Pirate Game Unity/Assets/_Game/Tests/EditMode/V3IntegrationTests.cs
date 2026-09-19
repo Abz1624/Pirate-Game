@@ -44,20 +44,37 @@ namespace HighSeas.Tests
         }
 
         [Test]
-        public void V3StagePoiPlacer_PlacesTwelveSalvageChestsOnly()
+        public void V3StagePoiPlacer_PlacesConquestPois()
         {
             var layout = new StageLayout { seed = 12345, playerSpawn = Vector3.zero };
             var rng = new RunRng(12345);
             V3StagePoiPlacer.Place(layout, rng, null);
 
             var chests = 0;
+            var wrecks = 0;
+            var caches = 0;
+            var buoys = 0;
+            var charts = 0;
+            var beacons = 0;
             for (var i = 0; i < layout.pois.Count; i++)
             {
-                Assert.That(layout.pois[i].type, Is.EqualTo(POIType.SalvageChest));
-                chests++;
+                switch (layout.pois[i].type)
+                {
+                    case POIType.SalvageChest: chests++; break;
+                    case POIType.GildedWreck: wrecks++; break;
+                    case POIType.MerchantSkiff: caches++; break;
+                    case POIType.TrialBuoy: buoys++; break;
+                    case POIType.CursedIdol: charts++; break;
+                    case POIType.BossBeacon: beacons++; break;
+                }
             }
 
             Assert.That(chests, Is.EqualTo(12));
+            Assert.That(wrecks, Is.EqualTo(1));
+            Assert.That(caches, Is.EqualTo(1));
+            Assert.That(buoys, Is.EqualTo(1));
+            Assert.That(charts, Is.EqualTo(1));
+            Assert.That(beacons, Is.EqualTo(1));
 
             for (var i = 0; i < layout.pois.Count; i++)
                 Assert.That(PlayBounds.IsInsideStormSafeZone(layout.pois[i].position), Is.True);

@@ -921,6 +921,10 @@ namespace HighSeas.Promo
             if (stormEdge != null)
                 stormEdge.gameObject.SetActive(false);
 
+            var boundsWalls = FindFirstObjectByType<V3PlayBoundsWallVisual>();
+            if (boundsWalls != null)
+                boundsWalls.gameObject.SetActive(false);
+
             var debugOverlay = FindFirstObjectByType<CollisionDebugOverlay>();
             if (debugOverlay != null)
                 debugOverlay.enabled = false;

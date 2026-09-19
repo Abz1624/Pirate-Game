@@ -6,13 +6,11 @@ using UnityEngine;
 
 namespace HighSeas.V3
 {
-    /// <summary>Captain, beacon lock, chest progress and objective-secured banner.</summary>
+    /// <summary>Megabonk-style objective list (placeholder HUD).</summary>
     public sealed class V3ObjectiveHud : MonoBehaviour
     {
-        TextMeshProUGUI _captainText;
-        TextMeshProUGUI _beaconText;
-        TextMeshProUGUI _chestText;
-        TextMeshProUGUI _objectiveText;
+        readonly TextMeshProUGUI[] _lines = new TextMeshProUGUI[3];
+        readonly RectTransform[] _lineRoots = new RectTransform[3];
         DemoPacingSettings _pacing;
 
         public static V3ObjectiveHud Ensure(Transform canvas)
@@ -33,15 +31,14 @@ namespace HighSeas.V3
             panel.color = new Color(0.05f, 0.08f, 0.14f, 0.86f);
 
             var hud = root.AddComponent<V3ObjectiveHud>();
-            hud._captainText = CreateLine(root.transform, "CaptainLine", new Vector2(0f, -12f));
-            hud._beaconText = CreateLine(root.transform, "BeaconLine", new Vector2(0f, -40f));
-            hud._chestText = CreateLine(root.transform, "ChestLine", new Vector2(0f, -68f));
-            hud._objectiveText = CreateLine(root.transform, "ObjectiveLine", new Vector2(0f, -96f));
+            hud._lineRoots[0] = CreateLine(root.transform, "ObjectiveLine0", new Vector2(0f, -12f), out hud._lines[0]);
+            hud._lineRoots[1] = CreateLine(root.transform, "ObjectiveLine1", new Vector2(0f, -40f), out hud._lines[1]);
+            hud._lineRoots[2] = CreateLine(root.transform, "ObjectiveLine2", new Vector2(0f, -68f), out hud._lines[2]);
             hud._pacing = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
             return hud;
         }
 
-        static TextMeshProUGUI CreateLine(Transform parent, string name, Vector2 anchoredPos)
+        static RectTransform CreateLine(Transform parent, string name, Vector2 anchoredPos, out TextMeshProUGUI text)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -51,54 +48,34 @@ namespace HighSeas.V3
             rect.pivot = new Vector2(1f, 1f);
             rect.anchoredPosition = anchoredPos;
             rect.sizeDelta = new Vector2(-16f, 24f);
-            var text = go.AddComponent<TextMeshProUGUI>();
+            text = go.AddComponent<TextMeshProUGUI>();
             text.fontSize = 16f;
             text.alignment = TextAlignmentOptions.MidlineRight;
             text.color = V3PlaceholderFactory.UiText;
-            return text;
+            return rect;
         }
 
         void Update()
         {
             if (RunManager.Instance == null) return;
 
-            var profile = V3CaptainProfile.Get(V3RunContext.CaptainId);
-            if (_captainText != null)
-                _captainText.text = profile.DisplayName;
+            V3MegabonkQuestDisplay.GatherRunState(
+                out var beaconState,
+                out var bossSummoned,
+                out var bossDefeated);
+            var visible = V3MegabonkQuestDisplay.BuildVisibleLines(beaconState, bossSummoned, bossDefeated);
 
-            if (_beaconText != null)
+            for (var i = 0; i < _lineRoots.Length; i++)
             {
-                var discovery = V3DiscoverySystem.Instance;
-                var beaconState = discovery != null ? discovery.BeaconState : BeaconRevealState.Hidden;
-                _beaconText.text = beaconState switch
-                {
-                    BeaconRevealState.Discovered => "Beacon: DISCOVERED",
-                    BeaconRevealState.ExactMarker => "Beacon: MARKED",
-                    BeaconRevealState.DirectionSector => "Beacon: NEARBY",
-                    _ => "Beacon: UNKNOWN"
-                };
-            }
+                var show = i < visible.Count;
+                _lineRoots[i].gameObject.SetActive(show);
+                if (!show || _lines[i] == null) continue;
 
-            if (_chestText != null)
-                _chestText.text = string.Empty;
-
-            if (_objectiveText != null)
-            {
-                _objectiveText.text = RunManager.Instance.ObjectiveSecured
-                    ? "OBJECTIVE SECURED"
-                    : "Secure the Treasury Beacon";
-                _objectiveText.color = RunManager.Instance.ObjectiveSecured
+                _lines[i].text = visible[i];
+                _lines[i].color = visible[i].StartsWith("✓")
                     ? new Color(0.45f, 0.95f, 0.55f)
                     : V3PlaceholderFactory.UiText;
             }
-        }
-
-        static string FormatTime(float seconds)
-        {
-            seconds = Mathf.Max(0f, seconds);
-            var mins = Mathf.FloorToInt(seconds / 60f);
-            var secs = Mathf.FloorToInt(seconds % 60f);
-            return $"{mins:00}:{secs:00}";
         }
     }
 }

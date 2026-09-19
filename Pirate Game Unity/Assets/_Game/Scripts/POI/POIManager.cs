@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Meta;
@@ -32,6 +33,8 @@ namespace HighSeas.POI
         readonly HashSet<int> _powderCacheAmbushStarted = new();
         readonly HashSet<int> _signalBuoyChargeAnnounced = new();
         readonly List<int> _powderCacheEnemySlots = new();
+        readonly List<int> _pendingChestPoiIndices = new();
+        float _nextChestSpawnTime;
         const int PowderCacheAmbushCount = 3;
         const int PowderCacheMaxThreat = 4;
         const float PowderCacheTriggerRadius = 8f;
@@ -56,6 +59,8 @@ namespace HighSeas.POI
 
         public void Initialize(World.StageLayout layout, GameDatabase db)
         {
+            ClearPoiMarkers();
+            ResetEncounterState();
             _layout = layout;
             database = db;
             if (loot == null)
@@ -67,6 +72,29 @@ namespace HighSeas.POI
             BuildMarkers();
         }
 
+        void ClearPoiMarkers()
+        {
+            var root = poiRoot != null ? poiRoot : transform;
+            for (var i = root.childCount - 1; i >= 0; i--)
+                Destroy(root.GetChild(i).gameObject);
+        }
+
+        void ResetEncounterState()
+        {
+            _bossSummoned = false;
+            _bossDefeated = false;
+            _paidChestCount = 0;
+            _powderCacheEncounterId = 0;
+            _powderCacheCleared = false;
+            _powderCacheAmbushStarted.Clear();
+            _signalBuoyChargeAnnounced.Clear();
+            _powderCacheEnemySlots.Clear();
+            _signalBuoyCharges.Clear();
+            _signalBuoysCompleted.Clear();
+            _pendingChestPoiIndices.Clear();
+            _nextChestSpawnTime = GameConstants.V3ProgressiveChestInitialDelaySeconds;
+        }
+
         void BuildMarkers()
         {
             if (_layout == null) return;
@@ -74,12 +102,40 @@ namespace HighSeas.POI
             for (var i = 0; i < _layout.pois.Count; i++)
             {
                 var poi = _layout.pois[i];
-                if (poi.type != POIType.SalvageChest)
+                if (_useV3ChestPricing && poi.type == POIType.SalvageChest)
+                {
+                    _pendingChestPoiIndices.Add(i);
                     continue;
-                var marker = CreateMarker(poi.type, poi.position, root);
-                var trigger = marker.AddComponent<POIInteractable>();
-                trigger.Initialize(this, poi.type, i, juiceSettings, pacingSettings);
+                }
+
+                SpawnPoiMarker(i, root);
             }
+        }
+
+        void SpawnPoiMarker(int poiIndex, Transform root)
+        {
+            if (_layout == null || poiIndex < 0 || poiIndex >= _layout.pois.Count) return;
+            if (root == null)
+                root = poiRoot != null ? poiRoot : transform;
+
+            var poi = _layout.pois[poiIndex];
+            var marker = CreateMarker(poi.type, poi.position, root);
+            var trigger = marker.AddComponent<POIInteractable>();
+            trigger.Initialize(this, poi.type, poiIndex, juiceSettings, pacingSettings);
+        }
+
+        void TickProgressiveChestSpawns()
+        {
+            if (!_useV3ChestPricing || _pendingChestPoiIndices.Count == 0) return;
+            if (RunManager.Instance == null || !RunManager.Instance.IsGameplayActive) return;
+
+            var elapsed = RunManager.Instance.ElapsedSeconds;
+            if (elapsed < _nextChestSpawnTime) return;
+
+            var poiIndex = _pendingChestPoiIndices[0];
+            _pendingChestPoiIndices.RemoveAt(0);
+            SpawnPoiMarker(poiIndex, null);
+            _nextChestSpawnTime = elapsed + GameConstants.V3ProgressiveChestIntervalSeconds;
         }
 
         GameObject CreateMarker(POIType type, Vector3 position, Transform root)
@@ -90,7 +146,12 @@ namespace HighSeas.POI
                 return CreatePrefabMarker(type, prefab, position, spawnPos, root);
 
             if (_usePlaceholderVisuals)
-                return V3PlaceholderFactory.CreatePoiMarker(type, spawnPos, root);
+            {
+                var marker = V3PlaceholderFactory.CreatePoiMarker(type, spawnPos, root);
+                if (type == POIType.SalvageChest)
+                    SalvageChestWaterFloat.Attach(marker, juiceSettings);
+                return marker;
+            }
 
             GameObject go;
             if (prefab != null)
@@ -112,6 +173,8 @@ namespace HighSeas.POI
             };
 
             StripColliders(go);
+            if (type == POIType.SalvageChest)
+                SalvageChestWaterFloat.Attach(go, juiceSettings);
             return go;
         }
 
@@ -123,25 +186,12 @@ namespace HighSeas.POI
 
             if (type == POIType.SalvageChest)
             {
-                AlignBottomToWater(go, waterPos.y + 0.05f);
+                SalvageChestWaterFloat.Attach(go, juiceSettings);
                 SalvageChestTreasureGlow.Attach(go, juiceSettings);
             }
 
             StripColliders(go);
             return go;
-        }
-
-        static void AlignBottomToWater(GameObject go, float waterY)
-        {
-            var renderers = go.GetComponentsInChildren<Renderer>(true);
-            if (renderers.Length == 0)
-                return;
-
-            var bounds = renderers[0].bounds;
-            for (var i = 1; i < renderers.Length; i++)
-                bounds.Encapsulate(renderers[i].bounds);
-
-            go.transform.position += Vector3.up * (waterY - bounds.min.y);
         }
 
         static void StripColliders(GameObject go)
@@ -220,6 +270,7 @@ namespace HighSeas.POI
             }
 
             MarkPoiUsed(index);
+            RunCombatTelemetry.Instance?.RecordPoiInteraction(type.ToString());
             return true;
         }
 
@@ -256,6 +307,7 @@ namespace HighSeas.POI
 
             TriggerBus.Instance?.RaiseChestOpen();
             MarkPoiUsed(index);
+            RunCombatTelemetry.Instance?.RecordPoiInteraction(POIType.SalvageChest.ToString());
             return true;
         }
 
@@ -296,6 +348,7 @@ namespace HighSeas.POI
             V3RunItemInventory.Instance?.TryAddItem(itemId);
             RunManager.Instance.AddGold(20);
             MarkPoiUsed(index);
+            RunCombatTelemetry.Instance?.RecordPoiInteraction(POIType.MerchantSkiff.ToString());
             return true;
         }
 
@@ -340,6 +393,7 @@ namespace HighSeas.POI
             ApplySignalBuoyReward();
             _signalBuoysCompleted.Add(index);
             MarkPoiUsed(index);
+            RunCombatTelemetry.Instance?.RecordPoiInteraction(POIType.TrialBuoy.ToString());
             return true;
         }
 
@@ -537,6 +591,8 @@ namespace HighSeas.POI
 
         void Update()
         {
+            TickProgressiveChestSpawns();
+
             if (!_powderCacheCleared && _powderCacheEncounterId > 0 && IsPowderCacheEncounterClear())
                 _powderCacheCleared = true;
 

@@ -65,7 +65,7 @@ namespace HighSeas.V3
             if (V3CaptainCatalog.IsLocked(_selectedCaptain))
                 return;
             V3CaptainSelection.Selected = _selectedCaptain;
-            CombatExperimentContext.SetActiveProfileId(_selectedProfileId);
+            CombatExperimentContext.SetActiveProfileId(CombatExperimentProfile.FullCombatV2Id);
             AppRoot.Instance?.LoadScene(V3SceneNames.SaltwindRun);
         }
 

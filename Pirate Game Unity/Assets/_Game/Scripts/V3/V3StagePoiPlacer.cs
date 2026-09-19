@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace HighSeas.V3
 {
-    /// <summary>Places salvage chest POIs for the v3 conquest layout.</summary>
+    /// <summary>Places 12 salvage chests, 4 finite encounter POIs, and the treasury beacon for the v3 conquest layout.</summary>
     public static class V3StagePoiPlacer
     {
         const int SalvageChestCount = 12;
@@ -17,6 +17,14 @@ namespace HighSeas.V3
 
         static float PoiEdgeMargin => PlayBounds.StormEdgeMargin + Clearance;
 
+        static readonly POIType[] SpecialTypes =
+        {
+            POIType.GildedWreck,
+            POIType.MerchantSkiff,
+            POIType.TrialBuoy,
+            POIType.CursedIdol
+        };
+
         public static void Place(StageLayout layout, RunRng rng, IslandLayoutDefinition islandLayout)
         {
             layout.pois.Clear();
@@ -25,8 +33,13 @@ namespace HighSeas.V3
             var spawn = layout.playerSpawn;
             var placed = new List<Vector3>();
 
+            for (var i = 0; i < SpecialTypes.Length; i++)
+                TryPlace(layout, rng, spawn, placed, SpecialTypes[i], islandLayout);
+
             for (var i = 0; i < SalvageChestCount; i++)
                 TryPlace(layout, rng, spawn, placed, POIType.SalvageChest, islandLayout);
+
+            V3SpawnAnchorValidator.SyncBossBeaconPoi(layout);
         }
 
         static void TryPlace(

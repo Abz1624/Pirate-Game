@@ -32,6 +32,7 @@ namespace HighSeas.V3
             EnsureV3ResultsScreen(canvas);
             V3DiscoverySystem.Ensure(layout);
             V3MinimapHud.Ensure(canvas.transform, layout);
+            V3BossBeaconGuide.Ensure(canvas.transform);
             V3ToastHud.Ensure(canvas.transform);
             V3InteractionController.Ensure(canvas.transform);
 

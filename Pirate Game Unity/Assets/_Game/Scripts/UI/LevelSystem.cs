@@ -71,6 +71,12 @@ namespace HighSeas.UI
             RefreshXpToNext();
         }
 
+        public void PrepareForNewRun(GameDatabase db, string startingWeapon)
+        {
+            _openingDraftShown = false;
+            Initialize(db, startingWeapon);
+        }
+
         public int GetWeaponLevel(string weaponId)
         {
             return _weaponLevels.TryGetValue(weaponId, out var level) ? level : 0;
@@ -179,6 +185,7 @@ namespace HighSeas.UI
             ApplyOffer(offer);
             if (offer.kind == LevelOfferKind.NewWeapon)
                 RunCombatTelemetry.Instance?.RecordNewWeaponOfferAccepted();
+            RunCombatTelemetry.Instance?.RecordOfferChoice(offer.kind.ToString(), offer.id);
             LoadoutChanged?.Invoke();
             RunManager.Instance?.SetPause(PauseReason.None);
             RunManager.Instance?.EnterPlaying();

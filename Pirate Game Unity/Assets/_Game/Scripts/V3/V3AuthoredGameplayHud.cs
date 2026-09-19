@@ -18,6 +18,7 @@ namespace HighSeas.V3
         public const float DefaultTopInset = 24f;
         const float ProfileExtraUp = 16f;
         const float TimerExtraDown = 4f;
+        const float QuestExtraDown = 12f;
 
         public static bool IsActive { get; private set; }
 
@@ -32,6 +33,7 @@ namespace HighSeas.V3
         RectTransform _profileRect;
         RectTransform _questRect;
         readonly List<TextMeshProUGUI> _questLines = new();
+        readonly List<RectTransform> _questSlotRoots = new();
 
         V3PlayerInfoHudArtSettings _art;
         PlayerShipController _player;
@@ -60,6 +62,19 @@ namespace HighSeas.V3
             }
 
             return null;
+        }
+
+        public static void SetProfileVisible(bool visible)
+        {
+            var hud = Object.FindFirstObjectByType<V3AuthoredGameplayHud>(FindObjectsInactive.Include);
+            hud?.ApplyProfileVisible(visible);
+        }
+
+        public void ApplyProfileVisible(bool visible)
+        {
+            BindIfNeeded();
+            if (_profileRect != null)
+                _profileRect.gameObject.SetActive(visible);
         }
 
         static void ConfigureCanvas(Canvas canvas)
@@ -124,17 +139,26 @@ namespace HighSeas.V3
                 weaponRow.gameObject.SetActive(false);
 
             _questLines.Clear();
+            _questSlotRoots.Clear();
             var questContent = root.Find("Quest/View/Content");
             if (questContent != null)
             {
+                var slots = new List<(int order, RectTransform root, TextMeshProUGUI line)>();
                 for (var c = 0; c < questContent.childCount; c++)
                 {
-                    var child = questContent.GetChild(c);
-                    if (!child.name.StartsWith("Quest_Slot"))
+                    var child = questContent.GetChild(c) as RectTransform;
+                    if (child == null || !child.name.StartsWith("Quest_Slot"))
                         continue;
                     var line = child.Find("Text (TMP)")?.GetComponent<TextMeshProUGUI>();
-                    if (line != null)
-                        _questLines.Add(line);
+                    if (line == null) continue;
+                    slots.Add((GetQuestSlotOrder(child.name), child, line));
+                }
+
+                slots.Sort((a, b) => a.order.CompareTo(b.order));
+                for (var i = 0; i < slots.Count; i++)
+                {
+                    _questSlotRoots.Add(slots[i].root);
+                    _questLines.Add(slots[i].line);
                 }
             }
 
@@ -173,7 +197,7 @@ namespace HighSeas.V3
                 _questRect.anchorMin = new Vector2(1f, 1f);
                 _questRect.anchorMax = new Vector2(1f, 1f);
                 _questRect.pivot = new Vector2(1f, 1f);
-                _questRect.anchoredPosition = new Vector2(-inset, -(inset + minimapHeight + inset));
+                _questRect.anchoredPosition = new Vector2(-inset, -(inset + minimapHeight + inset + QuestExtraDown));
             }
         }
 
@@ -267,39 +291,45 @@ namespace HighSeas.V3
 
             if (V3RunSession.IsPvP)
             {
-                SetQuestLine(0, "PvP Duel");
-                SetQuestLine(1, "Defeat the rival captain");
-                SetQuestLine(2, V3PvPRunDirector.RivalDefeated
-                    ? "Victory — rival sunk"
-                    : RunManager.Instance.IsRunEnded
-                        ? "Defeated"
-                        : "Sink the rival ship");
+                ApplyQuestLines(new List<string>
+                {
+                    "PvP Duel",
+                    V3PvPRunDirector.RivalDefeated
+                        ? "✓ Victory — rival sunk"
+                        : RunManager.Instance.IsRunEnded
+                            ? "Defeated"
+                            : "» Sink the rival ship"
+                });
                 return;
             }
 
-            var profile = V3CaptainProfile.Get(V3RunContext.CaptainId);
-            var discovery = V3DiscoverySystem.Instance;
-            var beaconState = discovery != null ? discovery.BeaconState : BeaconRevealState.Hidden;
-            var beaconLine = beaconState switch
-            {
-                BeaconRevealState.Discovered => "Beacon: discovered",
-                BeaconRevealState.ExactMarker => "Beacon: marked on map",
-                BeaconRevealState.DirectionSector => "Beacon: nearby",
-                _ => "Find the Treasury Beacon"
-            };
-
-            SetQuestLine(0, profile.DisplayName);
-            SetQuestLine(1, beaconLine);
-            SetQuestLine(2, RunManager.Instance.ObjectiveSecured
-                ? "Objective secured"
-                : "Secure the Treasury Beacon");
+            V3MegabonkQuestDisplay.GatherRunState(
+                out var beaconState,
+                out var bossSummoned,
+                out var bossDefeated);
+            ApplyQuestLines(V3MegabonkQuestDisplay.BuildVisibleLines(beaconState, bossSummoned, bossDefeated));
         }
 
-        void SetQuestLine(int index, string text)
+        void ApplyQuestLines(List<string> visibleLines)
         {
-            if (index < 0 || index >= _questLines.Count || _questLines[index] == null)
-                return;
-            _questLines[index].text = text;
+            for (var i = 0; i < _questSlotRoots.Count; i++)
+            {
+                var show = i < visibleLines.Count;
+                _questSlotRoots[i].gameObject.SetActive(show);
+                if (show && _questLines[i] != null)
+                    _questLines[i].text = visibleLines[i];
+            }
+        }
+
+        static int GetQuestSlotOrder(string slotName)
+        {
+            if (slotName == "Quest_Slot")
+                return 0;
+            if (!slotName.StartsWith("Quest_Slot ("))
+                return 99;
+
+            var inner = slotName.Substring("Quest_Slot (".Length).TrimEnd(')');
+            return int.TryParse(inner, out var index) ? index : 99;
         }
 
         static TextMeshProUGUI FindTmp(Transform root, string path)

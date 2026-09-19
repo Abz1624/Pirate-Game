@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using UnityEngine;
@@ -43,6 +44,7 @@ namespace HighSeas.V3
             if (!_items.Contains(itemId))
                 _items.Add(itemId);
             ApplyItemEffect(itemId);
+            RunCombatTelemetry.Instance?.RecordItemAcquired(itemId);
             V3ToastHud.Instance?.Show(V3ContentDescriptions.FormatAcquiredItem(itemId), 4f);
             return true;
         }
@@ -102,5 +104,11 @@ namespace HighSeas.V3
 
         public bool HasItem(string itemId) =>
             !string.IsNullOrEmpty(itemId) && _items.Contains(itemId);
+
+        public void ClearForNewRun()
+        {
+            _items.Clear();
+            _stacks.Clear();
+        }
     }
 }

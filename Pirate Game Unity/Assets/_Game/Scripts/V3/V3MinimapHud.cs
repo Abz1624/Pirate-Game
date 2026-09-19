@@ -144,10 +144,13 @@ namespace HighSeas.V3
             _mapScale = ComputeMapScale();
 
             var pos = _player.Position;
-            _contentRoot.anchoredPosition = -WorldToMap(pos);
+            var viewCenter = ComputeClampedMapViewCenter(pos);
+            _contentRoot.anchoredPosition = -WorldToMap(viewCenter);
             _contentRoot.sizeDelta = new Vector2(
                 PlayBounds.HalfExtentX * _mapScale * 2.2f,
                 PlayBounds.HalfExtentZ * _mapScale * 2.2f);
+
+            _playerIcon.anchoredPosition = WorldToMap(pos) - WorldToMap(viewCenter);
 
             var forward = GetPlayerHeading();
             var headingDeg = Mathf.Atan2(forward.x, -forward.z) * Mathf.Rad2Deg + headingOffsetDegrees;
@@ -355,6 +358,36 @@ namespace HighSeas.V3
                 32f,
                 Mathf.Max(PlayBounds.HalfExtentX, PlayBounds.HalfExtentZ) * VisibleWorldAxisFraction);
             return innerHalf / worldHalf;
+        }
+
+        /// <summary>
+        /// Keeps the player centered on the minimap until the visible window hits a playable edge,
+        /// then slides the map so the icon moves toward that edge (Megabonk-style clamp).
+        /// </summary>
+        Vector3 ComputeClampedMapViewCenter(Vector3 playerWorld)
+        {
+            if (_mapClip == null)
+                return playerWorld;
+
+            var innerHalf = Mathf.Min(_mapClip.rect.width, _mapClip.rect.height) * 0.5f;
+            if (innerHalf <= 1f)
+                innerHalf = 60f;
+
+            var visibleHalfWorld = innerHalf / Mathf.Max(_mapScale, 0.0001f);
+            var local = playerWorld - PlayBounds.Center;
+            local.y = 0f;
+
+            var halfX = PlayBounds.HalfExtentX;
+            var halfZ = PlayBounds.HalfExtentZ;
+            var maxOffsetX = Mathf.Max(0f, halfX - visibleHalfWorld);
+            var maxOffsetZ = Mathf.Max(0f, halfZ - visibleHalfWorld);
+
+            var viewLocal = new Vector3(
+                Mathf.Clamp(local.x, -maxOffsetX, maxOffsetX),
+                0f,
+                Mathf.Clamp(local.z, -maxOffsetZ, maxOffsetZ));
+
+            return PlayBounds.Center + viewLocal;
         }
 
         public void BuildMarkers(StageLayout layout)
@@ -659,13 +692,15 @@ namespace HighSeas.V3
                 child.gameObject.SetActive(true);
                 var discovery = V3DiscoverySystem.Instance;
                 var discovered = discovery.IsPoiVisible(markerIndex);
+                var beaconDiscovered = poi.type == POIType.BossBeacon &&
+                                       discovery.BeaconState >= BeaconRevealState.Discovered;
                 var beaconHint = poi.type == POIType.BossBeacon &&
                                  discovery.BeaconState >= BeaconRevealState.ExactMarker;
                 var exploredNearPoi = discovery.IsCellExplored(poi.position);
                 var nearPlayer = _player != null &&
                                  Vector3.Distance(_player.Position, poi.position) <= V3DiscoverySystem.DiscoveryRadius;
 
-                var alpha = discovered || beaconHint ? 1f :
+                var alpha = discovered || beaconHint || beaconDiscovered ? 1f :
                     exploredNearPoi || nearPlayer ? 0.92f : 0f;
 
                 var group = child.GetComponent<CanvasGroup>();
@@ -728,15 +763,18 @@ namespace HighSeas.V3
         void PulseBossBeacon()
         {
             _beaconPulse += Time.unscaledDeltaTime * 3f;
-            if (_mapRoot == null) return;
+            if (_mapRoot == null || V3DiscoverySystem.Instance == null) return;
+
+            var highlightDiscovered = V3DiscoverySystem.Instance.BeaconState >= BeaconRevealState.Discovered;
 
             for (var i = 0; i < _mapRoot.childCount; i++)
             {
                 var child = _mapRoot.GetChild(i);
                 if (!child.name.Contains(nameof(POIType.BossBeacon))) continue;
                 var group = child.GetComponent<CanvasGroup>();
-                if (group != null && group.alpha < 0.5f) continue;
-                var scale = 1f + Mathf.Sin(_beaconPulse) * 0.08f;
+                if (group != null && group.alpha < 0.5f && !highlightDiscovered) continue;
+                var pulseStrength = highlightDiscovered ? 0.16f : 0.08f;
+                var scale = 1f + Mathf.Sin(_beaconPulse) * pulseStrength;
                 child.localScale = new Vector3(scale, scale, 1f);
             }
         }
@@ -753,7 +791,7 @@ namespace HighSeas.V3
             if (!beacon.HasValue) return 0f;
             var delta = beacon.Value - from;
             delta.y = 0f;
-            return Mathf.Atan2(delta.x, -delta.z) * Mathf.Rad2Deg;
+            return Mathf.Atan2(delta.x, -delta.z) * Mathf.Rad2Deg + 180f;
         }
 
         Vector3 GetPlayerHeading()

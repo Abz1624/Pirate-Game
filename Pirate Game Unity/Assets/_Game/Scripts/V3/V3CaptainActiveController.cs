@@ -48,6 +48,16 @@ namespace HighSeas.V3
 
         public void Initialize(V3CaptainId id) => captainId = id;
 
+        public void ResetForNewRun()
+        {
+            _cooldownRemaining = 0f;
+            _braceTimer = 0f;
+            _kegRadiusBoostTimer = 0f;
+            _richieTimer = 0f;
+            _emberFlameTimer = 0f;
+            _roxieTimer = 0f;
+        }
+
         void Update()
         {
             if (!CombatExperimentContext.CaptainActivesEnabled) return;
@@ -113,6 +123,7 @@ namespace HighSeas.V3
             }
 
             _cooldownRemaining = def.cooldown;
+            RunCombatTelemetry.Instance?.Record("captain_active_used", new System.Collections.Generic.Dictionary<string, object> { ["captain"] = captainId.ToString() });
             V3ToastHud.Instance?.Show($"{def.displayName}!", 2.5f);
             return true;
         }
