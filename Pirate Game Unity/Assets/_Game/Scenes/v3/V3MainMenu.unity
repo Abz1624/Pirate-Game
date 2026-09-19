@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &443303246
+--- !u!1 &640058393
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,68 +127,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 443303248}
-  - component: {fileID: 443303247}
-  m_Layer: 0
-  m_Name: V3MainMenu
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &443303247
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 443303246}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0cd79a3c79df3948b367a891ac56dbe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.V3.V3MainMenuController
-  menuCanvas: {fileID: 0}
-  playButton: {fileID: 0}
-  quitButton: {fileID: 0}
-  titleText: {fileID: 0}
-  versionText: {fileID: 0}
-  captainLabel: {fileID: 0}
-  rookButton: {fileID: 0}
-  brineButton: {fileID: 0}
-  flintButton: {fileID: 0}
-  captainDetailText: {fileID: 0}
-  collectionPanel: {fileID: 0}
-  weaponsTabButton: {fileID: 0}
-  logbooksTabButton: {fileID: 0}
-  itemsTabButton: {fileID: 0}
-  questsTabButton: {fileID: 0}
---- !u!4 &443303248
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 443303246}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1086088536
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1086088539}
-  - component: {fileID: 1086088538}
-  - component: {fileID: 1086088537}
+  - component: {fileID: 640058396}
+  - component: {fileID: 640058395}
+  - component: {fileID: 640058394}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -196,21 +137,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1086088537
+--- !u!81 &640058394
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1086088536}
+  m_GameObject: {fileID: 640058393}
   m_Enabled: 1
---- !u!20 &1086088538
+--- !u!20 &640058395
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1086088536}
+  m_GameObject: {fileID: 640058393}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -255,16 +196,61 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &1086088539
+--- !u!4 &640058396
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1086088536}
+  m_GameObject: {fileID: 640058393}
   serializedVersion: 2
   m_LocalRotation: {x: 0.2079117, y: 0, z: 0, w: 0.9781476}
   m_LocalPosition: {x: 0, y: 12, z: -18}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1907799675
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1907799677}
+  - component: {fileID: 1907799676}
+  m_Layer: 0
+  m_Name: V3MainMenu
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1907799676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1907799675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0cd79a3c79df3948b367a891ac56dbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.V3.V3MainMenuController
+  menuCanvas: {fileID: 0}
+--- !u!4 &1907799677
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1907799675}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -274,5 +260,5 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1086088539}
-  - {fileID: 443303248}
+  - {fileID: 640058396}
+  - {fileID: 1907799677}

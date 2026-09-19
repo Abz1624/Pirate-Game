@@ -146,7 +146,8 @@ namespace HighSeas.Weapons
             _player = ownerShip != null ? ownerShip : FindFirstObjectByType<PlayerShipController>();
             _enemies = FindFirstObjectByType<EnemyWorld>();
             _projectiles = FindFirstObjectByType<ProjectileWorld>();
-            _juice = FindFirstObjectByType<WeaponJuiceController>();
+            if (_juice == null)
+                _juice = FindFirstObjectByType<WeaponJuiceController>();
             if (demoPacing == null)
                 demoPacing = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
         }

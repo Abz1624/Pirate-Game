@@ -38,6 +38,14 @@ namespace HighSeas.Core
         public const int StandardEnemyKillGold = 10;
         public const float V3ProgressiveChestInitialDelaySeconds = 20f;
         public const float V3ProgressiveChestIntervalSeconds = 30f;
+        public const float V3ChestSpawnGoldFraction = 0.8f;
+        public const int V3SalvageChestPoolSize = 20;
+        /// <summary>Applied to runtime enemy hull after minute/tier scaling (-33%).</summary>
+        public const float EnemyHealthGlobalMultiplier = 2f / 3f;
+        /// <summary>Applied to all XP granted during a run (+50%).</summary>
+        public const float XpGainGlobalMultiplier = 1.5f;
+        /// <summary>Continuous + pack cannonboat spawn rate (−33%).</summary>
+        public const float CannonboatSpawnRateMultiplier = 2f / 3f;
         public const float CreatureKnockbackSeconds = 1f;
         /// <summary>Extra gap kept between creature centers and the player hull.</summary>
         public const float CreatureHullSeparationPadding = 0.55f;
@@ -130,7 +138,8 @@ namespace HighSeas.Core
         {
             var tierMult = tier switch { 1 => 1f, 2 => 1.45f, _ => 2.05f };
             var stageMult = stageIndex switch { 0 => 1f, 1 => 1.22f, _ => 1.5f };
-            return baseHp * (1f + 0.09f * minute + 0.018f * minute * minute) * tierMult * stageMult;
+            return baseHp * (1f + 0.09f * minute + 0.018f * minute * minute) * tierMult * stageMult
+                   * GameConstants.EnemyHealthGlobalMultiplier;
         }
 
         public static float EnemyDamage(float baseDamage, float minute, int tier, int stageIndex)

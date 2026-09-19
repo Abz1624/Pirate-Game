@@ -16,6 +16,7 @@ namespace HighSeas.World
                 return 0;
 
             var rng = new RunRng(seed);
+            var tropicalPrefabs = TropicalIslandPrefabCatalog.GetRuntimePrefabs();
             var count = 0;
 
             for (var c = 0; c < layout.clusters.Length; c++)
@@ -30,7 +31,8 @@ namespace HighSeas.World
                 for (var i = 0; i < cluster.islands.Length; i++)
                 {
                     var entry = cluster.islands[i];
-                    if (entry.prefab == null) continue;
+                    var prefab = TropicalIslandPrefabCatalog.ResolvePrefab(entry, tropicalPrefabs, rng);
+                    if (prefab == null) continue;
 
                     var positionRadius = ResolvePositionJitter(entry.positionJitter, useV3SeedVariation);
                     var localJitter = RandomInCircle(rng, positionRadius);
@@ -39,8 +41,8 @@ namespace HighSeas.World
                     var yaw = entry.yRotation + (rng.MapFloat() * 2f - 1f) * rotationJitter;
                     var rotation = Quaternion.Euler(0f, yaw, 0f);
 
-                    var instance = Object.Instantiate(entry.prefab, position, rotation, islandRoot);
-                    instance.name = entry.prefab.name;
+                    var instance = Object.Instantiate(prefab, position, rotation, islandRoot);
+                    instance.name = prefab.name;
                     instance.transform.localScale = ResolveScale(entry);
                     IslandColliderUtility.ConfigureIslandCollision(instance);
                     count++;

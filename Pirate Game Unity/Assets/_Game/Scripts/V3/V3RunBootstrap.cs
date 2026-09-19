@@ -135,6 +135,7 @@ namespace HighSeas.V3
 
         void BootstrapRun(int seed, bool firstRun)
         {
+            ConfigureStageBuilder();
             LevelSystem.Instance?.CancelPendingLevelUps();
             LevelUpModal.Instance?.Hide();
             RunManager.Instance?.SetPause(PauseReason.None);
@@ -251,10 +252,11 @@ namespace HighSeas.V3
 
             if (firstRun)
             {
-                EnsureCombatVfx();
                 EnsureCombatTelemetryDriver();
                 WeaponTargetingVisualizer.Ensure();
             }
+
+            EnsureCombatVfx();
 
             if (!isPvPScene)
             {
@@ -282,7 +284,7 @@ namespace HighSeas.V3
                 var seedLabel = firstRun && V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
                 V3ToastHud.Instance?.Show(
                     firstRun
-                        ? $"Saltwind voyage ({seedLabel} seed {seed}).\nExplore 12 chests + 4 shrines, secure the Beacon."
+                        ? $"Saltwind voyage ({seedLabel} seed {seed}).\nFind salvage chests as you bank gold, secure the Beacon."
                         : $"New voyage (seed {seed}).\nIslands, chests, and spawn rerolled.",
                     firstRun ? 6f : 5f);
             }
@@ -393,13 +395,7 @@ namespace HighSeas.V3
 
             var islandSettings = ProceduralIslandSettings.Default.Clamped();
             stageBuilder.SetProceduralIslandSettings(islandSettings);
-
-            var layoutEntries = layout != null ? layout.CountSpawnableEntries() : 0;
-            var targetIslands = (islandSettings.countMin + islandSettings.countMax) * 0.5f;
-            var density = layoutEntries > 0
-                ? Mathf.Max(1f, targetIslands / layoutEntries)
-                : 1f;
-            stageBuilder.SetIslandDensityMultiplier(density);
+            stageBuilder.SetIslandDensityMultiplier(1f);
         }
 
         IslandLayoutDefinition ResolveIslandLayout()

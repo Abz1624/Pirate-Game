@@ -31,7 +31,7 @@ namespace HighSeas.World
             countMin = 40,
             countMax = 40,
             islandDiameterMeters = 12f,
-            minSeparationMeters = 28f,
+            minSeparationMeters = 22f,
             maxPlacementAttempts = 8000
         };
 

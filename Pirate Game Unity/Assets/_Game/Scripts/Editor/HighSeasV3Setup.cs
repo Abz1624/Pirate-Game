@@ -21,10 +21,14 @@ namespace HighSeas.Editor
         const string DataV3Folder = "Assets/_Game/Data/V3";
         const string ResourcesV3Layout = "Assets/_Game/Resources/V3SaltwindIslandLayout.asset";
 
+        const string ResourcesTropicalCatalog = "Assets/_Game/Resources/TropicalIslandPrefabCatalog.asset";
+
         [MenuItem("HighSeas/V3/Setup All Scenes")]
         public static void SetupAll()
         {
             EnsureFolders();
+            var tropicalPrefabs = LoadTropicalIslandPrefabs();
+            EnsureTropicalPrefabCatalog(tropicalPrefabs);
             var layout = CreateOrUpdateIslandLayout();
             CreateBootScene();
             CreateMainMenuScene();
@@ -40,6 +44,8 @@ namespace HighSeas.Editor
         public static void RegenerateIslandLayoutMenu()
         {
             EnsureFolders();
+            var tropicalPrefabs = LoadTropicalIslandPrefabs();
+            EnsureTropicalPrefabCatalog(tropicalPrefabs);
             CreateOrUpdateIslandLayout();
             AssetDatabase.SaveAssets();
         }
@@ -118,21 +124,19 @@ namespace HighSeas.Editor
                 if (!AssetDatabase.IsValidFolder(folder))
                     continue;
 
-                CollectIslandPrefabs(result, folder, "Island_Tropical t:Prefab");
-                if (result.Count > 0)
-                    break;
-
-                CollectIslandPrefabs(result, folder, "Island_ t:Prefab");
-                if (result.Count > 0)
-                    break;
-
-                CollectIslandPrefabs(result, folder, "t:Prefab");
+                CollectIslandPrefabs(result, folder, "Island_Tropical_ t:Prefab");
                 if (result.Count > 0)
                     break;
             }
 
+            result.RemoveAll(p => p == null || !TropicalIslandPrefabCatalog.IsAllowedPrefabName(p.name));
             result.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
             return result;
+        }
+
+        static void EnsureTropicalPrefabCatalog(List<GameObject> tropicalPrefabs)
+        {
+            TropicalIslandPrefabCatalog.CreateOrUpdateAsset(ResourcesTropicalCatalog, tropicalPrefabs);
         }
 
         static void CollectIslandPrefabs(List<GameObject> result, string folder, string filter)
@@ -145,7 +149,7 @@ namespace HighSeas.Editor
                     continue;
 
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                if (prefab == null || !prefab.name.StartsWith("Island", StringComparison.Ordinal))
+                if (prefab == null || !TropicalIslandPrefabCatalog.IsAllowedPrefabName(prefab.name))
                     continue;
 
                 if (!result.Contains(prefab))

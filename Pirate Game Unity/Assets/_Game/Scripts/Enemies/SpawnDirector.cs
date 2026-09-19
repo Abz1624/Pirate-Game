@@ -148,6 +148,8 @@ namespace HighSeas.Enemies
                 return false;
 
             var budgetCost = 1f;
+            if (def.id == "cannonboat")
+                budgetCost = 1f / GameConstants.CannonboatSpawnRateMultiplier;
             if (_budget < budgetCost)
                 return false;
 
@@ -332,7 +334,10 @@ namespace HighSeas.Enemies
             var baseWeight = (1f / Mathf.Max(1, def.threatCost)) * Mathf.Max(0f, weightMult);
             var phaseMult = CombatDirectorV2Composition.GetWeightMultiplier(def.id, RunManager.Instance.ElapsedSeconds / 60f);
             if (phaseMult <= 0f) return 0f;
-            return baseWeight * phaseMult;
+            var weight = baseWeight * phaseMult;
+            if (def.id == "cannonboat")
+                weight *= GameConstants.CannonboatSpawnRateMultiplier;
+            return weight;
         }
 
         public void SetV3PressureBeatsEnabled(bool enabled) => _v3PressureBeatsEnabled = enabled;

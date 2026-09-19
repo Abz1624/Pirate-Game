@@ -38,7 +38,7 @@ namespace HighSeas.Combat
         static readonly SpawnPackEntry[] Gunline =
         {
             new("shark", 4),
-            new("cannonboat", 2),
+            new("cannonboat", 1),
             new("manta_ray", 1),
             new("needle_sloop", 1)
         };
@@ -46,7 +46,7 @@ namespace HighSeas.Combat
         static readonly SpawnPackEntry[] AnchorAndFire =
         {
             new("reef_crab_miniboss", 1),
-            new("cannonboat", 2),
+            new("cannonboat", 1),
             new("shark", 4),
             new("net_cutter", 1)
         };
@@ -63,7 +63,7 @@ namespace HighSeas.Combat
         {
             new("hammerhead", 1),
             new("kraken_spawn", 1),
-            new("cannonboat", 2),
+            new("cannonboat", 1),
             new("shark", 4),
             new("repair_tender", 1),
             new("powder_barge", 1)

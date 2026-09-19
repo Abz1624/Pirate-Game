@@ -54,7 +54,8 @@ namespace RoguePirates.Simulation
         {
             var tierMult = tier switch { 1 => 1f, 2 => 1.45f, _ => 2.05f };
             var stageMult = stageIndex switch { 0 => 1f, 1 => 1.22f, _ => 1.5f };
-            var hp = baseHp * (1f + 0.09f * minute + 0.018f * minute * minute) * tierMult * stageMult;
+            var hp = baseHp * (1f + 0.09f * minute + 0.018f * minute * minute) * tierMult * stageMult
+                     * (2f / 3f);
             return SimFixed.FromFloat(hp);
         }
 

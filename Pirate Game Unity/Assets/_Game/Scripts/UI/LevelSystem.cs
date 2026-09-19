@@ -204,7 +204,8 @@ namespace HighSeas.UI
             if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
             var player = UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>();
             if (player?.Damage != null && !player.Damage.IsAlive) return;
-            CurrentXP += amount;
+            var scaled = Mathf.Max(1, Mathf.RoundToInt(amount * GameConstants.XpGainGlobalMultiplier));
+            CurrentXP += scaled;
             while (CurrentXP >= XPToNext)
             {
                 CurrentXP -= XPToNext;

@@ -2496,6 +2496,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5615479315126245041, guid: f3ad4fbfa70994176b87c353d615b980, type: 3}
       insertIndex: -1
       addedObject: {fileID: 238440826}
+    - targetCorrespondingSourceObject: {fileID: 5615479315126245041, guid: f3ad4fbfa70994176b87c353d615b980, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 238440827}
   m_SourcePrefab: {fileID: 100100000, guid: f3ad4fbfa70994176b87c353d615b980, type: 3}
 --- !u!1 &238440825 stripped
 GameObject:
@@ -2514,6 +2517,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4afe51fdfe6d73e4fac90ef1b87473a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.V3.V3AuthoredGameplayHud
+--- !u!114 &238440827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 238440825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0724d215f7e3bf4bb48991e5409c541, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.V3.V3RunResultsScreen
+  panel: {fileID: 0}
+  headlineText: {fileID: 0}
+  summaryText: {fileID: 0}
+  continueButton: {fileID: 0}
 --- !u!1001 &251907619
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13036,7 +13055,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 77.2
+      value: 32.800003
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.y
@@ -14623,7 +14642,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 81
+      value: 36.600006
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.y
@@ -15280,7 +15299,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -76.3
+      value: -120.7
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.y
@@ -19166,7 +19185,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -76.3
+      value: -120.7
       objectReference: {fileID: 0}
     - target: {fileID: 2549937295755019737, guid: ffbd68e3bd1bd4cbabf3d823bbbd73f9, type: 3}
       propertyPath: m_LocalPosition.y
@@ -20180,7 +20199,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e062f9b19dd56fa4d9357d2663127f42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Combat.DamageReceiver
-  maxHP: 100
+  maxHP: 150
   armor: 0
   isElite: 0
 --- !u!114 &2131002239

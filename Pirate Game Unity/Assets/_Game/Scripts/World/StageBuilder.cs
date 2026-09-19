@@ -71,27 +71,64 @@ namespace HighSeas.World
             PurgeGeneratedIslandContent();
             ClearIslands();
 
-            var islandSettings = ScaleSettingsForDensity(proceduralIslands.Clamped());
+            var baseSettings = proceduralIslands.Clamped();
             var gen = new StageGenerator();
-            var layout = gen.Generate(seed, stageIndex, islandSettings);
-
             var demoLayout = usePredefinedLayout ? IslandLayoutDefinition.LoadAssignedOrDefault(predefinedLayout) : null;
+            var generateSettings = demoLayout != null && demoLayout.HasIslands && _useV3PoiLayout
+                ? ClampAbstractGridSettings(baseSettings)
+                : ScaleSettingsForDensity(baseSettings);
+            var layout = gen.Generate(seed, stageIndex, generateSettings);
+
             if (demoLayout != null && demoLayout.HasIslands)
             {
-                var layoutCount = IslandLayoutSpawner.Spawn(demoLayout, islandRoot, seed, _useV3PoiLayout);
-                var layoutBaseline = Mathf.Max(layoutCount, demoLayout.CountSpawnableEntries());
-                var desiredTotal = Mathf.Max(
-                    layoutCount,
-                    Mathf.RoundToInt(layoutBaseline * islandDensityMultiplier));
-                var extraTarget = Mathf.Max(0, desiredTotal - layoutCount);
-                var extraSpawned = 0;
-                if (extraTarget > 0)
+                var desiredTotal = Mathf.RoundToInt((baseSettings.countMin + baseSettings.countMax) * 0.5f);
+                int layoutCount;
+                int extraSpawned = 0;
+                var extraTarget = 0;
+
+                if (_useV3PoiLayout)
                 {
-                    var supplementalVisuals = IslandVisualLibrary.Resolve(visuals);
-                    extraSpawned = SpawnSupplementalIslands(seed, islandSettings, extraTarget, supplementalVisuals, layoutCount);
-                    if (extraSpawned < extraTarget)
-                        Debug.LogWarning(
-                            $"StageBuilder: placed {extraSpawned}/{extraTarget} supplemental islands (density x{islandDensityMultiplier:F2}). Try + again or lower min separation on StageBuilder.");
+                    var tropicalPrefabs = TropicalIslandPrefabCatalog.GetRuntimePrefabs();
+                    if (tropicalPrefabs.Length == 0)
+                    {
+                        Debug.LogError("StageBuilder: no Island_Tropical_* prefabs found. Falling back to layout spawner.");
+                        layoutCount = IslandLayoutSpawner.Spawn(demoLayout, islandRoot, seed, true);
+                    }
+                    else
+                    {
+                        layoutCount = TropicalIslandSpawner.SpawnEvenlyAcrossMap(
+                            islandRoot,
+                            seed,
+                            desiredTotal,
+                            tropicalPrefabs,
+                            baseSettings);
+                    }
+                }
+                else
+                {
+                    layoutCount = IslandLayoutSpawner.Spawn(demoLayout, islandRoot, seed, _useV3PoiLayout);
+                    desiredTotal = Mathf.Max(layoutCount, desiredTotal);
+                    extraTarget = Mathf.Max(0, desiredTotal - layoutCount);
+                    if (extraTarget > 0)
+                    {
+                        var tropicalPrefabs = TropicalIslandPrefabCatalog.GetRuntimePrefabs();
+                        extraSpawned = tropicalPrefabs.Length > 0
+                            ? TropicalIslandSpawner.SpawnEvenlyAcrossMap(
+                                islandRoot,
+                                unchecked(seed + 90210),
+                                extraTarget,
+                                tropicalPrefabs,
+                                baseSettings)
+                            : SpawnSupplementalIslands(
+                                seed,
+                                baseSettings,
+                                extraTarget,
+                                IslandVisualLibrary.Resolve(visuals),
+                                layoutCount);
+                        if (extraSpawned < extraTarget)
+                            Debug.LogWarning(
+                                $"StageBuilder: placed {extraSpawned}/{extraTarget} supplemental islands.");
+                    }
                 }
 
                 PlayBounds.ConfigureFromExclusionRegistry();
@@ -102,10 +139,11 @@ namespace HighSeas.World
 
                 var total = layoutCount + extraSpawned;
                 Debug.Log(
-                    $"StageBuilder: spawned {total} islands (seed={seed}, layout {layoutCount}, target +{extraTarget} supplemental, placed +{extraSpawned}, density x{islandDensityMultiplier:F2}).");
+                    $"StageBuilder: spawned {total} islands (seed={seed}, v3EvenSpread={_useV3PoiLayout}, target {desiredTotal}, supplemental +{extraSpawned}).");
                 return layout;
             }
 
+            var islandSettings = generateSettings;
             var resolvedVisuals = useVisualPrefabs ? IslandVisualLibrary.Resolve(visuals) : null;
             var islandCount = 0;
 
@@ -136,6 +174,16 @@ namespace HighSeas.World
             return layout;
         }
 
+        static ProceduralIslandSettings ClampAbstractGridSettings(ProceduralIslandSettings settings)
+        {
+            // V3 uses authored layout islands; StageGenerator only supplies POI/spawn hints on the 220 m grid.
+            var s = settings;
+            const int maxAbstractIslands = 32;
+            s.countMin = Mathf.Min(s.countMin, maxAbstractIslands);
+            s.countMax = Mathf.Min(Mathf.Max(s.countMin, s.countMax), maxAbstractIslands);
+            return s.Clamped();
+        }
+
         ProceduralIslandSettings ScaleSettingsForDensity(ProceduralIslandSettings settings)
         {
             if (islandDensityMultiplier <= 1.001f)
@@ -159,8 +207,8 @@ namespace HighSeas.World
             var rng = new RunRng(unchecked(seed + 90210));
             var radius = settings.islandDiameterMeters * 0.5f;
             var margin = radius + 2f;
-            var mapReach = GameConstants.MapSizeMeters * 0.5f * Mathf.Max(1.35f, islandDensityMultiplier + 0.35f);
-            var halfMap = mapReach - margin;
+            var halfMap = GameConstants.MapSizeMeters * 0.5f - margin;
+            var clearance = radius + 3f;
             var attemptsPerIsland = Mathf.Max(200, settings.maxPlacementAttempts / Mathf.Max(1, targetCount));
 
             var occupied = new List<Vector3>(islandRoot.childCount + targetCount);
@@ -183,6 +231,10 @@ namespace HighSeas.World
                         (rng.MapFloat() * 2f - 1f) * halfMap);
 
                     if (!IsFarEnough(pos, occupied, minDistSq))
+                        continue;
+
+                    if (IslandSpawnExclusionRegistry.Count > 0 &&
+                        !IslandSpawnExclusionRegistry.IsClear(pos, clearance))
                         continue;
 
                     var index = indexOffset + spawned;
@@ -277,11 +329,24 @@ namespace HighSeas.World
             ProceduralIslandSettings settings,
             IslandVisualLibrary resolvedVisuals)
         {
+            var radius = settings.islandDiameterMeters * 0.5f;
+
+            if (resolvedVisuals == null || !resolvedVisuals.HasPrefabs)
+            {
+                var tropicalPrefabs = TropicalIslandPrefabCatalog.GetRuntimePrefabs();
+                if (tropicalPrefabs.Length > 0)
+                {
+                    var rng = new RunRng(unchecked(seed + index * 73856093 + 19349663));
+                    var prefab = tropicalPrefabs[rng.MapInt(0, tropicalPrefabs.Length)];
+                    var footprint = settings.islandDiameterMeters > 0f ? settings.islandDiameterMeters : 18f;
+                    TropicalIslandSpawner.SpawnAt(islandRoot, prefab, center, seed, index, footprint, rng);
+                    return;
+                }
+            }
+
             var root = new GameObject($"Island_{index}");
             root.transform.SetParent(islandRoot, false);
             root.transform.position = center;
-
-            var radius = settings.islandDiameterMeters * 0.5f;
 
             if (resolvedVisuals != null && resolvedVisuals.HasPrefabs)
                 BuildPrefabIsland(root.transform, index, seed, settings, resolvedVisuals);

@@ -12,7 +12,7 @@ namespace HighSeas.POI
 {
     public sealed class POIManager : MonoBehaviour
     {
-        public const int V3SalvageChestCount = 12;
+        public const int V3SalvageChestCount = GameConstants.V3SalvageChestPoolSize;
 
         [SerializeField] GameDatabase database;
         [SerializeField] LootService loot;
@@ -34,7 +34,7 @@ namespace HighSeas.POI
         readonly HashSet<int> _signalBuoyChargeAnnounced = new();
         readonly List<int> _powderCacheEnemySlots = new();
         readonly List<int> _pendingChestPoiIndices = new();
-        float _nextChestSpawnTime;
+        int _chestProgressSpawnPaidIndex = -1;
         const int PowderCacheAmbushCount = 3;
         const int PowderCacheMaxThreat = 4;
         const float PowderCacheTriggerRadius = 8f;
@@ -92,7 +92,7 @@ namespace HighSeas.POI
             _signalBuoyCharges.Clear();
             _signalBuoysCompleted.Clear();
             _pendingChestPoiIndices.Clear();
-            _nextChestSpawnTime = GameConstants.V3ProgressiveChestInitialDelaySeconds;
+            _chestProgressSpawnPaidIndex = -1;
         }
 
         void BuildMarkers()
@@ -110,6 +110,9 @@ namespace HighSeas.POI
 
                 SpawnPoiMarker(i, root);
             }
+
+            if (_useV3ChestPricing)
+                TrySpawnNextPendingChest();
         }
 
         void SpawnPoiMarker(int poiIndex, Transform root)
@@ -127,15 +130,62 @@ namespace HighSeas.POI
         void TickProgressiveChestSpawns()
         {
             if (!_useV3ChestPricing || _pendingChestPoiIndices.Count == 0) return;
-            if (RunManager.Instance == null || !RunManager.Instance.IsGameplayActive) return;
+            var rm = RunManager.Instance;
+            if (rm == null || rm.IsRunEnded) return;
 
-            var elapsed = RunManager.Instance.ElapsedSeconds;
-            if (elapsed < _nextChestSpawnTime) return;
+            if (_pendingChestPoiIndices.Count > 0 &&
+                CountActiveSalvageChestMarkers() == 0)
+            {
+                TrySpawnNextPendingChest();
+                return;
+            }
 
+            if (_chestProgressSpawnPaidIndex == _paidChestCount)
+                return;
+
+            var nextChestPrice = V3Economy.GetChestPrice(_paidChestCount);
+            var threshold = nextChestPrice * GameConstants.V3ChestSpawnGoldFraction;
+            if (rm.Gold < threshold)
+                return;
+
+            _chestProgressSpawnPaidIndex = _paidChestCount;
+            TrySpawnNextPendingChest();
+        }
+
+        int CountActiveSalvageChestMarkers()
+        {
+            if (_layout == null) return 0;
+            var count = 0;
+            for (var i = 0; i < _layout.pois.Count; i++)
+            {
+                if (_layout.pois[i].type != POIType.SalvageChest || _layout.pois[i].used)
+                    continue;
+                if (IsChestMarkerSpawned(i))
+                    count++;
+            }
+
+            return count;
+        }
+
+        bool IsChestMarkerSpawned(int poiIndex)
+        {
+            var root = poiRoot != null ? poiRoot : transform;
+            var triggers = root.GetComponentsInChildren<POIInteractable>(true);
+            for (var i = 0; i < triggers.Length; i++)
+            {
+                if (triggers[i].Index == poiIndex)
+                    return true;
+            }
+
+            return false;
+        }
+
+        void TrySpawnNextPendingChest()
+        {
+            if (_pendingChestPoiIndices.Count == 0) return;
             var poiIndex = _pendingChestPoiIndices[0];
             _pendingChestPoiIndices.RemoveAt(0);
             SpawnPoiMarker(poiIndex, null);
-            _nextChestSpawnTime = elapsed + GameConstants.V3ProgressiveChestIntervalSeconds;
         }
 
         GameObject CreateMarker(POIType type, Vector3 position, Transform root)

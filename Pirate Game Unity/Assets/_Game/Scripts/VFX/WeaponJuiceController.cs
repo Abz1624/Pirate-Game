@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace HighSeas.VFX
 {
+    [DefaultExecutionOrder(50)]
     public sealed class WeaponJuiceController : MonoBehaviour
     {
         [SerializeField] DemoJuiceSettings settings;
@@ -69,12 +70,15 @@ namespace HighSeas.VFX
                 effectRoot = root;
                 _root = root;
             }
+
+            ResolveHumanBindings();
         }
 
         void ResolveHumanBindings()
         {
             _player = V3MultiShipWeaponLoadouts.FindLocalHumanShip();
-            _weapons = V3MultiShipWeaponLoadouts.FindLocalHumanWeaponController();
+            _weapons = V3MultiShipWeaponLoadouts.GetWeaponControllerForShip(_player)
+                ?? V3MultiShipWeaponLoadouts.FindLocalHumanWeaponController();
         }
 
         void Update()
@@ -294,13 +298,24 @@ namespace HighSeas.VFX
                 var ps = particles[i];
                 if (ps == null) continue;
 
-                ConfigureFlamethrowerParticleSystem(ps);
                 var emission = ps.emission;
-                emission.rateOverTimeMultiplier = strength;
-                emission.enabled = strength > 0.001f;
-
-                if (strength > 0.001f && !ps.isPlaying)
-                    ps.Play(true);
+                if (strength > 0.001f)
+                {
+                    emission.enabled = true;
+                    emission.rateOverTimeMultiplier = strength;
+                    if (!ps.isPlaying)
+                    {
+                        ps.Clear(true);
+                        ps.Play(true);
+                    }
+                }
+                else
+                {
+                    emission.rateOverTimeMultiplier = 0f;
+                    emission.enabled = false;
+                    if (ps.isPlaying)
+                        ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                }
             }
         }
 
@@ -652,7 +667,10 @@ namespace HighSeas.VFX
             SetFlamethrowerPose(_flamethrowerPort, forward);
 
             var streaming = _weapons.IsFlamethrowerStreaming;
-            SetFlamethrowerEmissionStrength(_flamethrowerPort, streaming ? 1f : 0f);
+            var targetStrength = streaming ? 1f : 0f;
+            if (streaming && !_flamethrowerEmissionActive)
+                VfxParticleUtil.RestartParticles(_flamethrowerPort.gameObject);
+            SetFlamethrowerEmissionStrength(_flamethrowerPort, targetStrength);
             _flamethrowerEmissionActive = streaming;
         }
 
@@ -662,24 +680,50 @@ namespace HighSeas.VFX
                 ? settings.flamethrowerStreamPrefab
                 : settings.flamethrowerPrefab;
             if (mount != null || streamPrefab == null) return;
-            var instance = Instantiate(streamPrefab, _root);
-            instance.transform.localScale = Vector3.one * settings.flamethrowerScale * FlamethrowerVisualScaleMult;
-            StripPhysics(instance);
-            PrepareFlamethrowerStreamVisual(instance);
-            mount = instance.transform;
+
+            var template = Instantiate(streamPrefab);
+            var particleSource = FindFlamethrowerParticleTransform(template);
+            if (particleSource == null)
+            {
+                Destroy(template);
+                Debug.LogWarning("WeaponJuiceController: flamethrower prefab has no ParticleSystem.");
+                return;
+            }
+
+            var mountGo = new GameObject("FlamethrowerStreamMount");
+            mountGo.transform.SetParent(_root, false);
+
+            var streamVisual = Instantiate(particleSource.gameObject, mountGo.transform);
+            streamVisual.name = "FlamethrowerStream";
+            streamVisual.transform.localPosition = Vector3.zero;
+            streamVisual.transform.localRotation = particleSource.localRotation;
+            streamVisual.transform.localScale =
+                Vector3.one * settings.flamethrowerScale * FlamethrowerVisualScaleMult;
+
+            Destroy(template);
+            StripPhysics(mountGo);
+            VfxParticleUtil.SetRenderersEnabled(mountGo, true);
+            mount = mountGo.transform;
             PrepareFlamethrowerStreamParticles(mount);
             _flamethrowerEmissionActive = false;
         }
 
-        static void PrepareFlamethrowerStreamVisual(GameObject root)
+        static Transform FindFlamethrowerParticleTransform(GameObject prefabRoot)
         {
-            if (root == null) return;
-            var renderers = root.GetComponentsInChildren<Renderer>(true);
-            for (var i = 0; i < renderers.Length; i++)
+            if (prefabRoot == null) return null;
+
+            var particles = prefabRoot.GetComponentsInChildren<ParticleSystem>(true);
+            Transform best = null;
+            for (var i = 0; i < particles.Length; i++)
             {
-                if (renderers[i] is ParticleSystemRenderer) continue;
-                renderers[i].enabled = false;
+                var ps = particles[i];
+                if (ps == null) continue;
+                if (ps.name.Contains("Flame", System.StringComparison.OrdinalIgnoreCase))
+                    return ps.transform;
+                best ??= ps.transform;
             }
+
+            return best;
         }
 
         static void PrepareFlamethrowerStreamParticles(Transform mount)
@@ -698,10 +742,11 @@ namespace HighSeas.VFX
             main.loop = true;
             main.prewarm = true;
             main.playOnAwake = false;
+            main.cullingMode = ParticleSystemCullingMode.AlwaysSimulate;
 
             var emission = ps.emission;
             emission.enabled = false;
-            emission.rateOverTimeMultiplier = 0f;
+            emission.rateOverTimeMultiplier = 1f;
             if (emission.burstCount > 0)
                 emission.SetBursts(System.Array.Empty<ParticleSystem.Burst>());
         }

@@ -5747,6 +5747,7 @@ MonoBehaviour:
     islandDiameterMeters: 4
     minSeparationMeters: 6
     maxPlacementAttempts: 8000
+  islandDensityMultiplier: 1
 --- !u!114 &658786982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18934,14 +18935,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Player.FollowCamera
   target: {fileID: 2131002244}
   offset: {x: 0, y: 25, z: -20}
-  followShipRotation: 0
   lookAtOffset: {x: 0, y: 0, z: 0}
+  followShipRotation: 0
   rotationMode: 0
   rotationEuler: {x: 56, y: 0, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   positionSmoothing: 8
   rotationSmoothing: 6
   snapOnStart: 1
+  defaultThirdPerson: 1
+  thirdPersonOffset: {x: 0, y: 6, z: 14}
+  thirdPersonLookAtOffset: {x: 0, y: 1.5, z: 6}
+  thirdPersonFollowShipRotation: 1
+  thirdPersonRotationMode: 0
+  thirdPersonRotationEuler: {x: 12, y: 0, z: 0}
+  thirdPersonRotationOffset: {x: 0, y: 0, z: 0}
+  thirdPersonPositionSmoothing: 0
+  thirdPersonRotationSmoothing: 6
+  thirdPersonHighOffset: {x: 0, y: 8, z: -15}
+  thirdPersonHighLookAtOffset: {x: 0, y: 0, z: 0}
 --- !u!81 &1960317720
 AudioListener:
   m_ObjectHideFlags: 0
@@ -20179,6 +20191,7 @@ MonoBehaviour:
   collideWithIslands: 1
   hullRadius: 1.15
   hullHeight: 4.5
+  maxHullCollisionRadius: 2.25
 --- !u!54 &2131002240
 Rigidbody:
   m_ObjectHideFlags: 0

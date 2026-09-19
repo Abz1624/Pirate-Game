@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8c4a92b1d3f4056982a1b0c9d7e6f5a, type: 3}
+  m_Name: TropicalIslandPrefabCatalog
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.TropicalIslandPrefabCatalog
+  prefabs:
+  - {fileID: 1709254077376921, guid: 9b6371b6892875b4c8d3ff0bea693a2e, type: 3}
+  - {fileID: 1709254077376921, guid: 458814b7c6933224988d2a2b5782506c, type: 3}
+  - {fileID: 1709254077376921, guid: 35035871988a88a489c0eb5eba269e8b, type: 3}
+  - {fileID: 1709254077376921, guid: 867f24641977bd84581621fe140f6917, type: 3}
+  - {fileID: 1709254077376921, guid: daa620c10ac38cb4c9ae4d670e0e79c5, type: 3}
+  - {fileID: 1709254077376921, guid: a40b3d9be5dd9524ca8bb5d047993e47, type: 3}
+  - {fileID: 1709254077376921, guid: 05027bb3596478343a7c8a2ad1bc6bfb, type: 3}
+  - {fileID: 1709254077376921, guid: cd4239aa000b73147bad8bdbd897c6ce, type: 3}
+  - {fileID: 1709254077376921, guid: 85fd59285dd9e544da9d57b09a09681f, type: 3}
+  - {fileID: 1709254077376921, guid: d502b8d5274fc4e4c9d04a4906f2413b, type: 3}

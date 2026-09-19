@@ -6,10 +6,10 @@ using UnityEngine;
 
 namespace HighSeas.V3
 {
-    /// <summary>Places 12 salvage chests, 4 finite encounter POIs, and the treasury beacon for the v3 conquest layout.</summary>
+    /// <summary>Places salvage chests, 4 finite encounter POIs, and the treasury beacon for the v3 conquest layout.</summary>
     public static class V3StagePoiPlacer
     {
-        const int SalvageChestCount = 12;
+        const int SalvageChestCount = GameConstants.V3SalvageChestPoolSize;
         const float MinSpacing = 16f;
         const float MinRadius = 20f;
         const float MaxRadius = 78f;
