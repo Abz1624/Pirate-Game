@@ -22,6 +22,6 @@ namespace HighSeas.V3
         }
 
         public static bool UseExpandedPool() =>
-            CombatExperimentContext.Active != null && CombatExperimentContext.Active.directorV2Enabled;
+            CombatExperimentContext.Active != null && CombatExperimentContext.Active.encounterSpawnEnabled;
     }
 }

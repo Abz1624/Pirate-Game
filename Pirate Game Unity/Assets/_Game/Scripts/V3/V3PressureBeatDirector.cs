@@ -19,7 +19,7 @@ namespace HighSeas.V3
         const float WarningSeconds = 5f;
 
         [SerializeField] EnemyWorld enemyWorld;
-        [SerializeField] SpawnDirector spawnDirector;
+        [SerializeField] EncounterSpawner encounterSpawner;
         [SerializeField] Transform player;
 
         bool _hammerheadDone;
@@ -32,12 +32,12 @@ namespace HighSeas.V3
         float _krakenDeferUntil;
         float _pulseTimer;
 
-        public void Initialize(EnemyWorld world, SpawnDirector director, Transform playerTransform)
+        public void Initialize(EnemyWorld world, EncounterSpawner director, Transform playerTransform)
         {
             enemyWorld = world;
-            spawnDirector = director;
+            encounterSpawner = director;
             player = playerTransform;
-            spawnDirector?.ConfigureV3Pacing(true);
+            encounterSpawner?.ConfigureV3Pacing(true);
         }
 
         void Update()
@@ -86,7 +86,7 @@ namespace HighSeas.V3
                 return;
             }
 
-            if (spawnDirector != null && spawnDirector.TrySpawnPressureBeat(enemyId))
+            if (encounterSpawner != null && encounterSpawner.TrySpawnPressureBeat(enemyId))
             {
                 done = true;
                 RunCombatTelemetry.Instance?.Record("pressure_elite_spawned", new System.Collections.Generic.Dictionary<string, object> { ["label"] = label });
@@ -124,16 +124,16 @@ namespace HighSeas.V3
             if (_pulseTimer > 0f)
             {
                 _pulseTimer -= Time.deltaTime;
-                spawnDirector?.SetSpawnRateMultiplier(PulseRateMultiplier);
+                encounterSpawner?.SetSpawnRateMultiplier(PulseRateMultiplier);
                 if (_pulseTimer <= 0f)
-                    spawnDirector?.SetSpawnRateMultiplier(1f);
+                    encounterSpawner?.SetSpawnRateMultiplier(1f);
             }
         }
 
         void OnDestroy()
         {
-            if (spawnDirector != null)
-                spawnDirector.SetSpawnRateMultiplier(1f);
+            if (encounterSpawner != null)
+                encounterSpawner.SetSpawnRateMultiplier(1f);
         }
     }
 }

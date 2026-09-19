@@ -260,8 +260,8 @@ namespace HighSeas.V3
 
             if (!isPvPScene)
             {
-                ConfigureSpawnDirector(experimentProfile);
-                FindFirstObjectByType<SpawnDirector>()?.ResetForNewRun();
+                FindFirstObjectByType<EncounterSpawner>()?.ResetForNewRun();
+                ConfigureEncounterSpawner(experimentProfile);
                 if (firstRun)
                 {
                     EnsurePressureBeats(enemyWorld, player);
@@ -301,11 +301,11 @@ namespace HighSeas.V3
             Debug.Log($"V3RunBootstrap: run seed={seed} ({seedLabelLog}), POI rng={seed + 404}.");
         }
 
-        void ConfigureSpawnDirector(CombatExperimentProfile profile)
+        void ConfigureEncounterSpawner(CombatExperimentProfile profile)
         {
-            var director = FindFirstObjectByType<SpawnDirector>();
-            director?.ConfigureV3Pacing(true);
-            director?.ApplyCombatExperiment(profile);
+            var spawner = FindFirstObjectByType<EncounterSpawner>();
+            spawner?.ConfigureV3Pacing(true);
+            spawner?.ApplyCombatExperiment(profile);
         }
 
         static void EnsureHostileProjectiles()
@@ -344,20 +344,20 @@ namespace HighSeas.V3
             var systems = GameObject.Find("Systems");
             if (systems == null) return;
 
-            var director = systems.GetComponent<SpawnDirector>();
-            if (director == null)
-                director = FindFirstObjectByType<SpawnDirector>();
+            var spawner = systems.GetComponent<EncounterSpawner>();
+            if (spawner == null)
+                spawner = FindFirstObjectByType<EncounterSpawner>();
 
             var beats = systems.GetComponent<V3PressureBeatDirector>();
             if (beats == null)
                 beats = systems.AddComponent<V3PressureBeatDirector>();
-            beats.Initialize(enemyWorld, director, ship != null ? ship.transform : null);
+            beats.Initialize(enemyWorld, spawner, ship != null ? ship.transform : null);
         }
 
         void EnsureOvertimeDirector(EnemyWorld enemyWorld, PlayerShipController ship)
         {
-            var director = FindFirstObjectByType<SpawnDirector>();
-            V3OvertimeDirector.Ensure(enemyWorld, director, ship);
+            var spawner = FindFirstObjectByType<EncounterSpawner>();
+            V3OvertimeDirector.Ensure(enemyWorld, spawner, ship);
         }
 
         static string ResolveStartingWeapon(V3CaptainProfile profile)

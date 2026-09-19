@@ -5887,10 +5887,10 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c07d65dc2e5e2eb47988ac3d958a1077, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.SpawnDirector
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.EncounterSpawner
   enemyWorld: {fileID: 0}
   player: {fileID: 0}
-  settings: {fileID: 11400000, guid: df4dfc0e507780241ba5b50d9863315c, type: 2}
+  schedule: {fileID: 0}
   spawnCamera: {fileID: 0}
 --- !u!114 &658786992
 MonoBehaviour:
@@ -6011,7 +6011,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9c7d19062ce6b743bc74868c8198fab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.JuiceVfxBroker
-  settings: {fileID: 11400000, guid: 46f32d0fc5f591f4d9779fa985f59983, type: 2}
+  schedule: {fileID: 0}
   vfxRoot: {fileID: 149490258}
 --- !u!114 &658787000
 MonoBehaviour:

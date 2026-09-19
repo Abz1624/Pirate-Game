@@ -16,13 +16,13 @@ namespace HighSeas.V3
         const float DreadTideDamagePerSecond = 8f;
 
         EnemyWorld _enemyWorld;
-        SpawnDirector _spawnDirector;
+        EncounterSpawner _encounterSpawner;
         PlayerShipController _player;
         float _spawnTimer;
         float _dreadPulseTimer;
         bool _overtimeAnnounced;
 
-        public static V3OvertimeDirector Ensure(EnemyWorld world, SpawnDirector director, PlayerShipController player)
+        public static V3OvertimeDirector Ensure(EnemyWorld world, EncounterSpawner director, PlayerShipController player)
         {
             var existing = FindFirstObjectByType<V3OvertimeDirector>();
             if (existing != null)
@@ -37,10 +37,10 @@ namespace HighSeas.V3
             return component;
         }
 
-        public void Initialize(EnemyWorld world, SpawnDirector director, PlayerShipController player)
+        public void Initialize(EnemyWorld world, EncounterSpawner director, PlayerShipController player)
         {
             _enemyWorld = world;
-            _spawnDirector = director;
+            _encounterSpawner = director;
             _player = player;
         }
 
@@ -62,7 +62,7 @@ namespace HighSeas.V3
 
         void TickOvertimeSpawns(float dt)
         {
-            if (_enemyWorld == null || _spawnDirector == null) return;
+            if (_enemyWorld == null || _encounterSpawner == null) return;
 
             _spawnTimer -= dt;
             if (_spawnTimer > 0f) return;
@@ -72,9 +72,9 @@ namespace HighSeas.V3
             var spawnPursuer = RunManager.Instance.Rng.DirectorFloat() < pursuerWeight;
             var enemyId = spawnPursuer ? "drowned_pursuer" : "drowned_harrier";
 
-            if (_spawnDirector.TrySpawnOvertimeEnemy(enemyId, overtimeMinutes))
+            if (_encounterSpawner.TrySpawnOvertimeEnemy(enemyId, overtimeMinutes))
                 RunCombatTelemetry.Instance?.Record("overtime_enemy_spawned", new System.Collections.Generic.Dictionary<string, object> { ["enemyId"] = enemyId });
-            else if (_spawnDirector.TrySpawnOvertimeEnemy(spawnPursuer ? "drowned_harrier" : "drowned_pursuer", overtimeMinutes))
+            else if (_encounterSpawner.TrySpawnOvertimeEnemy(spawnPursuer ? "drowned_harrier" : "drowned_pursuer", overtimeMinutes))
                 RunCombatTelemetry.Instance?.Record("overtime_enemy_spawned", new System.Collections.Generic.Dictionary<string, object> { ["enemyId"] = spawnPursuer ? "drowned_harrier" : "drowned_pursuer" });
 
             _spawnTimer = SpawnInterval;

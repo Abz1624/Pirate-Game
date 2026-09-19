@@ -34,6 +34,8 @@ namespace HighSeas.Enemies
         public Transform healthBar;
         public string lastHitWeaponId;
         public bool swordfishSpringVisual;
+        public SpawnProfile spawnProfile;
+        public EnemySpawnRuntimeParams patternParams;
     }
 
     public sealed class SpatialHash
@@ -218,6 +220,67 @@ namespace HighSeas.Enemies
             return slot;
         }
 
+        public int SpawnFromProfile(
+            int definitionIndex,
+            Vector3 position,
+            SpawnProfile profile,
+            int profileInstanceId,
+            FormationRole formationRole,
+            int formationSlot,
+            int formationLeaderAgentId,
+            float hpMultiplier = 1f,
+            float damageMultiplier = 1f)
+        {
+            if (profile == null)
+                return -1;
+
+            var elite = profile.elite;
+            var affix = elite.isElite ? elite.affix : EliteAffix.None;
+            if (elite.isElite && affix == EliteAffix.None)
+                affix = EliteAffix.Rich;
+
+            var speedMult = profile.movement.speedMultiplier * (elite.isElite ? elite.speedMultiplier : 1f);
+            var slot = Spawn(
+                definitionIndex,
+                position,
+                affix,
+                speedMult,
+                hpMultiplier * (elite.isElite ? elite.hpMultiplier : 1f),
+                damageMultiplier * (elite.isElite ? elite.damageMultiplier : 1f));
+
+            if (slot < 0)
+                return -1;
+
+            var leaderUnitId = formationLeaderAgentId;
+            if (formationRole == FormationRole.Leader)
+                leaderUnitId = _agents[slot].id;
+
+            _agents[slot].spawnProfile = profile;
+            _agents[slot].patternParams = SpawnProfileResolver.Resolve(
+                profile, profileInstanceId, formationRole, formationSlot, leaderUnitId);
+            if (_agents[slot].patternParams.attackCooldown > 0f)
+                _agents[slot].attackCooldown = _agents[slot].patternParams.attackCooldown * 0.5f;
+            if (elite.isElite && elite.sizeMultiplier > 0.01f && _agents[slot].view != null)
+                _agents[slot].view.localScale *= elite.sizeMultiplier;
+
+            return slot;
+        }
+
+        public bool TryGetAgentByUnitId(int unitId, out int agentIndex)
+        {
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                if (_agents[i].active && _agents[i].id == unitId)
+                {
+                    agentIndex = i;
+                    return true;
+                }
+            }
+
+            agentIndex = -1;
+            return false;
+        }
+
         /// <summary>Scheduled pressure-beat elite: 6× HP, 1.25× damage (combat spec §9).</summary>
         public int SpawnPressureBeat(int definitionIndex, Vector3 position) =>
             Spawn(definitionIndex, position, EliteAffix.Rich, 1f, 6f, 1.25f);
@@ -292,6 +355,7 @@ namespace HighSeas.Enemies
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
 
+            var despawnProfile = _agents[index].spawnProfile;
             var def = definitions[_agents[index].definitionIndex];
             EnemyBurnFlash.SetBurning(_agents[index].view, false);
             if (_agents[index].view != null)
@@ -311,6 +375,7 @@ namespace HighSeas.Enemies
             _agents[index].active = false;
             _activeCount--;
             Combat.StatusController.Instance?.ClearIndex(index);
+            EncounterSpawner.Instance?.NotifyAgentDespawned(despawnProfile);
         }
 
         public void Tick(float dt, Vector3 playerPos, Combat.DamageReceiver playerDamage)
@@ -327,6 +392,7 @@ namespace HighSeas.Enemies
                 if (!_agents[i].active) continue;
                 ref var e = ref _agents[i];
                 var def = definitions[e.definitionIndex];
+                EnemySpecialBehaviorSystem.Tick(this, i, ref e, def, dt, playerPos, playerDamage);
                 var desiredVelocity = TickBehavior(i, ref e, def, dt, playerPos, playerVelocity);
                 MoveAgent(ref e, dt, desiredVelocity, def);
                 e.position.y = def.visualHeightOffset;
@@ -341,10 +407,14 @@ namespace HighSeas.Enemies
 
                 if (dist < contactRange && e.contactCooldown <= 0f)
                 {
-                    playerDamage?.TakeDamage(e.damage, e.position, false);
-                    e.contactCooldown = GameConstants.EnemyContactCooldown;
-                    TryApplyCreatureContactKnockback(ref e, def, playerPos);
-                    PushCreatureOffHull(ref e, playerPos, playerRadius);
+                    var contactEnabled = e.spawnProfile == null || e.patternParams.contactDamageEnabled;
+                    if (contactEnabled)
+                    {
+                        playerDamage?.TakeDamage(e.damage, e.position, false);
+                        e.contactCooldown = GameConstants.EnemyContactCooldown;
+                        TryApplyCreatureContactKnockback(ref e, def, playerPos);
+                        PushCreatureOffHull(ref e, playerPos, playerRadius);
+                    }
                 }
                 if (e.contactCooldown > 0f) e.contactCooldown -= dt;
             }
@@ -630,6 +700,22 @@ namespace HighSeas.Enemies
                 ? GetCreatureInterceptDirection(e, playerPos, playerVelocity, dist, dir)
                 : GetEncircleChaseDirection(e.id, e.position, playerPos, dist, dir);
 
+            if (e.spawnProfile != null)
+            {
+                var patternVel = EnemyPatternMovement.ComputeVelocity(
+                    e,
+                    e.patternParams,
+                    chaseDir,
+                    dir,
+                    dist,
+                    dt,
+                    ref e.chargeTimer);
+                var patternIntent = patternVel;
+                patternVel = ApplySeparation(agentIndex, patternVel, ref e, patternIntent);
+                e.velocity = Vector3.ClampMagnitude(patternVel, e.moveSpeed * 1.5f);
+                return patternIntent;
+            }
+
             if (def.id == "swordfish")
                 return TickSwordfishBehavior(ref e, chaseDir, dir, dist, dt, playerPos, playerVelocity);
 
@@ -833,6 +919,51 @@ namespace HighSeas.Enemies
             float dist,
             DamageReceiver playerDamage)
         {
+            if (e.spawnProfile != null)
+            {
+                var attackPattern = e.patternParams.attackPattern;
+                if (attackPattern == EnemyAttackPattern.Contact || attackPattern == EnemyAttackPattern.None)
+                    return;
+
+                e.attackCooldown -= dt;
+                if (e.attackCooldown > 0f) return;
+
+                var preferred = e.patternParams.attackRange > 0f
+                    ? e.patternParams.attackRange
+                    : def.preferredRange > 0f ? def.preferredRange : 12f;
+                var minRange = preferred * 0.7f;
+                var maxRange = preferred * 1.25f;
+                if (dist < minRange || dist > maxRange)
+                    return;
+
+                var dir = playerPos - e.position;
+                dir.y = 0f;
+                if (dir.sqrMagnitude < 0.01f) return;
+
+                if (IslandObstacles.IsAvailable)
+                {
+                    var origin = e.position + Vector3.up * 0.5f;
+                    var target = playerPos + Vector3.up * 0.5f;
+                    if (Physics.Linecast(origin, target, IslandObstacles.Mask, QueryTriggerInteraction.Ignore))
+                        return;
+                }
+
+                var hostiles = HostileProjectileWorld.Instance;
+                if (hostiles == null) return;
+
+                dir.Normalize();
+                var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
+                GetHostileShotProfile(def, out var speed, out var life, out var hitRadius, out var visualRadius);
+                if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius))
+                    return;
+
+                e.attackCooldown = e.patternParams.attackCooldown > 0f
+                    ? e.patternParams.attackCooldown
+                    : GetAttackRecovery(def);
+                return;
+            }
+            else
+            {
             if (def.category != EnemyCategory.Ship &&
                 def.behavior != EnemyBehavior.MaintainRange &&
                 def.behavior != EnemyBehavior.FormationRanged)
@@ -875,6 +1006,7 @@ namespace HighSeas.Enemies
                 var flank = Vector3.Cross(Vector3.up, dir);
                 hostiles.TrySpawn(muzzle, (dir + flank * 0.55f).normalized, speed, e.damage * 0.85f, life, hitRadius, visualRadius);
                 hostiles.TrySpawn(muzzle, (dir - flank * 0.55f).normalized, speed, e.damage * 0.85f, life, hitRadius, visualRadius);
+            }
             }
         }
 

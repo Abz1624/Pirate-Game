@@ -46,7 +46,7 @@ namespace HighSeas.Tests
         {
             var profile = CombatExperimentProfile.CreateBuiltIn("A_CURRENT");
             Assert.That(profile.weaponSlotCap, Is.EqualTo(6));
-            Assert.That(profile.directorV2Enabled, Is.True);
+            Assert.That(profile.encounterSpawnEnabled, Is.True);
             Assert.That(profile.profileId, Is.EqualTo(CombatExperimentProfile.FullCombatV2Id));
         }
 

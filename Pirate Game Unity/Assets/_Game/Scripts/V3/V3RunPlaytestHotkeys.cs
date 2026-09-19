@@ -30,13 +30,12 @@ namespace HighSeas.V3
         int _weaponIndex;
         int _itemIndex;
         int _logbookIndex;
-        bool _spawnDirectorWasEnabled = true;
+        bool _ambientSpawnWasEnabled = true;
         bool _spawnOverrideActive;
 
         WeaponController _weapons;
         LevelSystem _levels;
-        EnemyWorld _enemies;
-        SpawnDirector _spawnDirector;
+        EncounterSpawner _encounterSpawner;
         PlayerShipController _player;
 
         public static V3RunPlaytestHotkeys Ensure()
@@ -59,11 +58,10 @@ namespace HighSeas.V3
         {
             _weapons = FindFirstObjectByType<WeaponController>();
             _levels = LevelSystem.Instance;
-            _enemies = FindFirstObjectByType<EnemyWorld>();
-            _spawnDirector = FindFirstObjectByType<SpawnDirector>();
+            _encounterSpawner = FindFirstObjectByType<EncounterSpawner>();
             _player = FindFirstObjectByType<PlayerShipController>();
-            if (_spawnDirector != null)
-                _spawnDirectorWasEnabled = _spawnDirector.enabled;
+            if (_encounterSpawner != null)
+                _ambientSpawnWasEnabled = _encounterSpawner.AmbientScheduleEnabled;
         }
 
         void Update()
@@ -133,27 +131,16 @@ namespace HighSeas.V3
 
         void SpawnTargetCluster()
         {
-            if (_enemies == null || _player == null) return;
-            var defIndex = 0;
-            if (_enemies.Definitions != null)
+            var spawner = EncounterSpawner.Instance ?? FindFirstObjectByType<EncounterSpawner>();
+            var profile = spawner?.GetScheduleProfile("route_cannon");
+            if (spawner == null || profile == null)
             {
-                for (var i = 0; i < _enemies.Definitions.Length; i++)
-                {
-                    if (_enemies.Definitions[i]?.id == "cannonboat") { defIndex = i; break; }
-                }
+                V3ToastHud.Instance?.Show("Missing route_cannon profile on EncounterSpawnSchedule.", 2.5f);
+                return;
             }
 
-            var origin = _player.Position;
-            const int count = 6;
-            const float radius = 14f;
-            for (var i = 0; i < count; i++)
-            {
-                var angle = i / (float)count * Mathf.PI * 2f;
-                var pos = origin + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
-                _enemies.Spawn(defIndex, pos);
-            }
-
-            V3ToastHud.Instance?.Show("Spawned target ring (Shift+E)", 2f);
+            spawner.TriggerProfile(profile);
+            V3ToastHud.Instance?.Show("Triggered target profile (Shift+E)", 2f);
         }
 
         void RefillHull()
@@ -165,12 +152,15 @@ namespace HighSeas.V3
 
         void ToggleAutoSpawn()
         {
-            if (_spawnDirector == null) _spawnDirector = FindFirstObjectByType<SpawnDirector>();
-            if (_spawnDirector == null) return;
+            if (_encounterSpawner == null) _encounterSpawner = FindFirstObjectByType<EncounterSpawner>();
+            if (_encounterSpawner == null) return;
             _spawnOverrideActive = !_spawnOverrideActive;
-            _spawnDirector.enabled = _spawnOverrideActive ? _spawnDirectorWasEnabled : false;
+            _encounterSpawner.SetAmbientScheduleEnabled(
+                _spawnOverrideActive ? _ambientSpawnWasEnabled : false);
             V3ToastHud.Instance?.Show(
-                _spawnDirector.enabled ? "Auto spawn ON (Shift+N)" : "Auto spawn OFF — use Shift+E for targets",
+                _encounterSpawner.AmbientScheduleEnabled
+                    ? "Auto spawn ON (Shift+N)"
+                    : "Auto spawn OFF — use Shift+E for targets",
                 2.5f);
         }
 

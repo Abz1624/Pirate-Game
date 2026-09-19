@@ -1,8 +1,9 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace HighSeas.Combat
 {
-    /// <summary>Single combat configuration: Full Combat V2 (Director V2 spawns, six slots, directional weapons).</summary>
+    /// <summary>Combat experiment profile: weapon slots, encounter spawns, and tuning multipliers.</summary>
     [CreateAssetMenu(fileName = "CombatExperimentProfile", menuName = "HighSeas/Combat Experiment Profile")]
     public sealed class CombatExperimentProfile : ScriptableObject
     {
@@ -13,7 +14,8 @@ namespace HighSeas.Combat
         public int startingWeaponCount = 1;
         public bool openingWeaponDraftEnabled = true;
         public bool directionalWeaponTargetingEnabled = true;
-        public bool directorV2Enabled = true;
+        [FormerlySerializedAs("directorV2Enabled")]
+        public bool encounterSpawnEnabled = true;
         public bool captainActivesEnabled;
         public bool weaponEvolutionsEnabled = true;
         [Min(0.1f)] public float spawnDensityMultiplier = 1f;
@@ -29,7 +31,7 @@ namespace HighSeas.Combat
             profile.weaponSlotCap = 6;
             profile.openingWeaponDraftEnabled = true;
             profile.directionalWeaponTargetingEnabled = true;
-            profile.directorV2Enabled = true;
+            profile.encounterSpawnEnabled = true;
             profile.spawnDensityMultiplier = 1f;
             profile.weaponEvolutionsEnabled = true;
             profile.telemetryEnabled = true;
