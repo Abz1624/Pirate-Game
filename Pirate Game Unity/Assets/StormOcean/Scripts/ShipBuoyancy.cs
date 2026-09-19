@@ -29,6 +29,13 @@ namespace StormOcean
     /// Yaw (heading) is left untouched - this only makes the hull sit
     /// correctly on the current wave shape, it does not steer or drift the
     /// ship.
+    ///
+    /// If an optional ShipAutoSail is present on the same GameObject, its
+    /// per-frame forward-sail delta (ComputeFrameDelta) is folded into pos
+    /// BEFORE hull sampling and the spring targets are computed, so the ship
+    /// can sail forward while this remains the ONE place that actually moves
+    /// the kinematic Rigidbody each frame (see ShipAutoSail's header for why
+    /// a second independent mover on this body is unsafe).
     /// </summary>
     [ExecuteAlways]
     public class ShipBuoyancy : MonoBehaviour
@@ -46,15 +53,15 @@ namespace StormOcean
         [Tooltip("Raises (+) or lowers (-) the hull relative to the sampled water surface, e.g. for draft/keel depth.")]
         public float floatHeight = 0f;
         [Tooltip("Spring stiffness pulling the hull toward the sampled water height/attitude. Higher = snappier response to wave changes; lower = softer, sluggish (\"heavy\") response.")]
-        public float buoyancyStrength = 18f;
+        public float buoyancyStrength = 60f;
         [Tooltip("Damping on the pitch/roll spring. Near buoyancyStrength's critical value the hull settles cleanly; lower values let it rock more before settling; 0 oscillates indefinitely.")]
-        [Range(0f, 40f)] public float damping = 6f;
+        [Range(0f, 40f)] public float damping = 11f;
         [Tooltip("Damping on the vertical (heave) spring. Near buoyancyStrength's critical value the hull settles cleanly without bobbing like a cork.")]
-        [Range(0f, 40f)] public float verticalDamping = 8f;
+        [Range(0f, 40f)] public float verticalDamping = 15f;
         [Tooltip("Extra velocity resistance simulating water drag on the hull, applied on top of the spring damping. Bleeds off residual motion so the ship settles rather than drifting or lightly oscillating forever.")]
         [Range(0f, 10f)] public float waterDrag = 1.5f;
         [Tooltip("Clamps the vertical acceleration the buoyancy spring can apply (m/s^2). Prevents violent snapping/explosive motion on extreme waves; rotation uses a proportional clamp derived from this value.")]
-        public float maxBuoyancyForce = 40f;
+        public float maxBuoyancyForce = 90f;
         public float maxPitchDegrees = 25f;
         public float maxRollDegrees = 25f;
 
@@ -67,10 +74,12 @@ namespace StormOcean
         float rollVelocity;
         bool initialized;
         Rigidbody rb;
+        ShipAutoSail autoSail;
 
         void Awake()
         {
             rb = GetComponent<Rigidbody>();
+            autoSail = GetComponent<ShipAutoSail>();
         }
 
         void LateUpdate()
@@ -83,31 +92,60 @@ namespace StormOcean
             // can never inject a huge single-step velocity kick into the spring.
             float dt = Application.isPlaying ? Mathf.Min(Time.deltaTime, 0.1f) : 0f;
 
+            // Fold in any horizontal sail advance BEFORE hull sampling/heave, using
+            // the exact same dt as the spring below, so the frame's one
+            // authoritative rb.MovePosition call at the end of this method carries
+            // both forward sailing and heave/pitch/roll together.
+            if (autoSail != null && autoSail.enabled)
+            {
+                pos += autoSail.ComputeFrameDelta(dt);
+            }
+
             Vector3 flatFwd = new Vector3(transform.forward.x, 0f, transform.forward.z);
             if (flatFwd.sqrMagnitude < 0.0001f) flatFwd = Vector3.forward;
             flatFwd.Normalize();
             Vector3 flatRight = new Vector3(flatFwd.z, 0f, -flatFwd.x); // 90 deg from flatFwd on the horizontal plane
 
-            // Six-point hull footprint: front-left, front-right, center-left,
-            // center-right, rear-left, rear-right.
+            // Nine-point hull footprint (front/mid/rear rows x left/center/right
+            // columns). The previous 6-point version (corners + mid-left/mid-right,
+            // no centerline samples at all) derived the front/rear and left/right
+            // target angles from just 2-point row/column averages - too sparse
+            // against this ocean's wave detail (large-wave steepness + turbulence
+            // domain-warp alone create meaningful curvature across an 8x4m
+            // footprint), so the reconstructed rigid-plane height at the bow/stern/
+            // beam could disagree with the true locally-sampled water there by
+            // multiple meters (confirmed empirically: even with the spring removed
+            // entirely and the hull snapped instantly to target, the stern still
+            // showed a ~3m gap from its own local water sample - a plane-fit
+            // aliasing problem, not a spring-lag problem). Adding a true centerline
+            // row/column brings each row/column average from 2 samples to 3, closer
+            // to the real footprint integral, and lets the centerpoint itself anchor
+            // the heave target. Still just 9 cheap point samples per frame - not
+            // per-vertex/full-ocean CPU cost.
             Vector3 frontL = pos + flatFwd * (length * 0.5f) - flatRight * (width * 0.5f);
+            Vector3 frontC = pos + flatFwd * (length * 0.5f);
             Vector3 frontR = pos + flatFwd * (length * 0.5f) + flatRight * (width * 0.5f);
             Vector3 midL = pos - flatRight * (width * 0.5f);
+            Vector3 midC = pos;
             Vector3 midR = pos + flatRight * (width * 0.5f);
             Vector3 rearL = pos - flatFwd * (length * 0.5f) - flatRight * (width * 0.5f);
+            Vector3 rearC = pos - flatFwd * (length * 0.5f);
             Vector3 rearR = pos - flatFwd * (length * 0.5f) + flatRight * (width * 0.5f);
 
-            float hFL = ocean.SampleSurfaceHeight(frontL.x, frontL.z, t);
-            float hFR = ocean.SampleSurfaceHeight(frontR.x, frontR.z, t);
-            float hML = ocean.SampleSurfaceHeight(midL.x, midL.z, t);
-            float hMR = ocean.SampleSurfaceHeight(midR.x, midR.z, t);
-            float hRL = ocean.SampleSurfaceHeight(rearL.x, rearL.z, t);
-            float hRR = ocean.SampleSurfaceHeight(rearR.x, rearR.z, t);
+            float hFL = ocean.SampleBuoyancyHeight(frontL.x, frontL.z, t);
+            float hFC = ocean.SampleBuoyancyHeight(frontC.x, frontC.z, t);
+            float hFR = ocean.SampleBuoyancyHeight(frontR.x, frontR.z, t);
+            float hML = ocean.SampleBuoyancyHeight(midL.x, midL.z, t);
+            float hMC = ocean.SampleBuoyancyHeight(midC.x, midC.z, t);
+            float hMR = ocean.SampleBuoyancyHeight(midR.x, midR.z, t);
+            float hRL = ocean.SampleBuoyancyHeight(rearL.x, rearL.z, t);
+            float hRC = ocean.SampleBuoyancyHeight(rearC.x, rearC.z, t);
+            float hRR = ocean.SampleBuoyancyHeight(rearR.x, rearR.z, t);
 
-            float heaveTarget = (hFL + hFR + hML + hMR + hRL + hRR) / 6f + floatHeight;
+            float heaveTarget = (hFL + hFC + hFR + hML + hMC + hMR + hRL + hRC + hRR) / 9f + floatHeight;
 
-            float frontAvg = (hFL + hFR) * 0.5f;
-            float rearAvg = (hRL + hRR) * 0.5f;
+            float frontAvg = (hFL + hFC + hFR) / 3f;
+            float rearAvg = (hRL + hRC + hRR) / 3f;
             float leftAvg = (hFL + hML + hRL) / 3f;
             float rightAvg = (hFR + hMR + hRR) / 3f;
 

@@ -14,7 +14,7 @@ Shader "StormOcean/ContactFoam"
         _Breakup("Breakup", Range(0,1)) = 0.55
         _AnimSpeed("Animation Speed", Float) = 0.6
         _EdgeSoftness("Edge Softness", Range(0,1)) = 0.4
-        _Threshold("Threshold", Range(0,1)) = 0.35
+        _Threshold("Threshold", Range(0,1)) = 0.2
 
         _HalfLengthExt("Half Length Ext (m)", Float) = 5
         _HalfWidthExt("Half Width Ext (m)", Float) = 3
