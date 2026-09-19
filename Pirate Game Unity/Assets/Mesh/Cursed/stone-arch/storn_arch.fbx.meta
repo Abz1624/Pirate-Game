@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: d486ba591e762d4469d0064808489686
+guid: 5c448232dee0d3f4a93a4bd40abe5f2d
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -7,8 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Arka_Low_initialShadingGroup1
-    second: {fileID: 2100000, guid: 2f8e8a9157c9c724099d97ea6334c70a, type: 2}
+      name: Plant_Texture
+    second: {fileID: 2100000, guid: c1c5200d957d4684fa67ca38e0730e9c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert2
+    second: {fileID: 2100000, guid: 56b000b28cdbd7e45bf4d125e11b404e, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
