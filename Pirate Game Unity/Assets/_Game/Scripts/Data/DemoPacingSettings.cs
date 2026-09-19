@@ -7,9 +7,10 @@ namespace HighSeas.Data
     {
         [Header("Level Ups")]
         [Tooltip("Multiplier on XP required for levels 1 through Early Level Cap.")]
-        [Range(0.3f, 1f)] public float earlyLevelXpMultiplier = 0.62f;
+        [Range(0.3f, 1.5f)] public float earlyLevelXpMultiplier = 0.95f;
         [Min(1)] public int earlyLevelCap = 6;
-        [Range(1f, 3f)] public float xpDropMultiplier = 1.35f;
+        [Range(0.5f, 2f)] public float xpRequirementMultiplier = 1.28f;
+        [Range(0.5f, 3f)] public float xpDropMultiplier = 1.05f;
 
         [Header("Weapon Growth")]
         [Range(1f, 2f)] public float upgradePowerMultiplier = 1.2f;

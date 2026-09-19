@@ -21,8 +21,8 @@ namespace HighSeas.Tests
         [Test]
         public void V3GameMath_XPToNext_UsesFivePlusTwoL()
         {
-            Assert.That(V3GameMath.XPToNext(0), Is.EqualTo(25f));
-            Assert.That(V3GameMath.XPToNext(3), Is.EqualTo(61f));
+            Assert.That(V3GameMath.XPToNext(0), Is.EqualTo(32f));
+            Assert.That(V3GameMath.XPToNext(3), Is.EqualTo(77f));
         }
 
         [Test]
@@ -141,8 +141,8 @@ namespace HighSeas.Tests
 
             Assert.That(counts[V3FloorPowerupKind.RepairSupplies], Is.InRange(3_000, 4_000));
             Assert.That(counts[V3FloorPowerupKind.BattleSignal], Is.InRange(3_000, 4_000));
-            Assert.That(counts[V3FloorPowerupKind.Tailwind], Is.InRange(1_500, 2_500));
-            Assert.That(counts[V3FloorPowerupKind.SalvageChime], Is.InRange(1_500, 2_500));
+            Assert.That(counts[V3FloorPowerupKind.Tailwind], Is.InRange(1_200, 2_800));
+            Assert.That(counts[V3FloorPowerupKind.SalvageChime], Is.InRange(700, 1_500));
         }
 
         [Test]

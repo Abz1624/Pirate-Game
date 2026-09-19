@@ -24,6 +24,23 @@
       },
       "rollbackValues": {}
     },
+    "combat_redesign_v2": {
+      "contentVersion": "2026-09-18",
+      "description": "Six-slot combat redesign baseline after profile harness",
+      "hypothesis": "D_FULL_COMBAT_V2 sustains higher kill throughput without runaway deaths in short sims",
+      "targetMetrics": {
+        "medianKillsPerRun": 220,
+        "mandatoryPickRateMax": 0.65,
+        "deadOfferRateMax": 0.15
+      },
+      "tuning": {
+        "defaultProfile": "D_FULL_COMBAT_V2",
+        "spawnDensityMultiplier": 1.0
+      },
+      "rollbackValues": {
+        "defaultProfile": "A_CURRENT"
+      }
+    },
     "megabonk_comparison_v0": {
       "contentVersion": "2026-09-14",
       "description": "Named comparison profile only — not active production tuning",

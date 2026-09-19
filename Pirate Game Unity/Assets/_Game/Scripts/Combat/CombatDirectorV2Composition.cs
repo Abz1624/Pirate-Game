@@ -35,6 +35,7 @@ namespace HighSeas.Combat
             "hammerhead" => 0f,
             "kraken_spawn" => 0f,
             "reef_crab" or "reef_crab_miniboss" => 0f,
+            "needle_sloop" or "ram_raider" => 0f,
             _ => 0.35f
         };
 
@@ -47,6 +48,9 @@ namespace HighSeas.Combat
             "hammerhead" => 0.25f,
             "kraken_spawn" => 0f,
             "reef_crab" or "reef_crab_miniboss" => 0.15f,
+            "needle_sloop" => 0.7f,
+            "ram_raider" => 0.45f,
+            "bomb_ketch" => 0.2f,
             _ => 0.3f
         };
 
@@ -59,6 +63,9 @@ namespace HighSeas.Combat
             "hammerhead" => 0.85f,
             "kraken_spawn" => 0.35f,
             "reef_crab" or "reef_crab_miniboss" => 0.75f,
+            "net_cutter" => 0.55f,
+            "repair_tender" => 0.4f,
+            "powder_barge" => 0.35f,
             _ => 0.25f
         };
 
@@ -71,6 +78,8 @@ namespace HighSeas.Combat
             "hammerhead" => 1.1f,
             "kraken_spawn" => 1f,
             "reef_crab" or "reef_crab_miniboss" => 0.6f,
+            "shield_frigate" => 0.65f,
+            "treasure_raider" => 0.25f,
             _ => 0.2f
         };
 
@@ -83,6 +92,11 @@ namespace HighSeas.Combat
             "hammerhead" => 1.15f,
             "kraken_spawn" => 1.15f,
             "reef_crab" or "reef_crab_miniboss" => 0.5f,
+            "bomb_ketch" => 0.9f,
+            "net_cutter" => 0.85f,
+            "repair_tender" => 0.75f,
+            "powder_barge" => 0.7f,
+            "shield_frigate" => 0.8f,
             _ => 0.15f
         };
     }

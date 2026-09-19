@@ -38,8 +38,12 @@ namespace HighSeas.Enemies
         bool _v3PacingEnabled;
         bool _directorV2Enabled;
         float _spawnDensityMultiplier = 1f;
+        float _enemyHpMultiplier = 1f;
+        float _enemyDamageMultiplier = 1f;
         float _spawnRateMultiplier = 1f;
+        bool _settingsInstanced;
         float _nextPackTime;
+        readonly List<string> _packSpawnQueue = new(32);
 
         ScriptedPhase _scriptedPhase = ScriptedPhase.WaitingToStart;
         int _scriptedWaveIndex;
@@ -108,7 +112,7 @@ namespace HighSeas.Enemies
             }
 
             TrySpawnMinibosses();
-            TrySpawnDirectorPack();
+            TickDirectorPackSpawns();
 
             if (_spawnCooldown > 0f)
                 _spawnCooldown -= dt;
@@ -394,12 +398,13 @@ namespace HighSeas.Enemies
             if (!CanSpawnDefinition(defIndex, def, scripted))
                 return false;
 
-            var mode = settings != null ? settings.timingMode : SpawnTimingMode.ContinuousThreat;
-            if (mode == SpawnTimingMode.ContinuousThreat && _budget < def.threatCost)
+            var mode = GetThreatBudgetMode();
+            var budgetCost = GetThreatBudgetCost(def);
+            if (mode == SpawnTimingMode.ContinuousThreat && _budget < budgetCost)
                 return false;
 
             if (mode == SpawnTimingMode.ContinuousThreat)
-                _budget -= def.threatCost;
+                _budget -= budgetCost;
 
             var affix = EliteAffix.None;
             if (RunManager.Instance.Rng.DirectorFloat() < _eliteChance)
@@ -421,6 +426,8 @@ namespace HighSeas.Enemies
             for (var i = 0; i < attempts; i++)
             {
                 var position = PickSpawnPosition();
+                if (!IsOffScreenSpawnAllowed(def, position))
+                    continue;
                 if (IslandObstacles.IsAvailable && IslandObstacles.IsPositionBlocked(position, spawnRadius))
                     continue;
 
@@ -445,9 +452,12 @@ namespace HighSeas.Enemies
             var attempts = settings != null ? settings.spawnPositionAttempts : 16;
             var radius = enemyWorld.Definitions[defIndex].radius + 0.35f;
 
+            var def = enemyWorld.Definitions[defIndex];
             for (var i = 0; i < attempts; i++)
             {
                 var pos = PickSpawnPosition();
+                if (!IsOffScreenSpawnAllowed(def, pos))
+                    continue;
                 if (!IsSpawnCandidateValid(pos, radius))
                     continue;
 
@@ -466,8 +476,25 @@ namespace HighSeas.Enemies
         {
             var gap = settings != null ? settings.minSecondsBetweenSpawns : 0.35f;
             if (_v3PacingEnabled)
-                gap = Mathf.Max(gap, 0.65f);
+            {
+                var floor = _directorV2Enabled ? 0.4f : 0.65f;
+                gap = Mathf.Max(gap, floor);
+            }
             return gap;
+        }
+
+        SpawnTimingMode GetThreatBudgetMode()
+        {
+            if (_v3PacingEnabled)
+                return SpawnTimingMode.ContinuousThreat;
+            return settings != null ? settings.timingMode : SpawnTimingMode.ContinuousThreat;
+        }
+
+        float GetThreatBudgetCost(Data.EnemyDefinition def)
+        {
+            if (_v3PacingEnabled && _directorV2Enabled)
+                return 1f;
+            return def.threatCost;
         }
 
         int GetEnemyCap()
@@ -481,6 +508,8 @@ namespace HighSeas.Enemies
                 cap = Mathf.Min(cap, 36);
             return cap;
         }
+
+        public int GetEnemyCapForDebug() => GetEnemyCap();
 
         bool CanSpawnDefinition(int definitionIndex, Data.EnemyDefinition def, bool scriptedSpawn = false)
         {
@@ -595,13 +624,28 @@ namespace HighSeas.Enemies
             profile ??= CombatExperimentContext.Active;
             _directorV2Enabled = profile.directorV2Enabled;
             _spawnDensityMultiplier = profile.spawnDensityMultiplier;
+            _enemyHpMultiplier = profile.enemyHpMultiplier;
+            _enemyDamageMultiplier = profile.enemyDamageMultiplier;
             _nextPackTime = 120f;
+            enemyWorld?.SetExperimentMultipliers(_enemyHpMultiplier, _enemyDamageMultiplier);
             if (_directorV2Enabled)
                 _scriptedPhase = ScriptedPhase.Finished;
         }
 
-        void TrySpawnDirectorPack()
+        void TickDirectorPackSpawns()
         {
+            if (_packSpawnQueue.Count > 0)
+            {
+                if (_spawnCooldown > 0f || enemyWorld.ActiveCount >= GetEnemyCap())
+                    return;
+
+                var enemyId = _packSpawnQueue[0];
+                _packSpawnQueue.RemoveAt(0);
+                if (TrySpawnEnemyId(enemyId))
+                    _spawnCooldown = GetMinSpawnGap();
+                return;
+            }
+
             if (!_directorV2Enabled || RunManager.Instance == null) return;
             var elapsed = RunManager.Instance.ElapsedSeconds;
             if (elapsed < _nextPackTime) return;
@@ -609,27 +653,61 @@ namespace HighSeas.Enemies
 
             var minute = elapsed / 60f;
             _nextPackTime = elapsed + (minute >= 6f ? 18f : 24f);
-            (string id, int count)[] pack = minute switch
+            var pack = SpawnPackRegistry.GetPack(minute);
+            for (var i = 0; i < pack.Count; i++)
             {
-                >= 8f => new[] { ("hammerhead", 1), ("kraken_spawn", 1), ("cannonboat", 2), ("shark", 4) },
-                >= 6f => new[] { ("kraken_spawn", 1), ("manta_ray", 2), ("shark", 4) },
-                >= 4f => new[] { ("reef_crab_miniboss", 1), ("cannonboat", 2), ("shark", 4) },
-                >= 2f => new[] { ("swordfish", 2), ("cannonboat", 2), ("shark", 4) },
-                _ => new[] { ("shark", 8) }
-            };
-
-            for (var i = 0; i < pack.Length; i++)
-            {
-                for (var c = 0; c < pack[i].count; c++)
-                {
-                    if (enemyWorld.ActiveCount >= GetEnemyCap()) return;
-                    TrySpawnEnemyId(pack[i].id);
-                }
+                for (var c = 0; c < pack[i].Count; c++)
+                    _packSpawnQueue.Add(pack[i].EnemyId);
             }
         }
 
         public void SetSpawnRateMultiplier(float multiplier) =>
             _spawnRateMultiplier = Mathf.Max(0.1f, multiplier);
+
+        public void SetSpawnDensityMultiplier(float multiplier) =>
+            _spawnDensityMultiplier = Mathf.Max(0.1f, multiplier);
+
+        public void SetEnemyCombatMultipliers(float hpMultiplier, float damageMultiplier)
+        {
+            _enemyHpMultiplier = Mathf.Max(0.1f, hpMultiplier);
+            _enemyDamageMultiplier = Mathf.Max(0.1f, damageMultiplier);
+            enemyWorld?.SetExperimentMultipliers(_enemyHpMultiplier, _enemyDamageMultiplier);
+        }
+
+        public SpawnDirectorSettings GetMutableSettings()
+        {
+            if (settings != null && !_settingsInstanced)
+            {
+                settings = Instantiate(settings);
+                settings.hideFlags = HideFlags.DontSave;
+                _settingsInstanced = true;
+            }
+
+            return settings;
+        }
+
+        public float DebugThreatBudget => _budget;
+        public float DebugEliteChance => _eliteChance;
+        public float DebugSpawnRateMultiplier => _spawnRateMultiplier;
+        public float DebugSpawnDensityMultiplier => _spawnDensityMultiplier;
+        public float DebugEnemyHpMultiplier => _enemyHpMultiplier;
+        public float DebugEnemyDamageMultiplier => _enemyDamageMultiplier;
+        public bool DebugV3PacingEnabled => _v3PacingEnabled;
+        public bool DebugDirectorV2Enabled => _directorV2Enabled;
+
+        public float GetEffectiveThreatPerSecond()
+        {
+            if (RunManager.Instance == null) return 0f;
+            if (_v3PacingEnabled)
+                return ComputeV3ThreatPerSecond() * _spawnRateMultiplier;
+
+            var threatMult = settings != null ? settings.threatMultiplier : 1f;
+            if (_pacingSettings != null && !_v3PacingEnabled)
+                threatMult *= _pacingSettings.postScriptedThreatMultiplier;
+            return RunManager.Instance.ThreatPerSecond * threatMult * _spawnRateMultiplier;
+        }
+
+        public void ClearThreatBudget() => _budget = 0f;
 
         public bool TrySpawnPressureBeat(string enemyId)
         {
@@ -645,6 +723,9 @@ namespace HighSeas.Enemies
             for (var i = 0; i < attempts; i++)
             {
                 var pos = PickPressureBeatPosition();
+                var def = enemyWorld.Definitions[defIndex];
+                if (!IsOffScreenSpawnAllowed(def, pos))
+                    continue;
                 if (!IsSpawnCandidateValid(pos, radius))
                     continue;
 
@@ -657,6 +738,9 @@ namespace HighSeas.Enemies
 
         Vector3 PickPressureBeatPosition()
         {
+            if (_v3PacingEnabled)
+                return PickSpawnPosition();
+
             var rng = RunManager.Instance.Rng;
             for (var i = 0; i < 12; i++)
             {
@@ -720,15 +804,29 @@ namespace HighSeas.Enemies
 
         SpawnPlacementMode GetSpawnPlacementMode()
         {
+            if (_v3PacingEnabled)
+                return SpawnPlacementMode.OffCamera;
+
             if (settings == null)
                 return SpawnPlacementMode.ScreenEdge;
+
+            if (settings.spawnOutsideCameraView)
+                return SpawnPlacementMode.OffCamera;
 
             if (settings.spawnPlacement != SpawnPlacementMode.Annulus)
                 return settings.spawnPlacement;
 
-            return settings.spawnOutsideCameraView
-                ? SpawnPlacementMode.OffCamera
-                : SpawnPlacementMode.Annulus;
+            return SpawnPlacementMode.Annulus;
+        }
+
+        bool IsOffScreenSpawnAllowed(Data.EnemyDefinition def, Vector3 position)
+        {
+            if (!_v3PacingEnabled || def.isBoss)
+                return true;
+
+            var cam = GetSpawnCamera();
+            var margin = settings != null ? settings.cameraViewportMargin : 0.08f;
+            return !IsWorldPositionVisible(position, cam, margin);
         }
 
         Vector3 PickSpawnAtScreenEdge(float minDist, float maxDist, Core.RunRng rng)
@@ -771,7 +869,7 @@ namespace HighSeas.Enemies
                     if (!TryIntersectWaterPlane(ray, planeY, out var hitPoint))
                         continue;
 
-                    hitPoint = ClampSpawnDistance(hitPoint, minDist, maxDist, planeY);
+                    hitPoint = EnforceSpawnDistance(hitPoint, minDist, maxDist, planeY);
                     if (IsSpawnCandidateValid(hitPoint, 1.1f))
                         return hitPoint;
                 }
@@ -795,7 +893,8 @@ namespace HighSeas.Enemies
             return true;
         }
 
-        Vector3 ClampSpawnDistance(Vector3 point, float minDist, float maxDist, float planeY)
+        /// <summary>Push spawns outward if too close; never pull inward (keeps off-screen edge hits valid).</summary>
+        Vector3 EnforceSpawnDistance(Vector3 point, float minDist, float maxDist, float planeY)
         {
             var offset = point - player.position;
             offset.y = 0f;
@@ -803,13 +902,22 @@ namespace HighSeas.Enemies
             if (dist < 0.01f)
                 return player.position + Vector3.forward * minDist;
 
-            if (dist >= minDist && dist <= maxDist)
-                return point;
+            if (dist < minDist)
+            {
+                var result = player.position + offset.normalized * minDist;
+                result.y = planeY;
+                return result;
+            }
 
-            var clamped = Mathf.Clamp(dist, minDist, maxDist);
-            var result = player.position + offset.normalized * clamped;
-            result.y = planeY;
-            return result;
+            if (dist > maxDist && !_v3PacingEnabled)
+            {
+                var result = player.position + offset.normalized * maxDist;
+                result.y = planeY;
+                return result;
+            }
+
+            point.y = planeY;
+            return point;
         }
 
         bool IsSpawnCandidateValid(Vector3 point, float radius)
@@ -828,6 +936,16 @@ namespace HighSeas.Enemies
             var cam = GetSpawnCamera();
             var margin = settings != null ? settings.cameraViewportMargin : 0.08f;
             var attempts = settings != null ? settings.spawnPositionAttempts : 12;
+
+            if (cam != null)
+            {
+                for (var i = 0; i < attempts; i++)
+                {
+                    var edgePos = PickSpawnAtScreenEdge(minDist, maxDist, rng);
+                    if (!IsWorldPositionVisible(edgePos, cam, margin))
+                        return edgePos;
+                }
+            }
 
             for (var i = 0; i < attempts; i++)
             {
@@ -889,7 +1007,7 @@ namespace HighSeas.Enemies
             if (spawnCamera != null)
                 return spawnCamera;
 
-            if (_cachedSpawnCamera == null)
+            if (_cachedSpawnCamera == null || !_cachedSpawnCamera.isActiveAndEnabled)
                 _cachedSpawnCamera = Camera.main;
 
             return _cachedSpawnCamera;
@@ -918,7 +1036,7 @@ namespace HighSeas.Enemies
         }
 
         /// <summary>GDD combat spec §9, plus combat redesign Director V2 density curve.</summary>
-        static float ComputeV3ThreatPerSecond()
+        float ComputeV3ThreatPerSecond()
         {
             if (RunManager.Instance == null) return GameConstants.StageBaseThreat;
 
@@ -927,11 +1045,14 @@ namespace HighSeas.Enemies
             var depth = RunManager.Instance.StageIndex + 1;
             if (profile.directorV2Enabled)
             {
+                var itemDensity = V3.V3RunItemEffects.Instance?.GetSpawnDensityMultiplier() ?? 1f;
                 var enemiesPerSec = Mathf.Min(
                     16f,
                     (2.5f + 0.55f * minute + 0.025f * minute * minute)
                     * (1f + 0.25f * (depth - 1))
-                    * profile.spawnDensityMultiplier);
+                    * profile.spawnDensityMultiplier
+                    * _spawnDensityMultiplier
+                    * itemDensity);
                 return enemiesPerSec;
             }
 

@@ -675,6 +675,8 @@ namespace HighSeas.UI
 
         static bool IsWeaponOfferEligible(string weaponId)
         {
+            if (!Combat.WeaponFeatureFlags.IsWeaponEnabled(weaponId))
+                return false;
             if (!V3.V3RunContext.IsActive) return true;
             return V3.V3ContentUnlocks.IsWeaponUnlocked(weaponId);
         }

@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8960dcf2d44570342bbff957b0da712b, type: 3}
   m_Name: DemoPacingSettings
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.DemoPacingSettings
-  earlyLevelXpMultiplier: 0.62
+  earlyLevelXpMultiplier: 0.95
   earlyLevelCap: 6
-  xpDropMultiplier: 1.35
+  xpRequirementMultiplier: 1.28
+  xpDropMultiplier: 1.05
   upgradePowerMultiplier: 1.2
   startingDamageMultiplier: 1.1
   bossBeaconMinSeconds: 180

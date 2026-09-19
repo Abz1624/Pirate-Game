@@ -60,15 +60,21 @@ namespace HighSeas.V3
             _richieTimer = Mathf.Max(0f, _richieTimer - dt);
             _emberFlameTimer = Mathf.Max(0f, _emberFlameTimer - dt);
             _roxieTimer = Mathf.Max(0f, _roxieTimer - dt);
+            _richieDamageBuffTimer = Mathf.Max(0f, _richieDamageBuffTimer - dt);
 
             if (!WasActivatePressed()) return;
             TryActivate();
         }
 
+        float _richieDamageBuffTimer;
+        float _roxieNearMissCredit;
+
         static bool WasActivatePressed()
         {
             var keyboard = Keyboard.current;
-            return keyboard != null && keyboard.qKey.wasPressedThisFrame;
+            if (keyboard != null && (keyboard.spaceKey.wasPressedThisFrame || keyboard.qKey.wasPressedThisFrame))
+                return true;
+            return Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame;
         }
 
         public bool TryActivate()
@@ -90,6 +96,7 @@ namespace HighSeas.V3
                     break;
                 case V3CaptainId.Richie:
                     _richieTimer = 3f;
+                    _richieDamageBuffTimer = 5f;
                     player?.ApplyMoveEffect(1.35f, 3f);
                     break;
                 case V3CaptainId.Ember:
@@ -108,6 +115,15 @@ namespace HighSeas.V3
             _cooldownRemaining = def.cooldown;
             V3ToastHud.Instance?.Show($"{def.displayName}!", 2.5f);
             return true;
+        }
+
+        public float GetRichieActiveDamageBonus() =>
+            _richieDamageBuffTimer > 0f ? 0.1f : 0f;
+
+        public void NotifyNearMissDodge(float secondsReduced = 0.35f)
+        {
+            if (captainId != V3CaptainId.Roxie || _roxieTimer <= 0f) return;
+            _cooldownRemaining = Mathf.Max(0f, _cooldownRemaining - secondsReduced);
         }
 
         ActiveDefinition GetDefinition() => captainId switch

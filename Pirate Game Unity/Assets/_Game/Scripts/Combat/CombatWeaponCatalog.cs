@@ -17,14 +17,11 @@ namespace HighSeas.Combat
             var list = new List<WeaponDefinition>(database.weapons);
             AddIfMissing(list, CreateLongNine());
             AddIfMissing(list, CreateSwivelGuns());
-            AddIfMissing(list, CreateGrapeshot());
             AddIfMissing(list, CreateHarpoonGun());
             AddIfMissing(list, CreateMortar());
-            AddIfMissing(list, CreateBoardingParty());
             database.weapons = list.ToArray();
             SyncExperimentalWeapon(database, "mortar", CreateMortar());
             SyncExperimentalWeapon(database, "swivel_guns", CreateSwivelGuns());
-            SyncExperimentalWeapon(database, "boarding_party", CreateBoardingParty());
         }
 
         static void SyncExperimentalWeapon(GameDatabase database, string id, WeaponDefinition template)

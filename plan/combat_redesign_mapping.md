@@ -42,9 +42,13 @@ Engineering note mapping existing systems to `Rogue_Pirates_Cursor_Combat_Redesi
 
 | File | Role |
 |---|---|
-| `Assets/_Game/Scripts/Enemies/SpawnDirector.cs` | Threat budget spawning, V3 pacing |
+| `Assets/_Game/Scripts/Enemies/SpawnDirector.cs` | Threat budget spawning, V3 pacing, experiment HP/dmg mults |
+| `Assets/_Game/Scripts/Combat/SpawnPackRegistry.cs` | Named Director V2 packs (SWARM, GUNLINE, …) |
+| `Assets/_Game/Scripts/Combat/CombatSpecialistEnemyCatalog.cs` | Specialist enemy registration for Director V2 |
 | `Assets/_Game/Scripts/Enemies/SpawnDirectorSettings.cs` | Wave script + enemy tuning |
 | `Assets/_Game/Scripts/V3/V3PressureBeatDirector.cs` | Minute 3/4/7/8 beats |
+| `Assets/_Game/Scripts/V3/V3RouteEventDirector.cs` | Route-risk events (treasure raider, bounty flag, …) |
+| `Assets/_Game/Scripts/V3/V3PowerupCatalog.cs` | Expanded floor powerup pool when Director V2 is on |
 | `Assets/_Game/Scripts/V3/V3OvertimeDirector.cs` | Post-10:00 overtime spawns |
 
 ## Captain config
@@ -84,7 +88,8 @@ Engineering note mapping existing systems to `Rogue_Pirates_Cursor_Combat_Redesi
 | File | Role |
 |---|---|
 | `Assets/_Game/Scripts/Save/SaveService.cs` | Meta-only PlayerPrefs save |
-| `Assets/_Game/Scripts/Core/RunManager.cs` | In-memory run state (not snapshotted) |
+| `Assets/_Game/Scripts/Save/RunSnapshot.cs` | In-run snapshot (weapons, items, profile, captain CD) |
+| `Assets/_Game/Scripts/Core/RunManager.cs` | In-memory run state |
 
 ## Telemetry / post-run stats
 
@@ -99,4 +104,5 @@ Engineering note mapping existing systems to `Rogue_Pirates_Cursor_Combat_Redesi
 | File | Role |
 |---|---|
 | `Assets/_Game/Scripts/Combat/CombatExperimentProfile.cs` | Profiles A/B/C/D + runtime context |
+| `Assets/_Game/Simulation/Balance/ProfileBalanceHarness.cs` | CLI A/B/C/D balance matrix + JSONL reports |
 | `Assets/_Game/Resources/CombatExperiment/*.asset` | Optional authored profile assets |

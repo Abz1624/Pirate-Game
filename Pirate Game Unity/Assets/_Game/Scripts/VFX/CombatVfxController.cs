@@ -66,14 +66,21 @@ namespace HighSeas.VFX
                 LevelSystem.Instance.LevelChanged -= OnLevelChanged;
         }
 
-        void OnHit(float damage, bool crit, Vector3 position)
+        void OnHit(float damage, bool crit, Vector3 position, string weaponId)
         {
+            if (weaponId == "powder_kegs")
+                return;
             if (_broker == null) _broker = JuiceVfxBroker.Instance;
-            _broker?.PlayHit(position, crit);
+            if (CannonImpactVfx.IsCannonWeapon(weaponId))
+                _broker?.PlayCannonImpact(position, crit);
+            else
+                _broker?.PlayHit(position, crit);
         }
 
-        void OnKill(bool elite, bool boss, Vector3 position)
+        void OnKill(bool elite, bool boss, Vector3 position, string weaponId)
         {
+            if (weaponId == "powder_kegs")
+                return;
             if (_broker == null) _broker = JuiceVfxBroker.Instance;
             _broker?.PlayKill(position, elite, boss);
         }

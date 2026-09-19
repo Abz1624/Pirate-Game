@@ -28,13 +28,17 @@ namespace HighSeas.V3
 
         {
 
+            if (!WeaponFeatureFlags.IsWeaponEnabled(weaponId))
+
+                return false;
+
             if (V3PlaytestFlags.UnlockAllContent) return !string.IsNullOrEmpty(weaponId);
 
             if (string.IsNullOrEmpty(weaponId)) return false;
 
             if (CombatExperimentContext.Active.weaponSlotCap >= 6 && IsExperimentalPlaytestWeapon(weaponId))
 
-                return HasCompletedFirstConquest || weaponId is "long_nine" or "swivel_guns" or "grapeshot";
+                return HasCompletedFirstConquest || weaponId is "long_nine" or "swivel_guns";
 
             return weaponId switch
 
@@ -64,7 +68,7 @@ namespace HighSeas.V3
 
         static bool IsExperimentalPlaytestWeapon(string weaponId) =>
 
-            weaponId is "long_nine" or "swivel_guns" or "grapeshot" or "harpoon_gun" or "mortar" or "boarding_party";
+            weaponId is "long_nine" or "swivel_guns" or "harpoon_gun" or "mortar";
 
 
 

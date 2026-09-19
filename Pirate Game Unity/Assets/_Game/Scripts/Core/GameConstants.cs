@@ -21,8 +21,8 @@ namespace HighSeas.Core
     public static class GameConstants
     {
         public const float DefaultMoveSpeed = 6.2f;
-        /// <summary>Prototype: player max hull in all run scenes (base design × multiplier).</summary>
-        public const float HullHealthMultiplier = 10f;
+        /// <summary>Runtime hull scale applied to ship design values (1 = authored balance).</summary>
+        public const float HullHealthMultiplier = 1f;
         public const float DefaultHull = 100f * HullHealthMultiplier;
 
         public static float ScaleHull(float designHull) => designHull * HullHealthMultiplier;

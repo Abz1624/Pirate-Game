@@ -49,6 +49,15 @@ namespace HighSeas.V3
         [Range(2f, 24f)]
         public float fogEdgeSoftnessWorld = 10f;
 
+        [Header("Playable bounds")]
+        public Color outOfBoundsVeilColor = new(0.02f, 0.05f, 0.1f, 0.9f);
+
+        [Tooltip("UV fade width at the playable rectangle edge (content uses 2.2× bounds).")]
+        [Range(0.01f, 0.12f)]
+        public float outOfBoundsEdgeSoftnessUv = 0.045f;
+
+        const float MapContentPadding = 2.2f;
+
         float VisibleWorldAxisFraction =>
             megabonkFullMapZoom > 0.01f ? megabonkNormalZoom / megabonkFullMapZoom : 0.33f;
 
@@ -61,8 +70,13 @@ namespace HighSeas.V3
         RectTransform _beaconSector;
         Image _overlayImage;
         RawImage _fogRawImage;
+        RawImage _boundsVeilImage;
         Texture2D _fogTexture;
+        Texture2D _boundsVeilTexture;
         Color32[] _fogPixels;
+        Color32[] _boundsVeilPixels;
+        Color _lastOutOfBoundsVeilColor;
+        float _lastOutOfBoundsEdgeSoftnessUv;
         int _lastFogRevision = -1;
         int _lastFogMaskResolution;
         float _lastFogEdgeSoftness;
@@ -105,7 +119,11 @@ namespace HighSeas.V3
             _enemyWorld = FindFirstObjectByType<EnemyWorld>();
         }
 
-        void OnDestroy() => DestroyFogTexture();
+        void OnDestroy()
+        {
+            DestroyFogTexture();
+            DestroyBoundsVeilTexture();
+        }
 
         public void ApplyProjectSettings()
         {
@@ -136,6 +154,7 @@ namespace HighSeas.V3
             _playerIcon.localRotation = Quaternion.Euler(0f, 0f, headingDeg);
 
             RefreshFog(pos);
+            RefreshBoundsVeil();
             RefreshBeaconSector(pos);
             RefreshMarkerPositions();
             RefreshMarkerVisibility();
@@ -175,6 +194,10 @@ namespace HighSeas.V3
             }
             else
                 oceanImg.color = new Color(0.05f, 0.22f, 0.42f, 1f);
+
+            var boundsVeilRoot = CreateChild(_contentRoot, "BoundsVeilRoot");
+            Stretch(boundsVeilRoot);
+            EnsureBoundsVeilImage(boundsVeilRoot);
 
             _fogRoot = CreateChild(_contentRoot, "FogRoot");
             Stretch(_fogRoot);
@@ -263,6 +286,17 @@ namespace HighSeas.V3
             if (_mapClip == null) return;
             _contentRoot = _mapClip.Find("ContentRoot") as RectTransform;
             if (_contentRoot == null) return;
+
+            var boundsVeilRoot = _contentRoot.Find("BoundsVeilRoot") as RectTransform;
+            if (boundsVeilRoot == null)
+            {
+                boundsVeilRoot = CreateChild(_contentRoot, "BoundsVeilRoot");
+                Stretch(boundsVeilRoot);
+                var fogIndex = _contentRoot.Find("FogRoot")?.GetSiblingIndex() ?? 1;
+                boundsVeilRoot.SetSiblingIndex(Mathf.Max(0, fogIndex));
+            }
+
+            EnsureBoundsVeilImage(boundsVeilRoot);
             _fogRoot = _contentRoot.Find("FogRoot") as RectTransform;
             EnsureFogMaskImage();
             _mapRoot = _contentRoot.Find("MapRoot") as RectTransform;
@@ -381,6 +415,95 @@ namespace HighSeas.V3
             _lastFogTint = fogTint;
             EnsureFogTexture();
             RebuildFogMask(discovery);
+        }
+
+        void EnsureBoundsVeilImage(RectTransform parent)
+        {
+            if (parent == null) return;
+
+            var existing = parent.Find("BoundsVeil")?.GetComponent<RawImage>();
+            if (existing != null)
+            {
+                _boundsVeilImage = existing;
+                return;
+            }
+
+            var go = new GameObject("BoundsVeil", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            Stretch(go.GetComponent<RectTransform>());
+            _boundsVeilImage = go.AddComponent<RawImage>();
+            _boundsVeilImage.raycastTarget = false;
+            DestroyBoundsVeilTexture();
+        }
+
+        void RefreshBoundsVeil()
+        {
+            if (_boundsVeilImage == null) return;
+
+            var settingsChanged = _boundsVeilTexture == null
+                                  || _lastOutOfBoundsVeilColor != outOfBoundsVeilColor
+                                  || !Mathf.Approximately(_lastOutOfBoundsEdgeSoftnessUv, outOfBoundsEdgeSoftnessUv);
+            if (!settingsChanged) return;
+
+            _lastOutOfBoundsVeilColor = outOfBoundsVeilColor;
+            _lastOutOfBoundsEdgeSoftnessUv = outOfBoundsEdgeSoftnessUv;
+            EnsureBoundsVeilTexture();
+            RebuildBoundsVeilTexture();
+        }
+
+        void EnsureBoundsVeilTexture()
+        {
+            const int size = 128;
+            if (_boundsVeilTexture != null && _boundsVeilTexture.width == size) return;
+
+            DestroyBoundsVeilTexture();
+            _boundsVeilTexture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+            _boundsVeilPixels = new Color32[size * size];
+            _boundsVeilImage.texture = _boundsVeilTexture;
+        }
+
+        void RebuildBoundsVeilTexture()
+        {
+            if (_boundsVeilTexture == null || _boundsVeilPixels == null) return;
+
+            var size = _boundsVeilTexture.width;
+            var innerHalf = 0.5f / MapContentPadding;
+            var softness = Mathf.Max(0.005f, outOfBoundsEdgeSoftnessUv);
+            var r = (byte)Mathf.Clamp(Mathf.RoundToInt(outOfBoundsVeilColor.r * 255f), 0, 255);
+            var g = (byte)Mathf.Clamp(Mathf.RoundToInt(outOfBoundsVeilColor.g * 255f), 0, 255);
+            var b = (byte)Mathf.Clamp(Mathf.RoundToInt(outOfBoundsVeilColor.b * 255f), 0, 255);
+
+            for (var y = 0; y < size; y++)
+            {
+                var v = (y + 0.5f) / size;
+                var dy = Mathf.Abs(v - 0.5f);
+                for (var x = 0; x < size; x++)
+                {
+                    var u = (x + 0.5f) / size;
+                    var dx = Mathf.Abs(u - 0.5f);
+                    var outside = Mathf.Max(dx - innerHalf, dy - innerHalf);
+                    var alpha = outside <= 0f
+                        ? 0f
+                        : Mathf.SmoothStep(0f, 1f, outside / softness) * outOfBoundsVeilColor.a;
+                    _boundsVeilPixels[y * size + x] = new Color32(r, g, b, (byte)Mathf.Clamp(Mathf.RoundToInt(alpha * 255f), 0, 255));
+                }
+            }
+
+            _boundsVeilTexture.SetPixels32(_boundsVeilPixels);
+            _boundsVeilTexture.Apply(false);
+        }
+
+        void DestroyBoundsVeilTexture()
+        {
+            if (_boundsVeilTexture == null) return;
+            if (Application.isPlaying) Destroy(_boundsVeilTexture);
+            else DestroyImmediate(_boundsVeilTexture);
+            _boundsVeilTexture = null;
+            _boundsVeilPixels = null;
         }
 
         void EnsureFogMaskImage()

@@ -152,6 +152,8 @@ namespace HighSeas.Core
                 systems.AddComponent<JuiceVfxBroker>();
             if (systems.GetComponent<CombatVfxController>() == null)
                 systems.AddComponent<CombatVfxController>();
+            if (systems.GetComponent<FloatingDamageNumbers>() == null)
+                systems.AddComponent<FloatingDamageNumbers>();
             if (systems.GetComponent<WeaponJuiceController>() == null)
                 systems.AddComponent<WeaponJuiceController>();
             if (systems.GetComponent<PlayerJuiceController>() == null)

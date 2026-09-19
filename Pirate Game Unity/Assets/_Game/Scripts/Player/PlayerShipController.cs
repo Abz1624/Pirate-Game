@@ -265,12 +265,7 @@ namespace HighSeas.Player
             return hullRadius + 0.25f;
         }
 
-        Vector3 ClampV3PlayPosition(Vector3 position, float hullRadius)
-        {
-            if (!V3.V3RunContext.IsActive)
-                return position;
-            return PlayBounds.Clamp(position, GetPlayBoundsMargin(hullRadius));
-        }
+        Vector3 ClampV3PlayPosition(Vector3 position, float hullRadius) => position;
 
         void FixedUpdate()
         {
@@ -415,9 +410,6 @@ namespace HighSeas.Player
             }
 
             nextPosition.y = _body.position.y;
-
-            if (V3.V3RunContext.IsActive)
-                nextPosition = PlayBounds.Clamp(nextPosition, GetPlayBoundsMargin(GetHullWorldRadius()));
 
             _body.MovePosition(nextPosition);
             if (!_body.isKinematic)

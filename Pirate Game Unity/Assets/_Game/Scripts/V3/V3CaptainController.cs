@@ -77,13 +77,29 @@ namespace HighSeas.V3
         public float GetAdditiveDamageBonus()
         {
             var level = LevelSystem.Instance != null ? LevelSystem.Instance.Level : 1;
-            return captainId switch
+            var bonus = captainId switch
             {
                 V3CaptainId.Rook => GetPerLevelBonus(level, 0.005f, 0.25f),
                 V3CaptainId.Flint => GetPerLevelBonus(level, 0.005f, 0.25f),
+                V3CaptainId.Richie => GetRichieGoldTensionBonus(),
+                V3CaptainId.Ember => GetPerLevelBonus(level, 0.004f, 0.18f),
+                V3CaptainId.Roxie => GetPerLevelBonus(level, 0.003f, 0.15f),
                 _ => 0f
             };
+            return bonus;
         }
+
+        float GetRichieGoldTensionBonus()
+        {
+            if (RunManager.Instance == null) return 0f;
+            return Mathf.Min(0.2f, RunManager.Instance.Gold / 4500f);
+        }
+
+        public float GetBurnDamageMultiplier() =>
+            captainId == V3CaptainId.Ember ? 1.12f : 1f;
+
+        public float GetLightningDamageMultiplier() =>
+            captainId == V3CaptainId.Roxie ? 1.1f : 1f;
 
         void Update()
         {

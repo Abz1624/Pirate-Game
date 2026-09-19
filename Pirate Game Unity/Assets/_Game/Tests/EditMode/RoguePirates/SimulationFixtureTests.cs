@@ -56,6 +56,7 @@ namespace RoguePirates.Tests
         public void BossPlayerSameTick_SecuresObjectiveBeforeRunEnd()
         {
             var sim = new CombatSimulator(99999);
+            sim.ApplyExperimentConfig(CombatExperimentSimConfig.FromProfileId("A_CURRENT"));
             for (var i = 0; i < 600; i++)
                 sim.Step(SimConstants.TickDurationSeconds);
             sim.ApplySameTickLethalFixture();
