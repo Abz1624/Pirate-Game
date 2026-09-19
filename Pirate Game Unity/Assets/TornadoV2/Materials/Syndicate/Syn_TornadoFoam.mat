@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: TornadoOuter
-  m_Shader: {fileID: 4800000, guid: ee9620f91025845bfb8e1652ee365382, type: 3}
+  m_Name: Syn_TornadoFoam
+  m_Shader: {fileID: 4800000, guid: 5c14b75158159428899078f24ff6e6a5, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -16,7 +16,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: 3005
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -25,23 +25,13 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Alpha: 0.6
-    - _BottomFade: 0.12
-    - _Density: 0.62
-    - _FresnelPower: 2
-    - _FresnelStrength: 1.2
-    - _Softness: 0.3
-    - _TilingX: 8
-    - _TilingY: 2
-    - _TopFade: 0.35
-    - _Twist: -2
-    - _WobbleAmount: 0.25
-    - _WobbleFrequency: 1.5
-    - _WobbleSpeed: 1.8
+    - _Alpha: 1
+    - _Coverage: 0.55
+    - _Flow: 0.35
+    - _Repeats: 10
+    - _Spin: 0.12
     m_Colors:
-    - _ColorEdge: {r: 0.25, g: 0.015, b: 0, a: 1}
-    - _ColorHot: {r: 1.6, g: 0.4, b: 0.08, a: 1}
-    - _ColorMid: {r: 0.8, g: 0.09, b: 0.01, a: 1}
-    - _FlowSpeed: {r: -0.2, g: -0.6, b: 0, a: 0}
+    - _ColorFoam: {r: 1, g: 1, b: 1, a: 1}
+    - _ColorShade: {r: 0.7, g: 0.82, b: 0.95, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

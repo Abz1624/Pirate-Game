@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: TornadoCore
-  m_Shader: {fileID: 4800000, guid: ee9620f91025845bfb8e1652ee365382, type: 3}
+  m_Name: Syn_VortexTop2
+  m_Shader: {fileID: 4800000, guid: 2992a2454ca2e4b669988e93b537e157, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -16,7 +16,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -25,23 +25,20 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Alpha: 0.9
-    - _BottomFade: 0.12
-    - _Density: 0.42
-    - _FresnelPower: 2
-    - _FresnelStrength: 0.6
-    - _Softness: 0.25
-    - _TilingX: 4
-    - _TilingY: 3
-    - _TopFade: 0.35
+    - _Alpha: 1
+    - _Arms: 6
+    - _BandWidth: 0.85
+    - _Darken: 0.7
+    - _EyeDark: 0.55
+    - _Hole: 0.3
+    - _Reps: 1.6
+    - _Spin: -0.55
     - _Twist: 3
-    - _WobbleAmount: 0.08
-    - _WobbleFrequency: 1.5
-    - _WobbleSpeed: 2.5
     m_Colors:
-    - _ColorEdge: {r: 1, g: 0.12, b: 0, a: 1}
-    - _ColorHot: {r: 3.5, g: 1.6, b: 0.4, a: 1}
-    - _ColorMid: {r: 2.2, g: 0.55, b: 0.05, a: 1}
-    - _FlowSpeed: {r: 0.7, g: -1.6, b: 0, a: 0}
+    - _ColorBand: {r: 1, g: 0.93, b: 0.72, a: 1}
+    - _ColorBody: {r: 0.75, g: 0.09, b: 0.04, a: 1}
+    - _ColorDeep: {r: 0.22, g: 0.012, b: 0.012, a: 1}
+    - _ColorFringe: {r: 1, g: 0.3, b: 0.17, a: 1}
+    - _ColorGlow: {r: 1, g: 0.5, b: 0.15, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

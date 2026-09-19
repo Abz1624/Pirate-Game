@@ -26,22 +26,35 @@ Material:
     m_Ints: []
     m_Floats:
     - _Alpha: 0.85
+    - _BandWidth: 0.62
+    - _Bands: 6
     - _BottomFade: 0.12
     - _Density: 0.5
     - _FresnelPower: 2
     - _FresnelStrength: 0.9
+    - _Reps: 2.4
+    - _RimPower: 3.5
+    - _RimStrength: 1
     - _Softness: 0.22
+    - _Spin: 0.7
     - _TilingX: 6
     - _TilingY: 2.5
-    - _TopFade: 0.35
-    - _Twist: 2.5
-    - _WobbleAmount: 0.15
+    - _TopFade: 0.02
+    - _Twist: 6
+    - _Warp: 0.25
+    - _WobbleAmount: 0.1
     - _WobbleFrequency: 1.5
     - _WobbleSpeed: 2.5
     m_Colors:
+    - _ColorBand: {r: 1, g: 0.6, b: 0.16, a: 1}
+    - _ColorBody: {r: 0.26, g: 0.015, b: 0.01, a: 1}
+    - _ColorDeep: {r: 0.05, g: 0.004, b: 0.004, a: 1}
     - _ColorEdge: {r: 0.5, g: 0.04, b: 0, a: 1}
+    - _ColorFringe: {r: 0.8, g: 0.09, b: 0.02, a: 1}
     - _ColorHot: {r: 3, g: 1.1, b: 0.2, a: 1}
+    - _ColorInner: {r: 0.12, g: 0.01, b: 0.01, a: 1}
     - _ColorMid: {r: 1.7, g: 0.3, b: 0.02, a: 1}
+    - _ColorRim: {r: 1, g: 0.16, b: 0.03, a: 1}
     - _FlowSpeed: {r: 0.35, g: -1, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
