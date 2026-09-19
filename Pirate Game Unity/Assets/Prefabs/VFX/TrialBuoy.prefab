@@ -100,7 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2138496806582144065}
   m_Layer: 0
-  m_Name: 17_TrialBuoy
+  m_Name: TrialBuoy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
