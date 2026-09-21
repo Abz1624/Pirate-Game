@@ -303,6 +303,160 @@ Each block’s fields are defined in `SpawnProfileModules.cs` (Inspector tooltip
 
 ---
 
+## 5.1 Behavior types (detailed reference)
+
+Enemies use **two paths** depending on how they were spawned:
+
+| Spawn path | Movement | Attack | Extras |
+|------------|----------|--------|--------|
+| **`SpawnFromProfile`** (encounter spawner) | `EnemyMovementPattern` on profile (or mapped from definition if **UseDefinition**) | `EnemyAttackPattern` on profile (or mapped from definition if **UseDefinition**) | `EnemySpecialBehavior` + modules |
+| **Legacy `EnemyWorld.Spawn`** (no profile) | `EnemyDefinition.behavior` switch in `EnemyWorld` | Ranged only for ships / MaintainRange / FormationRanged; creatures mostly **contact** | No profile special behaviors |
+
+Profile-spawned enemies always run **`EnemyPatternMovement`** + **`EnemySpecialBehaviorSystem`** when `specialBehavior` is set. Tune movement/attack on the **spawn profile** for encounter content.
+
+### `EnemyDefinition.behavior` (`EnemyBehavior`)
+
+Set on each **`EnemyDefinition`**. Used when a spawn profile’s movement/attack pattern is **UseDefinition**, and always used for **legacy** spawns without a profile.
+
+| Behavior | Movement (legacy `EnemyWorld`) | Typical attack (legacy) | Default profile movement if **UseDefinition** | Default profile attack if **UseDefinition** |
+|----------|--------------------------------|-------------------------|-----------------------------------------------|---------------------------------------------|
+| **DirectChaser** | Steady chase toward player (intercept for creatures, encircle blend for ships) | Contact bump | DirectChase | Contact |
+| **TankChaser** | Same as DirectChaser | Contact | DirectChase | Contact |
+| **FlankingChaser** | Chase with sideways flank offset (alternates by agent id) | Contact | Flank | Contact |
+| **FastSwarm** | Chase at **1.2×** move speed | Contact | Swarm | Contact |
+| **DiveLunge** | Direct chase ( **`swordfish`** has a dedicated spring/lunge routine when legacy-spawned) | Contact | DiveLunge | Contact |
+| **TelegraphedCharge** | Slow approach → brief pause → **2.5×** speed charge, then reset | Contact | TelegraphedCharge (uses profile charge timings when spawned from profile) | Contact |
+| **MaintainRange** | Close if too far; strafe if too close; hold band at `preferredRange` | **Hostile projectile** when in range band | MaintainRange | SingleShot |
+| **FormationRanged** | Same band/strafe as MaintainRange | SingleShot (ships may hold still while cooling down) | MaintainRange | SingleShot |
+| **StrafeBurst** | Tangent strafe + slight inward drift | Uses attack cooldown on movement tick; ranged if ship + in band | Strafe | Contact |
+| **DriftPulse** | Normal chase speed | Contact (cooldown ticks on movement) | Drift | Contact |
+| **SuicideApproach** | Chase at **1.4×** speed | Contact (profile maps to SuicideExplosion attack enum; see attack table) | DirectChase | SuicideExplosion |
+| **StationaryTurret** | Does not move | Ranged if category/range rules allow | Stationary | Contact unless definition maps to ranged |
+| **PhaseDash** | *No dedicated legacy branch* — falls through to default chase | Contact | DirectChase (maps like default) | Contact |
+| **TentacleZone** | *Reserved* — default chase in legacy | Contact | DirectChase | Contact |
+| **SupportBuff** | *Reserved* — default chase in legacy | Contact | DirectChase | Contact |
+
+**Stock roster examples:** `cannonboat` / reef crab use **MaintainRange**; `shark` **DirectChaser**; `swordfish` **FastSwarm**; `hammerhead` **FlankingChaser**; `kraken_spawn` **TankChaser**; `manta_ray` **FlankingChaser**; miniboss **MaintainRange**; boss **TankChaser**.
+
+---
+
+### `EnemyMovementPattern` (spawn profile → `movement.pattern`)
+
+Overrides definition when not **UseDefinition**. Implemented in **`EnemyPatternMovement.ComputeVelocity`**.
+
+| Pattern | What the player sees | Key tunables |
+|---------|----------------------|--------------|
+| **UseDefinition** | Uses **`MapLegacyBehavior`** table above from linked `EnemyDefinition.behavior` | Set behavior on definition |
+| **DirectChase** | Moves along computed chase direction at full speed | `speedMultiplier` |
+| **Intercept** | Same velocity as DirectChase today (chase direction already includes creature intercept / encircle from `EnemyWorld`) | `speedMultiplier`, `interceptLead` (reserved for future lead tuning) |
+| **Flank** | Approach with sideways offset; flank side alternates by agent id | `flankAngleDegrees`, `speedMultiplier` |
+| **Orbit** | Circles player with tangent motion + slight inward pull | `orbitRadius`, `orbitDirection`, `speedMultiplier` |
+| **MaintainRange** | Closes if farther than preferred + 3 m; strafes if closer than preferred − 2 m; holds if in band | `preferredRange`, `speedMultiplier` |
+| **Strafe** | Side-step around player with slight inward component | `speedMultiplier` |
+| **TelegraphedCharge** | Creep (`0.2×` speed) while `chargeTimer > chargeWindUp`, then burst at `chargeSpeedMult × speed` | `chargeWindUpSeconds`, `chargeDurationSeconds`, `chargeCooldownSeconds`, `chargeSpeedMultiplier` |
+| **DiveLunge** | Currently same as DirectChase (use legacy swordfish or **PhaseDash** special for lunge fantasy) | `speedMultiplier` |
+| **Swarm** | Aggressive chase at **1.2×** speed | `speedMultiplier`, `separationStrength` (via `EnemyWorld.ApplySeparation`) |
+| **Drift** | Steady chase at normal speed | `speedMultiplier` |
+| **Stationary** | Zero velocity from pattern (still may attack at range) | — |
+
+While **`TerrainAmbush`** is hidden (`ambushHidden`), movement is forced to **zero** regardless of pattern.
+
+---
+
+### `EnemyAttackPattern` (spawn profile → `attack.pattern`)
+
+Resolved in **`SpawnProfileResolver.ResolveAttack`**. Ranged logic runs in **`EnemyWorld.TickRangedAttack`** for profile spawns.
+
+| Pattern | Intended role | Current runtime |
+|---------|---------------|-----------------|
+| **UseDefinition** | Derive from `EnemyDefinition.behavior` | MaintainRange / FormationRanged → **SingleShot**; SuicideApproach → **SuicideExplosion**; else **Contact** |
+| **Contact** | Hull bump damage only | Skips ranged tick; contact damage if `contactDamageEnabled` |
+| **None** | No ranged; can still use contact if enabled | Skips ranged tick |
+| **SingleShot** | One hostile projectile when player is in range band | Fires via `HostileProjectileWorld`; cooldown from profile `attackCooldown` or definition recovery |
+| **BurstVolley** | Multiple shots per cooldown | *Enum + profile fields exist; firing still uses single-shot path today* |
+| **SpreadVolley** | Cone of projectiles | *Not differentiated in fire code yet* |
+| **TelegraphedCharge** | Wind-up melee/ranged charge attack | *Not differentiated in fire code yet* |
+| **AreaDenial** | Persistent zone | *Not differentiated in fire code yet* |
+| **SuicideExplosion** | Explode on contact / death | Mapped from SuicideApproach; still primarily **contact** damage unless extended |
+
+**Ranged band (profile):** distance must be between **0.7×–1.25×** of `attackRange` (or definition `preferredRange`). Line-of-sight blocked by islands cancels the shot.
+
+---
+
+### `EnemySpecialBehavior` (spawn profile → `specialBehavior`)
+
+Runs **after** base movement each tick in **`EnemySpecialBehaviorSystem`**. Only applies to **profile-spawned** agents.
+
+| Special behavior | Purpose | Runtime summary |
+|------------------|---------|-----------------|
+| **None** | Standard move + attack only | — |
+| **Formation** | Leader + followers in a shape | **Followers** steer toward slot offset (Line / V / Wedge / Box). Can **break** if leader dies, or player enters `breakProximityRadius`. Leader uses normal movement pattern. |
+| **Summon** | Parent spawns minions | Every `spawnIntervalSeconds`, calls **`EncounterSpawner.TriggerProfile(minionProfile, minionsPerWave)`** up to `maxAliveMinions`. Requires minion profile assigned. |
+| **TetherBeam** | Risk if you stay in beam range | After `rampUpSeconds` inside `maxRange`, applies `tickDamage` every `tickIntervalSeconds`; breaks beyond `breakRange` or island linecast if `breakOnIslandBlock`. |
+| **SupportAura** | Buff nearby allies | Pulses every `pulseIntervalSeconds`: heal flat + % max HP and multiply ally `moveSpeed` within `radius`. Can disable when damaged. |
+| **PhaseDash** | Burst reposition | Cooldown → wind-up (stand still) → dash at `dashSpeed` along **TowardPlayer / Flank / AwayThenReengage** → pause; repeats up to `maxConsecutiveDashes` before long cooldown. Overrides velocity during dash. |
+| **TerrainAmbush** | Ambush reveal | Starts **hidden** (no movement). **OnSpawn**, **player radius**, or **on-screen** trigger calls reveal and applies `revealBurstSpeedMultiplier` to move speed. |
+| **Adaptive** | Counter kiting | When **`RunCombatSignals`** reports enabled signals (today only **PlayerKiteTime** is checked in code), stacks up to `maxAdaptationStacks`: applies `kiteResponseSpeedMultiplier` and switches movement to `kiteResponseMovement` for a cooldown window. Other signals (stand still, DPS, low HP, many enemies) are implemented in **`RunCombatSignals`** but require extending **`TickAdaptive`** to react to them. |
+
+**Adaptive signals** (`AdaptiveSignal` on profile): **PlayerKiteTime** (speed > ~4.5 m/s sustained), **PlayerStandStill** (speed < ~0.6 m/s), **HighPlayerDps**, **LowPlayerHp**, **ManyActiveEnemies**. Enable per profile via `adaptive.enabledSignals`.
+
+---
+
+### `EliteAffix` (spawn profile → `elite.affix`)
+
+Applied in **`EnemyWorld.SpawnFromProfile`** when `elite.isElite` is true (defaults affix to **Rich** if elite flag set but affix None).
+
+| Affix | Runtime effect |
+|-------|----------------|
+| **None** | No elite scaling (non-elite) |
+| **Armored** | **1.8×** HP |
+| **Swift** | **0.9×** HP, **1.35×** move speed |
+| **Rich** | **1.25×** HP; richer pickup roll on death |
+| **Volatile** | *Authoring slot; no extra hook in `EnemyWorld` spawn math today* |
+| **Cursed** | *Authoring slot; no extra hook in spawn math today* |
+| **Captain** | *Authoring slot; no extra hook in spawn math today* |
+
+All elites get **~1.38×** visual scale and an elite health bar when spawned.
+
+---
+
+### `FormationRole` / `FormationShape` (with **Formation** special)
+
+| Role | Meaning |
+|------|---------|
+| **Auto** | First spawn index in a group is leader; others followers |
+| **Leader** | Drives formation; followers track this agent id |
+| **Follower** | Uses formation offsets only |
+
+| Shape | Follower offset layout |
+|-------|-------------------------|
+| **Line** | Side-by-side along X |
+| **V** | Staggered V behind leader |
+| **Wedge** | Tighter wedge behind leader |
+| **Box** | Alternating left/right columns |
+
+---
+
+### `TerrainAmbushTrigger`
+
+| Trigger | Reveal when |
+|---------|-------------|
+| **OnSpawn** | Immediately on spawn (still hidden one frame until reveal) |
+| **WhenPlayerEntersRadius** | Player within `playerTriggerRadius` |
+| **WhenOffScreenThenReveal** | Enemy enters camera view (visible on screen) |
+
+---
+
+### `PhaseDashAxis`
+
+| Axis | Dash direction |
+|------|----------------|
+| **TowardPlayer** | Straight at player |
+| **Flank** | Perpendicular to player (side alternates by agent id) |
+| **AwayThenReengage** | Away from player (re-engage on next dash cycle) |
+
+---
+
 ## 6. Troubleshooting
 
 | Symptom | Likely cause |
