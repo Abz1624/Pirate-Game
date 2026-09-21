@@ -7,7 +7,8 @@ namespace HighSeas.Enemies
 {
     public static class EnemySpecialBehaviorSystem
     {
-        public static void Tick(
+        /// <summary>Runs before pattern movement (adaptive overrides, ambush reveal, non-movement modules).</summary>
+        public static void TickPreMovement(
             EnemyWorld world,
             int agentIndex,
             ref EnemyAgent agent,
@@ -22,9 +23,6 @@ namespace HighSeas.Enemies
 
             switch (p.specialBehavior)
             {
-                case EnemySpecialBehavior.Formation:
-                    TickFormation(world, ref agent, ref p, dt, playerPos);
-                    break;
                 case EnemySpecialBehavior.Summon:
                     TickSummon(world, agentIndex, ref agent, ref p, dt);
                     break;
@@ -33,9 +31,6 @@ namespace HighSeas.Enemies
                     break;
                 case EnemySpecialBehavior.SupportAura:
                     TickSupportAura(world, agentIndex, ref agent, ref p, dt);
-                    break;
-                case EnemySpecialBehavior.PhaseDash:
-                    TickPhaseDash(ref agent, ref p, dt, playerPos);
                     break;
                 case EnemySpecialBehavior.TerrainAmbush:
                     TickTerrainAmbush(ref agent, ref p, dt, playerPos);
@@ -46,7 +41,29 @@ namespace HighSeas.Enemies
             }
         }
 
-        static void TickFormation(EnemyWorld world, ref EnemyAgent agent, ref EnemySpawnRuntimeParams p, float dt, Vector3 playerPos)
+        /// <summary>Runs after pattern movement so formation slots and phase dash override base velocity.</summary>
+        public static void TickPostMovement(
+            EnemyWorld world,
+            ref EnemyAgent agent,
+            ref EnemySpawnRuntimeParams p,
+            float dt,
+            Vector3 playerPos)
+        {
+            if (p.specialBehavior == EnemySpecialBehavior.None)
+                return;
+
+            switch (p.specialBehavior)
+            {
+                case EnemySpecialBehavior.Formation:
+                    TickFormation(world, ref agent, ref p, playerPos);
+                    break;
+                case EnemySpecialBehavior.PhaseDash:
+                    TickPhaseDash(ref agent, ref p, dt, playerPos);
+                    break;
+            }
+        }
+
+        static void TickFormation(EnemyWorld world, ref EnemyAgent agent, ref EnemySpawnRuntimeParams p, Vector3 playerPos)
         {
             if (p.formationRole != FormationRole.Follower || p.formationLeaderAgentId <= 0)
                 return;
@@ -180,6 +197,7 @@ namespace HighSeas.Enemies
             if (p.dashPauseTimer > 0f)
             {
                 p.dashPauseTimer -= dt;
+                agent.velocity = Vector3.zero;
                 return;
             }
 

@@ -260,6 +260,12 @@ namespace HighSeas.Enemies
                 profile, profileInstanceId, formationRole, formationSlot, leaderUnitId);
             if (_agents[slot].patternParams.attackCooldown > 0f)
                 _agents[slot].attackCooldown = _agents[slot].patternParams.attackCooldown * 0.5f;
+            if (_agents[slot].patternParams.movementPattern == EnemyMovementPattern.TelegraphedCharge)
+            {
+                var chargeCooldown = _agents[slot].patternParams.chargeCooldown;
+                _agents[slot].chargeTimer = chargeCooldown > 0f ? chargeCooldown : 2f;
+            }
+
             if (elite.isElite && elite.sizeMultiplier > 0.01f && _agents[slot].view != null)
                 _agents[slot].view.localScale *= elite.sizeMultiplier;
 
@@ -412,8 +418,14 @@ namespace HighSeas.Enemies
                 if (!_agents[i].active) continue;
                 ref var e = ref _agents[i];
                 var def = definitions[e.definitionIndex];
-                EnemySpecialBehaviorSystem.Tick(this, i, ref e, def, dt, playerPos, playerDamage);
+                EnemySpecialBehaviorSystem.TickPreMovement(this, i, ref e, def, dt, playerPos, playerDamage);
                 var desiredVelocity = TickBehavior(i, ref e, def, dt, playerPos, playerVelocity);
+                if (e.spawnProfile != null)
+                {
+                    EnemySpecialBehaviorSystem.TickPostMovement(this, ref e, ref e.patternParams, dt, playerPos);
+                    desiredVelocity = e.velocity;
+                }
+
                 MoveAgent(ref e, dt, desiredVelocity, def);
                 e.position.y = def.visualHeightOffset;
                 UpdateView(ref e, def, dt, playerPos);

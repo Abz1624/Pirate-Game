@@ -30,6 +30,32 @@ namespace HighSeas.Tests
         }
 
         [Test]
+        public void TelegraphedChargePattern_ResetsAfterChargeDuration()
+        {
+            var agent = new EnemyAgent { moveSpeed = 4f, id = 1 };
+            var p = new EnemySpawnRuntimeParams
+            {
+                movementPattern = EnemyMovementPattern.TelegraphedCharge,
+                chargeWindUp = 1.5f,
+                chargeDuration = 0.35f,
+                chargeCooldown = 2f,
+                chargeSpeedMult = 2.5f
+            };
+            var chargeTimer = 2f;
+            var dir = Vector3.forward;
+
+            for (var i = 0; i < 200; i++)
+            {
+                EnemyPatternMovement.ComputeVelocity(
+                    agent, p, dir, dir, 10f, 0.05f, ref chargeTimer);
+                if (chargeTimer >= 1.99f && chargeTimer <= 2.01f && i > 10)
+                    break;
+            }
+
+            Assert.That(chargeTimer, Is.EqualTo(2f).Within(0.01f));
+        }
+
+        [Test]
         public void SpawnProfileResolver_EliteFieldsAppliedInResolve()
         {
             var profile = ScriptableObject.CreateInstance<SpawnProfile>();

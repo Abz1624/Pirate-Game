@@ -57,12 +57,23 @@ namespace HighSeas.Enemies
                     return (tangent + dir * 0.25f).normalized * speed;
                 }
                 case EnemyMovementPattern.TelegraphedCharge:
+                {
+                    var chargeWindUp = p.chargeWindUp > 0f ? p.chargeWindUp : 1.5f;
+                    var chargeDuration = p.chargeDuration > 0f ? p.chargeDuration : 0.35f;
+                    var chargeCooldown = p.chargeCooldown > 0f ? p.chargeCooldown : 2f;
                     chargeTimer -= dt;
+                    if (chargeTimer <= -chargeDuration)
+                    {
+                        chargeTimer = chargeCooldown;
+                        return Vector3.zero;
+                    }
+
                     if (chargeTimer <= 0f)
                         return dir * (speed * p.chargeSpeedMult);
-                    if (chargeTimer > p.chargeWindUp)
+                    if (chargeTimer > chargeWindUp)
                         return dir * (speed * 0.2f);
                     return Vector3.zero;
+                }
                 case EnemyMovementPattern.Swarm:
                     return chaseDir * (speed * 1.2f);
                 case EnemyMovementPattern.Drift:
