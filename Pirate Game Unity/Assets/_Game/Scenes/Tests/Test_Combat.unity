@@ -1261,6 +1261,7 @@ GameObject:
   - component: {fileID: 658786998}
   - component: {fileID: 658786997}
   - component: {fileID: 658786996}
+  - component: {fileID: 658787002}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -1292,6 +1293,7 @@ MonoBehaviour:
     islandDiameterMeters: 4
     minSeparationMeters: 6
     maxPlacementAttempts: 8000
+  islandDensityMultiplier: 1
 --- !u!114 &658786982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1306,7 +1308,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.POI.POIManager
   database: {fileID: 0}
   loot: {fileID: 658786984}
-  director: {fileID: 658786991}
+  encounterSpawner: {fileID: 658786991}
   juiceSettings: {fileID: 0}
   pacingSettings: {fileID: 0}
   poiRoot: {fileID: 0}
@@ -1389,6 +1391,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Weapons.WeaponController
   database: {fileID: 0}
+  ownerShip: {fileID: 0}
   maxSlots: 2
   demoPacing: {fileID: 0}
 --- !u!114 &658786989
@@ -1434,8 +1437,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.EncounterSpawner
   enemyWorld: {fileID: 0}
   player: {fileID: 0}
-  schedule: {fileID: 0}
   spawnCamera: {fileID: 0}
+  schedule: {fileID: 11400000, guid: b83b2c95913b99a47a103f5fc2b2b8a5, type: 2}
 --- !u!114 &658786992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1579,8 +1582,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9c7d19062ce6b743bc74868c8198fab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.JuiceVfxBroker
-  schedule: {fileID: 0}
+  settings: {fileID: 11400000, guid: 46f32d0fc5f591f4d9779fa985f59983, type: 2}
   vfxRoot: {fileID: 88686467}
+--- !u!114 &658787002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6ee71a9403b2154cb180fb83c6940ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.FloatingDamageNumbers
 --- !u!1 &704620840
 GameObject:
   m_ObjectHideFlags: 0
@@ -2655,6 +2670,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7185863248938482669, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8666331001818569078, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
       propertyPath: m_Name
       value: CutlassSloop
@@ -2662,13 +2681,43 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7185863248938482669, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1114253383}
   m_SourcePrefab: {fileID: 100100000, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
 --- !u!4 &1114253381 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4989441233055175701, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
   m_PrefabInstance: {fileID: 1114253380}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1114253382 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7185863248938482669, guid: 4e8c62715b03714429259e5da27cd4c3, type: 3}
+  m_PrefabInstance: {fileID: 1114253380}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &1114253383
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1114253382}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300000, guid: 7b9a149438f30b5498b3e5c0fe5ad408, type: 2}
 --- !u!115 &1137434216
 MonoScript:
   m_ObjectHideFlags: 0
@@ -2734,10 +2783,13 @@ MonoBehaviour:
   hullText: {fileID: 900928312}
   xpText: {fileID: 1943007356}
   timerText: {fileID: 1573692476}
+  timerCaption: {fileID: 0}
   goldText: {fileID: 175293510}
   levelText: {fileID: 1745209315}
   hullSlider: {fileID: 825022633}
   xpSlider: {fileID: 1061290677}
+  hullFill: {fileID: 0}
+  xpFill: {fileID: 0}
 --- !u!114 &1146000353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3202,6 +3254,7 @@ MonoBehaviour:
   - {fileID: 1597248573}
   - {fileID: 303098870}
   - {fileID: 1917119774}
+  cardViews: []
   cardFrames: []
   cardCategories: []
   cardTitles:
@@ -3214,7 +3267,6 @@ MonoBehaviour:
   - {fileID: 1198114985}
   - {fileID: 11143884}
   - {fileID: 889779429}
-  cardHotkeys: []
 --- !u!114 &1257118565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4341,14 +4393,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Player.FollowCamera
   target: {fileID: 0}
   offset: {x: 0, y: 18, z: -14}
-  followShipRotation: 0
   lookAtOffset: {x: 0, y: 0, z: 0}
+  followShipRotation: 0
   rotationMode: 0
   rotationEuler: {x: 56, y: 0, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   positionSmoothing: 0
   rotationSmoothing: 6
   snapOnStart: 1
+  defaultThirdPerson: 0
+  thirdPersonOffset: {x: 0, y: 6, z: 14}
+  thirdPersonLookAtOffset: {x: 0, y: 1.5, z: 6}
+  thirdPersonFollowShipRotation: 1
+  thirdPersonRotationMode: 0
+  thirdPersonRotationEuler: {x: 12, y: 0, z: 0}
+  thirdPersonRotationOffset: {x: 0, y: 0, z: 0}
+  thirdPersonPositionSmoothing: 0
+  thirdPersonRotationSmoothing: 6
+  thirdPersonHighOffset: {x: 0, y: 8, z: -15}
+  thirdPersonHighLookAtOffset: {x: 0, y: 0, z: 0}
 --- !u!81 &1960317720
 AudioListener:
   m_ObjectHideFlags: 0
@@ -4432,7 +4495,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2131002244}
-  - component: {fileID: 2131002241}
   - component: {fileID: 2131002240}
   - component: {fileID: 2131002239}
   - component: {fileID: 2131002238}
@@ -4475,16 +4537,24 @@ MonoBehaviour:
   acceleration: 15
   reverseAcceleration: 4
   turnSpeed: 800
+  sternPivotDistance: 1.5
+  turnCommitTime: 1
+  minTurnRateFraction: 0.6
+  turnCommitDecay: 7
+  turnInertiaDecay: 4
+  turnReverseDelay: 0.14
+  lateralGrip: 14
   waterDrag: 3
   brakeDrag: 6
   modelForwardIsNegativeZ: 1
   visualModel: {fileID: 1706650671}
   maxRollAngle: 26
-  rollSmoothing: 12
+  maxRollDegreesPerSecond: 17
   bankSpeedExponent: 1
   collideWithIslands: 1
   hullRadius: 1.15
   hullHeight: 4.5
+  maxHullCollisionRadius: 2.25
 --- !u!54 &2131002240
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4512,29 +4582,6 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 84
   m_CollisionDetection: 0
---- !u!136 &2131002241
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2131002237}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 1.15
-  m_Height: 4.5
-  m_Direction: 2
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &2131002244
 Transform:
   m_ObjectHideFlags: 0

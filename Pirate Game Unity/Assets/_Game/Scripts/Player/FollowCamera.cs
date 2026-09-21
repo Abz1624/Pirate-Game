@@ -36,8 +36,8 @@ namespace HighSeas.Player
         public bool snapOnStart = true;
 
         [Header("Third person — edit THESE while in third person (Play mode)")]
-        [Tooltip("Start runs in high third-person. Press C to cycle: High third person → Third person → Top-down.")]
-        public bool defaultThirdPerson = true;
+        [Tooltip("When enabled, run starts in high third-person. When off, starts top-down. Press C to cycle views.")]
+        public bool defaultThirdPerson = false;
 
         [Tooltip("Camera position in ship-local space when Follow Ship Rotation is on:\n" +
                  "X = right (+) / left (-)\n" +
@@ -66,8 +66,8 @@ namespace HighSeas.Player
         public float thirdPersonPositionSmoothing;
         public float thirdPersonRotationSmoothing = 6f;
 
-        [Header("Third person (high) — default run view; press C for standard third person")]
-        [Tooltip("Higher / farther rig. Used at run start when Default Third Person is enabled.")]
+        [Header("Third person (high) — press C from top-down to reach this view")]
+        [Tooltip("Higher / farther rig. Used at run start only when Default Third Person is enabled.")]
         public Vector3 thirdPersonHighOffset = new(0f, 8f, -15f);
 
         [Tooltip("Leave at (0,0,0) to reuse Third Person Look At Offset.")]
@@ -150,7 +150,7 @@ namespace HighSeas.Player
             if (defaultThirdPerson)
                 SetViewMode(CameraViewMode.ThirdPersonHigh);
             else
-                SetViewMode(CameraViewMode.ThirdPerson);
+                SetViewMode(CameraViewMode.TopDown);
         }
 
         void Update()

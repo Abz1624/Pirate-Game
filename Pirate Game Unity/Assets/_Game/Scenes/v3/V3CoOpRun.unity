@@ -18943,7 +18943,7 @@ MonoBehaviour:
   positionSmoothing: 8
   rotationSmoothing: 6
   snapOnStart: 1
-  defaultThirdPerson: 1
+  defaultThirdPerson: 0
   thirdPersonOffset: {x: 0, y: 6, z: 14}
   thirdPersonLookAtOffset: {x: 0, y: 1.5, z: 6}
   thirdPersonFollowShipRotation: 1
