@@ -41,3 +41,4 @@ sysinfo.txt
 *.aab
 *.unitypackage
 crashlytics-build.properties
+references/
