@@ -38,6 +38,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _ALPHATEST_ON
   - _BUILTIN_ALPHATEST_ON
   - _BUILTIN_AlphaClip
   - _BUILTIN_SURFACE_TYPE_TRANSPARENT
@@ -117,6 +118,7 @@ Material:
     - _DoubleSidedNormalMode: 2
     - _DstBlend: 1
     - _DstBlend2: 10
+    - _DstBlendAlpha: 1
     - _EnableBlendModePreserveSpecularLighting: 0
     - _EnableFogOnTransparent: 0
     - _ExcludeFromTUAndAA: 0
@@ -130,7 +132,8 @@ Material:
     - _RenderQueueType: 4
     - _RotationSpeed: 0.71
     - _Speed: 0.2
-    - _SrcBlend: 1
+    - _SrcBlend: 5
+    - _SrcBlendAlpha: 1
     - _StencilRef: 0
     - _StencilRefDepth: 1
     - _StencilRefDistortionVec: 4

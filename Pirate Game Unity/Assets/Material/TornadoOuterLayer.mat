@@ -60,7 +60,7 @@ Material:
     - _Emission: 10
     - _EnvironmentReflections: 1
     - _FresnelGlow: 1.19
-    - _FresnelPower: 2
+    - _FresnelPower: 10
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
@@ -86,9 +86,9 @@ Material:
     - _ZWriteControl: 0
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 0.5450981, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FresnelColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FresnelColor: {r: 4.594794, g: 4.594794, b: 4.594794, a: 1}
     - _Reel: {r: 10, g: 0.3, b: 5, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _TextureSpeed: {r: 1, g: 0.5, b: 0, a: 0}
