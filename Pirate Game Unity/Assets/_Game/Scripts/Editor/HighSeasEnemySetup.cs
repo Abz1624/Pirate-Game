@@ -1,11 +1,10 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using System.IO;
 using HighSeas.Core;
 using HighSeas.Data;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace HighSeas.Editor
 {
@@ -13,6 +12,7 @@ namespace HighSeas.Editor
     {
         const string EnemyFolder = "Assets/_Game/Data/Enemies";
         const string DatabasePath = "Assets/_Game/Data/GameDatabase.asset";
+        const string ResourcesDatabasePath = "Assets/_Game/Resources/GameDatabase.asset";
 
         const string CannonboatPrefabPath = "Assets/GameObject/Cannonboat.prefab";
         const string SharkPrefabPath = "Assets/GameObject/Shark.prefab";
@@ -88,6 +88,81 @@ namespace HighSeas.Editor
                 "Enemy visuals configured: ship + sea creatures + manta ray + reef crab miniboss/boss. " +
                 "Play Run or test scenes to verify spawns.");
             HighSeasEncounterSpawnSetup.SyncScheduleToResources();
+        }
+
+        [MenuItem("HighSeas/Sync Enemies Folder To GameDatabase")]
+        public static void SyncEnemiesFolderToGameDatabase()
+        {
+            if (!AssetDatabase.IsValidFolder(EnemyFolder))
+            {
+                Debug.LogError($"Enemy folder not found: {EnemyFolder}");
+                return;
+            }
+
+            var database = AssetDatabase.LoadAssetAtPath<GameDatabase>(DatabasePath);
+            if (database == null)
+            {
+                Debug.LogError($"GameDatabase not found at {DatabasePath}. Run HighSeas/Bootstrap Project first.");
+                return;
+            }
+
+            var guids = AssetDatabase.FindAssets("t:EnemyDefinition", new[] { EnemyFolder });
+            var loaded = new List<EnemyDefinition>(guids.Length);
+            for (var i = 0; i < guids.Length; i++)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                var enemy = AssetDatabase.LoadAssetAtPath<EnemyDefinition>(path);
+                if (enemy != null)
+                    loaded.Add(enemy);
+            }
+
+            loaded.Sort((a, b) =>
+            {
+                var idCompare = string.CompareOrdinal(a.id, b.id);
+                return idCompare != 0 ? idCompare : string.CompareOrdinal(a.name, b.name);
+            });
+
+            var seenIds = new HashSet<string>();
+            var duplicates = new List<string>();
+            for (var i = loaded.Count - 1; i >= 0; i--)
+            {
+                var id = loaded[i].id;
+                if (string.IsNullOrEmpty(id))
+                {
+                    Debug.LogWarning($"EnemyDefinition '{loaded[i].name}' has empty id — skipped.");
+                    loaded.RemoveAt(i);
+                    continue;
+                }
+
+                if (!seenIds.Add(id))
+                {
+                    duplicates.Add(id);
+                    loaded.RemoveAt(i);
+                }
+            }
+
+            database.enemies = loaded.ToArray();
+            EditorUtility.SetDirty(database);
+            SyncResourcesGameDatabaseCopy();
+            AssetDatabase.SaveAssets();
+
+            var dupNote = duplicates.Count > 0
+                ? $" Duplicate ids skipped: {string.Join(", ", duplicates)}."
+                : string.Empty;
+            Debug.Log(
+                $"GameDatabase.enemies synced from {EnemyFolder}: {database.enemies.Length} definitions.{dupNote}");
+        }
+
+        static void SyncResourcesGameDatabaseCopy()
+        {
+            if (!File.Exists(DatabasePath))
+                return;
+
+            if (AssetDatabase.LoadAssetAtPath<Object>(ResourcesDatabasePath) != null)
+                AssetDatabase.DeleteAsset(ResourcesDatabasePath);
+
+            if (!AssetDatabase.CopyAsset(DatabasePath, ResourcesDatabasePath))
+                Debug.LogWarning($"Could not copy GameDatabase to {ResourcesDatabasePath}");
         }
 
         static EnemyDefinition MakeEnemy(

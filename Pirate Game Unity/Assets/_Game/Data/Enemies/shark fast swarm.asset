@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d165e405d987a6b4a9eef8b11a2f7a8e, type: 3}
+  m_Name: shark fast swarm
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.EnemyDefinition
+  id: shark_fast_swarm
+  displayName: Shark Fast Swarm
+  category: 1
+  visualPrefab: {fileID: 1709254077376921, guid: 2ba1ad922beb17f49811cce1593c2220, type: 3}
+  visualScale: 1
+  visualYawOffset: 0
+  biomeTag: emerald
+  baseHP: 16
+  baseDamage: 9
+  moveSpeed: 4.75
+  radius: 1.1
+  visualHeightOffset: 0
+  threatCost: 4
+  xpValue: 4
+  goldValue: 1
+  behavior: 8
+  attackCooldown: 1.5
+  preferredRange: 8
+  tags: []
+  placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
+  isBoss: 0
+  isMiniboss: 0

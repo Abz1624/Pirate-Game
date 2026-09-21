@@ -36,6 +36,7 @@ namespace HighSeas.V3
         WeaponController _weapons;
         LevelSystem _levels;
         EncounterSpawner _encounterSpawner;
+        EnemyWorld _enemyWorld;
         PlayerShipController _player;
 
         public static V3RunPlaytestHotkeys Ensure()
@@ -59,6 +60,7 @@ namespace HighSeas.V3
             _weapons = FindFirstObjectByType<WeaponController>();
             _levels = LevelSystem.Instance;
             _encounterSpawner = FindFirstObjectByType<EncounterSpawner>();
+            _enemyWorld = FindFirstObjectByType<EnemyWorld>();
             _player = FindFirstObjectByType<PlayerShipController>();
             if (_encounterSpawner != null)
                 _ambientSpawnWasEnabled = _encounterSpawner.AmbientScheduleEnabled;
@@ -101,6 +103,9 @@ namespace HighSeas.V3
 
             if (keyboard.kKey.wasPressedThisFrame)
                 GrantCoOpPartyRandomWeapons();
+
+            if (keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame)
+                DespawnOldestEnemy();
         }
 
         void CycleWeapon(int delta)
@@ -148,6 +153,21 @@ namespace HighSeas.V3
             if (_player?.Damage == null) return;
             _player.Damage.Heal(_player.Damage.MaxHP);
             V3ToastHud.Instance?.Show("Hull refilled (Shift+R)", 1.5f);
+        }
+
+        void DespawnOldestEnemy()
+        {
+            if (_enemyWorld == null) _enemyWorld = FindFirstObjectByType<EnemyWorld>();
+            if (_enemyWorld == null) return;
+
+            if (!_enemyWorld.TryDespawnOldestActive(out var unitId))
+            {
+                V3ToastHud.Instance?.Show("No active enemies to remove (1)", 1.5f);
+                return;
+            }
+
+            var label = unitId >= 0 ? $"Removed oldest enemy (spawn id {unitId})" : "Removed oldest enemy";
+            V3ToastHud.Instance?.Show($"{label} · 1", 1.5f);
         }
 
         void ToggleAutoSpawn()
@@ -229,6 +249,7 @@ namespace HighSeas.V3
                 "Shift+E — spawn enemy ring\n" +
                 "Shift+R — refill hull\n" +
                 "Shift+N — toggle auto spawn\n" +
+                "1 — remove oldest spawned enemy\n" +
                 "I — grant next interaction item\n" +
                 "O — grant logbook rank\n" +
                 "B — summon treasury boss\n" +

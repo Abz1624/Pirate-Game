@@ -15,7 +15,39 @@ MonoBehaviour:
   gracePeriodSeconds: 2
   maxActiveEnemies: 55
   globalMinSpawnGapSeconds: 0.3
-  entries: []
+  entries:
+  - profile: {fileID: 11400000, guid: f19106da44775ad43b30e5581e34502f, type: 2}
+    startTimeSeconds: 0
+    loop: 0
+    loopIntervalSeconds: 0
+  - profile: {fileID: 11400000, guid: f8605b007ea61ab469b8816c1486f45a, type: 2}
+    startTimeSeconds: 30
+    loop: 0
+    loopIntervalSeconds: 0
+  - profile: {fileID: 11400000, guid: f1888fa72a5935643be2644a63a569cd, type: 2}
+    startTimeSeconds: 60
+    loop: 0
+    loopIntervalSeconds: 0
+  - profile: {fileID: 11400000, guid: ebe36335ebddeb847b202db1c2092981, type: 2}
+    startTimeSeconds: 90
+    loop: 0
+    loopIntervalSeconds: 0
+  - profile: {fileID: 11400000, guid: 2ce8d17fa619c8e4084e22c05e029676, type: 2}
+    startTimeSeconds: 120
+    loop: 0
+    loopIntervalSeconds: 0
+  - profile: {fileID: 11400000, guid: 84d2db6ccbcc56b419bbc87f2035c315, type: 2}
+    startTimeSeconds: 150
+    loop: 0
+    loopIntervalSeconds: 0
+  - profile: {fileID: 11400000, guid: cb73191182548e148aa576680f309c14, type: 2}
+    startTimeSeconds: 180
+    loop: 0
+    loopIntervalSeconds: 0
+  - profile: {fileID: 11400000, guid: a9ae452c43ce26e4c8c251593c24295d, type: 2}
+    startTimeSeconds: 210
+    loop: 0
+    loopIntervalSeconds: 0
   hammerheadBeat: {fileID: 0}
   krakenBeat: {fileID: 0}
   swarmPulse: {fileID: 0}

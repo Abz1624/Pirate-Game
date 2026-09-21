@@ -311,6 +311,7 @@ namespace HighSeas.Weapons
                 ResolveOwnerAndServices();
             if (_player == null || _projectiles == null) return;
             if (_enemies == null && !V3RunSession.AllowShipVsShipCombat) return;
+            if (V3PlaytestFlags.DisableShipAutoFire && V3RunContext.IsActive) return;
             TickWeapons(Time.deltaTime);
             TickCutlassDamage(Time.deltaTime);
         }

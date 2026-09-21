@@ -12,7 +12,7 @@ namespace HighSeas.Combat
         public string profileId = FullCombatV2Id;
         public int weaponSlotCap = 6;
         public int startingWeaponCount = 1;
-        public bool openingWeaponDraftEnabled = true;
+        public bool openingWeaponDraftEnabled = false;
         public bool directionalWeaponTargetingEnabled = true;
         [FormerlySerializedAs("directorV2Enabled")]
         public bool encounterSpawnEnabled = true;
@@ -29,7 +29,7 @@ namespace HighSeas.Combat
             var profile = CreateInstance<CombatExperimentProfile>();
             profile.profileId = FullCombatV2Id;
             profile.weaponSlotCap = 6;
-            profile.openingWeaponDraftEnabled = true;
+            profile.openingWeaponDraftEnabled = false;
             profile.directionalWeaponTargetingEnabled = true;
             profile.encounterSpawnEnabled = true;
             profile.spawnDensityMultiplier = 1f;

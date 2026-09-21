@@ -66,7 +66,10 @@ namespace HighSeas.Enemies
                 case EnemyMovementPattern.Swarm:
                     return chaseDir * (speed * 1.2f);
                 case EnemyMovementPattern.Drift:
-                    return chaseDir * speed;
+                {
+                    var pulse = 0.78f + 0.32f * Mathf.Sin(Time.time * 3.2f + agent.id * 0.37f);
+                    return chaseDir * (speed * pulse);
+                }
                 case EnemyMovementPattern.Stationary:
                     return Vector3.zero;
                 default:

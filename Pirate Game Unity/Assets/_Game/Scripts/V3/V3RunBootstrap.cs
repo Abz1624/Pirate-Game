@@ -216,6 +216,7 @@ namespace HighSeas.V3
             {
                 V3RunPlaytestHotkeys.Ensure();
                 SpawnDirectorDebugUI.Ensure();
+                EnemyIdentityDebugLabels.Ensure();
                 if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
                     WeaponCardAnimationDemo.Ensure();
                 V3BossSummonHotkey.Ensure();
@@ -273,7 +274,6 @@ namespace HighSeas.V3
             RunManager.Instance.EnterPlaying();
             if (!isPvPScene)
             {
-                LevelSystem.Instance?.TryShowOpeningWeaponDraft();
                 if (firstRun && V3PlaytestFlags.EnableRunPlaytestHotkeys)
                 {
                     V3ToastHud.Instance?.Show(

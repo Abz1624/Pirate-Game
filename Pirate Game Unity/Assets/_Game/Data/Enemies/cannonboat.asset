@@ -23,10 +23,11 @@ MonoBehaviour:
   baseDamage: 8
   moveSpeed: 3.8
   radius: 1.2
+  visualHeightOffset: 0
   threatCost: 3
   xpValue: 3
   goldValue: 1
-  behavior: 3
+  behavior: 0
   attackCooldown: 3
   preferredRange: 13
   tags: []

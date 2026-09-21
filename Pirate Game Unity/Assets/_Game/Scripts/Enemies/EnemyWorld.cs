@@ -351,6 +351,26 @@ namespace HighSeas.Enemies
             }
         }
 
+        /// <summary>Removes the active enemy with the lowest spawn id (earliest spawned).</summary>
+        public bool TryDespawnOldestActive(out int despawnedUnitId)
+        {
+            despawnedUnitId = -1;
+            var oldestSlot = -1;
+            var oldestId = int.MaxValue;
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                if (!_agents[i].active) continue;
+                if (_agents[i].id >= oldestId) continue;
+                oldestId = _agents[i].id;
+                oldestSlot = i;
+            }
+
+            if (oldestSlot < 0) return false;
+            despawnedUnitId = oldestId;
+            Despawn(oldestSlot);
+            return true;
+        }
+
         public void Despawn(int index)
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
@@ -702,14 +722,23 @@ namespace HighSeas.Enemies
 
             if (e.spawnProfile != null)
             {
-                var patternVel = EnemyPatternMovement.ComputeVelocity(
-                    e,
-                    e.patternParams,
-                    chaseDir,
-                    dir,
-                    dist,
-                    dt,
-                    ref e.chargeTimer);
+                Vector3 patternVel;
+                if (def.behavior == EnemyBehavior.DiveLunge)
+                {
+                    patternVel = TickSwordfishBehavior(ref e, chaseDir, dir, dist, dt, playerPos, playerVelocity);
+                }
+                else
+                {
+                    patternVel = EnemyPatternMovement.ComputeVelocity(
+                        e,
+                        e.patternParams,
+                        chaseDir,
+                        dir,
+                        dist,
+                        dt,
+                        ref e.chargeTimer);
+                }
+
                 var patternIntent = patternVel;
                 patternVel = ApplySeparation(agentIndex, patternVel, ref e, patternIntent);
                 e.velocity = Vector3.ClampMagnitude(patternVel, e.moveSpeed * 1.5f);

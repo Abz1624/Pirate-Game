@@ -23,6 +23,7 @@ MonoBehaviour:
   baseDamage: 14
   moveSpeed: 2
   radius: 2.2
+  visualHeightOffset: 0
   threatCost: 8
   xpValue: 35
   goldValue: 50

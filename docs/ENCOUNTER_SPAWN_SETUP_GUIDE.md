@@ -36,7 +36,7 @@ This guide covers how **enemy definitions**, **spawn profiles**, and the **encou
 
 1. **Create → HighSeas → Enemy Definition** (or duplicate an existing asset in `Data/Enemies/`).
 2. Assign fields (see [EnemyDefinition fields](#enemydefinition-fields)).
-3. Add the asset to **`GameDatabase.enemies`**.
+3. Add the asset to **`GameDatabase.enemies`**, or run **HighSeas → Sync Enemies Folder To GameDatabase** to register **every** `EnemyDefinition` under `Assets/_Game/Data/Enemies/` (sorted by `id`, duplicates skipped with a Console warning).
 
 Enemy ids must stay **stable** — spawn profiles and code lookups (`hammerhead`, `kraken_spawn`, …) reference **`EnemyDefinition.id`**, not the asset file name.
 
@@ -174,6 +174,7 @@ unity open "Pirate Game Unity"
 | Input | Tool |
 |-------|------|
 | **F9** | **Encounter Spawner** debug panel (`SpawnDirectorDebugUI`) — spawn rate multiplier, toggle **ambient schedule**, live enemy cap |
+| *(playtest)* | **Enemy identity labels** above each active enemy (`EnemyIdentityDebugLabels`) — id, behavior, profile, HP/dmg/speed when **`EnableEnemyIdentityLabels`** is true |
 | **F8** | V3 playtest hotkeys help (`V3RunPlaytestHotkeys`) |
 | **B** | Summon treasury boss (requires **`bossSummon`** profile on schedule) |
 
@@ -217,89 +218,250 @@ Relevant fixture: **`EncounterSpawnerTests`** (profile resolver, experiment ambi
 | **isBoss / isMiniboss** | Boss checks, POI logic |
 | **tags, biomeTag, placeholderColor** | Filtering / debug |
 
-### Spawn profile — Identity & enemy
+### SpawnProfile asset (all Inspector sections)
 
-| Field | Purpose |
-|-------|---------|
-| **profileId** | Optional string id; `ResolvedId` falls back to asset name |
-| **enemy** | Required `EnemyDefinition` reference |
+Create via **Assets → Create → HighSeas → Spawn Profile**. Nested structs live in `SpawnProfileModules.cs`.
 
-### Spawn profile — Timing (`SpawnTimingSettings`)
+#### Identity & enemy
 
-| Field | Purpose |
-|-------|---------|
-| **spawnCount** | Target spawns for Single/Sequence/Burst/Group/TimedWave |
-| **startDelaySeconds** | Added on top of schedule entry start time |
-| **triggerTimeSeconds** | Reserved for trigger-authored flows |
-| **repeatIntervalSeconds** | Repeat cadence where applicable |
-| **durationSeconds** | **Continuous** mode: stop after this many seconds (0 = no limit) |
-| **spawnIntervalSeconds** | Seconds between spawns (Sequence / Continuous / TimedWave) |
-| **cooldownAfterCompleteSeconds** | After a run completes, block re-loop until elapsed |
-| **maxActiveFromProfile** | Cap concurrent enemies from this profile (0 = unlimited) |
-| **pauseWhenRunPaused** | Honor run pause (default true) |
+| Field | Type | Default / range | Purpose |
+|-------|------|-----------------|--------|
+| **profileId** | string | empty → asset name | Optional stable id for logs/tools; **`ResolvedId`** uses this or the asset file name |
+| **enemy** | EnemyDefinition | — | **Required.** Which unit to spawn; must exist on **`GameDatabase.enemies`** |
 
-### Spawn profile — Placement (`SpawnPlacementSettings`)
+#### Spawn (top-level)
 
-| Field | Purpose |
-|-------|---------|
-| **requireOutsidePlayerFov** | Prefer off-camera spawn ring |
-| **distanceMin / distanceMax** | Annulus around player (meters) |
-| **viewportMargin** | Extra off-screen margin (0–0.35) |
-| **positionAttempts** | Retries if blocked by land/camera |
-| **allowedArcDegrees / arcYawOffset** | Limit spawn arc (360 = full ring) |
-| **groupSpacing** | Offset between group members |
-| **fallbackPolicy** | **Skip** vs **RetryLater** when placement fails |
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **spawnMode** | `SpawnMode` | Single | How **`EncounterSpawner`** executes this profile (see table below) |
+| **groupLayout** | `SpawnGroupLayout` | Scatter | Offset pattern when a burst spawns **multiple** positions in one execution |
+| **timing** | `SpawnTimingSettings` | see below | Counts, delays, intervals, caps |
+| **placement** | `SpawnPlacementSettings` | see below | Off-screen ring, arc, retries |
 
-### Spawn profile — Elite (`SpawnEliteSettings`)
+**`SpawnMode`**
 
-| Field | Purpose |
-|-------|---------|
-| **isElite** | Enable elite stat package |
-| **affix** | `EliteAffix`: None, Armored, Swift, Volatile, Rich, Cursed, Captain |
-| **hpMultiplier, damageMultiplier, speedMultiplier, sizeMultiplier** | Combat scaling |
-| **goldMultiplier, xpMultiplier** | Reward scaling |
+| Value | Spawner behavior |
+|-------|------------------|
+| **Single** | Spawn **1** per tick until **`timing.spawnCount`** total for this schedule/trigger run |
+| **Sequence** | Same as Single (1 per tick); use **`spawnIntervalSeconds`** between ticks |
+| **Burst** | One execution tries **`timing.spawnCount`** spawns at once (group layout applies) |
+| **Group** | Same count as Burst; uses **`groupLayout`** offsets |
+| **Continuous** | Spawn 1 per tick until **`durationSeconds`** elapses (**0** = never auto-complete) |
+| **TimedWave** | 1 per tick until **`spawnCount`** reached |
+| **Triggered** | Not driven by ambient schedule ticks; use **`EncounterSpawner.TriggerProfile`** only |
 
-### Spawn profile — Movement (`SpawnMovementOverrides`)
+**`SpawnGroupLayout`** (multi-spawn offsets via **`SpawnPlacementService.OffsetGroupPosition`**)
 
-| Field | Purpose |
-|-------|---------|
-| **pattern** | `EnemyMovementPattern` (UseDefinition maps from `EnemyDefinition.behavior`) |
-| **speedMultiplier, turnResponsiveness** | Locomotion tuning |
-| **preferredRange, interceptLead** | Ranged / intercept AI |
-| **orbitRadius, orbitDirection** | Orbit pattern |
-| **flankAngleDegrees** | Flank approach |
-| **chargeWindUpSeconds, chargeDurationSeconds, chargeCooldownSeconds, chargeSpeedMultiplier** | Charge patterns |
-| **separationStrength** | Swarm separation |
+| Value | Layout |
+|-------|--------|
+| **Cluster** | Tight cluster |
+| **Ring** | Ring around anchor |
+| **Line** | Line formation |
+| **Arc** | Arc in front/side |
+| **FlankPair** | Pair on flanks |
+| **Scatter** | Scattered offsets (default) |
 
-**Movement patterns:** UseDefinition, DirectChase, Intercept, Flank, Orbit, MaintainRange, Strafe, TelegraphedCharge, DiveLunge, Swarm, Drift, Stationary.
+#### Timing — `timing` (`SpawnTimingSettings`)
 
-### Spawn profile — Attack (`SpawnAttackOverrides`)
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **spawnCount** | int ≥ 0 | 1 | Total spawns for Single / Sequence / Burst / Group / TimedWave (not total for Continuous) |
+| **startDelaySeconds** | float ≥ 0 | 0 | Added to schedule entry **`startTimeSeconds`** before first spawn attempt |
+| **triggerTimeSeconds** | float ≥ 0 | 0 | *Authoring hook; not read by **`EncounterSpawner`** today* |
+| **repeatIntervalSeconds** | float ≥ 0 | 0 | *Authoring hook; not read by spawner today* |
+| **durationSeconds** | float ≥ 0 | 0 | **Continuous** only: stop after this many seconds of profile run time (**0** = infinite) |
+| **spawnIntervalSeconds** | float ≥ 0.05 | 0.5 | Gap between spawns for Sequence / Continuous / TimedWave; also scales with spawn rate multiplier |
+| **cooldownAfterCompleteSeconds** | float ≥ 0 | 0 | After a profile run marks **complete**, block that run until run time passes this cooldown (loop entries) |
+| **maxActiveFromProfile** | int ≥ 0 | 0 | Max living agents with this profile’s asset identity (**0** = no per-profile cap) |
+| **pauseWhenRunPaused** | bool | true | *Reserved; run pause already stops **`EncounterSpawner`** updates* |
 
-| Field | Purpose |
-|-------|---------|
-| **pattern** | Contact, SingleShot, BurstVolley, SpreadVolley, TelegraphedCharge, AreaDenial, SuicideExplosion, None, UseDefinition |
-| **contactDamageEnabled** | Bump damage on/off |
-| **attackRange, windUpSeconds, cooldownSeconds** | Ranged/melee timing |
-| **projectileCount, spreadDegrees, projectileSpeed, projectileLifetime** | Projectile volleys |
-| **burstShots, burstGapSeconds** | Burst fire |
-| **areaRadius, areaDurationSeconds** | Zone denial |
+Schedule **`ScheduledSpawnEntry`**: **`profile`**, **`startTimeSeconds`**, **`loop`**, **`loopIntervalSeconds`** — see [§3](#3-wire-the-encounter-spawn-schedule).
 
-### Spawn profile — Special behavior
+#### Placement — `placement` (`SpawnPlacementSettings`)
 
-Set **`specialBehavior`** to one of:
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **requireOutsidePlayerFov** | bool | true | Reject candidates visible in spawn camera viewport (with margin) |
+| **distanceMin** | float ≥ 0 | 10.8 | Min horizontal distance from player (m) |
+| **distanceMax** | float ≥ 0 | 18 | Max horizontal distance from player (m) |
+| **viewportMargin** | 0–0.35 | 0.08 | Extra inset when testing off-screen |
+| **positionAttempts** | int ≥ 1 | 16 | Random tries per spawn before giving up this attempt |
+| **allowedArcDegrees** | 30–360 | 360 | Limit spawn directions to a wedge |
+| **arcYawOffset** | −180–180 | 0 | Rotate the allowed arc (degrees) |
+| **groupSpacing** | float ≥ 0.5 | 2.5 | Meters between members in Burst/Group layouts |
+| **fallbackPolicy** | `SpawnFallbackPolicy` | RetryLater | **Skip**: fail spawn; **RetryLater**: retry after ~0.35 s |
 
-| Behavior | Settings block | Summary |
-|----------|----------------|---------|
-| **None** | — | Definition + movement/attack only |
-| **Formation** | `formation` | Leader/follower, shapes (Line, V, Wedge, Box), break conditions |
-| **Summon** | `summon` | Spawns **`minionProfile`** on interval, max alive, lifetime |
-| **TetherBeam** | `tether` | Range-limited beam damage + slow |
-| **SupportAura** | `supportAura` | Heal/speed aura for allies |
-| **PhaseDash** | `phaseDash` | Telegraphed dash phases |
-| **TerrainAmbush** | `terrainAmbush` | Hide until reveal trigger |
-| **Adaptive** | `adaptive` | Reacts to kite/stand-still/DPS/low HP/enemy count signals |
+Uses **`SpawnPlacementService`** + island/water checks.
 
-Each block’s fields are defined in `SpawnProfileModules.cs` (Inspector tooltips match code ranges).
+#### Elite — `elite` (`SpawnEliteSettings`)
+
+Applied in **`EnemyWorld.SpawnFromProfile`** (stacks with affix HP/speed rules).
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **isElite** | bool | false | Enable elite package + elite health bar |
+| **affix** | `EliteAffix` | None | If elite and None, runtime uses **Rich** |
+| **hpMultiplier** | float ≥ 0.1 | 1 | × max HP (also affix: Armored 1.8×, Swift 0.9×, Rich 1.25×) |
+| **damageMultiplier** | float ≥ 0.1 | 1 | × contact / shot damage |
+| **speedMultiplier** | float ≥ 0.1 | 1 | × move speed (× **`movement.speedMultiplier`**; Swift affix +1.35×) |
+| **sizeMultiplier** | float ≥ 0.1 | 1 | Scales visual root if elite |
+| **goldMultiplier** | float ≥ 0 | 1 | *Authoring; not applied on kill yet* |
+| **xpMultiplier** | float ≥ 0 | 1 | *Authoring; not applied on kill yet* |
+
+#### Movement — `movement` (`SpawnMovementOverrides`)
+
+Resolved by **`SpawnProfileResolver`** → **`EnemyPatternMovement`**. See [§5.1](#51-behavior-types-detailed-reference) for each **`pattern`**.
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **pattern** | `EnemyMovementPattern` | UseDefinition | Override movement; **UseDefinition** maps from **`enemy.behavior`** |
+| **speedMultiplier** | 0.1–3 | 1 | × **`EnemyDefinition.moveSpeed`** at spawn |
+| **turnResponsiveness** | 0.1–3 | 1 | *Authoring; not applied in movement code today* |
+| **preferredRange** | float ≥ 0 | 10 | **MaintainRange** band center (m) |
+| **interceptLead** | 0–3 | 1 | Authoring; intercept uses chase direction from `EnemyWorld` today |
+| **orbitRadius** | float ≥ 0 | 12 | *Authoring; orbit uses tangent motion, not strict radius hold* |
+| **orbitDirection** | −1–1 | 1 | Orbit tangent sign |
+| **flankAngleDegrees** | 0–90 | 35 | Flank approach angle |
+| **chargeWindUpSeconds** | float ≥ 0 | 1.5 | **TelegraphedCharge**: creep phase length |
+| **chargeDurationSeconds** | float ≥ 0 | 0.35 | *Authoring label; charge uses timer threshold, not this duration directly* |
+| **chargeCooldownSeconds** | float ≥ 0 | 2 | *Authoring; profile charge timer reset differs from legacy AI* |
+| **chargeSpeedMultiplier** | 1–4 | 2.5 | Burst speed during charge phase |
+| **separationStrength** | 0–1 | 1 | Stored on agent; **`ApplySeparation`** does not scale by this yet |
+
+#### Attack — `attack` (`SpawnAttackOverrides`)
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **pattern** | `EnemyAttackPattern` | UseDefinition | Ranged vs contact; see §5.1 (`EnemyAttackPattern`) |
+| **contactDamageEnabled** | bool | true | Hull bump damage when overlapping player |
+| **attackRange** | float ≥ 0 | 12 | Preferred ranged band center (m); band ≈ 0.7×–1.25× |
+| **windUpSeconds** | float ≥ 0 | 0 | *Authoring; ranged tick does not use wind-up yet* |
+| **cooldownSeconds** | float ≥ 0.1 | 2 | Seconds between ranged shots (profile spawn) |
+| **projectileCount** | int ≥ 1 | 1 | *Authoring; fire code spawns one hostile projectile today* |
+| **spreadDegrees** | 0–90 | 0 | *Authoring; not applied in fire code yet* |
+| **projectileSpeed** | float ≥ 0 | 9 | Authoring; `GetHostileShotProfile` uses definition defaults today |
+| **projectileLifetime** | float ≥ 0 | 1.4 | *Authoring; same* |
+| **burstShots** | int ≥ 1 | 1 | *Authoring; burst volley not wired* |
+| **burstGapSeconds** | float ≥ 0 | 0.15 | *Authoring* |
+| **areaRadius** | float ≥ 0 | 4 | *Authoring; area denial not wired* |
+| **areaDurationSeconds** | float ≥ 0 | 2 | *Authoring* |
+
+#### Special — top-level
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **specialBehavior** | `EnemySpecialBehavior` | None | Enables one module below; see §5.1 (`EnemySpecialBehavior`) |
+| **formation** | `FormationBehaviorSettings` | — | Used when **specialBehavior = Formation** |
+| **summon** | `SummonBehaviorSettings` | — | **Summon** |
+| **tether** | `TetherBeamSettings` | — | **TetherBeam** |
+| **supportAura** | `SupportAuraSettings` | — | **SupportAura** |
+| **phaseDash** | `PhaseDashBehaviorSettings` | — | **PhaseDash** |
+| **terrainAmbush** | `TerrainAmbushSettings` | — | **TerrainAmbush** |
+| **adaptive** | `AdaptiveCounterSettings` | — | **Adaptive** |
+
+Modules are always visible in the Inspector; only the selected **`specialBehavior`** runs at runtime.
+
+#### Formation — `formation` (`FormationBehaviorSettings`)
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **role** | `FormationRole` | Auto | **Auto**: index 0 = leader; or force Leader/Follower |
+| **shape** | `FormationShape` | Line | Follower slot offsets: Line, V, Wedge, Box |
+| **slotSpacing** | float ≥ 0.5 | 3 | Meters between formation slots |
+| **followDistance** | float ≥ 0.5 | 4 | *Authoring; followers steer to offset, not this distance* |
+| **leaderSpeedBias** | 0.8–1.5 | 1.05 | *Authoring; not applied today* |
+| **breakOnLeaderDeath** | bool | true | Followers revert to **Auto** movement if leader dies |
+| **breakOnPlayerProximity** | bool | false | Break formation if player within **`breakProximityRadius`** |
+| **breakProximityRadius** | float ≥ 0 | 6 | Meters for proximity break |
+| **regroupRadius** | float ≥ 0 | 14 | Authoring; not used in `TickFormation` today |
+| **followersInheritLeaderAttack** | bool | false | *Authoring; not wired* |
+
+#### Summon — `summon` (`SummonBehaviorSettings`)
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **minionProfile** | SpawnProfile | null | Profile passed to **`TriggerProfile`** each wave |
+| **minionsPerWave** | int ≥ 1 | 1 | **`burstCountOverride`** per trigger |
+| **spawnIntervalSeconds** | float ≥ 0.5 | 3 | Cooldown between summon waves |
+| **maxAliveMinions** | int ≥ 1 | 4 | Internal counter cap (not exact world count) |
+| **minionLifetimeSeconds** | float ≥ 0 | 0 | *Authoring; minions not auto-despawn by lifetime yet* |
+| **inheritElite** | bool | false | *Authoring; not wired* |
+| **despawnOnParentDeath** | bool | true | *Authoring; not wired* |
+
+Requires **`EncounterSpawner.Instance`** in scene.
+
+#### Tether beam — `tether` (`TetherBeamSettings`)
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **maxRange** | float ≥ 1 | 14 | Must be within this to start/ sustain beam |
+| **breakRange** | float ≥ 0.5 | 18 | Beyond this, beam resets |
+| **tickDamage** | float ≥ 0 | 3 | Damage per tick to player |
+| **tickIntervalSeconds** | float ≥ 0.1 | 0.5 | Time between damage ticks |
+| **rampUpSeconds** | float ≥ 0 | 0.75 | Delay before first tick after in range |
+| **playerMoveSpeedPenalty** | 0–0.6 | 0.15 | *Authoring; not applied to player speed today* |
+| **breakOnIslandBlock** | bool | true | Linecast to player; island blocks beam |
+
+#### Support aura — `supportAura` (`SupportAuraSettings`)
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **radius** | float ≥ 1 | 8 | Horizontal radius for ally scan |
+| **healPerSecond** | float ≥ 0 | 0 | Flat HP healed per pulse (× pulse interval) |
+| **healPercentMaxHpPerSecond** | 0–0.2 | 0 | % max HP healed per pulse |
+| **alliesOnly** | bool | true | *Authoring; loop skips self, heals other agents* |
+| **allySpeedMultiplier** | 0.5–1.5 | 1.05 | Multiplies ally **`moveSpeed`** each pulse (compounds) |
+| **pulseIntervalSeconds** | float ≥ 0.1 | 0.5 | Time between aura pulses |
+| **disableWhenDamaged** | bool | false | Stops aura if carrier below 98% HP |
+
+#### Phase dash — `phaseDash` (`PhaseDashBehaviorSettings`)
+
+Requires **`specialBehavior = PhaseDash`**. Not the same as **`EnemyDefinition.behavior = PhaseDash`** (see [§5.1](#phasedash-on-the-enemy-definition-legacy-branch)).
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **dashCooldownSeconds** | float ≥ 0.5 | 4 | Cooldown after max consecutive dashes |
+| **windUpSeconds** | float ≥ 0 | 0.6 | Stand still before dash |
+| **dashDistance** | float ≥ 1 | 8 | *Authoring; dash uses **`dashSpeed`** × **`dashDurationSeconds`**, not distance* |
+| **dashSpeed** | float ≥ 1 | 18 | Velocity during dash |
+| **dashDurationSeconds** | float ≥ 0.05 | 0.25 | How long dash velocity applies |
+| **damageReductionDuringDash** | 0–1 | 0.5 | *Authoring; not applied to damage taken today* |
+| **postDashPauseSeconds** | float ≥ 0 | 0.4 | Idle after dash before next wind-up |
+| **axis** | `PhaseDashAxis` | TowardPlayer | Dash direction: toward player, flank, or away |
+| **maxConsecutiveDashes** | int ≥ 1 | 2 | Dashes before long cooldown |
+
+#### Terrain ambush — `terrainAmbush` (`TerrainAmbushSettings`)
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **trigger** | `TerrainAmbushTrigger` | WhenOffScreenThenReveal | **OnSpawn**, **WhenPlayerEntersRadius**, or **WhenOffScreenThenReveal** (see §5.1) |
+| **hideRadius** | float ≥ 0 | 20 | *Authoring; hidden state uses zero velocity, not radius* |
+| **stalkSpeedMultiplier** | 0.1–1 | 0.45 | *Authoring; not applied while hidden today* |
+| **revealDistance** | float ≥ 0 | 10 | *Authoring; not used in reveal check today* |
+| **revealBurstSpeedMultiplier** | 1–3 | 1.8 | × **`moveSpeed`** once when ambush reveals |
+| **playerTriggerRadius** | float ≥ 0 | 12 | For **WhenPlayerEntersRadius** trigger |
+
+#### Adaptive counter — `adaptive` (`AdaptiveCounterSettings`)
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|--------|
+| **evaluationWindowSeconds** | float ≥ 1 | 8 | *Authoring; **`TickAdaptive`** uses signal timers, not this window* |
+| **enabledSignals** | `AdaptiveSignal[]` | kite + many enemies | Which signals may trigger adaptation |
+| **kiteThresholdSeconds** | float ≥ 1 | 4 | Player speed > ~4.5 m/s for this long → kite signal |
+| **standStillThresholdSeconds** | float ≥ 0 | 2 | Player nearly stopped → stand-still signal |
+| **highDpsThreshold** | float ≥ 0 | 40 | Recent DPS from **`RunCombatSignals`** |
+| **lowHpFraction** | 0–1 | 0.35 | Player HP % threshold |
+| **manyEnemiesThreshold** | int ≥ 1 | 28 | Active enemy count on **`RunCombatSignals`** |
+| **kiteResponseMovement** | `EnemyMovementPattern` | Flank | Movement override when adapting |
+| **kiteResponseSpeedMultiplier** | 0.5–2 | 1.15 | × speed when adapting |
+| **maxAdaptationStacks** | int ≥ 1 | 3 | Max stacks per agent |
+| **adaptationCooldownSeconds** | float ≥ 0.5 | 6 | Cooldown between adaptations |
+
+**Runtime note:** **`TickAdaptive`** currently reacts only to **`PlayerKiteTime`** among enabled signals; other signals are implemented in **`RunCombatSignals.IsSignalActive`** but need extra handling in **`TickAdaptive`** to take effect.
+
+---
+
+*Fields marked *Authoring* / *not wired* are safe to tune for future work but do not change play mode behavior yet.*
 
 ---
 
@@ -324,19 +486,43 @@ Set on each **`EnemyDefinition`**. Used when a spawn profile’s movement/attack
 | **TankChaser** | Same as DirectChaser | Contact | DirectChase | Contact |
 | **FlankingChaser** | Chase with sideways flank offset (alternates by agent id) | Contact | Flank | Contact |
 | **FastSwarm** | Chase at **1.2×** move speed | Contact | Swarm | Contact |
-| **DiveLunge** | Direct chase ( **`swordfish`** has a dedicated spring/lunge routine when legacy-spawned) | Contact | DiveLunge | Contact |
+| **DiveLunge** | **Profile spawn:** same spring/lunge as swordfish when close (burst speed ~2.45×). **Legacy:** plain chase (swordfish id only gets lunge in legacy path). | Contact | DiveLunge | Contact |
 | **TelegraphedCharge** | Slow approach → brief pause → **2.5×** speed charge, then reset | Contact | TelegraphedCharge (uses profile charge timings when spawned from profile) | Contact |
 | **MaintainRange** | Close if too far; strafe if too close; hold band at `preferredRange` | **Hostile projectile** when in range band | MaintainRange | SingleShot |
 | **FormationRanged** | Same band/strafe as MaintainRange | SingleShot (ships may hold still while cooling down) | MaintainRange | SingleShot |
 | **StrafeBurst** | Tangent strafe + slight inward drift | Uses attack cooldown on movement tick; ranged if ship + in band | Strafe | Contact |
-| **DriftPulse** | Normal chase speed | Contact (cooldown ticks on movement) | Drift | Contact |
+| **DriftPulse** | **Profile spawn:** chase with **oscillating speed** (~0.78×–1.1×) via **Drift** movement pattern. **Legacy:** plain chase + faster attack cooldown tick (mostly invisible on contact-only). | Contact | Drift | Contact |
 | **SuicideApproach** | Chase at **1.4×** speed | Contact (profile maps to SuicideExplosion attack enum; see attack table) | DirectChase | SuicideExplosion |
 | **StationaryTurret** | Does not move | Ranged if category/range rules allow | Stationary | Contact unless definition maps to ranged |
-| **PhaseDash** | *No dedicated legacy branch* — falls through to default chase | Contact | DirectChase (maps like default) | Contact |
-| **TentacleZone** | *Reserved* — default chase in legacy | Contact | DirectChase | Contact |
-| **SupportBuff** | *Reserved* — default chase in legacy | Contact | DirectChase | Contact |
+| **PhaseDash** | Plain chase only (see note below) | Contact | DirectChase | Contact |
+| **TentacleZone** | Plain chase only (reserved enum) | Contact | DirectChase | Contact |
+| **SupportBuff** | Plain chase only (reserved enum) | Contact | DirectChase | Contact |
 
 **Stock roster examples:** `cannonboat` / reef crab use **MaintainRange**; `shark` **DirectChaser**; `swordfish` **FastSwarm**; `hammerhead` **FlankingChaser**; `kraken_spawn` **TankChaser**; `manta_ray` **FlankingChaser**; miniboss **MaintainRange**; boss **TankChaser**.
+
+#### PhaseDash on the enemy definition (legacy branch)
+
+This is about **two different enums** that share a similar name:
+
+| Enum | Where you set it | What it controls |
+|------|------------------|------------------|
+| **`EnemyBehavior.PhaseDash`** | `EnemyDefinition.behavior` | Legacy movement switch in **`EnemyWorld`** (non-profile spawns) and the **UseDefinition** movement map |
+| **`EnemySpecialBehavior.PhaseDash`** | `SpawnProfile.specialBehavior` | Wind-up → dash → pause loop in **`EnemySpecialBehaviorSystem`** |
+
+**Legacy branch** = one `case` in the big `switch (def.behavior)` inside **`EnemyWorld.TickBehavior`**. Behaviors like **TelegraphedCharge** or **FlankingChaser** have their own `case` blocks with custom logic. **`EnemyBehavior.PhaseDash` has no `case`**, so execution hits the **`default`** branch, which is the same as a basic chaser: move toward the player at normal speed. No dash wind-up, no burst speed, no cooldown cycle.
+
+So if you only set **`EnemyDefinition.behavior = PhaseDash`** and spawn that enemy **without** a spawn profile (or with a profile that does not set **`specialBehavior = PhaseDash`**), it will **not** phase-dash—it will behave like a generic chaser.
+
+**How to actually get dash gameplay**
+
+1. Spawn via **`EncounterSpawner`** / a **`SpawnProfile`** (required for special behaviors).
+2. Set **`specialBehavior`** to **`PhaseDash`** on that profile.
+3. Tune **`phaseDash`** (cooldown, wind-up, dash speed, axis, etc.).
+4. Optionally set **`movement.pattern`** to something mild (e.g. **MaintainRange** or **DirectChase**) for movement between dashes—the dash **overrides velocity** while the dash timer is active.
+
+**Profile movement when behavior is PhaseDash:** `SpawnProfileResolver.MapLegacyBehavior` does not list **PhaseDash**, so **UseDefinition** movement resolves to **DirectChase**, not a dash pattern. Dash comes only from the **special behavior** module, not from the definition behavior enum.
+
+Same idea for **TentacleZone** and **SupportBuff** on **`EnemyDefinition`**: they are enum placeholders today; use spawn profiles and future/special modules rather than expecting unique logic from the definition field alone.
 
 ---
 
@@ -354,9 +540,9 @@ Overrides definition when not **UseDefinition**. Implemented in **`EnemyPatternM
 | **MaintainRange** | Closes if farther than preferred + 3 m; strafes if closer than preferred − 2 m; holds if in band | `preferredRange`, `speedMultiplier` |
 | **Strafe** | Side-step around player with slight inward component | `speedMultiplier` |
 | **TelegraphedCharge** | Creep (`0.2×` speed) while `chargeTimer > chargeWindUp`, then burst at `chargeSpeedMult × speed` | `chargeWindUpSeconds`, `chargeDurationSeconds`, `chargeCooldownSeconds`, `chargeSpeedMultiplier` |
-| **DiveLunge** | Currently same as DirectChase (use legacy swordfish or **PhaseDash** special for lunge fantasy) | `speedMultiplier` |
+| **DiveLunge** | Currently same as DirectChase in pattern-only path; **profile spawns** with **DiveLunge** behavior use swordfish-style lunge in **`EnemyWorld`** | `speedMultiplier` |
 | **Swarm** | Aggressive chase at **1.2×** speed | `speedMultiplier`, `separationStrength` (via `EnemyWorld.ApplySeparation`) |
-| **Drift** | Steady chase at normal speed | `speedMultiplier` |
+| **Drift** | Chase with **pulsing speed** (sine wave ~0.78×–1.1×) | `speedMultiplier` |
 | **Stationary** | Zero velocity from pattern (still may attack at range) | — |
 
 While **`TerrainAmbush`** is hidden (`ambushHidden`), movement is forced to **zero** regardless of pattern.
@@ -394,7 +580,7 @@ Runs **after** base movement each tick in **`EnemySpecialBehaviorSystem`**. Only
 | **Summon** | Parent spawns minions | Every `spawnIntervalSeconds`, calls **`EncounterSpawner.TriggerProfile(minionProfile, minionsPerWave)`** up to `maxAliveMinions`. Requires minion profile assigned. |
 | **TetherBeam** | Risk if you stay in beam range | After `rampUpSeconds` inside `maxRange`, applies `tickDamage` every `tickIntervalSeconds`; breaks beyond `breakRange` or island linecast if `breakOnIslandBlock`. |
 | **SupportAura** | Buff nearby allies | Pulses every `pulseIntervalSeconds`: heal flat + % max HP and multiply ally `moveSpeed` within `radius`. Can disable when damaged. |
-| **PhaseDash** | Burst reposition | Cooldown → wind-up (stand still) → dash at `dashSpeed` along **TowardPlayer / Flank / AwayThenReengage** → pause; repeats up to `maxConsecutiveDashes` before long cooldown. Overrides velocity during dash. |
+| **PhaseDash** | Burst reposition (profile only) | Cooldown → stand still (wind-up) → high-speed dash along **PhaseDashAxis** → short pause; may chain **`maxConsecutiveDashes`** before a long cooldown. **Overrides `velocity` during the dash.** Does **not** come from `EnemyDefinition.behavior = PhaseDash`; see **PhaseDash on the enemy definition (legacy branch)** above. |
 | **TerrainAmbush** | Ambush reveal | Starts **hidden** (no movement). **OnSpawn**, **player radius**, or **on-screen** trigger calls reveal and applies `revealBurstSpeedMultiplier` to move speed. |
 | **Adaptive** | Counter kiting | When **`RunCombatSignals`** reports enabled signals (today only **PlayerKiteTime** is checked in code), stacks up to `maxAdaptationStacks`: applies `kiteResponseSpeedMultiplier` and switches movement to `kiteResponseMovement` for a cooldown window. Other signals (stand still, DPS, low HP, many enemies) are implemented in **`RunCombatSignals`** but require extending **`TickAdaptive`** to react to them. |
 
