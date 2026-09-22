@@ -1,0 +1,90 @@
+{
+  "reviewDate": "2026-09-23",
+  "commit": "6a21ba63",
+  "editorTests": {
+    "summary": {
+      "total": 150,
+      "passed": 148,
+      "failed": 2,
+      "skipped": 0,
+      "inconclusive": 0
+    },
+    "failures": [
+      {
+        "FullName": "HighSeas.Tests.LevelUpPlayModeTests.LevelUpModal_ShowAndSelect_PausesRunManager",
+        "Status": "Failed",
+        "Duration": 0.213322,
+        "Message": "Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.\nDestroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect",
+        "StackTrace": "UnityEngine.Object:Destroy (UnityEngine.Object)\r\nHighSeas.Tests.LevelUpPlayModeTests/<LevelUpModal_ShowAndSelect_PausesRunManager>d__0:MoveNext () (at Assets/_Game/Tests/PlayMode/LevelUpPlayModeTests.cs:48)\r\nUnityEditor.EditorApplication:Internal_CallUpdateFunctions ()\r\n\r\n"
+      },
+      {
+        "FullName": "HighSeas.Tests.PlayModeSmokeTests.RunManager_CanBeginRun",
+        "Status": "Failed",
+        "Duration": 0.1161642,
+        "Message": "Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.\nDestroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect",
+        "StackTrace": "UnityEngine.Object:Destroy (UnityEngine.Object)\r\nHighSeas.Tests.PlayModeSmokeTests/<RunManager_CanBeginRun>d__0:MoveNext () (at Assets/_Game/Tests/PlayMode/PlayModeSmokeTests.cs:17)\r\nUnityEditor.EditorApplication:Internal_CallUpdateFunctions ()\r\n\r\n"
+      }
+    ]
+  },
+  "playModeTests": {
+    "summary": {
+      "total": 0,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0,
+      "inconclusive": 0
+    }
+  },
+  "authoredScheduleProbe": {
+    "output": null,
+    "diagnostics": [],
+    "success": true,
+    "result": {
+      "schedule": "Assets/_Game/Data/EncounterSpawnSchedule.asset",
+      "gap": 0.35,
+      "rows": [
+        {
+          "seconds": 60,
+          "activeProfiles": 1,
+          "nominalCombinedRate": 0.6
+        },
+        {
+          "seconds": 180,
+          "activeProfiles": 2,
+          "nominalCombinedRate": 1.80000007
+        },
+        {
+          "seconds": 300,
+          "activeProfiles": 3,
+          "nominalCombinedRate": 3.6
+        },
+        {
+          "seconds": 420,
+          "activeProfiles": 4,
+          "nominalCombinedRate": 6
+        },
+        {
+          "seconds": 540,
+          "activeProfiles": 5,
+          "nominalCombinedRate": 8.857142
+        }
+      ]
+    }
+  },
+  "marksRecordProbe": {
+    "output": null,
+    "diagnostics": [],
+    "success": true,
+    "result": {
+      "completedMinuteTicks": 0,
+      "firstReadCredits": 1,
+      "secondReadCredits": 2
+    }
+  },
+  "notes": [
+    "Independent review; no gameplay source or tuning assets changed.",
+    "Authored schedule rates are nominal before population, placement, frame-time, boss, and swarm effects; not observed kill rates.",
+    "Marks probe temporarily changed three in-memory tracker fields and restored them in finally; no persistent save was written.",
+    "Batch Editor attempt failed before test execution; subsequent tests ran via the connected Unity Pipeline tools."
+  ]
+}
