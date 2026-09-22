@@ -156,3 +156,22 @@ Do not call desktop performance or newcomer testing “optional” for acceptanc
 
 > Read plan/saltwind-verification/CODEX_REVIEW_2026-09-23.md and its evidence JSON. Implement the recommended work order, starting with R1/R2/R3 and real PlayMode coverage from R10. Reproduce each failure before fixing it; use the specified regression gates. Preserve handling/camera and unrelated modes. Treat previously passed helper tests as unit evidence, not proof that the whole checkpoint is complete. Maintain a resolution log mapping R1–R10 to changes, tests, commit/profile/hash, and remaining limitations. Complete actual runtime/lab parity before producing calibration runs. Keep external human/device checks honestly pending. Do not remove failing tests or weaken their assertions merely to restore green status.
 
+---
+
+## Resolution addendum (2026-09-23, post-review engineering)
+
+**Do not modify findings above.** This section records later verification only. Full mapping: [CODEX_RESOLUTION_LOG.md](CODEX_RESOLUTION_LOG.md).
+
+| Item | Status |
+| --- | --- |
+| Profile export hash | **`e4ffa52b4475d137e89c960eebf2de9ee42a3280c9f859cb5ca1761c1baa7eb7`** (`balanceVersion` 2; schedule + weapon + boss snapshots) |
+| Balance lab matrix | **1800 runs** (3 policies × **Conservative/Average/Expert** × 2 pools × 100 seeds) under `plan/saltwind-verification/balance-lab/`; documented win bands in [SALTWIND_LAB_TARGET_BANDS.md](SALTWIND_LAB_TARGET_BANDS.md) |
+| Prior 1200-run matrix (12 cells) | Superseded — Average/Expert were both Orbit; matrix now differentiates kite vs orbit |
+| R1 nine-minute ambient | EditMode `NineMinuteAmbient_UsesSingleBandFourExportRate` (540s → band 4 @ 3.0/s) |
+| R2 partial cache at cap | PlayMode `PartialCache_AtCap_SingleKill_DoesNotCompleteEncounter` + existing retry test |
+| R6 storm sail | PlayMode `StormSail_ContractedArena_KeepsSpawnAndBeaconInsideSafeZone` (900s safe scale) |
+| C13 external playtest / perf | **Still pending** — see [C13_EXTERNAL_PLAYTEST.md](C13_EXTERNAL_PLAYTEST.md) |
+| Delivery commit pin | **`2bd9ca2abdf05548c57e5f39f8765cbda048e2fe`** (see [VERIFICATION_INDEX.md](VERIFICATION_INDEX.md)) |
+
+Example production matrix (prior 12-cell run, hash `e4ffa52b…`): FreshSave ~89–90% objective; MarksUnlocked ~96–99%. Re-run **1800** menu after calibration changes to refresh CSV/summary and band warnings.
+

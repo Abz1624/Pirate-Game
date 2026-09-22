@@ -272,7 +272,7 @@ namespace HighSeas.Tests
             for (var seed = 1; seed <= 100; seed++)
             {
                 PlaceSaltwindLayout(seed, layoutDef, out var layout);
-                var report = SaltwindPoiLayoutLogic.Validate(layout, options);
+                var report = SaltwindPoiLayoutLogic.Validate(layout, options, layoutDef);
                 Assert.IsTrue(report.IsValid, $"seed={seed}: {report.Error}");
             }
 
@@ -378,6 +378,32 @@ namespace HighSeas.Tests
         }
 
         [Test]
+        public void PressureBeat_SkipsEliteAndSwarmDuringBossConflict()
+        {
+            var profile = StageBalanceProfile.CreateBuiltInSaltwindDefaults();
+            var hammerhead = SaltwindPressureBeatLogic.GetEliteBeatSeconds(profile, 0);
+            var swarmA = SaltwindPressureBeatLogic.GetSwarmStartSeconds(profile, 0);
+
+            Assert.IsTrue(SaltwindPressureBeatLogic.ShouldSkipScheduledEventForBoss(
+                hammerhead + 1f, hammerhead, bossFightActive: true));
+            Assert.IsFalse(SaltwindPressureBeatLogic.ShouldStartSwarmPulse(
+                swarmA + 1f, profile, 0, bossFightActive: true, alreadyStarted: false));
+            Assert.AreEqual(30f, SaltwindPressureBeatLogic.GetSwarmDurationSeconds(profile), 0.001f);
+            Assert.AreEqual(5f, SaltwindPressureBeatLogic.GetWarningSeconds(profile), 0.001f);
+        }
+
+        [Test]
+        public void PressureBeat_WarnsFiveSecondsBeforeEvents()
+        {
+            var profile = StageBalanceProfile.CreateBuiltInSaltwindDefaults();
+            var swarmA = SaltwindPressureBeatLogic.GetSwarmStartSeconds(profile, 0);
+            Assert.IsTrue(SaltwindPressureBeatLogic.ShouldShowEventWarning(
+                swarmA - 5f, swarmA, SaltwindPressureBeatLogic.GetWarningSeconds(profile)));
+            Assert.IsFalse(SaltwindPressureBeatLogic.ShouldShowEventWarning(
+                swarmA - 6f, swarmA, SaltwindPressureBeatLogic.GetWarningSeconds(profile)));
+        }
+
+        [Test]
         public void Composition_BandAnchors_AreAuthoredOnSchedule()
         {
 #if !UNITY_EDITOR
@@ -472,6 +498,24 @@ namespace HighSeas.Tests
                 BarnacleKingBossAttackLogic.SpreadRecoverySeconds * BarnacleKingBossAttackLogic.EnragedRecoveryScale,
                 state.PhaseTimer,
                 0.001f);
+        }
+
+        [Test]
+        public void MarkedBombardment_NoDamageDuringTelegraph_UsesFootprintRadius()
+        {
+            var telegraph = new BarnacleKingAttackState
+            {
+                Attack = BarnacleKingAttackKind.MarkedBombardment,
+                Phase = BarnacleKingBossPhase.Telegraph,
+                MarkedPoint = Vector3.zero
+            };
+            Assert.IsFalse(BarnacleKingBossAttackLogic.ShouldApplyMarkedAreaDamage(telegraph));
+
+            var center = new Vector3(10f, 0f, 10f);
+            Assert.IsTrue(BarnacleKingBossAttackLogic.IsPlayerInsideMarkedBlast(
+                center, center + new Vector3(BarnacleKingBossAttackLogic.MarkedBombardmentRadius - 0.5f, 0f, 0f)));
+            Assert.IsFalse(BarnacleKingBossAttackLogic.IsPlayerInsideMarkedBlast(
+                center, center + new Vector3(BarnacleKingBossAttackLogic.MarkedBombardmentRadius + 1f, 0f, 0f)));
         }
     }
 }

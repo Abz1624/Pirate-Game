@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using HighSeas.Combat;
+using HighSeas.Core;
 using RoguePirates.Simulation.Balance;
 
 namespace HighSeas.Balance
@@ -88,12 +90,36 @@ namespace HighSeas.Balance
             return false;
         }
 
-        public static bool IsRunItemOfferEligible(StageBalanceProfileExport export, string itemId)
+        public static bool IsWeaponAccessibleForProgression(
+            StageBalanceProfileExport export,
+            SaveService save,
+            IReadOnlyList<string> runOwnedWeaponIds,
+            string weaponId)
+        {
+            if (IsWeaponInOfferPool(export, weaponId)) return true;
+            if (save != null && save.HasEffectiveContentOwned(weaponId)) return true;
+            if (runOwnedWeaponIds != null)
+            {
+                for (var i = 0; i < runOwnedWeaponIds.Count; i++)
+                {
+                    if (runOwnedWeaponIds[i] == weaponId)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsRunItemOfferEligible(
+            StageBalanceProfileExport export,
+            string itemId,
+            SaveService save = null,
+            IReadOnlyList<string> runOwnedWeaponIds = null)
         {
             if (string.IsNullOrEmpty(itemId)) return false;
             if (!WeaponEvolutionCatalog.TryGetByRequiredItemId(itemId, out var evo))
                 return true;
-            return IsWeaponInOfferPool(export, evo.baseWeaponId);
+            return IsWeaponAccessibleForProgression(export, save, runOwnedWeaponIds, evo.baseWeaponId);
         }
 
         public static int SimulateBoundedProcCascade(int branchFactor, int maxEvents)

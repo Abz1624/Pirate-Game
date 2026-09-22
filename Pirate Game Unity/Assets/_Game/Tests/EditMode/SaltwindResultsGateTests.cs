@@ -63,7 +63,7 @@ namespace HighSeas.Tests
             var record = SaltwindStageSettlementLogic.BuildFixtureRecord();
             var breakdown = SaltwindStageSettlementLogic.ComputeBreakdown(export, record);
             Assert.IsTrue(SaltwindRunResultsLogic.MarksUiMatchesLedger(breakdown, breakdown.TotalMarks));
-            Assert.AreEqual(52, breakdown.TotalMarks);
+            Assert.AreEqual(57, breakdown.TotalMarks);
         }
 
         [Test]

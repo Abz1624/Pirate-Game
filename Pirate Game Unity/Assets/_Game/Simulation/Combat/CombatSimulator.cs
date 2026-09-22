@@ -20,7 +20,7 @@ namespace RoguePirates.Simulation
         readonly List<SimEvent> _events = new();
         readonly SimRng _mapRng;
         readonly SimRng _combatRng;
-        readonly SimRng _lootRng;
+        SimRng _lootRng;
 
         int _nextActorId = 1;
         int _nextProjectileId = 1;
@@ -35,12 +35,16 @@ namespace RoguePirates.Simulation
         int _peakEnemyCount;
         BalanceLabScenario _labScenario;
         float _poiHealRemaining;
-        float _nextPoiHealProgress = 0.33f;
+        float _nextPoiHealAtSeconds = float.PositiveInfinity;
+        int _nextRepairWreckIndex;
+        int _nextMerchantChestIndex;
+        readonly Dictionary<string, int> _weaponLevels = new();
         int _gold;
         int _merchantPurchasesCompleted;
         bool _evolutionApplied;
         int _poiInteractionsResolved;
         float _objectiveSecuredSeconds = -1f;
+        bool _bossSpawned;
         float _waveSpawnTimer;
         int _waveCompositionCursor;
 
@@ -118,7 +122,30 @@ namespace RoguePirates.Simulation
             _player.MaxHull = SimFixed.FromFloat(SimConstants.DefaultHull * _labScenario.PlayerHullMultiplier * _labScenario.CaptainHullMultiplier);
             _player.Hull = _player.MaxHull;
             if (_labScenario.EnablePois)
+            {
                 _poiHealRemaining = _player.MaxHull.ToFloat() * 0.30f * _labScenario.RepairWrecksUsed * _labScenario.PoiHealingMultiplier;
+                _nextRepairWreckIndex = 0;
+                _nextMerchantChestIndex = 0;
+                _nextPoiHealAtSeconds = _labScenario.StageProfile != null && _labScenario.RepairWrecksUsed > 0
+                    ? SaltwindLabRouteParityLogic.RepairWreckCheckpointSeconds(
+                        0,
+                        _labScenario.RepairWrecksUsed,
+                        _labScenario.DurationSeconds)
+                    : float.PositiveInfinity;
+            }
+
+            _weaponLevels.Clear();
+            for (var i = 0; i < _labScenario.WeaponLoadout.Count; i++)
+            {
+                var id = _labScenario.WeaponLoadout[i]?.Id;
+                if (string.IsNullOrEmpty(id)) continue;
+                _weaponLevels[id] = 1;
+            }
+
+            _bossSpawned = false;
+            _objectiveSecured = false;
+            _objectiveSecuredSeconds = -1f;
+            _state = SimRunState.Playing;
         }
 
         public CombatSimulator(int seed)
@@ -253,10 +280,16 @@ namespace RoguePirates.Simulation
                 minute,
                 _experimentConfig.SpawnDensityMultiplier,
                 _experimentConfig.DirectorV2Enabled);
-            if (_labScenario != null)
+            if (_labScenario?.StageProfile != null)
+            {
+                rate = SaltwindLabSpawnParityLogic.EffectiveAmbientSpawnsPerSecond(
+                    _labScenario.StageProfile,
+                    _clock.SimSeconds,
+                    TryGetLivingBoss(out _));
+            }
+            else if (_labScenario != null)
             {
                 rate *= _labScenario.DirectorThreatMultiplier * _labScenario.EnemySpawnWeight;
-                // Mirrors the V3 pressure beat director's four- and seven-minute spawn pulse.
                 var inFirstPulse = _clock.SimSeconds >= 240f && _clock.SimSeconds < 240f + _labScenario.PressurePulseDurationSeconds;
                 var inSecondPulse = _clock.SimSeconds >= 420f && _clock.SimSeconds < 420f + _labScenario.PressurePulseDurationSeconds;
                 if (inFirstPulse || inSecondPulse) rate *= _labScenario.PressurePulseMultiplier;
@@ -287,6 +320,11 @@ namespace RoguePirates.Simulation
 
         void SpawnBoss()
         {
+            if (_bossSpawned) return;
+            _bossSpawned = true;
+            if (_labScenario?.StageProfile != null)
+                CullNonBossEnemiesForFinale();
+
             _actors.Add(new SimActor
             {
                 Id = _nextActorId++,
@@ -401,11 +439,12 @@ namespace RoguePirates.Simulation
             _clock.AdvanceTick(false);
 
             MoveActors(dt);
+            var preferBoss = ShouldPreferBossTargets();
             if (_loadoutWeapons.Count == 0)
-                _weapon.Tick(dt, _player, _actors, _projectiles, ref _nextProjectileId, _events, _clock.Tick);
+                _weapon.Tick(dt, _player, _actors, _projectiles, ref _nextProjectileId, _events, _clock.Tick, preferBoss);
             else
                 for (var i = 0; i < _loadoutWeapons.Count; i++)
-                    _loadoutWeapons[i].Tick(dt, _player, _actors, _projectiles, ref _nextProjectileId, _events, _clock.Tick);
+                    _loadoutWeapons[i].Tick(dt, _player, _actors, _projectiles, ref _nextProjectileId, _events, _clock.Tick, preferBoss);
             AdvanceProjectiles(dt);
             ResolveContacts(dt);
             ResolveEnemyDeaths();
@@ -416,7 +455,7 @@ namespace RoguePirates.Simulation
             TickMerchantEconomy();
 
             var bossTick = (int)MathF.Round((_labScenario?.BossSpawnSeconds ?? 20f) / SimConstants.TickDurationSeconds);
-            if (_clock.Tick == bossTick)
+            if (!_bossSpawned && _clock.Tick >= bossTick)
                 SpawnBoss();
 
             if (_state == SimRunState.RunComplete)
@@ -585,6 +624,13 @@ namespace RoguePirates.Simulation
         void ApplyUpgradePath()
         {
             if (_labScenario == null || !_labScenario.SimulateUpgradePath) return;
+
+            if (_labScenario.StageProfile != null)
+            {
+                ApplySaltwindStageLevelUp();
+                return;
+            }
+
             TryAddSaltwindPolicyWeapon();
             var multiplier = 1f + _labScenario.DamageUpgradePerLevel;
             if (!_evolutionApplied && _level >= _labScenario.EvolutionLevel)
@@ -597,13 +643,101 @@ namespace RoguePirates.Simulation
             _labScenario.WeaponCount = Math.Max(_labScenario.WeaponCount, _loadoutWeapons.Count > 0 ? _loadoutWeapons.Count : 1);
         }
 
+        void ApplySaltwindStageLevelUp()
+        {
+            var export = _labScenario.StageProfile;
+            var slotCap = SaltwindLabProgressionParityLogic.WeaponSlotCapAtLevel(export, _level);
+            var owned = CollectOwnedWeaponIds();
+            var pick = SaltwindLabLevelOfferLogic.RollAutopick(
+                export,
+                _labScenario.SaltwindBuildPolicy,
+                _labScenario.SaltwindUnlockPool,
+                owned,
+                _weaponLevels,
+                _level,
+                slotCap,
+                ref _lootRng);
+
+            switch (pick.Action)
+            {
+                case SaltwindLabLevelOfferLogic.LevelUpAction.AddWeapon:
+                    AppendLabWeapon(pick.WeaponId);
+                    _weaponLevels[pick.WeaponId] = 1;
+                    break;
+                case SaltwindLabLevelOfferLogic.LevelUpAction.UpgradeWeapon:
+                    ApplyLabWeaponUpgrade(pick.WeaponId);
+                    break;
+            }
+
+            _labScenario.WeaponCount = Math.Max(_labScenario.WeaponCount, _loadoutWeapons.Count > 0 ? _loadoutWeapons.Count : 1);
+        }
+
+        List<string> CollectOwnedWeaponIds()
+        {
+            var owned = new List<string>();
+            for (var i = 0; i < _labScenario.WeaponLoadout.Count; i++)
+            {
+                var id = _labScenario.WeaponLoadout[i]?.Id;
+                if (!string.IsNullOrEmpty(id)) owned.Add(id);
+            }
+
+            return owned;
+        }
+
+        void ApplyLabWeaponUpgrade(string weaponId)
+        {
+            if (string.IsNullOrEmpty(weaponId)) return;
+            _weaponLevels.TryGetValue(weaponId, out var level);
+            if (level <= 0) level = 1;
+            SaltwindLabLevelOfferLogic.TryGetWeaponSnapshot(_labScenario.StageProfile, weaponId, out var snap);
+            if (snap != null && level >= snap.MaxLevel) return;
+
+            level++;
+            _weaponLevels[weaponId] = level;
+            var mult = snap != null
+                ? 1f + snap.DamageUpgradePerLevel
+                : 1f + _labScenario.DamageUpgradePerLevel;
+            for (var i = 0; i < _loadoutWeapons.Count; i++)
+            {
+                if (_labScenario.WeaponLoadout[i]?.Id != weaponId) continue;
+                _loadoutWeapons[i].MultiplyDamage(mult);
+                if (_labScenario.WeaponLoadout[i] != null)
+                    _labScenario.WeaponLoadout[i].Damage *= mult;
+                break;
+            }
+        }
+
         void TryAddSaltwindPolicyWeapon()
         {
             if (_labScenario.SaltwindBuildPolicy == SaltwindLabBuildPolicy.None) return;
-            if (_level % 2 != 0) return;
+            if (_labScenario.StageProfile != null &&
+                !SaltwindLabProgressionParityLogic.ShouldOfferNewWeaponOnLevel(_level))
+                return;
+            if (_labScenario.StageProfile == null && _level % 2 != 0) return;
 
-            var cap = Math.Min(_labScenario.WeaponSlotCap, 1 + _level / 2);
+            var cap = _labScenario.StageProfile != null
+                ? SaltwindLabProgressionParityLogic.WeaponSlotCapAtLevel(_labScenario.StageProfile, _level)
+                : Math.Min(_labScenario.WeaponSlotCap, 1 + _level / 2);
             if (_loadoutWeapons.Count >= cap) return;
+
+            var owned = new List<string>();
+            for (var i = 0; i < _labScenario.WeaponLoadout.Count; i++)
+            {
+                var id = _labScenario.WeaponLoadout[i]?.Id;
+                if (!string.IsNullOrEmpty(id)) owned.Add(id);
+            }
+
+            if (_labScenario.StageProfile != null &&
+                SaltwindLabProgressionParityLogic.TryPickPolicyWeapon(
+                    _labScenario.StageProfile,
+                    _labScenario.SaltwindBuildPolicy,
+                    _labScenario.SaltwindUnlockPool,
+                    owned,
+                    out var picked))
+            {
+                AppendLabWeapon(picked);
+                return;
+            }
 
             var queue = SaltwindBalanceLabScenarioFactory.ResolveWeaponQueue(
                 _labScenario.SaltwindBuildPolicy,
@@ -630,13 +764,26 @@ namespace RoguePirates.Simulation
 
         void AppendLabWeapon(string id)
         {
+            var damage = _labScenario.WeaponBaseDamage;
+            var cooldown = _labScenario.WeaponBaseCooldown;
+            var range = _labScenario.WeaponRange;
+            var projectileSpeed = _labScenario.WeaponProjectileSpeed;
+            if (_labScenario.StageProfile != null &&
+                SaltwindLabLevelOfferLogic.TryGetWeaponSnapshot(_labScenario.StageProfile, id, out var snap))
+            {
+                damage = snap.BaseDamage;
+                cooldown = snap.BaseCooldown;
+                range = snap.Range;
+                projectileSpeed = snap.ProjectileSpeed;
+            }
+
             var entry = new BalanceWeaponLoadoutEntry
             {
                 Id = id,
-                Damage = _labScenario.WeaponBaseDamage,
-                Cooldown = _labScenario.WeaponBaseCooldown,
-                Range = _labScenario.WeaponRange,
-                ProjectileSpeed = _labScenario.WeaponProjectileSpeed,
+                Damage = damage,
+                Cooldown = cooldown,
+                Range = range,
+                ProjectileSpeed = projectileSpeed,
                 TargetMultiplier = _labScenario.WeaponPatternTargetMultiplier
             };
             var system = new WeaponSystem();
@@ -659,13 +806,17 @@ namespace RoguePirates.Simulation
         void TickPoiRouteReward()
         {
             if (_poiHealRemaining <= 0f || _labScenario == null || !_labScenario.EnablePois) return;
-            // Repair Wreck healing is spaced through the expected route so it cannot erase early danger.
-            var routeProgress = _clock.SimSeconds / MathF.Max(1f, _labScenario.DurationSeconds);
-            if (routeProgress < _nextPoiHealProgress) return;
+            if (_clock.SimSeconds < _nextPoiHealAtSeconds) return;
             var heal = MathF.Min(_poiHealRemaining, _player.MaxHull.ToFloat() * 0.15f);
             _poiHealRemaining -= heal;
             _player.Hull = SimFixed.FromFloat(MathF.Min(_player.MaxHull.ToFloat(), _player.Hull.ToFloat() + heal));
-            _nextPoiHealProgress += 0.33f;
+            _nextRepairWreckIndex++;
+            _nextPoiHealAtSeconds = _nextRepairWreckIndex < _labScenario.RepairWrecksUsed
+                ? SaltwindLabRouteParityLogic.RepairWreckCheckpointSeconds(
+                    _nextRepairWreckIndex,
+                    _labScenario.RepairWrecksUsed,
+                    _labScenario.DurationSeconds)
+                : float.PositiveInfinity;
             ResolvePoiRisk();
         }
 
@@ -683,10 +834,13 @@ namespace RoguePirates.Simulation
         {
             if (_labScenario == null || !_labScenario.EnablePois || _labScenario.MerchantVisits <= 0 ||
                 _merchantPurchasesCompleted >= _labScenario.PlannedMerchantPurchases) return;
-            // Merchant encounters are distributed through the run; the purchase occurs only if earned gold affords it.
-            var progress = _clock.SimSeconds / MathF.Max(1f, _labScenario.DurationSeconds);
-            var nextVisitProgress = (_merchantPurchasesCompleted + 1f) / (_labScenario.MerchantVisits + 1f);
-            if (progress < nextVisitProgress) return;
+            var checkpoint = _labScenario.StageProfile != null
+                ? SaltwindLabRouteParityLogic.SalvageChestCheckpointSeconds(
+                    _labScenario.StageProfile,
+                    _nextMerchantChestIndex,
+                    _labScenario.DurationSeconds)
+                : (_merchantPurchasesCompleted + 1f) / (_labScenario.MerchantVisits + 1f) * _labScenario.DurationSeconds;
+            if (_clock.SimSeconds < checkpoint) return;
             var cost = _labScenario.StageProfile != null
                 ? StageBalanceProfileExportCodec.ChestPriceForPurchaseIndex(
                     _labScenario.StageProfile, _merchantPurchasesCompleted)
@@ -694,6 +848,7 @@ namespace RoguePirates.Simulation
             if (_gold < cost) return;
             _gold -= cost;
             _merchantPurchasesCompleted++;
+            _nextMerchantChestIndex++;
             if (_loadoutWeapons.Count == 0)
                 _weapon.MultiplyDamage(_labScenario.MerchantItemPowerMultiplier);
             else
@@ -706,8 +861,35 @@ namespace RoguePirates.Simulation
             if (_objectiveSecured) return;
             _objectiveSecured = true;
             _objectiveSecuredSeconds = _clock.SimSeconds;
-            _state = SimRunState.ObjectiveSecured;
+            _state = _labScenario?.StageProfile != null ? SimRunState.RunComplete : SimRunState.ObjectiveSecured;
             _events.Add(new SimEvent(SimEventKind.ObjectiveSecured, _clock.Tick, _player.Id));
+        }
+
+        bool ShouldPreferBossTargets() =>
+            _labScenario?.StageProfile != null && TryGetLivingBoss(out _);
+
+        bool TryGetLivingBoss(out SimActor boss)
+        {
+            boss = null;
+            for (var i = 0; i < _actors.Count; i++)
+            {
+                var actor = _actors[i];
+                if (!actor.IsBoss || actor.IsDead) continue;
+                boss = actor;
+                return true;
+            }
+
+            return false;
+        }
+
+        void CullNonBossEnemiesForFinale()
+        {
+            for (var i = _actors.Count - 1; i >= 0; i--)
+            {
+                var actor = _actors[i];
+                if (actor.IsPlayer || actor.IsBoss) continue;
+                _actors.RemoveAt(i);
+            }
         }
 
         /// <summary>Fixture: apply simultaneous lethal to player and boss on same tick.</summary>

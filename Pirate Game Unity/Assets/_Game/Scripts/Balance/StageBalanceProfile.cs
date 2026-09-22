@@ -13,7 +13,7 @@ namespace HighSeas.Balance
         [Header("Identity")]
         public string profileId = DefaultSaltwindSoloId;
         public int schemaVersion = 1;
-        public int balanceVersion = 1;
+        public int balanceVersion = 2;
 
         [Header("References")]
         public EncounterSpawnSchedule encounterSchedule;
@@ -205,7 +205,9 @@ namespace HighSeas.Balance
                     ExplosiveBarrelFuseSeconds = explosiveBarrelFuseSeconds,
                     ExplosiveBarrelRadius = explosiveBarrelRadius,
                     ExplosiveBarrelDamage = explosiveBarrelDamage,
-                    ExplosiveBarrelCount = explosiveBarrelCount
+                    ExplosiveBarrelCount = explosiveBarrelCount,
+                    FirstChestMaxTravelSeconds = 15f,
+                    RepresentativeCruiseSpeed = SaltwindPoiLayoutLogic.DefaultSaltwindCruiseSpeed
                 },
                 Progression = new StageProgressionExport
                 {
@@ -256,7 +258,10 @@ namespace HighSeas.Balance
                 StarterWeaponIds = new List<string>(starterWeaponIds ?? System.Array.Empty<string>()),
                 WeaponUnlocks = MapUnlocks(weaponUnlocks),
                 CaptainUnlocks = MapUnlocks(captainUnlocks),
-                ScheduleProfileKeys = CollectScheduleProfileKeys()
+                ScheduleProfileKeys = CollectScheduleProfileKeys(),
+                ScheduleProfileSnapshots = EncounterScheduleExportLogic.SnapshotSchedule(encounterSchedule),
+                WeaponStatSnapshots = WeaponStatExportLogic.SnapshotReferencedWeapons(this),
+                BossStatSnapshot = BossStatExportLogic.SnapshotSaltwindBoss()
             };
 
             return StageBalanceProfileExportCodec.WithContentHash(export);
@@ -307,6 +312,7 @@ namespace HighSeas.Balance
         {
             var profile = CreateInstance<StageBalanceProfile>();
             profile.name = "BuiltInSaltwindSolo";
+            profile.balanceVersion = 2;
             return profile;
         }
     }

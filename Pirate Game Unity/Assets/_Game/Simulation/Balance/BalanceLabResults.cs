@@ -159,12 +159,7 @@ namespace RoguePirates.Simulation.Balance
                 sim.SetMoveInput(1f, 0f);
         }
 
-        static SimInputPolicy ResolveInputPolicy(BalanceLabScenario scenario) => scenario.SkillPreset switch
-        {
-            BalanceSkillPreset.Conservative => SimInputPolicy.Kite,
-            BalanceSkillPreset.Aggressive => SimInputPolicy.Forward,
-            BalanceSkillPreset.Expert => SimInputPolicy.Orbit,
-            _ => scenario.InputPolicy
-        };
+        static SimInputPolicy ResolveInputPolicy(BalanceLabScenario scenario) =>
+            SaltwindLabMatrixCalibration.InputPolicyForSkill(scenario.SkillPreset);
     }
 }

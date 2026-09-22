@@ -1,4 +1,5 @@
 using System;
+using RoguePirates.Simulation.Balance;
 using UnityEngine;
 
 namespace HighSeas.Balance
@@ -30,6 +31,18 @@ namespace HighSeas.Balance
                 profile.ambientBandDurationSeconds,
                 profile.ambientRatePerSecond.Length);
             return GetAmbientRateForBand(profile, band);
+        }
+
+        public static float GetAmbientRateAtTime(StageBalanceProfileExport export, float elapsedSeconds)
+        {
+            if (export?.Spawn == null) return 0f;
+            var rates = export.Spawn.AmbientRatePerSecond;
+            if (rates == null || rates.Length == 0) return 0f;
+            var band = GetAmbientBandIndex(
+                elapsedSeconds,
+                export.Spawn.AmbientBandDurationSeconds,
+                rates.Length);
+            return rates[Mathf.Clamp(band, 0, rates.Length - 1)];
         }
 
         public static bool ShouldTickAmbientSchedule(

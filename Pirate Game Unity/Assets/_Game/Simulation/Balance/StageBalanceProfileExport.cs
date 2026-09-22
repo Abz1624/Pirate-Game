@@ -25,6 +25,46 @@ namespace RoguePirates.Simulation.Balance
         public List<StageUnlockExport> WeaponUnlocks = new();
         public List<StageUnlockExport> CaptainUnlocks = new();
         public List<string> ScheduleProfileKeys = new();
+        public List<StageScheduleProfileSnapshot> ScheduleProfileSnapshots = new();
+        public List<StageWeaponStatSnapshot> WeaponStatSnapshots = new();
+        public StageBossStatSnapshot BossStatSnapshot = new();
+    }
+
+    [Serializable]
+    public sealed class StageBossStatSnapshot
+    {
+        public string BossId = "barnacle_king";
+        public float BaseHull = 800f;
+        public float BaseDamage = 18f;
+        public float MoveSpeed = 2.5f;
+        public float AttackCooldownSeconds = 2.8f;
+        public float PreferredRange = 10f;
+    }
+
+    [Serializable]
+    public sealed class StageWeaponStatSnapshot
+    {
+        public string WeaponId = string.Empty;
+        public float BaseDamage = 10f;
+        public float BaseCooldown = 1.2f;
+        public float Range = 14f;
+        public float ProjectileSpeed = 16f;
+        public int MaxLevel = 12;
+        public float DamageUpgradePerLevel = 0.08f;
+    }
+
+    [Serializable]
+    public sealed class StageScheduleProfileSnapshot
+    {
+        public string ProfileKey = string.Empty;
+        public string EnemyId = string.Empty;
+        public float SpawnIntervalSeconds;
+        public float DurationSeconds;
+        public float StartDelaySeconds;
+        public float TriggerTimeSeconds;
+        public int SpawnCount;
+        public float EliteHpMultiplier = 1f;
+        public float EliteDamageMultiplier = 1f;
     }
 
     [Serializable]
@@ -91,6 +131,8 @@ namespace RoguePirates.Simulation.Balance
         public float ExplosiveBarrelRadius = 4f;
         public int ExplosiveBarrelDamage = 20;
         public int ExplosiveBarrelCount = 2;
+        public float FirstChestMaxTravelSeconds = 15f;
+        public float RepresentativeCruiseSpeed = 5.5f;
     }
 
     [Serializable]

@@ -1284,6 +1284,8 @@ namespace HighSeas.Enemies
                     !StageBalanceProfileContext.IsActive && e.affix == EliteAffix.Rich);
                 V3FloorPowerupWorld.Instance?.TryRollOnKill(e.position, e.isBoss, e.isElite);
                 RunEncounterTracker.RegisterAgentKill(e.id);
+                if (StageBalanceProfileContext.IsActive && def != null)
+                    RunMarksTracker.TryCreditScheduledEliteKill(def.id);
                 if (e.isBoss && RunEncounterTracker.BossObjectiveSecured)
                     Object.FindFirstObjectByType<POIManager>()?.NotifyBossDefeated();
                 Meta.TriggerBus.Instance?.RaiseKill(e.isElite, e.isBoss, e.position, e.lastHitWeaponId);

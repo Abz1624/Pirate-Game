@@ -128,6 +128,34 @@ namespace HighSeas.Core
             return ContainsId(Meta.marksOwnedContentIds, contentId);
         }
 
+        /// <summary>Marks ownership plus preserved legacy unlock/purchase arrays (Codex R4).</summary>
+        public bool HasEffectiveContentOwned(string contentId)
+        {
+            if (string.IsNullOrEmpty(contentId)) return false;
+            if (HasMarksOwned(contentId)) return true;
+            if (ContainsId(Meta.unlockedIds, contentId)) return true;
+            if (ContainsId(Meta.purchasedIds, contentId)) return true;
+
+            foreach (var alias in ContentOwnershipAliases(contentId))
+            {
+                if (HasMarksOwned(alias)) return true;
+                if (ContainsId(Meta.unlockedIds, alias)) return true;
+                if (ContainsId(Meta.purchasedIds, alias)) return true;
+            }
+
+            return false;
+        }
+
+        static IEnumerable<string> ContentOwnershipAliases(string contentId)
+        {
+            if (string.IsNullOrEmpty(contentId)) yield break;
+            var lower = contentId.ToLowerInvariant();
+            if (lower != contentId)
+                yield return lower;
+            if (contentId != lower)
+                yield return contentId;
+        }
+
         public bool TryPurchaseMarksUnlock(string contentId, int marksCost)
         {
             if (string.IsNullOrEmpty(contentId) || marksCost < 0) return false;

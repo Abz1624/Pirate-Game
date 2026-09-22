@@ -80,7 +80,12 @@ namespace HighSeas.V3
 
         void OnDestroy()
         {
-            if (_active == this) _active = null;
+            if (_active == this)
+            {
+                _active = null;
+                if (StageBalanceProfileContext.IsActive)
+                    AppRoot.EndActiveSaltwindRunContext();
+            }
         }
 
         public static bool TryRequestRestart()

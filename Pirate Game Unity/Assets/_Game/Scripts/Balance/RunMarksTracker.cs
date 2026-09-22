@@ -15,10 +15,11 @@ namespace HighSeas.Balance
         static int _killsThisOvertimeMinute;
         static int _qualifyingOrdinaryMinutes;
         static int _specialPoiCredits;
-        static bool _scheduledEliteCredited;
+        static int _scheduledEliteKillCredits;
         static bool _bossVictoryCredited;
         static int _qualifyingOvertimeMinutes;
         static readonly System.Collections.Generic.HashSet<int> _specialPoiIndices = new();
+        static readonly System.Collections.Generic.HashSet<string> _scheduledEliteKillKeys = new();
 
         public static bool IsActive => _active;
         public static string RunId => _runId;
@@ -40,10 +41,11 @@ namespace HighSeas.Balance
             _killsThisOvertimeMinute = 0;
             _qualifyingOrdinaryMinutes = 0;
             _specialPoiCredits = 0;
-            _scheduledEliteCredited = false;
+            _scheduledEliteKillCredits = 0;
             _bossVictoryCredited = false;
             _qualifyingOvertimeMinutes = 0;
             _specialPoiIndices.Clear();
+            _scheduledEliteKillKeys.Clear();
         }
 
         public static void NotifyKill()
@@ -89,9 +91,15 @@ namespace HighSeas.Balance
         static void CloseMinute(int completedMinute)
         {
             if (completedMinute < 0) return;
-            if (IsInOvertime()) return;
 
             var export = StageBalanceProfileContext.Export;
+            var deadline = export != null
+                ? SaltwindFinaleLogic.ResolveStageDeadlineSeconds(export)
+                : GameConstants.StageDurationSeconds;
+            var minuteEndSeconds = (completedMinute + 1) * 60f;
+            if (minuteEndSeconds > deadline)
+                return;
+
             var minKills = export?.Economy?.MarksPerQualifyingMinuteMinKills ?? 10;
             if (SaltwindStageSettlementLogic.QualifiesOrdinaryMinute(_killsThisMinute, minKills))
                 _qualifyingOrdinaryMinutes++;
@@ -129,10 +137,14 @@ namespace HighSeas.Balance
             return true;
         }
 
-        public static bool TryRegisterScheduledElite()
+        /// <summary>Credits Marks for a scheduled pressure elite when it is killed (not when spawned).</summary>
+        public static bool TryCreditScheduledEliteKill(string enemyDefinitionId)
         {
-            if (!_active || _scheduledEliteCredited) return false;
-            _scheduledEliteCredited = true;
+            if (!_active || string.IsNullOrEmpty(enemyDefinitionId)) return false;
+            if (enemyDefinitionId != "hammerhead" && enemyDefinitionId != "kraken_spawn") return false;
+            if (!_scheduledEliteKillKeys.Add(enemyDefinitionId)) return false;
+            if (_scheduledEliteKillCredits >= 2) return false;
+            _scheduledEliteKillCredits++;
             return true;
         }
 
@@ -143,16 +155,14 @@ namespace HighSeas.Balance
             return true;
         }
 
+        /// <summary>Read-only snapshot for settlement and UI. Does not mutate credit state.</summary>
         public static RunMarksRecord BuildRecord()
         {
-            if (_overtimeMinuteIndex >= 0)
-                TryCreditOvertimeMinute();
-
             return new RunMarksRecord(
                 _runId,
                 _qualifyingOrdinaryMinutes,
                 _specialPoiCredits,
-                _scheduledEliteCredited,
+                _scheduledEliteKillCredits,
                 _bossVictoryCredited,
                 _qualifyingOvertimeMinutes);
         }
@@ -164,7 +174,7 @@ namespace HighSeas.Balance
             data.runId = record.RunId;
             data.marksQualifyingOrdinaryMinutes = record.QualifyingOrdinaryMinutes;
             data.marksSpecialPoiCredits = record.SpecialPoiCredits;
-            data.marksScheduledEliteCredited = record.ScheduledEliteCredited;
+            data.marksScheduledEliteKillCredits = record.ScheduledEliteKillCredits;
             data.marksBossVictoryCredited = record.BossVictoryCredited;
             data.marksQualifyingOvertimeMinutes = record.QualifyingOvertimeMinutes;
         }

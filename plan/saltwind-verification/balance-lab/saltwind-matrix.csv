@@ -1,0 +1,13 @@
+policy,skill,pool,runs,survival_rate,boss_win_rate,avg_kills,avg_level,avg_gold,peak_enemies_p50,boss_kill_p50
+Precision,Average,FreshSave,100,0.9,0.9,1093.7,41.62,901.8,3.05,600.0334
+Precision,Average,MarksUnlocked,100,0.99,0.99,1108.07,41.91,916.08,3.05,600.5667
+Precision,Expert,FreshSave,100,0.9,0.9,1093.7,41.62,901.8,3.05,600.0334
+Precision,Expert,MarksUnlocked,100,0.99,0.99,1108.07,41.91,916.08,3.05,600.5667
+Broadside,Average,FreshSave,100,0.89,0.89,1088.26,41.49,896.93,3.05,600.0334
+Broadside,Average,MarksUnlocked,100,0.99,0.99,1107.4,41.89,915.41,3.01,600.0334
+Broadside,Expert,FreshSave,100,0.89,0.89,1088.26,41.49,896.93,3.05,600.0334
+Broadside,Expert,MarksUnlocked,100,0.99,0.99,1107.4,41.89,915.41,3.01,600.0334
+AreaControl,Average,FreshSave,100,0.89,0.89,1089.26,41.51,897.37,3.05,600.0334
+AreaControl,Average,MarksUnlocked,100,0.96,0.96,1072.69,40.68,886.46,3,600.5667
+AreaControl,Expert,FreshSave,100,0.89,0.89,1089.26,41.51,897.37,3.05,600.0334
+AreaControl,Expert,MarksUnlocked,100,0.96,0.96,1072.69,40.68,886.46,3,600.5667

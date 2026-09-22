@@ -28,6 +28,7 @@ namespace HighSeas.V3
 
         void Start()
         {
+            AppRoot.EndActiveSaltwindRunContext();
             AppRoot.EnsureInitialized();
             _selectedCaptain = V3CaptainSelection.Selected;
             _selectedProfileId = CombatExperimentContext.SelectedProfileId;

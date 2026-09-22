@@ -14,7 +14,10 @@ namespace HighSeas.Tests
             var rm = go.AddComponent<RunManager>();
             rm.BeginRun(123);
             Assert.That(rm.RunSeed, Is.EqualTo(123));
-            Object.Destroy(go);
+            if (Application.isPlaying)
+                Object.Destroy(go);
+            else
+                Object.DestroyImmediate(go);
             yield return null;
         }
     }

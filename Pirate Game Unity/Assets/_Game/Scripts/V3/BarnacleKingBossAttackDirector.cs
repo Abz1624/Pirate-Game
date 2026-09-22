@@ -13,7 +13,6 @@ namespace HighSeas.V3
     {
         const float ChargeSpeedMult = 2.6f;
         const float SpreadProjectileSpeed = 14f;
-        const float BombardProjectileSpeed = 11f;
 
         EnemyWorld _enemyWorld;
         PlayerShipController _player;
@@ -22,6 +21,8 @@ namespace HighSeas.V3
         bool _active;
         bool _executeFired;
         float _toastCooldown;
+        GameObject _markedTelegraph;
+        Material _markedTelegraphMaterial;
 
         public static BarnacleKingBossAttackDirector Ensure(EnemyWorld world, PlayerShipController player)
         {
@@ -51,6 +52,7 @@ namespace HighSeas.V3
             _active = false;
             _bossSlot = -1;
             _executeFired = false;
+            HideMarkedTelegraph();
             BarnacleKingBossAttackLogic.BeginRun(ref _state);
             _enemyWorld?.ClearBossAttackControl();
         }
@@ -91,6 +93,7 @@ namespace HighSeas.V3
             if (_state.Phase == BarnacleKingBossPhase.Execute && previousPhase != BarnacleKingBossPhase.Execute)
                 _executeFired = false;
 
+            UpdateMarkedTelegraph();
             ApplyMovementControl(boss);
             if (BarnacleKingBossAttackLogic.CanDealDamage(_state) && !_executeFired)
             {
@@ -121,22 +124,21 @@ namespace HighSeas.V3
 
         void FireAttack(in EnemyAgent boss)
         {
-            var hostiles = HostileProjectileWorld.Instance;
-            if (hostiles == null) return;
-
             switch (_state.Attack)
             {
                 case BarnacleKingAttackKind.AimedSpread:
-                    FireSpread(boss, hostiles);
+                    FireSpread(boss, HostileProjectileWorld.Instance);
                     break;
                 case BarnacleKingAttackKind.MarkedBombardment:
-                    FireBombard(boss, hostiles);
+                    ApplyMarkedBlast(boss);
                     break;
             }
         }
 
         void FireSpread(in EnemyAgent boss, HostileProjectileWorld hostiles)
         {
+            if (hostiles == null) return;
+
             var baseDir = _state.CommittedDirection;
             const int count = 5;
             const float spreadDeg = 12f;
@@ -148,18 +150,18 @@ namespace HighSeas.V3
             }
         }
 
-        void FireBombard(in EnemyAgent boss, HostileProjectileWorld hostiles)
+        void ApplyMarkedBlast(in EnemyAgent boss)
         {
-            var toMark = _state.MarkedPoint - boss.position;
-            toMark.y = 0f;
-            if (toMark.sqrMagnitude < 0.01f)
-                toMark = _state.CommittedDirection;
-            var dir = toMark.normalized;
-            for (var i = 0; i < 3; i++)
+            if (!BarnacleKingBossAttackLogic.ShouldApplyMarkedAreaDamage(_state)) return;
+            if (_player?.Damage == null || !_player.Damage.IsAlive) return;
+
+            if (BarnacleKingBossAttackLogic.IsPlayerInsideMarkedBlast(_state.MarkedPoint, _player.Position))
             {
-                var jitter = Quaternion.Euler(0f, (i - 1) * 8f, 0f) * dir;
-                SpawnShot(hostiles, boss, jitter, BombardProjectileSpeed, boss.damage * 0.7f);
+                var damage = boss.damage * 1.15f;
+                _player.Damage.TakeDamage(damage, _state.MarkedPoint, false);
             }
+
+            HideMarkedTelegraph();
         }
 
         static void SpawnShot(
@@ -173,9 +175,53 @@ namespace HighSeas.V3
             hostiles.TrySpawn(muzzle, dir, speed, damage, 2.4f, 0.55f, 0.45f);
         }
 
+        void UpdateMarkedTelegraph()
+        {
+            if (_state.Attack != BarnacleKingAttackKind.MarkedBombardment ||
+                _state.Phase != BarnacleKingBossPhase.Telegraph)
+            {
+                HideMarkedTelegraph();
+                return;
+            }
+
+            EnsureMarkedTelegraph();
+            var radius = BarnacleKingBossAttackLogic.MarkedBombardmentRadius;
+            _markedTelegraph.transform.position = _state.MarkedPoint + Vector3.up * 0.08f;
+            _markedTelegraph.transform.localScale = new Vector3(radius * 2f, 0.12f, radius * 2f);
+            _markedTelegraph.SetActive(true);
+        }
+
+        void EnsureMarkedTelegraph()
+        {
+            if (_markedTelegraph != null) return;
+            _markedTelegraph = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            _markedTelegraph.name = "BarnacleKingMarkedTelegraph";
+            var collider = _markedTelegraph.GetComponent<Collider>();
+            if (collider != null) Destroy(collider);
+
+            _markedTelegraphMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+            _markedTelegraphMaterial.color = new Color(1f, 0.35f, 0.1f, 0.55f);
+            _markedTelegraph.GetComponent<Renderer>().sharedMaterial = _markedTelegraphMaterial;
+        }
+
+        void HideMarkedTelegraph()
+        {
+            if (_markedTelegraph != null)
+                _markedTelegraph.SetActive(false);
+        }
+
+        void OnDestroy()
+        {
+            if (_markedTelegraph != null)
+                Destroy(_markedTelegraph);
+            if (_markedTelegraphMaterial != null)
+                Destroy(_markedTelegraphMaterial);
+        }
+
         void MaybeShowTelegraphToast()
         {
             if (_state.Phase != BarnacleKingBossPhase.Telegraph) return;
+            if (_state.Attack == BarnacleKingAttackKind.MarkedBombardment) return;
             _toastCooldown -= Time.deltaTime;
             if (_toastCooldown > 0f) return;
             _toastCooldown = 1.2f;
@@ -183,7 +229,6 @@ namespace HighSeas.V3
             {
                 BarnacleKingAttackKind.AimedSpread => "Barnacle King — spread incoming",
                 BarnacleKingAttackKind.CommittedCharge => "Barnacle King — charge incoming",
-                BarnacleKingAttackKind.MarkedBombardment => "Barnacle King — bombardment incoming",
                 _ => null
             };
             if (label != null)

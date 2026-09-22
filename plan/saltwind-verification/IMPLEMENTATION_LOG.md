@@ -8,19 +8,19 @@ Reference: `plan/SALTWIND_CURSOR_IMPLEMENTATION_HANDOFF.md`.
 | ---: | --- | --- | --- |
 | 00 | C00 | **passed** | Baseline + `PROTECTED_SETTINGS.json` |
 | 01 | C01 | **passed** | Profile export hash; `StageBalanceProfileTests` |
-| 02 | C02 | **passed** (automated + wired) | EditMode spawn gates; `ambient_spawn` / `spawn_checkpoint` telemetry (`spawn-telemetry-note.md`) |
-| 03 | C03 | **passed** | `RunEncounterTrackerTests` 7/7; `BossEncounterPlayModeTests` 2/2 |
-| 04 | C04 | **passed** | Step 04 menu + composition logic + `SaltwindScheduleGateTests` / `SaltwindAmbientCompositionGateTests` |
-| 05 | C05 | **passed** (automated) | `SaltwindFinaleGateTests` 6/6; profile-driven OT/storm + Barnacle King director |
-| 06 | C06 | **passed** (automated) | `SaltwindPoiLayoutGateTests` 3/3; 100-seed layout; finite POI runtime |
-| 07 | C07 | **passed** (automated) | `SaltwindProgressionGateTests` 6/6; profile XP/offers/starter pool |
-| 08 | C08 | **passed** (automated) | `SaltwindEconomyGateTests` 6/6; profile gold/chest/powerups |
-| 09 | C09 | **passed** (automated) | `SaltwindSettlementGateTests` 6/6; save v2, Marks settlement |
-| 10 | C10 | **passed** (automated) | `SaltwindResetGateTests` 6/6; retry order, snapshot validation, pause guards |
-| 11 | C11 | **passed** (automated) | `SaltwindResultsGateTests` 6/6; results UX, unlock goal, telemetry |
-| 12 | C12 | **passed** (automated) | `SaltwindBalanceLabGateTests` 6/6; profile-driven lab matrix |
-| 13 | C13 | **passed** (directional human) | `PLAYTEST_REPORT.md` — developer Editor sessions; perf + external panel **pending** |
-| 14 | C14 | **passed** (automated + docs) | `step14-regression-evidence.md`; profile re-export; delivery index — see pending rows below |
+| 02 | C02 | **passed (limitations)** | Exclusive ambient bands; `NineMinuteAmbient_*` gate; telemetry note |
+| 03 | C03 | **passed (limitations)** | Tracker EditMode + PlayMode partial-cache / boss lifecycle |
+| 04 | C04 | **passed (limitations)** | Schedule gates + profile pressure director |
+| 05 | C05 | **passed (limitations)** | Finale gates + storm PlayMode sail at contracted safe scale |
+| 06 | C06 | **passed (limitations)** | 100-seed POI layout + PlayMode storm POI safe-zone check |
+| 07 | C07 | **passed (limitations)** | Progression gates + lab offer parity |
+| 08 | C08 | **passed (limitations)** | Economy gates + lab chest quotes |
+| 09 | C09 | **passed (limitations)** | Settlement gates; Marks pure reads |
+| 10 | C10 | **passed (limitations)** | Reset/pause gates + PlayMode pause |
+| 11 | C11 | **passed (limitations)** | Results/unlocks gates |
+| 12 | C12 | **passed (limitations)** | **1800-run** lab matrix, skill bands — [SALTWIND_LAB_TARGET_BANDS.md](SALTWIND_LAB_TARGET_BANDS.md) |
+| 13 | C13 | **pending external** | [C13_EXTERNAL_PLAYTEST.md](C13_EXTERNAL_PLAYTEST.md) — not waived |
+| 14 | C14 | **passed (limitations)** | Index + exports; C13/perf outstanding |
 
 ## Step 13 — human verification (2026-09-23)
 
@@ -46,27 +46,21 @@ Reference: `plan/SALTWIND_CURSOR_IMPLEMENTATION_HANDOFF.md`.
 
 **Automated regression (Editor connected):** `unity command run_tests` — **79/79 passed** on Saltwind slice filters (56 `Saltwind*` gates + encounter/schedule/profile/POI/spawn modifier tests). Details: `step14-regression-evidence.md`.
 
-**Profile export:** `eval_file` → `export-profile.eval.cs` → hash **`3a45b3c6a7c278a8b3dfbd5b85f2d3bcb5237cfcc20c1d880c26070fc8dd917d`** in `profile-export/`.
-
-**Docs updated:** `VERIFICATION_INDEX.md`, `BALANCE_DECISIONS.md` (v2 playtest tuning), `PLACEHOLDERS.md` → visual catalogue.
+**Profile export (current):** hash **`e4ffa52b4475d137e89c960eebf2de9ee42a3280c9f859cb5ca1761c1baa7eb7`** — see `VERIFICATION_INDEX.md`.
 
 **C14 still pending (explicit)**
 
 | Item | Notes |
 | --- | --- |
 | Desktop perf trace | `PERF_TRACE_PENDING.md` — not captured |
-| External newcomer playtests | `PLAYTEST_REPORT.md` |
-| PlayMode CLI `--mode PlayMode` | 0 tests in `playmode-results.xml`; boss **2/2** in `playmode-boss-evidence.md` / `editmode-results.xml` |
-| Optional seed **12345** full telemetry JSON | Excerpt: `c02-telemetry-excerpt-seed1622933822.json` |
+| External newcomer playtests | `C13_EXTERNAL_PLAYTEST.md` |
+| C13 sign-off | **Pending external** — informal `PLAYTEST_REPORT.md` only |
 
-**C14 completed (2026-09-23 follow-up)**
+**C14 completed (resolution engineering, 2026-09-23)**
 
-- `editmode-results.xml` — EditMode assembly **124/124** pass (full CLI with Editor closed)
-- `c02-telemetry-excerpt-seed1622933822.json` — spawn telemetry sign-off sample
-- Delivery commit recorded: **`0ee6b0fc66dc79e87765517e6d75a7d6e8075fe1`** (owner)
-- Test fix: `LevelOfferGeneratorTests` sets `startingWeaponId = deck_cannons` for scripted first level-up assertion
-
-**Next (optional):** Desktop perf capture; external playtest panel; amend commit with test fix if needed.
+- Matrix calibration: Conservative / Average / Expert + documented bands — `SALTWIND_LAB_TARGET_BANDS.md`
+- Regression: R1 `NineMinuteAmbient_*`, R2 partial-cache PlayMode, R6 storm sail PlayMode
+- Delivery commit pin: **`2bd9ca2abdf05548c57e5f39f8765cbda048e2fe`** (see `VERIFICATION_INDEX.md`)
 
 ## Step 12 — code landed (2026-09-22)
 

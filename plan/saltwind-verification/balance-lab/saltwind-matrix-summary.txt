@@ -1,0 +1,14 @@
+Saltwind lab matrix: 1200 runs, profile e4ffa52b4475d137e89c960eebf2de9ee42a3280c9f859cb5ca1761c1baa7eb7, balance v2
+Modeled movement: orbit/kite/forward by skill preset (not real route choice). Modeled POI/chest rewards via export route checkpoints (first-chest travel + chest spacing) + chest price curve (not POIManager pathfinding). Modeled weapon growth via export fill-state weights + pity + weapon stat snapshots (SimRng autopick; not live LevelOfferGenerator UI/logbooks/run items).
+Saltwind/Precision/FreshSave/Average: 100 runs | objective 90% | survival 90% | kills 1093.7 | level 41.6 | gold 901.8 | peak enemies 3.1 | policy Precision | skill Average | pool FreshSave
+Saltwind/Precision/MarksUnlocked/Average: 100 runs | objective 99% | survival 99% | kills 1108.1 | level 41.9 | gold 916.1 | peak enemies 3.1 | policy Precision | skill Average | pool MarksUnlocked
+Saltwind/Precision/FreshSave/Expert: 100 runs | objective 90% | survival 90% | kills 1093.7 | level 41.6 | gold 901.8 | peak enemies 3.1 | policy Precision | skill Expert | pool FreshSave
+Saltwind/Precision/MarksUnlocked/Expert: 100 runs | objective 99% | survival 99% | kills 1108.1 | level 41.9 | gold 916.1 | peak enemies 3.1 | policy Precision | skill Expert | pool MarksUnlocked
+Saltwind/Broadside/FreshSave/Average: 100 runs | objective 89% | survival 89% | kills 1088.3 | level 41.5 | gold 896.9 | peak enemies 3.1 | policy Broadside | skill Average | pool FreshSave
+Saltwind/Broadside/MarksUnlocked/Average: 100 runs | objective 99% | survival 99% | kills 1107.4 | level 41.9 | gold 915.4 | peak enemies 3.0 | policy Broadside | skill Average | pool MarksUnlocked
+Saltwind/Broadside/FreshSave/Expert: 100 runs | objective 89% | survival 89% | kills 1088.3 | level 41.5 | gold 896.9 | peak enemies 3.1 | policy Broadside | skill Expert | pool FreshSave
+Saltwind/Broadside/MarksUnlocked/Expert: 100 runs | objective 99% | survival 99% | kills 1107.4 | level 41.9 | gold 915.4 | peak enemies 3.0 | policy Broadside | skill Expert | pool MarksUnlocked
+Saltwind/AreaControl/FreshSave/Average: 100 runs | objective 89% | survival 89% | kills 1089.3 | level 41.5 | gold 897.4 | peak enemies 3.1 | policy AreaControl | skill Average | pool FreshSave
+Saltwind/AreaControl/MarksUnlocked/Average: 100 runs | objective 96% | survival 96% | kills 1072.7 | level 40.7 | gold 886.5 | peak enemies 3.0 | policy AreaControl | skill Average | pool MarksUnlocked
+Saltwind/AreaControl/FreshSave/Expert: 100 runs | objective 89% | survival 89% | kills 1089.3 | level 41.5 | gold 897.4 | peak enemies 3.1 | policy AreaControl | skill Expert | pool FreshSave
+Saltwind/AreaControl/MarksUnlocked/Expert: 100 runs | objective 96% | survival 96% | kills 1072.7 | level 40.7 | gold 886.5 | peak enemies 3.0 | policy AreaControl | skill Expert | pool MarksUnlocked

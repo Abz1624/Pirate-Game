@@ -60,7 +60,7 @@ namespace HighSeas.Tests
             var rng = new RunRng(seed + 404);
             var options = V3StagePoiPlacementOptions.SaltwindSolo();
             V3StagePoiPlacer.Place(layout, rng, layoutDef, options);
-            Assert.IsTrue(SaltwindPoiLayoutLogic.Validate(layout, options).IsValid);
+            Assert.IsTrue(SaltwindPoiLayoutLogic.Validate(layout, options, layoutDef).IsValid);
 
             var chests = 0;
             var wrecks = 0;

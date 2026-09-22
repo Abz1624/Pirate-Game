@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 
+using HighSeas.Balance;
 using HighSeas.Core;
 
 using HighSeas.Data;
@@ -103,7 +104,6 @@ namespace HighSeas.V3
 
 
             if (!PlayBounds.IsInside(position, clearance))
-
                 return false;
 
 
@@ -491,6 +491,13 @@ namespace HighSeas.V3
 
                     continue;
 
+                if (!SaltwindPoiLayoutLogic.HasClearWaterRoute(
+                        spawn,
+                        pos,
+                        SaltwindPoiLayoutLogic.DefaultNavClearance,
+                        islandLayout))
+                    continue;
+
                 beacon = pos;
 
                 return true;
@@ -520,6 +527,13 @@ namespace HighSeas.V3
                 {
                     var candidate = spawn + new Vector3(Mathf.Cos(radians) * dist, 0f, Mathf.Sin(radians) * dist);
                     if (!PlayBounds.IsOpenWater(candidate, 3f))
+                        continue;
+
+                    if (!SaltwindPoiLayoutLogic.HasClearWaterRoute(
+                            spawn,
+                            candidate,
+                            SaltwindPoiLayoutLogic.DefaultNavClearance,
+                            islandLayout))
                         continue;
 
                     var score = Vector3.Distance(spawn, candidate);

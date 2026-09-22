@@ -74,14 +74,22 @@ namespace RoguePirates.Simulation.Combat
             _baseProjectileSpeed = MathF.Max(0.01f, projectileSpeed);
         }
 
-        public void Tick(float dt, SimActor player, List<SimActor> actors, List<SimProjectile> projectiles, ref int nextProjectileId, List<SimEvent> events, int tick)
+        public void Tick(
+            float dt,
+            SimActor player,
+            List<SimActor> actors,
+            List<SimProjectile> projectiles,
+            ref int nextProjectileId,
+            List<SimEvent> events,
+            int tick,
+            bool preferBossTargets = false)
         {
             if (player.IsDead) return;
             _cooldown -= dt;
             if (_cooldown > 0f) return;
             _cooldown = _baseCooldown * _cooldownMultiplier;
 
-            var dir = FindAutoTargetDirection(player, actors);
+            var dir = FindAutoTargetDirection(player, actors, preferBossTargets, _range);
             if (dir.LengthSq().Raw < SimFixed.FromFloat(0.01f).Raw)
             {
                 dir = player.Velocity;
@@ -94,7 +102,7 @@ namespace RoguePirates.Simulation.Combat
             var speed = SimFixed.FromFloat(_baseProjectileSpeed * _projectileSpeedMultiplier);
             var damage = SimMath.ComputeDamage(
                 _baseDamage, 1f, 0f, _damageMultiplier, false, 1.5f, false, 1f, 1f, 0f);
-            var target = FindClosestTarget(player, actors);
+            var target = FindClosestTarget(player, actors, preferBossTargets, _range);
             if (target != null && target.Position.Sub(player.Position).LengthSq().Raw <= SimFixed.FromFloat(_range * _range).Raw)
             {
                 target.Hull = target.Hull.Sub(damage);
@@ -123,16 +131,34 @@ namespace RoguePirates.Simulation.Combat
             events.Add(new SimEvent(SimEventKind.ProjectileSpawned, tick, player.Id, proj.Id));
         }
 
-        static SimVec2 FindAutoTargetDirection(SimActor player, List<SimActor> actors)
+        static SimVec2 FindAutoTargetDirection(SimActor player, List<SimActor> actors, bool preferBossTargets, float range)
         {
-            var target = FindClosestTarget(player, actors);
+            var target = FindClosestTarget(player, actors, preferBossTargets, range);
             return target == null ? SimVec2.Zero : target.Position.Sub(player.Position).Normalized();
         }
 
-        static SimActor FindClosestTarget(SimActor player, List<SimActor> actors)
+        static SimActor FindClosestTarget(SimActor player, List<SimActor> actors, bool preferBossTargets, float range)
         {
             SimActor target = null;
             var bestDistance = long.MaxValue;
+            if (preferBossTargets)
+            {
+                for (var i = 0; i < actors.Count; i++)
+                {
+                    var candidate = actors[i];
+                    if (!candidate.IsBoss || candidate.IsDead) continue;
+                    target = candidate;
+                    bestDistance = candidate.Position.Sub(player.Position).LengthSq().Raw;
+                    break;
+                }
+
+                if (target != null &&
+                    bestDistance <= SimFixed.FromFloat(range * range).Raw)
+                    return target;
+            }
+
+            target = null;
+            bestDistance = long.MaxValue;
             for (var i = 0; i < actors.Count; i++)
             {
                 var candidate = actors[i];

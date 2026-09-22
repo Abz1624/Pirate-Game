@@ -30,6 +30,9 @@ namespace HighSeas.Tests
             Assert.AreEqual(export.Economy.ChestBasePrice, roundTrip.Economy.ChestBasePrice);
             Assert.AreEqual(export.StarterWeaponIds.Count, roundTrip.StarterWeaponIds.Count);
             CollectionAssert.AreEqual(export.Spawn.AmbientRatePerSecond, roundTrip.Spawn.AmbientRatePerSecond);
+            Assert.Greater(export.WeaponStatSnapshots.Count, 0);
+            Assert.AreEqual(export.WeaponStatSnapshots.Count, roundTrip.WeaponStatSnapshots.Count);
+            Assert.AreEqual(export.BossStatSnapshot.BaseHull, roundTrip.BossStatSnapshot.BaseHull, 0.01f);
         }
 
         [Test]

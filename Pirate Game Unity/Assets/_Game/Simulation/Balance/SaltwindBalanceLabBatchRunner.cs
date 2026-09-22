@@ -39,6 +39,7 @@ namespace RoguePirates.Simulation.Balance
             var sb = new StringBuilder();
             sb.AppendLine($"Saltwind lab matrix: {TotalRuns} runs, profile {ProfileContentHash}, balance v{BalanceVersion}");
             sb.AppendLine(BehaviorDisclaimer);
+            sb.AppendLine(SaltwindLabMatrixCalibration.FormatTargetBandLegend());
             for (var i = 0; i < Cells.Count; i++)
             {
                 var c = Cells[i];
@@ -51,6 +52,7 @@ namespace RoguePirates.Simulation.Balance
                 sb.AppendLine();
             }
 
+            SaltwindLabMatrixCalibration.AppendTargetBandWarnings(this, sb);
             return sb.ToString();
         }
     }
@@ -101,18 +103,32 @@ namespace RoguePirates.Simulation.Balance
             scenario.WeaponId = starter[0];
             scenario.WeaponLoadout.Clear();
             scenario.WeaponLoadout.Add(CreateWeaponEntry(starter[0], scenario));
+            SaltwindLabBossParityLogic.ConfigureScenario(scenario, export, skill);
             return scenario;
         }
 
-        static BalanceWeaponLoadoutEntry CreateWeaponEntry(string id, BalanceLabScenario scenario) => new()
+        static BalanceWeaponLoadoutEntry CreateWeaponEntry(string id, BalanceLabScenario scenario)
         {
-            Id = id,
-            Damage = scenario.WeaponBaseDamage,
-            Cooldown = scenario.WeaponBaseCooldown,
-            Range = scenario.WeaponRange,
-            ProjectileSpeed = scenario.WeaponProjectileSpeed,
-            TargetMultiplier = scenario.WeaponPatternTargetMultiplier
-        };
+            var entry = new BalanceWeaponLoadoutEntry
+            {
+                Id = id,
+                Damage = scenario.WeaponBaseDamage,
+                Cooldown = scenario.WeaponBaseCooldown,
+                Range = scenario.WeaponRange,
+                ProjectileSpeed = scenario.WeaponProjectileSpeed,
+                TargetMultiplier = scenario.WeaponPatternTargetMultiplier
+            };
+            if (scenario.StageProfile != null &&
+                SaltwindLabLevelOfferLogic.TryGetWeaponSnapshot(scenario.StageProfile, id, out var snap))
+            {
+                entry.Damage = snap.BaseDamage;
+                entry.Cooldown = snap.BaseCooldown;
+                entry.Range = snap.Range;
+                entry.ProjectileSpeed = snap.ProjectileSpeed;
+            }
+
+            return entry;
+        }
 
         public static IReadOnlyList<string> ResolveWeaponQueue(
             SaltwindLabBuildPolicy policy,
@@ -146,6 +162,17 @@ namespace RoguePirates.Simulation.Balance
             }
 
             if (queue.Count == 0) queue.Add("deck_cannons");
+
+            if (pool == SaltwindLabUnlockPool.MarksUnlocked && export?.WeaponUnlocks != null)
+            {
+                for (var i = 0; i < export.WeaponUnlocks.Count; i++)
+                {
+                    var id = export.WeaponUnlocks[i]?.ContentId;
+                    if (string.IsNullOrEmpty(id) || queue.Contains(id)) continue;
+                    queue.Add(id);
+                }
+            }
+
             return queue;
         }
 
@@ -169,7 +196,12 @@ namespace RoguePirates.Simulation.Balance
             SaltwindLabBuildPolicy.AreaControl
         };
 
-        static readonly BalanceSkillPreset[] Skills = { BalanceSkillPreset.Average, BalanceSkillPreset.Expert };
+        static readonly BalanceSkillPreset[] Skills =
+        {
+            BalanceSkillPreset.Conservative,
+            BalanceSkillPreset.Average,
+            BalanceSkillPreset.Expert
+        };
         static readonly SaltwindLabUnlockPool[] Pools =
         {
             SaltwindLabUnlockPool.FreshSave,

@@ -39,6 +39,7 @@ namespace HighSeas.Save
         public int marksQualifyingOrdinaryMinutes;
         public int marksSpecialPoiCredits;
         public bool marksScheduledEliteCredited;
+        public int marksScheduledEliteKillCredits;
         public bool marksBossVictoryCredited;
         public int marksQualifyingOvertimeMinutes;
         public int activeBossEncounterId;

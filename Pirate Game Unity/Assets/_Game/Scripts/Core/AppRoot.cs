@@ -1,3 +1,5 @@
+using HighSeas.Balance;
+using HighSeas.V3;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -39,7 +41,26 @@ namespace HighSeas.Core
 
         public void LoadScene(string sceneName)
         {
+            if (StageBalanceProfileContext.IsActive &&
+                sceneName != V3SceneNames.SaltwindRun &&
+                !IsLocalMultiplayerRunScene(sceneName))
+            {
+                EndActiveSaltwindRunContext();
+            }
+
             SceneManager.LoadScene(sceneName);
+        }
+
+        static bool IsLocalMultiplayerRunScene(string sceneName) =>
+            sceneName == V3SceneNames.PvPBattle ||
+            sceneName == V3SceneNames.CoOpRun ||
+            sceneName == V3SceneNames.SplitScreenCoOpRun;
+
+        public static void EndActiveSaltwindRunContext()
+        {
+            StageBalanceProfileContext.EndRun();
+            V3RunContext.IsActive = false;
+            V3RunContext.Layout = null;
         }
     }
 

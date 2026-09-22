@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Balance.StageBalanceProfile
   profileId: saltwind_solo
   schemaVersion: 1
-  balanceVersion: 1
+  balanceVersion: 2
   encounterSchedule: {fileID: 11400000, guid: b83b2c95913b99a47a103f5fc2b2b8a5, type: 2}
   enforceCompleteScheduleReferences: 1
   graceSeconds: 2

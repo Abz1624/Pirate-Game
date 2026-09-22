@@ -22,7 +22,7 @@ namespace HighSeas.Balance
         public static SaltwindPoiLayoutReport Fail(string error) => new(false, error);
     }
 
-    /// <summary>Finite POI layout validation for Saltwind solo (Step 06 / C06).</summary>
+    /// <summary>Finite POI layout validation for Saltwind solo (Step 06 / C06). Boss beacons use route checks only; barrels are point-checked separately.</summary>
     public static class SaltwindPoiLayoutLogic
     {
         public const float DefaultSaltwindCruiseSpeed = 5.5f;
@@ -77,7 +77,8 @@ namespace HighSeas.Balance
 
         public static SaltwindPoiLayoutReport Validate(
             StageLayout layout,
-            V3StagePoiPlacementOptions options)
+            V3StagePoiPlacementOptions options,
+            IslandLayoutDefinition islandLayout = null)
         {
             if (layout?.pois == null)
                 return SaltwindPoiLayoutReport.Fail("layout.pois is null.");
@@ -87,10 +88,19 @@ namespace HighSeas.Balance
             var beacons = 0;
             Vector3? firstChest = null;
             var minChestDist = float.MaxValue;
+            var clearance = options.NavClearance;
 
             for (var i = 0; i < layout.pois.Count; i++)
             {
                 var poi = layout.pois[i];
+                if (islandLayout != null &&
+                    poi.type != POIType.BossBeacon &&
+                    !IsNavigable(poi.position, clearance, islandLayout))
+                {
+                    return SaltwindPoiLayoutReport.Fail(
+                        $"POI {poi.type} at {poi.position} is not navigable.");
+                }
+
                 switch (poi.type)
                 {
                     case POIType.SalvageChest:
@@ -133,6 +143,35 @@ namespace HighSeas.Balance
                 if (travel > options.FirstChestMaxTravelSeconds + 0.5f)
                     return SaltwindPoiLayoutReport.Fail(
                         $"Nearest chest travel {travel:F1}s exceeds {options.FirstChestMaxTravelSeconds}s.");
+
+                if (islandLayout != null &&
+                    !HasClearWaterRoute(
+                        layout.playerSpawn,
+                        firstChest.Value,
+                        clearance,
+                        islandLayout))
+                {
+                    return SaltwindPoiLayoutReport.Fail("Nearest chest has no clear water route from spawn.");
+                }
+            }
+
+            var beaconPos = layout.bossBeacon;
+            if (beaconPos == Vector3.zero)
+            {
+                for (var i = 0; i < layout.pois.Count; i++)
+                {
+                    if (layout.pois[i].type == POIType.BossBeacon)
+                    {
+                        beaconPos = layout.pois[i].position;
+                        break;
+                    }
+                }
+            }
+
+            if (islandLayout != null && beaconPos != Vector3.zero &&
+                !HasClearWaterRoute(layout.playerSpawn, beaconPos, clearance, islandLayout))
+            {
+                return SaltwindPoiLayoutReport.Fail("Boss beacon has no clear water route from spawn.");
             }
 
             if (layout.explosiveBarrelPositions != null &&

@@ -10,9 +10,7 @@ namespace HighSeas.V3
     {
         public const string FirstConquestKey = "v3_first_conquest_complete";
 
-        static bool BypassProgressionGates =>
-            V3PlaytestFlags.UnlockAllContent
-            && (!StageBalanceProfileContext.IsActive || V3PlaytestFlags.SaltwindDebugUnlockAll);
+        static bool BypassProgressionGates => V3PlaytestFlags.BypassProgressionGates;
 
         public static bool HasCompletedFirstConquest =>
             BypassProgressionGates || PlayerPrefs.GetInt(FirstConquestKey, 0) == 1;
@@ -29,7 +27,7 @@ namespace HighSeas.V3
                 var export = StageBalanceProfileContext.Export;
                 if (SaltwindStageProgressionLogic.IsWeaponInOfferPool(export, weaponId))
                     return true;
-                return AppRoot.Instance?.Save?.HasMarksOwned(weaponId) ?? false;
+                return AppRoot.Instance?.Save?.HasEffectiveContentOwned(weaponId) ?? false;
             }
 
             if (CombatExperimentContext.Active.weaponSlotCap >= 6 && IsExperimentalPlaytestWeapon(weaponId))
@@ -61,7 +59,8 @@ namespace HighSeas.V3
             if (StageBalanceProfileContext.IsActive)
                 return SaltwindStageProgressionLogic.IsRunItemOfferEligible(
                     StageBalanceProfileContext.Export,
-                    itemId);
+                    itemId,
+                    AppRoot.Instance?.Save);
             return true;
         }
     }

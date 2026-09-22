@@ -10,6 +10,7 @@ using HighSeas.Pickups;
 using HighSeas.Player;
 using HighSeas.Save;
 using HighSeas.V3;
+using HighSeas.Weapons;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -57,6 +58,16 @@ namespace HighSeas.POI
         public bool BossSummoned => _bossSummoned;
         public bool IsPowderCacheAmbushStarted(int index) => _powderCacheAmbushStarted.Contains(index);
         public bool BossDefeated => _bossDefeated;
+
+#if UNITY_INCLUDE_TESTS
+        /// <summary>PlayMode: boss summoned flag without full beacon interaction.</summary>
+        public void ConfigureTrackedBossEncounterForTests(int encounterId)
+        {
+            _bossSummoned = true;
+            _bossDefeated = false;
+            _bossEncounterId = encounterId;
+        }
+#endif
 
         public bool IsPoiConsumed(int index) =>
             _layout != null && index >= 0 && index < _layout.pois.Count && _layout.pois[index].used;
@@ -422,6 +433,24 @@ namespace HighSeas.POI
         public string GetSalvageChestPromptLabel() =>
             $"Open Salvage Chest — {GetSalvageChestQuotePrice()} gold";
 
+        static IReadOnlyList<string> CollectEquippedWeaponIds(PlayerShipController player)
+        {
+            if (player == null) return null;
+            var controller = player.GetComponent<WeaponController>();
+            if (controller == null || controller.Weapons == null || controller.Weapons.Count == 0)
+                return null;
+
+            var ids = new List<string>(controller.Weapons.Count);
+            for (var i = 0; i < controller.Weapons.Count; i++)
+            {
+                var def = controller.Weapons[i].def;
+                if (def != null && !string.IsNullOrEmpty(def.id))
+                    ids.Add(def.id);
+            }
+
+            return ids.Count > 0 ? ids : null;
+        }
+
         bool TryOpenSalvageChest(PlayerShipController player, int index)
         {
             if (_layout == null || index < 0 || index >= _layout.pois.Count || _layout.pois[index].used)
@@ -432,12 +461,15 @@ namespace HighSeas.POI
 
             if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export != null)
             {
+                var ownedWeapons = CollectEquippedWeaponIds(player);
                 var plan = SaltwindStageEconomyLogic.TryPlanChestPurchase(
                     StageBalanceProfileContext.Export,
                     StageBalanceProfileContext.Runtime.SuccessfulChestPurchases,
                     rm.Gold,
                     rm.Rng,
-                    rm.Stats.Luck);
+                    rm.Stats.Luck,
+                    AppRoot.Instance?.Save,
+                    ownedWeapons);
                 if (!plan.IsValid)
                 {
                     if (plan.Error == "insufficient gold")
@@ -671,8 +703,8 @@ namespace HighSeas.POI
             _powderCacheEnemySlots.Clear();
             var encounter = RunEncounterTracker.Request(RunEncounterKind.PowderCache, PowderCacheAmbushCount);
             _powderCacheTrackerEncounterId = encounter.EncounterId;
-            var spawned = spawner.TriggerProfileImmediate(profile, PowderCacheAmbushCount, encounter.EncounterId);
-            return spawned > 0;
+            spawner.TriggerProfile(profile, PowderCacheAmbushCount, encounter.EncounterId);
+            return true;
         }
 
         public void TickSignalBuoyCharge(PlayerShipController player, int index)

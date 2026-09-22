@@ -1,3 +1,4 @@
+using HighSeas.Core;
 using UnityEngine;
 
 namespace HighSeas.V3
@@ -85,9 +86,22 @@ namespace HighSeas.V3
             _ => "All Guns! (18s) — fire all weapons once; cutlass spin boost"
         };
 
-        public static bool IsLocked(V3CaptainId id) =>
-            !V3PlaytestFlags.UnlockAllContent
-            && id == V3CaptainId.Flint
-            && !V3ContentUnlocks.HasCompletedFirstConquest;
+        public static bool IsLocked(V3CaptainId id)
+        {
+            if (V3PlaytestFlags.BypassProgressionGates) return false;
+            if (id == V3CaptainId.Rook) return false;
+
+            if (id == V3CaptainId.Brine)
+                return !(AppRoot.Instance?.Save?.HasEffectiveContentOwned("brine") ?? false);
+
+            if (id == V3CaptainId.Flint)
+            {
+                if (AppRoot.Instance?.Save?.HasEffectiveContentOwned("flint") ?? false)
+                    return false;
+                return !V3ContentUnlocks.HasCompletedFirstConquest;
+            }
+
+            return false;
+        }
     }
 }

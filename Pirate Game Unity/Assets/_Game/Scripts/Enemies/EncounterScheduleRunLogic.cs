@@ -29,6 +29,72 @@ namespace HighSeas.Enemies
             return spawnedCount >= timing.spawnCount;
         }
 
+        /// <summary>
+        /// Saltwind ambient bands: each schedule entry is active in [start, nextStart) or until stage deadline.
+        /// </summary>
+        public static float ResolveScheduleEntryEndSeconds(
+            ScheduledSpawnEntry[] entries,
+            int entryIndex,
+            float stageDeadlineSeconds)
+        {
+            if (entries == null || entryIndex < 0)
+                return stageDeadlineSeconds;
+
+            for (var j = entryIndex + 1; j < entries.Length; j++)
+            {
+                var next = entries[j];
+                if (next?.profile != null)
+                    return next.startTimeSeconds;
+            }
+
+            return stageDeadlineSeconds;
+        }
+
+        public static bool IsWithinScheduleWindow(float runTimeSeconds, float windowStart, float windowEnd) =>
+            runTimeSeconds >= windowStart && runTimeSeconds < windowEnd;
+
+        public static bool IsScheduledContinuousWindowComplete(
+            float runTimeSeconds,
+            float windowStart,
+            float windowEnd,
+            SpawnProfile profile,
+            float elapsedInWindow,
+            int spawnedCount)
+        {
+            if (runTimeSeconds >= windowEnd)
+                return true;
+
+            if (profile == null)
+                return true;
+
+            if (profile.spawnMode != SpawnMode.Continuous)
+                return IsProfileRunComplete(profile, elapsedInWindow, spawnedCount);
+
+            if (profile.timing.durationSeconds > 0f)
+                return elapsedInWindow >= profile.timing.durationSeconds;
+
+            return false;
+        }
+
+        /// <summary>How many authored ambient band windows contain runTime (expect 0 or 1 when windows are exclusive).</summary>
+        public static int CountActiveBandWindows(float runTimeSeconds, float[] bandStartSeconds, float stageDeadlineSeconds)
+        {
+            if (bandStartSeconds == null || bandStartSeconds.Length == 0)
+                return 0;
+
+            var count = 0;
+            for (var i = 0; i < bandStartSeconds.Length; i++)
+            {
+                var end = i + 1 < bandStartSeconds.Length
+                    ? bandStartSeconds[i + 1]
+                    : stageDeadlineSeconds;
+                if (IsWithinScheduleWindow(runTimeSeconds, bandStartSeconds[i], end))
+                    count++;
+            }
+
+            return count;
+        }
+
         public static float GetContinuousSpawnInterval(
             SpawnProfile profile,
             float globalMinGap,

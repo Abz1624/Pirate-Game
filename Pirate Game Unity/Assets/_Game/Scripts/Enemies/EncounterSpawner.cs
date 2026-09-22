@@ -25,13 +25,17 @@ namespace HighSeas.Enemies
         int _nextProfileInstanceId = 1;
         readonly List<ActiveProfileRun> _activeProfiles = new(32);
         readonly Dictionary<int, int> _profileActiveCounts = new();
-        readonly List<TriggeredRequest> _triggerQueue = new(16);
+        readonly List<PendingTriggeredEncounter> _pendingEncounters = new(8);
 
-        struct TriggeredRequest
+        const float EncounterRequestTimeoutSeconds = 10f;
+
+        struct PendingTriggeredEncounter
         {
             public SpawnProfile profile;
-            public int burstCountOverride;
+            public int remainingCount;
             public int runEncounterId;
+            public float nextAttemptAt;
+            public float deadlineAt;
         }
 
         sealed class ActiveProfileRun
@@ -47,6 +51,7 @@ namespace HighSeas.Enemies
             public int loopCycleIndex;
             public bool complete;
             public float cooldownUntil;
+            public int scheduleEntryIndex;
             public int leaderAgentId = -1;
         }
 
@@ -127,7 +132,7 @@ namespace HighSeas.Enemies
         {
             _activeProfiles.Clear();
             _profileActiveCounts.Clear();
-            _triggerQueue.Clear();
+            _pendingEncounters.Clear();
             _spawnModifiers.Reset(1f);
             _ambientBudget.Reset();
             _globalSpawnGap = schedule != null ? schedule.globalMinSpawnGapSeconds : 0.3f;
@@ -163,11 +168,15 @@ namespace HighSeas.Enemies
         public void TriggerProfile(SpawnProfile profile, int countOverride = 0, int runEncounterId = 0)
         {
             if (profile == null) return;
-            _triggerQueue.Add(new TriggeredRequest
+            var runTime = RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f;
+            var count = countOverride > 0 ? countOverride : profile.timing.spawnCount;
+            _pendingEncounters.Add(new PendingTriggeredEncounter
             {
                 profile = profile,
-                burstCountOverride = countOverride,
-                runEncounterId = runEncounterId
+                remainingCount = count,
+                runEncounterId = runEncounterId,
+                nextAttemptAt = runTime,
+                deadlineAt = runTime + EncounterRequestTimeoutSeconds
             });
         }
 
@@ -234,6 +243,7 @@ namespace HighSeas.Enemies
                     profile = entry.profile,
                     instanceId = _nextProfileInstanceId++,
                     scheduledStartSeconds = entry.startTimeSeconds,
+                    scheduleEntryIndex = i,
                     nextSpawnAt = entry.startTimeSeconds + entry.profile.timing.startDelaySeconds,
                     nextAttemptAt = entry.startTimeSeconds + entry.profile.timing.startDelaySeconds,
                     elapsed = 0f,
@@ -244,30 +254,80 @@ namespace HighSeas.Enemies
 
         int ProcessTriggerQueue()
         {
+            if (RunManager.Instance == null) return 0;
+            var runTime = RunManager.Instance.ElapsedSeconds;
             var totalSpawned = 0;
-            for (var i = 0; i < _triggerQueue.Count; i++)
+
+            for (var i = _pendingEncounters.Count - 1; i >= 0; i--)
             {
-                var req = _triggerQueue[i];
-                var count = req.burstCountOverride > 0 ? req.burstCountOverride : req.profile.timing.spawnCount;
+                var pending = _pendingEncounters[i];
+                if (pending.profile == null)
+                {
+                    if (pending.runEncounterId > 0)
+                        Encounters.RunEncounterTracker.MarkFailed(pending.runEncounterId);
+                    _pendingEncounters.RemoveAt(i);
+                    continue;
+                }
+
+                if (runTime < pending.nextAttemptAt)
+                    continue;
+
+                if (runTime > pending.deadlineAt)
+                {
+                    if (pending.runEncounterId > 0)
+                        Encounters.RunEncounterTracker.MarkFailed(pending.runEncounterId);
+                    _pendingEncounters.RemoveAt(i);
+                    continue;
+                }
+
                 var spawned = TryExecuteSpawnBurst(
-                    req.profile, count, true, 1f, 1f, 0, ref _dummyLeader, req.runEncounterId);
+                    pending.profile,
+                    pending.remainingCount,
+                    true,
+                    1f,
+                    1f,
+                    0,
+                    ref _dummyLeader,
+                    pending.runEncounterId);
                 totalSpawned += spawned;
-                if (req.runEncounterId > 0 && spawned <= 0)
-                    Encounters.RunEncounterTracker.MarkFailed(req.runEncounterId);
+
+                if (spawned > 0)
+                    pending.remainingCount -= spawned;
+
+                if (pending.remainingCount <= 0)
+                {
+                    _pendingEncounters.RemoveAt(i);
+                    continue;
+                }
+
+                pending.nextAttemptAt = runTime + GetSpawnRetryIntervalSeconds();
+                _pendingEncounters[i] = pending;
             }
 
-            _triggerQueue.Clear();
             return totalSpawned;
         }
 
         void TickScheduledProfiles(float dt)
         {
             var runTime = RunManager.Instance.ElapsedSeconds;
+            var deadline = GetStageDeadlineSeconds();
             for (var i = 0; i < _activeProfiles.Count; i++)
             {
                 var run = _activeProfiles[i];
                 if (run.complete)
                     continue;
+
+                var windowEnd = EncounterScheduleRunLogic.ResolveScheduleEntryEndSeconds(
+                    schedule?.entries,
+                    run.scheduleEntryIndex,
+                    deadline);
+
+                if (runTime >= windowEnd)
+                {
+                    run.complete = true;
+                    _activeProfiles[i] = run;
+                    continue;
+                }
 
                 if (run.cooldownUntil > runTime)
                     continue;
@@ -362,12 +422,26 @@ namespace HighSeas.Enemies
             return _globalSpawnGap;
         }
 
-        bool IsProfileRunComplete(ActiveProfileRun run) =>
-            EncounterScheduleRunLogic.IsProfileRunComplete(run.profile, run.elapsed, run.spawned);
+        bool IsProfileRunComplete(ActiveProfileRun run)
+        {
+            var runTime = RunManager.Instance.ElapsedSeconds;
+            var deadline = GetStageDeadlineSeconds();
+            var windowEnd = EncounterScheduleRunLogic.ResolveScheduleEntryEndSeconds(
+                schedule?.entries,
+                run.scheduleEntryIndex,
+                deadline);
+            return EncounterScheduleRunLogic.IsScheduledContinuousWindowComplete(
+                runTime,
+                run.scheduledStartSeconds,
+                windowEnd,
+                run.profile,
+                run.elapsed,
+                run.spawned);
+        }
 
         bool CanSpawnMoreFromProfile(SpawnProfile profile)
         {
-            if (enemyWorld.ActiveCount >= GetEnemyCap())
+            if (enemyWorld.ActiveCount >= GetAmbientPopulationCap())
                 return false;
             if (profile.timing.maxActiveFromProfile <= 0)
                 return true;
@@ -411,7 +485,7 @@ namespace HighSeas.Enemies
                 dmgMult *= SaltwindFinaleLogic.GetOrdinaryTimeDamageMultiplier(elapsed);
             }
 
-            if (!ignoreCapSoft && enemyWorld.ActiveCount >= GetEnemyCap())
+            if (!ignoreCapSoft && enemyWorld.ActiveCount >= GetAmbientPopulationCap())
                 return 0;
 
             var spawnDef = profile.enemy;
@@ -441,7 +515,7 @@ namespace HighSeas.Enemies
             count = Mathf.Max(1, count);
             for (var i = 0; i < count; i++)
             {
-                if (enemyWorld.ActiveCount >= GetEnemyCap())
+                if (enemyWorld.ActiveCount >= (ignoreCapSoft ? GetEnemyCap() : GetAmbientPopulationCap()))
                     break;
 
                 var role = ResolveFormationRole(profile, i, count);
@@ -467,8 +541,7 @@ namespace HighSeas.Enemies
                     ref pos);
 
                 if (!SpawnPlacementService.IsFormationPositionValid(
-                        pos, spawnDef.radius + 0.35f, GetCamera(), profile.placement)
-                    && !(runEncounterId > 0 || spawnDef.isBoss))
+                        pos, spawnDef.radius + 0.35f, GetCamera(), profile.placement))
                     continue;
 
                 var slot = enemyWorld.SpawnFromProfile(
@@ -588,6 +661,23 @@ namespace HighSeas.Enemies
             return Mathf.Min(Mathf.Max(cap, 8), 180);
         }
 
+        int GetReservedEncounterSlots()
+        {
+            if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export?.Spawn != null)
+                return StageBalanceProfileContext.Export.Spawn.ReservedEncounterSlots;
+            return 0;
+        }
+
+        int GetAmbientPopulationCap() =>
+            Mathf.Max(1, GetEnemyCap() - GetReservedEncounterSlots());
+
+        float GetStageDeadlineSeconds()
+        {
+            if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export?.Timing != null)
+                return StageBalanceProfileContext.Export.Timing.StageDeadlineSeconds;
+            return GameConstants.StageDurationSeconds;
+        }
+
         Camera GetCamera()
         {
             if (spawnCamera != null)
@@ -665,6 +755,24 @@ namespace HighSeas.Enemies
             };
 
         public int GetEnemyCapForDebug() => GetEnemyCap();
+
+        public int GetAmbientPopulationCapForDebug() => GetAmbientPopulationCap();
+
+        public int PendingTriggeredEncounterCount => _pendingEncounters.Count;
+
+        public int ProcessPendingEncountersNow() => ProcessTriggerQueue();
+
+        /// <summary>PlayMode / harness wiring when components are created at runtime.</summary>
+        public void ConfigureRuntimeReferences(EnemyWorld world, Transform playerTransform, Camera cam = null)
+        {
+            enemyWorld = world;
+            player = playerTransform;
+            if (cam != null)
+            {
+                spawnCamera = cam;
+                _cachedCamera = cam;
+            }
+        }
         public float GetEffectiveThreatPerSecond() => GetEffectiveRateMultiplier() * 4f;
         public float DebugAmbientBudgetCarry => _ambientBudget.Accumulated;
     }

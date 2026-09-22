@@ -19,7 +19,7 @@ namespace HighSeas.Balance
             if (save == null || export == null || string.IsNullOrEmpty(contentId)) return false;
             if (save.HasMarksOwned(contentId)) return false;
 
-            var cost = SaltwindStageSettlementLogic.TryGetWeaponUnlockCost(export, contentId);
+            var cost = SaltwindStageSettlementLogic.TryGetContentUnlockCost(export, contentId);
             if (cost < 0) return false;
             return save.TryPurchaseMarksUnlock(contentId, cost);
         }
@@ -34,7 +34,7 @@ namespace HighSeas.Balance
             if (save.HasMarksOwned(goal))
                 return $"\nUnlock goal: {V3WeaponDisplayNames.GetWeaponName(goal)} — owned.\n";
 
-            var cost = SaltwindStageSettlementLogic.TryGetWeaponUnlockCost(export, goal);
+            var cost = SaltwindStageSettlementLogic.TryGetContentUnlockCost(export, goal);
             if (cost < 0)
                 return $"\nUnlock goal: {V3WeaponDisplayNames.GetWeaponName(goal)} — not a Marks unlock.\n";
 

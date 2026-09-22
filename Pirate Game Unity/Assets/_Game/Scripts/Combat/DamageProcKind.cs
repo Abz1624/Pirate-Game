@@ -32,5 +32,9 @@ namespace HighSeas.Combat
 
         public static bool AllowsItemProc(DamageProcKind kind) =>
             kind == DamageProcKind.DirectWeapon || kind == DamageProcKind.WhitelistedBridge;
+
+#if UNITY_INCLUDE_TESTS
+        public static int ProcEventsThisResolutionForTests => _procEventsThisResolution;
+#endif
     }
 }

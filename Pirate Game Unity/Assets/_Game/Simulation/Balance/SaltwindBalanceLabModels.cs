@@ -18,10 +18,14 @@ namespace RoguePirates.Simulation.Balance
     /// <summary>Human-readable labels for lab reports (Step 12).</summary>
     public static class SaltwindLabBehaviorLabels
     {
-        public const string Movement = "Modeled movement: orbit/kite/forward by skill preset (not real route choice).";
-        public const string Collection = "Modeled POI/chest rewards via route progress + chest price curve (not POIManager).";
-        public const string Offers = "Modeled weapon growth via level-up policy queue (not LevelOfferGenerator).";
-        public const string BossTiming = "Boss spawns at profile stage deadline seconds.";
+        public const string Movement =
+            "Modeled movement: Conservative/Average kite, Expert/Aggressive orbit/forward (not real route choice).";
+        public const string Collection =
+            "Modeled POI/chest rewards via export route checkpoints (first-chest travel + chest spacing) + chest price curve (not POIManager pathfinding).";
+        public const string Offers =
+            "Modeled weapon growth via export fill-state weights + pity + weapon stat snapshots (SimRng autopick; not live LevelOfferGenerator UI/logbooks/run items).";
+        public const string BossTiming =
+            "Boss spawns at profile deadline with export HP/damage; lab clears trash, stops ambient, and focuses weapon DPS on the boss.";
         public const string DamageAvoidance = "Conservative/Average kite more; Expert orbits (higher contact risk).";
 
         public static string ForPolicy(SaltwindLabBuildPolicy policy) => policy switch

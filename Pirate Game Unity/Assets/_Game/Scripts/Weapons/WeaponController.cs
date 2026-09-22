@@ -1322,6 +1322,7 @@ namespace HighSeas.Weapons
                 }
 
                 var blastRadius = GetPowderKegBlastRadius(Mathf.Max(keg.blastRadius, keg.triggerRadius));
+                CombatProcRuntime.BeginWeaponDamageResolution();
                 for (var ai = 0; ai < agents.Length; ai++)
                 {
                     if (!agents[ai].active) continue;
@@ -1333,7 +1334,7 @@ namespace HighSeas.Weapons
                         rng,
                         agents[ai].isElite,
                         keg.procCoefficient);
-                    _enemies.ApplyDamage(ai, dmg, false, weaponId: "powder_kegs");
+                    CombatProcRuntime.TryApplyTriggeredEnemyDamage(_enemies, ai, dmg, "powder_kegs");
                 }
 
                 var shipBlastDamage = RollPowderKegBlastDamage(
@@ -1663,6 +1664,8 @@ namespace HighSeas.Weapons
 
         void ApplyWeaponDamage(int enemyIndex, string weaponId, DamageSystem.DamageRoll dmg, bool isElite, bool isBoss)
         {
+            CombatProcRuntime.BeginWeaponDamageResolution();
+            if (!DamageProcPolicy.TryRegisterProcEvent()) return;
             WeaponDamageLedger.RecordHit(weaponId, dmg.amount, dmg.isCrit, isElite, isBoss);
             _enemies.ApplyDamage(enemyIndex, dmg.amount, dmg.isCrit, weaponId: weaponId);
         }

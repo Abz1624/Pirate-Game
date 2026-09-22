@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.UI;
 using HighSeas.V3;
 using RoguePirates.Simulation.Balance;
 using UnityEngine;
@@ -53,7 +55,9 @@ namespace HighSeas.Balance
             int successfulPurchases,
             int playerGold,
             RunRng rng,
-            float luck)
+            float luck,
+            SaveService metaSave = null,
+            IReadOnlyList<string> runOwnedWeaponIds = null)
         {
             if (export == null) return SaltwindChestPurchasePlan.Fail("missing export");
             if (rng == null) return SaltwindChestPurchasePlan.Fail("missing rng");
@@ -66,7 +70,8 @@ namespace HighSeas.Balance
             {
                 var itemId = V3ChestLoot.RollSalvageItem(rng, luck);
                 if (string.IsNullOrEmpty(itemId)) continue;
-                if (!SaltwindStageProgressionLogic.IsRunItemOfferEligible(export, itemId)) continue;
+                if (!SaltwindStageProgressionLogic.IsRunItemOfferEligible(
+                        export, itemId, metaSave, runOwnedWeaponIds)) continue;
                 return SaltwindChestPurchasePlan.Ok(price, itemId);
             }
 

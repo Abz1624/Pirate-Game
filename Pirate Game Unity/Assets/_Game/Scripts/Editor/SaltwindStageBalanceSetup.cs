@@ -54,7 +54,7 @@ namespace HighSeas.Editor
             Debug.Log($"Exported profile evidence to {outDir} (hash={export.ContentHash}).");
         }
 
-        [MenuItem("HighSeas/Saltwind/Run Balance Lab Matrix (1200 sim runs)")]
+        [MenuItem("HighSeas/Saltwind/Run Balance Lab Matrix (1800 sim runs)")]
         public static void RunBalanceLabMatrix()
         {
             var profile = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath)

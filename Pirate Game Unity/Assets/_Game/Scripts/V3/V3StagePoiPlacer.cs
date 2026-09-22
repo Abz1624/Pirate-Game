@@ -92,10 +92,16 @@ namespace HighSeas.V3
             if (!found && TryPlaceFromGrid(spawn, placed, islandLayout, clearance, maxDist, out bestPos))
                 found = true;
 
+            if (found &&
+                !SaltwindPoiLayoutLogic.HasClearWaterRoute(spawn, bestPos, clearance, islandLayout))
+                found = false;
+
             if (!found)
             {
-                bestPos = PlayBounds.Clamp(spawn + Vector3.forward * MinRadius, PoiEdgeMargin);
-                found = true;
+                if (TryPlaceNavigableFallback(spawn, placed, islandLayout, clearance, POIType.SalvageChest, layout, requireRouteFromSpawn: true))
+                    return;
+                Debug.LogWarning("V3StagePoiPlacer: could not place opening chest with navigable fallback.");
+                return;
             }
 
             placed.Add(bestPos);
@@ -144,7 +150,7 @@ namespace HighSeas.V3
             IslandLayoutDefinition islandLayout,
             float clearance)
         {
-            for (var attempt = 0; attempt < 120; attempt++)
+            for (var attempt = 0; attempt < 280; attempt++)
             {
                 var angle = rng.MapFloat() * Mathf.PI * 2f;
                 var maxRadius = GetMaxRadiusFromSpawn(spawn);
@@ -168,12 +174,64 @@ namespace HighSeas.V3
                 return;
             }
 
-            Debug.LogWarning($"V3StagePoiPlacer: could not place {type}; using fallback near spawn.");
-            var fallback = PlayBounds.Clamp(
-                spawn + new Vector3(placed.Count * 4f, 0f, MinRadius + placed.Count * 2f),
-                PoiEdgeMargin);
-            placed.Add(fallback);
-            layout.pois.Add(new POISlot { type = type, position = fallback });
+            if (TryPlaceNavigableFallback(
+                    spawn,
+                    placed,
+                    islandLayout,
+                    clearance,
+                    type,
+                    layout,
+                    requireRouteFromSpawn: false))
+                return;
+
+            Debug.LogWarning($"V3StagePoiPlacer: could not place {type}; skipping fallback without navigable clearance.");
+        }
+
+        // Spiral search for any still-valid navigable POI slot.
+        static bool TryPlaceNavigableFallback(
+            Vector3 spawn,
+            List<Vector3> placed,
+            IslandLayoutDefinition islandLayout,
+            float clearance,
+            POIType type,
+            StageLayout layout,
+            bool requireRouteFromSpawn)
+        {
+            for (var i = 0; i < 192; i++)
+            {
+                var angle = i * 19.7f * Mathf.Deg2Rad;
+                var radius = MinRadius + (i % 24) * 2.75f;
+                var candidate = spawn + new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+                if (!TryAcceptPosition(candidate, placed, islandLayout, clearance, out candidate) &&
+                    !TryAcceptPositionRelaxed(candidate, placed, islandLayout, clearance, out candidate))
+                    continue;
+                if (requireRouteFromSpawn &&
+                    !SaltwindPoiLayoutLogic.HasClearWaterRoute(spawn, candidate, clearance, islandLayout))
+                    continue;
+
+                placed.Add(candidate);
+                layout.pois.Add(new POISlot { type = type, position = candidate });
+                return true;
+            }
+
+            return false;
+        }
+
+        static bool TryAcceptPositionRelaxed(
+            Vector3 pos,
+            List<Vector3> placed,
+            IslandLayoutDefinition islandLayout,
+            float clearance,
+            out Vector3 resolved)
+        {
+            resolved = PlayBounds.Clamp(pos, PoiEdgeMargin);
+            for (var i = 0; i < placed.Count; i++)
+            {
+                if (Vector3.Distance(resolved, placed[i]) < MinSpacing * 0.65f)
+                    return false;
+            }
+
+            return SaltwindPoiLayoutLogic.IsNavigable(resolved, clearance, islandLayout);
         }
 
         static bool TryPlaceFromGrid(
@@ -191,9 +249,9 @@ namespace HighSeas.V3
             var center = PlayBounds.Center;
             var limitX = PlayBounds.HalfExtentX - PoiEdgeMargin;
             var limitZ = PlayBounds.HalfExtentZ - PoiEdgeMargin;
-            for (var x = -limitX; x <= limitX; x += 6f)
+            for (var x = -limitX; x <= limitX; x += 3f)
             {
-                for (var z = -limitZ; z <= limitZ; z += 6f)
+                for (var z = -limitZ; z <= limitZ; z += 3f)
                 {
                     var candidate = center + new Vector3(x, 0f, z);
                     if (Vector3.Distance(candidate, spawn) > maxDistanceFromSpawn)

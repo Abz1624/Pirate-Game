@@ -45,8 +45,17 @@ namespace HighSeas.Tests
             Assert.That(selected, Is.False);
 
             yield return null;
-            Object.Destroy(panel);
-            Object.Destroy(rmGo);
+            TeardownTestObject(panel);
+            TeardownTestObject(rmGo);
+        }
+
+        static void TeardownTestObject(Object target)
+        {
+            if (target == null) return;
+            if (Application.isPlaying)
+                Object.Destroy(target);
+            else
+                Object.DestroyImmediate(target);
         }
     }
 }

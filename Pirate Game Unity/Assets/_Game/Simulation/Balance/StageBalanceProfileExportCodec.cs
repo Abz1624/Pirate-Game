@@ -109,7 +109,69 @@ namespace RoguePirates.Simulation.Balance
                 export.WeaponUnlocks = MapUnlocks(GetList(root, "WeaponUnlocks"));
                 export.CaptainUnlocks = MapUnlocks(GetList(root, "CaptainUnlocks"));
                 export.ScheduleProfileKeys = GetStringList(root, "ScheduleProfileKeys");
+                export.ScheduleProfileSnapshots = MapSnapshots(GetList(root, "ScheduleProfileSnapshots"));
+                export.WeaponStatSnapshots = MapWeaponStats(GetList(root, "WeaponStatSnapshots"));
+                export.BossStatSnapshot = MapBoss(GetDict(root, "BossStatSnapshot"));
                 return export;
+            }
+
+            static StageBossStatSnapshot MapBoss(Dictionary<string, object> d)
+            {
+                var b = new StageBossStatSnapshot();
+                if (d == null) return b;
+                b.BossId = GetString(d, "BossId");
+                b.BaseHull = GetFloat(d, "BaseHull", b.BaseHull);
+                b.BaseDamage = GetFloat(d, "BaseDamage", b.BaseDamage);
+                b.MoveSpeed = GetFloat(d, "MoveSpeed", b.MoveSpeed);
+                b.AttackCooldownSeconds = GetFloat(d, "AttackCooldownSeconds", b.AttackCooldownSeconds);
+                b.PreferredRange = GetFloat(d, "PreferredRange", b.PreferredRange);
+                return b;
+            }
+
+            static List<StageWeaponStatSnapshot> MapWeaponStats(List<object> list)
+            {
+                var result = new List<StageWeaponStatSnapshot>();
+                if (list == null) return result;
+                for (var i = 0; i < list.Count; i++)
+                {
+                    if (list[i] is not Dictionary<string, object> d) continue;
+                    result.Add(new StageWeaponStatSnapshot
+                    {
+                        WeaponId = GetString(d, "WeaponId"),
+                        BaseDamage = GetFloat(d, "BaseDamage", 10f),
+                        BaseCooldown = GetFloat(d, "BaseCooldown", 1.2f),
+                        Range = GetFloat(d, "Range", 14f),
+                        ProjectileSpeed = GetFloat(d, "ProjectileSpeed", 16f),
+                        MaxLevel = GetInt(d, "MaxLevel", 12),
+                        DamageUpgradePerLevel = GetFloat(d, "DamageUpgradePerLevel", 0.08f)
+                    });
+                }
+
+                return result;
+            }
+
+            static List<StageScheduleProfileSnapshot> MapSnapshots(List<object> list)
+            {
+                var result = new List<StageScheduleProfileSnapshot>();
+                if (list == null) return result;
+                for (var i = 0; i < list.Count; i++)
+                {
+                    if (list[i] is not Dictionary<string, object> d) continue;
+                    result.Add(new StageScheduleProfileSnapshot
+                    {
+                        ProfileKey = GetString(d, "ProfileKey"),
+                        EnemyId = GetString(d, "EnemyId"),
+                        SpawnIntervalSeconds = GetFloat(d, "SpawnIntervalSeconds"),
+                        DurationSeconds = GetFloat(d, "DurationSeconds"),
+                        StartDelaySeconds = GetFloat(d, "StartDelaySeconds"),
+                        TriggerTimeSeconds = GetFloat(d, "TriggerTimeSeconds"),
+                        SpawnCount = GetInt(d, "SpawnCount"),
+                        EliteHpMultiplier = GetFloat(d, "EliteHpMultiplier", 1f),
+                        EliteDamageMultiplier = GetFloat(d, "EliteDamageMultiplier", 1f)
+                    });
+                }
+
+                return result;
             }
 
             static StageTimingExport MapTiming(Dictionary<string, object> d)
@@ -183,6 +245,8 @@ namespace RoguePirates.Simulation.Balance
                 e.ExplosiveBarrelRadius = GetFloat(d, "ExplosiveBarrelRadius", e.ExplosiveBarrelRadius);
                 e.ExplosiveBarrelDamage = GetInt(d, "ExplosiveBarrelDamage", e.ExplosiveBarrelDamage);
                 e.ExplosiveBarrelCount = GetInt(d, "ExplosiveBarrelCount", e.ExplosiveBarrelCount);
+                e.FirstChestMaxTravelSeconds = GetFloat(d, "FirstChestMaxTravelSeconds", e.FirstChestMaxTravelSeconds);
+                e.RepresentativeCruiseSpeed = GetFloat(d, "RepresentativeCruiseSpeed", e.RepresentativeCruiseSpeed);
                 return e;
             }
 
@@ -308,6 +372,26 @@ namespace RoguePirates.Simulation.Balance
                             if (!uFirst) builder.Append(',');
                             uFirst = false;
                             SerializeObject(unlock, builder);
+                        }
+                        return builder.Append(']');
+                    case IEnumerable<StageScheduleProfileSnapshot> scheduleSnapshots:
+                        builder.Append('[');
+                        var sFirst = true;
+                        foreach (var snap in scheduleSnapshots)
+                        {
+                            if (!sFirst) builder.Append(',');
+                            sFirst = false;
+                            SerializeObject(snap, builder);
+                        }
+                        return builder.Append(']');
+                    case IEnumerable<StageWeaponStatSnapshot> weaponSnapshots:
+                        builder.Append('[');
+                        var wFirst = true;
+                        foreach (var snap in weaponSnapshots)
+                        {
+                            if (!wFirst) builder.Append(',');
+                            wFirst = false;
+                            SerializeObject(snap, builder);
                         }
                         return builder.Append(']');
                     default:

@@ -129,6 +129,19 @@ namespace HighSeas.Balance
         public const float ChargeRecoverySeconds = 2f;
         public const float BombardRecoverySeconds = 2.5f;
         public const float EnragedRecoveryScale = 0.75f;
+        public const float MarkedBombardmentRadius = 5.5f;
+
+        public static bool IsPlayerInsideMarkedBlast(Vector3 markedPoint, Vector3 playerPosition, float radius = MarkedBombardmentRadius)
+        {
+            var flat = playerPosition - markedPoint;
+            flat.y = 0f;
+            return flat.sqrMagnitude <= radius * radius;
+        }
+
+        public static bool ShouldApplyMarkedAreaDamage(in BarnacleKingAttackState state) =>
+            state.Attack == BarnacleKingAttackKind.MarkedBombardment &&
+            state.Phase == BarnacleKingBossPhase.Execute &&
+            state.PhaseTimer > 0f;
 
         public static bool CanDealDamage(in BarnacleKingAttackState state) =>
             state.Phase == BarnacleKingBossPhase.Execute && state.PhaseTimer > 0f;
