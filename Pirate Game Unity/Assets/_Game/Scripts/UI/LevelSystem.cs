@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
-using HighSeas.Combat;
+using HighSeas.Balance;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.V3;
 using HighSeas.V3.MultiShip;
 using HighSeas.Weapons;
+using HighSeas.Save;
 using UnityEngine;
 
 namespace HighSeas.UI
@@ -35,6 +36,7 @@ namespace HighSeas.UI
         int _completedLevelUps;
         bool _useV3Rules;
         bool _useCombatExperimentOffers;
+        bool _useStageBalanceProgression;
         bool _openingDraftShown;
         CombatExperimentProfile _experimentProfile;
 
@@ -77,6 +79,38 @@ namespace HighSeas.UI
             Initialize(db, startingWeapon);
         }
 
+        public void RestoreSuspendSnapshot(RunSnapshotData data)
+        {
+            if (data == null) return;
+            Level = Mathf.Max(0, data.level);
+            CurrentXP = data.currentXp;
+            PendingLevelUps = 0;
+            _ownedWeapons.Clear();
+            _ownedLogbooks.Clear();
+            _weaponLevels.Clear();
+            _logbookLevels.Clear();
+            for (var i = 0; i < data.weaponIds.Count; i++)
+            {
+                var id = data.weaponIds[i];
+                if (string.IsNullOrEmpty(id)) continue;
+                _ownedWeapons.Add(id);
+                var lvl = i < data.weaponLevels.Count ? data.weaponLevels[i] : 1;
+                _weaponLevels[id] = Mathf.Max(1, lvl);
+            }
+
+            for (var i = 0; i < data.logbookIds.Count; i++)
+            {
+                var id = data.logbookIds[i];
+                if (string.IsNullOrEmpty(id)) continue;
+                _ownedLogbooks.Add(id);
+                var lvl = i < data.logbookLevels.Count ? data.logbookLevels[i] : 1;
+                _logbookLevels[id] = Mathf.Max(1, lvl);
+            }
+
+            RefreshXpToNext();
+            LoadoutChanged?.Invoke();
+        }
+
         public int GetWeaponLevel(string weaponId)
         {
             return _weaponLevels.TryGetValue(weaponId, out var level) ? level : 0;
@@ -91,6 +125,19 @@ namespace HighSeas.UI
         {
             _useV3Rules = true;
             logbookSlots = GameConstants.DefaultLogbookSlots;
+        }
+
+        public void ApplyStageBalanceProgression()
+        {
+            _useStageBalanceProgression = StageBalanceProfileContext.IsActive;
+            if (!_useStageBalanceProgression) return;
+
+            var export = StageBalanceProfileContext.Export;
+            if (export?.Progression == null) return;
+
+            weaponSlots = export.Progression.WeaponSlotCap;
+            logbookSlots = export.Progression.LogbookSlotCap;
+            _useCombatExperimentOffers = false;
         }
 
         public void SetPlaytestSoloWeapon(string weaponId)
@@ -193,9 +240,12 @@ namespace HighSeas.UI
 
         void RefreshXpToNext()
         {
-            XPToNext = _useV3Rules
-                ? V3GameMath.XPToNext(Level, demoPacing)
-                : GameMath.XPToNext(Level, demoPacing);
+            if (_useStageBalanceProgression && StageBalanceProfileContext.Export != null)
+                XPToNext = SaltwindStageProgressionLogic.XpToNext(StageBalanceProfileContext.Export, Level);
+            else
+                XPToNext = _useV3Rules
+                    ? V3GameMath.XPToNext(Level, demoPacing)
+                    : GameMath.XPToNext(Level, demoPacing);
         }
 
         public void AddXP(int amount)
@@ -204,15 +254,37 @@ namespace HighSeas.UI
             if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
             var player = UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>();
             if (player?.Damage != null && !player.Damage.IsAlive) return;
-            var scaled = Mathf.Max(1, Mathf.RoundToInt(amount * GameConstants.XpGainGlobalMultiplier));
-            CurrentXP += scaled;
-            while (CurrentXP >= XPToNext)
+            var scaled = _useStageBalanceProgression
+                ? amount
+                : Mathf.Max(1, Mathf.RoundToInt(amount * GameConstants.XpGainGlobalMultiplier));
+
+            if (_useStageBalanceProgression && StageBalanceProfileContext.Export != null)
             {
-                CurrentXP -= XPToNext;
-                Level++;
-                PendingLevelUps++;
-                RefreshXpToNext();
-                LevelChanged?.Invoke(Level);
+                var advance = SaltwindStageProgressionLogic.ApplyXpGrant(
+                    StageBalanceProfileContext.Export,
+                    Level,
+                    CurrentXP,
+                    scaled);
+                Level = advance.Level;
+                CurrentXP = advance.CurrentXp;
+                PendingLevelUps += advance.PendingLevelUps;
+                if (advance.PendingLevelUps > 0)
+                {
+                    RefreshXpToNext();
+                    LevelChanged?.Invoke(Level);
+                }
+            }
+            else
+            {
+                CurrentXP += scaled;
+                while (CurrentXP >= XPToNext)
+                {
+                    CurrentXP -= XPToNext;
+                    Level++;
+                    PendingLevelUps++;
+                    RefreshXpToNext();
+                    LevelChanged?.Invoke(Level);
+                }
             }
             if (PendingLevelUps > 0) ShowLevelUp();
         }
@@ -255,6 +327,30 @@ namespace HighSeas.UI
             var luck = RunManager.Instance.Stats.Luck;
             var player = UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>();
             var hull = player?.Damage;
+            if (_useStageBalanceProgression)
+            {
+                var stageOffers = LevelOfferGenerator.Generate(
+                    database,
+                    levelUpSettings,
+                    demoPacing,
+                    rng,
+                    luck,
+                    _ownedWeapons,
+                    _weaponLevels,
+                    _ownedLogbooks,
+                    _logbookLevels,
+                    weaponSlots,
+                    logbookSlots,
+                    isFirstLevelUp: false,
+                    RunManager.Instance?.Stats,
+                    hull?.CurrentHP ?? -1f,
+                    hull?.MaxHP ?? -1f,
+                    Level,
+                    useFillStateWeighting: true);
+                OffersReady?.Invoke();
+                return stageOffers;
+            }
+
             if (_useV3Rules && !_useCombatExperimentOffers && weaponSlots < 6)
                 return GenerateV3Offers(rng, luck, hull);
             var offers = LevelOfferGenerator.Generate(

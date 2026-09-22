@@ -20,6 +20,7 @@ namespace HighSeas.VFX
         }
 
         readonly List<Floater> _floaters = new(96);
+        int _enemyNumbersThisFrame;
         Transform _root;
         Font _font;
         bool _subscribed;
@@ -56,6 +57,7 @@ namespace HighSeas.VFX
 
         void Update()
         {
+            _enemyNumbersThisFrame = 0;
             if (!_subscribed)
                 TrySubscribe();
         }
@@ -80,6 +82,8 @@ namespace HighSeas.VFX
         public void ShowEnemyDamage(Vector3 worldPosition, float damage, bool crit)
         {
             if (damage <= 0f) return;
+            if (_enemyNumbersThisFrame >= 14) return;
+            _enemyNumbersThisFrame++;
             var spawn = worldPosition + Vector3.up * (1.35f + Random.Range(0f, 0.45f));
             Spawn(spawn, damage, crit, false);
         }

@@ -15,6 +15,18 @@ namespace HighSeas.Combat
 
     public static class DamageProcPolicy
     {
+        public const int MaxProcEventsPerResolution = 12;
+        static int _procEventsThisResolution;
+
+        public static void BeginDamageResolution() => _procEventsThisResolution = 0;
+
+        public static bool TryRegisterProcEvent()
+        {
+            if (_procEventsThisResolution >= MaxProcEventsPerResolution) return false;
+            _procEventsThisResolution++;
+            return true;
+        }
+
         public static bool AllowsCrit(DamageProcKind kind) =>
             kind == DamageProcKind.DirectWeapon || kind == DamageProcKind.WhitelistedBridge;
 

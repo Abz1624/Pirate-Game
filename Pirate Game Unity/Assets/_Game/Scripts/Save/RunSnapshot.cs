@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
+using HighSeas.Balance;
 using HighSeas.Combat;
+using HighSeas.Core;
+using HighSeas.Encounters;
+using HighSeas.POI;
 using UnityEngine;
 
 namespace HighSeas.Save
@@ -8,8 +12,10 @@ namespace HighSeas.Save
     [Serializable]
     public sealed class RunSnapshotData
     {
-        public int schemaVersion = 1;
+        public int schemaVersion = RunSnapshotRestoreLogic.SupportedSchemaVersion;
         public string experimentProfileId = "D_FULL_COMBAT_V2";
+        public string runId = string.Empty;
+        public string profileContentHash = string.Empty;
         public int runSeed;
         public float elapsedSeconds;
         public int level;
@@ -25,6 +31,23 @@ namespace HighSeas.Save
         public List<string> evolutionIds = new();
         public string captainId;
         public float captainActiveCooldown;
+        public int successfulChestPurchases;
+        public int paidChestCount;
+        public bool bossSummoned;
+        public bool bossDefeated;
+        public int[] consumedPoiIndices = Array.Empty<int>();
+        public int marksQualifyingOrdinaryMinutes;
+        public int marksSpecialPoiCredits;
+        public bool marksScheduledEliteCredited;
+        public bool marksBossVictoryCredited;
+        public int marksQualifyingOvertimeMinutes;
+        public int activeBossEncounterId;
+        public int activeBossState;
+        public int activeBossSpawnedCount;
+        public int activeBossKilledCount;
+        public int activePowderCacheEncounterId;
+        public int activePowderCacheState;
+        public int activePowderCacheSpawnedCount;
     }
 
     public static class RunSnapshotService
@@ -36,6 +59,7 @@ namespace HighSeas.Save
         public static void Save(RunSnapshotData data)
         {
             if (data == null) return;
+            data.schemaVersion = RunSnapshotRestoreLogic.SupportedSchemaVersion;
             var json = JsonUtility.ToJson(data);
             PlayerPrefs.SetString(PrefKey, json);
             PlayerPrefs.Save();
@@ -54,14 +78,16 @@ namespace HighSeas.Save
         }
 
         public static RunSnapshotData CaptureFromRun(
-            HighSeas.Core.RunManager run,
-            HighSeas.UI.LevelSystem levels,
-            CombatExperimentProfile profile)
+            RunManager run,
+            UI.LevelSystem levels,
+            CombatExperimentProfile profile,
+            POIManager poiManager = null)
         {
             if (run == null || levels == null) return null;
             var data = new RunSnapshotData
             {
                 experimentProfileId = profile != null ? profile.profileId : CombatExperimentContext.Active.profileId,
+                runId = run.RunId,
                 runSeed = run.RunSeed,
                 elapsedSeconds = run.ElapsedSeconds,
                 level = levels.Level,
@@ -71,6 +97,13 @@ namespace HighSeas.Save
                 objectiveSecured = run.ObjectiveSecured,
                 captainId = V3.V3CaptainSelection.Selected.ToString()
             };
+
+            if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export != null)
+            {
+                data.profileContentHash = StageBalanceProfileContext.Export.ContentHash;
+                data.successfulChestPurchases = StageBalanceProfileContext.Runtime?.SuccessfulChestPurchases ?? 0;
+                RunMarksTracker.WriteToSnapshot(data);
+            }
 
             var weapons = levels.OwnedWeapons;
             for (var i = 0; i < weapons.Count; i++)
@@ -103,7 +136,35 @@ namespace HighSeas.Save
             if (active != null)
                 data.captainActiveCooldown = active.CooldownRemaining;
 
+            if (poiManager != null)
+                poiManager.WriteSnapshotFields(data);
+
+            WriteEncounterSnapshotFields(data);
+
             return data;
+        }
+
+        static void WriteEncounterSnapshotFields(RunSnapshotData data)
+        {
+            var boss = RunEncounterTracker.ActiveBossEncounter;
+            if (boss != null)
+            {
+                data.activeBossEncounterId = boss.EncounterId;
+                data.activeBossState = (int)boss.State;
+                data.activeBossSpawnedCount = boss.SpawnedCount;
+                data.activeBossKilledCount = boss.KilledAgentIds.Count;
+            }
+        }
+
+        public static bool TryRestoreLoadoutSuspend(RunSnapshotData data, RunManager run, UI.LevelSystem levels)
+        {
+            if (data == null || run == null || levels == null) return false;
+            if (RunSnapshotRestoreLogic.Evaluate(data) != RunSnapshotRestoreVerdict.OkLoadoutSuspend)
+                return false;
+
+            run.RestoreSuspendSnapshot(data);
+            levels.RestoreSuspendSnapshot(data);
+            return true;
         }
     }
 }

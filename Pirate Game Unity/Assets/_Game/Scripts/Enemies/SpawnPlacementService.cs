@@ -200,6 +200,20 @@ namespace HighSeas.Enemies
             return true;
         }
 
+        public static bool IsFormationPositionValid(
+            Vector3 position,
+            float spawnRadius,
+            Camera camera,
+            SpawnPlacementSettings settings)
+        {
+            if (!IsSpawnCandidateValid(position, spawnRadius))
+                return false;
+            if (settings.requireOutsidePlayerFov && camera != null &&
+                IsWorldPositionVisible(position, camera, settings.viewportMargin))
+                return false;
+            return true;
+        }
+
         static bool IsSpawnCandidateValid(Vector3 point, float radius)
         {
             if (!PlayBounds.IsInside(point, radius))

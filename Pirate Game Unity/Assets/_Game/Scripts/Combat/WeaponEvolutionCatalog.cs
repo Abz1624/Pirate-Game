@@ -63,6 +63,19 @@ namespace HighSeas.Combat
             return false;
         }
 
+        public static bool TryGetByRequiredItemId(string itemId, out WeaponEvolutionDefinition def)
+        {
+            for (var i = 0; i < All.Length; i++)
+            {
+                if (All[i].requiredItemId != itemId) continue;
+                def = All[i];
+                return true;
+            }
+
+            def = default;
+            return false;
+        }
+
         public static bool TryGetEligible(string weaponId, int weaponLevel, out WeaponEvolutionDefinition def)
         {
             def = default;

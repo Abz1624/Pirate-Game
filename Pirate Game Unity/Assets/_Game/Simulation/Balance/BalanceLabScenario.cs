@@ -177,6 +177,14 @@ namespace RoguePirates.Simulation.Balance
         public float TargetExpertBossWinMin = .70f;
         public float TargetMerchantAffordabilityMin = .60f;
 
+        // Saltwind profile + lab matrix (Step 12). Never written to player saves or production assets.
+        public StageBalanceProfileExport StageProfile;
+        public string StageProfileContentHash = string.Empty;
+        public int StageBalanceVersion;
+        public SaltwindLabBuildPolicy SaltwindBuildPolicy = SaltwindLabBuildPolicy.None;
+        public SaltwindLabUnlockPool SaltwindUnlockPool = SaltwindLabUnlockPool.FreshSave;
+        public string BehaviorModelLabel = string.Empty;
+
         public BalanceLabScenario Clone()
         {
             var copy = (BalanceLabScenario)MemberwiseClone();
@@ -186,6 +194,7 @@ namespace RoguePirates.Simulation.Balance
             if (EnemyRoster != null) for (var i = 0; i < EnemyRoster.Count; i++) copy.EnemyRoster.Add(EnemyRoster[i]?.Clone());
             copy.ScriptedWaves = new List<BalanceWaveDefinition>();
             if (ScriptedWaves != null) for (var i = 0; i < ScriptedWaves.Count; i++) copy.ScriptedWaves.Add(ScriptedWaves[i]?.Clone());
+            copy.StageProfile = StageProfile;
             return copy;
         }
 

@@ -1,10 +1,14 @@
+using System;
 using System.Collections.Generic;
+using HighSeas.Balance;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.Encounters;
 using HighSeas.Meta;
 using HighSeas.Pickups;
 using HighSeas.Player;
+using HighSeas.Save;
 using HighSeas.V3;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -30,7 +34,11 @@ namespace HighSeas.POI
         bool _continueAfterBossVictory;
         bool _usePlaceholderVisuals;
         bool _useV3ChestPricing;
+        bool _spawnAllChestsAtStart;
+        float _signalBuoyChargeRequired = SignalBuoyChargeSeconds;
         int _powderCacheEncounterId;
+        int _powderCacheTrackerEncounterId;
+        int _bossEncounterId;
         bool _powderCacheCleared;
         readonly HashSet<int> _powderCacheAmbushStarted = new();
         readonly HashSet<int> _signalBuoyChargeAnnounced = new();
@@ -51,11 +59,50 @@ namespace HighSeas.POI
         public bool IsPoiConsumed(int index) =>
             _layout != null && index >= 0 && index < _layout.pois.Count && _layout.pois[index].used;
 
+        public void WriteSnapshotFields(RunSnapshotData data)
+        {
+            if (data == null) return;
+            data.paidChestCount = _paidChestCount;
+            data.bossSummoned = _bossSummoned;
+            data.bossDefeated = _bossDefeated;
+            if (_layout == null)
+            {
+                data.consumedPoiIndices = Array.Empty<int>();
+                return;
+            }
+
+            var consumed = new List<int>();
+            for (var i = 0; i < _layout.pois.Count; i++)
+            {
+                if (_layout.pois[i].used)
+                    consumed.Add(i);
+            }
+
+            data.consumedPoiIndices = consumed.ToArray();
+
+            if (_powderCacheTrackerEncounterId > 0)
+            {
+                var enc = RunEncounterTracker.Get(_powderCacheTrackerEncounterId);
+                if (enc != null)
+                {
+                    data.activePowderCacheEncounterId = enc.EncounterId;
+                    data.activePowderCacheState = (int)enc.State;
+                    data.activePowderCacheSpawnedCount = enc.SpawnedCount;
+                }
+            }
+        }
+
         public void SetV3Options(bool continueAfterBossVictory, bool usePlaceholderVisuals, bool useV3ChestPricing = true)
         {
             _continueAfterBossVictory = continueAfterBossVictory;
             _usePlaceholderVisuals = usePlaceholderVisuals;
             _useV3ChestPricing = useV3ChestPricing;
+            _spawnAllChestsAtStart = StageBalanceProfileContext.IsActive &&
+                                      StageBalanceProfileContext.Export?.Exploration?.DisableGoldTriggeredChestSpawn == true;
+            _signalBuoyChargeRequired = StageBalanceProfileContext.IsActive &&
+                                        StageBalanceProfileContext.Authoring != null
+                ? StageBalanceProfileContext.Authoring.signalBuoyOccupancySeconds
+                : SignalBuoyChargeSeconds;
         }
 
         public void Initialize(World.StageLayout layout, GameDatabase db)
@@ -86,6 +133,9 @@ namespace HighSeas.POI
             _bossDefeated = false;
             _paidChestCount = 0;
             _powderCacheEncounterId = 0;
+            _powderCacheTrackerEncounterId = 0;
+            _bossEncounterId = 0;
+            RunEncounterTracker.ResetForNewRun();
             _powderCacheCleared = false;
             _powderCacheAmbushStarted.Clear();
             _signalBuoyChargeAnnounced.Clear();
@@ -103,7 +153,7 @@ namespace HighSeas.POI
             for (var i = 0; i < _layout.pois.Count; i++)
             {
                 var poi = _layout.pois[i];
-                if (_useV3ChestPricing && poi.type == POIType.SalvageChest)
+                if (_useV3ChestPricing && poi.type == POIType.SalvageChest && !_spawnAllChestsAtStart)
                 {
                     _pendingChestPoiIndices.Add(i);
                     continue;
@@ -130,6 +180,7 @@ namespace HighSeas.POI
 
         void TickProgressiveChestSpawns()
         {
+            if (_spawnAllChestsAtStart) return;
             if (!_useV3ChestPricing || _pendingChestPoiIndices.Count == 0) return;
             var rm = RunManager.Instance;
             if (rm == null || rm.IsRunEnded) return;
@@ -304,6 +355,12 @@ namespace HighSeas.POI
                 case POIType.TrialBuoy:
                     return TryCompleteSignalBuoy(player, index);
                 case POIType.GildedWreck:
+                    if (player.Damage.CurrentHP >= RunManager.Instance.Stats.MaxHull - 0.5f)
+                    {
+                        V3ToastHud.Instance?.Show("Hull already full — wreck unchanged.", 2f);
+                        return false;
+                    }
+
                     player.Damage.Heal(RunManager.Instance.Stats.MaxHull * 0.25f);
                     V3ToastHud.Instance?.Show("Repair Wreck — hull restored 25%.", 2.5f);
                     break;
@@ -311,7 +368,10 @@ namespace HighSeas.POI
                     return TryCompletePowderCache(player, index);
                 case POIType.CursedIdol:
                     V3DiscoverySystem.Instance?.RevealNearestChests(3);
-                    V3ToastHud.Instance?.Show("Treasure Chart — nearest chests revealed.", 3f);
+                    var bearing = V3DiscoverySystem.Instance?.GetBeaconBearingDegrees(player.Position) ?? 0f;
+                    V3ToastHud.Instance?.Show(
+                        $"Treasure Chart — chests revealed; beacon bearing {bearing:0}°.",
+                        3f);
                     break;
                 case POIType.BossBeacon:
                     SummonBoss(player);
@@ -328,8 +388,61 @@ namespace HighSeas.POI
         Enemies.EncounterSpawner ResolveEncounterSpawner() =>
             encounterSpawner != null ? encounterSpawner : FindFirstObjectByType<Enemies.EncounterSpawner>();
 
+        public int GetSalvageChestQuotePrice()
+        {
+            if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export != null)
+            {
+                return SaltwindStageEconomyLogic.QuoteChestPrice(
+                    StageBalanceProfileContext.Export,
+                    StageBalanceProfileContext.Runtime.SuccessfulChestPurchases);
+            }
+
+            return V3Economy.GetChestPrice(_paidChestCount);
+        }
+
+        public string GetSalvageChestPromptLabel() =>
+            $"Open Salvage Chest — {GetSalvageChestQuotePrice()} gold";
+
         bool TryOpenSalvageChest(PlayerShipController player, int index)
         {
+            if (_layout == null || index < 0 || index >= _layout.pois.Count || _layout.pois[index].used)
+                return false;
+
+            var rm = RunManager.Instance;
+            if (rm == null) return false;
+
+            if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export != null)
+            {
+                var plan = SaltwindStageEconomyLogic.TryPlanChestPurchase(
+                    StageBalanceProfileContext.Export,
+                    StageBalanceProfileContext.Runtime.SuccessfulChestPurchases,
+                    rm.Gold,
+                    rm.Rng,
+                    rm.Stats.Luck);
+                if (!plan.IsValid)
+                {
+                    if (plan.Error == "insufficient gold")
+                        V3ToastHud.Instance?.Show($"Need {plan.Price} run gold to open chest.", 2f);
+                    else if (plan.Error == "no eligible loot")
+                        V3ToastHud.Instance?.Show("Chest unavailable — no eligible reward.", 2f);
+                    return false;
+                }
+
+                if (!rm.TrySpendGold(plan.Price))
+                {
+                    V3ToastHud.Instance?.Show($"Need {plan.Price} run gold to open chest.", 2f);
+                    return false;
+                }
+
+                StageBalanceProfileContext.Runtime.RegisterSuccessfulChestPurchase();
+                _paidChestCount++;
+                V3RunItemInventory.Instance?.TryAddItem(plan.ItemId);
+                TriggerBus.Instance?.RaiseChestOpen();
+                MarkPoiUsed(index);
+                RunCombatTelemetry.Instance?.RecordPoiInteraction(POIType.SalvageChest.ToString());
+                return true;
+            }
+
             var spawner = ResolveEncounterSpawner();
             var price = _useV3ChestPricing
                 ? V3Economy.GetChestPrice(_paidChestCount)
@@ -337,7 +450,7 @@ namespace HighSeas.POI
             if (!_useV3ChestPricing && _paidChestCount == 0 && pacingSettings != null)
                 price = Mathf.RoundToInt(price * (1f - pacingSettings.firstChestDiscount));
 
-            if (!RunManager.Instance.TrySpendGold(price))
+            if (!rm.TrySpendGold(price))
             {
                 V3ToastHud.Instance?.Show($"Need {price} run gold to open chest.", 2f);
                 return false;
@@ -346,15 +459,13 @@ namespace HighSeas.POI
             _paidChestCount++;
             if (_useV3ChestPricing || V3RunContext.IsActive)
             {
-                var itemId = V3ChestLoot.RollSalvageItem(
-                    RunManager.Instance.Rng,
-                    RunManager.Instance.Stats.Luck);
+                var itemId = V3ChestLoot.RollSalvageItem(rm.Rng, rm.Stats.Luck);
                 V3RunItemInventory.Instance?.TryAddItem(itemId);
             }
             else
             {
                 var relic = loot != null
-                    ? loot.RollRelic(RunManager.Instance.Rng, RunManager.Instance.Stats.Luck)
+                    ? loot.RollRelic(rm.Rng, rm.Stats.Luck)
                     : null;
                 if (relic != null)
                     TriggerBus.Instance?.AddRelic(relic);
@@ -401,7 +512,8 @@ namespace HighSeas.POI
 
             var itemId = RollPowderCacheItem();
             V3RunItemInventory.Instance?.TryAddItem(itemId);
-            RunManager.Instance.AddGold(20);
+            RunManager.Instance.AddGold(
+                StageBalanceProfileContext.Export?.Rewards?.PowderCacheBonusGold ?? 20);
             MarkPoiUsed(index);
             RunCombatTelemetry.Instance?.RecordPoiInteraction(POIType.MerchantSkiff.ToString());
             return true;
@@ -409,6 +521,12 @@ namespace HighSeas.POI
 
         bool IsPowderCacheEncounterClear()
         {
+            if (_powderCacheTrackerEncounterId > 0)
+            {
+                var record = RunEncounterTracker.Get(_powderCacheTrackerEncounterId);
+                return record != null && record.State == RunEncounterState.Completed;
+            }
+
             var spawner = ResolveEncounterSpawner();
             var profile = spawner?.GetScheduleProfile("powder_cache");
             var world = FindFirstObjectByType<Enemies.EnemyWorld>();
@@ -444,7 +562,7 @@ namespace HighSeas.POI
             _signalBuoyCharges.TryGetValue(index, out var charge) ? charge : 0f;
 
         public float GetSignalBuoyCharge01(int index) =>
-            Mathf.Clamp01(GetSignalBuoyCharge(index) / SignalBuoyChargeSeconds);
+            Mathf.Clamp01(GetSignalBuoyCharge(index) / _signalBuoyChargeRequired);
 
         public float SignalBuoyRadiusMeters => SignalBuoyRadius;
 
@@ -456,7 +574,7 @@ namespace HighSeas.POI
             if (Vector3.Distance(player.Position, GetPoiPosition(index)) > SignalBuoyRadius)
                 return false;
 
-            if (GetSignalBuoyCharge(index) < SignalBuoyChargeSeconds)
+            if (GetSignalBuoyCharge(index) < _signalBuoyChargeRequired)
                 return false;
 
             ApplySignalBuoyReward();
@@ -508,6 +626,7 @@ namespace HighSeas.POI
             var p = _layout.pois[index];
             p.used = true;
             _layout.pois[index] = p;
+            RunMarksTracker.TryRegisterSpecialPoi(index, p.type);
         }
 
         bool SpawnPowderCacheFight(Vector3 poiPosition)
@@ -522,27 +641,27 @@ namespace HighSeas.POI
             }
 
             _powderCacheEnemySlots.Clear();
-            spawner.TriggerProfile(profile, PowderCacheAmbushCount);
-            return true;
+            var encounter = RunEncounterTracker.Request(RunEncounterKind.PowderCache, PowderCacheAmbushCount);
+            _powderCacheTrackerEncounterId = encounter.EncounterId;
+            var spawned = spawner.TriggerProfileImmediate(profile, PowderCacheAmbushCount, encounter.EncounterId);
+            return spawned > 0;
         }
 
         public void TickSignalBuoyCharge(PlayerShipController player, int index)
         {
+            if (RunManager.Instance != null && RunManager.Instance.IsPaused) return;
             if (_signalBuoysCompleted.Contains(index) || player == null) return;
             if (!_signalBuoyCharges.ContainsKey(index))
                 _signalBuoyCharges[index] = 0f;
 
             if (Vector3.Distance(player.Position, GetPoiPosition(index)) > SignalBuoyRadius)
-            {
-                _signalBuoyCharges[index] = Mathf.Max(0f, _signalBuoyCharges[index] - Time.deltaTime * 0.5f);
                 return;
-            }
 
             if (_signalBuoyCharges[index] <= 0.05f)
                 AnnounceSignalBuoyCharge(index);
 
             _signalBuoyCharges[index] += Time.deltaTime;
-            if (_signalBuoyCharges[index] >= SignalBuoyChargeSeconds)
+            if (_signalBuoyCharges[index] >= _signalBuoyChargeRequired)
                 TryCompleteSignalBuoy(player, index);
         }
 
@@ -572,35 +691,36 @@ namespace HighSeas.POI
         void SummonBoss(PlayerShipController player)
         {
             if (_bossSummoned) return;
-            _bossSummoned = true;
-            RunManager.Instance.SetState(RunState.BossFight);
 
             var spawner = ResolveEncounterSpawner();
             var profile = spawner?.GetScheduleProfile("boss");
-            if (spawner != null && profile != null)
+            if (spawner == null || profile == null)
             {
-                spawner.TriggerProfile(profile, 1);
+                Debug.LogWarning(
+                    "POIManager: Assign bossSummon on EncounterSpawnSchedule to spawn the treasury boss.");
                 return;
             }
 
-            Debug.LogWarning(
-                "POIManager: Assign bossSummon on EncounterSpawnSchedule to spawn the treasury boss.");
+            var encounter = RunEncounterTracker.Request(RunEncounterKind.Boss, 1);
+            _bossEncounterId = encounter.EncounterId;
+            var spawned = spawner.TriggerProfileImmediate(profile, 1, encounter.EncounterId);
+            if (spawned <= 0)
+            {
+                RunEncounterTracker.MarkFailed(encounter.EncounterId);
+                _bossEncounterId = 0;
+                return;
+            }
+
+            _bossSummoned = true;
+            RunCombatTelemetry.Instance?.RecordBossSummoned(_bossEncounterId);
+            RunManager.Instance.SetState(RunState.BossFight);
         }
 
         public bool IsBossDead()
         {
             if (_bossDefeated) return true;
             if (!_bossSummoned) return false;
-
-            var world = FindFirstObjectByType<Enemies.EnemyWorld>();
-            if (world == null) return false;
-            for (var i = 0; i < world.Agents.Length; i++)
-            {
-                if (!world.Agents[i].active) continue;
-                if (world.Agents[i].isBoss) return false;
-            }
-
-            return true;
+            return RunEncounterTracker.BossObjectiveSecured;
         }
 
         /// <summary>DEC-024 / M2-031: secure boss objective even when player dies same simulation tick.</summary>
@@ -615,6 +735,8 @@ namespace HighSeas.POI
         {
             if (_bossDefeated) return;
             _bossDefeated = true;
+            RunMarksTracker.TryRegisterBossVictory();
+            RunCombatTelemetry.Instance?.RecordBossDefeated(_bossEncounterId);
             RunManager.Instance.SecureObjective();
             if (_continueAfterBossVictory && RunManager.Instance != null)
                 V3HomeSeed.TryLockFromRun(RunManager.Instance.RunSeed);
@@ -638,17 +760,6 @@ namespace HighSeas.POI
 
             if (!_powderCacheCleared && _powderCacheEncounterId > 0 && IsPowderCacheEncounterClear())
                 _powderCacheCleared = true;
-
-            if (!_bossSummoned || _bossDefeated) return;
-            var world = FindFirstObjectByType<Enemies.EnemyWorld>();
-            if (world == null) return;
-            var bossAlive = false;
-            for (var i = 0; i < world.Agents.Length; i++)
-            {
-                if (!world.Agents[i].active) continue;
-                if (world.Agents[i].isBoss) { bossAlive = true; break; }
-            }
-            if (!bossAlive) NotifyBossDefeated();
         }
     }
 
@@ -670,6 +781,7 @@ namespace HighSeas.POI
         public bool IsPlayerInRange => GetPlayerDistance() <= InteractRange;
         public bool UsesChargeInteraction => _type == POIType.TrialBuoy;
         public bool UsesProximityAmbush => _type == POIType.MerchantSkiff;
+        public bool ShowsSalvageChestPrice => _type == POIType.SalvageChest;
         public int Index => _index;
         public float InteractRange => _type switch
         {
@@ -688,7 +800,7 @@ namespace HighSeas.POI
 
         public string PromptLabel => _type switch
         {
-            POIType.SalvageChest => "Open Salvage Chest",
+            POIType.SalvageChest => _manager?.GetSalvageChestPromptLabel() ?? "Open Salvage Chest",
             POIType.GildedWreck => "Repair Wreck",
             POIType.MerchantSkiff => "Powder Cache",
             POIType.TrialBuoy => "Signal Buoy",
@@ -714,6 +826,7 @@ namespace HighSeas.POI
         void Update()
         {
             if (_used) return;
+            if (RunManager.Instance != null && RunManager.Instance.IsPaused) return;
             if (_type == POIType.TrialBuoy)
             {
                 var player = FindFirstObjectByType<PlayerShipController>();

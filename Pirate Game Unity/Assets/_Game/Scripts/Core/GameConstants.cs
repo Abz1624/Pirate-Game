@@ -69,7 +69,7 @@ namespace HighSeas.Core
         public const float CellSizeMeters = 16f;
         public const float SpawnAnnulusMin = 13f;
         public const float SpawnAnnulusMax = 22f;
-        public const int SaveVersion = 1;
+        public const int SaveVersion = 2;
         public const int DemoRunSeed = 12345;
 
         public static readonly float[] RarityMultipliers = { 1f, 1.25f, 1.55f, 1.90f, 2.50f };

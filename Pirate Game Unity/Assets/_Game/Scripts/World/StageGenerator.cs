@@ -12,6 +12,7 @@ namespace HighSeas.World
         public Vector3 bossBeacon;
         public List<POISlot> pois = new();
         public List<Vector3> islandCenters = new();
+        public List<Vector3> explosiveBarrelPositions = new();
     }
 
     public struct POISlot

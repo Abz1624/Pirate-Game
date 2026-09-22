@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HighSeas.Balance;
 using HighSeas.Core;
 using HighSeas.Player;
 using HighSeas.World;
@@ -198,13 +199,21 @@ namespace HighSeas.V3
         {
             if (_layout == null) return;
 
+            var sectorMinute = SectorHintMinute;
+            var exactMinute = ExactMarkerMinute;
+            if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export?.Timing != null)
+            {
+                sectorMinute = StageBalanceProfileContext.Export.Timing.BeaconDirectionHintSeconds / 60f;
+                exactMinute = StageBalanceProfileContext.Export.Timing.BeaconExactMarkerSeconds / 60f;
+            }
+
             var previous = _beaconState;
             var beaconDist = Vector3.Distance(playerPos, _layout.bossBeacon);
             if (_beaconState == BeaconRevealState.Hidden && beaconDist <= DiscoveryRadius)
                 _beaconState = BeaconRevealState.Discovered;
-            else if (_beaconState == BeaconRevealState.Hidden && minute >= ExactMarkerMinute)
+            else if (_beaconState == BeaconRevealState.Hidden && minute >= exactMinute)
                 _beaconState = BeaconRevealState.ExactMarker;
-            else if (_beaconState < BeaconRevealState.DirectionSector && minute >= SectorHintMinute)
+            else if (_beaconState < BeaconRevealState.DirectionSector && minute >= sectorMinute)
                 _beaconState = BeaconRevealState.DirectionSector;
 
             if (_beaconState != previous)

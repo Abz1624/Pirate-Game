@@ -36,6 +36,9 @@ namespace HighSeas.Combat
         int _itemsAcquired;
         int _goldEarned;
         int _goldSpent;
+        int _marksSettled;
+        string _stageProfileHash = string.Empty;
+        string _runId = string.Empty;
         readonly Dictionary<string, int> _offerChoices = new();
         readonly Dictionary<string, int> _poiChoices = new();
 
@@ -83,6 +86,67 @@ namespace HighSeas.Combat
         public void RecordGoldEarned(int amount) { if (_profile.telemetryEnabled && amount > 0) _goldEarned += amount; }
         public void RecordGoldSpent(int amount) { if (_profile.telemetryEnabled && amount > 0) _goldSpent += amount; }
 
+        public void RecordStageProfileStart(string profileId, string balanceVersion, string contentHash, string runId)
+        {
+            if (!_profile.telemetryEnabled) return;
+            _stageProfileHash = contentHash ?? string.Empty;
+            _runId = runId ?? string.Empty;
+            Record("stage_profile_start", new Dictionary<string, object>
+            {
+                ["profileId"] = profileId ?? string.Empty,
+                ["balanceVersion"] = balanceVersion ?? string.Empty,
+                ["contentHash"] = _stageProfileHash,
+                ["runId"] = _runId
+            });
+        }
+
+        public void RecordMarksSettlement(
+            int marksAwarded,
+            bool applied,
+            int total,
+            int minuteMarks,
+            int specialMarks,
+            int eliteMarks,
+            int bossMarks,
+            int overtimeMarks)
+        {
+            if (!_profile.telemetryEnabled) return;
+            if (applied) _marksSettled = marksAwarded;
+            Record("marks_settlement", new Dictionary<string, object>
+            {
+                ["marksAwarded"] = marksAwarded,
+                ["applied"] = applied,
+                ["total"] = total,
+                ["minutes"] = minuteMarks,
+                ["specialPoi"] = specialMarks,
+                ["elite"] = eliteMarks,
+                ["boss"] = bossMarks,
+                ["overtime"] = overtimeMarks
+            });
+        }
+
+        public void RecordPlayerDeath(bool objectiveSecured, string source = "player_ship")
+        {
+            Record("player_death", new Dictionary<string, object>
+            {
+                ["objectiveSecured"] = objectiveSecured,
+                ["source"] = source
+            });
+        }
+
+        public void RecordBossSummoned(int encounterId) =>
+            Record("boss_summoned", new Dictionary<string, object> { ["encounterId"] = encounterId });
+
+        public void RecordBossDefeated(int encounterId) =>
+            Record("boss_defeated", new Dictionary<string, object> { ["encounterId"] = encounterId });
+
+        public void RecordRunResultsShown(bool objectiveSecured, int marksAwarded) =>
+            Record("run_results_shown", new Dictionary<string, object>
+            {
+                ["objectiveSecured"] = objectiveSecured,
+                ["marksAwarded"] = marksAwarded
+            });
+
         void RecordChoice(Dictionary<string, int> counts, string key)
         {
             if (!_profile.telemetryEnabled) return;
@@ -123,9 +187,12 @@ namespace HighSeas.Combat
         public void Record(string eventName, Dictionary<string, object> fields)
         {
             if (!_profile.telemetryEnabled) return;
-            fields["event"] = eventName;
-            fields["t"] = RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f;
-            _events.Add(new Dictionary<string, object>(fields));
+            var payload = fields != null
+                ? new Dictionary<string, object>(fields)
+                : new Dictionary<string, object>();
+            payload["event"] = eventName;
+            payload["t"] = RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f;
+            _events.Add(payload);
         }
 
         public string ExportJsonSummary()
@@ -153,6 +220,9 @@ namespace HighSeas.Combat
             AppendField(sb, "itemsAcquired", _itemsAcquired);
             AppendField(sb, "goldEarned", _goldEarned);
             AppendField(sb, "goldSpent", _goldSpent);
+            AppendField(sb, "marksSettled", _marksSettled);
+            AppendField(sb, "stageProfileHash", _stageProfileHash, false);
+            AppendField(sb, "runId", _runId, false);
             AppendCountMap(sb, "offerChoices", _offerChoices);
             AppendCountMap(sb, "poiChoices", _poiChoices);
             AppendWeaponLedger(sb);

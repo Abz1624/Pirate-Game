@@ -107,7 +107,7 @@ namespace HighSeas.V3
             "sea_witchs_eye" => "Status effects apply with higher proc pressure.",
             "admirals_ledger" => "More distinct weapon families — modest global damage.",
             "lucky_doubloon" => "Increases Luck for chests and offers.",
-            "grapeshot_pouch" => "Evolution synergy — Stormshot Cannon.",
+            "grapeshot_pouch" => "+10% Deck Cannons damage; evolves into Stormshot Cannon.",
             "double_fuse_cord" => "Evolution synergy — Devil's Wake.",
             "serrated_scabbard" => "Evolution synergy — Bladed Tide.",
             "broadside_drum" => "Evolution synergy — King's Broadside.",

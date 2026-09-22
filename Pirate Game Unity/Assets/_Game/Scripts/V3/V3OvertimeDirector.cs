@@ -1,3 +1,4 @@
+using HighSeas.Balance;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Enemies;
@@ -9,7 +10,7 @@ namespace HighSeas.V3
     /// <summary>Drowned Pursuit overtime spawns and Dread Tide boundary pressure after minute 10.</summary>
     public sealed class V3OvertimeDirector : MonoBehaviour
     {
-        const float SpawnInterval = 1.4f;
+        const float LegacySpawnInterval = 1.4f;
         const float DreadTideStartMinute = 14f;
         const float DreadTideShrinkPerMinute = 0.05f;
         const float DreadTideMinSafeFraction = 0.4f;
@@ -44,6 +45,13 @@ namespace HighSeas.V3
             _player = player;
         }
 
+        public void ResetForRun()
+        {
+            _spawnTimer = 0f;
+            _dreadPulseTimer = 0f;
+            _overtimeAnnounced = false;
+        }
+
         void Update()
         {
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
@@ -57,7 +65,8 @@ namespace HighSeas.V3
             }
 
             TickOvertimeSpawns(Time.deltaTime);
-            TickDreadTide(Time.deltaTime);
+            if (!StageBalanceProfileContext.IsActive)
+                TickDreadTide(Time.deltaTime);
         }
 
         void TickOvertimeSpawns(float dt)
@@ -67,17 +76,24 @@ namespace HighSeas.V3
             _spawnTimer -= dt;
             if (_spawnTimer > 0f) return;
 
-            var overtimeMinutes = (RunManager.Instance.ElapsedSeconds - GameConstants.StageDurationSeconds) / 60f;
-            var pursuerWeight = overtimeMinutes < 2f ? 0.8f : 0.6f;
+            var elapsed = RunManager.Instance.ElapsedSeconds;
+            var export = StageBalanceProfileContext.Export;
+            var pursuerWeight = StageBalanceProfileContext.IsActive && export != null
+                ? SaltwindFinaleLogic.GetOvertimePursuerWeight(elapsed, export)
+                : elapsed < GameConstants.StageDurationSeconds + 120f ? 0.8f : 0.6f;
+
             var spawnPursuer = RunManager.Instance.Rng.DirectorFloat() < pursuerWeight;
             var enemyId = spawnPursuer ? "drowned_pursuer" : "drowned_harrier";
+            var overtimeMinutes = (elapsed - GameConstants.StageDurationSeconds) / 60f;
 
             if (_encounterSpawner.TrySpawnOvertimeEnemy(enemyId, overtimeMinutes))
                 RunCombatTelemetry.Instance?.Record("overtime_enemy_spawned", new System.Collections.Generic.Dictionary<string, object> { ["enemyId"] = enemyId });
             else if (_encounterSpawner.TrySpawnOvertimeEnemy(spawnPursuer ? "drowned_harrier" : "drowned_pursuer", overtimeMinutes))
                 RunCombatTelemetry.Instance?.Record("overtime_enemy_spawned", new System.Collections.Generic.Dictionary<string, object> { ["enemyId"] = spawnPursuer ? "drowned_harrier" : "drowned_pursuer" });
 
-            _spawnTimer = SpawnInterval;
+            _spawnTimer = StageBalanceProfileContext.IsActive && export != null
+                ? SaltwindFinaleLogic.GetOvertimeSpawnInterval(elapsed, export)
+                : LegacySpawnInterval;
         }
 
         void TickDreadTide(float dt)

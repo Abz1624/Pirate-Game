@@ -23,7 +23,7 @@ namespace HighSeas.V3
 
             var fileName = def != null && !string.IsNullOrEmpty(def.displayName)
                 ? def.displayName
-                : WeaponIdToDisplayName(weaponId);
+                : V3WeaponDisplayNames.GetWeaponName(weaponId);
 
             var sprite = LoadSprite(WeaponFolder + fileName + ".png")
                          ?? Resources.Load<Sprite>($"V3RunHudIcons/Weapons/{weaponId}");
@@ -44,23 +44,7 @@ namespace HighSeas.V3
             return sprite;
         }
 
-        static string WeaponIdToDisplayName(string weaponId) => weaponId switch
-        {
-            "deck_cannons" => "Deck Cannons",
-            "broadside_battery" => "Broadside Battery",
-            "powder_kegs" => "Powder Kegs",
-            "flying_cutlasses" => "Flying Cutlasses",
-            "flamethrower" => "Flamethrower",
-            "burning_oil" => "Flamethrower",
-            "lightning_mast" => "Lightning Mast",
-            "long_nine" => "Long Nine",
-            "swivel_guns" => "Swivel Guns",
-            "grapeshot" => "Grapeshot",
-            "harpoon_gun" => "Harpoon Gun",
-            "mortar" => "Mortar",
-            "boarding_party" => "Boarding Party",
-            _ => weaponId.Replace('_', ' ')
-        };
+        static string WeaponIdToDisplayName(string weaponId) => V3WeaponDisplayNames.GetWeaponName(weaponId);
 
         static string ItemIdToFileName(string itemId) => itemId switch
         {

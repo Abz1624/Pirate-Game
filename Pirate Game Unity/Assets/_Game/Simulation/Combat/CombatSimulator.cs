@@ -585,6 +585,7 @@ namespace RoguePirates.Simulation
         void ApplyUpgradePath()
         {
             if (_labScenario == null || !_labScenario.SimulateUpgradePath) return;
+            TryAddSaltwindPolicyWeapon();
             var multiplier = 1f + _labScenario.DamageUpgradePerLevel;
             if (!_evolutionApplied && _level >= _labScenario.EvolutionLevel)
             {
@@ -593,9 +594,67 @@ namespace RoguePirates.Simulation
             }
             if (_loadoutWeapons.Count == 0) _weapon.MultiplyDamage(multiplier);
             else for (var i = 0; i < _loadoutWeapons.Count; i++) _loadoutWeapons[i].MultiplyDamage(multiplier);
+            _labScenario.WeaponCount = Math.Max(_labScenario.WeaponCount, _loadoutWeapons.Count > 0 ? _loadoutWeapons.Count : 1);
         }
 
-        float XpNeeded() => SimMath.XPToNext(_level) * (_labScenario?.XpRequirementMultiplier ?? 1f);
+        void TryAddSaltwindPolicyWeapon()
+        {
+            if (_labScenario.SaltwindBuildPolicy == SaltwindLabBuildPolicy.None) return;
+            if (_level % 2 != 0) return;
+
+            var cap = Math.Min(_labScenario.WeaponSlotCap, 1 + _level / 2);
+            if (_loadoutWeapons.Count >= cap) return;
+
+            var queue = SaltwindBalanceLabScenarioFactory.ResolveWeaponQueue(
+                _labScenario.SaltwindBuildPolicy,
+                _labScenario.SaltwindUnlockPool,
+                _labScenario.StageProfile);
+            for (var i = 0; i < queue.Count; i++)
+            {
+                var id = queue[i];
+                if (WeaponAlreadyLoaded(id)) continue;
+                AppendLabWeapon(id);
+                break;
+            }
+        }
+
+        bool WeaponAlreadyLoaded(string weaponId)
+        {
+            for (var i = 0; i < _labScenario.WeaponLoadout.Count; i++)
+            {
+                if (_labScenario.WeaponLoadout[i]?.Id == weaponId) return true;
+            }
+
+            return false;
+        }
+
+        void AppendLabWeapon(string id)
+        {
+            var entry = new BalanceWeaponLoadoutEntry
+            {
+                Id = id,
+                Damage = _labScenario.WeaponBaseDamage,
+                Cooldown = _labScenario.WeaponBaseCooldown,
+                Range = _labScenario.WeaponRange,
+                ProjectileSpeed = _labScenario.WeaponProjectileSpeed,
+                TargetMultiplier = _labScenario.WeaponPatternTargetMultiplier
+            };
+            var system = new WeaponSystem();
+            system.SetDamageMultiplier(_labScenario.WeaponDamageMultiplier * _labScenario.ItemDamageMultiplier);
+            system.SetPatternTargetMultiplier(entry.TargetMultiplier);
+            system.SetAuthoredWeapon(entry.Damage, entry.Cooldown, entry.Range, entry.ProjectileSpeed);
+            system.ApplyLabTuning(_labScenario.WeaponCooldownMultiplier, _labScenario.ProjectileSpeedMultiplier,
+                _labScenario.ProjectileRadiusMultiplier * entry.SizeMultiplier);
+            _loadoutWeapons.Add(system);
+            _labScenario.WeaponLoadout.Add(entry);
+        }
+
+        float XpNeeded()
+        {
+            if (_labScenario?.StageProfile != null)
+                return StageBalanceProfileExportCodec.XpToNextLevel(_labScenario.StageProfile, _level);
+            return SimMath.XPToNext(_level) * (_labScenario?.XpRequirementMultiplier ?? 1f);
+        }
 
         void TickPoiRouteReward()
         {
@@ -628,7 +687,10 @@ namespace RoguePirates.Simulation
             var progress = _clock.SimSeconds / MathF.Max(1f, _labScenario.DurationSeconds);
             var nextVisitProgress = (_merchantPurchasesCompleted + 1f) / (_labScenario.MerchantVisits + 1f);
             if (progress < nextVisitProgress) return;
-            var cost = _labScenario.MerchantItemPrice + (_merchantPurchasesCompleted > 0 ? _labScenario.MerchantRerollPrice : 0);
+            var cost = _labScenario.StageProfile != null
+                ? StageBalanceProfileExportCodec.ChestPriceForPurchaseIndex(
+                    _labScenario.StageProfile, _merchantPurchasesCompleted)
+                : _labScenario.MerchantItemPrice + (_merchantPurchasesCompleted > 0 ? _labScenario.MerchantRerollPrice : 0);
             if (_gold < cost) return;
             _gold -= cost;
             _merchantPurchasesCompleted++;

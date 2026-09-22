@@ -1,3 +1,4 @@
+using HighSeas.Balance;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Enemies;
@@ -44,10 +45,21 @@ namespace HighSeas.V3
             if (Instance == this) Instance = null;
         }
 
+        public void ResetForRun()
+        {
+            _nextEventTime = 75f;
+            _eventsTriggered = 0;
+            _bountyDensityTimer = 0f;
+            _cursedChestActive = false;
+        }
+
         void Update()
         {
             if (!V3RunContext.IsActive || RunManager.Instance == null || RunManager.Instance.IsPaused) return;
             if (RunManager.Instance.IsRunEnded) return;
+            if (StageBalanceProfileContext.IsActive &&
+                StageBalanceProfileContext.Export?.Exploration?.DisableAutomaticRouteEvents == true)
+                return;
 
             var elapsed = RunManager.Instance.ElapsedSeconds;
             if (_bountyDensityTimer > 0f)

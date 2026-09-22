@@ -19,7 +19,7 @@ namespace HighSeas.Tests
             RunSnapshotService.Save(data);
             var loaded = RunSnapshotService.Load();
             Assert.That(loaded, Is.Not.Null);
-            Assert.That(loaded.schemaVersion, Is.EqualTo(1));
+            Assert.That(loaded.schemaVersion, Is.EqualTo(RunSnapshotRestoreLogic.SupportedSchemaVersion));
             Assert.That(loaded.runSeed, Is.EqualTo(42));
             Assert.That(loaded.weaponIds, Is.EqualTo(data.weaponIds));
             RunSnapshotService.Clear();

@@ -2533,6 +2533,9 @@ MonoBehaviour:
   headlineText: {fileID: 0}
   summaryText: {fileID: 0}
   continueButton: {fileID: 0}
+  menuButton: {fileID: 0}
+  selectGoalButton: {fileID: 0}
+  purchaseGoalButton: {fileID: 0}
 --- !u!1001 &251907619
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5777,6 +5780,7 @@ GameObject:
   - component: {fileID: 658786998}
   - component: {fileID: 658786997}
   - component: {fileID: 658786996}
+  - component: {fileID: 658787000}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -5823,7 +5827,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.POI.POIManager
   database: {fileID: 0}
   loot: {fileID: 0}
-  director: {fileID: 658786991}
+  encounterSpawner: {fileID: 658786991}
   juiceSettings: {fileID: 0}
   pacingSettings: {fileID: 0}
   poiRoot: {fileID: 0}
@@ -5951,8 +5955,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.EncounterSpawner
   enemyWorld: {fileID: 0}
   player: {fileID: 0}
-  schedule: {fileID: 0}
   spawnCamera: {fileID: 0}
+  schedule: {fileID: 0}
 --- !u!114 &658786992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6072,8 +6076,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9c7d19062ce6b743bc74868c8198fab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.JuiceVfxBroker
-  schedule: {fileID: 0}
+  settings: {fileID: 0}
   vfxRoot: {fileID: 149490258}
+--- !u!114 &658787000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c835d7666611ff4684e4c6eca9dcd6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Balance.StageBalanceProfileHost
+  profile: {fileID: 11400000, guid: 5c446dd1cad997947bc835f4b6ae9d6d, type: 2}
+  requireForSinglePlayerRun: 1
 --- !u!1 &676974001
 GameObject:
   m_ObjectHideFlags: 0
@@ -11336,6 +11354,9 @@ MonoBehaviour:
   headlineText: {fileID: 0}
   summaryText: {fileID: 0}
   continueButton: {fileID: 0}
+  menuButton: {fileID: 0}
+  selectGoalButton: {fileID: 0}
+  purchaseGoalButton: {fileID: 0}
 --- !u!1 &1155217064
 GameObject:
   m_ObjectHideFlags: 0

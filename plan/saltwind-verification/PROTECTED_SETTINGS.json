@@ -1,0 +1,75 @@
+{
+  "capturedAtUtc": "2026-09-21T21:15:00Z",
+  "baselineCommit": "701bfa7d081b646631b6db15b890d51e46d5ad40",
+  "scene": "Assets/_Game/Scenes/v3/V3SaltwindRun.unity",
+  "bootRoute": [
+    "Assets/_Game/Scenes/v3/V3Boot.unity",
+    "Assets/_Game/Scenes/v3/V3MainMenu.unity",
+    "Assets/_Game/Scenes/v3/V3SaltwindRun.unity"
+  ],
+  "playerShip": {
+    "hierarchyPath": "/PlayerShip",
+    "PlayerShipController": {
+      "maxSpeed": 75,
+      "reverseMaxSpeed": 20,
+      "acceleration": 15,
+      "reverseAcceleration": 10,
+      "turnSpeed": 125,
+      "sternPivotDistance": 1.5,
+      "turnCommitTime": 1,
+      "minTurnRateFraction": 0.6,
+      "turnCommitDecay": 7,
+      "turnInertiaDecay": 4,
+      "turnReverseDelay": 0.14,
+      "lateralGrip": 14,
+      "waterDrag": 2,
+      "brakeDrag": 3,
+      "modelForwardIsNegativeZ": false,
+      "maxRollAngle": 15,
+      "maxRollDegreesPerSecond": 17,
+      "bankSpeedExponent": 1,
+      "collideWithIslands": true,
+      "hullRadius": 1.15,
+      "hullHeight": 4.5,
+      "maxHullCollisionRadius": 2.25
+    },
+    "DamageReceiver": {
+      "maxHP": 150,
+      "armor": 0
+    }
+  },
+  "mainCamera": {
+    "hierarchyPath": "/Main Camera",
+    "FollowCamera": {
+      "offset": { "x": 0, "y": 25, "z": -20 },
+      "lookAtOffset": { "x": 0, "y": 0, "z": 0 },
+      "followShipRotation": false,
+      "rotationMode": "LookAtTarget",
+      "rotationEuler": { "x": 56, "y": 0, "z": 0 },
+      "rotationOffset": { "x": 0, "y": 0, "z": 0 },
+      "positionSmoothing": 8,
+      "rotationSmoothing": 6,
+      "snapOnStart": true,
+      "defaultThirdPerson": false,
+      "thirdPersonOffset": { "x": 0, "y": 6, "z": -14 },
+      "thirdPersonLookAtOffset": { "x": 0, "y": 1.5, "z": 6 },
+      "thirdPersonFollowShipRotation": true,
+      "thirdPersonRotationMode": "LookAtTarget",
+      "thirdPersonRotationEuler": { "x": 12, "y": 0, "z": 0 },
+      "thirdPersonRotationOffset": { "x": 0, "y": 0, "z": 0 },
+      "thirdPersonPositionSmoothing": 0,
+      "thirdPersonRotationSmoothing": 0,
+      "thirdPersonHighOffset": { "x": 0, "y": 8, "z": -15 },
+      "thirdPersonHighLookAtOffset": { "x": 0, "y": 0, "z": 0 }
+    },
+    "Camera": {
+      "fieldOfView": 50,
+      "nearClipPlane": 0.3,
+      "farClipPlane": 1000
+    }
+  },
+  "modeBaselineNotes": {
+    "soloSaltwind": "V3SaltwindRun without V3MultiShipSceneConfig (SinglePlayer session).",
+    "coOpPvP": "Scenes with V3MultiShipSceneConfig retain existing session rules; stage balance profile resolver is skipped."
+  }
+}

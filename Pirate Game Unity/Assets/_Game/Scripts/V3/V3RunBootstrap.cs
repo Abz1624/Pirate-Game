@@ -1,8 +1,9 @@
-using HighSeas.Combat;
+using HighSeas.Balance;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Debugging;
+using HighSeas.Encounters;
 using HighSeas.Enemies;
 using HighSeas.Meta;
 using HighSeas.Pickups;
@@ -130,6 +131,8 @@ namespace HighSeas.V3
 
         void RestartRun()
         {
+            SaltwindRunResetLogic.NotifyRetryStarting();
+            RunSnapshotService.Clear();
             BootstrapRun(Random.Range(1, int.MaxValue), firstRun: false);
         }
 
@@ -140,6 +143,15 @@ namespace HighSeas.V3
             LevelUpModal.Instance?.Hide();
             RunManager.Instance?.SetPause(PauseReason.None);
 
+            TeardownTransientRunState();
+
+            StageBalanceProfileContext.EndRun();
+            if (!TryBeginStageBalanceProfile(out var stageBalanceError))
+            {
+                Debug.LogError(stageBalanceError);
+                return;
+            }
+
             var experimentProfile = CombatExperimentContext.Active;
             CombatWeaponCatalog.ApplyToDatabase(database, experimentProfile);
             CombatSpecialistEnemyCatalog.ApplyToDatabase(database, experimentProfile);
@@ -147,12 +159,25 @@ namespace HighSeas.V3
             WeaponEvolutionRuntime.Reset();
             _ = new RunCombatTelemetry(experimentProfile);
             RunManager.Instance.BeginRun(seed);
+            RunMarksTracker.BeginRun(RunManager.Instance.RunId);
+            SaltwindRunSettlement.ClearLastResults();
+            if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export != null)
+            {
+                var ex = StageBalanceProfileContext.Export;
+                RunCombatTelemetry.Instance?.RecordStageProfileStart(
+                    ex.ProfileId,
+                    ex.BalanceVersion.ToString(),
+                    ex.ContentHash,
+                    RunManager.Instance.RunId);
+            }
             V3FloorPowerupWorld.Ensure();
             V3FloorPowerupWorld.Instance?.ResetForRun();
             V3RunItemInventory.Instance?.ClearForNewRun();
 
             _layout = stageBuilder != null ? stageBuilder.Build(seed, 0) : null;
             V3StormEdgeVisual.DisableWorldRings();
+            PlayBounds.ResetStormSafeRegion();
+            V3SaltwindStormRingVisual.Disable();
             V3PlayBoundsWallVisual.Ensure();
             V3RunContext.Layout = _layout;
             V3RunContext.CaptainId = V3CaptainSelection.Selected;
@@ -170,6 +195,8 @@ namespace HighSeas.V3
                     poi.enabled = true;
                     poi.SetV3Options(continueAfterBossVictory: true, usePlaceholderVisuals: usePlaceholderPoiVisuals, useV3ChestPricing: true);
                     poi.Initialize(_layout, database);
+                    if (_layout != null)
+                        V3ExplosiveBarrelWorld.Ensure(_layout);
                 }
             }
 
@@ -208,6 +235,7 @@ namespace HighSeas.V3
             EnsureLevelSystem();
             LevelSystem.Instance?.ConfigureV3();
             LevelSystem.Instance?.ApplyCombatExperiment(experimentProfile);
+            LevelSystem.Instance?.ApplyStageBalanceProgression();
             LevelSystem.Instance?.PrepareForNewRun(database, startingWeapon);
             V3RunItemInventory.Ensure();
             V3RunItemEffects.Ensure();
@@ -261,8 +289,7 @@ namespace HighSeas.V3
 
             if (!isPvPScene)
             {
-                FindFirstObjectByType<EncounterSpawner>()?.ResetForNewRun();
-                ConfigureEncounterSpawner(experimentProfile);
+                ResetSaltwindDirectors(enemyWorld, player);
                 if (firstRun)
                 {
                     EnsurePressureBeats(enemyWorld, player);
@@ -306,6 +333,29 @@ namespace HighSeas.V3
             var spawner = FindFirstObjectByType<EncounterSpawner>();
             spawner?.ConfigureV3Pacing(true);
             spawner?.ApplyCombatExperiment(profile);
+        }
+
+        static void TeardownTransientRunState()
+        {
+            RunEncounterTracker.ResetForNewRun();
+            RunMarksTracker.Reset();
+            SaltwindRunSettlement.ClearLastResults();
+            FindFirstObjectByType<PickupWorld>()?.ClearAllActive();
+            FindFirstObjectByType<ProjectileWorld>()?.ClearAllActive();
+            FindFirstObjectByType<HostileProjectileWorld>()?.ClearAllActive();
+        }
+
+        void ResetSaltwindDirectors(EnemyWorld enemyWorld, PlayerShipController ship)
+        {
+            var spawner = FindFirstObjectByType<EncounterSpawner>();
+            spawner?.ResetForNewRun();
+            ConfigureEncounterSpawner(CombatExperimentContext.Active);
+            FindFirstObjectByType<V3PressureBeatDirector>()?.ResetForRun();
+            FindFirstObjectByType<V3RouteEventDirector>()?.ResetForRun();
+            var overtime = V3OvertimeDirector.Ensure(enemyWorld, spawner, ship);
+            overtime.ResetForRun();
+            V3SaltwindStormDirector.Ensure().ResetForRun();
+            BarnacleKingBossAttackDirector.Ensure(enemyWorld, ship).ResetForRun();
         }
 
         static void EnsureHostileProjectiles()
@@ -357,11 +407,24 @@ namespace HighSeas.V3
         void EnsureOvertimeDirector(EnemyWorld enemyWorld, PlayerShipController ship)
         {
             var spawner = FindFirstObjectByType<EncounterSpawner>();
-            V3OvertimeDirector.Ensure(enemyWorld, spawner, ship);
+            var overtime = V3OvertimeDirector.Ensure(enemyWorld, spawner, ship);
+            overtime.ResetForRun();
+            V3SaltwindStormDirector.Ensure().ResetForRun();
+            BarnacleKingBossAttackDirector.Ensure(enemyWorld, ship).ResetForRun();
         }
 
         static string ResolveStartingWeapon(V3CaptainProfile profile)
         {
+            if (StageBalanceProfileContext.IsActive && !V3PlaytestFlags.SaltwindDebugUnlockAll)
+            {
+                var preferred = profile.StartingWeaponId;
+                if (SaltwindStageProgressionLogic.IsWeaponInOfferPool(
+                        StageBalanceProfileContext.Export,
+                        preferred))
+                    return preferred;
+                return "deck_cannons";
+            }
+
             if (!V3PlaytestFlags.UnlockAllContent && !PlayerPrefs.HasKey(V3ContentUnlocks.FirstConquestKey))
                 return "deck_cannons";
             return profile.StartingWeaponId;
@@ -416,6 +479,7 @@ namespace HighSeas.V3
             if (RunManager.Instance.IsRunEnded) return;
             var dt = Time.deltaTime;
             var playerPos = player != null ? player.Position : Vector3.zero;
+            FindFirstObjectByType<BarnacleKingBossAttackDirector>()?.Tick(dt);
             FindFirstObjectByType<EnemyWorld>()?.Tick(dt, playerPos, player?.Damage);
             FindFirstObjectByType<ProjectileWorld>()?.Tick(dt, FindFirstObjectByType<EnemyWorld>());
             FindFirstObjectByType<HostileProjectileWorld>()?.Tick(dt, player?.Damage);
@@ -448,7 +512,13 @@ namespace HighSeas.V3
             ApplyConquestUnlockIfSecured();
             RunManager.Instance.SetState(RunState.PlayerDead);
             RunManager.Instance.FinalizeRunOnDeath();
+            RunCombatTelemetry.Instance?.RecordPlayerDeath(RunManager.Instance.ObjectiveSecured);
             V3ToastHud.Instance?.Show("Run ended — gold banked.", 4f);
+            if (StageBalanceProfileContext.IsActive && SaltwindRunSettlement.LastSettlementApplied)
+            {
+                var marks = SaltwindRunSettlement.LastMarksAwarded;
+                V3ToastHud.Instance?.Show($"Marks settled: +{marks}", 4f);
+            }
         }
 
         void ResolveSameTickBossDeath()
@@ -521,8 +591,22 @@ namespace HighSeas.V3
             var snapshot = RunSnapshotService.CaptureFromRun(
                 RunManager.Instance,
                 LevelSystem.Instance,
-                CombatExperimentContext.Active);
+                CombatExperimentContext.Active,
+                FindFirstObjectByType<POIManager>());
             RunSnapshotService.Save(snapshot);
+        }
+
+        static bool TryBeginStageBalanceProfile(out string errorMessage)
+        {
+            errorMessage = null;
+            if (V3RunSession.IsLocalMultiplayer)
+                return true;
+
+            if (!StageBalanceProfileResolver.TryResolveForCurrentScene(out var profile, out errorMessage))
+                return false;
+
+            StageBalanceProfileContext.BeginRun(profile);
+            return true;
         }
     }
 }

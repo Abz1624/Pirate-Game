@@ -57,7 +57,7 @@ namespace HighSeas.V3
             switch (itemId)
             {
                 case "grapeshot_pouch":
-                    stats.AddModifier(new StatModifier(StatId.Damage, 0f, 1.06f));
+                    stats.AddModifier(new StatModifier(StatId.Damage, 0f, 1.1f));
                     break;
                 case "double_fuse_cord":
                     stats.AddModifier(new StatModifier(StatId.AttackSpeed, 0f, 1.08f));

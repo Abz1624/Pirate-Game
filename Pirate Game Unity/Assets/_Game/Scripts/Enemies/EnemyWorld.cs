@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using HighSeas.Balance;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.Encounters;
 using HighSeas.POI;
 using HighSeas.V3;
 using HighSeas.VFX;
@@ -104,6 +106,10 @@ namespace HighSeas.Enemies
         int _nextId = 1;
         float _experimentHpMultiplier = 1f;
         float _experimentDamageMultiplier = 1f;
+        int _bossControlSlot = -1;
+        bool _bossPauseMovement;
+        bool _bossUseForcedVelocity;
+        Vector3 _bossForcedVelocity;
 
         public int ActiveCount => _activeCount;
         public EnemyAgent[] Agents => _agents;
@@ -113,6 +119,38 @@ namespace HighSeas.Enemies
         {
             _experimentHpMultiplier = Mathf.Max(0.1f, hpMultiplier);
             _experimentDamageMultiplier = Mathf.Max(0.1f, damageMultiplier);
+        }
+
+        public bool TryFindActiveBoss(out int slot, out EnemyAgent agent)
+        {
+            slot = -1;
+            agent = default;
+            if (_agents == null) return false;
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                if (!_agents[i].active || !_agents[i].isBoss) continue;
+                slot = i;
+                agent = _agents[i];
+                return true;
+            }
+
+            return false;
+        }
+
+        public void SetBossAttackControl(int slot, bool pauseMovement, Vector3 forcedVelocity, bool useForced)
+        {
+            _bossControlSlot = slot;
+            _bossPauseMovement = pauseMovement;
+            _bossForcedVelocity = forcedVelocity;
+            _bossUseForcedVelocity = useForced;
+        }
+
+        public void ClearBossAttackControl()
+        {
+            _bossControlSlot = -1;
+            _bossPauseMovement = false;
+            _bossUseForcedVelocity = false;
+            _bossForcedVelocity = Vector3.zero;
         }
 
         void Awake()
@@ -398,9 +436,11 @@ namespace HighSeas.Enemies
                 _agents[index].healthBar = null;
             }
 
+            var releasedAgentId = _agents[index].id;
             _agents[index].active = false;
             _activeCount--;
             Combat.StatusController.Instance?.ClearIndex(index);
+            RunEncounterTracker.ReleaseAgentMapping(releasedAgentId);
             EncounterSpawner.Instance?.NotifyAgentDespawned(despawnProfile);
         }
 
@@ -716,6 +756,21 @@ namespace HighSeas.Enemies
 
         Vector3 TickBehavior(int agentIndex, ref EnemyAgent e, Data.EnemyDefinition def, float dt, Vector3 playerPos, Vector3 playerVelocity)
         {
+            if (e.isBoss && agentIndex == _bossControlSlot)
+            {
+                if (_bossPauseMovement)
+                {
+                    e.velocity = Vector3.zero;
+                    return Vector3.zero;
+                }
+
+                if (_bossUseForcedVelocity)
+                {
+                    e.velocity = _bossForcedVelocity;
+                    return _bossForcedVelocity;
+                }
+            }
+
             if (e.knockbackTimer > 0f)
             {
                 e.knockbackTimer -= dt;
@@ -1209,9 +1264,27 @@ namespace HighSeas.Enemies
             {
                 var def = definitions[e.definitionIndex];
                 RunManager.Instance?.RegisterKill(e.isBoss);
-                Pickups.PickupWorld.Instance?.SpawnFromEnemy(e.position, def.xpValue, def.goldValue, e.affix == EliteAffix.Rich);
-                V3FloorPowerupWorld.Instance?.TryRollOnKill(e.position, e.isBoss);
-                if (e.isBoss)
+                var export = StageBalanceProfileContext.Export;
+                var gold = def.goldValue;
+                if (StageBalanceProfileContext.IsActive && export != null)
+                {
+                    gold = SaltwindStageEconomyLogic.ResolveKillGoldDrop(
+                        export,
+                        def,
+                        RunManager.Instance.Rng,
+                        e.affix == EliteAffix.Rich,
+                        e.isElite,
+                        e.isBoss);
+                }
+
+                Pickups.PickupWorld.Instance?.SpawnFromEnemy(
+                    e.position,
+                    def.xpValue,
+                    gold,
+                    !StageBalanceProfileContext.IsActive && e.affix == EliteAffix.Rich);
+                V3FloorPowerupWorld.Instance?.TryRollOnKill(e.position, e.isBoss, e.isElite);
+                RunEncounterTracker.RegisterAgentKill(e.id);
+                if (e.isBoss && RunEncounterTracker.BossObjectiveSecured)
                     Object.FindFirstObjectByType<POIManager>()?.NotifyBossDefeated();
                 Meta.TriggerBus.Instance?.RaiseKill(e.isElite, e.isBoss, e.position, e.lastHitWeaponId);
                 V3.V3RunItemEffects.Instance?.NotifyKill();

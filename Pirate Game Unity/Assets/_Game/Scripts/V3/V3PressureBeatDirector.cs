@@ -1,3 +1,4 @@
+using HighSeas.Balance;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Enemies;
@@ -38,6 +39,20 @@ namespace HighSeas.V3
             encounterSpawner = director;
             player = playerTransform;
             encounterSpawner?.ConfigureV3Pacing(true);
+        }
+
+        public void ResetForRun()
+        {
+            _hammerheadDone = false;
+            _krakenDone = false;
+            _firstPulseDone = false;
+            _secondPulseDone = false;
+            _hammerheadWarned = false;
+            _krakenWarned = false;
+            _hammerheadDeferUntil = 0f;
+            _krakenDeferUntil = 0f;
+            _pulseTimer = 0f;
+            encounterSpawner?.ClearSpawnModifier("v3_swarm_pulse");
         }
 
         void Update()
@@ -89,6 +104,7 @@ namespace HighSeas.V3
             if (encounterSpawner != null && encounterSpawner.TrySpawnPressureBeat(enemyId))
             {
                 done = true;
+                RunMarksTracker.TryRegisterScheduledElite();
                 RunCombatTelemetry.Instance?.Record("pressure_elite_spawned", new System.Collections.Generic.Dictionary<string, object> { ["label"] = label });
                 V3ToastHud.Instance?.Show($"{label} has arrived!", 4f);
                 return;
@@ -110,6 +126,7 @@ namespace HighSeas.V3
             {
                 _firstPulseDone = true;
                 _pulseTimer = PulseDuration;
+                encounterSpawner?.SetTimedSpawnModifier("v3_swarm_pulse", PulseRateMultiplier, PulseDuration);
                 RunCombatTelemetry.Instance?.Record("pressure_pulse_started", new System.Collections.Generic.Dictionary<string, object> { ["beat"] = "minute_4" });
                 V3ToastHud.Instance?.Show("SWARM PULSE — +25% spawn rate (4:00)", 4f);
             }
@@ -117,6 +134,7 @@ namespace HighSeas.V3
             {
                 _secondPulseDone = true;
                 _pulseTimer = PulseDuration;
+                encounterSpawner?.SetTimedSpawnModifier("v3_swarm_pulse", PulseRateMultiplier, PulseDuration);
                 RunCombatTelemetry.Instance?.Record("pressure_pulse_started", new System.Collections.Generic.Dictionary<string, object> { ["beat"] = "minute_7" });
                 V3ToastHud.Instance?.Show("SWARM PULSE — +25% spawn rate (7:00)", 4f);
             }
@@ -124,16 +142,15 @@ namespace HighSeas.V3
             if (_pulseTimer > 0f)
             {
                 _pulseTimer -= Time.deltaTime;
-                encounterSpawner?.SetSpawnRateMultiplier(PulseRateMultiplier);
                 if (_pulseTimer <= 0f)
-                    encounterSpawner?.SetSpawnRateMultiplier(1f);
+                    encounterSpawner?.ClearSpawnModifier("v3_swarm_pulse");
             }
         }
 
         void OnDestroy()
         {
-            if (encounterSpawner != null)
-                encounterSpawner.SetSpawnRateMultiplier(1f);
+            encounterSpawner?.ClearSpawnModifier("v3_swarm_pulse");
+            encounterSpawner?.SetSpawnRateMultiplier(1f);
         }
     }
 }

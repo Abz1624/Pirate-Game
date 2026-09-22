@@ -3,6 +3,7 @@
     "rootNamespace": "HighSeas.Tests",
     "references": [
         "HighSeas.Runtime",
+        "RoguePirates.Simulation",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

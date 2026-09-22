@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HighSeas.Balance;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.V3;
@@ -60,7 +61,8 @@ namespace HighSeas.Pickups
 
         public void SpawnFromEnemy(Vector3 pos, int xp, int gold, bool rich)
         {
-            var xpMult = pacingSettings != null ? pacingSettings.xpDropMultiplier : 1f;
+            var useProfile = StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export != null;
+            var xpMult = useProfile ? 1f : (pacingSettings != null ? pacingSettings.xpDropMultiplier : 1f);
             var healthChance = pacingSettings != null ? pacingSettings.healthDropChance : 0.12f;
             var basePos = pos;
             basePos.y = 0f;
@@ -82,8 +84,8 @@ namespace HighSeas.Pickups
 
             if (gold > 0)
             {
-                var scaledGold = ScaleEnemyKillGold(gold);
-                var goldValue = rich ? scaledGold * 2 : scaledGold;
+                var scaledGold = useProfile ? gold : ScaleEnemyKillGold(gold);
+                var goldValue = useProfile || !rich ? scaledGold : scaledGold * 2;
                 Spawn(PickupType.GoldBarrel, goldValue, basePos + GetKillDropOffset(dropIndex++, dropCount));
             }
 
@@ -260,6 +262,26 @@ namespace HighSeas.Pickups
             }
         }
 
+        /// <summary>Magnetic Tide — pull existing loose XP/gold pickups only (no synthesis).</summary>
+        public void AttractLooseRewards()
+        {
+            for (var i = 0; i < _pool.Length; i++)
+            {
+                if (!_pool[i].active) continue;
+                switch (_pool[i].type)
+                {
+                    case PickupType.Infamy:
+                    case PickupType.Gold:
+                    case PickupType.FlyingGold:
+                    case PickupType.FlyingXp:
+                    case PickupType.GoldBarrel:
+                    case PickupType.XpBarrel:
+                        BeginHomingPickup(ref _pool[i]);
+                        break;
+                }
+            }
+        }
+
         public void ClearAllActive()
         {
             _pendingFlyingPickups.Clear();
@@ -390,7 +412,7 @@ namespace HighSeas.Pickups
                 return 0;
 
             var xp = value * RunManager.Instance.Stats.XPGain;
-            if (V3RunContext.IsActive)
+            if (V3RunContext.IsActive && !StageBalanceProfileContext.IsActive)
                 xp *= 0.35f;
             return Mathf.Max(1, Mathf.RoundToInt(xp));
         }
@@ -550,8 +572,16 @@ namespace HighSeas.Pickups
             }
         }
 
-        static void GrantGold(int value) =>
-            RunManager.Instance?.AddGold(Mathf.RoundToInt(value * (RunManager.Instance?.Stats.GoldGain ?? 1f)));
+        static void GrantGold(int value)
+        {
+            var rm = RunManager.Instance;
+            if (rm == null) return;
+            var scaled = SaltwindStageEconomyLogic.ApplyGoldGrant(
+                value,
+                StageBalanceProfileContext.Export,
+                rm.Stats.GoldGain);
+            rm.AddGold(scaled);
+        }
 
         void ReleasePickup(ref PickupAgent p)
         {

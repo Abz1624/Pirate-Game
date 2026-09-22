@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HighSeas.Balance;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.V3;
@@ -46,9 +47,20 @@ namespace HighSeas.Tests
         [Test]
         public void V3StagePoiPlacer_PlacesConquestPois()
         {
-            var layout = new StageLayout { seed = 12345, playerSpawn = Vector3.zero };
-            var rng = new RunRng(12345);
-            V3StagePoiPlacer.Place(layout, rng, null);
+            const int seed = 12345;
+            var layoutDef = Resources.Load<IslandLayoutDefinition>("V3SaltwindIslandLayout");
+            Assert.IsNotNull(layoutDef, "V3SaltwindIslandLayout must exist in Resources.");
+
+            IslandSpawnExclusionRegistry.Clear();
+            IslandLayoutSpawner.RegisterPredictedZones(layoutDef, seed);
+            PlayBounds.ConfigureFromExclusionRegistry();
+
+            var layout = new StageLayout { seed = seed };
+            V3SpawnAnchorValidator.TryResolveAnchors(layout, layoutDef, new RunRng(seed));
+            var rng = new RunRng(seed + 404);
+            var options = V3StagePoiPlacementOptions.SaltwindSolo();
+            V3StagePoiPlacer.Place(layout, rng, layoutDef, options);
+            Assert.IsTrue(SaltwindPoiLayoutLogic.Validate(layout, options).IsValid);
 
             var chests = 0;
             var wrecks = 0;
@@ -78,6 +90,8 @@ namespace HighSeas.Tests
 
             for (var i = 0; i < layout.pois.Count; i++)
                 Assert.That(PlayBounds.IsInsideStormSafeZone(layout.pois[i].position), Is.True);
+
+            IslandSpawnExclusionRegistry.Clear();
         }
 
         [Test]

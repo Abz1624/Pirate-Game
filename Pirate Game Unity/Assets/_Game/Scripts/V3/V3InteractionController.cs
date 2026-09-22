@@ -344,6 +344,24 @@ namespace HighSeas.V3
 
 
 
+                if (_target.ShowsSalvageChestPrice)
+
+                {
+
+                    SetPromptVisible(_target.IsPlayerInRange);
+
+                    _promptText.text = _target.PromptLabel;
+
+                    if (_target.IsPlayerInRange)
+
+                        _target.TryCompleteInteraction();
+
+                    return;
+
+                }
+
+
+
                 SetPromptVisible(false);
 
                 if (_target.IsPlayerInRange)

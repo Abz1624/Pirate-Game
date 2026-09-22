@@ -2,6 +2,7 @@
     "name": "HighSeas.Runtime",
     "rootNamespace": "HighSeas",
     "references": [
+        "RoguePirates.Simulation",
         "Unity.InputSystem",
         "Unity.TextMeshPro"
     ],

@@ -20,12 +20,31 @@ namespace HighSeas.World
         public static float HalfExtent => Mathf.Max(_halfExtentX, _halfExtentZ);
         public static bool IsConfigured => _configured;
 
+        static float _stormSafeScale = 1f;
+        static bool _useProfileStormSafe;
+
+        public static float StormSafeScale => _stormSafeScale;
+        public static bool UsesProfileStormSafe => _useProfileStormSafe;
+
+        public static void ResetStormSafeRegion()
+        {
+            _stormSafeScale = 1f;
+            _useProfileStormSafe = false;
+        }
+
+        public static void SetProfileStormSafeScale(float safeScale)
+        {
+            _useProfileStormSafe = true;
+            _stormSafeScale = Mathf.Clamp(safeScale, 0.05f, 1f);
+        }
+
         public static void ResetToDefaults()
         {
             _center = Vector3.zero;
             _halfExtentX = DefaultHalfExtent;
             _halfExtentZ = DefaultHalfExtent;
             _configured = false;
+            ResetStormSafeRegion();
         }
 
         /// <summary>Fit playable water around spawned island exclusion zones plus open-water padding.</summary>
@@ -50,11 +69,27 @@ namespace HighSeas.World
                    Mathf.Abs(local.z) <= _halfExtentZ - margin;
         }
 
-        public static bool IsInsideStormSafeZone(Vector3 position) => IsInside(position, StormEdgeMargin);
+        public static bool IsInsideStormSafeZone(Vector3 position)
+        {
+            if (!_useProfileStormSafe)
+                return IsInside(position, StormEdgeMargin);
+
+            var local = position - _center;
+            var hx = (_halfExtentX - StormEdgeMargin) * _stormSafeScale;
+            var hz = (_halfExtentZ - StormEdgeMargin) * _stormSafeScale;
+            return Mathf.Abs(local.x) <= hx && Mathf.Abs(local.z) <= hz;
+        }
 
         public static float GetStormDepth(Vector3 position)
         {
             var local = position - _center;
+            if (_useProfileStormSafe)
+            {
+                var hx = (_halfExtentX - StormEdgeMargin) * _stormSafeScale;
+                var hz = (_halfExtentZ - StormEdgeMargin) * _stormSafeScale;
+                return Mathf.Max(Mathf.Abs(local.x) - hx, Mathf.Abs(local.z) - hz);
+            }
+
             var limitX = _halfExtentX - StormEdgeMargin;
             var limitZ = _halfExtentZ - StormEdgeMargin;
             return Mathf.Max(Mathf.Abs(local.x) - limitX, Mathf.Abs(local.z) - limitZ);
@@ -90,6 +125,12 @@ namespace HighSeas.World
             var y = 0.12f;
             var hx = _halfExtentX - margin;
             var hz = _halfExtentZ - margin;
+            if (_useProfileStormSafe)
+            {
+                hx *= _stormSafeScale;
+                hz *= _stormSafeScale;
+            }
+
             a = new Vector3(_center.x - hx, y, _center.z - hz);
             b = new Vector3(_center.x + hx, y, _center.z - hz);
             c = new Vector3(_center.x + hx, y, _center.z + hz);

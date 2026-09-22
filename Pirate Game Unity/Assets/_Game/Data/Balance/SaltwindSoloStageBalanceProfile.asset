@@ -1,0 +1,126 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ced4ae99c4b419d44b2fcbcc8175de21, type: 3}
+  m_Name: SaltwindSoloStageBalanceProfile
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Balance.StageBalanceProfile
+  profileId: saltwind_solo
+  schemaVersion: 1
+  balanceVersion: 1
+  encounterSchedule: {fileID: 11400000, guid: b83b2c95913b99a47a103f5fc2b2b8a5, type: 2}
+  enforceCompleteScheduleReferences: 1
+  graceSeconds: 2
+  stageDeadlineSeconds: 600
+  beaconDirectionHintSeconds: 300
+  beaconExactMarkerSeconds: 420
+  stormStartSeconds: 720
+  stormWarningLeadSeconds: 10
+  ambientRatePerSecond:
+  - 0.6
+  - 1.2
+  - 1.8
+  - 2.4
+  - 3
+  ambientBandDurationSeconds: 120
+  maxActiveEnemies: 80
+  reservedEncounterSlots: 8
+  bossAmbientRateMultiplier: 0.5
+  scheduledEliteSecondsA: 180
+  scheduledEliteSecondsB: 480
+  swarmStartSecondsA: 240
+  swarmStartSecondsB: 420
+  swarmDurationSeconds: 30
+  eventWarningSeconds: 5
+  maxSimultaneousCannonboats: 4
+  maxSimultaneousAreaDenial: 2
+  maxSimultaneousChargeWindups: 2
+  minChargeWarningSeconds: 1
+  minExplosiveWarningSeconds: 1.2
+  spawnRetryIntervalSeconds: 0.35
+  requiredEncounterTimeoutSeconds: 10
+  swarmIntensityMultiplier: 1.25
+  ordinaryEnemyGoldChance: 0.5
+  ordinaryEnemyGoldAmount: 1
+  specialistEnemyGoldAmount: 2
+  scheduledEliteGoldAmount: 25
+  randomPowerupChancePerKill: 0.01
+  randomPowerupMinIntervalSeconds: 20
+  repairSuppliesMaxHullFraction: 0.2
+  powderRushAttackSpeedBonus: 0.3
+  powderRushDurationSeconds: 8
+  deadCalmSlowFraction: 0.3
+  deadCalmDurationSeconds: 5
+  repairWreckMaxHullFraction: 0.25
+  powderCacheBonusGold: 20
+  signalBuoyOccupancySeconds: 8
+  salvageChestCount: 12
+  disableGoldTriggeredChestSpawn: 1
+  disableAutomaticRouteEvents: 1
+  explosiveBarrelFuseSeconds: 1.2
+  explosiveBarrelRadius: 4
+  explosiveBarrelDamage: 20
+  explosiveBarrelCount: 2
+  weaponSlotCap: 6
+  logbookSlotCap: 2
+  levelUpChoiceCount: 3
+  levelZeroToOneXpCost: 7
+  xpCurveMultiplier: 5.325000286102295
+  xpCurveExponent: 1.065000057220459
+  newWeaponOfferProtectionLevels: 04000000080000000c00000010000000
+  chestBasePrice: 20
+  chestPriceGrowth: 1.22
+  chestPriceIncrementBase: 25
+  marksPerQualifyingMinute: 2
+  marksPerQualifyingMinuteMinKills: 10
+  marksPerSpecialPoi: 3
+  marksPerScheduledElite: 5
+  marksBossVictory: 25
+  marksPerOvertimeMinute: 3
+  marksOvertimeCap: 15
+  runGoldExpiresAtRunEnd: 1
+  bankRunGoldToDoubloons: 0
+  overtimeInitialSpawnIntervalSeconds: 1.4
+  overtimeIntervalFloorSeconds: 0.35
+  overtimeIntervalDecayPerStep: 0.85
+  overtimePressureStepSeconds: 30
+  overtimeHpMultiplierBase: 2
+  overtimeHpMultiplierExponentPerMinute: 0.5
+  overtimeDamageBonusPerMinute: 0.12
+  pursuerWeightFirstTwoMinutes: 0.8
+  harrierWeightFirstTwoMinutes: 0.2
+  pursuerWeightAfterTwoMinutes: 0.6
+  harrierWeightAfterTwoMinutes: 0.4
+  stormSafeRegionStartFraction: 1
+  stormSafeRegionEndFraction: 0.4
+  stormContractionStartSeconds: 720
+  stormContractionEndSeconds: 900
+  stormOutsideDamagePerSecond: 8
+  starterWeaponIds:
+  - deck_cannons
+  - broadside_battery
+  - powder_kegs
+  - flying_cutlasses
+  - long_nine
+  - swivel_guns
+  weaponUnlocks:
+  - contentId: lightning_mast
+    marksCost: 60
+  - contentId: flamethrower
+    marksCost: 80
+  - contentId: mortar
+    marksCost: 100
+  - contentId: harpoon_gun
+    marksCost: 100
+  captainUnlocks:
+  - contentId: brine
+    marksCost: 100
+  - contentId: flint
+    marksCost: 140

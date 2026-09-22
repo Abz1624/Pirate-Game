@@ -4,6 +4,8 @@ namespace HighSeas.V3
     public static class V3PlaytestFlags
     {
         public const bool UnlockAllContent = true;
+        /// <summary>When a stage balance profile is active, only this flag bypasses Marks gates.</summary>
+        public const bool SaltwindDebugUnlockAll = false;
         public const bool EnableRunPlaytestHotkeys = true;
         public const bool EnableSpawnDirectorDebugUi = true;
         public const bool EnableEnemyIdentityLabels = true;

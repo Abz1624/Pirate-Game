@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using HighSeas.Balance;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
@@ -449,11 +450,10 @@ namespace HighSeas.UI
 
         static int GetPityTargetWeaponCount(int playerLevel)
         {
-            if (playerLevel >= 16) return 6;
-            if (playerLevel >= 12) return 5;
-            if (playerLevel >= 8) return 4;
-            if (playerLevel >= 4) return 3;
-            return 0;
+            var levels = StageBalanceProfileContext.IsActive
+                ? StageBalanceProfileContext.Export?.Progression?.NewWeaponOfferProtectionLevels
+                : null;
+            return SaltwindStageProgressionLogic.GetNewWeaponPityTargetCount(playerLevel, levels);
         }
 
         static void ApplyWeaponPityGuarantee(

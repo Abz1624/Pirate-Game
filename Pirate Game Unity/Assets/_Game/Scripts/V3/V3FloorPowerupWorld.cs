@@ -1,3 +1,4 @@
+using HighSeas.Balance;
 using HighSeas.Core;
 using HighSeas.Player;
 using HighSeas.World;
@@ -40,6 +41,11 @@ namespace HighSeas.V3
         bool _damageBuffActive;
         bool _speedBuffActive;
         float _bobTime;
+        float _dropCooldownRemaining;
+        float _powderRushTimer;
+        float _deadCalmTimer;
+        float _deadCalmMultiplier = 1f;
+        bool _powderRushActive;
 
         public int SpawnedThisStage => _spawnedThisStage;
 
@@ -66,21 +72,38 @@ namespace HighSeas.V3
             for (var i = 0; i < _agents.Length; i++)
                 Despawn(i);
             _spawnedThisStage = 0;
+            _dropCooldownRemaining = 0f;
+            _powderRushTimer = 0f;
+            _deadCalmTimer = 0f;
+            _deadCalmMultiplier = 1f;
+            _powderRushActive = false;
             ClearBuffs();
         }
 
-        public void TryRollOnKill(Vector3 position, bool isBoss)
+        public void TryRollOnKill(Vector3 position, bool isBoss, bool isElite = false)
         {
             if (!V3RunContext.IsActive || isBoss) return;
             if (_spawnedThisStage >= MaxPerStage) return;
 
+            var export = StageBalanceProfileContext.Export;
+            var dropChance = export?.Rewards?.RandomPowerupChancePerKill ?? DropChance;
+            var cooldown = export?.Rewards?.RandomPowerupMinIntervalSeconds ?? 0f;
+
             var rng = RunManager.Instance?.Rng;
-            if (rng == null || rng.PowerupFloat() >= DropChance) return;
+            if (rng == null) return;
+
+            var forceEliteDrop = isElite && StageBalanceProfileContext.IsActive;
+            if (!forceEliteDrop)
+            {
+                if (_dropCooldownRemaining > 0f) return;
+                if (rng.PowerupFloat() >= dropChance) return;
+            }
 
             var kind = V3PowerupCatalog.RollKind(rng, V3PowerupCatalog.UseExpandedPool());
             if (!TrySpawn(kind, position))
                 return;
 
+            _dropCooldownRemaining = cooldown;
             V3ToastHud.Instance?.Show($"{GetDisplayName(kind)} dropped!", 2f);
         }
 
@@ -161,10 +184,16 @@ namespace HighSeas.V3
         public void Tick(float dt, Vector3 playerPos)
         {
             if (!V3RunContext.IsActive) return;
-            if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
+            if (RunManager.Instance != null && (RunManager.Instance.IsRunEnded || RunManager.Instance.IsPaused))
+                return;
+
+            if (_dropCooldownRemaining > 0f)
+                _dropCooldownRemaining -= dt;
 
             _bobTime += dt;
             TickBuffs(dt);
+            TickPowderRush(dt);
+            TickDeadCalm(dt);
 
             for (var i = 0; i < _agents.Length; i++)
             {
@@ -202,8 +231,10 @@ namespace HighSeas.V3
                     var player = FindFirstObjectByType<PlayerShipController>();
                     if (player?.Damage != null && player.Damage.IsAlive)
                     {
-                        var heal = player.Damage.MaxHP * 0.15f;
-                        player.Damage.Heal(heal);
+                        var maxFraction = StageBalanceProfileContext.Export?.Rewards?.RepairSuppliesMaxHullFraction ?? 0.15f;
+                        var heal = player.Damage.MaxHP * maxFraction;
+                        var missing = player.Damage.MaxHP - player.Damage.CurrentHP;
+                        player.Damage.Heal(Mathf.Min(heal, missing));
                     }
                     break;
                 }
@@ -223,15 +254,14 @@ namespace HighSeas.V3
                     ApplySpeedBuff(1.45f);
                     break;
                 case V3FloorPowerupKind.PowderRush:
-                    FindFirstObjectByType<Weapons.WeaponController>()?.CaptainFireAllWeapons();
-                    _battleSignalTimer = 4f;
-                    ApplyDamageBuff(1.15f);
+                    ApplyPowderRush();
                     break;
                 case V3FloorPowerupKind.MagneticTide:
-                    Pickups.PickupWorld.Instance?.AttractAllInfamy();
+                    Pickups.PickupWorld.Instance?.AttractLooseRewards();
                     break;
                 case V3FloorPowerupKind.DeadCalm:
-                    FindFirstObjectByType<Enemies.EncounterSpawner>()?.SetSpawnRateMultiplier(0.55f);
+                    if (!RunManager.Instance.IsBossFightState())
+                        ApplyDeadCalm();
                     break;
             }
 
@@ -301,8 +331,49 @@ namespace HighSeas.V3
         {
             _battleSignalTimer = 0f;
             _tailwindTimer = 0f;
+            _powderRushTimer = 0f;
+            _powderRushActive = false;
+            _deadCalmTimer = 0f;
             RemoveDamageBuff();
             RemoveSpeedBuff();
+            FindFirstObjectByType<Enemies.EncounterSpawner>()?.SetSpawnRateMultiplier(1f);
+        }
+
+        void ApplyPowderRush()
+        {
+            var export = StageBalanceProfileContext.Export;
+            var duration = export?.Rewards?.PowderRushDurationSeconds ?? 8f;
+            var bonus = export?.Rewards?.PowderRushAttackSpeedBonus ?? 0.3f;
+            _powderRushTimer = duration;
+            _powderRushActive = true;
+            ApplyDamageBuff(1f + bonus);
+        }
+
+        void TickPowderRush(float dt)
+        {
+            if (!_powderRushActive) return;
+            _powderRushTimer -= dt;
+            if (_powderRushTimer <= 0f)
+            {
+                _powderRushActive = false;
+                RemoveDamageBuff();
+            }
+        }
+
+        void ApplyDeadCalm()
+        {
+            var export = StageBalanceProfileContext.Export;
+            var slow = export?.Rewards?.DeadCalmSlowFraction ?? 0.3f;
+            _deadCalmTimer = export?.Rewards?.DeadCalmDurationSeconds ?? 5f;
+            FindFirstObjectByType<Enemies.EncounterSpawner>()?.SetSpawnRateMultiplier(1f - slow);
+        }
+
+        void TickDeadCalm(float dt)
+        {
+            if (_deadCalmTimer <= 0f) return;
+            _deadCalmTimer -= dt;
+            if (_deadCalmTimer <= 0f)
+                FindFirstObjectByType<Enemies.EncounterSpawner>()?.SetSpawnRateMultiplier(1f);
         }
 
         void Despawn(int index)
@@ -318,6 +389,9 @@ namespace HighSeas.V3
             kind switch
             {
                 V3FloorPowerupKind.RepairSupplies => "Repair Supplies",
+                V3FloorPowerupKind.PowderRush => "Powder Rush",
+                V3FloorPowerupKind.MagneticTide => "Magnetic Tide",
+                V3FloorPowerupKind.DeadCalm => "Dead Calm",
                 V3FloorPowerupKind.BattleSignal => "Battle Signal",
                 V3FloorPowerupKind.Tailwind => "Tailwind",
                 V3FloorPowerupKind.SalvageChime => "Salvage Chime",
