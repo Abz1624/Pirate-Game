@@ -1,0 +1,207 @@
+﻿{
+    "events":  [
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  1,
+                       "event":  "ambient_spawn",
+                       "t":  2.025926
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  5,
+                       "event":  "ambient_spawn",
+                       "t":  4.762034
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  6,
+                       "event":  "ambient_spawn",
+                       "t":  6.432125
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "shark",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  7,
+                       "event":  "ambient_spawn",
+                       "t":  8.105246
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  8,
+                       "event":  "ambient_spawn",
+                       "t":  11.18483
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "shark",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  9,
+                       "event":  "ambient_spawn",
+                       "t":  15.33639
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "shark",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  10,
+                       "event":  "ambient_spawn",
+                       "t":  17.00876
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  11,
+                       "event":  "ambient_spawn",
+                       "t":  18.67886
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  12,
+                       "event":  "ambient_spawn",
+                       "t":  20.3515
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "shark",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  13,
+                       "event":  "ambient_spawn",
+                       "t":  31.6245
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  14,
+                       "event":  "ambient_spawn",
+                       "t":  34.71078
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "shark",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  14,
+                       "event":  "ambient_spawn",
+                       "t":  37.08928
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  14,
+                       "event":  "ambient_spawn",
+                       "t":  39.11121
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  15,
+                       "event":  "ambient_spawn",
+                       "t":  41.87152
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  14,
+                       "event":  "ambient_spawn",
+                       "t":  44.97285
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  13,
+                       "event":  "ambient_spawn",
+                       "t":  46.64328
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "shark",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  11,
+                       "event":  "ambient_spawn",
+                       "t":  48.31592
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  11,
+                       "event":  "ambient_spawn",
+                       "t":  50.33539
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "shark",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  8,
+                       "event":  "ambient_spawn",
+                       "t":  52.00863
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "shark",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  8,
+                       "event":  "ambient_spawn",
+                       "t":  53.67986
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  8,
+                       "event":  "ambient_spawn",
+                       "t":  55.34668
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  5,
+                       "event":  "ambient_spawn",
+                       "t":  59.84216
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "shark",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  5,
+                       "event":  "ambient_spawn",
+                       "t":  61.85924
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "swordfish",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  5,
+                       "event":  "ambient_spawn",
+                       "t":  64.23283
+                   },
+                   {
+                       "band":  0,
+                       "enemyId":  "shark",
+                       "ambientBudgetCarry":  0,
+                       "activeEnemies":  6,
+                       "event":  "ambient_spawn",
+                       "t":  66.25228
+                   }
+               ],
+    "seed":  1622933822,
+    "note":  "Excerpt from developer playtest telemetry (C02 sign-off). Full file under AppData LocalLow.",
+    "stageProfileHash":  "3a45b3c6a7c278a8b3dfbd5b85f2d3bcb5237cfcc20c1d880c26070fc8dd917d"
+}

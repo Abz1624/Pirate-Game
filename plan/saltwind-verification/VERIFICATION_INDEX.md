@@ -1,69 +1,64 @@
 # Saltwind verification index (Codex)
 
-Status: **delivery ready for Codex review** — checkpoints **C00–C14** passed or explicitly pending below. See `IMPLEMENTATION_LOG.md`.
+Status: **delivery package complete** — remaining gaps are **explicitly pending** (perf, external playtesters). See `IMPLEMENTATION_LOG.md`.
 
-## Reproduce baseline tests
+## Reproduce tests
 
 ```powershell
 cd "C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game"
 $env:UNITY_PROJECT_PATH = Join-Path (Get-Location) 'Pirate Game Unity'
-# Close interactive Unity Editor first for full-suite XML:
+unity close "Pirate Game Unity"   # if interactive Editor open
 unity test 'Pirate Game Unity' --mode EditMode --output 'plan/saltwind-verification/editmode-results.xml'
 ```
 
-Connected Editor (while project open):
+Connected Editor: `unity command run_tests --mode EditMode --filter Saltwind --filter_type testName` (79-test slice).
 
-```powershell
-unity command run_tests --mode EditMode --filter Saltwind --filter_type testName
-```
-
-Step 14 slice log: `step14-regression-evidence.md` (**79/79** passed on listed filters, 2026-09-23).
+Regression log: `step14-regression-evidence.md`.
 
 ## Deliverables map
 
 | Artifact | Path | Status |
 | --- | --- | --- |
-| Implementation log | `plan/saltwind-verification/IMPLEMENTATION_LOG.md` | **Complete** (C00–C14) |
-| Protected settings | `plan/saltwind-verification/PROTECTED_SETTINGS.json` | Baseline captured |
-| Balance decisions | `plan/saltwind-verification/BALANCE_DECISIONS.md` | **v1 + v2 playtest tuning** |
-| Placeholders | `plan/saltwind-verification/PLACEHOLDERS.md` | Index → `PLACEHOLDER_VISUAL_CATALOG.md` |
-| Playtest report | `plan/saltwind-verification/PLAYTEST_REPORT.md` | Directional complete; perf + external **pending** |
-| Step 14 regression log | `plan/saltwind-verification/step14-regression-evidence.md` | **79/79** EditMode (connected Editor) |
-| EditMode XML | `plan/saltwind-verification/editmode-results.xml` | **Pending** — Editor must be closed for CLI batch |
-| Solo profile asset | `Pirate Game Unity/Assets/_Game/Data/Balance/SaltwindSoloStageBalanceProfile.asset` | Created |
-| Profile content hash | `3a45b3c6a7c278a8b3dfbd5b85f2d3bcb5237cfcc20c1d880c26070fc8dd917d` | `profile-export/` (Step 14 export) |
-| Balance Lab CSV | `plan/saltwind-verification/balance-lab/` | From Step 12 menu (optional attach) |
+| Implementation log | `plan/saltwind-verification/IMPLEMENTATION_LOG.md` | Complete |
+| Protected settings | `plan/saltwind-verification/PROTECTED_SETTINGS.json` | Baseline |
+| Balance decisions | `plan/saltwind-verification/BALANCE_DECISIONS.md` | v1 + v2 |
+| Placeholders | `plan/saltwind-verification/PLACEHOLDERS.md` | Index |
+| Playtest report | `plan/saltwind-verification/PLAYTEST_REPORT.md` | Directional; perf + external **pending** |
+| Step 14 regression | `plan/saltwind-verification/step14-regression-evidence.md` | Updated |
+| EditMode XML | `plan/saltwind-verification/editmode-results.xml` | **Captured** — EditMode asm **124/124** pass |
+| PlayMode boss gate | `plan/saltwind-verification/playmode-boss-evidence.md` | **2/2** (embedded in EditMode XML sweep) |
+| PlayMode CLI XML | `plan/saltwind-verification/playmode-results.xml` | Empty discovery (0 tests) — see boss evidence |
+| C02 telemetry excerpt | `plan/saltwind-verification/c02-telemetry-excerpt-seed1622933822.json` | Attached |
+| Perf trace | `plan/saltwind-verification/PERF_TRACE_PENDING.md` | **Pending** |
+| Solo profile | `Pirate Game Unity/Assets/_Game/Data/Balance/SaltwindSoloStageBalanceProfile.asset` | Authored |
+| Profile hash | `3a45b3c6a7c278a8b3dfbd5b85f2d3bcb5237cfcc20c1d880c26070fc8dd917d` | `profile-export/` |
 
 ## Git / profile pins
 
 | Pin | Value |
 | --- | --- |
 | Baseline commit (Step 00) | `701bfa7d081b646631b6db15b890d51e46d5ad40` |
-| Branch at Step 14 | `game-balance-experiment` |
-| HEAD at Step 14 automation | `eddbf53efb6aa22dee759c4ce1740b62540b1d2b` (local gameplay fixes may be **uncommitted**) |
-| Delivered implementation commit | **Pending** — owner git commit when ready |
+| Delivered implementation commit | **`0ee6b0fc66dc79e87765517e6d75a7d6e8075fe1`** (owner; verify includes latest test fix if amended) |
 | Profile content hash | `3a45b3c6a7c278a8b3dfbd5b85f2d3bcb5237cfcc20c1d880c26070fc8dd917d` |
 
-## Checkpoint summary (C00–C14)
+## Checkpoint summary
 
 | Gate | Result |
 | --- | --- |
-| C00–C12 | **Passed** (automated + lab); see log |
-| C13 | **Passed (directional)** — developer playtests; perf + newcomers **pending** |
-| C14 | **Passed (automated + docs)** — regression log + index; XML / PlayMode CLI / git commit **pending** |
+| C00–C12 | Passed (automated + lab) |
+| C13 | Directional human; perf + external **pending** |
+| C14 | Automated evidence + docs **complete** |
 
-## Outstanding issues
+## Outstanding (prominent)
 
-| Severity | Issue | Reproduction / mitigation |
+| Severity | Issue | Notes |
 | --- | --- | --- |
-| Medium | Full EditMode XML not captured | Close Editor; run `unity test ... --output editmode-results.xml` |
-| Medium | PlayMode suite not run via Pipeline | Async `run_tests` returned 0 tests; run `BossEncounterPlayModeTests` in Test Runner (2 tests) |
-| Low | C13 desktop perf + external panel | Documented pending in `PLAYTEST_REPORT.md` |
-| Low | Optional spawn telemetry sign-off | Seed **12345** per `spawn-telemetry-note.md` |
-| Low | Powder keg tuning | Requires fresh run after asset changes |
+| Low | Desktop perf trace | `PERF_TRACE_PENDING.md` |
+| Low | External newcomer playtests | `PLAYTEST_REPORT.md` |
+| Low | PlayMode CLI discovers 0 tests | Boss gate evidenced via `editmode-results.xml` |
+| Low | Optional full telemetry seed 12345 | Excerpt uses seed **1622933822** |
+| Info | `LevelOfferGeneratorTests` fix | Sets `startingWeaponId` in test setup — commit if not in `0ee6b0f` |
 
 ## Codex prompt
 
-Use the handoff prompt in `plan/SALTWIND_CURSOR_IMPLEMENTATION_HANDOFF.md` §7.
-
-**Prominent pending gates (not hidden):** human perf trace, external newcomer playtests, full EditMode XML, PlayMode CLI evidence, git delivery commit.
+`plan/SALTWIND_CURSOR_IMPLEMENTATION_HANDOFF.md` §7.

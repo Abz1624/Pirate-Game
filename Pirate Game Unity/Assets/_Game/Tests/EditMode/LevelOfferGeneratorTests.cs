@@ -34,6 +34,7 @@ namespace HighSeas.Tests
                 MakeLogbook("log_speed", StatId.AttackSpeed)
             };
             _settings.alwaysIncludeNewWeapon = false;
+            _settings.startingWeaponId = "deck_cannons";
         }
 
         [Test]

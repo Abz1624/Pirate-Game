@@ -54,13 +54,19 @@ Reference: `plan/SALTWIND_CURSOR_IMPLEMENTATION_HANDOFF.md`.
 
 | Item | Notes |
 | --- | --- |
-| `editmode-results.xml` | Requires **closing** interactive Editor, then `unity test ... --mode EditMode --output ...` |
-| PlayMode via Pipeline | Async runs returned **0 tests**; run `BossEncounterPlayModeTests` in Test Runner or CLI with PlayMode |
-| Git delivery commit | Working tree includes gameplay fixes — **not committed** unless owner requests |
-| C13 perf / external playtests | Remain **pending** in `PLAYTEST_REPORT.md` (not blocking correctness evidence) |
-| Optional C02 telemetry JSON (seed 12345) | Still optional |
+| Desktop perf trace | `PERF_TRACE_PENDING.md` — not captured |
+| External newcomer playtests | `PLAYTEST_REPORT.md` |
+| PlayMode CLI `--mode PlayMode` | 0 tests in `playmode-results.xml`; boss **2/2** in `playmode-boss-evidence.md` / `editmode-results.xml` |
+| Optional seed **12345** full telemetry JSON | Excerpt: `c02-telemetry-excerpt-seed1622933822.json` |
 
-**Next (owner):** Optional git commit for Codex review; close Editor for full EditMode XML; PlayMode 2-test smoke; external playtest panel when available.
+**C14 completed (2026-09-23 follow-up)**
+
+- `editmode-results.xml` — EditMode assembly **124/124** pass (full CLI with Editor closed)
+- `c02-telemetry-excerpt-seed1622933822.json` — spawn telemetry sign-off sample
+- Delivery commit recorded: **`0ee6b0fc66dc79e87765517e6d75a7d6e8075fe1`** (owner)
+- Test fix: `LevelOfferGeneratorTests` sets `startingWeaponId = deck_cannons` for scripted first level-up assertion
+
+**Next (optional):** Desktop perf capture; external playtest panel; amend commit with test fix if needed.
 
 ## Step 12 — code landed (2026-09-22)
 

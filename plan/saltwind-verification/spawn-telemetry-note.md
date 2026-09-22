@@ -39,8 +39,8 @@ Export path after death or results screen:
 | --- | --- |
 | EditMode gates (modifiers, budget, schedule logic) | **Green** — `SpawnSchedulingGateTests`, `EncounterScheduleRunLogicTests` |
 | Composition bands (Step 04) | **Green** — `SaltwindAmbientCompositionLogic` + `SaltwindAmbientCompositionGateTests` |
-| Live telemetry events wired | **Done** — capture JSON on next seeded run for sign-off |
-| Human playtest at normal speed | **Pending** — Step 13 |
+| Live telemetry events wired | **Done** — excerpt `c02-telemetry-excerpt-seed1622933822.json` (developer run seed **1622933822**, not 12345) |
+| Human playtest at normal speed | **Directional** — `PLAYTEST_REPORT.md` |
 
 ## Unit-test coverage
 

@@ -47,6 +47,6 @@ unity test 'Pirate Game Unity' --mode EditMode --output 'plan/saltwind-verificat
 
 ## Suggested order right now
 
-1. Optional **git commit** of Saltwind slice for Codex (`VERIFICATION_INDEX.md` pins baseline + profile hash).
-2. Close Editor → `editmode-results.xml` + PlayMode CLI if CI evidence needed.
-3. C13 perf / external playtests when hardware and panel available.
+1. Optional **amend commit** with `LevelOfferGeneratorTests.cs` fix if not in delivery commit.
+2. Desktop perf trace when ready (`PERF_TRACE_PENDING.md`).
+3. External playtests when panel available.
