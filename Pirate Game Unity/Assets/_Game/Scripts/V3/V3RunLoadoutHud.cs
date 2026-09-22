@@ -3,6 +3,7 @@ using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.UI;
+using HighSeas.V3.MultiShip;
 using HighSeas.Weapons;
 using TMPro;
 using UnityEngine;
@@ -184,7 +185,8 @@ namespace HighSeas.V3
         void Start()
         {
             _levels = LevelSystem.Instance;
-            _weapons = FindFirstObjectByType<WeaponController>();
+            _weapons = V3MultiShipWeaponLoadouts.FindLocalHumanWeaponController()
+                ?? FindFirstObjectByType<WeaponController>();
             _database = GameDatabaseLoader.Load();
             if (_levels != null)
                 _levels.LoadoutChanged += Refresh;
@@ -202,7 +204,9 @@ namespace HighSeas.V3
         void Refresh()
         {
             if (_levels == null) _levels = LevelSystem.Instance;
-            if (_weapons == null) _weapons = FindFirstObjectByType<WeaponController>();
+            if (_weapons == null)
+                _weapons = V3MultiShipWeaponLoadouts.FindLocalHumanWeaponController()
+                    ?? FindFirstObjectByType<WeaponController>();
             if (_database == null) _database = GameDatabaseLoader.Load();
 
             RefreshWeaponSlots();

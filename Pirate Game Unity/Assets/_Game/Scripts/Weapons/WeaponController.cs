@@ -59,6 +59,7 @@ namespace HighSeas.Weapons
         const float FlamethrowerTickInterval = 0.08f;
         const float FlamethrowerStreamSeconds = 2.75f;
         const float FlamethrowerRechargeSeconds = 0.55f;
+        const float PowderKegBlastBaseMult = 0.72f;
 
         public bool IsFlamethrowerStreaming
         {
@@ -311,7 +312,7 @@ namespace HighSeas.Weapons
                 ResolveOwnerAndServices();
             if (_player == null || _projectiles == null) return;
             if (_enemies == null && !V3RunSession.AllowShipVsShipCombat) return;
-            if (V3PlaytestFlags.DisableShipAutoFire && V3RunContext.IsActive) return;
+            if (V3PlaytestFlags.ShouldDisableShipAutoFire && V3RunContext.IsActive) return;
             TickWeapons(Time.deltaTime);
             TickCutlassDamage(Time.deltaTime);
         }
@@ -362,7 +363,7 @@ namespace HighSeas.Weapons
                             FireProjectile(ref w, stats, rng, 1);
                         break;
                     case WeaponPattern.FanVolley:
-                        FireFan(ref w, stats, rng, ResolveFanPelletCount(w));
+                        FireFan(ref w, stats, rng, ResolveFanPelletCount(w, stats));
                         break;
                     case WeaponPattern.Orbit:
                         FireOrbit(ref w, stats, rng);
@@ -501,7 +502,7 @@ namespace HighSeas.Weapons
                         FireProjectile(ref w, stats, rng, 1);
                     break;
                 case WeaponPattern.FanVolley:
-                    FireFan(ref w, stats, rng, ResolveFanPelletCount(w));
+                    FireFan(ref w, stats, rng, ResolveFanPelletCount(w, stats));
                     break;
                 case WeaponPattern.TrailZone:
                     if (w.def.id == "flamethrower" || w.def.id == "burning_oil")
@@ -570,11 +571,16 @@ namespace HighSeas.Weapons
             }
         }
 
-        static int ResolveFanPelletCount(WeaponInstance w)
+        static int ResolveProjectileQuantity(WeaponInstance w, PlayerStats stats)
         {
-            if (w.def != null && w.def.id == "broadside_battery")
-                return 3;
-            return 3 + w.quantityBonus;
+            if (w.def == null) return 1;
+            return Mathf.Max(1, w.def.baseQuantity + w.quantityBonus + Mathf.FloorToInt(stats.Get(StatId.Quantity)));
+        }
+
+        static int ResolveFanPelletCount(WeaponInstance w, PlayerStats stats)
+        {
+            var basePellets = w.def != null && w.def.id == "broadside_battery" ? 3 : 3 + w.quantityBonus;
+            return basePellets + Mathf.FloorToInt(stats.Get(StatId.Quantity));
         }
 
         void FireFan(ref WeaponInstance w, PlayerStats stats, RunRng rng, int pellets)
@@ -692,6 +698,22 @@ namespace HighSeas.Weapons
         }
 
         void FirePierceLane(ref WeaponInstance w, PlayerStats stats, RunRng rng, Vector3 dir, int primaryTarget)
+        {
+            var volleys = ResolveProjectileQuantity(w, stats);
+            for (var v = 0; v < volleys; v++)
+            {
+                var laneDir = dir;
+                if (volleys > 1)
+                {
+                    var spread = (v - (volleys - 1) * 0.5f) * 4f;
+                    laneDir = Quaternion.Euler(0f, spread, 0f) * dir;
+                }
+
+                FirePierceLaneVolley(ref w, stats, rng, laneDir, v == 0 ? primaryTarget : -1);
+            }
+        }
+
+        void FirePierceLaneVolley(ref WeaponInstance w, PlayerStats stats, RunRng rng, Vector3 dir, int primaryTarget)
         {
             NotifyFire(w.def, dir, primaryTarget);
             var origin = _player.Position;
@@ -857,7 +879,7 @@ namespace HighSeas.Weapons
                     continue;
                 }
 
-                var pellets = Mathf.Max(2, 1 + w.quantityBonus / 2);
+                var pellets = Mathf.Max(2, ResolveProjectileQuantity(w, stats));
                 var speed = w.def.projectileSpeed * w.speedMult * stats.ProjectileSpeed;
                 var size = 0.2f * w.sizeMult * stats.Size;
                 var hits = 0;
@@ -1239,12 +1261,19 @@ namespace HighSeas.Weapons
                 armTime = 0.2f,
                 lifeTime = 45f,
                 triggerRadius = 3f * w.sizeMult * stats.Size,
-                blastRadius = 2.8f * w.sizeMult * stats.Size,
+                blastRadius = 3.2f * w.sizeMult * stats.Size,
                 baseDamage = w.def.baseDamage,
                 damageBonus = w.damageBonus,
                 procCoefficient = w.def.procCoefficient,
                 visual = visual
             });
+        }
+
+        static float HorizontalDistance(Vector3 a, Vector3 b)
+        {
+            a.y = 0f;
+            b.y = 0f;
+            return Vector3.Distance(a, b);
         }
 
         void TickPowderKegs(float dt, PlayerStats stats, RunRng rng)
@@ -1281,7 +1310,7 @@ namespace HighSeas.Weapons
                 for (var ai = 0; ai < agents.Length; ai++)
                 {
                     if (!agents[ai].active) continue;
-                    if (Vector3.Distance(agents[ai].position, keg.position) > keg.triggerRadius) continue;
+                    if (HorizontalDistance(agents[ai].position, keg.position) > keg.triggerRadius) continue;
                     triggered = true;
                     break;
                 }
@@ -1292,25 +1321,29 @@ namespace HighSeas.Weapons
                     continue;
                 }
 
-                var blastRadius = GetPowderKegBlastRadius(keg.blastRadius);
+                var blastRadius = GetPowderKegBlastRadius(Mathf.Max(keg.blastRadius, keg.triggerRadius));
                 for (var ai = 0; ai < agents.Length; ai++)
                 {
                     if (!agents[ai].active) continue;
-                    if (Vector3.Distance(agents[ai].position, keg.position) > blastRadius) continue;
-                    var dmg = DamageSystem.RollDamage(
-                        keg.baseDamage * 1.5f,
+                    if (HorizontalDistance(agents[ai].position, keg.position) > blastRadius) continue;
+                    var dmg = RollPowderKegBlastDamage(
+                        keg.baseDamage,
                         keg.damageBonus,
                         stats,
-                        agents[ai].isElite,
-                        0f,
                         rng,
-                        keg.procCoefficient,
-                        "powder_kegs",
-                        DamageProcKind.TriggeredItem);
-                    _enemies.ApplyDamage(ai, dmg, false);
+                        agents[ai].isElite,
+                        keg.procCoefficient);
+                    _enemies.ApplyDamage(ai, dmg, false, weaponId: "powder_kegs");
                 }
 
-                V3ShipCombatRegistry.ApplyRadiusDamage(_player, keg.position, blastRadius, keg.baseDamage * 1.5f * keg.damageBonus, false, "powder_kegs");
+                var shipBlastDamage = RollPowderKegBlastDamage(
+                    keg.baseDamage,
+                    keg.damageBonus,
+                    stats,
+                    rng,
+                    false,
+                    keg.procCoefficient);
+                V3ShipCombatRegistry.ApplyRadiusDamage(_player, keg.position, blastRadius, shipBlastDamage, false, "powder_kegs");
 
                 _juice?.OnMineExploded(keg.position, blastRadius);
                 if (WeaponEvolutionCatalog.GetBehaviorModifier("powder_kegs") == "devils_wake")
@@ -1493,6 +1526,26 @@ namespace HighSeas.Weapons
                 ? V3CaptainActiveController.Instance.PowderKegBlastRadiusMultiplier
                 : 1f;
             return baseRadius * mult;
+        }
+
+        static float RollPowderKegBlastDamage(
+            float baseDamage,
+            float weaponLevelMult,
+            PlayerStats stats,
+            RunRng rng,
+            bool targetIsElite,
+            float procCoefficient)
+        {
+            return DamageSystem.RollDamage(
+                baseDamage * PowderKegBlastBaseMult,
+                weaponLevelMult,
+                stats,
+                targetIsElite,
+                0f,
+                rng,
+                procCoefficient,
+                "powder_kegs",
+                DamageProcKind.TriggeredItem);
         }
 
         Transform EnsureSkiffVisualRoot()

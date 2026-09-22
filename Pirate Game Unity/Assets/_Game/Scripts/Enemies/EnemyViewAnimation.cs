@@ -19,9 +19,9 @@ namespace HighSeas.Enemies
                 if (animator == null) continue;
 
                 animator.speed = speed;
-                animator.ResetTrigger("Attack");
-                animator.ResetTrigger("WindUp");
-                animator.ResetTrigger("Swim");
+                SafeResetTrigger(animator, "Attack");
+                SafeResetTrigger(animator, "WindUp");
+                SafeResetTrigger(animator, "Swim");
 
                 var swimHash = Animator.StringToHash("Armature_Swim");
                 var layerPhase = (phase + i * 0.137f) % 1f;
@@ -72,18 +72,44 @@ namespace HighSeas.Enemies
 
                 if (isSpringing)
                 {
-                    animator.ResetTrigger("Swim");
-                    animator.SetTrigger("WindUp");
+                    SafeResetTrigger(animator, "Swim");
+                    SafeSetTrigger(animator, "WindUp");
                 }
                 else
                 {
-                    animator.ResetTrigger("WindUp");
-                    animator.ResetTrigger("Attack");
-                    animator.SetTrigger("Swim");
+                    SafeResetTrigger(animator, "WindUp");
+                    SafeResetTrigger(animator, "Attack");
+                    SafeSetTrigger(animator, "Swim");
                 }
             }
 
             wasSpringing = isSpringing;
+        }
+
+        static void SafeResetTrigger(Animator animator, string name)
+        {
+            if (animator == null || string.IsNullOrEmpty(name)) return;
+            foreach (var param in animator.parameters)
+            {
+                if (param.type == AnimatorControllerParameterType.Trigger && param.name == name)
+                {
+                    animator.ResetTrigger(name);
+                    return;
+                }
+            }
+        }
+
+        static void SafeSetTrigger(Animator animator, string name)
+        {
+            if (animator == null || string.IsNullOrEmpty(name)) return;
+            foreach (var param in animator.parameters)
+            {
+                if (param.type == AnimatorControllerParameterType.Trigger && param.name == name)
+                {
+                    animator.SetTrigger(name);
+                    return;
+                }
+            }
         }
 
         static float HashTo01(int seed)

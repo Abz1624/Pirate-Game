@@ -4,6 +4,7 @@ using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Player;
 using HighSeas.UI;
+using HighSeas.V3.MultiShip;
 using HighSeas.Weapons;
 using TMPro;
 using UnityEngine;
@@ -81,7 +82,8 @@ namespace HighSeas.V3
 
             EnsureItemRow(root);
             _levels = LevelSystem.Instance;
-            _weapons = ResolveHumanWeaponController();
+            _weapons = V3MultiShipWeaponLoadouts.FindLocalHumanWeaponController()
+                       ?? ResolveHumanWeaponController();
             _database = GameDatabaseLoader.Load();
         }
 
@@ -155,7 +157,9 @@ namespace HighSeas.V3
         {
             if (_weaponRow == null) return;
             if (_levels == null) _levels = LevelSystem.Instance;
-            if (_weapons == null) _weapons = ResolveHumanWeaponController();
+            if (_weapons == null)
+                _weapons = V3MultiShipWeaponLoadouts.FindLocalHumanWeaponController()
+                           ?? ResolveHumanWeaponController();
             if (_database == null) _database = GameDatabaseLoader.Load();
 
             var cap = CombatExperimentContext.Active.weaponSlotCap;

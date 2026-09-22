@@ -21,7 +21,7 @@ MonoBehaviour:
     startDelaySeconds: 0
     triggerTimeSeconds: 0
     repeatIntervalSeconds: 0
-    durationSeconds: 120
+    durationSeconds: 0
     spawnIntervalSeconds: 0.8333333
     cooldownAfterCompleteSeconds: 0
     maxActiveFromProfile: 0

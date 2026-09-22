@@ -102,6 +102,13 @@ namespace HighSeas.Enemies
             if (RunManager.Instance.IsOvertime)
                 return;
 
+            if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export != null &&
+                !SaltwindStageTimelineLogic.ShouldTickAmbientSchedule(
+                    RunManager.Instance.ElapsedSeconds,
+                    false,
+                    StageBalanceProfileContext.Export.Timing.StageDeadlineSeconds))
+                return;
+
             Tick(Time.deltaTime);
         }
 
@@ -397,8 +404,12 @@ namespace HighSeas.Enemies
             if (profile?.enemy == null || enemyWorld == null || player == null)
                 return 0;
 
-            if (StageBalanceProfileContext.IsActive && profile.enemy.isBoss && RunManager.Instance != null)
-                hpMult *= SaltwindFinaleLogic.GetOrdinaryTimeHpMultiplier(RunManager.Instance.ElapsedSeconds);
+            if (StageBalanceProfileContext.IsActive && RunManager.Instance != null)
+            {
+                var elapsed = RunManager.Instance.ElapsedSeconds;
+                hpMult *= SaltwindFinaleLogic.GetOrdinaryTimeHpMultiplier(elapsed);
+                dmgMult *= SaltwindFinaleLogic.GetOrdinaryTimeDamageMultiplier(elapsed);
+            }
 
             if (!ignoreCapSoft && enemyWorld.ActiveCount >= GetEnemyCap())
                 return 0;
@@ -437,12 +448,13 @@ namespace HighSeas.Enemies
                 if (role == FormationRole.Leader)
                     leaderAgentId = -1;
 
-                if (!SpawnPlacementService.TryPickOffScreenPosition(
+                if (!SpawnPlacementService.TryPickSpawnPosition(
                         player,
                         GetCamera(),
                         profile.placement,
                         spawnDef.radius + 0.35f,
                         RunManager.Instance.Rng,
+                        allowNearPlayerFallback: runEncounterId > 0 || spawnDef.isBoss,
                         out var pos))
                     continue;
 
@@ -455,7 +467,8 @@ namespace HighSeas.Enemies
                     ref pos);
 
                 if (!SpawnPlacementService.IsFormationPositionValid(
-                        pos, spawnDef.radius + 0.35f, GetCamera(), profile.placement))
+                        pos, spawnDef.radius + 0.35f, GetCamera(), profile.placement)
+                    && !(runEncounterId > 0 || spawnDef.isBoss))
                     continue;
 
                 var slot = enemyWorld.SpawnFromProfile(

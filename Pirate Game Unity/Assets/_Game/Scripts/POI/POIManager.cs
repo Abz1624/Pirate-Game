@@ -41,6 +41,7 @@ namespace HighSeas.POI
         int _bossEncounterId;
         bool _powderCacheCleared;
         readonly HashSet<int> _powderCacheAmbushStarted = new();
+        readonly Dictionary<int, POIInteractable> _interactables = new();
         readonly HashSet<int> _signalBuoyChargeAnnounced = new();
         readonly List<int> _powderCacheEnemySlots = new();
         readonly List<int> _pendingChestPoiIndices = new();
@@ -54,6 +55,7 @@ namespace HighSeas.POI
 
         public int PaidChestCount => _paidChestCount;
         public bool BossSummoned => _bossSummoned;
+        public bool IsPowderCacheAmbushStarted(int index) => _powderCacheAmbushStarted.Contains(index);
         public bool BossDefeated => _bossDefeated;
 
         public bool IsPoiConsumed(int index) =>
@@ -144,6 +146,7 @@ namespace HighSeas.POI
             _signalBuoysCompleted.Clear();
             _pendingChestPoiIndices.Clear();
             _chestProgressSpawnPaidIndex = -1;
+            _interactables.Clear();
         }
 
         void BuildMarkers()
@@ -176,6 +179,20 @@ namespace HighSeas.POI
             var marker = CreateMarker(poi.type, poi.position, root);
             var trigger = marker.AddComponent<POIInteractable>();
             trigger.Initialize(this, poi.type, poiIndex, juiceSettings, pacingSettings);
+            _interactables[poiIndex] = trigger;
+        }
+
+        public void HidePoiMarkerVisual(int index)
+        {
+            if (_interactables.TryGetValue(index, out var interactable) && interactable != null)
+                interactable.SetMarkerHidden(true);
+        }
+
+        void ConsumePoiMarker(int index)
+        {
+            MarkPoiUsed(index);
+            if (_interactables.TryGetValue(index, out var interactable) && interactable != null)
+                interactable.ForceConsume();
         }
 
         void TickProgressiveChestSpawns()
@@ -348,7 +365,10 @@ namespace HighSeas.POI
             switch (type)
             {
                 case POIType.SalvageChest:
-                    return TryOpenSalvageChest(player, index);
+                    if (!TryOpenSalvageChest(player, index))
+                        return false;
+                    ConsumePoiMarker(index);
+                    return true;
                 case POIType.LighthouseOfFortune:
                     RunManager.Instance.Stats.AddModifier(new StatModifier(StatId.Damage, 0f, 1.08f));
                     break;
@@ -374,8 +394,7 @@ namespace HighSeas.POI
                         3f);
                     break;
                 case POIType.BossBeacon:
-                    SummonBoss(player);
-                    break;
+                    return TrySummonBossAtBeacon(player);
                 default:
                     return false;
             }
@@ -436,9 +455,15 @@ namespace HighSeas.POI
 
                 StageBalanceProfileContext.Runtime.RegisterSuccessfulChestPurchase();
                 _paidChestCount++;
-                V3RunItemInventory.Instance?.TryAddItem(plan.ItemId);
+                if (!V3RunItemInventory.Instance.TryAddItem(plan.ItemId))
+                {
+                    rm.AddGold(plan.Price);
+                    V3ToastHud.Instance?.Show("Inventory full — chest unchanged.", 2.5f);
+                    return false;
+                }
+
+                V3ToastHud.Instance?.Show($"Salvage Chest — gained {V3ItemCatalog.GetDisplayName(plan.ItemId)}.", 2.5f);
                 TriggerBus.Instance?.RaiseChestOpen();
-                MarkPoiUsed(index);
                 RunCombatTelemetry.Instance?.RecordPoiInteraction(POIType.SalvageChest.ToString());
                 return true;
             }
@@ -472,7 +497,6 @@ namespace HighSeas.POI
             }
 
             TriggerBus.Instance?.RaiseChestOpen();
-            MarkPoiUsed(index);
             RunCombatTelemetry.Instance?.RecordPoiInteraction(POIType.SalvageChest.ToString());
             return true;
         }
@@ -493,6 +517,7 @@ namespace HighSeas.POI
 
             _powderCacheAmbushStarted.Add(index);
             _powderCacheEncounterId++;
+            HidePoiMarkerVisual(index);
             V3ToastHud.Instance?.Show("Powder Cache — ambush incoming!", 3.5f);
         }
 
@@ -506,7 +531,10 @@ namespace HighSeas.POI
 
             if (!IsPowderCacheEncounterClear())
             {
-                V3ToastHud.Instance?.Show("Powder Cache — defeat the ambush first.", 2f);
+                if (SpawnPowderCacheFight(GetPoiPosition(index)))
+                    V3ToastHud.Instance?.Show("Powder Cache — more raiders!", 2.5f);
+                else
+                    V3ToastHud.Instance?.Show("Powder Cache — could not spawn reinforcements.", 2f);
                 return false;
             }
 
@@ -683,9 +711,33 @@ namespace HighSeas.POI
             }
 
             var player = FindFirstObjectByType<PlayerShipController>();
-            SummonBoss(player);
+            if (!TrySummonBossAtBeacon(player))
+                return false;
+
             V3ToastHud.Instance?.Show("Treasury Beacon — boss incoming! (B)", 3f);
             return true;
+        }
+
+        bool TrySummonBossAtBeacon(PlayerShipController player)
+        {
+            if (_bossSummoned)
+            {
+                V3ToastHud.Instance?.Show("Boss already summoned.", 2f);
+                return true;
+            }
+
+            if (_bossDefeated)
+            {
+                V3ToastHud.Instance?.Show("Objective already secured.", 2f);
+                return false;
+            }
+
+            SummonBoss(player);
+            if (_bossSummoned)
+                return true;
+
+            V3ToastHud.Instance?.Show("Beacon failed — clear space near the beacon and try again.", 3f);
+            return false;
         }
 
         void SummonBoss(PlayerShipController player)
@@ -713,7 +765,20 @@ namespace HighSeas.POI
 
             _bossSummoned = true;
             RunCombatTelemetry.Instance?.RecordBossSummoned(_bossEncounterId);
+            ConsumeBossBeaconMarker();
             RunManager.Instance.SetState(RunState.BossFight);
+        }
+
+        void ConsumeBossBeaconMarker()
+        {
+            if (_layout == null) return;
+            for (var i = 0; i < _layout.pois.Count; i++)
+            {
+                if (_layout.pois[i].type != POIType.BossBeacon || _layout.pois[i].used)
+                    continue;
+                ConsumePoiMarker(i);
+                return;
+            }
         }
 
         public bool IsBossDead()
@@ -769,6 +834,7 @@ namespace HighSeas.POI
         POIType _type;
         int _index;
         bool _used;
+        bool _markerHidden;
         DemoJuiceSettings _juice;
         DemoPacingSettings _pacing;
         bool _telegraphing;
@@ -777,7 +843,7 @@ namespace HighSeas.POI
         Transform _telegraphRing;
         Transform _chargeRing;
 
-        public bool CanInteract => !_used && _manager != null;
+        public bool CanInteract => !_used && !_markerHidden && _manager != null;
         public bool IsPlayerInRange => GetPlayerDistance() <= InteractRange;
         public bool UsesChargeInteraction => _type == POIType.TrialBuoy;
         public bool UsesProximityAmbush => _type == POIType.MerchantSkiff;
@@ -787,6 +853,7 @@ namespace HighSeas.POI
         {
             POIType.TrialBuoy => 4f,
             POIType.BossBeacon => 6f,
+            POIType.SalvageChest => 6f,
             _ => V3InteractionController.DefaultRange
         };
         public Vector3 WorldPosition => transform.position;
@@ -880,6 +947,18 @@ namespace HighSeas.POI
             HideChargeRing();
             HideTelegraph();
             gameObject.SetActive(false);
+        }
+
+        public void ForceConsume() => Consume();
+
+        public void SetMarkerHidden(bool hidden)
+        {
+            _markerHidden = hidden;
+            if (!hidden) return;
+            HideChargeRing();
+            HideTelegraph();
+            for (var i = 0; i < transform.childCount; i++)
+                transform.GetChild(i).gameObject.SetActive(false);
         }
 
         float GetPlayerDistance()

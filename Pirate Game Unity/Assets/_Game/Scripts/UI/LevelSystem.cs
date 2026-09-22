@@ -79,6 +79,27 @@ namespace HighSeas.UI
             Initialize(db, startingWeapon);
         }
 
+        /// <summary>After bootstrap init, mirror owned weapons onto the human <see cref="WeaponController"/>.</summary>
+        public void SyncWeaponControllerFromOwnedLoadout(WeaponController weapons)
+        {
+            weapons ??= ResolveHumanWeaponController();
+            if (weapons == null)
+            {
+                Debug.LogWarning("LevelSystem: no WeaponController found to sync starting loadout.");
+                return;
+            }
+
+            weapons.EnsureWeaponSlotCapacity(weaponSlots);
+            EnsureOwnedWeaponsOnController(weapons);
+            if (weapons.Weapons.Count == 0 && _ownedWeapons.Count > 0)
+            {
+                for (var i = 0; i < _ownedWeapons.Count && weapons.Weapons.Count < weaponSlots; i++)
+                    weapons.EquipWeapon(_ownedWeapons[i]);
+            }
+
+            LoadoutChanged?.Invoke();
+        }
+
         public void RestoreSuspendSnapshot(RunSnapshotData data)
         {
             if (data == null) return;
@@ -314,11 +335,7 @@ namespace HighSeas.UI
                 return;
             }
 
-            Debug.LogWarning("Level-up UI unavailable; auto-selecting first offer.");
-            if (offers.Count > 0)
-                OnOfferSelected(offers[0]);
-            else
-                ResumeAfterLevelUp();
+            Debug.LogWarning("Level-up UI unavailable; waiting for modal wiring.");
         }
 
         List<LevelOffer> GenerateOffers()

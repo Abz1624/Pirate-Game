@@ -52,6 +52,37 @@ namespace HighSeas.Enemies
             return false;
         }
 
+        /// <summary>Off-screen first; optional ring around the player when encounters must not whiff (boss/cache).</summary>
+        public static bool TryPickSpawnPosition(
+            Transform player,
+            Camera camera,
+            SpawnPlacementSettings settings,
+            float spawnRadius,
+            RunRng rng,
+            bool allowNearPlayerFallback,
+            out Vector3 position)
+        {
+            if (TryPickOffScreenPosition(player, camera, settings, spawnRadius, rng, out position))
+                return true;
+
+            if (!allowNearPlayerFallback || player == null)
+                return false;
+
+            var minDist = settings.distanceMin;
+            var maxDist = Mathf.Max(minDist + 0.5f, settings.distanceMax);
+            var attempts = Mathf.Max(1, settings.positionAttempts);
+            for (var i = 0; i < attempts; i++)
+            {
+                var candidate = PickInArc(player, settings, minDist, maxDist, rng);
+                if (!IsSpawnCandidateValid(candidate, spawnRadius))
+                    continue;
+                position = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
         public static void OffsetGroupPosition(
             SpawnGroupLayout layout,
             int index,

@@ -225,18 +225,22 @@ namespace HighSeas.V3
             V3CaptainActiveController.Instance?.ResetForNewRun();
 
             var startingWeapon = ResolveStartingWeapon(captainProfile);
+            LevelSystem.Instance?.ApplyStageBalanceProgression();
+
             var weapons = V3MultiShipWeaponLoadouts.FindLocalHumanWeaponController()
                 ?? FindFirstObjectByType<WeaponController>();
             if (player != null)
                 weapons?.BindOwner(player);
             weapons?.ApplyCombatExperiment(experimentProfile);
+            if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export?.Progression != null)
+                weapons?.EnsureWeaponSlotCapacity(StageBalanceProfileContext.Export.Progression.WeaponSlotCap);
             weapons?.Initialize(database, startingWeapon);
 
             EnsureLevelSystem();
             LevelSystem.Instance?.ConfigureV3();
             LevelSystem.Instance?.ApplyCombatExperiment(experimentProfile);
-            LevelSystem.Instance?.ApplyStageBalanceProgression();
             LevelSystem.Instance?.PrepareForNewRun(database, startingWeapon);
+            LevelSystem.Instance?.SyncWeaponControllerFromOwnedLoadout(weapons);
             V3RunItemInventory.Ensure();
             V3RunItemEffects.Ensure();
 
@@ -422,11 +426,11 @@ namespace HighSeas.V3
                         StageBalanceProfileContext.Export,
                         preferred))
                     return preferred;
-                return "deck_cannons";
+                return "broadside_battery";
             }
 
             if (!V3PlaytestFlags.UnlockAllContent && !PlayerPrefs.HasKey(V3ContentUnlocks.FirstConquestKey))
-                return "deck_cannons";
+                return "broadside_battery";
             return profile.StartingWeaponId;
         }
 

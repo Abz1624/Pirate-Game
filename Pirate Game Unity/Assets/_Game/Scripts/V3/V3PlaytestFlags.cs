@@ -9,7 +9,10 @@ namespace HighSeas.V3
         public const bool EnableRunPlaytestHotkeys = true;
         public const bool EnableSpawnDirectorDebugUi = true;
         public const bool EnableEnemyIdentityLabels = true;
-        /// <summary>Skip weapon cooldown firing and cutlass orbit damage during behavior tests.</summary>
+        /// <summary>Skip weapon cooldown firing during isolated behavior tests (not solo Saltwind).</summary>
         public const bool DisableShipAutoFire = true;
+
+        public static bool ShouldDisableShipAutoFire =>
+            DisableShipAutoFire && !Balance.StageBalanceProfileContext.IsActive;
     }
 }

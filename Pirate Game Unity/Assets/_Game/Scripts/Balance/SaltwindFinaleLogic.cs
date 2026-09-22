@@ -67,6 +67,13 @@ namespace HighSeas.Balance
             return 1f + 0.11f * minute + 0.022f * minute * minute;
         }
 
+        /// <summary>Saltwind ordinary-phase contact/ranged threat (player out-scales base <see cref="GameMath.EnemyDamage"/> alone).</summary>
+        public static float GetOrdinaryTimeDamageMultiplier(float elapsedSeconds)
+        {
+            var minute = elapsedSeconds / 60f;
+            return 1f + 0.14f * minute + 0.028f * minute * minute;
+        }
+
         public static float GetOvertimeEnemyHpMultiplier(float elapsedSeconds, StageBalanceProfileExport export)
         {
             if (export?.Overtime == null) return 1f;

@@ -17,7 +17,7 @@ MonoBehaviour:
   pattern: 5
   targeting: 4
   tags: []
-  baseDamage: 20
+  baseDamage: 14
   baseCooldown: 2.2
   range: 14
   baseQuantity: 1
@@ -49,5 +49,5 @@ MonoBehaviour:
     offerWeight: 0.7
     maxAccumulated: 1.5
     displayFormat: 
-  procCoefficient: 1
+  procCoefficient: 0.65
   projectileColor: {r: 1, g: 0, b: 0, a: 1}

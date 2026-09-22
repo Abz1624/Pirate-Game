@@ -24,6 +24,7 @@ namespace HighSeas.V3
 
         TextMeshProUGUI _timerText;
         TextMeshProUGUI _goldText;
+        TextMeshProUGUI _killText;
         Image _portrait;
         TextMeshProUGUI _captainNameText;
         TextMeshProUGUI _levelText;
@@ -113,6 +114,7 @@ namespace HighSeas.V3
 
             RefreshTimer();
             RefreshGold();
+            RefreshKillCount();
             RefreshProfile();
             RefreshQuests();
         }
@@ -125,6 +127,37 @@ namespace HighSeas.V3
             var root = transform;
             _timerText = FindTmp(root, "TImer/Text (TMP)");
             _goldText = FindTmp(root, "Coin_Count/Text (TMP)");
+            _killText = FindTmp(root, "Kill_Count/Text (TMP)");
+            if (_killText == null)
+            {
+                var killRoot = root.Find("Kill_Count");
+                if (killRoot == null)
+                {
+                    killRoot = new GameObject("Kill_Count", typeof(RectTransform)).transform;
+                    killRoot.SetParent(root.Find("Coin_Count")?.parent ?? root, false);
+                    var killRt = killRoot as RectTransform;
+                    if (killRt != null && root.Find("Coin_Count") is RectTransform coinRt)
+                    {
+                        killRt.anchorMin = coinRt.anchorMin;
+                        killRt.anchorMax = coinRt.anchorMax;
+                        killRt.pivot = coinRt.pivot;
+                        killRt.anchoredPosition = coinRt.anchoredPosition + new Vector2(0f, -36f);
+                        killRt.sizeDelta = coinRt.sizeDelta;
+                    }
+                }
+
+                var killTextGo = new GameObject("Text (TMP)", typeof(RectTransform));
+                killTextGo.transform.SetParent(killRoot, false);
+                var killTextRt = killTextGo.GetComponent<RectTransform>();
+                killTextRt.anchorMin = Vector2.zero;
+                killTextRt.anchorMax = Vector2.one;
+                killTextRt.offsetMin = Vector2.zero;
+                killTextRt.offsetMax = Vector2.zero;
+                _killText = killTextGo.AddComponent<TextMeshProUGUI>();
+                _killText.fontSize = 22f;
+                _killText.alignment = TextAlignmentOptions.Center;
+                _killText.color = RunHudTheme.Value;
+            }
             _captainNameText = FindTmp(root, "Profile/Name/Text (TMP)");
             _levelText = FindTmp(root, "Profile/Level_Count/Text (TMP)");
             _portrait = FindImage(root, "Profile/Icon");
@@ -133,10 +166,6 @@ namespace HighSeas.V3
             _timerRect = root.Find("TImer") as RectTransform;
             _profileRect = root.Find("Profile") as RectTransform;
             _questRect = root.Find("Quest") as RectTransform;
-
-            var weaponRow = root.Find("Weapon_Slot");
-            if (weaponRow != null)
-                weaponRow.gameObject.SetActive(false);
 
             _questLines.Clear();
             _questSlotRoots.Clear();
@@ -165,6 +194,12 @@ namespace HighSeas.V3
             _art = V3PlayerInfoHudArtSettings.Load();
             ConfigureSliders();
             _bound = _timerText != null || _profileRect != null;
+
+            var weaponRow = root.Find("Weapon_Slot");
+            if (weaponRow != null)
+                weaponRow.gameObject.SetActive(true);
+
+            V3AuthoredBottomLoadoutHud.Ensure(transform);
         }
 
         void ApplyScreenLayout()
@@ -244,6 +279,14 @@ namespace HighSeas.V3
                 return;
 
             _goldText.text = RunManager.Instance.Gold.ToString("N0");
+        }
+
+        void RefreshKillCount()
+        {
+            if (_killText == null || RunManager.Instance == null)
+                return;
+
+            _killText.text = $"KILLS {RunManager.Instance.KillCount:N0}";
         }
 
         void RefreshProfile()

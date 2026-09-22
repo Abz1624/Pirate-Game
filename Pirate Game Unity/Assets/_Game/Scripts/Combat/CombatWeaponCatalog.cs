@@ -58,7 +58,7 @@ namespace HighSeas.Combat
         {
             SetWeapon(database, "deck_cannons", TargetingMode.ForwardArc, 120f, 22f, 1f, preferElite: false);
             SetWeapon(database, "broadside_battery", TargetingMode.PortStarboard, 50f, 14f, 0.7f);
-            SetWeapon(database, "powder_kegs", TargetingMode.AftDeploy, 0f, 12f, 0.8f);
+            SetWeapon(database, "powder_kegs", TargetingMode.AftDeploy, 0f, 12f, 0.55f);
             SetWeapon(database, "flying_cutlasses", TargetingMode.AreaAroundShip, 360f, 6f, 0.35f);
             SetWeapon(database, "lightning_mast", TargetingMode.Nearest, 360f, 16f, 0.5f);
             SetWeapon(database, "flamethrower", TargetingMode.ForwardCone, 52f, 9.5f, 0.2f);

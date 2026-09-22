@@ -12,6 +12,7 @@ namespace HighSeas.V3
         TextMeshProUGUI _goldText;
         TextMeshProUGUI _xpText;
         TextMeshProUGUI _rumText;
+        TextMeshProUGUI _killText;
         LevelSystem _levels;
 
         public static V3RunStatsHud Ensure(Transform canvas)
@@ -35,6 +36,8 @@ namespace HighSeas.V3
             hud._goldText = CreateStat(root.transform, "GOLD", new Vector2(-170f, 0f), RunHudTheme.Gold);
             hud._xpText = CreateStat(root.transform, "XP", new Vector2(0f, 0f), RunHudTheme.XpFill);
             hud._rumText = CreateStat(root.transform, "RUM", new Vector2(170f, 0f), new Color(0.95f, 0.55f, 0.35f));
+            hud._killText = CreateStat(root.transform, "KILLS", new Vector2(340f, 0f), RunHudTheme.Value);
+            rect.sizeDelta = new Vector2(680f, 40f);
             return hud;
         }
 
@@ -72,6 +75,9 @@ namespace HighSeas.V3
                 var regen = RunManager.Instance.Stats.Get(StatId.HullRegen);
                 _rumText.text = regen > 0.01f ? $"RUM +{regen:0.1}/s" : "RUM —";
             }
+
+            if (_killText != null)
+                _killText.text = $"KILLS {RunManager.Instance.KillCount:N0}";
         }
     }
 }

@@ -19,8 +19,8 @@ Legend: **You** = manual (Editor, device, playtest). **Agent** = Cursor + Unity 
 | **10** | Reset + snapshot | Retry order; snapshot restore; mode isolation | Done (auto) | `SaltwindResetGateTests` |
 | **11** | Results + UX | Victory vs death; Marks breakdown; telemetry | Done (auto) | `SaltwindResultsGateTests` |
 | **12** | Balance Lab | 1200+ sim runs; lab/runtime parity | Done (auto + menu) | `SaltwindBalanceLabGateTests`; `balance-lab/` CSV |
-| **13** | Perf + humans | Desktop trace; **real** newcomer playtests | **You** | `PLAYTEST_REPORT.md` or **pending** |
-| **14** | Delivery | Full regression; `VERIFICATION_INDEX.md` complete | Agent + You verify | Codex package |
+| **13** | Perf + humans | Desktop trace; **real** newcomer playtests | **You** | `PLAYTEST_REPORT.md` (**done** directional; perf + external **pending**) |
+| **14** | Delivery | Full regression; `VERIFICATION_INDEX.md` complete | Agent + You verify | `step14-regression-evidence.md` + index (**done**; XML/PlayMode/git **pending**) |
 
 ## Quick commands
 
@@ -47,5 +47,6 @@ unity test 'Pirate Game Unity' --mode EditMode --output 'plan/saltwind-verificat
 
 ## Suggested order right now
 
-1. **Step 13** — Performance trace and human playtests (handoff C13).
-2. Optional: export C02 telemetry JSON on seed **12345** (see `spawn-telemetry-note.md`).
+1. Optional **git commit** of Saltwind slice for Codex (`VERIFICATION_INDEX.md` pins baseline + profile hash).
+2. Close Editor → `editmode-results.xml` + PlayMode CLI if CI evidence needed.
+3. C13 perf / external playtests when hardware and panel available.

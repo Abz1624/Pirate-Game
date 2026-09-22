@@ -72,6 +72,8 @@ namespace HighSeas.V3
 
         CanvasGroup _promptGroup;
 
+        int _salvageChestDismissedIndex = -1;
+
 
 
         public static V3InteractionController Ensure(Transform canvasRoot)
@@ -307,6 +309,7 @@ namespace HighSeas.V3
             var label = _target.PromptLabel;
 
             var interactHeld = IsInteractHeld();
+            var keyboard = Keyboard.current;
 
 
 
@@ -345,19 +348,32 @@ namespace HighSeas.V3
 
 
                 if (_target.ShowsSalvageChestPrice)
-
                 {
+                    if (!_target.IsPlayerInRange)
+                    {
+                        if (_salvageChestDismissedIndex == _target.Index)
+                            _salvageChestDismissedIndex = -1;
+                        SetPromptVisible(false);
+                        return;
+                    }
 
-                    SetPromptVisible(_target.IsPlayerInRange);
+                    if (_salvageChestDismissedIndex == _target.Index)
+                    {
+                        SetPromptVisible(false);
+                        return;
+                    }
 
-                    _promptText.text = _target.PromptLabel;
-
-                    if (_target.IsPlayerInRange)
-
-                        _target.TryCompleteInteraction();
+                    SetPromptVisible(true);
+                    _promptText.text = $"{label} — Take (E) / Skip (R)";
+                    if (keyboard != null)
+                    {
+                        if (keyboard.eKey.wasPressedThisFrame)
+                            _target.TryCompleteInteraction();
+                        else if (keyboard.rKey.wasPressedThisFrame)
+                            _salvageChestDismissedIndex = _target.Index;
+                    }
 
                     return;
-
                 }
 
 
@@ -491,8 +507,16 @@ namespace HighSeas.V3
             if (_target == null) return;
 
             if (_target.RequiredHoldSeconds <= 0f)
+            {
+                if (_target.ShowsSalvageChestPrice)
+                {
+                    if (_target.IsPlayerInRange)
+                        _target.TryCompleteInteraction();
+                    return;
+                }
 
                 _target.TryCompleteInteraction();
+            }
 
         }
 

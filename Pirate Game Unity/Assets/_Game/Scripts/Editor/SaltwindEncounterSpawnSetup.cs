@@ -51,7 +51,7 @@ namespace HighSeas.Editor
                     anchor,
                     SpawnMode.Continuous,
                     spawnInterval: 1f / bandRates[i],
-                    duration: 120f);
+                    duration: 0f);
                 ambientEntries[i] = new ScheduledSpawnEntry
                 {
                     profile = profile,

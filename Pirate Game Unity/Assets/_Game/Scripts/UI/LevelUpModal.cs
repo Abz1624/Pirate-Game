@@ -23,9 +23,13 @@ namespace HighSeas.UI
         [SerializeField] TextMeshProUGUI[] cardLevels;
         [SerializeField] TextMeshProUGUI[] cardRarities;
         [SerializeField] TextMeshProUGUI[] cardDescriptions;
+        [SerializeField] Button acceptButton;
+        [SerializeField] Button rejectButton;
 
         Action<LevelOffer> _callback;
+        Action _rejectCallback;
         List<LevelOffer> _offers;
+        int _selectedIndex;
 
         static LevelUpModal ResolveInstance()
         {
@@ -95,7 +99,7 @@ namespace HighSeas.UI
             ApplyWiring(LevelUpUiFactory.Rebuild(transform));
         }
 
-        public bool TryShow(List<LevelOffer> offers, Action<LevelOffer> callback)
+        public bool TryShow(List<LevelOffer> offers, Action<LevelOffer> callback, Action rejectCallback = null)
         {
             EnsureWired();
             if (!HasUsableCards())
@@ -104,7 +108,7 @@ namespace HighSeas.UI
                 return false;
             }
 
-            Show(offers, callback);
+            Show(offers, callback, rejectCallback);
             return true;
         }
 
@@ -114,13 +118,17 @@ namespace HighSeas.UI
                 panel.SetActive(false);
             _offers = null;
             _callback = null;
+            _rejectCallback = null;
+            _selectedIndex = -1;
         }
 
-        public void Show(List<LevelOffer> offers, Action<LevelOffer> callback)
+        public void Show(List<LevelOffer> offers, Action<LevelOffer> callback, Action rejectCallback = null)
         {
             EnsureWired();
             _offers = offers;
             _callback = callback;
+            _rejectCallback = rejectCallback;
+            _selectedIndex = -1;
             if (panel != null)
             {
                 EnsureVisibleOnTop();
@@ -164,6 +172,11 @@ namespace HighSeas.UI
                 if (cardFrames != null && i < cardFrames.Length && cardFrames[i] != null)
                     cardFrames[i].color = LevelUpRarityColors.ForRarity(offer.rarity);
             }
+
+            if (acceptButton != null)
+                acceptButton.gameObject.SetActive(false);
+            if (rejectButton != null)
+                rejectButton.gameObject.SetActive(false);
         }
 
         void EnsureVisibleOnTop()
@@ -245,6 +258,8 @@ namespace HighSeas.UI
             cardLevels = wiring.cardLevels;
             cardRarities = wiring.cardRarities;
             cardDescriptions = wiring.cardDescriptions;
+            acceptButton = wiring.acceptButton;
+            rejectButton = wiring.rejectButton;
         }
 
         void WireExistingCards()
@@ -327,6 +342,7 @@ namespace HighSeas.UI
         {
             if (_offers == null || index < 0 || index >= _offers.Count) return;
             if (panel != null) panel.SetActive(false);
+            _rejectCallback = null;
             _callback?.Invoke(_offers[index]);
         }
     }

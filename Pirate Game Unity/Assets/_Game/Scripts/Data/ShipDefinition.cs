@@ -12,7 +12,7 @@ namespace HighSeas.Data
         public float baseMoveSpeed = 6.2f;
         public float baseArmor;
         public float baseEvasion;
-        public string startingWeaponId = "deck_cannons";
+        public string startingWeaponId = "broadside_battery";
         public string passiveId;
         public string unlockQuestId;
         public int unlockDoubloonCost;

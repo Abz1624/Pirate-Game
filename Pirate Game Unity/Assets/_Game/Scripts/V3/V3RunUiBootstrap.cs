@@ -49,6 +49,7 @@ namespace HighSeas.V3
             else
             {
                 HideAuthoredPlaceholderDuplicates(canvas);
+                V3AuthoredBottomLoadoutHud.Ensure(authoredHud.transform);
             }
 
             HideLegacyRunHudPanels(canvas);
