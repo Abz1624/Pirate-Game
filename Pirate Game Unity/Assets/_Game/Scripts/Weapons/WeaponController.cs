@@ -1274,6 +1274,12 @@ namespace HighSeas.Weapons
             return Vector3.Distance(a, b);
         }
 
+        static bool PowderKegTouchesAgent(Vector3 kegPosition, float kegRadius, in Enemies.EnemyAgent agent)
+        {
+            var reach = agent.radius + (agent.isElite ? 0.75f : 0f);
+            return HorizontalDistance(kegPosition, agent.position) <= kegRadius + reach;
+        }
+
         void TickPowderKegs(float dt, PlayerStats stats, RunRng rng)
         {
             if (_enemies == null) return;
@@ -1299,7 +1305,7 @@ namespace HighSeas.Weapons
                 for (var ai = 0; ai < agents.Length; ai++)
                 {
                     if (!agents[ai].active) continue;
-                    if (HorizontalDistance(agents[ai].position, keg.position) > keg.triggerRadius) continue;
+                    if (!PowderKegTouchesAgent(keg.position, keg.triggerRadius, agents[ai])) continue;
                     triggered = true;
                     break;
                 }
@@ -1324,7 +1330,7 @@ namespace HighSeas.Weapons
             for (var ai = 0; ai < agents.Length; ai++)
             {
                 if (!agents[ai].active) continue;
-                if (HorizontalDistance(agents[ai].position, keg.position) > blastRadius) continue;
+                if (!PowderKegTouchesAgent(keg.position, blastRadius, agents[ai])) continue;
                 var dmg = RollPowderKegBlastDamage(
                     keg.baseDamage,
                     keg.damageBonus,

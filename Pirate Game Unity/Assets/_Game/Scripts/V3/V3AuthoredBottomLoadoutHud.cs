@@ -320,6 +320,23 @@ namespace HighSeas.V3
             if (weapon != null)
                 weapon.localScale = Vector3.one * 0.48f;
 
+            if (slot.emptyMarker != null)
+            {
+                var emptyRt = slot.emptyMarker.transform as RectTransform;
+                if (emptyRt != null)
+                {
+                    emptyRt.localScale = Vector3.one * 0.28f;
+                    emptyRt.anchorMin = new Vector2(0.5f, 0.5f);
+                    emptyRt.anchorMax = new Vector2(0.5f, 0.5f);
+                    emptyRt.pivot = new Vector2(0.5f, 0.5f);
+                    emptyRt.anchoredPosition = Vector2.zero;
+                    emptyRt.sizeDelta = new Vector2(56f, 56f);
+                }
+
+                if (slot.emptyMarker.TryGetComponent<Image>(out var emptyImg))
+                    emptyImg.preserveAspect = true;
+            }
+
             if (slot.levelText == null) return;
 
             slot.levelText.enableAutoSizing = true;
@@ -370,6 +387,13 @@ namespace HighSeas.V3
         {
             if (slot.emptyMarker != null)
                 slot.emptyMarker.SetActive(!filled);
+
+            if (!filled && slot.emptyMarker != null)
+            {
+                var emptyRt = slot.emptyMarker.transform as RectTransform;
+                if (emptyRt != null && emptyRt.localScale.x > 0.35f)
+                    emptyRt.localScale = Vector3.one * 0.28f;
+            }
 
             if (slot.frame != null)
                 slot.frame.color = filled ? accent : EmptyFrame;

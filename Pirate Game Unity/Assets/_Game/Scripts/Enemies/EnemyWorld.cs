@@ -528,6 +528,12 @@ namespace HighSeas.Enemies
 
                 MoveAgent(ref e, dt, desiredVelocity, def);
                 e.position.y = def.visualHeightOffset;
+                if (collideWithIslands && IslandObstacles.IsAvailable)
+                {
+                    var collisionRadius = GetCollisionRadiusForAgent(e);
+                    var height = IslandObstacles.GetCollisionHeight(collisionRadius);
+                    e.position = IslandObstacles.Depenetrate(e.position, collisionRadius, height);
+                }
                 UpdateView(ref e, def, dt, playerPos);
 
                 var dist = HorizontalDistance(e.position, playerPos);
@@ -848,7 +854,7 @@ namespace HighSeas.Enemies
             var usesCreatureIntercept = def.category == EnemyCategory.Creature && !def.isBoss && !def.isMiniboss;
             var chaseDir = usesCreatureIntercept
                 ? GetCreatureInterceptDirection(e, playerPos, playerVelocity, dist, dir)
-                : GetEncircleChaseDirection(e.id, e.position, playerPos, dist, dir);
+                : GetEncircleChaseDirection(e.id, e.position, playerPos, dist, dir, playerVelocity);
 
             if (e.spawnProfile != null)
             {
@@ -947,6 +953,8 @@ namespace HighSeas.Enemies
                     }
                     else if (def.isMiniboss)
                         behaviorVelocity = dir * (e.moveSpeed * 0.55f);
+                    else if (playerVelocity.sqrMagnitude < 0.12f)
+                        behaviorVelocity = dir * (e.moveSpeed * 0.42f);
                     else
                         behaviorVelocity = Vector3.zero;
                     break;
@@ -1014,10 +1022,10 @@ namespace HighSeas.Enemies
             var toPredicted = predicted - agent.position;
             toPredicted.y = 0f;
             if (toPredicted.sqrMagnitude < 0.01f)
-                return GetEncircleChaseDirection(agent.id, agent.position, playerPos, distToPlayer, directDir);
+                return GetEncircleChaseDirection(agent.id, agent.position, playerPos, distToPlayer, directDir, playerVelocity);
 
             var interceptDir = toPredicted.normalized;
-            var encircleDir = GetEncircleChaseDirection(agent.id, agent.position, playerPos, distToPlayer, directDir);
+            var encircleDir = GetEncircleChaseDirection(agent.id, agent.position, playerPos, distToPlayer, directDir, playerVelocity);
             var interceptWeight = distToPlayer > 16f ? 0.38f : distToPlayer > 8f ? 0.65f : 0.9f;
             if (playerSpeed > 0.75f && toEnemy.sqrMagnitude > 0.01f)
             {
@@ -1073,10 +1081,20 @@ namespace HighSeas.Enemies
         }
 
         /// <summary>Spread melee swarms around the player instead of stacking in a rear conga line.</summary>
-        static Vector3 GetEncircleChaseDirection(int agentId, Vector3 agentPos, Vector3 playerPos, float distToPlayer, Vector3 directDir)
+        static Vector3 GetEncircleChaseDirection(
+            int agentId,
+            Vector3 agentPos,
+            Vector3 playerPos,
+            float distToPlayer,
+            Vector3 directDir,
+            Vector3 playerVelocity)
         {
             if (distToPlayer < 0.01f)
                 return Vector3.forward;
+
+            playerVelocity.y = 0f;
+            if (playerVelocity.sqrMagnitude < 0.12f)
+                return directDir;
 
             var ringRadius = Mathf.Clamp(distToPlayer * 0.42f, 3.5f, 9f);
             var slotAngle = agentId * 2.39996323f;
@@ -1090,6 +1108,8 @@ namespace HighSeas.Enemies
 
             var encircleDir = toSlot.normalized;
             var encircleWeight = distToPlayer > 14f ? 0.72f : distToPlayer > 7f ? 0.55f : 0.28f;
+            if (playerVelocity.sqrMagnitude < 0.75f)
+                encircleWeight *= 0.35f;
             return Vector3.Slerp(directDir, encircleDir, encircleWeight).normalized;
         }
 

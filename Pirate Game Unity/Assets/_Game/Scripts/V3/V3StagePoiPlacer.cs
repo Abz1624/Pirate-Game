@@ -7,12 +7,12 @@ using UnityEngine;
 
 namespace HighSeas.V3
 {
-    /// <summary>Places salvage chests, 4 finite encounter POIs, and the treasury beacon for the v3 conquest layout.</summary>
+    /// <summary>Places salvage chests and finite encounter POIs across playable water; boss beacon uses spawn anchors.</summary>
     public static class V3StagePoiPlacer
     {
         const float MinSpacing = 16f;
         const float MinRadius = 20f;
-        const float MaxRadius = 78f;
+        const float FirstChestMaxPlacementRadius = 78f;
         const float Clearance = 2.5f;
 
         static float PoiEdgeMargin => PlayBounds.StormEdgeMargin + Clearance;
@@ -40,12 +40,10 @@ namespace HighSeas.V3
             var placed = new List<Vector3>();
             var clearance = Mathf.Max(Clearance, options.NavClearance);
 
-            for (var i = 0; i < SpecialTypes.Length; i++)
-                TryPlace(layout, rng, spawn, placed, SpecialTypes[i], islandLayout, clearance);
+            PlaceSpecialPoisAcrossPlayable(layout, rng, placed, islandLayout, clearance);
 
             TryPlaceFirstChest(layout, rng, spawn, placed, islandLayout, options, clearance);
-            for (var i = 1; i < options.SalvageChestCount; i++)
-                TryPlace(layout, rng, spawn, placed, POIType.SalvageChest, islandLayout, clearance);
+            PlaceSalvageChestsAcrossPlayable(layout, rng, placed, islandLayout, options, clearance);
 
             PlaceExplosiveBarrels(layout, placed, options, clearance, islandLayout);
             V3SpawnAnchorValidator.SyncBossBeaconPoi(layout);
@@ -61,7 +59,7 @@ namespace HighSeas.V3
             float clearance)
         {
             var maxDist = options.RepresentativeCruiseSpeed * options.FirstChestMaxTravelSeconds;
-            maxDist = Mathf.Clamp(maxDist, MinRadius, MaxRadius);
+            maxDist = Mathf.Clamp(maxDist, MinRadius, FirstChestMaxPlacementRadius);
             var bestPos = Vector3.zero;
             var found = false;
             var bestScore = float.MaxValue;
@@ -108,6 +106,221 @@ namespace HighSeas.V3
             layout.pois.Add(new POISlot { type = POIType.SalvageChest, position = bestPos });
         }
 
+        static void PlaceSpecialPoisAcrossPlayable(
+            StageLayout layout,
+            RunRng rng,
+            List<Vector3> placed,
+            IslandLayoutDefinition islandLayout,
+            float clearance)
+        {
+            if (!TryGetPlayableLimits(out var center, out var limitX, out var limitZ))
+            {
+                for (var i = 0; i < SpecialTypes.Length; i++)
+                    TryPlaceLegacyNearSpawn(layout, rng, layout.playerSpawn, placed, SpecialTypes[i], islandLayout, clearance);
+                return;
+            }
+
+            PreparePlayableCellOrder(
+                rng,
+                SpecialTypes.Length,
+                limitX,
+                limitZ,
+                out var cells,
+                out var gridCols,
+                out var gridRows,
+                out var cellW,
+                out var cellH);
+
+            for (var i = 0; i < SpecialTypes.Length; i++)
+            {
+                if (TryPlaceSinglePoiAcrossPlayable(
+                        layout,
+                        rng,
+                        layout.playerSpawn,
+                        placed,
+                        islandLayout,
+                        clearance,
+                        SpecialTypes[i],
+                        cells,
+                        i,
+                        gridCols,
+                        gridRows,
+                        cellW,
+                        cellH,
+                        center,
+                        limitX,
+                        limitZ))
+                    continue;
+
+                Debug.LogWarning(
+                    $"V3StagePoiPlacer: could not place {SpecialTypes[i]} across playable area.");
+            }
+        }
+
+        static void PlaceSalvageChestsAcrossPlayable(
+            StageLayout layout,
+            RunRng rng,
+            List<Vector3> placed,
+            IslandLayoutDefinition islandLayout,
+            V3StagePoiPlacementOptions options,
+            float clearance)
+        {
+            var remaining = options.SalvageChestCount - 1;
+            if (remaining <= 0) return;
+
+            if (!TryGetPlayableLimits(out var center, out var limitX, out var limitZ))
+            {
+                for (var i = 0; i < remaining; i++)
+                    TryPlaceLegacyNearSpawn(layout, rng, layout.playerSpawn, placed, POIType.SalvageChest, islandLayout, clearance);
+                return;
+            }
+
+            PreparePlayableCellOrder(rng, remaining, limitX, limitZ, out var cells, out var gridCols, out var gridRows, out var cellW, out var cellH);
+
+            for (var c = 0; c < remaining; c++)
+            {
+                if (TryPlaceSinglePoiAcrossPlayable(
+                        layout,
+                        rng,
+                        layout.playerSpawn,
+                        placed,
+                        islandLayout,
+                        clearance,
+                        POIType.SalvageChest,
+                        cells,
+                        c,
+                        gridCols,
+                        gridRows,
+                        cellW,
+                        cellH,
+                        center,
+                        limitX,
+                        limitZ))
+                    continue;
+
+                Debug.LogWarning("V3StagePoiPlacer: could not place salvage chest across playable area.");
+            }
+        }
+
+        static bool TryGetPlayableLimits(out Vector3 center, out float limitX, out float limitZ)
+        {
+            center = PlayBounds.Center;
+            limitX = PlayBounds.HalfExtentX - PoiEdgeMargin;
+            limitZ = PlayBounds.HalfExtentZ - PoiEdgeMargin;
+            return limitX >= MinRadius && limitZ >= MinRadius;
+        }
+
+        static void PreparePlayableCellOrder(
+            RunRng rng,
+            int poiCount,
+            float limitX,
+            float limitZ,
+            out List<int> cells,
+            out int gridCols,
+            out int gridRows,
+            out float cellW,
+            out float cellH)
+        {
+            gridCols = Mathf.Max(3, Mathf.CeilToInt(Mathf.Sqrt(poiCount * (limitX / Mathf.Max(limitZ, 1f)))));
+            gridRows = Mathf.Max(1, Mathf.CeilToInt((float)poiCount / gridCols));
+            cellW = (limitX * 2f) / gridCols;
+            cellH = (limitZ * 2f) / gridRows;
+            cells = new List<int>(gridCols * gridRows);
+            for (var i = 0; i < gridCols * gridRows; i++)
+                cells.Add(i);
+            ShuffleCellOrder(cells, rng);
+        }
+
+        static bool TryPlaceSinglePoiAcrossPlayable(
+            StageLayout layout,
+            RunRng rng,
+            Vector3 spawn,
+            List<Vector3> placed,
+            IslandLayoutDefinition islandLayout,
+            float clearance,
+            POIType type,
+            List<int> cells,
+            int poiIndex,
+            int gridCols,
+            int gridRows,
+            float cellW,
+            float cellH,
+            Vector3 center,
+            float limitX,
+            float limitZ)
+        {
+            var cellIndex = cells[poiIndex % cells.Count];
+            var col = cellIndex % gridCols;
+            var row = cellIndex / gridCols;
+
+            for (var attempt = 0; attempt < 72; attempt++)
+            {
+                var localX = -limitX + (col + rng.MapFloat()) * cellW;
+                var localZ = -limitZ + (row + rng.MapFloat()) * cellH;
+                var pos = center + new Vector3(localX, 0f, localZ);
+                if (!TryAcceptPosition(pos, placed, islandLayout, clearance, out pos))
+                    continue;
+
+                placed.Add(pos);
+                layout.pois.Add(new POISlot { type = type, position = pos });
+                return true;
+            }
+
+            return TryPlacePoiRandomAcrossPlayable(layout, rng, spawn, placed, islandLayout, clearance, type);
+        }
+
+        static void ShuffleCellOrder(List<int> cells, RunRng rng)
+        {
+            for (var i = cells.Count - 1; i > 0; i--)
+            {
+                var j = rng.MapInt(0, i + 1);
+                (cells[i], cells[j]) = (cells[j], cells[i]);
+            }
+        }
+
+        static bool TryPlacePoiRandomAcrossPlayable(
+            StageLayout layout,
+            RunRng rng,
+            Vector3 spawn,
+            List<Vector3> placed,
+            IslandLayoutDefinition islandLayout,
+            float clearance,
+            POIType type)
+        {
+            var limitX = PlayBounds.HalfExtentX - PoiEdgeMargin;
+            var limitZ = PlayBounds.HalfExtentZ - PoiEdgeMargin;
+            var center = PlayBounds.Center;
+
+            for (var attempt = 0; attempt < 280; attempt++)
+            {
+                var localX = (rng.MapFloat() * 2f - 1f) * limitX;
+                var localZ = (rng.MapFloat() * 2f - 1f) * limitZ;
+                var pos = center + new Vector3(localX, 0f, localZ);
+                if (!TryAcceptPosition(pos, placed, islandLayout, clearance, out pos))
+                    continue;
+
+                placed.Add(pos);
+                layout.pois.Add(new POISlot { type = type, position = pos });
+                return true;
+            }
+
+            if (TryPlaceFromGridAcrossPlayable(placed, islandLayout, clearance, out var gridPos))
+            {
+                placed.Add(gridPos);
+                layout.pois.Add(new POISlot { type = type, position = gridPos });
+                return true;
+            }
+
+            return TryPlaceNavigableFallback(
+                spawn,
+                placed,
+                islandLayout,
+                clearance,
+                type,
+                layout,
+                requireRouteFromSpawn: false);
+        }
+
         static void PlaceExplosiveBarrels(
             StageLayout layout,
             List<Vector3> placed,
@@ -141,7 +354,7 @@ namespace HighSeas.V3
             }
         }
 
-        static void TryPlace(
+        static void TryPlaceLegacyNearSpawn(
             StageLayout layout,
             RunRng rng,
             Vector3 spawn,
@@ -167,7 +380,7 @@ namespace HighSeas.V3
                 return;
             }
 
-            if (TryPlaceFromGrid(spawn, placed, islandLayout, clearance, MaxRadius, out var gridPos))
+            if (TryPlaceFromGrid(spawn, placed, islandLayout, clearance, GetMaxRadiusFromSpawn(spawn), out var gridPos))
             {
                 placed.Add(gridPos);
                 layout.pois.Add(new POISlot { type = type, position = gridPos });
@@ -234,6 +447,43 @@ namespace HighSeas.V3
             return SaltwindPoiLayoutLogic.IsNavigable(resolved, clearance, islandLayout);
         }
 
+        static bool TryPlaceFromGridAcrossPlayable(
+            List<Vector3> placed,
+            IslandLayoutDefinition islandLayout,
+            float clearance,
+            out Vector3 position)
+        {
+            position = default;
+            var bestScore = -1f;
+            var found = false;
+
+            var center = PlayBounds.Center;
+            var limitX = PlayBounds.HalfExtentX - PoiEdgeMargin;
+            var limitZ = PlayBounds.HalfExtentZ - PoiEdgeMargin;
+            for (var x = -limitX; x <= limitX; x += 3f)
+            {
+                for (var z = -limitZ; z <= limitZ; z += 3f)
+                {
+                    var candidate = center + new Vector3(x, 0f, z);
+                    if (!TryAcceptPosition(candidate, placed, islandLayout, clearance, out candidate))
+                        continue;
+
+                    var minDist = float.MaxValue;
+                    for (var i = 0; i < placed.Count; i++)
+                        minDist = Mathf.Min(minDist, Vector3.Distance(candidate, placed[i]));
+
+                    if (minDist > bestScore)
+                    {
+                        bestScore = minDist;
+                        position = candidate;
+                        found = true;
+                    }
+                }
+            }
+
+            return found;
+        }
+
         static bool TryPlaceFromGrid(
             Vector3 spawn,
             List<Vector3> placed,
@@ -296,7 +546,7 @@ namespace HighSeas.V3
             var reachX = PlayBounds.HalfExtentX - PoiEdgeMargin - Mathf.Abs(local.x);
             var reachZ = PlayBounds.HalfExtentZ - PoiEdgeMargin - Mathf.Abs(local.z);
             var maxReach = Mathf.Min(reachX, reachZ);
-            return Mathf.Clamp(maxReach, MinRadius, MaxRadius);
+            return Mathf.Max(MinRadius, maxReach);
         }
     }
 }

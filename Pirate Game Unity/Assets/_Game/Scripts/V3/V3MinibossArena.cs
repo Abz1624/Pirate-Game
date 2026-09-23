@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace HighSeas.V3
 {
-    /// <summary>Survivor-style miniboss moment: cull trash, pause ambient spawns until the boss agent dies.</summary>
+    /// <summary>Highlights a miniboss beat (toast + optional spawn throttle) without culling existing enemies.</summary>
     public static class V3MinibossArena
     {
         public static bool Active { get; private set; }
@@ -31,13 +31,6 @@ namespace HighSeas.V3
 
             FocusAgentId = focusAgentId;
             Active = true;
-            var culled = world.CullAllExceptAgent(focusAgentId);
-            if (!world.TryGetAgentByUnitId(focusAgentId, out _))
-            {
-                Active = false;
-                FocusAgentId = -1;
-                return;
-            }
 
             spawner?.SetMinibossArenaActive(true);
             V3ToastHud.Instance?.Show($"MINI BOSS — {displayName}", 4f);
@@ -45,7 +38,7 @@ namespace HighSeas.V3
             {
                 ["agentId"] = focusAgentId,
                 ["label"] = displayName,
-                ["culled"] = culled
+                ["culled"] = 0
             });
         }
 
@@ -60,7 +53,7 @@ namespace HighSeas.V3
             Active = false;
             FocusAgentId = -1;
             EncounterSpawner.Instance?.SetMinibossArenaActive(false);
-            V3ToastHud.Instance?.Show("Arena clear — enemies return!", 3f);
+            V3ToastHud.Instance?.Show("Miniboss defeated!", 3f);
             RunCombatTelemetry.Instance?.Record("miniboss_arena_end", null);
         }
     }
