@@ -1,6 +1,7 @@
 using HighSeas.Balance;
 using HighSeas.Combat;
 using HighSeas.Core;
+using HighSeas.Data;
 using HighSeas.Enemies;
 using UnityEngine;
 
@@ -26,6 +27,9 @@ namespace HighSeas.V3
         float _hammerheadDeferUntil;
         float _krakenDeferUntil;
         float _pulseTimer;
+        bool _reefMinibossDone;
+        bool _reefMinibossWarned;
+        DemoPacingSettings _pacing;
 
         public void Initialize(EnemyWorld world, EncounterSpawner director, Transform playerTransform)
         {
@@ -33,6 +37,7 @@ namespace HighSeas.V3
             encounterSpawner = director;
             player = playerTransform;
             encounterSpawner?.ConfigureV3Pacing(true);
+            _pacing = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
         }
 
         public void ResetForRun()
@@ -45,9 +50,12 @@ namespace HighSeas.V3
             _krakenWarned = false;
             _firstPulseWarned = false;
             _secondPulseWarned = false;
+            _reefMinibossDone = false;
+            _reefMinibossWarned = false;
             _hammerheadDeferUntil = 0f;
             _krakenDeferUntil = 0f;
             _pulseTimer = 0f;
+            V3MinibossArena.ResetForRun();
             encounterSpawner?.ClearSpawnModifier("v3_swarm_pulse");
         }
 
@@ -62,6 +70,7 @@ namespace HighSeas.V3
             var elapsed = RunManager.Instance.ElapsedSeconds;
             var profile = Profile;
             var warning = SaltwindPressureBeatLogic.GetWarningSeconds(profile);
+            var bossFight = RunManager.Instance.State == RunState.BossFight;
 
             TickBeat(ref _hammerheadDone, ref _hammerheadDeferUntil, ref _hammerheadWarned,
                 SaltwindPressureBeatLogic.GetEliteBeatSeconds(profile, 0),
@@ -69,7 +78,32 @@ namespace HighSeas.V3
             TickBeat(ref _krakenDone, ref _krakenDeferUntil, ref _krakenWarned,
                 SaltwindPressureBeatLogic.GetEliteBeatSeconds(profile, 1),
                 warning, 1, "kraken_spawn", "Kraken Spawn elite");
+            TickReefMiniboss(elapsed, warning, bossFight);
             TickPulses(elapsed, profile);
+        }
+
+        void TickReefMiniboss(float elapsed, float warningSeconds, bool bossFight)
+        {
+            if (_reefMinibossDone || bossFight || encounterSpawner == null) return;
+            var beatTime = _pacing != null ? _pacing.firstMinibossSeconds : 90f;
+            if (!_reefMinibossWarned && SaltwindPressureBeatLogic.ShouldShowEventWarning(elapsed, beatTime, warningSeconds))
+            {
+                _reefMinibossWarned = true;
+                V3ToastHud.Instance?.Show("WARNING — Reef Crab miniboss incoming!", warningSeconds);
+            }
+
+            if (elapsed < beatTime) return;
+            if (V3MinibossArena.Active) return;
+
+            if (encounterSpawner.TrySpawnMiniboss("reef_crab_miniboss", out var spawnedId))
+            {
+                V3MinibossArena.Begin(enemyWorld, encounterSpawner, spawnedId, "Reef Crab");
+                if (!V3MinibossArena.Active)
+                    return;
+
+                _reefMinibossDone = true;
+                RunCombatTelemetry.Instance?.Record("miniboss_spawned", new System.Collections.Generic.Dictionary<string, object> { ["id"] = "reef_crab_miniboss" });
+            }
         }
 
         void TickBeat(
@@ -108,9 +142,10 @@ namespace HighSeas.V3
             }
 
             if (encounterSpawner != null &&
-                encounterSpawner.TrySpawnPressureBeat(enemyId, scheduledEliteIndex, out _))
+                encounterSpawner.TrySpawnPressureBeat(enemyId, scheduledEliteIndex, out var spawnedId))
             {
                 done = true;
+                V3MinibossArena.Begin(enemyWorld, encounterSpawner, spawnedId, label);
                 RunCombatTelemetry.Instance?.Record("pressure_elite_spawned", new System.Collections.Generic.Dictionary<string, object> { ["label"] = label });
                 V3ToastHud.Instance?.Show($"{label} has arrived!", 4f);
                 return;

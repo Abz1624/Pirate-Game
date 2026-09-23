@@ -202,7 +202,13 @@ namespace HighSeas.Enemies
             }
             if (slot < 0) return -1;
 
-            position = PlayBounds.Clamp(position, def.radius + 1f);
+            var v3Scale = V3.V3RunContext.IsActive ? V3.V3RunContext.EnemyVisualScale : 1f;
+            var defVisualScale = def.visualScale > 0.01f ? def.visualScale : 1f;
+            if (def.visualPrefab == null)
+                defVisualScale = EnemyVisualFallbackResolver.ResolveVisualScale(def);
+            var appearanceScale = defVisualScale * v3Scale * GetThreatVisualScaleMultiplier(def, affix);
+            var gameplayRadius = def.radius * appearanceScale;
+            position = PlayBounds.Clamp(position, gameplayRadius + 1f);
             position.y = def.visualHeightOffset;
 
             var minute = RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds / 60f : 0f;
@@ -216,8 +222,7 @@ namespace HighSeas.Enemies
             hp *= Mathf.Max(0.1f, hpMultiplier) * _experimentHpMultiplier;
             dmg *= Mathf.Max(0.1f, damageMultiplier) * _experimentDamageMultiplier;
 
-            var v3Scale = V3.V3RunContext.IsActive ? V3.V3RunContext.EnemyVisualScale : 1f;
-            var visualScale = def.visualScale * v3Scale * (affix != EliteAffix.None ? 1.38f : 1f);
+            var visualScale = appearanceScale;
             var enemyId = _nextId;
             var view = CreateView(def, position, visualScale, affix != EliteAffix.None, enemyId);
 
@@ -233,12 +238,14 @@ namespace HighSeas.Enemies
                 maxHp = hp,
                 damage = dmg,
                 moveSpeed = baseSpeed,
-                radius = def.radius,
+                radius = gameplayRadius,
                 definitionIndex = definitionIndex,
                 affix = affix,
                 isElite = affix != EliteAffix.None,
                 isBoss = def.isBoss,
-                chargeTimer = def.id == "swordfish" ? 0f : 2f,
+                chargeTimer = def.id == "swordfish" ? 0f
+                    : def.behavior == EnemyBehavior.TelegraphedCharge ? (def.isMiniboss ? 1.15f : 1.5f)
+                    : 2f,
                 attackCooldown = GetInitialAttackCooldown(def),
                 swordfishSpringVisual = false,
                 view = view
@@ -246,7 +253,7 @@ namespace HighSeas.Enemies
 
             if (collideWithIslands && IslandObstacles.IsAvailable)
             {
-                var collisionRadius = GetCollisionRadius(def);
+                var collisionRadius = GetCollisionRadiusForAgent(_agents[slot]);
                 var height = IslandObstacles.GetCollisionHeight(collisionRadius);
                 _agents[slot].position = IslandObstacles.Depenetrate(position, collisionRadius, height);
                 if (view != null)
@@ -304,8 +311,12 @@ namespace HighSeas.Enemies
                 _agents[slot].chargeTimer = chargeCooldown > 0f ? chargeCooldown : 2f;
             }
 
-            if (elite.isElite && elite.sizeMultiplier > 0.01f && _agents[slot].view != null)
-                _agents[slot].view.localScale *= elite.sizeMultiplier;
+            if (elite.isElite && elite.sizeMultiplier > 0.01f)
+            {
+                if (_agents[slot].view != null)
+                    _agents[slot].view.localScale *= elite.sizeMultiplier;
+                MultiplyAgentRadius(slot, elite.sizeMultiplier);
+            }
 
             return slot;
         }
@@ -325,9 +336,41 @@ namespace HighSeas.Enemies
             return false;
         }
 
+        const float EliteVisualScaleMultiplier = 2.15f;
+        const float MinibossVisualScaleMultiplier = 2.85f;
+        const float PressureBeatVisualScaleMultiplier = 1.35f;
+
+        static float GetThreatVisualScaleMultiplier(EnemyDefinition def, EliteAffix affix)
+        {
+            if (def != null && def.isMiniboss)
+                return MinibossVisualScaleMultiplier;
+            if (affix != EliteAffix.None)
+                return EliteVisualScaleMultiplier;
+            return 1f;
+        }
+
+        void MultiplyAgentRadius(int slot, float multiplier)
+        {
+            if (slot < 0 || slot >= _agents.Length || !_agents[slot].active) return;
+            if (multiplier <= 0.01f) return;
+            var agent = _agents[slot];
+            agent.radius *= multiplier;
+            _agents[slot] = agent;
+        }
+
         /// <summary>Scheduled pressure-beat elite: 6× HP, 1.25× damage (combat spec §9).</summary>
-        public int SpawnPressureBeat(int definitionIndex, Vector3 position) =>
-            Spawn(definitionIndex, position, EliteAffix.Rich, 1f, 6f, 1.25f);
+        public int SpawnPressureBeat(int definitionIndex, Vector3 position)
+        {
+            var slot = Spawn(definitionIndex, position, EliteAffix.Rich, 1f, 6f, 1.25f);
+            if (slot >= 0)
+            {
+                if (_agents[slot].view != null)
+                    _agents[slot].view.localScale *= PressureBeatVisualScaleMultiplier;
+                MultiplyAgentRadius(slot, PressureBeatVisualScaleMultiplier);
+            }
+
+            return slot;
+        }
 
         /// <summary>Orients active enemy visuals toward a world point (promo shots, paused tableau).</summary>
         public void SnapAllActiveViewsToward(Vector3 worldTarget)
@@ -364,10 +407,11 @@ namespace HighSeas.Enemies
 
         Transform CreateView(Data.EnemyDefinition def, Vector3 position, float scale, bool elite, int animVariationSeed)
         {
-            if (def.visualPrefab != null)
+            var prefab = def.visualPrefab != null ? def.visualPrefab : EnemyVisualFallbackResolver.ResolvePrefab(def);
+            if (prefab != null)
             {
                 var yaw = Quaternion.Euler(0f, def.visualYawOffset, 0f);
-                var view = _viewPool.Acquire(def.visualPrefab, position, yaw, scale);
+                var view = _viewPool.Acquire(prefab, position, yaw, scale);
                 EnemyViewAnimation.ApplySpawnVariation(view, animVariationSeed);
                 return view;
             }
@@ -376,7 +420,7 @@ namespace HighSeas.Enemies
             go.name = string.IsNullOrEmpty(def.displayName) ? def.id : def.displayName;
             go.transform.SetParent(enemyRoot != null ? enemyRoot : transform, false);
             go.transform.position = position;
-            go.transform.localScale = Vector3.one * (def.radius * 2f);
+            go.transform.localScale = Vector3.one * (def.radius * 2f * scale);
             var col = go.GetComponent<Collider>();
             if (col != null) Destroy(col);
             var rend = go.GetComponent<Renderer>();
@@ -415,17 +459,33 @@ namespace HighSeas.Enemies
             return true;
         }
 
+        /// <summary>Despawns every active enemy except the agent with <paramref name="keepAgentId"/>.</summary>
+        public int CullAllExceptAgent(int keepAgentId)
+        {
+            if (keepAgentId <= 0 || _agents == null) return 0;
+            var culled = 0;
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                if (!_agents[i].active || _agents[i].id == keepAgentId) continue;
+                Despawn(i);
+                culled++;
+            }
+
+            return culled;
+        }
+
         public void Despawn(int index)
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
 
             var despawnProfile = _agents[index].spawnProfile;
             var def = definitions[_agents[index].definitionIndex];
+            var releasePrefab = def.visualPrefab != null ? def.visualPrefab : EnemyVisualFallbackResolver.ResolvePrefab(def);
             EnemyBurnFlash.SetBurning(_agents[index].view, false);
             if (_agents[index].view != null)
             {
-                if (def.visualPrefab != null)
-                    _viewPool.Release(_agents[index].view, def.visualPrefab);
+                if (releasePrefab != null)
+                    _viewPool.Release(_agents[index].view, releasePrefab);
                 else
                     Destroy(_agents[index].view.gameObject);
             }
@@ -480,12 +540,12 @@ namespace HighSeas.Enemies
                 if (dist < contactRange && e.contactCooldown <= 0f)
                 {
                     var contactEnabled = e.spawnProfile == null || e.patternParams.contactDamageEnabled;
-                    if (contactEnabled)
+                    if (contactEnabled || def.isMiniboss)
                     {
                         playerDamage?.TakeDamage(e.damage, e.position, false);
                         e.contactCooldown = GameConstants.EnemyContactCooldown;
                         TryApplyCreatureContactKnockback(ref e, def, playerPos);
-                        PushCreatureOffHull(ref e, playerPos, playerRadius);
+                        PushCreatureOffHull(ref e, playerPos, playerRadius, def);
                     }
                 }
                 if (e.contactCooldown > 0f) e.contactCooldown -= dt;
@@ -560,8 +620,9 @@ namespace HighSeas.Enemies
             agent.knockbackTimer = GameConstants.CreatureKnockbackSeconds;
         }
 
-        static void PushCreatureOffHull(ref EnemyAgent agent, Vector3 playerPos, float playerRadius)
+        static void PushCreatureOffHull(ref EnemyAgent agent, Vector3 playerPos, float playerRadius, Data.EnemyDefinition def)
         {
+            if (def.isMiniboss || def.isBoss) return;
             var required = GetMinimumCreatureHullDistance(playerRadius, agent.radius);
             var offset = agent.position - playerPos;
             offset.y = 0f;
@@ -593,8 +654,10 @@ namespace HighSeas.Enemies
         public float GetCollisionRadiusForAgent(in EnemyAgent agent)
         {
             if (definitions == null || agent.definitionIndex < 0 || agent.definitionIndex >= definitions.Length)
-                return agent.radius;
-            return GetCollisionRadius(definitions[agent.definitionIndex]);
+                return agent.radius + islandCollisionPadding;
+            var def = definitions[agent.definitionIndex];
+            var padding = def.category == EnemyCategory.Ship ? shipCollisionPadding : islandCollisionPadding;
+            return agent.radius + padding;
         }
 
         public void EnsureAgentCapacity(int minimum)
@@ -645,8 +708,7 @@ namespace HighSeas.Enemies
                 {
                     if (!_agents[i].active) continue;
                     ref var e = ref _agents[i];
-                    var def = definitions[e.definitionIndex];
-                    var collisionRadius = GetCollisionRadius(def);
+                    var collisionRadius = GetCollisionRadiusForAgent(e);
                     var height = IslandObstacles.GetCollisionHeight(collisionRadius);
                     e.position = IslandObstacles.Depenetrate(e.position, collisionRadius, height);
                     if (e.view != null)
@@ -698,7 +760,7 @@ namespace HighSeas.Enemies
                 return;
             }
 
-            var collisionRadius = GetCollisionRadius(def);
+            var collisionRadius = GetCollisionRadiusForAgent(e);
             var preferredDirection = desiredVelocity;
             preferredDirection.y = 0f;
 
@@ -752,6 +814,7 @@ namespace HighSeas.Enemies
                 facing *= Quaternion.Euler(0f, def.visualYawOffset, 0f);
 
             e.view.rotation = Quaternion.Slerp(e.view.rotation, facing, 1f - Mathf.Exp(-12f * dt));
+            EnemyShipWakeJuice.Tick(e.view, def.category, e.velocity);
         }
 
         Vector3 TickBehavior(int agentIndex, ref EnemyAgent e, Data.EnemyDefinition def, float dt, Vector3 playerPos, Vector3 playerVelocity)
@@ -834,13 +897,27 @@ namespace HighSeas.Enemies
                 }
                 case EnemyBehavior.TelegraphedCharge:
                     e.chargeTimer -= dt;
-                    if (e.chargeTimer <= 0f)
+                    if (def.isMiniboss)
+                    {
+                        const float miniWindUp = 0.45f;
+                        const float miniChargeDuration = 0.42f;
+                        const float miniCooldown = 0.95f;
+                        if (e.chargeTimer <= -miniChargeDuration)
+                            e.chargeTimer = miniCooldown;
+                        if (e.chargeTimer <= 0f)
+                            behaviorVelocity = dir * (e.moveSpeed * 3.5f);
+                        else if (e.chargeTimer <= miniWindUp)
+                            behaviorVelocity = Vector3.zero;
+                        else
+                            behaviorVelocity = dir * (e.moveSpeed * 0.95f);
+                    }
+                    else if (e.chargeTimer <= 0f)
                         behaviorVelocity = dir * (e.moveSpeed * 2.5f);
                     else if (e.chargeTimer > 1.5f)
                         behaviorVelocity = dir * (e.moveSpeed * 0.2f);
                     else
                         behaviorVelocity = Vector3.zero;
-                    if (e.chargeTimer <= -0.35f)
+                    if (!def.isMiniboss && e.chargeTimer <= -0.35f)
                         e.chargeTimer = 2f;
                     break;
                 case EnemyBehavior.MaintainRange:
@@ -853,14 +930,23 @@ namespace HighSeas.Enemies
                     }
 
                     var preferred = def.preferredRange > 0f ? def.preferredRange : 10f;
-                    if (dist > preferred + 3f)
+                    if (def.isMiniboss && dist > preferred * 0.35f)
+                        behaviorVelocity = dir * e.moveSpeed;
+                    else if (dist > preferred + 3f)
                         behaviorVelocity = dir * (e.moveSpeed * 0.65f);
                     else if (dist < preferred - 2f)
                     {
-                        var strafeSign = (e.id & 1) == 0 ? 1f : -1f;
-                        var tangent = Vector3.Cross(Vector3.up, dir) * strafeSign;
-                        behaviorVelocity = tangent * (e.moveSpeed * 0.35f);
+                        if (def.isMiniboss)
+                            behaviorVelocity = dir * (e.moveSpeed * 0.85f);
+                        else
+                        {
+                            var strafeSign = (e.id & 1) == 0 ? 1f : -1f;
+                            var tangent = Vector3.Cross(Vector3.up, dir) * strafeSign;
+                            behaviorVelocity = tangent * (e.moveSpeed * 0.35f);
+                        }
                     }
+                    else if (def.isMiniboss)
+                        behaviorVelocity = dir * (e.moveSpeed * 0.55f);
                     else
                         behaviorVelocity = Vector3.zero;
                     break;
@@ -1015,6 +1101,9 @@ namespace HighSeas.Enemies
             float dist,
             DamageReceiver playerDamage)
         {
+            if (!EnemyRangedAttackRules.SupportsRangedAttacks(def))
+                return;
+
             if (e.spawnProfile != null)
             {
                 var attackPattern = e.patternParams.attackPattern;
@@ -1286,6 +1375,7 @@ namespace HighSeas.Enemies
                 RunEncounterTracker.RegisterAgentKill(e.id);
                 if (StageBalanceProfileContext.IsActive && def != null)
                     RunMarksTracker.TryCreditScheduledEliteKill(e.id, def.id);
+                V3MinibossArena.NotifyAgentKilled(e.id);
                 if (e.isBoss && RunEncounterTracker.BossObjectiveSecured)
                     Object.FindFirstObjectByType<POIManager>()?.NotifyBossDefeated();
                 Meta.TriggerBus.Instance?.RaiseKill(e.isElite, e.isBoss, e.position, e.lastHitWeaponId);

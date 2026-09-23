@@ -13,17 +13,23 @@ MonoBehaviour:
   m_Name: gunner_cog
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.EnemyDefinition
   id: gunner_cog
+  displayName: Gunner Cog
+  category: 0
+  visualPrefab: {fileID: 1709254077376921, guid: 56edd4f3c823adc4ebd4220035b6a937, type: 3}
+  visualScale: 1
+  visualYawOffset: 0
   biomeTag: emerald
-  baseHP: 14
-  baseDamage: 6
+  baseHP: 20
+  baseDamage: 9
   moveSpeed: 3.5
-  radius: 1
-  threatCost: 4
-  xpValue: 5
+  radius: 1.15
+  visualHeightOffset: 0
+  threatCost: 3
+  xpValue: 4
   goldValue: 1
-  behavior: 3
-  attackCooldown: 1.5
-  preferredRange: 8
+  behavior: 7
+  attackCooldown: 2
+  preferredRange: 12
   tags: []
   placeholderColor: {r: 0, g: 0, b: 1, a: 1}
   isBoss: 0

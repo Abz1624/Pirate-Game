@@ -46,6 +46,22 @@ namespace HighSeas.Combat
             _currentHP = maxHP;
         }
 
+        public void SetArmor(float armorValue) => armor = armorValue;
+
+        /// <summary>Updates max HP without a free full heal (preserves current HP ratio by default).</summary>
+        public void AdjustMaxHP(float newMax, bool preserveRatio = true)
+        {
+            newMax = Mathf.Max(1f, newMax);
+            if (Mathf.Approximately(maxHP, newMax))
+                return;
+
+            var ratio = preserveRatio && maxHP > 0.01f ? _currentHP / maxHP : 1f;
+            maxHP = newMax;
+            _currentHP = preserveRatio
+                ? Mathf.Min(maxHP, maxHP * ratio)
+                : Mathf.Min(_currentHP, maxHP);
+        }
+
         public void TakeDamage(float amount, Vector3 hitPoint, bool isCrit)
         {
             if (!IsAlive) return;

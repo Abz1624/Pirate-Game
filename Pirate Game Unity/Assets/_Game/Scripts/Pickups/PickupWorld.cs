@@ -435,7 +435,11 @@ namespace HighSeas.Pickups
             {
                 EnsurePlayerShip();
                 if (_playerShip?.Damage != null && _playerShip.Damage.IsAlive)
-                    _playerShip.Damage.Heal(_pendingHealGrant);
+                {
+                    var missing = _playerShip.Damage.MaxHP - _playerShip.Damage.CurrentHP;
+                    _playerShip.Damage.Heal(Mathf.Min(_pendingHealGrant, missing));
+                }
+
                 _pendingHealGrant = 0;
             }
         }

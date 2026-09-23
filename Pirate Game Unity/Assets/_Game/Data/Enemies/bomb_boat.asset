@@ -13,11 +13,17 @@ MonoBehaviour:
   m_Name: bomb_boat
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.EnemyDefinition
   id: bomb_boat
+  displayName: Bomb Boat
+  category: 0
+  visualPrefab: {fileID: 1709254077376921, guid: 5ed2848d6af562343b7d1daa26a27d79, type: 3}
+  visualScale: 1
+  visualYawOffset: 0
   biomeTag: emerald
   baseHP: 10
   baseDamage: 14
   moveSpeed: 6
   radius: 1
+  visualHeightOffset: 0
   threatCost: 3
   xpValue: 4
   goldValue: 1

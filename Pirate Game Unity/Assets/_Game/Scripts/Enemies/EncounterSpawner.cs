@@ -21,11 +21,14 @@ namespace HighSeas.Enemies
         readonly SpawnModifierStack _spawnModifiers = new();
         readonly AmbientSpawnBudget _ambientBudget = new();
         bool _ambientScheduleEnabled = true;
+        bool _minibossArenaActive;
+        float _minibossArenaBlockedSince = -1f;
         float _globalSpawnGap;
         int _nextProfileInstanceId = 1;
         readonly List<ActiveProfileRun> _activeProfiles = new(32);
         readonly Dictionary<int, int> _profileActiveCounts = new();
         readonly List<PendingTriggeredEncounter> _pendingEncounters = new(8);
+        bool _processingTriggerQueue;
 
         const float EncounterRequestTimeoutSeconds = 10f;
 
@@ -98,6 +101,12 @@ namespace HighSeas.Enemies
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
             if (RunManager.Instance.IsRunEnded) return;
             if (RunManager.Instance.State != RunState.Playing && RunManager.Instance.State != RunState.BossFight) return;
+
+            if (_minibossArenaActive || V3.V3MinibossArena.BlocksAmbientSpawning)
+            {
+                AccumulateAmbientBudgetWhileBlocked(Time.deltaTime);
+                return;
+            }
 
             ProcessTriggerQueue();
 
@@ -331,11 +340,30 @@ namespace HighSeas.Enemies
         int ProcessTriggerQueue()
         {
             if (RunManager.Instance == null) return 0;
+            if (_processingTriggerQueue) return 0;
+
+            _processingTriggerQueue = true;
+            try
+            {
+                return ProcessTriggerQueueCore();
+            }
+            finally
+            {
+                _processingTriggerQueue = false;
+            }
+        }
+
+        int ProcessTriggerQueueCore()
+        {
+            if (RunManager.Instance == null) return 0;
             var runTime = RunManager.Instance.ElapsedSeconds;
             var totalSpawned = 0;
 
             for (var i = _pendingEncounters.Count - 1; i >= 0; i--)
             {
+                if (i >= _pendingEncounters.Count)
+                    continue;
+
                 var pending = _pendingEncounters[i];
                 if (pending.profile == null)
                 {
@@ -387,7 +415,8 @@ namespace HighSeas.Enemies
                 }
 
                 pending.nextAttemptAt = runTime + GetSpawnRetryIntervalSeconds();
-                _pendingEncounters[i] = pending;
+                if (i < _pendingEncounters.Count)
+                    _pendingEncounters[i] = pending;
             }
 
             return totalSpawned;
@@ -802,6 +831,70 @@ namespace HighSeas.Enemies
         {
             if (enabled)
                 ResetForNewRun();
+        }
+
+        public void SetMinibossArenaActive(bool active)
+        {
+            if (active && !_minibossArenaActive)
+                _minibossArenaBlockedSince = RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f;
+            else if (!active && _minibossArenaActive)
+                ReleaseMinibossArenaSpawnCatchUp();
+            _minibossArenaActive = active;
+            if (!active)
+                _minibossArenaBlockedSince = -1f;
+        }
+
+        void AccumulateAmbientBudgetWhileBlocked(float dt)
+        {
+            if (dt <= 0f || schedule?.entries == null) return;
+            var rate = 0f;
+            for (var i = 0; i < schedule.entries.Length; i++)
+            {
+                var entry = schedule.entries[i];
+                if (entry?.profile == null) continue;
+                var interval = Mathf.Max(0.1f, entry.profile.timing.spawnIntervalSeconds);
+                rate = Mathf.Max(rate, 1f / interval);
+            }
+
+            if (rate <= 0f)
+                rate = 0.6f;
+            _ambientBudget.AccumulateWhileBlocked(dt, rate, blocked: true);
+        }
+
+        void ReleaseMinibossArenaSpawnCatchUp()
+        {
+            if (_minibossArenaBlockedSince < 0f || RunManager.Instance == null) return;
+            var blockedSeconds = Mathf.Max(0f, RunManager.Instance.ElapsedSeconds - _minibossArenaBlockedSince);
+            if (blockedSeconds <= 0f) return;
+
+            _ambientBudget.Accumulated = _ambientBudget.MaxCarry;
+            var now = RunManager.Instance.ElapsedSeconds;
+            for (var i = 0; i < _activeProfiles.Count; i++)
+            {
+                var run = _activeProfiles[i];
+                run.nextSpawnAt = now;
+                run.nextAttemptAt = now;
+                _activeProfiles[i] = run;
+            }
+        }
+
+        public bool TrySpawnMiniboss(string enemyId, out int spawnedAgentId)
+        {
+            spawnedAgentId = -1;
+            if (enemyWorld == null || player == null || string.IsNullOrEmpty(enemyId)) return false;
+            var defIndex = FindDefinitionIndexById(enemyId);
+            if (defIndex < 0) return false;
+            var def = enemyWorld.Definitions[defIndex];
+            var rng = RunManager.Instance?.Rng;
+            if (rng == null) return false;
+
+            var angle = rng.LootFloat() * Mathf.PI * 2f;
+            var pos = player.position + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * 22f;
+            pos.y = def.visualHeightOffset;
+            var slot = enemyWorld.Spawn(defIndex, pos, EliteAffix.Rich, 1f, 4f, 1.15f);
+            if (slot < 0) return false;
+            spawnedAgentId = enemyWorld.Agents[slot].id;
+            return spawnedAgentId > 0;
         }
 
         public bool TrySpawnPressureBeat(string enemyId)

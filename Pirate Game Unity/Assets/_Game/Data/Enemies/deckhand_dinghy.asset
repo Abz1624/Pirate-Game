@@ -13,15 +13,21 @@ MonoBehaviour:
   m_Name: deckhand_dinghy
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.EnemyDefinition
   id: deckhand_dinghy
+  displayName: Deckhand Dinghy
+  category: 0
+  visualPrefab: {fileID: 1709254077376921, guid: 84d2bab2e18923f438d2c897b9c87351, type: 3}
+  visualScale: 0.82
+  visualYawOffset: 0
   biomeTag: emerald
   baseHP: 12
-  baseDamage: 6
-  moveSpeed: 4
-  radius: 1
+  baseDamage: 5
+  moveSpeed: 5.5
+  radius: 0.9
+  visualHeightOffset: 0
   threatCost: 1
   xpValue: 2
   goldValue: 1
-  behavior: 0
+  behavior: 8
   attackCooldown: 1.5
   preferredRange: 8
   tags: []

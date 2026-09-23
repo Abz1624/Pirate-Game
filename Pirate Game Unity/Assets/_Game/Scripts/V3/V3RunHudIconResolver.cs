@@ -11,6 +11,9 @@ namespace HighSeas.V3
     /// <summary>Resolves weapon/item sprites from Assets/UI (editor play) with optional Resources fallback.</summary>
     public static class V3RunHudIconResolver
     {
+        /// <summary>When false, loadout HUDs use text labels only (no weapon/item sprite lookup).</summary>
+        public const bool HudIconsEnabled = true;
+
         const string WeaponFolder = "Assets/UI/Weapons/";
         const string ItemFolder = "Assets/UI/Item Icons/";
 
@@ -18,6 +21,7 @@ namespace HighSeas.V3
 
         public static Sprite GetWeaponIcon(string weaponId, WeaponDefinition def = null)
         {
+            if (!HudIconsEnabled) return null;
             if (string.IsNullOrEmpty(weaponId)) return null;
             if (Cache.TryGetValue(weaponId, out var cached)) return cached;
 
@@ -33,6 +37,7 @@ namespace HighSeas.V3
 
         public static Sprite GetItemIcon(string itemId)
         {
+            if (!HudIconsEnabled) return null;
             if (string.IsNullOrEmpty(itemId)) return null;
             var key = "item:" + itemId;
             if (Cache.TryGetValue(key, out var cached)) return cached;

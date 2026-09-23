@@ -23,8 +23,8 @@ namespace HighSeas.V3
         public static bool EnableSpawnDirectorDebugUi => DeveloperPresetActive;
         public static bool EnableEnemyIdentityLabels => DeveloperPresetActive;
 
-        /// <summary>Skip weapon cooldown firing during isolated behavior tests (not solo Saltwind).</summary>
-        public const bool DisableShipAutoFire = true;
+        /// <summary>Skip weapon cooldown firing only in non-Saltwind isolated behavior tests.</summary>
+        public const bool DisableShipAutoFire = false;
 
         public static bool ShouldDisableShipAutoFire =>
             DisableShipAutoFire && !Balance.StageBalanceProfileContext.IsActive;

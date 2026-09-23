@@ -395,7 +395,8 @@ namespace HighSeas.POI
                         return false;
                     }
 
-                    player.Damage.Heal(RunManager.Instance.Stats.MaxHull * 0.25f);
+                    var missingHull = RunManager.Instance.Stats.MaxHull - player.Damage.CurrentHP;
+                    player.Damage.Heal(Mathf.Min(RunManager.Instance.Stats.MaxHull * 0.25f, missingHull));
                     V3ToastHud.Instance?.Show("Repair Wreck — hull restored 25%.", 2.5f);
                     break;
                 case POIType.MerchantSkiff:

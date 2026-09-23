@@ -27,7 +27,7 @@ MonoBehaviour:
   threatCost: 3
   xpValue: 3
   goldValue: 1
-  behavior: 0
+  behavior: 3
   attackCooldown: 3
   preferredRange: 13
   tags: []

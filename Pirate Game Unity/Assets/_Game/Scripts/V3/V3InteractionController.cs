@@ -72,6 +72,10 @@ namespace HighSeas.V3
 
         CanvasGroup _promptGroup;
 
+        RectTransform _promptRect;
+
+        bool _promptUsesCenterAnchor;
+
         int _salvageChestDismissedIndex = -1;
 
 
@@ -130,13 +134,9 @@ namespace HighSeas.V3
 
             var rect = panel.AddComponent<RectTransform>();
 
-            rect.anchorMin = new Vector2(0.5f, 0f);
+            _promptRect = rect;
 
-            rect.anchorMax = new Vector2(0.5f, 0f);
-
-            rect.pivot = new Vector2(0.5f, 0f);
-
-            rect.anchoredPosition = new Vector2(0f, 150f);
+            ApplyBottomPromptAnchor();
 
             rect.sizeDelta = new Vector2(520f, 72f);
 
@@ -301,6 +301,8 @@ namespace HighSeas.V3
                 return;
 
             }
+
+            UpdatePromptLayoutForTarget();
 
 
 
@@ -533,6 +535,38 @@ namespace HighSeas.V3
         }
 
 
+
+        void UpdatePromptLayoutForTarget()
+        {
+            if (_target == null || _promptRect == null) return;
+            var useCenter = _target.ShowsSalvageChestPrice || _target.RequiredHoldSeconds > 0f;
+            if (useCenter == _promptUsesCenterAnchor) return;
+            _promptUsesCenterAnchor = useCenter;
+            if (useCenter)
+                ApplyCenterPromptAnchor();
+            else
+                ApplyBottomPromptAnchor();
+        }
+
+        void ApplyBottomPromptAnchor()
+        {
+            if (_promptRect == null) return;
+            _promptRect.anchorMin = new Vector2(0.5f, 0f);
+            _promptRect.anchorMax = new Vector2(0.5f, 0f);
+            _promptRect.pivot = new Vector2(0.5f, 0f);
+            _promptRect.anchoredPosition = new Vector2(0f, 150f);
+            _promptRect.sizeDelta = new Vector2(520f, 72f);
+        }
+
+        void ApplyCenterPromptAnchor()
+        {
+            if (_promptRect == null) return;
+            _promptRect.anchorMin = new Vector2(0.5f, 0.5f);
+            _promptRect.anchorMax = new Vector2(0.5f, 0.5f);
+            _promptRect.pivot = new Vector2(0.5f, 0.5f);
+            _promptRect.anchoredPosition = Vector2.zero;
+            _promptRect.sizeDelta = new Vector2(560f, 88f);
+        }
 
         void SetPromptVisible(bool visible)
 

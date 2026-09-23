@@ -60,6 +60,8 @@ namespace HighSeas.Combat
 
         static TargetingMode ResolveMode(WeaponDefinition def)
         {
+            if (def.targeting == TargetingMode.PortStarboard)
+                return TargetingMode.PortStarboard;
             if (!CombatExperimentContext.Active.directionalWeaponTargetingEnabled)
             {
                 if (def.targeting == TargetingMode.DensestCluster) return TargetingMode.DensestCluster;
@@ -149,25 +151,56 @@ namespace HighSeas.Combat
         {
             targetIndex = -1;
             aimDirection = forward;
-            var right = Vector3.Cross(Vector3.up, forward).normalized;
-            var leftScore = ScoreSide(enemies, origin, right, range, sideRight: false, out var leftIndex);
-            var rightScore = ScoreSide(enemies, origin, right, range, sideRight: true, out var rightIndex);
-            if (leftScore <= float.MinValue && rightScore <= float.MinValue) return false;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
+            forward.Normalize();
 
-            if (rightScore >= leftScore)
-            {
-                targetIndex = rightIndex;
-                aimDirection = right;
-            }
-            else
-            {
-                targetIndex = leftIndex;
-                aimDirection = -right;
-            }
-            return targetIndex >= 0;
+            var right = Vector3.Cross(Vector3.up, forward).normalized;
+            var leftScore = ScoreSide(enemies, origin, forward, right, range, sideRight: false, out var leftIndex);
+            var rightScore = ScoreSide(enemies, origin, forward, right, range, sideRight: true, out var rightIndex);
+            if (leftScore <= float.MinValue && rightScore <= float.MinValue)
+                return false;
+
+            var useRight = rightScore >= leftScore;
+            targetIndex = useRight ? rightIndex : leftIndex;
+            if (targetIndex < 0) return false;
+
+            var agents = enemies.Agents;
+            var toTarget = agents[targetIndex].position - origin;
+            toTarget.y = 0f;
+            if (toTarget.sqrMagnitude < 0.01f) return false;
+            aimDirection = toTarget.normalized;
+            return true;
         }
 
-        static float ScoreSide(EnemyWorld enemies, Vector3 origin, Vector3 right, float range, bool sideRight, out int bestIndex)
+        /// <summary>True when a world point lies in the port or starboard firing arcs (not bow/stern).</summary>
+        public static bool IsInBroadsideArc(Vector3 forward, Vector3 origin, Vector3 targetPos)
+        {
+            forward.y = 0f;
+            var delta = targetPos - origin;
+            delta.y = 0f;
+            if (delta.sqrMagnitude < 0.01f) return false;
+            if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
+            forward.Normalize();
+            var dir = delta.normalized;
+            var forwardDot = Vector3.Dot(dir, forward);
+            if (Mathf.Abs(forwardDot) > BroadsideMaxForwardDot) return false;
+            var right = Vector3.Cross(Vector3.up, forward).normalized;
+            var sideDot = Mathf.Abs(Vector3.Dot(dir, right));
+            return sideDot >= BroadsideMinSideDot;
+        }
+
+        const float BroadsideMaxForwardDot = 0.5f;
+        const float BroadsideMinSideDot = 0.55f;
+
+        static float ScoreSide(
+            EnemyWorld enemies,
+            Vector3 origin,
+            Vector3 forward,
+            Vector3 right,
+            float range,
+            bool sideRight,
+            out int bestIndex)
         {
             bestIndex = -1;
             var bestScore = float.MinValue;
@@ -178,13 +211,23 @@ namespace HighSeas.Combat
                 if (!agents[i].active) continue;
                 var delta = agents[i].position - origin;
                 delta.y = 0f;
-                if (delta.sqrMagnitude > range * range) continue;
-                if (Vector3.Dot(delta.normalized, sideDir) < 0.35f) continue;
-                var score = -delta.sqrMagnitude;
+                var distSq = delta.sqrMagnitude;
+                if (distSq > range * range || distSq < 0.01f) continue;
+
+                var dir = delta.normalized;
+                var forwardDot = Vector3.Dot(dir, forward);
+                if (Mathf.Abs(forwardDot) > BroadsideMaxForwardDot) continue;
+
+                var sideDot = Vector3.Dot(dir, sideDir);
+                if (sideDot < BroadsideMinSideDot) continue;
+
+                var score = sideDot * 2f - Mathf.Abs(forwardDot) - distSq * 0.02f;
+                if (agents[i].isElite) score += 0.5f;
                 if (score <= bestScore) continue;
                 bestScore = score;
                 bestIndex = i;
             }
+
             return bestScore;
         }
 

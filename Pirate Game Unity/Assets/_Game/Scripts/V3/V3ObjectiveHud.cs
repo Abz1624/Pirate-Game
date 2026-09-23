@@ -72,7 +72,7 @@ namespace HighSeas.V3
                 if (!show || _lines[i] == null) continue;
 
                 _lines[i].text = visible[i];
-                _lines[i].color = visible[i].StartsWith("✓")
+                _lines[i].color = visible[i].StartsWith("[OK]")
                     ? new Color(0.45f, 0.95f, 0.55f)
                     : V3PlaceholderFactory.UiText;
             }

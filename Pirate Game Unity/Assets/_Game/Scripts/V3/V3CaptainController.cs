@@ -1,3 +1,4 @@
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Player;
 using HighSeas.UI;
@@ -61,7 +62,8 @@ namespace HighSeas.V3
             if (captainId != V3CaptainId.Brine) return;
             var player = FindFirstObjectByType<PlayerShipController>();
             if (player == null || RunManager.Instance == null) return;
-            player.Damage.Initialize(RunManager.Instance.Stats.MaxHull, GetBrineArmor());
+            PlayerHullSync.SyncMaxFromRunStats(player);
+            player.Damage.SetArmor(GetBrineArmor());
         }
 
         static float GetPerLevelBonus(int level, float perLevel, float cap) =>

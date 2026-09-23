@@ -338,7 +338,7 @@ namespace HighSeas.V3
                 {
                     "PvP Duel",
                     V3PvPRunDirector.RivalDefeated
-                        ? "✓ Victory — rival sunk"
+                        ? "[OK] Victory — rival sunk"
                         : RunManager.Instance.IsRunEnded
                             ? "Defeated"
                             : "» Sink the rival ship"

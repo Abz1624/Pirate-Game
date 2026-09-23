@@ -358,7 +358,7 @@ namespace HighSeas.UI
                     _logbookLevels,
                     weaponSlots,
                     logbookSlots,
-                    isFirstLevelUp: false,
+                    isFirstLevelUp: _completedLevelUps == 0,
                     RunManager.Instance?.Stats,
                     hull?.CurrentHP ?? -1f,
                     hull?.MaxHP ?? -1f,
@@ -599,7 +599,12 @@ namespace HighSeas.UI
             {
                 var player = UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>();
                 if (player?.Damage != null && player.Damage.IsAlive)
-                    player.Damage.Heal(player.Damage.MaxHP * GameConstants.LevelOfferFallbackHealFraction);
+                {
+                    var missing = player.Damage.MaxHP - player.Damage.CurrentHP;
+                    var heal = player.Damage.MaxHP * GameConstants.LevelOfferFallbackHealFraction;
+                    player.Damage.Heal(Mathf.Min(heal, missing));
+                }
+
                 return;
             }
 
@@ -685,6 +690,12 @@ namespace HighSeas.UI
                 def.primaryStat,
                 def.perLevelAdditive * mult,
                 def.perLevelMultiplicative));
+
+            if (def.primaryStat == StatId.Hull)
+            {
+                var player = UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>();
+                PlayerHullSync.SyncMaxFromRunStats(player, preserveRatio: false);
+            }
         }
     }
 }

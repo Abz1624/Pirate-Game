@@ -71,6 +71,24 @@ namespace HighSeas.UI
                 return FinalizeOffers(result, count, rng, stats, currentHull, maxHull);
             }
 
+            if (isFirstLevelUp && useFillStateWeighting && UsesMixedSaltwindLevelOffers())
+            {
+                AddMixedEarlyLevelOffers(
+                    result,
+                    database,
+                    settings,
+                    rng,
+                    luck,
+                    ownedWeapons,
+                    weaponLevels,
+                    ownedLogbooks,
+                    logbookLevels,
+                    logbookSlots,
+                    weaponSlots,
+                    count);
+                return FinalizeOffers(result, count, rng, stats, currentHull, maxHull);
+            }
+
             var usedKeys = new HashSet<string>();
             for (var i = 0; i < count; i++)
             {
@@ -307,6 +325,53 @@ namespace HighSeas.UI
             }
         }
 
+        static bool UsesMixedSaltwindLevelOffers() =>
+            V3RunContext.IsActive || StageBalanceProfileContext.IsActive;
+
+        static void AddMixedEarlyLevelOffers(
+            List<LevelOffer> result,
+            GameDatabase database,
+            LevelUpSettings settings,
+            RunRng rng,
+            float luck,
+            IReadOnlyList<string> ownedWeapons,
+            IReadOnlyDictionary<string, int> weaponLevels,
+            IReadOnlyList<string> ownedLogbooks,
+            IReadOnlyDictionary<string, int> logbookLevels,
+            int logbookSlots,
+            int weaponSlots,
+            int count)
+        {
+            var used = new HashSet<string>();
+            TryAddMixedOffer(result, used, TryRunItemOffer(rng, luck, used));
+            TryAddMixedOffer(result, used, TryLogbookOffer(database, ownedLogbooks, logbookLevels, logbookSlots, rng, luck, used, newOnly: true));
+            if (ownedWeapons.Count < weaponSlots)
+                TryAddMixedOffer(result, used, TryNewWeaponOffer(database, settings, ownedWeapons, weaponLevels, rng, used));
+
+            var attempts = 0;
+            while (result.Count < count && attempts < 48)
+            {
+                attempts++;
+                var roll = rng.LootFloat();
+                LevelOffer candidate = roll switch
+                {
+                    < 0.34f => TryRunItemOffer(rng, luck, used),
+                    < 0.62f => TryLogbookOffer(database, ownedLogbooks, logbookLevels, logbookSlots, rng, luck, used, newOnly: false),
+                    _ => TryNewWeaponOffer(database, settings, ownedWeapons, weaponLevels, rng, used)
+                };
+                TryAddMixedOffer(result, used, candidate);
+            }
+        }
+
+        static void TryAddMixedOffer(List<LevelOffer> result, HashSet<string> used, LevelOffer offer)
+        {
+            if (offer.id == null) return;
+            var key = GetOfferKey(offer);
+            if (used.Contains(key)) return;
+            used.Add(key);
+            result.Add(offer);
+        }
+
         static bool ContainsId(IReadOnlyList<string> list, string id)
         {
             if (list == null) return false;
@@ -342,7 +407,7 @@ namespace HighSeas.UI
             var canOfferLogbook = database.logbooks != null && database.logbooks.Length > 0;
             var canNewLogbook = CanOfferNewLogbook(ownedLogbooks, logbookSlots, database, logbookLevels);
             var canUpgradeLogbook = CanOfferLogbookUpgrade(ownedLogbooks, database, logbookLevels);
-            var canRunItem = V3RunContext.IsActive && V3ItemCatalog.InteractionItemIds.Length > 0;
+            var canRunItem = UsesMixedSaltwindLevelOffers() && V3ItemCatalog.InteractionItemIds.Length > 0;
 
             if (useFillStateWeighting)
             {
@@ -407,11 +472,17 @@ namespace HighSeas.UI
 
         static OfferCategoryWeights GetFillStateWeights(int equippedWeapons)
         {
-            if (equippedWeapons <= 2) return new OfferCategoryWeights { equippedWeaponUpgrade = 23f, newWeapon = 42f, equippedLogbookUpgrade = 18f, newLogbook = 9f, newRunItem = 8f };
-            if (equippedWeapons == 3) return new OfferCategoryWeights { equippedWeaponUpgrade = 32f, newWeapon = 32f, equippedLogbookUpgrade = 18f, newLogbook = 9f, newRunItem = 9f };
-            if (equippedWeapons == 4) return new OfferCategoryWeights { equippedWeaponUpgrade = 38f, newWeapon = 26f, equippedLogbookUpgrade = 18f, newLogbook = 9f, newRunItem = 9f };
-            if (equippedWeapons == 5) return new OfferCategoryWeights { equippedWeaponUpgrade = 46f, newWeapon = 18f, equippedLogbookUpgrade = 18f, newLogbook = 9f, newRunItem = 9f };
-            return new OfferCategoryWeights { equippedWeaponUpgrade = 58f, newWeapon = 0f, equippedLogbookUpgrade = 22f, newLogbook = 9f, newRunItem = 11f };
+            var mixedEarly = UsesMixedSaltwindLevelOffers();
+            if (equippedWeapons <= 2)
+            {
+                return mixedEarly
+                    ? new OfferCategoryWeights { equippedWeaponUpgrade = 22f, newWeapon = 24f, equippedLogbookUpgrade = 16f, newLogbook = 14f, newRunItem = 24f }
+                    : new OfferCategoryWeights { equippedWeaponUpgrade = 23f, newWeapon = 42f, equippedLogbookUpgrade = 18f, newLogbook = 9f, newRunItem = 8f };
+            }
+            if (equippedWeapons == 3) return new OfferCategoryWeights { equippedWeaponUpgrade = 30f, newWeapon = 26f, equippedLogbookUpgrade = 18f, newLogbook = 12f, newRunItem = 14f };
+            if (equippedWeapons == 4) return new OfferCategoryWeights { equippedWeaponUpgrade = 34f, newWeapon = 22f, equippedLogbookUpgrade = 18f, newLogbook = 12f, newRunItem = 14f };
+            if (equippedWeapons == 5) return new OfferCategoryWeights { equippedWeaponUpgrade = 40f, newWeapon = 16f, equippedLogbookUpgrade = 18f, newLogbook = 12f, newRunItem = 14f };
+            return new OfferCategoryWeights { equippedWeaponUpgrade = 52f, newWeapon = 0f, equippedLogbookUpgrade = 22f, newLogbook = 12f, newRunItem = 14f };
         }
 
         static LevelOffer TryRunItemOffer(RunRng rng, float luck, HashSet<string> usedKeys)
@@ -469,6 +540,7 @@ namespace HighSeas.UI
         {
             var target = GetPityTargetWeaponCount(playerLevel);
             if (target <= 0 || ownedWeapons.Count >= target || ownedWeapons.Count >= weaponSlots) return;
+            if (UsesMixedSaltwindLevelOffers() && playerLevel <= 5 && ownedWeapons.Count <= 3) return;
             for (var i = 0; i < offers.Count; i++)
             {
                 if (offers[i].kind == LevelOfferKind.NewWeapon) return;

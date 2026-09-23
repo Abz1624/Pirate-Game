@@ -21,15 +21,15 @@ MonoBehaviour:
   biomeTag: emerald
   baseHP: 120
   baseDamage: 14
-  moveSpeed: 2
+  moveSpeed: 4.6
   radius: 2.2
   visualHeightOffset: 0
   threatCost: 8
   xpValue: 35
   goldValue: 50
-  behavior: 3
-  attackCooldown: 1.5
-  preferredRange: 8
+  behavior: 2
+  attackCooldown: 1.2
+  preferredRange: 5
   tags: []
   placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
   isBoss: 0

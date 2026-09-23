@@ -49,7 +49,7 @@ namespace HighSeas.V3
         public static string FormatStep(string label, bool complete, bool active = false)
         {
             if (complete)
-                return $"✓ {label}";
+                return $"[OK] {label}";
             return active ? $"» {label}" : label;
         }
 

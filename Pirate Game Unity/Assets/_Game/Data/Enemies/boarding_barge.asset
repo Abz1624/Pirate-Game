@@ -13,17 +13,23 @@ MonoBehaviour:
   m_Name: boarding_barge
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.EnemyDefinition
   id: boarding_barge
+  displayName: Boarding Barge
+  category: 0
+  visualPrefab: {fileID: 1709254077376921, guid: 7afb2627fae5f894faa010e4c9375b29, type: 3}
+  visualScale: 1.12
+  visualYawOffset: 0
   biomeTag: emerald
-  baseHP: 40
-  baseDamage: 12
-  moveSpeed: 3
-  radius: 1
-  threatCost: 6
-  xpValue: 7
+  baseHP: 24
+  baseDamage: 8
+  moveSpeed: 3.2
+  radius: 1.25
+  visualHeightOffset: 0
+  threatCost: 4
+  xpValue: 5
   goldValue: 1
-  behavior: 5
-  attackCooldown: 1.5
-  preferredRange: 8
+  behavior: 3
+  attackCooldown: 2
+  preferredRange: 10
   tags: []
   placeholderColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   isBoss: 0

@@ -82,7 +82,6 @@ namespace HighSeas.Weapons
             public bool active;
             public Vector3 position;
             public float armTime;
-            public float lifeTime;
             public float triggerRadius;
             public float blastRadius;
             public float baseDamage;
@@ -1259,7 +1258,6 @@ namespace HighSeas.Weapons
                 active = true,
                 position = pos,
                 armTime = 0.2f,
-                lifeTime = 45f,
                 triggerRadius = 3f * w.sizeMult * stats.Size,
                 blastRadius = 3.2f * w.sizeMult * stats.Size,
                 baseDamage = w.def.baseDamage,
@@ -1290,15 +1288,6 @@ namespace HighSeas.Weapons
                 }
 
                 keg.armTime -= dt;
-                keg.lifeTime -= dt;
-                if (keg.lifeTime <= 0f)
-                {
-                    if (keg.visual != null)
-                        Destroy(keg.visual.gameObject);
-                    _powderKegs.RemoveAt(i);
-                    continue;
-                }
-
                 if (keg.armTime > 0f)
                 {
                     _powderKegs[i] = keg;
@@ -1321,38 +1310,45 @@ namespace HighSeas.Weapons
                     continue;
                 }
 
-                var blastRadius = GetPowderKegBlastRadius(Mathf.Max(keg.blastRadius, keg.triggerRadius));
-                CombatProcRuntime.BeginWeaponDamageResolution();
-                for (var ai = 0; ai < agents.Length; ai++)
-                {
-                    if (!agents[ai].active) continue;
-                    if (HorizontalDistance(agents[ai].position, keg.position) > blastRadius) continue;
-                    var dmg = RollPowderKegBlastDamage(
-                        keg.baseDamage,
-                        keg.damageBonus,
-                        stats,
-                        rng,
-                        agents[ai].isElite,
-                        keg.procCoefficient);
-                    CombatProcRuntime.TryApplyTriggeredEnemyDamage(_enemies, ai, dmg, "powder_kegs");
-                }
+                DetonatePowderKeg(i, keg, stats, rng);
+                _powderKegs.RemoveAt(i);
+            }
+        }
 
-                var shipBlastDamage = RollPowderKegBlastDamage(
+        void DetonatePowderKeg(int _, PowderKeg keg, PlayerStats stats, RunRng rng)
+        {
+            if (_enemies == null) return;
+            var blastRadius = GetPowderKegBlastRadius(Mathf.Max(keg.blastRadius, keg.triggerRadius));
+            CombatProcRuntime.BeginWeaponDamageResolution();
+            var agents = _enemies.Agents;
+            for (var ai = 0; ai < agents.Length; ai++)
+            {
+                if (!agents[ai].active) continue;
+                if (HorizontalDistance(agents[ai].position, keg.position) > blastRadius) continue;
+                var dmg = RollPowderKegBlastDamage(
                     keg.baseDamage,
                     keg.damageBonus,
                     stats,
                     rng,
-                    false,
+                    agents[ai].isElite,
                     keg.procCoefficient);
-                V3ShipCombatRegistry.ApplyRadiusDamage(_player, keg.position, blastRadius, shipBlastDamage, false, "powder_kegs");
-
-                _juice?.OnMineExploded(keg.position, blastRadius);
-                if (WeaponEvolutionCatalog.GetBehaviorModifier("powder_kegs") == "devils_wake")
-                    ChainNearbyPowderKegs(keg.position, 4.2f);
-                if (keg.visual != null)
-                    Destroy(keg.visual.gameObject);
-                _powderKegs.RemoveAt(i);
+                CombatProcRuntime.TryApplyTriggeredEnemyDamage(_enemies, ai, dmg, "powder_kegs");
             }
+
+            var shipBlastDamage = RollPowderKegBlastDamage(
+                keg.baseDamage,
+                keg.damageBonus,
+                stats,
+                rng,
+                false,
+                keg.procCoefficient);
+            V3ShipCombatRegistry.ApplyRadiusDamage(_player, keg.position, blastRadius, shipBlastDamage, false, "powder_kegs");
+
+            _juice?.OnMineExploded(keg.position, blastRadius);
+            if (WeaponEvolutionCatalog.GetBehaviorModifier("powder_kegs") == "devils_wake")
+                ChainNearbyPowderKegs(keg.position, 4.2f);
+            if (keg.visual != null)
+                Destroy(keg.visual.gameObject);
         }
 
         void ChainNearbyPowderKegs(Vector3 origin, float radius)

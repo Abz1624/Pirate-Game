@@ -21,6 +21,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b1c526572bf37234682f2e966afdcacf, type: 2}
   - {fileID: 11400000, guid: 00991039ee74b8548b4b65fbcee71958, type: 2}
   - {fileID: 11400000, guid: 71d78f615978922418316aa457302955, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   logbooks:
   - {fileID: 11400000, guid: be6da316ecff67542955c3009066c1d7, type: 2}
   - {fileID: 11400000, guid: 757d2a2837db6494eafb240ae660c6fd, type: 2}

@@ -124,7 +124,12 @@ namespace HighSeas.Enemies
         {
             if (profile.attack.pattern != EnemyAttackPattern.UseDefinition)
                 return profile.attack.pattern;
-            var behavior = profile.enemy?.behavior ?? EnemyBehavior.DirectChaser;
+            var enemy = profile.enemy;
+            var behavior = enemy?.behavior ?? EnemyBehavior.DirectChaser;
+            if (enemy != null && enemy.id == "cannonboat")
+                return EnemyAttackPattern.SingleShot;
+            if (!EnemyRangedAttackRules.SupportsRangedAttacks(enemy))
+                return EnemyAttackPattern.Contact;
             if (behavior == EnemyBehavior.SuicideApproach)
                 return EnemyAttackPattern.SuicideExplosion;
             if (behavior == EnemyBehavior.MaintainRange || behavior == EnemyBehavior.FormationRanged)

@@ -22,6 +22,47 @@ namespace HighSeas.Editor
         const string CrabPrefabPath = "Assets/GameObject/Crab.prefab";
         const string CrabElitePrefabPath = "Assets/GameObject/CrabElite.prefab";
         const string MantaRayPrefabPath = "Assets/GameObject/MantaRay.prefab";
+        const string SmuggleBoatPrefabPath = "Assets/GameObject/SmuggleBoat.prefab";
+        const string FireBoatPrefabPath = "Assets/GameObject/FireBoat.prefab";
+        const string RamShipPrefabPath = "Assets/GameObject/RamShip.prefab";
+        const string CannonboatNavyPrefabPath = "Assets/GameObject/CannonboatNavy.prefab";
+
+        [MenuItem("HighSeas/Wire Ship Enemy Proxy Visuals")]
+        public static void WireShipEnemyProxyVisuals()
+        {
+            EnsureFolder(EnemyFolder);
+            var smuggle = LoadPrefab(SmuggleBoatPrefabPath);
+            var fireBoat = LoadPrefab(FireBoatPrefabPath);
+            var ramShip = LoadPrefab(RamShipPrefabPath);
+            var navy = LoadPrefab(CannonboatNavyPrefabPath);
+
+            WireProxy("cutthroat_skiff", "Cutthroat Skiff", smuggle, 0.92f);
+            WireProxy("deckhand_dinghy", "Deckhand Dinghy", smuggle, 0.82f);
+            WireProxy("gunner_cog", "Gunner Cog", navy, 1f);
+            WireProxy("bomb_boat", "Bomb Boat", fireBoat, 1f);
+            WireProxy("rammer_raft", "Rammer Raft", ramShip, 1f);
+            WireProxy("boarding_barge", "Boarding Barge", ramShip, 1.12f);
+
+            SyncEnemiesFolderToGameDatabase();
+            Debug.Log("Ship enemy proxy visuals wired (SmuggleBoat, FireBoat, RamShip, CannonboatNavy).");
+        }
+
+        static void WireProxy(string id, string displayName, GameObject prefab, float scale)
+        {
+            var path = $"{EnemyFolder}/{id}.asset";
+            var enemy = AssetDatabase.LoadAssetAtPath<EnemyDefinition>(path);
+            if (enemy == null)
+            {
+                Debug.LogWarning($"Missing enemy asset: {path}");
+                return;
+            }
+
+            enemy.displayName = displayName;
+            enemy.category = EnemyCategory.Ship;
+            enemy.visualPrefab = prefab;
+            enemy.visualScale = scale;
+            EditorUtility.SetDirty(enemy);
+        }
 
         [MenuItem("HighSeas/Setup Enemy Visuals")]
         public static void SetupEnemyVisuals()
