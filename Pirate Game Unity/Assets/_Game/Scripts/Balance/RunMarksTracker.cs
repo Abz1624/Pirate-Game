@@ -20,6 +20,7 @@ namespace HighSeas.Balance
         static int _qualifyingOvertimeMinutes;
         static readonly System.Collections.Generic.HashSet<int> _specialPoiIndices = new();
         static readonly System.Collections.Generic.HashSet<string> _scheduledEliteKillKeys = new();
+        static readonly System.Collections.Generic.Dictionary<int, int> _scheduledEliteAgentToBeatIndex = new();
 
         public static bool IsActive => _active;
         public static string RunId => _runId;
@@ -46,6 +47,7 @@ namespace HighSeas.Balance
             _qualifyingOvertimeMinutes = 0;
             _specialPoiIndices.Clear();
             _scheduledEliteKillKeys.Clear();
+            _scheduledEliteAgentToBeatIndex.Clear();
         }
 
         public static void NotifyKill()
@@ -137,7 +139,29 @@ namespace HighSeas.Balance
             return true;
         }
 
-        /// <summary>Credits Marks for a scheduled pressure elite when it is killed (not when spawned).</summary>
+        /// <summary>Links a pressure-beat spawn to its scheduled elite index (0 or 1).</summary>
+        public static void RegisterScheduledEliteAgent(int agentId, int scheduledEliteIndex)
+        {
+            if (!_active || agentId <= 0 || scheduledEliteIndex < 0) return;
+            _scheduledEliteAgentToBeatIndex[agentId] = scheduledEliteIndex;
+        }
+
+        /// <summary>Credits Marks only when a registered scheduled-elite agent is killed.</summary>
+        public static bool TryCreditScheduledEliteKill(int agentId, string enemyDefinitionId)
+        {
+            if (!_active || agentId <= 0 || string.IsNullOrEmpty(enemyDefinitionId)) return false;
+            if (!_scheduledEliteAgentToBeatIndex.TryGetValue(agentId, out var beatIndex))
+                return false;
+
+            _scheduledEliteAgentToBeatIndex.Remove(agentId);
+            var creditKey = "scheduled_elite_" + beatIndex;
+            if (!_scheduledEliteKillKeys.Add(creditKey)) return false;
+            if (_scheduledEliteKillCredits >= 2) return false;
+            _scheduledEliteKillCredits++;
+            return true;
+        }
+
+        [System.Obsolete("Use TryCreditScheduledEliteKill(agentId, enemyDefinitionId) for runtime kills.")]
         public static bool TryCreditScheduledEliteKill(string enemyDefinitionId)
         {
             if (!_active || string.IsNullOrEmpty(enemyDefinitionId)) return false;

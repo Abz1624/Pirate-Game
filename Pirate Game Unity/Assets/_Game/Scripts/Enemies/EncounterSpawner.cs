@@ -184,11 +184,87 @@ namespace HighSeas.Enemies
         public int TriggerProfileImmediate(SpawnProfile profile, int countOverride, int runEncounterId)
         {
             TriggerProfile(profile, countOverride, runEncounterId);
-            return ProcessTriggerQueue();
+            ProcessTriggerQueue();
+            if (runEncounterId <= 0)
+                return 0;
+            var record = Encounters.RunEncounterTracker.Get(runEncounterId);
+            return record?.SpawnedCount ?? 0;
+        }
+
+        public bool HasPendingEncounter(int runEncounterId)
+        {
+            if (runEncounterId <= 0) return false;
+            for (var i = 0; i < _pendingEncounters.Count; i++)
+            {
+                if (_pendingEncounters[i].runEncounterId == runEncounterId)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public void CancelPendingEncounter(int runEncounterId)
+        {
+            if (runEncounterId <= 0) return;
+            for (var i = _pendingEncounters.Count - 1; i >= 0; i--)
+            {
+                if (_pendingEncounters[i].runEncounterId != runEncounterId) continue;
+                _pendingEncounters.RemoveAt(i);
+            }
         }
 
         public bool TrySpawnPressureBeat(SpawnProfile profile) =>
             profile != null && TryExecuteSpawnBurst(profile, 1, true, 1f, 1f, 0, ref _dummyLeader) > 0;
+
+        public bool TrySpawnPressureBeat(string enemyId, int scheduledEliteIndex, out int spawnedAgentId)
+        {
+            spawnedAgentId = -1;
+            if (schedule == null) return false;
+            var profile = enemyId switch
+            {
+                "hammerhead" => schedule.hammerheadBeat,
+                "kraken_spawn" => schedule.krakenBeat,
+                _ => null
+            };
+            if (profile == null || enemyWorld == null) return false;
+            var beforeMaxId = GetMaxActiveAgentId();
+            if (!TrySpawnPressureBeat(profile)) return false;
+            spawnedAgentId = FindNewestAgentIdAfter(beforeMaxId, profile.enemy);
+            if (spawnedAgentId > 0 && scheduledEliteIndex >= 0)
+                Balance.RunMarksTracker.RegisterScheduledEliteAgent(spawnedAgentId, scheduledEliteIndex);
+            return spawnedAgentId > 0;
+        }
+
+        int FindNewestAgentIdAfter(int beforeMaxId, EnemyDefinition expectedDef)
+        {
+            if (enemyWorld == null || expectedDef == null) return -1;
+            var defIndex = FindDefinitionIndex(expectedDef);
+            if (defIndex < 0) return -1;
+            var bestId = -1;
+            for (var i = 0; i < enemyWorld.Agents.Length; i++)
+            {
+                var agent = enemyWorld.Agents[i];
+                if (!agent.active || agent.definitionIndex != defIndex) continue;
+                if (agent.id <= beforeMaxId) continue;
+                if (agent.id > bestId) bestId = agent.id;
+            }
+
+            return bestId;
+        }
+
+        int GetMaxActiveAgentId()
+        {
+            if (enemyWorld == null) return 0;
+            var max = 0;
+            for (var i = 0; i < enemyWorld.Agents.Length; i++)
+            {
+                var agent = enemyWorld.Agents[i];
+                if (!agent.active) continue;
+                if (agent.id > max) max = agent.id;
+            }
+
+            return max;
+        }
 
         public bool TrySpawnOvertime(SpawnProfile profile, float overtimeMinutes)
         {
@@ -271,6 +347,16 @@ namespace HighSeas.Enemies
 
                 if (runTime < pending.nextAttemptAt)
                     continue;
+
+                if (pending.runEncounterId > 0)
+                {
+                    var encounter = Encounters.RunEncounterTracker.Get(pending.runEncounterId);
+                    if (encounter == null || encounter.IsTerminal)
+                    {
+                        _pendingEncounters.RemoveAt(i);
+                        continue;
+                    }
+                }
 
                 if (runTime > pending.deadlineAt)
                 {

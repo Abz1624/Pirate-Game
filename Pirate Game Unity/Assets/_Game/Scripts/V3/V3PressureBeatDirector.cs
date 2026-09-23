@@ -65,10 +65,10 @@ namespace HighSeas.V3
 
             TickBeat(ref _hammerheadDone, ref _hammerheadDeferUntil, ref _hammerheadWarned,
                 SaltwindPressureBeatLogic.GetEliteBeatSeconds(profile, 0),
-                warning, "hammerhead", "Hammerhead elite");
+                warning, 0, "hammerhead", "Hammerhead elite");
             TickBeat(ref _krakenDone, ref _krakenDeferUntil, ref _krakenWarned,
                 SaltwindPressureBeatLogic.GetEliteBeatSeconds(profile, 1),
-                warning, "kraken_spawn", "Kraken Spawn elite");
+                warning, 1, "kraken_spawn", "Kraken Spawn elite");
             TickPulses(elapsed, profile);
         }
 
@@ -78,6 +78,7 @@ namespace HighSeas.V3
             ref bool warned,
             float beatTime,
             float warningSeconds,
+            int scheduledEliteIndex,
             string enemyId,
             string label)
         {
@@ -106,7 +107,8 @@ namespace HighSeas.V3
                 return;
             }
 
-            if (encounterSpawner != null && encounterSpawner.TrySpawnPressureBeat(enemyId))
+            if (encounterSpawner != null &&
+                encounterSpawner.TrySpawnPressureBeat(enemyId, scheduledEliteIndex, out _))
             {
                 done = true;
                 RunCombatTelemetry.Instance?.Record("pressure_elite_spawned", new System.Collections.Generic.Dictionary<string, object> { ["label"] = label });
@@ -145,13 +147,33 @@ namespace HighSeas.V3
                 V3ToastHud.Instance?.Show("WARNING — swarm pulse at 7:00!", warning);
             }
 
-            if (SaltwindPressureBeatLogic.ShouldStartSwarmPulse(elapsed, profile, 0, bossFight, _firstPulseDone))
+            if (!_firstPulseDone &&
+                SaltwindPressureBeatLogic.ShouldSkipScheduledEventForBoss(elapsed, pulseA, bossFight))
+            {
+                _firstPulseDone = true;
+                RunCombatTelemetry.Instance?.Record("pressure_pulse_skipped", new System.Collections.Generic.Dictionary<string, object>
+                {
+                    ["beat"] = "swarm_a",
+                    ["reason"] = "boss_conflict"
+                });
+            }
+            else if (SaltwindPressureBeatLogic.ShouldStartSwarmPulse(elapsed, profile, 0, bossFight, _firstPulseDone))
             {
                 _firstPulseDone = true;
                 _pulseTimer = duration;
                 encounterSpawner?.SetTimedSpawnModifier("v3_swarm_pulse", mult, duration);
                 RunCombatTelemetry.Instance?.Record("pressure_pulse_started", new System.Collections.Generic.Dictionary<string, object> { ["beat"] = "swarm_a" });
                 V3ToastHud.Instance?.Show($"SWARM PULSE — +{(mult - 1f) * 100f:F0}% spawn rate", 4f);
+            }
+            else if (!_secondPulseDone &&
+                     SaltwindPressureBeatLogic.ShouldSkipScheduledEventForBoss(elapsed, pulseB, bossFight))
+            {
+                _secondPulseDone = true;
+                RunCombatTelemetry.Instance?.Record("pressure_pulse_skipped", new System.Collections.Generic.Dictionary<string, object>
+                {
+                    ["beat"] = "swarm_b",
+                    ["reason"] = "boss_conflict"
+                });
             }
             else if (SaltwindPressureBeatLogic.ShouldStartSwarmPulse(elapsed, profile, 1, bossFight, _secondPulseDone))
             {

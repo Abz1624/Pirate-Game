@@ -17,7 +17,7 @@ namespace HighSeas.Balance
         public static bool TryPurchaseUnlock(SaveService save, StageBalanceProfileExport export, string contentId)
         {
             if (save == null || export == null || string.IsNullOrEmpty(contentId)) return false;
-            if (save.HasMarksOwned(contentId)) return false;
+            if (save.HasEffectiveContentOwned(contentId)) return false;
 
             var cost = SaltwindStageSettlementLogic.TryGetContentUnlockCost(export, contentId);
             if (cost < 0) return false;
@@ -31,7 +31,7 @@ namespace HighSeas.Balance
             if (string.IsNullOrEmpty(goal))
                 return "\nUnlock goal: not selected (choose one in menu or results).\n";
 
-            if (save.HasMarksOwned(goal))
+            if (save.HasEffectiveContentOwned(goal))
                 return $"\nUnlock goal: {V3WeaponDisplayNames.GetWeaponName(goal)} — owned.\n";
 
             var cost = SaltwindStageSettlementLogic.TryGetContentUnlockCost(export, goal);
@@ -49,7 +49,7 @@ namespace HighSeas.Balance
             {
                 var entry = export.WeaponUnlocks[i];
                 if (entry == null || string.IsNullOrEmpty(entry.ContentId)) continue;
-                if (!save.HasMarksOwned(entry.ContentId))
+                if (!save.HasEffectiveContentOwned(entry.ContentId))
                     return entry.ContentId;
             }
 

@@ -15,11 +15,13 @@ namespace HighSeas.Tests
     /// <summary>Codex R10: runtime lifecycle integration (boss, cache retry, pause, settlement, mode).</summary>
     public sealed class SaltwindLifecyclePlayModeTests
     {
+        PlayModeSaveIsolation _saveIsolation;
         SaltwindPlayModeTestSupport _harness;
 
         [UnitySetUp]
         public IEnumerator SetUp()
         {
+            _saveIsolation = PlayModeSaveIsolation.Begin();
             _harness = SaltwindPlayModeTestSupport.Create(88001);
             yield return null;
         }
@@ -34,6 +36,8 @@ namespace HighSeas.Tests
             SaltwindRunSettlement.ClearLastResults();
             _harness?.Dispose();
             _harness = null;
+            _saveIsolation?.Dispose();
+            _saveIsolation = null;
             yield return null;
         }
 

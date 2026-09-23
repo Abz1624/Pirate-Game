@@ -80,7 +80,12 @@ namespace HighSeas.Tests
 
             var conservative = SaltwindBalanceLabScenarioFactory.Create(
                 export, 1, 1, SaltwindLabBuildPolicy.Broadside, SaltwindLabUnlockPool.FreshSave, BalanceSkillPreset.Conservative);
-            Assert.Less(conservative.BossBaseHull, fresh.BossBaseHull);
+            Assert.Greater(
+                SaltwindLabMatrixCalibration.BossHullMultiplierForSkill(
+                    BalanceSkillPreset.Conservative, SaltwindLabUnlockPool.FreshSave, SaltwindLabBuildPolicy.Broadside),
+                SaltwindLabMatrixCalibration.BossHullMultiplierForSkill(
+                    BalanceSkillPreset.Expert, SaltwindLabUnlockPool.FreshSave, SaltwindLabBuildPolicy.Broadside));
+            Assert.Greater(conservative.BossBaseHull, fresh.BossBaseHull);
         }
 
         [Test]

@@ -9,10 +9,12 @@ namespace HighSeas.Tests
     /// <summary>Codex R10: RunManager death path applies Marks settlement once (not tracker-only).</summary>
     public sealed class SaltwindSettlementPlayModeTests
     {
+        PlayModeSaveIsolation _saveIsolation;
+
         [UnitySetUp]
         public System.Collections.IEnumerator SetUp()
         {
-            AppRoot.EnsureInitialized();
+            _saveIsolation = PlayModeSaveIsolation.Begin();
             StageBalanceProfileContext.BeginRun(StageBalanceProfile.CreateBuiltInSaltwindDefaults());
             SaltwindRunSettlement.ClearLastResults();
             RunMarksTracker.Reset();
@@ -25,6 +27,8 @@ namespace HighSeas.Tests
             StageBalanceProfileContext.ResetForTests();
             RunMarksTracker.Reset();
             SaltwindRunSettlement.ClearLastResults();
+            _saveIsolation?.Dispose();
+            _saveIsolation = null;
             yield return null;
         }
 

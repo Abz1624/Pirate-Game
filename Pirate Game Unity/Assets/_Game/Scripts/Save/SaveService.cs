@@ -11,6 +11,24 @@ namespace HighSeas.Core
         void Delete(string key);
     }
 
+    /// <summary>Deterministic in-memory backend for PlayMode tests (never touches PlayerPrefs).</summary>
+    public sealed class MemorySaveBackend : ISaveBackend
+    {
+        readonly Dictionary<string, string> _store = new();
+
+        public bool TryLoad(string key, out string json)
+        {
+            if (_store.TryGetValue(key, out json))
+                return true;
+            json = null;
+            return false;
+        }
+
+        public void Save(string key, string json) => _store[key] = json ?? string.Empty;
+
+        public void Delete(string key) => _store.Remove(key);
+    }
+
     public sealed class PlayerPrefsSaveBackend : ISaveBackend
     {
         public bool TryLoad(string key, out string json)
@@ -159,7 +177,7 @@ namespace HighSeas.Core
         public bool TryPurchaseMarksUnlock(string contentId, int marksCost)
         {
             if (string.IsNullOrEmpty(contentId) || marksCost < 0) return false;
-            if (HasMarksOwned(contentId)) return false;
+            if (HasEffectiveContentOwned(contentId)) return false;
             if (Meta.marks < marksCost) return false;
 
             Meta.marks -= marksCost;

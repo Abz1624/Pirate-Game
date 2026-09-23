@@ -15,6 +15,15 @@ namespace HighSeas.Tests
     /// <summary>Codex R10: authored V3SaltwindRun scene + bootstrap/POI wiring.</summary>
     public sealed class SaltwindScenePlayModeTests
     {
+        PlayModeSaveIsolation _saveIsolation;
+
+        [UnitySetUp]
+        public IEnumerator SetUp()
+        {
+            _saveIsolation = PlayModeSaveIsolation.Begin();
+            yield return null;
+        }
+
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -22,6 +31,8 @@ namespace HighSeas.Tests
             RunMarksTracker.Reset();
             RunEncounterTracker.ResetForTests();
             SaltwindRunSettlement.ClearLastResults();
+            _saveIsolation?.Dispose();
+            _saveIsolation = null;
             yield return SceneManager.LoadSceneAsync(V3SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
         }

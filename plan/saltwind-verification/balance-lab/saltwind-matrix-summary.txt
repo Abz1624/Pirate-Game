@@ -18,7 +18,7 @@ Saltwind/AreaControl/MarksUnlocked/Conservative: 100 runs | objective 96% | surv
 Saltwind/AreaControl/FreshSave/Average: 100 runs | objective 78% | survival 78% | kills 1076.2 | level 41.2 | gold 884.5 | peak enemies 3.1 | policy AreaControl | skill Average | pool FreshSave
 Saltwind/AreaControl/MarksUnlocked/Average: 100 runs | objective 95% | survival 95% | kills 1072.2 | level 40.7 | gold 886.0 | peak enemies 3.0 | policy AreaControl | skill Average | pool MarksUnlocked
 Saltwind/AreaControl/FreshSave/Expert: 100 runs | objective 70% | survival 70% | kills 1066.8 | level 41.0 | gold 875.7 | peak enemies 3.1 | policy AreaControl | skill Expert | pool FreshSave
-Saltwind/AreaControl/MarksUnlocked/Expert: 100 runs | objective 76% | survival 76% | kills 1039.6 | level 39.9 | gold 854.2 | peak enemies 3.0 | policy AreaControl | skill Expert | pool MarksUnlocked
+Saltwind/AreaControl/MarksUnlocked/Expert: 100 runs | objective 67% | survival 67% | kills 1036.3 | level 39.8 | gold 851.0 | peak enemies 3.0 | policy AreaControl | skill Expert | pool MarksUnlocked
 Band warning: Precision/Conservative/FreshSave win 99% outside documented band.
 Band warning: Precision/Conservative/MarksUnlocked win 99% outside documented band.
 Band warning: Precision/Average/MarksUnlocked win 99% outside documented band.
@@ -28,4 +28,3 @@ Band warning: Broadside/Conservative/MarksUnlocked win 99% outside documented ba
 Band warning: Broadside/Average/MarksUnlocked win 99% outside documented band.
 Band warning: AreaControl/Conservative/FreshSave win 99% outside documented band.
 Band warning: AreaControl/Conservative/MarksUnlocked win 96% outside documented band.
-Band warning: AreaControl/Expert/MarksUnlocked win 76% outside documented band.

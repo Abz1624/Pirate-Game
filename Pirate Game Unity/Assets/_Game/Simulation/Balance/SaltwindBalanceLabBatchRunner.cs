@@ -30,15 +30,22 @@ namespace RoguePirates.Simulation.Balance
         public int BalanceVersion;
         public int TotalRuns;
         public readonly List<SaltwindBalanceLabCellSummary> Cells = new();
-        public string BehaviorDisclaimer = SaltwindLabBehaviorLabels.Movement + " " +
-                                           SaltwindLabBehaviorLabels.Collection + " " +
-                                           SaltwindLabBehaviorLabels.Offers;
+        public string BehaviorDisclaimer = SaltwindLabBehaviorLabels.FullMatrixDisclaimer();
+        public string GeneratedAtUtc = string.Empty;
+        public string SourceRevision = string.Empty;
+        public string CalibrationRevision = "v6-boss-hull-retune";
+        public string RuntimeHost = "Unity BalanceLabRunner / CombatSimulator";
 
         public string ToHumanSummary()
         {
             var sb = new StringBuilder();
             sb.AppendLine($"Saltwind lab matrix: {TotalRuns} runs, profile {ProfileContentHash}, balance v{BalanceVersion}");
             sb.AppendLine(BehaviorDisclaimer);
+            if (!string.IsNullOrEmpty(GeneratedAtUtc))
+                sb.AppendLine("Provenance: generatedAtUtc=" + GeneratedAtUtc +
+                              ", calibrationRevision=" + CalibrationRevision +
+                              ", runtime=" + RuntimeHost +
+                              (string.IsNullOrEmpty(SourceRevision) ? string.Empty : ", sourceRevision=" + SourceRevision));
             sb.AppendLine(SaltwindLabMatrixCalibration.FormatTargetBandLegend());
             for (var i = 0; i < Cells.Count; i++)
             {
@@ -217,7 +224,9 @@ namespace RoguePirates.Simulation.Balance
             var report = new SaltwindBalanceLabMatrixReport
             {
                 ProfileContentHash = export.ContentHash ?? string.Empty,
-                BalanceVersion = export.BalanceVersion
+                BalanceVersion = export.BalanceVersion,
+                GeneratedAtUtc = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture),
+                SourceRevision = Environment.GetEnvironmentVariable("SALTWIND_LAB_SOURCE_REVISION") ?? string.Empty,
             };
 
             for (var p = 0; p < Policies.Length; p++)
@@ -290,7 +299,11 @@ namespace RoguePirates.Simulation.Balance
             File.WriteAllText(Path.Combine(directory, "saltwind-matrix-meta.json"),
                 "{\"profileHash\":\"" + (report.ProfileContentHash ?? string.Empty) + "\",\"balanceVersion\":" +
                 report.BalanceVersion.ToString(CultureInfo.InvariantCulture) + ",\"totalRuns\":" +
-                report.TotalRuns.ToString(CultureInfo.InvariantCulture) + "}");
+                report.TotalRuns.ToString(CultureInfo.InvariantCulture) + ",\"generatedAtUtc\":\"" +
+                (report.GeneratedAtUtc ?? string.Empty) + "\",\"calibrationRevision\":\"" +
+                (report.CalibrationRevision ?? string.Empty) + "\",\"runtimeHost\":\"" +
+                (report.RuntimeHost ?? string.Empty) + "\",\"sourceRevision\":\"" +
+                (report.SourceRevision ?? string.Empty) + "\"}");
         }
 
         static void WriteCsv(SaltwindBalanceLabMatrixReport report, string path)

@@ -76,6 +76,12 @@ namespace HighSeas.Encounters
         public static RunEncounterRecord ActiveBossEncounter =>
             _activeBossEncounterId > 0 ? Get(_activeBossEncounterId) : null;
 
+        public static bool TryGetOpenBossEncounter(out RunEncounterRecord record)
+        {
+            record = ActiveBossEncounter;
+            return record != null && !record.IsTerminal;
+        }
+
         public static bool RegisterSpawnedAgent(int encounterId, int agentId)
         {
             if (encounterId <= 0 || agentId <= 0) return false;
@@ -127,6 +133,7 @@ namespace HighSeas.Encounters
             if (encounterId == _activeBossEncounterId)
                 _activeBossEncounterId = 0;
             ClearAgentMappingsForEncounter(encounterId);
+            Enemies.EncounterSpawner.Instance?.CancelPendingEncounter(encounterId);
         }
 
         static void ClearAgentMappingsForEncounter(int encounterId)

@@ -25,6 +25,27 @@ Reference: [CODEX_REVIEW_2026-09-23.md](CODEX_REVIEW_2026-09-23.md).
 
 **C13:** [C13_EXTERNAL_PLAYTEST.md](C13_EXTERNAL_PLAYTEST.md) — **pending external** (desktop perf, mobile, newcomer panel).
 
+## Independent follow-up (F1–F7, G1–G3) — 2026-09-23
+
+Reference: [CODEX_INDEPENDENT_FOLLOWUP_2026-09-23.md](CODEX_INDEPENDENT_FOLLOWUP_2026-09-23.md).
+
+| Finding | Fix summary | Regression evidence |
+| --- | --- | --- |
+| **F1** | Boss queue respects terminal encounters; POIManager no longer `MarkFailed` on first zero spawn; open boss request deduped; `CancelPendingEncounter` on fail | `SaltwindPoiEncounterPlayModeTests` (PlayMode), spawner queue guards |
+| **F2** | Powder cache repeat interaction only retries on **Failed** encounter | `PowderCache_RepeatedCompleteAttempt_KeepsEncounterId` |
+| **F3** | Cannonboat cap enforced on ordinary pool + capped fallback | `SaltwindCodexFollowupGateTests.CannonboatCap_*` |
+| **F4** | Scheduled elite Marks credit requires registered pressure-beat agent id | `ScheduledEliteKill_RequiresRegisteredAgent`, updated regression gate |
+| **F5** | Swarm pulses permanently skipped when boss active at beat time | `SwarmPulse_SkippedPermanentlyWhenBossActiveAtBeatTime`, director skip telemetry |
+| **F6** | `MemorySaveBackend` + `PlayModeSaveIsolation`; lifecycle/settlement/scene tests isolated | `PlayerPrefsMeta_UnchangedAfterFixtures` |
+| **F7** | Effective ownership on purchase + next-goal selection | `LegacyOwnedContent_BlocksMarksPurchase` |
+| **G1** | Storm test asserts `IsInsideStormSafeZone` at 720/810/900 with hull clearance | `StormSail_ContractedArena_*` (extended) |
+| **G2** | Matrix summary adds boss snap, victory termination, skill hull + provenance metadata | `SaltwindLabBehaviorLabels.FullMatrixDisclaimer`, `saltwind-matrix-meta.json` fields |
+| **G3** | Targeted Unity CLI reruns (Editor connected); full matrix/Expert band still slow — run locally | See commands below |
+
+**Unity CLI (2026-09-23):** `SaltwindCodexFollowupGateTests` **5/5 passed**; `ScheduledEliteKillCredits_AreDistinctPerElite` **passed**; `Matrix_ConservativeFresh_WinsBossOnSampleSeeds` — re-run after compile. PlayMode POI/storm: `unity command run_tests --mode playmode --async_tests true --filter SaltwindPoiEncounterPlayModeTests`.
+
+**Still pending:** C13 external playtest, `PERF_TRACE_PENDING.md`, full **1800** menu matrix refresh with new provenance fields, `Matrix_ExpertCells_StayWithinDocumentedWinBand` (long runtime).
+
 **Regression gates (2026-09-23 batch):**
 
 - EditMode: `TraceParity_FixedSeedCheckpoints_MatchRuntimeAndLab` passed; `Matrix_Production1200Runs_WritesVerificationArtifacts` passed (~16s); `BossWin_SaltwindScenario_SecuresObjectiveBeforeTimeout` passed after boss finale work.

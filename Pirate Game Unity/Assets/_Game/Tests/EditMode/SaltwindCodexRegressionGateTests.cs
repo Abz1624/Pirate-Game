@@ -70,9 +70,11 @@ namespace HighSeas.Tests
             StageBalanceProfileContext.BeginRun(StageBalanceProfile.CreateBuiltInSaltwindDefaults());
             RunMarksTracker.BeginRun("elites");
 
-            Assert.IsTrue(RunMarksTracker.TryCreditScheduledEliteKill("hammerhead"));
-            Assert.IsTrue(RunMarksTracker.TryCreditScheduledEliteKill("kraken_spawn"));
-            Assert.IsFalse(RunMarksTracker.TryCreditScheduledEliteKill("hammerhead"));
+            RunMarksTracker.RegisterScheduledEliteAgent(101, 0);
+            Assert.IsTrue(RunMarksTracker.TryCreditScheduledEliteKill(101, "hammerhead"));
+            RunMarksTracker.RegisterScheduledEliteAgent(202, 1);
+            Assert.IsTrue(RunMarksTracker.TryCreditScheduledEliteKill(202, "kraken_spawn"));
+            Assert.IsFalse(RunMarksTracker.TryCreditScheduledEliteKill(202, "kraken_spawn"));
 
             var record = RunMarksTracker.BuildRecord();
             Assert.AreEqual(2, record.ScheduledEliteKillCredits);

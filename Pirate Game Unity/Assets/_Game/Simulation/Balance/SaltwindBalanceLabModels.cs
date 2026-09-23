@@ -25,8 +25,15 @@ namespace RoguePirates.Simulation.Balance
         public const string Offers =
             "Modeled weapon growth via export fill-state weights + pity + weapon stat snapshots (SimRng autopick; not live LevelOfferGenerator UI/logbooks/run items).";
         public const string BossTiming =
-            "Boss spawns at profile deadline with export HP/damage; lab clears trash, stops ambient, and focuses weapon DPS on the boss.";
+            "Boss spawns at profile deadline; lab clears trash, stops ambient pressure, snaps player into boss arena (v5), then orbit input until boss kill.";
+        public const string VictoryTermination =
+            "Sim ends immediately on boss objective; survival rate is not post-victory overtime survival and does not prove 12–15 minute runs.";
+        public const string SkillHull =
+            "Per-skill/per-pool hull and boss HP multipliers are calibration knobs (v6), not live build stats.";
         public const string DamageAvoidance = "Conservative/Average kite more; Expert orbits (higher contact risk).";
+
+        public static string FullMatrixDisclaimer() =>
+            Movement + " " + Collection + " " + Offers + " " + BossTiming + " " + VictoryTermination + " " + SkillHull;
 
         public static string ForPolicy(SaltwindLabBuildPolicy policy) => policy switch
         {

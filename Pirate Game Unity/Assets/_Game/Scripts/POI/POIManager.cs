@@ -59,6 +59,9 @@ namespace HighSeas.POI
         public bool IsPowderCacheAmbushStarted(int index) => _powderCacheAmbushStarted.Contains(index);
         public bool BossDefeated => _bossDefeated;
 
+        /// <summary>PlayMode regression: active powder-cache encounter id (0 if none).</summary>
+        public int DebugPowderCacheEncounterId => _powderCacheTrackerEncounterId;
+
 #if UNITY_INCLUDE_TESTS
         /// <summary>PlayMode: boss summoned flag without full beacon interaction.</summary>
         public void ConfigureTrackedBossEncounterForTests(int encounterId)
@@ -563,10 +566,17 @@ namespace HighSeas.POI
 
             if (!IsPowderCacheEncounterClear())
             {
-                if (SpawnPowderCacheFight(GetPoiPosition(index)))
-                    V3ToastHud.Instance?.Show("Powder Cache — more raiders!", 2.5f);
-                else
-                    V3ToastHud.Instance?.Show("Powder Cache — could not spawn reinforcements.", 2f);
+                var record = _powderCacheTrackerEncounterId > 0
+                    ? RunEncounterTracker.Get(_powderCacheTrackerEncounterId)
+                    : null;
+                if (record != null && record.State == RunEncounterState.Failed)
+                {
+                    if (SpawnPowderCacheFight(GetPoiPosition(index)))
+                        V3ToastHud.Instance?.Show("Powder Cache — ambush retry!", 2.5f);
+                    else
+                        V3ToastHud.Instance?.Show("Powder Cache — could not spawn reinforcements.", 2f);
+                }
+
                 return false;
             }
 
@@ -774,7 +784,7 @@ namespace HighSeas.POI
 
         void SummonBoss(PlayerShipController player)
         {
-            if (_bossSummoned) return;
+            if (_bossSummoned || _bossDefeated) return;
 
             var spawner = ResolveEncounterSpawner();
             var profile = spawner?.GetScheduleProfile("boss");
@@ -785,15 +795,35 @@ namespace HighSeas.POI
                 return;
             }
 
+            if (RunEncounterTracker.TryGetOpenBossEncounter(out var open))
+            {
+                _bossEncounterId = open.EncounterId;
+                spawner.ProcessPendingEncountersNow();
+                open = RunEncounterTracker.Get(open.EncounterId);
+                if (open != null && open.SpawnedCount > 0 && open.State != RunEncounterState.Failed)
+                {
+                    _bossSummoned = true;
+                    ConsumeBossBeaconMarker();
+                    RunManager.Instance.SetState(RunState.BossFight);
+                    RunCombatTelemetry.Instance?.RecordBossSummoned(_bossEncounterId);
+                }
+
+                return;
+            }
+
             var encounter = RunEncounterTracker.Request(RunEncounterKind.Boss, 1);
             _bossEncounterId = encounter.EncounterId;
-            var spawned = spawner.TriggerProfileImmediate(profile, 1, encounter.EncounterId);
-            if (spawned <= 0)
+            spawner.TriggerProfileImmediate(profile, 1, encounter.EncounterId);
+            encounter = RunEncounterTracker.Get(encounter.EncounterId);
+            if (encounter == null || encounter.State == RunEncounterState.Failed)
             {
-                RunEncounterTracker.MarkFailed(encounter.EncounterId);
+                spawner.CancelPendingEncounter(_bossEncounterId);
                 _bossEncounterId = 0;
                 return;
             }
+
+            if (encounter.SpawnedCount <= 0)
+                return;
 
             _bossSummoned = true;
             RunCombatTelemetry.Instance?.RecordBossSummoned(_bossEncounterId);

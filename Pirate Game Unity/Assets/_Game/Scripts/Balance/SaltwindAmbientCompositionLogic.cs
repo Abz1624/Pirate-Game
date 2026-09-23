@@ -11,6 +11,7 @@ namespace HighSeas.Balance
     public static class SaltwindAmbientCompositionLogic
     {
         public const int BandCount = 5;
+        // Cannonboat caps apply to ordinary-pool picks (Codex F3).
 
         static readonly float[] OrdinaryShareByBand = { 1f, 0.8f, 0.7f, 0.65f, 0.6f };
 
@@ -77,8 +78,12 @@ namespace HighSeas.Balance
 
             if (OrdinaryFamilies[bandIndex].Length > 0)
             {
-                enemyId = OrdinaryFamilies[bandIndex][0];
-                return true;
+                var fallback = OrdinaryFamilies[bandIndex][0];
+                if (IsWithinCap(fallback, countActiveByEnemyId(fallback), export, false))
+                {
+                    enemyId = fallback;
+                    return true;
+                }
             }
 
             return false;
@@ -115,11 +120,14 @@ namespace HighSeas.Balance
             StageBalanceProfileExport export,
             bool specialistPool)
         {
-            if (export?.Spawn == null || !specialistPool)
+            if (export?.Spawn == null)
                 return true;
 
             if (enemyId == "cannonboat")
                 return activeCount < export.Spawn.MaxSimultaneousCannonboats;
+            if (!specialistPool)
+                return true;
+
             if (enemyId == "kraken_spawn")
                 return activeCount < export.Spawn.MaxSimultaneousAreaDenial;
             if (enemyId == "ram_raider")

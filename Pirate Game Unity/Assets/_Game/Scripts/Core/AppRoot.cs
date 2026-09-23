@@ -11,6 +11,9 @@ namespace HighSeas.Core
         public static AppRoot Instance { get; private set; }
 
         public SaveService Save { get; private set; }
+
+        /// <summary>PlayMode tests: swap to an isolated save without touching production PlayerPrefs.</summary>
+        public void ReplaceSave(SaveService save) => Save = save ?? throw new ArgumentNullException(nameof(save));
         public ConfigService Config { get; private set; }
         public AudioService Audio { get; private set; }
 

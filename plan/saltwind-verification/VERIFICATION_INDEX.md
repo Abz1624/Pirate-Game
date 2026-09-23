@@ -1,6 +1,6 @@
 # Saltwind verification index (Codex)
 
-Status: **independent follow-up found open correctness issues; Unity rerun blocked by main-thread timeouts**. **C13 external playtest and desktop perf remain pending**. See [CODEX_INDEPENDENT_FOLLOWUP_2026-09-23.md](CODEX_INDEPENDENT_FOLLOWUP_2026-09-23.md) for severity-ordered findings and current evidence. The resolution log and original review addendum retain earlier claims/history; the checkpoint table below is Cursor's prior status, not a new independent pass.
+Status: **F1–F7 / G1–G2 fixes landed locally; targeted EditMode gates passing on connected Editor**. **C13 external playtest and desktop perf remain pending**. Full PlayMode matrix + `Matrix_ExpertCells_*` still need async rerun. See [CODEX_INDEPENDENT_FOLLOWUP_2026-09-23.md](CODEX_INDEPENDENT_FOLLOWUP_2026-09-23.md) and the follow-up table in [CODEX_RESOLUTION_LOG.md](CODEX_RESOLUTION_LOG.md).
 
 ## Reproduce tests
 

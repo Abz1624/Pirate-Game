@@ -14,10 +14,12 @@ namespace HighSeas.Tests
     /// <summary>Codex R6/R8: storm safe-region behavior with active stage profile (PlayMode).</summary>
     public sealed class SaltwindStormArenaPlayModeTests
     {
+        PlayModeSaveIsolation _saveIsolation;
+
         [UnitySetUp]
         public IEnumerator SetUp()
         {
-            AppRoot.EnsureInitialized();
+            _saveIsolation = PlayModeSaveIsolation.Begin();
             StageBalanceProfileContext.BeginRun(StageBalanceProfile.CreateBuiltInSaltwindDefaults());
             yield return null;
         }
@@ -25,6 +27,8 @@ namespace HighSeas.Tests
         [UnityTearDown]
         public IEnumerator TearDown()
         {
+            _saveIsolation?.Dispose();
+            _saveIsolation = null;
             AppRoot.EndActiveSaltwindRunContext();
             yield return SceneManager.LoadSceneAsync(V3SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
@@ -66,6 +70,18 @@ namespace HighSeas.Tests
 
             PlayBounds.SetProfileStormSafeScale(SaltwindFinaleLogic.GetStormSafeRegionScale(900f, export));
             Assert.AreEqual(0.4f, PlayBounds.StormSafeScale, 0.001f);
+            Assert.IsTrue(PlayBounds.IsInsideStormSafeZone(layout.playerSpawn));
+            Assert.IsTrue(PlayBounds.IsInsideStormSafeZone(beacon));
+            const float hullClearance = 4f;
+            Assert.IsTrue(PlayBounds.IsInsideStormSafeZone(layout.playerSpawn + Vector3.forward * hullClearance));
+            Assert.IsTrue(PlayBounds.IsInsideStormSafeZone(layout.playerSpawn + Vector3.right * hullClearance));
+
+            for (var t = 720f; t <= 900f; t += 90f)
+            {
+                PlayBounds.SetProfileStormSafeScale(SaltwindFinaleLogic.GetStormSafeRegionScale(t, export));
+                Assert.IsTrue(PlayBounds.IsInsideStormSafeZone(layout.playerSpawn),
+                    $"Player spawn should remain in storm-safe water at t={t}s");
+            }
 
             IslandSpawnExclusionRegistry.Clear();
             PlayBounds.ResetStormSafeRegion();
