@@ -19,6 +19,8 @@ Reference: [CODEX_REVIEW_2026-09-23.md](CODEX_REVIEW_2026-09-23.md).
 
 **Delivery commit:** `2bd9ca2abdf05548c57e5f39f8765cbda048e2fe` (+ local calibration edits). Review addendum: [CODEX_REVIEW_2026-09-23.md](CODEX_REVIEW_2026-09-23.md#resolution-addendum-2026-09-23-post-review-engineering).
 
+**Interpretation (1800-run menu, pre–kite-boss fix):** Conservative/Average showed **0% objective** with **~99% survival** because **kite movement ran away from the sole living boss** after trash cull, so runs timed out without `ObjectiveSecured`. Expert orbit still won (~69–83%). **Fix:** kite switches to **orbit during boss finale**; **per-skill boss HP** scales (Conservative ×0.72, Average ×0.88, Expert Marks ×2.35). Re-run the matrix after pulling latest simulation code.
+
 **Balance lab:** Production matrix **1800 runs** (18 cells). Menu + artifacts: [SALTWIND_LAB_TARGET_BANDS.md](SALTWIND_LAB_TARGET_BANDS.md). Re-run matrix after calibration changes.
 
 **C13:** [C13_EXTERNAL_PLAYTEST.md](C13_EXTERNAL_PLAYTEST.md) — **pending external** (desktop perf, mobile, newcomer panel).

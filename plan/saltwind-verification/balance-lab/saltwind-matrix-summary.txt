@@ -1,14 +1,31 @@
-Saltwind lab matrix: 1200 runs, profile e4ffa52b4475d137e89c960eebf2de9ee42a3280c9f859cb5ca1761c1baa7eb7, balance v2
-Modeled movement: orbit/kite/forward by skill preset (not real route choice). Modeled POI/chest rewards via export route checkpoints (first-chest travel + chest spacing) + chest price curve (not POIManager pathfinding). Modeled weapon growth via export fill-state weights + pity + weapon stat snapshots (SimRng autopick; not live LevelOfferGenerator UI/logbooks/run items).
-Saltwind/Precision/FreshSave/Average: 100 runs | objective 90% | survival 90% | kills 1093.7 | level 41.6 | gold 901.8 | peak enemies 3.1 | policy Precision | skill Average | pool FreshSave
-Saltwind/Precision/MarksUnlocked/Average: 100 runs | objective 99% | survival 99% | kills 1108.1 | level 41.9 | gold 916.1 | peak enemies 3.1 | policy Precision | skill Average | pool MarksUnlocked
-Saltwind/Precision/FreshSave/Expert: 100 runs | objective 90% | survival 90% | kills 1093.7 | level 41.6 | gold 901.8 | peak enemies 3.1 | policy Precision | skill Expert | pool FreshSave
-Saltwind/Precision/MarksUnlocked/Expert: 100 runs | objective 99% | survival 99% | kills 1108.1 | level 41.9 | gold 916.1 | peak enemies 3.1 | policy Precision | skill Expert | pool MarksUnlocked
-Saltwind/Broadside/FreshSave/Average: 100 runs | objective 89% | survival 89% | kills 1088.3 | level 41.5 | gold 896.9 | peak enemies 3.1 | policy Broadside | skill Average | pool FreshSave
+Saltwind lab matrix: 1800 runs, profile e4ffa52b4475d137e89c960eebf2de9ee42a3280c9f859cb5ca1761c1baa7eb7, balance v2
+Modeled movement: Conservative kites pre-boss; all skills orbit during boss finale. Average/Expert orbit throughout (not real route choice). Modeled POI/chest rewards via export route checkpoints (first-chest travel + chest spacing) + chest price curve (not POIManager pathfinding). Modeled weapon growth via export fill-state weights + pity + weapon stat snapshots (SimRng autopick; not live LevelOfferGenerator UI/logbooks/run items).
+Lab target bands: Expert 40%–70%; Conservative 55%–95%; Average between Expert and Conservative. Movement: Conservative kite pre-boss; boss finale orbit for all skills; Average/Expert orbit in ambient.
+Saltwind/Precision/FreshSave/Conservative: 100 runs | objective 99% | survival 99% | kills 1106.9 | level 41.9 | gold 914.9 | peak enemies 3.9 | policy Precision | skill Conservative | pool FreshSave | Review: policy leads all cells by >45pt boss win spread — verify live before tuning.
+Saltwind/Precision/MarksUnlocked/Conservative: 100 runs | objective 99% | survival 99% | kills 1108.0 | level 41.9 | gold 916.0 | peak enemies 3.5 | policy Precision | skill Conservative | pool MarksUnlocked | Review: policy leads all cells by >45pt boss win spread — verify live before tuning.
+Saltwind/Precision/FreshSave/Average: 100 runs | objective 79% | survival 79% | kills 1081.2 | level 41.4 | gold 889.4 | peak enemies 3.1 | policy Precision | skill Average | pool FreshSave | Review: policy leads all cells by >45pt boss win spread — verify live before tuning.
+Saltwind/Precision/MarksUnlocked/Average: 100 runs | objective 99% | survival 99% | kills 1108.0 | level 41.9 | gold 916.0 | peak enemies 3.1 | policy Precision | skill Average | pool MarksUnlocked | Review: policy leads all cells by >45pt boss win spread — verify live before tuning.
+Saltwind/Precision/FreshSave/Expert: 100 runs | objective 70% | survival 70% | kills 1072.2 | level 41.2 | gold 880.5 | peak enemies 3.0 | policy Precision | skill Expert | pool FreshSave | Review: policy leads all cells by >45pt boss win spread — verify live before tuning.
+Saltwind/Precision/MarksUnlocked/Expert: 100 runs | objective 71% | survival 71% | kills 1077.7 | level 41.3 | gold 886.0 | peak enemies 3.0 | policy Precision | skill Expert | pool MarksUnlocked | Review: policy leads all cells by >45pt boss win spread — verify live before tuning.
+Saltwind/Broadside/FreshSave/Conservative: 100 runs | objective 99% | survival 99% | kills 1107.1 | level 41.9 | gold 915.2 | peak enemies 3.9 | policy Broadside | skill Conservative | pool FreshSave
+Saltwind/Broadside/MarksUnlocked/Conservative: 100 runs | objective 99% | survival 99% | kills 1107.7 | level 41.9 | gold 915.7 | peak enemies 3.4 | policy Broadside | skill Conservative | pool MarksUnlocked
+Saltwind/Broadside/FreshSave/Average: 100 runs | objective 77% | survival 77% | kills 1073.7 | level 41.2 | gold 882.5 | peak enemies 3.0 | policy Broadside | skill Average | pool FreshSave
 Saltwind/Broadside/MarksUnlocked/Average: 100 runs | objective 99% | survival 99% | kills 1107.4 | level 41.9 | gold 915.4 | peak enemies 3.0 | policy Broadside | skill Average | pool MarksUnlocked
-Saltwind/Broadside/FreshSave/Expert: 100 runs | objective 89% | survival 89% | kills 1088.3 | level 41.5 | gold 896.9 | peak enemies 3.1 | policy Broadside | skill Expert | pool FreshSave
-Saltwind/Broadside/MarksUnlocked/Expert: 100 runs | objective 99% | survival 99% | kills 1107.4 | level 41.9 | gold 915.4 | peak enemies 3.0 | policy Broadside | skill Expert | pool MarksUnlocked
-Saltwind/AreaControl/FreshSave/Average: 100 runs | objective 89% | survival 89% | kills 1089.3 | level 41.5 | gold 897.4 | peak enemies 3.1 | policy AreaControl | skill Average | pool FreshSave
-Saltwind/AreaControl/MarksUnlocked/Average: 100 runs | objective 96% | survival 96% | kills 1072.7 | level 40.7 | gold 886.5 | peak enemies 3.0 | policy AreaControl | skill Average | pool MarksUnlocked
-Saltwind/AreaControl/FreshSave/Expert: 100 runs | objective 89% | survival 89% | kills 1089.3 | level 41.5 | gold 897.4 | peak enemies 3.1 | policy AreaControl | skill Expert | pool FreshSave
-Saltwind/AreaControl/MarksUnlocked/Expert: 100 runs | objective 96% | survival 96% | kills 1072.7 | level 40.7 | gold 886.5 | peak enemies 3.0 | policy AreaControl | skill Expert | pool MarksUnlocked
+Saltwind/Broadside/FreshSave/Expert: 100 runs | objective 67% | survival 67% | kills 1058.3 | level 40.8 | gold 867.2 | peak enemies 3.0 | policy Broadside | skill Expert | pool FreshSave
+Saltwind/Broadside/MarksUnlocked/Expert: 100 runs | objective 52% | survival 52% | kills 1038.8 | level 40.4 | gold 848.3 | peak enemies 3.0 | policy Broadside | skill Expert | pool MarksUnlocked
+Saltwind/AreaControl/FreshSave/Conservative: 100 runs | objective 99% | survival 99% | kills 1106.9 | level 41.9 | gold 914.9 | peak enemies 3.9 | policy AreaControl | skill Conservative | pool FreshSave
+Saltwind/AreaControl/MarksUnlocked/Conservative: 100 runs | objective 96% | survival 96% | kills 1075.7 | level 40.8 | gold 889.5 | peak enemies 3.5 | policy AreaControl | skill Conservative | pool MarksUnlocked
+Saltwind/AreaControl/FreshSave/Average: 100 runs | objective 78% | survival 78% | kills 1076.2 | level 41.2 | gold 884.5 | peak enemies 3.1 | policy AreaControl | skill Average | pool FreshSave
+Saltwind/AreaControl/MarksUnlocked/Average: 100 runs | objective 95% | survival 95% | kills 1072.2 | level 40.7 | gold 886.0 | peak enemies 3.0 | policy AreaControl | skill Average | pool MarksUnlocked
+Saltwind/AreaControl/FreshSave/Expert: 100 runs | objective 70% | survival 70% | kills 1066.8 | level 41.0 | gold 875.7 | peak enemies 3.1 | policy AreaControl | skill Expert | pool FreshSave
+Saltwind/AreaControl/MarksUnlocked/Expert: 100 runs | objective 76% | survival 76% | kills 1039.6 | level 39.9 | gold 854.2 | peak enemies 3.0 | policy AreaControl | skill Expert | pool MarksUnlocked
+Band warning: Precision/Conservative/FreshSave win 99% outside documented band.
+Band warning: Precision/Conservative/MarksUnlocked win 99% outside documented band.
+Band warning: Precision/Average/MarksUnlocked win 99% outside documented band.
+Band warning: Precision/Expert/MarksUnlocked win 71% outside documented band.
+Band warning: Broadside/Conservative/FreshSave win 99% outside documented band.
+Band warning: Broadside/Conservative/MarksUnlocked win 99% outside documented band.
+Band warning: Broadside/Average/MarksUnlocked win 99% outside documented band.
+Band warning: AreaControl/Conservative/FreshSave win 99% outside documented band.
+Band warning: AreaControl/Conservative/MarksUnlocked win 96% outside documented band.
+Band warning: AreaControl/Expert/MarksUnlocked win 76% outside documented band.

@@ -323,7 +323,11 @@ namespace RoguePirates.Simulation
             if (_bossSpawned) return;
             _bossSpawned = true;
             if (_labScenario?.StageProfile != null)
+            {
                 CullNonBossEnemiesForFinale();
+                // Pre-boss kiting can drift the player far from the origin; lab projectiles despawn outside ±40.
+                SnapPlayerToSaltwindBossArena();
+            }
 
             _actors.Add(new SimActor
             {
@@ -400,6 +404,11 @@ namespace RoguePirates.Simulation
             }
             return null;
         }
+
+        public bool IsSaltwindBossFinaleActive() =>
+            _labScenario?.StageProfile != null &&
+            _bossSpawned &&
+            _state == SimRunState.BossFight;
 
         /// <summary>Moves away from the closest threat with a tangent component, approximating a cautious kiting player.</summary>
         public void SetKiteInput()
@@ -890,6 +899,12 @@ namespace RoguePirates.Simulation
                 if (actor.IsPlayer || actor.IsBoss) continue;
                 _actors.RemoveAt(i);
             }
+        }
+
+        void SnapPlayerToSaltwindBossArena()
+        {
+            _player.Position = new SimVec2(SimFixed.FromInt(8), SimFixed.FromInt(4));
+            _player.Velocity = default;
         }
 
         /// <summary>Fixture: apply simultaneous lethal to player and boss on same tick.</summary>

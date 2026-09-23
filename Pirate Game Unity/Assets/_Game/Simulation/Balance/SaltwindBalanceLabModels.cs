@@ -19,7 +19,7 @@ namespace RoguePirates.Simulation.Balance
     public static class SaltwindLabBehaviorLabels
     {
         public const string Movement =
-            "Modeled movement: Conservative/Average kite, Expert/Aggressive orbit/forward (not real route choice).";
+            "Modeled movement: Conservative kites pre-boss; all skills orbit during boss finale. Average/Expert orbit throughout (not real route choice).";
         public const string Collection =
             "Modeled POI/chest rewards via export route checkpoints (first-chest travel + chest spacing) + chest price curve (not POIManager pathfinding).";
         public const string Offers =

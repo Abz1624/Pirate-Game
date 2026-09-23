@@ -15,9 +15,9 @@ Reference: `SaltwindLabMatrixCalibration` in `RoguePirates.Simulation.Balance`.
 
 | Skill | Sim input | Hull multiplier (lab tuning) |
 | --- | --- | --- |
-| Conservative | Kite | 1.26 |
-| Average | Kite | 1.10 |
-| Expert | Orbit | 1.08 FreshSave; Marks ×0.36 (×0.50 AreaControl) + ×2.0 boss HP |
+| Conservative | Kite pre-boss; boss orbit + arena snap | 1.26 hull; boss HP ×1.28 (×1.12 Marks) |
+| Average | Orbit | 1.10 hull; boss HP ×0.92 (×2.05 Marks) |
+| Expert | Orbit | 1.08 FreshSave; Marks ×0.36 hull (×0.47 AreaControl); Marks boss HP ×3.10 |
 
 ## Documented objective (boss win) bands
 

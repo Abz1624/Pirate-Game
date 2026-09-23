@@ -60,6 +60,17 @@ namespace HighSeas.Editor
             var profile = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath)
                             ?? StageBalanceProfile.CreateBuiltInSaltwindDefaults();
             var export = profile.ToExport();
+            var sanity = SaltwindBalanceLabScenarioFactory.Create(
+                export,
+                12000,
+                8,
+                SaltwindLabBuildPolicy.Broadside,
+                SaltwindLabUnlockPool.FreshSave,
+                BalanceSkillPreset.Conservative);
+            var sanitySummary = BalanceLabRunner.Run(sanity);
+            Debug.Log(
+                $"Lab calibration v6 boss hull retune (Conservative/Broadside/FreshSave, 8 seeds): objective {sanitySummary.WinRate:P0} — target {SaltwindLabMatrixCalibration.ConservativeWinRateMin:P0}–{SaltwindLabMatrixCalibration.ConservativeWinRateMax:P0}.");
+
             var report = SaltwindBalanceLabBatchRunner.RunMatrix(export, new SaltwindBalanceLabBatchOptions
             {
                 BaseSeed = 12000,

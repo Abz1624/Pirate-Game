@@ -7,8 +7,13 @@ namespace RoguePirates.Simulation.Balance
     public static class SaltwindLabMatrixCalibration
     {
         public const float ExpertMarksHullFactorDefault = 0.36f;
-        public const float ExpertMarksHullFactorAreaControl = 0.50f;
-        public const float ExpertMarksBossHullScale = 2.0f;
+        public const float ExpertMarksHullFactorAreaControl = 0.47f;
+        public const float ExpertMarksBossHullScale = 3.10f;
+        public const float AverageMarksBossHullScale = 2.05f;
+        /// <summary>Post boss-arena snap: conservative finale is reachable; was 0.76 when kite drift blocked all boss damage.</summary>
+        public const float ConservativeBossHullScale = 1.28f;
+        public const float ConservativeMarksBossHullScale = 1.12f;
+        public const float AverageBossHullScale = 0.92f;
         public const float ExpertWinRateMin = 0.40f;
         public const float ExpertWinRateMax = 0.70f;
         public const float ConservativeWinRateMin = 0.55f;
@@ -39,10 +44,38 @@ namespace RoguePirates.Simulation.Balance
                 ? ExpertMarksHullFactorAreaControl
                 : ExpertMarksHullFactorDefault;
 
+        public static float BossHullMultiplierForSkill(
+            BalanceSkillPreset skill,
+            SaltwindLabUnlockPool pool,
+            SaltwindLabBuildPolicy policy)
+        {
+            switch (skill)
+            {
+                case BalanceSkillPreset.Conservative:
+                {
+                    var mult = ConservativeBossHullScale;
+                    if (pool == SaltwindLabUnlockPool.MarksUnlocked)
+                        mult *= ConservativeMarksBossHullScale;
+                    return mult;
+                }
+                case BalanceSkillPreset.Average:
+                {
+                    var mult = AverageBossHullScale;
+                    if (pool == SaltwindLabUnlockPool.MarksUnlocked)
+                        mult *= AverageMarksBossHullScale;
+                    return mult;
+                }
+                case BalanceSkillPreset.Expert:
+                    return pool == SaltwindLabUnlockPool.MarksUnlocked ? ExpertMarksBossHullScale : 1f;
+                default:
+                    return 1f;
+            }
+        }
+
         public static SimInputPolicy InputPolicyForSkill(BalanceSkillPreset skill) => skill switch
         {
             BalanceSkillPreset.Conservative => SimInputPolicy.Kite,
-            BalanceSkillPreset.Average => SimInputPolicy.Kite,
+            BalanceSkillPreset.Average => SimInputPolicy.Orbit,
             BalanceSkillPreset.Aggressive => SimInputPolicy.Forward,
             BalanceSkillPreset.Expert => SimInputPolicy.Orbit,
             _ => SimInputPolicy.Orbit
@@ -58,7 +91,7 @@ namespace RoguePirates.Simulation.Balance
         public static string FormatTargetBandLegend() =>
             $"Lab target bands: Expert {ExpertWinRateMin:P0}–{ExpertWinRateMax:P0}; " +
             $"Conservative {ConservativeWinRateMin:P0}–{ConservativeWinRateMax:P0}; " +
-            "Average between Expert and Conservative. Movement: Conservative/Average kite, Expert orbit.";
+            "Average between Expert and Conservative. Movement: Conservative kite pre-boss; boss finale orbit for all skills; Average/Expert orbit in ambient.";
 
         public static void AppendTargetBandWarnings(SaltwindBalanceLabMatrixReport report, StringBuilder sb)
         {

@@ -17,9 +17,10 @@ namespace RoguePirates.Simulation.Balance
             {
                 scenario.BossId = boss.BossId;
                 var bossHull = Math.Max(1f, boss.BaseHull);
-                if (skill == BalanceSkillPreset.Expert &&
-                    scenario.SaltwindUnlockPool == SaltwindLabUnlockPool.MarksUnlocked)
-                    bossHull *= SaltwindLabMatrixCalibration.ExpertMarksBossHullScale;
+                bossHull *= SaltwindLabMatrixCalibration.BossHullMultiplierForSkill(
+                    skill,
+                    scenario.SaltwindUnlockPool,
+                    scenario.SaltwindBuildPolicy);
                 scenario.BossBaseHull = bossHull;
                 scenario.BossBaseDamage = Math.Max(0.1f, boss.BaseDamage);
                 scenario.BossBaseMoveSpeed = Math.Max(0.1f, boss.MoveSpeed);

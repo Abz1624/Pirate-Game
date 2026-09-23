@@ -175,3 +175,5 @@ Do not call desktop performance or newcomer testing “optional” for acceptanc
 
 Example production matrix (prior 12-cell run, hash `e4ffa52b…`): FreshSave ~89–90% objective; MarksUnlocked ~96–99%. Re-run **1800** menu after calibration changes to refresh CSV/summary and band warnings.
 
+**2026-09-23 follow-up (boss lab parity):** Pre-boss kite drift left Conservative at **0% objective** (projectiles culled outside ±40 while player was far from origin). **v5** snaps the player into the boss arena on spawn; Conservative then **~99%** until **v6** retuned `ConservativeBossHullScale` (1.28, ×1.12 Marks) and Marks Average/Expert boss scales. Re-run matrix and expect sanity line **“Lab calibration v6 boss hull retune”**.
+

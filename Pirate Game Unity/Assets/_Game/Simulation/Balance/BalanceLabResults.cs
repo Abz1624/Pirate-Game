@@ -80,7 +80,7 @@ namespace RoguePirates.Simulation.Balance
                 var timeSeries = new List<BalanceLabTimePoint>();
                 for (var tick = 0; tick < ticks && sim.State != SimRunState.PlayerDead && sim.State != SimRunState.RunComplete; tick++)
                 {
-                    ApplyInput(sim, seed, tick, ResolveInputPolicy(scenario));
+                    ApplyInput(sim, seed, tick, ResolveInputPolicy(scenario), scenario);
                     sim.Step(SimConstants.TickDurationSeconds);
                     if (tick % 900 == 0)
                         timeSeries.Add(new BalanceLabTimePoint
@@ -143,8 +143,18 @@ namespace RoguePirates.Simulation.Balance
             return values[Math.Min(values.Count - 1, (int)MathF.Round((values.Count - 1) * percentile))];
         }
 
-        static void ApplyInput(CombatSimulator sim, int seed, int tick, SimInputPolicy policy)
+        static void ApplyInput(CombatSimulator sim, int seed, int tick, SimInputPolicy policy, BalanceLabScenario scenario)
         {
+            if (scenario?.StageProfile != null &&
+                tick >= SaltwindBossFinaleStartTick(scenario) &&
+                !sim.ObjectiveSecured &&
+                sim.State != SimRunState.RunComplete)
+            {
+                var phase = (seed + tick) * 0.05f;
+                sim.SetMoveInput(MathF.Cos(phase), MathF.Sin(phase));
+                return;
+            }
+
             if (policy == SimInputPolicy.Kite)
             {
                 sim.SetKiteInput();
@@ -161,5 +171,8 @@ namespace RoguePirates.Simulation.Balance
 
         static SimInputPolicy ResolveInputPolicy(BalanceLabScenario scenario) =>
             SaltwindLabMatrixCalibration.InputPolicyForSkill(scenario.SkillPreset);
+
+        static int SaltwindBossFinaleStartTick(BalanceLabScenario scenario) =>
+            Math.Max(0, (int)MathF.Round(scenario.BossSpawnSeconds / SimConstants.TickDurationSeconds));
     }
 }

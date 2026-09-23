@@ -77,6 +77,28 @@ namespace HighSeas.Tests
                 export, 1, 1, SaltwindLabBuildPolicy.Precision, SaltwindLabUnlockPool.MarksUnlocked, BalanceSkillPreset.Expert);
             Assert.Greater(marks.BossBaseHull, fresh.BossBaseHull);
             Assert.Less(marks.PlayerHullMultiplier, fresh.PlayerHullMultiplier);
+
+            var conservative = SaltwindBalanceLabScenarioFactory.Create(
+                export, 1, 1, SaltwindLabBuildPolicy.Broadside, SaltwindLabUnlockPool.FreshSave, BalanceSkillPreset.Conservative);
+            Assert.Less(conservative.BossBaseHull, fresh.BossBaseHull);
+        }
+
+        [Test]
+        public void Matrix_ConservativeFresh_WinsBossOnSampleSeeds()
+        {
+            var export = BuiltInExport();
+            var scenario = SaltwindBalanceLabScenarioFactory.Create(
+                export,
+                12000,
+                8,
+                SaltwindLabBuildPolicy.Broadside,
+                SaltwindLabUnlockPool.FreshSave,
+                BalanceSkillPreset.Conservative);
+            var summary = BalanceLabRunner.Run(scenario);
+            Assert.Greater(summary.WinRate, 0.55f,
+                "Conservative should secure the boss on most seeds after boss-arena snap");
+            Assert.Less(summary.WinRate, 0.96f,
+                "Conservative boss hull should stay below the documented 95% band ceiling");
         }
 
         [Test]
