@@ -6,7 +6,6 @@ using HighSeas.Encounters;
 using HighSeas.Enemies;
 using HighSeas.POI;
 using HighSeas.World;
-using HighSeas.Player;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -47,9 +46,12 @@ namespace HighSeas.Tests
 
             var failed = RunEncounterTracker.Request(RunEncounterKind.Boss, 1);
             var profile = _harness.CreateEncounterProfile(1);
+            profile.enemy.isBoss = true;
             _harness.Spawner.TriggerProfile(profile, 1, failed.EncounterId);
             RunEncounterTracker.MarkFailed(failed.EncounterId);
             _harness.Spawner.CancelPendingEncounter(failed.EncounterId);
+            while (_harness.EnemyWorld.ActiveCount >= cap)
+                Assert.IsTrue(_harness.EnemyWorld.TryDespawnOldestActive(out _), "Need a free hard-cap slot before boss retry spawn.");
 
             var boss = RunEncounterTracker.Request(RunEncounterKind.Boss, 1);
             var spawned = _harness.Spawner.TriggerProfileImmediate(profile, 1, boss.EncounterId);
@@ -91,18 +93,13 @@ namespace HighSeas.Tests
             _harness.Spawner.SetSchedule(schedule);
             _poi.Initialize(layout, db);
 
-            var playerGo = new GameObject("PlayerShip");
-            playerGo.transform.position = new Vector3(4f, 0f, 0f);
-            var player = playerGo.AddComponent<PlayerShipController>();
-
-            _poi.TickPowderCacheProximity(player, 0);
+            _poi.TickPowderCacheProximityAt(new Vector3(4f, 0f, 0f), 0);
             var firstId = _poi.DebugPowderCacheEncounterId;
             Assert.Greater(firstId, 0);
 
-            _poi.TickPowderCacheProximity(player, 0);
+            _poi.TickPowderCacheProximityAt(new Vector3(4f, 0f, 0f), 0);
             Assert.AreEqual(firstId, _poi.DebugPowderCacheEncounterId);
 
-            Object.Destroy(playerGo);
             yield return null;
         }
 

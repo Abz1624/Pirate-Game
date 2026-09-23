@@ -421,6 +421,9 @@ namespace HighSeas.POI
         Enemies.EncounterSpawner ResolveEncounterSpawner() =>
             encounterSpawner != null ? encounterSpawner : FindFirstObjectByType<Enemies.EncounterSpawner>();
 
+        /// <summary>PlayMode harness: bind the runtime spawner created alongside POIManager.</summary>
+        public void BindEncounterSpawner(Enemies.EncounterSpawner spawner) => encounterSpawner = spawner;
+
         public int GetSalvageChestQuotePrice()
         {
             if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export != null)
@@ -538,10 +541,17 @@ namespace HighSeas.POI
 
         public void TickPowderCacheProximity(PlayerShipController player, int index)
         {
-            if (player == null || _powderCacheAmbushStarted.Contains(index))
+            if (player == null) return;
+            TickPowderCacheProximityAt(player.Position, index);
+        }
+
+        /// <summary>PlayMode: avoid spinning up full ship colliders when only position matters.</summary>
+        public void TickPowderCacheProximityAt(Vector3 playerPosition, int index)
+        {
+            if (_powderCacheAmbushStarted.Contains(index))
                 return;
 
-            if (Vector3.Distance(player.Position, GetPoiPosition(index)) > PowderCacheTriggerRadius)
+            if (Vector3.Distance(playerPosition, GetPoiPosition(index)) > PowderCacheTriggerRadius)
                 return;
 
             if (!SpawnPowderCacheFight(GetPoiPosition(index)))

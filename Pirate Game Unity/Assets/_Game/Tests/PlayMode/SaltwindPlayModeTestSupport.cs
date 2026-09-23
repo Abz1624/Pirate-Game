@@ -106,6 +106,7 @@ namespace HighSeas.Tests
             go.transform.SetParent(_root.transform, false);
             var poi = go.AddComponent<POIManager>();
             poi.SetV3Options(continueAfterBossVictory: true, usePlaceholderVisuals: true, useV3ChestPricing: true);
+            poi.BindEncounterSpawner(Spawner);
             poi.Initialize(layout, db);
             return poi;
         }
