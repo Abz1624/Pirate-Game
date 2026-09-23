@@ -1,0 +1,45 @@
+{
+  "reviewCommit": "c69d5668af04297021e7dced23a49ac2435d9747",
+  "branch": "game-balance-experiment",
+  "reviewedAtUtc": "2026-09-23T09:35:29.6564455Z",
+  "profileBalanceVersion": 2,
+  "canonicalExportByteHash": "e4ffa52b4475d137e89c960eebf2de9ee42a3280c9f859cb5ca1761c1baa7eb7",
+  "unityVersion": "6000.3.11f1",
+  "unityCliOnPath": false,
+  "initialEditorStatus": "ready, stopped",
+  "commands": [
+    {
+      "command": "Unity MCP run_tests editor Saltwind async_tests=true timeout=300",
+      "result": "MCP tools/call timed out after 300s; no test results"
+    },
+    {
+      "command": "Unity MCP cancel_tests",
+      "result": "Main thread timeout after 60000ms"
+    },
+    {
+      "command": "Unity MCP run_tests editor NineMinuteAmbient_UsesSingleBandFourExportRate testName timeout=30",
+      "result": "Main thread timeout after 30000ms"
+    },
+    {
+      "command": "Unity MCP run_tests playmode Saltwind testName async_tests=true timeout=30",
+      "result": "Main thread timeout after 30000ms"
+    }
+  ],
+  "finalTestStatus": "running",
+  "independentUnityPassClaimed": false,
+  "playerPrefsUnchanged": true,
+  "playerPrefsBackup": "C:/Users/shara/AppData/Local/Temp/codex-saltwind-playerprefs-preverify.reg",
+  "simulationEvidence": "independent-v6-net/independent-provenance.json",
+  "conservativeSample": {
+    "runs": 8,
+    "baseSeed": 12000,
+    "host": "existing assembly under .NET, not Unity NUnit",
+    "pool": "FreshSave",
+    "bossWins": 7,
+    "build": "Broadside"
+  },
+  "expertSample": "independent-v6-net/expert-12-sample.json",
+  "humanPlaytest": "pending",
+  "devicePerformance": "pending",
+  "gameplayFixesMade": false
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "Policy": "Precision",
+    "Pool": "FreshSave",
+    "WinRate": 0.6666667,
+    "WithinBand": true
+  },
+  {
+    "Policy": "Precision",
+    "Pool": "MarksUnlocked",
+    "WinRate": 0.5,
+    "WithinBand": true
+  },
+  {
+    "Policy": "Broadside",
+    "Pool": "FreshSave",
+    "WinRate": 0.41666666,
+    "WithinBand": true
+  },
+  {
+    "Policy": "Broadside",
+    "Pool": "MarksUnlocked",
+    "WinRate": 0.33333334,
+    "WithinBand": false
+  },
+  {
+    "Policy": "AreaControl",
+    "Pool": "FreshSave",
+    "WinRate": 0.6666667,
+    "WithinBand": true
+  },
+  {
+    "Policy": "AreaControl",
+    "Pool": "MarksUnlocked",
+    "WinRate": 0.41666666,
+    "WithinBand": true
+  }
+]

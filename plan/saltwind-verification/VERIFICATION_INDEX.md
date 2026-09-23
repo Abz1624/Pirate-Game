@@ -1,6 +1,6 @@
 # Saltwind verification index (Codex)
 
-Status: **engineering verification complete with documented limitations** — **C13 external playtest and desktop perf remain pending**. See [CODEX_RESOLUTION_LOG.md](CODEX_RESOLUTION_LOG.md) and review addendum in [CODEX_REVIEW_2026-09-23.md](CODEX_REVIEW_2026-09-23.md).
+Status: **independent follow-up found open correctness issues; Unity rerun blocked by main-thread timeouts**. **C13 external playtest and desktop perf remain pending**. See [CODEX_INDEPENDENT_FOLLOWUP_2026-09-23.md](CODEX_INDEPENDENT_FOLLOWUP_2026-09-23.md) for severity-ordered findings and current evidence. The resolution log and original review addendum retain earlier claims/history; the checkpoint table below is Cursor's prior status, not a new independent pass.
 
 ## Reproduce tests
 
@@ -36,11 +36,13 @@ Regression log: [step14-regression-evidence.md](step14-regression-evidence.md).
 | --- | --- |
 | Baseline commit (Step 00) | `701bfa7d081b646631b6db15b890d51e46d5ad40` |
 | Reviewed implementation (Codex audit) | `6a21ba63` |
-| **Current delivery / resolution commit** | **`2bd9ca2abdf05548c57e5f39f8765cbda048e2fe`** |
+| **Current delivery / resolution commit** | **`c69d5668af04297021e7dced23a49ac2435d9747`** (includes post-review fixes in `1893e86a` and `c69d5668`; independently inspected) |
 | Profile content hash | **`e4ffa52b4475d137e89c960eebf2de9ee42a3280c9f859cb5ca1761c1baa7eb7`** |
 | Profile balance version | **2** |
 
 ## Checkpoint summary (C02–C14)
+
+**Prior implementation claims below:** independent review reopens encounter correctness (C03), composition/pressure (C04), reward identity (C09), legacy-owned unlock purchases (C11), storm/navigation evidence (C05/C06), test/save isolation and reruns (C10/C14), and lab/live disclosure (C12). R1/R2/R6 Unity gates are not independently passed in this follow-up. Separate existing-assembly .NET simulation results: [independent-v6-net/](independent-v6-net/); these do not replace Unity, device or human checks.
 
 | Gate | Result | Limitations |
 | --- | --- | --- |

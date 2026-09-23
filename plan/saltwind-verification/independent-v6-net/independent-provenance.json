@@ -1,0 +1,13 @@
+{
+  "hostRuntime": ".NET 10.0.11",
+  "seedsPerCell": 100,
+  "observedAtUtc": "2026-09-23T09:32:59.3118042Z",
+  "totalRuns": 1800,
+  "sourceCommit": "c69d5668af04297021e7dced23a49ac2435d9747",
+  "conservativeBossHullScale": 1.28,
+  "limitation": "Existing Unity-compiled assembly under .NET, not a fresh Unity compilation or NUnit/PlayMode run. Victory ends simulation; no overtime survival evidence. Original committed matrix preserved.",
+  "assemblySha256": "2aaa2836ee8c88243e47e517e3d5212a32c2b59981e8ee787909c200eb388363",
+  "baseSeed": 12000,
+  "assemblyLastWriteUtc": "2026-09-23T09:03:19.3215138Z",
+  "canonicalExportByteHash": "e4ffa52b4475d137e89c960eebf2de9ee42a3280c9f859cb5ca1761c1baa7eb7"
+}
