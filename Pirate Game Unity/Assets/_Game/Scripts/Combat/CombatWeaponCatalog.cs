@@ -12,16 +12,19 @@ namespace HighSeas.Combat
         {
             if (database?.weapons == null) return;
             TuneBaselineWeapons(database);
-            if (profile == null || profile.weaponSlotCap <= 2) return;
 
             var list = new List<WeaponDefinition>(database.weapons);
-            AddIfMissing(list, CreateLongNine());
             AddIfMissing(list, CreateSwivelGuns());
+            database.weapons = list.ToArray();
+            SyncExperimentalWeapon(database, "swivel_guns", CreateSwivelGuns());
+
+            if (profile == null || profile.weaponSlotCap <= 2) return;
+
+            AddIfMissing(list, CreateLongNine());
             AddIfMissing(list, CreateHarpoonGun());
             AddIfMissing(list, CreateMortar());
             database.weapons = list.ToArray();
             SyncExperimentalWeapon(database, "mortar", CreateMortar());
-            SyncExperimentalWeapon(database, "swivel_guns", CreateSwivelGuns());
         }
 
         static void SyncExperimentalWeapon(GameDatabase database, string id, WeaponDefinition template)

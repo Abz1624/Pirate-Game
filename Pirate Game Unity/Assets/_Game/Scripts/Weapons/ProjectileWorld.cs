@@ -12,6 +12,7 @@ namespace HighSeas.Weapons
     {
         public bool active;
         public Vector3 position;
+        public Vector3 previousPosition;
         public Vector3 velocity;
         public float damage;
         public float life;
@@ -26,6 +27,10 @@ namespace HighSeas.Weapons
     public sealed class ProjectileWorld : MonoBehaviour
     {
         public static ProjectileWorld Instance { get; private set; }
+
+        const float MinGameplayHitRadius = 0.32f;
+        const float HitSlop = 0.1f;
+        const float MaxVerticalHitSeparation = 4f;
 
         [SerializeField] Transform root;
         [SerializeField] DemoJuiceSettings juiceSettings;
@@ -72,11 +77,12 @@ namespace HighSeas.Weapons
             {
                 active = true,
                 position = pos,
+                previousPosition = pos,
                 velocity = dir.normalized * speed,
                 damage = damage,
                 life = life,
                 radius = radius,
-                pierceLeft = pierce,
+                pierceLeft = Mathf.Max(1, pierce + 1),
                 isCrit = isCrit,
                 weaponId = weaponId,
                 firingShip = firingShip,
@@ -123,7 +129,9 @@ namespace HighSeas.Weapons
             {
                 if (!_pool[i].active) continue;
                 ref var p = ref _pool[i];
+                var segmentStart = p.position;
                 p.position += p.velocity * dt;
+                p.previousPosition = segmentStart;
                 p.life -= dt;
                 if (p.view != null)
                 {
@@ -132,33 +140,75 @@ namespace HighSeas.Weapons
                         p.view.rotation = Quaternion.LookRotation(p.velocity.normalized, Vector3.up);
                 }
 
-                if (enemies != null)
+                if (enemies != null && p.pierceLeft > 0)
                 {
                     var list = enemies.Agents;
                     for (var ei = 0; ei < list.Length; ei++)
                     {
                         if (!list[ei].active) continue;
-                        var d = Vector3.Distance(p.position, list[ei].position);
-                        if (d > p.radius + list[ei].radius) continue;
+                        if (!TryHitAgentAlongSegment(
+                                segmentStart,
+                                p.position,
+                                p.radius,
+                                list[ei].position,
+                                list[ei].radius,
+                                out _))
+                            continue;
+
                         enemies.ApplyDamage(ei, p.damage, p.isCrit, weaponId: p.weaponId);
                         p.pierceLeft--;
-                        if (p.pierceLeft < 0) break;
+                        if (p.pierceLeft <= 0)
+                            break;
                     }
                 }
 
-                if (p.pierceLeft >= 0 && V3RunSession.AllowShipVsShipCombat && p.firingShip != null)
+                if (p.pierceLeft > 0 && V3RunSession.AllowShipVsShipCombat && p.firingShip != null)
                 {
                     if (V3ShipCombatRegistry.TryProjectileHit(p.firingShip, p.position, p.radius, p.damage, p.isCrit))
                     {
                         p.pierceLeft--;
-                        if (p.pierceLeft < 0)
+                        if (p.pierceLeft <= 0)
                             Despawn(i);
                     }
                 }
 
-                if (p.life <= 0f || p.pierceLeft < 0)
+                if (p.life <= 0f || p.pierceLeft <= 0)
                     Despawn(i);
             }
+        }
+
+        static bool TryHitAgentAlongSegment(
+            Vector3 segmentStart,
+            Vector3 segmentEnd,
+            float projectileRadius,
+            Vector3 agentPosition,
+            float agentRadius,
+            out float flatDistanceSqr)
+        {
+            flatDistanceSqr = float.MaxValue;
+            var hitRadius = Mathf.Max(projectileRadius, MinGameplayHitRadius) + agentRadius + HitSlop;
+            var closest = ClosestPointOnSegmentXZ(segmentStart, segmentEnd, agentPosition);
+            var flat = agentPosition - closest;
+            flat.y = 0f;
+            flatDistanceSqr = flat.sqrMagnitude;
+            if (flatDistanceSqr > hitRadius * hitRadius)
+                return false;
+
+            var verticalSeparation = Mathf.Abs(agentPosition.y - closest.y);
+            return verticalSeparation <= MaxVerticalHitSeparation;
+        }
+
+        static Vector3 ClosestPointOnSegmentXZ(Vector3 a, Vector3 b, Vector3 point)
+        {
+            var ab = b - a;
+            ab.y = 0f;
+            if (ab.sqrMagnitude < 0.0001f)
+                return a;
+
+            var ap = point - a;
+            ap.y = 0f;
+            var t = Mathf.Clamp01(Vector3.Dot(ap, ab) / ab.sqrMagnitude);
+            return a + ab * t;
         }
 
         void Despawn(int i)

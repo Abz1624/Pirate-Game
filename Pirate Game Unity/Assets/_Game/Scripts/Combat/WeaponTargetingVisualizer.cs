@@ -113,19 +113,26 @@ namespace HighSeas.Combat
             if (RunManager.Instance == null || RunManager.Instance.IsPaused || RunManager.Instance.IsRunEnded)
                 return;
 
+            ToggleAimVisuals();
+        }
+
+        public static void ToggleAimVisuals()
+        {
+            Ensure();
             var enabled = !CombatExperimentContext.ShowAimVisuals;
             CombatExperimentContext.ShowAimVisuals = enabled;
-            if (!enabled)
-                SetAllVisible(false);
+            if (Instance != null && !enabled)
+                Instance.SetAllVisible(false);
             V3ToastHud.Instance?.Show(
-                enabled ? "Weapon aim overlays ON (V)" : "Weapon aim overlays OFF (V)",
+                enabled ? "Weapon aim overlays ON (\\ or V)" : "Weapon aim overlays OFF (\\ or V)",
                 2f);
         }
 
         static bool WasAimVisualsTogglePressed()
         {
             var keyboard = Keyboard.current;
-            return keyboard != null && keyboard.vKey.wasPressedThisFrame;
+            return keyboard != null
+                && (keyboard.vKey.wasPressedThisFrame || keyboard.backslashKey.wasPressedThisFrame);
         }
 
         void LateUpdate()

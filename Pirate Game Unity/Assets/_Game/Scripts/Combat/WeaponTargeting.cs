@@ -335,13 +335,11 @@ namespace HighSeas.Combat
             out int targetIndex,
             out Vector3 aimDirection)
         {
-            return TryDensestCluster(
-                enemies,
-                origin,
-                range,
-                new WeaponDefinition { range = range, size = 3f, preferHighestHull = preferHighestHull },
-                out targetIndex,
-                out aimDirection);
+            var probe = ScriptableObject.CreateInstance<WeaponDefinition>();
+            probe.range = range;
+            probe.size = 3f;
+            probe.preferHighestHull = preferHighestHull;
+            return TryDensestCluster(enemies, origin, range, probe, out targetIndex, out aimDirection);
         }
     }
 }

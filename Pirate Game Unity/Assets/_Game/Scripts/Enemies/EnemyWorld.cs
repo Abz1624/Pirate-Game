@@ -170,6 +170,8 @@ namespace HighSeas.Enemies
                 EnemyViewPool.StripNavMeshFromPrefab(defs[i]?.visualPrefab);
         }
 
+        public void SetCollideWithIslands(bool enabled) => collideWithIslands = enabled;
+
         public int CountActiveByDefinition(int definitionIndex)
         {
             var count = 0;

@@ -12,6 +12,7 @@ using HighSeas.UI;
 using HighSeas.VFX;
 using HighSeas.Weapons;
 using HighSeas.World;
+using HighSeas.Playtest;
 using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -290,6 +291,7 @@ namespace HighSeas.Editor
             CreateMainMenuScene();
             CreateRunScene(db);
             CreateTestCombatScene(db);
+            CreateTestWeaponEnemyPlaytestScene(db);
             CreateTestPerformanceScene(db);
 
             var scenes = new[]
@@ -298,6 +300,7 @@ namespace HighSeas.Editor
                 Root + "/Scenes/MainMenu.unity",
                 Root + "/Scenes/Run.unity",
                 Root + "/Scenes/Tests/Test_Combat.unity",
+                Root + "/Scenes/Tests/Test_WeaponEnemy.unity",
                 Root + "/Scenes/Tests/Test_Performance.unity"
             };
             var sceneList = new System.Collections.Generic.List<EditorBuildSettingsScene>();
@@ -483,6 +486,11 @@ namespace HighSeas.Editor
         {
             CreateRunScene(db);
             SaveScene(Root + "/Scenes/Tests/Test_Combat.unity");
+        }
+
+        static void CreateTestWeaponEnemyPlaytestScene(GameDatabase db)
+        {
+            HighSeasWeaponEnemyPlaytestSceneSetup.CreateOrUpdateSceneBatch();
         }
 
         static void CreateTestPerformanceScene(GameDatabase db)

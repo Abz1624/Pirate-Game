@@ -404,7 +404,7 @@ namespace HighSeas.Weapons
             var speed = w.def.projectileSpeed * w.speedMult * stats.ProjectileSpeed;
             var settings = JuiceVfxBroker.Instance != null ? JuiceVfxBroker.Instance.Settings : null;
             var sizeMult = settings != null ? settings.swivelProjectileSizeMult : 0.55f;
-            var size = 0.35f * w.sizeMult * stats.Size * sizeMult;
+            var size = Mathf.Max(0.32f, 0.35f * w.sizeMult * stats.Size * sizeMult);
             var damageMult = settings != null ? settings.swivelDamageMult : 0.55f;
             var dmg = DamageSystem.RollDamageDetailed(
                 w.def.baseDamage * damageMult,
@@ -984,7 +984,7 @@ namespace HighSeas.Weapons
             {
                 if (!agents[i].active) continue;
                 var closest = ClosestPointOnSegment(origin, end, agents[i].position);
-                if (Vector3.Distance(closest, agents[i].position) > radius) continue;
+                if (HorizontalDistance(closest, agents[i].position) > radius + agents[i].radius * 0.35f) continue;
                 var dist = (closest - origin).sqrMagnitude;
                 if (dist >= bestDist) continue;
                 bestDist = dist;

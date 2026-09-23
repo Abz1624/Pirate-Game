@@ -100,6 +100,8 @@ namespace HighSeas.Player
         public Transform VisualModel => visualModel;
         public Vector3 MovementForward => GetShipForward();
 
+        public void SetModelForwardIsNegativeZ(bool negativeZ) => modelForwardIsNegativeZ = negativeZ;
+
         /// <summary>Run-scaled forward speed multiplier from player Move Speed stat.</summary>
         public float MoveSpeedMultiplier
         {

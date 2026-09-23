@@ -137,6 +137,17 @@ namespace HighSeas.Enemies
                 BootstrapScheduleEntries();
         }
 
+        /// <summary>Weapon/enemy playtest: no ambient schedule, triggers, or Update-driven spawns.</summary>
+        public void EnterManualPlaytestMode()
+        {
+            _ambientScheduleEnabled = false;
+            _activeProfiles.Clear();
+            _pendingEncounters.Clear();
+            _profileActiveCounts.Clear();
+            _ambientBudget.Reset();
+            enabled = false;
+        }
+
         public void ResetForNewRun()
         {
             _activeProfiles.Clear();
