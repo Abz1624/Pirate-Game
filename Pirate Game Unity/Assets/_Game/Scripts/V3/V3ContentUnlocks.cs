@@ -36,6 +36,7 @@ namespace HighSeas.V3
             return weaponId switch
             {
                 "deck_cannons" => true,
+                "swivel_guns" => true,
                 "broadside_battery" => true,
                 "powder_kegs" => HasCompletedFirstConquest || V3CaptainSelection.Selected == V3CaptainId.Flint,
                 "flying_cutlasses" => HasCompletedFirstConquest,

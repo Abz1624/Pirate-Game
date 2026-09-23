@@ -431,11 +431,11 @@ namespace HighSeas.V3
                         StageBalanceProfileContext.Export,
                         preferred))
                     return preferred;
-                return "broadside_battery";
+                return "swivel_guns";
             }
 
             if (!V3PlaytestFlags.UnlockAllContent && !PlayerPrefs.HasKey(V3ContentUnlocks.FirstConquestKey))
-                return "broadside_battery";
+                return "swivel_guns";
             return profile.StartingWeaponId;
         }
 

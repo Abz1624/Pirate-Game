@@ -14,7 +14,7 @@ namespace HighSeas.Data
 
         [Header("First Level Up")]
         public bool scriptFirstLevelUp = true;
-        public string startingWeaponId = "broadside_battery";
+        public string startingWeaponId = "swivel_guns";
 
         [Header("Demo")]
         [Tooltip("When enabled, every level-up includes a new weapon card if any unowned weapons remain.")]

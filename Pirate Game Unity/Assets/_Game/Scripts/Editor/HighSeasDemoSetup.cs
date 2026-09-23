@@ -216,7 +216,7 @@ namespace HighSeas.Editor
             settings.excludeMaxedWeapons = true;
             settings.preventDuplicateCards = true;
             settings.scriptFirstLevelUp = true;
-            settings.startingWeaponId = "broadside_battery";
+            settings.startingWeaponId = "swivel_guns";
             settings.commonStatLines = 1;
             settings.uncommonStatLines = 1;
             settings.rareStatLines = 2;

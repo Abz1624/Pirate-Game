@@ -19,7 +19,7 @@ MonoBehaviour:
   baseMoveSpeed: 6.2
   baseArmor: 0
   baseEvasion: 0
-  startingWeaponId: broadside_battery
+  startingWeaponId: swivel_guns
   passiveId: 
   unlockQuestId: 
   unlockDoubloonCost: 0

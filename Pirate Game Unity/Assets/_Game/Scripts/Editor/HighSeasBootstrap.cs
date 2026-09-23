@@ -157,7 +157,7 @@ namespace HighSeas.Editor
                 ship.displayName = "Cutlass Sloop";
                 ship.baseHull = 100f;
                 ship.baseMoveSpeed = 6.2f;
-                ship.startingWeaponId = "broadside_battery";
+                ship.startingWeaponId = "swivel_guns";
             });
 
         static WeaponDefinition[] CreateWeapons()

@@ -18,7 +18,7 @@ MonoBehaviour:
   excludeMaxedWeapons: 1
   preventDuplicateCards: 1
   scriptFirstLevelUp: 1
-  startingWeaponId: broadside_battery
+  startingWeaponId: swivel_guns
   alwaysIncludeNewWeapon: 1
   commonStatLines: 1
   uncommonStatLines: 1
