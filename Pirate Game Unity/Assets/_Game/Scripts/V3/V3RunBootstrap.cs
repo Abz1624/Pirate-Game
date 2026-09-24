@@ -258,11 +258,13 @@ namespace HighSeas.V3
             {
                 V3RunPlaytestHotkeys.Ensure();
                 SpawnDirectorDebugUI.Ensure();
-                EnemyIdentityDebugLabels.Ensure();
                 if (V3PlaytestFlags.EnableRunPlaytestHotkeys)
                     WeaponCardAnimationDemo.Ensure();
                 V3BossSummonHotkey.Ensure();
             }
+
+            EnemyIdentityDebugLabels.Ensure();
+            WeaponTargetingVisualizer.Ensure();
 
             Canvas runCanvas;
             if (firstRun)
@@ -292,10 +294,7 @@ namespace HighSeas.V3
             }
 
             if (firstRun)
-            {
                 EnsureCombatTelemetryDriver();
-                WeaponTargetingVisualizer.Ensure();
-            }
 
             EnsureCombatVfx();
             EnsurePlayfeelSystems(player, seed);

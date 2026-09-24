@@ -11,13 +11,15 @@ namespace HighSeas.Enemies
             Vector3 dir,
             float dist,
             float dt,
-            ref float chargeTimer)
+            ref float chargeTimer,
+            Vector3 playerVelocity = default)
         {
             if (p.ambushHidden)
                 return Vector3.zero;
 
             var speed = agent.moveSpeed * p.adaptiveSpeedMult;
             var movement = p.hasAdaptiveMovementOverride ? p.adaptiveMovementOverride : p.movementPattern;
+            var playerStatic = playerVelocity.sqrMagnitude < 0.12f;
 
             switch (movement)
             {
@@ -40,6 +42,13 @@ namespace HighSeas.Enemies
                 case EnemyMovementPattern.MaintainRange:
                 {
                     var preferred = p.preferredRange > 0f ? p.preferredRange : 10f;
+                    if (playerStatic)
+                    {
+                        if (dist > Mathf.Max(2.5f, preferred * 0.35f))
+                            return dir * (speed * 0.82f);
+                        return Vector3.zero;
+                    }
+
                     if (dist > preferred + 3f)
                         return dir * (speed * 0.65f);
                     if (dist < preferred - 2f)

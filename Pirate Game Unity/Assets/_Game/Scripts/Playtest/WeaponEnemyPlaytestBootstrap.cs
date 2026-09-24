@@ -70,7 +70,12 @@ namespace HighSeas.Playtest
                 balance.enabled = false;
         }
 
-        void OnDestroy() => WeaponEnemyPlaytestSession.Active = false;
+        void OnDestroy()
+        {
+            if (player != null && player.Damage != null)
+                player.Damage.SetPlaytestInvulnerable(false);
+            WeaponEnemyPlaytestSession.Active = false;
+        }
 
         void Start()
         {
@@ -141,7 +146,10 @@ namespace HighSeas.Playtest
             }
 
             if (player != null)
+            {
                 player.InitializeFromRun(RunManager.Instance.Stats.MaxHull);
+                player.Damage?.SetPlaytestInvulnerable(true);
+            }
 
             RunManager.Instance.EnterPlaying();
 

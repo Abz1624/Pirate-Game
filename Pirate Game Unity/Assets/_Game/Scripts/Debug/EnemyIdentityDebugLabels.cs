@@ -1,6 +1,6 @@
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Enemies;
-using HighSeas.V3;
 using UnityEngine;
 
 namespace HighSeas.Debugging
@@ -12,9 +12,6 @@ namespace HighSeas.Debugging
 
         public static void Ensure()
         {
-            if (!V3PlaytestFlags.EnableEnemyIdentityLabels)
-                return;
-
             if (FindFirstObjectByType<EnemyIdentityDebugLabels>() != null)
                 return;
 
@@ -26,7 +23,7 @@ namespace HighSeas.Debugging
 
         void OnGUI()
         {
-            if (!V3PlaytestFlags.EnableEnemyIdentityLabels)
+            if (!CombatDebugOverlays.Visible)
                 return;
 
             var world = FindFirstObjectByType<EnemyWorld>();
@@ -58,13 +55,18 @@ namespace HighSeas.Debugging
                 var profileName = agent.spawnProfile != null
                     ? agent.spawnProfile.ResolvedId
                     : "(legacy spawn)";
+                var role = def.isBoss ? "Boss" : def.isMiniboss ? "Miniboss" : "Enemy";
+                var tagLine = def.tags != null && def.tags.Length > 0
+                    ? string.Join(", ", def.tags)
+                    : "—";
                 var text =
-                    $"{def.displayName}\n" +
-                    $"id: {def.id} · {def.behavior}\n" +
-                    $"profile: {profileName}\n" +
-                    $"HP {agent.hp:F0}/{agent.maxHp:F0} · dmg {agent.damage:F0} · spd {agent.moveSpeed:F1}";
+                    $"{def.displayName} · {role}\n" +
+                    $"id: {def.id} · {def.category} · {def.behavior}\n" +
+                    $"tags: {tagLine}\n" +
+                    $"HP {agent.hp:F0}/{agent.maxHp:F0} · atk {agent.damage:F0} · spd {agent.moveSpeed:F1} · hit r {def.radius:F1}\n" +
+                    $"profile: {profileName}";
 
-                var rect = new Rect(screen.x - 110f, Screen.height - screen.y - 56f, 220f, 52f);
+                var rect = new Rect(screen.x - 120f, Screen.height - screen.y - 72f, 240f, 68f);
                 DrawOutlinedLabel(rect, text);
             }
         }

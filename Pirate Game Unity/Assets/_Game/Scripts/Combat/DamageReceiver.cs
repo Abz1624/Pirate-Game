@@ -23,6 +23,7 @@ namespace HighSeas.Combat
 
         float _currentHP;
         float _iframeUntil;
+        bool _playtestInvulnerable;
 
         public bool IsAlive => _currentHP > 0f;
         public float CurrentHP => _currentHP;
@@ -48,6 +49,9 @@ namespace HighSeas.Combat
 
         public void SetArmor(float armorValue) => armor = armorValue;
 
+        /// <summary>When true, <see cref="TakeDamage"/> is ignored (weapon/enemy playtest scene only).</summary>
+        public void SetPlaytestInvulnerable(bool invulnerable) => _playtestInvulnerable = invulnerable;
+
         /// <summary>Updates max HP without a free full heal (preserves current HP ratio by default).</summary>
         public void AdjustMaxHP(float newMax, bool preserveRatio = true)
         {
@@ -65,6 +69,7 @@ namespace HighSeas.Combat
         public void TakeDamage(float amount, Vector3 hitPoint, bool isCrit)
         {
             if (!IsAlive) return;
+            if (_playtestInvulnerable) return;
             if (Time.time < _iframeUntil) return;
             if (V3CaptainActiveController.Instance != null)
                 amount *= V3CaptainActiveController.Instance.IncomingDamageMultiplier;

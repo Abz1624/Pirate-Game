@@ -1,6 +1,7 @@
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Enemies;
+using HighSeas.Playtest;
 using HighSeas.Player;
 using HighSeas.V3;
 using HighSeas.Weapons;
@@ -109,37 +110,42 @@ namespace HighSeas.Combat
 
         void Update()
         {
-            if (!WasAimVisualsTogglePressed()) return;
+            if (!WasDebugOverlayTogglePressed()) return;
             if (RunManager.Instance == null || RunManager.Instance.IsPaused || RunManager.Instance.IsRunEnded)
                 return;
 
-            ToggleAimVisuals();
+            ToggleDebugOverlays();
         }
 
-        public static void ToggleAimVisuals()
+        public static void ToggleAimVisuals() => ToggleDebugOverlays();
+
+        public static void ToggleDebugOverlays()
         {
             Ensure();
-            var enabled = !CombatExperimentContext.ShowAimVisuals;
-            CombatExperimentContext.ShowAimVisuals = enabled;
+            var enabled = CombatDebugOverlays.Toggle();
             if (Instance != null && !enabled)
                 Instance.SetAllVisible(false);
             V3ToastHud.Instance?.Show(
-                enabled ? "Weapon aim overlays ON (\\ or V)" : "Weapon aim overlays OFF (\\ or V)",
-                2f);
+                enabled ? "Combat debug overlays ON (O)" : "Combat debug overlays OFF (O)",
+                2.5f);
         }
 
-        static bool WasAimVisualsTogglePressed()
+        static bool WasDebugOverlayTogglePressed()
         {
             var keyboard = Keyboard.current;
-            return keyboard != null
-                && (keyboard.vKey.wasPressedThisFrame || keyboard.backslashKey.wasPressedThisFrame);
+            if (keyboard == null) return false;
+            if (keyboard.oKey.wasPressedThisFrame || keyboard.vKey.wasPressedThisFrame)
+                return true;
+            if (WeaponEnemyPlaytestSession.Active)
+                return false;
+            return keyboard.backslashKey.wasPressedThisFrame;
         }
 
         void LateUpdate()
         {
             if (!_initialized) return;
 
-            if (!CombatExperimentContext.ShowAimVisuals
+            if (!CombatDebugOverlays.Visible
                 || RunManager.Instance == null
                 || RunManager.Instance.IsPaused)
             {
@@ -180,6 +186,9 @@ namespace HighSeas.Combat
             }
 
             var def = weapon.def;
+            var stats = RunManager.Instance?.Stats;
+            var sizeMult = weapon.sizeMult * (stats != null ? stats.Size : 1f);
+            var effectiveRange = def.range * sizeMult;
             var pulse = _firePulseTimer > 0f && def.id == _lastFiredWeaponId;
             var color = pulse ? WeaponDebugPalette.GetLocked(def.id) : WeaponDebugPalette.GetIdle(def.id);
             if (pulse && def.id == "lightning_mast")
@@ -192,17 +201,23 @@ namespace HighSeas.Combat
             forward.Normalize();
 
             var set = _slots[slotIndex];
-            var hasTarget = WeaponTargeting.TryResolveTarget(_enemies, _player, def, out var targetIndex, out _);
+            var hasTarget = WeaponTargeting.TryResolveTarget(_enemies, _player, def, out var targetIndex, out var aimDirection);
+            aimDirection.y = 0f;
+            if (aimDirection.sqrMagnitude < 0.001f) aimDirection = forward;
+            else aimDirection.Normalize();
+
             var targetPos = hasTarget ? _enemies.Agents[targetIndex].position : origin + forward * 4f;
             targetPos.y = GroundHeight;
 
             var showArea = true;
             var showMarker = false;
+            var useDirectional = WeaponTargeting.UsesDirectionalGeometry(def)
+                                 || def.targeting is TargetingMode.ForwardArc or TargetingMode.ForwardCone or TargetingMode.TetherTarget;
 
             if (def.pattern == WeaponPattern.PredictedAoE || def.id == "mortar")
             {
                 var point = WeaponTargeting.PredictClusterGround(_enemies, _player, def.range);
-                var radius = ResolveAoERadius(def, weapon);
+                var radius = ResolveAoERadius(def, weapon, sizeMult);
                 BuildDiscMesh(set.area.sharedMesh, point, radius, 32);
                 targetPos = point;
                 showMarker = true;
@@ -220,16 +235,19 @@ namespace HighSeas.Combat
             }
             else if (def.id == "swivel_guns")
             {
-                var aim = hasTarget ? (targetPos - origin).normalized : forward;
-                BuildFanMesh(set.area.sharedMesh, origin, aim, def.range * weapon.sizeMult, 38f);
+                var aim = hasTarget ? aimDirection : forward;
+                BuildFanMesh(set.area.sharedMesh, origin, aim, effectiveRange, hasTarget ? 22f : 360f);
                 showMarker = hasTarget;
             }
             else if (def.id == "long_nine")
             {
-                if (!CombatExperimentContext.Active.directionalWeaponTargetingEnabled)
+                if (!useDirectional)
                     showArea = false;
                 else
-                    BuildFanMesh(set.area.sharedMesh, origin, forward, def.range * weapon.sizeMult, 8f);
+                {
+                    BuildFanMesh(set.area.sharedMesh, origin, forward, effectiveRange, WeaponTargeting.ResolveArcDegrees(def));
+                    showMarker = hasTarget;
+                }
             }
             else if (def.id == "lightning_mast" || def.pattern == WeaponPattern.ChainLightning)
             {
@@ -249,13 +267,21 @@ namespace HighSeas.Combat
                 case TargetingMode.ForwardArc:
                 case TargetingMode.TetherTarget:
                 case TargetingMode.ForwardCone:
-                    if (!CombatExperimentContext.Active.directionalWeaponTargetingEnabled)
+                    if (!useDirectional)
                         showArea = false;
                     else
-                        BuildFanMesh(set.area.sharedMesh, origin, forward, def.range * weapon.sizeMult, WeaponTargeting.ResolveArcDegrees(def));
+                    {
+                        BuildFanMesh(
+                            set.area.sharedMesh,
+                            origin,
+                            forward,
+                            effectiveRange,
+                            WeaponTargeting.ResolveArcDegrees(def));
+                        showMarker = hasTarget;
+                    }
                     break;
                 case TargetingMode.PortStarboard:
-                    if (!CombatExperimentContext.Active.directionalWeaponTargetingEnabled)
+                    if (!useDirectional)
                         showArea = false;
                     else
                     {
@@ -269,41 +295,47 @@ namespace HighSeas.Combat
                                 sideDir = -right;
                         }
 
-                        BuildFanMesh(set.area.sharedMesh, origin, sideDir, def.range, 18f);
+                        BuildFanMesh(set.area.sharedMesh, origin, sideDir, effectiveRange, 18f);
                         showMarker = hasTarget;
                     }
                     break;
                 case TargetingMode.AftDeploy:
                 case TargetingMode.PlayerTrail when def.pattern == WeaponPattern.MineDrop:
-                    if (!CombatExperimentContext.Active.directionalWeaponTargetingEnabled)
+                    if (!useDirectional)
                         showArea = false;
                     else
-                        BuildFanMesh(set.area.sharedMesh, origin, -forward, 2.8f, 110f);
+                        BuildFanMesh(set.area.sharedMesh, origin, -forward, 2.8f * sizeMult, 110f);
                     break;
                 default:
                     if (def.pattern == WeaponPattern.PredictedAoE)
                     {
-                        var point = WeaponTargeting.PredictClusterGround(_enemies, _player, def.range);
-                        BuildDiscMesh(set.area.sharedMesh, point, def.size * weapon.sizeMult, 24);
+                        var point = WeaponTargeting.PredictClusterGround(_enemies, _player, effectiveRange);
+                        BuildDiscMesh(set.area.sharedMesh, point, def.size * sizeMult, 24);
                     }
                     else if (def.pattern == WeaponPattern.Orbit)
                     {
-                        BuildRingMesh(set.area.sharedMesh, origin, 5f * weapon.sizeMult, 32, 0.55f);
+                        BuildRingMesh(set.area.sharedMesh, origin, 5f * sizeMult, 32, 0.55f);
                         if (def.id == "flying_cutlasses")
                             color = new Color(1f, 0.88f, 0.28f, color.a);
                     }
-                    else if (def.targeting == TargetingMode.Nearest || def.pattern == WeaponPattern.AutoProjectile)
+                    else if (def.pattern == WeaponPattern.AutoProjectile || def.targeting == TargetingMode.Nearest)
                     {
                         if (hasTarget)
                         {
-                            var aim = (targetPos - origin).normalized;
-                            BuildFanMesh(set.area.sharedMesh, origin, aim, def.range * weapon.sizeMult, 42f);
+                            BuildFanMesh(set.area.sharedMesh, origin, aimDirection, effectiveRange, 18f);
                             showMarker = true;
                         }
                         else
                         {
-                            BuildDiscMesh(set.area.sharedMesh, origin, def.range, 36);
+                            BuildDiscMesh(set.area.sharedMesh, origin, effectiveRange, 36);
                         }
+                    }
+                    else if (def.pattern == WeaponPattern.FanVolley)
+                    {
+                        if (!useDirectional)
+                            showArea = false;
+                        else
+                            BuildFanMesh(set.area.sharedMesh, origin, forward, effectiveRange, def.fanSpreadDegrees);
                     }
                     else
                     {
@@ -356,9 +388,9 @@ namespace HighSeas.Combat
             renderer.SetPropertyBlock(_mpb);
         }
 
-        static float ResolveAoERadius(WeaponDefinition def, WeaponInstance weapon)
+        static float ResolveAoERadius(WeaponDefinition def, WeaponInstance weapon, float sizeMult)
         {
-            var scaled = def.size * weapon.sizeMult;
+            var scaled = def.size * sizeMult;
             if (def.id == "mortar")
                 return Mathf.Max(4f, scaled);
             return Mathf.Max(2f, scaled);

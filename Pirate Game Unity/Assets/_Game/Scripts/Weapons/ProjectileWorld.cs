@@ -23,6 +23,7 @@ namespace HighSeas.Weapons
         public PlayerShipController firingShip;
         public Transform view;
         public int homingEnemyIndex;
+        public Vector3 spawnDirection;
     }
 
     public sealed class ProjectileWorld : MonoBehaviour
@@ -32,7 +33,9 @@ namespace HighSeas.Weapons
         const float MinGameplayHitRadius = 0.32f;
         const float HitSlop = 0.16f;
         const float MaxVerticalHitSeparation = 4f;
-        const float HomingTurnRateDegPerSec = 68f;
+        const float HomingTurnRateDegPerSec = 20f;
+        const float HomingMinAngleDeg = 8f;
+        const float MaxHomingDeviationDeg = 10f;
 
         [SerializeField] Transform root;
         [SerializeField] DemoJuiceSettings juiceSettings;
@@ -76,12 +79,13 @@ namespace HighSeas.Weapons
 
             ResolveProjectileVisual(weaponId, radius, out var prefab, out var scaleMult, out var visualRadius);
             var view = _viewPool.Acquire(pos, color, visualRadius, prefab, scaleMult);
+            var normalizedDir = dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.forward;
             _pool[slot] = new Projectile
             {
                 active = true,
                 position = pos,
                 previousPosition = pos,
-                velocity = dir.normalized * speed,
+                velocity = normalizedDir * speed,
                 damage = damage,
                 life = life,
                 radius = radius,
@@ -90,7 +94,8 @@ namespace HighSeas.Weapons
                 weaponId = weaponId,
                 firingShip = firingShip,
                 view = view,
-                homingEnemyIndex = ShouldApplyHoming(weaponId, homingEnemyIndex) ? homingEnemyIndex : -1
+                homingEnemyIndex = ShouldApplyHoming(weaponId, homingEnemyIndex) ? homingEnemyIndex : -1,
+                spawnDirection = normalizedDir
             };
             _active++;
             return true;
@@ -230,7 +235,7 @@ namespace HighSeas.Weapons
             if (p.homingEnemyIndex >= agents.Length || !agents[p.homingEnemyIndex].active) return;
 
             var agent = agents[p.homingEnemyIndex];
-            var target = agent.position + agent.velocity * 0.12f;
+            var target = agent.position;
             target.y = p.position.y;
             var toTarget = target - p.position;
             toTarget.y = 0f;
@@ -242,10 +247,34 @@ namespace HighSeas.Weapons
             var current = p.velocity;
             current.y = 0f;
             var desired = toTarget.normalized * speed;
-            var maxRadians = HomingTurnRateDegPerSec * Mathf.Deg2Rad * dt;
+            var alignment = Vector3.Dot(current.normalized, desired.normalized);
+            if (alignment > 0.992f)
+                return;
+
+            var angleDeg = Mathf.Acos(Mathf.Clamp(alignment, -1f, 1f)) * Mathf.Rad2Deg;
+            if (angleDeg < HomingMinAngleDeg)
+                return;
+
+            var turnScale = Mathf.Clamp01(angleDeg / 40f);
+            var maxRadians = HomingTurnRateDegPerSec * Mathf.Deg2Rad * dt * turnScale;
             var steered = Vector3.RotateTowards(current, desired, maxRadians, 0f);
-            steered.y = p.velocity.y;
-            p.velocity = steered;
+            steered.y = 0f;
+            if (steered.sqrMagnitude < 0.01f) return;
+            steered.Normalize();
+
+            var spawnDir = p.spawnDirection;
+            spawnDir.y = 0f;
+            if (spawnDir.sqrMagnitude < 0.01f)
+                spawnDir = current.normalized;
+            else
+                spawnDir.Normalize();
+
+            var maxDevRad = MaxHomingDeviationDeg * Mathf.Deg2Rad;
+            var clampedDir = Vector3.RotateTowards(spawnDir, steered, maxDevRad, 0f);
+            if (Vector3.Angle(spawnDir, current.normalized) >= MaxHomingDeviationDeg - 0.5f)
+                return;
+
+            p.velocity = clampedDir * speed;
         }
 
         void Despawn(int i)

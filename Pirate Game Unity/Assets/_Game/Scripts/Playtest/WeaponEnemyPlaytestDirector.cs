@@ -117,7 +117,7 @@ namespace HighSeas.Playtest
             _ready = _enemyDefinitionIndices.Count > 0 && _weapons != null && _player != null;
             ShowStatus(
                 _ready
-                    ? "Weapon/Enemy playtest\n[ / ] weapon · ; / ' enemy · P spawn · \\ aim · F1 help"
+                    ? "Weapon/Enemy playtest\n[ / ] weapon · ; / ' enemy · P spawn · \\ clear · O aim · F1 help"
                     : "Playtest not ready — check bootstrap + database.",
                 6f);
         }
@@ -133,11 +133,19 @@ namespace HighSeas.Playtest
 
         void Update()
         {
-            if (!_ready) return;
+            if (!IsWeaponEnemyPlaytestScene() || !WeaponEnemyPlaytestSession.Active) return;
             if (RunManager.Instance != null && RunManager.Instance.IsPaused) return;
 
             var keyboard = Keyboard.current;
             if (keyboard == null) return;
+
+            if (keyboard.backslashKey.wasPressedThisFrame)
+            {
+                ClearAllEnemies();
+                return;
+            }
+
+            if (!_ready) return;
 
             if (keyboard.f1Key.wasPressedThisFrame)
             {
@@ -164,19 +172,16 @@ namespace HighSeas.Playtest
 
         void RebuildEnemyList()
         {
-            _enemyDefinitionIndices.Clear();
-            if (_enemyWorld?.Definitions == null) return;
-
-            var defs = _enemyWorld.Definitions;
-            for (var i = 0; i < defs.Length; i++)
+            if (_enemyWorld?.Definitions == null)
             {
-                if (defs[i] == null || string.IsNullOrEmpty(defs[i].id)) continue;
-                if (!includeBossesInEnemyCycle && (defs[i].isBoss || defs[i].isMiniboss)) continue;
-                _enemyDefinitionIndices.Add(i);
+                _enemyDefinitionIndices.Clear();
+                return;
             }
 
-            _enemyDefinitionIndices.Sort((a, b) =>
-                string.Compare(defs[a].id, defs[b].id, System.StringComparison.Ordinal));
+            V3SaltwindEnemyPlaytestCatalog.CollectCycleDefinitionIndices(
+                _enemyWorld.Definitions,
+                includeBossesInEnemyCycle,
+                _enemyDefinitionIndices);
             _enemyIndex = Mathf.Clamp(_enemyIndex, 0, Mathf.Max(0, _enemyDefinitionIndices.Count - 1));
         }
 
@@ -319,6 +324,22 @@ namespace HighSeas.Playtest
 
         int ResolveDefinitionIndex(string enemyId) => ResolveDefinitionIndex(_enemyWorld, enemyId);
 
+        void ClearAllEnemies()
+        {
+            RefreshReferences();
+            if (_enemyWorld == null)
+            {
+                ShowStatus("No EnemyWorld.", 2f);
+                return;
+            }
+
+            var before = _enemyWorld.ActiveCount;
+            _enemyWorld.DespawnAllActive();
+            ShowStatus(
+                before > 0 ? $"Cleared {before} enemies (\\)" : "No active enemies (\\)",
+                2.5f);
+        }
+
         void ShowHelp()
         {
             ShowStatus(
@@ -326,7 +347,8 @@ namespace HighSeas.Playtest
                 "[  ]  cycle weapon\n" +
                 ";  '  cycle enemy (no bosses by default)\n" +
                 "P  spawn one ahead of ship · Shift+P Barnacle King\n" +
-                "\\  toggle weapon range / attack overlays (V also works in run)\n" +
+                "\\  clear all spawned enemies · O / V aim overlays\n" +
+                "Hull damage disabled in this scene\n" +
                 "F1  help",
                 8f);
         }
@@ -359,7 +381,7 @@ namespace HighSeas.Playtest
                 new Rect(22f, Screen.height - 122f, 420f, 72f),
                 $"PLAYTEST  ·  Weapon: {weaponLabel}\n" +
                 $"Enemy: {enemyLabel}\n" +
-                "[ ] weapon   ; ' enemy   P spawn   \\ aim   Shift+P king",
+                "[ ] weapon   ; ' enemy   P spawn   \\ clear   O aim   Shift+P king",
                 style);
 
             if (Time.unscaledTime <= _statusUntil && !string.IsNullOrEmpty(_statusMessage))

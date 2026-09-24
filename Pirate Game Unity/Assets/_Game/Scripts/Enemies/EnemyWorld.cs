@@ -500,6 +500,7 @@ namespace HighSeas.Enemies
             }
 
             var releasedAgentId = _agents[index].id;
+            ReefCrabMinibossBehavior.ClearAgent(releasedAgentId);
             _agents[index].active = false;
             _activeCount--;
             Combat.StatusController.Instance?.ClearIndex(index);
@@ -522,7 +523,7 @@ namespace HighSeas.Enemies
                 ref var e = ref _agents[i];
                 var def = definitions[e.definitionIndex];
                 EnemySpecialBehaviorSystem.TickPreMovement(this, i, ref e, def, dt, playerPos, playerDamage);
-                var desiredVelocity = TickBehavior(i, ref e, def, dt, playerPos, playerVelocity);
+                var desiredVelocity = TickBehavior(i, ref e, def, dt, playerPos, playerVelocity, playerDamage);
                 if (e.spawnProfile != null)
                 {
                     EnemySpecialBehaviorSystem.TickPostMovement(this, ref e, ref e.patternParams, dt, playerPos);
@@ -826,7 +827,7 @@ namespace HighSeas.Enemies
             EnemyShipWakeJuice.Tick(e.view, def.category, e.velocity);
         }
 
-        Vector3 TickBehavior(int agentIndex, ref EnemyAgent e, Data.EnemyDefinition def, float dt, Vector3 playerPos, Vector3 playerVelocity)
+        Vector3 TickBehavior(int agentIndex, ref EnemyAgent e, Data.EnemyDefinition def, float dt, Vector3 playerPos, Vector3 playerVelocity, Combat.DamageReceiver playerDamage = null)
         {
             if (e.isBoss && agentIndex == _bossControlSlot)
             {
@@ -854,6 +855,24 @@ namespace HighSeas.Enemies
             toPlayer.y = 0f;
             var dist = toPlayer.magnitude;
             var dir = dist > 0.01f ? toPlayer / dist : Vector3.forward;
+
+            if (ReefCrabMinibossBehavior.Handles(def))
+            {
+                var crabVel = ReefCrabMinibossBehavior.TickMovement(
+                    agentIndex, ref e, def, dt, playerPos, playerDamage);
+                crabVel = ApplySeparation(agentIndex, crabVel, ref e, crabVel);
+                e.velocity = Vector3.ClampMagnitude(crabVel, e.moveSpeed * 1.1f);
+                return crabVel;
+            }
+
+            if (def.id == "shark")
+            {
+                var sharkVel = TickSharkBehavior(ref e, dir, dist, playerPos, playerVelocity);
+                sharkVel = ApplySeparation(agentIndex, sharkVel, ref e, sharkVel);
+                e.velocity = Vector3.ClampMagnitude(sharkVel, e.moveSpeed * 1.35f);
+                return sharkVel;
+            }
+
             var usesCreatureIntercept = def.category == EnemyCategory.Creature && !def.isBoss && !def.isMiniboss;
             var chaseDir = usesCreatureIntercept
                 ? GetCreatureInterceptDirection(e, playerPos, playerVelocity, dist, dir)
@@ -875,7 +894,8 @@ namespace HighSeas.Enemies
                         dir,
                         dist,
                         dt,
-                        ref e.chargeTimer);
+                        ref e.chargeTimer,
+                        playerVelocity);
                 }
 
                 var patternIntent = patternVel;
@@ -932,13 +952,23 @@ namespace HighSeas.Enemies
                 case EnemyBehavior.MaintainRange:
                 case EnemyBehavior.FormationRanged:
                 {
+                    var preferred = def.preferredRange > 0f ? def.preferredRange : 10f;
+                    var playerStatic = playerVelocity.sqrMagnitude < 0.12f;
+                    if (playerStatic)
+                    {
+                        if (dist > Mathf.Max(2.5f, preferred * 0.35f))
+                            behaviorVelocity = dir * (e.moveSpeed * 0.85f);
+                        else
+                            behaviorVelocity = Vector3.zero;
+                        break;
+                    }
+
                     if (def.category == EnemyCategory.Ship && e.attackCooldown > 0f)
                     {
                         behaviorVelocity = Vector3.zero;
                         break;
                     }
 
-                    var preferred = def.preferredRange > 0f ? def.preferredRange : 10f;
                     if (def.isMiniboss && dist > preferred * 0.35f)
                         behaviorVelocity = dir * e.moveSpeed;
                     else if (dist > preferred + 3f)
@@ -956,8 +986,6 @@ namespace HighSeas.Enemies
                     }
                     else if (def.isMiniboss)
                         behaviorVelocity = dir * (e.moveSpeed * 0.55f);
-                    else if (playerVelocity.sqrMagnitude < 0.12f)
-                        behaviorVelocity = dir * (e.moveSpeed * 0.42f);
                     else
                         behaviorVelocity = Vector3.zero;
                     break;
@@ -1040,6 +1068,37 @@ namespace HighSeas.Enemies
             return Vector3.Slerp(encircleDir, interceptDir, interceptWeight).normalized;
         }
 
+        /// <summary>Straight rush — slow approach, faster commit when close (no orbit or charge windup).</summary>
+        static Vector3 TickSharkBehavior(
+            ref EnemyAgent agent,
+            Vector3 directDir,
+            float dist,
+            Vector3 playerPos,
+            Vector3 playerVelocity)
+        {
+            directDir.y = 0f;
+            if (directDir.sqrMagnitude < 0.01f)
+                directDir = Vector3.forward;
+            directDir.Normalize();
+
+            var playerSpeed = playerVelocity.magnitude;
+            if (playerSpeed > 0.5f && dist > 9f)
+            {
+                var leadTime = Mathf.Clamp(dist / Mathf.Max(playerSpeed, 0.5f), 0.15f, 0.55f);
+                var predicted = playerPos + playerVelocity * leadTime;
+                var toLead = predicted - agent.position;
+                toLead.y = 0f;
+                if (toLead.sqrMagnitude > 0.04f)
+                    directDir = toLead.normalized;
+            }
+
+            if (dist > 16f)
+                return directDir * (agent.moveSpeed * 0.82f);
+            if (dist > 7f)
+                return directDir * (agent.moveSpeed * 1.05f);
+            return directDir * (agent.moveSpeed * 1.28f);
+        }
+
         static Vector3 TickSwordfishBehavior(
             ref EnemyAgent agent,
             Vector3 cruiseDir,
@@ -1049,20 +1108,32 @@ namespace HighSeas.Enemies
             Vector3 playerPos,
             Vector3 playerVelocity)
         {
-            const float springRange = 9.5f;
-            const float springDuration = 0.42f;
-            const float springRetriggerCooldown = 1.35f;
-            const float springSpeedMult = 2.45f;
-            const float cruiseMult = 1.05f;
+            const float springRange = 11f;
+            const float springDuration = 0.34f;
+            const float retreatDuration = 0.55f;
+            const float springRetriggerCooldown = 2f;
+            const float springSpeedMult = 3.1f;
+            const float cruiseMult = 1.12f;
+
+            directDir.y = 0f;
+            if (directDir.sqrMagnitude < 0.01f)
+                directDir = Vector3.forward;
+            directDir.Normalize();
 
             if (agent.chargeTimer > 0f)
             {
                 agent.chargeTimer -= dt;
                 if (agent.chargeTimer <= 0f)
-                    agent.chargeTimer = -springRetriggerCooldown;
+                    agent.chargeTimer = -retreatDuration;
+                return directDir * (agent.moveSpeed * springSpeedMult);
+            }
 
-                var springDir = GetCreatureInterceptDirection(agent, playerPos, playerVelocity, dist, directDir);
-                return springDir * (agent.moveSpeed * springSpeedMult);
+            if (agent.chargeTimer < 0f && agent.chargeTimer > -retreatDuration)
+            {
+                agent.chargeTimer += dt;
+                if (agent.chargeTimer >= 0f)
+                    agent.chargeTimer = -springRetriggerCooldown;
+                return -directDir * (agent.moveSpeed * 0.72f);
             }
 
             if (agent.chargeTimer < 0f)
@@ -1070,17 +1141,18 @@ namespace HighSeas.Enemies
                 agent.chargeTimer += dt;
                 if (agent.chargeTimer > 0f)
                     agent.chargeTimer = 0f;
-                return cruiseDir * (agent.moveSpeed * cruiseMult);
+                var tangent = Vector3.Cross(Vector3.up, directDir) * ((agent.id & 1) == 0 ? 1f : -1f);
+                return (tangent * 0.62f + directDir * 0.18f).normalized * (agent.moveSpeed * cruiseMult);
             }
 
             if (dist <= springRange)
             {
                 agent.chargeTimer = springDuration;
-                var springDir = GetCreatureInterceptDirection(agent, playerPos, playerVelocity, dist, directDir);
-                return springDir * (agent.moveSpeed * springSpeedMult);
+                return directDir * (agent.moveSpeed * springSpeedMult);
             }
 
-            return cruiseDir * (agent.moveSpeed * cruiseMult);
+            var orbit = Vector3.Cross(Vector3.up, directDir) * ((agent.id & 1) == 0 ? 1f : -1f);
+            return (orbit * 0.42f + directDir * 0.58f).normalized * (agent.moveSpeed * cruiseMult);
         }
 
         /// <summary>Spread melee swarms around the player instead of stacking in a rear conga line.</summary>
@@ -1125,6 +1197,9 @@ namespace HighSeas.Enemies
             DamageReceiver playerDamage)
         {
             if (!EnemyRangedAttackRules.SupportsRangedAttacks(def))
+                return;
+
+            if (def.id == "reef_crab_miniboss")
                 return;
 
             if (e.spawnProfile != null)
