@@ -38,8 +38,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6d47a76eef9063048afbf0be89c181bf, type: 2}
   - {fileID: 11400000, guid: 53b3c4d0fa20a14469c831e5cffc044e, type: 2}
   - {fileID: 11400000, guid: 9fbfc98cb2a59de458106671c67a79b0, type: 2}
-  - {fileID: 11400000, guid: c4e5f6a7b8c90123456789abcdef01, type: 2}
-  - {fileID: 11400000, guid: d5f6a7b8c9d0123456789abcdef0123, type: 2}
+  - {fileID: 11400000, guid: a1b2c3d4e5f6789012345678abcdef01, type: 2}
+  - {fileID: 11400000, guid: b2c3d4e5f6a7890123456789abcdef12, type: 2}
   relics:
   - {fileID: 11400000, guid: fe74e3efdcdc4b24fb3e393db522bb09, type: 2}
   - {fileID: 11400000, guid: dc7f323cabb48b149ac93842fed66899, type: 2}

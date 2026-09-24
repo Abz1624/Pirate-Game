@@ -417,7 +417,7 @@ namespace HighSeas.Weapons
                 w.def.id);
             var origin = _player.Position + Vector3.up * 0.35f;
             _juice?.OnWeaponFired(w.def.id, origin, dir);
-            _projectiles.TrySpawn(origin, dir, speed, dmg.amount, 2.4f, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id);
+            _projectiles.TrySpawn(origin, dir, speed, dmg.amount, 2.4f, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id, _player, target);
         }
 
         void BeginSwivelBurst(ref WeaponInstance w, PlayerStats stats, RunRng rng)
@@ -555,13 +555,21 @@ namespace HighSeas.Weapons
             var qty = w.def.baseQuantity + w.quantityBonus + Mathf.FloorToInt(stats.Get(StatId.Quantity));
             var speed = w.def.projectileSpeed * w.speedMult * stats.ProjectileSpeed;
             var size = 0.35f * w.sizeMult * stats.Size;
+            if (tetherEnemyIndex >= 0 && _enemies != null
+                && tetherEnemyIndex >= 0 && tetherEnemyIndex < _enemies.Agents.Length
+                && _enemies.Agents[tetherEnemyIndex].active)
+            {
+                var agent = _enemies.Agents[tetherEnemyIndex];
+                dir = WeaponTargeting.ComputeLeadDirection(_player.Position, agent.position, agent.velocity, speed);
+            }
+
             for (var i = 0; i < qty; i++)
             {
                 var spread = Quaternion.Euler(0f, (i - qty * 0.5f) * 4f, 0f) * dir;
                 var dmg = DamageSystem.RollDamageDetailed(w.def.baseDamage, w.damageBonus * w.level * 0.1f + 1f, stats, isElite, 0f, rng, w.def.procCoefficient, w.def.id);
                 var origin = _player.Position + Vector3.up * 0.35f;
                 _juice?.OnWeaponFired(w.def.id, origin, spread);
-                _projectiles.TrySpawn(origin, spread, speed, dmg.amount, 3f, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id, _player);
+                _projectiles.TrySpawn(origin, spread, speed, dmg.amount, 3f, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id, _player, tetherEnemyIndex);
                 if (w.def.targeting == TargetingMode.TetherTarget && tetherEnemyIndex >= 0)
                 {
                     StatusController.Instance?.ApplyStatus(tetherEnemyIndex, StatusType.Tarred, 1.2f * w.durationMult);
@@ -670,7 +678,19 @@ namespace HighSeas.Weapons
                     && JuiceVfxBroker.Instance.Settings.TryGetWeaponVfx(w.def.id, out var vfxBinding)
                     && vfxBinding.projectileLifeMult > 0f)
                     projectileLife *= vfxBinding.projectileLifeMult;
-                if (_projectiles.TrySpawn(origin, dir, speed, isBroadside ? 0f : dmg.amount, projectileLife, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id, _player))
+                if (_projectiles.TrySpawn(
+                        origin,
+                        dir,
+                        speed,
+                        isBroadside ? 0f : dmg.amount,
+                        projectileLife,
+                        size,
+                        0,
+                        dmg.isCrit,
+                        w.def.projectileColor,
+                        w.def.id,
+                        _player,
+                        !isBroadside ? hitIndex : -1))
                 {
                     if (!isBroadside && hitIndex >= 0)
                         hits++;

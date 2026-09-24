@@ -22,6 +22,7 @@ namespace HighSeas.Weapons
         public string weaponId;
         public PlayerShipController firingShip;
         public Transform view;
+        public int homingEnemyIndex;
     }
 
     public sealed class ProjectileWorld : MonoBehaviour
@@ -29,8 +30,9 @@ namespace HighSeas.Weapons
         public static ProjectileWorld Instance { get; private set; }
 
         const float MinGameplayHitRadius = 0.32f;
-        const float HitSlop = 0.1f;
+        const float HitSlop = 0.16f;
         const float MaxVerticalHitSeparation = 4f;
+        const float HomingTurnRateDegPerSec = 68f;
 
         [SerializeField] Transform root;
         [SerializeField] DemoJuiceSettings juiceSettings;
@@ -61,7 +63,8 @@ namespace HighSeas.Weapons
             bool isCrit,
             Color color,
             string weaponId = null,
-            PlayerShipController firingShip = null)
+            PlayerShipController firingShip = null,
+            int homingEnemyIndex = -1)
         {
             if (_active >= _pool.Length) return false;
             var slot = -1;
@@ -86,7 +89,8 @@ namespace HighSeas.Weapons
                 isCrit = isCrit,
                 weaponId = weaponId,
                 firingShip = firingShip,
-                view = view
+                view = view,
+                homingEnemyIndex = ShouldApplyHoming(weaponId, homingEnemyIndex) ? homingEnemyIndex : -1
             };
             _active++;
             return true;
@@ -129,6 +133,7 @@ namespace HighSeas.Weapons
             {
                 if (!_pool[i].active) continue;
                 ref var p = ref _pool[i];
+                ApplySubtleHoming(ref p, dt, enemies);
                 var segmentStart = p.position;
                 p.position += p.velocity * dt;
                 p.previousPosition = segmentStart;
@@ -146,11 +151,12 @@ namespace HighSeas.Weapons
                     for (var ei = 0; ei < list.Length; ei++)
                     {
                         if (!list[ei].active) continue;
+                        var agentPos = list[ei].position + list[ei].velocity * (dt * 0.5f);
                         if (!TryHitAgentAlongSegment(
                                 segmentStart,
                                 p.position,
                                 p.radius,
-                                list[ei].position,
+                                agentPos,
                                 list[ei].radius,
                                 out _))
                             continue;
@@ -209,6 +215,37 @@ namespace HighSeas.Weapons
             ap.y = 0f;
             var t = Mathf.Clamp01(Vector3.Dot(ap, ab) / ab.sqrMagnitude);
             return a + ab * t;
+        }
+
+        static bool ShouldApplyHoming(string weaponId, int enemyIndex)
+        {
+            if (enemyIndex < 0 || string.IsNullOrEmpty(weaponId)) return false;
+            return weaponId is "swivel_guns" or "deck_cannons" or "long_nine";
+        }
+
+        static void ApplySubtleHoming(ref Projectile p, float dt, EnemyWorld enemies)
+        {
+            if (p.homingEnemyIndex < 0 || enemies == null) return;
+            var agents = enemies.Agents;
+            if (p.homingEnemyIndex >= agents.Length || !agents[p.homingEnemyIndex].active) return;
+
+            var agent = agents[p.homingEnemyIndex];
+            var target = agent.position + agent.velocity * 0.12f;
+            target.y = p.position.y;
+            var toTarget = target - p.position;
+            toTarget.y = 0f;
+            if (toTarget.sqrMagnitude < 0.04f) return;
+
+            var speed = p.velocity.magnitude;
+            if (speed < 0.01f) return;
+
+            var current = p.velocity;
+            current.y = 0f;
+            var desired = toTarget.normalized * speed;
+            var maxRadians = HomingTurnRateDegPerSec * Mathf.Deg2Rad * dt;
+            var steered = Vector3.RotateTowards(current, desired, maxRadians, 0f);
+            steered.y = p.velocity.y;
+            p.velocity = steered;
         }
 
         void Despawn(int i)

@@ -37,25 +37,36 @@ namespace HighSeas.Combat
             var forward = player.MovementForward;
             var range = def.range;
 
+            bool resolved;
             switch (ResolveMode(def))
             {
                 case TargetingMode.ForwardArc:
                 case TargetingMode.TetherTarget:
-                    return TryForwardArc(enemies, origin, forward, range, def, out targetIndex, out aimDirection);
+                    resolved = TryForwardArc(enemies, origin, forward, range, def, out targetIndex, out aimDirection);
+                    break;
                 case TargetingMode.ForwardCone:
-                    return TryForwardArc(enemies, origin, forward, range, def, out targetIndex, out aimDirection);
+                    resolved = TryForwardArc(enemies, origin, forward, range, def, out targetIndex, out aimDirection);
+                    break;
                 case TargetingMode.PortStarboard:
-                    return TryPortStarboard(enemies, origin, forward, range, out targetIndex, out aimDirection);
+                    resolved = TryPortStarboard(enemies, origin, forward, range, out targetIndex, out aimDirection);
+                    break;
                 case TargetingMode.DensestCluster:
                 case TargetingMode.OmniClusterGround:
-                    return TryDensestCluster(enemies, origin, range, def, out targetIndex, out aimDirection);
+                    resolved = TryDensestCluster(enemies, origin, range, def, out targetIndex, out aimDirection);
+                    break;
                 case TargetingMode.NearestElite:
-                    return TryOmniNearest(enemies, origin, range, preferElite: true, preferHighestHull: def.preferHighestHull,
+                    resolved = TryOmniNearest(enemies, origin, range, preferElite: true, preferHighestHull: def.preferHighestHull,
                         out targetIndex, out aimDirection);
+                    break;
                 default:
-                    return TryOmniNearest(enemies, origin, range, preferElite: def.preferElite,
+                    resolved = TryOmniNearest(enemies, origin, range, preferElite: def.preferElite,
                         preferHighestHull: def.preferHighestHull, out targetIndex, out aimDirection);
+                    break;
             }
+
+            if (!resolved || targetIndex < 0) return false;
+            ApplyLeadAim(enemies, origin, def, targetIndex, ref aimDirection);
+            return true;
         }
 
         static TargetingMode ResolveMode(WeaponDefinition def)
@@ -312,6 +323,58 @@ namespace HighSeas.Combat
             if (preferHighestHull) score += agent.hp;
             if (agent.isBoss) score += 500f;
             return score;
+        }
+
+        static void ApplyLeadAim(EnemyWorld enemies, Vector3 origin, WeaponDefinition def, int targetIndex, ref Vector3 aimDirection)
+        {
+            if (enemies == null || targetIndex < 0 || targetIndex >= enemies.Agents.Length) return;
+            var agent = enemies.Agents[targetIndex];
+            if (!agent.active) return;
+            var speed = ResolveLeadSpeed(def);
+            aimDirection = ComputeLeadDirection(origin, agent.position, agent.velocity, speed);
+        }
+
+        static float ResolveLeadSpeed(WeaponDefinition def) =>
+            def != null && def.projectileSpeed > 0.1f ? def.projectileSpeed : 14f;
+
+        public static Vector3 ComputeLeadDirection(
+            Vector3 origin,
+            Vector3 targetPos,
+            Vector3 targetVelocity,
+            float projectileSpeed)
+        {
+            targetVelocity.y = 0f;
+            var toTarget = targetPos - origin;
+            toTarget.y = 0f;
+            if (toTarget.sqrMagnitude < 0.0001f)
+                return Vector3.forward;
+            if (projectileSpeed < 0.1f || targetVelocity.sqrMagnitude < 0.04f)
+                return toTarget.normalized;
+
+            var a = Vector3.Dot(targetVelocity, targetVelocity) - projectileSpeed * projectileSpeed;
+            var b = 2f * Vector3.Dot(targetVelocity, toTarget);
+            var c = toTarget.sqrMagnitude;
+            float timeToImpact;
+            if (Mathf.Abs(a) < 0.0001f)
+            {
+                timeToImpact = c / Mathf.Max(0.001f, -b);
+            }
+            else
+            {
+                var discriminant = b * b - 4f * a * c;
+                if (discriminant < 0f)
+                    return toTarget.normalized;
+                var sqrt = Mathf.Sqrt(discriminant);
+                var t1 = (-b - sqrt) / (2f * a);
+                var t2 = (-b + sqrt) / (2f * a);
+                timeToImpact = t1 > 0.02f ? t1 : (t2 > 0.02f ? t2 : toTarget.magnitude / projectileSpeed);
+            }
+
+            timeToImpact = Mathf.Clamp(timeToImpact, 0f, 2.5f);
+            var predicted = targetPos + targetVelocity * timeToImpact;
+            var aim = predicted - origin;
+            aim.y = 0f;
+            return aim.sqrMagnitude > 0.0001f ? aim.normalized : toTarget.normalized;
         }
 
         public static Vector3 PredictClusterGround(EnemyWorld enemies, PlayerShipController player, float range)

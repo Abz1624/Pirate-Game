@@ -9,7 +9,7 @@ namespace HighSeas.World
     {
         [SerializeField] float gustIntervalSeconds = 45f;
         [SerializeField] float gustDurationSeconds = 8f;
-        [SerializeField] float gustStrength = 3f;
+        [SerializeField] float gustStrength = 2.2f;
 
         float _nextGust;
         float _gustTimer;
@@ -22,8 +22,15 @@ namespace HighSeas.World
             _gustTimer = 0f;
         }
 
+        void OnEnable()
+        {
+            if (EnvironmentalHazardsDisabled.Value)
+                Destroy(this);
+        }
+
         void Update()
         {
+            if (EnvironmentalHazardsDisabled.Value) return;
             if (RunManager.Instance == null || RunManager.Instance.IsRunEnded) return;
             var elapsed = RunManager.Instance.ElapsedSeconds;
             if (_gustTimer > 0f)
@@ -41,12 +48,12 @@ namespace HighSeas.World
             V3ToastHud.Instance?.Show("Tailwind gust — ride the swell", 2f);
         }
 
-        static void ApplyWind(Vector3 deltaPerSecond)
+        static void ApplyWind(Vector3 targetDriftMetersPerSecond)
         {
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             if (ship == null) return;
             var receiver = ship.GetComponent<ExternalForceReceiver>();
-            receiver?.AddImpulse(deltaPerSecond);
+            receiver?.BlendToward(targetDriftMetersPerSecond, 2.5f);
         }
     }
 }

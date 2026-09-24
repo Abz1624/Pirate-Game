@@ -265,7 +265,11 @@ namespace HighSeas.V3
                     break;
             }
 
-            V3ToastHud.Instance?.Show($"{GetDisplayName(kind)} collected.", 2f);
+            V3ToastHud.Instance?.Show(kind switch
+            {
+                V3FloorPowerupKind.MagneticTide => "Magnetic Tide — distant XP and gold pull toward you.",
+                _ => $"{GetDisplayName(kind)} collected."
+            }, 2.5f);
         }
 
         void TickBuffs(float dt)

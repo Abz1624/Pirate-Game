@@ -124,6 +124,11 @@ namespace HighSeas.V3
         {
             _player = FindFirstObjectByType<PlayerShipController>();
             _enemyWorld = FindFirstObjectByType<EnemyWorld>();
+            SyncLayout();
+            EnsureVisualShell();
+            if (_layout != null)
+                BuildMarkers(_layout);
+            _lastFogRevision = -1;
         }
 
         void OnDestroy()
@@ -249,7 +254,6 @@ namespace HighSeas.V3
 
             var overlay = CreateChild(root, "FrameOverlay");
             Stretch(overlay);
-            overlay.SetAsLastSibling();
             _overlayImage = overlay.gameObject.AddComponent<Image>();
             _overlayImage.raycastTarget = false;
             if (art?.overlay != null)
@@ -260,6 +264,10 @@ namespace HighSeas.V3
             }
             else
                 _overlayImage.color = new Color(0.85f, 0.7f, 0.25f, 0.85f);
+
+            // Frame art must sit behind the clipped map; drawing it on top hides the whole minimap.
+            overlay.SetAsFirstSibling();
+            _mapClip.SetAsLastSibling();
         }
 
         void EnsureVisualShell()
@@ -298,6 +306,13 @@ namespace HighSeas.V3
             _contentRoot = _mapClip.Find("ContentRoot") as RectTransform;
             if (_contentRoot == null) return;
 
+            var frameOverlay = transform.Find("FrameOverlay");
+            if (frameOverlay != null)
+            {
+                frameOverlay.SetAsFirstSibling();
+                _mapClip.SetAsLastSibling();
+            }
+
             var boundsVeilRoot = _contentRoot.Find("BoundsVeilRoot") as RectTransform;
             if (boundsVeilRoot == null)
             {
@@ -311,7 +326,25 @@ namespace HighSeas.V3
             _fogRoot = _contentRoot.Find("FogRoot") as RectTransform;
             EnsureFogMaskImage();
             _mapRoot = _contentRoot.Find("MapRoot") as RectTransform;
+            if (_mapRoot == null)
+            {
+                _mapRoot = CreateChild(_contentRoot, "MapRoot");
+                _mapRoot.anchorMin = new Vector2(0.5f, 0.5f);
+                _mapRoot.anchorMax = new Vector2(0.5f, 0.5f);
+                _mapRoot.pivot = new Vector2(0.5f, 0.5f);
+                _mapRoot.sizeDelta = Vector2.zero;
+            }
+
             _threatRoot = _contentRoot.Find("ThreatRoot") as RectTransform;
+            if (_threatRoot == null)
+            {
+                _threatRoot = CreateChild(_contentRoot, "ThreatRoot");
+                _threatRoot.anchorMin = new Vector2(0.5f, 0.5f);
+                _threatRoot.anchorMax = new Vector2(0.5f, 0.5f);
+                _threatRoot.pivot = new Vector2(0.5f, 0.5f);
+                _threatRoot.sizeDelta = Vector2.zero;
+                _threatRoot.SetAsLastSibling();
+            }
             _playerIcon = _mapClip.Find("PlayerIcon") as RectTransform;
             _beaconSector = _mapClip.Find("BeaconSector") as RectTransform;
             _overlayImage = transform.Find("FrameOverlay")?.GetComponent<Image>();
@@ -441,8 +474,13 @@ namespace HighSeas.V3
         {
             if (_fogRawImage == null) return;
             var discovery = V3DiscoverySystem.Instance;
-            if (discovery == null) return;
+            if (discovery == null)
+            {
+                _fogRawImage.enabled = false;
+                return;
+            }
 
+            _fogRawImage.enabled = true;
             var revision = discovery.ExplorationRevision;
             var settingsChanged = revision != _lastFogRevision
                                   || fogMaskResolution != _lastFogMaskResolution

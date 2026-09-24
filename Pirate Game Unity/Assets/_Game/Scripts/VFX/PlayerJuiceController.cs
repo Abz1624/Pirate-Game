@@ -10,8 +10,20 @@ namespace HighSeas.VFX
 
         Transform _wake;
 
+        public void DisableSeaFoamTrail()
+        {
+            if (_wake != null)
+            {
+                Destroy(_wake.gameObject);
+                _wake = null;
+            }
+        }
+
         void Start()
         {
+            if (HighSeas.World.EnvironmentalHazardsDisabled.Value)
+                return;
+
             if (settings == null)
                 settings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
 

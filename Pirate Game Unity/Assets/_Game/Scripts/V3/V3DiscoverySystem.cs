@@ -65,6 +65,8 @@ namespace HighSeas.V3
             _revealedChestIndices.Clear();
             _beaconState = BeaconRevealState.Hidden;
             ExplorationRevision = 0;
+            if (layout != null)
+                ExploreAround(layout.playerSpawn, DiscoveryRadius);
         }
 
         void Awake()
