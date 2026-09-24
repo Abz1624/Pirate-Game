@@ -40,7 +40,7 @@ namespace HighSeas.Editor
             AddToBuildSettingsIfMissing(TargetScene);
             Debug.Log(
                 "Weapon+Enemy playtest scene rebuilt from V3SaltwindRun.\n" +
-                "Play: [ ] weapons, ; ' enemies, P spawn, Shift+P Barnacle King, F1 help.");
+                "Play: [ ] six Saltwind weapons, ; ' enemies, P spawn, Shift+P Barnacle King, F1 help.");
         }
 
         public static void CreateOrUpdateSceneBatch() => CreateOrUpdateScene();

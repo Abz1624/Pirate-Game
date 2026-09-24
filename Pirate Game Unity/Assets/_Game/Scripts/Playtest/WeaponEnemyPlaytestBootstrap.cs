@@ -20,7 +20,7 @@ namespace HighSeas.Playtest
     /// Lightweight V3-style run boot for Test_WeaponEnemy (no Saltwind profile / POI pressure).
     /// Disables legacy <see cref="RunBootstrap"/> and <see cref="V3RunBootstrap"/> on the same object.
     /// </summary>
-    [DefaultExecutionOrder(-110)]
+    [DefaultExecutionOrder(-200)]
     public sealed class WeaponEnemyPlaytestBootstrap : MonoBehaviour
     {
         [SerializeField] GameDatabase database;
@@ -128,12 +128,12 @@ namespace HighSeas.Playtest
             if (player != null)
                 weapons?.BindOwner(player);
             weapons?.ApplyCombatExperiment(experimentProfile);
-            weapons?.Initialize(database, "swivel_guns");
+            weapons?.Initialize(database, V3WeaponPlaytestCatalog.DefaultStartingWeaponId);
 
             EnsureLevelSystem();
             LevelSystem.Instance?.ConfigureV3();
             LevelSystem.Instance?.ApplyCombatExperiment(experimentProfile);
-            LevelSystem.Instance?.PrepareForNewRun(database, "swivel_guns");
+            LevelSystem.Instance?.PrepareForNewRun(database, V3WeaponPlaytestCatalog.DefaultStartingWeaponId);
             LevelSystem.Instance?.SyncWeaponControllerFromOwnedLoadout(weapons);
 
             var spawner = FindFirstObjectByType<EncounterSpawner>();

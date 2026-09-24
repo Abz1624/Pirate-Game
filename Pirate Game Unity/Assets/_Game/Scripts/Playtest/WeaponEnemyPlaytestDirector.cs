@@ -17,7 +17,7 @@ namespace HighSeas.Playtest
     /// <summary>
     /// Weapon/enemy sandbox hotkeys. Run boot is handled by <see cref="WeaponEnemyPlaytestBootstrap"/>.
     /// </summary>
-    [DefaultExecutionOrder(-200)]
+    [DefaultExecutionOrder(-190)]
     public sealed class WeaponEnemyPlaytestDirector : MonoBehaviour
     {
         const string SceneName = "Test_WeaponEnemy";
@@ -98,8 +98,17 @@ namespace HighSeas.Playtest
                 yield break;
 
             var waitSeconds = 0f;
-            while (!WeaponEnemyPlaytestSession.Active && waitSeconds < 5f)
+            while (waitSeconds < 6f)
             {
+                if (WeaponEnemyPlaytestSession.Active)
+                {
+                    RefreshReferences();
+                    if (_weapons != null
+                        && _weapons.Weapons.Count > 0
+                        && _weapons.Weapons[0].def?.id == V3WeaponPlaytestCatalog.DefaultStartingWeaponId)
+                        break;
+                }
+
                 waitSeconds += Time.unscaledDeltaTime;
                 yield return null;
             }
@@ -108,12 +117,11 @@ namespace HighSeas.Playtest
             {
                 EnsurePlaytestBootstrap();
                 yield return null;
+                RefreshReferences();
             }
 
-            yield return null;
-            RefreshReferences();
             RebuildEnemyList();
-            EquipWeaponAtIndex(_weaponIndex);
+            EquipStartingWeapon(showToast: false);
             _ready = _enemyDefinitionIndices.Count > 0 && _weapons != null && _player != null;
             ShowStatus(
                 _ready
@@ -199,7 +207,17 @@ namespace HighSeas.Playtest
             EquipWeaponAtIndex(_weaponIndex);
         }
 
-        void EquipWeaponAtIndex(int index)
+        void EquipStartingWeapon(bool showToast = true) =>
+            EquipWeaponById(V3WeaponPlaytestCatalog.DefaultStartingWeaponId, showToast);
+
+        void EquipWeaponById(string weaponId, bool showToast = true)
+        {
+            var index = V3WeaponPlaytestCatalog.IndexOf(weaponId);
+            if (index < 0) index = 0;
+            EquipWeaponAtIndex(index, showToast);
+        }
+
+        void EquipWeaponAtIndex(int index, bool showToast = true)
         {
             var pool = V3WeaponPlaytestCatalog.All;
             if (pool.Length == 0 || _weapons == null) return;
@@ -216,9 +234,12 @@ namespace HighSeas.Playtest
 
             _levels?.SetPlaytestSoloWeapon(id);
             CombatExperimentContext.ShowAimVisuals = true;
-            ShowStatus(
-                $"Weapon [{_weaponIndex + 1}/{pool.Length}]\n{V3WeaponPlaytestCatalog.GetDisplayLabel(id)}",
-                3f);
+            if (showToast)
+            {
+                ShowStatus(
+                    $"Weapon [{_weaponIndex + 1}/{pool.Length}]\n{V3WeaponPlaytestCatalog.GetDisplayLabel(id)}",
+                    3f);
+            }
         }
 
         void CycleEnemy(int delta)
