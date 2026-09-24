@@ -905,7 +905,16 @@ namespace HighSeas.Enemies
             }
 
             if (def.id == "swordfish")
-                return TickSwordfishBehavior(ref e, chaseDir, dir, dist, dt, playerPos, playerVelocity);
+            {
+                var swordfishVel = TickSwordfishBehavior(ref e, chaseDir, dir, dist, dt, playerPos, playerVelocity);
+                var swordfishIntent = swordfishVel;
+                swordfishVel = ApplySeparation(agentIndex, swordfishVel, ref e, swordfishIntent);
+                var swordfishCap = e.moveSpeed * 1.5f;
+                if (swordfishVel.sqrMagnitude > e.moveSpeed * e.moveSpeed * 2.1f)
+                    swordfishCap = e.moveSpeed * 2.6f;
+                e.velocity = Vector3.ClampMagnitude(swordfishVel, swordfishCap);
+                return swordfishIntent;
+            }
 
             Vector3 behaviorVelocity;
 
