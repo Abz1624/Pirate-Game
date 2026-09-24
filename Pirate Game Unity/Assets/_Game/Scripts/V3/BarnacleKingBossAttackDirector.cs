@@ -3,6 +3,7 @@ using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Encounters;
 using HighSeas.Enemies;
+using HighSeas.Playtest;
 using HighSeas.Player;
 using UnityEngine;
 
@@ -59,7 +60,7 @@ namespace HighSeas.V3
 
         public void Tick(float dt)
         {
-            if (!StageBalanceProfileContext.IsActive) return;
+            if (!StageBalanceProfileContext.IsActive && !WeaponEnemyPlaytestSession.Active) return;
             if (RunManager.Instance == null || RunManager.Instance.IsPaused || RunManager.Instance.IsRunEnded)
                 return;
             if (_enemyWorld == null || _player == null) return;
@@ -82,8 +83,9 @@ namespace HighSeas.V3
                 BarnacleKingBossAttackLogic.BeginRun(ref _state);
             }
 
-            var enraged = boss.maxHp > 0f && boss.hp <= boss.maxHp * 0.6f;
-            BarnacleKingBossAttackLogic.SetEnraged(ref _state, enraged);
+            var hpRatio = boss.maxHp > 0f ? boss.hp / boss.maxHp : 1f;
+            BarnacleKingBossAttackLogic.SetEnraged(ref _state, hpRatio <= 0.3f);
+            BarnacleKingBossAttackLogic.ApplyHealthPhase(ref _state, hpRatio);
 
             var playerPos = _player.Position;
             var bossPos = boss.position;
@@ -132,7 +134,19 @@ namespace HighSeas.V3
                 case BarnacleKingAttackKind.MarkedBombardment:
                     ApplyMarkedBlast(boss);
                     break;
+                case BarnacleKingAttackKind.ShellSlam:
+                    ApplyShellSlam(boss);
+                    break;
             }
+        }
+
+        void ApplyShellSlam(in EnemyAgent boss)
+        {
+            var center = _state.MarkedPoint;
+            center.y = 0f;
+            if (BarnacleKingBossAttackLogic.IsPlayerInsideMarkedBlast(center, _player.Position, 5f))
+                _player.Damage?.TakeDamage(boss.damage * 1.35f, center, false);
+            SaltwindCombatEffects.PlayExplosion(center, 5f);
         }
 
         void FireSpread(in EnemyAgent boss, HostileProjectileWorld hostiles)
@@ -177,15 +191,18 @@ namespace HighSeas.V3
 
         void UpdateMarkedTelegraph()
         {
-            if (_state.Attack != BarnacleKingAttackKind.MarkedBombardment ||
-                _state.Phase != BarnacleKingBossPhase.Telegraph)
+            if (_state.Phase != BarnacleKingBossPhase.Telegraph
+                || (_state.Attack != BarnacleKingAttackKind.MarkedBombardment
+                    && _state.Attack != BarnacleKingAttackKind.ShellSlam))
             {
                 HideMarkedTelegraph();
                 return;
             }
 
             EnsureMarkedTelegraph();
-            var radius = BarnacleKingBossAttackLogic.MarkedBombardmentRadius;
+            var radius = _state.Attack == BarnacleKingAttackKind.ShellSlam
+                ? 5f
+                : BarnacleKingBossAttackLogic.MarkedBombardmentRadius;
             _markedTelegraph.transform.position = _state.MarkedPoint + Vector3.up * 0.08f;
             _markedTelegraph.transform.localScale = new Vector3(radius * 2f, 0.12f, radius * 2f);
             _markedTelegraph.SetActive(true);
@@ -229,6 +246,7 @@ namespace HighSeas.V3
             {
                 BarnacleKingAttackKind.AimedSpread => "Barnacle King — spread incoming",
                 BarnacleKingAttackKind.CommittedCharge => "Barnacle King — charge incoming",
+                BarnacleKingAttackKind.ShellSlam => "Barnacle King — shell slam",
                 _ => null
             };
             if (label != null)

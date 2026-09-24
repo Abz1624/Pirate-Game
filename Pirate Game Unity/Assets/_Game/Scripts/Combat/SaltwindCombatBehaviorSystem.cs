@@ -45,14 +45,14 @@ namespace HighSeas.Combat
             switch (profile.archetype)
             {
                 case SaltwindCombatArchetype.DeckhandDinghy:
-                    velocity = TickDeckhand(ref agent, state, dir, dist, dt);
+                    velocity = TickDeckhand(ref agent, state, dir, dist, dt, playerVelocity);
                     return true;
                 case SaltwindCombatArchetype.Shark:
                 case SaltwindCombatArchetype.DrownedPursuer:
                     velocity = TickShark(ref agent, state, dir, dist, playerPos, playerVelocity);
                     return true;
                 case SaltwindCombatArchetype.Swordfish:
-                    velocity = TickSwordfish(ref agent, state, profile, dir, dist, dt, playerPos);
+                    velocity = TickSwordfish(ref agent, state, profile, dir, dist, dt, playerPos, playerVelocity);
                     return true;
                 case SaltwindCombatArchetype.CutthroatSkiff:
                     velocity = TickCutthroatSkiff(ref agent, state, dir, dist, playerVelocity, dt);
@@ -61,7 +61,9 @@ namespace HighSeas.Combat
                 case SaltwindCombatArchetype.EliteHammerhead:
                 case SaltwindCombatArchetype.RammerRaft:
                 case SaltwindCombatArchetype.RamRaider:
-                    velocity = TickTelegraphedCharge(ref agent, state, profile, dir, dist, dt);
+                    if (def.id == "hammerhead" && agent.isElite)
+                        profile.eliteHammerheadSecondCharge = true;
+                    velocity = TickTelegraphedCharge(ref agent, state, profile, dir, dist, dt, playerPos, playerVelocity);
                     return true;
                 case SaltwindCombatArchetype.Cannonboat:
                 case SaltwindCombatArchetype.NeedleSloop:
@@ -73,13 +75,15 @@ namespace HighSeas.Combat
                     velocity = TickMantaOrbit(ref agent, state, profile, dir, dist, dt);
                     return true;
                 case SaltwindCombatArchetype.BombBoat:
-                    velocity = TickBombBoat(ref agent, state, dir, dist, dt);
+                    velocity = TickBombBoat(ref agent, state, dir, dist, dt, playerPos, playerVelocity);
                     return true;
                 case SaltwindCombatArchetype.PowderBarge:
                     velocity = dir * (agent.moveSpeed * 0.55f);
                     return true;
-                case SaltwindCombatArchetype.BoardingBarge:
                 case SaltwindCombatArchetype.RepairTender:
+                    velocity = TickRepairTenderApproach(world, agentIndex, ref agent, dir, dist, dt);
+                    return true;
+                case SaltwindCombatArchetype.BoardingBarge:
                 case SaltwindCombatArchetype.ShieldFrigate:
                 case SaltwindCombatArchetype.GunnerCog:
                     velocity = TickMaintainRange(ref agent, state, profile, dir, dist, playerVelocity, dt);
@@ -115,28 +119,42 @@ namespace HighSeas.Combat
 
             var state = SaltwindCombatAgentStateStore.GetOrCreate(agent.id, def.id);
             var dist = HorizontalDistance(agent.position, playerPos);
+            var playerVelocity = ResolvePlayerVelocity(playerDamage);
+
+            if (agent.attackCooldown > 0f)
+                agent.attackCooldown -= dt;
+
+            if (profile.archetype is SaltwindCombatArchetype.BoardingBarge
+                or SaltwindCombatArchetype.NetCutter
+                or SaltwindCombatArchetype.PowderBarge
+                or SaltwindCombatArchetype.RepairTender
+                or SaltwindCombatArchetype.GunnerCog
+                or SaltwindCombatArchetype.ShieldFrigate
+                or SaltwindCombatArchetype.BombKetch
+                or SaltwindCombatArchetype.NeedleSloop)
+            {
+                SaltwindSpecialistCombat.Tick(
+                    world, agentIndex, ref agent, def, profile, state, dt, playerPos, playerVelocity, dist, playerDamage);
+                return;
+            }
 
             switch (profile.archetype)
             {
                 case SaltwindCombatArchetype.Cannonboat:
-                case SaltwindCombatArchetype.NeedleSloop:
                     TrySingleProjectileAttack(world, ref agent, def, profile, state, playerPos, dist, playerDamage);
                     break;
                 case SaltwindCombatArchetype.MantaRay:
-                    TrySpreadVolley(world, ref agent, def, profile, state, playerPos, dist, playerDamage);
+                    TrySpreadVolley(world, ref agent, def, profile, state, playerPos, dist, dt, playerDamage);
                     break;
                 case SaltwindCombatArchetype.BombBoat:
                     TickBombBoatDetonation(world, ref agent, def, state, playerPos, dist, playerDamage);
-                    break;
-                case SaltwindCombatArchetype.BombKetch:
-                    TickBombKetchMortar(world, ref agent, def, profile, state, playerPos, dist, playerDamage);
                     break;
                 case SaltwindCombatArchetype.KrakenSpawn:
                 case SaltwindCombatArchetype.EliteKrakenSpawn:
                     TickKrakenMarks(world, ref agent, def, profile, state, playerPos, dt, playerDamage);
                     break;
                 case SaltwindCombatArchetype.DrownedHarrier:
-                    TryBurstCrossingShot(world, ref agent, def, profile, state, playerPos, playerVelocity: ResolvePlayerVelocity(playerDamage), dist, playerDamage);
+                    TryBurstCrossingShot(world, ref agent, def, profile, state, playerPos, playerVelocity, dist, dt, playerDamage);
                     break;
             }
         }
@@ -155,8 +173,16 @@ namespace HighSeas.Combat
             return Vector3.Distance(a, b);
         }
 
-        static Vector3 TickDeckhand(ref EnemyAgent agent, SaltwindCombatAgentState state, Vector3 dir, float dist, float dt)
+        static Vector3 TickDeckhand(
+            ref EnemyAgent agent,
+            SaltwindCombatAgentState state,
+            Vector3 dir,
+            float dist,
+            float dt,
+            Vector3 playerVelocity)
         {
+            state.contactDisabled = state.phase == EnemyCombatPhase.Recover;
+
             if (state.phase == EnemyCombatPhase.Recover)
             {
                 state.phaseTimer -= dt;
@@ -172,8 +198,12 @@ namespace HighSeas.Combat
                 return -dir * (agent.moveSpeed * 0.9f);
             }
 
-            var wobble = Vector3.Cross(Vector3.up, dir) * Mathf.Sin(agent.id * 0.7f + Time.time * 2.2f) * 0.22f;
-            return (dir + wobble).normalized * (agent.moveSpeed * 1.05f);
+            playerVelocity.y = 0f;
+            var ringBias = Vector3.Cross(Vector3.up, dir) * Mathf.Sin(agent.id * 1.1f + agent.id * 0.17f) * 0.38f;
+            var wobble = Vector3.Cross(Vector3.up, dir) * Mathf.Sin(agent.id * 0.7f + Time.time * 2.2f) * 0.18f;
+            var approach = (dir + ringBias + wobble).normalized;
+            var speedMult = dist > 10f ? 1.02f : dist > 5f ? 1.12f : 1.22f;
+            return approach * (agent.moveSpeed * speedMult);
         }
 
         static Vector3 TickShark(
@@ -209,6 +239,71 @@ namespace HighSeas.Combat
             return dir * speed;
         }
 
+        static Vector3 SteerSwordfishAim(
+            Vector3 from,
+            Vector3 playerPos,
+            Vector3 playerVelocity,
+            Vector3 currentAim,
+            float maxTurnDegPerSec,
+            float dt,
+            float velocityLeadSeconds)
+        {
+            playerVelocity.y = 0f;
+            var target = playerPos + playerVelocity * velocityLeadSeconds;
+            var desired = target - from;
+            desired.y = 0f;
+            if (desired.sqrMagnitude < 0.01f)
+                return currentAim.sqrMagnitude > 0.01f ? currentAim.normalized : Vector3.forward;
+            desired.Normalize();
+            if (currentAim.sqrMagnitude < 0.01f)
+                return desired;
+            var maxRad = maxTurnDegPerSec * Mathf.Deg2Rad * dt;
+            return Vector3.RotateTowards(currentAim.normalized, desired, maxRad, 0f);
+        }
+
+        const float SwordfishInstantLungeRadiusDefault = 5.5f;
+
+        static float ResolveSwordfishInstantLungeRadius(EnemyCombatProfile profile)
+        {
+            if (profile == null || profile.preferredRange <= 0f)
+                return SwordfishInstantLungeRadiusDefault;
+            return Mathf.Clamp(profile.preferredRange * 0.55f, 4.5f, 7f);
+        }
+
+        static float ResolveSwordfishDashDuration(EnemyCombatProfile profile) =>
+            profile != null && profile.chargeDuration > 0f ? profile.chargeDuration : 0.65f;
+
+        static void BeginSwordfishExecute(
+            ref EnemyAgent agent,
+            SaltwindCombatAgentState state,
+            EnemyCombatProfile profile,
+            Vector3 playerPos,
+            Vector3 playerVelocity,
+            Vector3 fallbackDir)
+        {
+            state.phase = EnemyCombatPhase.Execute;
+            state.phaseTimer = ResolveSwordfishDashDuration(profile);
+            state.contactDisabled = false;
+            agent.chargeTimer = state.phaseTimer;
+            state.committedDirection = SteerSwordfishAim(
+                agent.position, playerPos, playerVelocity, fallbackDir, 720f, 0.016f, 0.1f);
+        }
+
+        static bool TryTriggerSwordfishInstantLunge(
+            ref EnemyAgent agent,
+            SaltwindCombatAgentState state,
+            EnemyCombatProfile profile,
+            float dist,
+            Vector3 playerPos,
+            Vector3 playerVelocity,
+            Vector3 fallbackDir)
+        {
+            if (dist > ResolveSwordfishInstantLungeRadius(profile)) return false;
+            if (state.phase is EnemyCombatPhase.Execute or EnemyCombatPhase.Recover) return false;
+            BeginSwordfishExecute(ref agent, state, profile, playerPos, playerVelocity, fallbackDir);
+            return true;
+        }
+
         static Vector3 TickSwordfish(
             ref EnemyAgent agent,
             SaltwindCombatAgentState state,
@@ -216,49 +311,75 @@ namespace HighSeas.Combat
             Vector3 dir,
             float dist,
             float dt,
-            Vector3 playerPos)
+            Vector3 playerPos,
+            Vector3 playerVelocity)
         {
             const float hoverRange = 10f;
+            const float dashSpeed = 12f;
+            const float telegraphSeconds = 0.85f;
+
+            if (TryTriggerSwordfishInstantLunge(
+                    ref agent, state, profile, dist, playerPos, playerVelocity, dir))
+                return state.committedDirection * dashSpeed;
+
             switch (state.phase)
             {
                 case EnemyCombatPhase.Telegraph:
                     state.phaseTimer -= dt;
+                    state.contactDisabled = true;
+                    state.committedDirection = SteerSwordfishAim(
+                        agent.position, playerPos, playerVelocity, state.committedDirection, 48f, dt, 0.12f);
                     if (state.phaseTimer <= 0f)
-                    {
-                        state.phase = EnemyCombatPhase.Execute;
-                        state.phaseTimer = profile.chargeDuration;
-                        state.committedDirection = state.committedDirection.sqrMagnitude > 0.01f
-                            ? state.committedDirection
-                            : dir;
-                    }
-                    return Vector3.zero;
+                        BeginSwordfishExecute(ref agent, state, profile, playerPos, playerVelocity, state.committedDirection);
+
+                    var creep = state.committedDirection * (agent.moveSpeed * 0.42f);
+                    var strafe = Vector3.Cross(Vector3.up, state.committedDirection) * (agent.moveSpeed * 0.22f * state.orbitSign);
+                    return creep + strafe;
                 case EnemyCombatPhase.Execute:
                     state.phaseTimer -= dt;
+                    state.contactDisabled = false;
+                    agent.chargeTimer = Mathf.Max(0f, state.phaseTimer);
+                    state.committedDirection = SteerSwordfishAim(
+                        agent.position, playerPos, playerVelocity, state.committedDirection, 26f, dt, 0.08f);
                     if (state.phaseTimer <= 0f)
                     {
                         state.phase = EnemyCombatPhase.Recover;
                         state.phaseTimer = 1.2f;
+                        agent.chargeTimer = 0f;
                     }
-                    return state.committedDirection * (agent.moveSpeed * profile.chargeSpeedMult);
+                    return state.committedDirection * dashSpeed;
                 case EnemyCombatPhase.Recover:
                     state.phaseTimer -= dt;
+                    state.contactDisabled = true;
                     if (state.phaseTimer <= 0f)
                         state.phase = EnemyCombatPhase.Approach;
-                    return -state.committedDirection * (agent.moveSpeed * 0.7f);
+                    return -state.committedDirection * (agent.moveSpeed * 0.85f);
                 default:
-                    if (dist > hoverRange + 2f)
-                        return dir * (agent.moveSpeed * 0.95f);
-                    if (dist <= hoverRange + 0.5f && state.phase == EnemyCombatPhase.Approach)
+                    state.contactDisabled = false;
+                    if (dist > hoverRange + 1f)
                     {
-                        state.phase = EnemyCombatPhase.Telegraph;
-                        state.phaseTimer = profile.chargeWindUp;
-                        state.committedDirection = dir;
-                        var tangent = Vector3.Cross(Vector3.up, dir) * state.orbitSign;
-                        return tangent * (agent.moveSpeed * 0.35f);
+                        state.committedDirection = SteerSwordfishAim(
+                            agent.position, playerPos, playerVelocity, dir, 90f, dt, 0.1f);
+                        return state.committedDirection * (agent.moveSpeed * 1.1f);
                     }
 
-                    var orbit = Vector3.Cross(Vector3.up, dir) * state.orbitSign;
-                    return orbit * (agent.moveSpeed * 0.55f);
+                    if (dist <= hoverRange + 1.5f)
+                    {
+                        if (state.phase == EnemyCombatPhase.Approach)
+                        {
+                            state.phase = EnemyCombatPhase.Telegraph;
+                            state.phaseTimer = telegraphSeconds;
+                            state.committedDirection = SteerSwordfishAim(
+                                agent.position, playerPos, playerVelocity, dir, 180f, dt, 0.12f);
+                        }
+
+                        state.committedDirection = SteerSwordfishAim(
+                            agent.position, playerPos, playerVelocity, state.committedDirection, 55f, dt, 0.1f);
+                        var tangent = Vector3.Cross(Vector3.up, state.committedDirection) * state.orbitSign;
+                        return (state.committedDirection * 0.35f + tangent * 0.65f).normalized * (agent.moveSpeed * 0.55f);
+                    }
+
+                    return dir * (agent.moveSpeed * 0.85f);
             }
         }
 
@@ -299,26 +420,25 @@ namespace HighSeas.Combat
                         state.phase = EnemyCombatPhase.Approach;
                     return (rear + Vector3.Cross(Vector3.up, rear) * state.orbitSign).normalized * (agent.moveSpeed * 1.1f);
                 default:
-                    if (dist > 14f)
-                    {
-                        var flankTarget = agent.position + rear * 8f + Vector3.Cross(Vector3.up, rear) * state.orbitSign * 6f;
-                        var toFlank = flankTarget - agent.position;
-                        toFlank.y = 0f;
-                        if (toFlank.sqrMagnitude > 0.01f)
-                            return toFlank.normalized * (agent.moveSpeed * 0.9f);
-                    }
+                {
+                    var flankTarget = playerVelocity.sqrMagnitude > 0.25f
+                        ? playerVelocity.normalized * -7f + Vector3.Cross(Vector3.up, playerVelocity.normalized) * state.orbitSign * 5f
+                        : rear * 6f + Vector3.Cross(Vector3.up, dir) * state.orbitSign * 5f;
+                    var toFlank = flankTarget;
+                    toFlank.y = 0f;
+                    if (toFlank.sqrMagnitude > 0.01f && dist > 12f)
+                        return toFlank.normalized * (agent.moveSpeed * 1f);
 
-                    if (dist < 11f && state.phase == EnemyCombatPhase.Approach)
+                    if (dist < 13f && state.phase == EnemyCombatPhase.Approach)
                     {
                         state.phase = EnemyCombatPhase.Telegraph;
                         state.phaseTimer = 0.8f;
-                        state.committedDirection = Vector3.Cross(Vector3.up, dir) * state.orbitSign;
-                        if (state.committedDirection.sqrMagnitude < 0.01f)
-                            state.committedDirection = dir;
-                        state.committedDirection.Normalize();
+                        var cross = Vector3.Cross(Vector3.up, playerVelocity.sqrMagnitude > 0.2f ? playerVelocity.normalized : dir);
+                        state.committedDirection = (cross * state.orbitSign).normalized;
                     }
 
-                    return dir * (agent.moveSpeed * 0.75f);
+                    return dir * (agent.moveSpeed * 0.8f);
+                }
             }
         }
 
@@ -328,7 +448,9 @@ namespace HighSeas.Combat
             EnemyCombatProfile profile,
             Vector3 dir,
             float dist,
-            float dt)
+            float dt,
+            Vector3 playerPos,
+            Vector3 playerVelocity)
         {
             switch (state.phase)
             {
@@ -339,14 +461,21 @@ namespace HighSeas.Combat
                     {
                         state.phase = EnemyCombatPhase.Execute;
                         state.phaseTimer = profile.chargeDuration;
-                        state.committedDirection = dir;
+                        state.committedDirection = PredictChargeDirection(agent.position, playerPos, playerVelocity, profile);
                         state.attackId++;
                         SaltwindCombatEncounterBudget.TryReserveCharge(state.attackId);
                     }
+                    else if (state.committedDirection.sqrMagnitude < 0.01f)
+                    {
+                        state.committedDirection = PredictChargeDirection(agent.position, playerPos, playerVelocity, profile);
+                    }
+
                     return Vector3.zero;
                 case EnemyCombatPhase.Execute:
                     state.phaseTimer -= dt;
-                    var speed = agent.moveSpeed * profile.chargeSpeedMult;
+                    var speed = profile.archetype is SaltwindCombatArchetype.Hammerhead or SaltwindCombatArchetype.EliteHammerhead
+                        ? Mathf.Max(agent.moveSpeed * profile.chargeSpeedMult, 11f)
+                        : agent.moveSpeed * profile.chargeSpeedMult;
                     var vel = state.committedDirection * speed;
                     if (IslandObstacles.IsAvailable)
                     {
@@ -401,15 +530,34 @@ namespace HighSeas.Combat
                     }
                     return Vector3.zero;
                 default:
-                    if (dist < profile.preferredRange + 4f)
+                {
+                    var engageDist = profile.archetype == SaltwindCombatArchetype.Hammerhead ? 22f : profile.preferredRange + 6f;
+                    if (dist < engageDist)
                     {
                         state.phase = EnemyCombatPhase.Telegraph;
                         state.phaseTimer = Mathf.Max(profile.chargeWindUp, SaltwindCombatEncounterBudget.MinChargeWarning);
-                        state.committedDirection = dir;
+                        state.committedDirection = PredictChargeDirection(agent.position, playerPos, playerVelocity, profile);
                     }
 
-                    return dir * (agent.moveSpeed * (profile.archetype == SaltwindCombatArchetype.RammerRaft ? 0.55f : 0.75f));
+                    var approachMult = profile.archetype == SaltwindCombatArchetype.Hammerhead ? 1.05f
+                        : profile.archetype == SaltwindCombatArchetype.RammerRaft ? 0.55f
+                        : 0.85f;
+                    return dir * (agent.moveSpeed * approachMult);
+                }
             }
+        }
+
+        static Vector3 PredictChargeDirection(Vector3 from, Vector3 playerPos, Vector3 playerVelocity, EnemyCombatProfile profile)
+        {
+            playerVelocity.y = 0f;
+            var lead = profile.archetype == SaltwindCombatArchetype.RamRaider ? 1.15f : 0.55f;
+            var predicted = playerPos + playerVelocity * lead;
+            var to = predicted - from;
+            to.y = 0f;
+            if (to.sqrMagnitude < 0.01f)
+                to = playerPos - from;
+            to.y = 0f;
+            return to.sqrMagnitude > 0.01f ? to.normalized : Vector3.forward;
         }
 
         static Vector3 TickMaintainRange(
@@ -475,24 +623,86 @@ namespace HighSeas.Combat
             return tangent * (agent.moveSpeed * 0.9f);
         }
 
-        static Vector3 TickBombBoat(ref EnemyAgent agent, SaltwindCombatAgentState state, Vector3 dir, float dist, float dt)
+        static Vector3 TickBombBoat(
+            ref EnemyAgent agent,
+            SaltwindCombatAgentState state,
+            Vector3 dir,
+            float dist,
+            float dt,
+            Vector3 playerPos,
+            Vector3 playerVelocity)
         {
+            if (state.phase == EnemyCombatPhase.Execute)
+            {
+                state.phaseTimer -= dt;
+                return state.committedDirection * 14f;
+            }
+
             if (state.phase == EnemyCombatPhase.Telegraph)
             {
                 state.phaseTimer -= dt;
                 if (state.phaseTimer <= 0f)
-                    state.phaseTimer = 0f;
+                {
+                    state.phase = EnemyCombatPhase.Execute;
+                    state.phaseTimer = 2.5f;
+                }
                 return Vector3.zero;
             }
 
-            if (dist <= 4f && state.phase != EnemyCombatPhase.Telegraph)
+            if (dist <= 5f)
             {
                 state.phase = EnemyCombatPhase.Telegraph;
-                state.phaseTimer = 1.2f;
+                state.phaseTimer = 0.35f;
+                playerVelocity.y = 0f;
+                state.committedPosition = playerPos + playerVelocity * 0.25f;
+                state.committedDirection = (state.committedPosition - agent.position).normalized;
+                if (state.committedDirection.sqrMagnitude < 0.01f)
+                    state.committedDirection = dir;
                 return Vector3.zero;
             }
 
-            return dir * (agent.moveSpeed * 1.35f);
+            return dir * (agent.moveSpeed * 1.5f);
+        }
+
+        static Vector3 TickRepairTenderApproach(
+            EnemyWorld world,
+            int selfIndex,
+            ref EnemyAgent agent,
+            Vector3 dir,
+            float dist,
+            float dt)
+        {
+            var agents = world.Agents;
+            var bestIndex = -1;
+            var bestMissing = 0f;
+            for (var i = 0; i < agents.Length; i++)
+            {
+                if (i == selfIndex || !agents[i].active) continue;
+                var ally = agents[i];
+                if (ally.maxHp <= 0f) continue;
+                var allyDef = world.Definitions[ally.definitionIndex];
+                if (allyDef == null || allyDef.isBoss || allyDef.isMiniboss) continue;
+                if (allyDef.id == "repair_tender") continue;
+                var missing = ally.maxHp - ally.hp;
+                if (missing < ally.maxHp * 0.04f) continue;
+                if (Vector3.Distance(ally.position, agent.position) > 20f) continue;
+                if (missing <= bestMissing) continue;
+                bestMissing = missing;
+                bestIndex = i;
+            }
+
+            if (bestIndex >= 0)
+            {
+                var toAlly = agents[bestIndex].position - agent.position;
+                toAlly.y = 0f;
+                if (toAlly.sqrMagnitude > 9f)
+                    return toAlly.normalized * (agent.moveSpeed * 0.75f);
+                return (-dir * 0.35f + toAlly.normalized * 0.25f).normalized * (agent.moveSpeed * 0.4f);
+            }
+
+            if (dist < 14f)
+                return (-dir).normalized * (agent.moveSpeed * 0.55f);
+            return dir * (agent.moveSpeed * 0.35f);
         }
 
         static Vector3 TickNetCutterRoute(
@@ -576,7 +786,7 @@ namespace HighSeas.Combat
         {
             if (agent.attackCooldown > 0f) return;
             var preferred = profile.attackRange > 0f ? profile.attackRange : profile.preferredRange;
-            if (dist < preferred * 0.7f || dist > preferred * 1.25f) return;
+            if (dist < preferred * 0.5f || dist > preferred * 1.55f) return;
             if (!SaltwindCombatEncounterBudget.TryReserveRanged(state.attackId)) return;
 
             var hostiles = HostileProjectileWorld.Instance;
@@ -602,11 +812,12 @@ namespace HighSeas.Combat
             SaltwindCombatAgentState state,
             Vector3 playerPos,
             float dist,
+            float dt,
             DamageReceiver playerDamage)
         {
             if (state.phase == EnemyCombatPhase.Telegraph)
             {
-                state.phaseTimer -= Time.deltaTime;
+                state.phaseTimer -= dt;
                 if (state.phaseTimer <= 0f)
                 {
                     FireFan(agent, def, profile, playerPos);
@@ -619,7 +830,7 @@ namespace HighSeas.Combat
 
             if (state.phase == EnemyCombatPhase.Recover)
             {
-                state.phaseTimer -= Time.deltaTime;
+                state.phaseTimer -= dt;
                 if (state.phaseTimer <= 0f)
                     state.phase = EnemyCombatPhase.Approach;
                 return;
@@ -662,33 +873,33 @@ namespace HighSeas.Combat
             float dist,
             DamageReceiver playerDamage)
         {
+            const float blastRadius = 3f;
+            if (state.phase == EnemyCombatPhase.Execute)
+            {
+                if (dist <= blastRadius + 1.5f)
+                    ExplodeBombBoat(world, ref agent, playerPos, playerDamage, blastRadius);
+                else if (state.phaseTimer <= 0f)
+                    ExplodeBombBoat(world, ref agent, playerPos, playerDamage, blastRadius);
+                return;
+            }
+
             if (state.phase != EnemyCombatPhase.Telegraph) return;
             if (state.phaseTimer > 0f) return;
-            var blastRadius = 3f;
+            state.phase = EnemyCombatPhase.Execute;
+            state.phaseTimer = 2f;
+        }
+
+        static void ExplodeBombBoat(
+            EnemyWorld world,
+            ref EnemyAgent agent,
+            Vector3 playerPos,
+            DamageReceiver playerDamage,
+            float blastRadius)
+        {
+            SaltwindCombatEffects.PlayExplosion(agent.position, blastRadius);
             if (HorizontalDistance(agent.position, playerPos) <= blastRadius && playerDamage != null)
                 playerDamage.TakeDamage(agent.damage * 1.4f, agent.position, false);
             world.DespawnByUnitId(agent.id);
-        }
-
-        static void TickBombKetchMortar(
-            EnemyWorld world,
-            ref EnemyAgent agent,
-            EnemyDefinition def,
-            EnemyCombatProfile profile,
-            SaltwindCombatAgentState state,
-            Vector3 playerPos,
-            float dist,
-            DamageReceiver playerDamage)
-        {
-            if (agent.attackCooldown > 0f) return;
-            if (dist < profile.preferredRange - 4f || dist > profile.preferredRange + 4f) return;
-            if (!SaltwindCombatEncounterBudget.TryReserveAreaDenial(state.attackId)) return;
-
-            state.committedPosition = playerPos + ResolvePlayerVelocity(playerDamage) * 0.65f;
-            state.phase = EnemyCombatPhase.Telegraph;
-            state.phaseTimer = 1.2f;
-            agent.attackCooldown = profile.attackCooldown;
-            state.attackId++;
         }
 
         static void TickKrakenMarks(
@@ -701,11 +912,7 @@ namespace HighSeas.Combat
             float dt,
             DamageReceiver playerDamage)
         {
-            if (agent.attackCooldown > 0f)
-            {
-                agent.attackCooldown -= dt;
-                return;
-            }
+            if (agent.attackCooldown > 0f) return;
 
             if (!SaltwindCombatEncounterBudget.TryReserveAreaDenial(state.attackId)) return;
             agent.attackCooldown = profile.attackCooldown;
@@ -733,6 +940,7 @@ namespace HighSeas.Combat
             Vector3 playerPos,
             Vector3 playerVelocity,
             float dist,
+            float dt,
             DamageReceiver playerDamage)
         {
             if (agent.attackCooldown > 0f) return;
@@ -746,7 +954,7 @@ namespace HighSeas.Combat
                 return;
             }
 
-            state.phaseTimer -= Time.deltaTime;
+            state.phaseTimer -= dt;
             if (state.phaseTimer > 0f) return;
 
             var hostiles = HostileProjectileWorld.Instance;

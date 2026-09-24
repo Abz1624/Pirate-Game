@@ -437,6 +437,12 @@ namespace HighSeas.POI
             return V3Economy.GetChestPrice(_paidChestCount);
         }
 
+        public bool CanAffordSalvageChest()
+        {
+            var rm = RunManager.Instance;
+            return rm != null && rm.Gold >= GetSalvageChestQuotePrice();
+        }
+
         public string GetSalvageChestPromptLabel() =>
             $"Open Salvage Chest — {GetSalvageChestQuotePrice()} gold";
 

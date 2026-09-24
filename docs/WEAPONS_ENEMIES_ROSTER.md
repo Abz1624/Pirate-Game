@@ -49,7 +49,7 @@ All spawning is driven by **`EncounterSpawnSchedule`** + **`SaltwindAmbientCompo
 
 | | **V3SaltwindRun** | **Test_WeaponEnemy** |
 |--|-------------------|----------------------|
-| Spawns | Automatic schedule + composition | Manual **`P`** only (`EncounterSpawner` manual mode) |
+| Spawns | Automatic schedule + composition | **`P`** cycle enemy · **`Ctrl+P`** `reef_crab_miniboss` · **`Shift+P`** `barnacle_king` |
 | Weapons | Start **`swivel_guns`**; grow via level-ups within **6** starters (6 slots) | **`[` / `]`** cycles the same **6** (`V3WeaponPlaytestCatalog`) |
 | Enemies | Full timeline above | **`;` / `'`** cycles 20 ids (Saltwind first-seen order) |
 
@@ -75,10 +75,10 @@ Default equipped weapon in **`Test_WeaponEnemy`** and **V3SaltwindRun**: **`swiv
 | # | id | Asset? | Pattern / targeting (effective) | Role |
 |---|-----|--------|----------------------------------|------|
 | 1 | `deck_cannons` | Yes | AutoProjectile · ForwardArc 120° · 22m | Forward gunnery |
-| 2 | `broadside_battery` | Yes | FanVolley · PortStarboard 50° · 14m | Side volleys |
+| 2 | `broadside_battery` | Yes | FanVolley · **PortStarboard only** (no bow/stern) · 14m | Side volleys |
 | 3 | `powder_kegs` | Yes | MineDrop · AftDeploy · 12m | Rear mines |
 | 4 | `flying_cutlasses` | Yes | Orbit · AreaAroundShip 360° · 6m | Orbit melee |
-| 5 | `long_nine` | **Runtime** | AutoProjectile · ForwardArc 40° · 24m | Precision sniper |
+| 5 | `long_nine` | **Runtime** | AutoProjectile · **ForwardArc 40° only** (highest-HP in cone) · 24m | Precision sniper — no rear/side shots |
 | 6 | `swivel_guns` | **Runtime** | AutoProjectile · Nearest 360° · 16m | Default starter / omni poke |
 
 ### Authored weapon assets not in the 6 (`Data/Weapons/`)
@@ -125,7 +125,29 @@ These exist in **`GameDatabase`** and are unlocked via **Marks**, not `starterWe
 - **`swordfish`** — `TickSwordfishBehavior`: cruise orbit → spring lunge in range → retreat → cooldown (always sets velocity; required for manual spawn).
 - **`shark`** — `TickSharkBehavior`: intercept / lead targeting.
 - **`reef_crab_miniboss`** — `ReefCrabMinibossBehavior` + telegraphed charge pattern.
-- **`barnacle_king`** — Boss slot + `BarnacleKingBossAttackDirector` attacks.
+- **`barnacle_king`** — Boss slot + `BarnacleKingBossAttackDirector` (HP phases **>65% / 35–65% / ≤30%** scripted rotation: spread, shell slam, charge, marked bombard).
+
+**Saltwind combat v3 (`SaltwindCombatBehaviorSystem` + `SaltwindSpecialistCombat`)** when `SaltwindCombatFeature` is on:
+
+| id | Player-facing role |
+|----|---------------------|
+| `swordfish` | Close to ~10m → short telegraph → **guided dash** (limited turn rate) → retreat |
+| `deckhand_dinghy` | **Fodder rammer**: wobbly swarm approach, **hull contact damage**, 0.8s recoil, repeat (no guns) |
+| `cutthroat_skiff` | Rear-quarter pass → crossing strike → reposition (not a straight chase) |
+| `cannonboat` | Orbit at range, single shots while in band |
+| `needle_sloop` | Long-range sniper; flees if you close inside ~8m |
+| `ram_raider` / `rammer_raft` | Telegraph charge with **lead prediction** |
+| `hammerhead` / elite | Charge; elite gets **second charge** before recover |
+| `manta_ray` | Orbit + repeating spread volleys |
+| `bomb_boat` | Telegraph → missile rush → explode on hull or timeout (VFX) |
+| `bomb_ketch` | Mortar marks at **predicted** player position |
+| `boarding_barge` | Mid-range telegraph → **slow + chip damage** on connect |
+| `net_cutter` | Flank route → **net segment** ahead of movement |
+| `powder_barge` | Chase while dropping **proximity mines** |
+| `repair_tender` | Escorts wounded allies (heal pulse in range) |
+| `gunner_cog` | Formation stagger → 3-shot burst at player |
+| `shield_frigate` | Mid-range intercept shot (ally cover) |
+| `kraken_spawn` / `elite_kraken_spawn` | Anchor + circle traps; elite fires **3 sequential** marks |
 
 ---
 

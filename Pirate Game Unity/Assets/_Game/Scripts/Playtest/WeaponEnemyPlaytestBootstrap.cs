@@ -157,6 +157,9 @@ namespace HighSeas.Playtest
             RunManager.Instance.EnterPlaying();
 
             WeaponTargetingVisualizer.Ensure();
+
+            if (player != null && enemyWorld != null)
+                BarnacleKingBossAttackDirector.Ensure(enemyWorld, player).ResetForRun();
         }
 
         void Update()
@@ -167,7 +170,10 @@ namespace HighSeas.Playtest
 
             var dt = Time.deltaTime;
             var playerPos = player != null ? player.Position : Vector3.zero;
-            FindFirstObjectByType<EnemyWorld>()?.Tick(dt, playerPos, player?.Damage);
+            var enemyWorld = FindFirstObjectByType<EnemyWorld>();
+            enemyWorld?.Tick(dt, playerPos, player?.Damage);
+            if (player != null && enemyWorld != null)
+                BarnacleKingBossAttackDirector.Ensure(enemyWorld, player).Tick(dt);
             FindFirstObjectByType<ProjectileWorld>()?.Tick(dt, FindFirstObjectByType<EnemyWorld>());
             FindFirstObjectByType<HostileProjectileWorld>()?.Tick(dt, player?.Damage);
             FindFirstObjectByType<PickupWorld>()?.Tick(dt, playerPos, RunManager.Instance.Stats.PickupRadius);

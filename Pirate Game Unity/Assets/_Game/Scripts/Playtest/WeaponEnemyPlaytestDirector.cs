@@ -163,8 +163,14 @@ namespace HighSeas.Playtest
 
             if (keyboard.pKey.wasPressedThisFrame)
             {
-                var bossesOnly = keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed;
-                SpawnSelectedEnemy(bossesOnly);
+                var shift = keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed;
+                var ctrl = keyboard.leftCtrlKey.isPressed || keyboard.rightCtrlKey.isPressed;
+                if (ctrl)
+                    SpawnEnemyById("reef_crab_miniboss");
+                else if (shift)
+                    SpawnEnemyById("barnacle_king");
+                else
+                    SpawnSelectedEnemy();
             }
 
             if (keyboard.leftBracketKey.wasPressedThisFrame)
@@ -273,7 +279,42 @@ namespace HighSeas.Playtest
                 : null;
         }
 
-        void SpawnSelectedEnemy(bool spawnBossFromDatabase)
+        void SpawnSelectedEnemy()
+        {
+            RefreshReferences();
+            RebuildEnemyList();
+            if (_enemyDefinitionIndices.Count == 0)
+            {
+                ShowStatus("No enemies in cycle.", 2.5f);
+                return;
+            }
+
+            var defIndex = _enemyDefinitionIndices[_enemyIndex];
+            var def = _enemyWorld.Definitions[defIndex];
+            SpawnEnemyAtIndex(defIndex, def);
+        }
+
+        void SpawnEnemyById(string enemyId)
+        {
+            RefreshReferences();
+            if (_enemyWorld == null || _player == null)
+            {
+                ShowStatus("Missing EnemyWorld or player.", 2.5f);
+                return;
+            }
+
+            var defIndex = ResolveDefinitionIndex(enemyId);
+            if (defIndex < 0)
+            {
+                ShowStatus($"{enemyId} not found in database.", 2.5f);
+                return;
+            }
+
+            var def = _enemyWorld.Definitions[defIndex];
+            SpawnEnemyAtIndex(defIndex, def);
+        }
+
+        void SpawnEnemyAtIndex(int defIndex, EnemyDefinition def)
         {
             RefreshReferences();
             RebuildEnemyList();
@@ -286,31 +327,6 @@ namespace HighSeas.Playtest
 
             if (clearEnemiesBeforeSpawn)
                 _enemyWorld.DespawnAllActive();
-
-            int defIndex;
-            EnemyDefinition def;
-            if (spawnBossFromDatabase)
-            {
-                defIndex = ResolveDefinitionIndex("barnacle_king");
-                if (defIndex < 0)
-                {
-                    ShowStatus("barnacle_king not found in database.", 2.5f);
-                    return;
-                }
-
-                def = _enemyWorld.Definitions[defIndex];
-            }
-            else
-            {
-                if (_enemyDefinitionIndices.Count == 0)
-                {
-                    ShowStatus("No enemies in cycle.", 2.5f);
-                    return;
-                }
-
-                defIndex = _enemyDefinitionIndices[_enemyIndex];
-                def = _enemyWorld.Definitions[defIndex];
-            }
 
             var center = _player.Position;
             center.y = 0f;
@@ -367,7 +383,7 @@ namespace HighSeas.Playtest
                 "Weapon + Enemy playtest (V3 ship/camera)\n" +
                 "[  ]  cycle weapon\n" +
                 ";  '  cycle enemy (no bosses by default)\n" +
-                "P  spawn one ahead of ship · Shift+P Barnacle King\n" +
+                "P  spawn cycle enemy · Ctrl+P Reef Crab · Shift+P Barnacle King\n" +
                 "\\  clear all spawned enemies · O / V aim overlays\n" +
                 "Hull damage disabled in this scene\n" +
                 "F1  help",
@@ -402,7 +418,7 @@ namespace HighSeas.Playtest
                 new Rect(22f, Screen.height - 122f, 420f, 72f),
                 $"PLAYTEST  ·  Weapon: {weaponLabel}\n" +
                 $"Enemy: {enemyLabel}\n" +
-                "[ ] weapon   ; ' enemy   P spawn   \\ clear   O aim   Shift+P king",
+                "[ ] weapon   ; ' enemy   P spawn   Ctrl+P crab   Shift+P king   \\ clear",
                 style);
 
             if (Time.unscaledTime <= _statusUntil && !string.IsNullOrEmpty(_statusMessage))

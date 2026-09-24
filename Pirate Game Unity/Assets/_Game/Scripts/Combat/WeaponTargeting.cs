@@ -42,7 +42,9 @@ namespace HighSeas.Combat
             {
                 case TargetingMode.ForwardArc:
                 case TargetingMode.TetherTarget:
-                    resolved = TryForwardArc(enemies, origin, forward, range, def, out targetIndex, out aimDirection);
+                    resolved = def != null && def.preferHighestHull
+                        ? TryForwardArcHighestHull(enemies, origin, forward, range, def, out targetIndex, out aimDirection)
+                        : TryForwardArc(enemies, origin, forward, range, def, out targetIndex, out aimDirection);
                     break;
                 case TargetingMode.ForwardCone:
                     resolved = TryForwardArc(enemies, origin, forward, range, def, out targetIndex, out aimDirection);
@@ -120,6 +122,42 @@ namespace HighSeas.Combat
             if (def.targetArcDegrees > 0f) return def.targetArcDegrees;
             if (def.fanSpreadDegrees > 0f) return def.fanSpreadDegrees;
             return 120f;
+        }
+
+        static bool TryForwardArcHighestHull(
+            EnemyWorld enemies,
+            Vector3 origin,
+            Vector3 forward,
+            float range,
+            WeaponDefinition def,
+            out int targetIndex,
+            out Vector3 aimDirection)
+        {
+            targetIndex = -1;
+            aimDirection = forward;
+            var arc = def.targetArcDegrees > 0f ? def.targetArcDegrees : 120f;
+            var bestHp = float.MinValue;
+            var bestDist = float.MaxValue;
+            var agents = enemies.Agents;
+            for (var i = 0; i < agents.Length; i++)
+            {
+                if (!agents[i].active) continue;
+                var delta = agents[i].position - origin;
+                delta.y = 0f;
+                var dist = delta.magnitude;
+                if (dist > range) continue;
+                if (!IsWithinForwardArc(origin, forward, agents[i].position, arc)) continue;
+                if (agents[i].hp > bestHp || (Mathf.Approximately(agents[i].hp, bestHp) && dist < bestDist))
+                {
+                    bestHp = agents[i].hp;
+                    bestDist = dist;
+                    targetIndex = i;
+                }
+            }
+
+            if (targetIndex < 0) return false;
+            aimDirection = (agents[targetIndex].position - origin).normalized;
+            return true;
         }
 
         static bool TryForwardArc(

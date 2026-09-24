@@ -1169,6 +1169,7 @@ namespace HighSeas.Enemies
             Vector3 playerVelocity)
         {
             const float springRange = 11f;
+            const float instantSpringRange = 5.5f;
             const float springDuration = 0.34f;
             const float retreatDuration = 0.55f;
             const float springRetriggerCooldown = 2f;
@@ -1205,6 +1206,12 @@ namespace HighSeas.Enemies
                 return (tangent * 0.62f + directDir * 0.18f).normalized * (agent.moveSpeed * cruiseMult);
             }
 
+            if (dist <= instantSpringRange && SwordfishLegacyReadyToSpring(agent, retreatDuration))
+            {
+                agent.chargeTimer = springDuration;
+                return directDir * (agent.moveSpeed * springSpeedMult);
+            }
+
             if (dist <= springRange)
             {
                 agent.chargeTimer = springDuration;
@@ -1213,6 +1220,13 @@ namespace HighSeas.Enemies
 
             var orbit = Vector3.Cross(Vector3.up, directDir) * ((agent.id & 1) == 0 ? 1f : -1f);
             return (orbit * 0.42f + directDir * 0.58f).normalized * (agent.moveSpeed * cruiseMult);
+        }
+
+        static bool SwordfishLegacyReadyToSpring(in EnemyAgent agent, float retreatDuration)
+        {
+            if (agent.chargeTimer > 0f) return false;
+            if (agent.chargeTimer < 0f && agent.chargeTimer > -retreatDuration) return false;
+            return true;
         }
 
         /// <summary>Spread melee swarms around the player instead of stacking in a rear conga line.</summary>
@@ -1485,6 +1499,16 @@ namespace HighSeas.Enemies
 
         public void SetBurnVisual(int index, bool burning) =>
             EnemyBurnFlash.SetBurning(index >= 0 && index < _agents.Length ? _agents[index].view : null, burning);
+
+        public void HealAgent(int index, float amount)
+        {
+            if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
+            var e = _agents[index];
+            e.hp = Mathf.Min(e.maxHp, e.hp + Mathf.Max(0f, amount));
+            _agents[index] = e;
+            var bar = e.healthBar != null ? e.healthBar.GetComponent<WorldHealthBar>() : null;
+            bar?.SetFill(e.hp / Mathf.Max(1f, e.maxHp));
+        }
 
         public void ApplyDamage(int index, float damage, bool isCrit, bool showHitFeedback = true, string weaponId = null)
         {

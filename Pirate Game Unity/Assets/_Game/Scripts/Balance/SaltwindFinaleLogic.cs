@@ -103,7 +103,8 @@ namespace HighSeas.Balance
         None,
         AimedSpread,
         CommittedCharge,
-        MarkedBombardment
+        MarkedBombardment,
+        ShellSlam
     }
 
     public enum BarnacleKingBossPhase
@@ -123,6 +124,10 @@ namespace HighSeas.Balance
         public bool Enraged;
         public BarnacleKingAttackKind QueuedFollowUp;
         public int PatternIndex;
+        public int ScriptPhase;
+        public int RotationStep;
+        public float PendingHpPhase;
+        public bool Phase3ChargePassPending;
     }
 
     public static class BarnacleKingBossAttackLogic
@@ -170,6 +175,18 @@ namespace HighSeas.Balance
         public static void SetEnraged(ref BarnacleKingAttackState state, bool enraged) =>
             state.Enraged = enraged;
 
+        public static void ApplyHealthPhase(ref BarnacleKingAttackState state, float hpRatio)
+        {
+            var target = hpRatio > 0.65f ? 1 : hpRatio > 0.3f ? 2 : 3;
+            if (target > state.ScriptPhase && state.Phase == BarnacleKingBossPhase.Recovery)
+            {
+                state.PendingHpPhase = target;
+                state.RotationStep = 0;
+            }
+            else if (state.ScriptPhase == 0)
+                state.ScriptPhase = 1;
+        }
+
         public static void Tick(
             ref BarnacleKingAttackState state,
             float dt,
@@ -185,6 +202,8 @@ namespace HighSeas.Balance
             switch (state.Phase)
             {
                 case BarnacleKingBossPhase.Recovery:
+                    if (state.PendingHpPhase > state.ScriptPhase)
+                        state.ScriptPhase = Mathf.RoundToInt(state.PendingHpPhase);
                     BeginTelegraph(ref state, PickNextAttack(ref state), bossPosition, playerPosition);
                     break;
                 case BarnacleKingBossPhase.Telegraph:
@@ -202,6 +221,30 @@ namespace HighSeas.Balance
             }
         }
 
+        static readonly BarnacleKingAttackKind[] Phase1 =
+        {
+            BarnacleKingAttackKind.AimedSpread,
+            BarnacleKingAttackKind.ShellSlam,
+            BarnacleKingAttackKind.AimedSpread,
+            BarnacleKingAttackKind.MarkedBombardment
+        };
+
+        static readonly BarnacleKingAttackKind[] Phase2 =
+        {
+            BarnacleKingAttackKind.AimedSpread,
+            BarnacleKingAttackKind.MarkedBombardment,
+            BarnacleKingAttackKind.CommittedCharge,
+            BarnacleKingAttackKind.ShellSlam
+        };
+
+        static readonly BarnacleKingAttackKind[] Phase3 =
+        {
+            BarnacleKingAttackKind.CommittedCharge,
+            BarnacleKingAttackKind.AimedSpread,
+            BarnacleKingAttackKind.MarkedBombardment,
+            BarnacleKingAttackKind.ShellSlam
+        };
+
         static BarnacleKingAttackKind PickNextAttack(ref BarnacleKingAttackState state)
         {
             if (state.QueuedFollowUp != BarnacleKingAttackKind.None)
@@ -211,19 +254,20 @@ namespace HighSeas.Balance
                 return follow;
             }
 
-            if (state.Enraged)
+            if (state.Phase3ChargePassPending)
             {
-                state.QueuedFollowUp = BarnacleKingAttackKind.MarkedBombardment;
-                return BarnacleKingAttackKind.AimedSpread;
+                state.Phase3ChargePassPending = false;
+                return BarnacleKingAttackKind.CommittedCharge;
             }
 
-            var roll = state.PatternIndex++ % 3;
-            return roll switch
-            {
-                0 => BarnacleKingAttackKind.AimedSpread,
-                1 => BarnacleKingAttackKind.CommittedCharge,
-                _ => BarnacleKingAttackKind.MarkedBombardment
-            };
+            var script = state.ScriptPhase <= 1 ? Phase1 : state.ScriptPhase == 2 ? Phase2 : Phase3;
+            var attack = script[state.RotationStep % script.Length];
+            state.RotationStep++;
+
+            if (state.ScriptPhase >= 3 && attack == BarnacleKingAttackKind.CommittedCharge)
+                state.Phase3ChargePassPending = true;
+
+            return attack;
         }
 
         static void BeginTelegraph(
@@ -239,6 +283,7 @@ namespace HighSeas.Balance
                 BarnacleKingAttackKind.AimedSpread => SpreadTelegraphSeconds,
                 BarnacleKingAttackKind.CommittedCharge => ChargeTelegraphSeconds,
                 BarnacleKingAttackKind.MarkedBombardment => BombardTelegraphSeconds,
+                BarnacleKingAttackKind.ShellSlam => SpreadTelegraphSeconds,
                 _ => 1f
             };
 
@@ -258,9 +303,11 @@ namespace HighSeas.Balance
                 BarnacleKingAttackKind.AimedSpread => SpreadRecoverySeconds,
                 BarnacleKingAttackKind.CommittedCharge => ChargeRecoverySeconds,
                 BarnacleKingAttackKind.MarkedBombardment => BombardRecoverySeconds,
+                BarnacleKingAttackKind.ShellSlam => SpreadRecoverySeconds,
                 _ => 1.5f
             };
-            if (state.Enraged)
+            if (state.Attack != BarnacleKingAttackKind.ShellSlam
+                && (state.Enraged || state.ScriptPhase >= 3))
                 recovery *= EnragedRecoveryScale;
             state.PhaseTimer = recovery;
             state.Attack = BarnacleKingAttackKind.None;

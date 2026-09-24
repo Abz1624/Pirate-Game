@@ -30,7 +30,8 @@ namespace HighSeas.Enemies
                 state = new SaltwindCombatAgentState
                 {
                     enemyId = enemyId,
-                    orbitSign = (unitId & 1) == 0 ? 1f : -1f
+                    orbitSign = (unitId & 1) == 0 ? 1f : -1f,
+                    phaseTimer = enemyId == "powder_barge" ? 2f : 0f
                 };
                 States[unitId] = state;
             }

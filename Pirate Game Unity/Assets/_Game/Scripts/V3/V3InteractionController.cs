@@ -74,9 +74,24 @@ namespace HighSeas.V3
 
         RectTransform _promptRect;
 
-        bool _promptUsesCenterAnchor;
+        RectTransform _promptTextRect;
+
+        enum PromptLayoutKind
+        {
+            BottomBar,
+            CenterCompact,
+            SalvageChestPopup
+        }
+
+        PromptLayoutKind _promptLayout = PromptLayoutKind.BottomBar;
 
         int _salvageChestDismissedIndex = -1;
+
+        int _salvageChestInsufficientFundsNotifiedIndex = -1;
+
+        bool _salvageChestPauseActive;
+
+        RunState _salvageChestResumeState = RunState.Playing;
 
 
 
@@ -163,6 +178,8 @@ namespace HighSeas.V3
             textRect.offsetMin = new Vector2(16f, 8f);
 
             textRect.offsetMax = new Vector2(-120f, -8f);
+
+            _promptTextRect = textRect;
 
             _promptText = textGo.AddComponent<TextMeshProUGUI>();
 
@@ -268,6 +285,8 @@ namespace HighSeas.V3
 
                 CancelHold();
 
+                EndSalvageChestChoicePause();
+
             }
 
         }
@@ -278,9 +297,25 @@ namespace HighSeas.V3
 
         {
 
-            if (RunManager.Instance != null && (RunManager.Instance.IsPaused || RunManager.Instance.IsRunEnded))
+            var run = RunManager.Instance;
+
+            if (run != null && run.IsRunEnded)
 
             {
+
+                EndSalvageChestChoicePause();
+
+                CancelHold();
+
+                return;
+
+            }
+
+            if (run != null && run.IsPaused && run.PauseReason != PauseReason.POIChoice)
+
+            {
+
+                _salvageChestPauseActive = false;
 
                 CancelHold();
 
@@ -295,6 +330,8 @@ namespace HighSeas.V3
             if (_target == null)
 
             {
+
+                EndSalvageChestChoicePause();
 
                 SetPromptVisible(false);
 
@@ -351,28 +388,62 @@ namespace HighSeas.V3
 
                 if (_target.ShowsSalvageChestPrice)
                 {
+                    if (!_target.CanInteract)
+                    {
+                        SetPromptVisible(false);
+                        EndSalvageChestChoicePause();
+                        return;
+                    }
+
                     if (!_target.IsPlayerInRange)
                     {
                         if (_salvageChestDismissedIndex == _target.Index)
                             _salvageChestDismissedIndex = -1;
+                        _salvageChestInsufficientFundsNotifiedIndex = -1;
                         SetPromptVisible(false);
+                        EndSalvageChestChoicePause();
                         return;
                     }
 
                     if (_salvageChestDismissedIndex == _target.Index)
                     {
                         SetPromptVisible(false);
+                        EndSalvageChestChoicePause();
                         return;
                     }
 
+                    if (!CanAffordSalvageChest())
+                    {
+                        SetPromptVisible(false);
+                        EndSalvageChestChoicePause();
+                        if (_salvageChestInsufficientFundsNotifiedIndex != _target.Index)
+                        {
+                            _salvageChestInsufficientFundsNotifiedIndex = _target.Index;
+                            var price = ResolveSalvageChestPrice();
+                            V3ToastHud.Instance?.Show($"Not enough funds — need {price} gold.", 2.5f);
+                        }
+
+                        return;
+                    }
+
+                    _salvageChestInsufficientFundsNotifiedIndex = -1;
+                    var chestPrice = ResolveSalvageChestPrice();
                     SetPromptVisible(true);
-                    _promptText.text = $"{label} — Take (E) / Skip (R)";
+                    BeginSalvageChestChoicePause();
+                    _promptText.text =
+                        $"<b>Salvage Chest</b>\n<size=120%>{chestPrice} gold</size>\nTake (E)  ·  Skip (R)";
                     if (keyboard != null)
                     {
                         if (keyboard.eKey.wasPressedThisFrame)
+                        {
                             _target.TryCompleteInteraction();
+                            EndSalvageChestChoicePause();
+                        }
                         else if (keyboard.rKey.wasPressedThisFrame)
+                        {
                             _salvageChestDismissedIndex = _target.Index;
+                            EndSalvageChestChoicePause();
+                        }
                     }
 
                     return;
@@ -512,8 +583,11 @@ namespace HighSeas.V3
             {
                 if (_target.ShowsSalvageChestPrice)
                 {
-                    if (_target.IsPlayerInRange)
+                    if (_target.IsPlayerInRange && CanAffordSalvageChest())
+                    {
                         _target.TryCompleteInteraction();
+                        EndSalvageChestChoicePause();
+                    }
                     return;
                 }
 
@@ -539,13 +613,25 @@ namespace HighSeas.V3
         void UpdatePromptLayoutForTarget()
         {
             if (_target == null || _promptRect == null) return;
-            var useCenter = _target.ShowsSalvageChestPrice || _target.RequiredHoldSeconds > 0f;
-            if (useCenter == _promptUsesCenterAnchor) return;
-            _promptUsesCenterAnchor = useCenter;
-            if (useCenter)
-                ApplyCenterPromptAnchor();
-            else
-                ApplyBottomPromptAnchor();
+            var desired = _target.ShowsSalvageChestPrice && CanAffordSalvageChest()
+                ? PromptLayoutKind.SalvageChestPopup
+                : _target.RequiredHoldSeconds > 0f
+                    ? PromptLayoutKind.CenterCompact
+                    : PromptLayoutKind.BottomBar;
+            if (desired == _promptLayout) return;
+            _promptLayout = desired;
+            switch (desired)
+            {
+                case PromptLayoutKind.SalvageChestPopup:
+                    ApplySalvageChestPopupAnchor();
+                    break;
+                case PromptLayoutKind.CenterCompact:
+                    ApplyCenterPromptAnchor();
+                    break;
+                default:
+                    ApplyBottomPromptAnchor();
+                    break;
+            }
         }
 
         void ApplyBottomPromptAnchor()
@@ -556,6 +642,17 @@ namespace HighSeas.V3
             _promptRect.pivot = new Vector2(0.5f, 0f);
             _promptRect.anchoredPosition = new Vector2(0f, 150f);
             _promptRect.sizeDelta = new Vector2(520f, 72f);
+            ApplyCompactPromptTextLayout();
+            if (_touchButton != null)
+            {
+                _touchButton.gameObject.SetActive(true);
+                var tr = _touchButton.GetComponent<RectTransform>();
+                tr.anchorMin = new Vector2(1f, 0.5f);
+                tr.anchorMax = new Vector2(1f, 0.5f);
+                tr.pivot = new Vector2(0.5f, 0.5f);
+                tr.anchoredPosition = new Vector2(-60f, 0f);
+                tr.sizeDelta = new Vector2(96f, 48f);
+            }
         }
 
         void ApplyCenterPromptAnchor()
@@ -566,7 +663,74 @@ namespace HighSeas.V3
             _promptRect.pivot = new Vector2(0.5f, 0.5f);
             _promptRect.anchoredPosition = Vector2.zero;
             _promptRect.sizeDelta = new Vector2(560f, 88f);
+            ApplyCompactPromptTextLayout();
+            if (_touchButton != null)
+            {
+                _touchButton.gameObject.SetActive(true);
+                var tr = _touchButton.GetComponent<RectTransform>();
+                tr.anchorMin = new Vector2(1f, 0.5f);
+                tr.anchorMax = new Vector2(1f, 0.5f);
+                tr.pivot = new Vector2(0.5f, 0.5f);
+                tr.anchoredPosition = new Vector2(-60f, 0f);
+                tr.sizeDelta = new Vector2(96f, 48f);
+            }
         }
+
+        void ApplySalvageChestPopupAnchor()
+        {
+            if (_promptRect == null) return;
+            const float inset = 0.35f;
+            _promptRect.anchorMin = new Vector2(inset, inset);
+            _promptRect.anchorMax = new Vector2(1f - inset, 1f - inset);
+            _promptRect.pivot = new Vector2(0.5f, 0.5f);
+            _promptRect.anchoredPosition = Vector2.zero;
+            _promptRect.sizeDelta = Vector2.zero;
+            ApplySalvageChestPromptTextLayout();
+            if (_touchButton != null)
+            {
+                _touchButton.gameObject.SetActive(true);
+                var tr = _touchButton.GetComponent<RectTransform>();
+                tr.anchorMin = new Vector2(0.5f, 0f);
+                tr.anchorMax = new Vector2(0.5f, 0f);
+                tr.pivot = new Vector2(0.5f, 0f);
+                tr.anchoredPosition = new Vector2(0f, 28f);
+                tr.sizeDelta = new Vector2(200f, 64f);
+            }
+        }
+
+        void ApplyCompactPromptTextLayout()
+        {
+            if (_promptText == null || _promptTextRect == null) return;
+            _promptTextRect.anchorMin = Vector2.zero;
+            _promptTextRect.anchorMax = Vector2.one;
+            _promptTextRect.offsetMin = new Vector2(16f, 8f);
+            _promptTextRect.offsetMax = new Vector2(-120f, -8f);
+            _promptText.fontSize = 22;
+            _promptText.alignment = TextAlignmentOptions.MidlineLeft;
+            _promptText.enableWordWrapping = true;
+        }
+
+        void ApplySalvageChestPromptTextLayout()
+        {
+            if (_promptText == null || _promptTextRect == null) return;
+            _promptTextRect.anchorMin = new Vector2(0f, 0.22f);
+            _promptTextRect.anchorMax = Vector2.one;
+            _promptTextRect.offsetMin = new Vector2(28f, 12f);
+            _promptTextRect.offsetMax = new Vector2(-28f, -20f);
+            _promptText.fontSize = 28;
+            _promptText.alignment = TextAlignmentOptions.Center;
+            _promptText.enableWordWrapping = true;
+            _promptText.richText = true;
+        }
+
+        static POIManager ResolvePoiManager() =>
+            Object.FindFirstObjectByType<POIManager>();
+
+        static int ResolveSalvageChestPrice() =>
+            ResolvePoiManager()?.GetSalvageChestQuotePrice() ?? 0;
+
+        static bool CanAffordSalvageChest() =>
+            ResolvePoiManager()?.CanAffordSalvageChest() ?? false;
 
         void SetPromptVisible(bool visible)
 
@@ -580,6 +744,34 @@ namespace HighSeas.V3
 
             _promptGroup.interactable = visible;
 
+        }
+
+        void BeginSalvageChestChoicePause()
+        {
+            if (_salvageChestPauseActive) return;
+            var run = RunManager.Instance;
+            if (run == null || run.IsRunEnded) return;
+            if (run.IsPaused) return;
+
+            _salvageChestResumeState = run.State;
+            _salvageChestPauseActive = true;
+            run.SetPause(PauseReason.POIChoice);
+            run.SetState(RunState.POIChoicePaused);
+        }
+
+        void EndSalvageChestChoicePause()
+        {
+            if (!_salvageChestPauseActive) return;
+            _salvageChestPauseActive = false;
+
+            var run = RunManager.Instance;
+            if (run == null || run.PauseReason != PauseReason.POIChoice) return;
+
+            run.SetPause(PauseReason.None);
+            var resume = _salvageChestResumeState;
+            if (resume is RunState.POIChoicePaused or RunState.LevelUpPaused)
+                resume = RunState.Playing;
+            run.SetState(resume);
         }
 
     }
