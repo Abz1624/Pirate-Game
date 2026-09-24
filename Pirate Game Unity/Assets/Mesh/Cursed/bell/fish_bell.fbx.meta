@@ -7,8 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: fish_bell1
-    second: {fileID: 2100000, guid: ab3a1470ca7738447920aff515342e97, type: 2}
+      name: fish_bell3
+    second: {fileID: 2100000, guid: 4605fe818504b8f47b0577cb2f47cef5, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
