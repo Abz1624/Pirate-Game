@@ -263,6 +263,12 @@ namespace HighSeas.Enemies
                     view.position = _agents[slot].position;
             }
 
+            if (SaltwindCombatFeature.IsEnabled && EnemyCombatProfileRegistry.TryGet(def.id, out _))
+            {
+                _agents[slot].patternParams = SpawnProfileResolver.ResolveForDefinition(def);
+                SaltwindCombatAgentStateStore.OnSpawn(_agents[slot].id, def.id);
+            }
+
             _activeCount++;
             AttachHealthBar(slot, def, view, affix != EliteAffix.None);
             return slot;
@@ -303,9 +309,12 @@ namespace HighSeas.Enemies
             if (formationRole == FormationRole.Leader)
                 leaderUnitId = _agents[slot].id;
 
+            var spawnedDef = definitions[definitionIndex];
             _agents[slot].spawnProfile = profile;
             _agents[slot].patternParams = SpawnProfileResolver.Resolve(
-                profile, profileInstanceId, formationRole, formationSlot, leaderUnitId);
+                profile, spawnedDef, profileInstanceId, formationRole, formationSlot, leaderUnitId);
+            if (SaltwindCombatFeature.IsEnabled && spawnedDef != null)
+                SaltwindCombatAgentStateStore.OnSpawn(_agents[slot].id, spawnedDef.id);
             if (_agents[slot].patternParams.attackCooldown > 0f)
                 _agents[slot].attackCooldown = _agents[slot].patternParams.attackCooldown * 0.5f;
             if (_agents[slot].patternParams.movementPattern == EnemyMovementPattern.TelegraphedCharge)
@@ -477,6 +486,13 @@ namespace HighSeas.Enemies
             return culled;
         }
 
+        public bool DespawnByUnitId(int unitId)
+        {
+            if (!TryGetAgentByUnitId(unitId, out var index)) return false;
+            Despawn(index);
+            return true;
+        }
+
         public void Despawn(int index)
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
@@ -501,6 +517,7 @@ namespace HighSeas.Enemies
 
             var releasedAgentId = _agents[index].id;
             ReefCrabMinibossBehavior.ClearAgent(releasedAgentId);
+            SaltwindCombatAgentStateStore.ClearAgent(releasedAgentId);
             _agents[index].active = false;
             _activeCount--;
             Combat.StatusController.Instance?.ClearIndex(index);
@@ -541,7 +558,10 @@ namespace HighSeas.Enemies
                 UpdateView(ref e, def, dt, playerPos);
 
                 var dist = HorizontalDistance(e.position, playerPos);
-                TickRangedAttack(ref e, def, dt, playerPos, dist, playerDamage);
+                if (SaltwindCombatFeature.IsEnabled && EnemyCombatProfileRegistry.UsesSaltwindBehavior(def.id))
+                    SaltwindCombatBehaviorSystem.TickCombat(this, i, ref e, def, dt, playerPos, playerDamage);
+                else
+                    TickRangedAttack(ref e, def, dt, playerPos, dist, playerDamage);
                 var playerRadius = GetPlayerContactRadius(playerDamage);
                 var contactRange = e.radius + playerRadius;
                 if (def.category == EnemyCategory.Creature && !def.isBoss && !def.isMiniboss)
@@ -549,7 +569,11 @@ namespace HighSeas.Enemies
 
                 if (dist < contactRange && e.contactCooldown <= 0f)
                 {
-                    var contactEnabled = e.spawnProfile == null || e.patternParams.contactDamageEnabled;
+                    var saltwindContactBlocked = SaltwindCombatFeature.IsEnabled
+                        && SaltwindCombatAgentStateStore.TryGet(e.id, out var combatState)
+                        && combatState.contactDisabled;
+                    var contactEnabled = !saltwindContactBlocked
+                        && (e.spawnProfile == null || e.patternParams.contactDamageEnabled);
                     if (contactEnabled || def.isMiniboss)
                     {
                         playerDamage?.TakeDamage(e.damage, e.position, false);
@@ -560,6 +584,9 @@ namespace HighSeas.Enemies
                 }
                 if (e.contactCooldown > 0f) e.contactCooldown -= dt;
             }
+
+            if (SaltwindCombatFeature.IsEnabled)
+                SaltwindHazardTelegraph.Tick(dt);
 
             ResolvePlayerHullSeparation(playerPos, playerDamage);
             ResolveAgentOverlaps();
@@ -856,7 +883,18 @@ namespace HighSeas.Enemies
             var dist = toPlayer.magnitude;
             var dir = dist > 0.01f ? toPlayer / dist : Vector3.forward;
 
-            if (ReefCrabMinibossBehavior.Handles(def))
+            if (SaltwindCombatFeature.IsEnabled
+                && EnemyCombatProfileRegistry.TryGet(def.id, out var combatProfile)
+                && combatProfile.archetype == SaltwindCombatArchetype.ReefCrabMiniboss)
+            {
+                var crabVel = SaltwindReefCrabCombat.TickMovement(
+                    agentIndex, ref e, def, dt, playerPos, playerDamage);
+                crabVel = ApplySeparation(agentIndex, crabVel, ref e, crabVel);
+                e.velocity = Vector3.ClampMagnitude(crabVel, e.moveSpeed * 1.1f);
+                return crabVel;
+            }
+
+            if (ReefCrabMinibossBehavior.Handles(def) && !SaltwindCombatFeature.IsEnabled)
             {
                 var crabVel = ReefCrabMinibossBehavior.TickMovement(
                     agentIndex, ref e, def, dt, playerPos, playerDamage);
@@ -865,7 +903,20 @@ namespace HighSeas.Enemies
                 return crabVel;
             }
 
-            if (def.id == "shark")
+            if (SaltwindCombatFeature.IsEnabled
+                && EnemyCombatProfileRegistry.TryGet(def.id, out var saltwindProfile)
+                && saltwindProfile.archetype != SaltwindCombatArchetype.ReefCrabMiniboss
+                && SaltwindCombatBehaviorSystem.TryTickMovement(
+                    this, agentIndex, ref e, def, saltwindProfile, dt, playerPos, playerVelocity, playerDamage,
+                    out var saltwindVel))
+            {
+                var saltwindIntent = saltwindVel;
+                saltwindVel = ApplySeparation(agentIndex, saltwindVel, ref e, saltwindIntent);
+                e.velocity = Vector3.ClampMagnitude(saltwindVel, e.moveSpeed * SaltwindCombatBehaviorSystem.GetSpeedCapMult(saltwindProfile));
+                return saltwindIntent;
+            }
+
+            if (def.id == "shark" && !SaltwindCombatFeature.IsEnabled)
             {
                 var sharkVel = TickSharkBehavior(ref e, dir, dist, playerPos, playerVelocity);
                 sharkVel = ApplySeparation(agentIndex, sharkVel, ref e, sharkVel);

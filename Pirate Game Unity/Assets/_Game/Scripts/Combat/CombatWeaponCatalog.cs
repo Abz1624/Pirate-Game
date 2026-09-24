@@ -59,8 +59,8 @@ namespace HighSeas.Combat
 
         static void TuneBaselineWeapons(GameDatabase database)
         {
-            SetWeapon(database, "deck_cannons", TargetingMode.ForwardArc, 120f, 22f, 1f, preferElite: false);
-            SetWeapon(database, "broadside_battery", TargetingMode.PortStarboard, 50f, 14f, 0.7f);
+            SetWeapon(database, "deck_cannons", TargetingMode.Nearest, 360f, 22f, 1f, preferElite: false);
+            SetWeapon(database, "broadside_battery", TargetingMode.DensestCluster, 50f, 14f, 0.7f);
             SetWeapon(database, "powder_kegs", TargetingMode.AftDeploy, 0f, 12f, 0.55f);
             SetWeapon(database, "flying_cutlasses", TargetingMode.AreaAroundShip, 360f, 6f, 0.35f);
             SetWeapon(database, "lightning_mast", TargetingMode.Nearest, 360f, 16f, 0.5f);
@@ -89,7 +89,7 @@ namespace HighSeas.Combat
         }
 
         static WeaponDefinition CreateLongNine() => Build(
-            "long_nine", "Long Nine", WeaponPattern.AutoProjectile, TargetingMode.ForwardArc,
+            "long_nine", "Long Nine", WeaponPattern.AutoProjectile, TargetingMode.NearestElite,
             damage: 28f, cooldown: 2.4f, range: 24f, arc: 40f, proc: 1f,
             tags: Tags("Gunnery", "Hunter"), preferHighestHull: true);
 

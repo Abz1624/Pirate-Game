@@ -19,8 +19,8 @@ namespace HighSeas.Balance
         {
             new[] { "swordfish", "deckhand_dinghy" },
             new[] { "swordfish", "deckhand_dinghy", "cutthroat_skiff", "hammerhead" },
-            new[] { "hammerhead", "cutthroat_skiff", "shark", "cannonboat" },
-            new[] { "manta_ray", "cannonboat", "hammerhead" },
+            new[] { "cutthroat_skiff", "hammerhead", "shark", "cannonboat" },
+            new[] { "manta_ray", "cannonboat", "hammerhead", "shark" },
             new[] { "manta_ray", "cannonboat", "hammerhead" }
         };
 
@@ -28,9 +28,9 @@ namespace HighSeas.Balance
         {
             Array.Empty<string>(),
             new[] { "needle_sloop", "ram_raider" },
-            new[] { "bomb_boat", "rammer_raft" },
-            new[] { "bomb_boat", "boarding_barge", "kraken_spawn" },
-            new[] { "kraken_spawn", "bomb_boat", "boarding_barge" }
+            new[] { "bomb_boat", "rammer_raft", "bomb_ketch", "gunner_cog" },
+            new[] { "bomb_boat", "boarding_barge", "net_cutter", "repair_tender", "kraken_spawn" },
+            new[] { "shield_frigate", "powder_barge", "kraken_spawn", "bomb_boat", "boarding_barge" }
         };
 
         public static bool TryGetAmbientBandIndex(string profileId, out int bandIndex)

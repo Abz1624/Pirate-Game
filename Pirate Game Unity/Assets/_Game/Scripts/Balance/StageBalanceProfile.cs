@@ -13,7 +13,7 @@ namespace HighSeas.Balance
         [Header("Identity")]
         public string profileId = DefaultSaltwindSoloId;
         public int schemaVersion = 1;
-        public int balanceVersion = 2;
+        public int balanceVersion = 3;
 
         [Header("References")]
         public EncounterSpawnSchedule encounterSchedule;

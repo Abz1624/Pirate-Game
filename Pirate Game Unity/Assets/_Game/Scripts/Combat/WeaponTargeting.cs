@@ -59,8 +59,11 @@ namespace HighSeas.Combat
                         out targetIndex, out aimDirection);
                     break;
                 default:
-                    resolved = TryOmniNearest(enemies, origin, range, preferElite: def.preferElite,
-                        preferHighestHull: def.preferHighestHull, out targetIndex, out aimDirection);
+                    if (def.id == "swivel_guns")
+                        resolved = TrySwivelDefense(enemies, origin, range, out targetIndex, out aimDirection);
+                    else
+                        resolved = TryOmniNearest(enemies, origin, range, preferElite: def.preferElite,
+                            preferHighestHull: def.preferHighestHull, out targetIndex, out aimDirection);
                     break;
             }
 
@@ -283,6 +286,36 @@ namespace HighSeas.Combat
             return true;
         }
 
+        static bool TrySwivelDefense(
+            EnemyWorld enemies,
+            Vector3 origin,
+            float range,
+            out int targetIndex,
+            out Vector3 aimDirection)
+        {
+            targetIndex = -1;
+            aimDirection = Vector3.forward;
+            var bestScore = float.MinValue;
+            var agents = enemies.Agents;
+            for (var i = 0; i < agents.Length; i++)
+            {
+                if (!agents[i].active) continue;
+                var delta = agents[i].position - origin;
+                delta.y = 0f;
+                var dist = delta.magnitude;
+                if (dist > range) continue;
+                var score = -dist;
+                if (dist <= 6f) score += 100f;
+                if (score <= bestScore) continue;
+                bestScore = score;
+                targetIndex = i;
+            }
+
+            if (targetIndex < 0) return false;
+            aimDirection = (agents[targetIndex].position - origin).normalized;
+            return true;
+        }
+
         static bool TryOmniNearest(
             EnemyWorld enemies,
             Vector3 origin,
@@ -321,7 +354,6 @@ namespace HighSeas.Combat
             var score = -distance;
             if (preferElite && agent.isElite) score += 1000f;
             if (preferHighestHull) score += agent.hp;
-            if (agent.isBoss) score += 500f;
             return score;
         }
 

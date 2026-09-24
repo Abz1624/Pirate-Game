@@ -167,6 +167,9 @@ namespace HighSeas.V3
             WeaponEvolutionRuntime.Reset();
             _ = new RunCombatTelemetry(experimentProfile);
             RunManager.Instance.BeginRun(seed);
+            SaltwindCombatEncounterBudget.ResetForRun();
+            SaltwindCombatAgentStateStore.ClearAll();
+            SaltwindHazardTelegraph.ClearAll();
             RunMarksTracker.BeginRun(RunManager.Instance.RunId);
             SaltwindRunSettlement.ClearLastResults();
             if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export != null)

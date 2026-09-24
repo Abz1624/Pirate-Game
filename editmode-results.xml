@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<test-run id="2" testcasecount="72" result="Failed(Child)" total="72" passed="69" failed="3" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:22Z" duration="0.4780139">
-  <test-suite type="TestSuite" id="1000" name="Pirate Game" fullname="Pirate Game" runstate="Runnable" testcasecount="72" result="Failed" site="Child" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:22Z" duration="0.478014" total="72" passed="69" failed="3" inconclusive="0" skipped="0" asserts="0">
+<test-run id="2" testcasecount="183" result="Failed(Child)" total="183" passed="180" failed="3" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:23:04Z" duration="1327.0565756">
+  <test-suite type="TestSuite" id="1000" name="Pirate Game" fullname="Pirate Game" runstate="Runnable" testcasecount="183" result="Failed" site="Child" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:23:04Z" duration="1327.056576" total="183" passed="180" failed="3" inconclusive="0" skipped="0" asserts="0">
     <properties>
       <property name="platform" value="EditMode" />
     </properties>
     <failure>
       <message><![CDATA[One or more child tests had errors]]></message>
     </failure>
-    <test-suite type="Assembly" id="1057" name="HighSeas.Tests.EditMode.dll" fullname="C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Library/ScriptAssemblies/HighSeas.Tests.EditMode.dll" runstate="Runnable" testcasecount="48" result="Failed" site="Child" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.211449" total="48" passed="47" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <test-suite type="Assembly" id="1189" name="HighSeas.Tests.EditMode.dll" fullname="C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Library/ScriptAssemblies/HighSeas.Tests.EditMode.dll" runstate="Runnable" testcasecount="161" result="Failed" site="Child" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:23:04Z" duration="1326.858151" total="161" passed="158" failed="3" inconclusive="0" skipped="0" asserts="0">
       <properties>
-        <property name="_PID" value="249196" />
+        <property name="_PID" value="225000" />
         <property name="_APPDOMAIN" value="Unity Child Domain" />
         <property name="platform" value="EditMode" />
         <property name="EditorOnly" value="True" />
@@ -17,60 +17,75 @@
       <failure>
         <message><![CDATA[One or more child tests had errors]]></message>
       </failure>
-      <test-suite type="TestSuite" id="1058" name="HighSeas" fullname="HighSeas" runstate="Runnable" testcasecount="48" result="Failed" site="Child" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.210687" total="48" passed="47" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <test-suite type="TestSuite" id="1190" name="HighSeas" fullname="HighSeas" runstate="Runnable" testcasecount="161" result="Failed" site="Child" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:23:04Z" duration="1326.855288" total="161" passed="158" failed="3" inconclusive="0" skipped="0" asserts="0">
         <properties />
         <failure>
           <message><![CDATA[One or more child tests had errors]]></message>
         </failure>
-        <test-suite type="TestSuite" id="1059" name="Tests" fullname="HighSeas.Tests" runstate="Runnable" testcasecount="48" result="Failed" site="Child" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.210148" total="48" passed="47" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <test-suite type="TestSuite" id="1191" name="Tests" fullname="HighSeas.Tests" runstate="Runnable" testcasecount="161" result="Failed" site="Child" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:23:04Z" duration="1326.850443" total="161" passed="158" failed="3" inconclusive="0" skipped="0" asserts="0">
           <properties />
           <failure>
             <message><![CDATA[One or more child tests had errors]]></message>
           </failure>
-          <test-suite type="TestFixture" id="1001" name="CombatExperimentTests" fullname="HighSeas.Tests.CombatExperimentTests" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.044663" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1165" name="AmbientSpawnBudgetTests" fullname="HighSeas.Tests.AmbientSpawnBudgetTests" classname="HighSeas.Tests.AmbientSpawnBudgetTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.025285" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1006" name="ForwardArcGeometry_RespectsHalfArcWidth" fullname="HighSeas.Tests.CombatExperimentTests.ForwardArcGeometry_RespectsHalfArcWidth" methodname="ForwardArcGeometry_RespectsHalfArcWidth" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="7721775" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.010669" asserts="0">
+            <test-case id="1166" name="BlockedAccumulation_Capped_AndDrainsOneAtATime" fullname="HighSeas.Tests.AmbientSpawnBudgetTests.BlockedAccumulation_Capped_AndDrainsOneAtATime" methodname="BlockedAccumulation_Capped_AndDrainsOneAtATime" classname="HighSeas.Tests.AmbientSpawnBudgetTests" runstate="Runnable" seed="727052621" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.011503" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1004" name="Generate_PityGuaranteesNewWeaponOptionAtLevelFour" fullname="HighSeas.Tests.CombatExperimentTests.Generate_PityGuaranteesNewWeaponOptionAtLevelFour" methodname="Generate_PityGuaranteesNewWeaponOptionAtLevelFour" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="1598095463" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.009394" asserts="0">
-              <properties>
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-            </test-case>
-            <test-case id="1003" name="Generate_WithSixSlots_DoesNotOfferNewWeaponWhenFull" fullname="HighSeas.Tests.CombatExperimentTests.Generate_WithSixSlots_DoesNotOfferNewWeaponWhenFull" methodname="Generate_WithSixSlots_DoesNotOfferNewWeaponWhenFull" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="2017158412" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.007217" asserts="0">
-              <properties>
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-            </test-case>
-            <test-case id="1005" name="OpeningDraft_ReturnsThreeDistinctWeapons" fullname="HighSeas.Tests.CombatExperimentTests.OpeningDraft_ReturnsThreeDistinctWeapons" methodname="OpeningDraft_ReturnsThreeDistinctWeapons" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="1905338172" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.001950" asserts="0">
-              <properties>
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-            </test-case>
-            <test-case id="1002" name="Profile_AlwaysUsesFullCombatV2" fullname="HighSeas.Tests.CombatExperimentTests.Profile_AlwaysUsesFullCombatV2" methodname="Profile_AlwaysUsesFullCombatV2" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="1293841310" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000421" asserts="0">
-              <properties>
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-            </test-case>
-            <test-case id="1007" name="ResolveArcDegrees_PrefersTargetArcOverFanSpread" fullname="HighSeas.Tests.CombatExperimentTests.ResolveArcDegrees_PrefersTargetArcOverFanSpread" methodname="ResolveArcDegrees_PrefersTargetArcOverFanSpread" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="352788705" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000841" asserts="0">
+            <test-case id="1167" name="Unblocked_DoesNotAccumulate" fullname="HighSeas.Tests.AmbientSpawnBudgetTests.Unblocked_DoesNotAccumulate" methodname="Unblocked_DoesNotAccumulate" classname="HighSeas.Tests.AmbientSpawnBudgetTests" runstate="Runnable" seed="470687216" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000685" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
           </test-suite>
-          <test-suite type="TestSuite" id="1060" name="EditMode" fullname="HighSeas.Tests.EditMode" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.002044" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1001" name="CombatExperimentTests" fullname="HighSeas.Tests.CombatExperimentTests" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.025827" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-suite type="TestFixture" id="1055" name="WeaponBeamTargetingTests" fullname="HighSeas.Tests.EditMode.WeaponBeamTargetingTests" classname="HighSeas.Tests.EditMode.WeaponBeamTargetingTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.001327" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-case id="1006" name="ForwardArcGeometry_RespectsHalfArcWidth" fullname="HighSeas.Tests.CombatExperimentTests.ForwardArcGeometry_RespectsHalfArcWidth" methodname="ForwardArcGeometry_RespectsHalfArcWidth" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="1843510592" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.004143" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1004" name="Generate_PityGuaranteesNewWeaponOptionAtLevelFour" fullname="HighSeas.Tests.CombatExperimentTests.Generate_PityGuaranteesNewWeaponOptionAtLevelFour" methodname="Generate_PityGuaranteesNewWeaponOptionAtLevelFour" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="1410617139" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.012666" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="Generate_WithSixSlots_DoesNotOfferNewWeaponWhenFull" fullname="HighSeas.Tests.CombatExperimentTests.Generate_WithSixSlots_DoesNotOfferNewWeaponWhenFull" methodname="Generate_WithSixSlots_DoesNotOfferNewWeaponWhenFull" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="990193306" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.004051" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="OpeningDraft_ReturnsThreeDistinctWeapons" fullname="HighSeas.Tests.CombatExperimentTests.OpeningDraft_ReturnsThreeDistinctWeapons" methodname="OpeningDraft_ReturnsThreeDistinctWeapons" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="1461866345" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.001256" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1002" name="Profile_AlwaysUsesFullCombatV2" fullname="HighSeas.Tests.CombatExperimentTests.Profile_AlwaysUsesFullCombatV2" methodname="Profile_AlwaysUsesFullCombatV2" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="1874500640" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000405" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1007" name="ResolveArcDegrees_PrefersTargetArcOverFanSpread" fullname="HighSeas.Tests.CombatExperimentTests.ResolveArcDegrees_PrefersTargetArcOverFanSpread" methodname="ResolveArcDegrees_PrefersTargetArcOverFanSpread" classname="HighSeas.Tests.CombatExperimentTests" runstate="Runnable" seed="1775715424" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000483" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestSuite" id="1192" name="EditMode" fullname="HighSeas.Tests.EditMode" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.002170" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1187" name="WeaponBeamTargetingTests" fullname="HighSeas.Tests.EditMode.WeaponBeamTargetingTests" classname="HighSeas.Tests.EditMode.WeaponBeamTargetingTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.001341" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-case id="1056" name="IsInsideBeam_RespectsHalfWidthAndRange" fullname="HighSeas.Tests.EditMode.WeaponBeamTargetingTests.IsInsideBeam_RespectsHalfWidthAndRange" methodname="IsInsideBeam_RespectsHalfWidthAndRange" classname="HighSeas.Tests.EditMode.WeaponBeamTargetingTests" runstate="Runnable" seed="113195525" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000697" asserts="0">
+              <test-case id="1188" name="IsInsideBeam_RespectsHalfWidthAndRange" fullname="HighSeas.Tests.EditMode.WeaponBeamTargetingTests.IsInsideBeam_RespectsHalfWidthAndRange" methodname="IsInsideBeam_RespectsHalfWidthAndRange" classname="HighSeas.Tests.EditMode.WeaponBeamTargetingTests" runstate="Runnable" seed="1436863059" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000770" asserts="0">
                 <properties>
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
@@ -78,255 +93,1004 @@
               </test-case>
             </test-suite>
           </test-suite>
-          <test-suite type="TestFixture" id="1008" name="EncounterSpawnerTests" fullname="HighSeas.Tests.EncounterSpawnerTests" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.014614" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1008" name="EncounterScheduleRunLogicTests" fullname="HighSeas.Tests.EncounterScheduleRunLogicTests" classname="HighSeas.Tests.EncounterScheduleRunLogicTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.002404" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1013" name="ApplyCombatExperiment_AppliesSpawnDensityMultiplier" fullname="HighSeas.Tests.EncounterSpawnerTests.ApplyCombatExperiment_AppliesSpawnDensityMultiplier" methodname="ApplyCombatExperiment_AppliesSpawnDensityMultiplier" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="1590145600" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.003880" asserts="0">
+            <test-case id="1010" name="BurstProfile_CompletesOnActualSpawnCount" fullname="HighSeas.Tests.EncounterScheduleRunLogicTests.BurstProfile_CompletesOnActualSpawnCount" methodname="BurstProfile_CompletesOnActualSpawnCount" classname="HighSeas.Tests.EncounterScheduleRunLogicTests" runstate="Runnable" seed="60739549" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000708" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1012" name="ApplyCombatExperiment_DisablesAmbientScheduleWhenEncounterSpawnOff" fullname="HighSeas.Tests.EncounterSpawnerTests.ApplyCombatExperiment_DisablesAmbientScheduleWhenEncounterSpawnOff" methodname="ApplyCombatExperiment_DisablesAmbientScheduleWhenEncounterSpawnOff" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="648238072" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.001090" asserts="0">
+            <test-case id="1011" name="ContinuousInterval_DensitySlowsCadenceOnly" fullname="HighSeas.Tests.EncounterScheduleRunLogicTests.ContinuousInterval_DensitySlowsCadenceOnly" methodname="ContinuousInterval_DensitySlowsCadenceOnly" classname="HighSeas.Tests.EncounterScheduleRunLogicTests" runstate="Runnable" seed="1406337768" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000279" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1014" name="SpawnPlacementService_RejectsVisibleCandidateWhenRequired" fullname="HighSeas.Tests.EncounterSpawnerTests.SpawnPlacementService_RejectsVisibleCandidateWhenRequired" methodname="SpawnPlacementService_RejectsVisibleCandidateWhenRequired" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="2057156424" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.003170" asserts="0">
+            <test-case id="1009" name="ContinuousProfile_CompletesOnElapsedDuration_NotDensityScaled" fullname="HighSeas.Tests.EncounterScheduleRunLogicTests.ContinuousProfile_CompletesOnElapsedDuration_NotDensityScaled" methodname="ContinuousProfile_CompletesOnElapsedDuration_NotDensityScaled" classname="HighSeas.Tests.EncounterScheduleRunLogicTests" runstate="Runnable" seed="381067899" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000173" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1009" name="SpawnProfileEnums_IncludeAdvancedSpecialBehaviors" fullname="HighSeas.Tests.EncounterSpawnerTests.SpawnProfileEnums_IncludeAdvancedSpecialBehaviors" methodname="SpawnProfileEnums_IncludeAdvancedSpecialBehaviors" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="1038754782" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000335" asserts="0">
-              <properties>
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-            </test-case>
-            <test-case id="1011" name="SpawnProfileResolver_EliteFieldsAppliedInResolve" fullname="HighSeas.Tests.EncounterSpawnerTests.SpawnProfileResolver_EliteFieldsAppliedInResolve" methodname="SpawnProfileResolver_EliteFieldsAppliedInResolve" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="1034807190" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.003914" asserts="0">
-              <properties>
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-            </test-case>
-            <test-case id="1010" name="SpawnProfileResolver_MapsLegacyFlankBehavior" fullname="HighSeas.Tests.EncounterSpawnerTests.SpawnProfileResolver_MapsLegacyFlankBehavior" methodname="SpawnProfileResolver_MapsLegacyFlankBehavior" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="358455707" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000358" asserts="0">
+            <test-case id="1012" name="LoopCycle_RestartsWithinWindow_SkipsExpiredCycle" fullname="HighSeas.Tests.EncounterScheduleRunLogicTests.LoopCycle_RestartsWithinWindow_SkipsExpiredCycle" methodname="LoopCycle_RestartsWithinWindow_SkipsExpiredCycle" classname="HighSeas.Tests.EncounterScheduleRunLogicTests" runstate="Runnable" seed="866148126" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000356" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
           </test-suite>
-          <test-suite type="TestFixture" id="1015" name="GameMathTests" fullname="HighSeas.Tests.GameMathTests" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.015087" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1013" name="EncounterSpawnerTests" fullname="HighSeas.Tests.EncounterSpawnerTests" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.014226" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1019" name="ChestCost_Increases" fullname="HighSeas.Tests.GameMathTests.ChestCost_Increases" methodname="ChestCost_Increases" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="269577484" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000252" asserts="0">
+            <test-case id="1019" name="ApplyCombatExperiment_AppliesSpawnDensityMultiplier" fullname="HighSeas.Tests.EncounterSpawnerTests.ApplyCombatExperiment_AppliesSpawnDensityMultiplier" methodname="ApplyCombatExperiment_AppliesSpawnDensityMultiplier" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="584126751" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.003211" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1017" name="DamageFormula_MatchesGoldenVector" fullname="HighSeas.Tests.GameMathTests.DamageFormula_MatchesGoldenVector" methodname="DamageFormula_MatchesGoldenVector" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="573688821" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000346" asserts="0">
+            <test-case id="1018" name="ApplyCombatExperiment_DisablesAmbientScheduleWhenEncounterSpawnOff" fullname="HighSeas.Tests.EncounterSpawnerTests.ApplyCombatExperiment_DisablesAmbientScheduleWhenEncounterSpawnOff" methodname="ApplyCombatExperiment_DisablesAmbientScheduleWhenEncounterSpawnOff" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="2120866639" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000773" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1016" name="DiagonalMovementNormalization_IsWithinOnePercent" fullname="HighSeas.Tests.GameMathTests.DiagonalMovementNormalization_IsWithinOnePercent" methodname="DiagonalMovementNormalization_IsWithinOnePercent" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="504368869" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000340" asserts="0">
+            <test-case id="1020" name="SpawnPlacementService_RejectsVisibleCandidateWhenRequired" fullname="HighSeas.Tests.EncounterSpawnerTests.SpawnPlacementService_RejectsVisibleCandidateWhenRequired" methodname="SpawnPlacementService_RejectsVisibleCandidateWhenRequired" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="1224499805" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.002906" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1020" name="RarityRoll_LegendaryProbabilityCapped" fullname="HighSeas.Tests.GameMathTests.RarityRoll_LegendaryProbabilityCapped" methodname="RarityRoll_LegendaryProbabilityCapped" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="47636768" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.002934" asserts="0">
+            <test-case id="1014" name="SpawnProfileEnums_IncludeAdvancedSpecialBehaviors" fullname="HighSeas.Tests.EncounterSpawnerTests.SpawnProfileEnums_IncludeAdvancedSpecialBehaviors" methodname="SpawnProfileEnums_IncludeAdvancedSpecialBehaviors" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="1102596372" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000345" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1026" name="SaveMigration_DefaultsMissingFields" fullname="HighSeas.Tests.GameMathTests.SaveMigration_DefaultsMissingFields" methodname="SaveMigration_DefaultsMissingFields" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="972036472" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.001604" asserts="0">
+            <test-case id="1017" name="SpawnProfileResolver_EliteFieldsAppliedInResolve" fullname="HighSeas.Tests.EncounterSpawnerTests.SpawnProfileResolver_EliteFieldsAppliedInResolve" methodname="SpawnProfileResolver_EliteFieldsAppliedInResolve" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="175266074" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.003052" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1025" name="StageGenerator_HighCountSettings_PlacesNearTarget" fullname="HighSeas.Tests.GameMathTests.StageGenerator_HighCountSettings_PlacesNearTarget" methodname="StageGenerator_HighCountSettings_PlacesNearTarget" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="2136125601" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.003975" asserts="0">
+            <test-case id="1015" name="SpawnProfileResolver_MapsLegacyFlankBehavior" fullname="HighSeas.Tests.EncounterSpawnerTests.SpawnProfileResolver_MapsLegacyFlankBehavior" methodname="SpawnProfileResolver_MapsLegacyFlankBehavior" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="1765615946" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000656" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1024" name="StageGenerator_IslandsDoNotOverlap" fullname="HighSeas.Tests.GameMathTests.StageGenerator_IslandsDoNotOverlap" methodname="StageGenerator_IslandsDoNotOverlap" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="2003735370" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.001585" asserts="0">
-              <properties>
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-            </test-case>
-            <test-case id="1022" name="StageGenerator_ReachabilityPasses" fullname="HighSeas.Tests.GameMathTests.StageGenerator_ReachabilityPasses" methodname="StageGenerator_ReachabilityPasses" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="1602497740" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000837" asserts="0">
-              <properties>
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-            </test-case>
-            <test-case id="1023" name="StageGenerator_SpawnsOnWaterPlane" fullname="HighSeas.Tests.GameMathTests.StageGenerator_SpawnsOnWaterPlane" methodname="StageGenerator_SpawnsOnWaterPlane" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="763995509" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000440" asserts="0">
-              <properties>
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-            </test-case>
-            <test-case id="1021" name="ThreatPerSecond_GrowsWithTime" fullname="HighSeas.Tests.GameMathTests.ThreatPerSecond_GrowsWithTime" methodname="ThreatPerSecond_GrowsWithTime" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="1640387021" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000229" asserts="0">
-              <properties>
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-            </test-case>
-            <test-case id="1018" name="XPToNext_IsMonotonic" fullname="HighSeas.Tests.GameMathTests.XPToNext_IsMonotonic" methodname="XPToNext_IsMonotonic" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="712684881" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000226" asserts="0">
+            <test-case id="1016" name="TelegraphedChargePattern_ResetsAfterChargeDuration" fullname="HighSeas.Tests.EncounterSpawnerTests.TelegraphedChargePattern_ResetsAfterChargeDuration" methodname="TelegraphedChargePattern_ResetsAfterChargeDuration" classname="HighSeas.Tests.EncounterSpawnerTests" runstate="Runnable" seed="669257238" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.001289" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
           </test-suite>
-          <test-suite type="TestFixture" id="1027" name="LevelOfferGeneratorTests" fullname="HighSeas.Tests.LevelOfferGeneratorTests" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.060958" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1021" name="GameMathTests" fullname="HighSeas.Tests.GameMathTests" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.017067" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1036" name="DamageProcPolicy_DotAndTriggeredItems_DoNotCrit" fullname="HighSeas.Tests.LevelOfferGeneratorTests.DamageProcPolicy_DotAndTriggeredItems_DoNotCrit" methodname="DamageProcPolicy_DotAndTriggeredItems_DoNotCrit" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="1584928738" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000548" asserts="0">
+            <test-case id="1025" name="ChestCost_Increases" fullname="HighSeas.Tests.GameMathTests.ChestCost_Increases" methodname="ChestCost_Increases" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="2066860824" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000290" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1034" name="FinalizeOffers_AllCapped_ShowsSingleContinue" fullname="HighSeas.Tests.LevelOfferGeneratorTests.FinalizeOffers_AllCapped_ShowsSingleContinue" methodname="FinalizeOffers_AllCapped_ShowsSingleContinue" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="1066459775" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.003636" asserts="0">
+            <test-case id="1023" name="DamageFormula_MatchesGoldenVector" fullname="HighSeas.Tests.GameMathTests.DamageFormula_MatchesGoldenVector" methodname="DamageFormula_MatchesGoldenVector" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="409484424" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000237" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1035" name="FinalizeOffers_WhenNoContentEligible_FillsFallbackCards" fullname="HighSeas.Tests.LevelOfferGeneratorTests.FinalizeOffers_WhenNoContentEligible_FillsFallbackCards" methodname="FinalizeOffers_WhenNoContentEligible_FillsFallbackCards" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="1146474841" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000794" asserts="0">
+            <test-case id="1022" name="DiagonalMovementNormalization_IsWithinOnePercent" fullname="HighSeas.Tests.GameMathTests.DiagonalMovementNormalization_IsWithinOnePercent" methodname="DiagonalMovementNormalization_IsWithinOnePercent" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="780550487" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000320" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1028" name="FirstLevelUp_GuaranteesStarterUpgradeNewWeaponAndLogbook" fullname="HighSeas.Tests.LevelOfferGeneratorTests.FirstLevelUp_GuaranteesStarterUpgradeNewWeaponAndLogbook" methodname="FirstLevelUp_GuaranteesStarterUpgradeNewWeaponAndLogbook" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="2127963636" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000951" asserts="0">
+            <test-case id="1026" name="RarityRoll_LegendaryProbabilityCapped" fullname="HighSeas.Tests.GameMathTests.RarityRoll_LegendaryProbabilityCapped" methodname="RarityRoll_LegendaryProbabilityCapped" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="830634580" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.003081" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1030" name="Generate_ExcludesMaxedWeapons" fullname="HighSeas.Tests.LevelOfferGeneratorTests.Generate_ExcludesMaxedWeapons" methodname="Generate_ExcludesMaxedWeapons" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="663752539" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.003022" asserts="0">
+            <test-case id="1032" name="SaveMigration_DefaultsMissingFields" fullname="HighSeas.Tests.GameMathTests.SaveMigration_DefaultsMissingFields" methodname="SaveMigration_DefaultsMissingFields" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="65287721" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.001929" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1029" name="Generate_PreventsDuplicateCards" fullname="HighSeas.Tests.LevelOfferGeneratorTests.Generate_PreventsDuplicateCards" methodname="Generate_PreventsDuplicateCards" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="1486627083" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.044768" asserts="0">
+            <test-case id="1031" name="StageGenerator_HighCountSettings_PlacesNearTarget" fullname="HighSeas.Tests.GameMathTests.StageGenerator_HighCountSettings_PlacesNearTarget" methodname="StageGenerator_HighCountSettings_PlacesNearTarget" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="2053632716" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.004602" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1031" name="Generate_WithDemoFlag_AlwaysIncludesNewWeaponWhenUnownedRemain" fullname="HighSeas.Tests.LevelOfferGeneratorTests.Generate_WithDemoFlag_AlwaysIncludesNewWeaponWhenUnownedRemain" methodname="Generate_WithDemoFlag_AlwaysIncludesNewWeaponWhenUnownedRemain" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="322542581" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.001879" asserts="0">
+            <test-case id="1030" name="StageGenerator_IslandsDoNotOverlap" fullname="HighSeas.Tests.GameMathTests.StageGenerator_IslandsDoNotOverlap" methodname="StageGenerator_IslandsDoNotOverlap" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="1664488993" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.001678" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1032" name="Generate_WithFullWeaponSlots_DoesNotOfferNewWeapons" fullname="HighSeas.Tests.LevelOfferGeneratorTests.Generate_WithFullWeaponSlots_DoesNotOfferNewWeapons" methodname="Generate_WithFullWeaponSlots_DoesNotOfferNewWeapons" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="661563104" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.002436" asserts="0">
+            <test-case id="1028" name="StageGenerator_ReachabilityPasses" fullname="HighSeas.Tests.GameMathTests.StageGenerator_ReachabilityPasses" methodname="StageGenerator_ReachabilityPasses" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="1153121339" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.001104" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1037" name="WeaponDefinitions_ExposePatternSpecificAxes" fullname="HighSeas.Tests.LevelOfferGeneratorTests.WeaponDefinitions_ExposePatternSpecificAxes" methodname="WeaponDefinitions_ExposePatternSpecificAxes" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="1581769585" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000647" asserts="0">
+            <test-case id="1029" name="StageGenerator_SpawnsOnWaterPlane" fullname="HighSeas.Tests.GameMathTests.StageGenerator_SpawnsOnWaterPlane" methodname="StageGenerator_SpawnsOnWaterPlane" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="670189395" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000465" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1033" name="WeaponUpgradeOffer_ScalesStatLinesByRarity" fullname="HighSeas.Tests.LevelOfferGeneratorTests.WeaponUpgradeOffer_ScalesStatLinesByRarity" methodname="WeaponUpgradeOffer_ScalesStatLinesByRarity" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="412462316" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000391" asserts="0">
+            <test-case id="1027" name="ThreatPerSecond_GrowsWithTime" fullname="HighSeas.Tests.GameMathTests.ThreatPerSecond_GrowsWithTime" methodname="ThreatPerSecond_GrowsWithTime" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="1283688634" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000393" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1024" name="XPToNext_IsMonotonic" fullname="HighSeas.Tests.GameMathTests.XPToNext_IsMonotonic" methodname="XPToNext_IsMonotonic" classname="HighSeas.Tests.GameMathTests" runstate="Runnable" seed="346785268" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000303" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
           </test-suite>
-          <test-suite type="TestFixture" id="1038" name="RunSnapshotTests" fullname="HighSeas.Tests.RunSnapshotTests" classname="HighSeas.Tests.RunSnapshotTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.003742" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1033" name="LevelOfferGeneratorTests" fullname="HighSeas.Tests.LevelOfferGeneratorTests" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.029973" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1039" name="RunSnapshot_RoundTrip_PreservesSchemaVersion" fullname="HighSeas.Tests.RunSnapshotTests.RunSnapshot_RoundTrip_PreservesSchemaVersion" methodname="RunSnapshot_RoundTrip_PreservesSchemaVersion" classname="HighSeas.Tests.RunSnapshotTests" runstate="Runnable" seed="1860373909" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.002814" asserts="0">
+            <test-case id="1042" name="DamageProcPolicy_DotAndTriggeredItems_DoNotCrit" fullname="HighSeas.Tests.LevelOfferGeneratorTests.DamageProcPolicy_DotAndTriggeredItems_DoNotCrit" methodname="DamageProcPolicy_DotAndTriggeredItems_DoNotCrit" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="806243500" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000627" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1040" name="FinalizeOffers_AllCapped_ShowsSingleContinue" fullname="HighSeas.Tests.LevelOfferGeneratorTests.FinalizeOffers_AllCapped_ShowsSingleContinue" methodname="FinalizeOffers_AllCapped_ShowsSingleContinue" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="731026377" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.003559" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1041" name="FinalizeOffers_WhenNoContentEligible_FillsFallbackCards" fullname="HighSeas.Tests.LevelOfferGeneratorTests.FinalizeOffers_WhenNoContentEligible_FillsFallbackCards" methodname="FinalizeOffers_WhenNoContentEligible_FillsFallbackCards" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="1438822192" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000942" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1034" name="FirstLevelUp_GuaranteesStarterUpgradeNewWeaponAndLogbook" fullname="HighSeas.Tests.LevelOfferGeneratorTests.FirstLevelUp_GuaranteesStarterUpgradeNewWeaponAndLogbook" methodname="FirstLevelUp_GuaranteesStarterUpgradeNewWeaponAndLogbook" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="1731881532" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.001414" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1036" name="Generate_ExcludesMaxedWeapons" fullname="HighSeas.Tests.LevelOfferGeneratorTests.Generate_ExcludesMaxedWeapons" methodname="Generate_ExcludesMaxedWeapons" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="176979560" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.003397" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1035" name="Generate_PreventsDuplicateCards" fullname="HighSeas.Tests.LevelOfferGeneratorTests.Generate_PreventsDuplicateCards" methodname="Generate_PreventsDuplicateCards" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="1319242174" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.013476" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1037" name="Generate_WithDemoFlag_AlwaysIncludesNewWeaponWhenUnownedRemain" fullname="HighSeas.Tests.LevelOfferGeneratorTests.Generate_WithDemoFlag_AlwaysIncludesNewWeaponWhenUnownedRemain" methodname="Generate_WithDemoFlag_AlwaysIncludesNewWeaponWhenUnownedRemain" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="571812605" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.001565" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1038" name="Generate_WithFullWeaponSlots_DoesNotOfferNewWeapons" fullname="HighSeas.Tests.LevelOfferGeneratorTests.Generate_WithFullWeaponSlots_DoesNotOfferNewWeapons" methodname="Generate_WithFullWeaponSlots_DoesNotOfferNewWeapons" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="965974976" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.001957" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1043" name="WeaponDefinitions_ExposePatternSpecificAxes" fullname="HighSeas.Tests.LevelOfferGeneratorTests.WeaponDefinitions_ExposePatternSpecificAxes" methodname="WeaponDefinitions_ExposePatternSpecificAxes" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="145602586" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000546" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1039" name="WeaponUpgradeOffer_ScalesStatLinesByRarity" fullname="HighSeas.Tests.LevelOfferGeneratorTests.WeaponUpgradeOffer_ScalesStatLinesByRarity" methodname="WeaponUpgradeOffer_ScalesStatLinesByRarity" classname="HighSeas.Tests.LevelOfferGeneratorTests" runstate="Runnable" seed="1735909462" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000397" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
           </test-suite>
-          <test-suite type="TestFixture" id="1040" name="SpawnDirectorTests" fullname="HighSeas.Tests.SpawnDirectorTests" classname="HighSeas.Tests.SpawnDirectorTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.002323" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1044" name="PlaytestFeedbackGateTests" fullname="HighSeas.Tests.PlaytestFeedbackGateTests" classname="HighSeas.Tests.PlaytestFeedbackGateTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.046599" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1042" name="SpawnPackRegistry_LateMixIncludesSpecialists" fullname="HighSeas.Tests.SpawnDirectorTests.SpawnPackRegistry_LateMixIncludesSpecialists" methodname="SpawnPackRegistry_LateMixIncludesSpecialists" classname="HighSeas.Tests.SpawnDirectorTests" runstate="Runnable" seed="2145702645" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.001145" asserts="0">
+            <test-case id="1048" name="EnemyTierLogic_BlocksGeneralBeforeLevelFive" fullname="HighSeas.Tests.PlaytestFeedbackGateTests.EnemyTierLogic_BlocksGeneralBeforeLevelFive" methodname="EnemyTierLogic_BlocksGeneralBeforeLevelFive" classname="HighSeas.Tests.PlaytestFeedbackGateTests" runstate="Runnable" seed="237267425" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000247" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1041" name="SpawnPackRegistry_ReturnsNonEmptyPacks" fullname="HighSeas.Tests.SpawnDirectorTests.SpawnPackRegistry_ReturnsNonEmptyPacks" methodname="SpawnPackRegistry_ReturnsNonEmptyPacks" classname="HighSeas.Tests.SpawnDirectorTests" runstate="Runnable" seed="1632404525" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000242" asserts="0">
+            <test-case id="1045" name="LogbookOffer_HullUsesFlatMaxHull_NotPercent" fullname="HighSeas.Tests.PlaytestFeedbackGateTests.LogbookOffer_HullUsesFlatMaxHull_NotPercent" methodname="LogbookOffer_HullUsesFlatMaxHull_NotPercent" classname="HighSeas.Tests.PlaytestFeedbackGateTests" runstate="Runnable" seed="583153079" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000810" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1049" name="RarityRoll_AtLuckZero_CommonIsMajority" fullname="HighSeas.Tests.PlaytestFeedbackGateTests.RarityRoll_AtLuckZero_CommonIsMajority" methodname="RarityRoll_AtLuckZero_CommonIsMajority" classname="HighSeas.Tests.PlaytestFeedbackGateTests" runstate="Runnable" seed="1850598177" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000644" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1050" name="SaltwindProfile_BalanceVersionIsThree" fullname="HighSeas.Tests.PlaytestFeedbackGateTests.SaltwindProfile_BalanceVersionIsThree" methodname="SaltwindProfile_BalanceVersionIsThree" classname="HighSeas.Tests.PlaytestFeedbackGateTests" runstate="Runnable" seed="1042259204" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.042997" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1046" name="StatDisplay_PercentStat_FormatsAsPercent" fullname="HighSeas.Tests.PlaytestFeedbackGateTests.StatDisplay_PercentStat_FormatsAsPercent" methodname="StatDisplay_PercentStat_FormatsAsPercent" classname="HighSeas.Tests.PlaytestFeedbackGateTests" runstate="Runnable" seed="529837238" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000200" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1047" name="V3LogbookCatalog_HasTenPlaytestBooks" fullname="HighSeas.Tests.PlaytestFeedbackGateTests.V3LogbookCatalog_HasTenPlaytestBooks" methodname="V3LogbookCatalog_HasTenPlaytestBooks" classname="HighSeas.Tests.PlaytestFeedbackGateTests" runstate="Runnable" seed="622401698" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000196" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
           </test-suite>
-          <test-suite type="TestFixture" id="1043" name="V3IntegrationTests" fullname="HighSeas.Tests.V3IntegrationTests" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.064294" total="11" passed="10" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1051" name="RunEncounterTrackerTests" fullname="HighSeas.Tests.RunEncounterTrackerTests" classname="HighSeas.Tests.RunEncounterTrackerTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.005773" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1053" name="BossEncounter_DespawnWithoutKill_DoesNotComplete" fullname="HighSeas.Tests.RunEncounterTrackerTests.BossEncounter_DespawnWithoutKill_DoesNotComplete" methodname="BossEncounter_DespawnWithoutKill_DoesNotComplete" classname="HighSeas.Tests.RunEncounterTrackerTests" runstate="Runnable" seed="1453388637" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.002237" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1052" name="BossEncounter_NoSpawn_NoFalseComplete" fullname="HighSeas.Tests.RunEncounterTrackerTests.BossEncounter_NoSpawn_NoFalseComplete" methodname="BossEncounter_NoSpawn_NoFalseComplete" classname="HighSeas.Tests.RunEncounterTrackerTests" runstate="Runnable" seed="1199696184" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000176" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1054" name="BossEncounter_TrackedKill_SecuresOnce" fullname="HighSeas.Tests.RunEncounterTrackerTests.BossEncounter_TrackedKill_SecuresOnce" methodname="BossEncounter_TrackedKill_SecuresOnce" classname="HighSeas.Tests.RunEncounterTrackerTests" runstate="Runnable" seed="869762550" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000275" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1055" name="FailedSummon_DoesNotSecureBoss" fullname="HighSeas.Tests.RunEncounterTrackerTests.FailedSummon_DoesNotSecureBoss" methodname="FailedSummon_DoesNotSecureBoss" classname="HighSeas.Tests.RunEncounterTrackerTests" runstate="Runnable" seed="1349193272" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000681" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1056" name="PartialCacheSpawn_DoesNotCompleteUntilAllKilled" fullname="HighSeas.Tests.RunEncounterTrackerTests.PartialCacheSpawn_DoesNotCompleteUntilAllKilled" methodname="PartialCacheSpawn_DoesNotCompleteUntilAllKilled" classname="HighSeas.Tests.RunEncounterTrackerTests" runstate="Runnable" seed="666211751" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000221" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1057" name="PooledAgentId_AfterDespawnMapping_DoesNotSecureBoss" fullname="HighSeas.Tests.RunEncounterTrackerTests.PooledAgentId_AfterDespawnMapping_DoesNotSecureBoss" methodname="PooledAgentId_AfterDespawnMapping_DoesNotSecureBoss" classname="HighSeas.Tests.RunEncounterTrackerTests" runstate="Runnable" seed="651573487" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000346" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1058" name="ResetForNewRun_ClearsOutstandingEncounters" fullname="HighSeas.Tests.RunEncounterTrackerTests.ResetForNewRun_ClearsOutstandingEncounters" methodname="ResetForNewRun_ClearsOutstandingEncounters" classname="HighSeas.Tests.RunEncounterTrackerTests" runstate="Runnable" seed="1032632370" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000177" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1059" name="RunSnapshotTests" fullname="HighSeas.Tests.RunSnapshotTests" classname="HighSeas.Tests.RunSnapshotTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.002789" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1060" name="RunSnapshot_RoundTrip_PreservesSchemaVersion" fullname="HighSeas.Tests.RunSnapshotTests.RunSnapshot_RoundTrip_PreservesSchemaVersion" methodname="RunSnapshot_RoundTrip_PreservesSchemaVersion" classname="HighSeas.Tests.RunSnapshotTests" runstate="Runnable" seed="723600448" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.002178" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1061" name="SaltwindAmbientCompositionGateTests" fullname="HighSeas.Tests.SaltwindAmbientCompositionGateTests" classname="HighSeas.Tests.SaltwindAmbientCompositionGateTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.067829" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1062" name="AmbientBandProfileIds_ParseToBandIndex" fullname="HighSeas.Tests.SaltwindAmbientCompositionGateTests.AmbientBandProfileIds_ParseToBandIndex" methodname="AmbientBandProfileIds_ParseToBandIndex" classname="HighSeas.Tests.SaltwindAmbientCompositionGateTests" runstate="Runnable" seed="1112170530" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000459" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1064" name="Band0_PicksOnlySoldierFodder" fullname="HighSeas.Tests.SaltwindAmbientCompositionGateTests.Band0_PicksOnlySoldierFodder" methodname="Band0_PicksOnlySoldierFodder" classname="HighSeas.Tests.SaltwindAmbientCompositionGateTests" runstate="Runnable" seed="367795628" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.062710" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[
+IgnoreFailingMessages:true
+
+IgnoreFailingMessages:false
+]]></output>
+            </test-case>
+            <test-case id="1065" name="KrakenAreaDenial_RespectsCapAndFallsBack" fullname="HighSeas.Tests.SaltwindAmbientCompositionGateTests.KrakenAreaDenial_RespectsCapAndFallsBack" methodname="KrakenAreaDenial_RespectsCapAndFallsBack" classname="HighSeas.Tests.SaltwindAmbientCompositionGateTests" runstate="Runnable" seed="1206850490" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.001582" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1063" name="OrdinaryShare_MatchesHandoffBands" fullname="HighSeas.Tests.SaltwindAmbientCompositionGateTests.OrdinaryShare_MatchesHandoffBands" methodname="OrdinaryShare_MatchesHandoffBands" classname="HighSeas.Tests.SaltwindAmbientCompositionGateTests" runstate="Runnable" seed="783072747" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.000193" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1066" name="SpawnTelemetry_Checkpoints_FireOncePerRun" fullname="HighSeas.Tests.SaltwindAmbientCompositionGateTests.SpawnTelemetry_Checkpoints_FireOncePerRun" methodname="SpawnTelemetry_Checkpoints_FireOncePerRun" classname="HighSeas.Tests.SaltwindAmbientCompositionGateTests" runstate="Runnable" seed="1472489784" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:00:57Z" duration="0.001710" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1067" name="SaltwindBalanceLabGateTests" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" testcasecount="15" result="Failed" site="Child" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:04:14Z" duration="196.351058" total="15" passed="13" failed="2" inconclusive="0" skipped="0" asserts="0">
             <properties />
             <failure>
               <message><![CDATA[One or more child tests had errors]]></message>
             </failure>
-            <test-case id="1053" name="DEC024_SecureObjective_PersistsThroughPlayerDeath" fullname="HighSeas.Tests.V3IntegrationTests.DEC024_SecureObjective_PersistsThroughPlayerDeath" methodname="DEC024_SecureObjective_PersistsThroughPlayerDeath" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="1629232768" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000866" asserts="0">
+            <test-case id="1081" name="BossWin_SaltwindScenario_SecuresObjectiveBeforeTimeout" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.BossWin_SaltwindScenario_SecuresObjectiveBeforeTimeout" methodname="BossWin_SaltwindScenario_SecuresObjectiveBeforeTimeout" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="951226228" result="Passed" start-time="2026-09-24 13:00:57Z" end-time="2026-09-24 13:01:06Z" duration="8.841732" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1049" name="V3ChestLoot_Seed12345_ProducesVariedDrops" fullname="HighSeas.Tests.V3IntegrationTests.V3ChestLoot_Seed12345_ProducesVariedDrops" methodname="V3ChestLoot_Seed12345_ProducesVariedDrops" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="792011733" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.001425" asserts="0">
+            <test-case id="1073" name="Calibration_MarksExpert_UsesTougherBossAndLowerHullThanFreshExpert" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.Calibration_MarksExpert_UsesTougherBossAndLowerHullThanFreshExpert" methodname="Calibration_MarksExpert_UsesTougherBossAndLowerHullThanFreshExpert" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="1994858359" result="Passed" start-time="2026-09-24 13:01:06Z" end-time="2026-09-24 13:01:06Z" duration="0.001700" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1048" name="V3ContentUnlocks_BlocksFlyingCutlassesBeforeFirstConquest" fullname="HighSeas.Tests.V3IntegrationTests.V3ContentUnlocks_BlocksFlyingCutlassesBeforeFirstConquest" methodname="V3ContentUnlocks_BlocksFlyingCutlassesBeforeFirstConquest" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="275516251" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000239" asserts="0">
+            <test-case id="1082" name="Export_LinkedSchedule_IncludesSnapshotsInHash" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.Export_LinkedSchedule_IncludesSnapshotsInHash" methodname="Export_LinkedSchedule_IncludesSnapshotsInHash" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="737986345" result="Passed" start-time="2026-09-24 13:01:06Z" end-time="2026-09-24 13:01:06Z" duration="0.002222" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1054" name="V3DiscoverySystem_RevealChests_AddsIndices" fullname="HighSeas.Tests.V3IntegrationTests.V3DiscoverySystem_RevealChests_AddsIndices" methodname="V3DiscoverySystem_RevealChests_AddsIndices" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="430192824" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.003396" asserts="0">
+            <test-case id="1077" name="LabScenario_doesNotReferencePlayerSave" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.LabScenario_doesNotReferencePlayerSave" methodname="LabScenario_doesNotReferencePlayerSave" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="1778689048" result="Passed" start-time="2026-09-24 13:01:06Z" end-time="2026-09-24 13:01:06Z" duration="0.001032" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1044" name="V3Economy_ChestPrice_MatchesGddProgression" fullname="HighSeas.Tests.V3IntegrationTests.V3Economy_ChestPrice_MatchesGddProgression" methodname="V3Economy_ChestPrice_MatchesGddProgression" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="339358855" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000366" asserts="0">
+            <test-case id="1080" name="LevelOffer_FillStateAndPity_AddsWeaponAtProtectionLevel" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.LevelOffer_FillStateAndPity_AddsWeaponAtProtectionLevel" methodname="LevelOffer_FillStateAndPity_AddsWeaponAtProtectionLevel" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="641534297" result="Passed" start-time="2026-09-24 13:01:06Z" end-time="2026-09-24 13:01:06Z" duration="0.001245" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1052" name="V3FloorPowerup_Constants_MatchCombatAppendix" fullname="HighSeas.Tests.V3IntegrationTests.V3FloorPowerup_Constants_MatchCombatAppendix" methodname="V3FloorPowerup_Constants_MatchCombatAppendix" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="173269314" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000193" asserts="0">
+            <test-case id="1076" name="Matrix_AverageAndExpert_DifferForSamePolicyPool" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_AverageAndExpert_DifferForSamePolicyPool" methodname="Matrix_AverageAndExpert_DifferForSamePolicyPool" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="1265025211" result="Failed" start-time="2026-09-24 13:01:06Z" end-time="2026-09-24 13:02:13Z" duration="66.849350" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[  Average (kite) and Expert (orbit) should diverge under calibration
+  Expected: greater than 0.00100000005f
+  But was:  0.0f
+]]></message>
+                <stack-trace><![CDATA[at HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_AverageAndExpert_DifferForSamePolicyPool () [0x000a8] in C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\Pirate Game Unity\Assets\_Game\Tests\EditMode\SaltwindBalanceLabGateTests.cs:153
+]]></stack-trace>
+              </failure>
+            </test-case>
+            <test-case id="1074" name="Matrix_ConservativeFresh_WinsBossOnSampleSeeds" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_ConservativeFresh_WinsBossOnSampleSeeds" methodname="Matrix_ConservativeFresh_WinsBossOnSampleSeeds" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="1949289154" result="Passed" start-time="2026-09-24 13:02:13Z" end-time="2026-09-24 13:02:15Z" duration="2.028254" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1051" name="V3FloorPowerup_RollKind_UsesFourWaySplit" fullname="HighSeas.Tests.V3IntegrationTests.V3FloorPowerup_RollKind_UsesFourWaySplit" methodname="V3FloorPowerup_RollKind_UsesFourWaySplit" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="1023128745" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.002159" asserts="0">
+            <test-case id="1075" name="Matrix_ExpertCells_StayWithinDocumentedWinBand" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_ExpertCells_StayWithinDocumentedWinBand" methodname="Matrix_ExpertCells_StayWithinDocumentedWinBand" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="1138815620" result="Failed" start-time="2026-09-24 13:02:15Z" end-time="2026-09-24 13:04:00Z" duration="104.659535" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[  Precision/MarksUnlocked expert win 0%
+  Expected: True
+  But was:  False
+]]></message>
+                <stack-trace><![CDATA[at HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_ExpertCells_StayWithinDocumentedWinBand () [0x0003d] in C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\Pirate Game Unity\Assets\_Game\Tests\EditMode\SaltwindBalanceLabGateTests.cs:122
+]]></stack-trace>
+              </failure>
+            </test-case>
+            <test-case id="1072" name="Matrix_fullGrid_HasEighteenCellsAndExpectedRunCount" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_fullGrid_HasEighteenCellsAndExpectedRunCount" methodname="Matrix_fullGrid_HasEighteenCellsAndExpectedRunCount" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="736003212" result="Passed" start-time="2026-09-24 13:04:00Z" end-time="2026-09-24 13:04:10Z" duration="10.001160" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1045" name="V3GameMath_XPToNext_UsesFivePlusTwoL" fullname="HighSeas.Tests.V3IntegrationTests.V3GameMath_XPToNext_UsesFivePlusTwoL" methodname="V3GameMath_XPToNext_UsesFivePlusTwoL" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="16428126" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.000280" asserts="0">
+            <test-case id="1071" name="Matrix_sameSeedAndPolicy_ReproducesSummary" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_sameSeedAndPolicy_ReproducesSummary" methodname="Matrix_sameSeedAndPolicy_ReproducesSummary" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="1657146527" result="Passed" start-time="2026-09-24 13:04:10Z" end-time="2026-09-24 13:04:14Z" duration="3.955320" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1046" name="V3HomeSeed_LocksGeographyAfterFirstBoss" fullname="HighSeas.Tests.V3IntegrationTests.V3HomeSeed_LocksGeographyAfterFirstBoss" methodname="V3HomeSeed_LocksGeographyAfterFirstBoss" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="1005498092" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.003638" asserts="0">
+            <test-case id="1068" name="Parity_ChestPrice_MatchesCodecFixtures" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.Parity_ChestPrice_MatchesCodecFixtures" methodname="Parity_ChestPrice_MatchesCodecFixtures" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="711063867" result="Passed" start-time="2026-09-24 13:04:14Z" end-time="2026-09-24 13:04:14Z" duration="0.001252" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1070" name="Parity_StageDeadline_MatchesExport" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.Parity_StageDeadline_MatchesExport" methodname="Parity_StageDeadline_MatchesExport" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="1799035588" result="Passed" start-time="2026-09-24 13:04:14Z" end-time="2026-09-24 13:04:14Z" duration="0.000949" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1069" name="Parity_XpLevelZeroToOne_MatchesCodec" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.Parity_XpLevelZeroToOne_MatchesCodec" methodname="Parity_XpLevelZeroToOne_MatchesCodec" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="810243902" result="Passed" start-time="2026-09-24 13:04:14Z" end-time="2026-09-24 13:04:14Z" duration="0.000889" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1079" name="RouteParity_FirstChestCheckpoint_MatchesExportTravelBudget" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.RouteParity_FirstChestCheckpoint_MatchesExportTravelBudget" methodname="RouteParity_FirstChestCheckpoint_MatchesExportTravelBudget" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="1706327327" result="Passed" start-time="2026-09-24 13:04:14Z" end-time="2026-09-24 13:04:14Z" duration="0.000819" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1078" name="TraceParity_FixedSeedCheckpoints_MatchRuntimeAndLab" fullname="HighSeas.Tests.SaltwindBalanceLabGateTests.TraceParity_FixedSeedCheckpoints_MatchRuntimeAndLab" methodname="TraceParity_FixedSeedCheckpoints_MatchRuntimeAndLab" classname="HighSeas.Tests.SaltwindBalanceLabGateTests" runstate="Runnable" seed="1242665087" result="Passed" start-time="2026-09-24 13:04:14Z" end-time="2026-09-24 13:04:14Z" duration="0.002050" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1083" name="SaltwindBalanceLabMatrixEvidenceTests" fullname="HighSeas.Tests.SaltwindBalanceLabMatrixEvidenceTests" classname="HighSeas.Tests.SaltwindBalanceLabMatrixEvidenceTests" runstate="Runnable" testcasecount="1" result="Failed" site="Child" start-time="2026-09-24 13:04:14Z" end-time="2026-09-24 13:23:01Z" duration="1127.637343" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-case id="1084" name="Matrix_Production1200Runs_WritesVerificationArtifacts" fullname="HighSeas.Tests.SaltwindBalanceLabMatrixEvidenceTests.Matrix_Production1200Runs_WritesVerificationArtifacts" methodname="Matrix_Production1200Runs_WritesVerificationArtifacts" classname="HighSeas.Tests.SaltwindBalanceLabMatrixEvidenceTests" runstate="Runnable" seed="1917427379" result="Failed" start-time="2026-09-24 13:04:14Z" end-time="2026-09-24 13:23:01Z" duration="1127.610799" asserts="0">
+              <properties>
+                <property name="Timeout" value="900000" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[Timeout value of 900000 ms was exceeded. If this is intended, increase the timeout value using a TimeoutAttribute.]]></message>
+                <stack-trace><![CDATA[]]></stack-trace>
+              </failure>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1085" name="SaltwindCodexFollowupGateTests" fullname="HighSeas.Tests.SaltwindCodexFollowupGateTests" classname="HighSeas.Tests.SaltwindCodexFollowupGateTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.140590" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1086" name="CannonboatCap_RejectsFifthThroughOrdinaryPool" fullname="HighSeas.Tests.SaltwindCodexFollowupGateTests.CannonboatCap_RejectsFifthThroughOrdinaryPool" methodname="CannonboatCap_RejectsFifthThroughOrdinaryPool" classname="HighSeas.Tests.SaltwindCodexFollowupGateTests" runstate="Runnable" seed="478552107" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.053372" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1090" name="ConservativeBossHull_V6_IsHigherThanFreshExpert" fullname="HighSeas.Tests.SaltwindCodexFollowupGateTests.ConservativeBossHull_V6_IsHigherThanFreshExpert" methodname="ConservativeBossHull_V6_IsHigherThanFreshExpert" classname="HighSeas.Tests.SaltwindCodexFollowupGateTests" runstate="Runnable" seed="842988481" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.003242" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1089" name="LegacyOwnedContent_BlocksMarksPurchase" fullname="HighSeas.Tests.SaltwindCodexFollowupGateTests.LegacyOwnedContent_BlocksMarksPurchase" methodname="LegacyOwnedContent_BlocksMarksPurchase" classname="HighSeas.Tests.SaltwindCodexFollowupGateTests" runstate="Runnable" seed="472320131" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.011613" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1087" name="ScheduledEliteKill_RequiresRegisteredAgent" fullname="HighSeas.Tests.SaltwindCodexFollowupGateTests.ScheduledEliteKill_RequiresRegisteredAgent" methodname="ScheduledEliteKill_RequiresRegisteredAgent" classname="HighSeas.Tests.SaltwindCodexFollowupGateTests" runstate="Runnable" seed="1345201979" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.006585" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1088" name="SwarmPulse_SkippedPermanentlyWhenBossActiveAtBeatTime" fullname="HighSeas.Tests.SaltwindCodexFollowupGateTests.SwarmPulse_SkippedPermanentlyWhenBossActiveAtBeatTime" methodname="SwarmPulse_SkippedPermanentlyWhenBossActiveAtBeatTime" classname="HighSeas.Tests.SaltwindCodexFollowupGateTests" runstate="Runnable" seed="1714551595" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.001683" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1091" name="SaltwindCodexRegressionGateTests" fullname="HighSeas.Tests.SaltwindCodexRegressionGateTests" classname="HighSeas.Tests.SaltwindCodexRegressionGateTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.036473" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1092" name="AmbientBands_AreExclusiveWindows_NotStacked" fullname="HighSeas.Tests.SaltwindCodexRegressionGateTests.AmbientBands_AreExclusiveWindows_NotStacked" methodname="AmbientBands_AreExclusiveWindows_NotStacked" classname="HighSeas.Tests.SaltwindCodexRegressionGateTests" runstate="Runnable" seed="849309156" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.003367" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1098" name="LegacyUnlockedIds_CountAsEffectiveOwnership" fullname="HighSeas.Tests.SaltwindCodexRegressionGateTests.LegacyUnlockedIds_CountAsEffectiveOwnership" methodname="LegacyUnlockedIds_CountAsEffectiveOwnership" classname="HighSeas.Tests.SaltwindCodexRegressionGateTests" runstate="Runnable" seed="490912318" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.000967" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1099" name="MarksOwnedLightningMast_MakesCopperConductorEligible" fullname="HighSeas.Tests.SaltwindCodexRegressionGateTests.MarksOwnedLightningMast_MakesCopperConductorEligible" methodname="MarksOwnedLightningMast_MakesCopperConductorEligible" classname="HighSeas.Tests.SaltwindCodexRegressionGateTests" runstate="Runnable" seed="643559162" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.004512" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1094" name="MarksRecord_BuildRecord_IsPure_NoMutationOnRepeatedRead" fullname="HighSeas.Tests.SaltwindCodexRegressionGateTests.MarksRecord_BuildRecord_IsPure_NoMutationOnRepeatedRead" methodname="MarksRecord_BuildRecord_IsPure_NoMutationOnRepeatedRead" classname="HighSeas.Tests.SaltwindCodexRegressionGateTests" runstate="Runnable" seed="278339359" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.002431" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1097" name="NineMinuteAmbient_UsesSingleBandFourExportRate" fullname="HighSeas.Tests.SaltwindCodexRegressionGateTests.NineMinuteAmbient_UsesSingleBandFourExportRate" methodname="NineMinuteAmbient_UsesSingleBandFourExportRate" classname="HighSeas.Tests.SaltwindCodexRegressionGateTests" runstate="Runnable" seed="1772216044" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.002623" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1093" name="ScheduledContinuousWindow_CompletesAtNextBandStart" fullname="HighSeas.Tests.SaltwindCodexRegressionGateTests.ScheduledContinuousWindow_CompletesAtNextBandStart" methodname="ScheduledContinuousWindow_CompletesAtNextBandStart" classname="HighSeas.Tests.SaltwindCodexRegressionGateTests" runstate="Runnable" seed="1568783651" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.003219" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1096" name="ScheduledEliteKillCredits_AreDistinctPerElite" fullname="HighSeas.Tests.SaltwindCodexRegressionGateTests.ScheduledEliteKillCredits_AreDistinctPerElite" methodname="ScheduledEliteKillCredits_AreDistinctPerElite" classname="HighSeas.Tests.SaltwindCodexRegressionGateTests" runstate="Runnable" seed="981379183" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.001661" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1095" name="StageDeadline_IncludesFinalOrdinaryMinuteBucket" fullname="HighSeas.Tests.SaltwindCodexRegressionGateTests.StageDeadline_IncludesFinalOrdinaryMinuteBucket" methodname="StageDeadline_IncludesFinalOrdinaryMinuteBucket" classname="HighSeas.Tests.SaltwindCodexRegressionGateTests" runstate="Runnable" seed="1847302774" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.001834" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1100" name="TryPurchaseUnlock_SupportsCaptainBrine" fullname="HighSeas.Tests.SaltwindCodexRegressionGateTests.TryPurchaseUnlock_SupportsCaptainBrine" methodname="TryPurchaseUnlock_SupportsCaptainBrine" classname="HighSeas.Tests.SaltwindCodexRegressionGateTests" runstate="Runnable" seed="1290967827" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.007342" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1127" name="SaltwindEconomyGateTests" fullname="HighSeas.Tests.SaltwindEconomyGateTests" classname="HighSeas.Tests.SaltwindEconomyGateTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.025736" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1128" name="ChestPrices_MatchApprovedFixtures" fullname="HighSeas.Tests.SaltwindEconomyGateTests.ChestPrices_MatchApprovedFixtures" methodname="ChestPrices_MatchApprovedFixtures" classname="HighSeas.Tests.SaltwindEconomyGateTests" runstate="Runnable" seed="229433701" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.002821" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1130" name="ChestPurchasePlan_InsufficientGold_DoesNotGrant" fullname="HighSeas.Tests.SaltwindEconomyGateTests.ChestPurchasePlan_InsufficientGold_DoesNotGrant" methodname="ChestPurchasePlan_InsufficientGold_DoesNotGrant" classname="HighSeas.Tests.SaltwindEconomyGateTests" runstate="Runnable" seed="295555320" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.005708" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1129" name="ChestPurchasePlan_RepeatedQuotes_DoNotAdvancePrice" fullname="HighSeas.Tests.SaltwindEconomyGateTests.ChestPurchasePlan_RepeatedQuotes_DoNotAdvancePrice" methodname="ChestPurchasePlan_RepeatedQuotes_DoNotAdvancePrice" classname="HighSeas.Tests.SaltwindEconomyGateTests" runstate="Runnable" seed="1011603280" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.005218" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1131" name="PickupMerge_ConservesTotals" fullname="HighSeas.Tests.SaltwindEconomyGateTests.PickupMerge_ConservesTotals" methodname="PickupMerge_ConservesTotals" classname="HighSeas.Tests.SaltwindEconomyGateTests" runstate="Runnable" seed="786582993" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.000696" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1132" name="ProfileGold_SkipsHiddenGoldGainStat" fullname="HighSeas.Tests.SaltwindEconomyGateTests.ProfileGold_SkipsHiddenGoldGainStat" methodname="ProfileGold_SkipsHiddenGoldGainStat" classname="HighSeas.Tests.SaltwindEconomyGateTests" runstate="Runnable" seed="1556130408" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.003286" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1133" name="SaltwindPowerupPool_UsesFourApprovedKinds" fullname="HighSeas.Tests.SaltwindEconomyGateTests.SaltwindPowerupPool_UsesFourApprovedKinds" methodname="SaltwindPowerupPool_UsesFourApprovedKinds" classname="HighSeas.Tests.SaltwindEconomyGateTests" runstate="Runnable" seed="745318364" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.002028" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1154" name="SaltwindFinaleGateTests" fullname="HighSeas.Tests.SaltwindFinaleGateTests" classname="HighSeas.Tests.SaltwindFinaleGateTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.018820" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1158" name="BossAttacks_NoDamageDuringTelegraph" fullname="HighSeas.Tests.SaltwindFinaleGateTests.BossAttacks_NoDamageDuringTelegraph" methodname="BossAttacks_NoDamageDuringTelegraph" classname="HighSeas.Tests.SaltwindFinaleGateTests" runstate="Runnable" seed="2062103834" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.001241" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1159" name="BossCharge_CommitsDirectionAtTelegraphEnd" fullname="HighSeas.Tests.SaltwindFinaleGateTests.BossCharge_CommitsDirectionAtTelegraphEnd" methodname="BossCharge_CommitsDirectionAtTelegraphEnd" classname="HighSeas.Tests.SaltwindFinaleGateTests" runstate="Runnable" seed="1987737233" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.002042" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1160" name="EnragedPhase_ShortensRecovery" fullname="HighSeas.Tests.SaltwindFinaleGateTests.EnragedPhase_ShortensRecovery" methodname="EnragedPhase_ShortensRecovery" classname="HighSeas.Tests.SaltwindFinaleGateTests" runstate="Runnable" seed="2039956414" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.000404" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1161" name="MarkedBombardment_NoDamageDuringTelegraph_UsesFootprintRadius" fullname="HighSeas.Tests.SaltwindFinaleGateTests.MarkedBombardment_NoDamageDuringTelegraph_UsesFootprintRadius" methodname="MarkedBombardment_NoDamageDuringTelegraph_UsesFootprintRadius" classname="HighSeas.Tests.SaltwindFinaleGateTests" runstate="Runnable" seed="464566378" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.001185" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1155" name="Overtime_StartsAtStageDeadline_NotBossDeath" fullname="HighSeas.Tests.SaltwindFinaleGateTests.Overtime_StartsAtStageDeadline_NotBossDeath" methodname="Overtime_StartsAtStageDeadline_NotBossDeath" classname="HighSeas.Tests.SaltwindFinaleGateTests" runstate="Runnable" seed="825298809" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.002994" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1156" name="Storm_StartsAt720Seconds" fullname="HighSeas.Tests.SaltwindFinaleGateTests.Storm_StartsAt720Seconds" methodname="Storm_StartsAt720Seconds" classname="HighSeas.Tests.SaltwindFinaleGateTests" runstate="Runnable" seed="1881817862" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.003187" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1157" name="StormSafeRegion_ContractsBetween720And900" fullname="HighSeas.Tests.SaltwindFinaleGateTests.StormSafeRegion_ContractsBetween720And900" methodname="StormSafeRegion_ContractsBetween720And900" classname="HighSeas.Tests.SaltwindFinaleGateTests" runstate="Runnable" seed="1520429584" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.001549" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1101" name="SaltwindModeGateTests" fullname="HighSeas.Tests.SaltwindModeGateTests" classname="HighSeas.Tests.SaltwindModeGateTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.017251" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1103" name="DeveloperPreset_EnablesHotkeysAndBypass" fullname="HighSeas.Tests.SaltwindModeGateTests.DeveloperPreset_EnablesHotkeysAndBypass" methodname="DeveloperPreset_EnablesHotkeysAndBypass" classname="HighSeas.Tests.SaltwindModeGateTests" runstate="Runnable" seed="926707395" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.001060" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1104" name="EndActiveSaltwindRunContext_ClearsProfileAndRunLayout" fullname="HighSeas.Tests.SaltwindModeGateTests.EndActiveSaltwindRunContext_ClearsProfileAndRunLayout" methodname="EndActiveSaltwindRunContext_ClearsProfileAndRunLayout" classname="HighSeas.Tests.SaltwindModeGateTests" runstate="Runnable" seed="610559001" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.003122" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1105" name="MenuWeaponGate_StableWithAndWithoutActiveProfile" fullname="HighSeas.Tests.SaltwindModeGateTests.MenuWeaponGate_StableWithAndWithoutActiveProfile" methodname="MenuWeaponGate_StableWithAndWithoutActiveProfile" classname="HighSeas.Tests.SaltwindModeGateTests" runstate="Runnable" seed="1983557101" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.009286" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1102" name="NormalPlay_RunHotkeysDisabled" fullname="HighSeas.Tests.SaltwindModeGateTests.NormalPlay_RunHotkeysDisabled" methodname="NormalPlay_RunHotkeysDisabled" classname="HighSeas.Tests.SaltwindModeGateTests" runstate="Runnable" seed="1722255884" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.000641" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1141" name="SaltwindPoiLayoutGateTests" fullname="HighSeas.Tests.SaltwindPoiLayoutGateTests" classname="HighSeas.Tests.SaltwindPoiLayoutGateTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:04Z" duration="2.082800" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1143" name="ExplosiveBarrelBlast_OneDamagePerActor" fullname="HighSeas.Tests.SaltwindPoiLayoutGateTests.ExplosiveBarrelBlast_OneDamagePerActor" methodname="ExplosiveBarrelBlast_OneDamagePerActor" classname="HighSeas.Tests.SaltwindPoiLayoutGateTests" runstate="Runnable" seed="1909842611" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.015341" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1144" name="ProfileExport_BeaconHints_AtFiveAndSevenMinutes" fullname="HighSeas.Tests.SaltwindPoiLayoutGateTests.ProfileExport_BeaconHints_AtFiveAndSevenMinutes" methodname="ProfileExport_BeaconHints_AtFiveAndSevenMinutes" classname="HighSeas.Tests.SaltwindPoiLayoutGateTests" runstate="Runnable" seed="687877022" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:01Z" duration="0.003438" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1142" name="SaltwindLayout_100Seeds_PassValidation" fullname="HighSeas.Tests.SaltwindPoiLayoutGateTests.SaltwindLayout_100Seeds_PassValidation" methodname="SaltwindLayout_100Seeds_PassValidation" classname="HighSeas.Tests.SaltwindPoiLayoutGateTests" runstate="Runnable" seed="2010172221" result="Passed" start-time="2026-09-24 13:23:01Z" end-time="2026-09-24 13:23:04Z" duration="2.059790" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1134" name="SaltwindProgressionGateTests" fullname="HighSeas.Tests.SaltwindProgressionGateTests" classname="HighSeas.Tests.SaltwindProgressionGateTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.028808" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1138" name="EvolutionIngredients_RequireBaseWeaponInPool" fullname="HighSeas.Tests.SaltwindProgressionGateTests.EvolutionIngredients_RequireBaseWeaponInPool" methodname="EvolutionIngredients_RequireBaseWeaponInPool" classname="HighSeas.Tests.SaltwindProgressionGateTests" runstate="Runnable" seed="519378881" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.003890" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1136" name="MultiLevelXpGrant_IndexesFromLevelZero" fullname="HighSeas.Tests.SaltwindProgressionGateTests.MultiLevelXpGrant_IndexesFromLevelZero" methodname="MultiLevelXpGrant_IndexesFromLevelZero" classname="HighSeas.Tests.SaltwindProgressionGateTests" runstate="Runnable" seed="878171953" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.005839" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1139" name="NewWeaponPityThresholds_MatchProfileLevels" fullname="HighSeas.Tests.SaltwindProgressionGateTests.NewWeaponPityThresholds_MatchProfileLevels" methodname="NewWeaponPityThresholds_MatchProfileLevels" classname="HighSeas.Tests.SaltwindProgressionGateTests" runstate="Runnable" seed="1515659291" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000647" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1140" name="ProcCascade_StopsAtConfiguredCap" fullname="HighSeas.Tests.SaltwindProgressionGateTests.ProcCascade_StopsAtConfiguredCap" methodname="ProcCascade_StopsAtConfiguredCap" classname="HighSeas.Tests.SaltwindProgressionGateTests" runstate="Runnable" seed="876222605" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000444" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1137" name="StarterPool_IncludesSixWeapons_ExcludesMarksUnlocks" fullname="HighSeas.Tests.SaltwindProgressionGateTests.StarterPool_IncludesSixWeapons_ExcludesMarksUnlocks" methodname="StarterPool_IncludesSixWeapons_ExcludesMarksUnlocks" classname="HighSeas.Tests.SaltwindProgressionGateTests" runstate="Runnable" seed="2050045880" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.004586" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1135" name="XpCurve_MatchesCodecFixtures" fullname="HighSeas.Tests.SaltwindProgressionGateTests.XpCurve_MatchesCodecFixtures" methodname="XpCurve_MatchesCodecFixtures" classname="HighSeas.Tests.SaltwindProgressionGateTests" runstate="Runnable" seed="955784102" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.008473" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1106" name="SaltwindResetGateTests" fullname="HighSeas.Tests.SaltwindResetGateTests" classname="HighSeas.Tests.SaltwindResetGateTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.010258" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1112" name="ResetPhaseCount_MatchesDocumentedOrder" fullname="HighSeas.Tests.SaltwindResetGateTests.ResetPhaseCount_MatchesDocumentedOrder" methodname="ResetPhaseCount_MatchesDocumentedOrder" classname="HighSeas.Tests.SaltwindResetGateTests" runstate="Runnable" seed="1577660545" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.001111" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1110" name="SnapshotRestore_AllowsLegacySchemaWithoutEncounterFields" fullname="HighSeas.Tests.SaltwindResetGateTests.SnapshotRestore_AllowsLegacySchemaWithoutEncounterFields" methodname="SnapshotRestore_AllowsLegacySchemaWithoutEncounterFields" classname="HighSeas.Tests.SaltwindResetGateTests" runstate="Runnable" seed="1996478703" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000813" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1109" name="SnapshotRestore_RejectsBossSummonedWithZeroSpawns" fullname="HighSeas.Tests.SaltwindResetGateTests.SnapshotRestore_RejectsBossSummonedWithZeroSpawns" methodname="SnapshotRestore_RejectsBossSummonedWithZeroSpawns" classname="HighSeas.Tests.SaltwindResetGateTests" runstate="Runnable" seed="1563288923" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000418" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1111" name="SnapshotRestore_RejectsFutureSchema" fullname="HighSeas.Tests.SaltwindResetGateTests.SnapshotRestore_RejectsFutureSchema" methodname="SnapshotRestore_RejectsFutureSchema" classname="HighSeas.Tests.SaltwindResetGateTests" runstate="Runnable" seed="1215144731" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000305" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1108" name="StageBalanceProfile_SkippedForLocalMultiplayer" fullname="HighSeas.Tests.SaltwindResetGateTests.StageBalanceProfile_SkippedForLocalMultiplayer" methodname="StageBalanceProfile_SkippedForLocalMultiplayer" classname="HighSeas.Tests.SaltwindResetGateTests" runstate="Runnable" seed="1553289376" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000871" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1107" name="ThreeRetries_IncrementGeneration_AndClearEncounters" fullname="HighSeas.Tests.SaltwindResetGateTests.ThreeRetries_IncrementGeneration_AndClearEncounters" methodname="ThreeRetries_IncrementGeneration_AndClearEncounters" classname="HighSeas.Tests.SaltwindResetGateTests" runstate="Runnable" seed="489484622" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.001137" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1113" name="SaltwindResultsGateTests" fullname="HighSeas.Tests.SaltwindResultsGateTests" classname="HighSeas.Tests.SaltwindResultsGateTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.062368" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1114" name="Headline_KeepsVictoryAfterDeath" fullname="HighSeas.Tests.SaltwindResultsGateTests.Headline_KeepsVictoryAfterDeath" methodname="Headline_KeepsVictoryAfterDeath" classname="HighSeas.Tests.SaltwindResultsGateTests" runstate="Runnable" seed="45277884" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000458" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1117" name="MarksUi_MatchesLedgerFixture" fullname="HighSeas.Tests.SaltwindResultsGateTests.MarksUi_MatchesLedgerFixture" methodname="MarksUi_MatchesLedgerFixture" classname="HighSeas.Tests.SaltwindResultsGateTests" runstate="Runnable" seed="1195172188" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.009016" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1118" name="UnlockGoal_SelectDoesNotPurchase" fullname="HighSeas.Tests.SaltwindResultsGateTests.UnlockGoal_SelectDoesNotPurchase" methodname="UnlockGoal_SelectDoesNotPurchase" classname="HighSeas.Tests.SaltwindResultsGateTests" runstate="Runnable" seed="227607893" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.006965" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1119" name="UnlockGoalProgress_ShowsFriendlyName" fullname="HighSeas.Tests.SaltwindResultsGateTests.UnlockGoalProgress_ShowsFriendlyName" methodname="UnlockGoalProgress_ShowsFriendlyName" classname="HighSeas.Tests.SaltwindResultsGateTests" runstate="Runnable" seed="641498362" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.008885" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1116" name="WeaponContribution_UsesDisplayNames_And100Percent" fullname="HighSeas.Tests.SaltwindResultsGateTests.WeaponContribution_UsesDisplayNames_And100Percent" methodname="WeaponContribution_UsesDisplayNames_And100Percent" classname="HighSeas.Tests.SaltwindResultsGateTests" runstate="Runnable" seed="926543008" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.031720" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1115" name="WeaponContribution_ZeroDamage_ReturnsEmpty" fullname="HighSeas.Tests.SaltwindResultsGateTests.WeaponContribution_ZeroDamage_ReturnsEmpty" methodname="WeaponContribution_ZeroDamage_ReturnsEmpty" classname="HighSeas.Tests.SaltwindResultsGateTests" runstate="Runnable" seed="297402334" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000921" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1145" name="SaltwindScheduleGateTests" fullname="HighSeas.Tests.SaltwindScheduleGateTests" classname="HighSeas.Tests.SaltwindScheduleGateTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.022741" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1147" name="BalanceProfile_ValidatesWithCompleteSchedule" fullname="HighSeas.Tests.SaltwindScheduleGateTests.BalanceProfile_ValidatesWithCompleteSchedule" methodname="BalanceProfile_ValidatesWithCompleteSchedule" classname="HighSeas.Tests.SaltwindScheduleGateTests" runstate="Runnable" seed="1845093802" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.006190" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1153" name="Composition_BandAnchors_AreAuthoredOnSchedule" fullname="HighSeas.Tests.SaltwindScheduleGateTests.Composition_BandAnchors_AreAuthoredOnSchedule" methodname="Composition_BandAnchors_AreAuthoredOnSchedule" classname="HighSeas.Tests.SaltwindScheduleGateTests" runstate="Runnable" seed="1735886689" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.005960" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1151" name="PressureBeat_SkipsEliteAndSwarmDuringBossConflict" fullname="HighSeas.Tests.SaltwindScheduleGateTests.PressureBeat_SkipsEliteAndSwarmDuringBossConflict" methodname="PressureBeat_SkipsEliteAndSwarmDuringBossConflict" classname="HighSeas.Tests.SaltwindScheduleGateTests" runstate="Runnable" seed="128854180" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000950" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1152" name="PressureBeat_WarnsFiveSecondsBeforeEvents" fullname="HighSeas.Tests.SaltwindScheduleGateTests.PressureBeat_WarnsFiveSecondsBeforeEvents" methodname="PressureBeat_WarnsFiveSecondsBeforeEvents" classname="HighSeas.Tests.SaltwindScheduleGateTests" runstate="Runnable" seed="2089507339" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000515" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1146" name="ResourcesSchedule_HasRequiredSaltwindProfiles" fullname="HighSeas.Tests.SaltwindScheduleGateTests.ResourcesSchedule_HasRequiredSaltwindProfiles" methodname="ResourcesSchedule_HasRequiredSaltwindProfiles" classname="HighSeas.Tests.SaltwindScheduleGateTests" runstate="Runnable" seed="1547663785" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000770" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1148" name="Timeline_AmbientRatesMatchProfileBands" fullname="HighSeas.Tests.SaltwindScheduleGateTests.Timeline_AmbientRatesMatchProfileBands" methodname="Timeline_AmbientRatesMatchProfileBands" classname="HighSeas.Tests.SaltwindScheduleGateTests" runstate="Runnable" seed="683089899" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.001161" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1149" name="Timeline_AmbientStopsAtDeadlineAndDuringOvertime" fullname="HighSeas.Tests.SaltwindScheduleGateTests.Timeline_AmbientStopsAtDeadlineAndDuringOvertime" methodname="Timeline_AmbientStopsAtDeadlineAndDuringOvertime" classname="HighSeas.Tests.SaltwindScheduleGateTests" runstate="Runnable" seed="803225872" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000455" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1150" name="Timeline_EliteAndSwarmCheckpoints" fullname="HighSeas.Tests.SaltwindScheduleGateTests.Timeline_EliteAndSwarmCheckpoints" methodname="Timeline_EliteAndSwarmCheckpoints" classname="HighSeas.Tests.SaltwindScheduleGateTests" runstate="Runnable" seed="1833780472" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000704" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1120" name="SaltwindSettlementGateTests" fullname="HighSeas.Tests.SaltwindSettlementGateTests" classname="HighSeas.Tests.SaltwindSettlementGateTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.023624" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1122" name="ApprovedFixture_TotalMarks_Is52" fullname="HighSeas.Tests.SaltwindSettlementGateTests.ApprovedFixture_TotalMarks_Is52" methodname="ApprovedFixture_TotalMarks_Is52" classname="HighSeas.Tests.SaltwindSettlementGateTests" runstate="Runnable" seed="998336357" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.011060" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1125" name="QualifyingMinute_RequiresMinKills" fullname="HighSeas.Tests.SaltwindSettlementGateTests.QualifyingMinute_RequiresMinKills" methodname="QualifyingMinute_RequiresMinKills" classname="HighSeas.Tests.SaltwindSettlementGateTests" runstate="Runnable" seed="2032606589" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000276" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1121" name="SaveMigration_V1_PreservesDoubloons_AndInitializesMarks" fullname="HighSeas.Tests.SaltwindSettlementGateTests.SaveMigration_V1_PreservesDoubloons_AndInitializesMarks" methodname="SaveMigration_V1_PreservesDoubloons_AndInitializesMarks" classname="HighSeas.Tests.SaltwindSettlementGateTests" runstate="Runnable" seed="167255751" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000479" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1124" name="TryPurchaseMarksUnlock_IsIdempotentWhenOwned" fullname="HighSeas.Tests.SaltwindSettlementGateTests.TryPurchaseMarksUnlock_IsIdempotentWhenOwned" methodname="TryPurchaseMarksUnlock_IsIdempotentWhenOwned" classname="HighSeas.Tests.SaltwindSettlementGateTests" runstate="Runnable" seed="901172797" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000449" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1123" name="TrySettleRun_IsIdempotentPerRunId" fullname="HighSeas.Tests.SaltwindSettlementGateTests.TrySettleRun_IsIdempotentPerRunId" methodname="TrySettleRun_IsIdempotentPerRunId" classname="HighSeas.Tests.SaltwindSettlementGateTests" runstate="Runnable" seed="2113226618" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000614" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1126" name="WeaponUnlockCost_ReadsProfileExport" fullname="HighSeas.Tests.SaltwindSettlementGateTests.WeaponUnlockCost_ReadsProfileExport" methodname="WeaponUnlockCost_ReadsProfileExport" classname="HighSeas.Tests.SaltwindSettlementGateTests" runstate="Runnable" seed="1720884428" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.005698" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1162" name="SpawnModifierStackTests" fullname="HighSeas.Tests.SpawnModifierStackTests" classname="HighSeas.Tests.SpawnModifierStackTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.005006" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1163" name="Modifiers_ComposeMultiplicatively_AndExpire" fullname="HighSeas.Tests.SpawnModifierStackTests.Modifiers_ComposeMultiplicatively_AndExpire" methodname="Modifiers_ComposeMultiplicatively_AndExpire" classname="HighSeas.Tests.SpawnModifierStackTests" runstate="Runnable" seed="1912167262" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.001147" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1164" name="RemoveModifier_StopsApplying" fullname="HighSeas.Tests.SpawnModifierStackTests.RemoveModifier_StopsApplying" methodname="RemoveModifier_StopsApplying" classname="HighSeas.Tests.SpawnModifierStackTests" runstate="Runnable" seed="1803581619" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000434" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1168" name="StageBalanceProfileTests" fullname="HighSeas.Tests.StageBalanceProfileTests" classname="HighSeas.Tests.StageBalanceProfileTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.056590" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1170" name="Export_Hash_IsStable_AndChangesWhenGameplayChanges" fullname="HighSeas.Tests.StageBalanceProfileTests.Export_Hash_IsStable_AndChangesWhenGameplayChanges" methodname="Export_Hash_IsStable_AndChangesWhenGameplayChanges" classname="HighSeas.Tests.StageBalanceProfileTests" runstate="Runnable" seed="1148140038" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.015323" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1169" name="Export_RoundTrip_PreservesGameplayValues" fullname="HighSeas.Tests.StageBalanceProfileTests.Export_RoundTrip_PreservesGameplayValues" methodname="Export_RoundTrip_PreservesGameplayValues" classname="HighSeas.Tests.StageBalanceProfileTests" runstate="Runnable" seed="759297421" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.013760" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1172" name="FormulaFixtures_MatchApprovedDefaults" fullname="HighSeas.Tests.StageBalanceProfileTests.FormulaFixtures_MatchApprovedDefaults" methodname="FormulaFixtures_MatchApprovedDefaults" classname="HighSeas.Tests.StageBalanceProfileTests" runstate="Runnable" seed="592983507" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.005469" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1173" name="Resolver_RejectsMissingHostInSinglePlayer" fullname="HighSeas.Tests.StageBalanceProfileTests.Resolver_RejectsMissingHostInSinglePlayer" methodname="Resolver_RejectsMissingHostInSinglePlayer" classname="HighSeas.Tests.StageBalanceProfileTests" runstate="Runnable" seed="1230288063" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.006719" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1174" name="Resolver_SkipsLocalMultiplayer" fullname="HighSeas.Tests.StageBalanceProfileTests.Resolver_SkipsLocalMultiplayer" methodname="Resolver_SkipsLocalMultiplayer" classname="HighSeas.Tests.StageBalanceProfileTests" runstate="Runnable" seed="1527231309" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000604" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1171" name="RuntimeState_IsNotSharedAcrossRuns" fullname="HighSeas.Tests.StageBalanceProfileTests.RuntimeState_IsNotSharedAcrossRuns" methodname="RuntimeState_IsNotSharedAcrossRuns" classname="HighSeas.Tests.StageBalanceProfileTests" runstate="Runnable" seed="526679971" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.009505" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1175" name="V3IntegrationTests" fullname="HighSeas.Tests.V3IntegrationTests" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.071343" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1185" name="DEC024_SecureObjective_PersistsThroughPlayerDeath" fullname="HighSeas.Tests.V3IntegrationTests.DEC024_SecureObjective_PersistsThroughPlayerDeath" methodname="DEC024_SecureObjective_PersistsThroughPlayerDeath" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="1408080696" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.005850" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1181" name="V3ChestLoot_Seed12345_ProducesVariedDrops" fullname="HighSeas.Tests.V3IntegrationTests.V3ChestLoot_Seed12345_ProducesVariedDrops" methodname="V3ChestLoot_Seed12345_ProducesVariedDrops" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="289053404" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.001271" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1180" name="V3ContentUnlocks_BlocksFlyingCutlassesBeforeFirstConquest" fullname="HighSeas.Tests.V3IntegrationTests.V3ContentUnlocks_BlocksFlyingCutlassesBeforeFirstConquest" methodname="V3ContentUnlocks_BlocksFlyingCutlassesBeforeFirstConquest" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="1383304274" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.002880" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1186" name="V3DiscoverySystem_RevealChests_AddsIndices" fullname="HighSeas.Tests.V3IntegrationTests.V3DiscoverySystem_RevealChests_AddsIndices" methodname="V3DiscoverySystem_RevealChests_AddsIndices" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="2021895537" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.008846" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1176" name="V3Economy_ChestPrice_MatchesGddProgression" fullname="HighSeas.Tests.V3IntegrationTests.V3Economy_ChestPrice_MatchesGddProgression" methodname="V3Economy_ChestPrice_MatchesGddProgression" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="1145557225" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000354" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1184" name="V3FloorPowerup_Constants_MatchCombatAppendix" fullname="HighSeas.Tests.V3IntegrationTests.V3FloorPowerup_Constants_MatchCombatAppendix" methodname="V3FloorPowerup_Constants_MatchCombatAppendix" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="198882332" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000235" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1183" name="V3FloorPowerup_RollKind_UsesFourWaySplit" fullname="HighSeas.Tests.V3IntegrationTests.V3FloorPowerup_RollKind_UsesFourWaySplit" methodname="V3FloorPowerup_RollKind_UsesFourWaySplit" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="1168512377" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.006551" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1177" name="V3GameMath_XPToNext_UsesFivePlusTwoL" fullname="HighSeas.Tests.V3IntegrationTests.V3GameMath_XPToNext_UsesFivePlusTwoL" methodname="V3GameMath_XPToNext_UsesFivePlusTwoL" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="1503154390" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000713" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1178" name="V3HomeSeed_LocksGeographyAfterFirstBoss" fullname="HighSeas.Tests.V3IntegrationTests.V3HomeSeed_LocksGeographyAfterFirstBoss" methodname="V3HomeSeed_LocksGeographyAfterFirstBoss" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="1276640416" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.007946" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
@@ -334,253 +1098,171 @@
               <output><![CDATA[V3HomeSeed: locked Saltwind geography to seed 424242.
 ]]></output>
             </test-case>
-            <test-case id="1050" name="V3Spawn_Seed12345_ResolvesOutsidePredictedIslands" fullname="HighSeas.Tests.V3IntegrationTests.V3Spawn_Seed12345_ResolvesOutsidePredictedIslands" methodname="V3Spawn_Seed12345_ResolvesOutsidePredictedIslands" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="1006381485" result="Passed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.040344" asserts="0">
+            <test-case id="1182" name="V3Spawn_Seed12345_ResolvesOutsidePredictedIslands" fullname="HighSeas.Tests.V3IntegrationTests.V3Spawn_Seed12345_ResolvesOutsidePredictedIslands" methodname="V3Spawn_Seed12345_ResolvesOutsidePredictedIslands" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="877765844" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.008877" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1047" name="V3StagePoiPlacer_PlacesConquestPois" fullname="HighSeas.Tests.V3IntegrationTests.V3StagePoiPlacer_PlacesConquestPois" methodname="V3StagePoiPlacer_PlacesConquestPois" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="1974908218" result="Failed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:21Z" duration="0.009084" asserts="0">
+            <test-case id="1179" name="V3StagePoiPlacer_PlacesConquestPois" fullname="HighSeas.Tests.V3IntegrationTests.V3StagePoiPlacer_PlacesConquestPois" methodname="V3StagePoiPlacer_PlacesConquestPois" classname="HighSeas.Tests.V3IntegrationTests" runstate="Runnable" seed="521238203" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.020235" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
-              <failure>
-                <message><![CDATA[  Expected: 12
-  But was:  20
-]]></message>
-                <stack-trace><![CDATA[at HighSeas.Tests.V3IntegrationTests.V3StagePoiPlacer_PlacesConquestPois () [0x000bc] in C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\Pirate Game Unity\Assets\_Game\Tests\EditMode\V3IntegrationTests.cs:72
-]]></stack-trace>
-              </failure>
             </test-case>
           </test-suite>
         </test-suite>
       </test-suite>
     </test-suite>
-    <test-suite type="Assembly" id="1065" name="HighSeas.Tests.PlayMode.dll" fullname="C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Library/ScriptAssemblies/HighSeas.Tests.PlayMode.dll" runstate="Runnable" testcasecount="2" result="Failed" site="Child" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:22Z" duration="0.152508" total="2" passed="0" failed="2" inconclusive="0" skipped="0" asserts="0">
+    <test-suite type="Assembly" id="1220" name="RoguePirates.Tests.EditMode.dll" fullname="C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Library/ScriptAssemblies/RoguePirates.Tests.EditMode.dll" runstate="Runnable" testcasecount="22" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.188202" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
       <properties>
-        <property name="_PID" value="249196" />
+        <property name="_PID" value="225000" />
         <property name="_APPDOMAIN" value="Unity Child Domain" />
         <property name="platform" value="EditMode" />
         <property name="EditorOnly" value="True" />
       </properties>
-      <failure>
-        <message><![CDATA[One or more child tests had errors]]></message>
-      </failure>
-      <test-suite type="TestSuite" id="1066" name="HighSeas" fullname="HighSeas" runstate="Runnable" testcasecount="2" result="Failed" site="Child" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:22Z" duration="0.151831" total="2" passed="0" failed="2" inconclusive="0" skipped="0" asserts="0">
+      <test-suite type="TestSuite" id="1221" name="RoguePirates" fullname="RoguePirates" runstate="Runnable" testcasecount="22" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.186446" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
         <properties />
-        <failure>
-          <message><![CDATA[One or more child tests had errors]]></message>
-        </failure>
-        <test-suite type="TestSuite" id="1067" name="Tests" fullname="HighSeas.Tests" runstate="Runnable" testcasecount="2" result="Failed" site="Child" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:22Z" duration="0.151606" total="2" passed="0" failed="2" inconclusive="0" skipped="0" asserts="0">
+        <test-suite type="TestSuite" id="1222" name="Tests" fullname="RoguePirates.Tests" runstate="Runnable" testcasecount="22" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.184225" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
           <properties />
-          <failure>
-            <message><![CDATA[One or more child tests had errors]]></message>
-          </failure>
-          <test-suite type="TestFixture" id="1061" name="LevelUpPlayModeTests" fullname="HighSeas.Tests.LevelUpPlayModeTests" classname="HighSeas.Tests.LevelUpPlayModeTests" runstate="Runnable" testcasecount="1" result="Failed" site="Child" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:22Z" duration="0.149234" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1194" name="BalanceGateTests" fullname="RoguePirates.Tests.BalanceGateTests" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.049072" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <failure>
-              <message><![CDATA[One or more child tests had errors]]></message>
-            </failure>
-            <test-case id="1062" name="LevelUpModal_ShowAndSelect_PausesRunManager" fullname="HighSeas.Tests.LevelUpPlayModeTests.LevelUpModal_ShowAndSelect_PausesRunManager" methodname="LevelUpModal_ShowAndSelect_PausesRunManager" classname="HighSeas.Tests.LevelUpPlayModeTests" runstate="Runnable" seed="1772918389" result="Failed" start-time="2026-09-19 22:51:21Z" end-time="2026-09-19 22:51:22Z" duration="0.148548" asserts="0">
-              <properties>
-                <property name="_JOINTYPE" value="UnityCombinatorial" />
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-              <failure>
-                <message><![CDATA[Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
-Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
-                <stack-trace><![CDATA[UnityEngine.Object:Destroy (UnityEngine.Object)
-HighSeas.Tests.LevelUpPlayModeTests/<LevelUpModal_ShowAndSelect_PausesRunManager>d__0:MoveNext () (at Assets/_Game/Tests/PlayMode/LevelUpPlayModeTests.cs:48)
-UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
-
-]]></stack-trace>
-              </failure>
-              <output><![CDATA[Destroy may not be called from edit mode! Use DestroyImmediate instead.
-Destroying an object in edit mode destroys it permanently.
-Destroy may not be called from edit mode! Use DestroyImmediate instead.
-Destroying an object in edit mode destroys it permanently.
-]]></output>
-            </test-case>
-          </test-suite>
-          <test-suite type="TestFixture" id="1063" name="PlayModeSmokeTests" fullname="HighSeas.Tests.PlayModeSmokeTests" classname="HighSeas.Tests.PlayModeSmokeTests" runstate="Runnable" testcasecount="1" result="Failed" site="Child" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.002131" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
-            <properties />
-            <failure>
-              <message><![CDATA[One or more child tests had errors]]></message>
-            </failure>
-            <test-case id="1064" name="RunManager_CanBeginRun" fullname="HighSeas.Tests.PlayModeSmokeTests.RunManager_CanBeginRun" methodname="RunManager_CanBeginRun" classname="HighSeas.Tests.PlayModeSmokeTests" runstate="Runnable" seed="1382232862" result="Failed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.001491" asserts="0">
-              <properties>
-                <property name="_JOINTYPE" value="UnityCombinatorial" />
-                <property name="retryIteration" value="0" />
-                <property name="repeatIteration" value="0" />
-              </properties>
-              <failure>
-                <message><![CDATA[Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
-Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
-                <stack-trace><![CDATA[UnityEngine.Object:Destroy (UnityEngine.Object)
-HighSeas.Tests.PlayModeSmokeTests/<RunManager_CanBeginRun>d__0:MoveNext () (at Assets/_Game/Tests/PlayMode/PlayModeSmokeTests.cs:17)
-UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
-
-]]></stack-trace>
-              </failure>
-              <output><![CDATA[Destroy may not be called from edit mode! Use DestroyImmediate instead.
-Destroying an object in edit mode destroys it permanently.
-]]></output>
-            </test-case>
-          </test-suite>
-        </test-suite>
-      </test-suite>
-    </test-suite>
-    <test-suite type="Assembly" id="1095" name="RoguePirates.Tests.EditMode.dll" fullname="C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Library/ScriptAssemblies/RoguePirates.Tests.EditMode.dll" runstate="Runnable" testcasecount="22" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.106558" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
-      <properties>
-        <property name="_PID" value="249196" />
-        <property name="_APPDOMAIN" value="Unity Child Domain" />
-        <property name="platform" value="EditMode" />
-        <property name="EditorOnly" value="True" />
-      </properties>
-      <test-suite type="TestSuite" id="1096" name="RoguePirates" fullname="RoguePirates" runstate="Runnable" testcasecount="22" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.106164" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
-        <properties />
-        <test-suite type="TestSuite" id="1097" name="Tests" fullname="RoguePirates.Tests" runstate="Runnable" testcasecount="22" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.105757" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
-          <properties />
-          <test-suite type="TestFixture" id="1069" name="BalanceGateTests" fullname="RoguePirates.Tests.BalanceGateTests" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.021715" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
-            <properties />
-            <test-case id="1071" name="BatchSimulation_NoRunawayKillsOnShortRuns" fullname="RoguePirates.Tests.BalanceGateTests.BatchSimulation_NoRunawayKillsOnShortRuns" methodname="BatchSimulation_NoRunawayKillsOnShortRuns" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="2140534707" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.012480" asserts="0">
+            <test-case id="1196" name="BatchSimulation_NoRunawayKillsOnShortRuns" fullname="RoguePirates.Tests.BalanceGateTests.BatchSimulation_NoRunawayKillsOnShortRuns" methodname="BatchSimulation_NoRunawayKillsOnShortRuns" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="1051129454" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.023964" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1070" name="ContentManifest_Validates" fullname="RoguePirates.Tests.BalanceGateTests.ContentManifest_Validates" methodname="ContentManifest_Validates" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="2139725218" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.003215" asserts="0">
+            <test-case id="1195" name="ContentManifest_Validates" fullname="RoguePirates.Tests.BalanceGateTests.ContentManifest_Validates" methodname="ContentManifest_Validates" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="1840122078" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.011229" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1072" name="MandatoryPickGate_ThresholdEnforced" fullname="RoguePirates.Tests.BalanceGateTests.MandatoryPickGate_ThresholdEnforced" methodname="MandatoryPickGate_ThresholdEnforced" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="1493996881" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.000632" asserts="0">
+            <test-case id="1197" name="MandatoryPickGate_ThresholdEnforced" fullname="RoguePirates.Tests.BalanceGateTests.MandatoryPickGate_ThresholdEnforced" methodname="MandatoryPickGate_ThresholdEnforced" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="2096396765" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.002215" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1074" name="RaidSettlement_IsIdempotent" fullname="RoguePirates.Tests.BalanceGateTests.RaidSettlement_IsIdempotent" methodname="RaidSettlement_IsIdempotent" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="1658783534" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.000666" asserts="0">
+            <test-case id="1199" name="RaidSettlement_IsIdempotent" fullname="RoguePirates.Tests.BalanceGateTests.RaidSettlement_IsIdempotent" methodname="RaidSettlement_IsIdempotent" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="51098186" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.001586" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1073" name="SoakSimulation_CompletesWithoutException" fullname="RoguePirates.Tests.BalanceGateTests.SoakSimulation_CompletesWithoutException" methodname="SoakSimulation_CompletesWithoutException" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="644032848" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.003500" asserts="0">
+            <test-case id="1198" name="SoakSimulation_CompletesWithoutException" fullname="RoguePirates.Tests.BalanceGateTests.SoakSimulation_CompletesWithoutException" methodname="SoakSimulation_CompletesWithoutException" classname="RoguePirates.Tests.BalanceGateTests" runstate="Runnable" seed="91650885" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.004357" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
           </test-suite>
-          <test-suite type="TestFixture" id="1075" name="BalanceLabRunnerTests" fullname="RoguePirates.Tests.BalanceLabRunnerTests" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.050534" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1200" name="BalanceLabRunnerTests" fullname="RoguePirates.Tests.BalanceLabRunnerTests" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.060826" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1080" name="CiGate_ReportsTargetBandResultDeterministically" fullname="RoguePirates.Tests.BalanceLabRunnerTests.CiGate_ReportsTargetBandResultDeterministically" methodname="CiGate_ReportsTargetBandResultDeterministically" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="600023141" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.008208" asserts="0">
+            <test-case id="1205" name="CiGate_ReportsTargetBandResultDeterministically" fullname="RoguePirates.Tests.BalanceLabRunnerTests.CiGate_ReportsTargetBandResultDeterministically" methodname="CiGate_ReportsTargetBandResultDeterministically" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="331723719" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.006398" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1081" name="Clone_DoesNotShareEditableLoadoutData" fullname="RoguePirates.Tests.BalanceLabRunnerTests.Clone_DoesNotShareEditableLoadoutData" methodname="Clone_DoesNotShareEditableLoadoutData" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="150624300" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.000417" asserts="0">
+            <test-case id="1206" name="Clone_DoesNotShareEditableLoadoutData" fullname="RoguePirates.Tests.BalanceLabRunnerTests.Clone_DoesNotShareEditableLoadoutData" methodname="Clone_DoesNotShareEditableLoadoutData" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="141660943" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000465" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1079" name="KitingAutoplayer_AutoTargetsAndProducesCombatProgress" fullname="RoguePirates.Tests.BalanceLabRunnerTests.KitingAutoplayer_AutoTargetsAndProducesCombatProgress" methodname="KitingAutoplayer_AutoTargetsAndProducesCombatProgress" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="808781920" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.004593" asserts="0">
+            <test-case id="1204" name="KitingAutoplayer_AutoTargetsAndProducesCombatProgress" fullname="RoguePirates.Tests.BalanceLabRunnerTests.KitingAutoplayer_AutoTargetsAndProducesCombatProgress" methodname="KitingAutoplayer_AutoTargetsAndProducesCombatProgress" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="1172173420" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.006240" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1078" name="MoreActiveWeapons_IncreasesShortRunKills" fullname="RoguePirates.Tests.BalanceLabRunnerTests.MoreActiveWeapons_IncreasesShortRunKills" methodname="MoreActiveWeapons_IncreasesShortRunKills" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="1818631594" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.031282" asserts="0">
+            <test-case id="1203" name="MoreActiveWeapons_IncreasesShortRunKills" fullname="RoguePirates.Tests.BalanceLabRunnerTests.MoreActiveWeapons_IncreasesShortRunKills" methodname="MoreActiveWeapons_IncreasesShortRunKills" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="1819089411" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.036093" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1076" name="SameScenarioAndSeeds_ProducesSameSummary" fullname="RoguePirates.Tests.BalanceLabRunnerTests.SameScenarioAndSeeds_ProducesSameSummary" methodname="SameScenarioAndSeeds_ProducesSameSummary" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="450415857" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.003870" asserts="0">
+            <test-case id="1201" name="SameScenarioAndSeeds_ProducesSameSummary" fullname="RoguePirates.Tests.BalanceLabRunnerTests.SameScenarioAndSeeds_ProducesSameSummary" methodname="SameScenarioAndSeeds_ProducesSameSummary" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="229611890" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.005213" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1077" name="Scenario_NormalizesInvalidInputsWithoutMutatingCaller" fullname="RoguePirates.Tests.BalanceLabRunnerTests.Scenario_NormalizesInvalidInputsWithoutMutatingCaller" methodname="Scenario_NormalizesInvalidInputsWithoutMutatingCaller" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="645891658" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.000350" asserts="0">
+            <test-case id="1202" name="Scenario_NormalizesInvalidInputsWithoutMutatingCaller" fullname="RoguePirates.Tests.BalanceLabRunnerTests.Scenario_NormalizesInvalidInputsWithoutMutatingCaller" methodname="Scenario_NormalizesInvalidInputsWithoutMutatingCaller" classname="RoguePirates.Tests.BalanceLabRunnerTests" runstate="Runnable" seed="1793797440" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000458" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
           </test-suite>
-          <test-suite type="TestFixture" id="1082" name="ProfileBalanceMatrixTests" fullname="RoguePirates.Tests.ProfileBalanceMatrixTests" classname="RoguePirates.Tests.ProfileBalanceMatrixTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.023410" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1207" name="ProfileBalanceMatrixTests" fullname="RoguePirates.Tests.ProfileBalanceMatrixTests" classname="RoguePirates.Tests.ProfileBalanceMatrixTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.035779" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1085" name="ComputeV3SpawnRate_MatchesDocSamples" fullname="RoguePirates.Tests.ProfileBalanceMatrixTests.ComputeV3SpawnRate_MatchesDocSamples" methodname="ComputeV3SpawnRate_MatchesDocSamples" classname="RoguePirates.Tests.ProfileBalanceMatrixTests" runstate="Runnable" seed="1649790041" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.000228" asserts="0">
+            <test-case id="1210" name="ComputeV3SpawnRate_MatchesDocSamples" fullname="RoguePirates.Tests.ProfileBalanceMatrixTests.ComputeV3SpawnRate_MatchesDocSamples" methodname="ComputeV3SpawnRate_MatchesDocSamples" classname="RoguePirates.Tests.ProfileBalanceMatrixTests" runstate="Runnable" seed="782879815" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000418" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1083" name="ProfileMatrix_DeterministicPerProfile" fullname="RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_DeterministicPerProfile" methodname="ProfileMatrix_DeterministicPerProfile" classname="RoguePirates.Tests.ProfileBalanceMatrixTests" runstate="Runnable" seed="713783638" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.005148" asserts="0">
+            <test-case id="1208" name="ProfileMatrix_DeterministicPerProfile" fullname="RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_DeterministicPerProfile" methodname="ProfileMatrix_DeterministicPerProfile" classname="RoguePirates.Tests.ProfileBalanceMatrixTests" runstate="Runnable" seed="68848896" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.009119" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1084" name="ProfileMatrix_SixSlotProfiles_OutkillBaselineOnAverage" fullname="RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_SixSlotProfiles_OutkillBaselineOnAverage" methodname="ProfileMatrix_SixSlotProfiles_OutkillBaselineOnAverage" classname="RoguePirates.Tests.ProfileBalanceMatrixTests" runstate="Runnable" seed="609608008" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.004042" asserts="0">
+            <test-case id="1209" name="ProfileMatrix_SixSlotProfiles_OutkillBaselineOnAverage" fullname="RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_SixSlotProfiles_OutkillBaselineOnAverage" methodname="ProfileMatrix_SixSlotProfiles_OutkillBaselineOnAverage" classname="RoguePirates.Tests.ProfileBalanceMatrixTests" runstate="Runnable" seed="1758164649" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.007019" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1086" name="ProfileMatrix_WritesBalanceReportArtifact" fullname="RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_WritesBalanceReportArtifact" methodname="ProfileMatrix_WritesBalanceReportArtifact" classname="RoguePirates.Tests.ProfileBalanceMatrixTests" runstate="Runnable" seed="1943969301" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.012014" asserts="0">
+            <test-case id="1211" name="ProfileMatrix_WritesBalanceReportArtifact" fullname="RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_WritesBalanceReportArtifact" methodname="ProfileMatrix_WritesBalanceReportArtifact" classname="RoguePirates.Tests.ProfileBalanceMatrixTests" runstate="Runnable" seed="2142932613" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.015286" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
           </test-suite>
-          <test-suite type="TestFixture" id="1087" name="SimulationFixtureTests" fullname="RoguePirates.Tests.SimulationFixtureTests" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.009229" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1212" name="SimulationFixtureTests" fullname="RoguePirates.Tests.SimulationFixtureTests" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.034145" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1092" name="BossPlayerSameTick_SecuresObjectiveBeforeRunEnd" fullname="RoguePirates.Tests.SimulationFixtureTests.BossPlayerSameTick_SecuresObjectiveBeforeRunEnd" methodname="BossPlayerSameTick_SecuresObjectiveBeforeRunEnd" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="1262662109" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.001565" asserts="0">
+            <test-case id="1217" name="BossPlayerSameTick_SecuresObjectiveBeforeRunEnd" fullname="RoguePirates.Tests.SimulationFixtureTests.BossPlayerSameTick_SecuresObjectiveBeforeRunEnd" methodname="BossPlayerSameTick_SecuresObjectiveBeforeRunEnd" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="1236163017" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.001804" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1091" name="LastRum_ConsumesOnceOnSameTickDoubleLethal" fullname="RoguePirates.Tests.SimulationFixtureTests.LastRum_ConsumesOnceOnSameTickDoubleLethal" methodname="LastRum_ConsumesOnceOnSameTickDoubleLethal" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="212972934" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.000307" asserts="0">
+            <test-case id="1216" name="LastRum_ConsumesOnceOnSameTickDoubleLethal" fullname="RoguePirates.Tests.SimulationFixtureTests.LastRum_ConsumesOnceOnSameTickDoubleLethal" methodname="LastRum_ConsumesOnceOnSameTickDoubleLethal" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="469872382" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000449" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1090" name="PauseSet_ClearingOneReason_DoesNotClearOthers" fullname="RoguePirates.Tests.SimulationFixtureTests.PauseSet_ClearingOneReason_DoesNotClearOthers" methodname="PauseSet_ClearingOneReason_DoesNotClearOthers" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="83723674" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.000204" asserts="0">
+            <test-case id="1215" name="PauseSet_ClearingOneReason_DoesNotClearOthers" fullname="RoguePirates.Tests.SimulationFixtureTests.PauseSet_ClearingOneReason_DoesNotClearOthers" methodname="PauseSet_ClearingOneReason_DoesNotClearOthers" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="1721051620" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000288" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1089" name="RenderFps30_60_120_YieldsIdenticalOutcomes" fullname="RoguePirates.Tests.SimulationFixtureTests.RenderFps30_60_120_YieldsIdenticalOutcomes" methodname="RenderFps30_60_120_YieldsIdenticalOutcomes" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="1104010471" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.001194" asserts="0">
+            <test-case id="1214" name="RenderFps30_60_120_YieldsIdenticalOutcomes" fullname="RoguePirates.Tests.SimulationFixtureTests.RenderFps30_60_120_YieldsIdenticalOutcomes" methodname="RenderFps30_60_120_YieldsIdenticalOutcomes" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="1499880168" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.002371" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1088" name="SameSeed_ProducesStableStateHash" fullname="RoguePirates.Tests.SimulationFixtureTests.SameSeed_ProducesStableStateHash" methodname="SameSeed_ProducesStableStateHash" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="619340035" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.001272" asserts="0">
+            <test-case id="1213" name="SameSeed_ProducesStableStateHash" fullname="RoguePirates.Tests.SimulationFixtureTests.SameSeed_ProducesStableStateHash" methodname="SameSeed_ProducesStableStateHash" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="900252594" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.002106" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1094" name="SimMath_DamageMatchesGoldenVector" fullname="RoguePirates.Tests.SimulationFixtureTests.SimMath_DamageMatchesGoldenVector" methodname="SimMath_DamageMatchesGoldenVector" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="1115779783" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.000177" asserts="0">
+            <test-case id="1219" name="SimMath_DamageMatchesGoldenVector" fullname="RoguePirates.Tests.SimulationFixtureTests.SimMath_DamageMatchesGoldenVector" methodname="SimMath_DamageMatchesGoldenVector" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="1685043545" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.000291" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1093" name="SimRng_LegendaryRateCapped" fullname="RoguePirates.Tests.SimulationFixtureTests.SimRng_LegendaryRateCapped" methodname="SimRng_LegendaryRateCapped" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="949338549" result="Passed" start-time="2026-09-19 22:51:22Z" end-time="2026-09-19 22:51:22Z" duration="0.002650" asserts="0">
+            <test-case id="1218" name="SimRng_LegendaryRateCapped" fullname="RoguePirates.Tests.SimulationFixtureTests.SimRng_LegendaryRateCapped" methodname="SimRng_LegendaryRateCapped" classname="RoguePirates.Tests.SimulationFixtureTests" runstate="Runnable" seed="60686713" result="Passed" start-time="2026-09-24 13:23:04Z" end-time="2026-09-24 13:23:04Z" duration="0.021107" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />

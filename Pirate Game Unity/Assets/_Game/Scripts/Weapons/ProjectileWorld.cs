@@ -1,3 +1,4 @@
+using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Enemies;
@@ -167,6 +168,13 @@ namespace HighSeas.Weapons
                             continue;
 
                         enemies.ApplyDamage(ei, p.damage, p.isCrit, weaponId: p.weaponId);
+                        if (p.weaponId == "harpoon_gun")
+                        {
+                            var agent = list[ei];
+                            var slow = agent.isBoss ? 0.125f : 0.25f;
+                            StatusController.Instance?.ApplyStatus(ei, StatusType.Tarred, slow);
+                            WeaponDamageLedger.RecordControl(p.weaponId, 1.2f);
+                        }
                         p.pierceLeft--;
                         if (p.pierceLeft <= 0)
                             break;

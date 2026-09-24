@@ -343,61 +343,81 @@ namespace HighSeas.Weapons
 
                 if (w.def.id == "swivel_guns" && w.swivelAwaitingSecond)
                 {
-                    FireSwivelShot(ref w, stats, rng);
-                    w.swivelAwaitingSecond = false;
-                    w.cooldownTimer = cd;
-                    WeaponDamageLedger.RecordEmission(w.def.id);
+                    if (FireSwivelShot(ref w, stats, rng) == WeaponFireOutcome.Emitted)
+                    {
+                        w.swivelAwaitingSecond = false;
+                        w.cooldownTimer = cd;
+                        WeaponDamageLedger.RecordEmission(w.def.id);
+                    }
                     _weapons[wi] = w;
                     continue;
                 }
 
-                w.cooldownTimer = cd;
-
-                switch (w.def.pattern)
+                var outcome = FireWeaponPattern(ref w, stats, rng);
+                if (outcome == WeaponFireOutcome.Emitted)
                 {
-                    case WeaponPattern.AutoProjectile:
-                        if (w.def.id == "swivel_guns")
-                            BeginSwivelBurst(ref w, stats, rng);
-                        else
-                            FireProjectile(ref w, stats, rng, 1);
-                        break;
-                    case WeaponPattern.FanVolley:
-                        FireFan(ref w, stats, rng, ResolveFanPelletCount(w, stats));
-                        break;
-                    case WeaponPattern.Orbit:
-                        FireOrbit(ref w, stats, rng);
-                        break;
-                    case WeaponPattern.TrailZone:
-                        if (w.def.id == "flamethrower" || w.def.id == "burning_oil")
-                            FireFlamethrower(ref w, stats, rng);
-                        else
-                            FireTrail(ref w, stats, rng);
-                        break;
-                    case WeaponPattern.MineDrop:
-                        FireMine(ref w, stats, rng);
-                        break;
-                    case WeaponPattern.ChainLightning:
-                        FireLightning(ref w, stats, rng);
-                        break;
-                    case WeaponPattern.AuraPulse:
-                        FireAura(ref w, stats, rng);
-                        break;
-                    case WeaponPattern.PredictedAoE:
-                        FireMortar(ref w, stats, rng);
-                        break;
-                    case WeaponPattern.SummonChase:
-                        FireBoardingParty(ref w, stats, rng);
-                        break;
+                    w.cooldownTimer = cd;
+                    WeaponDamageLedger.RecordEmission(w.def.id);
                 }
-                WeaponDamageLedger.RecordEmission(w.def.id);
+
                 _weapons[wi] = w;
             }
         }
 
-        void FireSwivelShot(ref WeaponInstance w, PlayerStats stats, RunRng rng)
+        WeaponFireOutcome FireWeaponPattern(ref WeaponInstance w, PlayerStats stats, RunRng rng)
+        {
+            if (!WeaponTargeting.TryResolveTarget(_enemies, _player, w.def, out _, out _)
+                && w.def.pattern != WeaponPattern.Orbit
+                && w.def.pattern != WeaponPattern.MineDrop
+                && w.def.pattern != WeaponPattern.TrailZone
+                && w.def.id != "flamethrower"
+                && w.def.id != "burning_oil"
+                && !V3ShipCombatRegistry.TryResolveAim(_player, w.def, out _, out _))
+                return WeaponFireOutcome.NoTarget;
+
+            switch (w.def.pattern)
+            {
+                case WeaponPattern.AutoProjectile:
+                    if (w.def.id == "swivel_guns")
+                        return BeginSwivelBurst(ref w, stats, rng);
+                    FireProjectile(ref w, stats, rng, 1);
+                    return WeaponFireOutcome.Emitted;
+                case WeaponPattern.FanVolley:
+                    FireFan(ref w, stats, rng, ResolveFanPelletCount(w, stats));
+                    return WeaponFireOutcome.Emitted;
+                case WeaponPattern.Orbit:
+                    FireOrbit(ref w, stats, rng);
+                    return WeaponFireOutcome.Emitted;
+                case WeaponPattern.TrailZone:
+                    if (w.def.id == "flamethrower" || w.def.id == "burning_oil")
+                        FireFlamethrower(ref w, stats, rng);
+                    else
+                        FireTrail(ref w, stats, rng);
+                    return WeaponFireOutcome.Emitted;
+                case WeaponPattern.MineDrop:
+                    FireMine(ref w, stats, rng);
+                    return WeaponFireOutcome.Emitted;
+                case WeaponPattern.ChainLightning:
+                    FireLightning(ref w, stats, rng);
+                    return WeaponFireOutcome.Emitted;
+                case WeaponPattern.AuraPulse:
+                    FireAura(ref w, stats, rng);
+                    return WeaponFireOutcome.Emitted;
+                case WeaponPattern.PredictedAoE:
+                    FireMortar(ref w, stats, rng);
+                    return WeaponFireOutcome.Emitted;
+                case WeaponPattern.SummonChase:
+                    FireBoardingParty(ref w, stats, rng);
+                    return WeaponFireOutcome.Emitted;
+                default:
+                    return WeaponFireOutcome.NoTarget;
+            }
+        }
+
+        WeaponFireOutcome FireSwivelShot(ref WeaponInstance w, PlayerStats stats, RunRng rng)
         {
             if (!WeaponTargeting.TryResolveTarget(_enemies, _player, w.def, out var target, out var dir))
-                return;
+                return WeaponFireOutcome.NoTarget;
 
             var enemy = _enemies.Agents[target];
             NotifyFire(w.def, dir, target);
@@ -417,17 +437,22 @@ namespace HighSeas.Weapons
                 w.def.id);
             var origin = _player.Position + Vector3.up * 0.35f;
             _juice?.OnWeaponFired(w.def.id, origin, dir);
-            _projectiles.TrySpawn(origin, dir, speed, dmg.amount, 2.4f, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id, _player, target);
+            if (!_projectiles.TrySpawn(origin, dir, speed, dmg.amount, 2.4f, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id, _player, target))
+                return WeaponFireOutcome.CapacityBlocked;
+            return WeaponFireOutcome.Emitted;
         }
 
-        void BeginSwivelBurst(ref WeaponInstance w, PlayerStats stats, RunRng rng)
+        WeaponFireOutcome BeginSwivelBurst(ref WeaponInstance w, PlayerStats stats, RunRng rng)
         {
-            FireSwivelShot(ref w, stats, rng);
+            var outcome = FireSwivelShot(ref w, stats, rng);
+            if (outcome != WeaponFireOutcome.Emitted)
+                return outcome;
             var gap = JuiceVfxBroker.Instance?.Settings != null
                 ? JuiceVfxBroker.Instance.Settings.swivelBetweenShotDelay
                 : 0.18f;
             w.swivelAwaitingSecond = true;
             w.cooldownTimer = gap;
+            return WeaponFireOutcome.Emitted;
         }
 
         public void CaptainFireAllWeapons()
@@ -570,11 +595,6 @@ namespace HighSeas.Weapons
                 var origin = _player.Position + Vector3.up * 0.35f;
                 _juice?.OnWeaponFired(w.def.id, origin, spread);
                 _projectiles.TrySpawn(origin, spread, speed, dmg.amount, 3f, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id, _player, tetherEnemyIndex);
-                if (w.def.targeting == TargetingMode.TetherTarget && tetherEnemyIndex >= 0)
-                {
-                    StatusController.Instance?.ApplyStatus(tetherEnemyIndex, StatusType.Tarred, 1.2f * w.durationMult);
-                    WeaponDamageLedger.RecordControl(w.def.id, 1.2f * w.durationMult);
-                }
             }
         }
 
@@ -661,18 +681,6 @@ namespace HighSeas.Weapons
                     w.def.id);
                 if (!isBroadside)
                     _juice?.OnWeaponFired(w.def.id, origin, dir);
-                if (isBroadside && hitIndex >= 0)
-                {
-                    ApplyWeaponDamage(hitIndex, w.def.id, dmg, isElite, _enemies.Agents[hitIndex].isBoss);
-                    hits++;
-                }
-                else if (isBroadside && V3ShipCombatRegistry.TrySegmentHit(_player, origin, end, hitRadius, out var shipHit))
-                {
-                    shipHit.Damage.TakeDamage(dmg.amount, shipHit.Ship.Position, dmg.isCrit);
-                    WeaponDamageLedger.RecordHit(w.def.id, dmg.amount, dmg.isCrit, false, false);
-                    hits++;
-                }
-
                 var projectileLife = isBroadside ? 1.2f : 2.5f;
                 if (isBroadside && JuiceVfxBroker.Instance?.Settings != null
                     && JuiceVfxBroker.Instance.Settings.TryGetWeaponVfx(w.def.id, out var vfxBinding)
@@ -682,7 +690,7 @@ namespace HighSeas.Weapons
                         origin,
                         dir,
                         speed,
-                        isBroadside ? 0f : dmg.amount,
+                        dmg.amount,
                         projectileLife,
                         size,
                         0,

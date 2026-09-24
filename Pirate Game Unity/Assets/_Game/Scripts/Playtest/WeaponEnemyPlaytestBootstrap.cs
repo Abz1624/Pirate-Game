@@ -100,6 +100,9 @@ namespace HighSeas.Playtest
             WeaponEvolutionRuntime.Reset();
 
             RunManager.Instance.BeginRun(runSeed != 0 ? runSeed : GameConstants.DemoRunSeed);
+            SaltwindCombatEncounterBudget.ResetForRun();
+            SaltwindCombatAgentStateStore.ClearAll();
+            SaltwindHazardTelegraph.ClearAll();
             _layout = stageBuilder != null ? stageBuilder.Build(runSeed, 0) : null;
             V3RunContext.Layout = _layout;
 

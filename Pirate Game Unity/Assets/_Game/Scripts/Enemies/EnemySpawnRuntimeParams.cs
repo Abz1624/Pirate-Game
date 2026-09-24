@@ -1,4 +1,6 @@
+using HighSeas.Combat;
 using HighSeas.Core;
+using HighSeas.Data;
 using UnityEngine;
 
 namespace HighSeas.Enemies
@@ -64,17 +66,103 @@ namespace HighSeas.Enemies
 
     public static class SpawnProfileResolver
     {
-        public static EnemySpawnRuntimeParams Resolve(SpawnProfile profile, int profileInstanceId, FormationRole role, int slot, int leaderId)
+        public static EnemySpawnRuntimeParams Resolve(
+            SpawnProfile profile,
+            EnemyDefinition spawnedEnemy,
+            int profileInstanceId,
+            FormationRole role,
+            int slot,
+            int leaderId)
         {
+            var identityEnemy = spawnedEnemy ?? profile?.enemy;
+            EnemySpawnRuntimeParams p;
+            if (SaltwindCombatFeature.IsEnabled && identityEnemy != null)
+                p = EnemyCombatProfileRegistry.ResolveRuntimeParams(identityEnemy, profile);
+            else
+                p = BuildFromProfileAnchor(profile, identityEnemy);
+
+            p.profileInstanceId = profileInstanceId;
+            p.formationRole = role;
+            p.formationSlot = slot;
+            p.formationLeaderAgentId = leaderId;
+            if (profile != null)
+            {
+                p.specialBehavior = profile.specialBehavior;
+                p.formation = profile.formation;
+                p.summon = profile.summon;
+                p.tether = profile.tether;
+                p.supportAura = profile.supportAura;
+                p.phaseDash = profile.phaseDash;
+                p.terrainAmbush = profile.terrainAmbush;
+                p.adaptive = profile.adaptive;
+                p.adaptiveSpeedMult = 1f;
+                p.ambushHidden = profile.specialBehavior == EnemySpecialBehavior.TerrainAmbush
+                    && profile.terrainAmbush.trigger != TerrainAmbushTrigger.OnSpawn;
+                p.dashCooldownTimer = profile.phaseDash.dashCooldownSeconds * 0.5f;
+                p.summonTimer = profile.summon.spawnIntervalSeconds;
+            }
+
+            return p;
+        }
+
+        public static EnemySpawnRuntimeParams Resolve(
+            SpawnProfile profile,
+            int profileInstanceId,
+            FormationRole role,
+            int slot,
+            int leaderId) =>
+            Resolve(profile, profile?.enemy, profileInstanceId, role, slot, leaderId);
+
+        public static EnemySpawnRuntimeParams ResolveForDefinition(EnemyDefinition spawnedEnemy) =>
+            Resolve(null, spawnedEnemy, 0, FormationRole.Auto, 0, -1);
+
+        public static void ApplyEncounterOverrides(
+            ref EnemySpawnRuntimeParams p,
+            SpawnProfile profile,
+            EnemyDefinition spawnedEnemy)
+        {
+            if (profile == null) return;
+            if (profile.enemy != null && spawnedEnemy != null && profile.enemy.id != spawnedEnemy.id)
+                return;
+            if (profile.movement.pattern != EnemyMovementPattern.UseDefinition)
+                p.movementPattern = profile.movement.pattern;
+            if (profile.attack.pattern != EnemyAttackPattern.UseDefinition)
+                p.attackPattern = profile.attack.pattern;
+            if (profile.movement.preferredRange > 0f)
+                p.preferredRange = profile.movement.preferredRange;
+            if (profile.movement.chargeWindUpSeconds > 0f)
+                p.chargeWindUp = profile.movement.chargeWindUpSeconds;
+            if (profile.movement.chargeDurationSeconds > 0f)
+                p.chargeDuration = profile.movement.chargeDurationSeconds;
+            if (profile.movement.chargeCooldownSeconds > 0f)
+                p.chargeCooldown = profile.movement.chargeCooldownSeconds;
+            if (profile.movement.chargeSpeedMultiplier > 0f)
+                p.chargeSpeedMult = profile.movement.chargeSpeedMultiplier;
+            if (profile.attack.attackRange > 0f)
+                p.attackRange = profile.attack.attackRange;
+            if (profile.attack.windUpSeconds > 0f)
+                p.attackWindUp = profile.attack.windUpSeconds;
+            if (profile.attack.cooldownSeconds > 0f)
+                p.attackCooldown = profile.attack.cooldownSeconds;
+        }
+
+        public static EnemySpawnRuntimeParams ResolveLegacyFromDefinition(EnemyDefinition def)
+        {
+            var profile = ScriptableObject.CreateInstance<SpawnProfile>();
+            profile.enemy = def;
+            return BuildFromProfileAnchor(profile, def);
+        }
+
+        static EnemySpawnRuntimeParams BuildFromProfileAnchor(SpawnProfile profile, EnemyDefinition identityEnemy)
+        {
+            profile ??= ScriptableObject.CreateInstance<SpawnProfile>();
+            if (identityEnemy != null)
+                profile.enemy = identityEnemy;
+
             var p = new EnemySpawnRuntimeParams
             {
-                profileInstanceId = profileInstanceId,
                 movementPattern = ResolveMovement(profile),
                 attackPattern = ResolveAttack(profile),
-                specialBehavior = profile.specialBehavior,
-                formationRole = role,
-                formationSlot = slot,
-                formationLeaderAgentId = leaderId,
                 preferredRange = profile.movement.preferredRange,
                 interceptLead = profile.movement.interceptLead,
                 orbitRadius = profile.movement.orbitRadius,
@@ -97,18 +185,7 @@ namespace HighSeas.Enemies
                 burstGap = profile.attack.burstGapSeconds,
                 areaRadius = profile.attack.areaRadius,
                 areaDuration = profile.attack.areaDurationSeconds,
-                formation = profile.formation,
-                summon = profile.summon,
-                tether = profile.tether,
-                supportAura = profile.supportAura,
-                phaseDash = profile.phaseDash,
-                terrainAmbush = profile.terrainAmbush,
-                adaptive = profile.adaptive,
-                adaptiveSpeedMult = 1f,
-                ambushHidden = profile.specialBehavior == EnemySpecialBehavior.TerrainAmbush
-                    && profile.terrainAmbush.trigger != TerrainAmbushTrigger.OnSpawn,
-                dashCooldownTimer = profile.phaseDash.dashCooldownSeconds * 0.5f,
-                summonTimer = profile.summon.spawnIntervalSeconds
+                adaptiveSpeedMult = 1f
             };
             return p;
         }

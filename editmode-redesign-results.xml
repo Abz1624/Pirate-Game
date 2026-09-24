@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="4" result="Passed" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-24 14:56:23Z" end-time="2026-09-24 14:56:23Z" duration="0.1458179">
+  <test-suite type="TestSuite" id="1000" name="Pirate Game" fullname="Pirate Game" runstate="Runnable" testcasecount="187" result="Passed" start-time="2026-09-24 14:56:23Z" end-time="2026-09-24 14:56:23Z" duration="0.145818" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1194" name="HighSeas.Tests.EditMode.dll" fullname="C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Library/ScriptAssemblies/HighSeas.Tests.EditMode.dll" runstate="Runnable" testcasecount="165" result="Passed" start-time="2026-09-24 14:56:23Z" end-time="2026-09-24 14:56:23Z" duration="0.137697" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="221584" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1195" name="HighSeas" fullname="HighSeas" runstate="Runnable" testcasecount="165" result="Passed" start-time="2026-09-24 14:56:23Z" end-time="2026-09-24 14:56:23Z" duration="0.135669" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1196" name="Tests" fullname="HighSeas.Tests" runstate="Runnable" testcasecount="165" result="Passed" start-time="2026-09-24 14:56:23Z" end-time="2026-09-24 14:56:23Z" duration="0.133759" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1101" name="SaltwindCombatRedesignGateTests" fullname="HighSeas.Tests.SaltwindCombatRedesignGateTests" classname="HighSeas.Tests.SaltwindCombatRedesignGateTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-24 14:56:23Z" end-time="2026-09-24 14:56:23Z" duration="0.130867" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1105" name="CombatBalanceVersion_IsIncremented" fullname="HighSeas.Tests.SaltwindCombatRedesignGateTests.CombatBalanceVersion_IsIncremented" methodname="CombatBalanceVersion_IsIncremented" classname="HighSeas.Tests.SaltwindCombatRedesignGateTests" runstate="Runnable" seed="1086925777" result="Passed" start-time="2026-09-24 14:56:23Z" end-time="2026-09-24 14:56:23Z" duration="0.105605" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1103" name="ManualAndScheduledResolve_ParityForSwordfish" fullname="HighSeas.Tests.SaltwindCombatRedesignGateTests.ManualAndScheduledResolve_ParityForSwordfish" methodname="ManualAndScheduledResolve_ParityForSwordfish" classname="HighSeas.Tests.SaltwindCombatRedesignGateTests" runstate="Runnable" seed="716840604" result="Passed" start-time="2026-09-24 14:56:23Z" end-time="2026-09-24 14:56:23Z" duration="0.004182" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1102" name="SpawnResolver_UsesSpawnedDefinition_NotAnchorProfile" fullname="HighSeas.Tests.SaltwindCombatRedesignGateTests.SpawnResolver_UsesSpawnedDefinition_NotAnchorProfile" methodname="SpawnResolver_UsesSpawnedDefinition_NotAnchorProfile" classname="HighSeas.Tests.SaltwindCombatRedesignGateTests" runstate="Runnable" seed="1998268515" result="Passed" start-time="2026-09-24 14:56:23Z" end-time="2026-09-24 14:56:23Z" duration="0.004319" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1104" name="SwivelGuns_RegisteredWithOmniNearestTargeting" fullname="HighSeas.Tests.SaltwindCombatRedesignGateTests.SwivelGuns_RegisteredWithOmniNearestTargeting" methodname="SwivelGuns_RegisteredWithOmniNearestTargeting" classname="HighSeas.Tests.SaltwindCombatRedesignGateTests" runstate="Runnable" seed="224230506" result="Passed" start-time="2026-09-24 14:56:23Z" end-time="2026-09-24 14:56:23Z" duration="0.003939" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/shara/AppData/LocalLow/DefaultCompany/Pirate Game\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
