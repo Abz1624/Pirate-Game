@@ -38,6 +38,7 @@ namespace HighSeas.UI
         bool _useCombatExperimentOffers;
         bool _useStageBalanceProgression;
         bool _openingDraftShown;
+        int _refreshesRemaining;
         CombatExperimentProfile _experimentProfile;
 
         public event Action<int> LevelChanged;
@@ -70,6 +71,7 @@ namespace HighSeas.UI
             Level = _useV3Rules ? 0 : 1;
             CurrentXP = 0f;
             PendingLevelUps = 0;
+            _refreshesRemaining = levelUpSettings != null ? levelUpSettings.refreshesPerRun : 2;
             RefreshXpToNext();
         }
 
@@ -78,6 +80,8 @@ namespace HighSeas.UI
             _openingDraftShown = false;
             Initialize(db, startingWeapon);
         }
+
+        public int RefreshesRemaining => _refreshesRemaining;
 
         /// <summary>After bootstrap init, mirror owned weapons onto the human <see cref="WeaponController"/>.</summary>
         public void SyncWeaponControllerFromOwnedLoadout(WeaponController weapons)
@@ -327,8 +331,9 @@ namespace HighSeas.UI
 
             var offers = GenerateOffers();
             var modal = LevelUpModal.Instance;
-            if (modal != null && modal.TryShow(offers, OnOfferSelected))
+            if (modal != null && modal.TryShow(offers, OnOfferSelected, OnLevelUpSkipped, OnLevelUpRefresh, _refreshesRemaining))
             {
+                V3OnboardingDirector.Instance?.NotifyLevelUpShown();
                 Debug.Log($"Level-up modal shown with {offers.Count} offers.");
                 RunManager.Instance?.SetPause(PauseReason.LevelUp);
                 RunManager.Instance?.SetState(RunState.LevelUpPaused);
@@ -548,6 +553,20 @@ namespace HighSeas.UI
             return default;
         }
 
+        void OnLevelUpSkipped()
+        {
+            PendingLevelUps = Mathf.Max(0, PendingLevelUps - 1);
+            if (PendingLevelUps > 0) ShowLevelUp();
+            else ResumeAfterLevelUp();
+        }
+
+        void OnLevelUpRefresh()
+        {
+            if (_refreshesRemaining <= 0) return;
+            _refreshesRemaining--;
+            ShowLevelUp();
+        }
+
         void OnOfferSelected(LevelOffer offer)
         {
             PendingLevelUps = Mathf.Max(0, PendingLevelUps - 1);
@@ -694,7 +713,8 @@ namespace HighSeas.UI
             if (def.primaryStat == StatId.Hull)
             {
                 var player = UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>();
-                PlayerHullSync.SyncMaxFromRunStats(player, preserveRatio: false);
+                var heal = def.perLevelAdditive * mult;
+                PlayerHullSync.SyncMaxFromRunStats(player, preserveRatio: false, healFlat: heal);
             }
         }
     }

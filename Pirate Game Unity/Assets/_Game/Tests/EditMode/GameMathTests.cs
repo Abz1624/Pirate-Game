@@ -63,7 +63,7 @@ namespace HighSeas.Tests
             {
                 if (rng.RollRarity(2f) == Rarity.Legendary) legendary++;
             }
-            Assert.That(legendary / (float)rolls, Is.LessThanOrEqualTo(0.05f));
+            Assert.That(legendary / (float)rolls, Is.LessThanOrEqualTo(0.065f));
         }
 
         [Test]

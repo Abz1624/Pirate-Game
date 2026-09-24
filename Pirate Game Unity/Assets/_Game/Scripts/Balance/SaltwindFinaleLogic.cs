@@ -61,16 +61,22 @@ namespace HighSeas.Balance
                 : export.Overtime.PursuerWeightAfterTwoMinutes;
         }
 
+        const float OrdinaryScalingDelaySeconds = 120f;
+
         public static float GetOrdinaryTimeHpMultiplier(float elapsedSeconds)
         {
-            var minute = elapsedSeconds / 60f;
+            if (elapsedSeconds < OrdinaryScalingDelaySeconds)
+                return 1f;
+            var minute = (elapsedSeconds - OrdinaryScalingDelaySeconds) / 60f;
             return 1f + 0.11f * minute + 0.022f * minute * minute;
         }
 
         /// <summary>Saltwind ordinary-phase contact/ranged threat (player out-scales base <see cref="GameMath.EnemyDamage"/> alone).</summary>
         public static float GetOrdinaryTimeDamageMultiplier(float elapsedSeconds)
         {
-            var minute = elapsedSeconds / 60f;
+            if (elapsedSeconds < OrdinaryScalingDelaySeconds)
+                return 1f;
+            var minute = (elapsedSeconds - OrdinaryScalingDelaySeconds) / 60f;
             return 1f + 0.14f * minute + 0.028f * minute * minute;
         }
 

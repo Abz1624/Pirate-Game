@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Player;
+using HighSeas.PlayerSystems;
 using HighSeas.POI;
 using HighSeas.UI;
 using HighSeas.V3.MultiShip;
@@ -30,6 +31,8 @@ namespace HighSeas.V3
         TextMeshProUGUI _levelText;
         Slider _hpSlider;
         Slider _xpSlider;
+        Slider _boostSlider;
+        Button _boostButton;
         RectTransform _timerRect;
         RectTransform _profileRect;
         RectTransform _questRect;
@@ -117,6 +120,7 @@ namespace HighSeas.V3
             RefreshKillCount();
             RefreshProfile();
             RefreshQuests();
+            RefreshBoostMeter();
         }
 
         public void BindIfNeeded()
@@ -166,6 +170,7 @@ namespace HighSeas.V3
             _timerRect = root.Find("TImer") as RectTransform;
             _profileRect = root.Find("Profile") as RectTransform;
             _questRect = root.Find("Quest") as RectTransform;
+            EnsureBoostHud(root);
 
             _questLines.Clear();
             _questSlotRoots.Clear();
@@ -388,6 +393,67 @@ namespace HighSeas.V3
         static Slider FindSlider(Transform root, string path)
         {
             return root.Find(path)?.GetComponent<Slider>();
+        }
+
+        void EnsureBoostHud(Transform root)
+        {
+            if (_boostSlider != null) return;
+            var boostRoot = root.Find("Boost_Meter");
+            if (boostRoot == null)
+            {
+                var go = new GameObject("Boost_Meter", typeof(RectTransform));
+                go.transform.SetParent(root, false);
+                boostRoot = go.transform;
+                var rt = go.GetComponent<RectTransform>();
+                rt.anchorMin = new Vector2(0f, 0f);
+                rt.anchorMax = new Vector2(0f, 0f);
+                rt.pivot = new Vector2(0f, 0f);
+                rt.anchoredPosition = new Vector2(24f, 24f);
+                rt.sizeDelta = new Vector2(180f, 28f);
+            }
+
+            _boostSlider = boostRoot.GetComponent<Slider>();
+            if (_boostSlider == null)
+            {
+                var sliderGo = new GameObject("Slider", typeof(RectTransform), typeof(Slider), typeof(Image));
+                sliderGo.transform.SetParent(boostRoot, false);
+                var srt = sliderGo.GetComponent<RectTransform>();
+                srt.anchorMin = Vector2.zero;
+                srt.anchorMax = Vector2.one;
+                srt.offsetMin = Vector2.zero;
+                srt.offsetMax = new Vector2(-52f, 0f);
+                _boostSlider = sliderGo.GetComponent<Slider>();
+                _boostSlider.minValue = 0f;
+                _boostSlider.maxValue = 1f;
+            }
+
+            _boostButton = boostRoot.GetComponentInChildren<Button>();
+            if (_boostButton == null)
+            {
+                var btnGo = new GameObject("BoostButton", typeof(RectTransform), typeof(Image), typeof(Button));
+                btnGo.transform.SetParent(boostRoot, false);
+                var brt = btnGo.GetComponent<RectTransform>();
+                brt.anchorMin = new Vector2(1f, 0.5f);
+                brt.anchorMax = new Vector2(1f, 0.5f);
+                brt.pivot = new Vector2(1f, 0.5f);
+                brt.anchoredPosition = Vector2.zero;
+                brt.sizeDelta = new Vector2(44f, 28f);
+                btnGo.GetComponent<Image>().color = new Color(0.2f, 0.45f, 0.7f, 0.9f);
+                _boostButton = btnGo.GetComponent<Button>();
+                _boostButton.onClick.AddListener(() =>
+                {
+                    if (_player != null)
+                        _player.GetComponent<ShipBoostController>()?.RequestBoost();
+                });
+            }
+        }
+
+        void RefreshBoostMeter()
+        {
+            if (_player == null) return;
+            var boost = _player.GetComponent<ShipBoostController>();
+            if (boost == null || _boostSlider == null) return;
+            _boostSlider.value = boost.BoostNormalized;
         }
     }
 }

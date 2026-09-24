@@ -85,8 +85,15 @@ namespace HighSeas.V3
         EnemyWorld _enemyWorld;
         StageLayout _layout;
         readonly List<RectTransform> _threatIcons = new(8);
+        readonly List<RectTransform> _spawnPingIcons = new(4);
+        static readonly List<(Vector3 world, float expires)> SpawnPings = new(6);
         float _beaconPulse;
         float _mapScale;
+
+        public static void RegisterSpawnPing(Vector3 worldPosition, float durationSeconds = 3f)
+        {
+            SpawnPings.Add((worldPosition, Time.unscaledTime + durationSeconds));
+        }
 
         public static V3MinimapHud Ensure(Transform canvas, StageLayout layout)
         {
@@ -162,6 +169,7 @@ namespace HighSeas.V3
             RefreshMarkerPositions();
             RefreshMarkerVisibility();
             RefreshThreatMarkers();
+            RefreshSpawnPings();
             PulseBossBeacon();
         }
 
@@ -712,6 +720,35 @@ namespace HighSeas.V3
                 }
 
                 group.alpha = alpha;
+            }
+        }
+
+        void RefreshSpawnPings()
+        {
+            if (_threatRoot == null) return;
+            var now = Time.unscaledTime;
+            for (var i = SpawnPings.Count - 1; i >= 0; i--)
+            {
+                if (SpawnPings[i].expires <= now)
+                    SpawnPings.RemoveAt(i);
+            }
+
+            for (var i = 0; i < _spawnPingIcons.Count; i++)
+                _spawnPingIcons[i].gameObject.SetActive(false);
+
+            for (var i = 0; i < SpawnPings.Count; i++)
+            {
+                while (_spawnPingIcons.Count <= i)
+                {
+                    var icon = CreateChild(_threatRoot, $"SpawnPing_{_spawnPingIcons.Count}");
+                    icon.sizeDelta = new Vector2(14f, 14f);
+                    _spawnPingIcons.Add(icon);
+                }
+
+                var pingIcon = _spawnPingIcons[i];
+                pingIcon.gameObject.SetActive(true);
+                pingIcon.anchoredPosition = WorldToMap(SpawnPings[i].world);
+                V3MinimapMarkerGraphics.Apply(pingIcon, V3MinimapMarkerGraphics.GlyphKind.GenericPoi);
             }
         }
 

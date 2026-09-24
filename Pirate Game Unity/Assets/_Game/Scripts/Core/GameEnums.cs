@@ -85,6 +85,14 @@ namespace HighSeas.Core
         Creature
     }
 
+    public enum EnemyTier
+    {
+        Soldier = 0,
+        Captain = 1,
+        General = 2,
+        Boss = 3
+    }
+
     public enum EnemyBehavior
     {
         DirectChaser,

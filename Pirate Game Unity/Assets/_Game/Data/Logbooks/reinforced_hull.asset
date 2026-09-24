@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e45593a37dc2dbf44a60f7383ff33976, type: 3}
   m_Name: reinforced_hull
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.LogbookDefinition
-  id: reinforced_hull
-  displayName: Reinforced Hull Plans
-  primaryStat: 0
-  perLevelAdditive: 20
+  id: navigators_charts
+  displayName: Navigator's Charts
+  primaryStat: 22
+  perLevelAdditive: 0.03
   perLevelMultiplicative: 1
-  maxLevel: 10
+  maxLevel: 12
   unlockQuestId: 

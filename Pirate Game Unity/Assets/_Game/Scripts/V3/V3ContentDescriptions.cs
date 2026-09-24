@@ -104,6 +104,23 @@ namespace HighSeas.V3
 
             $"{GetItemName(itemId)}\n<size=80%>{GetItemDescription(itemId)}</size>";
 
+        public static string GetWeaponBehaviorLine(string weaponId) => weaponId switch
+        {
+            "deck_cannons" => "Fires forward — steer to aim",
+            "broadside_battery" => "Fires port and starboard",
+            "powder_kegs" => "Drops mines astern",
+            "long_nine" => "Fires forward — steer to aim",
+            "harpoon_gun" => "Forward tether shot",
+            "mortar" => "Delayed ground strike",
+            _ => "Auto-attacks nearby enemies"
+        };
+
+        public static string GetWeaponStatSummary(WeaponDefinition def)
+        {
+            if (def == null) return string.Empty;
+            return $"{def.baseDamage:0.#} dmg · {def.baseCooldown:0.##}s · range {def.range:0.#}";
+        }
+
     }
 
 }

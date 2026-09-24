@@ -26,7 +26,7 @@ namespace HighSeas.Core
         public const float DefaultHull = 100f * HullHealthMultiplier;
 
         public static float ScaleHull(float designHull) => designHull * HullHealthMultiplier;
-        public const float DefaultPickupRadius = 3.5f;
+        public const float DefaultPickupRadius = 6f;
         public const float ContactIFrame = 0.20f;
         public const float EnemyContactCooldown = 0.8f;
         /// <summary>Director V2 continuous spawns only cannonboats during this window.</summary>
@@ -52,7 +52,7 @@ namespace HighSeas.Core
         public const float StageDurationSeconds = 600f;
         public const float StageBaseThreat = 2.6f;
         public const int DefaultWeaponSlots = 6;
-        public const int DefaultLogbookSlots = 2;
+        public const int DefaultLogbookSlots = 4;
         public const int MaxWeaponLevel = 12;
         public const int MaxLogbookLevel = 10;
         public const float MaxGlobalDamageMultiplier = 11f;
@@ -73,7 +73,7 @@ namespace HighSeas.Core
         public const int DemoRunSeed = 12345;
 
         public static readonly float[] RarityMultipliers = { 1f, 1.25f, 1.55f, 1.90f, 2.50f };
-        public static readonly float[] RarityBaseWeights = { 70f, 22.5f, 6f, 1.35f, 0.15f };
+        public static readonly float[] RarityBaseWeights = { 60f, 26f, 10f, 3.2f, 0.8f };
     }
 
     public static class GameMath

@@ -11,6 +11,7 @@ using HighSeas.Player;
 using HighSeas.POI;
 using HighSeas.UI;
 using HighSeas.V3.MultiShip;
+using HighSeas.Audio;
 using HighSeas.VFX;
 using HighSeas.Weapons;
 using HighSeas.Save;
@@ -178,6 +179,7 @@ namespace HighSeas.V3
             V3FloorPowerupWorld.Ensure();
             V3FloorPowerupWorld.Instance?.ResetForRun();
             V3RunItemInventory.Instance?.ClearForNewRun();
+            V3RunItemEffects.Instance?.ResetForNewRun();
 
             _layout = stageBuilder != null ? stageBuilder.Build(seed, 0) : null;
             V3StormEdgeVisual.DisableWorldRings();
@@ -221,6 +223,8 @@ namespace HighSeas.V3
                 var layoutDef = ResolveIslandLayout();
                 PlacePlayerAtSafeSpawn(player, layoutDef, seed);
                 player.SetMovementEnabled(true);
+                if (StageBalanceProfileContext.IsActive)
+                    V3RunOpeningXpScatter.ScatterNearPlayer(player.transform.position, seed);
             }
 
             var captainId = V3CaptainSelection.Selected;
@@ -282,8 +286,6 @@ namespace HighSeas.V3
 
                 if (V3CaptainController.Instance == null)
                     player.InitializeFromRun(RunManager.Instance.Stats.MaxHull);
-                else
-                    V3CaptainController.Instance.Initialize(captainId, player);
 
                 EnsurePlayerHealthBar(player);
             }
@@ -295,6 +297,7 @@ namespace HighSeas.V3
             }
 
             EnsureCombatVfx();
+            EnsurePlayfeelSystems(player, seed);
 
             if (!isPvPScene)
             {
@@ -425,18 +428,12 @@ namespace HighSeas.V3
         static string ResolveStartingWeapon(V3CaptainProfile profile)
         {
             if (StageBalanceProfileContext.IsActive && !V3PlaytestFlags.SaltwindDebugUnlockAll)
-            {
-                var preferred = profile.StartingWeaponId;
-                if (SaltwindStageProgressionLogic.IsWeaponInOfferPool(
-                        StageBalanceProfileContext.Export,
-                        preferred))
-                    return preferred;
                 return "swivel_guns";
-            }
 
             if (!V3PlaytestFlags.UnlockAllContent && !PlayerPrefs.HasKey(V3ContentUnlocks.FirstConquestKey))
                 return "swivel_guns";
-            return profile.StartingWeaponId;
+            var starter = profile.StartingWeaponId;
+            return string.IsNullOrEmpty(starter) ? "swivel_guns" : starter;
         }
 
         void PlacePlayerAtSafeSpawn(PlayerShipController ship, IslandLayoutDefinition layoutDef, int seed)
@@ -521,6 +518,7 @@ namespace HighSeas.V3
             ApplyConquestUnlockIfSecured();
             RunManager.Instance.SetState(RunState.PlayerDead);
             RunManager.Instance.FinalizeRunOnDeath();
+            V3OnboardingDirector.RecordRunCompleted();
             RunCombatTelemetry.Instance?.RecordPlayerDeath(RunManager.Instance.ObjectiveSecured);
             V3ToastHud.Instance?.Show("Run ended — gold banked.", 4f);
             if (StageBalanceProfileContext.IsActive && SaltwindRunSettlement.LastSettlementApplied)
@@ -583,6 +581,78 @@ namespace HighSeas.V3
                 broker.Configure(settings, vfxRoot);
 
             systems.GetComponent<WeaponJuiceController>()?.Configure(settings, vfxRoot);
+            if (systems.GetComponent<CameraShakeService>() == null)
+                systems.AddComponent<CameraShakeService>();
+            if (systems.GetComponent<SfxService>() == null)
+                systems.AddComponent<SfxService>();
+            if (systems.GetComponent<V3SpawnWarningHud>() == null)
+                systems.AddComponent<V3SpawnWarningHud>();
+        }
+
+        static void EnsurePlayfeelSystems(PlayerShipController ship, int seed)
+        {
+            V3OnboardingDirector.Ensure()?.ResetForRun();
+            var systems = GameObject.Find("Systems");
+            if (systems != null)
+            {
+                var dayNight = systems.GetComponent<DayNightDirector>();
+                if (dayNight == null) dayNight = systems.AddComponent<DayNightDirector>();
+                dayNight.BeginRun(seed);
+                var wind = systems.GetComponent<WindGustDirector>();
+                if (wind == null) wind = systems.AddComponent<WindGustDirector>();
+                wind.BeginRun(seed);
+            }
+
+            EnsureSaltwindEnvironmentHazards(seed);
+
+            if (ship == null) return;
+            var boost = ship.GetComponent<HighSeas.PlayerSystems.ShipBoostController>();
+            if (boost == null) boost = ship.gameObject.AddComponent<HighSeas.PlayerSystems.ShipBoostController>();
+            boost.Bind(ship);
+            if (ship.GetComponent<HighSeas.PlayerSystems.BoostCameraZoom>() == null)
+                ship.gameObject.AddComponent<HighSeas.PlayerSystems.BoostCameraZoom>();
+            if (ship.GetComponent<ExternalForceReceiver>() == null)
+                ship.gameObject.AddComponent<ExternalForceReceiver>();
+        }
+
+        static void EnsureSaltwindEnvironmentHazards(int seed)
+        {
+            if (!StageBalanceProfileContext.IsActive && !V3RunContext.IsActive)
+                return;
+
+            var root = GameObject.Find("EnvironmentHazards");
+            if (root == null)
+                root = new GameObject("EnvironmentHazards");
+
+            if (root.transform.childCount > 0)
+                return;
+
+            var rng = new RunRng(seed ^ 0x455631);
+            CreateCurrentLane(root.transform, new Vector3(-80f, 0f, 40f), Vector3.right);
+            CreateWhirlpool(root.transform, new Vector3(60f, 0f, -70f));
+            CreateWhirlpool(root.transform, new Vector3(-40f, 0f, -90f + rng.DirectorFloat() * 20f));
+        }
+
+        static void CreateCurrentLane(Transform parent, Vector3 center, Vector3 flow)
+        {
+            var go = new GameObject("OceanCurrent", typeof(BoxCollider));
+            go.transform.SetParent(parent, false);
+            go.transform.position = center;
+            var box = go.GetComponent<BoxCollider>();
+            box.isTrigger = true;
+            box.size = new Vector3(28f, 4f, 12f);
+            go.AddComponent<OceanCurrentZone>().Configure(flow);
+        }
+
+        static void CreateWhirlpool(Transform parent, Vector3 position)
+        {
+            var go = new GameObject("Whirlpool", typeof(SphereCollider));
+            go.transform.SetParent(parent, false);
+            go.transform.position = position;
+            var sphere = go.GetComponent<SphereCollider>();
+            sphere.isTrigger = true;
+            sphere.radius = 10f;
+            go.AddComponent<WhirlpoolHazard>();
         }
 
         static void EnsureCombatTelemetryDriver()

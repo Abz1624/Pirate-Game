@@ -52,7 +52,7 @@ namespace HighSeas.Combat
 
         public static bool ShowAimVisuals
         {
-            get => PlayerPrefs.GetInt(AimVisualsPrefKey, 1) == 1;
+            get => PlayerPrefs.GetInt(AimVisualsPrefKey, 0) == 1;
             set => PlayerPrefs.SetInt(AimVisualsPrefKey, value ? 1 : 0);
         }
 

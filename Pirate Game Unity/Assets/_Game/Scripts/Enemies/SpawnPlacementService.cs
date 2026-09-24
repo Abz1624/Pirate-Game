@@ -20,6 +20,8 @@ namespace HighSeas.Enemies
                 return false;
 
             var minDist = settings.distanceMin;
+            if (settings.requireOutsidePlayerFov && camera != null)
+                minDist = Mathf.Max(minDist, GetMinSpawnDistanceBeyondView(camera, player, settings.viewportMargin) + 1.5f);
             var maxDist = Mathf.Max(minDist + 0.5f, settings.distanceMax);
             var attempts = Mathf.Max(1, settings.positionAttempts);
             var margin = settings.viewportMargin;
@@ -69,6 +71,8 @@ namespace HighSeas.Enemies
                 return false;
 
             var minDist = settings.distanceMin;
+            if (settings.requireOutsidePlayerFov && camera != null)
+                minDist = Mathf.Max(minDist, GetMinSpawnDistanceBeyondView(camera, player, settings.viewportMargin) + 1.5f);
             var maxDist = Mathf.Max(minDist + 0.5f, settings.distanceMax);
             var attempts = Mathf.Max(1, settings.positionAttempts);
             for (var i = 0; i < attempts; i++)
@@ -265,6 +269,26 @@ namespace HighSeas.Enemies
                 && viewport.x <= 1f + viewportMargin
                 && viewport.y >= -viewportMargin
                 && viewport.y <= 1f + viewportMargin;
+        }
+
+        public static float GetMinSpawnDistanceBeyondView(Camera camera, Transform player, float viewportMargin)
+        {
+            if (camera == null || player == null) return 10f;
+            var planeY = player.position.y;
+            var maxDist = 0f;
+            for (var x = 0; x <= 1; x++)
+            {
+                for (var y = 0; y <= 1; y++)
+                {
+                    var ray = camera.ViewportPointToRay(new Vector3(x, y, 0f));
+                    if (!TryIntersectWaterPlane(ray, planeY, out var hit)) continue;
+                    var d = Vector3.Distance(new Vector3(player.position.x, planeY, player.position.z),
+                        new Vector3(hit.x, planeY, hit.z));
+                    if (d > maxDist) maxDist = d;
+                }
+            }
+
+            return maxDist * (1f + viewportMargin);
         }
 
         static Vector3 GetPlayerForward(Transform player)

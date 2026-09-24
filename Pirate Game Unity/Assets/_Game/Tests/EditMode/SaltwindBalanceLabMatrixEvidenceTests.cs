@@ -20,7 +20,7 @@ namespace HighSeas.Tests
 #endif
             profile ??= StageBalanceProfile.CreateBuiltInSaltwindDefaults();
             var export = profile.ToExport();
-            Assert.AreEqual(2, export.BalanceVersion);
+            Assert.AreEqual(3, export.BalanceVersion);
 
             var report = SaltwindBalanceLabBatchRunner.RunMatrix(export, new SaltwindBalanceLabBatchOptions
             {

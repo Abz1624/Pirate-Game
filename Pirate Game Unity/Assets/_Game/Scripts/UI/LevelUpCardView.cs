@@ -77,13 +77,23 @@ namespace HighSeas.UI
 
             if (rarityText != null)
             {
-                rarityText.text = offer.rarity.ToString().ToUpperInvariant();
-                rarityText.color = style.rarityText;
+                if (offer.hideRarity)
+                {
+                    rarityText.gameObject.SetActive(false);
+                }
+                else
+                {
+                    rarityText.gameObject.SetActive(true);
+                    rarityText.text = offer.rarity.ToString().ToUpperInvariant();
+                    rarityText.color = style.rarityText;
+                }
             }
 
             if (descriptionText != null)
             {
-                descriptionText.text = offer.description;
+                descriptionText.text = offer.effectLines != null && offer.effectLines.Length > 0
+                    ? string.Join("\n", offer.effectLines)
+                    : offer.description;
                 descriptionText.color = new Color(0.82f, 0.87f, 0.93f, 1f);
             }
 

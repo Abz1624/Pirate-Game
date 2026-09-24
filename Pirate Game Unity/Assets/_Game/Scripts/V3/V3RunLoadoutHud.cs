@@ -14,7 +14,7 @@ namespace HighSeas.V3
     /// <summary>Megabonk-style bottom loadout bar: weapon slots, logbook slots, and run items.</summary>
     public sealed class V3RunLoadoutHud : MonoBehaviour
     {
-        const int LogbookSlotCount = 2;
+        const int LogbookSlotCount = 4;
         const int ItemSlotCount = 4;
         const float BarWidth = 1040f;
         const float BarHeight = 92f;

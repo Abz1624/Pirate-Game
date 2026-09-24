@@ -17,9 +17,9 @@ namespace HighSeas.Balance
 
         static readonly string[][] OrdinaryFamilies =
         {
-            new[] { "shark", "swordfish" },
-            new[] { "cannonboat", "hammerhead" },
-            new[] { "manta_ray", "hammerhead", "cannonboat" },
+            new[] { "swordfish", "deckhand_dinghy" },
+            new[] { "swordfish", "deckhand_dinghy", "cutthroat_skiff", "hammerhead" },
+            new[] { "hammerhead", "cutthroat_skiff", "shark", "cannonboat" },
             new[] { "manta_ray", "cannonboat", "hammerhead" },
             new[] { "manta_ray", "cannonboat", "hammerhead" }
         };
@@ -28,7 +28,7 @@ namespace HighSeas.Balance
         {
             Array.Empty<string>(),
             new[] { "needle_sloop", "ram_raider" },
-            new[] { "bomb_boat", "boarding_barge" },
+            new[] { "bomb_boat", "rammer_raft" },
             new[] { "bomb_boat", "boarding_barge", "kraken_spawn" },
             new[] { "kraken_spawn", "bomb_boat", "boarding_barge" }
         };
@@ -56,7 +56,9 @@ namespace HighSeas.Balance
             RunRng rng,
             Func<string, int> countActiveByEnemyId,
             StageBalanceProfileExport export,
-            out string enemyId)
+            out string enemyId,
+            float elapsedSeconds = 0f,
+            int playerLevel = 0)
         {
             enemyId = null;
             if (bandIndex < 0 || bandIndex >= BandCount || rng == null)
@@ -69,17 +71,22 @@ namespace HighSeas.Balance
 
             if (rollSpecialist)
             {
-                if (TryPickFromPool(SpecialistFamilies[bandIndex], rng, countActiveByEnemyId, export, true, out enemyId))
+                if (TryPickFromPool(
+                        SpecialistFamilies[bandIndex], rng, countActiveByEnemyId, export, true,
+                        elapsedSeconds, playerLevel, out enemyId))
                     return true;
             }
 
-            if (TryPickFromPool(OrdinaryFamilies[bandIndex], rng, countActiveByEnemyId, export, false, out enemyId))
+            if (TryPickFromPool(
+                    OrdinaryFamilies[bandIndex], rng, countActiveByEnemyId, export, false,
+                    elapsedSeconds, playerLevel, out enemyId))
                 return true;
 
             if (OrdinaryFamilies[bandIndex].Length > 0)
             {
                 var fallback = OrdinaryFamilies[bandIndex][0];
-                if (IsWithinCap(fallback, countActiveByEnemyId(fallback), export, false))
+                if (IsWithinCap(fallback, countActiveByEnemyId(fallback), export, false) &&
+                    EnemyTierLogic.CanSpawnEnemyId(fallback, elapsedSeconds, playerLevel))
                 {
                     enemyId = fallback;
                     return true;
@@ -95,6 +102,8 @@ namespace HighSeas.Balance
             Func<string, int> countActiveByEnemyId,
             StageBalanceProfileExport export,
             bool specialistPool,
+            float elapsedSeconds,
+            int playerLevel,
             out string enemyId)
         {
             enemyId = null;
@@ -105,6 +114,8 @@ namespace HighSeas.Balance
             for (var offset = 0; offset < pool.Length; offset++)
             {
                 var candidate = pool[(start + offset) % pool.Length];
+                if (!EnemyTierLogic.CanSpawnEnemyId(candidate, elapsedSeconds, playerLevel))
+                    continue;
                 if (!IsWithinCap(candidate, countActiveByEnemyId(candidate), export, specialistPool))
                     continue;
                 enemyId = candidate;

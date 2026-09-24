@@ -68,6 +68,25 @@
       "farClipPlane": 1000
     }
   },
+  "additivePlaytestComponents": {
+    "playerShip": [
+      "HighSeas.PlayerSystems.ShipBoostController (boostDuration 2.5, boostCooldown 6, boostMoveMultiplier 1.5)",
+      "HighSeas.PlayerSystems.BoostCameraZoom (baseFov 50, boostFov 58)",
+      "HighSeas.World.ExternalForceReceiver"
+    ],
+    "systems": [
+      "HighSeas.VFX.CameraShakeService",
+      "HighSeas.Audio.SfxService",
+      "HighSeas.World.DayNightDirector",
+      "HighSeas.World.WindGustDirector",
+      "HighSeas.V3.V3OnboardingDirector",
+      "HighSeas.V3.V3SpawnWarningHud"
+    ],
+    "runtimeSpawned": [
+      "EnvironmentHazards/OceanCurrent",
+      "EnvironmentHazards/Whirlpool (x2)"
+    ]
+  },
   "modeBaselineNotes": {
     "soloSaltwind": "V3SaltwindRun without V3MultiShipSceneConfig (SinglePlayer session).",
     "coOpPvP": "Scenes with V3MultiShipSceneConfig retain existing session rules; stage balance profile resolver is skipped."

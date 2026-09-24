@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Balance.StageBalanceProfile
   profileId: saltwind_solo
   schemaVersion: 1
-  balanceVersion: 2
+  balanceVersion: 3
   encounterSchedule: {fileID: 11400000, guid: b83b2c95913b99a47a103f5fc2b2b8a5, type: 2}
   enforceCompleteScheduleReferences: 1
   graceSeconds: 2
@@ -24,7 +24,7 @@ MonoBehaviour:
   stormStartSeconds: 720
   stormWarningLeadSeconds: 10
   ambientRatePerSecond:
-  - 0.6
+  - 0.5
   - 1.2
   - 1.8
   - 2.4
@@ -69,12 +69,12 @@ MonoBehaviour:
   explosiveBarrelDamage: 20
   explosiveBarrelCount: 2
   weaponSlotCap: 6
-  logbookSlotCap: 2
+  logbookSlotCap: 4
   levelUpChoiceCount: 3
-  levelZeroToOneXpCost: 7
+  levelZeroToOneXpCost: 5
   xpCurveMultiplier: 5.325000286102295
   xpCurveExponent: 1.065000057220459
-  newWeaponOfferProtectionLevels: 04000000080000000c00000010000000
+  newWeaponOfferProtectionLevels: 020000000300000005000000080000000c000000
   chestBasePrice: 20
   chestPriceGrowth: 1.22
   chestPriceIncrementBase: 25

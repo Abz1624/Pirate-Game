@@ -43,7 +43,7 @@ namespace HighSeas.Tests
             var second = profile.ToExport();
             Assert.AreEqual(first.ContentHash, second.ContentHash);
 
-            profile.balanceVersion = 2;
+            profile.levelZeroToOneXpCost = profile.levelZeroToOneXpCost + 1;
             var changed = profile.ToExport();
             Assert.AreNotEqual(first.ContentHash, changed.ContentHash);
         }
@@ -69,7 +69,7 @@ namespace HighSeas.Tests
             Assert.AreEqual(38, StageBalanceProfileExportCodec.ChestPriceForPurchaseIndex(export, 2));
             Assert.AreEqual(46, StageBalanceProfileExportCodec.ChestPriceForPurchaseIndex(export, 3));
             Assert.AreEqual(56, StageBalanceProfileExportCodec.ChestPriceForPurchaseIndex(export, 4));
-            Assert.AreEqual(7, StageBalanceProfileExportCodec.XpToNextLevel(export, 0));
+            Assert.AreEqual(5, StageBalanceProfileExportCodec.XpToNextLevel(export, 0));
             Assert.AreEqual(0.35f, StageBalanceProfileExportCodec.OvertimeSpawnInterval(export, 600f), 0.001f);
             Assert.AreEqual(1.4f, StageBalanceProfileExportCodec.OvertimeSpawnInterval(export, 0f), 0.001f);
         }

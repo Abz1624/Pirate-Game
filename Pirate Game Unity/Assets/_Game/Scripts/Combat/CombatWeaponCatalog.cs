@@ -95,7 +95,7 @@ namespace HighSeas.Combat
 
         static WeaponDefinition CreateSwivelGuns() => Build(
             "swivel_guns", "Swivel Guns", WeaponPattern.AutoProjectile, TargetingMode.Nearest,
-            damage: 3.5f, cooldown: 0.72f, range: 13f, arc: 360f, proc: 0.35f,
+            damage: 6f, cooldown: 0.6f, range: 16f, arc: 360f, proc: 0.35f,
             tags: Tags("Gunnery"), quantity: 1);
 
         static WeaponDefinition CreateGrapeshot() => Build(
@@ -105,12 +105,12 @@ namespace HighSeas.Combat
 
         static WeaponDefinition CreateHarpoonGun() => Build(
             "harpoon_gun", "Harpoon Gun", WeaponPattern.AutoProjectile, TargetingMode.TetherTarget,
-            damage: 16f, cooldown: 1.8f, range: 16f, arc: 75f, proc: 0.8f,
-            tags: Tags("Hunter", "Control"), preferHighestHull: true);
+            damage: 16f, cooldown: 1.2f, range: 16f, arc: 75f, proc: 0.8f,
+            tags: Tags("Hunter", "Control"), preferHighestHull: false);
 
         static WeaponDefinition CreateMortar() => Build(
             "mortar", "Mortar", WeaponPattern.PredictedAoE, TargetingMode.OmniClusterGround,
-            damage: 22f, cooldown: 2.6f, range: 18f, arc: 360f, proc: 0.8f,
+            damage: 22f, cooldown: 1.8f, range: 18f, arc: 360f, proc: 0.8f,
             tags: Tags("Explosive"), size: 4.25f);
 
         static WeaponDefinition CreateBoardingParty() => Build(

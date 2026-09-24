@@ -1462,7 +1462,7 @@ namespace HighSeas.Weapons
             {
                 active = true,
                 position = target,
-                timer = 1.1f,
+                timer = 0.6f,
                 radius = w.def.size * w.sizeMult * stats.Size,
                 baseDamage = w.def.baseDamage,
                 damageBonus = w.damageBonus,

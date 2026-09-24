@@ -25,6 +25,7 @@ namespace HighSeas.UI
         [SerializeField] TextMeshProUGUI[] cardDescriptions;
         [SerializeField] Button acceptButton;
         [SerializeField] Button rejectButton;
+        [SerializeField] Button refreshButton;
 
         Action<LevelOffer> _callback;
         Action _rejectCallback;
@@ -99,7 +100,12 @@ namespace HighSeas.UI
             ApplyWiring(LevelUpUiFactory.Rebuild(transform));
         }
 
-        public bool TryShow(List<LevelOffer> offers, Action<LevelOffer> callback, Action rejectCallback = null)
+        public bool TryShow(
+            List<LevelOffer> offers,
+            Action<LevelOffer> callback,
+            Action rejectCallback = null,
+            Action refreshCallback = null,
+            int refreshesRemaining = 0)
         {
             EnsureWired();
             if (!HasUsableCards())
@@ -108,7 +114,7 @@ namespace HighSeas.UI
                 return false;
             }
 
-            Show(offers, callback, rejectCallback);
+            Show(offers, callback, rejectCallback, refreshCallback, refreshesRemaining);
             return true;
         }
 
@@ -122,12 +128,22 @@ namespace HighSeas.UI
             _selectedIndex = -1;
         }
 
-        public void Show(List<LevelOffer> offers, Action<LevelOffer> callback, Action rejectCallback = null)
+        Action _refreshCallback;
+        int _refreshesRemaining;
+
+        public void Show(
+            List<LevelOffer> offers,
+            Action<LevelOffer> callback,
+            Action rejectCallback = null,
+            Action refreshCallback = null,
+            int refreshesRemaining = 0)
         {
             EnsureWired();
             _offers = offers;
             _callback = callback;
             _rejectCallback = rejectCallback;
+            _refreshCallback = refreshCallback;
+            _refreshesRemaining = refreshesRemaining;
             _selectedIndex = -1;
             if (panel != null)
             {
@@ -176,7 +192,38 @@ namespace HighSeas.UI
             if (acceptButton != null)
                 acceptButton.gameObject.SetActive(false);
             if (rejectButton != null)
-                rejectButton.gameObject.SetActive(false);
+            {
+                var showSkip = rejectCallback != null;
+                rejectButton.gameObject.SetActive(showSkip);
+                if (showSkip)
+                {
+                    rejectButton.onClick.RemoveAllListeners();
+                    rejectButton.onClick.AddListener(OnSkipClicked);
+                    var label = rejectButton.GetComponentInChildren<TextMeshProUGUI>();
+                    if (label != null) label.text = "Skip";
+                }
+            }
+
+            if (refreshButton != null)
+            {
+                var showRefresh = _refreshCallback != null && _refreshesRemaining > 0;
+                refreshButton.gameObject.SetActive(showRefresh);
+                if (showRefresh)
+                {
+                    refreshButton.onClick.RemoveAllListeners();
+                    refreshButton.onClick.AddListener(OnRefreshClicked);
+                    var label = refreshButton.GetComponentInChildren<TextMeshProUGUI>();
+                    if (label != null) label.text = $"Refresh ({_refreshesRemaining} left)";
+                }
+            }
+        }
+
+        void OnSkipClicked() => _rejectCallback?.Invoke();
+
+        void OnRefreshClicked()
+        {
+            if (_refreshesRemaining <= 0) return;
+            _refreshCallback?.Invoke();
         }
 
         void EnsureVisibleOnTop()
@@ -260,6 +307,7 @@ namespace HighSeas.UI
             cardDescriptions = wiring.cardDescriptions;
             acceptButton = wiring.acceptButton;
             rejectButton = wiring.rejectButton;
+            refreshButton = wiring.refreshButton;
         }
 
         void WireExistingCards()

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.LogbookDefinition
   id: carpenters_notes
   displayName: Carpenter's Notes
-  primaryStat: 1
-  perLevelAdditive: 0.35
+  primaryStat: 0
+  perLevelAdditive: 10
   perLevelMultiplicative: 1
-  maxLevel: 10
+  maxLevel: 12
   unlockQuestId: 

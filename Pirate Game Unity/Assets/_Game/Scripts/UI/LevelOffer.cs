@@ -40,6 +40,9 @@ namespace HighSeas.UI
         public bool isNew;
         public string evolutionId;
         public WeaponUpgradeLine[] upgradeLines;
+        public string[] effectLines;
+        public string behaviorLine;
+        public bool hideRarity;
 
         public string LevelLabel =>
             isWeapon ? $"Lv {currentLevel} → {nextLevel}" : currentLevel > 0 ? $"Lv {currentLevel} → {nextLevel}" : "New";

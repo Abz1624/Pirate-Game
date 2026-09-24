@@ -19,7 +19,7 @@ MonoBehaviour:
   visualScale: 0.82
   visualYawOffset: 0
   biomeTag: emerald
-  baseHP: 12
+  baseHP: 10
   baseDamage: 5
   moveSpeed: 5.5
   radius: 0.9

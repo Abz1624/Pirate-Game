@@ -11,26 +11,17 @@ namespace HighSeas.V3
             if (PickupWorld.Instance == null) return;
 
             var rng = new RunRng(runSeed ^ 0x58F0);
-            const int barrels = 5;
-            const int looseBarrels = 10;
-
-            for (var b = 0; b < barrels; b++)
-            {
-                var angle = (b / (float)barrels) * Mathf.PI * 2f + rng.LootFloat() * 0.35f;
-                var radius = 5f + rng.LootFloat() * 4f;
-                var pos = center + new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
-                var value = 10 + rng.DirectorInt(0, 6);
-                PickupWorld.Instance.Spawn(PickupType.XpBarrel, value, pos);
-            }
-
-            for (var c = 0; c < looseBarrels; c++)
+            const int crystals = 12;
+            for (var c = 0; c < crystals; c++)
             {
                 var angle = rng.LootFloat() * Mathf.PI * 2f;
-                var radius = 3f + rng.LootFloat() * 7f;
+                var radius = 4f + rng.LootFloat() * 6f;
                 var pos = center + new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
-                var value = 3 + rng.DirectorInt(0, 4);
-                PickupWorld.Instance.Spawn(PickupType.XpBarrel, value, pos);
+                var value = c < 4 ? 4 + rng.DirectorInt(0, 3) : 2 + rng.DirectorInt(0, 2);
+                PickupWorld.Instance.Spawn(PickupType.Infamy, value, pos);
             }
+
+            PickupWorld.Instance.AttractAllInfamy();
         }
     }
 }

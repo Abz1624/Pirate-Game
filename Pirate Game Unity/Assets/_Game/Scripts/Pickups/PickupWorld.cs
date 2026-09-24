@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using HighSeas.Balance;
 using HighSeas.Core;
 using HighSeas.Data;
+using HighSeas.Audio;
 using HighSeas.V3;
 using UnityEngine;
 
@@ -76,10 +77,11 @@ namespace HighSeas.Pickups
             var dropIndex = 0;
             if (xp > 0)
             {
-                Spawn(
-                    PickupType.XpBarrel,
-                    Mathf.Max(1, Mathf.RoundToInt(xp * xpMult)),
-                    basePos + GetKillDropOffset(dropIndex++, dropCount));
+                var xpValue = Mathf.Max(1, Mathf.RoundToInt(xp * xpMult));
+                if (useProfile)
+                    SpawnSaltwindKillXp(basePos + GetKillDropOffset(dropIndex++, dropCount), xpValue);
+                else
+                    Spawn(PickupType.XpBarrel, xpValue, basePos + GetKillDropOffset(dropIndex++, dropCount));
             }
 
             if (gold > 0)
@@ -110,6 +112,52 @@ namespace HighSeas.Pickups
             if (authoredGold <= 0) return 0;
             if (authoredGold >= 50) return authoredGold;
             return authoredGold == 1 ? GameConstants.StandardEnemyKillGold : authoredGold * 10;
+        }
+
+        void SpawnSaltwindKillXp(Vector3 pos, int totalXp)
+        {
+            var pieces = Mathf.Clamp(totalXp, 1, 4);
+            var per = Mathf.Max(1, totalXp / pieces);
+            var remainder = totalXp - per * (pieces - 1);
+            for (var i = 0; i < pieces; i++)
+            {
+                var value = i == pieces - 1 ? remainder : per;
+                var offset = pieces <= 1
+                    ? Vector3.zero
+                    : new Vector3(
+                        Mathf.Cos(i * (Mathf.PI * 2f / pieces)) * 0.6f,
+                        0f,
+                        Mathf.Sin(i * (Mathf.PI * 2f / pieces)) * 0.6f);
+                SpawnHomingXpCrystal(pos + offset, value);
+            }
+        }
+
+        void SpawnHomingXpCrystal(Vector3 pos, int value)
+        {
+            if (_active >= _pool.Length) return;
+            var slot = -1;
+            for (var i = 0; i < _pool.Length; i++)
+            {
+                if (!_pool[i].active) { slot = i; break; }
+            }
+            if (slot < 0) return;
+
+            pos.y = GetPickupHeight(PickupType.Infamy);
+            var view = _viewPool.Acquire(PickupType.Infamy, pos, value);
+            ApplyUniformPickupScale(PickupType.Infamy, view);
+            _pool[slot] = new PickupAgent
+            {
+                active = true,
+                homingToPlayer = true,
+                type = PickupType.Infamy,
+                value = value,
+                position = pos,
+                basePosition = pos,
+                bobPhase = Random.Range(0f, Mathf.PI * 2f),
+                flyDelay = 0f,
+                view = view
+            };
+            _active++;
         }
 
         public void Spawn(PickupType type, int value, Vector3 pos)
@@ -302,7 +350,10 @@ namespace HighSeas.Pickups
             if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
             ProcessPendingFlyingPickups();
             _time += dt;
-            var xpPickupRadius = pacingSettings != null ? pacingSettings.xpAutoPickupRadius : 4.25f;
+            var statPickup = pickupRadius > 0f ? pickupRadius : GameConstants.DefaultPickupRadius;
+            var xpPickupRadius = Mathf.Max(
+                pacingSettings != null ? pacingSettings.xpAutoPickupRadius : 4.25f,
+                statPickup);
             var goldPickupRadius = pacingSettings != null ? pacingSettings.goldAutoPickupRadius : 26f;
             var barrelTouchRadius = pacingSettings != null ? pacingSettings.barrelTouchRadius : 5f;
 
@@ -393,13 +444,16 @@ namespace HighSeas.Pickups
                 case PickupType.FlyingXp:
                 case PickupType.Infamy:
                     _pendingXpGrant += ComputeXpGrant(p.value);
+                    SfxService.PlayPlaceholder("pickup_xp");
                     break;
                 case PickupType.Gold:
                 case PickupType.FlyingGold:
                     _pendingGoldGrant += p.value;
+                    SfxService.PlayPlaceholder("pickup_gold");
                     break;
                 case PickupType.FlyingHealth:
                     _pendingHealGrant += p.value;
+                    SfxService.PlayPlaceholder("pickup_health");
                     break;
             }
 

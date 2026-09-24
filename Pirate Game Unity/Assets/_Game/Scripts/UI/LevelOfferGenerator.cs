@@ -73,19 +73,17 @@ namespace HighSeas.UI
 
             if (isFirstLevelUp && useFillStateWeighting && UsesMixedSaltwindLevelOffers())
             {
-                AddMixedEarlyLevelOffers(
+                AddSaltwindFirstLevelOffers(
                     result,
                     database,
                     settings,
+                    pacing,
                     rng,
                     luck,
                     ownedWeapons,
                     weaponLevels,
                     ownedLogbooks,
-                    logbookLevels,
-                    logbookSlots,
-                    weaponSlots,
-                    count);
+                    logbookSlots);
                 return FinalizeOffers(result, count, rng, stats, currentHull, maxHull);
             }
 
@@ -328,39 +326,32 @@ namespace HighSeas.UI
         static bool UsesMixedSaltwindLevelOffers() =>
             V3RunContext.IsActive || StageBalanceProfileContext.IsActive;
 
-        static void AddMixedEarlyLevelOffers(
+        static void AddSaltwindFirstLevelOffers(
             List<LevelOffer> result,
             GameDatabase database,
             LevelUpSettings settings,
+            DemoPacingSettings pacing,
             RunRng rng,
             float luck,
             IReadOnlyList<string> ownedWeapons,
             IReadOnlyDictionary<string, int> weaponLevels,
             IReadOnlyList<string> ownedLogbooks,
-            IReadOnlyDictionary<string, int> logbookLevels,
-            int logbookSlots,
-            int weaponSlots,
-            int count)
+            int logbookSlots)
         {
-            var used = new HashSet<string>();
-            TryAddMixedOffer(result, used, TryRunItemOffer(rng, luck, used));
-            TryAddMixedOffer(result, used, TryLogbookOffer(database, ownedLogbooks, logbookLevels, logbookSlots, rng, luck, used, newOnly: true));
-            if (ownedWeapons.Count < weaponSlots)
-                TryAddMixedOffer(result, used, TryNewWeaponOffer(database, settings, ownedWeapons, weaponLevels, rng, used));
-
-            var attempts = 0;
-            while (result.Count < count && attempts < 48)
+            var swivel = database.GetWeapon("swivel_guns");
+            if (swivel != null)
             {
-                attempts++;
-                var roll = rng.LootFloat();
-                LevelOffer candidate = roll switch
-                {
-                    < 0.34f => TryRunItemOffer(rng, luck, used),
-                    < 0.62f => TryLogbookOffer(database, ownedLogbooks, logbookLevels, logbookSlots, rng, luck, used, newOnly: false),
-                    _ => TryNewWeaponOffer(database, settings, ownedWeapons, weaponLevels, rng, used)
-                };
-                TryAddMixedOffer(result, used, candidate);
+                weaponLevels.TryGetValue("swivel_guns", out var level);
+                result.Add(BuildWeaponUpgradeOffer(swivel, level, rng.RollRarity(luck), settings, pacing, rng));
             }
+
+            var newWeapon = PickNewWeapon(database, settings, ownedWeapons, weaponLevels, rng);
+            if (newWeapon != null)
+                result.Add(BuildNewWeaponOffer(newWeapon));
+
+            var logbook = PickLogbook(database, ownedLogbooks, new Dictionary<string, int>(), logbookSlots, rng);
+            if (logbook != null)
+                result.Add(BuildLogbookOffer(logbook, 0, rng.RollRarity(luck)));
         }
 
         static void TryAddMixedOffer(List<LevelOffer> result, HashSet<string> used, LevelOffer offer)
@@ -407,7 +398,7 @@ namespace HighSeas.UI
             var canOfferLogbook = database.logbooks != null && database.logbooks.Length > 0;
             var canNewLogbook = CanOfferNewLogbook(ownedLogbooks, logbookSlots, database, logbookLevels);
             var canUpgradeLogbook = CanOfferLogbookUpgrade(ownedLogbooks, database, logbookLevels);
-            var canRunItem = UsesMixedSaltwindLevelOffers() && V3ItemCatalog.InteractionItemIds.Length > 0;
+            var canRunItem = !UsesMixedSaltwindLevelOffers() && V3ItemCatalog.InteractionItemIds.Length > 0;
 
             if (useFillStateWeighting)
             {
@@ -476,13 +467,13 @@ namespace HighSeas.UI
             if (equippedWeapons <= 2)
             {
                 return mixedEarly
-                    ? new OfferCategoryWeights { equippedWeaponUpgrade = 22f, newWeapon = 24f, equippedLogbookUpgrade = 16f, newLogbook = 14f, newRunItem = 24f }
+                    ? new OfferCategoryWeights { equippedWeaponUpgrade = 20f, newWeapon = 40f, equippedLogbookUpgrade = 15f, newLogbook = 25f, newRunItem = 0f }
                     : new OfferCategoryWeights { equippedWeaponUpgrade = 23f, newWeapon = 42f, equippedLogbookUpgrade = 18f, newLogbook = 9f, newRunItem = 8f };
             }
-            if (equippedWeapons == 3) return new OfferCategoryWeights { equippedWeaponUpgrade = 30f, newWeapon = 26f, equippedLogbookUpgrade = 18f, newLogbook = 12f, newRunItem = 14f };
-            if (equippedWeapons == 4) return new OfferCategoryWeights { equippedWeaponUpgrade = 34f, newWeapon = 22f, equippedLogbookUpgrade = 18f, newLogbook = 12f, newRunItem = 14f };
-            if (equippedWeapons == 5) return new OfferCategoryWeights { equippedWeaponUpgrade = 40f, newWeapon = 16f, equippedLogbookUpgrade = 18f, newLogbook = 12f, newRunItem = 14f };
-            return new OfferCategoryWeights { equippedWeaponUpgrade = 52f, newWeapon = 0f, equippedLogbookUpgrade = 22f, newLogbook = 12f, newRunItem = 14f };
+            if (equippedWeapons == 3) return new OfferCategoryWeights { equippedWeaponUpgrade = 30f, newWeapon = 30f, equippedLogbookUpgrade = 20f, newLogbook = 20f, newRunItem = 0f };
+            if (equippedWeapons == 4) return new OfferCategoryWeights { equippedWeaponUpgrade = 30f, newWeapon = 30f, equippedLogbookUpgrade = 20f, newLogbook = 20f, newRunItem = 0f };
+            if (equippedWeapons == 5) return new OfferCategoryWeights { equippedWeaponUpgrade = 40f, newWeapon = 16f, equippedLogbookUpgrade = 18f, newLogbook = 12f, newRunItem = 0f };
+            return new OfferCategoryWeights { equippedWeaponUpgrade = 55f, newWeapon = 0f, equippedLogbookUpgrade = 45f, newLogbook = 0f, newRunItem = 0f };
         }
 
         static LevelOffer TryRunItemOffer(RunRng rng, float luck, HashSet<string> usedKeys)
@@ -791,6 +782,8 @@ namespace HighSeas.UI
             {
                 var lb = database.logbooks[i];
                 if (lb == null) continue;
+                if (UsesMixedSaltwindLevelOffers() && !V3LogbookCatalog.IsSaltwindPoolId(lb.id))
+                    continue;
                 var owned = ContainsId(ownedLogbooks, lb.id);
                 logbookLevels.TryGetValue(lb.id, out var level);
                 if (newOnly && owned) continue;
@@ -818,20 +811,28 @@ namespace HighSeas.UI
             return items[items.Count - 1];
         }
 
-        public static LevelOffer BuildNewWeaponOffer(WeaponDefinition def) => new()
+        public static LevelOffer BuildNewWeaponOffer(WeaponDefinition def)
         {
-            kind = LevelOfferKind.NewWeapon,
-            id = def.id,
-            title = def.displayName,
-            categoryLabel = "New Weapon",
-            description = V3ContentDescriptions.GetWeaponDescription(def),
-            rarity = Rarity.Uncommon,
-            currentLevel = 0,
-            nextLevel = 1,
-            isWeapon = true,
-            isNew = true,
-            upgradeLines = System.Array.Empty<WeaponUpgradeLine>()
-        };
+            var behavior = V3ContentDescriptions.GetWeaponBehaviorLine(def.id);
+            var stats = V3ContentDescriptions.GetWeaponStatSummary(def);
+            return new LevelOffer
+            {
+                kind = LevelOfferKind.NewWeapon,
+                id = def.id,
+                title = def.displayName,
+                categoryLabel = "New Weapon",
+                description = string.IsNullOrEmpty(stats) ? behavior : $"{stats}\n{behavior}",
+                behaviorLine = behavior,
+                effectLines = string.IsNullOrEmpty(stats) ? null : new[] { stats },
+                rarity = Rarity.Common,
+                hideRarity = true,
+                currentLevel = 0,
+                nextLevel = 1,
+                isWeapon = true,
+                isNew = true,
+                upgradeLines = System.Array.Empty<WeaponUpgradeLine>()
+            };
+        }
 
         public static LevelOffer BuildWeaponUpgradeOffer(
             WeaponDefinition def,
@@ -863,16 +864,17 @@ namespace HighSeas.UI
         {
             var mult = GameConstants.RarityMultipliers[(int)rarity];
             var value = def.perLevelAdditive * mult;
-            var desc = def.primaryStat == StatId.Quantity && value >= 1f
-                ? $"+{Mathf.RoundToInt(value)} {def.primaryStat}"
-                : $"+{value * 100f:0}% {def.primaryStat}";
+            var bonusLine = StatDisplay.FormatLogbookBonus(def.primaryStat, value);
+            if (def.primaryStat == StatId.Hull)
+                bonusLine += " (also heals)";
             return new LevelOffer
             {
                 kind = LevelOfferKind.Logbook,
                 id = def.id,
                 title = def.displayName,
                 categoryLabel = currentLevel > 0 ? "Logbook Upgrade" : "New Logbook",
-                description = $"{V3ContentDescriptions.GetLogbookDescription(def)}\n{desc}",
+                description = bonusLine,
+                effectLines = new[] { bonusLine },
                 rarity = rarity,
                 currentLevel = currentLevel,
                 nextLevel = currentLevel + 1,

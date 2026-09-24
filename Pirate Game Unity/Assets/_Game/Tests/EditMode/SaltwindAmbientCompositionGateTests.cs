@@ -2,6 +2,7 @@ using HighSeas.Balance;
 using HighSeas.Core;
 using NUnit.Framework;
 using RoguePirates.Simulation.Balance;
+using UnityEngine.TestTools;
 
 namespace HighSeas.Tests
 {
@@ -28,15 +29,19 @@ namespace HighSeas.Tests
         }
 
         [Test]
-        public void Band0_PicksOnlySharkOrSwordfish()
+        public void Band0_PicksOnlySoldierFodder()
         {
+            LogAssert.ignoreFailingMessages = true;
             var export = StageBalanceProfile.CreateBuiltInSaltwindDefaults().ToExport();
             var rng = new RunRng(12345);
             for (var i = 0; i < 64; i++)
             {
-                Assert.IsTrue(SaltwindAmbientCompositionLogic.TryPickEnemyId(0, rng, _ => 0, export, out var id));
-                Assert.That(id, Is.EqualTo("shark").Or.EqualTo("swordfish"));
+                Assert.IsTrue(SaltwindAmbientCompositionLogic.TryPickEnemyId(
+                    0, rng, _ => 0, export, out var id, elapsedSeconds: 45f, playerLevel: 1));
+                Assert.That(id, Is.EqualTo("swordfish").Or.EqualTo("deckhand_dinghy"));
             }
+
+            LogAssert.ignoreFailingMessages = false;
         }
 
         [Test]

@@ -179,7 +179,7 @@ namespace HighSeas.Tests
         public void XpCurve_MatchesCodecFixtures()
         {
             var export = StageBalanceProfile.CreateBuiltInSaltwindDefaults().ToExport();
-            Assert.AreEqual(7, SaltwindStageProgressionLogic.XpToNext(export, 0));
+            Assert.AreEqual(5, SaltwindStageProgressionLogic.XpToNext(export, 0));
             for (var level = 1; level <= 12; level++)
             {
                 Assert.AreEqual(

@@ -436,6 +436,19 @@ namespace HighSeas.V3
             label.alignment = TextAlignmentOptions.Center;
             label.color = new Color(0.18f, 0.14f, 0.1f, 1f);
 
+            var hint = CreateTmp(transform, "captain_select_hint",
+                "Captain for this voyage — all start with Swivel Guns; more weapons from level-ups",
+                16, FontStyles.Italic);
+            V3MainMenuTypography.ApplyBody(hint);
+            var hintRect = hint.rectTransform;
+            hintRect.anchorMin = new Vector2(0.5f, 0f);
+            hintRect.anchorMax = new Vector2(0.5f, 0f);
+            hintRect.pivot = new Vector2(0.5f, 0f);
+            hintRect.anchoredPosition = new Vector2(0f, 148f);
+            hintRect.sizeDelta = new Vector2(720f, 48f);
+            hint.alignment = TextAlignmentOptions.Center;
+            hint.color = new Color(0.82f, 0.88f, 0.95f, 0.92f);
+
             var button = go.GetComponent<Button>();
             button.onClick.AddListener(() => PlayRequested?.Invoke());
             return button;

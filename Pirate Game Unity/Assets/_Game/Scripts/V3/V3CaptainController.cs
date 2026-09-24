@@ -24,6 +24,9 @@ namespace HighSeas.V3
 
         public void Initialize(V3CaptainId id, PlayerShipController player)
         {
+            if (LevelSystem.Instance != null)
+                LevelSystem.Instance.LevelChanged -= OnLevelChanged;
+
             captainId = id;
             _profile = V3CaptainProfile.Get(id);
             ApplyBaseStats(player);

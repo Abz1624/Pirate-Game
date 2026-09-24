@@ -4,6 +4,7 @@ using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Player;
+using HighSeas.V3;
 using UnityEngine;
 
 namespace HighSeas.Enemies
@@ -604,9 +605,9 @@ namespace HighSeas.Enemies
             if (profile?.enemy == null || enemyWorld == null || player == null)
                 return 0;
 
+            var elapsed = RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f;
             if (StageBalanceProfileContext.IsActive && RunManager.Instance != null)
             {
-                var elapsed = RunManager.Instance.ElapsedSeconds;
                 hpMult *= SaltwindFinaleLogic.GetOrdinaryTimeHpMultiplier(elapsed);
                 dmgMult *= SaltwindFinaleLogic.GetOrdinaryTimeDamageMultiplier(elapsed);
             }
@@ -625,7 +626,9 @@ namespace HighSeas.Enemies
                     RunManager.Instance.Rng,
                     CountActiveEnemiesById,
                     StageBalanceProfileContext.Export,
-                    out pickedAmbientId))
+                    out pickedAmbientId,
+                    elapsed,
+                    UI.LevelSystem.Instance != null ? UI.LevelSystem.Instance.Level : 0))
             {
                 var pickedIndex = FindDefinitionIndexById(pickedAmbientId);
                 if (pickedIndex >= 0)
@@ -685,6 +688,8 @@ namespace HighSeas.Enemies
                     continue;
 
                 spawnedCount++;
+                if (ambientBandIndex >= 0 && runEncounterId <= 0)
+                    V3SpawnTelegraph.NotifyAmbientSpawn(pos, spawnDef);
                 if (ambientBandIndex >= 0)
                 {
                     SaltwindSpawnTelemetryLogic.RecordAmbientSpawn(

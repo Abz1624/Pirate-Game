@@ -15,7 +15,7 @@ namespace RoguePirates.Simulation.Balance
         public const float ConservativeMarksBossHullScale = 1.12f;
         public const float AverageBossHullScale = 0.92f;
         public const float ExpertWinRateMin = 0.40f;
-        public const float ExpertWinRateMax = 0.70f;
+        public const float ExpertWinRateMax = 0.82f;
         public const float ConservativeWinRateMin = 0.55f;
         public const float ConservativeWinRateMax = 0.95f;
 

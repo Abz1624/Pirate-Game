@@ -46,9 +46,9 @@ namespace HighSeas.Core
                 var totalBefore = 0f;
                 for (var i = 0; i < 5; i++) totalBefore += weights[i];
                 var legendaryProb = weights[4] / totalBefore;
-                if (legendaryProb > 0.04f)
+                if (legendaryProb > 0.06f)
                 {
-                    weights[4] = totalBefore * 0.04f;
+                    weights[4] = totalBefore * 0.06f;
                 }
             }
 

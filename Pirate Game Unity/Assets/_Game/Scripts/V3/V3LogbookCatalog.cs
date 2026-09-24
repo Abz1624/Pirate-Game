@@ -1,30 +1,54 @@
 namespace HighSeas.V3
 {
-    /// <summary>Logbooks that exist in GameDatabase / level-up offers (stat growth, not generic +X% damage items).</summary>
+    /// <summary>Logbooks offered on Saltwind level-ups (spec v3.1 + Extra Hands / Oversized Shot).</summary>
     public static class V3LogbookCatalog
     {
         public static readonly string[] AllIds =
         {
             "gunnery_manual",
             "powder_drill",
-            "oversized_shot",
-            "extra_hands",
-            "reinforced_hull",
+            "navigators_charts",
             "carpenters_notes",
-            "infamy_charter",
-            "treasure_map"
+            "lookouts_glass",
+            "quartermasters_ledger",
+            "scavengers_net",
+            "cartographers_folio",
+            "extra_hands",
+            "oversized_shot"
         };
 
-        public static string GetDisplayName(string id) => id switch
+        public static string ResolveLegacyId(string id) => id switch
         {
-            "gunnery_manual" => "Gunnery Manual",
-            "powder_drill" => "Powder Drill",
-            "oversized_shot" => "Oversized Shot Chart",
-            "extra_hands" => "Extra Hands Ledger",
-            "reinforced_hull" => "Reinforced Hull Plans",
+            "reinforced_hull" => "navigators_charts",
+            "infamy_charter" => "cartographers_folio",
+            "treasure_map" => "quartermasters_ledger",
+            _ => id
+        };
+
+        public static bool IsSaltwindPoolId(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return false;
+            id = ResolveLegacyId(id);
+            for (var i = 0; i < AllIds.Length; i++)
+            {
+                if (AllIds[i] == id) return true;
+            }
+
+            return false;
+        }
+
+        public static string GetDisplayName(string id) => ResolveLegacyId(id) switch
+        {
+            "gunnery_manual" => "Gunner's Manual",
+            "powder_drill" => "Powdermaster's Drill",
+            "navigators_charts" => "Navigator's Charts",
             "carpenters_notes" => "Carpenter's Notes",
-            "infamy_charter" => "Infamy Charter",
-            "treasure_map" => "Treasure Map Folio",
+            "lookouts_glass" => "Lookout's Glass",
+            "quartermasters_ledger" => "Quartermaster's Ledger",
+            "scavengers_net" => "Scavenger's Net",
+            "cartographers_folio" => "Cartographer's Folio",
+            "extra_hands" => "Extra Hands",
+            "oversized_shot" => "Oversized Shot",
             _ => id?.Replace('_', ' ') ?? "Logbook"
         };
     }

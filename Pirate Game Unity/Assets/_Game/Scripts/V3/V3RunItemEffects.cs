@@ -47,6 +47,21 @@ namespace HighSeas.V3
             if (Instance == this) Instance = null;
         }
 
+        public void ResetForNewRun()
+        {
+            _bellKillCounter = 0;
+            _glovesTimer = 0f;
+            _lanternTimer = 0f;
+            _headingInitialized = false;
+            _powderFuseCharge = 0f;
+            _distanceSinceLastHit = 0f;
+            _lastPos = Vector3.zero;
+            ExplosionDamageMultiplier = 1f;
+            StatusDamageMultiplier = 1f;
+            ControlledTargetDamageMultiplier = 1f;
+            ExtraLightningJumps = 0;
+        }
+
         void Update()
         {
             if (RunManager.Instance == null || RunManager.Instance.IsPaused || RunManager.Instance.IsRunEnded)

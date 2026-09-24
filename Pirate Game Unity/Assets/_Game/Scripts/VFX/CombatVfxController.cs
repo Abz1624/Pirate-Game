@@ -1,3 +1,4 @@
+using HighSeas.Audio;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Meta;
@@ -103,11 +104,14 @@ namespace HighSeas.VFX
             if (_broker == null) _broker = JuiceVfxBroker.Instance;
             var player = FindFirstObjectByType<PlayerShipController>();
             if (player == null) return;
+            var scale = settings.levelUpBurstScale > 0f ? settings.levelUpBurstScale : 1f;
             _broker.Play(
                 settings.levelUpBurstPrefab,
                 player.Position + Vector3.up * 0.5f,
                 Quaternion.identity,
-                settings.levelUpBurstScale);
+                scale);
+            CameraShakeService.Shake(0.12f, 0.25f);
+            SfxService.PlayPlaceholder("level_up");
         }
     }
 }

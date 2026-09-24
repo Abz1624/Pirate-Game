@@ -82,7 +82,7 @@ namespace HighSeas.V3
                 BarnacleKingBossAttackLogic.BeginRun(ref _state);
             }
 
-            var enraged = boss.maxHp > 0f && boss.hp <= boss.maxHp * 0.5f;
+            var enraged = boss.maxHp > 0f && boss.hp <= boss.maxHp * 0.6f;
             BarnacleKingBossAttackLogic.SetEnraged(ref _state, enraged);
 
             var playerPos = _player.Position;

@@ -30,6 +30,9 @@ namespace HighSeas.Data
         [Header("Rarity Power")]
         [Range(1f, 2f)] public float upgradePowerMultiplier = 1.2f;
 
+        [Header("Modal")]
+        [Min(0)] public int refreshesPerRun = 2;
+
         public int StatLinesForRarity(Core.Rarity rarity) => rarity switch
         {
             Core.Rarity.Uncommon => uncommonStatLines,

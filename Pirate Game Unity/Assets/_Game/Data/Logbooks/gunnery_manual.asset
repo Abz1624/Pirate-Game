@@ -17,5 +17,5 @@ MonoBehaviour:
   primaryStat: 5
   perLevelAdditive: 0.08
   perLevelMultiplicative: 1
-  maxLevel: 10
+  maxLevel: 12
   unlockQuestId: 

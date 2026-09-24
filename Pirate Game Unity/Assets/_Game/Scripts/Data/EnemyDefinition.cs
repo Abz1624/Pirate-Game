@@ -9,6 +9,7 @@ namespace HighSeas.Data
         public string id;
         public string displayName;
         public EnemyCategory category = EnemyCategory.Creature;
+        public EnemyTier tier = EnemyTier.Soldier;
         public GameObject visualPrefab;
         [Tooltip("Uniform scale applied to the visual prefab root.")]
         public float visualScale = 1f;

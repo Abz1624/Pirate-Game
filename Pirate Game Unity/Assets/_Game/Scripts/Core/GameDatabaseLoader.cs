@@ -87,10 +87,12 @@ namespace HighSeas.Core
                 MakeLogbook("powder_drill", StatId.AttackSpeed, 0.075f),
                 MakeLogbook("oversized_shot", StatId.Size, 0.10f),
                 MakeLogbook("extra_hands", StatId.Quantity, 1f),
-                MakeLogbook("reinforced_hull", StatId.Hull, 20f),
-                MakeLogbook("carpenters_notes", StatId.HullRegen, 0.35f),
-                MakeLogbook("infamy_charter", StatId.XPGain, 0.08f),
-                MakeLogbook("treasure_map", StatId.Luck, 0.07f)
+                MakeLogbook("navigators_charts", StatId.MoveSpeed, 0.03f),
+                MakeLogbook("carpenters_notes", StatId.Hull, 10f),
+                MakeLogbook("lookouts_glass", StatId.CritChance, 2f),
+                MakeLogbook("quartermasters_ledger", StatId.GoldGain, 0.08f),
+                MakeLogbook("scavengers_net", StatId.PickupRadius, 0.1f),
+                MakeLogbook("cartographers_folio", StatId.XPGain, 0.07f)
             };
         }
 

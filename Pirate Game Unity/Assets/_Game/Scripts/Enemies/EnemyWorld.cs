@@ -6,6 +6,7 @@ using HighSeas.Data;
 using HighSeas.Encounters;
 using HighSeas.POI;
 using HighSeas.V3;
+using HighSeas.Audio;
 using HighSeas.VFX;
 using HighSeas.World;
 using UnityEngine;
@@ -1366,6 +1367,24 @@ namespace HighSeas.Enemies
 
             if (showHitFeedback && e.view != null && weaponId != "powder_kegs")
                 JuiceVfxBroker.Instance?.PlayDamageHighlight(e.view);
+
+            if (showHitFeedback && damage > 0.25f)
+            {
+                var playerShip = UnityEngine.Object.FindFirstObjectByType<Player.PlayerShipController>();
+                if (playerShip != null)
+                {
+                    var away = e.position - playerShip.Position;
+                    away.y = 0f;
+                    if (away.sqrMagnitude > 0.01f)
+                    {
+                        e.knockbackDir = away.normalized;
+                        e.knockbackTimer = Mathf.Clamp(damage * 0.018f, 0.06f, 0.28f);
+                    }
+                }
+
+                CameraShakeService.Shake(Mathf.Min(0.08f, damage * 0.01f), 0.1f);
+                SfxService.PlayPlaceholder("enemy_hit");
+            }
 
             Meta.TriggerBus.Instance?.RaiseHit(damage, isCrit, e.position, weaponId);
             if (showHitFeedback && damage >= 0.5f)

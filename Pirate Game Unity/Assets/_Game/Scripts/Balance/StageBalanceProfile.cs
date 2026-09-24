@@ -81,7 +81,7 @@ namespace HighSeas.Balance
         public int levelZeroToOneXpCost = 7;
         public double xpCurveMultiplier = 5d * 1.065000057220459d;
         public double xpCurveExponent = 1.065000057220459d;
-        public int[] newWeaponOfferProtectionLevels = { 4, 8, 12, 16 };
+        public int[] newWeaponOfferProtectionLevels = { 2, 3, 5, 8, 12 };
 
         [Header("Economy")]
         public int chestBasePrice = 20;
@@ -312,7 +312,10 @@ namespace HighSeas.Balance
         {
             var profile = CreateInstance<StageBalanceProfile>();
             profile.name = "BuiltInSaltwindSolo";
-            profile.balanceVersion = 2;
+            profile.balanceVersion = 3;
+            profile.levelZeroToOneXpCost = 5;
+            profile.logbookSlotCap = 4;
+            profile.newWeaponOfferProtectionLevels = new[] { 2, 3, 5, 8, 12 };
             return profile;
         }
     }

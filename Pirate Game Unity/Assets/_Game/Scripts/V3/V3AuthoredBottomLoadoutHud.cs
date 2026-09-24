@@ -16,7 +16,7 @@ namespace HighSeas.V3
     [DisallowMultipleComponent]
     public sealed class V3AuthoredBottomLoadoutHud : MonoBehaviour
     {
-        const int LogbookSlotCount = 2;
+        const int LogbookSlotCount = 4;
         const int ItemSlotCount = 4;
         const float SideInset = 24f;
         const float BottomInset = 14f;

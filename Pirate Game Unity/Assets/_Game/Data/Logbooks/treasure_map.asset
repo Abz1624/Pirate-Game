@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e45593a37dc2dbf44a60f7383ff33976, type: 3}
   m_Name: treasure_map
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Data.LogbookDefinition
-  id: treasure_map
-  displayName: Treasure Map Folio
-  primaryStat: 15
-  perLevelAdditive: 0.07
+  id: quartermasters_ledger
+  displayName: Quartermaster's Ledger
+  primaryStat: 18
+  perLevelAdditive: 0.08
   perLevelMultiplicative: 1
-  maxLevel: 10
+  maxLevel: 12
   unlockQuestId: 
