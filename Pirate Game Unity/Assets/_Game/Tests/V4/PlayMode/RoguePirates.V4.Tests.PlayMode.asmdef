@@ -1,0 +1,25 @@
+{
+    "name": "RoguePirates.V4.Tests.PlayMode",
+    "rootNamespace": "RoguePirates.V4.Tests",
+    "references": [
+        "RoguePirates.V4",
+        "RoguePirates.V4.Config",
+        "RoguePirates.V4.DevTools",
+        "HighSeas.Runtime",
+        "RoguePirates.Simulation",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

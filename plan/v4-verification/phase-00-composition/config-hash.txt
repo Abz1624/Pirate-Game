@@ -1,0 +1,4 @@
+# M0 has no V4 config set yet (config assets arrive in M1).
+# Stage balance profile export ContentHash (V3 asset, clean database load), stamped in every trace header:
+954db823e25f64125d711ed23f97b6b721868b8e9912c3dd7bf6af180497acda
+# Seen after an earlier run in the same Editor session had applied catalogs (R-73): da2393158d7c..., 9da95d63d4d4...

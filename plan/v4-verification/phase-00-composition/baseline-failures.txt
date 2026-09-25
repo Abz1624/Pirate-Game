@@ -1,0 +1,5 @@
+# V3 baseline failures before any V4 runtime code (2026-09-25). 'V3 green' = no failures outside this list.
+EditMode HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_AverageAndExpert_DifferForSamePolicyPool
+EditMode HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_ExpertCells_StayWithinDocumentedWinBand
+EditMode HighSeas.Tests.SaltwindBalanceLabMatrixEvidenceTests.Matrix_Production1200Runs_WritesVerificationArtifacts
+PlayMode HighSeas.Tests.SaltwindStormArenaPlayModeTests.StormSail_ContractedArena_KeepsSpawnAndBeaconInsideSafeZone

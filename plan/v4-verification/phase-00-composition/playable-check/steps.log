@@ -1,0 +1,28 @@
+﻿[begin] started
+[menu] WAIT scene=V4Boot v4menu=False
+[menu] OK scene=V4MainMenu v4menu=True
+[shot] 01-menu.png
+[play] clicked Play
+[run-start] OK scene=V4SaltwindRun state=Playing seed=1448869960 runId=8033aea94c434a95917d727aeb6b38bd v4game=True console=True
+[god-on] invulnerable for the check
+[shot] 02-run-start.png
+[console-open] open=True
+[shot] 03-console.png
+[console-close] open=False
+[boss-summon] OK summoned=True
+[boss-spawned] OK bossIndex=9
+[shot] 04-boss.png
+[boss-kill] damage applied
+[boss-secured] OK defeated=True secured=True ended=False state=Playing
+[shot] 05-territory-claimed.png
+[death] lethal damage
+[settled] OK ended=True settled=True marks=25 boss=25
+[shot] 06-results.png
+[first-run-id] 8033aea94c434a95917d727aeb6b38bd
+[retry-click] clicked Retry on PLACEHOLDER_v3_ui_run_results_panel
+[retry-run] OK scene=V4SaltwindRun state=Playing seed=1066972476 runId=ffbe638f08ff45b8ae99b061704c3af1 v4game=True console=True
+[shot] 07-after-retry.png
+[console-restart-101] restart on seed 101
+[seed-101-run] OK scene=V4SaltwindRun state=Playing seed=101 runId=bf5f5c147cbe4f6c9df59c36c6144e16 v4game=True console=True
+[shot] 08-seed-101.png
+[console] errors returned=0

@@ -1,0 +1,137 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using NUnit.Framework;
+using RoguePirates.V4.DevTools.Trace;
+using UnityEngine;
+
+namespace RoguePirates.V4.Tests
+{
+    [Category("V4")]
+    public sealed class TraceComparerTests
+    {
+        static readonly string[] Base =
+        {
+            "{\"type\":\"header\",\"seed\":101,\"label\":\"a\"}",
+            "{\"type\":\"spawn\",\"t\":2.0167,\"f\":121,\"uid\":1,\"enemy\":\"swordfish\"}",
+            "{\"type\":\"level\",\"t\":30.1,\"f\":1800,\"level\":1}",
+            "{\"type\":\"minute\",\"m\":0,\"spawns\":{\"swordfish\":20},\"kills\":10,\"gold\":3,\"level\":1,\"hull\":100}",
+            "{\"type\":\"death\",\"t\":150}"
+        };
+
+        [Test]
+        public void Exact_IgnoresHeaderAndFrameNumbers()
+        {
+            var other = (string[])Base.Clone();
+            other[0] = "{\"type\":\"header\",\"seed\":101,\"label\":\"b\"}";
+            other[1] = other[1].Replace("\"f\":121", "\"f\":122");
+            Assert.IsTrue(TraceComparer.CompareExact(Base, other).Match);
+        }
+
+        [Test]
+        public void Exact_ReportsTheFirstDifferentLine()
+        {
+            var other = (string[])Base.Clone();
+            other[2] = other[2].Replace("30.1", "30.2");
+            var result = TraceComparer.CompareExact(Base, other);
+            Assert.IsFalse(result.Match);
+            StringAssert.Contains("line 1", result.Differences[0]);
+        }
+
+        [Test]
+        public void Parity_AcceptsSmallMinuteDrift_RejectsLargeOne()
+        {
+            var close = (string[])Base.Clone();
+            close[3] = close[3].Replace("\"swordfish\":20", "\"swordfish\":21");
+            Assert.IsTrue(TraceComparer.CompareParity(Base, close).Match);
+
+            var far = (string[])Base.Clone();
+            far[3] = far[3].Replace("\"swordfish\":20", "\"swordfish\":30");
+            Assert.IsFalse(TraceComparer.CompareParity(Base, far).Match);
+        }
+
+        [Test]
+        public void Parity_ChecksEventTimes()
+        {
+            var late = (string[])Base.Clone();
+            late[4] = "{\"type\":\"death\",\"t\":160}";
+            Assert.IsFalse(TraceComparer.CompareParity(Base, late).Match);
+        }
+    }
+
+    [Category("V4")]
+    public sealed class V4StructureTests
+    {
+        static readonly string[] V4Assemblies =
+        {
+            "RoguePirates.V4.Config", "RoguePirates.V4", "RoguePirates.V4.Presentation", "RoguePirates.V4.DevTools"
+        };
+
+        static string GameRoot => Path.Combine(Application.dataPath, "_Game");
+
+        static IEnumerable<Assembly> LoadedV4Assemblies() =>
+            AppDomain.CurrentDomain.GetAssemblies().Where(a => V4Assemblies.Contains(a.GetName().Name));
+
+        [Test]
+        public void NoAdapter_OutlivesItsDeletionPhase()
+        {
+            var overdue = new List<string>();
+            foreach (var assembly in LoadedV4Assemblies())
+            foreach (var type in assembly.GetTypes())
+            {
+                var attr = type.GetCustomAttribute<DeletedInPhaseAttribute>();
+                if (attr != null && attr.Phase <= V4Phase.Current)
+                    overdue.Add($"{type.FullName} (delete in M{attr.Phase})");
+            }
+            Assert.IsEmpty(overdue, "Adapters past their deletion phase: " + string.Join(", ", overdue));
+        }
+
+        [Test]
+        public void AssemblyReferences_FollowTheLayering()
+        {
+            // Config <- Runtime <- Presentation <- DevTools; the legacy runtime never references V4.
+            var forbidden = new Dictionary<string, string[]>
+            {
+                ["V4/Config/RoguePirates.V4.Config.asmdef"] = new[] { "RoguePirates.V4\"", "RoguePirates.V4.Presentation", "RoguePirates.V4.DevTools", "HighSeas.Runtime" },
+                ["V4/Runtime/RoguePirates.V4.asmdef"] = new[] { "RoguePirates.V4.Presentation", "RoguePirates.V4.DevTools" },
+                ["V4/Presentation/RoguePirates.V4.Presentation.asmdef"] = new[] { "RoguePirates.V4.DevTools" },
+                ["Scripts/HighSeas.Runtime.asmdef"] = new[] { "RoguePirates.V4" }
+            };
+            foreach (var pair in forbidden)
+            {
+                var text = File.ReadAllText(Path.Combine(GameRoot, pair.Key));
+                foreach (var name in pair.Value)
+                    Assert.IsFalse(text.Contains("\"" + name.TrimEnd('"') + "\""), $"{pair.Key} must not reference {name.TrimEnd('"')}");
+            }
+        }
+
+        [Test]
+        public void DevTools_IsCompiledOnlyInEditorAndDevelopmentBuilds()
+        {
+            var text = File.ReadAllText(Path.Combine(GameRoot, "V4/DevTools/RoguePirates.V4.DevTools.asmdef"));
+            StringAssert.Contains("UNITY_EDITOR || DEVELOPMENT_BUILD", text);
+        }
+
+        [Test]
+        public void OnlyTheBridge_ReferencesLegacySpawnerAndWeaponController()
+        {
+            var pattern = new Regex(@"\b(EncounterSpawner|WeaponController)\b");
+            var offenders = new List<string>();
+            foreach (var file in Directory.GetFiles(Path.Combine(GameRoot, "V4"), "*.cs", SearchOption.AllDirectories))
+            {
+                if (Path.GetFileName(file) == "V4LegacyBridge.cs") continue;
+                var lines = File.ReadAllLines(file);
+                for (var i = 0; i < lines.Length; i++)
+                {
+                    var code = lines[i].Trim();
+                    if (code.StartsWith("//") || code.StartsWith("///")) continue;
+                    if (pattern.IsMatch(code)) offenders.Add($"{Path.GetFileName(file)}:{i + 1}");
+                }
+            }
+            Assert.IsEmpty(offenders, "Only V4LegacyBridge may reference EncounterSpawner/WeaponController: " + string.Join(", ", offenders));
+        }
+    }
+}

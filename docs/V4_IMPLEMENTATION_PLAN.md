@@ -157,6 +157,35 @@ If `unity` is not on the path, use `C:/Program Files/Unity/Hub/Editor/6000.3.11f
 
 Each phase adds one architecture module, moves the listed code into it, exposes that module in the Tuning Console, and leaves `V4SaltwindRun` playable. Open a phase for the work, the play test and the proof.
 
+### 5.0 Execution order (adopted 2026-09-25)
+
+The code forces a different order from the numbered phases below. A legacy component can leave the V4 scene only when every in-scene reader of it is V4 or null-safe. So presentation decoupling comes before landmarks, landmarks before the Enemy World port (POIManager spawns the boss and Powder Cache through the legacy spawner into the legacy EnemyWorld), and the Enemy World before items and captains (V4 must own enemy attacks to apply Brace! and Keel). V3 files stay untouched until V3 retirement. Work runs as **M0–M15**; the detail blocks below keep their original numbers and are referenced by the "Doc phase" column.
+
+| V4 phase | Module | Doc phase | Why here |
+|---|---|---|---|
+| M0 | Composition root, V4 scenes, determinism harness, event buffer, console shell | 0 | Base for everything |
+| M1 | Config assets | 1 | Data before behavior |
+| M2 | Enemy Archetypes and Enemy Spawners | 2 | The spawner needs archetypes |
+| M3 | Wave Timeline and Spawn Controller | 3 | Replaces the ambient spawner; POIManager keeps the encounter executor |
+| M4 | Pool Service, Pool Catalog, Slot Pools | 4 | Infrastructure used from M5 on |
+| M5 | Weapon configs and Weapon Manager, with V4 player projectiles | 5 | Firing moves; LevelSystem stays as a disabled loadout record |
+| M6 | Presentation decoupling and CombatEvents coverage | 8 (moved up) | Views must stop reading hubs before the hubs move |
+| M7 | Landmarks, Beacon and Barnacle King | 7 | Removes POIManager, which frees EncounterSpawner and EnemyWorld |
+| M8 | Enemy World | 12 (moved up) | V4 owns the kill path and enemy attacks |
+| M9 | Build and Progression: items, powerups, captains, level-ups, logbooks, pickups | 6 (moved down) | Needs the V4 kill path and enemy attacks |
+| M10 | Difficulty Curve, Player Power Index, Director (observe) | 9 | |
+| M11 | Adaptive difficulty, one lever at a time | 10 | |
+| M12 | Rum and Results | 11a | |
+| M13 | Barks and Tutorial | 11b | |
+| M14 | Switch-over: last legacy views, zero creates, perf, release build, V4 boot | 12 (rest) | |
+| M15 | V3 retirement, only after the V4 playtest is signed off | — | All of `Scripts/` is one assembly, and shared files reference V3 types |
+
+Deviations from the detail blocks:
+- `V4LegacyBridge` keeps a disabled `WeaponController` as LevelSystem's loadout record until M9, not Phase 5, because `LevelSystem.ApplyOffer` writes into it. Other legacy dependencies sit in named `Legacy*` adapters tagged `[DeletedInPhase(n)]`.
+- Band 0 stays at the live spawner rate of **0.6** per second, and the Reef Crab stays at 150 s, until those changes are approved at the M1 and M3 gates.
+- Traces: M0–M2 must match V3 event for event. From M3 on they are compared per minute, within the tolerance written in each phase checklist. Goldens use a boss summon at 120 s, because the scripted pilot dies at about 150–225 s.
+- M0 applies the weapon and specialist catalogs to the loaded database exactly as V3 does. Deep-cloning the database moves to M2. The V4 Module Lab keeps its legacy playtest bootstrap until M2.
+
 <details>
 <summary><strong>Phase 0 — Composition root on the V4 scenes</strong></summary>
 
@@ -397,22 +426,24 @@ Condition-triggered timeline phases may fire up to about a minute early for a st
 
 ```mermaid
 flowchart TD
-    P0["0 V4Game on V4 scenes"] --> P1["1 Config assets"]
-    P1 --> P2["2 Archetypes and spawners"]
-    P2 --> P3["3 Wave Timeline and Spawn Controller"]
-    P3 --> P4["4 Pools"]
-    P4 --> P5["5 Weapon Manager"]
-    P5 --> P6["6 Build and Captain configs"]
-    P6 --> P7["7 Landmarks and boss"]
-    P7 --> P8["8 CombatEvents"]
-    P8 --> P9["9 Director, observe only"]
-    P9 --> P10["10 Adaptive on, leaderboard accepts it"]
-    P8 --> P11["11 Rum, barks, tutorial"]
-    P10 --> P12["12 Enemy World split and switch-over"]
-    P11 --> P12
+    M0["M0 V4Game on V4 scenes"] --> M1["M1 Config assets"]
+    M1 --> M2["M2 Archetypes and spawners"]
+    M2 --> M3["M3 Wave Timeline and Spawn Controller"]
+    M3 --> M4["M4 Pools"]
+    M4 --> M5["M5 Weapon Manager"]
+    M5 --> M6["M6 Presentation and CombatEvents"]
+    M6 --> M7["M7 Landmarks and boss"]
+    M7 --> M8["M8 Enemy World"]
+    M8 --> M9["M9 Build and Progression"]
+    M9 --> M10["M10 Director, observe only"]
+    M10 --> M11["M11 Adaptive difficulty"]
+    M11 --> M12["M12 Rum and Results"]
+    M12 --> M13["M13 Barks and Tutorial"]
+    M13 --> M14["M14 Switch-over"]
+    M14 --> M15["M15 V3 retirement, after sign-off"]
 ```
 
-Phase 11 can proceed beside Phases 9 and 10. It must not turn adaptive mode off.
+Phases run one at a time. Each one ends with tests, traces and an automated playable check, then a manual playtest and feedback, then one commit.
 
 ---
 
@@ -420,16 +451,19 @@ Phase 11 can proceed beside Phases 9 and 10. It must not turn adaptive mode off.
 
 | Phase | Module | Status | Evidence |
 |---|---|---|---|
-| 0 | Composition root | Not started | `plan/v4-verification/phase-00-composition/` |
-| 1 | Config assets | Not started | `plan/v4-verification/phase-01-config/` |
-| 2 | Archetypes and spawners | Not started | `plan/v4-verification/phase-02-archetypes/` |
-| 3 | Wave Timeline and Spawn Controller | Not started | `plan/v4-verification/phase-03-timeline/` |
-| 4 | Pools | Not started | `plan/v4-verification/phase-04-pools/` |
-| 5 | Weapon Manager | Not started | `plan/v4-verification/phase-05-weapons/` |
-| 6 | Build and Captains | Not started | `plan/v4-verification/phase-06-build/` |
-| 7 | Landmarks and boss | Not started | `plan/v4-verification/phase-07-boss/` |
-| 8 | CombatEvents | Not started | `plan/v4-verification/phase-08-events/` |
-| 9 | Difficulty Director, observe | Not started | `plan/v4-verification/phase-09-director/` |
-| 10 | Adaptive difficulty | Not started | `plan/v4-verification/phase-10-adaptive/` |
-| 11 | Rum, barks, tutorial | Not started | `plan/v4-verification/phase-11-rum-barks/` |
-| 12 | Enemy World split and switch-over | Not started | `plan/v4-verification/phase-12-switch/` |
+| M0 | Composition root | Passed (feel: playtested 2026-09-26) | `plan/v4-verification/phase-00-composition/` |
+| M1 | Config assets | Not started | `plan/v4-verification/phase-01-config/` |
+| M2 | Archetypes and spawners | Not started | `plan/v4-verification/phase-02-archetypes/` |
+| M3 | Wave Timeline and Spawn Controller | Not started | `plan/v4-verification/phase-03-timeline/` |
+| M4 | Pools | Not started | `plan/v4-verification/phase-04-pools/` |
+| M5 | Weapon Manager | Not started | `plan/v4-verification/phase-05-weapons/` |
+| M6 | Presentation and CombatEvents | Not started | `plan/v4-verification/phase-06-presentation/` |
+| M7 | Landmarks and boss | Not started | `plan/v4-verification/phase-07-boss/` |
+| M8 | Enemy World | Not started | `plan/v4-verification/phase-08-enemy-world/` |
+| M9 | Build and Progression | Not started | `plan/v4-verification/phase-09-build/` |
+| M10 | Difficulty Director, observe | Not started | `plan/v4-verification/phase-10-director/` |
+| M11 | Adaptive difficulty | Not started | `plan/v4-verification/phase-11-adaptive/` |
+| M12 | Rum and Results | Not started | `plan/v4-verification/phase-12-rum/` |
+| M13 | Barks and Tutorial | Not started | `plan/v4-verification/phase-13-narrative/` |
+| M14 | Switch-over | Not started | `plan/v4-verification/phase-14-switch/` |
+| M15 | V3 retirement | Not started | `plan/v4-verification/phase-15-retire/` |

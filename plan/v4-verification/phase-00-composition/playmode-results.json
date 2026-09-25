@@ -1,0 +1,34 @@
+{
+ "status": "completed",
+ "duration": 7.22,
+ "summary": {
+  "total": 3,
+  "passed": 3,
+  "failed": 0,
+  "skipped": 0,
+  "inconclusive": 0
+ },
+ "results": [
+  {
+   "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.BootFlow_ReachesMenu_ThenRunPlays",
+   "Status": "Passed",
+   "Duration": 4.812178,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Run_BossKill_ThenDeath_SettlesOnce",
+   "Status": "Passed",
+   "Duration": 1.32314,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.SceneReload_ClearsStaleMinibossArena",
+   "Status": "Passed",
+   "Duration": 1.0289285,
+   "Message": null,
+   "StackTrace": null
+  }
+ ]
+}

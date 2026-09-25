@@ -1,0 +1,24 @@
+{
+    "name": "RoguePirates.V4.Editor",
+    "rootNamespace": "RoguePirates.V4.Editor",
+    "references": [
+        "RoguePirates.V4",
+        "RoguePirates.V4.Config",
+        "RoguePirates.V4.Presentation",
+        "RoguePirates.V4.DevTools",
+        "HighSeas.Runtime",
+        "HighSeas.Editor",
+        "RoguePirates.Simulation"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

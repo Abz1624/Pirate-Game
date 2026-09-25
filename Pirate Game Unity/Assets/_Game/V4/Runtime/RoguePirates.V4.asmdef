@@ -1,0 +1,20 @@
+{
+    "name": "RoguePirates.V4",
+    "rootNamespace": "RoguePirates.V4",
+    "references": [
+        "RoguePirates.V4.Config",
+        "HighSeas.Runtime",
+        "RoguePirates.Simulation",
+        "Unity.InputSystem",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

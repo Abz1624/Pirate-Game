@@ -1,0 +1,23 @@
+{
+    "name": "RoguePirates.V4.DevTools",
+    "rootNamespace": "RoguePirates.V4.DevTools",
+    "references": [
+        "RoguePirates.V4",
+        "RoguePirates.V4.Config",
+        "RoguePirates.V4.Presentation",
+        "HighSeas.Runtime",
+        "RoguePirates.Simulation",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_EDITOR || DEVELOPMENT_BUILD"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
