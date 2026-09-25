@@ -152,9 +152,9 @@ unity test "Pirate Game Unity" --mode PlayMode --output "plan/v4-verification/ph
 **Trace runs (from M1).** Traces run in a Windows development player, not the Editor: about 3x faster per phase (M0 benchmark: 9.1 min for four runs in parallel against 27.5 min in the Editor).
 
 ```powershell
-.\plan4-verification	oolsuild-trace-player.ps1        # mirrors the project into Builds/V4Trace and builds (incremental ~35 s)
-.\plan4-verification	oolsun-traces-parallel.ps1 -Runs 'V4SaltwindRun|101|v4-101-a|<out>.jsonl', ...
-python plan4-verification	ools\compare-traces.py <v3-golden> <v4-trace> ...
+.\plan\v4-verification\tools\build-trace-player.ps1        # mirrors the project into Builds/V4Trace and builds (incremental ~35 s)
+.\plan\v4-verification\tools\run-traces-parallel.ps1 -Runs 'V4SaltwindRun|101|v4-101-a|<out>.jsonl', ...
+python plan\v4-verification\tools\compare-traces.py <v3-golden> <v4-trace> ...
 ```
 
 The V3 player goldens in `plan/v4-verification/phase-00-composition/player/` are recorded once, since V3 does not change until M15. After every phase an independent read-only reviewer checks the changes before the phase is reported.
