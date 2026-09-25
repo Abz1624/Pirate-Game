@@ -22,6 +22,7 @@ namespace RoguePirates.V4.Legacy
         readonly LegacyProfileAdapter _profile = new LegacyProfileAdapter();
         readonly LegacyDatabaseAdapter _database = new LegacyDatabaseAdapter();
         readonly V4LegacyBridge _bridge = new V4LegacyBridge();
+        readonly V4LegacySpawnBridge _spawnBridge = new V4LegacySpawnBridge();
         readonly LegacyWorldAdapter _world;
         PlayerShipController _player;
         StageLayout _layout;
@@ -58,8 +59,22 @@ namespace RoguePirates.V4.Legacy
             LegacyWorldAdapter.EnsureGameplayBootstrapComponents();
         }
 
+        /// <summary>
+        /// Seed for the next run, as V3 resolves it: explicit request, else a random seed on Retry
+        /// (V3RunBootstrap.RestartRun), else the locked home seed / random first-run seed (V3HomeSeed).
+        /// </summary>
+        public static int ResolveSeed(int requestedSeed, bool retry) =>
+            requestedSeed != 0 ? requestedSeed : retry ? Random.Range(1, int.MaxValue) : V3HomeSeed.ResolveRunSeed();
+
+        /// <summary>V3RunBootstrap.RestartRun side effects, called before the retry reload.</summary>
+        public static void NotifyRetryStarting()
+        {
+            HighSeas.Balance.SaltwindRunResetLogic.NotifyRetryStarting();
+            HighSeas.Save.RunSnapshotService.Clear();
+        }
+
         /// <summary>V3RunBootstrap.Start. Returns false when the run could not start.</summary>
-        public bool Start(int seed)
+        public bool Start(int seed, bool isRetry)
         {
             if (_database.Database == null)
             {
@@ -71,7 +86,7 @@ namespace RoguePirates.V4.Legacy
             _world.ConfigureStageBuilder();
             V3RunContext.IsActive = true;
             WireRunSystemsOnce();
-            return BootstrapRun(seed);
+            return BootstrapRun(seed, isRetry);
         }
 
         void WireRunSystemsOnce()
@@ -92,8 +107,10 @@ namespace RoguePirates.V4.Legacy
             _wired = false;
         }
 
-        bool BootstrapRun(int seed)
+        bool BootstrapRun(int seed, bool isRetry)
         {
+            // Every V4 run is a fresh scene, so all "first run" creation paths apply; only the start toast and log
+            // label follow V3's retry wording (V3 retries in place with firstRun: false).
             const bool firstRun = true;
             Seed = seed;
             _world.ConfigureStageBuilder();
@@ -164,20 +181,20 @@ namespace RoguePirates.V4.Legacy
 
             if (!isPvPScene)
             {
-                _bridge.ResetSpawnDirectors(enemyWorld, _player);
+                _spawnBridge.ResetSpawnDirectors(enemyWorld, _player);
                 LegacyStageAdapter.ResetBossDirector(enemyWorld, _player);
-                _bridge.EnsureSpawnDirectorsFirstRun(enemyWorld, _player,
+                _spawnBridge.EnsureSpawnDirectorsFirstRun(enemyWorld, _player,
                     () => LegacyStageAdapter.ResetBossDirector(enemyWorld, _player));
             }
 
             RunManager.Instance.EnterPlaying();
-            if (!isPvPScene) LegacyPresentationAdapter.ShowStartToasts(firstRun, seed);
+            if (!isPvPScene) LegacyPresentationAdapter.ShowStartToasts(!isRetry, seed);
 
             if (multiShipConfig != null && multiShipConfig.SessionKind != V3RunSessionKind.SinglePlayer)
                 V3MultiShipRunSetup.ApplyAfterRunStart(multiShipConfig.SessionKind, _player, _database.Database,
                     startingWeapon, multiShipConfig.ShipSpacing);
 
-            var seedLabel = V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
+            var seedLabel = !isRetry && V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
             Debug.Log($"V4Game: run seed={seed} ({seedLabel}), POI rng={seed + 404}.");
             return true;
         }

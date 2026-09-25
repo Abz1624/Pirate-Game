@@ -15,10 +15,15 @@ namespace RoguePirates.V4.DevTools.Trace
         public int seed = 101;
         public float captureDeltaTime = 1f / 60f;
         public float bossAtSeconds = 240f;
+        /// <summary>The harness kills the boss at this time through EnemyWorld.ApplyDamage (the weapon-hit path), so
+        /// victory, objective and settlement are covered by exact traces. The pilot kites the boss instead of fighting it.</summary>
+        public float killBossAtSeconds = 300f;
         public float maxSimSeconds = 900f;
         public int pauseResponseFrames = 3;
         public string pilot = PlayerPilot.PatternId;
         public string outPath;
+        public string commit;
+        public long createdUtcTicks;
         public bool stopPlayModeWhenDone = true;
 
         public static string RequestFilePath =>
@@ -28,6 +33,7 @@ namespace RoguePirates.V4.DevTools.Trace
         {
             var path = RequestFilePath;
             Directory.CreateDirectory(Path.GetDirectoryName(path));
+            createdUtcTicks = DateTime.UtcNow.Ticks;
             File.WriteAllText(path, JsonUtility.ToJson(this, true));
         }
 
@@ -40,6 +46,12 @@ namespace RoguePirates.V4.DevTools.Trace
             {
                 var request = JsonUtility.FromJson<TraceRequest>(File.ReadAllText(path));
                 File.Delete(path);
+                // A request left behind by a trace whose Play Mode never started must not hijack a later manual session.
+                if (request == null || DateTime.UtcNow.Ticks - request.createdUtcTicks > TimeSpan.FromMinutes(2).Ticks)
+                {
+                    Debug.LogWarning($"V4 trace: ignored a stale request file ({request?.label}).");
+                    return null;
+                }
                 return request;
             }
             catch (Exception e)

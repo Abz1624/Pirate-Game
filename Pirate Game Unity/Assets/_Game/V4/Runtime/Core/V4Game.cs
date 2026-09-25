@@ -1,22 +1,20 @@
 using System;
-using System.Reflection;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Player;
-using HighSeas.V3;
 using HighSeas.World;
+using RoguePirates.Simulation;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Legacy;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace RoguePirates.V4
 {
     /// <summary>
     /// V4 composition root. Builds the run context and module list and connects them. Systems that have no V4 module
     /// yet run through <see cref="LegacyRunShell"/> (same order and slot as V3RunBootstrap, so M0 runs match V3).
-    /// It must not grow gameplay logic of its own: new behavior goes into modules.
+    /// It must not grow gameplay logic of its own: new behavior goes into modules; legacy calls go into Legacy/.
     /// </summary>
     [DefaultExecutionOrder(-100)]
     public sealed class V4Game : MonoBehaviour
@@ -27,6 +25,7 @@ namespace RoguePirates.V4
         [SerializeField] IslandLayoutDefinition islandLayout;
         [SerializeField] bool usePlaceholderPoiVisuals = true;
 
+        /// <summary>Raised once per run after it starts; DevTools hooks the Tuning Console here (event, not state).</summary>
         public static event Action<V4Game> RunStarted;
 
         RunClock _clock;
@@ -36,7 +35,8 @@ namespace RoguePirates.V4
         LegacyRunShell _shell;
         LegacyEventFeed _feed;
         bool _running;
-        bool _resultsRebound;
+        bool _ended;
+        bool _objectiveSecured;
 
         public RunContext Context => _context;
         public ModuleRegistry Modules => _modules;
@@ -59,12 +59,10 @@ namespace RoguePirates.V4
         void Start()
         {
             var request = RunRequest.Consume();
-            var seed = request.seed != 0
-                ? request.seed
-                : request.retry ? UnityEngine.Random.Range(1, int.MaxValue) : V3HomeSeed.ResolveRunSeed();
+            var seed = LegacyRunShell.ResolveSeed(request.seed, request.retry);
 
             _modules.InitializeAll(_context);
-            if (!_shell.Start(seed)) return;
+            if (!_shell.Start(seed, request.retry)) return;
 
             _feed.Attach(_shell.Player);
             _modules.BeginRunAll(new RunStart(seed, request.retry));
@@ -79,29 +77,53 @@ namespace RoguePirates.V4
             _shell.Tick(Time.deltaTime);
 
             var run = RunManager.Instance;
-            var simulating = run != null && !run.IsPaused && !run.IsRunEnded;
-            if (simulating)
+            SyncPause(run);
+            if (run != null && !run.IsRunEnded)
             {
                 var steps = _clock.Advance(Time.deltaTime);
-                for (var i = 0; i < steps; i++) _modules.TickAll(_clock.NextTick());
+                for (var i = 0; i < steps; i++)
+                {
+                    _modules.TickAll(_clock.NextTick());
+                    _events.EndTick(); // one batch per simulation tick
+                }
             }
 
-            if (!_resultsRebound && run != null && run.IsRunEnded) RebindResultsButtons();
+            if (run == null) return;
+            _objectiveSecured = run.ObjectiveSecured;
+            if (!_ended && run.IsRunEnded) EndRun();
         }
 
         void LateUpdate()
         {
             if (!_running) return;
             _feed.AttachLevels();
-            _events.EndTick();
+            // Legacy producers publish outside V4 ticks (their own Update, or while paused); deliver those with the
+            // current tick stamp so readers see them this frame instead of waiting for the next tick.
+            if (_events.Pending.Count > 0) _events.EndTick();
+        }
+
+        /// <summary>The V4 clock mirrors the legacy pause (one source of truth until V4 owns pausing).</summary>
+        void SyncPause(RunManager run)
+        {
+            _clock.Pause.Remove(SimPauseReason.Manual | SimPauseReason.Choice);
+            if (run == null || !run.IsPaused) return;
+            _clock.Pause.Add(run.PauseReason == PauseReason.UserPause ? SimPauseReason.Manual : SimPauseReason.Choice);
+        }
+
+        void EndRun()
+        {
+            _ended = true;
+            _modules.EndRunAll(new RunEnd(_clock.SimTime, _objectiveSecured));
+            LegacyResultsRebinder.Rebind(RestartRun, GoToMenu);
         }
 
         void OnDestroy()
         {
-            if (_running)
+            // Fallback for runs left before they ended (restart, menu); values captured while RunManager existed.
+            if (_running && !_ended)
             {
-                var run = RunManager.Instance;
-                _modules.EndRunAll(new RunEnd(run != null ? run.ElapsedSeconds : 0f, run != null && run.ObjectiveSecured));
+                _ended = true;
+                _modules.EndRunAll(new RunEnd(_clock.SimTime, _objectiveSecured));
             }
 
             _feed?.Detach();
@@ -111,44 +133,9 @@ namespace RoguePirates.V4
 
         void OnApplicationPause(bool paused) => _shell?.OnApplicationPause(paused);
 
-        // ---- Results screen: keep Retry/Home inside V4 --------------------------------------------------
-
-        const string RestartButtonName = "PLACEHOLDER_v3_ui_run_results_restart";
-        const string MenuButtonName = "PLACEHOLDER_v3_ui_run_results_menu";
-        static readonly FieldInfo ContinueField = typeof(V3RunResultsScreen).GetField("continueButton", BindingFlags.Instance | BindingFlags.NonPublic);
-        static readonly FieldInfo MenuField = typeof(V3RunResultsScreen).GetField("menuButton", BindingFlags.Instance | BindingFlags.NonPublic);
-
-        /// <summary>
-        /// The legacy results screens build placeholder buttons in Awake and add listeners in Start that restart
-        /// through V3RunBootstrap (absent here) or load the V3 menu. By the time the run has ended every Start has
-        /// run, so replace those listeners with V4 restart and V4 menu.
-        /// </summary>
-        void RebindResultsButtons()
-        {
-            _resultsRebound = true;
-            foreach (var screen in FindObjectsByType<V3RunResultsScreen>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            {
-                Rebind(ContinueField?.GetValue(screen) as Button ?? FindButton(screen.transform, RestartButtonName), RestartRun);
-                Rebind(MenuField?.GetValue(screen) as Button ?? FindButton(screen.transform, MenuButtonName), GoToMenu);
-            }
-        }
-
-        static Button FindButton(Transform root, string name)
-        {
-            foreach (var button in root.GetComponentsInChildren<Button>(true))
-                if (button.name == name) return button;
-            return null;
-        }
-
-        static void Rebind(Button button, UnityEngine.Events.UnityAction action)
-        {
-            if (button == null) return;
-            button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(action);
-        }
-
         public static void RestartRun()
         {
+            LegacyRunShell.NotifyRetryStarting();
             RunRequest.MarkRetry();
             SceneManager.LoadScene(V4SceneNames.SaltwindRun);
         }

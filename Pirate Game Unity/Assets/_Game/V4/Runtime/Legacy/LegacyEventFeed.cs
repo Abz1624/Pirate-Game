@@ -27,7 +27,8 @@ namespace RoguePirates.V4.Legacy
             _clock = clock;
         }
 
-        float Now => RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f;
+        // Stamped with the V4 clock (tick index and sim time) so legacy and native events share one timeline.
+        float Now => _clock.SimTime;
 
         public void Attach(PlayerShipController player)
         {
@@ -45,6 +46,7 @@ namespace RoguePirates.V4.Legacy
             {
                 _run.StateChanged += OnRunState;
                 _run.GoldChanged += OnGold;
+                OnRunState(_run.State); // the feed attaches after EnterPlaying, so publish the state it missed
             }
 
             _player = player;

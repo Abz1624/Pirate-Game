@@ -123,6 +123,27 @@ namespace RoguePirates.V4.Tests
             CollectionAssert.AreEqual(new[] { "tick:a", "tick:b", "tick:c" }, log);
         }
 
+        sealed class Registering : IRunModule
+        {
+            readonly ModuleRegistry _registry;
+            public Registering(ModuleRegistry registry) { _registry = registry; }
+            public string Id => "registering";
+            public int TickOrder => 0;
+            public void Initialize(RunContext context) { }
+            public void BeginRun(in RunStart start) { }
+            public void Tick(in SimTick tick) => _registry.Add(new Probe("late", 0, new List<string>()));
+            public void EndRun(in RunEnd end) { }
+        }
+
+        [Test]
+        public void RegisteringDuringATick_IsRejected()
+        {
+            var registry = new ModuleRegistry();
+            registry.Add(new Registering(registry));
+            Assert.Throws<InvalidOperationException>(() => registry.TickAll(new SimTick(0, 1f / 60f, 0f)));
+            registry.Add(new Probe("after", 1, new List<string>())); // allowed again once the tick is over
+        }
+
         [Test]
         public void DuplicateIds_AreRejected()
         {

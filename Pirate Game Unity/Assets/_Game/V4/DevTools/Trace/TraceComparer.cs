@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace RoguePirates.V4.DevTools.Trace
 {
     /// <summary>
-    /// Compares two JSONL traces. Exact mode: every event line (header excluded, frame numbers ignored) must match in order.
+    /// Compares two JSONL traces. Exact mode: the key header fields (seed, pilot, dt, captain, platform, boss timings, config hash) must agree and every event line (frame numbers ignored) must match in order.
     /// Parity mode: per-minute spawn counts by enemy id and kill counts within a relative tolerance, plus level-up,
     /// boss and death times within an absolute tolerance.
     /// </summary>
@@ -39,11 +39,35 @@ namespace RoguePirates.V4.DevTools.Trace
             return m.Success ? m.Groups[1].Value : string.Empty;
         }
 
+        /// <summary>Header fields that must agree for two traces to be comparable (label, scene, commit may differ).</summary>
+        static readonly string[] HeaderKeys = { "seed", "pilot", "dt", "captain", "platform", "bossAt", "killBossAt", "configHash", "visualPins" };
+
+        static string HeaderField(string header, string key)
+        {
+            var m = Regex.Match(header ?? string.Empty, "\"" + key + "\":(\"[^\"]*\"|[^,}]*)");
+            return m.Success ? m.Groups[1].Value : "(missing)";
+        }
+
+        static void CompareHeaders(IReadOnlyList<string> expected, IReadOnlyList<string> actual, Result result)
+        {
+            string First(IReadOnlyList<string> lines) { foreach (var l in lines) if (TypeOf(l) == "header") return l; return null; }
+            var ha = First(expected);
+            var hb = First(actual);
+            if (ha == null || hb == null) { result.Differences.Add("header: missing in " + (ha == null ? "expected" : "actual")); return; }
+            foreach (var key in HeaderKeys)
+            {
+                var va = HeaderField(ha, key);
+                var vb = HeaderField(hb, key);
+                if (va != vb) result.Differences.Add($"header {key}: expected {va}, actual {vb}");
+            }
+        }
+
         public static Result CompareExact(IReadOnlyList<string> expected, IReadOnlyList<string> actual)
         {
             var a = Filter(expected);
             var b = Filter(actual);
             var result = new Result();
+            CompareHeaders(expected, actual, result);
             var n = Math.Min(a.Count, b.Count);
             for (var i = 0; i < n; i++)
             {

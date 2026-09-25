@@ -1,6 +1,6 @@
 # M0 diff summary
 
-Phase start: `8a8fbd1c`. Nothing committed yet: the M0 commit follows the playtest gate.
+Phase start: `8a8fbd1c`. M0 committed as `1811ffe9`; review fixes follow in a second M0 commit.
 
 ```
  M "Pirate Game Unity/ProjectSettings/EditorBuildSettings.asset"

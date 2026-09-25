@@ -9,6 +9,16 @@ namespace RoguePirates.V4.DevTools.Console
     /// <summary>Run controls: seed and restart, time scale, god mode, jump to time (forward only), force death.</summary>
     public sealed class RunSection : IConsoleSection
     {
+        /// <summary>True once the console changed Time.timeScale; the console resets it when the run scene unloads.</summary>
+        internal static bool TimeScaleChanged;
+
+        internal static void RestoreTimeScale()
+        {
+            if (!TimeScaleChanged) return;
+            Time.timeScale = 1f;
+            TimeScaleChanged = false;
+        }
+
         string _seedText = "101";
         string _jumpText = "240";
         bool _god;
@@ -32,7 +42,7 @@ namespace RoguePirates.V4.DevTools.Console
             GUILayout.BeginHorizontal();
             GUILayout.Label($"Time scale {Time.timeScale:0.##}", GUILayout.Width(110));
             var scale = GUILayout.HorizontalSlider(Time.timeScale, 0f, 4f);
-            if (!Mathf.Approximately(scale, Time.timeScale)) Time.timeScale = Mathf.Round(scale * 4f) / 4f;
+            if (!Mathf.Approximately(scale, Time.timeScale)) { Time.timeScale = Mathf.Round(scale * 4f) / 4f; TimeScaleChanged = true; }
             if (GUILayout.Button("1×", GUILayout.Width(32))) Time.timeScale = 1f;
             GUILayout.EndHorizontal();
 

@@ -1,9 +1,17 @@
 ﻿[begin] started
-[menu] WAIT scene=V4Boot v4menu=False
+[menu] ERROR: unity : Error: ❌ Command 'eval_file' failed:
+At C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v4-verification\tools\playable-check-m0.ps1:17 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: ❌ Command 'eval_file' failed::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error:    Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+Error: Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
 [menu] OK scene=V4MainMenu v4menu=True
 [shot] 01-menu.png
 [play] clicked Play
-[run-start] OK scene=V4SaltwindRun state=Playing seed=1448869960 runId=8033aea94c434a95917d727aeb6b38bd v4game=True console=True
+[run-start] OK scene=V4SaltwindRun state=Playing seed=762045365 runId=f41fce8be895495d9c4d47033ac0058c v4game=True console=True
 [god-on] invulnerable for the check
 [shot] 02-run-start.png
 [console-open] open=True
@@ -18,11 +26,11 @@
 [death] lethal damage
 [settled] OK ended=True settled=True marks=25 boss=25
 [shot] 06-results.png
-[first-run-id] 8033aea94c434a95917d727aeb6b38bd
+[first-run-id] f41fce8be895495d9c4d47033ac0058c
 [retry-click] clicked Retry on PLACEHOLDER_v3_ui_run_results_panel
-[retry-run] OK scene=V4SaltwindRun state=Playing seed=1066972476 runId=ffbe638f08ff45b8ae99b061704c3af1 v4game=True console=True
+[retry-run] OK scene=V4SaltwindRun state=Playing seed=1194201103 runId=453530930fa74790afee38e982a9171d v4game=True console=True
 [shot] 07-after-retry.png
 [console-restart-101] restart on seed 101
-[seed-101-run] OK scene=V4SaltwindRun state=Playing seed=101 runId=bf5f5c147cbe4f6c9df59c36c6144e16 v4game=True console=True
+[seed-101-run] OK scene=V4SaltwindRun state=Playing seed=101 runId=d0e8047c04c04d8eb3e2325e5cb5cc96 v4game=True console=True
 [shot] 08-seed-101.png
-[console] errors returned=0
+[console] errors returned=1

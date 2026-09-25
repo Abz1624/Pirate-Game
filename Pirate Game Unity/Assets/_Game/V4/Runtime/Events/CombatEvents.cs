@@ -67,8 +67,13 @@ namespace RoguePirates.V4.Events
 
     public interface ICombatEventReader
     {
-        /// <summary>Called once per tick with that tick's events, in publish order.</summary>
+        /// <summary>
+        /// Called once per simulation tick with that tick's events, in publish order. Legacy producers that publish
+        /// outside a tick (their own Update, or while paused) are delivered in an extra batch at the end of the frame,
+        /// stamped with the current tick. The list is only valid during the call; copy what you keep.
+        /// </summary>
         event Action<IReadOnlyList<CombatEvent>> TickPublished;
+        /// <summary>The most recent batch; valid until the next EndTick (the buffer is reused).</summary>
         IReadOnlyList<CombatEvent> LastTick { get; }
         long TotalPublished { get; }
     }

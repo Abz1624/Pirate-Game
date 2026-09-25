@@ -64,11 +64,36 @@ The profile context still ends when leaving for the menu, because `V4MainMenuCon
 | V4 PlayMode (`RoguePirates.V4`) | 3 / 3 pass: boot → menu → run; stale miniboss arena cleared on reload; boss kill → death → settles once, no double pay | `playmode-results.json` |
 | V3 regression, PlayMode | 31 tests, 30 pass, only the known storm-arena failure | `v3-regression-playmode-results.json` |
 | V3 regression, EditMode | 205 tests (187 V3 + 18 V4), 202 pass, only the 3 known failures | `v3-regression-editmode-results.json` |
-| Traces: V4 == V3, seeds 101 / 202 / 303 | **Exact match**, byte-identical including frame numbers (header excluded) | `v3-trace-*.jsonl`, `v4-trace-*.jsonl`, `trace-comparison.txt` |
+| Traces: V4 == V3, seeds 101 / 202 / 303 | **Exact match**: key header fields plus every event line, including frame numbers. Covered path: first run, Captain Rook, actives off, chests skipped, boss summoned at 4:00 and killed by the harness at 5:00, then play to death and settlement. Not covered by exact traces: retry, captain actives, chest purchase, non-default starting weapons, same-tick boss death (boss kill → death → settle-once is covered by a PlayMode test) | `v3-trace-*.jsonl`, `v4-trace-*.jsonl`, `trace-comparison.txt` |
 | V4 replay: seed 101 twice | Exact match | `v4-trace-seed-101-a/b.jsonl` |
-| V3 run-to-run determinism: seed 101 twice | Exact match (D5 exact mode holds) | `v3-trace-seed-101-a/b.jsonl` |
+| V3 run-to-run determinism: seed 101 twice | Exact match (D5 exact mode holds), shown with both pilots before the boss kill was added; V4 replay plus V4 == V3 covers it since | (earlier runs) |
 | Automated playable check | 8 / 8 steps OK, 0 console errors in the final run | `playable-check/` |
 | Write set | Clean, except a pre-existing checkout artifact (below) | `diff-summary.md` |
+
+## Independent review (2026-09-26)
+
+A read-only reviewer checked commit `1811ffe9` against V3 and the plan. No blockers: the V4 run matches V3 call for call, the traces genuinely match (non-trivial, V4 scene really runs V4Game), and nothing outside the write set changed. Findings and what was done:
+
+| # | Finding | Resolution |
+|---|---|---|
+| 1 | Major: CombatEvents delivered one batch per frame, not per tick; legacy events stamped with legacy time | **Fixed:** `EndTick()` after every module tick; legacy events published outside a tick are delivered at end of frame with the current tick stamp; the feed stamps V4 clock time. Reader contract documented |
+| 2 | Major: modules got `RunEnd` only on scene unload, possibly with `SimTime=0`/objective lost | **Fixed:** `RunEnd` is raised on the run-ended edge with values captured then; `OnDestroy` is only a fallback. PlayMode test asserts exactly one `RunEnd` with the objective |
+| 3 | Trace evidence narrower than claimed; header drift not compared | **Fixed:** the harness now kills the boss at 5:00 (victory, objective and boss Marks in every trace); `CompareExact` also compares seed, pilot, dt, captain, platform, boss timings and config hash (new test); claim narrowed above |
+| 4 | Retry toast/log said "locked seed" for the random retry seed | **Fixed:** toast and log follow the retry flag like V3 |
+| 5 | Stale trace request file could hijack a later manual session | **Fixed:** requests older than 2 minutes are ignored |
+| 6 | Trace prefs snapshot could be overwritten or lost on an Editor crash | **Fixed:** pending snapshots are restored before a new one; snapshot persisted to `Temp/` and restored on the next Editor load. Game view resolution is still left at 1080p (not restored) |
+| 7 | V4 clock pause not mapped to the legacy pause | **Fixed:** the clock's pause set mirrors `RunManager` every frame (UserPause → Manual, other reasons → Choice) |
+| 8 | Unrecorded deviations (RunRequest fields, menu, commit, legacy statics in V4Game, static event) | **Fixed/recorded:** seed resolution and results rebinding moved to `Legacy/` (`LegacyRunShell.ResolveSeed`, `LegacyResultsRebinder`); commit hash now in trace headers; the rest recorded below |
+| 9 | PlayMode teardown restored the real save before leaving the run scene | **Fixed:** teardown leaves the scene first; snapshot covers captain, actives and run snapshot keys too |
+| 10 | Console: time scale carried across restarts; typing in the console reached gameplay (B summons the boss) | **Fixed:** time scale resets when the run scene unloads; the game keyboard is muted while a console text field has focus. "Pause while open" only clears a pause it set |
+| 11 | V3 retry-only calls missing | **Fixed:** Retry calls `SaltwindRunResetLogic.NotifyRetryStarting()` and `RunSnapshotService.Clear()` like V3 |
+| 12 | Error path: V3 still ticks worlds when the profile fails to resolve | Recorded (V4 refuses to run instead; only reachable with a broken profile) |
+| 13 | Core edges: missed first RunState event; registering during a tick; buffer lifetime; GUID asmdef refs; bridge tag 9 cannot enforce the M3 spawn removal | **Fixed:** feed publishes the current state on attach; registry throws on registration during a call (new test); lifetime documented; layering test forbids GUID refs and Editor assemblies; spawn path split into `V4LegacySpawnBridge` tagged M3 |
+| 14 | Docs: R-55/R-71 marked applied too early; R-68 wording; statuses; stale diff summary | **Fixed** in the register and summary |
+
+Speed-up investigation (your question): runs are CPU-bound in simulation. Not rendering the world diverged the run (new defect R-74, simulation reads renderer bounds) and gave no speed-up; suppressing log output kept exact parity but gave no speed-up either. Both were reverted. See the reply for the options that do save time.
+
+Determinism follow-up: after adding the boss kill, a V4 seed-101 replay diverged by one gold at 8:30 (positions and kills identical). Cause: R-74, since skinned-mesh bounds only update while some camera draws them, so results could depend on Editor window visibility. Trace runs now pin visual state (skinned meshes update off-screen, animators always animate; header field `visualPins`, compared by `CompareExact`), and all goldens and V4 traces were re-recorded with the pin.
 
 ## Deviations from the plan, recorded
 
@@ -78,6 +103,9 @@ The profile context still ends when leaving for the menu, because `V4MainMenuCon
 4. **`V4ModuleLab`** keeps its legacy playtest bootstrap until M2, when archetypes exist to spawn.
 5. **`V4DeterminismTests` [V4Slow]** is replaced by the trace harness replay (seed 101 a/b above). A trace needs a fresh Play Mode session, which a PlayMode test cannot provide.
 6. **Goldens were recorded in `V3SaltwindRun`** instead of a V4 copy that still ran `V3RunBootstrap`. The V4 scene is a straight copy, so this is the same content. The header `scene` field differs and is ignored by the comparison.
+7. **`RunRequest` carries seed and retry only.** Captain, preset and pilot are added when a module needs them (preset M1, captain M9); the menu keeps V3's `V3CaptainSelection` hand-off.
+8. **`V4Game.RunStarted` is a static event** (a hook for DevTools, holds no state) besides `RunRequest`.
+9. **Traces kill the boss at 5:00 through the weapon-hit path**, because the autopilot kites the boss instead of fighting it.
 
 ## Findings during M0
 

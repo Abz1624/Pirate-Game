@@ -59,6 +59,7 @@ namespace RoguePirates.V4.DevTools.Console
         public void SetOpen(bool open)
         {
             _open = open;
+            if (!open) { GUIUtility.keyboardControl = 0; SetGameKeyboardBlocked(false); }
             ApplyPause();
         }
 
@@ -82,6 +83,29 @@ namespace RoguePirates.V4.DevTools.Console
         {
             _open = false;
             ApplyPause();
+            SetGameKeyboardBlocked(false);
+        }
+
+        void OnDestroy()
+        {
+            SetGameKeyboardBlocked(false);
+            RunSection.RestoreTimeScale(); // a slowed/frozen run must not carry into the next scene
+        }
+
+        bool _keyboardBlocked;
+
+        /// <summary>
+        /// While a console text field has focus, gameplay must not read the keys being typed (B summons the boss,
+        /// digits pick level-up cards). IMGUI text input comes from GUI events, not the Input System keyboard device,
+        /// so disabling the device only mutes gameplay.
+        /// </summary>
+        void SetGameKeyboardBlocked(bool blocked)
+        {
+            if (blocked == _keyboardBlocked) return;
+            var keyboard = Keyboard.current;
+            if (keyboard == null) { _keyboardBlocked = false; return; }
+            if (blocked) InputSystem.DisableDevice(keyboard); else InputSystem.EnableDevice(keyboard);
+            _keyboardBlocked = blocked;
         }
 
         void OnGUI()
@@ -93,6 +117,7 @@ namespace RoguePirates.V4.DevTools.Console
             }
 
             _window = GUI.Window(0x7634, _window, DrawWindow, "V4 Tuning Console (F1)");
+            if (Event.current.type == EventType.Repaint) SetGameKeyboardBlocked(GUIUtility.keyboardControl != 0);
         }
 
         void DrawWindow(int id)

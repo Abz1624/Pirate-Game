@@ -56,6 +56,7 @@ namespace RoguePirates.V4
         readonly List<IRunModule> _modules = new List<IRunModule>();
         readonly List<IRunModule> _ordered = new List<IRunModule>();
         bool _dirty;
+        bool _iterating;
 
         public IReadOnlyList<IRunModule> Modules
         {
@@ -65,16 +66,17 @@ namespace RoguePirates.V4
         public void Add(IRunModule module)
         {
             if (module == null) throw new ArgumentNullException(nameof(module));
+            if (_iterating) throw new InvalidOperationException($"Module '{module.Id}' cannot be registered while modules are being called.");
             foreach (var existing in _modules)
                 if (existing.Id == module.Id) throw new InvalidOperationException($"Module id '{module.Id}' is already registered.");
             _modules.Add(module);
             _dirty = true;
         }
 
-        public void InitializeAll(RunContext context) { foreach (var m in Modules) m.Initialize(context); }
-        public void BeginRunAll(in RunStart start) { foreach (var m in Modules) m.BeginRun(start); }
-        public void TickAll(in SimTick tick) { foreach (var m in Modules) m.Tick(tick); }
-        public void EndRunAll(in RunEnd end) { foreach (var m in Modules) m.EndRun(end); }
+        public void InitializeAll(RunContext context) { _iterating = true; try { foreach (var m in Modules) m.Initialize(context); } finally { _iterating = false; } }
+        public void BeginRunAll(in RunStart start) { _iterating = true; try { foreach (var m in Modules) m.BeginRun(start); } finally { _iterating = false; } }
+        public void TickAll(in SimTick tick) { _iterating = true; try { foreach (var m in Modules) m.Tick(tick); } finally { _iterating = false; } }
+        public void EndRunAll(in RunEnd end) { _iterating = true; try { foreach (var m in Modules) m.EndRun(end); } finally { _iterating = false; } }
 
         void EnsureOrder()
         {

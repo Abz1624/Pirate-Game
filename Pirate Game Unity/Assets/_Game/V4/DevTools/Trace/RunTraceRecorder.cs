@@ -60,6 +60,19 @@ namespace RoguePirates.V4.DevTools.Trace
         float SimTime => RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f;
         int Frame => Time.frameCount - _startFrame;
 
+        /// <summary>
+        /// Legacy pickups align barrels to skinned-renderer bounds (R-74), and skinned bounds / animation only update
+        /// while some camera draws them, so a run could depend on whether the Editor's Game or Scene view was visible.
+        /// Trace runs pin that state: skinned meshes always update bounds and animators always animate.
+        /// </summary>
+        static void PinVisualState()
+        {
+            foreach (var skinned in FindObjectsByType<SkinnedMeshRenderer>(FindObjectsSortMode.None))
+                if (!skinned.updateWhenOffscreen) skinned.updateWhenOffscreen = true;
+            foreach (var animator in FindObjectsByType<Animator>(FindObjectsSortMode.None))
+                if (animator.cullingMode != AnimatorCullingMode.AlwaysAnimate) animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+        }
+
         void OnDestroy()
         {
             if (_bus != null) { _bus.Kill -= OnKill; _bus.ChestOpened -= OnChest; }
@@ -69,6 +82,7 @@ namespace RoguePirates.V4.DevTools.Trace
         void LateUpdate()
         {
             if (_request == null || _finished) return;
+            PinVisualState();
             var run = RunManager.Instance;
             if (run == null) return;
 
@@ -91,6 +105,8 @@ namespace RoguePirates.V4.DevTools.Trace
 
             if (!_bossSummoned && t >= _request.bossAtSeconds && !run.IsRunEnded && !run.IsPaused && _poi != null)
                 _poi.TrySummonBoss();
+            if (_bossSummoned && !_bossDefeated && t >= _request.killBossAtSeconds && !run.IsRunEnded && !run.IsPaused)
+                TryKillBoss();
 
             if (t >= _nextSample)
             {
@@ -131,7 +147,7 @@ namespace RoguePirates.V4.DevTools.Trace
                 .Int("seed", RunManager.Instance.RunSeed).Str("pilot", _request.pilot).Num("dt", _request.captureDeltaTime)
                 .Str("captain", V3CaptainSelection.Selected.ToString()).Str("unity", Application.unityVersion)
                 .Str("platform", Application.isEditor ? "editor" : Application.platform.ToString())
-                .Num("bossAt", _request.bossAtSeconds).Str("configHash", StageBalanceProfileContext.Export?.ContentHash));
+                .Num("bossAt", _request.bossAtSeconds).Num("killBossAt", _request.killBossAtSeconds).Str("commit", _request.commit).Str("visualPins", "skinned-offscreen+always-animate").Str("configHash", StageBalanceProfileContext.Export?.ContentHash));
         }
 
         void OnKill(bool elite, bool boss, Vector3 pos, string weapon) =>
@@ -222,6 +238,19 @@ namespace RoguePirates.V4.DevTools.Trace
             {
                 if (!_bossSummoned && _poi.BossSummoned) { _bossSummoned = true; Add(new JsonLine("boss").Num("t", t).Str("state", "summoned")); }
                 if (!_bossDefeated && _poi.BossDefeated) { _bossDefeated = true; Add(new JsonLine("boss").Num("t", t).Str("state", "defeated")); }
+            }
+        }
+
+        /// <summary>Lethal hit on the active boss through the weapon-hit path (same as SaltwindScenePlayModeTests).</summary>
+        void TryKillBoss()
+        {
+            if (_world == null || _world.Agents == null) return;
+            for (var i = 0; i < _world.Agents.Length; i++)
+            {
+                var agent = _world.Agents[i];
+                if (!agent.active || !agent.isBoss) continue;
+                _world.ApplyDamage(i, Mathf.Max(agent.hp, agent.maxHp) + 500f, false, weaponId: "deck_cannons");
+                return;
             }
         }
 

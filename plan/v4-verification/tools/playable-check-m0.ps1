@@ -50,7 +50,7 @@ return (ok ? "OK " : "WAIT ") + $"scene={scene} state={rm?.State} seed={rm?.RunS
 unity command set_autotick --enable true 2>&1 | Out-Null
 unity command clear_console 2>&1 | Out-Null
 Eval 'begin' 'return RoguePirates.V4.Editor.V4TraceSession.BeginPlayableCheck("Assets/_Game/Scenes/V4/V4Boot.unity");' | Out-Null
-Start-Sleep -Seconds 10  # let the Play Mode domain reload finish before polling (polls during it time out)
+Start-Sleep -Seconds 20  # let the Play Mode domain reload finish before polling (polls during it time out)
 try {
     WaitFor 'menu' @'
 var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;

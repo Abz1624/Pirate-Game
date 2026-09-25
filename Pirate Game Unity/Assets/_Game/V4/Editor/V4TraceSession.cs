@@ -29,16 +29,37 @@ namespace RoguePirates.V4.Editor
         [Serializable] sealed class PrefEntry { public string key; public bool has; public bool isInt; public int i; public string s; }
         [Serializable] sealed class PrefSnapshot { public List<PrefEntry> entries = new List<PrefEntry>(); }
 
+        static string SnapshotFile => Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Temp", "v4-prefs-snapshot.json");
+
         static V4TraceSession()
         {
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
+            // Crash recovery: a snapshot file left behind means the Editor died mid-trace; put the user's prefs back.
+            if (!EditorApplication.isPlayingOrWillChangePlaymode && File.Exists(SnapshotFile))
+                EditorApplication.delayCall += () => { if (!EditorApplication.isPlaying) RestorePrefs(); };
+        }
+
+        static string GitCommit()
+        {
+            try
+            {
+                var git = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", ".git"));
+                var head = File.ReadAllText(Path.Combine(git, "HEAD")).Trim();
+                if (!head.StartsWith("ref: ")) return head;
+                var refPath = Path.Combine(git, head.Substring(5));
+                if (File.Exists(refPath)) return File.ReadAllText(refPath).Trim();
+                foreach (var line in File.ReadAllLines(Path.Combine(git, "packed-refs")))
+                    if (line.EndsWith(" " + head.Substring(5))) return line.Substring(0, line.IndexOf(' '));
+            }
+            catch (Exception) { }
+            return "unknown";
         }
 
         public static string Status => SessionState.GetString(StatusKey, "idle");
 
         /// <summary>Starts a trace. Returns "started" or a reason it could not start.</summary>
         public static string Run(string scenePath, int seed, string outPath, string label,
-            float bossAtSeconds = 240f, float maxSimSeconds = 900f)
+            float bossAtSeconds = 240f, float maxSimSeconds = 900f, float killBossAtSeconds = 300f)
         {
             if (EditorApplication.isPlaying || EditorApplication.isPlayingOrWillChangePlaymode) return "busy: already in Play Mode";
             if (!File.Exists(Path.Combine(Directory.GetParent(Application.dataPath).FullName, scenePath)))
@@ -68,7 +89,9 @@ namespace RoguePirates.V4.Editor
                 seed = seed,
                 outPath = fullOut,
                 bossAtSeconds = bossAtSeconds,
-                maxSimSeconds = maxSimSeconds
+                killBossAtSeconds = killBossAtSeconds,
+                maxSimSeconds = maxSimSeconds,
+                commit = GitCommit()
             }.WriteRequestFile();
 
             PlayModeWindow.SetCustomRenderingResolution(1920, 1080, "V4 Trace 1080p");
@@ -114,7 +137,7 @@ namespace RoguePirates.V4.Editor
         static void OnPlayModeChanged(PlayModeStateChange change)
         {
             if (change != PlayModeStateChange.EnteredEditMode) return;
-            if (!string.IsNullOrEmpty(SessionState.GetString(SnapshotKey, string.Empty)))
+            if (!string.IsNullOrEmpty(SessionState.GetString(SnapshotKey, string.Empty)) || File.Exists(SnapshotFile))
             {
                 RestorePrefs();
                 SessionState.SetString(StatusKey, "idle (last run finished, prefs restored)");
@@ -123,17 +146,23 @@ namespace RoguePirates.V4.Editor
 
         static void SnapshotPrefs()
         {
+            // Never overwrite a pending snapshot with already-pinned values: restore it first.
+            if (File.Exists(SnapshotFile) || !string.IsNullOrEmpty(SessionState.GetString(SnapshotKey, string.Empty))) RestorePrefs();
             var snapshot = new PrefSnapshot();
             foreach (var key in IntKeys)
                 snapshot.entries.Add(new PrefEntry { key = key, has = PlayerPrefs.HasKey(key), isInt = true, i = PlayerPrefs.GetInt(key, 0) });
             foreach (var key in StringKeys)
                 snapshot.entries.Add(new PrefEntry { key = key, has = PlayerPrefs.HasKey(key), s = PlayerPrefs.GetString(key, string.Empty) });
-            SessionState.SetString(SnapshotKey, JsonUtility.ToJson(snapshot));
+            var json = JsonUtility.ToJson(snapshot);
+            SessionState.SetString(SnapshotKey, json);
+            File.WriteAllText(SnapshotFile, json);
         }
 
         static void RestorePrefs()
         {
-            var snapshot = JsonUtility.FromJson<PrefSnapshot>(SessionState.GetString(SnapshotKey, "{}"));
+            var json = SessionState.GetString(SnapshotKey, string.Empty);
+            if (string.IsNullOrEmpty(json) && File.Exists(SnapshotFile)) json = File.ReadAllText(SnapshotFile);
+            var snapshot = JsonUtility.FromJson<PrefSnapshot>(string.IsNullOrEmpty(json) ? "{}" : json);
             if (snapshot?.entries != null)
             {
                 foreach (var e in snapshot.entries)
@@ -145,6 +174,7 @@ namespace RoguePirates.V4.Editor
                 PlayerPrefs.Save();
             }
             SessionState.EraseString(SnapshotKey);
+            if (File.Exists(SnapshotFile)) File.Delete(SnapshotFile);
         }
 
         /// <summary>Compares two trace files; mode "exact" or "parity". Returns a readable report.</summary>

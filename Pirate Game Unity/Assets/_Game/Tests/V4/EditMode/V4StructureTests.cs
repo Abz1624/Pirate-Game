@@ -54,6 +54,16 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
+        public void Exact_RejectsTracesWithDifferentKeyHeaderFields()
+        {
+            var other = (string[])Base.Clone();
+            other[0] = "{\"type\":\"header\",\"seed\":202,\"label\":\"a\"}";
+            var result = TraceComparer.CompareExact(Base, other);
+            Assert.IsFalse(result.Match);
+            StringAssert.Contains("header seed", result.Differences[0]);
+        }
+
+        [Test]
         public void Parity_ChecksEventTimes()
         {
             var late = (string[])Base.Clone();
@@ -96,8 +106,9 @@ namespace RoguePirates.V4.Tests
             var forbidden = new Dictionary<string, string[]>
             {
                 ["V4/Config/RoguePirates.V4.Config.asmdef"] = new[] { "RoguePirates.V4\"", "RoguePirates.V4.Presentation", "RoguePirates.V4.DevTools", "HighSeas.Runtime" },
-                ["V4/Runtime/RoguePirates.V4.asmdef"] = new[] { "RoguePirates.V4.Presentation", "RoguePirates.V4.DevTools" },
-                ["V4/Presentation/RoguePirates.V4.Presentation.asmdef"] = new[] { "RoguePirates.V4.DevTools" },
+                ["V4/Runtime/RoguePirates.V4.asmdef"] = new[] { "RoguePirates.V4.Presentation", "RoguePirates.V4.DevTools", "RoguePirates.V4.Editor", "HighSeas.Editor" },
+                ["V4/Presentation/RoguePirates.V4.Presentation.asmdef"] = new[] { "RoguePirates.V4.DevTools", "RoguePirates.V4.Editor", "HighSeas.Editor" },
+                ["V4/DevTools/RoguePirates.V4.DevTools.asmdef"] = new[] { "RoguePirates.V4.Editor", "HighSeas.Editor" },
                 ["Scripts/HighSeas.Runtime.asmdef"] = new[] { "RoguePirates.V4" }
             };
             foreach (var pair in forbidden)
@@ -106,6 +117,10 @@ namespace RoguePirates.V4.Tests
                 foreach (var name in pair.Value)
                     Assert.IsFalse(text.Contains("\"" + name.TrimEnd('"') + "\""), $"{pair.Key} must not reference {name.TrimEnd('"')}");
             }
+
+            // References by GUID would slip past the name checks above, so V4 asmdefs must reference by name.
+            foreach (var asmdef in Directory.GetFiles(Path.Combine(GameRoot, "V4"), "*.asmdef", SearchOption.AllDirectories))
+                StringAssert.DoesNotContain("\"GUID:", File.ReadAllText(asmdef), $"{Path.GetFileName(asmdef)} must reference assemblies by name");
         }
 
         [Test]
@@ -122,7 +137,8 @@ namespace RoguePirates.V4.Tests
             var offenders = new List<string>();
             foreach (var file in Directory.GetFiles(Path.Combine(GameRoot, "V4"), "*.cs", SearchOption.AllDirectories))
             {
-                if (Path.GetFileName(file) == "V4LegacyBridge.cs") continue;
+                var fileName = Path.GetFileName(file);
+                if (fileName == "V4LegacyBridge.cs" || fileName == "V4LegacySpawnBridge.cs") continue;
                 var lines = File.ReadAllLines(file);
                 for (var i = 0; i < lines.Length; i++)
                 {
@@ -131,7 +147,7 @@ namespace RoguePirates.V4.Tests
                     if (pattern.IsMatch(code)) offenders.Add($"{Path.GetFileName(file)}:{i + 1}");
                 }
             }
-            Assert.IsEmpty(offenders, "Only V4LegacyBridge may reference EncounterSpawner/WeaponController: " + string.Join(", ", offenders));
+            Assert.IsEmpty(offenders, "Only V4LegacyBridge/V4LegacySpawnBridge may reference EncounterSpawner/WeaponController: " + string.Join(", ", offenders));
         }
     }
 }

@@ -15,18 +15,21 @@ namespace RoguePirates.V4.Tests
     /// <summary>Swaps the save for an in-memory one and restores the PlayerPrefs a V4 run can touch.</summary>
     sealed class V4TestSaveIsolation : System.IDisposable
     {
-        static readonly string[] IntKeys = { "v3_home_seed", "v3_first_conquest_complete", "v3_saltwind_runs_completed" };
+        static readonly string[] IntKeys = { "v3_home_seed", "v3_first_conquest_complete", "v3_saltwind_runs_completed", "v3_selected_captain", "combat_captain_actives_enabled" };
         readonly SaveService _original;
         readonly bool[] _had = new bool[IntKeys.Length];
         readonly int[] _values = new int[IntKeys.Length];
         const string MetaKey = "highseas_meta_v1";
+        const string SnapshotKey = "highseas_run_snapshot_v1";
         readonly string _meta;
+        readonly string _runSnapshot;
 
         public V4TestSaveIsolation()
         {
             AppRoot.EnsureInitialized();
             _original = AppRoot.Instance.Save;
             _meta = PlayerPrefs.HasKey(MetaKey) ? PlayerPrefs.GetString(MetaKey) : null;
+            _runSnapshot = PlayerPrefs.HasKey(SnapshotKey) ? PlayerPrefs.GetString(SnapshotKey) : null;
             AppRoot.Instance.ReplaceSave(new SaveService(new MemorySaveBackend()));
             for (var i = 0; i < IntKeys.Length; i++)
             {
@@ -44,8 +47,22 @@ namespace RoguePirates.V4.Tests
                 else PlayerPrefs.DeleteKey(IntKeys[i]);
             }
             if (_meta != null) PlayerPrefs.SetString(MetaKey, _meta);
+            if (_runSnapshot != null) PlayerPrefs.SetString(SnapshotKey, _runSnapshot); else PlayerPrefs.DeleteKey(SnapshotKey);
             PlayerPrefs.Save();
         }
+    }
+
+    /// <summary>Counts the RunEnd notifications a module receives.</summary>
+    sealed class EndProbe : IRunModule
+    {
+        public int EndCount;
+        public RunEnd LastEnd;
+        public string Id => "test.end-probe";
+        public int TickOrder => 0;
+        public void Initialize(RunContext context) { }
+        public void BeginRun(in RunStart start) { }
+        public void Tick(in SimTick tick) { }
+        public void EndRun(in RunEnd end) { EndCount++; LastEnd = end; }
     }
 
     [Category("V4")]
@@ -64,14 +81,15 @@ namespace RoguePirates.V4.Tests
         [UnityTearDown]
         public IEnumerator TearDown()
         {
+            // Leave the run scene first so nothing still running writes to the real save after it is restored.
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
+            yield return null;
             StageBalanceProfileContext.ResetForTests();
             RunMarksTracker.Reset();
             RunEncounterTracker.ResetForTests();
             SaltwindRunSettlement.ClearLastResults();
             _isolation?.Dispose();
             _isolation = null;
-            yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
-            yield return null;
         }
 
         static IEnumerator WaitForPlaying()
@@ -120,6 +138,9 @@ namespace RoguePirates.V4.Tests
             yield return WaitForPlaying();
             Assert.AreEqual(101, RunManager.Instance.RunSeed, "RunRequest seed must reach RunManager");
 
+            var probe = new EndProbe();
+            Object.FindFirstObjectByType<V4Game>().Modules.Add(probe);
+
             var poi = Object.FindFirstObjectByType<POIManager>();
             var world = Object.FindFirstObjectByType<EnemyWorld>();
             var summoned = false;
@@ -167,6 +188,11 @@ namespace RoguePirates.V4.Tests
 
             RunManager.Instance.FinalizeRunOnDeath();
             Assert.AreEqual(afterFirst, AppRoot.Instance.Save.Meta.marks, "a second finalize must not pay again");
+
+            yield return null; // V4Game notices the run end on its next Update
+            Assert.AreEqual(1, probe.EndCount, "modules get RunEnd once, when the run ends (not only on scene unload)");
+            Assert.IsTrue(probe.LastEnd.ObjectiveSecured, "RunEnd must carry the secured objective");
+            Assert.Greater(probe.LastEnd.SimTime, 0f);
         }
     }
 }
