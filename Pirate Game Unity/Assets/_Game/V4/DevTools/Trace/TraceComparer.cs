@@ -40,7 +40,7 @@ namespace RoguePirates.V4.DevTools.Trace
         }
 
         /// <summary>Header fields that must agree for two traces to be comparable (label, scene, commit may differ).</summary>
-        static readonly string[] HeaderKeys = { "seed", "pilot", "dt", "captain", "platform", "bossAt", "killBossAt", "configHash", "visualPins" };
+        static readonly string[] HeaderKeys = { "seed", "pilot", "dt", "captain", "platform", "screen", "bossAt", "killBossAt", "configHash", "visualPins" };
 
         static string HeaderField(string header, string key)
         {

@@ -115,3 +115,23 @@ Determinism follow-up: after adding the boss kill, a V4 seed-101 replay diverged
 - **R-67a (new), real PlayerPrefs:** V3's own suites change the Editor's PlayerPrefs. `V3IntegrationTests` deletes `v3_home_seed` and `v3_first_conquest_complete`; PlayMode boss kills lock a home seed. Running the baselines therefore changed these keys in this Editor, and both are now absent. The values from before this session are unknown. `tools/prefs-guard.ps1` backs up and restores the registry key around future suite runs.
 - **Test side effects cleaned up:** the V3 suites rewrote `plan/saltwind-verification/balance-lab/*`, the TMP fallback font atlas and the line endings of `Data/EncounterSpawnSchedule.asset`. All three were restored with `git checkout`, and V3 data was not otherwise touched.
 - **Tooling:** `capture_game_view --save_path` always writes under `Assets/`, so the playable check decodes the inline image instead. A stray `Assets/Temp/` from one test capture was deleted. The 1200-run matrix baseline failure is a CLI main-thread timeout (the CLI was polled while the test held the main thread), not a gameplay failure.
+
+## Trace runner benchmark (26 Sep, your request)
+
+Option 1 is the Editor, one run at a time. Option 2 is a Windows development player built from a mirror copy of the project (`Builds/V4Trace/`, git-ignored, its own Library, so your Editor stays on WebGL), with runs in parallel.
+
+| Measure | Editor, sequential | Player, parallel (4) |
+|---|---|---|
+| Same 4 V4 runs (seeds 101, 101 replay, 202, 303) | about 1,645 s (27.5 min) | **547 s (9.1 min)** |
+| Game time simulated per wall second | 1.4 | 4.0 |
+| Build cost | none | first build 828 s (one-time import); incremental 35 s |
+| V3 reference runs per phase | none needed (V3 frozen) | none needed (recorded once, 408 s for 3) |
+
+Decision: the player is about 3x faster per phase, so it is the standard trace platform from M1 on. The Editor harness stays for debugging and the playable check. Player goldens: `player/`. V4 == V3 exactly on all three seeds, and the replay is identical even with four copies running at once.
+
+Harness changes for the player:
+- `TraceBoot` reads `-v4trace <request>` in a player and starts from the empty `V4TraceLauncher` scene.
+- It pins every PlayerPref a run reads to one state (Rook, actives off, aim visuals off, developer preset off, First Conquest done, tutorial seen, no home seed). This matters because parallel copies share one PlayerPrefs store, and First Conquest is written on victory and read by level-up offers mid-run. The Editor harness pins the same keys now too, closing a gap where Editor traces depended on your save state.
+- The recorder writes atomically, quits the player when done, and logs the screen size, which is compared.
+
+The Editor goldens in this folder predate the pins and are kept as M0 history.

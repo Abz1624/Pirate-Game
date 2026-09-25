@@ -11,6 +11,9 @@ namespace RoguePirates.V4.DevTools.Trace
     [Serializable]
     public sealed class TraceRequest
     {
+        /// <summary>Empty first scene of the trace player build; TraceBoot loads the requested run scene from it.</summary>
+        public const string LauncherSceneName = "V4TraceLauncher";
+
         public string label = "trace";
         public int seed = 101;
         public float captureDeltaTime = 1f / 60f;
@@ -22,6 +25,8 @@ namespace RoguePirates.V4.DevTools.Trace
         public int pauseResponseFrames = 3;
         public string pilot = PlayerPilot.PatternId;
         public string outPath;
+        /// <summary>Run scene path or name; used by player builds, which start in the empty launcher scene.</summary>
+        public string scene;
         public string commit;
         public long createdUtcTicks;
         public bool stopPlayModeWhenDone = true;
@@ -35,6 +40,19 @@ namespace RoguePirates.V4.DevTools.Trace
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             createdUtcTicks = DateTime.UtcNow.Ticks;
             File.WriteAllText(path, JsonUtility.ToJson(this, true));
+        }
+
+        /// <summary>Player builds: <c>-v4trace &lt;path&gt;</c> on the command line; the file is kept (the orchestrator owns it).</summary>
+        public static TraceRequest TryReadFromCommandLine()
+        {
+            var args = Environment.GetCommandLineArgs();
+            for (var i = 0; i < args.Length - 1; i++)
+            {
+                if (args[i] != "-v4trace") continue;
+                try { return JsonUtility.FromJson<TraceRequest>(File.ReadAllText(args[i + 1])); }
+                catch (Exception e) { Debug.LogError($"V4 trace: could not read {args[i + 1]}: {e.Message}"); return null; }
+            }
+            return null;
         }
 
         /// <summary>Reads and deletes the pending request file; null when none is pending.</summary>

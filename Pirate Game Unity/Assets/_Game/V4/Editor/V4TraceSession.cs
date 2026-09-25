@@ -19,10 +19,11 @@ namespace RoguePirates.V4.Editor
         const string SnapshotKey = "v4trace.prefsSnapshot";
         const string StatusKey = "v4trace.status";
 
+        // Every PlayerPref TraceBoot pins or deletes, so the user's values come back after the run.
         static readonly string[] IntKeys =
         {
-            "v3_selected_captain", "v3_home_seed", "v3_first_conquest_complete",
-            "v3_saltwind_runs_completed", "combat_captain_actives_enabled"
+            "v3_selected_captain", "v3_home_seed", "v3_first_conquest_complete", "v3_saltwind_runs_completed",
+            "combat_captain_actives_enabled", "combat_aim_visuals_enabled", "highseas_v3_developer_preset"
         };
         static readonly string[] StringKeys = { "highseas_meta_v1", "highseas_run_snapshot_v1" };
 
@@ -74,9 +75,6 @@ namespace RoguePirates.V4.Editor
 
             UnloadGameDatabase();
             SnapshotPrefs();
-            PlayerPrefs.SetInt("v3_selected_captain", 0); // Rook
-            PlayerPrefs.SetInt("combat_captain_actives_enabled", 0);
-            PlayerPrefs.Save();
 
             var fullOut = Path.IsPathRooted(outPath)
                 ? outPath
@@ -90,6 +88,7 @@ namespace RoguePirates.V4.Editor
                 outPath = fullOut,
                 bossAtSeconds = bossAtSeconds,
                 killBossAtSeconds = killBossAtSeconds,
+                scene = scenePath,
                 maxSimSeconds = maxSimSeconds,
                 commit = GitCommit()
             }.WriteRequestFile();
@@ -116,7 +115,7 @@ namespace RoguePirates.V4.Editor
 
             UnloadGameDatabase();
             SnapshotPrefs();
-            PlayerPrefs.SetInt("v3_selected_captain", 0);
+            PlayerPrefs.SetInt("v3_selected_captain", 0); // playable check is not a trace, so TraceBoot does not pin it
             PlayerPrefs.Save();
             PlayModeWindow.SetCustomRenderingResolution(1920, 1080, "V4 Trace 1080p");
             SessionState.SetString(StatusKey, $"playable check on {scenePath}");

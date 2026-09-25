@@ -146,7 +146,7 @@ namespace RoguePirates.V4.DevTools.Trace
             Add(new JsonLine("header").Int("schema", 1).Str("label", _request.label).Str("scene", scene)
                 .Int("seed", RunManager.Instance.RunSeed).Str("pilot", _request.pilot).Num("dt", _request.captureDeltaTime)
                 .Str("captain", V3CaptainSelection.Selected.ToString()).Str("unity", Application.unityVersion)
-                .Str("platform", Application.isEditor ? "editor" : Application.platform.ToString())
+                .Str("platform", Application.isEditor ? "editor" : Application.platform.ToString()).Str("screen", $"{Screen.width}x{Screen.height}")
                 .Num("bossAt", _request.bossAtSeconds).Num("killBossAt", _request.killBossAtSeconds).Str("commit", _request.commit).Str("visualPins", "skinned-offscreen+always-animate").Str("configHash", StageBalanceProfileContext.Export?.ContentHash));
         }
 
@@ -329,11 +329,17 @@ namespace RoguePirates.V4.DevTools.Trace
                 ? Path.Combine(Application.persistentDataPath, $"v4-trace-{_request.label}.jsonl")
                 : _request.outPath;
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path)));
-            File.WriteAllLines(path, _lines);
+            // Write then rename, so a watcher never reads a half-written trace.
+            var partial = path + ".partial";
+            File.WriteAllLines(partial, _lines);
+            if (File.Exists(path)) File.Delete(path);
+            File.Move(partial, path);
             Debug.Log($"V4 trace written: {path} ({_lines.Count} lines, {reason})");
 
 #if UNITY_EDITOR
             if (_request.stopPlayModeWhenDone) UnityEditor.EditorApplication.isPlaying = false;
+#else
+            if (_request.stopPlayModeWhenDone) Application.Quit();
 #endif
         }
 
