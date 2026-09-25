@@ -503,6 +503,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WeaponSlot_2
       objectReference: {fileID: 0}
+    - target: {fileID: 5730827492827576582, guid: 9ac28f64c927445969f862e37ff8b0a3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8412291910394858123, guid: 9ac28f64c927445969f862e37ff8b0a3, type: 3}
       propertyPath: m_Sprite
       value: 

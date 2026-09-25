@@ -16,17 +16,53 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 9e0c6caa9517d4fb7beb419ccc07972e, type: 3}
+    - target: {fileID: 1991424296980435979, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
+      propertyPath: m_Value
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2442209246052857843, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: b84e9cbcca2644c1caf85d4b183da329, type: 3}
     - target: {fileID: 3322750796169827429, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0.92
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3575041635524001557, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
       propertyPath: m_Name
       value: StatBar_Experience
+      objectReference: {fileID: 0}
+    - target: {fileID: 3997406061207299727, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3997406061207299727, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3997406061207299727, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3997406061207299727, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 4956123127622454026, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4956123127622454026, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4956123127622454026, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 4956123127622454026, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7936056294924735060, guid: 14b3fbc3c94184cefa8a6129908b4ff9, type: 3}
       propertyPath: m_Pivot.x
