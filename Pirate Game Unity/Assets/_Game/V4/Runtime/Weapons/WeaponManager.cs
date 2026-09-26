@@ -112,6 +112,11 @@ namespace RoguePirates.V4.Weapons
             _summon.TickSkiffs(dt);
             _fan.TickFollowUps(dt);
             var itemAttackSpeed = _c.Mods.ItemAttackSpeedMultiplier;
+            var rules = Rules;
+            // R-22 fixes: item attack speed once (V3 also sped up the countdown), and the overshoot past zero carried
+            // into the next cooldown (V3 dropped it), capped at one frame so a weapon that waited does not catch up.
+            var countdown = rules != null && rules.itemAttackSpeedAppliedOnce ? 1f : itemAttackSpeed;
+            var carry = rules != null && rules.carryCooldownOvershoot;
             for (var wi = 0; wi < _slots.Count; wi++)
             {
                 var w = _slots[wi];
@@ -122,16 +127,17 @@ namespace RoguePirates.V4.Weapons
                     continue;
                 }
 
-                w.CooldownTimer -= dt * itemAttackSpeed;
+                w.CooldownTimer -= dt * countdown;
                 if (w.CooldownTimer > 0f) continue;
 
                 var cd = WeaponStatResolver.Cooldown(w, _c.Mods, itemAttackSpeed);
+                var next = carry ? cd + Mathf.Max(w.CooldownTimer, -dt * countdown) : cd;
                 if (w.BurstShotsLeft > 0)
                 {
                     if (_projectile.FireBurstShot(w) == WeaponFireOutcome.Emitted)
                     {
                         w.BurstShotsLeft--;
-                        w.CooldownTimer = cd;
+                        w.CooldownTimer = w.BurstShotsLeft > 0 && !w.Config.projectile.v3FullCooldownAfterFirstShot ? w.Config.projectile.burstGapSeconds : next;
                         _c.RecordEmission(w);
                     }
                     continue;
@@ -139,7 +145,8 @@ namespace RoguePirates.V4.Weapons
 
                 if (FirePattern(w) == WeaponFireOutcome.Emitted)
                 {
-                    w.CooldownTimer = cd;
+                    // R-87 fix: a burst that just started keeps its gap (V3 overwrote it with the full cooldown).
+                    if (!(w.BurstShotsLeft > 0 && !w.Config.projectile.v3FullCooldownAfterFirstShot)) w.CooldownTimer = next;
                     _c.RecordEmission(w);
                 }
             }
@@ -245,7 +252,20 @@ namespace RoguePirates.V4.Weapons
         public void FireLightningSalvo()
         {
             if (_run == null || !_run.Exists || _c.Enemies == null || !_c.Enemies.Exists || _c.Ship == null || !_c.Ship.Exists) return;
-            _strike.FireSalvo(Rules);
+            var rules = Rules;
+            if (rules != null && rules.salvoUsesLightningWeapon)
+            {
+                // R-88 fix: fire the area-strike weapon you have (V3 looked for it by ids no weapon has).
+                SyncLoadout();
+                foreach (var w in _slots)
+                {
+                    if (w.Config == null || w.Config.behavior != Behavior.AreaStrike) continue;
+                    _strike.FireOnce(w);
+                    _c.RecordEmission(w);
+                    return;
+                }
+            }
+            _strike.FireSalvo(rules);
         }
 
         public bool FireSlot(int index)

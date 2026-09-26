@@ -1,0 +1,30 @@
+﻿[rect-before] HAS 46,191,563,638
+[is-playing] no
+[begin] started
+[is-playing] OK playing
+[lab-start] OK
+[solo-mortar] mortar
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[shell] WAIT
+[shell] WAIT
+[shell] WAIT
+[shell] WAIT
+[shell] WAIT
+[shell] WAIT
+[shell] WAIT
+[shell] OK shell in flight
+[shot] mortar-ring.png
+[solo-lightning] lightning
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[shot] chain-lightning.png
+[restore] ok
+[rect-restore] restored

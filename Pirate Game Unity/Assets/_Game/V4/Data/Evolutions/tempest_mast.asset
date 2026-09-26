@@ -22,6 +22,7 @@ MonoBehaviour:
   requiredItemId: copper_conductor
   effect: 6
   laneBurst:
+    laneArcDegrees: 40
     pellets: 5
     spreadDegrees: 55
     rayLength: 6
@@ -54,6 +55,7 @@ MonoBehaviour:
     jumpRadiusFactor: 0.75
     jumpDamageMultiplier: 0.65
     jumpProcMultiplier: 0.8
+    extraChainTargets: 2
     delayedSeconds: 0.85
     delayedRadiusFactor: 0.8
     delayedDamageMultiplier: 0.55

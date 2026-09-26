@@ -199,6 +199,7 @@ namespace RoguePirates.V4.Legacy
         public void LightningStrike(Vector3 position, float radius) => Juice?.OnLightningStrike(position, radius);
         public void FlameBurst(Vector3 origin, Vector3 aim) => Juice?.OnFlamethrowerBurst(origin, aim);
         public void AreaTelegraph(Vector3 position, float radius) => Juice?.OnMortarTelegraph(position, radius);
+        public void TimedRing(Vector3 position, float radius, float seconds) => LegacyHazardTelegraphView.ShowTimedRing(position, radius, seconds);
         // No random stream: V4 already made V3's draws (R-70); the bursts use the effect's own fallback spread.
         public void AreaImpact(Vector3 position, float radius) => Juice?.OnMortarImpact(position, radius, null);
         public void BurningPatch(Vector3 position, float radius) => Juice?.OnBurningOilDropped(position, radius);
@@ -311,7 +312,8 @@ namespace RoguePirates.V4.Legacy
             var w = list[index];
             w.cooldownTimer = state.CooldownTimer;
             w.swivelAwaitingSecond = state.AwaitingBurstShot;
-            w.flameStreamRemaining = state.StreamRemaining;
+            // V4's FlameStreamPresenter draws the stream; the juice controller's copy (1 particle a second) stays idle.
+            w.flameStreamRemaining = 0f;
             w.flameRechargeRemaining = state.RechargeRemaining;
             w.flameTickTimer = state.StreamTickTimer;
         }

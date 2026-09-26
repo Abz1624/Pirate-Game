@@ -16,8 +16,12 @@ MonoBehaviour:
   schemaVersion: 1
   balanceVersion: saltwind-v3-parity
   fireAllOrbitVolleySeconds: 2
+  itemAttackSpeedAppliedOnce: 1
+  carryCooldownOvershoot: 1
   salvoRange: 18
   salvoRadius: 3.5
   salvoDamage: 12
   salvoProcCoefficient: 0.35
   salvoLedgerId: captain_roxie_salvo
+  salvoUsesLightningWeapon: 1
+  salvoLevelFactor: 1

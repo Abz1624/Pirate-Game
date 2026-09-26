@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using HighSeas.Combat;
 using UnityEngine;
@@ -34,6 +35,54 @@ namespace RoguePirates.V4.Legacy
             new GameObject("V4HazardTelegraphs").AddComponent<LegacyHazardTelegraphView>();
         }
 
+        static readonly Color TimedColor = new Color(1f, 0.45f, 0.1f, 0.95f);
+
+        struct TimedRing
+        {
+            public Vector3 Center;
+            public float Radius, Total, Left;
+        }
+
+        readonly List<TimedRing> _timed = new List<TimedRing>();
+        readonly List<(LineRenderer outline, LineRenderer fill)> _timedViews = new List<(LineRenderer, LineRenderer)>();
+
+        /// <summary>
+        /// A landing ring whose inner ring fills over exactly <paramref name="seconds"/> of run time (V4 mortar shells, R-27
+        /// fix: V3's reticle showed 1.1 s for a 0.6 s shell).
+        /// </summary>
+        public static void ShowTimedRing(Vector3 center, float radius, float seconds)
+        {
+            Ensure();
+            var view = FindFirstObjectByType<LegacyHazardTelegraphView>();
+            if (view != null) view._timed.Add(new TimedRing { Center = center, Radius = radius, Total = Mathf.Max(0.01f, seconds), Left = seconds });
+        }
+
+        void TickTimedRings()
+        {
+            var paused = HighSeas.Core.RunManager.Instance != null && HighSeas.Core.RunManager.Instance.IsPaused;
+            for (var i = _timed.Count - 1; i >= 0; i--)
+            {
+                var ring = _timed[i];
+                if (!paused) ring.Left -= Time.deltaTime;
+                if (ring.Left <= 0f) { _timed.RemoveAt(i); continue; }
+                _timed[i] = ring;
+            }
+            while (_timedViews.Count < _timed.Count)
+                _timedViews.Add((CreateRing("TimedOutline" + _timedViews.Count), CreateRing("TimedFill" + _timedViews.Count)));
+            for (var i = 0; i < _timedViews.Count; i++)
+            {
+                var (outline, fill) = _timedViews[i];
+                var visible = i < _timed.Count;
+                if (outline.gameObject.activeSelf != visible) outline.gameObject.SetActive(visible);
+                if (fill.gameObject.activeSelf != visible) fill.gameObject.SetActive(visible);
+                if (!visible) continue;
+                var ring = _timed[i];
+                var progress = 1f - Mathf.Clamp01(ring.Left / ring.Total);
+                SetCircle(outline, ring.Center, ring.Radius, TimedColor, 0.3f);
+                SetCircle(fill, ring.Center, Mathf.Max(0.05f, ring.Radius * progress), new Color(TimedColor.r, TimedColor.g, TimedColor.b, 0.55f + 0.4f * progress), 0.45f);
+            }
+        }
+
         void Awake()
         {
             _material = new Material(Shader.Find("Sprites/Default"));
@@ -46,6 +95,7 @@ namespace RoguePirates.V4.Legacy
 
         void LateUpdate()
         {
+            TickTimedRings();
             if (!(SlotsField?.GetValue(null) is System.Array slots)) return;
             if (_outline == null || _outline.Length != slots.Length) Allocate(slots.Length);
             for (var i = 0; i < slots.Length; i++)

@@ -7,6 +7,8 @@ namespace RoguePirates.V4.Config
     [Serializable]
     public sealed class LaneBurstBlock
     {
+        [Tooltip("Register R-18 fix: the lane's arc in degrees (V3 used the weapon's 360°, so it hit everything within range). 0 = the weapon's arc.")]
+        public float laneArcDegrees = 40f;
         public int pellets = 5;
         public float spreadDegrees = 55f, rayLength = 6f, hitRadius = 0.75f, damageMultiplier = 0.35f, procCoefficient = 0.7f, sizeBase = 0.22f, lifeSeconds = 2f;
     }
@@ -47,6 +49,7 @@ namespace RoguePirates.V4.Config
     public sealed class JumpStrikeBlock
     {
         public float jumpRange = 9f, jumpRadiusFactor = 0.75f, jumpDamageMultiplier = 0.65f, jumpProcMultiplier = 0.8f;
+        [Tooltip("With chain lightning (R-19): extra chain targets instead of the area jump strike.")] public int extraChainTargets = 2;
         public float delayedSeconds = 0.85f, delayedRadiusFactor = 0.8f, delayedDamageMultiplier = 0.55f, delayedProcMultiplier = 0.5f;
     }
 

@@ -58,7 +58,7 @@ MonoBehaviour:
     displayFormat: 
   procCoefficient: 0.35
   projectileColor: {r: 1, g: 1, b: 1, a: 1}
-  levelDamageFactor: 0
+  levelDamageFactor: 1
   runtimeCatalogWeapon: 0
   projectileVisual:
     prefab: {fileID: 3274285418519690880, guid: a56db32405bb24ee290e68352d967ccd, type: 3}
@@ -81,6 +81,7 @@ MonoBehaviour:
     tarSlowBoss: 0.125
     controlSecondsPerHit: 1.2
     splashOnDespawn: 1
+    v3FullCooldownAfterFirstShot: 0
   lane:
     enabled: 0
     beam: 0
@@ -130,6 +131,12 @@ MonoBehaviour:
     radiusBase: 3.5
     radiusPerQuantity: 0.5
     shockSeconds: 0.5
+    chain: 1
+    chainTargets: 4
+    chainTargetsPerQuantity: 1
+    chainRange: 7
+    chainFalloff: 0.85
+    chainStrikeRadius: 1.4
   aura:
     radiusBase: 4
     damageMultiplier: 0.35
@@ -137,7 +144,8 @@ MonoBehaviour:
   predictedArea:
     impactDelaySeconds: 0.6
     telegraphHeight: 0.2
-    v3ImpactEffectDraws: 1
+    v3ImpactEffectDraws: 0
+    telegraphMatchesImpact: 1
   summon:
     backOffset: 5.5
     lateralOffset: 2.4

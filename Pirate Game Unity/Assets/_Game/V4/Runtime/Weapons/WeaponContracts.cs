@@ -108,6 +108,8 @@ namespace RoguePirates.V4.Weapons
         void LightningStrike(Vector3 position, float radius);
         void FlameBurst(Vector3 origin, Vector3 aim);
         void AreaTelegraph(Vector3 position, float radius);
+        /// <summary>A landing ring that fills over exactly <paramref name="seconds"/> (mortar, R-27 fix).</summary>
+        void TimedRing(Vector3 position, float radius, float seconds);
         void AreaImpact(Vector3 position, float radius);
         void BurningPatch(Vector3 position, float radius);
         void WaterSplash(Vector3 position);

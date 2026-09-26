@@ -46,6 +46,11 @@ namespace RoguePirates.V4.Presentation
             // M5: player projectile views (the weapon module looks them up in the run context).
             Projectiles = new Weapons.ProjectileViewPresenter(Pools, game.Config, Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings"));
             game.Context?.Replace<RoguePirates.V4.Weapons.IProjectileViews>(Projectiles);
+            // M5 playtest fix: the flamethrower stream (the existing stream effect at its authored emission).
+            var flame = GetComponent<Weapons.FlameStreamPresenter>();
+            if (flame == null) flame = gameObject.AddComponent<Weapons.FlameStreamPresenter>();
+            if (game.Context != null && game.Context.TryGet<RoguePirates.V4.Weapons.IWeaponManager>(out var weapons))
+                flame.Bind(weapons, Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings"));
         }
 
         void OnDestroy()

@@ -495,6 +495,49 @@ namespace RoguePirates.V4.Editor
             return log.ToString();
         }
 
+        [MenuItem("RoguePirates/V4/Apply M5 Playtest Fixes")]
+        static void ApplyM5PlaytestFixesFromMenu() => Debug.Log(ApplyM5PlaytestFixes());
+
+        /// <summary>
+        /// Fixes approved at the M5 gate, in place and idempotent (the v3-parity preset turns each back off): the level
+        /// factor on every weapon (R-21), Broadside Quantity (R-22), chain lightning (R-19), the Stormshot lane arc (R-18),
+        /// Swivel's burst gap (R-87), the mortar ring and no effect draws (R-27, R-70), item attack speed once, cooldown
+        /// overshoot carried and Roxie's salvo (R-22, R-88 in the weapon rules).
+        /// </summary>
+        public static string ApplyM5PlaytestFixes()
+        {
+            var log = new StringBuilder();
+            foreach (var guid in AssetDatabase.FindAssets("t:WeaponConfig", new[] { DataRoot + "/Weapons" }))
+            {
+                var w = AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                w.levelDamageFactor = true;
+                w.projectile.v3FullCooldownAfterFirstShot = false;
+                w.predictedArea.v3ImpactEffectDraws = false;
+                w.predictedArea.telegraphMatchesImpact = true;
+                w.areaStrike.chain = true;
+                if (w.behavior == ConfigEnums.WeaponBehavior.Fan) w.fan.quantityAddsPellets = true;
+                EditorUtility.SetDirty(w);
+            }
+            foreach (var guid in AssetDatabase.FindAssets("t:WeaponEvolutionConfig", new[] { DataRoot + "/Evolutions" }))
+            {
+                var e = AssetDatabase.LoadAssetAtPath<WeaponEvolutionConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                if (e.laneBurst.laneArcDegrees <= 0f) e.laneBurst.laneArcDegrees = 40f;
+                EditorUtility.SetDirty(e);
+            }
+            var rules = AssetDatabase.LoadAssetAtPath<WeaponRulesConfig>(WeaponRulesPath);
+            if (rules != null)
+            {
+                rules.itemAttackSpeedAppliedOnce = true;
+                rules.carryCooldownOvershoot = true;
+                rules.salvoUsesLightningWeapon = true;
+                rules.salvoLevelFactor = 1f;
+                EditorUtility.SetDirty(rules);
+            }
+            AssetDatabase.SaveAssets();
+            log.AppendLine("M5 playtest fixes applied (R-18, R-19, R-21, R-22, R-27, R-70, R-87, R-88)");
+            return log.ToString();
+        }
+
         static ConfigEnums.EvolutionEffect EvolutionEffectOf(string modifierId) => modifierId switch
         {
             "stormshot_cannon" => ConfigEnums.EvolutionEffect.LaneWithBurst,

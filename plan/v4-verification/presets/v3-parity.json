@@ -153,6 +153,124 @@
                     "value": "enemy.cannonboat"
                 }
             ]
+        },
+        {
+            "configId": "weapon.broadside_battery",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "levelDamageFactor",
+                    "value": "false"
+                },
+                {
+                    "path": "fan.quantityAddsPellets",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.flying_cutlasses",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "levelDamageFactor",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.flamethrower",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "levelDamageFactor",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.powder_kegs",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "levelDamageFactor",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.lightning_mast",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "levelDamageFactor",
+                    "value": "false"
+                },
+                {
+                    "path": "areaStrike.chain",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.mortar",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "levelDamageFactor",
+                    "value": "false"
+                },
+                {
+                    "path": "predictedArea.v3ImpactEffectDraws",
+                    "value": "true"
+                },
+                {
+                    "path": "predictedArea.telegraphMatchesImpact",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.swivel_guns",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "projectile.v3FullCooldownAfterFirstShot",
+                    "value": "true"
+                }
+            ]
+        },
+        {
+            "configId": "evolution.stormshot_cannon",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "laneBurst.laneArcDegrees",
+                    "value": "0"
+                }
+            ]
+        },
+        {
+            "configId": "weapon_rules",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "itemAttackSpeedAppliedOnce",
+                    "value": "false"
+                },
+                {
+                    "path": "carryCooldownOvershoot",
+                    "value": "false"
+                },
+                {
+                    "path": "salvoUsesLightningWeapon",
+                    "value": "false"
+                },
+                {
+                    "path": "salvoLevelFactor",
+                    "value": "0"
+                }
+            ]
         }
     ]
 }

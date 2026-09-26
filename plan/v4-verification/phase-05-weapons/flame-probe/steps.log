@@ -1,0 +1,23 @@
+﻿[rect-before] HAS 46,191,563,638
+[is-playing] no
+[begin] started
+[is-playing] OK playing
+[lab-start] OK
+[solo] solo flamethrower
+[probe-0] v4 stream 0.00 recharge 0.00 | record streaming False (0.00) | juice found=True enabled=True active=True juiceWeapons=record port=FlamethrowerStreamMount emitting=False
+[probe-1] v4 stream 1.27 recharge 0.00 | record streaming False (0.00) | juice found=True enabled=True active=True juiceWeapons=record port=FlamethrowerStreamMount emitting=False
+[probe-2] v4 stream 0.00 recharge 0.50 | record streaming False (0.00) | juice found=True enabled=True active=True juiceWeapons=record port=FlamethrowerStreamMount emitting=False
+[probe-3] v4 stream 1.95 recharge 0.00 | record streaming False (0.00) | juice found=True enabled=True active=True juiceWeapons=record port=FlamethrowerStreamMount emitting=False
+[probe-4] v4 stream 0.61 recharge 0.00 | record streaming False (0.00) | juice found=True enabled=True active=True juiceWeapons=record port=FlamethrowerStreamMount emitting=False
+[probe-5] v4 stream 2.61 recharge 0.00 | record streaming False (0.00) | juice found=True enabled=True active=True juiceWeapons=record port=FlamethrowerStreamMount emitting=False
+[probe-6] v4 stream 1.28 recharge 0.00 | record streaming False (0.00) | juice found=True enabled=True active=True juiceWeapons=record port=FlamethrowerStreamMount emitting=False
+[probe-7] v4 stream 0.00 recharge 0.51 | record streaming False (0.00) | juice found=True enabled=True active=True juiceWeapons=record port=FlamethrowerStreamMount emitting=False
+[streaming] OK
+[v4flame] presenter emitting=True particles=24 | juice stream idle=True
+[shot] flame-v4-streaming.png
+[recharging] WAIT
+[recharging] WAIT
+[recharging] WAIT
+[recharging] OK
+[v4flame-off] presenter emitting=False
+[rect-restore] restored

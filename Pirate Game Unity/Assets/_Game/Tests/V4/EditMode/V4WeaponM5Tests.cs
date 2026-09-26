@@ -89,7 +89,7 @@ namespace RoguePirates.V4.Tests
             public float CaptainWeaponMultiplier(string weaponId) => 1f;
             public float ItemGlobalDamageMultiplier => 1f;
             public float ItemCritChanceBonus => 0f;
-            public float ItemAttackSpeedMultiplier => 1f;
+            public float ItemAttackSpeedMultiplier { get; set; } = 1f;
             public float FlameRangeMultiplier => 1f;
             public float BurnDamageMultiplier => 1f;
             public float PowderKegBlastRadiusMultiplier => 1f;
@@ -167,9 +167,18 @@ namespace RoguePirates.V4.Tests
             public WeaponCombat Combat;
             public WeaponManager Manager;
 
-            public Harness(params string[] weaponIds)
+            public Harness(params string[] weaponIds) : this(false, weaponIds) { }
+
+            /// <summary>v3Parity: the v3-parity preset applied (every approved fix off: V3's behavior).</summary>
+            public Harness(bool v3Parity, params string[] weaponIds)
             {
                 Config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+                if (v3Parity)
+                {
+                    var errors = new List<string>();
+                    var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "..", "plan", "v4-verification", "presets", "v3-parity.json"));
+                    Assert.IsTrue(PresetCodec.Apply(Config, PresetCodec.FromJson(System.IO.File.ReadAllText(path)), 0f, errors), string.Join("\n", errors));
+                }
                 Combat = new WeaponCombat
                 {
                     Enemies = Enemies, Damage = Enemies, Ship = Ship, Mods = Mods, Hooks = Hooks, Random = Random,
@@ -201,7 +210,7 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void EveryWeapon_HasItsV3Behavior_AndConstants()
         {
-            using var h = new Harness();
+            using var h = new Harness(true);
             var w = h.Config.All<WeaponConfig>().ToDictionary(c => c.weaponId);
             Assert.AreEqual(ConfigEnums.WeaponBehavior.Projectile, w["deck_cannons"].behavior);
             Assert.AreEqual(ConfigEnums.WeaponBehavior.Fan, w["broadside_battery"].behavior);
@@ -283,7 +292,7 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void SwivelGuns_UseTheFullCooldownBetweenShots_AsV3Did()
         {
-            using var h = new Harness("swivel_guns");
+            using var h = new Harness(true, "swivel_guns");
             h.Enemies.Add(new Vector3(0f, 0f, 5f));
             h.Tick(1);
             var slot = h.Slot("swivel_guns");
@@ -316,7 +325,7 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void Mortar_Impact_MakesV3sEffectDraws()
         {
-            using var h = new Harness("mortar");
+            using var h = new Harness(true, "mortar");
             h.Enemies.Add(new Vector3(0f, 0f, 10f));
             h.Tick(1);
             Assert.AreEqual(1, h.Combat.Strikes.Count);
@@ -379,7 +388,7 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void LightningSalvo_StrikesForOneDamage_AsV3Did()
         {
-            using var h = new Harness("lightning_mast");
+            using var h = new Harness(true, "lightning_mast");
             h.Enemies.Add(new Vector3(0f, 0f, 5f));
             h.Manager.FireLightningSalvo();
             Assert.AreEqual(1, h.Enemies.Damage.Count, "the fallback strike, not the lightning weapon (register R-88)");
@@ -388,9 +397,9 @@ namespace RoguePirates.V4.Tests
 
         // ---- Evolutions (data on the behaviors) ------------------------------------------------------------------
 
-        static Harness Evolved(string weaponId, string evolutionId)
+        static Harness Evolved(string weaponId, string evolutionId, bool v3Parity = false)
         {
-            var h = new Harness(weaponId);
+            var h = new Harness(v3Parity, weaponId);
             h.Loadout.Entries[0].Evolution = evolutionId;
             h.Manager.SyncLoadout();
             Assert.IsNotNull(h.Slot(weaponId).Evolution, evolutionId + " resolved from config");
@@ -400,7 +409,7 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void Stormshot_FiresArcLanes_WithABurstFromTheFirstHit()
         {
-            using var h = Evolved("deck_cannons", "stormshot_cannon");
+            using var h = Evolved("deck_cannons", "stormshot_cannon", v3Parity: true);
             for (var i = 0; i < 4; i++) h.Enemies.Add(new Vector3(-3f + 2f * i, 0f, 8f + i));
             h.Manager.Tick(1f / 60f);
             Assert.AreEqual(4, h.Enemies.Damage.Count(d => d.weapon == "deck_cannons"), "the lane hits every enemy in its arc and range (R-18: arc 360)");
@@ -469,6 +478,109 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(h.Enemies.Damage.Any(d => d.index == far), "the jump strike hits the next enemy");
             Assert.AreEqual(1, h.Combat.Strikes.Count, "a delayed strike on the cluster");
             Assert.IsFalse(h.Combat.Strikes[0].AreaShell);
+        }
+
+        // ---- Fixes approved at the M5 gate (on by default; the v3-parity preset turns them off) ---------------------
+
+        [Test]
+        public void ParityPreset_TurnsEveryM5FixOff()
+        {
+            using var fixedRun = new Harness();
+            using var v3 = new Harness(true);
+            WeaponConfig W(Harness h, string id) => h.Config.All<WeaponConfig>().First(c => c.weaponId == id);
+            Assert.IsTrue(fixedRun.Config.All<WeaponConfig>().All(c => c.levelDamageFactor), "R-21: the level factor on every weapon");
+            Assert.IsTrue(W(fixedRun, "broadside_battery").fan.quantityAddsPellets, "R-22: Broadside takes Quantity");
+            Assert.IsTrue(W(fixedRun, "lightning_mast").areaStrike.chain, "R-19: chain lightning");
+            Assert.IsFalse(W(fixedRun, "swivel_guns").projectile.v3FullCooldownAfterFirstShot, "R-87");
+            Assert.IsFalse(W(fixedRun, "mortar").predictedArea.v3ImpactEffectDraws, "R-70");
+            Assert.IsTrue(W(fixedRun, "mortar").predictedArea.telegraphMatchesImpact, "R-27");
+            var rules = fixedRun.Config.All<WeaponRulesConfig>().First();
+            Assert.IsTrue(rules.itemAttackSpeedAppliedOnce && rules.carryCooldownOvershoot && rules.salvoUsesLightningWeapon && rules.salvoLevelFactor == 1f, "R-22, R-88");
+            Assert.AreEqual(40f, fixedRun.Config.All<WeaponEvolutionConfig>().First(e => e.evolutionId == "stormshot_cannon").laneBurst.laneArcDegrees, "R-18");
+
+            CollectionAssert.AreEquivalent(new[] { "deck_cannons", "harpoon_gun", "long_nine", "swivel_guns" }, v3.Config.All<WeaponConfig>().Where(c => c.levelDamageFactor).Select(c => c.weaponId));
+            Assert.IsFalse(W(v3, "broadside_battery").fan.quantityAddsPellets);
+            Assert.IsFalse(W(v3, "lightning_mast").areaStrike.chain);
+            Assert.IsTrue(W(v3, "swivel_guns").projectile.v3FullCooldownAfterFirstShot);
+            Assert.IsTrue(W(v3, "mortar").predictedArea.v3ImpactEffectDraws);
+            var v3Rules = v3.Config.All<WeaponRulesConfig>().First();
+            Assert.IsFalse(v3Rules.itemAttackSpeedAppliedOnce || v3Rules.carryCooldownOvershoot || v3Rules.salvoUsesLightningWeapon);
+            Assert.AreEqual(0f, v3Rules.salvoLevelFactor);
+            Assert.AreEqual(0f, v3.Config.All<WeaponEvolutionConfig>().First(e => e.evolutionId == "stormshot_cannon").laneBurst.laneArcDegrees);
+        }
+
+        [Test]
+        public void R87_SwivelBurst_KeepsItsGap()
+        {
+            using var h = new Harness("swivel_guns");
+            h.Enemies.Add(new Vector3(0f, 0f, 5f));
+            h.Tick(1);
+            var slot = h.Slot("swivel_guns");
+            Assert.AreEqual(0.18f, slot.CooldownTimer, 1e-5f, "the second shot comes 0.18 s later");
+            h.Tick(12);
+            Assert.AreEqual(2, h.Hooks.Emissions.Count, "both shots of the burst");
+        }
+
+        [Test]
+        public void R19_ChainLightning_JumpsToTheNearestUnhitEnemies_WithFalloff()
+        {
+            using var h = new Harness("lightning_mast");
+            for (var i = 0; i < 7; i++) h.Enemies.Add(new Vector3(0f, 0f, 6f + 5f * i)); // 5 m apart, a line away from the ship
+            h.Manager.Tick(1f / 60f);
+            var a = h.Config.All<WeaponConfig>().First(c => c.weaponId == "lightning_mast").areaStrike;
+            Assert.AreEqual(a.chainTargets, h.Enemies.Damage.Count, "chainTargets hits, one per enemy along the chain");
+            CollectionAssert.AreEqual(Enumerable.Range(0, a.chainTargets).ToArray(), h.Enemies.Damage.Select(d => d.index).ToArray(), "nearest first");
+            var ratio = h.Enemies.Damage[1].amount / h.Enemies.Damage[0].amount;
+            Assert.AreEqual(a.chainFalloff, ratio, 0.35f, "each jump deals less (crits aside)");
+            Assert.AreEqual(a.chainTargets, h.Enemies.Statuses.Count(st => st.status == WeaponStatus.Shock));
+        }
+
+        [Test]
+        public void R18_Stormshot_LaneHasANarrowArc()
+        {
+            using var h = Evolved("deck_cannons", "stormshot_cannon");
+            h.Enemies.Add(new Vector3(0f, 0f, 10f));   // ahead: the target
+            h.Enemies.Add(new Vector3(8f, 0f, 3f));    // far off the aim line, still in range
+            h.Manager.Tick(1f / 60f);
+            Assert.AreEqual(1, h.Enemies.Damage.Count(d => d.weapon == "deck_cannons"), "only enemies inside the 40° lane");
+        }
+
+        [Test]
+        public void R22_ItemAttackSpeed_AppliesOnce_AndOvershootCarries()
+        {
+            using var v3 = new Harness(true, "deck_cannons");
+            using var fixedRun = new Harness("deck_cannons");
+            foreach (var h in new[] { v3, fixedRun })
+            {
+                h.Mods.ItemAttackSpeedMultiplier = 2f;
+                h.Enemies.Add(new Vector3(0f, 0f, 6f));
+            }
+            v3.Tick(300);
+            fixedRun.Tick(300);
+            var cd = WeaponStatResolver.Cooldown(fixedRun.Slot("deck_cannons"), fixedRun.Mods, 2f);
+            Assert.AreEqual(300f / 60f / cd, fixedRun.Hooks.Emissions.Count, 1.5f, "one shot per cooldown");
+            Assert.Greater(v3.Hooks.Emissions.Count, fixedRun.Hooks.Emissions.Count * 1.6f, "V3 applied the item bonus twice");
+        }
+
+        [Test]
+        public void R88_Salvo_FiresTheLightningWeapon()
+        {
+            using var h = new Harness("lightning_mast");
+            h.Enemies.Add(new Vector3(0f, 0f, 5f));
+            h.Manager.FireLightningSalvo();
+            CollectionAssert.Contains(h.Hooks.Emissions, "lightning_mast");
+            Assert.Greater(h.Enemies.Damage[0].amount, 1f);
+        }
+
+        [Test]
+        public void R70_Mortar_NoLongerDrawsForItsEffect()
+        {
+            using var h = new Harness("mortar");
+            h.Enemies.Add(new Vector3(0f, 0f, 10f));
+            h.Tick(1);
+            var before = h.Random.Draws;
+            h.Tick(40);
+            Assert.AreEqual(1, h.Random.Draws - before, "only the crit roll for the enemy hit");
         }
 
         // ---- Projectiles and loadout -------------------------------------------------------------------------------

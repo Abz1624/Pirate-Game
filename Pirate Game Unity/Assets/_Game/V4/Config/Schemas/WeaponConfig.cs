@@ -28,6 +28,8 @@ namespace RoguePirates.V4.Config
         [Tooltip("Hits apply Tarred and count control time (V3 Harpoon Gun).")] public bool tarOnHit;
         public float tarSlow = 0.25f, tarSlowBoss = 0.125f, controlSecondsPerHit = 1.2f;
         public bool splashOnDespawn = true;
+        [Tooltip("V3 (register R-87): the tick path overwrote the burst gap with the full cooldown, so the second shot came a cooldown later. Off = the burst keeps its gap (approved fix).")]
+        public bool v3FullCooldownAfterFirstShot;
     }
 
     /// <summary>How this weapon's projectiles look (V3 picked these by weapon id in ProjectileWorld).</summary>
@@ -109,6 +111,11 @@ namespace RoguePirates.V4.Config
     public sealed class AreaStrikeBlock
     {
         public float radiusBase = 3.5f, radiusPerQuantity = 0.5f, shockSeconds = 0.5f;
+        [Tooltip("Chain lightning (register R-19 fix): hit the target, then jump to the nearest enemy not yet hit within chainRange, chainTargets + chainTargetsPerQuantity × quantity times, each jump dealing chainFalloff of the last. Off = V3's area strike around the target.")]
+        public bool chain = true;
+        public int chainTargets = 4, chainTargetsPerQuantity = 1;
+        public float chainRange = 7f, chainFalloff = 0.85f;
+        [Tooltip("Size of each strike effect on a chained enemy.")] public float chainStrikeRadius = 1.4f;
     }
 
     /// <summary>Damage around the ship (aura weapons).</summary>
@@ -124,7 +131,9 @@ namespace RoguePirates.V4.Config
     {
         public float impactDelaySeconds = 0.6f;
         public float telegraphHeight = 0.2f;
-        [Tooltip("Draw the combat-stream numbers V3's impact effect drew (register R-70), so crit rolls stay aligned with V3.")] public bool v3ImpactEffectDraws = true;
+        [Tooltip("V3 (register R-70): the impact effect drew from the combat stream. On only for exact V3 comparisons.")] public bool v3ImpactEffectDraws;
+        [Tooltip("Register R-27 fix: the landing ring lasts exactly the impact delay (V3's reticle showed 1.1 s for a 0.6 s shell). Off = V3's reticle.")]
+        public bool telegraphMatchesImpact = true;
     }
 
     /// <summary>Boarding skiffs that chase a target (Boarding Party).</summary>

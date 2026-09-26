@@ -71,3 +71,14 @@ No blockers. Fixed: a captain active pressed on the frame its cooldown expired w
 1. **Module Lab** (`V4ModuleLab`): F1 → Weapons → **Solo** each weapon; spawn enemies (Module Lab section) and watch it fire. Try **Fire**, **+1**, and **Evolve** on Deck Cannons (Stormshot lanes) and Flying Cutlasses (Bladed Tide pulse).
 2. F1 → Config → `weapon.deck_cannons` → `baseCooldown` 0.3: it fires much faster at once.
 3. **A full run** from `V4Boot`: level up to several weapons; everything should look and feel exactly like before (it matched V3 hit for hit in the traces).
+
+## Playtest feedback and approved fixes (27 Sep)
+
+**Flamethrower visuals missing** (damage worked): V3's juice controller set the existing `Flamethrower_Stream_VFX` flame particles to 1 particle a second (authored 60), so the stream was nearly invisible (R-89). V4 now shows that same effect at its authored emission while the flamethrower streams (`FlameStreamPresenter`); verified 24 live particles mid-stream, off during recharge (`flame-probe/flame-v4-streaming.png`).
+
+**Fixes approved (R-18 to R-22, R-27, R-70, R-87, R-88)**, each a config value on by default and turned off by the v3-parity preset:
+- R-18 Stormshot lane 40° arc · R-19 chain lightning · R-21 level factor on every weapon · R-22 Broadside takes Quantity, item attack speed once, cooldown overshoot carried · R-27 mortar ring matches its 0.6 s shell · R-70 no effect draws · R-87 Swivel burst keeps its gap · R-88 salvo uses your lightning weapon (level factor 1).
+- **Deferred to M8** (they need the V4 enemy world): Shock, Tarred, Breach and Curse readers, the harpoon tether (R-19/R-20), weapon knockback (R-22).
+- **Balance note:** together these make weapons noticeably stronger (every weapon scales with level, Swivel fires two shots per cooldown, attack speed and cooldowns tighter). All are in F1 → Config.
+
+Verification (targeted, no traces): EditMode 122/122 (new: a test per fix, and the preset restoring V3 for each), weapon PlayMode tests 3/3, Module Lab screenshots of the flame stream and chain lightning.
