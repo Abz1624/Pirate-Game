@@ -1,0 +1,15 @@
+﻿[begin] started
+[menu] OK scene=V4MainMenu
+[play] clicked Set Sail
+[run-start] OK config=saltwind-default hash=c41f8e4b67fb band2 rate=1.8 interval=0.5555556 edits=0
+[god-on] invulnerable for the check
+[console-config] open=True search=ratePerSecond
+[shot] 01-console-config.png
+[live-edit] band2 rate 1.8 -> 4: interval 0.5555556 -> 0.25; edits=1; hash=c3f3ca645601
+[shot] 02-after-live-edit.png
+[restart-with-preset] restart on seed 101 with preset band2x
+[preset-run] OK seed=101 t=3.3 band2 interval=0.25 (preset applied before the run)
+[console-again] open
+[shot] 03-preset-run.png
+[reset-all] reset: band2 rate=1.8 interval=0.5555556
+[console] errors returned=0

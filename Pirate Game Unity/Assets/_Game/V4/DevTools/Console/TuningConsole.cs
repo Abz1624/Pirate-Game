@@ -35,11 +35,17 @@ namespace RoguePirates.V4.DevTools.Console
 
         public V4Game Game { get; private set; }
         public bool IsOpen => _open;
+        /// <summary>The search box text; sections may filter their rows with it.</summary>
+        public string SearchText => _search ?? string.Empty;
 
         public void Bind(V4Game game)
         {
             Game = game;
-            if (_sections.Count == 0) AddSection(new RunSection());
+            if (_sections.Count == 0)
+            {
+                AddSection(new RunSection());
+                AddSection(new ConfigSection());
+            }
         }
 
         public void AddSection(IConsoleSection section)

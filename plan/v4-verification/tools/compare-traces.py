@@ -1,12 +1,14 @@
 """Exact trace comparison outside Unity, same rules as TraceComparer.CompareExact:
 key header fields must agree, and every non-header line must match with frame numbers ("f") ignored.
-Usage: python compare-traces.py expected.jsonl actual.jsonl [more pairs...]   (exit 1 if any pair differs)
+Usage: python compare-traces.py [--ignore-preset] expected.jsonl actual.jsonl [more pairs...]   (exit 1 if any pair differs)
+--ignore-preset: for V3-parity runs, where V4 runs with presets/v3-parity.json (restores V3 values that V4 changed
+by decision, e.g. band 0 = 0.6/s) against V3 goldens that have no preset.
 """
 import json
 import re
 import sys
 
-HEADER_KEYS = ["seed", "pilot", "dt", "captain", "platform", "screen", "bossAt", "killBossAt", "configHash", "visualPins"]
+HEADER_KEYS = ["seed", "pilot", "dt", "captain", "platform", "screen", "bossAt", "killBossAt", "killArenaAfter", "configHash", "visualPins", "preset"]
 FRAME = re.compile(r',"f":-?\d+')
 
 
@@ -17,11 +19,15 @@ def load(path):
     return header, events
 
 
+IGNORED = set()
+
+
 def compare(a_path, b_path):
     ha, ea = load(a_path)
     hb, eb = load(b_path)
-    diffs = [f"header {k}: {ha.get(k, '(missing)')} vs {hb.get(k, '(missing)')}"
-             for k in HEADER_KEYS if ha.get(k, "(missing)") != hb.get(k, "(missing)")]
+    defaults = {"preset": "", "killArenaAfter": -1}  # fields that older traces do not have
+    get = lambda h, k: h.get(k, defaults.get(k, "(missing)"))
+    diffs = [f"header {k}: {get(ha, k)} vs {get(hb, k)}" for k in HEADER_KEYS if k not in IGNORED and get(ha, k) != get(hb, k)]
     for i, (x, y) in enumerate(zip(ea, eb)):
         if x != y:
             diffs.append(f"line {i}: {x[:140]}\n        vs {y[:140]}")
@@ -33,6 +39,9 @@ def compare(a_path, b_path):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
+    if args and args[0] == "--ignore-preset":
+        IGNORED.add("preset")
+        args = args[1:]
     failed = False
     for a, b in zip(args[0::2], args[1::2]):
         diffs, n = compare(a, b)

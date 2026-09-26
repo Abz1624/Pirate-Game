@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using RoguePirates.V4.Config;
 using RoguePirates.V4.Events;
 
 namespace RoguePirates.V4
 {
     /// <summary>
-    /// What every module sees: the clock, the event stream, and contract lookup. Config (M1) and read-only views (M6)
-    /// are added here as those modules land.
+    /// What every module sees: the clock, the event stream, the per-run config copy and contract lookup. Read-only
+    /// views (M6) are added here when presentation moves.
     /// </summary>
     public sealed class RunContext
     {
@@ -14,11 +15,14 @@ namespace RoguePirates.V4
 
         public RunClock Clock { get; }
         public CombatEvents Events { get; }
+        /// <summary>Per-run copies of the config set; null in tests that don't need config.</summary>
+        public ConfigSetRuntime Config { get; }
 
-        public RunContext(RunClock clock, CombatEvents events)
+        public RunContext(RunClock clock, CombatEvents events, ConfigSetRuntime config = null)
         {
             Clock = clock ?? throw new ArgumentNullException(nameof(clock));
             Events = events ?? throw new ArgumentNullException(nameof(events));
+            Config = config;
         }
 
         /// <summary>Registers the implementation of a contract. Contracts are interfaces; one implementation each.</summary>

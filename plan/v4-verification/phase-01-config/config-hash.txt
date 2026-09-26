@@ -1,0 +1,4 @@
+# SaltwindDefault V4 config set hash (after the review fixes; the canonical form now includes curve weights and wrap modes)
+c41f8e4b67fb (first 12 hex; logged by the playable check)
+# V3 stage profile export hash (trace header configHash) at default config, unchanged from M0:
+954db823e25f64125d711ed23f97b6b721868b8e9912c3dd7bf6af180497acda

@@ -192,7 +192,7 @@ The code forces a different order from the numbered phases below. A legacy compo
 
 Deviations from the detail blocks:
 - `V4LegacyBridge` keeps a disabled `WeaponController` as LevelSystem's loadout record until M9, not Phase 5, because `LevelSystem.ApplyOffer` writes into it. Other legacy dependencies sit in named `Legacy*` adapters tagged `[DeletedInPhase(n)]`.
-- Band 0 stays at the live spawner rate of **0.6** per second, and the Reef Crab stays at 150 s, until those changes are approved at the M1 and M3 gates.
+- Band 0 spawns **0.5** enemies per second (decided at the M1 gate; V3 runs 0.6). Exact V3 comparisons use the `v3-parity` preset. The Reef Crab stays at 150 s until the M3 gate.
 - Traces: M0–M2 must match V3 event for event. From M3 on they are compared per minute, within the tolerance written in each phase checklist. Goldens use a boss summon at 120 s, because the scripted pilot dies at about 150–225 s.
 - M0 applies the weapon and specialist catalogs to the loaded database exactly as V3 does. Deep-cloning the database moves to M2. The V4 Module Lab keeps its legacy playtest bootstrap until M2.
 
@@ -462,7 +462,7 @@ Phases run one at a time. Each one ends with tests, traces and an automated play
 | Phase | Module | Status | Evidence |
 |---|---|---|---|
 | M0 | Composition root | Passed (feel: playtested 2026-09-26) | `plan/v4-verification/phase-00-composition/` |
-| M1 | Config assets | Not started | `plan/v4-verification/phase-01-config/` |
+| M1 | Config assets | Implemented, awaiting playtest | `plan/v4-verification/phase-01-config/` |
 | M2 | Archetypes and spawners | Not started | `plan/v4-verification/phase-02-archetypes/` |
 | M3 | Wave Timeline and Spawn Controller | Not started | `plan/v4-verification/phase-03-timeline/` |
 | M4 | Pools | Not started | `plan/v4-verification/phase-04-pools/` |

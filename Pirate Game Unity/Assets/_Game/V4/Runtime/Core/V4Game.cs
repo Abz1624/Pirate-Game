@@ -1,9 +1,11 @@
 using System;
+using HighSeas.Balance;
 using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.Player;
 using HighSeas.World;
 using RoguePirates.Simulation;
+using RoguePirates.V4.Config;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Legacy;
 using UnityEngine;
@@ -24,10 +26,16 @@ namespace RoguePirates.V4
         [SerializeField] PlayerShipController player;
         [SerializeField] IslandLayoutDefinition islandLayout;
         [SerializeField] bool usePlaceholderPoiVisuals = true;
+        [Header("Config (M1)")]
+        [Tooltip("The config set this run copies (SaltwindDefault).")]
+        [SerializeField] ConfigSet configSet;
+        [Tooltip("V3 stage profile the per-run profile starts from; fields V4 does not own yet pass through.")]
+        [SerializeField] StageBalanceProfile legacyBaseProfile;
 
         /// <summary>Raised once per run after it starts; DevTools hooks the Tuning Console here (event, not state).</summary>
         public static event Action<V4Game> RunStarted;
 
+        ConfigSetRuntime _config;
         RunClock _clock;
         CombatEvents _events;
         RunContext _context;
@@ -39,6 +47,7 @@ namespace RoguePirates.V4
         bool _objectiveSecured;
 
         public RunContext Context => _context;
+        public ConfigSetRuntime Config => _config;
         public ModuleRegistry Modules => _modules;
         public CombatEvents Events => _events;
         public LegacyRunShell Shell => _shell;
@@ -46,12 +55,16 @@ namespace RoguePirates.V4
 
         void Awake()
         {
-            _clock = new RunClock();
+            _config = configSet != null ? new ConfigSetRuntime(configSet) : null;
+            ApplyRequestedPreset();
+            var run = _config?.Single<RunConfig>();
+            _clock = run != null ? new RunClock(run.tickRate, run.maxStepsPerFrame) : new RunClock();
             _events = new CombatEvents();
-            _context = new RunContext(_clock, _events);
+            _context = new RunContext(_clock, _events, _config);
+            if (_config != null) _config.ConfigChanged += OnConfigChanged;
             _modules = new ModuleRegistry();
             // M0: no V4 modules yet. Each phase registers its module here and removes the legacy piece it replaces.
-            _shell = new LegacyRunShell(this, database, stageBuilder, player, islandLayout, usePlaceholderPoiVisuals);
+            _shell = new LegacyRunShell(this, database, stageBuilder, player, islandLayout, usePlaceholderPoiVisuals, _config, legacyBaseProfile);
             _feed = new LegacyEventFeed(_events, _clock);
             _shell.Awake();
         }
@@ -129,7 +142,23 @@ namespace RoguePirates.V4
             _feed?.Detach();
             _shell?.Unwire();
             _shell?.OnDestroy();
+            if (_config != null) _config.ConfigChanged -= OnConfigChanged;
+            _config?.Dispose();
         }
+
+        /// <summary>A preset requested for this run (console "restart with preset") applies before anything reads config.</summary>
+        void ApplyRequestedPreset()
+        {
+            var json = RunRequest.ConsumePreset();
+            if (_config == null || string.IsNullOrEmpty(json)) return;
+            var errors = new System.Collections.Generic.List<string>();
+            if (!PresetCodec.Apply(_config, PresetCodec.FromJson(json), 0f, errors))
+                Debug.LogWarning("V4Game: preset applied with errors:\n" + string.Join("\n", errors));
+        }
+
+        /// <summary>Every live config edit is also a ConfigChanged fact on the event stream (telemetry, console log).</summary>
+        void OnConfigChanged(ConfigChange change) =>
+            _events.Publish(new CombatEvent(CombatEventKind.ConfigChanged, _clock.TickIndex, _clock.SimTime, 0, 0, 0f, 0f, 0f, change.configId + "." + change.path));
 
         void OnApplicationPause(bool paused) => _shell?.OnApplicationPause(paused);
 

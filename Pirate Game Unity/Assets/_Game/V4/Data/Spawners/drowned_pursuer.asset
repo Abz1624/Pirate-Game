@@ -1,0 +1,103 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b386b888c6b3164f8f59591877eee6c, type: 3}
+  m_Name: drowned_pursuer
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemySpawnerConfig
+  configId: spawner.drowned_pursuer
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  legacyProfileId: drowned_pursuer
+  anchor: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
+  spawnMode: 0
+  groupLayout: 5
+  timing:
+    spawnCount: 1
+    startDelaySeconds: 0
+    triggerTimeSeconds: 0
+    repeatIntervalSeconds: 0
+    durationSeconds: 0
+    spawnIntervalSeconds: 1.5
+    cooldownAfterCompleteSeconds: 0
+    maxActiveFromProfile: 0
+    pauseWhenRunPaused: 1
+  placement:
+    requireOutsidePlayerFov: 1
+    distanceMin: 10.8
+    distanceMax: 18
+    viewportMargin: 0.08
+    positionAttempts: 16
+    allowedArcDegrees: 360
+    arcYawOffset: 0
+    groupSpacing: 2.5
+    fallbackPolicy: 1
+  elite:
+    isElite: 0
+    affix: 0
+    hpMultiplier: 1
+    damageMultiplier: 1
+    speedMultiplier: 1
+    sizeMultiplier: 1
+    goldMultiplier: 1
+    xpMultiplier: 1
+  movement:
+    pattern: 0
+    speedMultiplier: 1
+    turnResponsiveness: 1
+    preferredRange: 10
+    interceptLead: 1
+    orbitRadius: 12
+    orbitDirection: 1
+    flankAngleDegrees: 35
+    chargeWindUpSeconds: 1.5
+    chargeDurationSeconds: 0.35
+    chargeCooldownSeconds: 2
+    chargeSpeedMultiplier: 2.5
+    separationStrength: 1
+  attack:
+    pattern: 0
+    contactDamageEnabled: 1
+    attackRange: 12
+    windUpSeconds: 0
+    cooldownSeconds: 2
+    projectileCount: 1
+    spreadDegrees: 0
+    projectileSpeed: 9
+    projectileLifetime: 1.4
+    burstShots: 1
+    burstGapSeconds: 0.15
+    areaRadius: 4
+    areaDurationSeconds: 2
+  specialBehavior: 0
+  pressureWeight:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0.85
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1.35
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

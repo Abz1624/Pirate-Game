@@ -4,15 +4,15 @@ param(
     [Parameter(Mandatory)] [string] $Since,
     [int] $Phase = 0
 )
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'  # git prints line-ending warnings on stderr
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 Push-Location $repo
 try {
     $changed = @()
-    $changed += git diff --name-only $Since HEAD
-    $changed += git diff --name-only
-    $changed += git diff --name-only --cached
-    $changed += git ls-files --others --exclude-standard
+    $changed += git diff --name-only $Since HEAD 2>$null
+    $changed += git diff --name-only 2>$null
+    $changed += git diff --name-only --cached 2>$null
+    $changed += git ls-files --others --exclude-standard 2>$null
     $changed = $changed | Where-Object { $_ } | Sort-Object -Unique
 
     $allowed = @(

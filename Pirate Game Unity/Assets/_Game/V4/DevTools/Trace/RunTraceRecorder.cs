@@ -107,6 +107,7 @@ namespace RoguePirates.V4.DevTools.Trace
                 _poi.TrySummonBoss();
             if (_bossSummoned && !_bossDefeated && t >= _request.killBossAtSeconds && !run.IsRunEnded && !run.IsPaused)
                 TryKillBoss();
+            TrackArena(t, run);
 
             if (t >= _nextSample)
             {
@@ -147,7 +148,7 @@ namespace RoguePirates.V4.DevTools.Trace
                 .Int("seed", RunManager.Instance.RunSeed).Str("pilot", _request.pilot).Num("dt", _request.captureDeltaTime)
                 .Str("captain", V3CaptainSelection.Selected.ToString()).Str("unity", Application.unityVersion)
                 .Str("platform", Application.isEditor ? "editor" : Application.platform.ToString()).Str("screen", $"{Screen.width}x{Screen.height}")
-                .Num("bossAt", _request.bossAtSeconds).Num("killBossAt", _request.killBossAtSeconds).Str("commit", _request.commit).Str("visualPins", "skinned-offscreen+always-animate").Str("configHash", StageBalanceProfileContext.Export?.ContentHash));
+                .Num("bossAt", _request.bossAtSeconds).Num("killBossAt", _request.killBossAtSeconds).Num("killArenaAfter", _request.killArenaFocusAfterSeconds).Str("commit", _request.commit).Str("v4SetHash", FindFirstObjectByType<RoguePirates.V4.V4Game>()?.Config?.Hash ?? string.Empty).Str("preset", string.IsNullOrEmpty(_request.presetPath) ? string.Empty : Path.GetFileNameWithoutExtension(_request.presetPath)).Str("visualPins", "skinned-offscreen+always-animate").Str("configHash", StageBalanceProfileContext.Export?.ContentHash));
         }
 
         void OnKill(bool elite, bool boss, Vector3 pos, string weapon) =>
@@ -239,6 +240,27 @@ namespace RoguePirates.V4.DevTools.Trace
                 if (!_bossSummoned && _poi.BossSummoned) { _bossSummoned = true; Add(new JsonLine("boss").Num("t", t).Str("state", "summoned")); }
                 if (!_bossDefeated && _poi.BossDefeated) { _bossDefeated = true; Add(new JsonLine("boss").Num("t", t).Str("state", "defeated")); }
             }
+        }
+
+        int _arenaFocus = -1;
+        float _arenaStart;
+
+        /// <summary>Logs miniboss arenas and kills the focus enemy after the configured delay (weapon-hit path).</summary>
+        void TrackArena(float t, RunManager run)
+        {
+            if (!HighSeas.V3.V3MinibossArena.Active) { _arenaFocus = -1; return; }
+            var focus = HighSeas.V3.V3MinibossArena.FocusAgentId;
+            if (focus != _arenaFocus)
+            {
+                _arenaFocus = focus;
+                _arenaStart = t;
+                Add(new JsonLine("arena").Num("t", t).Int("f", Frame).Int("focus", focus).Str("state", "begin"));
+            }
+            if (_request.killArenaFocusAfterSeconds < 0f || t < _arenaStart + _request.killArenaFocusAfterSeconds || run.IsRunEnded || run.IsPaused) return;
+            if (_world == null || !_world.TryGetAgentByUnitId(focus, out var index)) return;
+            var agent = _world.Agents[index];
+            _world.ApplyDamage(index, Mathf.Max(agent.hp, agent.maxHp) + 500f, false, weaponId: "deck_cannons");
+            Add(new JsonLine("arena").Num("t", t).Int("f", Frame).Int("focus", focus).Str("state", "killed"));
         }
 
         /// <summary>Lethal hit on the active boss through the weapon-hit path (same as SaltwindScenePlayModeTests).</summary>

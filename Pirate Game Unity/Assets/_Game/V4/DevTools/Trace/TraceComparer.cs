@@ -40,12 +40,15 @@ namespace RoguePirates.V4.DevTools.Trace
         }
 
         /// <summary>Header fields that must agree for two traces to be comparable (label, scene, commit may differ).</summary>
-        static readonly string[] HeaderKeys = { "seed", "pilot", "dt", "captain", "platform", "screen", "bossAt", "killBossAt", "configHash", "visualPins" };
+        static readonly string[] HeaderKeys = { "seed", "pilot", "dt", "captain", "platform", "screen", "bossAt", "killBossAt", "killArenaAfter", "configHash", "visualPins", "preset" };
 
         static string HeaderField(string header, string key)
         {
             var m = Regex.Match(header ?? string.Empty, "\"" + key + "\":(\"[^\"]*\"|[^,}]*)");
-            return m.Success ? m.Groups[1].Value : "(missing)";
+            // Traces recorded before presets existed have no preset field; treat it as "no preset".
+            if (m.Success) return m.Groups[1].Value;
+            // Traces recorded before a field existed: no preset, no arena kill.
+            return key == "preset" ? "\"\"" : key == "killArenaAfter" ? "-1" : "(missing)";
         }
 
         static void CompareHeaders(IReadOnlyList<string> expected, IReadOnlyList<string> actual, Result result)

@@ -55,6 +55,8 @@ namespace RoguePirates.V4.DevTools.Trace
             foreach (var (key, value) in PinnedInts) PlayerPrefs.SetInt(key, value);
             foreach (var key in DeletedKeys) PlayerPrefs.DeleteKey(key);
             PlayerPrefs.Save();
+            if (!string.IsNullOrEmpty(request.presetPath) && File.Exists(request.presetPath))
+                RunRequest.RequestPreset(File.ReadAllText(request.presetPath)); // V4Game applies it before anything reads config
             Debug.Log($"V4 trace armed: {request.label} seed={request.seed} dt={request.captureDeltaTime}");
         }
 

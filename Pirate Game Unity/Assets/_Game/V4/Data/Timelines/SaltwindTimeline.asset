@@ -1,0 +1,560 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 752d8d72479575d4b97dcecc2d5d1487, type: 3}
+  m_Name: SaltwindTimeline
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WaveTimelineConfig
+  configId: timeline.saltwind
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  stageDeadlineSeconds: 600
+  graceSeconds: 2
+  maxActiveEnemies: 80
+  reservedEncounterSlots: 8
+  globalMinSpawnGapSeconds: 0.35
+  spawnRetryIntervalSeconds: 0.35
+  requiredEncounterTimeoutSeconds: 10
+  bossAmbientRateMultiplier: 0.5
+  eventWarningSeconds: 5
+  ambientBandDurationSeconds: 120
+  profileAmbientRatePerSecond:
+  - 0.5
+  - 1.2
+  - 1.8
+  - 2.4
+  - 3
+  minChargeWarningSeconds: 1
+  minExplosiveWarningSeconds: 1.2
+  phases:
+  - phaseId: band_0
+    label: Band 0
+    trigger:
+      kind: 0
+      timeSeconds: 0
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 11400000, guid: f81184cd12e1f8f45a7134e438d74845, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0.5
+    budgetUnit: 0
+    pools:
+    - poolId: ordinary
+      share: 1
+      entries:
+      - enemyId: swordfish
+        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+        weight: 1
+      - enemyId: deckhand_dinghy
+        archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
+        weight: 1
+    - poolId: specialist
+      share: 0
+      entries: []
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: band_1
+    label: Band 1
+    trigger:
+      kind: 0
+      timeSeconds: 120
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 11400000, guid: c7f30690887e7514ab17715a36100ab5, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 1.2
+    budgetUnit: 0
+    pools:
+    - poolId: ordinary
+      share: 0.8
+      entries:
+      - enemyId: swordfish
+        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+        weight: 1
+      - enemyId: deckhand_dinghy
+        archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
+        weight: 1
+      - enemyId: cutthroat_skiff
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        weight: 1
+      - enemyId: hammerhead
+        archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+        weight: 1
+    - poolId: specialist
+      share: 0.19999999
+      entries:
+      - enemyId: needle_sloop
+        archetype: {fileID: 0}
+        weight: 1
+      - enemyId: ram_raider
+        archetype: {fileID: 0}
+        weight: 1
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: band_2
+    label: Band 2
+    trigger:
+      kind: 0
+      timeSeconds: 240
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 11400000, guid: c032771fd8ba7b740b20a712b9d55ac7, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 1.8
+    budgetUnit: 0
+    pools:
+    - poolId: ordinary
+      share: 0.7
+      entries:
+      - enemyId: cutthroat_skiff
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        weight: 1
+      - enemyId: hammerhead
+        archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+        weight: 1
+      - enemyId: shark
+        archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
+        weight: 1
+      - enemyId: cannonboat
+        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+        weight: 1
+    - poolId: specialist
+      share: 0.3
+      entries:
+      - enemyId: bomb_boat
+        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        weight: 1
+      - enemyId: rammer_raft
+        archetype: {fileID: 11400000, guid: 41ad36546b03afc40b3c5a33a868ff37, type: 2}
+        weight: 1
+      - enemyId: bomb_ketch
+        archetype: {fileID: 0}
+        weight: 1
+      - enemyId: gunner_cog
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        weight: 1
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: band_3
+    label: Band 3
+    trigger:
+      kind: 0
+      timeSeconds: 360
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 11400000, guid: 074c75ed23898cf4db854604d1fd8956, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 2.4
+    budgetUnit: 0
+    pools:
+    - poolId: ordinary
+      share: 0.65
+      entries:
+      - enemyId: manta_ray
+        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
+        weight: 1
+      - enemyId: cannonboat
+        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+        weight: 1
+      - enemyId: hammerhead
+        archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+        weight: 1
+      - enemyId: shark
+        archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
+        weight: 1
+    - poolId: specialist
+      share: 0.35000002
+      entries:
+      - enemyId: bomb_boat
+        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        weight: 1
+      - enemyId: boarding_barge
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        weight: 1
+      - enemyId: net_cutter
+        archetype: {fileID: 0}
+        weight: 1
+      - enemyId: repair_tender
+        archetype: {fileID: 0}
+        weight: 1
+      - enemyId: kraken_spawn
+        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
+        weight: 1
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: band_4
+    label: Band 4
+    trigger:
+      kind: 0
+      timeSeconds: 480
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 11400000, guid: 754e07ebd1c2f4c439daac6b4942e39f, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 3
+    budgetUnit: 0
+    pools:
+    - poolId: ordinary
+      share: 0.6
+      entries:
+      - enemyId: manta_ray
+        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
+        weight: 1
+      - enemyId: cannonboat
+        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+        weight: 1
+      - enemyId: hammerhead
+        archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+        weight: 1
+    - poolId: specialist
+      share: 0.39999998
+      entries:
+      - enemyId: shield_frigate
+        archetype: {fileID: 0}
+        weight: 1
+      - enemyId: powder_barge
+        archetype: {fileID: 0}
+        weight: 1
+      - enemyId: kraken_spawn
+        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
+        weight: 1
+      - enemyId: bomb_boat
+        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        weight: 1
+      - enemyId: boarding_barge
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        weight: 1
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: reef_crab
+    label: Reef Crab miniboss (timing applies from M3)
+    trigger:
+      kind: 0
+      timeSeconds: 150
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 2
+      seconds: 0
+    spawner: {fileID: 0}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools:
+    - poolId: miniboss
+      share: 1
+      entries:
+      - enemyId: reef_crab_miniboss
+        archetype: {fileID: 11400000, guid: 38ceb085c1591c441b8ab565d3da9590, type: 2}
+        weight: 1
+    pauseAmbient: 1
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: elite_hammerhead
+    label: Elite Hammerhead
+    trigger:
+      kind: 0
+      timeSeconds: 180
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 2
+      seconds: 0
+    spawner: {fileID: 11400000, guid: 9e56b0f3a4700544d953ebc7ff532542, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 1
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 5
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: swarm_pulse_a
+    label: Swarm pulse
+    trigger:
+      kind: 0
+      timeSeconds: 240
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 1
+      seconds: 30
+    spawner: {fileID: 11400000, guid: 6de9f3eb9c2d2c8479a1eb1461a2a0d9, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 0
+    rateMultiplier: 1.25
+    burstCount: 0
+    warning:
+      leadSeconds: 5
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: swarm_pulse_b
+    label: Swarm pulse
+    trigger:
+      kind: 0
+      timeSeconds: 420
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 1
+      seconds: 30
+    spawner: {fileID: 11400000, guid: 6de9f3eb9c2d2c8479a1eb1461a2a0d9, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 0
+    rateMultiplier: 1.25
+    burstCount: 0
+    warning:
+      leadSeconds: 5
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: elite_kraken
+    label: Elite Kraken
+    trigger:
+      kind: 0
+      timeSeconds: 480
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 2
+      seconds: 0
+    spawner: {fileID: 11400000, guid: c5a076addd31e714d95fa567048e3a5e, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 1
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 5
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: boss
+    label: Barnacle King
+    trigger:
+      kind: 1
+      timeSeconds: 0
+      eventName: BeaconActivated
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 2
+      seconds: 0
+    spawner: {fileID: 11400000, guid: da3049c6851f7174790cd7255bdd0319, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 1
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: powder_cache
+    label: Powder Cache ambush
+    trigger:
+      kind: 1
+      timeSeconds: 0
+      eventName: PowderCacheOpened
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 2
+      seconds: 0
+    spawner: {fileID: 11400000, guid: e43da1e265019104c8016b9b6fd5d57d, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: overtime
+    label: Overtime
+    trigger:
+      kind: 0
+      timeSeconds: 600
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 11400000, guid: 8c07c57f2844427478dfa09b2331b493, type: 2}
+    alternateSpawner: {fileID: 11400000, guid: b318e16e2669c4a4d80dd59520545062, type: 2}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: "WARNING \u2014 {label} incoming!"
+    isBoss: 0
+    isOvertime: 1
+    isStorm: 0
+  - phaseId: storm
+    label: Storm
+    trigger:
+      kind: 0
+      timeSeconds: 720
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 0}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 10
+      template: The storm closes in!
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 1
+  tagCaps:
+  - tag: ranged_gunner
+    max: 4
+    scope: 0
+  - tag: area_denial
+    max: 2
+    scope: 1
+  - tag: charge_windup
+    max: 2
+    scope: 1
+  overtime:
+    initialSpawnIntervalSeconds: 1.4
+    intervalFloorSeconds: 0.35
+    intervalDecayPerStep: 0.85
+    pressureStepSeconds: 30
+    pursuerWeightFirstTwoMinutes: 0.8
+    harrierWeightFirstTwoMinutes: 0.2
+    pursuerWeightAfterTwoMinutes: 0.6
+    harrierWeightAfterTwoMinutes: 0.4
+  storm:
+    safeRegionStartFraction: 1
+    safeRegionEndFraction: 0.4
+    contractionStartSeconds: 720
+    contractionEndSeconds: 900
+    outsideDamagePerSecond: 8

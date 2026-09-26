@@ -1,0 +1,1595 @@
+{
+ "status": "completed",
+ "duration": 2018.36,
+ "summary": {
+  "total": 226,
+  "passed": 223,
+  "failed": 3,
+  "skipped": 0,
+  "inconclusive": 0
+ },
+ "results": [
+  {
+   "FullName": "HighSeas.Tests.AmbientSpawnBudgetTests.BlockedAccumulation_Capped_AndDrainsOneAtATime",
+   "Status": "Passed",
+   "Duration": 0.1439469,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.AmbientSpawnBudgetTests.Unblocked_DoesNotAccumulate",
+   "Status": "Passed",
+   "Duration": 0.0017667,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.CombatExperimentTests.ForwardArcGeometry_RespectsHalfArcWidth",
+   "Status": "Passed",
+   "Duration": 0.0307054,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.CombatExperimentTests.Generate_PityGuaranteesNewWeaponOptionAtLevelFour",
+   "Status": "Passed",
+   "Duration": 0.0815202,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.CombatExperimentTests.Generate_WithSixSlots_DoesNotOfferNewWeaponWhenFull",
+   "Status": "Passed",
+   "Duration": 0.014585,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.CombatExperimentTests.OpeningDraft_ReturnsThreeDistinctWeapons",
+   "Status": "Passed",
+   "Duration": 0.0274884,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.CombatExperimentTests.Profile_AlwaysUsesFullCombatV2",
+   "Status": "Passed",
+   "Duration": 0.0004428,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.CombatExperimentTests.ResolveArcDegrees_PrefersTargetArcOverFanSpread",
+   "Status": "Passed",
+   "Duration": 0.0006812,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EditMode.WeaponBeamTargetingTests.IsInsideBeam_RespectsHalfWidthAndRange",
+   "Status": "Passed",
+   "Duration": 0.0015312,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EncounterScheduleRunLogicTests.BurstProfile_CompletesOnActualSpawnCount",
+   "Status": "Passed",
+   "Duration": 0.001379,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EncounterScheduleRunLogicTests.ContinuousInterval_DensitySlowsCadenceOnly",
+   "Status": "Passed",
+   "Duration": 0.0004987,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EncounterScheduleRunLogicTests.ContinuousProfile_CompletesOnElapsedDuration_NotDensityScaled",
+   "Status": "Passed",
+   "Duration": 0.0002382,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EncounterScheduleRunLogicTests.LoopCycle_RestartsWithinWindow_SkipsExpiredCycle",
+   "Status": "Passed",
+   "Duration": 0.0004428,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EncounterSpawnerTests.ApplyCombatExperiment_AppliesSpawnDensityMultiplier",
+   "Status": "Passed",
+   "Duration": 0.0115589,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EncounterSpawnerTests.ApplyCombatExperiment_DisablesAmbientScheduleWhenEncounterSpawnOff",
+   "Status": "Passed",
+   "Duration": 0.0006532,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EncounterSpawnerTests.SpawnPlacementService_RejectsVisibleCandidateWhenRequired",
+   "Status": "Passed",
+   "Duration": 0.0092439,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EncounterSpawnerTests.SpawnProfileEnums_IncludeAdvancedSpecialBehaviors",
+   "Status": "Passed",
+   "Duration": 0.000266,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EncounterSpawnerTests.SpawnProfileResolver_EliteFieldsAppliedInResolve",
+   "Status": "Passed",
+   "Duration": 0.0105418,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EncounterSpawnerTests.SpawnProfileResolver_MapsLegacyFlankBehavior",
+   "Status": "Passed",
+   "Duration": 0.0024964,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.EncounterSpawnerTests.TelegraphedChargePattern_ResetsAfterChargeDuration",
+   "Status": "Passed",
+   "Duration": 0.012116,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.GameMathTests.ChestCost_Increases",
+   "Status": "Passed",
+   "Duration": 0.0022571,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.GameMathTests.DamageFormula_MatchesGoldenVector",
+   "Status": "Passed",
+   "Duration": 0.0013312,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.GameMathTests.DiagonalMovementNormalization_IsWithinOnePercent",
+   "Status": "Passed",
+   "Duration": 0.0003369,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.GameMathTests.RarityRoll_LegendaryProbabilityCapped",
+   "Status": "Passed",
+   "Duration": 0.0111536,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.GameMathTests.SaveMigration_DefaultsMissingFields",
+   "Status": "Passed",
+   "Duration": 0.0025663,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.GameMathTests.StageGenerator_HighCountSettings_PlacesNearTarget",
+   "Status": "Passed",
+   "Duration": 0.0168454,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.GameMathTests.StageGenerator_IslandsDoNotOverlap",
+   "Status": "Passed",
+   "Duration": 0.005421,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.GameMathTests.StageGenerator_ReachabilityPasses",
+   "Status": "Passed",
+   "Duration": 0.0020686,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.GameMathTests.StageGenerator_SpawnsOnWaterPlane",
+   "Status": "Passed",
+   "Duration": 0.0006418,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.GameMathTests.ThreatPerSecond_GrowsWithTime",
+   "Status": "Passed",
+   "Duration": 0.0003295,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.GameMathTests.XPToNext_IsMonotonic",
+   "Status": "Passed",
+   "Duration": 0.0004755,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.LevelOfferGeneratorTests.DamageProcPolicy_DotAndTriggeredItems_DoNotCrit",
+   "Status": "Passed",
+   "Duration": 0.0010432,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.LevelOfferGeneratorTests.FinalizeOffers_AllCapped_ShowsSingleContinue",
+   "Status": "Passed",
+   "Duration": 0.0078344,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.LevelOfferGeneratorTests.FinalizeOffers_WhenNoContentEligible_FillsFallbackCards",
+   "Status": "Passed",
+   "Duration": 0.0013902,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.LevelOfferGeneratorTests.FirstLevelUp_GuaranteesStarterUpgradeNewWeaponAndLogbook",
+   "Status": "Passed",
+   "Duration": 0.0024378,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.LevelOfferGeneratorTests.Generate_ExcludesMaxedWeapons",
+   "Status": "Passed",
+   "Duration": 0.0059063,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.LevelOfferGeneratorTests.Generate_PreventsDuplicateCards",
+   "Status": "Passed",
+   "Duration": 0.001609,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.LevelOfferGeneratorTests.Generate_WithDemoFlag_AlwaysIncludesNewWeaponWhenUnownedRemain",
+   "Status": "Passed",
+   "Duration": 0.0044894,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.LevelOfferGeneratorTests.Generate_WithFullWeaponSlots_DoesNotOfferNewWeapons",
+   "Status": "Passed",
+   "Duration": 0.0089236,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.LevelOfferGeneratorTests.WeaponDefinitions_ExposePatternSpecificAxes",
+   "Status": "Passed",
+   "Duration": 0.0015005,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.LevelOfferGeneratorTests.WeaponUpgradeOffer_ScalesStatLinesByRarity",
+   "Status": "Passed",
+   "Duration": 0.0007469,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.PlaytestFeedbackGateTests.EnemyTierLogic_BlocksGeneralBeforeLevelFive",
+   "Status": "Passed",
+   "Duration": 0.0005245,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.PlaytestFeedbackGateTests.LogbookOffer_HullUsesFlatMaxHull_NotPercent",
+   "Status": "Passed",
+   "Duration": 0.0014457,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.PlaytestFeedbackGateTests.RarityRoll_AtLuckZero_CommonIsMajority",
+   "Status": "Passed",
+   "Duration": 0.0013868,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.PlaytestFeedbackGateTests.SaltwindProfile_BalanceVersionIsThree",
+   "Status": "Passed",
+   "Duration": 0.3894881,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.PlaytestFeedbackGateTests.StatDisplay_PercentStat_FormatsAsPercent",
+   "Status": "Passed",
+   "Duration": 0.00024,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.PlaytestFeedbackGateTests.V3LogbookCatalog_HasTenPlaytestBooks",
+   "Status": "Passed",
+   "Duration": 0.0002258,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.RunEncounterTrackerTests.BossEncounter_DespawnWithoutKill_DoesNotComplete",
+   "Status": "Passed",
+   "Duration": 0.0042911,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.RunEncounterTrackerTests.BossEncounter_NoSpawn_NoFalseComplete",
+   "Status": "Passed",
+   "Duration": 0.00042,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.RunEncounterTrackerTests.BossEncounter_TrackedKill_SecuresOnce",
+   "Status": "Passed",
+   "Duration": 0.0002461,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.RunEncounterTrackerTests.FailedSummon_DoesNotSecureBoss",
+   "Status": "Passed",
+   "Duration": 0.0015195,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.RunEncounterTrackerTests.PartialCacheSpawn_DoesNotCompleteUntilAllKilled",
+   "Status": "Passed",
+   "Duration": 0.0004347,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.RunEncounterTrackerTests.PooledAgentId_AfterDespawnMapping_DoesNotSecureBoss",
+   "Status": "Passed",
+   "Duration": 0.0006682,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.RunEncounterTrackerTests.ResetForNewRun_ClearsOutstandingEncounters",
+   "Status": "Passed",
+   "Duration": 0.0005137,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.RunSnapshotTests.RunSnapshot_RoundTrip_PreservesSchemaVersion",
+   "Status": "Passed",
+   "Duration": 0.008942,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindAmbientCompositionGateTests.AmbientBandProfileIds_ParseToBandIndex",
+   "Status": "Passed",
+   "Duration": 0.0005725,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindAmbientCompositionGateTests.Band0_PicksOnlySoldierFodder",
+   "Status": "Passed",
+   "Duration": 0.6124691,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindAmbientCompositionGateTests.KrakenAreaDenial_RespectsCapAndFallsBack",
+   "Status": "Passed",
+   "Duration": 0.0056612,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindAmbientCompositionGateTests.OrdinaryShare_MatchesHandoffBands",
+   "Status": "Passed",
+   "Duration": 0.0005909,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindAmbientCompositionGateTests.SpawnTelemetry_Checkpoints_FireOncePerRun",
+   "Status": "Passed",
+   "Duration": 0.0077672,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.BossWin_SaltwindScenario_SecuresObjectiveBeforeTimeout",
+   "Status": "Passed",
+   "Duration": 11.5317681,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.Calibration_MarksExpert_UsesTougherBossAndLowerHullThanFreshExpert",
+   "Status": "Passed",
+   "Duration": 0.0040079,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.Export_LinkedSchedule_IncludesSnapshotsInHash",
+   "Status": "Passed",
+   "Duration": 0.0049317,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.LabScenario_doesNotReferencePlayerSave",
+   "Status": "Passed",
+   "Duration": 0.0029161,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.LevelOffer_FillStateAndPity_AddsWeaponAtProtectionLevel",
+   "Status": "Passed",
+   "Duration": 0.0030794,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_AverageAndExpert_DifferForSamePolicyPool",
+   "Status": "Failed",
+   "Duration": 136.1549545,
+   "Message": "  Average (kite) and Expert (orbit) should diverge under calibration\r\n  Expected: greater than 0.00100000005f\r\n  But was:  0.0f\r\n",
+   "StackTrace": "at HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_AverageAndExpert_DifferForSamePolicyPool () [0x000a8] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\EditMode\\SaltwindBalanceLabGateTests.cs:153\r\n"
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_ConservativeFresh_WinsBossOnSampleSeeds",
+   "Status": "Passed",
+   "Duration": 4.3044422,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_ExpertCells_StayWithinDocumentedWinBand",
+   "Status": "Failed",
+   "Duration": 222.839231,
+   "Message": "  Precision/MarksUnlocked expert win 0%\r\n  Expected: True\r\n  But was:  False\r\n",
+   "StackTrace": "at HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_ExpertCells_StayWithinDocumentedWinBand () [0x0003d] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\EditMode\\SaltwindBalanceLabGateTests.cs:122\r\n"
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_fullGrid_HasEighteenCellsAndExpectedRunCount",
+   "Status": "Passed",
+   "Duration": 21.3982641,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.Matrix_sameSeedAndPolicy_ReproducesSummary",
+   "Status": "Passed",
+   "Duration": 7.4987157,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.Parity_ChestPrice_MatchesCodecFixtures",
+   "Status": "Passed",
+   "Duration": 0.0160612,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.Parity_StageDeadline_MatchesExport",
+   "Status": "Passed",
+   "Duration": 0.0097741,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.Parity_XpLevelZeroToOne_MatchesCodec",
+   "Status": "Passed",
+   "Duration": 0.0105784,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.RouteParity_FirstChestCheckpoint_MatchesExportTravelBudget",
+   "Status": "Passed",
+   "Duration": 0.0097351,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabGateTests.TraceParity_FixedSeedCheckpoints_MatchRuntimeAndLab",
+   "Status": "Passed",
+   "Duration": 0.0570226,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindBalanceLabMatrixEvidenceTests.Matrix_Production1200Runs_WritesVerificationArtifacts",
+   "Status": "Failed",
+   "Duration": 1607.2416277,
+   "Message": "Timeout value of 900000 ms was exceeded. If this is intended, increase the timeout value using a TimeoutAttribute.",
+   "StackTrace": ""
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexFollowupGateTests.CannonboatCap_RejectsFifthThroughOrdinaryPool",
+   "Status": "Passed",
+   "Duration": 0.1094779,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexFollowupGateTests.ConservativeBossHull_V6_IsHigherThanFreshExpert",
+   "Status": "Passed",
+   "Duration": 0.0049537,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexFollowupGateTests.LegacyOwnedContent_BlocksMarksPurchase",
+   "Status": "Passed",
+   "Duration": 0.0206998,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexFollowupGateTests.ScheduledEliteKill_RequiresRegisteredAgent",
+   "Status": "Passed",
+   "Duration": 0.0103084,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexFollowupGateTests.SwarmPulse_SkippedPermanentlyWhenBossActiveAtBeatTime",
+   "Status": "Passed",
+   "Duration": 0.0040457,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexRegressionGateTests.AmbientBands_AreExclusiveWindows_NotStacked",
+   "Status": "Passed",
+   "Duration": 0.0143207,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexRegressionGateTests.LegacyUnlockedIds_CountAsEffectiveOwnership",
+   "Status": "Passed",
+   "Duration": 0.0017216,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexRegressionGateTests.MarksOwnedLightningMast_MakesCopperConductorEligible",
+   "Status": "Passed",
+   "Duration": 0.0120496,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexRegressionGateTests.MarksRecord_BuildRecord_IsPure_NoMutationOnRepeatedRead",
+   "Status": "Passed",
+   "Duration": 0.0063154,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexRegressionGateTests.NineMinuteAmbient_UsesSingleBandFourExportRate",
+   "Status": "Passed",
+   "Duration": 0.0061634,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexRegressionGateTests.ScheduledContinuousWindow_CompletesAtNextBandStart",
+   "Status": "Passed",
+   "Duration": 0.0204002,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexRegressionGateTests.ScheduledEliteKillCredits_AreDistinctPerElite",
+   "Status": "Passed",
+   "Duration": 0.0074861,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexRegressionGateTests.StageDeadline_IncludesFinalOrdinaryMinuteBucket",
+   "Status": "Passed",
+   "Duration": 0.0013871,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCodexRegressionGateTests.TryPurchaseUnlock_SupportsCaptainBrine",
+   "Status": "Passed",
+   "Duration": 0.010817,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCombatRedesignGateTests.CombatBalanceVersion_IsIncremented",
+   "Status": "Passed",
+   "Duration": 0.0098075,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCombatRedesignGateTests.ManualAndScheduledResolve_ParityForSwordfish",
+   "Status": "Passed",
+   "Duration": 0.0866752,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCombatRedesignGateTests.SpawnResolver_UsesSpawnedDefinition_NotAnchorProfile",
+   "Status": "Passed",
+   "Duration": 0.0087155,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindCombatRedesignGateTests.SwivelGuns_RegisteredWithOmniNearestTargeting",
+   "Status": "Passed",
+   "Duration": 0.0378917,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindEconomyGateTests.ChestPrices_MatchApprovedFixtures",
+   "Status": "Passed",
+   "Duration": 0.0090381,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindEconomyGateTests.ChestPurchasePlan_InsufficientGold_DoesNotGrant",
+   "Status": "Passed",
+   "Duration": 0.0080769,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindEconomyGateTests.ChestPurchasePlan_RepeatedQuotes_DoNotAdvancePrice",
+   "Status": "Passed",
+   "Duration": 0.0156723,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindEconomyGateTests.PickupMerge_ConservesTotals",
+   "Status": "Passed",
+   "Duration": 0.0013667,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindEconomyGateTests.ProfileGold_SkipsHiddenGoldGainStat",
+   "Status": "Passed",
+   "Duration": 0.007953,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindEconomyGateTests.SaltwindPowerupPool_UsesFourApprovedKinds",
+   "Status": "Passed",
+   "Duration": 0.0043665,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindFinaleGateTests.BossAttacks_NoDamageDuringTelegraph",
+   "Status": "Passed",
+   "Duration": 0.0017348,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindFinaleGateTests.BossCharge_CommitsDirectionAtTelegraphEnd",
+   "Status": "Passed",
+   "Duration": 0.0062796,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindFinaleGateTests.EnragedPhase_ShortensRecovery",
+   "Status": "Passed",
+   "Duration": 0.000728,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindFinaleGateTests.MarkedBombardment_NoDamageDuringTelegraph_UsesFootprintRadius",
+   "Status": "Passed",
+   "Duration": 0.0017828,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindFinaleGateTests.Overtime_StartsAtStageDeadline_NotBossDeath",
+   "Status": "Passed",
+   "Duration": 0.0089114,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindFinaleGateTests.Storm_StartsAt720Seconds",
+   "Status": "Passed",
+   "Duration": 0.0088364,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindFinaleGateTests.StormSafeRegion_ContractsBetween720And900",
+   "Status": "Passed",
+   "Duration": 0.0055704,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindModeGateTests.DeveloperPreset_EnablesHotkeysAndBypass",
+   "Status": "Passed",
+   "Duration": 0.0017121,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindModeGateTests.EndActiveSaltwindRunContext_ClearsProfileAndRunLayout",
+   "Status": "Passed",
+   "Duration": 0.0048818,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindModeGateTests.MenuWeaponGate_StableWithAndWithoutActiveProfile",
+   "Status": "Passed",
+   "Duration": 0.0119527,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindModeGateTests.NormalPlay_RunHotkeysDisabled",
+   "Status": "Passed",
+   "Duration": 0.0003453,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindPoiLayoutGateTests.ExplosiveBarrelBlast_OneDamagePerActor",
+   "Status": "Passed",
+   "Duration": 0.0184169,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindPoiLayoutGateTests.ProfileExport_BeaconHints_AtFiveAndSevenMinutes",
+   "Status": "Passed",
+   "Duration": 0.0057131,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindPoiLayoutGateTests.SaltwindLayout_100Seeds_PassValidation",
+   "Status": "Passed",
+   "Duration": 1.9632916,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindProgressionGateTests.EvolutionIngredients_RequireBaseWeaponInPool",
+   "Status": "Passed",
+   "Duration": 0.0042129,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindProgressionGateTests.MultiLevelXpGrant_IndexesFromLevelZero",
+   "Status": "Passed",
+   "Duration": 0.0063195,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindProgressionGateTests.NewWeaponPityThresholds_MatchProfileLevels",
+   "Status": "Passed",
+   "Duration": 0.0002294,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindProgressionGateTests.ProcCascade_StopsAtConfiguredCap",
+   "Status": "Passed",
+   "Duration": 0.0004885,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindProgressionGateTests.StarterPool_IncludesSixWeapons_ExcludesMarksUnlocks",
+   "Status": "Passed",
+   "Duration": 0.0038975,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindProgressionGateTests.XpCurve_MatchesCodecFixtures",
+   "Status": "Passed",
+   "Duration": 0.0033688,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResetGateTests.ResetPhaseCount_MatchesDocumentedOrder",
+   "Status": "Passed",
+   "Duration": 0.0006882,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResetGateTests.SnapshotRestore_AllowsLegacySchemaWithoutEncounterFields",
+   "Status": "Passed",
+   "Duration": 0.0010092,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResetGateTests.SnapshotRestore_RejectsBossSummonedWithZeroSpawns",
+   "Status": "Passed",
+   "Duration": 0.0001596,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResetGateTests.SnapshotRestore_RejectsFutureSchema",
+   "Status": "Passed",
+   "Duration": 0.0003121,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResetGateTests.StageBalanceProfile_SkippedForLocalMultiplayer",
+   "Status": "Passed",
+   "Duration": 0.000261,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResetGateTests.ThreeRetries_IncrementGeneration_AndClearEncounters",
+   "Status": "Passed",
+   "Duration": 0.0005477,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResultsGateTests.Headline_KeepsVictoryAfterDeath",
+   "Status": "Passed",
+   "Duration": 0.0007153,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResultsGateTests.MarksUi_MatchesLedgerFixture",
+   "Status": "Passed",
+   "Duration": 0.0050633,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResultsGateTests.UnlockGoal_SelectDoesNotPurchase",
+   "Status": "Passed",
+   "Duration": 0.0049484,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResultsGateTests.UnlockGoalProgress_ShowsFriendlyName",
+   "Status": "Passed",
+   "Duration": 0.0135658,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResultsGateTests.WeaponContribution_UsesDisplayNames_And100Percent",
+   "Status": "Passed",
+   "Duration": 0.0172612,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindResultsGateTests.WeaponContribution_ZeroDamage_ReturnsEmpty",
+   "Status": "Passed",
+   "Duration": 0.0003822,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindScheduleGateTests.BalanceProfile_ValidatesWithCompleteSchedule",
+   "Status": "Passed",
+   "Duration": 0.0054704,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindScheduleGateTests.Composition_BandAnchors_AreAuthoredOnSchedule",
+   "Status": "Passed",
+   "Duration": 0.005525,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindScheduleGateTests.PressureBeat_SkipsEliteAndSwarmDuringBossConflict",
+   "Status": "Passed",
+   "Duration": 0.0007816,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindScheduleGateTests.PressureBeat_WarnsFiveSecondsBeforeEvents",
+   "Status": "Passed",
+   "Duration": 0.0004862,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindScheduleGateTests.ResourcesSchedule_HasRequiredSaltwindProfiles",
+   "Status": "Passed",
+   "Duration": 0.0007451,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindScheduleGateTests.Timeline_AmbientRatesMatchProfileBands",
+   "Status": "Passed",
+   "Duration": 0.0006413,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindScheduleGateTests.Timeline_AmbientStopsAtDeadlineAndDuringOvertime",
+   "Status": "Passed",
+   "Duration": 0.0003515,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindScheduleGateTests.Timeline_EliteAndSwarmCheckpoints",
+   "Status": "Passed",
+   "Duration": 0.0008733,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindSettlementGateTests.ApprovedFixture_TotalMarks_Is52",
+   "Status": "Passed",
+   "Duration": 0.006584,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindSettlementGateTests.QualifyingMinute_RequiresMinKills",
+   "Status": "Passed",
+   "Duration": 0.0004243,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindSettlementGateTests.SaveMigration_V1_PreservesDoubloons_AndInitializesMarks",
+   "Status": "Passed",
+   "Duration": 0.0002541,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindSettlementGateTests.TryPurchaseMarksUnlock_IsIdempotentWhenOwned",
+   "Status": "Passed",
+   "Duration": 0.0002832,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindSettlementGateTests.TrySettleRun_IsIdempotentPerRunId",
+   "Status": "Passed",
+   "Duration": 0.0005467,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SaltwindSettlementGateTests.WeaponUnlockCost_ReadsProfileExport",
+   "Status": "Passed",
+   "Duration": 0.0042083,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SpawnModifierStackTests.Modifiers_ComposeMultiplicatively_AndExpire",
+   "Status": "Passed",
+   "Duration": 0.0012146,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.SpawnModifierStackTests.RemoveModifier_StopsApplying",
+   "Status": "Passed",
+   "Duration": 0.0001678,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.StageBalanceProfileTests.Export_Hash_IsStable_AndChangesWhenGameplayChanges",
+   "Status": "Passed",
+   "Duration": 0.0155862,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.StageBalanceProfileTests.Export_RoundTrip_PreservesGameplayValues",
+   "Status": "Passed",
+   "Duration": 0.016446,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.StageBalanceProfileTests.FormulaFixtures_MatchApprovedDefaults",
+   "Status": "Passed",
+   "Duration": 0.0062516,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.StageBalanceProfileTests.Resolver_RejectsMissingHostInSinglePlayer",
+   "Status": "Passed",
+   "Duration": 0.0111339,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.StageBalanceProfileTests.Resolver_SkipsLocalMultiplayer",
+   "Status": "Passed",
+   "Duration": 0.0004484,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.StageBalanceProfileTests.RuntimeState_IsNotSharedAcrossRuns",
+   "Status": "Passed",
+   "Duration": 0.0151728,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.V3IntegrationTests.DEC024_SecureObjective_PersistsThroughPlayerDeath",
+   "Status": "Passed",
+   "Duration": 0.0143467,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.V3IntegrationTests.V3ChestLoot_Seed12345_ProducesVariedDrops",
+   "Status": "Passed",
+   "Duration": 0.004761,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.V3IntegrationTests.V3ContentUnlocks_BlocksFlyingCutlassesBeforeFirstConquest",
+   "Status": "Passed",
+   "Duration": 0.0021826,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.V3IntegrationTests.V3DiscoverySystem_RevealChests_AddsIndices",
+   "Status": "Passed",
+   "Duration": 0.0229513,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.V3IntegrationTests.V3Economy_ChestPrice_MatchesGddProgression",
+   "Status": "Passed",
+   "Duration": 0.001008,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.V3IntegrationTests.V3FloorPowerup_Constants_MatchCombatAppendix",
+   "Status": "Passed",
+   "Duration": 0.0004276,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.V3IntegrationTests.V3FloorPowerup_RollKind_UsesFourWaySplit",
+   "Status": "Passed",
+   "Duration": 0.041737,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.V3IntegrationTests.V3GameMath_XPToNext_UsesFivePlusTwoL",
+   "Status": "Passed",
+   "Duration": 0.0007001,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.V3IntegrationTests.V3HomeSeed_LocksGeographyAfterFirstBoss",
+   "Status": "Passed",
+   "Duration": 0.0157704,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.V3IntegrationTests.V3Spawn_Seed12345_ResolvesOutsidePredictedIslands",
+   "Status": "Passed",
+   "Duration": 0.0087291,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "HighSeas.Tests.V3IntegrationTests.V3StagePoiPlacer_PlacesConquestPois",
+   "Status": "Passed",
+   "Duration": 0.0228366,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.BalanceGateTests.BatchSimulation_NoRunawayKillsOnShortRuns",
+   "Status": "Passed",
+   "Duration": 0.0245431,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.BalanceGateTests.ContentManifest_Validates",
+   "Status": "Passed",
+   "Duration": 0.0167942,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.BalanceGateTests.MandatoryPickGate_ThresholdEnforced",
+   "Status": "Passed",
+   "Duration": 0.0018005,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.BalanceGateTests.RaidSettlement_IsIdempotent",
+   "Status": "Passed",
+   "Duration": 0.0033738,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.BalanceGateTests.SoakSimulation_CompletesWithoutException",
+   "Status": "Passed",
+   "Duration": 0.0066977,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.CiGate_ReportsTargetBandResultDeterministically",
+   "Status": "Passed",
+   "Duration": 0.0064768,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.Clone_DoesNotShareEditableLoadoutData",
+   "Status": "Passed",
+   "Duration": 0.0004311,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.KitingAutoplayer_AutoTargetsAndProducesCombatProgress",
+   "Status": "Passed",
+   "Duration": 0.0038881,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.MoreActiveWeapons_IncreasesShortRunKills",
+   "Status": "Passed",
+   "Duration": 0.0310775,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.SameScenarioAndSeeds_ProducesSameSummary",
+   "Status": "Passed",
+   "Duration": 0.0036128,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.Scenario_NormalizesInvalidInputsWithoutMutatingCaller",
+   "Status": "Passed",
+   "Duration": 0.0007106,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.ProfileBalanceMatrixTests.ComputeV3SpawnRate_MatchesDocSamples",
+   "Status": "Passed",
+   "Duration": 0.0005164,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_DeterministicPerProfile",
+   "Status": "Passed",
+   "Duration": 0.008063,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_SixSlotProfiles_OutkillBaselineOnAverage",
+   "Status": "Passed",
+   "Duration": 0.0119899,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_WritesBalanceReportArtifact",
+   "Status": "Passed",
+   "Duration": 0.0148528,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.SimulationFixtureTests.BossPlayerSameTick_SecuresObjectiveBeforeRunEnd",
+   "Status": "Passed",
+   "Duration": 0.0023304,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.SimulationFixtureTests.LastRum_ConsumesOnceOnSameTickDoubleLethal",
+   "Status": "Passed",
+   "Duration": 0.0007071,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.SimulationFixtureTests.PauseSet_ClearingOneReason_DoesNotClearOthers",
+   "Status": "Passed",
+   "Duration": 0.0004279,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.SimulationFixtureTests.RenderFps30_60_120_YieldsIdenticalOutcomes",
+   "Status": "Passed",
+   "Duration": 0.0022592,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.SimulationFixtureTests.SameSeed_ProducesStableStateHash",
+   "Status": "Passed",
+   "Duration": 0.0022031,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.SimulationFixtureTests.SimMath_DamageMatchesGoldenVector",
+   "Status": "Passed",
+   "Duration": 0.0004177,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.Tests.SimulationFixtureTests.SimRng_LegendaryRateCapped",
+   "Status": "Passed",
+   "Duration": 0.0169531,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.CombatEventsTests.EndTick_DeliversBatchInPublishOrder",
+   "Status": "Passed",
+   "Duration": 0.0119096,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.CombatEventsTests.EndTick_StartsAFreshBatch",
+   "Status": "Passed",
+   "Duration": 0.001785,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.CombatEventsTests.PublishingFromAReader_Throws",
+   "Status": "Passed",
+   "Duration": 0.0026848,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.Context_ResolvesInterfaceContracts_Only",
+   "Status": "Passed",
+   "Duration": 0.0493629,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.DuplicateIds_AreRejected",
+   "Status": "Passed",
+   "Duration": 0.0022348,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.RegisteringDuringATick_IsRejected",
+   "Status": "Passed",
+   "Duration": 0.0023037,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.Ticks_RunInTickOrder_TiesKeepRegistrationOrder",
+   "Status": "Passed",
+   "Duration": 0.0014418,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.RunClockTests.Advance_CapsStepsPerFrame_AndDropsBacklog",
+   "Status": "Passed",
+   "Duration": 0.0004455,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.RunClockTests.Advance_YieldsWholeTicks_AndCarriesRemainder",
+   "Status": "Passed",
+   "Duration": 0.0002785,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.RunClockTests.NextTick_CountsTicksAndSimTime",
+   "Status": "Passed",
+   "Duration": 0.0016861,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.RunClockTests.Pause_IsASet_ClearingOneReasonKeepsTheOther",
+   "Status": "Passed",
+   "Duration": 0.0004177,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Exact_IgnoresHeaderAndFrameNumbers",
+   "Status": "Passed",
+   "Duration": 0.0139266,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Exact_RejectsTracesWithDifferentKeyHeaderFields",
+   "Status": "Passed",
+   "Duration": 0.0007723,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Exact_ReportsTheFirstDifferentLine",
+   "Status": "Passed",
+   "Duration": 0.0005843,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Parity_AcceptsSmallMinuteDrift_RejectsLargeOne",
+   "Status": "Passed",
+   "Duration": 0.0527062,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Parity_ChecksEventTimes",
+   "Status": "Passed",
+   "Duration": 0.0006575,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Hash_IsStable_AndChangesWithAnyValue",
+   "Status": "Passed",
+   "Duration": 0.0467128,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Preset_FromOlderSchemaWithoutMigration_IsRejected",
+   "Status": "Passed",
+   "Duration": 0.0914821,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Preset_RoundTrip_ReproducesTheEditedSet",
+   "Status": "Passed",
+   "Duration": 0.0451314,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Runtime_EditsCopies_LogsChanges_AndResets",
+   "Status": "Passed",
+   "Duration": 0.0033746,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Runtime_RemapsReferencesToTheCopies",
+   "Status": "Passed",
+   "Duration": 0.0020666,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.SetHash_IgnoresOrder_ButNotValues",
+   "Status": "Passed",
+   "Duration": 0.0013493,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Validator_ReportsIds_References_AndConfigRules",
+   "Status": "Passed",
+   "Duration": 0.0162892,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Archetypes_MatchTheCatalogAppliedV3Definitions",
+   "Status": "Passed",
+   "Duration": 0.0836754,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.ConfigEnums_MirrorTheV3Enums",
+   "Status": "Passed",
+   "Duration": 0.0047525,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.DifficultyDefaults_ReproduceTheV3Formulas",
+   "Status": "Passed",
+   "Duration": 0.0020437,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.EditingABandRate_ChangesOnlyThatBandsInterval",
+   "Status": "Passed",
+   "Duration": 0.058552,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.EveryConfigField_HasAConsoleRenderer",
+   "Status": "Passed",
+   "Duration": 0.0057464,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.EveryStageProfileField_IsOwnedOrPassThrough",
+   "Status": "Passed",
+   "Duration": 0.0073,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.RuntimeProfile_FromDefaults_EqualsTheV3Asset",
+   "Status": "Passed",
+   "Duration": 0.0171266,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.RuntimeSchedule_FromDefaults_EqualsTheV3Schedule",
+   "Status": "Passed",
+   "Duration": 0.0017112,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.RuntimeSpawnProfiles_FromDefaults_EqualTheV3Assets",
+   "Status": "Passed",
+   "Duration": 0.0156552,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.SaltwindSet_IsValid_AndPresetRoundTrips",
+   "Status": "Passed",
+   "Duration": 0.2258488,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Validator_SpawnerWeaponDifficultyRules",
+   "Status": "Passed",
+   "Duration": 0.0033653,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Validator_TimelineRules",
+   "Status": "Passed",
+   "Duration": 0.0027886,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4StructureTests.AssemblyReferences_FollowTheLayering",
+   "Status": "Passed",
+   "Duration": 0.0164397,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4StructureTests.DevTools_IsCompiledOnlyInEditorAndDevelopmentBuilds",
+   "Status": "Passed",
+   "Duration": 0.0006623,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4StructureTests.NoAdapter_OutlivesItsDeletionPhase",
+   "Status": "Passed",
+   "Duration": 0.0281365,
+   "Message": null,
+   "StackTrace": null
+  },
+  {
+   "FullName": "RoguePirates.V4.Tests.V4StructureTests.OnlyTheBridge_ReferencesLegacySpawnerAndWeaponController",
+   "Status": "Passed",
+   "Duration": 0.042925,
+   "Message": null,
+   "StackTrace": null
+  }
+ ]
+}

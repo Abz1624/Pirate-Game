@@ -54,6 +54,18 @@ namespace RoguePirates.V4.Legacy
             V3RouteEventDirector.Ensure();
         }
 
+        /// <summary>
+        /// Gives the spawner the per-run schedule clone (M1: config-driven values). Called before the first reset of
+        /// the run; never mid-run, because it drops pending encounter triggers (plan I1.4).
+        /// </summary>
+        public bool InstallSchedule(EncounterSpawnSchedule schedule)
+        {
+            var spawner = Object.FindFirstObjectByType<EncounterSpawner>();
+            if (spawner == null || schedule == null) return false;
+            spawner.SetSchedule(schedule);
+            return true;
+        }
+
         static void ConfigureEncounterSpawner(CombatExperimentProfile profile)
         {
             var spawner = Object.FindFirstObjectByType<EncounterSpawner>();

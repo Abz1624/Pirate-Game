@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06723e8a88f2b914086ea82003602abc, type: 3}
+  m_Name: flamethrower
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
+  configId: weapon.flamethrower
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  weaponId: flamethrower
+  displayName: Flamethrower
+  pattern: 3
+  targeting: 7
+  tags: []
+  baseDamage: 8
+  baseCooldown: 0.7
+  range: 9.5
+  baseQuantity: 1
+  projectileSpeed: 16
+  duration: 3
+  size: 1.25
+  knockback: 1
+  fanSpreadDegrees: 50
+  targetArcDegrees: 52
+  preferElite: 0
+  preferHighestHull: 0
+  maxLevel: 12
+  validUpgradeAxes: 000000000100000002000000
+  upgradeAxes:
+  - axis: 0
+    baseIncrement: 0.08
+    offerWeight: 1.1
+    maxAccumulated: 2
+    displayFormat: 
+  - axis: 5
+    baseIncrement: 0.1
+    offerWeight: 1
+    maxAccumulated: 2
+    displayFormat: 
+  - axis: 4
+    baseIncrement: 0.08
+    offerWeight: 1.1
+    maxAccumulated: 2
+    displayFormat: 
+  procCoefficient: 0.2
+  projectileColor: {r: 1, g: 0.4, b: 0, a: 1}
+  runtimeCatalogWeapon: 0

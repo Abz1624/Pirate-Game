@@ -4,7 +4,7 @@
 # keys a run reads to one fixed state, so instances cannot affect each other.
 # Usage: .\run-traces-parallel.ps1 -Runs 'V4SaltwindRun|101|v4-101-a|plan/.../player-v4-trace-seed-101-a.jsonl', ...
 param(
-    [Parameter(Mandatory)] [string[]] $Runs,          # "scene|seed|label|outPath" (outPath relative to repo root)
+    [Parameter(Mandatory)] [string[]] $Runs,          # "scene|seed|label|outPath[|presetPath]" (paths relative to repo root)
     [int] $MaxParallel = 4,
     [float] $BossAt = 240,
     [float] $KillBossAt = 300,
@@ -19,6 +19,7 @@ if (-not (Test-Path $exe)) { Write-Error "Player not built: $exe (run build-trac
 $work = Join-Path $Root 'runs'
 New-Item -ItemType Directory -Force $work | Out-Null
 $commit = (git -C $repo rev-parse HEAD).Trim()
+if ((git -C $repo status --porcelain -- 'Pirate Game Unity/Assets' 'Pirate Game Unity/ProjectSettings' | Measure-Object).Count -gt 0) { $commit += '+dirty' }
 
 # Back up the player's PlayerPrefs (company/product from ProjectSettings: DefaultCompany / Pirate Game).
 $prefsKey = 'HKCU\Software\DefaultCompany\Pirate Game'
@@ -34,14 +35,16 @@ $results = @()
 $sw = [Diagnostics.Stopwatch]::StartNew()
 
 function Start-Run([string] $spec) {
-    $scene, $seed, $label, $out = $spec.Split('|')
+    $parts = $spec.Split('|')
+    $scene, $seed, $label, $out = $parts[0..3]
+    $preset = if ($parts.Count -gt 4 -and $parts[4]) { [IO.Path]::GetFullPath((Join-Path $repo $parts[4])) } else { '' }
     $outFull = [IO.Path]::GetFullPath((Join-Path $repo $out))
     New-Item -ItemType Directory -Force (Split-Path $outFull) | Out-Null
     if (Test-Path $outFull) { Remove-Item $outFull -Force }
     $request = [ordered]@{
         label = $label; seed = [int]$seed; captureDeltaTime = 0.016666668; bossAtSeconds = $BossAt
         killBossAtSeconds = $KillBossAt; maxSimSeconds = $MaxSim; pauseResponseFrames = 3; pilot = 'player-v1'
-        outPath = $outFull; scene = $scene; commit = $commit; stopPlayModeWhenDone = $true
+        outPath = $outFull; scene = $scene; commit = $commit; stopPlayModeWhenDone = $true; presetPath = $preset
         createdUtcTicks = [DateTime]::UtcNow.Ticks
     }
     $reqPath = Join-Path $work "$label.json"

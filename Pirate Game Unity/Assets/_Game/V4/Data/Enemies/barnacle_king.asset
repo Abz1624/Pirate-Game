@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fdb197a18a247446b348e17d89532f5, type: 3}
+  m_Name: barnacle_king
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyArchetypeConfig
+  configId: enemy.barnacle_king
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  enemyId: barnacle_king
+  displayName: Barnacle King
+  category: 1
+  tier: 0
+  behavior: 5
+  biomeTag: emerald
+  stats:
+    baseHP: 800
+    baseDamage: 18
+    moveSpeed: 2.5
+    radius: 2.8
+    threatCost: 9
+    attackCooldown: 1.5
+    preferredRange: 8
+  rewards:
+    xpValue: 100
+    goldValue: 150
+  visual:
+    visualPrefab: {fileID: 1709254077376921, guid: 572d88ba1570e65438b5fef6059db2d5, type: 3}
+    visualScale: 2.4
+    visualYawOffset: 0
+    visualHeightOffset: 0
+    placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
+  tags: []
+  concurrencyTags: []
+  isBoss: 1
+  isMiniboss: 0
+  combat:
+    registered: 0
+    archetype: 0
+    movementPattern: 0
+    attackPattern: 0
+    preferredRange: 0
+    attackRange: 0
+    attackWindUp: 0
+    attackCooldown: 0
+    projectileCount: 1
+    spreadDegrees: 0
+    projectileSpeed: 0
+    chargeWindUp: 0
+    chargeDuration: 0
+    chargeCooldown: 0
+    chargeSpeedMult: 0
+    contactDamageEnabled: 1
+    eliteHammerheadSecondCharge: 0
+    eliteKrakenSequentialTraps: 0

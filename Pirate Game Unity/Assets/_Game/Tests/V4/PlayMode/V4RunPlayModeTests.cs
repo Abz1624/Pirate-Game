@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using HighSeas.Balance;
 using HighSeas.Core;
 using HighSeas.Encounters;
@@ -128,6 +129,54 @@ namespace RoguePirates.V4.Tests
             yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return WaitForPlaying();
             Assert.IsFalse(HighSeas.V3.V3MinibossArena.Active, "stale miniboss arena must be cleared at run start");
+        }
+
+        [UnityTest]
+        public IEnumerator LiveConfigEdits_ReachTheLegacyRun()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var game = Object.FindFirstObjectByType<V4Game>();
+            var legacy = game.Shell.LegacyConfig;
+            var spawner = Object.FindFirstObjectByType<EncounterSpawner>();
+            Assert.AreSame(legacy.RuntimeSchedule, spawner.Schedule, "the spawner must run the per-run schedule copy");
+            Assert.AreSame(legacy.RuntimeProfile, StageBalanceProfileContext.Authoring, "the profile context must use the per-run profile");
+
+            // Band 2 rate 1.8 -> 4 spawns/s: the band's spawn interval (read per spawn) becomes 0.25 s.
+            Assert.IsTrue(game.Config.TryApplyEdit("timeline.saltwind", "phases[2].ratePerSecond", "4", 1f, out var error), error);
+            Assert.AreEqual(0.25f, legacy.RuntimeSchedule.entries[2].profile.timing.spawnIntervalSeconds, 1e-6f);
+
+            // A profile-owned field: live in Authoring and in the rebuilt snapshot; chest purchases survive the rebuild.
+            StageBalanceProfileContext.Runtime.RegisterSuccessfulChestPurchase();
+            Assert.IsTrue(game.Config.TryApplyEdit("timeline.saltwind", "reservedEncounterSlots", "10", 2f, out error), error);
+            Assert.AreEqual(10, StageBalanceProfileContext.Authoring.reservedEncounterSlots);
+            Assert.AreEqual(10, StageBalanceProfileContext.Export.Spawn.ReservedEncounterSlots);
+            Assert.AreEqual(1, StageBalanceProfileContext.Runtime.SuccessfulChestPurchases);
+            Assert.AreEqual(2, game.Config.ChangeLog.Count);
+        }
+
+        [UnityTest]
+        public IEnumerator Preset_RequestedBeforeTheRun_AppliesFromTheStart()
+        {
+            var set = Resources.FindObjectsOfTypeAll<RoguePirates.V4.Config.ConfigSet>().FirstOrDefault(s => s.setId == "saltwind-default");
+            if (set == null)
+            {
+                yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+                yield return WaitForPlaying();
+                set = Resources.FindObjectsOfTypeAll<RoguePirates.V4.Config.ConfigSet>().First(s => s.setId == "saltwind-default");
+            }
+            string json;
+            using (var runtime = new RoguePirates.V4.Config.ConfigSetRuntime(set))
+            {
+                runtime.TryApplyEdit("timeline.saltwind", "phases[2].ratePerSecond", "4", 0f, out _);
+                json = RoguePirates.V4.Config.PresetCodec.ToJson(RoguePirates.V4.Config.PresetCodec.Capture(runtime, "band2x", runtime.Hash));
+            }
+            RunRequest.RequestPreset(json);
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var legacy = Object.FindFirstObjectByType<V4Game>().Shell.LegacyConfig;
+            Assert.AreEqual(0.25f, legacy.RuntimeSchedule.entries[2].profile.timing.spawnIntervalSeconds, 1e-6f, "preset must apply before the run starts");
+            Assert.IsNull(RunRequest.PresetJson, "the preset request is consumed");
         }
 
         [UnityTest]

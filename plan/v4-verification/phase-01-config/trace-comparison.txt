@@ -1,0 +1,10 @@
+M1 final traces (Windows player; pilot player-v1; boss summoned 240 s, killed 300 s; arena focus killed after 20 s; visual pins on)
+
+V4 with presets/v3-parity.json (band 0 = 0.6/s, as V3) vs V3 goldens (compare-traces.py --ignore-preset):
+v3-trace-seed-101-a vs v4-trace-seed-101-parity: MATCH (437 lines)
+v3-trace-seed-202-a vs v4-trace-seed-202-parity: MATCH (409 lines)
+v3-trace-seed-303-a vs v4-trace-seed-303-parity: MATCH (523 lines)
+v4-trace-seed-101-parity vs v4-trace-seed-101-parity-b: MATCH (437 lines, replay)
+
+V4 default config (band 0 = 0.5/s, R-01 decision) = new V4 baseline: v4-trace-seed-{101,202,303}-a.jsonl
+(before the R-01 change the default config also matched V3 exactly; see CHECKLIST)

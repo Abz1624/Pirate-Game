@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fdb197a18a247446b348e17d89532f5, type: 3}
+  m_Name: deckhand_dinghy
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyArchetypeConfig
+  configId: enemy.deckhand_dinghy
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  enemyId: deckhand_dinghy
+  displayName: Deckhand Dinghy
+  category: 0
+  tier: 0
+  behavior: 8
+  biomeTag: emerald
+  stats:
+    baseHP: 10
+    baseDamage: 5
+    moveSpeed: 5.5
+    radius: 0.9
+    threatCost: 1
+    attackCooldown: 1.5
+    preferredRange: 8
+  rewards:
+    xpValue: 2
+    goldValue: 1
+  visual:
+    visualPrefab: {fileID: 1709254077376921, guid: 84d2bab2e18923f438d2c897b9c87351, type: 3}
+    visualScale: 0.82
+    visualYawOffset: 0
+    visualHeightOffset: 0
+    placeholderColor: {r: 0, g: 1, b: 0, a: 1}
+  tags: []
+  concurrencyTags: []
+  isBoss: 0
+  isMiniboss: 0
+  combat:
+    registered: 1
+    archetype: 1
+    movementPattern: 9
+    attackPattern: 1
+    preferredRange: 6
+    attackRange: 12
+    attackWindUp: 0.8
+    attackCooldown: 2
+    projectileCount: 1
+    spreadDegrees: 0
+    projectileSpeed: 9
+    chargeWindUp: 1
+    chargeDuration: 0.65
+    chargeCooldown: 2
+    chargeSpeedMult: 2.5
+    contactDamageEnabled: 1
+    eliteHammerheadSecondCharge: 0
+    eliteKrakenSequentialTraps: 0

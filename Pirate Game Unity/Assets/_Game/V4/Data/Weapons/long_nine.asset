@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06723e8a88f2b914086ea82003602abc, type: 3}
+  m_Name: long_nine
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
+  configId: weapon.long_nine
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  weaponId: long_nine
+  displayName: Long Nine
+  pattern: 0
+  targeting: 6
+  tags:
+  - Gunnery
+  - Hunter
+  baseDamage: 28
+  baseCooldown: 2.4
+  range: 24
+  baseQuantity: 1
+  projectileSpeed: 16
+  duration: 2
+  size: 1
+  knockback: 1
+  fanSpreadDegrees: 50
+  targetArcDegrees: 40
+  preferElite: 0
+  preferHighestHull: 1
+  maxLevel: 12
+  validUpgradeAxes: 
+  upgradeAxes: []
+  procCoefficient: 1
+  projectileColor: {r: 0.65, g: 1, b: 1, a: 1}
+  runtimeCatalogWeapon: 1

@@ -5780,7 +5780,6 @@ GameObject:
   - component: {fileID: 658786998}
   - component: {fileID: 658786997}
   - component: {fileID: 658786996}
-  - component: {fileID: 658787000}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -6059,20 +6058,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.JuiceVfxBroker
   settings: {fileID: 0}
   vfxRoot: {fileID: 149490258}
---- !u!114 &658787000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c835d7666611ff4684e4c6eca9dcd6d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Balance.StageBalanceProfileHost
-  profile: {fileID: 11400000, guid: 5c446dd1cad997947bc835f4b6ae9d6d, type: 2}
-  requireForSinglePlayerRun: 1
 --- !u!114 &658787001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6090,6 +6075,8 @@ MonoBehaviour:
   player: {fileID: 2131002239}
   islandLayout: {fileID: 0}
   usePlaceholderPoiVisuals: 1
+  configSet: {fileID: 11400000, guid: 5831aeb9fd5687344a53de1cd4fff7db, type: 2}
+  legacyBaseProfile: {fileID: 11400000, guid: 5c446dd1cad997947bc835f4b6ae9d6d, type: 2}
 --- !u!1 &676974001
 GameObject:
   m_ObjectHideFlags: 0

@@ -90,6 +90,38 @@ namespace RoguePirates.V4.Editor
             }
         }
 
+        /// <summary>
+        /// M1: V4Game holds the config set and the V3 base profile, so the scene's StageBalanceProfileHost goes.
+        /// Idempotent.
+        /// </summary>
+        public static string ApplyM1(string configSetPath, string legacyProfilePath)
+        {
+            var log = new List<string>();
+            if (AssetDatabase.LoadAssetAtPath<RoguePirates.V4.Config.ConfigSet>(configSetPath) == null ||
+                AssetDatabase.LoadAssetAtPath<HighSeas.Balance.StageBalanceProfile>(legacyProfilePath) == null)
+                return "missing config set or legacy profile";
+            Edit(V4SceneNames.SaltwindRunPath, log, () =>
+            {
+                // Load after OpenScene: opening a scene in Single mode unloads unused assets loaded before it.
+                var configSet = AssetDatabase.LoadAssetAtPath<RoguePirates.V4.Config.ConfigSet>(configSetPath);
+                var profile = AssetDatabase.LoadAssetAtPath<HighSeas.Balance.StageBalanceProfile>(legacyProfilePath);
+                foreach (var game in Object.FindObjectsByType<V4Game>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                {
+                    var so = new SerializedObject(game);
+                    so.FindProperty("configSet").objectReferenceValue = configSet;
+                    so.FindProperty("legacyBaseProfile").objectReferenceValue = profile;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    log.Add($"  {game.gameObject.name}: V4Game config assigned");
+                }
+                foreach (var host in Object.FindObjectsByType<HighSeas.Balance.StageBalanceProfileHost>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                {
+                    log.Add($"  {host.gameObject.name}: StageBalanceProfileHost removed");
+                    Object.DestroyImmediate(host);
+                }
+            });
+            return string.Join("\n", log);
+        }
+
         static void AddToBuild(List<string> log, params string[] paths)
         {
             var scenes = EditorBuildSettings.scenes.ToList();

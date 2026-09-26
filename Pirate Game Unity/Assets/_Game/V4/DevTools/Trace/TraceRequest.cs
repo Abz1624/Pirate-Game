@@ -21,6 +21,10 @@ namespace RoguePirates.V4.DevTools.Trace
         /// <summary>The harness kills the boss at this time through EnemyWorld.ApplyDamage (the weapon-hit path), so
         /// victory, objective and settlement are covered by exact traces. The pilot kites the boss instead of fighting it.</summary>
         public float killBossAtSeconds = 300f;
+        /// <summary>The harness kills a miniboss-arena focus enemy (Reef Crab, elite beats) this long after the arena
+        /// opens, as a player would; the kiting pilot never fights it, and the arena pauses ambient spawns until it dies.
+        /// Negative disables.</summary>
+        public float killArenaFocusAfterSeconds = 20f;
         public float maxSimSeconds = 900f;
         public int pauseResponseFrames = 3;
         public string pilot = PlayerPilot.PatternId;
@@ -28,6 +32,8 @@ namespace RoguePirates.V4.DevTools.Trace
         /// <summary>Run scene path or name; used by player builds, which start in the empty launcher scene.</summary>
         public string scene;
         public string commit;
+        /// <summary>Optional config preset (JSON file) applied before the run starts; empty = default configs.</summary>
+        public string presetPath;
         public long createdUtcTicks;
         public bool stopPlayModeWhenDone = true;
 

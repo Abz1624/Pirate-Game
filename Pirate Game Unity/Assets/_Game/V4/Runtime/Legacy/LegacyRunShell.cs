@@ -1,3 +1,4 @@
+using HighSeas.Balance;
 using HighSeas.Combat;
 using HighSeas.Core;
 using HighSeas.Data;
@@ -5,6 +6,7 @@ using HighSeas.Player;
 using HighSeas.V3;
 using HighSeas.V3.MultiShip;
 using HighSeas.World;
+using RoguePirates.V4.Config;
 using UnityEngine;
 
 namespace RoguePirates.V4.Legacy
@@ -24,6 +26,7 @@ namespace RoguePirates.V4.Legacy
         readonly V4LegacyBridge _bridge = new V4LegacyBridge();
         readonly V4LegacySpawnBridge _spawnBridge = new V4LegacySpawnBridge();
         readonly LegacyWorldAdapter _world;
+        readonly LegacyConfigRuntime _legacyConfig;
         PlayerShipController _player;
         StageLayout _layout;
         bool _wired;
@@ -34,9 +37,13 @@ namespace RoguePirates.V4.Legacy
         public V4LegacyBridge Bridge => _bridge;
         public int Seed { get; private set; }
 
+        public LegacyConfigRuntime LegacyConfig => _legacyConfig;
+
         public LegacyRunShell(MonoBehaviour host, GameDatabase database, StageBuilder stageBuilder,
-            PlayerShipController player, IslandLayoutDefinition islandLayout, bool usePlaceholderPoiVisuals)
+            PlayerShipController player, IslandLayoutDefinition islandLayout, bool usePlaceholderPoiVisuals,
+            ConfigSetRuntime config, StageBalanceProfile legacyBaseProfile)
         {
+            _legacyConfig = new LegacyConfigRuntime(config, legacyBaseProfile);
             _host = host;
             _player = player;
             _usePlaceholderPoiVisuals = usePlaceholderPoiVisuals;
@@ -53,6 +60,10 @@ namespace RoguePirates.V4.Legacy
             LegacyWorldAdapter.DisableEnvironmentalHazards();
             AppRoot.EnsureInitialized();
             _database.Load(_serializedDatabase);
+            // M1: config-driven copies of the stage profile and encounter schedule, installed before any spawner reset.
+            if (_legacyConfig.Build(out var configError)) _spawnBridge.InstallSchedule(_legacyConfig.RuntimeSchedule);
+            else Debug.LogError("V4Game: " + configError);
+            _legacyConfig.ProfileChanged += () => _profile.Rebuild(_legacyConfig.RuntimeProfile);
             var multiConfig = Object.FindFirstObjectByType<V3MultiShipSceneConfig>();
             if (multiConfig != null) V3RunSession.Configure(multiConfig.SessionKind);
             LegacyWorldAdapter.EnsureTouchJoystickActive();
@@ -119,7 +130,7 @@ namespace RoguePirates.V4.Legacy
 
             LegacyRewardsAdapter.TeardownTransientRunState();
 
-            if (!_profile.TryBegin(out var profileError))
+            if (!_profile.TryBegin(_legacyConfig.RuntimeProfile, out var profileError))
             {
                 Debug.LogError(profileError);
                 return false;
@@ -220,7 +231,11 @@ namespace RoguePirates.V4.Legacy
 
         void OnPlayerDied() => LegacyRewardsAdapter.OnPlayerDied(_player);
 
-        public void OnDestroy() => _profile.EndIfActive();
+        public void OnDestroy()
+        {
+            _profile.EndIfActive();
+            _legacyConfig.Dispose();
+        }
 
         /// <summary>V3RunBootstrap.OnApplicationPause: capture a suspend snapshot (never loaded by V3 either).</summary>
         public void OnApplicationPause(bool paused)

@@ -27,14 +27,32 @@ namespace RoguePirates.V4.Legacy
     [DeletedInPhase(14, "Profile context readers are gone after switch-over")]
     public sealed class LegacyProfileAdapter
     {
-        public bool TryBegin(out string error)
+        /// <summary>
+        /// Begins the stage profile context with the per-run profile built from V4 config (M1; replaces the scene's
+        /// StageBalanceProfileHost). Validated with the same rules the V3 resolver applies.
+        /// </summary>
+        public bool TryBegin(StageBalanceProfile runtimeProfile, out string error)
         {
             error = null;
             StageBalanceProfileContext.EndRun();
             if (V3RunSession.IsLocalMultiplayer) return true;
-            if (!StageBalanceProfileResolver.TryResolveForCurrentScene(out var profile, out error)) return false;
-            StageBalanceProfileContext.BeginRun(profile);
+            if (runtimeProfile == null) { error = "V4Game: no stage profile (config set or legacy base profile missing)."; return false; }
+            var validation = StageBalanceProfileValidator.Validate(runtimeProfile);
+            if (!validation.IsValid) { error = validation.ErrorMessage; return false; }
+            StageBalanceProfileContext.BeginRun(runtimeProfile);
             return true;
+        }
+
+        /// <summary>
+        /// Rebuilds the profile snapshot after a live config edit. Readers of Authoring see the edited runtime profile
+        /// at once; the snapshot is rebuilt and the chest purchase count replayed so chest prices do not reset.
+        /// </summary>
+        public void Rebuild(StageBalanceProfile runtimeProfile)
+        {
+            if (!StageBalanceProfileContext.IsActive) return;
+            var purchases = StageBalanceProfileContext.Runtime?.SuccessfulChestPurchases ?? 0;
+            StageBalanceProfileContext.BeginRun(runtimeProfile);
+            for (var i = 0; i < purchases; i++) StageBalanceProfileContext.Runtime.RegisterSuccessfulChestPurchase();
         }
 
         public void EndIfActive()

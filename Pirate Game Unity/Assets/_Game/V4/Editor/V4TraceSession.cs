@@ -133,6 +133,23 @@ namespace RoguePirates.V4.Editor
             if (database != null && !EditorUtility.IsDirty(database)) Resources.UnloadAsset(database);
         }
 
+        /// <summary>
+        /// Snapshots the PlayerPrefs V3 test suites change (R-67a) before a test run. A PlayMode run restores them
+        /// automatically when the Editor returns to Edit Mode; after an EditMode run call <see cref="RestorePrefsNow"/>.
+        /// </summary>
+        public static string GuardPrefsForTestRun()
+        {
+            SnapshotPrefs();
+            return "prefs snapshot taken";
+        }
+
+        public static string RestorePrefsNow()
+        {
+            var pending = File.Exists(SnapshotFile) || !string.IsNullOrEmpty(SessionState.GetString(SnapshotKey, string.Empty));
+            if (pending) RestorePrefs();
+            return pending ? "prefs restored" : "no snapshot pending";
+        }
+
         static void OnPlayModeChanged(PlayModeStateChange change)
         {
             if (change != PlayModeStateChange.EnteredEditMode) return;

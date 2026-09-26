@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fdb197a18a247446b348e17d89532f5, type: 3}
+  m_Name: shark
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyArchetypeConfig
+  configId: enemy.shark
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  enemyId: shark
+  displayName: Shark
+  category: 1
+  tier: 0
+  behavior: 0
+  biomeTag: emerald
+  stats:
+    baseHP: 16
+    baseDamage: 6
+    moveSpeed: 4.2
+    radius: 1.1
+    threatCost: 4
+    attackCooldown: 1.5
+    preferredRange: 8
+  rewards:
+    xpValue: 4
+    goldValue: 1
+  visual:
+    visualPrefab: {fileID: 1709254077376921, guid: 2ba1ad922beb17f49811cce1593c2220, type: 3}
+    visualScale: 1
+    visualYawOffset: 0
+    visualHeightOffset: 0
+    placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
+  tags: []
+  concurrencyTags: []
+  isBoss: 0
+  isMiniboss: 0
+  combat:
+    registered: 1
+    archetype: 2
+    movementPattern: 1
+    attackPattern: 1
+    preferredRange: 8
+    attackRange: 12
+    attackWindUp: 0.8
+    attackCooldown: 2
+    projectileCount: 1
+    spreadDegrees: 0
+    projectileSpeed: 9
+    chargeWindUp: 1
+    chargeDuration: 0.65
+    chargeCooldown: 2
+    chargeSpeedMult: 2.5
+    contactDamageEnabled: 1
+    eliteHammerheadSecondCharge: 0
+    eliteKrakenSequentialTraps: 0
