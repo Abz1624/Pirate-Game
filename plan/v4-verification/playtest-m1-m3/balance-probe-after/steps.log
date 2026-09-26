@@ -1,0 +1,385 @@
+﻿[rect-before] HAS 20,150,640,890
+[is-playing] no
+[begin] started
+[is-playing] OK playing
+[run-start] OK t=5.1
+[jump-470] jumped to 470 s
+[traps-0] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-1] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-2] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-3] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-4] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-5] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-6] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-7] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-8] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-9] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-10] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-11] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-12] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-13] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-14] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-15] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-16] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-17] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-18] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-19] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-20] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-21] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-22] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-23] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-24] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-25] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-26] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-27] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-28] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-29] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-30] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-31] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-32] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-33] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-34] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-35] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-36] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-37] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-38] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[traps-39] ERROR: unity : Error: Runtime Error
+At C:\Users\shara\AppData\Local\Temp\claude\C--Kshitij-Work-X2C-web3-GitHub-Pirate-Game\7bf8872d-a5da-4817-8c0b-aeddaa0
+5af31\scratchpad\balance-probe-after.ps1:16 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Runtime Error:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Object reference not set to an instance of an object
+[jump-630] jumped to 630 s
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[enemies-636] t=642 | drowned_harrier: dmg 65.0 (base 8, x8.12) hp 470; swordfish: dmg 6.0 (base 6, x1.00) hp 5; cannonboat: dmg 31.7 (base 8, x3.96) hp 81; reef_crab_miniboss: dmg 23.0 (base 14, x1.65) hp 1124; drowned_pursuer: dmg 46.5 (base 6, x7.75) hp 386; 
+[jump-755] jumped to 755 s
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[enemies-763] t=770 | drowned_harrier: dmg 164.3 (base 8, x20.54) hp 2401; drowned_pursuer: dmg 123.7 (base 6, x20.62) hp 2150; 
+[rect-restore] restored

@@ -133,6 +133,9 @@ namespace RoguePirates.V4.Config
         public float pursuerWeightAfterTwoMinutes = 0.6f;
         [Tooltip("Stored for the profile hash; V3 rolls harrier as 1 - pursuer.")] public float harrierWeightAfterTwoMinutes = 0.4f;
         public string startToast = "DROWNED PURSUIT — spectral fleet incoming!";
+        [Tooltip("Extra HP and damage multiplier for overtime spawns, evaluated at each spawn: this at the deadline...")] public float spawnStatRampStart = 1f;
+        [Tooltip("...rising linearly to this after spawnStatRampSeconds (then held). 1 and 1 = V3 (no ramp).")] public float spawnStatRampEnd = 2f;
+        [Tooltip("Seconds after the deadline to reach spawnStatRampEnd.")] public float spawnStatRampSeconds = 300f;
     }
 
     [Serializable]
@@ -176,6 +179,8 @@ namespace RoguePirates.V4.Config
 
         [Header("Concurrency")]
         public List<TagCap> tagCaps = new List<TagCap>();
+        [Tooltip("An area-denial cast (Kraken traps) frees its concurrency slot after this many seconds. 0 = never, as in V3 (register R-06: after two casts per run no Kraken lays traps again).")]
+        public float areaDenialReleaseSeconds = 2f;
 
         [Header("Overtime and storm")]
         public OvertimeSettings overtime = new OvertimeSettings();

@@ -58,3 +58,15 @@ No blockers. Fixed:
 3. At 3:00 the elite Hammerhead (elite health bar, charges twice); at 8:00 the elite Kraken (sequential traps, no ramming damage).
 4. F1 → Jump to 600: overtime brings Drowned ships (placeholder models).
 5. Jump to about 740 and sail outside the safe water: HP drains steadily, damage numbers about twice a second, and enemies can still hit you.
+
+## Re-check feedback (second pass)
+
+| Your note | Finding | Change |
+|---|---|---|
+| Skip, F1 resize | Working | — |
+| No traps from the elite Kraken | V3 defect R-06: each Kraken trap cast reserves one of two area-denial slots and never releases it, so after two casts per run no Kraken lays traps again; ordinary Krakens use both slots before 8:00 | Slots are freed after 2 s (`timeline.areaDenialReleaseSeconds`). Measured: the elite Kraken lays a 3-circle trap every ~6 s (`balance-probe-traps/`) |
+| Overtime felt slow; died instantly at ~12:20 | Measured at 12:43 (`balance-probe/`): a Drowned pursuer hit for 145 and a harrier for 212 against 100 hull (V3's never-used Drowned stats, about 2× damage and 3–4× HP of the shark/cannonboat V3 used). The storm drains only 10–14 hull/s, 7–10 s to kill from full | Your choice: base stats = shark/cannonboat, plus a smooth overtime ramp 1× at 10:00 → 2× at 15:00 on HP and damage, evaluated at each spawn. V3's growth curve kept (your choice) |
+
+Pursuer damage per hit after the change (hull 100), measured (`balance-probe-after/`): **47 at 10:42, 124 at 12:50**; harrier 65 and 164. Expected from the formulas: 36 at 10:00, 59 at 11:00, 90 at 12:00, 133 at 13:00, 190 at 14:00. So from about 12:00 one Drowned hit still takes most or all of a 100-hull ship: that is V3's growth curve times the ramp you chose. Note that a jump starts you at level 2 with no items; in a real run you have more weapons (enemies die faster) but the same 100 hull unless you picked hull upgrades. Both are console values (`difficulty` curves, `timeline.overtime.spawnStatRamp*`) if it feels too harsh.
+
+Tests: EditMode 85 / 85 (new: ramp shape and preset, area-denial release and V3 mode), PlayMode 14 / 14. Traces not re-run: with the v3-parity preset the ramp is 1 and the release is off, so V3 behavior is unchanged (EditMode tests cover both); the short parity set runs at the end of M4.

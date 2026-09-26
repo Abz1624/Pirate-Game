@@ -41,7 +41,8 @@ $spawnCtl = 'RoguePirates.V4.Spawning.ISpawnController s = null; UnityEngine.Obj
 $pickCard = 'var modal = HighSeas.UI.LevelUpModal.Instance; var card = modal != null ? modal.transform.Find("CardRow/Card0") : null; if (HighSeas.Core.RunManager.Instance.IsPaused && card != null && card.gameObject.activeInHierarchy) card.GetComponent<UnityEngine.UI.Button>()?.onClick.Invoke();'
 unity command set_autotick --enable true 2>&1 | Out-Null
 unity command clear_console 2>&1 | Out-Null
-$rectBefore = Eval 'rect-before' 'return UnityEngine.PlayerPrefs.HasKey("v4_console_rect") ? "HAS " + UnityEngine.PlayerPrefs.GetString("v4_console_rect") : "NONE";'
+# Eval also writes its log line to the pipeline: keep only its return value (the last item).
+$rectBefore = @(Eval 'rect-before' 'return UnityEngine.PlayerPrefs.HasKey("v4_console_rect") ? "HAS " + UnityEngine.PlayerPrefs.GetString("v4_console_rect") : "NONE";')[-1]
 for ($attempt = 0; $attempt -lt 6; $attempt++) {
     $playing = Eval 'is-playing' 'return UnityEditor.EditorApplication.isPlaying ? "OK playing" : "no";'
     if ($playing -match '^OK') { break }

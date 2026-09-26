@@ -156,6 +156,10 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(archetype.visual.placeholderModel, archetype.enemyId + " is marked as a placeholder model");
                 fresh.visualPrefab = null;
                 fresh.visualScale = legacy.visualScale;
+                // Base HP/damage come from the V3 overtime enemies (shark, cannonboat), not V3's never-used fallback.
+                Assert.AreEqual(_set.All<EnemyArchetypeConfig>().Single(a => a.enemyId == (archetype.enemyId == "drowned_pursuer" ? "shark" : "cannonboat")).stats.baseDamage, fresh.baseDamage, archetype.enemyId + " damage");
+                fresh.baseHP = legacy.baseHP;
+                fresh.baseDamage = legacy.baseDamage;
                 Assert.AreEqual(JsonUtility.ToJson(legacy), JsonUtility.ToJson(fresh), archetype.enemyId);
             }
         }
@@ -265,6 +269,9 @@ namespace RoguePirates.V4.Tests
             "Editor/V3ConfigMigrator.cs:elite_kraken_spawn",
             "Editor/V3ConfigMigrator.cs:drowned_pursuer",
             "Editor/V3ConfigMigrator.cs:drowned_harrier",
+            // ...and the V3 overtime enemies whose base HP/damage the Drowned take (playtest follow-up).
+            "Editor/V3ConfigMigrator.cs:shark",
+            "Editor/V3ConfigMigrator.cs:cannonboat",
         };
 
         [Test]

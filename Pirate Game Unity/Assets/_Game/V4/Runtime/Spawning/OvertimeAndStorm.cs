@@ -54,6 +54,14 @@ namespace RoguePirates.V4.Spawning
         public static float DamageMultiplier(WaveTimelineConfig t, DifficultyCurveConfig d, float elapsed) =>
             1f + Mathf.Max(0f, OvertimeMinutes(t, elapsed)) * d.overtimeDamageBonusPerMinute;
 
+        /// <summary>Overtime spawn stat ramp (not V3): start at the deadline, linear to end over the ramp seconds, evaluated per spawn.</summary>
+        public static float SpawnStatRamp(WaveTimelineConfig t, float elapsed)
+        {
+            var o = t.overtime;
+            var k = o.spawnStatRampSeconds > 0f ? Mathf.Clamp01((elapsed - t.stageDeadlineSeconds) / o.spawnStatRampSeconds) : 1f;
+            return Mathf.Lerp(o.spawnStatRampStart, o.spawnStatRampEnd, k);
+        }
+
         public void Tick(float dt, TimelinePhase phase)
         {
             var t = _s.Timeline;
@@ -88,7 +96,8 @@ namespace RoguePirates.V4.Spawning
             var profile = _s.Profiles.For(spawner);
             if (profile == null) return false;
             var leader = -1;
-            return _executor.TryBurst(profile, 1, false, HpMultiplier(t, d, elapsed), DamageMultiplier(t, d, elapsed), 0, ref leader) > 0;
+            var ramp = SpawnStatRamp(t, _s.Run.ElapsedSeconds);
+            return _executor.TryBurst(profile, 1, false, HpMultiplier(t, d, elapsed) * ramp, DamageMultiplier(t, d, elapsed) * ramp, 0, ref leader) > 0;
         }
     }
 

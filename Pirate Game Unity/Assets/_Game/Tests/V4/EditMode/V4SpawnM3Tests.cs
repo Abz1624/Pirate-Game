@@ -553,6 +553,54 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
+        public void OvertimeSpawnRamp_RisesSmoothlyFromTheDeadline()
+        {
+            var h = Make();
+            using (h.Config)
+            {
+                var t = h.Timeline;
+                Assert.AreEqual(1f, OvertimePhase.SpawnStatRamp(t, 600f), 1e-5f, "1x at the deadline");
+                Assert.AreEqual(1.5f, OvertimePhase.SpawnStatRamp(t, 750f), 1e-5f, "linear, evaluated per spawn (no minute steps)");
+                Assert.AreEqual(1.0033f, OvertimePhase.SpawnStatRamp(t, 601f), 1e-4f);
+                Assert.AreEqual(2f, OvertimePhase.SpawnStatRamp(t, 900f), 1e-5f, "2x five minutes in");
+                Assert.AreEqual(2f, OvertimePhase.SpawnStatRamp(t, 1200f), 1e-5f, "then held");
+                Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "overtime.spawnStatRampEnd", "1", 0f, out var e), e);
+                Assert.AreEqual(1f, OvertimePhase.SpawnStatRamp(h.Timeline, 900f), 1e-5f, "end 1 = V3 (the v3-parity preset)");
+            }
+        }
+
+        [Test]
+        public void AreaDenialSlots_AreReleasedAfterTheConfiguredHold()
+        {
+            var h = Make();
+            using (h.Config)
+            {
+                SaltwindCombatEncounterBudgetReset();
+                var release = new LegacyAreaDenialRelease(h.Config);
+                Assert.IsTrue(LegacyAreaDenialRelease.Available);
+                Assert.IsTrue(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(1));
+                Assert.IsTrue(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(2));
+                release.Tick(100f);
+                Assert.IsFalse(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(3), "two casts active: full");
+                release.Tick(101.9f);
+                Assert.IsFalse(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(3), "still inside the 2 s hold");
+                release.Tick(102f);
+                Assert.IsTrue(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(3), "R-06: slots free again after the hold");
+
+                SaltwindCombatEncounterBudgetReset();
+                h.Config.TryApplyEdit("timeline.saltwind", "areaDenialReleaseSeconds", "0", 0f, out _);
+                var v3 = new LegacyAreaDenialRelease(h.Config);
+                HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(1);
+                HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(2);
+                v3.Tick(100f); v3.Tick(500f);
+                Assert.IsFalse(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(3), "0 = never released (V3)");
+                SaltwindCombatEncounterBudgetReset();
+            }
+        }
+
+        static void SaltwindCombatEncounterBudgetReset() => HighSeas.Combat.SaltwindCombatEncounterBudget.ResetForRun();
+
+        [Test]
         public void Overtime_IsNotHeldBackByAnArena()
         {
             var h = Make();

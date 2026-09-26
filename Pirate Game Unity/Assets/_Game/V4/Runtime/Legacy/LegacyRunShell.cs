@@ -30,6 +30,7 @@ namespace RoguePirates.V4.Legacy
         readonly LegacyConfigRuntime _legacyConfig;
         readonly V4RuntimeDatabase _runtimeDatabase;
         readonly LegacyCombatProfileOverride _combatOverride;
+        readonly LegacyAreaDenialRelease _areaDenial;
         GameDatabase _runDatabase;
         PlayerShipController _player;
         StageLayout _layout;
@@ -55,6 +56,7 @@ namespace RoguePirates.V4.Legacy
             _legacyConfig = new LegacyConfigRuntime(config, legacyBaseProfile);
             _runtimeDatabase = new V4RuntimeDatabase(config);
             _combatOverride = new LegacyCombatProfileOverride(config);
+            _areaDenial = new LegacyAreaDenialRelease(config);
             _host = host;
             _player = player;
             _usePlaceholderPoiVisuals = usePlaceholderPoiVisuals;
@@ -254,6 +256,7 @@ namespace RoguePirates.V4.Legacy
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
             if (RunManager.Instance.IsRunEnded) return;
             LegacyEnemyWorldPort.Tick(dt, _player);
+            _areaDenial.Tick(RunManager.Instance.ElapsedSeconds);
             ResolveSameTickBossDeath();
         }
 

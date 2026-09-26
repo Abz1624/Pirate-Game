@@ -1,0 +1,33 @@
+﻿[rect-before] HAS 46,191,563,638
+[is-playing] no
+[begin] started
+[is-playing] OK playing
+[run-start] OK t=5.5 hull 100/100
+[jump-740] jumped to 740 s
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[enemies-752] t=763 hull max 100 | drowned_pursuer: dmg 144.6 (base 12, x12.05) hp 3143; reef_crab_miniboss: dmg 27.0 (base 14, x1.93) hp 1939; elite_hammerhead: dmg 63.9 (base 7, x9.13) hp 254; elite_kraken_spawn: dmg 100.4 (base 11, x9.13) hp 508; drowned_harrier: dmg 211.5 (base 18, x11.75) hp 4622; 
+[place-2] placed at depth 2.0 m, inside=False, hull 100
+[clear-2] cleared
+[clear-2] cleared
+[clear-2] cleared
+[clear-2] cleared
+[drain-2] depth 4.7 m: lost 69.5 hull in 6.9 s = 10.1/s (max hull 100)
+[place-10] placed at depth 10.0 m, inside=False, hull 100
+[clear-10] cleared
+[clear-10] cleared
+[clear-10] cleared
+[clear-10] cleared
+[drain-10] depth 12.6 m: lost 100.0 hull in 6.9 s = 14.4/s (max hull 100)
+[probe-key] removed
+[rect-restore] restored

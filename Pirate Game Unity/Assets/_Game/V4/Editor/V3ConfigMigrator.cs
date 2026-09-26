@@ -462,22 +462,27 @@ namespace RoguePirates.V4.Editor
             }
             if (timeline != null) EditorUtility.SetDirty(timeline);
 
-            foreach (var (spawnerFile, enemy, model, scale) in new[]
+            // Base HP and damage are the enemies V3's overtime actually spawned (shark, cannonboat); the timeline's overtime
+            // spawn ramp (1x at the deadline to 2x five minutes later) makes them progressively stronger.
+            foreach (var (spawnerFile, enemy, model, scale, statsFrom) in new[]
                      {
-                         ("drowned_pursuer", "drowned_pursuer", "Assets/GameObject/SmuggleBoat.prefab", 1.05f),
-                         ("drowned_harrier", "drowned_harrier", "Assets/GameObject/CannonboatNavy.prefab", 0.95f),
+                         ("drowned_pursuer", "drowned_pursuer", "Assets/GameObject/SmuggleBoat.prefab", 1.05f, "shark"),
+                         ("drowned_harrier", "drowned_harrier", "Assets/GameObject/CannonboatNavy.prefab", 0.95f, "cannonboat"),
                      })
             {
                 var spawner = Load<EnemySpawnerConfig>($"{DataRoot}/Spawners/{spawnerFile}.asset");
                 var archetype = Load<EnemyArchetypeConfig>($"{DataRoot}/Enemies/{enemy}.asset");
-                if (spawner == null || archetype == null) { log.AppendLine($"missing {enemy} data"); continue; }
+                var source = Load<EnemyArchetypeConfig>($"{DataRoot}/Enemies/{statsFrom}.asset");
+                if (spawner == null || archetype == null || source == null) { log.AppendLine($"missing {enemy} data"); continue; }
+                archetype.stats.baseHP = source.stats.baseHP;
+                archetype.stats.baseDamage = source.stats.baseDamage;
                 spawner.anchor = archetype;
                 EditorUtility.SetDirty(spawner);
                 archetype.visual.visualPrefab = Load<GameObject>(model);
                 archetype.visual.visualScale = scale;
                 archetype.visual.placeholderModel = true;
                 EditorUtility.SetDirty(archetype);
-                log.AppendLine($"{spawnerFile}: anchors {enemy} (placeholder model {System.IO.Path.GetFileNameWithoutExtension(model)})");
+                log.AppendLine($"{spawnerFile}: anchors {enemy} (placeholder model {System.IO.Path.GetFileNameWithoutExtension(model)}, HP {archetype.stats.baseHP} damage {archetype.stats.baseDamage} from {statsFrom})");
             }
             AssetDatabase.SaveAssets();
             return log.ToString();

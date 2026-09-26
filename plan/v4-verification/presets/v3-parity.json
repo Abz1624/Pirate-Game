@@ -23,6 +23,14 @@
                 {
                     "path": "storm.damageMode",
                     "value": "PerFrameHit"
+                },
+                {
+                    "path": "overtime.spawnStatRampEnd",
+                    "value": "1"
+                },
+                {
+                    "path": "areaDenialReleaseSeconds",
+                    "value": "0"
                 }
             ]
         },

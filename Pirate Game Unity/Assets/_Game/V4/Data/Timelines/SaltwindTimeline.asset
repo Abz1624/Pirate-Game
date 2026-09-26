@@ -780,6 +780,7 @@ MonoBehaviour:
   - tag: charge_windup
     max: 2
     scope: 1
+  areaDenialReleaseSeconds: 2
   overtime:
     initialSpawnIntervalSeconds: 1.4
     intervalFloorSeconds: 0.35
@@ -790,6 +791,9 @@ MonoBehaviour:
     pursuerWeightAfterTwoMinutes: 0.6
     harrierWeightAfterTwoMinutes: 0.4
     startToast: "DROWNED PURSUIT \u2014 spectral fleet incoming!"
+    spawnStatRampStart: 1
+    spawnStatRampEnd: 2
+    spawnStatRampSeconds: 300
   storm:
     safeRegionStartFraction: 1
     safeRegionEndFraction: 0.4
