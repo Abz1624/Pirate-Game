@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `v4-modular-architecture` |
 | Phase start commit | `bd4d0f51` (M1–M3 passed) |
-| Status | Implemented, reviewed and verified. Awaiting your playtest |
+| Status | **Passed** (playtest 27 Sep) |
 
 ## What M4 delivers
 
@@ -54,3 +54,7 @@ No blockers. Fixed: destroyed in-use instances (leaked, then threw on recycle); 
 1. Play a normal run: nothing should look or feel different from M1–M3.
 2. F1 → Pools: 12 `enemy/...` pools, all 0 (they get used in M8). Tick "Count objects created outside the pool" for a minute: you'll see the legacy creation rate and its top sources (the minimap `Circle` markers, R-86).
 3. Module Lab scene → F1 → Pools → **Pool stress**: after 7 s the summary should read 0 created after prewarm, with recycled and 16 grown.
+
+## Playtest result (27 Sep)
+
+Passed. In a run all pools stayed at 0 and the creation counter rose once switched on. Module Lab pool stress: 0 created after prewarm, 11,568 acquires, 1,760 recycled, 16 grown, 0 rejected; peaks lab/stress_recycle 48/48, lab/stress_grow 32/16.
