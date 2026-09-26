@@ -33,6 +33,18 @@ namespace RoguePirates.V4.Legacy
             return Weapons;
         }
 
+        /// <summary>
+        /// M5: the controller becomes the loadout record. Unbound from the ship, its captain fire paths return at once
+        /// (WeaponController L460, L490); switched off, it never updates. The level system still equips and upgrades
+        /// weapons on it (found by type, not by owner) and V4's Weapon Manager reads it.
+        /// </summary>
+        public void MakeRecordOnly()
+        {
+            if (Weapons == null) return;
+            Weapons.BindOwner(null);
+            Weapons.enabled = false;
+        }
+
         /// <summary>LevelSystem mirrors its owned loadout onto the weapon controller (V3RunBootstrap L256).</summary>
         public void SyncLevelSystemLoadout() => HighSeas.UI.LevelSystem.Instance?.SyncWeaponControllerFromOwnedLoadout(Weapons);
     }

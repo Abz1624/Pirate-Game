@@ -45,6 +45,8 @@ namespace RoguePirates.V4.Legacy
         public int Seed { get; private set; }
 
         public LegacyConfigRuntime LegacyConfig => _legacyConfig;
+        /// <summary>M5: the V4 weapon module; bound at run start after the level system synced the loadout.</summary>
+        public LegacyWeaponWiring Weapons { get; set; }
 
         public LegacyRunShell(MonoBehaviour host, GameDatabase database, StageBuilder stageBuilder,
             PlayerShipController player, IslandLayoutDefinition islandLayout, bool usePlaceholderPoiVisuals,
@@ -192,6 +194,7 @@ namespace RoguePirates.V4.Legacy
             _bridge.SetUpWeapons(_player, experiment, _runDatabase, startingWeapon);
             LegacyBuildAdapter.PrepareLevelSystem(_runDatabase, experiment, startingWeapon);
             _bridge.SyncLevelSystemLoadout();
+            Weapons?.Bind();
             LegacyBuildAdapter.EnsureItemSystems();
 
             LegacyPresentationAdapter.EnsureDevAndDebugTools(firstRun);
@@ -228,8 +231,11 @@ namespace RoguePirates.V4.Legacy
             if (!isPvPScene) LegacyPresentationAdapter.ShowStartToasts(!isRetry, seed);
 
             if (multiShipConfig != null && multiShipConfig.SessionKind != V3RunSessionKind.SinglePlayer)
+            {
                 V3MultiShipRunSetup.ApplyAfterRunStart(multiShipConfig.SessionKind, _player, _runDatabase,
                     startingWeapon, multiShipConfig.ShipSpacing);
+                _bridge.MakeRecordOnly(); // the multi-ship setup rebinds the record's owner, which would re-arm its fire paths
+            }
 
             var seedLabel = !isRetry && V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
             Debug.Log($"V4Game: run seed={seed} ({seedLabel}), POI rng={seed + 404}.");
@@ -255,7 +261,7 @@ namespace RoguePirates.V4.Legacy
         {
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
             if (RunManager.Instance.IsRunEnded) return;
-            LegacyEnemyWorldPort.Tick(dt, _player);
+            LegacyEnemyWorldPort.Tick(dt, _player, Weapons != null ? Weapons.TickProjectiles : (System.Action<float>)null);
             _areaDenial.Tick(RunManager.Instance.ElapsedSeconds);
             ResolveSameTickBossDeath();
         }

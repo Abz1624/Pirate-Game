@@ -141,7 +141,8 @@ namespace RoguePirates.V4.Tests
             var allowed = new Dictionary<string, string[]>
             {
                 ["EncounterSpawner"] = new[] { "Runtime/Legacy/LegacySpawnAdapters.cs", "Editor/V4SceneSetup.cs" },
-                ["WeaponController"] = new[] { "Runtime/Legacy/V4LegacyBridge.cs" },
+                // M5: the switched-off controller is the loadout record: the bridge, the record adapter and the scene setup.
+                ["WeaponController"] = new[] { "Runtime/Legacy/V4LegacyBridge.cs", "Runtime/Legacy/LegacyWeaponAdapters.cs", "Runtime/Legacy/LegacyWeaponLab.cs", "Editor/V4SceneSetup.cs" },
             };
             var offenders = Scan(@"\b(EncounterSpawner|WeaponController)\b", (rel, match) => !allowed[match].Contains(rel));
             Assert.IsEmpty(offenders, "EncounterSpawner / WeaponController outside their adapters: " + string.Join(", ", offenders));

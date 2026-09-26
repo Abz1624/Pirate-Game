@@ -11,6 +11,7 @@ namespace RoguePirates.V4.Presentation
     public sealed class V4PresentationRoot : MonoBehaviour
     {
         public PoolService Pools { get; private set; }
+        public Weapons.ProjectileViewPresenter Projectiles { get; private set; }
         public V4Game Game { get; private set; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -42,6 +43,9 @@ namespace RoguePirates.V4.Presentation
             Pools = new PoolService(poolRoot);
             foreach (var definition in PoolCatalog.Build(game.Config, game.IsModuleLab)) Pools.Register(definition);
             Pools.PrewarmAll();
+            // M5: player projectile views (the weapon module looks them up in the run context).
+            Projectiles = new Weapons.ProjectileViewPresenter(Pools, game.Config, Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings"));
+            game.Context?.Replace<RoguePirates.V4.Weapons.IProjectileViews>(Projectiles);
         }
 
         void OnDestroy()

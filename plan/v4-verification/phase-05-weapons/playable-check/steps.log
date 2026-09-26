@@ -1,0 +1,120 @@
+﻿[rect-before] HAS 46,191,563,638
+[is-playing] no
+[begin] started
+[is-playing] OK playing
+[lab-start] OK weapons: swivel_guns
+[console] console open on Pools
+[solo-deck_cannons] solo deck_cannons
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[fired-deck_cannons] deck_cannons: 9 emissions in 3 s (slot deck_cannons, Projectile)
+[solo-swivel_guns] solo swivel_guns
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[fired-swivel_guns] swivel_guns: 16 emissions in 3 s (slot swivel_guns, Projectile)
+[solo-long_nine] solo long_nine
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[shot] weapon-long_nine.png
+[fired-long_nine] long_nine: 5 emissions in 3 s (slot long_nine, Projectile)
+[solo-harpoon_gun] solo harpoon_gun
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[fired-harpoon_gun] harpoon_gun: 8 emissions in 3 s (slot harpoon_gun, Projectile)
+[solo-broadside_battery] solo broadside_battery
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[shot] weapon-broadside_battery.png
+[fired-broadside_battery] broadside_battery: 8 emissions in 3 s (slot broadside_battery, Fan)
+[solo-flying_cutlasses] solo flying_cutlasses
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[shot] weapon-flying_cutlasses.png
+[fired-flying_cutlasses] flying_cutlasses: 11 emissions in 3 s (slot flying_cutlasses, Orbit)
+[solo-flamethrower] solo flamethrower
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[fired-flamethrower] flamethrower: 3 emissions in 3 s (slot flamethrower, ConeStream)
+[solo-powder_kegs] solo powder_kegs
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[shot] weapon-powder_kegs.png
+[fired-powder_kegs] powder_kegs: 5 emissions in 3 s (slot powder_kegs, Mine)
+[solo-lightning_mast] solo lightning_mast
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[shot] weapon-lightning_mast.png
+[fired-lightning_mast] lightning_mast: 7 emissions in 3 s (slot lightning_mast, AreaStrike)
+[solo-mortar] solo mortar
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[shot] weapon-mortar.png
+[fired-mortar] mortar: 7 emissions in 3 s (slot mortar, PredictedArea)
+[cooldown-before] deck cannons, default cooldown
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[cooldown-edit] default: 10 in 3 s; edit baseCooldown 0.25: True 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[cooldown-after] after edit: 35 in 3 s
+[evolve] deck cannons evolved to Stormshot
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[shot] weapon-stormshot.png
+[evolved] slot deck_cannons evolution Stormshot Cannon (LaneWithBurst); max concurrent targets 12
+[pools] projectile/Cannonball peak5 +0, projectile/Broadside_Cannonball_VFX peak3 +0, projectile/Harpoon peak1 +0, projectile/Cannonball small peak1 +0
+[restore-loadout] ok
+[key-cleanup] ok
+[rect-restore] restored

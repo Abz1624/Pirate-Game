@@ -205,6 +205,62 @@ namespace RoguePirates.V4.Editor
         }
 
         /// <summary>
+        /// M5: the V4 weapon tick takes WeaponController's place in the frame. The controller becomes the switched-off
+        /// loadout record (it never updates, so its own place no longer matters): its file ID moves to a free one and the
+        /// new "weapons" LegacyUpdateSlot on /Systems takes the old one, so the weapon tick runs where WeaponController.Update
+        /// ran (after LevelSystem, before PickupWorld). Idempotent.
+        /// </summary>
+        public static string ApplyM5()
+        {
+            var log = new List<string>();
+            foreach (var path in new[] { V4SceneNames.SaltwindRunPath, V4SceneNames.ModuleLabPath })
+            {
+                Edit(path, log, () =>
+                {
+                    var systems = GameObject.Find("Systems");
+                    var record = systems != null ? systems.GetComponent<HighSeas.Weapons.WeaponController>() : null;
+                    if (record == null) { log.Add("  no WeaponController on /Systems"); return; }
+                    if (record.enabled) { record.enabled = false; log.Add("  WeaponController switched off (loadout record)"); }
+                    if (!systems.GetComponents<Legacy.LegacyUpdateSlot>().Any(s => s.role == Legacy.LegacyWeaponWiring.WeaponsRole))
+                    {
+                        systems.AddComponent<Legacy.LegacyUpdateSlot>().role = Legacy.LegacyWeaponWiring.WeaponsRole;
+                        log.Add("  weapons LegacyUpdateSlot added");
+                    }
+                });
+                SwapWeaponSlotIntoRecordId(path, log);
+            }
+            return string.Join("\n", log);
+        }
+
+        const long WeaponControllerSceneId = 658786988;
+
+        static void SwapWeaponSlotIntoRecordId(string path, List<string> log)
+        {
+            EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+            var systems = GameObject.Find("Systems");
+            var record = systems != null ? systems.GetComponent<HighSeas.Weapons.WeaponController>() : null;
+            var slot = systems != null ? systems.GetComponents<Legacy.LegacyUpdateSlot>().FirstOrDefault(s => s.role == Legacy.LegacyWeaponWiring.WeaponsRole) : null;
+            if (record == null || slot == null) { log.Add($"  {path}: record or weapons slot missing"); return; }
+            long Id(Object o) => (long)GlobalObjectId.GetGlobalObjectIdSlow(o).targetObjectId;
+            var slotId = Id(slot);
+            if (slotId == WeaponControllerSceneId) { log.Add($"  {path}: weapons slot already has WeaponController's place ({slotId})"); return; }
+            var recordId = Id(record);
+            if (recordId != WeaponControllerSceneId) { log.Add($"  {path}: WeaponController has file ID {recordId}, expected {WeaponControllerSceneId}; not changed"); return; }
+
+            var file = Path.Combine(Path.GetDirectoryName(Application.dataPath), path);
+            var text = File.ReadAllText(file);
+            long free = -1;
+            for (var id = WeaponControllerSceneId + 1000; id < WeaponControllerSceneId + 100000; id++)
+                if (!Regex.IsMatch(text, $@"(&|fileID: ){id}\b")) { free = id; break; }
+            if (free < 0) { log.Add($"  {path}: no free file ID"); return; }
+            text = Regex.Replace(text, $@"(&|fileID: ){recordId}\b", m => m.Groups[1].Value + free);
+            text = Regex.Replace(text, $@"(&|fileID: ){slotId}\b", m => m.Groups[1].Value + recordId);
+            File.WriteAllText(file, text);
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            log.Add($"  {path}: WeaponController {recordId} -> {free}, weapons slot {slotId} -> {recordId}");
+        }
+
+        /// <summary>
         /// M2: the Module Lab is a copy of V4SaltwindRun with V4Game in lab mode (replaces the M0 copy of the legacy
         /// weapon/enemy playtest scene). Overwrites V4ModuleLab.
         /// </summary>

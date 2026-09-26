@@ -36,6 +36,12 @@ namespace RoguePirates.V4.Config
         [Tooltip("Cap per enemy model (0 = no cap).")] [AppliesFrom(8)] public int enemyViewCap = 0;
         [AppliesFrom(8)] public ConfigEnums.PoolOverflowPolicy enemyViewOverflow = ConfigEnums.PoolOverflowPolicy.Grow;
 
+        [Header("Derived projectile view entries (M5)")]
+        [Tooltip("Add one entry per projectile model the weapons fire (and the default model).")] [AppliesFrom(0)] public bool deriveProjectileViews = true;
+        [AppliesFrom(0)] public int projectileViewPrewarm = 24;
+        [Tooltip("Cap per projectile model (0 = no cap).")] [AppliesFrom(0)] public int projectileViewCap = 0;
+        [AppliesFrom(0)] public ConfigEnums.PoolOverflowPolicy projectileViewOverflow = ConfigEnums.PoolOverflowPolicy.Grow;
+
         public override void Validate(ConfigValidationReport report)
         {
             var keys = new HashSet<string>(StringComparer.Ordinal);

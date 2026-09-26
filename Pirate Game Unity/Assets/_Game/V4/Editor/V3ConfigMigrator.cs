@@ -423,6 +423,185 @@ namespace RoguePirates.V4.Editor
             return log.ToString();
         }
 
+        public const string WeaponRulesPath = DataRoot + "/Weapons/WeaponRules.asset";
+
+        [MenuItem("RoguePirates/V4/Apply M5 Weapon Configs")]
+        static void ApplyM5FromMenu() => Debug.Log(ApplyM5());
+
+        /// <summary>
+        /// M5, in place and idempotent: each weapon's behavior and pattern blocks (V3 WeaponController's pattern plus its
+        /// weapon-id branches, with the constants it and the juice settings held), its projectile model, the six
+        /// evolutions from WeaponEvolutionCatalog, and the weapon rules; all added to the config set.
+        /// </summary>
+        public static string ApplyM5()
+        {
+            var log = new StringBuilder();
+            var juice = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
+            var weapons = new Dictionary<string, WeaponConfig>();
+            foreach (var guid in AssetDatabase.FindAssets("t:WeaponConfig", new[] { DataRoot + "/Weapons" }))
+            {
+                var w = AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                weapons[w.weaponId] = w;
+                FillWeaponBehavior(w, juice);
+                EditorUtility.SetDirty(w);
+                log.AppendLine($"{w.weaponId}: {w.behavior}{(w.lane.enabled ? " (lane)" : "")}{(w.projectile.burstShots > 1 ? $" (burst {w.projectile.burstShots})" : "")}");
+            }
+
+            EnsureFolder(DataRoot + "/Evolutions");
+            var all = new List<V4ConfigAsset>();
+            foreach (var def in WeaponEvolutionCatalog.Definitions)
+            {
+                var path = $"{DataRoot}/Evolutions/{def.evolutionId}.asset";
+                var e = AssetDatabase.LoadAssetAtPath<WeaponEvolutionConfig>(path);
+                if (e == null)
+                {
+                    e = ScriptableObject.CreateInstance<WeaponEvolutionConfig>();
+                    AssetDatabase.CreateAsset(e, path);
+                }
+                e.configId = "evolution." + def.evolutionId;
+                e.evolutionId = def.evolutionId;
+                e.displayName = def.displayName;
+                e.description = def.description;
+                e.requiredItemId = def.requiredItemId;
+                e.baseWeapon = weapons.TryGetValue(def.baseWeaponId, out var baseWeapon) ? baseWeapon : null;
+                e.effect = EvolutionEffectOf(def.behaviorModifierId);
+                EditorUtility.SetDirty(e);
+                all.Add(e);
+                log.AppendLine($"{def.evolutionId}: {e.effect} on {def.baseWeaponId}");
+            }
+
+            var rules = AssetDatabase.LoadAssetAtPath<WeaponRulesConfig>(WeaponRulesPath);
+            if (rules == null)
+            {
+                rules = ScriptableObject.CreateInstance<WeaponRulesConfig>();
+                AssetDatabase.CreateAsset(rules, WeaponRulesPath);
+            }
+            rules.configId = "weapon_rules";
+            EditorUtility.SetDirty(rules);
+            all.Add(rules);
+
+            var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(ConfigSetPath);
+            if (set != null)
+            {
+                var added = 0;
+                foreach (var c in all)
+                    if (!set.configs.Contains(c)) { set.configs.Add(c); added++; }
+                set.configs = set.configs.Where(c => c != null).OrderBy(c => c.configId, StringComparer.Ordinal).ToList();
+                EditorUtility.SetDirty(set);
+                log.AppendLine($"config set: {added} added, {set.configs.Count} configs");
+            }
+            AssetDatabase.SaveAssets();
+            if (set != null) log.Append(ConfigValidator.Validate(set));
+            return log.ToString();
+        }
+
+        static ConfigEnums.EvolutionEffect EvolutionEffectOf(string modifierId) => modifierId switch
+        {
+            "stormshot_cannon" => ConfigEnums.EvolutionEffect.LaneWithBurst,
+            "kings_broadside" => ConfigEnums.EvolutionEffect.OppositeSideFollowUp,
+            "devils_wake" => ConfigEnums.EvolutionEffect.WakeKegs,
+            "bladed_tide" => ConfigEnums.EvolutionEffect.PulsingOrbit,
+            "hellfire_nozzle" => ConfigEnums.EvolutionEffect.WideConeWithPatches,
+            "tempest_mast" => ConfigEnums.EvolutionEffect.JumpAndDelayedStrike,
+            _ => ConfigEnums.EvolutionEffect.None,
+        };
+
+        /// <summary>
+        /// The behavior and blocks V3 WeaponController gave each weapon through its pattern and weapon-id branches. Every
+        /// value is V3's (WeaponController constants, the juice settings for Swivel Guns, the Long Nine beam and pellet
+        /// lifetimes, ProjectileWorld's homing list and projectile models).
+        /// </summary>
+        static void FillWeaponBehavior(WeaponConfig w, DemoJuiceSettings juice)
+        {
+            var id = w.weaponId;
+            w.projectile = new ProjectileBlock();
+            w.lane = new LaneBlock();
+            w.fan = new FanBlock();
+            w.orbit = new OrbitBlock();
+            w.stream = new StreamBlock();
+            w.trail = new TrailBlock();
+            w.mine = new MineBlock();
+            w.areaStrike = new AreaStrikeBlock();
+            w.aura = new AuraBlock();
+            w.predictedArea = new PredictedAreaBlock();
+            w.summon = new SummonBlock();
+            w.levelDamageFactor = false;
+
+            switch (w.pattern)
+            {
+                case ConfigEnums.WeaponPattern.AutoProjectile:
+                    w.behavior = ConfigEnums.WeaponBehavior.Projectile;
+                    w.levelDamageFactor = true; // V3 applies the level factor to projectiles and lanes only (R-21)
+                    break;
+                case ConfigEnums.WeaponPattern.FanVolley: w.behavior = ConfigEnums.WeaponBehavior.Fan; break;
+                case ConfigEnums.WeaponPattern.Orbit: w.behavior = ConfigEnums.WeaponBehavior.Orbit; break;
+                case ConfigEnums.WeaponPattern.TrailZone:
+                    w.behavior = id == "flamethrower" || id == "burning_oil" ? ConfigEnums.WeaponBehavior.ConeStream : ConfigEnums.WeaponBehavior.Trail;
+                    break;
+                case ConfigEnums.WeaponPattern.MineDrop: w.behavior = ConfigEnums.WeaponBehavior.Mine; break;
+                case ConfigEnums.WeaponPattern.ChainLightning: w.behavior = ConfigEnums.WeaponBehavior.AreaStrike; break;
+                case ConfigEnums.WeaponPattern.AuraPulse: w.behavior = ConfigEnums.WeaponBehavior.Aura; break;
+                case ConfigEnums.WeaponPattern.PredictedAoE: w.behavior = ConfigEnums.WeaponBehavior.PredictedArea; break;
+                case ConfigEnums.WeaponPattern.SummonChase: w.behavior = ConfigEnums.WeaponBehavior.Summon; break;
+            }
+
+            // ProjectileWorld.ShouldApplyHoming.
+            w.projectile.homing = id == "swivel_guns" || id == "deck_cannons" || id == "long_nine";
+            if (id == "swivel_guns")
+            {
+                // FireSwivelShot / BeginSwivelBurst (values from the juice settings, V3's defaults otherwise).
+                w.projectile.burstShots = 2;
+                w.projectile.burstGapSeconds = juice != null ? juice.swivelBetweenShotDelay : 0.18f;
+                w.projectile.damageMultiplier = juice != null ? juice.swivelDamageMult : 0.55f;
+                w.projectile.sizeMultiplier = juice != null ? juice.swivelProjectileSizeMult : 0.55f;
+                w.projectile.minSize = 0.32f;
+                w.projectile.lifeSeconds = 2.4f;
+                w.projectile.leadWithActualSpeed = false;
+                w.projectile.closeDefenseTargeting = true;
+            }
+            if (id == "long_nine")
+            {
+                w.lane.enabled = true;
+                w.lane.beam = true;
+                w.lane.beamHalfWidth = juice != null ? juice.longNineBeamHalfWidth : 0.32f;
+            }
+            if (id == "harpoon_gun") w.projectile.tarOnHit = true;
+            if (id == "broadside_battery")
+            {
+                w.fan.quantityAddsPellets = false;
+                w.fan.minSpeed = 42f;
+                w.fan.hitRadius = 1.05f;
+                var life = 1.2f;
+                if (juice != null && juice.TryGetWeaponVfx(id, out var binding) && binding.projectileLifeMult > 0f) life *= binding.projectileLifeMult;
+                w.fan.lifeSeconds = life;
+                w.fan.muzzlePerPellet = false;
+                w.fan.trackPelletTargets = false;
+                w.fan.splashOnDespawn = false;
+            }
+
+            // ProjectileWorld.ResolveProjectileVisual.
+            w.projectileVisual = new ProjectileVisual();
+            if (juice != null)
+            {
+                if (juice.TryGetWeaponVfx(id, out var vfx) && vfx.projectilePrefab != null)
+                {
+                    w.projectileVisual.prefab = vfx.projectilePrefab;
+                    w.projectileVisual.scaleMultiplier = vfx.projectileScaleMult;
+                }
+                else if (id == "swivel_guns")
+                {
+                    w.projectileVisual.prefab = juice.smallProjectilePrefab != null ? juice.smallProjectilePrefab : juice.projectilePrefab;
+                    w.projectileVisual.scaleMultiplier = juice.swivelProjectileSizeMult;
+                    w.projectileVisual.radiusMultiplier = 0.85f;
+                }
+                else if (id == "harpoon_gun" && juice.harpoonProjectilePrefab != null)
+                {
+                    w.projectileVisual.prefab = juice.harpoonProjectilePrefab;
+                    w.projectileVisual.scaleMultiplier = juice.harpoonProjectileScale;
+                }
+            }
+        }
+
         public const string PoolCatalogPath = DataRoot + "/Pools/SaltwindPools.asset";
         public const string PoolStressMarkerPath = DataRoot + "/Pools/PoolStressMarker.prefab";
 

@@ -272,6 +272,13 @@ namespace RoguePirates.V4.Tests
             // ...and the V3 overtime enemies whose base HP/damage the Drowned take (playtest follow-up).
             "Editor/V3ConfigMigrator.cs:shark",
             "Editor/V3ConfigMigrator.cs:cannonboat",
+            // M5: the weapon data step maps V3 WeaponController's weapon-id branches onto config (behaviors, blocks, models).
+            "Editor/V3ConfigMigrator.cs:swivel_guns",
+            "Editor/V3ConfigMigrator.cs:deck_cannons",
+            "Editor/V3ConfigMigrator.cs:long_nine",
+            "Editor/V3ConfigMigrator.cs:harpoon_gun",
+            "Editor/V3ConfigMigrator.cs:broadside_battery",
+            "Editor/V3ConfigMigrator.cs:flamethrower",
         };
 
         [Test]

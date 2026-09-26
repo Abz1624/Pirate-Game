@@ -1,0 +1,12 @@
+M5 end-of-phase trace set (Windows player, final code). V4 fires every weapon; V3 comparison and M4 default must match exactly.
+--- V4 (v3-parity preset) vs V3 goldens
+v3-trace-seed-101-a.jsonl vs v4-trace-seed-101-parity.jsonl: MATCH (437 lines)
+v3-trace-seed-202-a.jsonl vs v4-trace-seed-202-parity.jsonl: MATCH (409 lines)
+v3-trace-seed-303-a.jsonl vs v4-trace-seed-303-parity.jsonl: MATCH (523 lines)
+--- V4 replay
+v4-trace-seed-101-parity.jsonl vs v4-trace-seed-101-parity-b.jsonl: MATCH (437 lines)
+--- Default (playtest decisions on) vs the M4 default: weapons are V4 now, expected identical
+v4-trace-seed-101-a.jsonl vs v4-trace-seed-101-a.jsonl: MATCH (577 lines)
+v4-trace-seed-202-a.jsonl vs v4-trace-seed-202-a.jsonl: MATCH (544 lines)
+v4-trace-seed-303-a.jsonl vs v4-trace-seed-303-a.jsonl: MATCH (603 lines)
+

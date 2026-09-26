@@ -5769,7 +5769,7 @@ GameObject:
   - component: {fileID: 658786993}
   - component: {fileID: 658786990}
   - component: {fileID: 658786989}
-  - component: {fileID: 658786988}
+  - component: {fileID: 658787988}
   - component: {fileID: 658786987}
   - component: {fileID: 658786986}
   - component: {fileID: 658786985}
@@ -5781,6 +5781,7 @@ GameObject:
   - component: {fileID: 658786998}
   - component: {fileID: 658786997}
   - component: {fileID: 658786996}
+  - component: {fileID: 658786988}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -5896,14 +5897,14 @@ MonoBehaviour:
   weaponSlots: 2
   logbookSlots: 2
   demoPacing: {fileID: 0}
---- !u!114 &658786988
+--- !u!114 &658787988
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b642a6dca9e4f843ad0423cfc8a1fe6, type: 3}
   m_Name: 
@@ -5977,6 +5978,19 @@ MonoBehaviour:
   shipCollisionPadding: 0.55
   enemySeparationPadding: 0.2
   juiceSettings: {fileID: 0}
+--- !u!114 &658786993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16f779b2f5326b34da66a76903a0b73c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.Legacy.LegacyUpdateSlot
+  role: ambient
 --- !u!114 &658786994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6079,7 +6093,7 @@ MonoBehaviour:
   configSet: {fileID: 11400000, guid: 5831aeb9fd5687344a53de1cd4fff7db, type: 2}
   legacyBaseProfile: {fileID: 11400000, guid: 5c446dd1cad997947bc835f4b6ae9d6d, type: 2}
   moduleLab: 1
---- !u!114 &658786993
+--- !u!114 &658786988
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6091,7 +6105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16f779b2f5326b34da66a76903a0b73c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.Legacy.LegacyUpdateSlot
-  role: ambient
+  role: weapons
 --- !u!1 &676974001
 GameObject:
   m_ObjectHideFlags: 0

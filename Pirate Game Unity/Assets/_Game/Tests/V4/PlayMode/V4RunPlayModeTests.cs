@@ -434,9 +434,126 @@ namespace RoguePirates.V4.Tests
             Assert.IsNotNull(root);
             var stats = root.Pools.Stats().ToList();
             Assert.IsFalse(stats.Any(st => st.Key.StartsWith("lab/")), "no Module Lab pools in a run");
-            Assert.Greater(stats.Count, 5, "derived enemy view pools are listed");
-            Assert.AreEqual(0, stats.Sum(st => st.Prewarmed), "not prewarmed before V4 enemy views use them (M8)");
-            Assert.AreEqual(0, stats.Sum(st => st.Total), "no pooled instances exist");
+            var enemyPools = stats.Where(st => st.Key.StartsWith("enemy/")).ToList();
+            Assert.Greater(enemyPools.Count, 5, "derived enemy view pools are listed");
+            Assert.AreEqual(0, enemyPools.Sum(st => st.Total), "enemy views not prewarmed before V4 enemy views use them (M8)");
+            var projectilePools = stats.Where(st => st.Key.StartsWith("projectile/")).ToList();
+            Assert.Greater(projectilePools.Count, 0, "M5: projectile views are pooled");
+            Assert.IsTrue(projectilePools.All(st => st.Prewarmed > 0), "and prewarmed");
+            Assert.AreEqual(0, stats.Sum(st => st.CreatedAfterPrewarm), "nothing created after prewarm at run start");
+        }
+
+        static HighSeas.Weapons.WeaponController Record() => Object.FindFirstObjectByType<HighSeas.Weapons.WeaponController>();
+
+        static RoguePirates.V4.Weapons.IWeaponManager Weapons()
+        {
+            Object.FindFirstObjectByType<V4Game>().Context.TryGet<RoguePirates.V4.Weapons.IWeaponManager>(out var weapons);
+            return weapons;
+        }
+
+        static int Emissions(string weaponId) =>
+            HighSeas.Combat.WeaponDamageLedger.Snapshot().TryGetValue(weaponId, out var s) ? s.emissions : 0;
+
+        /// <summary>A ring of sharks around the ship, and one ahead and to each side, so every weapon has a target.</summary>
+        static void SurroundWithEnemies(EnemyWorld world, PlayerShipController ship, int count = 8)
+        {
+            var shark = System.Array.FindIndex(world.Definitions, d => d != null && d.id == "shark");
+            var forward = ship.MovementForward.sqrMagnitude > 0.01f ? ship.MovementForward.normalized : Vector3.forward;
+            var right = Vector3.Cross(Vector3.up, forward);
+            foreach (var offset in new[] { forward * 5f, right * 6f, -right * 6f, -forward * 4f })
+                world.Spawn(shark, ship.Position + offset, EliteAffix.None, 0.01f, 50f);
+            for (var i = 0; i < count; i++)
+            {
+                var a = i * Mathf.PI * 2f / count;
+                world.Spawn(shark, ship.Position + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * 9f, EliteAffix.None, 0.01f, 50f);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator Weapons_FireFromV4_AndTheRecordIsInert()
+        {
+            SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return null;
+            yield return WaitForPlaying();
+            var record = Record();
+            Assert.IsFalse(record.enabled, "the WeaponController is a switched-off loadout record");
+            var weapons = Weapons();
+            Assert.IsNotNull(weapons);
+            Assert.AreEqual(record.Weapons.Count, weapons.Slots.Count, "V4 slots mirror the record");
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            ship.Damage.SetPlaytestInvulnerable(true);
+            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            SurroundWithEnemies(world, ship);
+
+            var id = weapons.Slots[0].Id;
+            var before = Emissions(id);
+            record.CaptainFireAllWeapons(); // the V3 fire path: no owner, returns at once
+            Assert.AreEqual(before, Emissions(id), "the record's own fire path is inert");
+
+            var deadline = Time.realtimeSinceStartup + 10f;
+            while (Emissions(id) == before && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.Greater(Emissions(id), before, "V4 fired " + id);
+            Assert.AreEqual(0, Object.FindFirstObjectByType<HighSeas.Weapons.ProjectileWorld>().ActiveProjectileCount, "V3's ProjectileWorld is not used");
+        }
+
+        [UnityTest]
+        public IEnumerator LevelUpWrites_ToTheRecord_ReachV4()
+        {
+            SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return null;
+            yield return WaitForPlaying();
+            var record = Record();
+            var weapons = Weapons();
+            var count = weapons.Slots.Count;
+            Assert.IsTrue(record.EquipWeapon("mortar"), "what LevelSystem.ApplyOffer does for a new weapon");
+            yield return null;
+            yield return null;
+            Assert.AreEqual(count + 1, weapons.Slots.Count);
+            var slot = weapons.Slots.Last();
+            Assert.AreEqual("mortar", slot.Id);
+            record.UpgradeWeapon(record.FindWeaponIndex("mortar"), HighSeas.Core.Rarity.Uncommon);
+            yield return null;
+            yield return null;
+            Assert.AreEqual(2, slot.Level, "upgrades reach the same V4 slot");
+            Assert.AreEqual(record.Weapons.Last().damageBonus, slot.DamageBonus);
+        }
+
+        [UnityTest]
+        public IEnumerator EveryWeapon_Fires_InARun()
+        {
+            SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return null;
+            yield return WaitForPlaying();
+            var record = Record();
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            ship.Damage.SetPlaytestInvulnerable(true);
+            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            record.EnsureWeaponSlotCapacity(6);
+            foreach (var loadout in new[]
+                     {
+                         new[] { "deck_cannons", "broadside_battery", "powder_kegs", "flying_cutlasses", "lightning_mast", "flamethrower" },
+                         new[] { "swivel_guns", "long_nine", "harpoon_gun", "mortar" },
+                     })
+            {
+                record.SetWeaponLoadout(loadout);
+                HighSeas.UI.LevelSystem.Instance.SetPlaytestWeaponLoadout(loadout);
+                var before = loadout.ToDictionary(id => id, Emissions);
+                var deadline = Time.realtimeSinceStartup + 20f;
+                while (Time.realtimeSinceStartup < deadline && loadout.Any(id => Emissions(id) <= before[id]))
+                {
+                    if (world.ActiveCount < 6) SurroundWithEnemies(world, ship);
+                    if (RunManager.Instance.IsPaused) PickFirstCard();
+                    yield return null;
+                }
+                foreach (var id in loadout) Assert.Greater(Emissions(id), before[id], id + " fired");
+            }
+        }
+
+        static void PickFirstCard()
+        {
+            var modal = HighSeas.UI.LevelUpModal.Instance;
+            var card = modal != null ? modal.transform.Find("CardRow/Card0") : null;
+            if (card != null && card.gameObject.activeInHierarchy) card.GetComponent<UnityEngine.UI.Button>()?.onClick.Invoke();
         }
 
         [UnityTest]

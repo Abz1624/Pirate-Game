@@ -209,12 +209,14 @@ namespace RoguePirates.V4.Legacy
         }
 
         /// <summary>Same calls, same order as V3RunBootstrap.Update.</summary>
-        public static void Tick(float dt, PlayerShipController player)
+        public static void Tick(float dt, PlayerShipController player, System.Action<float> playerProjectiles = null)
         {
             var playerPos = player != null ? player.Position : Vector3.zero;
             Object.FindFirstObjectByType<BarnacleKingBossAttackDirector>()?.Tick(dt);
             Object.FindFirstObjectByType<EnemyWorld>()?.Tick(dt, playerPos, player?.Damage);
-            Object.FindFirstObjectByType<ProjectileWorld>()?.Tick(dt, Object.FindFirstObjectByType<EnemyWorld>());
+            // M5: V4 player projectiles tick here, where V3 ticked ProjectileWorld (which V4 no longer fills).
+            if (playerProjectiles != null) playerProjectiles(dt);
+            else Object.FindFirstObjectByType<ProjectileWorld>()?.Tick(dt, Object.FindFirstObjectByType<EnemyWorld>());
             Object.FindFirstObjectByType<HostileProjectileWorld>()?.Tick(dt, player?.Damage);
             Object.FindFirstObjectByType<PickupWorld>()?.Tick(dt, playerPos, RunManager.Instance.Stats.PickupRadius);
             V3FloorPowerupWorld.Instance?.Tick(dt, playerPos);

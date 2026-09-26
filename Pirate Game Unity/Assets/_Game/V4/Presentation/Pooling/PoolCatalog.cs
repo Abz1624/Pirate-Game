@@ -26,6 +26,10 @@ namespace RoguePirates.V4.Presentation.Pooling
                 if (e.moduleLabOnly && !moduleLab) continue;
                 result.Add(new PoolDefinition(e.key, e.prefab, e.prewarm, e.cap, e.overflow, e.moduleLabOnly ? "catalog (Module Lab)" : "catalog"));
             }
+            var used0 = new HashSet<string>(result.Select(d => d.Key));
+            if (catalog.deriveProjectileViews)
+                foreach (var d in DeriveProjectileViews(config, catalog))
+                    if (used0.Add(d.Key)) result.Add(d);
             if (catalog.deriveEnemyViews)
             {
                 // Keys come from model names: two different prefabs with the same name (or a catalog entry already
@@ -39,6 +43,29 @@ namespace RoguePirates.V4.Presentation.Pooling
                 }
             }
             return result;
+        }
+
+        /// <summary>The default projectile model plus each projectile or pellet weapon's own model (M5).</summary>
+        static IEnumerable<PoolDefinition> DeriveProjectileViews(ConfigSetRuntime config, PoolCatalogConfig catalog)
+        {
+            var settings = Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings");
+            var models = new List<(GameObject model, List<string> ids)>();
+            void Add(GameObject model, string id)
+            {
+                if (model == null) return;
+                var entry = models.FirstOrDefault(m => m.model == model);
+                if (entry.model == null) { entry = (model, new List<string>()); models.Add(entry); }
+                entry.ids.Add(id);
+            }
+            Add(settings != null ? settings.projectilePrefab : null, "default");
+            foreach (var w in config.All<WeaponConfig>())
+            {
+                if (w.behavior != ConfigEnums.WeaponBehavior.Projectile && w.behavior != ConfigEnums.WeaponBehavior.Fan) continue;
+                Add(w.projectileVisual != null && w.projectileVisual.prefab != null ? w.projectileVisual.prefab : settings != null ? settings.projectilePrefab : null, w.weaponId);
+            }
+            foreach (var (model, ids) in models)
+                yield return new PoolDefinition(Weapons.ProjectileViewPresenter.KeyFor(model), model, catalog.projectileViewPrewarm, catalog.projectileViewCap,
+                    catalog.projectileViewOverflow, "derived: projectiles of " + string.Join(", ", ids));
         }
 
         /// <summary>Enemies the timeline can spawn, by id, with the model each renders with.</summary>

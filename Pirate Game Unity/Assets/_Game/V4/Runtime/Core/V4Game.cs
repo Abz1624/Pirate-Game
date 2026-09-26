@@ -46,6 +46,7 @@ namespace RoguePirates.V4
         LegacyRunShell _shell;
         LegacyEventFeed _feed;
         SpawnController _spawn;
+        LegacyWeaponWiring _weapons;
         bool _running;
         bool _ended;
         bool _objectiveSecured;
@@ -88,6 +89,11 @@ namespace RoguePirates.V4
             var slots = new LegacySpawnSlots(_spawn.TickAmbient, _spawn.TickOvertime, _spawn.TickStorm, _spawn.TickBeats, _spawn.TickStormEdge);
             _shell = new LegacyRunShell(this, database, stageBuilder, player, islandLayout, usePlaceholderPoiVisuals, _config, legacyBaseProfile, slots, encounters);
             _context.Register<ISpawnerProfiles>(_shell.LegacyConfig);
+            // M5: the Weapon Manager (replaces WeaponController's firing and ProjectileWorld; the controller stays as the
+            // loadout record the legacy level system writes).
+            _weapons = new LegacyWeaponWiring(_shell, _context, _config, runState, _events, _clock);
+            _shell.Weapons = _weapons;
+            _context.Register<RoguePirates.V4.Weapons.IWeaponManager>(_weapons.Manager);
             _feed = new LegacyEventFeed(_events, _clock);
             damageSink.SteadyDamageReported += _feed.OnSteadyDamage;
             _shell.Awake();
@@ -166,6 +172,7 @@ namespace RoguePirates.V4
             }
 
             _feed?.Detach();
+            _weapons?.Dispose();
             _shell?.Unwire();
             _shell?.OnDestroy();
             if (_config != null) _config.ConfigChanged -= OnConfigChanged;
