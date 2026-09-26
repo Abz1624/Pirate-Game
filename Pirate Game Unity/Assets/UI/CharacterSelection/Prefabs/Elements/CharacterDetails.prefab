@@ -164,7 +164,7 @@ MonoBehaviour:
   m_text: SPECIAL ABILITY
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
-  m_sharedMaterial: {fileID: 0}
+  m_sharedMaterial: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -452,7 +452,7 @@ MonoBehaviour:
   m_text: Ram through obstacles and deal massive damage.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
-  m_sharedMaterial: {fileID: 0}
+  m_sharedMaterial: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -666,14 +666,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.34901962}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: be863af3e434543ebbb27befc8450f2b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ad636cd4a07ca4a83ae04588f5e9fdff, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -771,7 +771,7 @@ MonoBehaviour:
   m_text: UNSTOPPABLE
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
-  m_sharedMaterial: {fileID: 0}
+  m_sharedMaterial: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1256,7 +1256,7 @@ MonoBehaviour:
   m_text: HANK
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
-  m_sharedMaterial: {fileID: 0}
+  m_sharedMaterial: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1341,6 +1341,10 @@ PrefabInstance:
       propertyPath: m_text
       value: DURABILITY
       objectReference: {fileID: 0}
+    - target: {fileID: 85160617516416392, guid: d17b8c5f5bcef45c6a8f100fc87aec4c, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     - target: {fileID: 545462128913713293, guid: d17b8c5f5bcef45c6a8f100fc87aec4c, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1691,6 +1695,10 @@ PrefabInstance:
       propertyPath: m_text
       value: HANDLING
       objectReference: {fileID: 0}
+    - target: {fileID: 85160617516416392, guid: d17b8c5f5bcef45c6a8f100fc87aec4c, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     - target: {fileID: 545462128913713293, guid: d17b8c5f5bcef45c6a8f100fc87aec4c, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -2041,6 +2049,10 @@ PrefabInstance:
       propertyPath: m_text
       value: SPEED
       objectReference: {fileID: 0}
+    - target: {fileID: 85160617516416392, guid: d17b8c5f5bcef45c6a8f100fc87aec4c, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     - target: {fileID: 545462128913713293, guid: d17b8c5f5bcef45c6a8f100fc87aec4c, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -2391,6 +2403,10 @@ PrefabInstance:
       propertyPath: m_text
       value: FIREPOWER
       objectReference: {fileID: 0}
+    - target: {fileID: 85160617516416392, guid: d17b8c5f5bcef45c6a8f100fc87aec4c, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     - target: {fileID: 545462128913713293, guid: d17b8c5f5bcef45c6a8f100fc87aec4c, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
