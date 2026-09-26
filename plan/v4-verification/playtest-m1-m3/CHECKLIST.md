@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `v4-modular-architecture` |
 | Start commit | `a637154c` (M3 playtest steps) |
-| Status | Fixes implemented, reviewed and verified. Ready for your re-check; M4 does not start until you say so |
+| Status | **Passed** (27 Sep): traps visible, overtime feel accepted for now; values to be tuned during balancing |
 
 ## Your decisions, as applied
 

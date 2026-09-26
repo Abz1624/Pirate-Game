@@ -462,9 +462,9 @@ Phases run one at a time. Each one ends with tests, traces and an automated play
 | Phase | Module | Status | Evidence |
 |---|---|---|---|
 | M0 | Composition root | Passed (feel: playtested 2026-09-26) | `plan/v4-verification/phase-00-composition/` |
-| M1 | Config assets | Playtested with M2 and M3; decisions and fixes applied (`plan/v4-verification/playtest-m1-m3/`), awaiting your re-check | `plan/v4-verification/phase-01-config/` |
-| M2 | Archetypes and spawners | Playtested with M1 and M3; decisions and fixes applied (`plan/v4-verification/playtest-m1-m3/`), awaiting your re-check | `plan/v4-verification/phase-02-archetypes/` |
-| M3 | Wave Timeline and Spawn Controller | Playtested with M1 and M2; decisions and fixes applied (`plan/v4-verification/playtest-m1-m3/`), awaiting your re-check | `plan/v4-verification/phase-03-timeline/` |
+| M1 | Config assets | Passed (combined M1–M3 playtest, 27 Sep; values to be tuned during balancing; `plan/v4-verification/playtest-m1-m3/`) | `plan/v4-verification/phase-01-config/` |
+| M2 | Archetypes and spawners | Passed (combined M1–M3 playtest, 27 Sep; values to be tuned during balancing; `plan/v4-verification/playtest-m1-m3/`) | `plan/v4-verification/phase-02-archetypes/` |
+| M3 | Wave Timeline and Spawn Controller | Passed (combined M1–M3 playtest, 27 Sep; values to be tuned during balancing; `plan/v4-verification/playtest-m1-m3/`) | `plan/v4-verification/phase-03-timeline/` |
 | M4 | Pools | Not started | `plan/v4-verification/phase-04-pools/` |
 | M5 | Weapon Manager | Not started | `plan/v4-verification/phase-05-weapons/` |
 | M6 | Presentation and CombatEvents | Not started | `plan/v4-verification/phase-06-presentation/` |
