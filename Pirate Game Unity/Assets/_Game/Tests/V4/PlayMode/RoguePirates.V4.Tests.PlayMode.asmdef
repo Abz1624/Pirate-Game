@@ -4,6 +4,7 @@
     "references": [
         "RoguePirates.V4",
         "RoguePirates.V4.Config",
+        "RoguePirates.V4.Presentation",
         "RoguePirates.V4.DevTools",
         "HighSeas.Runtime",
         "RoguePirates.Simulation",

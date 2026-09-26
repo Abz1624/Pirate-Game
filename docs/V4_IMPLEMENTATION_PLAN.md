@@ -281,6 +281,8 @@ Deviations from the detail blocks:
 
 **Moves in:** the four view pools. `WeaponJuiceController`'s direct object creation (686 lines) goes through `PoolService` on the V4 path.
 
+**V4 execution (M4):** infrastructure only. The view pools, weapon keys and the ten-minute zero-create run move to the phases that port their consumers: weapon visuals in M5, enemy views in M8, the zero-create proof in M14 (plan §3). M4 delivers the slot pools, the view pool with its three overflow policies, the catalog (explicit entries plus one pool per enemy model the timeline can spawn, not prewarmed until M8), the Pools console section, a Module Lab stress scenario, and a probe that counts objects created outside the pool (the legacy baseline M14 must bring to 0).
+
 **Console section — Pools:** per-pool prewarm, cap, overflow policy, in-use and peak counts, and a counter of objects created after prewarm. It must stay at 0.
 
 **Playable check:** Play ten minutes with six weapons. The counter stays at 0. Lower a cap during play and see the overflow policy.
@@ -465,7 +467,7 @@ Phases run one at a time. Each one ends with tests, traces and an automated play
 | M1 | Config assets | Passed (combined M1–M3 playtest, 27 Sep; values to be tuned during balancing; `plan/v4-verification/playtest-m1-m3/`) | `plan/v4-verification/phase-01-config/` |
 | M2 | Archetypes and spawners | Passed (combined M1–M3 playtest, 27 Sep; values to be tuned during balancing; `plan/v4-verification/playtest-m1-m3/`) | `plan/v4-verification/phase-02-archetypes/` |
 | M3 | Wave Timeline and Spawn Controller | Passed (combined M1–M3 playtest, 27 Sep; values to be tuned during balancing; `plan/v4-verification/playtest-m1-m3/`) | `plan/v4-verification/phase-03-timeline/` |
-| M4 | Pools | Not started | `plan/v4-verification/phase-04-pools/` |
+| M4 | Pools | Implemented and reviewed; awaiting playtest | `plan/v4-verification/phase-04-pools/` |
 | M5 | Weapon Manager | Not started | `plan/v4-verification/phase-05-weapons/` |
 | M6 | Presentation and CombatEvents | Not started | `plan/v4-verification/phase-06-presentation/` |
 | M7 | Landmarks and boss | Not started | `plan/v4-verification/phase-07-boss/` |

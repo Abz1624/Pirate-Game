@@ -10,6 +10,8 @@ namespace RoguePirates.V4.Config
     {
         public enum EnemyBehavior { DirectChaser, FlankingChaser, TelegraphedCharge, MaintainRange, SuicideApproach, TankChaser, StrafeBurst, FormationRanged, FastSwarm, DiveLunge, DriftPulse, StationaryTurret, PhaseDash, TentacleZone, SupportBuff }
         public enum EnemyCategory { Ship, Creature }
+        /// <summary>What a view pool does when it is at its cap: create anyway (counted), reuse the oldest in use, or refuse.</summary>
+        public enum PoolOverflowPolicy { Grow = 0, RecycleOldest = 1, Reject = 2 }
         public enum EnemyTier { Soldier = 0, Captain = 1, General = 2, Boss = 3 }
         public enum EliteAffix { None, Armored, Swift, Volatile, Rich, Cursed, Captain }
         public enum WeaponPattern { AutoProjectile, FanVolley, Orbit, TrailZone, ChainLightning, MineDrop, AuraPulse, PredictedAoE, SummonChase }

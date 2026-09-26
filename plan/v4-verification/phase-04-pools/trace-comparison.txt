@@ -1,0 +1,17 @@
+M4 end-of-phase trace set (Windows player, build after all M1-M3 playtest fixes; short runs only, trace policy)
+--- V4 (v3-parity preset) vs V3 goldens
+v3-trace-seed-101-a.jsonl vs v4-trace-seed-101-parity.jsonl: MATCH (437 lines)
+v3-trace-seed-202-a.jsonl vs v4-trace-seed-202-parity.jsonl: MATCH (409 lines)
+v3-trace-seed-303-a.jsonl vs v4-trace-seed-303-parity.jsonl: MATCH (523 lines)
+--- V4 replay
+v4-trace-seed-101-parity.jsonl vs v4-trace-seed-101-parity-b.jsonl: MATCH (437 lines)
+--- Default: new baseline. vs the M1-M3 playtest default recorded before the overtime/Kraken fixes: identical until overtime (first difference after 10:00: Drowned base stats and the 1x-2x ramp, R-05; Kraken slot release R-06)
+v4-trace-seed-101-a.jsonl vs v4-trace-seed-101-a.jsonl: DIFF (570 lines)
+    line 566: {"type":"death","t":676.4456,"state":"RunComplete","objective":true}
+        vs {"type":"sample","t":680.0114,"x":73.6723,"z":-126.9485,"hull":37.196,"alive":72,"gold":98,"kills":157}
+v4-trace-seed-202-a.jsonl vs v4-trace-seed-202-a.jsonl: DIFF (528 lines)
+    line 506: {"type":"sample","t":635.0057,"x":121.0186,"z":-53.3057,"hull":27.893,"alive":72,"gold":115,"kills":128}
+        vs {"type":"sample","t":635.0057,"x":121.0186,"z":-53.3057,"hull":65.652,"alive":72,"gold":115,"kills":128}
+v4-trace-seed-303-a.jsonl vs v4-trace-seed-303-a.jsonl: DIFF (591 lines)
+    line 586: {"type":"sample","t":680.0114,"x":-117.0291,"z":10.5163,"hull":100,"alive":72,"gold":120,"kills":166}
+        vs {"type":"kill","t":679.4949,"uid":236,"enemy":"drowned_pursuer","elite":false,"boss":false,"weapon":"deck_cannons"}

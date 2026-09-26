@@ -1,0 +1,58 @@
+﻿[rect-before] HAS 46,191,563,638
+[is-playing] no
+[begin] started
+[is-playing] OK playing
+[lab-start] OK 14 pools, prewarmed 64, in use 0, created after prewarm 0, pooled objects 65
+[lab-console] console open on Pools
+[lab-stress] stress started
+[shot] 01-module-lab-stress-running.png
+[lab-stress-done] WAIT
+[lab-stress-done] WAIT
+[lab-stress-done] OK churn 5 s: 0 created after prewarm (11592 acquires in total); overflow: 1880 recycled, 16 grown, 0 rejected; peaks lab/stress_recycle 48/48, lab/stress_grow 32/16 | churnCreates=0 recycled=1880 grown=16 rejected=0 acquires=11592
+[shot] 02-module-lab-pools-after.png
+[is-playing] no
+[begin] started
+[is-playing] OK playing
+[run-start] OK 12 pools, prewarmed 0, in use 0, created after prewarm 0, pooled objects 1
+[run-console] console open on Pools
+[jump-240] jumped to 240 s
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[probe-on] probe on at t=251
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[shot] 03-run-pools-and-creation-probe.png
+[probe-result] t=306 enemies 69 | legacy creation 19685 in 63 s (311.9/s) | pool created after prewarm 0 | top: 19325 Circle; 105 EnemyDmg; 91 05_EnemyHealthIndicator; 42 PowderKeg_Explosion_VFX; 27 SmuggleBoat; 13 HammerHead; 10 LootBarrel; 8 Shark; 7 GemBarrel; 7 04_XPCrystal; 6 RamShip; 6 FlyingHealthPlus
+[kill-bosses] killed 1 boss/miniboss
+[probe-reset] probe reset
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[unpause] 
+[probe-no-boss] without boss/miniboss (alive 0): legacy creation 1397 in 18 s (76.1/s) | top: 1304 Circle; 35 EnemyDmg; 15 PowderKeg_Explosion_VFX; 14 05_EnemyHealthIndicator; 8 03_GoldCoin; 6 06_DamageHighlightShader
+[probe-off] probe off
+[rect-restore] restored

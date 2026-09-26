@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e0ca3225e27fc94cb4eb85c6361904b, type: 3}
+  m_Name: SaltwindPools
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.PoolCatalogConfig
+  configId: pools.saltwind
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  entries:
+  - key: lab/stress_recycle
+    prefab: {fileID: 3681178431521355356, guid: 877afd22d1b823c4c98710fca3640ded, type: 3}
+    prewarm: 48
+    cap: 48
+    overflow: 1
+    moduleLabOnly: 1
+  - key: lab/stress_grow
+    prefab: {fileID: 3681178431521355356, guid: 877afd22d1b823c4c98710fca3640ded, type: 3}
+    prewarm: 16
+    cap: 16
+    overflow: 0
+    moduleLabOnly: 1
+  deriveEnemyViews: 1
+  prewarmEnemyViews: 0
+  enemyViewPrewarm: 12
+  bossViewPrewarm: 1
+  enemyViewCap: 0
+  enemyViewOverflow: 0

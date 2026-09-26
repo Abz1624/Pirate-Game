@@ -38,6 +38,13 @@ namespace RoguePirates.V4.DevTools.Console
         EnemyWorld _world;
 
         public V4Game Game { get; private set; }
+        /// <summary>Counts objects created outside the V4 view pool (Pools section; off until switched on).</summary>
+        public Diagnostics.SceneObjectCreationProbe CreationProbe { get; private set; }
+
+        readonly List<System.Func<float, bool>> _everyFrame = new List<System.Func<float, bool>>();
+
+        /// <summary>Runs a task each frame (unscaled time) until it returns true, whether or not the console is open.</summary>
+        public void RunEveryFrame(System.Func<float, bool> task) { if (task != null) _everyFrame.Add(task); }
         public bool IsOpen => _open;
         /// <summary>The search box text; sections may filter their rows with it.</summary>
         public string SearchText => _search ?? string.Empty;
@@ -50,8 +57,11 @@ namespace RoguePirates.V4.DevTools.Console
                 AddSection(new RunSection());
                 AddSection(new TimelineSection());
                 AddSection(new ConfigSection());
+                AddSection(new PoolsSection());
                 if (game.IsModuleLab) AddSection(new ModuleLabSection());
             }
+            if (CreationProbe == null) CreationProbe = GetComponent<Diagnostics.SceneObjectCreationProbe>();
+            if (CreationProbe == null) CreationProbe = gameObject.AddComponent<Diagnostics.SceneObjectCreationProbe>();
         }
 
         public void AddSection(IConsoleSection section)
@@ -63,6 +73,13 @@ namespace RoguePirates.V4.DevTools.Console
         void Update()
         {
             _fps = Mathf.Lerp(_fps, 1f / Mathf.Max(Time.unscaledDeltaTime, 0.0001f), 0.1f);
+            for (var i = _everyFrame.Count - 1; i >= 0; i--)
+            {
+                bool done;
+                try { done = _everyFrame[i](Time.unscaledDeltaTime); }
+                catch (System.Exception e) { Debug.LogException(e); done = true; } // a failing task stops instead of throwing every frame
+                if (done) _everyFrame.RemoveAt(i);
+            }
             var toggle = (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
                          || (Gamepad.current != null && Gamepad.current.selectButton.wasPressedThisFrame);
             if (toggle) SetOpen(!_open);
@@ -262,13 +279,25 @@ namespace RoguePirates.V4.DevTools.Console
             return string.IsNullOrEmpty(spawn.CurrentPhaseLabel) ? "—" : spawn.CurrentPhaseLabel;
         }
 
+        RoguePirates.V4.Presentation.V4PresentationRoot _presentation;
+
+        string PoolsLabel()
+        {
+            if (_presentation == null) _presentation = FindFirstObjectByType<RoguePirates.V4.Presentation.V4PresentationRoot>();
+            var pools = _presentation != null ? _presentation.Pools : null;
+            if (pools == null) return "—";
+            int inUse = 0, created = pools.TotalCreatedAfterPrewarm;
+            foreach (var st in pools.Stats()) inUse += st.InUse;
+            return created > 0 ? $"{inUse} (+{created})" : inUse.ToString();
+        }
+
         void DrawHeader()
         {
             var run = RunManager.Instance;
             if (_world == null) _world = FindFirstObjectByType<EnemyWorld>();
             var t = run != null ? run.ElapsedSeconds : 0f;
             var alive = _world != null ? _world.ActiveCount : 0;
-            GUILayout.Label($"Run {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00}   Phase {PhaseLabel()}   Pressure —   Enemies {alive}   Pools —   FPS {_fps:0}",
+            GUILayout.Label($"Run {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00}   Phase {PhaseLabel()}   Pressure —   Enemies {alive}   Pools {PoolsLabel()}   FPS {_fps:0}",
                 GUI.skin.box);
         }
     }

@@ -25,6 +25,8 @@ namespace RoguePirates.V4.Config
         public GameObject visualPrefab;
         public float visualScale = 1f, visualYawOffset, visualHeightOffset;
         public Color placeholderColor = Color.red;
+        [Tooltip("Views of this model to prewarm in the V4 view pool (0 = the pool catalog's default for its kind). Read by the pool catalog (M4); V4 enemy views use it from M8.")]
+        [AppliesFrom(8)] public int poolPrewarm;
     }
 
     /// <summary>Mirror of the V3 EnemyCombatProfile registered for this enemy (registry values, before spawner overrides).</summary>
@@ -72,6 +74,7 @@ namespace RoguePirates.V4.Config
             report.Positive(this, "stats.baseHP", stats.baseHP);
             report.NotNegative(this, "stats.baseDamage", stats.baseDamage);
             report.Positive(this, "stats.radius", stats.radius);
+            if (visual != null && visual.poolPrewarm < 0) report.Error(this, "visual.poolPrewarm", "negative prewarm");
             report.NotNegative(this, "stats.moveSpeed", stats.moveSpeed);
             report.NotNegative(this, "stats.attackCooldown", stats.attackCooldown);
         }

@@ -423,6 +423,60 @@ namespace RoguePirates.V4.Editor
             return log.ToString();
         }
 
+        public const string PoolCatalogPath = DataRoot + "/Pools/SaltwindPools.asset";
+        public const string PoolStressMarkerPath = DataRoot + "/Pools/PoolStressMarker.prefab";
+
+        [MenuItem("RoguePirates/V4/Apply M4 Pool Catalog")]
+        static void ApplyM4FromMenu() => Debug.Log(ApplyM4());
+
+        /// <summary>
+        /// M4, idempotent: the pool catalog asset (derived enemy view pools on, not prewarmed until M8; two Module Lab
+        /// stress pools on a collider-free marker prefab) added to the config set.
+        /// </summary>
+        public static string ApplyM4()
+        {
+            var log = new StringBuilder();
+            EnsureFolder(DataRoot + "/Pools");
+            var marker = AssetDatabase.LoadAssetAtPath<GameObject>(PoolStressMarkerPath);
+            if (marker == null)
+            {
+                var temp = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Object.DestroyImmediate(temp.GetComponent<Collider>());
+                temp.name = "PoolStressMarker";
+                temp.transform.localScale = Vector3.one * 0.6f;
+                marker = PrefabUtility.SaveAsPrefabAsset(temp, PoolStressMarkerPath);
+                Object.DestroyImmediate(temp);
+                log.AppendLine("stress marker prefab created");
+            }
+
+            var catalog = AssetDatabase.LoadAssetAtPath<PoolCatalogConfig>(PoolCatalogPath);
+            if (catalog == null)
+            {
+                catalog = ScriptableObject.CreateInstance<PoolCatalogConfig>();
+                AssetDatabase.CreateAsset(catalog, PoolCatalogPath);
+                log.AppendLine("pool catalog created");
+            }
+            catalog.configId = "pools.saltwind";
+            catalog.entries = new List<PoolCatalogEntry>
+            {
+                new PoolCatalogEntry { key = "lab/stress_recycle", prefab = marker, prewarm = 48, cap = 48, overflow = ConfigEnums.PoolOverflowPolicy.RecycleOldest, moduleLabOnly = true },
+                new PoolCatalogEntry { key = "lab/stress_grow", prefab = marker, prewarm = 16, cap = 16, overflow = ConfigEnums.PoolOverflowPolicy.Grow, moduleLabOnly = true },
+            };
+            EditorUtility.SetDirty(catalog);
+
+            var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(ConfigSetPath);
+            if (set != null && !set.configs.Contains(catalog))
+            {
+                set.configs.Add(catalog);
+                set.configs = set.configs.Where(c => c != null).OrderBy(c => c.configId, StringComparer.Ordinal).ToList();
+                EditorUtility.SetDirty(set);
+                log.AppendLine("added to the config set");
+            }
+            AssetDatabase.SaveAssets();
+            if (set != null) log.Append(ConfigValidator.Validate(set));
+            return log.ToString();
+        }
+
         [MenuItem("RoguePirates/V4/Apply M1-M3 Playtest Decisions")]
         static void ApplyPlaytestDecisionsFromMenu() => Debug.Log(ApplyPlaytestDecisions());
 

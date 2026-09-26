@@ -375,6 +375,71 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
+        public IEnumerator PoolStress_InTheModuleLab_CreatesNothingAfterPrewarm()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.ModuleLab, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var root = Object.FindFirstObjectByType<RoguePirates.V4.Presentation.V4PresentationRoot>();
+            Assert.IsNotNull(root, "the presentation root installs itself on run start");
+            var pools = root.Pools;
+            var created = pools.TotalCreatedAfterPrewarm;
+            var stress = new RoguePirates.V4.DevTools.Diagnostics.PoolStressScenario(pools, Vector3.zero);
+            Assert.AreEqual(2, stress.PoolCount, "the two Module Lab stress pools");
+            var deadline = Time.realtimeSinceStartup + 30f;
+            while (!stress.Tick(1f / 60f) && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.IsTrue(stress.Done, stress.Summary);
+            Assert.AreEqual(0, stress.ChurnCreatesAfterPrewarm, "churn within prewarm creates nothing: " + stress.Summary);
+            Assert.Greater(stress.Acquires, 1000);
+            Assert.Greater(stress.Recycled, 0, "the recycle pool recycles at its cap");
+            Assert.AreEqual(16, stress.OverflowCreatesAfterPrewarm, "the grow pool grows past its cap of 16 to 32 and counts it");
+            Assert.AreEqual(0, stress.Rejected);
+            Assert.AreEqual(created + 16, pools.TotalCreatedAfterPrewarm);
+            Assert.IsTrue(pools.Stats().All(st => st.InUse == 0), "everything released");
+        }
+
+        [UnityTest]
+        public IEnumerator CreationProbe_CountsObjectsOutsideThePool_Only()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.ModuleLab, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var pools = Object.FindFirstObjectByType<RoguePirates.V4.Presentation.V4PresentationRoot>().Pools;
+            var probeHost = new GameObject("ProbeUnderTest");
+            var probe = probeHost.AddComponent<RoguePirates.V4.DevTools.Diagnostics.SceneObjectCreationProbe>();
+            try
+            {
+                probe.SetTracking(true);
+                yield return null; // first scan: baseline only
+                yield return null;
+                var held = new System.Collections.Generic.List<GameObject>();
+                for (var i = 0; i < 20; i++) held.Add(pools.Acquire("lab/stress_grow", Vector3.zero, Quaternion.identity)); // 4 grown past the cap
+                var foreign = new GameObject("ForeignThing(Clone)");
+                new GameObject("Child").transform.SetParent(foreign.transform);
+                yield return null;
+                yield return null;
+                Assert.AreEqual(1, probe.Total, "one object tree created outside the pool; pooled creates are left out");
+                Assert.AreEqual(1, probe.ByName["ForeignThing"], "named without (Clone)");
+                foreach (var h in held) pools.Release(h);
+                Object.Destroy(foreign);
+            }
+            finally { Object.Destroy(probeHost); }
+        }
+
+        [UnityTest]
+        public IEnumerator Run_HasAViewPool_ThatCreatesNothingBeforeItsConsumersExist()
+        {
+            SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return null;
+            yield return WaitForPlaying();
+            var root = Object.FindFirstObjectByType<RoguePirates.V4.Presentation.V4PresentationRoot>();
+            Assert.IsNotNull(root);
+            var stats = root.Pools.Stats().ToList();
+            Assert.IsFalse(stats.Any(st => st.Key.StartsWith("lab/")), "no Module Lab pools in a run");
+            Assert.Greater(stats.Count, 5, "derived enemy view pools are listed");
+            Assert.AreEqual(0, stats.Sum(st => st.Prewarmed), "not prewarmed before V4 enemy views use them (M8)");
+            Assert.AreEqual(0, stats.Sum(st => st.Total), "no pooled instances exist");
+        }
+
+        [UnityTest]
         public IEnumerator ModuleLab_SpawnsOnlyOnRequest()
         {
             yield return SceneManager.LoadSceneAsync(V4SceneNames.ModuleLab, LoadSceneMode.Single);
