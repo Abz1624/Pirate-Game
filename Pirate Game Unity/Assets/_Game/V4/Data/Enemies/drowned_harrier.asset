@@ -40,6 +40,7 @@ MonoBehaviour:
     placeholderColor: {r: 0.75, g: 0.45, b: 0.2, a: 1}
   tags: []
   concurrencyTags: []
+  spawnTier: 0
   isBoss: 0
   isMiniboss: 0
   inLegacyDatabase: 0

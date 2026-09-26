@@ -8,6 +8,7 @@ using RoguePirates.Simulation;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Spawning;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -44,6 +45,7 @@ namespace RoguePirates.V4
         ModuleRegistry _modules;
         LegacyRunShell _shell;
         LegacyEventFeed _feed;
+        SpawnController _spawn;
         bool _running;
         bool _ended;
         bool _objectiveSecured;
@@ -66,8 +68,25 @@ namespace RoguePirates.V4
             _context = new RunContext(_clock, _events, _config);
             if (_config != null) _config.ConfigChanged += OnConfigChanged;
             _modules = new ModuleRegistry();
-            // M0: no V4 modules yet. Each phase registers its module here and removes the legacy piece it replaces.
-            _shell = new LegacyRunShell(this, database, stageBuilder, player, islandLayout, usePlaceholderPoiVisuals, _config, legacyBaseProfile);
+            // Each phase registers its module here and removes the legacy piece it replaces.
+            // M3: the spawn controller (replaces the legacy ambient spawner and the V3 spawn directors).
+            _spawn = new SpawnController { LabMode = moduleLab };
+            _modules.Add(_spawn);
+            _context.Register<ISpawnController>(_spawn);
+            // Contracts the V4 modules use, implemented over legacy systems until those systems are ported.
+            var runState = new LegacyRunState();
+            var encounters = new LegacyEncounterExecutor();
+            _context.Register<IEnemySpawnSink>(new LegacyEnemySpawnSink());
+            _context.Register<ISpawnPlacement>(new LegacySpawnPlacement());
+            _context.Register<IRunRandom>(runState);
+            _context.Register<IRunStatus>(runState);
+            _context.Register<ISpawnFeedback>(new LegacySpawnFeedback());
+            _context.Register<IStormArena>(new LegacyStormArena());
+            _context.Register<IPlayerDamageSink>(new LegacyPlayerDamageSink());
+            _context.Register<ILegacySpawnRateSource>(encounters);
+            var slots = new LegacySpawnSlots(_spawn.TickAmbient, _spawn.TickOvertime, _spawn.TickStorm, _spawn.TickBeats, _spawn.TickStormEdge);
+            _shell = new LegacyRunShell(this, database, stageBuilder, player, islandLayout, usePlaceholderPoiVisuals, _config, legacyBaseProfile, slots, encounters);
+            _context.Register<ISpawnerProfiles>(_shell.LegacyConfig);
             _feed = new LegacyEventFeed(_events, _clock);
             _shell.Awake();
         }

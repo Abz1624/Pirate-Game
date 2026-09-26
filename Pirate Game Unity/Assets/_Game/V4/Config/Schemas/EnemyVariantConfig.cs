@@ -37,7 +37,8 @@ namespace RoguePirates.V4.Config
         public string[] tags = Array.Empty<string>();
         [Tooltip("On (default, R-13 decision): the alias uses its base archetype's model (not its scale, which sets the hitbox) as a stand-in until it gets its own model. Off = V3 behavior (no visual prefab, rendered as a placeholder cube). Applies at run start: swapped models mid-run would skip the legacy NavMesh stripping.")]
         [AppliesFrom(0)] public bool inheritBaseVisual = true;
-        [AppliesFrom(3, "V3 composition caps check enemy ids")] public string[] concurrencyTags = Array.Empty<string>();
+        [Tooltip("Concurrency tags the timeline's tag caps count (e.g. charge_windup).")] public string[] concurrencyTags = Array.Empty<string>();
+        [Tooltip("Tier the timeline pools unlock by (DifficultyCurve tierUnlocks).")] public ConfigEnums.EnemyTier spawnTier = ConfigEnums.EnemyTier.Soldier;
         [Tooltip("Aliases: copied into the legacy combat-profile registry at run start and on edits; reaches newly spawned enemies. Registry elites: V3 never reads these profiles (every lookup uses the database enemy id), so they apply once V4 spawns elite variants (M3, register R-03). Behaviors hard-coded in EnemyWorld move to data in M8.")] public ArchetypeCombat combat = new ArchetypeCombat();
 
         /// <summary>Registry elites' combat profiles have no V3 reader: their edits apply from M3 (R-03).</summary>

@@ -67,8 +67,10 @@ namespace RoguePirates.V4.Config
                     var count = f.GetValue() is IList l ? l.Count : 0;
                     list.Add((f.Path + CountSuffix, count.ToString(CultureInfo.InvariantCulture), true));
                 }
+                // Config references are stored by configId (ConfigSetRuntime.TryApplyEdit resolves them); Unity
+                // references (prefabs) and curves are not part of presets.
                 else if (f.Kind != ConfigFieldKind.Nested && f.Kind != ConfigFieldKind.List &&
-                         f.Kind != ConfigFieldKind.Curve && f.Kind != ConfigFieldKind.UnityReference && f.Kind != ConfigFieldKind.AssetReference)
+                         f.Kind != ConfigFieldKind.Curve && f.Kind != ConfigFieldKind.UnityReference)
                 {
                     list.Add((f.Path, ConfigFieldWalker.Format(f.GetValue()), false));
                 }

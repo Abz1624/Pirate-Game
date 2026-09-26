@@ -130,24 +130,51 @@ namespace RoguePirates.V4.Tests
             StringAssert.Contains("UNITY_EDITOR || DEVELOPMENT_BUILD", text);
         }
 
+        /// <summary>
+        /// M3: V4 never drives the legacy spawner. The kept EncounterSpawner (Beacon boss, Powder Cache, Dead Calm
+        /// sink) is touched only by LegacyEncounterExecutor (LegacySpawnAdapters.cs) and the scene setup tool; the
+        /// legacy WeaponController only by V4LegacyBridge until M5/M9.
+        /// </summary>
         [Test]
-        public void OnlyTheBridge_ReferencesLegacySpawnerAndWeaponController()
+        public void OnlyNamedAdapters_ReferenceLegacySpawnerAndWeaponController()
         {
-            var pattern = new Regex(@"\b(EncounterSpawner|WeaponController)\b");
-            var offenders = new List<string>();
-            foreach (var file in Directory.GetFiles(Path.Combine(GameRoot, "V4"), "*.cs", SearchOption.AllDirectories))
+            var allowed = new Dictionary<string, string[]>
             {
-                var fileName = Path.GetFileName(file);
-                if (fileName == "V4LegacyBridge.cs" || fileName == "V4LegacySpawnBridge.cs") continue;
+                ["EncounterSpawner"] = new[] { "Runtime/Legacy/LegacySpawnAdapters.cs", "Editor/V4SceneSetup.cs" },
+                ["WeaponController"] = new[] { "Runtime/Legacy/V4LegacyBridge.cs" },
+            };
+            var offenders = Scan(@"\b(EncounterSpawner|WeaponController)\b", (rel, match) => !allowed[match].Contains(rel));
+            Assert.IsEmpty(offenders, "EncounterSpawner / WeaponController outside their adapters: " + string.Join(", ", offenders));
+        }
+
+        /// <summary>M3: the V3 spawn directors are replaced; nothing outside Legacy/ (and the V3-golden trace fallback) uses them.</summary>
+        [Test]
+        public void NoV4Code_UsesTheV3SpawnDirectors()
+        {
+            var offenders = Scan(@"\b(V3PressureBeatDirector|V3OvertimeDirector|V3SaltwindStormDirector|V3StormEdgeDamage|V3RouteEventDirector|SpawnDirectorDebugUI|V3MinibossArena)\b",
+                (rel, match) => !rel.StartsWith("Runtime/Legacy/") && !(rel == "DevTools/Trace/RunTraceRecorder.cs" && match == "V3MinibossArena"));
+            Assert.IsEmpty(offenders, "V3 spawn directors used by V4 code: " + string.Join(", ", offenders));
+        }
+
+        /// <summary>Code lines (not comments) under V4/ matching the pattern where <paramref name="offends"/> says so.</summary>
+        static List<string> Scan(string pattern, System.Func<string, string, bool> offends)
+        {
+            var regex = new Regex(pattern);
+            var root = Path.Combine(GameRoot, "V4");
+            var offenders = new List<string>();
+            foreach (var file in Directory.GetFiles(root, "*.cs", SearchOption.AllDirectories))
+            {
+                var rel = file.Substring(root.Length + 1).Replace('\\', '/');
                 var lines = File.ReadAllLines(file);
                 for (var i = 0; i < lines.Length; i++)
                 {
                     var code = lines[i].Trim();
-                    if (code.StartsWith("//") || code.StartsWith("///")) continue;
-                    if (pattern.IsMatch(code)) offenders.Add($"{Path.GetFileName(file)}:{i + 1}");
+                    if (code.StartsWith("//")) continue;
+                    foreach (Match m in regex.Matches(code))
+                        if (offends(rel, m.Groups[1].Value)) offenders.Add($"{rel}:{i + 1} {m.Groups[1].Value}");
                 }
             }
-            Assert.IsEmpty(offenders, "Only V4LegacyBridge/V4LegacySpawnBridge may reference EncounterSpawner/WeaponController: " + string.Join(", ", offenders));
+            return offenders;
         }
     }
 }

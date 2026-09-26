@@ -1,0 +1,19 @@
+M3 traces, final (Windows player built from the working tree with the review fixes; same harness as M1/M2).
+Goldens: phase-01-config/player/v3-* (V3), phase-02-archetypes/player/v4-*-a (M2 V4 baseline). Long runs: invulnerable ship to 900 s, recorded for V3 and V4 in this batch (phase-03-timeline/player/*-long.jsonl).
+--- V4 (v3-parity preset) vs V3 goldens
+v3-trace-seed-101-a.jsonl vs v4-trace-seed-101-parity.jsonl: MATCH (437 lines)
+v3-trace-seed-202-a.jsonl vs v4-trace-seed-202-parity.jsonl: MATCH (409 lines)
+v3-trace-seed-303-a.jsonl vs v4-trace-seed-303-parity.jsonl: MATCH (523 lines)
+--- V4 replay
+v4-trace-seed-101-parity.jsonl vs v4-trace-seed-101-parity-b.jsonl: MATCH (437 lines)
+--- V4 default vs M2 V4 baseline
+v4-trace-seed-101-a.jsonl vs v4-trace-seed-101-a.jsonl: MATCH (507 lines)
+v4-trace-seed-202-a.jsonl vs v4-trace-seed-202-a.jsonl: MATCH (434 lines)
+v4-trace-seed-303-a.jsonl vs v4-trace-seed-303-a.jsonl: MATCH (559 lines)
+--- Long runs to 900 s, invulnerable: V4 (v3-parity preset) vs V3
+v3-trace-seed-101-long.jsonl vs v4-trace-seed-101-long.jsonl: MATCH (658 lines)
+v3-trace-seed-202-long.jsonl vs v4-trace-seed-202-long.jsonl: MATCH (716 lines)
+v3-trace-seed-303-long.jsonl vs v4-trace-seed-303-long.jsonl: MATCH (755 lines)
+
+
+Long runs reached 900 s (end: timeout) on all seeds: 23-27 overtime spawns after 10:00 and 11-14 after the storm starts at 12:00 per seed (shark/cannonboat stats, as V3, R-05). Storm-edge damage is not visible with an invulnerable ship (EditMode tests cover it).

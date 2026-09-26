@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91c3caae0823bfc42bbbb84cd666da92, type: 3}
+  m_Name: V4EncounterOnlySchedule
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.EncounterSpawnSchedule
+  gracePeriodSeconds: 2
+  maxActiveEnemies: 80
+  globalMinSpawnGapSeconds: 0.35
+  entries: []
+  hammerheadBeat: {fileID: 11400000, guid: 10ae3c63413f3934d960ed9619a8e5bb, type: 2}
+  krakenBeat: {fileID: 11400000, guid: a6e41cd952599ec4294fa377b9fadf13, type: 2}
+  swarmPulse: {fileID: 11400000, guid: bdc03da5b19cc5d498a9481d6d1a0e8e, type: 2}
+  drownedPursuer: {fileID: 11400000, guid: 4fdafbd2031c3aa4bba33d250c64f5cc, type: 2}
+  drownedHarrier: {fileID: 11400000, guid: abee5e9ea7adda4479fe71e7fe2498a1, type: 2}
+  routeTreasureRaider: {fileID: 0}
+  routeCursedRingSwordfish: {fileID: 0}
+  routeCursedRingCannon: {fileID: 0}
+  powderCacheAmbush: {fileID: 11400000, guid: 46066422fcae48645a04c6afd2994e96, type: 2}
+  bossSummon: {fileID: 11400000, guid: 7e74b11a821926f428784ac3dbfc99d6, type: 2}

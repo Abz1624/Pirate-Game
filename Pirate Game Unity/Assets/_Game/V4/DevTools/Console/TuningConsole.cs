@@ -44,6 +44,7 @@ namespace RoguePirates.V4.DevTools.Console
             if (_sections.Count == 0)
             {
                 AddSection(new RunSection());
+                AddSection(new TimelineSection());
                 AddSection(new ConfigSection());
                 if (game.IsModuleLab) AddSection(new ModuleLabSection());
             }
@@ -168,13 +169,19 @@ namespace RoguePirates.V4.DevTools.Console
                    || (section.SearchText ?? string.Empty).IndexOf(needle, System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
+        string PhaseLabel()
+        {
+            if (Game == null || Game.Context == null || !Game.Context.TryGet<RoguePirates.V4.Spawning.ISpawnController>(out var spawn)) return "—";
+            return string.IsNullOrEmpty(spawn.CurrentPhaseLabel) ? "—" : spawn.CurrentPhaseLabel;
+        }
+
         void DrawHeader()
         {
             var run = RunManager.Instance;
             if (_world == null) _world = FindFirstObjectByType<EnemyWorld>();
             var t = run != null ? run.ElapsedSeconds : 0f;
             var alive = _world != null ? _world.ActiveCount : 0;
-            GUILayout.Label($"Run {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00}   Phase —   Pressure —   Enemies {alive}   Pools —   FPS {_fps:0}",
+            GUILayout.Label($"Run {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00}   Phase {PhaseLabel()}   Pressure —   Enemies {alive}   Pools —   FPS {_fps:0}",
                 GUI.skin.box);
         }
     }

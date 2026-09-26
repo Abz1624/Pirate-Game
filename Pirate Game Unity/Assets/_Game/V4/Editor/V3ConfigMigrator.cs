@@ -135,6 +135,7 @@ namespace RoguePirates.V4.Editor
                 var t = writeTimeline ? timeline : Object.Instantiate(timeline);
                 var d = writeDifficulty ? difficulty : Object.Instantiate(difficulty);
                 LegacyConfigMapping.ReadProfile(profile, t, d);
+                if (writeTimeline) ConfigureM3Phases(timeline, id => archetypes.TryGetValue(id, out var a) ? a : null);
                 if (!writeTimeline) Object.DestroyImmediate(t);
                 if (!writeDifficulty) Object.DestroyImmediate(d);
                 EditorUtility.SetDirty(timeline);
@@ -188,6 +189,10 @@ namespace RoguePirates.V4.Editor
         /// <summary>Reloads the database and its definitions from disk, dropping in-memory catalog edits (R-73). Tests use it too: a play session leaves the loaded database catalog-mutated.</summary>
         public static GameDatabase LoadCleanDatabase()
         {
+            // After a Play Mode session the Editor keeps statics (domain reload happens on entering Play Mode only), so
+            // CombatExperimentContext still caches the profile Play Mode destroyed and reports it as null; the catalogs
+            // then skip silently (register R-82). Re-resolve it.
+            if (CombatExperimentContext.Active == null) CombatExperimentContext.ResetForTests();
             var db = GameDatabaseLoader.Load();
             // Unloading an asset does not re-resolve loaded objects that reference it, so unload the referrers too
             // (profile, schedules, spawn profiles); they reload from disk with fresh references on next access.
@@ -308,6 +313,110 @@ namespace RoguePirates.V4.Editor
                 spawner = Spawner(profile, spawners)
             });
 
+        /// <summary>The tier V3's ambient composition unlocks an enemy by (EnemyTierLogic keeps it in a table by id).</summary>
+        static ConfigEnums.EnemyTier SpawnTierOf(string enemyId) => (ConfigEnums.EnemyTier)(int)EnemyTierLogic.ResolveTierFromId(enemyId);
+
+        /// <summary>
+        /// M3: the scripted phases the V4 spawn controller runs, with V3's values: the Reef Crab miniboss
+        /// (V3PressureBeatDirector + EncounterSpawner.TrySpawnMiniboss: 22 m ring, loot-stream angle, Rich, HP x4,
+        /// damage x1.15, waits out the boss fight and any arena, retries until it spawns), the two scheduled elites
+        /// (their beat spawner, skipped for good during the boss fight, 20 s retry window, Marks index 0/1), beat
+        /// warnings at the stage's eventWarningSeconds, and V3's storm warning text.
+        /// </summary>
+        public static void ConfigureM3Phases(WaveTimelineConfig t, Func<string, EnemyArchetypeConfig> archetype)
+        {
+            if (t.Phase(LegacyConfigMapping.ReefCrab) is TimelinePhase reef)
+            {
+                reef.label = "Reef Crab miniboss";
+                reef.pools.Clear();
+                reef.pauseAmbient = true;
+                reef.warning.leadSeconds = t.eventWarningSeconds;
+                reef.focus = new FocusSpawn
+                {
+                    enabled = true, placement = FocusPlacement.RingAroundPlayer, archetype = archetype("reef_crab_miniboss"),
+                    ringDistance = 22f, affix = ConfigEnums.EliteAffix.Rich, speedMultiplier = 1f, hpMultiplier = 4f, damageMultiplier = 1.15f,
+                    bossConflict = BossConflict.WaitUntilBossEnds, retryWindowSeconds = 0f, scheduledEliteIndex = -1,
+                    waitForOtherArena = true, arrivalToast = string.Empty,
+                };
+            }
+            var elites = new[] { (LegacyConfigMapping.EliteA, 0), (LegacyConfigMapping.EliteB, 1) };
+            foreach (var (id, index) in elites)
+            {
+                if (!(t.Phase(id) is TimelinePhase elite)) continue;
+                elite.pauseAmbient = true;
+                elite.warning.leadSeconds = t.eventWarningSeconds;
+                elite.focus = new FocusSpawn
+                {
+                    enabled = true, placement = FocusPlacement.SpawnerProfile, bossConflict = BossConflict.SkipPermanently,
+                    retryWindowSeconds = SaltwindPressureBeatLogic.SpawnRetryWindowSeconds, scheduledEliteIndex = index,
+                    arrivalToast = "{label} has arrived!",
+                };
+            }
+            foreach (var id in new[] { LegacyConfigMapping.SwarmA, LegacyConfigMapping.SwarmB })
+                if (t.Phase(id) is TimelinePhase pulse) pulse.warning.leadSeconds = t.eventWarningSeconds;
+            if (t.phases.FirstOrDefault(p => p.isStorm) is TimelinePhase storm)
+                storm.warning.template = "DREAD TIDE — storm boundary in {lead} seconds!";
+        }
+
+        public const string EncounterOnlySchedulePath = DataRoot + "/Legacy/V4EncounterOnlySchedule.asset";
+
+        [MenuItem("RoguePirates/V4/Apply M3 Config Changes")]
+        static void ApplyM3FromMenu() => Debug.Log(ApplyM3());
+
+        /// <summary>
+        /// M3, in place and idempotent: spawn tiers on archetypes and variants, the scripted phases (see
+        /// <see cref="ConfigureM3Phases"/>), tier-unlock rules persisted on the difficulty asset, and the encounter-only
+        /// schedule the kept legacy spawner gets in the scene (the Resources schedule without ambient entries).
+        /// </summary>
+        public static string ApplyM3()
+        {
+            var log = new StringBuilder();
+            var archetypes = new Dictionary<string, EnemyArchetypeConfig>();
+            foreach (var guid in AssetDatabase.FindAssets("t:EnemyArchetypeConfig", new[] { DataRoot + "/Enemies" }))
+            {
+                var a = AssetDatabase.LoadAssetAtPath<EnemyArchetypeConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                archetypes[a.enemyId] = a;
+                a.spawnTier = SpawnTierOf(a.enemyId);
+                EditorUtility.SetDirty(a);
+                log.AppendLine($"{a.enemyId}: spawnTier {a.spawnTier}");
+            }
+            foreach (var guid in AssetDatabase.FindAssets("t:EnemyVariantConfig", new[] { DataRoot + "/Variants" }))
+            {
+                var v = AssetDatabase.LoadAssetAtPath<EnemyVariantConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                v.spawnTier = SpawnTierOf(v.variantId);
+                EditorUtility.SetDirty(v);
+                log.AppendLine($"{v.variantId}: spawnTier {v.spawnTier}");
+            }
+            var timeline = AssetDatabase.LoadAssetAtPath<WaveTimelineConfig>($"{DataRoot}/Timelines/SaltwindTimeline.asset");
+            if (timeline != null)
+            {
+                ConfigureM3Phases(timeline, id => archetypes.TryGetValue(id, out var a) ? a : null);
+                EditorUtility.SetDirty(timeline);
+                log.AppendLine("timeline: scripted phases configured");
+            }
+            var difficulty = AssetDatabase.LoadAssetAtPath<DifficultyCurveConfig>($"{DataRoot}/Difficulty/SaltwindDifficulty.asset");
+            if (difficulty != null) { EditorUtility.SetDirty(difficulty); log.AppendLine($"difficulty: {difficulty.tierUnlocks.Count} tier-unlock rules"); }
+
+            var source = AssetDatabase.LoadAssetAtPath<EncounterSpawnSchedule>(SchedulePath);
+            if (source != null)
+            {
+                EnsureFolder(DataRoot + "/Legacy");
+                var target = AssetDatabase.LoadAssetAtPath<EncounterSpawnSchedule>(EncounterOnlySchedulePath);
+                if (target == null)
+                {
+                    target = ScriptableObject.CreateInstance<EncounterSpawnSchedule>();
+                    AssetDatabase.CreateAsset(target, EncounterOnlySchedulePath);
+                }
+                EditorUtility.CopySerialized(source, target);
+                target.name = "V4EncounterOnlySchedule";
+                target.entries = Array.Empty<ScheduledSpawnEntry>();
+                EditorUtility.SetDirty(target);
+                log.AppendLine("encounter-only schedule written");
+            }
+            AssetDatabase.SaveAssets();
+            return log.ToString();
+        }
+
         static EnemySpawnerConfig Spawner(SpawnProfile p, Dictionary<SpawnProfile, EnemySpawnerConfig> spawners) =>
             p != null && spawners.TryGetValue(p, out var s) ? s : null;
 
@@ -332,6 +441,7 @@ namespace RoguePirates.V4.Editor
             a.displayName = d.displayName;
             a.category = (ConfigEnums.EnemyCategory)(int)d.category;
             a.tier = (ConfigEnums.EnemyTier)(int)d.tier;
+            a.spawnTier = SpawnTierOf(d.id);
             a.behavior = (ConfigEnums.EnemyBehavior)(int)d.behavior;
             a.biomeTag = d.biomeTag;
             a.stats = new ArchetypeStats { baseHP = d.baseHP, baseDamage = d.baseDamage, moveSpeed = d.moveSpeed, radius = d.radius, threatCost = d.threatCost, attackCooldown = d.attackCooldown, preferredRange = d.preferredRange };
@@ -367,6 +477,7 @@ namespace RoguePirates.V4.Editor
             v.moveSpeed = new FloatOverride { enabled = true, value = alias.moveSpeed };
             v.baseDamage = new FloatOverride();
             v.tags = alias.tags != null ? (string[])alias.tags.Clone() : Array.Empty<string>();
+            v.spawnTier = SpawnTierOf(alias.id);
             v.inheritBaseVisual = true; // R-13 decision: template model as a stand-in until specialists get their own models (V3: none)
             v.concurrencyTags = LegacyConfigMapping.LegacyConcurrencyTags.TryGetValue(alias.id, out var tags) ? (string[])tags.Clone() : Array.Empty<string>();
             v.combat = new ArchetypeCombat();

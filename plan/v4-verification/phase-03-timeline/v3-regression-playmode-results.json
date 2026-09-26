@@ -1,0 +1,272 @@
+{
+  "status": "completed",
+  "duration": 38.43,
+  "summary": {
+    "total": 37,
+    "passed": 36,
+    "failed": 1,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "HighSeas.Tests.BossEncounterPlayModeTests.FailedBossEncounter_DoesNotSecureObjective",
+      "Status": "Passed",
+      "Duration": 0.0224998,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.BossEncounterPlayModeTests.TrackedBossKill_SecuresObjectiveOnce",
+      "Status": "Passed",
+      "Duration": 0.012341,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.LevelUpPlayModeTests.LevelUpModal_ShowAndSelect_PausesRunManager",
+      "Status": "Passed",
+      "Duration": 0.6045343,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.PlayModeSmokeTests.RunManager_CanBeginRun",
+      "Status": "Passed",
+      "Duration": 0.073539,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindAdvancedPlayModeTests.CombatProcRuntime_CapsTriggeredApplicationsAtPolicyMax",
+      "Status": "Passed",
+      "Duration": 1.3662491,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindAdvancedPlayModeTests.SameTickBossKill_OnPlayerDeathPath_SecuresObjectiveAndSettlesBossMarks",
+      "Status": "Passed",
+      "Duration": 0.0464847,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindAdvancedPlayModeTests.SameTickBossKill_PostCombatFrame_ResolvesAfterRunEnded",
+      "Status": "Passed",
+      "Duration": 0.058288,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindLifecyclePlayModeTests.BossSpawnKill_SecuresObjective_ThenDeathSettlesOnce",
+      "Status": "Passed",
+      "Duration": 0.0617824,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindLifecyclePlayModeTests.DamageProcPolicy_DotDamage_NeverCritsInPlayModeRolls",
+      "Status": "Passed",
+      "Duration": 0.0389083,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindLifecyclePlayModeTests.LateBossVictory_AfterDeathFlag_StillSecuresObjectiveForSettlement",
+      "Status": "Passed",
+      "Duration": 0.0379412,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindLifecyclePlayModeTests.LocalMultiplayerSession_SkipsStageBalanceProfileGate",
+      "Status": "Passed",
+      "Duration": 0.0419683,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindLifecyclePlayModeTests.PartialCache_AtCap_SingleKill_DoesNotCompleteEncounter",
+      "Status": "Passed",
+      "Duration": 0.0913302,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindLifecyclePlayModeTests.PowderCache_PartialSpawn_RetriesAfterCapacityFrees",
+      "Status": "Passed",
+      "Duration": 0.047166,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindLifecyclePlayModeTests.RunManager_Pause_BlocksElapsedAdvance",
+      "Status": "Passed",
+      "Duration": 0.4736416,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindLifecyclePlayModeTests.ThreeRetries_IncrementGeneration_AndClearBossEncounter",
+      "Status": "Passed",
+      "Duration": 0.0168506,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindModeTransitionPlayModeTests.LoadSceneHelper_EndsProfileWhenLeavingSaltwindRun",
+      "Status": "Passed",
+      "Duration": 1.6026774,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindModeTransitionPlayModeTests.SoloProfile_EndContextThenBootScene_KeepsStarterUnlockStable",
+      "Status": "Passed",
+      "Duration": 1.1359839,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindPoiEncounterPlayModeTests.BossBlockedThenRetry_SpawnsTrackedBoss",
+      "Status": "Passed",
+      "Duration": 0.2178475,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindPoiEncounterPlayModeTests.PendingBossQueue_DoesNotSpawnAfterEncounterFailed",
+      "Status": "Passed",
+      "Duration": 0.0388281,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindPoiEncounterPlayModeTests.PlayerPrefsMeta_UnchangedAfterFixtures",
+      "Status": "Passed",
+      "Duration": 0.0332328,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindPoiEncounterPlayModeTests.PowderCache_RepeatedCompleteAttempt_KeepsEncounterId",
+      "Status": "Passed",
+      "Duration": 0.081866,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindScenePlayModeTests.V3SaltwindRunScene_BootstrapWiresRunManagerPoiAndSpawner",
+      "Status": "Passed",
+      "Duration": 2.4001047,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindScenePlayModeTests.V3SaltwindRunScene_BossCombatKill_SecuresObjectiveViaPoiDirector",
+      "Status": "Passed",
+      "Duration": 1.2774018,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindScenePlayModeTests.V3SaltwindRunScene_BossVictoryThenPlayerDeath_SettlesOnce",
+      "Status": "Passed",
+      "Duration": 1.1655089,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindScenePlayModeTests.V3SaltwindRunScene_PoiDirectorAcceptsBossSummonRequest",
+      "Status": "Passed",
+      "Duration": 1.0908989,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindSettlementPlayModeTests.PlayerDeath_SettlesMarksOnce_ThroughRunManager",
+      "Status": "Passed",
+      "Duration": 0.0306106,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindStormArenaPlayModeTests.StormSafeRegion_ContractsBetween720And900Seconds",
+      "Status": "Passed",
+      "Duration": 0.5583829,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindStormArenaPlayModeTests.StormSail_ContractedArena_KeepsSpawnAndBeaconInsideSafeZone",
+      "Status": "Failed",
+      "Duration": 0.5624508,
+      "Message": "  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at HighSeas.Tests.SaltwindStormArenaPlayModeTests+<StormSail_ContractedArena_KeepsSpawnAndBeaconInsideSafeZone>d__3.MoveNext () [0x0014b] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\PlayMode\\SaltwindStormArenaPlayModeTests.cs:73\r\nat UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\\Library\\PackageCache\\com.unity.test-framework@0b7a23ab2e1d\\UnityEngine.TestRunner\\NUnitExtensions\\Attributes\\TestEnumerator.cs:44\r\n"
+    },
+    {
+      "FullName": "HighSeas.Tests.SaltwindStormArenaPlayModeTests.StormWarning_LeadsStormStartByProfileSeconds",
+      "Status": "Passed",
+      "Duration": 0.5619462,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.AmbientSpawns_ComeFromTheV4SpawnController",
+      "Status": "Passed",
+      "Duration": 10.2186413,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.BootFlow_ReachesMenu_ThenRunPlays",
+      "Status": "Passed",
+      "Duration": 1.6009986,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.EnemyWorld_UsesTheConfigBuiltRuntimeDatabase",
+      "Status": "Passed",
+      "Duration": 1.0563739,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.LiveConfigEdits_ReachTheLegacyRun",
+      "Status": "Passed",
+      "Duration": 1.083093,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.ModuleLab_SpawnsOnlyOnRequest",
+      "Status": "Passed",
+      "Duration": 7.0847576,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Preset_RequestedBeforeTheRun_AppliesFromTheStart",
+      "Status": "Passed",
+      "Duration": 1.2116186,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Run_BossKill_ThenDeath_SettlesOnce",
+      "Status": "Passed",
+      "Duration": 1.1027613,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.SceneReload_ClearsStaleMinibossArena",
+      "Status": "Passed",
+      "Duration": 1.0417467,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

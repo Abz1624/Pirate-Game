@@ -314,8 +314,6 @@ namespace RoguePirates.V4.Legacy
         public static void ResetBossDirector(EnemyWorld enemyWorld, PlayerShipController ship) =>
             BarnacleKingBossAttackDirector.Ensure(enemyWorld, ship).ResetForRun();
 
-        public static void EnsureStormEdgeDamage(PlayerShipController ship) => V3StormEdgeDamage.Ensure(ship);
-
         /// <summary>
         /// Module Lab: POIs, hold-to-interact and the B-key summon are off, so chests, the powder-cache ambush and the
         /// Beacon boss cannot spawn anything (a boss summon runs the spawner's trigger queue even while it is stopped).
@@ -418,7 +416,8 @@ namespace RoguePirates.V4.Legacy
             if (firstRun)
             {
                 V3RunPlaytestHotkeys.Ensure();
-                SpawnDirectorDebugUI.Ensure();
+                // SpawnDirectorDebugUI (F9) is not created from M3: it rewrote the legacy spawner's base rate every
+                // frame (register R-71), and the legacy spawner no longer runs ambient spawns.
                 if (V3PlaytestFlags.EnableRunPlaytestHotkeys) WeaponCardAnimationDemo.Ensure();
                 V3BossSummonHotkey.Ensure();
             }

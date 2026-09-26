@@ -41,8 +41,10 @@ MonoBehaviour:
   tags: []
   concurrencyTags:
   - area_denial
+  spawnTier: 2
   isBoss: 0
   isMiniboss: 0
+  inLegacyDatabase: 1
   combat:
     registered: 1
     archetype: 20

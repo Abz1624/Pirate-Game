@@ -71,6 +71,20 @@ MonoBehaviour:
     warning:
       leadSeconds: 0
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 0
     isStorm: 0
@@ -127,6 +141,20 @@ MonoBehaviour:
     warning:
       leadSeconds: 0
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 0
     isStorm: 0
@@ -191,6 +219,20 @@ MonoBehaviour:
     warning:
       leadSeconds: 0
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 0
     isStorm: 0
@@ -259,6 +301,20 @@ MonoBehaviour:
     warning:
       leadSeconds: 0
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 0
     isStorm: 0
@@ -323,11 +379,25 @@ MonoBehaviour:
     warning:
       leadSeconds: 0
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 0
     isStorm: 0
   - phaseId: reef_crab
-    label: Reef Crab miniboss (timing applies from M3)
+    label: Reef Crab miniboss
     trigger:
       kind: 0
       timeSeconds: 150
@@ -342,20 +412,27 @@ MonoBehaviour:
     alternateSpawner: {fileID: 0}
     ratePerSecond: 0
     budgetUnit: 0
-    pools:
-    - poolId: miniboss
-      share: 1
-      entries:
-      - enemyId: reef_crab_miniboss
-        archetype: {fileID: 11400000, guid: 38ceb085c1591c441b8ab565d3da9590, type: 2}
-        variant: {fileID: 0}
-        weight: 1
+    pools: []
     pauseAmbient: 1
     rateMultiplier: 1
     burstCount: 0
     warning:
-      leadSeconds: 0
+      leadSeconds: 5
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 1
+      placement: 1
+      archetype: {fileID: 11400000, guid: 38ceb085c1591c441b8ab565d3da9590, type: 2}
+      ringDistance: 22
+      affix: 4
+      speedMultiplier: 1
+      hpMultiplier: 4
+      damageMultiplier: 1.15
+      bossConflict: 1
+      retryWindowSeconds: 0
+      scheduledEliteIndex: -1
+      waitForOtherArena: 1
+      arrivalToast: 
     isBoss: 0
     isOvertime: 0
     isStorm: 0
@@ -382,6 +459,20 @@ MonoBehaviour:
     warning:
       leadSeconds: 5
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 1
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: 0
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 0
     isStorm: 0
@@ -408,6 +499,20 @@ MonoBehaviour:
     warning:
       leadSeconds: 5
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 0
     isStorm: 0
@@ -434,6 +539,20 @@ MonoBehaviour:
     warning:
       leadSeconds: 5
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 0
     isStorm: 0
@@ -460,6 +579,20 @@ MonoBehaviour:
     warning:
       leadSeconds: 5
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 1
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: 1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 0
     isStorm: 0
@@ -486,6 +619,20 @@ MonoBehaviour:
     warning:
       leadSeconds: 0
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 1
     isOvertime: 0
     isStorm: 0
@@ -512,6 +659,20 @@ MonoBehaviour:
     warning:
       leadSeconds: 0
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 0
     isStorm: 0
@@ -538,6 +699,20 @@ MonoBehaviour:
     warning:
       leadSeconds: 0
       template: "WARNING \u2014 {label} incoming!"
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 1
     isStorm: 0
@@ -563,7 +738,21 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 10
-      template: The storm closes in!
+      template: "DREAD TIDE \u2014 storm boundary in {lead} seconds!"
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
     isBoss: 0
     isOvertime: 0
     isStorm: 1
@@ -586,9 +775,12 @@ MonoBehaviour:
     harrierWeightFirstTwoMinutes: 0.2
     pursuerWeightAfterTwoMinutes: 0.6
     harrierWeightAfterTwoMinutes: 0.4
+    startToast: "DROWNED PURSUIT \u2014 spectral fleet incoming!"
   storm:
     safeRegionStartFraction: 1
     safeRegionEndFraction: 0.4
     contractionStartSeconds: 720
     contractionEndSeconds: 900
     outsideDamagePerSecond: 8
+    startToast: "DREAD TIDE \u2014 stay inside the safe water!"
+    edgeToast: "STORM EDGE \u2014 return to open water!"

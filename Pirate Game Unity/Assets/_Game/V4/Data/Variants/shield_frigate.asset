@@ -38,6 +38,7 @@ MonoBehaviour:
   - specialist
   inheritBaseVisual: 1
   concurrencyTags: []
+  spawnTier: 0
   combat:
     registered: 1
     archetype: 17

@@ -26,6 +26,8 @@ namespace RoguePirates.V4.DevTools.Trace
         /// Negative disables.</summary>
         public float killArenaFocusAfterSeconds = 20f;
         public float maxSimSeconds = 900f;
+        /// <summary>The ship takes no damage (long runs that reach overtime and the storm). Same in V3 and V4 runs.</summary>
+        public bool invulnerable;
         public int pauseResponseFrames = 3;
         public string pilot = PlayerPilot.PatternId;
         public string outPath;

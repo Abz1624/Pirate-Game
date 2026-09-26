@@ -40,8 +40,10 @@ MonoBehaviour:
     placeholderColor: {r: 1, g: 0.5, b: 0, a: 1}
   tags: []
   concurrencyTags: []
+  spawnTier: 1
   isBoss: 0
   isMiniboss: 0
+  inLegacyDatabase: 1
   combat:
     registered: 1
     archetype: 11

@@ -24,7 +24,8 @@ namespace RoguePirates.V4.Legacy
         readonly LegacyProfileAdapter _profile = new LegacyProfileAdapter();
         readonly LegacyDatabaseAdapter _database = new LegacyDatabaseAdapter();
         readonly V4LegacyBridge _bridge = new V4LegacyBridge();
-        readonly V4LegacySpawnBridge _spawnBridge = new V4LegacySpawnBridge();
+        readonly LegacySpawnSlots _spawnSlots;
+        readonly LegacyEncounterExecutor _encounters;
         readonly LegacyWorldAdapter _world;
         readonly LegacyConfigRuntime _legacyConfig;
         readonly V4RuntimeDatabase _runtimeDatabase;
@@ -46,8 +47,11 @@ namespace RoguePirates.V4.Legacy
 
         public LegacyRunShell(MonoBehaviour host, GameDatabase database, StageBuilder stageBuilder,
             PlayerShipController player, IslandLayoutDefinition islandLayout, bool usePlaceholderPoiVisuals,
-            ConfigSetRuntime config, StageBalanceProfile legacyBaseProfile)
+            ConfigSetRuntime config, StageBalanceProfile legacyBaseProfile, LegacySpawnSlots spawnSlots,
+            LegacyEncounterExecutor encounters)
         {
+            _spawnSlots = spawnSlots;
+            _encounters = encounters;
             _legacyConfig = new LegacyConfigRuntime(config, legacyBaseProfile);
             _runtimeDatabase = new V4RuntimeDatabase(config);
             _combatOverride = new LegacyCombatProfileOverride(config);
@@ -67,8 +71,9 @@ namespace RoguePirates.V4.Legacy
             LegacyWorldAdapter.DisableEnvironmentalHazards();
             AppRoot.EnsureInitialized();
             _database.Load(_serializedDatabase);
-            // M1: config-driven copies of the stage profile and encounter schedule, installed before any spawner reset.
-            if (_legacyConfig.Build(out var configError)) _spawnBridge.InstallSchedule(_legacyConfig.RuntimeSchedule);
+            // M1: config-driven copies of the stage profile and encounter schedule. M3: the kept EncounterSpawner only
+            // runs the Beacon boss and Powder Cache, so it gets the schedule without ambient entries.
+            if (_legacyConfig.Build(out var configError)) _encounters.InstallSchedule(_legacyConfig.EncounterOnlySchedule);
             else Debug.LogError("V4Game: " + configError);
             _legacyConfig.ProfileChanged += () => _profile.Rebuild(_legacyConfig.RuntimeProfile);
             var multiConfig = Object.FindFirstObjectByType<V3MultiShipSceneConfig>();
@@ -192,7 +197,7 @@ namespace RoguePirates.V4.Legacy
 
             if (_player != null)
             {
-                LegacyStageAdapter.EnsureStormEdgeDamage(_player);
+                _spawnSlots.AddStormEdgeSlot(_player); // V3StormEdgeDamage's place; the V4 storm phase applies the damage
                 LegacyEnemyWorldPort.EnsureHostileProjectiles();
                 if (V3CaptainController.Instance == null)
                     _player.InitializeFromRun(RunManager.Instance.Stats.MaxHull);
@@ -205,10 +210,16 @@ namespace RoguePirates.V4.Legacy
 
             if (!isPvPScene)
             {
-                _spawnBridge.ResetSpawnDirectors(enemyWorld, _player);
+                // V3 created its spawn directors here (V3RunBootstrap.ResetSaltwindDirectors and the first-run path).
+                // M3: the V4 spawn controller replaces them; its ticks are created at the same points so they run at
+                // the same place in the frame (LegacyUpdateSlot).
+                LegacyEncounterExecutor.ResetForRun();
+                _spawnSlots.CreateOvertimeSlot();
+                _spawnSlots.AddStormSlot();
                 LegacyStageAdapter.ResetBossDirector(enemyWorld, _player);
-                _spawnBridge.EnsureSpawnDirectorsFirstRun(enemyWorld, _player,
-                    () => LegacyStageAdapter.ResetBossDirector(enemyWorld, _player));
+                _spawnSlots.AddBeatSlot();
+                LegacyStageAdapter.ResetBossDirector(enemyWorld, _player);
+                _spawnSlots.BindAmbient();
             }
 
             RunManager.Instance.EnterPlaying();
@@ -229,7 +240,7 @@ namespace RoguePirates.V4.Legacy
         /// </summary>
         public void EnterModuleLab()
         {
-            _spawnBridge.EnterModuleLab();
+            _encounters.EnterModuleLab();
             LegacyStageAdapter.EnterModuleLab();
             if (_player != null) _player.Damage.SetPlaytestInvulnerable(true);
         }

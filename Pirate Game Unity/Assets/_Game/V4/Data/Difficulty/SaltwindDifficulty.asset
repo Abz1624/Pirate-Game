@@ -151,6 +151,15 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+  tierUnlocks:
+  - tier: 1
+    minMinutes: 1.5
+    minPlayerLevel: 2
+    requireBoth: 0
+  - tier: 2
+    minMinutes: 5
+    minPlayerLevel: 5
+    requireBoth: 1
   overtimeHpMultiplierBase: 2
   overtimeHpMultiplierExponentPerMinute: 0.5
   overtimeDamageBonusPerMinute: 0.12

@@ -5,6 +5,7 @@ using HighSeas.Balance;
 using HighSeas.Data;
 using HighSeas.Enemies;
 using RoguePirates.V4.Config;
+using RoguePirates.V4.Spawning;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -18,7 +19,7 @@ namespace RoguePirates.V4.Legacy
     /// are written only when the run starts; to change them, restart with a preset (the console's "Restart with it").
     /// </summary>
     [DeletedInPhase(14, "Legacy profile and schedule are gone after switch-over")]
-    public sealed class LegacyConfigRuntime : IDisposable
+    public sealed class LegacyConfigRuntime : IDisposable, ISpawnerProfiles
     {
         readonly ConfigSetRuntime _config;
         readonly StageBalanceProfile _baseProfile;
@@ -28,6 +29,11 @@ namespace RoguePirates.V4.Legacy
 
         public StageBalanceProfile RuntimeProfile { get; private set; }
         public EncounterSpawnSchedule RuntimeSchedule { get; private set; }
+        /// <summary>
+        /// M3: the schedule the kept legacy EncounterSpawner gets: the same profile copies, no ambient entries (the V4
+        /// spawn controller runs the ambient bands). The full schedule stays on the runtime profile for its export.
+        /// </summary>
+        public EncounterSpawnSchedule EncounterOnlySchedule { get; private set; }
         public event Action ProfileChanged;
 
         WaveTimelineConfig Timeline => _config.Single<WaveTimelineConfig>();
@@ -72,6 +78,10 @@ namespace RoguePirates.V4.Legacy
             }
             LegacyConfigMapping.ApplySchedule(Timeline, RuntimeSchedule, ProfileFor, atRunStart: true);
 
+            EncounterOnlySchedule = Track(Object.Instantiate(RuntimeSchedule));
+            EncounterOnlySchedule.name = source.name;
+            EncounterOnlySchedule.entries = Array.Empty<ScheduledSpawnEntry>();
+
             RuntimeProfile = Track(Object.Instantiate(_baseProfile));
             RuntimeProfile.name = _baseProfile.name;
             LegacyConfigMapping.ApplyProfile(Timeline, Difficulty, RuntimeProfile);
@@ -95,6 +105,9 @@ namespace RoguePirates.V4.Legacy
                 if (copy != null) clone.enemy = copy;
             }
         }
+
+        /// <summary>The runtime spawn profile a spawner config drives (the V4 spawn controller spawns with it).</summary>
+        public SpawnProfile For(EnemySpawnerConfig spawner) => ProfileFor(spawner);
 
         SpawnProfile ProfileFor(EnemySpawnerConfig spawner) =>
             spawner != null && _cloneBySpawnerId.TryGetValue(spawner.configId, out var clone) ? clone : null;
@@ -123,10 +136,13 @@ namespace RoguePirates.V4.Legacy
                 case EnemySpawnerConfig spawner:
                     if (_cloneBySpawnerId.TryGetValue(spawner.configId, out var clone)) LegacyConfigMapping.ApplySpawner(spawner, clone);
                     LegacyConfigMapping.ApplySchedule(Timeline, RuntimeSchedule, ProfileFor, atRunStart: false); // band rates win over spawner intervals
+                    LegacyConfigMapping.ApplySchedule(Timeline, EncounterOnlySchedule, ProfileFor, atRunStart: false);
                     break;
                 case WaveTimelineConfig _:
                 case DifficultyCurveConfig _:
                     LegacyConfigMapping.ApplySchedule(Timeline, RuntimeSchedule, ProfileFor, atRunStart: false);
+                    // The kept encounter executor reads grace and max-active from its own copy (boss/cache caps).
+                    LegacyConfigMapping.ApplySchedule(Timeline, EncounterOnlySchedule, ProfileFor, atRunStart: false);
                     LegacyConfigMapping.ApplyProfile(Timeline, Difficulty, RuntimeProfile);
                     ProfileChanged?.Invoke();
                     break;

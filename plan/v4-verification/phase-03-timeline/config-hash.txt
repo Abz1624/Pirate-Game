@@ -1,0 +1,4 @@
+# SaltwindDefault V4 config set hash after M3 (trace header v4SetHash)
+092b02c88c4ffb114f476a3cf165a6102a907b67d2a9c08d90883a68969fffe2
+# V3 stage profile export hash (trace header configHash, Windows player) at default config: unchanged from M2
+b61d469c318037b49a75c183d0547b54847c355b9167118bf4ad0a7b4321de5c

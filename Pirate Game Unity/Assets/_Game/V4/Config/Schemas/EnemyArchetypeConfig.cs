@@ -57,7 +57,8 @@ namespace RoguePirates.V4.Config
         public ArchetypeVisual visual = new ArchetypeVisual();
         public string[] tags = Array.Empty<string>();
         [Tooltip("Concurrency tags used by timeline tag caps (ranged_gunner, area_denial, charge_windup).")]
-        [AppliesFrom(3, "V3 composition caps check enemy ids")] public string[] concurrencyTags = Array.Empty<string>();
+        public string[] concurrencyTags = Array.Empty<string>();
+        [Tooltip("Tier the timeline pools unlock by (DifficultyCurve tierUnlocks). V3 keeps it in a table by enemy id.")] public ConfigEnums.EnemyTier spawnTier = ConfigEnums.EnemyTier.Soldier;
         public bool isBoss, isMiniboss;
         [Tooltip("Off for enemies V3's database does not contain (drowned_pursuer/harrier exist only in the fallback database; V3 overtime spawns shark/cannonboat stats, register R-05).")]
         [AppliesFrom(0, "structural")] public bool inLegacyDatabase = true;

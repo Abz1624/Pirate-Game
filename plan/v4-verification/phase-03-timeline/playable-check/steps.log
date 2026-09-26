@@ -1,0 +1,30 @@
+﻿[is-playing] no
+[begin] started
+[is-playing] OK playing
+[run-start] OK t=8.5 alive=4 phase=Band 0 legacyAmbientEntries=0 rate=1
+[console] console open on Wave Timeline
+[shot] 01-wave-timeline.png
+[trigger-reef] trigger reef_crab: True
+[reef-arena] OK arena on, focus 7 = reef_crab_miniboss, hp 409
+[shot] 02-reef-crab-arena.png
+[arena-blocks] alive during arena: 3
+[arena-still] after 3 s: alive 2, reef_crab Active
+[kill-reef] reef crab killed
+[arena-off] OK arena off, reef_crab Done
+[skip-elite] skip elite_hammerhead: True, state Skipped
+[rate-before] newest unit 9
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[rate-edit] spawns in ~5 s before: 5; band_0 rate -> 3/s: True 
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[unpause] False
+[rate-after] spawns in ~5 s after the edit: 25 (unit ids issued, cap permitting)
+[duplicate] phases 14 -> 15: added band_2_copy at the end (edit its trigger and pools in Config; bands run in time order); copy spawner=spawner.saltwind_ambient_band_2, rate=1.8
+[shot] 03-after-edits.png
+[console] errors returned=0

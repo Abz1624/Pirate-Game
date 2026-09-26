@@ -23,10 +23,20 @@ namespace RoguePirates.V4.Config
         [Tooltip("Stage index 0, 1, 2+.")] public float[] stage = { 1f, 1f, 1f };
     }
 
+    /// <summary>When a tier may appear in timeline pools: time, player level, or both.</summary>
+    [Serializable]
+    public sealed class TierUnlockRule
+    {
+        public ConfigEnums.EnemyTier tier = ConfigEnums.EnemyTier.Captain;
+        public float minMinutes;
+        public int minPlayerLevel;
+        [Tooltip("On: both the time and the level are needed. Off: either is enough.")] public bool requireBoth;
+    }
+
     /// <summary>
     /// Enemy HP and damage growth. Defaults equal V3: GameMath.EnemyHP/EnemyDamage per minute with tier and stage
     /// multipliers and the global HP factor 2/3, the Saltwind ordinary-time multipliers after 2:00, and the overtime
-    /// multipliers. The overtime values reach the game in M1 through the legacy profile; the rest from M3/M8.
+    /// multipliers. Ordinary-time and overtime values are live (V4 spawn controller); per-minute growth moves in M8.
     /// </summary>
     [CreateAssetMenu(menuName = "RoguePirates/V4/Difficulty Curve", fileName = "DifficultyCurve")]
     public sealed class DifficultyCurveConfig : V4ConfigAsset
@@ -39,9 +49,17 @@ namespace RoguePirates.V4.Config
         [AppliesFrom(8)] public TierStageMultipliers damageMultipliers = new TierStageMultipliers { tier = new[] { 1f, 1.25f, 1.6f }, stage = new[] { 1f, 1.12f, 1.28f } };
 
         [Header("Saltwind ordinary time (SaltwindFinaleLogic)")]
-        [AppliesFrom(3)] public float ordinaryScalingDelaySeconds = 120f;
-        [Tooltip("x = minutes after the delay.")] [AppliesFrom(3)] public CurveSpec ordinaryHp = new CurveSpec { c0 = 1f, c1 = 0.11f, c2 = 0.022f };
-        [AppliesFrom(3)] public CurveSpec ordinaryDamage = new CurveSpec { c0 = 1f, c1 = 0.14f, c2 = 0.028f };
+        public float ordinaryScalingDelaySeconds = 120f;
+        [Tooltip("x = minutes after the delay.")] public CurveSpec ordinaryHp = new CurveSpec { c0 = 1f, c1 = 0.11f, c2 = 0.022f };
+        public CurveSpec ordinaryDamage = new CurveSpec { c0 = 1f, c1 = 0.14f, c2 = 0.028f };
+
+        [Header("Tier unlocks (timeline pools)")]
+        [Tooltip("Tiers without a rule are always allowed (V3: Captain from 1:30 or level 2; General from 5:00 and level 5).")]
+        public System.Collections.Generic.List<TierUnlockRule> tierUnlocks = new System.Collections.Generic.List<TierUnlockRule>
+        {
+            new TierUnlockRule { tier = ConfigEnums.EnemyTier.Captain, minMinutes = 1.5f, minPlayerLevel = 2, requireBoth = false },
+            new TierUnlockRule { tier = ConfigEnums.EnemyTier.General, minMinutes = 5f, minPlayerLevel = 5, requireBoth = true },
+        };
 
         [Header("Overtime (live through the stage profile)")]
         public float overtimeHpMultiplierBase = 2f;

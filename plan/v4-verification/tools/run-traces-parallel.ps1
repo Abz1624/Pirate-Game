@@ -9,6 +9,7 @@ param(
     [float] $BossAt = 240,
     [float] $KillBossAt = 300,
     [float] $MaxSim = 900,
+    [switch] $Invulnerable,                               # the ship takes no damage (long runs: overtime, storm)
     [int] $TimeoutSeconds = 1800,
     [string] $Root = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path 'Pirate Game Unity/Builds/V4Trace')
 )
@@ -45,7 +46,7 @@ function Start-Run([string] $spec) {
         label = $label; seed = [int]$seed; captureDeltaTime = 0.016666668; bossAtSeconds = $BossAt
         killBossAtSeconds = $KillBossAt; maxSimSeconds = $MaxSim; pauseResponseFrames = 3; pilot = 'player-v1'
         outPath = $outFull; scene = $scene; commit = $commit; stopPlayModeWhenDone = $true; presetPath = $preset
-        createdUtcTicks = [DateTime]::UtcNow.Ticks
+        createdUtcTicks = [DateTime]::UtcNow.Ticks; invulnerable = [bool]$Invulnerable
     }
     $reqPath = Join-Path $work "$label.json"
     $request | ConvertTo-Json | Set-Content -Path $reqPath -Encoding utf8

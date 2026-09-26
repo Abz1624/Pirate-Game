@@ -5766,6 +5766,7 @@ GameObject:
   - component: {fileID: 658787001}
   - component: {fileID: 658786992}
   - component: {fileID: 658786991}
+  - component: {fileID: 658786993}
   - component: {fileID: 658786990}
   - component: {fileID: 658786989}
   - component: {fileID: 658786988}
@@ -5955,7 +5956,7 @@ MonoBehaviour:
   enemyWorld: {fileID: 0}
   player: {fileID: 0}
   spawnCamera: {fileID: 0}
-  schedule: {fileID: 0}
+  schedule: {fileID: 11400000, guid: 5cd01a86d7bd67e439a85df9271276c3, type: 2}
 --- !u!114 &658786992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6078,6 +6079,19 @@ MonoBehaviour:
   configSet: {fileID: 11400000, guid: 5831aeb9fd5687344a53de1cd4fff7db, type: 2}
   legacyBaseProfile: {fileID: 11400000, guid: 5c446dd1cad997947bc835f4b6ae9d6d, type: 2}
   moduleLab: 1
+--- !u!114 &658786993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658786980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16f779b2f5326b34da66a76903a0b73c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.Legacy.LegacyUpdateSlot
+  role: ambient
 --- !u!1 &676974001
 GameObject:
   m_ObjectHideFlags: 0

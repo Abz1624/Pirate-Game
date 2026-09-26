@@ -84,6 +84,18 @@ namespace RoguePirates.V4.Config
             try
             {
                 var type = ConfigPath.TypeAt(copy, path);
+                if (typeof(V4ConfigAsset).IsAssignableFrom(type))
+                {
+                    // References by configId ("" = none), resolved to this run's copies.
+                    var id = valueText?.Trim() ?? string.Empty;
+                    V4ConfigAsset target = null;
+                    if (id.Length > 0 && (!_copies.TryGetValue(id, out target) || !type.IsInstanceOfType(target)))
+                    {
+                        error = $"'{id}' is not a {type.Name} in this set";
+                        return false;
+                    }
+                    return Apply(copy, path, target, runTime);
+                }
                 if (!ConfigFieldWalker.TryParse(type, valueText, out var value))
                 {
                     error = $"'{valueText}' is not a valid {type.Name}";
@@ -134,7 +146,13 @@ namespace RoguePirates.V4.Config
             error = null;
             var source = Source(configId);
             if (source == null) { error = $"unknown config '{configId}'"; return false; }
-            try { return TrySetValue(configId, path, ConfigPath.Get(source, path), runTime, out error); }
+            try
+            {
+                var value = ConfigPath.Get(source, path);
+                // A reference in the asset points at an asset; the run uses that asset's copy.
+                if (value is V4ConfigAsset asset && asset != null && _copies.TryGetValue(asset.configId, out var copy)) value = copy;
+                return TrySetValue(configId, path, value, runTime, out error);
+            }
             catch (Exception e) { error = e.Message; return false; }
         }
 

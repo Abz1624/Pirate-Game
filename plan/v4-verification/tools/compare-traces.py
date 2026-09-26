@@ -8,7 +8,7 @@ import json
 import re
 import sys
 
-HEADER_KEYS = ["seed", "pilot", "dt", "captain", "platform", "screen", "bossAt", "killBossAt", "killArenaAfter", "configHash", "visualPins", "preset"]
+HEADER_KEYS = ["seed", "pilot", "dt", "captain", "platform", "screen", "bossAt", "killBossAt", "killArenaAfter", "configHash", "visualPins", "preset", "invulnerable"]
 FRAME = re.compile(r',"f":-?\d+')
 
 
@@ -25,7 +25,7 @@ IGNORED = set()
 def compare(a_path, b_path):
     ha, ea = load(a_path)
     hb, eb = load(b_path)
-    defaults = {"preset": "", "killArenaAfter": -1}  # fields that older traces do not have
+    defaults = {"preset": "", "killArenaAfter": -1, "invulnerable": False}  # fields that older traces do not have
     get = lambda h, k: h.get(k, defaults.get(k, "(missing)"))
     diffs = [f"header {k}: {get(ha, k)} vs {get(hb, k)}" for k in HEADER_KEYS if k not in IGNORED and get(ha, k) != get(hb, k)]
     for i, (x, y) in enumerate(zip(ea, eb)):

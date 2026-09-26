@@ -139,12 +139,14 @@ namespace RoguePirates.V4.Tests
             var game = Object.FindFirstObjectByType<V4Game>();
             var legacy = game.Shell.LegacyConfig;
             var spawner = Object.FindFirstObjectByType<EncounterSpawner>();
-            Assert.AreSame(legacy.RuntimeSchedule, spawner.Schedule, "the spawner must run the per-run schedule copy");
+            // M3: the legacy spawner only runs encounters, from the per-run copy without ambient entries.
+            Assert.AreSame(legacy.EncounterOnlySchedule, spawner.Schedule, "the spawner must run the per-run encounter-only copy");
+            Assert.AreSame(legacy.RuntimeSchedule.bossSummon, spawner.Schedule.bossSummon, "same config-driven profile copies");
             Assert.AreSame(legacy.RuntimeProfile, StageBalanceProfileContext.Authoring, "the profile context must use the per-run profile");
 
-            // Band 2 rate 1.8 -> 4 spawns/s: the band's spawn interval (read per spawn) becomes 0.25 s.
+            // Band 2 rate 1.8 -> 4 spawns/s: the V4 spawn controller reads the phase's rate live (interval 0.25 s).
             Assert.IsTrue(game.Config.TryApplyEdit("timeline.saltwind", "phases[2].ratePerSecond", "4", 1f, out var error), error);
-            Assert.AreEqual(0.25f, legacy.RuntimeSchedule.entries[2].profile.timing.spawnIntervalSeconds, 1e-6f);
+            Assert.AreEqual(4f, game.Config.Get<RoguePirates.V4.Config.WaveTimelineConfig>("timeline.saltwind").phases[2].ratePerSecond);
 
             // A profile-owned field: live in Authoring and in the rebuilt snapshot; chest purchases survive the rebuild.
             StageBalanceProfileContext.Runtime.RegisterSuccessfulChestPurchase();
@@ -174,8 +176,10 @@ namespace RoguePirates.V4.Tests
             RunRequest.RequestPreset(json);
             yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return WaitForPlaying();
-            var legacy = Object.FindFirstObjectByType<V4Game>().Shell.LegacyConfig;
-            Assert.AreEqual(0.25f, legacy.RuntimeSchedule.entries[2].profile.timing.spawnIntervalSeconds, 1e-6f, "preset must apply before the run starts");
+            var game = Object.FindFirstObjectByType<V4Game>();
+            // The V4 spawn controller reads the band rate from the run's config copy.
+            Assert.AreEqual(4f, game.Config.Get<RoguePirates.V4.Config.WaveTimelineConfig>("timeline.saltwind").phases[2].ratePerSecond, "preset must apply before the run starts");
+            Assert.AreEqual(1, game.Config.ChangeLog.Count, "applied once, before the run");
             Assert.IsNull(RunRequest.PresetJson, "the preset request is consumed");
         }
 
@@ -197,6 +201,65 @@ namespace RoguePirates.V4.Tests
                          .Concat(schedule.entries.Select(e => e.profile)).Where(p => p != null && p.enemy != null))
                 Assert.AreSame(game.Shell.RuntimeDatabase.Database.GetEnemy(profile.enemy.id), profile.enemy,
                     $"{profile.name}: every spawn path reads the per-run copy");
+        }
+
+        [UnityTest]
+        public IEnumerator SpawnSlots_AllTickEveryFrame()
+        {
+            // The frame position of each slot (next to the V3 component it replaces) is checked with the profiler in
+            // play sessions and by exact trace parity in the player. Unity's test runner schedules scene components in
+            // a different order (measured: the ambient slot runs before the run clock here, after it in the Editor and
+            // the player), so this test only checks that every slot ticks each frame, and logs the observed order.
+            SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return null;
+            yield return WaitForPlaying();
+            for (var i = 0; i < 5; i++) yield return null;
+            yield return new WaitForEndOfFrame();
+            var slots = Object.FindObjectsByType<RoguePirates.V4.Legacy.LegacyUpdateSlot>(FindObjectsSortMode.None);
+            var clock = RunManager.Instance.ElapsedSeconds;
+            Debug.Log($"V4 slot clocks (test runner order): clock {clock:R}, " + string.Join(", ", slots.Select(s => $"{s.role}={s.ClockAtTick:R}")));
+            foreach (var role in new[] { "ambient", "overtime", "storm", "beats", "storm-edge" })
+            {
+                var slot = slots.Single(s => s.role == role);
+                Assert.AreEqual(Time.frameCount, slot.FrameAtTick, role + " ticked this frame");
+                Assert.That(slot.ClockAtTick, Is.GreaterThan(0f).And.LessThanOrEqualTo(clock), role + " saw this frame's clock or the previous one");
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator PowderCache_StillSpawnsThroughTheEncounterExecutor()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var spawner = Object.FindFirstObjectByType<EncounterSpawner>();
+            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var before = world.ActiveCount;
+            spawner.TriggerProfileImmediate(spawner.Schedule.powderCacheAmbush, 3, 0);
+            Assert.Greater(world.ActiveCount, before, "the kept spawner runs the Powder Cache ambush (register D4)");
+        }
+
+        [UnityTest]
+        public IEnumerator AmbientSpawns_ComeFromTheV4SpawnController()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var game = Object.FindFirstObjectByType<V4Game>();
+            Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Spawning.ISpawnController>(out var spawn), "spawn controller registered");
+            var legacy = Object.FindFirstObjectByType<EncounterSpawner>();
+            Assert.IsNotNull(legacy, "the legacy spawner stays for the Beacon boss and Powder Cache (register D4)");
+            Assert.AreEqual(0, legacy.Schedule.entries.Length, "the legacy spawner has no ambient entries");
+            Assert.IsNotNull(legacy.Schedule.bossSummon, "it keeps the boss and cache profiles");
+            var slots = Object.FindObjectsByType<RoguePirates.V4.Legacy.LegacyUpdateSlot>(FindObjectsSortMode.None);
+            foreach (var role in new[] { "ambient", "overtime", "storm", "beats", "storm-edge" })
+                Assert.IsTrue(slots.Any(s => s.role == role && s.Tick != null), $"{role} slot bound");
+            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3PressureBeatDirector>(), "no V3 beat director");
+            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3OvertimeDirector>(), "no V3 overtime director");
+
+            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var start = Time.realtimeSinceStartup;
+            while (RunManager.Instance.ElapsedSeconds < 9f && Time.realtimeSinceStartup - start < 30f) yield return null;
+            Assert.Greater(world.ActiveCount, 0, "ambient enemies spawned by V4");
+            Assert.AreEqual(RoguePirates.V4.Spawning.PhaseState.Active, spawn.Phases.First(p => p.PhaseId == "band_0").State);
         }
 
         [UnityTest]

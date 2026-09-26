@@ -14,12 +14,12 @@ namespace RoguePirates.V4.Config
         [AppliesFrom(9)] public int startingWeaponCount = 1;
         [AppliesFrom(9)] public bool openingWeaponDraftEnabled;
         [AppliesFrom(5)] public bool directionalWeaponTargetingEnabled = true;
-        [AppliesFrom(3)] public bool encounterSpawnEnabled = true;
+        [Tooltip("Off: no ambient spawns (beats, overtime and encounters still run).")] public bool encounterSpawnEnabled = true;
         [AppliesFrom(9)] public bool captainActivesEnabled;
         [AppliesFrom(9)] public bool weaponEvolutionsEnabled = true;
-        [AppliesFrom(3)] public float spawnDensityMultiplier = 1f, enemyHpMultiplier = 1f, enemyDamageMultiplier = 1f;
+        public float spawnDensityMultiplier = 1f, enemyHpMultiplier = 1f, enemyDamageMultiplier = 1f;
         [AppliesFrom(6)] [Range(0.25f, 1.5f)] public float playerVfxIntensityMultiplier = 1f;
-        [AppliesFrom(3)] public bool telemetryEnabled = true;
+        [AppliesFrom(12)] public bool telemetryEnabled = true;
 
         public override void Validate(ConfigValidationReport report)
         {

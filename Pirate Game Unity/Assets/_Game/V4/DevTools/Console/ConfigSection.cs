@@ -230,7 +230,17 @@ namespace RoguePirates.V4.DevTools.Console
                     var curve = value as AnimationCurve;
                     GUILayout.Label(curve == null ? "none" : $"curve, {curve.length} keys (edit in the asset)");
                     break;
-                default: // references
+                case ConfigFieldKind.AssetReference:
+                    // Another config of the field's type: click to step through them (and "none").
+                    if (GUILayout.Button(value is V4ConfigAsset current && current != null ? current.configId : "none"))
+                    {
+                        var options = new List<V4ConfigAsset> { null };
+                        options.AddRange(runtime.Configs.Where(c => field.Type.IsInstanceOfType(c)).OrderBy(c => c.configId, StringComparer.Ordinal));
+                        var at = options.FindIndex(o => o == (value as V4ConfigAsset));
+                        runtime.TrySetValue(config.configId, field.Path, options[(at + 1) % options.Count], runTime, out _);
+                    }
+                    break;
+                default: // Unity references (prefabs, sprites): edit in the asset
                     GUILayout.Label(ConfigFieldWalker.Format(value));
                     break;
             }

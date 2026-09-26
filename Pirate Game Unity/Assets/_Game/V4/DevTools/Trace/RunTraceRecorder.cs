@@ -143,12 +143,13 @@ namespace RoguePirates.V4.DevTools.Trace
             if (_bus != null) { _bus.Kill += OnKill; _bus.ChestOpened += OnChest; }
             else Debug.LogWarning("V4 trace: TriggerBus.Instance is null; kills will be recorded as despawns.");
 
+            if (_request.invulnerable && _ship != null) _ship.Damage.SetPlaytestInvulnerable(true); // long runs (overtime, storm)
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             Add(new JsonLine("header").Int("schema", 1).Str("label", _request.label).Str("scene", scene)
                 .Int("seed", RunManager.Instance.RunSeed).Str("pilot", _request.pilot).Num("dt", _request.captureDeltaTime)
                 .Str("captain", V3CaptainSelection.Selected.ToString()).Str("unity", Application.unityVersion)
                 .Str("platform", Application.isEditor ? "editor" : Application.platform.ToString()).Str("screen", $"{Screen.width}x{Screen.height}")
-                .Num("bossAt", _request.bossAtSeconds).Num("killBossAt", _request.killBossAtSeconds).Num("killArenaAfter", _request.killArenaFocusAfterSeconds).Str("commit", _request.commit).Str("v4SetHash", FindFirstObjectByType<RoguePirates.V4.V4Game>()?.Config?.Hash ?? string.Empty).Str("preset", string.IsNullOrEmpty(_request.presetPath) ? string.Empty : Path.GetFileNameWithoutExtension(_request.presetPath)).Str("visualPins", "skinned-offscreen+always-animate").Str("configHash", StageBalanceProfileContext.Export?.ContentHash));
+                .Num("bossAt", _request.bossAtSeconds).Num("killBossAt", _request.killBossAtSeconds).Num("killArenaAfter", _request.killArenaFocusAfterSeconds).Str("commit", _request.commit).Str("v4SetHash", FindFirstObjectByType<RoguePirates.V4.V4Game>()?.Config?.Hash ?? string.Empty).Str("preset", string.IsNullOrEmpty(_request.presetPath) ? string.Empty : Path.GetFileNameWithoutExtension(_request.presetPath)).Str("visualPins", "skinned-offscreen+always-animate").Str("configHash", StageBalanceProfileContext.Export?.ContentHash).Bool("invulnerable", _request.invulnerable));
         }
 
         void OnKill(bool elite, bool boss, Vector3 pos, string weapon) =>
@@ -242,14 +243,33 @@ namespace RoguePirates.V4.DevTools.Trace
             }
         }
 
+        RoguePirates.V4.Spawning.ISpawnController _v4Spawn;
+        bool _v4SpawnLooked;
+
+        RoguePirates.V4.Spawning.ISpawnController V4Spawn
+        {
+            get
+            {
+                if (_v4SpawnLooked) return _v4Spawn;
+                var game = FindFirstObjectByType<RoguePirates.V4.V4Game>();
+                if (game == null || game.Context == null) return null;
+                _v4SpawnLooked = true;
+                game.Context.TryGet(out _v4Spawn);
+                return _v4Spawn;
+            }
+        }
+
         int _arenaFocus = -1;
         float _arenaStart;
 
         /// <summary>Logs miniboss arenas and kills the focus enemy after the configured delay (weapon-hit path).</summary>
         void TrackArena(float t, RunManager run)
         {
-            if (!HighSeas.V3.V3MinibossArena.Active) { _arenaFocus = -1; return; }
-            var focus = HighSeas.V3.V3MinibossArena.FocusAgentId;
+            // V4 (M3+): the spawn controller owns arenas. V3 scenes (goldens): the static V3 arena.
+            var spawn = V4Spawn;
+            var active = spawn != null ? spawn.ArenaActive : HighSeas.V3.V3MinibossArena.Active;
+            if (!active) { _arenaFocus = -1; return; }
+            var focus = spawn != null ? spawn.ArenaFocusUnitId : HighSeas.V3.V3MinibossArena.FocusAgentId;
             if (focus != _arenaFocus)
             {
                 _arenaFocus = focus;

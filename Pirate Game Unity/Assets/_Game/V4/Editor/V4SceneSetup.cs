@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using HighSeas.V3;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -120,6 +122,86 @@ namespace RoguePirates.V4.Editor
                 }
             });
             return string.Join("\n", log);
+        }
+
+        /// <summary>
+        /// M3 (V4SaltwindRun and V4ModuleLab, idempotent): the kept EncounterSpawner gets the encounter-only schedule
+        /// (no ambient entries), so it can never run ambient spawns even if V4's schedule install fails; the ambient
+        /// spawn slot is added to /Systems and placed in the frame right after the run clock (see
+        /// <see cref="PlaceAmbientSlotAfterRunClock"/>).
+        /// </summary>
+        public static string ApplyM3()
+        {
+            var log = new List<string>();
+            if (AssetDatabase.LoadAssetAtPath<HighSeas.Enemies.EncounterSpawnSchedule>(V3ConfigMigrator.EncounterOnlySchedulePath) == null)
+                return "missing encounter-only schedule (run V3ConfigMigrator.ApplyM3 first)";
+            foreach (var path in new[] { V4SceneNames.SaltwindRunPath, V4SceneNames.ModuleLabPath })
+                Edit(path, log, () =>
+                {
+                    var schedule = AssetDatabase.LoadAssetAtPath<HighSeas.Enemies.EncounterSpawnSchedule>(V3ConfigMigrator.EncounterOnlySchedulePath);
+                    var systems = GameObject.Find("Systems");
+                    var spawner = systems != null ? systems.GetComponent<HighSeas.Enemies.EncounterSpawner>() : null;
+                    if (spawner == null) { log.Add("  no EncounterSpawner on /Systems"); return; }
+                    var so = new SerializedObject(spawner);
+                    so.FindProperty("schedule").objectReferenceValue = schedule;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    log.Add("  EncounterSpawner.schedule = V4EncounterOnlySchedule");
+
+                    var slot = systems.GetComponents<Legacy.LegacyUpdateSlot>().FirstOrDefault(s => s.role == Legacy.LegacySpawnSlots.AmbientRole);
+                    if (slot == null)
+                    {
+                        slot = systems.AddComponent<Legacy.LegacyUpdateSlot>();
+                        slot.role = Legacy.LegacySpawnSlots.AmbientRole;
+                        log.Add("  ambient LegacyUpdateSlot added");
+                    }
+                    // Directly after the EncounterSpawner in component order.
+                    for (var guard = 0; guard < 64; guard++)
+                    {
+                        var components = systems.GetComponents<Component>().ToList();
+                        var want = components.IndexOf(spawner) + 1;
+                        var at = components.IndexOf(slot);
+                        if (at == want) break;
+                        if (at > want) ComponentUtility.MoveComponentUp(slot); else ComponentUtility.MoveComponentDown(slot);
+                    }
+                });
+            foreach (var path in new[] { V4SceneNames.SaltwindRunPath, V4SceneNames.ModuleLabPath })
+                PlaceAmbientSlotAfterRunClock(path, log);
+            return string.Join("\n", log);
+        }
+
+        /// <summary>
+        /// Unity updates the components of a loaded scene in descending local file-ID order (measured with the
+        /// profiler in V4SaltwindRun: RunManager 658786994, EncounterSpawner ...991, WeaponController ...988, POIManager
+        /// ...982, in that order). A component added by the editor gets a fresh ID and would update before the run
+        /// clock. Unity has no API to choose a file ID, so after the slot is saved its ID is moved into the free gap
+        /// just below RunManager's (between RunManager and EncounterSpawner) with a text replace of that ID, and the
+        /// scene is re-imported. The V4 ambient tick then runs after the clock advances, like EncounterSpawner.Update;
+        /// the only change is that the kept (encounter-only) spawner now runs after it instead of before.
+        /// </summary>
+        static void PlaceAmbientSlotAfterRunClock(string path, List<string> log)
+        {
+            EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+            var systems = GameObject.Find("Systems");
+            var spawner = systems != null ? systems.GetComponent<HighSeas.Enemies.EncounterSpawner>() : null;
+            var clock = systems != null ? systems.GetComponent<HighSeas.Core.RunManager>() : null;
+            var slot = systems != null ? systems.GetComponents<Legacy.LegacyUpdateSlot>().FirstOrDefault(s => s.role == Legacy.LegacySpawnSlots.AmbientRole) : null;
+            if (spawner == null || clock == null || slot == null) { log.Add($"  {path}: slot, clock or spawner missing"); return; }
+            long Id(Object o) => (long)GlobalObjectId.GetGlobalObjectIdSlow(o).targetObjectId;
+            var low = Id(spawner);
+            var high = Id(clock);
+            var current = Id(slot);
+            if (current > low && current < high) { log.Add($"  {path}: ambient slot already between the run clock and the spawner ({current})"); return; }
+
+            var file = Path.Combine(Path.GetDirectoryName(Application.dataPath), path);
+            var text = File.ReadAllText(file);
+            long target = -1;
+            for (var id = high - 1; id > low; id--)
+                if (!Regex.IsMatch(text, $@"(&|fileID: ){id}\b")) { target = id; break; }
+            if (target < 0) { log.Add($"  {path}: no free file ID between {low} and {high}"); return; }
+            text = Regex.Replace(text, $@"(&|fileID: ){current}\b", m => m.Groups[1].Value + target);
+            File.WriteAllText(file, text);
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            log.Add($"  {path}: ambient slot file ID {current} -> {target} (runs after RunManager {high}, before EncounterSpawner {low})");
         }
 
         /// <summary>

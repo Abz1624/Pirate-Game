@@ -39,6 +39,7 @@ MonoBehaviour:
   inheritBaseVisual: 1
   concurrencyTags:
   - charge_windup
+  spawnTier: 1
   combat:
     registered: 1
     archetype: 10

@@ -37,6 +37,7 @@ MonoBehaviour:
   tags: []
   inheritBaseVisual: 0
   concurrencyTags: []
+  spawnTier: 0
   combat:
     registered: 1
     archetype: 21

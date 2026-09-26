@@ -10,12 +10,14 @@ namespace RoguePirates.V4.Config
     public enum PhaseDurationKind { UntilNext, Seconds, UntilCleared }
     public enum SpawnBudgetUnit { Spawns, Threat }
     public enum TagCapScope { Any, SpecialistPool }
+    public enum FocusPlacement { SpawnerProfile, RingAroundPlayer }
+    public enum BossConflict { SkipPermanently, WaitUntilBossEnds }
 
     [Serializable]
     public sealed class PhaseTrigger
     {
         public PhaseTriggerKind kind = PhaseTriggerKind.Time;
-        [Tooltip("Run time in seconds (Time trigger). Beats and the storm: live. Ambient bands: on restart (V3 caches band starts at run start). Overtime: follows the stage deadline. Reef Crab: from M3.")]
+        [Tooltip("Run time in seconds (Time trigger). Live until the phase starts; ambient bands run in time order, each until the next band starts. Overtime starts at the stage deadline instead.")]
         public float timeSeconds;
         [Tooltip("CombatEvents kind name (Event trigger).")] public string eventName = string.Empty;
         [Tooltip("Phase id that must be cleared first (AfterPhaseCleared).")] public string afterPhaseId = string.Empty;
@@ -34,7 +36,7 @@ namespace RoguePirates.V4.Config
     public sealed class PhaseWarning
     {
         [Tooltip("Seconds before the trigger; 0 = no warning.")] public float leadSeconds;
-        [Tooltip("{label} is replaced with the phase label.")] public string template = "WARNING — {label} incoming!";
+        [Tooltip("{label} is replaced with the phase label, {lead} with the lead seconds.")] public string template = "WARNING — {label} incoming!";
     }
 
     [Serializable]
@@ -64,6 +66,29 @@ namespace RoguePirates.V4.Config
         public TagCapScope scope = TagCapScope.Any;
     }
 
+    /// <summary>
+    /// A scripted spawn of one enemy when the phase starts (the Reef Crab miniboss, scheduled elites). With the phase's
+    /// pauseAmbient on, ambient spawns stop until that enemy dies (the miniboss arena).
+    /// </summary>
+    [Serializable]
+    public sealed class FocusSpawn
+    {
+        public bool enabled;
+        [Tooltip("SpawnerProfile: the phase's spawner places its anchor enemy (with ordinary-time scaling). RingAroundPlayer: this archetype at ringDistance, at a random angle from the loot stream.")]
+        public FocusPlacement placement = FocusPlacement.SpawnerProfile;
+        [Tooltip("Enemy for RingAroundPlayer placement.")] public EnemyArchetypeConfig archetype;
+        public float ringDistance = 22f;
+        [Tooltip("RingAroundPlayer only (spawner placement uses the spawner's elite settings).")] public ConfigEnums.EliteAffix affix = ConfigEnums.EliteAffix.None;
+        public float speedMultiplier = 1f, hpMultiplier = 1f, damageMultiplier = 1f;
+        [Tooltip("During the boss fight: skip for good (V3 elites) or wait until it ends (V3 Reef Crab).")]
+        public BossConflict bossConflict = BossConflict.SkipPermanently;
+        [Tooltip("Keep retrying this long after the trigger when no slot or position is free; 0 = until it spawns.")]
+        public float retryWindowSeconds = 20f;
+        [Tooltip("Index of the scheduled elite this is, for Marks/Rum (-1 = not a scheduled elite).")] public int scheduledEliteIndex = -1;
+        [Tooltip("Do not spawn while another arena is running.")] public bool waitForOtherArena;
+        [Tooltip("Shown when it spawns; {label} = phase label. Empty = no toast.")] public string arrivalToast = "{label} has arrived!";
+    }
+
     [Serializable]
     public sealed class TimelinePhase
     {
@@ -76,14 +101,16 @@ namespace RoguePirates.V4.Config
         [Tooltip("Second spawner (overtime harrier).")] public EnemySpawnerConfig alternateSpawner;
         [Tooltip("Ambient spawns per second while the phase is active (0 = not an ambient phase).")]
         public float ratePerSecond;
-        [AppliesFrom(3)] public SpawnBudgetUnit budgetUnit = SpawnBudgetUnit.Spawns;
-        [AppliesFrom(3, "V3 composition is hard-coded until the V4 Spawn Controller")] public List<SpawnPool> pools = new List<SpawnPool>();
-        [AppliesFrom(3)] public bool pauseAmbient;
-        [Tooltip("Multiplier on the ambient rate while active (swarm pulses). V3 uses the first swarm pulse's value for both pulses until M3.")]
+        [Tooltip("Spawns: ratePerSecond is spawns per second. Threat: threat cost per second (an enemy costing 3 waits three times as long).")]
+        public SpawnBudgetUnit budgetUnit = SpawnBudgetUnit.Spawns;
+        [Tooltip("Ambient composition: the first pool is the base (its share = chance a spawn stays in it); later pools share the rest. Tag caps and tier unlocks filter picks.")]
+        public List<SpawnPool> pools = new List<SpawnPool>();
+        [Tooltip("With a focus spawn: ambient spawns stop until the focus enemy dies.")] public bool pauseAmbient;
+        [Tooltip("Multiplier on the ambient spawn rate while active (swarm pulses, with a Seconds duration).")]
         public float rateMultiplier = 1f;
-        [AppliesFrom(3)] public int burstCount;
-        [Tooltip("Beat warnings use the stage eventWarningSeconds until M3; the storm phase's lead is live.")]
+        [Tooltip("Ambient: enemies per spawn (0 = the spawner's own count).")] public int burstCount;
         public PhaseWarning warning = new PhaseWarning();
+        public FocusSpawn focus = new FocusSpawn();
         public bool isBoss, isOvertime, isStorm;
     }
 
@@ -98,6 +125,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Stored for the profile hash; V3 rolls harrier as 1 - pursuer.")] public float harrierWeightFirstTwoMinutes = 0.2f;
         public float pursuerWeightAfterTwoMinutes = 0.6f;
         [Tooltip("Stored for the profile hash; V3 rolls harrier as 1 - pursuer.")] public float harrierWeightAfterTwoMinutes = 0.4f;
+        public string startToast = "DROWNED PURSUIT — spectral fleet incoming!";
     }
 
     [Serializable]
@@ -109,11 +137,13 @@ namespace RoguePirates.V4.Config
         public float contractionStartSeconds = 720f;
         public float contractionEndSeconds = 900f;
         public float outsideDamagePerSecond = 8f;
+        public string startToast = "DREAD TIDE — stay inside the safe water!";
+        public string edgeToast = "STORM EDGE — return to open water!";
     }
 
     /// <summary>
     /// The Saltwind run schedule: stage limits, ambient bands, scheduled beats, overtime and storm. In M1 its values
-    /// reach the game through the legacy profile and a cloned encounter schedule; from M3 the V4 timeline runs it.
+    /// reach the legacy profile (hash, POI and chest readers); from M3 the V4 spawn controller runs the phases.
     /// </summary>
     [CreateAssetMenu(menuName = "RoguePirates/V4/Wave Timeline", fileName = "WaveTimeline")]
     public sealed class WaveTimelineConfig : V4ConfigAsset
@@ -123,13 +153,13 @@ namespace RoguePirates.V4.Config
         [Tooltip("No ambient spawns before this run time.")] public float graceSeconds = 2f;
         public int maxActiveEnemies = 80;
         [Tooltip("Slots kept free for Beacon and encounter spawns (ambient cap = max - reserved).")] public int reservedEncounterSlots = 8;
-        [AppliesFrom(0, "cached by the legacy spawner at run start")] public float globalMinSpawnGapSeconds = 0.35f;
+        public float globalMinSpawnGapSeconds = 0.35f;
         public float spawnRetryIntervalSeconds = 0.35f;
-        [Tooltip("Stored for the profile hash; V3 hard-codes 10 s.")] public float requiredEncounterTimeoutSeconds = 10f;
+        [Tooltip("Stored for the profile hash; the legacy encounter executor (Beacon boss, Powder Cache) hard-codes 10 s until M7.")] [AppliesFrom(7)] public float requiredEncounterTimeoutSeconds = 10f;
         public float bossAmbientRateMultiplier = 0.5f;
         public float eventWarningSeconds = 5f;
         [Tooltip("Stored for the profile hash; the live band length comes from the phase triggers.")] public float ambientBandDurationSeconds = 120f;
-        [Tooltip("Stored for the profile hash only (band 0 reads 0.5 here). The live band rates are the phases' ratePerSecond (band 0 = 0.6/s). Register R-01.")]
+        [Tooltip("Stored for the stage profile hash only. The live band rates are the phases' ratePerSecond (register R-01).")]
         public float[] profileAmbientRatePerSecond = { 0.5f, 1.2f, 1.8f, 2.4f, 3f };
         [Tooltip("Stored for the profile hash; V3 does not read these.")] public float minChargeWarningSeconds = 1f, minExplosiveWarningSeconds = 1.2f;
 
@@ -179,6 +209,17 @@ namespace RoguePirates.V4.Config
                 if (!Mathf.Approximately(p.trigger.timeSeconds, stageDeadlineSeconds))
                     report.Error(this, "phases", $"overtime phase '{p.phaseId}' starts at {p.trigger.timeSeconds}s but the stage deadline is {stageDeadlineSeconds}s");
             if (phases.Count(p => p.isStorm) > 1) report.Error(this, "phases", "more than one storm phase");
+            for (var i = 0; i < phases.Count; i++)
+            {
+                var p = phases[i];
+                var at = $"phases[{i}]";
+                if (p.ratePerSecond > 0f && p.spawner == null) report.Error(this, at + ".spawner", "an ambient phase (ratePerSecond > 0) needs a spawner");
+                if (p.isOvertime && (p.spawner == null || p.alternateSpawner == null)) report.Error(this, at, "overtime needs a spawner and an alternate spawner");
+                if (!p.focus.enabled) continue;
+                if (p.focus.placement == FocusPlacement.SpawnerProfile && p.spawner == null) report.Error(this, at + ".spawner", "a focus spawn with SpawnerProfile placement needs a spawner");
+                if (p.focus.placement == FocusPlacement.RingAroundPlayer && p.focus.archetype == null) report.Error(this, at + ".focus.archetype", "a ring focus spawn needs an archetype");
+                if (p.focus.retryWindowSeconds < 0f) report.Error(this, at + ".focus.retryWindowSeconds", "must not be negative");
+            }
         }
 
         /// <summary>AfterPhaseCleared triggers must not form a loop (A waits for B, B waits for A).</summary>
