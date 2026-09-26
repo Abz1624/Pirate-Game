@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `v4-modular-architecture` |
 | Phase start commit | `f8edb04e` (M4 passed) |
-| Status | Implemented, reviewed and verified. Awaiting your playtest |
+| Status | **Passed** (playtest 27 Sep; flamethrower visuals to be updated later, R-89) |
 
 ## What M5 delivers
 
@@ -82,3 +82,7 @@ No blockers. Fixed: a captain active pressed on the frame its cooldown expired w
 - **Balance note:** together these make weapons noticeably stronger (every weapon scales with level, Swivel fires two shots per cooldown, attack speed and cooldowns tighter). All are in F1 → Config.
 
 Verification (targeted, no traces): EditMode 122/122 (new: a test per fix, and the preset restoring V3 for each), weapon PlayMode tests 3/3, Module Lab screenshots of the flame stream and chain lightning.
+
+## Re-check (27 Sep)
+
+Passed: flame stream, chain lightning, mortar ring and Swivel's two shots all work. **Note for later:** the flamethrower's visuals need a proper update (R-89: the stream is the existing effect at its authored rate, but it runs past the 9.5 m damage cone and is not matched to the stream timing).

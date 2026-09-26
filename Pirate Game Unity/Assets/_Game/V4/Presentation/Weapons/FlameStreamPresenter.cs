@@ -12,6 +12,8 @@ namespace RoguePirates.V4.Presentation.Weapons
     /// stream prefab, its flame particle system as V3's juice controller picked it), shown while a V4 stream weapon is
     /// streaming and posed ahead of the ship. V3's juice controller reset that particle system's emission to 1 particle a
     /// second (authored 60), so the stream was nearly invisible; this keeps the authored emission.
+    /// TODO (M5 playtest note, register R-89): the flamethrower visuals need a proper update later; this stream runs
+    /// past the 9.5 m damage cone and is not timed to the stream's start and end.
     /// </summary>
     public sealed class FlameStreamPresenter : MonoBehaviour
     {
