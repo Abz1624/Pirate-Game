@@ -139,3 +139,15 @@ MonoBehaviour:
     moveSpeed: 9.5
     strikeRange: 1.35
     strikeInterval: 0.55
+  visual:
+    cannonMuzzle: 0
+    fallbackMuzzleScale: 1
+    aimShape: 0
+    aimTargetFanDegrees: 22
+    aimMinAreaRadius: 2
+    firePulseSeconds: 0.18
+    firePulseFades: 0
+    orbitRingTinted: 0
+    orbitRingColor: {r: 1, g: 0.88, b: 0.28, a: 1}
+    summonModel: {fileID: 0}
+    summonModelScale: 0.42

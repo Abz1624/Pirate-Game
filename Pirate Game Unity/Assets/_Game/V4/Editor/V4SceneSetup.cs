@@ -232,6 +232,39 @@ namespace RoguePirates.V4.Editor
             return string.Join("\n", log);
         }
 
+        /// <summary>
+        /// M6: the V3 views the V4 presenters replace leave the run scenes: V3AuthoredGameplayHud on /Canvas (the HUD
+        /// presenter binds that canvas instead) and the two V3RunResultsScreen copies on /Canvas and /RunCanvas.
+        /// Removing a component from the /Canvas prefab instance is saved as a scene override; the prefab is untouched.
+        /// WeaponJuiceController and ProjectileWorld stay on /Systems: the juice controller is switched off at run start
+        /// (the V4 weapon presenter draws the weapon effects) but HellfirePatchWorld and SaltwindCombatEffects still call
+        /// its burning-oil and blast effects until M8; ProjectileWorld (unticked and empty since M5) is still read by
+        /// CombatTelemetryDriver until M8.
+        /// </summary>
+        public static string ApplyM6()
+        {
+            var log = new List<string>();
+            foreach (var path in new[] { V4SceneNames.SaltwindRunPath, V4SceneNames.ModuleLabPath })
+            {
+                Edit(path, log, () =>
+                {
+                    RemoveAll<HighSeas.V3.V3AuthoredGameplayHud>(log);
+                    RemoveAll<HighSeas.V3.V3RunResultsScreen>(log);
+                });
+            }
+            return string.Join("\n", log);
+        }
+
+        static void RemoveAll<T>(List<string> log) where T : Component
+        {
+            foreach (var c in Object.FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                var owner = c.gameObject.name;
+                Object.DestroyImmediate(c); // also removes components the /Canvas prefab itself has (saved as a removed-component override)
+                log.Add($"  removed {typeof(T).Name} from /{owner}");
+            }
+        }
+
         const long WeaponControllerSceneId = 658786988;
 
         static void SwapWeaponSlotIntoRecordId(string path, List<string> log)

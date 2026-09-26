@@ -1,0 +1,210 @@
+using System.Collections.Generic;
+using HighSeas.Core;
+using RoguePirates.V4.Config;
+using UnityEngine;
+
+namespace RoguePirates.V4.Views
+{
+    // Read-only snapshots presentation reads (M6). Presenters see only these interfaces, the event reader and the
+    // small command interfaces below (a button press is input, not a state change the presenter makes itself).
+    // M6 implements them over the legacy hubs (Runtime/Legacy/LegacyViews.cs); later phases swap in V4 modules
+    // without touching the presenters.
+
+    public interface IRunStatusView
+    {
+        bool Exists { get; }
+        float ElapsedSeconds { get; }
+        bool IsOvertime { get; }
+        int Gold { get; }
+        int Kills { get; }
+        bool IsRunEnded { get; }
+        bool IsPaused { get; }
+        bool IsRunComplete { get; }
+        bool ObjectiveSecured { get; }
+        bool EndedByDeath { get; }
+        /// <summary>The weapon/enemy playtest scene drives the run (backslash does not toggle the aim overlay there, as V3).</summary>
+        bool WeaponPlaytestActive { get; }
+    }
+
+    /// <summary>What the aim overlay reads about weapon targeting (the weapon module's targeting, read-only).</summary>
+    public interface IWeaponAimView
+    {
+        /// <summary>The weapon's current target, as the weapon module would pick it now (no side effects).</summary>
+        bool TryResolveTarget(WeaponConfig weapon, out Vector3 targetPosition, out Vector3 aimDirection);
+        /// <summary>The predicted-area point (densest cluster) within range.</summary>
+        Vector3 PredictClusterGround(float range);
+        /// <summary>The experiment's directional-targeting switch.</summary>
+        bool DirectionalTargeting { get; }
+        /// <summary>The weapon's targeting arc in degrees (as the weapon module resolves it).</summary>
+        float ArcDegrees(WeaponConfig weapon);
+        /// <summary>The player's Size stat (weapon areas scale with it).</summary>
+        float SizeMultiplier { get; }
+    }
+
+    public interface IShipView
+    {
+        bool Exists { get; }
+        Vector3 Position { get; }
+        Vector3 Velocity { get; }
+        Vector3 MovementForward { get; }
+        float Hp { get; }
+        float MaxHp { get; }
+        /// <summary>Boost meter fill, 0..1 (0 when the ship has no boost).</summary>
+        float BoostNormalized { get; }
+    }
+
+    public interface ICaptainView
+    {
+        /// <summary>The selected captain as its shared id (HighSeas V3CaptainId value), for portrait lookup.</summary>
+        int CaptainId { get; }
+        string DisplayTitle { get; }
+    }
+
+    public interface IProgressionView
+    {
+        bool Exists { get; }
+        int Level { get; }
+        float CurrentXp { get; }
+        float XpToNext { get; }
+        int LogbookCount { get; }
+        string LogbookId(int index);
+        string LogbookName(int index);
+        int LogbookRank(int index);
+    }
+
+    public interface ILoadoutView
+    {
+        /// <summary>Weapon slots shown on the HUD (the experiment's slot cap).</summary>
+        int WeaponSlotCap { get; }
+        int WeaponCount { get; }
+        string WeaponId(int index);
+        /// <summary>Display name, evolution-aware (the evolved name once a weapon has evolved).</summary>
+        string WeaponName(int index);
+        /// <summary>The name the icon files use (the base weapon's display name).</summary>
+        string WeaponIconName(int index);
+        int WeaponLevel(int index);
+        int ItemCount { get; }
+        string ItemId(int index);
+        string ItemName(int index);
+        int ItemStacks(int index);
+    }
+
+    public enum BeaconReveal { Hidden, DirectionSector, ExactMarker, Discovered }
+
+    public struct PoiMarker
+    {
+        public POIType type;
+        public Vector3 position;
+        public bool used;
+    }
+
+    public interface IStageView
+    {
+        bool Exists { get; }
+        /// <summary>Changes when the stage layout is replaced (a new run); markers are rebuilt then.</summary>
+        int LayoutVersion { get; }
+        int PoiCount { get; }
+        PoiMarker Poi(int index);
+        bool HasDiscovery { get; }
+        BeaconReveal Beacon { get; }
+        Vector3? BeaconPosition { get; }
+        bool IsPoiVisible(int index);
+        bool IsCellExplored(Vector3 world);
+        /// <summary>Changes whenever more of the map is explored (the fog mask is rebuilt then).</summary>
+        int ExplorationRevision { get; }
+        float ExploreCellSize { get; }
+        float DiscoveryRadius { get; }
+        bool BossSummoned { get; }
+        bool BossDefeated { get; }
+    }
+
+    public struct ThreatMarker
+    {
+        public Vector3 position;
+        public bool isBoss;
+    }
+
+    public interface IEnemyView
+    {
+        /// <summary>Fills the live boss and miniboss positions (the minimap's threat glyphs).</summary>
+        void CollectThreats(List<ThreatMarker> into);
+        /// <summary>Tier of an enemy definition (Spawned events carry the definition index).</summary>
+        EnemyTier TierOf(int definitionIndex);
+        bool IsKnownDefinition(int definitionIndex);
+    }
+
+    public struct NamedValue
+    {
+        public string name;
+        public float value;
+    }
+
+    public interface IResultsView
+    {
+        bool ObjectiveSecured { get; }
+        bool EndedByDeath { get; }
+        /// <summary>The profile line (stage, seed, run time).</summary>
+        string ProfileFooter { get; }
+        int GoldEarned { get; }
+        int GoldSpent { get; }
+        int GoldRemaining { get; }
+        /// <summary>Whether a reward settlement exists (a profile run); the section text below is empty otherwise.</summary>
+        bool HasRewardSection { get; }
+        /// <summary>The Rum breakdown as the player reads it (legacy formatting until M12); null when nothing was settled.</summary>
+        string RewardSection { get; }
+        string GoalProgress { get; }
+        /// <summary>Owned weapons, name and level (value).</summary>
+        void CollectFinalBuild(List<NamedValue> into);
+        /// <summary>Damage share per weapon, percent (value).</summary>
+        void CollectContributions(List<NamedValue> into);
+    }
+
+    /// <summary>Everything a presenter may read, gathered once at bind time.</summary>
+    public interface IRunViews
+    {
+        IRunStatusView Run { get; }
+        IShipView Ship { get; }
+        ICaptainView Captain { get; }
+        IProgressionView Progression { get; }
+        ILoadoutView Loadout { get; }
+        IStageView Stage { get; }
+        IEnemyView Enemies { get; }
+        IResultsView Results { get; }
+        IWeaponAimView WeaponAim { get; }
+        IToastSink Toasts { get; }
+        IHudCommands Commands { get; }
+    }
+
+    /// <summary>On-screen messages (the kept toast view until M14).</summary>
+    public interface IToastSink
+    {
+        void Show(string message, float seconds);
+    }
+
+    /// <summary>Player input the HUD and results screen forward. Commands, not state: the run decides what happens.</summary>
+    public interface IHudCommands
+    {
+        void RequestBoost();
+        void Retry();
+        void GoToMenu();
+        /// <summary>Picks the next reward unlock goal; returns the message to show.</summary>
+        string SelectNextUnlockGoal();
+        /// <summary>Buys the selected goal; returns the message to show.</summary>
+        string PurchaseUnlockGoal();
+    }
+
+    public sealed class RunViews : IRunViews
+    {
+        public IRunStatusView Run { get; set; }
+        public IShipView Ship { get; set; }
+        public ICaptainView Captain { get; set; }
+        public IProgressionView Progression { get; set; }
+        public ILoadoutView Loadout { get; set; }
+        public IStageView Stage { get; set; }
+        public IEnemyView Enemies { get; set; }
+        public IResultsView Results { get; set; }
+        public IWeaponAimView WeaponAim { get; set; }
+        public IToastSink Toasts { get; set; }
+        public IHudCommands Commands { get; set; }
+    }
+}

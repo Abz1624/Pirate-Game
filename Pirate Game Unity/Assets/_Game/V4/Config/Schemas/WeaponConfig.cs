@@ -41,6 +41,35 @@ namespace RoguePirates.V4.Config
         [Tooltip("Visual radius = gameplay radius × this (Swivel Guns 0.85).")] public float radiusMultiplier = 1f;
     }
 
+    /// <summary>
+    /// How the weapon's effects look (M6): the choices V3's juice controller and aim overlay made by weapon id,
+    /// as data. Presentation only; nothing here changes gameplay.
+    /// </summary>
+    [Serializable]
+    public sealed class WeaponEffectsVisual
+    {
+        [Tooltip("Muzzle effect: the juice settings' cannon muzzle (V3's cannon weapons) instead of the shooting prefab.")]
+        public bool cannonMuzzle;
+        [Tooltip("Muzzle scale when the juice settings have no binding for this weapon (V3: 1.12 for Broadside Battery).")]
+        public float fallbackMuzzleScale = 1f;
+        [Tooltip("Aim overlay shape (O key). ByTargeting picks it from pattern and targeting as V3 did.")]
+        public ConfigEnums.AimShape aimShape = ConfigEnums.AimShape.ByTargeting;
+        [Tooltip("Aim overlay: the target fan's width in degrees while a target is locked (V3 Swivel Guns: 22; 360 without a target).")]
+        public float aimTargetFanDegrees = 22f;
+        [Tooltip("Aim overlay: smallest predicted-area radius (V3: 4 for Mortar, 2 otherwise).")]
+        public float aimMinAreaRadius = 2f;
+        [Tooltip("Aim overlay: seconds the shape shows its locked colour after firing (V3: 0.55 Lightning Mast, 0.18 otherwise).")]
+        public float firePulseSeconds = 0.18f;
+        [Tooltip("Aim overlay: the fire flash fades out (V3: Lightning Mast).")]
+        public bool firePulseFades;
+        [Tooltip("Aim overlay: tint the orbit ring (V3: gold for Flying Cutlasses).")]
+        public bool orbitRingTinted;
+        public Color orbitRingColor = new Color(1f, 0.88f, 0.28f, 1f);
+        [Tooltip("Summon view model (V3 boarding skiffs used the Cannonboat model); empty = a brown box.")]
+        public GameObject summonModel;
+        public float summonModelScale = 0.42f;
+    }
+
     /// <summary>Instant forward lanes that hit every enemy in them (Long Nine beam; Stormshot's lane).</summary>
     [Serializable]
     public sealed class LaneBlock
@@ -153,7 +182,7 @@ namespace RoguePirates.V4.Config
     public sealed class WeaponConfig : V4ConfigAsset
     {
         [ConfigIdentity] public string weaponId;
-        [Tooltip("Shown by the legacy HUD and level-up cards (V3 WeaponDefinition) until V4 presenters in M6.")] [AppliesFrom(6)] public string displayName;
+        [Tooltip("The name the V4 HUD shows (from M6) and the icon file name; level-up cards read the V3 definition until M9.")] [AppliesFrom(6)] public string displayName;
         [Tooltip("V3's pattern (offers, HUD and the legacy loadout use it).")] [AppliesFrom(9)] public ConfigEnums.WeaponPattern pattern = ConfigEnums.WeaponPattern.AutoProjectile;
         [Tooltip("The V4 firing logic.")] public ConfigEnums.WeaponBehavior behavior = ConfigEnums.WeaponBehavior.Projectile;
         public ConfigEnums.TargetingMode targeting = ConfigEnums.TargetingMode.Nearest;
@@ -184,6 +213,7 @@ namespace RoguePirates.V4.Config
         public AuraBlock aura = new AuraBlock();
         public PredictedAreaBlock predictedArea = new PredictedAreaBlock();
         public SummonBlock summon = new SummonBlock();
+        [Tooltip("Effect looks (M6, presentation only).")] public WeaponEffectsVisual visual = new WeaponEffectsVisual();
 
         public override void Validate(ConfigValidationReport report)
         {

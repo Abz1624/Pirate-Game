@@ -21,6 +21,12 @@ namespace RoguePirates.V4.Config
         public bool salvoUsesLightningWeapon = true;
         [Tooltip("R-88: V3 passed 0 (every hit dealt the 1-damage floor).")] public float salvoLevelFactor = 1f;
 
+        [Header("Effects (M6, presentation only)")]
+        [Tooltip("Juice-settings weapon binding whose impact scale sizes every keg-style blast (V3: Powder Kegs').")]
+        public string blastVfxBinding;
+        [Tooltip("Juice-settings weapon binding whose impact scale sizes predicted-area impacts (V3: Mortar's).")]
+        public string impactVfxBinding;
+
         public override void Validate(ConfigValidationReport report)
         {
             report.Positive(this, nameof(salvoRadius), salvoRadius);

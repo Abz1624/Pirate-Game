@@ -457,23 +457,135 @@ namespace RoguePirates.V4.Legacy
             }
 
             EnemyIdentityDebugLabels.Ensure();
-            WeaponTargetingVisualizer.Ensure();
+            // M6: WeaponTargetingVisualizer is replaced by the V4 aim overlay (same O/V/backslash toggle).
         }
 
-        public static Canvas EnsureRunUi(StageLayout layout, bool firstRun)
+        /// <summary>
+        /// The run UI (M6). V3RunUiBootstrap.EnsureAll is no longer called: it adds V3AuthoredGameplayHud (which adds the
+        /// bottom loadout HUD), a V3RunResultsScreen, the V3 minimap and beacon guide, and even a LevelSystem, which the
+        /// V4 presenters and later phases replace. What it did for the kept legacy pieces is reproduced here in its
+        /// order: event system, run canvas setup, legacy RunHud and level-up modal layout, discovery, toasts,
+        /// interaction prompts, and hiding the placeholder duplicates. The V4 presenters are installed by the
+        /// presentation root when the run starts.
+        /// </summary>
+        public static Canvas EnsureRunUi(StageLayout layout)
         {
-            Canvas runCanvas;
-            if (firstRun)
-                runCanvas = V3RunUiBootstrap.EnsureAll(layout);
+            EnsureEventSystem();
+            var canvas = FindRunCanvas();
+            canvas.sortingOrder = 20;
+            UiCanvasConfigurator.Configure(canvas);
+            var legacyRunEnd = canvas.GetComponentInChildren<RunEndScreen>(true);
+            if (legacyRunEnd != null) legacyRunEnd.enabled = false;
+            EnsureLevelSystem();
+
+            var hud = canvas.GetComponent<RunHud>();
+            if (hud == null) hud = canvas.gameObject.AddComponent<RunHud>();
+            hud.RebuildUiLayout();
+            hud.ForceRefresh();
+            V3PlayerInfoHudArtSettings.Reload();
+
+            EnsureLevelUpModal(canvas);
+            V3DiscoverySystem.Ensure(layout);
+            V3ToastHud.Ensure(canvas.transform);
+            V3InteractionController.Ensure(canvas.transform);
+
+            if (HasAuthoredHudCanvas())
+            {
+                // V3 hid these placeholder duplicates once the authored HUD was found (the V4 HUD presenter binds it now).
+                HidePlaceholders<V3ObjectiveHud>(canvas.transform);
+                HidePlaceholders<V3RunLoadoutHud>(canvas.transform);
+                HidePlaceholders<V3RunCaptainActiveHud>(canvas.transform);
+                HidePlaceholders<V3RunStatsHud>(canvas.transform);
+                HidePlaceholders<V3RunTimerHud>(canvas.transform);
+                HidePlaceholders<V3PlayerInfoHud>(canvas.transform);
+            }
             else
             {
-                V3DiscoverySystem.Ensure(layout);
-                runCanvas = Object.FindFirstObjectByType<RunHud>()?.GetComponentInParent<Canvas>();
-                if (runCanvas != null) V3MinimapHud.Ensure(runCanvas.transform, layout);
+                // No authored HUD canvas: V3's fallback HUDs, as EnsureAll did (no V4 scene is built this way today).
+                V3ObjectiveHud.Ensure(canvas.transform);
+                V3RunLoadoutHud.Ensure(canvas.transform);
+                V3RunCaptainActiveHud.Ensure(canvas.transform);
+                V3RunStatsHud.Ensure(canvas.transform);
+                V3RunTimerHud.Ensure(canvas.transform);
+                V3PlayerInfoHud.Ensure(canvas.transform);
             }
 
-            runCanvas?.GetComponent<RunHud>()?.ForceRefresh();
-            return runCanvas;
+            var hudRoot = canvas.transform.Find(RunHudUiFactory.RootName);
+            var left = hudRoot != null ? hudRoot.Find("LeftHudPanel") : null;
+            if (left != null) left.gameObject.SetActive(false);
+            foreach (var strip in canvas.GetComponentsInChildren<WeaponLevelStripHud>(true)) strip.gameObject.SetActive(false);
+
+            hud.ForceRefresh();
+            return canvas;
+        }
+
+        static void EnsureEventSystem()
+        {
+            if (Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>() != null) return;
+            var es = new GameObject("EventSystem");
+            es.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            es.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+        }
+
+        /// <summary>V3RunUiBootstrap.EnsureRunCanvas: /RunCanvas, else the RunHud's canvas, else any canvas, else a new one.</summary>
+        public static Canvas FindRunCanvas()
+        {
+            var runCanvasGo = GameObject.Find("RunCanvas");
+            if (runCanvasGo != null && runCanvasGo.TryGetComponent(out Canvas runCanvas)) return runCanvas;
+            var runHud = Object.FindFirstObjectByType<RunHud>();
+            var hudCanvas = runHud != null ? runHud.GetComponentInParent<Canvas>() : null;
+            if (hudCanvas != null) return hudCanvas;
+            var canvas = Object.FindFirstObjectByType<Canvas>();
+            if (canvas != null) return canvas;
+            var go = new GameObject("RunCanvas");
+            canvas = go.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 0;
+            go.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+            return canvas;
+        }
+
+        /// <summary>V3 added a LevelSystem to /Systems when none existed (the scene has one); dropped when M9 replaces it.</summary>
+        static void EnsureLevelSystem()
+        {
+            if (LevelSystem.Instance != null) return;
+            var systems = GameObject.Find("Systems");
+            if (systems != null && systems.GetComponent<LevelSystem>() == null) systems.AddComponent<LevelSystem>();
+        }
+
+        static void EnsureLevelUpModal(Canvas canvas)
+        {
+            var modal = canvas.GetComponentInChildren<LevelUpModal>(true);
+            if (modal == null)
+            {
+                var panel = new GameObject("LevelUpPanel", typeof(RectTransform));
+                panel.transform.SetParent(canvas.transform, false);
+                var rt = panel.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                modal = panel.AddComponent<LevelUpModal>();
+            }
+            modal.RebuildUiLayout();
+            modal.gameObject.SetActive(false);
+        }
+
+        /// <summary>V3AuthoredGameplayHud.EnsureInScene's test: a canvas outside the legacy RunHud with Weapon_Slot and Profile.</summary>
+        static bool HasAuthoredHudCanvas()
+        {
+            foreach (var canvas in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (canvas.GetComponentInParent<RunHud>() != null) continue;
+                if (canvas.transform.Find("Weapon_Slot") != null && canvas.transform.Find("Profile") != null) return true;
+            }
+            return false;
+        }
+
+        static void HidePlaceholders<T>(Transform canvas) where T : Component
+        {
+            foreach (var component in canvas.GetComponentsInChildren<T>(true))
+                if (component.gameObject.name.StartsWith("PLACEHOLDER_")) component.gameObject.SetActive(false);
         }
 
         public static void EnsurePlayerHealthBar(PlayerShipController ship)
@@ -506,10 +618,18 @@ namespace RoguePirates.V4.Legacy
             var settings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
             var broker = systems.GetComponent<JuiceVfxBroker>();
             if (broker != null) broker.Configure(settings, vfxRoot);
-            systems.GetComponent<WeaponJuiceController>()?.Configure(settings, vfxRoot);
+            var juice = systems.GetComponent<WeaponJuiceController>();
+            if (juice != null)
+            {
+                juice.Configure(settings, vfxRoot);
+                // M6: the V4 weapon presenter draws the weapon effects. The juice controller stays (disabled) only because
+                // HellfirePatchWorld and SaltwindCombatEffects still call its burning-oil and blast effects (M8); its
+                // Update drew orbit blades and the flame mount from the loadout record, which V4 now draws.
+                juice.enabled = false;
+            }
             if (systems.GetComponent<CameraShakeService>() == null) systems.AddComponent<CameraShakeService>();
             if (systems.GetComponent<SfxService>() == null) systems.AddComponent<SfxService>();
-            if (systems.GetComponent<V3SpawnWarningHud>() == null) systems.AddComponent<V3SpawnWarningHud>();
+            // M6: V3SpawnWarningHud is not added; the spawn warning presenter shows those toasts.
             LegacyHazardTelegraphView.Ensure(); // V4 addition: V3 never draws pending ground hazards (Kraken traps)
         }
 

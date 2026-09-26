@@ -19,6 +19,8 @@ namespace RoguePirates.V4.Weapons
         bool FireSlot(int index);
         /// <summary>Drops kegs, strikes, skiffs, follow-ups and projectiles (loadout replaced, as V3's SetWeaponLoadout did).</summary>
         void ClearInFlight();
+        /// <summary>Where the orbit blades are this frame (their hit spheres); presentation draws the blades there.</summary>
+        IReadOnlyList<OrbitBehavior.HitSphere> OrbitHits { get; }
     }
 
     /// <summary>
@@ -80,6 +82,7 @@ namespace RoguePirates.V4.Weapons
         public PlayerProjectiles Projectiles => _c.Projectiles;
         public WeaponCombat Combat => _c;
         public OrbitBehavior Orbit => _orbit;
+        public IReadOnlyList<OrbitBehavior.HitSphere> OrbitHits => _orbit.Hits;
 
         WeaponRulesConfig Rules => _c.Rules();
 

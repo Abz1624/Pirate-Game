@@ -42,10 +42,13 @@ namespace RoguePirates.V4.Events
         public readonly float Y;
         public readonly float Z;
         public readonly string Tag;
+        /// <summary>Kind-specific flags (<see cref="CombatEventFlags"/>).</summary>
+        public readonly int Flags;
 
         public CombatEvent(CombatEventKind kind, long tick, float simTime, int a = 0, int b = 0,
-            float x = 0f, float y = 0f, float z = 0f, string tag = null)
+            float x = 0f, float y = 0f, float z = 0f, string tag = null, int flags = 0)
         {
+            Flags = flags;
             Kind = kind;
             Tick = tick;
             SimTime = simTime;
@@ -58,6 +61,12 @@ namespace RoguePirates.V4.Events
         }
 
         public override string ToString() => $"{Kind}@{SimTime:0.###} a={A} b={B} tag={Tag}";
+    }
+
+    public static class CombatEventFlags
+    {
+        /// <summary>Spawned: an ambient (timeline) spawn. Only these telegraph on the HUD, as V3's spawner did.</summary>
+        public const int AmbientSpawn = 1;
     }
 
     public interface ICombatEventWriter

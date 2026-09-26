@@ -1,7 +1,7 @@
 using HighSeas.Data;
-using HighSeas.Player;
 using HighSeas.VFX;
 using RoguePirates.V4.Config;
+using RoguePirates.V4.Views;
 using RoguePirates.V4.Weapons;
 using UnityEngine;
 
@@ -22,16 +22,18 @@ namespace RoguePirates.V4.Presentation.Weapons
 
         IWeaponManager _weapons;
         DemoJuiceSettings _settings;
-        PlayerShipController _ship;
+        IShipView _ship;
+        Vector3 _lastForward = Vector3.forward;
         Transform _mount;
         ParticleSystem[] _particles;
         bool _emitting;
         bool _unavailable;
 
-        public void Bind(IWeaponManager weapons, DemoJuiceSettings settings)
+        public void Bind(IWeaponManager weapons, DemoJuiceSettings settings, IShipView ship)
         {
             _weapons = weapons;
             _settings = settings;
+            _ship = ship;
         }
 
         public bool IsEmitting => _emitting;
@@ -45,13 +47,14 @@ namespace RoguePirates.V4.Presentation.Weapons
                 return;
             }
             if (!EnsureMount()) return;
-            if (_ship == null) _ship = FindFirstObjectByType<PlayerShipController>();
-            if (_ship != null)
+            if (_ship != null && _ship.Exists)
             {
                 var forward = _ship.MovementForward;
                 forward.y = 0f;
-                if (forward.sqrMagnitude < 0.0001f) forward = _ship.transform.forward;
+                // V3 fell back to the ship transform's forward; the view has no transform, so keep the last heading.
+                if (forward.sqrMagnitude < 0.0001f) forward = _lastForward;
                 forward.Normalize();
+                _lastForward = forward;
                 var offset = stream != null ? stream.Config.stream.forwardOffset : 1.65f;
                 _mount.SetPositionAndRotation(_ship.Position + forward * offset + Vector3.up * Height, Quaternion.LookRotation(forward, Vector3.up));
             }

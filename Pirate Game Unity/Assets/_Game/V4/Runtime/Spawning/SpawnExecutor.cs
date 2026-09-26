@@ -96,8 +96,9 @@ namespace RoguePirates.V4.Spawning
 
                 spawned++;
                 var unitId = _s.Sink.UnitIdAt(slot);
-                if (ambient) _s.Feedback.AmbientSpawnTelegraph(position, definitionIndex);
-                _s.Publish(CombatEventKind.Spawned, unitId, definitionIndex, position, _s.Sink.DefinitionId(definitionIndex));
+                // M6: ambient spawns are flagged; the spawn warning presenter telegraphs them (was V3SpawnTelegraph).
+                _s.Publish(CombatEventKind.Spawned, unitId, definitionIndex, position, _s.Sink.DefinitionId(definitionIndex),
+                    ambient ? CombatEventFlags.AmbientSpawn : 0);
                 if (role == FormationRole.Leader || (role == FormationRole.Auto && i == 0)) leaderUnitId = unitId;
             }
             return spawned;

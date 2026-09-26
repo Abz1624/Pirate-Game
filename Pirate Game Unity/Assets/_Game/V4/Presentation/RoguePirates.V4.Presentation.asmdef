@@ -5,7 +5,8 @@
         "RoguePirates.V4",
         "RoguePirates.V4.Config",
         "HighSeas.Runtime",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

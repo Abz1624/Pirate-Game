@@ -1,0 +1,44 @@
+﻿[is-playing] no
+[begin] started
+[is-playing] OK playing
+[run-start] OK run playing, presenters bound
+[god-mode] invulnerable for the check
+[v3-views] V3 HUD 0, results 0, minimap 0, guide 0, visualizer 0, juice enabled False
+[shot] hud-start.png
+[loadout] weapons set; items 4
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[shot] hud-loadout-and-effects.png
+[loadout-hud] weapons [Deck Canno… LV1; Broadside … LV1; Powder Kegs LV1; Flying Cut… LV1; Lightning … LV1; Mortar LV1] timer 00:21 gold 0 KILLS 4
+[effects] effects live 5, kegs/skiffs 1, blades 2, pools created after prewarm 0
+[overlay-on] overlays on
+[shot] aim-overlay.png
+[overlay-off] overlays off
+[beacon] beacon revealed
+[shot] beacon-guide.png
+[beacon-state] arrow True, skylight True, quest '» Activate the Beacon to summon the boss'
+[spawn-warning] notified tier-Captain def 3: warnings 1, pings 1
+[shot] spawn-warning.png
+[miniboss] miniboss def 12 spawned; probe on
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[spawn] 
+[shot] minimap-miniboss.png
+[probe] legacy creations 163 in 15 s (8.8/s now): EnemyDmg 108, 04_XPCrystal 21, 03_GoldCoin 10, 05_EnemyHealthIndicator 6, 06_DamageHighlightShader 4, GemBarrel 4
+[juice-still-works] VFXRoot children -1 -> -1; live particle systems 171
+[shot] juice-blast-and-oil.png
+[die] ship sunk
+[results] OK results showing: RUN ENDED
+[shot] results.png
+[results-text] Treasury not secured this voyage.\r | \r | Saltwind balance v3 · profile 09f99a65… · seed 568796995 · 38s | \r | Run gold earned: 8\r | Run gold spent: 0\r | Run gold remaining: 8 (run-only)\r |  | Marks: none earned this run. |  | Unlock goal: not selected (choose one in menu or results). |  | Final build: |   · Deck Cannons Lv 1 |   · Broadside Battery Lv 1 |   · Powder Kegs Lv 1 |   · Flying Cutlasses Lv 2 |   · Lightning Mast Lv 2 |   · Mortar Lv 2 |  | Weapon contribution: |   · Mortar: 31% dmg |   · Lightning Mast: 24% dmg |   · Flying Cutlasses: 16% dmg |   · Deck Cannons: 15% dmg |   · Broadside Battery: 9% dmg |   · Powder Kegs: 5% dmg | 

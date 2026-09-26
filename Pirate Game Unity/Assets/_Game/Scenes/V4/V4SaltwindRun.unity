@@ -2489,53 +2489,12 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4724500206099722037, guid: f3ad4fbfa70994176b87c353d615b980, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5615479315126245041, guid: f3ad4fbfa70994176b87c353d615b980, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 238440826}
-    - targetCorrespondingSourceObject: {fileID: 5615479315126245041, guid: f3ad4fbfa70994176b87c353d615b980, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 238440827}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f3ad4fbfa70994176b87c353d615b980, type: 3}
---- !u!1 &238440825 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5615479315126245041, guid: f3ad4fbfa70994176b87c353d615b980, type: 3}
-  m_PrefabInstance: {fileID: 238440824}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &238440826
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 238440825}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4afe51fdfe6d73e4fac90ef1b87473a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.V3.V3AuthoredGameplayHud
---- !u!114 &238440827
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 238440825}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0724d215f7e3bf4bb48991e5409c541, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.V3.V3RunResultsScreen
-  panel: {fileID: 0}
-  headlineText: {fileID: 0}
-  summaryText: {fileID: 0}
-  continueButton: {fileID: 0}
-  menuButton: {fileID: 0}
-  selectGoalButton: {fileID: 0}
-  purchaseGoalButton: {fileID: 0}
 --- !u!1001 &251907619
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5897,22 +5856,19 @@ MonoBehaviour:
   weaponSlots: 2
   logbookSlots: 2
   demoPacing: {fileID: 0}
---- !u!114 &658787988
+--- !u!114 &658786988
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 658786980}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b642a6dca9e4f843ad0423cfc8a1fe6, type: 3}
+  m_Script: {fileID: 11500000, guid: 16f779b2f5326b34da66a76903a0b73c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Weapons.WeaponController
-  database: {fileID: 0}
-  ownerShip: {fileID: 0}
-  maxSlots: 2
-  demoPacing: {fileID: 0}
+  m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.Legacy.LegacyUpdateSlot
+  role: weapons
 --- !u!114 &658786989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6093,19 +6049,22 @@ MonoBehaviour:
   configSet: {fileID: 11400000, guid: 5831aeb9fd5687344a53de1cd4fff7db, type: 2}
   legacyBaseProfile: {fileID: 11400000, guid: 5c446dd1cad997947bc835f4b6ae9d6d, type: 2}
   moduleLab: 0
---- !u!114 &658786988
+--- !u!114 &658787988
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16f779b2f5326b34da66a76903a0b73c, type: 3}
+  m_Script: {fileID: 11500000, guid: 5b642a6dca9e4f843ad0423cfc8a1fe6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.Legacy.LegacyUpdateSlot
-  role: weapons
+  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Weapons.WeaponController
+  database: {fileID: 0}
+  ownerShip: {fileID: 0}
+  maxSlots: 2
+  demoPacing: {fileID: 0}
 --- !u!1 &676974001
 GameObject:
   m_ObjectHideFlags: 0
@@ -11221,7 +11180,6 @@ GameObject:
   - component: {fileID: 1146000353}
   - component: {fileID: 1146000352}
   - component: {fileID: 1146000351}
-  - component: {fileID: 1146000357}
   m_Layer: 0
   m_Name: RunCanvas
   m_TagString: Untagged
@@ -11352,25 +11310,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &1146000357
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1146000350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0724d215f7e3bf4bb48991e5409c541, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.V3.V3RunResultsScreen
-  panel: {fileID: 0}
-  headlineText: {fileID: 0}
-  summaryText: {fileID: 0}
-  continueButton: {fileID: 0}
-  menuButton: {fileID: 0}
-  selectGoalButton: {fileID: 0}
-  purchaseGoalButton: {fileID: 0}
 --- !u!1 &1155217064
 GameObject:
   m_ObjectHideFlags: 0

@@ -178,12 +178,10 @@ namespace RoguePirates.V4.Legacy
         public int Kills => Run != null ? Run.KillCount : 0;
     }
 
-    /// <summary>Toasts, run telemetry, scheduled-elite Marks and the ambient spawn telegraph (legacy until M6/M12).</summary>
+    /// <summary>Toasts, run telemetry and scheduled-elite Marks (legacy until M12/M14; the spawn telegraph moved to a presenter in M6).</summary>
     [DeletedInPhase(12, "Presenters (M6) and V4 rewards (M12)")]
     public sealed class LegacySpawnFeedback : ISpawnFeedback
     {
-        EnemyWorld _world;
-
         public void Toast(string text, float seconds)
         {
             if (!string.IsNullOrEmpty(text)) V3ToastHud.Instance?.Show(text, seconds);
@@ -192,14 +190,6 @@ namespace RoguePirates.V4.Legacy
         public void Telemetry(string eventName, Dictionary<string, object> fields = null) => RunCombatTelemetry.Instance?.Record(eventName, fields);
 
         public void RegisterScheduledElite(int unitId, int scheduledEliteIndex) => RunMarksTracker.RegisterScheduledEliteAgent(unitId, scheduledEliteIndex);
-
-        public void AmbientSpawnTelegraph(Vector3 position, int definitionIndex)
-        {
-            if (_world == null) _world = Object.FindFirstObjectByType<EnemyWorld>();
-            var defs = _world != null ? _world.Definitions : null;
-            if (defs == null || definitionIndex < 0 || definitionIndex >= defs.Length) return;
-            V3SpawnTelegraph.NotifyAmbientSpawn(position, defs[definitionIndex]);
-        }
     }
 
     /// <summary>The storm's safe region (shared play bounds) and the V3 storm ring visual.</summary>

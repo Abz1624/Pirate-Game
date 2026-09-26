@@ -1,0 +1,3 @@
+﻿Command	Success	Result	Parameters
+console	true	{"entries":[],"cursor":17009,"session":"04e095bb52bb47828a0ed0198454c905","returned":0,"dropped":false,"reset":false,"counts":{"error":0,"warn":0,"log":395},"groundTruth":{"sampledUtc":"2026-09-26T22:38:22.6546617Z","ageMs":136,"compilationFailed":false,"compiling":false,"consoleErrors":0,"consoleWarnings":0,"consoleLogs":12,"seeded":true}}	{"level":"error","tail":"50"}
+

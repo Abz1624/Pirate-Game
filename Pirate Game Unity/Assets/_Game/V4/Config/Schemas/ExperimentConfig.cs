@@ -18,7 +18,7 @@ namespace RoguePirates.V4.Config
         [AppliesFrom(9)] public bool captainActivesEnabled;
         [AppliesFrom(9)] public bool weaponEvolutionsEnabled = true;
         public float spawnDensityMultiplier = 1f, enemyHpMultiplier = 1f, enemyDamageMultiplier = 1f;
-        [AppliesFrom(6)] [Range(0.25f, 1.5f)] public float playerVfxIntensityMultiplier = 1f;
+        [AppliesFrom(14, "V3 never reads it either; the player juice presenter in M14")] [Range(0.25f, 1.5f)] public float playerVfxIntensityMultiplier = 1f;
         [AppliesFrom(12)] public bool telemetryEnabled = true;
 
         public override void Validate(ConfigValidationReport report)

@@ -47,6 +47,7 @@ namespace RoguePirates.V4
         LegacyEventFeed _feed;
         SpawnController _spawn;
         LegacyWeaponWiring _weapons;
+        LegacyResultsTelemetry _resultsTelemetry;
         bool _running;
         bool _ended;
         bool _objectiveSecured;
@@ -94,6 +95,9 @@ namespace RoguePirates.V4
             _weapons = new LegacyWeaponWiring(_shell, _context, _config, runState, _events, _clock);
             _shell.Weapons = _weapons;
             _context.Register<RoguePirates.V4.Weapons.IWeaponManager>(_weapons.Manager);
+            // M6: the read-only views presentation reads (over the legacy hubs until their modules exist).
+            _context.Register<Views.IRunViews>(LegacyViewFactory.Create(player, _weapons.Manager, RestartRun, GoToMenu));
+            _resultsTelemetry = new LegacyResultsTelemetry();
             _feed = new LegacyEventFeed(_events, _clock);
             damageSink.SteadyDamageReported += _feed.OnSteadyDamage;
             _shell.Awake();
@@ -108,6 +112,7 @@ namespace RoguePirates.V4
             if (!_shell.Start(seed, request.retry)) return;
 
             _feed.Attach(_shell.Player);
+            _resultsTelemetry.Attach();
             if (moduleLab) _shell.EnterModuleLab();
             _modules.BeginRunAll(new RunStart(seed, request.retry));
             _running = true;
@@ -142,6 +147,7 @@ namespace RoguePirates.V4
             if (!_running) return;
             _shell.LateTick();
             _feed.AttachLevels();
+            _feed.Poll();
             // Legacy producers publish outside V4 ticks (their own Update, or while paused); deliver those with the
             // current tick stamp so readers see them this frame instead of waiting for the next tick.
             if (_events.Pending.Count > 0) _events.EndTick();
@@ -159,7 +165,6 @@ namespace RoguePirates.V4
         {
             _ended = true;
             _modules.EndRunAll(new RunEnd(_clock.SimTime, _objectiveSecured));
-            LegacyResultsRebinder.Rebind(RestartRun, GoToMenu);
         }
 
         void OnDestroy()
@@ -172,6 +177,7 @@ namespace RoguePirates.V4
             }
 
             _feed?.Detach();
+            _resultsTelemetry?.Dispose();
             _weapons?.Dispose();
             _shell?.Unwire();
             _shell?.OnDestroy();

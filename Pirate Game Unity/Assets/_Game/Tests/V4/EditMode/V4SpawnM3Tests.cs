@@ -123,7 +123,6 @@ namespace RoguePirates.V4.Tests
             void ISpawnFeedback.Toast(string text, float seconds) => Toasts.Add(text);
             void ISpawnFeedback.Telemetry(string eventName, Dictionary<string, object> fields) => Telemetry.Add(eventName);
             public void RegisterScheduledElite(int unitId, int scheduledEliteIndex) => Elites.Add((unitId, scheduledEliteIndex));
-            public void AmbientSpawnTelegraph(Vector3 position, int definitionIndex) { }
         }
 
         sealed class FakeStorm : IStormArena, IPlayerDamageSink

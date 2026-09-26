@@ -59,6 +59,7 @@ namespace RoguePirates.V4.DevTools.Console
                 AddSection(new ConfigSection());
                 AddSection(new PoolsSection());
                 AddSection(new WeaponsSection());
+                AddSection(new EventsSection(game));
                 if (game.IsModuleLab) AddSection(new ModuleLabSection());
             }
             if (CreationProbe == null) CreationProbe = GetComponent<Diagnostics.SceneObjectCreationProbe>();

@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ff2c8fba2fdb574392be2162490c642, type: 3}
+  m_Name: V4IconCatalog
+  m_EditorClassIdentifier: RoguePirates.V4.Presentation::RoguePirates.V4.Presentation.Hud.IconCatalog
+  weapons:
+  - id: broadside_battery
+    sprite: {fileID: 21300000, guid: 593ffcd0ddffe4d48894f90796778b8a, type: 3}
+  - id: deck_cannons
+    sprite: {fileID: 21300000, guid: c6a95499734ea461a8d3c4ff9797ac4c, type: 3}
+  - id: flamethrower
+    sprite: {fileID: 21300000, guid: 4d96a3be213e9408d9a97b3d20700d10, type: 3}
+  - id: flying_cutlasses
+    sprite: {fileID: 21300000, guid: c53632cd0d2b84bc685395b211a19fa8, type: 3}
+  - id: harpoon_gun
+    sprite: {fileID: 21300000, guid: a4de13c6c85634d5192b73c9f26d2844, type: 3}
+  - id: lightning_mast
+    sprite: {fileID: 21300000, guid: 35a44b8c3072040e7b15ea092ed273e1, type: 3}
+  - id: long_nine
+    sprite: {fileID: 21300000, guid: 7ed967b863b244f4399410b30c153faf, type: 3}
+  - id: mortar
+    sprite: {fileID: 21300000, guid: 4a8dd2e8e17314f6b87adedc1df9f333, type: 3}
+  - id: powder_kegs
+    sprite: {fileID: 21300000, guid: d9bd4665a8d924c9ea026451b52aec65, type: 3}
+  - id: swivel_guns
+    sprite: {fileID: 21300000, guid: 529fc179aeb964ea087e574e360bf922, type: 3}
+  items:
+  - id: admirals_ledger
+    sprite: {fileID: 21300000, guid: 76bf0e528c32d43b6ae0a9fe06705209, type: 3}
+  - id: black_powder_keg
+    sprite: {fileID: 21300000, guid: 84aac716c85e54a13ac4308ab5fa35ef, type: 3}
+  - id: broadside_drum
+    sprite: {fileID: 21300000, guid: 388a5fc9631a44c2b98a8f4008816e6a, type: 3}
+  - id: captains_bell
+    sprite: {fileID: 21300000, guid: 36c3b35440faa4838b1aab8f5b621f3e, type: 3}
+  - id: copper_conductor
+    sprite: {fileID: 21300000, guid: aa7053008857542a9b1103fc806638fe, type: 3}
+  - id: cursed_compass
+    sprite: {fileID: 21300000, guid: 524d25bbba96f4b278b1e55e05f65458, type: 3}
+  - id: double_fuse_cord
+    sprite: {fileID: 21300000, guid: 9883aa3857550444cb8716b8d47f1346, type: 3}
+  - id: dragons_breath_nozzle
+    sprite: {fileID: 21300000, guid: 16c04f5b7f97446538e18134664c48c8, type: 3}
+  - id: ghost_lantern
+    sprite: {fileID: 21300000, guid: a47112d50422942759fe461837c78402, type: 3}
+  - id: golden_figurehead
+    sprite: {fileID: 21300000, guid: f6f39d9812802428c921892289b54876, type: 3}
+  - id: grapeshot_pouch
+    sprite: {fileID: 21300000, guid: f5ae63898d87d4be5922b7474ce71782, type: 3}
+  - id: gunners_gloves
+    sprite: {fileID: 21300000, guid: 95616e3eee1434c779d4c84279e5f005, type: 3}
+  - id: leviathan_tooth
+    sprite: {fileID: 21300000, guid: 1422195c452ea427abc7dc8919e3aa36, type: 3}
+  - id: lucky_doubloon
+    sprite: {fileID: 21300000, guid: aa8ee6ecd6838423b8de4291145d0eff, type: 3}
+  - id: powder_fuse
+    sprite: {fileID: 21300000, guid: 3f519493da0eb4440bb302223f607d41, type: 3}
+  - id: reinforced_keel
+    sprite: {fileID: 21300000, guid: dd566595274f94edaafb3f28aebde852, type: 3}
+  - id: sea_witchs_eye
+    sprite: {fileID: 21300000, guid: 2ec35d5df5cf24ccb825e3e19f4ad9fe, type: 3}
+  - id: serrated_scabbard
+    sprite: {fileID: 21300000, guid: 525fba3bdeb5147b1b389c5aaf7a9889, type: 3}
+  - id: stormglass
+    sprite: {fileID: 21300000, guid: 2750eadd674fc420fab97688339093e6, type: 3}

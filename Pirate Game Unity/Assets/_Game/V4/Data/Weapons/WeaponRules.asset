@@ -25,3 +25,5 @@ MonoBehaviour:
   salvoLedgerId: captain_roxie_salvo
   salvoUsesLightningWeapon: 1
   salvoLevelFactor: 1
+  blastVfxBinding: powder_kegs
+  impactVfxBinding: mortar

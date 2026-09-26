@@ -17,6 +17,8 @@ namespace RoguePirates.V4.Config
         public enum WeaponPattern { AutoProjectile, FanVolley, Orbit, TrailZone, ChainLightning, MineDrop, AuraPulse, PredictedAoE, SummonChase }
         public enum TargetingMode { Nearest, NearestElite, DensestCluster, RandomNearby, PlayerTrail, AreaAroundShip, ForwardArc, ForwardCone, AftDeploy, PortStarboard, OmniClusterGround, TetherTarget, TrailZone }
         /// <summary>V4 weapon firing logic (M5); a V3 pattern plus the id checks WeaponController made.</summary>
+        /// <summary>Aim overlay shape (the O-key debug overlay, M6). ByTargeting = chosen from pattern and targeting as V3 did.</summary>
+        public enum AimShape { ByTargeting = 0, PredictedArea = 1, TargetFan = 2, ForwardFan = 3, StrikeDisc = 4 }
         public enum WeaponBehavior { Projectile = 0, Fan = 1, Orbit = 2, ConeStream = 3, Trail = 4, Mine = 5, AreaStrike = 6, Aura = 7, PredictedArea = 8, Summon = 9 }
         /// <summary>What an evolution changes in its base weapon's behavior.</summary>
         public enum EvolutionEffect { None = 0, LaneWithBurst = 1, OppositeSideFollowUp = 2, WakeKegs = 3, PulsingOrbit = 4, WideConeWithPatches = 5, JumpAndDelayedStrike = 6 }

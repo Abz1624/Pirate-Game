@@ -37,8 +37,8 @@ namespace RoguePirates.V4.Spawning
             context.TryGet(out LegacyRate);
         }
 
-        public void Publish(CombatEventKind kind, int a = 0, int b = 0, Vector3 position = default, string tag = null) =>
-            Context.Events.Publish(new CombatEvent(kind, Context.Clock.TickIndex, Run.ElapsedSeconds, a, b, position.x, position.y, position.z, tag));
+        public void Publish(CombatEventKind kind, int a = 0, int b = 0, Vector3 position = default, string tag = null, int flags = 0) =>
+            Context.Events.Publish(new CombatEvent(kind, Context.Clock.TickIndex, Run.ElapsedSeconds, a, b, position.x, position.y, position.z, tag, flags));
 
         /// <summary>{label} and {lead} in toast templates.</summary>
         public static string Format(string template, TimelinePhase phase) =>

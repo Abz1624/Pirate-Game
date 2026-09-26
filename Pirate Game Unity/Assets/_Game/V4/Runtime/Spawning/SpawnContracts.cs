@@ -70,14 +70,14 @@ namespace RoguePirates.V4.Spawning
 
     /// <summary>
     /// Side effects that are still legacy presentation, telemetry or rewards (toasts, run telemetry records, scheduled
-    /// elite Marks, the ambient spawn telegraph). They move to presenters and V4 rewards in M6 and M12.
+    /// elite Marks). Toasts move to presenters by M14 and the rest to V4 rewards in M12; the ambient spawn telegraph moved
+    /// to the spawn warning presenter in M6 (Spawned events flagged ambient).
     /// </summary>
     public interface ISpawnFeedback
     {
         void Toast(string text, float seconds);
         void Telemetry(string eventName, Dictionary<string, object> fields = null);
         void RegisterScheduledElite(int unitId, int scheduledEliteIndex);
-        void AmbientSpawnTelegraph(Vector3 position, int definitionIndex);
     }
 
     /// <summary>The storm's safe region and its ring (shared play bounds + legacy ring visual until M14).</summary>

@@ -491,6 +491,9 @@ namespace RoguePirates.V4.Editor
                 log.AppendLine($"config set: {added} added, {set.configs.Count} configs");
             }
             AssetDatabase.SaveAssets();
+            // ApplyM5 rebuilds V3's values; the fixes approved at the M5 gate and the M6 effect data go back on top.
+            log.Append(ApplyM5PlaytestFixes());
+            log.Append(ApplyM6Visuals());
             if (set != null) log.Append(ConfigValidator.Validate(set));
             return log.ToString();
         }
@@ -536,6 +539,59 @@ namespace RoguePirates.V4.Editor
             AssetDatabase.SaveAssets();
             log.AppendLine("M5 playtest fixes applied (R-18, R-19, R-21, R-22, R-27, R-70, R-87, R-88)");
             return log.ToString();
+        }
+
+        [MenuItem("RoguePirates/V4/Apply M6 Weapon Visuals")]
+        static void ApplyM6VisualsFromMenu() => Debug.Log(ApplyM6Visuals());
+
+        /// <summary>
+        /// M6: the effect choices V3's juice controller and aim overlay made by weapon id, written as weapon and rule data
+        /// so the V4 presenters never compare ids. Idempotent. Values are V3's: cannon muzzle for the cannon weapons,
+        /// Broadside's 1.12 fallback muzzle scale, the overlay shapes (Mortar predicted area with a 4 m minimum, Swivel
+        /// target fan, Long Nine forward fan, Lightning Mast strike disc with a fading 0.55 s flash), the gold cutlass
+        /// ring, the Cannonboat model for boarding skiffs, and the Powder Kegs / Mortar bindings for blasts and impacts.
+        /// </summary>
+        public static string ApplyM6Visuals()
+        {
+            var cannonMuzzle = new HashSet<string> { "long_nine", "deck_cannons", "broadside_battery", "swivel_guns", "grapeshot", "mortar" };
+            var db = GameDatabaseLoader.Load();
+            var skiff = db != null ? db.GetEnemy("cannonboat") : null;
+            var count = 0;
+            foreach (var guid in AssetDatabase.FindAssets("t:WeaponConfig", new[] { DataRoot + "/Weapons" }))
+            {
+                var w = AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                if (w == null) continue;
+                var v = w.visual ?? (w.visual = new WeaponEffectsVisual());
+                v.cannonMuzzle = cannonMuzzle.Contains(w.weaponId);
+                v.fallbackMuzzleScale = w.weaponId == "broadside_battery" ? 1.12f : 1f;
+                v.aimShape = w.weaponId switch
+                {
+                    "mortar" => ConfigEnums.AimShape.PredictedArea,
+                    "swivel_guns" => ConfigEnums.AimShape.TargetFan,
+                    "long_nine" => ConfigEnums.AimShape.ForwardFan,
+                    "lightning_mast" => ConfigEnums.AimShape.StrikeDisc,
+                    _ => ConfigEnums.AimShape.ByTargeting
+                };
+                v.aimTargetFanDegrees = 22f;
+                v.aimMinAreaRadius = w.weaponId == "mortar" ? 4f : 2f;
+                v.firePulseSeconds = w.weaponId == "lightning_mast" ? 0.55f : 0.18f;
+                v.firePulseFades = w.weaponId == "lightning_mast";
+                v.orbitRingTinted = w.weaponId == "flying_cutlasses";
+                v.orbitRingColor = new Color(1f, 0.88f, 0.28f, 1f);
+                v.summonModel = w.behavior == ConfigEnums.WeaponBehavior.Summon && skiff != null ? skiff.visualPrefab : null;
+                v.summonModelScale = 0.42f;
+                EditorUtility.SetDirty(w);
+                count++;
+            }
+            var rules = AssetDatabase.LoadAssetAtPath<WeaponRulesConfig>(WeaponRulesPath);
+            if (rules != null)
+            {
+                rules.blastVfxBinding = "powder_kegs";
+                rules.impactVfxBinding = "mortar";
+                EditorUtility.SetDirty(rules);
+            }
+            AssetDatabase.SaveAssets();
+            return $"M6 weapon visuals written for {count} weapons" + (skiff == null || skiff.visualPrefab == null ? " (no Cannonboat model found for skiffs)" : string.Empty) + "\n";
         }
 
         static ConfigEnums.EvolutionEffect EvolutionEffectOf(string modifierId) => modifierId switch

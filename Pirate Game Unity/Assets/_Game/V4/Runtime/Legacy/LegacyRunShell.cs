@@ -198,7 +198,7 @@ namespace RoguePirates.V4.Legacy
             LegacyBuildAdapter.EnsureItemSystems();
 
             LegacyPresentationAdapter.EnsureDevAndDebugTools(firstRun);
-            LegacyPresentationAdapter.EnsureRunUi(_layout, firstRun);
+            LegacyPresentationAdapter.EnsureRunUi(_layout);
 
             if (_player != null)
             {

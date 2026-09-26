@@ -15,6 +15,7 @@ namespace RoguePirates.V4.Legacy
     /// Builds the V4 weapon module over the legacy adapters (M5) and puts its ticks where V3's pieces ticked:
     /// the weapon tick in WeaponController's scene slot (file ID 658786988, set by V4SceneSetup.ApplyM5), orbit blade
     /// positions at order 50 (V3's juice controller), player projectiles where V3RunBootstrap ticked ProjectileWorld.
+    /// Effects go through <see cref="WeaponEffectsForwarder"/> to the V4 weapon presenter (M6).
     /// </summary>
     [DeletedInPhase(9, "Weapons read V4 progression and V4 enemies; slots go with the legacy frame order (M8)")]
     public sealed class LegacyWeaponWiring : IDisposable
@@ -24,7 +25,7 @@ namespace RoguePirates.V4.Legacy
         readonly LegacyRunShell _shell;
         readonly CombatEvents _events;
         readonly RunClock _clock;
-        readonly LegacyWeaponEffects _effects;
+        readonly WeaponEffectsForwarder _effects;
         readonly LegacyActiveProbe _probe;
         ExperimentConfig _experiment;
 
@@ -38,7 +39,11 @@ namespace RoguePirates.V4.Legacy
             var enemies = new LegacyWeaponEnemies();
             var ship = new LegacyWeaponShip(() => _shell.Player);
             Func<string, HighSeas.Data.WeaponDefinition> definition = id => _shell.Database != null ? _shell.Database.GetWeapon(id) : null;
-            _effects = new LegacyWeaponEffects(definition, () => _shell.Database);
+            // M6: effects go to the V4 weapon presenter the presentation root registers (was LegacyWeaponEffects).
+            // The timed ring and the water splash stay the kept legacy views' until M14.
+            _effects = new WeaponEffectsForwarder(() => context.TryGet<IWeaponEffects>(out var fx) ? fx : null,
+                LegacyHazardTelegraphView.ShowTimedRing,
+                position => HighSeas.VFX.JuiceVfxBroker.Instance?.PlayWaterSplash(position));
             var hooks = new LegacyWeaponHooks(() => _shell.Player, definition);
             var mods = new LegacyWeaponModifiers();
             var random = new LegacyCombatRandom();
@@ -105,7 +110,6 @@ namespace RoguePirates.V4.Legacy
         {
             Manager.ClearInFlight(false);
             _probe.Dispose();
-            _effects.Clear();
         }
     }
 }

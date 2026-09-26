@@ -279,6 +279,11 @@ namespace RoguePirates.V4.Tests
             "Editor/V3ConfigMigrator.cs:harpoon_gun",
             "Editor/V3ConfigMigrator.cs:broadside_battery",
             "Editor/V3ConfigMigrator.cs:flamethrower",
+            // M6: the weapon visuals step maps V3's juice controller and aim overlay weapon-id branches onto config.
+            "Editor/V3ConfigMigrator.cs:mortar",
+            "Editor/V3ConfigMigrator.cs:lightning_mast",
+            "Editor/V3ConfigMigrator.cs:flying_cutlasses",
+            "Editor/V3ConfigMigrator.cs:powder_kegs",
         };
 
         [Test]
