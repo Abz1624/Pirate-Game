@@ -70,3 +70,7 @@ No blockers. Fixed:
 Pursuer damage per hit after the change (hull 100), measured (`balance-probe-after/`): **47 at 10:42, 124 at 12:50**; harrier 65 and 164. Expected from the formulas: 36 at 10:00, 59 at 11:00, 90 at 12:00, 133 at 13:00, 190 at 14:00. So from about 12:00 one Drowned hit still takes most or all of a 100-hull ship: that is V3's growth curve times the ramp you chose. Note that a jump starts you at level 2 with no items; in a real run you have more weapons (enemies die faster) but the same 100 hull unless you picked hull upgrades. Both are console values (`difficulty` curves, `timeline.overtime.spawnStatRamp*`) if it feels too harsh.
 
 Tests: EditMode 85 / 85 (new: ramp shape and preset, area-denial release and V3 mode), PlayMode 14 / 14. Traces not re-run: with the v3-parity preset the ramp is 1 and the release is off, so V3 behavior is unchanged (EditMode tests cover both); the short parity set runs at the end of M4.
+
+## Third pass: elite Kraken traps still not visible
+
+The traps were firing (a 3-circle trap every ~6 s after the R-06 fix), but V3 draws nothing for a pending hazard: no marker while the fuse runs, only an explosion if the ship is still inside. So they were invisible (R-85). V4 now draws every pending hazard (Kraken traps red, mines amber, nets blue) as a ground ring plus an inner ring that grows to the outline as the fuse runs down. Screenshot: `kraken-trap-visual/01-kraken-trap.png` (8:04, two rings beside the ship, the third under it). Visual only, so traces are unchanged. Tests: EditMode 85 / 85, PlayMode 14 / 14.

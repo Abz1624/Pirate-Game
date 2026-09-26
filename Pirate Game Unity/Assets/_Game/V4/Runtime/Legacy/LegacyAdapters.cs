@@ -508,6 +508,7 @@ namespace RoguePirates.V4.Legacy
             if (systems.GetComponent<CameraShakeService>() == null) systems.AddComponent<CameraShakeService>();
             if (systems.GetComponent<SfxService>() == null) systems.AddComponent<SfxService>();
             if (systems.GetComponent<V3SpawnWarningHud>() == null) systems.AddComponent<V3SpawnWarningHud>();
+            LegacyHazardTelegraphView.Ensure(); // V4 addition: V3 never draws pending ground hazards (Kraken traps)
         }
 
         public static void EnsurePlayfeelSystems(PlayerShipController ship, int seed)

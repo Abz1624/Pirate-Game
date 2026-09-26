@@ -1,0 +1,22 @@
+﻿[rect-before] HAS 46,191,563,638
+[is-playing] no
+[begin] started
+[is-playing] OK playing
+[run-start] OK t=6.2
+[jump-470] jumped to 470 s
+[traps-0] t=471 trap circles 0, visible rings 0
+[traps-1] t=472 trap circles 0, visible rings 0
+[traps-2] t=473 trap circles 0, visible rings 0
+[traps-3] t=474 trap circles 0, visible rings 0
+[traps-4] t=476 trap circles 0, visible rings 0
+[traps-5] t=477 trap circles 0, visible rings 0
+[traps-6] t=478 trap circles 0, visible rings 0
+[traps-7] t=479 trap circles 0, visible rings 0
+[traps-8] t=480 trap circles 0, visible rings 0
+[traps-9] t=481 trap circles 0, visible rings 0
+[traps-10] t=482 trap circles 0, visible rings 0
+[traps-11] t=483 trap circles 3, visible rings 6
+[shot] 01-kraken-trap.png
+[traps-12] t=489 trap circles 3, visible rings 6
+[shot] 02-kraken-trap.png
+[rect-restore] restored

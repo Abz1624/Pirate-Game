@@ -1,6 +1,6 @@
 {
  "status": "completed",
- "duration": 34.24,
+ "duration": 32.64,
  "summary": {
   "total": 14,
   "passed": 14,
@@ -12,98 +12,98 @@
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.AmbientSpawns_ComeFromTheV4SpawnController",
    "Status": "Passed",
-   "Duration": 11.5043635,
+   "Duration": 11.240009,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.BootFlow_ReachesMenu_ThenRunPlays",
    "Status": "Passed",
-   "Duration": 1.7779656,
+   "Duration": 1.5866693,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.EliteBeat_AndOvertime_UseTheirOwnEnemies",
    "Status": "Passed",
-   "Duration": 1.0583624,
+   "Duration": 1.0241963,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.EnemyWorld_UsesTheConfigBuiltRuntimeDatabase",
    "Status": "Passed",
-   "Duration": 1.0413004,
+   "Duration": 1.0088961,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.LiveConfigEdits_ReachTheLegacyRun",
    "Status": "Passed",
-   "Duration": 1.1638209,
+   "Duration": 1.0487738,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.ModuleLab_SpawnsOnlyOnRequest",
    "Status": "Passed",
-   "Duration": 7.2938285,
+   "Duration": 7.0098806,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Overtime_SpawnsTheDrownedEnemies",
    "Status": "Passed",
-   "Duration": 1.1242367,
+   "Duration": 1.0293384,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.PowderCache_StillSpawnsThroughTheEncounterExecutor",
    "Status": "Passed",
-   "Duration": 1.157939,
+   "Duration": 1.0028885,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Preset_RequestedBeforeTheRun_AppliesFromTheStart",
    "Status": "Passed",
-   "Duration": 1.1394534,
+   "Duration": 1.1092636,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Run_BossKill_ThenDeath_SettlesOnce",
    "Status": "Passed",
-   "Duration": 1.2262466,
+   "Duration": 1.118259,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.SceneReload_ClearsStaleMinibossArena",
    "Status": "Passed",
-   "Duration": 1.1215757,
+   "Duration": 1.0653828,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.SkippingTheLastLevelUp_HidesTheCards",
    "Status": "Passed",
-   "Duration": 1.2846204,
+   "Duration": 1.144209,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.SpawnSlots_AllTickEveryFrame",
    "Status": "Passed",
-   "Duration": 1.2053805,
+   "Duration": 1.2069923,
    "Message": null,
    "StackTrace": null
   },
   {
    "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.SteadyStormDamage_RespectsGodMode_ThrottlesFeedback_AndCanKill",
    "Status": "Passed",
-   "Duration": 2.0886519,
+   "Duration": 1.9977934,
    "Message": null,
    "StackTrace": null
   }
