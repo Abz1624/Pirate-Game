@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 555a2ac9518b368498df14d31985b5f5, type: 3}
+  m_Name: StageContent_Saltwind
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.StageContentConfig
+  configId: stage.saltwind
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  salvageChestCount: 12
+  explosiveBarrelCount: 0
+  explosiveBarrelFuseSeconds: 1.2
+  explosiveBarrelRadius: 4
+  explosiveBarrelDamage: 20
+  chestBasePrice: 20
+  chestPriceGrowth: 1.22
+  chestPriceIncrementBase: 25
+  disableGoldTriggeredChestSpawn: 1
+  chestSpawnGoldFraction: 0.8
+  chestInteractRange: 6
+  chestPlanUsesLoadout: 0
+  interactRange: 4
+  repairWreckHealFraction: 0.25
+  repairWreckMaxHullFraction: 0.25
+  powderCacheAmbushCount: 3
+  powderCacheTriggerRadius: 8
+  powderCacheBonusGold: 20
+  signalBuoyChargeSeconds: 8
+  signalBuoyRadius: 4
+  signalBuoyRewards:
+  - stat: 5
+    add: 0
+    multiply: 1.1
+    label: +10% damage for this run
+  - stat: 20
+    add: 0.5
+    multiply: 1
+    label: +0.5 move speed for this run
+  - stat: 14
+    add: 0.8
+    multiply: 1
+    label: +0.8 pickup radius for this run
+  treasureChartRevealCount: 3
+  lighthouseDamageMultiplier: 1.08
+  disableAutomaticRouteEvents: 1
+  discoveryRadius: 24
+  exploreCellSize: 6
+  exploreRadius: 10
+  beaconDirectionHintSeconds: 300
+  beaconExactMarkerSeconds: 420
+  beaconInteractRange: 6
+  beaconHoldSeconds: 0.7
+  bossTelegraphSeconds: 0.7
+  beaconFoundByProximityAfterHints: 0
+  beaconExactMarkerAfterHint: 0
+  bossSpawner: {fileID: 11400000, guid: da3049c6851f7174790cd7255bdd0319, type: 2}
+  powderCacheSpawner: {fileID: 11400000, guid: e43da1e265019104c8016b9b6fd5d57d, type: 2}
+  continueAfterBossVictory: 1

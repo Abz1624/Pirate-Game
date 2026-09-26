@@ -594,6 +594,105 @@ namespace RoguePirates.V4.Editor
             return $"M6 weapon visuals written for {count} weapons" + (skiff == null || skiff.visualPrefab == null ? " (no Cannonboat model found for skiffs)" : string.Empty) + "\n";
         }
 
+        public const string StageContentPath = DataRoot + "/Stage/StageContent_Saltwind.asset";
+
+        [MenuItem("RoguePirates/V4/Apply M7 Stage Content")]
+        static void ApplyM7FromMenu() => Debug.Log(ApplyM7());
+
+        /// <summary>
+        /// M7: the stage content config from the V3 stage profile (placement counts, chest prices, landmark values, Beacon
+        /// hint times) and the constants POIManager, V3DiscoverySystem and V3InteractionController kept, with the boss and
+        /// Powder Cache spawners; plus the Barnacle King's boss config. Both join the config set. Idempotent. The adopted
+        /// decision "no explosive barrels" is the one V4 default that differs from V3 (the v3-parity preset restores 2).
+        /// </summary>
+        public static string ApplyM7()
+        {
+            var log = new StringBuilder();
+            var profile = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath);
+            var pacing = AssetDatabase.LoadAssetAtPath<DemoPacingSettings>(PacingPath);
+            if (!AssetDatabase.IsValidFolder(DataRoot + "/Stage")) AssetDatabase.CreateFolder(DataRoot, "Stage");
+            var stage = AssetDatabase.LoadAssetAtPath<StageContentConfig>(StageContentPath);
+            if (stage == null)
+            {
+                stage = ScriptableObject.CreateInstance<StageContentConfig>();
+                AssetDatabase.CreateAsset(stage, StageContentPath);
+            }
+            stage.configId = "stage.saltwind";
+            if (profile != null)
+            {
+                stage.salvageChestCount = profile.salvageChestCount;
+                stage.explosiveBarrelFuseSeconds = profile.explosiveBarrelFuseSeconds;
+                stage.explosiveBarrelRadius = profile.explosiveBarrelRadius;
+                stage.explosiveBarrelDamage = profile.explosiveBarrelDamage;
+                stage.chestBasePrice = profile.chestBasePrice;
+                stage.chestPriceGrowth = profile.chestPriceGrowth;
+                stage.chestPriceIncrementBase = profile.chestPriceIncrementBase;
+                stage.disableGoldTriggeredChestSpawn = profile.disableGoldTriggeredChestSpawn;
+                stage.disableAutomaticRouteEvents = profile.disableAutomaticRouteEvents;
+                stage.repairWreckMaxHullFraction = profile.repairWreckMaxHullFraction;
+                stage.powderCacheBonusGold = profile.powderCacheBonusGold;
+                stage.signalBuoyChargeSeconds = profile.signalBuoyOccupancySeconds;
+                stage.beaconDirectionHintSeconds = profile.beaconDirectionHintSeconds;
+                stage.beaconExactMarkerSeconds = profile.beaconExactMarkerSeconds;
+            }
+            stage.explosiveBarrelCount = 0; // adopted decision (V3 profile: 2)
+            stage.chestSpawnGoldFraction = GameConstants.V3ChestSpawnGoldFraction;
+            stage.chestInteractRange = 6f;
+            stage.chestPlanUsesLoadout = false;
+            stage.interactRange = HighSeas.V3.V3InteractionController.DefaultRange;
+            stage.repairWreckHealFraction = 0.25f;
+            stage.powderCacheAmbushCount = 3;
+            stage.powderCacheTriggerRadius = 8f;
+            stage.signalBuoyRadius = 4f;
+            stage.signalBuoyRewards = new[]
+            {
+                new BuoyReward { stat = (int)StatId.Damage, multiply = 1.1f, label = "+10% damage for this run" },
+                new BuoyReward { stat = (int)StatId.MoveSpeed, add = 0.5f, label = "+0.5 move speed for this run" },
+                new BuoyReward { stat = (int)StatId.PickupRadius, add = 0.8f, label = "+0.8 pickup radius for this run" },
+            };
+            stage.treasureChartRevealCount = 3;
+            stage.lighthouseDamageMultiplier = 1.08f;
+            stage.discoveryRadius = HighSeas.V3.V3DiscoverySystem.DiscoveryRadius;
+            stage.exploreCellSize = HighSeas.V3.V3DiscoverySystem.ExploreCellSize;
+            stage.exploreRadius = 10f;
+            stage.beaconInteractRange = 6f;
+            stage.beaconHoldSeconds = HighSeas.V3.V3InteractionController.BossHoldSeconds;
+            stage.bossTelegraphSeconds = pacing != null ? pacing.bossTelegraphSeconds : 0.7f;
+            stage.beaconFoundByProximityAfterHints = false;
+            stage.beaconExactMarkerAfterHint = false;
+            stage.continueAfterBossVictory = true;
+            stage.bossSpawner = FindSpawner("spawner.saltwind_boss");
+            stage.powderCacheSpawner = FindSpawner("spawner.saltwind_powder_cache");
+            EditorUtility.SetDirty(stage);
+            log.AppendLine($"stage content: {StageContentPath} (boss spawner {(stage.bossSpawner != null ? "ok" : "MISSING")}, powder cache spawner {(stage.powderCacheSpawner != null ? "ok" : "MISSING")})");
+
+            log.AppendLine(V4BossConfigGenerator.Generate());
+            var boss = AssetDatabase.LoadAssetAtPath<BossConfig>(V4BossConfigGenerator.AssetPath);
+
+            var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(ConfigSetPath);
+            if (set != null)
+            {
+                foreach (var c in new V4ConfigAsset[] { stage, boss })
+                    if (c != null && !set.configs.Contains(c)) set.configs.Add(c);
+                set.configs = set.configs.Where(c => c != null).OrderBy(c => c.configId, StringComparer.Ordinal).ToList();
+                EditorUtility.SetDirty(set);
+                log.AppendLine($"config set: {set.configs.Count} configs");
+            }
+            AssetDatabase.SaveAssets();
+            if (set != null) log.Append(ConfigValidator.Validate(set));
+            return log.ToString();
+        }
+
+        static EnemySpawnerConfig FindSpawner(string configId)
+        {
+            foreach (var guid in AssetDatabase.FindAssets("t:EnemySpawnerConfig", new[] { DataRoot + "/Spawners" }))
+            {
+                var spawner = AssetDatabase.LoadAssetAtPath<EnemySpawnerConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                if (spawner != null && spawner.configId == configId) return spawner;
+            }
+            return null;
+        }
+
         static ConfigEnums.EvolutionEffect EvolutionEffectOf(string modifierId) => modifierId switch
         {
             "stormshot_cannon" => ConfigEnums.EvolutionEffect.LaneWithBurst,

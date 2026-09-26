@@ -17,6 +17,8 @@ namespace RoguePirates.V4.Spawning
         public IPlayerDamageSink Player;
         public ILegacySpawnRateSource LegacyRate;
         public ISpawnerProfiles Profiles;
+        /// <summary>Required encounters (M7; optional so earlier tests without it still run).</summary>
+        public IEncounterTracker Encounters;
 
         public ConfigSetRuntime Config => Context?.Config;
         public WaveTimelineConfig Timeline => Config?.Single<WaveTimelineConfig>();
@@ -35,6 +37,7 @@ namespace RoguePirates.V4.Spawning
             Player = context.Get<IPlayerDamageSink>();
             Profiles = context.Get<ISpawnerProfiles>();
             context.TryGet(out LegacyRate);
+            context.TryGet(out Encounters);
         }
 
         public void Publish(CombatEventKind kind, int a = 0, int b = 0, Vector3 position = default, string tag = null, int flags = 0) =>

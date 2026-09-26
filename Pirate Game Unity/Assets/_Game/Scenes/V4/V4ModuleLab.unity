@@ -5734,13 +5734,13 @@ GameObject:
   - component: {fileID: 658786985}
   - component: {fileID: 658786984}
   - component: {fileID: 658786983}
-  - component: {fileID: 658786982}
   - component: {fileID: 658786981}
   - component: {fileID: 658786999}
   - component: {fileID: 658786998}
   - component: {fileID: 658786997}
   - component: {fileID: 658786996}
   - component: {fileID: 658786988}
+  - component: {fileID: 658786982}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -5782,15 +5782,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 658786980}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9b19449374daae42b7f12e6c87a7f26, type: 3}
+  m_Script: {fileID: 11500000, guid: 16f779b2f5326b34da66a76903a0b73c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.POI.POIManager
-  database: {fileID: 0}
-  loot: {fileID: 0}
-  encounterSpawner: {fileID: 658786991}
-  juiceSettings: {fileID: 0}
-  pacingSettings: {fileID: 0}
-  poiRoot: {fileID: 0}
+  m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.Legacy.LegacyUpdateSlot
+  role: stage
 --- !u!114 &658786983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5905,7 +5900,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c07d65dc2e5e2eb47988ac3d958a1077, type: 3}
   m_Name: 

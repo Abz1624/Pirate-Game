@@ -13,7 +13,7 @@ namespace RoguePirates.V4.Spawning
     /// Until the enemy world is V4 (M8), each part runs in the frame slot its V3 predecessor had (the legacy update
     /// slots call the Tick* methods), because the legacy enemy world, weapons and run clock tick around them.
     /// </summary>
-    public sealed class SpawnController : IRunModule, ISpawnController
+    public sealed class SpawnController : IRunModule, ISpawnController, IEncounterExecutor
     {
         readonly SpawnServices _s = new SpawnServices();
         readonly SpawnModifierStack _modifiers = new SpawnModifierStack();
@@ -24,6 +24,7 @@ namespace RoguePirates.V4.Spawning
         ScriptedPhases _scripted;
         OvertimePhase _overtime;
         StormPhase _storm;
+        EncounterExecutor _encounters;
         TimelineTriggers _triggers;
         readonly HashSet<string> _skipped = new HashSet<string>();
         readonly HashSet<string> _manual = new HashSet<string>();
@@ -47,6 +48,7 @@ namespace RoguePirates.V4.Spawning
             _scripted = new ScriptedPhases(_s, _executor, _ambient, _modifiers, _triggers);
             _overtime = new OvertimePhase(_s, _executor);
             _storm = new StormPhase(_s);
+            _encounters = new EncounterExecutor(_s, _executor, () => _scripted != null && _scripted.ArenaActive);
             context.Events.TickPublished += OnEvents;
             if (context.Config != null) context.Config.ConfigChanged += OnConfigChanged;
         }
@@ -57,6 +59,7 @@ namespace RoguePirates.V4.Spawning
             _skipped.Clear();
             _manual.Clear();
             _executor.ResetForRun();
+            _encounters.ResetForRun();
             _triggers.BeginRun();
             _ambient.BeginRun();
             _scripted.BeginRun();
@@ -117,6 +120,8 @@ namespace RoguePirates.V4.Spawning
         public void TickAmbient(float dt)
         {
             if (!_running) return;
+            // M7: the encounter queue (EncounterSpawner.Update ran it here, before its ambient tick). Off in the lab.
+            if (!LabMode) _encounters.Tick();
             var run = _s.Run;
             if (!run.Exists || run.IsPaused || run.IsRunEnded || !run.IsGameplayActive) return;
             _scripted.PollArena();
@@ -199,6 +204,14 @@ namespace RoguePirates.V4.Spawning
         }
 
         // ---- ISpawnController ----------------------------------------------------------------------------
+
+        // ---- Required encounters (M7): the stage content module queues the Beacon boss and Powder Cache here ----
+
+        public void Trigger(EnemySpawnerConfig spawner, int count, int encounterId) => _encounters?.Trigger(spawner, count, encounterId);
+        public int TriggerImmediate(EnemySpawnerConfig spawner, int count, int encounterId) => _encounters != null ? _encounters.TriggerImmediate(spawner, count, encounterId) : 0;
+        public int ProcessNow() => _encounters != null ? _encounters.ProcessNow() : 0;
+        public void Cancel(int encounterId) => _encounters?.Cancel(encounterId);
+        public bool HasPending(int encounterId) => _encounters != null && _encounters.HasPending(encounterId);
 
         public bool ArenaActive => _scripted != null && _scripted.ArenaActive;
         public int ArenaFocusUnitId => _scripted != null ? _scripted.ArenaFocusUnitId : -1;

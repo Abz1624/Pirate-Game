@@ -174,19 +174,20 @@ namespace RoguePirates.V4.Tests
             yield return null;
 
             // Beacon discovered, boss summoned, a landmark used, a level-up with cards.
-            var discovery = HighSeas.V3.V3DiscoverySystem.Instance;
-            typeof(HighSeas.V3.V3DiscoverySystem).GetField("_beaconState", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-                .SetValue(discovery, HighSeas.V3.BeaconRevealState.Discovered);
-            var poi = Object.FindFirstObjectByType<POIManager>();
+            game.Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var poi); // M7: V4 stage content
+            poi.RevealBeacon();
             var summoned = false;
             for (var i = 0; i < 60 && !summoned; i++) { summoned = poi.TrySummonBoss() && poi.BossSummoned; if (!summoned) yield return null; }
             Assert.IsTrue(summoned, "boss summon failed");
-            var layout = HighSeas.V3.V3RunContext.Layout;
-            var landmark = layout.pois.FindIndex(p => !p.used && p.type != HighSeas.Core.POIType.SalvageChest && p.type != HighSeas.Core.POIType.BossBeacon);
-            Assert.GreaterOrEqual(landmark, 0, "no landmark in the layout");
-            var slot = layout.pois[landmark];
-            slot.used = true;
-            layout.pois[landmark] = slot;
+            var layout = poi.Module.Layout;
+            // A Repair Wreck used through the stage module (hull damaged first so it has something to repair).
+            var landmark = layout.pois.FindIndex(p => !p.used && p.type == HighSeas.Core.POIType.GildedWreck);
+            Assert.GreaterOrEqual(landmark, 0, "no Repair Wreck in the layout");
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            ship.Damage.SetPlaytestInvulnerable(false);
+            ship.Damage.TakeDamage(ship.Damage.MaxHP * 0.5f, Vector3.zero, false);
+            ship.Damage.SetPlaytestInvulnerable(true);
+            Assert.IsTrue(poi.Module.Interact(HighSeas.Core.POIType.GildedWreck, landmark), "wreck repaired");
             HighSeas.UI.LevelSystem.Instance.AddXP(500);
             for (var i = 0; i < 20; i++) yield return null;
 

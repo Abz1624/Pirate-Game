@@ -55,7 +55,8 @@ namespace RoguePirates.V4.Spawning
         /// Returns how many spawned.
         /// </summary>
         public int TryBurst(SpawnProfile profile, int count, bool ignoreCapSoft, float hpMultiplier, float damageMultiplier,
-            int profileInstanceId, ref int leaderUnitId, TimelinePhase compositionPhase = null, bool ambient = false, string enemyId = null)
+            int profileInstanceId, ref int leaderUnitId, TimelinePhase compositionPhase = null, bool ambient = false, string enemyId = null,
+            int runEncounterId = 0)
         {
             if (profile == null || profile.enemy == null || !_s.Placement.Ready) return 0;
 
@@ -86,7 +87,8 @@ namespace RoguePirates.V4.Spawning
                 var role = ResolveFormationRole(profile, i, count);
                 if (role == FormationRole.Leader) leaderUnitId = -1;
 
-                if (!_s.Placement.TryPick(profile.placement, spawnRadius, isBoss, out var position)) continue;
+                // V3: encounters (and bosses) may fall back to spots near the ship.
+                if (!_s.Placement.TryPick(profile.placement, spawnRadius, runEncounterId > 0 || isBoss, out var position)) continue;
                 _s.Placement.OffsetGroup(profile.groupLayout, i, count, profile.placement.groupSpacing, ref position);
                 if (!_s.Placement.IsFormationPositionValid(position, spawnRadius, profile.placement)) continue;
 
@@ -99,6 +101,7 @@ namespace RoguePirates.V4.Spawning
                 // M6: ambient spawns are flagged; the spawn warning presenter telegraphs them (was V3SpawnTelegraph).
                 _s.Publish(CombatEventKind.Spawned, unitId, definitionIndex, position, _s.Sink.DefinitionId(definitionIndex),
                     ambient ? CombatEventFlags.AmbientSpawn : 0);
+                if (runEncounterId > 0) _s.Encounters?.RegisterSpawned(runEncounterId, unitId);
                 if (role == FormationRole.Leader || (role == FormationRole.Auto && i == 0)) leaderUnitId = unitId;
             }
             return spawned;

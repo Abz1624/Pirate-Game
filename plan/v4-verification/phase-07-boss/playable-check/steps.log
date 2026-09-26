@@ -1,0 +1,53 @@
+﻿[is-playing] no
+[begin] started
+[is-playing] OK playing
+[run-start] WAIT
+[run-start] OK playing
+[setup] POIs: BossBeacon 1, GildedWreck 1, MerchantSkiff 1, TrialBuoy 1, CursedIdol 1, SalvageChest 12; markers 17; POIManager False; barrels 0
+[shot] stage-start.png
+[to-chest] moved to SalvageChest 5
+[chest-pause] OK paused for the chest choice, target 5
+[shot] chest-prompt.png
+[chest-take] items 0 -> 1, gold 500 -> 480, chests bought 1
+[shot] chest-opened.png
+[hurt] hull 50
+[to-wreck] moved to GildedWreck 1
+[wreck] wreck used True, hull 75/100
+[shot] repair-wreck.png
+[to-buoy] moved to TrialBuoy 3
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[shot] buoy-charging.png
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[buoy] buoy used True, charge 8.0 s
+[shot] buoy-reward.png
+[to-cache] moved to MerchantSkiff 2
+[cache] ambush encounter 1: spawned 3, state Spawned
+[shot] powder-cache-ambush.png
+[to-beacon] moved to BossBeacon 0
+[hold] holding USE
+[shot] beacon-hold-telegraph.png
+[release] released
+[boss-summoned] OK boss summoned, state BossFight
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[shot] boss-fight.png
+[boss-attacks] boss attack AimedSpread, phase Telegraph, script phase 1, marked telegraph False
+[boss-kill] boss hit for its full health
+[boss-defeated] OK defeated; objective True; state Playing; run ended False
+[shot] boss-defeated.png
+[die] ship sunk
+[results] OK results: VICTORY SECURED — RUN ENDED
+[shot] results.png
+[results-text] You secured the treasury, then were sunk — victory stays earned.\r | \r | Saltwind balance v3 · profile 33839ce3… · seed 1588657615 · 63s | \r | Run gold earned: 500\r | Run gold spent: 20\r | Run gold remaining: 480 (run-only)\r |  | Marks earned this run: 36 |   Active minutes: 2 |   Special discoveries: 9 |   Scheduled elite: 0 |   Boss victory: 25 |   Overtime: 0 | Treasury Marks: 759 |  | Unlock goal: not selected (choose one in menu or results). |  | Final build: |   · Swivel Guns Lv 1 |  | Weapon contribution: |   · Swivel Guns: 100% dmg | 

@@ -31,6 +31,10 @@
                 {
                     "path": "areaDenialReleaseSeconds",
                     "value": "0"
+                },
+                {
+                    "path": "encountersWaitDuringArenas",
+                    "value": "true"
                 }
             ]
         },
@@ -269,6 +273,16 @@
                 {
                     "path": "salvoLevelFactor",
                     "value": "0"
+                }
+            ]
+        },
+        {
+            "configId": "stage.saltwind",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "explosiveBarrelCount",
+                    "value": "2"
                 }
             ]
         }

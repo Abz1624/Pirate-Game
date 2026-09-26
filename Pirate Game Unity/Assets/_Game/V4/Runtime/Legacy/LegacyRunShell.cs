@@ -47,6 +47,8 @@ namespace RoguePirates.V4.Legacy
         public LegacyConfigRuntime LegacyConfig => _legacyConfig;
         /// <summary>M5: the V4 weapon module; bound at run start after the level system synced the loadout.</summary>
         public LegacyWeaponWiring Weapons { get; set; }
+        /// <summary>M7: chests, landmarks, Beacon, discovery, interaction and the boss director.</summary>
+        public LegacyStageWiring Stage { get; set; }
 
         public LegacyRunShell(MonoBehaviour host, GameDatabase database, StageBuilder stageBuilder,
             PlayerShipController player, IslandLayoutDefinition islandLayout, bool usePlaceholderPoiVisuals,
@@ -173,7 +175,9 @@ namespace RoguePirates.V4.Legacy
             var multiShipConfig = Object.FindFirstObjectByType<V3MultiShipSceneConfig>();
             var isPvPScene = multiShipConfig != null && multiShipConfig.SessionKind == V3RunSessionKind.PvP;
 
-            LegacyStageAdapter.InitializePoi(_layout, _runDatabase, _usePlaceholderPoiVisuals, isPvPScene);
+            // M7: V4 stage content in POIManager's place (markers and barrels created at the same moment as V3).
+            Stage?.InitializePoi(_layout, isPvPScene);
+            Stage?.AttachKillHook();
 
             var enemyWorld = LegacyEnemyWorldPort.ResetAndDefine(_runDatabase);
 
@@ -198,7 +202,7 @@ namespace RoguePirates.V4.Legacy
             LegacyBuildAdapter.EnsureItemSystems();
 
             LegacyPresentationAdapter.EnsureDevAndDebugTools(firstRun);
-            LegacyPresentationAdapter.EnsureRunUi(_layout);
+            LegacyPresentationAdapter.EnsureRunUi(_layout, Stage);
 
             if (_player != null)
             {
@@ -221,10 +225,11 @@ namespace RoguePirates.V4.Legacy
                 LegacyEncounterExecutor.ResetForRun();
                 _spawnSlots.CreateOvertimeSlot();
                 _spawnSlots.AddStormSlot();
-                LegacyStageAdapter.ResetBossDirector(enemyWorld, _player);
+                Stage?.ResetBoss();
                 _spawnSlots.AddBeatSlot();
-                LegacyStageAdapter.ResetBossDirector(enemyWorld, _player);
+                Stage?.ResetBoss();
                 _spawnSlots.BindAmbient();
+                Stage?.BindManagerSlot();
             }
 
             RunManager.Instance.EnterPlaying();
@@ -249,7 +254,7 @@ namespace RoguePirates.V4.Legacy
         public void EnterModuleLab()
         {
             _encounters.EnterModuleLab();
-            LegacyStageAdapter.EnterModuleLab();
+            Stage?.EnterModuleLab();
             if (_player != null) _player.Damage.SetPlaytestInvulnerable(true);
         }
 
@@ -261,7 +266,8 @@ namespace RoguePirates.V4.Legacy
         {
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
             if (RunManager.Instance.IsRunEnded) return;
-            LegacyEnemyWorldPort.Tick(dt, _player, Weapons != null ? Weapons.TickProjectiles : (System.Action<float>)null);
+            LegacyEnemyWorldPort.Tick(dt, _player, Weapons != null ? Weapons.TickProjectiles : (System.Action<float>)null,
+                Stage != null ? Stage.TickBoss : (System.Action<float>)null);
             _areaDenial.Tick(RunManager.Instance.ElapsedSeconds);
             ResolveSameTickBossDeath();
         }
@@ -270,13 +276,13 @@ namespace RoguePirates.V4.Legacy
         {
             if (RunManager.Instance == null || _player == null || _player.Damage.IsAlive) return;
             if (!RunManager.Instance.IsRunEnded) return;
-            LegacyStageAdapter.TrySecureIfBossDead();
+            Stage?.TrySecureIfBossDead();
             LegacyRewardsAdapter.ApplyConquestUnlockIfSecured();
         }
 
         void OnPlayerDamaged(float amount, bool _) => LegacyRewardsAdapter.RecordDamage(amount);
 
-        void OnPlayerDied() => LegacyRewardsAdapter.OnPlayerDied(_player);
+        void OnPlayerDied() => LegacyRewardsAdapter.OnPlayerDied(_player, () => Stage?.TrySecureIfBossDead());
 
         public void OnDestroy()
         {

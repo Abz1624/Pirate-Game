@@ -22,6 +22,8 @@ namespace RoguePirates.V4.Presentation
         public RoguePirates.V4.Presentation.Hud.SpawnWarningPresenter SpawnWarnings { get; private set; }
         public Weapons.WeaponVfxPresenter WeaponEffects { get; private set; }
         public Weapons.WeaponAimOverlay AimOverlay { get; private set; }
+        public Stage.InteractionPromptPresenter InteractionPrompt { get; private set; }
+        public Stage.BossTelegraphPresenter BossTelegraph { get; private set; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Install()
@@ -67,6 +69,40 @@ namespace RoguePirates.V4.Presentation
                 InstallHud(views, game.Events);
                 InstallWeaponEffects(game, views);
             }
+            if (game.Context != null) InstallStage(game);
+        }
+
+        /// <summary>
+        /// M7: the interaction prompt (drawn where V3's was: just above the toast view on the run canvas) and the Barnacle
+        /// King's marked telegraph.
+        /// </summary>
+        void InstallStage(V4Game game)
+        {
+            var runCanvas = FindRunCanvas();
+            if (runCanvas != null && game.Context.TryGet<RoguePirates.V4.Stage.IInteractionPromptView>(out var prompt))
+            {
+                InteractionPrompt = Stage.InteractionPromptPresenter.Create(runCanvas.transform);
+                game.Context.TryGet<RoguePirates.V4.Stage.IInteractionTouch>(out var touch);
+                InteractionPrompt.Bind(prompt, touch);
+                PlaceAboveToast(runCanvas.transform, InteractionPrompt.transform);
+            }
+            if (game.Context.TryGet<RoguePirates.V4.Stage.IBossView>(out var boss))
+            {
+                BossTelegraph = GetComponent<Stage.BossTelegraphPresenter>();
+                if (BossTelegraph == null) BossTelegraph = gameObject.AddComponent<Stage.BossTelegraphPresenter>();
+                var config = game.Config;
+                BossTelegraph.Bind(boss, () => config != null ? config.Single<RoguePirates.V4.Config.BossConfig>() : null);
+            }
+        }
+
+        static void PlaceAboveToast(Transform canvas, Transform prompt)
+        {
+            for (var i = 0; i < canvas.childCount; i++)
+                if (canvas.GetChild(i).name == "PLACEHOLDER_v3_ui_toast_hud")
+                {
+                    prompt.SetSiblingIndex(Mathf.Min(i + 1, canvas.childCount - 1));
+                    return;
+                }
         }
 
         /// <summary>

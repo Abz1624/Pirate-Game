@@ -218,7 +218,7 @@ namespace RoguePirates.V4.Tests
             var slots = Object.FindObjectsByType<RoguePirates.V4.Legacy.LegacyUpdateSlot>(FindObjectsSortMode.None);
             var clock = RunManager.Instance.ElapsedSeconds;
             Debug.Log($"V4 slot clocks (test runner order): clock {clock:R}, " + string.Join(", ", slots.Select(s => $"{s.role}={s.ClockAtTick:R}")));
-            foreach (var role in new[] { "ambient", "overtime", "storm", "beats", "storm-edge" })
+            foreach (var role in new[] { "ambient", "overtime", "storm", "beats", "storm-edge", "stage", "discovery", "interaction" })
             {
                 var slot = slots.Single(s => s.role == role);
                 Assert.AreEqual(Time.frameCount, slot.FrameAtTick, role + " ticked this frame");
@@ -343,11 +343,17 @@ namespace RoguePirates.V4.Tests
         {
             yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return WaitForPlaying();
-            var spawner = Object.FindFirstObjectByType<EncounterSpawner>();
+            // M7: the V4 encounter executor runs the ambush (the legacy spawner is off, register D4).
+            var game = Object.FindFirstObjectByType<V4Game>();
+            Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Spawning.IEncounterExecutor>(out var executor) || game.Context.TryGet<RoguePirates.V4.Spawning.ISpawnController>(out _));
+            executor = (RoguePirates.V4.Spawning.IEncounterExecutor)game.Context.Get<RoguePirates.V4.Spawning.ISpawnController>();
+            game.Context.TryGet<RoguePirates.V4.Spawning.IEncounterTracker>(out var tracker);
             var world = Object.FindFirstObjectByType<EnemyWorld>();
             var before = world.ActiveCount;
-            spawner.TriggerProfileImmediate(spawner.Schedule.powderCacheAmbush, 3, 0);
-            Assert.Greater(world.ActiveCount, before, "the kept spawner runs the Powder Cache ambush (register D4)");
+            var id = tracker.Request(RoguePirates.V4.Spawning.EncounterKind.PowderCache, 3);
+            executor.TriggerImmediate(game.Config.Single<RoguePirates.V4.Config.StageContentConfig>().powderCacheSpawner, 3, id);
+            Assert.Greater(world.ActiveCount, before, "the V4 encounter executor spawns the Powder Cache ambush");
+            Assert.AreEqual(3, tracker.SpawnedCount(id), "registered with the encounter tracker (the legacy kill path completes it)");
         }
 
         [UnityTest]
@@ -358,9 +364,9 @@ namespace RoguePirates.V4.Tests
             var game = Object.FindFirstObjectByType<V4Game>();
             Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Spawning.ISpawnController>(out var spawn), "spawn controller registered");
             var legacy = Object.FindFirstObjectByType<EncounterSpawner>();
-            Assert.IsNotNull(legacy, "the legacy spawner stays for the Beacon boss and Powder Cache (register D4)");
+            Assert.IsNotNull(legacy, "the legacy spawner stays as Dead Calm's sink until M9 (register D4)");
+            Assert.IsFalse(legacy.enabled, "M7: switched off");
             Assert.AreEqual(0, legacy.Schedule.entries.Length, "the legacy spawner has no ambient entries");
-            Assert.IsNotNull(legacy.Schedule.bossSummon, "it keeps the boss and cache profiles");
             var slots = Object.FindObjectsByType<RoguePirates.V4.Legacy.LegacyUpdateSlot>(FindObjectsSortMode.None);
             foreach (var role in new[] { "ambient", "overtime", "storm", "beats", "storm-edge" })
                 Assert.IsTrue(slots.Any(s => s.role == role && s.Tick != null), $"{role} slot bound");
@@ -567,10 +573,11 @@ namespace RoguePirates.V4.Tests
             var start = Time.realtimeSinceStartup;
             while (RunManager.Instance.ElapsedSeconds < 6f && Time.realtimeSinceStartup - start < 20f) yield return null;
             Assert.AreEqual(0, world.ActiveCount, "no ambient spawns in the lab");
-            Assert.IsFalse(Object.FindFirstObjectByType<EncounterSpawner>().enabled, "spawner stopped: no ambient spawns or queued encounters");
-            Assert.IsFalse(Object.FindFirstObjectByType<POIManager>().enabled, "POIs off: no powder-cache ambush or chests");
-            var interaction = Object.FindFirstObjectByType<HighSeas.V3.V3InteractionController>();
-            Assert.IsTrue(interaction == null || !interaction.enabled, "no hold-to-interact: the Beacon cannot summon the boss");
+            Assert.IsFalse(Object.FindFirstObjectByType<EncounterSpawner>().enabled, "legacy spawner off (M7: Dead Calm sink only)");
+            Assert.IsNull(Object.FindFirstObjectByType<POIManager>(), "M7: no POIManager");
+            Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var stage));
+            Assert.IsFalse(stage.Module.Enabled, "stage content off: no powder-cache ambush, chests or Beacon");
+            Assert.IsFalse(stage.Interaction.Enabled, "no hold-to-interact: the Beacon cannot summon the boss");
 
             var index = System.Array.FindIndex(world.Definitions, d => d != null && d.id == "needle_sloop");
             Assert.GreaterOrEqual(index, 0, "specialist variants are in the runtime database");
@@ -595,7 +602,7 @@ namespace RoguePirates.V4.Tests
             var probe = new EndProbe();
             Object.FindFirstObjectByType<V4Game>().Modules.Add(probe);
 
-            var poi = Object.FindFirstObjectByType<POIManager>();
+            Object.FindFirstObjectByType<V4Game>().Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var poi); // M7: V4 stage content
             var world = Object.FindFirstObjectByType<EnemyWorld>();
             var summoned = false;
             for (var i = 0; i < 60 && !summoned; i++)

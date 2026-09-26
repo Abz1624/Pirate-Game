@@ -209,10 +209,11 @@ namespace RoguePirates.V4.Legacy
         }
 
         /// <summary>Same calls, same order as V3RunBootstrap.Update.</summary>
-        public static void Tick(float dt, PlayerShipController player, System.Action<float> playerProjectiles = null)
+        public static void Tick(float dt, PlayerShipController player, System.Action<float> playerProjectiles = null, System.Action<float> bossDirector = null)
         {
             var playerPos = player != null ? player.Position : Vector3.zero;
-            Object.FindFirstObjectByType<BarnacleKingBossAttackDirector>()?.Tick(dt);
+            // M7: the V4 boss director ticks first, where V3 ticked BarnacleKingBossAttackDirector.
+            bossDirector?.Invoke(dt);
             Object.FindFirstObjectByType<EnemyWorld>()?.Tick(dt, playerPos, player?.Damage);
             // M5: V4 player projectiles tick here, where V3 ticked ProjectileWorld (which V4 no longer fills).
             if (playerProjectiles != null) playerProjectiles(dt);
@@ -298,38 +299,6 @@ namespace RoguePirates.V4.Legacy
         }
     }
 
-    /// <summary>POIManager, barrels, boss attack director and storm edge damage.</summary>
-    [DeletedInPhase(7, "StageContent and BossDirector")]
-    public sealed class LegacyStageAdapter
-    {
-        public static void InitializePoi(StageLayout layout, GameDatabase database, bool usePlaceholderVisuals, bool isPvPScene)
-        {
-            var poi = Object.FindFirstObjectByType<POIManager>();
-            if (poi == null) return;
-            if (isPvPScene) { poi.enabled = false; return; }
-            poi.enabled = true;
-            poi.SetV3Options(continueAfterBossVictory: true, usePlaceholderVisuals: usePlaceholderVisuals, useV3ChestPricing: true);
-            poi.Initialize(layout, database);
-            if (layout != null) V3ExplosiveBarrelWorld.Ensure(layout);
-        }
-
-        public static void ResetBossDirector(EnemyWorld enemyWorld, PlayerShipController ship) =>
-            BarnacleKingBossAttackDirector.Ensure(enemyWorld, ship).ResetForRun();
-
-        /// <summary>
-        /// Module Lab: POIs, hold-to-interact and the B-key summon are off, so chests, the powder-cache ambush and the
-        /// Beacon boss cannot spawn anything (a boss summon runs the spawner's trigger queue even while it is stopped).
-        /// </summary>
-        public static void EnterModuleLab()
-        {
-            foreach (var poi in Object.FindObjectsByType<POIManager>(FindObjectsSortMode.None)) poi.enabled = false;
-            foreach (var interaction in Object.FindObjectsByType<V3InteractionController>(FindObjectsSortMode.None)) interaction.enabled = false;
-            foreach (var hotkey in Object.FindObjectsByType<V3BossSummonHotkey>(FindObjectsSortMode.None)) hotkey.enabled = false;
-        }
-
-        public static void TrySecureIfBossDead() => Object.FindFirstObjectByType<POIManager>()?.TrySecureIfBossDead();
-    }
-
     /// <summary>Marks tracking, settlement, telemetry, damage ledger and the death finalize path.</summary>
     [DeletedInPhase(12, "RewardModule")]
     public sealed class LegacyRewardsAdapter
@@ -385,7 +354,7 @@ namespace RoguePirates.V4.Legacy
         }
 
         /// <summary>V3RunBootstrap.OnPlayerDied (solo branch; the PvP branch is kept for parity).</summary>
-        public static void OnPlayerDied(PlayerShipController player)
+        public static void OnPlayerDied(PlayerShipController player, System.Action trySecureIfBossDead)
         {
             LevelSystem.Instance?.CancelPendingLevelUps();
             if (player != null) player.SetMovementEnabled(false);
@@ -397,7 +366,7 @@ namespace RoguePirates.V4.Legacy
                 return;
             }
 
-            LegacyStageAdapter.TrySecureIfBossDead();
+            trySecureIfBossDead?.Invoke();
             ApplyConquestUnlockIfSecured();
             RunManager.Instance.SetState(RunState.PlayerDead);
             RunManager.Instance.FinalizeRunOnDeath();
@@ -453,7 +422,7 @@ namespace RoguePirates.V4.Legacy
                 // SpawnDirectorDebugUI (F9) is not created from M3: it rewrote the legacy spawner's base rate every
                 // frame (register R-71), and the legacy spawner no longer runs ambient spawns.
                 if (V3PlaytestFlags.EnableRunPlaytestHotkeys) WeaponCardAnimationDemo.Ensure();
-                V3BossSummonHotkey.Ensure();
+                // M7: the B-key boss summon is a dev tool (Tuning Console, dev builds only; register R-55).
             }
 
             EnemyIdentityDebugLabels.Ensure();
@@ -468,7 +437,7 @@ namespace RoguePirates.V4.Legacy
         /// interaction prompts, and hiding the placeholder duplicates. The V4 presenters are installed by the
         /// presentation root when the run starts.
         /// </summary>
-        public static Canvas EnsureRunUi(StageLayout layout)
+        public static Canvas EnsureRunUi(StageLayout layout, LegacyStageWiring stage)
         {
             EnsureEventSystem();
             var canvas = FindRunCanvas();
@@ -485,9 +454,9 @@ namespace RoguePirates.V4.Legacy
             V3PlayerInfoHudArtSettings.Reload();
 
             EnsureLevelUpModal(canvas);
-            V3DiscoverySystem.Ensure(layout);
+            stage?.EnsureDiscovery(layout);        // M7: V4 discovery in V3DiscoverySystem's place
             V3ToastHud.Ensure(canvas.transform);
-            V3InteractionController.Ensure(canvas.transform);
+            stage?.EnsureInteraction(canvas.transform); // M7: V4 interaction in V3InteractionController's place
 
             if (HasAuthoredHudCanvas())
             {

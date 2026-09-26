@@ -48,6 +48,7 @@ namespace RoguePirates.V4
         SpawnController _spawn;
         LegacyWeaponWiring _weapons;
         LegacyResultsTelemetry _resultsTelemetry;
+        LegacyStageWiring _stage;
         bool _running;
         bool _ended;
         bool _objectiveSecured;
@@ -96,7 +97,12 @@ namespace RoguePirates.V4
             _shell.Weapons = _weapons;
             _context.Register<RoguePirates.V4.Weapons.IWeaponManager>(_weapons.Manager);
             // M6: the read-only views presentation reads (over the legacy hubs until their modules exist).
-            _context.Register<Views.IRunViews>(LegacyViewFactory.Create(player, _weapons.Manager, RestartRun, GoToMenu));
+            // M7: stage content (chests, landmarks, Beacon, discovery, interaction, boss director) replaces POIManager.
+            _stage = new LegacyStageWiring(_context, _config, runState, damageSink, _spawn, () => _shell.Player, () => _weapons.Manager, usePlaceholderPoiVisuals);
+            _shell.Stage = _stage;
+            var views = LegacyViewFactory.Create(player, _weapons.Manager, RestartRun, GoToMenu);
+            views.Stage = _stage.View;
+            _context.Register<Views.IRunViews>(views);
             _resultsTelemetry = new LegacyResultsTelemetry();
             _feed = new LegacyEventFeed(_events, _clock);
             damageSink.SteadyDamageReported += _feed.OnSteadyDamage;
@@ -147,7 +153,7 @@ namespace RoguePirates.V4
             if (!_running) return;
             _shell.LateTick();
             _feed.AttachLevels();
-            _feed.Poll();
+
             // Legacy producers publish outside V4 ticks (their own Update, or while paused); deliver those with the
             // current tick stamp so readers see them this frame instead of waiting for the next tick.
             if (_events.Pending.Count > 0) _events.EndTick();
@@ -178,6 +184,7 @@ namespace RoguePirates.V4
 
             _feed?.Detach();
             _resultsTelemetry?.Dispose();
+            _stage?.Dispose();
             _weapons?.Dispose();
             _shell?.Unwire();
             _shell?.OnDestroy();

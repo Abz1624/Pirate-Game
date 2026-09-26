@@ -470,7 +470,7 @@ Phases run one at a time. Each one ends with tests, traces and an automated play
 | M4 | Pools | Passed (playtest 27 Sep) | `plan/v4-verification/phase-04-pools/` |
 | M5 | Weapon Manager | Passed (playtest 27 Sep; flamethrower visuals to update later) | `plan/v4-verification/phase-05-weapons/` |
 | M6 | Presentation and CombatEvents | Implemented and reviewed; awaiting playtest | `plan/v4-verification/phase-06-presentation/` |
-| M7 | Landmarks and boss | Not started | `plan/v4-verification/phase-07-boss/` |
+| M7 | Landmarks and boss | Implemented and reviewed; awaiting playtest | `plan/v4-verification/phase-07-boss/` |
 | M8 | Enemy World | Not started | `plan/v4-verification/phase-08-enemy-world/` |
 | M9 | Build and Progression | Not started | `plan/v4-verification/phase-09-build/` |
 | M10 | Difficulty Director, observe | Not started | `plan/v4-verification/phase-10-director/` |

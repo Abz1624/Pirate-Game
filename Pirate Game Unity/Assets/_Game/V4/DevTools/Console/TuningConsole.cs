@@ -60,6 +60,7 @@ namespace RoguePirates.V4.DevTools.Console
                 AddSection(new PoolsSection());
                 AddSection(new WeaponsSection());
                 AddSection(new EventsSection(game));
+                AddSection(new StageSection());
                 if (game.IsModuleLab) AddSection(new ModuleLabSection());
             }
             if (CreationProbe == null) CreationProbe = GetComponent<Diagnostics.SceneObjectCreationProbe>();
@@ -85,6 +86,7 @@ namespace RoguePirates.V4.DevTools.Console
             var toggle = (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
                          || (Gamepad.current != null && Gamepad.current.selectButton.wasPressedThisFrame);
             if (toggle) SetOpen(!_open);
+            if (Game != null) StageSection.PollSummonKey(this);
         }
 
         public void SetOpen(bool open)

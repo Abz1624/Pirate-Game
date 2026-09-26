@@ -34,6 +34,7 @@ namespace RoguePirates.V4.DevTools.Trace
 
         EnemyWorld _world;
         POIManager _poi;
+        RoguePirates.V4.Stage.IStageContent _stage; // M7: V4 stage content (the V3 scene keeps POIManager)
         PlayerShipController _ship;
         TriggerBus _bus;
         bool _started, _ended, _finished;
@@ -103,8 +104,11 @@ namespace RoguePirates.V4.DevTools.Trace
             ScanAgents(t);
             PollProgress(t, run);
 
-            if (!_bossSummoned && t >= _request.bossAtSeconds && !run.IsRunEnded && !run.IsPaused && _poi != null)
-                _poi.TrySummonBoss();
+            if (!_bossSummoned && t >= _request.bossAtSeconds && !run.IsRunEnded && !run.IsPaused)
+            {
+                if (_stage != null) _stage.TrySummonBoss();
+                else if (_poi != null) _poi.TrySummonBoss();
+            }
             if (_bossSummoned && !_bossDefeated && t >= _request.killBossAtSeconds && !run.IsRunEnded && !run.IsPaused)
                 TryKillBoss();
             TrackArena(t, run);
@@ -138,6 +142,8 @@ namespace RoguePirates.V4.DevTools.Trace
             _startFrame = Time.frameCount;
             _world = FindFirstObjectByType<EnemyWorld>();
             _poi = FindFirstObjectByType<POIManager>();
+            var game = FindFirstObjectByType<RoguePirates.V4.V4Game>();
+            if (game != null && game.Context != null) game.Context.TryGet(out _stage);
             _ship = FindFirstObjectByType<PlayerShipController>();
             _bus = TriggerBus.Instance;
             if (_bus != null) { _bus.Kill += OnKill; _bus.ChestOpened += OnChest; }
@@ -236,7 +242,12 @@ namespace RoguePirates.V4.DevTools.Trace
                 _lastLevel = levels.Level;
             }
 
-            if (_poi != null)
+            if (_stage != null)
+            {
+                if (!_bossSummoned && _stage.BossSummoned) { _bossSummoned = true; Add(new JsonLine("boss").Num("t", t).Str("state", "summoned")); }
+                if (!_bossDefeated && _stage.BossDefeated) { _bossDefeated = true; Add(new JsonLine("boss").Num("t", t).Str("state", "defeated")); }
+            }
+            else if (_poi != null)
             {
                 if (!_bossSummoned && _poi.BossSummoned) { _bossSummoned = true; Add(new JsonLine("boss").Num("t", t).Str("state", "summoned")); }
                 if (!_bossDefeated && _poi.BossDefeated) { _bossDefeated = true; Add(new JsonLine("boss").Num("t", t).Str("state", "defeated")); }
@@ -322,13 +333,25 @@ namespace RoguePirates.V4.DevTools.Trace
                 if (++_chestPauseFrames >= _request.pauseResponseFrames)
                 {
                     _chestPauseFrames = 0;
-                    var interaction = V3InteractionController.Instance;
-                    var target = interaction != null ? TargetField?.GetValue(interaction) as POIInteractable : null;
-                    if (target != null)
+                    if (_stage != null)
                     {
-                        DismissedField.SetValue(interaction, target.Index);
-                        EndChestPauseMethod.Invoke(interaction, null);
-                        Add(new JsonLine("chestSkip").Num("t", SimTime).Int("f", Frame).Int("poi", target.Index));
+                        var index = _stage.PromptTarget;
+                        if (index >= 0)
+                        {
+                            _stage.SkipChest();
+                            Add(new JsonLine("chestSkip").Num("t", SimTime).Int("f", Frame).Int("poi", index));
+                        }
+                    }
+                    else
+                    {
+                        var interaction = V3InteractionController.Instance;
+                        var target = interaction != null ? TargetField?.GetValue(interaction) as POIInteractable : null;
+                        if (target != null)
+                        {
+                            DismissedField.SetValue(interaction, target.Index);
+                            EndChestPauseMethod.Invoke(interaction, null);
+                            Add(new JsonLine("chestSkip").Num("t", SimTime).Int("f", Frame).Int("poi", target.Index));
+                        }
                     }
                 }
             }

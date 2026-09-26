@@ -166,7 +166,9 @@ namespace RoguePirates.V4.Config
         [Tooltip("Slots kept free for Beacon and encounter spawns (ambient cap = max - reserved).")] public int reservedEncounterSlots = 8;
         public float globalMinSpawnGapSeconds = 0.35f;
         public float spawnRetryIntervalSeconds = 0.35f;
-        [Tooltip("Stored for the profile hash; the legacy encounter executor (Beacon boss, Powder Cache) hard-codes 10 s until M7.")] [AppliesFrom(7)] public float requiredEncounterTimeoutSeconds = 10f;
+        [Tooltip("A queued encounter (Beacon boss, Powder Cache) fails if it can't spawn within this many seconds.")] public float requiredEncounterTimeoutSeconds = 10f;
+        [Tooltip("V3: the encounter queue waited during miniboss arenas (and could time out). V4 default off (an intended difference since M3); the v3-parity preset turns it on.")]
+        public bool encountersWaitDuringArenas;
         public float bossAmbientRateMultiplier = 0.5f;
         public float eventWarningSeconds = 5f;
         [Tooltip("Stored for the profile hash; the live band length comes from the phase triggers.")] public float ambientBandDurationSeconds = 120f;

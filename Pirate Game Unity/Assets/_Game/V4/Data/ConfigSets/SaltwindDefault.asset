@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ConfigSet
   setId: saltwind-default
   configs:
+  - {fileID: 11400000, guid: 3fc6834b292d7ba4dab59a214a9211d1, type: 2}
   - {fileID: 11400000, guid: 3d5666d1245c29245a3564d6f07c7579, type: 2}
   - {fileID: 11400000, guid: fc5ebf9015a31ff49ad0b0cdf5061800, type: 2}
   - {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
@@ -52,6 +53,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c5a076addd31e714d95fa567048e3a5e, type: 2}
   - {fileID: 11400000, guid: e43da1e265019104c8016b9b6fd5d57d, type: 2}
   - {fileID: 11400000, guid: 6de9f3eb9c2d2c8479a1eb1461a2a0d9, type: 2}
+  - {fileID: 11400000, guid: 17c6c62bedb33764d8fa75a8d7129014, type: 2}
   - {fileID: 11400000, guid: e3e42a10f5a187343b276947848085dc, type: 2}
   - {fileID: 11400000, guid: c1d0a07fb62d55f428f69605d1f544cc, type: 2}
   - {fileID: 11400000, guid: 3786b3c3281c9e447a1b3d7252dbcf57, type: 2}

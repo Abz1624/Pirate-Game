@@ -41,6 +41,11 @@ namespace RoguePirates.V4.Legacy
             "stormOutsideDamagePerSecond",
             // DifficultyCurveConfig
             "overtimeHpMultiplierBase", "overtimeHpMultiplierExponentPerMinute", "overtimeDamageBonusPerMinute",
+            // StageContentConfig (M7)
+            "beaconDirectionHintSeconds", "beaconExactMarkerSeconds", "repairWreckMaxHullFraction", "powderCacheBonusGold",
+            "signalBuoyOccupancySeconds", "salvageChestCount", "disableGoldTriggeredChestSpawn", "disableAutomaticRouteEvents",
+            "explosiveBarrelFuseSeconds", "explosiveBarrelRadius", "explosiveBarrelDamage", "explosiveBarrelCount",
+            "chestBasePrice", "chestPriceGrowth", "chestPriceIncrementBase",
             // Set by the adapter to the per-run schedule clone
             "encounterSchedule",
         };
@@ -49,16 +54,11 @@ namespace RoguePirates.V4.Legacy
         public static readonly Dictionary<string, int> PassThroughProfileFields = new Dictionary<string, int>
         {
             ["profileId"] = 14, ["schemaVersion"] = 14, ["balanceVersion"] = 14, ["enforceCompleteScheduleReferences"] = 14,
-            ["beaconDirectionHintSeconds"] = 7, ["beaconExactMarkerSeconds"] = 7,
             ["ordinaryEnemyGoldChance"] = 12, ["ordinaryEnemyGoldAmount"] = 12, ["specialistEnemyGoldAmount"] = 12, ["scheduledEliteGoldAmount"] = 12,
             ["randomPowerupChancePerKill"] = 9, ["randomPowerupMinIntervalSeconds"] = 9, ["repairSuppliesMaxHullFraction"] = 9,
             ["powderRushAttackSpeedBonus"] = 9, ["powderRushDurationSeconds"] = 9, ["deadCalmSlowFraction"] = 9, ["deadCalmDurationSeconds"] = 9,
-            ["repairWreckMaxHullFraction"] = 7, ["powderCacheBonusGold"] = 7, ["signalBuoyOccupancySeconds"] = 7,
-            ["salvageChestCount"] = 7, ["disableGoldTriggeredChestSpawn"] = 7, ["disableAutomaticRouteEvents"] = 7,
-            ["explosiveBarrelFuseSeconds"] = 7, ["explosiveBarrelRadius"] = 7, ["explosiveBarrelDamage"] = 7, ["explosiveBarrelCount"] = 7,
             ["weaponSlotCap"] = 9, ["logbookSlotCap"] = 9, ["levelUpChoiceCount"] = 9, ["levelZeroToOneXpCost"] = 9,
             ["xpCurveMultiplier"] = 9, ["xpCurveExponent"] = 9, ["newWeaponOfferProtectionLevels"] = 9,
-            ["chestBasePrice"] = 7, ["chestPriceGrowth"] = 7, ["chestPriceIncrementBase"] = 7,
             ["marksPerQualifyingMinute"] = 12, ["marksPerQualifyingMinuteMinKills"] = 12, ["marksPerSpecialPoi"] = 12,
             ["marksPerScheduledElite"] = 12, ["marksBossVictory"] = 12, ["marksPerOvertimeMinute"] = 12, ["marksOvertimeCap"] = 12,
             ["runGoldExpiresAtRunEnd"] = 12, ["bankRunGoldToDoubloons"] = 12,
@@ -68,8 +68,29 @@ namespace RoguePirates.V4.Legacy
         // ---- Profile ------------------------------------------------------------------------------------
 
         /// <summary>Writes the V4-owned fields into a (runtime copy of the) V3 stage profile.</summary>
-        public static void ApplyProfile(WaveTimelineConfig t, DifficultyCurveConfig d, StageBalanceProfile p)
+        /// <summary>M7: the stage profile fields StageContentConfig owns (placement counts, chest prices, landmark values).</summary>
+        public static void ApplyStage(StageContentConfig s, StageBalanceProfile p)
         {
+            p.beaconDirectionHintSeconds = s.beaconDirectionHintSeconds;
+            p.beaconExactMarkerSeconds = s.beaconExactMarkerSeconds;
+            p.repairWreckMaxHullFraction = s.repairWreckMaxHullFraction;
+            p.powderCacheBonusGold = s.powderCacheBonusGold;
+            p.signalBuoyOccupancySeconds = s.signalBuoyChargeSeconds;
+            p.salvageChestCount = s.salvageChestCount;
+            p.disableGoldTriggeredChestSpawn = s.disableGoldTriggeredChestSpawn;
+            p.disableAutomaticRouteEvents = s.disableAutomaticRouteEvents;
+            p.explosiveBarrelFuseSeconds = s.explosiveBarrelFuseSeconds;
+            p.explosiveBarrelRadius = s.explosiveBarrelRadius;
+            p.explosiveBarrelDamage = s.explosiveBarrelDamage;
+            p.explosiveBarrelCount = s.explosiveBarrelCount;
+            p.chestBasePrice = s.chestBasePrice;
+            p.chestPriceGrowth = s.chestPriceGrowth;
+            p.chestPriceIncrementBase = s.chestPriceIncrementBase;
+        }
+
+        public static void ApplyProfile(WaveTimelineConfig t, DifficultyCurveConfig d, StageBalanceProfile p, StageContentConfig stage = null)
+        {
+            if (stage != null) ApplyStage(stage, p);
             p.graceSeconds = t.graceSeconds;
             p.stageDeadlineSeconds = t.stageDeadlineSeconds;
             var storm = t.phases.FirstOrDefault(x => x.isStorm);

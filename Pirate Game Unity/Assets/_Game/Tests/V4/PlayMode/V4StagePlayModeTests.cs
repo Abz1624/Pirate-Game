@@ -1,0 +1,170 @@
+using System.Collections;
+using System.Linq;
+using HighSeas.Balance;
+using HighSeas.Core;
+using HighSeas.Encounters;
+using HighSeas.Enemies;
+using HighSeas.Player;
+using HighSeas.POI;
+using NUnit.Framework;
+using RoguePirates.V4.Stage;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.TestTools;
+
+namespace RoguePirates.V4.Tests
+{
+    /// <summary>M7: chests, landmarks, the Beacon and the Barnacle King run in V4 stage content (POIManager is gone).</summary>
+    [Category("V4")]
+    public sealed class V4StagePlayModeTests
+    {
+        const float Timeout = 30f;
+        V4TestSaveIsolation _isolation;
+
+        [UnitySetUp]
+        public IEnumerator SetUp()
+        {
+            _isolation = new V4TestSaveIsolation();
+            yield return null;
+        }
+
+        [UnityTearDown]
+        public IEnumerator TearDown()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
+            yield return null;
+            StageBalanceProfileContext.ResetForTests();
+            RunMarksTracker.Reset();
+            RunEncounterTracker.ResetForTests();
+            SaltwindRunSettlement.ClearLastResults();
+            _isolation?.Dispose();
+            _isolation = null;
+        }
+
+        static IEnumerator StartRun()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            var deadline = Time.realtimeSinceStartup + Timeout;
+            while (Time.realtimeSinceStartup < deadline)
+            {
+                if (RunManager.Instance != null && RunManager.Instance.State == RunState.Playing && StageBalanceProfileContext.IsActive) yield break;
+                yield return null;
+            }
+            Assert.Fail("V4 run did not reach Playing.");
+        }
+
+        static IStageContent Stage()
+        {
+            Assert.IsTrue(Object.FindFirstObjectByType<V4Game>().Context.TryGet<IStageContent>(out var stage), "stage content registered");
+            return stage;
+        }
+
+        static PlayerShipController Ship()
+        {
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            ship.Damage.SetPlaytestInvulnerable(true);
+            return ship;
+        }
+
+        [UnityTest]
+        public IEnumerator StageContent_ReplacesPOIManager_AndBuildsTheMarkers()
+        {
+            yield return StartRun();
+            var stage = Stage();
+            Assert.IsNull(Object.FindFirstObjectByType<POIManager>(), "POIManager left the scene");
+            Assert.IsEmpty(Object.FindObjectsByType<POIInteractable>(FindObjectsInactive.Include, FindObjectsSortMode.None));
+            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3DiscoverySystem>());
+            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3InteractionController>());
+            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.BarnacleKingBossAttackDirector>());
+            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3BossSummonHotkey>());
+            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3ExplosiveBarrelWorld>(), "no barrels (adopted decision)");
+            Assert.IsFalse(Object.FindFirstObjectByType<EncounterSpawner>().enabled);
+
+            var layout = stage.Module.Layout;
+            Assert.IsNotNull(layout);
+            Assert.AreEqual(0, layout.explosiveBarrelPositions.Count, "the placer placed no barrels");
+            Assert.AreEqual(layout.pois.Count, stage.Module.MarkerOrder.Count, "Saltwind: every marker at the start");
+            var chests = layout.pois.Count(p => p.type == POIType.SalvageChest);
+            Assert.AreEqual(Object.FindFirstObjectByType<V4Game>().Config.Single<RoguePirates.V4.Config.StageContentConfig>().salvageChestCount, chests);
+            Assert.AreEqual(chests, Object.FindObjectsByType<SalvageChestWaterFloat>(FindObjectsSortMode.None).Length, "chests bob on the water, as V3");
+        }
+
+        [UnityTest]
+        public IEnumerator Beacon_SummonsTheBoss_AndTheV4DirectorAttacks()
+        {
+            yield return StartRun();
+            var stage = Stage();
+            var ship = Ship();
+            var beacon = stage.Module.Layout.pois.FindIndex(p => p.type == POIType.BossBeacon);
+            Assert.GreaterOrEqual(beacon, 0);
+            ship.SetWorldPosition(stage.Module.Layout.pois[beacon].position + new Vector3(3f, 0f, 0f));
+            yield return null;
+            stage.Module.TryCompleteInteraction(beacon);
+            var deadline = Time.realtimeSinceStartup + 5f;
+            while (!stage.BossSummoned && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.IsTrue(stage.BossSummoned, "the Beacon telegraph ended in a summon");
+            Assert.AreEqual(RunState.BossFight, RunManager.Instance.State);
+            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            Assert.IsTrue(world.TryFindActiveBoss(out _, out _), "the boss is in the world");
+
+            Assert.IsTrue(Object.FindFirstObjectByType<V4Game>().Context.TryGet<IBossView>(out var boss));
+            var attacks = new System.Collections.Generic.HashSet<RoguePirates.V4.Config.BossAttackKind>();
+            deadline = Time.realtimeSinceStartup + 12f;
+            while (attacks.Count < 2 && Time.realtimeSinceStartup < deadline)
+            {
+                if (boss.CurrentAttack != RoguePirates.V4.Config.BossAttackKind.None) attacks.Add(boss.CurrentAttack);
+                yield return null;
+            }
+            Assert.GreaterOrEqual(attacks.Count, 2, "the director telegraphs its rotation (spread, then shell slam)");
+        }
+
+        [UnityTest]
+        public IEnumerator Chest_PromptPausesTheRun_AndSkipResumes()
+        {
+            yield return StartRun();
+            var stage = Stage();
+            var ship = Ship();
+            RunManager.Instance.AddGold(500);
+            var chest = stage.Module.Layout.pois.FindIndex(p => p.type == POIType.SalvageChest);
+            ship.SetWorldPosition(stage.Module.MarkerPosition(chest) + new Vector3(2f, 0f, 0f));
+            var deadline = Time.realtimeSinceStartup + 3f;
+            while (RunManager.Instance.PauseReason != PauseReason.POIChoice && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.AreEqual(PauseReason.POIChoice, RunManager.Instance.PauseReason, "the chest's Take/Skip choice pauses the run");
+            Assert.AreEqual(chest, stage.PromptTarget);
+            yield return null;
+            var root = Object.FindFirstObjectByType<RoguePirates.V4.Presentation.V4PresentationRoot>();
+            Assert.IsTrue(root.InteractionPrompt.IsVisible);
+            StringAssert.Contains("Take (E)", root.InteractionPrompt.Text);
+            stage.SkipChest();
+            yield return null;
+            Assert.AreEqual(PauseReason.None, RunManager.Instance.PauseReason);
+            Assert.AreEqual(RunState.Playing, RunManager.Instance.State);
+        }
+
+        [UnityTest]
+        public IEnumerator PowderCache_AmbushSpawnsThroughTheV4Executor()
+        {
+            yield return StartRun();
+            var stage = Stage();
+            var ship = Ship();
+            var cache = stage.Module.Layout.pois.FindIndex(p => p.type == POIType.MerchantSkiff);
+            if (cache < 0) Assert.Ignore("no Powder Cache on this seed");
+            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var before = world.ActiveCount;
+            ship.SetWorldPosition(stage.Module.Layout.pois[cache].position + new Vector3(4f, 0f, 0f));
+            var deadline = Time.realtimeSinceStartup + 3f;
+            while (stage.Module.PowderCacheEncounterId == 0 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.Greater(stage.Module.PowderCacheEncounterId, 0, "the ambush started on approach");
+            Assert.IsTrue(stage.Module.IsHidden(cache));
+            deadline = Time.realtimeSinceStartup + 3f;
+            var record = RunEncounterTracker.Get(stage.Module.PowderCacheEncounterId);
+            while ((record == null || record.SpawnedCount < 3) && Time.realtimeSinceStartup < deadline)
+            {
+                yield return null;
+                record = RunEncounterTracker.Get(stage.Module.PowderCacheEncounterId);
+            }
+            Assert.AreEqual(3, record.SpawnedCount, "three ambushers, registered for the kill path");
+            Assert.GreaterOrEqual(world.ActiveCount, before + 3);
+        }
+    }
+}

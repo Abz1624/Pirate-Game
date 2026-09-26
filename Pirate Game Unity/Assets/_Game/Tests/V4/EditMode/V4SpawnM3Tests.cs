@@ -163,8 +163,25 @@ namespace RoguePirates.V4.Tests
             }
         }
 
+        sealed class FakeEncounters : IEncounterTracker
+        {
+            public readonly Dictionary<int, (EncounterState state, int spawned)> Records = new Dictionary<int, (EncounterState, int)>();
+            int _next = 1;
+            public void ResetForRun() { Records.Clear(); _next = 1; }
+            public int Request(EncounterKind kind, int expectedSpawnCount) { Records[_next] = (EncounterState.Requested, 0); return _next++; }
+            public bool Exists(int id) => Records.ContainsKey(id);
+            public EncounterState State(int id) => Records[id].state;
+            public int SpawnedCount(int id) => Records.TryGetValue(id, out var r) ? r.spawned : 0;
+            public bool IsTerminal(int id) => !Records.TryGetValue(id, out var r) || r.state == EncounterState.Completed || r.state == EncounterState.Failed;
+            public void RegisterSpawned(int id, int unitId) { var r = Records[id]; Records[id] = (EncounterState.Spawned, r.spawned + 1); }
+            public void MarkFailed(int id) { var r = Records[id]; Records[id] = (EncounterState.Failed, r.spawned); }
+            public bool TryGetOpenBossEncounter(out int id) { id = 0; return false; }
+            public bool BossObjectiveSecured => false;
+        }
+
         sealed class Harness
         {
+            public FakeEncounters Encounters = new FakeEncounters();
             public ConfigSetRuntime Config;
             public FakeRun Run = new FakeRun();
             public FakeSink Sink;
@@ -203,9 +220,83 @@ namespace RoguePirates.V4.Tests
             context.Register<IStormArena>(h.Storm);
             context.Register<IPlayerDamageSink>(h.Storm);
             context.Register<ISpawnerProfiles>(new FakeProfiles(_created));
+            context.Register<IEncounterTracker>(h.Encounters);
             h.Spawn.Initialize(context);
             h.Spawn.BeginRun(new RunStart(1, false));
             return h;
+        }
+
+        // ---- M7: the encounter queue (V3 EncounterSpawner's trigger queue) ----------------------------------------
+
+        [Test]
+        public void Encounter_Queued_SpawnsOnTheNextPass_IgnoringTheAmbientCap()
+        {
+            var h = Make();
+            using (h.Config)
+            {
+                var spawner = h.Config.Single<StageContentConfig>().powderCacheSpawner;
+                h.Sink.Blockers = h.Timeline.maxActiveEnemies - h.Timeline.reservedEncounterSlots; // ambient cap full
+                h.Run.Elapsed = 100f;
+                var id = h.Encounters.Request(EncounterKind.PowderCache, 3);
+                h.Spawn.Trigger(spawner, 3, id);
+                Assert.AreEqual(0, h.Encounters.SpawnedCount(id), "queued, not spawned yet");
+                h.Frame();
+                Assert.AreEqual(3, h.Encounters.SpawnedCount(id), "encounters use the reserved slots");
+                Assert.IsFalse(h.Spawn.HasPending(id));
+            }
+        }
+
+        [Test]
+        public void Encounter_Immediate_SpawnsNow()
+        {
+            var h = Make();
+            using (h.Config)
+            {
+                h.Run.Elapsed = 250f;
+                var id = h.Encounters.Request(EncounterKind.Boss, 1);
+                Assert.AreEqual(1, h.Spawn.TriggerImmediate(h.Config.Single<StageContentConfig>().bossSpawner, 1, id));
+            }
+        }
+
+        [Test]
+        public void Encounter_AtTheHardCap_RetriesThenFailsAfterTheTimeout()
+        {
+            var h = Make();
+            using (h.Config)
+            {
+                var spawner = h.Config.Single<StageContentConfig>().powderCacheSpawner;
+                h.Sink.Blockers = 500; // even the hard cap is full
+                h.Run.Elapsed = 100f;
+                var id = h.Encounters.Request(EncounterKind.PowderCache, 3);
+                h.Spawn.Trigger(spawner, 3, id);
+                h.RunUntil(109.9f);
+                Assert.AreEqual(EncounterState.Requested, h.Encounters.State(id), "still retrying within 10 s");
+                Assert.IsTrue(h.Spawn.HasPending(id));
+                h.RunUntil(110.2f);
+                Assert.AreEqual(EncounterState.Failed, h.Encounters.State(id), "failed after requiredEncounterTimeoutSeconds");
+                Assert.IsFalse(h.Spawn.HasPending(id));
+            }
+        }
+
+        [Test]
+        public void Encounter_Paused_WaitsAndTerminalEncountersLeaveTheQueue()
+        {
+            var h = Make();
+            using (h.Config)
+            {
+                var spawner = h.Config.Single<StageContentConfig>().powderCacheSpawner;
+                h.Run.Elapsed = 100f;
+                var id = h.Encounters.Request(EncounterKind.PowderCache, 3);
+                h.Spawn.Trigger(spawner, 3, id);
+                h.Run.Paused = true;
+                h.Frame();
+                Assert.AreEqual(0, h.Encounters.SpawnedCount(id), "no pass while paused");
+                h.Encounters.MarkFailed(id);
+                h.Run.Paused = false;
+                h.Frame();
+                Assert.AreEqual(0, h.Encounters.SpawnedCount(id));
+                Assert.IsFalse(h.Spawn.HasPending(id), "a finished encounter is dropped");
+            }
         }
 
         // ---- Semantics -----------------------------------------------------------------------------------------
@@ -598,6 +689,34 @@ namespace RoguePirates.V4.Tests
         }
 
         static void SaltwindCombatEncounterBudgetReset() => HighSeas.Combat.SaltwindCombatEncounterBudget.ResetForRun();
+
+        [Test]
+        public void Encounter_DuringAnArena_SpawnsByDefault_AndWaitsWithTheV3Switch()
+        {
+            foreach (var wait in new[] { false, true })
+            {
+                var h = Make();
+                using (h.Config)
+                {
+                    h.Config.TryApplyEdit("timeline.saltwind", "encountersWaitDuringArenas", wait ? "true" : "false", 0f, out _);
+                    h.RunUntil(151f);
+                    Assert.IsTrue(h.Spawn.ArenaActive);
+                    h.Sink.KillAllExcept(h.Spawn.ArenaFocusUnitId);
+                    var id = h.Encounters.Request(EncounterKind.PowderCache, 3);
+                    h.Spawn.Trigger(h.Config.Single<StageContentConfig>().powderCacheSpawner, 3, id);
+                    h.Frame();
+                    Assert.AreEqual(wait ? 0 : 3, h.Encounters.SpawnedCount(id), wait ? "V3: the queue waits during the arena" : "V4 default: arenas never block encounters");
+                    if (wait)
+                    {
+                        h.RunUntil(151f + h.Timeline.requiredEncounterTimeoutSeconds + 1f);
+                        Assert.AreEqual(EncounterState.Requested, h.Encounters.State(id), "V3 checked the deadline only on a queue pass");
+                        h.Sink.Kill(h.Spawn.ArenaFocusUnitId);
+                        h.Frame();
+                        Assert.AreEqual(EncounterState.Failed, h.Encounters.State(id), "past the deadline once the arena ends, as in V3");
+                    }
+                }
+            }
+        }
 
         [Test]
         public void Overtime_IsNotHeldBackByAnArena()

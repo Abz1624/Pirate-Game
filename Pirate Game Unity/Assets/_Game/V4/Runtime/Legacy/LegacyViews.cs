@@ -166,55 +166,6 @@ namespace RoguePirates.V4.Legacy
         public int ItemStacks(int index) => Items.GetStackCount(ItemId(index));
     }
 
-    [DeletedInPhase(7, "StageContentModule and BeaconDiscovery")]
-    public sealed class LegacyStageView : IStageView
-    {
-        CachedLookup<POIManager> _poi;
-        StageLayout _lastLayout;
-        int _layoutVersion;
-
-        static StageLayout Layout => V3RunContext.Layout;
-        static V3DiscoverySystem Discovery => V3DiscoverySystem.Instance;
-
-        public bool Exists => Layout != null;
-
-        public int LayoutVersion
-        {
-            get
-            {
-                if (!ReferenceEquals(Layout, _lastLayout)) { _lastLayout = Layout; _layoutVersion++; }
-                return _layoutVersion;
-            }
-        }
-
-        public int PoiCount => Layout?.pois != null ? Layout.pois.Count : 0;
-
-        public PoiMarker Poi(int index)
-        {
-            var slot = Layout.pois[index];
-            return new PoiMarker { type = slot.type, position = slot.position, used = slot.used };
-        }
-
-        public bool HasDiscovery => Discovery != null;
-        public BeaconReveal Beacon => Discovery != null ? (BeaconReveal)(int)Discovery.BeaconState : BeaconReveal.Hidden;
-        public Vector3? BeaconPosition => Discovery != null ? Discovery.GetBeaconPosition() : null;
-        public bool IsPoiVisible(int index) => Discovery != null && Discovery.IsPoiVisible(index);
-        public bool IsCellExplored(Vector3 world) => Discovery != null && Discovery.IsCellExplored(world);
-        public int ExplorationRevision => Discovery != null ? Discovery.ExplorationRevision : 0;
-        public float ExploreCellSize => V3DiscoverySystem.ExploreCellSize;
-        public float DiscoveryRadius => V3DiscoverySystem.DiscoveryRadius;
-
-        public bool BossSummoned
-        {
-            get { var poi = _poi.Get(); return poi != null && poi.BossSummoned; }
-        }
-
-        public bool BossDefeated
-        {
-            get { var poi = _poi.Get(); return poi != null && poi.BossDefeated; }
-        }
-    }
-
     [DeletedInPhase(8, "The V4 Enemy World")]
     public sealed class LegacyEnemyView : IEnemyView
     {
@@ -406,7 +357,6 @@ namespace RoguePirates.V4.Legacy
                 Captain = new LegacyCaptainView(),
                 Progression = new LegacyProgressionView(),
                 Loadout = new LegacyLoadoutView(weapons),
-                Stage = new LegacyStageView(),
                 Enemies = new LegacyEnemyView(),
                 Results = new LegacyResultsView(),
                 WeaponAim = weapons != null ? new WeaponAimView(weapons.Combat) : null,

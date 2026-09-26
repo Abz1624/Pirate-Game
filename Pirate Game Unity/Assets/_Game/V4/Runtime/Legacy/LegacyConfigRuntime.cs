@@ -38,6 +38,7 @@ namespace RoguePirates.V4.Legacy
 
         WaveTimelineConfig Timeline => _config.Single<WaveTimelineConfig>();
         DifficultyCurveConfig Difficulty => _config.Single<DifficultyCurveConfig>();
+        StageContentConfig Stage => _config.Single<StageContentConfig>();
 
         public LegacyConfigRuntime(ConfigSetRuntime config, StageBalanceProfile baseProfile)
         {
@@ -84,7 +85,7 @@ namespace RoguePirates.V4.Legacy
 
             RuntimeProfile = Track(Object.Instantiate(_baseProfile));
             RuntimeProfile.name = _baseProfile.name;
-            LegacyConfigMapping.ApplyProfile(Timeline, Difficulty, RuntimeProfile);
+            LegacyConfigMapping.ApplyProfile(Timeline, Difficulty, RuntimeProfile, Stage);
             RuntimeProfile.encounterSchedule = RuntimeSchedule;
 
             _config.ConfigChanged += OnConfigChanged;
@@ -157,7 +158,12 @@ namespace RoguePirates.V4.Legacy
                     LegacyConfigMapping.ApplySchedule(Timeline, RuntimeSchedule, ProfileFor, atRunStart: false);
                     // The kept encounter executor reads grace and max-active from its own copy (boss/cache caps).
                     LegacyConfigMapping.ApplySchedule(Timeline, EncounterOnlySchedule, ProfileFor, atRunStart: false);
-                    LegacyConfigMapping.ApplyProfile(Timeline, Difficulty, RuntimeProfile);
+                    LegacyConfigMapping.ApplyProfile(Timeline, Difficulty, RuntimeProfile, Stage);
+                    ProfileChanged?.Invoke();
+                    break;
+                case StageContentConfig stage:
+                    // Chest prices and landmark values reach the rebuilt profile export; placement counts apply next run.
+                    LegacyConfigMapping.ApplyStage(stage, RuntimeProfile);
                     ProfileChanged?.Invoke();
                     break;
             }

@@ -265,6 +265,59 @@ namespace RoguePirates.V4.Editor
             }
         }
 
+        /// <summary>
+        /// M7: POIManager leaves the run scenes. A stage LegacyUpdateSlot takes its file ID (so the V4 stage manager tick
+        /// runs where POIManager.Update ran), then POIManager is removed. EncounterSpawner is switched off: the V4 encounter
+        /// executor runs the Beacon boss and Powder Cache, and V3's Dead Calm still writes its rate multiplier to it
+        /// (register D4) until M9.
+        /// </summary>
+        public static string ApplyM7()
+        {
+            var log = new List<string>();
+            foreach (var path in new[] { V4SceneNames.SaltwindRunPath, V4SceneNames.ModuleLabPath })
+            {
+                Edit(path, log, () =>
+                {
+                    var systems = GameObject.Find("Systems");
+                    if (systems == null) { log.Add("  no /Systems"); return; }
+                    if (!systems.GetComponents<Legacy.LegacyUpdateSlot>().Any(s => s.role == Legacy.LegacyStageWiring.StageRole))
+                    {
+                        systems.AddComponent<Legacy.LegacyUpdateSlot>().role = Legacy.LegacyStageWiring.StageRole;
+                        log.Add("  stage LegacyUpdateSlot added");
+                    }
+                    var spawner = systems.GetComponent<HighSeas.Enemies.EncounterSpawner>();
+                    if (spawner != null && spawner.enabled) { spawner.enabled = false; log.Add("  EncounterSpawner switched off (Dead Calm sink)"); }
+                });
+                SwapSlotIntoComponentId<HighSeas.POI.POIManager>(path, Legacy.LegacyStageWiring.StageRole, log);
+                Edit(path, log, () => RemoveAll<HighSeas.POI.POIManager>(log));
+            }
+            return string.Join("\n", log);
+        }
+
+        /// <summary>Gives the slot with <paramref name="role"/> the file ID of the <typeparamref name="T"/> on /Systems (T moves to a free ID).</summary>
+        static void SwapSlotIntoComponentId<T>(string path, string role, List<string> log) where T : Component
+        {
+            EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+            var systems = GameObject.Find("Systems");
+            var target = systems != null ? systems.GetComponent<T>() : null;
+            var slot = systems != null ? systems.GetComponents<Legacy.LegacyUpdateSlot>().FirstOrDefault(s => s.role == role) : null;
+            if (target == null || slot == null) { log.Add($"  {path}: {typeof(T).Name} or {role} slot missing (already swapped?)"); return; }
+            long Id(Object o) => (long)GlobalObjectId.GetGlobalObjectIdSlow(o).targetObjectId;
+            var slotId = Id(slot);
+            var targetId = Id(target);
+            var file = Path.Combine(Path.GetDirectoryName(Application.dataPath), path);
+            var text = File.ReadAllText(file);
+            long free = -1;
+            for (var id = targetId + 1000; id < targetId + 100000; id++)
+                if (!Regex.IsMatch(text, $@"(&|fileID: ){id}\b")) { free = id; break; }
+            if (free < 0) { log.Add($"  {path}: no free file ID"); return; }
+            text = Regex.Replace(text, $@"(&|fileID: ){targetId}\b", m => m.Groups[1].Value + free);
+            text = Regex.Replace(text, $@"(&|fileID: ){slotId}\b", m => m.Groups[1].Value + targetId);
+            File.WriteAllText(file, text);
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            log.Add($"  {path}: {typeof(T).Name} {targetId} -> {free}, {role} slot {slotId} -> {targetId}");
+        }
+
         const long WeaponControllerSceneId = 658786988;
 
         static void SwapWeaponSlotIntoRecordId(string path, List<string> log)

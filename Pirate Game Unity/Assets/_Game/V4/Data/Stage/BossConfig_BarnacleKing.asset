@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1c74e39658fb3a46b1b739a14df22de, type: 3}
+  m_Name: BossConfig_BarnacleKing
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.BossConfig
+  configId: boss.barnacle_king
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  phase2Threshold: 0.65
+  phase3Threshold: 0.3
+  enrageThreshold: 0.3
+  phase1Rotation: 01000000040000000100000003000000
+  phase2Rotation: 01000000030000000200000004000000
+  phase3Rotation: 02000000010000000300000004000000
+  startRecoverySeconds: 0.5
+  enragedRecoveryScale: 0.75
+  enragedRecoveryAppliesToShellSlam: 0
+  spread:
+    telegraphSeconds: 1.2
+    executeSeconds: 0.25
+    recoverySeconds: 2
+    shotCount: 5
+    spreadDegrees: 12
+    damageMultiplier: 0.55
+    projectileSpeed: 14
+    projectileLifeSeconds: 2.4
+    projectileHitRadius: 0.55
+    projectileVisualRadius: 0.45
+    muzzleForwardOffset: 1.4
+    muzzleHeight: 0.6
+    toastText: "Barnacle King \u2014 spread incoming"
+  charge:
+    telegraphSeconds: 1.5
+    executeSeconds: 0.4
+    recoverySeconds: 2
+    speedMultiplier: 2.6
+    finalPhaseSecondCharge: 1
+    toastText: "Barnacle King \u2014 charge incoming"
+  bombard:
+    telegraphSeconds: 1.5
+    executeSeconds: 0.35
+    recoverySeconds: 2.5
+    radius: 5.5
+    damageMultiplier: 1.15
+  slam:
+    telegraphSeconds: 1.2
+    executeSeconds: 0.25
+    recoverySeconds: 2
+    radius: 5
+    damageMultiplier: 1.35
+    toastText: "Barnacle King \u2014 shell slam"
+  toastIntervalSeconds: 1.2
+  toastDurationSeconds: 1.1
+  telegraphColor: {r: 1, g: 0.35, b: 0.1, a: 0.55}
+  telegraphHeight: 0.08
+  telegraphThickness: 0.12
