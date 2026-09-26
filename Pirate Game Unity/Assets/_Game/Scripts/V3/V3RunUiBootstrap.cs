@@ -21,11 +21,6 @@ namespace HighSeas.V3
 
             EnsureLevelSystem();
 
-            var hud = canvas.GetComponent<RunHud>();
-            if (hud == null)
-                hud = canvas.gameObject.AddComponent<RunHud>();
-            hud.RebuildUiLayout();
-            hud.ForceRefresh();
             V3PlayerInfoHudArtSettings.Reload();
 
             EnsureLevelUpModal(canvas);
@@ -51,9 +46,6 @@ namespace HighSeas.V3
                 HideAuthoredPlaceholderDuplicates(canvas);
             }
 
-            HideLegacyRunHudPanels(canvas);
-            HideLegacyWeaponStrip(canvas);
-
             return canvas;
         }
 
@@ -76,24 +68,6 @@ namespace HighSeas.V3
                 if (go.name.StartsWith("PLACEHOLDER_"))
                     go.SetActive(false);
             }
-        }
-
-        static void HideLegacyRunHudPanels(Canvas canvas)
-        {
-            var root = canvas.transform.Find($"{RunHudUiFactory.RootName}");
-            if (root == null)
-                return;
-
-            var left = root.Find("LeftHudPanel");
-            if (left != null)
-                left.gameObject.SetActive(false);
-        }
-
-        static void HideLegacyWeaponStrip(Canvas canvas)
-        {
-            var strips = canvas.GetComponentsInChildren<WeaponLevelStripHud>(true);
-            for (var i = 0; i < strips.Length; i++)
-                strips[i].gameObject.SetActive(false);
         }
 
         static void EnsureEventSystem()
