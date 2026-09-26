@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7f9335aa87c5734da94c8425c3eccb2, type: 3}
+  m_Name: treasure_raider
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyVariantConfig
+  configId: variant.treasure_raider
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  variantId: treasure_raider
+  kind: 0
+  baseArchetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
+  displayName: treasure raider
+  behavior:
+    enabled: 1
+    value: 8
+  threatCost:
+    enabled: 1
+    value: 4
+  baseHP:
+    enabled: 1
+    value: 16
+  moveSpeed:
+    enabled: 1
+    value: 6.5
+  baseDamage:
+    enabled: 0
+    value: 0
+  tags:
+  - specialist
+  inheritBaseVisual: 1
+  concurrencyTags: []
+  combat:
+    registered: 1
+    archetype: 19
+    movementPattern: 9
+    attackPattern: 1
+    preferredRange: 14
+    attackRange: 12
+    attackWindUp: 0.8
+    attackCooldown: 2
+    projectileCount: 1
+    spreadDegrees: 0
+    projectileSpeed: 9
+    chargeWindUp: 1
+    chargeDuration: 0.65
+    chargeCooldown: 2
+    chargeSpeedMult: 2.5
+    contactDamageEnabled: 1
+    eliteHammerheadSecondCharge: 0
+    eliteKrakenSequentialTraps: 0

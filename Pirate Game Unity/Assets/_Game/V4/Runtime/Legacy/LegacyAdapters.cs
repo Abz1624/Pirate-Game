@@ -316,6 +316,17 @@ namespace RoguePirates.V4.Legacy
 
         public static void EnsureStormEdgeDamage(PlayerShipController ship) => V3StormEdgeDamage.Ensure(ship);
 
+        /// <summary>
+        /// Module Lab: POIs, hold-to-interact and the B-key summon are off, so chests, the powder-cache ambush and the
+        /// Beacon boss cannot spawn anything (a boss summon runs the spawner's trigger queue even while it is stopped).
+        /// </summary>
+        public static void EnterModuleLab()
+        {
+            foreach (var poi in Object.FindObjectsByType<POIManager>(FindObjectsSortMode.None)) poi.enabled = false;
+            foreach (var interaction in Object.FindObjectsByType<V3InteractionController>(FindObjectsSortMode.None)) interaction.enabled = false;
+            foreach (var hotkey in Object.FindObjectsByType<V3BossSummonHotkey>(FindObjectsSortMode.None)) hotkey.enabled = false;
+        }
+
         public static void TrySecureIfBossDead() => Object.FindFirstObjectByType<POIManager>()?.TrySecureIfBossDead();
     }
 

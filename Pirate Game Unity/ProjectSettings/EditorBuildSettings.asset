@@ -58,7 +58,7 @@ EditorBuildSettings:
     guid: 9fe04d79a2fb42e47aa59172c6199af4
   - enabled: 1
     path: Assets/_Game/Scenes/V4/V4ModuleLab.unity
-    guid: 452f1d47bee2e614986c464dcdad8ea7
+    guid: 368199673d20d7345a94b3b17b3ec999
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

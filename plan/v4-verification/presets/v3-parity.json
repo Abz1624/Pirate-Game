@@ -13,6 +13,86 @@
                     "value": "0.6"
                 }
             ]
+        },
+        {
+            "configId": "variant.bomb_ketch",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inheritBaseVisual",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "variant.needle_sloop",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inheritBaseVisual",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "variant.net_cutter",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inheritBaseVisual",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "variant.powder_barge",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inheritBaseVisual",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "variant.ram_raider",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inheritBaseVisual",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "variant.repair_tender",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inheritBaseVisual",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "variant.shield_frigate",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inheritBaseVisual",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "variant.treasure_raider",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inheritBaseVisual",
+                    "value": "false"
+                }
+            ]
         }
     ]
 }

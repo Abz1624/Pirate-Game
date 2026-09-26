@@ -45,6 +45,7 @@ namespace RoguePirates.V4.DevTools.Console
             {
                 AddSection(new RunSection());
                 AddSection(new ConfigSection());
+                if (game.IsModuleLab) AddSection(new ModuleLabSection());
             }
         }
 

@@ -462,8 +462,8 @@ Phases run one at a time. Each one ends with tests, traces and an automated play
 | Phase | Module | Status | Evidence |
 |---|---|---|---|
 | M0 | Composition root | Passed (feel: playtested 2026-09-26) | `plan/v4-verification/phase-00-composition/` |
-| M1 | Config assets | Implemented, awaiting playtest | `plan/v4-verification/phase-01-config/` |
-| M2 | Archetypes and spawners | Not started | `plan/v4-verification/phase-02-archetypes/` |
+| M1 | Config assets | Implemented and reviewed; playtest later (with M2 and M3) | `plan/v4-verification/phase-01-config/` |
+| M2 | Archetypes and spawners | Implemented and reviewed; playtest later (with M1 and M3) | `plan/v4-verification/phase-02-archetypes/` |
 | M3 | Wave Timeline and Spawn Controller | Not started | `plan/v4-verification/phase-03-timeline/` |
 | M4 | Pools | Not started | `plan/v4-verification/phase-04-pools/` |
 | M5 | Weapon Manager | Not started | `plan/v4-verification/phase-05-weapons/` |

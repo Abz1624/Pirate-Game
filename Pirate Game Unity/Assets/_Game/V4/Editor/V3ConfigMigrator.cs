@@ -63,6 +63,48 @@ namespace RoguePirates.V4.Editor
                 all.Add(a);
             }
 
+            // M2: drowned_pursuer/harrier exist only in V3's fallback database (not in the live one, register R-05).
+            var fallback = FallbackEnemies();
+            foreach (var def in fallback.Where(e => LegacyConfigMapping.FallbackOnlyEnemies.Contains(e.id)))
+            {
+                var a = GetOrCreate<EnemyArchetypeConfig>($"{DataRoot}/Enemies/{def.id}.asset", overwrite, log, out var write);
+                if (write) { FillArchetype(a, def); a.inLegacyDatabase = false; EditorUtility.SetDirty(a); }
+                archetypes[def.id] = a;
+                all.Add(a);
+            }
+            foreach (var def in fallback) Object.DestroyImmediate(def);
+
+            // M2: specialist aliases (database variants) and registry elites.
+            var variants = new Dictionary<string, EnemyVariantConfig>();
+            foreach (var alias in db.enemies.Where(e => e != null && !originalEnemyIds.Contains(e.id)))
+            {
+                LegacyConfigMapping.SpecialistTemplates.TryGetValue(alias.id, out var template);
+                if (template == null || !archetypes.TryGetValue(template, out var baseArchetype)) { log.AppendLine("no template for " + alias.id); continue; }
+                var v = GetOrCreate<EnemyVariantConfig>($"{DataRoot}/Variants/{alias.id}.asset", overwrite, log, out var write);
+                if (write) FillAliasVariant(v, alias, baseArchetype);
+                variants[alias.id] = v;
+                all.Add(v);
+            }
+            foreach (var (eliteId, baseId) in LegacyConfigMapping.RegistryElites)
+            {
+                if (!EnemyCombatProfileRegistry.TryGet(eliteId, out var eliteProfile) || !archetypes.TryGetValue(baseId, out var baseArchetype)) continue;
+                var v = GetOrCreate<EnemyVariantConfig>($"{DataRoot}/Variants/{eliteId}.asset", overwrite, log, out var write);
+                if (write)
+                {
+                    v.configId = "variant." + eliteId;
+                    v.variantId = eliteId;
+                    v.kind = VariantKind.RegistryElite;
+                    v.baseArchetype = baseArchetype;
+                    v.displayName = "Elite " + baseArchetype.displayName;
+                    v.combat = new ArchetypeCombat();
+                    LegacyConfigMapping.CopyFields(eliteProfile, v.combat);
+                    v.combat.registered = true;
+                    EditorUtility.SetDirty(v);
+                }
+                variants[eliteId] = v;
+                all.Add(v);
+            }
+
             // Spawners: every profile the schedule references.
             var spawners = new Dictionary<SpawnProfile, EnemySpawnerConfig>();
             foreach (var p in ScheduleProfiles(schedule))
@@ -98,6 +140,13 @@ namespace RoguePirates.V4.Editor
                 EditorUtility.SetDirty(timeline);
                 EditorUtility.SetDirty(difficulty);
             }
+            // Link pool entries to archetypes/variants created since the timeline was generated (idempotent; values untouched).
+            foreach (var entry in timeline.phases.SelectMany(p => p.pools).SelectMany(p => p.entries))
+            {
+                if (entry.archetype == null && archetypes.TryGetValue(entry.enemyId, out var archetype)) entry.archetype = archetype;
+                if (entry.archetype == null && entry.variant == null && variants.TryGetValue(entry.enemyId, out var variant)) entry.variant = variant;
+            }
+            EditorUtility.SetDirty(timeline);
             all.Add(timeline);
             all.Add(difficulty);
 
@@ -136,8 +185,8 @@ namespace RoguePirates.V4.Editor
 
         // ---- Sources ------------------------------------------------------------------------------------
 
-        /// <summary>Reloads the database and its definitions from disk, dropping in-memory catalog edits (R-73).</summary>
-        static GameDatabase LoadCleanDatabase()
+        /// <summary>Reloads the database and its definitions from disk, dropping in-memory catalog edits (R-73). Tests use it too: a play session leaves the loaded database catalog-mutated.</summary>
+        public static GameDatabase LoadCleanDatabase()
         {
             var db = GameDatabaseLoader.Load();
             // Unloading an asset does not re-resolve loaded objects that reference it, so unload the referrers too
@@ -299,6 +348,34 @@ namespace RoguePirates.V4.Editor
                 a.combat.registered = true;
             }
             EditorUtility.SetDirty(a);
+        }
+
+        /// <summary>V3's fallback enemy list (GameDatabaseLoader.CreateEnemies), for enemies only it defines.</summary>
+        static EnemyDefinition[] FallbackEnemies() =>
+            (EnemyDefinition[])typeof(GameDatabaseLoader).GetMethod("CreateEnemies", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
+
+        static void FillAliasVariant(EnemyVariantConfig v, EnemyDefinition alias, EnemyArchetypeConfig baseArchetype)
+        {
+            v.configId = "variant." + alias.id;
+            v.variantId = alias.id;
+            v.kind = VariantKind.DatabaseAlias;
+            v.baseArchetype = baseArchetype;
+            v.displayName = alias.displayName;
+            v.behavior = new BehaviorOverride { enabled = true, value = (ConfigEnums.EnemyBehavior)(int)alias.behavior };
+            v.threatCost = new IntOverride { enabled = true, value = alias.threatCost };
+            v.baseHP = new FloatOverride { enabled = true, value = alias.baseHP };
+            v.moveSpeed = new FloatOverride { enabled = true, value = alias.moveSpeed };
+            v.baseDamage = new FloatOverride();
+            v.tags = alias.tags != null ? (string[])alias.tags.Clone() : Array.Empty<string>();
+            v.inheritBaseVisual = true; // R-13 decision: template model as a stand-in until specialists get their own models (V3: none)
+            v.concurrencyTags = LegacyConfigMapping.LegacyConcurrencyTags.TryGetValue(alias.id, out var tags) ? (string[])tags.Clone() : Array.Empty<string>();
+            v.combat = new ArchetypeCombat();
+            if (EnemyCombatProfileRegistry.TryGet(alias.id, out var profile))
+            {
+                LegacyConfigMapping.CopyFields(profile, v.combat);
+                v.combat.registered = true;
+            }
+            EditorUtility.SetDirty(v);
         }
 
         static void FillWeapon(WeaponConfig c, WeaponDefinition w, bool runtimeCatalogWeapon)

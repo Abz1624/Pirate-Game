@@ -31,6 +31,8 @@ namespace RoguePirates.V4
         [SerializeField] ConfigSet configSet;
         [Tooltip("V3 stage profile the per-run profile starts from; fields V4 does not own yet pass through.")]
         [SerializeField] StageBalanceProfile legacyBaseProfile;
+        [Tooltip("Module Lab scene: invulnerable ship, no ambient spawns or beats; enemies are spawned from the console.")]
+        [SerializeField] bool moduleLab;
 
         /// <summary>Raised once per run after it starts; DevTools hooks the Tuning Console here (event, not state).</summary>
         public static event Action<V4Game> RunStarted;
@@ -52,6 +54,7 @@ namespace RoguePirates.V4
         public CombatEvents Events => _events;
         public LegacyRunShell Shell => _shell;
         public bool IsRunning => _running;
+        public bool IsModuleLab => moduleLab;
 
         void Awake()
         {
@@ -78,6 +81,7 @@ namespace RoguePirates.V4
             if (!_shell.Start(seed, request.retry)) return;
 
             _feed.Attach(_shell.Player);
+            if (moduleLab) _shell.EnterModuleLab();
             _modules.BeginRunAll(new RunStart(seed, request.retry));
             _running = true;
             RunStarted?.Invoke(this);
@@ -166,14 +170,18 @@ namespace RoguePirates.V4
         {
             LegacyRunShell.NotifyRetryStarting();
             RunRequest.MarkRetry();
-            SceneManager.LoadScene(V4SceneNames.SaltwindRun);
+            SceneManager.LoadScene(CurrentRunScene());
         }
 
         public static void RestartRunWithSeed(int seed)
         {
             RunRequest.RequestSeed(seed);
-            SceneManager.LoadScene(V4SceneNames.SaltwindRun);
+            SceneManager.LoadScene(CurrentRunScene());
         }
+
+        /// <summary>Restarts reload the run scene they came from (the Module Lab stays the lab).</summary>
+        static string CurrentRunScene() =>
+            SceneManager.GetActiveScene().name == V4SceneNames.ModuleLab ? V4SceneNames.ModuleLab : V4SceneNames.SaltwindRun;
 
         public static void GoToMenu() => SceneManager.LoadScene(V4SceneNames.MainMenu);
     }

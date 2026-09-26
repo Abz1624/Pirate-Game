@@ -6,6 +6,7 @@
         "RoguePirates.V4.Config",
         "RoguePirates.V4.Presentation",
         "RoguePirates.V4.DevTools",
+        "RoguePirates.V4.Editor",
         "HighSeas.Runtime",
         "RoguePirates.Simulation",
         "UnityEngine.TestRunner",

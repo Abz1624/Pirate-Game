@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fdb197a18a247446b348e17d89532f5, type: 3}
+  m_Name: drowned_harrier
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyArchetypeConfig
+  configId: enemy.drowned_harrier
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  enemyId: drowned_harrier
+  displayName: drowned harrier
+  category: 0
+  tier: 0
+  behavior: 3
+  biomeTag: emerald
+  stats:
+    baseHP: 70
+    baseDamage: 18
+    moveSpeed: 4
+    radius: 1.2
+    threatCost: 3
+    attackCooldown: 2.6
+    preferredRange: 11
+  rewards:
+    xpValue: 4
+    goldValue: 1
+  visual:
+    visualPrefab: {fileID: 0}
+    visualScale: 1
+    visualYawOffset: 0
+    visualHeightOffset: 0
+    placeholderColor: {r: 0.75, g: 0.45, b: 0.2, a: 1}
+  tags: []
+  concurrencyTags: []
+  isBoss: 0
+  isMiniboss: 0
+  inLegacyDatabase: 0
+  combat:
+    registered: 1
+    archetype: 25
+    movementPattern: 5
+    attackPattern: 3
+    preferredRange: 16
+    attackRange: 18
+    attackWindUp: 1
+    attackCooldown: 2.5
+    projectileCount: 2
+    spreadDegrees: 0
+    projectileSpeed: 0
+    chargeWindUp: 0
+    chargeDuration: 0
+    chargeCooldown: 0
+    chargeSpeedMult: 0
+    contactDamageEnabled: 0
+    eliteHammerheadSecondCharge: 0
+    eliteKrakenSequentialTraps: 0

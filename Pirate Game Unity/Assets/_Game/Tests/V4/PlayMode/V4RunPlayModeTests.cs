@@ -180,6 +180,54 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
+        public IEnumerator EnemyWorld_UsesTheConfigBuiltRuntimeDatabase()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var game = Object.FindFirstObjectByType<V4Game>();
+            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            Assert.AreSame(game.Shell.RuntimeDatabase.Database.enemies, world.Definitions, "the enemy world must use the runtime database");
+            var shark = world.Definitions.First(d => d != null && d.id == "shark");
+            Assert.AreEqual(HideFlags.DontSave, shark.hideFlags & HideFlags.DontSave, "definitions are per-run copies, not assets");
+            Assert.IsTrue(game.Config.TryApplyEdit("enemy.shark", "stats.moveSpeed", "9", 1f, out var error), error);
+            Assert.AreEqual(9f, shark.moveSpeed, "archetype edits reach the definition new spawns read");
+
+            var schedule = game.Shell.LegacyConfig.RuntimeSchedule;
+            foreach (var profile in new[] { schedule.bossSummon, schedule.powderCacheAmbush, schedule.hammerheadBeat, schedule.drownedPursuer }
+                         .Concat(schedule.entries.Select(e => e.profile)).Where(p => p != null && p.enemy != null))
+                Assert.AreSame(game.Shell.RuntimeDatabase.Database.GetEnemy(profile.enemy.id), profile.enemy,
+                    $"{profile.name}: every spawn path reads the per-run copy");
+        }
+
+        [UnityTest]
+        public IEnumerator ModuleLab_SpawnsOnlyOnRequest()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.ModuleLab, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var game = Object.FindFirstObjectByType<V4Game>();
+            Assert.IsTrue(game.IsModuleLab);
+            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var start = Time.realtimeSinceStartup;
+            while (RunManager.Instance.ElapsedSeconds < 6f && Time.realtimeSinceStartup - start < 20f) yield return null;
+            Assert.AreEqual(0, world.ActiveCount, "no ambient spawns in the lab");
+            Assert.IsFalse(Object.FindFirstObjectByType<EncounterSpawner>().enabled, "spawner stopped: no ambient spawns or queued encounters");
+            Assert.IsFalse(Object.FindFirstObjectByType<POIManager>().enabled, "POIs off: no powder-cache ambush or chests");
+            var interaction = Object.FindFirstObjectByType<HighSeas.V3.V3InteractionController>();
+            Assert.IsTrue(interaction == null || !interaction.enabled, "no hold-to-interact: the Beacon cannot summon the boss");
+
+            var index = System.Array.FindIndex(world.Definitions, d => d != null && d.id == "needle_sloop");
+            Assert.GreaterOrEqual(index, 0, "specialist variants are in the runtime database");
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            Assert.GreaterOrEqual(world.Spawn(index, ship.Position + Vector3.forward * 14f), 0);
+            Assert.AreEqual(1, world.ActiveCount);
+            var variant = game.Config.Get<RoguePirates.V4.Config.EnemyVariantConfig>("variant.needle_sloop");
+            Assert.AreEqual(variant.baseHP.value, world.Definitions[index].baseHP);
+            Assert.IsTrue(ship.Damage.IsAlive);
+            ship.Damage.TakeDamage(99999f, Vector3.zero, false);
+            Assert.IsTrue(ship.Damage.IsAlive, "the lab ship is invulnerable");
+        }
+
+        [UnityTest]
         public IEnumerator Run_BossKill_ThenDeath_SettlesOnce()
         {
             RunRequest.RequestSeed(101);

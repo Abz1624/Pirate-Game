@@ -1,0 +1,62 @@
+{
+  "status": "completed",
+  "duration": 19.38,
+  "summary": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.BootFlow_ReachesMenu_ThenRunPlays",
+      "Status": "Passed",
+      "Duration": 6.2606335,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.EnemyWorld_UsesTheConfigBuiltRuntimeDatabase",
+      "Status": "Passed",
+      "Duration": 1.1869369,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.LiveConfigEdits_ReachTheLegacyRun",
+      "Status": "Passed",
+      "Duration": 1.1318199,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.ModuleLab_SpawnsOnlyOnRequest",
+      "Status": "Passed",
+      "Duration": 7.1582238,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Preset_RequestedBeforeTheRun_AppliesFromTheStart",
+      "Status": "Passed",
+      "Duration": 1.1393397,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Run_BossKill_ThenDeath_SettlesOnce",
+      "Status": "Passed",
+      "Duration": 1.2081972,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.SceneReload_ClearsStaleMinibossArena",
+      "Status": "Passed",
+      "Duration": 1.0455527,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

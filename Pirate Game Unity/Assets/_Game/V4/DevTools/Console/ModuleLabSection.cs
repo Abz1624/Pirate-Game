@@ -1,0 +1,96 @@
+using System.Collections.Generic;
+using System.Linq;
+using HighSeas.Core;
+using HighSeas.Enemies;
+using HighSeas.Player;
+using RoguePirates.V4.Config;
+using RoguePirates.V4.Enemies;
+using UnityEngine;
+
+namespace RoguePirates.V4.DevTools.Console
+{
+    /// <summary>
+    /// Module Lab (M2): spawn any archetype or variant ahead of the ship, clear all enemies, and inspect the resolved
+    /// values with the layer that set each one. Shown only in the V4ModuleLab scene.
+    /// </summary>
+    public sealed class ModuleLabSection : IConsoleSection
+    {
+        public string Title => "Module Lab";
+        public string SearchText => "lab spawn enemy archetype variant inspector";
+
+        string _selected;
+        float _distance = 14f;
+        EnemyWorld _world;
+        PlayerShipController _ship;
+
+        public void Draw(TuningConsole console)
+        {
+            var game = console.Game;
+            if (game == null || !game.IsModuleLab) { GUILayout.Label("Open the V4ModuleLab scene to spawn enemies on demand."); return; }
+            var config = game.Config;
+            if (_world == null) _world = Object.FindFirstObjectByType<EnemyWorld>();
+            if (_ship == null) _ship = Object.FindFirstObjectByType<PlayerShipController>();
+            var world = _world;
+            var ship = _ship;
+            if (config == null || world == null || ship == null) { GUILayout.Label("Run not ready."); return; }
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"Enemies alive: {world.ActiveCount}", GUILayout.Width(130));
+            GUILayout.Label("Distance", GUILayout.Width(56));
+            _distance = GUILayout.HorizontalSlider(_distance, 6f, 30f, GUILayout.Width(90));
+            GUILayout.Label($"{_distance:0} m", GUILayout.Width(40));
+            if (GUILayout.Button("Clear all")) world.DespawnAllActive();
+            GUILayout.EndHorizontal();
+
+            // Elite rows spawn the base enemy with the Rich affix, which uses the base enemy's combat profile (V3 never
+            // reads the elite profiles, R-03), so the inspector shows the base resolution. Spawns go through
+            // EnemyWorld.Spawn without a spawn profile: no encounter overrides or profile-driven initial timers.
+            var rows = config.All<EnemyArchetypeConfig>().Where(a => a.inLegacyDatabase)
+                .Select(a => (id: a.enemyId, label: a.enemyId, spawnId: a.enemyId, elite: false, stats: (System.Func<ResolvedEnemyStats>)(() => EnemyStatResolver.Resolve(a))))
+                .Concat(config.All<EnemyVariantConfig>().Where(v => v.baseArchetype != null).Select(v => v.kind == VariantKind.RegistryElite
+                    ? (id: v.variantId, label: v.variantId + " (elite, base profile)", spawnId: v.baseArchetype.enemyId, elite: true,
+                        stats: (System.Func<ResolvedEnemyStats>)(() => EnemyStatResolver.Resolve(v.baseArchetype)))
+                    : (id: v.variantId, label: v.variantId + " (variant)", spawnId: v.variantId, elite: false,
+                        stats: (System.Func<ResolvedEnemyStats>)(() => EnemyStatResolver.Resolve(v)))))
+                .OrderBy(r => r.label).ToList();
+
+            foreach (var row in rows)
+            {
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button(row.label, _selected == row.id ? GUI.skin.box : GUI.skin.label, GUILayout.Width(210))) _selected = row.id;
+                if (GUILayout.Button("Spawn", GUILayout.Width(60))) Spawn(world, ship, row.spawnId, row.elite);
+                GUILayout.EndHorizontal();
+                if (_selected == row.id) DrawInspector(row.stats());
+            }
+        }
+
+        void Spawn(EnemyWorld world, PlayerShipController ship, string enemyId, bool elite)
+        {
+            var defs = world.Definitions;
+            var index = System.Array.FindIndex(defs, d => d != null && d.id == enemyId);
+            if (index < 0) { Debug.LogWarning($"Module Lab: {enemyId} is not in the run database"); return; }
+            var forward = ship.MovementForward.sqrMagnitude > 0.01f ? ship.MovementForward.normalized : Vector3.forward;
+            var position = ship.Position + forward * _distance;
+            world.Spawn(index, position, elite ? EliteAffix.Rich : EliteAffix.None);
+        }
+
+        static void DrawInspector(ResolvedEnemyStats r)
+        {
+            void Row(string name, object value)
+            {
+                var layer = r.Provenance.TryGetValue(name, out var l) ? l.ToString() : "-";
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(20);
+                GUILayout.Label(name, GUILayout.Width(120));
+                GUILayout.Label(value?.ToString() ?? "none", GUILayout.Width(120));
+                GUILayout.Label(layer);
+                GUILayout.EndHorizontal();
+            }
+            Row("behavior", r.behavior); Row("baseHP", r.baseHP); Row("baseDamage", r.baseDamage); Row("moveSpeed", r.moveSpeed);
+            Row("radius", r.radius); Row("threatCost", r.threatCost); Row("xpValue", r.xpValue); Row("goldValue", r.goldValue);
+            Row("preferredRange", r.preferredRange); Row("attackCooldown", r.attackCooldown); Row("tier", r.tier);
+            Row("visualPrefab", r.visualPrefab != null ? r.visualPrefab.name : "none (placeholder)");
+            Row("combat", r.combat != null && r.combat.registered ? r.combat.archetype.ToString() : "not registered");
+        }
+    }
+}

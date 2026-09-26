@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HighSeas.Balance;
+using HighSeas.Data;
 using HighSeas.Enemies;
 using RoguePirates.V4.Config;
 using UnityEngine;
@@ -80,6 +81,21 @@ namespace RoguePirates.V4.Legacy
             return true;
         }
 
+        /// <summary>
+        /// Points every runtime spawn profile at the per-run enemy copy with the same id (M2), so every spawn path
+        /// (beats, encounters, overtime, boss, route events) reads config values, not only the ambient pick.
+        /// </summary>
+        public void RetargetEnemies(GameDatabase runDatabase)
+        {
+            if (runDatabase == null) return;
+            foreach (var clone in _clones.Values)
+            {
+                if (clone == null || clone.enemy == null) continue;
+                var copy = runDatabase.GetEnemy(clone.enemy.id);
+                if (copy != null) clone.enemy = copy;
+            }
+        }
+
         SpawnProfile ProfileFor(EnemySpawnerConfig spawner) =>
             spawner != null && _cloneBySpawnerId.TryGetValue(spawner.configId, out var clone) ? clone : null;
 
@@ -120,7 +136,7 @@ namespace RoguePirates.V4.Legacy
         public void Dispose()
         {
             if (_config != null) _config.ConfigChanged -= OnConfigChanged;
-            foreach (var o in _created) if (o != null) Object.Destroy(o);
+            foreach (var o in _created) if (o != null) { if (Application.isPlaying) Object.Destroy(o); else Object.DestroyImmediate(o); }
             _created.Clear();
         }
     }

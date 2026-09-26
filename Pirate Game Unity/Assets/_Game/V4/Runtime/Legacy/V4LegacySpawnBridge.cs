@@ -66,6 +66,18 @@ namespace RoguePirates.V4.Legacy
             return true;
         }
 
+        /// <summary>
+        /// Module Lab: the encounter spawner stops entirely (ambient schedule and trigger queue, so no powder-cache or boss
+        /// encounters), and beats, route events and overtime are off.
+        /// </summary>
+        public void EnterModuleLab()
+        {
+            Object.FindFirstObjectByType<EncounterSpawner>()?.EnterManualPlaytestMode();
+            foreach (var beats in Object.FindObjectsByType<V3PressureBeatDirector>(FindObjectsSortMode.None)) beats.enabled = false;
+            foreach (var route in Object.FindObjectsByType<V3RouteEventDirector>(FindObjectsSortMode.None)) route.enabled = false;
+            foreach (var overtime in Object.FindObjectsByType<V3OvertimeDirector>(FindObjectsSortMode.None)) overtime.enabled = false;
+        }
+
         static void ConfigureEncounterSpawner(CombatExperimentProfile profile)
         {
             var spawner = Object.FindFirstObjectByType<EncounterSpawner>();

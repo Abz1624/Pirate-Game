@@ -1,0 +1,79 @@
+﻿[begin] ERROR: unity : Error: ❌ Command 'eval_file' failed:
+At C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v4-verification\tools\playable-check-m2.ps1:17 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: ❌ Command 'eval_file' failed::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error:    Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+Error: Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+[lab-start] ERROR: unity : Error: ❌ Command 'eval_file' failed:
+At C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v4-verification\tools\playable-check-m2.ps1:17 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: ❌ Command 'eval_file' failed::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error:    Cannot connect to Unity Editor Pipeline server at 127.0.0.1:7800. Make sure Unity Editor is running with the 
+Pipeline package installed.
+Error: Cannot connect to Unity Editor Pipeline server at 127.0.0.1:7800. Make sure Unity Editor is running with the 
+Pipeline package installed.
+[lab-start] ERROR: unity : Error: ❌ Command 'eval_file' failed:
+At C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v4-verification\tools\playable-check-m2.ps1:17 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: ❌ Command 'eval_file' failed::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error:    Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+Error: Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+[lab-start] ERROR: unity : Error: ❌ Command 'eval_file' failed:
+At C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v4-verification\tools\playable-check-m2.ps1:17 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: ❌ Command 'eval_file' failed::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error:    Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+Error: Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+[lab-start] ERROR: unity : Error: ❌ Command 'eval_file' failed:
+At C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v4-verification\tools\playable-check-m2.ps1:17 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: ❌ Command 'eval_file' failed::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error:    Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+Error: Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+[lab-start] ERROR: unity : Error: ❌ Command 'eval_file' failed:
+At C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v4-verification\tools\playable-check-m2.ps1:17 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: ❌ Command 'eval_file' failed::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error:    Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+Error: Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+[lab-start] ERROR: unity : Error: ❌ Command 'eval_file' failed:
+At C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v4-verification\tools\playable-check-m2.ps1:17 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: ❌ Command 'eval_file' failed::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error:    Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+Error: Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+[lab-start] WAIT
+[lab-start] WAIT
+[lab-start] WAIT
+[lab-start] WAIT
+[lab-start] OK lab=True t=8.0 alive=0 spawner=False poi=False interaction=False
+[spawn-all] spawned 21: swordfish,boarding_barge,bomb_boat,cannonboat,cutthroat_skiff,deckhand_dinghy,gunner_cog,hammerhead,kraken_spawn,manta_ray,rammer_raft,reef_crab_miniboss,shark,needle_sloop,ram_raider,bomb_ketch,net_cutter,repair_tender,powder_barge,shield_frigate,treasure_raider; alive=21
+[shot] 01-all-enemies.png
+[elite-row] elite_hammerhead row: alive 20 -> 21, elite agents=1
+[inspector] Module Lab section open, needle_sloop selected
+[shot] 02-lab-inspector.png
+[live-variant-edit] ram_raider baseHP 22 -> 60 (new spawns use it)
+[retry] Retry requested
+[retry-scene] OK scene=V4ModuleLab lab=True
+[console] errors returned=6

@@ -48,18 +48,20 @@ namespace RoguePirates.V4.Config
     {
         [Tooltip("Enemy id used by legacy code, saves and telemetry.")] [ConfigIdentity] public string enemyId;
         public string displayName;
-        [AppliesFrom(2)] public ConfigEnums.EnemyCategory category = ConfigEnums.EnemyCategory.Creature;
-        [AppliesFrom(2)] public ConfigEnums.EnemyTier tier = ConfigEnums.EnemyTier.Soldier;
-        [AppliesFrom(2)] public ConfigEnums.EnemyBehavior behavior = ConfigEnums.EnemyBehavior.DirectChaser;
-        [AppliesFrom(2)] public string biomeTag = "emerald";
-        [AppliesFrom(2)] public ArchetypeStats stats = new ArchetypeStats();
-        [AppliesFrom(2)] public ArchetypeRewards rewards = new ArchetypeRewards();
-        [AppliesFrom(2)] public ArchetypeVisual visual = new ArchetypeVisual();
-        [AppliesFrom(2)] public string[] tags = Array.Empty<string>();
+        public ConfigEnums.EnemyCategory category = ConfigEnums.EnemyCategory.Creature;
+        public ConfigEnums.EnemyTier tier = ConfigEnums.EnemyTier.Soldier;
+        public ConfigEnums.EnemyBehavior behavior = ConfigEnums.EnemyBehavior.DirectChaser;
+        public string biomeTag = "emerald";
+        public ArchetypeStats stats = new ArchetypeStats();
+        public ArchetypeRewards rewards = new ArchetypeRewards();
+        public ArchetypeVisual visual = new ArchetypeVisual();
+        public string[] tags = Array.Empty<string>();
         [Tooltip("Concurrency tags used by timeline tag caps (ranged_gunner, area_denial, charge_windup).")]
         [AppliesFrom(3, "V3 composition caps check enemy ids")] public string[] concurrencyTags = Array.Empty<string>();
-        [AppliesFrom(2)] public bool isBoss, isMiniboss;
-        [AppliesFrom(2, "copied into the registry profile; hard-coded EnemyWorld behaviors from M8")] public ArchetypeCombat combat = new ArchetypeCombat();
+        public bool isBoss, isMiniboss;
+        [Tooltip("Off for enemies V3's database does not contain (drowned_pursuer/harrier exist only in the fallback database; V3 overtime spawns shark/cannonboat stats, register R-05).")]
+        [AppliesFrom(0, "structural")] public bool inLegacyDatabase = true;
+        [Tooltip("Copied into the legacy combat-profile registry at run start and on edits; reaches newly spawned enemies. Behaviors hard-coded in EnemyWorld move to data in M8.")] public ArchetypeCombat combat = new ArchetypeCombat();
 
         public override void Validate(ConfigValidationReport report)
         {

@@ -1,0 +1,24 @@
+M2 traces, final (Windows player rebuilt from the working tree, same harness as M1). Goldens: phase-01-config/player/v3-* (V3), phase-01-config/player/v4-*-a (M1 V4 baseline); M2 runs in phase-02-archetypes/player.
+Default runs include the R-13 decision (specialists use their template's model; the v3-parity preset keeps V3's cubes).
+--- V4 (v3-parity preset) vs V3 goldens
+v3-trace-seed-101-a.jsonl vs v4-trace-seed-101-parity.jsonl: MATCH (437 lines)
+v3-trace-seed-202-a.jsonl vs v4-trace-seed-202-parity.jsonl: MATCH (409 lines)
+v3-trace-seed-303-a.jsonl vs v4-trace-seed-303-parity.jsonl: MATCH (523 lines)
+--- V4 replay
+v4-trace-seed-101-parity.jsonl vs v4-trace-seed-101-parity-b.jsonl: MATCH (437 lines)
+--- V4 default vs M1 V4 baseline
+v4-trace-seed-101-a.jsonl vs v4-trace-seed-101-a.jsonl: DIFF (611 lines)
+    line 227: {"type":"kill","t":204.8441,"uid":111,"enemy":"swordfish","elite":false,"boss":false,"weapon":"swivel_guns"}
+        vs {"type":"kill","t":204.8608,"uid":111,"enemy":"swordfish","elite":false,"boss":false,"weapon":"swivel_guns"}
+    length 611 vs 507
+v4-trace-seed-202-a.jsonl vs v4-trace-seed-202-a.jsonl: DIFF (548 lines)
+    line 121: {"type":"kill","t":123.9953,"uid":53,"enemy":"swordfish","elite":false,"boss":false,"weapon":"swivel_guns"}
+        vs {"type":"kill","t":124.012,"uid":53,"enemy":"swordfish","elite":false,"boss":false,"weapon":"swivel_guns"}
+    length 548 vs 434
+v4-trace-seed-303-a.jsonl vs v4-trace-seed-303-a.jsonl: DIFF (533 lines)
+    line 157: {"type":"kill","t":144.8921,"uid":79,"enemy":"needle_sloop","elite":false,"boss":false,"weapon":"swivel_guns"}
+        vs {"type":"kill","t":144.9087,"uid":79,"enemy":"needle_sloop","elite":false,"boss":false,"weapon":"swivel_guns"}
+    length 533 vs 559
+
+
+Default vs M1: spawns, stats, hitboxes and placement are unchanged (the stand-in model keeps the V3 scale and has no colliders, R-81); the runs first differ by one frame in a kill time (seeds 101 / 202 / 303: 3:24 / 2:04 / 2:25), after specialists with models have been on screen. The V3 simulation reads view state in places (R-74 family); the exact path from model to kill timing is not identified. These default runs are the M2 V4 baseline for M3.

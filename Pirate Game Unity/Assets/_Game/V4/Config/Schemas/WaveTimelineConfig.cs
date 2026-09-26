@@ -42,6 +42,7 @@ namespace RoguePirates.V4.Config
     {
         [Tooltip("Legacy enemy id; specialist variants get archetype assets in M2.")] public string enemyId = string.Empty;
         public EnemyArchetypeConfig archetype;
+        [Tooltip("Set for specialist variants (database aliases).")] public EnemyVariantConfig variant;
         public float weight = 1f;
     }
 

@@ -27,13 +27,18 @@ namespace RoguePirates.V4.Legacy
         readonly V4LegacySpawnBridge _spawnBridge = new V4LegacySpawnBridge();
         readonly LegacyWorldAdapter _world;
         readonly LegacyConfigRuntime _legacyConfig;
+        readonly V4RuntimeDatabase _runtimeDatabase;
+        readonly LegacyCombatProfileOverride _combatOverride;
+        GameDatabase _runDatabase;
         PlayerShipController _player;
         StageLayout _layout;
         bool _wired;
 
         public PlayerShipController Player => _player;
         public StageLayout Layout => _layout;
-        public GameDatabase Database => _database.Database;
+        /// <summary>The database the run uses: the M2 runtime database once built, else the loaded one.</summary>
+        public GameDatabase Database => _runDatabase != null ? _runDatabase : _database.Database;
+        public V4RuntimeDatabase RuntimeDatabase => _runtimeDatabase;
         public V4LegacyBridge Bridge => _bridge;
         public int Seed { get; private set; }
 
@@ -44,6 +49,8 @@ namespace RoguePirates.V4.Legacy
             ConfigSetRuntime config, StageBalanceProfile legacyBaseProfile)
         {
             _legacyConfig = new LegacyConfigRuntime(config, legacyBaseProfile);
+            _runtimeDatabase = new V4RuntimeDatabase(config);
+            _combatOverride = new LegacyCombatProfileOverride(config);
             _host = host;
             _player = player;
             _usePlaceholderPoiVisuals = usePlaceholderPoiVisuals;
@@ -138,6 +145,12 @@ namespace RoguePirates.V4.Legacy
 
             var experiment = CombatExperimentContext.Active;
             _database.ApplyCatalogs(experiment);
+            // M2: enemies come from V4 archetype/variant configs, in the exact legacy array layout.
+            _runDatabase = _runtimeDatabase.Build(_database.Database);
+            if (_runtimeDatabase.Unconfigured.Count > 0)
+                Debug.LogWarning("V4Game: enemies without V4 config (kept from V3): " + string.Join(", ", _runtimeDatabase.Unconfigured));
+            _legacyConfig.RetargetEnemies(_runDatabase); // every spawn profile reads the per-run copies
+            _combatOverride.ApplyAll();
             LegacyRewardsAdapter.ResetLedgers();
             LegacyRewardsAdapter.CreateTelemetry(experiment);
             RunManager.Instance.BeginRun(seed);
@@ -151,9 +164,9 @@ namespace RoguePirates.V4.Legacy
             var multiShipConfig = Object.FindFirstObjectByType<V3MultiShipSceneConfig>();
             var isPvPScene = multiShipConfig != null && multiShipConfig.SessionKind == V3RunSessionKind.PvP;
 
-            LegacyStageAdapter.InitializePoi(_layout, _database.Database, _usePlaceholderPoiVisuals, isPvPScene);
+            LegacyStageAdapter.InitializePoi(_layout, _runDatabase, _usePlaceholderPoiVisuals, isPvPScene);
 
-            var enemyWorld = LegacyEnemyWorldPort.ResetAndDefine(_database.Database);
+            var enemyWorld = LegacyEnemyWorldPort.ResetAndDefine(_runDatabase);
 
             if (_player == null) _player = Object.FindFirstObjectByType<PlayerShipController>();
             if (_player != null && _layout != null)
@@ -169,8 +182,8 @@ namespace RoguePirates.V4.Legacy
             var startingWeapon = LegacyBuildAdapter.ResolveStartingWeapon(captainProfile);
             LegacyBuildAdapter.ApplyStageBalanceProgression();
 
-            _bridge.SetUpWeapons(_player, experiment, _database.Database, startingWeapon);
-            LegacyBuildAdapter.PrepareLevelSystem(_database.Database, experiment, startingWeapon);
+            _bridge.SetUpWeapons(_player, experiment, _runDatabase, startingWeapon);
+            LegacyBuildAdapter.PrepareLevelSystem(_runDatabase, experiment, startingWeapon);
             _bridge.SyncLevelSystemLoadout();
             LegacyBuildAdapter.EnsureItemSystems();
 
@@ -202,12 +215,23 @@ namespace RoguePirates.V4.Legacy
             if (!isPvPScene) LegacyPresentationAdapter.ShowStartToasts(!isRetry, seed);
 
             if (multiShipConfig != null && multiShipConfig.SessionKind != V3RunSessionKind.SinglePlayer)
-                V3MultiShipRunSetup.ApplyAfterRunStart(multiShipConfig.SessionKind, _player, _database.Database,
+                V3MultiShipRunSetup.ApplyAfterRunStart(multiShipConfig.SessionKind, _player, _runDatabase,
                     startingWeapon, multiShipConfig.ShipSpacing);
 
             var seedLabel = !isRetry && V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
             Debug.Log($"V4Game: run seed={seed} ({seedLabel}), POI rng={seed + 404}.");
             return true;
+        }
+
+        /// <summary>
+        /// Module Lab mode (M2): invulnerable ship; the encounter spawner, spawn directors and POIs (chests, powder cache
+        /// ambush, Beacon boss) are off, so enemies appear only when requested from the console.
+        /// </summary>
+        public void EnterModuleLab()
+        {
+            _spawnBridge.EnterModuleLab();
+            LegacyStageAdapter.EnterModuleLab();
+            if (_player != null) _player.Damage.SetPlaytestInvulnerable(true);
         }
 
         /// <summary>V3RunBootstrap.Update.</summary>
@@ -235,6 +259,8 @@ namespace RoguePirates.V4.Legacy
         {
             _profile.EndIfActive();
             _legacyConfig.Dispose();
+            _combatOverride.Dispose(); // restore V3's shared combat-profile registry
+            _runtimeDatabase.Dispose();
         }
 
         /// <summary>V3RunBootstrap.OnApplicationPause: capture a suspend snapshot (never loaded by V3 either).</summary>

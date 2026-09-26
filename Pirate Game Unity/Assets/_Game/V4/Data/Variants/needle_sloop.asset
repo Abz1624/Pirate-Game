@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7f9335aa87c5734da94c8425c3eccb2, type: 3}
+  m_Name: needle_sloop
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyVariantConfig
+  configId: variant.needle_sloop
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  variantId: needle_sloop
+  kind: 0
+  baseArchetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+  displayName: needle sloop
+  behavior:
+    enabled: 1
+    value: 1
+  threatCost:
+    enabled: 1
+    value: 2
+  baseHP:
+    enabled: 1
+    value: 14
+  moveSpeed:
+    enabled: 1
+    value: 5.5
+  baseDamage:
+    enabled: 0
+    value: 0
+  tags:
+  - specialist
+  inheritBaseVisual: 1
+  concurrencyTags: []
+  combat:
+    registered: 1
+    archetype: 8
+    movementPattern: 5
+    attackPattern: 2
+    preferredRange: 18
+    attackRange: 20
+    attackWindUp: 1
+    attackCooldown: 2.5
+    projectileCount: 1
+    spreadDegrees: 0
+    projectileSpeed: 9
+    chargeWindUp: 1
+    chargeDuration: 0.65
+    chargeCooldown: 2
+    chargeSpeedMult: 2.5
+    contactDamageEnabled: 0
+    eliteHammerheadSecondCharge: 0
+    eliteKrakenSequentialTraps: 0

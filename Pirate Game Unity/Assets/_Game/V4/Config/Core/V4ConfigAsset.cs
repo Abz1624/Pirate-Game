@@ -18,6 +18,12 @@ namespace RoguePirates.V4.Config
         /// <summary>Adds rule violations for this asset. Called by <see cref="ConfigValidator"/>.</summary>
         public virtual void Validate(ConfigValidationReport report) { }
 
+        /// <summary>
+        /// When a field edit takes effect, for values that depend on the asset's content (checked before [AppliesFrom]):
+        /// the phase, 0 for "restart", null to use the field attributes.
+        /// </summary>
+        public virtual int? AppliesFromFor(string path) => null;
+
         /// <summary>Content hash of the current field values (canonical JSON, SHA-256).</summary>
         public string ComputeHash() => CanonicalConfigWriter.Hash(this);
     }

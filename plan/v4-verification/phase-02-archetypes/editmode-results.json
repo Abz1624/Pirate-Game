@@ -1,0 +1,405 @@
+{
+  "status": "completed",
+  "duration": 1.53,
+  "summary": {
+    "total": 56,
+    "passed": 56,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.CombatEventsTests.EndTick_DeliversBatchInPublishOrder",
+      "Status": "Passed",
+      "Duration": 0.0900598,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.CombatEventsTests.EndTick_StartsAFreshBatch",
+      "Status": "Passed",
+      "Duration": 0.0009284,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.CombatEventsTests.PublishingFromAReader_Throws",
+      "Status": "Passed",
+      "Duration": 0.0391134,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.Context_ResolvesInterfaceContracts_Only",
+      "Status": "Passed",
+      "Duration": 0.0341353,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.DuplicateIds_AreRejected",
+      "Status": "Passed",
+      "Duration": 0.0012202,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.RegisteringDuringATick_IsRejected",
+      "Status": "Passed",
+      "Duration": 0.0011287,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.Ticks_RunInTickOrder_TiesKeepRegistrationOrder",
+      "Status": "Passed",
+      "Duration": 0.0008175,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.RunClockTests.Advance_CapsStepsPerFrame_AndDropsBacklog",
+      "Status": "Passed",
+      "Duration": 0.0003824,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.RunClockTests.Advance_YieldsWholeTicks_AndCarriesRemainder",
+      "Status": "Passed",
+      "Duration": 0.0001143,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.RunClockTests.NextTick_CountsTicksAndSimTime",
+      "Status": "Passed",
+      "Duration": 0.001834,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.RunClockTests.Pause_IsASet_ClearingOneReasonKeepsTheOther",
+      "Status": "Passed",
+      "Duration": 0.0004975,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Exact_IgnoresHeaderAndFrameNumbers",
+      "Status": "Passed",
+      "Duration": 0.0033369,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Exact_RejectsTracesWithDifferentKeyHeaderFields",
+      "Status": "Passed",
+      "Duration": 0.0007118,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Exact_ReportsTheFirstDifferentLine",
+      "Status": "Passed",
+      "Duration": 0.0001922,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Parity_AcceptsSmallMinuteDrift_RejectsLargeOne",
+      "Status": "Passed",
+      "Duration": 0.0119124,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Parity_ChecksEventTimes",
+      "Status": "Passed",
+      "Duration": 0.000411,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Edits_RejectEnumNumbersThatNameNoMember",
+      "Status": "Passed",
+      "Duration": 0.0573923,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Hash_IsStable_AndChangesWithAnyValue",
+      "Status": "Passed",
+      "Duration": 0.006705,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Preset_FromOlderSchemaWithoutMigration_IsRejected",
+      "Status": "Passed",
+      "Duration": 0.008428,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Preset_RoundTrip_ReproducesTheEditedSet",
+      "Status": "Passed",
+      "Duration": 0.0120386,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.ResetConfig_RestoresListLengths_AndPresetsApplyOnDefaults",
+      "Status": "Passed",
+      "Duration": 0.0033633,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Runtime_EditsCopies_LogsChanges_AndResets",
+      "Status": "Passed",
+      "Duration": 0.0027131,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Runtime_RemapsReferencesToTheCopies",
+      "Status": "Passed",
+      "Duration": 0.001949,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.SetHash_IgnoresOrder_ButNotValues",
+      "Status": "Passed",
+      "Duration": 0.001263,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Validator_ReportsIds_References_AndConfigRules",
+      "Status": "Passed",
+      "Duration": 0.0075486,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Validator_StatIdHelper_RejectsIdsOutsideTheStatTable",
+      "Status": "Passed",
+      "Duration": 0.0012588,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Archetypes_CombatRewardsAndVisuals_MatchV3",
+      "Status": "Passed",
+      "Duration": 0.2679284,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Archetypes_MatchTheCatalogAppliedV3Definitions",
+      "Status": "Passed",
+      "Duration": 0.0593232,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.ConfigEnums_MirrorTheV3Enums",
+      "Status": "Passed",
+      "Duration": 0.0026239,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.DifficultyDefaults_ReproduceTheV3Formulas",
+      "Status": "Passed",
+      "Duration": 0.0012796,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.EditingABandRate_ChangesOnlyThatBandsInterval",
+      "Status": "Passed",
+      "Duration": 0.0154511,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.EveryConfigField_HasAConsoleRenderer",
+      "Status": "Passed",
+      "Duration": 0.0028362,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.EveryStageProfileField_IsOwnedOrPassThrough",
+      "Status": "Passed",
+      "Duration": 0.0010227,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.MirrorCopies_LeaveNoFieldUnmatched",
+      "Status": "Passed",
+      "Duration": 0.0007528,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.RuntimeProfile_FromDefaults_EqualsTheV3Asset",
+      "Status": "Passed",
+      "Duration": 0.0185065,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.RuntimeSchedule_FromDefaults_EqualsTheV3Schedule",
+      "Status": "Passed",
+      "Duration": 0.0097615,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.RuntimeSpawnProfiles_FromDefaults_EqualTheV3Assets",
+      "Status": "Passed",
+      "Duration": 0.0059296,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.SaltwindSet_IsValid_AndPresetRoundTrips",
+      "Status": "Passed",
+      "Duration": 0.0972749,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.TimelinePools_AndReefCrabTime_MatchTheV3Tables",
+      "Status": "Passed",
+      "Duration": 0.0036647,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Validator_RemainingTimelineRules",
+      "Status": "Passed",
+      "Duration": 0.0010957,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Validator_SpawnerWeaponDifficultyRules",
+      "Status": "Passed",
+      "Duration": 0.0021999,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Validator_TimelineRules",
+      "Status": "Passed",
+      "Duration": 0.0007846,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Weapons_EveryMirroredField_MatchesTheCatalogAppliedV3Definition",
+      "Status": "Passed",
+      "Duration": 0.0152329,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.CombatBlocks_EqualTheRegistry_ForArchetypesVariantsAndElites",
+      "Status": "Passed",
+      "Duration": 0.0055188,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.CombatOverride_WritesConfigValues_AndRestoresTheRegistry",
+      "Status": "Passed",
+      "Duration": 0.0229889,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.ConfigAlone_ReproducesEveryV3Enemy_OnAFreshDefinition",
+      "Status": "Passed",
+      "Duration": 0.0387664,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.EditingAnArchetype_RewritesItsDefinitionAndItsAliases",
+      "Status": "Passed",
+      "Duration": 0.051503,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.FallbackOnlyArchetypes_EqualV3FallbackDefinitions",
+      "Status": "Passed",
+      "Duration": 0.0042643,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.NoV4CodeOutsideLegacy_UsesContentIds",
+      "Status": "Passed",
+      "Duration": 0.0356772,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.Resolver_RecordsWhichLayerSetEachValue",
+      "Status": "Passed",
+      "Duration": 0.0009154,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.RuntimeDatabase_ReproducesTheCatalogAppliedV3Enemies_SlotForSlot",
+      "Status": "Passed",
+      "Duration": 0.0363776,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.SpecialistAliases_UseTheirTemplateModel_ByDefault",
+      "Status": "Passed",
+      "Duration": 0.0276721,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StructureTests.AssemblyReferences_FollowTheLayering",
+      "Status": "Passed",
+      "Duration": 0.0045973,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StructureTests.DevTools_IsCompiledOnlyInEditorAndDevelopmentBuilds",
+      "Status": "Passed",
+      "Duration": 0.0003572,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StructureTests.NoAdapter_OutlivesItsDeletionPhase",
+      "Status": "Passed",
+      "Duration": 0.0022615,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StructureTests.OnlyTheBridge_ReferencesLegacySpawnerAndWeaponController",
+      "Status": "Passed",
+      "Duration": 0.0229698,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

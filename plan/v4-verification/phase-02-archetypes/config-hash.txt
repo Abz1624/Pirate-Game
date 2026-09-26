@@ -1,0 +1,4 @@
+# SaltwindDefault V4 config set hash (M2: 52 configs, adds 10 variants and 2 drowned archetypes; from the trace header v4SetHash)
+c2c4e4a94459b82ceceefe218a3fd6e5ab3fc4cde0511c49ae653ac4be4bc359
+# V3 stage profile export hash (trace header configHash, Windows player) at default config: same as the M1 player V4 baseline (band 0 = 0.5, R-01):
+b61d469c318037b49a75c183d0547b54847c355b9167118bf4ad0a7b4321de5c

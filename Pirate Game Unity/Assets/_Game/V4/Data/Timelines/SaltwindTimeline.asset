@@ -56,9 +56,11 @@ MonoBehaviour:
       entries:
       - enemyId: swordfish
         archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: deckhand_dinghy
         archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
+        variant: {fileID: 0}
         weight: 1
     - poolId: specialist
       share: 0
@@ -94,24 +96,30 @@ MonoBehaviour:
       entries:
       - enemyId: swordfish
         archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: deckhand_dinghy
         archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: cutthroat_skiff
         archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: hammerhead
         archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+        variant: {fileID: 0}
         weight: 1
     - poolId: specialist
       share: 0.19999999
       entries:
       - enemyId: needle_sloop
         archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: c5abd483c1ea57a4eaf55da4f5bd7eea, type: 2}
         weight: 1
       - enemyId: ram_raider
         archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: aef9357337bb23d4eac5fbd17599df5f, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -144,30 +152,38 @@ MonoBehaviour:
       entries:
       - enemyId: cutthroat_skiff
         archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: hammerhead
         archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: shark
         archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+        variant: {fileID: 0}
         weight: 1
     - poolId: specialist
       share: 0.3
       entries:
       - enemyId: bomb_boat
         archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: rammer_raft
         archetype: {fileID: 11400000, guid: 41ad36546b03afc40b3c5a33a868ff37, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: bomb_ketch
         archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: c1d0a07fb62d55f428f69605d1f544cc, type: 2}
         weight: 1
       - enemyId: gunner_cog
         archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 0}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -200,33 +216,42 @@ MonoBehaviour:
       entries:
       - enemyId: manta_ray
         archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: hammerhead
         archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: shark
         archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
+        variant: {fileID: 0}
         weight: 1
     - poolId: specialist
       share: 0.35000002
       entries:
       - enemyId: bomb_boat
         archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: boarding_barge
         archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: net_cutter
         archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: 3b068cfeb41c78340a2edd50835b9898, type: 2}
         weight: 1
       - enemyId: repair_tender
         archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: 1ce2c53b4e217ad478ea224410175be8, type: 2}
         weight: 1
       - enemyId: kraken_spawn
         archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
+        variant: {fileID: 0}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -259,30 +284,38 @@ MonoBehaviour:
       entries:
       - enemyId: manta_ray
         archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: hammerhead
         archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+        variant: {fileID: 0}
         weight: 1
     - poolId: specialist
       share: 0.39999998
       entries:
       - enemyId: shield_frigate
         archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: 69d09e8af3b0224448976402532bdae6, type: 2}
         weight: 1
       - enemyId: powder_barge
         archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: d16a81d14b1dddf4fbef72c17747d940, type: 2}
         weight: 1
       - enemyId: kraken_spawn
         archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: bomb_boat
         archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        variant: {fileID: 0}
         weight: 1
       - enemyId: boarding_barge
         archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        variant: {fileID: 0}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -315,6 +348,7 @@ MonoBehaviour:
       entries:
       - enemyId: reef_crab_miniboss
         archetype: {fileID: 11400000, guid: 38ceb085c1591c441b8ab565d3da9590, type: 2}
+        variant: {fileID: 0}
         weight: 1
     pauseAmbient: 1
     rateMultiplier: 1

@@ -262,6 +262,8 @@ namespace RoguePirates.V4.DevTools.Console
         /// <summary>The nearest [AppliesFrom] on the field or a containing field: the phase, 0 for "restart", -1 when live.</summary>
         static int AppliesFrom(V4ConfigAsset config, string path)
         {
+            var own = config.AppliesFromFor(path);
+            if (own.HasValue) return own.Value;
             var type = config.GetType();
             foreach (var segment in path.Split('.'))
             {

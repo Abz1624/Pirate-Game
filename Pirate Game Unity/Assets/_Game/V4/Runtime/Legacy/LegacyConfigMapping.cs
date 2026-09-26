@@ -197,6 +197,20 @@ namespace RoguePirates.V4.Legacy
             ["ram_raider"] = new[] { CapChargeWindup }, // specialist alias; gets an archetype (variant) in M2
         };
 
+        /// <summary>Template of each V3 specialist alias (CombatSpecialistEnemyCatalog.ApplyToDatabase L17-24).</summary>
+        public static readonly Dictionary<string, string> SpecialistTemplates = new Dictionary<string, string>
+        {
+            ["needle_sloop"] = "cutthroat_skiff", ["ram_raider"] = "rammer_raft", ["bomb_ketch"] = "bomb_boat",
+            ["net_cutter"] = "gunner_cog", ["repair_tender"] = "boarding_barge", ["powder_barge"] = "boarding_barge",
+            ["shield_frigate"] = "gunner_cog", ["treasure_raider"] = "deckhand_dinghy",
+        };
+
+        /// <summary>V3 registry elite profiles and the enemy they belong to (EnemyCombatProfileRegistry L177-204).</summary>
+        public static readonly (string eliteId, string baseId)[] RegistryElites = { ("elite_hammerhead", "hammerhead"), ("elite_kraken_spawn", "kraken_spawn") };
+
+        /// <summary>Enemies only V3's fallback database defines (register R-05).</summary>
+        public static readonly string[] FallbackOnlyEnemies = { "drowned_pursuer", "drowned_harrier" };
+
         // ---- Encounter schedule -------------------------------------------------------------------------
 
         /// <summary>

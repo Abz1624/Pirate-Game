@@ -122,9 +122,42 @@ namespace RoguePirates.V4.Editor
             return string.Join("\n", log);
         }
 
+        /// <summary>
+        /// M2: the Module Lab is a copy of V4SaltwindRun with V4Game in lab mode (replaces the M0 copy of the legacy
+        /// weapon/enemy playtest scene). Overwrites V4ModuleLab.
+        /// </summary>
+        public static string CreateModuleLab()
+        {
+            var log = new List<string>();
+            if (!Copy(V4SceneNames.SaltwindRunPath, V4SceneNames.ModuleLabPath, overwrite: true, log)) return string.Join("\n", log);
+            Edit(V4SceneNames.ModuleLabPath, log, () =>
+            {
+                foreach (var game in Object.FindObjectsByType<V4Game>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                {
+                    var so = new SerializedObject(game);
+                    so.FindProperty("moduleLab").boolValue = true;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    log.Add($"  {game.gameObject.name}: V4Game lab mode on");
+                }
+            });
+            return string.Join("\n", log);
+        }
+
         static void AddToBuild(List<string> log, params string[] paths)
         {
             var scenes = EditorBuildSettings.scenes.ToList();
+            var stale = scenes.Where(s => paths.Contains(s.path) && s.guid.ToString() != AssetDatabase.AssetPathToGUID(s.path)).ToList();
+            if (stale.Count > 0)
+            {
+                // A re-created scene gets a new GUID. Replacing an entry with the same path is ignored by the setter,
+                // so write the list without the stale entries first, then put them back with the current GUID.
+                EditorBuildSettings.scenes = scenes.Except(stale).ToArray();
+                foreach (var s in stale)
+                {
+                    scenes[scenes.IndexOf(s)] = new EditorBuildSettingsScene(s.path, s.enabled);
+                    log.Add($"build list GUID refreshed: {s.path}");
+                }
+            }
             foreach (var path in paths)
             {
                 if (scenes.Any(s => s.path == path)) continue;

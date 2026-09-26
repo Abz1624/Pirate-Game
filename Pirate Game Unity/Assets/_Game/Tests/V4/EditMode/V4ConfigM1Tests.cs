@@ -124,7 +124,13 @@ namespace RoguePirates.V4.Tests
             var map = new Dictionary<SpawnProfile, SpawnProfile>();
             SpawnProfile CloneOf(SpawnProfile p) => p == null ? null : map.TryGetValue(p, out var c) ? c : map[p] = Clone(p);
             foreach (var e in clone.entries) e.profile = CloneOf(e.profile);
-            LegacyConfigMapping.ApplySchedule(Timeline, clone, s => map.Values.FirstOrDefault(c => c.ResolvedId == s.legacyProfileId), atRunStart: true);
+            // Band 0 is 0.5/s by decision (R-01); the V3 comparison uses the v3-parity value, 0.6.
+            using (var runtime = new ConfigSetRuntime(_set))
+            {
+                var band0 = runtime.Single<WaveTimelineConfig>().phases.FindIndex(p => p.phaseId == LegacyConfigMapping.BandPrefix + "0");
+                Assert.IsTrue(runtime.TryApplyEdit("timeline.saltwind", $"phases[{band0}].ratePerSecond", "0.6", 0f, out var error), error);
+                LegacyConfigMapping.ApplySchedule(runtime.Single<WaveTimelineConfig>(), clone, s => map.Values.FirstOrDefault(c => c.ResolvedId == s.legacyProfileId), atRunStart: true);
+            }
             Assert.AreEqual(schedule.gracePeriodSeconds, clone.gracePeriodSeconds);
             Assert.AreEqual(schedule.maxActiveEnemies, clone.maxActiveEnemies);
             Assert.AreEqual(schedule.globalMinSpawnGapSeconds, clone.globalMinSpawnGapSeconds);
@@ -155,13 +161,13 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void Archetypes_MatchTheCatalogAppliedV3Definitions()
         {
-            var db = GameDatabaseLoader.Load();
+            var db = RoguePirates.V4.Editor.V3ConfigMigrator.LoadCleanDatabase();
             var clone = Clone(db);
             clone.enemies = db.enemies.Select(e => e != null ? Clone(e) : null).ToArray();
             clone.weapons = db.weapons.Select(w => w != null ? Clone(w) : null).ToArray();
             CombatSpecialistEnemyCatalog.ApplyToDatabase(clone, CombatExperimentContext.Active);
             CombatWeaponCatalog.ApplyToDatabase(clone, CombatExperimentContext.Active);
-            foreach (var a in _set.All<EnemyArchetypeConfig>())
+            foreach (var a in _set.All<EnemyArchetypeConfig>().Where(a => a.inLegacyDatabase))
             {
                 var d = clone.GetEnemy(a.enemyId);
                 Assert.IsNotNull(d, a.enemyId);
@@ -313,8 +319,8 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void Archetypes_CombatRewardsAndVisuals_MatchV3()
         {
-            var db = GameDatabaseLoader.Load();
-            foreach (var a in _set.All<EnemyArchetypeConfig>())
+            var db = RoguePirates.V4.Editor.V3ConfigMigrator.LoadCleanDatabase();
+            foreach (var a in _set.All<EnemyArchetypeConfig>().Where(a => a.inLegacyDatabase))
             {
                 var d = db.GetEnemy(a.enemyId);
                 Assert.AreEqual(d.goldValue, a.rewards.goldValue, $"{a.enemyId} gold");
@@ -333,7 +339,7 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void Weapons_EveryMirroredField_MatchesTheCatalogAppliedV3Definition()
         {
-            var db = GameDatabaseLoader.Load();
+            var db = RoguePirates.V4.Editor.V3ConfigMigrator.LoadCleanDatabase();
             var clone = Clone(db);
             clone.enemies = db.enemies.Select(e => e != null ? Clone(e) : null).ToArray();
             clone.weapons = db.weapons.Select(w => w != null ? Clone(w) : null).ToArray();
