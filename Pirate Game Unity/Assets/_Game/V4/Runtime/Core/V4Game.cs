@@ -82,12 +82,14 @@ namespace RoguePirates.V4
             _context.Register<IRunStatus>(runState);
             _context.Register<ISpawnFeedback>(new LegacySpawnFeedback());
             _context.Register<IStormArena>(new LegacyStormArena());
-            _context.Register<IPlayerDamageSink>(new LegacyPlayerDamageSink());
+            var damageSink = new LegacyPlayerDamageSink();
+            _context.Register<IPlayerDamageSink>(damageSink);
             _context.Register<ILegacySpawnRateSource>(encounters);
             var slots = new LegacySpawnSlots(_spawn.TickAmbient, _spawn.TickOvertime, _spawn.TickStorm, _spawn.TickBeats, _spawn.TickStormEdge);
             _shell = new LegacyRunShell(this, database, stageBuilder, player, islandLayout, usePlaceholderPoiVisuals, _config, legacyBaseProfile, slots, encounters);
             _context.Register<ISpawnerProfiles>(_shell.LegacyConfig);
             _feed = new LegacyEventFeed(_events, _clock);
+            damageSink.SteadyDamageReported += _feed.OnSteadyDamage;
             _shell.Awake();
         }
 
@@ -132,6 +134,7 @@ namespace RoguePirates.V4
         void LateUpdate()
         {
             if (!_running) return;
+            _shell.LateTick();
             _feed.AttachLevels();
             // Legacy producers publish outside V4 ticks (their own Update, or while paused); deliver those with the
             // current tick stamp so readers see them this frame instead of waiting for the next tick.

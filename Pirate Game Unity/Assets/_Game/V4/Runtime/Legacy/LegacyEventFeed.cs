@@ -88,6 +88,9 @@ namespace RoguePirates.V4.Legacy
 
         void OnPlayerDamaged(float amount, bool crit) => Publish(CombatEventKind.PlayerDamaged, crit ? 1 : 0, 0, 0f, 0f, amount);
 
+        /// <summary>Steady damage (storm, R-57) bypasses DamageReceiver.Damaged; B = 1 marks it.</summary>
+        public void OnSteadyDamage(float amount) => Publish(CombatEventKind.PlayerDamaged, 0, 1, 0f, 0f, amount);
+
         void OnLevel(int level) => Publish(CombatEventKind.LevelUp, level);
     }
 }

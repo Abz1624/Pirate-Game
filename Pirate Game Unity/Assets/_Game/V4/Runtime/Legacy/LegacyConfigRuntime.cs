@@ -98,12 +98,25 @@ namespace RoguePirates.V4.Legacy
         public void RetargetEnemies(GameDatabase runDatabase)
         {
             if (runDatabase == null) return;
+            _runDatabase = runDatabase;
             foreach (var clone in _clones.Values)
             {
                 if (clone == null || clone.enemy == null) continue;
                 var copy = runDatabase.GetEnemy(clone.enemy.id);
                 if (copy != null) clone.enemy = copy;
             }
+            // A spawner's anchor archetype decides its enemy (R-05: overtime spawners anchor the Drowned enemies; the
+            // other spawners' anchors are V3's profile enemies, so nothing else changes).
+            foreach (var spawner in _config.All<EnemySpawnerConfig>()) ApplyAnchor(spawner);
+        }
+
+        GameDatabase _runDatabase;
+
+        void ApplyAnchor(EnemySpawnerConfig spawner)
+        {
+            if (_runDatabase == null || spawner?.anchor == null || !_cloneBySpawnerId.TryGetValue(spawner.configId, out var clone)) return;
+            var def = _runDatabase.GetEnemy(spawner.anchor.enemyId);
+            if (def != null) clone.enemy = def;
         }
 
         /// <summary>The runtime spawn profile a spawner config drives (the V4 spawn controller spawns with it).</summary>
@@ -135,6 +148,7 @@ namespace RoguePirates.V4.Legacy
             {
                 case EnemySpawnerConfig spawner:
                     if (_cloneBySpawnerId.TryGetValue(spawner.configId, out var clone)) LegacyConfigMapping.ApplySpawner(spawner, clone);
+                    ApplyAnchor(spawner);
                     LegacyConfigMapping.ApplySchedule(Timeline, RuntimeSchedule, ProfileFor, atRunStart: false); // band rates win over spawner intervals
                     LegacyConfigMapping.ApplySchedule(Timeline, EncounterOnlySchedule, ProfileFor, atRunStart: false);
                     break;

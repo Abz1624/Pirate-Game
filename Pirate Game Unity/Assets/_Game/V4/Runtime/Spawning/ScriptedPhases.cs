@@ -212,10 +212,11 @@ namespace RoguePirates.V4.Spawning
 
             var profile = _s.Profiles.For(phase.spawner);
             if (profile == null || profile.enemy == null) return false;
+            var variantId = focus.variant != null ? focus.variant.variantId : null;
             var before = _s.Sink.MaxActiveUnitId();
             var leader = -1;
-            if (_executor.TryBurst(profile, 1, true, focus.hpMultiplier, focus.damageMultiplier, 0, ref leader) <= 0) return false;
-            var definitionIndex = _s.Sink.IndexOf(profile.enemy);
+            if (_executor.TryBurst(profile, 1, true, focus.hpMultiplier, focus.damageMultiplier, 0, ref leader, enemyId: variantId) <= 0) return false;
+            var definitionIndex = !string.IsNullOrEmpty(variantId) && _s.Sink.FindDefinition(variantId) >= 0 ? _s.Sink.FindDefinition(variantId) : _s.Sink.IndexOf(profile.enemy);
             unitId = _s.Sink.NewestUnitAfter(before, definitionIndex);
             enemyId = _s.Sink.DefinitionId(definitionIndex);
             if (unitId > 0 && focus.scheduledEliteIndex >= 0) _s.Feedback.RegisterScheduledElite(unitId, focus.scheduledEliteIndex);

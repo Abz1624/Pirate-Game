@@ -34,6 +34,7 @@ namespace RoguePirates.V4.Legacy
         /// <summary>Builds the runtime database from the loaded one (call after the catalogs ran, like V3).</summary>
         public GameDatabase Build(GameDatabase loaded)
         {
+            Dispose(); // safe to build again: drops the previous copies, lookups and subscription
             Database = Track(Object.Instantiate(loaded));
             Database.name = loaded.name;
             var unconfigured = new List<string>();
@@ -48,9 +49,39 @@ namespace RoguePirates.V4.Legacy
                 _byId[copy.id] = copy;
                 if (!Write(copy.id)) unconfigured.Add(copy.id);
             }
+            AppendV4OnlyEnemies();
             Unconfigured = unconfigured;
             if (_config != null) _config.ConfigChanged += OnConfigChanged;
             return Database;
+        }
+
+        /// <summary>Ids of enemies V3's database does not have (appended after its slots, so no index moves).</summary>
+        readonly HashSet<string> _v4Only = new HashSet<string>();
+        public IReadOnlyCollection<string> V4OnlyIds => _v4Only;
+
+        /// <summary>
+        /// Enemies only V4 spawns: archetypes V3's live database lacks (the Drowned enemies, R-05) and the registry
+        /// elites (R-03: their own definition, so the elite combat profile applies to that unit only).
+        /// </summary>
+        void AppendV4OnlyEnemies()
+        {
+            if (_config == null) return;
+            var ids = _config.All<EnemyArchetypeConfig>().Where(a => !a.inLegacyDatabase).Select(a => a.enemyId)
+                .Concat(_config.All<EnemyVariantConfig>().Where(v => v.kind == VariantKind.RegistryElite && v.baseArchetype != null).Select(v => v.variantId))
+                .Where(id => !string.IsNullOrEmpty(id) && !_byId.ContainsKey(id)).OrderBy(id => id, StringComparer.Ordinal).ToList();
+            if (ids.Count == 0) return;
+            var list = new List<EnemyDefinition>(Database.enemies);
+            foreach (var id in ids)
+            {
+                var def = Track(ScriptableObject.CreateInstance<EnemyDefinition>());
+                def.name = id;
+                def.id = id;
+                _byId[id] = def;
+                _v4Only.Add(id);
+                Write(id);
+                list.Add(def);
+            }
+            Database.enemies = list.ToArray();
         }
 
         /// <summary>Resolves an enemy id from config and writes it into its runtime definition. False when no config.</summary>
@@ -58,13 +89,14 @@ namespace RoguePirates.V4.Legacy
         {
             if (_config == null || !_byId.TryGetValue(id, out var def)) return false;
             var archetype = _config.All<EnemyArchetypeConfig>().FirstOrDefault(a => a.enemyId == id);
-            var variant = _config.All<EnemyVariantConfig>().FirstOrDefault(v => v.variantId == id && v.kind == VariantKind.DatabaseAlias);
+            var variant = _config.All<EnemyVariantConfig>().FirstOrDefault(v => v.variantId == id && v.baseArchetype != null);
             if (archetype == null && variant == null) return false;
             Apply(archetype != null ? EnemyStatResolver.Resolve(archetype) : EnemyStatResolver.Resolve(variant), def);
-            // R-13 stand-in models: the template ships carry colliders on the Island layer (register R-81), which V3's
-            // spawn placement and island checks treat as obstacles. V3's specialist cubes have none, so the specialist
-            // gets a copy of the model without colliders and plays exactly as before.
-            if (variant != null && variant.inheritBaseVisual) def.visualPrefab = ColliderFreeCopy(def.visualPrefab);
+            // Stand-in models (R-13 specialists, V4-only enemies): the template ships carry colliders on the Island layer
+            // (register R-81), which V3's spawn placement and island checks treat as obstacles. V3's placeholder cubes
+            // have none, so these enemies get a copy of the model without colliders.
+            if ((variant != null && (variant.inheritBaseVisual || variant.kind == VariantKind.RegistryElite)) || _v4Only.Contains(id))
+                def.visualPrefab = ColliderFreeCopy(def.visualPrefab);
             return true;
         }
 
@@ -124,11 +156,11 @@ namespace RoguePirates.V4.Legacy
             {
                 case EnemyArchetypeConfig archetype:
                     Write(archetype.enemyId);
-                    // Aliases copy fields from their base, so rewrite those too.
-                    foreach (var v in _config.All<EnemyVariantConfig>().Where(v => v.baseArchetype == archetype && v.kind == VariantKind.DatabaseAlias))
+                    // Variants copy fields from their base, so rewrite those too.
+                    foreach (var v in _config.All<EnemyVariantConfig>().Where(v => v.baseArchetype == archetype))
                         Write(v.variantId);
                     break;
-                case EnemyVariantConfig variant when variant.kind == VariantKind.DatabaseAlias:
+                case EnemyVariantConfig variant:
                     Write(variant.variantId);
                     break;
             }
@@ -147,6 +179,8 @@ namespace RoguePirates.V4.Legacy
             foreach (var o in _created) if (o != null) { if (Application.isPlaying) Object.Destroy(o); else Object.DestroyImmediate(o); }
             _created.Clear();
             _colliderFreeCopies.Clear();
+            _byId.Clear();
+            _v4Only.Clear();
         }
     }
 

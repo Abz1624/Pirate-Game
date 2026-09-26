@@ -76,7 +76,10 @@ namespace RoguePirates.V4.Enemies
             if (variant == null) throw new ArgumentNullException(nameof(variant));
             if (variant.kind == VariantKind.RegistryElite)
             {
+                // The base enemy's stats with the elite's own id (its combat profile is keyed by it, R-03) and combat.
                 var elite = Resolve(variant.baseArchetype);
+                elite.Set(ref elite.id, variant.variantId, "id", StatLayer.Variant);
+                elite.Set(ref elite.displayName, string.IsNullOrEmpty(variant.displayName) ? "Elite " + elite.displayName : variant.displayName, "displayName", StatLayer.Variant);
                 elite.Set(ref elite.combat, variant.combat, "combat", StatLayer.Variant);
                 return elite;
             }

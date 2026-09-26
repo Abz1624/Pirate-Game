@@ -39,11 +39,7 @@ namespace RoguePirates.V4.Config
         [AppliesFrom(0)] public bool inheritBaseVisual = true;
         [Tooltip("Concurrency tags the timeline's tag caps count (e.g. charge_windup).")] public string[] concurrencyTags = Array.Empty<string>();
         [Tooltip("Tier the timeline pools unlock by (DifficultyCurve tierUnlocks).")] public ConfigEnums.EnemyTier spawnTier = ConfigEnums.EnemyTier.Soldier;
-        [Tooltip("Aliases: copied into the legacy combat-profile registry at run start and on edits; reaches newly spawned enemies. Registry elites: V3 never reads these profiles (every lookup uses the database enemy id), so they apply once V4 spawns elite variants (M3, register R-03). Behaviors hard-coded in EnemyWorld move to data in M8.")] public ArchetypeCombat combat = new ArchetypeCombat();
-
-        /// <summary>Registry elites' combat profiles have no V3 reader: their edits apply from M3 (R-03).</summary>
-        public override int? AppliesFromFor(string path) =>
-            kind == VariantKind.RegistryElite && (path == nameof(combat) || path.StartsWith(nameof(combat) + ".")) ? 3 : (int?)null;
+        [Tooltip("Aliases: copied into the legacy combat-profile registry at run start and on edits; reaches newly spawned enemies. Registry elites: the elite's own definition (appended to the run database) reads this profile when the timeline spawns the elite (R-03). Behaviors hard-coded in EnemyWorld move to data in M8.")] public ArchetypeCombat combat = new ArchetypeCombat();
 
         public override void Validate(ConfigValidationReport report)
         {

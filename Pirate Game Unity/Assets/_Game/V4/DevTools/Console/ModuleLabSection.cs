@@ -42,16 +42,16 @@ namespace RoguePirates.V4.DevTools.Console
             if (GUILayout.Button("Clear all")) world.DespawnAllActive();
             GUILayout.EndHorizontal();
 
-            // Elite rows spawn the base enemy with the Rich affix, which uses the base enemy's combat profile (V3 never
-            // reads the elite profiles, R-03), so the inspector shows the base resolution. Spawns go through
-            // EnemyWorld.Spawn without a spawn profile: no encounter overrides or profile-driven initial timers.
+            // Elite rows spawn the elite's own definition flagged elite (Rich affix), so its elite combat profile runs
+            // (R-03). Spawns go through EnemyWorld.Spawn without a spawn profile: no encounter overrides or
+            // profile-driven initial timers.
             var rows = config.All<EnemyArchetypeConfig>().Where(a => a.inLegacyDatabase)
                 .Select(a => (id: a.enemyId, label: a.enemyId, spawnId: a.enemyId, elite: false, stats: (System.Func<ResolvedEnemyStats>)(() => EnemyStatResolver.Resolve(a))))
-                .Concat(config.All<EnemyVariantConfig>().Where(v => v.baseArchetype != null).Select(v => v.kind == VariantKind.RegistryElite
-                    ? (id: v.variantId, label: v.variantId + " (elite, base profile)", spawnId: v.baseArchetype.enemyId, elite: true,
-                        stats: (System.Func<ResolvedEnemyStats>)(() => EnemyStatResolver.Resolve(v.baseArchetype)))
-                    : (id: v.variantId, label: v.variantId + " (variant)", spawnId: v.variantId, elite: false,
-                        stats: (System.Func<ResolvedEnemyStats>)(() => EnemyStatResolver.Resolve(v)))))
+                .Concat(config.All<EnemyVariantConfig>().Where(v => v.baseArchetype != null).Select(v =>
+                    (id: v.variantId, label: v.variantId + (v.kind == VariantKind.RegistryElite ? " (elite)" : " (variant)"), spawnId: v.variantId,
+                        elite: v.kind == VariantKind.RegistryElite, stats: (System.Func<ResolvedEnemyStats>)(() => EnemyStatResolver.Resolve(v)))))
+                .Concat(config.All<EnemyArchetypeConfig>().Where(a => !a.inLegacyDatabase).Select(a =>
+                    (id: a.enemyId, label: a.enemyId + " (V4 only)", spawnId: a.enemyId, elite: false, stats: (System.Func<ResolvedEnemyStats>)(() => EnemyStatResolver.Resolve(a)))))
                 .OrderBy(r => r.label).ToList();
 
             foreach (var row in rows)

@@ -75,6 +75,7 @@ MonoBehaviour:
       enabled: 0
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -145,6 +146,7 @@ MonoBehaviour:
       enabled: 0
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -223,6 +225,7 @@ MonoBehaviour:
       enabled: 0
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -305,6 +308,7 @@ MonoBehaviour:
       enabled: 0
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -383,6 +387,7 @@ MonoBehaviour:
       enabled: 0
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -423,6 +428,7 @@ MonoBehaviour:
       enabled: 1
       placement: 1
       archetype: {fileID: 11400000, guid: 38ceb085c1591c441b8ab565d3da9590, type: 2}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 4
       speedMultiplier: 1
@@ -463,6 +469,7 @@ MonoBehaviour:
       enabled: 1
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 11400000, guid: 3786b3c3281c9e447a1b3d7252dbcf57, type: 2}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -503,6 +510,7 @@ MonoBehaviour:
       enabled: 0
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -543,6 +551,7 @@ MonoBehaviour:
       enabled: 0
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -583,6 +592,7 @@ MonoBehaviour:
       enabled: 1
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 11400000, guid: dfa885f8cfbbc1e48b93677aedd3d6aa, type: 2}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -623,6 +633,7 @@ MonoBehaviour:
       enabled: 0
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -663,6 +674,7 @@ MonoBehaviour:
       enabled: 0
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -703,6 +715,7 @@ MonoBehaviour:
       enabled: 0
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -743,6 +756,7 @@ MonoBehaviour:
       enabled: 0
       placement: 0
       archetype: {fileID: 0}
+      variant: {fileID: 0}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -782,5 +796,6 @@ MonoBehaviour:
     contractionStartSeconds: 720
     contractionEndSeconds: 900
     outsideDamagePerSecond: 8
+    damageMode: 0
     startToast: "DREAD TIDE \u2014 stay inside the safe water!"
     edgeToast: "STORM EDGE \u2014 return to open water!"

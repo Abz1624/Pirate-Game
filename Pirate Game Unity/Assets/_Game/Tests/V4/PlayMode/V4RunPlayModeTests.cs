@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
 using HighSeas.Balance;
 using HighSeas.Core;
@@ -224,6 +224,118 @@ namespace RoguePirates.V4.Tests
                 Assert.AreEqual(Time.frameCount, slot.FrameAtTick, role + " ticked this frame");
                 Assert.That(slot.ClockAtTick, Is.GreaterThan(0f).And.LessThanOrEqualTo(clock), role + " saw this frame's clock or the previous one");
             }
+        }
+
+        [UnityTest]
+        public IEnumerator EliteBeat_AndOvertime_UseTheirOwnEnemies()
+        {
+            SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return null;
+            yield return WaitForPlaying();
+            var game = Object.FindFirstObjectByType<V4Game>();
+            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            // R-05: the overtime spawners' runtime profiles spawn the Drowned enemies.
+            var schedule = game.Shell.LegacyConfig.RuntimeSchedule;
+            Assert.AreEqual("drowned_pursuer", schedule.drownedPursuer.enemy.id);
+            Assert.AreEqual("drowned_harrier", schedule.drownedHarrier.enemy.id);
+            Assert.GreaterOrEqual(System.Array.FindIndex(world.Definitions, d => d != null && d.id == "drowned_pursuer"), 0, "in the run database");
+            // R-03: the elite beat spawns elite_hammerhead flagged elite.
+            game.Context.TryGet<RoguePirates.V4.Spawning.ISpawnController>(out var spawn);
+            Assert.IsTrue(spawn.TriggerNow("elite_hammerhead"));
+            var deadline = Time.realtimeSinceStartup + 10f;
+            while (!spawn.ArenaActive && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.IsTrue(spawn.ArenaActive, "the elite spawned");
+            Assert.IsTrue(world.TryGetAgentByUnitId(spawn.ArenaFocusUnitId, out var index));
+            Assert.AreEqual("elite_hammerhead", world.Definitions[world.Agents[index].definitionIndex].id);
+            Assert.IsTrue(world.Agents[index].isElite, "flagged elite");
+        }
+
+        [UnityTest]
+        public IEnumerator Overtime_SpawnsTheDrownedEnemies()
+        {
+            SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return null;
+            yield return WaitForPlaying();
+            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
+            // Jump past the stage deadline (the console's forward jump), then overtime must spawn Drowned enemies (R-05).
+            var run = RunManager.Instance;
+            run.RestoreSuspendSnapshot(new HighSeas.Save.RunSnapshotData { runId = run.RunId, elapsedSeconds = 601f, gold = run.Gold, kills = run.KillCount, objectiveSecured = run.ObjectiveSecured });
+            var deadline = Time.realtimeSinceStartup + 30f;
+            var found = false;
+            while (!found && Time.realtimeSinceStartup < deadline)
+            {
+                yield return null;
+                foreach (var agent in world.Agents)
+                    if (agent.active && world.Definitions[agent.definitionIndex] is var d && d != null && d.id.StartsWith("drowned_")) { found = true; break; }
+            }
+            Assert.IsTrue(found, "a Drowned enemy spawned in overtime");
+        }
+
+        [UnityTest]
+        public IEnumerator SteadyStormDamage_RespectsGodMode_ThrottlesFeedback_AndCanKill()
+        {
+            SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return null;
+            yield return WaitForPlaying();
+            var game = Object.FindFirstObjectByType<V4Game>();
+            Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Spawning.IPlayerDamageSink>(out var sink));
+            var receiver = Object.FindFirstObjectByType<PlayerShipController>().Damage;
+
+            receiver.SetPlaytestInvulnerable(true);
+            var hp = receiver.CurrentHP;
+            sink.DamageOverTime(5f, Vector3.zero);
+            Assert.AreEqual(hp, receiver.CurrentHP, "god mode blocks steady damage");
+            receiver.SetPlaytestInvulnerable(false);
+
+            // One small tick per frame for about a second: HP drops every frame, feedback at most every 0.5 s.
+            var reports = 0;
+            void Count(float _) => reports++;
+            HighSeas.Meta.TriggerBus.Instance.DamageTaken += Count;
+            hp = receiver.CurrentHP;
+            var start = Time.time;
+            var frames = 0;
+            while (Time.time - start < 1f) { sink.DamageOverTime(0.05f, Vector3.zero); frames++; yield return null; }
+            HighSeas.Meta.TriggerBus.Instance.DamageTaken -= Count;
+            Assert.AreEqual(hp - 0.05f * frames, receiver.CurrentHP, 0.05f * frames * 0.5f, "every tick lands (captain/item multipliers aside)");
+            Assert.Less(receiver.CurrentHP, hp);
+            Assert.LessOrEqual(reports, 3, $"feedback throttled ({frames} ticks)");
+            Assert.GreaterOrEqual(reports, 1);
+
+            var died = false;
+            receiver.Died += () => died = true;
+            sink.DamageOverTime(receiver.CurrentHP + 10f, Vector3.zero);
+            Assert.IsTrue(died, "a lethal tick kills through TakeDamage");
+            Assert.IsFalse(receiver.IsAlive);
+        }
+
+        [UnityTest]
+        public IEnumerator SkippingTheLastLevelUp_HidesTheCards()
+        {
+            SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return null;
+            yield return WaitForPlaying();
+            HighSeas.UI.LevelSystem.Instance.AddXP(12);
+            var deadline = Time.realtimeSinceStartup + 5f;
+            while (!RunManager.Instance.IsPaused && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.IsTrue(RunManager.Instance.IsPaused, "level-up cards shown");
+            var bf = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public;
+            var modal = HighSeas.UI.LevelUpModal.Instance;
+            var skip = (UnityEngine.UI.Button)typeof(HighSeas.UI.LevelUpModal).GetField("rejectButton", bf).GetValue(modal);
+            var panel = (GameObject)typeof(HighSeas.UI.LevelUpModal).GetField("panel", bf).GetValue(modal);
+            for (var i = 0; i < 10 && RunManager.Instance.IsPaused; i++) { skip.onClick.Invoke(); yield return null; }
+            Assert.IsFalse(RunManager.Instance.IsPaused, "all level-ups skipped");
+            yield return null;
+            yield return new WaitForEndOfFrame(); // after V4Game.LateUpdate (the test runner resumes coroutines mid-frame)
+            Assert.IsFalse(panel.activeSelf, $"R-83: the cards are hidden after the last Skip (pending={HighSeas.UI.LevelSystem.Instance.PendingLevelUps}, reason={RunManager.Instance.PauseReason}, modals={Object.FindObjectsByType<HighSeas.UI.LevelUpModal>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length}, cached={Diag(modal)})");
+        }
+
+        static string Diag(HighSeas.UI.LevelUpModal modal)
+        {
+            var sf = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic;
+            var cached = typeof(RoguePirates.V4.Legacy.LegacyPresentationAdapter).GetField("_levelUpModal", sf)?.GetValue(null) as Object;
+            var next = typeof(RoguePirates.V4.Legacy.LegacyPresentationAdapter).GetField("_nextModalLookupFrame", sf)?.GetValue(null);
+            return $"{(cached == null ? "null" : cached == modal ? "same" : "other")}, next={next}, frame={Time.frameCount}";
         }
 
         [UnityTest]

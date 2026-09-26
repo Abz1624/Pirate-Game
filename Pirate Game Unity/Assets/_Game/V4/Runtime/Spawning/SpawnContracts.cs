@@ -98,6 +98,8 @@ namespace RoguePirates.V4.Spawning
         bool IsAlive { get; }
         Vector3 Position { get; }
         void Damage(float amount, Vector3 source);
+        /// <summary>Damage over time (storm): applied steadily, without the ship's hit immunity (R-57).</summary>
+        void DamageOverTime(float amount, Vector3 source);
     }
 
     /// <summary>Spawn-rate multipliers owned by systems that are still legacy (Dead Calm, register D4).</summary>

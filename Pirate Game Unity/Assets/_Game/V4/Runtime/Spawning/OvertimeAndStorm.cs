@@ -95,7 +95,7 @@ namespace RoguePirates.V4.Spawning
     /// <summary>
     /// The storm (ports of V3SaltwindStormDirector and V3StormEdgeDamage, one clock): warning, then the safe region
     /// contracts over the contraction window; outside it the ship takes damage growing with depth, after an 8 s run
-    /// grace. Damage per frame is still throttled by the ship's i-frames, as in V3 (register R-57).
+    /// grace. Steady by default (R-57 decision); PerFrameHit keeps V3's hit-per-frame through the ship's hit immunity.
     /// </summary>
     internal sealed class StormPhase
     {
@@ -171,7 +171,8 @@ namespace RoguePirates.V4.Spawning
 
             var depth = _s.Storm.Depth(position);
             var damage = t.storm.outsideDamagePerSecond * (1f + depth * 0.08f) * dt;
-            _s.Player.Damage(damage, position);
+            if (t.storm.damageMode == StormDamageMode.Steady) _s.Player.DamageOverTime(damage, position);
+            else _s.Player.Damage(damage, position);
 
             _toastCooldown -= dt;
             if (_toastCooldown <= 0f)

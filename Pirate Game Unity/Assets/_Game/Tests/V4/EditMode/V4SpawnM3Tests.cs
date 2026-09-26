@@ -75,7 +75,7 @@ namespace RoguePirates.V4.Tests
             public FakeSink(ConfigSetRuntime config)
             {
                 foreach (var a in config.All<EnemyArchetypeConfig>()) _defs.Add((a.enemyId, a.isBoss, a.stats.threatCost));
-                foreach (var v in config.All<EnemyVariantConfig>().Where(v => v.kind == VariantKind.DatabaseAlias)) _defs.Add((v.variantId, false, 1));
+                foreach (var v in config.All<EnemyVariantConfig>()) _defs.Add((v.variantId, false, 1)); // aliases and registry elites
             }
 
             public int ActiveCount => Blockers + _agents.Count(a => a.Active);
@@ -103,6 +103,7 @@ namespace RoguePirates.V4.Tests
             public void SetExperimentMultipliers(float hpMultiplier, float damageMultiplier) { }
             public void Kill(int unitId) { for (var i = 0; i < _agents.Count; i++) if (_agents[i].Id == unitId) { var a = _agents[i]; a.Active = false; _agents[i] = a; } }
             public void KillAll() { for (var i = 0; i < _agents.Count; i++) { var a = _agents[i]; a.Active = false; _agents[i] = a; } }
+            public void KillAllExcept(int unitId) { for (var i = 0; i < _agents.Count; i++) { if (_agents[i].Id == unitId) continue; var a = _agents[i]; a.Active = false; _agents[i] = a; } }
         }
 
         sealed class FakePlacement : ISpawnPlacement
@@ -138,7 +139,9 @@ namespace RoguePirates.V4.Tests
             public bool Exists => true;
             public bool IsAlive => true;
             public Vector3 Position => Vector3.zero;
-            void IPlayerDamageSink.Damage(float amount, Vector3 source) => Damage += amount;
+            public float Hits, Steady;
+            void IPlayerDamageSink.Damage(float amount, Vector3 source) { Damage += amount; Hits += amount; }
+            void IPlayerDamageSink.DamageOverTime(float amount, Vector3 source) { Damage += amount; Steady += amount; }
         }
 
         sealed class FakeProfiles : ISpawnerProfiles
@@ -523,6 +526,49 @@ namespace RoguePirates.V4.Tests
                 for (var i = 0; i < 60; i++) h.Frame();
                 var perFrame = h.Timeline.storm.outsideDamagePerSecond * (1f + 5f * 0.08f) * Dt; // fake depth 5
                 Assert.AreEqual(60 * perFrame, h.Storm.Damage - start, 1e-3f, "8 x (1 + depth x 0.08) per second, per frame");
+                Assert.AreEqual(h.Storm.Damage, h.Storm.Steady, 1e-6f, "steady damage by default (R-57): no per-frame hits");
+
+                Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "storm.damageMode", "PerFrameHit", 31f, out e), e);
+                var steady = h.Storm.Steady;
+                for (var i = 0; i < 10; i++) h.Frame();
+                Assert.AreEqual(steady, h.Storm.Steady, "PerFrameHit (V3) uses hits instead");
+                Assert.Greater(h.Storm.Hits, 0f);
+            }
+        }
+
+        [Test]
+        public void EliteBeat_SpawnsTheEliteVariant_FlaggedByItsSpawner()
+        {
+            var h = Make();
+            using (h.Config)
+            {
+                h.Spawn.Skip("reef_crab");
+                h.RunUntil(181f);
+                var elite = h.Sink.Spawns.Last(s => s.t > 179f && s.id.StartsWith("elite_"));
+                Assert.AreEqual("elite_hammerhead", elite.id, "R-03: the scheduled elite spawns its elite variant");
+                Assert.AreEqual((elite.unit, 0), h.Feedback.Elites.Single(), "Marks register the elite unit");
+                Assert.IsTrue(h.Config.Get<EnemySpawnerConfig>("spawner.saltwind_elite_hammerhead").elite.isElite, "the beat spawner flags it elite");
+                Assert.AreEqual(h.Spawn.ArenaFocusUnitId, elite.unit);
+            }
+        }
+
+        [Test]
+        public void Overtime_IsNotHeldBackByAnArena()
+        {
+            var h = Make();
+            using (h.Config)
+            {
+                h.Config.TryApplyEdit("timeline.saltwind", "stageDeadlineSeconds", "160", 0f, out _);
+                foreach (var p in h.Timeline.phases.Where(p => p.isOvertime)) p.trigger.timeSeconds = 160f;
+                h.RunUntil(151f);
+                Assert.IsTrue(h.Spawn.ArenaActive, "the Reef Crab arena is running and its crab never dies here");
+                h.RunUntil(158f);
+                h.Sink.KillAllExcept(h.Spawn.ArenaFocusUnitId); // fake enemies never die on their own; keep the cap out of it
+                var before = h.Sink.Spawns.Count;
+                h.RunUntil(175f);
+                Assert.IsTrue(h.Spawn.ArenaActive);
+                Assert.Greater(h.Sink.Spawns.Count, before, "R-75: overtime spawns keep coming during an arena");
+                CollectionAssert.Contains(h.Feedback.Telemetry, "overtime_started");
             }
         }
 

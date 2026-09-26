@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using HighSeas.Balance;
@@ -106,14 +107,32 @@ namespace RoguePirates.V4.Tests
                 .Concat(new[] { schedule.hammerheadBeat, schedule.krakenBeat, schedule.swarmPulse, schedule.drownedPursuer, schedule.drownedHarrier, schedule.powderCacheAmbush, schedule.bossSummon })
                 .Where(p => p != null).Distinct().ToList();
             Assert.AreEqual(12, profiles.Count);
+            // Defaults with the v3-parity preset (it reverts the playtest decisions: elite beats R-03, Drowned anchors R-05).
+            using var parity = new ConfigSetRuntime(_set);
+            var errors = new List<string>();
+            Assert.IsTrue(PresetCodec.Apply(parity, PresetCodec.FromJson(File.ReadAllText(ParityPresetPath)), 0f, errors), string.Join("\n", errors));
             foreach (var p in profiles)
             {
-                var spawner = _set.All<EnemySpawnerConfig>().Single(s => s.legacyProfileId == p.ResolvedId);
+                var spawner = parity.All<EnemySpawnerConfig>().Single(s => s.legacyProfileId == p.ResolvedId);
                 Assert.AreEqual(p.enemy != null ? p.enemy.id : null, spawner.anchor != null ? spawner.anchor.enemyId : null, $"{p.ResolvedId} anchor");
                 var clone = Clone(p);
                 LegacyConfigMapping.ApplySpawner(spawner, clone);
                 Assert.AreEqual(JsonUtility.ToJson(p), JsonUtility.ToJson(clone), $"{p.ResolvedId} changed by its default config");
             }
+        }
+
+        static string ParityPresetPath => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "plan", "v4-verification", "presets", "v3-parity.json"));
+
+        [Test]
+        public void ParityPreset_PhaseIndices_TargetTheElitePhases()
+        {
+            // The preset addresses timeline phases by index; reordering the phases must not silently retarget it.
+            var timeline = _set.All<WaveTimelineConfig>().Single();
+            var json = File.ReadAllText(ParityPresetPath);
+            var indices = System.Text.RegularExpressions.Regex.Matches(json, @"phases\[(\d+)\]\.focus\.variant")
+                .Cast<System.Text.RegularExpressions.Match>().Select(m => int.Parse(m.Groups[1].Value)).ToList();
+            CollectionAssert.AreEquivalent(new[] { LegacyConfigMapping.EliteA, LegacyConfigMapping.EliteB }, indices.Select(i => timeline.phases[i].phaseId));
+            foreach (var i in indices) Assert.IsNotNull(timeline.phases[i].focus.variant, timeline.phases[i].phaseId + " spawns its elite variant by default (R-03)");
         }
 
         [Test]

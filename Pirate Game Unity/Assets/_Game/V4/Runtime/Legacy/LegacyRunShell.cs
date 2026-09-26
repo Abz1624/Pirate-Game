@@ -245,6 +245,9 @@ namespace RoguePirates.V4.Legacy
             if (_player != null) _player.Damage.SetPlaytestInvulnerable(true);
         }
 
+        /// <summary>End of frame, after legacy UI callbacks ran (skip button, level-up resume).</summary>
+        public void LateTick() => LegacyPresentationAdapter.HideLevelUpCardsLeftAfterSkip();
+
         /// <summary>V3RunBootstrap.Update.</summary>
         public void Tick(float dt)
         {

@@ -411,6 +411,38 @@ namespace RoguePirates.V4.Legacy
     [DeletedInPhase(14, "All presentation is V4 after switch-over")]
     public sealed class LegacyPresentationAdapter
     {
+        static readonly System.Reflection.FieldInfo LevelUpPanelField =
+            typeof(LevelUpModal).GetField("panel", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+        // Cached for the per-frame skip check (the modal only; its panel is rebuilt) (Unity's null check drops them when the scene unloads).
+        static LevelUpModal _levelUpModal;
+        static int _nextModalLookupFrame;
+
+        /// <summary>
+        /// V3 bug (register R-83): skipping the last pending level-up resumes the run but never hides the card panel,
+        /// so the cards stay on screen (and 1/2/3 still pick from them). Every way V3 shows the cards also pauses the
+        /// run for the level-up in the same call, so cards still showing while the run is unpaused with nothing
+        /// pending are stale: hide them. Picking a card already hides them, so in practice only Skip is affected.
+        /// </summary>
+        public static void HideLevelUpCardsLeftAfterSkip()
+        {
+            // Cheap checks first, and the modal cached: LevelUpModal.Instance re-wires its layout on every access.
+            var run = RunManager.Instance;
+            if (run == null || run.IsPaused) return;
+            if (LevelSystem.Instance != null && LevelSystem.Instance.PendingLevelUps > 0) return;
+            if (_levelUpModal == null)
+            {
+                if (Time.frameCount < _nextModalLookupFrame) return;
+                // The modal V3 shows (it may pick among several). V3 can replace it while building its UI, so a
+                // destroyed one is looked up again at once; only a failed lookup waits 30 frames.
+                _levelUpModal = LevelUpModal.Instance;
+                if (_levelUpModal == null) { _nextModalLookupFrame = Time.frameCount + 30; return; }
+            }
+            // Read the panel each time: the modal rebuilds it (NeedsModernRebuild), so a cached panel goes stale.
+            var panel = LevelUpPanelField?.GetValue(_levelUpModal) as GameObject;
+            if (panel != null && panel.activeSelf) _levelUpModal.Hide();
+        }
+
         public static void EnsureDevAndDebugTools(bool firstRun)
         {
             if (firstRun)

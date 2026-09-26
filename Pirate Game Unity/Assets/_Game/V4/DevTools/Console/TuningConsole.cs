@@ -24,7 +24,11 @@ namespace RoguePirates.V4.DevTools.Console
     {
         readonly List<IConsoleSection> _sections = new List<IConsoleSection>();
         readonly HashSet<string> _collapsed = new HashSet<string>();
-        Rect _window = new Rect(20, 210, 460, 560); // below the HUD profile panel
+        Rect _window = new Rect(20, 150, 600, 720); // below the HUD profile panel; resizable, remembered
+        const string RectPrefKey = "v4_console_rect";
+        const float MinWidth = 380f, MinHeight = 260f, Grip = 8f;
+        int _resizeEdges; // bit 1 left, 2 right, 4 top, 8 bottom
+        bool _rectLoaded;
         Vector2 _scroll;
         string _search = string.Empty;
         bool _open;
@@ -67,7 +71,7 @@ namespace RoguePirates.V4.DevTools.Console
         public void SetOpen(bool open)
         {
             _open = open;
-            if (!open) { GUIUtility.keyboardControl = 0; SetGameKeyboardBlocked(false); }
+            if (!open) { GUIUtility.keyboardControl = 0; SetGameKeyboardBlocked(false); if (_rectLoaded) SaveRect(); }
             ApplyPause();
         }
 
@@ -89,6 +93,7 @@ namespace RoguePirates.V4.DevTools.Console
 
         void OnDisable()
         {
+            if (_rectLoaded) SaveRect();
             _open = false;
             ApplyPause();
             SetGameKeyboardBlocked(false);
@@ -124,8 +129,87 @@ namespace RoguePirates.V4.DevTools.Console
                 return;
             }
 
+            LoadRect();
+            HandleResize(Event.current);
             _window = GUI.Window(0x7634, _window, DrawWindow, "V4 Tuning Console (F1)");
+            ClampToScreen();
             if (Event.current.type == EventType.Repaint) SetGameKeyboardBlocked(GUIUtility.keyboardControl != 0);
+        }
+
+        /// <summary>Drag any edge or corner to resize (outside the window's own controls); the size and position are remembered.</summary>
+        void HandleResize(Event e)
+        {
+            var mouse = e.mousePosition;
+            // Released outside the game view: IMGUI never sends the MouseUp, so end the resize here.
+            if (_resizeEdges != 0 && Mouse.current != null && !Mouse.current.leftButton.isPressed)
+            {
+                _resizeEdges = 0;
+                SaveRect();
+                return;
+            }
+            if (e.type == EventType.MouseDown && e.button == 0)
+            {
+                var outer = new Rect(_window.x - Grip, _window.y - Grip, _window.width + 2 * Grip, _window.height + 2 * Grip);
+                if (!outer.Contains(mouse)) return;
+                _resizeEdges = 0;
+                if (mouse.x <= _window.x + Grip) _resizeEdges |= 1;
+                if (mouse.x >= _window.xMax - Grip) _resizeEdges |= 2;
+                if (mouse.y <= _window.y + 2f && mouse.y >= _window.y - Grip) _resizeEdges |= 4; // top edge (the title bar moves the window)
+                if (mouse.y >= _window.yMax - Grip) _resizeEdges |= 8;
+                if (_resizeEdges != 0) e.Use();
+            }
+            else if (e.type == EventType.MouseDrag && _resizeEdges != 0)
+            {
+                if ((_resizeEdges & 1) != 0) { var right = _window.xMax; _window.xMin = Mathf.Min(mouse.x, right - MinWidth); _window.xMax = right; }
+                if ((_resizeEdges & 2) != 0) _window.width = Mathf.Max(MinWidth, mouse.x - _window.x);
+                if ((_resizeEdges & 4) != 0) { var bottom = _window.yMax; _window.yMin = Mathf.Min(mouse.y, bottom - MinHeight); _window.yMax = bottom; }
+                if ((_resizeEdges & 8) != 0) _window.height = Mathf.Max(MinHeight, mouse.y - _window.y);
+                e.Use();
+            }
+            else if (e.type == EventType.MouseUp && _resizeEdges != 0)
+            {
+                _resizeEdges = 0;
+                SaveRect();
+                e.Use();
+            }
+        }
+
+        void ClampToScreen()
+        {
+            _window.width = Mathf.Clamp(_window.width, MinWidth, Mathf.Max(MinWidth, Screen.width));
+            _window.height = Mathf.Clamp(_window.height, MinHeight, Mathf.Max(MinHeight, Screen.height));
+            // Keep the whole window on screen (a size saved on a larger screen shrinks to fit).
+            _window.x = Mathf.Clamp(_window.x, 0f, Mathf.Max(0f, Screen.width - _window.width));
+            _window.y = Mathf.Clamp(_window.y, 0f, Mathf.Max(0f, Screen.height - _window.height));
+            if (Event.current.type == EventType.MouseUp) SaveRect(); // after moving by the title bar
+        }
+
+        void LoadRect()
+        {
+            if (_rectLoaded) return;
+            _rectLoaded = true;
+            try
+            {
+                var parts = PlayerPrefs.GetString(RectPrefKey, string.Empty).Split(',');
+                if (parts.Length == 4 && float.TryParse(parts[0], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var x) &&
+                    float.TryParse(parts[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var y) &&
+                    float.TryParse(parts[2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var w) &&
+                    float.TryParse(parts[3], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var h))
+                    _window = new Rect(x, y, w, h);
+                else
+                    _window = new Rect(20f, 150f, Mathf.Min(640f, Screen.width * 0.45f), Mathf.Max(MinHeight, Screen.height - 190f));
+            }
+            catch (System.Exception) { }
+        }
+
+        void SaveRect()
+        {
+            try
+            {
+                var inv = System.Globalization.CultureInfo.InvariantCulture;
+                PlayerPrefs.SetString(RectPrefKey, string.Join(",", _window.x.ToString("0", inv), _window.y.ToString("0", inv), _window.width.ToString("0", inv), _window.height.ToString("0", inv)));
+            }
+            catch (System.Exception) { }
         }
 
         void DrawWindow(int id)
@@ -157,7 +241,10 @@ namespace RoguePirates.V4.DevTools.Console
             }
             GUILayout.EndScrollView();
 
+            GUILayout.BeginHorizontal();
             if (GUILayout.Button("Close")) SetOpen(false);
+            GUILayout.Label("drag an edge or corner to resize", GUILayout.ExpandWidth(false));
+            GUILayout.EndHorizontal();
             GUI.DragWindow(new Rect(0, 0, 10000, 22));
         }
 

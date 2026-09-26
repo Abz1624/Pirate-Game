@@ -20,6 +20,9 @@ namespace RoguePirates.V4.DevTools.Console
         public string SearchText => "timeline phase band beat pulse elite miniboss overtime storm trigger skip";
 
         string _status = string.Empty;
+        int _frame = -1;
+        readonly Dictionary<string, PhaseStatus> _states = new Dictionary<string, PhaseStatus>();
+        readonly Dictionary<TimelinePhase, string> _labels = new Dictionary<TimelinePhase, string>();
 
         public void Draw(TuningConsole console)
         {
@@ -30,7 +33,14 @@ namespace RoguePirates.V4.DevTools.Console
             ISpawnController spawn = null;
             game.Context?.TryGet(out spawn);
             var runTime = RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f;
-            var states = spawn != null ? spawn.Phases.ToDictionary(p => p.PhaseId, p => p) : new Dictionary<string, PhaseStatus>();
+            if (_frame != Time.frameCount)
+            {
+                _frame = Time.frameCount;
+                _states.Clear();
+                if (spawn != null) foreach (var p in spawn.Phases) _states[p.PhaseId] = p;
+                _labels.Clear();
+            }
+            var states = _states;
 
             if (spawn != null)
                 GUILayout.Label($"Now: {(string.IsNullOrEmpty(spawn.CurrentPhaseLabel) ? "—" : spawn.CurrentPhaseLabel)}   ·   spawn rate ×{spawn.EffectiveRateMultiplier:0.##}   ·   arena {(spawn.ArenaActive ? "on (unit " + spawn.ArenaFocusUnitId + ")" : "off")}", GUI.skin.box);
@@ -41,7 +51,8 @@ namespace RoguePirates.V4.DevTools.Console
                 var phase = timeline.phases[i];
                 states.TryGetValue(phase.phaseId, out var st);
                 GUILayout.BeginHorizontal();
-                GUILayout.Label(Describe(phase), GUILayout.Width(200));
+                if (!_labels.TryGetValue(phase, out var label)) _labels[phase] = label = Describe(phase);
+                GUILayout.Label(label, GUILayout.Width(200));
                 GUILayout.Label(st.PhaseId != null ? st.State.ToString() : "-", GUILayout.Width(56));
                 if (spawn != null && GUILayout.Button("Trigger", GUILayout.Width(58)))
                     _status = spawn.TriggerNow(phase.phaseId) ? $"{phase.phaseId}: triggered" : $"{phase.phaseId}: follows the run clock or the legacy executor";

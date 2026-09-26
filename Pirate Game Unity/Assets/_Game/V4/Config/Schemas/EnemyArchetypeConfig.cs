@@ -20,6 +20,8 @@ namespace RoguePirates.V4.Config
     [Serializable]
     public sealed class ArchetypeVisual
     {
+        [Tooltip("The model is a stand-in until the enemy gets its own art (future content; e.g. the Drowned enemies, R-05).")]
+        public bool placeholderModel;
         public GameObject visualPrefab;
         public float visualScale = 1f, visualYawOffset, visualHeightOffset;
         public Color placeholderColor = Color.red;

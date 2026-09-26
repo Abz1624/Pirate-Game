@@ -1,0 +1,18 @@
+M1-M3 playtest fixes: trace comparison (Windows player built before the review fixes; the fixes after it do not touch the parity path)
+--- V4 (v3-parity preset) vs V3 goldens
+v3-trace-seed-101-a.jsonl vs v4-trace-seed-101-parity.jsonl: MATCH (437 lines)
+v3-trace-seed-202-a.jsonl vs v4-trace-seed-202-parity.jsonl: MATCH (409 lines)
+v3-trace-seed-303-a.jsonl vs v4-trace-seed-303-parity.jsonl: MATCH (523 lines)
+--- V4 replay
+v4-trace-seed-101-parity.jsonl vs v4-trace-seed-101-parity-b.jsonl: MATCH (437 lines)
+--- Default (decisions on) vs M3 default: differ on purpose (first difference = the 3:00 elite beat now spawns elite_hammerhead)
+v4-trace-seed-101-a.jsonl vs v4-trace-seed-101-a.jsonl: DIFF (507 lines)
+    line 203: {"type":"spawn","t":180.0002,"uid":109,"enemy":"hammerhead","elite":false,"boss":false,"x":4.6335,"z":-64.1095}
+        vs {"type":"spawn","t":180.0002,"uid":109,"enemy":"elite_hammerhead","elite":true,"boss":false,"x":4.6335,"z":-67.0439}
+v4-trace-seed-202-a.jsonl vs v4-trace-seed-202-a.jsonl: DIFF (434 lines)
+    line 194: {"type":"spawn","t":180.0002,"uid":109,"enemy":"hammerhead","elite":false,"boss":false,"x":-95.238,"z":62.6208}
+        vs {"type":"spawn","t":180.0002,"uid":109,"enemy":"elite_hammerhead","elite":true,"boss":false,"x":-95.3027,"z":59.7366}
+v4-trace-seed-303-a.jsonl vs v4-trace-seed-303-a.jsonl: DIFF (559 lines)
+    line 208: {"type":"spawn","t":180.0002,"uid":109,"enemy":"hammerhead","elite":false,"boss":false,"x":-68.6787,"z":75.5335}
+        vs {"type":"spawn","t":180.0002,"uid":109,"enemy":"elite_hammerhead","elite":true,"boss":false,"x":-68.6787,"z":72.5991}
+--- Long runs: not recorded (timed out with 6 players at once; replaced by jump-to-time tests, see CHECKLIST)

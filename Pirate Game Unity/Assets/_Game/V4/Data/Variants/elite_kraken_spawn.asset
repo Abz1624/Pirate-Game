@@ -36,8 +36,9 @@ MonoBehaviour:
     value: 0
   tags: []
   inheritBaseVisual: 0
-  concurrencyTags: []
-  spawnTier: 0
+  concurrencyTags:
+  - area_denial
+  spawnTier: 2
   combat:
     registered: 1
     archetype: 22
@@ -54,6 +55,6 @@ MonoBehaviour:
     chargeDuration: 0
     chargeCooldown: 0
     chargeSpeedMult: 0
-    contactDamageEnabled: 1
+    contactDamageEnabled: 0
     eliteHammerheadSecondCharge: 0
     eliteKrakenSequentialTraps: 1

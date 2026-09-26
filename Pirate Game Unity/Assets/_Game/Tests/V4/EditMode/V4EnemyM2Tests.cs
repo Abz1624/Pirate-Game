@@ -66,7 +66,11 @@ namespace RoguePirates.V4.Tests
                 UseV3AliasVisuals(config);
                 var db = runtime.Build(v3);
                 CollectionAssert.IsEmpty(runtime.Unconfigured, "every enemy in the live database has a V4 config");
-                Assert.AreEqual(v3.enemies.Length, db.enemies.Length, "same array length (null slots included)");
+                // V3's slots first (null slots included); V4-only enemies (Drowned, registry elites) are appended after them.
+                Assert.AreEqual(v3.enemies.Length + runtime.V4OnlyIds.Count, db.enemies.Length, "V3's layout, then the V4-only enemies");
+                CollectionAssert.AreEquivalent(new[] { "drowned_harrier", "drowned_pursuer", "elite_hammerhead", "elite_kraken_spawn" }, runtime.V4OnlyIds);
+                for (var i = v3.enemies.Length; i < db.enemies.Length; i++)
+                    CollectionAssert.IsEmpty(db.enemies[i].visualPrefab != null ? db.enemies[i].visualPrefab.GetComponentsInChildren<Collider>(true) : new Collider[0], db.enemies[i].id + ": collider-free model (R-81)");
                 var compared = 0;
                 for (var i = 0; i < v3.enemies.Length; i++)
                 {
@@ -148,6 +152,10 @@ namespace RoguePirates.V4.Tests
                 var fresh = ScriptableObject.CreateInstance<EnemyDefinition>();
                 _created.Add(fresh);
                 V4RuntimeDatabase.Apply(EnemyStatResolver.Resolve(archetype), fresh);
+                // R-05: V4 gives them placeholder models (V3's fallback defines none); everything else is V3's.
+                Assert.IsTrue(archetype.visual.placeholderModel, archetype.enemyId + " is marked as a placeholder model");
+                fresh.visualPrefab = null;
+                fresh.visualScale = legacy.visualScale;
                 Assert.AreEqual(JsonUtility.ToJson(legacy), JsonUtility.ToJson(fresh), archetype.enemyId);
             }
         }
@@ -187,6 +195,8 @@ namespace RoguePirates.V4.Tests
                 var expected = new ArchetypeCombat();
                 LegacyConfigMapping.CopyFields(profile, expected);
                 expected.registered = true;
+                // R-77: the elite Kraken keeps the plain Kraken's no-contact rule (V3's elite entry left the default on).
+                if (id == "elite_kraken_spawn") expected.contactDamageEnabled = false;
                 Assert.AreEqual(JsonUtility.ToJson(expected), JsonUtility.ToJson(combat), id);
                 checkedIds.Add(id);
             }
@@ -236,7 +246,8 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(StatLayer.Variant, r.Provenance["visualPrefab"], "aliases take the template model by default (R-13)");
             Assert.AreEqual("needle_sloop", r.id);
             var elite = EnemyStatResolver.Resolve(_set.All<EnemyVariantConfig>().Single(v => v.variantId == "elite_hammerhead"));
-            Assert.AreEqual("hammerhead", elite.id, "registry elites are the same database enemy");
+            Assert.AreEqual("elite_hammerhead", elite.id, "registry elites have their own definition (R-03), so their combat profile applies to them alone");
+            Assert.AreEqual(_set.All<EnemyArchetypeConfig>().Single(a => a.enemyId == "hammerhead").stats.baseHP, elite.baseHP, "with the base enemy's stats");
             Assert.AreEqual(StatLayer.Variant, elite.Provenance["combat"]);
             Assert.IsTrue(elite.combat.eliteHammerheadSecondCharge);
         }
@@ -249,6 +260,11 @@ namespace RoguePirates.V4.Tests
         {
             "DevTools/Trace/RunTraceRecorder.cs:deck_cannons",
             "Editor/V3ConfigMigrator.cs:reef_crab_miniboss",
+            // The playtest-decision data step names the elite variants and Drowned enemies it wires up (R-03, R-05).
+            "Editor/V3ConfigMigrator.cs:elite_hammerhead",
+            "Editor/V3ConfigMigrator.cs:elite_kraken_spawn",
+            "Editor/V3ConfigMigrator.cs:drowned_pursuer",
+            "Editor/V3ConfigMigrator.cs:drowned_harrier",
         };
 
         [Test]

@@ -33,8 +33,9 @@ MonoBehaviour:
     xpValue: 3
     goldValue: 1
   visual:
-    visualPrefab: {fileID: 0}
-    visualScale: 1
+    placeholderModel: 1
+    visualPrefab: {fileID: 1709254077376921, guid: 84d2bab2e18923f438d2c897b9c87351, type: 3}
+    visualScale: 1.05
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}

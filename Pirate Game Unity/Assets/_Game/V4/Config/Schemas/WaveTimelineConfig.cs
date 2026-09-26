@@ -12,6 +12,11 @@ namespace RoguePirates.V4.Config
     public enum TagCapScope { Any, SpecialistPool }
     public enum FocusPlacement { SpawnerProfile, RingAroundPlayer }
     public enum BossConflict { SkipPermanently, WaitUntilBossEnds }
+    public enum StormDamageMode
+    {
+        [Tooltip("Steady damage every frame, not blocked by and not granting the ship's hit immunity (R-57 decision).")] Steady,
+        [Tooltip("V3: a hit every frame through the ship's 0.2 s hit immunity (about 0.7 damage/s, and it blocks enemy hits).")] PerFrameHit
+    }
 
     [Serializable]
     public sealed class PhaseTrigger
@@ -77,6 +82,8 @@ namespace RoguePirates.V4.Config
         [Tooltip("SpawnerProfile: the phase's spawner places its anchor enemy (with ordinary-time scaling). RingAroundPlayer: this archetype at ringDistance, at a random angle from the loot stream.")]
         public FocusPlacement placement = FocusPlacement.SpawnerProfile;
         [Tooltip("Enemy for RingAroundPlayer placement.")] public EnemyArchetypeConfig archetype;
+        [Tooltip("SpawnerProfile placement: spawn this variant instead of the spawner's anchor enemy (R-03: the scheduled elites spawn their elite variant, with its own combat profile).")]
+        public EnemyVariantConfig variant;
         public float ringDistance = 22f;
         [Tooltip("RingAroundPlayer only (spawner placement uses the spawner's elite settings).")] public ConfigEnums.EliteAffix affix = ConfigEnums.EliteAffix.None;
         public float speedMultiplier = 1f, hpMultiplier = 1f, damageMultiplier = 1f;
@@ -137,6 +144,7 @@ namespace RoguePirates.V4.Config
         public float contractionStartSeconds = 720f;
         public float contractionEndSeconds = 900f;
         public float outsideDamagePerSecond = 8f;
+        public StormDamageMode damageMode = StormDamageMode.Steady;
         public string startToast = "DREAD TIDE — stay inside the safe water!";
         public string edgeToast = "STORM EDGE — return to open water!";
     }

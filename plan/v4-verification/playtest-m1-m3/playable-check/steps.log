@@ -1,0 +1,19 @@
+﻿[rect-before] NONE
+[is-playing] no
+[begin] started
+[is-playing] OK playing
+[run-start] OK t=5.2 phase=Band 0
+[console] console open
+[shot] 01-console-default-size.png
+[console-rect] window 640x890 at 20,150 on 1920x1080
+[trigger-elite] trigger elite_hammerhead: True
+[elite] OK focus elite_hammerhead, elite=True, hp 12/12
+[shot] 02-elite-hammerhead.png
+[kill-elite] elite killed
+[jump-overtime] jumped to 601 s
+[drowned] WAIT
+[drowned] WAIT
+[drowned] WAIT
+[drowned] OK drowned alive: pursuer 2, harrier 2, t=606
+[shot] 03-overtime-drowned.png
+[rect-restore] removed

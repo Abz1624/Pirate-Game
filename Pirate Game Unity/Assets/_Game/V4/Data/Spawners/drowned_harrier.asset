@@ -16,7 +16,7 @@ MonoBehaviour:
   schemaVersion: 1
   balanceVersion: saltwind-v3-parity
   legacyProfileId: drowned_harrier
-  anchor: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+  anchor: {fileID: 11400000, guid: 99e727e763b21ca498a4d82e18fdd027, type: 2}
   spawnMode: 0
   groupLayout: 5
   timing:

@@ -175,8 +175,7 @@ namespace RoguePirates.V4.Spawning
                 foreach (var a in config.All<EnemyArchetypeConfig>())
                     _info[a.enemyId] = new EnemyInfo { Tags = a.concurrencyTags, Tier = a.spawnTier };
                 foreach (var v in config.All<EnemyVariantConfig>())
-                    if (v.kind == VariantKind.DatabaseAlias)
-                        _info[v.variantId] = new EnemyInfo { Tags = v.concurrencyTags, Tier = v.spawnTier };
+                    _info[v.variantId] = new EnemyInfo { Tags = v.concurrencyTags, Tier = v.spawnTier }; // elites count toward tag caps too
             }
             _infoValid = true;
         }

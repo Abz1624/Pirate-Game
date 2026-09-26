@@ -34,6 +34,10 @@ namespace RoguePirates.V4.Editor
         [MenuItem("RoguePirates/V4/Migrate V3 Data to Configs")]
         static void MigrateFromMenu() => Debug.Log(Migrate(false));
 
+        /// <summary>
+        /// M1/M2 generation from the V3 sources. To rebuild the data from scratch run, in order: this,
+        /// <see cref="ApplyM3"/> (which re-applies <see cref="ApplyPlaytestDecisions"/> itself).
+        /// </summary>
         public static string Migrate(bool overwrite)
         {
             var log = new StringBuilder();
@@ -412,6 +416,68 @@ namespace RoguePirates.V4.Editor
                 target.entries = Array.Empty<ScheduledSpawnEntry>();
                 EditorUtility.SetDirty(target);
                 log.AppendLine("encounter-only schedule written");
+            }
+            AssetDatabase.SaveAssets();
+            // ApplyM3 resets variant tiers and may rebuild the focus blocks: re-apply the later decisions on top.
+            log.Append(ApplyPlaytestDecisions());
+            return log.ToString();
+        }
+
+        [MenuItem("RoguePirates/V4/Apply M1-M3 Playtest Decisions")]
+        static void ApplyPlaytestDecisionsFromMenu() => Debug.Log(ApplyPlaytestDecisions());
+
+        /// <summary>
+        /// Decisions from the combined M1–M3 playtest, in place and idempotent:
+        /// R-03 the scheduled elite beats spawn their elite variant, flagged elite (the beat spawners' elite block);
+        /// R-05 overtime spawners anchor the Drowned archetypes, which get placeholder models (the proxy ships V3's
+        /// fallback resolver uses, marked placeholderModel for future art). The v3-parity preset reverts all of it.
+        /// </summary>
+        public static string ApplyPlaytestDecisions()
+        {
+            var log = new StringBuilder();
+            T Load<T>(string path) where T : Object => AssetDatabase.LoadAssetAtPath<T>(path);
+            var timeline = Load<WaveTimelineConfig>($"{DataRoot}/Timelines/SaltwindTimeline.asset");
+            foreach (var (phaseId, spawnerFile, variantFile) in new[]
+                     {
+                         (LegacyConfigMapping.EliteA, "saltwind_elite_hammerhead", "elite_hammerhead"),
+                         (LegacyConfigMapping.EliteB, "saltwind_elite_kraken", "elite_kraken_spawn"),
+                     })
+            {
+                var spawner = Load<EnemySpawnerConfig>($"{DataRoot}/Spawners/{spawnerFile}.asset");
+                var variant = Load<EnemyVariantConfig>($"{DataRoot}/Variants/{variantFile}.asset");
+                if (spawner == null || variant == null || timeline?.Phase(phaseId) == null) { log.AppendLine($"missing {phaseId} data"); continue; }
+                spawner.elite.isElite = true;
+                EditorUtility.SetDirty(spawner);
+                timeline.Phase(phaseId).focus.variant = variant;
+                // The V3 beat kraken counted toward the area-denial cap as a kraken_spawn; keep that for the elite.
+                var baseArchetype = variant.baseArchetype;
+                if (baseArchetype != null && baseArchetype.concurrencyTags != null) variant.concurrencyTags = (string[])baseArchetype.concurrencyTags.Clone();
+                if (baseArchetype != null) variant.spawnTier = baseArchetype.spawnTier;
+                // V3's elite registry entries never set contact damage (default on), unlike their base enemies; the
+                // elite profiles had no reader in V3, so keep the base enemy's rule (the plain beat Kraken never rams).
+                if (baseArchetype != null && variant.combat != null && baseArchetype.combat != null)
+                    variant.combat.contactDamageEnabled = baseArchetype.combat.contactDamageEnabled;
+                EditorUtility.SetDirty(variant);
+                log.AppendLine($"{phaseId}: spawns {variant.variantId}, spawner flagged elite");
+            }
+            if (timeline != null) EditorUtility.SetDirty(timeline);
+
+            foreach (var (spawnerFile, enemy, model, scale) in new[]
+                     {
+                         ("drowned_pursuer", "drowned_pursuer", "Assets/GameObject/SmuggleBoat.prefab", 1.05f),
+                         ("drowned_harrier", "drowned_harrier", "Assets/GameObject/CannonboatNavy.prefab", 0.95f),
+                     })
+            {
+                var spawner = Load<EnemySpawnerConfig>($"{DataRoot}/Spawners/{spawnerFile}.asset");
+                var archetype = Load<EnemyArchetypeConfig>($"{DataRoot}/Enemies/{enemy}.asset");
+                if (spawner == null || archetype == null) { log.AppendLine($"missing {enemy} data"); continue; }
+                spawner.anchor = archetype;
+                EditorUtility.SetDirty(spawner);
+                archetype.visual.visualPrefab = Load<GameObject>(model);
+                archetype.visual.visualScale = scale;
+                archetype.visual.placeholderModel = true;
+                EditorUtility.SetDirty(archetype);
+                log.AppendLine($"{spawnerFile}: anchors {enemy} (placeholder model {System.IO.Path.GetFileNameWithoutExtension(model)})");
             }
             AssetDatabase.SaveAssets();
             return log.ToString();

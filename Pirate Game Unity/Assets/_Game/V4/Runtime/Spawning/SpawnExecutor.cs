@@ -55,7 +55,7 @@ namespace RoguePirates.V4.Spawning
         /// Returns how many spawned.
         /// </summary>
         public int TryBurst(SpawnProfile profile, int count, bool ignoreCapSoft, float hpMultiplier, float damageMultiplier,
-            int profileInstanceId, ref int leaderUnitId, TimelinePhase compositionPhase = null, bool ambient = false)
+            int profileInstanceId, ref int leaderUnitId, TimelinePhase compositionPhase = null, bool ambient = false, string enemyId = null)
         {
             if (profile == null || profile.enemy == null || !_s.Placement.Ready) return 0;
 
@@ -65,8 +65,8 @@ namespace RoguePirates.V4.Spawning
 
             if (!ignoreCapSoft && _s.Sink.ActiveCount >= AmbientCap) return 0;
 
-            var definitionIndex = -1;
-            if (compositionPhase != null && compositionPhase.pools.Count > 0 && _s.Run.Exists)
+            var definitionIndex = string.IsNullOrEmpty(enemyId) ? -1 : _s.Sink.FindDefinition(enemyId);
+            if (definitionIndex < 0 && compositionPhase != null && compositionPhase.pools.Count > 0 && _s.Run.Exists)
             {
                 var picked = _composition.Pick(compositionPhase, elapsed, _s.Run.PlayerLevel);
                 if (picked != null) definitionIndex = _s.Sink.FindDefinition(picked);

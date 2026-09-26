@@ -11,6 +11,18 @@
                 {
                     "path": "phases[0].ratePerSecond",
                     "value": "0.6"
+                },
+                {
+                    "path": "phases[6].focus.variant",
+                    "value": ""
+                },
+                {
+                    "path": "phases[9].focus.variant",
+                    "value": ""
+                },
+                {
+                    "path": "storm.damageMode",
+                    "value": "PerFrameHit"
                 }
             ]
         },
@@ -91,6 +103,46 @@
                 {
                     "path": "inheritBaseVisual",
                     "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "spawner.saltwind_elite_hammerhead",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "elite.isElite",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "spawner.saltwind_elite_kraken",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "elite.isElite",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "spawner.drowned_pursuer",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "anchor",
+                    "value": "enemy.shark"
+                }
+            ]
+        },
+        {
+            "configId": "spawner.drowned_harrier",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "anchor",
+                    "value": "enemy.cannonboat"
                 }
             ]
         }

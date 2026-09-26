@@ -238,6 +238,58 @@ namespace RoguePirates.V4.Legacy
         public bool IsAlive => Exists && Ship.Damage.IsAlive;
         public Vector3 Position => Ship != null ? Ship.transform.position : Vector3.zero;
         public void Damage(float amount, Vector3 source) => Ship?.Damage?.TakeDamage(amount, source, false);
+
+        static readonly System.Reflection.FieldInfo InvulnerableField =
+            typeof(DamageReceiver).GetField("_playtestInvulnerable", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+        /// <summary>Seconds between reports of accumulated steady damage (feedback, telemetry, the V4 event).</summary>
+        public const float SteadyReportInterval = 0.5f;
+
+        /// <summary>Accumulated steady damage, reported at most every <see cref="SteadyReportInterval"/> seconds.</summary>
+        public event System.Action<float> SteadyDamageReported;
+
+        float _steadyPending;
+        float _steadyLastReport = float.NegativeInfinity;
+
+        void ReportSteady(bool force)
+        {
+            if (_steadyPending <= 0f) return;
+            if (!force && Time.time - _steadyLastReport < SteadyReportInterval) return;
+            var amount = _steadyPending;
+            _steadyPending = 0f;
+            _steadyLastReport = Time.time;
+            // TriggerBus drives damage numbers, the hit flash and on-damage relics: once per report, not every frame.
+            LegacyRewardsAdapter.RecordDamage(amount);
+            SteadyDamageReported?.Invoke(amount);
+        }
+
+        /// <summary>
+        /// Steady damage (storm, R-57): the same incoming multipliers as TakeDamage (Brace!, Keel), no hit immunity
+        /// given or respected, so enemy hits are not blocked by it. HP drops every frame; feedback and telemetry get
+        /// the summed amount every <see cref="SteadyReportInterval"/> s. A lethal tick goes through TakeDamage so
+        /// death, events and telemetry run as usual.
+        /// </summary>
+        public void DamageOverTime(float amount, Vector3 source)
+        {
+            var receiver = Ship != null ? Ship.Damage : null;
+            if (receiver == null || !receiver.IsAlive) return;
+            if (InvulnerableField != null && (bool)InvulnerableField.GetValue(receiver)) return; // god mode, Module Lab
+            if (V3CaptainActiveController.Instance != null) amount *= V3CaptainActiveController.Instance.IncomingDamageMultiplier;
+            if (V3RunItemEffects.Instance != null) amount *= V3RunItemEffects.Instance.GetIncomingDamageMultiplier(Ship);
+            if (amount <= 0f) return;
+            if (amount < receiver.CurrentHP)
+            {
+                receiver.Heal(-amount);
+                V3RunItemEffects.Instance?.NotifyPlayerTookDamage(); // per frame: it only resets item timers
+                _steadyPending += amount;
+                ReportSteady(false);
+                return;
+            }
+            _steadyPending += receiver.CurrentHP - 0.001f;
+            ReportSteady(true);
+            receiver.Heal(-(receiver.CurrentHP - 0.001f));
+            receiver.TakeDamage(1f, source, false); // retried next frame if the ship is inside its hit immunity
+        }
     }
 
     /// <summary>
