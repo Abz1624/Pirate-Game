@@ -243,6 +243,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 399834393481359305}
     m_Modifications:
+    - target: {fileID: 1911516023493443628, guid: a8ea325ea0b41454d90ddca2c8631748, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
+    - target: {fileID: 2245426102053486568, guid: a8ea325ea0b41454d90ddca2c8631748, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     - target: {fileID: 2403082435322339434, guid: a8ea325ea0b41454d90ddca2c8631748, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -323,6 +331,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3105059875413502673, guid: a8ea325ea0b41454d90ddca2c8631748, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     - target: {fileID: 3706772971184840957, guid: a8ea325ea0b41454d90ddca2c8631748, type: 3}
       propertyPath: m_Name
       value: CurrencyBar
@@ -345,6 +357,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5141175495564335504}
     m_Modifications:
+    - target: {fileID: 712334126127052904, guid: 2bc522a9334f64c82816781e9f8ec5b6, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     - target: {fileID: 968638721922445397, guid: 2bc522a9334f64c82816781e9f8ec5b6, type: 3}
       propertyPath: m_Name
       value: PlayerPanel
@@ -447,6 +463,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6112211029253582707}
     m_Modifications:
+    - target: {fileID: 579534943027700732, guid: e47e0fa7b468448bf9028e71903b9d48, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
+    - target: {fileID: 620617550079121718, guid: e47e0fa7b468448bf9028e71903b9d48, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
+    - target: {fileID: 3679828376051135623, guid: e47e0fa7b468448bf9028e71903b9d48, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     - target: {fileID: 6566956566596236098, guid: e47e0fa7b468448bf9028e71903b9d48, type: 3}
       propertyPath: m_Name
       value: UpgradeSelection
@@ -455,6 +483,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6670332566299996287, guid: e47e0fa7b468448bf9028e71903b9d48, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
+    - target: {fileID: 7429892745608502734, guid: e47e0fa7b468448bf9028e71903b9d48, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
+    - target: {fileID: 7460850208885073668, guid: e47e0fa7b468448bf9028e71903b9d48, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     - target: {fileID: 8572949198670838085, guid: e47e0fa7b468448bf9028e71903b9d48, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -637,6 +677,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MatchTitle
       objectReference: {fileID: 0}
+    - target: {fileID: 6938230457150972901, guid: 3e83dd5c2b3804adaa1b8d1aee407352, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1041,6 +1085,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5914484687369653923, guid: 6aa9484185788478fb10b519d55083ed, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     - target: {fileID: 7413436020709617538, guid: 6aa9484185788478fb10b519d55083ed, type: 3}
       propertyPath: m_Name
       value: MatchTimer

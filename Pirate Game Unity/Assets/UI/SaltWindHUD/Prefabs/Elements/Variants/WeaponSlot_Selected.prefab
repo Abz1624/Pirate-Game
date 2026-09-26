@@ -107,7 +107,7 @@ PrefabInstance:
     - target: {fileID: 8164893870988273267, guid: 9ac28f64c927445969f862e37ff8b0a3, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     - target: {fileID: 8572406412486850382, guid: 9ac28f64c927445969f862e37ff8b0a3, type: 3}
       propertyPath: m_fontAsset
       value: 
@@ -115,7 +115,7 @@ PrefabInstance:
     - target: {fileID: 8572406412486850382, guid: 9ac28f64c927445969f862e37ff8b0a3, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8883221218038588030, guid: b7ede80a4f89d47c2a7261db14d03c87, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
