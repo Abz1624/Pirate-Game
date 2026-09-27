@@ -42,7 +42,9 @@ namespace RoguePirates.V4.Legacy
         public bool HasDamageReceiver => ShipNow != null && ShipNow.Damage != null;
         public bool IsAlive => HasDamageReceiver && ShipNow.Damage.IsAlive;
         public Vector3 HullPosition => HasDamageReceiver ? ShipNow.Damage.transform.position : Position;
-        public void TakeDamage(float amount, Vector3 source, bool isCrit) { if (HasDamageReceiver) ShipNow.Damage.TakeDamage(amount, source, isCrit); }
+        /// <summary>M9: the build's incoming-damage multiplier (V3's DamageReceiver read the Captain and item singletons).</summary>
+        public System.Func<float> IncomingDamage;
+        public void TakeDamage(float amount, Vector3 source, bool isCrit) { if (HasDamageReceiver) ShipNow.Damage.TakeDamage(amount * (IncomingDamage?.Invoke() ?? 1f), source, isCrit); }
         public void ApplySlow(float speedMultiplier, float seconds) { if (ShipNow != null) ShipNow.ApplySlow(speedMultiplier, seconds); }
     }
 
@@ -94,6 +96,9 @@ namespace RoguePirates.V4.Legacy
     [DeletedInPhase(14, "V4 kill fan-out targets")]
     public sealed class LegacyEnemyKillTargets : IEnemyKillTargets
     {
+        /// <summary>M9: the V4 build modules (pickups, floor powerups, items) in PickupWorld's, V3FloorPowerupWorld's and V3RunItemEffects' places.</summary>
+        public LegacyBuildWiring Build;
+
         public void OnKilled(in EnemyUnit e, EnemyDefinition def)
         {
             RunManager.Instance?.RegisterKill(e.isBoss);
@@ -110,31 +115,35 @@ namespace RoguePirates.V4.Legacy
                     e.isBoss);
             }
 
-            HighSeas.Pickups.PickupWorld.Instance?.SpawnFromEnemy(
-                e.position,
-                def.xpValue,
-                gold,
-                !StageBalanceProfileContext.IsActive && e.affix == EliteAffix.Rich);
-            HighSeas.V3.V3FloorPowerupWorld.Instance?.TryRollOnKill(e.position, e.isBoss, e.isElite);
+            // (V3 doubled a Rich elite's gold only outside the stage profile, which V4 runs always use.)
+            Build?.SpawnKillDrops(e.position, def.xpValue, gold);
+            Build?.RollPowerup(e.position, e.isBoss, e.isElite);
             RunEncounterTracker.RegisterAgentKill(e.id);
             if (StageBalanceProfileContext.IsActive && def != null)
                 RunMarksTracker.TryCreditScheduledEliteKill(e.id, def.id);
             HighSeas.V3.V3MinibossArena.NotifyAgentKilled(e.id);
             HighSeas.Meta.TriggerBus.Instance?.RaiseKill(e.isElite, e.isBoss, e.position, e.lastHitWeaponId);
-            HighSeas.V3.V3RunItemEffects.Instance?.NotifyKill();
+            Build?.NotifyItemKill();
             if (!string.IsNullOrEmpty(e.lastHitWeaponId))
                 WeaponDamageLedger.RecordKill(e.lastHitWeaponId);
         }
     }
 
-    /// <summary>Hellfire patch needs: RunManager, V3's damage roll on the combat stream, the evolution catalog, the oil effect.</summary>
-    [DeletedInPhase(9, "Build & Progression (the damage roll and the evolution check)")]
+    /// <summary>
+    /// Hellfire patch needs: the run gate, the tick damage roll and the evolution check. M9: the roll is the V4 damage
+    /// calculator (V3 DamageSystem.RollDamage, base 4 with the Flamethrower's id, on the combat stream) and the check
+    /// reads the V4 progression's evolutions (V3 WeaponEvolutionRuntime); both are bound once the modules exist.
+    /// </summary>
+    [DeletedInPhase(14, "The run gate and the oil effect move to V4 with the run clock and presenters")]
     public sealed class LegacyHellfireEnvironment : IHellfireEnvironment
     {
+        const string FlamethrowerId = "flamethrower";
         static RunManager Run => RunManager.Instance;
+        public System.Func<RoguePirates.V4.Weapons.DamageCalculator> Calculator;
+        public System.Func<string, bool> HasHellfire;
         public bool RunActive => Run != null && !Run.IsPaused && !Run.IsRunEnded;
-        public float RollTickDamage(bool targetIsElite) => DamageSystem.RollDamage(4f, 1f, Run.Stats, targetIsElite, 0f, Run.Rng, 0f, "flamethrower");
-        public bool IsHellfireWeapon(string weaponId) => WeaponEvolutionCatalog.GetBehaviorModifier(weaponId) == "hellfire_nozzle";
+        public float RollTickDamage(bool targetIsElite) => Calculator().RollAmount(4f, 1f, targetIsElite, 0f, 0f, FlamethrowerId);
+        public bool IsHellfireWeapon(string weaponId) => HasHellfire != null && HasHellfire(weaponId);
 
         /// <summary>
         /// No effect: V3's burning-oil prefab (played through the disabled WeaponJuiceController) renders with a broken

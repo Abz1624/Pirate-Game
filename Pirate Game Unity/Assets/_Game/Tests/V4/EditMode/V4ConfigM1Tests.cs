@@ -378,7 +378,8 @@ namespace RoguePirates.V4.Tests
                     var b = v4 != null && v4.GetType().IsEnum ? ((int)v4).ToString() : ConfigFieldWalker.Format(v4);
                     Assert.AreEqual(a, b, $"{w.weaponId}.{f.Name}");
                 }
-                Assert.AreEqual(d.upgradeAxisConfigs?.Length ?? 0, w.upgradeAxes.Length, $"{w.weaponId} axes");
+                // M9: the axes are V3's effective ones (the asset's, else its pattern defaults), as its level-ups read them.
+                Assert.AreEqual(d.GetUpgradeConfigs().Count, w.upgradeAxes.Length, $"{w.weaponId} axes");
             }
         }
 

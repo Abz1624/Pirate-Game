@@ -63,7 +63,7 @@ namespace RoguePirates.V4.Legacy
     }
 
     /// <summary>Game database load and the runtime catalogs. M0 applies them exactly as V3 does.</summary>
-    [DeletedInPhase(9, "Enemies (M2), weapons (M5) and logbooks (M9) come from V4 configs")]
+    [DeletedInPhase(15, "The V4 enemy world and card texts still read the shared GameDatabase definition types (moved in M15)")]
     public sealed class LegacyDatabaseAdapter
     {
         public GameDatabase Database { get; private set; }
@@ -181,81 +181,6 @@ namespace RoguePirates.V4.Legacy
     }
 
 
-    /// <summary>Captains, items, powerups, hellfire patches and LevelSystem.</summary>
-    [DeletedInPhase(9, "Build & Progression modules")]
-    public sealed class LegacyBuildAdapter
-    {
-        public static void ResetPowerupsAndItems()
-        {
-            V3FloorPowerupWorld.Ensure();
-            V3FloorPowerupWorld.Instance?.ResetForRun();
-            V3RunItemInventory.Instance?.ClearForNewRun();
-            V3RunItemEffects.Instance?.ResetForNewRun();
-        }
-
-        /// <param name="createHellfireSlot">M8: the V4 hellfire patches' frame slot, created where V3 ensured HellfirePatchWorld.</param>
-        public static void EnsureCaptain(V3CaptainId captainId, PlayerShipController ship, System.Action createHellfireSlot)
-        {
-            var systems = GameObject.Find("Systems");
-            if (systems != null)
-            {
-                var controller = systems.GetComponent<V3CaptainController>();
-                if (controller == null) controller = systems.AddComponent<V3CaptainController>();
-                controller.Initialize(captainId, ship);
-            }
-
-            systems = GameObject.Find("Systems");
-            if (systems != null)
-            {
-                var active = systems.GetComponent<V3CaptainActiveController>();
-                if (active == null) active = systems.AddComponent<V3CaptainActiveController>();
-                active.Initialize(captainId);
-                createHellfireSlot?.Invoke();
-            }
-
-            V3CaptainActiveController.Instance?.ResetForNewRun();
-        }
-
-        public static string ResolveStartingWeapon(V3CaptainProfile profile)
-        {
-            if (StageBalanceProfileContext.IsActive && !V3PlaytestFlags.SaltwindDebugUnlockAll)
-                return "swivel_guns";
-            if (!V3PlaytestFlags.UnlockAllContent && !PlayerPrefs.HasKey(V3ContentUnlocks.FirstConquestKey))
-                return "swivel_guns";
-            var starter = profile.StartingWeaponId;
-            return string.IsNullOrEmpty(starter) ? "swivel_guns" : starter;
-        }
-
-        public static void ApplyStageBalanceProgression() => LevelSystem.Instance?.ApplyStageBalanceProgression();
-
-        /// <summary>Ensure and configure LevelSystem. The weapon-record sync that follows is done by V4LegacyBridge.</summary>
-        public static void PrepareLevelSystem(GameDatabase database, CombatExperimentProfile experiment, string startingWeapon)
-        {
-            if (LevelSystem.Instance == null)
-            {
-                var systems = GameObject.Find("Systems");
-                if (systems != null && systems.GetComponent<LevelSystem>() == null)
-                    systems.AddComponent<LevelSystem>();
-            }
-
-            LevelSystem.Instance?.ConfigureV3();
-            LevelSystem.Instance?.ApplyCombatExperiment(experiment);
-            LevelSystem.Instance?.PrepareForNewRun(database, startingWeapon);
-        }
-
-        public static void EnsureItemSystems()
-        {
-            V3RunItemInventory.Ensure();
-            V3RunItemEffects.Ensure();
-        }
-
-        public static void CancelPendingLevelUps()
-        {
-            LevelSystem.Instance?.CancelPendingLevelUps();
-            LevelUpModal.Instance?.Hide();
-        }
-    }
-
     /// <summary>Marks tracking, settlement, telemetry, damage ledger and the death finalize path.</summary>
     [DeletedInPhase(12, "RewardModule")]
     public sealed class LegacyRewardsAdapter
@@ -271,7 +196,7 @@ namespace RoguePirates.V4.Legacy
         public static void ResetLedgers()
         {
             WeaponDamageLedger.Reset();
-            WeaponEvolutionRuntime.Reset();
+            // (V3 also cleared WeaponEvolutionRuntime here; since M9 the evolutions are the V4 progression module's, reset per run.)
         }
 
         public static void CreateTelemetry(CombatExperimentProfile experiment) => _ = new RunCombatTelemetry(experiment);
@@ -304,9 +229,9 @@ namespace RoguePirates.V4.Legacy
         }
 
         /// <summary>V3RunBootstrap.OnPlayerDied (solo branch; the PvP branch is kept for parity).</summary>
-        public static void OnPlayerDied(PlayerShipController player, System.Action trySecureIfBossDead)
+        public static void OnPlayerDied(PlayerShipController player, System.Action trySecureIfBossDead, System.Action cancelPendingLevelUps)
         {
-            LevelSystem.Instance?.CancelPendingLevelUps();
+            cancelPendingLevelUps?.Invoke();
             if (player != null) player.SetMovementEnabled(false);
             if (V3RunSession.IsPvP)
             {
@@ -345,12 +270,12 @@ namespace RoguePirates.V4.Legacy
         /// run for the level-up in the same call, so cards still showing while the run is unpaused with nothing
         /// pending are stale: hide them. Picking a card already hides them, so in practice only Skip is affected.
         /// </summary>
-        public static void HideLevelUpCardsLeftAfterSkip()
+        public static void HideLevelUpCardsLeftAfterSkip(int pendingLevelUps)
         {
             // Cheap checks first, and the modal cached: LevelUpModal.Instance re-wires its layout on every access.
             var run = RunManager.Instance;
             if (run == null || run.IsPaused) return;
-            if (LevelSystem.Instance != null && LevelSystem.Instance.PendingLevelUps > 0) return;
+            if (pendingLevelUps > 0) return;
             if (_levelUpModal == null)
             {
                 if (Time.frameCount < _nextModalLookupFrame) return;
@@ -395,7 +320,6 @@ namespace RoguePirates.V4.Legacy
             UiCanvasConfigurator.Configure(canvas);
             var legacyRunEnd = canvas.GetComponentInChildren<RunEndScreen>(true);
             if (legacyRunEnd != null) legacyRunEnd.enabled = false;
-            EnsureLevelSystem();
 
             var hud = canvas.GetComponent<RunHud>();
             if (hud == null) hud = canvas.gameObject.AddComponent<RunHud>();
@@ -462,14 +386,6 @@ namespace RoguePirates.V4.Legacy
             canvas.sortingOrder = 0;
             go.AddComponent<UnityEngine.UI.GraphicRaycaster>();
             return canvas;
-        }
-
-        /// <summary>V3 added a LevelSystem to /Systems when none existed (the scene has one); dropped when M9 replaces it.</summary>
-        static void EnsureLevelSystem()
-        {
-            if (LevelSystem.Instance != null) return;
-            var systems = GameObject.Find("Systems");
-            if (systems != null && systems.GetComponent<LevelSystem>() == null) systems.AddComponent<LevelSystem>();
         }
 
         static void EnsureLevelUpModal(Canvas canvas)

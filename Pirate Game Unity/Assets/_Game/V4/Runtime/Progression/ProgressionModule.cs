@@ -77,6 +77,8 @@ namespace RoguePirates.V4.Progression
         public event Action LoadoutChanged;
         /// <summary>A weapon evolved (weapon id, evolution id).</summary>
         public event Action<string, string> Evolved;
+        /// <summary>A card was taken and applied (V3 recorded its offer telemetry here, before the next level-up shows).</summary>
+        public event Action<Offer> OfferChosen;
 
         public ProgressionModule(Func<ProgressionConfig> config, Func<string, WeaponConfig> weapon, Func<string, LogbookConfig> logbook, OfferGenerator offers,
             IOfferRandom rng, IOfferContext ctx, IStatModifierSink stats, IStatReader statValues, IProgressionRun run, IProgressionShip ship)
@@ -197,6 +199,7 @@ namespace RoguePirates.V4.Progression
             PendingLevelUps = Mathf.Max(0, PendingLevelUps - 1);
             ApplyOffer(offer);
             _completedLevelUps++;
+            OfferChosen?.Invoke(offer);
             LoadoutChanged?.Invoke();
             if (PendingLevelUps > 0) ShowLevelUp();
             else ResumeAfterLevelUp();
@@ -309,6 +312,49 @@ namespace RoguePirates.V4.Progression
             _stats.Add("logbook:" + def.logbookId, def.stat, def.perLevelAdditive * mult, def.perLevelMultiplicative);
             if (def.stat == (int)StatId.Hull) _ship?.SyncMaxHull(def.perLevelAdditive * mult);
         }
+
+        // ---- Console and Module Lab edits (dev tools; not V3 paths) -------------------------------------------------------
+
+        /// <summary>Replaces the carried weapons (console add, remove, solo): weapons kept keep their level and upgrades.</summary>
+        public void DevSetWeapons(IReadOnlyList<string> weaponIds)
+        {
+            Loadout.EnsureSlotCapacity(weaponIds.Count);
+            Loadout.Rebuild(weaponIds);
+            _state.Weapons.Clear();
+            foreach (var w in Loadout.Weapons)
+            {
+                _state.Weapons.Add(w.Id);
+                _state.WeaponLevels[w.Id] = w.Level;
+            }
+            LoadoutChanged?.Invoke();
+        }
+
+        /// <summary>One level with an Uncommon package on the weapon's most-offered axes (no Loot draws).</summary>
+        public void DevRankUp(int index)
+        {
+            if (index < 0 || index >= Loadout.Count) return;
+            var w = Loadout.Weapons[index];
+            var c = C;
+            var axes = (w.Config.upgradeAxes ?? Array.Empty<WeaponUpgradeAxis>()).OrderByDescending(a => a.offerWeight).Take(c.upgradeLinesPerRarity[1]);
+            var lines = axes.Select(a => new UpgradeLine(a.axis, a.axis == ConfigEnums.UpgradeAxis.Quantity
+                ? Mathf.Max(1f, Mathf.Round(a.baseIncrement * c.rarityMultipliers[1]))
+                : a.baseIncrement * c.rarityMultipliers[1] * c.upgradePowerMultiplier)).ToArray();
+            Loadout.ApplyUpgradePackage(index, lines);
+            _state.WeaponLevels[w.Id] = w.Level;
+            LoadoutChanged?.Invoke();
+        }
+
+        /// <summary>One Logbook rank at the given rarity, as taking its card does (a new Logbook needs a free slot).</summary>
+        public void DevRankLogbook(string logbookId, int rarity = 0)
+        {
+            var level = _state.LogbookLevel(logbookId);
+            ApplyOffer(new Offer { Kind = OfferKind.Logbook, Id = logbookId, Rarity = rarity, CurrentLevel = level, NextLevel = level + 1, IsNew = level <= 0 });
+            LoadoutChanged?.Invoke();
+        }
+
+        /// <summary>Evolves a weapon as taking its evolution card does.</summary>
+        public void DevEvolve(string weaponId, string evolutionId) =>
+            ApplyOffer(new Offer { Kind = OfferKind.WeaponEvolution, Id = weaponId, EvolutionId = evolutionId, IsWeapon = true });
 
         /// <summary>The owned lists and levels the offers read.</summary>
         sealed class OfferState : IOfferState

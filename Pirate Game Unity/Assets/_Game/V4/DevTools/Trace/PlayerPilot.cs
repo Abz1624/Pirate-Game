@@ -32,6 +32,7 @@ namespace RoguePirates.V4.DevTools.Trace
 
         readonly PlayerShipController _ship;
         RoguePirates.V4.Enemies.IEnemyWorldView _enemies;
+        RoguePirates.V4.Progression.PickupModule _pickups;
         RoguePirates.V4.Enemies.IHostileProjectileView _shots;
         RoguePirates.V4.Enemies.IHazardView _hazards;
         float _steerSign;
@@ -201,6 +202,7 @@ namespace RoguePirates.V4.DevTools.Trace
             if (_enemies != null && _shots != null && _hazards != null) return;
             var game = UnityEngine.Object.FindFirstObjectByType<RoguePirates.V4.V4Game>();
             var context = game != null ? game.Context : null;
+            _pickups = game != null && game.Build != null ? game.Build.Pickups : null; // M9: the V4 pickups
             if (context != null)
             {
                 context.TryGet(out _enemies);
@@ -216,15 +218,34 @@ namespace RoguePirates.V4.DevTools.Trace
             _hazards ??= new RoguePirates.V4.Legacy.LegacyHazardView();
         }
 
+        /// <summary>The pickups on the water: the V4 module (M9), else V3's PickupWorld (golden recordings).</summary>
+        int PickupCount(out PickupAgent[] legacy)
+        {
+            legacy = null;
+            if (_pickups != null) return _pickups.Capacity;
+            if (PickupWorld.Instance == null || !(PickupPool?.GetValue(PickupWorld.Instance) is PickupAgent[] pool)) return 0;
+            legacy = pool;
+            return pool.Length;
+        }
+
+        bool TryGetPickup(PickupAgent[] legacy, int i, out PickupType type, out Vector3 position, out bool homing)
+        {
+            if (legacy == null) return _pickups.TryGet(i, out type, out _, out position, out homing);
+            type = legacy[i].type;
+            position = legacy[i].position;
+            homing = legacy[i].homingToPlayer;
+            return legacy[i].active;
+        }
+
         Vector3 PickupPull(Vector3 pos)
         {
-            if (PickupWorld.Instance == null || !(PickupPool?.GetValue(PickupWorld.Instance) is PickupAgent[] pool)) return Vector3.zero;
+            var count = PickupCount(out var legacy);
             var best = Vector3.zero;
             var bestScore = 0f;
-            for (var i = 0; i < pool.Length; i++)
+            for (var i = 0; i < count; i++)
             {
-                if (!pool[i].active || pool[i].homingToPlayer) continue;
-                var value = pool[i].type switch
+                if (!TryGetPickup(legacy, i, out var type, out var position, out var homing) || homing) continue;
+                var value = type switch
                 {
                     PickupType.XpBarrel => 3f,
                     PickupType.GoldBarrel => 2.5f,
@@ -234,10 +255,10 @@ namespace RoguePirates.V4.DevTools.Trace
                     _ => 0f
                 };
                 if (value <= 0f) continue;
-                var to = Flat(pool[i].position) - pos;
+                var to = Flat(position) - pos;
                 var d = to.magnitude;
                 if (d > PickupRange || d < 0.5f) continue;
-                if (!PlayBounds.IsInsideStormSafeZone(pool[i].position)) continue;
+                if (!PlayBounds.IsInsideStormSafeZone(position)) continue;
                 var score = value / (1f + d * 0.15f);
                 if (score > bestScore) { bestScore = score; best = to / d; }
             }

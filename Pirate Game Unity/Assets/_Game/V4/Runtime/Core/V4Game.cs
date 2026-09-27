@@ -52,6 +52,7 @@ namespace RoguePirates.V4
         LegacyResultsTelemetry _resultsTelemetry;
         LegacyStageWiring _stage;
         LegacyEnemyWiring _enemies;
+        LegacyBuildWiring _build;
         bool _running;
         bool _ended;
         bool _objectiveSecured;
@@ -61,6 +62,8 @@ namespace RoguePirates.V4
         public ModuleRegistry Modules => _modules;
         public CombatEvents Events => _events;
         public LegacyRunShell Shell => _shell;
+        /// <summary>M9: the build and progression modules (console sections, trace pilot).</summary>
+        public LegacyBuildWiring Build => _build;
         public bool IsRunning => _running;
         public bool IsModuleLab => moduleLab;
 
@@ -101,16 +104,33 @@ namespace RoguePirates.V4
             _shell = new LegacyRunShell(this, database, stageBuilder, player, islandLayout, usePlaceholderPoiVisuals, _config, legacyBaseProfile, slots, encounters);
             _context.Register<ISpawnerProfiles>(_shell.LegacyConfig);
             _shell.Enemies = _enemies;
-            // M5: the Weapon Manager (replaces WeaponController's firing and ProjectileWorld; the controller stays as the
-            // loadout record the legacy level system writes).
-            _weapons = new LegacyWeaponWiring(_shell, _context, _config, runState, _events, _clock, _enemies);
+            // M9: level-ups, Logbooks, items, the Captain, floor powerups and pickups (replace LevelSystem, the weapon
+            // record, PickupWorld, the V3 Captain/item/powerup components and the switched-off EncounterSpawner).
+            _build = new LegacyBuildWiring(_config, () => _shell != null ? _shell.Player : null, () => _shell?.Database);
+            _shell.Build = _build;
+            _enemies.Build = _build;
+            _enemies.KillTargets.Build = _build;
+            _enemies.Services.PlayerIncomingDamage = _build.IncomingDamageMultiplier;
+            _enemies.Target.IncomingDamage = _build.IncomingDamageMultiplier;
+            damageSink.IncomingDamage = _build.IncomingDamageMultiplier;
+            damageSink.TookSteadyDamage = _build.Items.NotifyPlayerTookDamage;
+            encounters.DeadCalm = () => _build.Powerups.SpawnRateMultiplier;
+            runState.Level = () => _build.Progression.Level;
+            _context.Register<Progression.IItemInventory>(_build.Items);
+            // M5: the Weapon Manager (replaces WeaponController's firing and ProjectileWorld). M9: it reads the V4 loadout.
+            _weapons = new LegacyWeaponWiring(_shell, _context, _config, runState, _events, _clock, _enemies, _build);
             _shell.Weapons = _weapons;
+            _build.Weapons = _weapons.Manager;
+            _enemies.HellfireEnvironment.Calculator = () => _weapons.Manager.Combat.Calculator;
+            _enemies.HellfireEnvironment.HasHellfire = _build.HasHellfire;
             _context.Register<RoguePirates.V4.Weapons.IWeaponManager>(_weapons.Manager);
             // M6: the read-only views presentation reads (over the legacy hubs until their modules exist).
             // M7: stage content (chests, landmarks, Beacon, discovery, interaction, boss director) replaces POIManager.
             _stage = new LegacyStageWiring(_context, _config, runState, damageSink, _spawn, () => _shell.Player, () => _weapons.Manager, usePlaceholderPoiVisuals, _enemies);
             _shell.Stage = _stage;
-            var views = LegacyViewFactory.Create(player, _weapons.Manager, RestartRun, GoToMenu, _enemies.Contracts);
+            _stage.Economy.AddItem = _build.Items.TryAddItem;
+            var views = LegacyViewFactory.Create(player, _weapons.Manager, RestartRun, GoToMenu, _enemies.Contracts, _build,
+                () => _config?.Single<ExperimentConfig>()?.weaponSlotCap ?? 6);
             views.Stage = _stage.View;
             _context.Register<Views.IRunViews>(views);
             _resultsTelemetry = new LegacyResultsTelemetry();
@@ -128,6 +148,8 @@ namespace RoguePirates.V4
             if (!_shell.Start(seed, request.retry)) return;
 
             _feed.Attach(_shell.Player);
+            _feed.AttachLevels(_build.Progression);
+            _build.AttachShip(_shell.Player);
             _resultsTelemetry.Attach();
             if (moduleLab) _shell.EnterModuleLab();
             _modules.BeginRunAll(new RunStart(seed, request.retry));
@@ -162,7 +184,6 @@ namespace RoguePirates.V4
         {
             if (!_running) return;
             _shell.LateTick();
-            _feed.AttachLevels();
 
             // Legacy producers publish outside V4 ticks (their own Update, or while paused); deliver those with the
             // current tick stamp so readers see them this frame instead of waiting for the next tick.
@@ -197,6 +218,7 @@ namespace RoguePirates.V4
             _stage?.Dispose();
             _enemies?.Dispose();
             _weapons?.Dispose();
+            _build?.Dispose();
             _shell?.Unwire();
             _shell?.OnDestroy();
             if (_config != null) _config.ConfigChanged -= OnConfigChanged;

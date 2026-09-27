@@ -50,7 +50,7 @@ namespace RoguePirates.V4.Enemies
                     if (state.phaseTimer <= 0f)
                     {
                         if (HorizontalDistance(agent.position, playerPos) <= SlamRadius && playerDamage != null)
-                            playerDamage.TakeDamage(agent.damage * 1.35f, agent.position, false);
+                            _services.HitPlayer(playerDamage, agent.damage * 1.35f, agent.position);
                         state.phase = EnemyCombatPhase.Recover;
                         state.phaseTimer = SlamRecovery;
                     }

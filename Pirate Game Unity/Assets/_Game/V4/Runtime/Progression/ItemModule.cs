@@ -60,6 +60,8 @@ namespace RoguePirates.V4.Progression
             _world = world;
         }
 
+        readonly HashSet<string> _families = new HashSet<string>(); // Admiral's Ledger, reused per damage roll
+
         public IReadOnlyList<string> Items => _items;
         public bool HasItem(string itemId) => !string.IsNullOrEmpty(itemId) && _items.Contains(itemId);
         public int StackCount(string itemId) => itemId != null && _stacks.TryGetValue(itemId, out var n) ? n : 0;
@@ -202,10 +204,10 @@ namespace RoguePirates.V4.Progression
             var ledger = Effect(ItemEffectKind.DamagePerWeaponFamily);
             if (ledger != null)
             {
-                var families = new HashSet<string>();
+                _families.Clear();
                 foreach (var w in _world.Weapons)
-                    families.Add(w?.tags != null && w.tags.Length > 0 ? w.tags[0] : w?.weaponId ?? "unknown");
-                mult *= 1f + Mathf.Min(ledger.cap, families.Count * ledger.value);
+                    _families.Add(w?.tags != null && w.tags.Length > 0 ? w.tags[0] : w?.weaponId ?? "unknown");
+                mult *= 1f + Mathf.Min(ledger.cap, _families.Count * ledger.value);
             }
             var figurehead = Effect(ItemEffectKind.DamagePerGold);
             if (figurehead != null) mult *= 1f + Mathf.Min(figurehead.cap, _world.Gold / figurehead.threshold);

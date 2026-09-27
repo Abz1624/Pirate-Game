@@ -912,7 +912,7 @@ namespace RoguePirates.V4.Enemies
         {
             Effects.PlayExplosion(agent.position, blastRadius);
             if (HorizontalDistance(agent.position, playerPos) <= blastRadius && playerDamage != null)
-                playerDamage.TakeDamage(agent.damage * 1.4f, agent.position, false);
+                _services.HitPlayer(playerDamage, agent.damage * 1.4f, agent.position);
             world.DespawnByUnitId(agent.id);
         }
 

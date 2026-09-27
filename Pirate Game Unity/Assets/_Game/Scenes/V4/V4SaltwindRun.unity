@@ -5723,12 +5723,8 @@ GameObject:
   - component: {fileID: 658786995}
   - component: {fileID: 658786994}
   - component: {fileID: 658787001}
-  - component: {fileID: 658786991}
   - component: {fileID: 658786993}
   - component: {fileID: 658786990}
-  - component: {fileID: 658786989}
-  - component: {fileID: 658787988}
-  - component: {fileID: 658786987}
   - component: {fileID: 658786985}
   - component: {fileID: 658786984}
   - component: {fileID: 658786983}
@@ -5820,23 +5816,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2f9b7e77d253ae458168d20a4bc7c8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Meta.TriggerBus
---- !u!114 &658786987
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c1888c10c4865db4d8decef04042d36e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.LevelSystem
-  database: {fileID: 0}
-  levelUpSettings: {fileID: 11400000, guid: ebbefd794b9b26b4cabb689438a25625, type: 2}
-  weaponSlots: 2
-  logbookSlots: 2
-  demoPacing: {fileID: 0}
 --- !u!114 &658786988
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5850,21 +5829,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.Legacy.LegacyUpdateSlot
   role: weapons
---- !u!114 &658786989
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 92ba58c7f65f474479ec6aa98ed49ebb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Pickups.PickupWorld
-  root: {fileID: 0}
-  juiceSettings: {fileID: 0}
-  pacingSettings: {fileID: 0}
 --- !u!114 &658786990
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5879,22 +5843,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Weapons.ProjectileWorld
   root: {fileID: 0}
   juiceSettings: {fileID: 0}
---- !u!114 &658786991
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c07d65dc2e5e2eb47988ac3d958a1077, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Enemies.EncounterSpawner
-  enemyWorld: {fileID: 0}
-  player: {fileID: 0}
-  spawnCamera: {fileID: 0}
-  schedule: {fileID: 11400000, guid: 5cd01a86d7bd67e439a85df9271276c3, type: 2}
 --- !u!114 &658786993
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6016,22 +5964,6 @@ MonoBehaviour:
     islandCollisionPadding: 0.35
     shipCollisionPadding: 0.55
     enemySeparationPadding: 0.2
---- !u!114 &658787988
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b642a6dca9e4f843ad0423cfc8a1fe6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Weapons.WeaponController
-  database: {fileID: 0}
-  ownerShip: {fileID: 0}
-  maxSlots: 2
-  demoPacing: {fileID: 0}
 --- !u!1 &676974001
 GameObject:
   m_ObjectHideFlags: 0

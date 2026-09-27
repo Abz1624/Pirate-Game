@@ -23,7 +23,6 @@ namespace RoguePirates.V4.Legacy
         readonly bool _usePlaceholderPoiVisuals;
         readonly LegacyProfileAdapter _profile = new LegacyProfileAdapter();
         readonly LegacyDatabaseAdapter _database = new LegacyDatabaseAdapter();
-        readonly V4LegacyBridge _bridge = new V4LegacyBridge();
         readonly LegacySpawnSlots _spawnSlots;
         readonly LegacyEncounterExecutor _encounters;
         readonly LegacyWorldAdapter _world;
@@ -40,7 +39,6 @@ namespace RoguePirates.V4.Legacy
         /// <summary>The database the run uses: the M2 runtime database once built, else the loaded one.</summary>
         public GameDatabase Database => _runDatabase != null ? _runDatabase : _database.Database;
         public V4RuntimeDatabase RuntimeDatabase => _runtimeDatabase;
-        public V4LegacyBridge Bridge => _bridge;
         public int Seed { get; private set; }
 
         public LegacyConfigRuntime LegacyConfig => _legacyConfig;
@@ -50,6 +48,8 @@ namespace RoguePirates.V4.Legacy
         public LegacyStageWiring Stage { get; set; }
         /// <summary>M8: the V4 enemy world (replaces EnemyWorld, StatusController and HostileProjectileWorld).</summary>
         public LegacyEnemyWiring Enemies { get; set; }
+        /// <summary>M9: level-ups, items, the Captain, powerups and pickups (replace LevelSystem, the weapon record, PickupWorld and the V3 build components).</summary>
+        public LegacyBuildWiring Build { get; set; }
 
         public LegacyRunShell(MonoBehaviour host, GameDatabase database, StageBuilder stageBuilder,
             PlayerShipController player, IslandLayoutDefinition islandLayout, bool usePlaceholderPoiVisuals,
@@ -77,10 +77,9 @@ namespace RoguePirates.V4.Legacy
             LegacyWorldAdapter.DisableEnvironmentalHazards();
             AppRoot.EnsureInitialized();
             _database.Load(_serializedDatabase);
-            // M1: config-driven copies of the stage profile and encounter schedule. M3: the kept EncounterSpawner only
-            // runs the Beacon boss and Powder Cache, so it gets the schedule without ambient entries.
-            if (_legacyConfig.Build(out var configError)) _encounters.InstallSchedule(_legacyConfig.EncounterOnlySchedule);
-            else Debug.LogError("V4Game: " + configError);
+            // M1: config-driven copies of the stage profile and spawn profiles (the encounter-only schedule went with the
+            // legacy EncounterSpawner in M9).
+            if (!_legacyConfig.Build(out var configError)) Debug.LogError("V4Game: " + configError);
             _legacyConfig.ProfileChanged += () => _profile.Rebuild(_legacyConfig.RuntimeProfile);
             var multiConfig = Object.FindFirstObjectByType<V3MultiShipSceneConfig>();
             if (multiConfig != null) V3RunSession.Configure(multiConfig.SessionKind);
@@ -143,7 +142,7 @@ namespace RoguePirates.V4.Legacy
             const bool firstRun = true;
             Seed = seed;
             _world.ConfigureStageBuilder();
-            LegacyBuildAdapter.CancelPendingLevelUps();
+            Build?.CancelPendingLevelUps();
             RunManager.Instance?.SetPause(PauseReason.None);
 
             LegacyRewardsAdapter.TeardownTransientRunState(() => Enemies?.ClearTransientWorlds());
@@ -166,7 +165,7 @@ namespace RoguePirates.V4.Legacy
             LegacyRewardsAdapter.CreateTelemetry(experiment);
             RunManager.Instance.BeginRun(seed);
             LegacyRewardsAdapter.BeginRunTracking();
-            LegacyBuildAdapter.ResetPowerupsAndItems();
+            Build?.ResetForRun(); // V3 reset its floor powerups and items here
 
             _layout = _world.Build(seed);
             LegacyWorldAdapter.ResetWorldVisuals();
@@ -188,18 +187,14 @@ namespace RoguePirates.V4.Legacy
                 _player.SetMovementEnabled(true);
             }
 
-            var captainId = V3CaptainSelection.Selected;
-            var captainProfile = V3CaptainProfile.Get(captainId);
-            LegacyBuildAdapter.EnsureCaptain(captainId, _player, () => Enemies?.CreateHellfireSlot());
-
-            var startingWeapon = LegacyBuildAdapter.ResolveStartingWeapon(captainProfile);
-            LegacyBuildAdapter.ApplyStageBalanceProgression();
-
-            _bridge.SetUpWeapons(_player, experiment, _runDatabase, startingWeapon);
-            LegacyBuildAdapter.PrepareLevelSystem(_runDatabase, experiment, startingWeapon);
-            _bridge.SyncLevelSystemLoadout();
+            // M9: the V4 Captain, level-ups and items where V3 set up its Captain controllers, weapon record, LevelSystem
+            // and item components.
+            var captain = Build?.SelectedCaptain();
+            Build?.BeginCaptain(captain, () => Enemies?.CreateHellfireSlot());
+            var startingWeapon = Build?.ResolveStartingWeapon(captain);
+            Build?.BeginProgression(startingWeapon);
             Weapons?.Bind();
-            LegacyBuildAdapter.EnsureItemSystems();
+            Build?.BeginItems();
 
             LegacyPresentationAdapter.EnsureDevAndDebugTools(firstRun);
             LegacyPresentationAdapter.EnsureRunUi(_layout, Stage);
@@ -208,7 +203,7 @@ namespace RoguePirates.V4.Legacy
             {
                 _spawnSlots.AddStormEdgeSlot(_player); // V3StormEdgeDamage's place; the V4 storm phase applies the damage
                 // (V3 added HostileProjectileWorld to /Systems here; M8: the V4 enemy world owns the hostile shots.)
-                if (V3CaptainController.Instance == null)
+                if (captain == null)
                     _player.InitializeFromRun(RunManager.Instance.Stats.MaxHull);
                 LegacyPresentationAdapter.EnsurePlayerHealthBar(_player);
             }
@@ -239,7 +234,6 @@ namespace RoguePirates.V4.Legacy
             {
                 V3MultiShipRunSetup.ApplyAfterRunStart(multiShipConfig.SessionKind, _player, _runDatabase,
                     startingWeapon, multiShipConfig.ShipSpacing);
-                _bridge.MakeRecordOnly(); // the multi-ship setup rebinds the record's owner, which would re-arm its fire paths
             }
 
             var seedLabel = !isRetry && V3HomeSeed.HasLockedHomeSeed ? "locked" : "random";
@@ -248,18 +242,17 @@ namespace RoguePirates.V4.Legacy
         }
 
         /// <summary>
-        /// Module Lab mode (M2): invulnerable ship; the encounter spawner and spawn directors are off, so enemies appear
+        /// Module Lab mode (M2): invulnerable ship; ambient spawns and beats are off, so enemies appear
         /// only when requested from the console or by the stage content (M8 playtest: chests, landmarks and the Beacon work).
         /// </summary>
         public void EnterModuleLab()
         {
-            _encounters.EnterModuleLab();
             Stage?.EnterModuleLab();
             if (_player != null) _player.Damage.SetPlaytestInvulnerable(true);
         }
 
         /// <summary>End of frame, after legacy UI callbacks ran (skip button, level-up resume).</summary>
-        public void LateTick() => LegacyPresentationAdapter.HideLevelUpCardsLeftAfterSkip();
+        public void LateTick() => LegacyPresentationAdapter.HideLevelUpCardsLeftAfterSkip(Build != null ? Build.Progression.PendingLevelUps : 0);
 
         /// <summary>V3RunBootstrap.Update.</summary>
         public void Tick(float dt)
@@ -282,7 +275,7 @@ namespace RoguePirates.V4.Legacy
 
         void OnPlayerDamaged(float amount, bool _) => LegacyRewardsAdapter.RecordDamage(amount);
 
-        void OnPlayerDied() => LegacyRewardsAdapter.OnPlayerDied(_player, () => Stage?.TrySecureIfBossDead());
+        void OnPlayerDied() => LegacyRewardsAdapter.OnPlayerDied(_player, () => Stage?.TrySecureIfBossDead(), () => Build?.CancelPendingLevelUps());
 
         public void OnDestroy()
         {
@@ -292,15 +285,10 @@ namespace RoguePirates.V4.Legacy
             _runtimeDatabase.Dispose();
         }
 
-        /// <summary>V3RunBootstrap.OnApplicationPause: capture a suspend snapshot (never loaded by V3 either).</summary>
-        public void OnApplicationPause(bool paused)
-        {
-            if (!paused || RunManager.Instance == null || RunManager.Instance.IsRunEnded) return;
-            if (HighSeas.UI.LevelSystem.Instance == null) return;
-            var snapshot = HighSeas.Save.RunSnapshotService.CaptureFromRun(
-                RunManager.Instance, HighSeas.UI.LevelSystem.Instance, CombatExperimentContext.Active,
-                Object.FindFirstObjectByType<HighSeas.POI.POIManager>());
-            HighSeas.Save.RunSnapshotService.Save(snapshot);
-        }
+        /// <summary>
+        /// V3RunBootstrap.OnApplicationPause captured a suspend snapshot from LevelSystem and POIManager that nothing ever
+        /// loaded; both left the V4 scenes, so V4 captures nothing (plan M9 9.8).
+        /// </summary>
+        public void OnApplicationPause(bool paused) { }
     }
 }

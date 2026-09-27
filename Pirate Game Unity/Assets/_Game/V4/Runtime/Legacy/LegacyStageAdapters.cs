@@ -68,14 +68,17 @@ namespace RoguePirates.V4.Legacy
         public void Heal(float amount) => Player?.Damage?.Heal(amount);
     }
 
-    /// <summary>Chest prices and loot (stage profile economy), items (legacy inventory), the map random stream.</summary>
-    [DeletedInPhase(9, "ItemModule and the V4 chest economy")]
+    /// <summary>Chest prices and loot (stage profile economy), items (the V4 item module since M9), the map random stream.</summary>
+    [DeletedInPhase(14, "The V4 chest economy (prices and loot still read the stage profile)")]
     public sealed class LegacyStageEconomy : IStageEconomy
     {
         readonly Func<IWeaponManager> _weapons;
         readonly List<string> _equipped = new List<string>();
 
         public LegacyStageEconomy(Func<IWeaponManager> weapons) => _weapons = weapons;
+
+        /// <summary>M9: the run's item module (V3RunItemInventory.TryAddItem's place).</summary>
+        public Func<string, bool> AddItem;
 
         public int QuoteChestPrice() =>
             StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export != null
@@ -96,7 +99,7 @@ namespace RoguePirates.V4.Legacy
         }
 
         public void RegisterChestPurchase() => StageBalanceProfileContext.Runtime?.RegisterSuccessfulChestPurchase();
-        public bool TryAddItem(string itemId) => V3RunItemInventory.Instance != null && V3RunItemInventory.Instance.TryAddItem(itemId);
+        public bool TryAddItem(string itemId) => AddItem != null && AddItem(itemId);
         public string ItemName(string itemId) => V3ItemCatalog.GetDisplayName(itemId);
 
         public string RollChestPoolItem()

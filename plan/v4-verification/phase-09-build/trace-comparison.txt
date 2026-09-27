@@ -1,0 +1,26 @@
+M9 end-of-phase trace set (Windows player, final code after the switch-over review, run once). The V4 build modules now run
+level-ups, Logbooks, items, the Captain, floor powerups and pickups; LevelSystem, the WeaponController record, PickupWorld and
+the switched-off EncounterSpawner are gone from the run scenes. With the v3-parity preset the runs should equal the V3 goldens.
+--- V4 (v3-parity preset) vs V3 goldens
+v3-trace-seed-101-a.jsonl vs v4-trace-seed-101-parity.jsonl: DIFF (437 lines)
+    line 258: {"type":"offer","t":209.1097,"kind":"NewWeapon","id":"powder_kegs","choices":3}
+        vs {"type":"offer","t":209.1097,"kind":"Logbook","id":"cartographers_folio","choices":3}
+    length 437 vs 484
+v3-trace-seed-202-a.jsonl vs v4-trace-seed-202-parity.jsonl: DIFF (409 lines)
+    line 199: {"type":"offer","t":162.9877,"kind":"NewWeapon","id":"powder_kegs","choices":3}
+        vs {"type":"offer","t":162.9877,"kind":"NewWeapon","id":"flamethrower","choices":3}
+    length 409 vs 439
+v3-trace-seed-303-a.jsonl vs v4-trace-seed-303-parity.jsonl: DIFF (523 lines)
+    line 69: {"type":"offer","t":66.9665,"kind":"NewWeapon","id":"broadside_battery","choices":3}
+        vs {"type":"offer","t":66.9665,"kind":"NewWeapon","id":"powder_kegs","choices":3}
+    length 523 vs 781
+
+Every line before the first difference matches exactly (spawns, kills, levels, the first level-up cards, the Loot stream).
+Cause: the run's offer context dropped V3's unlock rule. V3's LevelOfferGenerator.IsWeaponOfferEligible offers a new weapon
+only if it is enabled AND, while V3RunContext is active (every run), unlocked (a starter or owned). V4's run wiring passed
+only the enabled check, so a fresh save was offered locked weapons (Powder Kegs, Flamethrower). The Editor lockstep tests ran
+with V3RunContext off, where V3 does not filter either, so they could not see it.
+Fix: LegacyBuildWiring.IsWeaponOfferEligible is V3's rule (enabled, and unlocked while V3RunContext is active); the offers
+lockstep test now runs half its 600 builds with V3RunContext on and locked weapons, and asserts the other half would have
+offered a locked weapon (6/6 green).
+Per the standing rule the trace set is not re-run after the fix; the lockstep test verifies it.

@@ -40,7 +40,7 @@ namespace RoguePirates.V4.Tests
             RunMarksTracker.Reset();
             RunEncounterTracker.ResetForTests();
             SaltwindRunSettlement.ClearLastResults();
-            HighSeas.Combat.WeaponEvolutionRuntime.Reset();
+            HighSeas.Combat.WeaponEvolutionRuntime.Reset(); // V3's static (V4 runs no longer write it; kept for mixed test sessions)
             _isolation?.Dispose();
             _isolation = null;
         }
@@ -140,45 +140,38 @@ namespace RoguePirates.V4.Tests
             else RunManager.Instance.SetPause(PauseReason.None);
         }
 
+        static RoguePirates.V4.Legacy.LegacyBuildWiring Build() => Object.FindFirstObjectByType<V4Game>().Build;
+
         static int CountBarrels(PickupType type)
         {
-            var pool = (HighSeas.Pickups.PickupAgent[])typeof(HighSeas.Pickups.PickupWorld).GetField("_pool", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(HighSeas.Pickups.PickupWorld.Instance);
-            return pool.Count(p => p.active && p.type == type);
+            var pickups = Build().Pickups;
+            var n = 0;
+            for (var i = 0; i < pickups.Capacity; i++)
+                if (pickups.TryGet(i, out var t, out _, out _, out _) && t == type) n++;
+            return n;
         }
 
-        /// <summary>Puts a Magnetic Tide powerup on V3's floor powerup world at the ship (collected on its next tick).</summary>
-        static void DropMagneticTideAt(Vector3 position)
-        {
-            var powerups = HighSeas.V3.V3FloorPowerupWorld.Instance;
-            var field = typeof(HighSeas.V3.V3FloorPowerupWorld).GetField("_agents", BindingFlags.Instance | BindingFlags.NonPublic);
-            var agents = (System.Array)field.GetValue(powerups);
-            var type = agents.GetType().GetElementType();
-            var agent = System.Activator.CreateInstance(type);
-            type.GetField("active").SetValue(agent, true);
-            type.GetField("kind").SetValue(agent, HighSeas.V3.V3FloorPowerupKind.MagneticTide);
-            type.GetField("position").SetValue(agent, position);
-            type.GetField("lifetime").SetValue(agent, 30f);
-            agents.SetValue(agent, 0);
-        }
+        /// <summary>Puts a Magnetic Tide powerup on the V4 powerup module at the position (collected when the ship is there).</summary>
+        static void DropMagneticTideAt(Vector3 position, float lifetime = -1f) =>
+            Assert.IsTrue(Build().Powerups.DevSpawn(RoguePirates.V4.Config.PowerupKind.MagneticTide, position, lifetime), "the tide was placed");
 
         [UnityTest]
         public IEnumerator R103_MagneticTide_OpensEveryBarrel_AndPays_NotUnderTheParityPreset()
         {
-            Assert.IsTrue(RoguePirates.V4.Legacy.LegacyMagneticTide.SeamsFound, "V3's powerup slots, pickup pool and barrel Collect exist");
             foreach (var parity in new[] { false, true })
             {
                 if (parity)
                     RunRequest.RequestPreset(System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json")));
                 yield return StartLab(); // no ambient spawns, so no other pickups
                 var ship = Object.FindFirstObjectByType<PlayerShipController>();
-                var pickups = HighSeas.Pickups.PickupWorld.Instance;
+                var pickups = Build().Pickups;
                 var far = ship.Position + new Vector3(30f, 0f, 0f);
                 for (var i = 0; i < 3; i++) pickups.Spawn(PickupType.XpBarrel, 5, far + new Vector3(0f, 0f, i * 3f));
                 for (var i = 0; i < 2; i++) pickups.Spawn(PickupType.GoldBarrel, 7, far + new Vector3(4f, 0f, i * 3f));
                 pickups.Spawn(PickupType.Powerup, 3, far + new Vector3(-4f, 0f, 0f));
-                var levels = HighSeas.UI.LevelSystem.Instance;
+                var levels = Build().Progression;
                 var gold = RunManager.Instance.Gold;
-                var xp = levels.Level * 100000f + levels.CurrentXP;
+                var xp = levels.Level * 100000f + levels.CurrentXp;
                 ship.Damage.SetPlaytestInvulnerable(false); // the lab ship is invulnerable: make room for the health barrel
                 ship.Damage.TakeDamage(20f, ship.Position, false);
                 ship.Damage.SetPlaytestInvulnerable(true);
@@ -197,7 +190,7 @@ namespace RoguePirates.V4.Tests
                 {
                     Assert.AreEqual(0, CountBarrels(PickupType.XpBarrel) + CountBarrels(PickupType.GoldBarrel) + CountBarrels(PickupType.Powerup), "every barrel opened");
                     Assert.Greater(RunManager.Instance.Gold, gold, "gold paid");
-                    Assert.Greater(levels.Level * 100000f + levels.CurrentXP, xp, "XP paid");
+                    Assert.Greater(levels.Level * 100000f + levels.CurrentXp, xp, "XP paid");
                     Assert.Greater(ship.Damage.CurrentHP, hull, "health paid");
                 }
             }
@@ -211,7 +204,7 @@ namespace RoguePirates.V4.Tests
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             var at = ship.Position + new Vector3(10f, 0f, 0f);
             var hooks = new RoguePirates.V4.Legacy.LegacyWeaponHooks(() => ship, id => null, enemies.Hellfire);
-            HighSeas.Combat.WeaponEvolutionRuntime.Apply("flamethrower", "hellfire_nozzle"); // the Hellfire Nozzle evolution (reset by the next run)
+            Build().Progression.DevEvolve("flamethrower", "hellfire_nozzle"); // the Hellfire Nozzle evolution (the run's own)
             hooks.SpawnFlamePatch(at, "flamethrower");
             Assert.AreEqual(1, enemies.Hellfire.ActiveCount);
             yield return null;
@@ -298,11 +291,11 @@ namespace RoguePirates.V4.Tests
             while (!stage.Module.IsPowderCacheChestReady(cache) && Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
             Assert.IsTrue(stage.Module.IsPowderCacheChestReady(cache), "all sunk: the cache became a Rare Treasure Chest");
             Assert.IsTrue(stage.Module.CanInteract(cache));
-            var inventory = HighSeas.V3.V3RunItemInventory.Instance;
-            var stacks = HighSeas.V3.V3ItemCatalog.ChestPool.ToDictionary(e => e.id, e => inventory.GetStackCount(e.id));
+            var inventory = Build().Items;
+            var stacks = HighSeas.V3.V3ItemCatalog.ChestPool.ToDictionary(e => e.id, e => inventory.StackCount(e.id));
             var gold = RunManager.Instance.Gold;
             stage.Module.TryCompleteInteraction(cache); // open it
-            var gained = HighSeas.V3.V3ItemCatalog.ChestPool.Where(e => inventory.GetStackCount(e.id) > stacks[e.id]).ToList();
+            var gained = HighSeas.V3.V3ItemCatalog.ChestPool.Where(e => inventory.StackCount(e.id) > stacks[e.id]).ToList();
             Assert.AreEqual(1, gained.Count, "one item gained (a new one or another stack)");
             Assert.GreaterOrEqual((int)gained[0].rarity, (int)Rarity.Rare, "Rare or better");
             Assert.GreaterOrEqual(RunManager.Instance.Gold, gold, "free");
@@ -333,16 +326,12 @@ namespace RoguePirates.V4.Tests
             yield return StartLab();
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             var far = ship.Position + new Vector3(30f, 0f, 0f);
-            for (var i = 0; i < 3; i++) HighSeas.Pickups.PickupWorld.Instance.Spawn(PickupType.XpBarrel, 5, far + new Vector3(0f, 0f, i * 3f));
+            for (var i = 0; i < 3; i++) Build().Pickups.Spawn(PickupType.XpBarrel, 5, far + new Vector3(0f, 0f, i * 3f));
             // A tide far from the ship whose lifetime runs out on its next tick: expired, not collected.
-            DropMagneticTideAt(far + new Vector3(0f, 0f, -20f));
-            var agents = (System.Array)typeof(HighSeas.V3.V3FloorPowerupWorld).GetField("_agents", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(HighSeas.V3.V3FloorPowerupWorld.Instance);
-            var agent = agents.GetValue(0);
-            agent.GetType().GetField("lifetime").SetValue(agent, 0.0001f);
-            agents.SetValue(agent, 0);
+            DropMagneticTideAt(far + new Vector3(0f, 0f, -20f), 0.0001f);
             var deadline = Time.realtimeSinceStartup + 1.5f;
             while (Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
-            Assert.IsFalse((bool)agent.GetType().GetField("active").GetValue(agents.GetValue(0)), "the tide expired");
+            Assert.AreEqual(0, Build().Powerups.ActiveCount, "the tide expired");
             Assert.AreEqual(3, CountBarrels(PickupType.XpBarrel), "an expired tide opens nothing");
         }
 

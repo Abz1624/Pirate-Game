@@ -31,8 +31,6 @@ namespace RoguePirates.V4.Legacy
     {
         readonly ConfigSetRuntime _config;
         readonly Transform _systems;
-        readonly LegacyMagneticTide _magneticTide;
-        bool? _magneticTideOn; // cached switch, refreshed on config edits
 
         public EnemySimulation Simulation { get; }
         public EnemyCombatServices Services { get; }
@@ -41,6 +39,10 @@ namespace RoguePirates.V4.Legacy
         public HellfirePatches Hellfire { get; }
         public LegacyEnemyTarget Target { get; }
         public ExplosiveBarrels Barrels { get; private set; }
+        public LegacyEnemyKillTargets KillTargets { get; } = new LegacyEnemyKillTargets();
+        public LegacyHellfireEnvironment HellfireEnvironment { get; } = new LegacyHellfireEnvironment();
+        /// <summary>M9: pickups and floor powerups tick in the frame where V3's did.</summary>
+        public LegacyBuildWiring Build { get; set; }
 
         public LegacyEnemyWiring(ConfigSetRuntime config, EnemyWorldSettings settings, Func<PlayerShipController> player)
         {
@@ -66,14 +68,9 @@ namespace RoguePirates.V4.Legacy
                 Shots = new HostileProjectiles(new LegacyHostileShotViews(_systems)),
                 Effects = effects,
                 SpawnParams = spawnParams,
-                // V3 queued minions on EncounterSpawner (switched off since M7) whenever it existed; no V3 data summons.
-                Summon = (profile, count) =>
-                {
-                    var spawner = EncounterSpawner.Instance;
-                    if (spawner == null) return false;
-                    spawner.TriggerProfile(profile, count);
-                    return true;
-                },
+                // V3 queued minions on its switched-off EncounterSpawner (counted, never spawned; no V3 data summons).
+                // The spawner left the V4 scenes in M9; the queueing is kept as accepted so the minion count behaves as V3.
+                Summon = (profile, count) => true,
             };
             s.Behaviors = new EnemyCombatBehaviors(s);
             s.Specialists = new EnemySpecialistCombat(s);
@@ -81,19 +78,17 @@ namespace RoguePirates.V4.Legacy
             s.SpecialBehaviors = new EnemySpecialBehaviors(s);
             Services = s;
             Contracts = new EnemyWorldContracts(Simulation, Statuses);
-            Hellfire = new HellfirePatches(Simulation, Statuses, new LegacyHellfireEnvironment());
-            _magneticTide = new LegacyMagneticTide(() => _magneticTideOn ??= _config?.Single<StageContentConfig>()?.magneticTideOpensBarrels ?? false);
+            Hellfire = new HellfirePatches(Simulation, Statuses, HellfireEnvironment);
 
-            // V3 Despawn after the slot is freed: statuses by slot, the encounter mapping, the legacy spawner's count.
+            // V3 Despawn after the slot is freed: statuses by slot, the encounter mapping (the legacy spawner's count left with it in M9).
             Simulation.Despawned += (slot, unitId, profile) =>
             {
                 Statuses.ClearIndex(slot);
                 RunEncounterTracker.ReleaseAgentMapping(unitId);
-                EncounterSpawner.Instance?.NotifyAgentDespawned(profile);
             };
             Statuses.Applied += type => HighSeas.Meta.TriggerBus.Instance?.RaiseStatusApplied(type);
             Simulation.SuppressHitHighlight = SuppressesHitHighlight;
-            Simulation.Bind(s, Target, new LegacyEnemyFeedback(), new LegacyEnemyKillTargets());
+            Simulation.Bind(s, Target, new LegacyEnemyFeedback(), KillTargets);
             LegacyHazardTelegraphView.Source = s.Hazards;
             LegacyHazardTelegraphView.Patches = Hellfire; // M8 playtest: a ground ring per burning patch
         }
@@ -113,12 +108,8 @@ namespace RoguePirates.V4.Legacy
             return _noHighlight.Contains(weaponId);
         }
 
-        /// <summary>Config edits (the console) can change the weapons' highlight flag and the Magnetic Tide switch.</summary>
-        public void OnConfigChanged()
-        {
-            _noHighlight = null;
-            _magneticTideOn = null;
-        }
+        /// <summary>Config edits (the console) can change the weapons' highlight flag.</summary>
+        public void OnConfigChanged() => _noHighlight = null;
 
         /// <summary>The run's scene is going away: the hazard rings stop reading this world.</summary>
         public void Dispose()
@@ -137,14 +128,14 @@ namespace RoguePirates.V4.Legacy
 
         public void ClearTransientWorlds()
         {
-            Object.FindFirstObjectByType<PickupWorld>()?.ClearAllActive();
+            Build?.Pickups.ClearAll();
             Object.FindFirstObjectByType<ProjectileWorld>()?.ClearAllActive();
             Services.Shots.ClearAllActive();
         }
 
         /// <summary>
         /// V3RunBootstrap.Update's enemy part, same calls and order as LegacyEnemyWorldPort.Tick: boss director, enemies,
-        /// player projectiles, hostile shots, pickups and floor powerups (still V3's), statuses.
+        /// player projectiles, hostile shots, pickups and floor powerups (V4 modules since M9), statuses.
         /// </summary>
         public void TickFrame(float dt, PlayerShipController player, Action<float> playerProjectiles, Action<float> bossDirector)
         {
@@ -154,12 +145,7 @@ namespace RoguePirates.V4.Legacy
             // V4 player projectiles tick here since M5 (V3's ProjectileWorld, which V4 no longer fills, needed V3's EnemyWorld).
             playerProjectiles?.Invoke(dt);
             Services.Shots.Tick(dt, player != null ? Target : null);
-            var pickups = Object.FindFirstObjectByType<PickupWorld>();
-            pickups?.Tick(dt, playerPos, RunManager.Instance.Stats.PickupRadius);
-            var powerups = V3FloorPowerupWorld.Instance;
-            _magneticTide.BeforeTick(powerups);
-            powerups?.Tick(dt, playerPos);
-            _magneticTide.AfterTick(powerups, pickups, dt); // R-103 (off under the v3-parity preset)
+            Build?.TickWorld(dt, playerPos); // Magnetic Tide opens the barrels when its switch is on (R-103)
             Statuses.Tick(dt, Simulation.Agents, (i, damage) => Simulation.ApplyDamage(i, damage, false, false), (i, burning) => Simulation.SetBurnVisual(i, burning));
         }
 

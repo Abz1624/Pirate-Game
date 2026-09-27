@@ -45,7 +45,8 @@ namespace RoguePirates.V4.Tests
         sealed class Ctx : IOfferContext
         {
             public Func<string, bool> Items = _ => false;
-            public bool IsWeaponOfferable(string weaponId) => WeaponFeatureFlags.IsWeaponEnabled(weaponId);
+            // The run's rule (V3 IsWeaponOfferEligible: the unlock counts while V3RunContext is active, as in every run).
+            public bool IsWeaponOfferable(string weaponId) => RoguePirates.V4.Legacy.LegacyBuildWiring.IsWeaponOfferEligible(weaponId);
             public bool IsWeaponUnlocked(string weaponId) => V3ContentUnlocks.IsWeaponUnlocked(weaponId);
             public bool HasItem(string itemId) => Items(itemId);
             public bool IsEvolved(string weaponId) => WeaponEvolutionRuntime.IsEvolved(weaponId);
@@ -131,9 +132,19 @@ namespace RoguePirates.V4.Tests
             var kinds = new HashSet<LevelOfferKind>();
             var inventory = Inventory();
             var items = (List<string>)typeof(V3RunItemInventory).GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(inventory);
+            // M9 trace finding: in runs (V3RunContext active) V3 offers only unlocked weapons. Half the builds run that way,
+            // with weapons locked (not starters, not owned), so the unlock rule is compared too.
+            V3RunContext.IsActive = true;
+            var locked = weaponIds.Count(id => !V3ContentUnlocks.IsWeaponUnlocked(id));
+            V3RunContext.IsActive = false;
+            Assert.Greater(locked, 0, "some weapons are locked in the test save (else the run rule is not exercised)");
+            var lockedNewWeaponSeen = false;
 
+            try
+            {
             for (var seed = 1; seed <= 600; seed++)
             {
+                V3RunContext.IsActive = seed % 2 == 0;
                 var state = new State();
                 var weaponCount = scenario.Next(1, 7);
                 foreach (var id in weaponIds.OrderBy(_ => scenario.Next()).Take(weaponCount))
@@ -181,8 +192,15 @@ namespace RoguePirates.V4.Tests
                     new OfferPlayer(hull, 100f, stats.GlobalDamage, stats.MoveSpeed), level);
                 AssertSame(v3, v4, $"seed {seed}");
                 Assert.AreEqual(v3Rng.LootFloat(), v4Rng.LootFloat(), $"seed {seed}: same number of Loot draws");
-                foreach (var o in v3) kinds.Add(o.kind);
+                foreach (var o in v3)
+                {
+                    kinds.Add(o.kind);
+                    if (!V3RunContext.IsActive && o.kind == LevelOfferKind.NewWeapon && !V3ContentUnlocks.IsWeaponUnlocked(o.id)) lockedNewWeaponSeen = true;
+                }
             }
+            }
+            finally { V3RunContext.IsActive = false; }
+            Assert.IsTrue(lockedNewWeaponSeen, "outside runs a locked weapon is offered (so the in-run builds really filter)");
             // The scenarios reach every Saltwind card kind.
             foreach (var k in new[] { LevelOfferKind.WeaponUpgrade, LevelOfferKind.NewWeapon, LevelOfferKind.Logbook, LevelOfferKind.WeaponEvolution, LevelOfferKind.FallbackHeal })
                 CollectionAssert.Contains(kinds, k, k + " covered");

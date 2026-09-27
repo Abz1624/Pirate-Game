@@ -71,7 +71,9 @@ namespace RoguePirates.V4.Legacy
         public bool IsRunEnded => Run != null && Run.IsRunEnded;
         public bool IsGameplayActive => Run != null && (Run.State == RunState.Playing || Run.State == RunState.BossFight);
         public bool IsBossFight => Run != null && Run.State == RunState.BossFight;
-        public int PlayerLevel => HighSeas.UI.LevelSystem.Instance != null ? HighSeas.UI.LevelSystem.Instance.Level : 0;
+        /// <summary>M9: the V4 progression's level (V3 LevelSystem.Level).</summary>
+        public Func<int> Level;
+        public int PlayerLevel => Level != null ? Level() : 0;
         public int Kills => Run != null ? Run.KillCount : 0;
     }
 
@@ -124,7 +126,16 @@ namespace RoguePirates.V4.Legacy
         public bool Exists => Ship != null && Ship.Damage != null;
         public bool IsAlive => Exists && Ship.Damage.IsAlive;
         public Vector3 Position => Ship != null ? Ship.transform.position : Vector3.zero;
-        public void Damage(float amount, Vector3 source) => Ship?.Damage?.TakeDamage(amount, source, false);
+        /// <summary>
+        /// M9: the build's incoming-damage multiplier (Brace!, Reinforced Keel) and the item hook for steady damage. V3's
+        /// DamageReceiver read the Captain and item singletons; hits through TakeDamage reach the items via its Damaged event.
+        /// </summary>
+        public System.Func<float> IncomingDamage;
+        public System.Action TookSteadyDamage;
+
+        float Incoming => IncomingDamage?.Invoke() ?? 1f;
+
+        public void Damage(float amount, Vector3 source) => Ship?.Damage?.TakeDamage(amount * Incoming, source, false);
 
         static readonly System.Reflection.FieldInfo InvulnerableField =
             typeof(DamageReceiver).GetField("_playtestInvulnerable", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
@@ -161,13 +172,12 @@ namespace RoguePirates.V4.Legacy
             var receiver = Ship != null ? Ship.Damage : null;
             if (receiver == null || !receiver.IsAlive) return;
             if (InvulnerableField != null && (bool)InvulnerableField.GetValue(receiver)) return; // god mode, Module Lab
-            if (V3CaptainActiveController.Instance != null) amount *= V3CaptainActiveController.Instance.IncomingDamageMultiplier;
-            if (V3RunItemEffects.Instance != null) amount *= V3RunItemEffects.Instance.GetIncomingDamageMultiplier(Ship);
+            amount *= Incoming;
             if (amount <= 0f) return;
             if (amount < receiver.CurrentHP)
             {
                 receiver.Heal(-amount);
-                V3RunItemEffects.Instance?.NotifyPlayerTookDamage(); // per frame: it only resets item timers
+                TookSteadyDamage?.Invoke(); // per frame: it only resets item timers
                 _steadyPending += amount;
                 ReportSteady(false);
                 return;
@@ -175,34 +185,19 @@ namespace RoguePirates.V4.Legacy
             _steadyPending += receiver.CurrentHP - 0.001f;
             ReportSteady(true);
             receiver.Heal(-(receiver.CurrentHP - 0.001f));
-            receiver.TakeDamage(1f, source, false); // retried next frame if the ship is inside its hit immunity
+            receiver.TakeDamage(Incoming, source, false); // retried next frame if the ship is inside its hit immunity
         }
     }
 
     /// <summary>
-    /// The legacy EncounterSpawner kept in the scene only for the Beacon boss and Powder Cache (register D4): it gets
-    /// a schedule with no ambient entries, and its spawn-rate base is read back because Dead Calm writes it.
+    /// Dead Calm's spawn-rate cut (M9: the V4 powerup module, which V3 wrote into its switched-off EncounterSpawner) and
+    /// the run-start resets V3 did while resetting its spawn directors. The spawner left the V4 scenes in M9.
     /// </summary>
-    [DeletedInPhase(9, "Stage content (M7) and the V4 powerup module (M9)")]
+    [DeletedInPhase(14, "Static V3 run resets go with the V3 kill path's last targets")]
     public sealed class LegacyEncounterExecutor : ILegacySpawnRateSource
     {
-        EncounterSpawner _spawner;
-
-        EncounterSpawner Spawner
-        {
-            get
-            {
-                if (_spawner == null) _spawner = Object.FindFirstObjectByType<EncounterSpawner>();
-                return _spawner;
-            }
-        }
-
-        public bool InstallSchedule(EncounterSpawnSchedule encounterOnly)
-        {
-            if (Spawner == null || encounterOnly == null) return false;
-            Spawner.SetSchedule(encounterOnly);
-            return true;
-        }
+        /// <summary>The powerup module's Dead Calm multiplier (1 when none).</summary>
+        public Func<float> DeadCalm;
 
         /// <summary>
         /// Run-start resets V3 did while resetting its spawn directors: the static miniboss arena (it survives a scene
@@ -215,17 +210,21 @@ namespace RoguePirates.V4.Legacy
             SaltwindSpawnTelemetryLogic.ResetForNewRun();
         }
 
-        public void EnterModuleLab() => Spawner?.EnterManualPlaytestMode();
-
-        /// <summary>The kept spawner's rate multiplier without its boss-fight factor: 1, or Dead Calm's slow.</summary>
+        /// <summary>
+        /// Dead Calm's slow, 1 when none. V3 multiplied its boss-fight factor into the spawner's rate and V4 divided it
+        /// back out (V4 applies its own); the same float steps are kept so traces match V3.
+        /// </summary>
         public float Multiplier
         {
             get
             {
-                if (Spawner == null) return 1f;
+                if (DeadCalm == null) return 1f;
                 var run = RunManager.Instance;
                 var bossFight = run != null && run.State == RunState.BossFight && StageBalanceProfileContext.Export?.Spawn != null;
-                return WithoutBossFactor(Spawner.DebugSpawnRateMultiplier, bossFight, StageBalanceProfileContext.Export?.Spawn?.BossAmbientRateMultiplier ?? 1f);
+                var boss = StageBalanceProfileContext.Export?.Spawn?.BossAmbientRateMultiplier ?? 1f;
+                var rate = DeadCalm();
+                if (bossFight) rate *= boss;
+                return WithoutBossFactor(rate, bossFight, boss);
             }
         }
 

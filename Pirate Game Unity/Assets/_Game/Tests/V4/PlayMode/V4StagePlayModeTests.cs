@@ -78,7 +78,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.BarnacleKingBossAttackDirector>());
             Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3BossSummonHotkey>());
             Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3ExplosiveBarrelWorld>(), "no barrels (adopted decision)");
-            Assert.IsFalse(Object.FindFirstObjectByType<EncounterSpawner>().enabled);
+            Assert.IsNull(Object.FindFirstObjectByType<EncounterSpawner>(), "M9: the legacy spawner left the scene");
 
             var layout = stage.Module.Layout;
             Assert.IsNotNull(layout);

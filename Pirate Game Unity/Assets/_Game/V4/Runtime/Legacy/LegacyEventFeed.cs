@@ -23,7 +23,7 @@ namespace RoguePirates.V4.Legacy
         TriggerBus _bus;
         RunManager _run;
         PlayerShipController _player;
-        LevelSystem _levels;
+        RoguePirates.V4.Progression.ProgressionModule _levels;
 
         public LegacyEventFeed(CombatEvents events, RunClock clock)
         {
@@ -54,14 +54,13 @@ namespace RoguePirates.V4.Legacy
 
             _player = player;
             if (_player != null && _player.Damage != null) _player.Damage.Damaged += OnPlayerDamaged;
-            AttachLevels();
         }
 
-        /// <summary>LevelSystem may be created during bootstrap; call again after it exists.</summary>
-        public void AttachLevels()
+        /// <summary>M9: level-ups from the V4 progression module (was LevelSystem).</summary>
+        public void AttachLevels(RoguePirates.V4.Progression.ProgressionModule levels)
         {
-            if (_levels != null || LevelSystem.Instance == null) return;
-            _levels = LevelSystem.Instance;
+            if (_levels != null || levels == null) return;
+            _levels = levels;
             _levels.LevelChanged += OnLevel;
             _levels.OffersReady += OnOffers;
         }

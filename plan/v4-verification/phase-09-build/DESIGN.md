@@ -50,6 +50,35 @@ Research (read-only maps with file:line): [research-progression.md](research-pro
 - Merge-on-full uses a 3-D distance (renderer-bounds height, R-74).
 - Powder Rush and Battle Signal share one damage slot; Full Sail shares Tailwind's.
 
-## Legacy reader audit
+## Legacy reader audit (step 9.8)
 
-To be written at the switch-over (step 9.8) from the research maps: every reader of `LevelSystem`, `WeaponController`, `PickupWorld`, `EncounterSpawner`, `V3RunItemInventory`/`Effects`, `V3CaptainController`/`ActiveController` and `V3FloorPowerupWorld` in V4 runs, classified ported / adapted / safe when absent.
+Every reader of the removed V3 build systems in a V4 run, from a read-only audit of `V4/**` and the shared V3 code that stays in the V4 scenes. **Ported** = now reads a V4 module; **adapted** = a kept V3 piece is driven by V4; **safe absent** = null-safe and nothing is lost; **dropped** = the behaviour is gone on purpose.
+
+| Reader | Read | Now |
+|---|---|---|
+| `LegacyRunShell.BootstrapRun` | LevelSystem prepare/sync, record setup, Captain controllers, item/powerup ensure, `V3CaptainController.Instance` hull fallback | Ported: `LegacyBuildWiring` (ResetForRun, BeginCaptain, ResolveStartingWeapon, BeginProgression, BeginItems) in V3's order |
+| `LegacyRunShell.OnApplicationPause` | `RunSnapshotService.CaptureFromRun(LevelSystem, POIManager)` | Dropped (never loaded by V3; plan 9.8) |
+| `LegacyWeaponWiring` / `LegacyWeaponRecord` | WeaponController record as the loadout | Ported: `ProgressionLoadout` (IWeaponLoadout) |
+| `LegacyWeaponModifiers` | Captain/active/item singletons | Ported: `BuildWeaponModifiers` over the stat store, `CaptainModule`, `ItemModule` |
+| `LegacyActiveProbe` | active cooldown polling, Captain's Bell via TriggerBus + V3 inventory | Ported: Captain events fire the weapons in the Captain's tick; the Bell fires on the next weapon tick (as since M5) |
+| `DamageReceiver.TakeDamage` (shared, kept) | Brace! and Keel multipliers, `NotifyPlayerTookDamage` from the V3 singletons (now absent) | Adapted: every V4 enemy hit goes through `EnemyCombatServices.HitPlayer` / `LegacyEnemyTarget` / the damage sink with the build multiplier; items hear `Damaged` |
+| `LegacyPlayerDamageSink.DamageOverTime` | the same multipliers and item hook | Ported to the build multiplier and `ItemModule.NotifyPlayerTookDamage` |
+| `LegacyEnemyKillTargets` | `PickupWorld.SpawnFromEnemy`, `V3FloorPowerupWorld.TryRollOnKill`, `V3RunItemEffects.NotifyKill` | Ported: pickups, powerups, items (same order) |
+| `LegacyEnemyWiring.TickFrame` / `ClearTransientWorlds` | PickupWorld and V3FloorPowerupWorld ticks, the R-103 adapter | Ported: `LegacyBuildWiring.TickWorld` (Magnetic Tide opens barrels through the pickup module when switched on) |
+| `LegacyEnemyWiring` summon / despawn | `EncounterSpawner.TriggerProfile` / `NotifyAgentDespawned` on the switched-off spawner | Summon kept as accepted (counted, never spawned, as V3); despawn count dropped (the spawner is gone) |
+| `LegacyHellfireEnvironment` | `DamageSystem.RollDamage` (reads the V3 singletons), `WeaponEvolutionRuntime` | Ported: V4 `DamageCalculator` and the progression's evolutions |
+| `LegacyEncounterExecutor` | `EncounterSpawner` schedule, lab mode, Dead Calm read-back | Ported: Dead Calm from `PowerupModule.SpawnRateMultiplier` (same float steps); schedule and lab mode dropped with the spawner |
+| `LegacyRunState.PlayerLevel` | `LevelSystem.Level` | Ported: progression level |
+| `LegacyStageEconomy.TryAddItem` | `V3RunItemInventory.TryAddItem` | Ported: `ItemModule.TryAddItem` (toast and telemetry as V3) |
+| `LegacyProgressionView`, `LegacyLoadoutView` items, `LegacyResultsView` final build | LevelSystem, V3 inventory | Ported: `ProgressionView`, item module, progression weapons |
+| `LegacyEventFeed` | LevelSystem `LevelChanged` / `OffersReady` | Ported: progression events |
+| `LegacyPresentationAdapter` | `EnsureLevelSystem`, skip-hide reads `PendingLevelUps` | Dropped / ported (pending from the progression) |
+| `CombatVfxController` (kept) | subscribes `LevelSystem.LevelChanged` for the level-up burst | Adapted: the build wiring invokes its handler on the progression's level change |
+| `RunHud` (kept, left panel hidden) | LevelSystem level/XP | Safe absent (the V4 HUD presenter shows level and XP) |
+| `WeaponJuiceController.Configure` (disabled) | finds the WeaponController | Safe absent |
+| `V3RunPlaytestHotkeys` (dev) | WeaponController, LevelSystem, V3 inventory | Safe absent; its grant hotkeys stop working (the console sections in 9.9 replace them) |
+| `V3OnboardingDirector` | `NotifyLevelUpShown` from LevelSystem | Ported: the level-up presenter calls it |
+| Trace recorder / pilot | LevelSystem level, PickupWorld pool | Ported, with the V3 fallback kept for golden recordings |
+| Console Weapons section (`LegacyWeaponLab`) | record + LevelSystem + `WeaponEvolutionRuntime` | Ported: progression dev edits |
+| Menu Captain locks | `V3CaptainCatalog.IsLocked` (the V3 carousel draws lock badges from it) | Unchanged (V3 locks); the adopted locks are in `CaptainConfig` and need the V4 menu view — gate decision with Richie's rule |
+

@@ -48,6 +48,20 @@ namespace RoguePirates.V4.Progression
 
         public void Clear() => _weapons.Clear();
 
+        /// <summary>Dev tools: these weapons in this order; ones already carried keep their state, new ones start fresh.</summary>
+        public void Rebuild(IReadOnlyList<string> weaponIds)
+        {
+            var kept = new List<LoadoutWeapon>(_weapons);
+            _weapons.Clear();
+            foreach (var id in weaponIds)
+            {
+                if (_weapons.Count >= _maxSlots) break;
+                var old = kept.Find(w => w.Id == id);
+                if (old != null) _weapons.Add(old);
+                else Equip(id);
+            }
+        }
+
         /// <summary>V3 EquipWeapon: fails when full or the weapon is unknown.</summary>
         public bool Equip(string weaponId)
         {

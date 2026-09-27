@@ -93,7 +93,8 @@ namespace RoguePirates.V4.Legacy
         public float BoostNormalized => Boost != null ? Boost.BoostNormalized : 0f;
     }
 
-    [DeletedInPhase(9, "CaptainModule and CaptainConfig")]
+    /// <summary>The run's Captain: the menu's saved selection (V3CaptainSelection) until the V4 menu reads CaptainConfig (M14).</summary>
+    [DeletedInPhase(14, "V4 menu and CaptainConfig titles")]
     public sealed class LegacyCaptainView : ICaptainView
     {
         static V3CaptainId Current => V3RunContext.IsActive ? V3RunContext.CaptainId : V3CaptainSelection.Selected;
@@ -101,48 +102,29 @@ namespace RoguePirates.V4.Legacy
         public string DisplayTitle => V3CaptainCatalog.GetDisplayTitle(Current);
     }
 
-    [DeletedInPhase(9, "ProgressionModule replaces LevelSystem")]
-    public sealed class LegacyProgressionView : IProgressionView
-    {
-        GameDatabase _database;
-
-        static LevelSystem Levels => LevelSystem.Instance;
-        // V3's HUD read logbook names from the loaded database asset (not the run copy); same names either way.
-        GameDatabase Database => _database != null ? _database : (_database = GameDatabaseLoader.Load());
-
-        public bool Exists => Levels != null;
-        public int Level => Levels != null ? Levels.Level : 1;
-        public float CurrentXp => Levels != null ? Levels.CurrentXP : 0f;
-        public float XpToNext => Levels != null ? Levels.XPToNext : 1f;
-        public int LogbookCount => Levels != null ? Levels.OwnedLogbooks.Count : 0;
-        public string LogbookId(int index) => Levels.OwnedLogbooks[index];
-
-        public string LogbookName(int index)
-        {
-            var id = LogbookId(index);
-            var def = Database != null ? Database.GetLogbook(id) : null;
-            return def != null ? def.displayName : id;
-        }
-
-        public int LogbookRank(int index) => Levels.GetLogbookLevel(LogbookId(index));
-    }
-
     /// <summary>
-    /// Weapons come from the V4 Weapon Manager (the slots it fires; they mirror the loadout record in order, so this is
-    /// what V3's HUD showed from WeaponController), names from the V4 weapon and evolution configs; items from the
-    /// legacy inventory until M9.
+    /// Weapons come from the V4 Weapon Manager (the slots it fires, in loadout order), names from the V4 weapon and
+    /// evolution configs; items from the V4 item module (M9), their names from V3's descriptions until the presenters
+    /// read item configs.
     /// </summary>
-    [DeletedInPhase(9, "ItemModule replaces the legacy item inventory")]
+    [DeletedInPhase(14, "Item names from item configs in the V4 presenters")]
     public sealed class LegacyLoadoutView : ILoadoutView
     {
         readonly IWeaponManager _weapons;
+        readonly RoguePirates.V4.Progression.IItemInventory _items;
+        readonly System.Func<int> _slotCap;
 
-        public LegacyLoadoutView(IWeaponManager weapons) => _weapons = weapons;
+        public LegacyLoadoutView(IWeaponManager weapons, RoguePirates.V4.Progression.IItemInventory items, System.Func<int> slotCap)
+        {
+            _weapons = weapons;
+            _items = items;
+            _slotCap = slotCap;
+        }
 
         IReadOnlyList<WeaponSlot> Slots => _weapons != null ? _weapons.Slots : null;
-        static V3RunItemInventory Items => V3RunItemInventory.Instance;
+        RoguePirates.V4.Progression.IItemInventory Items => _items;
 
-        public int WeaponSlotCap => CombatExperimentContext.Active.weaponSlotCap;
+        public int WeaponSlotCap => _slotCap();
         public int WeaponCount => Slots != null ? Slots.Count : 0;
         public string WeaponId(int index) => Slots[index].Id;
 
@@ -163,7 +145,7 @@ namespace RoguePirates.V4.Legacy
         public int ItemCount => Items != null ? Items.Items.Count : 0;
         public string ItemId(int index) => Items.Items[index];
         public string ItemName(int index) => V3ContentDescriptions.GetItemName(ItemId(index));
-        public int ItemStacks(int index) => Items.GetStackCount(ItemId(index));
+        public int ItemStacks(int index) => Items.StackCount(ItemId(index));
     }
 
 
@@ -172,6 +154,9 @@ namespace RoguePirates.V4.Legacy
     public sealed class LegacyResultsView : IResultsView
     {
         static RunManager Run => RunManager.Instance;
+
+        /// <summary>M9: the run's weapons and levels from the V4 progression module (was LevelSystem).</summary>
+        public RoguePirates.V4.Progression.ProgressionModule Progression;
 
         public bool ObjectiveSecured => Run != null && Run.ObjectiveSecured;
         public bool EndedByDeath => Run != null && Run.LastRunEndedByDeath;
@@ -212,12 +197,12 @@ namespace RoguePirates.V4.Legacy
         public void CollectFinalBuild(List<NamedValue> into)
         {
             into.Clear();
-            var levels = LevelSystem.Instance;
+            var levels = Progression;
             if (levels == null) return;
             for (var i = 0; i < levels.OwnedWeapons.Count; i++)
             {
                 var id = levels.OwnedWeapons[i];
-                into.Add(new NamedValue { name = V3WeaponDisplayNames.GetWeaponName(id), value = levels.GetWeaponLevel(id) });
+                into.Add(new NamedValue { name = V3WeaponDisplayNames.GetWeaponName(id), value = levels.WeaponLevel(id) });
             }
         }
 
@@ -314,7 +299,8 @@ namespace RoguePirates.V4.Legacy
     [DeletedInPhase(14, "Every view has a V4 implementation after switch-over")]
     public static class LegacyViewFactory
     {
-        public static RunViews Create(PlayerShipController player, WeaponManager weapons, System.Action retry, System.Action menu, IEnemyView enemies)
+        public static RunViews Create(PlayerShipController player, WeaponManager weapons, System.Action retry, System.Action menu, IEnemyView enemies,
+            LegacyBuildWiring build, System.Func<int> weaponSlotCap)
         {
             var ship = new LegacyShipView(player);
             return new RunViews
@@ -322,10 +308,10 @@ namespace RoguePirates.V4.Legacy
                 Run = new LegacyRunStatusView(),
                 Ship = ship,
                 Captain = new LegacyCaptainView(),
-                Progression = new LegacyProgressionView(),
-                Loadout = new LegacyLoadoutView(weapons),
+                Progression = new RoguePirates.V4.Progression.ProgressionView(build.Progression, id => build.Logbook(id)), // M9
+                Loadout = new LegacyLoadoutView(weapons, build.Items, weaponSlotCap),
                 Enemies = enemies, // M8: the V4 enemy world
-                Results = new LegacyResultsView(),
+                Results = new LegacyResultsView { Progression = build.Progression },
                 WeaponAim = weapons != null ? new WeaponAimView(weapons.Combat) : null,
                 Toasts = new LegacyToastSink(),
                 Commands = new LegacyHudCommands(ship, retry, menu)

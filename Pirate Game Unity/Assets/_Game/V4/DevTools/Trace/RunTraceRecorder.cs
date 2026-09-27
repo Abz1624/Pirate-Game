@@ -243,13 +243,23 @@ namespace RoguePirates.V4.DevTools.Trace
             _kills.Clear();
         }
 
+        RoguePirates.V4.V4Game _levelGame;
+
+        /// <summary>The player level: the V4 progression module (M9), else V3's LevelSystem (golden recordings); -1 if none.</summary>
+        int CurrentLevel()
+        {
+            if (_levelGame == null) _levelGame = FindFirstObjectByType<RoguePirates.V4.V4Game>();
+            if (_levelGame != null && _levelGame.Build != null) return _levelGame.Build.Progression.Level;
+            return LevelSystem.Instance != null ? LevelSystem.Instance.Level : -1;
+        }
+
         void PollProgress(float t, RunManager run)
         {
-            var levels = LevelSystem.Instance;
-            if (levels != null && levels.Level != _lastLevel)
+            var level = CurrentLevel();
+            if (level >= 0 && level != _lastLevel)
             {
-                if (_lastLevel >= 0) Add(new JsonLine("level").Num("t", t).Int("f", Frame).Int("level", levels.Level));
-                _lastLevel = levels.Level;
+                if (_lastLevel >= 0) Add(new JsonLine("level").Num("t", t).Int("f", Frame).Int("level", level));
+                _lastLevel = level;
             }
 
             if (_stage != null)
@@ -373,7 +383,7 @@ namespace RoguePirates.V4.DevTools.Trace
             {
                 var hull = _ship != null && _ship.Damage != null ? _ship.Damage.CurrentHP : 0f;
                 Add(new JsonLine("minute").Int("m", _minute).Counts("spawns", _minuteSpawns).Int("kills", _minuteKills)
-                    .Int("gold", run.Gold).Int("level", LevelSystem.Instance != null ? LevelSystem.Instance.Level : 0).Num("hull", hull));
+                    .Int("gold", run.Gold).Int("level", System.Math.Max(0, CurrentLevel())).Num("hull", hull));
                 _minuteSpawns.Clear();
                 _minuteKills = 0;
                 _minute++;

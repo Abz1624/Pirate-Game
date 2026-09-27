@@ -40,7 +40,7 @@ namespace RoguePirates.V4.DevTools.Console
                 if (GUILayout.Button("+1", GUILayout.Width(28))) LegacyWeaponLab.RankUp(game, i);
                 var evolution = evolutions?.FirstOrDefault(e => e.baseWeapon != null && e.baseWeapon.weaponId == w.Id);
                 GUI.enabled = evolution != null && w.Evolution == null;
-                if (GUILayout.Button("Evolve", GUILayout.Width(52)) && evolution != null) LegacyWeaponLab.Evolve(w.Id, evolution.evolutionId);
+                if (GUILayout.Button("Evolve", GUILayout.Width(52)) && evolution != null) LegacyWeaponLab.Evolve(game, w.Id, evolution.evolutionId);
                 GUI.enabled = true;
                 if (GUILayout.Button("x", GUILayout.Width(22))) LegacyWeaponLab.Remove(game, i);
                 GUILayout.EndHorizontal();

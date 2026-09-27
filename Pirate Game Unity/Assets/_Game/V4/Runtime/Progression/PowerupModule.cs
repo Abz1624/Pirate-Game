@@ -139,12 +139,25 @@ namespace RoguePirates.V4.Progression
             return pool[pool.Length - 1].kind;
         }
 
-        bool TrySpawn(PowerupKind kind, Vector3 origin)
+        /// <summary>Dev tools and tests: a powerup of this kind at (or near) the position; no drop roll, cap or cooldown.</summary>
+        public bool DevSpawn(PowerupKind kind, Vector3 origin, float lifetimeSeconds = -1f) => TrySpawn(kind, origin, lifetimeSeconds);
+
+        /// <summary>Powerups on the water (tests and the console).</summary>
+        public bool TryGet(int slot, out PowerupKind kind, out Vector3 position)
+        {
+            kind = _agents[slot].Kind;
+            position = _agents[slot].Position;
+            return _agents[slot].Active;
+        }
+
+        public int Capacity => _agents.Length;
+
+        bool TrySpawn(PowerupKind kind, Vector3 origin, float lifetimeSeconds = -1f)
         {
             var slot = -1;
             for (var i = 0; i < _agents.Length; i++) if (!_agents[i].Active) { slot = i; break; }
             if (slot < 0 || !TryFindSpot(origin, out var spot)) return false;
-            _agents[slot] = new Agent { Active = true, Kind = kind, Position = spot, Lifetime = C.lifetimeSeconds, View = _views?.Create(kind, spot) };
+            _agents[slot] = new Agent { Active = true, Kind = kind, Position = spot, Lifetime = lifetimeSeconds > 0f ? lifetimeSeconds : C.lifetimeSeconds, View = _views?.Create(kind, spot) };
             _spawnedThisStage++;
             return true;
         }

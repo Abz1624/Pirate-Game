@@ -134,7 +134,7 @@ namespace RoguePirates.V4.Tests
                 }
                 if (scenario.Next(0, 1500) == 0)
                 {
-                    streams.V3(() => { v3.AttractLooseRewards(); if (tideOpensBarrels) LegacyMagneticTide.OpenAllBarrels(v3); });
+                    streams.V3(() => { v3.AttractLooseRewards(); if (tideOpensBarrels) OpenAllBarrels(v3); });
                     streams.V4(module.AttractLooseRewards);
                 }
                 if (scenario.Next(0, 1500) == 0)
@@ -190,6 +190,16 @@ namespace RoguePirates.V4.Tests
             Assert.Greater(rewards.Gold, 0);
             Assert.Greater(rewards.Hull, 10f, "health barrels healed");
             Assert.AreEqual(rm.Rng.DirectorFloat(), rewards.Director.DirectorFloat(), "same Director draws");
+        }
+
+        /// <summary>The R-103 fix as the M8 adapter applied it to V3: every XP, gold and health barrel opened (V3's Collect).</summary>
+        static void OpenAllBarrels(PickupWorld pickups)
+        {
+            var pool = (PickupAgent[])typeof(PickupWorld).GetField("_pool", Private).GetValue(pickups);
+            var collect = typeof(PickupWorld).GetMethod("Collect", Private);
+            for (var i = 0; i < pool.Length; i++)
+                if (pool[i].active && (pool[i].type == PickupType.XpBarrel || pool[i].type == PickupType.GoldBarrel || pool[i].type == PickupType.Powerup))
+                    collect.Invoke(pickups, new object[] { i });
         }
 
         static int Grant(int value, float xpGain) => Mathf.Max(1, Mathf.RoundToInt(value * xpGain));

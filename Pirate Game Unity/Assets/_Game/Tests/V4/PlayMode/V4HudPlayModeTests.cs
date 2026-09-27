@@ -94,8 +94,15 @@ namespace RoguePirates.V4.Tests
             Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Combat.WeaponTargetingVisualizer>(FindObjectsInactive.Include, FindObjectsSortMode.None));
             var juice = Object.FindFirstObjectByType<HighSeas.VFX.WeaponJuiceController>();
             Assert.IsTrue(juice == null || !juice.enabled, "the juice controller no longer draws weapon effects");
-            Assert.IsNotNull(HighSeas.UI.LevelSystem.Instance, "the level system is still the scene's");
-            Assert.AreEqual(1, Object.FindObjectsByType<HighSeas.UI.LevelSystem>(FindObjectsSortMode.None).Length, "no second LevelSystem");
+            // M9: the V3 build systems left the run (the V4 progression, item, Captain, powerup and pickup modules replace them).
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.UI.LevelSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no LevelSystem");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Weapons.WeaponController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no weapon record");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Pickups.PickupWorld>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no PickupWorld");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Enemies.EncounterSpawner>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no EncounterSpawner");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3FloorPowerupWorld>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 powerups");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3RunItemInventory>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 items");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3CaptainController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 Captain");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3CaptainActiveController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 Captain active");
 
             // The HUD shows the run as V3's did.
             var run = RunManager.Instance;
@@ -103,7 +110,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual($"{Mathf.FloorToInt(elapsed / 60f):00}:{Mathf.FloorToInt(elapsed % 60f):00}", Text("Canvas/TImer/Text (TMP)"));
             Assert.AreEqual(run.Gold.ToString("N0"), Text("Canvas/Coin_Count/Text (TMP)"));
             Assert.AreEqual($"KILLS {run.KillCount:N0}", Text("Canvas/Kill_Count/Text (TMP)"));
-            Assert.AreEqual(Mathf.Max(1, HighSeas.UI.LevelSystem.Instance.Level).ToString(), Text("Canvas/Profile/Level_Count/Text (TMP)"));
+            Assert.AreEqual(Mathf.Max(1, Object.FindFirstObjectByType<V4Game>().Build.Progression.Level).ToString(), Text("Canvas/Profile/Level_Count/Text (TMP)"));
             StringAssert.Contains("\nLV1", FirstWeaponLabel(),"first weapon slot shows the starting weapon at level 1");
             Assert.AreEqual("» Find the Treasury Beacon", Text("Canvas/Quest/View/Content/Quest_Slot/Text (TMP)"));
             Assert.AreEqual(HighSeas.V3.V3RunContext.Layout.pois.Count, root.Minimap.PoiMarkerCount, "one minimap glyph per POI");
@@ -220,7 +227,7 @@ namespace RoguePirates.V4.Tests
             ship.Damage.TakeDamage(ship.Damage.MaxHP * 0.5f, Vector3.zero, false);
             ship.Damage.SetPlaytestInvulnerable(true);
             Assert.IsTrue(poi.Module.Interact(HighSeas.Core.POIType.GildedWreck, landmark), "wreck repaired");
-            HighSeas.UI.LevelSystem.Instance.AddXP(500);
+            Object.FindFirstObjectByType<V4Game>().Build.Progression.AddXp(500);
             for (var i = 0; i < 20; i++) yield return null;
 
             int C(string key) => counts.TryGetValue(key, out var n) ? n : 0;
@@ -243,8 +250,8 @@ namespace RoguePirates.V4.Tests
             var hp = GameObject.Find("Canvas/Profile/Health_Slider").GetComponent<UnityEngine.UI.Slider>();
             Assert.AreEqual(Mathf.Clamp01(ship.Damage.CurrentHP / ship.Damage.MaxHP), hp.value, 1e-4f, "hull bar");
             var xp = GameObject.Find("Canvas/Profile/XP_Slider").GetComponent<UnityEngine.UI.Slider>();
-            var levels = HighSeas.UI.LevelSystem.Instance;
-            Assert.AreEqual(Mathf.Clamp01(levels.CurrentXP / Mathf.Max(1f, levels.XPToNext)), xp.value, 1e-4f, "XP bar");
+            var levels = Object.FindFirstObjectByType<V4Game>().Build.Progression;
+            Assert.AreEqual(Mathf.Clamp01(levels.CurrentXp / Mathf.Max(1f, levels.XpToNext)), xp.value, 1e-4f, "XP bar");
 
             yield return new WaitForSeconds(0.6f); // the first hit's invulnerability frames would block the killing blow
             yield return DieAndWaitForResults();
@@ -291,11 +298,8 @@ namespace RoguePirates.V4.Tests
             yield return WaitForPlaying();
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             ship.Damage.SetPlaytestInvulnerable(true);
-            var record = Object.FindFirstObjectByType<HighSeas.Weapons.WeaponController>();
-            record.EnsureWeaponSlotCapacity(6);
             var loadout = new[] { "deck_cannons", "powder_kegs", "flying_cutlasses" };
-            record.SetWeaponLoadout(loadout);
-            HighSeas.UI.LevelSystem.Instance.SetPlaytestWeaponLoadout(loadout);
+            RoguePirates.V4.Legacy.LegacyWeaponLab.SetLoadout(Object.FindFirstObjectByType<V4Game>(), loadout);
             var effects = Object.FindFirstObjectByType<V4PresentationRoot>().WeaponEffects;
             var world = V4TestEnemies.Simulation();
 

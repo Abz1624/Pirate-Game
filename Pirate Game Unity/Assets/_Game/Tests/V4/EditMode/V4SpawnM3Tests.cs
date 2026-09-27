@@ -736,17 +736,20 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void DeadCalmProbe_ReadsTheLegacyBaseWithoutTheBossFactor()
+        public void DeadCalmRate_IsThePowerupModulesMultiplier_WithoutTheBossFactor()
         {
             Assert.AreEqual(0.7f, LegacyEncounterExecutor.WithoutBossFactor(0.35f, true, 0.5f), 1e-6f);
             Assert.AreEqual(0.7f, LegacyEncounterExecutor.WithoutBossFactor(0.7f, false, 0.5f), 1e-6f);
             Assert.AreEqual(0.7f, LegacyEncounterExecutor.WithoutBossFactor(0.7f, true, 0f), 1e-6f, "no division by zero");
+            // M9: the V4 powerup module's Dead Calm (V3 wrote it into the switched-off EncounterSpawner, which read it back
+            // as its effective rate; outside a boss fight that was the same number).
             var go = new GameObject("dead-calm-probe");
             try
             {
                 var spawner = go.AddComponent<EncounterSpawner>();
-                spawner.SetSpawnRateMultiplier(0.7f); // what V3FloorPowerupWorld's Dead Calm writes
-                Assert.AreEqual(0.7f, new LegacyEncounterExecutor().Multiplier, 1e-6f);
+                spawner.SetSpawnRateMultiplier(0.7f); // what V3FloorPowerupWorld's Dead Calm wrote
+                Assert.AreEqual(spawner.DebugSpawnRateMultiplier, new LegacyEncounterExecutor { DeadCalm = () => 0.7f }.Multiplier, 1e-6f);
+                Assert.AreEqual(1f, new LegacyEncounterExecutor().Multiplier, "no powerup module: no slow");
             }
             finally { Object.DestroyImmediate(go); }
         }

@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `v4-modular-architecture` |
 | Phase start commit | `33f8b95e` (M8 passed) |
-| Status | In progress: 9.1, 9.2, 9.6, 9.3, 9.5, 9.4 and 9.7 done (not wired into runs yet); 9.8 switch-over next |
+| Status | Implemented, awaiting playtest: 9.1–9.9 done; the modules run the V4 runs and the V3 build systems left the scenes |
 
 Design record: [DESIGN.md](DESIGN.md) (decisions, build order, gate decisions, determinism hazards). Research maps: [progression](research-progression.md), [items and Captains](research-items-captains.md), [pickups and powerups](research-pickups-powerups.md).
 
@@ -19,5 +19,30 @@ Design record: [DESIGN.md](DESIGN.md) (decisions, build order, gate decisions, d
 | 9.5 | Captain module | Done (not yet wired). `CaptainModule` ports V3CaptainController (base hull and speed, per-level and gold passives, Running Fuse, Hank's per-level hull resync; armor and element multipliers inert, R-49) and V3CaptainActiveController (actives, cooldowns, brace, keg radius, flame boost, damage buff, move and slow effects, salvo, fire-all). EditMode lockstep: all six Captains over 3,600 frames with speed changes, gold and random activations give V3's additive damage, keg damage, incoming damage, keg radius, flame range, burn and cooldown every frame, and V3's base stats |
 | 9.4 | Powerup module | Done (not yet wired). `PowerupModule` ports V3FloorPowerupWorld: drop roll on the Powerup stream, elites' forced drops, the spot search, lifetime, collection, Repair Supplies, Battle Signal / Powder Rush in one damage slot (R-43 switch), Tailwind / Full Sail in one speed slot, Salvage Chime and Magnetic Tide (events for the pickups), Dead Calm as a spawn-rate multiplier for the V4 spawn controller. EditMode lockstep: 20,000 frames of kills (elites, bosses) and a ship collecting drops give V3's drop count, powerups on the water, all stats, hull, Dead Calm rate and Powerup draws |
 | 9.7 | Pickup module | Done (not yet wired). `PickupModule` ports V3's PickupWorld: kill drops (XP, gold and health barrels on the drop circle; the health roll on the Director stream), merging into a same-type pickup when the pool is full, XP/coin homing radii, barrel touch, bursts into flying pieces with the per-frame budget (pieces that find no slot pay directly), bobbing, and the XP/gold/heal grants; every UnityEngine.Random draw where V3 makes it. Magnetic Tide opens the barrels when `magneticTideOpensBarrels` is on (R-103). Views: `LegacyPickupViews` over V3's PickupViewPool (scales, spin, barrels floated from renderer bounds, R-74; deleted in M14). EditMode lockstep, with the tide switch off and on: 12,000 frames of kills, loose XP/coins, Magnetic Tides and Salvage Chimes with the ship alternately idling (the pool fills) and sailing through give V3's pickups slot by slot (type, value, position, homing), XP, gold, hull and Director draws every frame |
-| 9.8 | Switch-over | Next |
-| 9.9 | Console sections | — |
+| 9.8 | Switch-over | Done. `LegacyBuildWiring` puts the modules in the run at V3's points (run start in V3RunBootstrap's order; the Captain and item ticks in slots where V3 added their components; pickups and powerups in the enemy frame; level-ups event-driven) over the kept shared pieces: the V3 level-up modal shows V4 cards with V3's texts (`LegacyLevelUpPresenter`), toasts, telemetry, onboarding and the level-up burst as V3. The weapons read the V4 loadout and `BuildWeaponModifiers`; Captain actives fire the weapons from the Captain's tick; Captain's Bell on the next weapon tick (as since M5). Every enemy hit, hostile shot, hazard, the storm and the boss apply the build's incoming multiplier (Brace!, Keel) — V3's shared DamageReceiver read it from the Captain/item singletons. Dead Calm from the powerup module (same float steps). `LevelSystem`, the `WeaponController` record, `PickupWorld` and the switched-off `EncounterSpawner` removed from both V4 scenes (`V4SceneSetup.ApplyM9`, pure deletions); `V4LegacyBridge`, `LegacyBuildAdapter`, `LegacyWeaponModifiers/Record`, `LegacyActiveProbe`, `LegacyMagneticTide`, `LegacyProgressionView` deleted; the database adapters retagged M15 (the enemy world still reads the shared definition types); `V4Phase.Current = 9`. Reader audit: [DESIGN.md](DESIGN.md#legacy-reader-audit-step-98). Tests: EditMode 240/240, PlayMode 45/45 (new: card pick → slots and Brace! on enemy hits); a structure test forbids the V3 build systems in V4 code |
+| 9.9 | Console sections | Done. Build section: level, XP, weapons, Logbooks, items, stats, Captain and cooldown, powerups and Dead Calm, pickups; +1 level, +100 XP, use active, add any item, a Logbook rank, drop any powerup at the ship, restart as any Captain. The build configs' numbers are the Config section's auto-generated rows (progression, offers, logbook, item, powerups, captain, unlocks, pickups) |
+
+## Independent review of 9.8 (switch-over)
+
+A read-only reviewer checked the switch-over against V3 (run-start order, singletons that went away, card conversion and enum orders, subscriptions, frame order, content ids, tags). No blocker in the gameplay wiring. Findings and fixes:
+
+| # | Finding | Fix |
+|---|---|---|
+| 1 | Major: the new structure test's word boundaries were written as control characters, so it could never match — and three lines would have failed it (`WeaponEvolutionRuntime.Reset`, two powerup-name lookups) | Test regex repaired; the stale reset removed (V4 no longer writes that static); the toast names' static lookup exempted by name with its reason; verified by an independent scan |
+| 2 | Dying with the level-up cards up kept the run paused (V3's CancelPendingLevelUps also lifted the pause) | `CancelPendingLevelUps` lifts it |
+| 3 | Per-hit allocations: item configs found with LINQ on every damage roll and hit; a new HashSet per roll with Admiral's Ledger | Item dictionary (rebuilt on config edits); the HashSet reused |
+| 4 | The `pickupRadiusApplied` switch (Cut and Run, R-49) did nothing | The pickup tick multiplies by the Captain's pickup multiplier (1 while the switch is off) |
+| 5 | Actives are on (adopted decision) but no cooldown shows on the authored HUD (V3's widget is hidden and read the removed controller) | Noted for the playtest and the M14 presenters; the console Build section shows it |
+| 6 | No test of the wiring itself | New PlayMode test: a card picked in the modal reaches the progression and the slots; Brace! reduces a contact hit and a hostile shot |
+
+Re-verified with targeted tests only: EditMode 240/240; PlayMode HUD (7), enemy (12) and the new wiring test.
+
+## Decisions needed at the gate
+
+- **Captain locks (D6):** the adopted locks are in `CaptainConfig` (Ember/Roxie until their weapon is owned, Hank 100 / Sparky 140 Rum), but the V4 menu still shows the V3 carousel, which draws its lock badges and Play button from V3's rule. Apply them now with a menu override, or with the V4 menu (M14)? And Richie's rule (his weapon, Broadside Battery, is a starter).
+- **R-31** evolutions unreachable once every weapon is maxed; **R-34** Lookout's Glass +2.0 crit per rank; **R-40** item hooks never read; **R-43** Powder Rush is Damage ×1.3 in Battle Signal's slot; **R-49** Brine armor, Ember/Roxie multipliers, Cut and Run pickup radius, gamepad South = boost + active; **R-84/R-102** boss-fight resume after a level-up. Each is a config switch with V3 behaviour until you decide.
+- **Active cooldown on screen:** actives are on by default but the authored HUD has no cooldown widget; add a small V4 one now or wait for M14?
+
+## Trace set (end of phase, run once)
+
+Three seeds under the v3-parity preset against the V3 goldens ([trace-comparison.txt](trace-comparison.txt)): every line matches until the first level-up card that offers a new weapon, where V4 offered a locked weapon (Powder Kegs, Flamethrower) to the fresh trace save. Cause: the run's offer context dropped V3's unlock rule (V3 offers a new weapon only if unlocked while V3RunContext is active, as in every run; the Editor lockstep tests ran with it off, where V3 does not filter either). Fixed in `LegacyBuildWiring.IsWeaponOfferEligible`; the offers lockstep test now runs half its builds with the run context on and locked weapons (6/6). Per the standing rule the set was not re-run after the fix.

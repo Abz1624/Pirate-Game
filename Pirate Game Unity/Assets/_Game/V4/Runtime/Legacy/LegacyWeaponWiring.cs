@@ -15,9 +15,10 @@ namespace RoguePirates.V4.Legacy
     /// Builds the V4 weapon module over the legacy adapters (M5) and puts its ticks where V3's pieces ticked:
     /// the weapon tick in WeaponController's scene slot (file ID 658786988, set by V4SceneSetup.ApplyM5), orbit blade
     /// positions at order 50 (V3's juice controller), player projectiles where V3RunBootstrap ticked ProjectileWorld.
-    /// Effects go through <see cref="WeaponEffectsForwarder"/> to the V4 weapon presenter (M6).
+    /// Effects go through <see cref="WeaponEffectsForwarder"/> to the V4 weapon presenter (M6). M9: the loadout is the
+    /// V4 progression's and the multipliers come from the stat resolver, Captain and item modules.
     /// </summary>
-    [DeletedInPhase(9, "Weapons read V4 progression and V4 enemies; slots go with the legacy frame order (M8)")]
+    [DeletedInPhase(14, "Frame slots and the kept legacy views go with switch-over")]
     public sealed class LegacyWeaponWiring : IDisposable
     {
         public const string WeaponsRole = "weapons";
@@ -26,15 +27,16 @@ namespace RoguePirates.V4.Legacy
         readonly CombatEvents _events;
         readonly RunClock _clock;
         readonly WeaponEffectsForwarder _effects;
-        readonly LegacyActiveProbe _probe;
+        readonly LegacyBuildWiring _build;
         ExperimentConfig _experiment;
 
         public WeaponManager Manager { get; }
 
         public LegacyWeaponWiring(LegacyRunShell shell, RunContext context, ConfigSetRuntime config, IRunStatus run, CombatEvents events, RunClock clock,
-            LegacyEnemyWiring enemyWorld)
+            LegacyEnemyWiring enemyWorld, LegacyBuildWiring build)
         {
             _shell = shell;
+            _build = build;
             _events = events;
             _clock = clock;
             var enemies = enemyWorld.Contracts; // M8: the V4 enemy world (was LegacyWeaponEnemies over V3's EnemyWorld)
@@ -46,7 +48,7 @@ namespace RoguePirates.V4.Legacy
                 LegacyHazardTelegraphView.ShowTimedRing,
                 position => HighSeas.VFX.JuiceVfxBroker.Instance?.PlayWaterSplash(position));
             var hooks = new LegacyWeaponHooks(() => _shell.Player, definition, enemyWorld.Hellfire);
-            var mods = new LegacyWeaponModifiers();
+            var mods = build.WeaponModifiers;
             var random = new LegacyCombatRandom();
 
             var combat = new WeaponCombat
@@ -71,17 +73,15 @@ namespace RoguePirates.V4.Legacy
                 Rules = () => config?.All<WeaponRulesConfig>().FirstOrDefault(),
             };
             combat.OnEmission = PublishFired;
-            Manager = new WeaponManager(combat, new LegacyWeaponRecord(() => _shell.Bridge.Weapons), run, config);
-            _probe = new LegacyActiveProbe(Manager);
+            Manager = new WeaponManager(combat, build.Progression.Loadout, run, config);
         }
 
         void PublishFired(WeaponSlot slot) =>
             _events?.Publish(new CombatEvent(CombatEventKind.Fired, _clock != null ? _clock.TickIndex : 0, _clock != null ? _clock.SimTime : 0f, tag: slot.Id));
 
-        /// <summary>Run start, after the level system synced the loadout: switch the record off and bind the ticks.</summary>
+        /// <summary>Run start, after the progression module equipped the starting weapon: bind the ticks.</summary>
         public void Bind()
         {
-            _shell.Bridge.MakeRecordOnly();
             LegacyUpdateSlot slot = null;
             foreach (var s in Object.FindObjectsByType<LegacyUpdateSlot>(FindObjectsSortMode.None))
                 if (s.role == WeaponsRole) { slot = s; break; }
@@ -100,7 +100,7 @@ namespace RoguePirates.V4.Legacy
 
         void TickWeapons(float dt)
         {
-            _probe.Poll();
+            _build.BeforeWeaponTick(); // Captain's Bell (Captain actives fire the weapons from the Captain's tick)
             Manager.Tick(dt);
         }
 
@@ -110,7 +110,6 @@ namespace RoguePirates.V4.Legacy
         public void Dispose()
         {
             Manager.ClearInFlight(false);
-            _probe.Dispose();
         }
     }
 }

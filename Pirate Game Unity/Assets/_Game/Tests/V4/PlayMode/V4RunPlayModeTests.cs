@@ -138,10 +138,7 @@ namespace RoguePirates.V4.Tests
             yield return WaitForPlaying();
             var game = Object.FindFirstObjectByType<V4Game>();
             var legacy = game.Shell.LegacyConfig;
-            var spawner = Object.FindFirstObjectByType<EncounterSpawner>();
-            // M3: the legacy spawner only runs encounters, from the per-run copy without ambient entries.
-            Assert.AreSame(legacy.EncounterOnlySchedule, spawner.Schedule, "the spawner must run the per-run encounter-only copy");
-            Assert.AreSame(legacy.RuntimeSchedule.bossSummon, spawner.Schedule.bossSummon, "same config-driven profile copies");
+            Assert.IsNull(Object.FindFirstObjectByType<EncounterSpawner>(), "M9: the legacy spawner left the scene");
             Assert.AreSame(legacy.RuntimeProfile, StageBalanceProfileContext.Authoring, "the profile context must use the per-run profile");
 
             // Band 2 rate 1.8 -> 4 spawns/s: the V4 spawn controller reads the phase's rate live (interval 0.25 s).
@@ -315,7 +312,8 @@ namespace RoguePirates.V4.Tests
             SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return null;
             yield return WaitForPlaying();
-            HighSeas.UI.LevelSystem.Instance.AddXP(12);
+            var levels = Object.FindFirstObjectByType<V4Game>().Build.Progression;
+            levels.AddXp(12);
             var deadline = Time.realtimeSinceStartup + 5f;
             while (!RunManager.Instance.IsPaused && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.IsTrue(RunManager.Instance.IsPaused, "level-up cards shown");
@@ -327,7 +325,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(RunManager.Instance.IsPaused, "all level-ups skipped");
             yield return null;
             yield return new WaitForEndOfFrame(); // after V4Game.LateUpdate (the test runner resumes coroutines mid-frame)
-            Assert.IsFalse(panel.activeSelf, $"R-83: the cards are hidden after the last Skip (pending={HighSeas.UI.LevelSystem.Instance.PendingLevelUps}, reason={RunManager.Instance.PauseReason}, modals={Object.FindObjectsByType<HighSeas.UI.LevelUpModal>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length}, cached={Diag(modal)})");
+            Assert.IsFalse(panel.activeSelf, $"R-83: the cards are hidden after the last Skip (pending={levels.PendingLevelUps}, reason={RunManager.Instance.PauseReason}, modals={Object.FindObjectsByType<HighSeas.UI.LevelUpModal>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length}, cached={Diag(modal)})");
         }
 
         static string Diag(HighSeas.UI.LevelUpModal modal)
@@ -363,10 +361,7 @@ namespace RoguePirates.V4.Tests
             yield return WaitForPlaying();
             var game = Object.FindFirstObjectByType<V4Game>();
             Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Spawning.ISpawnController>(out var spawn), "spawn controller registered");
-            var legacy = Object.FindFirstObjectByType<EncounterSpawner>();
-            Assert.IsNotNull(legacy, "the legacy spawner stays as Dead Calm's sink until M9 (register D4)");
-            Assert.IsFalse(legacy.enabled, "M7: switched off");
-            Assert.AreEqual(0, legacy.Schedule.entries.Length, "the legacy spawner has no ambient entries");
+            Assert.IsNull(Object.FindFirstObjectByType<EncounterSpawner>(), "M9: the legacy spawner (Dead Calm's sink) left the scene");
             var slots = Object.FindObjectsByType<RoguePirates.V4.Legacy.LegacyUpdateSlot>(FindObjectsSortMode.None);
             foreach (var role in new[] { "ambient", "overtime", "storm", "beats", "storm-edge" })
                 Assert.IsTrue(slots.Any(s => s.role == role && s.Tick != null), $"{role} slot bound");
@@ -449,7 +444,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(0, stats.Sum(st => st.CreatedAfterPrewarm), "nothing created after prewarm at run start");
         }
 
-        static HighSeas.Weapons.WeaponController Record() => Object.FindFirstObjectByType<HighSeas.Weapons.WeaponController>();
+        static RoguePirates.V4.Progression.ProgressionModule Levels() => Object.FindFirstObjectByType<V4Game>().Build.Progression;
 
         static RoguePirates.V4.Weapons.IWeaponManager Weapons()
         {
@@ -476,16 +471,15 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
-        public IEnumerator Weapons_FireFromV4_AndTheRecordIsInert()
+        public IEnumerator Weapons_FireFromV4_OnTheV4Loadout()
         {
             SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return null;
             yield return WaitForPlaying();
-            var record = Record();
-            Assert.IsFalse(record.enabled, "the WeaponController is a switched-off loadout record");
+            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.Weapons.WeaponController>(), "M9: no weapon record");
             var weapons = Weapons();
             Assert.IsNotNull(weapons);
-            Assert.AreEqual(record.Weapons.Count, weapons.Slots.Count, "V4 slots mirror the record");
+            Assert.AreEqual(Levels().Loadout.Count, weapons.Slots.Count, "V4 slots follow the progression loadout");
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             ship.Damage.SetPlaytestInvulnerable(true);
             var world = V4TestEnemies.Simulation();
@@ -493,8 +487,6 @@ namespace RoguePirates.V4.Tests
 
             var id = weapons.Slots[0].Id;
             var before = Emissions(id);
-            record.CaptainFireAllWeapons(); // the V3 fire path: no owner, returns at once
-            Assert.AreEqual(before, Emissions(id), "the record's own fire path is inert");
 
             var deadline = Time.realtimeSinceStartup + 10f;
             while (Emissions(id) == before && Time.realtimeSinceStartup < deadline) yield return null;
@@ -503,25 +495,25 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
-        public IEnumerator LevelUpWrites_ToTheRecord_ReachV4()
+        public IEnumerator LoadoutChanges_ReachTheV4WeaponSlots()
         {
             SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return null;
             yield return WaitForPlaying();
-            var record = Record();
+            var levels = Levels();
             var weapons = Weapons();
             var count = weapons.Slots.Count;
-            Assert.IsTrue(record.EquipWeapon("mortar"), "what LevelSystem.ApplyOffer does for a new weapon");
+            levels.DevSetWeapons(levels.Loadout.Weapons.Select(w => w.Id).Append("mortar").ToList());
             yield return null;
             yield return null;
             Assert.AreEqual(count + 1, weapons.Slots.Count);
             var slot = weapons.Slots.Last();
             Assert.AreEqual("mortar", slot.Id);
-            record.UpgradeWeapon(record.FindWeaponIndex("mortar"), HighSeas.Core.Rarity.Uncommon);
+            levels.DevRankUp(levels.Loadout.IndexOf("mortar"));
             yield return null;
             yield return null;
             Assert.AreEqual(2, slot.Level, "upgrades reach the same V4 slot");
-            Assert.AreEqual(record.Weapons.Last().damageBonus, slot.DamageBonus);
+            Assert.AreEqual(levels.Loadout.Weapons.Last().DamageBonus, slot.DamageBonus);
         }
 
         [UnityTest]
@@ -530,19 +522,17 @@ namespace RoguePirates.V4.Tests
             SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return null;
             yield return WaitForPlaying();
-            var record = Record();
+            var game = Object.FindFirstObjectByType<V4Game>();
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             ship.Damage.SetPlaytestInvulnerable(true);
             var world = V4TestEnemies.Simulation();
-            record.EnsureWeaponSlotCapacity(6);
             foreach (var loadout in new[]
                      {
                          new[] { "deck_cannons", "broadside_battery", "powder_kegs", "flying_cutlasses", "lightning_mast", "flamethrower" },
                          new[] { "swivel_guns", "long_nine", "harpoon_gun", "mortar" },
                      })
             {
-                record.SetWeaponLoadout(loadout);
-                HighSeas.UI.LevelSystem.Instance.SetPlaytestWeaponLoadout(loadout);
+                RoguePirates.V4.Legacy.LegacyWeaponLab.SetLoadout(game, loadout);
                 var before = loadout.ToDictionary(id => id, Emissions);
                 var deadline = Time.realtimeSinceStartup + 20f;
                 while (Time.realtimeSinceStartup < deadline && loadout.Any(id => Emissions(id) <= before[id]))
@@ -553,6 +543,52 @@ namespace RoguePirates.V4.Tests
                 }
                 foreach (var id in loadout) Assert.Greater(Emissions(id), before[id], id + " fired");
             }
+        }
+
+        /// <summary>
+        /// M9 wiring: a card picked in the kept V3 modal reaches the V4 progression and the weapon slots, and the build's
+        /// incoming-damage multiplier (Brace!) reaches enemy contact hits and hostile-shot hits (V3's DamageReceiver read it
+        /// from the Captain singleton, which left the run).
+        /// </summary>
+        [UnityTest]
+        public IEnumerator BuildWiring_CardPicksReachTheSlots_AndBraceReachesEnemyHits()
+        {
+            SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return null;
+            yield return WaitForPlaying();
+            var game = Object.FindFirstObjectByType<V4Game>();
+            var build = game.Build;
+            var levels = build.Progression;
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            ship.Damage.SetPlaytestInvulnerable(true);
+
+            int Progress() => levels.OwnedWeapons.Sum(levels.WeaponLevel) + levels.OwnedLogbooks.Sum(levels.LogbookLevel);
+            var before = Progress();
+            levels.AddXp(levels.XpToNext - Mathf.CeilToInt(levels.CurrentXp)); // exactly one level: one card
+            var deadline = Time.realtimeSinceStartup + 5f;
+            while (!RunManager.Instance.IsPaused && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.AreEqual(PauseReason.LevelUp, RunManager.Instance.PauseReason, "the modal paused the run for the V4 cards");
+            PickFirstCard();
+            yield return null;
+            yield return null;
+            Assert.IsFalse(RunManager.Instance.IsPaused, "picking resumes the run");
+            Assert.AreEqual(before + 1, Progress(), "the card was applied (a new weapon, an upgrade or a Logbook rank)");
+            Assert.AreEqual(levels.Loadout.Count, Weapons().Slots.Count, "the weapon slots follow the loadout");
+
+            var hank = game.Config.All<RoguePirates.V4.Config.CaptainConfig>().First(c => c.active != null && c.active.braceSeconds > 0f);
+            build.Captain.BeginRun(hank);
+            Assert.IsTrue(build.Captain.TryActivate(), "Brace! (actives on by default)");
+            var brace = hank.active.braceIncomingDamageMultiplier;
+            Assert.Less(brace, 1f);
+            ship.Damage.SetPlaytestInvulnerable(false);
+            var hp = ship.Damage.CurrentHP;
+            game.Shell.Enemies.Services.HitPlayer(ship.Damage, 10f, ship.Position);
+            Assert.AreEqual(hp - 10f * brace, ship.Damage.CurrentHP, 1e-3f, "a contact hit is braced");
+            yield return new WaitForSeconds(GameConstants.ContactIFrame + 0.05f);
+            hp = ship.Damage.CurrentHP;
+            game.Shell.Enemies.Target.TakeDamage(10f, ship.Position, false);
+            Assert.AreEqual(hp - 10f * brace, ship.Damage.CurrentHP, 1e-3f, "a hostile shot is braced");
+            ship.Damage.SetPlaytestInvulnerable(true);
         }
 
         static void PickFirstCard()
@@ -573,7 +609,7 @@ namespace RoguePirates.V4.Tests
             var start = Time.realtimeSinceStartup;
             while (RunManager.Instance.ElapsedSeconds < 6f && Time.realtimeSinceStartup - start < 20f) yield return null;
             Assert.AreEqual(0, world.ActiveCount, "no ambient spawns in the lab");
-            Assert.IsFalse(Object.FindFirstObjectByType<EncounterSpawner>().enabled, "legacy spawner off (M7: Dead Calm sink only)");
+            Assert.IsNull(Object.FindFirstObjectByType<EncounterSpawner>(), "M9: no legacy spawner");
             Assert.IsNull(Object.FindFirstObjectByType<POIManager>(), "M7: no POIManager");
             Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var stage));
             Assert.IsTrue(stage.Module.Enabled, "M8 playtest: chests, landmarks and the Beacon work in the lab");

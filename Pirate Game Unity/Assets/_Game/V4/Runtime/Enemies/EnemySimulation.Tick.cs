@@ -68,7 +68,7 @@ namespace RoguePirates.V4.Enemies
                         && (e.spawnProfile == null || e.patternParams.contactDamageEnabled);
                     if (contactEnabled || def.isMiniboss)
                     {
-                        playerDamage?.TakeDamage(e.damage, e.position, false);
+                        _services.HitPlayer(playerDamage, e.damage, e.position);
                         e.contactCooldown = GameConstants.EnemyContactCooldown;
                         TryApplyCreatureContactKnockback(ref e, def, playerPos);
                         PushCreatureOffHull(ref e, playerPos, playerRadius, def);

@@ -18,7 +18,7 @@ namespace RoguePirates.V4.Legacy
     /// ships still reference the loaded database's assets (legacy HUD and meta code reads them directly; weapons move
     /// to V4 in M5). Config edits rewrite the copies in place; the enemy world indexes into the same array.
     /// </summary>
-    [DeletedInPhase(9, "Enemies (M8) and the rest of the build data (M9) are V4 modules")]
+    [DeletedInPhase(15, "The V4 enemy world reads EnemyDefinition, a shared type moved with the rest in M15")]
     public sealed class V4RuntimeDatabase : IDisposable
     {
         readonly ConfigSetRuntime _config;

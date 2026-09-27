@@ -92,7 +92,7 @@ namespace RoguePirates.V4.Enemies
             {
                 var ship = playerDamage.GetComponent<PlayerShipController>();
                 ship?.ApplySlow(0.75f, 2f);
-                playerDamage.TakeDamage(agent.damage * 0.35f, agent.position, false);
+                _services.HitPlayer(playerDamage, agent.damage * 0.35f, agent.position);
             }
 
             state.phase = EnemyCombatPhase.Approach;

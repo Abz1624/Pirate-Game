@@ -40,6 +40,9 @@ namespace RoguePirates.V4.Legacy
 
         readonly LegacyEnemyWiring _enemyWorld;
 
+        /// <summary>Chest prices, loot and items (M9: items go to the V4 item module).</summary>
+        public LegacyStageEconomy Economy { get; }
+
         public LegacyStageWiring(RunContext context, ConfigSetRuntime config, IRunStatus runStatus, IPlayerDamageSink damageSink,
             IEncounterExecutor executor, Func<PlayerShipController> player, Func<IWeaponManager> weapons, bool usePlaceholderVisuals,
             LegacyEnemyWiring enemyWorld)
@@ -52,7 +55,8 @@ namespace RoguePirates.V4.Legacy
             _config = () => cached != null ? cached : (cached = config?.Single<StageContentConfig>());
             var run = new LegacyStageRun();
             var toasts = new LegacyStageToasts();
-            Module = new StageContentModule(_config, run, new LegacyStageShip(player), new LegacyStageEconomy(weapons),
+            Economy = new LegacyStageEconomy(weapons);
+            Module = new StageContentModule(_config, run, new LegacyStageShip(player), Economy,
                 new LegacyStageRewards(), toasts, Encounters, executor)
             {
                 Publish = PublishEvent

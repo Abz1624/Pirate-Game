@@ -314,6 +314,28 @@ namespace RoguePirates.V4.Editor
             return string.Join("\n", log);
         }
 
+        /// <summary>
+        /// M9: V3's build systems leave the run scenes — LevelSystem, the switched-off WeaponController record, PickupWorld
+        /// and the switched-off EncounterSpawner (Dead Calm's sink). The V4 progression, pickup and powerup modules replace
+        /// them. None of them updated (PickupWorld was ticked by the bootstrap, the other two were disabled, LevelSystem
+        /// has no Update), and removing components keeps the other file IDs, so the frame order is unchanged.
+        /// </summary>
+        public static string ApplyM9()
+        {
+            var log = new List<string>();
+            foreach (var path in new[] { V4SceneNames.SaltwindRunPath, V4SceneNames.ModuleLabPath })
+            {
+                Edit(path, log, () =>
+                {
+                    RemoveAll<HighSeas.UI.LevelSystem>(log);
+                    RemoveAll<HighSeas.Weapons.WeaponController>(log);
+                    RemoveAll<HighSeas.Pickups.PickupWorld>(log);
+                    RemoveAll<HighSeas.Enemies.EncounterSpawner>(log);
+                });
+            }
+            return string.Join("\n", log);
+        }
+
         /// <summary>Gives the slot with <paramref name="role"/> the file ID of the <typeparamref name="T"/> on /Systems (T moves to a free ID).</summary>
         static void SwapSlotIntoComponentId<T>(string path, string role, List<string> log) where T : Component
         {

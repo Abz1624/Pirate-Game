@@ -173,7 +173,7 @@ namespace RoguePirates.V4.Enemies
             if (p.tetherTickTimer > 0f)
                 return;
             p.tetherTickTimer = p.tether.tickIntervalSeconds;
-            playerDamage?.TakeDamage(p.tether.tickDamage, agent.position, false);
+            _services.HitPlayer(playerDamage, p.tether.tickDamage, agent.position);
         }
 
         void TickSupportAura(EnemySimulation world, int agentIndex, ref EnemyUnit agent, ref EnemySpawnRuntimeParams p, float dt)

@@ -131,21 +131,28 @@ namespace RoguePirates.V4.Tests
         }
 
         /// <summary>
-        /// M3: V4 never drives the legacy spawner. The kept EncounterSpawner (Beacon boss, Powder Cache, Dead Calm
-        /// sink) is touched only by LegacyEncounterExecutor (LegacySpawnAdapters.cs) and the scene setup tool; the
-        /// legacy WeaponController only by V4LegacyBridge until M5/M9.
+        /// M9: the V3 build systems left the V4 runs — LevelSystem, the WeaponController record, PickupWorld, the
+        /// switched-off EncounterSpawner, the Captain/item/powerup components and HellfirePatchWorld. No V4 code line
+        /// names them except the scene setup tool (it removes them), the config generators (they read V3's values),
+        /// the generator's id-keyed V3 mapping, and the trace tools' fallback for V3-golden recordings.
         /// </summary>
         [Test]
-        public void OnlyNamedAdapters_ReferenceLegacySpawnerAndWeaponController()
+        public void NoV4Code_UsesTheV3BuildSystems()
         {
-            var allowed = new Dictionary<string, string[]>
+            var exempt = new Dictionary<string, string[]>
             {
-                ["EncounterSpawner"] = new[] { "Runtime/Legacy/LegacySpawnAdapters.cs", "Runtime/Legacy/LegacyEnemyWiring.cs", "Editor/V4SceneSetup.cs" }, // M8: the despawn count and summon queue V3 EnemyWorld sent it (switched off; D4)
-                // M5: the switched-off controller is the loadout record: the bridge, the record adapter and the scene setup.
-                ["WeaponController"] = new[] { "Runtime/Legacy/V4LegacyBridge.cs", "Runtime/Legacy/LegacyWeaponAdapters.cs", "Runtime/Legacy/LegacyWeaponLab.cs", "Editor/V4SceneSetup.cs" },
+                ["Editor/V4SceneSetup.cs"] = null, // null = every type
+                ["Editor/V4BuildConfigGenerator.cs"] = null,
+                ["Editor/V3ConfigMigrator.cs"] = null,
+                ["Runtime/Legacy/LegacyBuildMapping.cs"] = new[] { "V3RunItemEffects" },
+                ["DevTools/Trace/RunTraceRecorder.cs"] = new[] { "LevelSystem" },
+                ["DevTools/Trace/PlayerPilot.cs"] = new[] { "PickupWorld" },
+                // The powerup toasts use V3's static display names until powerup names move into PowerupConfig (M14 presenters).
+                ["Runtime/Legacy/LegacyBuildWiring.cs"] = new[] { "V3FloorPowerupWorld" },
             };
-            var offenders = Scan(@"\b(EncounterSpawner|WeaponController)\b", (rel, match) => !allowed[match].Contains(rel));
-            Assert.IsEmpty(offenders, "EncounterSpawner / WeaponController outside their adapters: " + string.Join(", ", offenders));
+            var offenders = Scan(@"\b(LevelSystem|WeaponController|PickupWorld|EncounterSpawner|V3FloorPowerupWorld|V3RunItemInventory|V3RunItemEffects|V3CaptainController|V3CaptainActiveController|HellfirePatchWorld|WeaponEvolutionRuntime)\b",
+                (rel, match) => !(exempt.TryGetValue(rel, out var types) && (types == null || System.Array.IndexOf(types, match) >= 0)));
+            Assert.IsEmpty(offenders, "V3 build systems used by V4 code: " + string.Join(", ", offenders));
         }
 
         /// <summary>M3: the V3 spawn directors are replaced; nothing outside Legacy/ (and the V3-golden trace fallback) uses them.</summary>
