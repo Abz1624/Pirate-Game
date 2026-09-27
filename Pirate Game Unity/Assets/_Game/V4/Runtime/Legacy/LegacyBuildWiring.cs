@@ -53,7 +53,7 @@ namespace RoguePirates.V4.Legacy
             _config = config;
             _ship = ship;
             _database = database;
-            if (config != null) config.ConfigChanged += _ => _items = null;
+            if (config != null) config.ConfigChanged += _ => { _items = null; _lightning = null; };
             var run = new BuildRun(this);
             var world = new BuildShip(this);
             Stats = new StatResolver(() => RunManager.Instance != null ? RunManager.Instance.Stats : null);
@@ -68,6 +68,8 @@ namespace RoguePirates.V4.Legacy
                 new RunStreams(), new OfferContext(this), Stats, Stats, run, world)
             {
                 Presenter = new LegacyLevelUpPresenter(config, database),
+                // R-84/R-102: the stage switch decides (the v3-parity preset turns it off).
+                ResumeToBossFight = () => config.Single<StageContentConfig>()?.bossFightSurvivesLevelUp ?? false,
             };
             Items = new ItemModule(ItemConfig, Stats, world);
             Captain = new CaptainModule(Stats, world, run, () => Experiment?.captainActivesEnabled ?? false);
@@ -75,7 +77,7 @@ namespace RoguePirates.V4.Legacy
             Pickups = new PickupModule(() => config.Single<PickupConfig>(), HighSeas.Platform.QualityProfile.Current.pickupCap, new PickupRewards(this),
                 new LegacyPickupViews(PickupRoot(), null), () => config.Single<StageContentConfig>()?.magneticTideOpensBarrels ?? false,
                 () => HighSeas.Platform.QualityProfile.Current.vfxDensity);
-            WeaponModifiers = new BuildWeaponModifiers(() => RunManager.Instance.Stats, Captain, Items);
+            WeaponModifiers = new BuildWeaponModifiers(() => RunManager.Instance.Stats, Captain, Items, IsLightningWeapon);
 
             // Level-ups: the Captain first (V3's controller subscribed at run start), then the level-up burst.
             Progression.LevelChanged += _ => Captain.OnLevelChanged();
@@ -96,9 +98,39 @@ namespace RoguePirates.V4.Legacy
         }
 
         ExperimentConfig Experiment => _config?.Single<ExperimentConfig>();
+        /// <summary>The active's key for the HUD: the gamepad button while a gamepad is connected (R-49: RB, V3: A), else SPACE.</summary>
+        public string ActiveKeyHint() => Gamepad.current == null ? "SPACE" : Experiment != null && !Experiment.captainActiveOnGamepadSouth ? "RB" : "A";
+
+        /// <summary>Captain actives switched on (ExperimentConfig; off under the v3-parity preset).</summary>
+        public bool ActivesEnabled() => Experiment?.captainActivesEnabled ?? false;
 
         // Items are looked up on every damage roll and hit (ItemModule.Effect): a dictionary, rebuilt when configs change.
         Dictionary<string, ItemConfig> _items;
+        Dictionary<string, bool> _lightning;
+
+        /// <summary>R-49: Roxie's lightning multiplier applies to area-strike weapons (by config behavior, no ids).</summary>
+        bool IsLightningWeapon(string weaponId)
+        {
+            if (weaponId == null) return false;
+            if (_lightning == null)
+            {
+                _lightning = new Dictionary<string, bool>();
+                foreach (var w in _config.All<WeaponConfig>()) if (!string.IsNullOrEmpty(w.weaponId)) _lightning[w.weaponId] = w.behavior == ConfigEnums.WeaponBehavior.AreaStrike;
+            }
+            return _lightning.TryGetValue(weaponId, out var yes) && yes;
+        }
+
+        /// <summary>R-40/R-49: burn and Hellfire ticks × this (Sea Witch's Eye, Ember's passive burn).</summary>
+        public float StatusDamageMultiplier() => Items.StatusDamageMultiplier() * Captain.PassiveBurnMultiplier;
+
+        /// <summary>R-40: a near-miss dodge reaches Ghost Lantern and Roxie's active.</summary>
+        public void NotifyNearMiss()
+        {
+            Items.NotifyNearMiss();
+            Captain.NotifyNearMiss();
+        }
+
+        public float NearMissMargin() => Experiment != null ? Mathf.Max(0f, Experiment.nearMissMargin) : 0f;
 
         ItemConfig ItemConfig(string id)
         {
@@ -157,8 +189,11 @@ namespace RoguePirates.V4.Legacy
             AddSlot(GameObject.Find("Systems"), "captain", dt =>
             {
                 var keyboard = Keyboard.current;
+                var pad = Gamepad.current;
+                // R-49: V3 used gamepad South, which is also the boost button; with the fix the right shoulder uses the active.
+                var padButton = pad == null ? null : Experiment != null && !Experiment.captainActiveOnGamepadSouth ? pad.rightShoulder : pad.buttonSouth;
                 var pressed = keyboard != null && (keyboard.spaceKey.wasPressedThisFrame || keyboard.qKey.wasPressedThisFrame)
-                    || Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame;
+                    || padButton != null && padButton.wasPressedThisFrame;
                 Captain.Tick(dt, pressed);
             });
             createHellfireSlot?.Invoke();
@@ -310,6 +345,7 @@ namespace RoguePirates.V4.Legacy
             public bool Exists => Run != null;
             public bool IsRunEnded => Run != null && Run.IsRunEnded;
             public bool IsPaused => Run != null && Run.IsPaused;
+            public RunState State => Run != null ? Run.State : RunState.Playing;
             public int Gold => Run != null ? Run.Gold : 0;
             public int PlayerLevel => _w.Progression.Level;
             public void SetPause(PauseReason reason) => Run?.SetPause(reason);

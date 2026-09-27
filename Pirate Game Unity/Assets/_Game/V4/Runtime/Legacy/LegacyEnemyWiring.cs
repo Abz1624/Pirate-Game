@@ -43,6 +43,10 @@ namespace RoguePirates.V4.Legacy
         public LegacyHellfireEnvironment HellfireEnvironment { get; } = new LegacyHellfireEnvironment();
         /// <summary>M9: pickups and floor powerups tick in the frame where V3's did.</summary>
         public LegacyBuildWiring Build { get; set; }
+        /// <summary>R-40/R-49: burn ticks × this (Sea Witch's Eye, Ember's passive); 1 unless those switches are on.</summary>
+        public Func<float> StatusDamage;
+        /// <summary>R-40: the near-miss margin for hostile shots (0 = off).</summary>
+        public Func<float> NearMissMargin;
 
         public LegacyEnemyWiring(ConfigSetRuntime config, EnemyWorldSettings settings, Func<PlayerShipController> player)
         {
@@ -144,9 +148,11 @@ namespace RoguePirates.V4.Legacy
             Simulation.Tick(dt, playerPos, player?.Damage);
             // V4 player projectiles tick here since M5 (V3's ProjectileWorld, which V4 no longer fills, needed V3's EnemyWorld).
             playerProjectiles?.Invoke(dt);
+            Services.Shots.NearMissMargin = NearMissMargin != null ? NearMissMargin() : 0f;
             Services.Shots.Tick(dt, player != null ? Target : null);
             Build?.TickWorld(dt, playerPos); // Magnetic Tide opens the barrels when its switch is on (R-103)
-            Statuses.Tick(dt, Simulation.Agents, (i, damage) => Simulation.ApplyDamage(i, damage, false, false), (i, burning) => Simulation.SetBurnVisual(i, burning));
+            var status = StatusDamage != null ? StatusDamage() : 1f;
+            Statuses.Tick(dt, Simulation.Agents, (i, damage) => Simulation.ApplyDamage(i, damage * status, false, false), (i, burning) => Simulation.SetBurnVisual(i, burning));
         }
 
         /// <summary>The R-06 fix's release, where LegacyAreaDenialRelease ran (after the frame, with the run clock).</summary>

@@ -115,6 +115,11 @@ namespace RoguePirates.V4
             damageSink.IncomingDamage = _build.IncomingDamageMultiplier;
             damageSink.TookSteadyDamage = _build.Items.NotifyPlayerTookDamage;
             encounters.DeadCalm = () => _build.Powerups.SpawnRateMultiplier;
+            encounters.SpawnDensity = _build.Items.SpawnDensityMultiplier; // R-40: Cursed Compass
+            _enemies.Contracts.ControlledTargetMultiplier = _build.Items.ControlledTargetDamageMultiplier; // R-40: Leviathan's Tooth
+            _enemies.StatusDamage = _build.StatusDamageMultiplier; // R-40/R-49: burn ticks
+            _enemies.NearMissMargin = _build.NearMissMargin; // R-40: near-miss dodges
+            _enemies.Services.Shots.NearMiss += _build.NotifyNearMiss;
             runState.Level = () => _build.Progression.Level;
             _context.Register<Progression.IItemInventory>(_build.Items);
             // M5: the Weapon Manager (replaces WeaponController's firing and ProjectileWorld). M9: it reads the V4 loadout.
@@ -123,6 +128,7 @@ namespace RoguePirates.V4
             _build.Weapons = _weapons.Manager;
             _enemies.HellfireEnvironment.Calculator = () => _weapons.Manager.Combat.Calculator;
             _enemies.HellfireEnvironment.HasHellfire = _build.HasHellfire;
+            _enemies.HellfireEnvironment.StatusDamage = _build.StatusDamageMultiplier;
             _context.Register<RoguePirates.V4.Weapons.IWeaponManager>(_weapons.Manager);
             // M6: the read-only views presentation reads (over the legacy hubs until their modules exist).
             // M7: stage content (chests, landmarks, Beacon, discovery, interaction, boss director) replaces POIManager.

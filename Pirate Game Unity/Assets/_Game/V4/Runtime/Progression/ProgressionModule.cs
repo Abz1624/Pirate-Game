@@ -12,6 +12,7 @@ namespace RoguePirates.V4.Progression
     {
         bool Exists { get; }
         bool IsRunEnded { get; }
+        RunState State { get; }
         void SetPause(PauseReason reason);
         void SetState(RunState state);
         /// <summary>V3 RunManager.EnterPlaying (state Playing, no pause).</summary>
@@ -61,6 +62,12 @@ namespace RoguePirates.V4.Progression
 
         public ProgressionLoadout Loadout { get; }
         public IOfferPresenter Presenter { get; set; }
+        /// <summary>
+        /// R-84/R-102 fix (off = V3): a level-up during the boss fight resumes to the boss fight. V3's resume always set
+        /// the run to Playing, which doubled ambient spawns and stopped skipping elite beats while the boss lived.
+        /// </summary>
+        public Func<bool> ResumeToBossFight { get; set; }
+        RunState _stateBeforeLevelUp = RunState.Playing;
         public int Level { get; private set; }
         public float CurrentXp { get; private set; }
         public int XpToNext { get; private set; }
@@ -110,6 +117,7 @@ namespace RoguePirates.V4.Progression
             _completedLevelUps = 0;
             _state.Weapons.Add(startingWeapon);
             _state.WeaponLevels[startingWeapon] = 1;
+            _stateBeforeLevelUp = RunState.Playing;
             Level = c.startLevel;
             CurrentXp = 0f;
             PendingLevelUps = 0;
@@ -174,8 +182,10 @@ namespace RoguePirates.V4.Progression
                 return;
             }
             var offers = GenerateOffers();
+            var before = _run.Exists ? _run.State : RunState.Playing;
             if (Presenter != null && Presenter.TryShow(offers, Select, Skip, Refresh, RefreshesRemaining))
             {
+                if (before != RunState.LevelUpPaused) _stateBeforeLevelUp = before; // chained level-ups keep the first state
                 _run.SetPause(PauseReason.LevelUp);
                 _run.SetState(RunState.LevelUpPaused);
             }
@@ -224,7 +234,12 @@ namespace RoguePirates.V4.Progression
         void ResumeAfterLevelUp()
         {
             _run.SetPause(PauseReason.None);
-            _run.EnterPlaying();
+            // Only if the run is still in the level-up pause: the boss may have died (stage content set Playing) or the run
+            // ended while the cards were up, and then V3's resume (or the new state) stands.
+            var stillPaused = _run.Exists && !_run.IsRunEnded && _run.State == RunState.LevelUpPaused;
+            if (_stateBeforeLevelUp == RunState.BossFight && stillPaused && ResumeToBossFight != null && ResumeToBossFight()) _run.SetState(RunState.BossFight);
+            else _run.EnterPlaying();
+            _stateBeforeLevelUp = RunState.Playing;
         }
 
         // ---- Applying a card (V3 ApplyOffer) -------------------------------------------------------------------------------

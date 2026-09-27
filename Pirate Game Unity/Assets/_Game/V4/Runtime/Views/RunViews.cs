@@ -58,6 +58,13 @@ namespace RoguePirates.V4.Views
         /// <summary>The selected captain as its shared id (HighSeas V3CaptainId value), for portrait lookup.</summary>
         int CaptainId { get; }
         string DisplayTitle { get; }
+        /// <summary>M9 playtest: the Captain's active is on (actives switched on and the Captain has one).</summary>
+        bool ActiveAvailable { get; }
+        string ActiveName { get; }
+        float ActiveCooldownRemaining { get; }
+        float ActiveCooldownDuration { get; }
+        /// <summary>The key that uses it: SPACE, or the gamepad button while a gamepad is connected.</summary>
+        string ActiveKeyHint { get; }
     }
 
     public interface IProgressionView

@@ -170,10 +170,26 @@ namespace RoguePirates.V4.Progression
             return _runningFuseActive ? P.runningFuseMultiplier : 1f;
         }
 
-        public float IncomingDamageMultiplier => _braceTimer > 0f ? A.braceIncomingDamageMultiplier : 1f;
+        /// <summary>Brace! and, with R-49's switch, Hank's armor (100 / (100 + armor), armor = per level up to the cap; V3 set it on the receiver, which damage never read).</summary>
+        public float IncomingDamageMultiplier
+        {
+            get
+            {
+                var mult = _braceTimer > 0f ? A.braceIncomingDamageMultiplier : 1f;
+                if (P != null && P.armorApplied && P.armorPerLevel > 0f && _run.Exists)
+                    mult *= 100f / (100f + Mathf.Min(P.armorCap, P.armorPerLevel * Mathf.Max(0, _run.PlayerLevel)));
+                return mult;
+            }
+        }
+
+        /// <summary>R-49: Ember's passive burn ×1.12 (only with the switch; V3 never applied it).</summary>
+        public float PassiveBurnMultiplier => P != null && P.elementMultipliersApplied ? P.burnDamageMultiplier : 1f;
+
+        /// <summary>R-49: Roxie's passive lightning ×1.1 (only with the switch; V3 never applied it).</summary>
+        public float LightningDamageMultiplier => P != null && P.elementMultipliersApplied ? P.lightningDamageMultiplier : 1f;
         public float PowderKegBlastRadiusMultiplier => _kegRadiusTimer > 0f ? A.kegRadiusMultiplier : 1f;
         public float FlameRangeMultiplier => _flameTimer > 0f ? A.flameRangeMultiplier : 1f;
-        public float BurnDamageMultiplier => _flameTimer > 0f ? A.burnDamageMultiplier : 1f;
+        public float BurnDamageMultiplier => (_flameTimer > 0f ? A.burnDamageMultiplier : 1f) * PassiveBurnMultiplier;
         /// <summary>Cut and Run's pickup radius (V3 never applies it, R-49: only when pickupRadiusApplied).</summary>
         public float PickupRadiusMultiplier => _pickupTimer > 0f && A.pickupRadiusApplied ? A.pickupRadiusMultiplier : 1f;
     }

@@ -15,11 +15,15 @@ namespace RoguePirates.V4.Progression
         readonly CaptainModule _captain;
         readonly ItemModule _items;
 
-        public BuildWeaponModifiers(Func<PlayerStats> stats, CaptainModule captain, ItemModule items)
+        readonly Func<string, bool> _isLightning;
+
+        /// <param name="isLightning">The weapon is a lightning weapon (its config's area-strike behavior).</param>
+        public BuildWeaponModifiers(Func<PlayerStats> stats, CaptainModule captain, ItemModule items, Func<string, bool> isLightning = null)
         {
             _stats = stats;
             _captain = captain;
             _items = items;
+            _isLightning = isLightning;
         }
 
         PlayerStats Stats => _stats();
@@ -34,12 +38,22 @@ namespace RoguePirates.V4.Progression
         public float GlobalDamage => Stats.GlobalDamage;
 
         public float CaptainAdditiveDamage => _captain.AdditiveDamageBonus();
-        public float CaptainWeaponMultiplier(string weaponId) => _captain.WeaponDamageMultiplier(weaponId);
+        /// <summary>Running Fuse, and with R-49's switch Roxie's lightning ×1.1 on area-strike (lightning) weapons.</summary>
+        public float CaptainWeaponMultiplier(string weaponId)
+        {
+            var mult = _captain.WeaponDamageMultiplier(weaponId);
+            var lightning = _captain.LightningDamageMultiplier;
+            if (lightning != 1f && _isLightning != null && _isLightning(weaponId)) mult *= lightning;
+            return mult;
+        }
         public float ItemGlobalDamageMultiplier => _items.GlobalDamageMultiplier();
         public float ItemCritChanceBonus => _items.CritChanceBonus();
         public float ItemAttackSpeedMultiplier => _items.AttackSpeedMultiplier();
         public float FlameRangeMultiplier => _captain.FlameRangeMultiplier;
         public float BurnDamageMultiplier => _captain.BurnDamageMultiplier;
         public float PowderKegBlastRadiusMultiplier => _captain.PowderKegBlastRadiusMultiplier;
+        public float ExplosionDamageMultiplier => _items.ExplosionDamageMultiplier();
+        public void ExplosionResolved() => _items.NotifyExplosionResolved();
+        public int ExtraLightningJumps => _items.ExtraLightningJumps();
     }
 }

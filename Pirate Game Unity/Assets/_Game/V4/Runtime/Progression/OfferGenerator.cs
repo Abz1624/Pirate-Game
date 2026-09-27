@@ -164,7 +164,8 @@ namespace RoguePirates.V4.Progression
         {
             var owned = state.OwnedWeapons;
             var canAddWeapon = owned.Count < P.weaponSlots && HasUnownedWeapon(state);
-            var canUpgradeWeapon = HasUpgradeableWeapon(state);
+            var canUpgradeWeapon = HasUpgradeableWeapon(state)
+                || P.evolutionOffersWhenMaxed && _evolutionsEnabled() && !TryWeaponEvolutionOffer(ctx, state, usedKeys).IsEmpty; // R-31
             var canNewLogbook = CanOfferNewLogbook(state);
             var canUpgradeLogbook = CanOfferLogbookUpgrade(state);
 

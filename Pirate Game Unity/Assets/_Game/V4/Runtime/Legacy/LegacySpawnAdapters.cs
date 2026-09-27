@@ -198,6 +198,8 @@ namespace RoguePirates.V4.Legacy
     {
         /// <summary>The powerup module's Dead Calm multiplier (1 when none).</summary>
         public Func<float> DeadCalm;
+        /// <summary>R-40: Cursed Compass's spawn density (1 unless the item effect is on).</summary>
+        public Func<float> SpawnDensity;
 
         /// <summary>
         /// Run-start resets V3 did while resetting its spawn directors: the static miniboss arena (it survives a scene
@@ -218,13 +220,14 @@ namespace RoguePirates.V4.Legacy
         {
             get
             {
-                if (DeadCalm == null) return 1f;
+                if (DeadCalm == null) return SpawnDensity != null ? SpawnDensity() : 1f;
                 var run = RunManager.Instance;
                 var bossFight = run != null && run.State == RunState.BossFight && StageBalanceProfileContext.Export?.Spawn != null;
                 var boss = StageBalanceProfileContext.Export?.Spawn?.BossAmbientRateMultiplier ?? 1f;
                 var rate = DeadCalm();
                 if (bossFight) rate *= boss;
-                return WithoutBossFactor(rate, bossFight, boss);
+                var density = SpawnDensity != null ? SpawnDensity() : 1f;
+                return WithoutBossFactor(rate, bossFight, boss) * density;
             }
         }
 

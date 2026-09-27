@@ -41,7 +41,9 @@ namespace RoguePirates.V4.Progression
     /// </summary>
     public sealed class PowerupModule
     {
-        const string DamageSlot = "powerup:damage", SpeedSlot = "powerup:speed", RushSlot = "powerup:powder_rush";
+        const string DamageSlot = "powerup:damage", SpeedSlot = "powerup:speed", RushSlot = "powerup:powder_rush", FullSailSlot = "powerup:full_sail";
+        float _fullSailTimer; // R-43: Full Sail in its own slot
+        bool _fullSailActive;
 
         struct Agent
         {
@@ -232,6 +234,15 @@ namespace RoguePirates.V4.Progression
                     AttractXp?.Invoke();
                     break;
                 case PowerupKind.FullSail:
+                    if (c.fullSailOwnSlot)
+                    {
+                        _fullSailTimer = c.fullSailSeconds;
+                        _stats.RemoveSource(FullSailSlot);
+                        _stats.Add(FullSailSlot, (int)StatId.MoveSpeed, 0f, c.fullSailSpeedMultiplier);
+                        _fullSailActive = true;
+                        _world.SyncShipSpeed();
+                        break;
+                    }
                     _tailwindTimer = c.fullSailSeconds;
                     ApplySpeedBuff(c.fullSailSpeedMultiplier);
                     break;
@@ -272,6 +283,19 @@ namespace RoguePirates.V4.Progression
                 _tailwindTimer -= dt;
                 if (_tailwindTimer <= 0f) RemoveSpeedBuff();
             }
+            if (_fullSailTimer > 0f)
+            {
+                _fullSailTimer -= dt;
+                if (_fullSailTimer <= 0f) RemoveFullSail();
+            }
+        }
+
+        void RemoveFullSail()
+        {
+            if (!_fullSailActive) return;
+            _stats.RemoveSource(FullSailSlot);
+            _fullSailActive = false;
+            _world.SyncShipSpeed();
         }
 
         void TickPowderRush(float dt)
@@ -325,6 +349,8 @@ namespace RoguePirates.V4.Progression
         {
             _battleSignalTimer = 0f;
             _tailwindTimer = 0f;
+            _fullSailTimer = 0f;
+            RemoveFullSail();
             _powderRushTimer = 0f;
             _powderRushActive = false;
             _deadCalmTimer = 0f;

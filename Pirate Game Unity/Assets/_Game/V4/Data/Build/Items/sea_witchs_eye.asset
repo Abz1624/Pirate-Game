@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5955df3a89aa96429cea5e68565b8be, type: 3}
+  m_Name: sea_witchs_eye
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
+  configId: item.sea_witchs_eye
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  itemId: sea_witchs_eye
+  displayName: Sea Witch's Eye
+  description: Status effects apply with higher proc pressure.
+  rarity: 2
+  inChestPool: 1
+  inLevelUpPool: 1
+  chestPoolOrder: 13
+  collectionOrder: 10
+  statModifiers:
+  - stat: 15
+    additive: 0.04
+    multiplicative: 1
+  effects:
+  - kind: 9
+    value: 1.15
+    threshold: 0
+    seconds: 0
+    cap: 0
+    active: 1

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5955df3a89aa96429cea5e68565b8be, type: 3}
+  m_Name: copper_conductor
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
+  configId: item.copper_conductor
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  itemId: copper_conductor
+  displayName: Copper Conductor
+  description: "Evolution synergy \u2014 Tempest Mast."
+  rarity: 3
+  inChestPool: 1
+  inLevelUpPool: 0
+  chestPoolOrder: 18
+  collectionOrder: 18
+  statModifiers:
+  - stat: 12
+    additive: 0
+    multiplicative: 1.1
+  effects: []

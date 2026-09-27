@@ -220,6 +220,7 @@ namespace RoguePirates.V4.Tests
         {
             public bool Exists => true;
             public bool IsRunEnded => false;
+            public RunState State => RunState.Playing;
             public void SetPause(PauseReason reason) { }
             public void SetState(RunState state) { }
             public void EnterPlaying() { }

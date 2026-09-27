@@ -774,13 +774,14 @@ namespace RoguePirates.V4.Weapons
         {
             var id = keg.Source?.Id;
             var blastRadius = Mathf.Max(keg.BlastRadius, keg.TriggerRadius) * C.Mods.PowderKegBlastRadiusMultiplier;
+            var explosion = C.Mods.ExplosionDamageMultiplier; // R-40 (1 unless the item effects are on)
             C.Hooks.BeginDamageResolution();
             for (var ai = 0; ai < C.Enemies.Capacity; ai++)
             {
                 if (!C.Enemies.IsActive(ai)) continue;
                 if (!Touches(keg.Position, blastRadius, ai, keg.EliteReach)) continue;
                 var dmg = C.Calculator.RollAmount(keg.BaseDamage * keg.BlastDamageMultiplier, keg.DamageBonus, C.Enemies.IsElite(ai), 0f,
-                    keg.ProcCoefficient, id, WeaponDamageKind.TriggeredItem);
+                    keg.ProcCoefficient, id, WeaponDamageKind.TriggeredItem) * explosion;
                 if (C.Hooks.TryRegisterProcEvent()) C.DamageAndRecord(ai, id, dmg, false, id);
             }
 
@@ -789,6 +790,7 @@ namespace RoguePirates.V4.Weapons
             C.Hooks.ApplyShipRadiusDamage(keg.Position, blastRadius, shipBlastDamage, id);
 
             C.Effects?.Explosion(keg.Position, blastRadius);
+            C.Mods.ExplosionResolved();
             if (keg.Source != null && keg.Source.EvolutionEffect == Effect.WakeKegs)
                 ChainNearbyKegs(keg.Position, keg.Source.Evolution.wakeKegs);
             if (keg.View >= 0) C.Effects?.MineRemoved(keg.View);
@@ -922,6 +924,7 @@ namespace RoguePirates.V4.Weapons
             var a = def.areaStrike;
             var hits = a.chainTargets + a.chainTargetsPerQuantity * w.QuantityBonus;
             if (w.EvolutionEffect == Effect.JumpAndDelayedStrike) hits += w.Evolution.jumpStrike.extraChainTargets;
+            hits += C.Mods.ExtraLightningJumps; // R-40: Stormglass (0 unless the effect is on)
             _chained.Clear();
             var current = first;
             var damageScale = 1f;

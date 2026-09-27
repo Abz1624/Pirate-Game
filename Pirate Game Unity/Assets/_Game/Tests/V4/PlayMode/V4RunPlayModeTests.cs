@@ -578,8 +578,11 @@ namespace RoguePirates.V4.Tests
             var hank = game.Config.All<RoguePirates.V4.Config.CaptainConfig>().First(c => c.active != null && c.active.braceSeconds > 0f);
             build.Captain.BeginRun(hank);
             Assert.IsTrue(build.Captain.TryActivate(), "Brace! (actives on by default)");
-            var brace = hank.active.braceIncomingDamageMultiplier;
+            // Brace!, times Hank's armor at the current level (R-49, approved at the M9 gate).
+            var armor = hank.passive.armorApplied ? 100f / (100f + Mathf.Min(hank.passive.armorCap, hank.passive.armorPerLevel * build.Progression.Level)) : 1f;
+            var brace = hank.active.braceIncomingDamageMultiplier * armor;
             Assert.Less(brace, 1f);
+            Assert.AreEqual(brace, build.IncomingDamageMultiplier(), 1e-5f, "the build multiplier is Brace! times the armor");
             ship.Damage.SetPlaytestInvulnerable(false);
             var hp = ship.Damage.CurrentHP;
             game.Shell.Enemies.Services.HitPlayer(ship.Damage, 10f, ship.Position);

@@ -65,6 +65,12 @@ namespace RoguePirates.V4.Weapons
         float FlameRangeMultiplier { get; }
         float BurnDamageMultiplier { get; }
         float PowderKegBlastRadiusMultiplier { get; }
+        /// <summary>R-40: explosion damage (Black Powder Keg, Powder Fuse's charge); 1 unless those item effects are on.</summary>
+        float ExplosionDamageMultiplier { get; }
+        /// <summary>R-40: an explosion used Powder Fuse's charge.</summary>
+        void ExplosionResolved();
+        /// <summary>R-40: extra chain-lightning jumps (Stormglass); 0 unless the effect is on.</summary>
+        int ExtraLightningJumps { get; }
     }
 
     /// <summary>The combat stream of the run's random numbers (crit rolls, boarding sides).</summary>

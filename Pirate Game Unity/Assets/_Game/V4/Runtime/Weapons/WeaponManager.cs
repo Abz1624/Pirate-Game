@@ -181,6 +181,7 @@ namespace RoguePirates.V4.Weapons
                 if (strike.Timer > 0f) { list[i] = strike; continue; }
 
                 var hits = 0;
+                var explosion = strike.AreaShell ? _c.Mods.ExplosionDamageMultiplier : 1f;
                 for (var ai = 0; ai < _c.Enemies.Capacity; ai++)
                 {
                     if (!_c.Enemies.IsActive(ai)) continue;
@@ -194,11 +195,13 @@ namespace RoguePirates.V4.Weapons
                     hits++;
                     var isElite = _c.Enemies.IsElite(ai);
                     var dmg = _c.Calculator.Roll(strike.BaseDamage, strike.DamageBonus, isElite, 0f, strike.ProcCoefficient, strike.WeaponId);
+                    if (strike.AreaShell && explosion != 1f) dmg = new DamageRoll(dmg.Amount * explosion, dmg.IsCrit); // R-40: mortar shells explode
                     _c.ApplyWeaponDamage(ai, strike.WeaponId, dmg, isElite, _c.Enemies.IsBoss(ai));
                 }
                 _c.Hooks.RecordConcurrentTargets(strike.WeaponId, hits);
                 if (strike.AreaShell)
                 {
+                    _c.Mods.ExplosionResolved();
                     if (strike.ImpactDraws) DrawV3ImpactNumbers();
                     _c.Effects?.AreaImpact(strike.Position, strike.Radius);
                     _c.Effects?.WaterSplash(strike.Position);

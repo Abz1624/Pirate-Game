@@ -97,9 +97,25 @@ namespace RoguePirates.V4.Legacy
     [DeletedInPhase(14, "V4 menu and CaptainConfig titles")]
     public sealed class LegacyCaptainView : ICaptainView
     {
+        readonly RoguePirates.V4.Progression.CaptainModule _captain;
+        readonly System.Func<bool> _activesOn;
+
+        public LegacyCaptainView(RoguePirates.V4.Progression.CaptainModule captain = null, System.Func<bool> activesOn = null)
+        {
+            _captain = captain;
+            _activesOn = activesOn;
+        }
+
         static V3CaptainId Current => V3RunContext.IsActive ? V3RunContext.CaptainId : V3CaptainSelection.Selected;
         public int CaptainId => (int)Current;
         public string DisplayTitle => V3CaptainCatalog.GetDisplayTitle(Current);
+        // M9 playtest: the active's name and cooldown for the HUD widget (from the V4 Captain module).
+        public bool ActiveAvailable => _captain?.Config?.active != null && (_activesOn == null || _activesOn());
+        public string ActiveName => _captain?.Config?.active?.displayName ?? string.Empty;
+        public float ActiveCooldownRemaining => _captain != null ? _captain.CooldownRemaining : 0f;
+        public float ActiveCooldownDuration => _captain != null ? _captain.CooldownDuration : 0f;
+        public System.Func<string> KeyHint;
+        public string ActiveKeyHint => KeyHint != null ? KeyHint() : "SPACE";
     }
 
     /// <summary>
@@ -307,7 +323,7 @@ namespace RoguePirates.V4.Legacy
             {
                 Run = new LegacyRunStatusView(),
                 Ship = ship,
-                Captain = new LegacyCaptainView(),
+                Captain = new LegacyCaptainView(build.Captain, build.ActivesEnabled) { KeyHint = build.ActiveKeyHint },
                 Progression = new RoguePirates.V4.Progression.ProgressionView(build.Progression, id => build.Logbook(id)), // M9
                 Loadout = new LegacyLoadoutView(weapons, build.Items, weaponSlotCap),
                 Enemies = enemies, // M8: the V4 enemy world

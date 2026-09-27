@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b92b67fe5f60364dab020c22dc301ca, type: 3}
+  m_Name: ember
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.CaptainConfig
+  configId: captain.ember
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  captainKey: ember
+  legacyId: 4
+  displayName: Ember
+  title: Captain Ember
+  menuDescription: Ember turns the deck into a furnace. She stacks burn pressure
+    and stretches flame reach until nothing in the cone gets out clean.
+  passiveSummary: "Burn specialist \xB7 stronger flame pressure"
+  activeSummary: "Stoke the Flames (18s) \u2014 +30% burn dmg, +20% cone length 5s"
+  themeColor: {r: 1, g: 0.6745098, b: 0.36078432, a: 1}
+  menuOrder: 4
+  baseHull: 92
+  baseMoveSpeed: 5.9
+  startingWeaponId: flamethrower
+  v3StartingWeaponId: flamethrower
+  passive:
+    additiveDamagePerLevel: 0.004
+    additiveDamageCap: 0.18
+    additiveDamageGoldDivisor: 0
+    goldDamageCap: 0
+    runningFuse: 0
+    runningFuseSpeed: 4
+    runningFuseSeconds: 2
+    runningFuseWeaponId: 
+    runningFuseMultiplier: 1.15
+    armorPerLevel: 0
+    armorCap: 0
+    armorApplied: 1
+    burnDamageMultiplier: 1.12
+    lightningDamageMultiplier: 1
+    elementMultipliersApplied: 1
+  active:
+    displayName: Stoke the Flames
+    cooldownSeconds: 18
+    fireAllWeapons: 0
+    armPowderKegs: 0
+    fireLightningSalvo: 0
+    braceSeconds: 0
+    braceIncomingDamageMultiplier: 1
+    slowSeconds: 0
+    slowMultiplier: 1
+    moveSeconds: 0
+    moveMultiplier: 1
+    damageBuffSeconds: 0
+    damageBuffAdditive: 0
+    kegRadiusSeconds: 0
+    kegRadiusMultiplier: 1
+    flameSeconds: 5
+    flameRangeMultiplier: 1.2
+    burnDamageMultiplier: 1.3
+    pickupRadiusSeconds: 0
+    pickupRadiusMultiplier: 1
+    pickupRadiusApplied: 1
+    nearMissWindowSeconds: 0
+    nearMissCooldownRefund: 0
+  rumCost: 0
+  prerequisiteWeaponId: flamethrower
+  v3OwnershipKey: 
+  v3UnlockedByFirstConquest: 0

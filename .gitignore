@@ -17,6 +17,8 @@ Thumbs.db
 [Tt]emp/
 [Oo]bj/
 [Bb]uild/
+# V4 build and progression configs live in a folder named Build (M9); keep them tracked.
+!Pirate Game Unity/Assets/_Game/V4/Data/Build/
 [Bb]uilds/
 [Ll]ogs/
 [Uu]ser[Ss]ettings/

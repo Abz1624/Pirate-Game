@@ -93,6 +93,10 @@ namespace RoguePirates.V4.Tests
             public float FlameRangeMultiplier => 1f;
             public float BurnDamageMultiplier => 1f;
             public float PowderKegBlastRadiusMultiplier => 1f;
+            public float ExplosionDamageMultiplier { get; set; } = 1f;
+            public int ExplosionsResolved;
+            public void ExplosionResolved() => ExplosionsResolved++;
+            public int ExtraLightningJumps { get; set; }
         }
 
         sealed class FakeHooks : IWeaponCombatHooks
@@ -537,6 +541,48 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(0.18f, slot.CooldownTimer, 1e-5f, "the second shot comes 0.18 s later");
             h.Tick(12);
             Assert.AreEqual(2, h.Hooks.Emissions.Count, "both shots of the burst");
+        }
+
+        /// <summary>M9 gate, R-40: keg blasts and mortar shells deal the explosion multiplier and use Powder Fuse's charge.</summary>
+        [Test]
+        public void R40_Explosions_TakeTheExplosionMultiplier_AndResolveTheCharge()
+        {
+            float KegHit(float explosion)
+            {
+                using var h = new Harness("powder_kegs");
+                h.Mods.ExplosionDamageMultiplier = explosion;
+                h.Ship.Forward = Vector3.forward;
+                h.Tick(1);
+                h.Enemies.Add(h.Combat.Kegs[0].Position);
+                h.Tick(30);
+                Assert.AreEqual(1, h.Mods.ExplosionsResolved, "one blast resolves the charge once");
+                return h.Enemies.Damage.Single(d => d.weapon == "powder_kegs").amount;
+            }
+            Assert.AreEqual(KegHit(1f) * 1.5f, KegHit(1.5f), 1e-3f, "keg blast × explosion multiplier");
+
+            float MortarHit(float explosion)
+            {
+                using var h = new Harness(true, "mortar");
+                h.Mods.ExplosionDamageMultiplier = explosion;
+                h.Mods.CritChance = 0f;
+                h.Enemies.Add(new Vector3(0f, 0f, 10f));
+                h.Tick(41);
+                Assert.AreEqual(1, h.Mods.ExplosionsResolved, "the shell's impact resolves the charge");
+                return h.Enemies.Damage.Single(d => d.weapon == "mortar").amount;
+            }
+            Assert.AreEqual(MortarHit(1f) * 1.5f, MortarHit(1.5f), 1e-3f, "mortar shell × explosion multiplier");
+        }
+
+        /// <summary>M9 gate, R-40: Stormglass adds chain-lightning jumps.</summary>
+        [Test]
+        public void R40_Stormglass_AddsAChainJump()
+        {
+            using var h = new Harness("lightning_mast");
+            h.Mods.ExtraLightningJumps = 1;
+            for (var i = 0; i < 9; i++) h.Enemies.Add(new Vector3(0f, 0f, 6f + 5f * i));
+            h.Manager.Tick(1f / 60f);
+            var a = h.Config.All<WeaponConfig>().First(c => c.weaponId == "lightning_mast").areaStrike;
+            Assert.AreEqual(a.chainTargets + 1, h.Enemies.Damage.Count, "one more enemy along the chain");
         }
 
         [Test]

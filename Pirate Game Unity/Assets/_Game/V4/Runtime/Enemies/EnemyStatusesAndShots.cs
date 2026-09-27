@@ -14,6 +14,10 @@ namespace RoguePirates.V4.Enemies
     {
         readonly float[] _burnStacks = new float[512];
         readonly float[] _tarred = new float[512];
+        readonly float[] _controlled = new float[512]; // R-40: seconds an enemy counts as controlled (V4 only; nothing in V3 reads it)
+
+        /// <summary>R-40: how long a Tarred enemy counts as controlled (the harpoon's control seconds per hit, 1.2 s).</summary>
+        public float ControlledSeconds = 1.2f;
         readonly float[] _breach = new float[512];
         readonly float[] _curse = new float[512];
         readonly bool[] _burnVisualActive = new bool[512];
@@ -31,6 +35,7 @@ namespace RoguePirates.V4.Enemies
                     break;
                 case StatusType.Tarred:
                     _tarred[enemyIndex] = Mathf.Max(_tarred[enemyIndex], strength);
+                    _controlled[enemyIndex] = Mathf.Max(_controlled[enemyIndex], ControlledSeconds);
                     break;
                 case StatusType.Breach:
                     _breach[enemyIndex] = Mathf.Min(5f, _breach[enemyIndex] + 1f);
@@ -47,6 +52,11 @@ namespace RoguePirates.V4.Enemies
         public float GetVulnerability(int enemyIndex) => 1f + _curse[enemyIndex];
         public float GetArmorReduction(int enemyIndex) => _breach[enemyIndex] * 4f;
         public float BurnStacks(int enemyIndex) => _burnStacks[enemyIndex];
+        /// <summary>
+        /// R-40: the enemy is controlled — hit by a harpoon's tar within <see cref="ControlledSeconds"/>. (The tar value is
+        /// its strength, 0.25, not a duration, so it cannot serve as the window.) The harpoon hit itself lands before its tar.
+        /// </summary>
+        public bool IsControlled(int enemyIndex) => enemyIndex >= 0 && enemyIndex < _controlled.Length && _controlled[enemyIndex] > 0f;
 
         /// <param name="burnDamage">The burn tick through the hit path without hit feedback (V3 ApplyDamage(i, x, false, false)).</param>
         /// <param name="setBurnVisual">The model's burn flash on or off.</param>
@@ -56,7 +66,7 @@ namespace RoguePirates.V4.Enemies
             {
                 if (!agents[i].active)
                 {
-                    if (_burnStacks[i] > 0f || _tarred[i] > 0f || _breach[i] > 0f || _curse[i] > 0f)
+                    if (_burnStacks[i] > 0f || _tarred[i] > 0f || _breach[i] > 0f || _curse[i] > 0f || _controlled[i] > 0f)
                         ClearIndex(i);
                     continue;
                 }
@@ -75,6 +85,7 @@ namespace RoguePirates.V4.Enemies
                 }
 
                 _tarred[i] = Mathf.Max(0f, _tarred[i] - dt);
+                _controlled[i] = Mathf.Max(0f, _controlled[i] - dt);
                 _breach[i] = Mathf.Max(0f, _breach[i] - dt * 0.25f);
                 _curse[i] = Mathf.Max(0f, _curse[i] - dt * 0.05f);
             }
@@ -85,6 +96,7 @@ namespace RoguePirates.V4.Enemies
             if (index < 0 || index >= _burnStacks.Length) return;
             _burnStacks[index] = 0f;
             _tarred[index] = 0f;
+            _controlled[index] = 0f;
             _breach[index] = 0f;
             _curse[index] = 0f;
             _burnVisualActive[index] = false;
@@ -101,6 +113,8 @@ namespace RoguePirates.V4.Enemies
         public float radius;
         public float gravity;
         public Transform view;
+        /// <summary>R-40: passed within the near-miss margin of the ship without hitting.</summary>
+        public bool closePass;
     }
 
     /// <summary>Hostile shot models and the impact splash (V3's ProjectileViewPool and JuiceVfxBroker until M14).</summary>
@@ -217,13 +231,13 @@ namespace RoguePirates.V4.Enemies
 
                 if (shot.position.y < WaterSurfaceY && shot.velocity.y < 0f)
                 {
-                    Despawn(i, shot.position);
+                    DespawnMissed(i, shot.position);
                     continue;
                 }
 
                 if (IslandObstacles.IsAvailable && IslandObstacles.IsPositionBlocked(shot.position, shot.radius))
                 {
-                    Despawn(i, shot.position);
+                    DespawnMissed(i, shot.position);
                     continue;
                 }
 
@@ -234,9 +248,36 @@ namespace RoguePirates.V4.Enemies
                     continue;
                 }
 
+                if (NearMissMargin > 0f && target != null && target.IsAlive && !shot.closePass && IsClosePass(ref shot, target.HullPosition))
+                    shot.closePass = true;
+
                 if (shot.life <= 0f)
-                    Despawn(i, shot.position);
+                    DespawnMissed(i, shot.position);
             }
+        }
+
+        /// <summary>
+        /// R-40 fix (0 = off, V3): a hostile shot that passes within this many metres of the ship's hit circle and leaves
+        /// without hitting is a near-miss dodge (Ghost Lantern's crit, Roxie's refund; V3 had the hooks but no detection).
+        /// </summary>
+        public float NearMissMargin;
+
+        /// <summary>A shot dodged: it passed close and left without hitting.</summary>
+        public event Action NearMiss;
+
+        bool IsClosePass(ref HostileShot shot, Vector3 playerPos)
+        {
+            var flat = playerPos - shot.position;
+            flat.y = 0f;
+            var near = shot.radius + PlayerHitRadius + NearMissMargin;
+            return flat.sqrMagnitude <= near * near && Mathf.Abs(shot.position.y - playerPos.y) <= MaxVerticalHitSeparation;
+        }
+
+        void DespawnMissed(int index, Vector3 impactPosition)
+        {
+            var dodged = _pool[index].closePass;
+            Despawn(index, impactPosition);
+            if (dodged) NearMiss?.Invoke();
         }
 
         static bool TryHitPlayer(ref HostileShot shot, Vector3 playerPos)

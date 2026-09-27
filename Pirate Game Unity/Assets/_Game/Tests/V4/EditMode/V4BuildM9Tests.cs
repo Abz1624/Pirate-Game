@@ -114,7 +114,9 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual((int)StatId.XPGain, byId["cartographers_folio"].stat, "D6");
             Assert.AreEqual((int)StatId.GoldGain, byId["quartermasters_ledger"].stat, "D6");
             Assert.AreEqual((int)StatId.MoveSpeed, byId["navigators_charts"].stat, "D6");
-            Assert.AreEqual(2f, byId["lookouts_glass"].perLevelAdditive, "R-34 stays V3 until decided");
+            Assert.AreEqual(0.02f, byId["lookouts_glass"].perLevelAdditive, "R-34 fix (approved at the M9 gate)");
+            using (var v3 = Parity())
+                Assert.AreEqual(2f, v3.All<LogbookConfig>().Single(l => l.logbookId == "lookouts_glass").perLevelAdditive, "the v3-parity preset restores V3's +2.0");
         }
 
         [Test]
@@ -159,7 +161,12 @@ namespace RoguePirates.V4.Tests
             }
             Assert.AreEqual(12f, items["captains_bell"].effects.Single().threshold, "Captain's Bell every 12 kills");
             Assert.AreEqual(0.88f, items["reinforced_keel"].effects.Single().value);
-            Assert.IsFalse(items["black_powder_keg"].effects.Single().active, "R-40: V3 never reads it");
+            foreach (var id in new[] { "black_powder_keg", "powder_fuse", "sea_witchs_eye", "leviathan_tooth", "stormglass", "cursed_compass" })
+            {
+                Assert.IsTrue(items[id].effects.Single().active, id + ": R-40 fix (approved at the M9 gate)");
+                using var v3 = Parity();
+                Assert.IsFalse(v3.All<ItemConfig>().Single(i => i.itemId == id).effects.Single().active, id + ": the v3-parity preset restores V3 (never read)");
+            }
         }
 
         [Test]
@@ -201,7 +208,14 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(V3FloorPowerupWorld.CollectRadius, pw.collectRadius);
             Assert.AreEqual(profile.powderRushDurationSeconds, pw.powderRushSeconds);
             Assert.AreEqual(profile.deadCalmSlowFraction, pw.deadCalmSlowFraction);
-            Assert.IsTrue(pw.powderRushIsDamageInBattleSignalSlot, "R-43 stays V3 until decided");
+            Assert.IsFalse(pw.powderRushIsDamageInBattleSignalSlot, "R-43 fix: attack speed in its own slot (approved at the M9 gate)");
+            Assert.IsTrue(pw.fullSailOwnSlot, "R-43 fix: Full Sail stacks with Tailwind");
+            using (var v3 = Parity())
+            {
+                var v3pw = v3.Single<PowerupConfig>();
+                Assert.IsTrue(v3pw.powderRushIsDamageInBattleSignalSlot, "the v3-parity preset restores V3's shared slot");
+                Assert.IsFalse(v3pw.fullSailOwnSlot);
+            }
             CollectionAssert.AreEqual(new[] { PowerupKind.RepairSupplies, PowerupKind.PowderRush, PowerupKind.MagneticTide, PowerupKind.DeadCalm }, pw.pool.Select(e => e.kind));
             Assert.AreEqual((int)V3FloorPowerupKind.DeadCalm, (int)PowerupKind.DeadCalm, "enum order mirrors V3");
             var pk = Set.configs.OfType<PickupConfig>().Single();

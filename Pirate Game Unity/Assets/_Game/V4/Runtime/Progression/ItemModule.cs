@@ -174,6 +174,35 @@ namespace RoguePirates.V4.Progression
             FireAllWeapons?.Invoke();
         }
 
+        // ---- R-40 (V3 computed these in RefreshDynamicMultipliers but nothing read them; each counts only while its
+        // item effect is active, which the v3-parity preset switches off) ----------------------------------------------
+
+        /// <summary>Black Powder Keg ×1.12 on explosions, and Powder Fuse's one-shot ×1.35 once charged (V3 RefreshDynamicMultipliers).</summary>
+        public float ExplosionDamageMultiplier()
+        {
+            var mult = 1f;
+            var keg = Effect(ItemEffectKind.ExplosionDamage);
+            if (keg != null) mult *= keg.value;
+            var fuse = Effect(ItemEffectKind.ExplosionDamageAfterDistance);
+            if (fuse != null && _explosionCharge > 0f) mult *= fuse.value;
+            return mult;
+        }
+
+        /// <summary>V3 NotifyExplosionResolved: an explosion used Powder Fuse's charge.</summary>
+        public void NotifyExplosionResolved() => _explosionCharge = 0f;
+
+        /// <summary>Sea Witch's Eye ×1.15 on status (burn) damage.</summary>
+        public float StatusDamageMultiplier() => Effect(ItemEffectKind.StatusDamage)?.value ?? 1f;
+
+        /// <summary>Leviathan's Tooth ×1.2 against controlled (slowed) enemies.</summary>
+        public float ControlledTargetDamageMultiplier() => Effect(ItemEffectKind.ControlledTargetDamage)?.value ?? 1f;
+
+        /// <summary>Stormglass: extra chain-lightning jumps.</summary>
+        public int ExtraLightningJumps() => Mathf.RoundToInt(Effect(ItemEffectKind.ExtraLightningJumps)?.value ?? 0f);
+
+        /// <summary>Cursed Compass ×1.18 on the ambient spawn rate.</summary>
+        public float SpawnDensityMultiplier() => Effect(ItemEffectKind.SpawnDensity)?.value ?? 1f;
+
         /// <summary>V3 GetIncomingDamageMultiplier (Reinforced Keel).</summary>
         public float IncomingDamageMultiplier()
         {

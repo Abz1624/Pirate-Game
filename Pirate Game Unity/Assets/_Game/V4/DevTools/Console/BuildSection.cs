@@ -14,12 +14,38 @@ namespace RoguePirates.V4.DevTools.Console
     /// </summary>
     public sealed class BuildSection : IConsoleSection
     {
+        /// <summary>Uses the active and says what happened (off, cooling down, or what it does).</summary>
+        static string UseActive(RoguePirates.V4.Legacy.LegacyBuildWiring b)
+        {
+            var captain = b.Captain.Config;
+            if (captain?.active == null) return "No Captain active.";
+            if (!b.ActivesEnabled()) return "Captain actives are off (ExperimentConfig.captainActivesEnabled; the v3-parity preset turns them off).";
+            if (!b.Captain.IsReady) return $"{captain.active.displayName} is cooling down: {b.Captain.CooldownRemaining:0.0} s left.";
+            if (!b.Captain.TryActivate()) return $"{captain.active.displayName} did not fire.";
+            var a = captain.active;
+            var effects = new System.Collections.Generic.List<string>();
+            if (a.fireAllWeapons) effects.Add("every weapon fires once at its targets (weapons with nothing in range hold fire)");
+            if (a.armPowderKegs) effects.Add("powder kegs arm at once");
+            if (a.fireLightningSalvo) effects.Add("a lightning salvo");
+            if (a.braceSeconds > 0f) effects.Add($"incoming damage ×{a.braceIncomingDamageMultiplier} for {a.braceSeconds} s");
+            if (a.moveSeconds > 0f) effects.Add($"speed ×{a.moveMultiplier} for {a.moveSeconds} s");
+            if (a.damageBuffSeconds > 0f) effects.Add($"+{a.damageBuffAdditive * 100f:0}% damage for {a.damageBuffSeconds} s");
+            if (a.kegRadiusSeconds > 0f) effects.Add($"keg blast radius ×{a.kegRadiusMultiplier} for {a.kegRadiusSeconds} s");
+            if (a.flameSeconds > 0f) effects.Add($"flame range ×{a.flameRangeMultiplier}, burn ×{a.burnDamageMultiplier} for {a.flameSeconds} s");
+            if (a.slowSeconds > 0f) effects.Add($"own speed ×{a.slowMultiplier} for {a.slowSeconds} s");
+            if (a.pickupRadiusSeconds > 0f) effects.Add($"pickup radius ×{a.pickupRadiusMultiplier} for {a.pickupRadiusSeconds} s{(a.pickupRadiusApplied ? "" : " (off: R-49 switch)")}");
+            if (a.nearMissWindowSeconds > 0f) effects.Add($"near misses within {a.nearMissWindowSeconds} s refund {a.nearMissCooldownRefund} s");
+            if (effects.Count == 0) effects.Add("no effect configured");
+            return $"Used {a.displayName}: {string.Join("; ", effects)}. Cooldown {a.cooldownSeconds:0} s.";
+        }
+
         public string Title => "Build";
         public string SearchText => "build level xp level-up offers cards logbook logbooks item items powerup powerups captain active cooldown dead calm magnetic tide";
 
         const float TextWidth = 440f;
         GUIStyle _wrap;
         bool _items, _logbooks, _powerups, _captains;
+        string _activeResult = string.Empty; // what the last "Use active" did (M9 playtest: the press gave no feedback)
 
         public void Draw(TuningConsole console)
         {
@@ -43,10 +69,9 @@ namespace RoguePirates.V4.DevTools.Console
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("+1 level", GUILayout.Width(80))) levels.AddXp(Mathf.Max(1, levels.XpToNext - Mathf.FloorToInt(levels.CurrentXp)));
             if (GUILayout.Button("+100 XP", GUILayout.Width(80))) levels.AddXp(100);
-            GUI.enabled = captain != null && b.Captain.IsReady;
-            if (GUILayout.Button("Use active", GUILayout.Width(90))) b.Captain.TryActivate();
-            GUI.enabled = true;
+            if (GUILayout.Button("Use active", GUILayout.Width(90))) _activeResult = UseActive(b);
             GUILayout.EndHorizontal();
+            if (!string.IsNullOrEmpty(_activeResult)) GUILayout.Label(_activeResult, _wrap, GUILayout.Width(TextWidth));
 
             var ship = Object.FindFirstObjectByType<HighSeas.Player.PlayerShipController>();
             _items = GUILayout.Toggle(_items, "Items (add a stack)");

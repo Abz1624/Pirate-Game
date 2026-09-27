@@ -110,6 +110,7 @@ namespace RoguePirates.V4.Editor
             foreach (var c in created) EditorUtility.SetDirty(c);
             AssetDatabase.SaveAssets();
             log.Append(ApplyAdoptedDecisions());
+            log.Append(ApplyM9PlaytestDecisions());
 
             var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(V3ConfigMigrator.ConfigSetPath);
             if (set != null)
@@ -148,6 +149,52 @@ namespace RoguePirates.V4.Editor
             if (experiment != null) { experiment.captainActivesEnabled = true; EditorUtility.SetDirty(experiment); }
             AssetDatabase.SaveAssets();
             return "M9 adopted decisions applied (starting weapons, actives on, Captain locks, Logbook stats)\n";
+        }
+
+        [MenuItem("RoguePirates/V4/Apply M9 Playtest Decisions")]
+        static void ApplyM9PlaytestDecisionsFromMenu() => Debug.Log(ApplyM9PlaytestDecisions());
+
+        /// <summary>
+        /// Fixes approved at the M9 gate (28 Sep): R-31 evolution cards stay reachable with every weapon maxed; R-34
+        /// Lookout's Glass +0.02 crit per rank; R-40 the five item effects V3 never read, and near-miss detection; R-43
+        /// Powder Rush is attack speed in its own slot, Full Sail stacks with Tailwind; R-49 Hank's armor, Ember's and
+        /// Roxie's element multipliers, Cut and Run's pickup radius, the gamepad active on the right shoulder. The
+        /// v3-parity preset turns each off again. (R-84/R-102's switch is the stage config's, already on.)
+        /// </summary>
+        public static string ApplyM9PlaytestDecisions()
+        {
+            var progression = AssetDatabase.LoadAssetAtPath<ProgressionConfig>(BuildRoot + "/Progression_Saltwind.asset");
+            if (progression != null) { progression.evolutionOffersWhenMaxed = true; EditorUtility.SetDirty(progression); }
+            foreach (var guid in AssetDatabase.FindAssets("t:LogbookConfig", new[] { BuildRoot + "/Logbooks" }))
+            {
+                var l = AssetDatabase.LoadAssetAtPath<LogbookConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                if (l.logbookId != LegacyBuildMapping.LookoutsGlass) continue; // R-34
+                l.perLevelAdditive = 0.02f;
+                EditorUtility.SetDirty(l);
+            }
+            var powerups = AssetDatabase.LoadAssetAtPath<PowerupConfig>(BuildRoot + "/Powerups_Saltwind.asset");
+            if (powerups != null) { powerups.powderRushIsDamageInBattleSignalSlot = false; powerups.fullSailOwnSlot = true; EditorUtility.SetDirty(powerups); }
+            foreach (var guid in AssetDatabase.FindAssets("t:ItemConfig", new[] { BuildRoot + "/Items" }))
+            {
+                var item = AssetDatabase.LoadAssetAtPath<ItemConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                if (Array.IndexOf(LegacyBuildMapping.R40Items, item.itemId) < 0) continue; // R-40: only the decided items
+                var changed = false;
+                foreach (var e in item.effects) if (e != null && !e.active) { e.active = true; changed = true; }
+                if (changed) EditorUtility.SetDirty(item);
+            }
+            foreach (var guid in AssetDatabase.FindAssets("t:CaptainConfig", new[] { BuildRoot + "/Captains" }))
+            {
+                var c = AssetDatabase.LoadAssetAtPath<CaptainConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                c.passive.armorApplied = true;
+                c.passive.elementMultipliersApplied = true;
+                c.active.pickupRadiusApplied = true;
+                EditorUtility.SetDirty(c);
+            }
+            var experiment = AssetDatabase.FindAssets("t:ExperimentConfig", new[] { V3ConfigMigrator.DataRoot })
+                .Select(g => AssetDatabase.LoadAssetAtPath<ExperimentConfig>(AssetDatabase.GUIDToAssetPath(g))).FirstOrDefault();
+            if (experiment != null) { experiment.captainActiveOnGamepadSouth = false; experiment.nearMissMargin = 2f; EditorUtility.SetDirty(experiment); }
+            AssetDatabase.SaveAssets();
+            return "M9 playtest decisions applied (R-31, R-34, R-40, R-43, R-49)\n";
         }
 
         /// <summary>

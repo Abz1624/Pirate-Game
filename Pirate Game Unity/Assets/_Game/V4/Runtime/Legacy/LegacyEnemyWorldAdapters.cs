@@ -141,8 +141,10 @@ namespace RoguePirates.V4.Legacy
         static RunManager Run => RunManager.Instance;
         public System.Func<RoguePirates.V4.Weapons.DamageCalculator> Calculator;
         public System.Func<string, bool> HasHellfire;
+        /// <summary>R-40/R-49: the patch tick × this (status damage); 1 unless the switches are on.</summary>
+        public System.Func<float> StatusDamage;
         public bool RunActive => Run != null && !Run.IsPaused && !Run.IsRunEnded;
-        public float RollTickDamage(bool targetIsElite) => Calculator().RollAmount(4f, 1f, targetIsElite, 0f, 0f, FlamethrowerId);
+        public float RollTickDamage(bool targetIsElite) => Calculator().RollAmount(4f, 1f, targetIsElite, 0f, 0f, FlamethrowerId) * (StatusDamage != null ? StatusDamage() : 1f);
         public bool IsHellfireWeapon(string weaponId) => HasHellfire != null && HasHellfire(weaponId);
 
         /// <summary>

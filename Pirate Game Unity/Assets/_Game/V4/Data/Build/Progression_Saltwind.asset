@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea7bd72f8b0ee5649903490e5389323d, type: 3}
+  m_Name: Progression_Saltwind
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ProgressionConfig
+  configId: progression.saltwind
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  weaponSlots: 6
+  logbookSlots: 4
+  startLevel: 0
+  levelZeroToOneXp: 5
+  xpCurveOffset: 5
+  xpCurveMultiplier: 5.325000286102295
+  xpCurveExponent: 1.065000057220459
+  cardsPerLevel: 3
+  refreshesPerRun: 2
+  attemptsPerCard: 24
+  preventDuplicateCards: 1
+  excludeMaxedWeapons: 1
+  firstLevelUpWeaponId: swivel_guns
+  firstLevelUpWeaponUpgradeWeight: 1.2
+  ownedLogbookWeight: 1.5
+  maxWeaponLevel: 12
+  evolutionOffersWhenMaxed: 1
+  rarityBaseWeights:
+  - 60
+  - 26
+  - 10
+  - 3.2
+  - 0.8
+  luckExponent: 0.55
+  legendaryMaxShare: 0.06
+  rarityMultipliers:
+  - 1
+  - 1.25
+  - 1.55
+  - 1.9
+  - 2.5
+  upgradeLinesPerRarity: 0100000001000000020000000200000003000000
+  upgradePowerMultiplier: 1.44
+  newWeaponDamageBonus: 1.1
+  newWeaponProtectionLevels: 020000000300000005000000080000000c000000
+  guaranteeSkipMaxLevel: 5
+  guaranteeSkipMaxWeapons: 3
+  fallbackHealFraction: 0.1
+  fallbackDamageBonus: 0.02
+  fallbackDamageCap: 11
+  fallbackMoveSpeedMultiplier: 1.01
+  fallbackMoveSpeedCap: 12

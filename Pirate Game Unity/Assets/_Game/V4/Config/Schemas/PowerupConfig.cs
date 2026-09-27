@@ -47,12 +47,14 @@ namespace RoguePirates.V4.Config
         public float battleSignalSeconds = 8f;
         [Tooltip("Tailwind: move speed × for seconds.")] public float tailwindSpeedMultiplier = 1.2f;
         public float tailwindSeconds = 6f;
-        [Tooltip("Full Sail: move speed × for seconds (shares Tailwind's buff).")] public float fullSailSpeedMultiplier = 1.45f;
+        [Tooltip("Full Sail: move speed × for seconds (its own buff with fullSailOwnSlot; V3 shared Tailwind's).")] public float fullSailSpeedMultiplier = 1.45f;
         public float fullSailSeconds = 8f;
+        [Tooltip("R-43 fix (off = V3): Full Sail is its own speed buff and stacks with Tailwind. V3 put it in Tailwind's slot, so one replaced the other.")]
+        public bool fullSailOwnSlot = true;
         [Tooltip("Powder Rush: the bonus for seconds.")] public float powderRushBonus = 0.3f;
         public float powderRushSeconds = 8f;
         [Tooltip("V3 (register R-43): Powder Rush gives damage × (1 + bonus) in Battle Signal's slot despite its attack-speed name. Off: attack speed × (1 + bonus) in its own slot.")]
-        public bool powderRushIsDamageInBattleSignalSlot = true;
+        public bool powderRushIsDamageInBattleSignalSlot = true; // R-43 fix: false (attack speed, own slot); the v3-parity preset sets true
         [Tooltip("Dead Calm: enemy spawn rate × (1 − slow) for seconds (not during the boss fight).")] public float deadCalmSlowFraction = 0.3f;
         public float deadCalmSeconds = 5f;
 

@@ -63,6 +63,12 @@ namespace RoguePirates.V4.Legacy
             }
         }
 
+        /// <summary>M9 gate (R-40): the items whose effects V3 computed but never read, switched on by the approved fix.</summary>
+        public static readonly string[] R40Items = { "black_powder_keg", "powder_fuse", "sea_witchs_eye", "leviathan_tooth", "stormglass", "cursed_compass" };
+
+        /// <summary>M9 gate (R-34): the Logbook giving +2.0 crit chance per rank.</summary>
+        public const string LookoutsGlass = "lookouts_glass";
+
         /// <summary>The save key of a V3 Captain (V3CaptainId name, lower case).</summary>
         public static string CaptainKey(V3CaptainId id) => id.ToString().ToLowerInvariant();
 

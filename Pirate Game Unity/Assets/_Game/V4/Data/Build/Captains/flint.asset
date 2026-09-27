@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b92b67fe5f60364dab020c22dc301ca, type: 3}
+  m_Name: flint
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.CaptainConfig
+  configId: captain.flint
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  captainKey: flint
+  legacyId: 2
+  displayName: Sparky
+  title: Captain Sparky (Flint)
+  menuDescription: "Sparky lives for the blast radius. Powder kegs, running fuses,
+    and reckless acceleration\u2014if it can explode, it belongs on his deck."
+  passiveSummary: "Starts Powder Kegs \xB7 Running Fuse keg damage while speeding"
+  activeSummary: "Light the Fuse (18s) \u2014 arm kegs, +20% blast radius 4s"
+  themeColor: {r: 0.7490196, g: 0.11372549, b: 0.17254902, a: 1}
+  menuOrder: 3
+  baseHull: 90
+  baseMoveSpeed: 6.3
+  startingWeaponId: powder_kegs
+  v3StartingWeaponId: powder_kegs
+  passive:
+    additiveDamagePerLevel: 0.005
+    additiveDamageCap: 0.25
+    additiveDamageGoldDivisor: 0
+    goldDamageCap: 0
+    runningFuse: 1
+    runningFuseSpeed: 4
+    runningFuseSeconds: 2
+    runningFuseWeaponId: powder_kegs
+    runningFuseMultiplier: 1.15
+    armorPerLevel: 0
+    armorCap: 0
+    armorApplied: 1
+    burnDamageMultiplier: 1
+    lightningDamageMultiplier: 1
+    elementMultipliersApplied: 1
+  active:
+    displayName: Light the Fuse
+    cooldownSeconds: 18
+    fireAllWeapons: 0
+    armPowderKegs: 1
+    fireLightningSalvo: 0
+    braceSeconds: 0
+    braceIncomingDamageMultiplier: 1
+    slowSeconds: 0
+    slowMultiplier: 1
+    moveSeconds: 0
+    moveMultiplier: 1
+    damageBuffSeconds: 0
+    damageBuffAdditive: 0
+    kegRadiusSeconds: 4
+    kegRadiusMultiplier: 1.2
+    flameSeconds: 0
+    flameRangeMultiplier: 1
+    burnDamageMultiplier: 1
+    pickupRadiusSeconds: 0
+    pickupRadiusMultiplier: 1
+    pickupRadiusApplied: 1
+    nearMissWindowSeconds: 0
+    nearMissCooldownRefund: 0
+  rumCost: 140
+  prerequisiteWeaponId: 
+  v3OwnershipKey: flint
+  v3UnlockedByFirstConquest: 1

@@ -371,6 +371,14 @@
                 {
                     "path": "captainActivesEnabled",
                     "value": "false"
+                },
+                {
+                    "path": "nearMissMargin",
+                    "value": "0"
+                },
+                {
+                    "path": "captainActiveOnGamepadSouth",
+                    "value": "true"
                 }
             ]
         },
@@ -421,6 +429,208 @@
                 {
                     "path": "stat",
                     "value": "-1"
+                }
+            ]
+        },
+        {
+            "configId": "progression.saltwind",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "evolutionOffersWhenMaxed",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.lookouts_glass",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "perLevelAdditive",
+                    "value": "2"
+                }
+            ]
+        },
+        {
+            "configId": "item.black_powder_keg",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "effects[0].active",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.powder_fuse",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "effects[0].active",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.sea_witchs_eye",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "effects[0].active",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.leviathan_tooth",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "effects[0].active",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.stormglass",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "effects[0].active",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.cursed_compass",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "effects[0].active",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "powerups.saltwind",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "powderRushIsDamageInBattleSignalSlot",
+                    "value": "true"
+                },
+                {
+                    "path": "fullSailOwnSlot",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "captain.brine",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "passive.armorApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "passive.elementMultipliersApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "active.pickupRadiusApplied",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "captain.ember",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "passive.armorApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "passive.elementMultipliersApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "active.pickupRadiusApplied",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "captain.flint",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "passive.armorApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "passive.elementMultipliersApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "active.pickupRadiusApplied",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "captain.richie",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "passive.armorApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "passive.elementMultipliersApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "active.pickupRadiusApplied",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "captain.rook",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "passive.armorApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "passive.elementMultipliersApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "active.pickupRadiusApplied",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "captain.roxie",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "passive.armorApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "passive.elementMultipliersApplied",
+                    "value": "false"
+                },
+                {
+                    "path": "active.pickupRadiusApplied",
+                    "value": "false"
                 }
             ]
         }

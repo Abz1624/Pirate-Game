@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HighSeas.Balance;
 using HighSeas.Core;
@@ -128,8 +129,15 @@ namespace RoguePirates.V4.Enemies
         public bool IsBoss(int i) => _sim.Agents[i].isBoss;
         public bool TryGetNearest(Vector3 from, float range, out int index, bool preferElite = false) => _sim.TryGetNearest(from, range, out index, preferElite);
 
-        public void ApplyDamage(int index, float amount, bool isCrit, bool showHitFeedback = true, string weaponId = null) =>
+        /// <summary>R-40: weapon damage × this against controlled enemies (Leviathan's Tooth; 1 unless the effect is on).</summary>
+        public Func<float> ControlledTargetMultiplier;
+
+        public void ApplyDamage(int index, float amount, bool isCrit, bool showHitFeedback = true, string weaponId = null)
+        {
+            if (ControlledTargetMultiplier != null && _statuses != null && _statuses.IsControlled(index))
+                amount *= ControlledTargetMultiplier();
             _sim.ApplyDamage(index, amount, isCrit, showHitFeedback, weaponId);
+        }
 
         public void ApplyStatus(int index, WeaponStatus status, float strength)
         {

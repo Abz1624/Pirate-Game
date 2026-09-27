@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30b9ba8e21382e3429dbc3e1171653f9, type: 3}
+  m_Name: cartographers_folio
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.LogbookConfig
+  configId: logbook.cartographers_folio
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  logbookId: cartographers_folio
+  displayName: Cartographer's Folio
+  stat: 16
+  perLevelAdditive: 0.07
+  perLevelMultiplicative: 1
+  maxLevel: 12
+  inSaltwindPool: 1
+  databaseOrder: 6

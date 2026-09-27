@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f349338bd7628ec4ca504d09fbfb34d6, type: 3}
+  m_Name: OfferWeights_Saltwind
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.OfferWeightsConfig
+  configId: offer_weights.saltwind
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  rows:
+  - maxWeapons: 2
+    weaponUpgrade: 20
+    newWeapon: 40
+    logbookUpgrade: 15
+    newLogbook: 25
+    runItem: 0
+  - maxWeapons: 3
+    weaponUpgrade: 30
+    newWeapon: 30
+    logbookUpgrade: 20
+    newLogbook: 20
+    runItem: 0
+  - maxWeapons: 4
+    weaponUpgrade: 30
+    newWeapon: 30
+    logbookUpgrade: 20
+    newLogbook: 20
+    runItem: 0
+  - maxWeapons: 5
+    weaponUpgrade: 40
+    newWeapon: 16
+    logbookUpgrade: 18
+    newLogbook: 12
+    runItem: 0
+  - maxWeapons: 6
+    weaponUpgrade: 55
+    newWeapon: 0
+    logbookUpgrade: 45
+    newLogbook: 0
+    runItem: 0

@@ -22,6 +22,8 @@ MonoBehaviour:
   directionalWeaponTargetingEnabled: 1
   encounterSpawnEnabled: 1
   captainActivesEnabled: 1
+  captainActiveOnGamepadSouth: 0
+  nearMissMargin: 2
   weaponEvolutionsEnabled: 1
   spawnDensityMultiplier: 1
   enemyHpMultiplier: 1

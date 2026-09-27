@@ -33,6 +33,8 @@ namespace RoguePirates.V4.Config
         public float firstLevelUpWeaponUpgradeWeight = 1.2f;
         [Tooltip("An owned Logbook weighs this much among Logbook picks (new ones weigh 1).")] public float ownedLogbookWeight = 1.5f;
         [Tooltip("Weapon level needed for an evolution offer.")] public int maxWeaponLevel = 12;
+        [Tooltip("R-31 fix (off = V3): the weapon-upgrade card category stays open while a maxed weapon has an evolution it can take. V3 offered evolutions only through that category, which closes once every weapon is maxed, so evolutions became unreachable.")]
+        public bool evolutionOffersWhenMaxed = true;
 
         [Header("Rarity")]
         [Tooltip("Common, Uncommon, Rare, Epic, Legendary base weights, each × (1 + Luck)^(luckExponent × tier).")]

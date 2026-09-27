@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b92b67fe5f60364dab020c22dc301ca, type: 3}
+  m_Name: brine
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.CaptainConfig
+  configId: captain.brine
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  captainKey: brine
+  legacyId: 1
+  displayName: Hank
+  title: Captain Hank (Brine)
+  menuDescription: A steady hand on the wheel and iron in the hull. Hank holds the
+    line when the sea turns ugly, trading speed for survivability while his crew
+    braces for the worst.
+  passiveSummary: "110 Hull \xB7 +0.5 armor per level (cap 25)"
+  activeSummary: "Brace! (20s) \u2014 60% DR for 2s, \u221225% speed"
+  themeColor: {r: 0.2901961, g: 0.36862746, b: 0.15294118, a: 1}
+  menuOrder: 1
+  baseHull: 110
+  baseMoveSpeed: 5.7
+  startingWeaponId: deck_cannons
+  v3StartingWeaponId: swivel_guns
+  passive:
+    additiveDamagePerLevel: 0
+    additiveDamageCap: 0
+    additiveDamageGoldDivisor: 0
+    goldDamageCap: 0
+    runningFuse: 0
+    runningFuseSpeed: 4
+    runningFuseSeconds: 2
+    runningFuseWeaponId: 
+    runningFuseMultiplier: 1.15
+    armorPerLevel: 0.5
+    armorCap: 25
+    armorApplied: 1
+    burnDamageMultiplier: 1
+    lightningDamageMultiplier: 1
+    elementMultipliersApplied: 1
+  active:
+    displayName: Brace!
+    cooldownSeconds: 20
+    fireAllWeapons: 0
+    armPowderKegs: 0
+    fireLightningSalvo: 0
+    braceSeconds: 2
+    braceIncomingDamageMultiplier: 0.4
+    slowSeconds: 2
+    slowMultiplier: 0.75
+    moveSeconds: 0
+    moveMultiplier: 1
+    damageBuffSeconds: 0
+    damageBuffAdditive: 0
+    kegRadiusSeconds: 0
+    kegRadiusMultiplier: 1
+    flameSeconds: 0
+    flameRangeMultiplier: 1
+    burnDamageMultiplier: 1
+    pickupRadiusSeconds: 0
+    pickupRadiusMultiplier: 1
+    pickupRadiusApplied: 1
+    nearMissWindowSeconds: 0
+    nearMissCooldownRefund: 0
+  rumCost: 100
+  prerequisiteWeaponId: 
+  v3OwnershipKey: brine
+  v3UnlockedByFirstConquest: 0

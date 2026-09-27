@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c105ba0d6c72832499e145fcf268730d, type: 3}
+  m_Name: Unlocks_Saltwind
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.UnlockConfig
+  configId: unlocks.saltwind
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  starterWeaponIds:
+  - deck_cannons
+  - broadside_battery
+  - powder_kegs
+  - flying_cutlasses
+  - long_nine
+  - swivel_guns
+  weaponUnlocks:
+  - weaponId: lightning_mast
+    rumCost: 60
+  - weaponId: flamethrower
+    rumCost: 80
+  - weaponId: mortar
+    rumCost: 100
+  - weaponId: harpoon_gun
+    rumCost: 100
+  firstConquestWeaponId: swivel_guns
+  startingWeaponRule: 1

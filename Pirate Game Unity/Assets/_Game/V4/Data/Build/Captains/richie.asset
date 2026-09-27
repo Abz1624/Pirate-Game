@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b92b67fe5f60364dab020c22dc301ca, type: 3}
+  m_Name: richie
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.CaptainConfig
+  configId: captain.richie
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  captainKey: richie
+  legacyId: 3
+  displayName: Richie
+  title: Captain Richie
+  menuDescription: Richie chases gold and momentum. Pick up the haul, cut a sharp
+    turn, and let the next broadside hit harder than the last.
+  passiveSummary: "Gold-focused runner \xB7 stronger post-pickup damage spikes"
+  activeSummary: "Cut and Run (16s) \u2014 +35% speed, +50% pickup radius 3s"
+  themeColor: {r: 0.45882353, g: 0.13333334, b: 0.36862746, a: 1}
+  menuOrder: 2
+  baseHull: 95
+  baseMoveSpeed: 6.1
+  startingWeaponId: broadside_battery
+  v3StartingWeaponId: swivel_guns
+  passive:
+    additiveDamagePerLevel: 0
+    additiveDamageCap: 0
+    additiveDamageGoldDivisor: 4500
+    goldDamageCap: 0.2
+    runningFuse: 0
+    runningFuseSpeed: 4
+    runningFuseSeconds: 2
+    runningFuseWeaponId: 
+    runningFuseMultiplier: 1.15
+    armorPerLevel: 0
+    armorCap: 0
+    armorApplied: 1
+    burnDamageMultiplier: 1
+    lightningDamageMultiplier: 1
+    elementMultipliersApplied: 1
+  active:
+    displayName: Cut and Run
+    cooldownSeconds: 16
+    fireAllWeapons: 0
+    armPowderKegs: 0
+    fireLightningSalvo: 0
+    braceSeconds: 0
+    braceIncomingDamageMultiplier: 1
+    slowSeconds: 0
+    slowMultiplier: 1
+    moveSeconds: 3
+    moveMultiplier: 1.35
+    damageBuffSeconds: 5
+    damageBuffAdditive: 0.1
+    kegRadiusSeconds: 0
+    kegRadiusMultiplier: 1
+    flameSeconds: 0
+    flameRangeMultiplier: 1
+    burnDamageMultiplier: 1
+    pickupRadiusSeconds: 3
+    pickupRadiusMultiplier: 1.5
+    pickupRadiusApplied: 1
+    nearMissWindowSeconds: 0
+    nearMissCooldownRefund: 0
+  rumCost: 0
+  prerequisiteWeaponId: 
+  v3OwnershipKey: 
+  v3UnlockedByFirstConquest: 0

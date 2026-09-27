@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 747dc617d9525e44eabd8b90133a3445, type: 3}
+  m_Name: Pickups_Saltwind
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.PickupConfig
+  configId: pickups.saltwind
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  healthDropChance: 0.12
+  healthDropValue: 25
+  dropSpreadRadius: 1.6
+  dropAngleJitterDegrees: 15
+  dropRadiusJitter: 0.15
+  mergeRadius: 2
+  xpAutoPickupRadius: 4.25
+  goldAutoPickupRadius: 26
+  barrelTouchRadius: 5
+  flySpeedMin: 10
+  flySpeedMax: 28
+  collectDistance: 0.75
+  bobAmplitude: 0.12
+  bobSpeed: 3.5
+  burstCountMin: 6
+  burstCountMax: 10
+  burstMinimum: 3
+  maxFlyingSpawnsPerFrame: 18

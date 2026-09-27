@@ -275,6 +275,28 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
+        public IEnumerator CaptainActive_ShowsOnTheHud_WithItsCooldown()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var game = Object.FindFirstObjectByType<V4Game>();
+            var widget = Object.FindFirstObjectByType<V4PresentationRoot>().CaptainActive;
+            yield return null;
+            Assert.IsNotNull(widget, "the Captain-active widget is installed");
+            Assert.IsTrue(widget.IsShown, "shown: actives are on");
+            var name = game.Build.Captain.Config.active.displayName;
+            StringAssert.Contains(name, widget.Text);
+            StringAssert.Contains(game.Build.ActiveKeyHint(), widget.Text, "ready: the key");
+            Assert.AreEqual(1f, widget.Fill, 1e-4f);
+            Assert.IsTrue(game.Build.Captain.TryActivate());
+            yield return null;
+            yield return null;
+            StringAssert.IsMatch(@"\d+s$", widget.Text, "cooling down: the seconds left");
+            StringAssert.DoesNotContain(game.Build.ActiveKeyHint(), widget.Text);
+            Assert.Less(widget.Fill, 0.2f, "the bar starts empty and refills");
+        }
+
+        [UnityTest]
         public IEnumerator AmbientSpawns_AreFlaggedForTheSpawnWarnings()
         {
             yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);

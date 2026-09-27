@@ -736,8 +736,8 @@ namespace RoguePirates.V4.Stage
 
         /// <summary>
         /// R-102 fix (off = V3): V3's level-up resume always set the run to Playing, ending the boss fight while the boss
-        /// lived (ambient spawns lost the boss-fight rate and elite beats were no longer skipped). Put it back to
-        /// BossFight on the next stage tick while the summoned boss is alive.
+        /// lived. Until M9 the stage content put it back to BossFight on its next tick; since M9 the V4 progression module
+        /// resumes to BossFight itself (same switch), so this safety net only acts if something else left the fight.
         /// </summary>
         void RestoreBossFightAfterResume()
         {
