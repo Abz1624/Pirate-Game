@@ -39,6 +39,10 @@ namespace RoguePirates.V4.Config
         [Tooltip("Interaction range for chests (m).")] public float chestInteractRange = 6f;
         [Tooltip("R-47 fix (off = V3): the chest's loot roll knows your equipped weapons (V3 looked for them on the ship and never found any).")]
         public bool chestPlanUsesLoadout;
+        [Tooltip("R-96 fix (off = V3): a skipped chest is offered again after the ship leaves its range and comes back (V3 dropped the target before it could forget the skip, so only skipping another chest cleared it).")]
+        public bool forgetChestSkipWhenLeaving;
+        [Tooltip("R-101 fix (off = V3): the prompt lets go of a landmark once it is used (V3 kept it while the ship stayed in range, so the used Beacon kept asking to hold E, looping 0-100% without effect).")]
+        public bool promptReleasesUsedLandmark;
 
         [Header("Landmarks")]
         [Tooltip("Default interaction range (m).")] public float interactRange = 4f;
@@ -75,6 +79,8 @@ namespace RoguePirates.V4.Config
         public bool beaconFoundByProximityAfterHints;
         [Tooltip("R-94 fix (off = V3): the exact marker also follows the direction hint (V3 only reached it from hidden).")]
         public bool beaconExactMarkerAfterHint;
+        [Tooltip("R-96 fix (off = V3): after a failed summon (\"Beacon failed — clear space\") the Beacon can be activated again (V3 left its telegraph flag set, so it never worked again).")]
+        public bool beaconRetryAfterFailedSummon;
 
         [Header("Encounters")]
         [Tooltip("The spawner the Beacon summons the boss with.")] public EnemySpawnerConfig bossSpawner;

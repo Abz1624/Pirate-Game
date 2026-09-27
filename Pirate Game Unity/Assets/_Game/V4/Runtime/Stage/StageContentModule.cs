@@ -76,6 +76,7 @@ namespace RoguePirates.V4.Stage
         }
 
         StageContentConfig C => _config?.Invoke();
+        public StageContentConfig Config => C;
         public StageLayout Layout => _layout;
         public bool Enabled => _enabled;
         public bool BossSummoned => _bossSummoned;
@@ -261,6 +262,12 @@ namespace RoguePirates.V4.Stage
                 if (_telegraphTimer[index] > 0f) return;
                 _awaitingBossSummon[index] = false;
                 if (Interact(type, index)) Consume(index);
+                else if (C != null && C.beaconRetryAfterFailedSummon)
+                {
+                    // R-96 fix: V3 left the telegraph flag set after a failed summon, so the Beacon never worked again.
+                    _telegraphing[index] = false;
+                    _markers.HideTelegraph(index);
+                }
             }
         }
 

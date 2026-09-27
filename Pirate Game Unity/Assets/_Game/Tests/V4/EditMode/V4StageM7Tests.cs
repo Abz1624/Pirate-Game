@@ -510,6 +510,23 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
+        public void ChestPrompt_R96Fix_OffersASkippedChestAgainAfterLeaving()
+        {
+            var rig = Make((POIType.SalvageChest, new Vector3(3f, 0f, 0f)));
+            rig.Config.forgetChestSkipWhenLeaving = true;
+            rig.Interaction.Tick(0.016f);
+            rig.Interaction.SkipChest();
+            rig.Interaction.Tick(0.016f);
+            Assert.IsFalse(rig.Interaction.Visible, "skipped while the ship stays");
+            rig.Ship.Pos = new Vector3(50f, 0f, 0f);
+            rig.Interaction.Tick(0.016f);
+            rig.Ship.Pos = Vector3.zero;
+            rig.Interaction.Tick(0.016f);
+            Assert.IsTrue(rig.Interaction.Visible, "offered again on the way back");
+            Assert.AreEqual(PauseReason.POIChoice, rig.Run.PauseReason);
+        }
+
+        [Test]
         public void ChestPrompt_WithoutGold_ToastsOncePerApproach()
         {
             var rig = Make((POIType.SalvageChest, new Vector3(3f, 0f, 0f)));
@@ -530,6 +547,56 @@ namespace RoguePirates.V4.Tests
             rig.Interaction.Tick(0.016f);
             Assert.AreEqual(first, rig.Interaction.Target, "the opened chest stays the target while the ship is in range");
             Assert.IsFalse(rig.Interaction.Visible);
+        }
+
+        [Test]
+        public void BeaconPrompt_AfterTheSummon_LoopsAsV3_AndTheR101FixHidesIt()
+        {
+            foreach (var fix in new[] { false, true })
+            {
+                var rig = Make((POIType.BossBeacon, new Vector3(0f, 0f, 3f)));
+                rig.Config.promptReleasesUsedLandmark = fix;
+                rig.Interaction.TouchHolding = true;
+                for (var i = 0; i < 50; i++) rig.Interaction.Tick(0.016f); // hold 0.7 s: telegraph starts
+                rig.Tick(0.8f); // telegraph ends: boss summoned, Beacon used
+                Assert.IsTrue(rig.Stage.BossSummoned);
+                var texts = new List<string>();
+                var visible = 0;
+                for (var i = 0; i < 120; i++)
+                {
+                    rig.Interaction.Tick(0.016f);
+                    if (rig.Interaction.Visible) { visible++; texts.Add(rig.Interaction.Text); }
+                }
+                if (fix)
+                {
+                    Assert.AreEqual(0, visible, "R-101 fix: no prompt on the used Beacon");
+                    Assert.AreEqual(-1, rig.Interaction.Target);
+                }
+                else
+                {
+                    Assert.AreEqual(120, visible, "V3: the used Beacon keeps its prompt while E is held");
+                    Assert.Greater(texts.Count(t => t.EndsWith("hold 100%")), 1, "V3: the hold loops 0-100% without effect");
+                }
+            }
+        }
+
+        [Test]
+        public void Beacon_R96Fix_CanBeRetriedAfterAFailedSummon()
+        {
+            var rig = Make((POIType.BossBeacon, new Vector3(0f, 0f, 5f)));
+            rig.Config.beaconRetryAfterFailedSummon = true;
+            rig.Executor.SpawnOnImmediate = 0;
+            rig.Stage.TryCompleteInteraction(0);
+            rig.Tick(1f);
+            Assert.IsFalse(rig.Stage.BossSummoned);
+            Assert.IsFalse(rig.Stage.IsTelegraphing(0), "the telegraph ends with the failed summon");
+            Assert.IsFalse(rig.Markers.Telegraph);
+            // In a run the queued boss encounter keeps retrying for up to 10 s, then fails; the next activation asks again.
+            rig.Tracker.Set(1, EncounterState.Failed);
+            rig.Executor.SpawnOnImmediate = 1;
+            rig.Stage.TryCompleteInteraction(0);
+            rig.Tick(1f);
+            Assert.IsTrue(rig.Stage.BossSummoned, "the retry summons the boss");
         }
 
         [Test]
@@ -567,7 +634,9 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(2, profile.explosiveBarrelCount);
             Assert.IsNotNull(stage.bossSpawner);
             Assert.IsNotNull(stage.powderCacheSpawner);
-            Assert.IsFalse(stage.chestPlanUsesLoadout || stage.beaconExactMarkerAfterHint || stage.beaconFoundByProximityAfterHints, "fixes off (V3) until approved");
+            Assert.IsTrue(stage.chestPlanUsesLoadout && stage.beaconExactMarkerAfterHint && stage.beaconFoundByProximityAfterHints && stage.forgetChestSkipWhenLeaving
+                && stage.beaconRetryAfterFailedSummon && stage.powderCachePaysWhenCleared && stage.promptReleasesUsedLandmark,
+                "fixes approved at the M7 playtest (R-47, R-93, R-94, R-96, R-97, R-101) are on; the v3-parity preset turns them off");
             Assert.IsNotNull(set.configs.OfType<BossConfig>().SingleOrDefault(), "boss config in the set");
         }
 

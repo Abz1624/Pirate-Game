@@ -208,7 +208,11 @@ namespace RoguePirates.V4.Stage
         /// </summary>
         void RefreshNearestTarget()
         {
-            if (_target >= 0 && _stage.IsPlayerInRange(_target)) return;
+            var rules = _stage.Config;
+            var releaseUsed = rules != null && rules.promptReleasesUsedLandmark && _target >= 0 && _stage.IsConsumed(_target);
+            if (_target >= 0 && _stage.IsPlayerInRange(_target) && !releaseUsed) return;
+            // R-96 fix: forget a skipped chest once the ship has left it (V3 dropped the target before this could happen).
+            if (_target >= 0 && rules != null && rules.forgetChestSkipWhenLeaving && _salvageChestDismissedIndex == _target) _salvageChestDismissedIndex = -1;
             _target = -1;
             var best = float.MaxValue;
             var order = _stage.MarkerOrder;

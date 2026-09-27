@@ -679,8 +679,34 @@ namespace RoguePirates.V4.Editor
                 log.AppendLine($"config set: {set.configs.Count} configs");
             }
             AssetDatabase.SaveAssets();
+            // ApplyM7 rebuilds V3's values; the fixes approved at the M7 gate go back on top.
+            log.Append(ApplyM7PlaytestDecisions());
             if (set != null) log.Append(ConfigValidator.Validate(set));
             return log.ToString();
+        }
+
+        [MenuItem("RoguePirates/V4/Apply M7 Playtest Decisions")]
+        static void ApplyM7PlaytestDecisionsFromMenu() => Debug.Log(ApplyM7PlaytestDecisions());
+
+        /// <summary>
+        /// The fixes approved at the M7 playtest gate (the v3-parity preset turns them off again): R-47 chest loot knows the
+        /// loadout, R-93/R-94 Beacon discovery after the hints, R-96 skipped chests offered again and the Beacon retry after
+        /// a failed summon, R-97 Powder Cache payout, R-101 the prompt lets go of a used landmark.
+        /// </summary>
+        public static string ApplyM7PlaytestDecisions()
+        {
+            var stage = AssetDatabase.LoadAssetAtPath<StageContentConfig>(StageContentPath);
+            if (stage == null) return "stage content config missing\n";
+            stage.chestPlanUsesLoadout = true;
+            stage.beaconFoundByProximityAfterHints = true;
+            stage.beaconExactMarkerAfterHint = true;
+            stage.forgetChestSkipWhenLeaving = true;
+            stage.beaconRetryAfterFailedSummon = true;
+            stage.powderCachePaysWhenCleared = true;
+            stage.promptReleasesUsedLandmark = true;
+            EditorUtility.SetDirty(stage);
+            AssetDatabase.SaveAssets();
+            return "M7 playtest decisions applied (R-47, R-93, R-94, R-96, R-97, R-101)\n";
         }
 
         static EnemySpawnerConfig FindSpawner(string configId)

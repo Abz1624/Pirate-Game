@@ -26,13 +26,16 @@ MonoBehaviour:
   disableGoldTriggeredChestSpawn: 1
   chestSpawnGoldFraction: 0.8
   chestInteractRange: 6
-  chestPlanUsesLoadout: 0
+  chestPlanUsesLoadout: 1
+  forgetChestSkipWhenLeaving: 1
+  promptReleasesUsedLandmark: 1
   interactRange: 4
   repairWreckHealFraction: 0.25
   repairWreckMaxHullFraction: 0.25
   powderCacheAmbushCount: 3
   powderCacheTriggerRadius: 8
   powderCacheBonusGold: 20
+  powderCachePaysWhenCleared: 1
   signalBuoyChargeSeconds: 8
   signalBuoyRadius: 4
   signalBuoyRewards:
@@ -59,8 +62,9 @@ MonoBehaviour:
   beaconInteractRange: 6
   beaconHoldSeconds: 0.7
   bossTelegraphSeconds: 0.7
-  beaconFoundByProximityAfterHints: 0
-  beaconExactMarkerAfterHint: 0
+  beaconFoundByProximityAfterHints: 1
+  beaconExactMarkerAfterHint: 1
+  beaconRetryAfterFailedSummon: 1
   bossSpawner: {fileID: 11400000, guid: da3049c6851f7174790cd7255bdd0319, type: 2}
   powderCacheSpawner: {fileID: 11400000, guid: e43da1e265019104c8016b9b6fd5d57d, type: 2}
   continueAfterBossVictory: 1

@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `v4-modular-architecture` |
 | Phase start commit | `8c9ab707` (M6, awaiting playtest) |
-| Status | Implemented and reviewed; awaiting playtest |
+| Status | **Passed** (playtest 27 Sep; R-47, R-93, R-94, R-96, R-97, R-101 applied) |
 
 ## What M7 delivers
 
@@ -93,3 +93,20 @@ A read-only reviewer compared M7 with the plan and the V3 code it ports. No bloc
 2. **F1 → Landmarks, Beacon & Boss**: Reveal Beacon, Summon boss (or press B), set the boss to 31 % and watch the phase change wait for the current attack to finish.
 3. **F1 → Config → `boss.barnacle_king`**: reorder phase 1 (e.g. Charge, Charge, Spread) and fight it.
 4. Decide: R-97 (Powder Cache pays out once its ambush is cleared), R-47 (chest loot knows your weapons), R-93 and R-94 (Beacon found by sailing to it after the hint; exact marker after the hint), R-96 (skipped chests offered again; Beacon retry after a failed summon).
+
+## Playtest feedback and approved fixes (27 Sep)
+
+Passed: a normal run (chests, Repair Wreck, Signal Buoy, Powder Cache, Beacon, Barnacle King; no barrels), Reveal Beacon, Summon boss, and reordering phase 1 in `boss.barnacle_king`.
+
+| Feedback / decision | Done |
+|---|---|
+| The Beacon prompt loops after the summon (reported under M6) | R-101 fix (`promptReleasesUsedLandmark`): the prompt lets go of a used landmark. Test: V3 loops 120/120 frames with repeated "hold 100%"; with the fix no prompt and no target |
+| Setting the boss to 31 % showed no visible change | The playtest step was wrong: the phases are at 65 % and 30 %, so 31 % is still phase 2. A live probe held the boss at 60 % then 29 %: phase 2 below 65 % and phase 3 below 30 % (the enraged rotation Charge, Charge, Spread, Bombardment, Slam), charges telegraph and execute. The charge moves at 2.6× the boss's speed (about 6.5 m/s) from about 30 m, so it is easy to miss (V3 tuning; `boss.barnacle_king` charge values). While probing, found R-102 (a level-up during the boss fight returns the run to Playing) — to decide |
+| R-97 Powder Cache payout | On (`powderCachePaysWhenCleared`) |
+| R-47 chest loot knows your weapons | On (`chestPlanUsesLoadout`) |
+| R-93 Beacon found by sailing to it after the hint | On; it only marks the Beacon found (arrow, marker, quest) — the boss is still summoned by holding E / USE |
+| R-94 exact marker after the hint | On |
+| R-96 skipped chest offered again; Beacon retry after a failed summon | Both on (`forgetChestSkipWhenLeaving`, `beaconRetryAfterFailedSummon`). A failed summon is when the boss cannot spawn ("Beacon failed — clear space near the beacon"); letting go of E early was always retryable |
+| R-93–R-97 not in the artifact's register | The artifact's register table stopped at R-92 (the repo register had them). The artifact now lists all rows through R-102 and shows every phase's review |
+
+The approved fixes are on in `stage.saltwind` (migrator `ApplyM7PlaytestDecisions`, re-applied by `ApplyM7`) and off in `presets/v3-parity.json`, so the end-of-phase trace set is unaffected (not re-run, per the trace policy). Tests: `ChestPrompt_R96Fix_OffersASkippedChestAgainAfterLeaving`, `Beacon_R96Fix_CanBeRetriedAfterAFailedSummon`, `BeaconPrompt_AfterTheSummon_LoopsAsV3_AndTheR101FixHidesIt`, stage config asserts the approved switches, the parity profile test still equals V3. V4 EditMode 209/209, PlayMode 33/33.

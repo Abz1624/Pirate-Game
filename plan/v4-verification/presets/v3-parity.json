@@ -283,6 +283,34 @@
                 {
                     "path": "explosiveBarrelCount",
                     "value": "2"
+                },
+                {
+                    "path": "chestPlanUsesLoadout",
+                    "value": "false"
+                },
+                {
+                    "path": "beaconFoundByProximityAfterHints",
+                    "value": "false"
+                },
+                {
+                    "path": "beaconExactMarkerAfterHint",
+                    "value": "false"
+                },
+                {
+                    "path": "forgetChestSkipWhenLeaving",
+                    "value": "false"
+                },
+                {
+                    "path": "beaconRetryAfterFailedSummon",
+                    "value": "false"
+                },
+                {
+                    "path": "powderCachePaysWhenCleared",
+                    "value": "false"
+                },
+                {
+                    "path": "promptReleasesUsedLandmark",
+                    "value": "false"
                 }
             ]
         }
