@@ -8,6 +8,7 @@ using HighSeas.Core;
 using HighSeas.Data;
 using HighSeas.UI;
 using HighSeas.V3;
+using HighSeas.Weapons;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Editor;
@@ -45,6 +46,7 @@ namespace RoguePirates.V4.Tests
         {
             public Func<string, bool> Items = _ => false;
             public bool IsWeaponOfferable(string weaponId) => WeaponFeatureFlags.IsWeaponEnabled(weaponId);
+            public bool IsWeaponUnlocked(string weaponId) => V3ContentUnlocks.IsWeaponUnlocked(weaponId);
             public bool HasItem(string itemId) => Items(itemId);
             public bool IsEvolved(string weaponId) => WeaponEvolutionRuntime.IsEvolved(weaponId);
         }
@@ -69,13 +71,23 @@ namespace RoguePirates.V4.Tests
             return clone;
         }
 
-        static OfferGenerator Generator(ConfigSet set) => new OfferGenerator(
-            () => set.configs.OfType<ProgressionConfig>().Single(),
-            () => set.configs.OfType<OfferWeightsConfig>().Single(),
-            () => OfferGenerator.InDatabaseOrder(set.configs.OfType<WeaponConfig>()),
-            () => OfferGenerator.InDatabaseOrder(set.configs.OfType<LogbookConfig>()),
-            () => set.configs.OfType<WeaponEvolutionConfig>().ToList(),
+        static OfferGenerator Generator(ConfigSetRuntime set) => new OfferGenerator(
+            () => set.Single<ProgressionConfig>(),
+            () => set.Single<OfferWeightsConfig>(),
+            () => OfferGenerator.InDatabaseOrder(set.All<WeaponConfig>()),
+            () => OfferGenerator.InDatabaseOrder(set.All<LogbookConfig>()),
+            () => set.All<WeaponEvolutionConfig>().ToList(),
             () => CombatExperimentContext.Active.weaponEvolutionsEnabled);
+
+        /// <summary>The config set under the v3-parity preset (V3's Logbook stats and the other V3 values).</summary>
+        static ConfigSetRuntime Parity()
+        {
+            var runtime = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            var errors = new List<string>();
+            var preset = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
+            Assert.IsTrue(PresetCodec.Apply(runtime, PresetCodec.FromJson(preset), 0f, errors), string.Join("; ", errors));
+            return runtime;
+        }
 
         static void AssertSame(List<LevelOffer> v3, List<Offer> v4, string tag)
         {
@@ -109,12 +121,12 @@ namespace RoguePirates.V4.Tests
             StageBalanceProfileContext.BeginRun(profile); // Saltwind: fill-state weights, the Saltwind first level-up and Logbook pool
             var settings = AssetDatabase.LoadAssetAtPath<LevelUpSettings>("Assets/_Game/Data/LevelUpSettings.asset");
             var pacing = AssetDatabase.LoadAssetAtPath<DemoPacingSettings>(V3ConfigMigrator.PacingPath);
-            var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
+            using var set = Parity();
             var gen = Generator(set);
             var db = RunDatabase();
             var weaponIds = db.weapons.Where(w => w != null).Select(w => w.id).ToArray();
             var logbookIds = db.logbooks.Where(l => l != null).Select(l => l.id).ToArray();
-            var p = set.configs.OfType<ProgressionConfig>().Single();
+            var p = set.Single<ProgressionConfig>();
             var scenario = new System.Random(4242);
             var kinds = new HashSet<LevelOfferKind>();
             var inventory = Inventory();
@@ -152,10 +164,10 @@ namespace RoguePirates.V4.Tests
 
                 // V3's evolution check reads the item inventory and the evolved set.
                 WeaponEvolutionRuntime.Reset();
-                var v3Items = itemsOwned ? new HashSet<string>(set.configs.OfType<WeaponEvolutionConfig>().Select(e => e.requiredItemId)) : new HashSet<string>();
+                var v3Items = itemsOwned ? new HashSet<string>(set.All<WeaponEvolutionConfig>().Select(e => e.requiredItemId)) : new HashSet<string>();
                 if (scenario.Next(0, 5) == 0 && state.Weapons.Count > 0)
                 {
-                    var evo = set.configs.OfType<WeaponEvolutionConfig>().FirstOrDefault(e => e.baseWeapon != null && e.baseWeapon.weaponId == state.Weapons[0]);
+                    var evo = set.All<WeaponEvolutionConfig>().FirstOrDefault(e => e.baseWeapon != null && e.baseWeapon.weaponId == state.Weapons[0]);
                     if (evo != null) WeaponEvolutionRuntime.Apply(state.Weapons[0], evo.evolutionId);
                 }
                 inventory.ClearForNewRun();
@@ -182,6 +194,142 @@ namespace RoguePirates.V4.Tests
             var inv = V3RunItemInventory.Instance != null ? V3RunItemInventory.Instance : V3RunItemInventory.Ensure();
             _created.Add(inv.gameObject);
             return inv;
+        }
+
+        // ---- The module (V3 LevelSystem) ------------------------------------------------------------------------------
+
+        sealed class Run : IProgressionRun
+        {
+            public bool Exists => true;
+            public bool IsRunEnded => false;
+            public void SetPause(PauseReason reason) { }
+            public void SetState(RunState state) { }
+            public void EnterPlaying() { }
+        }
+
+        static T Awake<T>(GameObject host) where T : MonoBehaviour
+        {
+            var c = host.AddComponent<T>();
+            typeof(T).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(c, null);
+            return c;
+        }
+
+        [Test]
+        public void Module_EqualsV3sLevelSystem_OverXpGrantsAndCardChoices()
+        {
+            var profile = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(V3ConfigMigrator.ProfilePath);
+            StageBalanceProfileContext.BeginRun(profile);
+            var settings = AssetDatabase.LoadAssetAtPath<LevelUpSettings>("Assets/_Game/Data/LevelUpSettings.asset");
+            var pacing = AssetDatabase.LoadAssetAtPath<DemoPacingSettings>(V3ConfigMigrator.PacingPath);
+            using var set = Parity();
+            var db = RunDatabase();
+            var experiment = CombatExperimentContext.Active;
+            var inventory = Inventory();
+            var starter = "swivel_guns";
+            var choose = BindingFlags.Instance | BindingFlags.NonPublic;
+
+            for (var seed = 1; seed <= 12; seed++)
+            {
+                // V3: RunManager, the switched-off weapon record, LevelSystem set up as V3RunBootstrap / LegacyRunShell do.
+                var host = new GameObject("v3-run");
+                _created.Add(host);
+                var rm = Awake<RunManager>(host);
+                rm.BeginRun(seed);
+                inventory.ClearForNewRun();
+                WeaponEvolutionRuntime.Reset();
+                var recordHost = new GameObject("record");
+                _created.Add(recordHost);
+                var record = Awake<WeaponController>(recordHost);
+                record.ApplyCombatExperiment(experiment);
+                record.EnsureWeaponSlotCapacity(profile.weaponSlotCap);
+                record.Initialize(db, starter);
+                var levelHost = new GameObject("levels");
+                _created.Add(levelHost);
+                var levels = levelHost.AddComponent<LevelSystem>();
+                typeof(LevelSystem).GetField("levelUpSettings", choose).SetValue(levels, settings);
+                typeof(LevelSystem).GetField("demoPacing", choose).SetValue(levels, pacing);
+                typeof(LevelSystem).GetMethod("Awake", choose).Invoke(levels, null);
+                levels.ApplyStageBalanceProgression();
+                levels.ConfigureV3();
+                levels.ApplyCombatExperiment(experiment);
+                levels.PrepareForNewRun(db, starter);
+                levels.SyncWeaponControllerFromOwnedLoadout(record);
+
+                // V4: the module on its own Loot stream and stats.
+                var v4Stats = new PlayerStats();
+                var resolver = new StatResolver(() => v4Stats);
+                var v4Rng = new RunRng(seed);
+                var module = new ProgressionModule(
+                    () => set.Single<ProgressionConfig>(),
+                    id => set.All<WeaponConfig>().FirstOrDefault(w => w.weaponId == id),
+                    id => set.All<LogbookConfig>().FirstOrDefault(l => l.logbookId == id),
+                    Generator(set), new Loot(v4Rng), new Ctx(), resolver, resolver, new Run(), null);
+                module.BeginRun(starter, experiment.weaponSlotCap, pacing.startingDamageMultiplier);
+
+                var scenario = new System.Random(seed * 31);
+                for (var step = 0; step < 40; step++)
+                {
+                    var xp = scenario.Next(1, 30);
+                    levels.AddXP(xp);
+                    module.AddXp(xp);
+                    var tag = $"seed {seed} step {step}";
+                    while (levels.PendingLevelUps > 0)
+                    {
+                        var v3Offers = (List<LevelOffer>)typeof(LevelSystem).GetMethod("GenerateOffers", choose).Invoke(levels, null);
+                        var v4Offers = module.GenerateOffers();
+                        AssertSame(v3Offers, v4Offers, tag);
+                        var action = scenario.Next(0, 10);
+                        if (action == 0 && levels.RefreshesRemaining > 0)
+                        {
+                            typeof(LevelSystem).GetMethod("OnLevelUpRefresh", choose).Invoke(levels, null);
+                            module.Refresh();
+                            continue;
+                        }
+                        if (action == 1)
+                        {
+                            typeof(LevelSystem).GetMethod("OnLevelUpSkipped", choose).Invoke(levels, null);
+                            module.Skip();
+                            continue;
+                        }
+                        var pick = scenario.Next(0, v3Offers.Count);
+                        typeof(LevelSystem).GetMethod("OnOfferSelected", choose).Invoke(levels, new object[] { v3Offers[pick] });
+                        module.Select(v4Offers[pick]);
+                    }
+
+                    Assert.AreEqual(levels.Level, module.Level, tag + " level");
+                    Assert.AreEqual(levels.CurrentXP, module.CurrentXp, tag + " xp");
+                    Assert.AreEqual(levels.XPToNext, (float)module.XpToNext, tag + " xp to next");
+                    Assert.AreEqual(levels.PendingLevelUps, module.PendingLevelUps, tag + " pending");
+                    Assert.AreEqual(levels.RefreshesRemaining, module.RefreshesRemaining, tag + " refreshes");
+                    CollectionAssert.AreEqual(levels.OwnedWeapons, module.OwnedWeapons, tag + " weapons");
+                    CollectionAssert.AreEqual(levels.OwnedLogbooks, module.OwnedLogbooks, tag + " logbooks");
+                    foreach (var id in levels.OwnedWeapons) Assert.AreEqual(levels.GetWeaponLevel(id), module.WeaponLevel(id), tag + " level of " + id);
+                    foreach (var id in levels.OwnedLogbooks) Assert.AreEqual(levels.GetLogbookLevel(id), module.LogbookLevel(id), tag + " rank of " + id);
+                    Assert.AreEqual(record.Weapons.Count, module.Loadout.Count, tag + " loadout size");
+                    for (var i = 0; i < record.Weapons.Count; i++)
+                    {
+                        var a = record.Weapons[i];
+                        var b = module.Loadout.Get(i);
+                        var t = $"{tag} slot {i} ({a.def.id})";
+                        Assert.AreEqual(a.def.id, b.WeaponId, t);
+                        Assert.AreEqual(a.level, b.Level, t + " level");
+                        Assert.AreEqual(a.damageBonus, b.DamageBonus, t + " damage");
+                        Assert.AreEqual(a.quantityBonus, b.QuantityBonus, t + " quantity");
+                        Assert.AreEqual(a.cooldownMult, b.CooldownMult, t + " cooldown");
+                        Assert.AreEqual(a.speedMult, b.SpeedMult, t + " speed");
+                        Assert.AreEqual(a.sizeMult, b.SizeMult, t + " size");
+                        Assert.AreEqual(a.durationMult, b.DurationMult, t + " duration");
+                        Assert.AreEqual(a.knockbackMult, b.KnockbackMult, t + " knockback");
+                        WeaponEvolutionRuntime.TryGetEvolutionId(a.def.id, out var evo);
+                        Assert.AreEqual(evo, b.EvolutionId, t + " evolution");
+                    }
+                    foreach (StatId s in Enum.GetValues(typeof(StatId))) Assert.AreEqual(rm.Stats.Get(s), v4Stats.Get(s), $"{tag} {s}");
+                }
+                Assert.AreEqual(rm.Rng.LootFloat(), v4Rng.LootFloat(), $"seed {seed}: same Loot draws");
+                Object.DestroyImmediate(levelHost);
+                Object.DestroyImmediate(recordHost);
+                Object.DestroyImmediate(host);
+            }
         }
 
         [Test]
