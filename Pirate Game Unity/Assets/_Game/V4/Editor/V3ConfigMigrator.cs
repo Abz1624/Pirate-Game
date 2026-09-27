@@ -693,7 +693,6 @@ namespace RoguePirates.V4.Editor
                 stage.powderCacheEliteChallenge = true;
                 stage.powderCacheEliteCount = 4;
                 stage.powderCacheHoldSeconds = 0.7f;
-                stage.powderCacheChestHoldSeconds = 0.5f;
                 stage.powderCacheChestMinRarity = (int)Rarity.Rare;
                 stage.powderCacheEliteSpawners = new[]
                 {

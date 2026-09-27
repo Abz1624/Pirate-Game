@@ -42,7 +42,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8b279f40b6494984ba00522fd9ebeca6, type: 2}
   powderCacheEliteCount: 4
   powderCacheHoldSeconds: 0.7
-  powderCacheChestHoldSeconds: 0.5
   powderCacheChestMinRarity: 2
   signalBuoyChargeSeconds: 8
   signalBuoyRadius: 4

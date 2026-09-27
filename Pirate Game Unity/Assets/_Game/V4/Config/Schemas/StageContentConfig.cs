@@ -54,13 +54,12 @@ namespace RoguePirates.V4.Config
         [Tooltip("Gold for clearing a Powder Cache (plus a chest-pool item).")] public int powderCacheBonusGold = 20;
         [Tooltip("R-97 fix (off = V3): the Powder Cache pays out once its ambush is cleared (in V3 the hidden marker could never be used again, so it never paid).")]
         public bool powderCachePaysWhenCleared;
-        [Tooltip("M8 playtest (off = V3's proximity ambush of 3 skiffs): the Powder Cache is an elite challenge, like Megabonk's Challenge Shrine. Hold E at the cache to spring it; its elites attack; once all of them are sunk the cache becomes a free Rare Treasure Chest.")]
+        [Tooltip("M8 playtest (off = V3's proximity ambush of 3 skiffs): the Powder Cache is an elite challenge, like Megabonk's Challenge Shrine. Hold E at the cache to spring it; its elites attack; once all of them are sunk the cache becomes a free Rare Treasure Chest (the chest popup: E takes, R skips).")]
         public bool powderCacheEliteChallenge;
         [Tooltip("The challenge's elites come from these spawners in turn (each spawner's elite block makes them elites).")]
         public EnemySpawnerConfig[] powderCacheEliteSpawners = System.Array.Empty<EnemySpawnerConfig>();
         [Tooltip("Elites in the challenge.")] public int powderCacheEliteCount = 4;
         [Tooltip("Seconds to hold E at the cache to spring the challenge.")] public float powderCacheHoldSeconds = 0.7f;
-        [Tooltip("Seconds to hold E to open the Rare Treasure Chest.")] public float powderCacheChestHoldSeconds = 0.5f;
         [Tooltip("The Rare Treasure Chest's item is drawn from chest-pool items of at least this rarity (0 Common, 1 Uncommon, 2 Rare, 3 Epic).")]
         public int powderCacheChestMinRarity = 2;
         [Tooltip("Seconds inside the circle to charge a Signal Buoy.")] public float signalBuoyChargeSeconds = 8f;
@@ -120,7 +119,6 @@ namespace RoguePirates.V4.Config
                     report.Error(this, nameof(powderCacheEliteSpawners), "the elite challenge needs its spawners");
                 // 0 would make the prompt interact on arrival (springing the cache or opening the chest by sailing past).
                 report.Positive(this, nameof(powderCacheHoldSeconds), powderCacheHoldSeconds);
-                report.Positive(this, nameof(powderCacheChestHoldSeconds), powderCacheChestHoldSeconds);
                 if (powderCacheChestMinRarity < 0 || powderCacheChestMinRarity > 4) report.Error(this, nameof(powderCacheChestMinRarity), "must be 0-4");
             }
             if (signalBuoyRewards == null || signalBuoyRewards.Length == 0) report.Error(this, nameof(signalBuoyRewards), "needs at least one reward");

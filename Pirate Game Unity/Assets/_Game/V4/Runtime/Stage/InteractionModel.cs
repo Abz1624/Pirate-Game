@@ -109,7 +109,7 @@ namespace RoguePirates.V4.Stage
                     Text = label;
                     return;
                 }
-                if (_stage.ShowsSalvageChestPrice(_target))
+                if (_stage.ShowsSalvageChestPrice(_target) || _stage.ShowsFreeChestPopup(_target))
                 {
                     TickSalvageChest(keyboard);
                     return;
@@ -161,7 +161,8 @@ namespace RoguePirates.V4.Stage
                 EndSalvageChestChoicePause();
                 return;
             }
-            if (!_stage.CanAffordSalvageChest())
+            var free = _stage.ShowsFreeChestPopup(_target); // the Powder Cache's Rare Treasure Chest (M8 playtest)
+            if (!free && !_stage.CanAffordSalvageChest())
             {
                 Visible = false;
                 EndSalvageChestChoicePause();
@@ -174,10 +175,11 @@ namespace RoguePirates.V4.Stage
             }
 
             _salvageChestInsufficientFundsNotifiedIndex = -1;
-            var price = _stage.QuoteChestPrice();
             Visible = true;
             BeginSalvageChestChoicePause();
-            Text = $"<b>Salvage Chest</b>\n<size=120%>{price} gold</size>\nTake (E)  ·  Skip (R)";
+            Text = free
+                ? "<b>Rare Treasure Chest</b>\n<size=120%>Free</size>\nTake (E)  ·  Skip (R)"
+                : $"<b>Salvage Chest</b>\n<size=120%>{_stage.QuoteChestPrice()} gold</size>\nTake (E)  ·  Skip (R)";
             if (keyboard == null) return;
             if (keyboard.eKey.wasPressedThisFrame)
             {
@@ -199,9 +201,9 @@ namespace RoguePirates.V4.Stage
         public void TouchPressed()
         {
             if (_target < 0 || _stage.RequiredHoldSeconds(_target) > 0f) return;
-            if (_stage.ShowsSalvageChestPrice(_target))
+            if (_stage.ShowsSalvageChestPrice(_target) || _stage.ShowsFreeChestPopup(_target))
             {
-                if (_stage.IsPlayerInRange(_target) && _stage.CanAffordSalvageChest())
+                if (_stage.IsPlayerInRange(_target) && (_stage.ShowsFreeChestPopup(_target) || _stage.CanAffordSalvageChest()))
                 {
                     _stage.TryCompleteInteraction(_target);
                     EndSalvageChestChoicePause();
@@ -240,7 +242,7 @@ namespace RoguePirates.V4.Stage
 
         void UpdateLayout()
         {
-            Layout = _stage.ShowsSalvageChestPrice(_target) && _stage.CanAffordSalvageChest()
+            Layout = _stage.ShowsFreeChestPopup(_target) || (_stage.ShowsSalvageChestPrice(_target) && _stage.CanAffordSalvageChest())
                 ? PromptLayout.SalvageChestPopup
                 : _stage.RequiredHoldSeconds(_target) > 0f ? PromptLayout.CenterCompact : PromptLayout.BottomBar;
         }

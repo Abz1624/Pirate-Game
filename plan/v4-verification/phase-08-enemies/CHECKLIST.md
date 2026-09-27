@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `v4-modular-architecture` |
 | Phase start commit | `c26cdaf7` (M7, awaiting playtest) |
-| Status | Implemented and reviewed; **awaiting your playtest** |
+| Status | **Passed** (your playtest, four rounds, 27 Sep) |
 
 Design record: [DESIGN.md](DESIGN.md) (reader audit, update order, determinism hazards, build order).
 
@@ -157,4 +157,8 @@ Tests after round 2 and its review: EditMode 222/222, PlayMode 43/43. Checked vi
 | Beacon: "summoning.." works | — |
 | Couldn't find the Powder Cache; add an F1 button to spawn or locate it | F1 → Landmarks, Beacon & Boss → **Go to**: Powder Cache, Beacon, Chest, Repair Wreck, Signal Buoy, Treasure Chart. The ship moves next to the nearest unused one, inside its prompt range (dev console only). PlayMode `ConsoleGoTo_PowderCache_PutsTheShipInItsPromptRange_InTheRunAndTheLab` |
 | Hellfire rings on the water work | — |
+
+## Playtest round 4 (27 Sep): passed
+
+The Powder Cache works as intended. Change: the Rare Treasure Chest opens from the regular chest popup (press E to take, R to skip; it pauses like a salvage chest) and is free, instead of a hold. EditMode `PowderCacheChallenge_AllElitesSunk_TheCacheBecomesAFreeRareChest` checks the popup, the pause and that it is offered with no gold. EditMode 222/222; V4 enemy PlayMode tests 12/12. M8 passed.
 

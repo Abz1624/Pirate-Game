@@ -407,7 +407,17 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(POIType.SalvageChest, rig.Markers.Replaced[0], "a chest marker at the cache");
             Assert.IsTrue(rig.Stage.CanInteract(0));
             Assert.AreEqual("Open Rare Treasure Chest", rig.Stage.PromptLabel(0));
-            Assert.AreEqual(rig.Config.powderCacheChestHoldSeconds, rig.Stage.RequiredHoldSeconds(0));
+            Assert.AreEqual(0f, rig.Stage.RequiredHoldSeconds(0), "no hold: the chest popup");
+            Assert.IsTrue(rig.Stage.ShowsFreeChestPopup(0));
+            rig.Interaction.Tick(0.1f);
+            Assert.AreEqual(PromptLayout.SalvageChestPopup, rig.Interaction.Layout, "the regular chest popup");
+            StringAssert.Contains("Rare Treasure Chest", rig.Interaction.Text);
+            StringAssert.Contains("Free", rig.Interaction.Text);
+            Assert.AreEqual(PauseReason.POIChoice, rig.Run.PauseReason, "it pauses like a salvage chest");
+            rig.Run.Gold = 0;
+            rig.Interaction.Tick(0.1f);
+            Assert.IsTrue(rig.Interaction.Visible, "offered with no gold: it is free");
+            rig.Run.Gold = 1000;
             var gold = rig.Run.Gold;
             rig.Stage.TryCompleteInteraction(0);
             CollectionAssert.IsSubsetOf(new[] { "roll item min 2", "item rare_item", "chest opened" }, rig.Log.Lines);

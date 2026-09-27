@@ -234,8 +234,8 @@ namespace RoguePirates.V4.Stage
         {
             var type = Poi(index).type;
             if (type == POIType.BossBeacon) return C != null ? C.beaconHoldSeconds : 0.7f;
-            if (type == POIType.MerchantSkiff && EliteChallenge)
-                return _challengeChestReady.Contains(index) ? C.powderCacheChestHoldSeconds : C.powderCacheHoldSeconds;
+            if (type == POIType.MerchantSkiff && EliteChallenge && !_challengeChestReady.Contains(index))
+                return C.powderCacheHoldSeconds; // the Rare Treasure Chest opens from the chest popup (E), free
             return 0f;
         }
 
@@ -251,6 +251,8 @@ namespace RoguePirates.V4.Stage
         /// <summary>The Powder Cache challenge's encounter (0 when not sprung).</summary>
         public int PowderCacheChallengeEncounter(int index) => _challengeEncounters.TryGetValue(index, out var id) ? id : 0;
         public bool ShowsSalvageChestPrice(int index) => Poi(index).type == POIType.SalvageChest;
+        /// <summary>The chest popup without a price: the Powder Cache's Rare Treasure Chest (M8 playtest).</summary>
+        public bool ShowsFreeChestPopup(int index) => _challengeChestReady.Contains(index);
 
         public string PromptLabel(int index) => Poi(index).type switch
         {
