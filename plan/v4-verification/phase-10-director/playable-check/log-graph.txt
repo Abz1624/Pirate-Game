@@ -1,0 +1,13 @@
+one weapon: t=16 weapons=1 pressure=0.925 offense=11.1 norm=0.98 def=1.00 perf=0.32 mode=Observe samples=15
+one weapon: t=22 weapons=1 pressure=0.907 offense=11.1 norm=0.97 def=1.00 perf=0.33 mode=Observe samples=21
+six weapons: t=32 weapons=6 pressure=1.030 offense=69.9 norm=5.99 def=1.00 perf=0.37 mode=Observe samples=31
+six weapons: t=39 weapons=6 pressure=1.125 offense=69.9 norm=5.92 def=1.00 perf=0.59 mode=Observe samples=38
+six weapons: t=46 weapons=6 pressure=1.183 offense=69.9 norm=5.86 def=1.00 perf=0.74 mode=Observe samples=44
+six weapons: t=52 weapons=6 pressure=1.232 offense=69.9 norm=5.78 def=1.00 perf=0.67 mode=Observe samples=51
+six weapons: t=59 weapons=6 pressure=1.267 offense=69.9 norm=5.71 def=1.00 perf=0.96 mode=Observe samples=58
+six weapons: t=66 weapons=6 pressure=1.292 offense=69.9 norm=5.63 def=1.00 perf=0.96 mode=Observe samples=65
+six weapons: t=73 weapons=6 pressure=1.307 offense=69.9 norm=5.57 def=1.00 perf=0.89 mode=Observe samples=71
+six weapons: t=80 weapons=6 pressure=1.319 offense=69.9 norm=5.49 def=1.00 perf=0.97 mode=Observe samples=78
+six weapons: t=86 weapons=6 pressure=1.329 offense=69.9 norm=5.41 def=1.00 perf=1.11 mode=Observe samples=85
+six weapons: t=93 weapons=6 pressure=1.335 offense=69.9 norm=5.34 def=1.00 perf=1.04 mode=Observe samples=92
+shot: 02-difficulty-graph

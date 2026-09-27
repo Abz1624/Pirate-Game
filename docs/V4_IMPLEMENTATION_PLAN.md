@@ -473,7 +473,7 @@ Phases run one at a time. Each one ends with tests, traces and an automated play
 | M7 | Landmarks and boss | Passed (playtest 27 Sep; R-47, R-93, R-94, R-96, R-97, R-101 applied) | `plan/v4-verification/phase-07-boss/` |
 | M8 | Enemy World | Passed (playtest, four rounds: R-100, R-103 to R-106, Module Lab stage content, Powder Cache elite challenge) | `plan/v4-verification/phase-08-enemies/` |
 | M9 | Build and Progression | Passed | `plan/v4-verification/phase-09-build/` |
-| M10 | Difficulty Director, observe | Not started | `plan/v4-verification/phase-10-director/` |
+| M10 | Difficulty Director, observe | Implemented, awaiting playtest | `plan/v4-verification/phase-10-director/` |
 | M11 | Adaptive difficulty | Not started | `plan/v4-verification/phase-11-adaptive/` |
 | M12 | Rum and Results | Not started | `plan/v4-verification/phase-12-rum/` |
 | M13 | Barks and Tutorial | Not started | `plan/v4-verification/phase-13-narrative/` |

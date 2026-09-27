@@ -38,6 +38,9 @@ namespace RoguePirates.V4.Enemies
         readonly CombatStateStore _states = new CombatStateStore();
         readonly SpatialHash _hash = new SpatialHash(4f); // V3's hash type (a plain container, no shared state)
         EnemyCombatServices _services;
+
+        /// <summary>M10: the difficulty curve enemy HP and damage grow by (null = V3's GameMath formulas).</summary>
+        public Func<RoguePirates.V4.Config.DifficultyCurveConfig> Curve;
         IEnemyTarget _target;
         IEnemyFeedback _feedback;
         IEnemyKillTargets _kills;
@@ -225,8 +228,10 @@ namespace RoguePirates.V4.Enemies
             var minute = _run.Exists ? _run.ElapsedSeconds / 60f : 0f;
             var tier = _run.Exists ? _run.Tier : 1;
             var stage = _run.Exists ? _run.StageIndex : 0;
-            var hp = GameMath.EnemyHP(def.baseHP, minute, tier, stage);
-            var dmg = GameMath.EnemyDamage(def.baseDamage, minute, tier, stage);
+            // M10: the difficulty curve (its defaults are V3's GameMath formulas, bit for bit); V3's formula without one.
+            var curve = Curve?.Invoke();
+            var hp = curve != null ? Difficulty.CurveEvaluator.EnemyHp(curve, def.baseHP, minute, tier, stage) : GameMath.EnemyHP(def.baseHP, minute, tier, stage);
+            var dmg = curve != null ? Difficulty.CurveEvaluator.EnemyDamage(curve, def.baseDamage, minute, tier, stage) : GameMath.EnemyDamage(def.baseDamage, minute, tier, stage);
             if (affix == EliteAffix.Armored) hp *= 1.8f;
             if (affix == EliteAffix.Swift) hp *= 0.9f;
             if (affix == EliteAffix.Rich) hp *= 1.25f;

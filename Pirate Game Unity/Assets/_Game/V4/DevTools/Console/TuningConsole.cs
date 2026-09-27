@@ -59,6 +59,7 @@ namespace RoguePirates.V4.DevTools.Console
                 AddSection(new PoolsSection());
                 AddSection(new WeaponsSection());
                 AddSection(new BuildSection()); // M9
+                AddSection(new DifficultySection()); // M10
                 AddSection(new EventsSection(game));
                 AddSection(new StageSection());
                 if (game.IsModuleLab) AddSection(new ModuleLabSection());
@@ -302,7 +303,10 @@ namespace RoguePirates.V4.DevTools.Console
             Game?.Context?.TryGet(out enemies);
             var t = run != null ? run.ElapsedSeconds : 0f;
             var alive = enemies != null ? enemies.ActiveCount : 0;
-            GUILayout.Label($"Run {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00}   Phase {PhaseLabel()}   Pressure —   Enemies {alive}   Pools {PoolsLabel()}   FPS {_fps:0}",
+            RoguePirates.V4.Difficulty.IPressureView pressure = null;
+            Game?.Context?.TryGet(out pressure);
+            var pressureText = pressure != null ? pressure.Pressure.ToString("0.00") : "—";
+            GUILayout.Label($"Run {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00}   Phase {PhaseLabel()}   Pressure {pressureText}   Enemies {alive}   Pools {PoolsLabel()}   FPS {_fps:0}",
                 GUI.skin.box);
         }
     }

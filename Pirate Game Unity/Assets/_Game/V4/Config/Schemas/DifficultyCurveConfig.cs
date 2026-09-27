@@ -36,17 +36,17 @@ namespace RoguePirates.V4.Config
     /// <summary>
     /// Enemy HP and damage growth. Defaults equal V3: GameMath.EnemyHP/EnemyDamage per minute with tier and stage
     /// multipliers and the global HP factor 2/3, the Saltwind ordinary-time multipliers after 2:00, and the overtime
-    /// multipliers. Ordinary-time and overtime values are live (V4 spawn controller); per-minute growth moves in M8.
+    /// multipliers. Ordinary-time and overtime values are live (V4 spawn controller); the per-minute growth is live from M10 (CurveEvaluator, defaults = V3 GameMath).
     /// </summary>
     [CreateAssetMenu(menuName = "RoguePirates/V4/Difficulty Curve", fileName = "DifficultyCurve")]
     public sealed class DifficultyCurveConfig : V4ConfigAsset
     {
         [Header("Per-minute growth (GameMath)")]
-        [AppliesFrom(8)] public CurveSpec enemyHpPerMinute = new CurveSpec { c0 = 1f, c1 = 0.09f, c2 = 0.018f };
-        [AppliesFrom(8)] public TierStageMultipliers hpMultipliers = new TierStageMultipliers { tier = new[] { 1f, 1.45f, 2.05f }, stage = new[] { 1f, 1.22f, 1.5f } };
-        [AppliesFrom(8)] public float globalHpMultiplier = 2f / 3f;
-        [AppliesFrom(8)] public CurveSpec enemyDamagePerMinute = new CurveSpec { c0 = 1f, c1 = 0.055f };
-        [AppliesFrom(8)] public TierStageMultipliers damageMultipliers = new TierStageMultipliers { tier = new[] { 1f, 1.25f, 1.6f }, stage = new[] { 1f, 1.12f, 1.28f } };
+        [AppliesFrom(10)] public CurveSpec enemyHpPerMinute = new CurveSpec { c0 = 1f, c1 = 0.09f, c2 = 0.018f };
+        [AppliesFrom(10)] public TierStageMultipliers hpMultipliers = new TierStageMultipliers { tier = new[] { 1f, 1.45f, 2.05f }, stage = new[] { 1f, 1.22f, 1.5f } };
+        [AppliesFrom(10)] public float globalHpMultiplier = 2f / 3f;
+        [AppliesFrom(10)] public CurveSpec enemyDamagePerMinute = new CurveSpec { c0 = 1f, c1 = 0.055f };
+        [AppliesFrom(10)] public TierStageMultipliers damageMultipliers = new TierStageMultipliers { tier = new[] { 1f, 1.25f, 1.6f }, stage = new[] { 1f, 1.12f, 1.28f } };
 
         [Header("Saltwind ordinary time (SaltwindFinaleLogic)")]
         public float ordinaryScalingDelaySeconds = 120f;

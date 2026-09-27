@@ -1,0 +1,7 @@
+M10 end-of-phase trace set (Windows player, final code after the review fixes, run once). The enemy spawn now reads HP and
+damage from the V4 CurveEvaluator, and the difficulty director runs in Observe mode (default). v3-parity preset.
+--- V4 (v3-parity preset, director Observe) vs V3 goldens (phase-01-config/player)
+v3-trace-seed-101-a.jsonl vs v4-trace-seed-101-parity.jsonl: MATCH (437 lines)
+v3-trace-seed-202-a.jsonl vs v4-trace-seed-202-parity.jsonl: MATCH (409 lines)
+v3-trace-seed-303-a.jsonl vs v4-trace-seed-303-parity.jsonl: MATCH (523 lines)
+Header: "director":"director-1".

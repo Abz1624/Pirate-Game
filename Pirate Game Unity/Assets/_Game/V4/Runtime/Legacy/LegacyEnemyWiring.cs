@@ -83,6 +83,8 @@ namespace RoguePirates.V4.Legacy
             Services = s;
             Contracts = new EnemyWorldContracts(Simulation, Statuses);
             Hellfire = new HellfirePatches(Simulation, Statuses, HellfireEnvironment);
+            DifficultyCurveConfig curve = null; // cached: edits change the run's copy in place
+            Simulation.Curve = () => curve ??= _config?.Single<DifficultyCurveConfig>(); // M10
 
             // V3 Despawn after the slot is freed: statuses by slot, the encounter mapping (the legacy spawner's count left with it in M9).
             Simulation.Despawned += (slot, unitId, profile) =>

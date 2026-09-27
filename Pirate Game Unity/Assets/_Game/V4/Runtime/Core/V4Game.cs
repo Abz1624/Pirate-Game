@@ -53,6 +53,7 @@ namespace RoguePirates.V4
         LegacyStageWiring _stage;
         LegacyEnemyWiring _enemies;
         LegacyBuildWiring _build;
+        Difficulty.DifficultyDirector _director;
         bool _running;
         bool _ended;
         bool _objectiveSecured;
@@ -81,6 +82,10 @@ namespace RoguePirates.V4
             // M3: the spawn controller (replaces the legacy ambient spawner and the V3 spawn directors).
             _spawn = new SpawnController { LabMode = moduleLab };
             _modules.Add(_spawn);
+            // M10: the difficulty director (observe: it measures the player's power and logs Pressure; no gameplay reads it).
+            _director = new Difficulty.DifficultyDirector();
+            _modules.Add(_director);
+            _context.Register<Difficulty.IPressureView>(_director);
             _context.Register<ISpawnController>(_spawn);
             // Contracts the V4 modules use, implemented over legacy systems until those systems are ported.
             var runState = new LegacyRunState();
@@ -127,6 +132,7 @@ namespace RoguePirates.V4
             _shell.Weapons = _weapons;
             _build.Weapons = _weapons.Manager;
             _build.Enemies = _enemies.Contracts;
+            _context.Register<Difficulty.IPowerInputs>(new LegacyPowerInputs(() => _weapons?.Manager, _build, () => _shell?.Player));
             _enemies.HellfireEnvironment.Calculator = () => _weapons.Manager.Combat.Calculator;
             _enemies.HellfireEnvironment.HasHellfire = _build.HasHellfire;
             _enemies.HellfireEnvironment.StatusDamage = _build.StatusDamageMultiplier;

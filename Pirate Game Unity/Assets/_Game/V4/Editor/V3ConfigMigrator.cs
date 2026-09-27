@@ -177,7 +177,8 @@ namespace RoguePirates.V4.Editor
                 AssetDatabase.CreateAsset(set, ConfigSetPath);
             }
             set.setId = "saltwind-default";
-            set.configs = all.Distinct().OrderBy(c => c.configId, StringComparer.Ordinal).ToList();
+            // Keep configs other generators own (M9 build configs, the M10 director): the migrator only adds or refreshes its own.
+            set.configs = all.Concat(set.configs ?? new List<V4ConfigAsset>()).Where(c => c != null).Distinct().OrderBy(c => c.configId, StringComparer.Ordinal).ToList();
             EditorUtility.SetDirty(set);
 
             DestroyClone(db, sourceDb);

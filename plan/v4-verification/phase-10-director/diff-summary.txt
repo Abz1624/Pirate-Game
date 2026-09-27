@@ -1,0 +1,26 @@
+ .../Tests/V4/EditMode/V4DifficultyM10Tests.cs      | 286 +++++++++++++++++++++
+ .../Tests/V4/EditMode/V4DifficultyM10Tests.cs.meta |   2 +
+ .../V4/Config/Schemas/DifficultyCurveConfig.cs     |  12 +-
+ .../_Game/V4/Config/Schemas/DirectorConfig.cs      |  51 ++++
+ .../_Game/V4/Config/Schemas/DirectorConfig.cs.meta |   2 +
+ .../_Game/V4/Data/ConfigSets/SaltwindDefault.asset |   1 +
+ .../V4/Data/Difficulty/SaltwindDirector.asset      |  39 +++
+ .../V4/Data/Difficulty/SaltwindDirector.asset.meta |   8 +
+ .../_Game/V4/DevTools/Console/DifficultySection.cs |  73 ++++++
+ .../V4/DevTools/Console/DifficultySection.cs.meta  |   2 +
+ .../_Game/V4/DevTools/Console/TuningConsole.cs     |   6 +-
+ .../_Game/V4/DevTools/Trace/RunTraceRecorder.cs    |   2 +-
+ .../Assets/_Game/V4/Editor/V3ConfigMigrator.cs     |   3 +-
+ .../_Game/V4/Editor/V4DirectorConfigGenerator.cs   |  39 +++
+ .../V4/Editor/V4DirectorConfigGenerator.cs.meta    |   2 +
+ .../Assets/_Game/V4/Runtime/Core/V4Game.cs         |   6 +
+ .../Assets/_Game/V4/Runtime/Difficulty.meta        |   8 +
+ .../_Game/V4/Runtime/Difficulty/CurveEvaluator.cs  |  52 ++++
+ .../V4/Runtime/Difficulty/CurveEvaluator.cs.meta   |   2 +
+ .../V4/Runtime/Difficulty/DifficultyDirector.cs    | 246 ++++++++++++++++++
+ .../Runtime/Difficulty/DifficultyDirector.cs.meta  |   2 +
+ .../_Game/V4/Runtime/Enemies/EnemySimulation.cs    |   9 +-
+ .../_Game/V4/Runtime/Legacy/LegacyEnemyWiring.cs   |   2 +
+ .../_Game/V4/Runtime/Legacy/LegacyPowerInputs.cs   |  32 +++
+ .../V4/Runtime/Legacy/LegacyPowerInputs.cs.meta    |   2 +
+ 25 files changed, 878 insertions(+), 11 deletions(-)
