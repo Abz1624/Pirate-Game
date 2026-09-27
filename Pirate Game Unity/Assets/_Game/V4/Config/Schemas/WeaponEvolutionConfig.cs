@@ -42,6 +42,10 @@ namespace RoguePirates.V4.Config
     {
         public float arcMultiplier = 1.2f;
         public bool patchesOnKill = true;
+        [Tooltip("M8 playtest (off = V3): while the flame streams, it also leaves burning patches on the water ahead of the ship, not only where it kills.")]
+        public bool patchesAlongStream;
+        [Tooltip("Seconds between stream patches.")] public float streamPatchIntervalSeconds = 0.6f;
+        [Tooltip("Where along the flame a stream patch lands (fraction of its range).")] public float streamPatchRangeFraction = 0.75f;
     }
 
     /// <summary>Tempest Mast: a jump strike on the nearest other enemy, then a delayed strike on the densest cluster.</summary>
@@ -77,6 +81,12 @@ namespace RoguePirates.V4.Config
             if (string.IsNullOrWhiteSpace(evolutionId)) report.Error(this, nameof(evolutionId), "missing evolution id");
             if (baseWeapon == null) report.Error(this, nameof(baseWeapon), "missing base weapon");
             if (effect == ConfigEnums.EvolutionEffect.None) report.Error(this, nameof(effect), "no effect");
+            if (wideCone != null && wideCone.patchesAlongStream)
+            {
+                report.Positive(this, "wideCone.streamPatchIntervalSeconds", wideCone.streamPatchIntervalSeconds);
+                if (wideCone.streamPatchRangeFraction < 0f || wideCone.streamPatchRangeFraction > 1f)
+                    report.Error(this, "wideCone.streamPatchRangeFraction", "must be between 0 and 1");
+            }
         }
     }
 }

@@ -73,7 +73,15 @@ namespace RoguePirates.V4.Legacy
             foreach (var spawner in _config.All<EnemySpawnerConfig>())
             {
                 var clone = _clones.Values.FirstOrDefault(c => c.ResolvedId == spawner.legacyProfileId);
-                if (clone == null) continue;
+                if (clone == null)
+                {
+                    // A V4-only spawner (no V3 profile, e.g. the Powder Cache elites, M8 playtest): its own runtime profile,
+                    // outside V3's schedule, filled from the config below and anchored at run start.
+                    if (spawner.legacyProfileId == null || !spawner.legacyProfileId.StartsWith("v4_", StringComparison.Ordinal))
+                        Debug.LogWarning($"V4: spawner {spawner.configId} matches no V3 spawn profile ('{spawner.legacyProfileId}'); it gets its own. V4-only spawners use a 'v4_' profile id.");
+                    clone = Track(ScriptableObject.CreateInstance<SpawnProfile>());
+                    clone.name = clone.profileId = string.IsNullOrEmpty(spawner.legacyProfileId) ? spawner.configId : spawner.legacyProfileId;
+                }
                 _cloneBySpawnerId[spawner.configId] = clone;
                 LegacyConfigMapping.ApplySpawner(spawner, clone);
             }

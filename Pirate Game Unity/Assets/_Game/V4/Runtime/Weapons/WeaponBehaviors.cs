@@ -524,6 +524,7 @@ namespace RoguePirates.V4.Weapons
             {
                 w.StreamRemaining = StreamDuration(w);
                 w.StreamTickTimer = s.tickIntervalSeconds;
+                w.StreamPatchTimer = 0f;
             }
             ApplyTick(w, 1f, s.tickIntervalSeconds);
         }
@@ -547,6 +548,7 @@ namespace RoguePirates.V4.Weapons
                 if (!CanStart(w)) return;
                 w.StreamRemaining = StreamDuration(w);
                 w.StreamTickTimer = 0f;
+                w.StreamPatchTimer = 0f;
                 C.RecordEmission(w);
                 C.NotifyAimed(w, C.Ship.MovementForward);
             }
@@ -558,9 +560,30 @@ namespace RoguePirates.V4.Weapons
                 w.StreamTickTimer -= s.tickIntervalSeconds;
                 ApplyTick(w, itemAttackSpeed, s.tickIntervalSeconds);
             }
+            TickStreamPatches(w, dt);
 
             if (w.StreamRemaining <= 0f)
                 w.RechargeRemaining = RechargeDuration(w, itemAttackSpeed);
+        }
+
+        /// <summary>
+        /// Hellfire Nozzle with <c>patchesAlongStream</c> (M8 playtest; off = V3, where only kills left patches): while the
+        /// flame streams, a burning patch lands on the water ahead of the ship every interval.
+        /// </summary>
+        void TickStreamPatches(WeaponSlot w, float dt)
+        {
+            if (w.EvolutionEffect != Effect.WideConeWithPatches || !w.Evolution.wideCone.patchesAlongStream) return;
+            var cone = w.Evolution.wideCone;
+            var interval = Mathf.Max(0.05f, cone.streamPatchIntervalSeconds);
+            w.StreamPatchTimer += dt;
+            if (w.StreamPatchTimer < interval) return;
+            w.StreamPatchTimer -= interval;
+            var forward = C.Ship.MovementForward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.0001f) return;
+            forward.Normalize();
+            var origin = C.Ship.Position + forward * w.Config.stream.forwardOffset;
+            C.Hooks.SpawnFlamePatch(origin + forward * (Range(w) * cone.streamPatchRangeFraction), w.Config.weaponId);
         }
 
         float Range(WeaponSlot w) => w.Config.range * w.SizeMult * C.Mods.Size * C.Mods.FlameRangeMultiplier;

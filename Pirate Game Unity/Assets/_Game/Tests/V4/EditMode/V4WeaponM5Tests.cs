@@ -106,7 +106,8 @@ namespace RoguePirates.V4.Tests
             public void RecordEmission(string weaponId) => Emissions.Add(weaponId);
             public void RecordConcurrentTargets(string weaponId, int count) { }
             public void RecordControl(string weaponId, float seconds) { }
-            public void SpawnFlamePatch(Vector3 position, string weaponId) { }
+            public readonly List<Vector3> FlamePatches = new List<Vector3>();
+            public void SpawnFlamePatch(Vector3 position, string weaponId) => FlamePatches.Add(position);
             public void ApplyShipRadiusDamage(Vector3 center, float radius, float damage, string weaponId) { }
             public bool TryResolveShipAim(string weaponId, out Vector3 direction) { direction = Vector3.forward; return false; }
             public bool ShipVersusShip => false;
@@ -466,6 +467,23 @@ namespace RoguePirates.V4.Tests
             evolved.Tick(5);
             Assert.IsEmpty(plain.Hooks.Emissions, "outside the plain cone");
             Assert.IsNotEmpty(evolved.Hooks.Emissions, "inside the wider cone");
+        }
+
+        [Test]
+        public void HellfireNozzle_LeavesPatchesOnTheWaterWhileStreaming_NotUnderTheParityPreset()
+        {
+            foreach (var parity in new[] { false, true })
+            {
+                using var h = Evolved("flamethrower", "hellfire_nozzle", parity);
+                h.Enemies.Add(Vector3.forward * 4f, 1e9f); // starts the stream and never dies (no kill patches)
+                h.Tick(120); // 2 s of streaming
+                var cone = h.Config.All<WeaponEvolutionConfig>().First(e => e.evolutionId == "hellfire_nozzle").wideCone;
+                if (parity) { Assert.IsFalse(cone.patchesAlongStream); Assert.IsEmpty(h.Hooks.FlamePatches, "V3: patches only where the flame kills"); continue; }
+                Assert.IsTrue(cone.patchesAlongStream, "M8 playtest: on by default");
+                var expected = Mathf.FloorToInt(2f / cone.streamPatchIntervalSeconds);
+                Assert.That(h.Hooks.FlamePatches.Count, Is.InRange(expected - 1, expected + 1), "one patch per interval while the flame streams");
+                foreach (var patch in h.Hooks.FlamePatches) Assert.Greater(patch.z, 1f, "on the water ahead of the ship");
+            }
         }
 
         [Test]

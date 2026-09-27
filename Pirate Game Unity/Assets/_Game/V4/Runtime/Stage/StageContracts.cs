@@ -72,6 +72,8 @@ namespace RoguePirates.V4.Stage
         string ItemName(string itemId);
         /// <summary>A uniformly drawn chest-pool item (map stream), for the Powder Cache.</summary>
         string RollChestPoolItem();
+        /// <summary>A uniformly drawn chest-pool item of at least <paramref name="minRarity"/> (map stream), for the Powder Cache's Rare Treasure Chest.</summary>
+        string RollChestPoolItem(int minRarity);
         /// <summary>A map-stream draw in [0, maxExclusive) (Signal Buoy reward).</summary>
         int MapInt(int maxExclusive);
         /// <summary>The equipped weapons' ids (R-47 fix only).</summary>
@@ -111,6 +113,8 @@ namespace RoguePirates.V4.Stage
         /// <summary>The marker's current world position (chests bob), which interaction range is measured to.</summary>
         Vector3 Position(int index);
         void Hide(int index);
+        /// <summary>Replaces POI <paramref name="index"/>'s marker with a visible one of <paramref name="visualType"/> (same tick).</summary>
+        void Replace(int index, POIType visualType, Vector3 position, System.Action<int, float> tick);
         void Consume(int index);
         void SetChargeRing(int index, float charge01, float radius);
         void ShowTelegraph(int index);

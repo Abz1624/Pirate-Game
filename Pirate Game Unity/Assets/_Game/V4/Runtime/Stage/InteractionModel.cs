@@ -83,6 +83,15 @@ namespace RoguePirates.V4.Stage
 
             var holdDuration = _stage.RequiredHoldSeconds(_target);
             var label = _stage.PromptLabel(_target);
+            // R-101 fix, extended at the M8 playtest (off = V3): while the Beacon's summon telegraph runs the hold is done;
+            // V3 kept offering it, so a held E ran a second 0-100% hold that did nothing until the boss appeared.
+            if (_stage.Config != null && _stage.Config.promptReleasesUsedLandmark && _stage.IsTelegraphing(_target))
+            {
+                CancelHold();
+                Visible = true;
+                Text = $"{label} — summoning...";
+                return;
+            }
             var keyboard = Keyboard.current;
             var interactHeld = (keyboard != null && keyboard.eKey.isPressed) || TouchHolding;
 
@@ -209,7 +218,9 @@ namespace RoguePirates.V4.Stage
         void RefreshNearestTarget()
         {
             var rules = _stage.Config;
-            var releaseUsed = rules != null && rules.promptReleasesUsedLandmark && _target >= 0 && _stage.IsConsumed(_target);
+            // R-101 fix: let go of a used landmark, and (M8 playtest) of a hidden one (a Powder Cache whose ambush is on).
+            var releaseUsed = rules != null && _target >= 0 &&
+                ((rules.promptReleasesUsedLandmark && _stage.IsConsumed(_target)) || ((rules.promptReleasesUsedLandmark || rules.powderCacheEliteChallenge) && _stage.IsHidden(_target)));
             if (_target >= 0 && _stage.IsPlayerInRange(_target) && !releaseUsed) return;
             // R-96 fix: forget a skipped chest once the ship has left it (V3 dropped the target before this could happen).
             if (_target >= 0 && rules != null && rules.forgetChestSkipWhenLeaving && _salvageChestDismissedIndex == _target) _salvageChestDismissedIndex = -1;

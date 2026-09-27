@@ -124,3 +124,29 @@ No blockers; the v3-parity preset restores V3 exactly for R-100 and R-103, and t
 
 Tests after the fixes and the review: EditMode 215/215, PlayMode 43/43.
 
+## Playtest round 2 (27 Sep) and fixes
+
+| Your note | Finding | Fix (targeted tests only; no traces) |
+|---|---|---|
+| Module Lab chest, Beacon, summon and Powder Cache work, but the Beacon's hold goes to 100%, back to 0% and up again before the boss appears | After the hold, the Beacon's 0.7 s summon telegraph runs while the prompt keeps offering the hold (V3 behaviour); a held E runs a second hold that does nothing | While the telegraph runs the prompt shows "summoning..." (R-101 switch). EditMode `Beacon_WhileTheSummonTelegraphs_ThePromptOffersNoSecondHold` |
+| The Powder Cache doesn't seem to spawn enemies; it should spawn 4-5 elites which, all killed, drop a rare treasure chest, like Megabonk | V3's ambush: 3 plain cutthroat skiffs out of view on approach (R-105). Megabonk's Challenge Shrine: accept the challenge, marked elites spawn, killing all of them drops a free chest | `powderCacheEliteChallenge`: hold E to spring; 4 elites (2 armored skiffs, 2 rich cannonboats) in view; the cache hides (no prompt) while they fight; then it becomes a free Rare Treasure Chest (Rare or better item + 20 gold). V4-only spawners get their own runtime spawn profile. EditMode `PowderCacheChallenge_HoldSpringsFourElites_NotByProximity`, `..._AllElitesSunk_TheCacheBecomesAFreeRareChest`, `..._AFailedSpawn_Regroups`; PlayMode `ModuleLab_PowderCacheChallenge_FourElites_ThenAFreeRareChest`; V3's ambush kept under the parity preset (`PowderCache_V3Ambush_UnderTheParityPreset_SpawnsThroughTheV4Executor`) |
+| Magnetic Tide works | — | — |
+| Hellfire patches only show on enemies; also show them on the water | V3 drops a patch only where the flame kills (R-106) | While the flame streams, a patch every 0.6 s on the water ahead of the ship. EditMode `HellfireNozzle_LeavesPatchesOnTheWaterWhileStreaming_NotUnderTheParityPreset` |
+| Elite hammerhead charges twice, normal ones once | — | — |
+
+### Independent review of round 2
+
+No blockers; the v3-parity preset turns every round-2 behaviour off, and the Beacon change has no simulation effect. Findings and actions:
+
+| Finding | Action |
+|---|---|
+| Major: a partly spawned elite group timed out, left its elites outside the encounter and queued a new group, possibly again and again | Challenge elites have no spawn deadline: they keep trying until all 4 are placed |
+| Major: Clear all, or a group that could not be queued, left the cache hidden for good | Clear all brings open challenge caches back; a group with nothing queued fails cleanly and the cache stays usable; tests |
+| The cannonboat elites took the skiff-tuned encounter overrides; the gold/XP multipliers are read by nothing | Overrides zeroed (the enemies' own values); multipliers left at 1 |
+| Validator gaps (hold seconds of 0 would interact on arrival, rarity range, stream-patch values); an unmatched V3 spawner would silently get its own profile | Validated; a warning unless the spawner's profile id is marked V4-only (`v4_`) |
+| PlayMode challenge test could flake (a lab weapon sinking an elite early; a stacked item) | Counts the encounter's spawns and the item stacks |
+| Hellfire stream patches: interval drift; balance (about 4 live patches while streaming) | Drift fixed; balance recorded under R-106 |
+| Nits: the chest used the landmark range; the hidden-cache prompt depended on the R-101 switch | Chest range 6 m; the challenge switch also releases the hidden cache |
+
+Tests after round 2 and its review: EditMode 222/222, PlayMode 43/43. Checked visually in the Module Lab (prompt, 4 elites, the chest and its prompt).
+

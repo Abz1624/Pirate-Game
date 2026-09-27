@@ -208,7 +208,7 @@ namespace RoguePirates.V4.Spawning
 
         // ---- Required encounters (M7): the stage content module queues the Beacon boss and Powder Cache here ----
 
-        public void Trigger(EnemySpawnerConfig spawner, int count, int encounterId) => _encounters?.Trigger(spawner, count, encounterId);
+        public void Trigger(EnemySpawnerConfig spawner, int count, int encounterId, bool noDeadline = false) => _encounters?.Trigger(spawner, count, encounterId, noDeadline);
         public int TriggerImmediate(EnemySpawnerConfig spawner, int count, int encounterId) => _encounters != null ? _encounters.TriggerImmediate(spawner, count, encounterId) : 0;
         public int ProcessNow() => _encounters != null ? _encounters.ProcessNow() : 0;
         public void Cancel(int encounterId) => _encounters?.Cancel(encounterId);

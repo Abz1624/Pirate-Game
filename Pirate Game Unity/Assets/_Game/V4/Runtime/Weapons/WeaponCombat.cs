@@ -21,6 +21,8 @@ namespace RoguePirates.V4.Weapons
         /// <summary>Shots of the current burst still to fire (Swivel Guns' second shot).</summary>
         public int BurstShotsLeft;
         public float StreamRemaining, RechargeRemaining, StreamTickTimer;
+        /// <summary>Time since the flame's last burning patch on the water (Hellfire Nozzle, M8 playtest).</summary>
+        public float StreamPatchTimer;
 
         public string Id => Config != null ? Config.weaponId : null;
         public ConfigEnums.EvolutionEffect EvolutionEffect => Evolution != null ? Evolution.effect : ConfigEnums.EvolutionEffect.None;

@@ -29,8 +29,11 @@ namespace RoguePirates.V4.Spawning
     /// <summary>Queues and spawns required encounters (what POIManager asked the legacy spawner to do).</summary>
     public interface IEncounterExecutor
     {
-        /// <summary>Queues an encounter; it spawns on the next pass of the queue.</summary>
-        void Trigger(EnemySpawnerConfig spawner, int count, int encounterId);
+        /// <summary>
+        /// Queues an encounter; it spawns on the next pass of the queue. <paramref name="noDeadline"/>: it keeps retrying
+        /// until all have spawned instead of failing at the required-encounter timeout (the Powder Cache elite challenge).
+        /// </summary>
+        void Trigger(EnemySpawnerConfig spawner, int count, int encounterId, bool noDeadline = false);
         /// <summary>Queues an encounter and runs the queue now (boss summon); returns the encounter's spawned count.</summary>
         int TriggerImmediate(EnemySpawnerConfig spawner, int count, int encounterId);
         int ProcessNow();
@@ -77,7 +80,7 @@ namespace RoguePirates.V4.Spawning
         float Timeout => _s.Timeline != null ? _s.Timeline.requiredEncounterTimeoutSeconds : 10f;
         float RetryInterval => _s.Timeline != null && _s.Timeline.spawnRetryIntervalSeconds > 0f ? _s.Timeline.spawnRetryIntervalSeconds : 0.35f;
 
-        public void Trigger(EnemySpawnerConfig spawner, int count, int encounterId)
+        public void Trigger(EnemySpawnerConfig spawner, int count, int encounterId, bool noDeadline = false)
         {
             if (spawner == null) return;
             var profile = _s.Profiles != null ? _s.Profiles.For(spawner) : null;
@@ -90,7 +93,7 @@ namespace RoguePirates.V4.Spawning
                 remaining = count > 0 ? count : profile.timing.spawnCount,
                 encounterId = encounterId,
                 nextAttemptAt = now,
-                deadlineAt = now + Timeout
+                deadlineAt = noDeadline ? float.MaxValue : now + Timeout
             });
         }
 

@@ -50,6 +50,9 @@ MonoBehaviour:
   wideCone:
     arcMultiplier: 1.2
     patchesOnKill: 1
+    patchesAlongStream: 1
+    streamPatchIntervalSeconds: 0.6
+    streamPatchRangeFraction: 0.75
   jumpStrike:
     jumpRange: 9
     jumpRadiusFactor: 0.75

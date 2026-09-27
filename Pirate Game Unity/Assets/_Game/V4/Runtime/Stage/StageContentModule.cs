@@ -40,6 +40,8 @@ namespace RoguePirates.V4.Stage
         int _powderCacheEncounterCount, _powderCacheTrackerId, _bossEncounterId;
         bool _powderCacheCleared;
         readonly HashSet<int> _powderCacheAmbushStarted = new HashSet<int>();
+        readonly Dictionary<int, int> _challengeEncounters = new Dictionary<int, int>(); // Powder Cache index -> elite encounter
+        readonly HashSet<int> _challengeChestReady = new HashSet<int>();
         readonly HashSet<int> _signalBuoyChargeAnnounced = new HashSet<int>();
         readonly Dictionary<int, float> _signalBuoyCharges = new Dictionary<int, float>();
         readonly HashSet<int> _signalBuoysCompleted = new HashSet<int>();
@@ -119,6 +121,8 @@ namespace RoguePirates.V4.Stage
             _encounters?.ResetForRun();
             _powderCacheCleared = false;
             _powderCacheAmbushStarted.Clear();
+            _challengeEncounters.Clear();
+            _challengeChestReady.Clear();
             _signalBuoyChargeAnnounced.Clear();
             _signalBuoyCharges.Clear();
             _signalBuoysCompleted.Clear();
@@ -221,22 +225,40 @@ namespace RoguePirates.V4.Stage
                 case POIType.TrialBuoy: return c != null ? c.interactRange : 4f;
                 case POIType.BossBeacon: return c != null ? c.beaconInteractRange : 6f;
                 case POIType.SalvageChest: return c != null ? c.chestInteractRange : 6f;
+                case POIType.MerchantSkiff when _challengeChestReady.Contains(index): return c != null ? c.chestInteractRange : 6f;
                 default: return c != null ? c.interactRange : 4f;
             }
         }
 
-        public float RequiredHoldSeconds(int index) =>
-            Poi(index).type == POIType.BossBeacon ? (C != null ? C.beaconHoldSeconds : 0.7f) : 0f;
+        public float RequiredHoldSeconds(int index)
+        {
+            var type = Poi(index).type;
+            if (type == POIType.BossBeacon) return C != null ? C.beaconHoldSeconds : 0.7f;
+            if (type == POIType.MerchantSkiff && EliteChallenge)
+                return _challengeChestReady.Contains(index) ? C.powderCacheChestHoldSeconds : C.powderCacheHoldSeconds;
+            return 0f;
+        }
 
         public bool UsesChargeInteraction(int index) => Poi(index).type == POIType.TrialBuoy;
-        public bool UsesProximityAmbush(int index) => Poi(index).type == POIType.MerchantSkiff;
+        public bool UsesProximityAmbush(int index) => Poi(index).type == POIType.MerchantSkiff && !EliteChallenge;
+
+        /// <summary>The Powder Cache elite challenge (M8 playtest; off = V3's proximity ambush).</summary>
+        bool EliteChallenge => C != null && C.powderCacheEliteChallenge && C.powderCacheEliteSpawners != null && C.powderCacheEliteSpawners.Length > 0;
+
+        /// <summary>The Powder Cache's ambush has been sunk and its Rare Treasure Chest waits to be opened.</summary>
+        public bool IsPowderCacheChestReady(int index) => _challengeChestReady.Contains(index);
+
+        /// <summary>The Powder Cache challenge's encounter (0 when not sprung).</summary>
+        public int PowderCacheChallengeEncounter(int index) => _challengeEncounters.TryGetValue(index, out var id) ? id : 0;
         public bool ShowsSalvageChestPrice(int index) => Poi(index).type == POIType.SalvageChest;
 
         public string PromptLabel(int index) => Poi(index).type switch
         {
             POIType.SalvageChest => SalvageChestPromptLabel,
             POIType.GildedWreck => "Repair Wreck",
-            POIType.MerchantSkiff => "Powder Cache",
+            POIType.MerchantSkiff => !EliteChallenge ? "Powder Cache"
+                : _challengeChestReady.Contains(index) ? "Open Rare Treasure Chest"
+                : $"Powder Cache — spring the ambush ({C.powderCacheEliteCount} elites guard a rare chest)",
             POIType.TrialBuoy => "Signal Buoy",
             POIType.CursedIdol => "Treasure Chart",
             POIType.BossBeacon => "Activate Treasury Beacon",
@@ -255,7 +277,11 @@ namespace RoguePirates.V4.Stage
                 _markers.SetChargeRing(index, SignalBuoyCharge01(index), SignalBuoyRadius);
                 if (Poi(index).used) Consume(index);
             }
-            if (type == POIType.MerchantSkiff) TickPowderCacheProximity(index);
+            if (type == POIType.MerchantSkiff)
+            {
+                if (EliteChallenge) TickPowderCacheChallenge(index);
+                else TickPowderCacheProximity(index);
+            }
             if (_awaitingBossSummon[index])
             {
                 _telegraphTimer[index] -= dt;
@@ -336,7 +362,7 @@ namespace RoguePirates.V4.Stage
                     _toasts?.Show("Repair Wreck — hull restored 25%.", 2.5f);
                     break;
                 case POIType.MerchantSkiff:
-                    return TryCompletePowderCache(index);
+                    return EliteChallenge ? TryPowderCacheChallenge(index) : TryCompletePowderCache(index);
                 case POIType.CursedIdol:
                     Discovery.RevealNearestChests(c != null ? c.treasureChartRevealCount : 3, _ship.Position);
                     var bearing = Discovery.BeaconBearingDegrees(_ship.Position);
@@ -452,6 +478,98 @@ namespace RoguePirates.V4.Stage
             var count = Mathf.Max(1, C.powderCacheAmbushCount);
             _powderCacheTrackerId = _encounters.Request(EncounterKind.PowderCache, count);
             _executor.Trigger(spawner, count, _powderCacheTrackerId);
+            return true;
+        }
+
+        // ---- Powder Cache elite challenge (M8 playtest; Megabonk's Challenge Shrine) -------------------------------
+
+        /// <summary>Held E at the cache: spring the challenge; held E at the chest it became: open it.</summary>
+        bool TryPowderCacheChallenge(int index)
+        {
+            if (_challengeChestReady.Contains(index)) return TryOpenPowderCacheChest(index);
+            if (_challengeEncounters.ContainsKey(index)) return false;
+            if (!SpawnPowderCacheElites(index))
+            {
+                _toasts?.Show("Powder Cache — the ambush failed to spawn, try again.", 2f);
+                return false;
+            }
+            HideMarker(index);
+            _toasts?.Show($"Powder Cache — {C.powderCacheEliteCount} elites attack! Sink them all for a rare treasure chest.", 3.5f);
+            return false;
+        }
+
+        bool SpawnPowderCacheElites(int index)
+        {
+            if (_executor == null) return false;
+            var spawners = C.powderCacheEliteSpawners;
+            var count = Mathf.Max(1, C.powderCacheEliteCount);
+            var encounter = _encounters.Request(EncounterKind.PowderCache, count);
+            // The elites come from the spawners in turn (4 over 2 spawners: 2 each).
+            for (var s = 0; s < spawners.Length; s++)
+            {
+                var n = count / spawners.Length + (s < count % spawners.Length ? 1 : 0);
+                // No deadline: the elites keep trying to spawn until all are placed (a timed-out partial group would
+                // leave its elites outside the encounter and queue a new group).
+                if (n > 0 && spawners[s] != null) _executor.Trigger(spawners[s], n, encounter, noDeadline: true);
+            }
+            if (!_executor.HasPending(encounter))
+            {
+                _encounters.MarkFailed(encounter); // nothing could be queued (a spawner without a runtime profile)
+                return false;
+            }
+            _challengeEncounters[index] = encounter;
+            return true;
+        }
+
+        /// <summary>While the elites fight: respawn a group that failed to spawn; once all are sunk, the cache becomes the chest.</summary>
+        void TickPowderCacheChallenge(int index)
+        {
+            if (_challengeChestReady.Contains(index) || !_challengeEncounters.TryGetValue(index, out var encounter)) return;
+            if (!_encounters.Exists(encounter) || _encounters.State(encounter) == EncounterState.Failed)
+            {
+                if (SpawnPowderCacheElites(index)) _toasts?.Show("Powder Cache — the elites regroup!", 2.5f);
+                return;
+            }
+            if (_encounters.State(encounter) != EncounterState.Completed) return;
+            _challengeChestReady.Add(index);
+            _hidden[index] = false;
+            _markers.Replace(index, POIType.SalvageChest, Poi(index).position, TickPoi);
+            _toasts?.Show("Ambush sunk — a Rare Treasure Chest surfaced at the Powder Cache!", 3.5f);
+        }
+
+        /// <summary>
+        /// Module Lab "Clear all" removed the elites without sinking them: the open challenges end and their caches come
+        /// back, ready to be sprung again.
+        /// </summary>
+        public void ForgetDespawnedPowderCaches()
+        {
+            foreach (var pair in new List<KeyValuePair<int, int>>(_challengeEncounters))
+            {
+                var index = pair.Key;
+                if (_challengeChestReady.Contains(index) || !InRange(index) || _used[index]) continue;
+                _executor?.Cancel(pair.Value);
+                _encounters.MarkFailed(pair.Value);
+                _challengeEncounters.Remove(index);
+                _hidden[index] = false;
+                _markers.Replace(index, Poi(index).type, Poi(index).position, TickPoi);
+            }
+        }
+
+        bool TryOpenPowderCacheChest(int index)
+        {
+            var itemId = _economy.RollChestPoolItem(C.powderCacheChestMinRarity);
+            if (!_economy.TryAddItem(itemId))
+            {
+                _toasts?.Show("Inventory full — the treasure chest stays.", 2.5f);
+                return false;
+            }
+            _run.AddGold(C.powderCacheBonusGold);
+            _toasts?.Show($"Rare Treasure Chest — gained {_economy.ItemName(itemId)}.", 3f);
+            _rewards?.ChestOpened();
+            Publish?.Invoke(CombatEventKind.ChestOpened, index, 0, Poi(index).position, null);
+            _challengeChestReady.Remove(index);
+            MarkPoiUsed(index);
+            _rewards?.PoiUsedTelemetry(POIType.MerchantSkiff);
             return true;
         }
 

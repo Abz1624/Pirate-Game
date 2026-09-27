@@ -292,6 +292,8 @@ namespace RoguePirates.V4.Tests
             "Editor/V3ConfigMigrator.cs:gunner_cog",
             "Editor/V3ConfigMigrator.cs:bomb_boat",
             "Editor/V3ConfigMigrator.cs:manta_ray",
+            // M8 playtest: the Powder Cache elite challenge's spawner anchors.
+            "Editor/V3ConfigMigrator.cs:cutthroat_skiff",
         };
 
         [Test]

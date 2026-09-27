@@ -688,10 +688,77 @@ namespace RoguePirates.V4.Editor
             if (stage != null)
             {
                 stage.magneticTideOpensBarrels = true;
+                // Round 2: the Powder Cache is an elite challenge (Megabonk's Challenge Shrine): 2 armored skiffs and 2
+                // rich cannonboats; sinking all 4 turns the cache into a free Rare Treasure Chest.
+                stage.powderCacheEliteChallenge = true;
+                stage.powderCacheEliteCount = 4;
+                stage.powderCacheHoldSeconds = 0.7f;
+                stage.powderCacheChestHoldSeconds = 0.5f;
+                stage.powderCacheChestMinRarity = (int)Rarity.Rare;
+                stage.powderCacheEliteSpawners = new[]
+                {
+                    PowderCacheEliteSpawner("powder_cache_elite_skiff", "cutthroat_skiff", ConfigEnums.EliteAffix.Armored),
+                    PowderCacheEliteSpawner("powder_cache_elite_cannonboat", "cannonboat", ConfigEnums.EliteAffix.Rich),
+                };
                 EditorUtility.SetDirty(stage);
+                var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(ConfigSetPath);
+                if (set != null)
+                {
+                    foreach (var s in stage.powderCacheEliteSpawners)
+                        if (s != null && !set.configs.Contains(s)) set.configs.Add(s);
+                    set.configs = set.configs.Where(c => c != null).OrderBy(c => c.configId, StringComparer.Ordinal).ToList();
+                    EditorUtility.SetDirty(set);
+                }
+            }
+            // Round 2: the Hellfire Nozzle's flame also leaves burning patches on the water while it streams.
+            var hellfire = AssetDatabase.LoadAssetAtPath<WeaponEvolutionConfig>(DataRoot + "/Evolutions/hellfire_nozzle.asset");
+            if (hellfire != null && hellfire.wideCone != null)
+            {
+                hellfire.wideCone.patchesAlongStream = true;
+                EditorUtility.SetDirty(hellfire);
             }
             AssetDatabase.SaveAssets();
-            return $"M8 playtest decisions applied (R-100, R-103{(stage == null ? ": stage content config missing" : string.Empty)})\n";
+            return $"M8 playtest decisions applied (R-100, R-103, Powder Cache elite challenge, Hellfire stream patches{(stage == null ? ": stage content config missing" : string.Empty)})\n";
+        }
+
+        /// <summary>
+        /// A V4-only spawner for the Powder Cache elite challenge: V3's Powder Cache spawner values, anchored on
+        /// <paramref name="enemyId"/>, flagged elite, placed in view near the ship.
+        /// </summary>
+        static EnemySpawnerConfig PowderCacheEliteSpawner(string file, string enemyId, ConfigEnums.EliteAffix affix)
+        {
+            var path = $"{DataRoot}/Spawners/{file}.asset";
+            var spawner = AssetDatabase.LoadAssetAtPath<EnemySpawnerConfig>(path);
+            if (spawner == null)
+            {
+                var source = AssetDatabase.LoadAssetAtPath<EnemySpawnerConfig>($"{DataRoot}/Spawners/saltwind_powder_cache.asset");
+                spawner = source != null ? Object.Instantiate(source) : ScriptableObject.CreateInstance<EnemySpawnerConfig>();
+                AssetDatabase.CreateAsset(spawner, path);
+            }
+            spawner.configId = "spawner." + file;
+            spawner.legacyProfileId = "v4_" + file; // no V3 profile: the run builds its own
+            spawner.balanceVersion = "m8-playtest";
+            spawner.anchor = AssetDatabase.LoadAssetAtPath<EnemyArchetypeConfig>($"{DataRoot}/Enemies/{enemyId}.asset");
+            spawner.timing.spawnCount = 2;
+            spawner.placement.requireOutsidePlayerFov = false;
+            spawner.placement.distanceMin = 7f;
+            spawner.placement.distanceMax = 12f;
+            // No encounter overrides (0 = the enemy's own values): the Powder Cache values were tuned for skiffs.
+            spawner.movement.preferredRange = 0f;
+            spawner.movement.chargeWindUpSeconds = 0f;
+            spawner.movement.chargeDurationSeconds = 0f;
+            spawner.movement.chargeCooldownSeconds = 0f;
+            spawner.movement.chargeSpeedMultiplier = 0f;
+            spawner.attack.attackRange = 0f;
+            spawner.attack.windUpSeconds = 0f;
+            spawner.attack.cooldownSeconds = 0f;
+            spawner.elite.isElite = true;
+            spawner.elite.affix = affix;
+            spawner.elite.hpMultiplier = 1.5f;
+            spawner.elite.goldMultiplier = 1f; // read by neither V3 nor V4
+            spawner.elite.xpMultiplier = 1f;
+            EditorUtility.SetDirty(spawner);
+            return spawner;
         }
 
         public const string StageContentPath = DataRoot + "/Stage/StageContent_Saltwind.asset";

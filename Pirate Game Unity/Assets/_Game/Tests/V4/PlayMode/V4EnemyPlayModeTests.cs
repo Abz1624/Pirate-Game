@@ -273,7 +273,7 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
-        public IEnumerator ModuleLab_PowderCache_AmbushSpawnsThroughTheEncounterQueue()
+        public IEnumerator ModuleLab_PowderCacheChallenge_FourElites_ThenAFreeRareChest()
         {
             yield return StartLab();
             var stage = Get<RoguePirates.V4.Stage.IStageContent>();
@@ -281,11 +281,32 @@ namespace RoguePirates.V4.Tests
             var cache = layout.pois.FindIndex(p => p.type == POIType.MerchantSkiff);
             Assert.GreaterOrEqual(cache, 0, "the lab has a Powder Cache");
             var sim = V4TestEnemies.Simulation();
-            Assert.AreEqual(0, sim.ActiveCount);
-            Object.FindFirstObjectByType<PlayerShipController>().SetWorldPosition(stage.Module.MarkerPosition(cache) + new Vector3(4f, 0f, 0f));
+            Object.FindFirstObjectByType<PlayerShipController>().SetWorldPosition(stage.Module.MarkerPosition(cache) + new Vector3(2f, 0f, 0f));
+            for (var i = 0; i < 30; i++) { KeepRunning(); yield return null; }
+            Assert.AreEqual(0, sim.ActiveCount, "sailing up does not spring it: you hold E");
+            stage.Module.TryCompleteInteraction(cache); // the completed hold
             var deadline = Time.realtimeSinceStartup + 8f;
-            while (sim.ActiveCount < 3 && Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
-            Assert.GreaterOrEqual(sim.ActiveCount, 3, "the ambush of 3 spawned (queued encounters tick in the lab)");
+            var encounter = RunEncounterTracker.Get(stage.Module.PowderCacheChallengeEncounter(cache));
+            Assert.IsNotNull(encounter, "the challenge's encounter");
+            while (encounter.SpawnedCount < 4 && Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
+            Assert.AreEqual(4, encounter.SpawnedCount, "4 elites spawned (queued encounters tick in the lab)");
+            for (var i = 0; i < sim.Agents.Length; i++)
+                if (sim.Agents[i].active) Assert.IsTrue(sim.Agents[i].isElite, "every ambusher is an elite");
+            for (var i = 0; i < sim.Agents.Length; i++)
+                if (sim.Agents[i].active) sim.ApplyDamage(i, sim.Agents[i].maxHp + 500f, false, weaponId: "deck_cannons");
+            deadline = Time.realtimeSinceStartup + 5f;
+            while (!stage.Module.IsPowderCacheChestReady(cache) && Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
+            Assert.IsTrue(stage.Module.IsPowderCacheChestReady(cache), "all sunk: the cache became a Rare Treasure Chest");
+            Assert.IsTrue(stage.Module.CanInteract(cache));
+            var inventory = HighSeas.V3.V3RunItemInventory.Instance;
+            var stacks = HighSeas.V3.V3ItemCatalog.ChestPool.ToDictionary(e => e.id, e => inventory.GetStackCount(e.id));
+            var gold = RunManager.Instance.Gold;
+            stage.Module.TryCompleteInteraction(cache); // open it
+            var gained = HighSeas.V3.V3ItemCatalog.ChestPool.Where(e => inventory.GetStackCount(e.id) > stacks[e.id]).ToList();
+            Assert.AreEqual(1, gained.Count, "one item gained (a new one or another stack)");
+            Assert.GreaterOrEqual((int)gained[0].rarity, (int)Rarity.Rare, "Rare or better");
+            Assert.GreaterOrEqual(RunManager.Instance.Gold, gold, "free");
+            Assert.IsTrue(layout.pois[cache].used);
         }
 
         [UnityTest]

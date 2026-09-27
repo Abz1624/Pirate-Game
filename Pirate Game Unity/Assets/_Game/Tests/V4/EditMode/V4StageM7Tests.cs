@@ -92,6 +92,7 @@ namespace RoguePirates.V4.Tests
             public bool TryAddItem(string itemId) { _log.Add("item " + itemId); return !InventoryFull; }
             public string ItemName(string itemId) => "Item X";
             public string RollChestPoolItem() { _log.Add("roll item"); return "cache_item"; }
+            public string RollChestPoolItem(int minRarity) { _log.Add("roll item min " + minRarity); return "rare_item"; }
             public int MapInt(int maxExclusive) { _log.Add("map " + maxExclusive); return MapResult; }
             public IReadOnlyList<string> EquippedWeaponIds => new[] { "w1" };
         }
@@ -142,7 +143,8 @@ namespace RoguePirates.V4.Tests
             readonly Log _log;
             public int SpawnOnImmediate = 1;
             public FakeExecutor(FakeTracker tracker, Log log) { _tracker = tracker; _log = log; }
-            public void Trigger(EnemySpawnerConfig spawner, int count, int encounterId) => _log.Add($"trigger {spawner.name} {count} {encounterId}");
+            public readonly HashSet<int> Pending = new HashSet<int>();
+            public void Trigger(EnemySpawnerConfig spawner, int count, int encounterId, bool noDeadline = false) { Pending.Add(encounterId); _log.Add($"trigger {spawner.name} {count} {encounterId}{(noDeadline ? " no deadline" : string.Empty)}"); }
             public int TriggerImmediate(EnemySpawnerConfig spawner, int count, int encounterId)
             {
                 _log.Add($"immediate {spawner.name} {count} {encounterId}");
@@ -150,8 +152,8 @@ namespace RoguePirates.V4.Tests
                 return _tracker.SpawnedCount(encounterId);
             }
             public int ProcessNow() => 0;
-            public void Cancel(int encounterId) => _log.Add("cancel " + encounterId);
-            public bool HasPending(int encounterId) => false;
+            public void Cancel(int encounterId) { Pending.Remove(encounterId); _log.Add("cancel " + encounterId); }
+            public bool HasPending(int encounterId) => Pending.Contains(encounterId);
         }
 
         sealed class FakeMarkers : IPoiMarkers
@@ -165,6 +167,8 @@ namespace RoguePirates.V4.Tests
             public bool IsSpawned(int index) => Spawned.ContainsKey(index);
             public Vector3 Position(int index) => Spawned.TryGetValue(index, out var p) ? p : Vector3.zero;
             public void Hide(int index) => Hidden.Add(index);
+            public readonly Dictionary<int, POIType> Replaced = new Dictionary<int, POIType>();
+            public void Replace(int index, POIType visualType, Vector3 position, System.Action<int, float> tick) { Hidden.Remove(index); Replaced[index] = visualType; Spawned[index] = position + Vector3.up * 0.15f; Ticks[index] = tick; }
             public void Consume(int index) => Consumed.Add(index);
             public void SetChargeRing(int index, float charge01, float radius) { }
             public void ShowTelegraph(int index) => Telegraph = true;
@@ -335,6 +339,123 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(rig.Layout.pois[0].used);
             CollectionAssert.IsSubsetOf(new[] { "roll item", "item cache_item", "gold +20" }, rig.Log.Lines);
             Assert.AreEqual(1, rig.Events.Count(e => e.kind == CombatEventKind.LandmarkUsed));
+        }
+
+        // ---- M8 playtest round 2 ---------------------------------------------------------------------------------------
+
+        [Test]
+        public void Beacon_WhileTheSummonTelegraphs_ThePromptOffersNoSecondHold()
+        {
+            var rig = Make((POIType.BossBeacon, new Vector3(2f, 0f, 0f)));
+            rig.Config.promptReleasesUsedLandmark = true;
+            rig.Stage.TryCompleteInteraction(0); // the hold finished: the telegraph runs
+            Assert.IsTrue(rig.Stage.IsTelegraphing(0));
+            rig.Interaction.TouchHolding = true; // still holding
+            rig.Interaction.Tick(0.1f);
+            StringAssert.EndsWith("summoning...", rig.Interaction.Text, "no second 0-100% hold while the boss is summoned");
+            rig.Config.promptReleasesUsedLandmark = false;
+            rig.Interaction.Tick(0.1f);
+            StringAssert.Contains("hold", rig.Interaction.Text, "v3-parity: V3's second hold");
+        }
+
+        Rig MakeChallenge()
+        {
+            var rig = Make((POIType.MerchantSkiff, new Vector3(3f, 0f, 0f)));
+            rig.Config.powderCacheEliteChallenge = true;
+            rig.Config.powderCacheEliteCount = 4;
+            var a = ScriptableObject.CreateInstance<EnemySpawnerConfig>(); a.name = "eliteA";
+            var b = ScriptableObject.CreateInstance<EnemySpawnerConfig>(); b.name = "eliteB";
+            _owned.Add(a); _owned.Add(b);
+            rig.Config.powderCacheEliteSpawners = new[] { a, b };
+            return rig;
+        }
+
+        [Test]
+        public void PowderCacheChallenge_HoldSpringsFourElites_NotByProximity()
+        {
+            var rig = MakeChallenge();
+            rig.Ship.Pos = new Vector3(3f, 0f, 0f);
+            rig.Tick(0.1f);
+            Assert.AreEqual(0, rig.Log.Count("trigger"), "sailing close does not spring it (V3's proximity ambush is off)");
+            Assert.IsFalse(rig.Stage.UsesProximityAmbush(0));
+            Assert.AreEqual(rig.Config.powderCacheHoldSeconds, rig.Stage.RequiredHoldSeconds(0));
+            StringAssert.Contains("4 elites", rig.Stage.PromptLabel(0));
+            rig.Config.promptReleasesUsedLandmark = true;
+            rig.Interaction.Tick(0.1f);
+            Assert.IsTrue(rig.Interaction.Visible, "the cache offers its hold");
+            rig.Stage.TryCompleteInteraction(0);
+            CollectionAssert.AreEqual(new[] { "trigger eliteA 2 1 no deadline", "trigger eliteB 2 1 no deadline" }, rig.Log.Lines.Where(l => l.StartsWith("trigger")).ToList(), "4 elites from the spawners in turn, one encounter");
+            Assert.IsTrue(rig.Markers.Hidden.Contains(0), "the cache hides while the elites fight");
+            Assert.IsFalse(rig.Stage.CanInteract(0));
+            rig.Interaction.Tick(0.1f);
+            Assert.IsFalse(rig.Interaction.Visible, "no prompt while the elites fight (the prompt lets go of the hidden cache)");
+            Assert.IsFalse(rig.Layout.pois[0].used);
+        }
+
+        [Test]
+        public void PowderCacheChallenge_AllElitesSunk_TheCacheBecomesAFreeRareChest()
+        {
+            var rig = MakeChallenge();
+            rig.Ship.Pos = new Vector3(3f, 0f, 0f);
+            rig.Stage.TryCompleteInteraction(0);
+            rig.Tracker.Set(1, EncounterState.Spawned);
+            rig.Tick(0.1f);
+            Assert.IsFalse(rig.Stage.IsPowderCacheChestReady(0), "not while elites live");
+            rig.Tracker.Set(1, EncounterState.Completed);
+            rig.Tick(0.1f);
+            Assert.IsTrue(rig.Stage.IsPowderCacheChestReady(0));
+            Assert.AreEqual(POIType.SalvageChest, rig.Markers.Replaced[0], "a chest marker at the cache");
+            Assert.IsTrue(rig.Stage.CanInteract(0));
+            Assert.AreEqual("Open Rare Treasure Chest", rig.Stage.PromptLabel(0));
+            Assert.AreEqual(rig.Config.powderCacheChestHoldSeconds, rig.Stage.RequiredHoldSeconds(0));
+            var gold = rig.Run.Gold;
+            rig.Stage.TryCompleteInteraction(0);
+            CollectionAssert.IsSubsetOf(new[] { "roll item min 2", "item rare_item", "chest opened" }, rig.Log.Lines);
+            Assert.AreEqual(gold + rig.Config.powderCacheBonusGold, rig.Run.Gold, "free, plus the cache's bonus gold");
+            Assert.IsTrue(rig.Layout.pois[0].used);
+            Assert.IsTrue(rig.Markers.Consumed.Contains(0));
+        }
+
+        [Test]
+        public void PowderCacheChallenge_ClearAll_BringsTheCacheBack()
+        {
+            var rig = MakeChallenge();
+            rig.Ship.Pos = new Vector3(3f, 0f, 0f);
+            rig.Stage.TryCompleteInteraction(0);
+            rig.Tracker.Set(1, EncounterState.Spawned);
+            rig.Stage.ForgetDespawnedPowderCaches(); // the lab's Clear all removed the elites
+            Assert.AreEqual(EncounterState.Failed, rig.Tracker.State(1));
+            CollectionAssert.Contains(rig.Log.Lines, "cancel 1");
+            Assert.AreEqual(POIType.MerchantSkiff, rig.Markers.Replaced[0], "the cache is back");
+            Assert.IsTrue(rig.Stage.CanInteract(0));
+            rig.Tick(0.1f);
+            Assert.AreEqual(2, rig.Log.Count("trigger"), "no regroup after Clear all");
+            rig.Stage.TryCompleteInteraction(0);
+            Assert.AreEqual(4, rig.Log.Count("trigger"), "it can be sprung again");
+        }
+
+        [Test]
+        public void PowderCacheChallenge_NothingQueued_FailsCleanly()
+        {
+            var rig = MakeChallenge();
+            rig.Config.powderCacheEliteSpawners = new EnemySpawnerConfig[] { null };
+            rig.Ship.Pos = new Vector3(3f, 0f, 0f);
+            rig.Stage.TryCompleteInteraction(0);
+            Assert.IsFalse(rig.Markers.Hidden.Contains(0), "the cache stays usable");
+            Assert.IsTrue(rig.Stage.CanInteract(0));
+            Assert.AreEqual(EncounterState.Failed, rig.Tracker.State(1), "the empty encounter is failed, not left open");
+        }
+
+        [Test]
+        public void PowderCacheChallenge_AFailedSpawn_Regroups()
+        {
+            var rig = MakeChallenge();
+            rig.Ship.Pos = new Vector3(3f, 0f, 0f);
+            rig.Stage.TryCompleteInteraction(0);
+            rig.Tracker.MarkFailed(1);
+            rig.Tick(0.1f);
+            Assert.AreEqual(4, rig.Log.Count("trigger"), "a new group is queued");
+            Assert.IsFalse(rig.Stage.IsPowderCacheChestReady(0));
         }
 
         [Test]

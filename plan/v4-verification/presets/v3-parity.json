@@ -269,6 +269,16 @@
             ]
         },
         {
+            "configId": "evolution.hellfire_nozzle",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "wideCone.patchesAlongStream",
+                    "value": "false"
+                }
+            ]
+        },
+        {
             "configId": "weapon_rules",
             "schemaVersion": 1,
             "edits": [
@@ -332,6 +342,10 @@
                 },
                 {
                     "path": "magneticTideOpensBarrels",
+                    "value": "false"
+                },
+                {
+                    "path": "powderCacheEliteChallenge",
                     "value": "false"
                 }
             ]

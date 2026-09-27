@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HighSeas.Balance;
 using HighSeas.Combat;
 using HighSeas.Core;
@@ -101,6 +102,13 @@ namespace RoguePirates.V4.Legacy
         public string RollChestPoolItem()
         {
             var pool = V3ItemCatalog.ChestPool;
+            return pool[RunManager.Instance.Rng.MapInt(0, pool.Count)].id;
+        }
+
+        public string RollChestPoolItem(int minRarity)
+        {
+            var pool = V3ItemCatalog.ChestPool.Where(e => (int)e.rarity >= minRarity).ToList();
+            if (pool.Count == 0) return RollChestPoolItem();
             return pool[RunManager.Instance.Rng.MapInt(0, pool.Count)].id;
         }
 
@@ -272,6 +280,16 @@ namespace RoguePirates.V4.Legacy
             slot.role = "poi";
             slot.Tick = dt => tick(index, dt);
             _markers[index] = new Marker { Go = go, Type = type };
+        }
+
+        public void Replace(int index, POIType visualType, Vector3 position, Action<int, float> tick)
+        {
+            if (_markers.TryGetValue(index, out var old) && old.Go != null)
+            {
+                HideRings(old);
+                Object.Destroy(old.Go);
+            }
+            Spawn(index, visualType, position, tick);
         }
 
         public bool IsSpawned(int index) => _markers.ContainsKey(index);

@@ -45,8 +45,8 @@ namespace RoguePirates.V4.DevTools.Console
             if (GUILayout.Button("Clear all"))
             {
                 dev.DespawnAll();
-                // A boss removed this way was never killed: let the stage forget the summon (summon it again from F1).
-                if (game.Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var stage)) stage.Module.ForgetDespawnedBoss();
+                // A boss or Powder Cache elites removed this way were never sunk: the stage forgets them (summon or spring again).
+                if (game.Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var stage)) { stage.Module.ForgetDespawnedBoss(); stage.Module.ForgetDespawnedPowderCaches(); }
             }
             GUILayout.EndHorizontal();
 

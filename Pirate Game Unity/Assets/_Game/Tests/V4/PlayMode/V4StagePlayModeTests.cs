@@ -142,8 +142,10 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
-        public IEnumerator PowderCache_AmbushSpawnsThroughTheV4Executor()
+        public IEnumerator PowderCache_V3Ambush_UnderTheParityPreset_SpawnsThroughTheV4Executor()
         {
+            // V3's proximity ambush of 3 (the default is the elite challenge since the M8 playtest).
+            RunRequest.RequestPreset(System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json")));
             yield return StartRun();
             var stage = Stage();
             var ship = Ship();
