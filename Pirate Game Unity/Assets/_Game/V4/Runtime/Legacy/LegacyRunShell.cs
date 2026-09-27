@@ -248,8 +248,8 @@ namespace RoguePirates.V4.Legacy
         }
 
         /// <summary>
-        /// Module Lab mode (M2): invulnerable ship; the encounter spawner, spawn directors and POIs (chests, powder cache
-        /// ambush, Beacon boss) are off, so enemies appear only when requested from the console.
+        /// Module Lab mode (M2): invulnerable ship; the encounter spawner and spawn directors are off, so enemies appear
+        /// only when requested from the console or by the stage content (M8 playtest: chests, landmarks and the Beacon work).
         /// </summary>
         public void EnterModuleLab()
         {

@@ -542,8 +542,9 @@ namespace RoguePirates.V4.Legacy
             {
                 juice.Configure(settings, vfxRoot);
                 // M6: the V4 weapon presenter draws the weapon effects. The juice controller stays (disabled) only because
-                // HellfirePatchWorld and SaltwindCombatEffects still call its burning-oil and blast effects (M8); its
-                // Update drew orbit blades and the flame mount from the loadout record, which V4 now draws.
+                // SaltwindCombatEffects (the enemy world's hazard and blast effects) still calls its blast effect; the
+                // Hellfire patches no longer play its broken burning oil (R-104, M8 playtest). Its Update drew orbit
+                // blades and the flame mount from the loadout record, which V4 now draws.
                 juice.enabled = false;
             }
             if (systems.GetComponent<CameraShakeService>() == null) systems.AddComponent<CameraShakeService>();

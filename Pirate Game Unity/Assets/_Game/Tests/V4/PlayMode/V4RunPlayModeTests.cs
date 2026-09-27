@@ -576,8 +576,9 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(Object.FindFirstObjectByType<EncounterSpawner>().enabled, "legacy spawner off (M7: Dead Calm sink only)");
             Assert.IsNull(Object.FindFirstObjectByType<POIManager>(), "M7: no POIManager");
             Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var stage));
-            Assert.IsFalse(stage.Module.Enabled, "stage content off: no powder-cache ambush, chests or Beacon");
-            Assert.IsFalse(stage.Interaction.Enabled, "no hold-to-interact: the Beacon cannot summon the boss");
+            Assert.IsTrue(stage.Module.Enabled, "M8 playtest: chests, landmarks and the Beacon work in the lab");
+            Assert.IsTrue(stage.Interaction.Enabled, "M8 playtest: prompts in the lab");
+            Assert.IsFalse(stage.BossSummoned, "nothing summoned by itself");
 
             var index = System.Array.FindIndex(world.Definitions, d => d != null && d.id == "needle_sloop");
             Assert.GreaterOrEqual(index, 0, "specialist variants are in the runtime database");

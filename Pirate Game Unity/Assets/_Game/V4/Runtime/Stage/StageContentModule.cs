@@ -105,7 +105,7 @@ namespace RoguePirates.V4.Stage
             BuildMarkers();
         }
 
-        /// <summary>Off: no chest spawns, ambushes, buoy charge, interactions or Beacon (Module Lab).</summary>
+        /// <summary>Off: no chest spawns, ambushes, buoy charge, interactions or Beacon.</summary>
         public void SetEnabled(bool enabled) => _enabled = enabled;
 
         void ResetState()
@@ -517,8 +517,16 @@ namespace RoguePirates.V4.Stage
         /// <summary>The boss summon without the Beacon (console, dev-build B key, trace harness).</summary>
         public bool TrySummonBoss()
         {
-            if (!_enabled) return false; // Module Lab: no boss (V3 disabled its hotkey there)
-            if (_run.Exists && _run.IsRunEnded) return false;
+            if (!_enabled)
+            {
+                _toasts?.Show("Stage content is off in this scene: no boss.", 2f);
+                return false;
+            }
+            if (_run.Exists && _run.IsRunEnded)
+            {
+                _toasts?.Show("The run has ended.", 2f);
+                return false;
+            }
             if (_bossDefeated)
             {
                 _toasts?.Show("Objective already secured.", 2f);
@@ -621,6 +629,26 @@ namespace RoguePirates.V4.Stage
 
         public bool IsBossDead() => _bossDefeated || (_bossSummoned && _encounters.BossObjectiveSecured);
 
+        /// <summary>
+        /// Module Lab: a boss victory there is not saved (no home-seed lock and no boss-victory Marks), so the lab cannot
+        /// change later runs.
+        /// </summary>
+        public bool LabMode { get; set; }
+
+        /// <summary>
+        /// Module Lab "Clear all" removed the summoned boss without killing it: forget the summon (its encounter fails) so
+        /// the run leaves the boss fight and the boss can be summoned again.
+        /// </summary>
+        public void ForgetDespawnedBoss()
+        {
+            if (!_bossSummoned || _bossDefeated) return;
+            _executor?.Cancel(_bossEncounterId);
+            if (_bossEncounterId > 0) _encounters.MarkFailed(_bossEncounterId);
+            _bossEncounterId = 0;
+            _bossSummoned = false;
+            if (_run.Exists && _run.State == RunState.BossFight) _run.SetState(RunState.Playing);
+        }
+
         /// <summary>Same-tick boss and player death counts as a win (V3 DEC-024).</summary>
         public void TrySecureIfBossDead()
         {
@@ -641,12 +669,12 @@ namespace RoguePirates.V4.Stage
         {
             if (_bossDefeated) return;
             _bossDefeated = true;
-            _rewards?.RegisterBossVictory();
+            if (!LabMode) _rewards?.RegisterBossVictory();
             _rewards?.BossDefeatedTelemetry(_bossEncounterId);
             _run.SecureObjective();
             Publish?.Invoke(CombatEventKind.BossState, 2, _bossEncounterId, default, null);
             var continueAfter = C == null || C.continueAfterBossVictory;
-            if (continueAfter && _run.Exists) _rewards?.LockHomeSeed(_run.RunSeed);
+            if (continueAfter && _run.Exists && !LabMode) _rewards?.LockHomeSeed(_run.RunSeed);
             _toasts?.Show("TERRITORY OBJECTIVE SECURED — survive or keep farming.", 5f);
             if (continueAfter && _run.Exists && !_run.IsRunEnded)
             {

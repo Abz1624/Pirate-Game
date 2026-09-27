@@ -128,7 +128,7 @@ namespace RoguePirates.V4.Legacy
     }
 
     /// <summary>Hellfire patch needs: RunManager, V3's damage roll on the combat stream, the evolution catalog, the oil effect.</summary>
-    [DeletedInPhase(9, "Build & Progression (stats) / M14 (effects)")]
+    [DeletedInPhase(9, "Build & Progression (the damage roll and the evolution check)")]
     public sealed class LegacyHellfireEnvironment : IHellfireEnvironment
     {
         static RunManager Run => RunManager.Instance;
@@ -136,11 +136,12 @@ namespace RoguePirates.V4.Legacy
         public float RollTickDamage(bool targetIsElite) => DamageSystem.RollDamage(4f, 1f, Run.Stats, targetIsElite, 0f, Run.Rng, 0f, "flamethrower");
         public bool IsHellfireWeapon(string weaponId) => WeaponEvolutionCatalog.GetBehaviorModifier(weaponId) == "hellfire_nozzle";
 
-        public void OilDropped(Vector3 position, float radius)
-        {
-            var juice = Object.FindFirstObjectByType<WeaponJuiceController>();
-            juice?.OnBurningOilDropped(position, radius);
-        }
+        /// <summary>
+        /// No effect: V3's burning-oil prefab (played through the disabled WeaponJuiceController) renders with a broken
+        /// pink material (R-104). The patches show as ground rings instead (<see cref="LegacyHazardTelegraphView.Patches"/>,
+        /// M8 playtest).
+        /// </summary>
+        public void OilDropped(Vector3 position, float radius) { }
     }
 
     /// <summary>Explosive barrel settings and gate (the stage profile export) and V3's toast.</summary>

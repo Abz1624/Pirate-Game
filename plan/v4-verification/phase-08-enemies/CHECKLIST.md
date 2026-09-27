@@ -97,3 +97,30 @@ A read-only reviewer diffed every V4 file against its V3 original: faithful (no 
 4. **F1 → Landmarks, Beacon & Boss → Summon boss**, then set its health (e.g. 25 %) and fight it.
 5. Decide: R-100 (only elite hammerheads charge twice; V3 lets the first elite give every hammerhead the second charge).
 
+## Playtest round 1 (27 Sep) and fixes
+
+| Your note | Finding | Fix (targeted tests only; no traces) |
+|---|---|---|
+| R-100: only elite hammerheads charge twice | Decision | `enemy.hammerhead.world`: `eliteLatchesSecondChargeForAll` off, new `eliteChargesTwice` on (the elite charges twice itself; the shared profile is never latched). The v3-parity preset restores V3's latch; the V3 lockstep tests apply V3's rules. EditMode `R100_OnlyTheEliteHammerheadChargesTwice_AndTheSharedProfileStaysUnchanged` |
+| The burning patch VFX looks broken; use placeholder markers like the Kraken rings | V3's burning-trail prefab, played through the disabled `WeaponJuiceController`, renders with a broken pink material (R-104) | Each Hellfire patch draws a ground ring (burn radius 2.1 m) with an inner ring that shrinks as the patch burns out (`LegacyHazardTelegraphView.Patches`); the broken effect is not played. Visual only. PlayMode `HellfirePatch_ShowsAGroundMarker_UntilItBurnsOut` |
+| Module Lab: Clear all works | — | — |
+| F1 "Summon boss" says "Summon refused, see toast" | In the Module Lab, stage content was switched off by design (V3 switched `POIManager` off in its test scene) and the refusal showed no toast. In a run the summon and the Beacon prompt work (checked live) | The lab keeps chests, landmarks, the Beacon and their prompts on; the encounter queue ticks in the lab so the boss and the Powder Cache ambush spawn; the B key works in the lab; every refused summon shows a reason. Ambient spawns stay off. A lab boss victory is not saved (no home-seed lock, no boss-victory Marks); Clear all during a lab boss fight forgets the summon so the boss can be summoned again. PlayMode `ModuleLab_BossSummonAndKill_IsNotSaved`, `ModuleLab_ClearAllDuringTheBossFight_LetsYouSummonAgain`, `ModuleLab_PowderCache_AmbushSpawnsThroughTheEncounterQueue`, `ModuleLab_SpawnsOnlyOnRequest` (updated). This deliberately reverses the M2 review's lab rule (no POIs in the lab) and M7's "never in the Module Lab" for the summon |
+| No "hold E" popup on the Treasury Beacon | Same cause (Module Lab) | Same fix |
+| No chest popups in V4ModuleLab | Same cause | Same fix |
+| Magnetic Tide: XP, health and gold don't increase | V3 defect R-103 (confirmed live: 28 XP and 16 gold barrels flew in and vanished; XP and gold unchanged; health barrels not pulled) | `LegacyMagneticTide` (tag M9): when a Magnetic Tide is collected, every XP, gold and health barrel opens where it lies and its crystals, coins and health fly to the ship and pay (`stage.saltwind.magneticTideOpensBarrels`; off in the v3-parity preset). PlayMode `R103_MagneticTide_OpensEveryBarrel_AndPays_NotUnderTheParityPreset` (both presets), `R103_AnExpiredMagneticTide_OpensNothing`; EditMode: the default config has it on |
+
+### Independent review of the playtest fixes
+
+No blockers; the v3-parity preset restores V3 exactly for R-100 and R-103, and the lab and encounter-queue changes are reachable only in the lab (not used by traces). Findings and actions:
+
+| Finding | Action |
+|---|---|
+| Major: a boss killed in the lab would lock the home seed (PlayerPrefs) and register the boss-victory Marks, changing later real runs | Lab mode skips both; test kills a lab boss and checks the home seed and Marks |
+| The stated Hellfire cause was wrong: V3's WeaponJuiceController is still added (disabled) and did play the pink prefab | Comments, R-104 and this table corrected |
+| Clear all during a lab boss fight left the run stuck in the boss fight with the summon used | Clear all forgets a despawned boss; test |
+| The lab summon test proved nothing about the queue tick and could be flaky | Summon retried; new Powder Cache ambush test only the queue tick can pass |
+| No negative test for an expired tide; no EditMode check of the default switch | Both added |
+| Nits: per-frame config scan, a redundant flag reset, duplicate ring helper, stale InteractionModel doc | Switch cached (refreshed on config edits); cleaned up |
+
+Tests after the fixes and the review: EditMode 215/215, PlayMode 43/43.
+

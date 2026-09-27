@@ -663,7 +663,35 @@ namespace RoguePirates.V4.Editor
                 EditorUtility.SetDirty(weapon);
             }
             AssetDatabase.SaveAssets();
+            // ApplyM8World rebuilds V3's rules; the fixes approved at the M8 gate go back on top.
+            log.Append(ApplyM8PlaytestDecisions());
             return log.ToString();
+        }
+
+        [MenuItem("RoguePirates/V4/Apply M8 Playtest Decisions")]
+        static void ApplyM8PlaytestDecisionsFromMenu() => Debug.Log(ApplyM8PlaytestDecisions());
+
+        /// <summary>
+        /// The fixes approved at the M8 playtest gate (the v3-parity preset turns them off again): R-100 only elite
+        /// hammerheads charge twice, R-103 Magnetic Tide opens the barrels.
+        /// </summary>
+        public static string ApplyM8PlaytestDecisions()
+        {
+            var hammerhead = AssetDatabase.FindAssets("t:EnemyArchetypeConfig", new[] { DataRoot + "/Enemies" })
+                .Select(g => AssetDatabase.LoadAssetAtPath<EnemyArchetypeConfig>(AssetDatabase.GUIDToAssetPath(g)))
+                .FirstOrDefault(a => a != null && a.enemyId == "hammerhead");
+            if (hammerhead == null) return "hammerhead archetype missing\n";
+            hammerhead.world.eliteLatchesSecondChargeForAll = false;
+            hammerhead.world.eliteChargesTwice = true;
+            EditorUtility.SetDirty(hammerhead);
+            var stage = AssetDatabase.LoadAssetAtPath<StageContentConfig>(StageContentPath);
+            if (stage != null)
+            {
+                stage.magneticTideOpensBarrels = true;
+                EditorUtility.SetDirty(stage);
+            }
+            AssetDatabase.SaveAssets();
+            return $"M8 playtest decisions applied (R-100, R-103{(stage == null ? ": stage content config missing" : string.Empty)})\n";
         }
 
         public const string StageContentPath = DataRoot + "/Stage/StageContent_Saltwind.asset";

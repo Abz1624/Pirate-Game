@@ -31,6 +31,8 @@ namespace RoguePirates.V4.Legacy
     {
         readonly ConfigSetRuntime _config;
         readonly Transform _systems;
+        readonly LegacyMagneticTide _magneticTide;
+        bool? _magneticTideOn; // cached switch, refreshed on config edits
 
         public EnemySimulation Simulation { get; }
         public EnemyCombatServices Services { get; }
@@ -80,6 +82,7 @@ namespace RoguePirates.V4.Legacy
             Services = s;
             Contracts = new EnemyWorldContracts(Simulation, Statuses);
             Hellfire = new HellfirePatches(Simulation, Statuses, new LegacyHellfireEnvironment());
+            _magneticTide = new LegacyMagneticTide(() => _magneticTideOn ??= _config?.Single<StageContentConfig>()?.magneticTideOpensBarrels ?? false);
 
             // V3 Despawn after the slot is freed: statuses by slot, the encounter mapping, the legacy spawner's count.
             Simulation.Despawned += (slot, unitId, profile) =>
@@ -92,6 +95,7 @@ namespace RoguePirates.V4.Legacy
             Simulation.SuppressHitHighlight = SuppressesHitHighlight;
             Simulation.Bind(s, Target, new LegacyEnemyFeedback(), new LegacyEnemyKillTargets());
             LegacyHazardTelegraphView.Source = s.Hazards;
+            LegacyHazardTelegraphView.Patches = Hellfire; // M8 playtest: a ground ring per burning patch
         }
 
         /// <summary>V3 skipped the damage highlight for Powder Kegs hits (by id); now the weapon's <c>visual.noHitHighlight</c>.</summary>
@@ -109,13 +113,18 @@ namespace RoguePirates.V4.Legacy
             return _noHighlight.Contains(weaponId);
         }
 
-        /// <summary>Config edits (the console) can change the weapons' highlight flag.</summary>
-        public void OnConfigChanged() => _noHighlight = null;
+        /// <summary>Config edits (the console) can change the weapons' highlight flag and the Magnetic Tide switch.</summary>
+        public void OnConfigChanged()
+        {
+            _noHighlight = null;
+            _magneticTideOn = null;
+        }
 
         /// <summary>The run's scene is going away: the hazard rings stop reading this world.</summary>
         public void Dispose()
         {
             if (LegacyHazardTelegraphView.Source == Services.Hazards) LegacyHazardTelegraphView.Source = null;
+            if (LegacyHazardTelegraphView.Patches == Hellfire) LegacyHazardTelegraphView.Patches = null;
         }
 
         /// <summary>LegacyEnemyWorldPort.ResetAndDefine: the run's definitions (with their id rules) and clear transient worlds.</summary>
@@ -145,8 +154,12 @@ namespace RoguePirates.V4.Legacy
             // V4 player projectiles tick here since M5 (V3's ProjectileWorld, which V4 no longer fills, needed V3's EnemyWorld).
             playerProjectiles?.Invoke(dt);
             Services.Shots.Tick(dt, player != null ? Target : null);
-            Object.FindFirstObjectByType<PickupWorld>()?.Tick(dt, playerPos, RunManager.Instance.Stats.PickupRadius);
-            V3FloorPowerupWorld.Instance?.Tick(dt, playerPos);
+            var pickups = Object.FindFirstObjectByType<PickupWorld>();
+            pickups?.Tick(dt, playerPos, RunManager.Instance.Stats.PickupRadius);
+            var powerups = V3FloorPowerupWorld.Instance;
+            _magneticTide.BeforeTick(powerups);
+            powerups?.Tick(dt, playerPos);
+            _magneticTide.AfterTick(powerups, pickups, dt); // R-103 (off under the v3-parity preset)
             Statuses.Tick(dt, Simulation.Agents, (i, damage) => Simulation.ApplyDamage(i, damage, false, false), (i, burning) => Simulation.SetBurnVisual(i, burning));
         }
 

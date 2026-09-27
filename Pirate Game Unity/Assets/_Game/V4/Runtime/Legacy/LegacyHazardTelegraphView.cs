@@ -23,6 +23,15 @@ namespace RoguePirates.V4.Legacy
         /// <summary>The run's hazards (M8: the V4 enemy world's; set by the run before the first frame).</summary>
         public static RoguePirates.V4.Enemies.IHazardView Source;
 
+        /// <summary>
+        /// The run's Hellfire patches (M8 playtest): a placeholder ground marker per burning patch, like the trap rings.
+        /// The outline is the burn radius; the inner ring shrinks as the patch burns out.
+        /// </summary>
+        public static RoguePirates.V4.Enemies.HellfirePatches Patches;
+
+        static readonly Color PatchColor = new Color(1f, 0.3f, 0.05f, 0.95f);
+        LineRenderer[] _patchOutline, _patchFill;
+
         LineRenderer[] _outline, _fill;
         float[] _fuseTotal;
         Vector3[] _lastCenter;
@@ -73,8 +82,7 @@ namespace RoguePirates.V4.Legacy
             {
                 var (outline, fill) = _timedViews[i];
                 var visible = i < _timed.Count;
-                if (outline.gameObject.activeSelf != visible) outline.gameObject.SetActive(visible);
-                if (fill.gameObject.activeSelf != visible) fill.gameObject.SetActive(visible);
+                ShowPair(outline, fill, visible);
                 if (!visible) continue;
                 var ring = _timed[i];
                 var progress = 1f - Mathf.Clamp01(ring.Left / ring.Total);
@@ -96,6 +104,7 @@ namespace RoguePirates.V4.Legacy
         void LateUpdate()
         {
             TickTimedRings();
+            DrawPatches();
             var source = Source;
             if (source == null) return;
             var capacity = source.Capacity;
@@ -127,6 +136,41 @@ namespace RoguePirates.V4.Legacy
             }
         }
 
+        void DrawPatches()
+        {
+            var patches = Patches;
+            if (patches == null)
+            {
+                if (_patchOutline != null)
+                    for (var i = 0; i < _patchOutline.Length; i++) ShowPair(_patchOutline[i], _patchFill[i], false);
+                return;
+            }
+            if (_patchOutline == null || _patchOutline.Length != patches.Capacity)
+            {
+                _patchOutline = new LineRenderer[patches.Capacity];
+                _patchFill = new LineRenderer[patches.Capacity];
+                for (var i = 0; i < patches.Capacity; i++)
+                {
+                    _patchOutline[i] = CreateRing("PatchOutline" + i);
+                    _patchFill[i] = CreateRing("PatchFill" + i);
+                }
+            }
+            for (var i = 0; i < _patchOutline.Length; i++)
+            {
+                var live = patches.TryGet(i, out var center, out var radius, out var lifeLeft);
+                ShowPair(_patchOutline[i], _patchFill[i], live);
+                if (!live) continue;
+                SetCircle(_patchOutline[i], center, radius, PatchColor, 0.3f);
+                SetCircle(_patchFill[i], center, Mathf.Max(0.05f, radius * lifeLeft), new Color(PatchColor.r, PatchColor.g, PatchColor.b, 0.45f + 0.5f * lifeLeft), 0.45f);
+            }
+        }
+
+        static void ShowPair(LineRenderer outline, LineRenderer fill, bool visible)
+        {
+            if (outline.gameObject.activeSelf != visible) outline.gameObject.SetActive(visible);
+            if (fill.gameObject.activeSelf != visible) fill.gameObject.SetActive(visible);
+        }
+
         void Allocate(int count)
         {
             _outline = new LineRenderer[count];
@@ -156,11 +200,7 @@ namespace RoguePirates.V4.Legacy
             return line;
         }
 
-        void Show(int i, bool visible)
-        {
-            if (_outline[i].gameObject.activeSelf != visible) _outline[i].gameObject.SetActive(visible);
-            if (_fill[i].gameObject.activeSelf != visible) _fill[i].gameObject.SetActive(visible);
-        }
+        void Show(int i, bool visible) => ShowPair(_outline[i], _fill[i], visible);
 
         static void SetCircle(LineRenderer line, Vector3 center, float radius, Color color, float width)
         {

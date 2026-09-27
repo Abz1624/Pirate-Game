@@ -128,8 +128,14 @@ namespace RoguePirates.V4.Tests
             public void OnKilled(in EnemyUnit unit, EnemyDefinition def) => _log.Add($"{unit.id}:{def.id}");
         }
 
-        Worlds Make(ConfigSetRuntime config)
+        Worlds Make(ConfigSetRuntime config, bool v3Rules = true)
         {
+            if (v3Rules)
+            {
+                // Lockstep against V3: V3's hammerhead latch (R-100), which the default config fixes.
+                Assert.IsTrue(config.TryApplyEdit("enemy.hammerhead", "world.eliteLatchesSecondChargeForAll", "true", 0f, out _));
+                Assert.IsTrue(config.TryApplyEdit("enemy.hammerhead", "world.eliteChargesTwice", "false", 0f, out _));
+            }
             var runtime = new V4RuntimeDatabase(config);
             var db = runtime.Build(CatalogAppliedDatabase());
             _created.Add(db);
@@ -303,6 +309,40 @@ namespace RoguePirates.V4.Tests
         {
             var angle = frame * Dt * speed / radius;
             return new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+        }
+
+        [Test]
+        public void R100_OnlyTheEliteHammerheadChargesTwice_AndTheSharedProfileStaysUnchanged()
+        {
+            UnityEngine.TestTools.LogAssert.ignoreFailingMessages = true;
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            StageBalanceProfileContext.BeginRun(AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath));
+            var w = Make(config, v3Rules: false);
+            Assert.IsTrue(EnemyCombatProfileRegistry.TryGet("hammerhead", out var shared));
+            shared.eliteHammerheadSecondCharge = false;
+            var hammerhead = System.Array.FindIndex(w.Defs, d => d != null && d.id == "hammerhead");
+            var elite = w.V4.Spawn(hammerhead, new Vector3(16f, 0f, 0f), EliteAffix.Rich);
+            var plain = w.V4.Spawn(hammerhead, new Vector3(-16f, 0f, 0f));
+            Assert.IsTrue(w.V4.Agents[elite].isElite && !w.V4.Agents[plain].isElite);
+            bool eliteSecond = false, plainSecond = false;
+            for (var frame = 0; frame < 1800; frame++)
+            {
+                w.ShipB.transform.position = Vector3.zero;
+                IFrameUntil.SetValue(w.ShipB.Damage, -1f);
+                w.V4.Tick(Dt, w.ShipB.Position, w.ShipB.Damage);
+                foreach (var (slot, isElite) in new[] { (elite, true), (plain, false) })
+                {
+                    if (!w.V4.Agents[slot].active || !w.V4.CombatStates.TryGet(w.V4.Agents[slot].id, out var state)) continue;
+                    // A second wind-up straight after the first pass is the second charge.
+                    if (state.chargePassCount == 1 && state.phase == EnemyCombatPhase.Telegraph)
+                    {
+                        if (isElite) eliteSecond = true; else plainSecond = true;
+                    }
+                }
+            }
+            Assert.IsTrue(eliteSecond, "the elite hammerhead charges twice");
+            Assert.IsFalse(plainSecond, "a plain hammerhead charges once");
+            Assert.IsFalse(shared.eliteHammerheadSecondCharge, "the shared combat profile is not latched");
         }
 
         [Test]

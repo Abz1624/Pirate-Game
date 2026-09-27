@@ -69,3 +69,4 @@ MonoBehaviour:
   powderCacheSpawner: {fileID: 11400000, guid: e43da1e265019104c8016b9b6fd5d57d, type: 2}
   continueAfterBossVictory: 1
   bossFightSurvivesLevelUp: 1
+  magneticTideOpensBarrels: 1

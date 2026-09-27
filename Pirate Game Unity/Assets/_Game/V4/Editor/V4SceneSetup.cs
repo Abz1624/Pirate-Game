@@ -237,9 +237,9 @@ namespace RoguePirates.V4.Editor
         /// presenter binds that canvas instead) and the two V3RunResultsScreen copies on /Canvas and /RunCanvas.
         /// Removing a component from the /Canvas prefab instance is saved as a scene override; the prefab is untouched.
         /// WeaponJuiceController and ProjectileWorld stay on /Systems: the juice controller is switched off at run start
-        /// (the V4 weapon presenter draws the weapon effects) but HellfirePatchWorld and SaltwindCombatEffects still call
-        /// its burning-oil and blast effects until M8; ProjectileWorld (unticked and empty since M5) is still read by
-        /// CombatTelemetryDriver until M8.
+        /// (the V4 weapon presenter draws the weapon effects) but SaltwindCombatEffects still calls its blast effect (the
+        /// Hellfire burning oil is no longer played since the M8 playtest, R-104); ProjectileWorld (unticked and empty
+        /// since M5) was read by CombatTelemetryDriver until M8.
         /// </summary>
         public static string ApplyM6()
         {

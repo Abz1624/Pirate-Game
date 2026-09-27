@@ -62,6 +62,8 @@ namespace RoguePirates.V4.Config
         [AppliesFrom(8)] public bool excludedFromRepair;
         [Tooltip("The first elite of this enemy to tick gives every enemy of its combat profile the elite second charge for the rest of the run (V3 quirk: hammerhead, register R-100).")]
         [AppliesFrom(8)] public bool eliteLatchesSecondChargeForAll;
+        [Tooltip("R-100 fix (with the latch above off): an elite of this enemy makes the second charge itself, without changing the other enemies of its combat profile.")]
+        [AppliesFrom(8)] public bool eliteChargesTwice;
         [Tooltip("Uses ranged attacks whatever its category and behaviour (V3: cannonboat, gunner_cog, bomb_boat, manta_ray, drowned_harrier).")]
         [AppliesFrom(8)] public bool alwaysRanged;
 

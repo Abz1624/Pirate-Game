@@ -40,6 +40,7 @@ namespace RoguePirates.V4.Tests
             RunMarksTracker.Reset();
             RunEncounterTracker.ResetForTests();
             SaltwindRunSettlement.ClearLastResults();
+            HighSeas.Combat.WeaponEvolutionRuntime.Reset();
             _isolation?.Dispose();
             _isolation = null;
         }
@@ -116,6 +117,194 @@ namespace RoguePirates.V4.Tests
                 if (parity) Assert.AreEqual(2, budget.ActiveAreaDenial, "v3-parity: never released (R-06 off)");
                 else Assert.Less(budget.ActiveAreaDenial, 2, "R-06: the shell frees each cast 2 s later on the run clock");
             }
+        }
+
+        static IEnumerator StartLab()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.ModuleLab, LoadSceneMode.Single);
+            var deadline = Time.realtimeSinceStartup + Timeout;
+            while (Time.realtimeSinceStartup < deadline)
+            {
+                if (RunManager.Instance != null && RunManager.Instance.State == RunState.Playing && StageBalanceProfileContext.IsActive) yield break;
+                yield return null;
+            }
+            Assert.Fail("V4 Module Lab did not reach Playing.");
+        }
+
+        static void KeepRunning()
+        {
+            if (!RunManager.Instance.IsPaused) return;
+            var modal = HighSeas.UI.LevelUpModal.Instance;
+            var card = modal != null ? modal.transform.Find("CardRow/Card0") : null;
+            if (card != null && card.gameObject.activeInHierarchy) card.GetComponent<UnityEngine.UI.Button>()?.onClick.Invoke();
+            else RunManager.Instance.SetPause(PauseReason.None);
+        }
+
+        static int CountBarrels(PickupType type)
+        {
+            var pool = (HighSeas.Pickups.PickupAgent[])typeof(HighSeas.Pickups.PickupWorld).GetField("_pool", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(HighSeas.Pickups.PickupWorld.Instance);
+            return pool.Count(p => p.active && p.type == type);
+        }
+
+        /// <summary>Puts a Magnetic Tide powerup on V3's floor powerup world at the ship (collected on its next tick).</summary>
+        static void DropMagneticTideAt(Vector3 position)
+        {
+            var powerups = HighSeas.V3.V3FloorPowerupWorld.Instance;
+            var field = typeof(HighSeas.V3.V3FloorPowerupWorld).GetField("_agents", BindingFlags.Instance | BindingFlags.NonPublic);
+            var agents = (System.Array)field.GetValue(powerups);
+            var type = agents.GetType().GetElementType();
+            var agent = System.Activator.CreateInstance(type);
+            type.GetField("active").SetValue(agent, true);
+            type.GetField("kind").SetValue(agent, HighSeas.V3.V3FloorPowerupKind.MagneticTide);
+            type.GetField("position").SetValue(agent, position);
+            type.GetField("lifetime").SetValue(agent, 30f);
+            agents.SetValue(agent, 0);
+        }
+
+        [UnityTest]
+        public IEnumerator R103_MagneticTide_OpensEveryBarrel_AndPays_NotUnderTheParityPreset()
+        {
+            Assert.IsTrue(RoguePirates.V4.Legacy.LegacyMagneticTide.SeamsFound, "V3's powerup slots, pickup pool and barrel Collect exist");
+            foreach (var parity in new[] { false, true })
+            {
+                if (parity)
+                    RunRequest.RequestPreset(System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json")));
+                yield return StartLab(); // no ambient spawns, so no other pickups
+                var ship = Object.FindFirstObjectByType<PlayerShipController>();
+                var pickups = HighSeas.Pickups.PickupWorld.Instance;
+                var far = ship.Position + new Vector3(30f, 0f, 0f);
+                for (var i = 0; i < 3; i++) pickups.Spawn(PickupType.XpBarrel, 5, far + new Vector3(0f, 0f, i * 3f));
+                for (var i = 0; i < 2; i++) pickups.Spawn(PickupType.GoldBarrel, 7, far + new Vector3(4f, 0f, i * 3f));
+                pickups.Spawn(PickupType.Powerup, 3, far + new Vector3(-4f, 0f, 0f));
+                var levels = HighSeas.UI.LevelSystem.Instance;
+                var gold = RunManager.Instance.Gold;
+                var xp = levels.Level * 100000f + levels.CurrentXP;
+                ship.Damage.SetPlaytestInvulnerable(false); // the lab ship is invulnerable: make room for the health barrel
+                ship.Damage.TakeDamage(20f, ship.Position, false);
+                ship.Damage.SetPlaytestInvulnerable(true);
+                var hull = ship.Damage.CurrentHP;
+                Assert.Less(hull, ship.Damage.MaxHP, "room to heal");
+                DropMagneticTideAt(ship.Position);
+                var deadline = Time.realtimeSinceStartup + 8f;
+                while (Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
+                if (parity)
+                {
+                    Assert.AreEqual(0, CountBarrels(PickupType.XpBarrel) + CountBarrels(PickupType.GoldBarrel), "V3: XP and gold barrels are pulled and vanish");
+                    Assert.AreEqual(1, CountBarrels(PickupType.Powerup), "V3: health barrels are not pulled");
+                    Assert.AreEqual(gold, RunManager.Instance.Gold, "V3: the pulled barrels pay nothing");
+                }
+                else
+                {
+                    Assert.AreEqual(0, CountBarrels(PickupType.XpBarrel) + CountBarrels(PickupType.GoldBarrel) + CountBarrels(PickupType.Powerup), "every barrel opened");
+                    Assert.Greater(RunManager.Instance.Gold, gold, "gold paid");
+                    Assert.Greater(levels.Level * 100000f + levels.CurrentXP, xp, "XP paid");
+                    Assert.Greater(ship.Damage.CurrentHP, hull, "health paid");
+                }
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator HellfirePatch_ShowsAGroundMarker_UntilItBurnsOut()
+        {
+            yield return StartLab();
+            var enemies = Object.FindFirstObjectByType<V4Game>().Shell.Enemies;
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            var at = ship.Position + new Vector3(10f, 0f, 0f);
+            var hooks = new RoguePirates.V4.Legacy.LegacyWeaponHooks(() => ship, id => null, enemies.Hellfire);
+            HighSeas.Combat.WeaponEvolutionRuntime.Apply("flamethrower", "hellfire_nozzle"); // the Hellfire Nozzle evolution (reset by the next run)
+            hooks.SpawnFlamePatch(at, "flamethrower");
+            Assert.AreEqual(1, enemies.Hellfire.ActiveCount);
+            yield return null;
+            var view = Object.FindFirstObjectByType<RoguePirates.V4.Legacy.LegacyHazardTelegraphView>();
+            Assert.IsNotNull(view);
+            var outline = view.transform.Find("PatchOutline0");
+            Assert.IsNotNull(outline, "a marker ring per patch slot");
+            Assert.IsTrue(outline.gameObject.activeSelf, "the burning patch shows its ground marker");
+            var line = outline.GetComponent<LineRenderer>();
+            Assert.AreEqual(at.x + 2.1f, line.GetPosition(0).x, 0.01f, "the ring is the burn radius around the patch");
+            var deadline = Time.realtimeSinceStartup + 6f;
+            while (enemies.Hellfire.ActiveCount > 0 && Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
+            yield return null;
+            Assert.IsFalse(outline.gameObject.activeSelf, "the marker goes when the patch burns out");
+        }
+
+        static IEnumerator SummonBoss(RoguePirates.V4.Stage.IStageContent stage)
+        {
+            // An early summon can fail to place the boss (as in the run test): retry for a few frames.
+            for (var i = 0; i < 60 && !stage.BossSummoned; i++)
+            {
+                stage.TrySummonBoss();
+                yield return null;
+            }
+            Assert.IsTrue(stage.BossSummoned, "the F1 summon works in the lab (M8 playtest)");
+        }
+
+        [UnityTest]
+        public IEnumerator ModuleLab_BossSummonAndKill_IsNotSaved()
+        {
+            yield return StartLab();
+            var stage = Get<RoguePirates.V4.Stage.IStageContent>();
+            var lockedBefore = HighSeas.V3.V3HomeSeed.HasLockedHomeSeed;
+            yield return SummonBoss(stage);
+            var sim = V4TestEnemies.Simulation();
+            Assert.IsTrue(sim.TryFindActiveBoss(out var slot, out var boss), "the boss spawned");
+            sim.ApplyDamage(slot, boss.maxHp + 500f, false, weaponId: "deck_cannons");
+            var deadline = Time.realtimeSinceStartup + 5f;
+            while (!stage.BossDefeated && Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
+            Assert.IsTrue(stage.BossDefeated, "the lab boss can be defeated");
+            Assert.AreEqual(lockedBefore, HighSeas.V3.V3HomeSeed.HasLockedHomeSeed, "a lab boss victory does not lock the home seed");
+            Assert.IsFalse(RunMarksTracker.BuildRecord().BossVictoryCredited, "nor register the boss-victory Marks");
+        }
+
+        [UnityTest]
+        public IEnumerator ModuleLab_ClearAllDuringTheBossFight_LetsYouSummonAgain()
+        {
+            yield return StartLab();
+            var stage = Get<RoguePirates.V4.Stage.IStageContent>();
+            yield return SummonBoss(stage);
+            Assert.AreEqual(RunState.BossFight, RunManager.Instance.State);
+            Get<IEnemyDevControl>().DespawnAll();
+            stage.Module.ForgetDespawnedBoss(); // what the lab's Clear all does after despawning
+            for (var i = 0; i < 5; i++) { KeepRunning(); yield return null; }
+            Assert.IsFalse(stage.BossSummoned);
+            Assert.AreEqual(RunState.Playing, RunManager.Instance.State, "out of the boss fight");
+            yield return SummonBoss(stage);
+            Assert.IsTrue(V4TestEnemies.Simulation().TryFindActiveBoss(out _, out _), "a new boss spawned");
+        }
+
+        [UnityTest]
+        public IEnumerator ModuleLab_PowderCache_AmbushSpawnsThroughTheEncounterQueue()
+        {
+            yield return StartLab();
+            var stage = Get<RoguePirates.V4.Stage.IStageContent>();
+            var layout = stage.Module.Layout;
+            var cache = layout.pois.FindIndex(p => p.type == POIType.MerchantSkiff);
+            Assert.GreaterOrEqual(cache, 0, "the lab has a Powder Cache");
+            var sim = V4TestEnemies.Simulation();
+            Assert.AreEqual(0, sim.ActiveCount);
+            Object.FindFirstObjectByType<PlayerShipController>().SetWorldPosition(stage.Module.MarkerPosition(cache) + new Vector3(4f, 0f, 0f));
+            var deadline = Time.realtimeSinceStartup + 8f;
+            while (sim.ActiveCount < 3 && Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
+            Assert.GreaterOrEqual(sim.ActiveCount, 3, "the ambush of 3 spawned (queued encounters tick in the lab)");
+        }
+
+        [UnityTest]
+        public IEnumerator R103_AnExpiredMagneticTide_OpensNothing()
+        {
+            yield return StartLab();
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            var far = ship.Position + new Vector3(30f, 0f, 0f);
+            for (var i = 0; i < 3; i++) HighSeas.Pickups.PickupWorld.Instance.Spawn(PickupType.XpBarrel, 5, far + new Vector3(0f, 0f, i * 3f));
+            // A tide far from the ship whose lifetime runs out on its next tick: expired, not collected.
+            DropMagneticTideAt(far + new Vector3(0f, 0f, -20f));
+            var agents = (System.Array)typeof(HighSeas.V3.V3FloorPowerupWorld).GetField("_agents", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(HighSeas.V3.V3FloorPowerupWorld.Instance);
+            var agent = agents.GetValue(0);
+            agent.GetType().GetField("lifetime").SetValue(agent, 0.0001f);
+            agents.SetValue(agent, 0);
+            var deadline = Time.realtimeSinceStartup + 1.5f;
+            while (Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
+            Assert.IsFalse((bool)agent.GetType().GetField("active").GetValue(agents.GetValue(0)), "the tide expired");
+            Assert.AreEqual(3, CountBarrels(PickupType.XpBarrel), "an expired tide opens nothing");
         }
 
         [UnityTest]

@@ -143,12 +143,13 @@ namespace RoguePirates.V4.Legacy
 
         public void TrySecureIfBossDead() => Module.TrySecureIfBossDead();
 
-        /// <summary>Module Lab: no chests, ambushes or Beacon, and no prompts (V3 switched POIManager and the controller off).</summary>
-        public void EnterModuleLab()
-        {
-            Module.SetEnabled(false);
-            Interaction.Enabled = false;
-        }
+        /// <summary>
+        /// Module Lab: chests, landmarks, the Beacon and their prompts work as in a run (M8 playtest: they were off, as V3
+        /// switched POIManager and the controller off in its test scene, so the lab's Beacon and chests did nothing).
+        /// Nothing spawns by itself: the Powder Cache ambush and the boss come only from what you do. A boss victory in
+        /// the lab is not saved (no home-seed lock or boss-victory Marks).
+        /// </summary>
+        public void EnterModuleLab() => Module.LabMode = true;
 
         public void Dispose() => _killHook.Dispose();
     }

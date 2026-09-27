@@ -75,7 +75,8 @@ MonoBehaviour:
     initialCombatPhaseTimer: 0
     swordfishSpringDash: 0
     excludedFromRepair: 0
-    eliteLatchesSecondChargeForAll: 1
+    eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 1
     alwaysRanged: 0
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:

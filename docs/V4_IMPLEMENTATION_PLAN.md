@@ -471,7 +471,7 @@ Phases run one at a time. Each one ends with tests, traces and an automated play
 | M5 | Weapon Manager | Passed (playtest 27 Sep; flamethrower visuals to update later) | `plan/v4-verification/phase-05-weapons/` |
 | M6 | Presentation and CombatEvents | Passed (playtest 27 Sep; R-90, R-91, R-92 applied) | `plan/v4-verification/phase-06-presentation/` |
 | M7 | Landmarks and boss | Passed (playtest 27 Sep; R-47, R-93, R-94, R-96, R-97, R-101 applied) | `plan/v4-verification/phase-07-boss/` |
-| M8 | Enemy World | Implemented and reviewed; awaiting playtest | `plan/v4-verification/phase-08-enemies/` |
+| M8 | Enemy World | Playtest round 1 fixed and reviewed (R-100, R-103, R-104, Module Lab stage content); awaiting your re-check | `plan/v4-verification/phase-08-enemies/` |
 | M9 | Build and Progression | Not started | `plan/v4-verification/phase-09-build/` |
 | M10 | Difficulty Director, observe | Not started | `plan/v4-verification/phase-10-director/` |
 | M11 | Adaptive difficulty | Not started | `plan/v4-verification/phase-11-adaptive/` |

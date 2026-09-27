@@ -52,7 +52,7 @@ namespace RoguePirates.V4.Stage
         public int Target => _target;
         /// <summary>Set by the prompt presenter while its touch button is held.</summary>
         public bool TouchHolding { get; set; }
-        /// <summary>A switch the Module Lab uses (V3 disabled the controller).</summary>
+        /// <summary>Off: no prompts or hold-to-interact (V3 disabled its controller in scenes without landmarks). On everywhere since the M8 playtest (the Module Lab too).</summary>
         public bool Enabled { get; set; } = true;
 
         /// <summary>V3InteractionController.Update.</summary>

@@ -91,6 +91,10 @@ namespace RoguePirates.V4.Config
         [Tooltip("R-102 fix (off = V3): a level-up during the boss fight returns to the boss fight (V3's level-up always resumed to Playing, which doubled ambient spawns and stopped skipping elite beats while the boss lived).")]
         public bool bossFightSurvivesLevelUp;
 
+        [Header("Floor powerups (V3's floor powerup world until M9)")]
+        [Tooltip("R-103 fix (off = V3): Magnetic Tide opens every XP, gold and health barrel on the map and their crystals, coins and health fly to you. V3 pulled the XP and gold barrels, which then vanished without paying, and never pulled health barrels; kills drop barrels, so the powerup gave nothing.")]
+        public bool magneticTideOpensBarrels;
+
         public override void Validate(ConfigValidationReport report)
         {
             if (salvageChestCount < 1) report.Error(this, nameof(salvageChestCount), "must be at least 1 (the stage profile rejects 0)");

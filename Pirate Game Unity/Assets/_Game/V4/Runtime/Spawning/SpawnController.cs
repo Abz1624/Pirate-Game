@@ -120,8 +120,9 @@ namespace RoguePirates.V4.Spawning
         public void TickAmbient(float dt)
         {
             if (!_running) return;
-            // M7: the encounter queue (EncounterSpawner.Update ran it here, before its ambient tick). Off in the lab.
-            if (!LabMode) _encounters.Tick();
+            // M7: the encounter queue (EncounterSpawner.Update ran it here, before its ambient tick). Also in the lab (M8
+            // playtest), where only the stage content's requests (Powder Cache, Beacon boss) fill it.
+            _encounters.Tick();
             var run = _s.Run;
             if (!run.Exists || run.IsPaused || run.IsRunEnded || !run.IsGameplayActive) return;
             _scripted.PollArena();

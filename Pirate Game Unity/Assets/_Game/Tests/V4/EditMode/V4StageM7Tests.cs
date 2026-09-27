@@ -338,12 +338,12 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void ModuleLab_StageOff_RefusesTheBossSummon()
+        public void StageOff_RefusesTheBossSummon()
         {
             var rig = Make((POIType.BossBeacon, new Vector3(0f, 0f, 5f)));
             rig.Stage.SetEnabled(false);
             Assert.IsFalse(rig.Stage.TrySummonBoss());
-            Assert.AreEqual(0, rig.Log.Count("immediate"), "nothing summoned in the lab");
+            Assert.AreEqual(0, rig.Log.Count("immediate"), "nothing summoned with stage content off");
         }
 
         [Test]
@@ -668,6 +668,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(stage.chestPlanUsesLoadout && stage.beaconExactMarkerAfterHint && stage.beaconFoundByProximityAfterHints && stage.forgetChestSkipWhenLeaving
                 && stage.beaconRetryAfterFailedSummon && stage.powderCachePaysWhenCleared && stage.promptReleasesUsedLandmark && stage.bossFightSurvivesLevelUp,
                 "fixes approved at the M7 playtest (R-47, R-93, R-94, R-96, R-97, R-101) are on; the v3-parity preset turns them off");
+            Assert.IsTrue(stage.magneticTideOpensBarrels, "R-103 fix (M8 playtest) is on; the v3-parity preset turns it off");
             Assert.IsNotNull(set.configs.OfType<BossConfig>().SingleOrDefault(), "boss config in the set");
         }
 

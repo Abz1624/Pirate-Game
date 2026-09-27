@@ -58,6 +58,19 @@ namespace RoguePirates.V4.Enemies
             }
         }
 
+        /// <summary>Patch slots (for the ground markers).</summary>
+        public int Capacity => _patches.Length;
+
+        /// <summary>A live patch: its centre, radius and the fraction of its lifetime left (1 when it appears).</summary>
+        public bool TryGet(int slot, out Vector3 position, out float radius, out float lifeLeft)
+        {
+            var patch = _patches[slot];
+            position = patch.position;
+            radius = PatchRadius;
+            lifeLeft = Mathf.Clamp01(patch.life / PatchLifetime);
+            return patch.active;
+        }
+
         public void TrySpawnOnDirectFlameKill(Vector3 position, string weaponId)
         {
             if (!_env.IsHellfireWeapon(weaponId)) return;

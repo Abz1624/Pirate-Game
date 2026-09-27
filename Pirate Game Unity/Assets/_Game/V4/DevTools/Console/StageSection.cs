@@ -77,7 +77,7 @@ namespace RoguePirates.V4.DevTools.Console
             var run = RunManager.Instance;
             if (run == null || run.IsRunEnded || run.IsPaused) return;
             var game = console.Game;
-            if (game == null || game.IsModuleLab) return;
+            if (game == null) return;
             if (game.Context != null && game.Context.TryGet<IStageContent>(out var stage)) stage.TrySummonBoss();
         }
     }

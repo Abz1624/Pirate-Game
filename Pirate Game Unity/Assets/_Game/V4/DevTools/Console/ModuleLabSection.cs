@@ -42,7 +42,12 @@ namespace RoguePirates.V4.DevTools.Console
             GUILayout.Label("Distance", GUILayout.Width(56));
             _distance = GUILayout.HorizontalSlider(_distance, 6f, 30f, GUILayout.Width(90));
             GUILayout.Label($"{_distance:0} m", GUILayout.Width(40));
-            if (GUILayout.Button("Clear all")) dev.DespawnAll();
+            if (GUILayout.Button("Clear all"))
+            {
+                dev.DespawnAll();
+                // A boss removed this way was never killed: let the stage forget the summon (summon it again from F1).
+                if (game.Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var stage)) stage.Module.ForgetDespawnedBoss();
+            }
             GUILayout.EndHorizontal();
 
             // Elite rows spawn the elite's own definition flagged elite (Rich affix), so its elite combat profile runs

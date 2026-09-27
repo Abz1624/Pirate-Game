@@ -511,7 +511,7 @@ namespace RoguePirates.V4.Enemies
                         state.phase = EnemyCombatPhase.Recover;
                         state.phaseTimer = profile.chargeCooldown;
                         state.chargePassCount++;
-                        if (profile.eliteHammerheadSecondCharge && state.chargePassCount == 1)
+                        if ((profile.eliteHammerheadSecondCharge || (agent.isElite && Sim.RulesFor(agent.definitionIndex).eliteChargesTwice)) && state.chargePassCount == 1)
                         {
                             state.phase = EnemyCombatPhase.Telegraph;
                             state.phaseTimer = profile.chargeWindUp;
