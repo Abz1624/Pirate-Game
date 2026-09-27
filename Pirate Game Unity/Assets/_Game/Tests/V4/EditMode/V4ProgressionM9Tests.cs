@@ -332,6 +332,117 @@ namespace RoguePirates.V4.Tests
             }
         }
 
+        // ---- Items (V3 V3RunItemInventory + V3RunItemEffects) --------------------------------------------------------
+
+        sealed class ItemWorld : IItemWorld
+        {
+            public HighSeas.Player.PlayerShipController Ship;
+            public Func<int> GoldOf;
+            public Func<IEnumerable<WeaponConfig>> WeaponsOf;
+            public bool RunActive => true;
+            public bool ShipExists => Ship != null;
+            public Vector3 ShipForward => Ship.MovementForward;
+            public Vector3 ShipPosition => Ship.Position;
+            public Vector3 ShipVelocity => Ship.Velocity;
+            public int Gold => GoldOf();
+            public IEnumerable<WeaponConfig> Weapons => WeaponsOf();
+        }
+
+        [Test]
+        public void Items_EqualV3sInventoryAndEffects_OverAScriptedRun()
+        {
+            using var set = Parity();
+            var db = RunDatabase();
+            var host = new GameObject("run");
+            _created.Add(host);
+            var rm = Awake<RunManager>(host);
+            rm.BeginRun(7);
+            var inventory = Inventory();
+            inventory.ClearForNewRun();
+            var effects = V3RunItemEffects.Ensure();
+            _created.Add(effects);
+            effects.ResetForNewRun();
+            var shipHost = new GameObject("ship");
+            _created.Add(shipHost);
+            shipHost.AddComponent<HighSeas.Combat.DamageReceiver>();
+            var ship = shipHost.AddComponent<HighSeas.Player.PlayerShipController>();
+            var velocity = typeof(HighSeas.Player.PlayerShipController).GetField("_velocity", BindingFlags.Instance | BindingFlags.NonPublic);
+            var recordHost = new GameObject("record");
+            _created.Add(recordHost);
+            var record = Awake<WeaponController>(recordHost);
+            record.ApplyCombatExperiment(CombatExperimentContext.Active);
+            record.Initialize(db, "swivel_guns");
+
+            var v4Stats = new PlayerStats();
+            var resolver = new StatResolver(() => v4Stats);
+            var items = new ItemModule(id => set.All<ItemConfig>().FirstOrDefault(i => i.itemId == id), resolver, new ItemWorld
+            {
+                Ship = ship, GoldOf = () => rm.Gold,
+                WeaponsOf = () => record.Weapons.Select(w => set.All<WeaponConfig>().First(c => c.weaponId == w.def.id)),
+            });
+            var v4Bells = 0;
+            items.FireAllWeapons += () => v4Bells++;
+            var bellCounter = typeof(V3RunItemEffects).GetField("_bellKillCounter", BindingFlags.Instance | BindingFlags.NonPublic);
+            // V3's Update with an explicit frame (Time.deltaTime is 0 in edit mode): its timers, then its two steps.
+            var gloves = typeof(V3RunItemEffects).GetField("_glovesTimer", BindingFlags.Instance | BindingFlags.NonPublic);
+            var lantern = typeof(V3RunItemEffects).GetField("_lanternTimer", BindingFlags.Instance | BindingFlags.NonPublic);
+            var track = typeof(V3RunItemEffects).GetMethod("TrackHeadingAndMovement", BindingFlags.Instance | BindingFlags.NonPublic);
+            var refresh = typeof(V3RunItemEffects).GetMethod("RefreshDynamicMultipliers", BindingFlags.Instance | BindingFlags.NonPublic);
+            const float dt = 1f / 60f;
+            var turnBuffEnded = false;
+            var addEffect = typeof(V3RunItemInventory).GetMethod("ApplyItemEffect", BindingFlags.Instance | BindingFlags.NonPublic);
+            var itemsList = (List<string>)typeof(V3RunItemInventory).GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(inventory);
+            var stacks = (Dictionary<string, int>)typeof(V3RunItemInventory).GetField("_stacks", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(inventory);
+            var ids = set.All<ItemConfig>().Select(i => i.itemId).OrderBy(i => i).ToArray();
+            var scenario = new System.Random(99);
+            var v3Bells = 0;
+            var extraWeapons = new[] { "deck_cannons", "broadside_battery", "powder_kegs", "flying_cutlasses", "lightning_mast" };
+            var heading = 0f;
+
+            for (var frame = 0; frame < 3000; frame++)
+            {
+                if (frame % 60 == 0)
+                {
+                    var id = ids[scenario.Next(ids.Length)];
+                    // V3 TryAddItem without its telemetry/toast singletons: the stack, the list, the stat changes.
+                    stacks.TryGetValue(id, out var n); stacks[id] = n + 1;
+                    if (!itemsList.Contains(id)) itemsList.Add(id);
+                    addEffect.Invoke(inventory, new object[] { id });
+                    items.TryAddItem(id);
+                }
+                if (frame % 400 == 200 && record.Weapons.Count < 6) record.EquipWeapon(extraWeapons[record.Weapons.Count - 1]);
+                if (frame % 7 == 0) rm.AddGold(scenario.Next(0, 40));
+                heading += scenario.Next(0, 200) == 0 ? scenario.Next(-60, 60) : 0.05f;
+                var dir = Quaternion.Euler(0f, heading, 0f) * Vector3.forward;
+                shipHost.transform.rotation = Quaternion.LookRotation(dir);
+                var speed = scenario.Next(0, 4) == 0 ? 2f : 6f;
+                shipHost.transform.position += dir * speed / 60f;
+                velocity.SetValue(ship, dir * speed);
+                if (scenario.Next(0, 15) == 0) { effects.NotifyKill(); items.NotifyKill(); if ((int)bellCounter.GetValue(effects) == 0 && inventory.HasItem("captains_bell")) v3Bells++; }
+                if (scenario.Next(0, 90) == 0) { effects.NotifyPlayerTookDamage(); items.NotifyPlayerTookDamage(); }
+
+                var hadBuff = effects.GetAttackSpeedMultiplier() > 1f;
+                gloves.SetValue(effects, Mathf.Max(0f, (float)gloves.GetValue(effects) - dt));
+                lantern.SetValue(effects, Mathf.Max(0f, (float)lantern.GetValue(effects) - dt));
+                track.Invoke(effects, new object[] { dt });
+                refresh.Invoke(effects, null);
+                items.Tick(dt);
+                if (hadBuff && effects.GetAttackSpeedMultiplier() == 1f) turnBuffEnded = true;
+
+                var tag = $"frame {frame}";
+                Assert.AreEqual(effects.GetAttackSpeedMultiplier(), items.AttackSpeedMultiplier(), tag + " attack speed");
+                Assert.AreEqual(effects.GetCritChanceBonus(), items.CritChanceBonus(), tag + " crit bonus");
+                Assert.AreEqual(effects.GetIncomingDamageMultiplier(ship), items.IncomingDamageMultiplier(), tag + " incoming damage");
+                Assert.AreEqual(effects.GetGlobalDamageMultiplier(record), items.GlobalDamageMultiplier(), tag + " damage");
+                Assert.AreEqual(v3Bells, v4Bells, tag + " Captain's Bell");
+            }
+            CollectionAssert.AreEqual(inventory.Items, items.Items);
+            foreach (var id in ids) Assert.AreEqual(inventory.GetStackCount(id), items.StackCount(id), id);
+            foreach (StatId s in Enum.GetValues(typeof(StatId))) Assert.AreEqual(rm.Stats.Get(s), v4Stats.Get(s), s.ToString());
+            Assert.Greater(v4Bells, 0, "the Bell rang");
+            Assert.IsTrue(turnBuffEnded, "the Gloves' buff ran out at least once");
+        }
+
         [Test]
         public void WeaponOfferData_EqualsV3sRunDatabase()
         {
