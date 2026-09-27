@@ -74,3 +74,4 @@ MonoBehaviour:
   prerequisiteWeaponId: 
   v3OwnershipKey: brine
   v3UnlockedByFirstConquest: 0
+  unlockLifetimeGold: 0

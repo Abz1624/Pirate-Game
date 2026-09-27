@@ -65,6 +65,12 @@ namespace RoguePirates.V4.Views
         float ActiveCooldownDuration { get; }
         /// <summary>The key that uses it: SPACE, or the gamepad button while a gamepad is connected.</summary>
         string ActiveKeyHint { get; }
+        /// <summary>M9 playtest: times the active was used (a change shows the effect banner), what it does, and how long its effect lasts.</summary>
+        int ActiveUses { get; }
+        string ActiveSummary { get; }
+        float ActiveEffectRemaining { get; }
+        float ActiveEffectDuration { get; }
+        Color ThemeColor { get; }
     }
 
     public interface IProgressionView

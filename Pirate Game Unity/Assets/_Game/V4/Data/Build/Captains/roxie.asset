@@ -73,3 +73,4 @@ MonoBehaviour:
   prerequisiteWeaponId: lightning_mast
   v3OwnershipKey: 
   v3UnlockedByFirstConquest: 0
+  unlockLifetimeGold: 0

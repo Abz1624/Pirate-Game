@@ -21,7 +21,10 @@ namespace RoguePirates.V4.DevTools.Console
             if (captain?.active == null) return "No Captain active.";
             if (!b.ActivesEnabled()) return "Captain actives are off (ExperimentConfig.captainActivesEnabled; the v3-parity preset turns them off).";
             if (!b.Captain.IsReady) return $"{captain.active.displayName} is cooling down: {b.Captain.CooldownRemaining:0.0} s left.";
-            if (!b.Captain.TryActivate()) return $"{captain.active.displayName} did not fire.";
+            if (!b.Captain.TryActivate())
+                return RoguePirates.V4.Progression.CaptainModule.OnlyFiresWeapons(captain.active) && !b.AnyEnemyInWeaponRange()
+                    ? $"{captain.active.displayName}: no enemies in range, so it kept its charge."
+                    : $"{captain.active.displayName} did not fire.";
             var a = captain.active;
             var effects = new System.Collections.Generic.List<string>();
             if (a.fireAllWeapons) effects.Add("every weapon fires once at its targets (weapons with nothing in range hold fire)");
@@ -63,6 +66,7 @@ namespace RoguePirates.V4.DevTools.Console
             if (stats != null)
                 GUILayout.Label($"Damage {stats.GlobalDamage:0.00}  ·  attack speed {stats.AttackSpeed:0.00}  ·  crit {stats.CritChance:0.00}  ·  luck {stats.Luck:0.00}  ·  move {stats.MoveSpeed:0.00}  ·  pickup {stats.PickupRadius:0.00}  ·  XP gain {stats.XPGain:0.00}", _wrap, GUILayout.Width(TextWidth));
             var captain = b.Captain.Config;
+            GUILayout.Label($"Lifetime gold {RoguePirates.V4.Legacy.LegacyBuildWiring.LifetimeGold:N0} (Richie unlocks at 5,000; enforced by the V4 menu in M14)", _wrap, GUILayout.Width(TextWidth));
             GUILayout.Label($"Captain {captain?.displayName ?? "none"}  ·  active {captain?.active?.displayName} {(b.Captain.IsReady ? "ready" : $"cooldown {b.Captain.CooldownRemaining:0.0}s")}  ·  incoming damage ×{b.IncomingDamageMultiplier():0.00}", _wrap, GUILayout.Width(TextWidth));
             GUILayout.Label($"Floor powerups {b.Powerups.ActiveCount} on the water ({b.Powerups.SpawnedThisStage} this stage)  ·  Dead Calm ×{b.Powerups.SpawnRateMultiplier:0.00}  ·  pickups {b.Pickups.ActiveCount}/{b.Pickups.Capacity}", _wrap, GUILayout.Width(TextWidth));
 

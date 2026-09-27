@@ -288,6 +288,69 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual((0, 0), Fire(2f, 0f), "V3 (margin 0): no detection");
         }
 
+        // ---- Playtest round 2: weapons-only actives hold without a target; the effect is visible ------------------------
+
+        [Test]
+        public void WeaponsOnlyActive_KeepsItsCharge_WithNothingInRange()
+        {
+            using var set = Default();
+            var rook = Captain(set, "rook");
+            var held = 0;
+            var inRange = false;
+            rook.HeldWithoutTarget += _ => held++;
+            rook.HoldWithoutTarget = () => set.Single<ExperimentConfig>().captainActiveHoldsWithoutTarget;
+            rook.HasWeaponTarget = () => inRange;
+            Assert.IsFalse(rook.TryActivate(), "All Guns! with nothing in range");
+            Assert.AreEqual(1, held, "the toast is raised");
+            Assert.IsTrue(rook.IsReady, "the charge is kept");
+            Assert.AreEqual(0, rook.ActiveUses);
+            inRange = true;
+            Assert.IsTrue(rook.TryActivate(), "with an enemy in range it fires");
+            Assert.AreEqual(1, rook.ActiveUses);
+            Assert.Greater(rook.ActiveEffectRemaining, 0f, "an instant active still flashes");
+
+            var roxie = Captain(set, "roxie");
+            roxie.HoldWithoutTarget = () => true;
+            roxie.HasWeaponTarget = () => false;
+            Assert.IsTrue(roxie.TryActivate(), "Ride the Gale's speed boost is useful without a target, so it fires");
+            Assert.AreEqual(set.All<CaptainConfig>().Single(c => c.captainKey == "roxie").active.moveSeconds, roxie.ActiveEffectDuration, 1e-4f, "its effect lasts as long as the boost");
+
+            var v3 = Captain(set, "rook");
+            v3.HasWeaponTarget = () => false; // no HoldWithoutTarget: V3 fires whatever is in range
+            Assert.IsTrue(v3.TryActivate(), "V3 behaviour: All Guns! fires with nothing in range");
+
+            using var parity = Parity();
+            Assert.IsFalse(parity.Single<ExperimentConfig>().captainActiveHoldsWithoutTarget, "the v3-parity preset turns it off");
+        }
+
+        [Test]
+        public void LifetimeGold_AddsTheRunsGold_OncePerRun()
+        {
+            var key = RoguePirates.V4.Legacy.LegacyBuildWiring.LifetimeGoldKey;
+            var had = PlayerPrefs.HasKey(key);
+            var old = PlayerPrefs.GetInt(key, 0);
+            var host = new GameObject("run");
+            try
+            {
+                var rm = host.AddComponent<RunManager>();
+                typeof(RunManager).GetMethod("Awake", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.Invoke(rm, null);
+                rm.BeginRun(5);
+                rm.AddGold(300);
+                PlayerPrefs.SetInt(key, 1000);
+                using var set = Default();
+                var build = new RoguePirates.V4.Legacy.LegacyBuildWiring(set, () => null, () => null);
+                build.RecordRunGold();
+                build.RecordRunGold();
+                Assert.AreEqual(1300, RoguePirates.V4.Legacy.LegacyBuildWiring.LifetimeGold, "the run's 300 gold, counted once");
+                build.Dispose();
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(host);
+                if (had) PlayerPrefs.SetInt(key, old); else PlayerPrefs.DeleteKey(key);
+            }
+        }
+
         // ---- R-49: Captains ------------------------------------------------------------------------------------------
 
         sealed class Ship : ICaptainShip
@@ -329,7 +392,8 @@ namespace RoguePirates.V4.Tests
                 Assert.AreEqual(1.1f, Captain(set, "roxie").LightningDamageMultiplier, 1e-5f, "Roxie's lightning");
                 Assert.AreEqual(1f, Captain(set, "rook").IncomingDamageMultiplier, "no armor for Rook");
                 Assert.IsTrue(set.All<CaptainConfig>().Single(c => c.captainKey == "richie").active.pickupRadiusApplied, "Cut and Run's pickup radius");
-                Assert.IsFalse(set.Single<ExperimentConfig>().captainActiveOnGamepadSouth, "the gamepad active moves off South (the boost button)");
+                Assert.IsTrue(set.Single<ExperimentConfig>().captainActiveOnGamepadSouth, "playtest round 2: the gamepad active stays on South for now (no gamepad to test the RB rebind)");
+                Assert.AreEqual(5000, set.All<CaptainConfig>().Single(c => c.captainKey == "richie").unlockLifetimeGold, "Richie unlocks with 5,000 lifetime gold");
             }
             using (var set = Parity())
             {

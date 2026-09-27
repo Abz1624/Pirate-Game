@@ -88,6 +88,8 @@ namespace RoguePirates.V4.Config
         [Tooltip("Locked until this weapon is owned (Ember, Roxie). Empty = none.")] public string prerequisiteWeaponId;
         [Tooltip("V3 rule: locked unless the save owns this content id. Empty = never locked.")] public string v3OwnershipKey;
         [Tooltip("V3 rule: First Conquest also unlocks it (Sparky).")] public bool v3UnlockedByFirstConquest;
+        [Tooltip("M9 playtest (Richie): unlocked once this much gold has been earned across all runs (0 = no such rule). The V4 menu enforces locks in M14; the lifetime total is counted from M9.")]
+        public int unlockLifetimeGold;
 
         public override void Validate(ConfigValidationReport report)
         {

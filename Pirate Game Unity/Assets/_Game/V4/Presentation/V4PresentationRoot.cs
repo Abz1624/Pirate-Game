@@ -18,6 +18,7 @@ namespace RoguePirates.V4.Presentation
         public RoguePirates.V4.Presentation.Hud.AuthoredHudPresenter Hud { get; private set; }
         public RoguePirates.V4.Presentation.Hud.MinimapPresenter Minimap { get; private set; }
         public RoguePirates.V4.Presentation.Hud.CaptainActivePresenter CaptainActive { get; private set; }
+        public RoguePirates.V4.Presentation.Hud.CaptainActiveEffectPresenter CaptainActiveEffect { get; private set; }
         public RoguePirates.V4.Presentation.Hud.BeaconGuidePresenter BeaconGuide { get; private set; }
         public RoguePirates.V4.Presentation.Hud.ResultsPresenter Results { get; private set; }
         public RoguePirates.V4.Presentation.Hud.SpawnWarningPresenter SpawnWarnings { get; private set; }
@@ -166,6 +167,8 @@ namespace RoguePirates.V4.Presentation
                 // M9 playtest: the Captain's active and its cooldown, beside the boost meter.
                 CaptainActive = RoguePirates.V4.Presentation.Hud.CaptainActivePresenter.Create(authored.transform);
                 CaptainActive.Bind(views);
+                CaptainActiveEffect = RoguePirates.V4.Presentation.Hud.CaptainActiveEffectPresenter.Create(authored.transform);
+                CaptainActiveEffect.Bind(views);
             }
 
             if (runCanvas == null) return;

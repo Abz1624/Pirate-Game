@@ -188,11 +188,14 @@ namespace RoguePirates.V4.Editor
                 c.passive.armorApplied = true;
                 c.passive.elementMultipliersApplied = true;
                 c.active.pickupRadiusApplied = true;
+                c.unlockLifetimeGold = c.captainKey == "richie" ? 5000 : 0; // playtest round 2: Richie unlocks with 5,000 lifetime gold
                 EditorUtility.SetDirty(c);
             }
             var experiment = AssetDatabase.FindAssets("t:ExperimentConfig", new[] { V3ConfigMigrator.DataRoot })
                 .Select(g => AssetDatabase.LoadAssetAtPath<ExperimentConfig>(AssetDatabase.GUIDToAssetPath(g))).FirstOrDefault();
-            if (experiment != null) { experiment.captainActiveOnGamepadSouth = false; experiment.nearMissMargin = 2f; EditorUtility.SetDirty(experiment); }
+            // Playtest round 2: the gamepad active stays on South (no gamepad to test the RB rebind with); weapons-only actives
+            // keep their charge when nothing is in range.
+            if (experiment != null) { experiment.captainActiveOnGamepadSouth = true; experiment.nearMissMargin = 2f; experiment.captainActiveHoldsWithoutTarget = true; EditorUtility.SetDirty(experiment); }
             AssetDatabase.SaveAssets();
             return "M9 playtest decisions applied (R-31, R-34, R-40, R-43, R-49)\n";
         }

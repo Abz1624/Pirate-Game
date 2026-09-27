@@ -44,6 +44,7 @@ namespace RoguePirates.V4.Progression
         float _fastMoveTimer;
         bool _runningFuseActive;
         float _cooldown, _braceTimer, _kegRadiusTimer, _pickupTimer, _flameTimer, _nearMissTimer, _damageBuffTimer;
+        float _effectTimer, _effectDuration; // M9 playtest: how long the active's effect shows (the longest of its timed parts)
 
         public CaptainConfig Config { get; private set; }
 
@@ -52,6 +53,17 @@ namespace RoguePirates.V4.Progression
         public event Action FireAllWeapons;
         public event Action ArmPowderKegs;
         public event Action FireLightningSalvo;
+        /// <summary>M9 playtest: the active only fires weapons and nothing is in range, so it keeps its charge.</summary>
+        public event Action<CaptainConfig> HeldWithoutTarget;
+
+        /// <summary>M9 playtest (off = V3): an active whose only effect is firing the weapons waits for a target in range instead of spending its charge on nothing.</summary>
+        public Func<bool> HoldWithoutTarget { get; set; }
+        /// <summary>Some enemy is within a carried weapon's range.</summary>
+        public Func<bool> HasWeaponTarget { get; set; }
+        /// <summary>Times the active was used this run (the HUD's effect banner watches it).</summary>
+        public int ActiveUses { get; private set; }
+        public float ActiveEffectRemaining => _effectTimer;
+        public float ActiveEffectDuration => _effectDuration;
 
         public CaptainModule(IStatModifierSink stats, ICaptainShip ship, ICaptainRun run, Func<bool> activesEnabled)
         {
@@ -75,6 +87,8 @@ namespace RoguePirates.V4.Progression
             _fastMoveTimer = 0f;
             _runningFuseActive = false;
             _cooldown = _braceTimer = _kegRadiusTimer = _pickupTimer = _flameTimer = _nearMissTimer = _damageBuffTimer = 0f;
+            _effectTimer = _effectDuration = 0f;
+            ActiveUses = 0;
             if (config == null) return;
             _stats.SetBase((int)StatId.Hull, config.baseHull);
             _stats.SetBase((int)StatId.MoveSpeed, config.baseMoveSpeed);
@@ -116,6 +130,7 @@ namespace RoguePirates.V4.Progression
             _flameTimer = Mathf.Max(0f, _flameTimer - dt);
             _nearMissTimer = Mathf.Max(0f, _nearMissTimer - dt);
             _damageBuffTimer = Mathf.Max(0f, _damageBuffTimer - dt);
+            _effectTimer = Mathf.Max(0f, _effectTimer - dt);
             if (activatePressed) TryActivate();
         }
 
@@ -124,6 +139,11 @@ namespace RoguePirates.V4.Progression
         {
             if (!_activesEnabled() || !IsReady || A == null) return false;
             var a = A;
+            if (OnlyFiresWeapons(a) && HoldWithoutTarget != null && HoldWithoutTarget() && HasWeaponTarget != null && !HasWeaponTarget())
+            {
+                HeldWithoutTarget?.Invoke(Config);
+                return false;
+            }
             if (a.braceSeconds > 0f) _braceTimer = a.braceSeconds;
             if (a.slowSeconds > 0f) _ship?.ApplySlow(a.slowMultiplier, a.slowSeconds);
             if (a.armPowderKegs) ArmPowderKegs?.Invoke();
@@ -136,9 +156,18 @@ namespace RoguePirates.V4.Progression
             if (a.fireLightningSalvo) FireLightningSalvo?.Invoke();
             if (a.fireAllWeapons) FireAllWeapons?.Invoke();
             _cooldown = a.cooldownSeconds;
+            _effectDuration = Mathf.Max(a.braceSeconds, a.slowSeconds, a.kegRadiusSeconds, a.pickupRadiusSeconds, a.damageBuffSeconds, a.moveSeconds, a.flameSeconds, a.nearMissWindowSeconds);
+            if (_effectDuration <= 0f) _effectDuration = 0.8f; // an instant active (All Guns!) still flashes
+            _effectTimer = _effectDuration;
+            ActiveUses++;
             ActiveUsed?.Invoke(Config);
             return true;
         }
+
+        /// <summary>The active's only effect is firing the weapons (All Guns!): pointless with nothing in range.</summary>
+        public static bool OnlyFiresWeapons(CaptainActive a) =>
+            (a.fireAllWeapons || a.fireLightningSalvo) && !a.armPowderKegs && a.braceSeconds <= 0f && a.slowSeconds <= 0f && a.kegRadiusSeconds <= 0f
+            && a.pickupRadiusSeconds <= 0f && a.damageBuffSeconds <= 0f && a.moveSeconds <= 0f && a.flameSeconds <= 0f && a.nearMissWindowSeconds <= 0f;
 
         /// <summary>V3 NotifyNearMissDodge (Roxie; V3 never calls it).</summary>
         public void NotifyNearMiss()

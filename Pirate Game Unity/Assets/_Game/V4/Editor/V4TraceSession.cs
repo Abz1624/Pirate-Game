@@ -23,7 +23,7 @@ namespace RoguePirates.V4.Editor
         static readonly string[] IntKeys =
         {
             "v3_selected_captain", "v3_home_seed", "v3_first_conquest_complete", "v3_saltwind_runs_completed",
-            "combat_captain_actives_enabled", "combat_aim_visuals_enabled", "highseas_v3_developer_preset"
+            "combat_captain_actives_enabled", "combat_aim_visuals_enabled", "highseas_v3_developer_preset", "v4_lifetime_gold"
         };
         static readonly string[] StringKeys = { "highseas_meta_v1", "highseas_run_snapshot_v1" };
 

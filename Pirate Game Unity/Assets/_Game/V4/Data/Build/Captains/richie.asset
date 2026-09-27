@@ -73,3 +73,4 @@ MonoBehaviour:
   prerequisiteWeaponId: 
   v3OwnershipKey: 
   v3UnlockedByFirstConquest: 0
+  unlockLifetimeGold: 5000

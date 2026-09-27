@@ -47,6 +47,12 @@ namespace RoguePirates.V4.Legacy
         public BuildWeaponModifiers WeaponModifiers { get; }
         /// <summary>Set once the weapon module exists (Captain actives and Captain's Bell fire it).</summary>
         public IWeaponManager Weapons { get; set; }
+        /// <summary>The enemy world (for "is anything in range" before a weapons-only active).</summary>
+        public IEnemyQuery Enemies { get; set; }
+
+        /// <summary>PlayerPrefs key of the gold earned across all runs (Richie's unlock, M9 playtest).</summary>
+        public const string LifetimeGoldKey = "v4_lifetime_gold";
+        bool _goldRecorded;
 
         public LegacyBuildWiring(ConfigSetRuntime config, Func<PlayerShipController> ship, Func<GameDatabase> database)
         {
@@ -86,6 +92,9 @@ namespace RoguePirates.V4.Legacy
             Items.Acquired += OnItemAcquired;
             Items.FireAllWeapons += () => _bellPending = true;
             Captain.ActiveUsed += OnActiveUsed;
+            Captain.HoldWithoutTarget = () => Experiment?.captainActiveHoldsWithoutTarget ?? false;
+            Captain.HasWeaponTarget = AnyEnemyInWeaponRange;
+            Captain.HeldWithoutTarget += c => V3ToastHud.Instance?.Show($"{c.active.displayName} — no enemies in range", 2f);
             Captain.FireAllWeapons += () => Weapons?.FireAllOnce();
             Captain.ArmPowderKegs += () => Weapons?.ArmAllKegs();
             Captain.FireLightningSalvo += () => Weapons?.FireLightningSalvo();
@@ -168,6 +177,7 @@ namespace RoguePirates.V4.Legacy
         public void ResetForRun()
         {
             Stats.ResetForRun();
+            _goldRecorded = false;
             Powerups.ResetForRun();
             Items.ResetForRun();
             Pickups.ClearAll();
@@ -192,9 +202,14 @@ namespace RoguePirates.V4.Legacy
                 var pad = Gamepad.current;
                 // R-49: V3 used gamepad South, which is also the boost button; with the fix the right shoulder uses the active.
                 var padButton = pad == null ? null : Experiment != null && !Experiment.captainActiveOnGamepadSouth ? pad.rightShoulder : pad.buttonSouth;
-                var pressed = keyboard != null && (keyboard.spaceKey.wasPressedThisFrame || keyboard.qKey.wasPressedThisFrame)
-                    || padButton != null && padButton.wasPressedThisFrame;
-                Captain.Tick(dt, pressed);
+                var keyPressed = keyboard != null && (keyboard.spaceKey.wasPressedThisFrame || keyboard.qKey.wasPressedThisFrame);
+                var padPressed = padButton != null && padButton.wasPressedThisFrame;
+                // South is also the boost button: a boost press must not raise "no enemies in range" every time, so a
+                // weapons-only active with nothing in range ignores a South press (keyboard presses still say so).
+                if (padPressed && !keyPressed && padButton == pad.buttonSouth && Captain.Config?.active != null
+                    && CaptainModule.OnlyFiresWeapons(Captain.Config.active) && (Experiment?.captainActiveHoldsWithoutTarget ?? false) && !AnyEnemyInWeaponRange())
+                    padPressed = false;
+                Captain.Tick(dt, keyPressed || padPressed);
             });
             createHellfireSlot?.Invoke();
         }
@@ -254,6 +269,32 @@ namespace RoguePirates.V4.Legacy
             var config = _config.All<WeaponEvolutionConfig>().FirstOrDefault(e => e.evolutionId == evolution);
             return config != null && config.effect == ConfigEnums.EvolutionEffect.WideConeWithPatches && config.wideCone.patchesOnKill;
         }
+
+        const float TargetMargin = 1.5f; // enemies are measured centre to centre; a big hull's edge can be in reach first
+
+        /// <summary>Some enemy is within the range of a carried weapon (a weapons-only active waits for one).</summary>
+        public bool AnyEnemyInWeaponRange()
+        {
+            var ship = Ship;
+            if (ship == null || Enemies == null || Weapons == null) return true; // nothing to check against: let it fire
+            var range = 0f;
+            var size = RunManager.Instance != null ? RunManager.Instance.Stats.Size : 1f;
+            foreach (var slot in Weapons.Slots) if (slot?.Config != null) range = Mathf.Max(range, slot.Config.range * slot.SizeMult * size);
+            return range > 0f && Enemies.TryGetNearest(ship.Position, range + TargetMargin, out _);
+        }
+
+        /// <summary>Adds the run's gold to the lifetime total once (run end; Richie unlocks at 5,000, enforced by the V4 menu in M14).</summary>
+        public void RecordRunGold()
+        {
+            if (_goldRecorded || RunManager.Instance == null) return;
+            _goldRecorded = true;
+            var earned = RunManager.Instance.GrossGoldEarned;
+            if (earned <= 0) return;
+            PlayerPrefs.SetInt(LifetimeGoldKey, LifetimeGold + earned);
+            PlayerPrefs.Save();
+        }
+
+        public static int LifetimeGold => PlayerPrefs.GetInt(LifetimeGoldKey, 0);
 
         /// <summary>The build's incoming-damage multiplier on the ship (Brace!, Reinforced Keel).</summary>
         public float IncomingDamageMultiplier() => Captain.IncomingDamageMultiplier * Items.IncomingDamageMultiplier();

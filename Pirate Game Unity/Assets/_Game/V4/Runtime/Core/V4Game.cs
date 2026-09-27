@@ -126,6 +126,7 @@ namespace RoguePirates.V4
             _weapons = new LegacyWeaponWiring(_shell, _context, _config, runState, _events, _clock, _enemies, _build);
             _shell.Weapons = _weapons;
             _build.Weapons = _weapons.Manager;
+            _build.Enemies = _enemies.Contracts;
             _enemies.HellfireEnvironment.Calculator = () => _weapons.Manager.Combat.Calculator;
             _enemies.HellfireEnvironment.HasHellfire = _build.HasHellfire;
             _enemies.HellfireEnvironment.StatusDamage = _build.StatusDamageMultiplier;
@@ -207,6 +208,7 @@ namespace RoguePirates.V4
         void EndRun()
         {
             _ended = true;
+            if (!moduleLab) _build?.RecordRunGold(); // lifetime gold (Richie's unlock)
             _modules.EndRunAll(new RunEnd(_clock.SimTime, _objectiveSecured));
         }
 
@@ -216,6 +218,7 @@ namespace RoguePirates.V4
             if (_running && !_ended)
             {
                 _ended = true;
+                if (!moduleLab) _build?.RecordRunGold(); // a run left mid-way (restart, menu) still earned its gold
                 _modules.EndRunAll(new RunEnd(_clock.SimTime, _objectiveSecured));
             }
 

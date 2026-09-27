@@ -288,12 +288,30 @@ namespace RoguePirates.V4.Tests
             StringAssert.Contains(name, widget.Text);
             StringAssert.Contains(game.Build.ActiveKeyHint(), widget.Text, "ready: the key");
             Assert.AreEqual(1f, widget.Fill, 1e-4f);
-            Assert.IsTrue(game.Build.Captain.TryActivate());
+            // All Guns! waits for a target (playtest round 2): put a shark in range, the ship invulnerable.
+            var ship = Object.FindFirstObjectByType<HighSeas.Player.PlayerShipController>();
+            ship.Damage.SetPlaytestInvulnerable(true);
+            var world = V4TestEnemies.Simulation();
+            var shark = System.Array.FindIndex(world.Definitions, d => d != null && d.id == "shark");
+            world.Spawn(shark, ship.Position + ship.MovementForward.normalized * 6f, HighSeas.Core.EliteAffix.None, 0.01f, 50f);
+            Assert.IsTrue(game.Build.AnyEnemyInWeaponRange(), "a target in range");
+            Assert.IsTrue(game.Build.Captain.TryActivate(), "the active fires with a target in range");
             yield return null;
             yield return null;
             StringAssert.IsMatch(@"\d+s$", widget.Text, "cooling down: the seconds left");
             StringAssert.DoesNotContain(game.Build.ActiveKeyHint(), widget.Text);
             Assert.Less(widget.Fill, 0.2f, "the bar starts empty and refills");
+
+            // Playtest round 2: the active shows a banner with its name and a ring around the ship while its effect lasts.
+            var effect = Object.FindFirstObjectByType<V4PresentationRoot>().CaptainActiveEffect;
+            Assert.IsNotNull(effect);
+            Assert.IsTrue(effect.BannerShown, "the banner shows");
+            Assert.AreEqual(name.ToUpperInvariant(), effect.BannerTitle);
+            Assert.IsTrue(effect.RingShown, "the ring shows");
+            var deadline = Time.realtimeSinceStartup + 6f;
+            while ((effect.BannerShown || effect.RingShown) && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.IsFalse(effect.BannerShown, "the banner fades out");
+            Assert.IsFalse(effect.RingShown, "the ring goes when the effect ends");
         }
 
         [UnityTest]

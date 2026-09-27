@@ -116,6 +116,11 @@ namespace RoguePirates.V4.Legacy
         public float ActiveCooldownDuration => _captain != null ? _captain.CooldownDuration : 0f;
         public System.Func<string> KeyHint;
         public string ActiveKeyHint => KeyHint != null ? KeyHint() : "SPACE";
+        public int ActiveUses => _captain != null ? _captain.ActiveUses : 0;
+        public string ActiveSummary => _captain?.Config?.activeSummary ?? string.Empty;
+        public float ActiveEffectRemaining => _captain != null ? _captain.ActiveEffectRemaining : 0f;
+        public float ActiveEffectDuration => _captain != null ? _captain.ActiveEffectDuration : 0f;
+        public UnityEngine.Color ThemeColor => _captain?.Config != null ? _captain.Config.themeColor : UnityEngine.Color.white;
     }
 
     /// <summary>
