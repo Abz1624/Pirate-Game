@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `v4-modular-architecture` |
 | Phase start commit | `33f8b95e` (M8 passed) |
-| Status | In progress: 9.1, 9.2, 9.6, 9.3, 9.5 and 9.4 done (not wired into runs yet); 9.7 pickups next |
+| Status | In progress: 9.1, 9.2, 9.6, 9.3, 9.5, 9.4 and 9.7 done (not wired into runs yet); 9.8 switch-over next |
 
 Design record: [DESIGN.md](DESIGN.md) (decisions, build order, gate decisions, determinism hazards). Research maps: [progression](research-progression.md), [items and Captains](research-items-captains.md), [pickups and powerups](research-pickups-powerups.md).
 
@@ -18,6 +18,6 @@ Design record: [DESIGN.md](DESIGN.md) (decisions, build order, gate decisions, d
 | 9.3 | Item module | Done (not yet wired). `ItemModule` (`IItemInventory`) ports V3RunItemInventory (uncapped stacks, stat changes per stack) and V3RunItemEffects (Gunner's Gloves, Ghost Lantern, Reinforced Keel, Captain's Bell, Admiral's Ledger, Golden Figurehead, Powder Fuse; R-40 effects inert) from the item configs. EditMode lockstep: 3,000 frames of a scripted run (turns, speed changes, kills, hits, gold, an item every second, weapons added) give V3's attack speed, crit bonus, incoming damage, damage multiplier, Bell triggers, inventory, stacks and all stats every frame |
 | 9.5 | Captain module | Done (not yet wired). `CaptainModule` ports V3CaptainController (base hull and speed, per-level and gold passives, Running Fuse, Hank's per-level hull resync; armor and element multipliers inert, R-49) and V3CaptainActiveController (actives, cooldowns, brace, keg radius, flame boost, damage buff, move and slow effects, salvo, fire-all). EditMode lockstep: all six Captains over 3,600 frames with speed changes, gold and random activations give V3's additive damage, keg damage, incoming damage, keg radius, flame range, burn and cooldown every frame, and V3's base stats |
 | 9.4 | Powerup module | Done (not yet wired). `PowerupModule` ports V3FloorPowerupWorld: drop roll on the Powerup stream, elites' forced drops, the spot search, lifetime, collection, Repair Supplies, Battle Signal / Powder Rush in one damage slot (R-43 switch), Tailwind / Full Sail in one speed slot, Salvage Chime and Magnetic Tide (events for the pickups), Dead Calm as a spawn-rate multiplier for the V4 spawn controller. EditMode lockstep: 20,000 frames of kills (elites, bosses) and a ship collecting drops give V3's drop count, powerups on the water, all stats, hull, Dead Calm rate and Powerup draws |
-| 9.7 | Pickup module | Next |
-| 9.8 | Switch-over | — |
+| 9.7 | Pickup module | Done (not yet wired). `PickupModule` ports V3's PickupWorld: kill drops (XP, gold and health barrels on the drop circle; the health roll on the Director stream), merging into a same-type pickup when the pool is full, XP/coin homing radii, barrel touch, bursts into flying pieces with the per-frame budget (pieces that find no slot pay directly), bobbing, and the XP/gold/heal grants; every UnityEngine.Random draw where V3 makes it. Magnetic Tide opens the barrels when `magneticTideOpensBarrels` is on (R-103). Views: `LegacyPickupViews` over V3's PickupViewPool (scales, spin, barrels floated from renderer bounds, R-74; deleted in M14). EditMode lockstep, with the tide switch off and on: 12,000 frames of kills, loose XP/coins, Magnetic Tides and Salvage Chimes with the ship alternately idling (the pool fills) and sailing through give V3's pickups slot by slot (type, value, position, homing), XP, gold, hull and Director draws every frame |
+| 9.8 | Switch-over | Next |
 | 9.9 | Console sections | — |
