@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `v4-modular-architecture` |
 | Phase start commit | `33f8b95e` (M8 passed) |
-| Status | Implemented, awaiting playtest: 9.1–9.9 done; the modules run the V4 runs and the V3 build systems left the scenes |
+| Status | **Passed** (28 Sep): 9.1–9.9 done; two playtest rounds fixed; you confirmed every Captain active works |
 
 Design record: [DESIGN.md](DESIGN.md) (decisions, build order, gate decisions, determinism hazards). Research maps: [progression](research-progression.md), [items and Captains](research-items-captains.md), [pickups and powerups](research-pickups-powerups.md).
 
@@ -75,3 +75,7 @@ Tests: EditMode 249/249 (new `V4M9GateFixTests`: R-31 incl. a missing item, R-43
 Independent review: no parity change; fixed a toast on every gamepad boost press (South is also boost), trace runs and PlayMode tests adding to the real lifetime gold (the key is now restored by the Editor trace session and the test isolation, and cleared by the trace boot; trace players already restore their prefs), the ring staying on after the run ends, dark ring/banner colours, the range check ignoring size upgrades and enemy size, abandoned runs' gold, the ring material, and test gaps (the V3 fire-anyway case; lifetime gold counted once per run).
 
 Tests: EditMode 251/251 (new: weapons-only actives hold without a target and V3 fires anyway; lifetime gold once per run); PlayMode: HUD 8/8 (the widget test now also checks the banner and ring appear and go), run 21/21. Screenshots cannot catch the 2-second banner through the CLI (each call takes about 2 s), so the PlayMode test checks it frame by frame; `11-all-guns-no-target-toast.png` shows the charge kept (gold "SPACE").
+
+## Playtest round 3 (28 Sep): passed
+
+You confirmed every Captain active works (banner, ring, hold without a target). M9 passed.
