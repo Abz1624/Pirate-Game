@@ -33,11 +33,13 @@ MonoBehaviour:
     xpValue: 3
     goldValue: 1
   visual:
+    placeholderModel: 0
     visualPrefab: {fileID: 1709254077376921, guid: d2843682a53b8a2408650308a79b4c2d, type: 3}
     visualScale: 1
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 0.75, g: 0.45, b: 0.2, a: 1}
+    poolPrewarm: 0
   tags: []
   concurrencyTags:
   - ranged_gunner
@@ -64,3 +66,31 @@ MonoBehaviour:
     contactDamageEnabled: 1
     eliteHammerheadSecondCharge: 0
     eliteKrakenSequentialTraps: 0
+  world:
+    initialChargeTimer:
+      enabled: 0
+      value: 0
+    initialAttackCooldown:
+      enabled: 1
+      value: 1.1
+    initialCombatPhaseTimer: 0
+    swordfishSpringDash: 0
+    excludedFromRepair: 0
+    eliteLatchesSecondChargeForAll: 0
+    alwaysRanged: 1
+    noProfilelessRangedAttack: 0
+    rangedMinRangeFactor:
+      enabled: 1
+      value: 0.8
+    rangedMaxRangeFactor:
+      enabled: 1
+      value: 1.15
+    rangedRecovery:
+      enabled: 1
+      value: 2
+    rangedFlankShots: 0
+    ownShotProfile: 1
+    shotSpeed: 9
+    shotLife: 1.55
+    shotHitRadius: 0.38
+    shotVisualRadius: 0.16

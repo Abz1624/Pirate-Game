@@ -39,6 +39,7 @@ MonoBehaviour:
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 0.75, g: 0.45, b: 0.2, a: 1}
+    poolPrewarm: 0
   tags: []
   concurrencyTags: []
   spawnTier: 0
@@ -64,3 +65,31 @@ MonoBehaviour:
     contactDamageEnabled: 0
     eliteHammerheadSecondCharge: 0
     eliteKrakenSequentialTraps: 0
+  world:
+    initialChargeTimer:
+      enabled: 0
+      value: 0
+    initialAttackCooldown:
+      enabled: 1
+      value: 0.9
+    initialCombatPhaseTimer: 0
+    swordfishSpringDash: 0
+    excludedFromRepair: 0
+    eliteLatchesSecondChargeForAll: 0
+    alwaysRanged: 1
+    noProfilelessRangedAttack: 0
+    rangedMinRangeFactor:
+      enabled: 0
+      value: 0
+    rangedMaxRangeFactor:
+      enabled: 0
+      value: 0
+    rangedRecovery:
+      enabled: 0
+      value: 0
+    rangedFlankShots: 0
+    ownShotProfile: 1
+    shotSpeed: 10
+    shotLife: 1.45
+    shotHitRadius: 0.24
+    shotVisualRadius: 0.14

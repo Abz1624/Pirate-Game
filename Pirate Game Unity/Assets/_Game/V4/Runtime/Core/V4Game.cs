@@ -80,6 +80,11 @@ namespace RoguePirates.V4
             var runState = new LegacyRunState();
             var encounters = new LegacyEncounterExecutor();
             _context.Register<IEnemySpawnSink>(new LegacyEnemySpawnSink());
+            var enemyView = new LegacyEnemyWorldView();
+            _context.Register<Enemies.IEnemyWorldView>(enemyView);
+            _context.Register<Enemies.IEnemyDevControl>(enemyView);
+            _context.Register<Enemies.IHostileProjectileView>(new LegacyHostileProjectileView());
+            _context.Register<Enemies.IHazardView>(new LegacyHazardView());
             _context.Register<ISpawnPlacement>(new LegacySpawnPlacement());
             _context.Register<IRunRandom>(runState);
             _context.Register<IRunStatus>(runState);

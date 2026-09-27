@@ -68,6 +68,8 @@ namespace RoguePirates.V4.Config
         [Tooltip("Summon view model (V3 boarding skiffs used the Cannonboat model); empty = a brown box.")]
         public GameObject summonModel;
         public float summonModelScale = 0.42f;
+        [Tooltip("Enemies hit by this weapon do not flash (V3: Powder Kegs). Read by the enemy world's hit path from M8.")]
+        [AppliesFrom(8)] public bool noHitHighlight;
     }
 
     /// <summary>Instant forward lanes that hit every enemy in them (Long Nine beam; Stormshot's lane).</summary>

@@ -28,13 +28,12 @@ namespace RoguePirates.V4.DevTools.Trace
         const float EdgeComfort = 22f;
         const float IslandProbe = 16f;
 
-        static readonly FieldInfo ProjectilePool = typeof(HostileProjectileWorld).GetField("_pool", BindingFlags.Instance | BindingFlags.NonPublic);
         static readonly FieldInfo PickupPool = typeof(PickupWorld).GetField("_pool", BindingFlags.Instance | BindingFlags.NonPublic);
-        static readonly FieldInfo HazardSlots = typeof(SaltwindHazardTelegraph).GetField("Slots", BindingFlags.Static | BindingFlags.NonPublic);
-        static FieldInfo _hazardActive, _hazardCenter, _hazardRadius;
 
         readonly PlayerShipController _ship;
-        EnemyWorld _enemies;
+        RoguePirates.V4.Enemies.IEnemyWorldView _enemies;
+        RoguePirates.V4.Enemies.IHostileProjectileView _shots;
+        RoguePirates.V4.Enemies.IHazardView _hazards;
         float _steerSign;
         Vector3 _stuckAnchor;
         float _stuckClock;
@@ -138,18 +137,18 @@ namespace RoguePirates.V4.DevTools.Trace
 
         void AddEnemies(Vector3 pos, ref Vector3 threat, ref float danger)
         {
-            if (_enemies == null) _enemies = UnityEngine.Object.FindFirstObjectByType<EnemyWorld>();
-            var agents = _enemies != null ? _enemies.Agents : null;
-            if (agents == null) return;
-            for (var i = 0; i < agents.Length; i++)
+            ResolveViews();
+            if (!_enemies.Exists) return;
+            var capacity = _enemies.Capacity;
+            for (var i = 0; i < capacity; i++)
             {
-                if (!agents[i].active) continue;
-                var away = pos - Flat(agents[i].position);
-                var range = ThreatRange + agents[i].radius + (agents[i].isBoss ? 10f : 0f);
+                if (!_enemies.TryGet(i, out var agent)) continue;
+                var away = pos - Flat(agent.position);
+                var range = ThreatRange + agent.radius + (agent.isBoss ? 10f : 0f);
                 var d = away.magnitude;
                 if (d > range || d < 0.001f) continue;
                 var w = (1f - d / range);
-                w *= w * (agents[i].isBoss ? 2.5f : agents[i].isElite ? 1.6f : 1f);
+                w *= w * (agent.isBoss ? 2.5f : agent.isElite ? 1.6f : 1f);
                 threat += away / d * w;
                 danger += w;
             }
@@ -157,13 +156,14 @@ namespace RoguePirates.V4.DevTools.Trace
 
         void AddProjectiles(Vector3 pos, ref Vector3 threat, ref float danger)
         {
-            if (HostileProjectileWorld.Instance == null || !(ProjectilePool?.GetValue(HostileProjectileWorld.Instance) is HostileProjectile[] pool)) return;
-            for (var i = 0; i < pool.Length; i++)
+            ResolveViews();
+            var capacity = _shots.Capacity;
+            for (var i = 0; i < capacity; i++)
             {
-                if (!pool[i].active) continue;
-                var rel = pos - Flat(pool[i].position);
+                if (!_shots.TryGet(i, out var shot)) continue;
+                var rel = pos - Flat(shot.position);
                 if (rel.sqrMagnitude > ProjectileRange * ProjectileRange) continue;
-                var v = Flat(pool[i].velocity);
+                var v = Flat(shot.velocity);
                 var speed2 = v.sqrMagnitude;
                 if (speed2 < 0.01f) continue;
                 var tClosest = Vector3.Dot(rel, v) / speed2; // seconds until closest approach
@@ -180,26 +180,40 @@ namespace RoguePirates.V4.DevTools.Trace
 
         void AddHazards(Vector3 pos, ref Vector3 threat, ref float danger)
         {
-            if (!(HazardSlots?.GetValue(null) is Array slots)) return;
-            foreach (var slot in slots)
+            ResolveViews();
+            var capacity = _hazards.Capacity;
+            for (var i = 0; i < capacity; i++)
             {
-                if (slot == null) continue;
-                if (_hazardActive == null)
-                {
-                    var type = slot.GetType();
-                    _hazardActive = type.GetField("active");
-                    _hazardCenter = type.GetField("center");
-                    _hazardRadius = type.GetField("radius");
-                }
-                if (!(bool)_hazardActive.GetValue(slot)) continue;
-                var away = pos - Flat((Vector3)_hazardCenter.GetValue(slot));
-                var reach = (float)_hazardRadius.GetValue(slot) + 3f;
+                if (!_hazards.TryGet(i, out var hazard)) continue;
+                var away = pos - Flat(hazard.center);
+                var reach = hazard.radius + 3f;
                 var d = away.magnitude;
                 if (d > reach) continue;
                 var w = 3f * (1f - d / reach) + 0.5f;
                 threat += (d > 0.05f ? away / d : Vector3.forward) * w;
                 danger += w;
             }
+        }
+
+        /// <summary>The run's enemy views; in V3 scenes (golden recordings, no V4 run context) the legacy ones.</summary>
+        void ResolveViews()
+        {
+            if (_enemies != null && _shots != null && _hazards != null) return;
+            var game = UnityEngine.Object.FindFirstObjectByType<RoguePirates.V4.V4Game>();
+            var context = game != null ? game.Context : null;
+            if (context != null)
+            {
+                context.TryGet(out _enemies);
+                context.TryGet(out _shots);
+                context.TryGet(out _hazards);
+            }
+            if (game != null && (_enemies == null || _shots == null || _hazards == null))
+                Debug.LogError("PlayerPilot: the V4 run does not register the enemy views");
+            if (game != null) return;
+            // V3 scenes (the golden recordings) have no V4 run: the legacy world through the same views.
+            _enemies ??= new RoguePirates.V4.Legacy.LegacyEnemyWorldView();
+            _shots ??= new RoguePirates.V4.Legacy.LegacyHostileProjectileView();
+            _hazards ??= new RoguePirates.V4.Legacy.LegacyHazardView();
         }
 
         Vector3 PickupPull(Vector3 pos)

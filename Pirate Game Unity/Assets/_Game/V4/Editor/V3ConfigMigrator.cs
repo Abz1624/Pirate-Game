@@ -185,6 +185,7 @@ namespace RoguePirates.V4.Editor
             var report = ConfigValidator.Validate(set);
             log.AppendLine($"config set: {set.configs.Count} configs, hash {set.ComputeHash().Substring(0, 12)}");
             log.Append(report);
+            log.Append(ApplyM8World());
             return log.ToString();
         }
 
@@ -592,6 +593,77 @@ namespace RoguePirates.V4.Editor
             }
             AssetDatabase.SaveAssets();
             return $"M6 weapon visuals written for {count} weapons" + (skiff == null || skiff.visualPrefab == null ? " (no Cannonboat model found for skiffs)" : string.Empty) + "\n";
+        }
+
+        [MenuItem("RoguePirates/V4/Apply M8 Enemy World Rules")]
+        static void ApplyM8WorldFromMenu() => Debug.Log(ApplyM8World());
+
+        /// <summary>
+        /// M8: the per-enemy rules the V3 enemy world hard-coded by enemy id, as archetype and variant data (V3 matched
+        /// the exact id, so each id's rules sit on its own asset). Idempotent; everything else is reset to "no rule".
+        /// </summary>
+        public static string ApplyM8World()
+        {
+            var log = new StringBuilder();
+            var rules = new Dictionary<string, ArchetypeWorldRules>();
+            foreach (var guid in AssetDatabase.FindAssets("t:EnemyArchetypeConfig", new[] { DataRoot + "/Enemies" }))
+            {
+                var a = AssetDatabase.LoadAssetAtPath<EnemyArchetypeConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                a.world = new ArchetypeWorldRules();
+                rules[a.enemyId] = a.world;
+                EditorUtility.SetDirty(a);
+            }
+            foreach (var guid in AssetDatabase.FindAssets("t:EnemyVariantConfig", new[] { DataRoot + "/Variants" }))
+            {
+                var v = AssetDatabase.LoadAssetAtPath<EnemyVariantConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                v.world = new ArchetypeWorldRules();
+                rules[v.variantId] = v.world;
+                EditorUtility.SetDirty(v);
+            }
+
+            ArchetypeWorldRules Rules(string id)
+            {
+                if (rules.TryGetValue(id, out var r)) { log.AppendLine($"{id}: world rules"); return r; }
+                log.AppendLine($"WARNING {id}: no archetype or variant");
+                return new ArchetypeWorldRules();
+            }
+            // EnemyWorld.Spawn (initial charge timer, initial attack cooldown), UpdateView and TickBehavior (swordfish).
+            Rules("swordfish").initialChargeTimer = new FloatOverride { enabled = true, value = 0f };
+            Rules("swordfish").swordfishSpringDash = true;
+            Rules("cannonboat").initialAttackCooldown = new FloatOverride { enabled = true, value = 1.1f };
+            Rules("drowned_harrier").initialAttackCooldown = new FloatOverride { enabled = true, value = 0.9f };
+            // SaltwindCombatAgentStateStore.GetOrCreate.
+            Rules("powder_barge").initialCombatPhaseTimer = 2f;
+            // SaltwindCombatBehaviorSystem / SaltwindSpecialistCombat repair targets.
+            Rules("repair_tender").excludedFromRepair = true;
+            // SaltwindCombatBehaviorSystem.TryTickMovement (R-100).
+            Rules("hammerhead").eliteLatchesSecondChargeForAll = true;
+            // EnemyRangedAttackRules.SupportsRangedAttacks.
+            foreach (var id in new[] { "cannonboat", "gunner_cog", "bomb_boat", "manta_ray", "drowned_harrier" }) Rules(id).alwaysRanged = true;
+            // EnemyWorld.TickRangedAttack / GetAttackRecovery / GetHostileShotProfile (enemies without a combat profile).
+            Rules("reef_crab_miniboss").noProfilelessRangedAttack = true;
+            Rules("cannonboat").rangedMinRangeFactor = new FloatOverride { enabled = true, value = 0.8f };
+            Rules("cannonboat").rangedMaxRangeFactor = new FloatOverride { enabled = true, value = 1.15f };
+            Rules("cannonboat").rangedRecovery = new FloatOverride { enabled = true, value = 2f };
+            Rules("manta_ray").rangedFlankShots = true;
+            void Shot(string id, float speed, float life, float hit, float visual)
+            {
+                var r = Rules(id);
+                r.ownShotProfile = true;
+                r.shotSpeed = speed; r.shotLife = life; r.shotHitRadius = hit; r.shotVisualRadius = visual;
+            }
+            Shot("drowned_harrier", 10f, 1.45f, 0.24f, 0.14f);
+            Shot("cannonboat", 9f, 1.55f, 0.38f, 0.16f);
+            // EnemyWorld.ApplyDamage: no damage highlight for Powder Kegs hits.
+            foreach (var guid in AssetDatabase.FindAssets("t:WeaponConfig", new[] { DataRoot + "/Weapons" }))
+            {
+                var weapon = AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                if (weapon.visual == null) continue;
+                weapon.visual.noHitHighlight = weapon.weaponId == "powder_kegs";
+                EditorUtility.SetDirty(weapon);
+            }
+            AssetDatabase.SaveAssets();
+            return log.ToString();
         }
 
         public const string StageContentPath = DataRoot + "/Stage/StageContent_Saltwind.asset";

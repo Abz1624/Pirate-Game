@@ -32,7 +32,8 @@ namespace RoguePirates.V4.DevTools.Trace
         readonly List<KillEvent> _kills = new List<KillEvent>();
         readonly SortedDictionary<string, int> _minuteSpawns = new SortedDictionary<string, int>();
 
-        EnemyWorld _world;
+        RoguePirates.V4.Enemies.IEnemyWorldView _enemies;
+        RoguePirates.V4.Enemies.IEnemyDevControl _enemyDev;
         POIManager _poi;
         RoguePirates.V4.Stage.IStageContent _stage; // M7: V4 stage content (the V3 scene keeps POIManager)
         PlayerShipController _ship;
@@ -140,10 +141,22 @@ namespace RoguePirates.V4.DevTools.Trace
         {
             _started = true;
             _startFrame = Time.frameCount;
-            _world = FindFirstObjectByType<EnemyWorld>();
             _poi = FindFirstObjectByType<POIManager>();
             var game = FindFirstObjectByType<RoguePirates.V4.V4Game>();
-            if (game != null && game.Context != null) game.Context.TryGet(out _stage);
+            if (game != null && game.Context != null)
+            {
+                game.Context.TryGet(out _stage);
+                game.Context.TryGet(out _enemies);
+                game.Context.TryGet(out _enemyDev);
+            }
+            // V3 scenes (the golden recordings) have no V4 run: read the legacy world through the same views. A V4 run
+            // always registers them; never fall back there (it would read an empty legacy world after M8).
+            if (game == null && (_enemies == null || _enemyDev == null))
+            {
+                var legacy = new RoguePirates.V4.Legacy.LegacyEnemyWorldView();
+                _enemies ??= legacy;
+                _enemyDev ??= legacy;
+            }
             _ship = FindFirstObjectByType<PlayerShipController>();
             _bus = TriggerBus.Instance;
             if (_bus != null) { _bus.Kill += OnKill; _bus.ChestOpened += OnChest; }
@@ -165,27 +178,24 @@ namespace RoguePirates.V4.DevTools.Trace
 
         void ScanAgents(float t)
         {
-            if (_world == null || _world.Agents == null) { _kills.Clear(); return; }
-            var agents = _world.Agents;
-            var defs = _world.Definitions;
+            if (_enemies == null || !_enemies.Exists) { _kills.Clear(); return; }
             _seen.Clear();
-            for (var i = 0; i < agents.Length; i++)
+            var capacity = _enemies.Capacity;
+            for (var i = 0; i < capacity; i++)
             {
-                var a = agents[i];
-                if (!a.active) continue;
-                _seen.Add(a.id);
-                if (!_alive.TryGetValue(a.id, out var info))
+                if (!_enemies.TryGet(i, out var a)) continue;
+                _seen.Add(a.unitId);
+                if (!_alive.TryGetValue(a.unitId, out var info))
                 {
-                    var def = defs != null && a.definitionIndex >= 0 && a.definitionIndex < defs.Length ? defs[a.definitionIndex] : null;
-                    info = new AgentInfo { Enemy = def != null ? def.id : "?", Elite = a.isElite, Boss = a.isBoss };
+                    info = new AgentInfo { Enemy = a.enemyId, Elite = a.isElite, Boss = a.isBoss };
                     _totalSpawns++;
                     _minuteSpawns.TryGetValue(info.Enemy, out var c);
                     _minuteSpawns[info.Enemy] = c + 1;
-                    Add(new JsonLine("spawn").Num("t", t).Int("f", Frame).Int("uid", a.id).Str("enemy", info.Enemy)
+                    Add(new JsonLine("spawn").Num("t", t).Int("f", Frame).Int("uid", a.unitId).Str("enemy", info.Enemy)
                         .Bool("elite", info.Elite).Bool("boss", info.Boss).Num("x", a.position.x).Num("z", a.position.z));
                 }
                 info.Pos = a.position;
-                _alive[a.id] = info;
+                _alive[a.unitId] = info;
             }
 
             _removed.Clear();
@@ -288,21 +298,20 @@ namespace RoguePirates.V4.DevTools.Trace
                 Add(new JsonLine("arena").Num("t", t).Int("f", Frame).Int("focus", focus).Str("state", "begin"));
             }
             if (_request.killArenaFocusAfterSeconds < 0f || t < _arenaStart + _request.killArenaFocusAfterSeconds || run.IsRunEnded || run.IsPaused) return;
-            if (_world == null || !_world.TryGetAgentByUnitId(focus, out var index)) return;
-            var agent = _world.Agents[index];
-            _world.ApplyDamage(index, Mathf.Max(agent.hp, agent.maxHp) + 500f, false, weaponId: "deck_cannons");
+            if (_enemies == null || !_enemies.TryFindByUnitId(focus, out var index)) return;
+            _enemyDev.Kill(index, "deck_cannons");
             Add(new JsonLine("arena").Num("t", t).Int("f", Frame).Int("focus", focus).Str("state", "killed"));
         }
 
         /// <summary>Lethal hit on the active boss through the weapon-hit path (same as SaltwindScenePlayModeTests).</summary>
         void TryKillBoss()
         {
-            if (_world == null || _world.Agents == null) return;
-            for (var i = 0; i < _world.Agents.Length; i++)
+            if (_enemies == null || !_enemies.Exists) return;
+            var capacity = _enemies.Capacity;
+            for (var i = 0; i < capacity; i++)
             {
-                var agent = _world.Agents[i];
-                if (!agent.active || !agent.isBoss) continue;
-                _world.ApplyDamage(i, Mathf.Max(agent.hp, agent.maxHp) + 500f, false, weaponId: "deck_cannons");
+                if (!_enemies.TryGet(i, out var agent) || !agent.isBoss) continue;
+                _enemyDev.Kill(i, "deck_cannons");
                 return;
             }
         }

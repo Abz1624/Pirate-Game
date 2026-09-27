@@ -20,7 +20,6 @@ namespace RoguePirates.V4.DevTools.Console
 
         string _selected;
         float _distance = 14f;
-        EnemyWorld _world;
         PlayerShipController _ship;
 
         public void Draw(TuningConsole console)
@@ -28,22 +27,26 @@ namespace RoguePirates.V4.DevTools.Console
             var game = console.Game;
             if (game == null || !game.IsModuleLab) { GUILayout.Label("Open the V4ModuleLab scene to spawn enemies on demand."); return; }
             var config = game.Config;
-            if (_world == null) _world = Object.FindFirstObjectByType<EnemyWorld>();
             if (_ship == null) _ship = Object.FindFirstObjectByType<PlayerShipController>();
-            var world = _world;
             var ship = _ship;
-            if (config == null || world == null || ship == null) { GUILayout.Label("Run not ready."); return; }
+            RoguePirates.V4.Spawning.IEnemySpawnSink sink = null;
+            IEnemyDevControl dev = null;
+            if (config == null || ship == null || game.Context == null || !game.Context.TryGet(out sink) || !game.Context.TryGet(out dev))
+            {
+                GUILayout.Label("Run not ready.");
+                return;
+            }
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label($"Enemies alive: {world.ActiveCount}", GUILayout.Width(130));
+            GUILayout.Label($"Enemies alive: {sink.ActiveCount}", GUILayout.Width(130));
             GUILayout.Label("Distance", GUILayout.Width(56));
             _distance = GUILayout.HorizontalSlider(_distance, 6f, 30f, GUILayout.Width(90));
             GUILayout.Label($"{_distance:0} m", GUILayout.Width(40));
-            if (GUILayout.Button("Clear all")) world.DespawnAllActive();
+            if (GUILayout.Button("Clear all")) dev.DespawnAll();
             GUILayout.EndHorizontal();
 
             // Elite rows spawn the elite's own definition flagged elite (Rich affix), so its elite combat profile runs
-            // (R-03). Spawns go through EnemyWorld.Spawn without a spawn profile: no encounter overrides or
+            // (R-03). Spawns go through the enemy sink's Spawn without a spawn profile: no encounter overrides or
             // profile-driven initial timers.
             var rows = config.All<EnemyArchetypeConfig>().Where(a => a.inLegacyDatabase)
                 .Select(a => (id: a.enemyId, label: a.enemyId, spawnId: a.enemyId, elite: false, stats: (System.Func<ResolvedEnemyStats>)(() => EnemyStatResolver.Resolve(a))))
@@ -58,20 +61,19 @@ namespace RoguePirates.V4.DevTools.Console
             {
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button(row.label, _selected == row.id ? GUI.skin.box : GUI.skin.label, GUILayout.Width(210))) _selected = row.id;
-                if (GUILayout.Button("Spawn", GUILayout.Width(60))) Spawn(world, ship, row.spawnId, row.elite);
+                if (GUILayout.Button("Spawn", GUILayout.Width(60))) Spawn(sink, ship, row.spawnId, row.elite);
                 GUILayout.EndHorizontal();
                 if (_selected == row.id) DrawInspector(row.stats());
             }
         }
 
-        void Spawn(EnemyWorld world, PlayerShipController ship, string enemyId, bool elite)
+        void Spawn(RoguePirates.V4.Spawning.IEnemySpawnSink sink, PlayerShipController ship, string enemyId, bool elite)
         {
-            var defs = world.Definitions;
-            var index = System.Array.FindIndex(defs, d => d != null && d.id == enemyId);
+            var index = sink.FindDefinition(enemyId);
             if (index < 0) { Debug.LogWarning($"Module Lab: {enemyId} is not in the run database"); return; }
             var forward = ship.MovementForward.sqrMagnitude > 0.01f ? ship.MovementForward.normalized : Vector3.forward;
             var position = ship.Position + forward * _distance;
-            world.Spawn(index, position, elite ? EliteAffix.Rich : EliteAffix.None);
+            sink.Spawn(index, position, elite ? ConfigEnums.EliteAffix.Rich : ConfigEnums.EliteAffix.None, 1f, 1f, 1f);
         }
 
         static void DrawInspector(ResolvedEnemyStats r)

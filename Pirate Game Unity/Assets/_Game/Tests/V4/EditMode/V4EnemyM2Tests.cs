@@ -284,6 +284,14 @@ namespace RoguePirates.V4.Tests
             "Editor/V3ConfigMigrator.cs:lightning_mast",
             "Editor/V3ConfigMigrator.cs:flying_cutlasses",
             "Editor/V3ConfigMigrator.cs:powder_kegs",
+            // M8: the world-rules data step maps V3 EnemyWorld's enemy-id branches onto archetype/variant data.
+            "Editor/V3ConfigMigrator.cs:swordfish",
+            "Editor/V3ConfigMigrator.cs:powder_barge",
+            "Editor/V3ConfigMigrator.cs:repair_tender",
+            "Editor/V3ConfigMigrator.cs:hammerhead",
+            "Editor/V3ConfigMigrator.cs:gunner_cog",
+            "Editor/V3ConfigMigrator.cs:bomb_boat",
+            "Editor/V3ConfigMigrator.cs:manta_ray",
         };
 
         [Test]

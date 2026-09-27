@@ -40,6 +40,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Concurrency tags the timeline's tag caps count (e.g. charge_windup).")] public string[] concurrencyTags = Array.Empty<string>();
         [Tooltip("Tier the timeline pools unlock by (DifficultyCurve tierUnlocks).")] public ConfigEnums.EnemyTier spawnTier = ConfigEnums.EnemyTier.Soldier;
         [Tooltip("Aliases: copied into the legacy combat-profile registry at run start and on edits; reaches newly spawned enemies. Registry elites: the elite's own definition (appended to the run database) reads this profile when the timeline spawns the elite (R-03). Behaviors hard-coded in EnemyWorld move to data in M8.")] public ArchetypeCombat combat = new ArchetypeCombat();
+        [Tooltip("The variant's own id-matched rules (V3 matched the exact enemy id, so they are not inherited from the base).")] public ArchetypeWorldRules world = new ArchetypeWorldRules();
 
         public override void Validate(ConfigValidationReport report)
         {

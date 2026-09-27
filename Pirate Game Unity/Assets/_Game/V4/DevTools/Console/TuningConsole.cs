@@ -35,7 +35,6 @@ namespace RoguePirates.V4.DevTools.Console
         bool _pauseWhileOpen;
         bool _pausedByConsole;
         float _fps;
-        EnemyWorld _world;
 
         public V4Game Game { get; private set; }
         /// <summary>Counts objects created outside the V4 view pool (Pools section; off until switched on).</summary>
@@ -298,9 +297,10 @@ namespace RoguePirates.V4.DevTools.Console
         void DrawHeader()
         {
             var run = RunManager.Instance;
-            if (_world == null) _world = FindFirstObjectByType<EnemyWorld>();
+            RoguePirates.V4.Enemies.IEnemyWorldView enemies = null;
+            Game?.Context?.TryGet(out enemies);
             var t = run != null ? run.ElapsedSeconds : 0f;
-            var alive = _world != null ? _world.ActiveCount : 0;
+            var alive = enemies != null ? enemies.ActiveCount : 0;
             GUILayout.Label($"Run {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00}   Phase {PhaseLabel()}   Pressure —   Enemies {alive}   Pools {PoolsLabel()}   FPS {_fps:0}",
                 GUI.skin.box);
         }

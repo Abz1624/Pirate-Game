@@ -46,23 +46,27 @@ namespace RoguePirates.V4.DevTools.Console
             GUILayout.BeginHorizontal();
             GUILayout.Label("Boss health %", GUILayout.Width(90));
             _hpPercent = GUILayout.TextField(_hpPercent, GUILayout.Width(50));
-            if (GUILayout.Button("Set", GUILayout.Width(50))) _last = SetBossHealth(_hpPercent);
+            if (GUILayout.Button("Set", GUILayout.Width(50))) _last = SetBossHealth(game, _hpPercent);
             GUILayout.EndHorizontal();
             if (_last.Length > 0) GUILayout.Label(_last, _wrap, GUILayout.Width(TextWidth));
         }
 
-        /// <summary>Sets the live boss's health to a percentage of its maximum (legacy enemy world until M8).</summary>
-        static string SetBossHealth(string percentText)
+        /// <summary>Sets the live boss's health to a percentage of its maximum.</summary>
+        static string SetBossHealth(V4Game game, string percentText)
         {
             if (!float.TryParse(percentText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var percent))
                 return "Not a number";
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
-            if (world == null || !world.TryFindActiveBoss(out var slot, out var boss)) return "No boss alive";
-            var agents = world.Agents;
-            var agent = agents[slot];
-            agent.hp = Mathf.Clamp(boss.maxHp * percent / 100f, 1f, boss.maxHp);
-            agents[slot] = agent;
-            return $"Boss health set to {agent.hp:0} / {boss.maxHp:0}";
+            RoguePirates.V4.Enemies.IEnemyWorldView enemies = null;
+            RoguePirates.V4.Enemies.IEnemyDevControl dev = null;
+            if (game == null || game.Context == null || !game.Context.TryGet(out enemies) || !game.Context.TryGet(out dev)) return "Run not ready";
+            for (var i = 0; i < enemies.Capacity; i++)
+            {
+                if (!enemies.TryGet(i, out var boss) || !boss.isBoss) continue;
+                dev.SetHealthFraction(i, percent / 100f);
+                enemies.TryGet(i, out boss);
+                return $"Boss health set to {boss.hp:0} / {boss.maxHp:0}";
+            }
+            return "No boss alive";
         }
 
         /// <summary>The dev-build B key (V3's V3BossSummonHotkey: run live, not paused).</summary>

@@ -57,3 +57,31 @@ MonoBehaviour:
     contactDamageEnabled: 1
     eliteHammerheadSecondCharge: 1
     eliteKrakenSequentialTraps: 0
+  world:
+    initialChargeTimer:
+      enabled: 0
+      value: 0
+    initialAttackCooldown:
+      enabled: 0
+      value: 0
+    initialCombatPhaseTimer: 0
+    swordfishSpringDash: 0
+    excludedFromRepair: 0
+    eliteLatchesSecondChargeForAll: 0
+    alwaysRanged: 0
+    noProfilelessRangedAttack: 0
+    rangedMinRangeFactor:
+      enabled: 0
+      value: 0
+    rangedMaxRangeFactor:
+      enabled: 0
+      value: 0
+    rangedRecovery:
+      enabled: 0
+      value: 0
+    rangedFlankShots: 0
+    ownShotProfile: 0
+    shotSpeed: 9
+    shotLife: 1.3
+    shotHitRadius: 0.22
+    shotVisualRadius: 0.13
