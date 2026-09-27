@@ -104,7 +104,7 @@ namespace RoguePirates.V4.Legacy
                     p.additiveDamagePerLevel = 0.005f; p.additiveDamageCap = 0.25f;
                     p.runningFuse = true; p.runningFuseSpeed = 4f; p.runningFuseSeconds = 2f; p.runningFuseWeaponId = "powder_kegs"; p.runningFuseMultiplier = 1.15f;
                     break;
-                case V3CaptainId.Richie: p.additiveDamagePerGold = 1f / 4500f; p.goldDamageCap = 0.2f; break;
+                case V3CaptainId.Richie: p.additiveDamageGoldDivisor = 4500f; p.goldDamageCap = 0.2f; break;
                 case V3CaptainId.Ember: p.additiveDamagePerLevel = 0.004f; p.additiveDamageCap = 0.18f; p.burnDamageMultiplier = 1.12f; break;
                 case V3CaptainId.Roxie: p.additiveDamagePerLevel = 0.003f; p.additiveDamageCap = 0.15f; p.lightningDamageMultiplier = 1.1f; break;
                 case V3CaptainId.Brine: p.armorPerLevel = 0.5f; p.armorCap = 25f; break;

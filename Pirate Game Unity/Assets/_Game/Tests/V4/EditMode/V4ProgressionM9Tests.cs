@@ -443,6 +443,118 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(turnBuffEnded, "the Gloves' buff ran out at least once");
         }
 
+        // ---- Captains (V3 V3CaptainController + V3CaptainActiveController) ---------------------------------------------
+
+        sealed class CaptainShip : ICaptainShip
+        {
+            public float SpeedValue;
+            public readonly List<string> Calls = new List<string>();
+            public bool Exists => true;
+            public float Speed => SpeedValue;
+            public void InitializeHull(float baseHull) => Calls.Add("hull " + baseHull);
+            public void SyncMaxHullKeepRatio() => Calls.Add("sync hull");
+            public void ApplySlow(float multiplier, float seconds) => Calls.Add($"slow {multiplier} {seconds}");
+            public void ApplyMoveEffect(float multiplier, float seconds) => Calls.Add($"move {multiplier} {seconds}");
+        }
+
+        sealed class CaptainRun : ICaptainRun
+        {
+            public Func<int> GoldOf;
+            public bool Exists => true;
+            public bool IsPaused => false;
+            public bool IsRunEnded => false;
+            public int Gold => GoldOf();
+            public int PlayerLevel => 1; // V3 reads LevelSystem.Instance.Level, else 1 (no level system here)
+        }
+
+        [Test]
+        public void Captains_EqualV3sControllers_ForEveryCaptain()
+        {
+            using var set = Parity();
+            const string activesKey = "combat_captain_actives_enabled";
+            var hadKey = PlayerPrefs.HasKey(activesKey);
+            var old = PlayerPrefs.GetInt(activesKey, 0);
+            PlayerPrefs.SetInt(activesKey, 1);
+            try
+            {
+                foreach (V3CaptainId id in Enum.GetValues(typeof(V3CaptainId)))
+                {
+                    var host = new GameObject("run");
+                    _created.Add(host);
+                    var rm = Awake<RunManager>(host);
+                    rm.BeginRun(3);
+                    var shipHost = new GameObject("ship");
+                    _created.Add(shipHost);
+                    var damage = shipHost.AddComponent<HighSeas.Combat.DamageReceiver>();
+                    var ship = shipHost.AddComponent<HighSeas.Player.PlayerShipController>();
+                    typeof(HighSeas.Player.PlayerShipController).GetField("_damage", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(ship, damage);
+                    var velocity = typeof(HighSeas.Player.PlayerShipController).GetField("_velocity", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var captainHost = new GameObject("captain");
+                    _created.Add(captainHost);
+                    var v3 = Awake<V3CaptainController>(captainHost);
+                    v3.Initialize(id, ship);
+                    var active = Awake<V3CaptainActiveController>(captainHost);
+                    active.Initialize(id);
+                    active.ResetForNewRun();
+
+                    var v4Stats = new PlayerStats();
+                    var resolver = new StatResolver(() => v4Stats);
+                    var v4Ship = new CaptainShip();
+                    var module = new CaptainModule(resolver, v4Ship, new CaptainRun { GoldOf = () => rm.Gold }, () => true);
+                    var config = set.All<CaptainConfig>().Single(c => c.legacyId == (int)id);
+                    module.BeginRun(config);
+                    Assert.AreEqual(rm.Stats.Get(StatId.Hull), v4Stats.Get(StatId.Hull), id + " hull base");
+                    Assert.AreEqual(rm.Stats.Get(StatId.MoveSpeed), v4Stats.Get(StatId.MoveSpeed), id + " speed base");
+                    Assert.AreEqual("hull " + V3CaptainProfile.Get(id).BaseHull, v4Ship.Calls[0], id + " InitializeFromRun");
+                    Assert.AreEqual(id == V3CaptainId.Brine, v4Ship.Calls.Contains("sync hull"), id + " Hank's hull resync");
+
+                    // V3's two Updates with an explicit frame (Time.deltaTime is 0 in edit mode).
+                    const float dt = 1f / 60f;
+                    string[] timers = { "_cooldownRemaining", "_braceTimer", "_kegRadiusBoostTimer", "_richieTimer", "_emberFlameTimer", "_roxieTimer", "_richieDamageBuffTimer" };
+                    var fastMove = typeof(V3CaptainController).GetField("_fastMoveTimer", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var fuse = typeof(V3CaptainController).GetField("_runningFuseActive", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var scenario = new System.Random((int)id + 11);
+                    var uses = 0;
+                    for (var frame = 0; frame < 3600; frame++)
+                    {
+                        var speed = scenario.Next(0, 90) == 0 ? 2f : 6f;
+                        velocity.SetValue(ship, new Vector3(0f, 0f, speed));
+                        v4Ship.SpeedValue = speed;
+                        if (frame % 5 == 0) rm.AddGold(scenario.Next(0, 30));
+                        if (id == V3CaptainId.Flint)
+                        {
+                            if (speed >= 4f) fastMove.SetValue(v3, (float)fastMove.GetValue(v3) + dt);
+                            else { fastMove.SetValue(v3, 0f); fuse.SetValue(v3, false); }
+                            if (!(bool)fuse.GetValue(v3) && (float)fastMove.GetValue(v3) >= 2f) fuse.SetValue(v3, true);
+                        }
+                        foreach (var t in timers)
+                        {
+                            var f = typeof(V3CaptainActiveController).GetField(t, BindingFlags.Instance | BindingFlags.NonPublic);
+                            f.SetValue(active, Mathf.Max(0f, (float)f.GetValue(active) - dt));
+                        }
+                        var press = scenario.Next(0, 120) == 0;
+                        if (press) { var used = active.TryActivate(); if (used) uses++; }
+                        module.Tick(dt, press);
+
+                        var tag = $"{id} frame {frame}";
+                        Assert.AreEqual(v3.GetAdditiveDamageBonus() + active.GetRichieActiveDamageBonus(), module.AdditiveDamageBonus(), tag + " additive damage");
+                        Assert.AreEqual(v3.GetWeaponDamageMultiplier("powder_kegs"), module.WeaponDamageMultiplier("powder_kegs"), tag + " keg damage");
+                        Assert.AreEqual(active.IncomingDamageMultiplier, module.IncomingDamageMultiplier, tag + " incoming damage");
+                        Assert.AreEqual(active.PowderKegBlastRadiusMultiplier, module.PowderKegBlastRadiusMultiplier, tag + " keg radius");
+                        Assert.AreEqual(active.FlameRangeMultiplier, module.FlameRangeMultiplier, tag + " flame range");
+                        Assert.AreEqual(active.BurnDamageMultiplier, module.BurnDamageMultiplier, tag + " burn");
+                        Assert.AreEqual(active.CooldownRemaining, module.CooldownRemaining, tag + " cooldown");
+                    }
+                    Assert.Greater(uses, 2, id + " used its active");
+                    Object.DestroyImmediate(captainHost);
+                }
+            }
+            finally
+            {
+                if (hadKey) PlayerPrefs.SetInt(activesKey, old); else PlayerPrefs.DeleteKey(activesKey);
+            }
+        }
+
         [Test]
         public void WeaponOfferData_EqualsV3sRunDatabase()
         {

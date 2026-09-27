@@ -10,7 +10,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("+ damage per player level, up to the cap (Rook, Sparky 0.005/0.25; Ember 0.004/0.18; Roxie 0.003/0.15).")]
         public float additiveDamagePerLevel;
         public float additiveDamageCap;
-        [Tooltip("+ damage per run gold, up to the cap (Richie: 1/4500, 0.2). 0 = none.")] public float additiveDamagePerGold;
+        [Tooltip("+ damage = run gold / this divisor, up to the cap (Richie: 4500, 0.2). 0 = none.")] public float additiveDamageGoldDivisor;
         public float goldDamageCap;
         [Tooltip("Running Fuse (Sparky): at speed m/s or faster for seconds, this weapon deals × multiplier.")] public bool runningFuse;
         public float runningFuseSpeed = 4f;
