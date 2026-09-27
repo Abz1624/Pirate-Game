@@ -21,7 +21,7 @@ MonoBehaviour:
   openingWeaponDraftEnabled: 0
   directionalWeaponTargetingEnabled: 1
   encounterSpawnEnabled: 1
-  captainActivesEnabled: 0
+  captainActivesEnabled: 1
   weaponEvolutionsEnabled: 1
   spawnDensityMultiplier: 1
   enemyHpMultiplier: 1

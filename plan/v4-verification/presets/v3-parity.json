@@ -363,6 +363,66 @@
                     "value": "0.4"
                 }
             ]
+        },
+        {
+            "configId": "experiment",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "captainActivesEnabled",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "unlocks.saltwind",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "startingWeaponRule",
+                    "value": "V3AlwaysFirstConquestWeapon"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.scavengers_net",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "stat",
+                    "value": "15"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.cartographers_folio",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "stat",
+                    "value": "17"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.quartermasters_ledger",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "stat",
+                    "value": "18"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.navigators_charts",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "stat",
+                    "value": "-1"
+                }
+            ]
         }
     ]
 }
