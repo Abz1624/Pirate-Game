@@ -157,6 +157,7 @@ namespace RoguePirates.V4.Stage
         public void TickManager(float dt)
         {
             if (!_enabled) return;
+            RestoreBossFightAfterResume();
             TickProgressiveChestSpawns();
             if (!_powderCacheCleared && _powderCacheEncounterCount > 0 && IsPowderCacheEncounterClear())
             {
@@ -603,6 +604,19 @@ namespace RoguePirates.V4.Stage
                 ConsumePoiMarker(i);
                 return;
             }
+        }
+
+        /// <summary>
+        /// R-102 fix (off = V3): V3's level-up resume always set the run to Playing, ending the boss fight while the boss
+        /// lived (ambient spawns lost the boss-fight rate and elite beats were no longer skipped). Put it back to
+        /// BossFight on the next stage tick while the summoned boss is alive.
+        /// </summary>
+        void RestoreBossFightAfterResume()
+        {
+            if (C == null || !C.bossFightSurvivesLevelUp) return;
+            if (!_bossSummoned || IsBossDead()) return;
+            if (!_run.Exists || _run.IsPaused || _run.IsRunEnded || _run.State != RunState.Playing) return;
+            _run.SetState(RunState.BossFight);
         }
 
         public bool IsBossDead() => _bossDefeated || (_bossSummoned && _encounters.BossObjectiveSecured);

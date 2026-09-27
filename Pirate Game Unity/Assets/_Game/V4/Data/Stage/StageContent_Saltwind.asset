@@ -68,3 +68,4 @@ MonoBehaviour:
   bossSpawner: {fileID: 11400000, guid: da3049c6851f7174790cd7255bdd0319, type: 2}
   powderCacheSpawner: {fileID: 11400000, guid: e43da1e265019104c8016b9b6fd5d57d, type: 2}
   continueAfterBossVictory: 1
+  bossFightSurvivesLevelUp: 1

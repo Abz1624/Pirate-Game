@@ -704,9 +704,18 @@ namespace RoguePirates.V4.Editor
             stage.beaconRetryAfterFailedSummon = true;
             stage.powderCachePaysWhenCleared = true;
             stage.promptReleasesUsedLandmark = true;
+            stage.bossFightSurvivesLevelUp = true; // R-102
             EditorUtility.SetDirty(stage);
+            // A more noticeable Barnacle King charge (V3: 2.6x speed for 0.4 s, about 2.6 m): 6x for 0.9 s, about 13.5 m.
+            var boss = AssetDatabase.LoadAssetAtPath<BossConfig>(V4BossConfigGenerator.AssetPath);
+            if (boss != null)
+            {
+                boss.charge.speedMultiplier = 6f;
+                boss.charge.executeSeconds = 0.9f;
+                EditorUtility.SetDirty(boss);
+            }
             AssetDatabase.SaveAssets();
-            return "M7 playtest decisions applied (R-47, R-93, R-94, R-96, R-97, R-101)\n";
+            return "M7 playtest decisions applied (R-47, R-93, R-94, R-96, R-97, R-101, R-102, boss charge)\n";
         }
 
         static EnemySpawnerConfig FindSpawner(string configId)

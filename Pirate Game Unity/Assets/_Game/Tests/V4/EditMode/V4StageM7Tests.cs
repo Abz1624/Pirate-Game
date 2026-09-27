@@ -405,6 +405,37 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
+        public void LevelUpDuringTheBossFight_EndsItAsV3_AndTheR102FixRestoresIt()
+        {
+            foreach (var fix in new[] { false, true })
+            {
+                var rig = Make((POIType.BossBeacon, new Vector3(0f, 0f, 5f)));
+                rig.Config.bossFightSurvivesLevelUp = fix;
+                rig.Stage.TryCompleteInteraction(0);
+                rig.Tick(1f);
+                Assert.AreEqual(RunState.BossFight, rig.Run.State);
+                // V3's level-up resume: SetPause(None) + EnterPlaying.
+                rig.Run.State = RunState.Playing;
+                rig.Tick(0.016f);
+                Assert.AreEqual(fix ? RunState.BossFight : RunState.Playing, rig.Run.State,
+                    fix ? "R-102 fix: back to the boss fight while the boss lives" : "V3: the level-up ends the boss fight");
+            }
+        }
+
+        [Test]
+        public void R102Fix_LeavesTheRunInPlaying_OnceTheBossIsDead()
+        {
+            var rig = Make((POIType.BossBeacon, new Vector3(0f, 0f, 5f)));
+            rig.Config.bossFightSurvivesLevelUp = true;
+            rig.Stage.TryCompleteInteraction(0);
+            rig.Tick(1f);
+            rig.Tracker.Set(1, EncounterState.Completed); // the kill path completed the boss encounter
+            rig.Run.State = RunState.Playing;
+            rig.Tick(0.016f);
+            Assert.AreEqual(RunState.Playing, rig.Run.State);
+        }
+
+        [Test]
         public void BossVictory_FollowsV3sOrder_AndTheRunContinues()
         {
             var rig = Make((POIType.BossBeacon, new Vector3(0f, 0f, 5f)));
@@ -635,7 +666,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsNotNull(stage.bossSpawner);
             Assert.IsNotNull(stage.powderCacheSpawner);
             Assert.IsTrue(stage.chestPlanUsesLoadout && stage.beaconExactMarkerAfterHint && stage.beaconFoundByProximityAfterHints && stage.forgetChestSkipWhenLeaving
-                && stage.beaconRetryAfterFailedSummon && stage.powderCachePaysWhenCleared && stage.promptReleasesUsedLandmark,
+                && stage.beaconRetryAfterFailedSummon && stage.powderCachePaysWhenCleared && stage.promptReleasesUsedLandmark && stage.bossFightSurvivesLevelUp,
                 "fixes approved at the M7 playtest (R-47, R-93, R-94, R-96, R-97, R-101) are on; the v3-parity preset turns them off");
             Assert.IsNotNull(set.configs.OfType<BossConfig>().SingleOrDefault(), "boss config in the set");
         }

@@ -311,6 +311,24 @@
                 {
                     "path": "promptReleasesUsedLandmark",
                     "value": "false"
+                },
+                {
+                    "path": "bossFightSurvivesLevelUp",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "boss.barnacle_king",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "charge.speedMultiplier",
+                    "value": "2.6"
+                },
+                {
+                    "path": "charge.executeSeconds",
+                    "value": "0.4"
                 }
             ]
         }

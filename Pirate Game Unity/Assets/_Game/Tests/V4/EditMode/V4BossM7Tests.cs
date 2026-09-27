@@ -746,6 +746,22 @@ namespace RoguePirates.V4.Tests
         // ---- Config ---------------------------------------------------------------------------------------------
 
         [Test]
+        public void BarnacleKingAsset_HasTheApprovedChargeTuning_AndTheParityPresetRestoresV3()
+        {
+            var set = UnityEditor.AssetDatabase.LoadAssetAtPath<ConfigSet>("Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset");
+            var asset = set.configs.OfType<BossConfig>().Single();
+            Assert.AreEqual(6f, asset.charge.speedMultiplier, "approved at the M7 playtest: a more noticeable charge");
+            Assert.AreEqual(0.9f, asset.charge.executeSeconds);
+            using var parity = new ConfigSetRuntime(set);
+            var errors = new List<string>();
+            var preset = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
+            Assert.IsTrue(PresetCodec.Apply(parity, PresetCodec.FromJson(preset), 0f, errors), string.Join("\n", errors));
+            var v3 = parity.Single<BossConfig>();
+            Assert.AreEqual(V4BossConfigGenerator.DirectorConstant("ChargeSpeedMult", float.NaN), v3.charge.speedMultiplier);
+            Assert.AreEqual(BarnacleKingBossAttackLogic.ChargeCommitSeconds, v3.charge.executeSeconds);
+        }
+
+        [Test]
         public void DefaultConfig_EqualsV3Constants()
         {
             var c = NewConfig();

@@ -110,3 +110,13 @@ Passed: a normal run (chests, Repair Wreck, Signal Buoy, Powder Cache, Beacon, B
 | R-93–R-97 not in the artifact's register | The artifact's register table stopped at R-92 (the repo register had them). The artifact now lists all rows through R-102 and shows every phase's review |
 
 The approved fixes are on in `stage.saltwind` (migrator `ApplyM7PlaytestDecisions`, re-applied by `ApplyM7`) and off in `presets/v3-parity.json`, so the end-of-phase trace set is unaffected (not re-run, per the trace policy). Tests: `ChestPrompt_R96Fix_OffersASkippedChestAgainAfterLeaving`, `Beacon_R96Fix_CanBeRetriedAfterAFailedSummon`, `BeaconPrompt_AfterTheSummon_LoopsAsV3_AndTheR101FixHidesIt`, stage config asserts the approved switches, the parity profile test still equals V3. V4 EditMode 209/209, PlayMode 33/33.
+
+### Follow-up decisions (27 Sep)
+
+| Decision | Done |
+|---|---|
+| R-102: resume the boss fight after a level-up | On (`bossFightSurvivesLevelUp`); tests: V3 ends the fight / the fix restores it; the fix leaves Playing once the boss is dead. Live probe: after a level-up click the next stage tick puts the run back to BossFight |
+| Make the boss charge more noticeable | `boss.barnacle_king` charge: 6× the boss's speed (was 2.6×) for 0.9 s (was 0.4 s): about 15 m/s over about 13.5 m (was 6.5 m/s over 2.6 m); telegraph (1.5 s) and toast unchanged. Live probe: 15 m/s during the charge. The v3-parity preset restores V3's 2.6 / 0.4. Test: the asset has the new values and the preset restores V3's |
+
+V4 EditMode 212/212. No trace run (the parity preset turns both off).
+

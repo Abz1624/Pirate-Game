@@ -40,9 +40,9 @@ MonoBehaviour:
     toastText: "Barnacle King \u2014 spread incoming"
   charge:
     telegraphSeconds: 1.5
-    executeSeconds: 0.4
+    executeSeconds: 0.9
     recoverySeconds: 2
-    speedMultiplier: 2.6
+    speedMultiplier: 6
     finalPhaseSecondCharge: 1
     toastText: "Barnacle King \u2014 charge incoming"
   bombard:

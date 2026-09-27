@@ -88,6 +88,8 @@ namespace RoguePirates.V4.Config
 
         [Header("Boss victory")]
         [Tooltip("The run continues after the boss dies (V3 Saltwind: on).")] public bool continueAfterBossVictory = true;
+        [Tooltip("R-102 fix (off = V3): a level-up during the boss fight returns to the boss fight (V3's level-up always resumed to Playing, which doubled ambient spawns and stopped skipping elite beats while the boss lived).")]
+        public bool bossFightSurvivesLevelUp;
 
         public override void Validate(ConfigValidationReport report)
         {
