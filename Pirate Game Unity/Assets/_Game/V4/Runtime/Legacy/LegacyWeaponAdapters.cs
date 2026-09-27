@@ -17,44 +17,6 @@ using Object = UnityEngine.Object;
 
 namespace RoguePirates.V4.Legacy
 {
-    /// <summary>The legacy EnemyWorld and StatusController as the weapon module's enemy query and damage sink.</summary>
-    [DeletedInPhase(8, "V4 enemy world")]
-    public sealed class LegacyWeaponEnemies : IEnemyQuery, IEnemyDamageSink
-    {
-        EnemyWorld _world;
-        EnemyWorld World => _world != null ? _world : (_world = Object.FindFirstObjectByType<EnemyWorld>());
-
-        public bool Exists => World != null;
-        public int Capacity => World != null ? World.Agents.Length : 0;
-        public bool IsActive(int i) => World.Agents[i].active;
-        // Raw reads, active or not: V3 read a just-killed enemy's last position after damaging it.
-        public Vector3 Position(int i) => World.Agents[i].position;
-        public Vector3 Velocity(int i) => World.Agents[i].velocity;
-        public float Radius(int i) => World.Agents[i].radius;
-        public float Hp(int i) => World.Agents[i].hp;
-        public bool IsElite(int i) => World.Agents[i].isElite;
-        public bool IsBoss(int i) => World.Agents[i].isBoss;
-        public bool TryGetNearest(Vector3 from, float range, out int index, bool preferElite = false)
-        {
-            index = -1;
-            return World != null && World.TryGetNearest(from, range, out index, preferElite);
-        }
-
-        public void ApplyDamage(int index, float amount, bool isCrit, bool showHitFeedback = true, string weaponId = null) =>
-            World?.ApplyDamage(index, amount, isCrit, showHitFeedback, weaponId);
-
-        public void ApplyStatus(int index, WeaponStatus status, float strength)
-        {
-            var type = status switch
-            {
-                WeaponStatus.Burn => StatusType.Burn,
-                WeaponStatus.Shock => StatusType.Shock,
-                WeaponStatus.Curse => StatusType.Curse,
-                _ => StatusType.Tarred,
-            };
-            StatusController.Instance?.ApplyStatus(index, type, strength);
-        }
-    }
 
     /// <summary>The player ship for weapons.</summary>
     [DeletedInPhase(14, "V4 ship snapshot")]
@@ -128,11 +90,13 @@ namespace RoguePirates.V4.Legacy
     {
         readonly Func<PlayerShipController> _ship;
         readonly Func<string, WeaponDefinition> _definition;
+        readonly RoguePirates.V4.Enemies.HellfirePatches _hellfire;
 
-        public LegacyWeaponHooks(Func<PlayerShipController> ship, Func<string, WeaponDefinition> definition)
+        public LegacyWeaponHooks(Func<PlayerShipController> ship, Func<string, WeaponDefinition> definition, RoguePirates.V4.Enemies.HellfirePatches hellfire)
         {
             _ship = ship;
             _definition = definition;
+            _hellfire = hellfire;
         }
 
         public void BeginDamageResolution() => CombatProcRuntime.BeginWeaponDamageResolution();
@@ -141,7 +105,8 @@ namespace RoguePirates.V4.Legacy
         public void RecordEmission(string weaponId) => WeaponDamageLedger.RecordEmission(weaponId);
         public void RecordConcurrentTargets(string weaponId, int count) => WeaponDamageLedger.RecordConcurrentTargets(weaponId, count);
         public void RecordControl(string weaponId, float seconds) => WeaponDamageLedger.RecordControl(weaponId, seconds);
-        public void SpawnFlamePatch(Vector3 position, string weaponId) => HellfirePatchWorld.TrySpawnOnDirectFlameKill(position, weaponId);
+        // M8: the V4 hellfire patches (V3's HellfirePatchWorld read V3's EnemyWorld, which left the V4 scenes).
+        public void SpawnFlamePatch(Vector3 position, string weaponId) => _hellfire?.TrySpawnOnDirectFlameKill(position, weaponId);
 
         public void ApplyShipRadiusDamage(Vector3 center, float radius, float damage, string weaponId) =>
             V3ShipCombatRegistry.ApplyRadiusDamage(_ship?.Invoke(), center, radius, damage, false, weaponId);

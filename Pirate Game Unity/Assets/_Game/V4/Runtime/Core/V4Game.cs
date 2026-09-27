@@ -34,6 +34,8 @@ namespace RoguePirates.V4
         [SerializeField] StageBalanceProfile legacyBaseProfile;
         [Tooltip("Module Lab scene: invulnerable ship, no ambient spawns or beats; enemies are spawned from the console.")]
         [SerializeField] bool moduleLab;
+        [Tooltip("M8: the enemy world's scene values (were serialized on V3's EnemyWorld component in the V4 scenes).")]
+        [SerializeField] Enemies.EnemyWorldSettings enemyWorld = new Enemies.EnemyWorldSettings();
 
         /// <summary>Raised once per run after it starts; DevTools hooks the Tuning Console here (event, not state).</summary>
         public static event Action<V4Game> RunStarted;
@@ -49,6 +51,7 @@ namespace RoguePirates.V4
         LegacyWeaponWiring _weapons;
         LegacyResultsTelemetry _resultsTelemetry;
         LegacyStageWiring _stage;
+        LegacyEnemyWiring _enemies;
         bool _running;
         bool _ended;
         bool _objectiveSecured;
@@ -79,12 +82,13 @@ namespace RoguePirates.V4
             // Contracts the V4 modules use, implemented over legacy systems until those systems are ported.
             var runState = new LegacyRunState();
             var encounters = new LegacyEncounterExecutor();
-            _context.Register<IEnemySpawnSink>(new LegacyEnemySpawnSink());
-            var enemyView = new LegacyEnemyWorldView();
-            _context.Register<Enemies.IEnemyWorldView>(enemyView);
-            _context.Register<Enemies.IEnemyDevControl>(enemyView);
-            _context.Register<Enemies.IHostileProjectileView>(new LegacyHostileProjectileView());
-            _context.Register<Enemies.IHazardView>(new LegacyHazardView());
+            // M8: the V4 enemy world (replaces EnemyWorld, StatusController and HostileProjectileWorld).
+            _enemies = new LegacyEnemyWiring(_config, enemyWorld, () => _shell != null ? _shell.Player : null);
+            _context.Register<IEnemySpawnSink>(_enemies.Contracts);
+            _context.Register<Enemies.IEnemyWorldView>(_enemies.Contracts);
+            _context.Register<Enemies.IEnemyDevControl>(_enemies.Contracts);
+            _context.Register<Enemies.IHostileProjectileView>(_enemies.Services.Shots);
+            _context.Register<Enemies.IHazardView>(_enemies.Services.Hazards);
             _context.Register<ISpawnPlacement>(new LegacySpawnPlacement());
             _context.Register<IRunRandom>(runState);
             _context.Register<IRunStatus>(runState);
@@ -96,16 +100,17 @@ namespace RoguePirates.V4
             var slots = new LegacySpawnSlots(_spawn.TickAmbient, _spawn.TickOvertime, _spawn.TickStorm, _spawn.TickBeats, _spawn.TickStormEdge);
             _shell = new LegacyRunShell(this, database, stageBuilder, player, islandLayout, usePlaceholderPoiVisuals, _config, legacyBaseProfile, slots, encounters);
             _context.Register<ISpawnerProfiles>(_shell.LegacyConfig);
+            _shell.Enemies = _enemies;
             // M5: the Weapon Manager (replaces WeaponController's firing and ProjectileWorld; the controller stays as the
             // loadout record the legacy level system writes).
-            _weapons = new LegacyWeaponWiring(_shell, _context, _config, runState, _events, _clock);
+            _weapons = new LegacyWeaponWiring(_shell, _context, _config, runState, _events, _clock, _enemies);
             _shell.Weapons = _weapons;
             _context.Register<RoguePirates.V4.Weapons.IWeaponManager>(_weapons.Manager);
             // M6: the read-only views presentation reads (over the legacy hubs until their modules exist).
             // M7: stage content (chests, landmarks, Beacon, discovery, interaction, boss director) replaces POIManager.
-            _stage = new LegacyStageWiring(_context, _config, runState, damageSink, _spawn, () => _shell.Player, () => _weapons.Manager, usePlaceholderPoiVisuals);
+            _stage = new LegacyStageWiring(_context, _config, runState, damageSink, _spawn, () => _shell.Player, () => _weapons.Manager, usePlaceholderPoiVisuals, _enemies);
             _shell.Stage = _stage;
-            var views = LegacyViewFactory.Create(player, _weapons.Manager, RestartRun, GoToMenu);
+            var views = LegacyViewFactory.Create(player, _weapons.Manager, RestartRun, GoToMenu, _enemies.Contracts);
             views.Stage = _stage.View;
             _context.Register<Views.IRunViews>(views);
             _resultsTelemetry = new LegacyResultsTelemetry();
@@ -190,6 +195,7 @@ namespace RoguePirates.V4
             _feed?.Detach();
             _resultsTelemetry?.Dispose();
             _stage?.Dispose();
+            _enemies?.Dispose();
             _weapons?.Dispose();
             _shell?.Unwire();
             _shell?.OnDestroy();
@@ -208,8 +214,11 @@ namespace RoguePirates.V4
         }
 
         /// <summary>Every live config edit is also a ConfigChanged fact on the event stream (telemetry, console log).</summary>
-        void OnConfigChanged(ConfigChange change) =>
+        void OnConfigChanged(ConfigChange change)
+        {
+            _enemies?.OnConfigChanged();
             _events.Publish(new CombatEvent(CombatEventKind.ConfigChanged, _clock.TickIndex, _clock.SimTime, 0, 0, 0f, 0f, 0f, change.configId + "." + change.path));
+        }
 
         void OnApplicationPause(bool paused) => _shell?.OnApplicationPause(paused);
 

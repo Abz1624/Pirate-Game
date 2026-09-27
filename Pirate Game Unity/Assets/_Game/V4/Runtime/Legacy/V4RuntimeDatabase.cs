@@ -190,7 +190,7 @@ namespace RoguePirates.V4.Legacy
     /// it at runtime (SaltwindCombatBehaviorSystem sets the elite hammerhead flag), so originals are snapshotted first
     /// and restored when the V4 run ends. Registry values are copied into agents at spawn: edits reach new spawns.
     /// </summary>
-    [DeletedInPhase(8, "V4 Enemy World reads archetype combat blocks directly")]
+    [DeletedInPhase(14, "Spawn parameters and combat dispatch still read the registry this fills from config")]
     public sealed class LegacyCombatProfileOverride : IDisposable
     {
         readonly ConfigSetRuntime _config;

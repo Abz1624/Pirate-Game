@@ -126,12 +126,14 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(SaltwindCombatFeature.IsEnabled);
 
             var game = Object.FindFirstObjectByType<V4Game>();
-            var legacy = Object.FindFirstObjectByType<EnemyWorld>();
-            var legacyShots = HostileProjectileWorld.Instance ?? Object.FindFirstObjectByType<HostileProjectileWorld>();
-            var legacyStatuses = StatusController.Instance;
-            Assert.IsNotNull(legacyShots);
-            Assert.IsNotNull(legacyStatuses);
-            Assert.AreEqual(0, legacy.ActiveCount, "the lab starts empty");
+            // M8: V3's enemy world left the run scenes; the test builds one (and V3's shots and statuses) to compare with.
+            Assert.IsNull(Object.FindFirstObjectByType<EnemyWorld>(), "M8: no V3 EnemyWorld in the lab");
+            var legacyHost = new GameObject("v3-lockstep-world");
+            var legacy = legacyHost.AddComponent<EnemyWorld>();
+            legacy.SetDefinitions(V4TestEnemies.Simulation().Definitions);
+            var legacyShots = legacyHost.AddComponent<HostileProjectileWorld>();
+            var legacyStatuses = legacyHost.AddComponent<StatusController>();
+            Assert.AreEqual(0, legacy.ActiveCount);
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             HazardPlayer.SetValue(null, ship);
             // Nothing else ticks the V3 world while paused (the shell, weapons and spawner stop).
@@ -141,7 +143,8 @@ namespace RoguePirates.V4.Tests
             var target = new LegacyEnemyTarget(ship);
             var effects = new LegacyEnemyEffects();
             var root = new GameObject("v4-lockstep-world");
-            var v4 = new EnemySimulation(legacy.Agents.Length, new LegacyEnemyRunState(), new LegacyEnemyViewSink(root.transform), new LegacyEnemySpawnParams(), new EnemyWorldSettings());
+            // A V3 EnemyWorld added at runtime has its code defaults (island probe 10; the scenes set 6).
+            var v4 = new EnemySimulation(legacy.Agents.Length, new LegacyEnemyRunState(), new LegacyEnemyViewSink(root.transform), new LegacyEnemySpawnParams(), new EnemyWorldSettings { islandAvoidanceProbeDistance = 10f });
             v4.SetDefinitions(legacy.Definitions, EnemySimulation.BuildRules(game.Config, legacy.Definitions));
             s.Simulation = v4;
             s.Hazards = new HazardTelegraphs(target, effects);
@@ -216,7 +219,9 @@ namespace RoguePirates.V4.Tests
             Assert.Greater(kills.Count, 0, "kills happened, so the kill timing was compared");
             v4.DespawnAllActive();
             s.Shots.ClearAllActive();
+            legacy.DespawnAllActive();
             Object.Destroy(root);
+            Object.Destroy(legacyHost);
         }
     }
 }

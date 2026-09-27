@@ -15,31 +15,35 @@ namespace RoguePirates.V4.Legacy
     [DeletedInPhase(14, "V4 ship")]
     public sealed class LegacyEnemyTarget : IEnemyTarget, IHostileShotTarget
     {
-        readonly PlayerShipController _ship;
+        readonly System.Func<PlayerShipController> _find;
+        PlayerShipController _ship;
 
         public LegacyEnemyTarget(PlayerShipController ship) { _ship = ship; }
+        /// <summary>The run's ship, looked up when first needed (the shell finds it during bootstrap).</summary>
+        public LegacyEnemyTarget(System.Func<PlayerShipController> find) { _find = find; }
 
-        public PlayerShipController Ship => _ship;
-        public bool Exists => _ship != null;
-        public Vector3 Position => _ship != null ? _ship.Position : Vector3.zero;
+        PlayerShipController ShipNow => _ship != null ? _ship : (_ship = _find?.Invoke());
+        public PlayerShipController Ship => ShipNow;
+        public bool Exists => ShipNow != null;
+        public Vector3 Position => ShipNow != null ? ShipNow.Position : Vector3.zero;
 
         public Vector3 Velocity
         {
             get
             {
-                if (_ship == null) return Vector3.zero;
-                var v = _ship.Velocity;
+                if (ShipNow == null) return Vector3.zero;
+                var v = ShipNow.Velocity;
                 v.y = 0f;
                 return v;
             }
         }
 
-        public float ContactRadius => _ship != null ? _ship.IslandCollisionRadius : 1.15f;
-        public bool HasDamageReceiver => _ship != null && _ship.Damage != null;
-        public bool IsAlive => HasDamageReceiver && _ship.Damage.IsAlive;
-        public Vector3 HullPosition => HasDamageReceiver ? _ship.Damage.transform.position : Position;
-        public void TakeDamage(float amount, Vector3 source, bool isCrit) { if (HasDamageReceiver) _ship.Damage.TakeDamage(amount, source, isCrit); }
-        public void ApplySlow(float speedMultiplier, float seconds) { if (_ship != null) _ship.ApplySlow(speedMultiplier, seconds); }
+        public float ContactRadius => ShipNow != null ? ShipNow.IslandCollisionRadius : 1.15f;
+        public bool HasDamageReceiver => ShipNow != null && ShipNow.Damage != null;
+        public bool IsAlive => HasDamageReceiver && ShipNow.Damage.IsAlive;
+        public Vector3 HullPosition => HasDamageReceiver ? ShipNow.Damage.transform.position : Position;
+        public void TakeDamage(float amount, Vector3 source, bool isCrit) { if (HasDamageReceiver) ShipNow.Damage.TakeDamage(amount, source, isCrit); }
+        public void ApplySlow(float speedMultiplier, float seconds) { if (ShipNow != null) ShipNow.ApplySlow(speedMultiplier, seconds); }
     }
 
     /// <summary>Enemy explosions: V3's SaltwindCombatEffects (the weapon juice controller's mine blast; visual only).</summary>

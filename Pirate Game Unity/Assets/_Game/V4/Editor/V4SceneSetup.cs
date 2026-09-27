@@ -294,6 +294,26 @@ namespace RoguePirates.V4.Editor
             return string.Join("\n", log);
         }
 
+        /// <summary>
+        /// M8: V3's EnemyWorld and StatusController leave the run scenes (the V4 enemy world replaces them; neither had an
+        /// Update, so the frame order of the remaining components is unchanged). HostileProjectileWorld was only ever
+        /// added at runtime.
+        /// </summary>
+        public static string ApplyM8()
+        {
+            var log = new List<string>();
+            foreach (var path in new[] { V4SceneNames.SaltwindRunPath, V4SceneNames.ModuleLabPath })
+            {
+                Edit(path, log, () =>
+                {
+                    RemoveAll<HighSeas.Enemies.EnemyWorld>(log);
+                    RemoveAll<HighSeas.Combat.StatusController>(log);
+                    RemoveAll<HighSeas.Combat.HostileProjectileWorld>(log);
+                });
+            }
+            return string.Join("\n", log);
+        }
+
         /// <summary>Gives the slot with <paramref name="role"/> the file ID of the <typeparamref name="T"/> on /Systems (T moves to a free ID).</summary>
         static void SwapSlotIntoComponentId<T>(string path, string role, List<string> log) where T : Component
         {

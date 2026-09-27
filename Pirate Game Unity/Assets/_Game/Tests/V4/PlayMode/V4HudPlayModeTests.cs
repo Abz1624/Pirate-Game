@@ -297,7 +297,7 @@ namespace RoguePirates.V4.Tests
             record.SetWeaponLoadout(loadout);
             HighSeas.UI.LevelSystem.Instance.SetPlaytestWeaponLoadout(loadout);
             var effects = Object.FindFirstObjectByType<V4PresentationRoot>().WeaponEffects;
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
 
             bool sawTimed = false, sawKeg = false, sawBlades = false;
             var deadline = Time.realtimeSinceStartup + 20f;
@@ -314,7 +314,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(sawBlades, "orbit blades drawn by the V4 presenter");
         }
 
-        static void Surround(EnemyWorld world, PlayerShipController ship)
+        static void Surround(RoguePirates.V4.Enemies.EnemySimulation world, PlayerShipController ship)
         {
             var shark = System.Array.FindIndex(world.Definitions, d => d != null && d.id == "shark");
             var forward = ship.MovementForward.sqrMagnitude > 0.01f ? ship.MovementForward.normalized : Vector3.forward;

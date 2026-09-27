@@ -82,7 +82,7 @@ namespace RoguePirates.V4.Enemies
         int _areaDenialTracked;
 
         /// <summary>
-        /// R-06 fix (port of LegacyAreaDenialRelease): each area-denial reservation is freed <paramref name="holdSeconds"/>
+        /// R-06 fix (was LegacyAreaDenialRelease on V3's static budget, M3-M7): each area-denial reservation is freed <paramref name="holdSeconds"/>
         /// after it was seen; 0 keeps V3's never-released budget (the v3-parity preset). Called once per frame where the
         /// legacy release ran (after the enemy frame), with the run clock.
         /// </summary>
@@ -121,8 +121,6 @@ namespace RoguePirates.V4.Enemies
     /// </summary>
     public sealed class HazardTelegraphs : IHazardView
     {
-        public enum HazardKind { Explosion, NetSlow, Mine }
-
         sealed class PendingHazard
         {
             public bool active;
@@ -154,7 +152,7 @@ namespace RoguePirates.V4.Enemies
             if (index < 0 || index >= _slots.Length) return false;
             var slot = _slots[index];
             if (slot == null || !slot.active) return false;
-            hazard = new HazardSnapshot { center = slot.center, radius = slot.radius, timer = slot.timer, armed = slot.armed };
+            hazard = new HazardSnapshot { kind = slot.kind, center = slot.center, radius = slot.radius, timer = slot.timer, armed = slot.armed };
             return true;
         }
 

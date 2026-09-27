@@ -31,12 +31,13 @@ namespace RoguePirates.V4.Legacy
 
         public WeaponManager Manager { get; }
 
-        public LegacyWeaponWiring(LegacyRunShell shell, RunContext context, ConfigSetRuntime config, IRunStatus run, CombatEvents events, RunClock clock)
+        public LegacyWeaponWiring(LegacyRunShell shell, RunContext context, ConfigSetRuntime config, IRunStatus run, CombatEvents events, RunClock clock,
+            LegacyEnemyWiring enemyWorld)
         {
             _shell = shell;
             _events = events;
             _clock = clock;
-            var enemies = new LegacyWeaponEnemies();
+            var enemies = enemyWorld.Contracts; // M8: the V4 enemy world (was LegacyWeaponEnemies over V3's EnemyWorld)
             var ship = new LegacyWeaponShip(() => _shell.Player);
             Func<string, HighSeas.Data.WeaponDefinition> definition = id => _shell.Database != null ? _shell.Database.GetWeapon(id) : null;
             // M6: effects go to the V4 weapon presenter the presentation root registers (was LegacyWeaponEffects).
@@ -44,7 +45,7 @@ namespace RoguePirates.V4.Legacy
             _effects = new WeaponEffectsForwarder(() => context.TryGet<IWeaponEffects>(out var fx) ? fx : null,
                 LegacyHazardTelegraphView.ShowTimedRing,
                 position => HighSeas.VFX.JuiceVfxBroker.Instance?.PlayWaterSplash(position));
-            var hooks = new LegacyWeaponHooks(() => _shell.Player, definition);
+            var hooks = new LegacyWeaponHooks(() => _shell.Player, definition, enemyWorld.Hellfire);
             var mods = new LegacyWeaponModifiers();
             var random = new LegacyCombatRandom();
 

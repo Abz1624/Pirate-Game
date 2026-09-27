@@ -15,109 +15,6 @@ using Object = UnityEngine.Object;
 
 namespace RoguePirates.V4.Legacy
 {
-    /// <summary>The V4 spawn controller's enemy sink over the legacy enemy world (M3–M7).</summary>
-    [DeletedInPhase(8, "V4 Enemy World")]
-    public sealed class LegacyEnemySpawnSink : IEnemySpawnSink
-    {
-        EnemyWorld _world;
-
-        EnemyWorld World
-        {
-            get
-            {
-                if (_world == null) _world = Object.FindFirstObjectByType<EnemyWorld>();
-                return _world;
-            }
-        }
-
-        EnemyDefinition[] Definitions => World != null ? World.Definitions : null;
-
-        public int ActiveCount => World != null ? World.ActiveCount : 0;
-
-        public int FindDefinition(string enemyId)
-        {
-            var defs = Definitions;
-            if (defs == null || string.IsNullOrEmpty(enemyId)) return -1;
-            for (var i = 0; i < defs.Length; i++) if (defs[i] != null && defs[i].id == enemyId) return i;
-            return -1;
-        }
-
-        /// <summary>EncounterSpawner.FindDefinitionIndex: same object, or same id.</summary>
-        public int IndexOf(EnemyDefinition definition)
-        {
-            var defs = Definitions;
-            if (defs == null || definition == null) return -1;
-            for (var i = 0; i < defs.Length; i++) if (defs[i] == definition || defs[i]?.id == definition.id) return i;
-            return -1;
-        }
-
-        EnemyDefinition At(int index)
-        {
-            var defs = Definitions;
-            return defs != null && index >= 0 && index < defs.Length ? defs[index] : null;
-        }
-
-        public string DefinitionId(int index) => At(index)?.id;
-        public bool DefinitionIsBoss(int index) => At(index) != null && At(index).isBoss;
-        public float DefinitionRadius(int index) => At(index) != null ? At(index).radius : 1f;
-        public float DefinitionHeightOffset(int index) => At(index) != null ? At(index).visualHeightOffset : 0f;
-
-        public int SpawnFromProfile(int definitionIndex, Vector3 position, SpawnProfile profile, int profileInstanceId,
-            FormationRole role, int formationSlot, int leaderUnitId, float hpMultiplier, float damageMultiplier) =>
-            World != null ? World.SpawnFromProfile(definitionIndex, position, profile, profileInstanceId, role, formationSlot, leaderUnitId, hpMultiplier, damageMultiplier) : -1;
-
-        public int Spawn(int definitionIndex, Vector3 position, ConfigEnums.EliteAffix affix, float speedMultiplier, float hpMultiplier, float damageMultiplier) =>
-            World != null ? World.Spawn(definitionIndex, position, (EliteAffix)(int)affix, speedMultiplier, hpMultiplier, damageMultiplier) : -1;
-
-        public int UnitIdAt(int slot) => World != null && slot >= 0 && slot < World.Agents.Length ? World.Agents[slot].id : -1;
-
-        public bool IsUnitActive(int unitId) => unitId > 0 && World != null && World.TryGetAgentByUnitId(unitId, out _);
-
-        public int MaxActiveUnitId()
-        {
-            if (World == null) return 0;
-            var max = 0;
-            foreach (var a in World.Agents) if (a.active && a.id > max) max = a.id;
-            return max;
-        }
-
-        public int NewestUnitAfter(int afterUnitId, int definitionIndex)
-        {
-            if (World == null || definitionIndex < 0) return -1;
-            var best = -1;
-            foreach (var a in World.Agents)
-                if (a.active && a.definitionIndex == definitionIndex && a.id > afterUnitId && a.id > best) best = a.id;
-            return best;
-        }
-
-        public int CountActive(int definitionIndex)
-        {
-            if (World == null || definitionIndex < 0) return 0;
-            var count = 0;
-            foreach (var a in World.Agents) if (a.active && a.definitionIndex == definitionIndex) count++;
-            return count;
-        }
-
-        public int CountActiveFromProfile(SpawnProfile profile)
-        {
-            if (World == null || profile == null) return 0;
-            var count = 0;
-            foreach (var a in World.Agents) if (a.active && a.spawnProfile == profile) count++;
-            return count;
-        }
-
-        public float ThreatOfNewestAfter(int afterUnitId)
-        {
-            if (World == null) return 0f;
-            var best = -1;
-            var threat = 0f;
-            foreach (var a in World.Agents)
-                if (a.active && a.id > afterUnitId && a.id > best) { best = a.id; threat = At(a.definitionIndex)?.threatCost ?? 0; }
-            return threat;
-        }
-
-        public void SetExperimentMultipliers(float hpMultiplier, float damageMultiplier) => World?.SetExperimentMultipliers(hpMultiplier, damageMultiplier);
-    }
 
     /// <summary>Spawn placement through the shared placement service, player transform and main camera.</summary>
     [DeletedInPhase(14, "V4 world module owns placement")]
@@ -210,7 +107,7 @@ namespace RoguePirates.V4.Legacy
     }
 
     /// <summary>Damage to the ship through its damage receiver (V4 PlayerDamageService from M8).</summary>
-    [DeletedInPhase(8, "PlayerDamageService")]
+    [DeletedInPhase(14, "PlayerDamageService (captain and item damage multipliers move to V4 in M9)")]
     public sealed class LegacyPlayerDamageSink : IPlayerDamageSink
     {
         PlayerShipController _ship;
@@ -341,7 +238,7 @@ namespace RoguePirates.V4.Legacy
     /// Creates the V4 spawn ticks at the frame positions of the V3 directors they replace (see LegacyUpdateSlot) and
     /// binds the scene's ambient slot.
     /// </summary>
-    [DeletedInPhase(8, "V4 owns the frame once the enemy world is V4")]
+    [DeletedInPhase(14, "V4 owns the frame once the run clock is V4")]
     public sealed class LegacySpawnSlots
     {
         public const string AmbientRole = "ambient";

@@ -189,7 +189,7 @@ namespace RoguePirates.V4.Tests
             yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return WaitForPlaying();
             var game = Object.FindFirstObjectByType<V4Game>();
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
             Assert.AreSame(game.Shell.RuntimeDatabase.Database.enemies, world.Definitions, "the enemy world must use the runtime database");
             var shark = world.Definitions.First(d => d != null && d.id == "shark");
             Assert.AreEqual(HideFlags.DontSave, shark.hideFlags & HideFlags.DontSave, "definitions are per-run copies, not assets");
@@ -233,7 +233,7 @@ namespace RoguePirates.V4.Tests
             yield return null;
             yield return WaitForPlaying();
             var game = Object.FindFirstObjectByType<V4Game>();
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
             // R-05: the overtime spawners' runtime profiles spawn the Drowned enemies.
             var schedule = game.Shell.LegacyConfig.RuntimeSchedule;
             Assert.AreEqual("drowned_pursuer", schedule.drownedPursuer.enemy.id);
@@ -256,7 +256,7 @@ namespace RoguePirates.V4.Tests
             SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return null;
             yield return WaitForPlaying();
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
             Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
             // Jump past the stage deadline (the console's forward jump), then overtime must spawn Drowned enemies (R-05).
             var run = RunManager.Instance;
@@ -348,7 +348,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Spawning.IEncounterExecutor>(out var executor) || game.Context.TryGet<RoguePirates.V4.Spawning.ISpawnController>(out _));
             executor = (RoguePirates.V4.Spawning.IEncounterExecutor)game.Context.Get<RoguePirates.V4.Spawning.ISpawnController>();
             game.Context.TryGet<RoguePirates.V4.Spawning.IEncounterTracker>(out var tracker);
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
             var before = world.ActiveCount;
             var id = tracker.Request(RoguePirates.V4.Spawning.EncounterKind.PowderCache, 3);
             executor.TriggerImmediate(game.Config.Single<RoguePirates.V4.Config.StageContentConfig>().powderCacheSpawner, 3, id);
@@ -373,7 +373,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3PressureBeatDirector>(), "no V3 beat director");
             Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3OvertimeDirector>(), "no V3 overtime director");
 
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
             var start = Time.realtimeSinceStartup;
             while (RunManager.Instance.ElapsedSeconds < 9f && Time.realtimeSinceStartup - start < 30f) yield return null;
             Assert.Greater(world.ActiveCount, 0, "ambient enemies spawned by V4");
@@ -461,7 +461,7 @@ namespace RoguePirates.V4.Tests
             HighSeas.Combat.WeaponDamageLedger.Snapshot().TryGetValue(weaponId, out var s) ? s.emissions : 0;
 
         /// <summary>A ring of sharks around the ship, and one ahead and to each side, so every weapon has a target.</summary>
-        static void SurroundWithEnemies(EnemyWorld world, PlayerShipController ship, int count = 8)
+        static void SurroundWithEnemies(RoguePirates.V4.Enemies.EnemySimulation world, PlayerShipController ship, int count = 8)
         {
             var shark = System.Array.FindIndex(world.Definitions, d => d != null && d.id == "shark");
             var forward = ship.MovementForward.sqrMagnitude > 0.01f ? ship.MovementForward.normalized : Vector3.forward;
@@ -488,7 +488,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(record.Weapons.Count, weapons.Slots.Count, "V4 slots mirror the record");
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             ship.Damage.SetPlaytestInvulnerable(true);
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
             SurroundWithEnemies(world, ship);
 
             var id = weapons.Slots[0].Id;
@@ -533,7 +533,7 @@ namespace RoguePirates.V4.Tests
             var record = Record();
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             ship.Damage.SetPlaytestInvulnerable(true);
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
             record.EnsureWeaponSlotCapacity(6);
             foreach (var loadout in new[]
                      {
@@ -569,7 +569,7 @@ namespace RoguePirates.V4.Tests
             yield return WaitForPlaying();
             var game = Object.FindFirstObjectByType<V4Game>();
             Assert.IsTrue(game.IsModuleLab);
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
             var start = Time.realtimeSinceStartup;
             while (RunManager.Instance.ElapsedSeconds < 6f && Time.realtimeSinceStartup - start < 20f) yield return null;
             Assert.AreEqual(0, world.ActiveCount, "no ambient spawns in the lab");
@@ -603,7 +603,7 @@ namespace RoguePirates.V4.Tests
             Object.FindFirstObjectByType<V4Game>().Modules.Add(probe);
 
             Object.FindFirstObjectByType<V4Game>().Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var poi); // M7: V4 stage content
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
             var summoned = false;
             for (var i = 0; i < 60 && !summoned; i++)
             {

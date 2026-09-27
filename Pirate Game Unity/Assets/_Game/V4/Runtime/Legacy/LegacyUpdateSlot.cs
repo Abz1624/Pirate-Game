@@ -13,7 +13,7 @@ namespace RoguePirates.V4.Legacy
     /// (V4SceneSetup.ApplyM3), the others are created at the same points of the run start. Unity's test runner orders
     /// scene components differently; exact trace parity in the player is the proof of the order.
     /// </summary>
-    [DeletedInPhase(8, "V4 owns the frame once the enemy world is V4")]
+    [DeletedInPhase(14, "V4 owns the frame once the run clock is V4")]
     [AddComponentMenu("")]
     public sealed class LegacyUpdateSlot : MonoBehaviour
     {

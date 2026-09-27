@@ -142,7 +142,7 @@ namespace RoguePirates.V4.Legacy
     /// The static RunEncounterTracker as V4's encounter records: the legacy enemy world's kill path completes the boss
     /// and Powder Cache encounters there (RegisterAgentKill) until the V4 enemy world (M8).
     /// </summary>
-    [DeletedInPhase(8, "The V4 enemy world completes encounters in the V4 tracker")]
+    [DeletedInPhase(14, "V4 encounter tracker (the kill path still completes encounters in the static tracker)")]
     public sealed class LegacyEncounterTracker : IEncounterTracker
     {
         public void ResetForRun() => RunEncounterTracker.ResetForNewRun();
@@ -177,7 +177,7 @@ namespace RoguePirates.V4.Legacy
     /// The legacy kill path told POIManager about a boss kill right before raising TriggerBus.Kill; V4 listens to that
     /// event (subscribed first, at run start) and gives the stage module the same moment.
     /// </summary>
-    [DeletedInPhase(8, "The V4 kill fanout calls the stage module directly")]
+    [DeletedInPhase(14, "The kill fan-out still raises TriggerBus.Kill, which the stage hears first")]
     public sealed class LegacyBossKillHook : IDisposable
     {
         TriggerBus _bus;

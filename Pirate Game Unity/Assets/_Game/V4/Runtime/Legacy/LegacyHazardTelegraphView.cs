@@ -11,7 +11,7 @@ namespace RoguePirates.V4.Legacy
     /// an inner ring that grows to the outline as the fuse runs down. Visual only: it reads the hazard slots in
     /// LateUpdate, owns no colliders and draws no random numbers, so gameplay and traces are unchanged.
     /// </summary>
-    [DeletedInPhase(8, "V4 HazardTelegraphs and their presenter")]
+    [DeletedInPhase(14, "V4 hazard presenter")]
     public sealed class LegacyHazardTelegraphView : MonoBehaviour
     {
         const int Segments = 40;
@@ -20,8 +20,8 @@ namespace RoguePirates.V4.Legacy
         static readonly Color MineColor = new Color(1f, 0.7f, 0.1f, 0.95f);
         static readonly Color NetColor = new Color(0.35f, 0.8f, 1f, 0.9f);
 
-        static readonly FieldInfo SlotsField = typeof(SaltwindHazardTelegraph).GetField("Slots", BindingFlags.Static | BindingFlags.NonPublic);
-        FieldInfo _active, _kind, _center, _radius, _timer, _armed;
+        /// <summary>The run's hazards (M8: the V4 enemy world's; set by the run before the first frame).</summary>
+        public static RoguePirates.V4.Enemies.IHazardView Source;
 
         LineRenderer[] _outline, _fill;
         float[] _fuseTotal;
@@ -31,7 +31,7 @@ namespace RoguePirates.V4.Legacy
 
         public static void Ensure()
         {
-            if (SlotsField == null || FindFirstObjectByType<LegacyHazardTelegraphView>() != null) return;
+            if (FindFirstObjectByType<LegacyHazardTelegraphView>() != null) return;
             new GameObject("V4HazardTelegraphs").AddComponent<LegacyHazardTelegraphView>();
         }
 
@@ -96,47 +96,35 @@ namespace RoguePirates.V4.Legacy
         void LateUpdate()
         {
             TickTimedRings();
-            if (!(SlotsField?.GetValue(null) is System.Array slots)) return;
-            if (_outline == null || _outline.Length != slots.Length) Allocate(slots.Length);
-            for (var i = 0; i < slots.Length; i++)
+            var source = Source;
+            if (source == null) return;
+            var capacity = source.Capacity;
+            if (_outline == null || _outline.Length != capacity) Allocate(capacity);
+            for (var i = 0; i < capacity; i++)
             {
-                var slot = slots.GetValue(i);
-                if (slot != null && _active == null) BindFields(slot.GetType());
-                var active = slot != null && _active != null && (bool)_active.GetValue(slot);
-                if (!active)
+                if (!source.TryGet(i, out var hazard))
                 {
                     _wasActive[i] = false;
                     Show(i, false);
                     continue;
                 }
 
-                var kind = _kind.GetValue(slot).ToString();
-                var center = (Vector3)_center.GetValue(slot);
-                var radius = (float)_radius.GetValue(slot);
-                var timer = (float)_timer.GetValue(slot);
+                var kind = hazard.kind.ToString();
+                var center = hazard.center;
+                var radius = hazard.radius;
+                var timer = hazard.timer;
                 if (!_wasActive[i] || center != _lastCenter[i]) _fuseTotal[i] = Mathf.Max(0.01f, timer); // a new hazard in this slot
                 _wasActive[i] = true;
                 _lastCenter[i] = center;
 
                 var color = kind == "Mine" ? MineColor : kind == "NetSlow" ? NetColor : TrapColor;
                 // Mines: fill while arming, then a full ring while armed. Traps: fill as the fuse runs down. Nets: full.
-                var armed = kind == "Mine" && _armed != null && (bool)_armed.GetValue(slot);
+                var armed = kind == "Mine" && hazard.armed;
                 var progress = kind == "NetSlow" || armed ? 1f : 1f - Mathf.Clamp01(timer / _fuseTotal[i]);
                 Show(i, true);
                 SetCircle(_outline[i], center, radius, color, 0.3f);
                 SetCircle(_fill[i], center, Mathf.Max(0.05f, radius * progress), new Color(color.r, color.g, color.b, 0.55f + 0.4f * progress), 0.45f);
             }
-        }
-
-        void BindFields(System.Type t)
-        {
-            const BindingFlags f = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            _active = t.GetField("active", f);
-            _kind = t.GetField("kind", f);
-            _center = t.GetField("center", f);
-            _radius = t.GetField("radius", f);
-            _timer = t.GetField("timer", f);
-            _armed = t.GetField("armed", f);
         }
 
         void Allocate(int count)

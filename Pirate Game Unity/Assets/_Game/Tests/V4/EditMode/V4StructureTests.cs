@@ -140,7 +140,7 @@ namespace RoguePirates.V4.Tests
         {
             var allowed = new Dictionary<string, string[]>
             {
-                ["EncounterSpawner"] = new[] { "Runtime/Legacy/LegacySpawnAdapters.cs", "Editor/V4SceneSetup.cs" },
+                ["EncounterSpawner"] = new[] { "Runtime/Legacy/LegacySpawnAdapters.cs", "Runtime/Legacy/LegacyEnemyWiring.cs", "Editor/V4SceneSetup.cs" }, // M8: the despawn count and summon queue V3 EnemyWorld sent it (switched off; D4)
                 // M5: the switched-off controller is the loadout record: the bridge, the record adapter and the scene setup.
                 ["WeaponController"] = new[] { "Runtime/Legacy/V4LegacyBridge.cs", "Runtime/Legacy/LegacyWeaponAdapters.cs", "Runtime/Legacy/LegacyWeaponLab.cs", "Editor/V4SceneSetup.cs" },
             };

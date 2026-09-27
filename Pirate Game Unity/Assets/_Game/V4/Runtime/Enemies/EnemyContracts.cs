@@ -56,8 +56,11 @@ namespace RoguePirates.V4.Enemies
         bool TryGet(int index, out HostileShotSnapshot shot);
     }
 
+    public enum HazardKind { Explosion, NetSlow, Mine }
+
     public struct HazardSnapshot
     {
+        public HazardKind kind;
         public Vector3 center;
         public float radius;
         public float timer;

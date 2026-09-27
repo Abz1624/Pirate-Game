@@ -665,30 +665,27 @@ namespace RoguePirates.V4.Tests
             var h = Make();
             using (h.Config)
             {
-                SaltwindCombatEncounterBudgetReset();
-                var release = new LegacyAreaDenialRelease(h.Config);
-                Assert.IsTrue(LegacyAreaDenialRelease.Available);
-                Assert.IsTrue(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(1));
-                Assert.IsTrue(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(2));
-                release.Tick(100f);
-                Assert.IsFalse(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(3), "two casts active: full");
-                release.Tick(101.9f);
-                Assert.IsFalse(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(3), "still inside the 2 s hold");
-                release.Tick(102f);
-                Assert.IsTrue(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(3), "R-06: slots free again after the hold");
+                // M8: the release runs on the V4 enemy world's budget (was LegacyAreaDenialRelease on V3's static budget).
+                var hold = h.Timeline.areaDenialReleaseSeconds;
+                Assert.AreEqual(2f, hold);
+                var budget = new RoguePirates.V4.Enemies.EncounterBudget(() => 2, () => 2);
+                Assert.IsTrue(budget.TryReserveAreaDenial(1));
+                Assert.IsTrue(budget.TryReserveAreaDenial(2));
+                budget.TickAreaDenialRelease(100f, hold);
+                Assert.IsFalse(budget.TryReserveAreaDenial(3), "two casts active: full");
+                budget.TickAreaDenialRelease(101.9f, hold);
+                Assert.IsFalse(budget.TryReserveAreaDenial(3), "still inside the 2 s hold");
+                budget.TickAreaDenialRelease(102f, hold);
+                Assert.IsTrue(budget.TryReserveAreaDenial(3), "R-06: slots free again after the hold");
 
-                SaltwindCombatEncounterBudgetReset();
-                h.Config.TryApplyEdit("timeline.saltwind", "areaDenialReleaseSeconds", "0", 0f, out _);
-                var v3 = new LegacyAreaDenialRelease(h.Config);
-                HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(1);
-                HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(2);
-                v3.Tick(100f); v3.Tick(500f);
-                Assert.IsFalse(HighSeas.Combat.SaltwindCombatEncounterBudget.TryReserveAreaDenial(3), "0 = never released (V3)");
-                SaltwindCombatEncounterBudgetReset();
+                var v3 = new RoguePirates.V4.Enemies.EncounterBudget(() => 2, () => 2);
+                v3.TryReserveAreaDenial(1);
+                v3.TryReserveAreaDenial(2);
+                v3.TickAreaDenialRelease(100f, 0f); v3.TickAreaDenialRelease(500f, 0f);
+                Assert.IsFalse(v3.TryReserveAreaDenial(3), "0 = never released (V3)");
             }
         }
 
-        static void SaltwindCombatEncounterBudgetReset() => HighSeas.Combat.SaltwindCombatEncounterBudget.ResetForRun();
 
         [Test]
         public void Encounter_DuringAnArena_SpawnsByDefault_AndWaitsWithTheV3Switch()

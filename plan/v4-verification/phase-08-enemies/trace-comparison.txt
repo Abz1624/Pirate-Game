@@ -1,0 +1,7 @@
+M8 end-of-phase trace set (Windows player, final code after the switch-over review, run once). The V4 enemy world now
+runs every enemy, enemy attack, hostile shot, status and kill; V3's EnemyWorld, StatusController and
+HostileProjectileWorld are gone from the run scenes. With the v3-parity preset the runs must equal the V3 goldens exactly.
+--- V4 (v3-parity preset) vs V3 goldens
+v3-trace-seed-101-a.jsonl vs v4-trace-seed-101-parity.jsonl: MATCH (437 lines)
+v3-trace-seed-202-a.jsonl vs v4-trace-seed-202-parity.jsonl: MATCH (409 lines)
+v3-trace-seed-303-a.jsonl vs v4-trace-seed-303-parity.jsonl: MATCH (523 lines)

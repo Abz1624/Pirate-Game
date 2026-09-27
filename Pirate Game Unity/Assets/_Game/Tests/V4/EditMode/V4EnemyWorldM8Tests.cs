@@ -230,6 +230,65 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
+        public void RunScenes_CarryV3sEnemyWorldSceneValues_OnV4Game()
+        {
+            // V3's EnemyWorld component left the scenes in M8; its serialized values moved to V4Game.enemyWorld.
+            foreach (var scene in new[] { "Assets/_Game/Scenes/V4/V4SaltwindRun.unity", "Assets/_Game/Scenes/V4/V4ModuleLab.unity" })
+            {
+                var text = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "..", scene)).Replace("\r\n", "\n");
+                StringAssert.DoesNotContain("HighSeas.Enemies.EnemyWorld", text, scene + ": no V3 EnemyWorld");
+                StringAssert.DoesNotContain("HighSeas.Combat.StatusController", text, scene + ": no V3 StatusController");
+                StringAssert.Contains("  enemyWorld:\n    collideWithIslands: 1\n    islandAvoidanceProbeDistance: 6\n    islandCollisionPadding: 0.35\n    shipCollisionPadding: 0.55\n    enemySeparationPadding: 0.2", text,
+                    scene + ": V3's scene values (the component's code default for the island probe was 10)");
+            }
+        }
+
+        [Test]
+        public void V3EnemyWorldTypes_OnlyInTheGoldenViewsAndTheSceneStep()
+        {
+            var types = new System.Text.RegularExpressions.Regex(@"\b(EnemyWorld|StatusController|HostileProjectileWorld|HellfirePatchWorld|CombatTelemetryDriver)\b");
+            var allowed = new[] { "Runtime/Legacy/LegacyEnemyViews.cs", "Editor/V4SceneSetup.cs" };
+            var root = System.IO.Path.Combine(Application.dataPath, "_Game", "V4");
+            var offenders = new List<string>();
+            foreach (var file in System.IO.Directory.GetFiles(root, "*.cs", System.IO.SearchOption.AllDirectories))
+            {
+                var rel = file.Substring(root.Length + 1).Replace('\\', '/');
+                if (allowed.Contains(rel)) continue;
+                var lines = System.IO.File.ReadAllLines(file);
+                for (var i = 0; i < lines.Length; i++)
+                {
+                    var code = lines[i];
+                    var comment = code.IndexOf("//", System.StringComparison.Ordinal);
+                    if (comment >= 0) code = code.Substring(0, comment);
+                    code = System.Text.RegularExpressions.Regex.Replace(code, @"""(?:[^""\\]|\\.)*""", @""""""); // ignore string literals (tooltips)
+                    if (types.IsMatch(code)) offenders.Add($"{rel}:{i + 1}");
+                }
+            }
+            CollectionAssert.IsEmpty(offenders, "M8: V3's enemy world types only in the V3-scene golden views and the scene step");
+        }
+
+        sealed class OnlyHellfire : IHellfireEnvironment
+        {
+            public bool RunActive => true;
+            public float RollTickDamage(bool elite) => 1f;
+            public bool IsHellfireWeapon(string weaponId) => weaponId == "evolved_flamer";
+            public void OilDropped(Vector3 position, float radius) { }
+        }
+
+        [Test]
+        public void FlameKillHook_SpawnsV4HellfirePatches_OnlyForTheHellfireEvolution()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            var p = Make(config);
+            var patches = new HellfirePatches(p.V4, new EnemyStatuses(), new OnlyHellfire());
+            var hooks = new LegacyWeaponHooks(() => null, id => null, patches);
+            hooks.SpawnFlamePatch(Vector3.zero, "deck_cannons");
+            Assert.AreEqual(0, patches.ActiveCount, "no patch for other weapons");
+            hooks.SpawnFlamePatch(Vector3.zero, "evolved_flamer");
+            Assert.AreEqual(1, patches.ActiveCount, "the weapon hook reaches the V4 patches (the Hellfire Nozzle gate decides)");
+        }
+
+        [Test]
         public void IdRules_ComeFromTheExactArchetypeOrVariant()
         {
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using System.Reflection;
 using HighSeas.Balance;
 using HighSeas.Combat;
@@ -62,7 +63,91 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
-        public IEnumerator EnemyViews_MirrorTheSimulation_SlotBySlot_AndDevActionsUseTheHitPath()
+        public IEnumerator Switchover_V3EnemyPiecesGone_V4ReplacementsWired()
+        {
+            yield return StartRun();
+            Assert.IsNull(Object.FindFirstObjectByType<EnemyWorld>(), "V3 EnemyWorld removed from the scene");
+            Assert.IsNull(Object.FindFirstObjectByType<StatusController>(), "V3 StatusController removed from the scene");
+            Assert.IsNull(Object.FindFirstObjectByType<HostileProjectileWorld>(), "V3 HostileProjectileWorld no longer added");
+            Assert.IsNull(Object.FindFirstObjectByType<HellfirePatchWorld>(), "V3 HellfirePatchWorld no longer ensured");
+            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.CombatTelemetryDriver>(), "V3 CombatTelemetryDriver no longer added");
+            var systems = GameObject.Find("Systems");
+            var roles = systems.GetComponents<RoguePirates.V4.Legacy.LegacyUpdateSlot>().Select(sl => sl.role).ToList();
+            CollectionAssert.Contains(roles, "hellfire", "hellfire patches tick where V3 ensured HellfirePatchWorld");
+            CollectionAssert.Contains(roles, "telemetry", "telemetry samples where CombatTelemetryDriver was added");
+            var wiring = Object.FindFirstObjectByType<V4Game>().Shell.Enemies;
+            Assert.AreSame(wiring.Services.Hazards, RoguePirates.V4.Legacy.LegacyHazardTelegraphView.Source, "the hazard rings draw the V4 hazards");
+
+            // A hellfire patch burns an enemy standing in it (V3's patch world read the legacy enemy world).
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            ship.Damage.SetPlaytestInvulnerable(true);
+            var sim = wiring.Simulation;
+            var barge = System.Array.FindIndex(sim.Definitions, d => d != null && d.id == "boarding_barge");
+            var at = ship.Position + new Vector3(18f, 0f, 0f);
+            var slot = sim.Spawn(barge, at);
+            Assert.GreaterOrEqual(slot, 0);
+            var hp = sim.Agents[slot].hp;
+            typeof(HellfirePatches).GetMethod("AddPatch", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(wiring.Hellfire, new object[] { sim.Agents[slot].position });
+            var end = Time.realtimeSinceStartup + 1.5f;
+            while (Time.realtimeSinceStartup < end && sim.Agents[slot].active && sim.Agents[slot].hp >= hp) yield return null;
+            Assert.IsTrue(!sim.Agents[slot].active || sim.Agents[slot].hp < hp, "the patch damaged the enemy through the V4 hit path");
+            Assert.Greater(wiring.Statuses.BurnStacks(slot) + (sim.Agents[slot].active ? 0f : 1f), 0f, "and set it burning");
+        }
+
+        [UnityTest]
+        public IEnumerator AreaDenialRelease_RunsInTheRun_AndNotUnderTheParityPreset()
+        {
+            foreach (var parity in new[] { false, true })
+            {
+                if (parity)
+                    RunRequest.RequestPreset(System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json")));
+                yield return StartRun();
+                Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
+                var budget = Object.FindFirstObjectByType<V4Game>().Shell.Enemies.Services.Budget;
+                while (budget.TryReserveAreaDenial(0)) { } // fill it (two Kraken casts)
+                var t0 = RunManager.Instance.ElapsedSeconds;
+                var deadline = Time.realtimeSinceStartup + 8f;
+                while (RunManager.Instance.ElapsedSeconds < t0 + 2.3f && Time.realtimeSinceStartup < deadline)
+                {
+                    if (RunManager.Instance.IsPaused) RunManager.Instance.SetPause(PauseReason.None); // no level-up card holds the clock
+                    yield return null;
+                }
+                Assert.GreaterOrEqual(RunManager.Instance.ElapsedSeconds, t0 + 2.3f);
+                if (parity) Assert.AreEqual(2, budget.ActiveAreaDenial, "v3-parity: never released (R-06 off)");
+                else Assert.Less(budget.ActiveAreaDenial, 2, "R-06: the shell frees each cast 2 s later on the run clock");
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator TelemetrySlot_SamplesTheV4EnemyWorld()
+        {
+            yield return StartRun();
+            Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
+            var sim = V4TestEnemies.Simulation();
+            var deadline = Time.realtimeSinceStartup + 10f;
+            while (sim.ActiveCount < 3 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.GreaterOrEqual(sim.ActiveCount, 3, "ambient spawns arrived");
+            yield return null;
+            var peak = (float)typeof(RunCombatTelemetry).GetField("_peakEnemies", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(RunCombatTelemetry.Instance);
+            Assert.GreaterOrEqual(peak, 3, "the telemetry slot counts the V4 world's enemies (V3's driver would read 0 now)");
+        }
+
+        [UnityTest]
+        public IEnumerator Switchover_ParityPresetBarrels_RunOnTheV4World()
+        {
+            var preset = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
+            RunRequest.RequestPreset(preset);
+            yield return StartRun();
+            var legacy = Object.FindFirstObjectByType<HighSeas.V3.V3ExplosiveBarrelWorld>();
+            Assert.IsNotNull(legacy, "the parity preset places V3's barrels (their markers stay V3's)");
+            Assert.IsFalse(legacy.enabled, "V3's barrel update is switched off");
+            var slots = legacy.GetComponents<RoguePirates.V4.Legacy.LegacyUpdateSlot>();
+            Assert.AreEqual(1, slots.Count(sl => sl.role == "barrels"), "a V4 barrel slot on the same object");
+            Assert.AreEqual(2, Object.FindFirstObjectByType<V4Game>().Shell.Enemies.Barrels.Count);
+        }
+
+        [UnityTest]
+        public IEnumerator EnemyContracts_MapTheSimulation_SlotBySlot_AndDevActionsUseTheHitPath()
         {
             yield return StartRun();
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
@@ -72,7 +157,9 @@ namespace RoguePirates.V4.Tests
             var dev = Get<IEnemyDevControl>();
             var shots = Get<IHostileProjectileView>();
             var hazards = Get<IHazardView>();
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            // M8: the views are the V4 enemy world's; compare them with its own arrays.
+            Assert.IsNull(Object.FindFirstObjectByType<EnemyWorld>(), "M8: no V3 EnemyWorld in the run");
+            var world = V4TestEnemies.Simulation();
 
             // Gunners that fire at the ship and a Kraken that lays traps, so shots and hazards exist while comparing.
             foreach (var id in new[] { "cannonboat", "cannonboat", "kraken_spawn", "shark" })
@@ -82,7 +169,7 @@ namespace RoguePirates.V4.Tests
                 sink.Spawn(index, ship.Position + new Vector3(10f, 0f, 6f), ConfigEnums.EliteAffix.None, 1f, 1f, 1f);
             }
 
-            var pool = (HostileProjectile[])typeof(HostileProjectileWorld).GetField("_pool", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(HostileProjectileWorld.Instance);
+            var pool = Object.FindFirstObjectByType<V4Game>().Shell.Enemies.Services.Shots.Pool;
             var sawShot = false;
             var end = Time.realtimeSinceStartup + 4f;
             while (Time.realtimeSinceStartup < end)

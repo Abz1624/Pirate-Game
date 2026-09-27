@@ -104,7 +104,7 @@ namespace RoguePirates.V4.Tests
             while (!stage.BossSummoned && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.IsTrue(stage.BossSummoned, "the Beacon telegraph ended in a summon");
             Assert.AreEqual(RunState.BossFight, RunManager.Instance.State);
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
             Assert.IsTrue(world.TryFindActiveBoss(out _, out _), "the boss is in the world");
 
             Assert.IsTrue(Object.FindFirstObjectByType<V4Game>().Context.TryGet<IBossView>(out var boss));
@@ -149,7 +149,7 @@ namespace RoguePirates.V4.Tests
             var ship = Ship();
             var cache = stage.Module.Layout.pois.FindIndex(p => p.type == POIType.MerchantSkiff);
             if (cache < 0) Assert.Ignore("no Powder Cache on this seed");
-            var world = Object.FindFirstObjectByType<EnemyWorld>();
+            var world = V4TestEnemies.Simulation();
             var before = world.ActiveCount;
             ship.SetWorldPosition(stage.Module.Layout.pois[cache].position + new Vector3(4f, 0f, 0f));
             var deadline = Time.realtimeSinceStartup + 3f;

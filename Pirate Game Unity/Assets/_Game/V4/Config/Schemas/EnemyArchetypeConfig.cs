@@ -104,7 +104,7 @@ namespace RoguePirates.V4.Config
         public bool isBoss, isMiniboss;
         [Tooltip("Off for enemies V3's database does not contain (drowned_pursuer/harrier exist only in the fallback database; V3 overtime spawns shark/cannonboat stats, register R-05).")]
         [AppliesFrom(0, "structural")] public bool inLegacyDatabase = true;
-        [Tooltip("Copied into the legacy combat-profile registry at run start and on edits; reaches newly spawned enemies. Behaviors hard-coded in EnemyWorld move to data in M8.")] public ArchetypeCombat combat = new ArchetypeCombat();
+        [Tooltip("Copied into the legacy combat-profile registry at run start and on edits; reaches newly spawned enemies. V3's enemy-id behaviours are data in the world block (M8).")] public ArchetypeCombat combat = new ArchetypeCombat();
         public ArchetypeWorldRules world = new ArchetypeWorldRules();
 
         public override void Validate(ConfigValidationReport report)

@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `v4-modular-architecture` |
 | Phase start commit | `c26cdaf7` (M7, awaiting playtest) |
-| Status | In progress — V4 enemy world built and lockstep-tested against V3; not yet bound to the run (switch-over pending) |
+| Status | Implemented and reviewed; **awaiting your playtest** |
 
 Design record: [DESIGN.md](DESIGN.md) (reader audit, update order, determinism hazards, build order).
 
@@ -17,7 +17,7 @@ Design record: [DESIGN.md](DESIGN.md) (reader audit, update order, determinism h
 | 2–4 | The frame: behaviours per combat archetype, specialists, Reef Crab, pattern movement, special behaviours, movement/islands/separation/overlaps, views, ranged path, contact damage, hazards, statuses, hostile shots, hit path, kill fan-out | Ported (mechanical port of V3's code, statics → per-run instances, enemy ids → rules). EditMode lockstep: a crowd of every enemy + every spawn profile for 1,500 frames with hits and burns, and 12 archetypes standing still then chased for 1,200 frames — agents, combat states, hostile shots, hazards, damage to the ship and kills identical to V3 every frame. PlayMode lockstep in the Module Lab (real islands, physics and V3's models, R-81 respected by spawning each world in its own frame): 19 enemy types incl. every specialist and the Reef Crab around the islands for 900 frames with hits, burns and kills — identical every frame |
 | 5 | Special behaviours (no V3 data uses them) | Ported with step 2 (summon goes to a service; adaptive signals stay null as in V3, R-12) |
 | 5b | Boss path; contracts over the V4 world; silent-loss ports | Boss lockstep (spawn-profile movement, the director's hold and forced charge, escorts, hits) identical to V3 for 900 frames. `EnemyWorldContracts` implements the spawn sink, weapon query/damage, boss control, views, dev actions and the presenters' enemy view over the V4 world (same semantics as the legacy adapters). `HellfirePatches` (lockstep: same rolls on the combat stream, same burns and kills as V3's HellfirePatchWorld) and `ExplosiveBarrels` (enemy damage from barrel blasts) ported; not bound yet |
-| 6 | Switch-over: V4 world bound in runs, legacy EnemyWorld/StatusController out of the scenes, weapons/boss/spawner rebound, hellfire and barrel damage ported, telemetry sampler, `V4Phase.Current = 8`, PlayMode lockstep with islands, end-of-phase trace set | Pending |
+| 6 | Switch-over | Done; reviewed. End-of-phase trace set (run once): seeds 101/202/303 with the v3-parity preset equal the V3 goldens exactly (437/409/523 lines, `trace-comparison.txt`). `LegacyEnemyWiring` builds the V4 world in `V4Game.Awake` and registers its contracts (spawn sink, enemy views, dev actions, hostile shot and hazard views); the shell runs `ResetAndDefine`, the enemy frame (`TickFrame`, V3RunBootstrap.Update's order: boss director, enemies, player projectiles, hostile shots, V3 pickups and floor powerups, statuses), the R-06 release, a hellfire slot where V3 ensured HellfirePatchWorld and a telemetry slot where CombatTelemetryDriver was added; weapons, the boss director, barrels (V3's markers kept, its update moved to a slot on the same object), the presenters' enemy view and the hazard rings use the V4 world. `EnemyWorld` and `StatusController` removed from V4SaltwindRun and V4ModuleLab (`V4SceneSetup.ApplyM8`; their scene values now on `V4Game.enemyWorld`). Replaced adapters deleted; the rest re-tagged M14 with reasons; `V4Phase.Current = 8`. Tests: EditMode 214/214, PlayMode 37/37 (switch-over test: V3 pieces gone, slots present, hazard rings on V4, a hellfire patch burns a V4 enemy; parity-preset barrels on the V4 world; Module Lab lockstep with islands against a V3 world the test builds). Playable check (`playable-check/`): the full route (spawns and kills, chest, Repair Wreck, Signal Buoy, Powder Cache ambush of 3, Beacon, boss kill, results) on the V4 world, 0 game errors |
 
 ## Deviations from the task list (recorded so far)
 
@@ -30,7 +30,45 @@ Design record: [DESIGN.md](DESIGN.md) (reader audit, update order, determinism h
 | V4 `EncounterTracker` | The kill path still completes encounters in the static RunEncounterTracker (`LegacyEnemyKillTargets`) | The stage content and its adapters read it; moving both together is safer |
 | Port V3's combat-feature-off branches | Not ported: `ReefCrabMinibossBehavior` and the shark rush only ran with the Saltwind combat feature off | V4 runs always have the stage profile active |
 | Statuses keyed by unit id (intended difference) | Slot-keyed as V3 for now; the switch comes after exact parity | A burn applied after a killing hit is inherited by the next spawn in V3; changing it breaks trace parity |
+| `PlayerDamageService` (I8.6) | Enemy damage to the ship still goes through `LegacyPlayerDamageSink` / `DamageReceiver.TakeDamage` (re-tagged M14) | The captain and item damage multipliers it applies are still V3 components until M9 |
+| Pooled health bars, damage-number presenter (I8.7) | V3's health bars and `FloatingDamageNumbers` at V3's points (`LegacyEnemyViewSink`, `LegacyEnemyFeedback`, M14) | Damage numbers draw from Unity's global random state (pickup offsets); moving them changes the run |
+| Stop `LegacyEventFeed`'s Hit/Kill republishing | Kept | The V4 world still raises TriggerBus Hit/Kill; nothing publishes Hit/Killed natively yet, so stopping it would drop both events |
+| Telemetry driver | `CreateTelemetrySlot` samples the V4 world's enemies and the V4 projectile count (V3's driver counted `ProjectileWorld`, 0 since M5); it looks the ship up until found (V3 cached it in `Start`) | Telemetry only (not in traces); the V4 count means what V3's did |
 | — | Shared V3 code still read: `EnemyCombatProfileRegistry` (config-filled), `PlayBounds`, `IslandObstacles`, `GameConstants`, `GameMath`, `SpatialHash`, physics; `Time.time`/`Time.deltaTime` where V3 read them | No per-run state of the old world; same frame, same values |
+
+## Legacy reader audit (switch-over)
+
+Readers of V3's `EnemyWorld`, `StatusController`, `HostileProjectileWorld`, `HellfirePatchWorld`, `CombatTelemetryDriver` and the static hazard/budget/combat-state stores reachable in V4 runs:
+
+| Reader | Classification |
+|---|---|
+| `LegacyEnemyWorldPort`, `LegacyEnemySpawnSink`, `LegacyWeaponEnemies`, `LegacyBossControl`, `LegacyHostileProjectiles`, `LegacyEnemyView`, `LegacyAreaDenialRelease` | Replaced by the V4 world and deleted |
+| Trace recorder, trace pilot, Tuning Console (header, Module Lab, boss health) | Switched to the enemy views/dev actions (step 0); V3 scenes keep the legacy views for the golden recordings |
+| `HellfirePatchWorld` | Replaced: `HellfirePatches` in a slot where V3 ensured it; the weapon hook calls the V4 patches |
+| `V3ExplosiveBarrelWorld` (parity preset only) | Its update moved to a V4 slot on the same object (markers kept) |
+| `CombatTelemetryDriver` | Replaced by the telemetry slot |
+| `LegacyHazardTelegraphView` | Reads the V4 hazards |
+| `EncounterSpawner` (switched off) | Still receives the despawn count and summon queue, as from V3's EnemyWorld (no effect; D4) |
+| `WeaponController` record, `ProjectileWorld` | Disabled / never filled: their enemy-world reads are unreachable |
+| Static `SaltwindHazardTelegraph`, `SaltwindCombatEncounterBudget`, `SaltwindCombatAgentStateStore` | Only reset by `LegacyRewardsAdapter`; the V4 world keeps its own per run |
+| `V3RunPlaytestHotkeys` (dev hotkey "despawn oldest enemy") | Null-safe: now does nothing (dev only; the console's Module Lab "Clear all" covers it) |
+| `EnemyIdentityDebugLabels` | No longer created (debug overlay; a DevTools port later) |
+| `V3MultiShipRunSetup` despawn | Only with a multi-ship scene config, which no V4 scene has |
+| `MinimapController`, `V3MinimapHud`, `WeaponTargetingVisualizer`, `CollisionDebugOverlay`, `SpawnDirectorDebugUI`, `BotShipBrain`, V3 boss/spawn directors | Not in the V4 scenes, never created |
+
+## Independent review of the switch-over
+
+A read-only reviewer compared the switch-over with the deleted port, V3RunBootstrap.Update and V3's EnemyWorld. No blockers; the frame order, reset, despawn listener order, object parents and creation moments, slot positions and scene values were confirmed. Findings and actions:
+
+| Finding | Action |
+|---|---|
+| Reader audit missing; two dev-tool losses unrecorded | Audit above; the dev hotkey and debug labels recorded |
+| Deviations unrecorded (PlayerDamageService, I8.7 presenters, the Hit/Kill feed kept) | Rows added; DESIGN corrected |
+| The island scene values were only covered by the trace | EditMode test: both scenes carry V3's values on `V4Game.enemyWorld` and no V3 enemy components |
+| Tests lost what they claimed (views test now maps the V4 world; hellfire via reflection; R-06 and telemetry untested in a run) | Views test renamed; flame-kill hook test (patches only for the Hellfire evolution); R-06 in a run and off under the parity preset; telemetry samples the V4 world's enemies |
+| Telemetry sampler differs from V3's driver | Recorded (deviations) |
+| Nits: dead V3 hellfire fallback, stale hazard-view source, per-hit config scan, LegacyAdapters.cs line endings, the TMP font asset | Fallback removed; source cleared when the run's scene goes; highlight lookup cached (rebuilt on config edits); file encoding restored; the font asset is kept out of the commit |
+| Suggested: a scan for V3 enemy-world types in V4 code | Added (only the V3-scene golden views and the scene step may name them) |
 
 ## Independent review of steps 0–5
 
@@ -50,3 +88,12 @@ A read-only reviewer diffed every V4 file against its V3 original: faithful (no 
 
 - R-99: V3's hazard telegraphs cache the player statically, so from the second run in a process Kraken traps, mines and nets never hurt (V4 per-run; fixed by the port).
 - R-100: the first elite hammerhead to tick gives every hammerhead the elite second charge (V3 writes the shared profile); V4 keeps it per run (the registry is re-applied at run start).
+
+## Your playtest
+
+1. **A normal run from `V4Boot`.** Enemies should look, move, attack and die exactly as before: sharks, swordfish dashes, hammerhead charges, cannonboat shots, bomb boats, Kraken traps (the ground rings), the specialists, the Reef Crab at 2:30, the elite beats and the Barnacle King (with its bigger charge from the M7 follow-up). Hits flash, damage numbers show, kills drop XP and gold.
+2. **Flamethrower with the Hellfire Nozzle evolution** (F1 → Weapons → Solo / Evolve in the Module Lab): burning patches should damage enemies standing in them.
+3. **Module Lab** (`V4ModuleLab`): F1 → Module Lab → spawn a few enemies, then **Clear all**.
+4. **F1 → Landmarks, Beacon & Boss → Summon boss**, then set its health (e.g. 25 %) and fight it.
+5. Decide: R-100 (only elite hammerheads charge twice; V3 lets the first elite give every hammerhead the second charge).
+

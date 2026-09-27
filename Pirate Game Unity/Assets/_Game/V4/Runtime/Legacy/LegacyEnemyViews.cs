@@ -109,7 +109,7 @@ namespace RoguePirates.V4.Legacy
     public sealed class LegacyHazardView : IHazardView
     {
         static readonly FieldInfo Slots = typeof(SaltwindHazardTelegraph).GetField("Slots", BindingFlags.Static | BindingFlags.NonPublic);
-        static FieldInfo _active, _center, _radius, _timer, _armed;
+        static FieldInfo _active, _kind, _center, _radius, _timer, _armed;
 
         static Array All => Slots?.GetValue(null) as Array;
 
@@ -126,6 +126,7 @@ namespace RoguePirates.V4.Legacy
             {
                 var type = slot.GetType();
                 _active = type.GetField("active");
+                _kind = type.GetField("kind");
                 _center = type.GetField("center");
                 _radius = type.GetField("radius");
                 _timer = type.GetField("timer");
@@ -134,6 +135,7 @@ namespace RoguePirates.V4.Legacy
             if (!(bool)_active.GetValue(slot)) return false;
             hazard = new HazardSnapshot
             {
+                kind = (HazardKind)System.Enum.Parse(typeof(HazardKind), _kind.GetValue(slot).ToString()),
                 center = (Vector3)_center.GetValue(slot),
                 radius = (float)_radius.GetValue(slot),
                 timer = (float)_timer.GetValue(slot),

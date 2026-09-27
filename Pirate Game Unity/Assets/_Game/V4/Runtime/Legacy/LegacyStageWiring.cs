@@ -20,7 +20,7 @@ namespace RoguePirates.V4.Legacy
     /// V3InteractionController were created, one tick per marker (POIInteractable's place), the boss director first in
     /// the legacy world tick (V3RunBootstrap.Update).
     /// </summary>
-    [DeletedInPhase(8, "Stage content reads the V4 enemy world; slots go with the legacy frame order")]
+    [DeletedInPhase(14, "V4 composition root; its frame slots go with the legacy frame order")]
     public sealed class LegacyStageWiring : IDisposable
     {
         public const string StageRole = "stage";
@@ -38,9 +38,13 @@ namespace RoguePirates.V4.Legacy
         public BossDirector Boss { get; }
         public LegacyEncounterTracker Encounters { get; } = new LegacyEncounterTracker();
 
+        readonly LegacyEnemyWiring _enemyWorld;
+
         public LegacyStageWiring(RunContext context, ConfigSetRuntime config, IRunStatus runStatus, IPlayerDamageSink damageSink,
-            IEncounterExecutor executor, Func<PlayerShipController> player, Func<IWeaponManager> weapons, bool usePlaceholderVisuals)
+            IEncounterExecutor executor, Func<PlayerShipController> player, Func<IWeaponManager> weapons, bool usePlaceholderVisuals,
+            LegacyEnemyWiring enemyWorld)
         {
+            _enemyWorld = enemyWorld;
             _usePlaceholderVisuals = usePlaceholderVisuals;
             _events = context.Events;
             _clock = context.Clock;
@@ -57,7 +61,8 @@ namespace RoguePirates.V4.Legacy
             View = new StageView(Module, Interaction);
 
             var objective = new LegacyBossObjective();
-            Boss = new BossDirector(new LegacyBossControl(), new LegacyHostileProjectiles(), damageSink, new LegacyBossEffects(),
+            // M8: the boss and its shots are the V4 enemy world's (were LegacyBossControl / LegacyHostileProjectiles).
+            Boss = new BossDirector(enemyWorld.Contracts, enemyWorld.Services.Shots, damageSink, new LegacyBossEffects(),
                 runStatus, () => config?.Single<BossConfig>(), () => objective.Secured, () => objective.StageActive);
 
             context.Register<IEncounterTracker>(Encounters);
@@ -85,7 +90,7 @@ namespace RoguePirates.V4.Legacy
             // V3 always added the barrel world; V4 places none by default (adopted decision), so it only adds it when
             // the config asks for barrels (the v3-parity preset does).
             var c = _config();
-            if (c == null || c.explosiveBarrelCount > 0) V3ExplosiveBarrelWorld.Ensure(layout);
+            if (c == null || c.explosiveBarrelCount > 0) _enemyWorld.TakeOverBarrels(V3ExplosiveBarrelWorld.Ensure(layout), layout);
         }
 
         /// <summary>V3DiscoverySystem.Ensure's place: its update object, created here, and the reset around the spawn.</summary>

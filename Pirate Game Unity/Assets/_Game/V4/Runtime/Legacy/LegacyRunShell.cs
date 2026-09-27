@@ -30,7 +30,6 @@ namespace RoguePirates.V4.Legacy
         readonly LegacyConfigRuntime _legacyConfig;
         readonly V4RuntimeDatabase _runtimeDatabase;
         readonly LegacyCombatProfileOverride _combatOverride;
-        readonly LegacyAreaDenialRelease _areaDenial;
         GameDatabase _runDatabase;
         PlayerShipController _player;
         StageLayout _layout;
@@ -49,6 +48,8 @@ namespace RoguePirates.V4.Legacy
         public LegacyWeaponWiring Weapons { get; set; }
         /// <summary>M7: chests, landmarks, Beacon, discovery, interaction and the boss director.</summary>
         public LegacyStageWiring Stage { get; set; }
+        /// <summary>M8: the V4 enemy world (replaces EnemyWorld, StatusController and HostileProjectileWorld).</summary>
+        public LegacyEnemyWiring Enemies { get; set; }
 
         public LegacyRunShell(MonoBehaviour host, GameDatabase database, StageBuilder stageBuilder,
             PlayerShipController player, IslandLayoutDefinition islandLayout, bool usePlaceholderPoiVisuals,
@@ -60,7 +61,6 @@ namespace RoguePirates.V4.Legacy
             _legacyConfig = new LegacyConfigRuntime(config, legacyBaseProfile);
             _runtimeDatabase = new V4RuntimeDatabase(config);
             _combatOverride = new LegacyCombatProfileOverride(config);
-            _areaDenial = new LegacyAreaDenialRelease(config);
             _host = host;
             _player = player;
             _usePlaceholderPoiVisuals = usePlaceholderPoiVisuals;
@@ -146,7 +146,7 @@ namespace RoguePirates.V4.Legacy
             LegacyBuildAdapter.CancelPendingLevelUps();
             RunManager.Instance?.SetPause(PauseReason.None);
 
-            LegacyRewardsAdapter.TeardownTransientRunState();
+            LegacyRewardsAdapter.TeardownTransientRunState(() => Enemies?.ClearTransientWorlds());
 
             if (!_profile.TryBegin(_legacyConfig.RuntimeProfile, out var profileError))
             {
@@ -179,7 +179,7 @@ namespace RoguePirates.V4.Legacy
             Stage?.InitializePoi(_layout, isPvPScene);
             Stage?.AttachKillHook();
 
-            var enemyWorld = LegacyEnemyWorldPort.ResetAndDefine(_runDatabase);
+            Enemies?.ResetAndDefine(_runDatabase);
 
             if (_player == null) _player = Object.FindFirstObjectByType<PlayerShipController>();
             if (_player != null && _layout != null)
@@ -190,7 +190,7 @@ namespace RoguePirates.V4.Legacy
 
             var captainId = V3CaptainSelection.Selected;
             var captainProfile = V3CaptainProfile.Get(captainId);
-            LegacyBuildAdapter.EnsureCaptain(captainId, _player);
+            LegacyBuildAdapter.EnsureCaptain(captainId, _player, () => Enemies?.CreateHellfireSlot());
 
             var startingWeapon = LegacyBuildAdapter.ResolveStartingWeapon(captainProfile);
             LegacyBuildAdapter.ApplyStageBalanceProgression();
@@ -207,13 +207,13 @@ namespace RoguePirates.V4.Legacy
             if (_player != null)
             {
                 _spawnSlots.AddStormEdgeSlot(_player); // V3StormEdgeDamage's place; the V4 storm phase applies the damage
-                LegacyEnemyWorldPort.EnsureHostileProjectiles();
+                // (V3 added HostileProjectileWorld to /Systems here; M8: the V4 enemy world owns the hostile shots.)
                 if (V3CaptainController.Instance == null)
                     _player.InitializeFromRun(RunManager.Instance.Stats.MaxHull);
                 LegacyPresentationAdapter.EnsurePlayerHealthBar(_player);
             }
 
-            LegacyRewardsAdapter.EnsureTelemetryDriver();
+            Enemies?.CreateTelemetrySlot(() => Weapons != null ? Weapons.Manager.Projectiles.ActiveCount : 0); // CombatTelemetryDriver's place
             LegacyPresentationAdapter.EnsureCombatVfx();
             LegacyPresentationAdapter.EnsurePlayfeelSystems(_player, seed);
 
@@ -266,9 +266,9 @@ namespace RoguePirates.V4.Legacy
         {
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
             if (RunManager.Instance.IsRunEnded) return;
-            LegacyEnemyWorldPort.Tick(dt, _player, Weapons != null ? Weapons.TickProjectiles : (System.Action<float>)null,
+            Enemies?.TickFrame(dt, _player, Weapons != null ? Weapons.TickProjectiles : (System.Action<float>)null,
                 Stage != null ? Stage.TickBoss : (System.Action<float>)null);
-            _areaDenial.Tick(RunManager.Instance.ElapsedSeconds);
+            Enemies?.TickAreaDenialRelease(RunManager.Instance.ElapsedSeconds);
             ResolveSameTickBossDeath();
         }
 

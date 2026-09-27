@@ -166,39 +166,6 @@ namespace RoguePirates.V4.Legacy
         public int ItemStacks(int index) => Items.GetStackCount(ItemId(index));
     }
 
-    [DeletedInPhase(8, "The V4 Enemy World")]
-    public sealed class LegacyEnemyView : IEnemyView
-    {
-        CachedLookup<EnemyWorld> _world;
-
-        public void CollectThreats(List<ThreatMarker> into)
-        {
-            into.Clear();
-            var world = _world.Get();
-            if (world == null) return;
-            var defs = world.Definitions;
-            if (defs == null || defs.Length == 0) return;
-            var agents = world.Agents;
-            for (var i = 0; i < agents.Length; i++)
-            {
-                var agent = agents[i];
-                if (!agent.active) continue;
-                if (agent.definitionIndex < 0 || agent.definitionIndex >= defs.Length) continue;
-                var def = defs[agent.definitionIndex];
-                if (def == null || (!def.isBoss && !def.isMiniboss)) continue;
-                into.Add(new ThreatMarker { position = agent.position, isBoss = def.isBoss });
-            }
-        }
-
-        public bool IsKnownDefinition(int definitionIndex)
-        {
-            var defs = _world.Get()?.Definitions;
-            return defs != null && definitionIndex >= 0 && definitionIndex < defs.Length && defs[definitionIndex] != null;
-        }
-
-        public EnemyTier TierOf(int definitionIndex) =>
-            IsKnownDefinition(definitionIndex) ? EnemyTierLogic.ResolveTier(_world.Get().Definitions[definitionIndex]) : EnemyTier.Soldier;
-    }
 
     /// <summary>The results data V3RunResultsScreen.BuildSummaryText read, same sources and formatting helpers.</summary>
     [DeletedInPhase(12, "RewardModule and the V4 results view")]
@@ -347,7 +314,7 @@ namespace RoguePirates.V4.Legacy
     [DeletedInPhase(14, "Every view has a V4 implementation after switch-over")]
     public static class LegacyViewFactory
     {
-        public static RunViews Create(PlayerShipController player, WeaponManager weapons, System.Action retry, System.Action menu)
+        public static RunViews Create(PlayerShipController player, WeaponManager weapons, System.Action retry, System.Action menu, IEnemyView enemies)
         {
             var ship = new LegacyShipView(player);
             return new RunViews
@@ -357,7 +324,7 @@ namespace RoguePirates.V4.Legacy
                 Captain = new LegacyCaptainView(),
                 Progression = new LegacyProgressionView(),
                 Loadout = new LegacyLoadoutView(weapons),
-                Enemies = new LegacyEnemyView(),
+                Enemies = enemies, // M8: the V4 enemy world
                 Results = new LegacyResultsView(),
                 WeaponAim = weapons != null ? new WeaponAimView(weapons.Combat) : null,
                 Toasts = new LegacyToastSink(),

@@ -180,50 +180,6 @@ namespace RoguePirates.V4.Legacy
         }
     }
 
-    /// <summary>Legacy enemy, projectile, pickup and status worlds: reset, definitions and the per-frame tick.</summary>
-    [DeletedInPhase(8, "V4 Enemy World")]
-    public sealed class LegacyEnemyWorldPort
-    {
-        public static void ClearTransientWorlds()
-        {
-            Object.FindFirstObjectByType<PickupWorld>()?.ClearAllActive();
-            Object.FindFirstObjectByType<ProjectileWorld>()?.ClearAllActive();
-            Object.FindFirstObjectByType<HostileProjectileWorld>()?.ClearAllActive();
-        }
-
-        public static EnemyWorld ResetAndDefine(GameDatabase database)
-        {
-            Object.FindFirstObjectByType<EnemyWorld>()?.ResetAllAgentsForPromo();
-            ClearTransientWorlds();
-            var enemyWorld = Object.FindFirstObjectByType<EnemyWorld>();
-            enemyWorld?.SetDefinitions(database.enemies);
-            return enemyWorld;
-        }
-
-        public static void EnsureHostileProjectiles()
-        {
-            if (Object.FindFirstObjectByType<HostileProjectileWorld>() != null) return;
-            var systems = GameObject.Find("Systems");
-            if (systems == null) return;
-            systems.AddComponent<HostileProjectileWorld>();
-        }
-
-        /// <summary>Same calls, same order as V3RunBootstrap.Update.</summary>
-        public static void Tick(float dt, PlayerShipController player, System.Action<float> playerProjectiles = null, System.Action<float> bossDirector = null)
-        {
-            var playerPos = player != null ? player.Position : Vector3.zero;
-            // M7: the V4 boss director ticks first, where V3 ticked BarnacleKingBossAttackDirector.
-            bossDirector?.Invoke(dt);
-            Object.FindFirstObjectByType<EnemyWorld>()?.Tick(dt, playerPos, player?.Damage);
-            // M5: V4 player projectiles tick here, where V3 ticked ProjectileWorld (which V4 no longer fills).
-            if (playerProjectiles != null) playerProjectiles(dt);
-            else Object.FindFirstObjectByType<ProjectileWorld>()?.Tick(dt, Object.FindFirstObjectByType<EnemyWorld>());
-            Object.FindFirstObjectByType<HostileProjectileWorld>()?.Tick(dt, player?.Damage);
-            Object.FindFirstObjectByType<PickupWorld>()?.Tick(dt, playerPos, RunManager.Instance.Stats.PickupRadius);
-            V3FloorPowerupWorld.Instance?.Tick(dt, playerPos);
-            Object.FindFirstObjectByType<StatusController>()?.Tick(dt, Object.FindFirstObjectByType<EnemyWorld>());
-        }
-    }
 
     /// <summary>Captains, items, powerups, hellfire patches and LevelSystem.</summary>
     [DeletedInPhase(9, "Build & Progression modules")]
@@ -237,7 +193,8 @@ namespace RoguePirates.V4.Legacy
             V3RunItemEffects.Instance?.ResetForNewRun();
         }
 
-        public static void EnsureCaptain(V3CaptainId captainId, PlayerShipController ship)
+        /// <param name="createHellfireSlot">M8: the V4 hellfire patches' frame slot, created where V3 ensured HellfirePatchWorld.</param>
+        public static void EnsureCaptain(V3CaptainId captainId, PlayerShipController ship, System.Action createHellfireSlot)
         {
             var systems = GameObject.Find("Systems");
             if (systems != null)
@@ -253,7 +210,7 @@ namespace RoguePirates.V4.Legacy
                 var active = systems.GetComponent<V3CaptainActiveController>();
                 if (active == null) active = systems.AddComponent<V3CaptainActiveController>();
                 active.Initialize(captainId);
-                HellfirePatchWorld.Ensure();
+                createHellfireSlot?.Invoke();
             }
 
             V3CaptainActiveController.Instance?.ResetForNewRun();
@@ -303,12 +260,12 @@ namespace RoguePirates.V4.Legacy
     [DeletedInPhase(12, "RewardModule")]
     public sealed class LegacyRewardsAdapter
     {
-        public static void TeardownTransientRunState()
+        public static void TeardownTransientRunState(System.Action clearTransientWorlds)
         {
             RunEncounterTracker.ResetForNewRun();
             RunMarksTracker.Reset();
             SaltwindRunSettlement.ClearLastResults();
-            LegacyEnemyWorldPort.ClearTransientWorlds();
+            clearTransientWorlds?.Invoke();
         }
 
         public static void ResetLedgers()
@@ -333,13 +290,6 @@ namespace RoguePirates.V4.Legacy
             }
         }
 
-        public static void EnsureTelemetryDriver()
-        {
-            var systems = GameObject.Find("Systems");
-            if (systems == null) return;
-            if (systems.GetComponent<CombatTelemetryDriver>() == null)
-                systems.AddComponent<CombatTelemetryDriver>();
-        }
 
         public static void ApplyConquestUnlockIfSecured()
         {
@@ -425,7 +375,7 @@ namespace RoguePirates.V4.Legacy
                 // M7: the B-key boss summon is a dev tool (Tuning Console, dev builds only; register R-55).
             }
 
-            EnemyIdentityDebugLabels.Ensure();
+            // M8: EnemyIdentityDebugLabels read V3's EnemyWorld, which left the V4 scenes (debug labels: a DevTools port later).
             // M6: WeaponTargetingVisualizer is replaced by the V4 aim overlay (same O/V/backslash toggle).
         }
 

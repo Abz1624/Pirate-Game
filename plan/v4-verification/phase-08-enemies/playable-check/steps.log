@@ -1,0 +1,72 @@
+﻿[is-playing] ERROR: unity : Error: ❌ Command 'eval_file' failed:
+At C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v4-verification\tools\playable-check-m8.ps1:21 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: ❌ Command 'eval_file' failed::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error:    Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+Error: Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+[begin] started
+[is-playing] ERROR: unity : Error: ❌ Command 'eval_file' failed:
+At C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v4-verification\tools\playable-check-m8.ps1:21 char:10
++     $r = unity command eval_file --file $f 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: ❌ Command 'eval_file' failed::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error:    Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+Error: Pipeline server returned 400 Bad Request: Internal Server Error. Main thread operation timed out after 5000ms
+[begin] busy: already in Play Mode
+[is-playing] OK playing
+[run-start] OK playing
+[setup] POIs: BossBeacon 1, GildedWreck 1, MerchantSkiff 1, TrialBuoy 1, CursedIdol 1, SalvageChest 12; markers 17; V3 EnemyWorld False; V4 enemies 7; kills 2; barrels 0
+[shot] stage-start.png
+[v4-world] V4 enemies alive 8; kills 6; hostile shots 0; hull 100
+[shot] enemies-v4-world.png
+[to-chest] moved to SalvageChest 5
+[chest-pause] OK paused for the chest choice, target 5
+[shot] chest-prompt.png
+[chest-take] items 0 -> 1, gold 500 -> 480, chests bought 1
+[shot] chest-opened.png
+[hurt] hull 50
+[to-wreck] moved to GildedWreck 1
+[wreck] wreck used True, hull 75/100
+[shot] repair-wreck.png
+[to-buoy] moved to TrialBuoy 3
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[shot] buoy-charging.png
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[buoy] buoy used True, charge 8.0 s
+[shot] buoy-reward.png
+[to-cache] moved to MerchantSkiff 2
+[cache] ambush encounter 1: spawned 3, state Spawned
+[shot] powder-cache-ambush.png
+[to-beacon] moved to BossBeacon 0
+[hold] holding USE
+[shot] beacon-hold-telegraph.png
+[release] released
+[boss-summoned] OK boss summoned, state BossFight
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[pick] 
+[shot] boss-fight.png
+[boss-attacks] boss attack None, phase Recovery, script phase 1, marked telegraph False
+[boss-kill] boss hit for its full health (V4 world)
+[boss-defeated] OK defeated; objective True; state Playing; run ended False
+[shot] boss-defeated.png
+[die] ship sunk
+[results] OK results: VICTORY SECURED — RUN ENDED
+[shot] results.png
+[results-text] You secured the treasury, then were sunk — victory stays earned.\r | \r | Saltwind balance v3 · profile 33839ce3… · seed 1773492506 · 89s | \r | Run gold earned: 501\r | Run gold spent: 20\r | Run gold remaining: 481 (run-only)\r |  | Marks earned this run: 33 |   Active minutes: 2 |   Special discoveries: 6 |   Scheduled elite: 0 |   Boss victory: 25 |   Overtime: 0 | Treasury Marks: 835 |  | Unlock goal: not selected (choose one in menu or results). |  | Final build: |   · Swivel Guns Lv 2 |  | Weapon contribution: |   · Swivel Guns: 100% dmg | 

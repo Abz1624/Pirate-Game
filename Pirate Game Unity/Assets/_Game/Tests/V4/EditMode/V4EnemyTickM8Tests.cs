@@ -482,30 +482,6 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual("deck_cannons", w.V4.Agents[slot].lastHitWeaponId, "the last hit's weapon is kept for the kill event");
         }
 
-        [Test]
-        public void AreaDenialRelease_MatchesTheLegacyRelease()
-        {
-            foreach (var hold in new[] { 0f, 2f })
-            {
-                SaltwindCombatEncounterBudget.ResetForRun();
-                var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
-                config.TryApplyEdit("timeline.saltwind", "areaDenialReleaseSeconds", hold.ToString(System.Globalization.CultureInfo.InvariantCulture), 0f, out _);
-                var legacy = new LegacyAreaDenialRelease(config);
-                var v4 = new EncounterBudget(() => 2, () => 2);
-                var active = typeof(SaltwindCombatEncounterBudget).GetField("_activeAreaDenial", BindingFlags.Static | BindingFlags.NonPublic);
-                for (var f = 0; f < 600; f++)
-                {
-                    var t = f * Dt;
-                    if (f % 37 == 3)
-                        Assert.AreEqual(SaltwindCombatEncounterBudget.TryReserveAreaDenial(f), v4.TryReserveAreaDenial(f), $"hold {hold} frame {f}: reserve");
-                    legacy.Tick(t);
-                    v4.TickAreaDenialRelease(t, hold);
-                    Assert.AreEqual((int)active.GetValue(null), v4.ActiveAreaDenial, $"hold {hold} frame {f}: active area denial");
-                }
-                config.Dispose();
-            }
-            SaltwindCombatEncounterBudget.ResetForRun();
-        }
 
         [Test]
         public void StandingStill_ThenSprinting_MatchesV3()
