@@ -82,6 +82,7 @@ namespace RoguePirates.V4.Presentation.Hud
             var results = _views.Results;
             if (_headline != null) _headline.text = SaltwindRunResultsLogic.BuildHeadline(results.ObjectiveSecured, results.ObjectiveSecured && results.EndedByDeath);
             if (_summary != null) _summary.text = BuildSummary();
+            if (_summaryScroll != null) _summaryScroll.verticalNormalizedPosition = 1f; // open at the top
         }
 
         public void Hide()
@@ -165,7 +166,7 @@ namespace RoguePirates.V4.Presentation.Hud
 
             _headline = CreateText("PLACEHOLDER_v3_ui_run_results_headline", new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(520f, 56f), 26, TextAlignmentOptions.Center);
             _headline.text = "RESULTS";
-            _summary = CreateText("PLACEHOLDER_v3_ui_run_results_body", new Vector2(0.5f, 0.5f), new Vector2(0f, 40f), new Vector2(520f, 300f), 20, TextAlignmentOptions.TopLeft);
+            _summary = CreateScrollingBody();
 
             _retry = CreateButton("run_results_restart", "Retry voyage", "Start a new voyage with a fresh layout.", new Vector2(-180f, 28f), OnRetryClicked);
             _menu = CreateButton("run_results_menu", "Main menu", "Return to main menu.", new Vector2(0f, 28f), OnMenuClicked);
@@ -173,6 +174,52 @@ namespace RoguePirates.V4.Presentation.Hud
             _purchaseGoal = CreateButton("run_results_buy", "Purchase goal", "Spend Marks on selected unlock goal.", new Vector2(90f, 78f), OnPurchaseGoalClicked);
             _panel.SetActive(false);
         }
+
+        /// <summary>
+        /// R-92 fix (approved at the M6 playtest): V3's body (520x300 at the panel centre) ran below the panel and under
+        /// the buttons once the Marks breakdown, build and weapon lines were listed. The body now fills the space between
+        /// the headline and the two button rows and scrolls (wheel or drag) when the text is longer.
+        /// </summary>
+        TextMeshProUGUI CreateScrollingBody()
+        {
+            const float top = 68f;     // below the headline (36 + 56/2 + 4)
+            const float bottom = 108f; // above the two button rows (78 + 44/2 + 8)
+            var viewport = new GameObject("run_results_body_viewport", typeof(RectTransform), typeof(RectMask2D), typeof(Image), typeof(ScrollRect));
+            viewport.transform.SetParent(_panel.transform, false);
+            var vr = viewport.GetComponent<RectTransform>();
+            vr.anchorMin = new Vector2(0f, 0f);
+            vr.anchorMax = new Vector2(1f, 1f);
+            vr.offsetMin = new Vector2(20f, bottom);
+            vr.offsetMax = new Vector2(-20f, -top);
+            viewport.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0f); // raycast target for wheel/drag
+
+            var go = new GameObject("PLACEHOLDER_v3_ui_run_results_body", typeof(RectTransform));
+            go.transform.SetParent(viewport.transform, false);
+            var rect = go.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(0f, 0f);
+            var text = go.AddComponent<TextMeshProUGUI>();
+            text.alignment = TextAlignmentOptions.TopLeft;
+            text.fontSize = 20;
+            text.raycastTarget = false;
+            var fitter = go.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            var scroll = viewport.GetComponent<ScrollRect>();
+            scroll.content = rect;
+            scroll.viewport = vr;
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 24f;
+            _summaryScroll = scroll;
+            return text;
+        }
+
+        ScrollRect _summaryScroll;
 
         TextMeshProUGUI CreateText(string name, Vector2 anchor, Vector2 position, Vector2 size, float fontSize, TextAlignmentOptions alignment)
         {

@@ -313,9 +313,11 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             if (_boostSlider != null) return;
             var boostRoot = root.Find("Boost_Meter");
+            _weaponRow = root.Find("Weapon_Slot") as RectTransform;
             if (boostRoot == null)
             {
                 var go = new GameObject("Boost_Meter", typeof(RectTransform));
+                _boostPlaceholder = rtOf(go);
                 go.transform.SetParent(root, false);
                 boostRoot = go.transform;
                 var rt = go.GetComponent<RectTransform>();
@@ -361,10 +363,30 @@ namespace RoguePirates.V4.Presentation.Hud
             _boostButton.onClick.AddListener(OnBoostClicked);
         }
 
+        static RectTransform rtOf(GameObject go) => go.GetComponent<RectTransform>();
+
+        RectTransform _boostPlaceholder;
+        RectTransform _weaponRow;
+        const float BoostAboveRowGap = 10f;
+
+        /// <summary>
+        /// R-91 fix (approved at the M6 playtest): V3's placeholder meter sat at 24,24 from the bottom-left, on top of
+        /// the first two weapon slots. The placeholder now sits just above the weapon row (which rescales with the
+        /// screen); an authored meter keeps its own place.
+        /// </summary>
+        void PlaceBoostAboveWeaponRow()
+        {
+            if (_boostPlaceholder == null || _weaponRow == null) return;
+            var top = _weaponRow.anchoredPosition.y + _weaponRow.rect.height * _weaponRow.localScale.y;
+            var target = new Vector2(24f, top + BoostAboveRowGap);
+            if (_boostPlaceholder.anchoredPosition != target) _boostPlaceholder.anchoredPosition = target;
+        }
+
         void OnBoostClicked() => _views?.Commands?.RequestBoost();
 
         void RefreshBoostMeter()
         {
+            PlaceBoostAboveWeaponRow();
             var ship = _views.Ship;
             if (_boostSlider == null || ship == null || !ship.Exists) return;
             _boostSlider.value = ship.BoostNormalized;

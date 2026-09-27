@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `v4-modular-architecture` |
 | Phase start commit | `c39cb892` (M5 passed) |
-| Status | Implemented, reviewed and verified. **Awaiting your playtest** |
+| Status | **Passed** (playtest 27 Sep; R-90, R-91, R-92 applied) |
 
 ## What M6 delivers
 
@@ -95,3 +95,16 @@ Checked by the review and found correct: scene removals (including the prefab's 
 3. **Press O** in a run: the aim overlay shows each weapon's shape; press O again to hide it.
 4. **F1 → Events**: counts rise as you play; **Export session** writes a file (path shown).
 5. Decide: R-90 (keep the icon fix), R-91 (move the boost meter off the weapon row), R-92 (results text overflow).
+
+## Playtest feedback and approved fixes (27 Sep)
+
+All four checks passed (HUD, loadout, minimap, beacon arrow, spawn warnings, weapon effects, results; Retry and Main menu; the O aim overlay; F1 → Events and Export session).
+
+| Feedback / decision | Done |
+|---|---|
+| The Beacon's hold prompt kept looping 0–100 % after the boss was summoned | V3 behaviour (the prompt keeps a used landmark as its target while the ship is in range). Fixed in the M7 stage prompt, R-101 (`promptReleasesUsedLandmark`, on; off in the v3-parity preset); test in `V4StageM7Tests` |
+| R-90 keep the item icons | Kept |
+| R-91 move the boost meter off the weapon row | The placeholder meter sits just above the weapon row and follows its scale (`AuthoredHudPresenter.PlaceBoostAboveWeaponRow`); an authored meter keeps its place |
+| R-92 results text overflow | The body fills the space between the headline and the two button rows and scrolls when longer (`ResultsPresenter.CreateScrollingBody`) |
+
+Verification: PlayMode `PlaytestFixes_BoostMeterAboveTheWeaponRow_ResultsBodyClearOfTheButtons` (screen rectangles: the meter's bottom is above the row's top; the text area ends above the Retry, Menu and goal buttons and stays inside the panel); screenshots `phase-07-boss/playtest-fixes/01-*.png`, `02-*.png`. V4 EditMode 209/209, PlayMode 33/33. No trace run (presentation only).

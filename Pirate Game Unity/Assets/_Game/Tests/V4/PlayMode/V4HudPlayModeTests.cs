@@ -140,6 +140,38 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(V4SceneNames.MainMenu, SceneManager.GetActiveScene().name, "Main menu loads the V4 menu");
         }
 
+        static Rect ScreenRect(RectTransform rt)
+        {
+            var c = new Vector3[4];
+            rt.GetWorldCorners(c);
+            return Rect.MinMaxRect(c[0].x, c[0].y, c[2].x, c[2].y);
+        }
+
+        [UnityTest]
+        public IEnumerator PlaytestFixes_BoostMeterAboveTheWeaponRow_ResultsBodyClearOfTheButtons()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            yield return null;
+            var canvas = GameObject.Find("Canvas").transform;
+            var boost = ScreenRect(canvas.Find("Boost_Meter") as RectTransform);
+            var row = ScreenRect(canvas.Find("Weapon_Slot") as RectTransform);
+            Assert.GreaterOrEqual(boost.yMin, row.yMax - 0.5f, "R-91: the boost meter sits above the weapon row, not on its first slots");
+
+            yield return DieAndWaitForResults();
+            var root = Object.FindFirstObjectByType<V4PresentationRoot>();
+            var body = GameObject.Find("run_results_body_viewport").GetComponent<RectTransform>();
+            var bodyRect = ScreenRect(body);
+            foreach (var button in new[] { root.Results.RetryButton, root.Results.MenuButton })
+                Assert.GreaterOrEqual(bodyRect.yMin, ScreenRect(button.GetComponent<RectTransform>()).yMax, "R-92: the text area ends above the buttons");
+            var goal = GameObject.Find("PLACEHOLDER_v3_ui_run_results_goal") ?? GameObject.Find("run_results_goal");
+            if (goal != null) Assert.GreaterOrEqual(bodyRect.yMin, ScreenRect(goal.GetComponent<RectTransform>()).yMax);
+            var panel = ScreenRect(body.parent as RectTransform);
+            Assert.IsTrue(panel.Contains(bodyRect.min) && panel.Contains(bodyRect.max), "R-92: the text area stays inside the panel");
+            Assert.IsNotNull(body.GetComponent<UnityEngine.UI.ScrollRect>(), "long results scroll inside the area");
+            StringAssert.Contains("Run gold earned:", root.Results.SummaryText);
+        }
+
         static IEnumerator DieAndWaitForResults()
         {
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
