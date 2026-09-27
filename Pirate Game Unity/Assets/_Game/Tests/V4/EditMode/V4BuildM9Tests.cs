@@ -213,6 +213,38 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(StartingWeaponRule.CaptainWeapon, un.startingWeaponRule, "D6");
         }
 
+        // ---- 9.2 Stat resolver -----------------------------------------------------------------------------------------
+
+        [Test]
+        public void StatResolver_GivesPlayerStatsNumbers_AndRemovesBySource()
+        {
+            var stats = new PlayerStats();
+            var v3 = new PlayerStats();
+            var resolver = new StatResolver(() => stats);
+            var changed = new List<int>();
+            resolver.Changed += changed.Add;
+
+            // The same changes in the same order as V3 applies them directly.
+            resolver.SetBase((int)StatId.Hull, 110f); v3.SetBase(StatId.Hull, 110f);
+            resolver.Add("item:grapeshot_pouch", (int)StatId.Damage, 0f, 1.1f); v3.AddModifier(new StatModifier(StatId.Damage, 0f, 1.1f));
+            resolver.Add("logbook:gunnery_manual", (int)StatId.Damage, 0.08f * 1.25f); v3.AddModifier(new StatModifier(StatId.Damage, 0.08f * 1.25f));
+            resolver.Add("powerup:battle_signal", (int)StatId.Damage, 0f, 1.25f); v3.AddModifier(new StatModifier(StatId.Damage, 0f, 1.25f));
+            resolver.Add("item:grapeshot_pouch", (int)StatId.Damage, 0f, 1.1f); v3.AddModifier(new StatModifier(StatId.Damage, 0f, 1.1f));
+            foreach (StatId s in Enum.GetValues(typeof(StatId))) Assert.AreEqual(v3.Get(s), resolver.Get((int)s), s.ToString());
+            Assert.AreEqual(2, resolver.CountFor("item:grapeshot_pouch"));
+
+            resolver.RemoveSource("powerup:battle_signal"); v3.RemoveModifier(new StatModifier(StatId.Damage, 0f, 1.25f));
+            Assert.AreEqual(v3.Get(StatId.Damage), resolver.Get((int)StatId.Damage), "only the powerup's change goes");
+            Assert.AreEqual(0, resolver.CountFor("powerup:battle_signal"));
+            Assert.AreEqual(2, resolver.CountFor("item:grapeshot_pouch"));
+
+            resolver.Add("logbook:navigators_charts", 22, 0.03f); // V3's missing stat: ignored, as PlayerStats never matched it
+            Assert.AreEqual(v3.Get(StatId.MoveSpeed), resolver.Get((int)StatId.MoveSpeed));
+            CollectionAssert.Contains(changed, (int)StatId.Damage);
+            CollectionAssert.Contains(changed, (int)StatId.Hull);
+            CollectionAssert.DoesNotContain(changed, 22);
+        }
+
         [Test]
         public void ParityPreset_RestoresV3ForEveryAdoptedDecision()
         {
