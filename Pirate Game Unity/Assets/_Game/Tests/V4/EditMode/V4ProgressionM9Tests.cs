@@ -555,6 +555,110 @@ namespace RoguePirates.V4.Tests
             }
         }
 
+        // ---- Powerups (V3 V3FloorPowerupWorld) --------------------------------------------------------------------------
+
+        sealed class PowerupRng : IPowerupRandom
+        {
+            readonly RunRng _rng;
+            public PowerupRng(RunRng rng) { _rng = rng; }
+            public float PowerupFloat() => _rng.PowerupFloat();
+        }
+
+        sealed class PowerupWorld : IPowerupWorld
+        {
+            public float Hull = 40f, MaxHull = 100f;
+            public int SpeedSyncs, AttractXp, AttractLoose;
+            public bool IsFreeSpot(Vector3 p, float margin, float clearance) =>
+                HighSeas.World.PlayBounds.IsInside(p, margin) && !(HighSeas.World.IslandObstacles.IsAvailable && HighSeas.World.IslandObstacles.IsPositionBlocked(p, clearance));
+            public bool IsBossFight => false;
+            public bool ShipAlive => Hull > 0f;
+            public float ShipHull => Hull;
+            public float ShipMaxHull => MaxHull;
+            public void HealShip(float amount) => Hull += amount;
+            public void SyncShipSpeed() => SpeedSyncs++;
+        }
+
+        [Test]
+        public void Powerups_EqualV3sFloorPowerupWorld_OverKillsAndPickups()
+        {
+            UnityEngine.TestTools.LogAssert.ignoreFailingMessages = true; // V3 destroys its placeholder views (edit mode logs)
+            var profile = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(V3ConfigMigrator.ProfilePath);
+            StageBalanceProfileContext.BeginRun(profile);
+            V3RunContext.IsActive = true;
+            try
+            {
+                using var set = Parity();
+                var host = new GameObject("run");
+                _created.Add(host);
+                var rm = Awake<RunManager>(host);
+                rm.BeginRun(21);
+                var spawnerHost = new GameObject("spawner");
+                _created.Add(spawnerHost);
+                var spawner = spawnerHost.AddComponent<HighSeas.Enemies.EncounterSpawner>(); // Dead Calm's V3 sink
+                var shipHost = new GameObject("ship");
+                _created.Add(shipHost);
+                var damage = shipHost.AddComponent<HighSeas.Combat.DamageReceiver>();
+                damage.Initialize(100f);
+                typeof(HighSeas.Combat.DamageReceiver).GetField("_currentHP", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(damage, 40f);
+                var ship = shipHost.AddComponent<HighSeas.Player.PlayerShipController>();
+                typeof(HighSeas.Player.PlayerShipController).GetField("_damage", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(ship, damage);
+                var worldHost = new GameObject("powerups");
+                _created.Add(worldHost);
+                var v3 = Awake<V3FloorPowerupWorld>(worldHost);
+                v3.ResetForRun();
+
+                var v4Stats = new PlayerStats();
+                var resolver = new StatResolver(() => v4Stats);
+                var v4Rng = new RunRng(21);
+                var world = new PowerupWorld();
+                var module = new PowerupModule(() => set.Single<PowerupConfig>(), new PowerupRng(v4Rng), resolver, world, null);
+                module.ResetForRun();
+                module.AttractXp += () => world.AttractXp++;
+                module.AttractLooseRewards += () => world.AttractLoose++;
+                var agentsField = typeof(V3FloorPowerupWorld).GetField("_agents", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                var scenario = new System.Random(5);
+                var player = Vector3.zero;
+                var drops = new List<Vector3>();
+                for (var frame = 0; frame < 20000; frame++)
+                {
+                    const float dt = 1f / 60f;
+                    if (scenario.Next(0, 4) == 0)
+                    {
+                        var at = new Vector3(scenario.Next(-40, 40), 0f, scenario.Next(-40, 40));
+                        var elite = scenario.Next(0, 300) == 0;
+                        var boss = scenario.Next(0, 2000) == 0;
+                        var before = v3.SpawnedThisStage;
+                        v3.TryRollOnKill(at, boss, elite);
+                        module.TryRollOnKill(at, boss, elite);
+                        if (v3.SpawnedThisStage > before) drops.Add(at);
+                    }
+                    // The ship sails to the latest drop, so most powerups are collected before they expire.
+                    var target = drops.Count > 0 ? drops[drops.Count - 1] : Vector3.zero;
+                    player = Vector3.MoveTowards(player, target, 10f * dt);
+                    v3.Tick(dt, player);
+                    module.Tick(dt, player);
+
+                    var tag = $"frame {frame}";
+                    Assert.AreEqual(v3.SpawnedThisStage, module.SpawnedThisStage, tag + " spawned");
+                    var agents = (Array)agentsField.GetValue(v3);
+                    var active = 0;
+                    foreach (var a in agents) if ((bool)a.GetType().GetField("active").GetValue(a)) active++;
+                    Assert.AreEqual(active, module.ActiveCount, tag + " on the water");
+                    foreach (StatId s in Enum.GetValues(typeof(StatId))) Assert.AreEqual(rm.Stats.Get(s), v4Stats.Get(s), $"{tag} {s}");
+                    Assert.AreEqual(spawner.DebugSpawnRateMultiplier, module.SpawnRateMultiplier, tag + " Dead Calm");
+                    Assert.AreEqual(damage.CurrentHP, world.Hull, tag + " hull");
+                }
+                Assert.AreEqual(rm.Rng.PowerupFloat(), v4Rng.PowerupFloat(), "same Powerup draws");
+                Assert.AreEqual(set.Single<PowerupConfig>().maxPerStage, module.SpawnedThisStage, "the stage cap was reached");
+                Assert.Greater(world.AttractLoose, 0, "a Magnetic Tide was collected");
+            }
+            finally
+            {
+                V3RunContext.IsActive = false;
+            }
+        }
+
         [Test]
         public void WeaponOfferData_EqualsV3sRunDatabase()
         {

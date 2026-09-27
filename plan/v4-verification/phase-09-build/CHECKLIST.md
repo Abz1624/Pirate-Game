@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `v4-modular-architecture` |
 | Phase start commit | `33f8b95e` (M8 passed) |
-| Status | In progress: 9.1, 9.2, 9.6, 9.3 and 9.5 done (not wired into runs yet); 9.4 powerups next |
+| Status | In progress: 9.1, 9.2, 9.6, 9.3, 9.5 and 9.4 done (not wired into runs yet); 9.7 pickups next |
 
 Design record: [DESIGN.md](DESIGN.md) (decisions, build order, gate decisions, determinism hazards). Research maps: [progression](research-progression.md), [items and Captains](research-items-captains.md), [pickups and powerups](research-pickups-powerups.md).
 
@@ -17,7 +17,7 @@ Design record: [DESIGN.md](DESIGN.md) (decisions, build order, gate decisions, d
 | 9.6 | Progression module and offer generator | Done (not yet wired into runs). `OfferGenerator` ports V3's LevelOfferGenerator Saltwind path (first level-up, fill-state weights, Saltwind Logbook pool, evolutions, new-weapon guarantee, fallbacks, rarity roll, upgrade packages); `ProgressionModule` ports LevelSystem's stage path (XP curve and grants, pending level-ups, show/select/skip/refresh, applying cards: loadout equip and upgrades, Logbook ranks through the stat resolver, fallbacks, evolutions); `ProgressionLoadout` replaces the V3 weapon record (EquipWeapon, ApplyUpgradePackage, ApplyAxisValue) and feeds the weapon module (`IWeaponLoadout`). Weapon configs gained V3's run-database order and upgrade axes. EditMode lockstep under the v3-parity preset: 600 randomized builds give V3's exact cards and Loot draws; 12 seeds × 40 XP grants with random picks, skips and refreshes give V3's level, XP, pending, owned weapons and Logbooks with levels, loadout values, all 21 stats and Loot draws |
 | 9.3 | Item module | Done (not yet wired). `ItemModule` (`IItemInventory`) ports V3RunItemInventory (uncapped stacks, stat changes per stack) and V3RunItemEffects (Gunner's Gloves, Ghost Lantern, Reinforced Keel, Captain's Bell, Admiral's Ledger, Golden Figurehead, Powder Fuse; R-40 effects inert) from the item configs. EditMode lockstep: 3,000 frames of a scripted run (turns, speed changes, kills, hits, gold, an item every second, weapons added) give V3's attack speed, crit bonus, incoming damage, damage multiplier, Bell triggers, inventory, stacks and all stats every frame |
 | 9.5 | Captain module | Done (not yet wired). `CaptainModule` ports V3CaptainController (base hull and speed, per-level and gold passives, Running Fuse, Hank's per-level hull resync; armor and element multipliers inert, R-49) and V3CaptainActiveController (actives, cooldowns, brace, keg radius, flame boost, damage buff, move and slow effects, salvo, fire-all). EditMode lockstep: all six Captains over 3,600 frames with speed changes, gold and random activations give V3's additive damage, keg damage, incoming damage, keg radius, flame range, burn and cooldown every frame, and V3's base stats |
-| 9.4 | Powerup module | Next |
-| 9.7 | Pickup module | — |
+| 9.4 | Powerup module | Done (not yet wired). `PowerupModule` ports V3FloorPowerupWorld: drop roll on the Powerup stream, elites' forced drops, the spot search, lifetime, collection, Repair Supplies, Battle Signal / Powder Rush in one damage slot (R-43 switch), Tailwind / Full Sail in one speed slot, Salvage Chime and Magnetic Tide (events for the pickups), Dead Calm as a spawn-rate multiplier for the V4 spawn controller. EditMode lockstep: 20,000 frames of kills (elites, bosses) and a ship collecting drops give V3's drop count, powerups on the water, all stats, hull, Dead Calm rate and Powerup draws |
+| 9.7 | Pickup module | Next |
 | 9.8 | Switch-over | — |
 | 9.9 | Console sections | — |
