@@ -196,7 +196,9 @@ namespace RoguePirates.V4.Config
         public bool preferElite, preferHighestHull;
         [Tooltip("Level-up offers are the legacy level system's until M9.")] [AppliesFrom(9)] public int maxLevel = 12;
         [AppliesFrom(9)] public ConfigEnums.UpgradeAxis[] validUpgradeAxes = Array.Empty<ConfigEnums.UpgradeAxis>();
+        [Tooltip("Upgrade lines a level-up can roll (V3's axis configs, or its pattern defaults when a weapon had none).")]
         [AppliesFrom(9)] public WeaponUpgradeAxis[] upgradeAxes = Array.Empty<WeaponUpgradeAxis>();
+        [Tooltip("Position in V3's run database (level-up picks walk the weapons in this order).")] [AppliesFrom(9)] public int databaseOrder = -1;
         public float procCoefficient = 1f;
         public Color projectileColor = Color.white;
         [Tooltip("Damage per hit scales with weapon level (× damageBonus × level × 0.1 + 1). V3 applies this to projectiles and lanes only (register R-21).")]

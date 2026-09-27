@@ -56,6 +56,7 @@ MonoBehaviour:
     offerWeight: 0.6
     maxAccumulated: 1
     displayFormat: 
+  databaseOrder: 3
   procCoefficient: 0.5
   projectileColor: {r: 0, g: 1, b: 1, a: 1}
   levelDamageFactor: 1

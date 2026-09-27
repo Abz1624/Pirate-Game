@@ -11,6 +11,7 @@ using RoguePirates.V4.Config;
 using RoguePirates.V4.Legacy;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace RoguePirates.V4.Editor
 {
@@ -104,6 +105,8 @@ namespace RoguePirates.V4.Editor
             FillPickups(pickups, pacing);
             created.Add(pickups);
 
+            log.Append(FillWeaponOffers(db));
+
             foreach (var c in created) EditorUtility.SetDirty(c);
             AssetDatabase.SaveAssets();
             log.Append(ApplyAdoptedDecisions());
@@ -145,6 +148,43 @@ namespace RoguePirates.V4.Editor
             if (experiment != null) { experiment.captainActivesEnabled = true; EditorUtility.SetDirty(experiment); }
             AssetDatabase.SaveAssets();
             return "M9 adopted decisions applied (starting weapons, actives on, Captain locks, Logbook stats)\n";
+        }
+
+        /// <summary>
+        /// The weapons' level-up data as V3's run database has it (the loaded database after CombatWeaponCatalog adds
+        /// its four weapons): database order, max level and upgrade axes (V3's pattern defaults where a weapon has none).
+        /// </summary>
+        static string FillWeaponOffers(GameDatabase source)
+        {
+            var clone = Object.Instantiate(source);
+            var created = new List<Object> { clone };
+            try
+            {
+                clone.weapons = source.weapons.Select(w => { if (w == null) return null; var c = Object.Instantiate(w); c.name = w.name; created.Add(c); return c; }).ToArray();
+                HighSeas.Combat.CombatWeaponCatalog.ApplyToDatabase(clone, HighSeas.Combat.CombatExperimentContext.Active);
+                var n = 0;
+                foreach (var guid in AssetDatabase.FindAssets("t:WeaponConfig", new[] { V3ConfigMigrator.DataRoot + "/Weapons" }))
+                {
+                    var w = AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                    var index = Array.FindIndex(clone.weapons, d => d != null && d.id == w.weaponId);
+                    if (index < 0) continue;
+                    var def = clone.weapons[index];
+                    w.databaseOrder = index;
+                    w.maxLevel = def.maxLevel;
+                    w.upgradeAxes = def.GetUpgradeConfigs().Select(x => new WeaponUpgradeAxis
+                    {
+                        axis = (ConfigEnums.UpgradeAxis)(int)x.axis, baseIncrement = x.baseIncrement, offerWeight = x.offerWeight,
+                        maxAccumulated = x.maxAccumulated, displayFormat = x.displayFormat ?? string.Empty
+                    }).ToArray();
+                    EditorUtility.SetDirty(w);
+                    n++;
+                }
+                return $"weapon offer data: {n} weapons (run database order, max level, upgrade axes)\n";
+            }
+            finally
+            {
+                foreach (var o in created) if (o != null) Object.DestroyImmediate(o);
+            }
         }
 
         static void FillProgression(ProgressionConfig p, StageBalanceProfile profile, DemoPacingSettings pacing, LevelUpSettings levelUp)

@@ -36,7 +36,33 @@ MonoBehaviour:
   preferHighestHull: 0
   maxLevel: 12
   validUpgradeAxes: 
-  upgradeAxes: []
+  upgradeAxes:
+  - axis: 0
+    baseIncrement: 0.08
+    offerWeight: 1.2
+    maxAccumulated: 2
+    displayFormat: 
+  - axis: 1
+    baseIncrement: 0.05
+    offerWeight: 1
+    maxAccumulated: 0.6
+    displayFormat: 
+  - axis: 2
+    baseIncrement: 1
+    offerWeight: 0.8
+    maxAccumulated: 4
+    displayFormat: 
+  - axis: 3
+    baseIncrement: 0.06
+    offerWeight: 0.7
+    maxAccumulated: 1.5
+    displayFormat: 
+  - axis: 6
+    baseIncrement: 0.05
+    offerWeight: 0.6
+    maxAccumulated: 1.5
+    displayFormat: 
+  databaseOrder: 46
   procCoefficient: 0.35
   projectileColor: {r: 0.65, g: 1, b: 1, a: 1}
   levelDamageFactor: 1
