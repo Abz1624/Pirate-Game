@@ -150,3 +150,11 @@ No blockers; the v3-parity preset turns every round-2 behaviour off, and the Bea
 
 Tests after round 2 and its review: EditMode 222/222, PlayMode 43/43. Checked visually in the Module Lab (prompt, 4 elites, the chest and its prompt).
 
+## Playtest round 3 (27 Sep)
+
+| Your note | Fix |
+|---|---|
+| Beacon: "summoning.." works | — |
+| Couldn't find the Powder Cache; add an F1 button to spawn or locate it | F1 → Landmarks, Beacon & Boss → **Go to**: Powder Cache, Beacon, Chest, Repair Wreck, Signal Buoy, Treasure Chart. The ship moves next to the nearest unused one, inside its prompt range (dev console only). PlayMode `ConsoleGoTo_PowderCache_PutsTheShipInItsPromptRange_InTheRunAndTheLab` |
+| Hellfire rings on the water work | — |
+

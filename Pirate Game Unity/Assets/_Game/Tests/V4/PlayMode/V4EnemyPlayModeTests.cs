@@ -310,6 +310,24 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
+        public IEnumerator ConsoleGoTo_PowderCache_PutsTheShipInItsPromptRange_InTheRunAndTheLab()
+        {
+            foreach (var lab in new[] { false, true })
+            {
+                if (lab) yield return StartLab(); else yield return StartRun();
+                var game = Object.FindFirstObjectByType<V4Game>();
+                var stage = Get<RoguePirates.V4.Stage.IStageContent>();
+                var cache = stage.Module.Layout.pois.FindIndex(p => p.type == POIType.MerchantSkiff);
+                var message = RoguePirates.V4.DevTools.Console.StageSection.GoTo(game, POIType.MerchantSkiff);
+                if (cache < 0) { StringAssert.StartsWith("No Powder Cache", message); continue; }
+                StringAssert.StartsWith("Moved to Powder Cache", message);
+                Assert.IsTrue(stage.Module.IsPlayerInRange(cache), "in range of its hold prompt");
+                for (var i = 0; i < 3; i++) { KeepRunning(); yield return null; }
+                Assert.AreEqual(cache, stage.PromptTarget, "the prompt offers the challenge");
+            }
+        }
+
+        [UnityTest]
         public IEnumerator R103_AnExpiredMagneticTide_OpensNothing()
         {
             yield return StartLab();
