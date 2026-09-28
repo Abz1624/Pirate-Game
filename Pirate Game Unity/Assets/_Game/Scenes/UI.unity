@@ -756,17 +756,13 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 26998402214871309, guid: 5fd47dc43484e45aaa4684a6f88fc294, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2098081529539239683, guid: 5fd47dc43484e45aaa4684a6f88fc294, type: 3}
       propertyPath: m_LocalPosition.x
       value: -18.141788
       objectReference: {fileID: 0}
     - target: {fileID: 2098081529539239683, guid: 5fd47dc43484e45aaa4684a6f88fc294, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.000010592735
+      value: 2.4
       objectReference: {fileID: 0}
     - target: {fileID: 2098081529539239683, guid: 5fd47dc43484e45aaa4684a6f88fc294, type: 3}
       propertyPath: m_LocalPosition.z
@@ -800,21 +796,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 21.88
       objectReference: {fileID: 0}
-    - target: {fileID: 4122365728750370098, guid: 5fd47dc43484e45aaa4684a6f88fc294, type: 3}
-      propertyPath: m_Intensity
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4586232833936603820, guid: 5fd47dc43484e45aaa4684a6f88fc294, type: 3}
-      propertyPath: m_Intensity
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5532503270260709974, guid: 5fd47dc43484e45aaa4684a6f88fc294, type: 3}
       propertyPath: m_Name
       value: pirate_tombstone
-      objectReference: {fileID: 0}
-    - target: {fileID: 5532503270260709974, guid: 5fd47dc43484e45aaa4684a6f88fc294, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
