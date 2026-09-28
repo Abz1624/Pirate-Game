@@ -22,6 +22,8 @@ namespace RoguePirates.V4.Presentation
         public RoguePirates.V4.Presentation.Hud.BeaconGuidePresenter BeaconGuide { get; private set; }
         public RoguePirates.V4.Presentation.Hud.ResultsPresenter Results { get; private set; }
         public RoguePirates.V4.Presentation.Hud.SpawnWarningPresenter SpawnWarnings { get; private set; }
+        /// <summary>M13: barks and tutorial prompts.</summary>
+        public RoguePirates.V4.Presentation.Hud.NarrativePresenter Narrative { get; private set; }
         public Weapons.WeaponVfxPresenter WeaponEffects { get; private set; }
         public Weapons.WeaponAimOverlay AimOverlay { get; private set; }
         public Stage.InteractionPromptPresenter InteractionPrompt { get; private set; }
@@ -72,6 +74,20 @@ namespace RoguePirates.V4.Presentation
                 InstallWeaponEffects(game, views);
             }
             if (game.Context != null) InstallStage(game);
+            if (game.Context != null) InstallNarrative(game);
+        }
+
+        /// <summary>M13: barks and tutorial prompts, on the authored HUD canvas (or the run canvas).</summary>
+        void InstallNarrative(V4Game game)
+        {
+            if (!game.Context.TryGet<RoguePirates.V4.Narrative.INarrativeView>(out var narrative)) return;
+            // The run canvas (above the authored HUD) and its last child, so a prompt also shows over the level-up cards.
+            var run = FindRunCanvas();
+            var parent = run != null ? run.transform : RoguePirates.V4.Presentation.Hud.AuthoredHudPresenter.FindAuthoredCanvas()?.transform;
+            if (parent == null) return;
+            Narrative = RoguePirates.V4.Presentation.Hud.NarrativePresenter.Create(parent);
+            Narrative.transform.SetAsLastSibling();
+            Narrative.Bind(narrative);
         }
 
         /// <summary>

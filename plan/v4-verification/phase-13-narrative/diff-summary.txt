@@ -1,0 +1,10 @@
+ .../Assets/_Game/Tests/V4/PlayMode/V4RunPlayModeTests.cs |  2 +-
+ .../_Game/V4/Data/ConfigSets/SaltwindDefault.asset       |  1 +
+ .../Assets/_Game/V4/DevTools/Console/TuningConsole.cs    |  1 +
+ .../Assets/_Game/V4/DevTools/Trace/TraceBoot.cs          |  1 +
+ .../Assets/_Game/V4/Editor/V4TraceSession.cs             |  2 +-
+ .../Assets/_Game/V4/Presentation/V4PresentationRoot.cs   | 16 ++++++++++++++++
+ Pirate Game Unity/Assets/_Game/V4/Runtime/Core/V4Game.cs | 11 +++++++++++
+ .../Assets/_Game/V4/Runtime/Legacy/LegacyAdapters.cs     |  4 ++--
+ .../Assets/_Game/V4/Runtime/Legacy/LegacyBuildWiring.cs  |  1 -
+ 9 files changed, 34 insertions(+), 5 deletions(-)

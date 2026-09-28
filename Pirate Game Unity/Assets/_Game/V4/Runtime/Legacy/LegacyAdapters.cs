@@ -258,7 +258,7 @@ namespace RoguePirates.V4.Legacy
                     rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.ScheduledElite), rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.BossVictory),
                     rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.OvertimeMinute));
             run.SetState(RunState.RunComplete); // gold is run-only: nothing is banked (R-59)
-            V3OnboardingDirector.RecordRunCompleted();
+            // (M13: V3's onboarding is retired in V4 runs; the V4 tutorial keeps its own progress key.)
             RunCombatTelemetry.Instance?.RecordPlayerDeath(run.ObjectiveSecured);
             V3ToastHud.Instance?.Show("Run ended.", 4f);
             if (rewards != null && rewards.SettlementApplied)
@@ -484,7 +484,7 @@ namespace RoguePirates.V4.Legacy
 
         public static void EnsurePlayfeelSystems(PlayerShipController ship, int seed)
         {
-            V3OnboardingDirector.Ensure()?.ResetForRun();
+            // (M13: V3OnboardingDirector is no longer created; the V4 tutorial replaces it.)
             LegacyWorldAdapter.DisableEnvironmentalHazards();
 
             var systems = GameObject.Find("Systems");

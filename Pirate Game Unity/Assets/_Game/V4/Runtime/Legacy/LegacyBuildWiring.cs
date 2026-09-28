@@ -501,7 +501,6 @@ namespace RoguePirates.V4.Legacy
                 Debug.LogWarning("Level-up UI unavailable; waiting for modal wiring.");
                 return false;
             }
-            V3OnboardingDirector.Instance?.NotifyLevelUpShown();
             Debug.Log($"Level-up modal shown with {offers.Count} offers.");
             return true;
         }

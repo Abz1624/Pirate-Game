@@ -16,7 +16,7 @@ namespace RoguePirates.V4.Tests
     /// <summary>Swaps the save for an in-memory one and restores the PlayerPrefs a V4 run can touch.</summary>
     sealed class V4TestSaveIsolation : System.IDisposable
     {
-        static readonly string[] IntKeys = { "v3_home_seed", "v3_first_conquest_complete", "v3_saltwind_runs_completed", "v3_selected_captain", "combat_captain_actives_enabled", "v4_lifetime_gold" };
+        static readonly string[] IntKeys = { "v3_home_seed", "v3_first_conquest_complete", "v3_saltwind_runs_completed", "v3_selected_captain", "combat_captain_actives_enabled", "v4_lifetime_gold", "v4_tutorial_progress" };
         readonly SaveService _original;
         readonly bool[] _had = new bool[IntKeys.Length];
         readonly int[] _values = new int[IntKeys.Length];

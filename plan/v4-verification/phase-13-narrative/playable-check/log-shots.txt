@@ -1,0 +1,4 @@
+prompt: t=21.8 paused=False tutorial=1/9 prompt=[Sail with WASD or the left stick.] bark=[-]
+shot: 03-tutorial-prompt-in-play
+bark: t=32.2 paused=False tutorial=1/9 prompt=[Sail with WASD or the left stick.] bark=[Penny: Salvage. Legally, probably ours.]
+shot: 04-bark-in-play

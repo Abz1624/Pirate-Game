@@ -476,6 +476,6 @@ Phases run one at a time. Each one ends with tests, traces and an automated play
 | M10 | Difficulty Director, observe | Implemented, awaiting playtest | `plan/v4-verification/phase-10-director/` |
 | M11 | Adaptive difficulty | Implemented, awaiting playtest | `plan/v4-verification/phase-11-adaptive/` |
 | M12 | Rum and Results | Implemented, awaiting playtest | `plan/v4-verification/phase-12-rum/` |
-| M13 | Barks and Tutorial | Not started | `plan/v4-verification/phase-13-narrative/` |
+| M13 | Barks and Tutorial | Implemented, awaiting playtest | `plan/v4-verification/phase-13-narrative/` |
 | M14 | Switch-over | Not started | `plan/v4-verification/phase-14-switch/` |
 | M15 | V3 retirement | Not started | `plan/v4-verification/phase-15-retire/` |

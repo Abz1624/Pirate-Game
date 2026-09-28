@@ -55,3 +55,17 @@ Committed "(awaiting playtest)". Evidence: `phase-12-rum/CHECKLIST.md`.
 - [ ] **When Rum is paid:** at death (as V3), and — new — when a victory ends the run (only if "continue after boss victory" is switched off; V3 paid Doubloons there instead). Leaving a run mid-way (restart, menu) pays nothing, as in V3.
 - [ ] **Results damage share** is the same as V3's (per-hit records, V3's names), now held by V4 instead of V3's static ledger.
 - [ ] The results screen keeps V3's layout (only the wording changed).
+
+### M13
+
+Committed "(awaiting playtest)". Evidence: `phase-13-narrative/CHECKLIST.md`. **All bark lines are placeholders I wrote in the GDD's voice** — your Narrative Bible was not read (see the standing question at the top).
+
+**Playtest (10 min):** F1 → search "tutorial" → Reset tutorial, then restart the run. The nine prompts should appear one at a time under the timer as you play (sail, XP, level-up, chest, landmark, Beacon, boss telegraph, "TERRITORY CLAIMED…", the death summary). Barks appear bottom-left (Penny, the chipmunk's action captions, the Barnacle King, your Captain) and never pause anything. F1 → Barks: play any bark.
+
+**Doubts I resolved myself (please confirm or overrule):**
+- [ ] **Placeholder lines** (30 barks). Replace from the Bible once you allow it; the chipmunk has no name yet ("The chipmunk").
+- [ ] **Tutorial gate:** shows until finished (progress kept across runs under `v4_tutorial_progress`), not only on the first run; V3's four onboarding toasts are retired in V4.
+- [ ] **Stalled steps are skipped** after a time limit (XP 2 min, level-up / chest / landmark 2.5 min, Beacon 6 min, telegraph 2 min) so the tutorial never gets stuck; skipped steps don't come back. If you reach the Beacon or sink the boss early, the steps in between are skipped and the claim banner still shows.
+- [ ] **A fourth speaker:** your Captain also barks (their catchphrases: Rook "Exactly as planned.", Hank "No." …). The plan listed Penny, the chipmunk and the Barnacle King only. Keep?
+- [ ] **Placement:** barks bottom-left above the loadout, prompts in a strip under the timer (their own places, so they never fight the one-message toast). They hide behind the level-up card screen.
+- [ ] **The boss-kill toast** ("TERRITORY OBJECTIVE SECURED…") still shows; during the tutorial the claim prompt shows too. Which banner wording wins is your open GDD question.

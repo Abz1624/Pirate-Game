@@ -1,0 +1,456 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9301fa1770276174e848c12ef8b55328, type: 3}
+  m_Name: SaltwindNarrative
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.NarrativeConfig
+  configId: narrative.saltwind
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  barksEnabled: 1
+  tutorialEnabled: 1
+  globalCooldownSeconds: 10
+  barkSeconds: 3.5
+  quietAfterBossSeconds: 6
+  pennyName: Penny
+  chipmunkName: The chipmunk
+  bossName: Barnacle King
+  barks:
+  - barkId: start_penny
+    enabled: 1
+    speaker: 0
+    trigger: 0
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - Try to bring the ship back this time.
+    - I have the repair bill ready. Just in case.
+    cooldownSeconds: 9999
+    priority: 5
+    oncePerRun: 1
+  - barkId: start_captain
+    enabled: 1
+    speaker: 3
+    trigger: 0
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - Exactly as planned.
+    cooldownSeconds: 9999
+    priority: 4
+    oncePerRun: 1
+  - barkId: streak_captain
+    enabled: 1
+    speaker: 3
+    trigger: 1
+    value: 8
+    windowSeconds: 6
+    tag: 
+    lines:
+    - Again.
+    - Exactly as planned.
+    - More.
+    cooldownSeconds: 45
+    priority: 3
+    oncePerRun: 0
+  - barkId: streak_penny
+    enabled: 1
+    speaker: 0
+    trigger: 1
+    value: 15
+    windowSeconds: 6
+    tag: 
+    lines:
+    - That's a lot of wreckage. None of it is ours. Good.
+    cooldownSeconds: 90
+    priority: 2
+    oncePerRun: 0
+  - barkId: level_penny
+    enabled: 1
+    speaker: 0
+    trigger: 2
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - Another upgrade. I'll pretend that was budgeted.
+    - Fine. Bolt it on.
+    cooldownSeconds: 60
+    priority: 1
+    oncePerRun: 0
+  - barkId: level_captain
+    enabled: 1
+    speaker: 3
+    trigger: 2
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - I have an idea.
+    - Better.
+    cooldownSeconds: 75
+    priority: 1
+    oncePerRun: 0
+  - barkId: chest_chipmunk
+    enabled: 1
+    speaker: 1
+    trigger: 3
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - '*stuffs something shiny into its cheeks*'
+    - '*inspects the chest, then the Captain''s pockets*'
+    cooldownSeconds: 60
+    priority: 3
+    oncePerRun: 0
+  - barkId: chest_penny
+    enabled: 1
+    speaker: 0
+    trigger: 3
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - Salvage. Legally, probably ours.
+    cooldownSeconds: 90
+    priority: 2
+    oncePerRun: 0
+  - barkId: landmark_penny
+    enabled: 1
+    speaker: 0
+    trigger: 4
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - Useful. Don't get used to useful.
+    cooldownSeconds: 60
+    priority: 2
+    oncePerRun: 0
+  - barkId: landmark_chipmunk
+    enabled: 1
+    speaker: 1
+    trigger: 4
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - '*pockets a bolt nobody will miss*'
+    cooldownSeconds: 90
+    priority: 1
+    oncePerRun: 0
+  - barkId: beacon_hint_penny
+    enabled: 1
+    speaker: 0
+    trigger: 5
+    value: 1
+    windowSeconds: 6
+    tag: 
+    lines:
+    - The Beacon's out there. So is whoever owns it.
+    cooldownSeconds: 9999
+    priority: 4
+    oncePerRun: 1
+  - barkId: beacon_spotted_penny
+    enabled: 1
+    speaker: 0
+    trigger: 6
+    value: 3
+    windowSeconds: 6
+    tag: 
+    lines:
+    - There's the Treasury Beacon. The sea keeps receipts, Captain.
+    cooldownSeconds: 9999
+    priority: 6
+    oncePerRun: 1
+  - barkId: boss_summoned_king
+    enabled: 1
+    speaker: 2
+    trigger: 7
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - Your ship is improperly docked in MY waters.
+    - Unlicensed vessel! Unpaid tax! Leave, or be fined.
+    cooldownSeconds: 9999
+    priority: 8
+    oncePerRun: 1
+  - barkId: boss_summoned_penny
+    enabled: 1
+    speaker: 0
+    trigger: 7
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - That's the Barnacle King. He'll want paperwork.
+    cooldownSeconds: 9999
+    priority: 7
+    oncePerRun: 1
+  - barkId: boss_defeated_penny
+    enabled: 1
+    speaker: 0
+    trigger: 8
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - Please stop there. You won't, but please.
+    - That was expensive. Worth it, apparently.
+    cooldownSeconds: 9999
+    priority: 9
+    oncePerRun: 1
+  - barkId: boss_defeated_chipmunk
+    enabled: 1
+    speaker: 1
+    trigger: 8
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - '*claims one barnacle as a crown*'
+    cooldownSeconds: 9999
+    priority: 8
+    oncePerRun: 1
+  - barkId: elite_hammer_penny
+    enabled: 1
+    speaker: 0
+    trigger: 9
+    value: 0
+    windowSeconds: 6
+    tag: elite_hammerhead
+    lines:
+    - That hammerhead looks personally offended.
+    cooldownSeconds: 9999
+    priority: 5
+    oncePerRun: 1
+  - barkId: elite_kraken_penny
+    enabled: 1
+    speaker: 0
+    trigger: 9
+    value: 0
+    windowSeconds: 6
+    tag: elite_kraken
+    lines:
+    - Kraken spawn. I'm not paying for tentacle damage.
+    cooldownSeconds: 9999
+    priority: 5
+    oncePerRun: 1
+  - barkId: reef_crab_penny
+    enabled: 1
+    speaker: 0
+    trigger: 9
+    value: 0
+    windowSeconds: 6
+    tag: reef_crab
+    lines:
+    - Reef crab. Armoured. Unreasonably so.
+    cooldownSeconds: 9999
+    priority: 5
+    oncePerRun: 1
+  - barkId: overtime_penny
+    enabled: 1
+    speaker: 0
+    trigger: 9
+    value: 0
+    windowSeconds: 6
+    tag: overtime
+    lines:
+    - We could leave. We won't. Noted.
+    cooldownSeconds: 9999
+    priority: 6
+    oncePerRun: 1
+  - barkId: storm_penny
+    enabled: 1
+    speaker: 0
+    trigger: 10
+    value: 0
+    windowSeconds: 6
+    tag: storm
+    lines:
+    - Storm's coming. I've seen your sailing. This will be expensive.
+    cooldownSeconds: 9999
+    priority: 6
+    oncePerRun: 1
+  - barkId: hull_low_penny
+    enabled: 1
+    speaker: 0
+    trigger: 11
+    value: 0.3
+    windowSeconds: 6
+    tag: 
+    lines:
+    - The hull is mostly holes now.
+    - Repairs are getting expensive. Sail better.
+    cooldownSeconds: 45
+    priority: 7
+    oncePerRun: 0
+  - barkId: hull_low_captain
+    enabled: 1
+    speaker: 3
+    trigger: 11
+    value: 0.15
+    windowSeconds: 6
+    tag: 
+    lines:
+    - The ship looks fine.
+    - No.
+    cooldownSeconds: 60
+    priority: 6
+    oncePerRun: 0
+  - barkId: gold_penny
+    enabled: 1
+    speaker: 0
+    trigger: 12
+    value: 150
+    windowSeconds: 6
+    tag: 
+    lines:
+    - 'Good news: gold. Bad news: it''s only good until we sink.'
+    cooldownSeconds: 9999
+    priority: 3
+    oncePerRun: 1
+  - barkId: gold_chipmunk
+    enabled: 1
+    speaker: 1
+    trigger: 12
+    value: 300
+    windowSeconds: 6
+    tag: 
+    lines:
+    - '*eyes the gold pile with professional interest*'
+    cooldownSeconds: 9999
+    priority: 2
+    oncePerRun: 1
+  - barkId: quiet_penny
+    enabled: 1
+    speaker: 0
+    trigger: 13
+    value: 25
+    windowSeconds: 6
+    tag: 
+    lines:
+    - Quiet. I don't like quiet.
+    - Nobody's shooting. Enjoy it.
+    cooldownSeconds: 120
+    priority: 1
+    oncePerRun: 0
+  - barkId: quiet_chipmunk
+    enabled: 1
+    speaker: 1
+    trigger: 13
+    value: 40
+    windowSeconds: 6
+    tag: 
+    lines:
+    - '*naps in a coil of rope*'
+    cooldownSeconds: 150
+    priority: 1
+    oncePerRun: 0
+  - barkId: streak_chipmunk
+    enabled: 1
+    speaker: 1
+    trigger: 1
+    value: 20
+    windowSeconds: 6
+    tag: 
+    lines:
+    - '*applauds, then steals a coin from the applause*'
+    cooldownSeconds: 120
+    priority: 1
+    oncePerRun: 0
+  - barkId: level_chipmunk
+    enabled: 1
+    speaker: 1
+    trigger: 2
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - '*tests the new part with its teeth*'
+    cooldownSeconds: 150
+    priority: 0
+    oncePerRun: 0
+  - barkId: boss_summoned_captain
+    enabled: 1
+    speaker: 3
+    trigger: 7
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - Let it spread.
+    - I have an idea.
+    cooldownSeconds: 9999
+    priority: 6
+    oncePerRun: 1
+  tutorial:
+  - stepId: move
+    prompt: Sail with WASD or the left stick.
+    completesOn: 0
+    promptSeconds: 6
+    skipAfterSeconds: 0
+    showOnComplete: 0
+  - stepId: autofire_xp
+    prompt: Your guns fire on their own. Sink ships and sail over the XP they drop.
+    completesOn: 1
+    promptSeconds: 6
+    skipAfterSeconds: 120
+    showOnComplete: 0
+  - stepId: level_up
+    prompt: "Level up: pick one card \u2014 a new weapon, an upgrade or a Logbook."
+    completesOn: 2
+    promptSeconds: 6
+    skipAfterSeconds: 150
+    showOnComplete: 0
+  - stepId: chest
+    prompt: Salvage chests hold items. Sail up to one and hold E to open it.
+    completesOn: 3
+    promptSeconds: 6
+    skipAfterSeconds: 150
+    showOnComplete: 0
+  - stepId: landmark
+    prompt: 'The minimap marks landmarks. Use one: a Repair Wreck, a Signal Buoy
+      or a Treasure Chart.'
+    completesOn: 4
+    promptSeconds: 6
+    skipAfterSeconds: 150
+    showOnComplete: 0
+  - stepId: beacon
+    prompt: Find the Treasury Beacon (the minimap points to it) and hold E to call
+      its guardian.
+    completesOn: 5
+    promptSeconds: 6
+    skipAfterSeconds: 360
+    showOnComplete: 0
+  - stepId: boss_telegraph
+    prompt: Marked water shows where the Barnacle King will strike. Sail out of it.
+    completesOn: 6
+    promptSeconds: 6
+    skipAfterSeconds: 120
+    showOnComplete: 0
+  - stepId: claim
+    prompt: "TERRITORY CLAIMED \u2014 SURVIVE AS LONG AS YOU CAN."
+    completesOn: 7
+    promptSeconds: 6
+    skipAfterSeconds: 0
+    showOnComplete: 1
+  - stepId: death_summary
+    prompt: 'Run gold is lost at sea. Rum is yours to keep: spend it on unlocks between
+      voyages.'
+    completesOn: 8
+    promptSeconds: 8
+    skipAfterSeconds: 0
+    showOnComplete: 1

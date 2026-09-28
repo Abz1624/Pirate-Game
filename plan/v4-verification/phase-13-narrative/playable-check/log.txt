@@ -1,0 +1,6 @@
+start (prompt + run-start bark): t=74.0 paused=True tutorial=1/9 prompt=[-] bark=[-]
+shot: 01-tutorial-prompt-and-start-bark
+after step 1: t=74.0 paused=True tutorial=2/9 prompt=[Your guns fire on their own. Sink ships and sail over the XP they drop.] bark=[-]
+Barnacle King bark: t=74.0 paused=True tutorial=2/9 prompt=[-] bark=[Barnacle King: Your ship is improperly docked in MY waters.]
+shot: 02-boss-bark-and-step-2
+after 25 s of play: t=74.0 paused=True tutorial=2/9 prompt=[-] bark=[-]
