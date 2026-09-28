@@ -70,6 +70,7 @@ namespace RoguePirates.V4.Tests
             Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
             Assert.IsTrue(game.Context.TryGet<IPressureView>(out var view));
             Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "eliteLever", "false", 1f, out var error), error);
+            Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "toughnessLever", "false", 1f, out error), error); // cap HP alone
             Assert.IsTrue(game.Config.TryApplyEdit("timeline.saltwind", "reservedEncounterSlots", "0", 1f, out error), error);
             Assert.IsTrue(game.Config.TryApplyEdit("timeline.saltwind", "maxActiveEnemies", "8", 1f, out error), error);
             Assert.IsTrue(game.Config.TryApplyEdit("timeline.saltwind", "phases[0].ratePerSecond", "6", 1f, out error), error);
@@ -135,7 +136,7 @@ namespace RoguePirates.V4.Tests
             view.ForcedPressure = 1f;
             var baseRate = spawn.EffectiveRateMultiplier;
             view.ForcedPressure = 1.35f;
-            Assert.AreEqual(baseRate * 1.35f, spawn.EffectiveRateMultiplier, 1e-4f, "+35 % at the top");
+            Assert.AreEqual(baseRate * 1.75f, spawn.EffectiveRateMultiplier, 1e-4f, "+75 % at the top (playtest round 1)");
             view.ForcedPressure = 0.85f;
             Assert.AreEqual(baseRate * 0.85f, spawn.EffectiveRateMultiplier, 1e-4f, "−15 % at the bottom");
             Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "mode", "Observe", 1f, out var error), error);
@@ -145,6 +146,8 @@ namespace RoguePirates.V4.Tests
 
             // Elite lever at 100 %: ambient spawns arrive as elites (flagged), with the elite settings.
             Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "eliteChanceAtMax", "1", 1f, out error), error);
+            // The ordinary-rewards path (playtest round 1 defaults to elite rewards; the switch's off path is still checked here).
+            Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "eliteLeverPaysEliteRewards", "false", 1f, out error), error);
             var world = V4TestEnemies.Simulation();
             var elites = new List<int>();
             void OnEvents(IReadOnlyList<CombatEvent> batch)

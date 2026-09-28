@@ -210,10 +210,27 @@ namespace RoguePirates.V4.Tests
             r.Flush(); // delivered after settlement: the settled breakdown does not change
             Assert.AreEqual(27, r.Rum.SettledTotal);
             var text = RunResultsView.Format(r.Rum.SettledRows, r.Rum.SettledTotal, r.Bank.Treasury, "Rum");
-            StringAssert.Contains("Rum earned this run: 27", text);
-            StringAssert.Contains("Chests opened: 2", text);
-            StringAssert.Contains("Treasury Rum: 27", text);
+            StringAssert.Contains("RUM EARNED  +27", text, "just the total (playtest round 1)");
+            StringAssert.DoesNotContain("Chests opened", text, "no per-row breakdown on the results screen");
+            StringAssert.Contains("Treasury: 27 Rum", text);
             StringAssert.DoesNotContain("Marks", text);
+        }
+
+        /// <summary>Playtest round 1: the gold left at death is banked as Rum (1 per 10 gold); the v3-parity preset turns it off.</summary>
+        [Test]
+        public void GoldLeftAtDeath_IsBankedAsRum()
+        {
+            using var set = Default();
+            var r = Make(set);
+            r.Rum.RunGold = () => 257;
+            r.Time = 30f;
+            r.Rum.Settle("gold", true);
+            Assert.AreEqual(25, r.Rum.SettledRows.First(x => x.RowId == "gold").Rum, "257 gold → 25 Rum");
+            StringAssert.Contains("RUM EARNED  +25", RunResultsView.Format(r.Rum.SettledRows, r.Rum.SettledTotal, r.Bank.Treasury, "Rum"));
+            var preset = File.ReadAllText(Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
+            var errors = new List<string>();
+            Assert.IsTrue(PresetCodec.Apply(set, PresetCodec.FromJson(preset), 0f, errors), string.Join("; ", errors));
+            Assert.IsFalse(set.Single<RewardConfig>().Row("gold").enabled, "V3 banked nothing: off under the parity preset");
         }
 
         [Test]

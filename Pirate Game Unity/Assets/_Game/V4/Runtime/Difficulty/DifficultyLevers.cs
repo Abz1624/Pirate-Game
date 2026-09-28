@@ -28,6 +28,14 @@ namespace RoguePirates.V4.Difficulty
         bool RollElite();
         /// <summary>HP multiplier for an ambient spawn made while the enemy cap blocked a spawn recently (1 otherwise).</summary>
         float CapHpMultiplier { get; }
+        /// <summary>Ambient spawns' HP and damage × these (toughness lever; 1 unless Adaptive).</summary>
+        float AmbientHpMultiplier { get; }
+        float AmbientDamageMultiplier { get; }
+        /// <summary>Minibosses and elite beats (focus phases): HP and damage × these (1 unless Adaptive). Never the boss.</summary>
+        float FocusHpMultiplier { get; }
+        float FocusDamageMultiplier { get; }
+        /// <summary>Adaptive elites pay elite rewards.</summary>
+        bool AdaptiveElitesPayEliteRewards { get; }
         /// <summary>Pressure for "Pressure at least" timeline conditions: Pressure in Adaptive mode, else 1 (as before M11).</summary>
         float ConditionPressure { get; }
         /// <summary>The config the elite lever reads (affix and multipliers).</summary>
@@ -48,6 +56,9 @@ namespace RoguePirates.V4.Difficulty
         public static float TierLead(float pressure, float max, DirectorConfig d) => Mathf.Max(0f, d.tierLeadSecondsAtMax) * Above(pressure, max);
 
         public static float CapHp(float pressure, float max, DirectorConfig d) => 1f + Mathf.Max(0f, d.capHpMultiplierAtMax - 1f) * Above(pressure, max);
+
+        /// <summary>1 at or below Pressure 1, <paramref name="atMax"/> at the top of the band (never below 1).</summary>
+        public static float Scale(float pressure, float max, float atMax) => 1f + Mathf.Max(0f, atMax - 1f) * Above(pressure, max);
 
         /// <summary>1 + Σ matching rules of maxBoost × share of the build in the rule's range × Above.</summary>
         public static float Composition(IReadOnlyList<string> roleTags, float closeShare, float above, DirectorConfig d)

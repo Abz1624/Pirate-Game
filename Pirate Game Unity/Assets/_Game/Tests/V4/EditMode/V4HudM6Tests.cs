@@ -301,7 +301,7 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void ResultsSummary_IsV3sSummary()
+        public void ResultsSummary_ReadsAtAGlance()
         {
             var results = new FakeResults();
             var go = new GameObject("canvas", typeof(Canvas));
@@ -310,21 +310,17 @@ namespace RoguePirates.V4.Tests
                 var presenter = ResultsPresenter.Create(go.transform);
                 presenter.Bind(new RunViews { Results = results, Commands = new FakeCommands(), Toasts = new FakeToasts() }, null, null);
 
-                var expected = new System.Text.StringBuilder();
-                expected.AppendLine(SaltwindRunResultsLogic.BuildOutcomeSubline(false, false));
-                expected.AppendLine();
-                expected.AppendLine(results.ProfileFooter);
-                expected.AppendLine("Run gold earned: 120");
-                expected.AppendLine("Run gold spent: 60");
-                expected.AppendLine("Run gold remaining: 60 (run-only)");
-                expected.AppendLine("\nRum: not settled this run.");
-                expected.Append(results.GoalProgress);
-                expected.Append("\nFinal build:\n  · Deck Cannons Lv 4\n");
-                expected.Append("\nWeapon contribution:\n  · Deck Cannons: 72% dmg\n  · Mortar: 28% dmg\n");
-                Assert.AreEqual(expected.ToString(), presenter.BuildSummary());
+                // Playtest round 1 layout: outcome, Rum, goal, gold, then each weapon's level and damage share on one line.
+                var summary = presenter.BuildSummary();
+                StringAssert.StartsWith(SaltwindRunResultsLogic.BuildOutcomeSubline(false, false), summary);
+                StringAssert.Contains("\nRUM EARNED  +0  (Rum is paid when the ship sinks)", summary);
+                StringAssert.Contains(results.GoalProgress, summary);
+                StringAssert.Contains("Gold: earned 120 · spent 60 · left 60", summary);
+                StringAssert.Contains("Build:\n  · Deck Cannons Lv 4 · 72% dmg\n  · Mortar · 28% dmg\n", summary);
+                StringAssert.EndsWith(results.ProfileFooter + System.Environment.NewLine, summary);
 
                 results.RewardSection = "\nRum +12\n";
-                StringAssert.Contains("Run gold remaining: 60 (run-only)" + System.Environment.NewLine + "\nRum +12\nGoal:", presenter.BuildSummary());
+                StringAssert.Contains("\nRum +12\nGoal:", presenter.BuildSummary());
                 results.HasRewardSection = false;
                 StringAssert.DoesNotContain("Rum", presenter.BuildSummary());
             }

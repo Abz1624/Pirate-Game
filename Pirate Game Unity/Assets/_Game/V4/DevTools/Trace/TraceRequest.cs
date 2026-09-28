@@ -30,6 +30,8 @@ namespace RoguePirates.V4.DevTools.Trace
         public bool invulnerable;
         public int pauseResponseFrames = 3;
         public string pilot = PlayerPilot.PatternId;
+        /// <summary>Human pilot (playtest round 1): Average, Weak (keeps one weapon: upgrades/items only, skips chests) or Strong (six weapons early).</summary>
+        public string pilotProfile = "Average";
         public string outPath;
         /// <summary>Run scene path or name; used by player builds, which start in the empty launcher scene.</summary>
         public string scene;

@@ -108,8 +108,8 @@ namespace RoguePirates.V4.Legacy
             RunManager.Instance?.RegisterKill(e.isBoss);
             Killed?.Invoke(e.id, (e.isElite ? 1 : 0) | (e.isBoss ? 2 : 0) | (e.ordinaryRewards ? 4 : 0), e.position,
                 RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f, e.lastHitWeaponId);
-            // M11: an adaptive elite pays the unit's ordinary rewards (no Rich gold, elite payout, forced powerup or
-            // elite-kill item procs): per-kill rewards never adapt.
+            // M11: an adaptive elite marked "ordinary rewards" pays the unit's ordinary rewards (no Rich gold, elite payout,
+            // forced powerup or elite-kill item procs); playtest round 1 made elite rewards the default (a DirectorConfig switch).
             var rewardElite = e.isElite && !e.ordinaryRewards;
             var rewardRich = e.affix == EliteAffix.Rich && !e.ordinaryRewards;
             var export = StageBalanceProfileContext.Export;

@@ -105,7 +105,12 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual("TERRITORY CLAIMED — SURVIVE AS LONG AS YOU CAN.", c.tutorial[7].prompt);
             Assert.AreEqual(TutorialTrigger.RunEnded, c.tutorial[8].completesOn);
             StringAssert.Contains("Rum", c.tutorial[8].prompt);
-            Assert.IsTrue(c.barks.Where(b => b.speaker == BarkSpeaker.Chipmunk).All(b => b.lines.All(l => l.StartsWith("*"))), "the chipmunk is silent: action captions");
+            Assert.IsTrue(c.barks.Where(b => b.speaker == BarkSpeaker.Chipmunk).All(b => b.lines.All(l => l.StartsWith("*Chippy"))), "Chippy is silent: action captions");
+            Assert.AreEqual("Chippy", c.chipmunkName);
+            // Every Captain bark has each of the six Captains' own lines (from the Narrative Bible).
+            foreach (var b in c.barks.Where(x => x.speaker == BarkSpeaker.Captain))
+                foreach (var key in new[] { "rook", "brine", "richie", "flint", "ember", "roxie" })
+                    Assert.IsTrue(b.captainLines.Any(x => x.captainKey == key && x.lines.Length > 0), $"{b.barkId}: {key}");
         }
 
         [Test]
@@ -153,7 +158,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(before, r.View.PromptSerial, "no claim prompt before the boss dies");
             r.Publish(CombatEventKind.BossState, 2);
             r.Advance(0.1f);
-            Assert.AreEqual("TERRITORY CLAIMED — SURVIVE AS LONG AS YOU CAN.", r.View.PromptText);
+            Assert.AreEqual(8, r.Tutorial.Index, "the claim step completed (silently: the banner is the stage's first-conquest toast)");
 
             r.Tutorial.EndRun(new RunEnd(100f, true)); // left mid-run (restart, menu): not a death
             Assert.AreEqual(8, r.Tutorial.Index, "leaving is not the death summary");
@@ -182,17 +187,21 @@ namespace RoguePirates.V4.Tests
             r.Publish(CombatEventKind.BossState, 2);
             r.Advance(0.1f);
             Assert.AreEqual(8, r.Tutorial.Index, "telegraph skipped, the claim completed");
-            Assert.AreEqual("TERRITORY CLAIMED — SURVIVE AS LONG AS YOU CAN.", r.View.PromptText, "the banner on the real first conquest");
+            Assert.IsTrue(r.Tutorial.Current == null || r.Tutorial.Current.stepId == "death_summary", "caught up to the death summary");
         }
 
         [Test]
         public void Tutorial_SkipsAStalledStep_WithoutCompletingIt_AndIsOffInTheLab()
         {
             using var set = Default();
-            var r = Make(set, 1); // XP step: skipped after 120 s
-            r.Advance(125f);
-            Assert.AreEqual(2, r.Tutorial.Index);
-            CollectionAssert.Contains(r.Tutorial.SkippedThisRun, "autofire_xp");
+            var core = Make(set, 1); // XP step: core, never skipped (playtest round 1)
+            core.Advance(400f);
+            Assert.AreEqual(1, core.Tutorial.Index, "core steps wait for the player");
+
+            var r = Make(set, 3); // chest step: optional, skipped after 150 s
+            r.Advance(155f);
+            Assert.AreEqual(4, r.Tutorial.Index);
+            CollectionAssert.Contains(r.Tutorial.SkippedThisRun, "chest");
 
             var lab = new TutorialDirector { View = new NarrativeView(), Store = new Store(), LabMode = true };
             var context = new RunContext(new RunClock(), new CombatEvents(), set);

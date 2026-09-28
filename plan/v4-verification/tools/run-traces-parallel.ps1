@@ -39,12 +39,15 @@ function Start-Run([string] $spec) {
     $parts = $spec.Split('|')
     $scene, $seed, $label, $out = $parts[0..3]
     $preset = if ($parts.Count -gt 4 -and $parts[4]) { [IO.Path]::GetFullPath((Join-Path $repo $parts[4])) } else { '' }
+    # Optional 6th/7th fields (playtest round 1): pilot pattern (player-v1 | human-v1) and human build profile (Average | Weak | Strong).
+    $pilot = if ($parts.Count -gt 5 -and $parts[5]) { $parts[5] } else { 'player-v1' }
+    $profile = if ($parts.Count -gt 6 -and $parts[6]) { $parts[6] } else { 'Average' }
     $outFull = [IO.Path]::GetFullPath((Join-Path $repo $out))
     New-Item -ItemType Directory -Force (Split-Path $outFull) | Out-Null
     if (Test-Path $outFull) { Remove-Item $outFull -Force }
     $request = [ordered]@{
         label = $label; seed = [int]$seed; captureDeltaTime = 0.016666668; bossAtSeconds = $BossAt
-        killBossAtSeconds = $KillBossAt; maxSimSeconds = $MaxSim; pauseResponseFrames = 3; pilot = 'player-v1'
+        killBossAtSeconds = $KillBossAt; maxSimSeconds = $MaxSim; pauseResponseFrames = 3; pilot = $pilot; pilotProfile = $profile
         outPath = $outFull; scene = $scene; commit = $commit; stopPlayModeWhenDone = $true; presetPath = $preset
         createdUtcTicks = [DateTime]::UtcNow.Ticks; invulnerable = [bool]$Invulnerable
     }

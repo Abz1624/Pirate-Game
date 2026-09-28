@@ -40,17 +40,14 @@ namespace RoguePirates.V4.Legacy
         public void AddGold(int amount) => Run?.AddGold(amount);
         public bool TrySpendGold(int amount) => Run != null && Run.TrySpendGold(amount);
         public void SecureObjective() => Run?.SecureObjective();
-        /// <summary>M12: V3's CompleteRun paid Doubloons; V4 secures the objective, settles Rum once and ends the run.</summary>
+        /// <summary>M12: V3's CompleteRun paid Doubloons; V4 secures the objective and ends the run. Rum is paid only at death
+        /// (playtest round 1), so a victory that ends the run (continue-after-boss off, not the default) pays nothing.</summary>
         public void CompleteRun(bool victory)
         {
             if (Run == null) return;
             if (victory) Run.SecureObjective();
-            Rewards?.Settle(Run.RunId, false);
             Run.SetState(RunState.RunComplete);
         }
-
-        /// <summary>M12: Rum (a victory that ends the run settles it; only when continue-after-boss-victory is off).</summary>
-        public RoguePirates.V4.Rewards.RewardModule Rewards;
         public void AddStatModifier(int stat, float add, float multiply) => Run?.Stats.AddModifier(new StatModifier((StatId)stat, add, multiply));
     }
 

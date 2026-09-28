@@ -39,18 +39,12 @@ namespace RoguePirates.V4.Rewards
         public int GoldRemaining => Remaining != null ? Remaining() : 0;
         public bool HasRewardSection => _rum != null;
 
-        /// <summary>V3's breakdown layout, one line per enabled row, in Rum; null until the run is settled.</summary>
+        /// <summary>The Rum earned and the treasury; null until the run is settled.</summary>
         public string RewardSection => _rum == null || !_rum.Settled ? null : Format(_rum.SettledRows, _rum.SettledTotal, _rum.Treasury, _rum.CurrencyName);
 
-        public static string Format(IReadOnlyList<RumRowResult> rows, int total, int treasury, string currency)
-        {
-            if (total <= 0) return $"\n{currency}: none earned this run.\n";
-            var sb = new StringBuilder();
-            sb.Append('\n').Append(currency).Append(" earned this run: ").Append(total).Append('\n');
-            foreach (var r in rows) sb.Append("  ").Append(r.Label).Append(": ").Append(r.Rum).Append('\n');
-            sb.Append("Treasury ").Append(currency).Append(": ").Append(treasury).Append('\n');
-            return sb.ToString();
-        }
+        /// <summary>Playtest round 1: just the Rum earned and the treasury (no per-row breakdown; the console keeps the rows).</summary>
+        public static string Format(IReadOnlyList<RumRowResult> rows, int total, int treasury, string currency) =>
+            $"\n{currency.ToUpperInvariant()} EARNED  +{total}\n  Treasury: {treasury} {currency}\n";
 
         public string GoalProgress => _unlocks != null ? _unlocks.GoalProgress() : string.Empty;
 

@@ -1,0 +1,18 @@
+{
+    "presetSchema": 1,
+    "setId": "saltwind-default",
+    "baseSetHash": "767d150f31c4aa3c4121f459d99d7fc709dee70a212690d87c550cdf871169d8",
+    "name": "director-observe",
+    "configs": [
+        {
+            "configId": "director.saltwind",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "mode",
+                    "value": "Observe"
+                }
+            ]
+        }
+    ]
+}

@@ -81,8 +81,8 @@ namespace RoguePirates.V4.Presentation.Hud
             t.fontStyle = style;
             t.color = color;
             t.alignment = align;
-            t.textWrappingMode = TextWrappingModes.NoWrap;
-            t.overflowMode = TextOverflowModes.Ellipsis;
+            t.textWrappingMode = TextWrappingModes.Normal; // playtest round 1: long lines wrap instead of ending in "…"
+            t.overflowMode = TextOverflowModes.Overflow;
             t.raycastTarget = false;
             return t;
         }
@@ -103,6 +103,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 _seenBark = _view.BarkSerial;
                 _speaker.text = _view.BarkSpeaker;
                 _line.text = _view.BarkLine;
+                FitHeight(_bark, _line, 36f, 12f); // speaker row + wrapped line
                 _barkTimer = Mathf.Max(0.5f, _view.BarkSeconds);
                 _bark.gameObject.SetActive(true);
             }
@@ -110,11 +111,22 @@ namespace RoguePirates.V4.Presentation.Hud
             {
                 _seenPrompt = _view.PromptSerial;
                 _promptText.text = _view.PromptText;
+                FitHeight(_prompt, _promptText, 14f, 14f);
                 _promptTimer = Mathf.Max(0.5f, _view.PromptSeconds);
                 _prompt.gameObject.SetActive(true);
             }
             Fade(ref _barkTimer, _bark, _barkBack, _speaker, _line);
             Fade(ref _promptTimer, _prompt, _promptBack, _promptText, null);
+        }
+
+        /// <summary>Grows the panel (and the text box) to the wrapped text's height.</summary>
+        static void FitHeight(RectTransform panel, TextMeshProUGUI text, float top, float bottom)
+        {
+            var width = panel.rect.width + ((RectTransform)text.transform).sizeDelta.x;
+            var height = Mathf.Ceil(text.GetPreferredValues(text.text, Mathf.Max(50f, width), 0f).y);
+            var rt = (RectTransform)text.transform;
+            rt.sizeDelta = new Vector2(rt.sizeDelta.x, height);
+            panel.sizeDelta = new Vector2(panel.sizeDelta.x, top + height + bottom);
         }
 
         static void Fade(ref float timer, RectTransform panel, Image back, TextMeshProUGUI a, TextMeshProUGUI b)

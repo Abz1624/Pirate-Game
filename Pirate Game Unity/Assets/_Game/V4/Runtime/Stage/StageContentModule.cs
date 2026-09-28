@@ -21,6 +21,9 @@ namespace RoguePirates.V4.Stage
     /// </summary>
     public sealed class StageContentModule
     {
+        /// <summary>True until the player's first conquest is recorded (the claim banner shows then; later the short one).</summary>
+        public System.Func<bool> IsFirstConquest;
+
         public const string PromptOpenChest = "Open Salvage Chest";
 
         readonly Func<StageContentConfig> _config;
@@ -793,7 +796,8 @@ namespace RoguePirates.V4.Stage
             Publish?.Invoke(CombatEventKind.BossState, 2, _bossEncounterId, default, null);
             var continueAfter = C == null || C.continueAfterBossVictory;
             if (continueAfter && _run.Exists && !LabMode) _rewards?.LockHomeSeed(_run.RunSeed);
-            _toasts?.Show("TERRITORY OBJECTIVE SECURED — survive or keep farming.", 5f);
+            // Playtest round 1: the claim line on the player's first conquest ever, then the short banner.
+            _toasts?.Show(IsFirstConquest != null && IsFirstConquest() ? "TERRITORY CLAIMED — SURVIVE AS LONG AS YOU CAN." : "OBJECTIVE SECURED", 5f);
             if (continueAfter && _run.Exists && !_run.IsRunEnded)
             {
                 _run.SetState(RunState.Playing);

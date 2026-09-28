@@ -1,0 +1,41 @@
+t=12 goal=explore pos=(2,-86) fromCenter=85 half=(124,125) lvl=0 weapons=1 hull=100/100 kills=1 gold=0 poisUsed=0 boss=False/False pressure=0.94 state=Playing
+t=19 goal=explore pos=(-26,-60) fromCenter=66 half=(124,125) lvl=1 weapons=2 hull=100/100 kills=2 gold=0 poisUsed=0 boss=False/False pressure=0.96 state=Playing
+t=27 goal=explore pos=(-6,-70) fromCenter=69 half=(124,125) lvl=2 weapons=3 hull=100/100 kills=5 gold=0 poisUsed=0 boss=False/False pressure=1.00 state=Playing
+t=36 goal=explore pos=(-46,-91) fromCenter=102 half=(124,125) lvl=3 weapons=4 hull=100/100 kills=10 gold=5 poisUsed=0 boss=False/False pressure=1.11 state=Playing
+t=43 goal=explore pos=(-7,-63) fromCenter=62 half=(124,125) lvl=3 weapons=4 hull=100/100 kills=13 gold=5 poisUsed=0 boss=False/False pressure=1.18 state=Playing
+t=51 goal=explore pos=(-12,-55) fromCenter=55 half=(124,125) lvl=4 weapons=5 hull=100/100 kills=17 gold=5 poisUsed=0 boss=False/False pressure=1.23 state=Playing
+t=59 goal=explore pos=(-23,-56) fromCenter=60 half=(124,125) lvl=4 weapons=5 hull=100/100 kills=22 gold=5 poisUsed=0 boss=False/False pressure=1.27 state=Playing
+shot: 06-average
+t=69 goal=explore pos=(-22,-84) fromCenter=87 half=(124,125) lvl=5 weapons=5 hull=100/100 kills=29 gold=11 poisUsed=0 boss=False/False pressure=1.30 state=Playing
+t=77 goal=explore pos=(0,-92) fromCenter=90 half=(124,125) lvl=5 weapons=5 hull=100/100 kills=34 gold=11 poisUsed=0 boss=False/False pressure=1.32 state=Playing
+t=85 goal=explore pos=(18,-88) fromCenter=88 half=(124,125) lvl=5 weapons=5 hull=100/100 kills=41 gold=12 poisUsed=0 boss=False/False pressure=1.33 state=Playing
+t=92 goal=explore pos=(39,-81) fromCenter=87 half=(124,125) lvl=6 weapons=5 hull=100/100 kills=50 gold=15 poisUsed=0 boss=False/False pressure=1.33 state=Playing
+t=100 goal=landmark:MerchantSkiff pos=(68,-84) fromCenter=105 half=(124,125) lvl=6 weapons=5 hull=100/100 kills=56 gold=15 poisUsed=0 boss=False/False pressure=1.33 state=Playing
+t=107 goal=landmark:MerchantSkiff pos=(55,-56) fromCenter=75 half=(124,125) lvl=7 weapons=6 hull=100/100 kills=63 gold=19 poisUsed=0 boss=False/False pressure=1.33 state=Playing
+t=115 goal=landmark:MerchantSkiff pos=(47,-74) fromCenter=85 half=(124,125) lvl=7 weapons=6 hull=100/100 kills=69 gold=19 poisUsed=0 boss=False/False pressure=1.33 state=Playing
+t=123 goal=chest pos=(40,-80) fromCenter=87 half=(124,125) lvl=7 weapons=6 hull=100/100 kills=74 gold=20 poisUsed=0 boss=False/False pressure=1.34 state=Playing
+t=131 goal=chest pos=(34,-96) fromCenter=100 half=(124,125) lvl=7 weapons=6 hull=100/100 kills=81 gold=20 poisUsed=0 boss=False/False pressure=1.33 state=Playing
+t=138 goal=chest pos=(22,-82) fromCenter=83 half=(124,125) lvl=7 weapons=6 hull=100/100 kills=88 gold=20 poisUsed=0 boss=False/False pressure=1.30 state=Playing
+t=146 goal=chest pos=(17,-61) fromCenter=62 half=(124,125) lvl=8 weapons=6 hull=100/100 kills=103 gold=24 poisUsed=0 boss=False/False pressure=1.29 state=Playing
+t=154 goal=beacon pos=(-12,-95) fromCenter=95 half=(124,125) lvl=9 weapons=6 hull=100/100 kills=117 gold=5 poisUsed=1 boss=False/False pressure=1.28 state=Playing
+shot: 18-average
+t=165 goal=beacon pos=(-7,-89) fromCenter=88 half=(124,125) lvl=9 weapons=6 hull=100/100 kills=125 gold=10 poisUsed=1 boss=False/False pressure=1.31 state=Playing
+t=173 goal=beacon pos=(32,-73) fromCenter=77 half=(124,125) lvl=10 weapons=6 hull=100/100 kills=130 gold=73 poisUsed=1 boss=False/False pressure=1.32 state=Playing
+t=180 goal=beacon pos=(27,-73) fromCenter=75 half=(124,125) lvl=11 weapons=6 hull=100/100 kills=133 gold=80 poisUsed=1 boss=False/False pressure=1.33 state=Playing
+t=188 goal=beacon pos=(21,-73) fromCenter=74 half=(124,125) lvl=11 weapons=6 hull=100/100 kills=133 gold=90 poisUsed=1 boss=False/False pressure=1.34 state=Playing
+t=196 goal=beacon pos=(28,-66) fromCenter=69 half=(124,125) lvl=11 weapons=6 hull=100/100 kills=133 gold=90 poisUsed=1 boss=False/False pressure=1.34 state=Playing
+t=204 goal=beacon pos=(1,-79) fromCenter=78 half=(124,125) lvl=11 weapons=6 hull=100/100 kills=134 gold=95 poisUsed=1 boss=False/False pressure=1.34 state=Playing
+t=211 goal=boss pos=(-31,-70) fromCenter=77 half=(124,125) lvl=12 weapons=6 hull=100/100 kills=138 gold=149 poisUsed=2 boss=True/False pressure=1.35 state=BossFight
+t=219 goal=boss pos=(-22,-97) fromCenter=99 half=(124,125) lvl=12 weapons=6 hull=100/100 kills=144 gold=151 poisUsed=2 boss=True/False pressure=1.35 state=BossFight
+t=227 goal=boss pos=(20,-99) fromCenter=99 half=(124,125) lvl=12 weapons=6 hull=100/100 kills=150 gold=204 poisUsed=2 boss=True/False pressure=1.35 state=BossFight
+t=234 goal=boss pos=(-11,-108) fromCenter=107 half=(124,125) lvl=13 weapons=6 hull=63/100 kills=152 gold=259 poisUsed=2 boss=True/False pressure=1.35 state=BossFight
+t=242 goal=boss pos=(4,-92) fromCenter=91 half=(124,125) lvl=14 weapons=6 hull=88/100 kills=165 gold=312 poisUsed=2 boss=True/False pressure=1.35 state=LevelUpPaused
+t=250 goal=boss pos=(37,-98) fromCenter=103 half=(124,125) lvl=14 weapons=6 hull=100/100 kills=170 gold=313 poisUsed=2 boss=True/False pressure=1.35 state=BossFight
+shot: 30-average
+t=260 goal=boss pos=(58,-94) fromCenter=108 half=(124,125) lvl=15 weapons=6 hull=100/100 kills=177 gold=331 poisUsed=2 boss=True/False pressure=1.35 state=BossFight
+t=267 goal=boss pos=(46,-105) fromCenter=112 half=(124,125) lvl=15 weapons=6 hull=100/100 kills=186 gold=338 poisUsed=2 boss=True/False pressure=1.35 state=BossFight
+t=275 goal=boss pos=(25,-107) fromCenter=108 half=(124,125) lvl=15 weapons=6 hull=100/100 kills=197 gold=345 poisUsed=2 boss=True/False pressure=1.35 state=BossFight
+t=282 goal=boss pos=(40,-108) fromCenter=113 half=(124,125) lvl=15 weapons=6 hull=87/100 kills=202 gold=318 poisUsed=3 boss=True/False pressure=1.35 state=BossFight
+t=289 goal=boss pos=(22,-88) fromCenter=89 half=(124,125) lvl=16 weapons=6 hull=100/100 kills=214 gold=333 poisUsed=3 boss=True/False pressure=1.35 state=BossFight
+t=297 goal=boss pos=(17,-80) fromCenter=80 half=(124,125) lvl=16 weapons=6 hull=34/100 kills=226 gold=387 poisUsed=3 boss=True/False pressure=1.35 state=BossFight
+t=302 goal=boss pos=(28,-85) fromCenter=87 half=(124,125) lvl=16 weapons=6 hull=0/100 kills=237 gold=388 poisUsed=3 boss=True/False pressure=1.35 state=RunComplete

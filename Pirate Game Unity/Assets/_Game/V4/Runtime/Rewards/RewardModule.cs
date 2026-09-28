@@ -19,7 +19,10 @@ namespace RoguePirates.V4.Rewards
     {
         public string RowId, Label;
         public RumSource Source;
+        /// <summary>How many times the row paid (for the gold row: the gold banked).</summary>
         public int Credits, Rum;
+        /// <summary>Rum per credit (for the gold row: gold per Rum).</summary>
+        public int PerCredit;
     }
 
     /// <summary>Read-only Rum state for the results view, the console and traces.</summary>
@@ -94,6 +97,8 @@ namespace RoguePirates.V4.Rewards
 
         /// <summary>The run clock (RunManager's elapsed time: the console's jump moves it; minutes close on it).</summary>
         public Func<float> RunTime;
+        /// <summary>The run's gold now (banked as Rum at death by the gold row).</summary>
+        public Func<int> RunGold;
         float CurrentTime => RunTime != null ? RunTime() : 0f;
 
         public void Initialize(RunContext context)
@@ -224,13 +229,21 @@ namespace RoguePirates.V4.Rewards
                     case RumSource.ScheduledElite: candidates = sunk.Count; break;
                     case RumSource.BossVictory: candidates = boss ? 1 : 0; break;
                     case RumSource.ChestOpened: candidates = chests; break;
+                    case RumSource.RunGoldBanked:
+                    {
+                        var gold = Mathf.Max(0, RunGold != null ? RunGold() : 0);
+                        var goldRum = gold / Mathf.Max(1, row.goldPerRum) * Mathf.Max(0, row.rum);
+                        if (row.maxRum > 0) goldRum = Mathf.Min(goldRum, row.maxRum);
+                        into.Add(new RumRowResult { RowId = row.rowId, Label = row.label, Source = row.source, Credits = gold, Rum = goldRum, PerCredit = Mathf.Max(1, row.goldPerRum) });
+                        continue;
+                    }
                 }
                 var credits = candidates;
                 if (row.maxCredits > 0) credits = Mathf.Min(credits, row.maxCredits);
                 if (row.maxRum > 0 && row.rum > 0) credits = Mathf.Min(credits, row.maxRum / row.rum);
                 var rum = credits * Mathf.Max(0, row.rum);
                 if (row.maxRum > 0) rum = Mathf.Min(rum, row.maxRum);
-                into.Add(new RumRowResult { RowId = row.rowId, Label = row.label, Source = row.source, Credits = credits, Rum = rum });
+                into.Add(new RumRowResult { RowId = row.rowId, Label = row.label, Source = row.source, Credits = credits, Rum = rum, PerCredit = Mathf.Max(0, row.rum) });
             }
         }
 

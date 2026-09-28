@@ -130,7 +130,7 @@ namespace RoguePirates.V4.Tests
             yield return WaitForPlaying();
             yield return DieAndWaitForResults();
             var root = Object.FindFirstObjectByType<V4PresentationRoot>();
-            StringAssert.Contains("Run gold earned:", root.Results.SummaryText);
+            StringAssert.Contains("Gold: earned", root.Results.SummaryText);
             Assert.IsFalse(GameObject.Find("Canvas").transform.Find("Profile").gameObject.activeSelf, "the profile hides behind the results, as V3");
 
             root.Results.RetryButton.onClick.Invoke();
@@ -176,7 +176,7 @@ namespace RoguePirates.V4.Tests
             var panel = ScreenRect(body.parent as RectTransform);
             Assert.IsTrue(panel.Contains(bodyRect.min) && panel.Contains(bodyRect.max), "R-92: the text area stays inside the panel");
             Assert.IsNotNull(body.GetComponent<UnityEngine.UI.ScrollRect>(), "long results scroll inside the area");
-            StringAssert.Contains("Run gold earned:", root.Results.SummaryText);
+            StringAssert.Contains("Gold: earned", root.Results.SummaryText);
         }
 
         static IEnumerator DieAndWaitForResults()

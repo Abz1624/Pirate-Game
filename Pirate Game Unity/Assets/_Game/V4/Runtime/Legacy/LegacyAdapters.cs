@@ -256,8 +256,8 @@ namespace RoguePirates.V4.Legacy
                 RunCombatTelemetry.Instance?.RecordMarksSettlement(rum, true, rum,
                     rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.QualifyingMinute), rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.SpecialLandmark),
                     rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.ScheduledElite), rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.BossVictory),
-                    rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.OvertimeMinute));
-            run.SetState(RunState.RunComplete); // gold is run-only: nothing is banked (R-59)
+                    rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.OvertimeMinute)); // (V3's telemetry has no slot for the gold row: the total includes it)
+            run.SetState(RunState.RunComplete); // run gold itself is not kept; the "gold" Rum row converts what is left (playtest round 1)
             // (M13: V3's onboarding is retired in V4 runs; the V4 tutorial keeps its own progress key.)
             RunCombatTelemetry.Instance?.RecordPlayerDeath(run.ObjectiveSecured);
             V3ToastHud.Instance?.Show("Run ended.", 4f);

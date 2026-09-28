@@ -6,6 +6,16 @@ namespace RoguePirates.V4.Config
     /// <summary>What the difficulty director does with Pressure (M10 observes only; M11 adds the levers).</summary>
     public enum DirectorMode { Off = 0, Observe = 1, Adaptive = 2 }
 
+    /// <summary>What the build's offense is compared with (playtest round 1).</summary>
+    public enum ExpectedOffense
+    {
+        /// <summary>The run's first offense grown by the enemy HP curve (M10): "your damage keeps up with enemy toughness".</summary>
+        EnemyHpCurve = 0,
+        /// <summary>The run's first offense grown by <see cref="DirectorConfig.onTrackGrowth"/>: an average build at that minute.
+        /// Pressure 1 = on track; ahead of it raises Pressure.</summary>
+        OnTrackBuild = 1,
+    }
+
     /// <summary>Which part of the build favours an enemy role in the composition lever (M11).</summary>
     public enum BuildRange { CloseRange = 0, LongRange = 1 }
 
@@ -37,7 +47,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Kills, spawns and hull loss are measured over this many seconds.")] public float performanceWindowSeconds = 30f;
 
         [Header("Gains (how much each part moves Pressure; 0 = ignored)")]
-        [Tooltip("Offense above what the curve expects raises Pressure.")] public float offenseGain = 0.25f;
+        [Tooltip("Offense above what the curve expects raises Pressure (playtest round 1: 0.25 → 0.8 so a build 1.3× ahead reads ~1.24 and 1.45× hits the top).")] public float offenseGain = 0.8f;
         [Tooltip("Hull above what the curve expects raises Pressure.")] public float defenseGain = 0.15f;
         [Tooltip("Killing faster than enemies arrive (and losing little hull) raises Pressure.")] public float performanceGain = 0.2f;
 
@@ -47,6 +57,23 @@ namespace RoguePirates.V4.Config
         [Tooltip("Performance: the kill/spawn ratio that counts as even (no push).")] public float evenKillRatio = 0.9f;
         [Tooltip("Performance: hull lost per second (fraction of max hull) that cancels a full kill lead.")] public float hullLossPenaltyPerSecond = 0.02f;
 
+        [Header("Expected offense (what counts as an on-track build)")]
+        [AppliesFrom(10)] public ExpectedOffense expectedOffense = ExpectedOffense.OnTrackBuild;
+        [Tooltip("OnTrackBuild: offense of an average build at each minute, as a multiple of the run's starting offense (x = minutes).")]
+        // Calibrated in playtest round 1 from the median of three average-build human-pilot runs (director observing):
+        // about ×4 by 1:00, ×8 by 3:00 (six weapons), a plateau while upgrades land, then evolutions from ~7:00.
+        [AppliesFrom(10)] public AnimationCurve onTrackGrowth = LinearCurve(
+            (0f, 1f), (1f, 3.9f), (2f, 6.7f), (3f, 8.1f), (4f, 8.8f), (5f, 9.9f), (6f, 10.5f), (8f, 17f), (10f, 24f), (15f, 34f));
+        [Tooltip("An evolved weapon's offense × this (evolutions add effects the base numbers do not show).")] [AppliesFrom(10)] public float evolutionOffenseMultiplier = 1.6f;
+        [Tooltip("A hit counts at most referenceEnemyHp × the enemy HP curve × overkillCapMultiplier in the power index (damage past a kill is wasted).")]
+        [AppliesFrom(10)] public bool overkillCap = true;
+        [Tooltip("Base HP of a typical ambient enemy (before the global HP multiplier).")] [AppliesFrom(10)] public float referenceEnemyHp = 16f;
+        [AppliesFrom(10)] public float overkillCapMultiplier = 1.5f;
+
+        [Header("Pressure floor (playtest round 1: weak builds are eased only at the very start)")]
+        [Tooltip("After this many seconds Pressure never goes below pressureFloor.")] [AppliesFrom(11)] public float pressureFloorAfterSeconds = 30f;
+        [AppliesFrom(11)] public float pressureFloor = 1f;
+
         [Header("Coverage (offense per behaviour: how much of the field a hit reaches)")]
         [Tooltip("Weight per weapon behaviour (ConfigEnums.WeaponBehavior order). Area and orbit weapons hit more enemies per shot.")]
         public float[] behaviorCoverage = { 1f, 1.6f, 1.8f, 1.5f, 1.2f, 1.4f, 1.6f, 1.3f, 1.5f, 1f }; // Projectile, Fan, Orbit, ConeStream, Trail, Mine, AreaStrike, Aura, PredictedArea, Summon
@@ -55,13 +82,14 @@ namespace RoguePirates.V4.Config
         // top of the band (0 at 1 or below, 1 at pressureMax): strong builds only; weak builds only get the lower rate.
         [Header("Lever: threat rate (ambient spawn rate × this)")]
         [AppliesFrom(11)] public bool threatRateLever = true;
-        [Tooltip("Rate multiplier = 1 + gain × (Pressure − 1), clamped.")] [AppliesFrom(11)] public float threatRateGain = 1f;
+        [Tooltip("Rate multiplier = 1 + gain × (Pressure − 1), clamped.")] [AppliesFrom(11)] public float threatRateGain = 2.2f;
         [AppliesFrom(11)] public float threatRateMin = 0.85f;
-        [AppliesFrom(11)] public float threatRateMax = 1.35f;
+        [AppliesFrom(11)] public float threatRateMax = 1.75f;
 
         [Header("Lever: elite chance (an ambient spawn becomes elite)")]
         [AppliesFrom(11)] public bool eliteLever = true;
-        [Tooltip("Chance at the top of the band (scaled by Above).")] [AppliesFrom(11)] public float eliteChanceAtMax = 0.05f;
+        [Tooltip("Chance at the top of the band (scaled by Above).")] [AppliesFrom(11)] public float eliteChanceAtMax = 0.12f;
+        [Tooltip("Adaptive elites pay the elite rewards (gold, forced powerup, elite-kill item effects): richer targets for strong builds.")] [AppliesFrom(11)] public bool eliteLeverPaysEliteRewards = true;
         [AppliesFrom(11)] public ConfigEnums.EliteAffix eliteAffix = ConfigEnums.EliteAffix.Rich;
         [AppliesFrom(11)] public float eliteHpMultiplier = 1.5f;
         [AppliesFrom(11)] public float eliteDamageMultiplier = 1.1f;
@@ -69,7 +97,17 @@ namespace RoguePirates.V4.Config
 
         [Header("Lever: tier timing (tougher tiers unlock earlier)")]
         [AppliesFrom(11)] public bool tierTimingLever = true;
-        [Tooltip("Seconds earlier at the top of the band. Time-triggered beats never move.")] [AppliesFrom(11)] public float tierLeadSecondsAtMax = 60f;
+        [Tooltip("Seconds earlier at the top of the band. Time-triggered beats never move.")] [AppliesFrom(11)] public float tierLeadSecondsAtMax = 90f;
+
+        [Header("Lever: ambient toughness (every ambient spawn, scaled by Above)")]
+        [AppliesFrom(11)] public bool toughnessLever = true;
+        [AppliesFrom(11)] public float toughnessHpAtMax = 1.25f;
+        [AppliesFrom(11)] public float toughnessDamageAtMax = 1.2f;
+
+        [Header("Lever: minibosses and elite beats (never the boss; beat times never move)")]
+        [AppliesFrom(11)] public bool focusLever = true;
+        [AppliesFrom(11)] public float focusHpAtMax = 1.5f;
+        [AppliesFrom(11)] public float focusDamageAtMax = 1.2f;
 
         [Header("Lever: composition bias")]
         [AppliesFrom(11)] public bool compositionLever = true;
@@ -95,6 +133,19 @@ namespace RoguePirates.V4.Config
         [Tooltip("A run is ranked only in Adaptive mode, with this director version, no forced Pressure and no live tuning edits.")]
         [AppliesFrom(11)] public string rankedVersion = "director-1";
 
+        /// <summary>A curve through the points with straight segments between them (no overshoot between keys).</summary>
+        public static AnimationCurve LinearCurve(params (float x, float y)[] points)
+        {
+            var keys = new Keyframe[points.Length];
+            for (var i = 0; i < points.Length; i++)
+            {
+                var inSlope = i > 0 ? (points[i].y - points[i - 1].y) / (points[i].x - points[i - 1].x) : 0f;
+                var outSlope = i < points.Length - 1 ? (points[i + 1].y - points[i].y) / (points[i + 1].x - points[i].x) : 0f;
+                keys[i] = new Keyframe(points[i].x, points[i].y, inSlope, outSlope);
+            }
+            return new AnimationCurve(keys);
+        }
+
         public override void Validate(ConfigValidationReport report)
         {
             report.Positive(this, nameof(sampleIntervalSeconds), sampleIntervalSeconds);
@@ -107,6 +158,14 @@ namespace RoguePirates.V4.Config
             if (eliteChanceAtMax < 0f || eliteChanceAtMax > 1f) report.Error(this, nameof(eliteChanceAtMax), "chance must be 0..1");
             if (tierLeadSecondsAtMax < 0f) report.Error(this, nameof(tierLeadSecondsAtMax), "negative lead");
             if (capHpMultiplierAtMax < 1f) report.Error(this, nameof(capHpMultiplierAtMax), "the cap HP lever only raises HP");
+            if (pressureFloor <= 0f) report.Error(this, nameof(pressureFloor), "must be positive (it is clamped to the curve's Pressure band at runtime)");
+            if (pressureFloorAfterSeconds < 0f) report.Error(this, nameof(pressureFloorAfterSeconds), "negative time");
+            if (expectedOffense == ExpectedOffense.OnTrackBuild && (onTrackGrowth == null || onTrackGrowth.length == 0))
+                report.Error(this, nameof(onTrackGrowth), "needs at least one key");
+            if (overkillCap && (referenceEnemyHp <= 0f || overkillCapMultiplier <= 0f)) report.Error(this, nameof(referenceEnemyHp), "the overkill cap needs positive values");
+            if (evolutionOffenseMultiplier < 1f) report.Error(this, nameof(evolutionOffenseMultiplier), "an evolution never lowers offense");
+            if (toughnessHpAtMax < 1f || toughnessDamageAtMax < 1f || focusHpAtMax < 1f || focusDamageAtMax < 1f)
+                report.Error(this, nameof(toughnessHpAtMax), "toughness/focus levers only raise HP and damage");
         }
     }
 }

@@ -66,10 +66,10 @@ namespace RoguePirates.V4.Tests
             StringAssert.Contains("guns fire on their own", presenter.PromptText, "the next prompt");
             Assert.AreEqual(1, PlayerPrefs.GetInt(PlayerPrefsTutorialStore.Key, 0), "progress saved under the V4 key");
 
-            Assert.IsTrue(barks.Play("chest_chipmunk"));
+            Assert.IsTrue(barks.Play("chest_chippy"));
             yield return null;
             Assert.IsTrue(presenter.BarkShown);
-            StringAssert.StartsWith("The chipmunk: *", presenter.BarkText);
+            StringAssert.StartsWith("Chippy: *Chippy", presenter.BarkText);
             Assert.IsFalse(RunManager.Instance.IsPaused, "barks never pause");
         }
     }

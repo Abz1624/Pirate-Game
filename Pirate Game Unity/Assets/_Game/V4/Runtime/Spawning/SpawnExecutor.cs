@@ -123,6 +123,8 @@ namespace RoguePirates.V4.Spawning
             var isBoss = _s.Sink.DefinitionIsBoss(definitionIndex);
             // M11 lever: while the cap keeps blocking, bodies cannot be added, so new ambient spawns get more HP instead.
             if (levers != null && !isBoss && elapsed - _capBlockedAt <= levers.Config.capBlockedWindowSeconds) hpMultiplier *= levers.CapHpMultiplier;
+            // Playtest round 1: every ambient spawn gets tougher toward the top of the band.
+            if (levers != null && !isBoss) { hpMultiplier *= levers.AmbientHpMultiplier; damageMultiplier *= levers.AmbientDamageMultiplier; }
             var spawned = 0;
             count = Mathf.Max(1, count);
             for (var i = 0; i < count; i++)
@@ -149,7 +151,7 @@ namespace RoguePirates.V4.Spawning
                 {
                     slot = _s.Sink.SpawnFromProfile(definitionIndex, position, spawnProfile, profileInstanceId, role, i, leaderUnitId,
                         hpMultiplier, damageMultiplier);
-                    if (adaptiveElite && slot >= 0) _s.Sink.MarkAdaptiveElite(slot, profile);
+                    if (adaptiveElite && slot >= 0) _s.Sink.MarkAdaptiveElite(slot, profile, !levers.AdaptiveElitesPayEliteRewards);
                 }
                 finally { if (adaptiveElite) DestroyCopy(spawnProfile); }
                 if (slot < 0) continue;

@@ -194,6 +194,10 @@ namespace RoguePirates.V4.Spawning
             unitId = -1;
             enemyId = null;
             var focus = phase.focus;
+            // Playtest round 1: minibosses and elite beats are tougher for strong builds (their times never move; 1 unless Adaptive).
+            var levers = _s.Levers != null && _s.Levers.Adaptive ? _s.Levers : null;
+            var hp = focus.hpMultiplier * (levers != null ? levers.FocusHpMultiplier : 1f);
+            var damage = focus.damageMultiplier * (levers != null ? levers.FocusDamageMultiplier : 1f);
             if (focus.placement == FocusPlacement.RingAroundPlayer)
             {
                 if (focus.archetype == null || !_s.Placement.Ready) return false;
@@ -203,7 +207,7 @@ namespace RoguePirates.V4.Spawning
                 var angle = _s.Random.LootFloat() * Mathf.PI * 2f;
                 var position = _s.Placement.PlayerPosition + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * focus.ringDistance;
                 position.y = _s.Sink.DefinitionHeightOffset(index);
-                var slot = _s.Sink.Spawn(index, position, focus.affix, focus.speedMultiplier, focus.hpMultiplier, focus.damageMultiplier);
+                var slot = _s.Sink.Spawn(index, position, focus.affix, focus.speedMultiplier, hp, damage);
                 if (slot < 0) return false;
                 unitId = _s.Sink.UnitIdAt(slot);
                 if (unitId > 0) _s.Publish(CombatEventKind.Spawned, unitId, index, position, enemyId);
@@ -215,7 +219,7 @@ namespace RoguePirates.V4.Spawning
             var variantId = focus.variant != null ? focus.variant.variantId : null;
             var before = _s.Sink.MaxActiveUnitId();
             var leader = -1;
-            if (_executor.TryBurst(profile, 1, true, focus.hpMultiplier, focus.damageMultiplier, 0, ref leader, enemyId: variantId) <= 0) return false;
+            if (_executor.TryBurst(profile, 1, true, hp, damage, 0, ref leader, enemyId: variantId) <= 0) return false;
             var definitionIndex = !string.IsNullOrEmpty(variantId) && _s.Sink.FindDefinition(variantId) >= 0 ? _s.Sink.FindDefinition(variantId) : _s.Sink.IndexOf(profile.enemy);
             unitId = _s.Sink.NewestUnitAfter(before, definitionIndex);
             enemyId = _s.Sink.DefinitionId(definitionIndex);

@@ -565,6 +565,17 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
+        public void BossVictory_FirstConquest_ShowsTheClaimLine()
+        {
+            var rig = Make((POIType.BossBeacon, new Vector3(0f, 0f, 5f)));
+            rig.Stage.IsFirstConquest = () => true;
+            Assert.IsTrue(rig.Stage.TrySummonBoss());
+            rig.Tracker.Set(1, EncounterState.Completed);
+            rig.Stage.OnBossKilled();
+            CollectionAssert.Contains(rig.Toasts.Shown, "TERRITORY CLAIMED — SURVIVE AS LONG AS YOU CAN.");
+        }
+
+        [Test]
         public void BossVictory_FollowsV3sOrder_AndTheRunContinues()
         {
             var rig = Make((POIType.BossBeacon, new Vector3(0f, 0f, 5f)));
@@ -575,7 +586,7 @@ namespace RoguePirates.V4.Tests
             rig.Tracker.Set(1, EncounterState.Completed);
             rig.Stage.OnBossKilled();
             CollectionAssert.AreEqual(new[] { "telemetry defeated", "secure", "home seed 101", "state Playing" }, rig.Log.Lines);
-            CollectionAssert.Contains(rig.Toasts.Shown, "TERRITORY OBJECTIVE SECURED — survive or keep farming.");
+            CollectionAssert.Contains(rig.Toasts.Shown, "OBJECTIVE SECURED", "playtest round 1: the short banner after the first conquest");
             rig.Stage.OnBossKilled();
             Assert.AreEqual(1, rig.Log.Count("secure"), "once");
         }

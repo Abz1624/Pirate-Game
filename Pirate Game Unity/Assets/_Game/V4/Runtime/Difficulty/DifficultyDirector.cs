@@ -50,7 +50,14 @@ namespace RoguePirates.V4.Difficulty
         public static float Offense(IPowerInputs inputs, DirectorConfig d) => Offense(inputs, d, out _);
 
         /// <summary>Offense, and how much of it comes from close-range behaviours (<see cref="DirectorConfig.closeRangeBehaviors"/>).</summary>
-        public static float Offense(IPowerInputs inputs, DirectorConfig d, out float closeRange)
+        public static float Offense(IPowerInputs inputs, DirectorConfig d, out float closeRange) =>
+            Offense(inputs, d, out closeRange, float.PositiveInfinity);
+
+        /// <summary>
+        /// <paramref name="hitCap"/>: a hit counts at most this much damage (playtest round 1: damage past what kills the
+        /// enemy is wasted in a horde, so one huge weapon no longer reads like a full broadside; breadth counts).
+        /// </summary>
+        public static float Offense(IPowerInputs inputs, DirectorConfig d, out float closeRange, float hitCap)
         {
             closeRange = 0f;
             var m = inputs.Modifiers;
@@ -64,7 +71,10 @@ namespace RoguePirates.V4.Difficulty
                 var cooldown = Mathf.Max(0.05f, WeaponStatResolver.Cooldown(w, m, m.ItemAttackSpeedMultiplier));
                 var quantity = WeaponStatResolver.ProjectileQuantity(w, m);
                 var coverage = d.behaviorCoverage != null && (int)w.Config.behavior < d.behaviorCoverage.Length ? d.behaviorCoverage[(int)w.Config.behavior] : 1f;
-                var part = damage / cooldown * quantity * coverage;
+                // Playtest round 1: crit and evolutions are part of the build too.
+                var crit = 1f + Mathf.Clamp01(m.CritChance + m.ItemCritChanceBonus) * Mathf.Max(0f, m.CritDamage - 1f);
+                var evolved = w.Evolution != null ? Mathf.Max(1f, d.evolutionOffenseMultiplier) : 1f;
+                var part = Mathf.Min(damage * crit * evolved, hitCap) / cooldown * quantity * coverage;
                 total += part;
                 if (d.closeRangeBehaviors != null && Array.IndexOf(d.closeRangeBehaviors, w.Config.behavior) >= 0) closeRange += part;
             }
@@ -259,11 +269,12 @@ namespace RoguePirates.V4.Difficulty
             var hullLost = 0f;
             foreach (var w in _window) { kills += w.kills; spawns += w.spawns; hullLost += w.hullLost; }
 
-            Offense = PlayerPowerIndex.Offense(_inputs, d, out var closeRange);
+            Offense = PlayerPowerIndex.Offense(_inputs, d, out var closeRange, HitCap(d, curve, _simTime));
             CloseRangeShare = Offense > 0f ? Mathf.Clamp01(closeRange / Offense) : 0f;
             // The baseline is the first offense seen, brought back to time 0 (weapons may arrive late, e.g. the Module Lab).
-            if (_offense0 <= 0f && Offense > 0f) _offense0 = Offense / Mathf.Max(0.0001f, CurveEvaluator.ExpectedHpScale(curve, _simTime));
-            var expected = _offense0 * CurveEvaluator.ExpectedHpScale(curve, _simTime);
+            var growth = ExpectedGrowth(d, curve, _simTime);
+            if (_offense0 <= 0f && Offense > 0f) _offense0 = Offense / Mathf.Max(0.0001f, growth);
+            var expected = _offense0 * growth;
             var sample = new DirectorSample
             {
                 OffenseNorm = expected > 0f ? Offense / expected : 1f,
@@ -273,7 +284,10 @@ namespace RoguePirates.V4.Difficulty
             OffenseNorm = sample.OffenseNorm;
             DefenseNorm = sample.DefenseNorm;
             Performance = sample.Performance;
-            _pressure = DirectorMath.Step(_pressure, DirectorMath.Target(sample, d, min, max), dt, d, min, max);
+            // Playtest round 1: weak builds are eased only in the first seconds; after that Pressure never drops below the floor.
+            var floor = _simTime >= d.pressureFloorAfterSeconds ? Mathf.Clamp(d.pressureFloor, min, max) : min;
+            _pressure = DirectorMath.Step(_pressure, DirectorMath.Target(sample, d, floor, max), dt, d, min, max);
+            _pressure = Mathf.Max(_pressure, floor); // from the floor time on, never below it (no ramp: the user's rule is "never")
             _pressureSum += Pressure;
             _pressureSamples++;
             _pressurePeak = Mathf.Max(_pressurePeak, Pressure);
@@ -289,6 +303,20 @@ namespace RoguePirates.V4.Difficulty
             if (_events != null) _events.TickPublished -= OnEvents;
         }
 
+        /// <summary>The most damage one hit counts for in the power index (infinite when the overkill cap is off).</summary>
+        public static float HitCap(DirectorConfig d, DifficultyCurveConfig curve, float time) =>
+            d.overkillCap && curve != null
+                ? Mathf.Max(0.01f, d.referenceEnemyHp * curve.globalHpMultiplier * CurveEvaluator.ExpectedHpScale(curve, time) * d.overkillCapMultiplier)
+                : float.PositiveInfinity;
+
+        /// <summary>Expected offense growth at <paramref name="time"/> (× the run's starting offense).</summary>
+        public static float ExpectedGrowth(DirectorConfig d, DifficultyCurveConfig curve, float time)
+        {
+            if (d.expectedOffense == ExpectedOffense.OnTrackBuild && d.onTrackGrowth != null && d.onTrackGrowth.length > 0)
+                return Mathf.Max(0.01f, d.onTrackGrowth.Evaluate(time / 60f));
+            return CurveEvaluator.ExpectedHpScale(curve, time);
+        }
+
         // ---- M11: the levers (neutral unless Adaptive and the lever is on) ----------------------------------------
 
         public bool Adaptive => !_failed && Config != null && Config.mode == DirectorMode.Adaptive;
@@ -298,6 +326,11 @@ namespace RoguePirates.V4.Difficulty
         public float TierLeadSeconds => Adaptive && Config.tierTimingLever ? LeverMath.TierLead(Pressure, PressureMax, Config) : 0f;
         public float CapHpMultiplier => Adaptive && Config.capHpLever ? LeverMath.CapHp(Pressure, PressureMax, Config) : 1f;
         // Never below 1: a weak build must not delay a "Pressure at least" phase that fired without the director (early, never later).
+        public float AmbientHpMultiplier => Adaptive && Config.toughnessLever ? LeverMath.Scale(Pressure, PressureMax, Config.toughnessHpAtMax) : 1f;
+        public float AmbientDamageMultiplier => Adaptive && Config.toughnessLever ? LeverMath.Scale(Pressure, PressureMax, Config.toughnessDamageAtMax) : 1f;
+        public float FocusHpMultiplier => Adaptive && Config.focusLever ? LeverMath.Scale(Pressure, PressureMax, Config.focusHpAtMax) : 1f;
+        public float FocusDamageMultiplier => Adaptive && Config.focusLever ? LeverMath.Scale(Pressure, PressureMax, Config.focusDamageAtMax) : 1f;
+        public bool AdaptiveElitesPayEliteRewards => Config != null && Config.eliteLeverPaysEliteRewards;
         public float ConditionPressure => Adaptive && Config.pressureConditionTriggers ? Mathf.Max(1f, Pressure) : 1f;
         public bool CompositionActive => Adaptive && Config.compositionLever && LeverMath.Above(Pressure, PressureMax) > 0f;
 

@@ -65,6 +65,7 @@ namespace RoguePirates.V4.Legacy
             {
                 Publish = PublishEvent
             };
+            Module.IsFirstConquest = () => !HighSeas.V3.V3ContentUnlocks.HasCompletedFirstConquest; // playtest round 1: banner
             Interaction = new InteractionModel(Module, run, toasts);
             View = new StageView(Module, Interaction);
 

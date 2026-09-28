@@ -635,9 +635,9 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(ship.Damage.IsAlive, "the lab ship is invulnerable");
         }
 
-        /// <summary>M12: with continue-after-boss-victory off, the boss kill ends the run: Rum is settled once, no Doubloons.</summary>
+        /// <summary>M12: with continue-after-boss-victory off, the boss kill ends the run: no Rum (paid only at death, playtest round 1), no Doubloons.</summary>
         [UnityTest]
-        public IEnumerator VictoryThatEndsTheRun_SettlesRum_AndBanksNothing()
+        public IEnumerator VictoryThatEndsTheRun_PaysNothing_AndBanksNothing()
         {
             yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return WaitForPlaying();
@@ -661,12 +661,11 @@ namespace RoguePirates.V4.Tests
             var before = AppRoot.Instance.Save.Meta.marks;
             world.ApplyDamage(bossIndex, world.Agents[bossIndex].maxHp + 500f, false, weaponId: "deck_cannons");
             deadline = Time.realtimeSinceStartup + 4f;
-            while (!rum.Settled && Time.realtimeSinceStartup < deadline) yield return null;
+            while (RunManager.Instance.State != RunState.RunComplete && Time.realtimeSinceStartup < deadline) yield return null;
+            yield return null;
             Assert.AreEqual(RunState.RunComplete, RunManager.Instance.State);
-            Assert.IsTrue(rum.Settled && rum.SettlementApplied, "the victory settles Rum");
-            Assert.IsFalse(rum.EndedByDeath);
-            Assert.AreEqual(25, rum.SettledRumOf(RoguePirates.V4.Config.RumSource.BossVictory));
-            Assert.AreEqual(before + rum.SettledTotal, AppRoot.Instance.Save.Meta.marks);
+            Assert.IsFalse(rum.Settled, "playtest round 1: Rum is paid only at death");
+            Assert.AreEqual(before, AppRoot.Instance.Save.Meta.marks);
             Assert.AreEqual(doubloons, AppRoot.Instance.Save.Meta.doubloons, "no Doubloons (V3's CompleteRun paid them)");
         }
 
@@ -739,8 +738,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(rum.SettledTotal, ((RoguePirates.V4.Rewards.RewardModule)rum).Settle(RunManager.Instance.RunId, true), "a second settle returns the first result");
             Assert.AreEqual(afterFirst, AppRoot.Instance.Save.Meta.marks, "and pays nothing");
             Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Views.IRunViews>(out var views));
-            StringAssert.Contains("Rum earned this run: " + rum.SettledTotal, views.Results.RewardSection);
-            StringAssert.Contains("Boss victory: 25", views.Results.RewardSection);
+            StringAssert.Contains("RUM EARNED  +" + rum.SettledTotal, views.Results.RewardSection);
 
             yield return null; // V4Game notices the run end on its next Update
             Assert.AreEqual(1, probe.EndCount, "modules get RunEnd once, when the run ends (not only on scene unload)");

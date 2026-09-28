@@ -28,7 +28,8 @@ namespace RoguePirates.V4.Tests
             var d = set.Single<DirectorConfig>();
             var max = set.Single<DifficultyCurveConfig>().pressureMax;
             Assert.AreEqual(1f, LeverMath.ThreatRate(1f, d), 1e-6f);
-            Assert.AreEqual(1.35f, LeverMath.ThreatRate(1.35f, d), 1e-6f, "+35 % at the top");
+            Assert.AreEqual(d.threatRateMax, LeverMath.ThreatRate(1.35f, d), 1e-6f, "the top of the band (playtest round 1: +75 %)");
+            Assert.AreEqual(1.75f, d.threatRateMax, 1e-6f);
             Assert.AreEqual(0.85f, LeverMath.ThreatRate(0.85f, d), 1e-6f, "−15 % at the bottom");
             var gain = d.threatRateGain;
             d.threatRateGain = 5f;
@@ -43,7 +44,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(0f, LeverMath.EliteChance(0.85f, max, d), "weak builds get no fewer elites than the design");
             Assert.AreEqual(d.eliteChanceAtMax, LeverMath.EliteChance(max, max, d), 1e-6f);
             Assert.AreEqual(0f, LeverMath.TierLead(0.9f, max, d), "tiers never unlock later");
-            Assert.AreEqual(60f, LeverMath.TierLead(max, max, d), 1e-4f, "about a minute earlier at the top");
+            Assert.AreEqual(90f, LeverMath.TierLead(max, max, d), 1e-4f, "a minute and a half earlier at the top");
             Assert.AreEqual(1f, LeverMath.CapHp(1f, max, d));
             Assert.AreEqual(d.capHpMultiplierAtMax, LeverMath.CapHp(max, max, d), 1e-6f);
             Assert.AreEqual(1f, LeverMath.CapHp(0.85f, max, d), "never lowers HP");
@@ -58,8 +59,11 @@ namespace RoguePirates.V4.Tests
             IDifficultyLevers levers = director;
             director.ForcedPressure = 1.35f;
             Assert.IsTrue(levers.Adaptive);
-            Assert.AreEqual(1.35f, levers.ThreatRateMultiplier, 1e-5f);
-            Assert.AreEqual(60f, levers.TierLeadSeconds, 1e-3f);
+            Assert.AreEqual(1.75f, levers.ThreatRateMultiplier, 1e-5f);
+            Assert.AreEqual(90f, levers.TierLeadSeconds, 1e-3f);
+            Assert.AreEqual(d.toughnessHpAtMax, levers.AmbientHpMultiplier, 1e-5f);
+            Assert.AreEqual(d.focusHpAtMax, levers.FocusHpMultiplier, 1e-5f);
+            Assert.AreEqual(d.focusDamageAtMax, levers.FocusDamageMultiplier, 1e-5f);
             Assert.AreEqual(d.capHpMultiplierAtMax, levers.CapHpMultiplier, 1e-5f);
             Assert.AreEqual(1.35f, levers.ConditionPressure, 1e-5f);
             Assert.IsTrue(levers.CompositionActive);
@@ -144,6 +148,9 @@ namespace RoguePirates.V4.Tests
         public void Adaptive_Replay_GivesTheSamePressure_AndTheSameElites()
         {
             using var set = Default();
+            // Expected offense held at the starting build, so six weapons are clearly ahead of it (the calibrated curve
+            // counts six weapons at 2:30 as on track).
+            set.Single<DirectorConfig>().onTrackGrowth = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(15f, 1f));
             (List<float>, List<bool>) Play()
             {
                 var (director, events, inputs) = Rig(set, 303);
@@ -174,8 +181,13 @@ namespace RoguePirates.V4.Tests
         {
             var root = Path.Combine(Application.dataPath, "_Game/V4/Runtime");
             string Read(string rel) => File.ReadAllText(Path.Combine(root, rel));
-            foreach (var file in new[] { "Spawning/ScriptedPhases.cs", "Spawning/EncounterExecutor.cs", "Spawning/OvertimeAndStorm.cs" })
-                Assert.IsFalse(Read(file).Contains("Levers"), file + " (beats, encounters, boss, overtime) must not adapt");
+            foreach (var file in new[] { "Spawning/EncounterExecutor.cs", "Spawning/OvertimeAndStorm.cs" })
+                Assert.IsFalse(Read(file).Contains("Levers"), file + " (encounters, boss, overtime) must not adapt");
+            // Playtest round 1: minibosses and elite beats get tougher, but only their HP and damage — never their timing.
+            var scripted = Read("Spawning/ScriptedPhases.cs");
+            foreach (var member in new[] { "ThreatRate", "TierLead", "ConditionPressure", "RollElite", "SpawnerWeight", "Composition", "CapHp" })
+                Assert.IsFalse(scripted.Contains("." + member), "scripted beats read only the focus HP/damage levers, not " + member);
+            StringAssert.Contains("FocusHpMultiplier", scripted);
             foreach (var dir in new[] { "Stage", "Progression", "Enemies", "Weapons" })
                 foreach (var f in Directory.GetFiles(Path.Combine(root, dir), "*.cs", SearchOption.AllDirectories))
                     Assert.IsFalse(File.ReadAllText(f).Contains("Levers") || File.ReadAllText(f).Contains("IDifficultyLevers"), f + " (rewards, boss HP, kills) must not adapt");
@@ -270,6 +282,60 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(clean.CreateRecord(1, 1, 1f, "h", 0).ranked, "opening the dev console unranks the run");
             clean.BeginRun(new RunStart(2, false));
             Assert.IsFalse(clean.Unranked, "a new run starts clean");
+        }
+
+        [Test]
+        public void PlaytestRound1_Floor_CritAndEvolutions_EliteRewards_AndFocusLevers()
+        {
+            using var set = Default();
+            var d = set.Single<DirectorConfig>();
+            // A weak build: Pressure may dip below 1 only in the first 30 s.
+            var (weak, events, inputs) = Rig(set);
+            inputs.HullValue = 20f; // defense well below even
+            var t = 0;
+            Run(weak, events, ref t, 20);
+            Assert.Less(weak.Pressure, 1f, "the first seconds may ease a weak build");
+            Run(weak, events, ref t, 11);
+            Assert.GreaterOrEqual(weak.Pressure, 1f - 1e-4f, "right after 30 s Pressure is already at the floor (review fix: no ramp)");
+            Run(weak, events, ref t, 49);
+            Assert.GreaterOrEqual(weak.Pressure, 1f - 1e-4f, "after 30 s Pressure never stays below 1");
+
+            // Crit and evolutions count in the power index.
+            var plain = WithWeapons(set, 1);
+            var baseOffense = PlayerPowerIndex.Offense(plain, d);
+            plain.M.CritChance = 0.5f;
+            plain.M.CritDamage = 2f;
+            Assert.AreEqual(baseOffense * 1.5f, PlayerPowerIndex.Offense(plain, d), baseOffense * 1e-4f, "50 % crit at ×2 = ×1.5");
+            plain.Slots[0].Evolution = ScriptableObject.CreateInstance<WeaponEvolutionConfig>();
+            try { Assert.AreEqual(baseOffense * 1.5f * d.evolutionOffenseMultiplier, PlayerPowerIndex.Offense(plain, d), baseOffense * 1e-3f, "an evolved weapon"); }
+            finally { Object.DestroyImmediate(plain.Slots[0].Evolution); }
+
+            // Overkill cap: damage past what kills a typical enemy is not counted, so one huge weapon does not read like six.
+            var curveConfig = set.Single<DifficultyCurveConfig>();
+            var cap = DifficultyDirector.HitCap(d, curveConfig, 120f);
+            Assert.AreEqual(d.referenceEnemyHp * curveConfig.globalHpMultiplier * CurveEvaluator.ExpectedHpScale(curveConfig, 120f) * d.overkillCapMultiplier, cap, 1e-3f);
+            var huge = WithWeapons(set, 1);
+            huge.M.CritChance = 0f;
+            var uncapped = PlayerPowerIndex.Offense(huge, d, out _, float.PositiveInfinity);
+            Assert.AreEqual(uncapped, PlayerPowerIndex.Offense(huge, d, out _, 1e9f), uncapped * 1e-4f, "a cap above the hit changes nothing");
+            huge.M.GlobalDamage = 1000f;
+            Assert.Less(PlayerPowerIndex.Offense(huge, d, out _, cap), uncapped * 1000f * 0.5f, "×1000 damage is mostly overkill");
+            Assert.AreEqual(PlayerPowerIndex.Offense(huge, d, out _, cap), PlayerPowerIndex.Offense(huge, d, out _, cap), "deterministic");
+            d.overkillCap = false;
+            Assert.IsTrue(float.IsPositiveInfinity(DifficultyDirector.HitCap(d, curveConfig, 120f)), "switch off = no cap");
+            d.overkillCap = true;
+
+            // On-track expected offense: an average build at minute 4 reads as even.
+            Assert.AreEqual(ExpectedOffense.OnTrackBuild, d.expectedOffense);
+            Assert.AreEqual(d.onTrackGrowth.Evaluate(4f), DifficultyDirector.ExpectedGrowth(d, set.Single<DifficultyCurveConfig>(), 240f), 1e-5f);
+
+            IDifficultyLevers levers = Rig(set).director;
+            Assert.IsTrue(levers.AdaptiveElitesPayEliteRewards, "playtest round 1: adaptive elites pay elite rewards");
+            ((DifficultyDirector)levers).ForcedPressure = 1.35f;
+            Assert.AreEqual(d.focusHpAtMax, levers.FocusHpMultiplier, 1e-5f);
+            ((DifficultyDirector)levers).ForcedPressure = 1f;
+            Assert.AreEqual(1f, levers.FocusHpMultiplier, "neutral at Pressure 1");
+            Assert.AreEqual(1f, levers.AmbientHpMultiplier);
         }
 
         [Test]

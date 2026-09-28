@@ -69,6 +69,20 @@ namespace RoguePirates.V4.DevTools.Console
                 ship.Damage.SetPlaytestInvulnerable(false);
                 ship.Damage.TakeDamage(1_000_000f, ship.Position, false);
             }
+
+            // Playtest round 1: a pilot that plays like a person (fights, dodges, collects, explores, opens chests, uses
+            // landmarks, summons and fights the boss) — to watch, and for balance measurements.
+            var player = Object.FindFirstObjectByType<RoguePirates.V4.DevTools.Trace.HumanPlayer>();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(player != null ? $"Autopilot: {player.Profile} ({player.Pilot.Goal})" : "Autopilot: off", GUILayout.Width(200));
+            foreach (RoguePirates.V4.DevTools.Trace.HumanPlayer.BuildProfile profile in System.Enum.GetValues(typeof(RoguePirates.V4.DevTools.Trace.HumanPlayer.BuildProfile)))
+                if (GUILayout.Button(profile.ToString(), GUILayout.Width(70)) && ship != null)
+                {
+                    if (player != null) player.Uninstall();
+                    RoguePirates.V4.DevTools.Trace.HumanPlayer.Install(ship, profile);
+                }
+            if (player != null && GUILayout.Button("Off", GUILayout.Width(50))) player.Uninstall();
+            GUILayout.EndHorizontal();
         }
 
         static void JumpTo(RunManager run, float target)

@@ -19,13 +19,116 @@ MonoBehaviour:
   version: director-1
   sampleIntervalSeconds: 1
   performanceWindowSeconds: 30
-  offenseGain: 0.25
+  offenseGain: 0.8
   defenseGain: 0.15
   performanceGain: 0.2
   smoothingSeconds: 20
   maxChangePerSecond: 0.02
   evenKillRatio: 0.9
   hullLossPenaltyPerSecond: 0.02
+  expectedOffense: 1
+  onTrackGrowth:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 2.9
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 3.9
+      inSlope: 2.9
+      outSlope: 2.7999997
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 2
+      value: 6.7
+      inSlope: 2.7999997
+      outSlope: 1.4000006
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 3
+      value: 8.1
+      inSlope: 1.4000006
+      outSlope: 0.6999998
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 4
+      value: 8.8
+      inSlope: 0.6999998
+      outSlope: 1.0999994
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 5
+      value: 9.9
+      inSlope: 1.0999994
+      outSlope: 0.6000004
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 6
+      value: 10.5
+      inSlope: 0.6000004
+      outSlope: 3.25
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 8
+      value: 17
+      inSlope: 3.25
+      outSlope: 3.5
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 10
+      value: 24
+      inSlope: 3.5
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 15
+      value: 34
+      inSlope: 2
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  evolutionOffenseMultiplier: 1.6
+  overkillCap: 1
+  referenceEnemyHp: 16
+  overkillCapMultiplier: 1.5
+  pressureFloorAfterSeconds: 30
+  pressureFloor: 1
   behaviorCoverage:
   - 1
   - 1.6
@@ -38,17 +141,24 @@ MonoBehaviour:
   - 1.5
   - 1
   threatRateLever: 1
-  threatRateGain: 1
+  threatRateGain: 2.2
   threatRateMin: 0.85
-  threatRateMax: 1.35
+  threatRateMax: 1.75
   eliteLever: 1
-  eliteChanceAtMax: 0.05
+  eliteChanceAtMax: 0.12
+  eliteLeverPaysEliteRewards: 1
   eliteAffix: 4
   eliteHpMultiplier: 1.5
   eliteDamageMultiplier: 1.1
   eliteSizeMultiplier: 1.15
   tierTimingLever: 1
-  tierLeadSecondsAtMax: 60
+  tierLeadSecondsAtMax: 90
+  toughnessLever: 1
+  toughnessHpAtMax: 1.25
+  toughnessDamageAtMax: 1.2
+  focusLever: 1
+  focusHpAtMax: 1.5
+  focusDamageAtMax: 1.2
   compositionLever: 1
   closeRangeBehaviors: 0200000003000000040000000500000007000000
   compositionRules:

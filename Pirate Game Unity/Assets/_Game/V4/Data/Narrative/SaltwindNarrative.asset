@@ -21,7 +21,7 @@ MonoBehaviour:
   barkSeconds: 3.5
   quietAfterBossSeconds: 6
   pennyName: Penny
-  chipmunkName: The chipmunk
+  chipmunkName: Chippy
   bossName: Barnacle King
   barks:
   - barkId: start_penny
@@ -33,7 +33,9 @@ MonoBehaviour:
     tag: 
     lines:
     - Try to bring the ship back this time.
-    - I have the repair bill ready. Just in case.
+    - The repair bill's already open. Just in case.
+    - Get rich. Come home. In that order.
+    captainLines: []
     cooldownSeconds: 9999
     priority: 5
     oncePerRun: 1
@@ -45,7 +47,33 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
+    - This one's going to be a story.
     - Exactly as planned.
+    captainLines:
+    - captainKey: rook
+      lines:
+      - This one's going to be a story.
+      - Exactly as planned.
+    - captainKey: brine
+      lines:
+      - Ship's sound. Let's go.
+      - Nobody's running today.
+    - captainKey: richie
+      lines:
+      - Let's go make some money.
+      - Every coin comes home with me.
+    - captainKey: flint
+      lines:
+      - I have an idea.
+      - Brought extra powder. Don't ask.
+    - captainKey: ember
+      lines:
+      - Let's see what catches.
+      - Nice and slow.
+    - captainKey: roxie
+      lines:
+      - Let's find something fast.
+      - Closer is better.
     cooldownSeconds: 9999
     priority: 4
     oncePerRun: 1
@@ -57,9 +85,32 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - Again.
     - Exactly as planned.
-    - More.
+    - They'll write songs about this.
+    captainLines:
+    - captainKey: rook
+      lines:
+      - Exactly as planned.
+      - They'll write songs about this.
+    - captainKey: brine
+      lines:
+      - Still floating.
+      - Next.
+    - captainKey: richie
+      lines:
+      - That's profit sinking. Theirs.
+    - captainKey: flint
+      lines:
+      - That was a small one.
+      - Bigger next time.
+    - captainKey: ember
+      lines:
+      - Let it spread.
+      - There. Much better.
+    - captainKey: roxie
+      lines:
+      - Again.
+      - Closer next time.
     cooldownSeconds: 45
     priority: 3
     oncePerRun: 0
@@ -71,7 +122,8 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - That's a lot of wreckage. None of it is ours. Good.
+    - That's a lot of wreckage. None of it ours, for once.
+    captainLines: []
     cooldownSeconds: 90
     priority: 2
     oncePerRun: 0
@@ -83,8 +135,9 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - Another upgrade. I'll pretend that was budgeted.
+    - Another upgrade. I'll pretend it was budgeted.
     - Fine. Bolt it on.
+    captainLines: []
     cooldownSeconds: 60
     priority: 1
     oncePerRun: 0
@@ -96,12 +149,30 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - I have an idea.
-    - Better.
+    - Even better than planned.
+    captainLines:
+    - captainKey: rook
+      lines:
+      - Even better than planned.
+    - captainKey: brine
+      lines:
+      - Sturdier. Good.
+    - captainKey: richie
+      lines:
+      - An investment. Technically.
+    - captainKey: flint
+      lines:
+      - Ooh. That's going to be loud.
+    - captainKey: ember
+      lines:
+      - Needs another minute.
+    - captainKey: roxie
+      lines:
+      - Faster. Good.
     cooldownSeconds: 75
     priority: 1
     oncePerRun: 0
-  - barkId: chest_chipmunk
+  - barkId: chest_chippy
     enabled: 1
     speaker: 1
     trigger: 3
@@ -109,8 +180,9 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - '*stuffs something shiny into its cheeks*'
-    - '*inspects the chest, then the Captain''s pockets*'
+    - '*Chippy''s cheeks are suddenly very full*'
+    - '*Chippy inspects the chest, then the Captain''s pockets*'
+    captainLines: []
     cooldownSeconds: 60
     priority: 3
     oncePerRun: 0
@@ -123,6 +195,7 @@ MonoBehaviour:
     tag: 
     lines:
     - Salvage. Legally, probably ours.
+    captainLines: []
     cooldownSeconds: 90
     priority: 2
     oncePerRun: 0
@@ -135,10 +208,11 @@ MonoBehaviour:
     tag: 
     lines:
     - Useful. Don't get used to useful.
+    captainLines: []
     cooldownSeconds: 60
     priority: 2
     oncePerRun: 0
-  - barkId: landmark_chipmunk
+  - barkId: landmark_chippy
     enabled: 1
     speaker: 1
     trigger: 4
@@ -146,7 +220,8 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - '*pockets a bolt nobody will miss*'
+    - '*Chippy pockets a compass part. Nobody saw.*'
+    captainLines: []
     cooldownSeconds: 90
     priority: 1
     oncePerRun: 0
@@ -158,7 +233,8 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - The Beacon's out there. So is whoever owns it.
+    - The Beacon's out there. So is whoever thinks he owns it.
+    captainLines: []
     cooldownSeconds: 9999
     priority: 4
     oncePerRun: 1
@@ -171,6 +247,7 @@ MonoBehaviour:
     tag: 
     lines:
     - There's the Treasury Beacon. The sea keeps receipts, Captain.
+    captainLines: []
     cooldownSeconds: 9999
     priority: 6
     oncePerRun: 1
@@ -182,8 +259,10 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - Your ship is improperly docked in MY waters.
-    - Unlicensed vessel! Unpaid tax! Leave, or be fined.
+    - Your ship is improperly docked.
+    - That treasure is unpaid tax.
+    - Everything in Saltwind is MY property.
+    captainLines: []
     cooldownSeconds: 9999
     priority: 8
     oncePerRun: 1
@@ -196,8 +275,40 @@ MonoBehaviour:
     tag: 
     lines:
     - That's the Barnacle King. He'll want paperwork.
+    captainLines: []
     cooldownSeconds: 9999
     priority: 7
+    oncePerRun: 1
+  - barkId: boss_summoned_captain
+    enabled: 1
+    speaker: 3
+    trigger: 7
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - We meet again. Probably.
+    captainLines:
+    - captainKey: rook
+      lines:
+      - We meet again. Probably.
+    - captainKey: brine
+      lines:
+      - Not moving.
+    - captainKey: richie
+      lines:
+      - He wants tax? From me?
+    - captainKey: flint
+      lines:
+      - I have an idea.
+    - captainKey: ember
+      lines:
+      - He'll catch.
+    - captainKey: roxie
+      lines:
+      - Now it's interesting.
+    cooldownSeconds: 9999
+    priority: 6
     oncePerRun: 1
   - barkId: boss_defeated_penny
     enabled: 1
@@ -207,12 +318,13 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - Please stop there. You won't, but please.
-    - That was expensive. Worth it, apparently.
+    - We're done. Come home.
+    - Objective secured. The sensible thing now is to stop.
+    captainLines: []
     cooldownSeconds: 9999
     priority: 9
     oncePerRun: 1
-  - barkId: boss_defeated_chipmunk
+  - barkId: boss_defeated_chippy
     enabled: 1
     speaker: 1
     trigger: 8
@@ -220,9 +332,41 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - '*claims one barnacle as a crown*'
+    - '*Chippy claims the Barnacle King''s crown. It is shiny.*'
+    captainLines: []
     cooldownSeconds: 9999
     priority: 8
+    oncePerRun: 1
+  - barkId: boss_defeated_captain
+    enabled: 1
+    speaker: 3
+    trigger: 8
+    value: 0
+    windowSeconds: 6
+    tag: 
+    lines:
+    - Exactly as planned. Now, about that chest...
+    captainLines:
+    - captainKey: rook
+      lines:
+      - Exactly as planned. Now, about that chest...
+    - captainKey: brine
+      lines:
+      - Told you. No dodging needed.
+    - captainKey: richie
+      lines:
+      - Now we collect.
+    - captainKey: flint
+      lines:
+      - Can I keep the crown? For science.
+    - captainKey: ember
+      lines:
+      - There. Much better.
+    - captainKey: roxie
+      lines:
+      - Again.
+    cooldownSeconds: 9999
+    priority: 7
     oncePerRun: 1
   - barkId: elite_hammer_penny
     enabled: 1
@@ -233,6 +377,7 @@ MonoBehaviour:
     tag: elite_hammerhead
     lines:
     - That hammerhead looks personally offended.
+    captainLines: []
     cooldownSeconds: 9999
     priority: 5
     oncePerRun: 1
@@ -245,6 +390,7 @@ MonoBehaviour:
     tag: elite_kraken
     lines:
     - Kraken spawn. I'm not paying for tentacle damage.
+    captainLines: []
     cooldownSeconds: 9999
     priority: 5
     oncePerRun: 1
@@ -256,7 +402,8 @@ MonoBehaviour:
     windowSeconds: 6
     tag: reef_crab
     lines:
-    - Reef crab. Armoured. Unreasonably so.
+    - A reef crab. Armoured. Unreasonably so.
+    captainLines: []
     cooldownSeconds: 9999
     priority: 5
     oncePerRun: 1
@@ -268,7 +415,8 @@ MonoBehaviour:
     windowSeconds: 6
     tag: overtime
     lines:
-    - We could leave. We won't. Noted.
+    - We already won. We could leave. We won't. Noted.
+    captainLines: []
     cooldownSeconds: 9999
     priority: 6
     oncePerRun: 1
@@ -281,6 +429,7 @@ MonoBehaviour:
     tag: storm
     lines:
     - Storm's coming. I've seen your sailing. This will be expensive.
+    captainLines: []
     cooldownSeconds: 9999
     priority: 6
     oncePerRun: 1
@@ -293,7 +442,8 @@ MonoBehaviour:
     tag: 
     lines:
     - The hull is mostly holes now.
-    - Repairs are getting expensive. Sail better.
+    - Repairs are getting expensive.
+    captainLines: []
     cooldownSeconds: 45
     priority: 7
     oncePerRun: 0
@@ -305,8 +455,26 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - The ship looks fine.
-    - No.
+    - All part of the plan.
+    captainLines:
+    - captainKey: rook
+      lines:
+      - All part of the plan.
+    - captainKey: brine
+      lines:
+      - No.
+    - captainKey: richie
+      lines:
+      - The ship looks fine.
+    - captainKey: flint
+      lines:
+      - Structural integrity is overrated.
+    - captainKey: ember
+      lines:
+      - Just a little singed.
+    - captainKey: roxie
+      lines:
+      - Closer.
     cooldownSeconds: 60
     priority: 6
     oncePerRun: 0
@@ -318,11 +486,12 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - 'Good news: gold. Bad news: it''s only good until we sink.'
+    - 'Good news: Gold. Bad news: repairs.'
+    captainLines: []
     cooldownSeconds: 9999
     priority: 3
     oncePerRun: 1
-  - barkId: gold_chipmunk
+  - barkId: gold_chippy
     enabled: 1
     speaker: 1
     trigger: 12
@@ -330,7 +499,8 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - '*eyes the gold pile with professional interest*'
+    - '*Chippy eyes the Gold with professional interest*'
+    captainLines: []
     cooldownSeconds: 9999
     priority: 2
     oncePerRun: 1
@@ -343,11 +513,11 @@ MonoBehaviour:
     tag: 
     lines:
     - Quiet. I don't like quiet.
-    - Nobody's shooting. Enjoy it.
+    captainLines: []
     cooldownSeconds: 120
     priority: 1
     oncePerRun: 0
-  - barkId: quiet_chipmunk
+  - barkId: quiet_chippy
     enabled: 1
     speaker: 1
     trigger: 13
@@ -355,11 +525,12 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - '*naps in a coil of rope*'
+    - '*Chippy naps in a coil of rope*'
+    captainLines: []
     cooldownSeconds: 150
     priority: 1
     oncePerRun: 0
-  - barkId: streak_chipmunk
+  - barkId: streak_chippy
     enabled: 1
     speaker: 1
     trigger: 1
@@ -367,11 +538,12 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - '*applauds, then steals a coin from the applause*'
+    - '*Chippy applauds, then pockets a coin from the applause*'
+    captainLines: []
     cooldownSeconds: 120
     priority: 1
     oncePerRun: 0
-  - barkId: level_chipmunk
+  - barkId: level_chippy
     enabled: 1
     speaker: 1
     trigger: 2
@@ -379,23 +551,11 @@ MonoBehaviour:
     windowSeconds: 6
     tag: 
     lines:
-    - '*tests the new part with its teeth*'
+    - '*Chippy tests the new part with its teeth*'
+    captainLines: []
     cooldownSeconds: 150
     priority: 0
     oncePerRun: 0
-  - barkId: boss_summoned_captain
-    enabled: 1
-    speaker: 3
-    trigger: 7
-    value: 0
-    windowSeconds: 6
-    tag: 
-    lines:
-    - Let it spread.
-    - I have an idea.
-    cooldownSeconds: 9999
-    priority: 6
-    oncePerRun: 1
   tutorial:
   - stepId: move
     prompt: Sail with WASD or the left stick.
@@ -403,24 +563,28 @@ MonoBehaviour:
     promptSeconds: 6
     skipAfterSeconds: 0
     showOnComplete: 0
+    silent: 0
   - stepId: autofire_xp
     prompt: Your guns fire on their own. Sink ships and sail over the XP they drop.
     completesOn: 1
     promptSeconds: 6
-    skipAfterSeconds: 120
+    skipAfterSeconds: 0
     showOnComplete: 0
+    silent: 0
   - stepId: level_up
     prompt: "Level up: pick one card \u2014 a new weapon, an upgrade or a Logbook."
     completesOn: 2
     promptSeconds: 6
-    skipAfterSeconds: 150
+    skipAfterSeconds: 0
     showOnComplete: 0
+    silent: 0
   - stepId: chest
     prompt: Salvage chests hold items. Sail up to one and hold E to open it.
     completesOn: 3
     promptSeconds: 6
     skipAfterSeconds: 150
     showOnComplete: 0
+    silent: 0
   - stepId: landmark
     prompt: 'The minimap marks landmarks. Use one: a Repair Wreck, a Signal Buoy
       or a Treasure Chart.'
@@ -428,29 +592,34 @@ MonoBehaviour:
     promptSeconds: 6
     skipAfterSeconds: 150
     showOnComplete: 0
+    silent: 0
   - stepId: beacon
     prompt: Find the Treasury Beacon (the minimap points to it) and hold E to call
       its guardian.
     completesOn: 5
     promptSeconds: 6
-    skipAfterSeconds: 360
+    skipAfterSeconds: 0
     showOnComplete: 0
+    silent: 0
   - stepId: boss_telegraph
     prompt: Marked water shows where the Barnacle King will strike. Sail out of it.
     completesOn: 6
     promptSeconds: 6
-    skipAfterSeconds: 120
+    skipAfterSeconds: 0
     showOnComplete: 0
+    silent: 0
   - stepId: claim
     prompt: "TERRITORY CLAIMED \u2014 SURVIVE AS LONG AS YOU CAN."
     completesOn: 7
     promptSeconds: 6
     skipAfterSeconds: 0
     showOnComplete: 1
+    silent: 1
   - stepId: death_summary
-    prompt: 'Run gold is lost at sea. Rum is yours to keep: spend it on unlocks between
-      voyages.'
+    prompt: 'Leftover gold is banked as Rum. Rum is yours to keep: spend it on unlocks
+      between voyages.'
     completesOn: 8
     promptSeconds: 8
     skipAfterSeconds: 0
     showOnComplete: 1
+    silent: 0

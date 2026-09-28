@@ -95,12 +95,17 @@ namespace RoguePirates.V4
             _context.Register<Difficulty.IDifficultyLevers>(_director); // M11: the adaptive levers (ambient spawns read them)
             // M12: Rum — rows listening to events, settled once per run id at death (replaces the V3 Marks tracker).
             _context.Register<Rewards.IRumBank>(new Rewards.SaveRumBank(() => AppRoot.Instance != null ? AppRoot.Instance.Save : null));
-            _rewards = new Rewards.RewardModule { LabMode = moduleLab, RunTime = () => RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f };
+            _rewards = new Rewards.RewardModule
+            {
+                LabMode = moduleLab,
+                RunTime = () => RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f,
+                RunGold = () => RunManager.Instance != null ? RunManager.Instance.Gold : 0,
+            };
             _modules.Add(_rewards);
             _context.Register<Rewards.IRumView>(_rewards);
             // M13: barks and the First Conquest tutorial (replace V3OnboardingDirector); presentation reads the narrative view.
             var narrative = new Narrative.NarrativeView();
-            _barks = new Narrative.BarkDirector { View = narrative };
+            _barks = new Narrative.BarkDirector { View = narrative, CaptainKey = () => _build?.Captain?.Config?.captainKey };
             _tutorial = new Narrative.TutorialDirector { View = narrative, LabMode = moduleLab };
             _modules.Add(_barks);
             _modules.Add(_tutorial);
@@ -172,7 +177,6 @@ namespace RoguePirates.V4
             _context.Register<Views.IRunViews>(views);
             _resultsTelemetry = new LegacyResultsTelemetry { Rum = _rewards };
             _shell.Rewards = _rewards;
-            _stage.StageRun.Rewards = _rewards; // M12: a victory that ends the run settles Rum
             _feed = new LegacyEventFeed(_events, _clock);
             _enemies.KillTargets.Killed = _feed.OnEnemyKilled; // M12: Killed events carry the unit id and run-clock time
             damageSink.SteadyDamageReported += _feed.OnSteadyDamage;

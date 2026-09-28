@@ -100,19 +100,21 @@ namespace RoguePirates.V4.DevTools.Trace
                 return;
             }
 
-            RespondToPauses(run);
+            // Playtest round 1: the human pilot plays for itself (cards, chests, the Beacon, the boss, minibosses).
+            var human = _request.pilot == HumanPilot.PatternId;
+            if (!human) RespondToPauses(run);
             var t = SimTime;
             ScanAgents(t);
             PollProgress(t, run);
 
-            if (!_bossSummoned && t >= _request.bossAtSeconds && !run.IsRunEnded && !run.IsPaused)
+            if (!human && !_bossSummoned && t >= _request.bossAtSeconds && !run.IsRunEnded && !run.IsPaused)
             {
                 if (_stage != null) _stage.TrySummonBoss();
                 else if (_poi != null) _poi.TrySummonBoss();
             }
-            if (_bossSummoned && !_bossDefeated && t >= _request.killBossAtSeconds && !run.IsRunEnded && !run.IsPaused)
+            if (!human && _bossSummoned && !_bossDefeated && t >= _request.killBossAtSeconds && !run.IsRunEnded && !run.IsPaused)
                 TryKillBoss();
-            TrackArena(t, run);
+            if (!human) TrackArena(t, run);
 
             if (t >= _nextSample)
             {
@@ -384,10 +386,32 @@ namespace RoguePirates.V4.DevTools.Trace
                 var hull = _ship != null && _ship.Damage != null ? _ship.Damage.CurrentHP : 0f;
                 Add(new JsonLine("minute").Int("m", _minute).Counts("spawns", _minuteSpawns).Int("kills", _minuteKills)
                     .Int("gold", run.Gold).Int("level", System.Math.Max(0, CurrentLevel())).Num("hull", hull));
+                if (_request.pilot == HumanPilot.PatternId) { AddHurtLines(); AddPowerLine(run); } // playtest round 1: balance measurement
                 _minuteSpawns.Clear();
                 _minuteKills = 0;
                 _minute++;
             }
+        }
+
+        /// <summary>Human-pilot runs: every hit of 2+ damage with what was near the ship (why the pilot died).</summary>
+        void AddHurtLines()
+        {
+            var human = FindFirstObjectByType<HumanPlayer>();
+            if (human == null) return;
+            foreach (var h in human.Hurts) Add(new JsonLine("hurt").Str("h", h));
+            human.Hurts.Clear();
+        }
+
+        /// <summary>Human-pilot runs: Pressure, the power index and the build each minute (balance measurement).</summary>
+        void AddPowerLine(RunManager run)
+        {
+            var game = FindFirstObjectByType<RoguePirates.V4.V4Game>();
+            if (game == null || game.Context == null || !game.Context.TryGet<RoguePirates.V4.Difficulty.IPressureView>(out var p)) return;
+            var weapons = game.Build != null ? game.Build.Progression.OwnedWeapons.Count : 0;
+            var human = FindFirstObjectByType<HumanPlayer>();
+            Add(new JsonLine("power").Int("m", _minute).Num("t", run.ElapsedSeconds).Num("pressure", p.Pressure).Num("offense", p.Offense)
+                .Num("offenseNorm", p.OffenseNorm).Num("defense", p.DefenseNorm).Num("performance", p.Performance).Int("weapons", weapons)
+                .Int("alive", _alive.Count).Str("goal", human != null ? human.Pilot.Goal : "").Str("profile", human != null ? human.Profile.ToString() : ""));
         }
 
         void WriteSettlementAndFinish(string reason)

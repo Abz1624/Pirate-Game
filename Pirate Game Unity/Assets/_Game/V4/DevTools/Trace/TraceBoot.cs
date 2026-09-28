@@ -103,7 +103,15 @@ namespace RoguePirates.V4.DevTools.Trace
 
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             if (ship != null)
-                ship.ConfigureBotControl(Active.pilot == ScriptedPilot.PatternId ? new ScriptedPilot() : (IShipSteerInput)new PlayerPilot(ship));
+            {
+                if (Active.pilot == HumanPilot.PatternId)
+                {
+                    // Playtest round 1: a pilot that plays like a person (balance measurement), with its build profile.
+                    System.Enum.TryParse(Active.pilotProfile, out HumanPlayer.BuildProfile profile);
+                    HumanPlayer.Install(ship, profile);
+                }
+                else ship.ConfigureBotControl(Active.pilot == ScriptedPilot.PatternId ? new ScriptedPilot() : (IShipSteerInput)new PlayerPilot(ship));
+            }
 
             var go = new GameObject("V4TraceRecorder");
             go.AddComponent<RunTraceRecorder>().Begin(Active);

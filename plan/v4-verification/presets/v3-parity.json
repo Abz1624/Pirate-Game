@@ -647,6 +647,16 @@
                     "value": "Observe"
                 }
             ]
+        },
+        {
+            "configId": "rewards.saltwind",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "rows[6].enabled",
+                    "value": "false"
+                }
+            ]
         }
     ]
 }

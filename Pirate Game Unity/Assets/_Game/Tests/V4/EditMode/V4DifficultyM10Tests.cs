@@ -127,7 +127,7 @@ namespace RoguePirates.V4.Tests
         internal sealed class Mods : IWeaponModifiers
         {
             public float AttackSpeed => 1f; public float ProjectileSpeed => 1f; public float Size => 1f; public float Duration => 1f;
-            public float Quantity => 0f; public float CritChance => 0f; public float CritDamage => 1.5f; public float EliteDamage => 1f;
+            public float Quantity => 0f; public float CritChance { get; set; } public float CritDamage { get; set; } = 1.5f; public float EliteDamage => 1f;
             public float GlobalDamage { get; set; } = 1f; public float CaptainAdditiveDamage => 0f;
             public float CaptainWeaponMultiplier(string weaponId) => 1f;
             public float ItemGlobalDamageMultiplier => 1f; public float ItemCritChanceBonus => 0f; public float ItemAttackSpeedMultiplier => 1f;

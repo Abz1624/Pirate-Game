@@ -338,12 +338,12 @@ namespace RoguePirates.V4.Enemies
             return slot;
         }
 
-        /// <summary>M11: marks an adaptive elite — it pays ordinary rewards and counts against its source spawner (the elite
+        /// <summary>M11: marks an adaptive elite — it pays ordinary rewards when asked (playtest round 1 default: elite rewards) and counts against its source spawner (the elite
         /// copy of the profile is only used to spawn it).</summary>
-        public void MarkAdaptiveElite(int slot, SpawnProfile sourceProfile)
+        public void MarkAdaptiveElite(int slot, SpawnProfile sourceProfile, bool ordinaryRewards = true)
         {
             if (slot < 0 || slot >= _agents.Length || !_agents[slot].active) return;
-            _agents[slot].ordinaryRewards = true;
+            _agents[slot].ordinaryRewards = ordinaryRewards;
             _agents[slot].spawnProfile = sourceProfile;
         }
 

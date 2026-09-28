@@ -95,6 +95,9 @@ namespace RoguePirates.V4.Narrative
         bool _runStartDone;
         int _gold;
 
+        /// <summary>The selected Captain's config key (rook, brine, …), for the Captain's own lines.</summary>
+        public Func<string> CaptainKey;
+
         public string Id => "barks";
         public int TickOrder => 950;
         public NarrativeView View;
@@ -252,7 +255,15 @@ namespace RoguePirates.V4.Narrative
             _lastBark = now;
             _lastPlayed[rule.barkId] = now;
             _playedThisRun.Add(rule.barkId);
-            var line = rule.lines != null && rule.lines.Length > 0 ? rule.lines[_rng.Next(rule.lines.Length)] : string.Empty;
+            var lines = rule.lines;
+            if (rule.speaker == BarkSpeaker.Captain && rule.captainLines != null && CaptainKey != null)
+            {
+                var key = CaptainKey();
+                for (var i = 0; i < rule.captainLines.Count; i++)
+                    if (rule.captainLines[i] != null && rule.captainLines[i].captainKey == key && rule.captainLines[i].lines != null && rule.captainLines[i].lines.Length > 0)
+                    { lines = rule.captainLines[i].lines; break; }
+            }
+            var line = lines != null && lines.Length > 0 ? lines[_rng.Next(lines.Length)] : string.Empty;
             View?.ShowBark(SpeakerName(rule.speaker), line, Config != null ? Config.barkSeconds : 3.5f, rule.barkId);
         }
 
@@ -361,6 +372,7 @@ namespace RoguePirates.V4.Narrative
         void Show(TutorialStep step, float now)
         {
             _lastShown = now;
+            if (step.silent) return;
             View?.ShowPrompt(step.prompt, step.promptSeconds);
         }
 

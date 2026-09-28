@@ -90,39 +90,51 @@ namespace RoguePirates.V4.Presentation.Hud
             if (_panel != null) _panel.SetActive(false);
         }
 
-        /// <summary>V3RunResultsScreen.BuildSummaryText, line for line.</summary>
+        /// <summary>
+        /// The results text (playtest round 1: reorganised for reading at a glance): outcome and a one-line run summary,
+        /// the Rum earned (total only), the goal, gold, then the build with each weapon's level and damage share on one
+        /// line; the profile line last.
+        /// </summary>
         public string BuildSummary()
         {
             var r = _views.Results;
+            var run = _views.Run;
             var sb = new StringBuilder();
             sb.AppendLine(SaltwindRunResultsLogic.BuildOutcomeSubline(r.ObjectiveSecured, r.EndedByDeath));
-            sb.AppendLine();
-            sb.AppendLine(r.ProfileFooter);
-            sb.AppendLine($"Run gold earned: {r.GoldEarned}");
-            sb.AppendLine($"Run gold spent: {r.GoldSpent}");
-            sb.AppendLine($"Run gold remaining: {r.GoldRemaining} (run-only)");
+            if (run != null)
+            {
+                var t = Mathf.Max(0f, run.ElapsedSeconds);
+                var level = _views.Progression != null ? _views.Progression.Level : 0;
+                sb.AppendLine($"Survived {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00} · {run.Kills} kills · level {level}");
+            }
 
             if (r.HasRewardSection)
             {
                 var section = r.RewardSection;
                 if (section != null) sb.Append(section);
-                else sb.AppendLine("\nRum: not settled this run.");
+                else sb.AppendLine("\nRUM EARNED  +0  (Rum is paid when the ship sinks)");
                 sb.Append(r.GoalProgress);
             }
 
-            r.CollectFinalBuild(_scratch);
-            if (_scratch.Count > 0)
-            {
-                sb.Append("\nFinal build:\n");
-                foreach (var w in _scratch) sb.Append("  · ").Append(w.name).Append(" Lv ").Append((int)w.value).Append('\n');
-            }
+            sb.AppendLine($"\nGold: earned {r.GoldEarned} · spent {r.GoldSpent} · left {r.GoldRemaining}");
 
+            r.CollectFinalBuild(_scratch);
+            var build = new List<NamedValue>(_scratch);
             r.CollectContributions(_scratch);
-            if (_scratch.Count > 0)
+            if (build.Count > 0 || _scratch.Count > 0)
             {
-                sb.Append("\nWeapon contribution:\n");
-                foreach (var w in _scratch) sb.Append("  · ").Append(w.name).Append(": ").Append(w.value.ToString("0")).Append("% dmg\n");
+                sb.Append("\nBuild:\n");
+                foreach (var w in build)
+                {
+                    sb.Append("  · ").Append(w.name).Append(" Lv ").Append((int)w.value);
+                    var share = _scratch.Find(c => c.name == w.name);
+                    if (share.name != null) sb.Append(" · ").Append(share.value.ToString("0")).Append("% dmg");
+                    sb.Append('\n');
+                }
+                foreach (var c in _scratch)
+                    if (!build.Exists(w => w.name == c.name)) sb.Append("  · ").Append(c.name).Append(" · ").Append(c.value.ToString("0")).Append("% dmg\n");
             }
+            sb.Append('\n').AppendLine(r.ProfileFooter);
             return sb.ToString();
         }
 
