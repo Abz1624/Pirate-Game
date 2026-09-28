@@ -222,11 +222,25 @@ namespace RoguePirates.V4.Tests
         {
             using var set = Default();
             var r = Make(set);
-            r.Rum.RunGold = () => 257;
+            r.Rum.RunGold = () => 500;
             r.Time = 30f;
             r.Rum.Settle("gold", true);
-            Assert.AreEqual(25, r.Rum.SettledRows.First(x => x.RowId == "gold").Rum, "257 gold → 25 Rum");
-            StringAssert.Contains("RUM EARNED  +25", RunResultsView.Format(r.Rum.SettledRows, r.Rum.SettledTotal, r.Bank.Treasury, "Rum"));
+            Assert.AreEqual(9, r.Rum.SettledRows.First(x => x.RowId == "gold").Rum, "500 gold → 15 × (1 − ½^(500/350)) = 9 Rum");
+            StringAssert.Contains("RUM EARNED  +9", RunResultsView.Format(r.Rum.SettledRows, r.Rum.SettledTotal, r.Bank.Treasury, "Rum"));
+
+            // Playtest round 2: the curve flattens, so overtime-farmed gold cannot break the economy.
+            var row = set.Single<RewardConfig>().Row("gold");
+            Assert.AreEqual(15, row.maxRum);
+            Assert.AreEqual(0, RewardModule.GoldRum(0, 15, 350f));
+            Assert.AreEqual(2, RewardModule.GoldRum(100, 15, 350f));
+            Assert.AreEqual(7, RewardModule.GoldRum(350, 15, 350f), "goldForHalf pays half the cap");
+            Assert.AreEqual(11, RewardModule.GoldRum(765, 15, 350f));
+            Assert.AreEqual(15, RewardModule.GoldRum(100000, 15, 350f), "never more than the cap");
+            for (var g = 0; g < 5000; g += 50)
+            {
+                Assert.LessOrEqual(RewardModule.GoldRum(g, 15, 350f), RewardModule.GoldRum(g + 50, 15, 350f), "more gold never pays less");
+                Assert.LessOrEqual(RewardModule.GoldRum(g + 350, 15, 350f) - RewardModule.GoldRum(g, 15, 350f), 8, "flattens");
+            }
             var preset = File.ReadAllText(Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
             var errors = new List<string>();
             Assert.IsTrue(PresetCodec.Apply(set, PresetCodec.FromJson(preset), 0f, errors), string.Join("; ", errors));

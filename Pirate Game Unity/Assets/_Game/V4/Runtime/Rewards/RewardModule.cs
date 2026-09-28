@@ -22,7 +22,6 @@ namespace RoguePirates.V4.Rewards
         /// <summary>How many times the row paid (for the gold row: the gold banked).</summary>
         public int Credits, Rum;
         /// <summary>Rum per credit (for the gold row: gold per Rum).</summary>
-        public int PerCredit;
     }
 
     /// <summary>Read-only Rum state for the results view, the console and traces.</summary>
@@ -53,6 +52,16 @@ namespace RoguePirates.V4.Rewards
     /// </summary>
     public sealed class RewardModule : IRunModule, IRumView
     {
+        /// <summary>
+        /// Leftover gold → Rum (playtest round 2): cap × (1 − ½^(gold / goldForHalf)), rounded down. It flattens: each further
+        /// goldForHalf pays half of what is left, and no amount of hoarded or overtime-farmed gold pays more than the cap.
+        /// </summary>
+        public static int GoldRum(int gold, int cap, float goldForHalf)
+        {
+            if (gold <= 0 || cap <= 0 || goldForHalf <= 0f) return 0;
+            return Mathf.Clamp(Mathf.FloorToInt(cap * (1f - Mathf.Pow(0.5f, gold / goldForHalf)) + 1e-4f), 0, cap);
+        }
+
         readonly Dictionary<int, int> _killsPerMinute = new Dictionary<int, int>();
         readonly Dictionary<int, int> _killsPerOvertimeMinute = new Dictionary<int, int>();
         readonly HashSet<int> _landmarks = new HashSet<int>();
@@ -232,9 +241,8 @@ namespace RoguePirates.V4.Rewards
                     case RumSource.RunGoldBanked:
                     {
                         var gold = Mathf.Max(0, RunGold != null ? RunGold() : 0);
-                        var goldRum = gold / Mathf.Max(1, row.goldPerRum) * Mathf.Max(0, row.rum);
-                        if (row.maxRum > 0) goldRum = Mathf.Min(goldRum, row.maxRum);
-                        into.Add(new RumRowResult { RowId = row.rowId, Label = row.label, Source = row.source, Credits = gold, Rum = goldRum, PerCredit = Mathf.Max(1, row.goldPerRum) });
+                        var goldRum = GoldRum(gold, row.maxRum, row.goldForHalf);
+                        into.Add(new RumRowResult { RowId = row.rowId, Label = row.label, Source = row.source, Credits = gold, Rum = goldRum });
                         continue;
                     }
                 }
@@ -243,7 +251,7 @@ namespace RoguePirates.V4.Rewards
                 if (row.maxRum > 0 && row.rum > 0) credits = Mathf.Min(credits, row.maxRum / row.rum);
                 var rum = credits * Mathf.Max(0, row.rum);
                 if (row.maxRum > 0) rum = Mathf.Min(rum, row.maxRum);
-                into.Add(new RumRowResult { RowId = row.rowId, Label = row.label, Source = row.source, Credits = credits, Rum = rum, PerCredit = Mathf.Max(0, row.rum) });
+                into.Add(new RumRowResult { RowId = row.rowId, Label = row.label, Source = row.source, Credits = credits, Rum = rum });
             }
         }
 

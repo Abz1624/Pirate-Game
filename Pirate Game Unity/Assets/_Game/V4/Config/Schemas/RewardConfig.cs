@@ -19,8 +19,9 @@ namespace RoguePirates.V4.Config
         BossVictory = 4,
         /// <summary>A chest opened (ChestOpened event).</summary>
         ChestOpened = 5,
-        /// <summary>Run gold left at death, banked as Rum: one Rum per <see cref="RumRow.goldPerRum"/> gold (Narrative Bible: the
-        /// remaining run Gold is banked when the run ends).</summary>
+        /// <summary>Run gold left at death, banked as Rum on a flattening curve: maxRum × (1 − ½^(gold / goldForHalf)), so
+        /// hoarded or overtime-farmed gold can never pay more than maxRum (playtest round 2; Narrative Bible: the remaining
+        /// run Gold is banked when the run ends).</summary>
         RunGoldBanked = 6,
     }
 
@@ -36,7 +37,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Minute sources: kills needed in the minute.")] public int minKills = 10;
         [Tooltip("At most this many credits per run (0 = no limit). Not used by the gold row (use maxRum there).")] public int maxCredits;
         [Tooltip("At most this much Rum from the row per run (0 = no limit); credits stop once it is reached.")] public int maxRum;
-        [Tooltip("RunGoldBanked: gold per Rum.")] public int goldPerRum = 10;
+        [Tooltip("RunGoldBanked: leftover gold that pays half of maxRum; each further goldForHalf pays half of what is left.")] public float goldForHalf = 350f;
     }
 
     /// <summary>
@@ -56,7 +57,7 @@ namespace RoguePirates.V4.Config
             new RumRow { rowId = "boss", label = "Boss victory", source = RumSource.BossVictory, rum = 25, maxCredits = 1 },
             new RumRow { rowId = "overtime", label = "Overtime", source = RumSource.OvertimeMinute, rum = 3, minKills = 10, maxRum = 15 },
             new RumRow { rowId = "chests", label = "Chests opened", source = RumSource.ChestOpened, rum = 1, enabled = false },
-            new RumRow { rowId = "gold", label = "Gold banked", source = RumSource.RunGoldBanked, rum = 1, goldPerRum = 10 },
+            new RumRow { rowId = "gold", label = "Gold banked", source = RumSource.RunGoldBanked, rum = 0, maxRum = 15, goldForHalf = 350f },
         };
 
         public RumRow Row(string rowId)
@@ -74,7 +75,8 @@ namespace RoguePirates.V4.Config
                 if (r == null) { report.Error(this, nameof(rows), "null row"); continue; }
                 if (string.IsNullOrWhiteSpace(r.rowId) || !ids.Add(r.rowId)) report.Error(this, nameof(rows), $"missing or duplicate row id '{r.rowId}'");
                 if (r.rum < 0 || r.minKills < 0 || r.maxCredits < 0 || r.maxRum < 0) report.Error(this, nameof(rows), $"row '{r.rowId}': negative value");
-                if (r.source == RumSource.RunGoldBanked && r.goldPerRum <= 0) report.Error(this, nameof(rows), $"row '{r.rowId}': gold per Rum must be above 0");
+                if (r.source == RumSource.RunGoldBanked && (r.goldForHalf <= 0f || r.maxRum <= 0))
+                    report.Error(this, nameof(rows), $"row '{r.rowId}': the gold curve needs maxRum and goldForHalf above 0");
             }
         }
     }

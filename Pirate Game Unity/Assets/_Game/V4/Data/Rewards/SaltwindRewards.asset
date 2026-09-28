@@ -25,7 +25,7 @@ MonoBehaviour:
     minKills: 10
     maxCredits: 0
     maxRum: 0
-    goldPerRum: 10
+    goldForHalf: 350
   - rowId: landmarks
     label: Special discoveries
     enabled: 1
@@ -34,7 +34,7 @@ MonoBehaviour:
     minKills: 10
     maxCredits: 0
     maxRum: 0
-    goldPerRum: 10
+    goldForHalf: 350
   - rowId: elites
     label: Scheduled elite
     enabled: 1
@@ -43,7 +43,7 @@ MonoBehaviour:
     minKills: 10
     maxCredits: 2
     maxRum: 0
-    goldPerRum: 10
+    goldForHalf: 350
   - rowId: boss
     label: Boss victory
     enabled: 1
@@ -52,7 +52,7 @@ MonoBehaviour:
     minKills: 10
     maxCredits: 1
     maxRum: 0
-    goldPerRum: 10
+    goldForHalf: 350
   - rowId: overtime
     label: Overtime
     enabled: 1
@@ -61,7 +61,7 @@ MonoBehaviour:
     minKills: 10
     maxCredits: 0
     maxRum: 15
-    goldPerRum: 10
+    goldForHalf: 350
   - rowId: chests
     label: Chests opened
     enabled: 0
@@ -70,13 +70,13 @@ MonoBehaviour:
     minKills: 10
     maxCredits: 0
     maxRum: 0
-    goldPerRum: 10
+    goldForHalf: 350
   - rowId: gold
     label: Gold banked
     enabled: 1
     source: 6
-    rum: 1
+    rum: 0
     minKills: 10
     maxCredits: 0
-    maxRum: 0
-    goldPerRum: 10
+    maxRum: 15
+    goldForHalf: 350
