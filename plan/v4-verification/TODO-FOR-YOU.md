@@ -4,6 +4,12 @@ You asked me to run M10 → M15 unattended, log my doubts and anything that need
 
 How I ran it: each phase got its targeted tests, an automated playable check, an independent read-only review (findings fixed), and its own commit. The single V3-comparison trace set ran only for phases that replace V3 gameplay. Only the pause for your playtest was skipped. M15 (deleting V3) is on a separate branch and not merged.
 
+## Where things stand (28 Sep)
+
+M10–M13 are committed "(awaiting playtest)". **Paused before M14 at your request** so you can playtest M10–M13 first; M15 (deleting V3) waits until after you have playtested the V4 game.
+
+M14 turned out much larger than the plan assumed: 59 legacy adapters (~5,600 lines) are tagged for M14, including the run bootstrap, V3's stage profile and the spawn/combat-profile plumbing (these change the frame order, so the V3-comparison traces need new baselines). The inventory is ready; when you are back we choose between a "core switch-over first" M14 (everything visible + proofs; deep plumbing moved to M15) and the full M14.
+
 ## Standing questions
 
 - [ ] **Narrative Bible (M13):** may I read your untracked `Rogue_Pirates_Narrative_Bible_v1.md` as the source for bark and tutorial lines? (Until you say yes, M13 uses placeholder lines written from the gameplay doc; I have not opened the file.)
