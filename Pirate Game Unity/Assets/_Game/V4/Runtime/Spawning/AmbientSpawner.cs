@@ -174,6 +174,7 @@ namespace RoguePirates.V4.Spawning
 
                 if (!CanSpawnMore(run.Profile))
                 {
+                    if (_s.Sink.ActiveCount >= _executor.AmbientCap) _executor.NoteAmbientCapBlocked(runTime); // M11 cap-HP lever
                     run.NextAttemptAt = runTime + timeline.spawnRetryIntervalSeconds;
                     continue;
                 }
@@ -246,7 +247,10 @@ namespace RoguePirates.V4.Spawning
                     var baseInterval = phase.ratePerSecond > 0f
                         ? (phase.budgetUnit == SpawnBudgetUnit.Threat ? run.LastThreatCost : 1f) / phase.ratePerSecond
                         : profile.timing.spawnIntervalSeconds;
-                    return Mathf.Max(gap, baseInterval / Mathf.Max(0.1f, rateMultiplier));
+                    var weighted = rateMultiplier;
+                    // M11: the spawner's pressureWeight curve (composition lever; 1 unless Adaptive).
+                    if (_s.Levers != null && _s.Levers.Adaptive && phase.spawner != null) weighted *= _s.Levers.SpawnerWeight(phase.spawner.pressureWeight);
+                    return Mathf.Max(gap, baseInterval / Mathf.Max(0.1f, weighted));
                 case SpawnMode.Sequence:
                 case SpawnMode.TimedWave:
                     return Mathf.Max(gap, profile.timing.spawnIntervalSeconds);

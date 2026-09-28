@@ -15,7 +15,7 @@ MonoBehaviour:
   configId: director.saltwind
   schemaVersion: 1
   balanceVersion: saltwind-v3-parity
-  mode: 1
+  mode: 2
   version: director-1
   sampleIntervalSeconds: 1
   performanceWindowSeconds: 30
@@ -37,3 +37,29 @@ MonoBehaviour:
   - 1.3
   - 1.5
   - 1
+  threatRateLever: 1
+  threatRateGain: 1
+  threatRateMin: 0.85
+  threatRateMax: 1.35
+  eliteLever: 1
+  eliteChanceAtMax: 0.05
+  eliteAffix: 4
+  eliteHpMultiplier: 1.5
+  eliteDamageMultiplier: 1.1
+  eliteSizeMultiplier: 1.15
+  tierTimingLever: 1
+  tierLeadSecondsAtMax: 60
+  compositionLever: 1
+  closeRangeBehaviors: 0200000003000000040000000500000007000000
+  compositionRules:
+  - enemyTag: ranged
+    favouredBy: 0
+    maxBoost: 0.6
+  - enemyTag: swarm
+    favouredBy: 1
+    maxBoost: 0.6
+  capHpLever: 1
+  capHpMultiplierAtMax: 1.2
+  capBlockedWindowSeconds: 5
+  pressureConditionTriggers: 1
+  rankedVersion: director-1

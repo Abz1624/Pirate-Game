@@ -18,12 +18,20 @@ namespace RoguePirates.V4.Difficulty
         float IncomingDamageMultiplier { get; }
     }
 
-    /// <summary>Read-only Pressure for presentation, the console, traces and (M11) the levers.</summary>
+    /// <summary>Pressure for presentation, the console, traces and (M11) the levers.</summary>
     public interface IPressureView
     {
         DirectorMode Mode { get; }
         string Version { get; }
+        /// <summary>Current Pressure (the forced value while one is set).</summary>
         float Pressure { get; }
+        /// <summary>Test-only override from the console (M11): while set, Pressure is this value and the run is not ranked.</summary>
+        float? ForcedPressure { get; set; }
+        /// <summary>Share of the build's offense from close-range weapons (composition lever), 0..1.</summary>
+        float CloseRangeShare { get; }
+        /// <summary>Developer tools were used this run (the tuning console opened): the run record is never ranked.</summary>
+        bool Unranked { get; }
+        void MarkUnranked();
         float Offense { get; }
         float OffenseNorm { get; }
         float DefenseNorm { get; }
@@ -39,8 +47,12 @@ namespace RoguePirates.V4.Difficulty
     /// </summary>
     public static class PlayerPowerIndex
     {
-        public static float Offense(IPowerInputs inputs, DirectorConfig d)
+        public static float Offense(IPowerInputs inputs, DirectorConfig d) => Offense(inputs, d, out _);
+
+        /// <summary>Offense, and how much of it comes from close-range behaviours (<see cref="DirectorConfig.closeRangeBehaviors"/>).</summary>
+        public static float Offense(IPowerInputs inputs, DirectorConfig d, out float closeRange)
         {
+            closeRange = 0f;
             var m = inputs.Modifiers;
             if (inputs.Weapons == null || m == null) return 0f;
             var total = 0f;
@@ -52,7 +64,9 @@ namespace RoguePirates.V4.Difficulty
                 var cooldown = Mathf.Max(0.05f, WeaponStatResolver.Cooldown(w, m, m.ItemAttackSpeedMultiplier));
                 var quantity = WeaponStatResolver.ProjectileQuantity(w, m);
                 var coverage = d.behaviorCoverage != null && (int)w.Config.behavior < d.behaviorCoverage.Length ? d.behaviorCoverage[(int)w.Config.behavior] : 1f;
-                total += damage / cooldown * quantity * coverage;
+                var part = damage / cooldown * quantity * coverage;
+                total += part;
+                if (d.closeRangeBehaviors != null && Array.IndexOf(d.closeRangeBehaviors, w.Config.behavior) >= 0) closeRange += part;
             }
             return total;
         }
@@ -101,8 +115,9 @@ namespace RoguePirates.V4.Difficulty
     /// publishes a PowerChanged event. It reads only simulation state and the event stream (no random draws, no writes to
     /// other modules), so Observe mode cannot change a run. M11 lets levers read <see cref="IPressureView.Pressure"/>.
     /// </summary>
-    public sealed class DifficultyDirector : IRunModule, IPressureView
+    public sealed class DifficultyDirector : IRunModule, IPressureView, IDifficultyLevers
     {
+        const int EliteStreamSalt = 0x5EED11; // the elite lever's own stream: seed-derived, never a V3 RunRng stream
         const int HistoryLength = 180;
 
         readonly Queue<(float time, int kills, int spawns, float hullLost)> _window = new Queue<(float, int, int, float)>();
@@ -117,13 +132,32 @@ namespace RoguePirates.V4.Difficulty
         float _sampleTimer, _offense0, _simTime;
         int _pendingKills, _pendingSpawns;
         float _pendingHullLost;
+        float _pressure = 1f; // the smoothed value; Pressure shows the forced one while set
+        float? _forced;
+        bool _everForced;
+        float _pressureSum, _pressurePeak = 1f;
+        int _pressureSamples;
+        System.Random _eliteRng = new System.Random(EliteStreamSalt);
 
         public string Id => "difficulty";
         public int TickOrder => 50; // after the clock, before spawning (plan §4.4)
 
         public DirectorMode Mode => Config != null ? Config.mode : DirectorMode.Off;
         public string Version => Config != null ? Config.version : string.Empty;
-        public float Pressure { get; private set; } = 1f;
+        public float Pressure => _forced ?? _pressure;
+        public float? ForcedPressure
+        {
+            get => _forced;
+            set
+            {
+                _forced = value.HasValue && !float.IsNaN(value.Value) && !float.IsInfinity(value.Value)
+                    ? Mathf.Clamp(value.Value, PressureMin, PressureMax) : (float?)null;
+                if (_forced.HasValue) _everForced = true;
+            }
+        }
+        public float CloseRangeShare { get; private set; }
+        float PressureMin => Curve != null ? Curve.pressureMin : 0.85f;
+        float PressureMax => Curve != null ? Curve.pressureMax : 1.35f;
         public float Offense { get; private set; }
         public float OffenseNorm { get; private set; } = 1f;
         public float DefenseNorm { get; private set; } = 1f;
@@ -145,7 +179,15 @@ namespace RoguePirates.V4.Difficulty
 
         public void BeginRun(in RunStart start)
         {
-            Pressure = 1f;
+            _pressure = 1f;
+            _forced = null;
+            _everForced = false;
+            _pressureSum = 0f;
+            _pressurePeak = 1f;
+            _pressureSamples = 0;
+            CloseRangeShare = 0f;
+            _eliteRng = new System.Random(start.Seed ^ EliteStreamSalt);
+            Unranked = false;
             OffenseNorm = DefenseNorm = Performance = 1f;
             Offense = _offense0 = 0f;
             _sampleTimer = 0f;
@@ -180,7 +222,7 @@ namespace RoguePirates.V4.Difficulty
             if (d.mode == DirectorMode.Off)
             {
                 // Off: Pressure is 1, and nothing gathered while off lands in the window when it comes back on.
-                Pressure = OffenseNorm = DefenseNorm = Performance = 1f;
+                _pressure = OffenseNorm = DefenseNorm = Performance = 1f;
                 _pendingKills = _pendingSpawns = 0;
                 _pendingHullLost = 0f;
                 _window.Clear();
@@ -217,7 +259,8 @@ namespace RoguePirates.V4.Difficulty
             var hullLost = 0f;
             foreach (var w in _window) { kills += w.kills; spawns += w.spawns; hullLost += w.hullLost; }
 
-            Offense = PlayerPowerIndex.Offense(_inputs, d);
+            Offense = PlayerPowerIndex.Offense(_inputs, d, out var closeRange);
+            CloseRangeShare = Offense > 0f ? Mathf.Clamp01(closeRange / Offense) : 0f;
             // The baseline is the first offense seen, brought back to time 0 (weapons may arrive late, e.g. the Module Lab).
             if (_offense0 <= 0f && Offense > 0f) _offense0 = Offense / Mathf.Max(0.0001f, CurveEvaluator.ExpectedHpScale(curve, _simTime));
             var expected = _offense0 * CurveEvaluator.ExpectedHpScale(curve, _simTime);
@@ -230,7 +273,10 @@ namespace RoguePirates.V4.Difficulty
             OffenseNorm = sample.OffenseNorm;
             DefenseNorm = sample.DefenseNorm;
             Performance = sample.Performance;
-            Pressure = DirectorMath.Step(Pressure, DirectorMath.Target(sample, d, min, max), dt, d, min, max);
+            _pressure = DirectorMath.Step(_pressure, DirectorMath.Target(sample, d, min, max), dt, d, min, max);
+            _pressureSum += Pressure;
+            _pressureSamples++;
+            _pressurePeak = Mathf.Max(_pressurePeak, Pressure);
 
             if (_history.Count >= HistoryLength) _history.RemoveAt(0);
             _history.Add(Pressure);
@@ -241,6 +287,61 @@ namespace RoguePirates.V4.Difficulty
         public void EndRun(in RunEnd end)
         {
             if (_events != null) _events.TickPublished -= OnEvents;
+        }
+
+        // ---- M11: the levers (neutral unless Adaptive and the lever is on) ----------------------------------------
+
+        public bool Adaptive => !_failed && Config != null && Config.mode == DirectorMode.Adaptive;
+        DirectorConfig IDifficultyLevers.Config => Config;
+
+        public float ThreatRateMultiplier => Adaptive && Config.threatRateLever ? LeverMath.ThreatRate(Pressure, Config) : 1f;
+        public float TierLeadSeconds => Adaptive && Config.tierTimingLever ? LeverMath.TierLead(Pressure, PressureMax, Config) : 0f;
+        public float CapHpMultiplier => Adaptive && Config.capHpLever ? LeverMath.CapHp(Pressure, PressureMax, Config) : 1f;
+        // Never below 1: a weak build must not delay a "Pressure at least" phase that fired without the director (early, never later).
+        public float ConditionPressure => Adaptive && Config.pressureConditionTriggers ? Mathf.Max(1f, Pressure) : 1f;
+        public bool CompositionActive => Adaptive && Config.compositionLever && LeverMath.Above(Pressure, PressureMax) > 0f;
+
+        public float SpawnerWeight(AnimationCurve pressureWeight)
+        {
+            if (!Adaptive || !Config.compositionLever || pressureWeight == null || pressureWeight.length == 0) return 1f;
+            var w = pressureWeight.Evaluate(Pressure);
+            return float.IsNaN(w) ? 1f : Mathf.Max(0f, w);
+        }
+
+        public float CompositionWeight(IReadOnlyList<string> roleTags) =>
+            CompositionActive ? LeverMath.Composition(roleTags, CloseRangeShare, LeverMath.Above(Pressure, PressureMax), Config) : 1f;
+
+        public bool RollElite()
+        {
+            if (!Adaptive || !Config.eliteLever) return false;
+            var chance = LeverMath.EliteChance(Pressure, PressureMax, Config);
+            return chance > 0f && _eliteRng.NextDouble() < chance; // no draw at or below Pressure 1
+        }
+
+        /// <summary>M11: the run used developer tools (the tuning console): never ranked.</summary>
+        public bool Unranked { get; private set; }
+        public void MarkUnranked() => Unranked = true;
+
+        /// <summary>The run's leaderboard record (M11). Ranked: Adaptive, the ranked version, never forced, no tuning edits.</summary>
+        public RunScoreRecord CreateRecord(int seed, int kills, float runSeconds, string configHash, int tuningEdits)
+        {
+            var d = Config;
+            var mode = d != null ? d.mode : DirectorMode.Off;
+            return new RunScoreRecord
+            {
+                seed = seed,
+                kills = kills,
+                runSeconds = runSeconds,
+                averagePressure = _pressureSamples > 0 ? _pressureSum / _pressureSamples : 1f,
+                peakPressure = _pressurePeak,
+                directorVersion = d != null ? d.version : string.Empty,
+                directorMode = mode.ToString(),
+                configHash = configHash ?? string.Empty,
+                pressureForced = _everForced,
+                tuningEdits = tuningEdits,
+                ranked = d != null && mode == DirectorMode.Adaptive && d.version == d.rankedVersion && !_everForced && tuningEdits == 0 && !_failed && !Unranked,
+                finishedUtc = DateTime.UtcNow.ToString("o"),
+            };
         }
     }
 }

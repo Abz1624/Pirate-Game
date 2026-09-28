@@ -24,6 +24,8 @@ namespace RoguePirates.V4.Enemies
         public int definitionIndex;
         public EliteAffix affix;
         public bool isElite;
+        /// <summary>M11: an adaptive elite (the elite lever) — fights as an elite, pays the unit's ordinary rewards.</summary>
+        public bool ordinaryRewards;
         public bool isBoss;
         public Transform view;
         public Transform healthBar;

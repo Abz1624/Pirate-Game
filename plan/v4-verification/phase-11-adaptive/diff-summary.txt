@@ -1,0 +1,27 @@
+ .../Tests/V4/EditMode/V4DifficultyM10Tests.cs      |  20 ++--
+ .../_Game/Tests/V4/EditMode/V4EnemyWorldM8Tests.cs |   5 +-
+ .../_Game/Tests/V4/EditMode/V4SpawnM3Tests.cs      |   1 +
+ .../_Game/Tests/V4/PlayMode/V4RunPlayModeTests.cs  |   4 +
+ .../_Game/V4/Config/Schemas/DirectorConfig.cs      |  65 ++++++++++-
+ .../V4/Data/Difficulty/SaltwindDirector.asset      |  28 ++++-
+ .../_Game/V4/DevTools/Console/DifficultySection.cs |  27 ++++-
+ .../_Game/V4/DevTools/Console/TuningConsole.cs     |   2 +
+ .../_Game/V4/DevTools/Trace/RunTraceRecorder.cs    |   2 +-
+ .../Assets/_Game/V4/DevTools/Trace/TraceBoot.cs    |   2 +-
+ .../_Game/V4/Editor/V4DirectorConfigGenerator.cs   |   2 +-
+ .../Assets/_Game/V4/Editor/V4TraceSession.cs       |   2 +-
+ .../Assets/_Game/V4/Runtime/Core/V4Game.cs         |  24 ++++-
+ .../V4/Runtime/Difficulty/DifficultyDirector.cs    | 119 +++++++++++++++++++--
+ .../_Game/V4/Runtime/Enemies/EnemySimulation.cs    |   9 ++
+ .../Assets/_Game/V4/Runtime/Enemies/EnemyUnit.cs   |   2 +
+ .../V4/Runtime/Enemies/EnemyWorldContracts.cs      |   2 +
+ .../Assets/_Game/V4/Runtime/Events/CombatEvents.cs |   2 +
+ .../V4/Runtime/Legacy/LegacyEnemyWorldAdapters.cs  |  12 ++-
+ .../_Game/V4/Runtime/Spawning/AmbientSpawner.cs    |   6 +-
+ .../_Game/V4/Runtime/Spawning/SpawnComposition.cs  |  24 ++++-
+ .../_Game/V4/Runtime/Spawning/SpawnContracts.cs    |   2 +
+ .../_Game/V4/Runtime/Spawning/SpawnController.cs   |   4 +-
+ .../_Game/V4/Runtime/Spawning/SpawnExecutor.cs     |  71 ++++++++++--
+ .../_Game/V4/Runtime/Spawning/SpawnServices.cs     |   3 +
+ .../_Game/V4/Runtime/Spawning/TimelineTriggers.cs  |   3 +-
+ 26 files changed, 394 insertions(+), 49 deletions(-)

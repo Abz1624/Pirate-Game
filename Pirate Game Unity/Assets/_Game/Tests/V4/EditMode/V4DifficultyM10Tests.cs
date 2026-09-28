@@ -18,9 +18,9 @@ namespace RoguePirates.V4.Tests
     {
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
 
-        static ConfigSetRuntime Default() => new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+        internal static ConfigSetRuntime Default() => new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
 
-        static ConfigSetRuntime Parity()
+        internal static ConfigSetRuntime Parity()
         {
             var runtime = Default();
             var errors = new List<string>();
@@ -124,7 +124,7 @@ namespace RoguePirates.V4.Tests
 
         // ---- Power index -----------------------------------------------------------------------------------------------
 
-        sealed class Mods : IWeaponModifiers
+        internal sealed class Mods : IWeaponModifiers
         {
             public float AttackSpeed => 1f; public float ProjectileSpeed => 1f; public float Size => 1f; public float Duration => 1f;
             public float Quantity => 0f; public float CritChance => 0f; public float CritDamage => 1.5f; public float EliteDamage => 1f;
@@ -135,7 +135,7 @@ namespace RoguePirates.V4.Tests
             public float ExplosionDamageMultiplier => 1f; public void ExplosionResolved() { } public int ExtraLightningJumps => 0;
         }
 
-        sealed class Inputs : IPowerInputs
+        internal sealed class Inputs : IPowerInputs
         {
             public List<WeaponSlot> Slots = new List<WeaponSlot>();
             public Mods M = new Mods();
@@ -147,7 +147,7 @@ namespace RoguePirates.V4.Tests
             public float IncomingDamageMultiplier => Incoming;
         }
 
-        static Inputs WithWeapons(ConfigSetRuntime set, int count)
+        internal static Inputs WithWeapons(ConfigSetRuntime set, int count)
         {
             var inputs = new Inputs();
             foreach (var w in set.All<WeaponConfig>().Where(w => w.databaseOrder >= 0).OrderBy(w => w.databaseOrder).Take(count))
@@ -205,7 +205,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(Mathf.Min(120, 180), director.History.Count);
         }
 
-        static (DifficultyDirector director, CombatEvents events, Inputs inputs) Rig(ConfigSetRuntime set)
+        internal static (DifficultyDirector director, CombatEvents events, Inputs inputs) Rig(ConfigSetRuntime set, int seed = 1)
         {
             var events = new CombatEvents();
             var context = new RunContext(new RunClock(), events, set);
@@ -213,7 +213,7 @@ namespace RoguePirates.V4.Tests
             context.Register<IPowerInputs>(inputs);
             var director = new DifficultyDirector();
             director.Initialize(context);
-            director.BeginRun(new RunStart(1, false));
+            director.BeginRun(new RunStart(seed, false));
             return (director, events, inputs);
         }
 
@@ -279,8 +279,12 @@ namespace RoguePirates.V4.Tests
                 "only the composition root holds the director, and only the event enum names PowerChanged");
             var presentation = Path.Combine(Application.dataPath, "_Game/V4/Presentation");
             Assert.IsFalse(Directory.GetFiles(presentation, "*.cs", SearchOption.AllDirectories).Any(f => Reads(File.ReadAllText(f))), "no presenter reads Pressure");
+            // M11: the default is Adaptive (the levers read Pressure through IDifficultyLevers, never IPressureView); the
+            // v3-parity preset keeps Observe, which the trace sets prove changes nothing.
             using var set = Default();
-            Assert.AreEqual(DirectorMode.Observe, set.Single<DirectorConfig>().mode, "M10 ships in Observe");
+            Assert.AreEqual(DirectorMode.Adaptive, set.Single<DirectorConfig>().mode, "M11 ships Adaptive");
+            using var parity = Parity();
+            Assert.AreEqual(DirectorMode.Observe, parity.Single<DirectorConfig>().mode, "the v3-parity preset observes only");
         }
     }
 }

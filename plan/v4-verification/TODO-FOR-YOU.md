@@ -22,3 +22,24 @@ Committed "(awaiting playtest)". Evidence: `phase-10-director/CHECKLIST.md`. Tra
 - [ ] *Performance* "even" point = 90 % of spawns killed over 30 s; hull loss costs 0.02 per hull-fraction/s. With nothing spawning (boss arena) it counts as even.
 - [ ] *Gains* offense 0.25 / defense 0.15 / performance 0.2 (my guesses; a six-weapon build at 1:30 hits the 1.35 cap, one weapon sits at ~0.9). Tune in M11 once the levers act on it.
 - [ ] The power index ignores crit and evolutions for now.
+
+### M11
+
+Committed "(awaiting playtest)". Evidence: `phase-11-adaptive/CHECKLIST.md`. **Adaptive is now the default for every run**; the v3-parity preset keeps Observe (traces prove it equals V3).
+
+**Playtest (10 min):** F1 → search "adaptive".
+1. Weak build (keep one weapon, play normally): Pressure and "threat rate" should sit a little below 1 — fewer enemies than V3.
+2. Strong build (Build section → add weapons): Pressure climbs to ~1.3 over a minute; the lever line shows threat ×1.3, tier lead ~55 s, cap HP up to ×1.2, composition on. More enemies, occasional elites among ordinary spawns.
+3. Tick "Force Pressure", drag to 1.35: the ambient spawn rate rises about a third. Switch the mode to Observe: the levers go neutral.
+4. Die: nothing visible yet (the run record is stored for the future leaderboard; it shows in M12/M14 UI only).
+
+**Doubts I resolved myself (please confirm or overrule):**
+- [ ] **Early game for everyone:** at the start every player has one weapon; with an average pilot Pressure drifts to ~0.9, so the first minutes have ~10 % fewer spawns than V3. A good player who kills fast stays near 1. Keep (the doc wants weak builds eased), or never let Pressure go below 1 in the first N minutes?
+- [ ] **Threat band:** 1 + (Pressure − 1), clamped 0.85–1.35 (−15 % … +35 %), matching the doc's "±15–35 %".
+- [ ] **Elite lever:** up to 5 % of ambient spawns at the top of the band become elites (Rich look, HP ×1.5, damage ×1.1, size ×1.15) but **pay the unit's ordinary rewards** (no Rich gold, no forced powerup, no elite-kill item procs), so "per-kill rewards never adapt" holds strictly. The doc also calls elites "richer targets"; if you want them to pay elite rewards, it is one switch. Its roll uses its own seed-derived stream.
+- [ ] **Tier timing:** only earlier (up to 60 s at the top), never later for weak builds.
+- [ ] **Composition:** enemies get roles from their attack pattern (shooters/hazard layers = "ranged", rammers/biters/bombers/chargers = "swarm"); a close-range build (cutlasses, flamethrower, kegs, trail, aura) boosts ranged ships' pick weight up to +60 %, a long-range build boosts swarms. The spawner pressure-weight curves are flat (1) by default, so they do nothing until authored.
+- [ ] **Cap HP:** ambient spawns made within 5 s of the cap blocking a spawn get up to +20 % HP.
+- [ ] **What never adapts:** boss, Beacon/Powder Cache encounters, Reef Crab and elite beats, swarm pulses, overtime and the storm (all stay as authored). Overtime reading the threat lever is a possible later change.
+- [ ] **Ranked flag:** Adaptive + version `director-1` + never forced + no live tuning edits (a preset counts as edits, so preset runs are unranked) + the dev console never opened. Checking the config hash against a published list needs the leaderboard backend (later).
+- [ ] **Not measured:** the plan's "time-to-death band for strong/weak builds" needs long full runs, which we agreed to avoid; I recorded the lever values over 2.5 minutes instead. Want a one-off measurement later?

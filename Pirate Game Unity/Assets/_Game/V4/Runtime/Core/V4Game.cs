@@ -54,6 +54,7 @@ namespace RoguePirates.V4
         LegacyEnemyWiring _enemies;
         LegacyBuildWiring _build;
         Difficulty.DifficultyDirector _director;
+        int _seed;
         bool _running;
         bool _ended;
         bool _objectiveSecured;
@@ -82,10 +83,12 @@ namespace RoguePirates.V4
             // M3: the spawn controller (replaces the legacy ambient spawner and the V3 spawn directors).
             _spawn = new SpawnController { LabMode = moduleLab };
             _modules.Add(_spawn);
-            // M10: the difficulty director (observe: it measures the player's power and logs Pressure; no gameplay reads it).
+            // M10: the difficulty director (measures the player's power, logs Pressure). M11: Adaptive by default; the levers
+            // bend ambient spawning only.
             _director = new Difficulty.DifficultyDirector();
             _modules.Add(_director);
             _context.Register<Difficulty.IPressureView>(_director);
+            _context.Register<Difficulty.IDifficultyLevers>(_director); // M11: the adaptive levers (ambient spawns read them)
             _context.Register<ISpawnController>(_spawn);
             // Contracts the V4 modules use, implemented over legacy systems until those systems are ported.
             var runState = new LegacyRunState();
@@ -156,6 +159,7 @@ namespace RoguePirates.V4
         {
             var request = RunRequest.Consume();
             var seed = LegacyRunShell.ResolveSeed(request.seed, request.retry);
+            _seed = seed;
 
             _modules.InitializeAll(_context);
             if (!_shell.Start(seed, request.retry)) return;
@@ -215,8 +219,26 @@ namespace RoguePirates.V4
         {
             _ended = true;
             if (!moduleLab) _build?.RecordRunGold(); // lifetime gold (Richie's unlock)
+            if (!moduleLab) RecordRunScore();
             _modules.EndRunAll(new RunEnd(_clock.SimTime, _objectiveSecured));
         }
+
+        /// <summary>M11: the leaderboard record (kills beside average/peak Pressure, director version, config hash). Only runs
+        /// that ended (death), not runs left mid-way.</summary>
+        void RecordRunScore()
+        {
+            var run = RunManager.Instance;
+            if (_director == null || run == null) return;
+            try
+            {
+                var record = _director.CreateRecord(_seed, run.KillCount, run.ElapsedSeconds, _config?.Hash, _config != null ? _config.ChangeLog.Count : 0);
+                RunRecords.Add(record);
+            }
+            catch (System.Exception e) { Debug.LogException(e); } // a record failure never blocks the run end
+        }
+
+        /// <summary>M11: where run records go (tests swap it).</summary>
+        public Difficulty.IRunRecordStore RunRecords { get; set; } = new Difficulty.PlayerPrefsRunRecordStore();
 
         void OnDestroy()
         {

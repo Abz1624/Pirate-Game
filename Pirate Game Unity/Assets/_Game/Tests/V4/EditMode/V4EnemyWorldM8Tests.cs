@@ -95,7 +95,10 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(p.Legacy.ActiveCount, p.V4.ActiveCount, step + ": active count");
             Assert.AreEqual(p.Legacy.Agents.Length, p.V4.Agents.Length);
             var unitFields = typeof(EnemyUnit).GetFields(BindingFlags.Instance | BindingFlags.Public).ToDictionary(f => f.Name);
-            Assert.AreEqual(AgentFields.Length, unitFields.Count, "EnemyUnit mirrors EnemyAgent field for field");
+            // M11 adds one V4-only field (adaptive elites pay ordinary rewards); it is never set without the elite lever.
+            Assert.AreEqual(AgentFields.Length + 1, unitFields.Count, "EnemyUnit mirrors EnemyAgent field for field (+ ordinaryRewards)");
+            Assert.IsTrue(unitFields.ContainsKey(nameof(EnemyUnit.ordinaryRewards)));
+            foreach (var unit in p.V4.Agents) Assert.IsFalse(unit.ordinaryRewards, step + ": no adaptive elites in lockstep runs");
             for (var i = 0; i < p.Legacy.Agents.Length; i++)
             {
                 object a = p.Legacy.Agents[i];

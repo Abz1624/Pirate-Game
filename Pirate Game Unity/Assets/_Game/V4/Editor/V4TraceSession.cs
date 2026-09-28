@@ -25,7 +25,7 @@ namespace RoguePirates.V4.Editor
             "v3_selected_captain", "v3_home_seed", "v3_first_conquest_complete", "v3_saltwind_runs_completed",
             "combat_captain_actives_enabled", "combat_aim_visuals_enabled", "highseas_v3_developer_preset", "v4_lifetime_gold"
         };
-        static readonly string[] StringKeys = { "highseas_meta_v1", "highseas_run_snapshot_v1" };
+        static readonly string[] StringKeys = { "highseas_meta_v1", "highseas_run_snapshot_v1", "v4_run_records" };
 
         [Serializable] sealed class PrefEntry { public string key; public bool has; public bool isInt; public int i; public string s; }
         [Serializable] sealed class PrefSnapshot { public List<PrefEntry> entries = new List<PrefEntry>(); }

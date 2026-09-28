@@ -23,6 +23,8 @@ namespace RoguePirates.V4.Spawning
         int SpawnFromProfile(int definitionIndex, Vector3 position, SpawnProfile profile, int profileInstanceId,
             FormationRole role, int formationSlot, int leaderUnitId, float hpMultiplier, float damageMultiplier);
         int Spawn(int definitionIndex, Vector3 position, ConfigEnums.EliteAffix affix, float speedMultiplier, float hpMultiplier, float damageMultiplier);
+        /// <summary>M11: the elite lever's spawn in <paramref name="slot"/> pays ordinary rewards and belongs to <paramref name="sourceProfile"/>.</summary>
+        void MarkAdaptiveElite(int slot, SpawnProfile sourceProfile);
         /// <summary>Unit id of the enemy in a slot returned by a spawn call.</summary>
         int UnitIdAt(int slot);
         bool IsUnitActive(int unitId);

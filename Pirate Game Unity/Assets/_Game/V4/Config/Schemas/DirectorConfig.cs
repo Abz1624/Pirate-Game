@@ -6,6 +6,19 @@ namespace RoguePirates.V4.Config
     /// <summary>What the difficulty director does with Pressure (M10 observes only; M11 adds the levers).</summary>
     public enum DirectorMode { Off = 0, Observe = 1, Adaptive = 2 }
 
+    /// <summary>Which part of the build favours an enemy role in the composition lever (M11).</summary>
+    public enum BuildRange { CloseRange = 0, LongRange = 1 }
+
+    /// <summary>Composition bias (M11): enemies with <see cref="enemyTag"/> get up to <see cref="maxBoost"/> more pick
+    /// weight, scaled by the share of the build's offense in <see cref="favouredBy"/> and by how far Pressure is above 1.</summary>
+    [Serializable]
+    public sealed class CompositionRule
+    {
+        public string enemyTag = "ranged";
+        public BuildRange favouredBy = BuildRange.CloseRange;
+        public float maxBoost = 0.6f;
+    }
+
     /// <summary>
     /// The difficulty director (M10, gameplay doc §5.3): once a second it samples the player's power — offense from the
     /// carried weapons, defense from the hull, performance from kills against spawns and hull lost — and turns it into a
@@ -16,8 +29,8 @@ namespace RoguePirates.V4.Config
     [CreateAssetMenu(menuName = "RoguePirates/V4/Director", fileName = "Director")]
     public sealed class DirectorConfig : V4ConfigAsset
     {
-        [Tooltip("Off: Pressure stays 1. Observe: computed and logged, no effect (M10). Adaptive: the levers read it (M11).")]
-        public DirectorMode mode = DirectorMode.Observe;
+        [Tooltip("Off: Pressure stays 1. Observe: computed and logged, no effect (M10). Adaptive: the levers read it (M11, the shipping mode).")]
+        public DirectorMode mode = DirectorMode.Adaptive;
         [Tooltip("Stamped in trace headers and run records; change it when the formula changes (ranked runs compare within one version).")]
         public string version = "director-1";
         [Tooltip("Seconds between samples.")] public float sampleIntervalSeconds = 1f;
@@ -38,6 +51,50 @@ namespace RoguePirates.V4.Config
         [Tooltip("Weight per weapon behaviour (ConfigEnums.WeaponBehavior order). Area and orbit weapons hit more enemies per shot.")]
         public float[] behaviorCoverage = { 1f, 1.6f, 1.8f, 1.5f, 1.2f, 1.4f, 1.6f, 1.3f, 1.5f, 1f }; // Projectile, Fan, Orbit, ConeStream, Trail, Mine, AreaStrike, Aura, PredictedArea, Summon
 
+        // ---- M11 levers (Adaptive mode only; each can be switched off). "Above" = how far Pressure is from 1 toward the
+        // top of the band (0 at 1 or below, 1 at pressureMax): strong builds only; weak builds only get the lower rate.
+        [Header("Lever: threat rate (ambient spawn rate × this)")]
+        [AppliesFrom(11)] public bool threatRateLever = true;
+        [Tooltip("Rate multiplier = 1 + gain × (Pressure − 1), clamped.")] [AppliesFrom(11)] public float threatRateGain = 1f;
+        [AppliesFrom(11)] public float threatRateMin = 0.85f;
+        [AppliesFrom(11)] public float threatRateMax = 1.35f;
+
+        [Header("Lever: elite chance (an ambient spawn becomes elite)")]
+        [AppliesFrom(11)] public bool eliteLever = true;
+        [Tooltip("Chance at the top of the band (scaled by Above).")] [AppliesFrom(11)] public float eliteChanceAtMax = 0.05f;
+        [AppliesFrom(11)] public ConfigEnums.EliteAffix eliteAffix = ConfigEnums.EliteAffix.Rich;
+        [AppliesFrom(11)] public float eliteHpMultiplier = 1.5f;
+        [AppliesFrom(11)] public float eliteDamageMultiplier = 1.1f;
+        [AppliesFrom(11)] public float eliteSizeMultiplier = 1.15f;
+
+        [Header("Lever: tier timing (tougher tiers unlock earlier)")]
+        [AppliesFrom(11)] public bool tierTimingLever = true;
+        [Tooltip("Seconds earlier at the top of the band. Time-triggered beats never move.")] [AppliesFrom(11)] public float tierLeadSecondsAtMax = 60f;
+
+        [Header("Lever: composition bias")]
+        [AppliesFrom(11)] public bool compositionLever = true;
+        [Tooltip("Weapon behaviours counted as close range; the rest are long range.")]
+        [AppliesFrom(11)] public ConfigEnums.WeaponBehavior[] closeRangeBehaviors =
+            { ConfigEnums.WeaponBehavior.Orbit, ConfigEnums.WeaponBehavior.ConeStream, ConfigEnums.WeaponBehavior.Trail, ConfigEnums.WeaponBehavior.Mine, ConfigEnums.WeaponBehavior.Aura };
+        [Tooltip("A close-range build draws more ranged ships; a long-range build draws more swarms (gameplay doc §5.3).")]
+        [AppliesFrom(11)] public CompositionRule[] compositionRules =
+        {
+            new CompositionRule { enemyTag = "ranged", favouredBy = BuildRange.CloseRange, maxBoost = 0.6f },
+            new CompositionRule { enemyTag = "swarm", favouredBy = BuildRange.LongRange, maxBoost = 0.6f },
+        };
+
+        [Header("Lever: enemy HP, only while the enemy cap is full")]
+        [AppliesFrom(11)] public bool capHpLever = true;
+        [Tooltip("HP multiplier at the top of the band for ambient spawns made while the cap blocked a spawn recently.")] [AppliesFrom(11)] public float capHpMultiplierAtMax = 1.2f;
+        [Tooltip("A cap block counts for this many seconds.")] [AppliesFrom(11)] public float capBlockedWindowSeconds = 5f;
+
+        [Header("Timeline")]
+        [Tooltip("Condition triggers 'Pressure at least' read Pressure (Adaptive only; otherwise they see 1).")] [AppliesFrom(11)] public bool pressureConditionTriggers = true;
+
+        [Header("Ranked (run records)")]
+        [Tooltip("A run is ranked only in Adaptive mode, with this director version, no forced Pressure and no live tuning edits.")]
+        [AppliesFrom(11)] public string rankedVersion = "director-1";
+
         public override void Validate(ConfigValidationReport report)
         {
             report.Positive(this, nameof(sampleIntervalSeconds), sampleIntervalSeconds);
@@ -46,6 +103,10 @@ namespace RoguePirates.V4.Config
             report.Positive(this, nameof(maxChangePerSecond), maxChangePerSecond);
             if (string.IsNullOrWhiteSpace(version)) report.Error(this, nameof(version), "missing version");
             if (behaviorCoverage == null || behaviorCoverage.Length == 0) report.Error(this, nameof(behaviorCoverage), "needs a weight per behaviour");
+            if (threatRateMin <= 0f || threatRateMax < threatRateMin) report.Error(this, nameof(threatRateMin), "threat band must be 0 < min <= max");
+            if (eliteChanceAtMax < 0f || eliteChanceAtMax > 1f) report.Error(this, nameof(eliteChanceAtMax), "chance must be 0..1");
+            if (tierLeadSecondsAtMax < 0f) report.Error(this, nameof(tierLeadSecondsAtMax), "negative lead");
+            if (capHpMultiplierAtMax < 1f) report.Error(this, nameof(capHpMultiplierAtMax), "the cap HP lever only raises HP");
         }
     }
 }

@@ -22,8 +22,10 @@ namespace RoguePirates.V4.Tests
         readonly int[] _values = new int[IntKeys.Length];
         const string MetaKey = "highseas_meta_v1";
         const string SnapshotKey = "highseas_run_snapshot_v1";
+        const string RecordsKey = "v4_run_records"; // M11 run records
         readonly string _meta;
         readonly string _runSnapshot;
+        readonly string _records;
 
         public V4TestSaveIsolation()
         {
@@ -31,6 +33,7 @@ namespace RoguePirates.V4.Tests
             _original = AppRoot.Instance.Save;
             _meta = PlayerPrefs.HasKey(MetaKey) ? PlayerPrefs.GetString(MetaKey) : null;
             _runSnapshot = PlayerPrefs.HasKey(SnapshotKey) ? PlayerPrefs.GetString(SnapshotKey) : null;
+            _records = PlayerPrefs.HasKey(RecordsKey) ? PlayerPrefs.GetString(RecordsKey) : null;
             AppRoot.Instance.ReplaceSave(new SaveService(new MemorySaveBackend()));
             for (var i = 0; i < IntKeys.Length; i++)
             {
@@ -49,6 +52,7 @@ namespace RoguePirates.V4.Tests
             }
             if (_meta != null) PlayerPrefs.SetString(MetaKey, _meta);
             if (_runSnapshot != null) PlayerPrefs.SetString(SnapshotKey, _runSnapshot); else PlayerPrefs.DeleteKey(SnapshotKey);
+            if (_records != null) PlayerPrefs.SetString(RecordsKey, _records); else PlayerPrefs.DeleteKey(RecordsKey);
             PlayerPrefs.Save();
         }
     }

@@ -62,6 +62,8 @@ namespace RoguePirates.V4.Enemies
         public float DefinitionRadius(int index) => At(index) != null ? At(index).radius : 1f;
         public float DefinitionHeightOffset(int index) => At(index) != null ? At(index).visualHeightOffset : 0f;
 
+        public void MarkAdaptiveElite(int slot, SpawnProfile sourceProfile) => _sim.MarkAdaptiveElite(slot, sourceProfile);
+
         public int SpawnFromProfile(int definitionIndex, Vector3 position, SpawnProfile profile, int profileInstanceId,
             FormationRole role, int formationSlot, int leaderUnitId, float hpMultiplier, float damageMultiplier) =>
             _sim.SpawnFromProfile(definitionIndex, position, profile, profileInstanceId, role, formationSlot, leaderUnitId, hpMultiplier, damageMultiplier);

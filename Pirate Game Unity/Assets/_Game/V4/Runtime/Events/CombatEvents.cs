@@ -67,6 +67,8 @@ namespace RoguePirates.V4.Events
     {
         /// <summary>Spawned: an ambient (timeline) spawn. Only these telegraph on the HUD, as V3's spawner did.</summary>
         public const int AmbientSpawn = 1;
+        /// <summary>Spawned: the M11 elite lever upgraded this ambient spawn.</summary>
+        public const int AdaptiveElite = 2;
     }
 
     public interface ICombatEventWriter

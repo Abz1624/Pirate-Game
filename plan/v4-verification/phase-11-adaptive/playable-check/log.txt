@@ -1,0 +1,19 @@
+weak (one weapon): t=19 weapons=1 pressure=0.914 mode=Adaptive rate=0.91 threat=0.91 tierLead=0 capHp=1.00 comp=False close=0.00 alive=6 newestUnit=9
+weak (one weapon): t=28 weapons=1 pressure=0.896 mode=Adaptive rate=0.90 threat=0.90 tierLead=0 capHp=1.00 comp=False close=0.00 alive=8 newestUnit=13
+weak (one weapon): t=37 weapons=1 pressure=0.889 mode=Adaptive rate=0.89 threat=0.89 tierLead=0 capHp=1.00 comp=False close=0.00 alive=10 newestUnit=17
+weak (one weapon): t=45 weapons=1 pressure=0.895 mode=Adaptive rate=0.90 threat=0.90 tierLead=0 capHp=1.00 comp=False close=0.00 alive=10 newestUnit=20
+weak (one weapon): t=54 weapons=1 pressure=0.902 mode=Adaptive rate=0.90 threat=0.90 tierLead=0 capHp=1.00 comp=False close=0.00 alive=12 newestUnit=24
+strong (six weapons): t=66 weapons=6 pressure=1.050 mode=Adaptive rate=1.05 threat=1.05 tierLead=9 capHp=1.03 comp=True close=0.34 alive=13 newestUnit=30
+strong (six weapons): t=74 weapons=6 pressure=1.159 mode=Adaptive rate=1.16 threat=1.16 tierLead=27 capHp=1.09 comp=True close=0.34 alive=14 newestUnit=35
+strong (six weapons): t=83 weapons=6 pressure=1.228 mode=Adaptive rate=1.23 threat=1.23 tierLead=39 capHp=1.13 comp=True close=0.34 alive=15 newestUnit=40
+strong (six weapons): t=92 weapons=6 pressure=1.272 mode=Adaptive rate=1.27 threat=1.27 tierLead=47 capHp=1.16 comp=True close=0.34 alive=15 newestUnit=45
+strong (six weapons): t=101 weapons=6 pressure=1.298 mode=Adaptive rate=1.30 threat=1.30 tierLead=51 capHp=1.17 comp=True close=0.34 alive=19 newestUnit=51
+strong (six weapons): t=109 weapons=6 pressure=1.317 mode=Adaptive rate=1.32 threat=1.32 tierLead=54 capHp=1.18 comp=True close=0.34 alive=19 newestUnit=56
+strong (six weapons): t=118 weapons=6 pressure=1.329 mode=Adaptive rate=1.33 threat=1.33 tierLead=56 capHp=1.19 comp=True close=0.34 alive=18 newestUnit=62
+strong (six weapons): t=127 weapons=6 pressure=1.336 mode=Adaptive rate=1.34 threat=1.34 tierLead=58 capHp=1.19 comp=True close=0.34 alive=25 newestUnit=76
+strong (six weapons): t=136 weapons=6 pressure=1.341 mode=Adaptive rate=1.34 threat=1.34 tierLead=58 capHp=1.19 comp=True close=0.34 alive=30 newestUnit=90
+strong (six weapons): t=145 weapons=6 pressure=1.344 mode=Adaptive rate=1.34 threat=1.34 tierLead=59 capHp=1.20 comp=True close=0.34 alive=35 newestUnit=104
+forced 1.0: ~6 spawns in 20s (real time; fixed-step clock) | t=176 weapons=6 pressure=1.000 mode=Adaptive rate=1.00 threat=1.00 tierLead=0 capHp=1.00 comp=False close=0.34 alive=34 newestUnit=121
+forced 1.35: ~23 spawns in 20s (real time; fixed-step clock) | t=207 weapons=6 pressure=1.350 mode=Adaptive rate=1.35 threat=1.35 tierLead=60 capHp=1.20 comp=True close=0.34 alive=44 newestUnit=155
+forced 1.0: ~28 spawns in 20s (real time; fixed-step clock) | t=238 weapons=6 pressure=1.000 mode=Adaptive rate=1.00 threat=1.00 tierLead=0 capHp=1.00 comp=False close=0.34 alive=51 newestUnit=194
+shot: 01-difficulty-levers-forced

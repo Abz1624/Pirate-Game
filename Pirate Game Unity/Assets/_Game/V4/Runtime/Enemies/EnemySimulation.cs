@@ -338,6 +338,15 @@ namespace RoguePirates.V4.Enemies
             return slot;
         }
 
+        /// <summary>M11: marks an adaptive elite — it pays ordinary rewards and counts against its source spawner (the elite
+        /// copy of the profile is only used to spawn it).</summary>
+        public void MarkAdaptiveElite(int slot, SpawnProfile sourceProfile)
+        {
+            if (slot < 0 || slot >= _agents.Length || !_agents[slot].active) return;
+            _agents[slot].ordinaryRewards = true;
+            _agents[slot].spawnProfile = sourceProfile;
+        }
+
         /// <summary>Scheduled pressure-beat elite: 6× HP, 1.25× damage (V3 combat spec §9).</summary>
         public int SpawnPressureBeat(int definitionIndex, Vector3 position)
         {

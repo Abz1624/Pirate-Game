@@ -92,6 +92,7 @@ namespace RoguePirates.V4.Tests
                 return _agents.Count - 1;
             }
             public int SpawnFromProfile(int definitionIndex, Vector3 position, SpawnProfile profile, int profileInstanceId, FormationRole role, int formationSlot, int leaderUnitId, float hpMultiplier, float damageMultiplier) => Add(definitionIndex, profile);
+            public void MarkAdaptiveElite(int slot, SpawnProfile sourceProfile) { }
             public int Spawn(int definitionIndex, Vector3 position, ConfigEnums.EliteAffix affix, float speedMultiplier, float hpMultiplier, float damageMultiplier) => Add(definitionIndex, null);
             public int UnitIdAt(int slot) => _agents[slot].Id;
             public bool IsUnitActive(int unitId) => _agents.Any(a => a.Active && a.Id == unitId);

@@ -474,7 +474,7 @@ Phases run one at a time. Each one ends with tests, traces and an automated play
 | M8 | Enemy World | Passed (playtest, four rounds: R-100, R-103 to R-106, Module Lab stage content, Powder Cache elite challenge) | `plan/v4-verification/phase-08-enemies/` |
 | M9 | Build and Progression | Passed | `plan/v4-verification/phase-09-build/` |
 | M10 | Difficulty Director, observe | Implemented, awaiting playtest | `plan/v4-verification/phase-10-director/` |
-| M11 | Adaptive difficulty | Not started | `plan/v4-verification/phase-11-adaptive/` |
+| M11 | Adaptive difficulty | Implemented, awaiting playtest | `plan/v4-verification/phase-11-adaptive/` |
 | M12 | Rum and Results | Not started | `plan/v4-verification/phase-12-rum/` |
 | M13 | Barks and Tutorial | Not started | `plan/v4-verification/phase-13-narrative/` |
 | M14 | Switch-over | Not started | `plan/v4-verification/phase-14-switch/` |

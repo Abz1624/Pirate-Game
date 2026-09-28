@@ -637,6 +637,16 @@
                     "value": "false"
                 }
             ]
+        },
+        {
+            "configId": "director.saltwind",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "mode",
+                    "value": "Observe"
+                }
+            ]
         }
     ]
 }

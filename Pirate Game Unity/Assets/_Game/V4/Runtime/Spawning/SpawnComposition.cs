@@ -18,6 +18,7 @@ namespace RoguePirates.V4.Spawning
         struct EnemyInfo
         {
             public string[] Tags;
+            public string[] Roles; // M11 composition lever (own tags + combat roles)
             public ConfigEnums.EnemyTier Tier;
         }
 
@@ -91,21 +92,32 @@ namespace RoguePirates.V4.Spawning
         int StartIndex(SpawnPool pool)
         {
             var entries = pool.entries;
+            var levers = _s.Levers;
+            var bias = levers != null && levers.Adaptive && levers.CompositionActive; // M11 composition lever
             var equal = true;
             var total = 0f;
+            float first = 0f;
             for (var i = 0; i < entries.Count; i++)
             {
-                total += entries[i].weight;
-                if (i > 0 && !UnityEngine.Mathf.Approximately(entries[i].weight, entries[0].weight)) equal = false;
+                var w = Weight(entries[i], bias);
+                total += w;
+                if (i == 0) first = w;
+                else if (!UnityEngine.Mathf.Approximately(w, first)) equal = false;
             }
             if (equal || total <= 0f) return _s.Random.DirectorInt(0, entries.Count);
             var r = _s.Random.DirectorFloat() * total;
             for (var i = 0; i < entries.Count; i++)
             {
-                r -= entries[i].weight;
+                r -= Weight(entries[i], bias);
                 if (r < 0f) return i;
             }
             return entries.Count - 1;
+        }
+
+        float Weight(PoolEntry entry, bool bias)
+        {
+            if (!bias) return entry.weight;
+            return Info(IdOf(entry), out var info) ? entry.weight * _s.Levers.CompositionWeight(info.Roles) : entry.weight;
         }
 
         public static string IdOf(PoolEntry entry)
@@ -148,6 +160,8 @@ namespace RoguePirates.V4.Spawning
         {
             var d = _s.Difficulty;
             if (d == null || !Info(enemyId, out var info)) return true;
+            var levers = _s.Levers;
+            if (levers != null && levers.Adaptive) elapsed += levers.TierLeadSeconds; // M11: tougher tiers sooner (never later)
             foreach (var rule in d.tierUnlocks)
             {
                 if (rule.tier != info.Tier) continue;
@@ -173,9 +187,9 @@ namespace RoguePirates.V4.Spawning
             if (config != null)
             {
                 foreach (var a in config.All<EnemyArchetypeConfig>())
-                    _info[a.enemyId] = new EnemyInfo { Tags = a.concurrencyTags, Tier = a.spawnTier };
+                    _info[a.enemyId] = new EnemyInfo { Tags = a.concurrencyTags, Tier = a.spawnTier, Roles = RoguePirates.V4.Difficulty.EnemyRoles.Of(a.tags, a.combat) };
                 foreach (var v in config.All<EnemyVariantConfig>())
-                    _info[v.variantId] = new EnemyInfo { Tags = v.concurrencyTags, Tier = v.spawnTier }; // elites count toward tag caps too
+                    _info[v.variantId] = new EnemyInfo { Tags = v.concurrencyTags, Tier = v.spawnTier, Roles = RoguePirates.V4.Difficulty.EnemyRoles.Of(v.tags, v.combat) }; // elites count toward tag caps too
             }
             _infoValid = true;
         }

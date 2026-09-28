@@ -5,14 +5,15 @@ using UnityEngine;
 namespace RoguePirates.V4.DevTools.Console
 {
     /// <summary>
-    /// Difficulty (M10): the director's live Pressure with its parts (offense, defense, performance), a graph of the last
-    /// three minutes, and the mode (Off / Observe / Adaptive). The curves, gains, clamps, smoothing and slope are edited
-    /// live in the Config section (difficulty.*, director.*).
+    /// Difficulty (M10–M11): the director's live Pressure with its parts (offense, defense, performance), a graph of the
+    /// last three minutes, the mode (Off / Observe / Adaptive), what each adaptive lever is doing now, and a test-only
+    /// "force Pressure" slider (a forced run is never ranked). The curves, gains, clamps, lever switches and ranges are
+    /// edited live in the Config section (difficulty.*, director.*).
     /// </summary>
     public sealed class DifficultySection : IConsoleSection
     {
         public string Title => "Difficulty";
-        public string SearchText => "difficulty director pressure power offense defense performance curve adaptive observe";
+        public string SearchText => "difficulty director pressure power offense defense performance curve adaptive observe lever elite threat tier force ranked";
 
         const float Width = 440f, GraphHeight = 90f;
         GUIStyle _wrap;
@@ -29,10 +30,26 @@ namespace RoguePirates.V4.DevTools.Console
 
             GUILayout.Label($"Pressure {view.Pressure:0.000}  (band {min:0.00}–{max:0.00})  ·  mode {view.Mode}  ·  {view.Version}", _wrap, GUILayout.Width(Width));
             GUILayout.Label($"Offense {view.Offense:0.0} dps-eq (×{view.OffenseNorm:0.00} of what the curve expects)  ·  defense ×{view.DefenseNorm:0.00}  ·  performance ×{view.Performance:0.00}", _wrap, GUILayout.Width(Width));
-            if (view.Mode == DirectorMode.Observe) GUILayout.Label("Observe: Pressure is logged only; nothing in the run reads it (the levers come in M11).", _wrap, GUILayout.Width(Width));
+            if (view.Mode == DirectorMode.Observe) GUILayout.Label("Observe: Pressure is logged only; the levers stay neutral.", _wrap, GUILayout.Width(Width));
+            if (game.Context.TryGet<IDifficultyLevers>(out var levers))
+            {
+                var spawn = game.Context.TryGet<RoguePirates.V4.Spawning.ISpawnController>(out var sc) ? sc : null;
+                GUILayout.Label($"Levers{(levers.Adaptive ? "" : " (neutral: not Adaptive)")}: threat rate ×{levers.ThreatRateMultiplier:0.00}  ·  tier lead {levers.TierLeadSeconds:0}s  ·  " +
+                    $"cap HP ×{levers.CapHpMultiplier:0.00}  ·  composition {(levers.CompositionActive ? "on" : "off")} (close-range build {view.CloseRangeShare:P0})" +
+                    (spawn != null ? $"  ·  ambient rate now ×{spawn.EffectiveRateMultiplier:0.00}" : ""), _wrap, GUILayout.Width(Width));
+            }
 
             var rect = GUILayoutUtility.GetRect(Width, GraphHeight, GUILayout.Width(Width));
             DrawGraph(rect, view, min, max);
+
+            GUILayout.BeginHorizontal();
+            var forced = view.ForcedPressure.HasValue;
+            var force = GUILayout.Toggle(forced, "Force Pressure (test only)", GUILayout.Width(170));
+            var value = view.ForcedPressure ?? view.Pressure;
+            if (force) value = GUILayout.HorizontalSlider(value, min, max, GUILayout.Width(180));
+            GUILayout.Label(force ? value.ToString("0.00") : "", GUILayout.Width(40));
+            GUILayout.EndHorizontal();
+            if (force) view.ForcedPressure = value; else if (forced) view.ForcedPressure = null;
 
             var director = game.Config?.Single<DirectorConfig>();
             if (director == null) return;

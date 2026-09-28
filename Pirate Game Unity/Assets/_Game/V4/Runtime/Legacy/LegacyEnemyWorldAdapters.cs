@@ -102,6 +102,10 @@ namespace RoguePirates.V4.Legacy
         public void OnKilled(in EnemyUnit e, EnemyDefinition def)
         {
             RunManager.Instance?.RegisterKill(e.isBoss);
+            // M11: an adaptive elite pays the unit's ordinary rewards (no Rich gold, elite payout, forced powerup or
+            // elite-kill item procs): per-kill rewards never adapt.
+            var rewardElite = e.isElite && !e.ordinaryRewards;
+            var rewardRich = e.affix == EliteAffix.Rich && !e.ordinaryRewards;
             var export = StageBalanceProfileContext.Export;
             var gold = def.goldValue;
             if (StageBalanceProfileContext.IsActive && export != null)
@@ -110,19 +114,19 @@ namespace RoguePirates.V4.Legacy
                     export,
                     def,
                     RunManager.Instance.Rng,
-                    e.affix == EliteAffix.Rich,
-                    e.isElite,
+                    rewardRich,
+                    rewardElite,
                     e.isBoss);
             }
 
             // (V3 doubled a Rich elite's gold only outside the stage profile, which V4 runs always use.)
             Build?.SpawnKillDrops(e.position, def.xpValue, gold);
-            Build?.RollPowerup(e.position, e.isBoss, e.isElite);
+            Build?.RollPowerup(e.position, e.isBoss, rewardElite);
             RunEncounterTracker.RegisterAgentKill(e.id);
             if (StageBalanceProfileContext.IsActive && def != null)
                 RunMarksTracker.TryCreditScheduledEliteKill(e.id, def.id);
             HighSeas.V3.V3MinibossArena.NotifyAgentKilled(e.id);
-            HighSeas.Meta.TriggerBus.Instance?.RaiseKill(e.isElite, e.isBoss, e.position, e.lastHitWeaponId);
+            HighSeas.Meta.TriggerBus.Instance?.RaiseKill(rewardElite, e.isBoss, e.position, e.lastHitWeaponId);
             Build?.NotifyItemKill();
             if (!string.IsNullOrEmpty(e.lastHitWeaponId))
                 WeaponDamageLedger.RecordKill(e.lastHitWeaponId);

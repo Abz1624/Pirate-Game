@@ -41,7 +41,8 @@ namespace RoguePirates.V4.Spawning
                     {
                         case PhaseConditionKind.PlayerLevelAtLeast: return _s.Run.PlayerLevel >= trigger.conditionValue;
                         case PhaseConditionKind.KillsAtLeast: return _s.Run.Kills >= trigger.conditionValue;
-                        case PhaseConditionKind.PressureAtLeast: return 1f >= trigger.conditionValue; // no director until M10
+                        // M11: Pressure only in Adaptive mode (Observe/Off see 1, as before). Time triggers never move.
+                        case PhaseConditionKind.PressureAtLeast: return (_s.Levers != null ? _s.Levers.ConditionPressure : 1f) >= trigger.conditionValue;
                     }
                     return false;
             }

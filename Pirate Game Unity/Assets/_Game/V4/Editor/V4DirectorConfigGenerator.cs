@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RoguePirates.V4.Editor
 {
-    /// <summary>M10: creates the director config (defaults: Observe mode) and adds it to the Saltwind config set. Idempotent.</summary>
+    /// <summary>M10: creates the director config and adds it to the Saltwind config set. Idempotent. Default mode: Observe in M10, Adaptive from M11 (the v3-parity preset sets Observe).</summary>
     public static class V4DirectorConfigGenerator
     {
         public const string DirectorPath = V3ConfigMigrator.DataRoot + "/Difficulty/SaltwindDirector.asset";

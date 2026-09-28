@@ -38,7 +38,7 @@ namespace RoguePirates.V4.DevTools.Trace
             ("v3_first_conquest_complete", 1),        // read by level-up unlock gates mid-run, written on victory
             ("v3_saltwind_runs_completed", 2),        // tutorial already seen
         };
-        static readonly string[] DeletedKeys = { "v3_home_seed", "highseas_run_snapshot_v1", "v4_lifetime_gold" };
+        static readonly string[] DeletedKeys = { "v3_home_seed", "highseas_run_snapshot_v1", "v4_lifetime_gold", "v4_run_records" };
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics() => Active = null;

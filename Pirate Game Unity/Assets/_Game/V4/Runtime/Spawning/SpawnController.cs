@@ -97,7 +97,8 @@ namespace RoguePirates.V4.Spawning
             if (e != null) _s.Sink.SetExperimentMultipliers(e.enemyHpMultiplier, e.enemyDamageMultiplier);
         }
 
-        /// <summary>Spawn-rate multiplier now: legacy base (Dead Calm) × experiment density × pulses × boss fight.</summary>
+        /// <summary>Ambient spawn-rate multiplier now: legacy base (Dead Calm) × experiment density × pulses × boss fight × the
+        /// M11 threat-rate lever (1 unless Adaptive).</summary>
         public float EffectiveRateMultiplier
         {
             get
@@ -110,6 +111,7 @@ namespace RoguePirates.V4.Spawning
                 if (experiment != null) multiplier *= UnityEngine.Mathf.Max(0.1f, experiment.spawnDensityMultiplier);
                 var timeline = _s.Timeline;
                 if (_s.Run.IsBossFight && timeline != null) multiplier *= timeline.bossAmbientRateMultiplier;
+                if (_s.Levers != null && _s.Levers.Adaptive) multiplier *= _s.Levers.ThreatRateMultiplier;
                 return multiplier;
             }
         }

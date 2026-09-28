@@ -19,6 +19,8 @@ namespace RoguePirates.V4.Spawning
         public ISpawnerProfiles Profiles;
         /// <summary>Required encounters (M7; optional so earlier tests without it still run).</summary>
         public IEncounterTracker Encounters;
+        /// <summary>M11: the adaptive levers (neutral unless the director is Adaptive). Only ambient spawns read them.</summary>
+        public RoguePirates.V4.Difficulty.IDifficultyLevers Levers;
 
         public ConfigSetRuntime Config => Context?.Config;
         public WaveTimelineConfig Timeline => Config?.Single<WaveTimelineConfig>();
@@ -32,6 +34,7 @@ namespace RoguePirates.V4.Spawning
             Placement = context.Get<ISpawnPlacement>();
             Random = context.Get<IRunRandom>();
             Run = context.Get<IRunStatus>();
+            context.TryGet(out Levers);
             Feedback = context.Get<ISpawnFeedback>();
             Storm = context.Get<IStormArena>();
             Player = context.Get<IPlayerDamageSink>();

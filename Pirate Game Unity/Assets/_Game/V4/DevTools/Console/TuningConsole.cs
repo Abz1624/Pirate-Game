@@ -93,6 +93,8 @@ namespace RoguePirates.V4.DevTools.Console
         public void SetOpen(bool open)
         {
             _open = open;
+            // M11: a run that opened the developer console (edits, cheats, spawns) is never ranked.
+            if (open && Game?.Context != null && Game.Context.TryGet<RoguePirates.V4.Difficulty.IPressureView>(out var pressure)) pressure.MarkUnranked();
             if (!open) { GUIUtility.keyboardControl = 0; SetGameKeyboardBlocked(false); if (_rectLoaded) SaveRect(); }
             ApplyPause();
         }

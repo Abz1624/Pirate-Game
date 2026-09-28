@@ -14,6 +14,10 @@ namespace RoguePirates.V4.Spawning
         readonly SpawnServices _s;
         readonly SpawnComposition _composition;
         int _nextProfileInstanceId = 1;
+        float _capBlockedAt = float.NegativeInfinity; // M11: last time the ambient cap blocked a spawn
+
+        /// <summary>M11: ambient spawns the elite lever upgraded this run (console, tests).</summary>
+        public int AdaptiveElites { get; private set; }
 
         public SpawnExecutor(SpawnServices services, SpawnComposition composition)
         {
@@ -21,7 +25,41 @@ namespace RoguePirates.V4.Spawning
             _composition = composition;
         }
 
-        public void ResetForRun() => _nextProfileInstanceId = 1;
+        public void ResetForRun()
+        {
+            _nextProfileInstanceId = 1;
+            _capBlockedAt = float.NegativeInfinity;
+            AdaptiveElites = 0;
+        }
+
+        /// <summary>M11: the ambient cap blocked a spawn now (the ambient spawner checks the cap before calling TryBurst).</summary>
+        public void NoteAmbientCapBlocked(float runTime) => _capBlockedAt = runTime;
+
+        /// <summary>M11: a one-spawn elite copy of an ambient spawner's profile, current at this moment (same movement,
+        /// attacks and modules; elite settings from the director config). The caller destroys it right after the spawn and
+        /// the agent is pointed back at the source profile, so nothing is cached and spawner caps count it.</summary>
+        static SpawnProfile EliteCopy(SpawnProfile profile, RoguePirates.V4.Config.DirectorConfig d)
+        {
+            var clone = Object.Instantiate(profile);
+            clone.name = profile.name + " (adaptive elite)";
+            var source = profile.elite;
+            clone.elite = new SpawnEliteSettings
+            {
+                isElite = true,
+                affix = (HighSeas.Core.EliteAffix)(int)d.eliteAffix, // same order (tested)
+                hpMultiplier = Mathf.Max(0.1f, d.eliteHpMultiplier),
+                damageMultiplier = Mathf.Max(0.1f, d.eliteDamageMultiplier),
+                sizeMultiplier = Mathf.Max(0.1f, d.eliteSizeMultiplier),
+                speedMultiplier = source != null ? source.speedMultiplier : 1f,
+            };
+            return clone;
+        }
+
+        static void DestroyCopy(Object o)
+        {
+            if (o == null) return;
+            if (Application.isPlaying) Object.Destroy(o); else Object.DestroyImmediate(o);
+        }
         public int NextInstanceId() => _nextProfileInstanceId++;
 
         /// <summary>Hard cap on alive enemies (V3: schedule maxActiveEnemies, clamped to 8..180).</summary>
@@ -64,7 +102,12 @@ namespace RoguePirates.V4.Spawning
             hpMultiplier *= OrdinaryHpMultiplier(elapsed);
             damageMultiplier *= OrdinaryDamageMultiplier(elapsed);
 
-            if (!ignoreCapSoft && _s.Sink.ActiveCount >= AmbientCap) return 0;
+            var levers = ambient && _s.Levers != null && _s.Levers.Adaptive ? _s.Levers : null; // M11: ambient spawns only
+            if (!ignoreCapSoft && _s.Sink.ActiveCount >= AmbientCap)
+            {
+                if (ambient) _capBlockedAt = elapsed;
+                return 0;
+            }
 
             var definitionIndex = string.IsNullOrEmpty(enemyId) ? -1 : _s.Sink.FindDefinition(enemyId);
             if (definitionIndex < 0 && compositionPhase != null && compositionPhase.pools.Count > 0 && _s.Run.Exists)
@@ -78,11 +121,17 @@ namespace RoguePirates.V4.Spawning
             profileInstanceId = profileInstanceId > 0 ? profileInstanceId : NextInstanceId();
             var spawnRadius = _s.Sink.DefinitionRadius(definitionIndex) + 0.35f;
             var isBoss = _s.Sink.DefinitionIsBoss(definitionIndex);
+            // M11 lever: while the cap keeps blocking, bodies cannot be added, so new ambient spawns get more HP instead.
+            if (levers != null && !isBoss && elapsed - _capBlockedAt <= levers.Config.capBlockedWindowSeconds) hpMultiplier *= levers.CapHpMultiplier;
             var spawned = 0;
             count = Mathf.Max(1, count);
             for (var i = 0; i < count; i++)
             {
-                if (_s.Sink.ActiveCount >= (ignoreCapSoft ? EnemyCap : AmbientCap)) break;
+                if (_s.Sink.ActiveCount >= (ignoreCapSoft ? EnemyCap : AmbientCap))
+                {
+                    if (ambient) _capBlockedAt = elapsed;
+                    break;
+                }
 
                 var role = ResolveFormationRole(profile, i, count);
                 if (role == FormationRole.Leader) leaderUnitId = -1;
@@ -92,15 +141,25 @@ namespace RoguePirates.V4.Spawning
                 _s.Placement.OffsetGroup(profile.groupLayout, i, count, profile.placement.groupSpacing, ref position);
                 if (!_s.Placement.IsFormationPositionValid(position, spawnRadius, profile.placement)) continue;
 
-                var slot = _s.Sink.SpawnFromProfile(definitionIndex, position, profile, profileInstanceId, role, i, leaderUnitId,
-                    hpMultiplier, damageMultiplier);
+                // M11 elite lever (its own seeded stream); a profile that is already elite stays as it is.
+                var adaptiveElite = levers != null && !isBoss && !(profile.elite != null && profile.elite.isElite) && levers.RollElite();
+                var spawnProfile = adaptiveElite ? EliteCopy(profile, levers.Config) : profile;
+                int slot;
+                try
+                {
+                    slot = _s.Sink.SpawnFromProfile(definitionIndex, position, spawnProfile, profileInstanceId, role, i, leaderUnitId,
+                        hpMultiplier, damageMultiplier);
+                    if (adaptiveElite && slot >= 0) _s.Sink.MarkAdaptiveElite(slot, profile);
+                }
+                finally { if (adaptiveElite) DestroyCopy(spawnProfile); }
                 if (slot < 0) continue;
+                if (adaptiveElite) AdaptiveElites++;
 
                 spawned++;
                 var unitId = _s.Sink.UnitIdAt(slot);
                 // M6: ambient spawns are flagged; the spawn warning presenter telegraphs them (was V3SpawnTelegraph).
                 _s.Publish(CombatEventKind.Spawned, unitId, definitionIndex, position, _s.Sink.DefinitionId(definitionIndex),
-                    ambient ? CombatEventFlags.AmbientSpawn : 0);
+                    (ambient ? CombatEventFlags.AmbientSpawn : 0) | (adaptiveElite ? CombatEventFlags.AdaptiveElite : 0));
                 if (runEncounterId > 0) _s.Encounters?.RegisterSpawned(runEncounterId, unitId);
                 if (role == FormationRole.Leader || (role == FormationRole.Auto && i == 0)) leaderUnitId = unitId;
             }
