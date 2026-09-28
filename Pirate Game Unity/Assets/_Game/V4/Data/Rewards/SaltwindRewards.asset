@@ -78,5 +78,5 @@ MonoBehaviour:
     rum: 0
     minKills: 10
     maxCredits: 0
-    maxRum: 15
-    goldForHalf: 350
+    maxRum: 60
+    goldForHalf: 1500

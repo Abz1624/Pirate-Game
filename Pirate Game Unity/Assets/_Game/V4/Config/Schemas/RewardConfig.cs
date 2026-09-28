@@ -37,7 +37,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Minute sources: kills needed in the minute.")] public int minKills = 10;
         [Tooltip("At most this many credits per run (0 = no limit). Not used by the gold row (use maxRum there).")] public int maxCredits;
         [Tooltip("At most this much Rum from the row per run (0 = no limit); credits stop once it is reached.")] public int maxRum;
-        [Tooltip("RunGoldBanked: leftover gold that pays half of maxRum; each further goldForHalf pays half of what is left.")] public float goldForHalf = 350f;
+        [Tooltip("RunGoldBanked: leftover gold that pays half of maxRum; each further goldForHalf pays half of what is left.")] public float goldForHalf = 1500f;
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ namespace RoguePirates.V4.Config
             new RumRow { rowId = "boss", label = "Boss victory", source = RumSource.BossVictory, rum = 25, maxCredits = 1 },
             new RumRow { rowId = "overtime", label = "Overtime", source = RumSource.OvertimeMinute, rum = 3, minKills = 10, maxRum = 15 },
             new RumRow { rowId = "chests", label = "Chests opened", source = RumSource.ChestOpened, rum = 1, enabled = false },
-            new RumRow { rowId = "gold", label = "Gold banked", source = RumSource.RunGoldBanked, rum = 0, maxRum = 15, goldForHalf = 350f },
+            new RumRow { rowId = "gold", label = "Gold banked", source = RumSource.RunGoldBanked, rum = 0, maxRum = 60, goldForHalf = 1500f },
         };
 
         public RumRow Row(string rowId)

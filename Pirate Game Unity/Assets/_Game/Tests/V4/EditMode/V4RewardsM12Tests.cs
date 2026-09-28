@@ -225,21 +225,29 @@ namespace RoguePirates.V4.Tests
             r.Rum.RunGold = () => 500;
             r.Time = 30f;
             r.Rum.Settle("gold", true);
-            Assert.AreEqual(9, r.Rum.SettledRows.First(x => x.RowId == "gold").Rum, "500 gold → 15 × (1 − ½^(500/350)) = 9 Rum");
-            StringAssert.Contains("RUM EARNED  +9", RunResultsView.Format(r.Rum.SettledRows, r.Rum.SettledTotal, r.Bank.Treasury, "Rum"));
+            Assert.AreEqual(12, r.Rum.SettledRows.First(x => x.RowId == "gold").Rum, "500 gold → 60 × (1 − ½^(500/1500)) = 12 Rum");
+            StringAssert.Contains("RUM EARNED  +12", RunResultsView.Format(r.Rum.SettledRows, r.Rum.SettledTotal, r.Bank.Treasury, "Rum"));
 
             // Playtest round 2: the curve flattens, so overtime-farmed gold cannot break the economy.
             var row = set.Single<RewardConfig>().Row("gold");
-            Assert.AreEqual(15, row.maxRum);
-            Assert.AreEqual(0, RewardModule.GoldRum(0, 15, 350f));
-            Assert.AreEqual(2, RewardModule.GoldRum(100, 15, 350f));
-            Assert.AreEqual(7, RewardModule.GoldRum(350, 15, 350f), "goldForHalf pays half the cap");
-            Assert.AreEqual(11, RewardModule.GoldRum(765, 15, 350f));
-            Assert.AreEqual(15, RewardModule.GoldRum(100000, 15, 350f), "never more than the cap");
-            for (var g = 0; g < 5000; g += 50)
+            // Round 3: scaled to effort — early gold pays about like active minutes (~1 Rum per 40 gold), ~1,500 gold
+            // (15-25 minutes of strong play) about a boss victory, and a marathon at most a good run's other rows.
+            Assert.AreEqual(60, row.maxRum);
+            Assert.AreEqual(1500f, row.goldForHalf);
+            Assert.AreEqual(0, RewardModule.GoldRum(0, 60, 1500f));
+            Assert.AreEqual(2, RewardModule.GoldRum(100, 60, 1500f));
+            Assert.AreEqual(17, RewardModule.GoldRum(765, 60, 1500f));
+            Assert.AreEqual(30, RewardModule.GoldRum(1500, 60, 1500f), "goldForHalf pays half the cap");
+            Assert.AreEqual(45, RewardModule.GoldRum(3000, 60, 1500f));
+            Assert.AreEqual(59, RewardModule.GoldRum(10000, 60, 1500f));
+            Assert.LessOrEqual(RewardModule.GoldRum(1000000, 60, 1500f), 60, "never more than the cap");
+            var previousGain = 60;
+            for (var g = 0; g < 12000; g += 1500)
             {
-                Assert.LessOrEqual(RewardModule.GoldRum(g, 15, 350f), RewardModule.GoldRum(g + 50, 15, 350f), "more gold never pays less");
-                Assert.LessOrEqual(RewardModule.GoldRum(g + 350, 15, 350f) - RewardModule.GoldRum(g, 15, 350f), 8, "flattens");
+                Assert.LessOrEqual(RewardModule.GoldRum(g, 60, 1500f), RewardModule.GoldRum(g + 1500, 60, 1500f), "more gold never pays less");
+                var gain = RewardModule.GoldRum(g + 1500, 60, 1500f) - RewardModule.GoldRum(g, 60, 1500f);
+                Assert.LessOrEqual(gain, previousGain + 1, "each further 1,500 gold pays less (flattens)");
+                previousGain = gain;
             }
             var preset = File.ReadAllText(Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
             var errors = new List<string>();

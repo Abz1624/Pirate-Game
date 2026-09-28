@@ -9,6 +9,17 @@ are happy with M10–M13 we choose between a "core switch-over first" M14 and th
 Evidence: `playtest-m10-m13/measure/RESULTS.md` (time-to-death with the human-like autopilot), `playtest-m10-m13/parity/`
 (V3-comparison traces), EditMode 292/292, PlayMode 50/50. An independent reviewer checked the round; its findings are fixed.
 
+## Round 3 (29 Sep) — your answers
+
+- **Gold curve:** 15 was too low for big efforts. Now scaled to effort against the other Rum rows: `60 × (1 − ½^(gold ÷ 1,500))`
+  — 100 → 2, 500 → 12, 765 → 17, 1,500 → 30 (≈ a boss victory; ~15–25 min of strong play at 30–110 gold/min), 3,000 → 45,
+  10,000 → 59, never above 60 (≈ what a good run earns from all other rows). Early gold pays about like active minutes
+  (~1 Rum per 40 gold).
+- **M14:** the full switch-over (all 59 legacy adapters). Started.
+- **Chipmunk:** Chippy only; the "Name the Chipmunk" community event is dropped from the GDD.
+
+- [ ] **Check the gold curve** once more when convenient (die with 500–1,500 gold).
+
 ## Playtest round 2 (29 Sep) — your answers
 
 Everything confirmed except the gold → Rum rate ("too generous; make it flatten so overtime gold farming can't break
@@ -16,8 +27,7 @@ the economy"). **Done:** leftover gold now pays `15 × (1 − ½^(gold ÷ 350))`
 350 → 7, 500 → 9, 765 → 11, 1,500 → 14, and never more than 15 however much is farmed (15 is also the overtime row's
 cap). Before: 1 per 10 gold (765 gold paid 76 of a 95-Rum run). Tunable per row: `maxRum`, `goldForHalf`.
 
-- [ ] **Check the gold curve:** die with ~200–500 gold left; the results should show a few Rum more than your other
-      rows alone. Say if 15 max / 350 half feels right.
+- [x] **Check the gold curve:** 15 max felt too low — retuned in round 3.
 
 ## Playtest round 2 — what you tried (15 min)
 
