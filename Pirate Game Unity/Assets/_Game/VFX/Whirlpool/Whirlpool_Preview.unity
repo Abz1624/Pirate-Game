@@ -297,7 +297,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5262176667083471855, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.size
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5262176667083471855, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[0].m_Name
@@ -308,12 +308,20 @@ PrefabInstance:
       value: Particle Count
       objectReference: {fileID: 0}
     - target: {fileID: 5262176667083471855, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
+      propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[2].m_Name
+      value: Rotation Speed
+      objectReference: {fileID: 0}
+    - target: {fileID: 5262176667083471855, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[0].m_Value
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5262176667083471855, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[1].m_Value
-      value: 1500
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5262176667083471855, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
+      propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[2].m_Value
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5262176667083471855, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[0].m_Overridden
@@ -321,6 +329,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5262176667083471855, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[1].m_Overridden
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5262176667083471855, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
+      propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[2].m_Overridden
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5654319288947532959, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
