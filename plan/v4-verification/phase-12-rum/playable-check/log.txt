@@ -1,0 +1,8 @@
+treasury before: 802
+after 2 minutes: t=131 kills=58 settled=False applied=False total=0 treasury=802 rows: Active minutes=2/4; Special discoveries=0/0; Scheduled elite=0/0; Boss victory=0/0; Overtime=0/0; 
+after the Signal Buoy: t=131 kills=58 settled=False applied=False total=0 treasury=802 rows: Active minutes=2/4; Special discoveries=0/0; Scheduled elite=0/0; Boss victory=0/0; Overtime=0/0; 
+after death: t=131 kills=59 settled=True applied=True total=4 treasury=806 rows: Active minutes=2/4; Special discoveries=0/0; Scheduled elite=0/0; Boss victory=0/0; Overtime=0/0; 
+results section:  | Rum earned this run: 4 |   Active minutes: 4 |   Special discoveries: 0 |   Scheduled elite: 0 |   Boss victory: 0 |   Overtime: 0 | Treasury Rum: 806 | 
+goal:  Unlock goal: not selected (choose one in menu or results). 
+treasury after: 806
+shot: 01-results-rum

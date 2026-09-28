@@ -77,8 +77,9 @@ namespace RoguePirates.V4.Legacy
         public int Kills => Run != null ? Run.KillCount : 0;
     }
 
-    /// <summary>Toasts, run telemetry and scheduled-elite Marks (legacy until M12/M14; the spawn telegraph moved to a presenter in M6).</summary>
-    [DeletedInPhase(12, "Presenters (M6) and V4 rewards (M12)")]
+    /// <summary>Toasts and run telemetry (legacy until M14; the spawn telegraph moved to a presenter in M6; scheduled-elite
+    /// Rum listens to the focus PhaseChanged event since M12).</summary>
+    [DeletedInPhase(14, "ToastPresenter and V4 telemetry")]
     public sealed class LegacySpawnFeedback : ISpawnFeedback
     {
         public void Toast(string text, float seconds)
@@ -87,8 +88,7 @@ namespace RoguePirates.V4.Legacy
         }
 
         public void Telemetry(string eventName, Dictionary<string, object> fields = null) => RunCombatTelemetry.Instance?.Record(eventName, fields);
-
-        public void RegisterScheduledElite(int unitId, int scheduledEliteIndex) => RunMarksTracker.RegisterScheduledEliteAgent(unitId, scheduledEliteIndex);
+
     }
 
     /// <summary>The storm's safe region (shared play bounds) and the V3 storm ring visual.</summary>
@@ -157,7 +157,7 @@ namespace RoguePirates.V4.Legacy
             _steadyPending = 0f;
             _steadyLastReport = Time.time;
             // TriggerBus drives damage numbers, the hit flash and on-damage relics: once per report, not every frame.
-            LegacyRewardsAdapter.RecordDamage(amount);
+            LegacyRunLifecycle.RecordDamage(amount);
             SteadyDamageReported?.Invoke(amount);
         }
 

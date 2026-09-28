@@ -635,6 +635,41 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(ship.Damage.IsAlive, "the lab ship is invulnerable");
         }
 
+        /// <summary>M12: with continue-after-boss-victory off, the boss kill ends the run: Rum is settled once, no Doubloons.</summary>
+        [UnityTest]
+        public IEnumerator VictoryThatEndsTheRun_SettlesRum_AndBanksNothing()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var game = Object.FindFirstObjectByType<V4Game>();
+            Assert.IsTrue(game.Config.TryApplyEdit("stage.saltwind", "continueAfterBossVictory", "false", 1f, out var error), error);
+            Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Rewards.IRumView>(out var rum));
+            game.Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var poi);
+            var world = V4TestEnemies.Simulation();
+            var summoned = false;
+            for (var i = 0; i < 60 && !summoned; i++) { summoned = poi.TrySummonBoss() && poi.BossSummoned; if (!summoned) yield return null; }
+            Assert.IsTrue(summoned);
+            var bossIndex = -1;
+            var deadline = Time.realtimeSinceStartup + 8f;
+            while (bossIndex < 0 && Time.realtimeSinceStartup < deadline)
+            {
+                for (var i = 0; i < world.Agents.Length; i++) if (world.Agents[i].active && world.Agents[i].isBoss) { bossIndex = i; break; }
+                if (bossIndex < 0) yield return null;
+            }
+            Assert.GreaterOrEqual(bossIndex, 0);
+            var doubloons = AppRoot.Instance.Save.Meta.doubloons;
+            var before = AppRoot.Instance.Save.Meta.marks;
+            world.ApplyDamage(bossIndex, world.Agents[bossIndex].maxHp + 500f, false, weaponId: "deck_cannons");
+            deadline = Time.realtimeSinceStartup + 4f;
+            while (!rum.Settled && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.AreEqual(RunState.RunComplete, RunManager.Instance.State);
+            Assert.IsTrue(rum.Settled && rum.SettlementApplied, "the victory settles Rum");
+            Assert.IsFalse(rum.EndedByDeath);
+            Assert.AreEqual(25, rum.SettledRumOf(RoguePirates.V4.Config.RumSource.BossVictory));
+            Assert.AreEqual(before + rum.SettledTotal, AppRoot.Instance.Save.Meta.marks);
+            Assert.AreEqual(doubloons, AppRoot.Instance.Save.Meta.doubloons, "no Doubloons (V3's CompleteRun paid them)");
+        }
+
         [UnityTest]
         public IEnumerator Run_BossKill_ThenDeath_SettlesOnce()
         {
@@ -676,23 +711,36 @@ namespace RoguePirates.V4.Tests
 
             Assert.IsTrue(RunEncounterTracker.BossObjectiveSecured, "boss encounter must complete");
 
-            var marksBefore = AppRoot.Instance.Save.Meta.marks;
+            // M12: Rum is the V4 reward module's, settled at death (no FinalizeRunOnDeath, no Doubloons).
+            var game = Object.FindFirstObjectByType<V4Game>();
+            Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Rewards.IRumView>(out var rum));
+            var rumBefore = AppRoot.Instance.Save.Meta.marks;
+            var doubloonsBefore = AppRoot.Instance.Save.Meta.doubloons;
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             ship.Damage.TakeDamage(99999f, Vector3.zero, false);
             deadline = Time.realtimeSinceStartup + 6f;
             while (Time.realtimeSinceStartup < deadline)
             {
-                if (RunManager.Instance.IsRunEnded && SaltwindRunSettlement.LastSettlementApplied) break;
+                if (RunManager.Instance.IsRunEnded && rum.Settled) break;
                 yield return null;
             }
             Assert.IsTrue(RunManager.Instance.IsRunEnded, "death must end the run");
-            Assert.IsTrue(SaltwindRunSettlement.LastSettlementApplied, "settlement must apply");
-            Assert.Greater(SaltwindRunSettlement.LastBreakdown.BossVictoryCredits, 0, "boss victory must be credited");
-            Assert.AreEqual(marksBefore + SaltwindRunSettlement.LastMarksAwarded, AppRoot.Instance.Save.Meta.marks);
+            Assert.AreEqual(RunState.RunComplete, RunManager.Instance.State);
+            Assert.IsTrue(rum.SettlementApplied, "settlement must apply");
+            Assert.IsTrue(rum.EndedByDeath);
+            Assert.AreEqual(25, rum.SettledRumOf(RoguePirates.V4.Config.RumSource.BossVictory), "boss victory must be credited");
+            Assert.AreEqual(rumBefore + rum.SettledTotal, AppRoot.Instance.Save.Meta.marks);
+            Assert.AreEqual(doubloonsBefore, AppRoot.Instance.Save.Meta.doubloons, "gold is run-only: nothing banked");
+            Assert.IsFalse(SaltwindRunSettlement.LastSettlementApplied, "the V3 settlement never runs");
             var afterFirst = AppRoot.Instance.Save.Meta.marks;
 
-            RunManager.Instance.FinalizeRunOnDeath();
-            Assert.AreEqual(afterFirst, AppRoot.Instance.Save.Meta.marks, "a second finalize must not pay again");
+            RoguePirates.V4.Legacy.LegacyRunLifecycle.OnPlayerDied(null, null, null, (RoguePirates.V4.Rewards.RewardModule)rum); // a second death callback
+            Assert.AreEqual(afterFirst, AppRoot.Instance.Save.Meta.marks, "a second death callback must not pay again");
+            Assert.AreEqual(rum.SettledTotal, ((RoguePirates.V4.Rewards.RewardModule)rum).Settle(RunManager.Instance.RunId, true), "a second settle returns the first result");
+            Assert.AreEqual(afterFirst, AppRoot.Instance.Save.Meta.marks, "and pays nothing");
+            Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Views.IRunViews>(out var views));
+            StringAssert.Contains("Rum earned this run: " + rum.SettledTotal, views.Results.RewardSection);
+            StringAssert.Contains("Boss victory: 25", views.Results.RewardSection);
 
             yield return null; // V4Game notices the run end on its next Update
             Assert.AreEqual(1, probe.EndCount, "modules get RunEnd once, when the run ends (not only on scene unload)");

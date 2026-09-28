@@ -61,7 +61,7 @@ namespace RoguePirates.V4.DevTools.Console
                 float.TryParse(_jumpText, NumberStyles.Float, CultureInfo.InvariantCulture, out var target))
                 JumpTo(run, target);
             GUILayout.EndHorizontal();
-            GUILayout.Label("Forward only: due beats fire at once and skipped minutes count 0 kills for Marks.");
+            GUILayout.Label("Forward only: due beats fire at once and skipped minutes count 0 kills for Rum.");
 
             if (GUILayout.Button("Force death") && ship != null && ship.Damage != null && ship.Damage.IsAlive)
             {

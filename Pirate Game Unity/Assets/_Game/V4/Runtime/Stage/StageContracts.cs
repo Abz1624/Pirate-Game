@@ -80,11 +80,9 @@ namespace RoguePirates.V4.Stage
         IReadOnlyList<string> EquippedWeaponIds { get; }
     }
 
-    /// <summary>Marks, telemetry, the home seed and the chest trigger (legacy rewards until M12).</summary>
+    /// <summary>Telemetry, the home seed and the chest trigger. M12: Rum listens to LandmarkUsed / BossState events instead.</summary>
     public interface IStageRewards
     {
-        void RegisterSpecialPoi(int poiIndex, POIType type);
-        void RegisterBossVictory();
         void LockHomeSeed(int runSeed);
         void ChestOpened();
         void PoiUsedTelemetry(POIType type);

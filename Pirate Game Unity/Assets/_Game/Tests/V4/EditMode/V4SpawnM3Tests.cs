@@ -120,10 +120,10 @@ namespace RoguePirates.V4.Tests
         {
             public readonly List<string> Toasts = new List<string>();
             public readonly List<string> Telemetry = new List<string>();
+            /// <summary>M12: scheduled elites as Rum sees them — the focus PhaseChanged event (unit id) of a phase with a scheduled-elite index.</summary>
             public readonly List<(int unit, int index)> Elites = new List<(int, int)>();
             void ISpawnFeedback.Toast(string text, float seconds) => Toasts.Add(text);
             void ISpawnFeedback.Telemetry(string eventName, Dictionary<string, object> fields) => Telemetry.Add(eventName);
-            public void RegisterScheduledElite(int unitId, int scheduledEliteIndex) => Elites.Add((unitId, scheduledEliteIndex));
         }
 
         sealed class FakeStorm : IStormArena, IPlayerDamageSink
@@ -224,6 +224,15 @@ namespace RoguePirates.V4.Tests
             context.Register<IEncounterTracker>(h.Encounters);
             h.Spawn.Initialize(context);
             h.Spawn.BeginRun(new RunStart(1, false));
+            h.Events.TickPublished += batch =>
+            {
+                foreach (var e in batch)
+                {
+                    if (e.Kind != CombatEventKind.PhaseChanged || e.B != 1 || e.A <= 0) continue;
+                    var phase = h.Timeline.Phase(e.Tag);
+                    if (phase?.focus != null && phase.focus.scheduledEliteIndex >= 0) h.Feedback.Elites.Add((e.A, phase.focus.scheduledEliteIndex));
+                }
+            };
             return h;
         }
 
@@ -394,7 +403,7 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void EliteBeat_RegistersMarks_AndIsSkippedForGoodDuringTheBossFight()
+        public void EliteBeat_IsAnnouncedForRum_AndIsSkippedForGoodDuringTheBossFight()
         {
             var h = Make();
             using (h.Config)
@@ -402,7 +411,7 @@ namespace RoguePirates.V4.Tests
                 h.RunUntil(151f);
                 h.Sink.Kill(h.Spawn.ArenaFocusUnitId); // clear the reef crab arena
                 h.RunUntil(181f);
-                Assert.AreEqual(1, h.Feedback.Elites.Count, "elite hammerhead registered for Marks");
+                Assert.AreEqual(1, h.Feedback.Elites.Count, "elite hammerhead announced with its unit (Rum registers it)");
                 Assert.AreEqual(0, h.Feedback.Elites[0].index);
 
                 var boss = Make();
@@ -637,7 +646,7 @@ namespace RoguePirates.V4.Tests
                 h.RunUntil(181f);
                 var elite = h.Sink.Spawns.Last(s => s.t > 179f && s.id.StartsWith("elite_"));
                 Assert.AreEqual("elite_hammerhead", elite.id, "R-03: the scheduled elite spawns its elite variant");
-                Assert.AreEqual((elite.unit, 0), h.Feedback.Elites.Single(), "Marks register the elite unit");
+                Assert.AreEqual((elite.unit, 0), h.Feedback.Elites.Single(), "Rum registers the elite unit");
                 Assert.IsTrue(h.Config.Get<EnemySpawnerConfig>("spawner.saltwind_elite_hammerhead").elite.isElite, "the beat spawner flags it elite");
                 Assert.AreEqual(h.Spawn.ArenaFocusUnitId, elite.unit);
             }

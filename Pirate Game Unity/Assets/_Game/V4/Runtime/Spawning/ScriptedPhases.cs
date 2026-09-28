@@ -219,7 +219,7 @@ namespace RoguePirates.V4.Spawning
             var definitionIndex = !string.IsNullOrEmpty(variantId) && _s.Sink.FindDefinition(variantId) >= 0 ? _s.Sink.FindDefinition(variantId) : _s.Sink.IndexOf(profile.enemy);
             unitId = _s.Sink.NewestUnitAfter(before, definitionIndex);
             enemyId = _s.Sink.DefinitionId(definitionIndex);
-            if (unitId > 0 && focus.scheduledEliteIndex >= 0) _s.Feedback.RegisterScheduledElite(unitId, focus.scheduledEliteIndex);
+            // M12: Rum registers the scheduled elite from the PhaseChanged event (unit id) published for this spawn.
             return unitId > 0;
         }
 

@@ -21,6 +21,9 @@ namespace RoguePirates.V4.Legacy
     [DeletedInPhase(14, "Frame slots and the kept legacy views go with switch-over")]
     public sealed class LegacyWeaponWiring : IDisposable
     {
+        /// <summary>M12: the weapon hit records (the results damage share listens to them).</summary>
+        public LegacyWeaponHooks Hooks { get; private set; }
+
         public const string WeaponsRole = "weapons";
 
         readonly LegacyRunShell _shell;
@@ -48,6 +51,7 @@ namespace RoguePirates.V4.Legacy
                 LegacyHazardTelegraphView.ShowTimedRing,
                 position => HighSeas.VFX.JuiceVfxBroker.Instance?.PlayWaterSplash(position));
             var hooks = new LegacyWeaponHooks(() => _shell.Player, definition, enemyWorld.Hellfire);
+            Hooks = hooks;
             var mods = build.WeaponModifiers;
             var random = new LegacyCombatRandom();
 

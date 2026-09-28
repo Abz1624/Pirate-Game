@@ -181,9 +181,12 @@ namespace RoguePirates.V4.Legacy
     }
 
 
-    /// <summary>Marks tracking, settlement, telemetry, damage ledger and the death finalize path.</summary>
-    [DeletedInPhase(12, "RewardModule")]
-    public sealed class LegacyRewardsAdapter
+    /// <summary>
+    /// Run-state statics, telemetry, the damage ledger and the death flow. M12: no Marks — Rum is the V4 reward module's,
+    /// settled at death between PlayerDead and RunComplete (never RunManager.FinalizeRunOnDeath, which banked Doubloons).
+    /// </summary>
+    [DeletedInPhase(14, "V4 run lifecycle and telemetry")]
+    public sealed class LegacyRunLifecycle
     {
         public static void TeardownTransientRunState(System.Action clearTransientWorlds)
         {
@@ -206,7 +209,7 @@ namespace RoguePirates.V4.Legacy
             SaltwindCombatEncounterBudget.ResetForRun();
             SaltwindCombatAgentStateStore.ClearAll();
             SaltwindHazardTelegraph.ClearAll();
-            RunMarksTracker.BeginRun(RunManager.Instance.RunId);
+            // M12: the V3 Marks tracker is never started (it stays inert); Rum is the V4 reward module's.
             SaltwindRunSettlement.ClearLastResults();
             if (StageBalanceProfileContext.IsActive && StageBalanceProfileContext.Export != null)
             {
@@ -228,8 +231,10 @@ namespace RoguePirates.V4.Legacy
             RunCombatTelemetry.Instance?.RecordDamageTaken(amount);
         }
 
-        /// <summary>V3RunBootstrap.OnPlayerDied (solo branch; the PvP branch is kept for parity).</summary>
-        public static void OnPlayerDied(PlayerShipController player, System.Action trySecureIfBossDead, System.Action cancelPendingLevelUps)
+        /// <summary>V3RunBootstrap.OnPlayerDied (solo branch; the PvP branch is kept for parity). M12: Rum is settled by
+        /// <paramref name="rewards"/> between PlayerDead and RunComplete, as V3 settled Marks inside FinalizeRunOnDeath.</summary>
+        public static void OnPlayerDied(PlayerShipController player, System.Action trySecureIfBossDead, System.Action cancelPendingLevelUps,
+            RoguePirates.V4.Rewards.RewardModule rewards)
         {
             cancelPendingLevelUps?.Invoke();
             if (player != null) player.SetMovementEnabled(false);
@@ -243,13 +248,21 @@ namespace RoguePirates.V4.Legacy
 
             trySecureIfBossDead?.Invoke();
             ApplyConquestUnlockIfSecured();
-            RunManager.Instance.SetState(RunState.PlayerDead);
-            RunManager.Instance.FinalizeRunOnDeath();
+            var run = RunManager.Instance;
+            if (run.State == RunState.RunComplete) return; // V3: FinalizeRunOnDeath ran once
+            run.SetState(RunState.PlayerDead);
+            var rum = rewards != null ? rewards.Settle(run.RunId, true) : 0;
+            if (rewards != null && rewards.SettlementApplied)
+                RunCombatTelemetry.Instance?.RecordMarksSettlement(rum, true, rum,
+                    rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.QualifyingMinute), rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.SpecialLandmark),
+                    rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.ScheduledElite), rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.BossVictory),
+                    rewards.SettledRumOf(RoguePirates.V4.Config.RumSource.OvertimeMinute));
+            run.SetState(RunState.RunComplete); // gold is run-only: nothing is banked (R-59)
             V3OnboardingDirector.RecordRunCompleted();
-            RunCombatTelemetry.Instance?.RecordPlayerDeath(RunManager.Instance.ObjectiveSecured);
-            V3ToastHud.Instance?.Show("Run ended — gold banked.", 4f);
-            if (StageBalanceProfileContext.IsActive && SaltwindRunSettlement.LastSettlementApplied)
-                V3ToastHud.Instance?.Show($"Marks settled: +{SaltwindRunSettlement.LastMarksAwarded}", 4f);
+            RunCombatTelemetry.Instance?.RecordPlayerDeath(run.ObjectiveSecured);
+            V3ToastHud.Instance?.Show("Run ended.", 4f);
+            if (rewards != null && rewards.SettlementApplied)
+                V3ToastHud.Instance?.Show($"{rewards.CurrencyName} settled: +{rum}", 4f);
         }
     }
 

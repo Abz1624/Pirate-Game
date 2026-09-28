@@ -1,0 +1,27 @@
+ .../Assets/_Game/Tests/V4/EditMode/V4HudM6Tests.cs |  10 +-
+ .../_Game/Tests/V4/EditMode/V4SpawnM3Tests.cs      |  17 +-
+ .../_Game/Tests/V4/EditMode/V4StageM7Tests.cs      |   8 +-
+ .../_Game/Tests/V4/PlayMode/V4RunPlayModeTests.cs  |  62 ++-
+ .../_Game/V4/Config/Schemas/WaveTimelineConfig.cs  |   2 +-
+ .../_Game/V4/Data/ConfigSets/SaltwindDefault.asset |   1 +
+ .../Assets/_Game/V4/DevTools/Console/RunSection.cs |   2 +-
+ .../_Game/V4/DevTools/Console/TuningConsole.cs     |   1 +
+ .../_Game/V4/DevTools/Trace/RunTraceRecorder.cs    |  24 +-
+ .../_Game/V4/Presentation/Hud/ResultsPresenter.cs  |  10 +-
+ .../Assets/_Game/V4/Runtime/Core/V4Game.cs         |  18 +-
+ .../Assets/_Game/V4/Runtime/Core/V4Phase.cs        |   2 +-
+ .../_Game/V4/Runtime/Legacy/LegacyAdapters.cs      |  37 +-
+ .../V4/Runtime/Legacy/LegacyEnemyWorldAdapters.cs  |   9 +-
+ .../_Game/V4/Runtime/Legacy/LegacyEventFeed.cs     |   8 +-
+ .../_Game/V4/Runtime/Legacy/LegacyRunShell.cs      |  16 +-
+ .../_Game/V4/Runtime/Legacy/LegacySpawnAdapters.cs | 604 ++++++++++-----------
+ .../_Game/V4/Runtime/Legacy/LegacyStageAdapters.cs |  16 +-
+ .../_Game/V4/Runtime/Legacy/LegacyStageWiring.cs   |   4 +
+ .../Assets/_Game/V4/Runtime/Legacy/LegacyViews.cs  | 141 ++---
+ .../V4/Runtime/Legacy/LegacyWeaponAdapters.cs      |  11 +-
+ .../_Game/V4/Runtime/Legacy/LegacyWeaponWiring.cs  |   4 +
+ .../_Game/V4/Runtime/Spawning/ScriptedPhases.cs    |   2 +-
+ .../_Game/V4/Runtime/Spawning/SpawnContracts.cs    |   1 -
+ .../_Game/V4/Runtime/Stage/StageContentModule.cs   |   2 -
+ .../_Game/V4/Runtime/Stage/StageContracts.cs       |   4 +-
+ 26 files changed, 543 insertions(+), 473 deletions(-)

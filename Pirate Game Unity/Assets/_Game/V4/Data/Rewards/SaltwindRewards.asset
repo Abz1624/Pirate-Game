@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5726a59cee9a074fab7af32748225a2, type: 3}
+  m_Name: SaltwindRewards
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.RewardConfig
+  configId: rewards.saltwind
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  currencyName: Rum
+  rows:
+  - rowId: minutes
+    label: Active minutes
+    enabled: 1
+    source: 0
+    rum: 2
+    minKills: 10
+    maxCredits: 0
+    maxRum: 0
+  - rowId: landmarks
+    label: Special discoveries
+    enabled: 1
+    source: 2
+    rum: 3
+    minKills: 10
+    maxCredits: 0
+    maxRum: 0
+  - rowId: elites
+    label: Scheduled elite
+    enabled: 1
+    source: 3
+    rum: 5
+    minKills: 10
+    maxCredits: 2
+    maxRum: 0
+  - rowId: boss
+    label: Boss victory
+    enabled: 1
+    source: 4
+    rum: 25
+    minKills: 10
+    maxCredits: 1
+    maxRum: 0
+  - rowId: overtime
+    label: Overtime
+    enabled: 1
+    source: 1
+    rum: 3
+    minKills: 10
+    maxCredits: 0
+    maxRum: 15
+  - rowId: chests
+    label: Chests opened
+    enabled: 0
+    source: 5
+    rum: 1
+    minKills: 10
+    maxCredits: 0
+    maxRum: 0

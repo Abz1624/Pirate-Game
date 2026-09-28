@@ -101,8 +101,6 @@ namespace RoguePirates.V4.Tests
         {
             readonly Log _log;
             public FakeRewards(Log log) => _log = log;
-            public void RegisterSpecialPoi(int poiIndex, POIType type) => _log.Add($"special {poiIndex} {type}");
-            public void RegisterBossVictory() => _log.Add("marks boss");
             public void LockHomeSeed(int runSeed) => _log.Add("home seed " + runSeed);
             public void ChestOpened() => _log.Add("chest opened");
             public void PoiUsedTelemetry(POIType type) => _log.Add("telemetry " + type);
@@ -236,7 +234,7 @@ namespace RoguePirates.V4.Tests
             var rig = Make((POIType.SalvageChest, new Vector3(3f, 0f, 0f)));
             Assert.IsTrue(rig.Markers.IsSpawned(0), "Saltwind spawns every chest at the start");
             rig.Stage.TryCompleteInteraction(0);
-            CollectionAssert.AreEqual(new[] { "plan none", "spend 20", "purchase", "item item_x", "chest opened", "telemetry SalvageChest", "special 0 SalvageChest" }, rig.Log.Lines,
+            CollectionAssert.AreEqual(new[] { "plan none", "spend 20", "purchase", "item item_x", "chest opened", "telemetry SalvageChest" }, rig.Log.Lines,
                 "V3 order (and R-47: no equipped weapons passed by default)");
             Assert.IsTrue(rig.Layout.pois[0].used);
             Assert.IsTrue(rig.Markers.Consumed.Contains(0));
@@ -324,7 +322,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(rig.Layout.pois[0].used, "V3 quirk (R-97): the hidden cache is never targeted again, so it never pays in play");
             // The payout code itself (reached only by direct use in V3):
             Assert.IsTrue(rig.Stage.Interact(POIType.MerchantSkiff, 0));
-            CollectionAssert.IsSubsetOf(new[] { "roll item", "item cache_item", "gold +20", "special 0 MerchantSkiff" }, rig.Log.Lines);
+            CollectionAssert.IsSubsetOf(new[] { "roll item", "item cache_item", "gold +20" }, rig.Log.Lines);
         }
 
         [Test]
@@ -576,7 +574,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(rig.Stage.BossDefeated, "only once the boss encounter completed");
             rig.Tracker.Set(1, EncounterState.Completed);
             rig.Stage.OnBossKilled();
-            CollectionAssert.AreEqual(new[] { "marks boss", "telemetry defeated", "secure", "home seed 101", "state Playing" }, rig.Log.Lines);
+            CollectionAssert.AreEqual(new[] { "telemetry defeated", "secure", "home seed 101", "state Playing" }, rig.Log.Lines);
             CollectionAssert.Contains(rig.Toasts.Shown, "TERRITORY OBJECTIVE SECURED — survive or keep farming.");
             rig.Stage.OnBossKilled();
             Assert.AreEqual(1, rig.Log.Count("secure"), "once");

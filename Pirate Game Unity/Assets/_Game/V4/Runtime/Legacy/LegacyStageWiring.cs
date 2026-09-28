@@ -23,6 +23,9 @@ namespace RoguePirates.V4.Legacy
     [DeletedInPhase(14, "V4 composition root; its frame slots go with the legacy frame order")]
     public sealed class LegacyStageWiring : IDisposable
     {
+        /// <summary>M12: the run adapter the stage module ends runs through (Rum is set on it).</summary>
+        public LegacyStageRun StageRun { get; private set; }
+
         public const string StageRole = "stage";
 
         readonly bool _usePlaceholderVisuals;
@@ -54,6 +57,7 @@ namespace RoguePirates.V4.Legacy
             StageContentConfig cached = null;
             _config = () => cached != null ? cached : (cached = config?.Single<StageContentConfig>());
             var run = new LegacyStageRun();
+            StageRun = run;
             var toasts = new LegacyStageToasts();
             Economy = new LegacyStageEconomy(weapons);
             Module = new StageContentModule(_config, run, new LegacyStageShip(player), Economy,

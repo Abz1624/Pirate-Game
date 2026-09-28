@@ -41,7 +41,7 @@ namespace RoguePirates.V4.Legacy
     }
 
     /// <summary>Proc budget, the damage ledger, flame patches, and the ship-versus-ship hooks (inert in solo).</summary>
-    [DeletedInPhase(12, "V4 kill path (M8), rewards and telemetry (M12)")]
+    [DeletedInPhase(14, "Telemetry ledger, proc budget, flame patches and ship combat (the results damage share is V4's since M12)")]
     public sealed class LegacyWeaponHooks : IWeaponCombatHooks
     {
         readonly Func<PlayerShipController> _ship;
@@ -57,7 +57,14 @@ namespace RoguePirates.V4.Legacy
 
         public void BeginDamageResolution() => CombatProcRuntime.BeginWeaponDamageResolution();
         public bool TryRegisterProcEvent() => DamageProcPolicy.TryRegisterProcEvent();
-        public void RecordHit(string weaponId, float damage, bool isCrit, bool isElite, bool isBoss) => WeaponDamageLedger.RecordHit(weaponId, damage, isCrit, isElite, isBoss);
+        /// <summary>M12: every recorded weapon hit (ledger id, damage) — the V4 results damage share listens.</summary>
+        public event Action<string, float> HitRecorded;
+
+        public void RecordHit(string weaponId, float damage, bool isCrit, bool isElite, bool isBoss)
+        {
+            WeaponDamageLedger.RecordHit(weaponId, damage, isCrit, isElite, isBoss);
+            HitRecorded?.Invoke(weaponId, damage);
+        }
         public void RecordEmission(string weaponId) => WeaponDamageLedger.RecordEmission(weaponId);
         public void RecordConcurrentTargets(string weaponId, int count) => WeaponDamageLedger.RecordConcurrentTargets(weaponId, count);
         public void RecordControl(string weaponId, float seconds) => WeaponDamageLedger.RecordControl(weaponId, seconds);

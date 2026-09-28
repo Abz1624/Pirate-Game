@@ -394,11 +394,25 @@ namespace RoguePirates.V4.DevTools.Trace
         {
             var run = RunManager.Instance;
             if (run != null) FlushMinute(run, _minute + 1);
-            var b = SaltwindRunSettlement.LastBreakdown;
-            Add(new JsonLine("marks").Bool("applied", SaltwindRunSettlement.LastSettlementApplied)
-                .Int("awarded", SaltwindRunSettlement.LastMarksAwarded).Int("minutes", b.QualifyingOrdinaryMinutes)
-                .Int("poi", b.SpecialPoiCredits).Int("elites", b.ScheduledEliteCredits).Int("boss", b.BossVictoryCredits)
-                .Int("overtime", b.OvertimeMinuteCredits).Int("total", b.TotalMarks));
+            // M12: the V4 Rum settlement, in V3's "marks" line shape (the V3 goldens compare it field for field).
+            RoguePirates.V4.Rewards.IRumView rum = null;
+            FindFirstObjectByType<RoguePirates.V4.V4Game>()?.Context?.TryGet(out rum);
+            if (rum != null)
+                Add(new JsonLine("marks").Bool("applied", rum.SettlementApplied).Int("awarded", rum.SettledTotal)
+                    .Int("minutes", rum.SettledRumOf(RoguePirates.V4.Config.RumSource.QualifyingMinute))
+                    .Int("poi", rum.SettledRumOf(RoguePirates.V4.Config.RumSource.SpecialLandmark))
+                    .Int("elites", rum.SettledRumOf(RoguePirates.V4.Config.RumSource.ScheduledElite))
+                    .Int("boss", rum.SettledRumOf(RoguePirates.V4.Config.RumSource.BossVictory))
+                    .Int("overtime", rum.SettledRumOf(RoguePirates.V4.Config.RumSource.OvertimeMinute))
+                    .Int("total", rum.SettledTotal));
+            else
+            {
+                var b = SaltwindRunSettlement.LastBreakdown; // V3 scenes (golden recording)
+                Add(new JsonLine("marks").Bool("applied", SaltwindRunSettlement.LastSettlementApplied)
+                    .Int("awarded", SaltwindRunSettlement.LastMarksAwarded).Int("minutes", b.QualifyingOrdinaryMinutes)
+                    .Int("poi", b.SpecialPoiCredits).Int("elites", b.ScheduledEliteCredits).Int("boss", b.BossVictoryCredits)
+                    .Int("overtime", b.OvertimeMinuteCredits).Int("total", b.TotalMarks));
+            }
             Finish(reason);
         }
 

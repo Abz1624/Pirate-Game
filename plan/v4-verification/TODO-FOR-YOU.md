@@ -43,3 +43,15 @@ Committed "(awaiting playtest)". Evidence: `phase-11-adaptive/CHECKLIST.md`. **A
 - [ ] **What never adapts:** boss, Beacon/Powder Cache encounters, Reef Crab and elite beats, swarm pulses, overtime and the storm (all stay as authored). Overtime reading the threat lever is a possible later change.
 - [ ] **Ranked flag:** Adaptive + version `director-1` + never forced + no live tuning edits (a preset counts as edits, so preset runs are unranked) + the dev console never opened. Checking the config hash against a published list needs the leaderboard backend (later).
 - [ ] **Not measured:** the plan's "time-to-death band for strong/weak builds" needs long full runs, which we agreed to avoid; I recorded the lever values over 2.5 minutes instead. Want a one-off measurement later?
+
+### M12
+
+Committed "(awaiting playtest)". Evidence: `phase-12-rum/CHECKLIST.md`.
+
+**Playtest (5 min):** play past 2–3 minutes killing steadily, use a landmark (Signal Buoy / Repair Wreck / Treasure Chart), then die. The results screen should say **Rum** everywhere, list the rows (Active minutes, Special discoveries, Scheduled elite, Boss victory, Overtime) and your treasury; the toast says "Rum settled: +N" (no more "gold banked"). Then F1 → search "rum": tick "1 Rum per chest opened", open a chest, die: a "Chests opened" row appears. Retry: no double pay.
+
+**Doubts I resolved myself (please confirm or overrule):**
+- [ ] **Row values = V3's Marks** (2 per qualifying minute of ≥10 kills, 3 per special landmark, 5 per scheduled elite (max 2), 25 boss, 3 per overtime minute up to 15): the 57 fixture holds. The chest row is off by default.
+- [ ] **When Rum is paid:** at death (as V3), and — new — when a victory ends the run (only if "continue after boss victory" is switched off; V3 paid Doubloons there instead). Leaving a run mid-way (restart, menu) pays nothing, as in V3.
+- [ ] **Results damage share** is the same as V3's (per-hit records, V3's names), now held by V4 instead of V3's static ledger.
+- [ ] The results screen keeps V3's layout (only the wording changed).

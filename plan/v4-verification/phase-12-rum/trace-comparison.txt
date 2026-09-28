@@ -1,0 +1,8 @@
+M12 end-of-phase trace set (Windows player, final code after the review fixes, run once). Rum is now settled by the V4
+reward module (event rows, kills timestamped on the run clock); the trace's "marks" line comes from that settlement.
+--- V4 (v3-parity preset) vs V3 goldens (phase-01-config/player)
+v3-trace-seed-101-a.jsonl vs v4-trace-seed-101-parity.jsonl: MATCH (437 lines)
+v3-trace-seed-202-a.jsonl vs v4-trace-seed-202-parity.jsonl: MATCH (409 lines)
+v3-trace-seed-303-a.jsonl vs v4-trace-seed-303-parity.jsonl: MATCH (523 lines)
+Settlements (identical to V3's Marks lines): 101 → 42 (minutes 12, elites 5, boss 25); 202 → 42; 303 → 52 (minutes 14,
+landmark 3, elites 10, boss 25).

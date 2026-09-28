@@ -52,7 +52,9 @@ namespace RoguePirates.V4.Legacy
         public bool IsPaused => Run != null && Run.IsPaused;
         public bool IsRunComplete => Run != null && Run.State == RunState.RunComplete;
         public bool ObjectiveSecured => Run != null && Run.ObjectiveSecured;
-        public bool EndedByDeath => Run != null && Run.LastRunEndedByDeath;
+        /// <summary>M12: from the V4 Rum settlement (V3's flag was set by FinalizeRunOnDeath, which V4 no longer calls).</summary>
+        public System.Func<bool> EndedByDeathSource;
+        public bool EndedByDeath => EndedByDeathSource != null ? EndedByDeathSource() : Run != null && Run.LastRunEndedByDeath;
         public bool WeaponPlaytestActive => HighSeas.Playtest.WeaponEnemyPlaytestSession.Active;
     }
 
@@ -170,119 +172,35 @@ namespace RoguePirates.V4.Legacy
     }
 
 
-    /// <summary>The results data V3RunResultsScreen.BuildSummaryText read, same sources and formatting helpers.</summary>
-    [DeletedInPhase(12, "RewardModule and the V4 results view")]
-    public sealed class LegacyResultsView : IResultsView
-    {
-        static RunManager Run => RunManager.Instance;
-
-        /// <summary>M9: the run's weapons and levels from the V4 progression module (was LevelSystem).</summary>
-        public RoguePirates.V4.Progression.ProgressionModule Progression;
-
-        public bool ObjectiveSecured => Run != null && Run.ObjectiveSecured;
-        public bool EndedByDeath => Run != null && Run.LastRunEndedByDeath;
-
-        public string ProfileFooter => Run != null
-            ? SaltwindRunResultsLogic.FormatProfileFooter(StageBalanceProfileContext.Export, Run.RunSeed, Run.ElapsedSeconds)
-            : string.Empty;
-
-        public int GoldEarned => Run != null ? Run.GrossGoldEarned : 0;
-        public int GoldSpent => Run != null ? Run.GrossGoldSpent : 0;
-        public int GoldRemaining => Run != null ? Run.Gold : 0;
-        public bool HasRewardSection => StageBalanceProfileContext.IsActive;
-
-        public string RewardSection
-        {
-            get
-            {
-                if (!StageBalanceProfileContext.IsActive) return string.Empty;
-                var save = AppRoot.Instance?.Save;
-                var treasury = save?.Meta.marks ?? 0;
-                var awarded = SaltwindRunSettlement.LastMarksAwarded;
-                if (SaltwindRunSettlement.LastSettlementApplied || awarded > 0 || SaltwindRunSettlement.LastBreakdown.TotalMarks > 0)
-                    return SaltwindRunResultsLogic.FormatMarksBreakdownForPlayer(SaltwindRunSettlement.LastBreakdown, awarded, treasury);
-                return null;
-            }
-        }
-
-        public string GoalProgress
-        {
-            get
-            {
-                if (!StageBalanceProfileContext.IsActive) return string.Empty;
-                var save = AppRoot.Instance?.Save;
-                return save != null ? SaltwindMarksUnlockLogic.FormatSelectedGoalProgress(save, StageBalanceProfileContext.Export) : string.Empty;
-            }
-        }
-
-        public void CollectFinalBuild(List<NamedValue> into)
-        {
-            into.Clear();
-            var levels = Progression;
-            if (levels == null) return;
-            for (var i = 0; i < levels.OwnedWeapons.Count; i++)
-            {
-                var id = levels.OwnedWeapons[i];
-                into.Add(new NamedValue { name = V3WeaponDisplayNames.GetWeaponName(id), value = levels.WeaponLevel(id) });
-            }
-        }
-
-        public void CollectContributions(List<NamedValue> into)
-        {
-            into.Clear();
-            var lines = SaltwindRunResultsLogic.BuildWeaponContributionLines(WeaponDamageLedger.Snapshot());
-            for (var i = 0; i < lines.Count; i++)
-                into.Add(new NamedValue { name = lines[i].DisplayName, value = lines[i].DamageSharePercent });
-        }
-    }
-
     [DeletedInPhase(14, "ToastPresenter replaces the kept V3 toast view")]
     public sealed class LegacyToastSink : IToastSink
     {
         public void Show(string message, float seconds) => V3ToastHud.Instance?.Show(message, seconds);
     }
 
-    /// <summary>Button presses from the HUD and results screen, forwarded as V3 handled them (restart and menu go to V4).</summary>
-    [DeletedInPhase(12, "The reward/unlock actions move to the V4 unlock service")]
+    /// <summary>Button presses from the HUD and results screen: boost, restart and menu go to V4; unlock goals to the V4
+    /// unlock service (M12).</summary>
+    [DeletedInPhase(14, "HUD commands over the kept ship boost")]
     public sealed class LegacyHudCommands : IHudCommands
     {
         readonly LegacyShipView _ship;
         readonly System.Action _retry;
         readonly System.Action _menu;
+        readonly RoguePirates.V4.Rewards.UnlockService _unlocks;
 
-        public LegacyHudCommands(LegacyShipView ship, System.Action retry, System.Action menu)
+        public LegacyHudCommands(LegacyShipView ship, System.Action retry, System.Action menu, RoguePirates.V4.Rewards.UnlockService unlocks)
         {
             _ship = ship;
             _retry = retry;
             _menu = menu;
+            _unlocks = unlocks;
         }
 
         public void RequestBoost() => _ship?.Boost?.RequestBoost();
         public void Retry() => _retry?.Invoke();
         public void GoToMenu() => _menu?.Invoke();
-
-        public string SelectNextUnlockGoal()
-        {
-            var save = AppRoot.Instance?.Save;
-            var export = StageBalanceProfileContext.Export;
-            if (save == null || export == null) return null;
-            var next = SaltwindMarksUnlockLogic.GetNextLockedMarksWeapon(export, save);
-            if (string.IsNullOrEmpty(next)) return "All Marks weapons owned.";
-            SaltwindMarksUnlockLogic.TrySetUnlockGoal(save, next);
-            return $"Unlock goal: {V3WeaponDisplayNames.GetWeaponName(next)}";
-        }
-
-        public string PurchaseUnlockGoal()
-        {
-            var save = AppRoot.Instance?.Save;
-            var export = StageBalanceProfileContext.Export;
-            if (save == null || export == null) return null;
-            var goal = save.Meta.selectedUnlockGoal;
-            if (string.IsNullOrEmpty(goal)) return "Select an unlock goal first.";
-            if (SaltwindMarksUnlockLogic.TryPurchaseUnlock(save, export, goal))
-                return $"Unlocked {V3WeaponDisplayNames.GetWeaponName(goal)}!";
-            return "Not enough Marks or already owned.";
-        }
+        public string SelectNextUnlockGoal() => _unlocks?.SelectNextGoal();
+        public string PurchaseUnlockGoal() => _unlocks?.PurchaseGoal();
     }
 
     /// <summary>
@@ -290,10 +208,12 @@ namespace RoguePirates.V4.Legacy
     /// run's RunComplete state change (before the death record that follows it). That is not presentation, so it stays
     /// here, at the same moment. V3 had two results screens and did it twice (R-63); once now.
     /// </summary>
-    [DeletedInPhase(12, "V4 rewards and telemetry")]
+    [DeletedInPhase(14, "V4 telemetry")]
     public sealed class LegacyResultsTelemetry : System.IDisposable
     {
         RunManager _run;
+        /// <summary>M12: the settled Rum (was SaltwindRunSettlement.LastMarksAwarded).</summary>
+        public RoguePirates.V4.Rewards.IRumView Rum;
 
         public void Attach()
         {
@@ -311,7 +231,7 @@ namespace RoguePirates.V4.Legacy
         void OnStateChanged(RunState state)
         {
             if (state != RunState.RunComplete || _run == null) return;
-            RunCombatTelemetry.Instance?.RecordRunResultsShown(_run.ObjectiveSecured, SaltwindRunSettlement.LastMarksAwarded);
+            RunCombatTelemetry.Instance?.RecordRunResultsShown(_run.ObjectiveSecured, Rum != null ? Rum.SettledTotal : 0);
             RunCombatTelemetry.Instance?.WriteExportFile();
         }
     }
@@ -321,21 +241,44 @@ namespace RoguePirates.V4.Legacy
     public static class LegacyViewFactory
     {
         public static RunViews Create(PlayerShipController player, WeaponManager weapons, System.Action retry, System.Action menu, IEnemyView enemies,
-            LegacyBuildWiring build, System.Func<int> weaponSlotCap)
+            LegacyBuildWiring build, System.Func<int> weaponSlotCap, RoguePirates.V4.Rewards.IRumView rum, RoguePirates.V4.Rewards.UnlockService unlocks,
+            RoguePirates.V4.Rewards.DamageShareTracker damage)
         {
             var ship = new LegacyShipView(player);
+            // M12: the V4 results view; the run facts still held by the kept run manager come in as delegates.
+            var results = new RoguePirates.V4.Rewards.RunResultsView(rum, unlocks, damage)
+            {
+                Objective = () => RunManager.Instance != null && RunManager.Instance.ObjectiveSecured,
+                Footer = () => RunManager.Instance != null
+                    ? SaltwindRunResultsLogic.FormatProfileFooter(StageBalanceProfileContext.Export, RunManager.Instance.RunSeed, RunManager.Instance.ElapsedSeconds)
+                    : string.Empty,
+                Earned = () => RunManager.Instance != null ? RunManager.Instance.GrossGoldEarned : 0,
+                Spent = () => RunManager.Instance != null ? RunManager.Instance.GrossGoldSpent : 0,
+                Remaining = () => RunManager.Instance != null ? RunManager.Instance.Gold : 0,
+                WeaponName = V3WeaponDisplayNames.GetWeaponName, // the names V3's results screen showed
+                FinalBuild = into =>
+                {
+                    var levels = build?.Progression;
+                    if (levels == null) return;
+                    for (var i = 0; i < levels.OwnedWeapons.Count; i++)
+                    {
+                        var id = levels.OwnedWeapons[i];
+                        into.Add(new NamedValue { name = V3WeaponDisplayNames.GetWeaponName(id), value = levels.WeaponLevel(id) });
+                    }
+                },
+            };
             return new RunViews
             {
-                Run = new LegacyRunStatusView(),
+                Run = new LegacyRunStatusView { EndedByDeathSource = () => rum != null && rum.EndedByDeath },
                 Ship = ship,
                 Captain = new LegacyCaptainView(build.Captain, build.ActivesEnabled) { KeyHint = build.ActiveKeyHint },
                 Progression = new RoguePirates.V4.Progression.ProgressionView(build.Progression, id => build.Logbook(id)), // M9
                 Loadout = new LegacyLoadoutView(weapons, build.Items, weaponSlotCap),
                 Enemies = enemies, // M8: the V4 enemy world
-                Results = new LegacyResultsView { Progression = build.Progression },
+                Results = results,
                 WeaponAim = weapons != null ? new WeaponAimView(weapons.Combat) : null,
                 Toasts = new LegacyToastSink(),
-                Commands = new LegacyHudCommands(ship, retry, menu)
+                Commands = new LegacyHudCommands(ship, retry, menu, unlocks)
             };
         }
     }

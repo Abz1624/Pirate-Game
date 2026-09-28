@@ -60,6 +60,7 @@ namespace RoguePirates.V4.DevTools.Console
                 AddSection(new WeaponsSection());
                 AddSection(new BuildSection()); // M9
                 AddSection(new DifficultySection()); // M10
+                AddSection(new RumSection()); // M12
                 AddSection(new EventsSection(game));
                 AddSection(new StageSection());
                 if (game.IsModuleLab) AddSection(new ModuleLabSection());

@@ -99,9 +99,15 @@ namespace RoguePirates.V4.Legacy
         /// <summary>M9: the V4 build modules (pickups, floor powerups, items) in PickupWorld's, V3FloorPowerupWorld's and V3RunItemEffects' places.</summary>
         public LegacyBuildWiring Build;
 
+        /// <summary>M12: publishes the Killed event (unit id, flags, position, run-clock time, weapon) — Rum's minute rows and
+        /// scheduled elites read it. Flags: 1 elite, 2 boss, 4 pays ordinary rewards (adaptive elite).</summary>
+        public System.Action<int, int, Vector3, float, string> Killed;
+
         public void OnKilled(in EnemyUnit e, EnemyDefinition def)
         {
             RunManager.Instance?.RegisterKill(e.isBoss);
+            Killed?.Invoke(e.id, (e.isElite ? 1 : 0) | (e.isBoss ? 2 : 0) | (e.ordinaryRewards ? 4 : 0), e.position,
+                RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f, e.lastHitWeaponId);
             // M11: an adaptive elite pays the unit's ordinary rewards (no Rich gold, elite payout, forced powerup or
             // elite-kill item procs): per-kill rewards never adapt.
             var rewardElite = e.isElite && !e.ordinaryRewards;
@@ -123,8 +129,7 @@ namespace RoguePirates.V4.Legacy
             Build?.SpawnKillDrops(e.position, def.xpValue, gold);
             Build?.RollPowerup(e.position, e.isBoss, rewardElite);
             RunEncounterTracker.RegisterAgentKill(e.id);
-            if (StageBalanceProfileContext.IsActive && def != null)
-                RunMarksTracker.TryCreditScheduledEliteKill(e.id, def.id);
+            // (M12: scheduled-elite Rum reads the Killed event; the V3 Marks tracker is no longer fed.)
             HighSeas.V3.V3MinibossArena.NotifyAgentKilled(e.id);
             HighSeas.Meta.TriggerBus.Instance?.RaiseKill(rewardElite, e.isBoss, e.position, e.lastHitWeaponId);
             Build?.NotifyItemKill();

@@ -50,6 +50,8 @@ namespace RoguePirates.V4.Legacy
         public LegacyEnemyWiring Enemies { get; set; }
         /// <summary>M9: level-ups, items, the Captain, powerups and pickups (replace LevelSystem, the weapon record, PickupWorld and the V3 build components).</summary>
         public LegacyBuildWiring Build { get; set; }
+        /// <summary>M12: Rum, settled at death.</summary>
+        public RoguePirates.V4.Rewards.RewardModule Rewards { get; set; }
 
         public LegacyRunShell(MonoBehaviour host, GameDatabase database, StageBuilder stageBuilder,
             PlayerShipController player, IslandLayoutDefinition islandLayout, bool usePlaceholderPoiVisuals,
@@ -145,7 +147,7 @@ namespace RoguePirates.V4.Legacy
             Build?.CancelPendingLevelUps();
             RunManager.Instance?.SetPause(PauseReason.None);
 
-            LegacyRewardsAdapter.TeardownTransientRunState(() => Enemies?.ClearTransientWorlds());
+            LegacyRunLifecycle.TeardownTransientRunState(() => Enemies?.ClearTransientWorlds());
 
             if (!_profile.TryBegin(_legacyConfig.RuntimeProfile, out var profileError))
             {
@@ -161,10 +163,10 @@ namespace RoguePirates.V4.Legacy
                 Debug.LogWarning("V4Game: enemies without V4 config (kept from V3): " + string.Join(", ", _runtimeDatabase.Unconfigured));
             _legacyConfig.RetargetEnemies(_runDatabase); // every spawn profile reads the per-run copies
             _combatOverride.ApplyAll();
-            LegacyRewardsAdapter.ResetLedgers();
-            LegacyRewardsAdapter.CreateTelemetry(experiment);
+            LegacyRunLifecycle.ResetLedgers();
+            LegacyRunLifecycle.CreateTelemetry(experiment);
             RunManager.Instance.BeginRun(seed);
-            LegacyRewardsAdapter.BeginRunTracking();
+            LegacyRunLifecycle.BeginRunTracking();
             Build?.ResetForRun(); // V3 reset its floor powerups and items here
 
             _layout = _world.Build(seed);
@@ -270,12 +272,12 @@ namespace RoguePirates.V4.Legacy
             if (RunManager.Instance == null || _player == null || _player.Damage.IsAlive) return;
             if (!RunManager.Instance.IsRunEnded) return;
             Stage?.TrySecureIfBossDead();
-            LegacyRewardsAdapter.ApplyConquestUnlockIfSecured();
+            LegacyRunLifecycle.ApplyConquestUnlockIfSecured();
         }
 
-        void OnPlayerDamaged(float amount, bool _) => LegacyRewardsAdapter.RecordDamage(amount);
+        void OnPlayerDamaged(float amount, bool _) => LegacyRunLifecycle.RecordDamage(amount);
 
-        void OnPlayerDied() => LegacyRewardsAdapter.OnPlayerDied(_player, () => Stage?.TrySecureIfBossDead(), () => Build?.CancelPendingLevelUps());
+        void OnPlayerDied() => LegacyRunLifecycle.OnPlayerDied(_player, () => Stage?.TrySecureIfBossDead(), () => Build?.CancelPendingLevelUps(), Rewards);
 
         public void OnDestroy()
         {

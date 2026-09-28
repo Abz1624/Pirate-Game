@@ -54,6 +54,8 @@ namespace RoguePirates.V4
         LegacyEnemyWiring _enemies;
         LegacyBuildWiring _build;
         Difficulty.DifficultyDirector _director;
+        Rewards.RewardModule _rewards;
+        Rewards.DamageShareTracker _damageShare;
         int _seed;
         bool _running;
         bool _ended;
@@ -89,6 +91,11 @@ namespace RoguePirates.V4
             _modules.Add(_director);
             _context.Register<Difficulty.IPressureView>(_director);
             _context.Register<Difficulty.IDifficultyLevers>(_director); // M11: the adaptive levers (ambient spawns read them)
+            // M12: Rum — rows listening to events, settled once per run id at death (replaces the V3 Marks tracker).
+            _context.Register<Rewards.IRumBank>(new Rewards.SaveRumBank(() => AppRoot.Instance != null ? AppRoot.Instance.Save : null));
+            _rewards = new Rewards.RewardModule { LabMode = moduleLab, RunTime = () => RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f };
+            _modules.Add(_rewards);
+            _context.Register<Rewards.IRumView>(_rewards);
             _context.Register<ISpawnController>(_spawn);
             // Contracts the V4 modules use, implemented over legacy systems until those systems are ported.
             var runState = new LegacyRunState();
@@ -145,12 +152,18 @@ namespace RoguePirates.V4
             _stage = new LegacyStageWiring(_context, _config, runState, damageSink, _spawn, () => _shell.Player, () => _weapons.Manager, usePlaceholderPoiVisuals, _enemies);
             _shell.Stage = _stage;
             _stage.Economy.AddItem = _build.Items.TryAddItem;
+            var unlocks = new Rewards.UnlockService(() => AppRoot.Instance != null ? AppRoot.Instance.Save : null, () => _config); // M12
+            _damageShare = new Rewards.DamageShareTracker(); // M12: results damage share from the weapon hit records
+            if (_weapons.Hooks != null) _weapons.Hooks.HitRecorded += _damageShare.Record;
             var views = LegacyViewFactory.Create(player, _weapons.Manager, RestartRun, GoToMenu, _enemies.Contracts, _build,
-                () => _config?.Single<ExperimentConfig>()?.weaponSlotCap ?? 6);
+                () => _config?.Single<ExperimentConfig>()?.weaponSlotCap ?? 6, _rewards, unlocks, _damageShare);
             views.Stage = _stage.View;
             _context.Register<Views.IRunViews>(views);
-            _resultsTelemetry = new LegacyResultsTelemetry();
+            _resultsTelemetry = new LegacyResultsTelemetry { Rum = _rewards };
+            _shell.Rewards = _rewards;
+            _stage.StageRun.Rewards = _rewards; // M12: a victory that ends the run settles Rum
             _feed = new LegacyEventFeed(_events, _clock);
+            _enemies.KillTargets.Killed = _feed.OnEnemyKilled; // M12: Killed events carry the unit id and run-clock time
             damageSink.SteadyDamageReported += _feed.OnSteadyDamage;
             _shell.Awake();
         }
@@ -252,6 +265,7 @@ namespace RoguePirates.V4
 
             _feed?.Detach();
             _resultsTelemetry?.Dispose();
+            _damageShare?.Dispose();
             _stage?.Dispose();
             _enemies?.Dispose();
             _weapons?.Dispose();

@@ -91,7 +91,7 @@ namespace RoguePirates.V4.Config
         public BossConflict bossConflict = BossConflict.SkipPermanently;
         [Tooltip("Keep retrying this long after the trigger when no slot or position is free; 0 = until it spawns.")]
         public float retryWindowSeconds = 20f;
-        [Tooltip("Index of the scheduled elite this is, for Marks/Rum (-1 = not a scheduled elite).")] public int scheduledEliteIndex = -1;
+        [Tooltip("Index of the scheduled elite this is, for Rum (-1 = not a scheduled elite).")] public int scheduledEliteIndex = -1;
         [Tooltip("Do not spawn while another arena is running.")] public bool waitForOtherArena;
         [Tooltip("Shown when it spawns; {label} = phase label. Empty = no toast.")] public string arrivalToast = "{label} has arrived!";
     }

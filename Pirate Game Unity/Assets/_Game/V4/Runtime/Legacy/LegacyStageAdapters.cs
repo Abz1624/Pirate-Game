@@ -40,7 +40,17 @@ namespace RoguePirates.V4.Legacy
         public void AddGold(int amount) => Run?.AddGold(amount);
         public bool TrySpendGold(int amount) => Run != null && Run.TrySpendGold(amount);
         public void SecureObjective() => Run?.SecureObjective();
-        public void CompleteRun(bool victory) => Run?.CompleteRun(victory);
+        /// <summary>M12: V3's CompleteRun paid Doubloons; V4 secures the objective, settles Rum once and ends the run.</summary>
+        public void CompleteRun(bool victory)
+        {
+            if (Run == null) return;
+            if (victory) Run.SecureObjective();
+            Rewards?.Settle(Run.RunId, false);
+            Run.SetState(RunState.RunComplete);
+        }
+
+        /// <summary>M12: Rum (a victory that ends the run settles it; only when continue-after-boss-victory is off).</summary>
+        public RoguePirates.V4.Rewards.RewardModule Rewards;
         public void AddStatModifier(int stat, float add, float multiply) => Run?.Stats.AddModifier(new StatModifier((StatId)stat, add, multiply));
     }
 
@@ -131,11 +141,9 @@ namespace RoguePirates.V4.Legacy
         }
     }
 
-    [DeletedInPhase(12, "RewardModule and V4 telemetry")]
+    [DeletedInPhase(14, "V4 telemetry, home seed and chest trigger")]
     public sealed class LegacyStageRewards : IStageRewards
     {
-        public void RegisterSpecialPoi(int poiIndex, POIType type) => RunMarksTracker.TryRegisterSpecialPoi(poiIndex, type);
-        public void RegisterBossVictory() => RunMarksTracker.TryRegisterBossVictory();
         public void LockHomeSeed(int runSeed) => V3HomeSeed.TryLockFromRun(runSeed);
         public void ChestOpened() => TriggerBus.Instance?.RaiseChestOpen();
         public void PoiUsedTelemetry(POIType type) => RunCombatTelemetry.Instance?.RecordPoiInteraction(type.ToString());

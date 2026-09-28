@@ -13,7 +13,7 @@ namespace RoguePirates.V4.Presentation.Hud
 {
     /// <summary>
     /// The run results screen (M6): port of V3RunResultsScreen. Same panel, texts and buttons (Retry voyage, Main menu,
-    /// Set unlock goal, Purchase goal) and the same summary (outcome, profile line, run gold, Marks breakdown, goal
+    /// Set unlock goal, Purchase goal) and the same summary (outcome, profile line, run gold, Rum breakdown, goal
     /// progress, final build, weapon contribution). Opens on the RunState event for RunComplete and reads the results
     /// view. Retry restarts the V4 run and Main menu loads the V4 menu. V3 had two copies of this screen in the scene,
     /// stacked (R-63); there is one now, on the run canvas where the top copy was.
@@ -106,7 +106,7 @@ namespace RoguePirates.V4.Presentation.Hud
             {
                 var section = r.RewardSection;
                 if (section != null) sb.Append(section);
-                else sb.AppendLine("\nMarks: not settled this run.");
+                else sb.AppendLine("\nRum: not settled this run.");
                 sb.Append(r.GoalProgress);
             }
 
@@ -170,14 +170,14 @@ namespace RoguePirates.V4.Presentation.Hud
 
             _retry = CreateButton("run_results_restart", "Retry voyage", "Start a new voyage with a fresh layout.", new Vector2(-180f, 28f), OnRetryClicked);
             _menu = CreateButton("run_results_menu", "Main menu", "Return to main menu.", new Vector2(0f, 28f), OnMenuClicked);
-            _selectGoal = CreateButton("run_results_goal", "Set unlock goal", "Choose next Marks unlock (does not spend Marks).", new Vector2(-90f, 78f), OnSelectGoalClicked);
-            _purchaseGoal = CreateButton("run_results_buy", "Purchase goal", "Spend Marks on selected unlock goal.", new Vector2(90f, 78f), OnPurchaseGoalClicked);
+            _selectGoal = CreateButton("run_results_goal", "Set unlock goal", "Choose next Rum unlock (does not spend Rum).", new Vector2(-90f, 78f), OnSelectGoalClicked);
+            _purchaseGoal = CreateButton("run_results_buy", "Purchase goal", "Spend Rum on selected unlock goal.", new Vector2(90f, 78f), OnPurchaseGoalClicked);
             _panel.SetActive(false);
         }
 
         /// <summary>
         /// R-92 fix (approved at the M6 playtest): V3's body (520x300 at the panel centre) ran below the panel and under
-        /// the buttons once the Marks breakdown, build and weapon lines were listed. The body now fills the space between
+        /// the buttons once the Rum breakdown, build and weapon lines were listed. The body now fills the space between
         /// the headline and the two button rows and scrolls (wheel or drag) when the text is longer.
         /// </summary>
         TextMeshProUGUI CreateScrollingBody()

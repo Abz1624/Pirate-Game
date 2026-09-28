@@ -291,7 +291,7 @@ namespace RoguePirates.V4.Tests
             public void Retry() => Retries++;
             public void GoToMenu() => Menus++;
             public string SelectNextUnlockGoal() => "Unlock goal: Mortar";
-            public string PurchaseUnlockGoal() => "Not enough Marks or already owned.";
+            public string PurchaseUnlockGoal() => "Not enough Rum or already owned.";
         }
 
         sealed class FakeToasts : IToastSink
@@ -317,16 +317,16 @@ namespace RoguePirates.V4.Tests
                 expected.AppendLine("Run gold earned: 120");
                 expected.AppendLine("Run gold spent: 60");
                 expected.AppendLine("Run gold remaining: 60 (run-only)");
-                expected.AppendLine("\nMarks: not settled this run.");
+                expected.AppendLine("\nRum: not settled this run.");
                 expected.Append(results.GoalProgress);
                 expected.Append("\nFinal build:\n  · Deck Cannons Lv 4\n");
                 expected.Append("\nWeapon contribution:\n  · Deck Cannons: 72% dmg\n  · Mortar: 28% dmg\n");
                 Assert.AreEqual(expected.ToString(), presenter.BuildSummary());
 
-                results.RewardSection = "\nMarks +12\n";
-                StringAssert.Contains("Run gold remaining: 60 (run-only)" + System.Environment.NewLine + "\nMarks +12\nGoal:", presenter.BuildSummary());
+                results.RewardSection = "\nRum +12\n";
+                StringAssert.Contains("Run gold remaining: 60 (run-only)" + System.Environment.NewLine + "\nRum +12\nGoal:", presenter.BuildSummary());
                 results.HasRewardSection = false;
-                StringAssert.DoesNotContain("Marks", presenter.BuildSummary());
+                StringAssert.DoesNotContain("Rum", presenter.BuildSummary());
             }
             finally { Object.DestroyImmediate(go); }
         }

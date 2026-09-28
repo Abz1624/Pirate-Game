@@ -621,7 +621,6 @@ namespace RoguePirates.V4.Stage
             var p = _layout.pois[index];
             p.used = true;
             _layout.pois[index] = p;
-            _rewards?.RegisterSpecialPoi(index, p.type);
             if (p.type != POIType.SalvageChest && p.type != POIType.BossBeacon)
                 Publish?.Invoke(CombatEventKind.LandmarkUsed, index, 0, p.position, p.type.ToString());
         }
@@ -789,7 +788,6 @@ namespace RoguePirates.V4.Stage
         {
             if (_bossDefeated) return;
             _bossDefeated = true;
-            if (!LabMode) _rewards?.RegisterBossVictory();
             _rewards?.BossDefeatedTelemetry(_bossEncounterId);
             _run.SecureObjective();
             Publish?.Invoke(CombatEventKind.BossState, 2, _bossEncounterId, default, null);

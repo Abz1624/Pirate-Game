@@ -79,7 +79,6 @@ namespace RoguePirates.V4.Spawning
     {
         void Toast(string text, float seconds);
         void Telemetry(string eventName, Dictionary<string, object> fields = null);
-        void RegisterScheduledElite(int unitId, int scheduledEliteIndex);
     }
 
     /// <summary>The storm's safe region and its ring (shared play bounds + legacy ring visual until M14).</summary>

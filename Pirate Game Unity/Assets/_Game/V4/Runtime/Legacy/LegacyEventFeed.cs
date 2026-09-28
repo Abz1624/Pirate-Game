@@ -80,8 +80,12 @@ namespace RoguePirates.V4.Legacy
         void OnHit(float damage, bool crit, Vector3 pos, string weapon) =>
             Publish(CombatEventKind.Hit, crit ? 1 : 0, 0, pos.x, pos.z, damage, weapon);
 
-        void OnKill(bool elite, bool boss, Vector3 pos, string weapon) =>
-            Publish(CombatEventKind.Killed, elite ? 1 : 0, boss ? 1 : 0, pos.x, pos.z, 0f, weapon);
+        // M12: kills are published by the V4 kill fan-out (unit id and run-clock time); TriggerBus kills are not republished.
+        void OnKill(bool elite, bool boss, Vector3 pos, string weapon) { }
+
+        /// <summary>M12: Killed — A unit id, B flags (1 elite, 2 boss, 4 ordinary rewards), X/Y position, Z run-clock time, tag weapon.</summary>
+        public void OnEnemyKilled(int unitId, int flags, Vector3 pos, float runTime, string weapon) =>
+            Publish(CombatEventKind.Killed, unitId, flags, pos.x, pos.z, runTime, weapon);
 
         void OnRunState(RunState state) => Publish(CombatEventKind.RunState, (int)state);
 
