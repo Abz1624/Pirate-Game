@@ -34,7 +34,7 @@ Material:
     - _Cull: 0
     - _EdgeSoftness: 0.05
     - _HighlightSoftness: 0.08
-    - _HighlightThreshold: 0.62
+    - _HighlightThreshold: 0.78
     - _Intensity: 1
     - _Polar: 0
     - _PolarTwist: 0.6
@@ -43,8 +43,8 @@ Material:
     - _RimPower: 1.5
     - _VFade: 0
     m_Colors:
-    - _BodyColor: {r: 1, g: 0.48, b: 0.08, a: 0.7}
-    - _HighlightColor: {r: 2.2, g: 1.8, b: 1.1, a: 1}
+    - _BodyColor: {r: 1, g: 0.55, b: 0.1, a: 0.85}
+    - _HighlightColor: {r: 1.7, g: 1.4, b: 0.75, a: 1}
     - _PolarRing: {r: 0.12, g: 0.2, b: 0.98, a: 0.35}
     - _Scroll: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

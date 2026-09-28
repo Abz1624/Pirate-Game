@@ -25,14 +25,14 @@ namespace TornadoFX
 
         [Header("Shape (meters, before Scale)")]
         [Min(1f)] public float tornadoHeight = 7f;
-        [Min(0.2f)] public float tornadoBaseRadius = 1.75f;
-        [Min(0.1f)] public float waistRadius = 0.85f;
+        [Min(0.2f)] public float tornadoBaseRadius = 2.0f;
+        [Min(0.1f)] public float waistRadius = 1.0f;
         [Min(0.2f)] public float tornadoTopRadius = 3.5f;
-        [Range(0f, 1f)] public float lean = 0.15f;
+        [Range(0f, 1f)] public float lean = 0.12f;
 
         [Header("Motion")]
         [Tooltip("Main rotation in revolutions per second (negative = counter-clockwise).")]
-        [Range(-4f, 4f)] public float rotationSpeed = 2f;
+        [Range(-4f, 4f)] public float rotationSpeed = 1.6f;
         [Tooltip("Multiplier on upward particle speed and texture scroll.")]
         [Range(0f, 3f)] public float verticalSpeed = 1f;
         [Tooltip("Multiplier on every layer's Noise strength.")]
@@ -273,12 +273,13 @@ namespace TornadoFX
             mpb = new MaterialPropertyBlock();
 
             //                     ps            spin              ratio  jitter dim    whiten gain   hlGain
-            lCore    = Make(core,         Spin.RotationY,  0.60f, 0.15f, false, 0f,   1f,    1f);
-            lSwirls  = Make(swirls,       Spin.RotationY,  1.00f, 0.12f, true,  0f,   1f,    1f);
-            lRibbons = Make(outerRibbons, Spin.Orbital,    1.25f, 0.20f, true,  0.1f, 1f,    1f);
-            lSparks  = Make(sparks,       Spin.Orbital,    1.10f, 0.30f, false, 0.55f,1f,    1f);
-            lDebris  = Make(debris,       Spin.Orbital,    0.70f, 0.25f, false, 0f,   0.35f, 0f);
-            lGround  = Make(groundVortex, Spin.Rotation2D,-0.25f, 0.10f, true,  0f,   1f,    1f);
+            // Motion hierarchy: heavy slow core < ground < swirls/ribbons < sparks < small debris (fastest)
+            lCore    = Make(core,         Spin.RotationY,  0.35f, 0.10f, false, 0f,   1f,    1f);
+            lSwirls  = Make(swirls,       Spin.RotationY,  1.00f, 0.08f, true,  0f,   1f,    1f);
+            lRibbons = Make(outerRibbons, Spin.Orbital,    1.05f, 0.10f, true,  0f,   1f,    1f);
+            lSparks  = Make(sparks,       Spin.Orbital,    0.90f, 0.20f, false, 0.2f, 1f,    1f);
+            lDebris  = Make(debris,       Spin.Orbital,    1.25f, 0.20f, false, 0f,   0.35f, 0f);
+            lGround  = Make(groundVortex, Spin.Rotation2D, 0.30f, 0.10f, true,  0f,   1f,    1f);
             lGlow    = Make(glow,         Spin.None,       0f,    0f,    true,  0f,   1f,    1f);
             lGlow.isGlow = lGround.isGlow = true;
             layers = new[] { lCore, lSwirls, lRibbons, lSparks, lDebris, lGround, lGlow };
@@ -324,18 +325,15 @@ namespace TornadoFX
             var sh = outerRibbons.shape; sh.mesh = set.funnel;
             sh = sparks.shape; sh.mesh = set.funnel;
 
-            sh = debris.shape; sh.radius = tornadoBaseRadius * 1.5f;
+            sh = debris.shape; sh.radius = tornadoBaseRadius * 1.3f;
 
             var gm = groundVortex.main;
-            float d = tornadoBaseRadius * 2.5f * 2f; // ground vortex ~2.5x the base radius
+            float d = tornadoBaseRadius * 2.3f * 2f; // ground vortex ~2.3x the base radius
             gm.startSize = new ParticleSystem.MinMaxCurve(d * 0.9f, d * 1.05f);
 
-            sh = glow.shape;
-            sh.position = new Vector3(0f, tornadoHeight * 0.5f, 0f);
-            sh.scale = new Vector3(0.6f, tornadoHeight * 0.75f, 0.6f);
-            var glm = glow.main;
-            float g = (tornadoBaseRadius + tornadoTopRadius) * 0.9f;
-            glm.startSize = new ParticleSystem.MinMaxCurve(g, g * 1.4f);
+            var glm = glow.main; // soft ground glow disc, a bit wider than the vortex
+            float g = tornadoBaseRadius * 4.8f;
+            glm.startSize = new ParticleSystem.MinMaxCurve(g, g * 1.1f);
         }
 
         void ApplyAll()
@@ -398,7 +396,7 @@ namespace TornadoFX
             float i = tornadoIntensity;
             float brightness = i <= 1f ? i : 1f + (i - 1f) * 0.8f;
             Color c = tornadoColor;
-            Color hlBase = Color.Lerp(c, new Color(1f, 0.95f, 0.75f), 0.6f);
+            Color hlBase = Color.Lerp(c, new Color(1f, 0.85f, 0.5f), 0.55f); // soft warm yellow, not white
 
             foreach (var l in layers)
             {

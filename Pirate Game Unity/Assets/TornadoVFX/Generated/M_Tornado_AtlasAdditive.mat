@@ -44,7 +44,7 @@ Material:
     - _VFade: 0
     m_Colors:
     - _BodyColor: {r: 1, g: 0.5, b: 0.1, a: 1}
-    - _HighlightColor: {r: 3, g: 2.8, b: 2.4, a: 1}
+    - _HighlightColor: {r: 1.6, g: 1.35, b: 0.8, a: 1}
     - _PolarRing: {r: 0.12, g: 0.2, b: 0.98, a: 0.35}
     - _Scroll: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

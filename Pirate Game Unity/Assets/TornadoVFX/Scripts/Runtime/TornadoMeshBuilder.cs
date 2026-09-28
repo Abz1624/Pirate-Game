@@ -27,6 +27,7 @@ namespace TornadoFX
         }
 
         public const float WaistHeight = 0.42f; // normalized height of the narrowest point
+        public const float SwirlGap = 1.05f;    // swirl radius vs funnel radius: hug the surface
 
         static readonly Dictionary<string, MeshSet> cache = new Dictionary<string, MeshSet>();
 
@@ -40,10 +41,9 @@ namespace TornadoFX
                 swirls = new[]
                 {
                     //                h0     h1    span(turns) radiusMul  seed
-                    BuildSwirl(s, 0.03f, 0.34f, 0.80f, 1.14f, 11),
-                    BuildSwirl(s, 0.28f, 0.62f, 0.75f, 1.18f, 23),
-                    BuildSwirl(s, 0.55f, 0.92f, 0.68f, 1.12f, 37),
-                    BuildSwirl(s, 0.78f, 1.02f, 0.58f, 1.06f, 51),
+                    BuildSwirl(s, 0.03f, 0.36f, 0.85f, SwirlGap, 11),
+                    BuildSwirl(s, 0.30f, 0.64f, 0.80f, SwirlGap, 23),
+                    BuildSwirl(s, 0.58f, 0.95f, 0.72f, SwirlGap, 37),
                 }
             };
             cache[key] = set;
@@ -56,7 +56,7 @@ namespace TornadoFX
             if (h < WaistHeight)
             {
                 float t = 1f - h / WaistHeight;
-                return s.waistRadius + (s.baseRadius - s.waistRadius) * t * t;
+                return s.waistRadius + (s.baseRadius - s.waistRadius) * Mathf.Pow(t, 1.6f); // fuller, wider base
             }
             float u = (h - WaistHeight) / (1f - WaistHeight);
             return s.waistRadius + (s.topRadius - s.waistRadius) * Mathf.Pow(u, 1.7f);
@@ -134,14 +134,16 @@ namespace TornadoFX
                 float h = Mathf.Lerp(h0, h1, t);
                 float a = t * span + phase;
                 // slight random distortion so the curves are never perfect circles
-                float n = 1f + 0.09f * Mathf.Sin(t * 9f + seed) + 0.05f * Mathf.Sin(t * 21f + seed * 2.1f);
+                float n = 1f + 0.035f * Mathf.Sin(t * 7f + seed) + 0.02f * Mathf.Sin(t * 17f + seed * 2.1f);
                 float rad = Radius(s, Mathf.Clamp01(h)) * radiusMul * n;
                 var dir = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
                 Vector3 center = CenterOffset(s, Mathf.Clamp01(h)) + dir * rad + Vector3.up * (h * s.height);
 
-                float width = Mathf.Lerp(0.3f, 1.05f, h) * scale * (0.75f + 0.25f * Mathf.Sin(t * 5f + seed));
+                float width = Mathf.Lerp(0.45f, 1.25f, h) * scale * (0.75f + 0.25f * Mathf.Sin(t * 5f + seed));
                 // the band's top edge leans outward like the funnel wall
-                Vector3 up = (Vector3.up + dir * 0.35f * Mathf.Lerp(0.3f, 1f, h)).normalized;
+                // follow the funnel wall slope so the band lies on the surface
+                float slope = (Radius(s, Mathf.Clamp01(h + 0.02f)) - Radius(s, Mathf.Clamp01(h - 0.02f))) / (0.04f * s.height);
+                Vector3 up = (Vector3.up + dir * slope).normalized;
 
                 verts[i * 2] = center - up * width * 0.5f;
                 verts[i * 2 + 1] = center + up * width * 0.5f;

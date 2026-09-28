@@ -28,7 +28,7 @@ public static class TornadoVFXBuilder
     };
 
     // Default dimensions baked into the saved meshes (the controller rebuilds at runtime if changed)
-    static readonly TornadoMeshBuilder.Shape DefaultShape = new TornadoMeshBuilder.Shape(7f, 1.75f, 0.85f, 3.5f, 0.15f);
+    static readonly TornadoMeshBuilder.Shape DefaultShape = new TornadoMeshBuilder.Shape(7f, 2.0f, 1.0f, 3.5f, 0.12f);
 
     [MenuItem("Tools/Tornado VFX/Build Prefab")]
     public static void Build()
@@ -40,30 +40,30 @@ public static class TornadoVFXBuilder
 
         // ---------- textures ----------
         var texBody = SaveTexture("T_Tornado_BodyNoise", 256, 256, BodyNoise, TextureWrapMode.Repeat, true);
-        var texStreak = SaveTexture("T_Tornado_Streak", 256, 64, Streak, TextureWrapMode.Clamp, true);
+        var texStreak = SaveTexture("T_Tornado_Streak", 256, 64, Streak, TextureWrapMode.Repeat, true);
         var texAtlas = SaveTexture("T_Tornado_Atlas", 128, 128, Atlas, TextureWrapMode.Clamp, false);
 
         // ---------- materials (5 shared) ----------
         var mBody = SaveMat("M_Tornado_Body", shader, texBody, m =>
         {
-            m.SetColor("_BodyColor", new Color(1f, 0.34f, 0.04f, 0.6f));
-            m.SetColor("_HighlightColor", new Color(1.9f, 1.4f, 0.8f, 1f));
-            m.SetFloat("_HighlightThreshold", 0.74f);
+            m.SetColor("_BodyColor", new Color(1f, 0.36f, 0.05f, 0.82f));
+            m.SetColor("_HighlightColor", new Color(1.35f, 0.9f, 0.35f, 1f));
+            m.SetFloat("_HighlightThreshold", 0.86f);
             m.SetFloat("_HighlightSoftness", 0.06f);
             m.SetFloat("_EdgeSoftness", 0.08f);
             m.SetTextureScale("_MainTex", new Vector2(2f, 1f));
-            m.SetVector("_Scroll", new Vector4(0.35f, -0.9f, 0, 0));
-            m.SetFloat("_Additive", 0.3f);
-            m.SetFloat("_RimAmount", 0.6f);
-            m.SetFloat("_CenterOpacity", 0.35f);
+            m.SetVector("_Scroll", new Vector4(0.18f, -0.5f, 0, 0));
+            m.SetFloat("_Additive", 0.12f);
+            m.SetFloat("_RimAmount", 0.55f);
+            m.SetFloat("_CenterOpacity", 0.6f);
             m.SetFloat("_RimPower", 1.6f);
             m.SetFloat("_VFade", 1f);
         });
         var mSwirl = SaveMat("M_Tornado_Swirl", shader, texStreak, m =>
         {
-            m.SetColor("_BodyColor", new Color(1f, 0.48f, 0.08f, 0.7f));
-            m.SetColor("_HighlightColor", new Color(2.2f, 1.8f, 1.1f, 1f));
-            m.SetFloat("_HighlightThreshold", 0.62f);
+            m.SetColor("_BodyColor", new Color(1f, 0.55f, 0.1f, 0.85f));
+            m.SetColor("_HighlightColor", new Color(1.7f, 1.4f, 0.75f, 1f));
+            m.SetFloat("_HighlightThreshold", 0.78f);
             m.SetFloat("_EdgeSoftness", 0.05f);
             m.SetFloat("_RandomOffset", 0f);
             m.SetFloat("_Additive", 1f);
@@ -71,28 +71,29 @@ public static class TornadoVFXBuilder
         var mTrail = SaveMat("M_Tornado_Trail", shader, texStreak, m =>
         {
             m.SetColor("_BodyColor", new Color(1f, 0.6f, 0.15f, 1f));
-            m.SetColor("_HighlightColor", new Color(2.4f, 2.1f, 1.5f, 1f));
-            m.SetFloat("_HighlightThreshold", 0.5f);
+            m.SetColor("_HighlightColor", new Color(1.4f, 1.1f, 0.5f, 1f));
+            m.SetFloat("_HighlightThreshold", 0.75f);
             m.SetFloat("_RandomOffset", 0f);
             m.SetFloat("_Additive", 1f);
         });
-        var mGround = SaveMat("M_Tornado_Ground", shader, texBody, m =>
+        var mGround = SaveMat("M_Tornado_Ground", shader, texStreak, m =>
         {
-            m.SetColor("_BodyColor", new Color(1f, 0.45f, 0.08f, 0.8f));
-            m.SetColor("_HighlightColor", new Color(2.6f, 2.1f, 1.4f, 1f));
-            m.SetFloat("_HighlightThreshold", 0.6f);
+            m.SetColor("_BodyColor", new Color(1f, 0.45f, 0.08f, 0.9f));
+            m.SetColor("_HighlightColor", new Color(1.5f, 1.15f, 0.55f, 1f));
+            m.SetFloat("_HighlightThreshold", 0.8f);
             m.SetFloat("_EdgeSoftness", 0.1f);
-            m.SetTextureScale("_MainTex", new Vector2(3f, 1.5f));
-            m.SetVector("_Scroll", new Vector4(0.12f, -0.35f, 0, 0));
+            m.SetTextureScale("_MainTex", new Vector2(3f, 0.8f));
+            m.SetTextureOffset("_MainTex", new Vector2(0f, -0.12f)); // strokes sit at ~75% of the disc radius
+            m.SetVector("_Scroll", new Vector4(0f, 0f, 0, 0));
             m.SetFloat("_Additive", 1f);
             m.SetFloat("_Polar", 1f); m.EnableKeyword("_POLAR");
-            m.SetFloat("_PolarTwist", 0.8f);
-            m.SetVector("_PolarRing", new Vector4(0.1f, 0.25f, 1f, 0.5f));
+            m.SetFloat("_PolarTwist", 1.1f); // curved, spiralling streaks
+            m.SetVector("_PolarRing", new Vector4(0.2f, 0.25f, 1f, 0.4f));
         });
         var mAtlasAdd = SaveMat("M_Tornado_AtlasAdditive", shader, texAtlas, m =>
         {
             m.SetColor("_BodyColor", new Color(1f, 0.5f, 0.1f, 1f));
-            m.SetColor("_HighlightColor", new Color(3f, 2.8f, 2.4f, 1f));
+            m.SetColor("_HighlightColor", new Color(1.6f, 1.35f, 0.8f, 1f));
             m.SetFloat("_HighlightThreshold", 0.6f);
             m.SetFloat("_HighlightSoftness", 0.25f);
             m.SetFloat("_EdgeSoftness", 0.3f);
@@ -113,10 +114,10 @@ public static class TornadoVFXBuilder
         var funnel = SaveMesh(TornadoMeshBuilder.BuildFunnel(DefaultShape), "Mesh_Tornado_Funnel");
         var swirlMeshes = new[]
         {
-            SaveMesh(TornadoMeshBuilder.BuildSwirl(DefaultShape, 0.03f, 0.34f, 0.80f, 1.14f, 11), "Mesh_Tornado_Swirl_A"),
-            SaveMesh(TornadoMeshBuilder.BuildSwirl(DefaultShape, 0.28f, 0.62f, 0.75f, 1.18f, 23), "Mesh_Tornado_Swirl_B"),
-            SaveMesh(TornadoMeshBuilder.BuildSwirl(DefaultShape, 0.55f, 0.92f, 0.68f, 1.12f, 37), "Mesh_Tornado_Swirl_C"),
-            SaveMesh(TornadoMeshBuilder.BuildSwirl(DefaultShape, 0.78f, 1.02f, 0.58f, 1.06f, 51), "Mesh_Tornado_Swirl_D"),
+            // 3 bands (low / mid / top) that hug the funnel wall; must match TornadoMeshBuilder.GetOrBuild
+            SaveMesh(TornadoMeshBuilder.BuildSwirl(DefaultShape, 0.03f, 0.36f, 0.85f, TornadoMeshBuilder.SwirlGap, 11), "Mesh_Tornado_Swirl_A"),
+            SaveMesh(TornadoMeshBuilder.BuildSwirl(DefaultShape, 0.30f, 0.64f, 0.80f, TornadoMeshBuilder.SwirlGap, 23), "Mesh_Tornado_Swirl_B"),
+            SaveMesh(TornadoMeshBuilder.BuildSwirl(DefaultShape, 0.58f, 0.95f, 0.72f, TornadoMeshBuilder.SwirlGap, 37), "Mesh_Tornado_Swirl_C"),
         };
 
         // ---------- hierarchy ----------
@@ -159,24 +160,24 @@ public static class TornadoVFXBuilder
     {
         var ps = NewPS("Tornado_Core", parent, 6, out var r);
         var main = ps.main;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(1.1f, 1.5f);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(1.6f, 2.0f);
         main.startSize3D = true;
-        main.startSizeX = new ParticleSystem.MinMaxCurve(0.92f, 1.06f);
-        main.startSizeY = new ParticleSystem.MinMaxCurve(0.94f, 1.06f);
-        main.startSizeZ = new ParticleSystem.MinMaxCurve(0.92f, 1.06f);
+        main.startSizeX = new ParticleSystem.MinMaxCurve(0.96f, 1.03f);
+        main.startSizeY = new ParticleSystem.MinMaxCurve(0.97f, 1.03f);
+        main.startSizeZ = new ParticleSystem.MinMaxCurve(0.96f, 1.03f);
         main.startRotation3D = true;
         main.startRotationX = new ParticleSystem.MinMaxCurve(0f, 0f);
         main.startRotationY = new ParticleSystem.MinMaxCurve(0f, TAU);
         main.startRotationZ = new ParticleSystem.MinMaxCurve(0f, 0f);
         main.startColor = Color.white;
 
-        Emission(ps, 3.5f);
-        Velocity(ps, 0.2f, 0.5f);
+        Emission(ps, 3f);
+        Velocity(ps, 0.1f, 0.25f);
         SpinY(ps, 7.5f);
-        SizeOverLife(ps, Curve(0f, 0.85f, 0.5f, 1f, 1f, 1.06f));
+        SizeOverLife(ps, Curve(0f, 0.94f, 0.5f, 1f, 1f, 1.03f));
         ColorOverLife(ps, Grad(Color.white, Color.white), Alpha(0f, 0f, 0.2f, 1f, 0.7f, 1f, 1f, 0f));
-        Erosion(ps, Curve(0f, 0.6f, 0.25f, 0.05f, 0.6f, 0.08f, 1f, 0.8f));
-        Noise(ps, 0.12f, 0.4f, 0.3f);
+        Erosion(ps, Curve(0f, 0.35f, 0.25f, 0.02f, 0.7f, 0.04f, 1f, 0.55f));
+        Noise(ps, 0.05f, 0.25f, 0.15f);
 
         r.renderMode = ParticleSystemRenderMode.Mesh;
         r.mesh = funnel;
@@ -190,23 +191,23 @@ public static class TornadoVFXBuilder
     //    rising, widening toward the top. These make the strong spiral lines.
     static ParticleSystem BuildSwirls(Transform parent, Material mat, Mesh[] meshes)
     {
-        var ps = NewPS("Tornado_Swirls", parent, 10, out var r);
+        var ps = NewPS("Tornado_Swirls", parent, 5, out var r);
         var main = ps.main;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(0.9f, 1.3f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.92f, 1.08f);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(1.1f, 1.5f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.97f, 1.03f);
         main.startRotation3D = true;
         main.startRotationX = new ParticleSystem.MinMaxCurve(0f, 0f);
         main.startRotationY = new ParticleSystem.MinMaxCurve(0f, TAU);
         main.startRotationZ = new ParticleSystem.MinMaxCurve(0f, 0f);
-        main.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.85f, 0.6f), Color.white);
+        main.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.9f, 0.75f), Color.white);
 
-        Emission(ps, 5f);
-        Velocity(ps, 0.6f, 1.1f);
+        Emission(ps, 3.2f);
+        Velocity(ps, 0.25f, 0.5f);
         SpinY(ps, 12.5f);
-        SizeOverLife(ps, Curve(0f, 0.85f, 1f, 1.2f));
+        SizeOverLife(ps, Curve(0f, 0.96f, 1f, 1.06f));
         ColorOverLife(ps, Grad(Color.white, Color.white), Alpha(0f, 0f, 0.15f, 1f, 0.65f, 1f, 1f, 0f));
-        Erosion(ps, Curve(0f, 0.55f, 0.2f, 0.05f, 0.55f, 0.1f, 1f, 0.9f));
-        Noise(ps, 0.2f, 0.6f, 0.5f);
+        Erosion(ps, Curve(0f, 0.5f, 0.2f, 0.03f, 0.6f, 0.06f, 1f, 0.8f));
+        Noise(ps, 0.04f, 0.3f, 0.2f);
 
         r.renderMode = ParticleSystemRenderMode.Mesh;
         r.SetMeshes(meshes);
@@ -221,29 +222,29 @@ public static class TornadoVFXBuilder
     //    some peeling off outward late in life. Particle quads are not rendered - only trails.
     static ParticleSystem BuildRibbons(Transform parent, Material trailMat, Mesh funnel)
     {
-        var ps = NewPS("Tornado_Outer_Ribbons", parent, 20, out var r);
+        var ps = NewPS("Tornado_Outer_Ribbons", parent, 6, out var r);
         var main = ps.main;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(0.7f, 1.1f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.07f, 0.16f);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.5f, 0.8f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.06f, 0.1f);
 
-        Emission(ps, 14f);
-        MeshShape(ps, funnel, 0.35f);
-        var vel = Velocity(ps, 1.5f, 2.6f);
+        Emission(ps, 4f);
+        MeshShape(ps, funnel, 0.05f);
+        var vel = Velocity(ps, 0.6f, 1.0f);
         vel.orbitalX = new ParticleSystem.MinMaxCurve(0f, 0f);
         vel.orbitalY = new ParticleSystem.MinMaxCurve(13f, 17f);
         vel.orbitalZ = new ParticleSystem.MinMaxCurve(0f, 0f);
         // Random between "stay on the funnel" and "detach and fly outward late in life"
-        vel.radial = new ParticleSystem.MinMaxCurve(1f, Curve(0f, 0f, 1f, 0f), Curve(0f, 0f, 0.6f, 0.3f, 1f, 5f));
+        vel.radial = new ParticleSystem.MinMaxCurve(0f, 0f); // stay on the surface
         ColorOverLife(ps,
-            Grad(new Color(1f, 0.45f, 0.05f), new Color(1f, 0.85f, 0.3f), Color.white),
+            Grad(new Color(1f, 0.5f, 0.08f), new Color(1f, 0.8f, 0.35f)),
             Alpha(0f, 0f, 0.15f, 1f, 0.75f, 1f, 1f, 0f));
-        Noise(ps, 0.6f, 0.8f, 0.6f);
+        Noise(ps, 0.08f, 0.4f, 0.3f);
 
         var tr = ps.trails;
         tr.enabled = true;
         tr.mode = ParticleSystemTrailMode.PerParticle;
         tr.ratio = 1f;
-        tr.lifetime = new ParticleSystem.MinMaxCurve(0.2f, 0.4f); // random length
+        tr.lifetime = new ParticleSystem.MinMaxCurve(0.25f, 0.4f); // random length
         tr.minVertexDistance = 0.15f;
         tr.textureMode = ParticleSystemTrailTextureMode.Stretch;
         tr.worldSpace = false;
@@ -261,26 +262,26 @@ public static class TornadoVFXBuilder
     // 5. SPARKS: 10-30 tiny stretched glowing dots spiralling up, some shooting outward.
     static ParticleSystem BuildSparks(Transform parent, Material mat, Mesh funnel)
     {
-        var ps = NewPS("Tornado_Sparks", parent, 30, out var r);
+        var ps = NewPS("Tornado_Sparks", parent, 8, out var r);
         var main = ps.main;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(0.5f, 1.1f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.06f, 0.14f);
-        main.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.9f, 0.6f), Color.white);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.6f, 1.0f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.08f);
+        main.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.75f, 0.4f), new Color(1f, 0.9f, 0.65f));
 
-        Emission(ps, 22f);
-        MeshShape(ps, funnel, 0.5f);
-        var vel = Velocity(ps, 1.5f, 3f);
+        Emission(ps, 6f);
+        MeshShape(ps, funnel, 0.08f);
+        var vel = Velocity(ps, 1.0f, 1.8f);
         vel.orbitalX = new ParticleSystem.MinMaxCurve(0f, 0f);
         vel.orbitalY = new ParticleSystem.MinMaxCurve(10f, 17f);
         vel.orbitalZ = new ParticleSystem.MinMaxCurve(0f, 0f);
-        vel.radial = new ParticleSystem.MinMaxCurve(0f, 2.5f); // occasional outward shots
-        ColorOverLife(ps, Grad(Color.white, new Color(1f, 0.8f, 0.35f)), Alpha(0f, 0f, 0.1f, 1f, 0.7f, 1f, 1f, 0f));
-        Noise(ps, 1.2f, 1.5f, 1f);
+        vel.radial = new ParticleSystem.MinMaxCurve(-0.15f, 0.45f); // mostly hug the wall, rarely drift out
+        ColorOverLife(ps, Grad(Color.white, new Color(1f, 0.7f, 0.3f)), Alpha(0f, 0f, 0.15f, 0.9f, 0.6f, 0.9f, 1f, 0f));
+        Noise(ps, 0.25f, 0.8f, 0.4f);
         Frame(ps, 1, 1);
 
         r.renderMode = ParticleSystemRenderMode.Stretch;
-        r.velocityScale = 0.04f;
-        r.lengthScale = 1.5f;
+        r.velocityScale = 0.03f;
+        r.lengthScale = 1.2f;
         r.sharedMaterial = mat;
         r.sortingFudge = -10f;
         return ps;
@@ -289,36 +290,36 @@ public static class TornadoVFXBuilder
     // 6. DEBRIS: small dark rock/leaf silhouettes orbiting the base, pulled in and up.
     static ParticleSystem BuildDebris(Transform parent, Material mat)
     {
-        var ps = NewPS("Tornado_Debris", parent, 14, out var r);
+        var ps = NewPS("Tornado_Debris", parent, 10, out var r);
         var main = ps.main;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(1.4f, 2.2f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.08f, 0.22f);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(1.2f, 1.8f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.07f, 0.16f);
         main.startRotation = new ParticleSystem.MinMaxCurve(0f, TAU);
-        main.gravityModifier = -0.35f; // slightly negative
+        main.gravityModifier = -0.1f; // slightly negative
         main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.8f, 0.8f, 0.8f), Color.white);
 
-        Emission(ps, 9f);
+        Emission(ps, 5.5f);
         var sh = ps.shape;
         sh.enabled = true;
         sh.shapeType = ParticleSystemShapeType.Circle;
-        sh.radius = 2.6f;
+        sh.radius = 2.3f;
         sh.radiusThickness = 0.35f;
         sh.rotation = new Vector3(90f, 0f, 0f);
         sh.position = new Vector3(0f, 0.1f, 0f);
-        sh.randomPositionAmount = 0.2f;
+        sh.randomPositionAmount = 0.1f;
 
-        var vel = Velocity(ps, 0.6f, 1.4f);            // vertical: medium
+        var vel = Velocity(ps, 0.25f, 0.7f);           // low: stays near the ground
         vel.orbitalX = new ParticleSystem.MinMaxCurve(0f, 0f);
         vel.orbitalY = new ParticleSystem.MinMaxCurve(7f, 11f); // orbital: medium/high
         vel.orbitalZ = new ParticleSystem.MinMaxCurve(0f, 0f);
-        vel.radial = new ParticleSystem.MinMaxCurve(-1.6f, -0.8f); // strong inward pull
+        vel.radial = new ParticleSystem.MinMaxCurve(-1.4f, -0.9f); // pulled inward
 
         var rol = ps.rotationOverLifetime;
         rol.enabled = true;
         rol.separateAxes = false;
         rol.z = new ParticleSystem.MinMaxCurve(-6f, 6f);
         ColorOverLife(ps, Grad(Color.white, Color.white), Alpha(0f, 0f, 0.15f, 1f, 0.8f, 1f, 1f, 0f));
-        Noise(ps, 0.4f, 0.8f, 0.5f);
+        Noise(ps, 0.12f, 0.5f, 0.3f);
         Frame(ps, 2, 3); // rock or leaf
 
         r.renderMode = ParticleSystemRenderMode.Billboard;
@@ -330,22 +331,22 @@ public static class TornadoVFXBuilder
     // 7. GROUND VORTEX: 2-3 flat polar-UV swirl discs, counter-rotating, pulsing.
     static ParticleSystem BuildGround(Transform parent, Material mat)
     {
-        var ps = NewPS("Tornado_Ground_Vortex", parent, 3, out var r);
+        var ps = NewPS("Tornado_Ground_Vortex", parent, 2, out var r);
         ps.transform.localPosition = new Vector3(0f, 0.03f, 0f);
         var main = ps.main;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(1.8f, 2.2f);
-        main.startSize = new ParticleSystem.MinMaxCurve(7.9f, 9.2f);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(2.4f, 2.8f);
+        main.startSize = new ParticleSystem.MinMaxCurve(8.5f, 9.4f);
         main.startRotation = new ParticleSystem.MinMaxCurve(0f, TAU);
 
-        Emission(ps, 1.2f);
+        Emission(ps, 0.6f);
         var rol = ps.rotationOverLifetime;
         rol.enabled = true;
         rol.separateAxes = false;
         rol.z = new ParticleSystem.MinMaxCurve(-3.5f, -2.8f);
-        SizeOverLife(ps, Curve(0f, 0.9f, 1f, 1.05f));
+        SizeOverLife(ps, Curve(0f, 1.05f, 1f, 0.9f)); // shrinks inward = pulled in
         // pulsing opacity
-        ColorOverLife(ps, Grad(Color.white, Color.white), Alpha(0f, 0f, 0.2f, 1f, 0.45f, 0.65f, 0.7f, 1f, 1f, 0f));
-        Erosion(ps, Curve(0f, 0.4f, 0.3f, 0.02f, 0.7f, 0.05f, 1f, 0.6f));
+        ColorOverLife(ps, Grad(Color.white, Color.white), Alpha(0f, 0f, 0.25f, 0.9f, 0.5f, 0.7f, 0.75f, 0.9f, 1f, 0f));
+        Erosion(ps, Curve(0f, 0.3f, 0.3f, 0.02f, 0.7f, 0.04f, 1f, 0.5f));
 
         r.renderMode = ParticleSystemRenderMode.HorizontalBillboard;
         r.sharedMaterial = mat;
@@ -354,29 +355,25 @@ public static class TornadoVFXBuilder
         return ps;
     }
 
-    // 8. GLOW: 3 big, very soft additive quads along the column (no bloom needed).
+    // 8. GLOW: one soft warm disc on the ground under the funnel (anchors it; no column haze, no bloom).
     static ParticleSystem BuildGlow(Transform parent, Material mat)
     {
-        var ps = NewPS("Tornado_Glow", parent, 4, out var r);
+        var ps = NewPS("Tornado_Glow", parent, 2, out var r);
+        ps.transform.localPosition = new Vector3(0f, 0.02f, 0f);
         var main = ps.main;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(1.6f, 2f);
-        main.startSize = new ParticleSystem.MinMaxCurve(4.7f, 6.6f);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(2f, 2.4f);
+        main.startSize = new ParticleSystem.MinMaxCurve(9.6f, 10.6f);
         main.startRotation = new ParticleSystem.MinMaxCurve(0f, TAU);
         main.startColor = new Color(1f, 0.55f, 0.2f, 1f);
 
-        Emission(ps, 1.7f);
-        var sh = ps.shape;
-        sh.enabled = true;
-        sh.shapeType = ParticleSystemShapeType.Box;
-        sh.position = new Vector3(0f, 3.5f, 0f);
-        sh.scale = new Vector3(0.6f, 5.25f, 0.6f);
-        ColorOverLife(ps, Grad(Color.white, Color.white), Alpha(0f, 0f, 0.4f, 0.22f, 0.6f, 0.22f, 1f, 0f));
+        Emission(ps, 0.7f);
+                ColorOverLife(ps, Grad(Color.white, Color.white), Alpha(0f, 0f, 0.3f, 0.45f, 0.7f, 0.45f, 1f, 0f));
         Frame(ps, 0, 0);
 
-        r.renderMode = ParticleSystemRenderMode.Billboard;
+        r.renderMode = ParticleSystemRenderMode.HorizontalBillboard;
         r.sharedMaterial = mat;
-        r.maxParticleSize = 3f;
-        r.sortingFudge = 10f;
+        r.maxParticleSize = 10f;
+        r.sortingFudge = 25f;
         return ps;
     }
 

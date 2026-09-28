@@ -29,23 +29,23 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Additive: 0.3
-    - _CenterOpacity: 0.35
+    - _Additive: 0.12
+    - _CenterOpacity: 0.6
     - _Cull: 0
     - _EdgeSoftness: 0.08
     - _HighlightSoftness: 0.06
-    - _HighlightThreshold: 0.74
+    - _HighlightThreshold: 0.86
     - _Intensity: 1
     - _Polar: 0
     - _PolarTwist: 0.6
     - _RandomOffset: 1
-    - _RimAmount: 0.6
+    - _RimAmount: 0.55
     - _RimPower: 1.6
     - _VFade: 1
     m_Colors:
-    - _BodyColor: {r: 1, g: 0.34, b: 0.04, a: 0.6}
-    - _HighlightColor: {r: 1.9, g: 1.4, b: 0.8, a: 1}
+    - _BodyColor: {r: 1, g: 0.36, b: 0.05, a: 0.82}
+    - _HighlightColor: {r: 1.35, g: 0.9, b: 0.35, a: 1}
     - _PolarRing: {r: 0.12, g: 0.2, b: 0.98, a: 0.35}
-    - _Scroll: {r: 0.35, g: -0.9, b: 0, a: 0}
+    - _Scroll: {r: 0.18, g: -0.5, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -25,9 +25,9 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 2b3e5816090324ae985fa28eeac51e8c, type: 3}
-        m_Scale: {x: 3, y: 1.5}
-        m_Offset: {x: 0, y: 0}
+        m_Texture: {fileID: 2800000, guid: 78b82b8f3ad5e44a7b026c2b3e7e7b55, type: 3}
+        m_Scale: {x: 3, y: 0.8}
+        m_Offset: {x: 0, y: -0.12}
     m_Ints: []
     m_Floats:
     - _Additive: 1
@@ -35,18 +35,18 @@ Material:
     - _Cull: 0
     - _EdgeSoftness: 0.1
     - _HighlightSoftness: 0.08
-    - _HighlightThreshold: 0.6
+    - _HighlightThreshold: 0.8
     - _Intensity: 1
     - _Polar: 1
-    - _PolarTwist: 0.8
+    - _PolarTwist: 1.1
     - _RandomOffset: 1
     - _RimAmount: 0
     - _RimPower: 1.5
     - _VFade: 0
     m_Colors:
-    - _BodyColor: {r: 1, g: 0.45, b: 0.08, a: 0.8}
-    - _HighlightColor: {r: 2.6, g: 2.1, b: 1.4, a: 1}
-    - _PolarRing: {r: 0.1, g: 0.25, b: 1, a: 0.5}
-    - _Scroll: {r: 0.12, g: -0.35, b: 0, a: 0}
+    - _BodyColor: {r: 1, g: 0.45, b: 0.08, a: 0.9}
+    - _HighlightColor: {r: 1.5, g: 1.15, b: 0.55, a: 1}
+    - _PolarRing: {r: 0.2, g: 0.25, b: 1, a: 0.4}
+    - _Scroll: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
