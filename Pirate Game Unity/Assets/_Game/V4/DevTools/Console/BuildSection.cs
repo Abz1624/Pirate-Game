@@ -15,7 +15,7 @@ namespace RoguePirates.V4.DevTools.Console
     public sealed class BuildSection : IConsoleSection
     {
         /// <summary>Uses the active and says what happened (off, cooling down, or what it does).</summary>
-        static string UseActive(RoguePirates.V4.Legacy.LegacyBuildWiring b)
+        static string UseActive(RoguePirates.V4.Composition.BuildModule b)
         {
             var captain = b.Captain.Config;
             if (captain?.active == null) return "No Captain active.";
@@ -66,7 +66,7 @@ namespace RoguePirates.V4.DevTools.Console
             if (stats != null)
                 GUILayout.Label($"Damage {stats.GlobalDamage:0.00}  ·  attack speed {stats.AttackSpeed:0.00}  ·  crit {stats.CritChance:0.00}  ·  luck {stats.Luck:0.00}  ·  move {stats.MoveSpeed:0.00}  ·  pickup {stats.PickupRadius:0.00}  ·  XP gain {stats.XPGain:0.00}", _wrap, GUILayout.Width(TextWidth));
             var captain = b.Captain.Config;
-            GUILayout.Label($"Lifetime gold {RoguePirates.V4.Legacy.LegacyBuildWiring.LifetimeGold:N0} (Richie unlocks at 5,000; enforced by the V4 menu in M14)", _wrap, GUILayout.Width(TextWidth));
+            GUILayout.Label($"Lifetime gold {RoguePirates.V4.Rewards.LifetimeGold.Total:N0} (Richie unlocks at 5,000; enforced by the V4 menu in M14)", _wrap, GUILayout.Width(TextWidth));
             GUILayout.Label($"Captain {captain?.displayName ?? "none"}  ·  active {captain?.active?.displayName} {(b.Captain.IsReady ? "ready" : $"cooldown {b.Captain.CooldownRemaining:0.0}s")}  ·  incoming damage ×{b.IncomingDamageMultiplier():0.00}", _wrap, GUILayout.Width(TextWidth));
             GUILayout.Label($"Floor powerups {b.Powerups.ActiveCount} on the water ({b.Powerups.SpawnedThisStage} this stage)  ·  Dead Calm ×{b.Powerups.SpawnRateMultiplier:0.00}  ·  pickups {b.Pickups.ActiveCount}/{b.Pickups.Capacity}", _wrap, GUILayout.Width(TextWidth));
 
@@ -113,7 +113,8 @@ namespace RoguePirates.V4.DevTools.Console
                     GUILayout.Label($"{c.displayName} — {c.startingWeaponId}, {c.active?.displayName} ({c.active?.cooldownSeconds:0} s)", GUILayout.Width(300));
                     if (GUILayout.Button("Play", GUILayout.Width(44)))
                     {
-                        HighSeas.V3.V3CaptainSelection.Selected = (HighSeas.V3.V3CaptainId)c.legacyId;
+                        RoguePirates.V4.Progression.CaptainChoice.LegacyId = c.legacyId;
+                        RunRequest.AllowLockedCaptainOnce(); // testing: any Captain, locked or not
                         V4Game.RestartRun();
                     }
                     GUILayout.EndHorizontal();

@@ -10,6 +10,7 @@ using HighSeas.Data;
 using HighSeas.Enemies;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
+using RoguePirates.V4.Editor;
 using RoguePirates.V4.Legacy;
 using UnityEditor;
 using UnityEngine;
@@ -79,8 +80,8 @@ namespace RoguePirates.V4.Tests
         public void EveryStageProfileField_IsOwnedOrPassThrough()
         {
             var all = typeof(StageBalanceProfile).GetFields(BindingFlags.Instance | BindingFlags.Public).Select(f => f.Name).ToList();
-            var owned = new HashSet<string>(LegacyConfigMapping.OwnedProfileFields);
-            var passed = LegacyConfigMapping.PassThroughProfileFields.Keys.ToHashSet();
+            var owned = new HashSet<string>(V3ConfigMapping.OwnedProfileFields);
+            var passed = V3ConfigMapping.PassThroughProfileFields.Keys.ToHashSet();
             CollectionAssert.IsEmpty(all.Where(f => !owned.Contains(f) && !passed.Contains(f)), "unmapped StageBalanceProfile fields");
             CollectionAssert.IsEmpty(owned.Intersect(passed), "a field is both owned and pass-through");
             CollectionAssert.IsEmpty(owned.Concat(passed).Where(f => !all.Contains(f)), "mapping names a field the profile does not have");
@@ -91,7 +92,7 @@ namespace RoguePirates.V4.Tests
         {
             var asset = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath);
             var runtime = Clone(asset);
-            LegacyConfigMapping.ApplyProfile(Timeline, Difficulty, runtime);
+            V3ConfigMapping.ApplyProfile(Timeline, Difficulty, runtime);
             var a = PublicFields(asset);
             var b = PublicFields(runtime);
             var diffs = a.Keys.Where(k => Show(a[k]) != Show(b[k])).Select(k => $"{k}: {Show(a[k])} -> {Show(b[k])}").ToList();
@@ -116,7 +117,7 @@ namespace RoguePirates.V4.Tests
                 var spawner = parity.All<EnemySpawnerConfig>().Single(s => s.legacyProfileId == p.ResolvedId);
                 Assert.AreEqual(p.enemy != null ? p.enemy.id : null, spawner.anchor != null ? spawner.anchor.enemyId : null, $"{p.ResolvedId} anchor");
                 var clone = Clone(p);
-                LegacyConfigMapping.ApplySpawner(spawner, clone);
+                V3ConfigMapping.ApplySpawner(spawner, clone);
                 Assert.AreEqual(JsonUtility.ToJson(p), JsonUtility.ToJson(clone), $"{p.ResolvedId} changed by its default config");
             }
         }
@@ -131,7 +132,7 @@ namespace RoguePirates.V4.Tests
             var json = File.ReadAllText(ParityPresetPath);
             var indices = System.Text.RegularExpressions.Regex.Matches(json, @"phases\[(\d+)\]\.focus\.variant")
                 .Cast<System.Text.RegularExpressions.Match>().Select(m => int.Parse(m.Groups[1].Value)).ToList();
-            CollectionAssert.AreEquivalent(new[] { LegacyConfigMapping.EliteA, LegacyConfigMapping.EliteB }, indices.Select(i => timeline.phases[i].phaseId));
+            CollectionAssert.AreEquivalent(new[] { V3ConfigMapping.EliteA, V3ConfigMapping.EliteB }, indices.Select(i => timeline.phases[i].phaseId));
             foreach (var i in indices) Assert.IsNotNull(timeline.phases[i].focus.variant, timeline.phases[i].phaseId + " spawns its elite variant by default (R-03)");
         }
 
@@ -146,9 +147,9 @@ namespace RoguePirates.V4.Tests
             // Band 0 is 0.5/s by decision (R-01); the V3 comparison uses the v3-parity value, 0.6.
             using (var runtime = new ConfigSetRuntime(_set))
             {
-                var band0 = runtime.Single<WaveTimelineConfig>().phases.FindIndex(p => p.phaseId == LegacyConfigMapping.BandPrefix + "0");
+                var band0 = runtime.Single<WaveTimelineConfig>().phases.FindIndex(p => p.phaseId == V3ConfigMapping.BandPrefix + "0");
                 Assert.IsTrue(runtime.TryApplyEdit("timeline.saltwind", $"phases[{band0}].ratePerSecond", "0.6", 0f, out var error), error);
-                LegacyConfigMapping.ApplySchedule(runtime.Single<WaveTimelineConfig>(), clone, s => map.Values.FirstOrDefault(c => c.ResolvedId == s.legacyProfileId), atRunStart: true);
+                V3ConfigMapping.ApplySchedule(runtime.Single<WaveTimelineConfig>(), clone, s => map.Values.FirstOrDefault(c => c.ResolvedId == s.legacyProfileId), atRunStart: true);
             }
             Assert.AreEqual(schedule.gracePeriodSeconds, clone.gracePeriodSeconds);
             Assert.AreEqual(schedule.maxActiveEnemies, clone.maxActiveEnemies);
@@ -169,7 +170,7 @@ namespace RoguePirates.V4.Tests
                 var schedule = Clone(AssetDatabase.LoadAssetAtPath<EncounterSpawnSchedule>(SchedulePath));
                 var map = schedule.entries.ToDictionary(e => e.profile, e => Clone(e.profile));
                 foreach (var e in schedule.entries) e.profile = map[e.profile];
-                LegacyConfigMapping.ApplySchedule(runtime.Single<WaveTimelineConfig>(), schedule, s => map.Values.FirstOrDefault(c => c.ResolvedId == s.legacyProfileId), atRunStart: false);
+                V3ConfigMapping.ApplySchedule(runtime.Single<WaveTimelineConfig>(), schedule, s => map.Values.FirstOrDefault(c => c.ResolvedId == s.legacyProfileId), atRunStart: false);
                 Assert.AreEqual(0.25f, schedule.entries[2].profile.timing.spawnIntervalSeconds, 1e-6f);
                 Assert.AreEqual(1f / 1.2f, schedule.entries[1].profile.timing.spawnIntervalSeconds, 1e-6f);
             }
@@ -330,8 +331,8 @@ namespace RoguePirates.V4.Tests
             _created.Add(c);
             foreach (var (v3, v4) in new (object, object)[] { (p.timing, c.timing), (p.placement, c.placement), (p.elite, c.elite), (p.movement, c.movement), (p.attack, c.attack) })
             {
-                CollectionAssert.IsEmpty(LegacyConfigMapping.CopyFields(v3, v4), $"{v4.GetType().Name} has fields V3 lacks");
-                CollectionAssert.IsEmpty(LegacyConfigMapping.CopyFields(v4, v3), $"{v3.GetType().Name} has fields the V4 mirror lacks");
+                CollectionAssert.IsEmpty(V3ConfigMapping.CopyFields(v3, v4), $"{v4.GetType().Name} has fields V3 lacks");
+                CollectionAssert.IsEmpty(V3ConfigMapping.CopyFields(v4, v3), $"{v3.GetType().Name} has fields the V4 mirror lacks");
             }
         }
 
@@ -349,7 +350,7 @@ namespace RoguePirates.V4.Tests
                 Assert.AreEqual(d.preferredRange, a.stats.preferredRange, $"{a.enemyId} preferred range");
                 if (!EnemyCombatProfileRegistry.TryGet(a.enemyId, out var profile)) continue;
                 var expected = new ArchetypeCombat();
-                LegacyConfigMapping.CopyFields(profile, expected);
+                V3ConfigMapping.CopyFields(profile, expected);
                 expected.registered = true;
                 Assert.AreEqual(JsonUtility.ToJson(expected), JsonUtility.ToJson(a.combat), $"{a.enemyId} combat profile");
             }
@@ -392,14 +393,14 @@ namespace RoguePirates.V4.Tests
             var specialist = (string[][])Table("SpecialistFamilies");
             for (var band = 0; band < 5; band++)
             {
-                var phase = Timeline.Phase(LegacyConfigMapping.BandPrefix + band);
+                var phase = Timeline.Phase(V3ConfigMapping.BandPrefix + band);
                 Assert.AreEqual(shares[band], phase.pools[0].share, $"band {band} ordinary share");
                 Assert.AreEqual(1f - shares[band], phase.pools[1].share, 1e-6f, $"band {band} specialist share");
                 CollectionAssert.AreEqual(ordinary[band], phase.pools[0].entries.Select(e => e.enemyId).ToArray(), $"band {band} ordinary pool");
                 CollectionAssert.AreEqual(specialist[band], phase.pools[1].entries.Select(e => e.enemyId).ToArray(), $"band {band} specialist pool");
             }
             var pacing = AssetDatabase.LoadAssetAtPath<DemoPacingSettings>("Assets/_Game/Resources/DemoPacingSettings.asset");
-            Assert.AreEqual(pacing.firstMinibossSeconds, Timeline.Phase(LegacyConfigMapping.ReefCrab).trigger.timeSeconds);
+            Assert.AreEqual(pacing.firstMinibossSeconds, Timeline.Phase(V3ConfigMapping.ReefCrab).trigger.timeSeconds);
         }
 
         [Test]

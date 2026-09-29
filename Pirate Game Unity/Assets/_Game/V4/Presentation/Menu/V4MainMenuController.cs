@@ -1,0 +1,171 @@
+using System.Collections.Generic;
+using HighSeas.V3;
+using RoguePirates.V4.Composition;
+using RoguePirates.V4.Config;
+using RoguePirates.V4.Presentation.Menu;
+using RoguePirates.V4.Rewards;
+using UnityEngine;
+using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+namespace RoguePirates.V4
+{
+    /// <summary>
+    /// V4 main menu (M14.13; was V3's carousel with V3's locks): the Captain cards from the Captain configs in menu order,
+    /// locked by <see cref="CaptainLocks"/> (the adopted locks; the session's v3-parity preset restores V3's, through
+    /// <see cref="MenuServices"/>). A locked Captain whose
+    /// only missing piece is Rum turns Set Sail into an unlock for that Rum. Set Sail saves the Captain (the shared
+    /// selection the run reads) and loads the V4 run scene.
+    /// </summary>
+    public sealed class V4MainMenuController : MonoBehaviour
+    {
+        [SerializeField] Canvas menuCanvas;
+        [Tooltip("The Captain, unlock and reward configs the menu reads (the run's config set).")]
+        [SerializeField] ConfigSet configSet;
+
+        CaptainSelectView _view;
+        MenuServices _services;
+        ConfigSetRuntime _config;
+        CaptainLocks _locks;
+        UnlockService _unlocks;
+        readonly List<CaptainConfig> _captains = new List<CaptainConfig>();
+        readonly List<CaptainMenuEntry> _entries = new List<CaptainMenuEntry>();
+        int _focused;
+
+        public CaptainSelectView View => _view;
+        public CaptainLocks Locks => _locks;
+
+        void Awake()
+        {
+            EnsureMenuCamera();
+            EnsureEventSystem();
+            if (menuCanvas == null) BuildCanvas();
+            _view = CaptainSelectView.Ensure(menuCanvas.transform);
+        }
+
+        void Start()
+        {
+            // M14.13 review fix: the menu's services come from the runtime (the session's preset applied, V3 state through the ports).
+            _services = MenuServices.Create(configSet);
+            if (_services == null) { Debug.LogError("V4MainMenuController: no config set"); return; }
+            _config = _services.Config;
+            _locks = _services.Locks;
+            _unlocks = _services.Unlocks;
+            _captains.Clear();
+            _captains.AddRange(_locks.MenuOrder());
+            BuildEntries();
+
+            var selected = 0;
+            for (var i = 0; i < _captains.Count; i++)
+                if (_captains[i].legacyId == RoguePirates.V4.Progression.CaptainChoice.LegacyId) selected = i;
+            _view.CaptainChanged += OnFocus;
+            _view.PlayRequested += OnPlay;
+            _view.Show(_entries, selected, Hint());
+            OnFocus(_view.SelectedIndex);
+        }
+
+        void OnDestroy()
+        {
+            if (_view != null)
+            {
+                _view.CaptainChanged -= OnFocus;
+                _view.PlayRequested -= OnPlay;
+            }
+            _services?.Dispose();
+        }
+
+        void BuildEntries()
+        {
+            _entries.Clear();
+            foreach (var c in _captains)
+            {
+                var state = _locks.StateOf(c);
+                _entries.Add(new CaptainMenuEntry
+                {
+                    Key = c.captainKey,
+                    ArtId = (V3CaptainId)c.legacyId,
+                    Label = c.displayName,
+                    Theme = c.themeColor,
+                    Locked = state.Locked,
+                    LockReason = state.Reason,
+                });
+            }
+        }
+
+        string Hint()
+        {
+            var rule = _config?.Single<UnlockConfig>()?.startingWeaponRule ?? StartingWeaponRule.CaptainWeapon;
+            return rule == StartingWeaponRule.CaptainWeapon
+                ? "Captain for this voyage — each brings a starting weapon; more weapons from level-ups"
+                : "Captain for this voyage — all start with Swivel Guns; more weapons from level-ups";
+        }
+
+        void OnFocus(int index)
+        {
+            if (index < 0 || index >= _captains.Count) return;
+            _focused = index;
+            var state = _locks.StateOf(_captains[index]);
+            if (!state.Locked) RoguePirates.V4.Progression.CaptainChoice.LegacyId = _captains[index].legacyId;
+            var (label, enabled) = PlayButton(state, Currency);
+            _view.SetPlayButton(label, enabled);
+        }
+
+        /// <summary>Set Sail for an open Captain, a Rum unlock when that is all that is missing, else locked.</summary>
+        public static (string label, bool enabled) PlayButton(CaptainLockState state, string currency) =>
+            !state.Locked ? ("SET SAIL", true)
+            : state.CanBuy ? ($"UNLOCK — {state.RumCost} {currency}", true)
+            : ("LOCKED", false);
+
+        string Currency => (_config?.Single<RewardConfig>()?.currencyName ?? "Rum").ToUpperInvariant();
+
+        void OnPlay()
+        {
+            if (_focused < 0 || _focused >= _captains.Count) return;
+            var captain = _captains[_focused];
+            var state = _locks.StateOf(captain);
+            if (state.Locked)
+            {
+                if (!state.CanBuy) return;
+                _unlocks.Purchase(captain.captainKey);
+                BuildEntries();
+                _view.Refresh(_entries);
+                OnFocus(_focused);
+                return;
+            }
+            RoguePirates.V4.Progression.CaptainChoice.LegacyId = captain.legacyId;
+            MenuServices.BeginSaltwindExperiment();
+            SceneManager.LoadScene(V4SceneNames.SaltwindRun);
+        }
+
+        static void EnsureMenuCamera()
+        {
+            if (Camera.main != null) return;
+            var cameraGo = new GameObject("Main Camera") { tag = "MainCamera" };
+            var camera = cameraGo.AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = new Color(0.04f, 0.1f, 0.16f, 1f);
+            cameraGo.AddComponent<AudioListener>();
+        }
+
+        static void EnsureEventSystem()
+        {
+            if (FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>() != null) return;
+            var esGo = new GameObject("EventSystem");
+            esGo.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGo.AddComponent<InputSystemUIInputModule>();
+        }
+
+        void BuildCanvas()
+        {
+            var canvasGo = new GameObject("v4_ui_main_menu_canvas");
+            menuCanvas = canvasGo.AddComponent<Canvas>();
+            menuCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            var scaler = canvasGo.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+            canvasGo.AddComponent<GraphicRaycaster>();
+        }
+    }
+}

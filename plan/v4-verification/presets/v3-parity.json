@@ -393,6 +393,10 @@
                 {
                     "path": "startingWeaponRule",
                     "value": "V3AlwaysFirstConquestWeapon"
+                },
+                {
+                    "path": "captainLockRule",
+                    "value": "V3Ownership"
                 }
             ]
         },

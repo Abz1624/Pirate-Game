@@ -17,6 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   weaponId: swivel_guns
   displayName: Swivel Guns
+  description: Rapid omni-directional cleanup fire.
+  behaviorLine: Auto-attacks nearby enemies
   pattern: 0
   behavior: 0
   targeting: 0
@@ -71,6 +73,7 @@ MonoBehaviour:
     prefab: {fileID: 7836255817071307116, guid: 96dd3998edea9449bb2665bc16f84ee5, type: 3}
     scaleMultiplier: 1
     radiusMultiplier: 1
+  hitEffect: 1
   projectile:
     burstShots: 2
     burstGapSeconds: 0.18

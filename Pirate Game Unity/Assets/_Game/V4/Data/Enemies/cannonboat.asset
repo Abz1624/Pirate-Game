@@ -77,7 +77,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 1
+    defaultAttackSingleShot: 1
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:
       enabled: 1

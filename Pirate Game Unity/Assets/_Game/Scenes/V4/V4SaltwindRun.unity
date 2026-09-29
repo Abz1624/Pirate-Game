@@ -5347,7 +5347,6 @@ GameObject:
   - component: {fileID: 613376440}
   - component: {fileID: 613376443}
   - component: {fileID: 613376442}
-  - component: {fileID: 613376441}
   m_Layer: 0
   m_Name: RunEndPanel
   m_TagString: Untagged
@@ -5376,21 +5375,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 600, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &613376441
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 613376439}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 317a8442b014aec43ae26e4eab3833d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.RunEndScreen
-  playButton: {fileID: 0}
-  quitButton: {fileID: 0}
-  versionText: {fileID: 0}
 --- !u!114 &613376442
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5723,18 +5707,7 @@ GameObject:
   - component: {fileID: 658786995}
   - component: {fileID: 658786994}
   - component: {fileID: 658787001}
-  - component: {fileID: 658786993}
-  - component: {fileID: 658786990}
-  - component: {fileID: 658786985}
-  - component: {fileID: 658786984}
-  - component: {fileID: 658786983}
   - component: {fileID: 658786981}
-  - component: {fileID: 658786999}
-  - component: {fileID: 658786998}
-  - component: {fileID: 658786997}
-  - component: {fileID: 658786996}
-  - component: {fileID: 658786988}
-  - component: {fileID: 658786982}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -5767,95 +5740,6 @@ MonoBehaviour:
     minSeparationMeters: 6
     maxPlacementAttempts: 8000
   islandDensityMultiplier: 1
---- !u!114 &658786982
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16f779b2f5326b34da66a76903a0b73c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.Legacy.LegacyUpdateSlot
-  role: stage
---- !u!114 &658786983
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2f9b7e77d253ae458168d20a4bc7c8f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Meta.QuestService
---- !u!114 &658786984
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2f9b7e77d253ae458168d20a4bc7c8f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Meta.LootService
---- !u!114 &658786985
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2f9b7e77d253ae458168d20a4bc7c8f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Meta.TriggerBus
---- !u!114 &658786988
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16f779b2f5326b34da66a76903a0b73c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.Legacy.LegacyUpdateSlot
-  role: weapons
---- !u!114 &658786990
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c416cd57a103d8d4da091331f8062db0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.Weapons.ProjectileWorld
-  root: {fileID: 0}
-  juiceSettings: {fileID: 0}
---- !u!114 &658786993
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16f779b2f5326b34da66a76903a0b73c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.Legacy.LegacyUpdateSlot
-  role: ambient
 --- !u!114 &658786994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5884,60 +5768,6 @@ Transform:
   - {fileID: 149490258}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &658786996
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aceb8a524413baa458a5a8d31d33637c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.PlayerJuiceController
-  settings: {fileID: 0}
---- !u!114 &658786997
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d503021e1cbb8d4fac1f88623166e7d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.WeaponJuiceController
-  settings: {fileID: 0}
-  effectRoot: {fileID: 0}
---- !u!114 &658786998
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66fab8b65389a664d9885b182fc7f6e8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.CombatVfxController
-  settings: {fileID: 0}
---- !u!114 &658786999
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658786980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9c7d19062ce6b743bc74868c8198fab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.VFX.JuiceVfxBroker
-  settings: {fileID: 0}
-  vfxRoot: {fileID: 149490258}
 --- !u!114 &658787001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5956,7 +5786,6 @@ MonoBehaviour:
   islandLayout: {fileID: 0}
   usePlaceholderPoiVisuals: 1
   configSet: {fileID: 11400000, guid: 5831aeb9fd5687344a53de1cd4fff7db, type: 2}
-  legacyBaseProfile: {fileID: 11400000, guid: 5c446dd1cad997947bc835f4b6ae9d6d, type: 2}
   moduleLab: 0
   enemyWorld:
     collideWithIslands: 1
@@ -11077,8 +10906,6 @@ GameObject:
   - component: {fileID: 1146000355}
   - component: {fileID: 1146000354}
   - component: {fileID: 1146000353}
-  - component: {fileID: 1146000352}
-  - component: {fileID: 1146000351}
   m_Layer: 0
   m_Name: RunCanvas
   m_TagString: Untagged
@@ -11086,43 +10913,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1146000351
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1146000350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 317a8442b014aec43ae26e4eab3833d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.TutorialOverlay
-  playButton: {fileID: 0}
-  quitButton: {fileID: 0}
-  versionText: {fileID: 0}
---- !u!114 &1146000352
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1146000350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb0d90258f01a874da08919ffde7c4d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.RunHud
-  hullText: {fileID: 1070149739}
-  xpText: {fileID: 1097627612}
-  timerText: {fileID: 1413230149}
-  timerCaption: {fileID: 455475401}
-  goldText: {fileID: 484073973}
-  levelText: {fileID: 1862637523}
-  hullSlider: {fileID: 1328563802}
-  xpSlider: {fileID: 1243750995}
-  hullFill: {fileID: 331118243}
-  xpFill: {fileID: 604039111}
 --- !u!114 &1146000353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12723,7 +12513,6 @@ GameObject:
   - component: {fileID: 1257118563}
   - component: {fileID: 1257118566}
   - component: {fileID: 1257118565}
-  - component: {fileID: 1257118564}
   m_Layer: 0
   m_Name: LevelUpPanel
   m_TagString: Untagged
@@ -12753,54 +12542,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1257118564
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1257118562}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3d4e5f6a7b84901b2c3d4e5f6789012, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.LevelUpModal
-  panel: {fileID: 1257118562}
-  cardButtons:
-  - {fileID: 862056701}
-  - {fileID: 95084553}
-  - {fileID: 1412494009}
-  cardViews:
-  - {fileID: 862056700}
-  - {fileID: 95084552}
-  - {fileID: 1412494008}
-  cardFrames:
-  - {fileID: 1627608828}
-  - {fileID: 224891172}
-  - {fileID: 1330038823}
-  cardCategories:
-  - {fileID: 78244251}
-  - {fileID: 782554020}
-  - {fileID: 1641023135}
-  cardTitles:
-  - {fileID: 36622947}
-  - {fileID: 793578212}
-  - {fileID: 1302570876}
-  cardLevels:
-  - {fileID: 1314579811}
-  - {fileID: 542146676}
-  - {fileID: 1347466672}
-  cardRarities:
-  - {fileID: 714445465}
-  - {fileID: 1133009951}
-  - {fileID: 1046628278}
-  cardDescriptions:
-  - {fileID: 466284111}
-  - {fileID: 980860056}
-  - {fileID: 1155217066}
-  acceptButton: {fileID: 0}
-  rejectButton: {fileID: 0}
-  refreshButton: {fileID: 0}
 --- !u!114 &1257118565
 MonoBehaviour:
   m_ObjectHideFlags: 0

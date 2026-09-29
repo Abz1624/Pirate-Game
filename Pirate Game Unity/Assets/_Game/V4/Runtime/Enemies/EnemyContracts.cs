@@ -73,4 +73,12 @@ namespace RoguePirates.V4.Enemies
         int Capacity { get; }
         bool TryGet(int index, out HazardSnapshot hazard);
     }
+
+    /// <summary>Burning patches on the water (Hellfire Nozzle), for their ground markers (read-only).</summary>
+    public interface IBurningPatchView
+    {
+        int Capacity { get; }
+        /// <summary>A live patch: its centre, radius and the fraction of its lifetime left (1 when it appears).</summary>
+        bool TryGet(int slot, out Vector3 position, out float radius, out float lifeLeft);
+    }
 }

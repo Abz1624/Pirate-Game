@@ -63,7 +63,11 @@ namespace RoguePirates.V4.Tests
             StageBalanceProfileContext.ResetForTests();
             foreach (var kv in _latches) kv.Key.eliteHammerheadSecondCharge = kv.Value;
             _latches.Clear();
+            _registry?.Dispose();
+            _registry = null;
         }
+
+        V3RegistryFromConfig _registry; // M14: V3's registry holds the config values while a test compares with it
 
         static void ResetLegacyStatics()
         {
@@ -130,6 +134,8 @@ namespace RoguePirates.V4.Tests
 
         Worlds Make(ConfigSetRuntime config, bool v3Rules = true)
         {
+            _registry?.Dispose();
+            _registry = new V3RegistryFromConfig(config);
             if (v3Rules)
             {
                 // Lockstep against V3: V3's hammerhead latch (R-100), which the default config fixes.
@@ -158,18 +164,20 @@ namespace RoguePirates.V4.Tests
             var v4Host = new GameObject("v4-world");
             _created.Add(v4Host);
             var s = new EnemyCombatServices();
-            var target = new LegacyEnemyTarget(w.ShipB);
-            var effects = new LegacyEnemyEffects();
-            w.V4 = new EnemySimulation(w.Legacy.Agents.Length, new LegacyEnemyRunState(), new LegacyEnemyViewSink(v4Host.transform), new LegacyEnemySpawnParams(),
+            var target = new LegacyShipPort(w.ShipB);
+            var effects = new RoguePirates.V4.Views.EnemyEffectsForwarder(null);
+            // M14: the V4 resolver over per-run combat profiles; combat on exactly when V3's is (the test's profile context).
+            var spawnParams = new EnemySpawnParamResolver(new EnemyCombatProfiles(config), config) { CombatEnabled = SaltwindCombatFeature.IsEnabled };
+            w.V4 = new EnemySimulation(w.Legacy.Agents.Length, new LegacyRunPort(), new V3EnemyViewSink(v4Host.transform), spawnParams,
                 new EnemyWorldSettings { islandAvoidanceProbeDistance = 10f }); // the component's code default (the scene sets 6)
             w.V4.SetDefinitions(db.enemies, EnemySimulation.BuildRules(config, db.enemies));
             s.Simulation = w.V4;
             s.Hazards = new HazardTelegraphs(target, effects);
             s.Budget = new EncounterBudget(() => StageBalanceProfileContext.Export?.Spawn?.MaxSimultaneousChargeWindups ?? 2,
                 () => StageBalanceProfileContext.Export?.Spawn?.MaxSimultaneousAreaDenial ?? 2);
-            s.Shots = new HostileProjectiles(new LegacyHostileShotViews(v4Host.transform));
+            s.Shots = new HostileProjectiles(new RoguePirates.V4.Views.HostileShotViewsForwarder(null));
             s.Effects = effects;
-            s.SpawnParams = new LegacyEnemySpawnParams();
+            s.SpawnParams = spawnParams;
             s.Behaviors = new EnemyCombatBehaviors(s);
             s.Specialists = new EnemySpecialistCombat(s);
             s.ReefCrab = new EnemyReefCrabCombat(s);
@@ -284,7 +292,7 @@ namespace RoguePirates.V4.Tests
                 w.LegacyStatuses.Tick(Dt, w.Legacy);
 
                 w.V4.Tick(Dt, w.ShipB.Position, w.ShipB.Damage);
-                w.Services.Shots.Tick(Dt, new LegacyEnemyTarget(w.ShipB));
+                w.Services.Shots.Tick(Dt, new LegacyShipPort(w.ShipB));
                 w.V4Statuses.Tick(Dt, w.V4.Agents, (i, d) => w.V4.ApplyDamage(i, d, false, false), (i, b) => w.V4.SetBurnVisual(i, b));
 
                 if (hitEvery > 0 && frame % hitEvery == hitEvery - 1)
@@ -318,7 +326,8 @@ namespace RoguePirates.V4.Tests
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
             StageBalanceProfileContext.BeginRun(AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath));
             var w = Make(config, v3Rules: false);
-            Assert.IsTrue(EnemyCombatProfileRegistry.TryGet("hammerhead", out var shared));
+            // M14: V4's run copy of the hammerhead profile (V3's shared registry is no longer read or written by V4).
+            Assert.IsTrue(w.Services.SpawnParams.TryGetCombatProfile("hammerhead", out var shared));
             shared.eliteHammerheadSecondCharge = false;
             var hammerhead = System.Array.FindIndex(w.Defs, d => d != null && d.id == "hammerhead");
             var elite = w.V4.Spawn(hammerhead, new Vector3(16f, 0f, 0f), EliteAffix.Rich);
@@ -494,7 +503,7 @@ namespace RoguePirates.V4.Tests
             StageBalanceProfileContext.BeginRun(AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath));
             var w = Make(config);
             var log = new List<string>();
-            w.V4.Bind(w.Services, new LegacyEnemyTarget(w.ShipB), new RecordingFeedback(log), new OrderKills(log, w.V4));
+            w.V4.Bind(w.Services, new LegacyShipPort(w.ShipB), new RecordingFeedback(log), new OrderKills(log, w.V4));
             w.V4.Despawned += (slot, unit, profile) => log.Add($"despawned {unit}");
             w.V4.SuppressHitHighlight = id => id == "powder_kegs";
             var shark = System.Array.FindIndex(w.Defs, e => e != null && e.id == "shark");

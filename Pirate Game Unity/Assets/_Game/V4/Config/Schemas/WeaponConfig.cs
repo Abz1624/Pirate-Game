@@ -185,6 +185,8 @@ namespace RoguePirates.V4.Config
     {
         [ConfigIdentity] public string weaponId;
         [Tooltip("The name the V4 HUD shows (from M6) and the icon file name; level-up cards read the V3 definition until M9.")] [AppliesFrom(6)] public string displayName;
+        [Tooltip("The upgrade card's first line (M14; V3 V3ContentDescriptions.GetWeaponDescription).")] [AppliesFrom(14)] public string description = string.Empty;
+        [Tooltip("The new-weapon card's firing line (M14; V3 V3ContentDescriptions.GetWeaponBehaviorLine).")] [AppliesFrom(14)] public string behaviorLine = string.Empty;
         [Tooltip("V3's pattern (offers, HUD and the legacy loadout use it).")] [AppliesFrom(9)] public ConfigEnums.WeaponPattern pattern = ConfigEnums.WeaponPattern.AutoProjectile;
         [Tooltip("The V4 firing logic.")] public ConfigEnums.WeaponBehavior behavior = ConfigEnums.WeaponBehavior.Projectile;
         public ConfigEnums.TargetingMode targeting = ConfigEnums.TargetingMode.Nearest;
@@ -206,6 +208,8 @@ namespace RoguePirates.V4.Config
         [Tooltip("True for weapons created at runtime by CombatWeaponCatalog (no V3 asset).")] public bool runtimeCatalogWeapon;
 
         public ProjectileVisual projectileVisual = new ProjectileVisual();
+        [Tooltip("The hit/kill effect its hits play (V3: Deck Cannons, Broadside Battery and Swivel Guns a cannon impact; Powder Kegs none, their blast is their own).")]
+        [AppliesFrom(14)] public ConfigEnums.WeaponHitEffect hitEffect = ConfigEnums.WeaponHitEffect.Standard;
         public ProjectileBlock projectile = new ProjectileBlock();
         public LaneBlock lane = new LaneBlock();
         public FanBlock fan = new FanBlock();

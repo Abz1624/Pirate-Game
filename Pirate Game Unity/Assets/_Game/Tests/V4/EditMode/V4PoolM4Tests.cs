@@ -204,7 +204,11 @@ namespace RoguePirates.V4.Tests
             var derived = defs.Where(d => d.Key.StartsWith(PoolCatalog.EnemyKeyPrefix)).ToList();
             Assert.Greater(derived.Count, 5);
             Assert.AreEqual(derived.Count, derived.Select(d => d.Key).Distinct().Count(), "one pool per model");
-            Assert.IsTrue(derived.All(d => d.Prewarm == 0), "nothing renders through the pool before M8");
+            // M14.10: the enemy view presenter renders through these pools, so the catalog prewarms them (the switch below).
+            Assert.IsTrue(catalog.prewarmEnemyViews, "derived enemy pools prewarm by default since M14.10");
+            Assert.IsTrue(config.TryApplyEdit(catalog.configId, "prewarmEnemyViews", "false", 0f, out var off), off);
+            Assert.IsTrue(PoolCatalog.Build(config, moduleLab: false).Where(d => d.Key.StartsWith(PoolCatalog.EnemyKeyPrefix)).All(d => d.Prewarm == 0),
+                "switched off, nothing is created up front");
 
             var reachable = PoolCatalog.ReachableEnemies(config, catalog);
             var ids = reachable.Select(r => r.id).ToList();
@@ -218,7 +222,11 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(catalog.bossViewPrewarm, warm.Single(d => d.Prefab == reefModel).Prewarm, "miniboss models prewarm the boss count");
             var hammerheadModel = reachable.Single(r => r.id == "hammerhead").model;
             Assert.AreEqual(catalog.enemyViewPrewarm, warm.Single(d => d.Prefab == hammerheadModel).Prewarm, "other models prewarm the enemy count");
-            Assert.IsTrue(warm.All(d => d.Prewarm == catalog.enemyViewPrewarm || d.Prewarm == catalog.bossViewPrewarm), "boss and miniboss models (Reef Crab, Barnacle King) use the boss count");
+            // M14.15: an archetype's own visual.poolPrewarm wins (the common SmuggleBoat enemies prewarm 60).
+            var own = reachable.Where(r => r.model != null && r.prewarm != catalog.enemyViewPrewarm && r.prewarm != catalog.bossViewPrewarm).Select(r => r.model).ToList();
+            var odd = warm.Where(d => !own.Contains(d.Prefab) && d.Prewarm != catalog.enemyViewPrewarm && d.Prewarm != catalog.bossViewPrewarm).Select(d => $"{d.Key}={d.Prewarm}").ToList();
+            Assert.IsEmpty(odd, "boss and miniboss models (Reef Crab, Barnacle King) use the boss count");
+            Assert.IsTrue(warm.Where(d => own.Contains(d.Prefab)).All(d => d.Prewarm == reachable.Where(r => r.model == d.Prefab).Max(r => r.prewarm)), "an archetype's own prewarm, the largest per model");
 
             var lab = PoolCatalog.Build(config, moduleLab: true);
             Assert.AreEqual(2, lab.Count(d => d.Key.StartsWith("lab/")));

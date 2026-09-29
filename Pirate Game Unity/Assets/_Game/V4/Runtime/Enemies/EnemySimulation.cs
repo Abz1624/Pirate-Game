@@ -44,6 +44,8 @@ namespace RoguePirates.V4.Enemies
         IEnemyTarget _target;
         IEnemyFeedback _feedback;
         IEnemyKillTargets _kills;
+        /// <summary>M14: publishes the Hit event (damage, crit, position, weapon).</summary>
+        public System.Action<float, bool, Vector3, string> HitPublished;
 
         EnemyUnit[] _agents;
         EnemyDefinition[] _definitions;

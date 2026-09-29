@@ -21,6 +21,8 @@ namespace RoguePirates.V4.Config
         public enum AimShape { ByTargeting = 0, PredictedArea = 1, TargetFan = 2, ForwardFan = 3, StrikeDisc = 4 }
         public enum WeaponBehavior { Projectile = 0, Fan = 1, Orbit = 2, ConeStream = 3, Trail = 4, Mine = 5, AreaStrike = 6, Aura = 7, PredictedArea = 8, Summon = 9 }
         /// <summary>What an evolution changes in its base weapon's behavior.</summary>
+        /// <summary>The hit and kill effect a weapon's hits play (V3 CombatVfxController: cannon weapons a cannon impact, powder kegs nothing).</summary>
+        public enum WeaponHitEffect { Standard = 0, CannonImpact = 1, None = 2 }
         public enum EvolutionEffect { None = 0, LaneWithBurst = 1, OppositeSideFollowUp = 2, WakeKegs = 3, PulsingOrbit = 4, WideConeWithPatches = 5, JumpAndDelayedStrike = 6 }
         public enum UpgradeAxis { Damage, Cooldown, Quantity, Speed, Size, Duration, Knockback, Crit, CritDamage, Pierce }
         public enum SpawnMode { Single = 0, Sequence = 1, Burst = 2, Group = 3, Continuous = 4, TimedWave = 5, Triggered = 6 }
@@ -29,6 +31,11 @@ namespace RoguePirates.V4.Config
         public enum EnemyMovementPattern { UseDefinition = 0, DirectChase = 1, Intercept = 2, Flank = 3, Orbit = 4, MaintainRange = 5, Strafe = 6, TelegraphedCharge = 7, DiveLunge = 8, Swarm = 9, Drift = 10, Stationary = 11 }
         public enum EnemyAttackPattern { UseDefinition = 0, Contact = 1, SingleShot = 2, BurstVolley = 3, SpreadVolley = 4, TelegraphedCharge = 5, AreaDenial = 6, SuicideExplosion = 7, None = 8 }
         public enum EnemySpecialBehavior { None = 0, Formation = 1, Summon = 2, TetherBeam = 3, SupportAura = 4, PhaseDash = 5, TerrainAmbush = 6, Adaptive = 7 }
+        public enum FormationRole { Auto = 0, Leader = 1, Follower = 2 }
+        public enum FormationShape { Line = 0, V = 1, Wedge = 2, Box = 3 }
+        public enum PhaseDashAxis { TowardPlayer = 0, Flank = 1, AwayThenReengage = 2 }
+        public enum TerrainAmbushTrigger { OnSpawn = 0, WhenPlayerEntersRadius = 1, WhenOffScreenThenReveal = 2 }
+        public enum AdaptiveSignal { PlayerKiteTime = 0, PlayerStandStill = 1, HighPlayerDps = 2, LowPlayerHp = 3, ManyActiveEnemies = 4 }
         public enum SaltwindCombatArchetype { LegacyGeneric, DeckhandDinghy, Shark, Swordfish, CutthroatSkiff, Hammerhead, Cannonboat, MantaRay, NeedleSloop, RammerRaft, RamRaider, BombBoat, BombKetch, PowderBarge, BoardingBarge, NetCutter, RepairTender, ShieldFrigate, GunnerCog, TreasureRaider, KrakenSpawn, EliteHammerhead, EliteKrakenSpawn, ReefCrabMiniboss, DrownedPursuer, DrownedHarrier }
     }
 

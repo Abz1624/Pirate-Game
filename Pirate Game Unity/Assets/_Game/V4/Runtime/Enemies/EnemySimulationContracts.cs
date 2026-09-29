@@ -73,6 +73,10 @@ namespace RoguePirates.V4.Enemies
         /// <summary>The Saltwind combat feature is on (the stage profile says so).</summary>
         bool CombatEnabled { get; }
         bool HasCombatProfile(EnemyDefinition def);
+        /// <summary>M14: the run's combat profile of an enemy id (was V3's static registry).</summary>
+        bool TryGetCombatProfile(string enemyId, out HighSeas.Combat.EnemyCombatProfile profile);
+        /// <summary>Combat on and the enemy has a combat profile (V3 EnemyCombatProfileRegistry.UsesSaltwindBehavior).</summary>
+        bool UsesCombatBehavior(string enemyId);
         EnemySpawnRuntimeParams ResolveForDefinition(EnemyDefinition def);
         EnemySpawnRuntimeParams Resolve(SpawnProfile profile, EnemyDefinition def, int profileInstanceId, FormationRole role, int formationSlot, int leaderUnitId);
     }

@@ -17,6 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   weaponId: flying_cutlasses
   displayName: Flying Cutlasses
+  description: Orbiting blades strike nearby foes.
+  behaviorLine: Auto-attacks nearby enemies
   pattern: 2
   behavior: 2
   targeting: 5
@@ -65,6 +67,7 @@ MonoBehaviour:
     prefab: {fileID: 3274285418519690880, guid: a56db32405bb24ee290e68352d967ccd, type: 3}
     scaleMultiplier: 1
     radiusMultiplier: 1
+  hitEffect: 0
   projectile:
     burstShots: 1
     burstGapSeconds: 0.18

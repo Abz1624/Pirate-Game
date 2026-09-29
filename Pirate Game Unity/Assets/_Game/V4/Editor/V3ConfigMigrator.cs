@@ -69,7 +69,7 @@ namespace RoguePirates.V4.Editor
 
             // M2: drowned_pursuer/harrier exist only in V3's fallback database (not in the live one, register R-05).
             var fallback = FallbackEnemies();
-            foreach (var def in fallback.Where(e => LegacyConfigMapping.FallbackOnlyEnemies.Contains(e.id)))
+            foreach (var def in fallback.Where(e => V3ConfigMapping.FallbackOnlyEnemies.Contains(e.id)))
             {
                 var a = GetOrCreate<EnemyArchetypeConfig>($"{DataRoot}/Enemies/{def.id}.asset", overwrite, log, out var write);
                 if (write) { FillArchetype(a, def); a.inLegacyDatabase = false; EditorUtility.SetDirty(a); }
@@ -82,14 +82,14 @@ namespace RoguePirates.V4.Editor
             var variants = new Dictionary<string, EnemyVariantConfig>();
             foreach (var alias in db.enemies.Where(e => e != null && !originalEnemyIds.Contains(e.id)))
             {
-                LegacyConfigMapping.SpecialistTemplates.TryGetValue(alias.id, out var template);
+                V3ConfigMapping.SpecialistTemplates.TryGetValue(alias.id, out var template);
                 if (template == null || !archetypes.TryGetValue(template, out var baseArchetype)) { log.AppendLine("no template for " + alias.id); continue; }
                 var v = GetOrCreate<EnemyVariantConfig>($"{DataRoot}/Variants/{alias.id}.asset", overwrite, log, out var write);
                 if (write) FillAliasVariant(v, alias, baseArchetype);
                 variants[alias.id] = v;
                 all.Add(v);
             }
-            foreach (var (eliteId, baseId) in LegacyConfigMapping.RegistryElites)
+            foreach (var (eliteId, baseId) in V3ConfigMapping.RegistryElites)
             {
                 if (!EnemyCombatProfileRegistry.TryGet(eliteId, out var eliteProfile) || !archetypes.TryGetValue(baseId, out var baseArchetype)) continue;
                 var v = GetOrCreate<EnemyVariantConfig>($"{DataRoot}/Variants/{eliteId}.asset", overwrite, log, out var write);
@@ -101,7 +101,7 @@ namespace RoguePirates.V4.Editor
                     v.baseArchetype = baseArchetype;
                     v.displayName = "Elite " + baseArchetype.displayName;
                     v.combat = new ArchetypeCombat();
-                    LegacyConfigMapping.CopyFields(eliteProfile, v.combat);
+                    V3ConfigMapping.CopyFields(eliteProfile, v.combat);
                     v.combat.registered = true;
                     EditorUtility.SetDirty(v);
                 }
@@ -117,7 +117,7 @@ namespace RoguePirates.V4.Editor
                 if (write)
                 {
                     s.configId = "spawner." + p.ResolvedId;
-                    LegacyConfigMapping.ReadSpawner(p, s);
+                    V3ConfigMapping.ReadSpawner(p, s);
                     s.anchor = p.enemy != null && archetypes.TryGetValue(p.enemy.id, out var anchor) ? anchor : null;
                     EditorUtility.SetDirty(s);
                 }
@@ -138,7 +138,7 @@ namespace RoguePirates.V4.Editor
                 // ReadProfile needs the phases; when only one asset is rewritten, read into a scratch copy of the other.
                 var t = writeTimeline ? timeline : Object.Instantiate(timeline);
                 var d = writeDifficulty ? difficulty : Object.Instantiate(difficulty);
-                LegacyConfigMapping.ReadProfile(profile, t, d);
+                V3ConfigMapping.ReadProfile(profile, t, d);
                 if (writeTimeline) ConfigureM3Phases(timeline, id => archetypes.TryGetValue(id, out var a) ? a : null);
                 if (!writeTimeline) Object.DestroyImmediate(t);
                 if (!writeDifficulty) Object.DestroyImmediate(d);
@@ -259,7 +259,7 @@ namespace RoguePirates.V4.Editor
                 if (e.profile == null) continue;
                 var phase = new TimelinePhase
                 {
-                    phaseId = LegacyConfigMapping.BandPrefix + i,
+                    phaseId = V3ConfigMapping.BandPrefix + i,
                     label = $"Band {i}",
                     trigger = new PhaseTrigger { kind = PhaseTriggerKind.Time, timeSeconds = e.startTimeSeconds },
                     duration = new PhaseDuration { kind = PhaseDurationKind.UntilNext },
@@ -274,38 +274,38 @@ namespace RoguePirates.V4.Editor
 
             t.phases.Add(new TimelinePhase
             {
-                phaseId = LegacyConfigMapping.ReefCrab, label = "Reef Crab miniboss (timing applies from M3)",
+                phaseId = V3ConfigMapping.ReefCrab, label = "Reef Crab miniboss (timing applies from M3)",
                 trigger = new PhaseTrigger { timeSeconds = pacing.firstMinibossSeconds }, pauseAmbient = true,
                 duration = new PhaseDuration { kind = PhaseDurationKind.UntilCleared },
                 pools = { Pool("miniboss", 1f, new[] { "reef_crab_miniboss" }, archetypes) }
             });
-            AddBeat(t, LegacyConfigMapping.EliteA, "Elite Hammerhead", schedule.hammerheadBeat, spawners, pauseAmbient: true);
-            AddBeat(t, LegacyConfigMapping.SwarmA, "Swarm pulse", schedule.swarmPulse, spawners, pauseAmbient: false);
-            AddBeat(t, LegacyConfigMapping.SwarmB, "Swarm pulse", schedule.swarmPulse, spawners, pauseAmbient: false);
-            AddBeat(t, LegacyConfigMapping.EliteB, "Elite Kraken", schedule.krakenBeat, spawners, pauseAmbient: true);
+            AddBeat(t, V3ConfigMapping.EliteA, "Elite Hammerhead", schedule.hammerheadBeat, spawners, pauseAmbient: true);
+            AddBeat(t, V3ConfigMapping.SwarmA, "Swarm pulse", schedule.swarmPulse, spawners, pauseAmbient: false);
+            AddBeat(t, V3ConfigMapping.SwarmB, "Swarm pulse", schedule.swarmPulse, spawners, pauseAmbient: false);
+            AddBeat(t, V3ConfigMapping.EliteB, "Elite Kraken", schedule.krakenBeat, spawners, pauseAmbient: true);
             t.phases.Add(new TimelinePhase
             {
-                phaseId = LegacyConfigMapping.Boss, label = "Barnacle King", isBoss = true,
+                phaseId = V3ConfigMapping.Boss, label = "Barnacle King", isBoss = true,
                 trigger = new PhaseTrigger { kind = PhaseTriggerKind.Event, eventName = "BeaconActivated" },
                 duration = new PhaseDuration { kind = PhaseDurationKind.UntilCleared },
                 spawner = Spawner(schedule.bossSummon, spawners)
             });
             t.phases.Add(new TimelinePhase
             {
-                phaseId = LegacyConfigMapping.PowderCache, label = "Powder Cache ambush",
+                phaseId = V3ConfigMapping.PowderCache, label = "Powder Cache ambush",
                 trigger = new PhaseTrigger { kind = PhaseTriggerKind.Event, eventName = "PowderCacheOpened" },
                 duration = new PhaseDuration { kind = PhaseDurationKind.UntilCleared },
                 spawner = Spawner(schedule.powderCacheAmbush, spawners)
             });
             t.phases.Add(new TimelinePhase
             {
-                phaseId = LegacyConfigMapping.Overtime, label = "Overtime", isOvertime = true,
+                phaseId = V3ConfigMapping.Overtime, label = "Overtime", isOvertime = true,
                 trigger = new PhaseTrigger { timeSeconds = 600f }, // ReadProfile sets it to the profile's stage deadline
                 spawner = Spawner(schedule.drownedPursuer, spawners), alternateSpawner = Spawner(schedule.drownedHarrier, spawners)
             });
             t.phases.Add(new TimelinePhase
             {
-                phaseId = LegacyConfigMapping.Storm, label = "Storm", isStorm = true,
+                phaseId = V3ConfigMapping.Storm, label = "Storm", isStorm = true,
                 trigger = new PhaseTrigger { timeSeconds = 720f },
                 warning = new PhaseWarning { leadSeconds = 10f, template = "The storm closes in!" }
             });
@@ -331,7 +331,7 @@ namespace RoguePirates.V4.Editor
         /// </summary>
         public static void ConfigureM3Phases(WaveTimelineConfig t, Func<string, EnemyArchetypeConfig> archetype)
         {
-            if (t.Phase(LegacyConfigMapping.ReefCrab) is TimelinePhase reef)
+            if (t.Phase(V3ConfigMapping.ReefCrab) is TimelinePhase reef)
             {
                 reef.label = "Reef Crab miniboss";
                 reef.pools.Clear();
@@ -345,7 +345,7 @@ namespace RoguePirates.V4.Editor
                     waitForOtherArena = true, arrivalToast = string.Empty,
                 };
             }
-            var elites = new[] { (LegacyConfigMapping.EliteA, 0), (LegacyConfigMapping.EliteB, 1) };
+            var elites = new[] { (V3ConfigMapping.EliteA, 0), (V3ConfigMapping.EliteB, 1) };
             foreach (var (id, index) in elites)
             {
                 if (!(t.Phase(id) is TimelinePhase elite)) continue;
@@ -358,7 +358,7 @@ namespace RoguePirates.V4.Editor
                     arrivalToast = "{label} has arrived!",
                 };
             }
-            foreach (var id in new[] { LegacyConfigMapping.SwarmA, LegacyConfigMapping.SwarmB })
+            foreach (var id in new[] { V3ConfigMapping.SwarmA, V3ConfigMapping.SwarmB })
                 if (t.Phase(id) is TimelinePhase pulse) pulse.warning.leadSeconds = t.eventWarningSeconds;
             if (t.phases.FirstOrDefault(p => p.isStorm) is TimelinePhase storm)
                 storm.warning.template = "DREAD TIDE — storm boundary in {lead} seconds!";
@@ -426,6 +426,22 @@ namespace RoguePirates.V4.Editor
         }
 
         public const string WeaponRulesPath = DataRoot + "/Weapons/WeaponRules.asset";
+
+        /// <summary>M14.11, in place and idempotent: each weapon's level-up card texts (V3's id tables).</summary>
+        public static string ApplyM14Cards()
+        {
+            var log = new StringBuilder();
+            foreach (var guid in AssetDatabase.FindAssets("t:WeaponConfig", new[] { DataRoot + "/Weapons" }))
+            {
+                var w = AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                w.description = HighSeas.V3.V3ContentDescriptions.GetWeaponDescription(w.weaponId);
+                w.behaviorLine = HighSeas.V3.V3ContentDescriptions.GetWeaponBehaviorLine(w.weaponId);
+                EditorUtility.SetDirty(w);
+                log.AppendLine($"{w.weaponId}: \"{w.description}\" / \"{w.behaviorLine}\"");
+            }
+            AssetDatabase.SaveAssets();
+            return log.ToString();
+        }
 
         [MenuItem("RoguePirates/V4/Apply M5 Weapon Configs")]
         static void ApplyM5FromMenu() => Debug.Log(ApplyM5());
@@ -641,6 +657,7 @@ namespace RoguePirates.V4.Editor
             Rules("hammerhead").eliteLatchesSecondChargeForAll = true;
             // EnemyRangedAttackRules.SupportsRangedAttacks.
             foreach (var id in new[] { "cannonboat", "gunner_cog", "bomb_boat", "manta_ray", "drowned_harrier" }) Rules(id).alwaysRanged = true;
+            Rules("cannonboat").defaultAttackSingleShot = true; // M14: SpawnProfileResolver.ResolveAttack's id rule
             // EnemyWorld.TickRangedAttack / GetAttackRecovery / GetHostileShotProfile (enemies without a combat profile).
             Rules("reef_crab_miniboss").noProfilelessRangedAttack = true;
             Rules("cannonboat").rangedMinRangeFactor = new FloatOverride { enabled = true, value = 0.8f };
@@ -694,6 +711,7 @@ namespace RoguePirates.V4.Editor
                 stage.powderCacheEliteChallenge = true;
                 stage.powderCacheEliteCount = 4;
                 stage.powderCacheHoldSeconds = 0.7f;
+                stage.powderCacheSpringsOnPress = true; // M14 playtest: a press of E springs it, no hold
                 stage.powderCacheChestMinRarity = (int)Rarity.Rare;
                 stage.powderCacheEliteSpawners = new[]
                 {
@@ -914,6 +932,12 @@ namespace RoguePirates.V4.Editor
         static void FillWeaponBehavior(WeaponConfig w, DemoJuiceSettings juice)
         {
             var id = w.weaponId;
+            // M14.11: the level-up card texts V3 kept in V3ContentDescriptions' id tables.
+            w.description = HighSeas.V3.V3ContentDescriptions.GetWeaponDescription(id);
+            w.behaviorLine = HighSeas.V3.V3ContentDescriptions.GetWeaponBehaviorLine(id);
+            // M14: V3 CombatVfxController's id rules (CannonImpactVfx.CannonWeaponIds; powder kegs skip hit and kill effects).
+            w.hitEffect = id is "deck_cannons" or "broadside_battery" or "swivel_guns" ? ConfigEnums.WeaponHitEffect.CannonImpact
+                : id == "powder_kegs" ? ConfigEnums.WeaponHitEffect.None : ConfigEnums.WeaponHitEffect.Standard;
             w.projectile = new ProjectileBlock();
             w.lane = new LaneBlock();
             w.fan = new FanBlock();
@@ -1072,8 +1096,8 @@ namespace RoguePirates.V4.Editor
             var timeline = Load<WaveTimelineConfig>($"{DataRoot}/Timelines/SaltwindTimeline.asset");
             foreach (var (phaseId, spawnerFile, variantFile) in new[]
                      {
-                         (LegacyConfigMapping.EliteA, "saltwind_elite_hammerhead", "elite_hammerhead"),
-                         (LegacyConfigMapping.EliteB, "saltwind_elite_kraken", "elite_kraken_spawn"),
+                         (V3ConfigMapping.EliteA, "saltwind_elite_hammerhead", "elite_hammerhead"),
+                         (V3ConfigMapping.EliteB, "saltwind_elite_kraken", "elite_kraken_spawn"),
                      })
             {
                 var spawner = Load<EnemySpawnerConfig>($"{DataRoot}/Spawners/{spawnerFile}.asset");
@@ -1152,13 +1176,13 @@ namespace RoguePirates.V4.Editor
             a.rewards = new ArchetypeRewards { xpValue = d.xpValue, goldValue = d.goldValue };
             a.visual = new ArchetypeVisual { visualPrefab = d.visualPrefab, visualScale = d.visualScale, visualYawOffset = d.visualYawOffset, visualHeightOffset = d.visualHeightOffset, placeholderColor = d.placeholderColor };
             a.tags = d.tags != null ? (string[])d.tags.Clone() : Array.Empty<string>();
-            a.concurrencyTags = LegacyConfigMapping.LegacyConcurrencyTags.TryGetValue(d.id, out var concurrency) ? (string[])concurrency.Clone() : Array.Empty<string>();
+            a.concurrencyTags = V3ConfigMapping.LegacyConcurrencyTags.TryGetValue(d.id, out var concurrency) ? (string[])concurrency.Clone() : Array.Empty<string>();
             a.isBoss = d.isBoss;
             a.isMiniboss = d.isMiniboss;
             a.combat = new ArchetypeCombat();
             if (EnemyCombatProfileRegistry.TryGet(d.id, out var p))
             {
-                LegacyConfigMapping.CopyFields(p, a.combat);
+                V3ConfigMapping.CopyFields(p, a.combat);
                 a.combat.registered = true;
             }
             EditorUtility.SetDirty(a);
@@ -1183,11 +1207,11 @@ namespace RoguePirates.V4.Editor
             v.tags = alias.tags != null ? (string[])alias.tags.Clone() : Array.Empty<string>();
             v.spawnTier = SpawnTierOf(alias.id);
             v.inheritBaseVisual = true; // R-13 decision: template model as a stand-in until specialists get their own models (V3: none)
-            v.concurrencyTags = LegacyConfigMapping.LegacyConcurrencyTags.TryGetValue(alias.id, out var tags) ? (string[])tags.Clone() : Array.Empty<string>();
+            v.concurrencyTags = V3ConfigMapping.LegacyConcurrencyTags.TryGetValue(alias.id, out var tags) ? (string[])tags.Clone() : Array.Empty<string>();
             v.combat = new ArchetypeCombat();
             if (EnemyCombatProfileRegistry.TryGet(alias.id, out var profile))
             {
-                LegacyConfigMapping.CopyFields(profile, v.combat);
+                V3ConfigMapping.CopyFields(profile, v.combat);
                 v.combat.registered = true;
             }
             EditorUtility.SetDirty(v);
@@ -1221,7 +1245,7 @@ namespace RoguePirates.V4.Editor
         {
             e.configId = "experiment";
             e.legacyProfileId = p.profileId;
-            LegacyConfigMapping.CopyFields(p, e);
+            V3ConfigMapping.CopyFields(p, e);
             EditorUtility.SetDirty(e);
         }
 

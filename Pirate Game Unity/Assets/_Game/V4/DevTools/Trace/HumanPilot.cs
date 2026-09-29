@@ -508,10 +508,6 @@ namespace RoguePirates.V4.DevTools.Trace
     {
         public enum BuildProfile { Average = 0, Weak = 1, Strong = 2 }
 
-        static readonly FieldInfo OffersField = typeof(LevelUpModal).GetField("_offers", BindingFlags.Instance | BindingFlags.NonPublic);
-        static readonly FieldInfo PanelField = typeof(LevelUpModal).GetField("panel", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-        static readonly MethodInfo PickMethod = typeof(LevelUpModal).GetMethod("Pick", BindingFlags.Instance | BindingFlags.NonPublic);
-        static readonly MethodInfo SkipMethod = typeof(LevelUpModal).GetMethod("OnSkipClicked", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
         public HumanPilot Pilot { get; private set; }
         public BuildProfile Profile;
@@ -580,19 +576,20 @@ namespace RoguePirates.V4.DevTools.Trace
 
         void RespondToLevelUp()
         {
-            var modal = LevelUpModal.Instance;
-            var panel = modal != null && PanelField != null ? PanelField.GetValue(modal) as GameObject : null;
-            var offers = panel != null && panel.activeSelf && OffersField != null ? OffersField.GetValue(modal) as List<LevelOffer> : null;
+            // M14.11: the level-up presenter's pick/skip API (was reflection on V3's LevelUpModal).
+            RoguePirates.V4.Progression.IOfferChoice cards = null;
+            _game?.Context?.TryGet(out cards);
+            var offers = cards != null && cards.IsShowing ? cards.Shown : null;
             if (offers == null || offers.Count == 0) { _modalFrames = 0; return; }
             if (++_modalFrames < 20) return; // a person takes a moment to read the cards
             _modalFrames = 0;
             // Weak: keeps its one weapon (upgrades, items and Logbooks only), like a player who never adds guns.
             var pick = BestCard(offers);
-            if (Profile == BuildProfile.Weak && offers[pick].kind == LevelOfferKind.NewWeapon && SkipMethod != null) { SkipMethod.Invoke(modal, null); return; }
-            PickMethod?.Invoke(modal, new object[] { pick });
+            if (Profile == BuildProfile.Weak && offers[pick].Kind == RoguePirates.V4.Progression.OfferKind.NewWeapon) { cards.Skip(); return; }
+            cards.Pick(pick);
         }
 
-        int BestCard(List<LevelOffer> offers)
+        int BestCard(IReadOnlyList<RoguePirates.V4.Progression.Offer> offers)
         {
             var weapons = _game?.Build?.Progression?.OwnedWeapons?.Count ?? 1;
             var best = 0;
@@ -600,15 +597,15 @@ namespace RoguePirates.V4.DevTools.Trace
             for (var i = 0; i < offers.Count; i++)
             {
                 var o = offers[i];
-                var score = o.kind switch
+                var score = o.Kind switch
                 {
-                    LevelOfferKind.WeaponEvolution => 100f,
-                    LevelOfferKind.NewWeapon => Profile == BuildProfile.Weak ? -100f : weapons < 6 ? 80f - weapons * 4f : 5f,
-                    LevelOfferKind.WeaponUpgrade => 50f + o.currentLevel * 2f,
-                    LevelOfferKind.NewRunItem => 45f,
-                    LevelOfferKind.Logbook => 35f + o.currentLevel,
+                    RoguePirates.V4.Progression.OfferKind.WeaponEvolution => 100f,
+                    RoguePirates.V4.Progression.OfferKind.NewWeapon => Profile == BuildProfile.Weak ? -100f : weapons < 6 ? 80f - weapons * 4f : 5f,
+                    RoguePirates.V4.Progression.OfferKind.WeaponUpgrade => 50f + o.CurrentLevel * 2f,
+                    RoguePirates.V4.Progression.OfferKind.NewRunItem => 45f,
+                    RoguePirates.V4.Progression.OfferKind.Logbook => 35f + o.CurrentLevel,
                     _ => 10f,
-                } + (int)o.rarity * 3f;
+                } + o.Rarity * 3f;
                 if (score > bestScore) { bestScore = score; best = i; }
             }
             return best;

@@ -92,8 +92,16 @@ namespace RoguePirates.V4.Tests
             Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3SpawnWarningHud>(FindObjectsInactive.Include, FindObjectsSortMode.None));
             Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3SpawnEdgeIndicator>(FindObjectsInactive.Include, FindObjectsSortMode.None));
             Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Combat.WeaponTargetingVisualizer>(FindObjectsInactive.Include, FindObjectsSortMode.None));
-            var juice = Object.FindFirstObjectByType<HighSeas.VFX.WeaponJuiceController>();
-            Assert.IsTrue(juice == null || !juice.enabled, "the juice controller no longer draws weapon effects");
+            // M14.9b: the V3 effect components and the event bus left the run (V4 presenters on the event stream).
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.VFX.WeaponJuiceController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no weapon juice controller");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.VFX.JuiceVfxBroker>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no juice broker");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.VFX.CombatVfxController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no combat VFX controller");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.VFX.PlayerJuiceController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no player juice controller");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.VFX.PlayerHealthBarBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 health bar binder");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Meta.TriggerBus>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no TriggerBus");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Weapons.ProjectileWorld>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 ProjectileWorld");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3PlayBoundsWallVisual>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 edge walls");
+            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3SaltwindStormRingVisual>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 storm ring");
             // M9: the V3 build systems left the run (the V4 progression, item, Captain, powerup and pickup modules replace them).
             Assert.IsEmpty(Object.FindObjectsByType<HighSeas.UI.LevelSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no LevelSystem");
             Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Weapons.WeaponController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no weapon record");
@@ -339,7 +347,7 @@ namespace RoguePirates.V4.Tests
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             ship.Damage.SetPlaytestInvulnerable(true);
             var loadout = new[] { "deck_cannons", "powder_kegs", "flying_cutlasses" };
-            RoguePirates.V4.Legacy.LegacyWeaponLab.SetLoadout(Object.FindFirstObjectByType<V4Game>(), loadout);
+            RoguePirates.V4.DevTools.WeaponLab.SetLoadout(Object.FindFirstObjectByType<V4Game>(), loadout);
             var effects = Object.FindFirstObjectByType<V4PresentationRoot>().WeaponEffects;
             var world = V4TestEnemies.Simulation();
 

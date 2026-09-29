@@ -103,16 +103,18 @@ namespace RoguePirates.V4.Spawning
         void DamageOverTime(float amount, Vector3 source);
     }
 
-    /// <summary>Spawn-rate multipliers owned by systems that are still legacy (Dead Calm, register D4).</summary>
-    public interface ILegacySpawnRateSource
+    /// <summary>Spawn-rate multipliers owned by other modules (Dead Calm, Cursed Compass).</summary>
+    public interface ISpawnRateSource
     {
         float Multiplier { get; }
     }
 
-    /// <summary>The runtime legacy spawn profile a spawner config drives (built by the M1 config bridge).</summary>
+    /// <summary>The runtime spawn profile a spawner config drives (M14: built from the config alone by SpawnerProfiles).</summary>
     public interface ISpawnerProfiles
     {
         SpawnProfile For(EnemySpawnerConfig spawner);
+        /// <summary>M11: the profile's adaptive-elite copy for one spawn (reused; current at this moment).</summary>
+        SpawnProfile EliteCopy(SpawnProfile source, DirectorConfig d);
     }
 
     public enum PhaseState { Waiting, Warned, Active, Done, Skipped, External }

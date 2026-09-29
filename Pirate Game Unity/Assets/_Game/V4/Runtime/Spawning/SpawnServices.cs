@@ -15,7 +15,7 @@ namespace RoguePirates.V4.Spawning
         public ISpawnFeedback Feedback;
         public IStormArena Storm;
         public IPlayerDamageSink Player;
-        public ILegacySpawnRateSource LegacyRate;
+        public ISpawnRateSource ExternalRate;
         public ISpawnerProfiles Profiles;
         /// <summary>Required encounters (M7; optional so earlier tests without it still run).</summary>
         public IEncounterTracker Encounters;
@@ -39,7 +39,7 @@ namespace RoguePirates.V4.Spawning
             Storm = context.Get<IStormArena>();
             Player = context.Get<IPlayerDamageSink>();
             Profiles = context.Get<ISpawnerProfiles>();
-            context.TryGet(out LegacyRate);
+            context.TryGet(out ExternalRate);
             context.TryGet(out Encounters);
         }
 

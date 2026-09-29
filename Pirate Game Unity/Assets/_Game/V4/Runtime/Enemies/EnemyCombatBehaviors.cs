@@ -128,7 +128,7 @@ namespace RoguePirates.V4.Enemies
             Vector3 playerPos,
             DamageReceiver playerDamage)
         {
-            if (!EnemyCombatProfileRegistry.TryGet(def.id, out var profile)) return;
+            if (!_services.SpawnParams.TryGetCombatProfile(def.id, out var profile)) return;
             if (profile.archetype == SaltwindCombatArchetype.ReefCrabMiniboss) return;
 
             var state = State(agent.id, def);

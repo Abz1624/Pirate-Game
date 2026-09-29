@@ -66,6 +66,8 @@ namespace RoguePirates.V4.Config
         [AppliesFrom(8)] public bool eliteChargesTwice;
         [Tooltip("Uses ranged attacks whatever its category and behaviour (V3: cannonboat, gunner_cog, bomb_boat, manta_ray, drowned_harrier).")]
         [AppliesFrom(8)] public bool alwaysRanged;
+        [Tooltip("With no attack pattern and no combat profile it fires single shots (V3: cannonboat, SpawnProfileResolver.ResolveAttack).")]
+        [AppliesFrom(14)] public bool defaultAttackSingleShot;
 
         [Header("Ranged path without a combat profile (V3's pre-Saltwind path; every V3 enemy but the boss has a profile)")]
         [Tooltip("Never uses the profileless ranged path at all (V3: reef_crab_miniboss returned before both of its branches).")]

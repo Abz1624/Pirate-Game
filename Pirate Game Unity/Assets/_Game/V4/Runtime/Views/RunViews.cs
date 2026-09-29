@@ -51,6 +51,25 @@ namespace RoguePirates.V4.Views
         float MaxHp { get; }
         /// <summary>Boost meter fill, 0..1 (0 when the ship has no boost).</summary>
         float BoostNormalized { get; }
+        /// <summary>M14: the ship's visual root, for effects drawn on it (damage flash, highlight); null without a ship.</summary>
+        Transform Anchor { get; }
+        /// <summary>M14.9b: the ship's model, where its health bar sits (V3 PlayerHealthBarBinder: VisualModel, else the ship).</summary>
+        Transform VisualModel => Anchor;
+    }
+
+    /// <summary>
+    /// The play area as the world presenters draw it (M14.9b; V3's V3PlayBoundsWallVisual and V3SaltwindStormRingVisual
+    /// read the shared PlayBounds): the bounds rectangle for the edge walls and the storm's safe rectangle for its ring.
+    /// </summary>
+    public interface IWorldView
+    {
+        Vector3 BoundsCenter { get; }
+        float BoundsHalfX { get; }
+        float BoundsHalfZ { get; }
+        /// <summary>The storm ring is up (from the storm's start until the next run).</summary>
+        bool StormRingVisible { get; }
+        /// <summary>The storm's safe rectangle, in ring order.</summary>
+        void StormRingCorners(out Vector3 a, out Vector3 b, out Vector3 c, out Vector3 d);
     }
 
     public interface ICaptainView

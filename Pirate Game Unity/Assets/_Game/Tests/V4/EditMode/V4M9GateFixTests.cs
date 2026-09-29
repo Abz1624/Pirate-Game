@@ -162,6 +162,7 @@ namespace RoguePirates.V4.Tests
         {
             public List<Offer> Offers;
             public bool TryShow(List<Offer> offers, Action<Offer> selected, Action skipped, Action refreshed, int refreshesRemaining) { Offers = offers; return true; }
+            public void Hide() { }
         }
 
         static RunState StateAfterALevelUpInTheBossFight(bool resumeToBossFight, RunState? changedDuringPause = null)
@@ -326,7 +327,7 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void LifetimeGold_AddsTheRunsGold_OncePerRun()
         {
-            var key = RoguePirates.V4.Legacy.LegacyBuildWiring.LifetimeGoldKey;
+            var key = RoguePirates.V4.Composition.BuildModule.LifetimeGoldKey;
             var had = PlayerPrefs.HasKey(key);
             var old = PlayerPrefs.GetInt(key, 0);
             var host = new GameObject("run");
@@ -338,10 +339,10 @@ namespace RoguePirates.V4.Tests
                 rm.AddGold(300);
                 PlayerPrefs.SetInt(key, 1000);
                 using var set = Default();
-                var build = new RoguePirates.V4.Legacy.LegacyBuildWiring(set, () => null, () => null);
+                var build = new RoguePirates.V4.Composition.BuildModule(set, () => null, () => null);
                 build.RecordRunGold();
                 build.RecordRunGold();
-                Assert.AreEqual(1300, RoguePirates.V4.Legacy.LegacyBuildWiring.LifetimeGold, "the run's 300 gold, counted once");
+                Assert.AreEqual(1300, RoguePirates.V4.Composition.BuildModule.LifetimeGold, "the run's 300 gold, counted once");
                 build.Dispose();
             }
             finally

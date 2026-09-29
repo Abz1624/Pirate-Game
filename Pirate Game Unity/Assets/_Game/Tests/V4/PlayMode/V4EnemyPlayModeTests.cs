@@ -72,12 +72,13 @@ namespace RoguePirates.V4.Tests
             Assert.IsNull(Object.FindFirstObjectByType<HostileProjectileWorld>(), "V3 HostileProjectileWorld no longer added");
             Assert.IsNull(Object.FindFirstObjectByType<HellfirePatchWorld>(), "V3 HellfirePatchWorld no longer ensured");
             Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.CombatTelemetryDriver>(), "V3 CombatTelemetryDriver no longer added");
-            var systems = GameObject.Find("Systems");
-            var roles = systems.GetComponents<RoguePirates.V4.Legacy.LegacyUpdateSlot>().Select(sl => sl.role).ToList();
-            CollectionAssert.Contains(roles, "hellfire", "hellfire patches tick where V3 ensured HellfirePatchWorld");
-            CollectionAssert.Contains(roles, "telemetry", "telemetry samples where CombatTelemetryDriver was added");
+            // M14.14: frame steps (were legacy update slots).
+            var frame = Object.FindFirstObjectByType<V4Game>().Frame;
+            Assert.IsTrue(frame.Has(FrameStep.Hellfire), "hellfire patches tick in the frame");
+            Assert.IsTrue(frame.Has(FrameStep.Telemetry), "telemetry samples in the frame");
             var wiring = Object.FindFirstObjectByType<V4Game>().Shell.Enemies;
-            Assert.AreSame(wiring.Services.Hazards, RoguePirates.V4.Legacy.LegacyHazardTelegraphView.Source, "the hazard rings draw the V4 hazards");
+            Assert.AreSame(wiring.Services.Hazards, Object.FindFirstObjectByType<V4Game>().Context.Get<RoguePirates.V4.Enemies.IHazardView>(),
+                "the hazard rings draw the V4 hazards (M14.9b: the presenter reads the context's hazard view)");
 
             // A hellfire patch burns an enemy standing in it (V3's patch world read the legacy enemy world).
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
@@ -134,13 +135,13 @@ namespace RoguePirates.V4.Tests
         static void KeepRunning()
         {
             if (!RunManager.Instance.IsPaused) return;
-            var modal = HighSeas.UI.LevelUpModal.Instance;
+            var modal = Object.FindFirstObjectByType<RoguePirates.V4.Presentation.Hud.LevelUpPresenter>(); // M14.11
             var card = modal != null ? modal.transform.Find("CardRow/Card0") : null;
             if (card != null && card.gameObject.activeInHierarchy) card.GetComponent<UnityEngine.UI.Button>()?.onClick.Invoke();
             else RunManager.Instance.SetPause(PauseReason.None);
         }
 
-        static RoguePirates.V4.Legacy.LegacyBuildWiring Build() => Object.FindFirstObjectByType<V4Game>().Build;
+        static RoguePirates.V4.Composition.BuildModule Build() => Object.FindFirstObjectByType<V4Game>().Build;
 
         static int CountBarrels(PickupType type)
         {
@@ -203,12 +204,12 @@ namespace RoguePirates.V4.Tests
             var enemies = Object.FindFirstObjectByType<V4Game>().Shell.Enemies;
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             var at = ship.Position + new Vector3(10f, 0f, 0f);
-            var hooks = new RoguePirates.V4.Legacy.LegacyWeaponHooks(() => ship, id => null, enemies.Hellfire);
+            var hooks = new RoguePirates.V4.Weapons.WeaponCombatHooks(null, enemies.Hellfire);
             Build().Progression.DevEvolve("flamethrower", "hellfire_nozzle"); // the Hellfire Nozzle evolution (the run's own)
             hooks.SpawnFlamePatch(at, "flamethrower");
             Assert.AreEqual(1, enemies.Hellfire.ActiveCount);
             yield return null;
-            var view = Object.FindFirstObjectByType<RoguePirates.V4.Legacy.LegacyHazardTelegraphView>();
+            var view = Object.FindFirstObjectByType<RoguePirates.V4.Presentation.Effects.HazardRingPresenter>();
             Assert.IsNotNull(view);
             var outline = view.transform.Find("PatchOutline0");
             Assert.IsNotNull(outline, "a marker ring per patch slot");
@@ -279,10 +280,10 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(0, sim.ActiveCount, "sailing up does not spring it: you hold E");
             stage.Module.TryCompleteInteraction(cache); // the completed hold
             var deadline = Time.realtimeSinceStartup + 8f;
-            var encounter = RunEncounterTracker.Get(stage.Module.PowderCacheChallengeEncounter(cache));
-            Assert.IsNotNull(encounter, "the challenge's encounter");
-            while (encounter.SpawnedCount < 4 && Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
-            Assert.AreEqual(4, encounter.SpawnedCount, "4 elites spawned (queued encounters tick in the lab)");
+            var encounter = stage.Module.PowderCacheChallengeEncounter(cache); // M14: the run's V4 encounter tracker
+            Assert.IsTrue(Get<RoguePirates.V4.Spawning.IEncounterTracker>().Exists(encounter), "the challenge's encounter");
+            while (Get<RoguePirates.V4.Spawning.IEncounterTracker>().SpawnedCount(encounter) < 4 && Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
+            Assert.AreEqual(4, Get<RoguePirates.V4.Spawning.IEncounterTracker>().SpawnedCount(encounter), "4 elites spawned (queued encounters tick in the lab)");
             for (var i = 0; i < sim.Agents.Length; i++)
                 if (sim.Agents[i].active) Assert.IsTrue(sim.Agents[i].isElite, "every ambusher is an elite");
             for (var i = 0; i < sim.Agents.Length; i++)
@@ -345,7 +346,7 @@ namespace RoguePirates.V4.Tests
             while (sim.ActiveCount < 3 && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.GreaterOrEqual(sim.ActiveCount, 3, "ambient spawns arrived");
             yield return null;
-            var peak = (float)typeof(RunCombatTelemetry).GetField("_peakEnemies", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(RunCombatTelemetry.Instance);
+            var peak = Object.FindFirstObjectByType<V4Game>().Telemetry.PeakEnemies; // M14: the V4 telemetry
             Assert.GreaterOrEqual(peak, 3, "the telemetry slot counts the V4 world's enemies (V3's driver would read 0 now)");
         }
 
@@ -358,8 +359,7 @@ namespace RoguePirates.V4.Tests
             var legacy = Object.FindFirstObjectByType<HighSeas.V3.V3ExplosiveBarrelWorld>();
             Assert.IsNotNull(legacy, "the parity preset places V3's barrels (their markers stay V3's)");
             Assert.IsFalse(legacy.enabled, "V3's barrel update is switched off");
-            var slots = legacy.GetComponents<RoguePirates.V4.Legacy.LegacyUpdateSlot>();
-            Assert.AreEqual(1, slots.Count(sl => sl.role == "barrels"), "a V4 barrel slot on the same object");
+            Assert.IsTrue(Object.FindFirstObjectByType<V4Game>().Frame.Has(FrameStep.Barrels), "the V4 barrels tick in the frame");
             Assert.AreEqual(2, Object.FindFirstObjectByType<V4Game>().Shell.Enemies.Barrels.Count);
         }
 

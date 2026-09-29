@@ -35,13 +35,51 @@ namespace RoguePirates.V4.Progression
         void PlaySound(string id);
     }
 
+    /// <summary>The random draws pickups make (drop jitter, bob phase, burst count, scatter, fly delay).</summary>
+    public interface IPickupRandom
+    {
+        float Range(float min, float max);
+        int Range(int minInclusive, int maxExclusive);
+        Vector3 InsideUnitSphere();
+    }
+
+    /// <summary>A seed-derived stream for the pickup draws (M14; its own, so presentation can never move a pickup).</summary>
+    public sealed class SeededPickupRandom : IPickupRandom
+    {
+        readonly System.Random _random;
+        public SeededPickupRandom(int seed) { _random = new System.Random(seed); }
+        public float Range(float min, float max) => min + (float)_random.NextDouble() * (max - min);
+        public int Range(int minInclusive, int maxExclusive) => _random.Next(minInclusive, maxExclusive);
+
+        public Vector3 InsideUnitSphere()
+        {
+            while (true)
+            {
+                var v = new Vector3(Range(-1f, 1f), Range(-1f, 1f), Range(-1f, 1f));
+                if (v.sqrMagnitude <= 1f) return v;
+            }
+        }
+    }
+
     /// <summary>
     /// Pickups (M9 step 9.7): port of V3's PickupWorld — kill drops (XP, gold and health barrels), merging when full,
     /// collection radii, homing, barrel bursts into flying pieces, the per-frame budget and the grants, with every
-    /// UnityEngine.Random draw where V3 made it (trace runs pin its seed). Magnetic Tide can open the barrels (R-103).
+    /// random draw where V3 made it. Magnetic Tide can open the barrels (R-103). M14 (intended change): the draws come from
+    /// the module's own seed-derived stream instead of UnityEngine.Random, which presentation code (damage numbers, camera
+    /// shake, VFX, the chest bob) also drew from — moving or removing any VFX used to move the pickups.
     /// </summary>
     public sealed class PickupModule
     {
+        /// <summary>The pickup draws (a seeded stream in runs; a parity test plugs in UnityEngine.Random, V3's source).</summary>
+        public IPickupRandom Random = new SeededPickupRandom(0);
+
+        /// <summary>Seeds the pickup stream for a run (run start; the run seed decides every scatter and delay).</summary>
+        public void Seed(int runSeed) => Random = new SeededPickupRandom(runSeed ^ 0x71C0B5);
+
+        float Range(float min, float max) => Random.Range(min, max);
+        int Range(int minInclusive, int maxExclusive) => Random.Range(minInclusive, maxExclusive);
+        Vector3 InsideUnitSphere() => Random.InsideUnitSphere();
+
         struct Agent
         {
             public bool Active, Homing;
@@ -115,8 +153,8 @@ namespace RoguePirates.V4.Progression
         {
             if (count <= 1) return Vector3.zero;
             var c = C;
-            var angle = (index * (360f / count) + Random.Range(-c.dropAngleJitterDegrees, c.dropAngleJitterDegrees)) * Mathf.Deg2Rad;
-            var radius = c.dropSpreadRadius + Random.Range(-c.dropRadiusJitter, c.dropRadiusJitter);
+            var angle = (index * (360f / count) + Range(-c.dropAngleJitterDegrees, c.dropAngleJitterDegrees)) * Mathf.Deg2Rad;
+            var radius = c.dropSpreadRadius + Range(-c.dropRadiusJitter, c.dropRadiusJitter);
             return new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
         }
 
@@ -132,7 +170,7 @@ namespace RoguePirates.V4.Progression
             _pool[slot] = new Agent
             {
                 Active = true, Homing = false, Type = type, Value = value, Position = position, BasePosition = position,
-                BobPhase = Random.Range(0f, Mathf.PI * 2f), View = view,
+                BobPhase = Range(0f, Mathf.PI * 2f), View = view,
             };
             _active++;
         }
@@ -320,19 +358,19 @@ namespace RoguePirates.V4.Progression
             var c = C;
             var min = c.burstCountMin;
             var max = Mathf.Max(min, c.burstCountMax);
-            var count = Mathf.Max(c.burstMinimum, Mathf.RoundToInt(Random.Range(min, max + 1) * _vfxDensity()));
+            var count = Mathf.Max(c.burstMinimum, Mathf.RoundToInt(Range(min, max + 1) * _vfxDensity()));
             var perPiece = Mathf.Max(1, total / count);
             var remainder = total - perPiece * count;
             for (var k = 0; k < count; k++)
             {
-                var scatter = Random.insideUnitSphere * 0.8f;
+                var scatter = InsideUnitSphere() * 0.8f;
                 scatter.y = 0f;
                 var pos = origin + scatter;
                 pos.y = 0.45f;
                 _pending.Enqueue(new Pending
                 {
                     Type = flying, Position = pos, Value = perPiece + (k == 0 ? remainder : 0),
-                    FlyDelay = Random.Range(0.05f, 0.25f) + k * 0.02f,
+                    FlyDelay = Range(0.05f, 0.25f) + k * 0.02f,
                 });
             }
         }
@@ -356,7 +394,7 @@ namespace RoguePirates.V4.Progression
             _pool[slot] = new Agent
             {
                 Active = true, Homing = true, Type = p.Type, Value = p.Value, Position = p.Position, BasePosition = p.Position,
-                BobPhase = Random.Range(0f, Mathf.PI * 2f), FlyDelay = p.FlyDelay, View = view,
+                BobPhase = Range(0f, Mathf.PI * 2f), FlyDelay = p.FlyDelay, View = view,
             };
             _active++;
             return true;

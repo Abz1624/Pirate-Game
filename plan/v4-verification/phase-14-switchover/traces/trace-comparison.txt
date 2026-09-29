@@ -1,0 +1,91 @@
+M14 end-of-phase trace set (Windows development player, run once after all M14 code and the review fixes' code
+changes except the later pool prewarm counts, which do not touch simulation). Seeds 101/202/303, v3-parity preset,
+scripted autopilot, boss forced at 4:00 and killed at 5:00, compared with the V3 goldens (phase-01-config/player).
+
+Before M14 the same set matched V3 exactly (playtest-m10-m13/parity: MATCH on all three). Exact V3 parity ends with
+M14 by decision; the set now differs from the first spawn on. Explained differences:
+
+1. Header configHash: expected. Since 14.3 the stage profile is built from the V4 configs (the export equals V3's
+   clone except the unused schedule snapshot), so its content hash changes.
+2. First divergence, every seed: the first ambient spawn (t = 2.0167 s, same enemy, same time) lands one placement step
+   (about 2.5 m in z) away. The only earlier record (the ship at 0.02 s) matches exactly, and the placement settings
+   and random stream are unchanged (spawner profiles equal V3's by test). The most likely cause, inferred rather than
+   isolated (that would need another trace run), is intended change 4 (one frame driver after the run clock: the spawn
+   tick now runs after every order-0 shared component instead of interleaved with them by scene file ID), which
+   changes what the screen-edge placement reads in that frame. From that point the runs diverge chaotically (enemy positions steer the
+   autopilot, which changes kills, pickups, level-ups and weapon choices).
+3. Intended changes 1-3 also change the course once the runs diverge: pickups draw from their own seeded stream
+   (offsets and fly delays differ, so XP arrives at different times), new enemy models no longer keep island colliders
+   for a frame or toggle /Systems, and chest range is measured to the POI position.
+
+What stays the same (checks on the per-minute statistics below):
+- The schedule: spawns in minutes 0-2 are identical in count in all three seeds (35 / 36 / 49); the boss is summoned at
+  4:00 in all three; spawn counts per minute afterwards follow the same bands (differences track how many enemies
+  are alive, which depends on survival).
+- No systematic difficulty shift: V4 survived longer on seeds 101 (647 s vs 407 s) and 303 (779 s vs 497 s) and shorter
+  on 202 (250 s vs 364 s, died in the boss fight before killing the boss). Rum follows survival (53 vs 42, 58 vs 52,
+  13 vs 42).
+
+--- compare-traces.py output
+v3-trace-seed-101-a.jsonl vs v4-trace-seed-101-parity.jsonl: DIFF (437 lines)
+    header configHash: da2393158d7c567fd69161c56d3ad589bd685050844400f8dc2447772e883c3c vs 07c5c03eaa4afe98f0e3f4023b69980ee13ef279132b122f1666a60ebb17ab62
+    line 1: {"type":"spawn","t":2.0167,"uid":1,"enemy":"swordfish","elite":false,"boss":false,"x":76.1,"z":-104.8475}
+        vs {"type":"spawn","t":2.0167,"uid":1,"enemy":"swordfish","elite":false,"boss":false,"x":76.0895,"z":-107.3482}
+    length 437 vs 570
+v3-trace-seed-202-a.jsonl vs v4-trace-seed-202-parity.jsonl: DIFF (409 lines)
+    header configHash: da2393158d7c567fd69161c56d3ad589bd685050844400f8dc2447772e883c3c vs 07c5c03eaa4afe98f0e3f4023b69980ee13ef279132b122f1666a60ebb17ab62
+    line 1: {"type":"spawn","t":2.0167,"uid":1,"enemy":"deckhand_dinghy","elite":false,"boss":false,"x":-43.1933,"z":-94.2237}
+        vs {"type":"spawn","t":2.0167,"uid":1,"enemy":"deckhand_dinghy","elite":false,"boss":false,"x":-43.1939,"z":-96.8409}
+    length 409 vs 329
+v3-trace-seed-303-a.jsonl vs v4-trace-seed-303-parity.jsonl: DIFF (523 lines)
+    header configHash: da2393158d7c567fd69161c56d3ad589bd685050844400f8dc2447772e883c3c vs 07c5c03eaa4afe98f0e3f4023b69980ee13ef279132b122f1666a60ebb17ab62
+    line 1: {"type":"spawn","t":2.0167,"uid":1,"enemy":"swordfish","elite":false,"boss":false,"x":61.6337,"z":-57.0924}
+        vs {"type":"spawn","t":2.0167,"uid":1,"enemy":"swordfish","elite":false,"boss":false,"x":61.6302,"z":-59.5983}
+    length 523 vs 675
+
+
+[exited with code 1]
+
+--- per-minute statistics
+=== seed 101
+ minute         0    1    2    3    4    5    6    7    8    9   10
+ spawns V3     35   36   49   27   14   15   20    0    0    0    0
+ spawns V4     35   36   49   18   22   18   13    7   14   12   11
+ kills  V3     12   25   20   18   14   15   19    0    0    0    0
+ kills  V4     17   17   15   17   22   18   13    7   14   12   11
+ level-ups V3 [16, 64, 84, 102, 159, 209, 295, 347, 382]
+ level-ups V4 [15, 26, 38, 152, 244, 271, 282, 342, 461, 582]
+ boss V3 [('summoned', 240), ('defeated', 300)]  V4 [('summoned', 240), ('defeated', 300)]
+ death V3 [407]  V4 [647]
+ marks V3 [{'type': 'marks', 'applied': True, 'awarded': 42, 'minutes': 12, 'poi': 0, 'elites': 5, 'boss': 25, 'overtime': 0, 'total': 42}]
+ marks V4 [{'type': 'marks', 'applied': True, 'awarded': 53, 'minutes': 18, 'poi': 0, 'elites': 10, 'boss': 25, 'overtime': 0, 'total': 53}]
+ spawns by enemy V3 {'swordfish': 50, 'deckhand_dinghy': 53, 'hammerhead': 30, 'needle_sloop': 12, 'cutthroat_skiff': 22, 'ram_raider': 2, 'reef_crab_miniboss': 1, 'barnacle_king': 1, 'shark': 4, 'bomb_ketch': 3, 'rammer_raft': 2, 'cannonboat': 4, 'gunner_cog': 1, 'net_cutter': 2, 'bomb_boat': 4, 'repair_tender': 2, 'kraken_spawn': 2, 'manta_ray': 1}
+ spawns by enemy V4 {'swordfish': 57, 'deckhand_dinghy': 44, 'cutthroat_skiff': 15, 'needle_sloop': 12, 'hammerhead': 36, 'ram_raider': 2, 'reef_crab_miniboss': 1, 'barnacle_king': 1, 'cannonboat': 6, 'rammer_raft': 3, 'shark': 19, 'bomb_boat': 11, 'bomb_ketch': 3, 'gunner_cog': 3, 'manta_ray': 8, 'net_cutter': 4, 'boarding_barge': 1, 'kraken_spawn': 3, 'shield_frigate': 4, 'powder_barge': 2}
+=== seed 202
+ minute         0    1    2    3    4    5    6
+ spawns V3     35   36   49   29   21   13    1
+ spawns V4     35   36   49   38    3    0    0
+ kills  V3     10   18   28   22   20   13    1
+ kills  V4     11   24   32   19    3    0    0
+ level-ups V3 [56, 77, 120, 163, 202, 248, 274, 299, 333, 364]
+ level-ups V4 [55, 61, 86, 124, 178, 218, 243]
+ boss V3 [('summoned', 240), ('defeated', 300)]  V4 [('summoned', 240)]
+ death V3 [364]  V4 [250]
+ marks V3 [{'type': 'marks', 'applied': True, 'awarded': 42, 'minutes': 12, 'poi': 0, 'elites': 5, 'boss': 25, 'overtime': 0, 'total': 42}]
+ marks V4 [{'type': 'marks', 'applied': True, 'awarded': 13, 'minutes': 8, 'poi': 0, 'elites': 5, 'boss': 0, 'overtime': 0, 'total': 13}]
+ spawns by enemy V3 {'deckhand_dinghy': 52, 'swordfish': 52, 'needle_sloop': 17, 'hammerhead': 23, 'cutthroat_skiff': 14, 'ram_raider': 4, 'reef_crab_miniboss': 1, 'shark': 7, 'barnacle_king': 1, 'gunner_cog': 3, 'cannonboat': 4, 'bomb_ketch': 2, 'rammer_raft': 2, 'bomb_boat': 2}
+ spawns by enemy V4 {'deckhand_dinghy': 51, 'swordfish': 53, 'cutthroat_skiff': 18, 'needle_sloop': 18, 'hammerhead': 15, 'ram_raider': 2, 'reef_crab_miniboss': 1, 'barnacle_king': 1, 'shark': 1, 'cannonboat': 1}
+=== seed 303
+ minute         0    1    2    3    4    5    6    7    8    9   10   11   12
+ spawns V3     35   36   49   28   18   14   28   15    4    0    0    0    0
+ spawns V4     35   36   49   34   15   15   18   14   18   17    7    7    3
+ kills  V3      9   22   25   20   18   14   28   15    4    0    0    0    0
+ kills  V4     13   24   27   18   15   15   18   14   18   17    7    7    3
+ level-ups V3 [10, 67, 104, 144, 171, 225, 242, 338, 405]
+ level-ups V4 [35, 59, 81, 155, 210, 268, 279, 393, 495, 590, 732]
+ boss V3 [('summoned', 240), ('defeated', 300)]  V4 [('summoned', 240), ('defeated', 300)]
+ death V3 [497]  V4 [779]
+ marks V3 [{'type': 'marks', 'applied': True, 'awarded': 52, 'minutes': 14, 'poi': 3, 'elites': 10, 'boss': 25, 'overtime': 0, 'total': 52}]
+ marks V4 [{'type': 'marks', 'applied': True, 'awarded': 58, 'minutes': 20, 'poi': 3, 'elites': 10, 'boss': 25, 'overtime': 0, 'total': 58}]
+ spawns by enemy V3 {'swordfish': 49, 'deckhand_dinghy': 41, 'cutthroat_skiff': 25, 'hammerhead': 36, 'ram_raider': 3, 'needle_sloop': 10, 'reef_crab_miniboss': 1, 'barnacle_king': 1, 'cannonboat': 5, 'rammer_raft': 4, 'shark': 18, 'gunner_cog': 3, 'bomb_boat': 8, 'bomb_ketch': 1, 'kraken_spawn': 3, 'net_cutter': 2, 'repair_tender': 6, 'boarding_barge': 5, 'manta_ray': 6}
+ spawns by enemy V4 {'swordfish': 58, 'deckhand_dinghy': 45, 'hammerhead': 47, 'needle_sloop': 13, 'cutthroat_skiff': 21, 'reef_crab_miniboss': 1, 'ram_raider': 2, 'barnacle_king': 1, 'rammer_raft': 4, 'cannonboat': 13, 'bomb_boat': 11, 'shark': 18, 'gunner_cog': 4, 'manta_ray': 8, 'repair_tender': 7, 'boarding_barge': 5, 'net_cutter': 1, 'kraken_spawn': 3, 'shield_frigate': 5, 'powder_barge': 1}

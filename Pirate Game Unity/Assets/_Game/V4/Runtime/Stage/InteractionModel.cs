@@ -97,6 +97,13 @@ namespace RoguePirates.V4.Stage
 
             if (holdDuration <= 0f)
             {
+                if (_stage.SpringsOnPress(_target))
+                {
+                    Visible = _stage.IsPlayerInRange(_target);
+                    Text = $"{label} — press E or USE";
+                    if (Visible && keyboard != null && keyboard.eKey.wasPressedThisFrame) _stage.TryCompleteInteraction(_target);
+                    return;
+                }
                 if (_stage.UsesChargeInteraction(_target))
                 {
                     Visible = _stage.IsPlayerInRange(_target);

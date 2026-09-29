@@ -1,4 +1,40 @@
-# Your TODOs (updated 29 Sep, after playtest round 1)
+# Your TODOs (updated 29 Sep, M14 awaiting your playtest)
+
+## M14 playtest round 1 — fixes to check (29 Sep)
+
+- [ ] **Ship trail:** the foam wake behind your ship shows while you sail and fades when you stop.
+- [ ] **Powder Cache:** one press of E (or USE) springs the elite challenge; no hold bar.
+- [ ] **Storm damage:** I could not reproduce "no damage outside the ring" (the test shows the hull dropping). If it happens
+  again, please note the run time, whether god mode was on in F1, and whether the "storm" warning toast appeared at the
+  edge.
+- Sparky is 140 Rum only in the game; the GDD now says so too.
+
+## M14 Switch-over — implemented, awaiting your playtest (29 Sep)
+
+V4 now runs on its own code end to end: every legacy adapter tagged for M14 is gone (only the M15 "ports" to shared
+code remain), the last V3 views and effects are V4 presenters on the view pool, the menu is V4 with the Captain locks
+you decided, and builds contain the V4 scenes only. Not committed yet (commit "V4 M14: Switch-over" after your playtest).
+Evidence: `phase-14-switchover/` (PLAN.md step log, `perf.md`, `traces/trace-comparison.txt`). EditMode 312/312,
+PlayMode 50/50, V3 regression: see PLAN.md 14.15. An independent reviewer checked the phase; its findings are fixed.
+
+**Exact V3 parity ends here** (your decision). Four intended simulation changes: pickups on their own seeded stream;
+pooled enemy models without the one-frame island colliders; chest range measured to the chest's position; and all run
+ticks now run from one frame driver after the run clock (the review found this one). The one trace set shows the same
+schedule (identical spawn counts for 3 minutes, boss at 4:00) and no systematic difficulty shift.
+
+What to try (play from V4Boot):
+- [ ] **Menu:** Rook open; Hank "100 Rum", Sparky "140 Rum", Ember/Roxie "Unlock … first", Richie "Earn 5,000 gold
+  across voyages (N)" on the locked cards. With enough Rum, Set Sail on Hank reads "UNLOCK — 100 RUM" and buys him.
+- [ ] **A normal run:** everything should look and feel as before — enemies and their health bars, enemy cannonballs and
+  splashes, pickups (gems, coins, barrels), floor powerups, hazard rings (Kraken traps, mortar landings), the ship's
+  health bar, chests and landmarks (Signal Buoy ring, Beacon telegraph), the storm ring and the edge walls, hit sparks,
+  kill explosions, damage numbers, toasts.
+- [ ] **Level-up cards:** same look; 1/2/3 keys, Skip, Refresh. (Text change: the new-weapon stat line shows the range the
+  weapon really uses — Flamethrower 9.5, V3's card said 14.)
+- [ ] **Anything that feels different** from before M14 (timing of spawns, chests, XP) — the frame-order change is the
+  one to watch.
+- [ ] Dev tools still in F1 (Editor/development builds only): Build → Captains "Play" starts any Captain, locked or not.
+
 
 ## Where things stand (29 Sep)
 

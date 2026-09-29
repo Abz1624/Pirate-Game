@@ -50,7 +50,7 @@ namespace RoguePirates.V4.Enemies
                 UpdateView(ref e, def, dt, playerPos);
 
                 var dist = HorizontalDistance(e.position, playerPos);
-                if (_params.CombatEnabled && EnemyCombatProfileRegistry.UsesSaltwindBehavior(def.id))
+                if (_params.CombatEnabled && _params.UsesCombatBehavior(def.id))
                     _services.Behaviors.TickCombat(this, i, ref e, def, dt, playerPos, playerDamage);
                 else
                     TickRangedAttack(ref e, def, dt, playerPos, dist, playerDamage);
@@ -341,7 +341,7 @@ namespace RoguePirates.V4.Enemies
             var dir = dist > 0.01f ? toPlayer / dist : Vector3.forward;
 
             if (_params.CombatEnabled
-                && EnemyCombatProfileRegistry.TryGet(def.id, out var combatProfile)
+                && _params.TryGetCombatProfile(def.id, out var combatProfile)
                 && combatProfile.archetype == SaltwindCombatArchetype.ReefCrabMiniboss)
             {
                 var crabVel = _services.ReefCrab.TickMovement(
@@ -355,7 +355,7 @@ namespace RoguePirates.V4.Enemies
             // have it on, so they are not ported.)
 
             if (_params.CombatEnabled
-                && EnemyCombatProfileRegistry.TryGet(def.id, out var saltwindProfile)
+                && _params.TryGetCombatProfile(def.id, out var saltwindProfile)
                 && saltwindProfile.archetype != SaltwindCombatArchetype.ReefCrabMiniboss
                 && _services.Behaviors.TryTickMovement(this, agentIndex, ref e, def, saltwindProfile, dt, playerPos, playerVelocity, playerDamage,
                     out var saltwindVel))
@@ -976,6 +976,7 @@ namespace RoguePirates.V4.Enemies
             }
 
             _feedback?.RaiseHit(damage, isCrit, e.position, weaponId);
+            HitPublished?.Invoke(damage, isCrit, e.position, weaponId); // M14: the Hit event, at the moment V3 raised TriggerBus.Hit
             if (showHitFeedback && damage >= 0.5f)
                 _feedback?.DamageNumber(e.position, damage, isCrit);
 

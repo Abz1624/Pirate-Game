@@ -6,6 +6,21 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/_Game/Scenes/V4/V4Boot.unity
+    guid: 107317348ec30334ab2695812ce7eb1f
+  - enabled: 1
+    path: Assets/_Game/Scenes/V4/V4MainMenu.unity
+    guid: 384bed348e14cac44916dad6147ff129
+  - enabled: 1
+    path: Assets/_Game/Scenes/V4/V4SaltwindRun.unity
+    guid: 9fe04d79a2fb42e47aa59172c6199af4
+  - enabled: 1
+    path: Assets/_Game/Scenes/V4/V4ModuleLab.unity
+    guid: 368199673d20d7345a94b3b17b3ec999
+  - enabled: 1
+    path: Assets/_Game/Scenes/V4/V4TraceLauncher.unity
+    guid: 45558b0306b267242ae1b6a2bcb57998
+  - enabled: 1
     path: Assets/_Game/Scenes/v3/V3Boot.unity
     guid: f8a2c1d94e3b4a6489f0e2d71c5a9031
   - enabled: 1
@@ -47,18 +62,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Game/Scenes/Tests/Test_WeaponEnemy.unity
     guid: f3e892f7b7f33cc41bb8be8242262e87
-  - enabled: 1
-    path: Assets/_Game/Scenes/V4/V4Boot.unity
-    guid: 107317348ec30334ab2695812ce7eb1f
-  - enabled: 1
-    path: Assets/_Game/Scenes/V4/V4MainMenu.unity
-    guid: 384bed348e14cac44916dad6147ff129
-  - enabled: 1
-    path: Assets/_Game/Scenes/V4/V4SaltwindRun.unity
-    guid: 9fe04d79a2fb42e47aa59172c6199af4
-  - enabled: 1
-    path: Assets/_Game/Scenes/V4/V4ModuleLab.unity
-    guid: 368199673d20d7345a94b3b17b3ec999
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

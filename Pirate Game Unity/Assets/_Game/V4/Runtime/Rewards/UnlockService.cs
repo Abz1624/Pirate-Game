@@ -96,6 +96,17 @@ namespace RoguePirates.V4.Rewards
             return $"Not enough {Currency} or already owned.";
         }
 
+        /// <summary>M14.13: buys a weapon or Captain with Rum (the menu's Captain unlock); returns the message to show.</summary>
+        public string Purchase(string contentId)
+        {
+            var save = _save();
+            if (save == null || string.IsNullOrEmpty(contentId)) return null;
+            if (save.HasEffectiveContentOwned(contentId)) return $"{DisplayName(contentId)} is already unlocked.";
+            var cost = CostOf(contentId);
+            if (cost < 0) return $"{DisplayName(contentId)} is not a {Currency} unlock.";
+            return save.TryPurchaseMarksUnlock(contentId, cost) ? $"Unlocked {DisplayName(contentId)}!" : $"Not enough {Currency}.";
+        }
+
         /// <summary>The goal line on the results screen (V3's wording, in Rum).</summary>
         public string GoalProgress()
         {

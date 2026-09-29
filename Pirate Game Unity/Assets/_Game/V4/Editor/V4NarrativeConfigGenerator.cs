@@ -22,11 +22,11 @@ namespace RoguePirates.V4.Editor
                 var b = n.barks.Find(x => x != null && x.barkId == barkId);
                 if (b != null) b.tag = phaseId;
             }
-            Tag("elite_hammer_penny", RoguePirates.V4.Legacy.LegacyConfigMapping.EliteA);
-            Tag("elite_kraken_penny", RoguePirates.V4.Legacy.LegacyConfigMapping.EliteB);
-            Tag("reef_crab_penny", RoguePirates.V4.Legacy.LegacyConfigMapping.ReefCrab);
-            Tag("overtime_penny", RoguePirates.V4.Legacy.LegacyConfigMapping.Overtime);
-            Tag("storm_penny", RoguePirates.V4.Legacy.LegacyConfigMapping.Storm);
+            Tag("elite_hammer_penny", V3ConfigMapping.EliteA);
+            Tag("elite_kraken_penny", V3ConfigMapping.EliteB);
+            Tag("reef_crab_penny", V3ConfigMapping.ReefCrab);
+            Tag("overtime_penny", V3ConfigMapping.Overtime);
+            Tag("storm_penny", V3ConfigMapping.Storm);
         }
 
         public static string Create()

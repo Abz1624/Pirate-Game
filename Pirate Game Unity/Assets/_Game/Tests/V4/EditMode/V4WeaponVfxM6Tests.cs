@@ -35,6 +35,7 @@ namespace RoguePirates.V4.Tests
 
         sealed class FakeShipView : IShipView
         {
+            public Transform Anchor => null;
             public Vector3 Pos, Forward = Vector3.forward;
             public bool Exists => true;
             public Vector3 Position => Pos;

@@ -13,6 +13,48 @@ namespace RoguePirates.V4.Config
         public string label;
     }
 
+    /// <summary>Gold a kill drops (field names match V3's stage profile; V3 SaltwindStageEconomyLogic.ResolveKillGoldDrop).</summary>
+    [Serializable]
+    public sealed class StageKillGold
+    {
+        [Range(0f, 1f)] public float ordinaryEnemyGoldChance = 0.5f;
+        public int ordinaryEnemyGoldAmount = 1;
+        public int specialistEnemyGoldAmount = 2;
+        public int scheduledEliteGoldAmount = 25;
+    }
+
+    /// <summary>An unlock the shared V3 unlock checks read (V3 StageUnlockEntry).</summary>
+    [Serializable]
+    public sealed class SharedUnlockEntry
+    {
+        public string contentId;
+        public int marksCost;
+    }
+
+    /// <summary>
+    /// V3's values for the stage-profile fields no V4 system owns (field names match V3's StageBalanceProfile). The V4 run
+    /// builds the stage profile the shared V3 code reads from these plus the V4-owned configs (M14; was a clone of V3's asset).
+    /// </summary>
+    [Serializable]
+    public sealed class SharedStageProfileValues
+    {
+        public string profileId = "saltwind_solo";
+        public int schemaVersion = 1, balanceVersion = 3;
+        public bool enforceCompleteScheduleReferences;
+        [Range(0f, 1f)] public float randomPowerupChancePerKill = 0.01f;
+        public float randomPowerupMinIntervalSeconds = 20f, repairSuppliesMaxHullFraction = 0.2f;
+        public float powderRushAttackSpeedBonus = 0.3f, powderRushDurationSeconds = 8f, deadCalmSlowFraction = 0.3f, deadCalmDurationSeconds = 5f;
+        public int weaponSlotCap = 6, logbookSlotCap = 2, levelUpChoiceCount = 3, levelZeroToOneXpCost = 7;
+        public double xpCurveMultiplier = 5d * 1.065000057220459d, xpCurveExponent = 1.065000057220459d;
+        public int[] newWeaponOfferProtectionLevels = { 2, 3, 5, 8, 12 };
+        public int marksPerQualifyingMinute = 2, marksPerQualifyingMinuteMinKills = 10, marksPerSpecialPoi = 3, marksPerScheduledElite = 5;
+        public int marksBossVictory = 25, marksPerOvertimeMinute = 3, marksOvertimeCap = 15;
+        public bool runGoldExpiresAtRunEnd = true, bankRunGoldToDoubloons;
+        public string[] starterWeaponIds = Array.Empty<string>();
+        public SharedUnlockEntry[] weaponUnlocks = Array.Empty<SharedUnlockEntry>();
+        public SharedUnlockEntry[] captainUnlocks = Array.Empty<SharedUnlockEntry>();
+    }
+
     /// <summary>
     /// Stage content (M7): chests, the four landmarks and the Treasury Beacon, filled with V3's values (POIManager,
     /// V3DiscoverySystem, V3InteractionController and the stage profile fields they read). POI placement stays in the
@@ -22,6 +64,12 @@ namespace RoguePirates.V4.Config
     [CreateAssetMenu(menuName = "RoguePirates/V4/Stage Content", fileName = "StageContent")]
     public sealed class StageContentConfig : V4ConfigAsset
     {
+        [Header("Kill gold (M14: was passed through from V3's stage profile)")]
+        [AppliesFrom(14)] public StageKillGold killGold = new StageKillGold();
+        [Header("Values the shared V3 code reads from the stage profile (M14; removed with that code in M15)")]
+        [Tooltip("V3's own values for the stage-profile fields no V4 system owns. Only shared V3 code the V4 run still calls reads them (unlock and item-offer checks, the profile identity); V4 systems read their own configs (progression, powerups, Rum, unlocks).")]
+        [AppliesFrom(14)] public SharedStageProfileValues sharedProfile = new SharedStageProfileValues();
+
         [Header("Placement (read by the stage builder when the run starts)")]
         [Tooltip("Salvage chests placed on the map.")] [AppliesFrom(7, "read when the run starts")] public int salvageChestCount = 12;
         [Tooltip("Explosive barrels placed on the map. V4 default 0 (adopted decision: no barrels); V3 placed 2.")]
@@ -34,6 +82,10 @@ namespace RoguePirates.V4.Config
         [Tooltip("First chest price.")] public int chestBasePrice = 20;
         [Tooltip("Price growth per chest bought (price = ceil(increment base × growth^n) after the first).")] public float chestPriceGrowth = 1.22f;
         public int chestPriceIncrementBase = 25;
+        [Tooltip("Chest loot rarity weights, Common → Legendary (V3 V3ChestLoot).")] [AppliesFrom(14)] public float[] chestRarityWeights = { 35f, 45f, 12f, 2f, 0.2f };
+        [Tooltip("Rare and better weights × (1 + this × (stage depth − 1)).")] [AppliesFrom(14)] public float chestRareBoostPerStageDepth = 0.15f;
+        [Tooltip("Stage depth for the chest roll (Saltwind 1).")] [AppliesFrom(14)] public int chestStageDepth = 1;
+        [Tooltip("Rolls at an eligible item before a chest purchase fails.")] [AppliesFrom(14)] public int chestLootAttempts = 24;
         [Tooltip("All chests appear at the start instead of one at a time as gold comes in (Saltwind: on).")] [AppliesFrom(7, "read when the run starts")] public bool disableGoldTriggeredChestSpawn = true;
         [Tooltip("The next chest appears once run gold reaches this fraction of its price (V3 0.8).")] public float chestSpawnGoldFraction = 0.8f;
         [Tooltip("Interaction range for chests (m).")] public float chestInteractRange = 6f;
@@ -59,7 +111,9 @@ namespace RoguePirates.V4.Config
         [Tooltip("The challenge's elites come from these spawners in turn (each spawner's elite block makes them elites).")]
         public EnemySpawnerConfig[] powderCacheEliteSpawners = System.Array.Empty<EnemySpawnerConfig>();
         [Tooltip("Elites in the challenge.")] public int powderCacheEliteCount = 4;
-        [Tooltip("Seconds to hold E at the cache to spring the challenge.")] public float powderCacheHoldSeconds = 0.7f;
+        [Tooltip("Seconds to hold E at the cache to spring the challenge (when it does not spring on a press).")] public float powderCacheHoldSeconds = 0.7f;
+        [Tooltip("M14 playtest (off = hold E for the hold time): one press of E (or USE) at the cache springs the challenge.")]
+        public bool powderCacheSpringsOnPress;
         [Tooltip("The Rare Treasure Chest's item is drawn from chest-pool items of at least this rarity (0 Common, 1 Uncommon, 2 Rare, 3 Epic).")]
         public int powderCacheChestMinRarity = 2;
         [Tooltip("Seconds inside the circle to charge a Signal Buoy.")] public float signalBuoyChargeSeconds = 8f;
@@ -118,7 +172,7 @@ namespace RoguePirates.V4.Config
                 if (powderCacheEliteSpawners == null || powderCacheEliteSpawners.Length == 0 || System.Array.Exists(powderCacheEliteSpawners, s => s == null))
                     report.Error(this, nameof(powderCacheEliteSpawners), "the elite challenge needs its spawners");
                 // 0 would make the prompt interact on arrival (springing the cache or opening the chest by sailing past).
-                report.Positive(this, nameof(powderCacheHoldSeconds), powderCacheHoldSeconds);
+                if (!powderCacheSpringsOnPress) report.Positive(this, nameof(powderCacheHoldSeconds), powderCacheHoldSeconds);
                 if (powderCacheChestMinRarity < 0 || powderCacheChestMinRarity > 4) report.Error(this, nameof(powderCacheChestMinRarity), "must be 0-4");
             }
             if (signalBuoyRewards == null || signalBuoyRewards.Length == 0) report.Error(this, nameof(signalBuoyRewards), "needs at least one reward");

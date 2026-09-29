@@ -8,6 +8,7 @@ using HighSeas.Data;
 using HighSeas.Enemies;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
+using RoguePirates.V4.Editor;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Legacy;
 using RoguePirates.V4.Spawning;
@@ -149,6 +150,8 @@ namespace RoguePirates.V4.Tests
             readonly Dictionary<EnemySpawnerConfig, SpawnProfile> _profiles = new Dictionary<EnemySpawnerConfig, SpawnProfile>();
             readonly List<Object> _created;
             public FakeProfiles(List<Object> created) { _created = created; }
+            readonly SpawnerProfiles _elites = new SpawnerProfiles(null);
+            public SpawnProfile EliteCopy(SpawnProfile source, RoguePirates.V4.Config.DirectorConfig d) => _elites.EliteCopy(source, d);
             public SpawnProfile For(EnemySpawnerConfig spawner)
             {
                 if (spawner == null) return null;
@@ -157,7 +160,7 @@ namespace RoguePirates.V4.Tests
                 var def = ScriptableObject.CreateInstance<EnemyDefinition>();
                 def.id = spawner.anchor != null ? spawner.anchor.enemyId : "shark";
                 p.enemy = def;
-                LegacyConfigMapping.ApplySpawner(spawner, p);
+                V3ConfigMapping.ApplySpawner(spawner, p);
                 _created.Add(p);
                 _created.Add(def);
                 return _profiles[spawner] = p;
@@ -421,7 +424,7 @@ namespace RoguePirates.V4.Tests
                     boss.Sink.Kill(boss.Spawn.ArenaFocusUnitId);
                     boss.Run.BossFight = true;
                     boss.RunUntil(185f);
-                    Assert.AreEqual(PhaseState.Skipped, boss.Spawn.Phases.First(p => p.PhaseId == LegacyConfigMapping.EliteA).State);
+                    Assert.AreEqual(PhaseState.Skipped, boss.Spawn.Phases.First(p => p.PhaseId == V3ConfigMapping.EliteA).State);
                     CollectionAssert.Contains(boss.Feedback.Telemetry, "pressure_elite_skipped");
                     boss.Run.BossFight = false;
                     boss.RunUntil(190f);
@@ -524,7 +527,7 @@ namespace RoguePirates.V4.Tests
             var h = Make();
             using (h.Config)
             {
-                var elite = h.Timeline.Phase(LegacyConfigMapping.EliteA);
+                var elite = h.Timeline.Phase(V3ConfigMapping.EliteA);
                 elite.trigger.kind = PhaseTriggerKind.Condition;
                 elite.trigger.conditionKind = PhaseConditionKind.PlayerLevelAtLeast;
                 elite.trigger.conditionValue = 8f;
@@ -544,10 +547,10 @@ namespace RoguePirates.V4.Tests
             var h = Make();
             using (h.Config)
             {
-                var a = h.Timeline.Phase(LegacyConfigMapping.SwarmA);
+                var a = h.Timeline.Phase(V3ConfigMapping.SwarmA);
                 a.trigger.kind = PhaseTriggerKind.Event;
                 a.trigger.eventName = nameof(CombatEventKind.LevelUp);
-                var b = h.Timeline.Phase(LegacyConfigMapping.SwarmB);
+                var b = h.Timeline.Phase(V3ConfigMapping.SwarmB);
                 b.trigger.kind = PhaseTriggerKind.AfterPhaseCleared;
                 b.trigger.afterPhaseId = a.phaseId;
                 h.RunUntil(10f);
@@ -565,7 +568,7 @@ namespace RoguePirates.V4.Tests
             using (h.Config)
             {
                 h.RunUntil(10f);
-                Assert.IsTrue(h.Spawn.TriggerNow(LegacyConfigMapping.SwarmA));
+                Assert.IsTrue(h.Spawn.TriggerNow(V3ConfigMapping.SwarmA));
                 h.Frame();
                 Assert.AreEqual(1.25f, h.Spawn.EffectiveRateMultiplier, 1e-6f);
                 Assert.IsTrue(h.Spawn.Skip("band_0"));
@@ -748,9 +751,9 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void DeadCalmRate_IsThePowerupModulesMultiplier_WithoutTheBossFactor()
         {
-            Assert.AreEqual(0.7f, LegacyEncounterExecutor.WithoutBossFactor(0.35f, true, 0.5f), 1e-6f);
-            Assert.AreEqual(0.7f, LegacyEncounterExecutor.WithoutBossFactor(0.7f, false, 0.5f), 1e-6f);
-            Assert.AreEqual(0.7f, LegacyEncounterExecutor.WithoutBossFactor(0.7f, true, 0f), 1e-6f, "no division by zero");
+            Assert.AreEqual(0.7f, SpawnRateModifiers.WithoutBossFactor(0.35f, true, 0.5f), 1e-6f);
+            Assert.AreEqual(0.7f, SpawnRateModifiers.WithoutBossFactor(0.7f, false, 0.5f), 1e-6f);
+            Assert.AreEqual(0.7f, SpawnRateModifiers.WithoutBossFactor(0.7f, true, 0f), 1e-6f, "no division by zero");
             // M9: the V4 powerup module's Dead Calm (V3 wrote it into the switched-off EncounterSpawner, which read it back
             // as its effective rate; outside a boss fight that was the same number).
             var go = new GameObject("dead-calm-probe");
@@ -758,8 +761,8 @@ namespace RoguePirates.V4.Tests
             {
                 var spawner = go.AddComponent<EncounterSpawner>();
                 spawner.SetSpawnRateMultiplier(0.7f); // what V3FloorPowerupWorld's Dead Calm wrote
-                Assert.AreEqual(spawner.DebugSpawnRateMultiplier, new LegacyEncounterExecutor { DeadCalm = () => 0.7f }.Multiplier, 1e-6f);
-                Assert.AreEqual(1f, new LegacyEncounterExecutor().Multiplier, "no powerup module: no slow");
+                Assert.AreEqual(spawner.DebugSpawnRateMultiplier, new SpawnRateModifiers(null, null) { DeadCalm = () => 0.7f }.Multiplier, 1e-6f);
+                Assert.AreEqual(1f, new SpawnRateModifiers(null, null).Multiplier, "no powerup module: no slow");
             }
             finally { Object.DestroyImmediate(go); }
         }
@@ -883,7 +886,7 @@ namespace RoguePirates.V4.Tests
             using (var config = new ConfigSetRuntime(_set))
             {
                 var timeline = config.Single<WaveTimelineConfig>();
-                var index = timeline.phases.FindIndex(p => p.phaseId == LegacyConfigMapping.ReefCrab);
+                var index = timeline.phases.FindIndex(p => p.phaseId == V3ConfigMapping.ReefCrab);
                 Assert.IsTrue(config.TryApplyEdit(timeline.configId, $"phases[{index}].focus.archetype", "enemy.shark", 0f, out var error), error);
                 Assert.AreSame(config.Get<EnemyArchetypeConfig>("enemy.shark"), timeline.phases[index].focus.archetype, "the run's copy, not the asset");
                 Assert.IsFalse(config.TryApplyEdit(timeline.configId, $"phases[{index}].focus.archetype", "spawner.nope", 0f, out _));
@@ -905,7 +908,7 @@ namespace RoguePirates.V4.Tests
             using (var config = new ConfigSetRuntime(_set))
             {
                 var t = config.Single<WaveTimelineConfig>();
-                var reef = t.Phase(LegacyConfigMapping.ReefCrab);
+                var reef = t.Phase(V3ConfigMapping.ReefCrab);
                 Assert.IsTrue(reef.focus.enabled);
                 Assert.AreEqual(FocusPlacement.RingAroundPlayer, reef.focus.placement);
                 Assert.AreEqual("reef_crab_miniboss", reef.focus.archetype.enemyId);
@@ -914,7 +917,7 @@ namespace RoguePirates.V4.Tests
                 Assert.AreEqual(0f, reef.focus.retryWindowSeconds);
                 var pacing = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
                 Assert.AreEqual(pacing.firstMinibossSeconds, reef.trigger.timeSeconds, "R-02: 150 s as V3");
-                foreach (var (id, index) in new[] { (LegacyConfigMapping.EliteA, 0), (LegacyConfigMapping.EliteB, 1) })
+                foreach (var (id, index) in new[] { (V3ConfigMapping.EliteA, 0), (V3ConfigMapping.EliteB, 1) })
                 {
                     var elite = t.Phase(id);
                     Assert.IsTrue(elite.focus.enabled && elite.pauseAmbient, id);

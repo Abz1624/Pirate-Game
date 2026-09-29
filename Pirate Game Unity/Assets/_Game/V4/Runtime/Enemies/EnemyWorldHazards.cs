@@ -21,7 +21,7 @@ namespace RoguePirates.V4.Enemies
     /// Hellfire Nozzle flame patches (port of HellfirePatchWorld): up to 8 patches of 2.4 s that burn enemies within
     /// 2.1 m every 0.35 s. Ticked where V3's component updated (a frame slot added where V3 ensured it).
     /// </summary>
-    public sealed class HellfirePatches
+    public sealed class HellfirePatches : IBurningPatchView
     {
         const int MaxPatches = 8;
         const float PatchLifetime = 2.4f;
@@ -153,6 +153,32 @@ namespace RoguePirates.V4.Enemies
         /// <summary>V3 SaltwindExplosiveBarrelLogic.ShouldDetonate.</summary>
         bool ShouldDetonate(float fuse);
         void Toast(string text, float seconds);
+    }
+
+    /// <summary>
+    /// The explosive barrels' settings and gate (M14; was LegacyBarrelEnvironment over the stage-profile export): the stage
+    /// config's barrel values, V3's detonation rule (fuse at or below 0) and the run gate (the profile was always active in
+    /// a V4 run).
+    /// </summary>
+    public sealed class BarrelEnvironment : IBarrelEnvironment
+    {
+        readonly RoguePirates.V4.Spawning.IRunStatus _run;
+        readonly System.Func<RoguePirates.V4.Config.StageContentConfig> _stage;
+        readonly System.Action<string, float> _toast;
+
+        public BarrelEnvironment(RoguePirates.V4.Spawning.IRunStatus run, System.Func<RoguePirates.V4.Config.StageContentConfig> stage, System.Action<string, float> toast)
+        {
+            _run = run;
+            _stage = stage;
+            _toast = toast;
+        }
+
+        public bool RunActive => _run != null && _run.Exists && !_run.IsPaused && !_run.IsRunEnded;
+        public float FuseSeconds => _stage?.Invoke()?.explosiveBarrelFuseSeconds ?? 1.2f;
+        public float Radius => _stage?.Invoke()?.explosiveBarrelRadius ?? 4f;
+        public int Damage => _stage?.Invoke()?.explosiveBarrelDamage ?? 20;
+        public bool ShouldDetonate(float fuse) => fuse <= 0f;
+        public void Toast(string text, float seconds) => _toast?.Invoke(text, seconds);
     }
 
     /// <summary>

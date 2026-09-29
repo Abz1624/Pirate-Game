@@ -17,6 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   weaponId: long_nine
   displayName: Long Nine
+  description: Long forward line for elite priority shots.
+  behaviorLine: "Fires forward \u2014 steer to aim"
   pattern: 0
   behavior: 0
   targeting: 6
@@ -72,6 +74,7 @@ MonoBehaviour:
     prefab: {fileID: 0}
     scaleMultiplier: 1
     radiusMultiplier: 1
+  hitEffect: 0
   projectile:
     burstShots: 1
     burstGapSeconds: 0.18

@@ -5,6 +5,7 @@ using HighSeas.Balance;
 using HighSeas.Core;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
+using RoguePirates.V4.Editor;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Legacy;
 using RoguePirates.V4.Rewards;
@@ -66,8 +67,8 @@ namespace RoguePirates.V4.Tests
             r.Publish(CombatEventKind.LandmarkUsed, 3);
             r.Publish(CombatEventKind.LandmarkUsed, 7);
             r.Publish(CombatEventKind.LandmarkUsed, 7); // the same landmark again: once
-            r.Publish(CombatEventKind.PhaseChanged, 101, 1, 0f, LegacyConfigMapping.EliteA);
-            r.Publish(CombatEventKind.PhaseChanged, 102, 1, 0f, LegacyConfigMapping.EliteB);
+            r.Publish(CombatEventKind.PhaseChanged, 101, 1, 0f, V3ConfigMapping.EliteA);
+            r.Publish(CombatEventKind.PhaseChanged, 102, 1, 0f, V3ConfigMapping.EliteB);
             r.Flush();
             r.Kill(400f, 101);
             r.Kill(410f, 102);
@@ -172,8 +173,8 @@ namespace RoguePirates.V4.Tests
         {
             using var set = Default();
             var r = Make(set);
-            r.Publish(CombatEventKind.PhaseChanged, 5, 1, 0f, LegacyConfigMapping.EliteA);
-            r.Publish(CombatEventKind.PhaseChanged, 6, 1, 0f, LegacyConfigMapping.EliteB);
+            r.Publish(CombatEventKind.PhaseChanged, 5, 1, 0f, V3ConfigMapping.EliteA);
+            r.Publish(CombatEventKind.PhaseChanged, 6, 1, 0f, V3ConfigMapping.EliteB);
             r.Publish(CombatEventKind.PhaseChanged, 7, 1, 0f, "reef_crab"); // not a scheduled elite (no index)
             r.Flush();
             r.Kill(200f, 7);
@@ -288,6 +289,78 @@ namespace RoguePirates.V4.Tests
             // Every weapon damage path in the weapon module records its hit (the ledger hook the share listens to).
             var weapons = File.ReadAllText(Path.Combine(Application.dataPath, "_Game/V4/Runtime/Weapons/WeaponCombat.cs"));
             StringAssert.Contains("Hooks.RecordHit(ledgerId", weapons);
+        }
+
+        /// <summary>
+        /// M14.13: the menu's Captain locks. Adopted rule: Hank 100 and Sparky 140 Rum (buyable when the treasury holds
+        /// it), Ember and Roxie until their weapon is owned, Richie until 5,000 lifetime gold. V3 rule (preset): Hank and
+        /// Sparky by save ownership (Sparky also by a First Conquest), the rest open.
+        /// </summary>
+        [Test]
+        public void CaptainLocks_FollowTheAdoptedRule_AndV3sUnderThePreset()
+        {
+            using var set = Default();
+            var save = new SaveService(new MemorySaveBackend());
+            var lifetime = 0;
+            var conquest = false;
+            var locks = new CaptainLocks(() => set, () => save, () => conquest, () => lifetime);
+            CaptainConfig C(string key) => set.All<CaptainConfig>().Single(c => c.captainKey == key);
+
+            Assert.AreEqual(new[] { "rook", "brine", "richie", "flint", "ember", "roxie" }, locks.MenuOrder().Select(c => c.captainKey).ToArray(), "V3's menu order");
+            Assert.IsFalse(locks.IsLocked(C("rook")));
+            var hank = locks.StateOf(C("brine"));
+            Assert.IsTrue(hank.Locked);
+            Assert.AreEqual(100, hank.RumCost);
+            Assert.IsFalse(hank.CanBuy, "no Rum yet");
+            save.TrySettleRun("r1", 120);
+            Assert.IsTrue(locks.StateOf(C("brine")).CanBuy, "100 Rum buys Hank");
+            var unlocks = new UnlockService(() => save, () => set);
+            StringAssert.StartsWith("Unlocked", unlocks.Purchase("brine"));
+            Assert.IsFalse(locks.IsLocked(C("brine")));
+            Assert.AreEqual(20, save.Meta.marks);
+            Assert.AreEqual(140, locks.StateOf(C("flint")).RumCost);
+            var ember = locks.StateOf(C("ember"));
+            Assert.IsTrue(ember.Locked);
+            StringAssert.Contains("first", ember.Reason, "Ember waits for her weapon");
+            var richie = locks.StateOf(C("richie"));
+            Assert.IsTrue(richie.Locked);
+            StringAssert.Contains("5,000", richie.Reason);
+            lifetime = 5000;
+            Assert.IsFalse(locks.IsLocked(C("richie")), "5,000 lifetime gold unlocks Richie");
+
+            Assert.IsTrue(set.TryApplyEdit(set.Single<UnlockConfig>().configId, "captainLockRule", "V3Ownership", 0f, out var error), error);
+            var fresh = new SaveService(new MemorySaveBackend());
+            var v3 = new CaptainLocks(() => set, () => fresh, () => conquest, () => 0);
+            Assert.IsTrue(v3.IsLocked(C("brine")), "V3: Hank needs \"brine\" owned");
+            Assert.IsTrue(v3.IsLocked(C("flint")));
+            conquest = true;
+            Assert.IsFalse(v3.IsLocked(C("flint")), "V3: a First Conquest unlocks Sparky");
+            Assert.IsFalse(v3.IsLocked(C("ember")) || v3.IsLocked(C("roxie")) || v3.IsLocked(C("richie")), "V3: the rest are open");
+        }
+
+        /// <summary>
+        /// M14.13 review fix: the menu's services apply the session's preset, so the v3-parity preset switches the
+        /// menu's Captain locks back to V3's rule (Ember open again), and the Set Sail button follows the lock state.
+        /// </summary>
+        [Test]
+        public void MenuServices_ApplyTheSessionPreset_ToTheCaptainLocks()
+        {
+            var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
+            using var defaults = RoguePirates.V4.Composition.MenuServices.ForConfig(set, null);
+            CaptainConfig C(RoguePirates.V4.Composition.MenuServices m, string key) => m.Config.All<CaptainConfig>().Single(c => c.captainKey == key);
+            Assert.AreEqual(CaptainLockRule.CaptainConfig, defaults.Config.Single<UnlockConfig>().captainLockRule);
+            Assert.IsTrue(defaults.Locks.IsLocked(C(defaults, "ember")), "adopted rule: Ember waits for the Flamethrower");
+
+            var parity = File.ReadAllText(Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
+            var errors = new List<string>();
+            using var v3 = RoguePirates.V4.Composition.MenuServices.ForConfig(set, parity, errors);
+            Assert.IsEmpty(errors, string.Join("\n", errors));
+            Assert.AreEqual(CaptainLockRule.V3Ownership, v3.Config.Single<UnlockConfig>().captainLockRule, "the preset reaches the menu's configs");
+            Assert.IsFalse(v3.Locks.IsLocked(C(v3, "ember")) || v3.Locks.IsLocked(C(v3, "roxie")) || v3.Locks.IsLocked(C(v3, "richie")), "V3: the rest are open");
+
+            Assert.AreEqual(("SET SAIL", true), V4MainMenuController.PlayButton(CaptainLockState.Open, "RUM"));
+            Assert.AreEqual(("UNLOCK — 100 RUM", true), V4MainMenuController.PlayButton(new CaptainLockState(true, "100 Rum", 100, true), "RUM"));
+            Assert.AreEqual(("LOCKED", false), V4MainMenuController.PlayButton(new CaptainLockState(true, "100 Rum", 100, false), "RUM"));
         }
 
         [Test]

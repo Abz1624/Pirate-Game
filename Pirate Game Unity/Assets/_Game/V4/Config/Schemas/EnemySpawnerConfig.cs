@@ -63,6 +63,80 @@ namespace RoguePirates.V4.Config
         public float burstGapSeconds = 0.15f, areaRadius = 4f, areaDurationSeconds = 2f;
     }
 
+    // M14: the special-behaviour modules (were passed through from the V3 spawn profile asset). Field names match V3's
+    // module settings so the mapping copies them by name; defaults are V3's.
+
+    [Serializable]
+    public sealed class SpawnerFormation
+    {
+        public ConfigEnums.FormationRole role = ConfigEnums.FormationRole.Auto;
+        public ConfigEnums.FormationShape shape = ConfigEnums.FormationShape.Line;
+        public float slotSpacing = 3f, followDistance = 4f, leaderSpeedBias = 1.05f;
+        public bool breakOnLeaderDeath = true, breakOnPlayerProximity;
+        public float breakProximityRadius = 6f, regroupRadius = 14f;
+        public bool followersInheritLeaderAttack;
+    }
+
+    [Serializable]
+    public sealed class SpawnerSummon
+    {
+        [Tooltip("The spawner its minions come from (V3 minionProfile; no V3 data set one).")] public EnemySpawnerConfig minionSpawner;
+        public int minionsPerWave = 1;
+        public float spawnIntervalSeconds = 3f;
+        public int maxAliveMinions = 4;
+        public float minionLifetimeSeconds;
+        public bool inheritElite, despawnOnParentDeath = true;
+    }
+
+    [Serializable]
+    public sealed class SpawnerTether
+    {
+        public float maxRange = 14f, breakRange = 18f, tickDamage = 3f, tickIntervalSeconds = 0.5f, rampUpSeconds = 0.75f;
+        [Range(0f, 0.6f)] public float playerMoveSpeedPenalty = 0.15f;
+        public bool breakOnIslandBlock = true;
+    }
+
+    [Serializable]
+    public sealed class SpawnerSupportAura
+    {
+        public float radius = 8f, healPerSecond;
+        [Range(0f, 0.2f)] public float healPercentMaxHpPerSecond;
+        public bool alliesOnly = true;
+        public float allySpeedMultiplier = 1.05f, pulseIntervalSeconds = 0.5f;
+        public bool disableWhenDamaged;
+    }
+
+    [Serializable]
+    public sealed class SpawnerPhaseDash
+    {
+        public float dashCooldownSeconds = 4f, windUpSeconds = 0.6f, dashDistance = 8f, dashSpeed = 18f, dashDurationSeconds = 0.25f;
+        [Range(0f, 1f)] public float damageReductionDuringDash = 0.5f;
+        public float postDashPauseSeconds = 0.4f;
+        public ConfigEnums.PhaseDashAxis axis = ConfigEnums.PhaseDashAxis.TowardPlayer;
+        public int maxConsecutiveDashes = 2;
+    }
+
+    [Serializable]
+    public sealed class SpawnerTerrainAmbush
+    {
+        public ConfigEnums.TerrainAmbushTrigger trigger = ConfigEnums.TerrainAmbushTrigger.WhenOffScreenThenReveal;
+        public float hideRadius = 20f, stalkSpeedMultiplier = 0.45f, revealDistance = 10f, revealBurstSpeedMultiplier = 1.8f, playerTriggerRadius = 12f;
+    }
+
+    [Serializable]
+    public sealed class SpawnerAdaptive
+    {
+        public float evaluationWindowSeconds = 8f;
+        public ConfigEnums.AdaptiveSignal[] enabledSignals = { ConfigEnums.AdaptiveSignal.PlayerKiteTime, ConfigEnums.AdaptiveSignal.ManyActiveEnemies };
+        public float kiteThresholdSeconds = 4f, standStillThresholdSeconds = 2f, highDpsThreshold = 40f;
+        [Range(0f, 1f)] public float lowHpFraction = 0.35f;
+        public int manyEnemiesThreshold = 28;
+        public ConfigEnums.EnemyMovementPattern kiteResponseMovement = ConfigEnums.EnemyMovementPattern.Flank;
+        public float kiteResponseSpeedMultiplier = 1.15f;
+        public int maxAdaptationStacks = 3;
+        public float adaptationCooldownSeconds = 6f;
+    }
+
     /// <summary>
     /// One spawn profile: which archetype it anchors, how it spawns and the per-spawner overrides. Mirrors the V3
     /// SpawnProfile blocks (special-behavior modules pass through from the V3 asset until M8). In M1 the values are
@@ -80,7 +154,15 @@ namespace RoguePirates.V4.Config
         public SpawnerElite elite = new SpawnerElite();
         public SpawnerMovement movement = new SpawnerMovement();
         public SpawnerAttack attack = new SpawnerAttack();
-        [AppliesFrom(8, "module settings pass through from the V3 profile")] public ConfigEnums.EnemySpecialBehavior specialBehavior = ConfigEnums.EnemySpecialBehavior.None;
+        [AppliesFrom(8)] public ConfigEnums.EnemySpecialBehavior specialBehavior = ConfigEnums.EnemySpecialBehavior.None;
+        [Header("Special-behaviour modules (M14: V4 data; were V3 pass-through)")]
+        [AppliesFrom(14)] public SpawnerFormation formation = new SpawnerFormation();
+        [AppliesFrom(14)] public SpawnerSummon summon = new SpawnerSummon();
+        [AppliesFrom(14)] public SpawnerTether tether = new SpawnerTether();
+        [AppliesFrom(14)] public SpawnerSupportAura supportAura = new SpawnerSupportAura();
+        [AppliesFrom(14)] public SpawnerPhaseDash phaseDash = new SpawnerPhaseDash();
+        [AppliesFrom(14)] public SpawnerTerrainAmbush terrainAmbush = new SpawnerTerrainAmbush();
+        [AppliesFrom(14)] public SpawnerAdaptive adaptive = new SpawnerAdaptive();
         [AppliesFrom(11)] public AnimationCurve pressureWeight = AnimationCurve.Constant(0.85f, 1.35f, 1f);
 
         public override void Validate(ConfigValidationReport report)

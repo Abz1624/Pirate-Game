@@ -43,9 +43,13 @@ namespace RoguePirates.V4.Tests
             yield return null;
         }
 
+        V3RegistryFromConfig _registry;
+
         [UnityTearDown]
         public IEnumerator TearDown()
         {
+            _registry?.Dispose();
+            _registry = null;
             yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
             StageBalanceProfileContext.ResetForTests();
@@ -140,19 +144,22 @@ namespace RoguePirates.V4.Tests
             RunManager.Instance.SetPause(PauseReason.UserPause);
 
             var s = new EnemyCombatServices();
-            var target = new LegacyEnemyTarget(ship);
-            var effects = new LegacyEnemyEffects();
+            var target = new LegacyShipPort(ship);
+            var effects = new RoguePirates.V4.Views.EnemyEffectsForwarder(null);
             var root = new GameObject("v4-lockstep-world");
             // A V3 EnemyWorld added at runtime has its code defaults (island probe 10; the scenes set 6).
-            var v4 = new EnemySimulation(legacy.Agents.Length, new LegacyEnemyRunState(), new LegacyEnemyViewSink(root.transform), new LegacyEnemySpawnParams(), new EnemyWorldSettings { islandAvoidanceProbeDistance = 10f });
+            // M14: the run no longer writes the config into V3's registry; the V3 side of the comparison gets it here.
+            _registry = new V3RegistryFromConfig(game.Config);
+            var spawnParams = new EnemySpawnParamResolver(new EnemyCombatProfiles(game.Config), game.Config) { CombatEnabled = SaltwindCombatFeature.IsEnabled };
+            var v4 = new EnemySimulation(legacy.Agents.Length, new LegacyRunPort(), new V3EnemyViewSink(root.transform), spawnParams, new EnemyWorldSettings { islandAvoidanceProbeDistance = 10f });
             v4.SetDefinitions(legacy.Definitions, EnemySimulation.BuildRules(game.Config, legacy.Definitions));
             s.Simulation = v4;
             s.Hazards = new HazardTelegraphs(target, effects);
             s.Budget = new EncounterBudget(() => StageBalanceProfileContext.Export?.Spawn?.MaxSimultaneousChargeWindups ?? 2,
                 () => StageBalanceProfileContext.Export?.Spawn?.MaxSimultaneousAreaDenial ?? 2);
-            s.Shots = new HostileProjectiles(new LegacyHostileShotViews(root.transform));
+            s.Shots = new HostileProjectiles(new RoguePirates.V4.Views.HostileShotViewsForwarder(null));
             s.Effects = effects;
-            s.SpawnParams = new LegacyEnemySpawnParams();
+            s.SpawnParams = spawnParams;
             s.Behaviors = new EnemyCombatBehaviors(s);
             s.Specialists = new EnemySpecialistCombat(s);
             s.ReefCrab = new EnemyReefCrabCombat(s);

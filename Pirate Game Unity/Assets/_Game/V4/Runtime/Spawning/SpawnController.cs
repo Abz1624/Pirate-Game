@@ -106,7 +106,7 @@ namespace RoguePirates.V4.Spawning
                 if (!_running) return 1f;
                 var elapsed = _s.Run.ElapsedSeconds;
                 var multiplier = _modifiers.GetRateMultiplier(elapsed);
-                if (_s.LegacyRate != null) multiplier *= _s.LegacyRate.Multiplier;
+                if (_s.ExternalRate != null) multiplier *= _s.ExternalRate.Multiplier;
                 var experiment = _s.Experiment;
                 if (experiment != null) multiplier *= UnityEngine.Mathf.Max(0.1f, experiment.spawnDensityMultiplier);
                 var timeline = _s.Timeline;

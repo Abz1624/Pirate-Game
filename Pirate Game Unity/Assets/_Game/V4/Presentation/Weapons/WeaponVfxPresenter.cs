@@ -22,12 +22,17 @@ namespace RoguePirates.V4.Presentation.Weapons
     /// <see cref="IWeaponManager"/> (orbit slot, blade positions) and <see cref="IShipView"/> (ship heading); no legacy
     /// hub is looked up, and no random number is drawn (the mortar bursts use V3's fallback spread, as M5 did: V4
     /// already made V3's combat draws in the simulation, register R-70).</para>
-    /// <para>Not here: the flame stream (FlameStreamPresenter), the water splash (still the shared JuiceVfxBroker, whose
-    /// merge window other splashes share, until M14) and the timed mortar ring (the kept LegacyHazardTelegraphView); the
-    /// runtime WeaponEffectsForwarder sends those two to the legacy views.</para>
+    /// <para>M14.9b: also the water splash (V3 JuiceVfxBroker.PlayWaterSplash, with its merge window shared by every
+    /// splash in the run, enemy shots included), the enemy world's blasts (V3 SaltwindCombatEffects: the keg blast at sea
+    /// level) and, through the hazard ring presenter, the timed mortar ring. Not here: the flame stream
+    /// (FlameStreamPresenter).</para>
     /// </summary>
-    public sealed class WeaponVfxPresenter : MonoBehaviour, IWeaponEffects
+    public sealed class WeaponVfxPresenter : MonoBehaviour, IWeaponEffects, RoguePirates.V4.Enemies.IEnemyEffects
     {
+        // V3 JuiceVfxBroker: splashes within 1.35 m and 0.14 s of the last one merge into it.
+        const float SplashMergeRadius = 1.35f;
+        const float SplashMergeSeconds = 0.14f;
+        const int PrewarmSplash = 12;
         public const string KeyPrefix = "vfx.";
 
         // Pool kinds: one pool per (kind, prefab), because each kind prepares its instances differently.
@@ -58,8 +63,9 @@ namespace RoguePirates.V4.Presentation.Weapons
         // settings' own bindings stay keyed by the firing weapon's id.
 
         // Prewarm per kind (enough for the usual overlap: 4 mortar bursts, a 5-strike lightning chain, a keg trail).
-        const int PrewarmMuzzle = 4, PrewarmBurst = 4, PrewarmMortarBurst = 8, PrewarmBlast = 3, PrewarmLightning = 6;
-        const int PrewarmBeam = 2, PrewarmReticle = 2, PrewarmKeg = 8, PrewarmCutlass = 4, PrewarmSkiff = 3;
+        // M14.15: raised to the peaks of a six-weapon run at ~70 enemies (keg blasts peaked at 9).
+        const int PrewarmMuzzle = 6, PrewarmBurst = 6, PrewarmMortarBurst = 8, PrewarmBlast = 12, PrewarmLightning = 8;
+        const int PrewarmBeam = 2, PrewarmReticle = 2, PrewarmKeg = 32, PrewarmCutlass = 8, PrewarmSkiff = 3;
 
         sealed class Prepared
         {
@@ -97,6 +103,12 @@ namespace RoguePirates.V4.Presentation.Weapons
         Func<WeaponRulesConfig> _rules;
         WeaponAimOverlay _overlay;
         Func<IReadOnlyList<OrbitBehavior.HitSphere>> _bladeHits;
+        float _lastSplashTime = -10f;
+        Vector3 _lastSplashPos;
+
+        /// <summary>M14.9b: draws the timed landing rings (set by the presentation root).</summary>
+        public Effects.HazardRingPresenter HazardRings { get; set; }
+        public int SplashesPlayed { get; private set; }
 
         readonly Dictionary<(string kind, int prefab), string> _keys = new Dictionary<(string, int), string>();
         readonly Dictionary<int, Prepared> _prepared = new Dictionary<int, Prepared>();
@@ -316,11 +328,11 @@ namespace RoguePirates.V4.Presentation.Weapons
             PlayBurst(_settings.burningTrailPrefab, position, Quaternion.identity, scale, lifetime);
         }
 
-        /// <summary>
-        /// The timed landing ring (R-27 fix) is drawn by the kept legacy hazard ring view until M14; the runtime forwarder
-        /// sends it there (presentation does not call legacy code).
-        /// </summary>
-        public void TimedRing(Vector3 position, float radius, float seconds) { }
+        /// <summary>The timed landing ring (R-27 fix: it fills over the shell's real delay), drawn by the hazard ring presenter.</summary>
+        public void TimedRing(Vector3 position, float radius, float seconds)
+        {
+            if (HazardRings != null) HazardRings.ShowTimedRing(position, radius, seconds);
+        }
 
         /// <summary>
         /// V3 OnMortarImpact with no random stream (as M5 called it): 4 small bursts spread by V3's fallback pattern inside
@@ -362,11 +374,26 @@ namespace RoguePirates.V4.Presentation.Weapons
             PlayBurst(_settings.burningTrailPrefab, position, Quaternion.identity, scale, 1.6f);
         }
 
-        /// <summary>
-        /// The water splash stays the shared legacy broker's until M14 (its merge window covers every splash in the run);
-        /// the runtime forwarder sends it there.
-        /// </summary>
-        public void WaterSplash(Vector3 position) { }
+        /// <summary>V3 JuiceVfxBroker.PlayWaterSplash: the splash prefab at y 0.35 for 0.55 s, merged with a recent nearby one.</summary>
+        public void WaterSplash(Vector3 position)
+        {
+            if (_settings == null || _settings.waterImpactSplashPrefab == null) return;
+            if (Time.time - _lastSplashTime < SplashMergeSeconds
+                && (position - _lastSplashPos).sqrMagnitude < SplashMergeRadius * SplashMergeRadius)
+                return;
+            _lastSplashTime = Time.time;
+            _lastSplashPos = position;
+            position.y = 0.35f;
+            PlayBurst(_settings.waterImpactSplashPrefab, position, Quaternion.identity, _settings.waterImpactSplashScale, 0.55f);
+            SplashesPlayed++;
+        }
+
+        /// <summary>V3 SaltwindCombatEffects.PlayExplosion: the keg blast at sea level (bomb boats, mines, traps, the boss).</summary>
+        public void PlayExplosion(Vector3 position, float blastRadius)
+        {
+            position.y = 0f;
+            Explosion(position, blastRadius);
+        }
 
         /// <summary>V3 CreateBoardingSkiffVisual: the skiff model at 0.42 scale, colliders removed, or a brown box.</summary>
         public int SkiffSpawned(Vector3 position, Vector3 forward)
@@ -697,6 +724,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             var reticle = telegraph != null ? telegraph.transform.Find(ReticleChild) : null;
             if (reticle != null) EnsurePool(KindReticle, reticle.gameObject, PrewarmReticle);
             if (s.burningTrailPrefab != null) EnsurePool(KindBurst, s.burningTrailPrefab, PrewarmBurst);
+            if (s.waterImpactSplashPrefab != null) EnsurePool(KindBurst, s.waterImpactSplashPrefab, PrewarmSplash);
             if (s.mineBarrelPrefab != null) EnsurePool(KindKeg, s.mineBarrelPrefab, PrewarmKeg);
             if (s.cutlassPrefab != null) EnsurePool(KindCutlass, s.cutlassPrefab, PrewarmCutlass);
             if (_skiffModel != null) EnsurePool(KindSkiff, _skiffModel, PrewarmSkiff);

@@ -39,7 +39,7 @@ MonoBehaviour:
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-    poolPrewarm: 0
+    poolPrewarm: 60
   tags: []
   concurrencyTags: []
   spawnTier: 0

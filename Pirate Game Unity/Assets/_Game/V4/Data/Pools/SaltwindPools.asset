@@ -29,8 +29,8 @@ MonoBehaviour:
     overflow: 0
     moduleLabOnly: 1
   deriveEnemyViews: 1
-  prewarmEnemyViews: 0
-  enemyViewPrewarm: 12
+  prewarmEnemyViews: 1
+  enemyViewPrewarm: 28
   bossViewPrewarm: 1
   enemyViewCap: 0
   enemyViewOverflow: 0

@@ -12,17 +12,8 @@ namespace RoguePirates.V4.Weapons
     public sealed class WeaponEffectsForwarder : IWeaponEffects
     {
         readonly Func<IWeaponEffects> _target;
-        readonly Action<Vector3, float, float> _timedRing;
-        readonly Action<Vector3> _waterSplash;
 
-        /// <param name="timedRing">Draws the timed landing ring (the kept legacy ring view until M14); null = the presenter.</param>
-        /// <param name="waterSplash">Plays a water splash (the shared legacy broker until M14); null = the presenter.</param>
-        public WeaponEffectsForwarder(Func<IWeaponEffects> target, Action<Vector3, float, float> timedRing = null, Action<Vector3> waterSplash = null)
-        {
-            _target = target;
-            _timedRing = timedRing;
-            _waterSplash = waterSplash;
-        }
+        public WeaponEffectsForwarder(Func<IWeaponEffects> target) { _target = target; }
 
         IWeaponEffects T
         {
@@ -46,18 +37,10 @@ namespace RoguePirates.V4.Weapons
         public void LightningStrike(Vector3 position, float radius) => T?.LightningStrike(position, radius);
         public void FlameBurst(Vector3 origin, Vector3 aim) => T?.FlameBurst(origin, aim);
         public void AreaTelegraph(Vector3 position, float radius) => T?.AreaTelegraph(position, radius);
-        public void TimedRing(Vector3 position, float radius, float seconds)
-        {
-            if (_timedRing != null) _timedRing(position, radius, seconds);
-            else T?.TimedRing(position, radius, seconds);
-        }
+        public void TimedRing(Vector3 position, float radius, float seconds) => T?.TimedRing(position, radius, seconds);
         public void AreaImpact(Vector3 position, float radius) => T?.AreaImpact(position, radius);
         public void BurningPatch(Vector3 position, float radius) => T?.BurningPatch(position, radius);
-        public void WaterSplash(Vector3 position)
-        {
-            if (_waterSplash != null) _waterSplash(position);
-            else T?.WaterSplash(position);
-        }
+        public void WaterSplash(Vector3 position) => T?.WaterSplash(position);
         public int SkiffSpawned(Vector3 position, Vector3 forward) => T?.SkiffSpawned(position, forward) ?? -1;
         public void SkiffMoved(int handle, Vector3 position, Vector3 facing) => T?.SkiffMoved(handle, position, facing);
         public void SkiffRemoved(int handle) => T?.SkiffRemoved(handle);

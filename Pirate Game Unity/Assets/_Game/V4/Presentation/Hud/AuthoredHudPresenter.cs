@@ -57,7 +57,7 @@ namespace RoguePirates.V4.Presentation.Hud
             for (var i = 0; i < canvases.Length; i++)
             {
                 var canvas = canvases[i];
-                if (canvas.GetComponentInParent<RunHud>() != null) continue;
+                if (canvas.name == "RunCanvas") continue; // M14.11: the run canvas (V3's RunHud sat on it)
                 if (canvas.transform.Find("Weapon_Slot") == null || canvas.transform.Find("Profile") == null) continue;
                 return canvas;
             }

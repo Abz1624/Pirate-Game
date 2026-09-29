@@ -37,12 +37,12 @@ namespace RoguePirates.V4.DevTools.Console
                 GUILayout.BeginHorizontal();
                 GUILayout.Label($"{w.Id}  lv{w.Level}  {w.Config?.behavior}{(w.Evolution != null ? "  → " + w.Evolution.displayName : "")}  {state}", GUILayout.Width(300));
                 if (GUILayout.Button("Fire", GUILayout.Width(40))) weapons.FireSlot(i);
-                if (GUILayout.Button("+1", GUILayout.Width(28))) LegacyWeaponLab.RankUp(game, i);
+                if (GUILayout.Button("+1", GUILayout.Width(28))) WeaponLab.RankUp(game, i);
                 var evolution = evolutions?.FirstOrDefault(e => e.baseWeapon != null && e.baseWeapon.weaponId == w.Id);
                 GUI.enabled = evolution != null && w.Evolution == null;
-                if (GUILayout.Button("Evolve", GUILayout.Width(52)) && evolution != null) LegacyWeaponLab.Evolve(game, w.Id, evolution.evolutionId);
+                if (GUILayout.Button("Evolve", GUILayout.Width(52)) && evolution != null) WeaponLab.Evolve(game, w.Id, evolution.evolutionId);
                 GUI.enabled = true;
-                if (GUILayout.Button("x", GUILayout.Width(22))) LegacyWeaponLab.Remove(game, i);
+                if (GUILayout.Button("x", GUILayout.Width(22))) WeaponLab.Remove(game, i);
                 GUILayout.EndHorizontal();
             }
 
@@ -53,10 +53,10 @@ namespace RoguePirates.V4.DevTools.Console
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label($"{config.weaponId} ({config.behavior})", GUILayout.Width(250));
-                GUI.enabled = !owned.Contains(config.weaponId) && owned.Count < LegacyWeaponLab.SlotCap(game);
-                if (GUILayout.Button("Add", GUILayout.Width(44))) LegacyWeaponLab.Add(game, config.weaponId);
+                GUI.enabled = !owned.Contains(config.weaponId) && owned.Count < WeaponLab.SlotCap(game);
+                if (GUILayout.Button("Add", GUILayout.Width(44))) WeaponLab.Add(game, config.weaponId);
                 GUI.enabled = true;
-                if (GUILayout.Button("Solo", GUILayout.Width(44))) LegacyWeaponLab.Solo(game, config.weaponId);
+                if (GUILayout.Button("Solo", GUILayout.Width(44))) WeaponLab.Solo(game, config.weaponId);
                 GUILayout.EndHorizontal();
             }
         }

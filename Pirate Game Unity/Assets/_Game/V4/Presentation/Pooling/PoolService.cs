@@ -90,6 +90,9 @@ namespace RoguePirates.V4.Presentation.Pooling
         readonly Dictionary<int, Instance> _owned = new Dictionary<int, Instance>();
         readonly HashSet<int> _createdIds = new HashSet<int>();
 
+        /// <summary>The inactive holder for free instances; presenters also keep their pool templates here.</summary>
+        public Transform Staging => _staging;
+
         public PoolService(Transform root)
         {
             _root = root;

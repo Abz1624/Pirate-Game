@@ -17,6 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   weaponId: flamethrower
   displayName: Flamethrower
+  description: Automatic ship weapon.
+  behaviorLine: Auto-attacks nearby enemies
   pattern: 3
   behavior: 3
   targeting: 7
@@ -60,6 +62,7 @@ MonoBehaviour:
     prefab: {fileID: 0}
     scaleMultiplier: 1
     radiusMultiplier: 1
+  hitEffect: 0
   projectile:
     burstShots: 1
     burstGapSeconds: 0.18

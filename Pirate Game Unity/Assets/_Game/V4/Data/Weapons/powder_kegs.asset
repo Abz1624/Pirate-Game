@@ -17,6 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   weaponId: powder_kegs
   displayName: Powder Kegs
+  description: Drops explosive kegs along your wake.
+  behaviorLine: Drops mines astern
   pattern: 5
   behavior: 5
   targeting: 8
@@ -65,6 +67,7 @@ MonoBehaviour:
     prefab: {fileID: 0}
     scaleMultiplier: 1
     radiusMultiplier: 1
+  hitEffect: 2
   projectile:
     burstShots: 1
     burstGapSeconds: 0.18

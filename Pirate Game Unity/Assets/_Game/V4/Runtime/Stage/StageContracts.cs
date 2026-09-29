@@ -30,6 +30,14 @@ namespace RoguePirates.V4.Stage
         void AddStatModifier(int stat, float add, float multiply);
     }
 
+    /// <summary>M14: the run's loot and map streams (chest rolls, Powder Cache items, Signal Buoy rewards).</summary>
+    public interface IStageRandom
+    {
+        float LootFloat();
+        int LootInt(int minInclusive, int maxExclusive);
+        int MapInt(int minInclusive, int maxExclusive);
+    }
+
     /// <summary>The player ship for landmarks (position, hull, repair).</summary>
     public interface IStageShip
     {
@@ -97,26 +105,24 @@ namespace RoguePirates.V4.Stage
     }
 
     /// <summary>
-    /// The POI marker objects. V3 created them in POIManager.Initialize, and the chest's bobbing draws from Unity's
-    /// global random state and moves the chest (interaction range is measured to the marker), so they are created at
-    /// the same moment and in the same order as V3, with the per-POI tick on the marker (POIInteractable's place).
-    /// Legacy objects until M14 (R-95).
+    /// The POI markers as the marker presenter draws them (M14.12; the stage module held marker objects through
+    /// IPoiMarkers before): which POIs have a marker, its look, and whether it is hidden, used, charging or telegraphing.
     /// </summary>
-    public interface IPoiMarkers
+    public interface IPoiMarkerView
     {
-        void Clear();
-        /// <summary>Creates POI <paramref name="index"/>'s marker; <paramref name="tick"/> runs in the marker's Update.</summary>
-        void Spawn(int index, POIType type, Vector3 position, System.Action<int, float> tick);
-        bool IsSpawned(int index);
-        /// <summary>The marker's current world position (chests bob), which interaction range is measured to.</summary>
-        Vector3 Position(int index);
-        void Hide(int index);
-        /// <summary>Replaces POI <paramref name="index"/>'s marker with a visible one of <paramref name="visualType"/> (same tick).</summary>
-        void Replace(int index, POIType visualType, Vector3 position, System.Action<int, float> tick);
-        void Consume(int index);
-        void SetChargeRing(int index, float charge01, float radius);
-        void ShowTelegraph(int index);
-        void PulseTelegraph(int index);
-        void HideTelegraph(int index);
+        /// <summary>Changes when a new layout is set (a new run).</summary>
+        int LayoutVersion { get; }
+        int PoiCount { get; }
+        bool UsePlaceholderVisuals { get; }
+        POIType PoiType(int index);
+        Vector3 PoiPosition(int index);
+        bool IsMarkerSpawned(int index);
+        POIType VisualType(int index);
+        bool IsHidden(int index);
+        bool IsConsumed(int index);
+        bool ChargeRingShown(int index);
+        float SignalBuoyCharge01(int index);
+        float ChargeRingRadius { get; }
+        bool TelegraphRingShown(int index);
     }
 }

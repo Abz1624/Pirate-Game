@@ -6,6 +6,7 @@ using HighSeas.Core;
 using HighSeas.World;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
+using RoguePirates.V4.Editor;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Legacy;
 using RoguePirates.V4.Spawning;
@@ -154,27 +155,6 @@ namespace RoguePirates.V4.Tests
             public bool HasPending(int encounterId) => Pending.Contains(encounterId);
         }
 
-        sealed class FakeMarkers : IPoiMarkers
-        {
-            public readonly Dictionary<int, Vector3> Spawned = new Dictionary<int, Vector3>();
-            public readonly HashSet<int> Hidden = new HashSet<int>(), Consumed = new HashSet<int>();
-            public readonly Dictionary<int, System.Action<int, float>> Ticks = new Dictionary<int, System.Action<int, float>>();
-            public bool Telegraph;
-            public void Clear() => Spawned.Clear();
-            public void Spawn(int index, POIType type, Vector3 position, System.Action<int, float> tick) { Spawned[index] = position + Vector3.up * 0.15f; Ticks[index] = tick; }
-            public bool IsSpawned(int index) => Spawned.ContainsKey(index);
-            public Vector3 Position(int index) => Spawned.TryGetValue(index, out var p) ? p : Vector3.zero;
-            public void Hide(int index) => Hidden.Add(index);
-            public readonly Dictionary<int, POIType> Replaced = new Dictionary<int, POIType>();
-            public void Replace(int index, POIType visualType, Vector3 position, System.Action<int, float> tick) { Hidden.Remove(index); Replaced[index] = visualType; Spawned[index] = position + Vector3.up * 0.15f; Ticks[index] = tick; }
-            public void Consume(int index) => Consumed.Add(index);
-            public void SetChargeRing(int index, float charge01, float radius) { }
-            public void ShowTelegraph(int index) => Telegraph = true;
-            public void PulseTelegraph(int index) { }
-            public void HideTelegraph(int index) => Telegraph = false;
-            public void TickAll(float dt) { foreach (var t in Ticks.ToList()) t.Value(t.Key, dt); }
-        }
-
         sealed class Rig
         {
             public Log Log = new Log();
@@ -184,7 +164,6 @@ namespace RoguePirates.V4.Tests
             public FakeToasts Toasts = new FakeToasts();
             public FakeTracker Tracker = new FakeTracker();
             public FakeExecutor Executor;
-            public FakeMarkers Markers = new FakeMarkers();
             public StageContentConfig Config;
             public StageContentModule Stage;
             public InteractionModel Interaction;
@@ -193,7 +172,7 @@ namespace RoguePirates.V4.Tests
 
             public void Tick(float dt)
             {
-                Markers.TickAll(dt);
+                Stage.TickPois(dt);
                 Stage.TickManager(dt);
             }
         }
@@ -221,7 +200,7 @@ namespace RoguePirates.V4.Tests
             foreach (var (type, pos) in pois) rig.Layout.pois.Add(new POISlot { type = type, position = pos });
             var beacon = rig.Layout.pois.FindIndex(p => p.type == POIType.BossBeacon);
             if (beacon >= 0) rig.Layout.bossBeacon = rig.Layout.pois[beacon].position;
-            rig.Stage.Initialize(rig.Layout, rig.Markers);
+            rig.Stage.Initialize(rig.Layout);
             rig.Stage.Discovery.Initialize(rig.Layout);
             return rig;
         }
@@ -232,12 +211,12 @@ namespace RoguePirates.V4.Tests
         public void Chest_Purchase_SpendsBuysAndConsumes_AsV3()
         {
             var rig = Make((POIType.SalvageChest, new Vector3(3f, 0f, 0f)));
-            Assert.IsTrue(rig.Markers.IsSpawned(0), "Saltwind spawns every chest at the start");
+            Assert.IsTrue(rig.Stage.IsMarkerSpawned(0), "Saltwind spawns every chest at the start");
             rig.Stage.TryCompleteInteraction(0);
             CollectionAssert.AreEqual(new[] { "plan none", "spend 20", "purchase", "item item_x", "chest opened", "telemetry SalvageChest" }, rig.Log.Lines,
                 "V3 order (and R-47: no equipped weapons passed by default)");
             Assert.IsTrue(rig.Layout.pois[0].used);
-            Assert.IsTrue(rig.Markers.Consumed.Contains(0));
+            Assert.IsTrue(rig.Stage.IsConsumed(0));
             Assert.AreEqual(1, rig.Stage.PaidChestCount);
             CollectionAssert.Contains(rig.Toasts.Shown, "Salvage Chest — gained Item X.");
             Assert.AreEqual((CombatEventKind.ChestOpened, 0), rig.Events.Single());
@@ -298,7 +277,7 @@ namespace RoguePirates.V4.Tests
             CollectionAssert.Contains(rig.Log.Lines, "map 3");
             CollectionAssert.Contains(rig.Log.Lines, "stat 14 +0.8 x1", "third reward: pickup radius");
             Assert.AreEqual(1, rig.Toasts.Shown.Count(t => t == "Signal Buoy charging — stay in the circle!"));
-            Assert.IsTrue(rig.Markers.Consumed.Contains(0));
+            Assert.IsTrue(rig.Stage.IsConsumed(0));
         }
 
         [Test]
@@ -311,7 +290,7 @@ namespace RoguePirates.V4.Tests
             rig.Ship.Pos = new Vector3(37f, 0f, 0f);
             rig.Tick(0.1f);
             CollectionAssert.Contains(rig.Log.Lines, "trigger cache 3 1");
-            Assert.IsTrue(rig.Markers.Hidden.Contains(0));
+            Assert.IsTrue(rig.Stage.IsHidden(0));
             CollectionAssert.Contains(rig.Toasts.Shown, "Powder Cache — ambush incoming!");
             Assert.IsFalse(rig.Stage.CanInteract(0), "hidden while the ambush lasts");
 
@@ -383,11 +362,33 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(rig.Interaction.Visible, "the cache offers its hold");
             rig.Stage.TryCompleteInteraction(0);
             CollectionAssert.AreEqual(new[] { "trigger eliteA 2 1 no deadline", "trigger eliteB 2 1 no deadline" }, rig.Log.Lines.Where(l => l.StartsWith("trigger")).ToList(), "4 elites from the spawners in turn, one encounter");
-            Assert.IsTrue(rig.Markers.Hidden.Contains(0), "the cache hides while the elites fight");
+            Assert.IsTrue(rig.Stage.IsHidden(0), "the cache hides while the elites fight");
             Assert.IsFalse(rig.Stage.CanInteract(0));
             rig.Interaction.Tick(0.1f);
             Assert.IsFalse(rig.Interaction.Visible, "no prompt while the elites fight (the prompt lets go of the hidden cache)");
             Assert.IsFalse(rig.Layout.pois[0].used);
+        }
+
+        [Test]
+        public void PowderCacheChallenge_SpringsOnPress_NoHold_NotByProximity()
+        {
+            var rig = MakeChallenge();
+            rig.Config.powderCacheSpringsOnPress = true; // M14 playtest
+            rig.Ship.Pos = new Vector3(3f, 0f, 0f);
+            Assert.AreEqual(0f, rig.Stage.RequiredHoldSeconds(0), "no hold");
+            Assert.IsTrue(rig.Stage.SpringsOnPress(0));
+            rig.Interaction.Tick(0.1f);
+            rig.Interaction.Tick(0.1f);
+            Assert.IsTrue(rig.Interaction.Visible);
+            StringAssert.Contains("press E", rig.Interaction.Text);
+            Assert.AreEqual(0, rig.Log.Count("trigger"), "being in range without a press does not spring it");
+            rig.Interaction.TouchPressed(); // the USE button is a press too
+            Assert.AreEqual(2, rig.Log.Count("trigger"), "one press springs the challenge");
+            Assert.IsFalse(rig.Stage.SpringsOnPress(0) && rig.Stage.CanInteract(0), "not again while the elites fight");
+
+            var off = MakeChallenge(); // off: V4's hold (the v3-parity preset has no challenge at all)
+            Assert.IsFalse(off.Stage.SpringsOnPress(0));
+            Assert.AreEqual(off.Config.powderCacheHoldSeconds, off.Stage.RequiredHoldSeconds(0));
         }
 
         [Test]
@@ -402,7 +403,7 @@ namespace RoguePirates.V4.Tests
             rig.Tracker.Set(1, EncounterState.Completed);
             rig.Tick(0.1f);
             Assert.IsTrue(rig.Stage.IsPowderCacheChestReady(0));
-            Assert.AreEqual(POIType.SalvageChest, rig.Markers.Replaced[0], "a chest marker at the cache");
+            Assert.AreEqual(POIType.SalvageChest, rig.Stage.VisualType(0), "a chest marker at the cache");
             Assert.IsTrue(rig.Stage.CanInteract(0));
             Assert.AreEqual("Open Rare Treasure Chest", rig.Stage.PromptLabel(0));
             Assert.AreEqual(0f, rig.Stage.RequiredHoldSeconds(0), "no hold: the chest popup");
@@ -421,7 +422,7 @@ namespace RoguePirates.V4.Tests
             CollectionAssert.IsSubsetOf(new[] { "roll item min 2", "item rare_item", "chest opened" }, rig.Log.Lines);
             Assert.AreEqual(gold + rig.Config.powderCacheBonusGold, rig.Run.Gold, "free, plus the cache's bonus gold");
             Assert.IsTrue(rig.Layout.pois[0].used);
-            Assert.IsTrue(rig.Markers.Consumed.Contains(0));
+            Assert.IsTrue(rig.Stage.IsConsumed(0));
         }
 
         [Test]
@@ -434,7 +435,7 @@ namespace RoguePirates.V4.Tests
             rig.Stage.ForgetDespawnedPowderCaches(); // the lab's Clear all removed the elites
             Assert.AreEqual(EncounterState.Failed, rig.Tracker.State(1));
             CollectionAssert.Contains(rig.Log.Lines, "cancel 1");
-            Assert.AreEqual(POIType.MerchantSkiff, rig.Markers.Replaced[0], "the cache is back");
+            Assert.AreEqual(POIType.MerchantSkiff, rig.Stage.VisualType(0), "the cache is back");
             Assert.IsTrue(rig.Stage.CanInteract(0));
             rig.Tick(0.1f);
             Assert.AreEqual(2, rig.Log.Count("trigger"), "no regroup after Clear all");
@@ -449,7 +450,7 @@ namespace RoguePirates.V4.Tests
             rig.Config.powderCacheEliteSpawners = new EnemySpawnerConfig[] { null };
             rig.Ship.Pos = new Vector3(3f, 0f, 0f);
             rig.Stage.TryCompleteInteraction(0);
-            Assert.IsFalse(rig.Markers.Hidden.Contains(0), "the cache stays usable");
+            Assert.IsFalse(rig.Stage.IsHidden(0), "the cache stays usable");
             Assert.IsTrue(rig.Stage.CanInteract(0));
             Assert.AreEqual(EncounterState.Failed, rig.Tracker.State(1), "the empty encounter is failed, not left open");
         }
@@ -483,7 +484,7 @@ namespace RoguePirates.V4.Tests
             var asset = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>("Assets/_Game/Data/Balance/SaltwindSoloStageBalanceProfile.asset");
             var profile = Object.Instantiate(asset);
             _owned.Add(profile);
-            LegacyConfigMapping.ApplyStage(runtime.Single<StageContentConfig>(), profile);
+            V3ConfigMapping.ApplyStage(runtime.Single<StageContentConfig>(), profile);
             var export = profile.ToExport();
             CollectionAssert.AreEqual(new[] { 20, 31, 38, 46, 56 }, Enumerable.Range(0, 5).Select(n => SaltwindStageEconomyLogic.QuoteChestPrice(export, n)).ToArray());
         }
@@ -506,7 +507,7 @@ namespace RoguePirates.V4.Tests
         {
             var rig = Make((POIType.BossBeacon, new Vector3(0f, 0f, 5f)));
             rig.Stage.TryCompleteInteraction(0);
-            Assert.IsTrue(rig.Markers.Telegraph);
+            Assert.IsTrue(rig.Stage.TelegraphRingShown(0));
             Assert.IsTrue(rig.Stage.IsTelegraphing(0));
             rig.Tick(0.5f);
             Assert.IsFalse(rig.Stage.BossSummoned, "0.7 s telegraph");
@@ -514,7 +515,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(rig.Stage.BossSummoned);
             CollectionAssert.Contains(rig.Log.Lines, "immediate boss 1 1");
             Assert.AreEqual(RunState.BossFight, rig.Run.State);
-            Assert.IsTrue(rig.Layout.pois[0].used && rig.Markers.Consumed.Contains(0));
+            Assert.IsTrue(rig.Layout.pois[0].used && rig.Stage.IsConsumed(0));
             Assert.AreEqual(1, rig.Events.Count(e => e.kind == CombatEventKind.BossState && e.a == 1));
         }
 
@@ -761,7 +762,7 @@ namespace RoguePirates.V4.Tests
             rig.Tick(1f);
             Assert.IsFalse(rig.Stage.BossSummoned);
             Assert.IsFalse(rig.Stage.IsTelegraphing(0), "the telegraph ends with the failed summon");
-            Assert.IsFalse(rig.Markers.Telegraph);
+            Assert.IsFalse(rig.Stage.TelegraphRingShown(0));
             // In a run the queued boss encounter keeps retrying for up to 10 s, then fails; the next activation asks again.
             rig.Tracker.Set(1, EncounterState.Failed);
             rig.Executor.SpawnOnImmediate = 1;
@@ -822,7 +823,7 @@ namespace RoguePirates.V4.Tests
             var asset = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>("Assets/_Game/Data/Balance/SaltwindSoloStageBalanceProfile.asset");
             var runtime = Object.Instantiate(asset);
             _owned.Add(runtime);
-            LegacyConfigMapping.ApplyProfile(parity.Single<WaveTimelineConfig>(), parity.Single<DifficultyCurveConfig>(), runtime, parity.Single<StageContentConfig>());
+            V3ConfigMapping.ApplyProfile(parity.Single<WaveTimelineConfig>(), parity.Single<DifficultyCurveConfig>(), runtime, parity.Single<StageContentConfig>());
             Assert.AreEqual(asset.ToExport().ContentHash, runtime.ToExport().ContentHash, "with V3's barrel count the stage fields equal V3's profile");
         }
     }

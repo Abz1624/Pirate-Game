@@ -17,6 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   weaponId: broadside_battery
   displayName: Broadside Battery
+  description: Side-arc volleys into nearby clusters.
+  behaviorLine: Fires port and starboard
   pattern: 1
   behavior: 1
   targeting: 9
@@ -65,6 +67,7 @@ MonoBehaviour:
     prefab: {fileID: 7836255817071307116, guid: 156c07d35294fb74ca25d92c0af14a0c, type: 3}
     scaleMultiplier: 1.15
     radiusMultiplier: 1
+  hitEffect: 1
   projectile:
     burstShots: 1
     burstGapSeconds: 0.18

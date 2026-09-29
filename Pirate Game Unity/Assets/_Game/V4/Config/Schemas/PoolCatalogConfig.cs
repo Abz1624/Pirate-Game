@@ -30,8 +30,8 @@ namespace RoguePirates.V4.Config
 
         [Header("Derived enemy view entries")]
         [Tooltip("Add one entry per enemy model the wave timeline can spawn.")] [AppliesFrom(0)] public bool deriveEnemyViews = true;
-        [Tooltip("Create the derived enemy views up front. Off until V4 enemy views use the pool (M8): nothing would use them.")] [AppliesFrom(8)] public bool prewarmEnemyViews;
-        [Tooltip("Prewarm per enemy model when the archetype's poolPrewarm is 0.")] [AppliesFrom(8)] public int enemyViewPrewarm = 12;
+        [Tooltip("Create the derived enemy views up front (M14.10: the enemy view presenter renders through these pools).")] [AppliesFrom(8)] public bool prewarmEnemyViews = true;
+        [Tooltip("Prewarm per enemy model when the archetype's poolPrewarm is 0.")] [AppliesFrom(8)] public int enemyViewPrewarm = 28;
         [Tooltip("Prewarm for boss and miniboss models when the archetype's poolPrewarm is 0.")] [AppliesFrom(8)] public int bossViewPrewarm = 1;
         [Tooltip("Cap per enemy model (0 = no cap).")] [AppliesFrom(8)] public int enemyViewCap = 0;
         [AppliesFrom(8)] public ConfigEnums.PoolOverflowPolicy enemyViewOverflow = ConfigEnums.PoolOverflowPolicy.Grow;

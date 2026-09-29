@@ -38,6 +38,53 @@ namespace RoguePirates.V4.Progression
     {
         /// <summary>Shows the cards; false when the modal isn't available (the run then does not pause, as V3).</summary>
         bool TryShow(List<Offer> offers, Action<Offer> selected, Action skipped, Action refreshed, int refreshesRemaining);
+        /// <summary>Hides the cards (a run start cancels pending level-ups).</summary>
+        void Hide();
+    }
+
+    /// <summary>
+    /// The cards on screen, for tools that play the run (M14.11; the trace recorder and the autopilot reflected on V3's
+    /// LevelUpModal): what is showing, and the same pick and skip the player's clicks make.
+    /// </summary>
+    public interface IOfferChoice
+    {
+        bool IsShowing { get; }
+        IReadOnlyList<Offer> Shown { get; }
+        void Pick(int index);
+        void Skip();
+    }
+
+    /// <summary>
+    /// The progression module's card sink (M14.11; was LegacyLevelUpPresenter over V3's LevelUpModal): forwards to the
+    /// level-up presenter the presentation root registers. Without one TryShow is false (the run then does not pause,
+    /// as V3 with no modal).
+    /// </summary>
+    public sealed class OfferPresenterForwarder : IOfferPresenter
+    {
+        readonly Func<IOfferPresenter> _target;
+
+        public OfferPresenterForwarder(Func<IOfferPresenter> target) { _target = target; }
+
+        IOfferPresenter T
+        {
+            get
+            {
+                var t = _target?.Invoke();
+                if (t == null || ReferenceEquals(t, this)) return null;
+                if (t is UnityEngine.Object unityObject && unityObject == null) return null;
+                return t;
+            }
+        }
+
+        public bool TryShow(List<Offer> offers, Action<Offer> selected, Action skipped, Action refreshed, int refreshesRemaining)
+        {
+            var t = T;
+            if (t != null && t.TryShow(offers, selected, skipped, refreshed, refreshesRemaining)) return true;
+            UnityEngine.Debug.LogWarning("Level-up UI unavailable; waiting for modal wiring.");
+            return false;
+        }
+
+        public void Hide() => T?.Hide();
     }
 
     /// <summary>

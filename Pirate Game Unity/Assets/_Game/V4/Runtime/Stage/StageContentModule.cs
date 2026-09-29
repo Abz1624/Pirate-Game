@@ -15,11 +15,14 @@ namespace RoguePirates.V4.Stage
     /// chests (price quote, loot plan on the loot stream, item, refund when full), Repair Wreck, Powder Cache (proximity
     /// ambush through the V4 encounter executor, then item + gold), Signal Buoy (charge in the circle, reward on the map
     /// stream), Treasure Chart, Lighthouse of Fortune, and the Beacon (hold, telegraph, boss summon) with boss victory.
-    /// Ticks where V3 ticked: <see cref="TickManager"/> in POIManager's scene slot, <see cref="TickPoi"/> on each marker
-    /// (POIInteractable's place). V3's non-profile paths (relic chests, spawner chest prices) are not ported: V4 always
+    /// Ticks where V3 ticked: <see cref="TickManager"/> in POIManager's scene slot; the per-POI ticks (V3's
+    /// POIInteractable on each marker) run from <see cref="TickPois"/> (M14.12). The markers are presentation: the module
+    /// keeps their state (spawned, visual type, hidden, used, charge ring, telegraph ring) and the marker presenter draws it
+    /// through <see cref="IPoiMarkerView"/>. Interaction range is measured to the POI's own position (M14.12, R-95 -
+    /// intended change 3: V3 measured to the bobbing chest marker). V3's non-profile paths (relic chests, spawner chest prices) are not ported: V4 always
     /// runs with a stage profile.
     /// </summary>
-    public sealed class StageContentModule
+    public sealed class StageContentModule : IPoiMarkerView
     {
         /// <summary>True until the player's first conquest is recorded (the claim banner shows then; later the short one).</summary>
         public System.Func<bool> IsFirstConquest;
@@ -34,7 +37,6 @@ namespace RoguePirates.V4.Stage
         readonly IStageToasts _toasts;
         readonly IEncounterTracker _encounters;
         readonly IEncounterExecutor _executor;
-        IPoiMarkers _markers;
 
         StageLayout _layout;
         bool _enabled = true;
@@ -54,6 +56,11 @@ namespace RoguePirates.V4.Stage
         // POIInteractable state, per POI index.
         bool[] _used, _hidden, _telegraphing, _awaitingBossSummon;
         float[] _telegraphTimer;
+        // Marker state the presenter draws (M14.12; was held by the marker objects).
+        bool[] _spawned, _chargeRingShown, _telegraphRingShown;
+        POIType[] _visualType;
+        bool _placeholderVisuals;
+        int _layoutVersion;
         readonly List<int> _markerOrder = new List<int>(); // marker creation order (V3's interactable lookup order)
 
         public BeaconDiscovery Discovery { get; }
@@ -92,12 +99,12 @@ namespace RoguePirates.V4.Stage
         float SignalBuoyChargeRequired => C != null ? C.signalBuoyChargeSeconds : 8f;
         float SignalBuoyRadius => C != null ? C.signalBuoyRadius : 4f;
 
-        /// <summary>POIManager.SetV3Options + Initialize: resets the run's stage state and creates the markers.</summary>
-        public void Initialize(StageLayout layout, IPoiMarkers markers, bool enabled = true)
+        /// <summary>POIManager.SetV3Options + Initialize: resets the run's stage state and spawns the markers.</summary>
+        public void Initialize(StageLayout layout, bool enabled = true, bool placeholderVisuals = false)
         {
-            _markers?.Clear();
-            _markers = markers;
             _enabled = enabled;
+            _placeholderVisuals = placeholderVisuals;
+            _layoutVersion++;
             ResetState();
             _layout = layout;
             var n = layout?.pois != null ? layout.pois.Count : 0;
@@ -106,6 +113,10 @@ namespace RoguePirates.V4.Stage
             _telegraphing = new bool[n];
             _awaitingBossSummon = new bool[n];
             _telegraphTimer = new float[n];
+            _spawned = new bool[n];
+            _chargeRingShown = new bool[n];
+            _telegraphRingShown = new bool[n];
+            _visualType = new POIType[n];
             if (!_enabled) return; // PvP scenes: V3 switched POIManager off before initializing it
             BuildMarkers();
         }
@@ -153,9 +164,9 @@ namespace RoguePirates.V4.Stage
 
         void SpawnMarker(int index)
         {
-            if (_layout == null || index < 0 || index >= _layout.pois.Count || _markers == null) return;
-            var poi = _layout.pois[index];
-            _markers.Spawn(index, poi.type, poi.position, TickPoi);
+            if (_layout == null || index < 0 || index >= _layout.pois.Count) return;
+            _spawned[index] = true;
+            _visualType[index] = _layout.pois[index].type;
             _markerOrder.Add(index);
         }
 
@@ -195,7 +206,7 @@ namespace RoguePirates.V4.Stage
             if (_layout == null) return 0;
             var count = 0;
             for (var i = 0; i < _layout.pois.Count; i++)
-                if (_layout.pois[i].type == POIType.SalvageChest && !_layout.pois[i].used && _markers.IsSpawned(i)) count++;
+                if (_layout.pois[i].type == POIType.SalvageChest && !_layout.pois[i].used && _spawned[i]) count++;
             return count;
         }
 
@@ -209,12 +220,13 @@ namespace RoguePirates.V4.Stage
 
         // ---- POIInteractable (per marker) ---------------------------------------------------------------------
 
-        public bool IsMarkerSpawned(int index) => _markers != null && _markers.IsSpawned(index);
+        public bool IsMarkerSpawned(int index) => InRange(index) && _spawned != null && _spawned[index];
         public bool CanInteract(int index) => _enabled && InRange(index) && !_used[index] && !_hidden[index];
         public bool IsConsumed(int index) => InRange(index) && _used[index];
         public bool IsHidden(int index) => InRange(index) && _hidden[index];
         public bool IsTelegraphing(int index) => InRange(index) && _telegraphing[index];
-        public Vector3 MarkerPosition(int index) => _markers != null ? _markers.Position(index) : Poi(index).position;
+        /// <summary>Where interaction range is measured: the POI's own position (R-95; V3 used the bobbing marker).</summary>
+        public Vector3 MarkerPosition(int index) => Poi(index).position;
         public float DistanceToShip(int index) => _ship != null && _ship.Exists ? Vector3.Distance(_ship.Position, MarkerPosition(index)) : float.MaxValue;
         public bool IsPlayerInRange(int index) => DistanceToShip(index) <= InteractRange(index);
         bool InRange(int index) => _used != null && index >= 0 && index < _used.Length;
@@ -238,9 +250,13 @@ namespace RoguePirates.V4.Stage
             var type = Poi(index).type;
             if (type == POIType.BossBeacon) return C != null ? C.beaconHoldSeconds : 0.7f;
             if (type == POIType.MerchantSkiff && EliteChallenge && !_challengeChestReady.Contains(index))
-                return C.powderCacheHoldSeconds; // the Rare Treasure Chest opens from the chest popup (E), free
+                return C.powderCacheSpringsOnPress ? 0f : C.powderCacheHoldSeconds; // the Rare Treasure Chest opens from the chest popup (E), free
             return 0f;
         }
+
+        /// <summary>M14 playtest (off = hold E): one press of E at the Powder Cache springs its elite challenge.</summary>
+        public bool SpringsOnPress(int index) =>
+            Poi(index).type == POIType.MerchantSkiff && EliteChallenge && C.powderCacheSpringsOnPress && !_challengeChestReady.Contains(index);
 
         public bool UsesChargeInteraction(int index) => Poi(index).type == POIType.TrialBuoy;
         public bool UsesProximityAmbush(int index) => Poi(index).type == POIType.MerchantSkiff && !EliteChallenge;
@@ -270,6 +286,42 @@ namespace RoguePirates.V4.Stage
             _ => Poi(index).type.ToString()
         };
 
+        /// <summary>The per-POI ticks, in marker order (V3: each marker's POIInteractable.Update).</summary>
+        public void TickPois(float dt)
+        {
+            for (var i = 0; i < _markerOrder.Count; i++) TickPoi(_markerOrder[i], dt);
+        }
+
+        void HideRings(int index)
+        {
+            _chargeRingShown[index] = false;
+            _telegraphRingShown[index] = false;
+        }
+
+        /// <summary>V3 replaced the marker object (rings gone, a visible marker of the new look).</summary>
+        void ReplaceMarker(int index, POIType visualType)
+        {
+            HideRings(index);
+            _visualType[index] = visualType;
+            if (!_spawned[index])
+            {
+                _spawned[index] = true;
+                _markerOrder.Add(index);
+            }
+        }
+
+        // ---- IPoiMarkerView (the marker presenter) -------------------------------------------------------------
+
+        public int LayoutVersion => _layoutVersion;
+        public int PoiCount => _spawned != null ? _spawned.Length : 0;
+        public bool UsePlaceholderVisuals => _placeholderVisuals;
+        public POIType PoiType(int index) => Poi(index).type;
+        public Vector3 PoiPosition(int index) => Poi(index).position;
+        public POIType VisualType(int index) => _visualType[index];
+        public bool ChargeRingShown(int index) => InRange(index) && _chargeRingShown[index];
+        public float ChargeRingRadius => SignalBuoyRadius;
+        public bool TelegraphRingShown(int index) => InRange(index) && _telegraphRingShown[index];
+
         /// <summary>POIInteractable.Update: buoy charge and ring, Powder Cache proximity, the Beacon's telegraph countdown.</summary>
         public void TickPoi(int index, float dt)
         {
@@ -279,7 +331,7 @@ namespace RoguePirates.V4.Stage
             if (type == POIType.TrialBuoy)
             {
                 TickSignalBuoyCharge(index, dt);
-                _markers.SetChargeRing(index, SignalBuoyCharge01(index), SignalBuoyRadius);
+                _chargeRingShown[index] = true; // POIInteractable.UpdateChargeRing made the ring on its first tick
                 if (Poi(index).used) Consume(index);
             }
             if (type == POIType.MerchantSkiff)
@@ -290,7 +342,6 @@ namespace RoguePirates.V4.Stage
             if (_awaitingBossSummon[index])
             {
                 _telegraphTimer[index] -= dt;
-                _markers.PulseTelegraph(index);
                 if (_telegraphTimer[index] > 0f) return;
                 _awaitingBossSummon[index] = false;
                 if (Interact(type, index)) Consume(index);
@@ -298,7 +349,7 @@ namespace RoguePirates.V4.Stage
                 {
                     // R-96 fix: V3 left the telegraph flag set after a failed summon, so the Beacon never worked again.
                     _telegraphing[index] = false;
-                    _markers.HideTelegraph(index);
+                    _telegraphRingShown[index] = false;
                 }
             }
         }
@@ -315,7 +366,7 @@ namespace RoguePirates.V4.Stage
                     _telegraphing[index] = true;
                     _awaitingBossSummon[index] = true;
                     _telegraphTimer[index] = C != null ? C.bossTelegraphSeconds : 0.7f;
-                    _markers.ShowTelegraph(index);
+                    _telegraphRingShown[index] = true;
                 }
                 return;
             }
@@ -327,7 +378,7 @@ namespace RoguePirates.V4.Stage
             _used[index] = true;
             _telegraphing[index] = false;
             _telegraphTimer[index] = 0f;
-            _markers.Consume(index);
+            HideRings(index);
         }
 
         void HideMarker(int index)
@@ -335,7 +386,7 @@ namespace RoguePirates.V4.Stage
             _hidden[index] = true;
             _telegraphing[index] = false; // V3 SetMarkerHidden hid the rings (HideTelegraph resets the telegraph)
             _telegraphTimer[index] = 0f;
-            _markers.Hide(index);
+            HideRings(index);
         }
 
         // ---- POIManager.Interact ------------------------------------------------------------------------------
@@ -538,7 +589,7 @@ namespace RoguePirates.V4.Stage
             if (_encounters.State(encounter) != EncounterState.Completed) return;
             _challengeChestReady.Add(index);
             _hidden[index] = false;
-            _markers.Replace(index, POIType.SalvageChest, Poi(index).position, TickPoi);
+            ReplaceMarker(index, POIType.SalvageChest);
             _toasts?.Show("Ambush sunk — a Rare Treasure Chest surfaced at the Powder Cache!", 3.5f);
         }
 
@@ -556,7 +607,7 @@ namespace RoguePirates.V4.Stage
                 _encounters.MarkFailed(pair.Value);
                 _challengeEncounters.Remove(index);
                 _hidden[index] = false;
-                _markers.Replace(index, Poi(index).type, Poi(index).position, TickPoi);
+                ReplaceMarker(index, Poi(index).type);
             }
         }
 
@@ -631,7 +682,7 @@ namespace RoguePirates.V4.Stage
         void ConsumePoiMarker(int index)
         {
             MarkPoiUsed(index);
-            if (InRange(index) && _markers != null && _markers.IsSpawned(index)) Consume(index);
+            if (InRange(index) && _spawned[index]) Consume(index);
         }
 
         // ---- Beacon and boss ---------------------------------------------------------------------------------------

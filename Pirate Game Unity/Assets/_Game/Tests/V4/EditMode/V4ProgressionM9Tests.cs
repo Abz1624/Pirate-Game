@@ -16,6 +16,7 @@ using RoguePirates.V4.Progression;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using RoguePirates.V4.Composition;
 
 namespace RoguePirates.V4.Tests
 {
@@ -46,7 +47,7 @@ namespace RoguePirates.V4.Tests
         {
             public Func<string, bool> Items = _ => false;
             // The run's rule (V3 IsWeaponOfferEligible: the unlock counts while V3RunContext is active, as in every run).
-            public bool IsWeaponOfferable(string weaponId) => RoguePirates.V4.Legacy.LegacyBuildWiring.IsWeaponOfferEligible(weaponId);
+            public bool IsWeaponOfferable(string weaponId) => RoguePirates.V4.Composition.BuildModule.IsWeaponOfferEligible(weaponId);
             public bool IsWeaponUnlocked(string weaponId) => V3ContentUnlocks.IsWeaponUnlocked(weaponId);
             public bool HasItem(string itemId) => Items(itemId);
             public bool IsEvolved(string weaponId) => WeaponEvolutionRuntime.IsEvolved(weaponId);
@@ -249,7 +250,7 @@ namespace RoguePirates.V4.Tests
 
             for (var seed = 1; seed <= 12; seed++)
             {
-                // V3: RunManager, the switched-off weapon record, LevelSystem set up as V3RunBootstrap / LegacyRunShell do.
+                // V3: RunManager, the switched-off weapon record, LevelSystem set up as V3RunBootstrap / RunBootstrapSequence do.
                 var host = new GameObject("v3-run");
                 _created.Add(host);
                 var rm = Awake<RunManager>(host);

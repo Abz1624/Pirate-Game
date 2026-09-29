@@ -159,13 +159,10 @@ namespace RoguePirates.V4.Tests
             Assert.Greater(stage.Module.PowderCacheEncounterId, 0, "the ambush started on approach");
             Assert.IsTrue(stage.Module.IsHidden(cache));
             deadline = Time.realtimeSinceStartup + 3f;
-            var record = RunEncounterTracker.Get(stage.Module.PowderCacheEncounterId);
-            while ((record == null || record.SpawnedCount < 3) && Time.realtimeSinceStartup < deadline)
-            {
-                yield return null;
-                record = RunEncounterTracker.Get(stage.Module.PowderCacheEncounterId);
-            }
-            Assert.AreEqual(3, record.SpawnedCount, "three ambushers, registered for the kill path");
+            // M14: the run's V4 encounter tracker (was V3's static RunEncounterTracker).
+            Object.FindFirstObjectByType<V4Game>().Context.TryGet<RoguePirates.V4.Spawning.IEncounterTracker>(out var tracker);
+            while (tracker.SpawnedCount(stage.Module.PowderCacheEncounterId) < 3 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.AreEqual(3, tracker.SpawnedCount(stage.Module.PowderCacheEncounterId), "three ambushers, registered for the kill path");
             Assert.GreaterOrEqual(world.ActiveCount, before + 3);
         }
     }

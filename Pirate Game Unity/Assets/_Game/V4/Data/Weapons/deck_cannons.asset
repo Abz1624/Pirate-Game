@@ -17,6 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   weaponId: deck_cannons
   displayName: Deck Cannons
+  description: Reliable forward cannon fire.
+  behaviorLine: "Fires forward \u2014 steer to aim"
   pattern: 0
   behavior: 0
   targeting: 0
@@ -70,6 +72,7 @@ MonoBehaviour:
     prefab: {fileID: 7836255817071307116, guid: 00e79e7cf55e34082a44dbce82256ab6, type: 3}
     scaleMultiplier: 1
     radiusMultiplier: 1
+  hitEffect: 1
   projectile:
     burstShots: 1
     burstGapSeconds: 0.18

@@ -28,6 +28,27 @@ namespace RoguePirates.V4.Presentation
         public Weapons.WeaponAimOverlay AimOverlay { get; private set; }
         public Stage.InteractionPromptPresenter InteractionPrompt { get; private set; }
         public Stage.BossTelegraphPresenter BossTelegraph { get; private set; }
+        /// <summary>M14.12: chest and landmark markers (were made by LegacyPoiMarkers at run start).</summary>
+        public Stage.PoiMarkerPresenter PoiMarkers { get; private set; }
+        /// <summary>M14: toasts, combat feedback (hit/kill effects, flashes, level-up burst), damage numbers, camera shake.</summary>
+        public RoguePirates.V4.Presentation.Hud.ToastPresenter Toasts { get; private set; }
+        public Effects.CombatFeedbackPresenter CombatFeedback { get; private set; }
+        public Effects.DamageNumberPresenter DamageNumbers { get; private set; }
+        public Effects.CameraShakePresenter CameraShake { get; private set; }
+        /// <summary>M14.9b: world views (were V3's PickupViewPool, ProjectileViewPool, placeholder powerups, the kept hazard
+        /// ring view, PlayerHealthBarBinder, V3SaltwindStormRingVisual and V3PlayBoundsWallVisual).</summary>
+        public Effects.HazardRingPresenter HazardRings { get; private set; }
+        /// <summary>M14.11: the level-up cards (was V3's LevelUpModal).</summary>
+        public RoguePirates.V4.Presentation.Hud.LevelUpPresenter LevelUp { get; private set; }
+        /// <summary>M14.10: enemy models and health bars on the view pool (intended change 2).</summary>
+        public Effects.EnemyViewPresenter EnemyViews { get; private set; }
+        public Effects.HostileShotPresenter HostileShots { get; private set; }
+        public Effects.PickupPresenter Pickups { get; private set; }
+        public Effects.PowerupPresenter Powerups { get; private set; }
+        public World.ShipHealthBarPresenter ShipHealthBar { get; private set; }
+        public World.ShipWakePresenter ShipWake { get; private set; }
+        public World.StormRingPresenter StormRing { get; private set; }
+        public World.BoundsWallPresenter BoundsWalls { get; private set; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Install()
@@ -48,6 +69,7 @@ namespace RoguePirates.V4.Presentation
         {
             if (Game == game && Pools != null) return;
             Game = game;
+            DisposeWorldTemplates();
             Pools?.Dispose();
             var poolRoot = transform.Find("Pools");
             if (poolRoot == null)
@@ -70,11 +92,112 @@ namespace RoguePirates.V4.Presentation
             // M6: HUD presenters, weapon effects and the aim overlay.
             if (game.Context != null && game.Context.TryGet<Views.IRunViews>(out var views))
             {
+                RoguePirates.V4.Presentation.Hud.RunCanvasSetup.Apply(); // M14.14: the run canvas groundwork (was the run shell's)
+                InstallToasts(views); // first: the results screen and the interaction prompt are layered around it
+                InstallFeedback(game, views);
                 InstallHud(views, game.Events);
                 InstallWeaponEffects(game, views);
+                InstallWorld(game, views);
+                InstallLevelUp(game);
             }
             if (game.Context != null) InstallStage(game);
             if (game.Context != null) InstallNarrative(game);
+        }
+
+        /// <summary>M14: the toast presenter on the run canvas (V3ToastHud's place); the run's toast forwarder shows through it.</summary>
+        void InstallToasts(Views.IRunViews views)
+        {
+            var runCanvas = FindRunCanvas();
+            if (runCanvas == null) return;
+            Toasts = RoguePirates.V4.Presentation.Hud.ToastPresenter.Create(runCanvas.transform);
+            (views.Toasts as Views.ToastForwarder)?.SetTarget(Toasts);
+        }
+
+        /// <summary>M14: combat feedback from the event stream and the enemy simulation's hit feedback (was V3's
+        /// CombatVfxController, JuiceVfxBroker, FloatingDamageNumbers and CameraShakeService).</summary>
+        void InstallFeedback(V4Game game, Views.IRunViews views)
+        {
+            CameraShake = GetComponent<Effects.CameraShakePresenter>();
+            if (CameraShake == null) CameraShake = gameObject.AddComponent<Effects.CameraShakePresenter>();
+            System.Func<Transform> ship = () => views.Ship != null ? views.Ship.Anchor : null;
+            DamageNumbers = GetComponent<Effects.DamageNumberPresenter>();
+            if (DamageNumbers == null) DamageNumbers = gameObject.AddComponent<Effects.DamageNumberPresenter>();
+            DamageNumbers.Bind(Pools, () => { var t = ship(); return t != null ? t.position : (Vector3?)null; });
+            CombatFeedback = GetComponent<Effects.CombatFeedbackPresenter>();
+            if (CombatFeedback == null) CombatFeedback = gameObject.AddComponent<Effects.CombatFeedbackPresenter>();
+            CombatFeedback.Bind(Pools, game.Events, game.Config, Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings"), ship, CameraShake, DamageNumbers);
+            game.Context.Replace<RoguePirates.V4.Enemies.IEnemyHitFeedback>(CombatFeedback);
+        }
+
+        /// <summary>
+        /// M14.9b: the world views: hazard rings, enemy shots, pickups, floor powerups, the ship health bar, the storm ring
+        /// and the edge walls. Blasts and splashes are the weapon presenter's (the enemy world's blast sink points at it).
+        /// </summary>
+        void InstallWorld(V4Game game, Views.IRunViews views)
+        {
+            var juice = Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings");
+            var run = views.Run;
+            EnemyViews = new Effects.EnemyViewPresenter(Pools, juice);
+            game.Context.Replace<RoguePirates.V4.Enemies.IEnemyViewSink>(EnemyViews);
+            HazardRings = Child<Effects.HazardRingPresenter>("V4HazardRings");
+            HazardRings.Bind(game.Context.TryGet<RoguePirates.V4.Enemies.IHazardView>(out var hazards) ? hazards : null,
+                game.Context.TryGet<RoguePirates.V4.Enemies.IBurningPatchView>(out var patches) ? patches : null,
+                () => run != null && run.IsPaused);
+            if (WeaponEffects != null)
+            {
+                WeaponEffects.HazardRings = HazardRings;
+                game.Context.Replace<RoguePirates.V4.Enemies.IEnemyEffects>(WeaponEffects);
+            }
+            var splash = WeaponEffects;
+            HostileShots = new Effects.HostileShotPresenter(Pools, juice, position => { if (splash != null) splash.WaterSplash(position); });
+            game.Context.Replace<RoguePirates.V4.Enemies.IHostileShotViews>(HostileShots);
+            Pickups = new Effects.PickupPresenter(Pools, juice);
+            game.Context.Replace<RoguePirates.V4.Progression.IPickupViews>(Pickups);
+            Powerups = new Effects.PowerupPresenter(Pools);
+            game.Context.Replace<RoguePirates.V4.Progression.IPowerupViews>(Powerups);
+            ShipHealthBar = Child<World.ShipHealthBarPresenter>("V4ShipHealthBar");
+            ShipHealthBar.Bind(Pools, views.Ship, juice);
+            ShipWake = Child<World.ShipWakePresenter>("V4ShipWake");
+            ShipWake.Bind(views.Ship);
+            var world = game.Context.TryGet<Views.IWorldView>(out var w) ? w : null;
+            StormRing = Child<World.StormRingPresenter>("V4StormRing");
+            StormRing.Bind(world);
+            BoundsWalls = Child<World.BoundsWallPresenter>("V4BoundsWalls");
+            BoundsWalls.Bind(world, views.Ship);
+        }
+
+        /// <summary>M14.11: the level-up cards on the run canvas; the progression module and the tools reach them through the context.</summary>
+        void InstallLevelUp(V4Game game)
+        {
+            LevelUp = RoguePirates.V4.Presentation.Hud.LevelUpPresenter.Create(FindRunCanvas(), game.Config);
+            if (LevelUp == null) return;
+            game.Context.Replace<RoguePirates.V4.Progression.IOfferPresenter>(LevelUp);
+            game.Context.Replace<RoguePirates.V4.Progression.IOfferChoice>(LevelUp);
+        }
+
+        /// <summary>A presenter on its own child object (created once, kept across runs of this root).</summary>
+        T Child<T>(string name) where T : Component
+        {
+            var child = transform.Find(name);
+            if (child == null)
+            {
+                child = new GameObject(name).transform;
+                child.SetParent(transform, false);
+            }
+            var component = child.GetComponent<T>();
+            return component != null ? component : child.gameObject.AddComponent<T>();
+        }
+
+        void DisposeWorldTemplates()
+        {
+            EnemyViews?.Dispose();
+            HostileShots?.Dispose();
+            Pickups?.Dispose();
+            Powerups?.Dispose();
+            EnemyViews = null;
+            HostileShots = null;
+            Pickups = null;
+            Powerups = null;
         }
 
         /// <summary>M13: barks and tutorial prompts, on the authored HUD canvas (or the run canvas).</summary>
@@ -111,12 +234,17 @@ namespace RoguePirates.V4.Presentation
                 var config = game.Config;
                 BossTelegraph.Bind(boss, () => config != null ? config.Single<RoguePirates.V4.Config.BossConfig>() : null);
             }
+            if (game.Context.TryGet<RoguePirates.V4.Stage.IPoiMarkerView>(out var markers))
+            {
+                PoiMarkers = Child<Stage.PoiMarkerPresenter>("V4PoiMarkers");
+                PoiMarkers.Bind(markers);
+            }
         }
 
         static void PlaceAboveToast(Transform canvas, Transform prompt)
         {
             for (var i = 0; i < canvas.childCount; i++)
-                if (canvas.GetChild(i).name == "PLACEHOLDER_v3_ui_toast_hud")
+                if (canvas.GetChild(i).name == RoguePirates.V4.Presentation.Hud.ToastPresenter.ObjectName)
                 {
                     prompt.SetSiblingIndex(Mathf.Min(i + 1, canvas.childCount - 1));
                     return;
@@ -205,7 +333,7 @@ namespace RoguePirates.V4.Presentation
             for (var i = 0; i < canvas.childCount; i++)
             {
                 var name = canvas.GetChild(i).name;
-                if (name == "PLACEHOLDER_v3_ui_toast_hud" || name == "PLACEHOLDER_v3_ui_interaction_prompt") { index = i; break; }
+                if (name == RoguePirates.V4.Presentation.Hud.ToastPresenter.ObjectName || name == "PLACEHOLDER_v3_ui_interaction_prompt") { index = i; break; }
             }
             if (index >= 0 && results.GetSiblingIndex() > index) results.SetSiblingIndex(index);
         }
@@ -213,14 +341,13 @@ namespace RoguePirates.V4.Presentation
         static Canvas FindRunCanvas()
         {
             var go = GameObject.Find("RunCanvas");
-            if (go != null && go.TryGetComponent(out Canvas canvas)) return canvas;
-            var runHud = FindFirstObjectByType<HighSeas.UI.RunHud>();
-            return runHud != null ? runHud.GetComponentInParent<Canvas>() : null;
+            return go != null && go.TryGetComponent(out Canvas canvas) ? canvas : null;
         }
 
         void OnDestroy()
         {
             if (WeaponEffects != null) WeaponEffects.Clear();
+            DisposeWorldTemplates();
             Pools?.Dispose();
             Pools = null;
         }

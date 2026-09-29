@@ -8,6 +8,7 @@ using HighSeas.Core;
 using HighSeas.Data;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
+using RoguePirates.V4.Editor;
 using RoguePirates.V4.Enemies;
 using RoguePirates.V4.Legacy;
 using UnityEditor;
@@ -197,7 +198,7 @@ namespace RoguePirates.V4.Tests
             {
                 if (!pristine.TryGetValue(id, out var profile)) { Assert.IsFalse(combat.registered, id); continue; }
                 var expected = new ArchetypeCombat();
-                LegacyConfigMapping.CopyFields(profile, expected);
+                V3ConfigMapping.CopyFields(profile, expected);
                 expected.registered = true;
                 // R-77: the elite Kraken keeps the plain Kraken's no-contact rule (V3's elite entry left the default on).
                 if (id == "elite_kraken_spawn") expected.contactDamageEnabled = false;
@@ -209,34 +210,30 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void CombatOverride_WritesConfigValues_AndRestoresTheRegistry()
+        public void CombatProfiles_AreTheRunsCopies_OfTheConfig_AndNeverTouchTheV3Registry()
         {
-            Assert.IsTrue(EnemyCombatProfileRegistry.TryGet("hammerhead", out var live));
-            var before = Snapshot(live);
-            try
+            // M14: per-run profiles replace the registry override (which wrote V3's static registry and restored it).
+            Assert.IsTrue(EnemyCombatProfileRegistry.TryGet("hammerhead", out var registry));
+            var before = JsonUtility.ToJson(Snapshot(registry));
+            using (var config = new ConfigSetRuntime(_set))
+            using (var profiles = new EnemyCombatProfiles(config))
             {
-                using (var config = new ConfigSetRuntime(_set))
-                {
-                    config.TryApplyEdit("enemy.hammerhead", "combat.chargeCooldown", "9", 0f, out _);
-                    var over = new LegacyCombatProfileOverride(config);
-                    over.ApplyAll();
-                    Assert.AreEqual(9f, live.chargeCooldown, "config value written into the registry");
-                    config.TryApplyEdit("enemy.hammerhead", "combat.chargeCooldown", "7", 0f, out _);
-                    Assert.AreEqual(7f, live.chargeCooldown, "live edits reach the registry");
-                    over.Dispose();
-                }
-                Assert.AreEqual(JsonUtility.ToJson(before), JsonUtility.ToJson(Snapshot(live)), "registry restored when the run ends");
+                Assert.IsTrue(profiles.TryGet("hammerhead", out var run));
+                Assert.AreNotSame(registry, run);
+                Assert.AreEqual(JsonUtility.ToJson(Snapshot(registry)), JsonUtility.ToJson(Snapshot(run)), "default config = V3's registry values");
+                config.TryApplyEdit("enemy.hammerhead", "combat.chargeCooldown", "9", 0f, out _);
+                Assert.AreEqual(9f, run.chargeCooldown, "live edits reach the run's profile");
+                run.eliteHammerheadSecondCharge = true; // the R-100 latch changes the run's copy only
+                var registered = config.All<EnemyArchetypeConfig>().Count(a => a.combat.registered) + config.All<EnemyVariantConfig>().Count(v => v.combat.registered);
+                Assert.AreEqual(registered, profiles.Count, "one profile per registered combat block");
             }
-            finally
-            {
-                LegacyConfigMapping.CopyFields(before, live); // never leave the shared registry changed
-            }
+            Assert.AreEqual(before, JsonUtility.ToJson(Snapshot(registry)), "V3's registry untouched");
         }
 
         static ArchetypeCombat Snapshot(EnemyCombatProfile p)
         {
             var c = new ArchetypeCombat();
-            LegacyConfigMapping.CopyFields(p, c);
+            V3ConfigMapping.CopyFields(p, c);
             return c;
         }
 
@@ -311,6 +308,7 @@ namespace RoguePirates.V4.Tests
             {
                 var rel = file.Substring(root.Length + 1).Replace('\\', '/');
                 if (rel.StartsWith("Runtime/Legacy/")) continue; // the name-keyed bridge (plan D3)
+                if (rel == "Editor/V3ConfigMapping.cs") continue; // M14: the migrator's half of that bridge, moved out of Runtime/Legacy
                 var lines = File.ReadAllLines(file);
                 for (var i = 0; i < lines.Length; i++)
                     foreach (Match m in literal.Matches(lines[i]))

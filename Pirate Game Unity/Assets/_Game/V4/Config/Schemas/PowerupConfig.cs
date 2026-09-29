@@ -7,6 +7,13 @@ namespace RoguePirates.V4.Config
     public enum PowerupKind { RepairSupplies = 0, BattleSignal = 1, Tailwind = 2, SalvageChime = 3, FullSail = 4, PowderRush = 5, MagneticTide = 6, DeadCalm = 7 }
 
     [Serializable]
+    public sealed class PowerupName
+    {
+        public PowerupKind kind;
+        public string displayName;
+    }
+
+    [Serializable]
     public sealed class PowerupPoolEntry
     {
         public PowerupKind kind;
@@ -20,6 +27,27 @@ namespace RoguePirates.V4.Config
     [CreateAssetMenu(menuName = "RoguePirates/V4/Powerups", fileName = "Powerups")]
     public sealed class PowerupConfig : V4ConfigAsset
     {
+        [Tooltip("M14.14: the names the drop and pickup toasts use (the names V3 showed).")] [AppliesFrom(14)]
+        public PowerupName[] names =
+        {
+            new PowerupName { kind = PowerupKind.RepairSupplies, displayName = "Repair Supplies" },
+            new PowerupName { kind = PowerupKind.BattleSignal, displayName = "Battle Signal" },
+            new PowerupName { kind = PowerupKind.Tailwind, displayName = "Tailwind" },
+            new PowerupName { kind = PowerupKind.SalvageChime, displayName = "Salvage Chime" },
+            new PowerupName { kind = PowerupKind.FullSail, displayName = "Full Sail" },
+            new PowerupName { kind = PowerupKind.PowderRush, displayName = "Powder Rush" },
+            new PowerupName { kind = PowerupKind.MagneticTide, displayName = "Magnetic Tide" },
+            new PowerupName { kind = PowerupKind.DeadCalm, displayName = "Dead Calm" },
+        };
+
+        public string DisplayName(PowerupKind kind)
+        {
+            if (names != null)
+                foreach (var n in names)
+                    if (n != null && n.kind == kind && !string.IsNullOrEmpty(n.displayName)) return n.displayName;
+            return kind.ToString();
+        }
+
         [Header("Drops")]
         [Tooltip("Chance per non-boss kill.")] public float dropChancePerKill = 0.01f;
         [Tooltip("Seconds after a drop before the next roll can succeed.")] public float minIntervalSeconds = 20f;

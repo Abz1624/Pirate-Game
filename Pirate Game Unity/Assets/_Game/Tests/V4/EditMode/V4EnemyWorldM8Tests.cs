@@ -47,7 +47,11 @@ namespace RoguePirates.V4.Tests
             _created.Clear();
             SaltwindCombatAgentStateStore.ClearAll();
             StageBalanceProfileContext.ResetForTests();
+            _registry?.Dispose();
+            _registry = null;
         }
+
+        V3RegistryFromConfig _registry; // M14: V3's registry holds the config values while a test compares with it
 
         GameDatabase CatalogAppliedDatabase()
         {
@@ -71,6 +75,8 @@ namespace RoguePirates.V4.Tests
 
         Pair Make(ConfigSetRuntime config)
         {
+            _registry?.Dispose();
+            _registry = new V3RegistryFromConfig(config);
             var runtime = new V4RuntimeDatabase(config);
             var db = runtime.Build(CatalogAppliedDatabase());
             _created.Add(db);
@@ -83,7 +89,8 @@ namespace RoguePirates.V4.Tests
 
             var v4Root = new GameObject("v4-world");
             _created.Add(v4Root);
-            var sim = new EnemySimulation(legacy.Agents.Length, new LegacyEnemyRunState(), new LegacyEnemyViewSink(v4Root.transform), new LegacyEnemySpawnParams(), new EnemyWorldSettings { islandAvoidanceProbeDistance = 10f });
+            var sim = new EnemySimulation(legacy.Agents.Length, new LegacyRunPort(), new V3EnemyViewSink(v4Root.transform),
+                new EnemySpawnParamResolver(new EnemyCombatProfiles(config), config) { CombatEnabled = SaltwindCombatFeature.IsEnabled }, new EnemyWorldSettings { islandAvoidanceProbeDistance = 10f });
             sim.SetDefinitions(db.enemies, EnemySimulation.BuildRules(config, db.enemies));
             return new Pair { Legacy = legacy, V4 = sim, Defs = db.enemies };
         }
@@ -284,7 +291,7 @@ namespace RoguePirates.V4.Tests
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
             var p = Make(config);
             var patches = new HellfirePatches(p.V4, new EnemyStatuses(), new OnlyHellfire());
-            var hooks = new LegacyWeaponHooks(() => null, id => null, patches);
+            var hooks = new RoguePirates.V4.Weapons.WeaponCombatHooks(null, patches);
             hooks.SpawnFlamePatch(Vector3.zero, "deck_cannons");
             Assert.AreEqual(0, patches.ActiveCount, "no patch for other weapons");
             hooks.SpawnFlamePatch(Vector3.zero, "evolved_flamer");

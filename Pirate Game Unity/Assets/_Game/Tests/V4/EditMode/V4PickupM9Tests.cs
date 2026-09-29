@@ -21,6 +21,13 @@ namespace RoguePirates.V4.Tests
     [Category("V4")]
     public sealed class V4PickupM9Tests
     {
+        sealed class UnityRandomSource : IPickupRandom
+        {
+            public float Range(float min, float max) => Random.Range(min, max);
+            public int Range(int minInclusive, int maxExclusive) => Random.Range(minInclusive, maxExclusive);
+            public Vector3 InsideUnitSphere() => Random.insideUnitSphere;
+        }
+
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
         const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
         readonly List<Object> _created = new List<Object>();
@@ -100,8 +107,11 @@ namespace RoguePirates.V4.Tests
 
             var rewards = new Rewards { Run = rm, Director = new RunRng(33), Hull = 10f, MaxHull = 5000f };
             var juice = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
-            var module = new PickupModule(() => config, cap, rewards, new LegacyPickupViews(Host("v4-pickups").transform, juice),
+            var module = new PickupModule(() => config, cap, rewards, new RoguePirates.V4.Presentation.Effects.PickupPresenter(new RoguePirates.V4.Presentation.Pooling.PoolService(Host("v4-pickups").transform), juice),
                 () => tideOpensBarrels, () => HighSeas.Platform.QualityProfile.Current.vfxDensity);
+            // M14: runs draw from the module's own seeded stream; this parity test plugs in V3's source, UnityEngine.Random,
+            // so the logic is compared draw for draw.
+            module.Random = new UnityRandomSource();
 
             var streams = new Streams(77);
             var scenario = new System.Random(8);

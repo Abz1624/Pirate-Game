@@ -256,6 +256,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.V4MainMenuController
   menuCanvas: {fileID: 0}
+  configSet: {fileID: 11400000, guid: 5831aeb9fd5687344a53de1cd4fff7db, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

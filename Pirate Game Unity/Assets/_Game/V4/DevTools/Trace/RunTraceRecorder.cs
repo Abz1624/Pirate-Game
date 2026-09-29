@@ -78,6 +78,7 @@ namespace RoguePirates.V4.DevTools.Trace
         void OnDestroy()
         {
             if (_bus != null) { _bus.Kill -= OnKill; _bus.ChestOpened -= OnChest; }
+            if (_v4Events != null) _v4Events.TickPublished -= OnV4Events;
             if (_started && !_finished) Finish("aborted");
         }
 
@@ -150,6 +151,7 @@ namespace RoguePirates.V4.DevTools.Trace
                 game.Context.TryGet(out _stage);
                 game.Context.TryGet(out _enemies);
                 game.Context.TryGet(out _enemyDev);
+                game.Context.TryGet(out _cards); // M14.11: the level-up presenter's pick API
             }
             // V3 scenes (the golden recordings) have no V4 run: read the legacy world through the same views. A V4 run
             // always registers them; never fall back there (it would read an empty legacy world after M8).
@@ -160,9 +162,20 @@ namespace RoguePirates.V4.DevTools.Trace
                 _enemyDev ??= legacy;
             }
             _ship = FindFirstObjectByType<PlayerShipController>();
-            _bus = TriggerBus.Instance;
-            if (_bus != null) { _bus.Kill += OnKill; _bus.ChestOpened += OnChest; }
-            else Debug.LogWarning("V4 trace: TriggerBus.Instance is null; kills will be recorded as despawns.");
+            // M14: V4 runs publish kills and chests as events (TriggerBus is gone from them); V3 scenes (golden recording)
+            // still raise TriggerBus.
+            var v4Game = FindFirstObjectByType<RoguePirates.V4.V4Game>();
+            if (v4Game != null && v4Game.Events != null)
+            {
+                _v4Events = v4Game.Events;
+                _v4Events.TickPublished += OnV4Events;
+            }
+            else
+            {
+                _bus = TriggerBus.Instance;
+                if (_bus != null) { _bus.Kill += OnKill; _bus.ChestOpened += OnChest; }
+                else Debug.LogWarning("V4 trace: TriggerBus.Instance is null; kills will be recorded as despawns.");
+            }
 
             if (_request.invulnerable && _ship != null) _ship.Damage.SetPlaytestInvulnerable(true); // long runs (overtime, storm)
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
@@ -175,6 +188,21 @@ namespace RoguePirates.V4.DevTools.Trace
 
         void OnKill(bool elite, bool boss, Vector3 pos, string weapon) =>
             _kills.Add(new KillEvent { Pos = pos, Elite = elite, Boss = boss, Weapon = weapon });
+
+        RoguePirates.V4.Events.ICombatEventReader _v4Events;
+
+        /// <summary>V4's Killed (flags: 1 elite, 2 boss, 4 ordinary rewards; V3's TriggerBus elite flag was "elite rewards") and ChestOpened.</summary>
+        void OnV4Events(System.Collections.Generic.IReadOnlyList<RoguePirates.V4.Events.CombatEvent> batch)
+        {
+            for (var i = 0; i < batch.Count; i++)
+            {
+                var e = batch[i];
+                if (e.Kind == RoguePirates.V4.Events.CombatEventKind.Killed)
+                    OnKill((e.B & 1) != 0 && (e.B & 4) == 0, (e.B & 2) != 0, new Vector3(e.X, 0f, e.Y), e.Tag);
+                else if (e.Kind == RoguePirates.V4.Events.CombatEventKind.ChestOpened)
+                    OnChest();
+            }
+        }
 
         void OnChest() => Add(new JsonLine("chest").Num("t", SimTime).Int("gold", RunManager.Instance != null ? RunManager.Instance.Gold : 0));
 
@@ -246,6 +274,20 @@ namespace RoguePirates.V4.DevTools.Trace
         }
 
         RoguePirates.V4.V4Game _levelGame;
+        RoguePirates.V4.Progression.IOfferChoice _cards;
+
+        /// <summary>V4 runs: the first card after the configured number of frames, through the presenter's pick.</summary>
+        void RespondToCards()
+        {
+            var offers = _cards.IsShowing ? _cards.Shown : null;
+            if (offers == null || offers.Count == 0) { _modalOpenFrames = 0; return; }
+            if (++_modalOpenFrames < _request.pauseResponseFrames) return;
+            _modalOpenFrames = 0;
+            var chosen = offers[0];
+            Add(new JsonLine("offer").Num("t", SimTime).Int("f", Frame).Str("kind", chosen.Kind.ToString()).Str("id", chosen.Id)
+                .Int("choices", offers.Count));
+            _cards.Pick(0);
+        }
 
         /// <summary>The player level: the V4 progression module (M9), else V3's LevelSystem (golden recordings); -1 if none.</summary>
         int CurrentLevel()
@@ -330,8 +372,9 @@ namespace RoguePirates.V4.DevTools.Trace
 
         void RespondToPauses(RunManager run)
         {
-            // LevelUpModal.Pick hides the panel but leaves _offers set, so "open" means panel visible AND offers set
-            // (the same test LevelUpModal.Update uses before reading the 1/2/3 keys).
+            if (_cards != null) { RespondToCards(); goto chest; }
+            // V3 scenes (golden recordings): LevelUpModal.Pick hides the panel but leaves _offers set, so "open" means
+            // panel visible AND offers set (the same test LevelUpModal.Update uses before reading the 1/2/3 keys).
             var modal = LevelUpModal.Instance;
             var panel = modal != null && PanelField != null ? PanelField.GetValue(modal) as GameObject : null;
             var open = panel != null && panel.activeSelf;
@@ -349,6 +392,7 @@ namespace RoguePirates.V4.DevTools.Trace
             }
             else _modalOpenFrames = 0;
 
+            chest:
             if (run.PauseReason == PauseReason.POIChoice)
             {
                 if (++_chestPauseFrames >= _request.pauseResponseFrames)

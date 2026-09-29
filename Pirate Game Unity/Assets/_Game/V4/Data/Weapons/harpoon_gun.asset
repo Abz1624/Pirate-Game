@@ -17,6 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   weaponId: harpoon_gun
   displayName: Harpoon Gun
+  description: Forward tether that slows priority targets.
+  behaviorLine: Forward tether shot
   pattern: 0
   behavior: 0
   targeting: 11
@@ -72,6 +74,7 @@ MonoBehaviour:
     prefab: {fileID: 1709254077376921, guid: 1a44c40e34fd64925a9a70661f87e2d5, type: 3}
     scaleMultiplier: 1
     radiusMultiplier: 1
+  hitEffect: 0
   projectile:
     burstShots: 1
     burstGapSeconds: 0.18

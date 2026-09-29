@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using NUnit.Framework;
 using RoguePirates.V4.DevTools.Trace;
 using UnityEngine;
+using RoguePirates.V4.Composition;
 
 namespace RoguePirates.V4.Tests
 {
@@ -148,7 +149,6 @@ namespace RoguePirates.V4.Tests
                 ["DevTools/Trace/RunTraceRecorder.cs"] = new[] { "LevelSystem" },
                 ["DevTools/Trace/PlayerPilot.cs"] = new[] { "PickupWorld" },
                 // The powerup toasts use V3's static display names until powerup names move into PowerupConfig (M14 presenters).
-                ["Runtime/Legacy/LegacyBuildWiring.cs"] = new[] { "V3FloorPowerupWorld" },
             };
             var offenders = Scan(@"\b(LevelSystem|WeaponController|PickupWorld|EncounterSpawner|V3FloorPowerupWorld|V3RunItemInventory|V3RunItemEffects|V3CaptainController|V3CaptainActiveController|HellfirePatchWorld|WeaponEvolutionRuntime)\b",
                 (rel, match) => !(exempt.TryGetValue(rel, out var types) && (types == null || System.Array.IndexOf(types, match) >= 0)));

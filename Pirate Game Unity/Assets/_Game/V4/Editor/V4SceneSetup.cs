@@ -111,7 +111,8 @@ namespace RoguePirates.V4.Editor
                 {
                     var so = new SerializedObject(game);
                     so.FindProperty("configSet").objectReferenceValue = configSet;
-                    so.FindProperty("legacyBaseProfile").objectReferenceValue = profile;
+                    var legacyProfile = so.FindProperty("legacyBaseProfile"); // M1-M13 only: M14 builds the profile from config
+                    if (legacyProfile != null) legacyProfile.objectReferenceValue = profile;
                     so.ApplyModifiedPropertiesWithoutUndo();
                     log.Add($"  {game.gameObject.name}: V4Game config assigned");
                 }
@@ -147,61 +148,9 @@ namespace RoguePirates.V4.Editor
                     so.ApplyModifiedPropertiesWithoutUndo();
                     log.Add("  EncounterSpawner.schedule = V4EncounterOnlySchedule");
 
-                    var slot = systems.GetComponents<Legacy.LegacyUpdateSlot>().FirstOrDefault(s => s.role == Legacy.LegacySpawnSlots.AmbientRole);
-                    if (slot == null)
-                    {
-                        slot = systems.AddComponent<Legacy.LegacyUpdateSlot>();
-                        slot.role = Legacy.LegacySpawnSlots.AmbientRole;
-                        log.Add("  ambient LegacyUpdateSlot added");
-                    }
-                    // Directly after the EncounterSpawner in component order.
-                    for (var guard = 0; guard < 64; guard++)
-                    {
-                        var components = systems.GetComponents<Component>().ToList();
-                        var want = components.IndexOf(spawner) + 1;
-                        var at = components.IndexOf(slot);
-                        if (at == want) break;
-                        if (at > want) ComponentUtility.MoveComponentUp(slot); else ComponentUtility.MoveComponentDown(slot);
-                    }
+                    // (M14.14: the ambient slot placed here is gone; the frame pipeline runs the ambient tick.)
                 });
-            foreach (var path in new[] { V4SceneNames.SaltwindRunPath, V4SceneNames.ModuleLabPath })
-                PlaceAmbientSlotAfterRunClock(path, log);
             return string.Join("\n", log);
-        }
-
-        /// <summary>
-        /// Unity updates the components of a loaded scene in descending local file-ID order (measured with the
-        /// profiler in V4SaltwindRun: RunManager 658786994, EncounterSpawner ...991, WeaponController ...988, POIManager
-        /// ...982, in that order). A component added by the editor gets a fresh ID and would update before the run
-        /// clock. Unity has no API to choose a file ID, so after the slot is saved its ID is moved into the free gap
-        /// just below RunManager's (between RunManager and EncounterSpawner) with a text replace of that ID, and the
-        /// scene is re-imported. The V4 ambient tick then runs after the clock advances, like EncounterSpawner.Update;
-        /// the only change is that the kept (encounter-only) spawner now runs after it instead of before.
-        /// </summary>
-        static void PlaceAmbientSlotAfterRunClock(string path, List<string> log)
-        {
-            EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
-            var systems = GameObject.Find("Systems");
-            var spawner = systems != null ? systems.GetComponent<HighSeas.Enemies.EncounterSpawner>() : null;
-            var clock = systems != null ? systems.GetComponent<HighSeas.Core.RunManager>() : null;
-            var slot = systems != null ? systems.GetComponents<Legacy.LegacyUpdateSlot>().FirstOrDefault(s => s.role == Legacy.LegacySpawnSlots.AmbientRole) : null;
-            if (spawner == null || clock == null || slot == null) { log.Add($"  {path}: slot, clock or spawner missing"); return; }
-            long Id(Object o) => (long)GlobalObjectId.GetGlobalObjectIdSlow(o).targetObjectId;
-            var low = Id(spawner);
-            var high = Id(clock);
-            var current = Id(slot);
-            if (current > low && current < high) { log.Add($"  {path}: ambient slot already between the run clock and the spawner ({current})"); return; }
-
-            var file = Path.Combine(Path.GetDirectoryName(Application.dataPath), path);
-            var text = File.ReadAllText(file);
-            long target = -1;
-            for (var id = high - 1; id > low; id--)
-                if (!Regex.IsMatch(text, $@"(&|fileID: ){id}\b")) { target = id; break; }
-            if (target < 0) { log.Add($"  {path}: no free file ID between {low} and {high}"); return; }
-            text = Regex.Replace(text, $@"(&|fileID: ){current}\b", m => m.Groups[1].Value + target);
-            File.WriteAllText(file, text);
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-            log.Add($"  {path}: ambient slot file ID {current} -> {target} (runs after RunManager {high}, before EncounterSpawner {low})");
         }
 
         /// <summary>
@@ -221,13 +170,8 @@ namespace RoguePirates.V4.Editor
                     var record = systems != null ? systems.GetComponent<HighSeas.Weapons.WeaponController>() : null;
                     if (record == null) { log.Add("  no WeaponController on /Systems"); return; }
                     if (record.enabled) { record.enabled = false; log.Add("  WeaponController switched off (loadout record)"); }
-                    if (!systems.GetComponents<Legacy.LegacyUpdateSlot>().Any(s => s.role == Legacy.LegacyWeaponWiring.WeaponsRole))
-                    {
-                        systems.AddComponent<Legacy.LegacyUpdateSlot>().role = Legacy.LegacyWeaponWiring.WeaponsRole;
-                        log.Add("  weapons LegacyUpdateSlot added");
-                    }
+                    // (M14.14: the weapons slot added here is gone; the frame pipeline runs the weapon tick.)
                 });
-                SwapWeaponSlotIntoRecordId(path, log);
             }
             return string.Join("\n", log);
         }
@@ -280,15 +224,10 @@ namespace RoguePirates.V4.Editor
                 {
                     var systems = GameObject.Find("Systems");
                     if (systems == null) { log.Add("  no /Systems"); return; }
-                    if (!systems.GetComponents<Legacy.LegacyUpdateSlot>().Any(s => s.role == Legacy.LegacyStageWiring.StageRole))
-                    {
-                        systems.AddComponent<Legacy.LegacyUpdateSlot>().role = Legacy.LegacyStageWiring.StageRole;
-                        log.Add("  stage LegacyUpdateSlot added");
-                    }
+                    // (M14.14: the stage slot added here is gone; the frame pipeline runs the stage tick.)
                     var spawner = systems.GetComponent<HighSeas.Enemies.EncounterSpawner>();
                     if (spawner != null && spawner.enabled) { spawner.enabled = false; log.Add("  EncounterSpawner switched off (Dead Calm sink)"); }
                 });
-                SwapSlotIntoComponentId<HighSeas.POI.POIManager>(path, Legacy.LegacyStageWiring.StageRole, log);
                 Edit(path, log, () => RemoveAll<HighSeas.POI.POIManager>(log));
             }
             return string.Join("\n", log);
@@ -336,56 +275,68 @@ namespace RoguePirates.V4.Editor
             return string.Join("\n", log);
         }
 
-        /// <summary>Gives the slot with <paramref name="role"/> the file ID of the <typeparamref name="T"/> on /Systems (T moves to a free ID).</summary>
-        static void SwapSlotIntoComponentId<T>(string path, string role, List<string> log) where T : Component
+        /// <summary>
+        /// M14.9b: the last V3 effect and event components leave the run scenes — JuiceVfxBroker, CombatVfxController,
+        /// WeaponJuiceController and PlayerJuiceController (every effect is a V4 presenter on the event stream), the three
+        /// MetaSystems components (TriggerBus, whose raises are gone, and LootService / QuestService, which only V3's
+        /// POIManager read) and ProjectileWorld (empty and unticked since M5). Every remaining V3 reader of them uses
+        /// <c>?.</c> or a null check (audit in the M14 checklist), and none of them is in the V4 scenes.
+        /// </summary>
+        public static string ApplyM14Effects()
         {
-            EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
-            var systems = GameObject.Find("Systems");
-            var target = systems != null ? systems.GetComponent<T>() : null;
-            var slot = systems != null ? systems.GetComponents<Legacy.LegacyUpdateSlot>().FirstOrDefault(s => s.role == role) : null;
-            if (target == null || slot == null) { log.Add($"  {path}: {typeof(T).Name} or {role} slot missing (already swapped?)"); return; }
-            long Id(Object o) => (long)GlobalObjectId.GetGlobalObjectIdSlow(o).targetObjectId;
-            var slotId = Id(slot);
-            var targetId = Id(target);
-            var file = Path.Combine(Path.GetDirectoryName(Application.dataPath), path);
-            var text = File.ReadAllText(file);
-            long free = -1;
-            for (var id = targetId + 1000; id < targetId + 100000; id++)
-                if (!Regex.IsMatch(text, $@"(&|fileID: ){id}\b")) { free = id; break; }
-            if (free < 0) { log.Add($"  {path}: no free file ID"); return; }
-            text = Regex.Replace(text, $@"(&|fileID: ){targetId}\b", m => m.Groups[1].Value + free);
-            text = Regex.Replace(text, $@"(&|fileID: ){slotId}\b", m => m.Groups[1].Value + targetId);
-            File.WriteAllText(file, text);
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-            log.Add($"  {path}: {typeof(T).Name} {targetId} -> {free}, {role} slot {slotId} -> {targetId}");
+            var log = new List<string>();
+            foreach (var path in new[] { V4SceneNames.SaltwindRunPath, V4SceneNames.ModuleLabPath })
+            {
+                Edit(path, log, () =>
+                {
+                    RemoveAll<HighSeas.VFX.JuiceVfxBroker>(log);
+                    RemoveAll<HighSeas.VFX.CombatVfxController>(log);
+                    RemoveAll<HighSeas.VFX.WeaponJuiceController>(log);
+                    RemoveAll<HighSeas.VFX.PlayerJuiceController>(log);
+                    RemoveAll<HighSeas.Meta.TriggerBus>(log);
+                    RemoveAll<HighSeas.Meta.LootService>(log);
+                    RemoveAll<HighSeas.Meta.QuestService>(log);
+                    RemoveAll<HighSeas.Weapons.ProjectileWorld>(log);
+                    RemoveAll<HighSeas.VFX.PlayerHealthBarBinder>(log);
+                    RemoveAll<HighSeas.V3.V3PlayBoundsWallVisual>(log);
+                    RemoveAll<HighSeas.V3.V3SaltwindStormRingVisual>(log);
+                    // M14.11: the level-up presenter takes the LevelUpPanel object over and lays out its own cards.
+                    RemoveAll<HighSeas.UI.LevelUpModal>(log);
+                    // M14.11: V3's RunHud (hidden under the authored HUD), its run-end screen and main-menu controller on /RunCanvas.
+                    RemoveAll<HighSeas.UI.RunHud>(log);
+                    RemoveAll<HighSeas.UI.RunEndScreen>(log);
+                    RemoveAll<HighSeas.UI.MainMenuController>(log);
+                    // M14.14: the legacy update slots (ambient, weapons, stage) left the code; their components are
+                    // missing scripts now. The frame pipeline runs those ticks.
+                    foreach (var go in Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    {
+                        var removed = GameObjectUtility.RemoveMonoBehavioursWithMissingScript(go);
+                        if (removed > 0) log.Add($"  removed {removed} missing-script component(s) from /{go.name}");
+                    }
+                });
+            }
+            return string.Join("\n", log);
         }
 
-        const long WeaponControllerSceneId = 658786988;
-
-        static void SwapWeaponSlotIntoRecordId(string path, List<string> log)
+        /// <summary>
+        /// M14.13: the V4 menu reads the Captain configs and lock rules: its controller gets the run's config set.
+        /// </summary>
+        public static string ApplyM14Menu()
         {
-            EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
-            var systems = GameObject.Find("Systems");
-            var record = systems != null ? systems.GetComponent<HighSeas.Weapons.WeaponController>() : null;
-            var slot = systems != null ? systems.GetComponents<Legacy.LegacyUpdateSlot>().FirstOrDefault(s => s.role == Legacy.LegacyWeaponWiring.WeaponsRole) : null;
-            if (record == null || slot == null) { log.Add($"  {path}: record or weapons slot missing"); return; }
-            long Id(Object o) => (long)GlobalObjectId.GetGlobalObjectIdSlow(o).targetObjectId;
-            var slotId = Id(slot);
-            if (slotId == WeaponControllerSceneId) { log.Add($"  {path}: weapons slot already has WeaponController's place ({slotId})"); return; }
-            var recordId = Id(record);
-            if (recordId != WeaponControllerSceneId) { log.Add($"  {path}: WeaponController has file ID {recordId}, expected {WeaponControllerSceneId}; not changed"); return; }
-
-            var file = Path.Combine(Path.GetDirectoryName(Application.dataPath), path);
-            var text = File.ReadAllText(file);
-            long free = -1;
-            for (var id = WeaponControllerSceneId + 1000; id < WeaponControllerSceneId + 100000; id++)
-                if (!Regex.IsMatch(text, $@"(&|fileID: ){id}\b")) { free = id; break; }
-            if (free < 0) { log.Add($"  {path}: no free file ID"); return; }
-            text = Regex.Replace(text, $@"(&|fileID: ){recordId}\b", m => m.Groups[1].Value + free);
-            text = Regex.Replace(text, $@"(&|fileID: ){slotId}\b", m => m.Groups[1].Value + recordId);
-            File.WriteAllText(file, text);
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-            log.Add($"  {path}: WeaponController {recordId} -> {free}, weapons slot {slotId} -> {recordId}");
+            var log = new List<string>();
+            Edit(V4SceneNames.MainMenuPath, log, () =>
+            {
+                var set = AssetDatabase.LoadAssetAtPath<RoguePirates.V4.Config.ConfigSet>("Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset");
+                foreach (var menu in Object.FindObjectsByType<V4MainMenuController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                {
+                    var so = new SerializedObject(menu);
+                    so.FindProperty("configSet").objectReferenceValue = set;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    log.Add($"  {menu.name}: config set {(set != null ? set.name : "MISSING")}");
+                }
+                RemoveAll<HighSeas.V3.V3MainMenuCharacterSelect>(log);
+            });
+            return string.Join("\n", log);
         }
 
         /// <summary>

@@ -34,6 +34,8 @@ namespace RoguePirates.V4.Tests
             "FindFirstObjectByType<PlayerShipController>", "FindFirstObjectByType<HighSeas.Player.PlayerShipController>",
             // Review finding: legacy adapters, the legacy VFX broker, the playtest flag and the weapon module's internals.
             "RoguePirates.V4.Legacy", "JuiceVfxBroker", "WeaponEnemyPlaytestSession", "LegacyHazardTelegraphView",
+            // M14.9b: the V3 effect components (the world presenters read the bounds through IWorldView).
+            "WeaponJuiceController", "CombatVfxController", "TriggerBus",
             "WeaponManager", "WeaponCombat", "WeaponTargetingService", "LegacyWeaponEnemies", "EnemyWorld"
         };
 

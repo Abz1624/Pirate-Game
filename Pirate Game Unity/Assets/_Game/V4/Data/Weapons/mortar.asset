@@ -17,6 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   weaponId: mortar
   displayName: Mortar
+  description: Delayed cluster bombardment.
+  behaviorLine: Delayed ground strike
   pattern: 7
   behavior: 8
   targeting: 10
@@ -56,6 +58,7 @@ MonoBehaviour:
     prefab: {fileID: 0}
     scaleMultiplier: 1
     radiusMultiplier: 1
+  hitEffect: 0
   projectile:
     burstShots: 1
     burstGapSeconds: 0.18

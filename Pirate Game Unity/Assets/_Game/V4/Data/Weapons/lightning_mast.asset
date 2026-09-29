@@ -17,6 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   weaponId: lightning_mast
   displayName: Lightning Mast
+  description: Automatic ship weapon.
+  behaviorLine: Auto-attacks nearby enemies
   pattern: 4
   behavior: 6
   targeting: 0
@@ -65,6 +67,7 @@ MonoBehaviour:
     prefab: {fileID: 0}
     scaleMultiplier: 1
     radiusMultiplier: 1
+  hitEffect: 0
   projectile:
     burstShots: 1
     burstGapSeconds: 0.18

@@ -35,31 +35,6 @@ namespace RoguePirates.V4.Spawning
         /// <summary>M11: the ambient cap blocked a spawn now (the ambient spawner checks the cap before calling TryBurst).</summary>
         public void NoteAmbientCapBlocked(float runTime) => _capBlockedAt = runTime;
 
-        /// <summary>M11: a one-spawn elite copy of an ambient spawner's profile, current at this moment (same movement,
-        /// attacks and modules; elite settings from the director config). The caller destroys it right after the spawn and
-        /// the agent is pointed back at the source profile, so nothing is cached and spawner caps count it.</summary>
-        static SpawnProfile EliteCopy(SpawnProfile profile, RoguePirates.V4.Config.DirectorConfig d)
-        {
-            var clone = Object.Instantiate(profile);
-            clone.name = profile.name + " (adaptive elite)";
-            var source = profile.elite;
-            clone.elite = new SpawnEliteSettings
-            {
-                isElite = true,
-                affix = (HighSeas.Core.EliteAffix)(int)d.eliteAffix, // same order (tested)
-                hpMultiplier = Mathf.Max(0.1f, d.eliteHpMultiplier),
-                damageMultiplier = Mathf.Max(0.1f, d.eliteDamageMultiplier),
-                sizeMultiplier = Mathf.Max(0.1f, d.eliteSizeMultiplier),
-                speedMultiplier = source != null ? source.speedMultiplier : 1f,
-            };
-            return clone;
-        }
-
-        static void DestroyCopy(Object o)
-        {
-            if (o == null) return;
-            if (Application.isPlaying) Object.Destroy(o); else Object.DestroyImmediate(o);
-        }
         public int NextInstanceId() => _nextProfileInstanceId++;
 
         /// <summary>Hard cap on alive enemies (V3: schedule maxActiveEnemies, clamped to 8..180).</summary>
@@ -145,15 +120,10 @@ namespace RoguePirates.V4.Spawning
 
                 // M11 elite lever (its own seeded stream); a profile that is already elite stays as it is.
                 var adaptiveElite = levers != null && !isBoss && !(profile.elite != null && profile.elite.isElite) && levers.RollElite();
-                var spawnProfile = adaptiveElite ? EliteCopy(profile, levers.Config) : profile;
-                int slot;
-                try
-                {
-                    slot = _s.Sink.SpawnFromProfile(definitionIndex, position, spawnProfile, profileInstanceId, role, i, leaderUnitId,
-                        hpMultiplier, damageMultiplier);
-                    if (adaptiveElite && slot >= 0) _s.Sink.MarkAdaptiveElite(slot, profile, !levers.AdaptiveElitesPayEliteRewards);
-                }
-                finally { if (adaptiveElite) DestroyCopy(spawnProfile); }
+                var spawnProfile = adaptiveElite ? _s.Profiles.EliteCopy(profile, levers.Config) : profile;
+                var slot = _s.Sink.SpawnFromProfile(definitionIndex, position, spawnProfile, profileInstanceId, role, i, leaderUnitId,
+                    hpMultiplier, damageMultiplier);
+                if (adaptiveElite && slot >= 0) _s.Sink.MarkAdaptiveElite(slot, profile, !levers.AdaptiveElitesPayEliteRewards);
                 if (slot < 0) continue;
                 if (adaptiveElite) AdaptiveElites++;
 

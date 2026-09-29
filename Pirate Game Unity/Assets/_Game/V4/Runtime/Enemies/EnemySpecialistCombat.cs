@@ -159,7 +159,7 @@ namespace RoguePirates.V4.Enemies
                 var def = world.Definitions[ally.definitionIndex];
                 if (def == null || def.isBoss || def.isMiniboss) continue;
                 if (Sim.RulesFor(ally.definitionIndex).excludedFromRepair) continue;
-                if (EnemyCombatProfileRegistry.TryGet(def.id, out var p)
+                if (_services.SpawnParams.TryGetCombatProfile(def.id, out var p)
                     && p.archetype == SaltwindCombatArchetype.RepairTender)
                     continue;
                 var missing = ally.maxHp - ally.hp;
