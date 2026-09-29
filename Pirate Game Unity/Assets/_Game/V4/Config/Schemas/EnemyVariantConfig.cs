@@ -17,7 +17,7 @@ namespace RoguePirates.V4.Config
 
     /// <summary>
     /// An enemy built on a base archetype. Database aliases follow the V3 specialist rule
-    /// (CombatSpecialistEnemyCatalog.RegisterAlias): category, damage, radius, xp, gold, preferred range, attack cooldown
+    /// (V3's specialist catalog; M16: the runtime database creates them): category, damage, radius, xp, gold, preferred range, attack cooldown
     /// and placeholder color come from the base; behavior, threat, HP and speed are overridden; tags are "specialist";
     /// everything else keeps EnemyDefinition defaults (so no visual prefab, register R-13). Registry elites
     /// (elite_hammerhead, elite_kraken_spawn) only carry their own combat profile.
@@ -27,6 +27,8 @@ namespace RoguePirates.V4.Config
     {
         [Tooltip("Legacy id: the alias enemy id, or the registry profile id for elites.")] [ConfigIdentity] public string variantId;
         [AppliesFrom(0, "structural: decides where the variant lives in the legacy data")] public VariantKind kind = VariantKind.DatabaseAlias;
+        [AppliesFrom(0, "structural: the alias's slot in the runtime database")] [Tooltip("Database aliases: their order after the loaded enemies in the runtime database (M16: was V3's specialist catalog order).")]
+        public int databaseSlotOrder;
         [AppliesFrom(0)] public EnemyArchetypeConfig baseArchetype;
         public string displayName;
         public BehaviorOverride behavior = new BehaviorOverride();

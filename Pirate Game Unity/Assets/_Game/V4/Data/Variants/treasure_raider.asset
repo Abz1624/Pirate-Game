@@ -17,6 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   variantId: treasure_raider
   kind: 0
+  databaseSlotOrder: 7
   baseArchetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
   displayName: treasure raider
   behavior:
@@ -69,7 +70,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 0
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:
       enabled: 0

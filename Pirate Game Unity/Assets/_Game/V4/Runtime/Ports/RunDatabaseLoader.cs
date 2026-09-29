@@ -14,11 +14,10 @@ using UnityEngine;
 
 namespace RoguePirates.V4.Ports
 {
-    // Each adapter wraps one legacy area that V4 still depends on. The attribute names the phase that deletes it;
-    // DeletedInPhaseTests fails if an adapter outlives that phase. Method bodies are ported from V3RunBootstrap
-    // with the call order unchanged, so M0 runs are identical to V3 runs.
-
-    /// <summary>Game database load and the runtime catalogs. M0 applies them exactly as V3 does.</summary>
+    /// <summary>
+    /// The game database load (the shared definitions the runtime database is built from). M16: V3's runtime catalogs
+    /// are gone — the runtime database creates the specialist aliases from config and every value comes from config.
+    /// </summary>
     public sealed class RunDatabaseLoader
     {
         public GameDatabase Database { get; private set; }
@@ -30,12 +29,5 @@ namespace RoguePirates.V4.Ports
                 Database = GameDatabaseLoader.Load();
         }
 
-        /// <summary>The runtime weapon and specialist catalogs for the active combat experiment.</summary>
-        public void ApplyCatalogs()
-        {
-            var experiment = CombatExperimentContext.Active;
-            CombatWeaponCatalog.ApplyToDatabase(Database, experiment);
-            CombatSpecialistEnemyCatalog.ApplyToDatabase(Database, experiment);
-        }
     }
 }

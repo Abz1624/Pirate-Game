@@ -12,7 +12,7 @@ namespace RoguePirates.V4.Foundation.Data
         public float baseMoveSpeed = 6.2f;
         public float baseArmor;
         public float baseEvasion;
-        public string startingWeaponId = "swivel_guns";
+        public string startingWeaponId;
         public string passiveId;
         public string unlockQuestId;
         public int unlockDoubloonCost;

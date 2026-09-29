@@ -12,9 +12,9 @@ using Object = UnityEngine.Object;
 namespace RoguePirates.V4.Ports
 {
     /// <summary>
-    /// The per-run GameDatabase the legacy run uses from M2. Its enemy array has exactly the layout of the loaded
-    /// database after V3's catalogs (null slots and appended specialist aliases included, so definition indices match),
-    /// but every enemy is a per-run copy written from its archetype or variant config. Weapons, logbooks, relics and
+    /// The per-run GameDatabase the run uses (since M2). Its enemy array is the loaded database's layout (null slots
+    /// included), then the specialist aliases in their configured order (M16: created here; V3's catalog appended them),
+    /// then the V4-only enemies; every enemy is a per-run copy written from its archetype or variant config. Weapons, logbooks, relics and
     /// ships still reference the loaded database's assets (legacy HUD and meta code reads them directly; weapons move
     /// to V4 in M5). Config edits rewrite the copies in place; the enemy world indexes into the same array.
     /// </summary>
@@ -30,7 +30,7 @@ namespace RoguePirates.V4.Ports
 
         public V4RuntimeDatabase(ConfigSetRuntime config) { _config = config; }
 
-        /// <summary>Builds the runtime database from the loaded one (call after the catalogs ran, like V3).</summary>
+        /// <summary>Builds the runtime database from the loaded one (its slots, then the aliases, then the V4-only enemies).</summary>
         public GameDatabase Build(GameDatabase loaded)
         {
             Dispose(); // safe to build again: drops the previous copies, lookups and subscription
@@ -48,10 +48,37 @@ namespace RoguePirates.V4.Ports
                 _byId[copy.id] = copy;
                 if (!Write(copy.id)) unconfigured.Add(copy.id);
             }
+            AppendDatabaseAliases();
             AppendV4OnlyEnemies();
             Unconfigured = unconfigured;
             if (_config != null) _config.ConfigChanged += OnConfigChanged;
             return Database;
+        }
+
+        /// <summary>
+        /// The database aliases (V3's specialists: an id with its own stats on a template enemy's model), appended after
+        /// the loaded slots in their configured slot order — what V3's specialist catalog appended (M16: the catalog is
+        /// gone). An alias is skipped when the loaded database already has its id or lacks its template, as the catalog did.
+        /// </summary>
+        void AppendDatabaseAliases()
+        {
+            if (_config == null) return;
+            var aliases = _config.All<EnemyVariantConfig>()
+                .Where(v => v.kind == VariantKind.DatabaseAlias && v.baseArchetype != null && !string.IsNullOrEmpty(v.variantId))
+                .Where(v => !_byId.ContainsKey(v.variantId) && _byId.ContainsKey(v.baseArchetype.enemyId))
+                .OrderBy(v => v.databaseSlotOrder).ThenBy(v => v.variantId, StringComparer.Ordinal).ToList();
+            if (aliases.Count == 0) return;
+            var list = new List<EnemyDefinition>(Database.enemies);
+            foreach (var v in aliases)
+            {
+                var def = Track(ScriptableObject.CreateInstance<EnemyDefinition>());
+                def.name = string.Empty; // as the catalog's definitions
+                def.id = v.variantId;
+                _byId[def.id] = def;
+                Write(def.id);
+                list.Add(def);
+            }
+            Database.enemies = list.ToArray();
         }
 
         /// <summary>Ids of enemies V3's database does not have (appended after its slots, so no index moves).</summary>

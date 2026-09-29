@@ -69,6 +69,7 @@ MonoBehaviour:
       marksCost: 100
     - contentId: flint
       marksCost: 140
+    bossEnemyId: barnacle_king
   salvageChestCount: 12
   explosiveBarrelCount: 0
   explosiveBarrelFuseSeconds: 1.2

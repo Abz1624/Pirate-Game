@@ -7,11 +7,9 @@ namespace RoguePirates.V4.Foundation.Balance
     /// <summary>Captures the Saltwind solo finale boss for reproducible profile content hashing.</summary>
     public static class BossStatExportLogic
     {
-        public const string DefaultSaltwindBossId = "barnacle_king";
 
-        public static StageBossStatSnapshot SnapshotSaltwindBoss(
-            GameDatabase database = null,
-            string bossId = DefaultSaltwindBossId)
+        /// <summary>The stage boss's stats (M16: its id comes from the stage config, was V3's constant).</summary>
+        public static StageBossStatSnapshot SnapshotSaltwindBoss(string bossId, GameDatabase database = null)
         {
             database ??= GameDatabaseLoader.Load();
             var def = database != null ? database.GetEnemy(bossId) : null;

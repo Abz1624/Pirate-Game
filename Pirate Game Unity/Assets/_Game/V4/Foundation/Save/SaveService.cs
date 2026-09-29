@@ -97,7 +97,64 @@ namespace RoguePirates.V4.Foundation.Core
         public void Save()
         {
             Meta.version = GameConstants.SaveVersion;
+            KeepStoredOwnership();
             _backend.Save(MetaKey, JsonUtility.ToJson(Meta));
+        }
+
+        /// <summary>
+        /// M16 (save safety): nothing in the game removes owned content or settled-run receipts, so a write that would
+        /// drop any the stored save holds comes from a stale copy of the save (a player lost an unlock this way between
+        /// two playtests). They are kept, and the writer is reported with its stack trace.
+        /// </summary>
+        void KeepStoredOwnership()
+        {
+            if (!_backend.TryLoad(MetaKey, out var json) || string.IsNullOrEmpty(json)) return;
+            MetaSaveData stored;
+            try { stored = Migrate(JsonUtility.FromJson<MetaSaveData>(json)); } // as Load reads it (a pre-v2 save has no owned ids)
+            catch (ArgumentException) { return; }
+            if (stored == null) return;
+            var dropped = new List<string>();
+            Meta.unlockedIds = KeepAll(stored.unlockedIds, Meta.unlockedIds, dropped);
+            Meta.purchasedIds = KeepAll(stored.purchasedIds, Meta.purchasedIds, dropped);
+            Meta.marksOwnedContentIds = KeepAll(stored.marksOwnedContentIds, Meta.marksOwnedContentIds, dropped);
+            var receipts = new List<string>();
+            Meta.settledRunReceiptIds = KeepAll(stored.settledRunReceiptIds, Meta.settledRunReceiptIds, receipts);
+            if (dropped.Count > 0 || receipts.Count > 0)
+                Debug.LogError($"SaveService: a save write would have dropped owned content [{string.Join(", ", dropped)}] and " +
+                               $"{receipts.Count} settled-run receipt(s) held by the stored save; they were kept. Writer:\n{Environment.StackTrace}");
+        }
+
+        /// <summary>
+        /// Writes a saved copy of the meta back (test and trace helpers restoring a snapshot) through the same guard, so a
+        /// restore can bring back values but never remove owned content or receipts added since the snapshot.
+        /// </summary>
+        public static void RestoreSnapshot(string metaJson, ISaveBackend backend = null)
+        {
+            if (string.IsNullOrEmpty(metaJson)) return;
+            try
+            {
+                var service = new SaveService(backend);
+                service.Meta = Migrate(JsonUtility.FromJson<MetaSaveData>(metaJson));
+                service.Save();
+            }
+            catch (ArgumentException e)
+            {
+                // A corrupt snapshot or stored save: leave the stored save as it is rather than stop the caller.
+                Debug.LogError("SaveService: snapshot not restored (unreadable save data): " + e.Message);
+            }
+        }
+
+        static string[] KeepAll(string[] stored, string[] current, List<string> dropped)
+        {
+            if (stored == null || stored.Length == 0) return current ?? Array.Empty<string>();
+            var result = current;
+            foreach (var id in stored)
+            {
+                if (string.IsNullOrEmpty(id) || ContainsId(result, id)) continue;
+                dropped.Add(id);
+                result = AddUnique(result, id);
+            }
+            return result ?? Array.Empty<string>();
         }
 
         public static MetaSaveData Migrate(MetaSaveData data)

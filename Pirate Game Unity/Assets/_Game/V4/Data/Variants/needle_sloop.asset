@@ -17,6 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   variantId: needle_sloop
   kind: 0
+  databaseSlotOrder: 0
   baseArchetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
   displayName: needle sloop
   behavior:
@@ -69,7 +70,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 0
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:
       enabled: 0

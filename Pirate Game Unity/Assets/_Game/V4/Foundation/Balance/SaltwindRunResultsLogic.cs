@@ -6,17 +6,6 @@ using RoguePirates.Simulation.Balance;
 
 namespace RoguePirates.V4.Foundation.Balance
 {
-    public readonly struct WeaponContributionLine
-    {
-        public string DisplayName { get; }
-        public float DamageSharePercent { get; }
-
-        public WeaponContributionLine(string displayName, float damageSharePercent)
-        {
-            DisplayName = displayName;
-            DamageSharePercent = damageSharePercent;
-        }
-    }
 
     /// <summary>Results copy and reconciliation for Saltwind runs (Step 11 / C11).</summary>
     public static class SaltwindRunResultsLogic
@@ -37,30 +26,6 @@ namespace RoguePirates.V4.Foundation.Balance
             if (objectiveSecured)
                 return "Treasury objective complete. Survive or keep farming.";
             return "Treasury not secured this voyage.";
-        }
-
-        public static IReadOnlyList<WeaponContributionLine> BuildWeaponContributionLines(
-            IReadOnlyDictionary<string, WeaponContributionStats> snapshot)
-        {
-            if (snapshot == null || snapshot.Count == 0)
-                return Array.Empty<WeaponContributionLine>();
-
-            var total = 0f;
-            foreach (var pair in snapshot)
-                total += pair.Value.totalDamage;
-            if (total <= 0f)
-                return Array.Empty<WeaponContributionLine>();
-
-            var lines = new List<WeaponContributionLine>(snapshot.Count);
-            foreach (var pair in snapshot)
-            {
-                if (pair.Value.totalDamage <= 0f) continue;
-                var pct = pair.Value.totalDamage / total * 100f;
-                lines.Add(new WeaponContributionLine(WeaponDisplayNames.GetWeaponName(pair.Key), pct));
-            }
-
-            lines.Sort((a, b) => b.DamageSharePercent.CompareTo(a.DamageSharePercent));
-            return lines;
         }
 
         public static string FormatProfileFooter(StageBalanceProfileExport export, int runSeed, float elapsedSeconds)

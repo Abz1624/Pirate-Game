@@ -30,39 +30,10 @@ namespace RoguePirates.V4.Foundation.Progression
                 return AppRoot.Instance?.Save?.HasEffectiveContentOwned(weaponId) ?? false;
             }
 
-            if (CombatExperimentContext.Active.weaponSlotCap >= 6 && IsExperimentalPlaytestWeapon(weaponId))
-                return HasCompletedFirstConquest || weaponId is "long_nine" or "swivel_guns";
-
-            return weaponId switch
-            {
-                "deck_cannons" => true,
-                "swivel_guns" => true,
-                "broadside_battery" => true,
-                "powder_kegs" => HasCompletedFirstConquest || CaptainSelection.Selected == CaptainId.Flint,
-                "flying_cutlasses" => HasCompletedFirstConquest,
-                "lightning_mast" => HasCompletedFirstConquest,
-                "flamethrower" => HasCompletedFirstConquest,
-                "burning_oil" => HasCompletedFirstConquest,
-                _ => false
-            };
+            // M16: V3's hard-coded unlock table (outside a stage-profile run) is gone; V4 asks only inside runs, where the
+            // stage profile is always active. Outside one, only the save's ownership counts.
+            return AppRoot.Instance?.Save?.HasEffectiveContentOwned(weaponId) ?? false;
         }
 
-        static bool IsExperimentalPlaytestWeapon(string weaponId) =>
-            weaponId is "long_nine" or "swivel_guns" or "harpoon_gun" or "mortar";
-
-        public static bool IsLogbookUnlocked(string logbookId) =>
-            BypassProgressionGates || !string.IsNullOrEmpty(logbookId);
-
-        public static bool IsItemUnlocked(string itemId)
-        {
-            if (BypassProgressionGates) return !string.IsNullOrEmpty(itemId);
-            if (string.IsNullOrEmpty(itemId)) return false;
-            if (StageBalanceProfileContext.IsActive)
-                return SaltwindStageProgressionLogic.IsRunItemOfferEligible(
-                    StageBalanceProfileContext.Export,
-                    itemId,
-                    AppRoot.Instance?.Save);
-            return true;
-        }
     }
 }

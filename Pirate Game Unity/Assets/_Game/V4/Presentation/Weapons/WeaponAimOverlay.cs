@@ -13,7 +13,7 @@ namespace RoguePirates.V4.Presentation.Weapons
 {
     /// <summary>
     /// The combat debug aim overlay (M6): one filled ground shape and one target disc per weapon slot, shown while the
-    /// combat debug overlays are on. Port of V3's WeaponTargetingVisualizer: same shapes, colours (WeaponDebugPalette),
+    /// combat debug overlays are on. Port of V3's WeaponTargetingVisualizer: same shapes, colours (each weapon config's aim colour, M16),
     /// ground height and fire pulse (<see cref="NotifyAimed"/>, forwarded by <see cref="WeaponVfxPresenter.Aimed"/>).
     /// <para>What V4 changes: it reads the V4 weapon slots and configs, the V4 targeting service and enemy query and the
     /// ship view instead of finding WeaponController, EnemyWorld and PlayerShipController; the key toggle is injected
@@ -28,7 +28,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         const float TargetDiscRadius = 0.85f;
 
         // V3's aim shapes keyed by weapon id (WeaponTargetingVisualizer special-cased these weapons by id). Kept in this
-        // one place; the colours come from V3's WeaponDebugPalette, keyed by id as well.
+        // one place; the colours come from each weapon config (M16; were V3's palette keyed by id).
 
         struct SlotVisual
         {
@@ -143,7 +143,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             var sizeMult = weapon.SizeMult * (_aim != null ? _aim.SizeMultiplier : 1f);
             var effectiveRange = def.range * sizeMult;
             var pulse = _firePulseTimer > 0f && id == _lastFiredWeaponId;
-            var color = pulse ? WeaponDebugPalette.GetLocked(id) : WeaponDebugPalette.GetIdle(id);
+            var color = AimColor(def, pulse ? 0.9f : 0.32f);
             var visual = def.visual ?? DefaultVisual;
             if (pulse && visual.firePulseFades)
                 color.a *= Mathf.Clamp01(_firePulseTimer / _firePulseDuration);
@@ -297,8 +297,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             if (showMarkerFinal && set.Marker != null)
             {
                 BuildDiscMesh(set.Marker.sharedMesh, targetPos, TargetDiscRadius, 16);
-                var markerColor = WeaponDebugPalette.GetLocked(id);
-                markerColor.a = 0.75f;
+                var markerColor = AimColor(def, 0.75f);
                 SetRendererColor(set.MarkerRenderer, markerColor, true);
                 set.Marker.gameObject.SetActive(true);
             }
@@ -540,6 +539,14 @@ namespace RoguePirates.V4.Presentation.Weapons
         static void Kill(UnityEngine.Object o)
         {
             if (Application.isPlaying) Destroy(o); else DestroyImmediate(o);
+        }
+
+        /// <summary>The weapon's aim colour at an overlay alpha (locked 0.9, idle 0.32, target disc 0.75, as V3).</summary>
+        static Color AimColor(WeaponConfig def, float alpha)
+        {
+            var c = def != null ? def.aimOverlayColor : new Color(0.7f, 0.7f, 0.7f);
+            c.a = alpha;
+            return c;
         }
     }
 }

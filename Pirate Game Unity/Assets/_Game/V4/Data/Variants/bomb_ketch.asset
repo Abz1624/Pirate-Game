@@ -17,6 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   variantId: bomb_ketch
   kind: 0
+  databaseSlotOrder: 2
   baseArchetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
   displayName: bomb ketch
   behavior:
@@ -69,7 +70,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 0
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:
       enabled: 0

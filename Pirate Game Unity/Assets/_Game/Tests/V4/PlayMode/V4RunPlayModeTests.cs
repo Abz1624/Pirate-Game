@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Linq;
 using RoguePirates.V4.Foundation.Balance;
 using RoguePirates.V4.Foundation.Core;
@@ -49,7 +49,7 @@ namespace RoguePirates.V4.Tests
                 if (_had[i]) PlayerPrefs.SetInt(IntKeys[i], _values[i]);
                 else PlayerPrefs.DeleteKey(IntKeys[i]);
             }
-            if (_meta != null) PlayerPrefs.SetString(MetaKey, _meta);
+            if (_meta != null) SaveService.RestoreSnapshot(_meta); // M16: through the save guard (never drops owned content)
             if (_runSnapshot != null) PlayerPrefs.SetString(SnapshotKey, _runSnapshot); else PlayerPrefs.DeleteKey(SnapshotKey);
             if (_records != null) PlayerPrefs.SetString(RecordsKey, _records); else PlayerPrefs.DeleteKey(RecordsKey);
             PlayerPrefs.Save();

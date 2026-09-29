@@ -98,7 +98,7 @@ namespace RoguePirates.V4.Foundation.VFX
             {
                 var binding = settings.weaponVfxBindings[i];
                 if (binding?.projectilePrefab == prefab)
-                    return binding.weaponId != "harpoon_gun";
+                    return binding.projectilePrefab != settings.harpoonProjectilePrefab;
             }
 
             return false;

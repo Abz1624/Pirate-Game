@@ -234,11 +234,18 @@ namespace RoguePirates.V4.Tests
             using var h = new Harness();
             var e = h.Config.All<WeaponEvolutionConfig>().ToDictionary(c => c.evolutionId);
             Assert.AreEqual(6, e.Count);
-            foreach (var def in WeaponEvolutionCatalog.Definitions)
+            // M16: V3's evolution catalog is deleted; its six rows, as they were.
+            var rows = new[]
             {
-                Assert.AreEqual(def.baseWeaponId, e[def.evolutionId].baseWeapon.weaponId, def.evolutionId);
-                Assert.AreEqual(def.requiredItemId, e[def.evolutionId].requiredItemId);
-                Assert.AreNotEqual(ConfigEnums.EvolutionEffect.None, e[def.evolutionId].effect);
+                ("stormshot_cannon", "deck_cannons", "grapeshot_pouch"), ("kings_broadside", "broadside_battery", "broadside_drum"),
+                ("devils_wake", "powder_kegs", "double_fuse_cord"), ("bladed_tide", "flying_cutlasses", "serrated_scabbard"),
+                ("hellfire_nozzle", "flamethrower", "dragons_breath_nozzle"), ("tempest_mast", "lightning_mast", "copper_conductor"),
+            };
+            foreach (var (evolution, weapon, item) in rows)
+            {
+                Assert.AreEqual(weapon, e[evolution].baseWeapon.weaponId, evolution);
+                Assert.AreEqual(item, e[evolution].requiredItemId, evolution);
+                Assert.AreNotEqual(ConfigEnums.EvolutionEffect.None, e[evolution].effect);
             }
         }
 

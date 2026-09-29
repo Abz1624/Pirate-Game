@@ -34,8 +34,8 @@ namespace RoguePirates.V4.Tests
             _created.Clear();
         }
 
-        /// <summary>The database a run starts from: the loaded one after the catalogs (applied here to a deep clone).</summary>
-        GameDatabase CatalogAppliedDatabase()
+        /// <summary>The database a run starts from: the loaded one, as a deep clone (M16: V3's catalogs are gone).</summary>
+        GameDatabase LoadedDatabase()
         {
             // After a Play Mode session the cached experiment profile can be a destroyed object (register R-82): re-resolve it.
             if (CombatExperimentContext.Active == null) CombatExperimentContext.ResetForTests();
@@ -44,9 +44,41 @@ namespace RoguePirates.V4.Tests
             _created.Add(clone);
             clone.enemies = db.enemies.Select(e => { if (e == null) return null; var c = Object.Instantiate(e); c.name = e.name; _created.Add(c); return c; }).ToArray();
             clone.weapons = db.weapons.Select(w => { if (w == null) return null; var c = Object.Instantiate(w); c.name = w.name; _created.Add(c); return c; }).ToArray();
-            CombatWeaponCatalog.ApplyToDatabase(clone, CombatExperimentContext.Active);
-            CombatSpecialistEnemyCatalog.ApplyToDatabase(clone, CombatExperimentContext.Active);
             return clone;
+        }
+
+        GameDatabase CloneOf(GameDatabase db)
+        {
+            if (CombatExperimentContext.Active == null) CombatExperimentContext.ResetForTests();
+            var clone = Object.Instantiate(db);
+            _created.Add(clone);
+            clone.enemies = db.enemies.Select(e => { if (e == null) return null; var c = Object.Instantiate(e); c.name = e.name; _created.Add(c); return c; }).ToArray();
+            clone.weapons = db.weapons.Select(w => { if (w == null) return null; var c = Object.Instantiate(w); c.name = w.name; _created.Add(c); return c; }).ToArray();
+            return clone;
+        }
+
+        /// <summary>M16: the runtime database appends V3's eight specialist aliases right after the loaded slots, in V3's
+        /// catalog order (proved equal to the catalog path, field for field, before the catalogs were deleted), for the
+        /// Editor database and the player (Resources) one.</summary>
+        [TestCase(true)]
+        [TestCase(false)]
+        public void RuntimeDatabase_AppendsTheAliases_InV3sOrder(bool editorDatabase)
+        {
+            var db = editorDatabase ? AssetDatabase.LoadAssetAtPath<GameDatabase>(GameDatabaseLoader.AssetPath) : Resources.Load<GameDatabase>("GameDatabase");
+            using (var config = new ConfigSetRuntime(_set))
+            using (var runtime = new V4RuntimeDatabase(config))
+            {
+                var loaded = CloneOf(db);
+                var built = runtime.Build(loaded).enemies;
+                var order = new[] { "needle_sloop", "ram_raider", "bomb_ketch", "net_cutter", "repair_tender", "powder_barge", "shield_frigate", "treasure_raider" };
+                for (var i = 0; i < order.Length; i++)
+                {
+                    var d = built[loaded.enemies.Length + i];
+                    Assert.AreEqual(order[i], d.id, "slot " + (loaded.enemies.Length + i));
+                    CollectionAssert.Contains(d.tags, "specialist");
+                    Assert.AreEqual(string.Empty, d.name, "nameless, as the catalog's definitions");
+                }
+            }
         }
 
         /// <summary>M15 (the V4 half of the retired V3 slot-for-slot test): every enemy the loaded database holds has a
@@ -54,15 +86,16 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void RuntimeDatabase_ConfiguresEveryEnemy_AndAppendsTheV4OnlyOnes()
         {
-            var loaded = CatalogAppliedDatabase();
+            var loaded = LoadedDatabase();
             using (var config = new ConfigSetRuntime(_set))
             using (var runtime = new V4RuntimeDatabase(config))
             {
                 var db = runtime.Build(loaded);
                 CollectionAssert.IsEmpty(runtime.Unconfigured, "every enemy in the live database has a V4 config");
                 CollectionAssert.AreEquivalent(new[] { "drowned_harrier", "drowned_pursuer", "elite_hammerhead", "elite_kraken_spawn" }, runtime.V4OnlyIds);
-                Assert.AreEqual(loaded.enemies.Length + runtime.V4OnlyIds.Count, db.enemies.Length, "the loaded layout, then the V4-only enemies");
-                Assert.AreEqual(22, loaded.enemies.Count(e => e != null), "14 authored enemies + 8 specialist aliases");
+                Assert.AreEqual(loaded.enemies.Length + 8 + runtime.V4OnlyIds.Count, db.enemies.Length, "the loaded layout, the 8 specialist aliases (M16: created here), then the V4-only enemies");
+                Assert.AreEqual(14, loaded.enemies.Count(e => e != null), "14 authored enemies in the loaded database");
+                Assert.AreEqual(22 + runtime.V4OnlyIds.Count, db.enemies.Count(e => e != null), "14 authored + 8 aliases + the V4-only enemies");
                 for (var i = 0; i < loaded.enemies.Length; i++)
                 {
                     Assert.AreEqual(loaded.enemies[i] == null, db.enemies[i] == null, $"slot {i} null-ness");
@@ -73,6 +106,59 @@ namespace RoguePirates.V4.Tests
             }
         }
 
+        /// <summary>M16 (V3's proxy-model table removed): every runtime enemy has its model, and the archetypes carry the
+        /// proxy models and scales V3's table gave the eight ship enemies without art.</summary>
+        [Test]
+        public void EveryRuntimeEnemy_HasAModel_AndTheArchetypesCarryV3sProxies()
+        {
+            using (var config = new ConfigSetRuntime(_set))
+            using (var runtime = new V4RuntimeDatabase(config))
+            {
+                var db = runtime.Build(LoadedDatabase());
+                foreach (var d in db.enemies.Where(e => e != null))
+                    Assert.IsNotNull(d.visualPrefab, d.id + " has a model");
+                var proxies = new (string id, string model, float scale)[]
+                {
+                    ("cutthroat_skiff", "SmuggleBoat", 0.92f), ("deckhand_dinghy", "SmuggleBoat", 0.82f), ("gunner_cog", "CannonboatNavy", 1f),
+                    ("bomb_boat", "FireBoat", 1f), ("rammer_raft", "RamShip", 1f), ("boarding_barge", "RamShip", 1.12f),
+                    ("drowned_pursuer", "SmuggleBoat", 1.05f), ("drowned_harrier", "CannonboatNavy", 0.95f),
+                };
+                foreach (var (id, model, scale) in proxies)
+                {
+                    var d = db.GetEnemy(id);
+                    Assert.AreEqual(model, d.visualPrefab.name, id);
+                    Assert.AreEqual(scale, d.visualScale, 1e-5f, id);
+                }
+            }
+        }
+
+        /// <summary>M16: the spawn-warning tier comes from config; equal to V3's id table for every runtime enemy.</summary>
+        [Test]
+        public void WarningTiers_FromConfig_EqualV3sTable()
+        {
+            using (var config = new ConfigSetRuntime(_set))
+            using (var runtime = new V4RuntimeDatabase(config))
+            {
+                var db = runtime.Build(LoadedDatabase());
+                foreach (var d in db.enemies.Where(e => e != null))
+                {
+                    var expected = d.isBoss ? EnemyTier.Boss : d.isMiniboss ? EnemyTier.General : V3Tier(d.id);
+                    var fromConfig = d.isBoss ? EnemyTier.Boss : d.isMiniboss ? EnemyTier.General : d.tier;
+                    Assert.AreEqual(expected, fromConfig, d.id);
+                    Assert.AreEqual(fromConfig, RoguePirates.V4.Foundation.Balance.EnemyTierLogic.ResolveTier(d), d.id + " (the warning reads it)");
+                }
+            }
+        }
+
+        /// <summary>V3's tier table by enemy id (EnemyTierLogic.ResolveTierFromId, deleted in M16).</summary>
+        static EnemyTier V3Tier(string id) => id switch
+        {
+            "barnacle_king" => EnemyTier.Boss,
+            "reef_crab_miniboss" or "kraken_spawn" or "boarding_barge" => EnemyTier.General,
+            "shark" or "cannonboat" or "gunner_cog" or "bomb_boat" or "rammer_raft" or "manta_ray" or "needle_sloop" or "ram_raider" => EnemyTier.Captain,
+            _ => EnemyTier.Soldier
+        };
+
         [Test]
         public void SpecialistAliases_UseTheirTemplateModel_ByDefault()
         {
@@ -80,7 +166,7 @@ namespace RoguePirates.V4.Tests
             using (var config = new ConfigSetRuntime(_set))
             using (var runtime = new V4RuntimeDatabase(config))
             {
-                var db = runtime.Build(CatalogAppliedDatabase());
+                var db = runtime.Build(LoadedDatabase());
                 var aliases = config.All<EnemyVariantConfig>().Where(v => v.kind == VariantKind.DatabaseAlias).ToList();
                 Assert.AreEqual(8, aliases.Count);
                 foreach (var v in aliases)
@@ -106,7 +192,7 @@ namespace RoguePirates.V4.Tests
             using (var config = new ConfigSetRuntime(_set))
             using (var runtime = new V4RuntimeDatabase(config))
             {
-                var db = runtime.Build(CatalogAppliedDatabase());
+                var db = runtime.Build(LoadedDatabase());
                 Assert.IsTrue(config.TryApplyEdit("enemy.rammer_raft", "stats.baseDamage", "99", 0f, out var error), error);
                 Assert.AreEqual(99f, db.GetEnemy("rammer_raft").baseDamage);
                 Assert.AreEqual(99f, db.GetEnemy("ram_raider").baseDamage, "aliases copy the template's damage");
@@ -117,23 +203,24 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void CombatProfiles_AreTheRunsCopies_OfTheConfig_AndNeverTouchTheV3Registry()
+        public void CombatProfiles_AreTheRunsCopies_OfTheConfig()
         {
-            // M14: per-run profiles replace the registry override (which wrote V3's static registry and restored it).
-            Assert.IsTrue(EnemyCombatProfileRegistry.TryGet("hammerhead", out var registry));
-            var before = JsonUtility.ToJson(Snapshot(registry));
+            // M14: per-run profiles replace V3's static registry (M16: the registry is deleted).
             using (var config = new ConfigSetRuntime(_set))
             using (var profiles = new EnemyCombatProfiles(config))
             {
                 Assert.IsTrue(profiles.TryGet("hammerhead", out var run));
-                Assert.AreNotSame(registry, run);
+                using (var other = new EnemyCombatProfiles(config))
+                {
+                    Assert.IsTrue(other.TryGet("hammerhead", out var second));
+                    Assert.AreNotSame(run, second, "each run builds its own copies");
+                }
                 config.TryApplyEdit("enemy.hammerhead", "combat.chargeCooldown", "9", 0f, out _);
                 Assert.AreEqual(9f, run.chargeCooldown, "live edits reach the run's profile");
                 run.eliteHammerheadSecondCharge = true; // the R-100 latch changes the run's copy only
                 var registered = config.All<EnemyArchetypeConfig>().Count(a => a.combat.registered) + config.All<EnemyVariantConfig>().Count(v => v.combat.registered);
                 Assert.AreEqual(registered, profiles.Count, "one profile per registered combat block");
             }
-            Assert.AreEqual(before, JsonUtility.ToJson(Snapshot(registry)), "V3's registry untouched");
         }
 
         static ArchetypeCombat Snapshot(EnemyCombatProfile p)
@@ -171,29 +258,11 @@ namespace RoguePirates.V4.Tests
         };
 
         /// <summary>
-        /// M15: shared code moved into V4/Foundation that still keys V3's data tables by content id (tiers, combat
-        /// profiles, weapon and specialist catalogs, database fallbacks, unlock pools). Replacing them with config is
-        /// follow-up work outside M15 (a behaviour-neutral move); this list may only shrink.
+        /// Foundation files allowed to key data by content id. M15 listed 17 (V3's tiers, combat profiles, weapon and
+        /// specialist catalogs, database fallbacks, unlock pools); M16 moved all of them onto config. Keep it empty.
         /// </summary>
         static readonly HashSet<string> NameKeyedFoundationFiles = new HashSet<string>
         {
-            "Foundation/Balance/BossStatExportLogic.cs",
-            "Foundation/Balance/EnemyTierLogic.cs",
-            "Foundation/Balance/StageBalanceProfile.cs",
-            "Foundation/Balance/WeaponStatExportLogic.cs",
-            "Foundation/Combat/CombatSpecialistEnemyCatalog.cs",
-            "Foundation/Combat/CombatWeaponCatalog.cs",
-            "Foundation/Combat/EnemyCombatProfileRegistry.cs",
-            "Foundation/Combat/WeaponDebugPalette.cs",
-            "Foundation/Combat/WeaponDisplayNames.cs",
-            "Foundation/Combat/WeaponEvolutionCatalog.cs",
-            "Foundation/Core/GameDatabaseLoader.cs",
-            "Foundation/Data/ShipDefinition.cs",
-            "Foundation/Enemies/EnemyRangedAttackRules.cs",
-            "Foundation/Enemies/EnemySpawnRuntimeParams.cs",
-            "Foundation/Enemies/EnemyVisualFallbackResolver.cs",
-            "Foundation/Progression/ContentUnlocks.cs",
-            "Foundation/VFX/VfxParticleUtil.cs",
         };
 
         [Test]

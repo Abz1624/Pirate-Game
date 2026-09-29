@@ -129,13 +129,15 @@ namespace RoguePirates.V4.Tests
         sealed class FakeStorm : IStormArena, IPlayerDamageSink
         {
             public float Scale = 1f, Damage;
-            public bool Inside = true;
+            public bool Inside = true, InsideWall = true;
             public void ResetForRun() => Scale = 1f;
             public void SetSafeScale(float scale) => Scale = scale;
             public void ShowRing() { }
             public void RefreshRing() { }
             public bool IsInsideSafeZone(Vector3 position) => Inside;
             public float Depth(Vector3 position) => 5f;
+            public bool IsInsideBounds(Vector3 position) => InsideWall;
+            public float BoundsDepth(Vector3 position) => 2f;
             public bool Exists => true;
             public bool IsAlive => true;
             public Vector3 Position => Vector3.zero;
@@ -635,6 +637,41 @@ namespace RoguePirates.V4.Tests
                 for (var i = 0; i < 10; i++) h.Frame();
                 Assert.AreEqual(steady, h.Storm.Steady, "PerFrameHit (V3) uses hits instead");
                 Assert.Greater(h.Storm.Hits, 0f);
+            }
+        }
+
+        /// <summary>M15 playtest: outside the red edge wall the ship takes steady damage at any time (off = V3); during the
+        /// storm the storm's edge damage applies instead, never both.</summary>
+        [Test]
+        public void EdgeWall_DamagesOutsideItAtAnyTime_ButNotTwiceInTheStorm()
+        {
+            var h = Make();
+            using (h.Config)
+            {
+                Assert.IsTrue(h.Timeline.storm.edgeWallDamage, "on in the Saltwind timeline");
+                h.RunUntil(10f); // past the 8 s grace, long before the storm
+                Assert.AreEqual(0f, h.Storm.Damage, "inside the wall: nothing");
+                h.Storm.InsideWall = false;
+                var start = h.Storm.Damage;
+                for (var i = 0; i < 60; i++) h.Frame();
+                var perSecond = h.Timeline.storm.edgeWallDamagePerSecond * (1f + 2f * 0.08f); // fake: 2 m beyond the wall
+                Assert.AreEqual(perSecond, h.Storm.Damage - start, 1e-3f, "8 x (1 + metres beyond x 0.08) per second");
+                Assert.AreEqual(h.Storm.Damage, h.Storm.Steady, 1e-6f, "steady damage (no hit immunity)");
+                Assert.IsTrue(h.Feedback.Toasts.Any(t => t.Contains("OFF THE MAP")), "a warning toast");
+
+                Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "storm.edgeWallDamage", "false", 11f, out var e), e);
+                var off = h.Storm.Damage;
+                for (var i = 0; i < 30; i++) h.Frame();
+                Assert.AreEqual(off, h.Storm.Damage, "switched off (the v3-parity preset): nothing past the wall");
+
+                Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "storm.edgeWallDamage", "true", 12f, out e), e);
+                Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", $"phases[{h.Timeline.phases.FindIndex(p => p.isStorm)}].trigger.timeSeconds", "20", 12f, out e), e);
+                h.Storm.Inside = false;
+                h.RunUntil(20.05f);
+                var stormStart = h.Storm.Damage;
+                for (var i = 0; i < 60; i++) h.Frame();
+                var stormPerSecond = h.Timeline.storm.outsideDamagePerSecond * (1f + 5f * 0.08f);
+                Assert.AreEqual(stormPerSecond, h.Storm.Damage - stormStart, 1e-3f, "in the storm only the storm's damage applies");
             }
         }
 

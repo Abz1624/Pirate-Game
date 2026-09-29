@@ -17,6 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   variantId: ram_raider
   kind: 0
+  databaseSlotOrder: 1
   baseArchetype: {fileID: 11400000, guid: 41ad36546b03afc40b3c5a33a868ff37, type: 2}
   displayName: ram raider
   behavior:
@@ -70,7 +71,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 0
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:
       enabled: 0

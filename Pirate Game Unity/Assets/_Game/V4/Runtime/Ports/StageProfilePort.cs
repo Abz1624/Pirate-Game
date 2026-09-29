@@ -75,6 +75,8 @@ namespace RoguePirates.V4.Ports
             error = null;
             StageBalanceProfileContext.EndRun();
             if (_config == null || Timeline == null || Difficulty == null) { error = "V4Game: the config set has no timeline/difficulty config."; return false; }
+            // M16: the starter weapons, unlock costs and boss id come only from the stage config now (V3's built-in lists are gone).
+            if (_config.Single<StageContentConfig>() == null) { error = "V4Game: the config set has no stage content config."; return false; }
             StageBalanceProfileContext.BeginRun(Profile);
             _config.ConfigChanged += OnConfigChanged;
             return true;

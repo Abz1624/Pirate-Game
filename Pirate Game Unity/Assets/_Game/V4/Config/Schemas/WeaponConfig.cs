@@ -176,7 +176,7 @@ namespace RoguePirates.V4.Config
     }
 
     /// <summary>
-    /// One weapon, filled from the V3 WeaponDefinition after CombatWeaponCatalog's runtime retunes, plus the pattern
+    /// One weapon, filled from the V3 WeaponDefinition after V3's runtime weapon catalog retunes (the catalog is gone since M16), plus the pattern
     /// constants V3 kept in WeaponController and the juice settings (M5). The behavior picks the firing logic; its block
     /// holds that logic's numbers. No V4 code compares weapon ids.
     /// </summary>
@@ -203,9 +203,11 @@ namespace RoguePirates.V4.Config
         [Tooltip("Position in V3's run database (level-up picks walk the weapons in this order).")] [AppliesFrom(9)] public int databaseOrder = -1;
         public float procCoefficient = 1f;
         public Color projectileColor = Color.white;
+        [Tooltip("The combat debug aim overlay's colour for this weapon (RGB; M16: was V3's palette keyed by weapon id).")]
+        public Color aimOverlayColor = new Color(0.7f, 0.7f, 0.7f);
         [Tooltip("Damage per hit scales with weapon level (× damageBonus × level × 0.1 + 1). V3 applies this to projectiles and lanes only (register R-21).")]
         public bool levelDamageFactor;
-        [Tooltip("True for weapons created at runtime by CombatWeaponCatalog (no V3 asset).")] public bool runtimeCatalogWeapon;
+        [Tooltip("True for weapons V3 created at runtime (no V3 asset).")] public bool runtimeCatalogWeapon;
 
         public ProjectileVisual projectileVisual = new ProjectileVisual();
         [Tooltip("The hit/kill effect its hits play (V3: Deck Cannons, Broadside Battery and Swivel Guns a cannon impact; Powder Kegs none, their blast is their own).")]

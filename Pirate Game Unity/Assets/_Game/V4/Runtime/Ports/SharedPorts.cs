@@ -259,6 +259,12 @@ namespace RoguePirates.V4.Ports
         public void RefreshRing() { } // the presenter redraws from the safe rectangle each frame
         public bool IsInsideSafeZone(Vector3 position) => PlayBounds.IsInsideStormSafeZone(position);
         public float Depth(Vector3 position) => PlayBounds.GetStormDepth(position);
+        public bool IsInsideBounds(Vector3 position) => PlayBounds.IsInside(position);
+        public float BoundsDepth(Vector3 position)
+        {
+            var local = position - PlayBounds.Center;
+            return Mathf.Max(Mathf.Abs(local.x) - PlayBounds.HalfExtentX, Mathf.Abs(local.z) - PlayBounds.HalfExtentZ);
+        }
 
         public Vector3 BoundsCenter => PlayBounds.Center;
         public float BoundsHalfX => PlayBounds.HalfExtentX;

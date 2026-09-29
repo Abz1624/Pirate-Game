@@ -175,20 +175,32 @@ namespace RoguePirates.V4.Spawning
                 return;
             }
             var position = _s.Player.Position;
-            if (_s.Storm.IsInsideSafeZone(position)) return;
-            if (phase == null || _s.Run.ElapsedSeconds < phase.trigger.timeSeconds) return;
+            var stormActive = phase != null && _s.Run.ElapsedSeconds >= phase.trigger.timeSeconds;
+            if (!stormActive || _s.Storm.IsInsideSafeZone(position))
+            {
+                // M15 playtest (off = V3): outside the red edge wall the ship takes steady damage at any time.
+                if (t.storm.edgeWallDamage && !_s.Storm.IsInsideBounds(position))
+                {
+                    var beyond = Mathf.Max(0f, _s.Storm.BoundsDepth(position));
+                    _s.Player.DamageOverTime(t.storm.edgeWallDamagePerSecond * (1f + beyond * 0.08f) * dt, position);
+                    ToastEvery(dt, t.storm.edgeWallToast);
+                }
+                return;
+            }
 
             var depth = _s.Storm.Depth(position);
             var damage = t.storm.outsideDamagePerSecond * (1f + depth * 0.08f) * dt;
             if (t.storm.damageMode == StormDamageMode.Steady) _s.Player.DamageOverTime(damage, position);
             else _s.Player.Damage(damage, position);
+            ToastEvery(dt, t.storm.edgeToast);
+        }
 
+        void ToastEvery(float dt, string text)
+        {
             _toastCooldown -= dt;
-            if (_toastCooldown <= 0f)
-            {
-                _toastCooldown = 2.5f;
-                _s.Feedback.Toast(t.storm.edgeToast, 2f);
-            }
+            if (_toastCooldown > 0f) return;
+            _toastCooldown = 2.5f;
+            _s.Feedback.Toast(text, 2f);
         }
     }
 }

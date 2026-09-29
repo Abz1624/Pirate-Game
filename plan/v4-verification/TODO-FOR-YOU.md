@@ -1,15 +1,9 @@
-# Your TODOs (updated 29 Sep, M15 committed, M16 started)
+# Your TODOs (updated 29 Sep, M16 committed)
 
-## M16 — started (29 Sep)
+## Next
 
-Your M15 playtest feedback becomes M16. Nothing to try yet; I will ask for a playtest when it is built.
-- **Save safety:** your Hank unlock was lost between two playtests (you re-bought him). M15 did not change the save code
-  and I could not find the cause in what was left to inspect, so M16 makes the tools and tests unable to overwrite your
-  save and adds a check that reports (with the code responsible) any save write that would drop something you own.
-- **Edge wall:** your decision — steady damage while outside the red edge wall at any time, with a warning toast
-  (the v3-parity preset keeps V3's open edge).
-- **Content ids into config:** the 17 Foundation files that still key V3's data tables by content id move onto the V4
-  configs, with no gameplay change (checked by tests and one trace set).
+- Nothing waiting on you. The V4 plan (M0–M16) is complete and committed. Options from here: open a pull request to
+  merge `v4-modular-architecture` into `main`, or pick the next gameplay work.
 
 ## Still open
 
@@ -18,6 +12,9 @@ Your M15 playtest feedback becomes M16. Nothing to try yet; I will ask for a pla
 
 ## Done
 
+- **M16 playtest follow-ups** (29 Sep): the edge wall hurts (checked, god mode blocks it); your save stays exactly as
+  left between Play sessions (the Editor trace tool that rolled it back is fixed; no write can drop an unlock); a normal
+  run plays as before with the last content-id tables moved onto config (trace set identical to M15).
 - **M15 V3 retirement** (29 Sep): a normal run and the Unity menus checked; V3's code, scenes, tests and data are gone
   and the shared code lives in `V4/Foundation`. The trace set drifted from M14 by float-sized amounts (the parity
   preset's V3 barrel markers are gone); details in `phase-15-retirement/`.

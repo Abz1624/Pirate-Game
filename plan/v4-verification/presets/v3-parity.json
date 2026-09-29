@@ -25,6 +25,10 @@
                     "value": "PerFrameHit"
                 },
                 {
+                    "path": "storm.edgeWallDamage",
+                    "value": "false"
+                },
+                {
                     "path": "overtime.spawnStatRampEnd",
                     "value": "1"
                 },

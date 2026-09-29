@@ -52,6 +52,7 @@ MonoBehaviour:
   databaseOrder: 49
   procCoefficient: 0.8
   projectileColor: {r: 0.65, g: 1, b: 1, a: 1}
+  aimOverlayColor: {r: 1, g: 0.45, b: 0.15, a: 1}
   levelDamageFactor: 1
   runtimeCatalogWeapon: 1
   projectileVisual:

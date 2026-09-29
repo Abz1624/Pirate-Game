@@ -51,6 +51,8 @@ namespace RoguePirates.V4.Config
         public int marksBossVictory = 25, marksPerOvertimeMinute = 3, marksOvertimeCap = 15;
         public bool runGoldExpiresAtRunEnd = true, bankRunGoldToDoubloons;
         public string[] starterWeaponIds = Array.Empty<string>();
+        [Tooltip("The stage boss's enemy id; its stats go into the stage profile's content hash (M16: was V3's constant).")]
+        public string bossEnemyId = string.Empty;
         public SharedUnlockEntry[] weaponUnlocks = Array.Empty<SharedUnlockEntry>();
         public SharedUnlockEntry[] captainUnlocks = Array.Empty<SharedUnlockEntry>();
     }

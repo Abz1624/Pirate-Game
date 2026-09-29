@@ -116,29 +116,12 @@ namespace RoguePirates.V4.Foundation.Balance
         public float stormOutsideDamagePerSecond = 8f;
 
         [Header("Content IDs")]
-        public string[] starterWeaponIds =
-        {
-            "deck_cannons",
-            "broadside_battery",
-            "powder_kegs",
-            "flying_cutlasses",
-            "long_nine",
-            "swivel_guns"
-        };
-
-        public StageUnlockEntry[] weaponUnlocks =
-        {
-            new() { contentId = "lightning_mast", marksCost = 60 },
-            new() { contentId = "flamethrower", marksCost = 80 },
-            new() { contentId = "mortar", marksCost = 100 },
-            new() { contentId = "harpoon_gun", marksCost = 100 }
-        };
-
-        public StageUnlockEntry[] captainUnlocks =
-        {
-            new() { contentId = "brine", marksCost = 100 },
-            new() { contentId = "flint", marksCost = 140 }
-        };
+        // M16: filled from StageContentConfig.sharedProfile in every run (V3's built-in id lists removed).
+        public string[] starterWeaponIds = System.Array.Empty<string>();
+        [UnityEngine.Tooltip("The stage boss's enemy id; its stats go into the content hash (M16: from the stage config).")]
+        public string bossEnemyId = string.Empty;
+        public StageUnlockEntry[] weaponUnlocks = System.Array.Empty<StageUnlockEntry>();
+        public StageUnlockEntry[] captainUnlocks = System.Array.Empty<StageUnlockEntry>();
 
         public StageBalanceProfileExport ToExport()
         {
@@ -261,7 +244,7 @@ namespace RoguePirates.V4.Foundation.Balance
                 ScheduleProfileKeys = CollectScheduleProfileKeys(),
                 ScheduleProfileSnapshots = EncounterScheduleExportLogic.SnapshotSchedule(encounterSchedule),
                 WeaponStatSnapshots = WeaponStatExportLogic.SnapshotReferencedWeapons(this),
-                BossStatSnapshot = BossStatExportLogic.SnapshotSaltwindBoss()
+                BossStatSnapshot = BossStatExportLogic.SnapshotSaltwindBoss(bossEnemyId)
             };
 
             return StageBalanceProfileExportCodec.WithContentHash(export);
@@ -308,16 +291,6 @@ namespace RoguePirates.V4.Foundation.Balance
             if (!keys.Contains(key)) keys.Add(key);
         }
 
-        public static StageBalanceProfile CreateBuiltInSaltwindDefaults()
-        {
-            var profile = CreateInstance<StageBalanceProfile>();
-            profile.name = "BuiltInSaltwindSolo";
-            profile.balanceVersion = 3;
-            profile.levelZeroToOneXpCost = 5;
-            profile.logbookSlotCap = 4;
-            profile.newWeaponOfferProtectionLevels = new[] { 2, 3, 5, 8, 12 };
-            return profile;
-        }
     }
 
     [System.Serializable]

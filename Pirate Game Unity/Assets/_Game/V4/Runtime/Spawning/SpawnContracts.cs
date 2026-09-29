@@ -90,6 +90,10 @@ namespace RoguePirates.V4.Spawning
         void RefreshRing();
         bool IsInsideSafeZone(Vector3 position);
         float Depth(Vector3 position);
+        /// <summary>Inside the play area's edge wall (M15 playtest: damage outside it at any time).</summary>
+        bool IsInsideBounds(Vector3 position);
+        /// <summary>Metres beyond the edge wall (0 or less inside).</summary>
+        float BoundsDepth(Vector3 position);
     }
 
     /// <summary>Damage to the player ship (M3: the ship's damage receiver; M8: the V4 player damage service).</summary>

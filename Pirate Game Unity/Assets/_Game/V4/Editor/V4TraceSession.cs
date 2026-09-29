@@ -18,6 +18,12 @@ namespace RoguePirates.V4.Editor
     {
         const string SnapshotKey = "v4trace.prefsSnapshot";
         const string StatusKey = "v4trace.status";
+        // M16 review: set only when this Editor session starts a trace or playable check. Without it a pending snapshot
+        // is never written back — before, any Play session ending (the player's own playtest) restored a stale snapshot,
+        // undoing purchases, Rum and progress made since (the likely cause of a lost unlock between two playtests).
+        const string ActiveKey = "v4trace.active";
+        // A snapshot left by a crash mid-trace is restored only if it is this recent; an older one is discarded.
+        static readonly TimeSpan CrashRecoveryWindow = TimeSpan.FromHours(3);
 
         // Every PlayerPref TraceBoot pins or deletes, so the user's values come back after the run.
         static readonly string[] IntKeys =
@@ -25,19 +31,21 @@ namespace RoguePirates.V4.Editor
             "v3_selected_captain", "v3_home_seed", "v3_first_conquest_complete", "v3_saltwind_runs_completed",
             "combat_captain_actives_enabled", "combat_aim_visuals_enabled", "highseas_v3_developer_preset", "v4_lifetime_gold", "v4_tutorial_progress"
         };
-        static readonly string[] StringKeys = { "highseas_meta_v1", "highseas_run_snapshot_v1", "v4_run_records" };
+        const string MetaKey = "highseas_meta_v1";
+        static readonly string[] StringKeys = { MetaKey, "highseas_run_snapshot_v1", "v4_run_records" };
 
         [Serializable] sealed class PrefEntry { public string key; public bool has; public bool isInt; public int i; public string s; }
-        [Serializable] sealed class PrefSnapshot { public List<PrefEntry> entries = new List<PrefEntry>(); }
+        [Serializable] sealed class PrefSnapshot { public long takenUtcTicks; public List<PrefEntry> entries = new List<PrefEntry>(); }
 
         static string SnapshotFile => Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Temp", "v4-prefs-snapshot.json");
 
         static V4TraceSession()
         {
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
-            // Crash recovery: a snapshot file left behind means the Editor died mid-trace; put the user's prefs back.
+            // Crash recovery: a snapshot file left behind means the Editor died mid-trace; put the user's prefs back, but
+            // only a fresh one (an old file could roll back progress the player made since).
             if (!EditorApplication.isPlayingOrWillChangePlaymode && File.Exists(SnapshotFile))
-                EditorApplication.delayCall += () => { if (!EditorApplication.isPlaying) RestorePrefs(); };
+                EditorApplication.delayCall += () => { if (!EditorApplication.isPlaying) RecoverAfterCrash(); };
         }
 
         static string GitCommit()
@@ -73,8 +81,8 @@ namespace RoguePirates.V4.Editor
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
             }
 
-            UnloadGameDatabase();
             SnapshotPrefs();
+            SessionState.SetString(ActiveKey, "1");
 
             var fullOut = Path.IsPathRooted(outPath)
                 ? outPath
@@ -113,8 +121,8 @@ namespace RoguePirates.V4.Editor
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
             }
 
-            UnloadGameDatabase();
             SnapshotPrefs();
+            SessionState.SetString(ActiveKey, "1");
             PlayerPrefs.SetInt("v3_selected_captain", 0); // playable check is not a trace, so TraceBoot does not pin it
             PlayerPrefs.Save();
             PlayModeWindow.SetCustomRenderingResolution(1920, 1080, "V4 Trace 1080p");
@@ -123,37 +131,19 @@ namespace RoguePirates.V4.Editor
             return "started";
         }
 
-        /// <summary>
-        /// Each run applies the weapon/specialist catalogs to the loaded GameDatabase in memory, and the stage profile
-        /// hash snapshots those stats before that step (R-73). Unloading makes every run start from the asset on disk.
-        /// </summary>
-        static void UnloadGameDatabase()
-        {
-            var database = RoguePirates.V4.Foundation.Core.GameDatabaseLoader.Load();
-            if (database != null && !EditorUtility.IsDirty(database)) Resources.UnloadAsset(database);
-        }
-
-        /// <summary>
-        /// Snapshots the PlayerPrefs V3 test suites change (R-67a) before a test run. A PlayMode run restores them
-        /// automatically when the Editor returns to Edit Mode; after an EditMode run call <see cref="RestorePrefsNow"/>.
-        /// </summary>
-        public static string GuardPrefsForTestRun()
-        {
-            SnapshotPrefs();
-            return "prefs snapshot taken";
-        }
-
-        public static string RestorePrefsNow()
-        {
-            var pending = File.Exists(SnapshotFile) || !string.IsNullOrEmpty(SessionState.GetString(SnapshotKey, string.Empty));
-            if (pending) RestorePrefs();
-            return pending ? "prefs restored" : "no snapshot pending";
-        }
-
         static void OnPlayModeChanged(PlayModeStateChange change)
         {
             if (change != PlayModeStateChange.EnteredEditMode) return;
-            if (!string.IsNullOrEmpty(SessionState.GetString(SnapshotKey, string.Empty)) || File.Exists(SnapshotFile))
+            var pending = !string.IsNullOrEmpty(SessionState.GetString(SnapshotKey, string.Empty)) || File.Exists(SnapshotFile);
+            if (pending && string.IsNullOrEmpty(SessionState.GetString(ActiveKey, string.Empty)))
+            {
+                // Not our Play session (the player's own): never write an old snapshot over their progress.
+                Debug.LogWarning("V4TraceSession: discarded a pending prefs snapshot that no trace of this session owns (not restored).");
+                DiscardSnapshot();
+                return;
+            }
+            SessionState.EraseString(ActiveKey);
+            if (pending)
             {
                 RestorePrefs();
                 SessionState.SetString(StatusKey, "idle (last run finished, prefs restored)");
@@ -162,9 +152,14 @@ namespace RoguePirates.V4.Editor
 
         static void SnapshotPrefs()
         {
-            // Never overwrite a pending snapshot with already-pinned values: restore it first.
-            if (File.Exists(SnapshotFile) || !string.IsNullOrEmpty(SessionState.GetString(SnapshotKey, string.Empty))) RestorePrefs();
-            var snapshot = new PrefSnapshot();
+            // A pending snapshot of this session's unfinished trace holds the real values (the current ones are pinned):
+            // restore it first. One no trace of this session owns is stale: discard it, never write it back.
+            if (File.Exists(SnapshotFile) || !string.IsNullOrEmpty(SessionState.GetString(SnapshotKey, string.Empty)))
+            {
+                if (!string.IsNullOrEmpty(SessionState.GetString(ActiveKey, string.Empty))) RestorePrefs();
+                else DiscardSnapshot();
+            }
+            var snapshot = new PrefSnapshot { takenUtcTicks = DateTime.UtcNow.Ticks };
             foreach (var key in IntKeys)
                 snapshot.entries.Add(new PrefEntry { key = key, has = PlayerPrefs.HasKey(key), isInt = true, i = PlayerPrefs.GetInt(key, 0) });
             foreach (var key in StringKeys)
@@ -172,6 +167,25 @@ namespace RoguePirates.V4.Editor
             var json = JsonUtility.ToJson(snapshot);
             SessionState.SetString(SnapshotKey, json);
             File.WriteAllText(SnapshotFile, json);
+        }
+
+        static void RecoverAfterCrash()
+        {
+            try
+            {
+                var snapshot = JsonUtility.FromJson<PrefSnapshot>(File.ReadAllText(SnapshotFile));
+                var age = DateTime.UtcNow - new DateTime(snapshot != null ? snapshot.takenUtcTicks : 0L, DateTimeKind.Utc);
+                if (snapshot != null && snapshot.takenUtcTicks > 0 && age < CrashRecoveryWindow) { RestorePrefs(); return; }
+                Debug.LogWarning($"V4TraceSession: discarded a stale prefs snapshot ({age.TotalHours:0.#} h old; not restored).");
+            }
+            catch (Exception e) { Debug.LogWarning("V4TraceSession: unreadable prefs snapshot discarded: " + e.Message); }
+            DiscardSnapshot();
+        }
+
+        static void DiscardSnapshot()
+        {
+            SessionState.EraseString(SnapshotKey);
+            if (File.Exists(SnapshotFile)) File.Delete(SnapshotFile);
         }
 
         static void RestorePrefs()
@@ -183,8 +197,9 @@ namespace RoguePirates.V4.Editor
             {
                 foreach (var e in snapshot.entries)
                 {
-                    if (!e.has) { PlayerPrefs.DeleteKey(e.key); continue; }
+                    if (!e.has) { if (e.key != MetaKey) PlayerPrefs.DeleteKey(e.key); continue; } // M16: never delete the player's save
                     if (e.isInt) PlayerPrefs.SetInt(e.key, e.i);
+                    else if (e.key == MetaKey) RoguePirates.V4.Foundation.Core.SaveService.RestoreSnapshot(e.s); // M16: never drops owned content
                     else PlayerPrefs.SetString(e.key, e.s);
                 }
                 PlayerPrefs.Save();

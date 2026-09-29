@@ -29,7 +29,6 @@ namespace RoguePirates.V4.Foundation.Balance
                 }
             }
 
-            if (ids.Count == 0) ids.Add("deck_cannons");
 
             var sorted = new List<string>(ids);
             sorted.Sort(string.CompareOrdinal);

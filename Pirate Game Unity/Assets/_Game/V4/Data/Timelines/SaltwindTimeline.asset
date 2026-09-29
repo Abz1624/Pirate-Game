@@ -803,3 +803,6 @@ MonoBehaviour:
     damageMode: 0
     startToast: "DREAD TIDE \u2014 stay inside the safe water!"
     edgeToast: "STORM EDGE \u2014 return to open water!"
+    edgeWallDamage: 1
+    edgeWallDamagePerSecond: 8
+    edgeWallToast: "OFF THE MAP \u2014 turn back to open water!"

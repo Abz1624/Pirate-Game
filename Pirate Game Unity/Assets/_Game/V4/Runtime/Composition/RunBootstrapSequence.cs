@@ -143,7 +143,6 @@ namespace RoguePirates.V4.Composition
                 return false;
             }
 
-            _database.ApplyCatalogs();
             // M2: enemies come from V4 archetype/variant configs, in the exact legacy array layout.
             _runDatabase = _runtimeDatabase.Build(_database.Database);
             if (_runtimeDatabase.Unconfigured.Count > 0)

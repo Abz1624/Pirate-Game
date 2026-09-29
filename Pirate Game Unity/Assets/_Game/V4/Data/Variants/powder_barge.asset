@@ -17,6 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   variantId: powder_barge
   kind: 0
+  databaseSlotOrder: 5
   baseArchetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
   displayName: powder barge
   behavior:
@@ -69,7 +70,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 0
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:
       enabled: 0

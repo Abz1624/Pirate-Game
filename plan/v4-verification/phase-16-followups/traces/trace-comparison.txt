@@ -1,0 +1,11 @@
+M16 end-of-phase trace set (Windows development player, run once after all M16 code: save guard, edge-wall damage,
+content ids onto config). Seeds 101/202/303, v3-parity preset (the edge-wall damage is off under it), scripted autopilot,
+boss forced at 4:00 and killed at 5:00 — the same set as M15 — compared with M15's stored traces.
+
+Result: MATCH on all three seeds (569 / 329 / 645 lines), headers included. Removing V3's content-id tables and
+catalogs (the runtime database now creates the specialist aliases from config), the save guard and the edge-wall
+switch left the v3-parity game identical event for event. It also shows the V4 replay is exact run to run.
+
+v4-trace-seed-101-parity.jsonl vs v4-trace-seed-101-parity.jsonl: MATCH (569 lines)
+v4-trace-seed-202-parity.jsonl vs v4-trace-seed-202-parity.jsonl: MATCH (329 lines)
+v4-trace-seed-303-parity.jsonl vs v4-trace-seed-303-parity.jsonl: MATCH (645 lines)

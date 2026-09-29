@@ -42,7 +42,7 @@ namespace RoguePirates.V4.Tests
             StageBalanceProfileContext.ResetForTests();
         }
 
-        GameDatabase CatalogAppliedDatabase()
+        GameDatabase LoadedDatabase()
         {
             // After a Play Mode session the cached experiment profile can be a destroyed object (register R-82): re-resolve it.
             if (CombatExperimentContext.Active == null) CombatExperimentContext.ResetForTests();
@@ -51,8 +51,6 @@ namespace RoguePirates.V4.Tests
             _created.Add(clone);
             clone.enemies = db.enemies.Select(e => { if (e == null) return null; var c = Object.Instantiate(e); c.name = e.name; _created.Add(c); return c; }).ToArray();
             clone.weapons = db.weapons.Select(w => { if (w == null) return null; var c = Object.Instantiate(w); c.name = w.name; _created.Add(c); return c; }).ToArray();
-            CombatWeaponCatalog.ApplyToDatabase(clone, CombatExperimentContext.Active);
-            CombatSpecialistEnemyCatalog.ApplyToDatabase(clone, CombatExperimentContext.Active);
             return clone;
         }
 
@@ -66,7 +64,7 @@ namespace RoguePirates.V4.Tests
         Pair Make(ConfigSetRuntime config)
         {
             var runtime = new V4RuntimeDatabase(config);
-            var db = runtime.Build(CatalogAppliedDatabase());
+            var db = runtime.Build(LoadedDatabase());
             _created.Add(db);
 
             var sim = new EnemySimulation(RoguePirates.V4.Foundation.Platform.QualityProfile.Current.enemyCap, new RunPort(), new EnemyViewForwarder(null),
@@ -113,7 +111,7 @@ namespace RoguePirates.V4.Tests
         {
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
             var runtime = new V4RuntimeDatabase(config);
-            var db = runtime.Build(CatalogAppliedDatabase());
+            var db = runtime.Build(LoadedDatabase());
             _created.Add(db);
             var rules = EnemySimulation.BuildRules(config, db.enemies);
             ArchetypeWorldRules Of(string id) => rules[System.Array.FindIndex(db.enemies, e => e != null && e.id == id)];

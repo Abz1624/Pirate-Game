@@ -150,6 +150,11 @@ namespace RoguePirates.V4.Config
         public StormDamageMode damageMode = StormDamageMode.Steady;
         public string startToast = "DREAD TIDE — stay inside the safe water!";
         public string edgeToast = "STORM EDGE — return to open water!";
+        [Tooltip("M15 playtest (off = V3: nothing happens past the red edge wall before the storm): steady damage while the ship is outside the edge wall, at any time. During the storm the storm's own edge damage applies instead.")]
+        public bool edgeWallDamage;
+        [Tooltip("Damage per second just outside the edge wall; it grows 8 % per metre further out, like the storm's.")]
+        public float edgeWallDamagePerSecond = 8f;
+        public string edgeWallToast = "OFF THE MAP — turn back to open water!";
     }
 
     /// <summary>

@@ -43,7 +43,8 @@ namespace RoguePirates.V4.Enemies
             r.Set(ref r.id, archetype.enemyId, "id", a);
             r.Set(ref r.displayName, archetype.displayName, "displayName", a);
             r.Set(ref r.category, archetype.category, "category", a);
-            r.Set(ref r.tier, archetype.tier, "tier", a);
+            // M16: the warning tier is config (V3 looked it up in a table by id): the archetype's own tier, else its spawn tier.
+            r.Set(ref r.tier, archetype.tier != ConfigEnums.EnemyTier.Soldier ? archetype.tier : archetype.spawnTier, "tier", a);
             r.Set(ref r.behavior, archetype.behavior, "behavior", a);
             r.Set(ref r.biomeTag, archetype.biomeTag, "biomeTag", a);
             r.Set(ref r.baseHP, archetype.stats.baseHP, "baseHP", a);
@@ -69,7 +70,7 @@ namespace RoguePirates.V4.Enemies
 
         /// <summary>
         /// A database alias: V3's specialist rule. Fields not copied from the base keep EnemyDefinition's defaults,
-        /// exactly as CombatSpecialistEnemyCatalog.RegisterAlias creates them.
+        /// exactly as V3's specialist catalog created them (the runtime database creates them since M16).
         /// </summary>
         public static ResolvedEnemyStats Resolve(EnemyVariantConfig variant)
         {
@@ -81,6 +82,8 @@ namespace RoguePirates.V4.Enemies
                 elite.Set(ref elite.id, variant.variantId, "id", StatLayer.Variant);
                 elite.Set(ref elite.displayName, string.IsNullOrEmpty(variant.displayName) ? "Elite " + elite.displayName : variant.displayName, "displayName", StatLayer.Variant);
                 elite.Set(ref elite.combat, variant.combat, "combat", StatLayer.Variant);
+                // V3's tier table did not list the registry elites, so they read as Soldier.
+                elite.Set(ref elite.tier, ConfigEnums.EnemyTier.Soldier, "tier", StatLayer.Variant);
                 return elite;
             }
 
@@ -88,7 +91,7 @@ namespace RoguePirates.V4.Enemies
             var r = new ResolvedEnemyStats();
             const StatLayer d = StatLayer.Default, a = StatLayer.Archetype, v = StatLayer.Variant;
             // EnemyDefinition defaults for everything the alias does not set.
-            r.Set(ref r.tier, ConfigEnums.EnemyTier.Soldier, "tier", d);
+            r.Set(ref r.tier, variant.spawnTier, "tier", v); // M16: V3's tier table by id, now the variant's spawn tier
             r.Set(ref r.biomeTag, "emerald", "biomeTag", d);
             r.Set(ref r.visualScale, 1f, "visualScale", d);
             r.Set(ref r.visualYawOffset, 0f, "visualYawOffset", d);
