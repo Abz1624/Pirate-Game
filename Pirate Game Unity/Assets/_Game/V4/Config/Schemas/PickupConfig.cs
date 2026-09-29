@@ -16,6 +16,8 @@ namespace RoguePirates.V4.Config
         public float dropAngleJitterDegrees = 15f;
         public float dropRadiusJitter = 0.15f;
         [Tooltip("With every pickup slot taken, a drop merges into a same-type pickup within this distance (else it is lost).")] public float mergeRadius = 2f;
+        [Tooltip("V5 M1: with every slot taken and no XP pickup within mergeRadius, XP merges into the nearest XP pickup anywhere instead of being lost (Vampire Survivors merges XP gems above a cap). XP only: gold, health and barrels keep the V4 rule. Off = V4/V3 (lost).")]
+        public bool mergeIntoNearestWhenFull;
 
         [Header("Collection")]
         [Tooltip("XP crystals home in within this distance (or the ship's pickup radius, if larger).")] public float xpAutoPickupRadius = 4.25f;

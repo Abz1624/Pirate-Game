@@ -44,6 +44,14 @@ namespace RoguePirates.V4.DevTools.Console
 
             if (spawn != null)
                 GUILayout.Label($"Now: {(string.IsNullOrEmpty(spawn.CurrentPhaseLabel) ? "—" : spawn.CurrentPhaseLabel)}   ·   spawn rate ×{spawn.EffectiveRateMultiplier:0.##}   ·   arena {(spawn.ArenaActive ? "on (unit " + spawn.ArenaFocusUnitId + ")" : "off")}", GUI.skin.box);
+            if (spawn is IFlowStatus flow)
+            {
+                if (flow.FlowEnabled)
+                    GUILayout.Label($"Flow: wave {flow.WaveIndex + 1}/{timeline.flow.waves.Count}   ·   floor {flow.Floor}   ·   " +
+                                    $"{(flow.InRelease ? $"release {flow.ReleaseRemaining:0}s" : "no release")}   ·   topped up {flow.ToppedUp}   ·   hordes {flow.HordesSpawned}/{timeline.flow.hordes.Count}", GUI.skin.box);
+                else
+                    GUILayout.Label("Flow: off (V4 bands only)", GUI.skin.box);
+            }
             if (_status.Length > 0) GUILayout.Label(_status);
 
             for (var i = 0; i < timeline.phases.Count; i++)

@@ -1,15 +1,15 @@
 {
   "updated": "30 Sep 2026",
-  "statusLine": "M0 done · all V5 questions answered (plan rev 9) · M1 starts on your go",
-  "statusOk": true,
+  "statusLine": "M1 enemy flow built · awaiting your playtest · working on M2",
+  "statusOk": false,
   "facts": [
     [
       "Progress",
-      "M0 done; plan rev 9 (33 phases); every V5 question answered; M1 next"
+      "M0 done; M1 built, reviewed and committed (awaiting your playtest); M2 in progress"
     ],
     [
-      "Baseline",
-      "EditMode 307/307 · PlayMode 49/49"
+      "Tests",
+      "EditMode 331/331 · PlayMode 50/50"
     ],
     [
       "Gate",
@@ -26,8 +26,12 @@
       "chip": "done 29 Sep"
     },
     "M1": {
-      "state": "next",
-      "chip": "next, on your go"
+      "state": "playtest",
+      "chip": "built 30 Sep · awaiting your playtest"
+    },
+    "M2": {
+      "state": "building",
+      "chip": "in progress"
     }
   },
   "log": [
@@ -95,14 +99,23 @@
       "when": "30 Sep",
       "what": "Your third round of answers applied as <strong>plan rev 9</strong>: Unity Netcode for GameObjects for multiplayer (free; we write nearby-enemy filtering and lag compensation), treasury protection (vault 80% / treasury 20%, 8 h shield, 10% daily loss cap, 72 h for new players), the reference phone (Galaxy A15 / A16 4G at 30 fps), forfeits pay nothing but a genuine short match does, checked voyage RUM usable on devnet. <strong>Every V5 question is now answered.</strong> Added a per-service Railway cost breakdown with savings (about $20–25/month if ~30 of 100 players play daily; $40–45 if all do; about $14–33 with the three biggest savings).",
       "commit": ""
+    },
+    {
+      "when": "30 Sep",
+      "what": "You chose: carry on while away, commit and push each phase that passes its tests and review, stand-in instead of the phone, Unity restarts allowed. M0 committed and pushed.",
+      "commit": "0b523f0d"
+    },
+    {
+      "when": "30 Sep",
+      "what": "<strong>M1 enemy flow built</strong> (unattended): a minimum crowd per minute (ten 1-minute waves with a jagged floor), four telegraphed hordes (ring, line, pack) with a lull before each and edge markers, breathing room after arenas, the boss kill and hordes, a lower floor during the boss fight, XP that merges instead of being lost. Off under the v3-parity preset. Independent review: 3 blockers, 4 majors, 9 minors, all fixed. EditMode 331/331, PlayMode 50/50, playable check 0 game errors. Found: today's WebGL build needs a 344 MB heap and a 160 MB download, above the phone budget (moved to M7).",
+      "commit": ""
     }
   ],
   "todos": {
     "next": [
-      "<strong>Read the Railway breakdown</strong> in <em>Your answers, explained</em> (what runs, what it costs, where to save).",
-      "<strong>Get the reference phone</strong> (Samsung Galaxy A15 or A16 4G, about $130–150; any Helio G99 phone such as a Galaxy A24 works) for M1's measurement.",
-      "<strong>Say go for M1</strong> (enemy flow) when you are ready.",
-      "<strong>Accounts</strong> (final list and costs in the answers): Railway by M9; a domain, a Google Cloud project and Resend by M10b; Helius by M11; Firebase by M19. Keys go into Railway variables or an uncommitted <code>.env</code>, never into chat."
+      "<strong>Playtest M1</strong> (enemy flow): three runs with a weak, an average and a strong build; see the M1 box on this page for what to look for.",
+      "<strong>Get the reference phone</strong> (Galaxy A15 or A16 4G) before M7: M1 found today's build needs 344 MB of memory where the phone allows about 256 MB.",
+      "<strong>Accounts</strong> (list and costs in the answers): Railway by M9; a domain, a Google Cloud project and Resend by M10b; Helius by M11; Firebase by M19."
     ],
     "open": [
       "Earlier GDD questions (21 left) are still on the board; the raid entry fee (question 4) feeds M15 and the pass price (question 5) feeds M20."
@@ -184,6 +197,41 @@
       "check": "Independent review of rev 9 (incl. a recomputation of the Railway costs)",
       "result": "No blockers · 2 majors · 4 minors → addressed",
       "evidence": "plan/v5/status.json → reviews[4]"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M1",
+      "check": "EditMode, all assemblies (incl. 24 flow tests)",
+      "result": "331 / 331 passed · 51.6 s",
+      "evidence": "plan/v5/phase-01-flow/evidence/editmode.json"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M1",
+      "check": "PlayMode, all assemblies (incl. the flow checkpoints in the real scene)",
+      "result": "50 / 50 passed · 167.9 s",
+      "evidence": "plan/v5/phase-01-flow/evidence/playmode.json"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M1",
+      "check": "Playable check: real Play session, clock jumps to 1, 3, 5:30 (horde), 6, 9, 13 min, screenshots",
+      "result": "0 game errors; alive 15 / 25 / 51 / 72 / 71; the 5:30 horde on screen",
+      "evidence": "plan/v5/phase-01-flow/evidence/playable/"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M1",
+      "check": "Stand-in phone memory (last WebGL build, read in the browser)",
+      "result": "WebAssembly heap 344 MB, JS heap 277 MB, data 160 MB: above the 256 MB phone budget (M7)",
+      "evidence": "plan/v5/phase-01-flow/PLAN.md → Measurement"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M1",
+      "check": "Independent review (v5-reviewer)",
+      "result": "3 blockers · 4 majors · 9 minors → all fixed or recorded",
+      "evidence": "plan/v5/phase-01-flow/PLAN.md → Independent review"
     }
   ],
   "phaseResults": {
@@ -199,6 +247,24 @@
       {
         "title": "Plan reviews",
         "text": "Two independent reviews: rev 1 had 3 blockers, 12 majors, 7 minors; rev 2 had no blockers, 5 majors, 6 minors. All addressed in rev 3."
+      }
+    ],
+    "M1": [
+      {
+        "title": "What changed",
+        "text": "Ten 1-minute waves keep a minimum crowd alive (topped up one enemy every 0.35 s), four hordes (1:45 ring, 5:30 line, 7:40 pack, 9:15 ring) with a 10 s lull and edge markers, breathing room after big moments, XP merging. Data in the Saltwind timeline; the v3-parity preset turns it off."
+      },
+      {
+        "title": "Tests",
+        "text": "EditMode 331/331 (24 new), PlayMode 50/50 (1 new: the crowd reaches each minute's floor in the real scene). Playable check with screenshots at 1, 3, 5:30, 6, 9 and 13 minutes: 0 game errors."
+      },
+      {
+        "title": "Review",
+        "text": "3 blockers (spawn gap, missing edge markers, stale evidence), 4 majors, 9 minors: all fixed. Table on this page under Review findings."
+      },
+      {
+        "title": "Your playtest",
+        "text": "Play three runs (a weak, an average and a strong build). Does the crowd feel constant but changing minute to minute? Do the hordes (1:45, 5:30, 7:40, 9:15) read, with the arrow at the screen edge? Is there breathing room after the Reef Crab, the elites and the boss? F1 → Wave Timeline shows the flow line."
       }
     ]
   },
@@ -657,6 +723,68 @@
           "where": "Wording",
           "finding": "Stale Quantum and \"still open\" text; Serverless listed as an extra saving.",
           "fix": "Reworded; Serverless marked as already assumed, wake-up time measured in M9."
+        }
+      ]
+    },
+    {
+      "title": "M1 enemy flow: implementation review (30 Sep)",
+      "summary": "The reviewer checked the diff against the plan, the V4 rules and the evidence. <strong>3 blockers, 4 majors, 9 minors</strong>; all fixed or recorded.",
+      "rows": [
+        {
+          "n": "1",
+          "sev": "Blocker",
+          "where": "Evidence",
+          "finding": "The PlayMode results predated the new M1 PlayMode test.",
+          "fix": "Both suites re-run after the last change; the test is in the evidence."
+        },
+        {
+          "n": "2",
+          "sev": "Blocker",
+          "where": "Floor top-ups",
+          "finding": "Several enemies could spawn in one frame, ignoring the 0.35 s spawn gap.",
+          "fix": "One top-up per gap; a flow-on gap test."
+        },
+        {
+          "n": "3",
+          "sev": "Blocker",
+          "where": "Hordes",
+          "finding": "The planned edge markers were missing.",
+          "fix": "Horde warnings carry a direction; the HUD shows the edge arrow and a minimap ping."
+        },
+        {
+          "n": "4",
+          "sev": "Major",
+          "where": "Hordes",
+          "finding": "Late hordes found no room at the enemy cap but still counted.",
+          "fix": "A 10 s lull before each horde, headroom above the cap, counted only when something spawns."
+        },
+        {
+          "n": "5",
+          "sev": "Major",
+          "where": "Horde placement",
+          "finding": "Members could be skipped on screen or placed without bounds checks.",
+          "fix": "Formed just beyond the view; islands and bounds always checked."
+        },
+        {
+          "n": "6",
+          "sev": "Major",
+          "where": "Plan",
+          "finding": "The phone deferral was not recorded.",
+          "fix": "Recorded in the plan (M1, M7) and your TODOs, with the memory finding."
+        },
+        {
+          "n": "7",
+          "sev": "Major",
+          "where": "Pickups",
+          "finding": "Merging applied to all pickups; merged views kept old values.",
+          "fix": "XP only; the view is re-drawn."
+        },
+        {
+          "n": "8–16",
+          "sev": "Minor",
+          "where": "Various",
+          "finding": "Dead code, untested holds and releases, adaptive lever, version tag, stale status, text, a weak cap test, warning timing, a tool error, a magenta effect.",
+          "fix": "Fixed, or recorded as pre-existing (the magenta flame effect is V4's known placeholder)."
         }
       ]
     }

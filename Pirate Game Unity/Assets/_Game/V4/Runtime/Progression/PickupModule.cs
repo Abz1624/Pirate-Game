@@ -193,14 +193,31 @@ namespace RoguePirates.V4.Progression
         void MergeNearby(PickupType type, int value, Vector3 position)
         {
             var radius = C.mergeRadius;
+            var nearest = -1;
+            var nearestDistance = float.MaxValue;
             for (var i = 0; i < _pool.Length; i++)
             {
                 if (!_pool[i].Active || _pool[i].Type != type) continue;
-                if (Vector3.Distance(_pool[i].Position, position) > radius) continue;
-                _pool[i].Value += value;
-                return;
+                var distance = Vector3.Distance(_pool[i].Position, position);
+                if (distance <= radius)
+                {
+                    _pool[i].Value += value;
+                    return;
+                }
+                if (distance < nearestDistance) { nearestDistance = distance; nearest = i; }
+            }
+            // V5 M1: never lose XP while an XP pickup exists anywhere; its view is re-drawn with the merged value.
+            if (!C.mergeIntoNearestWhenFull || nearest < 0 || !IsXp(type)) return;
+            _pool[nearest].Value += value;
+            if (_pool[nearest].View != null && _views != null)
+            {
+                _views.Release(_pool[nearest].View, type, _pool[nearest].Value - value);
+                _pool[nearest].View = _views.Acquire(type, _pool[nearest].Position, _pool[nearest].Value);
+                if (_pool[nearest].Homing && _pool[nearest].View != null) _views.BeginHoming(_pool[nearest].View, type);
             }
         }
+
+        static bool IsXp(PickupType type) => type == PickupType.Infamy || type == PickupType.FlyingXp;
 
         // ---- Powerups that pull pickups ---------------------------------------------------------------------------------
 

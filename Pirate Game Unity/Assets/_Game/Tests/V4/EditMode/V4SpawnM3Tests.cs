@@ -114,6 +114,7 @@ namespace RoguePirates.V4.Tests
             public bool TryPick(SpawnPlacementSettings settings, float spawnRadius, bool allowNearPlayerFallback, out Vector3 position) { position = new Vector3(30f, 0f, 0f); return true; }
             public void OffsetGroup(SpawnGroupLayout layout, int index, int count, float spacing, ref Vector3 position) { }
             public bool IsFormationPositionValid(Vector3 position, float spawnRadius, SpawnPlacementSettings settings) => true;
+            public float ViewEdgeDistance => 0f;
         }
 
         sealed class FakeFeedback : ISpawnFeedback
@@ -226,6 +227,9 @@ namespace RoguePirates.V4.Tests
             context.Register<IPlayerDamageSink>(h.Storm);
             context.Register<ISpawnerProfiles>(new FakeProfiles(_created));
             context.Register<IEncounterTracker>(h.Encounters);
+            // V5 M1: these tests pin the V4 band semantics alone; the enemy flow on top (floor, minute waves, hordes,
+            // release) has its own tests in V5FlowM1Tests.
+            h.Timeline.flow.enabled = false;
             h.Spawn.Initialize(context);
             h.Spawn.BeginRun(new RunStart(1, false));
             h.Events.TickPublished += batch =>

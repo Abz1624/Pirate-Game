@@ -210,7 +210,7 @@ new enemy mix each minute, horde events and elites on a rhythm, breathing room a
   jump the clock to 1:00, 3:00, 6:00, 9:00 and 13:00 (invulnerable) and check the alive count and the active wave.
 
 Automated check: a scripted run with screenshots at 1, 3, 6, 9 and 13 minutes; zero console errors; frame time logged.
-On the reference phone (Q31): at least 95% of frames under 34 ms over a 15-minute run at the chosen cap, and the floor
+(Built 30 Sep without the phone: the owner chose a stand-in, so the phone checks below moved to M7.) On the reference phone (Q31): at least 95% of frames under 34 ms over a 15-minute run at the chosen cap, and the floor
 phone (Galaxy A06) holding 30 fps on the Low preset, never below 20 fps; memory recorded against the 256 MB ceiling.
 Owner playtest: three runs (weak, average, strong build): does the crowd feel constant and changing, do hordes read, is
 there breathing room after elites, does overtime still feel like a fair ramp?
@@ -350,7 +350,7 @@ Goal: the game plays well on phones and tablets in mobile browsers and on deskto
   32-bit Chrome cannot grow past ~256 MB; 512 MB only where the browser is 64-bit, such as iOS Safari and desktop), compressed textures
   ≤ 1K, 20–30 MB first download, 100–150 draw calls, render scale 0.6–0.75 on phones, 30 fps on the reference phone and
   60 fps where the device allows, automatic quality tier from measured frame time, particle caps, touch detection; desktop
-  and mobile WebGL builds; local HTTPS serving for phone testing; the M1 enemy cap re-checked on the reference phone with the full UI (Q21, Q31).
+  and mobile WebGL builds; local HTTPS serving for phone testing; the enemy cap, frame time (95% of frames under 34 ms over 15 minutes) and memory measured on the reference phone and the floor phone (Q21, Q31; moved here from M1, which had only a stand-in). M1 found the current build needs a 344 MB WebAssembly heap and a 160 MB data download, so this phase must bring both under the 256 MB and 20–30 MB budgets.
 - T7.x Layout tests at 5 resolutions (every touch target ≥ 48 px, nothing outside the safe area), input router tests;
   PlayMode touch simulation; the WebGL build succeeds.
 

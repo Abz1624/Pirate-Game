@@ -121,6 +121,29 @@ namespace RoguePirates.V4.Spawning
 
         public bool HasRun(string phaseId) => Find(phaseId) != null;
 
+        /// <summary>
+        /// V5 M1: the ambient band running now (the latest-started live run), for the flow director's floor top-ups, which
+        /// spawn from the same spawner and pools as the band.
+        /// </summary>
+        public bool TryGetCurrent(WaveTimelineConfig timeline, float now, out TimelinePhase phase, out SpawnProfile profile, out int instanceId)
+        {
+            phase = null;
+            profile = null;
+            instanceId = 0;
+            Run best = null;
+            foreach (var run in _runs)
+            {
+                if (run.Complete || now < run.ScheduledStart || run.Profile == null) continue;
+                if (best == null || run.ScheduledStart >= best.ScheduledStart) best = run;
+            }
+            if (best == null || timeline == null) return false;
+            phase = timeline.Phase(best.PhaseId);
+            if (phase == null) return false;
+            profile = best.Profile;
+            instanceId = best.InstanceId;
+            return true;
+        }
+
         void AddRun(TimelinePhase phase, float start)
         {
             var profile = _s.Profiles.For(phase.spawner);

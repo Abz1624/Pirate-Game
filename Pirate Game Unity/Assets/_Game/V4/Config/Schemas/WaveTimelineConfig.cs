@@ -157,6 +157,88 @@ namespace RoguePirates.V4.Config
         public string edgeWallToast = "OFF THE MAP — turn back to open water!";
     }
 
+    public enum HordeFormation
+    {
+        [Tooltip("A closing circle around the ship.")] Ring,
+        [Tooltip("A wall side by side, across the ship's path, from one direction.")] Line,
+        [Tooltip("A tight pack from one side.")] Cluster
+    }
+
+    /// <summary>
+    /// V5 M1: one minute of the enemy flow (Vampire Survivors-style). While it is current, a minimum number of enemies is
+    /// kept alive (topped up on every interval tick) and the ambient band's rate is multiplied. The floor curve is jagged on
+    /// purpose (tension and release), not a ramp.
+    /// </summary>
+    [Serializable]
+    public sealed class MinuteWave
+    {
+        [Tooltip("Run time (s) this wave starts; it lasts until the next wave's start or the stage deadline.")] public float startSeconds;
+        [Tooltip("Minimum enemies alive, as a share of the ambient cap (the device cap minus reserved encounter slots).")]
+        [Range(0f, 1f)] public float minAliveShare;
+        [Tooltip("Multiplier on the current ambient band's spawn rate while this wave is current.")] public float rateMultiplier = 1f;
+        [Tooltip("Seconds between floor top-up checks (Vampire Survivors: 1.0 early, down to 0.25).")] public float topUpIntervalSeconds = 1f;
+        [Tooltip("At most this many enemies per top-up tick.")] public int maxTopUpPerTick = 4;
+    }
+
+    /// <summary>V5 M1: a telegraphed horde: many weak, fast enemies at once in a formation, away from the boss fight.</summary>
+    [Serializable]
+    public sealed class HordeEvent
+    {
+        [ConfigIdentity] public string hordeId = "horde";
+        public string label = "Horde";
+        public float timeSeconds;
+        public HordeFormation formation = HordeFormation.Ring;
+        [Tooltip("The enemy the horde is made of (weak fodder reads best).")] public EnemyArchetypeConfig archetype;
+        public int count = 16;
+        [Tooltip("Distance from the ship where the formation appears.")] public float distance = 20f;
+        [Tooltip("Spacing between enemies (Line, Cluster).")] public float spacing = 1.8f;
+        public float speedMultiplier = 1.3f;
+        public float hpMultiplier = 0.7f;
+        public float damageMultiplier = 1f;
+        [Tooltip("Warning toast this long before it arrives (0 = none).")] public float warningLeadSeconds = 3f;
+        public string warningToast = "HORDE INCOMING!";
+    }
+
+    /// <summary>V5 M1: tension and release. After big moments the ambient flow backs off for a while.</summary>
+    [Serializable]
+    public sealed class ReleaseSettings
+    {
+        [Tooltip("Ambient rate multiplier during a release window.")] public float rateMultiplier = 0.35f;
+        [Tooltip("Floor multiplier during a release window.")] public float floorMultiplier = 0.4f;
+        [Tooltip("Release after a miniboss or scheduled elite (arena) is sunk, seconds.")] public float afterArenaSeconds = 20f;
+        [Tooltip("Release after the Barnacle King is sunk, seconds.")] public float afterBossKillSeconds = 25f;
+        [Tooltip("A horde's release starts this long after it arrives...")] public float hordeReleaseDelaySeconds = 20f;
+        [Tooltip("...and lasts this long.")] public float afterHordeSeconds = 15f;
+        [Tooltip("Floor multiplier while the Barnacle King fight is on (the fight is the focus; Vampire Survivors drops to ~10 on boss minutes).")]
+        public float bossFightFloorMultiplier = 0.3f;
+        [Tooltip("A lull (release rate and floor) this long before each horde, so the crowd thins and the horde has room.")]
+        public float preHordeLullSeconds = 10f;
+    }
+
+    [Serializable]
+    public sealed class FlowSettings
+    {
+        [Tooltip("V5 M1 enemy flow (minute waves, floor, hordes, release). Off = V4 bands only (the v3-parity preset turns it off).")]
+        public bool enabled;
+        public List<MinuteWave> waves = new List<MinuteWave>();
+        public List<HordeEvent> hordes = new List<HordeEvent>();
+        public ReleaseSettings release = new ReleaseSettings();
+
+        /// <summary>The wave current at <paramref name="seconds"/> (waves sorted by start time), or null.</summary>
+        public MinuteWave WaveAt(float seconds, out int index)
+        {
+            index = -1;
+            MinuteWave best = null;
+            for (var i = 0; i < waves.Count; i++)
+            {
+                var w = waves[i];
+                if (w.startSeconds > seconds) continue;
+                if (best == null || w.startSeconds >= best.startSeconds) { best = w; index = i; }
+            }
+            return best;
+        }
+    }
+
     /// <summary>
     /// The Saltwind run schedule: stage limits, ambient bands, scheduled beats, overtime and storm. In M1 its values
     /// reach the legacy profile (hash, POI and chest readers); from M3 the V4 spawn controller runs the phases.
@@ -192,6 +274,9 @@ namespace RoguePirates.V4.Config
         [Header("Overtime and storm")]
         public OvertimeSettings overtime = new OvertimeSettings();
         public StormSettings storm = new StormSettings();
+
+        [Header("Enemy flow (V5 M1)")]
+        public FlowSettings flow = new FlowSettings();
 
         public TimelinePhase Phase(string id) => phases.FirstOrDefault(p => p.phaseId == id);
         public TagCap Cap(string tag) => tagCaps.FirstOrDefault(c => c.tag == tag);
@@ -229,6 +314,7 @@ namespace RoguePirates.V4.Config
                 if (!Mathf.Approximately(p.trigger.timeSeconds, stageDeadlineSeconds))
                     report.Error(this, "phases", $"overtime phase '{p.phaseId}' starts at {p.trigger.timeSeconds}s but the stage deadline is {stageDeadlineSeconds}s");
             if (phases.Count(p => p.isStorm) > 1) report.Error(this, "phases", "more than one storm phase");
+            ValidateFlow(report);
             for (var i = 0; i < phases.Count; i++)
             {
                 var p = phases[i];
@@ -239,6 +325,42 @@ namespace RoguePirates.V4.Config
                 if (p.focus.placement == FocusPlacement.SpawnerProfile && p.spawner == null) report.Error(this, at + ".spawner", "a focus spawn with SpawnerProfile placement needs a spawner");
                 if (p.focus.placement == FocusPlacement.RingAroundPlayer && p.focus.archetype == null) report.Error(this, at + ".focus.archetype", "a ring focus spawn needs an archetype");
                 if (p.focus.retryWindowSeconds < 0f) report.Error(this, at + ".focus.retryWindowSeconds", "must not be negative");
+            }
+        }
+
+        void ValidateFlow(ConfigValidationReport report)
+        {
+            if (flow == null) return;
+            for (var i = 0; i < flow.waves.Count; i++)
+            {
+                var w = flow.waves[i];
+                var at = $"flow.waves[{i}]";
+                report.NotNegative(this, at + ".startSeconds", w.startSeconds);
+                if (w.minAliveShare < 0f || w.minAliveShare > 1f) report.Error(this, at + ".minAliveShare", "must be 0-1");
+                if (w.rateMultiplier < 0f) report.Error(this, at + ".rateMultiplier", "must not be negative");
+                report.Positive(this, at + ".topUpIntervalSeconds", w.topUpIntervalSeconds);
+                if (w.maxTopUpPerTick < 1) report.Error(this, at + ".maxTopUpPerTick", "must be at least 1");
+            }
+            var ids = new HashSet<string>();
+            for (var i = 0; i < flow.hordes.Count; i++)
+            {
+                var h = flow.hordes[i];
+                var at = $"flow.hordes[{i}]";
+                if (string.IsNullOrWhiteSpace(h.hordeId)) report.Error(this, at + ".hordeId", "missing horde id");
+                else if (!ids.Add(h.hordeId)) report.Error(this, at + ".hordeId", $"duplicate horde id '{h.hordeId}'");
+                if (h.archetype == null) report.Error(this, at + ".archetype", "a horde needs an archetype");
+                if (h.count < 1) report.Error(this, at + ".count", "must be at least 1");
+                report.Positive(this, at + ".distance", h.distance);
+                report.NotNegative(this, at + ".timeSeconds", h.timeSeconds);
+            }
+            var r = flow.release;
+            if (r != null)
+            {
+                if (r.rateMultiplier < 0f || r.floorMultiplier < 0f || r.bossFightFloorMultiplier < 0f)
+                    report.Error(this, "flow.release", "multipliers must not be negative");
+                report.NotNegative(this, "flow.release.afterArenaSeconds", r.afterArenaSeconds);
+                report.NotNegative(this, "flow.release.afterBossKillSeconds", r.afterBossKillSeconds);
+                report.NotNegative(this, "flow.release.afterHordeSeconds", r.afterHordeSeconds);
             }
         }
 

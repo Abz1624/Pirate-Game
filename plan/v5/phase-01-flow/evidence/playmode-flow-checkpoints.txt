@@ -1,0 +1,1 @@
+[V5 M1 flow checkpoints] 1:00 wave 1 floor 14 alive 14 release False avg frame 4.2 ms | 3:00 wave 3 floor 16 alive 16 release False avg frame 4.3 ms | 6:00 wave 6 floor 32 alive 32 release False avg frame 4.7 ms | 9:00 wave 9 floor 18 alive 32 release False avg frame 6.6 ms | 13:00 alive 36

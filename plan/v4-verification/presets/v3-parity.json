@@ -39,6 +39,10 @@
                 {
                     "path": "encountersWaitDuringArenas",
                     "value": "true"
+                },
+                {
+                    "path": "flow.enabled",
+                    "value": "false"
                 }
             ]
         },
@@ -662,6 +666,16 @@
             "edits": [
                 {
                     "path": "rows[6].enabled",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "pickups.saltwind",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "mergeIntoNearestWhenFull",
                     "value": "false"
                 }
             ]

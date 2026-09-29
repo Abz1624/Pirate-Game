@@ -312,5 +312,8 @@ namespace RoguePirates.V4.Ports
 
         public bool IsFormationPositionValid(Vector3 position, float spawnRadius, SpawnPlacementSettings settings) =>
             SpawnPlacementService.IsFormationPositionValid(position, spawnRadius, Camera, settings);
+
+        public float ViewEdgeDistance =>
+            Camera != null && Player != null ? SpawnPlacementService.GetMinSpawnDistanceBeyondView(Camera, Player, 0.08f) + 1.5f : 0f;
     }
 }

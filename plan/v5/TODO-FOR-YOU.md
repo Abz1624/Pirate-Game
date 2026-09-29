@@ -12,6 +12,10 @@
 
 ## Still open
 
+- **Phone memory (found in M1):** today's WebGL build needs a 344 MB WebAssembly heap and a 160 MB data download at the
+  start of a run. A Galaxy A15/A16 (32-bit Chrome) allows about 256 MB, so the game would most likely not load there.
+  M7 (mobile) must fix this; the phone checks from M1 moved there because there was no reference phone yet.
+
 - Earlier GDD questions (21 left) are still on the board; the raid entry fee (question 4) feeds M15 and the pass price
   (question 5) feeds M20.
 

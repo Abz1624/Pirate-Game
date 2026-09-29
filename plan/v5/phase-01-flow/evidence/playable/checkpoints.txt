@@ -1,0 +1,6 @@
+1:00  t=83 wave=1 floor=14 alive=15 release=False toppedUp=16 hordes=0 frame=4.9ms
+3:00  t=202 wave=3 floor=16 alive=25 release=False toppedUp=16 hordes=0 frame=4.7ms
+horde 5:30  t=338 wave=5 floor=22 alive=52 release=False toppedUp=16 hordes=1 frame=7.6ms
+6:00  t=378 wave=6 floor=13 alive=51 release=True toppedUp=16 hordes=1 frame=7.4ms
+9:00  t=557 wave=9 floor=45 alive=72 release=False toppedUp=16 hordes=2 frame=8.1ms
+13:00  t=802 wave=-1 floor=0 alive=71 release=False toppedUp=16 hordes=2 frame=10.0ms

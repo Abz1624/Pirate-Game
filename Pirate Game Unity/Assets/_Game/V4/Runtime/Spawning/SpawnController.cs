@@ -13,7 +13,7 @@ namespace RoguePirates.V4.Spawning
     /// Until the enemy world is V4 (M8), each part runs in the frame slot its V3 predecessor had (the legacy update
     /// slots call the Tick* methods), because the legacy enemy world, weapons and run clock tick around them.
     /// </summary>
-    public sealed class SpawnController : IRunModule, ISpawnController, IEncounterExecutor
+    public sealed class SpawnController : IRunModule, ISpawnController, IEncounterExecutor, IFlowStatus
     {
         readonly SpawnServices _s = new SpawnServices();
         readonly SpawnModifierStack _modifiers = new SpawnModifierStack();
@@ -26,6 +26,7 @@ namespace RoguePirates.V4.Spawning
         StormPhase _storm;
         EncounterExecutor _encounters;
         TimelineTriggers _triggers;
+        FlowDirector _flow;
         readonly HashSet<string> _skipped = new HashSet<string>();
         readonly HashSet<string> _manual = new HashSet<string>();
         bool _running;
@@ -49,6 +50,7 @@ namespace RoguePirates.V4.Spawning
             _overtime = new OvertimePhase(_s, _executor);
             _storm = new StormPhase(_s);
             _encounters = new EncounterExecutor(_s, _executor, () => _scripted != null && _scripted.ArenaActive);
+            _flow = new FlowDirector(_s, _executor, _ambient);
             context.Events.TickPublished += OnEvents;
             if (context.Config != null) context.Config.ConfigChanged += OnConfigChanged;
         }
@@ -65,6 +67,7 @@ namespace RoguePirates.V4.Spawning
             _scripted.BeginRun();
             _overtime.BeginRun();
             _storm.BeginRun();
+            _flow.BeginRun();
             ApplyExperiment();
             _running = true;
         }
@@ -77,6 +80,7 @@ namespace RoguePirates.V4.Spawning
         void OnEvents(IReadOnlyList<CombatEvent> events)
         {
             _triggers?.OnEvents(events);
+            _flow?.OnEvents(events);
             for (var i = 0; i < events.Count; i++)
                 if (events[i].Kind == CombatEventKind.PhaseChanged && events[i].B == 1)
                 {
@@ -112,6 +116,7 @@ namespace RoguePirates.V4.Spawning
                 var timeline = _s.Timeline;
                 if (_s.Run.IsBossFight && timeline != null) multiplier *= timeline.bossAmbientRateMultiplier;
                 if (_s.Levers != null && _s.Levers.Adaptive) multiplier *= _s.Levers.ThreatRateMultiplier;
+                multiplier *= _flow.RateMultiplier(elapsed); // V5 M1: minute wave and release window (1 when flow is off)
                 return multiplier;
             }
         }
@@ -128,6 +133,7 @@ namespace RoguePirates.V4.Spawning
             var run = _s.Run;
             if (!run.Exists || run.IsPaused || run.IsRunEnded || !run.IsGameplayActive) return;
             _scripted.PollArena();
+            _flow.Observe(run.ElapsedSeconds, _scripted.ArenaActive);
             var live = _s.Timeline;
             if (live != null)
             {
@@ -145,6 +151,7 @@ namespace RoguePirates.V4.Spawning
             if (run.ElapsedSeconds < timeline.graceSeconds) return;
             StartTriggeredAmbientPhases(timeline, run.ElapsedSeconds);
             _ambient.Tick(dt, EffectiveRateMultiplier);
+            _flow.Tick(run.ElapsedSeconds, run.IsBossFight);
         }
 
         /// <summary>Ambient phases with event/condition triggers, or triggered by hand, start their run here.</summary>
@@ -215,6 +222,15 @@ namespace RoguePirates.V4.Spawning
         public int ProcessNow() => _encounters != null ? _encounters.ProcessNow() : 0;
         public void Cancel(int encounterId) => _encounters?.Cancel(encounterId);
         public bool HasPending(int encounterId) => _encounters != null && _encounters.HasPending(encounterId);
+
+        // ---- IFlowStatus (V5 M1) ----
+        public bool FlowEnabled => _flow != null && _flow.FlowEnabled;
+        public int WaveIndex => _flow != null ? _flow.WaveIndex : -1;
+        public int Floor => _flow != null ? _flow.Floor : 0;
+        public bool InRelease => _flow != null && _flow.InRelease;
+        public float ReleaseRemaining => _flow != null ? _flow.ReleaseRemaining : 0f;
+        public int ToppedUp => _flow != null ? _flow.ToppedUp : 0;
+        public int HordesSpawned => _flow != null ? _flow.HordesSpawned : 0;
 
         public bool ArenaActive => _scripted != null && _scripted.ArenaActive;
         public int ArenaFocusUnitId => _scripted != null ? _scripted.ArenaFocusUnitId : -1;

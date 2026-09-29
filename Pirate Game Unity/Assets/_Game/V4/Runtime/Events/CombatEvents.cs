@@ -69,6 +69,8 @@ namespace RoguePirates.V4.Events
         public const int AmbientSpawn = 1;
         /// <summary>Spawned: the M11 elite lever upgraded this ambient spawn.</summary>
         public const int AdaptiveElite = 2;
+        /// <summary>V5 M1 Warning: a horde is coming from the event's position (edge marker and minimap ping).</summary>
+        public const int HordeWarning = 4;
     }
 
     public interface ICombatEventWriter

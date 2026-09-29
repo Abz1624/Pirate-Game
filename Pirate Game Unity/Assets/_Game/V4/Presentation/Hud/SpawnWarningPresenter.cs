@@ -83,6 +83,11 @@ namespace RoguePirates.V4.Presentation.Hud
             for (var i = 0; i < batch.Count; i++)
             {
                 var e = batch[i];
+                if (e.Kind == CombatEventKind.Warning && (e.Flags & CombatEventFlags.HordeWarning) != 0)
+                {
+                    NotifyHorde(new Vector3(e.X, e.Y, e.Z));
+                    continue;
+                }
                 if (e.Kind != CombatEventKind.Spawned || (e.Flags & CombatEventFlags.AmbientSpawn) == 0) continue;
                 Notify(new Vector3(e.X, e.Y, e.Z), e.B);
             }
@@ -111,6 +116,17 @@ namespace RoguePirates.V4.Presentation.Hud
             if (_minimap != null) _minimap.RegisterSpawnPing(position, PingSeconds);
             _edgePings.Add(new Ping { world = position, expires = Time.unscaledTime + EdgeSeconds });
         }
+
+        /// <summary>V5 M1: a horde is coming from <paramref name="position"/>: edge marker and minimap ping (its toast comes from the flow).</summary>
+        public void NotifyHorde(Vector3 position)
+        {
+            HordeWarningsShown++;
+            if (_minimap != null) _minimap.RegisterSpawnPing(position, HordeSeconds);
+            _edgePings.Add(new Ping { world = position, expires = Time.unscaledTime + HordeSeconds });
+        }
+
+        public int HordeWarningsShown { get; private set; }
+        const float HordeSeconds = 3.5f;
 
         void LateUpdate()
         {

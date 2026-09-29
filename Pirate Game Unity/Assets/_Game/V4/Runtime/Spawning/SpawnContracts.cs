@@ -46,6 +46,8 @@ namespace RoguePirates.V4.Spawning
         bool TryPick(SpawnPlacementSettings settings, float spawnRadius, bool allowNearPlayerFallback, out Vector3 position);
         void OffsetGroup(SpawnGroupLayout layout, int index, int count, float spacing, ref Vector3 position);
         bool IsFormationPositionValid(Vector3 position, float spawnRadius, SpawnPlacementSettings settings);
+        /// <summary>V5 M1: distance from the ship to just beyond the camera's view (0 without a camera); hordes form outside it.</summary>
+        float ViewEdgeDistance { get; }
     }
 
     /// <summary>The run's seeded random streams (RunManager.Rng until V4 owns the RNG).</summary>

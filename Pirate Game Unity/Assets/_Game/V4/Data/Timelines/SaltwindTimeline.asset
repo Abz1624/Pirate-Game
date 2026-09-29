@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WaveTimelineConfig
   configId: timeline.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m1
   stageDeadlineSeconds: 600
   graceSeconds: 2
   maxActiveEnemies: 80
@@ -22,6 +22,7 @@ MonoBehaviour:
   globalMinSpawnGapSeconds: 0.35
   spawnRetryIntervalSeconds: 0.35
   requiredEncounterTimeoutSeconds: 10
+  encountersWaitDuringArenas: 0
   bossAmbientRateMultiplier: 0.5
   eventWarningSeconds: 5
   ambientBandDurationSeconds: 120
@@ -806,3 +807,118 @@ MonoBehaviour:
     edgeWallDamage: 1
     edgeWallDamagePerSecond: 8
     edgeWallToast: "OFF THE MAP \u2014 turn back to open water!"
+  flow:
+    enabled: 1
+    waves:
+    - startSeconds: 0
+      minAliveShare: 0.08
+      rateMultiplier: 1
+      topUpIntervalSeconds: 1
+      maxTopUpPerTick: 2
+    - startSeconds: 60
+      minAliveShare: 0.2
+      rateMultiplier: 1
+      topUpIntervalSeconds: 1
+      maxTopUpPerTick: 3
+    - startSeconds: 120
+      minAliveShare: 0.32
+      rateMultiplier: 1
+      topUpIntervalSeconds: 0.75
+      maxTopUpPerTick: 4
+    - startSeconds: 180
+      minAliveShare: 0.22
+      rateMultiplier: 0.9
+      topUpIntervalSeconds: 1
+      maxTopUpPerTick: 3
+    - startSeconds: 240
+      minAliveShare: 0.38
+      rateMultiplier: 1
+      topUpIntervalSeconds: 0.75
+      maxTopUpPerTick: 4
+    - startSeconds: 300
+      minAliveShare: 0.3
+      rateMultiplier: 0.95
+      topUpIntervalSeconds: 1
+      maxTopUpPerTick: 3
+    - startSeconds: 360
+      minAliveShare: 0.45
+      rateMultiplier: 1
+      topUpIntervalSeconds: 0.6
+      maxTopUpPerTick: 5
+    - startSeconds: 420
+      minAliveShare: 0.55
+      rateMultiplier: 1.05
+      topUpIntervalSeconds: 0.5
+      maxTopUpPerTick: 5
+    - startSeconds: 480
+      minAliveShare: 0.4
+      rateMultiplier: 0.9
+      topUpIntervalSeconds: 0.75
+      maxTopUpPerTick: 4
+    - startSeconds: 540
+      minAliveShare: 0.62
+      rateMultiplier: 1.1
+      topUpIntervalSeconds: 0.5
+      maxTopUpPerTick: 6
+    hordes:
+    - hordeId: ring_1m45
+      label: Ring horde
+      timeSeconds: 105
+      formation: 0
+      archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+      count: 14
+      distance: 20
+      spacing: 1.8
+      speedMultiplier: 1.25
+      hpMultiplier: 0.8
+      damageMultiplier: 1
+      warningLeadSeconds: 3
+      warningToast: "HORDE \u2014 they're circling you!"
+    - hordeId: line_5m30
+      label: Line horde
+      timeSeconds: 330
+      formation: 1
+      archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
+      count: 16
+      distance: 22
+      spacing: 1.8
+      speedMultiplier: 1.2
+      hpMultiplier: 0.8
+      damageMultiplier: 1
+      warningLeadSeconds: 3
+      warningToast: "HORDE \u2014 a line incoming!"
+    - hordeId: cluster_7m40
+      label: Pack horde
+      timeSeconds: 460
+      formation: 2
+      archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+      count: 18
+      distance: 24
+      spacing: 1.8
+      speedMultiplier: 1.35
+      hpMultiplier: 0.7
+      damageMultiplier: 1
+      warningLeadSeconds: 3
+      warningToast: "HORDE \u2014 a pack from one side!"
+    - hordeId: ring_9m15
+      label: Ring horde
+      timeSeconds: 555
+      formation: 0
+      archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+      count: 24
+      distance: 21
+      spacing: 1.8
+      speedMultiplier: 1.3
+      hpMultiplier: 0.7
+      damageMultiplier: 1
+      warningLeadSeconds: 3
+      warningToast: "HORDE \u2014 they're circling you!"
+    release:
+      rateMultiplier: 0.35
+      floorMultiplier: 0.4
+      afterArenaSeconds: 20
+      afterBossKillSeconds: 25
+      hordeReleaseDelaySeconds: 20
+      afterHordeSeconds: 15
+      bossFightFloorMultiplier: 0.3
+      preHordeLullSeconds: 10
