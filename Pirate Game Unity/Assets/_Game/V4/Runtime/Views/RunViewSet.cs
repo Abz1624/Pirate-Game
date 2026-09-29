@@ -140,7 +140,7 @@ namespace RoguePirates.V4.Views
                 Earned = s.GoldEarned,
                 Spent = s.GoldSpent,
                 Remaining = s.GoldRemaining,
-                WeaponName = WeaponName, // M14.11: the weapon configs' names (were V3WeaponDisplayNames)
+                WeaponName = WeaponName, // M14.11: the weapon configs' names (were WeaponDisplayNames)
                 FinalBuild = into =>
                 {
                     if (progression == null) return;

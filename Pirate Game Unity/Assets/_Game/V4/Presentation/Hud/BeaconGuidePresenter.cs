@@ -1,4 +1,4 @@
-using HighSeas.V3;
+using RoguePirates.V4.Foundation.UI;
 using RoguePirates.V4.Views;
 using UnityEngine;
 using UnityEngine.UI;
@@ -54,7 +54,7 @@ namespace RoguePirates.V4.Presentation.Hud
             _arrowRoot.sizeDelta = new Vector2(48f, 48f);
 
             var image = arrow.AddComponent<Image>();
-            image.sprite = V3MinimapUiSprites.Triangle;
+            image.sprite = MinimapUiSprites.Triangle;
             image.color = new Color(0.95f, 0.45f, 1f, 0.95f);
             image.raycastTarget = false;
             _arrowGroup = arrow.AddComponent<CanvasGroup>();

@@ -2,23 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using HighSeas.Audio;
-using HighSeas.Balance;
-using HighSeas.Combat;
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.Player;
-using HighSeas.UI;
-using HighSeas.V3;
-using HighSeas.VFX;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Audio;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Combat;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.UI;
+using RoguePirates.V4.Foundation.World;
+using RoguePirates.V4.Foundation.VFX;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Progression;
 using RoguePirates.V4.Weapons;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 
 namespace RoguePirates.V4.Composition
 {
@@ -27,7 +26,7 @@ namespace RoguePirates.V4.Composition
     /// pickups — over the kept shared pieces (RunManager's stats and state, the ship, the level-up modal, the pickup
     /// and powerup views, toasts and telemetry). Replaces V3's LevelSystem, WeaponController record, PickupWorld,
     /// V3RunItemInventory/Effects, V3CaptainController/ActiveController and V3FloorPowerupWorld. The ticks sit where
-    /// those components updated (see <see cref="LegacyUpdateSlot"/>).
+    /// those components updated (frame steps since M14.14).
     /// </summary>
     public sealed class BuildModule : IDisposable
     {
@@ -79,9 +78,9 @@ namespace RoguePirates.V4.Composition
             Items = new ItemModule(ItemConfig, Stats, world);
             Captain = new CaptainModule(Stats, world, run, () => Experiment?.captainActivesEnabled ?? false);
             Powerups = new PowerupModule(() => config.Single<PowerupConfig>(), new RunStreams(), Stats, world, new RoguePirates.V4.Views.PowerupViewsForwarder(() => PowerupViewsTarget?.Invoke()));
-            Pickups = new PickupModule(() => config.Single<PickupConfig>(), HighSeas.Platform.QualityProfile.Current.pickupCap, new PickupRewards(this),
+            Pickups = new PickupModule(() => config.Single<PickupConfig>(), RoguePirates.V4.Foundation.Platform.QualityProfile.Current.pickupCap, new PickupRewards(this),
                 new RoguePirates.V4.Views.PickupViewsForwarder(() => PickupViewsTarget?.Invoke()), () => config.Single<StageContentConfig>()?.magneticTideOpensBarrels ?? false,
-                () => HighSeas.Platform.QualityProfile.Current.vfxDensity);
+                () => RoguePirates.V4.Foundation.Platform.QualityProfile.Current.vfxDensity);
             WeaponModifiers = new BuildWeaponModifiers(() => RunManager.Instance.Stats, Captain, Items, IsLightningWeapon);
 
             // Level-ups: the Captain first (V3's controller subscribed at run start), then the level-up burst.
@@ -159,7 +158,7 @@ namespace RoguePirates.V4.Composition
         /// <summary>M14.14: the run's frame (ticks register here instead of legacy update slots).</summary>
         public FramePipeline Frame { get; set; }
         /// <summary>M14.9b: the pickup and powerup presenters the presentation root registers (were V3's PickupViewPool
-        /// and V3PlaceholderFactory's floor powerups).</summary>
+        /// and PlaceholderFactory's floor powerups).</summary>
         public Func<IPickupViews> PickupViewsTarget;
         /// <summary>M14.11: the level-up presenter (was LegacyLevelUpPresenter over V3's LevelUpModal).</summary>
         public Func<IOfferPresenter> OfferPresenterTarget;
@@ -231,10 +230,10 @@ namespace RoguePirates.V4.Composition
         {
             var unlocks = _config.Single<UnlockConfig>();
             var firstConquest = unlocks != null ? unlocks.firstConquestWeaponId : null;
-            var conquered = LegacyContentPort.ConqueredForStartingWeapon;
+            var conquered = ContentPort.ConqueredForStartingWeapon;
             // V3 (ResolveStartingWeapon): Saltwind always starts with Swivel Guns unless the debug unlock-all flag is on;
             // then a conquered save starts with the Captain's V3 weapon.
-            if (LegacyContentPort.SaltwindDebugUnlockAll)
+            if (ContentPort.SaltwindDebugUnlockAll)
                 return conquered && captain != null && !string.IsNullOrEmpty(captain.v3StartingWeaponId) ? captain.v3StartingWeaponId : firstConquest;
             if (unlocks == null || unlocks.startingWeaponRule == StartingWeaponRule.V3AlwaysFirstConquestWeapon) return firstConquest;
             return conquered && captain != null && !string.IsNullOrEmpty(captain.startingWeaponId) ? captain.startingWeaponId : firstConquest;
@@ -367,14 +366,14 @@ namespace RoguePirates.V4.Composition
         /// V3 LevelOfferGenerator.IsWeaponOfferEligible: the weapon's feature flag and, in V3 runs (V3RunContext active,
         /// as every V4 run is), its unlock — a starter or owned in the save. A fresh save is never offered a locked weapon.
         /// </summary>
-        public static bool IsWeaponOfferEligible(string weaponId) => LegacyContentPort.IsWeaponOfferEligible(weaponId);
+        public static bool IsWeaponOfferEligible(string weaponId) => ContentPort.IsWeaponOfferEligible(weaponId);
 
         sealed class OfferContext : IOfferContext
         {
             readonly BuildModule _w;
             public OfferContext(BuildModule w) => _w = w;
             public bool IsWeaponOfferable(string weaponId) => IsWeaponOfferEligible(weaponId);
-            public bool IsWeaponUnlocked(string weaponId) => LegacyContentPort.IsWeaponUnlocked(weaponId);
+            public bool IsWeaponUnlocked(string weaponId) => ContentPort.IsWeaponUnlocked(weaponId);
             public bool HasItem(string itemId) => _w.Items.HasItem(itemId);
             public bool IsEvolved(string weaponId) => _w.Progression.EvolutionOf(weaponId) != null;
         }
@@ -436,7 +435,7 @@ namespace RoguePirates.V4.Composition
             public void SyncShipSpeed() => SyncSpeed();
         }
 
-        /// <summary>V3's floor powerup models (V3PlaceholderFactory), children of /Systems as V3FloorPowerupWorld's were.</summary>
+        /// <summary>V3's floor powerup models (PlaceholderFactory), children of /Systems as V3FloorPowerupWorld's were.</summary>
         /// <summary>Where pickups pay: XP to the level-ups, gold through the stage economy, hull to the ship.</summary>
         sealed class PickupRewards : IPickupRewards
         {
@@ -449,7 +448,7 @@ namespace RoguePirates.V4.Composition
             public void GrantGold(int amount)
             {
                 if (Run == null) return;
-                Run.AddGold(LegacyStageProfilePort.ApplyGoldGrant(amount, Run.Stats.GoldGain));
+                Run.AddGold(StageProfilePort.ApplyGoldGrant(amount, Run.Stats.GoldGain));
             }
             public void HealShip(int amount)
             {

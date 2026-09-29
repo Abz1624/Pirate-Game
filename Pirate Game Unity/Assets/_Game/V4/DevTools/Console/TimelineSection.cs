@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Spawning;
 using UnityEngine;

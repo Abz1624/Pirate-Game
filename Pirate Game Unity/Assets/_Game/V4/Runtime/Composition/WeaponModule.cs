@@ -1,14 +1,13 @@
 using System;
 using System.Linq;
-using HighSeas.Core;
-using HighSeas.Weapons;
+using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Spawning;
 using RoguePirates.V4.Weapons;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 
 namespace RoguePirates.V4.Composition
 {
@@ -36,7 +35,7 @@ namespace RoguePirates.V4.Composition
         /// <summary>M14.14: the run's frame (ticks register here instead of legacy update slots).</summary>
         public FramePipeline Frame { get; set; }
 
-        public WeaponModule(RunBootstrapSequence shell, RunContext context, ConfigSetRuntime config, LegacyRunPort run, LegacyShipPort ship, CombatEvents events, RunClock clock,
+        public WeaponModule(RunBootstrapSequence shell, RunContext context, ConfigSetRuntime config, RunPort run, ShipPort ship, CombatEvents events, RunClock clock,
             EnemyWorldModule enemyWorld, BuildModule build, IWeaponTelemetry telemetry)
         {
             _shell = shell;

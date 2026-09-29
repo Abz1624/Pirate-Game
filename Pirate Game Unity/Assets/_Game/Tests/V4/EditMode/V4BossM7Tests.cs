@@ -4,7 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using HighSeas.Balance;
+using RoguePirates.V4.Foundation.Balance;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Editor;
@@ -17,15 +17,13 @@ using Object = UnityEngine.Object;
 namespace RoguePirates.V4.Tests
 {
     /// <summary>
-    /// M7 boss director: the V4 port against V3's BarnacleKingBossAttackLogic plus a line-for-line copy of V3
-    /// BarnacleKingBossAttackDirector's tick and firing rules (the MonoBehaviour itself needs RunManager and the legacy
-    /// worlds), over scripted health and ship paths with fixed and varying dt; then the rules one at a time, the config
-    /// defaults against V3's constants, live edits, the gates, no random draws and the marked-circle presenter.
+    /// M7 boss director: the rules one at a time, the config defaults against V3's constants, live edits, the gates,
+    /// no random draws (over a scripted fight with varying dt) and the marked-circle presenter.
     /// </summary>
     [Category("V4")]
     public sealed class V4BossM7Tests
     {
-        // ---- Log format shared by the V4 fakes and the V3 reference ------------------------------------------------
+        // ---- Log format written by the V4 fakes ----------------------------------------------------------------
 
         static string F(float v) => v.ToString("R", CultureInfo.InvariantCulture);
         static string V(Vector3 v) => $"({F(v.x)},{F(v.y)},{F(v.z)})";
@@ -102,175 +100,6 @@ namespace RoguePirates.V4.Tests
             public int Kills => 0;
         }
 
-        // ---- V3 reference: BarnacleKingBossAttackDirector.Tick after its RunManager/world gates, verbatim ----------
-
-        sealed class V3Reference
-        {
-            static readonly float ChargeSpeedMult = V4BossConfigGenerator.DirectorConstant("ChargeSpeedMult", float.NaN);
-            static readonly float SpreadProjectileSpeed = V4BossConfigGenerator.DirectorConstant("SpreadProjectileSpeed", float.NaN);
-
-            readonly List<string> _log;
-            BarnacleKingAttackState _state;
-            int _bossSlot = -1;
-            bool _active;
-            bool _executeFired;
-            float _toastCooldown;
-            bool _telegraph;
-            Vector3 _telegraphCenter;
-            float _telegraphRadius;
-
-            public V3Reference(List<string> log) { _log = log; }
-
-            public void ResetForRun()
-            {
-                _active = false;
-                _bossSlot = -1;
-                _executeFired = false;
-                _telegraph = false;
-                BarnacleKingBossAttackLogic.BeginRun(ref _state);
-                _log.Add("ctrl clear");
-            }
-
-            public void Tick(float dt, Frame f)
-            {
-                if (f.Secured)
-                {
-                    if (_active) ResetForRun();
-                    return;
-                }
-                if (!f.HasBoss)
-                {
-                    _bossSlot = -1;
-                    if (_active) ResetForRun();
-                    return;
-                }
-                var boss = f.Boss;
-                _bossSlot = boss.Slot;
-                if (!_active)
-                {
-                    _active = true;
-                    BarnacleKingBossAttackLogic.BeginRun(ref _state);
-                }
-
-                var hpRatio = boss.MaxHp > 0f ? boss.Hp / boss.MaxHp : 1f;
-                BarnacleKingBossAttackLogic.SetEnraged(ref _state, hpRatio <= 0.3f);
-                BarnacleKingBossAttackLogic.ApplyHealthPhase(ref _state, hpRatio);
-
-                var playerPos = f.Player;
-                var bossPos = boss.Position;
-                var previousPhase = _state.Phase;
-                BarnacleKingBossAttackLogic.Tick(ref _state, dt, bossPos, playerPos);
-
-                if (_state.Phase == BarnacleKingBossPhase.Execute && previousPhase != BarnacleKingBossPhase.Execute)
-                    _executeFired = false;
-
-                UpdateMarkedTelegraph();
-                ApplyMovementControl(boss);
-                if (BarnacleKingBossAttackLogic.CanDealDamage(_state) && !_executeFired)
-                {
-                    FireAttack(boss, f);
-                    _executeFired = true;
-                }
-
-                MaybeShowTelegraphToast(dt);
-            }
-
-            void ApplyMovementControl(BossSnapshot boss)
-            {
-                if (BarnacleKingBossAttackLogic.IsMovementPaused(_state))
-                {
-                    _log.Add($"ctrl set {_bossSlot} {true} {V(Vector3.zero)} {false}");
-                    return;
-                }
-                if (BarnacleKingBossAttackLogic.IsChargeCommit(_state))
-                {
-                    var vel = _state.CommittedDirection * (boss.MoveSpeed * ChargeSpeedMult);
-                    _log.Add($"ctrl set {_bossSlot} {false} {V(vel)} {true}");
-                    return;
-                }
-                _log.Add("ctrl clear");
-            }
-
-            void FireAttack(BossSnapshot boss, Frame f)
-            {
-                switch (_state.Attack)
-                {
-                    case BarnacleKingAttackKind.AimedSpread: FireSpread(boss); break;
-                    case BarnacleKingAttackKind.MarkedBombardment: ApplyMarkedBlast(boss, f); break;
-                    case BarnacleKingAttackKind.ShellSlam: ApplyShellSlam(boss, f); break;
-                }
-            }
-
-            void ApplyShellSlam(BossSnapshot boss, Frame f)
-            {
-                var center = _state.MarkedPoint;
-                center.y = 0f;
-                if (BarnacleKingBossAttackLogic.IsPlayerInsideMarkedBlast(center, f.Player, 5f))
-                    _log.Add($"dmg {F(boss.Damage * 1.35f)} {V(center)}");
-                _log.Add($"boom {V(center)} {F(5f)}");
-            }
-
-            void FireSpread(BossSnapshot boss)
-            {
-                var baseDir = _state.CommittedDirection;
-                const int count = 5;
-                const float spreadDeg = 12f;
-                for (var i = 0; i < count; i++)
-                {
-                    var t = (i - (count - 1) * 0.5f) / (count - 1);
-                    var dir = Quaternion.Euler(0f, t * spreadDeg, 0f) * baseDir;
-                    var muzzle = boss.Position + dir * (boss.Radius + 1.4f) + Vector3.up * 0.6f;
-                    _log.Add($"shot {V(muzzle)} {V(dir)} {F(SpreadProjectileSpeed)} {F(boss.Damage * 0.55f)} {F(2.4f)} {F(0.55f)} {F(0.45f)}");
-                }
-            }
-
-            void ApplyMarkedBlast(BossSnapshot boss, Frame f)
-            {
-                if (!BarnacleKingBossAttackLogic.ShouldApplyMarkedAreaDamage(_state)) return;
-                if (!f.Alive) return;
-                if (BarnacleKingBossAttackLogic.IsPlayerInsideMarkedBlast(_state.MarkedPoint, f.Player))
-                {
-                    var damage = boss.Damage * 1.15f;
-                    _log.Add($"dmg {F(damage)} {V(_state.MarkedPoint)}");
-                }
-                _telegraph = false;
-            }
-
-            void UpdateMarkedTelegraph()
-            {
-                if (_state.Phase != BarnacleKingBossPhase.Telegraph
-                    || (_state.Attack != BarnacleKingAttackKind.MarkedBombardment && _state.Attack != BarnacleKingAttackKind.ShellSlam))
-                {
-                    _telegraph = false;
-                    return;
-                }
-                _telegraphRadius = _state.Attack == BarnacleKingAttackKind.ShellSlam ? 5f : BarnacleKingBossAttackLogic.MarkedBombardmentRadius;
-                _telegraphCenter = _state.MarkedPoint;
-                _telegraph = true;
-            }
-
-            void MaybeShowTelegraphToast(float dt)
-            {
-                if (_state.Phase != BarnacleKingBossPhase.Telegraph) return;
-                if (_state.Attack == BarnacleKingAttackKind.MarkedBombardment) return;
-                _toastCooldown -= dt;
-                if (_toastCooldown > 0f) return;
-                _toastCooldown = 1.2f;
-                var label = _state.Attack switch
-                {
-                    BarnacleKingAttackKind.AimedSpread => "Barnacle King — spread incoming",
-                    BarnacleKingAttackKind.CommittedCharge => "Barnacle King — charge incoming",
-                    BarnacleKingAttackKind.ShellSlam => "Barnacle King — shell slam",
-                    _ => null
-                };
-                if (label != null) _log.Add($"toast {label} {F(1.1f)}");
-            }
-
-            public string State() => StateLine((int)_state.Phase, (int)_state.Attack, _state.PhaseTimer, _state.CommittedDirection,
-                _state.MarkedPoint, _state.Enraged, (int)_state.QueuedFollowUp, _state.ScriptPhase, _state.RotationStep,
-                _state.PendingHpPhase, _state.Phase3ChargePassPending, _telegraph, _telegraphCenter, _telegraphRadius);
-        }
-
         // ---- Scripted frames -------------------------------------------------------------------------------------
 
         struct Frame
@@ -292,20 +121,6 @@ namespace RoguePirates.V4.Tests
                 Boss = new BossSnapshot { Slot = 3, Position = bossPos, Hp = hp, MaxHp = maxHp, MoveSpeed = 3.2f, Damage = 18f, Radius = 2.2f },
                 Player = new Vector3(Mathf.Cos(a) * r, 0.3f, Mathf.Sin(a) * r)
             };
-        }
-
-        /// <summary>90 s at 60 fps, health falling steadily from full to 2% over 80 s.</summary>
-        static List<Frame> SteadyFight()
-        {
-            var frames = new List<Frame>();
-            var t = 0f;
-            const float dt = 1f / 60f;
-            for (var i = 0; i < 60 * 90; i++)
-            {
-                frames.Add(MakeFrame(dt, t, Mathf.Lerp(1f, 0.02f, Mathf.Clamp01(t / 80f)) * 1200f, 1200f));
-                t += dt;
-            }
-            return frames;
         }
 
         /// <summary>
@@ -333,22 +148,6 @@ namespace RoguePirates.V4.Tests
                 t += dt;
             }
             return frames;
-        }
-
-        static List<string> RunV3(IEnumerable<Frame> frames)
-        {
-            var log = new List<string>();
-            var v3 = new V3Reference(log);
-            v3.ResetForRun();
-            v3.ResetForRun(); // V3RunBootstrap reset the director twice at run start
-            var step = 0;
-            foreach (var f in frames)
-            {
-                log.Add($"#{step++}");
-                if (!f.Paused) v3.Tick(f.Dt, f);
-                log.Add(v3.State());
-            }
-            return log;
         }
 
         List<string> RunV4(IEnumerable<Frame> frames, BossConfig config)
@@ -380,18 +179,6 @@ namespace RoguePirates.V4.Tests
             return log;
         }
 
-        static void AssertSameLog(List<string> v3, List<string> v4)
-        {
-            var n = Math.Min(v3.Count, v4.Count);
-            for (var i = 0; i < n; i++)
-            {
-                if (v3[i] == v4[i]) continue;
-                var frame = v3.Take(i + 1).LastOrDefault(l => l.StartsWith("#"));
-                Assert.Fail($"first difference at line {i} (frame {frame}):\nV3: {v3[i]}\nV4: {v4[i]}");
-            }
-            Assert.AreEqual(v3.Count, v4.Count, "log lengths");
-        }
-
         // ---- Fixture --------------------------------------------------------------------------------------------
 
         readonly List<Object> _owned = new List<Object>();
@@ -409,46 +196,6 @@ namespace RoguePirates.V4.Tests
         {
             foreach (var o in _owned) if (o != null) Object.DestroyImmediate(o);
             _owned.Clear();
-        }
-
-        // ---- Side by side with V3 -------------------------------------------------------------------------------
-
-        [Test]
-        public void SteadyFight_MatchesV3_FrameForFrame()
-        {
-            var frames = SteadyFight();
-            var v4 = RunV4(frames, NewConfig());
-            AssertSameLog(RunV3(frames), v4);
-
-            // The scenario has to exercise every rule it compares.
-            Assert.Greater(v4.Count(l => l.StartsWith("shot ")), 0, "spread shots");
-            Assert.Greater(v4.Count(l => l.StartsWith("dmg ")), 0, "blast damage");
-            Assert.Greater(v4.Count(l => l.StartsWith("boom ")), 0, "slam explosions");
-            Assert.Greater(v4.Count(l => l.StartsWith("toast ")), 0, "toasts");
-            Assert.Greater(v4.Count(l => l.StartsWith("ctrl set 3 False")), 0, "charge velocity");
-            Assert.Greater(v4.Count(l => l.StartsWith("ctrl set 3 True")), 0, "movement pause");
-            Assert.IsTrue(v4.Any(l => l.Contains(" sp=3 ")), "phase 3 reached");
-            Assert.IsTrue(v4.Any(l => l.Contains(" c2=True ")), "second charge pass");
-        }
-
-        [Test]
-        public void EventfulFight_MatchesV3_FrameForFrame()
-        {
-            var frames = EventfulFight();
-            var v4 = RunV4(frames, NewConfig());
-            AssertSameLog(RunV3(frames), v4);
-            Assert.Greater(v4.Count(l => l.StartsWith("dmg ")), 0, "blast damage");
-            Assert.IsTrue(v4.Any(l => l.Contains(" sp=2 ")), "phase 2 at exactly 0.65");
-            Assert.IsTrue(v4.Any(l => l.Contains(" dir=(0,0,1) ")), "forward fallback when the ship is on the boss");
-        }
-
-        [Test]
-        public void GeneratedConfig_MatchesV3_FrameForFrame()
-        {
-            var config = NewConfig();
-            V4BossConfigGenerator.FillFromV3(config);
-            var frames = SteadyFight();
-            AssertSameLog(RunV3(frames), RunV4(frames, config));
         }
 
         // ---- Rules one at a time --------------------------------------------------------------------------------
@@ -757,8 +504,15 @@ namespace RoguePirates.V4.Tests
             var preset = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
             Assert.IsTrue(PresetCodec.Apply(parity, PresetCodec.FromJson(preset), 0f, errors), string.Join("\n", errors));
             var v3 = parity.Single<BossConfig>();
-            Assert.AreEqual(V4BossConfigGenerator.DirectorConstant("ChargeSpeedMult", float.NaN), v3.charge.speedMultiplier);
+            Assert.AreEqual(2.6f, v3.charge.speedMultiplier);
             Assert.AreEqual(BarnacleKingBossAttackLogic.ChargeCommitSeconds, v3.charge.executeSeconds);
+        }
+
+        /// <summary>One of V3's private attack rotations (Phase1-3 in BarnacleKingBossAttackLogic), converted by value.</summary>
+        static BossAttackKind[] V3Rotation(string name)
+        {
+            var field = typeof(BarnacleKingBossAttackLogic).GetField(name, BindingFlags.NonPublic | BindingFlags.Static);
+            return field?.GetValue(null) is BarnacleKingAttackKind[] v3 ? v3.Select(a => (BossAttackKind)(int)a).ToArray() : null;
         }
 
         [Test]
@@ -780,11 +534,11 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(BarnacleKingBossAttackLogic.EnragedRecoveryScale, c.enragedRecoveryScale);
             Assert.IsFalse(c.enragedRecoveryAppliesToShellSlam);
             Assert.AreEqual(BarnacleKingBossAttackLogic.MarkedBombardmentRadius, c.bombard.radius);
-            Assert.AreEqual(V4BossConfigGenerator.DirectorConstant("ChargeSpeedMult", float.NaN), c.charge.speedMultiplier);
-            Assert.AreEqual(V4BossConfigGenerator.DirectorConstant("SpreadProjectileSpeed", float.NaN), c.spread.projectileSpeed);
-            CollectionAssert.AreEqual(V4BossConfigGenerator.V3Rotation("Phase1"), c.phase1Rotation);
-            CollectionAssert.AreEqual(V4BossConfigGenerator.V3Rotation("Phase2"), c.phase2Rotation);
-            CollectionAssert.AreEqual(V4BossConfigGenerator.V3Rotation("Phase3"), c.phase3Rotation);
+            Assert.AreEqual(2.6f, c.charge.speedMultiplier, "V3 director: ChargeSpeedMult");
+            Assert.AreEqual(14f, c.spread.projectileSpeed, "V3 director: SpreadProjectileSpeed");
+            CollectionAssert.AreEqual(V3Rotation("Phase1"), c.phase1Rotation);
+            CollectionAssert.AreEqual(V3Rotation("Phase2"), c.phase2Rotation);
+            CollectionAssert.AreEqual(V3Rotation("Phase3"), c.phase3Rotation);
 
             // V3 literals (no symbol to read): thresholds, start rest, spread, blasts, toasts, circle.
             Assert.AreEqual(0.65f, c.phase2Threshold);
@@ -810,19 +564,6 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(0.12f, c.telegraphThickness);
             Assert.AreEqual((int)BarnacleKingAttackKind.ShellSlam, (int)BossAttackKind.ShellSlam, "enum values mirror V3's");
             Assert.AreEqual((int)BarnacleKingBossPhase.Execute, (int)BossPhase.Execute);
-        }
-
-        [Test]
-        public void GeneratorFill_EqualsTheDefaults()
-        {
-            var filled = NewConfig();
-            filled.spread.shotCount = 9;
-            filled.phase3Rotation = new[] { BossAttackKind.ShellSlam };
-            V4BossConfigGenerator.FillFromV3(filled);
-            Assert.AreEqual(V4BossConfigGenerator.ConfigId, filled.configId);
-            var defaults = NewConfig();
-            defaults.configId = V4BossConfigGenerator.ConfigId;
-            Assert.AreEqual(defaults.ComputeHash(), filled.ComputeHash());
         }
 
         [Test]

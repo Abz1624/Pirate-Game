@@ -1,11 +1,10 @@
 using System.Collections;
 using System.Linq;
-using HighSeas.Balance;
-using HighSeas.Core;
-using HighSeas.Encounters;
-using HighSeas.Enemies;
-using HighSeas.Player;
-using HighSeas.POI;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.POI;
 using NUnit.Framework;
 using RoguePirates.V4.Stage;
 using UnityEngine;
@@ -34,9 +33,6 @@ namespace RoguePirates.V4.Tests
             yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
             StageBalanceProfileContext.ResetForTests();
-            RunMarksTracker.Reset();
-            RunEncounterTracker.ResetForTests();
-            SaltwindRunSettlement.ClearLastResults();
             _isolation?.Dispose();
             _isolation = null;
         }
@@ -71,14 +67,6 @@ namespace RoguePirates.V4.Tests
         {
             yield return StartRun();
             var stage = Stage();
-            Assert.IsNull(Object.FindFirstObjectByType<POIManager>(), "POIManager left the scene");
-            Assert.IsEmpty(Object.FindObjectsByType<POIInteractable>(FindObjectsInactive.Include, FindObjectsSortMode.None));
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3DiscoverySystem>());
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3InteractionController>());
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.BarnacleKingBossAttackDirector>());
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3BossSummonHotkey>());
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3ExplosiveBarrelWorld>(), "no barrels (adopted decision)");
-            Assert.IsNull(Object.FindFirstObjectByType<EncounterSpawner>(), "M9: the legacy spawner left the scene");
 
             var layout = stage.Module.Layout;
             Assert.IsNotNull(layout);

@@ -1,12 +1,11 @@
 using System.Collections;
 using System.Linq;
 using System.Reflection;
-using HighSeas.Balance;
-using HighSeas.Combat;
-using HighSeas.Core;
-using HighSeas.Encounters;
-using HighSeas.Enemies;
-using HighSeas.Player;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Combat;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.Player;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Enemies;
@@ -37,10 +36,6 @@ namespace RoguePirates.V4.Tests
             yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
             StageBalanceProfileContext.ResetForTests();
-            RunMarksTracker.Reset();
-            RunEncounterTracker.ResetForTests();
-            SaltwindRunSettlement.ClearLastResults();
-            HighSeas.Combat.WeaponEvolutionRuntime.Reset(); // V3's static (V4 runs no longer write it; kept for mixed test sessions)
             _isolation?.Dispose();
             _isolation = null;
         }
@@ -67,11 +62,6 @@ namespace RoguePirates.V4.Tests
         public IEnumerator Switchover_V3EnemyPiecesGone_V4ReplacementsWired()
         {
             yield return StartRun();
-            Assert.IsNull(Object.FindFirstObjectByType<EnemyWorld>(), "V3 EnemyWorld removed from the scene");
-            Assert.IsNull(Object.FindFirstObjectByType<StatusController>(), "V3 StatusController removed from the scene");
-            Assert.IsNull(Object.FindFirstObjectByType<HostileProjectileWorld>(), "V3 HostileProjectileWorld no longer added");
-            Assert.IsNull(Object.FindFirstObjectByType<HellfirePatchWorld>(), "V3 HellfirePatchWorld no longer ensured");
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.CombatTelemetryDriver>(), "V3 CombatTelemetryDriver no longer added");
             // M14.14: frame steps (were legacy update slots).
             var frame = Object.FindFirstObjectByType<V4Game>().Frame;
             Assert.IsTrue(frame.Has(FrameStep.Hellfire), "hellfire patches tick in the frame");
@@ -238,7 +228,7 @@ namespace RoguePirates.V4.Tests
         {
             yield return StartLab();
             var stage = Get<RoguePirates.V4.Stage.IStageContent>();
-            var lockedBefore = HighSeas.V3.V3HomeSeed.HasLockedHomeSeed;
+            var lockedBefore = RoguePirates.V4.Foundation.Progression.HomeSeed.HasLockedHomeSeed;
             yield return SummonBoss(stage);
             var sim = V4TestEnemies.Simulation();
             Assert.IsTrue(sim.TryFindActiveBoss(out var slot, out var boss), "the boss spawned");
@@ -246,8 +236,7 @@ namespace RoguePirates.V4.Tests
             var deadline = Time.realtimeSinceStartup + 5f;
             while (!stage.BossDefeated && Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
             Assert.IsTrue(stage.BossDefeated, "the lab boss can be defeated");
-            Assert.AreEqual(lockedBefore, HighSeas.V3.V3HomeSeed.HasLockedHomeSeed, "a lab boss victory does not lock the home seed");
-            Assert.IsFalse(RunMarksTracker.BuildRecord().BossVictoryCredited, "nor register the boss-victory Marks");
+            Assert.AreEqual(lockedBefore, RoguePirates.V4.Foundation.Progression.HomeSeed.HasLockedHomeSeed, "a lab boss victory does not lock the home seed");
         }
 
         [UnityTest]
@@ -293,12 +282,13 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(stage.Module.IsPowderCacheChestReady(cache), "all sunk: the cache became a Rare Treasure Chest");
             Assert.IsTrue(stage.Module.CanInteract(cache));
             var inventory = Build().Items;
-            var stacks = HighSeas.V3.V3ItemCatalog.ChestPool.ToDictionary(e => e.id, e => inventory.StackCount(e.id));
+            var chestPool = Object.FindFirstObjectByType<V4Game>().Config.All<ItemConfig>().Where(i => i.inChestPool).ToList(); // the run's chest pool
+            var stacks = chestPool.ToDictionary(e => e.itemId, e => inventory.StackCount(e.itemId));
             var gold = RunManager.Instance.Gold;
             stage.Module.TryCompleteInteraction(cache); // open it
-            var gained = HighSeas.V3.V3ItemCatalog.ChestPool.Where(e => inventory.StackCount(e.id) > stacks[e.id]).ToList();
+            var gained = chestPool.Where(e => inventory.StackCount(e.itemId) > stacks[e.itemId]).ToList();
             Assert.AreEqual(1, gained.Count, "one item gained (a new one or another stack)");
-            Assert.GreaterOrEqual((int)gained[0].rarity, (int)Rarity.Rare, "Rare or better");
+            Assert.GreaterOrEqual(gained[0].rarity, (int)Rarity.Rare, "Rare or better");
             Assert.GreaterOrEqual(RunManager.Instance.Gold, gold, "free");
             Assert.IsTrue(layout.pois[cache].used);
         }
@@ -356,9 +346,6 @@ namespace RoguePirates.V4.Tests
             var preset = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
             RunRequest.RequestPreset(preset);
             yield return StartRun();
-            var legacy = Object.FindFirstObjectByType<HighSeas.V3.V3ExplosiveBarrelWorld>();
-            Assert.IsNotNull(legacy, "the parity preset places V3's barrels (their markers stay V3's)");
-            Assert.IsFalse(legacy.enabled, "V3's barrel update is switched off");
             Assert.IsTrue(Object.FindFirstObjectByType<V4Game>().Frame.Has(FrameStep.Barrels), "the V4 barrels tick in the frame");
             Assert.AreEqual(2, Object.FindFirstObjectByType<V4Game>().Shell.Enemies.Barrels.Count);
         }
@@ -375,7 +362,6 @@ namespace RoguePirates.V4.Tests
             var shots = Get<IHostileProjectileView>();
             var hazards = Get<IHazardView>();
             // M8: the views are the V4 enemy world's; compare them with its own arrays.
-            Assert.IsNull(Object.FindFirstObjectByType<EnemyWorld>(), "M8: no V3 EnemyWorld in the run");
             var world = V4TestEnemies.Simulation();
 
             // Gunners that fire at the ship and a Kraken that lays traps, so shots and hazards exist while comparing.

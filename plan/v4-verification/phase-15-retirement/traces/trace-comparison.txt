@@ -1,0 +1,38 @@
+M15 end-of-phase trace set (Windows development player, run once after all M15.1-15.4 code). Seeds 101/202/303,
+v3-parity preset, scripted autopilot, boss forced at 4:00 and killed at 5:00 — the same set as M14 — compared with
+M14's stored traces (phase-14-switchover/traces). M15 moves and deletes code only, so the expectation was an exact match.
+
+Result: not exact. Headers match (incl. the stage-profile content hash). The runs follow M14 line for line and then
+drift by float-sized amounts: seed 101 at line 50 (t = 40.7 s, a spawn 0.3 mm away, same enemy, same time), seed 303
+at line 52 (t = 51.4 s, a kill one frame earlier), seed 202 at line 244 (t = 185.5 s, a kill one frame earlier).
+
+Outcomes (M14 -> M15):
+  seed 101: death 646.6 s -> 682.0 s, kills 163 -> 156, Rum 53 -> 51
+  seed 202: death 250.5 s -> 250.5 s, kills 89 -> 89, Rum 13 -> 13 (only kill times differ, by one frame)
+  seed 303: death 779.1 s -> 774.1 s, kills 196 -> 183, Rum 58 -> 58
+  all: boss summoned 240.0 s and killed 300.0 s where M14 killed it; spawns in minutes 0-2 identical (35 / 37 / 49).
+
+Cause (inferred, not isolated — isolating it would need another trace run, which the phase protocol does not allow):
+no simulation code changed. Every change between the M14 set and this one was checked:
+  - M15's cut V3 branches were always null/false in V4 runs (captain/item multipliers, Marks, multi-ship, run context);
+  - simulation code draws no UnityEngine.Random (pickups have their own seeded stream since M14.8);
+  - the ship wake (M14 playtest round 1) is a TrailRenderer only (no collider); pool prewarms instantiate under an
+    inactive parent (no collider ever enters the physics scene).
+The one change to the set of physics actors: under the v3-parity preset V3's barrel marker world (removed with V3 in
+15.1) created two primitive cylinders in V4Game.Start whose colliders were destroyed at the end of that frame — after
+the first physics step, which runs after Start. So M14's physics scene had two extra actors for one step; PhysX's
+internal actor order differs, and the solver's float results differ slightly the first time the ship's hull works
+against an island, which is where the drift appears. The default game places no barrels, so it is not affected.
+
+--- compare-traces.py output
+v4-trace-seed-101-parity.jsonl vs v4-trace-seed-101-parity.jsonl: DIFF (570 lines)
+    line 50: {"type":"spawn","t":40.6829,"uid":24,"enemy":"deckhand_dinghy","elite":false,"boss":false,"x":-9.6674,"z":-27.9576}
+        vs {"type":"spawn","t":40.6829,"uid":24,"enemy":"deckhand_dinghy","elite":false,"boss":false,"x":-9.6671,"z":-27.9554}
+    length 570 vs 569
+v4-trace-seed-202-parity.jsonl vs v4-trace-seed-202-parity.jsonl: DIFF (329 lines)
+    line 244: {"type":"kill","t":185.5655,"uid":113,"enemy":"needle_sloop","elite":false,"boss":false,"weapon":"swivel_guns"}
+        vs {"type":"kill","t":185.5322,"uid":113,"enemy":"needle_sloop","elite":false,"boss":false,"weapon":"swivel_guns"}
+v4-trace-seed-303-parity.jsonl vs v4-trace-seed-303-parity.jsonl: DIFF (675 lines)
+    line 52: {"type":"kill","t":51.4494,"uid":9,"enemy":"swordfish","elite":false,"boss":false,"weapon":"swivel_guns"}
+        vs {"type":"kill","t":51.4327,"uid":9,"enemy":"swordfish","elite":false,"boss":false,"weapon":"swivel_guns"}
+    length 675 vs 645

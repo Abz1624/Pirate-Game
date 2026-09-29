@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using HighSeas.Data;
-using HighSeas.VFX;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.VFX;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Presentation.Pooling;
 using RoguePirates.V4.Weapons;

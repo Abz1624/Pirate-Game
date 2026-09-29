@@ -1,9 +1,8 @@
 using System.Collections;
-using HighSeas.Balance;
-using HighSeas.Core;
-using HighSeas.Encounters;
-using HighSeas.Enemies;
-using HighSeas.POI;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.POI;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Narrative;
@@ -13,7 +12,7 @@ using UnityEngine.TestTools;
 
 namespace RoguePirates.V4.Tests
 {
-    /// <summary>M13: the tutorial prompt and barks in the real run scene; V3's onboarding is gone.</summary>
+    /// <summary>M13: the tutorial prompt and barks in the real run scene.</summary>
     [Category("V4")]
     public sealed class V4NarrativePlayModeTests
     {
@@ -33,9 +32,6 @@ namespace RoguePirates.V4.Tests
             yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
             StageBalanceProfileContext.ResetForTests();
-            RunMarksTracker.Reset();
-            RunEncounterTracker.ResetForTests();
-            SaltwindRunSettlement.ClearLastResults();
             _isolation?.Dispose();
             _isolation = null;
         }
@@ -53,7 +49,6 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(game.Context.TryGet<IBarkControl>(out var barks));
             var presenter = Object.FindFirstObjectByType<RoguePirates.V4.Presentation.Hud.NarrativePresenter>();
             Assert.IsNotNull(presenter, "the narrative presenter is installed");
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3OnboardingDirector>(), "V3's onboarding is not created in V4 runs");
 
             Assert.IsTrue(tutorial.Active);
             Assert.AreEqual(0, tutorial.Index);

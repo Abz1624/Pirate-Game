@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using HighSeas.Balance;
-using HighSeas.Combat;
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.Enemies;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Combat;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.Enemies;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Editor;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -22,8 +22,6 @@ namespace RoguePirates.V4.Tests
     public sealed class V4ConfigM1Tests
     {
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
-        const string ProfilePath = "Assets/_Game/Data/Balance/SaltwindSoloStageBalanceProfile.asset";
-        const string SchedulePath = "Assets/_Game/Resources/EncounterSpawnSchedule.asset";
 
         readonly List<Object> _created = new List<Object>();
         ConfigSet _set;
@@ -32,7 +30,7 @@ namespace RoguePirates.V4.Tests
         public void SetUp()
         {
             _set = AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
-            Assert.IsNotNull(_set, "SaltwindDefault config set missing (run RoguePirates/V4/Migrate V3 Data to Configs)");
+            Assert.IsNotNull(_set, "SaltwindDefault config set missing");
         }
 
         [TearDown]
@@ -46,10 +44,23 @@ namespace RoguePirates.V4.Tests
         WaveTimelineConfig Timeline => _set.All<WaveTimelineConfig>().Single();
         DifficultyCurveConfig Difficulty => _set.All<DifficultyCurveConfig>().Single();
 
-        static Dictionary<string, object> PublicFields(object o) =>
-            o.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public).ToDictionary(f => f.Name, f => f.GetValue(o));
+        // ---- the shared stage profile ------------------------------------------------------------------------
 
-        static string Show(object v) => v is Array a ? "[" + string.Join(",", a.Cast<object>()) + "]" : v?.ToString() ?? "null";
+        /// <summary>
+        /// M15 (replaces the retired V3 field-ownership and profile-equality tests): the stage profile the run builds from
+        /// the V4 configs, under the v3-parity preset, has the content hash the M14 and M15 trace sets recorded in their
+        /// headers. Any change to how a profile field is filled (or to a config value it reads) changes the hash.
+        /// </summary>
+        [Test]
+        public void StageProfile_UnderTheParityPreset_KeepsTheTracedContentHash()
+        {
+            using var runtime = new ConfigSetRuntime(_set);
+            var preset = File.ReadAllText(Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
+            var errors = new List<string>();
+            Assert.IsTrue(PresetCodec.Apply(runtime, PresetCodec.FromJson(preset), 0f, errors), string.Join("\n", errors));
+            using var port = new StageProfilePort(runtime);
+            Assert.AreEqual("07c5c03eaa4afe98f0e3f4023b69980ee13ef279132b122f1666a60ebb17ab62", port.Profile.ToExport().ContentHash);
+        }
 
         // ---- enum mirrors ----------------------------------------------------------------------------------
 
@@ -74,53 +85,7 @@ namespace RoguePirates.V4.Tests
             }
         }
 
-        // ---- ownership and legacy mapping ---------------------------------------------------------------
-
-        [Test]
-        public void EveryStageProfileField_IsOwnedOrPassThrough()
-        {
-            var all = typeof(StageBalanceProfile).GetFields(BindingFlags.Instance | BindingFlags.Public).Select(f => f.Name).ToList();
-            var owned = new HashSet<string>(V3ConfigMapping.OwnedProfileFields);
-            var passed = V3ConfigMapping.PassThroughProfileFields.Keys.ToHashSet();
-            CollectionAssert.IsEmpty(all.Where(f => !owned.Contains(f) && !passed.Contains(f)), "unmapped StageBalanceProfile fields");
-            CollectionAssert.IsEmpty(owned.Intersect(passed), "a field is both owned and pass-through");
-            CollectionAssert.IsEmpty(owned.Concat(passed).Where(f => !all.Contains(f)), "mapping names a field the profile does not have");
-        }
-
-        [Test]
-        public void RuntimeProfile_FromDefaults_EqualsTheV3Asset()
-        {
-            var asset = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath);
-            var runtime = Clone(asset);
-            V3ConfigMapping.ApplyProfile(Timeline, Difficulty, runtime);
-            var a = PublicFields(asset);
-            var b = PublicFields(runtime);
-            var diffs = a.Keys.Where(k => Show(a[k]) != Show(b[k])).Select(k => $"{k}: {Show(a[k])} -> {Show(b[k])}").ToList();
-            CollectionAssert.IsEmpty(diffs, "default config changed profile fields");
-            Assert.AreEqual(asset.ToExport().ContentHash, runtime.ToExport().ContentHash, "profile export hash must not change");
-        }
-
-        [Test]
-        public void RuntimeSpawnProfiles_FromDefaults_EqualTheV3Assets()
-        {
-            var schedule = AssetDatabase.LoadAssetAtPath<EncounterSpawnSchedule>(SchedulePath);
-            var profiles = (schedule.entries ?? Array.Empty<ScheduledSpawnEntry>()).Select(e => e.profile)
-                .Concat(new[] { schedule.hammerheadBeat, schedule.krakenBeat, schedule.swarmPulse, schedule.drownedPursuer, schedule.drownedHarrier, schedule.powderCacheAmbush, schedule.bossSummon })
-                .Where(p => p != null).Distinct().ToList();
-            Assert.AreEqual(12, profiles.Count);
-            // Defaults with the v3-parity preset (it reverts the playtest decisions: elite beats R-03, Drowned anchors R-05).
-            using var parity = new ConfigSetRuntime(_set);
-            var errors = new List<string>();
-            Assert.IsTrue(PresetCodec.Apply(parity, PresetCodec.FromJson(File.ReadAllText(ParityPresetPath)), 0f, errors), string.Join("\n", errors));
-            foreach (var p in profiles)
-            {
-                var spawner = parity.All<EnemySpawnerConfig>().Single(s => s.legacyProfileId == p.ResolvedId);
-                Assert.AreEqual(p.enemy != null ? p.enemy.id : null, spawner.anchor != null ? spawner.anchor.enemyId : null, $"{p.ResolvedId} anchor");
-                var clone = Clone(p);
-                V3ConfigMapping.ApplySpawner(spawner, clone);
-                Assert.AreEqual(JsonUtility.ToJson(p), JsonUtility.ToJson(clone), $"{p.ResolvedId} changed by its default config");
-            }
-        }
+        // ---- the v3-parity preset --------------------------------------------------------------------------
 
         static string ParityPresetPath => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "plan", "v4-verification", "presets", "v3-parity.json"));
 
@@ -132,87 +97,11 @@ namespace RoguePirates.V4.Tests
             var json = File.ReadAllText(ParityPresetPath);
             var indices = System.Text.RegularExpressions.Regex.Matches(json, @"phases\[(\d+)\]\.focus\.variant")
                 .Cast<System.Text.RegularExpressions.Match>().Select(m => int.Parse(m.Groups[1].Value)).ToList();
-            CollectionAssert.AreEquivalent(new[] { V3ConfigMapping.EliteA, V3ConfigMapping.EliteB }, indices.Select(i => timeline.phases[i].phaseId));
+            CollectionAssert.AreEquivalent(new[] { "elite_hammerhead", "elite_kraken" }, indices.Select(i => timeline.phases[i].phaseId));
             foreach (var i in indices) Assert.IsNotNull(timeline.phases[i].focus.variant, timeline.phases[i].phaseId + " spawns its elite variant by default (R-03)");
         }
 
-        [Test]
-        public void RuntimeSchedule_FromDefaults_EqualsTheV3Schedule()
-        {
-            var schedule = AssetDatabase.LoadAssetAtPath<EncounterSpawnSchedule>(SchedulePath);
-            var clone = Clone(schedule);
-            var map = new Dictionary<SpawnProfile, SpawnProfile>();
-            SpawnProfile CloneOf(SpawnProfile p) => p == null ? null : map.TryGetValue(p, out var c) ? c : map[p] = Clone(p);
-            foreach (var e in clone.entries) e.profile = CloneOf(e.profile);
-            // Band 0 is 0.5/s by decision (R-01); the V3 comparison uses the v3-parity value, 0.6.
-            using (var runtime = new ConfigSetRuntime(_set))
-            {
-                var band0 = runtime.Single<WaveTimelineConfig>().phases.FindIndex(p => p.phaseId == V3ConfigMapping.BandPrefix + "0");
-                Assert.IsTrue(runtime.TryApplyEdit("timeline.saltwind", $"phases[{band0}].ratePerSecond", "0.6", 0f, out var error), error);
-                V3ConfigMapping.ApplySchedule(runtime.Single<WaveTimelineConfig>(), clone, s => map.Values.FirstOrDefault(c => c.ResolvedId == s.legacyProfileId), atRunStart: true);
-            }
-            Assert.AreEqual(schedule.gracePeriodSeconds, clone.gracePeriodSeconds);
-            Assert.AreEqual(schedule.maxActiveEnemies, clone.maxActiveEnemies);
-            Assert.AreEqual(schedule.globalMinSpawnGapSeconds, clone.globalMinSpawnGapSeconds);
-            for (var i = 0; i < schedule.entries.Length; i++)
-            {
-                Assert.AreEqual(schedule.entries[i].startTimeSeconds, clone.entries[i].startTimeSeconds, $"entry {i} start");
-                Assert.AreEqual(schedule.entries[i].profile.timing.spawnIntervalSeconds, clone.entries[i].profile.timing.spawnIntervalSeconds, $"band {i} interval (1/rate must round-trip exactly)");
-            }
-        }
-
-        [Test]
-        public void EditingABandRate_ChangesOnlyThatBandsInterval()
-        {
-            using (var runtime = new ConfigSetRuntime(_set))
-            {
-                Assert.IsTrue(runtime.TryApplyEdit("timeline.saltwind", "phases[2].ratePerSecond", "4", 0f, out var error), error);
-                var schedule = Clone(AssetDatabase.LoadAssetAtPath<EncounterSpawnSchedule>(SchedulePath));
-                var map = schedule.entries.ToDictionary(e => e.profile, e => Clone(e.profile));
-                foreach (var e in schedule.entries) e.profile = map[e.profile];
-                V3ConfigMapping.ApplySchedule(runtime.Single<WaveTimelineConfig>(), schedule, s => map.Values.FirstOrDefault(c => c.ResolvedId == s.legacyProfileId), atRunStart: false);
-                Assert.AreEqual(0.25f, schedule.entries[2].profile.timing.spawnIntervalSeconds, 1e-6f);
-                Assert.AreEqual(1f / 1.2f, schedule.entries[1].profile.timing.spawnIntervalSeconds, 1e-6f);
-            }
-        }
-
-        // ---- migration parity against V3 data ----------------------------------------------------------
-
-        [Test]
-        public void Archetypes_MatchTheCatalogAppliedV3Definitions()
-        {
-            var db = RoguePirates.V4.Editor.V3ConfigMigrator.LoadCleanDatabase();
-            var clone = Clone(db);
-            clone.enemies = db.enemies.Select(e => e != null ? Clone(e) : null).ToArray();
-            clone.weapons = db.weapons.Select(w => w != null ? Clone(w) : null).ToArray();
-            CombatSpecialistEnemyCatalog.ApplyToDatabase(clone, CombatExperimentContext.Active);
-            CombatWeaponCatalog.ApplyToDatabase(clone, CombatExperimentContext.Active);
-            foreach (var a in _set.All<EnemyArchetypeConfig>().Where(a => a.inLegacyDatabase))
-            {
-                var d = clone.GetEnemy(a.enemyId);
-                Assert.IsNotNull(d, a.enemyId);
-                Assert.AreEqual((int)d.behavior, (int)a.behavior, $"{a.enemyId} behavior");
-                Assert.AreEqual(d.threatCost, a.stats.threatCost, $"{a.enemyId} threat");
-                Assert.AreEqual(d.baseHP, a.stats.baseHP, $"{a.enemyId} hp");
-                Assert.AreEqual(d.baseDamage, a.stats.baseDamage, $"{a.enemyId} damage");
-                Assert.AreEqual(d.moveSpeed, a.stats.moveSpeed, $"{a.enemyId} speed");
-                Assert.AreEqual(d.radius, a.stats.radius, $"{a.enemyId} radius");
-                Assert.AreEqual(d.xpValue, a.rewards.xpValue, $"{a.enemyId} xp");
-                Assert.AreEqual(d.isBoss, a.isBoss);
-                Assert.AreEqual(EnemyCombatProfileRegistry.TryGet(a.enemyId, out _), a.combat.registered, $"{a.enemyId} registry");
-            }
-            foreach (var w in _set.All<WeaponConfig>())
-            {
-                var d = clone.GetWeapon(w.weaponId);
-                Assert.IsNotNull(d, w.weaponId);
-                Assert.AreEqual(d.baseDamage, w.baseDamage, $"{w.weaponId} damage");
-                Assert.AreEqual(d.baseCooldown, w.baseCooldown, $"{w.weaponId} cooldown");
-                Assert.AreEqual(d.range, w.range, $"{w.weaponId} range");
-                Assert.AreEqual((int)d.targeting, (int)w.targeting, $"{w.weaponId} targeting");
-                Assert.AreEqual(d.targetArcDegrees, w.targetArcDegrees, $"{w.weaponId} arc");
-                Assert.AreEqual(d.procCoefficient, w.procCoefficient, $"{w.weaponId} proc");
-            }
-        }
+        // ---- difficulty curve ------------------------------------------------------------------------------
 
         [Test]
         public void DifficultyDefaults_ReproduceTheV3Formulas()
@@ -331,76 +220,9 @@ namespace RoguePirates.V4.Tests
             _created.Add(c);
             foreach (var (v3, v4) in new (object, object)[] { (p.timing, c.timing), (p.placement, c.placement), (p.elite, c.elite), (p.movement, c.movement), (p.attack, c.attack) })
             {
-                CollectionAssert.IsEmpty(V3ConfigMapping.CopyFields(v3, v4), $"{v4.GetType().Name} has fields V3 lacks");
-                CollectionAssert.IsEmpty(V3ConfigMapping.CopyFields(v4, v3), $"{v3.GetType().Name} has fields the V4 mirror lacks");
+                CollectionAssert.IsEmpty(FieldMirror.CopyFields(v3, v4), $"{v4.GetType().Name} has fields V3 lacks");
+                CollectionAssert.IsEmpty(FieldMirror.CopyFields(v4, v3), $"{v3.GetType().Name} has fields the V4 mirror lacks");
             }
-        }
-
-        [Test]
-        public void Archetypes_CombatRewardsAndVisuals_MatchV3()
-        {
-            var db = RoguePirates.V4.Editor.V3ConfigMigrator.LoadCleanDatabase();
-            foreach (var a in _set.All<EnemyArchetypeConfig>().Where(a => a.inLegacyDatabase))
-            {
-                var d = db.GetEnemy(a.enemyId);
-                Assert.AreEqual(d.goldValue, a.rewards.goldValue, $"{a.enemyId} gold");
-                Assert.AreEqual(d.visualScale, a.visual.visualScale, $"{a.enemyId} visual scale");
-                Assert.AreSame(d.visualPrefab, a.visual.visualPrefab, $"{a.enemyId} prefab");
-                Assert.AreEqual(d.attackCooldown, a.stats.attackCooldown, $"{a.enemyId} attack cooldown");
-                Assert.AreEqual(d.preferredRange, a.stats.preferredRange, $"{a.enemyId} preferred range");
-                if (!EnemyCombatProfileRegistry.TryGet(a.enemyId, out var profile)) continue;
-                var expected = new ArchetypeCombat();
-                V3ConfigMapping.CopyFields(profile, expected);
-                expected.registered = true;
-                Assert.AreEqual(JsonUtility.ToJson(expected), JsonUtility.ToJson(a.combat), $"{a.enemyId} combat profile");
-            }
-        }
-
-        [Test]
-        public void Weapons_EveryMirroredField_MatchesTheCatalogAppliedV3Definition()
-        {
-            var db = RoguePirates.V4.Editor.V3ConfigMigrator.LoadCleanDatabase();
-            var clone = Clone(db);
-            clone.enemies = db.enemies.Select(e => e != null ? Clone(e) : null).ToArray();
-            clone.weapons = db.weapons.Select(w => w != null ? Clone(w) : null).ToArray();
-            CombatWeaponCatalog.ApplyToDatabase(clone, CombatExperimentContext.Active);
-            var shared = typeof(WeaponDefinition).GetFields(BindingFlags.Instance | BindingFlags.Public)
-                .Where(f => typeof(WeaponConfig).GetField(f.Name) != null && (f.FieldType.IsPrimitive || f.FieldType == typeof(string) || f.FieldType.IsEnum || f.FieldType == typeof(Color)))
-                .ToList();
-            Assert.Greater(shared.Count, 15);
-            foreach (var w in _set.All<WeaponConfig>())
-            {
-                var d = clone.GetWeapon(w.weaponId);
-                foreach (var f in shared)
-                {
-                    var v3 = f.GetValue(d);
-                    var v4 = typeof(WeaponConfig).GetField(f.Name).GetValue(w);
-                    var a = f.FieldType.IsEnum ? ((int)v3).ToString() : ConfigFieldWalker.Format(v3);
-                    var b = v4 != null && v4.GetType().IsEnum ? ((int)v4).ToString() : ConfigFieldWalker.Format(v4);
-                    Assert.AreEqual(a, b, $"{w.weaponId}.{f.Name}");
-                }
-                // M9: the axes are V3's effective ones (the asset's, else its pattern defaults), as its level-ups read them.
-                Assert.AreEqual(d.GetUpgradeConfigs().Count, w.upgradeAxes.Length, $"{w.weaponId} axes");
-            }
-        }
-
-        [Test]
-        public void TimelinePools_AndReefCrabTime_MatchTheV3Tables()
-        {
-            object Table(string name) => typeof(SaltwindAmbientCompositionLogic).GetField(name, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public).GetValue(null);
-            var shares = (float[])Table("OrdinaryShareByBand");
-            var ordinary = (string[][])Table("OrdinaryFamilies");
-            var specialist = (string[][])Table("SpecialistFamilies");
-            for (var band = 0; band < 5; band++)
-            {
-                var phase = Timeline.Phase(V3ConfigMapping.BandPrefix + band);
-                Assert.AreEqual(shares[band], phase.pools[0].share, $"band {band} ordinary share");
-                Assert.AreEqual(1f - shares[band], phase.pools[1].share, 1e-6f, $"band {band} specialist share");
-                CollectionAssert.AreEqual(ordinary[band], phase.pools[0].entries.Select(e => e.enemyId).ToArray(), $"band {band} ordinary pool");
-                CollectionAssert.AreEqual(specialist[band], phase.pools[1].entries.Select(e => e.enemyId).ToArray(), $"band {band} specialist pool");
-            }
-            var pacing = AssetDatabase.LoadAssetAtPath<DemoPacingSettings>("Assets/_Game/Resources/DemoPacingSettings.asset");
-            Assert.AreEqual(pacing.firstMinibossSeconds, Timeline.Phase(V3ConfigMapping.ReefCrab).trigger.timeSeconds);
         }
 
         [Test]

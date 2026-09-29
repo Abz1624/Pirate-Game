@@ -44,7 +44,7 @@ namespace RoguePirates.V4.Progression
     {
         /// <summary>The weapon can be offered (V3: its feature flag, and in V3 runs its unlock: starter or owned).</summary>
         bool IsWeaponOfferable(string weaponId);
-        /// <summary>The weapon is unlocked (V3 V3ContentUnlocks.IsWeaponUnlocked: a starter, or owned in the save); checked again when a card is applied.</summary>
+        /// <summary>The weapon is unlocked (V3 ContentUnlocks.IsWeaponUnlocked: a starter, or owned in the save); checked again when a card is applied.</summary>
         bool IsWeaponUnlocked(string weaponId);
         bool HasItem(string itemId);
         bool IsEvolved(string weaponId);

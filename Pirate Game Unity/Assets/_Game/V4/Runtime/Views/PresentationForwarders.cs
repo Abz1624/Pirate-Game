@@ -1,5 +1,5 @@
 using System;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Enemies;
 using RoguePirates.V4.Progression;
@@ -8,7 +8,7 @@ using UnityEngine;
 namespace RoguePirates.V4.Views
 {
     /// <summary>
-    /// The simulation's view sinks (M14.9b; were V3's ProjectileViewPool, PickupViewPool, V3PlaceholderFactory powerups,
+    /// The simulation's view sinks (M14.9b; were V3's ProjectileViewPool, PickupViewPool, PlaceholderFactory powerups,
     /// SaltwindCombatEffects and JuiceVfxBroker's splash). The modules are built before presentation exists and keep
     /// their sink from construction, so each forwarder hands every call to the presenter the presentation root registers
     /// at that moment, if any. Without one (tests, batch runs, after the presenter is destroyed) nothing is drawn and

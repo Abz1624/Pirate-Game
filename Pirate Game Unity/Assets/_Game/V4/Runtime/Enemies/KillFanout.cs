@@ -1,6 +1,6 @@
 using System;
-using HighSeas.Core;
-using HighSeas.Data;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Spawning;
 using UnityEngine;

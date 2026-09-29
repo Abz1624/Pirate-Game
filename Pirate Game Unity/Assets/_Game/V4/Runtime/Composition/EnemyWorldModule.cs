@@ -1,22 +1,19 @@
 using System;
 using System.Linq;
-using HighSeas.Balance;
-using HighSeas.Combat;
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.Encounters;
-using HighSeas.Enemies;
-using HighSeas.Pickups;
-using HighSeas.Player;
-using HighSeas.V3;
-using HighSeas.Weapons;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Combat;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.Pickups;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Enemies;
 using RoguePirates.V4.Spawning;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 
 namespace RoguePirates.V4.Composition
 {
@@ -32,7 +29,7 @@ namespace RoguePirates.V4.Composition
     {
         readonly ConfigSetRuntime _config;
         readonly Transform _systems;
-        readonly LegacyRunPort _run;
+        readonly RunPort _run;
 
         public EnemySimulation Simulation { get; }
         public EnemyCombatServices Services { get; }
@@ -41,7 +38,7 @@ namespace RoguePirates.V4.Composition
         public HellfirePatches Hellfire { get; }
         /// <summary>M14: the run's enemy combat profiles.</summary>
         public EnemyCombatProfiles CombatProfiles { get; }
-        public LegacyShipPort Target { get; }
+        public ShipPort Target { get; }
         public ExplosiveBarrels Barrels { get; private set; }
         /// <summary>M14: the V4 kill fan-out (was LegacyEnemyKillTargets).</summary>
         public KillFanout KillTargets { get; }
@@ -64,7 +61,7 @@ namespace RoguePirates.V4.Composition
         /// <summary>R-40: the near-miss margin for hostile shots (0 = off).</summary>
         public Func<float> NearMissMargin;
 
-        public EnemyWorldModule(ConfigSetRuntime config, EnemyWorldSettings settings, LegacyShipPort ship, LegacyRunPort run, EncounterTracker encounters)
+        public EnemyWorldModule(ConfigSetRuntime config, EnemyWorldSettings settings, ShipPort ship, RunPort run, EncounterTracker encounters)
         {
             _config = config;
             var systems = GameObject.Find("Systems");
@@ -87,7 +84,7 @@ namespace RoguePirates.V4.Composition
             var spawnParams = new EnemySpawnParamResolver(CombatProfiles, config);
             // V3's EnemyWorld had no enemy root, so its models sat under its own object, /Systems (EnemyViewPool.Acquire
             // switches that root off and on around each new model).
-            Simulation = new EnemySimulation(HighSeas.Platform.QualityProfile.Current.enemyCap, run,
+            Simulation = new EnemySimulation(RoguePirates.V4.Foundation.Platform.QualityProfile.Current.enemyCap, run,
                 new EnemyViewForwarder(() => ViewsTarget?.Invoke()), spawnParams, settings);
             Statuses = new EnemyStatuses();
             var s = new EnemyCombatServices

@@ -3,7 +3,7 @@
     "rootNamespace": "RoguePirates.V4",
     "references": [
         "RoguePirates.V4.Config",
-        "HighSeas.Runtime",
+        "RoguePirates.V4.Foundation",
         "RoguePirates.Simulation",
         "Unity.InputSystem",
         "Unity.TextMeshPro"

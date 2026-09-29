@@ -1,7 +1,6 @@
 using System.Globalization;
-using HighSeas.Core;
-using HighSeas.Player;
-using HighSeas.Save;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Player;
 using UnityEngine;
 
 namespace RoguePirates.V4.DevTools.Console
@@ -88,14 +87,7 @@ namespace RoguePirates.V4.DevTools.Console
         static void JumpTo(RunManager run, float target)
         {
             if (target <= run.ElapsedSeconds) return;
-            run.RestoreSuspendSnapshot(new RunSnapshotData
-            {
-                runId = run.RunId,
-                elapsedSeconds = target,
-                gold = run.Gold,
-                kills = run.KillCount,
-                objectiveSecured = run.ObjectiveSecured
-            });
+            run.JumpClock(target);
         }
     }
 }

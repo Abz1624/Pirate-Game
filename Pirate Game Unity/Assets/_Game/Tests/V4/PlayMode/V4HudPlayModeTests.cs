@@ -1,11 +1,10 @@
 using System.Collections;
 using System.Linq;
-using HighSeas.Balance;
-using HighSeas.Core;
-using HighSeas.Encounters;
-using HighSeas.Enemies;
-using HighSeas.Player;
-using HighSeas.POI;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.POI;
 using NUnit.Framework;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Presentation;
@@ -35,10 +34,7 @@ namespace RoguePirates.V4.Tests
             yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
             StageBalanceProfileContext.ResetForTests();
-            RunMarksTracker.Reset();
-            RunEncounterTracker.ResetForTests();
-            SaltwindRunSettlement.ClearLastResults();
-            HighSeas.Combat.CombatDebugOverlays.SetVisible(false);
+            RoguePirates.V4.Foundation.Combat.CombatDebugOverlays.SetVisible(false);
             _isolation?.Dispose();
             _isolation = null;
         }
@@ -83,35 +79,6 @@ namespace RoguePirates.V4.Tests
             Assert.IsNotNull(root.WeaponEffects);
             Assert.IsNotNull(root.AimOverlay);
 
-            // None of the replaced V3 views exist at run time (not even re-added by a bootstrap).
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3AuthoredGameplayHud>(FindObjectsInactive.Include, FindObjectsSortMode.None));
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3AuthoredBottomLoadoutHud>(FindObjectsInactive.Include, FindObjectsSortMode.None));
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3RunResultsScreen>(FindObjectsInactive.Include, FindObjectsSortMode.None));
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3MinimapHud>(FindObjectsInactive.Include, FindObjectsSortMode.None));
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3BossBeaconGuide>(FindObjectsInactive.Include, FindObjectsSortMode.None));
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3SpawnWarningHud>(FindObjectsInactive.Include, FindObjectsSortMode.None));
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3SpawnEdgeIndicator>(FindObjectsInactive.Include, FindObjectsSortMode.None));
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Combat.WeaponTargetingVisualizer>(FindObjectsInactive.Include, FindObjectsSortMode.None));
-            // M14.9b: the V3 effect components and the event bus left the run (V4 presenters on the event stream).
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.VFX.WeaponJuiceController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no weapon juice controller");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.VFX.JuiceVfxBroker>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no juice broker");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.VFX.CombatVfxController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no combat VFX controller");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.VFX.PlayerJuiceController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no player juice controller");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.VFX.PlayerHealthBarBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 health bar binder");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Meta.TriggerBus>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no TriggerBus");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Weapons.ProjectileWorld>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 ProjectileWorld");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3PlayBoundsWallVisual>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 edge walls");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3SaltwindStormRingVisual>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 storm ring");
-            // M9: the V3 build systems left the run (the V4 progression, item, Captain, powerup and pickup modules replace them).
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.UI.LevelSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no LevelSystem");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Weapons.WeaponController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no weapon record");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Pickups.PickupWorld>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no PickupWorld");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.Enemies.EncounterSpawner>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no EncounterSpawner");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3FloorPowerupWorld>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 powerups");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3RunItemInventory>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 items");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3CaptainController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 Captain");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.V3.V3CaptainActiveController>(FindObjectsInactive.Include, FindObjectsSortMode.None), "no V3 Captain active");
-
             // The HUD shows the run as V3's did.
             var run = RunManager.Instance;
             var elapsed = run.ElapsedSeconds;
@@ -121,7 +88,8 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(Mathf.Max(1, Object.FindFirstObjectByType<V4Game>().Build.Progression.Level).ToString(), Text("Canvas/Profile/Level_Count/Text (TMP)"));
             StringAssert.Contains("\nLV1", FirstWeaponLabel(),"first weapon slot shows the starting weapon at level 1");
             Assert.AreEqual("» Find the Treasury Beacon", Text("Canvas/Quest/View/Content/Quest_Slot/Text (TMP)"));
-            Assert.AreEqual(HighSeas.V3.V3RunContext.Layout.pois.Count, root.Minimap.PoiMarkerCount, "one minimap glyph per POI");
+            Object.FindFirstObjectByType<V4Game>().Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var stage);
+            Assert.AreEqual(stage.Module.Layout.pois.Count, root.Minimap.PoiMarkerCount, "one minimap glyph per POI");
         }
 
         static string FirstWeaponLabel()
@@ -228,13 +196,13 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(summoned, "boss summon failed");
             var layout = poi.Module.Layout;
             // A Repair Wreck used through the stage module (hull damaged first so it has something to repair).
-            var landmark = layout.pois.FindIndex(p => !p.used && p.type == HighSeas.Core.POIType.GildedWreck);
+            var landmark = layout.pois.FindIndex(p => !p.used && p.type == RoguePirates.V4.Foundation.Core.POIType.GildedWreck);
             Assert.GreaterOrEqual(landmark, 0, "no Repair Wreck in the layout");
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             ship.Damage.SetPlaytestInvulnerable(false);
             ship.Damage.TakeDamage(ship.Damage.MaxHP * 0.5f, Vector3.zero, false);
             ship.Damage.SetPlaytestInvulnerable(true);
-            Assert.IsTrue(poi.Module.Interact(HighSeas.Core.POIType.GildedWreck, landmark), "wreck repaired");
+            Assert.IsTrue(poi.Module.Interact(RoguePirates.V4.Foundation.Core.POIType.GildedWreck, landmark), "wreck repaired");
             Object.FindFirstObjectByType<V4Game>().Build.Progression.AddXp(500);
             for (var i = 0; i < 20; i++) yield return null;
 
@@ -263,8 +231,8 @@ namespace RoguePirates.V4.Tests
 
             yield return new WaitForSeconds(0.6f); // the first hit's invulnerability frames would block the killing blow
             yield return DieAndWaitForResults();
-            var telemetry = HighSeas.Combat.RunCombatTelemetry.Instance;
-            var records = telemetry == null ? null : (System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>)typeof(HighSeas.Combat.RunCombatTelemetry)
+            var telemetry = Object.FindFirstObjectByType<V4Game>().Telemetry;
+            var records = telemetry == null ? null : (System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>)typeof(RoguePirates.V4.Telemetry.RunTelemetry)
                 .GetField("_events", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(telemetry);
             if (records != null && records.Count > 0) // telemetry is on in the run's experiment profile
             {
@@ -297,11 +265,11 @@ namespace RoguePirates.V4.Tests
             StringAssert.Contains(game.Build.ActiveKeyHint(), widget.Text, "ready: the key");
             Assert.AreEqual(1f, widget.Fill, 1e-4f);
             // All Guns! waits for a target (playtest round 2): put a shark in range, the ship invulnerable.
-            var ship = Object.FindFirstObjectByType<HighSeas.Player.PlayerShipController>();
+            var ship = Object.FindFirstObjectByType<RoguePirates.V4.Foundation.Player.PlayerShipController>();
             ship.Damage.SetPlaytestInvulnerable(true);
             var world = V4TestEnemies.Simulation();
             var shark = System.Array.FindIndex(world.Definitions, d => d != null && d.id == "shark");
-            world.Spawn(shark, ship.Position + ship.MovementForward.normalized * 6f, HighSeas.Core.EliteAffix.None, 0.01f, 50f);
+            world.Spawn(shark, ship.Position + ship.MovementForward.normalized * 6f, RoguePirates.V4.Foundation.Core.EliteAffix.None, 0.01f, 50f);
             Assert.IsTrue(game.Build.AnyEnemyInWeaponRange(), "a target in range");
             Assert.IsTrue(game.Build.Captain.TryActivate(), "the active fires with a target in range");
             yield return null;

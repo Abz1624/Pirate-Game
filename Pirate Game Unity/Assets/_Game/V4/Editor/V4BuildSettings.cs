@@ -79,5 +79,19 @@ namespace RoguePirates.V4.Editor
                    $"time={summary.totalTime.TotalSeconds:0}s errors={summary.totalErrors} scenes={string.Join(",", ScenesFor(options).Select(Path.GetFileNameWithoutExtension))} " +
                    $"V4 runtime dll={runtime} DevTools dll={devTools}";
         }
+
+        /// <summary>
+        /// Command-line release build (M15: replaces V3's HighSeasBuild.BuildWebGL for tools/build-webgl.bat): the active
+        /// target (switched to WebGL first) into Builds/WebGL; exits with 1 when the build fails.
+        /// </summary>
+        public static void BuildWebGLFromCommandLine()
+        {
+            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WebGL)
+                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL, BuildTarget.WebGL);
+            var folder = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Builds", "WebGL");
+            var result = BuildRelease(folder);
+            Debug.Log("V4 build: " + result);
+            if (Application.isBatchMode) EditorApplication.Exit(result.StartsWith("result=Succeeded") ? 0 : 1);
+        }
     }
 }

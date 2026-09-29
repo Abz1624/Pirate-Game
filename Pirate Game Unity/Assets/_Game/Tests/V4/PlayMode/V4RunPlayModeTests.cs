@@ -1,11 +1,10 @@
 ﻿using System.Collections;
 using System.Linq;
-using HighSeas.Balance;
-using HighSeas.Core;
-using HighSeas.Encounters;
-using HighSeas.Enemies;
-using HighSeas.Player;
-using HighSeas.POI;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.POI;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -90,9 +89,6 @@ namespace RoguePirates.V4.Tests
             yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
             StageBalanceProfileContext.ResetForTests();
-            RunMarksTracker.Reset();
-            RunEncounterTracker.ResetForTests();
-            SaltwindRunSettlement.ClearLastResults();
             _isolation?.Dispose();
             _isolation = null;
         }
@@ -121,28 +117,6 @@ namespace RoguePirates.V4.Tests
             yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return WaitForPlaying();
             Assert.IsNotNull(Object.FindFirstObjectByType<V4Game>(), "V4SaltwindRun must be driven by V4Game");
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3RunBootstrap>(), "V3RunBootstrap must not be in the V4 scene");
-        }
-
-        [UnityTest]
-        public IEnumerator SceneReload_IgnoresAStaleV3MinibossArena()
-        {
-            // R-68: V3's static arena survives a scene reload. M14: the V4 run no longer reads (or resets) it — the spawn
-            // controller owns arenas — so a stale V3 arena cannot block the next run's spawns.
-            typeof(HighSeas.V3.V3MinibossArena).GetProperty("Active").SetValue(null, true);
-            try
-            {
-                yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
-                yield return WaitForPlaying();
-                var game = Object.FindFirstObjectByType<V4Game>();
-                Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Spawning.ISpawnController>(out var spawn));
-                Assert.IsFalse(spawn.ArenaActive, "the V4 run starts without an arena");
-                var world = V4TestEnemies.Simulation();
-                var deadline = Time.realtimeSinceStartup + 20f;
-                while (world.ActiveCount == 0 && Time.realtimeSinceStartup < deadline) yield return null;
-                Assert.Greater(world.ActiveCount, 0, "ambient spawns start despite the stale V3 arena");
-            }
-            finally { typeof(HighSeas.V3.V3MinibossArena).GetMethod("ResetForRun").Invoke(null, null); }
         }
 
         [UnityTest]
@@ -151,7 +125,6 @@ namespace RoguePirates.V4.Tests
             yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return WaitForPlaying();
             var game = Object.FindFirstObjectByType<V4Game>();
-            Assert.IsNull(Object.FindFirstObjectByType<EncounterSpawner>(), "M9: the legacy spawner left the scene");
             // M14: the profile the shared V3 code reads is built from the V4 configs (no V3 asset clone).
             Assert.AreSame(game.Shell.StageProfile.Profile, StageBalanceProfileContext.Authoring, "the profile context must use the per-run profile");
 
@@ -278,7 +251,7 @@ namespace RoguePirates.V4.Tests
             Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
             // Jump past the stage deadline (the console's forward jump), then overtime must spawn Drowned enemies (R-05).
             var run = RunManager.Instance;
-            run.RestoreSuspendSnapshot(new HighSeas.Save.RunSnapshotData { runId = run.RunId, elapsedSeconds = 601f, gold = run.Gold, kills = run.KillCount, objectiveSecured = run.ObjectiveSecured });
+            run.JumpClock(601f);
             var deadline = Time.realtimeSinceStartup + 30f;
             var found = false;
             while (!found && Time.realtimeSinceStartup < deadline)
@@ -302,15 +275,15 @@ namespace RoguePirates.V4.Tests
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             ship.Damage.SetPlaytestInvulnerable(false);
             for (var i = 0; i < 10; i++) yield return null;
-            run.RestoreSuspendSnapshot(new HighSeas.Save.RunSnapshotData { runId = run.RunId, elapsedSeconds = 800f, gold = run.Gold, kills = run.KillCount, objectiveSecured = run.ObjectiveSecured });
+            run.JumpClock(800f);
             var deadline = Time.realtimeSinceStartup + 20f;
             while (!game.Context.Get<RoguePirates.V4.Views.IWorldView>().StormRingVisible && Time.realtimeSinceStartup < deadline) { KeepRunningStorm(); yield return null; }
             Assert.IsTrue(game.Context.Get<RoguePirates.V4.Views.IWorldView>().StormRingVisible, "the storm ring is up at 13:20");
-            var outside = HighSeas.World.PlayBounds.Center + new Vector3(HighSeas.World.PlayBounds.HalfExtentX - 10f, 0f, 0f);
+            var outside = RoguePirates.V4.Foundation.World.PlayBounds.Center + new Vector3(RoguePirates.V4.Foundation.World.PlayBounds.HalfExtentX - 10f, 0f, 0f);
             ship.SetMovementEnabled(false);
             ship.SetWorldPosition(outside);
             yield return null;
-            Assert.IsFalse(HighSeas.World.PlayBounds.IsInsideStormSafeZone(ship.Position), "the ship is outside the safe zone");
+            Assert.IsFalse(RoguePirates.V4.Foundation.World.PlayBounds.IsInsideStormSafeZone(ship.Position), "the ship is outside the safe zone");
             var hp = ship.Damage.CurrentHP;
             deadline = Time.realtimeSinceStartup + 12f; // the storm edge's 8 s grace from run start is long past
             while (Mathf.Approximately(ship.Damage.CurrentHP, hp) && Time.realtimeSinceStartup < deadline) { KeepRunningStorm(); ship.SetWorldPosition(outside); yield return null; }
@@ -387,7 +360,6 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(RunManager.Instance.IsPaused, "all level-ups skipped");
             yield return null;
             Assert.IsFalse(panel.activeSelf, $"R-83: the cards are hidden after the last Skip (pending={levels.PendingLevelUps}, reason={RunManager.Instance.PauseReason})");
-            Assert.IsEmpty(Object.FindObjectsByType<HighSeas.UI.LevelUpModal>(FindObjectsInactive.Include, FindObjectsSortMode.None), "V3's modal left the run");
         }
 
         [UnityTest]
@@ -415,11 +387,8 @@ namespace RoguePirates.V4.Tests
             yield return WaitForPlaying();
             var game = Object.FindFirstObjectByType<V4Game>();
             Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Spawning.ISpawnController>(out var spawn), "spawn controller registered");
-            Assert.IsNull(Object.FindFirstObjectByType<EncounterSpawner>(), "M9: the legacy spawner (Dead Calm's sink) left the scene");
             foreach (var step in new[] { FrameStep.Ambient, FrameStep.Overtime, FrameStep.Storm, FrameStep.Beats, FrameStep.StormEdge })
                 Assert.IsTrue(game.Frame.Has(step), $"{step} step bound");
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3PressureBeatDirector>(), "no V3 beat director");
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.V3.V3OvertimeDirector>(), "no V3 overtime director");
 
             var world = V4TestEnemies.Simulation();
             var start = Time.realtimeSinceStartup;
@@ -531,7 +500,6 @@ namespace RoguePirates.V4.Tests
             SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return null;
             yield return WaitForPlaying();
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.Weapons.WeaponController>(), "M9: no weapon record");
             var weapons = Weapons();
             Assert.IsNotNull(weapons);
             Assert.AreEqual(Levels().Loadout.Count, weapons.Slots.Count, "V4 slots follow the progression loadout");
@@ -546,7 +514,6 @@ namespace RoguePirates.V4.Tests
             var deadline = Time.realtimeSinceStartup + 10f;
             while (Emissions(id) == before && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.Greater(Emissions(id), before, "V4 fired " + id);
-            Assert.IsNull(Object.FindFirstObjectByType<HighSeas.Weapons.ProjectileWorld>(), "V3's ProjectileWorld left the run scenes (M14.9b)");
         }
 
         [UnityTest]
@@ -667,8 +634,6 @@ namespace RoguePirates.V4.Tests
             var start = Time.realtimeSinceStartup;
             while (RunManager.Instance.ElapsedSeconds < 6f && Time.realtimeSinceStartup - start < 20f) yield return null;
             Assert.AreEqual(0, world.ActiveCount, "no ambient spawns in the lab");
-            Assert.IsNull(Object.FindFirstObjectByType<EncounterSpawner>(), "M9: no legacy spawner");
-            Assert.IsNull(Object.FindFirstObjectByType<POIManager>(), "M7: no POIManager");
             Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Stage.IStageContent>(out var stage));
             Assert.IsTrue(stage.Module.Enabled, "M8 playtest: chests, landmarks and the Beacon work in the lab");
             Assert.IsTrue(stage.Interaction.Enabled, "M8 playtest: prompts in the lab");
@@ -781,7 +746,6 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(25, rum.SettledRumOf(RoguePirates.V4.Config.RumSource.BossVictory), "boss victory must be credited");
             Assert.AreEqual(rumBefore + rum.SettledTotal, AppRoot.Instance.Save.Meta.marks);
             Assert.AreEqual(doubloonsBefore, AppRoot.Instance.Save.Meta.doubloons, "gold is run-only: nothing banked");
-            Assert.IsFalse(SaltwindRunSettlement.LastSettlementApplied, "the V3 settlement never runs");
             var afterFirst = AppRoot.Instance.Save.Meta.marks;
 
             game.Lifecycle.OnPlayerDied(null, null); // a second death callback

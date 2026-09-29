@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.Pickups;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.Pickups;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Presentation.Pooling;
 using RoguePirates.V4.Progression;

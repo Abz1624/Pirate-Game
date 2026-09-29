@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using HighSeas.Core;
-using HighSeas.Enemies;
-using HighSeas.Player;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.Player;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Enemies;
 using UnityEngine;

@@ -1,13 +1,13 @@
 using System;
-using HighSeas.Balance;
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.Player;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.Simulation;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Events;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 using RoguePirates.V4.Spawning;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -18,7 +18,7 @@ namespace RoguePirates.V4
     /// <summary>
     /// V4 composition root. Builds the run context and module list and connects them. Systems that have no V4 module
     /// yet run through <see cref="RunBootstrapSequence"/> (same order and slot as V3RunBootstrap, so M0 runs match V3).
-    /// It must not grow gameplay logic of its own: new behavior goes into modules; legacy calls go into Legacy/.
+    /// It must not grow gameplay logic of its own: new behavior goes into modules; calls into the shared run, ship and world go through Ports/.
     /// </summary>
     [DefaultExecutionOrder(-100)]
     public sealed class V4Game : MonoBehaviour
@@ -46,8 +46,8 @@ namespace RoguePirates.V4
         ModuleRegistry _modules;
         RunBootstrapSequence _shell;
         RunEventPublisher _publisher;
-        LegacyRunPort _runPort;
-        LegacyShipPort _shipPort;
+        RunPort _runPort;
+        ShipPort _shipPort;
         SpawnController _spawn;
         FramePipeline _frame;
         /// <summary>M14.14: the run's frame steps.</summary>
@@ -127,12 +127,12 @@ namespace RoguePirates.V4
             _context.Register<ISpawnController>(_spawn);
             // Contracts the V4 modules use, implemented over legacy systems until those systems are ported.
             // M14: the shared run and ship (kept until M15) behind two ports; every V4 reader goes through them.
-            var runState = new LegacyRunPort
+            var runState = new RunPort
             {
                 Timeline = () => _config?.Single<WaveTimelineConfig>(),
                 EndedByDeathSource = () => _rewards != null && _rewards.EndedByDeath,
             };
-            var ship = new LegacyShipPort(() => _shell != null && _shell.Player != null ? _shell.Player : player);
+            var ship = new ShipPort(() => _shell != null && _shell.Player != null ? _shell.Player : player);
             // M14: the run's telemetry (port of V3's static RunCombatTelemetry + WeaponDamageLedger, same export) and the
             // run lifecycle (start tracking, damage record, death flow; was LegacyRunLifecycle).
             var experiment = _config?.Single<ExperimentConfig>();
@@ -158,11 +158,11 @@ namespace RoguePirates.V4
             _context.Register<Enemies.IEnemyDevControl>(_enemies.Contracts);
             _context.Register<Enemies.IHostileProjectileView>(_enemies.Services.Shots);
             _context.Register<Enemies.IHazardView>(_enemies.Services.Hazards);
-            _context.Register<ISpawnPlacement>(new LegacySpawnPlacementPort(() => _shell != null ? _shell.Player : null));
+            _context.Register<ISpawnPlacement>(new SpawnPlacementPort(() => _shell != null ? _shell.Player : null));
             _context.Register<IRunRandom>(runState);
             _context.Register<IRunStatus>(runState);
             _context.Register<ISpawnFeedback>(new SpawnFeedback(_toasts, _telemetry)); // M14 (was LegacySpawnFeedback)
-            var playBounds = new LegacyPlayBoundsPort();
+            var playBounds = new PlayBoundsPort();
             _context.Register<IStormArena>(playBounds);
             _context.Register<Views.IWorldView>(playBounds);
             var damageSink = new PlayerDamageService(ship); // M14.14 (was LegacyPlayerDamageSink)

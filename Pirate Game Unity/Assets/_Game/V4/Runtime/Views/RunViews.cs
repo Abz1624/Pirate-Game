@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Config;
 using UnityEngine;
 
@@ -7,8 +7,8 @@ namespace RoguePirates.V4.Views
 {
     // Read-only snapshots presentation reads (M6). Presenters see only these interfaces, the event reader and the
     // small command interfaces below (a button press is input, not a state change the presenter makes itself).
-    // M6 implements them over the legacy hubs (Runtime/Legacy/LegacyViews.cs); later phases swap in V4 modules
-    // without touching the presenters.
+    // M6 implemented them over the legacy hubs; since M14 V4 modules and the ports in Runtime/Ports implement them,
+    // without the presenters changing.
 
     public interface IRunStatusView
     {
@@ -74,7 +74,7 @@ namespace RoguePirates.V4.Views
 
     public interface ICaptainView
     {
-        /// <summary>The selected captain as its shared id (HighSeas V3CaptainId value), for portrait lookup.</summary>
+        /// <summary>The selected captain as its shared id (Foundation CaptainId value), for portrait lookup.</summary>
         int CaptainId { get; }
         string DisplayTitle { get; }
         /// <summary>M9 playtest: the Captain's active is on (actives switched on and the Captain has one).</summary>

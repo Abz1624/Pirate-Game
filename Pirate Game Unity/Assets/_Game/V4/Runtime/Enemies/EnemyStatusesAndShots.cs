@@ -1,6 +1,6 @@
 using System;
-using HighSeas.Core;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.World;
 using UnityEngine;
 
 namespace RoguePirates.V4.Enemies

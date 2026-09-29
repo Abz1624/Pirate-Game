@@ -6,8 +6,7 @@
         "RoguePirates.V4.Config",
         "RoguePirates.V4.Presentation",
         "RoguePirates.V4.DevTools",
-        "HighSeas.Runtime",
-        "HighSeas.Editor",
+        "RoguePirates.V4.Foundation",
         "RoguePirates.Simulation"
     ],
     "includePlatforms": [

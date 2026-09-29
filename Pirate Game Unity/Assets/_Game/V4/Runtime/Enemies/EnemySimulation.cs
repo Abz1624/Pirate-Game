@@ -1,8 +1,8 @@
 using System;
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.Enemies;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Config;
 using UnityEngine;
 

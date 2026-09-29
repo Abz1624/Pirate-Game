@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using HighSeas.Balance;
-using HighSeas.Core;
-using HighSeas.Enemies;
-using HighSeas.Meta;
-using HighSeas.Player;
-using HighSeas.POI;
-using HighSeas.UI;
-using HighSeas.V3;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.POI;
+using RoguePirates.V4.Foundation.UI;
+using RoguePirates.V4.Foundation.Progression;
 using UnityEngine;
 
 namespace RoguePirates.V4.DevTools.Trace
@@ -34,10 +33,8 @@ namespace RoguePirates.V4.DevTools.Trace
 
         RoguePirates.V4.Enemies.IEnemyWorldView _enemies;
         RoguePirates.V4.Enemies.IEnemyDevControl _enemyDev;
-        POIManager _poi;
-        RoguePirates.V4.Stage.IStageContent _stage; // M7: V4 stage content (the V3 scene keeps POIManager)
+        RoguePirates.V4.Stage.IStageContent _stage;
         PlayerShipController _ship;
-        TriggerBus _bus;
         bool _started, _ended, _finished;
         int _startFrame, _endFrame;
         int _lastLevel = -1, _minute, _minuteKills, _totalSpawns, _totalKills;
@@ -45,18 +42,9 @@ namespace RoguePirates.V4.DevTools.Trace
         bool _bossSummoned, _bossDefeated;
         int _modalOpenFrames, _chestPauseFrames;
 
-        static readonly FieldInfo OffersField = typeof(LevelUpModal).GetField("_offers", BindingFlags.Instance | BindingFlags.NonPublic);
-        static readonly FieldInfo PanelField = typeof(LevelUpModal).GetField("panel", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-        static readonly MethodInfo PickMethod = typeof(LevelUpModal).GetMethod("Pick", BindingFlags.Instance | BindingFlags.NonPublic);
-        static readonly FieldInfo TargetField = typeof(V3InteractionController).GetField("_target", BindingFlags.Instance | BindingFlags.NonPublic);
-        static readonly FieldInfo DismissedField = typeof(V3InteractionController).GetField("_salvageChestDismissedIndex", BindingFlags.Instance | BindingFlags.NonPublic);
-        static readonly MethodInfo EndChestPauseMethod = typeof(V3InteractionController).GetMethod("EndSalvageChestChoicePause", BindingFlags.Instance | BindingFlags.NonPublic);
-
         public void Begin(TraceRequest request)
         {
             _request = request;
-            if (OffersField == null || PanelField == null || PickMethod == null || TargetField == null || DismissedField == null || EndChestPauseMethod == null)
-                Debug.LogError("V4 trace: a pause-responder member was not found; replays may stall at modals.");
         }
 
         float SimTime => RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f;
@@ -77,7 +65,6 @@ namespace RoguePirates.V4.DevTools.Trace
 
         void OnDestroy()
         {
-            if (_bus != null) { _bus.Kill -= OnKill; _bus.ChestOpened -= OnChest; }
             if (_v4Events != null) _v4Events.TickPublished -= OnV4Events;
             if (_started && !_finished) Finish("aborted");
         }
@@ -111,7 +98,6 @@ namespace RoguePirates.V4.DevTools.Trace
             if (!human && !_bossSummoned && t >= _request.bossAtSeconds && !run.IsRunEnded && !run.IsPaused)
             {
                 if (_stage != null) _stage.TrySummonBoss();
-                else if (_poi != null) _poi.TrySummonBoss();
             }
             if (!human && _bossSummoned && !_bossDefeated && t >= _request.killBossAtSeconds && !run.IsRunEnded && !run.IsPaused)
                 TryKillBoss();
@@ -144,7 +130,6 @@ namespace RoguePirates.V4.DevTools.Trace
         {
             _started = true;
             _startFrame = Time.frameCount;
-            _poi = FindFirstObjectByType<POIManager>();
             var game = FindFirstObjectByType<RoguePirates.V4.V4Game>();
             if (game != null && game.Context != null)
             {
@@ -153,35 +138,21 @@ namespace RoguePirates.V4.DevTools.Trace
                 game.Context.TryGet(out _enemyDev);
                 game.Context.TryGet(out _cards); // M14.11: the level-up presenter's pick API
             }
-            // V3 scenes (the golden recordings) have no V4 run: read the legacy world through the same views. A V4 run
-            // always registers them; never fall back there (it would read an empty legacy world after M8).
-            if (game == null && (_enemies == null || _enemyDev == null))
-            {
-                var legacy = new RoguePirates.V4.Legacy.LegacyEnemyWorldView();
-                _enemies ??= legacy;
-                _enemyDev ??= legacy;
-            }
             _ship = FindFirstObjectByType<PlayerShipController>();
-            // M14: V4 runs publish kills and chests as events (TriggerBus is gone from them); V3 scenes (golden recording)
-            // still raise TriggerBus.
+            // M14: V4 runs publish kills and chests as events.
             var v4Game = FindFirstObjectByType<RoguePirates.V4.V4Game>();
             if (v4Game != null && v4Game.Events != null)
             {
                 _v4Events = v4Game.Events;
                 _v4Events.TickPublished += OnV4Events;
             }
-            else
-            {
-                _bus = TriggerBus.Instance;
-                if (_bus != null) { _bus.Kill += OnKill; _bus.ChestOpened += OnChest; }
-                else Debug.LogWarning("V4 trace: TriggerBus.Instance is null; kills will be recorded as despawns.");
-            }
+            else Debug.LogWarning("V4 trace: no V4 run; kills will be recorded as despawns.");
 
             if (_request.invulnerable && _ship != null) _ship.Damage.SetPlaytestInvulnerable(true); // long runs (overtime, storm)
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             Add(new JsonLine("header").Int("schema", 1).Str("label", _request.label).Str("scene", scene)
                 .Int("seed", RunManager.Instance.RunSeed).Str("pilot", _request.pilot).Num("dt", _request.captureDeltaTime)
-                .Str("captain", V3CaptainSelection.Selected.ToString()).Str("unity", Application.unityVersion)
+                .Str("captain", CaptainSelection.Selected.ToString()).Str("unity", Application.unityVersion)
                 .Str("platform", Application.isEditor ? "editor" : Application.platform.ToString()).Str("screen", $"{Screen.width}x{Screen.height}")
                 .Num("bossAt", _request.bossAtSeconds).Num("killBossAt", _request.killBossAtSeconds).Num("killArenaAfter", _request.killArenaFocusAfterSeconds).Str("commit", _request.commit).Str("v4SetHash", FindFirstObjectByType<RoguePirates.V4.V4Game>()?.Config?.Hash ?? string.Empty).Str("director", FindFirstObjectByType<RoguePirates.V4.V4Game>()?.Config?.Single<RoguePirates.V4.Config.DirectorConfig>()?.version ?? string.Empty).Str("directorMode", FindFirstObjectByType<RoguePirates.V4.V4Game>()?.Config?.Single<RoguePirates.V4.Config.DirectorConfig>()?.mode.ToString() ?? string.Empty).Str("preset", string.IsNullOrEmpty(_request.presetPath) ? string.Empty : Path.GetFileNameWithoutExtension(_request.presetPath)).Str("visualPins", "skinned-offscreen+always-animate").Str("configHash", StageBalanceProfileContext.Export?.ContentHash).Bool("invulnerable", _request.invulnerable));
         }
@@ -289,12 +260,12 @@ namespace RoguePirates.V4.DevTools.Trace
             _cards.Pick(0);
         }
 
-        /// <summary>The player level: the V4 progression module (M9), else V3's LevelSystem (golden recordings); -1 if none.</summary>
+        /// <summary>The player level from the V4 progression module (M9); -1 if none.</summary>
         int CurrentLevel()
         {
             if (_levelGame == null) _levelGame = FindFirstObjectByType<RoguePirates.V4.V4Game>();
             if (_levelGame != null && _levelGame.Build != null) return _levelGame.Build.Progression.Level;
-            return LevelSystem.Instance != null ? LevelSystem.Instance.Level : -1;
+            return -1;
         }
 
         void PollProgress(float t, RunManager run)
@@ -310,11 +281,6 @@ namespace RoguePirates.V4.DevTools.Trace
             {
                 if (!_bossSummoned && _stage.BossSummoned) { _bossSummoned = true; Add(new JsonLine("boss").Num("t", t).Str("state", "summoned")); }
                 if (!_bossDefeated && _stage.BossDefeated) { _bossDefeated = true; Add(new JsonLine("boss").Num("t", t).Str("state", "defeated")); }
-            }
-            else if (_poi != null)
-            {
-                if (!_bossSummoned && _poi.BossSummoned) { _bossSummoned = true; Add(new JsonLine("boss").Num("t", t).Str("state", "summoned")); }
-                if (!_bossDefeated && _poi.BossDefeated) { _bossDefeated = true; Add(new JsonLine("boss").Num("t", t).Str("state", "defeated")); }
             }
         }
 
@@ -340,11 +306,11 @@ namespace RoguePirates.V4.DevTools.Trace
         /// <summary>Logs miniboss arenas and kills the focus enemy after the configured delay (weapon-hit path).</summary>
         void TrackArena(float t, RunManager run)
         {
-            // V4 (M3+): the spawn controller owns arenas. V3 scenes (goldens): the static V3 arena.
+            // V4 (M3+): the spawn controller owns arenas.
             var spawn = V4Spawn;
-            var active = spawn != null ? spawn.ArenaActive : HighSeas.V3.V3MinibossArena.Active;
+            var active = spawn != null && spawn.ArenaActive;
             if (!active) { _arenaFocus = -1; return; }
-            var focus = spawn != null ? spawn.ArenaFocusUnitId : HighSeas.V3.V3MinibossArena.FocusAgentId;
+            var focus = spawn.ArenaFocusUnitId;
             if (focus != _arenaFocus)
             {
                 _arenaFocus = focus;
@@ -372,27 +338,8 @@ namespace RoguePirates.V4.DevTools.Trace
 
         void RespondToPauses(RunManager run)
         {
-            if (_cards != null) { RespondToCards(); goto chest; }
-            // V3 scenes (golden recordings): LevelUpModal.Pick hides the panel but leaves _offers set, so "open" means
-            // panel visible AND offers set (the same test LevelUpModal.Update uses before reading the 1/2/3 keys).
-            var modal = LevelUpModal.Instance;
-            var panel = modal != null && PanelField != null ? PanelField.GetValue(modal) as GameObject : null;
-            var open = panel != null && panel.activeSelf;
-            var offers = open && OffersField != null ? OffersField.GetValue(modal) as List<LevelOffer> : null;
-            if (offers != null && offers.Count > 0)
-            {
-                if (++_modalOpenFrames >= _request.pauseResponseFrames)
-                {
-                    _modalOpenFrames = 0;
-                    var chosen = offers[0];
-                    Add(new JsonLine("offer").Num("t", SimTime).Int("f", Frame).Str("kind", chosen.kind.ToString()).Str("id", chosen.id)
-                        .Int("choices", offers.Count));
-                    PickMethod?.Invoke(modal, new object[] { 0 });
-                }
-            }
-            else _modalOpenFrames = 0;
+            if (_cards != null) RespondToCards();
 
-            chest:
             if (run.PauseReason == PauseReason.POIChoice)
             {
                 if (++_chestPauseFrames >= _request.pauseResponseFrames)
@@ -405,17 +352,6 @@ namespace RoguePirates.V4.DevTools.Trace
                         {
                             _stage.SkipChest();
                             Add(new JsonLine("chestSkip").Num("t", SimTime).Int("f", Frame).Int("poi", index));
-                        }
-                    }
-                    else
-                    {
-                        var interaction = V3InteractionController.Instance;
-                        var target = interaction != null ? TargetField?.GetValue(interaction) as POIInteractable : null;
-                        if (target != null)
-                        {
-                            DismissedField.SetValue(interaction, target.Index);
-                            EndChestPauseMethod.Invoke(interaction, null);
-                            Add(new JsonLine("chestSkip").Num("t", SimTime).Int("f", Frame).Int("poi", target.Index));
                         }
                     }
                 }
@@ -473,14 +409,6 @@ namespace RoguePirates.V4.DevTools.Trace
                     .Int("boss", rum.SettledRumOf(RoguePirates.V4.Config.RumSource.BossVictory))
                     .Int("overtime", rum.SettledRumOf(RoguePirates.V4.Config.RumSource.OvertimeMinute))
                     .Int("total", rum.SettledTotal));
-            else
-            {
-                var b = SaltwindRunSettlement.LastBreakdown; // V3 scenes (golden recording)
-                Add(new JsonLine("marks").Bool("applied", SaltwindRunSettlement.LastSettlementApplied)
-                    .Int("awarded", SaltwindRunSettlement.LastMarksAwarded).Int("minutes", b.QualifyingOrdinaryMinutes)
-                    .Int("poi", b.SpecialPoiCredits).Int("elites", b.ScheduledEliteCredits).Int("boss", b.BossVictoryCredits)
-                    .Int("overtime", b.OvertimeMinuteCredits).Int("total", b.TotalMarks));
-            }
             Finish(reason);
         }
 

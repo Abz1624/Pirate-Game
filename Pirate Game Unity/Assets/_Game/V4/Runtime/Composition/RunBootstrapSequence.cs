@@ -1,9 +1,9 @@
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.Player;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Config;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 using UnityEngine;
 
 namespace RoguePirates.V4.Composition
@@ -19,12 +19,12 @@ namespace RoguePirates.V4.Composition
     {
         readonly MonoBehaviour _host;
         readonly bool _usePlaceholderPoiVisuals;
-        readonly LegacyDatabaseAdapter _database = new LegacyDatabaseAdapter();
+        readonly RunDatabaseLoader _database = new RunDatabaseLoader();
         readonly FramePipeline _frame;
         readonly RoguePirates.V4.Spawning.SpawnController _spawn;
         readonly RoguePirates.V4.Spawning.SpawnRateModifiers _encounters;
-        readonly LegacyWorldPort _world;
-        readonly LegacyStageProfilePort _stageProfile;
+        readonly WorldPort _world;
+        readonly StageProfilePort _stageProfile;
         readonly V4RuntimeDatabase _runtimeDatabase;
         GameDatabase _runDatabase;
         PlayerShipController _player;
@@ -39,7 +39,7 @@ namespace RoguePirates.V4.Composition
         public int Seed { get; private set; }
 
         /// <summary>M14: the stage profile the shared V3 code reads (built from the V4 configs).</summary>
-        public LegacyStageProfilePort StageProfile => _stageProfile;
+        public StageProfilePort StageProfile => _stageProfile;
         /// <summary>M14: the V4 spawner profiles (bound to the run database here, where V3 retargeted its clones).</summary>
         public RoguePirates.V4.Spawning.SpawnerProfiles Spawners { get; set; }
         /// <summary>M5: the V4 weapon module; bound at run start after the level system synced the loadout.</summary>
@@ -48,7 +48,7 @@ namespace RoguePirates.V4.Composition
         public StageModule Stage { get; set; }
         /// <summary>M14: the V4 run lifecycle and the shared run port.</summary>
         public RunLifecycle Lifecycle { get; set; }
-        public LegacyRunPort RunPort { get; set; }
+        public RunPort RunPort { get; set; }
         /// <summary>M14: the run's toast sink.</summary>
         public RoguePirates.V4.Views.IToastSink Toasts { get; set; }
         /// <summary>M8: the V4 enemy world (replaces EnemyWorld, StatusController and HostileProjectileWorld).</summary>
@@ -66,13 +66,13 @@ namespace RoguePirates.V4.Composition
             _frame = frame;
             _spawn = spawn;
             _encounters = encounters;
-            _stageProfile = new LegacyStageProfilePort(config);
+            _stageProfile = new StageProfilePort(config);
             _runtimeDatabase = new V4RuntimeDatabase(config);
             _host = host;
             _player = player;
             _usePlaceholderPoiVisuals = usePlaceholderPoiVisuals;
             _serializedDatabase = database;
-            _world = new LegacyWorldPort(stageBuilder, islandLayout);
+            _world = new WorldPort(stageBuilder, islandLayout);
         }
 
         readonly GameDatabase _serializedDatabase;
@@ -80,16 +80,16 @@ namespace RoguePirates.V4.Composition
         /// <summary>V3RunBootstrap.Awake, same order.</summary>
         public void Awake()
         {
-            LegacyWorldPort.PrepareScene(); // hazards off, the touch joystick, the ship visual bootstrap
+            WorldPort.PrepareScene(); // hazards off, the touch joystick, the ship visual bootstrap
             AppRoot.EnsureInitialized();
             _database.Load(_serializedDatabase);
         }
 
         /// <summary>Seed for the next run (explicit request, else random on Retry, else the home seed).</summary>
-        public static int ResolveSeed(int requestedSeed, bool retry) => LegacyWorldPort.ResolveSeed(requestedSeed, retry);
+        public static int ResolveSeed(int requestedSeed, bool retry) => WorldPort.ResolveSeed(requestedSeed, retry);
 
         /// <summary>V3RunBootstrap.RestartRun side effects, called before the retry reload.</summary>
-        public static void NotifyRetryStarting() => LegacyWorldPort.NotifyRetryStarting();
+        public static void NotifyRetryStarting() => WorldPort.NotifyRetryStarting();
 
         /// <summary>V3RunBootstrap.Start. Returns false when the run could not start.</summary>
         public bool Start(int seed, bool isRetry)
@@ -102,7 +102,7 @@ namespace RoguePirates.V4.Composition
 
             if (RunManager.Instance == null) _host.gameObject.AddComponent<RunManager>();
             _world.ConfigureStageBuilder();
-            LegacyWorldPort.MarkRunContextActive();
+            WorldPort.MarkRunContextActive();
             WireRunSystemsOnce();
             return BootstrapRun(seed, isRetry);
         }
@@ -136,7 +136,6 @@ namespace RoguePirates.V4.Composition
             RunManager.Instance?.SetPause(PauseReason.None);
 
             Enemies?.ClearTransientWorlds();
-            RunPort?.ResetSharedRunState(); // M14: V3's other run statics are only read by V3 systems the V4 scenes no longer contain
 
             if (!_stageProfile.TryBegin(out var profileError))
             {
@@ -160,8 +159,7 @@ namespace RoguePirates.V4.Composition
             Build?.ResetForRun(); // V3 reset its floor powerups and items here
 
             _layout = _world.Build(seed);
-            LegacyWorldPort.ResetWorldVisuals();
-            LegacyWorldPort.SetRunContext(_layout);
+            WorldPort.ResetWorldVisuals();
 
             // M7: V4 stage content in POIManager's place.
             Stage?.InitializePoi(_layout);
@@ -200,7 +198,7 @@ namespace RoguePirates.V4.Composition
             Enemies?.CreateTelemetrySlot(() => Weapons != null ? Weapons.Manager.Projectiles.ActiveCount : 0); // CombatTelemetryDriver's place
             // (M14.9b: V3's JuiceVfxBroker, WeaponJuiceController and PlayerJuiceController are not added; every effect is
             // a V4 presenter.)
-            LegacyWorldPort.EnsurePlayfeel(_player, seed); // day-night, boost, boost camera zoom
+            WorldPort.EnsurePlayfeel(_player, seed); // day-night, boost, boost camera zoom
 
             // V3 created its spawn directors here (V3RunBootstrap.ResetSaltwindDirectors and the first-run path).
             // M3: the V4 spawn controller replaces them; M14.14: its ticks are frame steps (were legacy update slots).
@@ -213,9 +211,9 @@ namespace RoguePirates.V4.Composition
             Stage?.BindManagerSlot();
 
             RunManager.Instance.EnterPlaying();
-            Lifecycle?.ShowStartToast(!isRetry, seed, LegacyWorldPort.HomeSeedLocked);
+            Lifecycle?.ShowStartToast(!isRetry, seed, WorldPort.HomeSeedLocked);
 
-            var seedLabel = !isRetry && LegacyWorldPort.HomeSeedLocked ? "locked" : "random";
+            var seedLabel = !isRetry && WorldPort.HomeSeedLocked ? "locked" : "random";
             Debug.Log($"V4Game: run seed={seed} ({seedLabel}), POI rng={seed + 404}.");
             return true;
         }

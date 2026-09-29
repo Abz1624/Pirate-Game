@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using HighSeas.V3;
+using RoguePirates.V4.Foundation.Pickups;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Presentation.Pooling;
 using RoguePirates.V4.Progression;
@@ -10,7 +11,7 @@ using Object = UnityEngine.Object;
 namespace RoguePirates.V4.Presentation.Effects
 {
     /// <summary>
-    /// Floor powerup models (M14.9b; V3 built a placeholder marker per drop with V3PlaceholderFactory.CreateFloorPowerup
+    /// Floor powerup models (M14.9b; V3 built a placeholder marker per drop with PlaceholderFactory.CreateFloorPowerup
     /// and destroyed it on pickup). The same placeholder look, built once per powerup kind as a pool template (keys
     /// "powerup/&lt;kind&gt;") and prewarmed at bind, so a drop takes a pooled model and a pickup returns it.
     /// </summary>
@@ -30,7 +31,7 @@ namespace RoguePirates.V4.Presentation.Effects
             _pools = pools;
             foreach (PowerupKind kind in Enum.GetValues(typeof(PowerupKind)))
             {
-                var template = V3PlaceholderFactory.CreateFloorPowerup((V3FloorPowerupKind)(int)kind, Vector3.zero, null);
+                var template = PlaceholderFactory.CreateFloorPowerup((FloorPowerupKind)(int)kind, Vector3.zero, null);
                 if (template == null) continue;
                 template.SetActive(false);
                 template.transform.SetParent(_pools.Staging, true);

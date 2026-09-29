@@ -38,7 +38,22 @@ unity status --json
 
 Your user-level `~/.cursor/mcp.json` still points at the old **Coplay** `unityMCP` HTTP server (`http://127.0.0.1:8080/mcp`). That entry is broken and can be removed or disabled in Cursor → Settings → MCP. This repo uses Unity's official CLI MCP instead.
 
-The project still lists `com.coplaydev.unity-mcp` in `Packages/manifest.json`; it is optional and can be removed once you fully migrate to `com.unity.pipeline`.
+The Coplay package (`com.coplaydev.unity-mcp`) was removed from `Packages/manifest.json` in V4 M15.
+
+## Code layout (since V4 M15)
+
+The old V3 game is gone. The game lives under `Pirate Game Unity/Assets/_Game/V4/` (the engine-independent simulation, content, account and platform assemblies stay in `Assets/_Game/Simulation`, `Content`, `AccountClient` and `PlatformAdapters`):
+
+| Folder | Assembly | Contents |
+|---|---|---|
+| `Foundation/` | `RoguePirates.V4.Foundation` | Shared base the run is built on (run manager, ship, stage builder and islands, POI placement, save and unlock state, definitions). References no other V4 assembly. |
+| `Config/` | `RoguePirates.V4.Config` | ScriptableObject config schemas, hashing, presets. No behaviour. |
+| `Runtime/` | `RoguePirates.V4` | Modules, contracts, the frame pipeline; `Runtime/Ports/` is the one boundary to the Foundation MonoBehaviours. |
+| `Presentation/` | `RoguePirates.V4.Presentation` | Presenters on the view pool; read views and events only. |
+| `DevTools/` | `RoguePirates.V4.DevTools` | Tuning Console, trace harness, autopilot (Editor and development builds only). |
+| `Editor/` | `RoguePirates.V4.Editor` | Build settings, trace build, island authoring tools. |
+
+Scenes: `Assets/_Game/Scenes/V4/` (`V4Boot` first in the build). Tests: `Assets/_Game/Tests/V4/` (EditMode, PlayMode) and `Assets/_Game/Tests/RoguePirates/` (simulation).
 
 ## Agent workflow (preferred order)
 
@@ -46,7 +61,7 @@ The project still lists `com.coplaydev.unity-mcp` in `Packages/manifest.json`; i
 2. **Inspect live Editor** — `unity command` (list tools), `unity command eval "return Application.version;"`
 3. **Make code changes** in `Pirate Game Unity/Assets/`
 4. **Let Unity recompile** (or use CLI to drive the Editor)
-5. **Run tests** — `unity test "Pirate Game Unity" --mode EditMode`
+5. **Run tests** — `unity test "Pirate Game Unity" --mode EditMode` (and `--mode PlayMode`)
 6. **Report** what changed, commands run, and remaining failures
 
 When a Unity Editor is connected, **prefer `unity command` over editing `.unity` / `.prefab` YAML by hand**.

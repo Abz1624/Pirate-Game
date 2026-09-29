@@ -26,7 +26,7 @@ namespace RoguePirates.V4.Config
 
     /// <summary>
     /// Content unlocks (M9): the starter weapons, Rum unlock costs, the First Conquest weapon and how a run picks its
-    /// starting weapon. From V3's stage profile (starterWeaponIds, weaponUnlocks) and V3ContentUnlocks.
+    /// starting weapon. From V3's stage profile (starterWeaponIds, weaponUnlocks) and ContentUnlocks.
     /// </summary>
     [CreateAssetMenu(menuName = "RoguePirates/V4/Unlocks", fileName = "Unlocks")]
     public sealed class UnlockConfig : V4ConfigAsset

@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using HighSeas.Balance;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Editor;
 using RoguePirates.V4.Events;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 using RoguePirates.V4.Rewards;
 using UnityEditor;
 using UnityEngine;
@@ -19,7 +19,6 @@ namespace RoguePirates.V4.Tests
     public sealed class V4RewardsM12Tests
     {
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
-        const string ProfilePath = "Assets/_Game/Data/Balance/SaltwindSoloStageBalanceProfile.asset";
 
         static ConfigSetRuntime Default() => new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
 
@@ -67,8 +66,8 @@ namespace RoguePirates.V4.Tests
             r.Publish(CombatEventKind.LandmarkUsed, 3);
             r.Publish(CombatEventKind.LandmarkUsed, 7);
             r.Publish(CombatEventKind.LandmarkUsed, 7); // the same landmark again: once
-            r.Publish(CombatEventKind.PhaseChanged, 101, 1, 0f, V3ConfigMapping.EliteA);
-            r.Publish(CombatEventKind.PhaseChanged, 102, 1, 0f, V3ConfigMapping.EliteB);
+            r.Publish(CombatEventKind.PhaseChanged, 101, 1, 0f, "elite_hammerhead");
+            r.Publish(CombatEventKind.PhaseChanged, 102, 1, 0f, "elite_kraken");
             r.Flush();
             r.Kill(400f, 101);
             r.Kill(410f, 102);
@@ -84,15 +83,16 @@ namespace RoguePirates.V4.Tests
         {
             using var set = Default();
             var c = set.Single<RewardConfig>();
-            var p = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath);
-            Assert.AreEqual(p.marksPerQualifyingMinute, c.Row("minutes").rum);
-            Assert.AreEqual(p.marksPerQualifyingMinuteMinKills, c.Row("minutes").minKills);
-            Assert.AreEqual(p.marksPerSpecialPoi, c.Row("landmarks").rum);
-            Assert.AreEqual(p.marksPerScheduledElite, c.Row("elites").rum);
+            // V3's Saltwind Marks economy (its stage profile): 2 per minute of 10+ kills, 3 per special POI, 5 per
+            // scheduled elite, 25 for the boss, 3 per overtime minute up to 15.
+            Assert.AreEqual(2, c.Row("minutes").rum);
+            Assert.AreEqual(10, c.Row("minutes").minKills);
+            Assert.AreEqual(3, c.Row("landmarks").rum);
+            Assert.AreEqual(5, c.Row("elites").rum);
             Assert.AreEqual(2, c.Row("elites").maxCredits);
-            Assert.AreEqual(p.marksBossVictory, c.Row("boss").rum);
-            Assert.AreEqual(p.marksPerOvertimeMinute, c.Row("overtime").rum);
-            Assert.AreEqual(p.marksOvertimeCap, c.Row("overtime").maxRum);
+            Assert.AreEqual(25, c.Row("boss").rum);
+            Assert.AreEqual(3, c.Row("overtime").rum);
+            Assert.AreEqual(15, c.Row("overtime").maxRum);
             Assert.IsFalse(c.Row("chests").enabled, "the chest row is an extra, off by default");
             Assert.AreEqual("Rum", c.currencyName);
         }
@@ -104,15 +104,13 @@ namespace RoguePirates.V4.Tests
             var r = Make(set);
             PlayFixture(r);
             var total = r.Rum.Settle("run-1", true);
-            var v3 = SaltwindStageSettlementLogic.ComputeBreakdown(AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath).ToExport(),
-                SaltwindStageSettlementLogic.BuildFixtureRecord());
-            Assert.AreEqual(SaltwindStageSettlementLogic.ApprovedFixtureTotalMarks, total);
+            // V3's approved fixture breakdown: 5 minutes × 2, 2 POIs × 3, 2 elites × 5, boss 25, 2 overtime minutes × 3.
             Assert.AreEqual(57, total);
-            Assert.AreEqual(v3.QualifyingOrdinaryMinutes, r.Rum.SettledRumOf(RumSource.QualifyingMinute));
-            Assert.AreEqual(v3.SpecialPoiCredits, r.Rum.SettledRumOf(RumSource.SpecialLandmark));
-            Assert.AreEqual(v3.ScheduledEliteCredits, r.Rum.SettledRumOf(RumSource.ScheduledElite));
-            Assert.AreEqual(v3.BossVictoryCredits, r.Rum.SettledRumOf(RumSource.BossVictory));
-            Assert.AreEqual(v3.OvertimeMinuteCredits, r.Rum.SettledRumOf(RumSource.OvertimeMinute));
+            Assert.AreEqual(10, r.Rum.SettledRumOf(RumSource.QualifyingMinute));
+            Assert.AreEqual(6, r.Rum.SettledRumOf(RumSource.SpecialLandmark));
+            Assert.AreEqual(10, r.Rum.SettledRumOf(RumSource.ScheduledElite));
+            Assert.AreEqual(25, r.Rum.SettledRumOf(RumSource.BossVictory));
+            Assert.AreEqual(6, r.Rum.SettledRumOf(RumSource.OvertimeMinute));
             Assert.IsTrue(r.Rum.SettlementApplied);
             Assert.AreEqual(57, r.Bank.Treasury);
         }
@@ -173,8 +171,8 @@ namespace RoguePirates.V4.Tests
         {
             using var set = Default();
             var r = Make(set);
-            r.Publish(CombatEventKind.PhaseChanged, 5, 1, 0f, V3ConfigMapping.EliteA);
-            r.Publish(CombatEventKind.PhaseChanged, 6, 1, 0f, V3ConfigMapping.EliteB);
+            r.Publish(CombatEventKind.PhaseChanged, 5, 1, 0f, "elite_hammerhead");
+            r.Publish(CombatEventKind.PhaseChanged, 6, 1, 0f, "elite_kraken");
             r.Publish(CombatEventKind.PhaseChanged, 7, 1, 0f, "reef_crab"); // not a scheduled elite (no index)
             r.Flush();
             r.Kill(200f, 7);
@@ -367,12 +365,12 @@ namespace RoguePirates.V4.Tests
         public void Unlocks_CostWhatV3Charged_AndSelectingNeverSpends()
         {
             using var set = Default();
-            var export = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath).ToExport();
             var save = new SaveService(new MemorySaveBackend());
             var unlocks = new UnlockService(() => save, () => set);
-            foreach (var w in export.WeaponUnlocks) Assert.AreEqual(w.MarksCost, unlocks.CostOf(w.ContentId), w.ContentId);
-            foreach (var c in export.CaptainUnlocks) Assert.AreEqual(c.MarksCost, unlocks.CostOf(c.ContentId), c.ContentId);
-            Assert.AreEqual(SaltwindMarksUnlockLogic.GetNextLockedMarksWeapon(export, save), unlocks.NextLockedWeapon());
+            // V3's Saltwind unlock prices (its stage profile), weapons in V3's goal order.
+            foreach (var (id, price) in new[] { ("lightning_mast", 60), ("flamethrower", 80), ("mortar", 100), ("harpoon_gun", 100), ("brine", 100), ("flint", 140) })
+                Assert.AreEqual(price, unlocks.CostOf(id), id);
+            Assert.AreEqual("lightning_mast", unlocks.NextLockedWeapon(), "a fresh save's first locked weapon, as V3 picked it");
 
             save.TrySettleRun("r1", 70);
             var goal = unlocks.NextLockedWeapon();
@@ -406,8 +404,7 @@ namespace RoguePirates.V4.Tests
                 Assert.IsFalse(text.Contains("RunMarksTracker.Try") || text.Contains("RunMarksTracker.Register") || text.Contains("RunMarksTracker.BeginRun"), name + ": V3 Marks tracker");
                 Assert.IsFalse(text.Contains("SaltwindRunSettlement.TrySettle") || text.Contains("SaltwindMarksUnlockLogic."), name + ": V3 settlement/unlocks");
                 Assert.IsFalse(text.Contains("AddDoubloons"), name + ": Doubloons");
-                if (!name.EndsWith("/Legacy/LegacyAdapters.cs"))
-                    Assert.IsFalse(text.Contains("FinalizeRunOnDeath("), name + ": V3 death finalize (only the kept PvP branch may call it)");
+                Assert.IsFalse(text.Contains("FinalizeRunOnDeath("), name + ": V3 death finalize");
                 if (name.Contains("/Presentation/"))
                     Assert.IsFalse(text.Contains("Marks"), name + ": player-facing text says Rum");
             }

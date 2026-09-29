@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.POI;
-using HighSeas.V3;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.POI;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Stage;
 using UnityEngine;
 
@@ -177,7 +177,7 @@ namespace RoguePirates.V4.Presentation.Stage
 
             if (placeholders)
             {
-                var marker = V3PlaceholderFactory.CreatePoiMarker(type, spawnPos, root);
+                var marker = PlaceholderFactory.CreatePoiMarker(type, spawnPos, root);
                 if (type == POIType.SalvageChest) SalvageChestWaterFloat.Attach(marker, _juice);
                 return marker;
             }

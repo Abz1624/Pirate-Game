@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using HighSeas.Combat;
-using HighSeas.Data;
+using RoguePirates.V4.Foundation.Combat;
+using RoguePirates.V4.Foundation.Data;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Presentation.Pooling;
@@ -303,7 +303,7 @@ namespace RoguePirates.V4.Tests
 
             // Source check: no run random stream and no legacy hubs in the presenter code (comments excluded).
             string[] forbidden = { "RunRng", "CombatFloat", "ICombatRandom", "Random.", "RunManager", "FindFirstObjectByType", "FindObjectOfType",
-                "WeaponController", "EnemyWorld", "PlayerShipController", "LevelSystem" };
+                "PlayerShipController" };
             foreach (var file in new[] { "WeaponVfxPresenter.cs", "WeaponAimOverlay.cs" })
             {
                 var path = Path.Combine(Application.dataPath, "_Game", "V4", "Presentation", "Weapons", file);

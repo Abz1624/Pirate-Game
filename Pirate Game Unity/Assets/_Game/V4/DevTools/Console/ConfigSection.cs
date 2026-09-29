@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Config;
 using UnityEngine;
 

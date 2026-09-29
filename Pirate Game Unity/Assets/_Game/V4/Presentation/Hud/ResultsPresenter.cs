@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
-using HighSeas.Balance;
-using HighSeas.Core;
-using HighSeas.V3;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Views;
 using TMPro;
@@ -169,7 +169,7 @@ namespace RoguePirates.V4.Presentation.Hud
 
         void BuildUi(Transform canvas)
         {
-            _panel = V3PlaceholderFactory.CreateUiPanel(transform, "run_results_panel", new Vector2(560f, 520f),
+            _panel = PlaceholderFactory.CreateUiPanel(transform, "run_results_panel", new Vector2(560f, 520f),
                 "Full-screen run results layout — replace with production UI art.");
             var panelRect = _panel.GetComponent<RectTransform>();
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -250,7 +250,7 @@ namespace RoguePirates.V4.Presentation.Hud
 
         Button CreateButton(string id, string label, string hint, Vector2 position, UnityEngine.Events.UnityAction onClick)
         {
-            var button = V3PlaceholderFactory.CreateUiButton(_panel.transform, id, label, new Vector2(160f, 44f), hint);
+            var button = PlaceholderFactory.CreateUiButton(_panel.transform, id, label, new Vector2(160f, 44f), hint);
             var rect = button.GetComponent<RectTransform>();
             rect.anchorMin = new Vector2(0.5f, 0f);
             rect.anchorMax = new Vector2(0.5f, 0f);

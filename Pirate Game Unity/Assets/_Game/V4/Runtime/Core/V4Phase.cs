@@ -5,7 +5,7 @@ namespace RoguePirates.V4
     /// <summary>The migration phase this code base has reached. Adapters tagged with a deletion phase at or below this fail a test.</summary>
     public static class V4Phase
     {
-        public const int Current = 14;
+        public const int Current = 15;
     }
 
     /// <summary>Marks a temporary legacy adapter with the phase that deletes it.</summary>

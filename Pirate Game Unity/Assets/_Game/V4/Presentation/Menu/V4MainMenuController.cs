@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using HighSeas.V3;
+using RoguePirates.V4.Foundation.Progression;
 using RoguePirates.V4.Composition;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Presentation.Menu;
@@ -84,7 +84,7 @@ namespace RoguePirates.V4
                 _entries.Add(new CaptainMenuEntry
                 {
                     Key = c.captainKey,
-                    ArtId = (V3CaptainId)c.legacyId,
+                    ArtId = (CaptainId)c.legacyId,
                     Label = c.displayName,
                     Theme = c.themeColor,
                     Locked = state.Locked,

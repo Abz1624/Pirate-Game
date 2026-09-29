@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using HighSeas.Combat;
+using RoguePirates.V4.Foundation.Combat;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Views;
 using RoguePirates.V4.Weapons;

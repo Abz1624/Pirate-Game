@@ -1,5 +1,5 @@
 using System;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Rewards;
 
 namespace RoguePirates.V4.Telemetry

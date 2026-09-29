@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using HighSeas.Combat;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Combat;
+using RoguePirates.V4.Foundation.Core;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Spawning;
@@ -126,13 +126,6 @@ namespace RoguePirates.V4.Tests
             public float CombatFloat() { Draws++; return (float)_r.NextDouble(); }
         }
 
-        sealed class RunRngRandom : ICombatRandom
-        {
-            readonly RunRng _rng;
-            public RunRngRandom(RunRng rng) { _rng = rng; }
-            public float CombatFloat() => _rng.CombatFloat();
-        }
-
         sealed class FakeRun : IRunStatus
         {
             public bool Exists => true;
@@ -247,32 +240,6 @@ namespace RoguePirates.V4.Tests
                 Assert.AreEqual(def.requiredItemId, e[def.evolutionId].requiredItemId);
                 Assert.AreNotEqual(ConfigEnums.EvolutionEffect.None, e[def.evolutionId].effect);
             }
-        }
-
-        // ---- Damage ----------------------------------------------------------------------------------------------
-
-        [Test]
-        public void DamageCalculator_EqualsV3DamageSystem_ForTheSameStream()
-        {
-            var stats = new PlayerStats();
-            var mods = new FakeMods { CritChance = stats.CritChance, CritDamage = stats.CritDamage, EliteDamage = stats.EliteDamage, GlobalDamage = stats.GlobalDamage };
-            var v3Rng = new RunRng(4242);
-            var v4Rng = new RunRng(4242);
-            var v4 = new DamageCalculator(mods, new RunRngRandom(v4Rng));
-            var r = new System.Random(1);
-            for (var i = 0; i < 2000; i++)
-            {
-                var baseDamage = (float)r.NextDouble() * 40f + 1f;
-                var level = (float)r.NextDouble() * 3f + 0.5f;
-                var elite = r.Next(2) == 0;
-                var proc = (float)r.NextDouble() * 1.5f;
-                var kind = r.Next(6) == 0 ? DamageProcKind.TriggeredItem : DamageProcKind.DirectWeapon;
-                var a = DamageSystem.RollDamageDetailed(baseDamage, level, stats, elite, 0f, v3Rng, proc, "deck_cannons", kind);
-                var b = v4.Roll(baseDamage, level, elite, 0f, proc, "deck_cannons", kind == DamageProcKind.TriggeredItem ? WeaponDamageKind.TriggeredItem : WeaponDamageKind.DirectWeapon);
-                Assert.AreEqual(a.amount, b.Amount, $"case {i}");
-                Assert.AreEqual(a.isCrit, b.IsCrit, $"case {i}");
-            }
-            Assert.AreEqual(v3Rng.CombatFloat(), v4Rng.CombatFloat(), "the streams stayed in step (same number of draws, crits only when the kind can crit)");
         }
 
         // ---- Cooldowns and bursts ----------------------------------------------------------------------------------

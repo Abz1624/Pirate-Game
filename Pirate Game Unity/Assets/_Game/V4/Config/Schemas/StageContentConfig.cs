@@ -58,7 +58,7 @@ namespace RoguePirates.V4.Config
     /// <summary>
     /// Stage content (M7): chests, the four landmarks and the Treasury Beacon, filled with V3's values (POIManager,
     /// V3DiscoverySystem, V3InteractionController and the stage profile fields they read). POI placement stays in the
-    /// shared StageBuilder (V3StagePoiPlacer on the map stream) until M15; the counts it reads come from here through the
+    /// shared StageBuilder (StagePoiPlacer on the map stream) until M15; the counts it reads come from here through the
     /// runtime stage profile.
     /// </summary>
     [CreateAssetMenu(menuName = "RoguePirates/V4/Stage Content", fileName = "StageContent")]

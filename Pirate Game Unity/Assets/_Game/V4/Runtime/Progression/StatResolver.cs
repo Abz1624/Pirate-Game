@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 
 namespace RoguePirates.V4.Progression
 {

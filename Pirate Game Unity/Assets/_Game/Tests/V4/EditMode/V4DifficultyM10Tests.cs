@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Difficulty;

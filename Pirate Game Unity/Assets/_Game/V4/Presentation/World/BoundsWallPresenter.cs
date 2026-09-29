@@ -1,4 +1,4 @@
-using HighSeas.V3;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Views;
 using UnityEngine;
 
@@ -19,7 +19,7 @@ namespace RoguePirates.V4.Presentation.World
 
         sealed class Wall
         {
-            public V3PlayBoundsWallSegment Segment;
+            public PlayBoundsWallSegment Segment;
             public Vector3 OutwardNormal;
         }
 
@@ -36,7 +36,7 @@ namespace RoguePirates.V4.Presentation.World
             if (_west == null)
             {
                 var resource = Resources.Load<GameObject>(DefaultPrefabResource);
-                var prefab = resource != null ? resource.GetComponent<V3PlayBoundsWallSegment>() : null;
+                var prefab = resource != null ? resource.GetComponent<PlayBoundsWallSegment>() : null;
                 _west = CreateWall("WestWall", Vector3.left, prefab);
                 _east = CreateWall("EastWall", Vector3.right, prefab);
                 _south = CreateWall("SouthWall", Vector3.back, prefab);
@@ -103,9 +103,9 @@ namespace RoguePirates.V4.Presentation.World
 
         static void SetFade(Wall wall, float fade) => wall.Segment.SetProximityFade(fade);
 
-        Wall CreateWall(string name, Vector3 outwardNormal, V3PlayBoundsWallSegment prefab)
+        Wall CreateWall(string name, Vector3 outwardNormal, PlayBoundsWallSegment prefab)
         {
-            V3PlayBoundsWallSegment segment;
+            PlayBoundsWallSegment segment;
             if (prefab != null) segment = Instantiate(prefab, transform);
             else
             {
@@ -113,7 +113,7 @@ namespace RoguePirates.V4.Presentation.World
                 go.transform.SetParent(transform, false);
                 var collider = go.GetComponent<Collider>();
                 if (collider != null) DestroyImmediate(collider);
-                segment = go.AddComponent<V3PlayBoundsWallSegment>();
+                segment = go.AddComponent<PlayBoundsWallSegment>();
             }
             segment.name = name;
             segment.FaceOutward(outwardNormal);

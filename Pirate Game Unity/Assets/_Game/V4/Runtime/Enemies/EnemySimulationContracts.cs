@@ -1,6 +1,6 @@
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.Enemies;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.Enemies;
 using UnityEngine;
 
 namespace RoguePirates.V4.Enemies
@@ -74,7 +74,7 @@ namespace RoguePirates.V4.Enemies
         bool CombatEnabled { get; }
         bool HasCombatProfile(EnemyDefinition def);
         /// <summary>M14: the run's combat profile of an enemy id (was V3's static registry).</summary>
-        bool TryGetCombatProfile(string enemyId, out HighSeas.Combat.EnemyCombatProfile profile);
+        bool TryGetCombatProfile(string enemyId, out RoguePirates.V4.Foundation.Combat.EnemyCombatProfile profile);
         /// <summary>Combat on and the enemy has a combat profile (V3 EnemyCombatProfileRegistry.UsesSaltwindBehavior).</summary>
         bool UsesCombatBehavior(string enemyId);
         EnemySpawnRuntimeParams ResolveForDefinition(EnemyDefinition def);

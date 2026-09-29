@@ -1,4 +1,4 @@
-using HighSeas.Enemies;
+using RoguePirates.V4.Foundation.Enemies;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Events;
 using UnityEngine;

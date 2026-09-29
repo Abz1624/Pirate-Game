@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using HighSeas.Enemies;
+using RoguePirates.V4.Foundation.Enemies;
 using RoguePirates.V4.Config;
 
 namespace RoguePirates.V4.Spawning

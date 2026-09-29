@@ -5,7 +5,7 @@
         "RoguePirates.V4",
         "RoguePirates.V4.Config",
         "RoguePirates.V4.Presentation",
-        "HighSeas.Runtime",
+        "RoguePirates.V4.Foundation",
         "RoguePirates.Simulation",
         "Unity.InputSystem"
     ],

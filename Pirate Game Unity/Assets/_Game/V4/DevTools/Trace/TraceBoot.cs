@@ -1,10 +1,9 @@
 using System;
 using System.IO;
 using System.Reflection;
-using HighSeas.Core;
-using HighSeas.Player;
-using HighSeas.V3;
-using HighSeas.Platform;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.Platform;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -17,7 +16,7 @@ namespace RoguePirates.V4.DevTools.Trace
     /// player it comes from the command line (<c>-v4trace &lt;request.json&gt;</c>), and the player starts in the empty
     /// launcher scene, which loads the requested run scene. Pins everything that would otherwise make two runs of the
     /// same seed differ: frame dt, the global UnityEngine.Random seed, screen shake, the save backend, the PlayerPrefs a
-    /// run reads, and the run seed (V3RunBootstrap's serialized fields in V3 scenes, RunRequest in V4 scenes).
+    /// run reads, and the run seed (RunRequest).
     /// </summary>
     static class TraceBoot
     {
@@ -88,14 +87,6 @@ namespace RoguePirates.V4.DevTools.Trace
             {
                 AppRoot.Instance.ReplaceSave(new SaveService(new MemorySaveBackend()));
                 AppRoot.Instance.Config.ScreenShakeEnabled = false;
-            }
-
-            // V3 scenes: force the inspector seed before V3RunBootstrap.Start runs.
-            var v3 = Object.FindFirstObjectByType<V3RunBootstrap>();
-            if (v3 != null)
-            {
-                SetPrivateField(v3, "forceInspectorSeed", true);
-                SetPrivateField(v3, "runSeed", Active.seed);
             }
 
             // V4 scenes read the seed from RunRequest.

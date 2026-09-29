@@ -264,7 +264,7 @@ namespace RoguePirates.V4.Tests
         public void ReviewFixes_EnumOrder_NaN_ConditionsNeverLater_AndConsoleUnranks()
         {
             // The elite affix is cast between the config enum and the game enum: same names in the same order.
-            CollectionAssert.AreEqual(System.Enum.GetNames(typeof(HighSeas.Core.EliteAffix)), System.Enum.GetNames(typeof(ConfigEnums.EliteAffix)));
+            CollectionAssert.AreEqual(System.Enum.GetNames(typeof(RoguePirates.V4.Foundation.Core.EliteAffix)), System.Enum.GetNames(typeof(ConfigEnums.EliteAffix)));
             using var set = Default();
             var (director, _, _) = Rig(set);
             IDifficultyLevers levers = director;

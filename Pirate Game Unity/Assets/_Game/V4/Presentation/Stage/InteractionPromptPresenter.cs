@@ -1,4 +1,4 @@
-using HighSeas.V3;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Stage;
 using TMPro;
 using UnityEngine;
@@ -65,7 +65,7 @@ namespace RoguePirates.V4.Presentation.Stage
             textGo.transform.SetParent(panel.transform, false);
             _textRect = textGo.AddComponent<RectTransform>();
             _text = textGo.AddComponent<TextMeshProUGUI>();
-            _text.color = V3PlaceholderFactory.UiText;
+            _text.color = PlaceholderFactory.UiText;
             ApplyCompactTextLayout();
 
             var buttonGo = new GameObject("TouchInteract");
@@ -77,7 +77,7 @@ namespace RoguePirates.V4.Presentation.Stage
             buttonRect.sizeDelta = new Vector2(96f, 48f);
             _button = buttonGo.AddComponent<Button>();
             var buttonImage = buttonGo.AddComponent<Image>();
-            buttonImage.color = V3PlaceholderFactory.UiAccent;
+            buttonImage.color = PlaceholderFactory.UiAccent;
             _button.targetGraphic = buttonImage;
 
             var labelGo = new GameObject("Label");

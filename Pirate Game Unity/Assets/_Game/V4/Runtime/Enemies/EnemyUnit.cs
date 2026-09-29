@@ -1,5 +1,5 @@
-using HighSeas.Core;
-using HighSeas.Enemies;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Enemies;
 using UnityEngine;
 
 namespace RoguePirates.V4.Enemies
@@ -39,7 +39,7 @@ namespace RoguePirates.V4.Enemies
     public sealed class CombatAgentState
     {
         public string enemyId;
-        public HighSeas.Combat.EnemyCombatPhase phase = HighSeas.Combat.EnemyCombatPhase.Approach;
+        public RoguePirates.V4.Foundation.Combat.EnemyCombatPhase phase = RoguePirates.V4.Foundation.Combat.EnemyCombatPhase.Approach;
         public float phaseTimer;
         public int attackSequence;
         public int attackId;

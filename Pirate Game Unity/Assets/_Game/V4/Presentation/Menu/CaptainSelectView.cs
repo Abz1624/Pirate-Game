@@ -5,15 +5,16 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using HighSeas.V3;
+using RoguePirates.V4.Foundation.Progression;
+using RoguePirates.V4.Foundation.UI;
 
 namespace RoguePirates.V4.Presentation.Menu
 {
-    /// <summary>One Captain card: the art id (V3's captain art is keyed by V3CaptainId), label, theme and lock.</summary>
+    /// <summary>One Captain card: the art id (V3's captain art is keyed by CaptainId), label, theme and lock.</summary>
     public struct CaptainMenuEntry
     {
         public string Key;
-        public V3CaptainId ArtId;
+        public CaptainId ArtId;
         public string Label;
         public Color Theme;
         public bool Locked;
@@ -54,7 +55,7 @@ namespace RoguePirates.V4.Presentation.Menu
         Image _bgVignette;
         Image _bgAccentGlow;
         RectTransform _row;
-        V3CharacterCardArtSettings _art;
+        CharacterCardArtSettings _art;
 
         readonly List<CardSlot> _slots = new();
         readonly float[] _focus = new float[6];
@@ -78,7 +79,7 @@ namespace RoguePirates.V4.Presentation.Menu
 
         struct CardSlot
         {
-            public V3CaptainId captain;
+            public CaptainId captain;
             public TextMeshProUGUI lockLabel;
             public RectTransform root;
             public Image scrollImage;
@@ -106,14 +107,14 @@ namespace RoguePirates.V4.Presentation.Menu
 
         void Awake()
         {
-            V3CharacterCardArtSettings.Reload();
-            _art = V3CharacterCardArtSettings.Load();
+            CharacterCardArtSettings.Reload();
+            _art = CharacterCardArtSettings.Load();
         }
 
         /// <summary>Builds the cards for these Captains (menu order) and selects <paramref name="selected"/>.</summary>
         public void Show(IReadOnlyList<CaptainMenuEntry> entries, int selected, string hint)
         {
-            if (_art == null) _art = V3CharacterCardArtSettings.Load();
+            if (_art == null) _art = CharacterCardArtSettings.Load();
             _entries.Clear();
             _entries.AddRange(entries);
             if (!string.IsNullOrEmpty(hint)) _hintText = hint;
@@ -473,7 +474,7 @@ namespace RoguePirates.V4.Presentation.Menu
             return image;
         }
 
-        bool HasCardArt(V3CaptainId captain)
+        bool HasCardArt(CaptainId captain)
         {
             if (_art == null)
                 return false;
@@ -550,7 +551,7 @@ namespace RoguePirates.V4.Presentation.Menu
         void ApplyCardVisuals(
             Image scrollImage,
             Image selectedImage,
-            V3CaptainId captain,
+            CaptainId captain,
             float focusFactor,
             float artHeight,
             TextMeshProUGUI placeholderLabel)
@@ -628,7 +629,7 @@ namespace RoguePirates.V4.Presentation.Menu
             return new Vector2(Mathf.Max(scrollSize.x, selectedSize.x), Mathf.Max(scrollSize.y, selectedSize.y));
         }
 
-        static void ApplyPlaceholder(Image image, V3CaptainId captain, TextMeshProUGUI placeholderLabel)
+        static void ApplyPlaceholder(Image image, CaptainId captain, TextMeshProUGUI placeholderLabel)
         {
             image.sprite = null;
             image.color = GetPlaceholderColor(captain);
@@ -638,13 +639,13 @@ namespace RoguePirates.V4.Presentation.Menu
                 placeholderLabel.enabled = true;
         }
 
-        static Color GetPlaceholderColor(V3CaptainId id) => id switch
+        static Color GetPlaceholderColor(CaptainId id) => id switch
         {
-            V3CaptainId.Brine => new Color(0.15f, 0.45f, 0.38f, 1f),
-            V3CaptainId.Flint => new Color(0.42f, 0.22f, 0.55f, 1f),
-            V3CaptainId.Richie => new Color(0.55f, 0.42f, 0.18f, 1f),
-            V3CaptainId.Ember => new Color(0.62f, 0.22f, 0.12f, 1f),
-            V3CaptainId.Roxie => new Color(0.12f, 0.42f, 0.62f, 1f),
+            CaptainId.Brine => new Color(0.15f, 0.45f, 0.38f, 1f),
+            CaptainId.Flint => new Color(0.42f, 0.22f, 0.55f, 1f),
+            CaptainId.Richie => new Color(0.55f, 0.42f, 0.18f, 1f),
+            CaptainId.Ember => new Color(0.62f, 0.22f, 0.12f, 1f),
+            CaptainId.Roxie => new Color(0.12f, 0.42f, 0.62f, 1f),
             _ => new Color(0.45f, 0.38f, 0.15f, 1f)
         };
 

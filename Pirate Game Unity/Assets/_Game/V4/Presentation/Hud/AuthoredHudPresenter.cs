@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using HighSeas.UI;
-using HighSeas.V3;
+using RoguePirates.V4.Foundation.UI;
+using RoguePirates.V4.Foundation.Progression;
 using RoguePirates.V4.Views;
 using TMPro;
 using UnityEngine;
@@ -39,7 +39,7 @@ namespace RoguePirates.V4.Presentation.Hud
         readonly List<RectTransform> _questSlotRoots = new List<RectTransform>();
         readonly List<string> _visibleQuestLines = new List<string>(3);
 
-        V3PlayerInfoHudArtSettings _art;
+        PlayerInfoHudArtSettings _art;
         IRunViews _views;
         MinimapPresenter _minimap;
         bool _bound;
@@ -123,7 +123,7 @@ namespace RoguePirates.V4.Presentation.Hud
             EnsureBoostHud(root);
             BindQuestSlots(root);
 
-            _art = V3PlayerInfoHudArtSettings.Load();
+            _art = PlayerInfoHudArtSettings.Load();
             ConfigureSlider(_hpSlider);
             ConfigureSlider(_xpSlider);
             _bound = _timerText != null || _profileRect != null;
@@ -262,7 +262,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 if (_portrait != null && captain.CaptainId != _lastPortraitCaptain)
                 {
                     _lastPortraitCaptain = captain.CaptainId;
-                    var sprite = _art != null ? _art.GetCaptainIcon((V3CaptainId)captain.CaptainId) : null;
+                    var sprite = _art != null ? _art.GetCaptainIcon((CaptainId)captain.CaptainId) : null;
                     if (sprite != null)
                     {
                         _portrait.sprite = sprite;

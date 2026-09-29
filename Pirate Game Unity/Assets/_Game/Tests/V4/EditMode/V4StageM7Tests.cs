@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using HighSeas.Balance;
-using HighSeas.Core;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.World;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Editor;
 using RoguePirates.V4.Events;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 using RoguePirates.V4.Spawning;
 using RoguePirates.V4.Stage;
 using RoguePirates.V4.Views;
@@ -22,7 +22,6 @@ namespace RoguePirates.V4.Tests
     public sealed class V4StageM7Tests
     {
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
-        static string ParityPresetPath => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "plan", "v4-verification", "presets", "v3-parity.json"));
         readonly List<Object> _owned = new List<Object>();
 
         [TearDown]
@@ -481,12 +480,8 @@ namespace RoguePirates.V4.Tests
         {
             var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
             using var runtime = new ConfigSetRuntime(set);
-            var asset = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>("Assets/_Game/Data/Balance/SaltwindSoloStageBalanceProfile.asset");
-            var profile = Object.Instantiate(asset);
-            _owned.Add(profile);
-            V3ConfigMapping.ApplyStage(runtime.Single<StageContentConfig>(), profile);
-            var export = profile.ToExport();
-            CollectionAssert.AreEqual(new[] { 20, 31, 38, 46, 56 }, Enumerable.Range(0, 5).Select(n => SaltwindStageEconomyLogic.QuoteChestPrice(export, n)).ToArray());
+            var stage = runtime.Single<StageContentConfig>();
+            CollectionAssert.AreEqual(new[] { 20, 31, 38, 46, 56 }, Enumerable.Range(0, 5).Select(n => ChestEconomy.ChestPrice(stage, n)).ToArray(), "V3's price sequence");
         }
 
         [Test]
@@ -792,18 +787,17 @@ namespace RoguePirates.V4.Tests
         {
             var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
             var stage = set.configs.OfType<StageContentConfig>().Single();
-            var profile = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>("Assets/_Game/Data/Balance/SaltwindSoloStageBalanceProfile.asset");
-            Assert.AreEqual(profile.salvageChestCount, stage.salvageChestCount);
-            Assert.AreEqual(profile.chestBasePrice, stage.chestBasePrice);
-            Assert.AreEqual(profile.chestPriceGrowth, stage.chestPriceGrowth);
-            Assert.AreEqual(profile.chestPriceIncrementBase, stage.chestPriceIncrementBase);
-            Assert.AreEqual(profile.disableGoldTriggeredChestSpawn, stage.disableGoldTriggeredChestSpawn);
-            Assert.AreEqual(profile.signalBuoyOccupancySeconds, stage.signalBuoyChargeSeconds);
-            Assert.AreEqual(profile.powderCacheBonusGold, stage.powderCacheBonusGold);
-            Assert.AreEqual(profile.beaconDirectionHintSeconds, stage.beaconDirectionHintSeconds);
-            Assert.AreEqual(profile.beaconExactMarkerSeconds, stage.beaconExactMarkerSeconds);
-            Assert.AreEqual(0, stage.explosiveBarrelCount, "adopted decision: no barrels");
-            Assert.AreEqual(2, profile.explosiveBarrelCount);
+            // V3's Saltwind stage profile values.
+            Assert.AreEqual(12, stage.salvageChestCount);
+            Assert.AreEqual(20, stage.chestBasePrice);
+            Assert.AreEqual(1.22f, stage.chestPriceGrowth);
+            Assert.AreEqual(25, stage.chestPriceIncrementBase);
+            Assert.IsTrue(stage.disableGoldTriggeredChestSpawn);
+            Assert.AreEqual(8f, stage.signalBuoyChargeSeconds);
+            Assert.AreEqual(20, stage.powderCacheBonusGold);
+            Assert.AreEqual(300f, stage.beaconDirectionHintSeconds);
+            Assert.AreEqual(420f, stage.beaconExactMarkerSeconds);
+            Assert.AreEqual(0, stage.explosiveBarrelCount, "adopted decision: no barrels (V3 had 2)");
             Assert.IsNotNull(stage.bossSpawner);
             Assert.IsNotNull(stage.powderCacheSpawner);
             Assert.IsTrue(stage.chestPlanUsesLoadout && stage.beaconExactMarkerAfterHint && stage.beaconFoundByProximityAfterHints && stage.forgetChestSkipWhenLeaving
@@ -811,20 +805,6 @@ namespace RoguePirates.V4.Tests
                 "fixes approved at the M7 playtest (R-47, R-93, R-94, R-96, R-97, R-101) are on; the v3-parity preset turns them off");
             Assert.IsTrue(stage.magneticTideOpensBarrels, "R-103 fix (M8 playtest) is on; the v3-parity preset turns it off");
             Assert.IsNotNull(set.configs.OfType<BossConfig>().SingleOrDefault(), "boss config in the set");
-        }
-
-        [Test]
-        public void RuntimeProfile_WithTheParityPreset_EqualsTheV3Asset()
-        {
-            var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
-            using var parity = new ConfigSetRuntime(set);
-            var errors = new List<string>();
-            Assert.IsTrue(PresetCodec.Apply(parity, PresetCodec.FromJson(File.ReadAllText(ParityPresetPath)), 0f, errors), string.Join("\n", errors));
-            var asset = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>("Assets/_Game/Data/Balance/SaltwindSoloStageBalanceProfile.asset");
-            var runtime = Object.Instantiate(asset);
-            _owned.Add(runtime);
-            V3ConfigMapping.ApplyProfile(parity.Single<WaveTimelineConfig>(), parity.Single<DifficultyCurveConfig>(), runtime, parity.Single<StageContentConfig>());
-            Assert.AreEqual(asset.ToExport().ContentHash, runtime.ToExport().ContentHash, "with V3's barrel count the stage fields equal V3's profile");
         }
     }
 }

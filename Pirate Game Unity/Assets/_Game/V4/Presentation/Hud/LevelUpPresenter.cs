@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using HighSeas.UI;
+using RoguePirates.V4.Foundation.UI;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Progression;
 using TMPro;

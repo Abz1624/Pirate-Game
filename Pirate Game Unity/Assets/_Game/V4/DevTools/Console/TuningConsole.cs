@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using HighSeas.Core;
-using HighSeas.Enemies;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
 

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
-using HighSeas.Core;
-using HighSeas.Data;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Enemies;
@@ -274,10 +274,10 @@ namespace RoguePirates.V4.Tests
             IgnoreEditModeMaterialWarning(); // the placeholder cube's tint uses renderer.material, as V3 did
             var pools = Pools();
             var presenter = new EnemyViewPresenter(pools, Juice());
-            var database = HighSeas.Core.GameDatabaseLoader.Load();
+            var database = RoguePirates.V4.Foundation.Core.GameDatabaseLoader.Load();
             try
             {
-                HighSeas.Data.EnemyDefinition modelled = null;
+                RoguePirates.V4.Foundation.Data.EnemyDefinition modelled = null;
                 foreach (var d in database.enemies) if (d != null && d.visualPrefab != null) { modelled = d; break; }
                 Assert.IsNotNull(modelled, "an enemy with a model");
                 var view = presenter.CreateView(modelled, new Vector3(4f, 0f, 2f), 0.88f, false, 7);
@@ -295,7 +295,7 @@ namespace RoguePirates.V4.Tests
                 var again = presenter.CreateView(modelled, Vector3.zero, 0.88f, true, 8);
                 Assert.AreSame(view, again, "and is reused");
 
-                var placeholder = ScriptableObject.CreateInstance<HighSeas.Data.EnemyDefinition>();
+                var placeholder = ScriptableObject.CreateInstance<RoguePirates.V4.Foundation.Data.EnemyDefinition>();
                 _created.Add(placeholder);
                 placeholder.id = "test_placeholder";
                 placeholder.radius = 1.5f;
@@ -313,60 +313,19 @@ namespace RoguePirates.V4.Tests
             finally { presenter.Dispose(); pools.Dispose(); }
         }
 
-        /// <summary>14.11: the level-up card texts from the V4 configs equal what V3's card builders wrote.</summary>
-        [Test]
-        public void OfferCards_EqualV3sCardTexts()
-        {
-            using var set = new ConfigSetRuntime(UnityEditor.AssetDatabase.LoadAssetAtPath<ConfigSet>("Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset"));
-            using var runtime = new RoguePirates.V4.Legacy.V4RuntimeDatabase(set);
-            var db = runtime.Build(RoguePirates.V4.Editor.V3ConfigMigrator.LoadCleanDatabase());
-            var checkedWeapons = 0;
-            foreach (var w in set.All<WeaponConfig>())
-            {
-                var def = db.GetWeapon(w.weaponId);
-                if (def == null) continue;
-                var v3 = HighSeas.UI.LevelOfferGenerator.BuildNewWeaponOffer(def);
-                var v4 = RoguePirates.V4.Presentation.Hud.OfferCards.ToCard(new RoguePirates.V4.Progression.Offer
-                    { Kind = RoguePirates.V4.Progression.OfferKind.NewWeapon, Id = w.weaponId, IsWeapon = true, IsNew = true, NextLevel = 1 }, set);
-                Assert.AreEqual(v3.title, v4.title, w.weaponId);
-                // M14.11 text difference: the stat line shows the weapon config's range, the one the weapon uses (V3's card
-                // showed the definition's range, which the flamethrower's stream ignores: 14 on the card, 9.5 in play).
-                Assert.AreEqual(v3.description.Replace($"range {def.range:0.#}", $"range {w.range:0.#}"), v4.description, w.weaponId);
-                Assert.AreEqual(v3.behaviorLine, v4.behaviorLine, w.weaponId);
-                Assert.AreEqual(HighSeas.V3.V3ContentDescriptions.GetWeaponDescription(def),
-                    RoguePirates.V4.Presentation.Hud.OfferCards.ToCard(new RoguePirates.V4.Progression.Offer
-                        { Kind = RoguePirates.V4.Progression.OfferKind.WeaponUpgrade, Id = w.weaponId, IsWeapon = true }, set).description.Split('\n')[0], w.weaponId);
-                checkedWeapons++;
-            }
-            Assert.GreaterOrEqual(checkedWeapons, 6);
-            foreach (var (kind, v3) in new[]
-                     {
-                         (RoguePirates.V4.Progression.OfferKind.FallbackHeal, HighSeas.UI.LevelOfferGenerator.BuildFallbackHealOffer()),
-                         (RoguePirates.V4.Progression.OfferKind.FallbackDamage, HighSeas.UI.LevelOfferGenerator.BuildFallbackDamageOffer()),
-                         (RoguePirates.V4.Progression.OfferKind.FallbackMoveSpeed, HighSeas.UI.LevelOfferGenerator.BuildFallbackMoveSpeedOffer()),
-                         (RoguePirates.V4.Progression.OfferKind.Continue, HighSeas.UI.LevelOfferGenerator.BuildContinueOffer()),
-                     })
-            {
-                var v4 = RoguePirates.V4.Presentation.Hud.OfferCards.ToCard(new RoguePirates.V4.Progression.Offer { Kind = kind, Id = v3.id }, set);
-                Assert.AreEqual(v3.title, v4.title, kind.ToString());
-                Assert.AreEqual(v3.description, v4.description, kind.ToString());
-                Assert.AreEqual(v3.categoryLabel, v4.categoryLabel, kind.ToString());
-            }
-        }
-
         sealed class FakeMarkers : RoguePirates.V4.Stage.IPoiMarkerView
         {
-            public HighSeas.Core.POIType[] Types = { HighSeas.Core.POIType.SalvageChest, HighSeas.Core.POIType.MerchantSkiff, HighSeas.Core.POIType.TrialBuoy };
+            public RoguePirates.V4.Foundation.Core.POIType[] Types = { RoguePirates.V4.Foundation.Core.POIType.SalvageChest, RoguePirates.V4.Foundation.Core.POIType.MerchantSkiff, RoguePirates.V4.Foundation.Core.POIType.TrialBuoy };
             public bool[] Spawned = { true, true, true }, Hidden = new bool[3], Used = new bool[3];
-            public HighSeas.Core.POIType[] Visual = { HighSeas.Core.POIType.SalvageChest, HighSeas.Core.POIType.MerchantSkiff, HighSeas.Core.POIType.TrialBuoy };
+            public RoguePirates.V4.Foundation.Core.POIType[] Visual = { RoguePirates.V4.Foundation.Core.POIType.SalvageChest, RoguePirates.V4.Foundation.Core.POIType.MerchantSkiff, RoguePirates.V4.Foundation.Core.POIType.TrialBuoy };
             public bool Charge;
             public int LayoutVersion => 1;
             public int PoiCount => 3;
             public bool UsePlaceholderVisuals => true;
-            public HighSeas.Core.POIType PoiType(int i) => Types[i];
+            public RoguePirates.V4.Foundation.Core.POIType PoiType(int i) => Types[i];
             public Vector3 PoiPosition(int i) => new Vector3(i * 10f, 0f, 5f);
             public bool IsMarkerSpawned(int i) => Spawned[i];
-            public HighSeas.Core.POIType VisualType(int i) => Visual[i];
+            public RoguePirates.V4.Foundation.Core.POIType VisualType(int i) => Visual[i];
             public bool IsHidden(int i) => Hidden[i];
             public bool IsConsumed(int i) => Used[i];
             public bool ChargeRingShown(int i) => Charge && i == 2;
@@ -394,13 +353,13 @@ namespace RoguePirates.V4.Tests
 
             var cache = presenter.Shown(1);
             Assert.IsNotNull(cache);
-            view.Visual[1] = HighSeas.Core.POIType.SalvageChest; // the Powder Cache's Rare Treasure Chest
+            view.Visual[1] = RoguePirates.V4.Foundation.Core.POIType.SalvageChest; // the Powder Cache's Rare Treasure Chest
             Call(presenter, "LateUpdate");
             Assert.IsNotNull(presenter.Shown(1));
             Assert.AreNotSame(cache, presenter.Shown(1), "the cache shows its Rare Treasure Chest look");
             Assert.IsFalse(cache.activeSelf);
             view.Hidden[1] = true; // the elites spring: the cache hides its children
-            view.Visual[1] = HighSeas.Core.POIType.MerchantSkiff; // "Clear all" ends the challenge: the cache comes back
+            view.Visual[1] = RoguePirates.V4.Foundation.Core.POIType.MerchantSkiff; // "Clear all" ends the challenge: the cache comes back
             Call(presenter, "LateUpdate");
             view.Hidden[1] = false;
             Call(presenter, "LateUpdate");

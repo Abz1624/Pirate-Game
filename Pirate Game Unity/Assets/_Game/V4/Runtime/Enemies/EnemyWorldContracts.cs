@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using HighSeas.Balance;
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.Enemies;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.Enemies;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Spawning;
 using RoguePirates.V4.Stage;

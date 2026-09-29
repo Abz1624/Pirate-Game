@@ -45,7 +45,7 @@ namespace RoguePirates.V4.Presentation.Hud
             toast._text.overflowMode = TextOverflowModes.Ellipsis;
             toast._text.maxVisibleLines = 3;
             toast._text.richText = true;
-            toast._text.color = HighSeas.V3.V3PlaceholderFactory.UiAccent;
+            toast._text.color = RoguePirates.V4.Foundation.World.PlaceholderFactory.UiAccent;
             root.SetActive(false);
             return toast;
         }

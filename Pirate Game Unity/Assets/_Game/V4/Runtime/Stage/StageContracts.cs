@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 using UnityEngine;
 
 namespace RoguePirates.V4.Stage
 {
-    // What the stage content module (M7) needs from systems that are still legacy. Each is implemented in
-    // Runtime/Legacy/LegacyStageAdapters.cs and replaced by the V4 module named in its adapter's deletion phase.
+    // What the stage content module (M7) needs from the run, the ship and the other modules. The run and ship halves are
+    // implemented by the ports in Runtime/Ports (RunPort, ShipPort); the rest by V4 modules.
 
     /// <summary>The run as the legacy run manager keeps it (state, pause, gold, stats).</summary>
     public interface IStageRun
@@ -26,7 +26,7 @@ namespace RoguePirates.V4.Stage
         bool TrySpendGold(int amount);
         void SecureObjective();
         void CompleteRun(bool victory);
-        /// <summary>A permanent run modifier on a shared stat (HighSeas StatId value).</summary>
+        /// <summary>A permanent run modifier on a shared stat (Foundation StatId value).</summary>
         void AddStatModifier(int stat, float add, float multiply);
     }
 

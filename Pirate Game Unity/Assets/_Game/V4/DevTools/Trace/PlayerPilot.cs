@@ -1,12 +1,12 @@
 using System;
 using System.Reflection;
-using HighSeas.Combat;
-using HighSeas.Core;
-using HighSeas.Enemies;
-using HighSeas.Pickups;
-using HighSeas.Platform;
-using HighSeas.Player;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Combat;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.Pickups;
+using RoguePirates.V4.Foundation.Platform;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.World;
 using UnityEngine;
 
 namespace RoguePirates.V4.DevTools.Trace
@@ -28,7 +28,6 @@ namespace RoguePirates.V4.DevTools.Trace
         const float EdgeComfort = 22f;
         const float IslandProbe = 16f;
 
-        static readonly FieldInfo PickupPool = typeof(PickupWorld).GetField("_pool", BindingFlags.Instance | BindingFlags.NonPublic);
 
         readonly PlayerShipController _ship;
         RoguePirates.V4.Enemies.IEnemyWorldView _enemies;
@@ -211,40 +210,22 @@ namespace RoguePirates.V4.DevTools.Trace
             }
             if (game != null && (_enemies == null || _shots == null || _hazards == null))
                 Debug.LogError("PlayerPilot: the V4 run does not register the enemy views");
-            if (game != null) return;
-            // V3 scenes (the golden recordings) have no V4 run: the legacy world through the same views.
-            _enemies ??= new RoguePirates.V4.Legacy.LegacyEnemyWorldView();
-            _shots ??= new RoguePirates.V4.Legacy.LegacyHostileProjectileView();
-            _hazards ??= new RoguePirates.V4.Legacy.LegacyHazardView();
         }
 
-        /// <summary>The pickups on the water: the V4 module (M9), else V3's PickupWorld (golden recordings).</summary>
-        int PickupCount(out PickupAgent[] legacy)
-        {
-            legacy = null;
-            if (_pickups != null) return _pickups.Capacity;
-            if (PickupWorld.Instance == null || !(PickupPool?.GetValue(PickupWorld.Instance) is PickupAgent[] pool)) return 0;
-            legacy = pool;
-            return pool.Length;
-        }
+        /// <summary>The pickups on the water (the V4 pickup module, M9).</summary>
+        int PickupCount() => _pickups != null ? _pickups.Capacity : 0;
 
-        bool TryGetPickup(PickupAgent[] legacy, int i, out PickupType type, out Vector3 position, out bool homing)
-        {
-            if (legacy == null) return _pickups.TryGet(i, out type, out _, out position, out homing);
-            type = legacy[i].type;
-            position = legacy[i].position;
-            homing = legacy[i].homingToPlayer;
-            return legacy[i].active;
-        }
+        bool TryGetPickup(int i, out PickupType type, out Vector3 position, out bool homing) =>
+            _pickups.TryGet(i, out type, out _, out position, out homing);
 
         Vector3 PickupPull(Vector3 pos)
         {
-            var count = PickupCount(out var legacy);
+            var count = PickupCount();
             var best = Vector3.zero;
             var bestScore = 0f;
             for (var i = 0; i < count; i++)
             {
-                if (!TryGetPickup(legacy, i, out var type, out var position, out var homing) || homing) continue;
+                if (!TryGetPickup(i, out var type, out var position, out var homing) || homing) continue;
                 var value = type switch
                 {
                     PickupType.XpBarrel => 3f,

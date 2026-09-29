@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using HighSeas.Core;
-using HighSeas.V3;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.UI;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Views;
 using UnityEngine;
 using UnityEngine.UI;
@@ -119,7 +119,7 @@ namespace RoguePirates.V4.Presentation.Hud
 
         void ApplyProjectSettings()
         {
-            var s = V3MinimapHudSettings.Load();
+            var s = MinimapHudSettings.Load();
             if (s == null) return;
             cornerInset = s.cornerInset;
             heightFraction = s.heightFraction;
@@ -174,12 +174,12 @@ namespace RoguePirates.V4.Presentation.Hud
 
         void BuildChrome(RectTransform root)
         {
-            var art = V3MinimapArtSettings.Load();
+            var art = MinimapArtSettings.Load();
 
             _mapClip = CreateChild(root, "MapClip");
             Stretch(_mapClip);
             var maskImage = _mapClip.gameObject.AddComponent<Image>();
-            maskImage.sprite = V3MinimapUiSprites.Circle;
+            maskImage.sprite = MinimapUiSprites.Circle;
             maskImage.color = Color.white;
             maskImage.raycastTarget = false;
             _mapClip.gameObject.AddComponent<Mask>().showMaskGraphic = false;
@@ -216,14 +216,14 @@ namespace RoguePirates.V4.Presentation.Hud
             _beaconSector = CreateChild(_mapClip, "BeaconSector");
             _beaconSector.sizeDelta = new Vector2(52f, 52f);
             var sectorImg = _beaconSector.gameObject.AddComponent<Image>();
-            sectorImg.sprite = V3MinimapUiSprites.Triangle;
+            sectorImg.sprite = MinimapUiSprites.Triangle;
             sectorImg.color = new Color(0.85f, 0.25f, 0.95f, 0.22f);
             sectorImg.raycastTarget = false;
             _beaconSector.gameObject.SetActive(false);
 
             _playerIcon = CreateChild(_mapClip, "PlayerIcon");
             _playerIcon.sizeDelta = new Vector2(16f, 16f);
-            V3MinimapMarkerGraphics.Apply(_playerIcon, V3MinimapMarkerGraphics.GlyphKind.Player);
+            MinimapMarkerGraphics.Apply(_playerIcon, MinimapMarkerGraphics.GlyphKind.Player);
 
             var overlay = CreateChild(root, "FrameOverlay");
             Stretch(overlay);
@@ -309,7 +309,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 var marker = CreateChild(_mapRoot, $"POI_{i}_{poi.type}");
                 marker.sizeDelta = new Vector2(20f, 20f);
                 marker.anchoredPosition = WorldToMap(poi.position);
-                V3MinimapMarkerGraphics.Apply(marker, V3MinimapMarkerGraphics.FromPoi(poi.type));
+                MinimapMarkerGraphics.Apply(marker, MinimapMarkerGraphics.FromPoi(poi.type));
                 var group = marker.gameObject.AddComponent<CanvasGroup>();
                 group.blocksRaycasts = false;
                 group.interactable = false;
@@ -480,7 +480,7 @@ namespace RoguePirates.V4.Presentation.Hud
             for (var i = 0; i < _spawnPings.Count; i++)
             {
                 var glyph = GlyphAt(_spawnPingIcons, i, "SpawnPing_", 14f);
-                SetGlyph(glyph, V3MinimapMarkerGraphics.GlyphKind.GenericPoi);
+                SetGlyph(glyph, MinimapMarkerGraphics.GlyphKind.GenericPoi);
                 glyph.rect.anchoredPosition = WorldToMap(_spawnPings[i].world);
             }
             HideFrom(_spawnPingIcons, _spawnPings.Count);
@@ -496,7 +496,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 var threat = _threats[i];
                 if (stage != null && stage.HasDiscovery && !stage.IsCellExplored(threat.position)) continue;
                 var glyph = GlyphAt(_threatIcons, write++, "Threat_", 18f);
-                SetGlyph(glyph, threat.isBoss ? V3MinimapMarkerGraphics.GlyphKind.Boss : V3MinimapMarkerGraphics.GlyphKind.Miniboss);
+                SetGlyph(glyph, threat.isBoss ? MinimapMarkerGraphics.GlyphKind.Boss : MinimapMarkerGraphics.GlyphKind.Miniboss);
                 glyph.rect.anchoredPosition = WorldToMap(threat.position);
             }
             HideFrom(_threatIcons, write);
@@ -516,11 +516,11 @@ namespace RoguePirates.V4.Presentation.Hud
         }
 
         /// <summary>Builds the glyph's shapes only when its kind changes (R-86).</summary>
-        static void SetGlyph(Glyph glyph, V3MinimapMarkerGraphics.GlyphKind kind)
+        static void SetGlyph(Glyph glyph, MinimapMarkerGraphics.GlyphKind kind)
         {
             if (glyph.kind == (int)kind) return;
             glyph.kind = (int)kind;
-            V3MinimapMarkerGraphics.Apply(glyph.rect, kind);
+            MinimapMarkerGraphics.Apply(glyph.rect, kind);
         }
 
         static void HideFrom(List<Glyph> icons, int start)

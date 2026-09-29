@@ -8,8 +8,8 @@ namespace RoguePirates.V4.Progression
     {
         public static int LegacyId
         {
-            get => RoguePirates.V4.Legacy.LegacyContentPort.SelectedCaptainId;
-            set => RoguePirates.V4.Legacy.LegacyContentPort.SelectedCaptainId = value;
+            get => RoguePirates.V4.Ports.ContentPort.SelectedCaptainId;
+            set => RoguePirates.V4.Ports.ContentPort.SelectedCaptainId = value;
         }
     }
 }

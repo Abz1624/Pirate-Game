@@ -48,7 +48,7 @@ namespace RoguePirates.V4.Presentation.Pooling
         /// <summary>The default projectile model plus each projectile or pellet weapon's own model (M5).</summary>
         static IEnumerable<PoolDefinition> DeriveProjectileViews(ConfigSetRuntime config, PoolCatalogConfig catalog)
         {
-            var settings = Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings");
+            var settings = Resources.Load<RoguePirates.V4.Foundation.Data.DemoJuiceSettings>("DemoJuiceSettings");
             var models = new List<(GameObject model, List<string> ids)>();
             void Add(GameObject model, string id)
             {

@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.UI;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.UI;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Progression;
 

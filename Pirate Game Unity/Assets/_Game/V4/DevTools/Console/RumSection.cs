@@ -43,7 +43,7 @@ namespace RoguePirates.V4.DevTools.Console
             var on = GUILayout.Toggle(chests.enabled, $"Row: {chests.rum} {rum.CurrencyName} per chest opened", GUILayout.Width(Width));
             if (on != chests.enabled)
             {
-                var t = HighSeas.Core.RunManager.Instance != null ? HighSeas.Core.RunManager.Instance.ElapsedSeconds : 0f;
+                var t = RoguePirates.V4.Foundation.Core.RunManager.Instance != null ? RoguePirates.V4.Foundation.Core.RunManager.Instance.ElapsedSeconds : 0f;
                 if (!game.Config.TryApplyEdit(config.configId, $"rows[{index}].enabled", on ? "true" : "false", t, out var error)) Debug.LogWarning("Rum: " + error);
             }
         }

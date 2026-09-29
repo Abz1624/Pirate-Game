@@ -397,7 +397,7 @@ namespace RoguePirates.V4.Narrative
                         if (e.A == 2) CatchUp(TutorialTrigger.BossDefeated);
                         break;
                     case CombatEventKind.RunState:
-                        if (e.A == (int)HighSeas.Core.RunState.PlayerDead || e.A == (int)HighSeas.Core.RunState.RunComplete) Complete(TutorialTrigger.RunEnded);
+                        if (e.A == (int)RoguePirates.V4.Foundation.Core.RunState.PlayerDead || e.A == (int)RoguePirates.V4.Foundation.Core.RunState.RunComplete) Complete(TutorialTrigger.RunEnded);
                         break;
                 }
             }

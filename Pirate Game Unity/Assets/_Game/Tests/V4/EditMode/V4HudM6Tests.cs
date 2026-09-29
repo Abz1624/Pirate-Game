@@ -2,11 +2,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using HighSeas.Balance;
-using HighSeas.Combat;
-using HighSeas.Core;
-using HighSeas.POI;
-using HighSeas.V3;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Combat;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.POI;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Events;
@@ -31,9 +30,13 @@ namespace RoguePirates.V4.Tests
             "RunManager", "LevelSystem", "POIManager", "EnemyWorld", "V3DiscoverySystem", "WeaponController",
             "V3RunItemInventory", "V3RunContext", "V3CaptainSelection", "RunCombatTelemetry", "SaltwindRunSettlement",
             "WeaponDamageLedger", "RunMarksTracker", "V3RunBootstrap", "V3ToastHud", "EncounterSpawner", "PickupWorld",
-            "FindFirstObjectByType<PlayerShipController>", "FindFirstObjectByType<HighSeas.Player.PlayerShipController>",
-            // Review finding: legacy adapters, the legacy VFX broker, the playtest flag and the weapon module's internals.
-            "RoguePirates.V4.Legacy", "JuiceVfxBroker", "WeaponEnemyPlaytestSession", "LegacyHazardTelegraphView",
+            "FindFirstObjectByType<PlayerShipController>", "FindFirstObjectByType<RoguePirates.V4.Foundation.Player.PlayerShipController>",
+            // M15: the shared progression state under its V4 names (V3CaptainSelection, V3ContentUnlocks, V3HomeSeed,
+            // V3PlaytestFlags, V3RunContext before).
+            "CaptainSelection", "ContentUnlocks", "HomeSeed", "PlaytestFlags", "ActiveRun",
+            // Review finding: the ports to the shared run/ship/world (M15: was the legacy adapters), the legacy VFX
+            // broker, the playtest flag and the weapon module's internals.
+            "RoguePirates.V4.Ports", "JuiceVfxBroker", "WeaponEnemyPlaytestSession", "LegacyHazardTelegraphView",
             // M14.9b: the V3 effect components (the world presenters read the bounds through IWorldView).
             "WeaponJuiceController", "CombatVfxController", "TriggerBus",
             "WeaponManager", "WeaponCombat", "WeaponTargetingService", "LegacyWeaponEnemies", "EnemyWorld"
@@ -63,116 +66,39 @@ namespace RoguePirates.V4.Tests
                 StringAssert.DoesNotContain("RoguePirates.V4.Presentation", StripComments(File.ReadAllText(file)), Path.GetFileName(file));
         }
 
+        /// <summary>M15: the legacy namespace is gone; nothing is tagged for deletion any more.</summary>
         [Test]
-        public void EveryLegacyType_HasADeletionPhase()
+        public void NoLegacyNamespace_AndNoTaggedTypes_Remain()
         {
-            var missing = System.AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => a.GetName().Name == "RoguePirates.V4")
+            var types = System.AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => a.GetName().Name.StartsWith("RoguePirates.V4"))
                 .SelectMany(a => a.GetTypes())
-                .Where(t => t.Namespace == "RoguePirates.V4.Legacy" && !t.IsNested && !t.Name.StartsWith("<")
-                            && System.Reflection.CustomAttributeExtensions.GetCustomAttribute<DeletedInPhaseAttribute>(t) == null)
-                .Select(t => t.Name)
+                .Where(t => !t.IsNested && !t.Name.StartsWith("<"))
                 .ToList();
-            Assert.IsEmpty(missing, "Legacy types need [DeletedInPhase]: " + string.Join(", ", missing));
+            Assert.IsEmpty(types.Where(t => t.Namespace == "RoguePirates.V4.Legacy").Select(t => t.Name), "legacy namespace");
+            Assert.IsEmpty(types.Where(t => System.Reflection.CustomAttributeExtensions.GetCustomAttribute<DeletedInPhaseAttribute>(t) != null)
+                .Select(t => t.Name), "types tagged [DeletedInPhase]");
         }
 
         static string StripComments(string code) =>
             Regex.Replace(code, @"//[^\n]*|/\*.*?\*/", string.Empty, RegexOptions.Singleline);
 
-        // ---- Scenes ---------------------------------------------------------------------------------------------
-
-        [TestCase(V4SceneNames.SaltwindRunPath)]
-        [TestCase(V4SceneNames.ModuleLabPath)]
-        public void RunScenes_NoLongerHoldTheReplacedV3Views(string scenePath)
-        {
-            var text = File.ReadAllText(Path.Combine(Path.GetDirectoryName(Application.dataPath), scenePath));
-            foreach (var type in new[] { typeof(V3AuthoredGameplayHud), typeof(V3RunResultsScreen) })
-            {
-                var script = AssetDatabase.FindAssets(type.Name + " t:MonoScript")
-                    .Select(AssetDatabase.GUIDToAssetPath)
-                    .First(p => Path.GetFileNameWithoutExtension(p) == type.Name);
-                var guid = AssetDatabase.AssetPathToGUID(script);
-                StringAssert.DoesNotContain("guid: " + guid, text, $"{type.Name} is still in {scenePath}");
-            }
-
-            // The authored /Canvas prefab itself carries a V3AuthoredGameplayHud: the scene must remove it as an override.
-            const string canvasPrefab = "Assets/UI/Prefabs/Canvas.prefab";
-            var canvasGuid = AssetDatabase.AssetPathToGUID(canvasPrefab);
-            foreach (var hud in AssetDatabase.LoadAssetAtPath<GameObject>(canvasPrefab).GetComponentsInChildren<V3AuthoredGameplayHud>(true))
-            {
-                var fileId = GlobalObjectId.GetGlobalObjectIdSlow(hud).targetObjectId;
-                StringAssert.Contains($"- {{fileID: {fileId}, guid: {canvasGuid}, type: 3}}", text,
-                    $"{scenePath} must remove the Canvas prefab's V3AuthoredGameplayHud ({fileId})");
-            }
-        }
-
-        // ---- Quest lines ------------------------------------------------------------------------------------------
-
-        [Test]
-        public void QuestLines_MatchV3ForEveryState()
-        {
-            var lines = new List<string>();
-            foreach (BeaconRevealState state in System.Enum.GetValues(typeof(BeaconRevealState)))
-            foreach (var summoned in new[] { false, true })
-            foreach (var defeated in new[] { false, true })
-            {
-                QuestLines.Build((BeaconReveal)(int)state, summoned, defeated, lines);
-                CollectionAssert.AreEqual(V3MegabonkQuestDisplay.BuildVisibleLines(state, summoned, defeated), lines, $"{state} summoned={summoned} defeated={defeated}");
-            }
-        }
-
-        [Test]
-        public void BeaconRevealStates_MatchV3()
-        {
-            CollectionAssert.AreEqual(System.Enum.GetNames(typeof(BeaconRevealState)), System.Enum.GetNames(typeof(BeaconReveal)));
-        }
-
         // ---- Loadout HUD ------------------------------------------------------------------------------------------
 
         [Test]
-        public void WeaponNames_MatchTheV3Hud()
-        {
-            // V3's HUD read the run database: the asset plus the runtime weapon catalog (Harpoon Gun, Mortar...).
-            var db = RoguePirates.V4.Editor.V3ConfigMigrator.LoadCleanDatabase();
-            var database = Object.Instantiate(db);
-            database.weapons = db.weapons.Select(w => w != null ? Object.Instantiate(w) : null).ToArray();
-            CombatWeaponCatalog.ApplyToDatabase(database, CombatExperimentContext.Active);
-            foreach (var guid in AssetDatabase.FindAssets("t:WeaponConfig", new[] { "Assets/_Game/V4/Data/Weapons" }))
-            {
-                var config = AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(guid));
-                var def = database.GetWeapon(config.weaponId);
-                Assert.IsNotNull(def, config.weaponId);
-                Assert.AreEqual(def.displayName, config.displayName, $"{config.weaponId}: V3 HUD showed the definition's name");
-            }
-            foreach (var guid in AssetDatabase.FindAssets("t:WeaponEvolutionConfig", new[] { "Assets/_Game/V4/Data/Evolutions" }))
-            {
-                var evolution = AssetDatabase.LoadAssetAtPath<WeaponEvolutionConfig>(AssetDatabase.GUIDToAssetPath(guid));
-                var v3 = WeaponEvolutionCatalog.Definitions.First(d => d.evolutionId == evolution.evolutionId);
-                Assert.AreEqual(v3.displayName, evolution.displayName, evolution.evolutionId);
-            }
-        }
-
-        [Test]
-        public void IconCatalog_HoldsTheIconsV3LookedUp()
+        public void IconCatalog_HasAnIconForEveryWeaponAndChestItem()
         {
             var catalog = IconCatalog.Load();
-            Assert.IsNotNull(catalog, "Assets/_Game/V4/Resources/V4IconCatalog.asset (menu RoguePirates/V4/Build Icon Catalog)");
-            var db = RoguePirates.V4.Editor.V3ConfigMigrator.LoadCleanDatabase();
-            var database = Object.Instantiate(db);
-            database.weapons = db.weapons.Select(w => w != null ? Object.Instantiate(w) : null).ToArray();
-            CombatWeaponCatalog.ApplyToDatabase(database, CombatExperimentContext.Active);
+            Assert.IsNotNull(catalog, "Assets/_Game/V4/Resources/V4IconCatalog.asset");
             foreach (var guid in AssetDatabase.FindAssets("t:WeaponConfig", new[] { "Assets/_Game/V4/Data/Weapons" }))
             {
                 var config = AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(guid));
-                var v3 = V3RunHudIconResolver.GetWeaponIcon(config.weaponId, database.GetWeapon(config.weaponId));
-                Assert.AreEqual(v3, catalog.Weapon(config.weaponId), config.weaponId);
                 Assert.IsNotNull(catalog.Weapon(config.weaponId), $"{config.weaponId} has no icon");
             }
-            foreach (var (id, _) in V3ItemCatalog.ChestPool)
+            foreach (var guid in AssetDatabase.FindAssets("t:ItemConfig", new[] { "Assets/_Game/V4/Data/Build/Items" }))
             {
-                var v3 = V3RunHudIconResolver.GetItemIcon(id);
-                if (v3 != null) Assert.AreEqual(v3, catalog.Item(id), id);
-                Assert.IsNotNull(catalog.Item(id), $"{id} has no icon (R-90: V3 missed three apostrophe names)");
+                var item = AssetDatabase.LoadAssetAtPath<ItemConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                if (item.inChestPool) Assert.IsNotNull(catalog.Item(item.itemId), $"{item.itemId} has no icon (R-90: V3 missed three apostrophe names)");
             }
         }
 

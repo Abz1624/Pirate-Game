@@ -59,7 +59,7 @@ namespace RoguePirates.V4.DevTools.Console
                 GUI.enabled = director.mode != mode;
                 if (GUILayout.Button(mode.ToString(), GUILayout.Width(90)))
                 {
-                    var t = HighSeas.Core.RunManager.Instance != null ? HighSeas.Core.RunManager.Instance.ElapsedSeconds : 0f;
+                    var t = RoguePirates.V4.Foundation.Core.RunManager.Instance != null ? RoguePirates.V4.Foundation.Core.RunManager.Instance.ElapsedSeconds : 0f;
                     if (!game.Config.TryApplyEdit(director.configId, "mode", mode.ToString(), t, out var error)) Debug.LogWarning("Difficulty: " + error);
                 }
                 GUI.enabled = true;

@@ -23,7 +23,6 @@ namespace RoguePirates.V4.Editor
         static readonly string[] Scenes =
         {
             LauncherPath,
-            "Assets/_Game/Scenes/v3/V3SaltwindRun.unity",
             V4SceneNames.SaltwindRunPath
         };
 

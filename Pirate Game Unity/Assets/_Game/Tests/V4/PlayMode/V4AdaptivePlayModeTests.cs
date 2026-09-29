@@ -1,11 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
-using HighSeas.Balance;
-using HighSeas.Core;
-using HighSeas.Encounters;
-using HighSeas.Enemies;
-using HighSeas.Player;
-using HighSeas.POI;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.POI;
 using NUnit.Framework;
 using RoguePirates.V4.Difficulty;
 using RoguePirates.V4.Events;
@@ -42,9 +41,6 @@ namespace RoguePirates.V4.Tests
             yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
             StageBalanceProfileContext.ResetForTests();
-            RunMarksTracker.Reset();
-            RunEncounterTracker.ResetForTests();
-            SaltwindRunSettlement.ClearLastResults();
             _isolation?.Dispose();
             _isolation = null;
         }

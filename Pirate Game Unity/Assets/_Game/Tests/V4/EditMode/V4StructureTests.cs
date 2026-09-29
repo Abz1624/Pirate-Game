@@ -103,14 +103,14 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void AssemblyReferences_FollowTheLayering()
         {
-            // Config <- Runtime <- Presentation <- DevTools; the legacy runtime never references V4.
+            // Foundation <- Runtime <- Presentation <- DevTools; Config <- Runtime; Foundation (the shared code, M15) references no other V4 assembly.
             var forbidden = new Dictionary<string, string[]>
             {
-                ["V4/Config/RoguePirates.V4.Config.asmdef"] = new[] { "RoguePirates.V4\"", "RoguePirates.V4.Presentation", "RoguePirates.V4.DevTools", "HighSeas.Runtime" },
-                ["V4/Runtime/RoguePirates.V4.asmdef"] = new[] { "RoguePirates.V4.Presentation", "RoguePirates.V4.DevTools", "RoguePirates.V4.Editor", "HighSeas.Editor" },
-                ["V4/Presentation/RoguePirates.V4.Presentation.asmdef"] = new[] { "RoguePirates.V4.DevTools", "RoguePirates.V4.Editor", "HighSeas.Editor" },
-                ["V4/DevTools/RoguePirates.V4.DevTools.asmdef"] = new[] { "RoguePirates.V4.Editor", "HighSeas.Editor" },
-                ["Scripts/HighSeas.Runtime.asmdef"] = new[] { "RoguePirates.V4" }
+                ["V4/Config/RoguePirates.V4.Config.asmdef"] = new[] { "RoguePirates.V4\"", "RoguePirates.V4.Presentation", "RoguePirates.V4.DevTools", "RoguePirates.V4.Foundation" },
+                ["V4/Runtime/RoguePirates.V4.asmdef"] = new[] { "RoguePirates.V4.Presentation", "RoguePirates.V4.DevTools", "RoguePirates.V4.Editor" },
+                ["V4/Presentation/RoguePirates.V4.Presentation.asmdef"] = new[] { "RoguePirates.V4.DevTools", "RoguePirates.V4.Editor" },
+                ["V4/DevTools/RoguePirates.V4.DevTools.asmdef"] = new[] { "RoguePirates.V4.Editor" },
+                ["V4/Foundation/RoguePirates.V4.Foundation.asmdef"] = new[] { "RoguePirates.V4\"", "RoguePirates.V4.Config", "RoguePirates.V4.Presentation", "RoguePirates.V4.DevTools", "RoguePirates.V4.Editor" }
             };
             foreach (var pair in forbidden)
             {
@@ -134,33 +134,23 @@ namespace RoguePirates.V4.Tests
         /// <summary>
         /// M9: the V3 build systems left the V4 runs — LevelSystem, the WeaponController record, PickupWorld, the
         /// switched-off EncounterSpawner, the Captain/item/powerup components and HellfirePatchWorld. No V4 code line
-        /// names them except the scene setup tool (it removes them), the config generators (they read V3's values),
-        /// the generator's id-keyed V3 mapping, and the trace tools' fallback for V3-golden recordings.
+        /// names them (M15 deleted the scene setup tool, the config generators, the V3 mapping and the trace tools'
+        /// V3-golden fallback that were exempt).
         /// </summary>
         [Test]
         public void NoV4Code_UsesTheV3BuildSystems()
         {
-            var exempt = new Dictionary<string, string[]>
-            {
-                ["Editor/V4SceneSetup.cs"] = null, // null = every type
-                ["Editor/V4BuildConfigGenerator.cs"] = null,
-                ["Editor/V3ConfigMigrator.cs"] = null,
-                ["Runtime/Legacy/LegacyBuildMapping.cs"] = new[] { "V3RunItemEffects" },
-                ["DevTools/Trace/RunTraceRecorder.cs"] = new[] { "LevelSystem" },
-                ["DevTools/Trace/PlayerPilot.cs"] = new[] { "PickupWorld" },
-                // The powerup toasts use V3's static display names until powerup names move into PowerupConfig (M14 presenters).
-            };
             var offenders = Scan(@"\b(LevelSystem|WeaponController|PickupWorld|EncounterSpawner|V3FloorPowerupWorld|V3RunItemInventory|V3RunItemEffects|V3CaptainController|V3CaptainActiveController|HellfirePatchWorld|WeaponEvolutionRuntime)\b",
-                (rel, match) => !(exempt.TryGetValue(rel, out var types) && (types == null || System.Array.IndexOf(types, match) >= 0)));
+                (rel, match) => true);
             Assert.IsEmpty(offenders, "V3 build systems used by V4 code: " + string.Join(", ", offenders));
         }
 
-        /// <summary>M3: the V3 spawn directors are replaced; nothing outside Legacy/ (and the V3-golden trace fallback) uses them.</summary>
+        /// <summary>M3: the V3 spawn directors are replaced; nothing outside Legacy/ uses them.</summary>
         [Test]
         public void NoV4Code_UsesTheV3SpawnDirectors()
         {
             var offenders = Scan(@"\b(V3PressureBeatDirector|V3OvertimeDirector|V3SaltwindStormDirector|V3StormEdgeDamage|V3RouteEventDirector|SpawnDirectorDebugUI|V3MinibossArena)\b",
-                (rel, match) => !rel.StartsWith("Runtime/Legacy/") && !(rel == "DevTools/Trace/RunTraceRecorder.cs" && match == "V3MinibossArena"));
+                (rel, match) => !rel.StartsWith("Runtime/Ports/"));
             Assert.IsEmpty(offenders, "V3 spawn directors used by V4 code: " + string.Join(", ", offenders));
         }
 

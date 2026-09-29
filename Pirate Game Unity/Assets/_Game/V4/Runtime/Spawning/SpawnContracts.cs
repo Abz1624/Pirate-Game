@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using HighSeas.Enemies;
+using RoguePirates.V4.Foundation.Enemies;
 using RoguePirates.V4.Config;
 using UnityEngine;
 
@@ -15,7 +15,7 @@ namespace RoguePirates.V4.Spawning
         /// <summary>Definition index for an enemy id in the run database, or -1.</summary>
         int FindDefinition(string enemyId);
         /// <summary>Index of this exact definition, or of one with the same id (the legacy lookup), or -1.</summary>
-        int IndexOf(HighSeas.Data.EnemyDefinition definition);
+        int IndexOf(RoguePirates.V4.Foundation.Data.EnemyDefinition definition);
         string DefinitionId(int index);
         bool DefinitionIsBoss(int index);
         float DefinitionRadius(int index);

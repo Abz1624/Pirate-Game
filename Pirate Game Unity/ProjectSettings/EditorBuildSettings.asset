@@ -20,48 +20,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Game/Scenes/V4/V4TraceLauncher.unity
     guid: 45558b0306b267242ae1b6a2bcb57998
-  - enabled: 1
-    path: Assets/_Game/Scenes/v3/V3Boot.unity
-    guid: f8a2c1d94e3b4a6489f0e2d71c5a9031
-  - enabled: 1
-    path: Assets/_Game/Scenes/v3/V3MainMenu.unity
-    guid: b4e7f21a6c2d49f0a8b3c5d91e0f7428
-  - enabled: 1
-    path: Assets/_Game/Scenes/v3/V3SaltwindRun.unity
-    guid: d3962d2bec1f16e4cbf066776d0fec25
-  - enabled: 1
-    path: Assets/_Game/Scenes/v3/V3PvPBattle.unity
-    guid: a8f3c21e4b9d2f1489e0a7c3b5d61e02
-  - enabled: 1
-    path: Assets/_Game/Scenes/v3/V3CoOpRun.unity
-    guid: d825e802299329144b77811712f77da1
-  - enabled: 1
-    path: Assets/_Game/Scenes/Boot.unity
-    guid: b2b75971f10f3604aad32d662c0b5971
-  - enabled: 1
-    path: Assets/_Game/Scenes/MainMenu.unity
-    guid: 0b5d6e1ebaae0ee40a3fd4885eb30ab3
-  - enabled: 1
-    path: Assets/_Game/Scenes/Run.unity
-    guid: acd0d7463f917004b844b479dfb8d013
-  - enabled: 1
-    path: Assets/_Game/Scenes/Tests/Test_Combat.unity
-    guid: 1d24688f57d810d49be9259e9ea8ec42
-  - enabled: 1
-    path: Assets/_Game/Scenes/Tests/Test_Performance.unity
-    guid: c0b7868b1121ff14e9a4e3613da41650
-  - enabled: 1
-    path: Assets/_Game/Scenes/Tests/Test_Tuning.unity
-    guid: afe82dd1113a92f40bbe910db0d0fc85
-  - enabled: 1
-    path: Assets/_Game/Scenes/v3/V3MapGenerator.unity
-    guid: e8fb497e369244f479a009a236edc690
-  - enabled: 1
-    path: Assets/_Game/Scenes/v3/V3SplitScreenCoOp.unity
-    guid: 7f077cade8fa49f4d95897deadd6f2d5
-  - enabled: 1
-    path: Assets/_Game/Scenes/Tests/Test_WeaponEnemy.unity
-    guid: f3e892f7b7f33cc41bb8be8242262e87
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

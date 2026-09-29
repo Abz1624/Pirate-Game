@@ -1,4 +1,4 @@
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 using UnityEngine.InputSystem;
 
 namespace RoguePirates.V4.Stage

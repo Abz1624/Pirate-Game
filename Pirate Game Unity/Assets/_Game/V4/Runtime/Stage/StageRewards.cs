@@ -1,5 +1,5 @@
 using System;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 
 namespace RoguePirates.V4.Stage
 {
@@ -10,7 +10,7 @@ namespace RoguePirates.V4.Stage
     /// </summary>
     public sealed class StageRewards : IStageRewards
     {
-        /// <summary>Locks the run's seed as the home seed (V3 V3HomeSeed.TryLockFromRun).</summary>
+        /// <summary>Locks the run's seed as the home seed (V3 HomeSeed.TryLockFromRun).</summary>
         public Action<int> LockSeed;
         public RoguePirates.V4.Telemetry.RunTelemetry Telemetry;
 

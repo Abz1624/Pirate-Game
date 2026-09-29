@@ -1,5 +1,5 @@
 using System.Linq;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Progression;
 using UnityEngine;
@@ -77,7 +77,7 @@ namespace RoguePirates.V4.DevTools.Console
             GUILayout.EndHorizontal();
             if (!string.IsNullOrEmpty(_activeResult)) GUILayout.Label(_activeResult, _wrap, GUILayout.Width(TextWidth));
 
-            var ship = Object.FindFirstObjectByType<HighSeas.Player.PlayerShipController>();
+            var ship = Object.FindFirstObjectByType<RoguePirates.V4.Foundation.Player.PlayerShipController>();
             _items = GUILayout.Toggle(_items, "Items (add a stack)");
             if (_items)
                 foreach (var item in game.Config.All<ItemConfig>().OrderBy(i => i.itemId))

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using HighSeas.Core;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Views;
 using UnityEngine;

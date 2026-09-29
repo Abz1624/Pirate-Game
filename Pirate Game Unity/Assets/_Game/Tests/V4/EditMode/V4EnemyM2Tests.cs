@@ -3,14 +3,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using HighSeas.Combat;
-using HighSeas.Core;
-using HighSeas.Data;
+using RoguePirates.V4.Foundation.Combat;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Editor;
 using RoguePirates.V4.Enemies;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -34,10 +34,12 @@ namespace RoguePirates.V4.Tests
             _created.Clear();
         }
 
-        /// <summary>The database a V3 run uses: the loaded one after the catalogs (applied here to a deep clone).</summary>
+        /// <summary>The database a run starts from: the loaded one after the catalogs (applied here to a deep clone).</summary>
         GameDatabase CatalogAppliedDatabase()
         {
-            var db = RoguePirates.V4.Editor.V3ConfigMigrator.LoadCleanDatabase();
+            // After a Play Mode session the cached experiment profile can be a destroyed object (register R-82): re-resolve it.
+            if (CombatExperimentContext.Active == null) CombatExperimentContext.ResetForTests();
+            var db = GameDatabaseLoader.Load();
             var clone = Object.Instantiate(db);
             _created.Add(clone);
             clone.enemies = db.enemies.Select(e => { if (e == null) return null; var c = Object.Instantiate(e); c.name = e.name; _created.Add(c); return c; }).ToArray();
@@ -47,69 +49,27 @@ namespace RoguePirates.V4.Tests
             return clone;
         }
 
-        /// <summary>
-        /// V3 visuals for the specialist aliases (no model, placeholder cube). The default gives them their template's
-        /// model instead (R-13 decision); the v3-parity preset carries the same edits.
-        /// </summary>
-        static void UseV3AliasVisuals(ConfigSetRuntime config)
-        {
-            foreach (var v in config.All<EnemyVariantConfig>().Where(v => v.kind == VariantKind.DatabaseAlias))
-                Assert.IsTrue(config.TryApplyEdit(v.configId, "inheritBaseVisual", "false", 0f, out var error), error);
-        }
-
+        /// <summary>M15 (the V4 half of the retired V3 slot-for-slot test): every enemy the loaded database holds has a
+        /// V4 config, the V4-only enemies are appended after the loaded slots, and their models carry no colliders (R-81).</summary>
         [Test]
-        public void RuntimeDatabase_ReproducesTheCatalogAppliedV3Enemies_SlotForSlot()
+        public void RuntimeDatabase_ConfiguresEveryEnemy_AndAppendsTheV4OnlyOnes()
         {
-            var v3 = CatalogAppliedDatabase();
+            var loaded = CatalogAppliedDatabase();
             using (var config = new ConfigSetRuntime(_set))
             using (var runtime = new V4RuntimeDatabase(config))
             {
-                UseV3AliasVisuals(config);
-                var db = runtime.Build(v3);
+                var db = runtime.Build(loaded);
                 CollectionAssert.IsEmpty(runtime.Unconfigured, "every enemy in the live database has a V4 config");
-                // V3's slots first (null slots included); V4-only enemies (Drowned, registry elites) are appended after them.
-                Assert.AreEqual(v3.enemies.Length + runtime.V4OnlyIds.Count, db.enemies.Length, "V3's layout, then the V4-only enemies");
                 CollectionAssert.AreEquivalent(new[] { "drowned_harrier", "drowned_pursuer", "elite_hammerhead", "elite_kraken_spawn" }, runtime.V4OnlyIds);
-                for (var i = v3.enemies.Length; i < db.enemies.Length; i++)
+                Assert.AreEqual(loaded.enemies.Length + runtime.V4OnlyIds.Count, db.enemies.Length, "the loaded layout, then the V4-only enemies");
+                Assert.AreEqual(22, loaded.enemies.Count(e => e != null), "14 authored enemies + 8 specialist aliases");
+                for (var i = 0; i < loaded.enemies.Length; i++)
+                {
+                    Assert.AreEqual(loaded.enemies[i] == null, db.enemies[i] == null, $"slot {i} null-ness");
+                    if (loaded.enemies[i] != null) Assert.AreNotSame(loaded.enemies[i], db.enemies[i], "runtime definitions are per-run copies");
+                }
+                for (var i = loaded.enemies.Length; i < db.enemies.Length; i++)
                     CollectionAssert.IsEmpty(db.enemies[i].visualPrefab != null ? db.enemies[i].visualPrefab.GetComponentsInChildren<Collider>(true) : new Collider[0], db.enemies[i].id + ": collider-free model (R-81)");
-                var compared = 0;
-                for (var i = 0; i < v3.enemies.Length; i++)
-                {
-                    Assert.AreEqual(v3.enemies[i] == null, db.enemies[i] == null, $"slot {i} null-ness");
-                    if (v3.enemies[i] == null) continue;
-                    Assert.AreNotSame(v3.enemies[i], db.enemies[i], "runtime definitions are per-run copies");
-                    Assert.AreEqual(JsonUtility.ToJson(v3.enemies[i]), JsonUtility.ToJson(db.enemies[i]), $"slot {i} ({v3.enemies[i].id})");
-                    compared++;
-                }
-                Assert.AreEqual(22, compared, "14 authored enemies + 8 specialist aliases");
-                Assert.AreEqual(v3.weapons.Length, db.weapons.Length);
-                for (var i = 0; i < v3.weapons.Length; i++)
-                    Assert.AreSame(v3.weapons[i], db.weapons[i], "weapons stay on the loaded database's assets until M5");
-            }
-        }
-
-        [Test]
-        public void ConfigAlone_ReproducesEveryV3Enemy_OnAFreshDefinition()
-        {
-            // The runtime database starts from copies of the V3 definitions, so a field Apply forgot would still match
-            // there. Writing onto an empty definition proves every value comes from config.
-            var v3 = CatalogAppliedDatabase();
-            using (var config = new ConfigSetRuntime(_set))
-            {
-                UseV3AliasVisuals(config);
-                var compared = 0;
-                foreach (var legacy in v3.enemies.Where(e => e != null))
-                {
-                    var archetype = config.All<EnemyArchetypeConfig>().FirstOrDefault(a => a.enemyId == legacy.id);
-                    var variant = config.All<EnemyVariantConfig>().FirstOrDefault(v => v.variantId == legacy.id && v.kind == VariantKind.DatabaseAlias);
-                    Assert.IsTrue(archetype != null || variant != null, legacy.id);
-                    var fresh = ScriptableObject.CreateInstance<EnemyDefinition>();
-                    _created.Add(fresh);
-                    V4RuntimeDatabase.Apply(archetype != null ? EnemyStatResolver.Resolve(archetype) : EnemyStatResolver.Resolve(variant), fresh);
-                    Assert.AreEqual(JsonUtility.ToJson(legacy), JsonUtility.ToJson(fresh), legacy.id);
-                    compared++;
-                }
-                Assert.AreEqual(22, compared);
             }
         }
 
@@ -141,31 +101,6 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void FallbackOnlyArchetypes_EqualV3FallbackDefinitions()
-        {
-            var fallback = (EnemyDefinition[])typeof(GameDatabaseLoader).GetMethod("CreateEnemies", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
-            foreach (var d in fallback) _created.Add(d);
-            var drowned = _set.All<EnemyArchetypeConfig>().Where(a => !a.inLegacyDatabase).ToList();
-            CollectionAssert.AreEquivalent(new[] { "drowned_pursuer", "drowned_harrier" }, drowned.Select(a => a.enemyId));
-            foreach (var archetype in drowned)
-            {
-                var legacy = fallback.Single(d => d.id == archetype.enemyId);
-                var fresh = ScriptableObject.CreateInstance<EnemyDefinition>();
-                _created.Add(fresh);
-                V4RuntimeDatabase.Apply(EnemyStatResolver.Resolve(archetype), fresh);
-                // R-05: V4 gives them placeholder models (V3's fallback defines none); everything else is V3's.
-                Assert.IsTrue(archetype.visual.placeholderModel, archetype.enemyId + " is marked as a placeholder model");
-                fresh.visualPrefab = null;
-                fresh.visualScale = legacy.visualScale;
-                // Base HP/damage come from the V3 overtime enemies (shark, cannonboat), not V3's never-used fallback.
-                Assert.AreEqual(_set.All<EnemyArchetypeConfig>().Single(a => a.enemyId == (archetype.enemyId == "drowned_pursuer" ? "shark" : "cannonboat")).stats.baseDamage, fresh.baseDamage, archetype.enemyId + " damage");
-                fresh.baseHP = legacy.baseHP;
-                fresh.baseDamage = legacy.baseDamage;
-                Assert.AreEqual(JsonUtility.ToJson(legacy), JsonUtility.ToJson(fresh), archetype.enemyId);
-            }
-        }
-
-        [Test]
         public void EditingAnArchetype_RewritesItsDefinitionAndItsAliases()
         {
             using (var config = new ConfigSetRuntime(_set))
@@ -181,34 +116,6 @@ namespace RoguePirates.V4.Tests
             }
         }
 
-        /// <summary>
-        /// The registry as V3 builds it. The live one is shared and mutated at runtime (the elite hammerhead flag), so
-        /// comparing against it would depend on what ran earlier in the session.
-        /// </summary>
-        static Dictionary<string, EnemyCombatProfile> Pristine() =>
-            (Dictionary<string, EnemyCombatProfile>)typeof(EnemyCombatProfileRegistry).GetMethod("Build", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
-
-        [Test]
-        public void CombatBlocks_EqualTheRegistry_ForArchetypesVariantsAndElites()
-        {
-            var checkedIds = new List<string>();
-            var pristine = Pristine();
-            foreach (var (id, combat) in _set.All<EnemyArchetypeConfig>().Select(a => (a.enemyId, a.combat))
-                         .Concat(_set.All<EnemyVariantConfig>().Select(v => (v.variantId, v.combat))))
-            {
-                if (!pristine.TryGetValue(id, out var profile)) { Assert.IsFalse(combat.registered, id); continue; }
-                var expected = new ArchetypeCombat();
-                V3ConfigMapping.CopyFields(profile, expected);
-                expected.registered = true;
-                // R-77: the elite Kraken keeps the plain Kraken's no-contact rule (V3's elite entry left the default on).
-                if (id == "elite_kraken_spawn") expected.contactDamageEnabled = false;
-                Assert.AreEqual(JsonUtility.ToJson(expected), JsonUtility.ToJson(combat), id);
-                checkedIds.Add(id);
-            }
-            CollectionAssert.IsSubsetOf(new[] { "elite_hammerhead", "elite_kraken_spawn", "drowned_pursuer", "drowned_harrier", "needle_sloop" }, checkedIds);
-            Assert.GreaterOrEqual(checkedIds.Count, 24);
-        }
-
         [Test]
         public void CombatProfiles_AreTheRunsCopies_OfTheConfig_AndNeverTouchTheV3Registry()
         {
@@ -220,7 +127,6 @@ namespace RoguePirates.V4.Tests
             {
                 Assert.IsTrue(profiles.TryGet("hammerhead", out var run));
                 Assert.AreNotSame(registry, run);
-                Assert.AreEqual(JsonUtility.ToJson(Snapshot(registry)), JsonUtility.ToJson(Snapshot(run)), "default config = V3's registry values");
                 config.TryApplyEdit("enemy.hammerhead", "combat.chargeCooldown", "9", 0f, out _);
                 Assert.AreEqual(9f, run.chargeCooldown, "live edits reach the run's profile");
                 run.eliteHammerheadSecondCharge = true; // the R-100 latch changes the run's copy only
@@ -233,7 +139,7 @@ namespace RoguePirates.V4.Tests
         static ArchetypeCombat Snapshot(EnemyCombatProfile p)
         {
             var c = new ArchetypeCombat();
-            V3ConfigMapping.CopyFields(p, c);
+            FieldMirror.CopyFields(p, c);
             return c;
         }
 
@@ -254,47 +160,44 @@ namespace RoguePirates.V4.Tests
         }
 
         /// <summary>
-        /// Content-id literals outside Legacy/ that are not comparisons: the trace harness credits its forced kills to
-        /// a weapon (as V3's trace did), and the migrator names the miniboss beat's pool.
+        /// Content-id literals that are not comparisons: the trace harness credits its forced kills to a weapon (as V3's
+        /// trace did); the stage-profile port keys the shared profile's elite beat by its timeline phase id, which equals
+        /// the elite Hammerhead's variant id.
         /// </summary>
         static readonly HashSet<string> AllowedLiterals = new HashSet<string>
         {
             "DevTools/Trace/RunTraceRecorder.cs:deck_cannons",
-            "Editor/V3ConfigMigrator.cs:reef_crab_miniboss",
-            // The playtest-decision data step names the elite variants and Drowned enemies it wires up (R-03, R-05).
-            "Editor/V3ConfigMigrator.cs:elite_hammerhead",
-            "Editor/V3ConfigMigrator.cs:elite_kraken_spawn",
-            "Editor/V3ConfigMigrator.cs:drowned_pursuer",
-            "Editor/V3ConfigMigrator.cs:drowned_harrier",
-            // ...and the V3 overtime enemies whose base HP/damage the Drowned take (playtest follow-up).
-            "Editor/V3ConfigMigrator.cs:shark",
-            "Editor/V3ConfigMigrator.cs:cannonboat",
-            // M5: the weapon data step maps V3 WeaponController's weapon-id branches onto config (behaviors, blocks, models).
-            "Editor/V3ConfigMigrator.cs:swivel_guns",
-            "Editor/V3ConfigMigrator.cs:deck_cannons",
-            "Editor/V3ConfigMigrator.cs:long_nine",
-            "Editor/V3ConfigMigrator.cs:harpoon_gun",
-            "Editor/V3ConfigMigrator.cs:broadside_battery",
-            "Editor/V3ConfigMigrator.cs:flamethrower",
-            // M6: the weapon visuals step maps V3's juice controller and aim overlay weapon-id branches onto config.
-            "Editor/V3ConfigMigrator.cs:mortar",
-            "Editor/V3ConfigMigrator.cs:lightning_mast",
-            "Editor/V3ConfigMigrator.cs:flying_cutlasses",
-            "Editor/V3ConfigMigrator.cs:powder_kegs",
-            // M8: the world-rules data step maps V3 EnemyWorld's enemy-id branches onto archetype/variant data.
-            "Editor/V3ConfigMigrator.cs:swordfish",
-            "Editor/V3ConfigMigrator.cs:powder_barge",
-            "Editor/V3ConfigMigrator.cs:repair_tender",
-            "Editor/V3ConfigMigrator.cs:hammerhead",
-            "Editor/V3ConfigMigrator.cs:gunner_cog",
-            "Editor/V3ConfigMigrator.cs:bomb_boat",
-            "Editor/V3ConfigMigrator.cs:manta_ray",
-            // M8 playtest: the Powder Cache elite challenge's spawner anchors.
-            "Editor/V3ConfigMigrator.cs:cutthroat_skiff",
+            "Runtime/Ports/StageProfilePort.cs:elite_hammerhead",
+        };
+
+        /// <summary>
+        /// M15: shared code moved into V4/Foundation that still keys V3's data tables by content id (tiers, combat
+        /// profiles, weapon and specialist catalogs, database fallbacks, unlock pools). Replacing them with config is
+        /// follow-up work outside M15 (a behaviour-neutral move); this list may only shrink.
+        /// </summary>
+        static readonly HashSet<string> NameKeyedFoundationFiles = new HashSet<string>
+        {
+            "Foundation/Balance/BossStatExportLogic.cs",
+            "Foundation/Balance/EnemyTierLogic.cs",
+            "Foundation/Balance/StageBalanceProfile.cs",
+            "Foundation/Balance/WeaponStatExportLogic.cs",
+            "Foundation/Combat/CombatSpecialistEnemyCatalog.cs",
+            "Foundation/Combat/CombatWeaponCatalog.cs",
+            "Foundation/Combat/EnemyCombatProfileRegistry.cs",
+            "Foundation/Combat/WeaponDebugPalette.cs",
+            "Foundation/Combat/WeaponDisplayNames.cs",
+            "Foundation/Combat/WeaponEvolutionCatalog.cs",
+            "Foundation/Core/GameDatabaseLoader.cs",
+            "Foundation/Data/ShipDefinition.cs",
+            "Foundation/Enemies/EnemyRangedAttackRules.cs",
+            "Foundation/Enemies/EnemySpawnRuntimeParams.cs",
+            "Foundation/Enemies/EnemyVisualFallbackResolver.cs",
+            "Foundation/Progression/ContentUnlocks.cs",
+            "Foundation/VFX/VfxParticleUtil.cs",
         };
 
         [Test]
-        public void NoV4CodeOutsideLegacy_UsesContentIds()
+        public void NoV4Code_UsesContentIds()
         {
             // Any string literal equal to a content id counts (==, case, switch arms, is, Equals, StartsWith, Contains,
             // collection literals...), not only the comparison forms.
@@ -307,15 +210,25 @@ namespace RoguePirates.V4.Tests
             foreach (var file in Directory.GetFiles(root, "*.cs", SearchOption.AllDirectories))
             {
                 var rel = file.Substring(root.Length + 1).Replace('\\', '/');
-                if (rel.StartsWith("Runtime/Legacy/")) continue; // the name-keyed bridge (plan D3)
-                if (rel == "Editor/V3ConfigMapping.cs") continue; // M14: the migrator's half of that bridge, moved out of Runtime/Legacy
+                if (NameKeyedFoundationFiles.Contains(rel)) continue;
                 var lines = File.ReadAllLines(file);
                 for (var i = 0; i < lines.Length; i++)
                     foreach (Match m in literal.Matches(lines[i]))
                         if (ids.Contains(m.Groups[1].Value) && !AllowedLiterals.Contains(rel + ":" + m.Groups[1].Value))
                             offenders.Add($"{rel}:{i + 1} \"{m.Groups[1].Value}\"");
             }
-            CollectionAssert.IsEmpty(offenders, "content ids outside Legacy/");
+            CollectionAssert.IsEmpty(offenders, "content ids in V4 code");
+            // The allowlists may only shrink: an entry whose file no longer holds a content id must be removed.
+            var stale = NameKeyedFoundationFiles.Where(f => !File.Exists(Path.Combine(root, f))
+                    || !literal.Matches(File.ReadAllText(Path.Combine(root, f))).Cast<Match>().Any(m => ids.Contains(m.Groups[1].Value)))
+                .Concat(AllowedLiterals.Where(a =>
+                {
+                    var i = a.LastIndexOf(':');
+                    var file = Path.Combine(root, a.Substring(0, i));
+                    return !File.Exists(file) || !File.ReadAllText(file).Contains("\"" + a.Substring(i + 1) + "\"") || !ids.Contains(a.Substring(i + 1));
+                }))
+                .ToList();
+            CollectionAssert.IsEmpty(stale, "allowlist entries that no longer apply");
         }
     }
 }

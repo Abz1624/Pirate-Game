@@ -81,13 +81,13 @@ namespace RoguePirates.V4.Presentation
             foreach (var definition in PoolCatalog.Build(game.Config, game.IsModuleLab)) Pools.Register(definition);
             Pools.PrewarmAll();
             // M5: player projectile views (the weapon module looks them up in the run context).
-            Projectiles = new Weapons.ProjectileViewPresenter(Pools, game.Config, Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings"));
+            Projectiles = new Weapons.ProjectileViewPresenter(Pools, game.Config, Resources.Load<RoguePirates.V4.Foundation.Data.DemoJuiceSettings>("DemoJuiceSettings"));
             game.Context?.Replace<RoguePirates.V4.Weapons.IProjectileViews>(Projectiles);
             // M5 playtest fix: the flamethrower stream (the existing stream effect at its authored emission).
             var flame = GetComponent<Weapons.FlameStreamPresenter>();
             if (flame == null) flame = gameObject.AddComponent<Weapons.FlameStreamPresenter>();
             if (game.Context != null && game.Context.TryGet<RoguePirates.V4.Weapons.IWeaponManager>(out var weapons))
-                flame.Bind(weapons, Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings"),
+                flame.Bind(weapons, Resources.Load<RoguePirates.V4.Foundation.Data.DemoJuiceSettings>("DemoJuiceSettings"),
                     game.Context.TryGet<Views.IRunViews>(out var shipViews) ? shipViews.Ship : null);
             // M6: HUD presenters, weapon effects and the aim overlay.
             if (game.Context != null && game.Context.TryGet<Views.IRunViews>(out var views))
@@ -125,7 +125,7 @@ namespace RoguePirates.V4.Presentation
             DamageNumbers.Bind(Pools, () => { var t = ship(); return t != null ? t.position : (Vector3?)null; });
             CombatFeedback = GetComponent<Effects.CombatFeedbackPresenter>();
             if (CombatFeedback == null) CombatFeedback = gameObject.AddComponent<Effects.CombatFeedbackPresenter>();
-            CombatFeedback.Bind(Pools, game.Events, game.Config, Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings"), ship, CameraShake, DamageNumbers);
+            CombatFeedback.Bind(Pools, game.Events, game.Config, Resources.Load<RoguePirates.V4.Foundation.Data.DemoJuiceSettings>("DemoJuiceSettings"), ship, CameraShake, DamageNumbers);
             game.Context.Replace<RoguePirates.V4.Enemies.IEnemyHitFeedback>(CombatFeedback);
         }
 
@@ -135,7 +135,7 @@ namespace RoguePirates.V4.Presentation
         /// </summary>
         void InstallWorld(V4Game game, Views.IRunViews views)
         {
-            var juice = Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings");
+            var juice = Resources.Load<RoguePirates.V4.Foundation.Data.DemoJuiceSettings>("DemoJuiceSettings");
             var run = views.Run;
             EnemyViews = new Effects.EnemyViewPresenter(Pools, juice);
             game.Context.Replace<RoguePirates.V4.Enemies.IEnemyViewSink>(EnemyViews);
@@ -269,7 +269,7 @@ namespace RoguePirates.V4.Presentation
             var summon = Weapons.WeaponVfxPresenter.FindSummonModel(game.Config);
             var config = game.Config;
             RoguePirates.V4.Config.WeaponRulesConfig rulesCache = null;
-            WeaponEffects.Bind(Pools, weapons, views.Ship, Resources.Load<HighSeas.Data.DemoJuiceSettings>("DemoJuiceSettings"),
+            WeaponEffects.Bind(Pools, weapons, views.Ship, Resources.Load<RoguePirates.V4.Foundation.Data.DemoJuiceSettings>("DemoJuiceSettings"),
                 summon.model, AimOverlay, null,
                 () => rulesCache != null ? rulesCache : (rulesCache = config != null ? System.Linq.Enumerable.FirstOrDefault(config.All<RoguePirates.V4.Config.WeaponRulesConfig>()) : null),
                 summon.scale);

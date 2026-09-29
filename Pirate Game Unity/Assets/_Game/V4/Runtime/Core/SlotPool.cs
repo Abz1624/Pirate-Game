@@ -1,6 +1,6 @@
 using System;
-using HighSeas.Core;
-using HighSeas.Platform;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Platform;
 
 namespace RoguePirates.V4
 {

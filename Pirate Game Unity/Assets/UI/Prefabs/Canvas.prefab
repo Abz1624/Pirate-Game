@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 8135940608437876882}
   - component: {fileID: 2784177082163842458}
   - component: {fileID: 2531825728006618891}
-  - component: {fileID: 4724500206099722037}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -107,18 +106,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &4724500206099722037
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5615479315126245041}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4afe51fdfe6d73e4fac90ef1b87473a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.V3.V3AuthoredGameplayHud
 --- !u!1001 &699091574509414955
 PrefabInstance:
   m_ObjectHideFlags: 0

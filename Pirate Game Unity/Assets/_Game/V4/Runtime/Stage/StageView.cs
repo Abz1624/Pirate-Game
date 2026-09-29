@@ -29,7 +29,7 @@ namespace RoguePirates.V4.Stage
     {
         readonly StageContentModule _stage;
         readonly InteractionModel _interaction;
-        HighSeas.World.StageLayout _lastLayout;
+        RoguePirates.V4.Foundation.World.StageLayout _lastLayout;
         int _layoutVersion;
 
         public StageView(StageContentModule stage, InteractionModel interaction)

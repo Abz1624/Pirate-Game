@@ -2,15 +2,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using HighSeas.Balance;
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.Enemies;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.Enemies;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Editor;
 using RoguePirates.V4.Events;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 using RoguePirates.V4.Spawning;
 using RoguePirates.Simulation.Balance;
 using UnityEditor;
@@ -21,13 +21,12 @@ namespace RoguePirates.V4.Tests
 {
     /// <summary>
     /// M3 spawn controller: semantics with in-memory fakes (grace, interval, cap retry without debt, gap clamp, boss
-    /// rate, pulses, arenas, overtime), formulas and composition checked against the V3 code they replace.
+    /// rate, pulses, arenas, overtime), formulas checked against the shared V3 finale code they replace.
     /// </summary>
     [Category("V4")]
     public sealed class V4SpawnM3Tests
     {
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
-        const string ProfilePath = "Assets/_Game/Data/Balance/SaltwindSoloStageBalanceProfile.asset";
         const float Dt = 1f / 60f;
 
         ConfigSet _set;
@@ -160,7 +159,7 @@ namespace RoguePirates.V4.Tests
                 var def = ScriptableObject.CreateInstance<EnemyDefinition>();
                 def.id = spawner.anchor != null ? spawner.anchor.enemyId : "shark";
                 p.enemy = def;
-                V3ConfigMapping.ApplySpawner(spawner, p);
+                SpawnerProfiles.Apply(spawner, p);
                 _created.Add(p);
                 _created.Add(def);
                 return _profiles[spawner] = p;
@@ -424,7 +423,7 @@ namespace RoguePirates.V4.Tests
                     boss.Sink.Kill(boss.Spawn.ArenaFocusUnitId);
                     boss.Run.BossFight = true;
                     boss.RunUntil(185f);
-                    Assert.AreEqual(PhaseState.Skipped, boss.Spawn.Phases.First(p => p.PhaseId == V3ConfigMapping.EliteA).State);
+                    Assert.AreEqual(PhaseState.Skipped, boss.Spawn.Phases.First(p => p.PhaseId == "elite_hammerhead").State);
                     CollectionAssert.Contains(boss.Feedback.Telemetry, "pressure_elite_skipped");
                     boss.Run.BossFight = false;
                     boss.RunUntil(190f);
@@ -527,7 +526,7 @@ namespace RoguePirates.V4.Tests
             var h = Make();
             using (h.Config)
             {
-                var elite = h.Timeline.Phase(V3ConfigMapping.EliteA);
+                var elite = h.Timeline.Phase("elite_hammerhead");
                 elite.trigger.kind = PhaseTriggerKind.Condition;
                 elite.trigger.conditionKind = PhaseConditionKind.PlayerLevelAtLeast;
                 elite.trigger.conditionValue = 8f;
@@ -547,10 +546,10 @@ namespace RoguePirates.V4.Tests
             var h = Make();
             using (h.Config)
             {
-                var a = h.Timeline.Phase(V3ConfigMapping.SwarmA);
+                var a = h.Timeline.Phase("swarm_pulse_a");
                 a.trigger.kind = PhaseTriggerKind.Event;
                 a.trigger.eventName = nameof(CombatEventKind.LevelUp);
-                var b = h.Timeline.Phase(V3ConfigMapping.SwarmB);
+                var b = h.Timeline.Phase("swarm_pulse_b");
                 b.trigger.kind = PhaseTriggerKind.AfterPhaseCleared;
                 b.trigger.afterPhaseId = a.phaseId;
                 h.RunUntil(10f);
@@ -568,7 +567,7 @@ namespace RoguePirates.V4.Tests
             using (h.Config)
             {
                 h.RunUntil(10f);
-                Assert.IsTrue(h.Spawn.TriggerNow(V3ConfigMapping.SwarmA));
+                Assert.IsTrue(h.Spawn.TriggerNow("swarm_pulse_a"));
                 h.Frame();
                 Assert.AreEqual(1.25f, h.Spawn.EffectiveRateMultiplier, 1e-6f);
                 Assert.IsTrue(h.Spawn.Skip("band_0"));
@@ -754,25 +753,20 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(0.7f, SpawnRateModifiers.WithoutBossFactor(0.35f, true, 0.5f), 1e-6f);
             Assert.AreEqual(0.7f, SpawnRateModifiers.WithoutBossFactor(0.7f, false, 0.5f), 1e-6f);
             Assert.AreEqual(0.7f, SpawnRateModifiers.WithoutBossFactor(0.7f, true, 0f), 1e-6f, "no division by zero");
-            // M9: the V4 powerup module's Dead Calm (V3 wrote it into the switched-off EncounterSpawner, which read it back
-            // as its effective rate; outside a boss fight that was the same number).
-            var go = new GameObject("dead-calm-probe");
-            try
-            {
-                var spawner = go.AddComponent<EncounterSpawner>();
-                spawner.SetSpawnRateMultiplier(0.7f); // what V3FloorPowerupWorld's Dead Calm wrote
-                Assert.AreEqual(spawner.DebugSpawnRateMultiplier, new SpawnRateModifiers(null, null) { DeadCalm = () => 0.7f }.Multiplier, 1e-6f);
-                Assert.AreEqual(1f, new SpawnRateModifiers(null, null).Multiplier, "no powerup module: no slow");
-            }
-            finally { Object.DestroyImmediate(go); }
+            // M9: the V4 powerup module's Dead Calm is the multiplier as it stands (V3 read the same number back as its
+            // effective rate outside a boss fight).
+            Assert.AreEqual(0.7f, new SpawnRateModifiers(null, null) { DeadCalm = () => 0.7f }.Multiplier, 1e-6f);
+            Assert.AreEqual(1f, new SpawnRateModifiers(null, null).Multiplier, "no powerup module: no slow");
         }
 
         // ---- Formulas equal V3 ---------------------------------------------------------------------------------
 
+        /// <summary>M15: the shared formulas read the stage profile the run builds from the V4 configs (V3's asset is gone).</summary>
         StageBalanceProfileExport V3Export()
         {
-            var profile = AssetDatabase.LoadAssetAtPath<StageBalanceProfile>(ProfilePath);
-            return profile.ToExport();
+            using var config = new ConfigSetRuntime(_set);
+            using var port = new RoguePirates.V4.Ports.StageProfilePort(config);
+            return port.Profile.ToExport();
         }
 
         [Test]
@@ -825,46 +819,6 @@ namespace RoguePirates.V4.Tests
             return s;
         }
 
-        /// <summary>
-        /// Same seed, same alive counts, same time and level: V4's pool pick returns V3's enemy on every draw and leaves
-        /// the director stream in the same state (all five bands, caps hit and not hit, tiers locked and unlocked).
-        /// </summary>
-        [Test]
-        public void Composition_PicksWhatV3Picks_DrawForDraw()
-        {
-            var export = V3Export();
-            var h = Make();
-            using (h.Config)
-            {
-                var services = ServicesOf(h);
-                var v4Rng = new FakeRun { Rng = new RunRng(99) };
-                services.Random = v4Rng;
-                var composition = new SpawnComposition(services);
-                var v3Rng = new RunRng(99);
-                var counts = new Dictionary<string, int>();
-                var chaos = new System.Random(5);
-                var bands = h.Timeline.phases.Where(PhaseKinds.IsAmbient).ToList();
-                Assert.AreEqual(5, bands.Count);
-                for (var draw = 0; draw < 4000; draw++)
-                {
-                    counts["cannonboat"] = chaos.Next(0, 6);
-                    counts["kraken_spawn"] = chaos.Next(0, 4);
-                    counts["ram_raider"] = chaos.Next(0, 4);
-                    var band = draw % 5;
-                    var elapsed = (float)(chaos.NextDouble() * 600.0);
-                    var level = chaos.Next(0, 9);
-                    h.Sink.KillAll();
-                    foreach (var pair in counts)
-                        for (var n = 0; n < pair.Value; n++) h.Sink.Spawn(h.Sink.FindDefinition(pair.Key), Vector3.zero, ConfigEnums.EliteAffix.None, 1f, 1f, 1f);
-                    composition.Invalidate();
-                    var v3Ok = SaltwindAmbientCompositionLogic.TryPickEnemyId(band, v3Rng, id => counts.TryGetValue(id, out var c) ? c : 0, export, out var v3Id, elapsed, level);
-                    var v4Id = composition.Pick(bands[band], elapsed, level);
-                    Assert.AreEqual(v3Ok ? v3Id : null, v4Id, $"draw {draw}, band {band}, t={elapsed:0.0}, level {level}");
-                }
-                Assert.AreEqual(v3Rng.DirectorFloat(), v4Rng.DirectorFloat(), "director streams in step");
-            }
-        }
-
         // ---- Text, references, structure -----------------------------------------------------------------------
 
         [Test]
@@ -886,7 +840,7 @@ namespace RoguePirates.V4.Tests
             using (var config = new ConfigSetRuntime(_set))
             {
                 var timeline = config.Single<WaveTimelineConfig>();
-                var index = timeline.phases.FindIndex(p => p.phaseId == V3ConfigMapping.ReefCrab);
+                var index = timeline.phases.FindIndex(p => p.phaseId == "reef_crab");
                 Assert.IsTrue(config.TryApplyEdit(timeline.configId, $"phases[{index}].focus.archetype", "enemy.shark", 0f, out var error), error);
                 Assert.AreSame(config.Get<EnemyArchetypeConfig>("enemy.shark"), timeline.phases[index].focus.archetype, "the run's copy, not the asset");
                 Assert.IsFalse(config.TryApplyEdit(timeline.configId, $"phases[{index}].focus.archetype", "spawner.nope", 0f, out _));
@@ -908,21 +862,20 @@ namespace RoguePirates.V4.Tests
             using (var config = new ConfigSetRuntime(_set))
             {
                 var t = config.Single<WaveTimelineConfig>();
-                var reef = t.Phase(V3ConfigMapping.ReefCrab);
+                var reef = t.Phase("reef_crab");
                 Assert.IsTrue(reef.focus.enabled);
                 Assert.AreEqual(FocusPlacement.RingAroundPlayer, reef.focus.placement);
                 Assert.AreEqual("reef_crab_miniboss", reef.focus.archetype.enemyId);
                 Assert.AreEqual((22f, 4f, 1.15f), (reef.focus.ringDistance, reef.focus.hpMultiplier, reef.focus.damageMultiplier));
                 Assert.AreEqual(BossConflict.WaitUntilBossEnds, reef.focus.bossConflict);
                 Assert.AreEqual(0f, reef.focus.retryWindowSeconds);
-                var pacing = Resources.Load<DemoPacingSettings>("DemoPacingSettings");
-                Assert.AreEqual(pacing.firstMinibossSeconds, reef.trigger.timeSeconds, "R-02: 150 s as V3");
-                foreach (var (id, index) in new[] { (V3ConfigMapping.EliteA, 0), (V3ConfigMapping.EliteB, 1) })
+                Assert.AreEqual(150f, reef.trigger.timeSeconds, "R-02: 150 s as V3");
+                foreach (var (id, index) in new[] { ("elite_hammerhead", 0), ("elite_kraken", 1) })
                 {
                     var elite = t.Phase(id);
                     Assert.IsTrue(elite.focus.enabled && elite.pauseAmbient, id);
                     Assert.AreEqual(index, elite.focus.scheduledEliteIndex, id);
-                    Assert.AreEqual(SaltwindPressureBeatLogic.SpawnRetryWindowSeconds, elite.focus.retryWindowSeconds, id);
+                    Assert.AreEqual(20f, elite.focus.retryWindowSeconds, id + " (V3's 20 s retry window)");
                 }
                 Assert.AreEqual(2, config.Single<DifficultyCurveConfig>().tierUnlocks.Count);
                 var report = new ConfigValidationReport();

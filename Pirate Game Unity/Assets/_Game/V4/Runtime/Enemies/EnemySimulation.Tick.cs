@@ -1,10 +1,10 @@
 using System;
-using HighSeas.Balance;
-using HighSeas.Combat;
-using HighSeas.Core;
-using HighSeas.Data;
-using HighSeas.Enemies;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Combat;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.Data;
+using RoguePirates.V4.Foundation.Enemies;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Config;
 using UnityEngine;
 
@@ -129,7 +129,7 @@ namespace RoguePirates.V4.Enemies
         static Vector3 ResolvePlayerVelocity(DamageReceiver playerDamage)
         {
             if (playerDamage == null) return Vector3.zero;
-            var ship = playerDamage.GetComponent<HighSeas.Player.PlayerShipController>();
+            var ship = playerDamage.GetComponent<RoguePirates.V4.Foundation.Player.PlayerShipController>();
             if (ship == null) return Vector3.zero;
             var velocity = ship.Velocity;
             velocity.y = 0f;
@@ -170,7 +170,7 @@ namespace RoguePirates.V4.Enemies
         static float GetPlayerContactRadius(DamageReceiver playerDamage)
         {
             if (playerDamage == null) return 1.15f;
-            var ship = playerDamage.GetComponent<HighSeas.Player.PlayerShipController>();
+            var ship = playerDamage.GetComponent<RoguePirates.V4.Foundation.Player.PlayerShipController>();
             return ship != null ? ship.IslandCollisionRadius : 1.15f;
         }
 

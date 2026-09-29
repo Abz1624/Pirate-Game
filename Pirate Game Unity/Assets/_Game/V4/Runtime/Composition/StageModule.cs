@@ -1,8 +1,7 @@
 using System;
-using HighSeas.Balance;
-using HighSeas.Player;
-using HighSeas.V3;
-using HighSeas.World;
+using RoguePirates.V4.Foundation.Balance;
+using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Spawning;
@@ -10,7 +9,7 @@ using RoguePirates.V4.Stage;
 using RoguePirates.V4.Weapons;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 
 namespace RoguePirates.V4.Composition
 {
@@ -23,7 +22,7 @@ namespace RoguePirates.V4.Composition
     public sealed class StageModule : IDisposable
     {
         /// <summary>M12: the run adapter the stage module ends runs through (Rum is set on it).</summary>
-        public LegacyRunPort StageRun { get; private set; }
+        public RunPort StageRun { get; private set; }
 
         /// <summary>M14.14: the run's frame (ticks register here instead of legacy update slots).</summary>
         public FramePipeline Frame { get; set; }
@@ -46,9 +45,9 @@ namespace RoguePirates.V4.Composition
         /// <summary>Chest prices, loot and items (M9: items go to the V4 item module; M14: the V4 chest economy).</summary>
         public ChestEconomy Economy { get; }
         /// <summary>Telemetry, the home seed and the chest trigger (M14: telemetry is the V4 module's).</summary>
-        public StageRewards Rewards { get; } = new StageRewards { LockSeed = LegacyWorldPort.LockHomeSeed }; // M14.12
+        public StageRewards Rewards { get; } = new StageRewards { LockSeed = WorldPort.LockHomeSeed }; // M14.12
 
-        public StageModule(RunContext context, ConfigSetRuntime config, LegacyRunPort runStatus, LegacyShipPort ship, IPlayerDamageSink damageSink,
+        public StageModule(RunContext context, ConfigSetRuntime config, RunPort runStatus, ShipPort ship, IPlayerDamageSink damageSink,
             IEncounterExecutor executor, Func<PlayerShipController> player, Func<IWeaponManager> weapons, bool usePlaceholderVisuals,
             EnemyWorldModule enemyWorld, EncounterTracker encounters, IStageToasts toasts)
         {
@@ -61,13 +60,13 @@ namespace RoguePirates.V4.Composition
             _config = () => cached != null ? cached : (cached = config?.Single<StageContentConfig>());
             var run = runStatus;
             StageRun = run;
-            Economy = new ChestEconomy(() => config, run, run, () => HighSeas.Core.AppRoot.Instance != null ? HighSeas.Core.AppRoot.Instance.Save : null, weapons);
+            Economy = new ChestEconomy(() => config, run, run, () => RoguePirates.V4.Foundation.Core.AppRoot.Instance != null ? RoguePirates.V4.Foundation.Core.AppRoot.Instance.Save : null, weapons);
             Module = new StageContentModule(_config, run, ship, Economy,
                 Rewards, toasts, Encounters, executor)
             {
                 Publish = PublishEvent
             };
-            Module.IsFirstConquest = () => !LegacyContentPort.FirstConquestDone; // playtest round 1: banner
+            Module.IsFirstConquest = () => !ContentPort.FirstConquestDone; // playtest round 1: banner
             Interaction = new InteractionModel(Module, run, toasts);
             View = new StageView(Module, Interaction);
 
@@ -102,7 +101,6 @@ namespace RoguePirates.V4.Composition
             var c = _config();
             if (c == null || c.explosiveBarrelCount > 0)
             {
-                LegacyWorldPort.EnsureBarrelMarkers(layout); // V3's markers; the V4 enemy world runs the barrels
                 _enemyWorld.TakeOverBarrels(layout);
             }
         }

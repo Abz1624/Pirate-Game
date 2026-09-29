@@ -1,5 +1,5 @@
 using System;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Config;
 using UnityEngine;
 
@@ -25,7 +25,7 @@ namespace RoguePirates.V4.Progression
         void SyncShipSpeed();
     }
 
-    /// <summary>Powerup models on the water (V3 V3PlaceholderFactory.CreateFloorPowerup; destroyed on despawn).</summary>
+    /// <summary>Powerup models on the water (V3 PlaceholderFactory.CreateFloorPowerup; destroyed on despawn).</summary>
     public interface IPowerupViews
     {
         object Create(PowerupKind kind, Vector3 position);

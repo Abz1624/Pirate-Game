@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace RoguePirates.V4.Config
 {
-    /// <summary>Floor powerups (same names and order as V3's V3FloorPowerupKind).</summary>
+    /// <summary>Floor powerups (same names and order as V3's FloorPowerupKind).</summary>
     public enum PowerupKind { RepairSupplies = 0, BattleSignal = 1, Tailwind = 2, SalvageChime = 3, FullSail = 4, PowderRush = 5, MagneticTide = 6, DeadCalm = 7 }
 
     [Serializable]

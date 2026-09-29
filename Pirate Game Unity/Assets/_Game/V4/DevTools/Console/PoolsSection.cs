@@ -85,7 +85,7 @@ namespace RoguePirates.V4.DevTools.Console
             GUI.enabled = _stress == null;
             if (GUILayout.Button($"Pool stress ({PoolStressScenario.ChurnSeconds + PoolStressScenario.OverflowSeconds:0} s)", GUILayout.Width(150)))
             {
-                var ship = Object.FindFirstObjectByType<HighSeas.Player.PlayerShipController>();
+                var ship = Object.FindFirstObjectByType<RoguePirates.V4.Foundation.Player.PlayerShipController>();
                 _stress = new PoolStressScenario(pools, ship != null ? ship.Position + Vector3.forward * 12f : Vector3.zero);
                 console.RunEveryFrame(dt =>
                 {

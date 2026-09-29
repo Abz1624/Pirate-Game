@@ -129,7 +129,7 @@ namespace RoguePirates.V4.Editor
         /// </summary>
         static void UnloadGameDatabase()
         {
-            var database = HighSeas.Core.GameDatabaseLoader.Load();
+            var database = RoguePirates.V4.Foundation.Core.GameDatabaseLoader.Load();
             if (database != null && !EditorUtility.IsDirty(database)) Resources.UnloadAsset(database);
         }
 

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using HighSeas.Core;
+using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Config;
-using RoguePirates.V4.Legacy;
+using RoguePirates.V4.Ports;
 using RoguePirates.V4.Rewards;
 
 namespace RoguePirates.V4.Composition
@@ -29,13 +29,13 @@ namespace RoguePirates.V4.Composition
 
         /// <summary>The Captain locks over a config (the menu's, or the run's).</summary>
         public static CaptainLocks CreateLocks(Func<ConfigSetRuntime> config) =>
-            new CaptainLocks(config, Save, () => LegacyContentPort.FirstConquestDone, () => LifetimeGold.Total,
-                () => LegacyContentPort.BypassProgressionGates);
+            new CaptainLocks(config, Save, () => ContentPort.FirstConquestDone, () => LifetimeGold.Total,
+                () => ContentPort.BypassProgressionGates);
 
         /// <summary>Leaves any run context, initializes the app and the combat experiment for the menu, and builds the services.</summary>
         public static MenuServices Create(ConfigSet set, List<string> presetErrors = null)
         {
-            LegacyContentPort.PrepareMenu();
+            ContentPort.PrepareMenu();
             return ForConfig(set, RunRequest.ActivePresetJson, presetErrors);
         }
 
@@ -50,7 +50,7 @@ namespace RoguePirates.V4.Composition
         }
 
         /// <summary>The run's combat experiment as V3's Set Sail chose it.</summary>
-        public static void BeginSaltwindExperiment() => LegacyContentPort.BeginSaltwindExperiment();
+        public static void BeginSaltwindExperiment() => ContentPort.BeginSaltwindExperiment();
 
         public void Dispose() => Config?.Dispose();
     }

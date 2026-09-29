@@ -21,7 +21,6 @@ namespace RoguePirates.V4.DevTools
         static void OnRunStarted(V4Game game)
         {
             if (TraceBoot.Active != null || game == null) return;
-            EnsurePlaytestTools(game);
             // Own object, not /Systems: the legacy EnemyViewPool uses /Systems as its pool root and deactivates it
             // around every new enemy view (R-72), which would close the console each time.
             var console = Object.FindFirstObjectByType<TuningConsole>();
@@ -29,17 +28,5 @@ namespace RoguePirates.V4.DevTools
             console.Bind(game);
         }
 
-        /// <summary>
-        /// V3's run playtest tools (M14.14; was LegacyPresentationAdapter.EnsureDevAndDebugTools, in every build): the F8
-        /// hotkeys and, with V3's playtest flag, the weapon-card animation demo and its toast. DevTools only now.
-        /// </summary>
-        static void EnsurePlaytestTools(V4Game game)
-        {
-            HighSeas.V3.V3RunPlaytestHotkeys.Ensure();
-            if (!HighSeas.V3.V3PlaytestFlags.EnableRunPlaytestHotkeys) return;
-            HighSeas.UI.WeaponCardAnimationDemo.Ensure();
-            if (game.Context != null && game.Context.TryGet<RoguePirates.V4.Views.IRunViews>(out var views))
-                views.Toasts?.Show("Playtest: F8 hotkeys · G weapon card scatter · H card scroll", 5f);
-        }
     }
 }
