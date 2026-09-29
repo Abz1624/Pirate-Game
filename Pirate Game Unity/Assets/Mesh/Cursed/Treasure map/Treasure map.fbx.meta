@@ -3,17 +3,7 @@ guid: c893c07f22d3967409491fada2260e0f
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Treasure_map1
-    second: {fileID: 2100000, guid: 27f2adaa0011fdb4e80da6d8bcf3f022, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Treasure_map_Bottle
-    second: {fileID: 2100000, guid: eace762463b9ac94b88e087c828a9bf4, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
