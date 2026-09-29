@@ -9797,7 +9797,7 @@ PrefabInstance:
     - target: {fileID: 596168779263024228, guid: c893c07f22d3967409491fada2260e0f, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 27f2adaa0011fdb4e80da6d8bcf3f022, type: 2}
+      objectReference: {fileID: 2100000, guid: bbd9c79ec46aa44e9bd38987ba422598, type: 2}
     - target: {fileID: 919132149155446097, guid: c893c07f22d3967409491fada2260e0f, type: 3}
       propertyPath: m_Name
       value: Treasure map
@@ -9811,8 +9811,33 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: c893c07f22d3967409491fada2260e0f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8023758446630712519}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: -6519009750602378086, guid: c893c07f22d3967409491fada2260e0f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5194317444909463164}
   m_SourcePrefab: {fileID: 100100000, guid: c893c07f22d3967409491fada2260e0f, type: 3}
+--- !u!1 &1460407048004389317 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -6519009750602378086, guid: c893c07f22d3967409491fada2260e0f, type: 3}
+  m_PrefabInstance: {fileID: 3585915694342921567}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5194317444909463164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1460407048004389317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e77470d7bebd47909ba8f48564a0df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapEmissionPulse
+  emissionColor: {r: 1, g: 0.76, b: 0.34, a: 1}
+  minIntensity: 0.7
+  maxIntensity: 1.1
+  period: 3.6
+  randomPhase: 1
 --- !u!4 &3911660149239167668 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c893c07f22d3967409491fada2260e0f, type: 3}
