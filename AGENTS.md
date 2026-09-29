@@ -98,6 +98,15 @@ $env:UNITY_PROJECT_PATH = "c:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\Pirate Ga
 
 If the project has compile errors, Unity boots into **Safe Mode** and Pipeline does not load. Fix compile errors and restart the Editor before using `unity command` or MCP.
 
+## V5 work (since 29 Sep 2026)
+
+New features are built on branch `v5-live-game` following [plan/v5/V5_PLAN.md](plan/v5/V5_PLAN.md): one phase at a
+time, each gated by targeted tests, a scripted playable check, an independent review and the owner's playtest, then one
+commit `V5 M<n>: <module>`. The independent reviewer is the read-only agent
+[.claude/agents/v5-reviewer.md](.claude/agents/v5-reviewer.md); run it on the plan after it changes and on every
+phase's diff before reporting the phase. In tools without Claude Code agents, give a separate read-only session that
+file as its instructions. Evidence goes in `plan/v5/phase-NN-<name>/`; owner to-dos in `plan/v5/TODO-FOR-YOU.md`.
+
 ## Product context
 
 Read [Rogue_Pirates_Cursor_Implementation.md](Rogue_Pirates_Cursor_Implementation.md) for milestone scope, non-negotiable gameplay rules, and what not to build yet.

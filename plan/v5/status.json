@@ -1,0 +1,664 @@
+{
+  "updated": "30 Sep 2026",
+  "statusLine": "M0 done · all V5 questions answered (plan rev 9) · M1 starts on your go",
+  "statusOk": true,
+  "facts": [
+    [
+      "Progress",
+      "M0 done; plan rev 9 (33 phases); every V5 question answered; M1 next"
+    ],
+    [
+      "Baseline",
+      "EditMode 307/307 · PlayMode 49/49"
+    ],
+    [
+      "Gate",
+      "Tests, playable check, reviewer, your playtest"
+    ],
+    [
+      "Branch",
+      "<code>v5-live-game</code>"
+    ]
+  ],
+  "phases": {
+    "M0": {
+      "state": "done",
+      "chip": "done 29 Sep"
+    },
+    "M1": {
+      "state": "next",
+      "chip": "next, on your go"
+    }
+  },
+  "log": [
+    {
+      "when": "29 Sep",
+      "what": "Your 24 requests received. Branch <code>v5-live-game</code> created from the V4 tip (<code>f1b9a4cf</code>).",
+      "commit": ""
+    },
+    {
+      "when": "29 Sep",
+      "what": "Mapped the current game with three read-only searches (content and balance; menu, backend and web3; art) and two web research tasks (survivor-like balance; Solana, MagicBlock, wallets and multiplayer). Research saved in <code>plan/v5/research/</code>.",
+      "commit": ""
+    },
+    {
+      "when": "29 Sep",
+      "what": "Independent reviewer agent written: <code>.claude/agents/v5-reviewer.md</code> (read-only; reviews the plan and each phase's code).",
+      "commit": ""
+    },
+    {
+      "when": "29 Sep",
+      "what": "Baseline in the open Editor: EditMode <strong>307/307</strong>, PlayMode <strong>49/49</strong>, console clean.",
+      "commit": ""
+    },
+    {
+      "when": "29 Sep",
+      "what": "Plan written: 26 phases in six stages, 14 proposed decisions, 20 questions for you.",
+      "commit": ""
+    },
+    {
+      "when": "29 Sep",
+      "what": "Independent plan review: <strong>3 blockers, 12 majors, 7 minors</strong>. All fixed in plan rev 2: a replay-verification spike before accounts, pending RUM until verified, no RUM-to-token bridge through items, anti-collusion rules, wager formats per mode, split phases (now 29, M0–M28). Details under Review findings.",
+      "commit": ""
+    },
+    {
+      "when": "29 Sep",
+      "what": "GDD updated: three Decision log rows (V5 direction, reversals, two economies and custody), the roadmap's V5 track, the Not now and Never lists, and 27 V5 questions on the board.",
+      "commit": ""
+    },
+    {
+      "when": "30 Sep",
+      "what": "Plan re-review of rev 2: <strong>no blockers</strong>, 5 majors and 6 minors (server-issued seeds, capped legacy RUM on migration, the fallback that would amend D6, two oversized phases, the real-time no-go path). All fixed in <strong>plan rev 3</strong>: M9b (conditional kinematic port), M10/M10b and M26/M26b splits, an early netcode measurement in M9.",
+      "commit": ""
+    },
+    {
+      "when": "30 Sep",
+      "what": "Your answers to the V5 questions applied as <strong>plan rev 4</strong>: custody on our Railway server, a Monte Carlo balance simulator instead of autopilot runs, one enemy cap sized for a low-end phone, endless overtime, RUM treasury and vault, anti-collusion deferred, and more (decision D17). Researched and explained what you asked about: Photon and the other multiplayer options with costs, sign-in, hosting, Megabonk's levels, the four weapons plus eight more ideas, replay verification, and a cost breakdown of every third-party account (about $5–20 a month at 100 players). See <em>Your answers, explained</em>.",
+      "commit": ""
+    },
+    {
+      "when": "30 Sep",
+      "what": "Independent review of your answers (rev 4): <strong>no blockers</strong>, 6 majors, 7 minors, all fixed in <strong>rev 5</strong>: custody safeguards (master-key backup and rotation, separate secrets, one-time key export), numeric pass limits for the Photon test in M9, the enemy cap set on your reference phone in M1, deferred anti-collusion switches still tested. Three new questions (Q31–Q33).",
+      "commit": ""
+    },
+    {
+      "when": "30 Sep",
+      "what": "Your second round of answers applied as <strong>plan rev 7</strong>: 6 full-loot AI raids a day, uncapped PvP RUM, Google + email sign-in, Railway only, evolutions at level 8 with multi-level rare cards, nine new weapons (M4, M4b), a new Monte Carlo simulator written from scratch on V4 with ten player personalities, plausibility checks with value-moving modes played on our match server (moved up to M13b), no key export. Researched the 4-player Hunt netcode (recommendation now <strong>Fish-Net + Bayou</strong>: Photon calls its server mode \"not recommended\" for browsers) and the reference phone (<strong>Galaxy A15 / A16 4G at a steady 30 fps</strong>; browser memory near 256 MB is the big constraint).",
+      "commit": ""
+    },
+    {
+      "when": "30 Sep",
+      "what": "Independent review of rev 7: <strong>no blockers</strong>, 8 majors, 10 minors, all fixed in <strong>rev 8</strong>: plausibility bounds from the balance model, a hard 256 MB mobile memory limit, a prediction-ready ship controller, server-session costs measured in M9 (Railway estimate ~$30–60/month once sessions run), the multi-ship lobby as its own phase (M21), fully specified personalities. Two new questions (Q34, Q35).",
+      "commit": ""
+    },
+    {
+      "when": "30 Sep",
+      "what": "Your third round of answers applied as <strong>plan rev 9</strong>: Unity Netcode for GameObjects for multiplayer (free; we write nearby-enemy filtering and lag compensation), treasury protection (vault 80% / treasury 20%, 8 h shield, 10% daily loss cap, 72 h for new players), the reference phone (Galaxy A15 / A16 4G at 30 fps), forfeits pay nothing but a genuine short match does, checked voyage RUM usable on devnet. <strong>Every V5 question is now answered.</strong> Added a per-service Railway cost breakdown with savings (about $20–25/month if ~30 of 100 players play daily; $40–45 if all do; about $14–33 with the three biggest savings).",
+      "commit": ""
+    }
+  ],
+  "todos": {
+    "next": [
+      "<strong>Read the Railway breakdown</strong> in <em>Your answers, explained</em> (what runs, what it costs, where to save).",
+      "<strong>Get the reference phone</strong> (Samsung Galaxy A15 or A16 4G, about $130–150; any Helio G99 phone such as a Galaxy A24 works) for M1's measurement.",
+      "<strong>Say go for M1</strong> (enemy flow) when you are ready.",
+      "<strong>Accounts</strong> (final list and costs in the answers): Railway by M9; a domain, a Google Cloud project and Resend by M10b; Helius by M11; Firebase by M19. Keys go into Railway variables or an uncommitted <code>.env</code>, never into chat."
+    ],
+    "open": [
+      "Earlier GDD questions (21 left) are still on the board; the raid entry fee (question 4) feeds M15 and the pass price (question 5) feeds M20."
+    ],
+    "done": [
+      "<strong>V5 questions, round 3</strong> (30 Sep): netcode, treasury protection, reference phone, forfeits and checked RUM decided; every V5 question answered.",
+      "<strong>V5 questions, round 2</strong> (30 Sep): 16 more decided (D17), personalities defined, the Hunt netcode and reference phone researched.",
+      "<strong>V5 questions answered</strong> (30 Sep): 19 decided (D17), the rest explained on this page; the plan reviewed again (rev 5).",
+      "<strong>V5 M0 setup</strong> (29 Sep): branch, reviewer agent, plan and research, green baseline."
+    ]
+  },
+  "proof": [
+    {
+      "date": "29 Sep",
+      "phase": "M0",
+      "check": "EditMode, all assemblies (baseline)",
+      "result": "307 / 307 passed · 32.7 s",
+      "evidence": "plan/v5/phase-00-setup/evidence/baseline-editmode.json"
+    },
+    {
+      "date": "29 Sep",
+      "phase": "M0",
+      "check": "PlayMode, all assemblies (baseline)",
+      "result": "49 / 49 passed · 177 s",
+      "evidence": "plan/v5/phase-00-setup/evidence/baseline-playmode.json"
+    },
+    {
+      "date": "29 Sep",
+      "phase": "M0",
+      "check": "Editor console after compile",
+      "result": "0 errors",
+      "evidence": "unity command console"
+    },
+    {
+      "date": "29 Sep",
+      "phase": "M0",
+      "check": "Independent plan review, rev 1",
+      "result": "3 blockers · 12 majors · 7 minors → all addressed in rev 2",
+      "evidence": "plan/v5/status.json → reviews[0]"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M0",
+      "check": "Independent plan re-review, rev 2",
+      "result": "No blockers · 5 majors · 6 minors → all addressed in rev 3",
+      "evidence": "plan/v5/status.json → reviews[1]"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M0",
+      "check": "Pricing and Megabonk research for your follow-up questions",
+      "result": "Saved; all prices from the vendors' pricing pages",
+      "evidence": "plan/v5/research/PRICING_RESEARCH.md, MEGABONK_LEVELS.md"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M0",
+      "check": "Independent review of your answers (rev 4)",
+      "result": "No blockers · 6 majors · 7 minors → all addressed in rev 5",
+      "evidence": "plan/v5/status.json → reviews[2]"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M0",
+      "check": "Hunt netcode and device research",
+      "result": "Saved with sources",
+      "evidence": "plan/v5/research/HUNT_NETCODE.md, DEVICE_TARGETS.md"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M0",
+      "check": "Independent review of rev 7",
+      "result": "No blockers · 8 majors · 10 minors → all addressed in rev 8",
+      "evidence": "plan/v5/status.json → reviews[3]"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M0",
+      "check": "Independent review of rev 9 (incl. a recomputation of the Railway costs)",
+      "result": "No blockers · 2 majors · 4 minors → addressed",
+      "evidence": "plan/v5/status.json → reviews[4]"
+    }
+  ],
+  "phaseResults": {
+    "M0": [
+      {
+        "title": "Tests",
+        "text": "Baseline green: EditMode 307/307 and PlayMode 49/49 in Unity 6000.3.11f1; no compile errors."
+      },
+      {
+        "title": "Reviewer",
+        "text": "Agent file in place; it ran the plan review (below). In this session it runs through a general agent loading the same file; new sessions list it as <code>v5-reviewer</code>."
+      },
+      {
+        "title": "Plan reviews",
+        "text": "Two independent reviews: rev 1 had 3 blockers, 12 majors, 7 minors; rev 2 had no blockers, 5 majors, 6 minors. All addressed in rev 3."
+      }
+    ]
+  },
+  "reviews": [
+    {
+      "title": "Plan review, rev 1 → rev 2 (29 Sep)",
+      "summary": "The independent reviewer read the plan against your 24 requests, the research, the handoff rules, the GDD's never list and the current code. It found 3 blockers, 12 majors and 7 minors, and confirmed that the plan's claims about the existing code were accurate. All 22 are addressed in rev 2 (now 29 phases, M0–M28). A second review checks the fixes.",
+      "rows": [
+        {
+          "n": "1",
+          "sev": "Blocker",
+          "where": "M10 (was M8) run settlement",
+          "finding": "Server RUM trusted a client-uploaded run summary before any verification existed, against D6 and the handoff's rule on client-trust fallbacks.",
+          "fix": "Run RUM is now <em>pending</em> until verified and cannot be spent, transferred or wagered (D6, I10b.4)."
+        },
+        {
+          "n": "2",
+          "sev": "Blocker",
+          "where": "Verification",
+          "finding": "Replay verification was assumed, not proven: unseeded draws (<code>PickupModule</code>, <code>WorldPort</code>), Rigidbody physics, no cost measured.",
+          "fix": "New <strong>M9 replay verification spike</strong> before accounts: seeding fixes, WebGL vs headless agreement over 10 runs, CPU per minute, go/no-go with named fallbacks (Q29)."
+        },
+        {
+          "n": "3",
+          "sev": "Blocker",
+          "where": "D4, sails and island NFTs",
+          "finding": "RUM-bought items could be minted and sold for tokens: an indirect RUM-to-token bridge.",
+          "fix": "D4 now tracks item origin: anything bought, earned or traded with RUM stays web2 forever; island sales return RUM-bought parts to the seller (Q24)."
+        },
+        {
+          "n": "4",
+          "sev": "Major",
+          "where": "D8",
+          "finding": "The list of reversals missed token winnings (play-to-earn), token balances and the Arena draft.",
+          "fix": "D8 names all six reversals; Q26 asks you to confirm them."
+        },
+        {
+          "n": "5",
+          "sev": "Major",
+          "where": "Wallet migration",
+          "finding": "NFT migration was planned before NFTs exist; royalty allow-lists block transfers by unlisted programs.",
+          "fix": "M13 migrates tokens, records and inventory; NFT migration moves to M26 through the game program."
+        },
+        {
+          "n": "6",
+          "sev": "Major",
+          "where": "Marketplace",
+          "finding": "No ownership sync for NFTs sold elsewhere; devnet external markets unconfirmed.",
+          "fix": "M26 adds an indexer or webhook with a reconcile job, and an honest devnet exit criterion (Tensor's open program)."
+        },
+        {
+          "n": "7",
+          "sev": "Major",
+          "where": "Raids, wagers, market",
+          "finding": "No anti-collusion policy.",
+          "fix": "New D15 (linked accounts blocked, price bands, daily caps, review flags) wired into M15, M24, M26, M27; defaults in Q27."
+        },
+        {
+          "n": "8",
+          "sev": "Major",
+          "where": "Wagers",
+          "finding": "Race and Hunt wager formats were undefined.",
+          "fix": "M24 defines Arena, Hunt and Race formats: entry windows, minimum entrants, refunds, unverified finishes."
+        },
+        {
+          "n": "9",
+          "sev": "Major",
+          "where": "Order",
+          "finding": "A web3 playtest bought a decoration before decorations exist; phone measurement before the mobile build; an unrealistic hackathon option.",
+          "fix": "Playtest buys a store item; the cap is measured on desktop in M1 and on a phone in M7; Q1 option B rewritten."
+        },
+        {
+          "n": "10",
+          "sev": "Major",
+          "where": "AI captains",
+          "finding": "The planned brain reused DevTools autopilots that never ship.",
+          "fix": "M16 rewrites the brain in Runtime with a test that Runtime never references DevTools (D10)."
+        },
+        {
+          "n": "11",
+          "sev": "Major",
+          "where": "Raid schedule",
+          "finding": "Player schedules stored as the designer-owned timeline asset (read as a singleton, hashed).",
+          "fix": "A schedule DTO in the base snapshot becomes an in-memory overlay at raid start; its hash enters raid records."
+        },
+        {
+          "n": "12",
+          "sev": "Major",
+          "where": "Phase size",
+          "finding": "M1 and the old netcode-plus-Arena phase were too big for one gate.",
+          "fix": "Split: M1 enemy flow and M2 balance model; M21 netcode spike and M22 Arena."
+        },
+        {
+          "n": "13",
+          "sev": "Major",
+          "where": "Every phase",
+          "finding": "Several phases lacked a playtest line or an automated check.",
+          "fix": "Every phase now has both (or an owner check for document and spike phases)."
+        },
+        {
+          "n": "14",
+          "sev": "Major",
+          "where": "Server",
+          "finding": "The .NET 8 target ends support on 10 Nov 2026.",
+          "fix": "The server moves to .NET 10 LTS in M10."
+        },
+        {
+          "n": "15",
+          "sev": "Major",
+          "where": "Raids",
+          "finding": "Raid loot currency undefined.",
+          "fix": "New question Q23 (suggested: RUM, split into an exposed treasury and a safe vault)."
+        },
+        {
+          "n": "16",
+          "sev": "Minor",
+          "where": "Cross-references",
+          "finding": "Wrong question numbers in two tasks.",
+          "fix": "Fixed in rev 2."
+        },
+        {
+          "n": "17",
+          "sev": "Minor",
+          "where": "M4",
+          "finding": "Siren Bell was said to charm; Grapeshot is an item, not a weapon.",
+          "fix": "Siren Bell slows and stuns; Grapeshot removed from the weapon options."
+        },
+        {
+          "n": "18",
+          "sev": "Minor",
+          "where": "M12",
+          "finding": "Onchain record rent and scope undefined.",
+          "fix": "Only value-bearing results are recorded; ordinary runs batch into the player record; match accounts close after settlement."
+        },
+        {
+          "n": "19",
+          "sev": "Minor",
+          "where": "M19",
+          "finding": "Web push needs a Firebase account, against the local-only rule.",
+          "fix": "D11 now covers third-party accounts; Q30 asks when to create them."
+        },
+        {
+          "n": "20",
+          "sev": "Minor",
+          "where": "Presets",
+          "finding": "The v3-parity preset's status was unclear.",
+          "fix": "D16: it stays as a regression baseline until M28; new mechanics switch off under it."
+        },
+        {
+          "n": "21",
+          "sev": "Minor",
+          "where": "Q3",
+          "finding": "Privy's server-held custody flow was unclear.",
+          "fix": "Q3 and M10/M11 spell out Privy server wallets with a server-verified token."
+        },
+        {
+          "n": "22",
+          "sev": "Minor",
+          "where": "Q16",
+          "finding": "'Saltwind only' narrowed the global kill board.",
+          "fix": "Option A is now every voyage biome as it ships."
+        }
+      ]
+    },
+    {
+      "title": "Plan re-review, rev 2 → rev 3 (30 Sep)",
+      "summary": "The reviewer re-checked rev 2: <strong>no blockers</strong>. 17 of the first 22 findings were fully resolved and 5 partly; it found 5 new majors and 6 minors, mostly about value integrity (seeds, migrated RUM, fallbacks) and phase size. All are addressed in rev 3 (31 phases plus the conditional M9b).",
+      "rows": [
+        {
+          "n": "N1",
+          "sev": "Major",
+          "where": "M9 fallback B, D6",
+          "finding": "Fallback B (statistical checks) would pay RUM without a verified replay, and async modes would then need the later match server.",
+          "fix": "Choosing B now explicitly amends D6 and moves Stage E ahead of Stage C; fallback A got its own conditional phase <strong>M9b kinematic port</strong>."
+        },
+        {
+          "n": "N2",
+          "sev": "Major",
+          "where": "Seeds",
+          "finding": "The client picks the run seed, so a verified run could still be a rerolled easy seed.",
+          "fix": "Every value-earning run uses a server-issued seed that verification checks (D6, I10.2, M18)."
+        },
+        {
+          "n": "N3",
+          "sev": "Major",
+          "where": "Save migration",
+          "finding": "Migration copied the editable local RUM balance into the server account.",
+          "fix": "Local RUM becomes capped <em>legacy RUM</em>: store-only, never transferred, wagered or exposed to raids (I10b.3)."
+        },
+        {
+          "n": "N4",
+          "sev": "Major",
+          "where": "Phase size",
+          "finding": "The server phase and the marketplace phase were too big for one gate.",
+          "fix": "Split into <strong>M10</strong> server and ledger / <strong>M10b</strong> accounts and migration, and <strong>M26</strong> NFTs and ownership sync / <strong>M26b</strong> marketplace."
+        },
+        {
+          "n": "N5",
+          "sev": "Minor",
+          "where": "Cross-references",
+          "finding": "Stale references (the V4 save guard, art-guide updates, invites, question tags, D14 vs Q15, Q1 wording, assembly direction).",
+          "fix": "All corrected; art-guide update tasks added to M14, M25 and M27; invite tasks added to M22–M24."
+        },
+        {
+          "n": "N6",
+          "sev": "Minor",
+          "where": "Verification notes",
+          "finding": "The list of unseeded draws was out of date; the placeholder verifier project was not mentioned; client and server are two builds.",
+          "fix": "Corrected list; M10 replaces the placeholder with a verifier worker; both build ids are recorded."
+        },
+        {
+          "n": "N7",
+          "sev": "Minor",
+          "where": "M24 playtest",
+          "finding": "Self-contradicting playtest wording.",
+          "fix": "Against a second tester's account."
+        },
+        {
+          "n": "N8",
+          "sev": "Minor",
+          "where": "D15",
+          "finding": "Race base owners could wager on their own base; referrals were not covered.",
+          "fix": "Both covered by D15."
+        },
+        {
+          "n": "N9",
+          "sev": "Minor",
+          "where": "M20",
+          "finding": "Brand bounty events depended on a later phase.",
+          "fix": "Marked as wired in M27."
+        },
+        {
+          "n": "N10",
+          "sev": "Minor",
+          "where": "Gate",
+          "finding": "Determinism was proved once and never re-checked.",
+          "fix": "A standing replay-determinism test joins gate step 6 from M10 on."
+        },
+        {
+          "n": "N11",
+          "sev": "Minor",
+          "where": "M1",
+          "finding": "Six mechanics in one phase.",
+          "fix": "Accepted; watched when M1 is detailed."
+        },
+        {
+          "n": "R2",
+          "sev": "Major",
+          "where": "M21",
+          "finding": "The netcode spike had no no-go path, no multi-ship runtime task, and its risk was measured last.",
+          "fix": "No-go path (Arena with light PvE, Hunt reduced or dropped), a multi-ship runtime task, and an early bandwidth measurement in M9 (I9.5)."
+        },
+        {
+          "n": "R3",
+          "sev": "Minor",
+          "where": "M4",
+          "finding": "Siren Bell's stun was not in the design doc.",
+          "fix": "Now a damaging pulse with a 20% slow, per the design."
+        }
+      ]
+    },
+    {
+      "title": "Review of your answers, rev 4 → rev 5 (30 Sep)",
+      "summary": "The reviewer checked that every answer is reflected in the plan and that the explanations are accurate and plain. <strong>No blockers</strong>, 6 majors and 7 minors, all addressed in rev 5. It raised three new questions for you (Q31 reference phone, Q32 key export, Q33 master-key backup).",
+      "rows": [
+        {
+          "n": "1",
+          "sev": "Major",
+          "where": "M1, M2",
+          "finding": "Overtime tiers and a run-ending pursuer were still mentioned after you chose the endless ramp.",
+          "fix": "Removed; M1 and M2 keep the endless ramp (Q22)."
+        },
+        {
+          "n": "2",
+          "sev": "Major",
+          "where": "Custody (D7), risks",
+          "finding": "Keys on Railway: the master key and the database share one Railway project; no backup or rotation; fee payer and settle keys not separated.",
+          "fix": "D7 and a new risk row: offline master-key backup (Q33), a key id for rotation, separate secrets for the fee payer, treasury and settle authority."
+        },
+        {
+          "n": "3",
+          "sev": "Major",
+          "where": "D7 vs key export",
+          "finding": "Key export contradicted \"keys never reach the client\".",
+          "fix": "One-time export after a fresh sign-in, logged; the account then becomes self-custody (Q32)."
+        },
+        {
+          "n": "4",
+          "sev": "Major",
+          "where": "Photon (M9, M21)",
+          "finding": "Photon's docs call client-server modes on WebGL \"not recommended\"; the free plan caps relayed traffic at 0.3 TB a month.",
+          "fix": "New risk row; M9's test has numeric pass limits (≤ 60 ms added latency, ≤ 30 KB/s per player, ≤ 150 MB per 4-player match); Fish-Net + Bayou fallback; ANSWERS corrected."
+        },
+        {
+          "n": "5",
+          "sev": "Major",
+          "where": "Enemy cap",
+          "finding": "One cap sized for a low-end phone was set only in M7, after M1–M3 tuning; no reference phone or frame rate.",
+          "fix": "The cap is set in M1 on your reference phone (new Q31); targets are shares of the cap; Hunt clients see at most the cap."
+        },
+        {
+          "n": "6",
+          "sev": "Major",
+          "where": "Anti-collusion",
+          "finding": "Referrals were still blocked though D15 turns limits off; AI raids, prizes and referrals missing from the risk; off-switches untested.",
+          "fix": "Hooks off (D15), each tested with its switch on; risk row lists every value flow."
+        },
+        {
+          "n": "7",
+          "sev": "Minor",
+          "where": "Accounts",
+          "finding": "Photon is needed for the M9 test, not only M21.",
+          "fix": "ANSWERS and TODOs say Photon from M9."
+        },
+        {
+          "n": "8",
+          "sev": "Minor",
+          "where": "M18",
+          "finding": "Leaderboard scope adopted before Q16 is answered.",
+          "fix": "Marked proposed."
+        },
+        {
+          "n": "9",
+          "sev": "Minor",
+          "where": "Q29 wording",
+          "finding": "\"Cheating stays impossible\" overclaimed; option B's stage-order effect missing.",
+          "fix": "\"A changed result is always caught\"; bots need separate checks; B moves the real-time stage earlier."
+        },
+        {
+          "n": "10",
+          "sev": "Minor",
+          "where": "M25",
+          "finding": "Tests still listed moderation states.",
+          "fix": "A stored report flag only on devnet."
+        },
+        {
+          "n": "11",
+          "sev": "Minor",
+          "where": "M26",
+          "finding": "Treasury and vault RUM on a plot sale unspecified.",
+          "fix": "They stay with the seller."
+        },
+        {
+          "n": "12",
+          "sev": "Minor",
+          "where": "Decisions",
+          "finding": "Dangling Q4/Q8/Q14 note; D17 missed Q3, Q18, Q23 and was out of order.",
+          "fix": "Inlined; D17 completed and reordered."
+        },
+        {
+          "n": "13",
+          "sev": "Minor",
+          "where": "ANSWERS",
+          "finding": "Megabonk claim stated as fact; the Balance Lab's editor window no longer exists.",
+          "fix": "Qualified as an estimate; M2 gives the lab a front end in the Tuning Console."
+        }
+      ]
+    },
+    {
+      "title": "Review of rev 7 (30 Sep)",
+      "summary": "Checked your second round of answers against the plan. <strong>No blockers</strong>, 8 majors and 10 minors, all addressed in rev 8 (33 phases). Two new questions for you: Q34 (forfeits) and Q35 (when checked voyage RUM can be wagered or sold).",
+      "rows": [
+        {
+          "n": "1",
+          "sev": "Major",
+          "where": "M9 plausibility",
+          "finding": "\"Kills can't exceed spawns\" is weak: the game spawns more as you kill more.",
+          "fix": "Bounds now come from the balance model and simulator; tested against a forged but consistent 99th-percentile log."
+        },
+        {
+          "n": "2",
+          "sev": "Major",
+          "where": "D6",
+          "finding": "Plausibility-checked RUM can still reach other players through wagers, the market and raids.",
+          "fix": "Stated in D6 and the risks; new question Q35."
+        },
+        {
+          "n": "3",
+          "sev": "Major",
+          "where": "Arena, Hunt",
+          "finding": "With uncapped PvP RUM (Q10) and collusion checks off, instant forfeits mint RUM.",
+          "fix": "Suggested rule: forfeits and matches under a minimum length pay nothing (Q34)."
+        },
+        {
+          "n": "4",
+          "sev": "Major",
+          "where": "M7 memory",
+          "finding": "\"Heap near 256 MB, max 512\" would crash 32-bit Chrome on the reference phone.",
+          "fix": "Hard 256 MB limit for mobile browsers (budget ~200 MB); 512 only on 64-bit browsers."
+        },
+        {
+          "n": "5",
+          "sev": "Major",
+          "where": "M13b",
+          "finding": "Too big for one gate.",
+          "fix": "Split: M13b single-player server sessions; new M21 multi-ship runtime and lobby before the Arena."
+        },
+        {
+          "n": "6",
+          "sev": "Major",
+          "where": "Prediction",
+          "finding": "Client prediction needs a deterministic ship controller; the physics ship had no task.",
+          "fix": "M13b adds a prediction-ready ship controller; M9 tests responsiveness at 150 ms."
+        },
+        {
+          "n": "7",
+          "sev": "Major",
+          "where": "Server sessions",
+          "finding": "No measure of session cost, sessions per process or mobile latency.",
+          "fix": "M9 go-limits added; AI raids run headless faster than real time; Railway cost estimate (~$30–60/month) before M13b closes."
+        },
+        {
+          "n": "8",
+          "sev": "Major",
+          "where": "Personalities",
+          "finding": "Parameters incomplete and values outside the declared enums.",
+          "fix": "Every personality has all 12 parameters with defined enums; avoidable damage and boss timing defined."
+        },
+        {
+          "n": "9–18",
+          "sev": "Minor",
+          "where": "Various",
+          "finding": "D11 timing, D4 AI-raid wording, a stale tag, floor-phone and 95% frame checks, assembly direction, invite order, request map rows, Quantum re-plan note, stale page cards, task order and profile mapping.",
+          "fix": "All corrected."
+        }
+      ]
+    },
+    {
+      "title": "Review of rev 9 (30 Sep)",
+      "summary": "Checked your third round: the Netcode for GameObjects choice, the forfeit rule and the Railway arithmetic (all within 20% of a recomputation). <strong>No blockers</strong>, 2 majors, 4 minors, all addressed.",
+      "rows": [
+        {
+          "n": "1",
+          "sev": "Major",
+          "where": "TODOs, status",
+          "finding": "Read before the round-3 update landed (Fish-Net Pro, open questions).",
+          "fix": "Already current; confirmed."
+        },
+        {
+          "n": "2",
+          "sev": "Major",
+          "where": "Railway savings",
+          "finding": "\"Ranked only on request\" was already in the baseline, so it double-counted.",
+          "fix": "Removed; reduced totals restated: ~$26–33 busy, ~$14–20 quiet."
+        },
+        {
+          "n": "3–4",
+          "sev": "Minor",
+          "where": "Forfeit rule (M22, M23)",
+          "finding": "Winner's pay on a forfeit, idle players, PvE sinkings and the Hunt's version were undefined.",
+          "fix": "One rule for both modes, with tests: nobody paid if others leave within 60 s; after that the remaining player is paid; 30 s idle counts as leaving; PvE, storm and edge wall count as combat."
+        },
+        {
+          "n": "5–6",
+          "sev": "Minor",
+          "where": "Wording",
+          "finding": "Stale Quantum and \"still open\" text; Serverless listed as an extra saving.",
+          "fix": "Reworded; Serverless marked as already assumed, wake-up time measured in M9."
+        }
+      ]
+    }
+  ]
+}
