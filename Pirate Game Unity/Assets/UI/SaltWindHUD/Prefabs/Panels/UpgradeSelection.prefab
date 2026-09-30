@@ -356,7 +356,9 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4018100761558256943, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_text
-      value: Flying Cutlasses
+      value: 'Deck Cannons
+
+'
       objectReference: {fileID: 0}
     - target: {fileID: 4018100761558256943, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_sharedMaterial
@@ -369,7 +371,7 @@ PrefabInstance:
     - target: {fileID: 4333656337994946496, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: e002b0706aae84183ad9e1a1c091faab, type: 3}
+      objectReference: {fileID: 21300000, guid: a024a598d32da4d16a9cdc5128a906ee, type: 3}
     - target: {fileID: 6015223669223067893, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_Name
       value: Card_5
@@ -632,7 +634,9 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4018100761558256943, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_text
-      value: Flying Cutlasses
+      value: 'Grapeshot
+
+'
       objectReference: {fileID: 0}
     - target: {fileID: 4018100761558256943, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_sharedMaterial
@@ -645,7 +649,19 @@ PrefabInstance:
     - target: {fileID: 4333656337994946496, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: e002b0706aae84183ad9e1a1c091faab, type: 3}
+      objectReference: {fileID: 21300000, guid: b755fa8baad554653aa9014aca4d8526, type: 3}
+    - target: {fileID: 5597489126413667233, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 51.5122
+      objectReference: {fileID: 0}
+    - target: {fileID: 5597489126413667233, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 39.8049
+      objectReference: {fileID: 0}
+    - target: {fileID: 5597489126413667233, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 6015223669223067893, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_Name
       value: Card_6
@@ -908,7 +924,9 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4018100761558256943, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_text
-      value: Flying Cutlasses
+      value: 'Broadside Battery
+
+'
       objectReference: {fileID: 0}
     - target: {fileID: 4018100761558256943, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_sharedMaterial
@@ -921,7 +939,19 @@ PrefabInstance:
     - target: {fileID: 4333656337994946496, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: e002b0706aae84183ad9e1a1c091faab, type: 3}
+      objectReference: {fileID: 21300000, guid: e393d96a935ee438c862c3f06a29b227, type: 3}
+    - target: {fileID: 5597489126413667233, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 32.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5597489126413667233, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 24.8818
+      objectReference: {fileID: 0}
+    - target: {fileID: 5597489126413667233, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 6015223669223067893, guid: 9a4ebb6ec09c04514aea59d9f6bffbaf, type: 3}
       propertyPath: m_Name
       value: Card_4
