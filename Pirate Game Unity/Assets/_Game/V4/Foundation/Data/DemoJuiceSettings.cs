@@ -160,7 +160,7 @@ namespace RoguePirates.V4.Foundation.Data
         [Tooltip("Demo: no voyage message at run start (it shows the seed and mentions chests and the Beacon).")]
         public bool hideVoyageToast = true;
         [Tooltip("Demo: the boss rises on its own at this run time (seconds; 0 = only at the Treasury Beacon).")]
-        [Min(0f)] public float autoBossSeconds = 600f;
+        [Min(0f)] public float autoBossSeconds = 540f;
         [Tooltip("Demo: the whirlpool that swirls where the boss is about to rise, and for how long before it does.")]
         public GameObject bossArrivalPrefab;
         [Min(0f)] public float bossArrivalScale = 1.6f;
