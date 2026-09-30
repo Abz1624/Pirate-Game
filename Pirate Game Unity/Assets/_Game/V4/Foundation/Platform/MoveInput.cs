@@ -30,6 +30,8 @@ namespace RoguePirates.V4.Foundation.Platform
         const float StickDeadZone = 0.12f;
         // Full speed from half the stick's reach (W on a keyboard is always full speed).
         const float FullThrottleReach = 0.5f;
+        // Beyond this angle off the ship's heading the stick reverses instead of turning round.
+        const float ReverseAngle = 145f;
 
         /// <summary>The last read came from the stick as a heading (the ship then turns at once, without the keyboard's
         /// reverse pause and turn ramp-up).</summary>
@@ -66,8 +68,10 @@ namespace RoguePirates.V4.Foundation.Platform
             shipForward.y = 0f;
             if (shipForward.sqrMagnitude < 0.0001f) return new Vector2(0f, reach);
             var angle = Vector3.SignedAngle(shipForward.normalized, desired, Vector3.up); // + = to the right
+            // Stick pulled nearly straight back: reverse (the keyboard's S), so a ship nosed into an island can back off.
+            if (Mathf.Abs(angle) > ReverseAngle) return new Vector2(0f, -Mathf.Clamp01(reach / FullThrottleReach));
             var steer = Mathf.Abs(angle) < SteerDeadZoneAngle ? 0f : Mathf.Clamp(angle / FullSteerAngle, -1f, 1f);
-            var throttle = Mathf.Clamp01(reach / FullThrottleReach) * Mathf.Lerp(1f, 0.6f, Mathf.InverseLerp(120f, 180f, Mathf.Abs(angle)));
+            var throttle = Mathf.Clamp01(reach / FullThrottleReach) * Mathf.Lerp(1f, 0.6f, Mathf.InverseLerp(90f, ReverseAngle, Mathf.Abs(angle)));
             return new Vector2(steer, throttle);
         }
 
