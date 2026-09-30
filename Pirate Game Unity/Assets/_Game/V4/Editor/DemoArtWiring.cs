@@ -192,11 +192,13 @@ namespace RoguePirates.V4.Editor
         {
             var juice = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
             if (juice == null) { log.Add("Landmarks: no DemoJuiceSettings"); return; }
+            // Once the POI prefabs exist (Build Demo Scenes), they are the artists' and are left alone.
+            bool Poi(GameObject g) => g != null && AssetDatabase.GetAssetPath(g).StartsWith("Assets/_Game/V4/Demo/POI");
             var chest = Load<GameObject>("Assets/GameObject/Treasure_chest.prefab");
-            if (chest != null) { juice.salvageChestPrefab = chest; juice.salvageChestGlowPrefab = null; }
-            juice.gildedWreckPrefab = Load<GameObject>("Assets/GameObject/repair_wreck.prefab");
-            juice.cursedIdolPrefab = Load<GameObject>("Assets/GameObject/Treasure map.prefab");
-            juice.merchantSkiffPrefab = Load<GameObject>("Assets/GameObject/pirate_tombstone.prefab");
+            if (chest != null && !Poi(juice.salvageChestPrefab)) { juice.salvageChestPrefab = chest; juice.salvageChestGlowPrefab = null; }
+            if (!Poi(juice.gildedWreckPrefab)) juice.gildedWreckPrefab = Load<GameObject>("Assets/GameObject/repair_wreck.prefab");
+            if (!Poi(juice.cursedIdolPrefab)) juice.cursedIdolPrefab = Load<GameObject>("Assets/GameObject/Treasure map.prefab");
+            if (!Poi(juice.merchantSkiffPrefab)) juice.merchantSkiffPrefab = Load<GameObject>("Assets/GameObject/pirate_tombstone.prefab");
             EditorUtility.SetDirty(juice);
             log.Add("Landmarks: treasure chest, repair wreck, treasure map, cursed tombstone");
         }

@@ -370,6 +370,8 @@ namespace RoguePirates.V4.Presentation.Hud
 
         RectTransform _boostPlaceholder;
         RectTransform _weaponRow;
+        /// <summary>Demo: the art HUD's weapon row, which the boost meter sits above instead of the authored one.</summary>
+        public RectTransform WeaponRowForBoost { set { if (value != null) _weaponRow = value; } }
         const float BoostAboveRowGap = 10f;
 
         /// <summary>

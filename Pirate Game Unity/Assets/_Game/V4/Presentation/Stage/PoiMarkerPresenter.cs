@@ -172,7 +172,8 @@ namespace RoguePirates.V4.Presentation.Stage
             var spawnPos = position + Vector3.up * 0.15f;
             var prefab = GetPrefab(type);
             var placeholders = _view.UsePlaceholderVisuals;
-            if (prefab != null && (!placeholders || type == POIType.SalvageChest || type == POIType.GildedWreck || type == POIType.CursedIdol || type == POIType.MerchantSkiff))
+            // Demo: an assigned POI prefab (Assets/_Game/V4/Demo/POI, editable by the artists) always shows, placeholders or not.
+            if (prefab != null)
                 return CreatePrefabMarker(type, prefab, spawnPos, root);
 
             if (placeholders)

@@ -107,6 +107,25 @@ namespace RoguePirates.V4.Presentation.Hud
             return hud;
         }
 
+        /// <summary>Demo: an art frame (HUD_SaltWind's Minimap) the map sits in; its own frame art hides.</summary>
+        public RectTransform FollowTarget { get; set; }
+        Image _frameOverlay;
+        readonly Vector3[] _followCorners = new Vector3[4];
+
+        void FollowArtFrame()
+        {
+            if (FollowTarget == null || !FollowTarget.gameObject.activeInHierarchy) return;
+            var rect = (RectTransform)transform;
+            FollowTarget.GetWorldCorners(_followCorners);
+            var scale = Mathf.Max(0.0001f, rect.lossyScale.x);
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.position = (_followCorners[0] + _followCorners[2]) * 0.5f;
+            var size = (_followCorners[2] - _followCorners[0]) / scale;
+            rect.sizeDelta = new Vector2(size.x, size.y);
+            RefreshClipInsets(rect);
+            if (_frameOverlay != null && _frameOverlay.enabled) _frameOverlay.enabled = false;
+        }
+
         public void Bind(IRunViews views)
         {
             _views = views;
@@ -146,6 +165,7 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             if (_views == null) return;
             RefreshMapSize();
+            FollowArtFrame();
             var ship = _views.Ship;
             if (ship == null || !ship.Exists || _playerIcon == null || _contentRoot == null) return;
 
@@ -229,6 +249,7 @@ namespace RoguePirates.V4.Presentation.Hud
             Stretch(overlay);
             var overlayImage = overlay.gameObject.AddComponent<Image>();
             overlayImage.raycastTarget = false;
+            _frameOverlay = overlayImage;
             if (art != null && art.overlay != null)
             {
                 overlayImage.sprite = art.overlay;

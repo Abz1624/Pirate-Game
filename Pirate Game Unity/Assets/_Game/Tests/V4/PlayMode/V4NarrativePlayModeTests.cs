@@ -23,6 +23,7 @@ namespace RoguePirates.V4.Tests
         {
             _isolation = new V4TestSaveIsolation();
             PlayerPrefs.DeleteKey(PlayerPrefsTutorialStore.Key); // a fresh First Conquest (restored after the test)
+            RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Disabled = true; // the demo hides barks and prompts
             yield return null;
         }
 
@@ -31,6 +32,7 @@ namespace RoguePirates.V4.Tests
         {
             yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
+            RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Disabled = false;
             StageBalanceProfileContext.ResetForTests();
             _isolation?.Dispose();
             _isolation = null;

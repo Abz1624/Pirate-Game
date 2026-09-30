@@ -619,6 +619,7 @@ namespace RoguePirates.V4.Tests
         static void PickFirstCard()
         {
             var modal = Object.FindFirstObjectByType<RoguePirates.V4.Presentation.Hud.LevelUpPresenter>(); // M14.11
+            if (modal != null && modal.UsesArtCards) { modal.Pick(0); return; } // demo: the art cards' click calls Pick
             var card = modal != null ? modal.transform.Find("CardRow/Card0") : null;
             if (card != null && card.gameObject.activeInHierarchy) card.GetComponent<UnityEngine.UI.Button>()?.onClick.Invoke();
         }

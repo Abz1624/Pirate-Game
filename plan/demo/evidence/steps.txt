@@ -1,10 +1,10 @@
 main menu: art panel shown
 set sail: captain select open
-locked: CharacterSlot_Sparky -> UNLOCK GÇö 140 RUM
+locked: CharacterSlot_Ember -> LOCKED
 rook: choice=0
 hud: SaltWind HUD shown
 landmarks: CursedIdol(mesh) GildedWreck(mesh) MerchantSkiff(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh)
 level-up cards shown
 vfx preview: played 2
 vfx in play: profile effects played so far 2
-3:00 level=1 weapons=1 profileFx=3
+3:00 level=3 weapons=2 profileFx=3

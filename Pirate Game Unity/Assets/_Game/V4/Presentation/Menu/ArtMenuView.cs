@@ -42,14 +42,14 @@ namespace RoguePirates.V4.Presentation.Menu
         readonly List<Slot> _slots = new List<Slot>();
         IReadOnlyList<CaptainMenuEntry> _entries = Array.Empty<CaptainMenuEntry>();
         int _selected;
-        bool _binding;
+        bool _binding, _ordered, _ownsBackdrops;
+        TextMeshProUGUI _lockReason;
 
         sealed class Slot
         {
             public string Name;
             public Toggle Toggle;
             public GameObject LockOverlay;
-            public TextMeshProUGUI LockText;
             public GameObject Details;
             public GameObject Boat;
             public int Entry = -1;
@@ -63,11 +63,20 @@ namespace RoguePirates.V4.Presentation.Menu
         /// <summary>The art menu on the canvas, or null when its settings are missing (the generated carousel is used then).</summary>
         public static ArtMenuView TryCreate(Transform canvas, Func<int> rum, string currency)
         {
+            if (canvas == null) return null;
             var settings = ArtMenuSettings.Load();
-            if (settings == null || !settings.Usable || canvas == null) return null;
+            var inScene = FindDeep(canvas, "MainMenuPanel") != null && FindDeep(canvas, "CharacterSelectionPanel") != null;
+            if (!inScene && (settings == null || !settings.Usable)) return null;
             var view = canvas.gameObject.AddComponent<ArtMenuView>();
             view.Build(settings, canvas, rum, currency);
             return view;
+        }
+
+        static GameObject SceneRoot(string name)
+        {
+            foreach (var go in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
+                if (go.name == name) return go;
+            return null;
         }
 
         void Build(ArtMenuSettings settings, Transform canvas, Func<int> rum, string currency)
@@ -75,12 +84,26 @@ namespace RoguePirates.V4.Presentation.Menu
             _settings = settings;
             _rum = rum;
             _currency = string.IsNullOrEmpty(currency) ? "RUM" : currency;
-            _menuCamera = Camera.main;
-            if (settings.mainMenuBackdrop != null) _mainBackdrop = Instantiate(settings.mainMenuBackdrop);
-            if (settings.characterSelectBackdrop != null) _selectBackdrop = Instantiate(settings.characterSelectBackdrop);
+            // The menu scene holds the art team's panels and 3D sets (Tools > Rogue Pirates > Demo > Build Demo Scenes);
+            // without them, the prefabs from the settings are used.
+            _main = FindDeep(canvas, "MainMenuPanel")?.gameObject;
+            _select = FindDeep(canvas, "CharacterSelectionPanel")?.gameObject;
+            _mainBackdrop = SceneRoot("MainMenuSetup");
+            _selectBackdrop = SceneRoot("CharacterSelection Setup");
+            _ownsBackdrops = _mainBackdrop == null && _selectBackdrop == null;
+            if (_ownsBackdrops && settings != null)
+            {
+                if (settings.mainMenuBackdrop != null) _mainBackdrop = Instantiate(settings.mainMenuBackdrop);
+                if (settings.characterSelectBackdrop != null) _selectBackdrop = Instantiate(settings.characterSelectBackdrop);
+            }
             // The panels' roots are zero-size in their prefabs (the art scene stretched them); stretch them over the canvas.
-            _main = Stretch(Instantiate(settings.mainMenuPanel, canvas, false));
-            _select = Stretch(Instantiate(settings.characterSelectionPanel, canvas, false));
+            if (_main == null) _main = Stretch(Instantiate(settings.mainMenuPanel, canvas, false));
+            if (_select == null) _select = Stretch(Instantiate(settings.characterSelectionPanel, canvas, false));
+            // The menu camera stays on only when it is not one of the sets' cameras and the showing set has none.
+            _menuCamera = Camera.main;
+            if (_menuCamera != null && ((_mainBackdrop != null && _menuCamera.transform.IsChildOf(_mainBackdrop.transform)) ||
+                                        (_selectBackdrop != null && _menuCamera.transform.IsChildOf(_selectBackdrop.transform)))) _menuCamera = null;
+            if (!_ownsBackdrops) _menuCamera = null; // the scene's cameras are the artists' (as in their UI scene)
 
             // Main menu.
             OnClick(_main.transform, "SetSail", () => ShowSelect(true));
@@ -109,9 +132,13 @@ namespace RoguePirates.V4.Presentation.Menu
                 _setSailText.fontSizeMax = 40f;
                 _setSailText.color = new Color(0.25f, 0.13f, 0.05f);
                 _setSailText.raycastTarget = false;
-                if (_settings.font != null) _setSailText.font = _settings.font;
+                if (_settings != null && _settings.font != null) _setSailText.font = _settings.font;
                 textGo.SetActive(false);
             }
+            // What unlocks the focused Captain, above Set Sail ("LockReason" in the scene, else made here).
+            _lockReason = FindDeep(_select.transform, "LockReason")?.GetComponent<TextMeshProUGUI>();
+            if (_lockReason == null && _setSail != null) _lockReason = AddLockText(_setSail.transform);
+            if (_lockReason != null) _lockReason.gameObject.SetActive(false);
             foreach (var toggle in _select.GetComponentsInChildren<Toggle>(true))
             {
                 if (!toggle.name.StartsWith("CharacterSlot_", StringComparison.Ordinal)) continue;
@@ -119,7 +146,6 @@ namespace RoguePirates.V4.Presentation.Menu
                 slot.LockOverlay = FindDeep(toggle.transform, "LockOverlay")?.gameObject;
                 slot.Details = FindDeep(_select.transform, "CharacterDetails_" + slot.Name)?.gameObject;
                 if (_selectBackdrop != null) slot.Boat = FindDeep(_selectBackdrop.transform, slot.Name + "_Boat")?.gameObject;
-                if (slot.LockOverlay != null) slot.LockText = AddLockText(slot.LockOverlay.transform);
                 var captured = slot;
                 toggle.onValueChanged.AddListener(on => { if (on && !_binding) Focus(captured); });
                 _slots.Add(slot);
@@ -148,10 +174,31 @@ namespace RoguePirates.V4.Presentation.Menu
                 var e = _entries[slot.Entry];
                 slot.Toggle.interactable = true; // locked Captains stay focusable (and buyable)
                 if (slot.LockOverlay != null) slot.LockOverlay.SetActive(e.Locked);
-                if (slot.LockText != null) slot.LockText.text = e.Locked ? e.LockReason : "";
                 if (slot.Details != null) FillDetails(slot.Details.transform, e);
             }
+            if (!_ordered) OrderSlots();
             UpdateRum();
+        }
+
+        /// <summary>The slots in the Captains' menu order (Rook, Hank, Richie, Sparky, Ember, Roxie), filling the art's
+        /// groups (pages) in turn.</summary>
+        void OrderSlots()
+        {
+            _ordered = true;
+            var groups = new List<Transform>();
+            foreach (var slot in _slots)
+                if (slot.Toggle.transform.parent != null && !groups.Contains(slot.Toggle.transform.parent)) groups.Add(slot.Toggle.transform.parent);
+            if (groups.Count == 0) return;
+            groups.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+            var ordered = new List<Slot>(_slots);
+            ordered.Sort((a, b) => (a.Entry < 0 ? int.MaxValue : a.Entry).CompareTo(b.Entry < 0 ? int.MaxValue : b.Entry));
+            var perGroup = Mathf.Max(1, Mathf.CeilToInt(ordered.Count / (float)groups.Count));
+            for (var i = 0; i < ordered.Count; i++)
+            {
+                var t = ordered[i].Toggle.transform;
+                t.SetParent(groups[Mathf.Min(i / perGroup, groups.Count - 1)], false);
+                t.SetSiblingIndex(i % perGroup);
+            }
         }
 
         public void SetPlayButton(string label, bool enabled)
@@ -159,7 +206,7 @@ namespace RoguePirates.V4.Presentation.Menu
             if (_setSail == null) return;
             _setSail.interactable = enabled;
             var plain = label == "SET SAIL";
-            if (_setSailArt != null) _setSailArt.sprite = plain || _settings.setSailNoText == null ? _setSailSprite : _settings.setSailNoText;
+            if (_setSailArt != null) _setSailArt.sprite = plain || _settings == null || _settings.setSailNoText == null ? _setSailSprite : _settings.setSailNoText;
             if (_setSailText != null)
             {
                 _setSailText.gameObject.SetActive(!plain);
@@ -179,6 +226,12 @@ namespace RoguePirates.V4.Presentation.Menu
                 if (s == slot && !s.Toggle.isOn) s.Toggle.isOn = true;
             }
             _binding = false;
+            if (_lockReason != null)
+            {
+                var e = _entries[slot.Entry];
+                _lockReason.gameObject.SetActive(e.Locked && !string.IsNullOrEmpty(e.LockReason));
+                _lockReason.text = e.Locked ? e.LockReason : "";
+            }
             if (notify) CaptainChanged?.Invoke(slot.Entry);
         }
 
@@ -215,23 +268,23 @@ namespace RoguePirates.V4.Presentation.Menu
                 description.text = string.IsNullOrEmpty(e.PassiveSummary) ? e.ActiveSummary : e.ActiveSummary + "\n<size=80%>" + e.PassiveSummary + "</size>";
         }
 
-        TextMeshProUGUI AddLockText(Transform overlay)
+        TextMeshProUGUI AddLockText(Transform setSail)
         {
-            var go = new GameObject("V4LockReason", typeof(RectTransform));
-            go.transform.SetParent(overlay, false);
+            var go = new GameObject("LockReason", typeof(RectTransform));
+            go.transform.SetParent(setSail.parent, false);
+            var button = (RectTransform)setSail;
             var rt = (RectTransform)go.transform;
-            rt.anchorMin = new Vector2(0f, 0f);
-            rt.anchorMax = new Vector2(1f, 0.3f);
-            rt.offsetMin = new Vector2(6f, 6f);
-            rt.offsetMax = new Vector2(-6f, 0f);
+            rt.anchorMin = button.anchorMin;
+            rt.anchorMax = button.anchorMax;
+            rt.pivot = new Vector2(0.5f, 0f);
+            rt.sizeDelta = new Vector2(Mathf.Max(360f, button.rect.width), 40f);
+            rt.anchoredPosition = button.anchoredPosition + new Vector2((0.5f - button.pivot.x) * button.rect.width, (1f - button.pivot.y) * button.rect.height + 8f);
             var t = go.AddComponent<TextMeshProUGUI>();
             t.alignment = TextAlignmentOptions.Center;
-            t.enableAutoSizing = true;
-            t.fontSizeMin = 10f;
-            t.fontSizeMax = 20f;
+            t.fontSize = 24f;
             t.color = new Color(1f, 0.92f, 0.75f);
             t.raycastTarget = false;
-            if (_settings.font != null) t.font = _settings.font;
+            if (_settings != null && _settings.font != null) t.font = _settings.font;
             return t;
         }
 
@@ -267,6 +320,7 @@ namespace RoguePirates.V4.Presentation.Menu
 
         void OnDestroy()
         {
+            if (!_ownsBackdrops) return;
             if (_mainBackdrop != null) Destroy(_mainBackdrop);
             if (_selectBackdrop != null) Destroy(_selectBackdrop);
         }

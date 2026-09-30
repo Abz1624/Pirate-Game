@@ -190,6 +190,8 @@ namespace RoguePirates.V4.Presentation
         {
             LevelUp = RoguePirates.V4.Presentation.Hud.LevelUpPresenter.Create(FindRunCanvas(), game.Config);
             if (LevelUp == null) return;
+            if (SaltWindHud != null && SaltWindHud.UpgradeSelection != null)
+                LevelUp.UseArtCards(SaltWindHud.UpgradeSelection, RoguePirates.V4.Presentation.Hud.IconCatalog.Load());
             game.Context.Replace<RoguePirates.V4.Progression.IOfferPresenter>(LevelUp);
             game.Context.Replace<RoguePirates.V4.Progression.IOfferChoice>(LevelUp);
         }
@@ -223,6 +225,7 @@ namespace RoguePirates.V4.Presentation
         void InstallNarrative(V4Game game)
         {
             if (!game.Context.TryGet<RoguePirates.V4.Narrative.INarrativeView>(out var narrative)) return;
+            if (RoguePirates.V4.Presentation.Hud.SaltWindHudSettings.Hides(s => s.hideNarrative)) return; // demo: no barks or tutorial prompts
             // The run canvas (above the authored HUD) and its last child, so a prompt also shows over the level-up cards.
             var run = FindRunCanvas();
             var parent = run != null ? run.transform : RoguePirates.V4.Presentation.Hud.AuthoredHudPresenter.FindAuthoredCanvas()?.transform;
@@ -317,8 +320,11 @@ namespace RoguePirates.V4.Presentation
             {
                 Minimap = RoguePirates.V4.Presentation.Hud.MinimapPresenter.Create(runCanvas.transform);
                 Minimap.Bind(views);
-                BeaconGuide = RoguePirates.V4.Presentation.Hud.BeaconGuidePresenter.Create(runCanvas.transform);
-                BeaconGuide.Bind(views);
+                if (!RoguePirates.V4.Presentation.Hud.SaltWindHudSettings.Hides(s => s.hideBeaconGuide))
+                {
+                    BeaconGuide = RoguePirates.V4.Presentation.Hud.BeaconGuidePresenter.Create(runCanvas.transform);
+                    BeaconGuide.Bind(views);
+                }
             }
 
             var authored = RoguePirates.V4.Presentation.Hud.AuthoredHudPresenter.FindAuthoredCanvas();
@@ -329,6 +335,7 @@ namespace RoguePirates.V4.Presentation
                 Hud.Bind(views, Minimap, RoguePirates.V4.Presentation.Hud.IconCatalog.Load());
                 // Demo (30 Sep 2026): the art team's HUD over the authored canvas, when its settings are present.
                 SaltWindHud = RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Install(authored, Hud, views, RoguePirates.V4.Presentation.Hud.IconCatalog.Load(), Minimap);
+                if (SaltWindHud != null && Minimap != null) Minimap.FollowTarget = SaltWindHud.ArtMinimap;
                 // M9 playtest: the Captain's active and its cooldown, beside the boost meter.
                 CaptainActive = RoguePirates.V4.Presentation.Hud.CaptainActivePresenter.Create(authored.transform);
                 CaptainActive.Bind(views);

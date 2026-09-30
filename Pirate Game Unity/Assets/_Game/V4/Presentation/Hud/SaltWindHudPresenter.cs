@@ -17,23 +17,26 @@ namespace RoguePirates.V4.Presentation.Hud
     /// </summary>
     public sealed class SaltWindHudPresenter : MonoBehaviour
     {
-        static readonly string[] Replaced = { "TImer", "Coin_Count", "Kill_Count", "Profile", "Quest", "Weapon_Slot" };
+        static readonly string[] Replaced = { "TImer", "Coin_Count", "Kill_Count", "Profile", "Quest", "Weapon_Slot", "Loadout_Right" };
 
         IRunViews _views;
         IconCatalog _icons;
         SaltWindHudSettings _settings;
         AuthoredHudPresenter _authored;
         GameObject _hud;
-        TextMeshProUGUI _name, _time, _gold, _kills, _title;
+        TextMeshProUGUI _name, _time, _gold, _kills, _rum;
         Image _portrait;
         Slider _hp, _xp;
         readonly List<Image> _markers = new List<Image>();
         readonly List<WeaponSlotView> _weapons = new List<WeaponSlotView>();
         readonly List<string> _quest = new List<string>(3);
         int _lastCaptain = -1;
-        MinimapPresenter _minimap;
-        RectTransform _topRight;
-        readonly Vector3[] _corners = new Vector3[4];
+        readonly List<Image> _items = new List<Image>();
+
+        /// <summary>The art's minimap frame (V4's minimap follows it).</summary>
+        public RectTransform ArtMinimap { get; private set; }
+        /// <summary>The art's level-up cards (the level-up presenter shows them).</summary>
+        public Transform UpgradeSelection { get; private set; }
 
         sealed class WeaponSlotView
         {
@@ -51,11 +54,11 @@ namespace RoguePirates.V4.Presentation.Hud
         public static SaltWindHudPresenter Install(Canvas authoredCanvas, AuthoredHudPresenter authored, IRunViews views, IconCatalog icons, MinimapPresenter minimap = null)
         {
             var settings = SaltWindHudSettings.Load();
+            if (Disabled && authoredCanvas != null) authoredCanvas.transform.Find("HUD_SaltWind")?.gameObject.SetActive(false);
             if (Disabled || settings == null || settings.hudPrefab == null || authoredCanvas == null) return null;
             var p = authoredCanvas.GetComponent<SaltWindHudPresenter>();
             if (p == null) p = authoredCanvas.gameObject.AddComponent<SaltWindHudPresenter>();
             p.Bind(settings, authored, views, icons);
-            p._minimap = minimap;
             return p;
         }
 
@@ -65,6 +68,10 @@ namespace RoguePirates.V4.Presentation.Hud
             _authored = authored;
             _views = views;
             _icons = icons;
+            // The HUD is placed in the run scene (Tools > Rogue Pirates > Demo > Build Demo Scenes) so artists can tweak it;
+            // a scene without it gets one from the prefab.
+            if (_hud == null) _hud = transform.Find("HUD_SaltWind")?.gameObject;
+            if (_hud != null && _weapons.Count == 0) BindWidgets(_hud.transform);
             if (_hud == null)
             {
                 _hud = Instantiate(settings.hudPrefab, transform, false);
@@ -76,27 +83,30 @@ namespace RoguePirates.V4.Presentation.Hud
                 BindWidgets(_hud.transform);
             }
             _lastCaptain = -1;
+            if (_authored != null && _hud != null) _authored.WeaponRowForBoost = Find(_hud.transform, "WeaponLoadout") as RectTransform;
         }
 
         void BindWidgets(Transform root)
         {
-            // Not V4's: the art's level-up cards and item grid (V4 draws those); the art's minimap is a frame only, so it
-            // keeps its place in the layout but draws nothing (V4's minimap sits there).
-            SetActive(root, "UpgradeSelection", false);
-            SetActive(root, "ItemBar", false);
-            SetActive(Find(root, "CurrencyBar"), "Rum", false);
-            // The art's minimap is a frame only: V4's minimap takes the corner and the counters sit below it (LateUpdate).
-            SetActive(root, "Minimap", false);
-            _topRight = Find(root, "TopRight") as RectTransform;
-            // The weapon row moves to the bottom centre: V4's item and Logbook slots keep the bottom-right corner.
-            if (Find(root, "WeaponLoadout") is RectTransform row)
-            {
-                row.anchorMin = row.anchorMax = new Vector2(0.5f, 0f);
-                row.pivot = new Vector2(0.5f, 0f);
-                row.anchoredPosition = new Vector2(0f, 24f);
-            }
-            foreach (var g in root.GetComponentsInChildren<Graphic>(true)) g.raycastTarget = false;
-            foreach (var s in root.GetComponentsInChildren<Selectable>(true)) s.interactable = false;
+            _hud = root.gameObject;
+            UpgradeSelection = Find(root, "UpgradeSelection");
+            // The art's minimap is a frame: V4's minimap draws the map inside it (it follows ArtMinimap).
+            ArtMinimap = Find(root, "Minimap") as RectTransform;
+            SetActive(ArtMinimap, "MapContent", false);
+            SetActive(ArtMinimap, "PlayerMarker", false);
+            // The HUD is display only (the level-up cards keep their buttons).
+            foreach (var g in root.GetComponentsInChildren<Graphic>(true))
+                if (UpgradeSelection == null || !g.transform.IsChildOf(UpgradeSelection)) g.raycastTarget = false;
+            foreach (var s in root.GetComponentsInChildren<Selectable>(true))
+                if (UpgradeSelection == null || !s.transform.IsChildOf(UpgradeSelection)) s.interactable = false;
+
+            var itemBar = Find(root, "ItemBar");
+            if (itemBar != null)
+                for (var i = 0; i < itemBar.childCount; i++)
+                {
+                    var icon = Find(itemBar.GetChild(i), "Icon")?.GetComponent<Image>();
+                    if (icon != null) _items.Add(icon);
+                }
 
             var panel = Find(root, "PlayerPanel");
             _name = Find(panel, "Name")?.GetComponent<TextMeshProUGUI>();
@@ -108,9 +118,8 @@ namespace RoguePirates.V4.Presentation.Hud
             var currency = Find(root, "CurrencyBar");
             _gold = Find(Find(currency, "Gold"), "Amount")?.GetComponent<TextMeshProUGUI>();
             _kills = Find(Find(currency, "Kills"), "Amount")?.GetComponent<TextMeshProUGUI>();
+            _rum = Find(Find(currency, "Rum"), "Amount")?.GetComponent<TextMeshProUGUI>();
             var title = Find(root, "MatchTitle");
-            _title = Find(title, "Title")?.GetComponent<TextMeshProUGUI>();
-            if (_title != null) { _title.enableAutoSizing = true; _title.fontSizeMin = 12f; _title.fontSizeMax = Mathf.Max(18f, _title.fontSize); }
             var markers = Find(title, "KillMarkers");
             if (markers != null)
                 for (var i = 0; i < markers.childCount; i++)
@@ -167,6 +176,9 @@ namespace RoguePirates.V4.Presentation.Hud
                 }
                 if (_gold != null) _gold.text = run.Gold.ToString("N0");
                 if (_kills != null) _kills.text = run.Kills.ToString("N0");
+                // Rum: the player's treasury (this run's Rum is settled on the results screen).
+                var app = RoguePirates.V4.Foundation.Core.AppRoot.Instance;
+                if (_rum != null) _rum.text = (app != null && app.Save != null ? app.Save.Meta.marks : 0).ToString("N0");
             }
 
             var captain = _views.Captain;
@@ -189,19 +201,20 @@ namespace RoguePirates.V4.Presentation.Hud
 
             RefreshObjective();
             RefreshWeapons();
-            KeepCountersBelowMinimap();
+            RefreshItems();
         }
 
-        /// <summary>Moves the art's top-right counters just below V4's minimap (screen-space overlay: world = pixels).</summary>
-        void KeepCountersBelowMinimap()
+        void RefreshItems()
         {
-            var map = _minimap != null ? _minimap.transform as RectTransform : null;
-            if (_topRight == null || map == null || !map.gameObject.activeInHierarchy) return;
-            map.GetWorldCorners(_corners);
-            var mapBottom = _corners[0].y;
-            _topRight.GetWorldCorners(_corners);
-            var delta = mapBottom - 8f - _corners[1].y;
-            if (Mathf.Abs(delta) > 0.5f) _topRight.position += new Vector3(0f, delta, 0f);
+            var loadout = _views.Loadout;
+            if (loadout == null) return;
+            for (var i = 0; i < _items.Count; i++)
+            {
+                var sprite = i < loadout.ItemCount && _icons != null ? _icons.Item(loadout.ItemId(i)) : null;
+                var slot = _items[i].transform.parent.gameObject;
+                if (slot.activeSelf != (sprite != null)) slot.SetActive(sprite != null);
+                if (sprite != null && _items[i].sprite != sprite) { _items[i].sprite = sprite; _items[i].preserveAspect = true; }
+            }
         }
 
         void RefreshObjective()
@@ -209,7 +222,6 @@ namespace RoguePirates.V4.Presentation.Hud
             var stage = _views.Stage;
             if (stage == null) return;
             QuestLines.Build(stage.Beacon, stage.BossSummoned, stage.BossDefeated, _quest);
-            if (_title != null && _quest.Count > 0) _title.text = _quest[0];
             var done = stage.BossDefeated ? 3 : stage.BossSummoned ? 2 : stage.Beacon == BeaconReveal.Discovered ? 1 : 0;
             for (var i = 0; i < _markers.Count; i++)
             {

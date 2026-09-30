@@ -31,6 +31,12 @@ namespace RoguePirates.V4.Presentation.Hud
         int _refreshesRemaining;
         bool _showing;
 
+        // Demo (30 Sep 2026): the art team's UpgradeSelection cards (HUD_SaltWind) instead of the generated ones.
+        Transform _art;
+        IconCatalog _icons;
+        readonly List<Button> _artButtons = new List<Button>();
+        public bool UsesArtCards => _art != null;
+
         public bool IsShowing => _showing && _panel != null && _panel.activeSelf;
         public IReadOnlyList<Offer> Shown => _offers;
         public IReadOnlyList<LevelOffer> Cards => _cards;
@@ -72,9 +78,82 @@ namespace RoguePirates.V4.Presentation.Hud
             HideNow();
         }
 
+        /// <summary>
+        /// Shows the offers on the art team's cards (Card_1.. under UpgradeSelection: Background by rarity, Icon, Title,
+        /// Description); this panel keeps only its Skip and Refresh buttons. The cards' layout is the artists'.
+        /// </summary>
+        public void UseArtCards(Transform upgradeSelection, IconCatalog icons)
+        {
+            _art = upgradeSelection;
+            _icons = icons;
+            _artButtons.Clear();
+            if (_art == null) return;
+            var row = _art.Find("CardRow") ?? _art;
+            for (var i = 0; i < row.childCount; i++)
+            {
+                var b = row.GetChild(i).GetComponent<Button>();
+                if (b != null) _artButtons.Add(b);
+            }
+            _artButtons.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+            _art.gameObject.SetActive(false);
+        }
+
+        void ShowArtCards()
+        {
+            _art.gameObject.SetActive(true);
+            _art.SetAsLastSibling();
+            var cardArt = RoguePirates.V4.Foundation.UI.LevelUpCardArtSettings.Load();
+            for (var i = 0; i < _artButtons.Count; i++)
+            {
+                var b = _artButtons[i];
+                var has = i < _cards.Count && i < 3;
+                b.gameObject.SetActive(has);
+                b.onClick.RemoveAllListeners();
+                if (!has) continue;
+                var index = i;
+                b.onClick.AddListener(() => Pick(index));
+                b.interactable = true;
+                var card = _cards[i];
+                var offer = _offers[i];
+                var bg = b.transform.Find("Background")?.GetComponent<Image>();
+                if (bg != null && cardArt != null && cardArt.TryGet(card.rarity, out var sprite, out _) && sprite != null) bg.sprite = sprite;
+                var icon = b.transform.Find("Background/Icon")?.GetComponent<Image>();
+                var shadow = b.transform.Find("Background/Shadow")?.GetComponent<Image>();
+                var iconSprite = IconOf(offer);
+                foreach (var img in new[] { icon, shadow })
+                {
+                    if (img == null) continue;
+                    img.gameObject.SetActive(iconSprite != null);
+                    if (iconSprite != null) { img.sprite = iconSprite; img.preserveAspect = true; }
+                }
+                var title = b.transform.Find("Background/Title")?.GetComponent<TextMeshProUGUI>();
+                if (title != null) title.text = card.title;
+                var description = b.transform.Find("Background/Description")?.GetComponent<TextMeshProUGUI>();
+                if (description != null)
+                {
+                    var effect = card.effectLines != null && card.effectLines.Length > 0 ? string.Join("\n", card.effectLines) : card.description;
+                    var level = card.LevelLabel;
+                    description.text = string.IsNullOrEmpty(level) ? effect : level + "\n" + effect;
+                }
+            }
+        }
+
+        Sprite IconOf(Offer offer)
+        {
+            if (_icons == null) return null;
+            switch (offer.Kind)
+            {
+                case OfferKind.WeaponUpgrade:
+                case OfferKind.NewWeapon:
+                case OfferKind.WeaponEvolution: return _icons.Weapon(offer.Id);
+                case OfferKind.NewRunItem: return _icons.Item(offer.Id);
+                default: return null;
+            }
+        }
+
         public bool TryShow(List<Offer> offers, Action<Offer> selected, Action skipped, Action refreshed, int refreshesRemaining)
         {
-            if (_ui.cardButtons == null || _ui.cardButtons.Length == 0) return false;
+            if (_art == null && (_ui.cardButtons == null || _ui.cardButtons.Length == 0)) return false;
             _offers.Clear();
             _cards.Clear();
             if (offers != null)
@@ -90,6 +169,22 @@ namespace RoguePirates.V4.Presentation.Hud
             _showing = true;
             transform.SetAsLastSibling(); // V3 EnsureVisibleOnTop
             _panel.SetActive(true);
+            if (_art != null)
+            {
+                // Only Skip and Refresh stay on this panel: its cards, title, hint and dimming belong to the generated look.
+                foreach (Transform child in transform)
+                    child.gameObject.SetActive(child == (_ui.rejectButton != null ? _ui.rejectButton.transform : null) || child == (_ui.refreshButton != null ? _ui.refreshButton.transform : null) || IsAncestorOfButtons(child));
+                var panelImage = GetComponent<Image>();
+                if (panelImage != null) panelImage.enabled = false;
+                if (_ui.headerTitle != null) _ui.headerTitle.gameObject.SetActive(false);
+                if (_ui.headerSubtitle != null) _ui.headerSubtitle.gameObject.SetActive(false);
+                foreach (var t in GetComponentsInChildren<TextMeshProUGUI>(true))
+                    if (t.text != null && t.text.Contains("pick a card")) t.gameObject.SetActive(false);
+                ShowArtCards();
+                SetupButton(_ui.rejectButton, skipped != null, "Skip", Skip);
+                SetupButton(_ui.refreshButton, refreshed != null && refreshesRemaining > 0, $"Refresh ({refreshesRemaining} left)", OnRefresh);
+                return true;
+            }
 
             for (var i = 0; i < 3; i++)
             {
@@ -139,10 +234,18 @@ namespace RoguePirates.V4.Presentation.Hud
             _refreshed = null;
         }
 
+        bool IsAncestorOfButtons(Transform t)
+        {
+            foreach (var b in new[] { _ui.rejectButton, _ui.refreshButton })
+                if (b != null && b.transform.IsChildOf(t)) return true;
+            return false;
+        }
+
         void HideNow()
         {
             _showing = false;
             if (_panel != null) _panel.SetActive(false);
+            if (_art != null) _art.gameObject.SetActive(false);
         }
 
         /// <summary>V3 Pick: hides the cards and answers with the chosen offer.</summary>

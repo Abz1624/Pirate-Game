@@ -127,7 +127,8 @@ namespace RoguePirates.V4.Presentation.Hud
                 _boost = t as RectTransform;
                 if (_boost == null) return;
             }
-            if (_boost.anchorMin != Vector2.zero || _boost.anchorMax != Vector2.zero) return; // an authored meter elsewhere: keep the default place
+            // Beside the meter wherever it is anchored (the demo's authored meter sits at the bottom centre).
+            if (_rect.anchorMin != _boost.anchorMin || _rect.anchorMax != _boost.anchorMax) { _rect.anchorMin = _boost.anchorMin; _rect.anchorMax = _boost.anchorMax; }
             var scale = _boost.localScale;
             var pos = _boost.anchoredPosition + new Vector2((1f - _boost.pivot.x) * _boost.rect.width * scale.x + Gap, -_boost.pivot.y * _boost.rect.height * scale.y);
             var height = _boost.rect.height * _boost.localScale.y;

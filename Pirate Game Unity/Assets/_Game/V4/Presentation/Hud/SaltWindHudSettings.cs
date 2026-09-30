@@ -24,6 +24,19 @@ namespace RoguePirates.V4.Presentation.Hud
         [Tooltip("Objective pip, done / not done.")]
         public Sprite markerDone;
         public Sprite markerOpen;
+        [Header("Demo switches")]
+        [Tooltip("Hide the barks and tutorial prompts.")]
+        public bool hideNarrative = true;
+        [Tooltip("Hide the Treasury Beacon guide (the spotlight and the arrow to the beacon).")]
+        public bool hideBeaconGuide = true;
+
+        /// <summary>A demo switch that is on (never while the art HUD is switched off for tests).</summary>
+        public static bool Hides(System.Func<SaltWindHudSettings, bool> flag)
+        {
+            if (SaltWindHudPresenter.Disabled) return false;
+            var s = Load();
+            return s != null && flag(s);
+        }
 
         public Sprite PortraitOf(int captainId)
         {
