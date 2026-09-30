@@ -179,8 +179,8 @@ MonoBehaviour:
   enemyHealthBarHeight: 2.2
   playerHealthBarHeight: 6
   showHealthOnElitesOnly: 0
-  salvageChestPrefab: {fileID: 4407610472142162157, guid: 9848d10ca2d58f745a077ec09bf9322b, type: 3}
-  salvageChestGlowPrefab: {fileID: 1590415177872986601, guid: acdb90624a404aa438447006f1026065, type: 3}
+  salvageChestPrefab: {fileID: 1790944715606093602, guid: 442b2792d425a4a7c8bfc257f14cdee8, type: 3}
+  salvageChestGlowPrefab: {fileID: 0}
   salvageChestGlowScale: 0.55
   lighthousePrefab: {fileID: 8566692806509818879, guid: 3474afa68addb4a23ab3b6e1b1bb164d, type: 3}
   trialBuoyPrefab: {fileID: 4037768348685628337, guid: 2f694d24f3dfc41efb3621ab070c12eb, type: 3}
@@ -191,6 +191,12 @@ MonoBehaviour:
   trialBuoyScale: 1
   bossBeaconScale: 1
   bossTelegraphScale: 2.4
+  gildedWreckPrefab: {fileID: 568573178516406369, guid: 2c6e4a9dd0e70480b8a577dea99b531e, type: 3}
+  gildedWreckScale: 1
+  cursedIdolPrefab: {fileID: 4396307645674545166, guid: 2e24b53b4ba564bb3aa4a8d2895cc2d4, type: 3}
+  cursedIdolScale: 1
+  merchantSkiffPrefab: {fileID: 5532503270260709974, guid: 5fd47dc43484e45aaa4684a6f88fc294, type: 3}
+  merchantSkiffScale: 1
   playerDamageFlashColor: {r: 1, g: 0.25, b: 0.2, a: 1}
   playerDamageFlashDuration: 0.12
   damageHighlightDuration: 0.14

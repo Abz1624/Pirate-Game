@@ -98,7 +98,13 @@ namespace RoguePirates.V4.Foundation.UI
             }
 
             if (usedArt)
+            {
                 ApplyArtCardTextLayout();
+                var ink = LevelUpCardArtSettings.Load() != null ? LevelUpCardArtSettings.Load().artTextColor : default;
+                if (ink.a > 0f)
+                    foreach (var t in new[] { titleText, categoryText, levelText, rarityText })
+                        if (t != null) t.color = ink;
+            }
 
             transform.localScale = _baseScale;
             _hoverT = 0f;
@@ -248,6 +254,12 @@ namespace RoguePirates.V4.Foundation.UI
                 Stretch(glow.rectTransform);
                 if (panelFill != null)
                     glow.transform.SetSiblingIndex(panelFill.transform.GetSiblingIndex() + 1);
+            }
+            else if (glow != null && background != null)
+            {
+                // Demo: a complete card background (the art team's) needs no glow panel behind it.
+                glow.sprite = null;
+                glow.color = Color.clear;
             }
             else if (glow != null)
             {

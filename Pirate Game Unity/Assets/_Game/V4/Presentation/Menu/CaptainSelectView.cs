@@ -20,6 +20,10 @@ namespace RoguePirates.V4.Presentation.Menu
         public bool Locked;
         /// <summary>What unlocks it (shown on the card when locked).</summary>
         public string LockReason;
+        /// <summary>Demo art menu: the active's name and summary and the passive summary (Captain config).</summary>
+        public string ActiveName;
+        public string ActiveSummary;
+        public string PassiveSummary;
     }
 
     /// <summary>
@@ -28,7 +32,7 @@ namespace RoguePirates.V4.Presentation.Menu
     /// builds from the Captain configs and the V4 lock rules. A locked card shows what unlocks it; the button reads
     /// <see cref="PlayLabel"/> (the menu turns it into a Rum unlock when that is all that is missing).
     /// </summary>
-    public sealed class CaptainSelectView : MonoBehaviour
+    public sealed class CaptainSelectView : MonoBehaviour, ICaptainMenuView
     {
         const float CardHeight = 520f;
         const float CardGap = 10f;

@@ -16,6 +16,7 @@ namespace RoguePirates.V4.Presentation
         public Weapons.ProjectileViewPresenter Projectiles { get; private set; }
         public V4Game Game { get; private set; }
         public RoguePirates.V4.Presentation.Hud.AuthoredHudPresenter Hud { get; private set; }
+        public RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter SaltWindHud { get; private set; }
         public RoguePirates.V4.Presentation.Hud.MinimapPresenter Minimap { get; private set; }
         public RoguePirates.V4.Presentation.Hud.CaptainActivePresenter CaptainActive { get; private set; }
         public RoguePirates.V4.Presentation.Hud.CaptainActiveEffectPresenter CaptainActiveEffect { get; private set; }
@@ -99,9 +100,27 @@ namespace RoguePirates.V4.Presentation
                 InstallWeaponEffects(game, views);
                 InstallWorld(game, views);
                 InstallLevelUp(game);
+                InstallVfxProfiles(views);
+                // Demo: the chosen Captain's sail and flag on the player ship.
+                if (views.Ship != null && views.Captain != null)
+                    RoguePirates.V4.Presentation.Hud.SaltWindHudSettings.Load()?.ApplyShipLook(views.Ship.Anchor, views.Captain.CaptainId);
             }
             if (game.Context != null) InstallStage(game);
             if (game.Context != null) InstallNarrative(game);
+        }
+
+        /// <summary>Demo (30 Sep 2026): the artists' VFX profiles, handed to the presenters that play each moment.</summary>
+        public Effects.VfxProfilePlayer VfxProfiles { get; private set; }
+
+        void InstallVfxProfiles(Views.IRunViews views)
+        {
+            VfxProfiles = GetComponent<Effects.VfxProfilePlayer>();
+            if (VfxProfiles == null) VfxProfiles = gameObject.AddComponent<Effects.VfxProfilePlayer>();
+            VfxProfiles.Bind(Pools, RoguePirates.V4.Foundation.Data.VfxProfileLibrary.Load(), () => views.Ship != null ? views.Ship.Anchor : null);
+            if (Projectiles != null) Projectiles.Profiles = VfxProfiles;
+            if (WeaponEffects != null) WeaponEffects.Profiles = VfxProfiles;
+            if (CombatFeedback != null) CombatFeedback.Profiles = VfxProfiles;
+            if (EnemyViews != null) EnemyViews.Profiles = VfxProfiles;
         }
 
         /// <summary>M14: the toast presenter on the run canvas (V3ToastHud's place); the run's toast forwarder shows through it.</summary>
@@ -308,6 +327,8 @@ namespace RoguePirates.V4.Presentation
                 Hud = authored.GetComponent<RoguePirates.V4.Presentation.Hud.AuthoredHudPresenter>();
                 if (Hud == null) Hud = authored.gameObject.AddComponent<RoguePirates.V4.Presentation.Hud.AuthoredHudPresenter>();
                 Hud.Bind(views, Minimap, RoguePirates.V4.Presentation.Hud.IconCatalog.Load());
+                // Demo (30 Sep 2026): the art team's HUD over the authored canvas, when its settings are present.
+                SaltWindHud = RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Install(authored, Hud, views, RoguePirates.V4.Presentation.Hud.IconCatalog.Load(), Minimap);
                 // M9 playtest: the Captain's active and its cooldown, beside the boost meter.
                 CaptainActive = RoguePirates.V4.Presentation.Hud.CaptainActivePresenter.Create(authored.transform);
                 CaptainActive.Bind(views);

@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aca5feef8a57f3e4287ac615f3cf0968, type: 3}
+  m_Name: V4SaltWindHudSettings
+  m_EditorClassIdentifier: RoguePirates.V4.Presentation::RoguePirates.V4.Presentation.Hud.SaltWindHudSettings
+  hudPrefab: {fileID: 5604566127793267425, guid: 55b31bfdf9734481b8940938e86ab08e, type: 3}
+  portraits:
+  - captainId: 1
+    sprite: {fileID: 21300000, guid: b97207fbc095a4c628bc58818e4a535e, type: 3}
+    sail: {fileID: 2100000, guid: 156b175b2356949cd8bd6fe0d276e83b, type: 2}
+    flag: {fileID: 2100000, guid: 2f6e57ee50cb1497b91a66fb81c937fb, type: 2}
+  - captainId: 4
+    sprite: {fileID: 21300000, guid: dcfbf5c7832e94cb69dcf42d58939db7, type: 3}
+    sail: {fileID: 2100000, guid: c91128630258e4fcda1b85da861fbefb, type: 2}
+    flag: {fileID: 2100000, guid: 3bffb77f5ef1242149e7d828b3f9daa2, type: 2}
+  - captainId: 2
+    sprite: {fileID: 21300000, guid: 5c803726e004543c3b3c651b6165d2ff, type: 3}
+    sail: {fileID: 2100000, guid: cc26fd8ace82f4b13a7c5ed8a02ba283, type: 2}
+    flag: {fileID: 2100000, guid: 306c267430602413ea8823b79b219f79, type: 2}
+  - captainId: 3
+    sprite: {fileID: 21300000, guid: a7d01556c8a4444678f4dce4ac0f5bdc, type: 3}
+    sail: {fileID: 2100000, guid: 119af8d04439040cf821dc762c75ca23, type: 2}
+    flag: {fileID: 2100000, guid: 52e8c0f3aa3cb4c228262549b98da194, type: 2}
+  - captainId: 0
+    sprite: {fileID: 21300000, guid: d2434264071f94d13ba2b7f5adedafde, type: 3}
+    sail: {fileID: 2100000, guid: a7a028b72be3e4ddeb2f8582150d6704, type: 2}
+    flag: {fileID: 2100000, guid: 774a1155c106f45a9978a3e9fb62164c, type: 2}
+  - captainId: 5
+    sprite: {fileID: 21300000, guid: f241ff6dca810425bafd2dce584d834a, type: 3}
+    sail: {fileID: 2100000, guid: c29c3ae4ed7784c1ca84aae63e76def3, type: 2}
+    flag: {fileID: 2100000, guid: 2b1cb97223b1f44c88adc93c38d0d189, type: 2}
+  markerDone: {fileID: 21300000, guid: 652cb16da0ad6463f8383678f1f20d14, type: 3}
+  markerOpen: {fileID: 21300000, guid: f030e8158928e436f9ea329aa3d5f65a, type: 3}
+  shipSailMaterial: EnemySail
+  shipFlagMaterial: SkullBandanaFlag

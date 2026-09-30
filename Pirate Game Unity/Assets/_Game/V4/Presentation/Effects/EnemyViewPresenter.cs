@@ -36,6 +36,8 @@ namespace RoguePirates.V4.Presentation.Effects
         GameObject _cube;
 
         public int LiveCount => _liveKey.Count;
+        /// <summary>Demo: the artists' per-enemy VFX profiles (trail, hit).</summary>
+        public VfxProfilePlayer Profiles { get; set; }
 
         public EnemyViewPresenter(PoolService pools, DemoJuiceSettings juice)
         {
@@ -69,6 +71,7 @@ namespace RoguePirates.V4.Presentation.Effects
                 if (view == null) return null;
                 view.localScale = Vector3.one * scale;
                 EnemyViewAnimation.ApplySpawnVariation(view, animationSeed);
+                Profiles?.EnemyViewCreated(def.id, view);
                 return view;
             }
 
@@ -79,6 +82,7 @@ namespace RoguePirates.V4.Presentation.Effects
             cube.localScale = Vector3.one * (def.radius * 2f * scale);
             var renderer = cube.GetComponent<Renderer>();
             if (renderer != null) renderer.material.color = elite ? Color.magenta : def.placeholderColor;
+            Profiles?.EnemyViewCreated(def.id, cube);
             return cube;
         }
 
@@ -98,6 +102,7 @@ namespace RoguePirates.V4.Presentation.Effects
         {
             if (view != null)
             {
+                Profiles?.EnemyViewReleased(view);
                 EnemyBurnFlash.SetBurning(view, false);
                 _liveKey.Remove(view);
                 if (!_pools.Release(view.gameObject)) Object.Destroy(view.gameObject);

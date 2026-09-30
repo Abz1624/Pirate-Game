@@ -172,7 +172,7 @@ namespace RoguePirates.V4.Presentation.Stage
             var spawnPos = position + Vector3.up * 0.15f;
             var prefab = GetPrefab(type);
             var placeholders = _view.UsePlaceholderVisuals;
-            if (prefab != null && (!placeholders || type == POIType.SalvageChest))
+            if (prefab != null && (!placeholders || type == POIType.SalvageChest || type == POIType.GildedWreck || type == POIType.CursedIdol || type == POIType.MerchantSkiff))
                 return CreatePrefabMarker(type, prefab, spawnPos, root);
 
             if (placeholders)
@@ -230,6 +230,9 @@ namespace RoguePirates.V4.Presentation.Stage
                 POIType.LighthouseOfFortune => _juice.lighthousePrefab,
                 POIType.TrialBuoy => _juice.trialBuoyPrefab,
                 POIType.BossBeacon => _juice.bossBeaconPrefab,
+                POIType.GildedWreck => _juice.gildedWreckPrefab,
+                POIType.CursedIdol => _juice.cursedIdolPrefab,
+                POIType.MerchantSkiff => _juice.merchantSkiffPrefab,
                 _ => null
             };
         }
@@ -243,6 +246,9 @@ namespace RoguePirates.V4.Presentation.Stage
                 POIType.LighthouseOfFortune => _juice.lighthouseScale,
                 POIType.TrialBuoy => _juice.trialBuoyScale,
                 POIType.BossBeacon => _juice.bossBeaconScale,
+                POIType.GildedWreck => _juice.gildedWreckScale,
+                POIType.CursedIdol => _juice.cursedIdolScale,
+                POIType.MerchantSkiff => _juice.merchantSkiffScale,
                 _ => 1f
             };
         }

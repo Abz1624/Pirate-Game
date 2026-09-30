@@ -25,6 +25,8 @@ namespace RoguePirates.V4.Tests
         public IEnumerator SetUp()
         {
             _isolation = new V4TestSaveIsolation();
+            // These tests cover the authored HUD widgets, which the demo's art HUD hides (it has its own switch).
+            RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Disabled = true;
             yield return null;
         }
 
@@ -37,6 +39,7 @@ namespace RoguePirates.V4.Tests
             RoguePirates.V4.Foundation.Combat.CombatDebugOverlays.SetVisible(false);
             _isolation?.Dispose();
             _isolation = null;
+            RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Disabled = false;
         }
 
         static IEnumerator WaitForPlaying()

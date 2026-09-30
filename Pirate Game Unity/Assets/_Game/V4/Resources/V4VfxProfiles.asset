@@ -1,0 +1,1440 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52f1860a1b0b59a43ab8add7c8cd7e80, type: 3}
+  m_Name: V4VfxProfiles
+  m_EditorClassIdentifier: RoguePirates.V4.Foundation::RoguePirates.V4.Foundation.Data.VfxProfileLibrary
+  profiles:
+  - subject: 0
+    id: broadside_battery
+    displayName: Broadside Battery
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 0
+    id: deck_cannons
+    displayName: Deck Cannons
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 0
+    id: flamethrower
+    displayName: Flamethrower
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 0
+    id: flying_cutlasses
+    displayName: Flying Cutlasses
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 0
+    id: harpoon_gun
+    displayName: Harpoon Gun
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 0
+    id: lightning_mast
+    displayName: Lightning Mast
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 0
+    id: long_nine
+    displayName: Long Nine
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 0
+    id: mortar
+    displayName: Mortar
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 0
+    id: powder_kegs
+    displayName: Powder Kegs
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 0
+    id: swivel_guns
+    displayName: Swivel Guns
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 1
+    id: player_ship
+    displayName: Player ship
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 6168184190451578026, guid: 952b3b2d104ddfd47ba6d824d0c79475, type: 3}
+      replaceDefault: 0
+      scale: 2
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 5
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 2
+    id: barnacle_king
+    displayName: Barnacle King
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 6168184190451578026, guid: 952b3b2d104ddfd47ba6d824d0c79475, type: 3}
+      replaceDefault: 0
+      scale: 2.5
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 4
+    spawn:
+      enabled: 1
+      prefab: {fileID: 510283002905398643, guid: adaa86ff16ffb41d4b89bd1a1da7d5ef, type: 3}
+      replaceDefault: 0
+      scale: 1.5
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 4
+  - subject: 2
+    id: boarding_barge
+    displayName: Boarding Barge
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 2
+    id: bomb_boat
+    displayName: Bomb Boat
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 2
+    id: cannonboat
+    displayName: Cannonboat
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 2
+    id: cutthroat_skiff
+    displayName: Cutthroat Skiff
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 2
+    id: deckhand_dinghy
+    displayName: Deckhand Dinghy
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 2
+    id: gunner_cog
+    displayName: Gunner Cog
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 2
+    id: hammerhead
+    displayName: Hammerhead
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 2
+    id: kraken_spawn
+    displayName: Kraken Spawn
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 5654319288947532959, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
+      replaceDefault: 0
+      scale: 0.6
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 3
+  - subject: 2
+    id: manta_ray
+    displayName: Manta Ray
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 2
+    id: rammer_raft
+    displayName: Rammer Raft
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 2
+    id: reef_crab_miniboss
+    displayName: Reef Crab
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 571485676089228992, guid: 2d123199d518f4fec9b6abf4b2071b20, type: 3}
+      replaceDefault: 0
+      scale: 1.5
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 3
+    spawn:
+      enabled: 1
+      prefab: {fileID: 5654319288947532959, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
+      replaceDefault: 0
+      scale: 0.8
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 3
+  - subject: 2
+    id: shark
+    displayName: Shark
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+  - subject: 2
+    id: swordfish
+    displayName: Swordfish
+    muzzle:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    projectile:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    trail:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    hit:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    death:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0
+    spawn:
+      enabled: 1
+      prefab: {fileID: 0}
+      replaceDefault: 1
+      scale: 1
+      useTint: 0
+      tint: {r: 1, g: 1, b: 1, a: 1}
+      offset: {x: 0, y: 0, z: 0}
+      lifetime: 0

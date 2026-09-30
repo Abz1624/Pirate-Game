@@ -22,13 +22,17 @@ namespace RoguePirates.V4.Presentation.Effects
         readonly List<Live> _live = new List<Live>(64);
         readonly Dictionary<GameObject, (string key, float lifetime)> _byPrefab = new Dictionary<GameObject, (string, float)>();
 
+        readonly string _prefix = "fx/";
+
         public PooledEffects(PoolService pools) { _pools = pools; }
+        /// <summary>A separate set of pools (the demo's VFX profiles: their tinted instances never reach the default effects).</summary>
+        public PooledEffects(PoolService pools, string keyPrefix) { _pools = pools; _prefix = keyPrefix; }
 
         /// <summary>Registers a prefab's pool (prewarmed; grows past the prewarm and counts it).</summary>
         public void Register(GameObject prefab, int prewarm)
         {
             if (prefab == null || _pools == null || _byPrefab.ContainsKey(prefab)) return;
-            var key = "fx/" + prefab.name;
+            var key = _prefix + prefab.name;
             if (!_pools.Has(key)) _pools.Register(new PoolDefinition(key, prefab, prewarm, 0, ConfigEnums.PoolOverflowPolicy.Grow, "effects"));
             _byPrefab[prefab] = (key, EstimateLifetime(prefab));
         }

@@ -49,6 +49,8 @@ namespace RoguePirates.V4.Presentation.Hud
 
         public LoadoutHudPresenter Loadout { get; private set; }
         public bool IsBound => _bound;
+        /// <summary>False while the results screen hides the profile (the demo HUD follows it).</summary>
+        public bool ProfileVisible { get; private set; } = true;
 
         /// <summary>The authored HUD canvas: a canvas outside the legacy RunHud with the Weapon_Slot and Profile widgets.</summary>
         public static Canvas FindAuthoredCanvas()
@@ -79,6 +81,7 @@ namespace RoguePirates.V4.Presentation.Hud
         /// <summary>V3 hid the profile while the results screen showed and brought it back on retry/menu.</summary>
         public void SetProfileVisible(bool visible)
         {
+            ProfileVisible = visible;
             BindWidgets();
             if (_profileRect != null) _profileRect.gameObject.SetActive(visible);
         }

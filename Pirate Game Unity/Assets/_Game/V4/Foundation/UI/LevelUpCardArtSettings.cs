@@ -15,6 +15,8 @@ namespace RoguePirates.V4.Foundation.UI
         }
 
         public RarityArt[] rarityArt;
+        [Tooltip("Demo (art team's parchment cards): colour of the title, category, level and rarity text on the art; alpha 0 keeps the default colours. The description sits on the ribbon and stays light.")]
+        public Color artTextColor = new Color(0f, 0f, 0f, 0f);
 
         static LevelUpCardArtSettings _cached;
 

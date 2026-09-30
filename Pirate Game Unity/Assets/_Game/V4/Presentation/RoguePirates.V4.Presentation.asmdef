@@ -6,7 +6,8 @@
         "RoguePirates.V4.Config",
         "RoguePirates.V4.Foundation",
         "Unity.TextMeshPro",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.VisualEffectGraph.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

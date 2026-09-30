@@ -145,6 +145,16 @@ namespace RoguePirates.V4.Foundation.Data
         public float trialBuoyScale = 1f;
         public float bossBeaconScale = 1f;
         public float bossTelegraphScale = 2.4f;
+        [Header("POI Visuals (art team, demo)")]
+        [Tooltip("Repair Wreck landmark. Shown even while placeholder POI visuals are on.")]
+        public GameObject gildedWreckPrefab;
+        public float gildedWreckScale = 1f;
+        [Tooltip("Treasure Chart landmark. Shown even while placeholder POI visuals are on.")]
+        public GameObject cursedIdolPrefab;
+        public float cursedIdolScale = 1f;
+        [Tooltip("Powder Cache landmark. Shown even while placeholder POI visuals are on.")]
+        public GameObject merchantSkiffPrefab;
+        public float merchantSkiffScale = 1f;
 
         [Header("Player Feedback")]
         public Color playerDamageFlashColor = new(1f, 0.25f, 0.2f, 1f);

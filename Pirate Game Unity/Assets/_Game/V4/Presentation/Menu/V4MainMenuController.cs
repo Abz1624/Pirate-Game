@@ -24,7 +24,7 @@ namespace RoguePirates.V4
         [Tooltip("The Captain, unlock and reward configs the menu reads (the run's config set).")]
         [SerializeField] ConfigSet configSet;
 
-        CaptainSelectView _view;
+        ICaptainMenuView _view;
         MenuServices _services;
         ConfigSetRuntime _config;
         CaptainLocks _locks;
@@ -33,7 +33,9 @@ namespace RoguePirates.V4
         readonly List<CaptainMenuEntry> _entries = new List<CaptainMenuEntry>();
         int _focused;
 
-        public CaptainSelectView View => _view;
+        /// <summary>The generated carousel (null when the art team's menu is shown).</summary>
+        public CaptainSelectView View => _view as CaptainSelectView;
+        public ArtMenuView ArtView => _view as ArtMenuView;
         public CaptainLocks Locks => _locks;
 
         void Awake()
@@ -41,7 +43,12 @@ namespace RoguePirates.V4
             EnsureMenuCamera();
             EnsureEventSystem();
             if (menuCanvas == null) BuildCanvas();
-            _view = CaptainSelectView.Ensure(menuCanvas.transform);
+            // Demo: the art team's menu when its settings are present, else the generated carousel.
+            _view = ArtMenuView.TryCreate(menuCanvas.transform,
+                () => RoguePirates.V4.Foundation.Core.AppRoot.Instance != null && RoguePirates.V4.Foundation.Core.AppRoot.Instance.Save != null
+                    ? RoguePirates.V4.Foundation.Core.AppRoot.Instance.Save.Meta.marks : 0,
+                "RUM");
+            if (_view == null) _view = CaptainSelectView.Ensure(menuCanvas.transform);
         }
 
         void Start()
@@ -55,6 +62,7 @@ namespace RoguePirates.V4
             _captains.Clear();
             _captains.AddRange(_locks.MenuOrder());
             BuildEntries();
+            (_view as ArtMenuView)?.SetCurrency(Currency);
 
             var selected = 0;
             for (var i = 0; i < _captains.Count; i++)
@@ -89,6 +97,9 @@ namespace RoguePirates.V4
                     Theme = c.themeColor,
                     Locked = state.Locked,
                     LockReason = state.Reason,
+                    ActiveName = c.active != null ? c.active.displayName : null,
+                    ActiveSummary = c.activeSummary,
+                    PassiveSummary = c.passiveSummary,
                 });
             }
         }

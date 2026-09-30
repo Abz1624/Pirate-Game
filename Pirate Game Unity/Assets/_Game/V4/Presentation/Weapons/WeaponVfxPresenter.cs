@@ -109,6 +109,8 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>M14.9b: draws the timed landing rings (set by the presentation root).</summary>
         public Effects.HazardRingPresenter HazardRings { get; set; }
         public int SplashesPlayed { get; private set; }
+        /// <summary>Demo: the artists' per-weapon VFX profiles (muzzle).</summary>
+        public Effects.VfxProfilePlayer Profiles { get; set; }
 
         readonly Dictionary<(string kind, int prefab), string> _keys = new Dictionary<(string, int), string>();
         readonly Dictionary<int, Prepared> _prepared = new Dictionary<int, Prepared>();
@@ -199,10 +201,11 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>V3 OnWeaponFired: the weapon's muzzle prefab (its CannonSmoke child when it has one) for 0.35 s.</summary>
         public void Fired(string weaponId, Vector3 origin, Vector3 direction)
         {
+            var rotation = direction.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(direction.normalized, Vector3.up) : Quaternion.identity;
+            if (ProfileMuzzle(weaponId, origin, rotation, out var profileScale)) return;
             var prefab = ResolveMuzzlePrefab(weaponId);
             if (prefab == null) return;
-            var rotation = direction.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(direction.normalized, Vector3.up) : Quaternion.identity;
-            var scale = _settings.shootingVfxScale;
+            var scale = _settings.shootingVfxScale * profileScale;
             if (_settings.TryGetWeaponVfx(weaponId, out var binding) && binding.muzzleScaleMult > 0f)
                 scale *= binding.muzzleScaleMult;
             else
@@ -248,7 +251,8 @@ namespace RoguePirates.V4.Presentation.Weapons
             sideDirection.Normalize();
             var origin = shipPosition + sideDirection * 1.1f + Vector3.up * 0.35f;
             var rotation = Quaternion.LookRotation(sideDirection, Vector3.up);
-            var scale = _settings.shootingVfxScale * 1.15f;
+            if (ProfileMuzzle(weaponId, origin, rotation, out var profileScale)) return;
+            var scale = _settings.shootingVfxScale * 1.15f * profileScale;
             if (_settings.TryGetWeaponVfx(weaponId, out var binding) && binding.muzzleScaleMult > 0f)
                 scale *= binding.muzzleScaleMult;
             if (!PlayGunChildBurst(prefab, origin, rotation, scale, 0.4f))
@@ -616,6 +620,18 @@ namespace RoguePirates.V4.Presentation.Weapons
             for (var i = 0; i < slots.Count; i++)
                 if (slots[i].Config != null && slots[i].Config.weaponId == weaponId) return slots[i].Config.visual;
             return null;
+        }
+
+        /// <summary>Demo: the weapon's muzzle profile. Plays its prefab; true when that replaces the default muzzle.
+        /// <paramref name="defaultScale"/> is the slot's scale for the default when the slot has no prefab.</summary>
+        bool ProfileMuzzle(string weaponId, Vector3 origin, Quaternion rotation, out float defaultScale)
+        {
+            defaultScale = 1f;
+            var slot = Profiles != null ? Profiles.Slot(VfxSubject.Weapon, weaponId, VfxSlotKind.Muzzle) : null;
+            if (slot == null) return false;
+            if (!slot.HasPrefab) { defaultScale = slot.ScaleOrOne; return false; }
+            Profiles.Play(slot, origin, rotation, _settings != null ? _settings.shootingVfxScale : 1f);
+            return slot.SuppressesDefault;
         }
 
         GameObject ResolveMuzzlePrefab(string weaponId)

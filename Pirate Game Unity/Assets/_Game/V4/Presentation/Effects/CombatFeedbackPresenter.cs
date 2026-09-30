@@ -31,6 +31,8 @@ namespace RoguePirates.V4.Presentation.Effects
         float _flashTimer;
 
         public int EffectsPlayed { get; private set; }
+        /// <summary>Demo: the artists' VFX profiles (weapon hits and kills, enemy spawns and deaths, the ship's hits and sinking).</summary>
+        public VfxProfilePlayer Profiles { get; set; }
 
         public void Bind(PoolService pools, ICombatEventReader events, ConfigSetRuntime config, DemoJuiceSettings settings, Func<Transform> ship,
             CameraShakePresenter shake, DamageNumberPresenter numbers)
@@ -81,9 +83,18 @@ namespace RoguePirates.V4.Presentation.Effects
                 {
                     case CombatEventKind.Hit: OnHit(new Vector3(e.X, 0f, e.Y), e.A == 1, e.Tag); break;
                     case CombatEventKind.Killed:
+                        // A profile may replace the kill effect, but a boss keeps its multi-burst.
+                        if (Profiles != null && Profiles.Killed(e.A, e.Tag, new Vector3(e.X, 0.25f, e.Y)) && (e.B & 2) == 0) break;
                         OnKill(new Vector3(e.X, 0f, e.Y), (e.B & 1) != 0 && (e.B & 4) == 0, (e.B & 2) != 0, e.Tag);
                         break;
-                    case CombatEventKind.PlayerDamaged: OnPlayerDamaged(e.Z); break;
+                    case CombatEventKind.Spawned: Profiles?.Spawned(e.A, e.Tag, new Vector3(e.X, 0f, e.Y)); break;
+                    case CombatEventKind.RunState:
+                        if (e.A == (int)RoguePirates.V4.Foundation.Core.RunState.PlayerDead) Profiles?.ShipDied();
+                        break;
+                    case CombatEventKind.PlayerDamaged:
+                        if (e.Z > 0f) Profiles?.ShipDamaged();
+                        OnPlayerDamaged(e.Z);
+                        break;
                     case CombatEventKind.LevelUp: OnLevelUp(); break;
                 }
             }
@@ -98,15 +109,22 @@ namespace RoguePirates.V4.Presentation.Effects
         void OnHit(Vector3 position, bool crit, string weaponId)
         {
             if (_s == null) return;
+            var profile = Profiles != null ? Profiles.Slot(VfxSubject.Weapon, weaponId, VfxSlotKind.Hit) : null;
+            if (profile != null && profile.HasPrefab)
+            {
+                Profiles.Play(profile, position + Vector3.up * 0.35f, Quaternion.identity, crit ? 1.15f : 1f);
+                if (profile.SuppressesDefault) return;
+            }
             var effect = HitEffect(weaponId);
             if (effect == ConfigEnums.WeaponHitEffect.None) return;
+            var mult = profile != null && !profile.HasPrefab ? profile.ScaleOrOne : 1f;
             if (effect == ConfigEnums.WeaponHitEffect.CannonImpact)
             {
                 var prefab = _s.cannonImpactPrefab != null ? _s.cannonImpactPrefab : _s.weaponExplosionPrefab;
-                if (prefab != null) { Play(prefab, position + Vector3.up * 0.45f, _s.cannonImpactScale * (crit ? 1.12f : 1f), 0.55f); return; }
+                if (prefab != null) { Play(prefab, position + Vector3.up * 0.45f, _s.cannonImpactScale * (crit ? 1.12f : 1f) * mult, 0.55f); return; }
             }
             var hit = crit && _s.critHitPrefab != null ? _s.critHitPrefab : _s.enemyHitPrefab;
-            Play(hit, position + Vector3.up * 0.35f, crit ? _s.critHitScale : _s.enemyHitScale);
+            Play(hit, position + Vector3.up * 0.35f, (crit ? _s.critHitScale : _s.enemyHitScale) * mult);
         }
 
         /// <summary>V3 CombatVfxController.OnKill → JuiceVfxBroker.PlayKill.</summary>
@@ -127,7 +145,8 @@ namespace RoguePirates.V4.Presentation.Effects
             }
             var explosion = elite && _s.eliteKillExplosionPrefab != null ? _s.eliteKillExplosionPrefab : _s.enemyKillPrefab;
             if (explosion == null) return;
-            Play(explosion, position + Vector3.up * 0.25f, elite ? _s.eliteKillExplosionScale : _s.enemyKillScale);
+            var mult = Profiles != null ? Profiles.KillScale(weaponId) : 1f;
+            Play(explosion, position + Vector3.up * 0.25f, (elite ? _s.eliteKillExplosionScale : _s.enemyKillScale) * mult);
         }
 
         /// <summary>V3 CombatVfxController.OnDamageTaken: the ship flashes and gets a highlight; the number rises above it.</summary>
@@ -153,6 +172,7 @@ namespace RoguePirates.V4.Presentation.Effects
         /// <summary>V3 JuiceVfxBroker.PlayDamageHighlight + DamageHighlightPulse: a highlight on the target for a moment.</summary>
         public void DamageHighlight(Transform view)
         {
+            Profiles?.EnemyHit(view);
             if (_s == null || _s.damageHighlightPrefab == null || view == null) return;
             var go = _fx.Play(_s.damageHighlightPrefab, view.position, Quaternion.identity, _s.damageHighlightScale, _s.damageHighlightDuration, view);
             if (go == null) return;

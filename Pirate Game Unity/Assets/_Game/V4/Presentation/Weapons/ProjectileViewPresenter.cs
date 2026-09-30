@@ -33,6 +33,8 @@ namespace RoguePirates.V4.Presentation.Weapons
         }
 
         public int LiveCount => _live.Count;
+        /// <summary>Demo: the artists' per-weapon VFX profiles (projectile model and trail).</summary>
+        public Effects.VfxProfilePlayer Profiles { get; set; }
 
         /// <summary>The pool key for a model (the catalog derives these from the weapons, so they are prewarmed).</summary>
         public static string KeyFor(GameObject prefab) => prefab != null ? KeyPrefix + prefab.name : null;
@@ -45,6 +47,13 @@ namespace RoguePirates.V4.Presentation.Weapons
             var visualRadius = radius * (visual != null ? visual.radiusMultiplier : 1f);
             var sizeMult = _settings != null ? _settings.projectileSizeMultiplier : 1.2f;
             var scale = Mathf.Max(0.2f, visualRadius * (_settings != null ? _settings.projectileRadiusMultiplier : 1f) * 2f * sizeMult * scaleMult);
+            var profile = Profiles != null ? Profiles.Slot(VfxSubject.Weapon, weaponId, VfxSlotKind.Projectile) : null;
+            if (profile != null && profile.enabled)
+            {
+                if (profile.prefab != null) prefab = profile.prefab;
+                scale *= profile.ScaleOrOne;
+                if (profile.useTint) color = profile.tint;
+            }
 
             var key = KeyFor(prefab);
             if (key == null) return -1;
@@ -75,6 +84,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             }
             Tint(go.transform, color);
 
+            Profiles?.Attach(Profiles.Slot(VfxSubject.Weapon, weaponId, VfxSlotKind.Trail), go.transform);
             var handle = _next++;
             _live[handle] = go;
             return handle;
@@ -92,6 +102,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             if (!_live.TryGetValue(handle, out var go)) return;
             _live.Remove(handle);
             if (go == null) return;
+            Profiles?.Detach(go.transform);
             VfxParticleUtil.SetTrailEmitting(go, false);
             VfxParticleUtil.ClearMotionTrails(go);
             _pools.Release(go);
