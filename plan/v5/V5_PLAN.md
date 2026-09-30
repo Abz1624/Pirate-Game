@@ -3,6 +3,22 @@
 Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 9 (30 Sep): all V5 questions answered (three rounds); stage order approved; a few confirmations open
 (section 9)**. Explanations of every answer: `plan/v5/ANSWERS.md`.
 
+**Demo interlude (30 Sep, merged at `27a238bc`, V5 resumed at `86724e6b`).** Work paused after M3 for a demo on
+branch `demo`, then merged back. Kept: the art team's menu, Captain select, SaltWind HUD and level-up cards
+(`ArtMenuView`, `SaltWindHudPresenter`, art mode in `LevelUpPresenter`); per-weapon/ship/enemy VFX profiles and the VFX
+editor; POI prefabs (`Assets/_Game/V4/Demo/POI`) and level-up card prefabs; music; the floating touch joystick (app and
+mobile browsers); safe-area HUD; mobile render settings; smarter enemies (island routing, intercept, surround, led
+shots, shot reach); shots stop at islands; 3x walls and a camera clamped to the walls and the storm; dark minimap fog.
+The demo's switches live in `DemoMode` (`DemoJuiceSettings`, `V4SaltWindHudSettings`; off in tests): on for V5 are half
+XP (`xpMultiplier` 0.5) and the 1.625x ship speed; the boss rises out of the whirlpool after the beacon summon (no
+auto-boss); POIs, Captain active, boost, barks, tutorial, Logbook cards and the flamethrower are back; the beacon
+pointer and the start-of-run message stay hidden. Plan effects: **before M4**, re-run the M2/M3 model and simulator on
+this baseline (half XP, speed, the lower player ranges, the AI changes, cannon boats from 1:00) and report; **M4** fixes
+the flamethrower VFX; **M7** starts from the floating joystick, safe-area HUD and mobile render settings (the 174 MB web
+data download still needs M7's budget work); **M8** builds its hub on the art menu (its Leaderboard, Ledger, Raid,
+Profile and Settings buttons are placeholders). Later: fold the kept switches into configs (and the balance model)
+and retire `DemoMode`.
+
 V5 turns the finished V4 voyage into a live game: a balanced voyage, a menu with a shop, the rest of the content, mobile
 controls, verified accounts with custodial Solana devnet wallets, a player island with defenses, async raids and races,
 real-time PvP modes, wagers, a creator economy (sails, islands, marketplace), brand bounties and retention systems.
