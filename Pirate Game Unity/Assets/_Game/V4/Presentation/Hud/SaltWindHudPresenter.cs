@@ -47,6 +47,29 @@ namespace RoguePirates.V4.Presentation.Hud
         }
 
         public GameObject Hud => _hud;
+        RectTransform _safeArea;
+        Rect _lastSafe;
+        Vector2Int _lastScreen;
+
+        /// <summary>The HUD's SafeArea follows the screen's safe area (notch, cutout) plus a margin for rounded corners on phones.</summary>
+        void FitSafeArea()
+        {
+            if (_safeArea == null) return;
+            var screen = new Vector2Int(Screen.width, Screen.height);
+            var safe = Screen.safeArea;
+            if (safe == _lastSafe && screen == _lastScreen) return;
+            _lastSafe = safe;
+            _lastScreen = screen;
+            var margin = Application.isMobilePlatform ? RoguePirates.V4.Foundation.Core.DemoMode.MobileHudEdgeMargin * screen.y : 0f;
+            var xMin = Mathf.Max(safe.xMin, margin);
+            var xMax = Mathf.Min(safe.xMax, screen.x - margin);
+            var yMin = Mathf.Max(safe.yMin, margin * 0.5f);
+            var yMax = Mathf.Min(safe.yMax, screen.y - margin * 0.5f);
+            _safeArea.anchorMin = new Vector2(xMin / Mathf.Max(1, screen.x), yMin / Mathf.Max(1, screen.y));
+            _safeArea.anchorMax = new Vector2(xMax / Mathf.Max(1, screen.x), yMax / Mathf.Max(1, screen.y));
+            _safeArea.offsetMin = Vector2.zero;
+            _safeArea.offsetMax = Vector2.zero;
+        }
         /// <summary>Off: the authored HUD shows as before (the V4 HUD PlayMode tests cover those widgets).</summary>
         public static bool Disabled
         {
@@ -93,6 +116,7 @@ namespace RoguePirates.V4.Presentation.Hud
         void BindWidgets(Transform root)
         {
             _hud = root.gameObject;
+            _safeArea = Find(root, "SafeArea") as RectTransform;
             UpgradeSelection = Find(root, "UpgradeSelection");
             // The art's minimap is a frame: V4's minimap draws the map inside it (it follows ArtMinimap).
             var minimap = Find(root, "Minimap");
@@ -172,6 +196,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 var boost = transform.Find("Boost_Meter");
                 if (boost != null && boost.gameObject.activeSelf) boost.gameObject.SetActive(false);
             }
+            FitSafeArea();
             var show = _authored == null || _authored.ProfileVisible;
             if (_hud.activeSelf != show) _hud.SetActive(show);
             if (!show) return;

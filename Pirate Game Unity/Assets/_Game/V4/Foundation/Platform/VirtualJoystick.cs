@@ -7,7 +7,7 @@ namespace RoguePirates.V4.Foundation.Platform
     /// <summary>
     /// The touch stick. Fixed: the background stays where it is authored. Floating (demo, 30 Sep 2026): this object is an
     /// invisible touch zone (the left half of the screen); the background appears where the thumb lands, the handle
-    /// follows the drag, and both hide on release. The zone stops taking touches while the game is paused (level-up
+    /// follows the drag, and both hide on release. The zone stops taking touches while the run is paused (level-up
     /// cards and results sit under it).
     /// </summary>
     public sealed class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
@@ -41,7 +41,10 @@ namespace RoguePirates.V4.Foundation.Platform
         void Update()
         {
             if (!floating || _zone == null) return;
-            var live = Time.timeScale > 0f;
+            // Paused (level-up cards, chest prompts, results): the zone lets touches through to the UI under it. The run's
+            // pause state, not the time scale: a level-up pauses the run without stopping time.
+            var run = RoguePirates.V4.Foundation.Core.RunManager.Instance;
+            var live = Time.timeScale > 0f && (run == null || !run.IsPaused);
             if (_zone.raycastTarget != live) _zone.raycastTarget = live;
             if (!live && _active) Release();
         }

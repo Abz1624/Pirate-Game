@@ -157,6 +157,10 @@ namespace RoguePirates.V4.Foundation.Data
         public float merchantSkiffScale = 1f;
         [Tooltip("Demo: no points of interest on the stage (chests, landmarks, the Treasury Beacon).")]
         public bool hidePointsOfInterest = true;
+        [Tooltip("Demo: the ship's top speed, times this.")]
+        [Min(0.1f)] public float shipSpeedMultiplier = 1.3f;
+        [Tooltip("Demo: HUD margin from the screen edges on phones (fraction of the screen height), on top of the safe area, for rounded corners.")]
+        [Range(0f, 0.1f)] public float mobileHudEdgeMargin = 0.035f;
 
         [Header("Player Feedback")]
         public Color playerDamageFlashColor = new(1f, 0.25f, 0.2f, 1f);

@@ -193,7 +193,7 @@ namespace RoguePirates.V4.Foundation.Player
             var statSpeed = RunManager.Instance != null
                 ? RunManager.Instance.Stats.MoveSpeed
                 : GameConstants.DefaultMoveSpeed;
-            _moveSpeedMultiplier = statSpeed / ReferenceMaxSpeed;
+            _moveSpeedMultiplier = statSpeed / ReferenceMaxSpeed * RoguePirates.V4.Foundation.Core.DemoMode.ShipSpeedMultiplier;
         }
 
         public void ResetMotion()

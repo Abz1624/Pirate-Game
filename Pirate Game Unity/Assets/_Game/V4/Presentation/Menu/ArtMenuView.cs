@@ -86,6 +86,10 @@ namespace RoguePirates.V4.Presentation.Menu
             _currency = string.IsNullOrEmpty(currency) ? "RUM" : currency;
             // The menu scene holds the art team's panels and 3D sets (Tools > Rogue Pirates > Demo > Build Demo Scenes);
             // without them, the prefabs from the settings are used.
+            // Wide phones (20:9): scale by height so the top bar and Set Sail stay on screen; 16:9 and narrower by width.
+            var scaler = canvas.GetComponent<CanvasScaler>();
+            if (scaler != null && scaler.uiScaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize)
+                scaler.matchWidthOrHeight = Screen.width / (float)Mathf.Max(1, Screen.height) > scaler.referenceResolution.x / scaler.referenceResolution.y + 0.01f ? 1f : 0f;
             _main = FindDeep(canvas, "MainMenuPanel")?.gameObject;
             _select = FindDeep(canvas, "CharacterSelectionPanel")?.gameObject;
             _mainBackdrop = SceneRoot("MainMenuSetup");
@@ -105,6 +109,18 @@ namespace RoguePirates.V4.Presentation.Menu
                                         (_selectBackdrop != null && _menuCamera.transform.IsChildOf(_selectBackdrop.transform)))) _menuCamera = null;
             if (!_ownsBackdrops) _menuCamera = null; // the scene's cameras are the artists' (as in their UI scene)
 
+            // Main menu. Its Background keeps a 16:9 shape (an aspect fitter that fills the screen), which pushes the top bar
+            // and Set Sail off wider phones (20:9): it is stretched over the screen instead, so the buttons sit in its corners.
+            var background = _main.transform.Find("Background") as RectTransform;
+            if (background != null)
+            {
+                var fitter = background.GetComponent<AspectRatioFitter>();
+                if (fitter != null) fitter.enabled = false;
+                background.anchorMin = Vector2.zero;
+                background.anchorMax = Vector2.one;
+                background.offsetMin = Vector2.zero;
+                background.offsetMax = Vector2.zero;
+            }
             // Main menu.
             OnClick(_main.transform, "SetSail", () => ShowSelect(true));
             foreach (var name in new[] { "Leaderboard", "Ledger", "Raid", "Settings", "Profile" })
