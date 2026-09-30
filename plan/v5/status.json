@@ -1,15 +1,15 @@
 {
   "updated": "1 Oct 2026",
-  "statusLine": "M1, M2, M3 and the half-XP retune playtested (fine for now, finetune later); next: M4 new weapons",
-  "statusOk": true,
+  "statusLine": "You are away: building M3b-M3e from your notes a-k (decisions logged); M3b done, awaiting your playtest",
+  "statusOk": false,
   "facts": [
     [
       "Progress",
-      "M0–M3 done (M1–M3 and the half-XP retune playtested 1 Oct; finetuning later)"
+      "M0–M3 done; M3b built and committed (awaiting your playtest); M3c-M3e next"
     ],
     [
       "Tests",
-      "EditMode 372/372 · PlayMode 53/53"
+      "EditMode 374/374 · PlayMode 56/57 (one known intermittent test)"
     ],
     [
       "Gate",
@@ -36,6 +36,10 @@
     "M3": {
       "state": "done",
       "chip": "done 1 Oct · playtested"
+    },
+    "M3b": {
+      "state": "playtest",
+      "chip": "built 1 Oct · awaiting your playtest"
     }
   },
   "log": [
@@ -138,12 +142,22 @@
       "when": "1 Oct",
       "what": "Your answers: M1–M3 and the retune are fine for now (finetuning later), and the level-up pace targets hold the pace at ±20% (minute 1: 12–18 s; 0–10 min: 20–30 s).",
       "commit": ""
+    },
+    {
+      "when": "1 Oct",
+      "what": "You left notes a-k and a sketch before going away for 7-8 hours and asked me to keep going and decide on your behalf. Plan: four new phases before M4: <strong>M3b</strong> feel fixes, <strong>M3c</strong> level-up rhythm, <strong>M3d</strong> pressure from enemy count with peaks and valleys and distinct enemies, <strong>M3e</strong> performance and the enemy cap. Decisions and questions: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code>. The plan review found no blockers, 7 majors and 5 minors, all fixed (M3c split, the cap after measuring, M3's evolution goals re-checked).",
+      "commit": ""
+    },
+    {
+      "when": "1 Oct",
+      "what": "<strong>M3b feel fixes built</strong> (awaiting your playtest): an island hit pushes the ship back off the shore and costs 5 hull at most every 2 s (through Brace! and the Keel, with the usual hit flash); unblown powder kegs sink after 45 s; the Captain's special ability has a round touch button in the joystick's art above the weapon grid, with a cooldown sweep (touch devices only). Review: no blockers; 9 code findings and 4 more on the fixes, all fixed (the button and the Captain bar could hide for good; the bounce was being cancelled by the reverse-speed limit). EditMode 374/374, PlayMode 56/57 (a known intermittent test).",
+      "commit": "40d0dde7"
     }
   ],
   "todos": {
     "next": [
-      "<strong>Playtest M2 and M3 on the demo baseline</strong> (half XP, 1.625x ship speed, lower player ranges, smarter enemies, cannon boats from 1:00). Before M4 I re-run the balance model and simulator on it and report; nothing retuned without your OK.",
-      "<strong>Playtest M1</strong> (enemy flow), <strong>M2</strong> (balance) and <strong>M3</strong> (builds): see each phase's box on this page.",
+      "<strong>Read what I decided while you were away</strong>: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code> (every decision with its reason and the alternatives, and five questions for you).",
+      "<strong>Playtest M3b</strong>: steer into an island (bounce, 5 hull at most every 2 s), drop powder kegs and wait 45 s (unblown ones sink), use the round ability button on a phone build.",
       "<strong>M2 and M3 decisions</strong>: targets, the Turtle, evolution level, Captains, synergy items, Epic +2, volley and crit pieces, pity and refreshes (details on each phase's page and in TODO-FOR-YOU.md).",
       "<strong>Get the reference phone</strong> (Galaxy A15 or A16 4G) before M7: today's build needs 344 MB of memory where the phone allows about 256 MB.",
       "<strong>Accounts</strong> (list and costs in the answers): Railway by M9; a domain, a Google Cloud project and Resend by M10b; Helius by M11; Firebase by M19."
@@ -153,6 +167,8 @@
       "Earlier GDD questions (21 left) are still on the board; the raid entry fee (question 4) feeds M15 and the pass price (question 5) feeds M20."
     ],
     "done": [
+      "<strong>Balance re-check</strong> (1 Oct): half XP kept, retune around it; see <code>plan/v5/balance-recheck/README.md</code>.",
+      "<strong>Playtest M1-M3 and the half-XP retune</strong> (1 Oct): fine for now, finetuning later; the level-up pace targets hold the pace at ±20%.",
       "<strong>V5 questions, round 3</strong> (30 Sep): netcode, treasury protection, reference phone, forfeits and checked RUM decided; every V5 question answered.",
       "<strong>V5 questions, round 2</strong> (30 Sep): 16 more decided (D17), personalities defined, the Hunt netcode and reference phone researched.",
       "<strong>V5 questions answered</strong> (30 Sep): 19 decided (D17), the rest explained on this page; the plan reviewed again (rev 5).",
@@ -370,6 +386,27 @@
       "check": "EditMode and PlayMode suites after merging the demo into V5 (demo switches off in tests)",
       "result": "367/367 and 51/51",
       "evidence": "plan/demo/evidence/editmode.json, playmode.json"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3b",
+      "check": "EditMode and PlayMode suites",
+      "result": "374/374 and 56/57 (the known intermittent powder-cache test); V5FeelPlayModeTests 4/4 three runs in a row after the last change",
+      "evidence": "plan/v5/phase-03b-feel/editmode.json, playmode.json"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3b",
+      "check": "Playable check (boot → menu → run; button, real press, island hit)",
+      "result": "button above the weapon grid; All Guns! fired (17 s cooldown); one hit = 5 hull; 0 game errors",
+      "evidence": "plan/v5/phase-03b-feel/playable/"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3b",
+      "check": "Independent review (v5-reviewer), plan and code, two passes",
+      "result": "no blockers; plan 7 majors + 5 minors; code 5 majors + 4 minors, then 1 major + 3 minors → fixed or recorded",
+      "evidence": "plan/v5/phase-03b-feel/PLAN.md → Independent review"
     }
   ],
   "phaseResults": {
@@ -439,6 +476,20 @@
       {
         "title": "Your playtest",
         "text": "One run per Captain. Name any weapon that feels useless or broken. Do rarer cards feel like a big jump (+2/+3 levels)? Does an evolution arrive in a normal run, and does it feel earned? Is Flint too tanky now?"
+      }
+    ],
+    "M3b": [
+      {
+        "title": "What changed",
+        "text": "Island hits push the ship back off the shore and cost 5 hull at most every 2 s (RunConfig); unblown kegs sink after 45 s (mine.lifeSeconds); a round touch button for the Captain's ability above the weapon grid. The v3-parity preset turns all three off."
+      },
+      {
+        "title": "Tests",
+        "text": "EditMode 374/374; PlayMode 56/57 (a known intermittent test, flagged separately); V5FeelPlayModeTests 4/4 three times after the last change."
+      },
+      {
+        "title": "Playable check",
+        "text": "The button above the weapon grid, a real press firing All Guns! (17 s cooldown), one island hit costing exactly 5 hull, 0 game errors (<code>plan/v5/phase-03b-feel/playable/</code>)."
       }
     ]
   },
@@ -1055,6 +1106,61 @@
           "where": "Second pass",
           "finding": "Stale Captain numbers; a check's scene reload order; pity carry-over; a test accessor.",
           "fix": "Fixed or recorded."
+        }
+      ]
+    },
+    {
+      "title": "M3b-M3e plan and M3b code review (1 Oct)",
+      "summary": "<strong>No blockers.</strong> Plan: 7 majors, 5 minors (the cap against the reference phone, M3's evolution goals, the boss fight at any summon time, where the stronger types come from, M3c too big, parity, logging); all fixed. Code: 5 majors, 4 minors, then 1 major and 3 minors on the fixes; all fixed or recorded.",
+      "rows": [
+        {
+          "n": "C1",
+          "sev": "Major",
+          "where": "Ability button, Captain bar",
+          "finding": "The presenters deactivated themselves and could never come back.",
+          "fix": "Hidden through a CanvasGroup; hide-then-show tested."
+        },
+        {
+          "n": "C2",
+          "sev": "Major",
+          "where": "Island damage",
+          "finding": "Skipped Brace!/Keel and used the contact immunity.",
+          "fix": "Through the incoming multiplier; DamageReceiver.TakeImpact (no immunity, the hit event fires)."
+        },
+        {
+          "n": "C3",
+          "sev": "Major",
+          "where": "Holding into a shore",
+          "finding": "Could cost hull every 0.75 s.",
+          "fix": "A separate 2 s damage cooldown; a 5 s hold test."
+        },
+        {
+          "n": "C5",
+          "sev": "Major",
+          "where": "Button test",
+          "finding": "Bypassed the EventSystem.",
+          "fix": "A real raycast and pointer-down at the button's centre."
+        },
+        {
+          "n": "N1",
+          "sev": "Major",
+          "where": "Island damage",
+          "finding": "No hit feedback, items not told.",
+          "fix": "The hit event fires (TakeImpact)."
+        },
+        {
+          "n": "-",
+          "sev": "Found",
+          "where": "Bounce",
+          "finding": "The push was cut by the reverse-speed limit.",
+          "fix": "A fading push outside the steering limits."
+        },
+        {
+          "n": "-",
+          "sev": "Found",
+          "where": "Button",
+          "finding": "Covered the SaltWind weapon grid; invisible when that HUD is off.",
+          "fix": "On the canvas root, above the weapon grid, safe-area insets."
         }
       ]
     }
