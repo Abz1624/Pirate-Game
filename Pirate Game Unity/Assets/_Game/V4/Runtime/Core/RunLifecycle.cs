@@ -46,6 +46,7 @@ namespace RoguePirates.V4
         /// <summary>The voyage toast at run start (M14.14; was LegacyPresentationAdapter.ShowStartToasts, V3's wording).</summary>
         public void ShowStartToast(bool firstRun, int seed, bool homeSeedLocked)
         {
+            if (RoguePirates.V4.Foundation.Core.DemoMode.HideVoyageToast) return; // demo: no seed or chest/Beacon message
             var seedLabel = firstRun && homeSeedLocked ? "locked" : "random";
             Toast?.Invoke(
                 firstRun

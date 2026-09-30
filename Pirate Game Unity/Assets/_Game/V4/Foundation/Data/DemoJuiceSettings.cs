@@ -157,6 +157,8 @@ namespace RoguePirates.V4.Foundation.Data
         public float merchantSkiffScale = 1f;
         [Tooltip("Demo: no points of interest on the stage (chests, landmarks, the Treasury Beacon).")]
         public bool hidePointsOfInterest = true;
+        [Tooltip("Demo: no voyage message at run start (it shows the seed and mentions chests and the Beacon).")]
+        public bool hideVoyageToast = true;
         [Tooltip("Demo: the ship's top speed, times this.")]
         [Min(0.1f)] public float shipSpeedMultiplier = 1.625f;
         [Tooltip("Demo: XP from pickups, times this (0.5 = levelling at half the pace).")]
