@@ -19,6 +19,8 @@ namespace RoguePirates.V4.Foundation.Core
         public static float ShipSpeedMultiplier => Off || Settings == null ? 1f : Settings.shipSpeedMultiplier;
         public static bool HideVoyageToast => !Off && Settings != null && Settings.hideVoyageToast;
         public static float AutoBossSeconds => Off || Settings == null ? 0f : Settings.autoBossSeconds;
+        /// <summary>The boss rises out of its whirlpool after a moment (needs the whirlpool prefab); off: it spawns at once.</summary>
+        public static bool BossWhirlpool => !Off && Settings != null && Settings.bossArrivalPrefab != null;
         public static float BossArrivalSeconds => Settings == null ? 2.5f : Settings.bossArrivalSeconds;
         public static float XpMultiplier => Off || Settings == null ? 1f : Settings.xpMultiplier;
         public static float MobileHudEdgeMargin => Off || Settings == null ? 0f : Settings.mobileHudEdgeMargin;

@@ -710,7 +710,7 @@ namespace RoguePirates.V4.Stage
                 _toasts?.Show("Objective already secured.", 2f);
                 return false;
             }
-            if (_bossSummoned)
+            if (_bossSummoned || _bossArriving)
             {
                 _toasts?.Show("Boss already summoned.", 2f);
                 return false;
@@ -732,32 +732,43 @@ namespace RoguePirates.V4.Stage
                 _toasts?.Show("Objective already secured.", 2f);
                 return false;
             }
+            if (_bossArriving) return true;
+            // With the whirlpool on, the boss rises out of it near the ship a moment later (TickBossArrival).
+            if (DemoMode.BossWhirlpool && _ship != null && _ship.Exists)
+            {
+                BeginBossArrival();
+                return true;
+            }
             SummonBoss();
             if (_bossSummoned) return true;
             _toasts?.Show("Beacon failed: clear space near the beacon and try again.", 3f);
             return false;
         }
 
-        // Demo (30 Sep 2026): with no Treasury Beacon, the boss rises on its own at a run time, out of a whirlpool that
-        // swirls on screen for a moment first.
+        // The boss rises out of a whirlpool that swirls on screen for a moment first (demo, 30 Sep 2026; kept for V5):
+        // after a beacon summon, or on its own at a run time when that switch is set (DemoMode.AutoBossSeconds).
         bool _bossArriving;
         float _bossArrivalTimer;
         Vector3 _bossArrivalPoint;
         const float BossArrivalDistance = 11f;
 
+        void BeginBossArrival()
+        {
+            _bossArriving = true;
+            _bossArrivalTimer = DemoMode.BossArrivalSeconds;
+            _bossArrivalPoint = PickBossArrivalPoint(_ship.Position);
+            Publish?.Invoke(CombatEventKind.BossArriving, 0, 0, _bossArrivalPoint, null);
+            _toasts?.Show("Something stirs beneath the waves...", 2.5f);
+        }
+
         void TickAutoBoss(float dt)
         {
             if (_bossSummoned || _bossDefeated || _run == null) return;
-            var at = DemoMode.AutoBossSeconds;
-            if (at <= 0f) return;
             if (!_bossArriving)
             {
-                if (_run.ElapsedSeconds < at || _ship == null || !_ship.Exists) return;
-                _bossArriving = true;
-                _bossArrivalTimer = DemoMode.BossArrivalSeconds;
-                _bossArrivalPoint = PickBossArrivalPoint(_ship.Position);
-                Publish?.Invoke(CombatEventKind.BossArriving, 0, 0, _bossArrivalPoint, null);
-                _toasts?.Show("Something stirs beneath the waves...", 2.5f);
+                var at = DemoMode.AutoBossSeconds;
+                if (at <= 0f || _run.ElapsedSeconds < at || _ship == null || !_ship.Exists) return;
+                BeginBossArrival();
                 return;
             }
             _bossArrivalTimer -= dt;

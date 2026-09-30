@@ -40,13 +40,12 @@ MonoBehaviour:
     flag: {fileID: 2100000, guid: 2b1cb97223b1f44c88adc93c38d0d189, type: 2}
   markerDone: {fileID: 21300000, guid: 652cb16da0ad6463f8383678f1f20d14, type: 3}
   markerOpen: {fileID: 21300000, guid: f030e8158928e436f9ea329aa3d5f65a, type: 3}
-  hideNarrative: 1
+  hideNarrative: 0
   hideBeaconGuide: 1
-  weaponCardsOnly: 1
-  hideCaptainActive: 1
-  hideBoostMeter: 1
-  excludedWeapons:
-  - flamethrower
+  weaponCardsOnly: 0
+  hideCaptainActive: 0
+  hideBoostMeter: 0
+  excludedWeapons: []
   music: {fileID: 8300000, guid: cebcbf44b9aab174b978de42302033cf, type: 3}
   musicVolume: 0.6
   weaponCards:
