@@ -120,11 +120,18 @@ namespace RoguePirates.V4.Presentation.Hud
                 var icon = b.transform.Find("Background/Icon")?.GetComponent<Image>();
                 var shadow = b.transform.Find("Background/Shadow")?.GetComponent<Image>();
                 var iconSprite = IconOf(offer);
-                foreach (var img in new[] { icon, shadow })
+                // The weapon's card prefab sets the icon's whole look (rotation, size, position, scale): the art's six
+                // card slots each carry the layout of the sample picture they were made with.
+                var prefab = IsWeapon(offer) ? SaltWindHudSettings.Load()?.WeaponCardPrefab(offer.Id) : null;
+                foreach (var (img, path) in new[] { (icon, "Background/Icon"), (shadow, "Background/Shadow") })
                 {
                     if (img == null) continue;
                     img.gameObject.SetActive(iconSprite != null);
-                    if (iconSprite != null) { img.sprite = iconSprite; img.preserveAspect = true; }
+                    if (iconSprite == null) continue;
+                    img.sprite = iconSprite;
+                    img.preserveAspect = true;
+                    var source = prefab != null ? prefab.transform.Find(path) as RectTransform : null;
+                    CopyLayout(img.rectTransform, source ?? DefaultLayout(path));
                 }
                 var title = b.transform.Find("Background/Title")?.GetComponent<TextMeshProUGUI>();
                 if (title != null) title.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(card.title);
@@ -136,6 +143,37 @@ namespace RoguePirates.V4.Presentation.Hud
                     description.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(string.IsNullOrEmpty(level) ? effect : level + "\n" + effect);
                 }
             }
+        }
+
+        static bool IsWeapon(Offer offer) =>
+            offer.Kind == OfferKind.WeaponUpgrade || offer.Kind == OfferKind.NewWeapon || offer.Kind == OfferKind.WeaponEvolution;
+
+        RectTransform _defaultCard;
+
+        /// <summary>The base UpgradeCard's layout (no weapon card prefab): the first weapon card prefab's parent layout is
+        /// the base one, since the prefabs are its variants; else the slot keeps its own.</summary>
+        RectTransform DefaultLayout(string path)
+        {
+            if (_defaultCard == null)
+            {
+                var settings = SaltWindHudSettings.Load();
+                if (settings != null)
+                    foreach (var c in settings.weaponCards)
+                        if (c.cardPrefab != null) { _defaultCard = c.cardPrefab.transform as RectTransform; break; }
+            }
+            return _defaultCard != null ? _defaultCard.Find(path) as RectTransform : null;
+        }
+
+        static void CopyLayout(RectTransform target, RectTransform source)
+        {
+            if (target == null || source == null) return;
+            target.anchorMin = source.anchorMin;
+            target.anchorMax = source.anchorMax;
+            target.pivot = source.pivot;
+            target.anchoredPosition = source.anchoredPosition;
+            target.sizeDelta = source.sizeDelta;
+            target.localRotation = source.localRotation;
+            target.localScale = source.localScale;
         }
 
         Sprite IconOf(Offer offer)

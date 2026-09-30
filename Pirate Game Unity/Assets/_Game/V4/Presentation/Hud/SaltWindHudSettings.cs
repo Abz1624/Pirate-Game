@@ -51,6 +51,14 @@ namespace RoguePirates.V4.Presentation.Hud
             public GameObject cardPrefab;
         }
 
+        /// <summary>The weapon's level-up card prefab, or null.</summary>
+        public GameObject WeaponCardPrefab(string weaponId)
+        {
+            foreach (var c in weaponCards)
+                if (c.weaponId == weaponId && c.cardPrefab != null) return c.cardPrefab;
+            return null;
+        }
+
         /// <summary>The icon on the weapon's card prefab (Background/Icon), or null.</summary>
         public Sprite WeaponCardIcon(string weaponId)
         {

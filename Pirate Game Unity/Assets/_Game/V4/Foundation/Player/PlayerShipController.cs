@@ -144,7 +144,7 @@ namespace RoguePirates.V4.Foundation.Player
             VirtualJoystick joystick = null;
             foreach (var j in FindObjectsByType<VirtualJoystick>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (j.gameObject.scene == gameObject.scene) { joystick = j; break; }
-            _compositeInput = new CompositeShipSteerInput(joystick);
+            _compositeInput = new CompositeShipSteerInput(joystick, GetShipForward); // the stick points where to sail
         }
 
         public void InitializeFromRun(float hull)
