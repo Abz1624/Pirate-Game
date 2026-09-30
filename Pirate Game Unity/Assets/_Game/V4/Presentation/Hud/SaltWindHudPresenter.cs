@@ -47,6 +47,10 @@ namespace RoguePirates.V4.Presentation.Hud
         }
 
         public GameObject Hud => _hud;
+        // Last values shown: text is rebuilt only when they change (no per-frame garbage on phones).
+        int _shownSeconds = -1, _shownGold = int.MinValue, _shownKills = int.MinValue, _shownRum = int.MinValue, _shownLevel = -1, _shownDone = -1;
+        bool _shownOvertime;
+        readonly int[] _shownWeaponLevels = new int[8];
         RectTransform _safeArea;
         Rect _lastSafe;
         Vector2Int _lastScreen;
@@ -204,17 +208,20 @@ namespace RoguePirates.V4.Presentation.Hud
             var run = _views.Run;
             if (run != null && run.Exists)
             {
-                var elapsed = run.ElapsedSeconds;
-                if (_time != null)
+                var seconds = Mathf.FloorToInt(run.ElapsedSeconds);
+                if (_time != null && (seconds != _shownSeconds || run.IsOvertime != _shownOvertime))
                 {
-                    _time.text = $"{Mathf.FloorToInt(elapsed / 60f):00}:{Mathf.FloorToInt(elapsed % 60f):00}";
+                    _shownSeconds = seconds;
+                    _shownOvertime = run.IsOvertime;
+                    _time.text = $"{seconds / 60:00}:{seconds % 60:00}";
                     _time.color = run.IsOvertime ? RunHudTheme.TimerOvertime : Color.white;
                 }
-                if (_gold != null) _gold.text = run.Gold.ToString("N0");
-                if (_kills != null) _kills.text = run.Kills.ToString("N0");
+                if (_gold != null && run.Gold != _shownGold) { _shownGold = run.Gold; _gold.text = run.Gold.ToString("N0"); }
+                if (_kills != null && run.Kills != _shownKills) { _shownKills = run.Kills; _kills.text = run.Kills.ToString("N0"); }
                 // Rum: the player's treasury (this run's Rum is settled on the results screen).
                 var app = RoguePirates.V4.Foundation.Core.AppRoot.Instance;
-                if (_rum != null) _rum.text = (app != null && app.Save != null ? app.Save.Meta.marks : 0).ToString("N0");
+                var rum = app != null && app.Save != null ? app.Save.Meta.marks : 0;
+                if (_rum != null && rum != _shownRum) { _shownRum = rum; _rum.text = rum.ToString("N0"); }
             }
 
             var captain = _views.Captain;
@@ -222,7 +229,11 @@ namespace RoguePirates.V4.Presentation.Hud
             if (captain != null && _name != null)
             {
                 var level = progression != null && progression.Exists ? Mathf.Max(1, progression.Level) : 1;
-                _name.text = $"{captain.DisplayTitle}  <size=80%>Lv {level}</size>";
+                if (level != _shownLevel || captain.CaptainId != _lastCaptain)
+                {
+                    _shownLevel = level;
+                    _name.text = $"{captain.DisplayTitle}  <size=80%>Lv {level}</size>";
+                }
                 if (_portrait != null && captain.CaptainId != _lastCaptain)
                 {
                     _lastCaptain = captain.CaptainId;
@@ -257,8 +268,9 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             var stage = _views.Stage;
             if (stage == null) return;
-            QuestLines.Build(stage.Beacon, stage.BossSummoned, stage.BossDefeated, _quest);
             var done = stage.BossDefeated ? 3 : stage.BossSummoned ? 2 : stage.Beacon == BeaconReveal.Discovered ? 1 : 0;
+            if (done == _shownDone) return;
+            _shownDone = done;
             for (var i = 0; i < _markers.Count; i++)
             {
                 var sprite = i < done ? _settings.markerDone : _settings.markerOpen;
@@ -286,7 +298,15 @@ namespace RoguePirates.V4.Presentation.Hud
                     w.Icon.enabled = sprite != null;
                     if (sprite != null && w.Icon.sprite != sprite) { w.Icon.sprite = sprite; w.Icon.preserveAspect = true; }
                 }
-                if (filled && w.Level != null) w.Level.text = loadout.WeaponLevel(i).ToString();
+                if (filled && w.Level != null)
+                {
+                    var lv = loadout.WeaponLevel(i);
+                    if (i >= _shownWeaponLevels.Length || _shownWeaponLevels[i] != lv)
+                    {
+                        if (i < _shownWeaponLevels.Length) _shownWeaponLevels[i] = lv;
+                        w.Level.text = lv.ToString();
+                    }
+                }
             }
         }
 

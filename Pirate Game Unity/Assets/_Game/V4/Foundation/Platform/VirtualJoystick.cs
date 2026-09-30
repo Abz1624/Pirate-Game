@@ -10,7 +10,7 @@ namespace RoguePirates.V4.Foundation.Platform
     /// follows the drag, and both hide on release. The zone stops taking touches while the run is paused (level-up
     /// cards and results sit under it).
     /// </summary>
-    public sealed class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
+    public sealed class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler, IInitializePotentialDragHandler
     {
         [SerializeField] RectTransform background;
         [SerializeField] RectTransform handle;
@@ -64,6 +64,9 @@ namespace RoguePirates.V4.Foundation.Platform
             }
             OnDrag(eventData);
         }
+
+        /// <summary>No drag threshold: the UI waits ~10 px before it reports a drag, which dropped small stick moves.</summary>
+        public void OnInitializePotentialDrag(PointerEventData eventData) => eventData.useDragThreshold = false;
 
         public void OnDrag(PointerEventData eventData)
         {

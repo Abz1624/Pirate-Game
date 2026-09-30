@@ -28,6 +28,12 @@ namespace RoguePirates.V4.Foundation.Platform
         const float FullSteerAngle = 35f;
         const float SteerDeadZoneAngle = 4f;
         const float StickDeadZone = 0.12f;
+        // Full speed from half the stick's reach (W on a keyboard is always full speed).
+        const float FullThrottleReach = 0.5f;
+
+        /// <summary>The last read came from the stick as a heading (the ship then turns at once, without the keyboard's
+        /// reverse pause and turn ramp-up).</summary>
+        public bool HeadingActive { get; private set; }
 
         /// <param name="shipForward">The ship's heading on the water; with it the stick points where the ship should go
         /// (the ship turns towards the stick's direction and sails at the stick's reach), without it the stick is raw
@@ -61,12 +67,13 @@ namespace RoguePirates.V4.Foundation.Platform
             if (shipForward.sqrMagnitude < 0.0001f) return new Vector2(0f, reach);
             var angle = Vector3.SignedAngle(shipForward.normalized, desired, Vector3.up); // + = to the right
             var steer = Mathf.Abs(angle) < SteerDeadZoneAngle ? 0f : Mathf.Clamp(angle / FullSteerAngle, -1f, 1f);
-            var throttle = reach * Mathf.Lerp(1f, 0.55f, Mathf.InverseLerp(90f, 180f, Mathf.Abs(angle)));
+            var throttle = Mathf.Clamp01(reach / FullThrottleReach) * Mathf.Lerp(1f, 0.6f, Mathf.InverseLerp(120f, 180f, Mathf.Abs(angle)));
             return new Vector2(steer, throttle);
         }
 
         public Vector2 ReadSteerThrottle()
         {
+            HeadingActive = false;
             var kb = _keyboard.ReadSteerThrottle();
             if (Mathf.Abs(kb.x) > 0.01f || Mathf.Abs(kb.y) > 0.01f)
                 return kb;
@@ -76,7 +83,11 @@ namespace RoguePirates.V4.Foundation.Platform
 
             var stick = _joystick.ReadMove();
             if (_shipForward != null)
-                return HeadingToSteerThrottle(stick, _shipForward(), Camera.main != null ? Camera.main.transform : null);
+            {
+                var st = HeadingToSteerThrottle(stick, _shipForward(), Camera.main != null ? Camera.main.transform : null);
+                HeadingActive = st != Vector2.zero;
+                return st;
+            }
             return new Vector2(
                 Mathf.Clamp(stick.x, -1f, 1f),
                 Mathf.Clamp(stick.y, -1f, 1f));

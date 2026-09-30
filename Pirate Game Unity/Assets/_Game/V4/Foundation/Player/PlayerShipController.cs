@@ -294,7 +294,10 @@ namespace RoguePirates.V4.Foundation.Player
                 turnEffectiveness = 0.35f;
 
             var hasSteerInput = Mathf.Abs(input.steer) > 0.01f;
-            var steerReversed = hasSteerInput &&
+            // The touch stick steers to a heading: it turns at once, both ways (no reverse pause or ramp-up).
+            var headingSteer = _compositeInput != null && _compositeInput.HeadingActive;
+            if (headingSteer) { _steerCommit = 1f; _reverseTurnTimer = 0f; }
+            var steerReversed = !headingSteer && hasSteerInput &&
                                 Mathf.Sign(input.steer) != Mathf.Sign(_lastSteerInput) &&
                                 Mathf.Abs(_lastSteerInput) > 0.01f;
 
@@ -361,7 +364,7 @@ namespace RoguePirates.V4.Foundation.Player
 
             if (Mathf.Abs(input.throttle) > 0.01f)
             {
-                var thrust = input.throttle > 0f ? acceleration : reverseAcceleration;
+                var thrust = (input.throttle > 0f ? acceleration : reverseAcceleration) * RoguePirates.V4.Foundation.Core.DemoMode.ShipSpeedMultiplier;
                 _velocity += forward * (input.throttle * thrust * moveMult * dt);
 
                 forwardSpeed = Vector3.Dot(_velocity, forward);
