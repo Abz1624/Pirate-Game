@@ -34,11 +34,20 @@ namespace RoguePirates.V4.Ports
         public static void PrepareScene()
         {
             DisableEnvironmentalHazards();
-            var joystick = GameObject.Find("JoystickBG");
-            if (joystick != null && !joystick.activeSelf) joystick.SetActive(true);
+            // Demo: the touch stick only in the mobile app (it is authored inactive, so Find cannot see it: search the scene).
+            var joystick = FindInactive("JoystickBG");
+            var wanted = RoguePirates.V4.Foundation.Platform.VirtualJoystick.TouchControlsWanted;
+            if (joystick != null && joystick.activeSelf != wanted) joystick.SetActive(wanted);
             var systems = GameObject.Find("Systems");
             if (systems != null && systems.GetComponent<PlayerShipVisualBootstrap>() == null)
                 systems.AddComponent<PlayerShipVisualBootstrap>();
+        }
+
+        static GameObject FindInactive(string name)
+        {
+            foreach (var t in Object.FindObjectsByType<RectTransform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (t.name == name) return t.gameObject;
+            return null;
         }
 
         /// <summary>V3 turned off its wind, currents and whirlpools for Saltwind (M15: that code is gone; a leftover

@@ -39,6 +39,7 @@ namespace RoguePirates.V4.Editor
             var log = new List<string>();
             BuildPoiPrefabs(log);
             BuildRunScene(log);
+            BuildJoystick(log);
             BuildMenuScene(log);
             AssetDatabase.SaveAssets();
             Debug.Log("[DemoSceneBuilder]\n" + string.Join("\n", log));
@@ -151,6 +152,96 @@ namespace RoguePirates.V4.Editor
                 log.Add("Run: HUD_SaltWind placed on " + canvas.name + " in " + RunScene);
             }
             else log.Add("Run: HUD_SaltWind already in the scene");
+        }
+
+        // ---- Touch joystick -----------------------------------------------------------------------------------------------
+
+        const string JoystickArt = "Assets/_Game/Art/Joysticks/";
+
+        [MenuItem("Tools/Rogue Pirates/Demo/Build Touch Joystick")]
+        public static void BuildJoystickMenu()
+        {
+            var log = new List<string>();
+            BuildJoystick(log);
+            Debug.Log("[DemoSceneBuilder]\n" + string.Join("\n", log));
+        }
+
+        /// <summary>
+        /// The run scene's JoystickBG becomes a floating stick: an invisible touch zone over the left half of the screen,
+        /// with the art team's base (compass) and knob (bubble) that appear under the thumb. Shown only in the mobile app.
+        /// </summary>
+        public static void BuildJoystick(List<string> log)
+        {
+            Sprite AsSprite(string file)
+            {
+                var path = JoystickArt + file;
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (importer != null && importer.textureType != TextureImporterType.Sprite)
+                {
+                    importer.textureType = TextureImporterType.Sprite;
+                    importer.spriteImportMode = SpriteImportMode.Single;
+                    importer.alphaIsTransparency = true;
+                    importer.SaveAndReimport();
+                }
+                return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            }
+            var baseSprite = AsSprite("Rouge_Pirate_ui_joystick.png");
+            var knobSprite = AsSprite("Rouge_Pirate_ui_joystick_2.png");
+
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (scene.path != RunScene) scene = EditorSceneManager.OpenScene(RunScene, OpenSceneMode.Single);
+            var zone = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<RectTransform>(true)).FirstOrDefault(t => t.name == "JoystickBG");
+            if (zone == null) { log.Add("Joystick: no JoystickBG in " + RunScene); return; }
+            var stick = zone.GetComponent<Foundation.Platform.VirtualJoystick>();
+
+            // The zone: the left half of the screen, invisible but touchable.
+            zone.anchorMin = Vector2.zero;
+            zone.anchorMax = new Vector2(0.5f, 1f);
+            zone.pivot = new Vector2(0.5f, 0.5f);
+            zone.offsetMin = Vector2.zero;
+            zone.offsetMax = Vector2.zero;
+            var zoneImage = zone.GetComponent<UnityEngine.UI.Image>();
+            if (zoneImage == null) zoneImage = zone.gameObject.AddComponent<UnityEngine.UI.Image>();
+            zoneImage.sprite = null;
+            zoneImage.color = new Color(1f, 1f, 1f, 0f);
+            zoneImage.raycastTarget = true;
+            foreach (Transform child in zone) if (child.name != "Base") child.gameObject.SetActive(false);
+
+            var baseRt = zone.Find("Base") as RectTransform;
+            if (baseRt == null)
+            {
+                baseRt = new GameObject("Base", typeof(RectTransform), typeof(UnityEngine.UI.Image)).GetComponent<RectTransform>();
+                baseRt.SetParent(zone, false);
+            }
+            baseRt.anchorMin = baseRt.anchorMax = baseRt.pivot = new Vector2(0.5f, 0.5f);
+            baseRt.sizeDelta = new Vector2(260f, 260f);
+            var baseImage = baseRt.GetComponent<UnityEngine.UI.Image>();
+            baseImage.sprite = baseSprite;
+            baseImage.color = new Color(1f, 1f, 1f, 0.85f);
+            baseImage.raycastTarget = false;
+            var knob = baseRt.Find("Knob") as RectTransform;
+            if (knob == null)
+            {
+                knob = new GameObject("Knob", typeof(RectTransform), typeof(UnityEngine.UI.Image)).GetComponent<RectTransform>();
+                knob.SetParent(baseRt, false);
+            }
+            knob.anchorMin = knob.anchorMax = knob.pivot = new Vector2(0.5f, 0.5f);
+            knob.sizeDelta = new Vector2(110f, 110f);
+            knob.anchoredPosition = Vector2.zero;
+            var knobImage = knob.GetComponent<UnityEngine.UI.Image>();
+            knobImage.sprite = knobSprite;
+            knobImage.raycastTarget = false;
+
+            var so = new SerializedObject(stick);
+            so.FindProperty("background").objectReferenceValue = baseRt;
+            so.FindProperty("handle").objectReferenceValue = knob;
+            so.FindProperty("maxRadius").floatValue = 95f;
+            so.FindProperty("floating").boolValue = true;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            zone.gameObject.SetActive(false); // switched on at run start in the mobile app only
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            log.Add("Joystick: floating stick on the left half of the screen (mobile app only)");
         }
 
         // ---- Points of interest -------------------------------------------------------------------------------------

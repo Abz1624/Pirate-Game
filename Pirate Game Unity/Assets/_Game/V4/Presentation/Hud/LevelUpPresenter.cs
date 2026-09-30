@@ -181,8 +181,9 @@ namespace RoguePirates.V4.Presentation.Hud
                 foreach (var t in GetComponentsInChildren<TextMeshProUGUI>(true))
                     if (t.text != null && t.text.Contains("pick a card")) t.gameObject.SetActive(false);
                 ShowArtCards();
-                SetupButton(_ui.rejectButton, skipped != null, "Skip", Skip);
-                SetupButton(_ui.refreshButton, refreshed != null && refreshesRemaining > 0, $"Refresh ({refreshesRemaining} left)", OnRefresh);
+                // Demo: no Skip or Refresh on the art cards (Skip() and the refresh still work for tools and tests).
+                SetupButton(_ui.rejectButton, false, "Skip", Skip);
+                SetupButton(_ui.refreshButton, false, "Refresh", OnRefresh);
                 return true;
             }
 
