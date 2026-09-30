@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.long_nine
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m3
+  balanceVersion: saltwind-v5-demo
   weaponId: long_nine
   displayName: Long Nine
   description: Long forward line for elite priority shots.

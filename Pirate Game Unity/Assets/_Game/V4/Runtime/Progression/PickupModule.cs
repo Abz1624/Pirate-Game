@@ -106,7 +106,7 @@ namespace RoguePirates.V4.Progression
         readonly Queue<Pending> _pending = new Queue<Pending>();
         Agent[] _pool = new Agent[0];
         int _active, _pendingXp, _pendingGold, _pendingHeal;
-        float _demoXpCarry; // the demo's XP rate keeps its fractions between pickups
+        float _xpCarry; // the XP pace (PickupConfig.xpPickupMultiplier) keeps its fractions between pickups
         float _time;
 
         public PickupModule(Func<PickupConfig> config, int capacity, IPickupRewards rewards, IPickupViews views, Func<bool> magneticTideOpensBarrels, Func<float> vfxDensity)
@@ -256,7 +256,7 @@ namespace RoguePirates.V4.Progression
         {
             _pending.Clear();
             _pendingXp = _pendingGold = _pendingHeal = 0;
-            _demoXpCarry = 0f;
+            _xpCarry = 0f;
             for (var i = 0; i < _pool.Length; i++) if (_pool[i].Active) Release(i);
         }
 
@@ -356,13 +356,13 @@ namespace RoguePirates.V4.Progression
             {
                 var xp = _pendingXp;
                 _pendingXp = 0;
-                // Demo: levelling pace (0.5 = half the XP, twice as many pickups per level).
-                var rate = DemoMode.XpMultiplier;
+                // V5 baseline: levelling pace (0.5 = half the XP, twice as many pickups per level).
+                var rate = _config() != null ? _config().xpPickupMultiplier : 1f;
                 if (!Mathf.Approximately(rate, 1f))
                 {
-                    _demoXpCarry += xp * rate;
-                    xp = Mathf.FloorToInt(_demoXpCarry);
-                    _demoXpCarry -= xp;
+                    _xpCarry += xp * rate;
+                    xp = Mathf.FloorToInt(_xpCarry);
+                    _xpCarry -= xp;
                 }
                 if (xp > 0) _rewards.GrantXp(xp);
             }

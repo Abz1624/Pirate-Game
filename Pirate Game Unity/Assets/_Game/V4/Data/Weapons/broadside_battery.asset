@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.broadside_battery
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m3
+  balanceVersion: saltwind-v5-demo
   weaponId: broadside_battery
   displayName: Broadside Battery
   description: Side-arc volleys into nearby clusters.

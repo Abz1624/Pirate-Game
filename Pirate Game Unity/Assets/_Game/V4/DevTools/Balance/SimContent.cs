@@ -49,6 +49,12 @@ namespace RoguePirates.V4.DevTools.Balance
         public ExperimentConfig Experiment { get; }
         public StageContentConfig Stage { get; }
         public PickupConfig Pickups { get; }
+        /// <summary>V5: the run config (the ship speed factor).</summary>
+        public RunConfig Run { get; }
+        /// <summary>V5: the ship's top speed and acceleration factor (RunConfig.shipSpeedMultiplier).</summary>
+        public float ShipSpeedMultiplier => Run != null && Run.shipSpeedMultiplier > 0f ? Run.shipSpeedMultiplier : 1f;
+        /// <summary>V5: the levelling pace (PickupConfig.xpPickupMultiplier).</summary>
+        public float XpPickupMultiplier => Pickups != null ? Pickups.xpPickupMultiplier : 1f;
         public PowerupConfig Powerups { get; }
         public RewardConfig Rewards { get; }
         public UnlockConfig Unlocks { get; }
@@ -77,6 +83,7 @@ namespace RoguePirates.V4.DevTools.Balance
             Experiment = config.Single<ExperimentConfig>();
             Stage = config.Single<StageContentConfig>();
             Pickups = config.Single<PickupConfig>();
+            Run = config.Single<RunConfig>();
             Powerups = config.Single<PowerupConfig>();
             Rewards = config.Single<RewardConfig>();
             Unlocks = config.Single<UnlockConfig>();

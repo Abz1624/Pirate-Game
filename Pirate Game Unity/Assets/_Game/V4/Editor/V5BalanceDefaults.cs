@@ -77,7 +77,7 @@ namespace RoguePirates.V4.Editor
                 PT("first_timer", 5.5f, 9f, 0f, 0.15f),
                 PT("thumb_sailor", 7f, 12f, 0.1f, 0.6f),
                 PT("casual_cruiser", 8f, 12f, 0.3f, 0.7f),
-                PT("steady_captain", 11f, 15f, 0.6f, 0.85f, 30f, 46f),
+                PT("steady_captain", 11f, 15f, 0.6f, 0.85f, 21f, 35f), // level at 10:00 was 30–46 before the demo-baseline retune (XP ×0.5)
                 // Revised after the first calibrated run (were 0.45–0.85; 10–14.5; 9–13.5 and 0.3–0.75): the Turtle (dodge 0.6)
                 // and the Treasure Hound (0.55) dodge less than the baseline (0.7), so they sink before it; the Glass Cannon
                 // summons the boss at 4:00 with a damage build, and beating it early is what it plays for.
@@ -102,17 +102,20 @@ namespace RoguePirates.V4.Editor
                 // Minute 5 holds the 5:30 horde (alive was ≤ 0.65); minute 6 is the baseline's boss fight, when its hits go to
                 // the Barnacle King (kills were ≥ 45).
                 MT(5, 0.18f, 0.70f, 35f, 130f, 16f, 26f, 0.8f),
-                MT(6, 0.25f, 0.75f, 30f, 140f, 18f, 29f, 0.9f),
-                MT(7, 0.30f, 0.85f, 50f, 160f, 21f, 32f, 1f),
-                MT(8, 0.22f, 0.80f, 45f, 160f, 23f, 35f, 1f),
-                MT(9, 0.35f, 0.90f, 55f, 180f, 25f, 38f, 1.1f),
+                // Levels from 6:00 follow the demo-baseline retune (XP ×0.5, 30 Sep 2026); before: 18–29, 21–32, 23–35,
+                // 25–38, 28–42, 30–45, 32–48.
+                MT(6, 0.25f, 0.75f, 30f, 140f, 15f, 26f, 0.9f),
+                MT(7, 0.30f, 0.85f, 50f, 160f, 17f, 29f, 1f),
+                MT(8, 0.22f, 0.80f, 45f, 160f, 18f, 31f, 1f),
+                MT(9, 0.35f, 0.90f, 55f, 180f, 20f, 33f, 1.1f),
                 // Overtime spawns one enemy every 1.4 s at first, down to 0.35 s (kills were ≥ 50).
-                MT(10, 0.25f, 1.0f, 30f, 200f, 28f, 42f, float.NaN),
-                MT(11, 0.25f, 1.0f, 30f, 220f, 30f, 45f, float.NaN),
-                MT(12, 0.25f, 1.0f, 30f, 240f, 32f, 48f, float.NaN),
+                MT(10, 0.25f, 1.0f, 30f, 200f, 21f, 35f, float.NaN),
+                MT(11, 0.25f, 1.0f, 30f, 220f, 22f, 37f, float.NaN),
+                MT(12, 0.25f, 1.0f, 30f, 240f, 23f, 39f, float.NaN),
             };
-            t.levelUpGapMinute1 = new TargetBand(4f, 12f);
-            t.levelUpGapTo10 = new TargetBand(13f, 20f);
+            // The demo-baseline retune (XP ×0.5): were 4–12 and 13–20.
+            t.levelUpGapMinute1 = new TargetBand(10f, 20f);
+            t.levelUpGapTo10 = new TargetBand(20f, 30f);
             t.fodderTtkSeconds = new TargetBand(float.NaN, 1f);
             t.eliteTtkSeconds = new TargetBand(4f, 8f);
             t.minibossTtkSeconds = new TargetBand(15f, 30f);

@@ -227,7 +227,7 @@ namespace RoguePirates.V4.DevTools.Balance
             return target > 0f ? w.At(level).RolePower(w.Role) / target : float.NaN;
         }
 
-        public static readonly int[] ParityLevels = { 1, 4, 8, 12 }; // 8: where evolution unlocks (V5 M3 review)
+        public static readonly int[] ParityLevels = { 1, 4, 6, 8, 12 }; // 6: where evolution unlocks since the demo-baseline retune; 8: in M3 (review)
 
         /// <summary>The Markdown parity table (plan/v5/phase-03-builds/weapon-parity.md).</summary>
         public static string Report(IReadOnlyList<WeaponPowerCurve> curves, float band = 0.2f)

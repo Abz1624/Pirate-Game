@@ -9,15 +9,17 @@ branch `demo`, then merged back. Kept: the art team's menu, Captain select, Salt
 editor; POI prefabs (`Assets/_Game/V4/Demo/POI`) and level-up card prefabs; music; the floating touch joystick (app and
 mobile browsers); safe-area HUD; mobile render settings; smarter enemies (island routing, intercept, surround, led
 shots, shot reach); shots stop at islands; 3x walls and a camera clamped to the walls and the storm; dark minimap fog.
-The demo's switches live in `DemoMode` (`DemoJuiceSettings`, `V4SaltWindHudSettings`; off in tests): on for V5 are half
-XP (`xpMultiplier` 0.5) and the 1.625x ship speed; the boss rises out of the whirlpool after the beacon summon (no
-auto-boss); POIs, Captain active, boost, barks, tutorial, Logbook cards and the flamethrower are back; the beacon
-pointer and the start-of-run message stay hidden. Plan effects: **before M4**, re-run the M2/M3 model and simulator on
-this baseline (half XP, speed, the lower player ranges, the AI changes, cannon boats from 1:00) and report; **M4** fixes
-the flamethrower VFX; **M7** starts from the floating joystick, safe-area HUD and mobile render settings (the 174 MB web
+The demo's switches live in `DemoMode` (`DemoJuiceSettings`, `V4SaltWindHudSettings`; off in tests): the boss rises out
+of the whirlpool after the beacon summon (no auto-boss); POIs, Captain active, boost, barks, tutorial, Logbook cards and
+the flamethrower are back; the beacon pointer and the start-of-run message stay hidden. **Balance re-check (1 Oct,
+`plan/v5/balance-recheck/`):** half XP and the 1.625x ship speed moved into config (`PickupConfig.xpPickupMultiplier`,
+`RunConfig.shipSpeedMultiplier`) and the simulator; half XP alone took the model from 2 to 24 of 76 targets missed; the
+owner kept half XP and chose a retune around it (enemy HP growth x0.55, damage growth x0.7, evolution from weapon
+level 6, Lightning Mast -2%, the director curve re-measured, level and level-up targets at the slower pace): 2 of 76
+missed again, the same two as M3. Plan effects: **M4** fixes the flamethrower VFX; **M7** starts from the floating joystick, safe-area HUD and mobile render settings (the 174 MB web
 data download still needs M7's budget work); **M8** builds its hub on the art menu (its Leaderboard, Ledger, Raid,
-Profile and Settings buttons are placeholders). Later: fold the kept switches into configs (and the balance model)
-and retire `DemoMode`.
+Profile and Settings buttons are placeholders). Later: fold the remaining switches into configs and retire
+`DemoMode`.
 
 V5 turns the finished V4 voyage into a live game: a balanced voyage, a menu with a shop, the rest of the content, mobile
 controls, verified accounts with custodial Solana devnet wallets, a player island with defenses, async raids and races,

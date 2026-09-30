@@ -66,6 +66,13 @@ namespace RoguePirates.V4.Composition
             _frame = frame;
             _spawn = spawn;
             _encounters = encounters;
+            // V5 baseline: the ship's speed factor (top speed and acceleration) for this run.
+            var runConfig = config != null ? config.Single<RunConfig>() : null;
+            if (player != null)
+            {
+                player.RunSpeedMultiplier = runConfig != null && runConfig.shipSpeedMultiplier > 0f ? runConfig.shipSpeedMultiplier : 1f;
+                player.SyncRunSpeedMultiplier();
+            }
             _stageProfile = new StageProfilePort(config);
             _runtimeDatabase = new V4RuntimeDatabase(config);
             _host = host;

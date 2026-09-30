@@ -734,7 +734,7 @@ namespace RoguePirates.V4.DevTools.Balance
         void MoveAndAttack()
         {
             var slow = _t < _deadCalmUntil ? 1f - (_c.Powerups != null ? _c.Powerups.deadCalmSlowFraction : 0.3f) : 1f;
-            var shipSpeed = _b.Stat(StatId.MoveSpeed);
+            var shipSpeed = _b.Stat(StatId.MoveSpeed) * _c.ShipSpeedMultiplier;
             var contacts = 0;
             // I-frames: the ship takes at most one hit per ContactIFrame seconds.
             _hitBudget = Mathf.Min(_hitBudget + _dt / GameConstants.ContactIFrame, 2f);
@@ -949,12 +949,13 @@ namespace RoguePirates.V4.DevTools.Balance
 
         void GrantXp(float amount)
         {
-            _xpCarry += amount;
+            // As the game: × the XP gain stat per pickup, then the pace, the fractions carried (review: gain before the pace).
+            _xpCarry += amount * _b.XpGain * _c.XpPickupMultiplier;
             var whole = Mathf.FloorToInt(_xpCarry);
             if (whole <= 0) return;
             _xpCarry -= whole;
             var level = _b.Progression.Level;
-            _b.GrantXp(whole);
+            _b.GrantScaledXp(whole);
             if (_b.Progression.Level != level) _r.Refreshes = _b.Refreshes;
         }
 

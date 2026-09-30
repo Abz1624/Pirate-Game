@@ -104,6 +104,17 @@ namespace RoguePirates.V4.DevTools.Balance
             ResolveCards();
         }
 
+        /// <summary>The XP gain stat (the pickup module rounds value × this per orb, before the XP pace).</summary>
+        public float XpGain => _stats.XPGain;
+
+        /// <summary>XP already scaled by the XP gain and the pace (SimRun's carry), then the cards it earns.</summary>
+        public void GrantScaledXp(int amount)
+        {
+            if (amount <= 0 || !Alive) return;
+            Progression.AddXp(amount);
+            ResolveCards();
+        }
+
         public bool AddItem(string itemId)
         {
             var added = Items.TryAddItem(itemId);
@@ -227,7 +238,7 @@ namespace RoguePirates.V4.DevTools.Balance
             }
             public void Hide() => _b._shown = null;
 
-            public float Speed => _b.Stat(StatId.MoveSpeed) * 0.7f;
+            public float Speed => _b.Stat(StatId.MoveSpeed) * _b._content.ShipSpeedMultiplier * 0.7f;
             public void InitializeHull(float baseHull) => _b.Hull = _b.MaxHull;
             public void SyncMaxHullKeepRatio()
             {

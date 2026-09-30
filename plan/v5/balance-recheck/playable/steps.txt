@@ -1,0 +1,5 @@
+config: xpPickupMultiplier=0.5 shipSpeedMultiplier=1.625 evolutionUnlockLevel=6 enemyHpPerMinute.c1=0.0495 ordinaryHp.c1=0.044 ordinaryDamage.c1=0.042 onTrackGrowth(10)=33.7 lightning.baseDamage=10.56
+ship: RunSpeedMultiplier=1.625 MoveSpeedMultiplier=0.202
+xp pickup: dropped 2 at level 0 with 0/3
+xp after: level 1 xp 0/4
+2:00 level=4 weapons=3 enemies=0

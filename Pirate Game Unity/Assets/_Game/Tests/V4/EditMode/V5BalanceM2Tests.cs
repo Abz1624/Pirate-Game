@@ -237,8 +237,9 @@ namespace RoguePirates.V4.Tests
             var steady = c.Personalities.Find("steady_captain");
             var lazy = Clone(steady, "lazy"); lazy.pickupGreed = 0f;
             var greedy = Clone(steady, "greedy"); greedy.pickupGreed = 1f;
-            float LevelAt3(PlayerPersonality p) => SimBatch.Percentile(Enumerable.Range(0, 20)
-                .Select(i => new SimRun(c, p, 900 + i, "rook").Play()).Where(r => r.Minutes.Count > 3).Select(r => (float)r.Minutes[3].Level).ToList(), 0.5f);
+            // The mean of the 20 runs (at the demo baseline's half XP the medians tie on whole levels).
+            float LevelAt3(PlayerPersonality p) => (float)Enumerable.Range(0, 20)
+                .Select(i => new SimRun(c, p, 900 + i, "rook").Play()).Where(r => r.Minutes.Count > 3).Average(r => r.Minutes[3].Level);
             Assert.Greater(LevelAt3(greedy), LevelAt3(lazy));
         }
 
@@ -256,9 +257,12 @@ namespace RoguePirates.V4.Tests
 
         // ---- Calibration against the V4 autopilot's real runs --------------------------------------------------------
 
-        /// <summary>The values the V4 autopilot measurement ran with (before the V5 M2 and M3 retunes).</summary>
+        /// <summary>The values the V4 autopilot measurement ran with (before the V5 M2 and M3 retunes and the demo).</summary>
         static void PreM2(ConfigSetRuntime rt)
         {
+            // The demo's changes and the retune around its slower levelling, back to V5 M3 (the steps below go on to V4).
+            var errors = new List<string>();
+            Assert.IsTrue(DemoBaseline.Revert(rt, errors) && DemoBaseline.RevertRetune(rt, errors), string.Join("; ", errors));
             // M3: evolution rules, chests, weapons, Logbooks, items and Flint, back to their values before V5.
             var prog = rt.Single<ProgressionConfig>();
             prog.evolutionUnlockLevel = 0; prog.levelsPerRarity = new[] { 1, 1, 1, 1, 1 }; prog.rarePityLevelUps = 0;
@@ -368,9 +372,9 @@ namespace RoguePirates.V4.Tests
         public void Retune_IsInTheData_AndTheParityPresetRestoresIt()
         {
             using var rt = new ConfigSetRuntime(Set);
-            StringAssert.StartsWith("saltwind-v5-m", rt.Single<ProgressionConfig>().balanceVersion, "retuned in V5 (M2, then M3)");
+            StringAssert.StartsWith("saltwind-v5-", rt.Single<ProgressionConfig>().balanceVersion, "retuned in V5 (M2, M3, then the demo baseline)");
             Assert.AreEqual(3, rt.Single<ProgressionConfig>().levelZeroToOneXp);
-            Assert.AreEqual(0.08f, rt.Single<DifficultyCurveConfig>().ordinaryHp.c1, 1e-6f);
+            Assert.AreEqual(0.044f, rt.Single<DifficultyCurveConfig>().ordinaryHp.c1, 1e-6f, "M2's 0.08, × 0.55 by the demo-baseline retune");
             var parity = new ConfigSetRuntime(Set);
             try
             {
@@ -462,7 +466,8 @@ namespace RoguePirates.V4.Tests
             var c = new SimContent(rt);
             var some = Clone(c.Personalities.Find("steady_captain"), "some");
             var all = Clone(some, "all"); all.chests = PersonalityChests.All;
-            float Chests(PlayerPersonality p) => SimBatch.Percentile(Enumerable.Range(0, 20).Select(i => (float)new SimRun(c, p, 300 + i, "rook").Play().ChestsOpened).ToList(), 0.5f);
+            // Totals over the 20 runs (the medians tie at the demo baseline's slower pace).
+            float Chests(PlayerPersonality p) => Enumerable.Range(0, 20).Sum(i => new SimRun(c, p, 300 + i, "rook").Play().ChestsOpened);
             Assert.Less(Chests(some), Chests(all), "Some waits for twice the price; All buys what it can afford");
         }
 

@@ -63,6 +63,14 @@
                 {
                     "path": "phases[5].focus.damageMultiplier",
                     "value": "1.15"
+                },
+                {
+                    "path": "phases[0].pools[0].share",
+                    "value": "1"
+                },
+                {
+                    "path": "phases[0].pools[1].share",
+                    "value": "0"
                 }
             ]
         },
@@ -77,6 +85,14 @@
                 {
                     "path": "world.eliteChargesTwice",
                     "value": "false"
+                },
+                {
+                    "path": "combat.chargeWindUp",
+                    "value": "1.2"
+                },
+                {
+                    "path": "combat.chargeCooldown",
+                    "value": "2"
                 }
             ]
         },
@@ -185,6 +201,10 @@
                 {
                     "path": "elite.hpMultiplier",
                     "value": "1"
+                },
+                {
+                    "path": "placement.requireOutsidePlayerFov",
+                    "value": "true"
                 }
             ]
         },
@@ -255,6 +275,14 @@
                 {
                     "path": "upgradeAxes[3].maxAccumulated",
                     "value": "1.5"
+                },
+                {
+                    "path": "range",
+                    "value": "14"
+                },
+                {
+                    "path": "fan.lifeSeconds",
+                    "value": "1.2"
                 }
             ]
         },
@@ -435,6 +463,10 @@
                 {
                     "path": "upgradeAxes[3].maxAccumulated",
                     "value": "1"
+                },
+                {
+                    "path": "range",
+                    "value": "16"
                 }
             ]
         },
@@ -473,6 +505,10 @@
                 {
                     "path": "upgradeAxes[1].maxAccumulated",
                     "value": "0.6"
+                },
+                {
+                    "path": "range",
+                    "value": "18"
                 }
             ]
         },
@@ -527,6 +563,14 @@
                 {
                     "path": "upgradeAxes[4].maxAccumulated",
                     "value": "1.5"
+                },
+                {
+                    "path": "range",
+                    "value": "16"
+                },
+                {
+                    "path": "projectile.lifeSeconds",
+                    "value": "2.4"
                 }
             ]
         },
@@ -1001,6 +1045,10 @@
                 {
                     "path": "mergeIntoNearestWhenFull",
                     "value": "false"
+                },
+                {
+                    "path": "xpPickupMultiplier",
+                    "value": "1"
                 }
             ]
         },
@@ -1035,6 +1083,18 @@
                 {
                     "path": "overtimeHpMultiplierExponentPerMinute",
                     "value": "0.5"
+                },
+                {
+                    "path": "tierUnlocks[0].minMinutes",
+                    "value": "1.5"
+                },
+                {
+                    "path": "enemyHpPerMinute.c1",
+                    "value": "0.09"
+                },
+                {
+                    "path": "enemyHpPerMinute.c2",
+                    "value": "0.018"
                 }
             ]
         },
@@ -1105,6 +1165,14 @@
                 {
                     "path": "upgradeAxes[4].maxAccumulated",
                     "value": "1.5"
+                },
+                {
+                    "path": "range",
+                    "value": "22"
+                },
+                {
+                    "path": "projectile.lifeSeconds",
+                    "value": "3"
                 }
             ]
         },
@@ -1155,6 +1223,14 @@
                 {
                     "path": "upgradeAxes[4].maxAccumulated",
                     "value": "1.5"
+                },
+                {
+                    "path": "range",
+                    "value": "16"
+                },
+                {
+                    "path": "projectile.lifeSeconds",
+                    "value": "3"
                 }
             ]
         },
@@ -1205,6 +1281,10 @@
                 {
                     "path": "upgradeAxes[4].maxAccumulated",
                     "value": "1.5"
+                },
+                {
+                    "path": "range",
+                    "value": "24"
                 }
             ]
         },
@@ -1235,6 +1315,30 @@
                 {
                     "path": "statModifiers[0].multiplicative",
                     "value": "1.08"
+                }
+            ]
+        },
+        {
+            "configId": "run",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "shipSpeedMultiplier",
+                    "value": "1"
+                }
+            ]
+        },
+        {
+            "configId": "enemy.rammer_raft",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "combat.chargeWindUp",
+                    "value": "1.4"
+                },
+                {
+                    "path": "combat.chargeCooldown",
+                    "value": "2.2"
                 }
             ]
         }

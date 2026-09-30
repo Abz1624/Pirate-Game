@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.swivel_guns
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m3
+  balanceVersion: saltwind-v5-demo
   weaponId: swivel_guns
   displayName: Swivel Guns
   description: Rapid omni-directional cleanup fire.

@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.RunConfig
   configId: run
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-demo
   tickRate: 60
   maxStepsPerFrame: 5
+  shipSpeedMultiplier: 1.625

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WaveTimelineConfig
   configId: timeline.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m2
+  balanceVersion: saltwind-v5-demo
   stageDeadlineSeconds: 600
   graceSeconds: 2
   maxActiveEnemies: 80
@@ -75,7 +75,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 0
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 0
       placement: 0
@@ -146,7 +146,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 0
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 0
       placement: 0
@@ -225,7 +225,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 0
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 0
       placement: 0
@@ -308,7 +308,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 0
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 0
       placement: 0
@@ -387,7 +387,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 0
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 0
       placement: 0
@@ -428,7 +428,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 5
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 1
       placement: 1
@@ -469,7 +469,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 5
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 1
       placement: 0
@@ -510,7 +510,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 5
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 0
       placement: 0
@@ -551,7 +551,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 5
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 0
       placement: 0
@@ -592,7 +592,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 5
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 1
       placement: 0
@@ -633,7 +633,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 0
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 0
       placement: 0
@@ -674,7 +674,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 0
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 0
       placement: 0
@@ -715,7 +715,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 0
-      template: "WARNING: {label} incoming!"
+      template: 'WARNING: {label} incoming!'
     focus:
       enabled: 0
       placement: 0
@@ -756,7 +756,7 @@ MonoBehaviour:
     burstCount: 0
     warning:
       leadSeconds: 10
-      template: "DREAD TIDE: storm boundary in {lead} seconds!"
+      template: 'DREAD TIDE: storm boundary in {lead} seconds!'
     focus:
       enabled: 0
       placement: 0
@@ -795,7 +795,7 @@ MonoBehaviour:
     harrierWeightFirstTwoMinutes: 0.2
     pursuerWeightAfterTwoMinutes: 0.6
     harrierWeightAfterTwoMinutes: 0.4
-    startToast: "DROWNED PURSUIT: spectral fleet incoming!"
+    startToast: 'DROWNED PURSUIT: spectral fleet incoming!'
     spawnStatRampStart: 1
     spawnStatRampEnd: 1.5
     spawnStatRampSeconds: 300
@@ -806,11 +806,11 @@ MonoBehaviour:
     contractionEndSeconds: 900
     outsideDamagePerSecond: 8
     damageMode: 0
-    startToast: "DREAD TIDE: stay inside the safe water!"
-    edgeToast: "STORM EDGE: return to open water!"
+    startToast: 'DREAD TIDE: stay inside the safe water!'
+    edgeToast: 'STORM EDGE: return to open water!'
     edgeWallDamage: 1
     edgeWallDamagePerSecond: 8
-    edgeWallToast: "OFF THE MAP: turn back to open water!"
+    edgeWallToast: 'OFF THE MAP: turn back to open water!'
   flow:
     enabled: 1
     waves:
@@ -877,7 +877,7 @@ MonoBehaviour:
       hpMultiplier: 0.8
       damageMultiplier: 1
       warningLeadSeconds: 3
-      warningToast: "HORDE: they're circling you!"
+      warningToast: 'HORDE: they''re circling you!'
     - hordeId: line_5m30
       label: Line horde
       timeSeconds: 330
@@ -890,7 +890,7 @@ MonoBehaviour:
       hpMultiplier: 0.8
       damageMultiplier: 1
       warningLeadSeconds: 3
-      warningToast: "HORDE: a line incoming!"
+      warningToast: 'HORDE: a line incoming!'
     - hordeId: cluster_7m40
       label: Pack horde
       timeSeconds: 460
@@ -903,7 +903,7 @@ MonoBehaviour:
       hpMultiplier: 0.7
       damageMultiplier: 1
       warningLeadSeconds: 3
-      warningToast: "HORDE: a pack from one side!"
+      warningToast: 'HORDE: a pack from one side!'
     - hordeId: ring_9m15
       label: Ring horde
       timeSeconds: 555
@@ -916,7 +916,7 @@ MonoBehaviour:
       hpMultiplier: 0.7
       damageMultiplier: 1
       warningLeadSeconds: 3
-      warningToast: "HORDE: they're circling you!"
+      warningToast: 'HORDE: they''re circling you!'
     release:
       rateMultiplier: 0.35
       floorMultiplier: 0.4

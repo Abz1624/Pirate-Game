@@ -167,6 +167,52 @@ namespace RoguePirates.V4.Tests
             Assert.IsNull(RunRequest.PresetJson, "the preset request is consumed");
         }
 
+        // ---- V5 demo baseline: the ship's speed factor comes from RunConfig (review, 1 Oct 2026) -------------------------
+
+        static float ExpectedSpeed(float factor) => RunManager.Instance.Stats.MoveSpeed / 50f * factor; // PlayerShipController.ReferenceMaxSpeed
+
+        [UnityTest]
+        public IEnumerator ShipSpeed_ComesFromRunConfig_AndSurvivesAStatChange()
+        {
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var game = Object.FindFirstObjectByType<V4Game>();
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            var factor = game.Config.Single<RoguePirates.V4.Config.RunConfig>().shipSpeedMultiplier;
+            Assert.AreEqual(1.625f, factor, 1e-5f, "the demo baseline's speed in the data");
+            Assert.AreEqual(factor, ship.RunSpeedMultiplier, 1e-5f, "set by the run bootstrap");
+            Assert.AreEqual(ExpectedSpeed(factor), ship.MoveSpeedMultiplier, 1e-4f, "at the start");
+            // The game's own path: the move-speed fallback card adds the stat and re-syncs the ship.
+            var statBefore = RunManager.Instance.Stats.MoveSpeed;
+            game.Build.Progression.Select(new RoguePirates.V4.Progression.Offer { Kind = RoguePirates.V4.Progression.OfferKind.FallbackMoveSpeed, Id = "fallback_move_speed", Lines = System.Array.Empty<RoguePirates.V4.Progression.UpgradeLine>() });
+            Assert.Greater(RunManager.Instance.Stats.MoveSpeed, statBefore, "the card raised the move-speed stat");
+            Assert.AreEqual(ExpectedSpeed(factor), ship.MoveSpeedMultiplier, 1e-4f, "after a move-speed change the factor still applies");
+        }
+
+        [UnityTest]
+        public IEnumerator ShipSpeed_TheParityPresetsFactor_AppliesFromTheStart()
+        {
+            var set = Resources.FindObjectsOfTypeAll<RoguePirates.V4.Config.ConfigSet>().FirstOrDefault(s => s.setId == "saltwind-default");
+            if (set == null)
+            {
+                yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+                yield return WaitForPlaying();
+                set = Resources.FindObjectsOfTypeAll<RoguePirates.V4.Config.ConfigSet>().First(s => s.setId == "saltwind-default");
+            }
+            string json;
+            using (var runtime = new RoguePirates.V4.Config.ConfigSetRuntime(set))
+            {
+                Assert.IsTrue(runtime.TryApplyEdit("run", "shipSpeedMultiplier", "1", 0f, out var error), error);
+                json = RoguePirates.V4.Config.PresetCodec.ToJson(RoguePirates.V4.Config.PresetCodec.Capture(runtime, "speed1", runtime.Hash));
+            }
+            RunRequest.RequestPreset(json);
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            yield return WaitForPlaying();
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            Assert.AreEqual(1f, ship.RunSpeedMultiplier, 1e-5f, "a preset requested before the run sets the factor");
+            Assert.AreEqual(ExpectedSpeed(1f), ship.MoveSpeedMultiplier, 1e-4f);
+        }
+
         [UnityTest]
         public IEnumerator EnemyWorld_UsesTheConfigBuiltRuntimeDatabase()
         {

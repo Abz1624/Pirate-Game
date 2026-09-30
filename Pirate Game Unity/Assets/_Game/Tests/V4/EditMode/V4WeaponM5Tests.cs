@@ -218,14 +218,14 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(ConfigEnums.WeaponBehavior.AreaStrike, w["lightning_mast"].behavior);
             Assert.AreEqual(ConfigEnums.WeaponBehavior.PredictedArea, w["mortar"].behavior);
             var swivel = w["swivel_guns"].projectile;
-            // Demo (30 Sep 2026): shot lifetime cut to the new range (12 m x 1.15 / 16 m/s; was 2.4 s).
-            Assert.AreEqual((2, 0.18f, 0.55f, 0.55f, 0.32f, 0.86f), (swivel.burstShots, swivel.burstGapSeconds, swivel.damageMultiplier, swivel.sizeMultiplier, swivel.minSize, swivel.lifeSeconds));
+            // V3's values (the parity preset); the demo baseline cut the lifetime to its shorter range (0.86 s).
+            Assert.AreEqual((2, 0.18f, 0.55f, 0.55f, 0.32f, 2.4f), (swivel.burstShots, swivel.burstGapSeconds, swivel.damageMultiplier, swivel.sizeMultiplier, swivel.minSize, swivel.lifeSeconds));
             Assert.IsTrue(swivel.closeDefenseTargeting && swivel.homing && !swivel.leadWithActualSpeed);
             Assert.IsTrue(w["long_nine"].lane.enabled && w["long_nine"].lane.beam);
             Assert.IsTrue(w["harpoon_gun"].projectile.tarOnHit);
             var fan = w["broadside_battery"].fan;
-            // Demo: pellet lifetime cut to the new range (12 m x 1.15 / 42 m/s; was 1.2 s).
-            Assert.AreEqual((false, 42f, 1.05f, 0.33f, false, false, false), (fan.quantityAddsPellets, fan.minSpeed, fan.hitRadius, fan.lifeSeconds, fan.muzzlePerPellet, fan.trackPelletTargets, fan.splashOnDespawn));
+            // V3's pellet lifetime (the demo baseline: 0.33 s for its shorter range).
+            Assert.AreEqual((false, 42f, 1.05f, 1.2f, false, false, false), (fan.quantityAddsPellets, fan.minSpeed, fan.hitRadius, fan.lifeSeconds, fan.muzzlePerPellet, fan.trackPelletTargets, fan.splashOnDespawn));
             // R-21: the level damage factor only where V3 applied it.
             CollectionAssert.AreEquivalent(new[] { "deck_cannons", "harpoon_gun", "long_nine", "swivel_guns" }, w.Values.Where(c => c.levelDamageFactor).Select(c => c.weaponId));
         }

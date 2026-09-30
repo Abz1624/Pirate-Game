@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyArchetypeConfig
   configId: enemy.hammerhead
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-demo
   enemyId: hammerhead
   displayName: Hammerhead
   category: 1
@@ -78,6 +78,7 @@ MonoBehaviour:
     eliteLatchesSecondChargeForAll: 0
     eliteChargesTwice: 1
     alwaysRanged: 0
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:
       enabled: 0

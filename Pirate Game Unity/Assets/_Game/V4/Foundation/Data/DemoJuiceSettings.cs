@@ -168,10 +168,6 @@ namespace RoguePirates.V4.Foundation.Data
         [Tooltip("Plays instead of VFX Graph effects (the whirlpool) where the device can't run them (WebGL: no compute shaders).")]
         public GameObject vfxGraphFallbackPrefab;
         [Min(0.01f)] public float vfxGraphFallbackScale = 0.6f;
-        [Tooltip("Demo: the ship's top speed, times this.")]
-        [Min(0.1f)] public float shipSpeedMultiplier = 1.625f;
-        [Tooltip("Demo: XP from pickups, times this (0.5 = levelling at half the pace).")]
-        [Range(0.1f, 2f)] public float xpMultiplier = 0.5f;
         [Tooltip("Demo: HUD margin from the screen edges on phones (fraction of the screen height), on top of the safe area, for rounded corners.")]
         [Range(0f, 0.1f)] public float mobileHudEdgeMargin = 0.035f;
 

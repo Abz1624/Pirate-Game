@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.DirectorConfig
   configId: director.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m2
+  balanceVersion: saltwind-v5-demo
   mode: 2
   version: director-1
   sampleIntervalSeconds: 1
@@ -34,114 +34,114 @@ MonoBehaviour:
       time: 0
       value: 1
       inSlope: 0
-      outSlope: 4.4
+      outSlope: 3.1999998
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 5.4
-      inSlope: 4.4
-      outSlope: 2.9
+      value: 4.2
+      inSlope: 3.1999998
+      outSlope: 1.5
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 2
-      value: 8.3
-      inSlope: 2.9
-      outSlope: 2.6999998
+      value: 5.7
+      inSlope: 1.5
+      outSlope: 1.6000004
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 3
-      value: 11
-      inSlope: 2.6999998
-      outSlope: 3.6999998
+      value: 7.3
+      inSlope: 1.6000004
+      outSlope: 2.3999996
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 4
-      value: 14.7
-      inSlope: 3.6999998
-      outSlope: 3.000001
+      value: 9.7
+      inSlope: 2.3999996
+      outSlope: 3.4000006
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 5
-      value: 17.7
-      inSlope: 3.000001
-      outSlope: 5.5999985
+      value: 13.1
+      inSlope: 3.4000006
+      outSlope: 3.6999989
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 6
-      value: 23.3
-      inSlope: 5.5999985
-      outSlope: 5.700001
+      value: 16.8
+      inSlope: 3.6999989
+      outSlope: 3.4000015
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 7
-      value: 29
-      inSlope: 5.700001
-      outSlope: 6
+      value: 20.2
+      inSlope: 3.4000015
+      outSlope: 5.699999
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 8
-      value: 35
-      inSlope: 6
-      outSlope: 5.799999
+      value: 25.9
+      inSlope: 5.699999
+      outSlope: 5.1000004
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 9
-      value: 40.8
-      inSlope: 5.799999
-      outSlope: 8
+      value: 31
+      inSlope: 5.1000004
+      outSlope: 2.7999992
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 10
-      value: 48.8
-      inSlope: 8
-      outSlope: 4.300001
+      value: 33.8
+      inSlope: 2.7999992
+      outSlope: 6.8999996
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 12
-      value: 57.4
-      inSlope: 4.300001
-      outSlope: 7.533333
+      value: 47.6
+      inSlope: 6.8999996
+      outSlope: 6.1999993
       tangentMode: 69
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 15
-      value: 80
-      inSlope: 7.533333
+      value: 66.2
+      inSlope: 6.1999993
       outSlope: 0
       tangentMode: 69
       weightedMode: 0

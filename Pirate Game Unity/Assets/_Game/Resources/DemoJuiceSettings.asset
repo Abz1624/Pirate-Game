@@ -205,8 +205,6 @@ MonoBehaviour:
   bossArrivalSeconds: 2.5
   vfxGraphFallbackPrefab: {fileID: 7117905026468385747, guid: 9bf6488282dca46eda70d6338c3d982f, type: 3}
   vfxGraphFallbackScale: 3
-  shipSpeedMultiplier: 1.625
-  xpMultiplier: 0.5
   mobileHudEdgeMargin: 0.035
   playerDamageFlashColor: {r: 1, g: 0.25, b: 0.2, a: 1}
   playerDamageFlashDuration: 0.12

@@ -14,7 +14,7 @@ using UnityEngine;
 namespace RoguePirates.V4.Tests
 {
     /// <summary>
-    /// V5 M3 build balance: evolutions reachable (the card from weapon level 8 with its item, rarer cards granting more
+    /// V5 M3 build balance: evolutions reachable (the card from weapon level 6 with its item since the demo-baseline retune, 8 in M3; rarer cards granting more
     /// levels, the pity rule, the chest's evolution-item chance), weapon parity per role, Logbook and item bands, Captains
     /// within ±10%, the item flow, and the v3-parity preset restoring every M3 value.
     /// </summary>
@@ -86,12 +86,13 @@ namespace RoguePirates.V4.Tests
         // ---- Evolutions reachable (G3.1) ---------------------------------------------------------------------------
 
         [Test]
-        public void EvolutionCard_ComesFromWeaponLevel8_WithItsItem()
+        public void EvolutionCard_ComesFromWeaponLevel6_WithItsItem()
         {
+            // M3 set level 8; the demo-baseline retune (XP ×0.5) moved it to 6 so focused builds still evolve in most runs.
             using var rt = new ConfigSetRuntime(Set);
-            Assert.AreEqual(8, rt.Single<ProgressionConfig>().evolutionUnlockLevel);
-            Assert.IsFalse(DealsEvolution(rt, 7), "not at level 7");
-            Assert.IsTrue(DealsEvolution(rt, 8), "from level 8");
+            Assert.AreEqual(6, rt.Single<ProgressionConfig>().evolutionUnlockLevel);
+            Assert.IsFalse(DealsEvolution(rt, 5), "not at level 5");
+            Assert.IsTrue(DealsEvolution(rt, 6), "from level 6");
             using var parity = V4DifficultyM10Tests.Parity();
             Assert.IsFalse(DealsEvolution(parity, 8), "V3 (the parity preset): only at the max level");
             Assert.IsTrue(DealsEvolution(parity, parity.Single<ProgressionConfig>().maxWeaponLevel));
@@ -118,7 +119,7 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void EvolvedAtLevel8_TheWeaponLevelsOnTo12_ThroughCards()
+        public void EvolvedAtTheUnlockLevel_TheWeaponLevelsOnTo12_ThroughCards()
         {
             using var rt = new ConfigSetRuntime(Set);
             var b = Build(rt, out var c);
@@ -126,7 +127,7 @@ namespace RoguePirates.V4.Tests
             var id = evo.baseWeapon.weaponId;
             b.Progression.DevSetWeapons(new[] { id });
             var index = b.Progression.Loadout.IndexOf(id);
-            while (b.WeaponLevel(id) < 8) b.Progression.DevRankUp(index);
+            while (b.WeaponLevel(id) < rt.Single<ProgressionConfig>().evolutionUnlockLevel) b.Progression.DevRankUp(index);
             b.Progression.DevEvolve(id, evo.evolutionId);
             var g = Generator(rt);
             var rng = new Rng(7);
@@ -260,11 +261,11 @@ namespace RoguePirates.V4.Tests
         {
             using var rt = new ConfigSetRuntime(Set);
             var stage = rt.Single<StageContentConfig>();
-            Assert.AreEqual((0.4f, 0), (stage.evolutionItemChance, stage.evolutionItemMinWeaponLevel), "0 = from the evolution card's level (8)");
-            Assert.That(EvolutionItemShare(rt, 8, false, false), Is.GreaterThan(0.35f), "about 40% (plus the ordinary roll's own chance)");
-            Assert.Less(EvolutionItemShare(rt, 7, false, false), 0.15f, "below level 8 only the ordinary roll");
-            Assert.Less(EvolutionItemShare(rt, 8, true, false), 0.15f, "not when the item is already carried");
-            Assert.Less(EvolutionItemShare(rt, 8, false, true), 0.15f, "not when the weapon has evolved");
+            Assert.AreEqual((0.4f, 0), (stage.evolutionItemChance, stage.evolutionItemMinWeaponLevel), "0 = from the evolution card's level (6)");
+            Assert.That(EvolutionItemShare(rt, 6, false, false), Is.GreaterThan(0.35f), "about 40% (plus the ordinary roll's own chance)");
+            Assert.Less(EvolutionItemShare(rt, 5, false, false), 0.15f, "below level 6 only the ordinary roll");
+            Assert.Less(EvolutionItemShare(rt, 6, true, false), 0.15f, "not when the item is already carried");
+            Assert.Less(EvolutionItemShare(rt, 6, false, true), 0.15f, "not when the weapon has evolved");
             using var parity = V4DifficultyM10Tests.Parity();
             Assert.Less(EvolutionItemShare(parity, 8, false, false), 0.15f, "V3: off");
         }
@@ -308,7 +309,7 @@ namespace RoguePirates.V4.Tests
             var stage = rt.Single<StageContentConfig>();
             var p = rt.Single<ProgressionConfig>();
             Assert.AreEqual(0, stage.evolutionItemMinWeaponLevel, "0 = follow the card");
-            Assert.AreEqual(8, ChestEconomy.EvolutionItemMinLevel(stage, p));
+            Assert.AreEqual(6, ChestEconomy.EvolutionItemMinLevel(stage, p));
             p.evolutionUnlockLevel = 10;
             Assert.AreEqual(10, ChestEconomy.EvolutionItemMinLevel(stage, p), "the two cannot disagree");
         }
@@ -432,7 +433,7 @@ namespace RoguePirates.V4.Tests
             foreach (var w in parity.All<WeaponConfig>().Where(w => v3Damage.ContainsKey(w.weaponId)))
             {
                 Assert.AreEqual(v3Damage[w.weaponId], w.baseDamage, 1e-4f, w.weaponId);
-                Assert.AreEqual("saltwind-v5-m3", current.All<WeaponConfig>().Single(x => x.weaponId == w.weaponId).balanceVersion, "retuned in M3");
+                StringAssert.StartsWith("saltwind-v5-", current.All<WeaponConfig>().Single(x => x.weaponId == w.weaponId).balanceVersion, "retuned in M3 (the Lightning Mast again in the demo-baseline retune)");
             }
             Assert.AreEqual(0.08f, parity.All<LogbookConfig>().Single(l => l.logbookId == "gunnery_manual").perLevelAdditive, 1e-5f);
             Assert.AreEqual(10f, parity.All<LogbookConfig>().Single(l => l.logbookId == "carpenters_notes").perLevelAdditive, 1e-5f);

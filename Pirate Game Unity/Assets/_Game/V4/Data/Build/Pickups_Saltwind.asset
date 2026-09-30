@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.PickupConfig
   configId: pickups.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m1
+  balanceVersion: saltwind-v5-demo
   healthDropChance: 0.12
   healthDropValue: 25
   dropSpreadRadius: 1.6
@@ -22,6 +22,7 @@ MonoBehaviour:
   dropRadiusJitter: 0.15
   mergeRadius: 2
   mergeIntoNearestWhenFull: 1
+  xpPickupMultiplier: 0.5
   xpAutoPickupRadius: 4.25
   goldAutoPickupRadius: 26
   barrelTouchRadius: 5

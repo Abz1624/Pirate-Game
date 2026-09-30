@@ -61,6 +61,7 @@ namespace RoguePirates.V4.Tests
         public void AKillsBarrels_WaitForTheShip_ThenPayOutOnce()
         {
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            config.Single<PickupConfig>().xpPickupMultiplier = 1f; // the barrel's own value (the XP pace has its own test)
             var rewards = new Rewards();
             var views = new Views();
             var pickups = Make(config, rewards, views, 101);
@@ -83,6 +84,30 @@ namespace RoguePirates.V4.Tests
             for (var i = 0; i < 120; i++) pickups.Tick(Dt, kill, 1f);
             Assert.AreEqual(7, rewards.Xp, "no second payout");
             Assert.AreEqual(3, rewards.Gold);
+        }
+
+        [Test]
+        public void XpPickupMultiplier_PacesTheXp_WithoutLosingFractions()
+        {
+            // V5 demo baseline (30 Sep 2026): XP from pickups ×0.5, the fractions carried from orb to orb.
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            Assert.AreEqual(0.5f, config.Single<PickupConfig>().xpPickupMultiplier, "the demo baseline's pace in the data");
+            int Collect(float rate, int barrels)
+            {
+                config.Single<PickupConfig>().xpPickupMultiplier = rate;
+                var rewards = new Rewards();
+                var pickups = Make(config, rewards, new Views(), 101);
+                var kill = new Vector3(10f, 0f, 10f);
+                for (var b = 0; b < barrels; b++)
+                {
+                    pickups.SpawnFromEnemy(kill, 7, 0);
+                    for (var i = 0; i < 600; i++) pickups.Tick(Dt, kill, 1f); // collected, burst into orbs, granted
+                }
+                return rewards.Xp;
+            }
+            var full = Collect(1f, 3);
+            Assert.Greater(full, 0);
+            Assert.AreEqual(Mathf.FloorToInt(full * 0.5f), Collect(0.5f, 3), "half of the same orbs, no fraction lost");
         }
 
         [Test]

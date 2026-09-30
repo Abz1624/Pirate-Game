@@ -188,12 +188,17 @@ namespace RoguePirates.V4.Foundation.Player
             _moveEffectTimer = Mathf.Max(_moveEffectTimer, durationSeconds);
         }
 
+        /// <summary>The run's ship speed factor (RunConfig.shipSpeedMultiplier, set by the run bootstrap): top speed and
+        /// acceleration, on top of the move-speed stat. A config-level exception to "stats change only through the
+        /// resolver": it is a per-map tuning factor (the demo's switch, now RunConfig), not a build modifier.</summary>
+        public float RunSpeedMultiplier { get; set; } = 1f;
+
         public void SyncRunSpeedMultiplier()
         {
             var statSpeed = RunManager.Instance != null
                 ? RunManager.Instance.Stats.MoveSpeed
                 : GameConstants.DefaultMoveSpeed;
-            _moveSpeedMultiplier = statSpeed / ReferenceMaxSpeed * RoguePirates.V4.Foundation.Core.DemoMode.ShipSpeedMultiplier;
+            _moveSpeedMultiplier = statSpeed / ReferenceMaxSpeed * RunSpeedMultiplier;
         }
 
         public void ResetMotion()
@@ -364,7 +369,7 @@ namespace RoguePirates.V4.Foundation.Player
 
             if (Mathf.Abs(input.throttle) > 0.01f)
             {
-                var thrust = (input.throttle > 0f ? acceleration : reverseAcceleration) * RoguePirates.V4.Foundation.Core.DemoMode.ShipSpeedMultiplier;
+                var thrust = (input.throttle > 0f ? acceleration : reverseAcceleration) * RunSpeedMultiplier;
                 _velocity += forward * (input.throttle * thrust * moveMult * dt);
 
                 forwardSpeed = Vector3.Dot(_velocity, forward);

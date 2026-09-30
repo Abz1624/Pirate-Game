@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.harpoon_gun
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m3
+  balanceVersion: saltwind-v5-demo
   weaponId: harpoon_gun
   displayName: Harpoon Gun
   description: Forward tether that slows priority targets.

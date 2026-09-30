@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemySpawnerConfig
   configId: spawner.saltwind_elite_kraken
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m2
+  balanceVersion: saltwind-v5-demo
   legacyProfileId: saltwind_elite_kraken
   anchor: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
   spawnMode: 0

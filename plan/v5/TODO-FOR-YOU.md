@@ -1,12 +1,16 @@
-# Your TODOs — V5 (updated 30 Sep)
+# Your TODOs — V5 (updated 1 Oct)
 
 ## Next
 
 - **Playtest M2 and M3 on the demo baseline.** The demo round (30 Sep) changed the voyage and you chose to keep it:
   pickups give half XP, the ship is 1.625x faster (acceleration too), player shooting ranges are lower (Deck Cannons
   22 -> 16 and so on), enemies are smarter (they path around islands, cut you off, surround you and lead their shots),
-  the hammerhead and rammer attack sooner, and cannon boats appear from 1:00. Before M4 I re-run the M2/M3 balance model
-  and simulator on this baseline and report what moved; nothing is retuned without your OK.
+  the hammerhead and rammer attack sooner, and cannon boats appear from 1:00. You kept half XP and chose a retune around
+  it (1 Oct, `plan/v5/balance-recheck/README.md`): enemies grow gentler (HP growth x0.55, damage growth x0.7), the
+  evolution card comes from weapon level 6 (was 8), the Lightning Mast is 2% weaker. In the simulator runs last as long
+  as in M3 and the boss is beaten as often; levels come about 40% slower. Check in the playtest: does the slower
+  levelling feel good, do evolutions still arrive (around 6-7 minutes for a focused build), and is the mid-run still a
+  fight with the gentler enemies?
 - **Flamethrower VFX:** it is offered again, but its effect is still broken; I fix it in M4 (weapon VFX work).
 - **Read the Railway breakdown**: tracking page section "Your answers, explained", or `plan/v5/ANSWERS.md` (what runs
   on Railway, what each part costs, where to save).

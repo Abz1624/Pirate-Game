@@ -19,6 +19,9 @@ namespace RoguePirates.V4.Config
         [Tooltip("V5 M1: with every slot taken and no XP pickup within mergeRadius, XP merges into the nearest XP pickup anywhere instead of being lost (Vampire Survivors merges XP gems above a cap). XP only: gold, health and barrels keep the V4 rule. Off = V4/V3 (lost).")]
         public bool mergeIntoNearestWhenFull;
 
+        [Tooltip("V5 (demo baseline, 30 Sep 2026): XP from pickups, times this (0.5 = half: levels come at half the pace). V3/V4: 1.")]
+        [Min(0.01f)] public float xpPickupMultiplier = 1f;
+
         [Header("Collection")]
         [Tooltip("XP crystals home in within this distance (or the ship's pickup radius, if larger).")] public float xpAutoPickupRadius = 4.25f;
         [Tooltip("Coins home in within this distance.")] public float goldAutoPickupRadius = 26f;
@@ -41,6 +44,7 @@ namespace RoguePirates.V4.Config
             if (healthDropChance < 0f || healthDropChance > 1f) report.Error(this, nameof(healthDropChance), "must be 0-1");
             report.Positive(this, nameof(barrelTouchRadius), barrelTouchRadius);
             report.Positive(this, nameof(collectDistance), collectDistance);
+            report.Positive(this, nameof(xpPickupMultiplier), xpPickupMultiplier);
             if (burstCountMin < 1 || burstCountMax < burstCountMin) report.Error(this, nameof(burstCountMin), "needs 1 ≤ min ≤ max");
             if (maxFlyingSpawnsPerFrame < 1) report.Error(this, nameof(maxFlyingSpawnsPerFrame), "must be at least 1");
         }

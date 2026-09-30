@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.BalanceTargetsConfig
   configId: balance_targets.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-demo
   personalities:
   - personalityId: first_timer
     deathMinute:
@@ -54,8 +54,8 @@ MonoBehaviour:
       min: 0.6
       max: 0.85
     levelAt10:
-      min: 30
-      max: 46
+      min: 21
+      max: 35
   - personalityId: glass_cannon
     deathMinute:
       min: 8
@@ -221,8 +221,8 @@ MonoBehaviour:
       min: 30
       max: 140
     level:
-      min: 18
-      max: 29
+      min: 15
+      max: 26
     damageTakenShare:
       min: NaN
       max: 0.9
@@ -237,8 +237,8 @@ MonoBehaviour:
       min: 50
       max: 160
     level:
-      min: 21
-      max: 32
+      min: 17
+      max: 29
     damageTakenShare:
       min: NaN
       max: 1
@@ -253,8 +253,8 @@ MonoBehaviour:
       min: 45
       max: 160
     level:
-      min: 23
-      max: 35
+      min: 18
+      max: 31
     damageTakenShare:
       min: NaN
       max: 1
@@ -269,8 +269,8 @@ MonoBehaviour:
       min: 55
       max: 180
     level:
-      min: 25
-      max: 38
+      min: 20
+      max: 33
     damageTakenShare:
       min: NaN
       max: 1.1
@@ -285,8 +285,8 @@ MonoBehaviour:
       min: 30
       max: 200
     level:
-      min: 28
-      max: 42
+      min: 21
+      max: 35
     damageTakenShare:
       min: NaN
       max: NaN
@@ -301,8 +301,8 @@ MonoBehaviour:
       min: 30
       max: 220
     level:
-      min: 30
-      max: 45
+      min: 22
+      max: 37
     damageTakenShare:
       min: NaN
       max: NaN
@@ -317,8 +317,8 @@ MonoBehaviour:
       min: 30
       max: 240
     level:
-      min: 32
-      max: 48
+      min: 23
+      max: 39
     damageTakenShare:
       min: NaN
       max: NaN
@@ -326,11 +326,11 @@ MonoBehaviour:
       min: NaN
       max: NaN
   levelUpGapMinute1:
-    min: 4
-    max: 12
-  levelUpGapTo10:
-    min: 13
+    min: 10
     max: 20
+  levelUpGapTo10:
+    min: 20
+    max: 30
   fodderTtkSeconds:
     min: NaN
     max: 1
