@@ -109,6 +109,11 @@ namespace RoguePirates.V4.Progression
         public int DealsSinceRare { get; private set; }
         bool _pityRaised; // the pity rule raises one weapon upgrade per deal
 
+        /// <summary>Demo (30 Sep 2026): only weapon cards (upgrades, new weapons, evolutions); no Logbooks, and the first
+        /// level-up deals like any other. Set by the presentation from its demo settings; off in tests. The fallback
+        /// cards (heal, damage, speed) still fill a deal when no weapon card is left.</summary>
+        public static bool WeaponCardsOnly;
+
         /// <summary>A new run: the pity count starts again.</summary>
         public void ResetForRun() => DealsSinceRare = 0;
 
@@ -159,7 +164,7 @@ namespace RoguePirates.V4.Progression
             var result = new List<Offer>(count);
             _pityRaised = false;
 
-            if (isFirstLevelUp)
+            if (isFirstLevelUp && !WeaponCardsOnly)
             {
                 AddFirstLevelOffers(result, rng, ctx, state, luck);
                 CountPity(result);
@@ -213,8 +218,8 @@ namespace RoguePirates.V4.Progression
             var canAddWeapon = owned.Count < P.weaponSlots && HasUnownedWeapon(state);
             var canUpgradeWeapon = HasUpgradeableWeapon(state)
                 || P.evolutionOffersWhenMaxed && _evolutionsEnabled() && !TryWeaponEvolutionOffer(ctx, state, usedKeys).IsEmpty; // R-31
-            var canNewLogbook = CanOfferNewLogbook(state);
-            var canUpgradeLogbook = CanOfferLogbookUpgrade(state);
+            var canNewLogbook = !WeaponCardsOnly && CanOfferNewLogbook(state);
+            var canUpgradeLogbook = !WeaponCardsOnly && CanOfferLogbookUpgrade(state);
 
             var w = _weights().RowFor(owned.Count);
             var total = 0f;

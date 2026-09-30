@@ -40,5 +40,29 @@ MonoBehaviour:
     flag: {fileID: 2100000, guid: 2b1cb97223b1f44c88adc93c38d0d189, type: 2}
   markerDone: {fileID: 21300000, guid: 652cb16da0ad6463f8383678f1f20d14, type: 3}
   markerOpen: {fileID: 21300000, guid: f030e8158928e436f9ea329aa3d5f65a, type: 3}
+  hideNarrative: 1
+  hideBeaconGuide: 1
+  weaponCardsOnly: 1
+  weaponCards:
+  - weaponId: broadside_battery
+    cardPrefab: {fileID: 2751188906273833744, guid: 300a29baf4ecd914ab11b982437eb26e, type: 3}
+  - weaponId: deck_cannons
+    cardPrefab: {fileID: 3093942312287327160, guid: 386ef85c44872fa419f3be20887a90ca, type: 3}
+  - weaponId: flamethrower
+    cardPrefab: {fileID: 1025151603682660168, guid: 1e534b17b99160d4cb3e487a15799743, type: 3}
+  - weaponId: flying_cutlasses
+    cardPrefab: {fileID: 3401229427827726648, guid: 9c60f1670ee6b4b4b86befd15269b9e6, type: 3}
+  - weaponId: harpoon_gun
+    cardPrefab: {fileID: 8409919444915023463, guid: 19a761fc68c922944a830a4742122678, type: 3}
+  - weaponId: lightning_mast
+    cardPrefab: {fileID: 5714017555926377406, guid: 5d99af25ace79504899884705914280f, type: 3}
+  - weaponId: long_nine
+    cardPrefab: {fileID: 1214074361570705291, guid: 0eb597c0dd1982a46ae6e081f7e62ebd, type: 3}
+  - weaponId: mortar
+    cardPrefab: {fileID: 513627715385535820, guid: 532bd12c7efde1a45acfff3a560a8fb7, type: 3}
+  - weaponId: powder_kegs
+    cardPrefab: {fileID: 6457848292612646911, guid: 11afb040f0c24e647873c70e547a47a2, type: 3}
+  - weaponId: swivel_guns
+    cardPrefab: {fileID: 3039817791560900569, guid: 71447c98f8b13d440b97b480905d052e, type: 3}
   shipSailMaterial: EnemySail
   shipFlagMaterial: SkullBandanaFlag

@@ -29,6 +29,30 @@ namespace RoguePirates.V4.Presentation.Hud
         public bool hideNarrative = true;
         [Tooltip("Hide the Treasury Beacon guide (the spotlight and the arrow to the beacon).")]
         public bool hideBeaconGuide = true;
+        [Tooltip("Level-up cards offer weapons only (no Logbooks).")]
+        public bool weaponCardsOnly = true;
+        [Tooltip("One level-up card per weapon (Assets/_Game/V4/Demo/LevelUpCards): its Icon is the icon that weapon's cards show.")]
+        public WeaponCard[] weaponCards = Array.Empty<WeaponCard>();
+
+        [Serializable]
+        public struct WeaponCard
+        {
+            public string weaponId;
+            public GameObject cardPrefab;
+        }
+
+        /// <summary>The icon on the weapon's card prefab (Background/Icon), or null.</summary>
+        public Sprite WeaponCardIcon(string weaponId)
+        {
+            foreach (var c in weaponCards)
+                if (c.weaponId == weaponId && c.cardPrefab != null)
+                {
+                    var icon = c.cardPrefab.transform.Find("Background/Icon");
+                    var image = icon != null ? icon.GetComponent<UnityEngine.UI.Image>() : null;
+                    return image != null ? image.sprite : null;
+                }
+            return null;
+        }
 
         /// <summary>A demo switch that is on (never while the art HUD is switched off for tests).</summary>
         public static bool Hides(System.Func<SaltWindHudSettings, bool> flag)

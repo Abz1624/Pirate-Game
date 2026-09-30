@@ -140,13 +140,15 @@ namespace RoguePirates.V4.Presentation.Hud
 
         Sprite IconOf(Offer offer)
         {
-            if (_icons == null) return null;
             switch (offer.Kind)
             {
                 case OfferKind.WeaponUpgrade:
                 case OfferKind.NewWeapon:
-                case OfferKind.WeaponEvolution: return _icons.Weapon(offer.Id);
-                case OfferKind.NewRunItem: return _icons.Item(offer.Id);
+                case OfferKind.WeaponEvolution:
+                    // The weapon's card prefab (the artists' icon) first, then the HUD icon.
+                    var cardIcon = SaltWindHudSettings.Load()?.WeaponCardIcon(offer.Id);
+                    return cardIcon != null ? cardIcon : _icons?.Weapon(offer.Id);
+                case OfferKind.NewRunItem: return _icons?.Item(offer.Id);
                 default: return null;
             }
         }

@@ -38,6 +38,7 @@ namespace RoguePirates.V4.Editor
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             var log = new List<string>();
             BuildPoiPrefabs(log);
+            BuildLevelUpCards(log);
             BuildRunScene(log);
             BuildJoystick(log);
             BuildMenuScene(log);
@@ -152,6 +153,60 @@ namespace RoguePirates.V4.Editor
                 log.Add("Run: HUD_SaltWind placed on " + canvas.name + " in " + RunScene);
             }
             else log.Add("Run: HUD_SaltWind already in the scene");
+        }
+
+        // ---- Level-up cards --------------------------------------------------------------------------------------------
+
+        const string CardFolder = "Assets/_Game/V4/Demo/LevelUpCards";
+
+        [MenuItem("Tools/Rogue Pirates/Demo/Build Level-Up Cards")]
+        public static void BuildLevelUpCardsMenu()
+        {
+            var log = new List<string>();
+            BuildLevelUpCards(log);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[DemoSceneBuilder] " + string.Join(" ", log));
+        }
+
+        /// <summary>
+        /// One level-up card per weapon: a variant of the art team's UpgradeCard with the weapon's icon (Background/Icon),
+        /// listed in V4SaltWindHudSettings. The icon set on a card is the one that weapon's level-up cards show; existing
+        /// cards are kept (the artists' edits), new weapons get one.
+        /// </summary>
+        public static void BuildLevelUpCards(List<string> log)
+        {
+            var baseCard = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/UI/SaltWindHUD/Prefabs/Elements/UpgradeCard.prefab");
+            var settings = AssetDatabase.LoadAssetAtPath<SaltWindHudSettings>("Assets/_Game/V4/Resources/V4SaltWindHudSettings.asset");
+            var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(ConfigSetPath);
+            if (baseCard == null || settings == null || set == null) { log.Add("Cards: missing UpgradeCard, settings or config set"); return; }
+            if (!AssetDatabase.IsValidFolder(CardFolder)) AssetDatabase.CreateFolder("Assets/_Game/V4/Demo", "LevelUpCards");
+            var icons = IconCatalog.Load();
+            var entries = new List<SaltWindHudSettings.WeaponCard>();
+            var made = 0;
+            foreach (var w in set.All<WeaponConfig>().Where(w => w != null && !string.IsNullOrEmpty(w.weaponId)).OrderBy(w => w.displayName))
+            {
+                var path = CardFolder + "/LevelUpCard_" + (string.IsNullOrEmpty(w.displayName) ? w.weaponId : w.displayName) + ".prefab";
+                var card = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (card == null)
+                {
+                    var instance = (GameObject)PrefabUtility.InstantiatePrefab(baseCard);
+                    var sprite = icons != null ? icons.Weapon(w.weaponId) : null;
+                    foreach (var name in new[] { "Background/Icon", "Background/Shadow" })
+                    {
+                        var image = instance.transform.Find(name)?.GetComponent<UnityEngine.UI.Image>();
+                        if (image != null && sprite != null) image.sprite = sprite;
+                    }
+                    var title = instance.transform.Find("Background/Title")?.GetComponent<TMP_Text>();
+                    if (title != null) title.text = w.displayName;
+                    card = PrefabUtility.SaveAsPrefabAsset(instance, path);
+                    Object.DestroyImmediate(instance);
+                    made++;
+                }
+                entries.Add(new SaltWindHudSettings.WeaponCard { weaponId = w.weaponId, cardPrefab = card });
+            }
+            settings.weaponCards = entries.ToArray();
+            EditorUtility.SetDirty(settings);
+            log.Add($"Cards: {entries.Count} weapon cards in {CardFolder} ({made} new)");
         }
 
         // ---- Touch joystick -----------------------------------------------------------------------------------------------
