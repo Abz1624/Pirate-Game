@@ -9802,6 +9802,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: Treasure map
       objectReference: {fileID: 0}
+    - target: {fileID: 6230634417073530188, guid: c893c07f22d3967409491fada2260e0f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.0030969935
+      objectReference: {fileID: 0}
+    - target: {fileID: 6230634417073530188, guid: c893c07f22d3967409491fada2260e0f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.005895827
+      objectReference: {fileID: 0}
+    - target: {fileID: 6230634417073530188, guid: c893c07f22d3967409491fada2260e0f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.85585153
+      objectReference: {fileID: 0}
+    - target: {fileID: 6230634417073530188, guid: c893c07f22d3967409491fada2260e0f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6230634417073530188, guid: c893c07f22d3967409491fada2260e0f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.5172216
+      objectReference: {fileID: 0}
+    - target: {fileID: 6230634417073530188, guid: c893c07f22d3967409491fada2260e0f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -62.292
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
