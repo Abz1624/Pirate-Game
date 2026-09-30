@@ -27,7 +27,7 @@ MonoBehaviour:
   - Hunter
   baseDamage: 25.023508
   baseCooldown: 2.4
-  range: 24
+  range: 18
   baseQuantity: 1
   projectileSpeed: 16
   duration: 2

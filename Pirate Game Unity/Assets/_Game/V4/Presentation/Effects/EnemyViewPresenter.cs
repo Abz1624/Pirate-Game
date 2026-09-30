@@ -33,6 +33,8 @@ namespace RoguePirates.V4.Presentation.Effects
         readonly Dictionary<GameObject, string> _keys = new Dictionary<GameObject, string>();
         readonly Dictionary<Transform, string> _liveKey = new Dictionary<Transform, string>();
         readonly HashSet<int> _prepared = new HashSet<int>();
+        readonly Dictionary<int, (TrailRenderer[] trails, ParticleSystem[] particles)> _motion =
+            new Dictionary<int, (TrailRenderer[], ParticleSystem[])>();
         GameObject _cube;
 
         public int LiveCount => _liveKey.Count;
@@ -104,6 +106,7 @@ namespace RoguePirates.V4.Presentation.Effects
             {
                 Profiles?.EnemyViewReleased(view);
                 EnemyBurnFlash.SetBurning(view, false);
+                ClearMotion(view.gameObject);
                 _liveKey.Remove(view);
                 if (!_pools.Release(view.gameObject)) Object.Destroy(view.gameObject);
             }
@@ -132,8 +135,26 @@ namespace RoguePirates.V4.Presentation.Effects
             var go = _pools.Acquire(key, position, rotation);
             if (go == null) return null;
             if (_prepared.Add(go.GetInstanceID())) StripImmediate(go);
+            // A reused model keeps the trail points of its last life; cleared now it is at its new place, the wake
+            // does not draw a streak across the water from where the last enemy died.
+            ClearMotion(go);
             _liveKey[go.transform] = key;
             return go.transform;
+        }
+
+        /// <summary>Drops the model's trail points and particles (emission stays as it was; the wake tick drives it).</summary>
+        void ClearMotion(GameObject go)
+        {
+            var id = go.GetInstanceID();
+            if (!_motion.TryGetValue(id, out var motion))
+            {
+                motion = (go.GetComponentsInChildren<TrailRenderer>(true), go.GetComponentsInChildren<ParticleSystem>(true));
+                _motion[id] = motion;
+            }
+            for (var i = 0; i < motion.trails.Length; i++)
+                if (motion.trails[i] != null) motion.trails[i].Clear();
+            for (var i = 0; i < motion.particles.Length; i++)
+                if (motion.particles[i] != null) motion.particles[i].Clear(false);
         }
 
         /// <summary>The catalog's pool for the model, or a pool made on first use (a model the timeline cannot reach).</summary>

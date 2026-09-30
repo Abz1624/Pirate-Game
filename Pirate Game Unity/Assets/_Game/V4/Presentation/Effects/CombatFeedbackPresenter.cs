@@ -88,6 +88,7 @@ namespace RoguePirates.V4.Presentation.Effects
                         OnKill(new Vector3(e.X, 0f, e.Y), (e.B & 1) != 0 && (e.B & 4) == 0, (e.B & 2) != 0, e.Tag);
                         break;
                     case CombatEventKind.Spawned: Profiles?.Spawned(e.A, e.Tag, new Vector3(e.X, 0f, e.Y)); break;
+                    case CombatEventKind.BossArriving: OnBossArriving(new Vector3(e.X, 0f, e.Y)); break;
                     case CombatEventKind.RunState:
                         if (e.A == (int)RoguePirates.V4.Foundation.Core.RunState.PlayerDead) Profiles?.ShipDied();
                         break;
@@ -103,6 +104,15 @@ namespace RoguePirates.V4.Presentation.Effects
         void Play(GameObject prefab, Vector3 position, float scale, float lifetime = 0f)
         {
             if (_fx.Play(prefab, position, Quaternion.identity, scale, lifetime) != null) EffectsPlayed++;
+        }
+
+        /// <summary>Demo: the whirlpool where the boss is about to rise (it swirls until just after the boss appears).</summary>
+        void OnBossArriving(Vector3 position)
+        {
+            if (_s == null || _s.bossArrivalPrefab == null || Profiles == null) return;
+            var slot = new VfxSlot { prefab = _s.bossArrivalPrefab, scale = _s.bossArrivalScale, lifetime = _s.bossArrivalSeconds + 2.5f, replaceDefault = false };
+            Profiles.Play(slot, position, Quaternion.identity);
+            _shake?.Shake(0.1f, _s.bossArrivalSeconds);
         }
 
         /// <summary>V3 CombatVfxController.OnHit → JuiceVfxBroker.PlayHit / PlayCannonImpact.</summary>

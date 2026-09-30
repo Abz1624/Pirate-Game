@@ -27,7 +27,9 @@ namespace RoguePirates.V4.Events
         GoldChanged,
         PowerChanged,
         RumChanged,
-        ConfigChanged
+        ConfigChanged,
+        /// <summary>Demo: the boss is about to rise at X/Y (the whirlpool plays there first); Z = seconds until it does.</summary>
+        BossArriving
     }
 
     /// <summary>One fact from the simulation. Small value type: ids in A/B, numbers in X/Y/Z, a string tag for content ids.</summary>

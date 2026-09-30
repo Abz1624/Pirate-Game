@@ -185,6 +185,14 @@ namespace RoguePirates.V4.Presentation.Hud
             var viewCenter = ComputeClampedMapViewCenter(pos);
             _contentRoot.anchoredPosition = -WorldToMap(viewCenter);
             _contentRoot.sizeDelta = new Vector2(PlayBounds.HalfExtentX * _mapScale * 2.2f, PlayBounds.HalfExtentZ * _mapScale * 2.2f);
+            // The fog texture covers the play area exactly (±half extents), not the padded map content: sized to it, the
+            // explored patches sit under the ship instead of 10% further out.
+            if (_fogRoot != null)
+            {
+                _fogRoot.anchorMin = _fogRoot.anchorMax = new Vector2(0.5f, 0.5f);
+                _fogRoot.anchoredPosition = Vector2.zero;
+                _fogRoot.sizeDelta = new Vector2(PlayBounds.HalfExtentX * _mapScale * 2f, PlayBounds.HalfExtentZ * _mapScale * 2f);
+            }
             _playerIcon.anchoredPosition = WorldToMap(pos) - WorldToMap(viewCenter);
 
             var forward = PlayerHeading(ship);
@@ -492,7 +500,8 @@ namespace RoguePirates.V4.Presentation.Hud
         void RefreshBeaconSector(IStageView stage, Vector3 playerPos)
         {
             if (_beaconSector == null || stage == null || !stage.HasDiscovery) return;
-            var show = stage.Beacon == BeaconReveal.DirectionSector;
+            // Demo: no Treasury Beacon on the map, so no sector pointing at it.
+            var show = stage.Beacon == BeaconReveal.DirectionSector && !RoguePirates.V4.Foundation.Core.DemoMode.NoPointsOfInterest;
             if (_beaconSector.gameObject.activeSelf != show) _beaconSector.gameObject.SetActive(show);
             if (!show) return;
             _beaconSector.anchoredPosition = Vector2.zero;

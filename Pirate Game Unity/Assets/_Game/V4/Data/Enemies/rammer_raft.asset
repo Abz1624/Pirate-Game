@@ -58,9 +58,9 @@ MonoBehaviour:
     projectileCount: 1
     spreadDegrees: 0
     projectileSpeed: 9
-    chargeWindUp: 1.4
+    chargeWindUp: 0.8
     chargeDuration: 1.1
-    chargeCooldown: 2.2
+    chargeCooldown: 1.6
     chargeSpeedMult: 2.8
     contactDamageEnabled: 1
     eliteHammerheadSecondCharge: 0

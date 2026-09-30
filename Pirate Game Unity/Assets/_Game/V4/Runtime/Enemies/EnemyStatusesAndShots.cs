@@ -167,7 +167,38 @@ namespace RoguePirates.V4.Enemies
             return true;
         }
 
-        public bool TrySpawn(Vector3 position, Vector3 direction, float speed, float damage, float life, float hitRadius, float visualRadius = -1f)
+        const float DefaultShotGravity = 7.5f;
+        const float MinShotGravity = 1.5f;
+        const float MaxShotFlightSeconds = 3f;
+
+        /// <summary>
+        /// Where to aim so a shot at <paramref name="shotSpeed"/> meets a ship holding its course: the target's position
+        /// plus its velocity times the flight time (refined twice, capped at <paramref name="maxLead"/> seconds).
+        /// </summary>
+        public static Vector3 PredictAimPoint(Vector3 from, Vector3 targetPos, Vector3 targetVelocity, float shotSpeed, float maxLead = 1.5f)
+        {
+            targetVelocity.y = 0f;
+            if (shotSpeed <= 0.01f || targetVelocity.sqrMagnitude < 0.04f)
+                return targetPos;
+
+            var aim = targetPos;
+            for (var pass = 0; pass < 2; pass++)
+            {
+                var dx = aim.x - from.x;
+                var dz = aim.z - from.z;
+                var lead = Mathf.Min(maxLead, Mathf.Sqrt(dx * dx + dz * dz) / shotSpeed);
+                aim = targetPos + targetVelocity * lead;
+            }
+
+            return aim;
+        }
+
+        /// <param name="targetDistance">
+        /// Horizontal distance to the aim point (below 0 = V3's fixed arc). With it the arc is shaped so the shot comes back
+        /// to muzzle height at that distance: the old fixed arc splashed down after about 7.6 m, well short of the 12-22 m
+        /// firing ranges.
+        /// </param>
+        public bool TrySpawn(Vector3 position, Vector3 direction, float speed, float damage, float life, float hitRadius, float visualRadius = -1f, float targetDistance = -1f)
         {
             if (_active >= _pool.Length) return false;
 
@@ -193,6 +224,26 @@ namespace RoguePirates.V4.Enemies
 
             var velocity = dir * speed;
             velocity.y = Mathf.Clamp(speed * 0.3f, 1.6f, 3.2f);
+            var gravity = DefaultShotGravity;
+            if (targetDistance > 0f && speed > 0.01f)
+            {
+                // Flight time to the aim point; keep the usual launch angle and lighten gravity so it lands there, or on
+                // short shots keep gravity and lower the launch.
+                var flight = Mathf.Clamp(targetDistance / speed, 0.15f, MaxShotFlightSeconds);
+                gravity = 2f * velocity.y / flight;
+                if (gravity > DefaultShotGravity)
+                {
+                    gravity = DefaultShotGravity;
+                    velocity.y = Mathf.Max(0.6f, gravity * flight * 0.5f);
+                }
+                else if (gravity < MinShotGravity)
+                {
+                    gravity = MinShotGravity;
+                    velocity.y = gravity * flight * 0.5f;
+                }
+
+                life = Mathf.Max(life, flight + 0.35f);
+            }
 
             var view = _views?.Acquire(position, HostileProjectileColor, visualRadius);
             _pool[slot] = new HostileShot
@@ -203,7 +254,7 @@ namespace RoguePirates.V4.Enemies
                 life = life,
                 damage = damage,
                 radius = hitRadius,
-                gravity = 7.5f,
+                gravity = gravity,
                 view = view
             };
             _active++;

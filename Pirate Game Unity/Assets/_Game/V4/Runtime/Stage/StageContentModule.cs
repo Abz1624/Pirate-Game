@@ -83,7 +83,7 @@ namespace RoguePirates.V4.Stage
             _encounters = encounters;
             _executor = executor;
             Discovery = new BeaconDiscovery(config, () => _ship != null && _ship.Exists ? _ship.Position : (Vector3?)null);
-            Discovery.BeaconSpotted += () => _toasts?.Show("Treasury Beacon spotted — follow the guide.", 3.5f);
+            Discovery.BeaconSpotted += () => { if (!DemoMode.NoPointsOfInterest) _toasts?.Show("Treasury Beacon spotted: follow the guide.", 3.5f); };
             Discovery.BeaconChanged += state => Publish?.Invoke(CombatEventKind.BeaconState, (int)state, 0, default, null);
         }
 
@@ -128,6 +128,8 @@ namespace RoguePirates.V4.Stage
 
         void ResetState()
         {
+            _bossArriving = false;
+            _bossArrivalTimer = 0f;
             _bossSummoned = false;
             _bossDefeated = false;
             _paidChestCount = 0;
@@ -178,6 +180,7 @@ namespace RoguePirates.V4.Stage
         {
             if (!_enabled) return;
             RestoreBossFightAfterResume();
+            TickAutoBoss(dt);
             TickProgressiveChestSpawns();
             if (!_powderCacheCleared && _powderCacheEncounterCount > 0 && IsPowderCacheEncounterClear())
             {
@@ -713,7 +716,7 @@ namespace RoguePirates.V4.Stage
                 return false;
             }
             if (!TrySummonBossAtBeacon()) return false;
-            _toasts?.Show("Treasury Beacon — boss incoming! (B)", 3f);
+            _toasts?.Show("Treasury Beacon: boss incoming! (B)", 3f);
             return true;
         }
 
@@ -731,8 +734,53 @@ namespace RoguePirates.V4.Stage
             }
             SummonBoss();
             if (_bossSummoned) return true;
-            _toasts?.Show("Beacon failed — clear space near the beacon and try again.", 3f);
+            _toasts?.Show("Beacon failed: clear space near the beacon and try again.", 3f);
             return false;
+        }
+
+        // Demo (30 Sep 2026): with no Treasury Beacon, the boss rises on its own at a run time, out of a whirlpool that
+        // swirls on screen for a moment first.
+        bool _bossArriving;
+        float _bossArrivalTimer;
+        Vector3 _bossArrivalPoint;
+        const float BossArrivalDistance = 11f;
+
+        void TickAutoBoss(float dt)
+        {
+            if (_bossSummoned || _bossDefeated || _run == null) return;
+            var at = DemoMode.AutoBossSeconds;
+            if (at <= 0f) return;
+            if (!_bossArriving)
+            {
+                if (_run.ElapsedSeconds < at || _ship == null || !_ship.Exists) return;
+                _bossArriving = true;
+                _bossArrivalTimer = DemoMode.BossArrivalSeconds;
+                _bossArrivalPoint = PickBossArrivalPoint(_ship.Position);
+                Publish?.Invoke(CombatEventKind.BossArriving, 0, 0, _bossArrivalPoint, null);
+                _toasts?.Show("Something stirs beneath the waves...", 2.5f);
+                return;
+            }
+            _bossArrivalTimer -= dt;
+            if (_bossArrivalTimer > 0f) return;
+            SpawnPointOverride.Set(_bossArrivalPoint);
+            SummonBoss();
+            SpawnPointOverride.Clear();
+            if (!_bossSummoned) _bossArrivalTimer = 0.5f; // a failed spawn tries again shortly, at the same spot
+        }
+
+        /// <summary>On screen near the ship (ahead of it on the screen first), on open water inside the play area.</summary>
+        static Vector3 PickBossArrivalPoint(Vector3 ship)
+        {
+            for (var i = 0; i < 12; i++)
+            {
+                var angle = (90f + i * 30f) * Mathf.Deg2Rad; // screen-up first (world +Z), then around
+                var p = PlayBounds.Clamp(ship + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * BossArrivalDistance, 6f);
+                p.y = 0f;
+                if (!IslandObstacles.IsPositionBlocked(p, 4f)) return p;
+            }
+            var fallback = PlayBounds.Clamp(ship + Vector3.forward * BossArrivalDistance, 6f);
+            fallback.y = 0f;
+            return fallback;
         }
 
         void SummonBoss()

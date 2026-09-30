@@ -21,5 +21,5 @@ MonoBehaviour:
   megabonkFullMapZoom: 300
   headingOffsetDegrees: 0
   fogMaskResolution: 160
-  fogTint: {r: 0.15267348, g: 0.15343976, b: 0.15471691, a: 0.88}
+  fogTint: {r: 0.02, g: 0.035, b: 0.06, a: 0.97}
   fogEdgeSoftnessWorld: 10

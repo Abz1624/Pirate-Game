@@ -1,3 +1,4 @@
+using RoguePirates.V4.Foundation.World;
 using UnityEngine;
 
 namespace RoguePirates.V4.Weapons
@@ -109,7 +110,10 @@ namespace RoguePirates.V4.Weapons
                 ref var p = ref _pool[i];
                 ApplySubtleHoming(ref p, dt);
                 var segmentStart = p.Position;
-                p.Position += p.Velocity * dt;
+                var next = p.Position + p.Velocity * dt;
+                // Islands stop shots like enemy shots: the flight segment (no tunnelling at speed) or the shot's body.
+                var hitIsland = TryHitIsland(segmentStart, next, p.Radius, out var stopAt);
+                p.Position = hitIsland ? stopAt : next;
                 p.PreviousPosition = segmentStart;
                 p.Life -= dt;
                 if (p.View >= 0) views?.Move(p.View, p.Position, p.Velocity);
@@ -137,9 +141,25 @@ namespace RoguePirates.V4.Weapons
                     }
                 }
 
-                if (p.Life <= 0f || p.PierceLeft <= 0)
+                if (hitIsland || p.Life <= 0f || p.PierceLeft <= 0)
                     Despawn(i, views);
             }
+        }
+
+        /// <summary>
+        /// True when the shot's flight from <paramref name="from"/> to <paramref name="to"/> meets an island collider;
+        /// <paramref name="stopAt"/> is where it stops (the contact point, or the end when only its body overlaps).
+        /// </summary>
+        static bool TryHitIsland(Vector3 from, Vector3 to, float radius, out Vector3 stopAt)
+        {
+            stopAt = to;
+            if (!IslandObstacles.IsAvailable) return false;
+            if (Physics.Linecast(from, to, out var hit, IslandObstacles.Mask, QueryTriggerInteraction.Ignore))
+            {
+                stopAt = hit.point;
+                return true;
+            }
+            return IslandObstacles.IsPositionBlocked(to, radius);
         }
 
         static bool TryHitAgentAlongSegment(Vector3 segmentStart, Vector3 segmentEnd, float projectileRadius, Vector3 agentPosition, float agentRadius)

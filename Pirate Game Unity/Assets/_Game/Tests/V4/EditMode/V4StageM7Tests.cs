@@ -522,7 +522,7 @@ namespace RoguePirates.V4.Tests
             rig.Stage.TryCompleteInteraction(0);
             rig.Tick(1f);
             Assert.IsFalse(rig.Stage.BossSummoned);
-            CollectionAssert.Contains(rig.Toasts.Shown, "Beacon failed — clear space near the beacon and try again.");
+            CollectionAssert.Contains(rig.Toasts.Shown, "Beacon failed: clear space near the beacon and try again.");
             var before = rig.Log.Count("immediate");
             rig.Stage.TryCompleteInteraction(0);
             rig.Tick(1f);
@@ -632,7 +632,7 @@ namespace RoguePirates.V4.Tests
             rig.Ship.Pos = new Vector3(0f, 0f, 290f);
             d.Tick(false, 421f);
             Assert.AreEqual(BeaconReveal.Discovered, d.Beacon);
-            CollectionAssert.Contains(rig.Toasts.Shown, "Treasury Beacon spotted — follow the guide.");
+            CollectionAssert.Contains(rig.Toasts.Shown, "Treasury Beacon spotted: follow the guide.");
         }
 
         [Test]

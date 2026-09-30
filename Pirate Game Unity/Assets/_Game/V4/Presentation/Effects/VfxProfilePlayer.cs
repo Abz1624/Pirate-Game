@@ -35,7 +35,17 @@ namespace RoguePirates.V4.Presentation.Effects
             _shipSpawned = false;
         }
 
-        public VfxSlot Slot(VfxSubject subject, string id, VfxSlotKind kind) => Library != null ? Library.Slot(subject, id, kind) : null;
+        public VfxSlot Slot(VfxSubject subject, string id, VfxSlotKind kind)
+        {
+            if (Library == null) return null;
+            var slot = Library.Slot(subject, id, kind);
+            // An elite variant without its own profile uses its base enemy's ("elite_x" → "x").
+            if (slot == null && subject == VfxSubject.Enemy && id != null && id.StartsWith(ElitePrefix, System.StringComparison.Ordinal))
+                slot = Library.Slot(subject, id.Substring(ElitePrefix.Length), kind);
+            return slot;
+        }
+
+        const string ElitePrefix = "elite_";
 
         /// <summary>Plays the slot's prefab at the pose (offset in the pose's frame); false when the slot has none.</summary>
         public bool Play(VfxSlot slot, Vector3 position, Quaternion rotation, float baseScale = 1f, Transform parent = null)
@@ -78,7 +88,10 @@ namespace RoguePirates.V4.Presentation.Effects
             _trails.Remove(target);
             if (trail.go == null) return;
             trail.go.transform.SetParent(null, true);
-            if (_pools == null || !_pools.Release(trail.go)) Destroy(trail.go);
+            if (_pools == null || !_pools.Release(trail.go))
+            {
+                if (Application.isPlaying) Destroy(trail.go); else DestroyImmediate(trail.go); // play-mode exit tears down in edit mode
+            }
         }
 
         /// <summary>Effects that do not restart with their particle systems: VFX Graph effects (the whirlpool) and the
@@ -94,8 +107,7 @@ namespace RoguePirates.V4.Presentation.Effects
         public void Spawned(int unitId, string enemyId, Vector3 position)
         {
             if (string.IsNullOrEmpty(enemyId)) return;
-            _enemyOfUnit[unitId] = enemyId;
-            Play(Slot(VfxSubject.Enemy, enemyId, VfxSlotKind.Spawn), position, Quaternion.identity);
+            _enemyOfUnit[unitId] = enemyId; // the spawn effect plays when the model appears (EnemyViewCreated), where it is
         }
 
         /// <summary>An enemy died: its own death effect, else the killing weapon's. True when the default kill effect should not play.</summary>
@@ -120,6 +132,7 @@ namespace RoguePirates.V4.Presentation.Effects
         {
             if (view == null || string.IsNullOrEmpty(enemyId)) return;
             _enemyOfView[view] = enemyId;
+            Play(Slot(VfxSubject.Enemy, enemyId, VfxSlotKind.Spawn), new Vector3(view.position.x, 0f, view.position.z), Quaternion.identity);
             Attach(Slot(VfxSubject.Enemy, enemyId, VfxSlotKind.Trail), view);
         }
 

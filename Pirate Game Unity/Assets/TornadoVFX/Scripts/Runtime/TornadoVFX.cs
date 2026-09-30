@@ -356,7 +356,13 @@ namespace TornadoFX
 
                 var vel = l.ps.velocityOverLifetime;
                 if (vel.enabled)
+                {
+                    // Unity needs all three velocity axes in the same mode: y is a range, so x and z become ranges of
+                    // their constant values ("Particle Velocity curves must all be in the same mode" otherwise).
+                    if (vel.x.mode == ParticleSystemCurveMode.Constant) vel.x = new ParticleSystem.MinMaxCurve(vel.x.constant, vel.x.constant);
+                    if (vel.z.mode == ParticleSystemCurveMode.Constant) vel.z = new ParticleSystem.MinMaxCurve(vel.z.constant, vel.z.constant);
                     vel.y = new ParticleSystem.MinMaxCurve(l.baseVelY.x * verticalSpeed, l.baseVelY.y * verticalSpeed);
+                }
 
                 float w = omega * l.spinRatio;
                 var spin = new ParticleSystem.MinMaxCurve(w * (1f - l.spinJitter), w * (1f + l.spinJitter));

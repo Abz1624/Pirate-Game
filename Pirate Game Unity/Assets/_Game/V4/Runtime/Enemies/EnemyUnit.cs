@@ -33,6 +33,14 @@ namespace RoguePirates.V4.Enemies
         public bool swordfishSpringVisual;
         public SpawnProfile spawnProfile;
         public EnemySpawnRuntimeParams patternParams;
+        /// <summary>Island routing: the side (+1/-1, 0 = not routing) chosen once when an island blocked the way, kept until
+        /// the way is clear so the agent does not flip sides and stall against the shore.</summary>
+        public int islandAvoidSide;
+        /// <summary>Seconds until the next line-of-sight check toward the goal (checks are throttled, not per frame).</summary>
+        public float islandCheckTimer;
+        /// <summary>The last island that blocked this agent (centre and radius incl. margin; radius 0 = none known).</summary>
+        public Vector3 islandCenter;
+        public float islandRadius;
     }
 
     /// <summary>Per-enemy combat state (port of V3's SaltwindCombatAgentState).</summary>

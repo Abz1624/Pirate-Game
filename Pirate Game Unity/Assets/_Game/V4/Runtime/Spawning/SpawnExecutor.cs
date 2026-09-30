@@ -114,7 +114,8 @@ namespace RoguePirates.V4.Spawning
                 if (role == FormationRole.Leader) leaderUnitId = -1;
 
                 // V3: encounters (and bosses) may fall back to spots near the ship.
-                if (!_s.Placement.TryPick(profile.placement, spawnRadius, runEncounterId > 0 || isBoss, out var position)) continue;
+                if (!SpawnPointOverride.TryTake(out var position) &&
+                    !_s.Placement.TryPick(profile.placement, spawnRadius, runEncounterId > 0 || isBoss, out position)) continue;
                 _s.Placement.OffsetGroup(profile.groupLayout, i, count, profile.placement.groupSpacing, ref position);
                 if (!_s.Placement.IsFormationPositionValid(position, spawnRadius, profile.placement)) continue;
 

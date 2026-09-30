@@ -14,7 +14,7 @@ namespace RoguePirates.V4.Presentation.World
         const string DefaultPrefabResource = "V3PlayBoundsWallSegment";
         const float ShowDistance = 32f;
         const float FadeWidth = 14f;
-        const float WallHeight = 14f;
+        const float WallHeight = 42f; // demo: 3x taller (was 14)
         const float WallThickness = 1.2f;
 
         sealed class Wall

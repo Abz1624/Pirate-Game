@@ -25,7 +25,7 @@ MonoBehaviour:
   tags: []
   baseDamage: 11.059644
   baseCooldown: 1.5
-  range: 14
+  range: 12
   baseQuantity: 1
   projectileSpeed: 16
   duration: 2
@@ -99,7 +99,7 @@ MonoBehaviour:
     minSpeed: 42
     sizeBase: 0.38
     hitRadius: 1.05
-    lifeSeconds: 1.2
+    lifeSeconds: 0.33
     muzzlePerPellet: 0
     trackPelletTargets: 0
     sideMuzzleOffset: 0.85

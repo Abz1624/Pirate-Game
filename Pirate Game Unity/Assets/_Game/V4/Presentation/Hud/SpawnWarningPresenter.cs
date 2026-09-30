@@ -72,6 +72,9 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             _arrow = new GameObject("Arrow0", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
             _arrow.transform.SetParent(transform, false);
+            // A chevron, not a bare Image (a sprite-less Image drew as an orange square).
+            _arrow.sprite = RoguePirates.V4.Foundation.UI.MinimapUiSprites.Triangle;
+            _arrow.preserveAspect = true;
             _arrow.color = new Color(1f, 0.75f, 0.35f, 0.9f);
             _arrow.raycastTarget = false;
             _arrow.rectTransform.sizeDelta = new Vector2(28f, 28f);
@@ -171,7 +174,7 @@ namespace RoguePirates.V4.Presentation.Hud
             SetArrow(true);
             _arrow.rectTransform.position = edge;
             var angle = Mathf.Atan2(screen.y - center.y, screen.x - center.x) * Mathf.Rad2Deg;
-            _arrow.rectTransform.rotation = Quaternion.Euler(0f, 0f, angle - 90f);
+            _arrow.rectTransform.rotation = Quaternion.Euler(0f, 0f, angle + 90f); // the triangle's point is at its bottom
         }
 
         void SetArrow(bool on)

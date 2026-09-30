@@ -25,7 +25,7 @@ MonoBehaviour:
   tags: []
   baseDamage: 10.838604
   baseCooldown: 1.05
-  range: 22
+  range: 16
   baseQuantity: 1
   projectileSpeed: 16
   duration: 2
@@ -81,7 +81,7 @@ MonoBehaviour:
     sizeBase: 0.35
     sizeMultiplier: 1
     minSize: 0
-    lifeSeconds: 3
+    lifeSeconds: 1.15
     spreadStepDegrees: 4
     leadWithActualSpeed: 1
     homing: 1

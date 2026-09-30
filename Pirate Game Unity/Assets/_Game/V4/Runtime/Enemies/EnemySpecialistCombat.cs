@@ -51,16 +51,16 @@ namespace RoguePirates.V4.Enemies
                     TickRepairTender(world, agentIndex, ref agent, state, dt);
                     break;
                 case SaltwindCombatArchetype.GunnerCog:
-                    TickGunnerCog(ref agent, profile, state, dt, playerPos, dist);
+                    TickGunnerCog(ref agent, profile, state, dt, playerPos, playerVelocity, dist);
                     break;
                 case SaltwindCombatArchetype.ShieldFrigate:
-                    TickShieldFrigate(ref agent, profile, state, dt, playerPos, dist);
+                    TickShieldFrigate(ref agent, profile, state, dt, playerPos, playerVelocity, dist);
                     break;
                 case SaltwindCombatArchetype.BombKetch:
                     TickBombKetch(world, ref agent, profile, state, dt, playerPos, playerVelocity, dist, playerDamage);
                     break;
                 case SaltwindCombatArchetype.NeedleSloop:
-                    TickNeedleSloop(ref agent, profile, state, dt, playerPos, dist);
+                    TickNeedleSloop(ref agent, profile, state, dt, playerPos, playerVelocity, dist);
                     break;
             }
         }
@@ -187,12 +187,16 @@ namespace RoguePirates.V4.Enemies
             agent.attackCooldown = 4f;
         }
 
+        const float GunnerVolleySpreadDegrees = 6f;
+        const float NeedleShotSpeed = 16f;
+
         void TickGunnerCog(
             ref EnemyUnit agent,
             EnemyCombatProfile profile,
             CombatAgentState state,
             float dt,
             Vector3 playerPos,
+            Vector3 playerVelocity,
             float dist)
         {
             if (dist < 5f || dist > 22f) return;
@@ -221,10 +225,15 @@ namespace RoguePirates.V4.Enemies
             var hostiles = Shots;
             if (hostiles != null)
             {
+                // Lead the volley at firing time and fan it (-6, 0, +6 degrees) instead of stacking three shots on one line.
+                var aim = EnemySimulation.AimLed(
+                    agent.position, playerPos, playerVelocity, profile.projectileSpeed, state.committedDirection);
+                var muzzle = agent.position + aim * (agent.radius + 1.2f) + Vector3.up * 0.55f;
+                var shotDistance = EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, profile.projectileSpeed);
                 for (var shot = 0; shot < 3; shot++)
                 {
-                    var muzzle = agent.position + state.committedDirection * (agent.radius + 1.2f) + Vector3.up * 0.55f;
-                    hostiles.TrySpawn(muzzle, state.committedDirection, profile.projectileSpeed, agent.damage * 0.9f, 1.5f, 0.42f, 0.32f);
+                    var shotDir = Quaternion.Euler(0f, (shot - 1) * GunnerVolleySpreadDegrees, 0f) * aim;
+                    hostiles.TrySpawn(muzzle, shotDir, profile.projectileSpeed, agent.damage * 0.9f, 1.5f, 0.42f, 0.32f, shotDistance);
                 }
             }
 
@@ -238,6 +247,7 @@ namespace RoguePirates.V4.Enemies
             CombatAgentState state,
             float dt,
             Vector3 playerPos,
+            Vector3 playerVelocity,
             float dist)
         {
             if (dist < 8f || dist > 16f) return;
@@ -260,9 +270,10 @@ namespace RoguePirates.V4.Enemies
                 dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
                 {
-                    dir.Normalize();
+                    dir = EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, profile.projectileSpeed, dir);
                     var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
-                    hostiles.TrySpawn(muzzle, dir, profile.projectileSpeed, agent.damage, 1.4f, 0.45f, 0.35f);
+                    hostiles.TrySpawn(muzzle, dir, profile.projectileSpeed, agent.damage, 1.4f, 0.45f, 0.35f,
+                        EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, profile.projectileSpeed));
                 }
             }
 
@@ -308,6 +319,7 @@ namespace RoguePirates.V4.Enemies
             CombatAgentState state,
             float dt,
             Vector3 playerPos,
+            Vector3 playerVelocity,
             float dist)
         {
             if (dist < 12f || dist > 24f) return;
@@ -330,9 +342,10 @@ namespace RoguePirates.V4.Enemies
                 dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
                 {
-                    dir.Normalize();
+                    dir = EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, NeedleShotSpeed, dir);
                     var muzzle = agent.position + dir * (agent.radius + 1.3f) + Vector3.up * 0.55f;
-                    hostiles.TrySpawn(muzzle, dir, 16f, agent.damage, 1.2f, 0.35f, 0.28f);
+                    hostiles.TrySpawn(muzzle, dir, NeedleShotSpeed, agent.damage, 1.2f, 0.35f, 0.28f,
+                        EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, NeedleShotSpeed));
                 }
             }
 

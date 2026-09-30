@@ -30,7 +30,7 @@ MonoBehaviour:
     maxActiveFromProfile: 0
     pauseWhenRunPaused: 1
   placement:
-    requireOutsidePlayerFov: 1
+    requireOutsidePlayerFov: 0
     distanceMin: 10.8
     distanceMax: 18
     viewportMargin: 0.08

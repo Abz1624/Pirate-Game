@@ -105,7 +105,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.V3.V3PlayBoundsWallSegment
   tint: {r: 0.78, g: 0.18, b: 0.22, a: 0.28}
   texture: {fileID: 0}
-  textureTiling: {x: 1, y: 1}
+  textureTiling: {x: 1, y: 3}
   textureScrollDirection: {x: 0, y: 1}
   textureScrollSpeed: 0.25
   materialTemplate: {fileID: 2100000, guid: 78236a05395ed604ea8b666e359cdf29, type: 2}

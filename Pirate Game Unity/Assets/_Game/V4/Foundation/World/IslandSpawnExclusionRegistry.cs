@@ -80,6 +80,30 @@ namespace RoguePirates.V4.Foundation.World
             return true;
         }
 
+        /// <summary>
+        /// The zone whose edge is nearest <paramref name="point"/> (within <paramref name="slack"/> metres outside it), so
+        /// enemy steering can route around the whole island rather than one collider. Allocation-free.
+        /// </summary>
+        public static bool TryGetNearestZone(Vector3 point, float slack, out Vector3 center, out float radius)
+        {
+            center = default;
+            radius = 0f;
+            var best = float.MaxValue;
+            for (var i = 0; i < Zones.Count; i++)
+            {
+                var zone = Zones[i];
+                var dx = point.x - zone.Center.x;
+                var dz = point.z - zone.Center.z;
+                var outside = Mathf.Sqrt(dx * dx + dz * dz) - zone.Radius;
+                if (outside > slack || outside >= best) continue;
+                best = outside;
+                center = zone.Center;
+                radius = zone.Radius;
+            }
+
+            return best < float.MaxValue;
+        }
+
         public static bool TryGetExtents(out float minX, out float maxX, out float minZ, out float maxZ)
         {
             minX = minZ = float.MaxValue;

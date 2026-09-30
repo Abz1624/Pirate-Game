@@ -39,6 +39,21 @@ namespace RoguePirates.V4.Spawning
     }
 
     /// <summary>Spawn positions: off-screen ring around the ship, group offsets and validity (islands, bounds, view).</summary>
+    /// <summary>Demo (30 Sep 2026): a one-shot spawn point for the next pick (the boss rises where its whirlpool swirled).</summary>
+    public static class SpawnPointOverride
+    {
+        static Vector3? _next;
+        public static void Set(Vector3 position) => _next = position;
+        public static void Clear() => _next = null;
+        public static bool TryTake(out Vector3 position)
+        {
+            position = _next ?? default;
+            var had = _next.HasValue;
+            _next = null;
+            return had;
+        }
+    }
+
     public interface ISpawnPlacement
     {
         bool Ready { get; }

@@ -39,7 +39,6 @@ namespace RoguePirates.V4.Tests
             RoguePirates.V4.Foundation.Combat.CombatDebugOverlays.SetVisible(false);
             _isolation?.Dispose();
             _isolation = null;
-            RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Disabled = false;
         }
 
         static IEnumerator WaitForPlaying()

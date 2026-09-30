@@ -26,7 +26,7 @@ MonoBehaviour:
   - Gunnery
   baseDamage: 5.4652953
   baseCooldown: 0.6
-  range: 16
+  range: 12
   baseQuantity: 1
   projectileSpeed: 16
   duration: 2
@@ -82,7 +82,7 @@ MonoBehaviour:
     sizeBase: 0.35
     sizeMultiplier: 0.55
     minSize: 0.32
-    lifeSeconds: 2.4
+    lifeSeconds: 0.86
     spreadStepDegrees: 4
     leadWithActualSpeed: 0
     homing: 1

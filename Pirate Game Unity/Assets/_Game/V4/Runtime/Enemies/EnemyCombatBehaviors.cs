@@ -59,7 +59,7 @@ namespace RoguePirates.V4.Enemies
             switch (profile.archetype)
             {
                 case SaltwindCombatArchetype.DeckhandDinghy:
-                    velocity = TickDeckhand(ref agent, state, dir, dist, dt, playerVelocity);
+                    velocity = TickDeckhand(ref agent, state, dir, dist, dt, playerPos, playerVelocity);
                     return true;
                 case SaltwindCombatArchetype.Shark:
                 case SaltwindCombatArchetype.DrownedPursuer:
@@ -155,10 +155,10 @@ namespace RoguePirates.V4.Enemies
             switch (profile.archetype)
             {
                 case SaltwindCombatArchetype.Cannonboat:
-                    TrySingleProjectileAttack(world, ref agent, def, profile, state, playerPos, dist, playerDamage);
+                    TrySingleProjectileAttack(world, ref agent, def, profile, state, playerPos, playerVelocity, dist, playerDamage);
                     break;
                 case SaltwindCombatArchetype.MantaRay:
-                    TrySpreadVolley(world, ref agent, def, profile, state, playerPos, dist, dt, playerDamage);
+                    TrySpreadVolley(world, ref agent, def, profile, state, playerPos, playerVelocity, dist, dt, playerDamage);
                     break;
                 case SaltwindCombatArchetype.BombBoat:
                     TickBombBoatDetonation(world, ref agent, def, state, playerPos, dist, playerDamage);
@@ -193,6 +193,7 @@ namespace RoguePirates.V4.Enemies
             Vector3 dir,
             float dist,
             float dt,
+            Vector3 playerPos,
             Vector3 playerVelocity)
         {
             state.contactDisabled = state.phase == EnemyCombatPhase.Recover;
@@ -212,10 +213,10 @@ namespace RoguePirates.V4.Enemies
                 return -dir * (agent.moveSpeed * 0.9f);
             }
 
-            playerVelocity.y = 0f;
-            var ringBias = Vector3.Cross(Vector3.up, dir) * Mathf.Sin(agent.id * 1.1f + agent.id * 0.17f) * 0.38f;
-            var wobble = Vector3.Cross(Vector3.up, dir) * Mathf.Sin(agent.id * 0.7f + Time.time * 2.2f) * 0.18f;
-            var approach = (dir + ringBias + wobble).normalized;
+            // Cut the player off and close from a ring slot (replaces the fixed per-id side bias).
+            var pursuit = EnemySimulation.GetPursuitDirection(agent.id, agent.position, agent.moveSpeed, playerPos, playerVelocity);
+            var wobble = Vector3.Cross(Vector3.up, pursuit) * Mathf.Sin(agent.id * 0.7f + Time.time * 2.2f) * 0.18f;
+            var approach = (pursuit + wobble).normalized;
             var speedMult = dist > 10f ? 1.02f : dist > 5f ? 1.12f : 1.22f;
             return approach * (agent.moveSpeed * speedMult);
         }
@@ -236,16 +237,8 @@ namespace RoguePirates.V4.Enemies
                 return -dir * (agent.moveSpeed * 0.85f);
             }
 
-            playerVelocity.y = 0f;
-            if (playerVelocity.sqrMagnitude > 0.5f && dist > 9f)
-            {
-                var leadTime = Mathf.Clamp(dist / Mathf.Max(playerVelocity.magnitude, 0.5f), 0.15f, 0.55f);
-                var predicted = playerPos + playerVelocity * leadTime;
-                var toLead = predicted - agent.position;
-                toLead.y = 0f;
-                if (toLead.sqrMagnitude > 0.04f)
-                    dir = toLead.normalized;
-            }
+            // Cut the player off (intercept point) and, when close, come in from a ring slot so a pack surrounds.
+            dir = EnemySimulation.GetPursuitDirection(agent.id, agent.position, agent.moveSpeed, playerPos, playerVelocity);
 
             var speed = dist > 16f ? agent.moveSpeed * 0.82f
                 : dist > 7f ? agent.moveSpeed * 1.05f
@@ -473,9 +466,18 @@ namespace RoguePirates.V4.Enemies
                     state.contactDisabled = true;
                     if (state.phaseTimer <= 0f)
                     {
+                        state.committedDirection = PredictChargeDirection(agent.position, playerPos, playerVelocity, profile);
+                        if (ChargeLaneBlocked(agent, state.committedDirection, GetChargeLength(agent, profile)))
+                        {
+                            // An island is in the way: go back to approaching (island pathing takes it round) instead
+                            // of ramming the shore and sitting out a cooldown.
+                            state.phase = EnemyCombatPhase.Approach;
+                            state.contactDisabled = false;
+                            return Vector3.zero;
+                        }
+
                         state.phase = EnemyCombatPhase.Execute;
                         state.phaseTimer = profile.chargeDuration;
-                        state.committedDirection = PredictChargeDirection(agent.position, playerPos, playerVelocity, profile);
                         state.attackId++;
                         Budget.TryReserveCharge(state.attackId);
                     }
@@ -487,10 +489,7 @@ namespace RoguePirates.V4.Enemies
                     return Vector3.zero;
                 case EnemyCombatPhase.Execute:
                     state.phaseTimer -= dt;
-                    var speed = profile.archetype is SaltwindCombatArchetype.Hammerhead or SaltwindCombatArchetype.EliteHammerhead
-                        ? Mathf.Max(agent.moveSpeed * profile.chargeSpeedMult, 11f)
-                        : agent.moveSpeed * profile.chargeSpeedMult;
-                    var vel = state.committedDirection * speed;
+                    var vel = state.committedDirection * GetChargeSpeed(agent, profile);
                     if (IslandObstacles.IsAvailable)
                     {
                         var next = agent.position + vel * dt;
@@ -499,10 +498,13 @@ namespace RoguePirates.V4.Enemies
                         var corrected = IslandObstacles.Depenetrate(next, radius, height);
                         if ((corrected - next).sqrMagnitude > 0.04f)
                         {
+                            // Hit an island: a short recovery that already turns back toward the player (not a freeze).
                             state.phase = EnemyCombatPhase.Recover;
-                            state.phaseTimer = profile.chargeCooldown;
+                            state.phaseTimer = Mathf.Min(profile.chargeCooldown, IslandBumpRecoverSeconds);
                             state.contactDisabled = true;
-                            return Vector3.zero;
+                            state.committedDirection = EnemySimulation.GetPursuitDirection(
+                                agent.id, agent.position, agent.moveSpeed, playerPos, playerVelocity, 0f);
+                            return GetRecoverDrift(agent, state, profile, playerPos, playerVelocity);
                         }
                     }
 
@@ -542,23 +544,72 @@ namespace RoguePirates.V4.Enemies
                         state.chargePassCount = 0;
                         state.contactDisabled = false;
                     }
-                    return Vector3.zero;
+                    return GetRecoverDrift(agent, state, profile, playerPos, playerVelocity);
                 default:
                 {
-                    var engageDist = profile.archetype == SaltwindCombatArchetype.Hammerhead ? 22f : profile.preferredRange + 6f;
-                    if (dist < engageDist)
+                    // Engage from about the charge's own length, so the charge reaches the player (22 m left it idling).
+                    var chargeLength = GetChargeLength(agent, profile);
+                    if (dist < chargeLength)
                     {
-                        state.phase = EnemyCombatPhase.Telegraph;
-                        state.phaseTimer = Mathf.Max(profile.chargeWindUp, EncounterBudget.MinChargeWarning);
-                        state.committedDirection = PredictChargeDirection(agent.position, playerPos, playerVelocity, profile);
+                        var lane = PredictChargeDirection(agent.position, playerPos, playerVelocity, profile);
+                        if (!ChargeLaneBlocked(agent, lane, chargeLength))
+                        {
+                            state.phase = EnemyCombatPhase.Telegraph;
+                            state.phaseTimer = Mathf.Max(profile.chargeWindUp, EncounterBudget.MinChargeWarning);
+                            state.committedDirection = lane;
+                        }
                     }
 
                     var approachMult = profile.archetype == SaltwindCombatArchetype.Hammerhead ? 1.05f
                         : profile.archetype == SaltwindCombatArchetype.RammerRaft ? 0.55f
                         : 0.85f;
-                    return dir * (agent.moveSpeed * approachMult);
+                    var approachDir = EnemySimulation.GetPursuitDirection(agent.id, agent.position, agent.moveSpeed, playerPos, playerVelocity);
+                    return approachDir * (agent.moveSpeed * approachMult);
                 }
             }
+        }
+
+        const float IslandBumpRecoverSeconds = 0.6f;
+        const float RecoverDriftSpeedMult = 0.6f;
+        const float MinChargeEngage = 8f;
+        const float MaxChargeEngage = 18f;
+
+        static float GetChargeSpeed(in EnemyUnit agent, EnemyCombatProfile profile) =>
+            profile.archetype is SaltwindCombatArchetype.Hammerhead or SaltwindCombatArchetype.EliteHammerhead
+                ? Mathf.Max(agent.moveSpeed * profile.chargeSpeedMult, 11f)
+                : agent.moveSpeed * profile.chargeSpeedMult;
+
+        /// <summary>How far one charge travels (speed x duration, a little short so it ends on the player), clamped.</summary>
+        static float GetChargeLength(in EnemyUnit agent, EnemyCombatProfile profile) =>
+            Mathf.Clamp(GetChargeSpeed(agent, profile) * profile.chargeDuration * 0.95f, MinChargeEngage, MaxChargeEngage);
+
+        /// <summary>After a charge the charger curves back toward the player at reduced speed instead of sitting still.</summary>
+        static Vector3 GetRecoverDrift(in EnemyUnit agent, CombatAgentState state, EnemyCombatProfile profile, Vector3 playerPos, Vector3 playerVelocity)
+        {
+            var toward = EnemySimulation.GetPursuitDirection(agent.id, agent.position, agent.moveSpeed, playerPos, playerVelocity, 0f);
+            var heading = toward;
+            if (state.committedDirection.sqrMagnitude > 0.01f)
+            {
+                var progress = 1f - Mathf.Clamp01(state.phaseTimer / Mathf.Max(0.1f, profile.chargeCooldown));
+                var from = state.committedDirection.normalized;
+                heading = Vector3.Dot(from, toward) < -0.95f
+                    ? Vector3.Cross(Vector3.up, from) * state.orbitSign
+                    : Vector3.Slerp(from, toward, 0.3f + 0.7f * progress);
+                heading.y = 0f;
+                heading = heading.sqrMagnitude > 0.0001f ? heading.normalized : toward;
+            }
+
+            return heading * (agent.moveSpeed * RecoverDriftSpeedMult);
+        }
+
+        /// <summary>Would a charge along <paramref name="direction"/> hit an island within <paramref name="length"/>?</summary>
+        static bool ChargeLaneBlocked(in EnemyUnit agent, Vector3 direction, float length)
+        {
+            if (!IslandObstacles.IsAvailable || direction.sqrMagnitude < 0.01f)
+                return false;
+            var origin = new Vector3(agent.position.x, Mathf.Max(agent.position.y, 0f) + 0.5f, agent.position.z);
+            return Physics.SphereCast(origin, Mathf.Max(0.2f, agent.radius * 0.6f), direction.normalized, out _, length,
+                IslandObstacles.Mask, QueryTriggerInteraction.Ignore);
         }
 
         Vector3 PredictChargeDirection(Vector3 from, Vector3 playerPos, Vector3 playerVelocity, EnemyCombatProfile profile)
@@ -675,7 +726,8 @@ namespace RoguePirates.V4.Enemies
                 return Vector3.zero;
             }
 
-            return dir * (agent.moveSpeed * 1.5f);
+            return EnemySimulation.GetPursuitDirection(agent.id, agent.position, agent.moveSpeed, playerPos, playerVelocity, 0f)
+                * (agent.moveSpeed * 1.5f);
         }
 
         Vector3 TickRepairTenderApproach(
@@ -795,6 +847,7 @@ namespace RoguePirates.V4.Enemies
             EnemyCombatProfile profile,
             CombatAgentState state,
             Vector3 playerPos,
+            Vector3 playerVelocity,
             float dist,
             DamageReceiver playerDamage)
         {
@@ -809,9 +862,10 @@ namespace RoguePirates.V4.Enemies
             var dir = playerPos - agent.position;
             dir.y = 0f;
             if (dir.sqrMagnitude < 0.01f) return;
-            dir.Normalize();
+            dir = EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, profile.projectileSpeed, dir);
             var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
-            if (!hostiles.TrySpawn(muzzle, dir, profile.projectileSpeed, agent.damage, 1.5f, 0.45f, 0.35f))
+            if (!hostiles.TrySpawn(muzzle, dir, profile.projectileSpeed, agent.damage, 1.5f, 0.45f, 0.35f,
+                    EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, profile.projectileSpeed)))
                 return;
 
             agent.attackCooldown = profile.attackCooldown;
@@ -825,6 +879,7 @@ namespace RoguePirates.V4.Enemies
             EnemyCombatProfile profile,
             CombatAgentState state,
             Vector3 playerPos,
+            Vector3 playerVelocity,
             float dist,
             float dt,
             DamageReceiver playerDamage)
@@ -834,7 +889,7 @@ namespace RoguePirates.V4.Enemies
                 state.phaseTimer -= dt;
                 if (state.phaseTimer <= 0f)
                 {
-                    FireFan(agent, def, profile, playerPos);
+                    FireFan(agent, def, profile, playerPos, playerVelocity);
                     state.phase = EnemyCombatPhase.Recover;
                     state.phaseTimer = 1.6f;
                     agent.attackCooldown = profile.attackCooldown;
@@ -858,14 +913,16 @@ namespace RoguePirates.V4.Enemies
             state.phaseTimer = profile.attackWindUp;
         }
 
-        void FireFan(in EnemyUnit agent, EnemyDefinition def, EnemyCombatProfile profile, Vector3 playerPos)
+        void FireFan(in EnemyUnit agent, EnemyDefinition def, EnemyCombatProfile profile, Vector3 playerPos, Vector3 playerVelocity)
         {
             var hostiles = Shots;
             if (hostiles == null) return;
             var dir = playerPos - agent.position;
             dir.y = 0f;
             if (dir.sqrMagnitude < 0.01f) return;
-            dir.Normalize();
+            dir = EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, profile.projectileSpeed, dir);
+            var shotDistance = EnemySimulation.LedShotDistance(
+                agent.position + dir * (agent.radius + 1.1f), playerPos, playerVelocity, profile.projectileSpeed);
             var count = Mathf.Max(1, profile.projectileCount);
             var spread = profile.spreadDegrees;
             var half = spread * 0.5f;
@@ -874,7 +931,7 @@ namespace RoguePirates.V4.Enemies
                 var angle = count <= 1 ? 0f : -half + spread / (count - 1) * i;
                 var shotDir = Quaternion.Euler(0f, angle, 0f) * dir;
                 var muzzle = agent.position + shotDir * (agent.radius + 1.1f) + Vector3.up * 0.55f;
-                hostiles.TrySpawn(muzzle, shotDir, profile.projectileSpeed, agent.damage * 0.9f, 1.6f, 0.42f, 0.32f);
+                hostiles.TrySpawn(muzzle, shotDir, profile.projectileSpeed, agent.damage * 0.9f, 1.6f, 0.42f, 0.32f, shotDistance);
             }
         }
 
@@ -974,12 +1031,15 @@ namespace RoguePirates.V4.Enemies
             var hostiles = Shots;
             if (hostiles != null)
             {
-                var dir = (state.committedPosition - agent.position).normalized;
+                // Lead the shot from where the player is now (the telegraph-time guess is the fallback). A profile without
+                // a shot speed (the harrier's data has 0) uses the runtime default of 9 m/s, else its shots only drop.
+                var shotSpeed = profile.projectileSpeed > 0f ? profile.projectileSpeed : 9f;
+                var dir = EnemySimulation.AimLed(
+                    agent.position, playerPos, playerVelocity, shotSpeed, state.committedPosition - agent.position);
+                var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
+                var shotDistance = EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, shotSpeed);
                 for (var i = 0; i < 2; i++)
-                {
-                    var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
-                    hostiles.TrySpawn(muzzle, dir, profile.projectileSpeed, agent.damage, 1.4f, 0.4f, 0.32f);
-                }
+                    hostiles.TrySpawn(muzzle, dir, shotSpeed, agent.damage, 1.4f, 0.4f, 0.32f, shotDistance);
             }
 
             state.phase = EnemyCombatPhase.Approach;

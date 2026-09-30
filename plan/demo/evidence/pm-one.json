@@ -1,0 +1,20 @@
+{
+  "status": "completed",
+  "duration": 5.84,
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.LegacyFeeds_PublishBeaconBossLandmarkAndOffers_Once",
+      "Status": "Passed",
+      "Duration": 5.6780501,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

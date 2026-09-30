@@ -32,7 +32,6 @@ namespace RoguePirates.V4.Tests
         {
             yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
-            RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Disabled = false;
             StageBalanceProfileContext.ResetForTests();
             _isolation?.Dispose();
             _isolation = null;

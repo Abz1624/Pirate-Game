@@ -1,3 +1,4 @@
+using RoguePirates.V4.Foundation.World;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -204,6 +205,7 @@ namespace RoguePirates.V4.Foundation.Player
             }
 
             UpdateSmoothedAnchor(anchorPosition);
+            _smoothedAnchor = ClampAnchorToPlayArea(_smoothedAnchor);
 
             var desiredPosition = GetDesiredPosition(_smoothedAnchor);
             transform.position = desiredPosition;
@@ -216,7 +218,7 @@ namespace RoguePirates.V4.Foundation.Player
 
             CacheTargetBody();
             var anchorPosition = GetAnchorPosition();
-            _smoothedAnchor = anchorPosition;
+            _smoothedAnchor = IsThirdPersonView ? anchorPosition : ClampAnchorToPlayArea(anchorPosition);
             _anchorVelocity = Vector3.zero;
             _anchorInitialized = true;
 
@@ -254,6 +256,75 @@ namespace RoguePirates.V4.Foundation.Player
         }
 
         Vector3 GetAnchorPosition() => target.position;
+
+        [Tooltip("Demo: the view stops at the play area's walls (and at the storm's edge once it closes in), so the sea beyond is never shown.")]
+        [SerializeField] bool clampToPlayArea = true;
+        [Tooltip("While clamped to the storm edge, the ship stays at least this far inside the view (m).")]
+        [SerializeField] float shipViewMargin = 4f;
+        Camera _viewCamera;
+
+        /// <summary>
+        /// Moves the follow point so the camera's footprint on the water (its four view corners on the sea plane) stays
+        /// inside the play area; once the storm is shrinking the safe area, inside the storm edge too, as long as the ship
+        /// stays on screen. A view wider than the area centres on it.
+        /// </summary>
+        Vector3 ClampAnchorToPlayArea(Vector3 anchor)
+        {
+            if (!clampToPlayArea || PlayBounds.HalfExtentX <= 0f || PlayBounds.HalfExtentZ <= 0f) return anchor;
+            if (_viewCamera == null) _viewCamera = GetComponent<Camera>();
+            if (_viewCamera == null) return anchor;
+
+            var pos = GetDesiredPosition(anchor);
+            var rot = GetDesiredRotation(pos);
+            var tan = Mathf.Tan(_viewCamera.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            var aspect = _viewCamera.aspect;
+            // The footprint's middle row gives the sideways reach at the ship's depth (the tilted view's far corners spread
+            // much wider and would pull the camera far off the ship); the bottom and top edge centres give the near and
+            // far reach. The tall edge walls hide the little that the far corners see beyond.
+            float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
+            for (var i = 0; i < 4; i++)
+            {
+                var vx = i == 0 ? -tan * aspect : i == 1 ? tan * aspect : 0f;
+                var vy = i == 2 ? -tan : i == 3 ? tan : 0f;
+                var dir = rot * new Vector3(vx, vy, 1f);
+                if (dir.y > -0.01f) return anchor; // the view reaches the horizon: no footprint to clamp
+                var hit = pos + dir * (-pos.y / dir.y);
+                var off = hit - anchor;
+                minX = Mathf.Min(minX, off.x); maxX = Mathf.Max(maxX, off.x);
+                minZ = Mathf.Min(minZ, off.z); maxZ = Mathf.Max(maxZ, off.z);
+            }
+
+            var c = PlayBounds.Center;
+            var result = anchor;
+            if (PlayBounds.UsesProfileStormSafe && PlayBounds.StormSafeScale < 0.999f)
+            {
+                var sx = (PlayBounds.HalfExtentX - PlayBounds.StormEdgeMargin) * PlayBounds.StormSafeScale;
+                var sz = (PlayBounds.HalfExtentZ - PlayBounds.StormEdgeMargin) * PlayBounds.StormSafeScale;
+                result.x = ClampAxis(result.x, c.x, sx, minX, maxX);
+                result.z = ClampAxis(result.z, c.z, sz, minZ, maxZ);
+            }
+            result.x = ClampAxis(result.x, c.x, PlayBounds.HalfExtentX, minX, maxX);
+            result.z = ClampAxis(result.z, c.z, PlayBounds.HalfExtentZ, minZ, maxZ);
+            // The ship always stays on screen.
+            var shipPos = target.position;
+            result.x = KeepInView(result.x, shipPos.x, minX, maxX);
+            result.z = KeepInView(result.z, shipPos.z, minZ, maxZ);
+            return result;
+        }
+
+        static float ClampAxis(float value, float center, float half, float minOffset, float maxOffset)
+        {
+            var lo = center - half - minOffset;
+            var hi = center + half - maxOffset;
+            return lo > hi ? center - (minOffset + maxOffset) * 0.5f : Mathf.Clamp(value, lo, hi);
+        }
+
+        float KeepInView(float value, float ship, float minOffset, float maxOffset)
+        {
+            var lo = ship - maxOffset + shipViewMargin;
+            var hi = ship - minOffset - shipViewMargin;
+            return lo > hi ? value : Mathf.Clamp(value, lo, hi);
+        }
 
         Vector3 GetDesiredPosition(Vector3 anchorPosition)
         {

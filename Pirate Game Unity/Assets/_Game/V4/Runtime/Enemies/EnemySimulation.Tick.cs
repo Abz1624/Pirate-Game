@@ -39,7 +39,7 @@ namespace RoguePirates.V4.Enemies
                     desiredVelocity = e.velocity;
                 }
 
-                MoveAgent(ref e, dt, desiredVelocity, def);
+                MoveAgent(ref e, dt, desiredVelocity, def, playerPos);
                 e.position.y = def.visualHeightOffset;
                 if (_settings.collideWithIslands && IslandObstacles.IsAvailable)
                 {
@@ -53,7 +53,7 @@ namespace RoguePirates.V4.Enemies
                 if (_params.CombatEnabled && _params.UsesCombatBehavior(def.id))
                     _services.Behaviors.TickCombat(this, i, ref e, def, dt, playerPos, playerDamage);
                 else
-                    TickRangedAttack(ref e, def, dt, playerPos, dist, playerDamage);
+                    TickRangedAttack(ref e, def, dt, playerPos, playerVelocity, dist, playerDamage);
                 var playerRadius = GetPlayerContactRadius(playerDamage);
                 var contactRange = e.radius + playerRadius;
                 if (def.category == EnemyCategory.Creature && !def.isBoss && !def.isMiniboss)
@@ -238,14 +238,17 @@ namespace RoguePirates.V4.Enemies
                         else
                             push = new Vector3((self.id % 2 == 0 ? 1f : -1f) * minDist * 0.5f, 0f, 0f);
 
-                        self.position += push;
-                        other.position -= push;
+                        // Neither is shoved onto an island; what one cannot take, the other does.
+                        var selfPush = ClipIslandPush(self.position, push);
+                        var otherPush = ClipIslandPush(other.position, -push - (push - selfPush));
+                        self.position += selfPush;
+                        other.position += otherPush;
                     }
                 }
             }
         }
 
-        void MoveAgent(ref EnemyUnit e, float dt, Vector3 desiredVelocity, EnemyDefinition def)
+        void MoveAgent(ref EnemyUnit e, float dt, Vector3 desiredVelocity, EnemyDefinition def, Vector3 playerPos)
         {
             var delta = e.velocity * dt;
             if (!_settings.collideWithIslands || !IslandObstacles.IsAvailable)
@@ -258,13 +261,22 @@ namespace RoguePirates.V4.Enemies
             var preferredDirection = desiredVelocity;
             preferredDirection.y = 0f;
 
+            var steerBias = e.id;
+            if (!e.isBoss && e.knockbackTimer <= 0f && !IsCommittedDash(e))
+            {
+                RouteAroundIslands(ref e, dt, ref preferredDirection, collisionRadius, playerPos);
+                // The contact slide turns the same way as the route (its tangent convention: +1 = Cross(up, normal)).
+                if (e.islandAvoidSide != 0)
+                    steerBias = e.islandAvoidSide > 0 ? 0 : 1;
+            }
+
             e.velocity = IslandObstacles.ApplyAvoidanceSteering(
                 e.position,
                 e.velocity,
                 preferredDirection,
                 collisionRadius,
                 _settings.islandAvoidanceProbeDistance,
-                e.id);
+                steerBias);
 
             delta = e.velocity * dt;
             var height = IslandObstacles.GetCollisionHeight(collisionRadius);
@@ -277,6 +289,139 @@ namespace RoguePirates.V4.Enemies
                 preferredDirection);
 
             e.position = IslandObstacles.Depenetrate(e.position, collisionRadius, height);
+        }
+
+        const float IslandCheckInterval = 0.2f;
+        const float IslandRouteLookahead = 18f;
+        const float IslandRouteShortLookahead = 10f;
+
+        /// <summary>A committed dash (charge, lunge, bomb run) keeps its line; the charge code handles islands itself.</summary>
+        bool IsCommittedDash(in EnemyUnit e) =>
+            _params.CombatEnabled && _states.TryGet(e.id, out var state) && state.phase == EnemyCombatPhase.Execute;
+
+        /// <summary>
+        /// Island pathing: while an island blocks the way to the goal, steer along its shore on the side chosen when it was
+        /// first seen (the side the goal lies on), held until the way is clear, and hug harder the nearer the agent is.
+        /// Without this, agents pushed straight at the player pile up on the near shore. Physics checks are throttled.
+        /// </summary>
+        void RouteAroundIslands(ref EnemyUnit e, float dt, ref Vector3 preferredDirection, float collisionRadius, Vector3 playerPos)
+        {
+            var speed = preferredDirection.magnitude;
+            if (speed < 0.05f)
+                return;
+            var goalDir = preferredDirection / speed;
+
+            e.islandCheckTimer -= dt;
+            if (e.islandCheckTimer <= 0f)
+            {
+                e.islandCheckTimer = IslandCheckInterval;
+                UpdateIslandRoute(ref e, goalDir, collisionRadius, playerPos);
+            }
+
+            if (e.islandAvoidSide == 0)
+                return;
+
+            var radial = e.position - e.islandCenter;
+            radial.y = 0f;
+            var d = radial.magnitude;
+            if (d < 0.01f)
+                return;
+            radial /= d;
+
+            // The goal now lies away from the island: the way is open.
+            if (Vector3.Dot(goalDir, radial) > 0.2f)
+            {
+                e.islandAvoidSide = 0;
+                return;
+            }
+
+            var tangent = Vector3.Cross(Vector3.up, radial) * e.islandAvoidSide;
+            var hold = Mathf.Max(1f, e.islandRadius);
+            var radialCorrection = Mathf.Clamp((hold - d) / hold * 2f, -0.5f, 0.8f);
+            var around = (tangent + radial * radialCorrection).normalized;
+            if (Vector3.Dot(goalDir, around) < -0.95f)
+                around = tangent;
+
+            var nearness = Mathf.Clamp01(1f - (d - hold) / 8f);
+            var routed = Vector3.Slerp(goalDir, around, Mathf.Lerp(0.35f, 1f, nearness));
+            routed.y = 0f;
+            if (routed.sqrMagnitude < 0.0001f)
+                return;
+            routed.Normalize();
+
+            // Turn the whole velocity (separation included) by the same amount the goal was turned.
+            e.velocity = Quaternion.FromToRotation(goalDir, routed) * e.velocity;
+            e.velocity.y = 0f;
+            preferredDirection = routed * speed;
+        }
+
+        /// <summary>One throttled look toward the goal (the player when heading at it, else a short look ahead).</summary>
+        void UpdateIslandRoute(ref EnemyUnit e, Vector3 goalDir, float collisionRadius, Vector3 playerPos)
+        {
+            var toPlayer = playerPos - e.position;
+            toPlayer.y = 0f;
+            var distToPlayer = toPlayer.magnitude;
+            var lookahead = IslandRouteShortLookahead;
+            if (distToPlayer > 0.01f && Vector3.Dot(goalDir, toPlayer / distToPlayer) > 0.7f)
+                lookahead = Mathf.Min(IslandRouteLookahead, distToPlayer);
+            if (lookahead < 1.5f)
+            {
+                e.islandAvoidSide = 0;
+                return;
+            }
+
+            // A thin probe, so an agent already touching the shore still sees it (casts ignore colliders they start inside).
+            var origin = new Vector3(e.position.x, Mathf.Max(e.position.y, 0f) + 0.5f, e.position.z);
+            var probeRadius = Mathf.Max(0.2f, collisionRadius * 0.5f);
+            if (!Physics.SphereCast(origin, probeRadius, goalDir, out var hit, lookahead, IslandObstacles.Mask, QueryTriggerInteraction.Ignore))
+            {
+                e.islandAvoidSide = 0;
+                return;
+            }
+
+            if (!IslandSpawnExclusionRegistry.TryGetNearestZone(hit.point, 3f, out var center, out var radius))
+            {
+                var bounds = hit.collider != null ? hit.collider.bounds : new Bounds(hit.point, Vector3.one);
+                center = bounds.center;
+                radius = Mathf.Max(bounds.extents.x, bounds.extents.z) + 2f;
+            }
+
+            center.y = 0f;
+            var sameIsland = e.islandAvoidSide != 0 && (center - e.islandCenter).sqrMagnitude < 1f;
+            e.islandCenter = center;
+            e.islandRadius = radius;
+            if (sameIsland)
+                return;
+
+            // The side is chosen once: the way round on which the goal lies (sign of to-centre x goal). A goal dead
+            // behind the centre keeps the way the agent is already drifting.
+            var toCenter = center - e.position;
+            toCenter.y = 0f;
+            var side = toCenter.x * goalDir.z - toCenter.z * goalDir.x;
+            if (Mathf.Abs(side) < 0.1f * toCenter.magnitude)
+                side = toCenter.x * e.velocity.z - toCenter.z * e.velocity.x;
+            e.islandAvoidSide = side < 0f ? -1 : 1;
+        }
+
+        /// <summary>
+        /// Removes the part of a crowding push that points into a nearby island (an island spawn-exclusion zone), so
+        /// separation and overlap resolution never shove an agent onto rock.
+        /// </summary>
+        static Vector3 ClipIslandPush(Vector3 position, Vector3 push)
+        {
+            if (IslandSpawnExclusionRegistry.Count == 0 || push.sqrMagnitude < 1e-8f)
+                return push;
+            if (!IslandSpawnExclusionRegistry.TryGetNearestZone(position, 2f, out var center, out _))
+                return push;
+
+            var outward = position - center;
+            outward.y = 0f;
+            var d = outward.magnitude;
+            if (d < 0.01f)
+                return push;
+            outward /= d;
+            var inward = -Vector3.Dot(push, outward);
+            return inward > 0f ? push + outward * inward : push;
         }
 
         void UpdateView(ref EnemyUnit e, EnemyDefinition def, float dt, Vector3 playerPos)
@@ -368,9 +513,7 @@ namespace RoguePirates.V4.Enemies
 
 
             var usesCreatureIntercept = def.category == EnemyCategory.Creature && !def.isBoss && !def.isMiniboss;
-            var chaseDir = usesCreatureIntercept
-                ? GetCreatureInterceptDirection(e, playerPos, playerVelocity, dist, dir)
-                : GetEncircleChaseDirection(e.id, e.position, playerPos, dist, dir, playerVelocity);
+            var chaseDir = GetPursuitDirection(e.id, e.position, e.moveSpeed, playerPos, playerVelocity);
 
             if (e.spawnProfile != null)
             {
@@ -529,46 +672,57 @@ namespace RoguePirates.V4.Enemies
             return intent;
         }
 
-        static Vector3 GetCreatureInterceptDirection(
-            in EnemyUnit agent,
+        const float PursuitMaxLead = 1.2f;
+        const float SurroundRange = 12f;
+        const float SurroundMaxAngle = 75f;
+
+        /// <summary>
+        /// Chasers cut the player off: they aim where the player will be when they arrive (lead capped at
+        /// <see cref="PursuitMaxLead"/> s) and, inside <paramref name="surroundRange"/>, at a slot beside that point picked
+        /// by unit id (golden-ratio spread of bearings), so a pack closes from several sides instead of trailing in one line.
+        /// </summary>
+        internal static Vector3 GetPursuitDirection(
+            int agentId,
+            Vector3 agentPos,
+            float agentSpeed,
             Vector3 playerPos,
             Vector3 playerVelocity,
-            float distToPlayer,
-            Vector3 directDir)
+            float surroundRange = SurroundRange)
         {
+            var toPlayer = playerPos - agentPos;
+            toPlayer.y = 0f;
+            var dist = toPlayer.magnitude;
+            if (dist < 0.01f)
+                return Vector3.forward;
+
             playerVelocity.y = 0f;
-            var playerSpeed = playerVelocity.magnitude;
-            var leadTime = playerSpeed > 0.35f
-                ? Mathf.Clamp(distToPlayer / Mathf.Max(1f, agent.moveSpeed + playerSpeed * 0.65f), 0.12f, 2.2f)
-                : 0f;
-
-            var toEnemy = agent.position - playerPos;
-            toEnemy.y = 0f;
-            if (playerSpeed > 0.35f && toEnemy.sqrMagnitude > 0.01f)
+            var aim = playerPos;
+            if (playerVelocity.sqrMagnitude > 0.12f)
             {
-                var forward = playerVelocity / playerSpeed;
-                var alignment = Vector3.Dot(toEnemy.normalized, forward);
-                if (alignment > -0.35f)
-                    leadTime *= Mathf.Lerp(1.08f, 1.42f, Mathf.Clamp01(alignment));
+                var closing = Mathf.Max(1f, agentSpeed);
+                for (var pass = 0; pass < 2; pass++)
+                {
+                    var lead = Mathf.Min(PursuitMaxLead, HorizontalDistance(aim, agentPos) / closing);
+                    aim = playerPos + playerVelocity * lead;
+                }
             }
 
-            var predicted = playerPos + playerVelocity * leadTime;
-            var toPredicted = predicted - agent.position;
-            toPredicted.y = 0f;
-            if (toPredicted.sqrMagnitude < 0.01f)
-                return GetEncircleChaseDirection(agent.id, agent.position, playerPos, distToPlayer, directDir, playerVelocity);
-
-            var interceptDir = toPredicted.normalized;
-            var encircleDir = GetEncircleChaseDirection(agent.id, agent.position, playerPos, distToPlayer, directDir, playerVelocity);
-            var interceptWeight = distToPlayer > 16f ? 0.38f : distToPlayer > 8f ? 0.65f : 0.9f;
-            if (playerSpeed > 0.75f && toEnemy.sqrMagnitude > 0.01f)
+            if (surroundRange > 0f && dist < surroundRange && dist > 2.5f)
             {
-                var alignment = Vector3.Dot(toEnemy.normalized, playerVelocity.normalized);
-                if (alignment > -0.25f)
-                    interceptWeight = Mathf.Min(0.96f, interceptWeight + 0.12f);
+                var fromAim = agentPos - aim;
+                fromAim.y = 0f;
+                if (fromAim.sqrMagnitude > 0.01f)
+                {
+                    var slot = Mathf.Repeat(agentId * 0.618034f, 1f) * 2f - 1f;
+                    var fade = Mathf.Clamp01((surroundRange - dist) / 4f);
+                    var ringRadius = Mathf.Clamp((dist - 2.5f) * 0.6f, 0f, 6f) * fade;
+                    aim += Quaternion.Euler(0f, slot * SurroundMaxAngle, 0f) * (fromAim.normalized * ringRadius);
+                }
             }
 
-            return Vector3.Slerp(encircleDir, interceptDir, interceptWeight).normalized;
+            var toAim = aim - agentPos;
+            toAim.y = 0f;
+            return toAim.sqrMagnitude > 0.01f ? toAim.normalized : toPlayer / dist;
         }
 
         /// <summary>Straight rush — slow approach, faster commit when close (no orbit or charge windup).</summary>
@@ -672,44 +826,12 @@ namespace RoguePirates.V4.Enemies
             return true;
         }
 
-        /// <summary>Spread melee swarms around the player instead of stacking in a rear conga line.</summary>
-        static Vector3 GetEncircleChaseDirection(
-            int agentId,
-            Vector3 agentPos,
-            Vector3 playerPos,
-            float distToPlayer,
-            Vector3 directDir,
-            Vector3 playerVelocity)
-        {
-            if (distToPlayer < 0.01f)
-                return Vector3.forward;
-
-            playerVelocity.y = 0f;
-            if (playerVelocity.sqrMagnitude < 0.12f)
-                return directDir;
-
-            var ringRadius = Mathf.Clamp(distToPlayer * 0.42f, 3.5f, 9f);
-            var slotAngle = agentId * 2.39996323f;
-            var slotOffset = new Vector3(Mathf.Cos(slotAngle), 0f, Mathf.Sin(slotAngle)) * ringRadius;
-            var slotTarget = playerPos + slotOffset;
-            var toSlot = slotTarget - agentPos;
-            toSlot.y = 0f;
-
-            if (toSlot.sqrMagnitude < 0.01f)
-                return directDir;
-
-            var encircleDir = toSlot.normalized;
-            var encircleWeight = distToPlayer > 14f ? 0.72f : distToPlayer > 7f ? 0.55f : 0.28f;
-            if (playerVelocity.sqrMagnitude < 0.75f)
-                encircleWeight *= 0.35f;
-            return Vector3.Slerp(directDir, encircleDir, encircleWeight).normalized;
-        }
-
         void TickRangedAttack(
             ref EnemyUnit e,
             EnemyDefinition def,
             float dt,
             Vector3 playerPos,
+            Vector3 playerVelocity,
             float dist,
             DamageReceiver playerDamage)
         {
@@ -752,10 +874,11 @@ namespace RoguePirates.V4.Enemies
                 var hostiles = _services.Shots;
                 if (hostiles == null) return;
 
-                dir.Normalize();
-                var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
                 GetHostileShotProfile(def, rules, out var speed, out var life, out var hitRadius, out var visualRadius);
-                if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius))
+                dir = AimLed(e.position, playerPos, playerVelocity, speed, dir);
+                var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
+                if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius,
+                        LedShotDistance(muzzle, playerPos, playerVelocity, speed)))
                     return;
 
                 e.attackCooldown = e.patternParams.attackCooldown > 0f
@@ -794,10 +917,11 @@ namespace RoguePirates.V4.Enemies
             var hostiles = _services.Shots;
             if (hostiles == null) return;
 
-            dir.Normalize();
-            var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
             GetHostileShotProfile(def, rules, out var speed, out var life, out var hitRadius, out var visualRadius);
-            if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius))
+            dir = AimLed(e.position, playerPos, playerVelocity, speed, dir);
+            var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
+            var shotDistance = LedShotDistance(muzzle, playerPos, playerVelocity, speed);
+            if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius, shotDistance))
                 return;
 
             e.attackCooldown = GetAttackRecovery(def, rules);
@@ -805,13 +929,27 @@ namespace RoguePirates.V4.Enemies
             if (rules.rangedFlankShots)
             {
                 var flank = Vector3.Cross(Vector3.up, dir);
-                hostiles.TrySpawn(muzzle, (dir + flank * 0.55f).normalized, speed, e.damage * 0.85f, life, hitRadius, visualRadius);
-                hostiles.TrySpawn(muzzle, (dir - flank * 0.55f).normalized, speed, e.damage * 0.85f, life, hitRadius, visualRadius);
+                hostiles.TrySpawn(muzzle, (dir + flank * 0.55f).normalized, speed, e.damage * 0.85f, life, hitRadius, visualRadius, shotDistance);
+                hostiles.TrySpawn(muzzle, (dir - flank * 0.55f).normalized, speed, e.damage * 0.85f, life, hitRadius, visualRadius, shotDistance);
             }
             }
         }
 
 
+
+        /// <summary>Flat unit direction toward where a shot at <paramref name="shotSpeed"/> meets the player (lead-capped); <paramref name="fallback"/> if degenerate.</summary>
+        internal static Vector3 AimLed(Vector3 from, Vector3 playerPos, Vector3 playerVelocity, float shotSpeed, Vector3 fallback)
+        {
+            var aim = HostileProjectiles.PredictAimPoint(from, playerPos, playerVelocity, shotSpeed) - from;
+            aim.y = 0f;
+            if (aim.sqrMagnitude > 0.01f) return aim.normalized;
+            fallback.y = 0f;
+            return fallback.sqrMagnitude > 0.0001f ? fallback.normalized : Vector3.forward;
+        }
+
+        /// <summary>Horizontal distance from the muzzle to the led aim point, so the shot's arc lands there.</summary>
+        internal static float LedShotDistance(Vector3 muzzle, Vector3 playerPos, Vector3 playerVelocity, float shotSpeed) =>
+            HorizontalDistance(muzzle, HostileProjectiles.PredictAimPoint(muzzle, playerPos, playerVelocity, shotSpeed));
 
         /// <summary>V3 EnemyRangedAttackRules.SupportsRangedAttacks; its enemy-id list is <c>world.alwaysRanged</c>.</summary>
         static bool SupportsRangedAttacks(EnemyDefinition def, ArchetypeWorldRules rules)
@@ -885,7 +1023,7 @@ namespace RoguePirates.V4.Enemies
             }
 
             if (count == 0) return velocity;
-            push /= count;
+            push = ClipIslandPush(self.position, push / count);
 
             var separated = velocity + push * 3f;
             if (preferredDirection.sqrMagnitude < 0.01f)

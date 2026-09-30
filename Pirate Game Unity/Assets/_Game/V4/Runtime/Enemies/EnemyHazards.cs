@@ -29,7 +29,9 @@ namespace RoguePirates.V4.Enemies
     /// </summary>
     public sealed class EncounterBudget
     {
-        public const float MinChargeWarning = 1f;
+        /// <summary>Shortest charge telegraph: long enough to read and dodge, short enough that chargers do not idle
+        /// (demo playtest: the 1 s floor made the hammerhead pause too long).</summary>
+        public const float MinChargeWarning = 0.6f;
         public const float MinExplosiveWarning = 1.2f;
 
         readonly System.Func<int> _maxCharges;
