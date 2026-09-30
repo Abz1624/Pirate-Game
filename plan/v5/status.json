@@ -122,7 +122,7 @@
     {
       "when": "30 Sep",
       "what": "<strong>M3 build balance built</strong> (unattended): evolutions reachable (the card from weapon level 8 with its item; Rare/Epic cards +2 levels, Legendary +3; a pity rule; a 40% chance that a chest gives a ready weapon's evolution item) — focused builds now evolve in ~60% of runs, around minute 6. All ten weapons within ±20% of their role at levels 1, 4, 8 and 12 (the Flamethrower no longer fades, the Powder Kegs no longer lag, the Lightning Mast no longer runs away). Plain Logbooks and items in their rarity bands; volley and crit pieces flagged; synergy items left for you. Captains within ±10% on run length (Flint's hull 90 → 120). 5 items by 10:00. Review: 3 majors, 10 minors, then 1 major and 3 minors on the fixes; all fixed or recorded.",
-      "commit": ""
+      "commit": "e1195f7f"
     }
   ],
   "todos": {
