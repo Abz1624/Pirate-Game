@@ -58,6 +58,8 @@ namespace RoguePirates.V4.Weapons
         public bool Active;
         public Vector3 Position;
         public float ArmTime, TriggerRadius, BlastRadius, BaseDamage, DamageBonus, ProcCoefficient, EliteReach, BlastDamageMultiplier;
+        /// <summary>Seconds until an unblown keg sinks (V5; infinity = never).</summary>
+        public float LifeLeft, SinkSeconds;
         public WeaponSlot Source;
         public int View;
     }

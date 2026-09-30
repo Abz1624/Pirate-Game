@@ -217,6 +217,7 @@ namespace RoguePirates.V4.Ports
         public bool HullInvulnerable => HasDamageReceiver && InvulnerableField != null && (bool)InvulnerableField.GetValue(Ship.Damage);
         public void HitHull(float amount, Vector3 source) { if (HasDamageReceiver) Ship.Damage.TakeDamage(amount, source, false); }
         public void DrainHull(float amount) { if (HasDamageReceiver) Ship.Damage.Heal(-amount); }
+        public void KnockHull(float amount, Vector3 source) { if (HasDamageReceiver) Ship.Damage.TakeImpact(amount, source); }
         public void SetMovementEnabled(bool enabled) { if (Ship != null) Ship.SetMovementEnabled(enabled); }
 
         // ---- events (M14: was LegacyEventFeed's damage receiver half) ----

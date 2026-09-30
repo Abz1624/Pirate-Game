@@ -203,6 +203,26 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
+        public void SunkKeg_GoesDownAndTilts_ThenReturnsToThePool()
+        {
+            // V5 (owner, 1 Oct 2026): an unblown keg sinks out of sight before its view goes back.
+            _settings.mineBarrelPrefab = Prefab("TestKeg");
+            _presenter.Bind(_pools, null, null, _settings, null);
+            var handle = _presenter.MineDropped(new Vector3(1f, 0.55f, 2f));
+            var keg = ActiveInstances(WeaponVfxPresenter.KeyPrefix + "keg/").Single();
+            _presenter.MineSunk(handle, 1.5f);
+            Assert.AreEqual(0, _presenter.LiveHandleCount, "no longer a live keg");
+            Assert.AreEqual(1, _presenter.SinkingCount);
+            _presenter.Tick(0.75f);
+            Assert.Less(keg.transform.position.y, 0.55f, "going down");
+            Assert.Greater(keg.transform.position.y, 0.55f - WeaponVfxPresenter.KegSinkDepth);
+            Assert.AreNotEqual(Quaternion.identity, keg.transform.rotation, "tilting as it goes");
+            _presenter.Tick(0.8f);
+            Assert.AreEqual(0, _presenter.SinkingCount);
+            Assert.AreEqual(0, InUse(WeaponVfxPresenter.KeyPrefix + "keg/"), "back in its pool");
+        }
+
+        [Test]
         public void RepeatedEffects_ComeFromThePool_WithoutNewObjectsAfterPrewarm()
         {
             var gun = Prefab("TestGun", "Barrel", "CannonSmoke");

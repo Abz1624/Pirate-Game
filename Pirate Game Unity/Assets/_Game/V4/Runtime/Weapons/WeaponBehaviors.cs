@@ -731,6 +731,8 @@ namespace RoguePirates.V4.Weapons
                 ProcCoefficient = w.Config.procCoefficient,
                 EliteReach = m.eliteReachBonus,
                 BlastDamageMultiplier = m.blastDamageMultiplier,
+                LifeLeft = m.lifeSeconds > 0f ? m.lifeSeconds : float.PositiveInfinity,
+                SinkSeconds = m.sinkSeconds,
                 Source = w,
                 View = view,
             });
@@ -744,8 +746,18 @@ namespace RoguePirates.V4.Weapons
 
         public void TickKegs(float dt)
         {
-            if (C.Enemies == null || !C.Enemies.Exists) return;
             var list = C.Kegs;
+            // V5: unblown kegs sink after their lifetime (counted with or without an enemy world).
+            for (var i = list.Count - 1; i >= 0; i--)
+            {
+                var keg = list[i];
+                if (!keg.Active || float.IsPositiveInfinity(keg.LifeLeft)) continue;
+                keg.LifeLeft -= dt;
+                if (keg.LifeLeft > 0f) { list[i] = keg; continue; }
+                C.Effects?.MineSunk(keg.View, keg.SinkSeconds);
+                list.RemoveAt(i);
+            }
+            if (C.Enemies == null || !C.Enemies.Exists) return;
             for (var i = list.Count - 1; i >= 0; i--)
             {
                 var keg = list[i];

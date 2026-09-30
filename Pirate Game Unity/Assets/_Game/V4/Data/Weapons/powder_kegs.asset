@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.powder_kegs
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m3
+  balanceVersion: saltwind-v5-m3b
   weaponId: powder_kegs
   displayName: Powder Kegs
   description: Drops explosive kegs along your wake.
@@ -132,6 +132,8 @@ MonoBehaviour:
     blastRadius: 3.2
     blastDamageMultiplier: 0.72
     eliteReachBonus: 0.75
+    lifeSeconds: 45
+    sinkSeconds: 1.5
   areaStrike:
     radiusBase: 3.5
     radiusPerQuantity: 0.5

@@ -24,14 +24,20 @@ namespace RoguePirates.V4.Foundation.Platform
         Graphic _zone;
 
         public Vector2 ReadMove() => _input;
+        /// <summary>The stick's base and knob art (the ability button reuses them).</summary>
+        public Sprite BaseSprite => background != null && background.TryGetComponent<Image>(out var i) ? i.sprite : null;
+        public Sprite KnobSprite => handle != null && handle.TryGetComponent<Image>(out var i) ? i.sprite : null;
         public bool Floating => floating;
 
         /// <summary>Touch controls on phones and tablets: the Android and iOS apps and the web build in a mobile browser
         /// (the Editor's Device Simulator counts); never on desktop.</summary>
-        public static bool TouchControlsWanted =>
+        public static bool TouchControlsWanted => ForceTouchControls ||
             UnityEngine.Device.Application.platform == RuntimePlatform.Android ||
             UnityEngine.Device.Application.platform == RuntimePlatform.IPhonePlayer ||
             (UnityEngine.Device.Application.platform == RuntimePlatform.WebGLPlayer && UnityEngine.Device.Application.isMobilePlatform);
+
+        /// <summary>Tests and the playable check: show touch controls on desktop too.</summary>
+        public static bool ForceTouchControls;
 
         void Awake()
         {

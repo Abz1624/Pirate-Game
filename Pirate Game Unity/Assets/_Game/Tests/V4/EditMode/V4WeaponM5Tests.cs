@@ -304,6 +304,58 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
+        public void PowderKeg_Unblown_SinksAfter45Seconds_AndNeverUnderTheParityPreset()
+        {
+            // V5 (owner, 1 Oct 2026): an unblown keg sinks and is gone after 45 s; V3 kept every keg forever.
+            using var h = new Harness("powder_kegs");
+            var sunk = new List<int>();
+            h.Combat.Effects = new SinkRecorder(sunk);
+            h.Ship.Forward = Vector3.forward;
+            h.Tick(1);
+            Assert.AreEqual(45f, h.Config.All<WeaponConfig>().First(w => w.weaponId == "powder_kegs").mine.lifeSeconds);
+            var first = h.Combat.Kegs[0].View;
+            h.Slot("powder_kegs").CooldownTimer = 1e9f; // no more drops
+            h.Tick(44 * 60 - 2);
+            Assert.IsTrue(h.Combat.Kegs.Any(k => k.View == first), "still afloat at 44 s");
+            h.Tick(70);
+            Assert.IsFalse(h.Combat.Kegs.Any(k => k.View == first), "gone after 45 s");
+            CollectionAssert.Contains(sunk, first, "its view sinks (not a blast)");
+            Assert.AreEqual(0, h.Enemies.Damage.Count, "sinking deals no damage");
+
+            using var v3 = new Harness(true, "powder_kegs");
+            v3.Ship.Forward = Vector3.forward;
+            v3.Tick(1);
+            v3.Slot("powder_kegs").CooldownTimer = 1e9f;
+            v3.Tick(120 * 60);
+            Assert.AreEqual(1, v3.Combat.Kegs.Count, "V3: an unblown keg stays");
+        }
+
+        sealed class SinkRecorder : IWeaponEffects
+        {
+            readonly List<int> _sunk;
+            int _next;
+            public SinkRecorder(List<int> sunk) => _sunk = sunk;
+            public void Fired(string weaponId, Vector3 origin, Vector3 direction) { }
+            public void Aimed(string weaponId, Vector3 aimDirection, Vector3 targetPosition, bool hasTarget) { }
+            public void Beam(Vector3 origin, Vector3 direction, float range, float halfWidth) { }
+            public void SideSalvo(string weaponId, Vector3 shipPosition, Vector3 sideDirection) { }
+            public int MineDropped(Vector3 position) => ++_next;
+            public void MineRemoved(int handle) { }
+            public void MineSunk(int handle, float seconds) => _sunk.Add(handle);
+            public void Explosion(Vector3 position, float radius) { }
+            public void LightningStrike(Vector3 position, float radius) { }
+            public void FlameBurst(Vector3 origin, Vector3 aim) { }
+            public void AreaTelegraph(Vector3 position, float radius) { }
+            public void TimedRing(Vector3 position, float radius, float seconds) { }
+            public void AreaImpact(Vector3 position, float radius) { }
+            public void BurningPatch(Vector3 position, float radius) { }
+            public void WaterSplash(Vector3 position) { }
+            public int SkiffSpawned(Vector3 position, Vector3 forward) => ++_next;
+            public void SkiffMoved(int handle, Vector3 position, Vector3 facing) { }
+            public void SkiffRemoved(int handle) { }
+        }
+
+        [Test]
         public void Mortar_Impact_MakesV3sEffectDraws()
         {
             using var h = new Harness(true, "mortar");

@@ -33,6 +33,7 @@ namespace RoguePirates.V4.Weapons
         public void SideSalvo(string weaponId, Vector3 shipPosition, Vector3 sideDirection) => T?.SideSalvo(weaponId, shipPosition, sideDirection);
         public int MineDropped(Vector3 position) => T?.MineDropped(position) ?? -1;
         public void MineRemoved(int handle) => T?.MineRemoved(handle);
+        public void MineSunk(int handle, float seconds) => T?.MineSunk(handle, seconds);
         public void Explosion(Vector3 position, float radius) => T?.Explosion(position, radius);
         public void LightningStrike(Vector3 position, float radius) => T?.LightningStrike(position, radius);
         public void FlameBurst(Vector3 origin, Vector3 aim) => T?.FlameBurst(origin, aim);

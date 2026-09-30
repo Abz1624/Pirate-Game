@@ -181,6 +181,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>Ends timed effects (V3 VfxAutoReturn / Destroy(go, t)): scaled time, starting the frame after spawn.</summary>
         public void Tick(float dt)
         {
+            TickSinking(dt);
             for (var i = _timed.Count - 1; i >= 0; i--)
             {
                 var t = _timed[i];
@@ -275,6 +276,52 @@ namespace RoguePirates.V4.Presentation.Weapons
         }
 
         public void MineRemoved(int handle) => ReleaseHandle(handle);
+
+        /// <summary>V5: an unblown keg sinks (down and tilting) over <paramref name="seconds"/>, then goes back to its pool.</summary>
+        public void MineSunk(int handle, float seconds)
+        {
+            if (!_handles.TryGetValue(handle, out var view)) return;
+            _handles.Remove(handle);
+            if (view.Go == null || seconds <= 0f) { ReleaseView(view); return; }
+            var t = view.Go.transform;
+            _sinking.Add(new Sinking { View = view, Left = seconds, Total = seconds, StartY = t.position.y, StartRotation = t.rotation });
+        }
+
+        /// <summary>Depth a sinking keg goes below its floating height before it is recycled.</summary>
+        public const float KegSinkDepth = 1.4f;
+
+        struct Sinking
+        {
+            public View View;
+            public float Left, Total, StartY;
+            public Quaternion StartRotation;
+        }
+
+        readonly List<Sinking> _sinking = new List<Sinking>();
+        public int SinkingCount => _sinking.Count;
+
+        void TickSinking(float dt)
+        {
+            for (var i = _sinking.Count - 1; i >= 0; i--)
+            {
+                var s = _sinking[i];
+                s.Left -= dt;
+                var go = s.View.Go;
+                if (s.Left <= 0f || go == null)
+                {
+                    _sinking.RemoveAt(i);
+                    ReleaseView(s.View);
+                    continue;
+                }
+                var k = 1f - s.Left / s.Total; // 0 → 1
+                var t = go.transform;
+                var p = t.position;
+                p.y = s.StartY - KegSinkDepth * k * k;
+                t.position = p;
+                t.rotation = s.StartRotation * Quaternion.Euler(0f, 0f, 35f * k);
+                _sinking[i] = s;
+            }
+        }
 
         /// <summary>V3 OnMineExploded: the powder keg blast (only its impact, ring and smoke children), else a burst.</summary>
         public void Explosion(Vector3 position, float radius)
@@ -458,6 +505,8 @@ namespace RoguePirates.V4.Presentation.Weapons
             _timed.Clear();
             foreach (var view in _handles.Values) ReleaseView(view);
             _handles.Clear();
+            foreach (var s in _sinking) ReleaseView(s.View);
+            _sinking.Clear();
             ReleaseBlades(0);
         }
 

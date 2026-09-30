@@ -25,7 +25,8 @@ namespace RoguePirates.V4.Presentation.Hud
         string _lastKey, _lastName; // the label is rebuilt only when these change
 
         /// <summary>Shown and ready (tests and the playable check).</summary>
-        public bool IsShown => _rect != null && _rect.gameObject.activeSelf && _views?.Captain != null && _views.Captain.ActiveAvailable;
+        public bool IsShown => _group != null && _group.alpha > 0f && _views?.Captain != null && _views.Captain.ActiveAvailable;
+        CanvasGroup _group; // hides the bar without deactivating this object (V5 review: it could never come back)
         public string Text => _label != null ? _label.text : string.Empty;
         public float Fill => _fill != null ? _fill.fillAmount : 0f;
 
@@ -43,6 +44,8 @@ namespace RoguePirates.V4.Presentation.Hud
         void Build(RectTransform rt)
         {
             _rect = rt;
+            _group = rt.gameObject.AddComponent<CanvasGroup>();
+            _group.blocksRaycasts = false;
             rt.anchorMin = rt.anchorMax = Vector2.zero;
             rt.pivot = Vector2.zero;
             rt.sizeDelta = new Vector2(Width, Height);
@@ -98,7 +101,7 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             var captain = _views?.Captain;
             var show = captain != null && captain.ActiveAvailable;
-            if (_rect.gameObject.activeSelf != show) _rect.gameObject.SetActive(show);
+            if ((_group.alpha > 0f) != show) _group.alpha = show ? 1f : 0f;
             if (!show) return;
             PlaceBesideBoost();
 

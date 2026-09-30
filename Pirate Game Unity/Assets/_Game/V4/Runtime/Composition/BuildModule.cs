@@ -220,7 +220,9 @@ namespace RoguePirates.V4.Composition
                 if (padPressed && !keyPressed && padButton == pad.buttonSouth && Captain.Config?.active != null
                     && CaptainModule.OnlyFiresWeapons(Captain.Config.active) && (Experiment?.captainActiveHoldsWithoutTarget ?? false) && !AnyEnemyInWeaponRange())
                     padPressed = false;
-                Captain.Tick(dt, keyPressed || padPressed);
+                // V5: the round touch button (touch devices).
+                var touchPressed = RoguePirates.V4.Foundation.Platform.TouchAbilityButton.ConsumePress();
+                Captain.Tick(dt, keyPressed || padPressed || touchPressed);
             });
             createHellfireSlot?.Invoke();
         }

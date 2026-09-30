@@ -122,14 +122,34 @@ namespace RoguePirates.V4.Foundation.World
             return steered;
         }
 
+        /// <summary>V5: the hardest island hit of one move: the shore's flat outward normal and the speed taken out along
+        /// it (zero when the move touched nothing).</summary>
+        public struct ShoreHit
+        {
+            public Vector3 Normal;
+            public float InwardSpeed;
+        }
+
         public static Vector3 ResolveCapsuleMovement(
             Vector3 position,
             Vector3 delta,
             float radius,
             float height,
             ref Vector3 velocity,
+            Vector3 preferredDirection = default) =>
+            ResolveCapsuleMovement(position, delta, radius, height, ref velocity, out _, preferredDirection);
+
+        /// <summary>As above, also reporting the hardest shore hit of the move (V5 island impact).</summary>
+        public static Vector3 ResolveCapsuleMovement(
+            Vector3 position,
+            Vector3 delta,
+            float radius,
+            float height,
+            ref Vector3 velocity,
+            out ShoreHit shoreHit,
             Vector3 preferredDirection = default)
         {
+            shoreHit = default;
             var mask = Mask;
             if (mask == 0 || delta.sqrMagnitude < 1e-8f)
                 return position + delta;
@@ -140,7 +160,7 @@ namespace RoguePirates.V4.Foundation.World
             var result = position;
 
             for (var step = 0; step < stepCount; step++)
-                result = ResolveCapsuleStep(result, stepDelta, radius, height, ref velocity, mask);
+                result = ResolveCapsuleStep(result, stepDelta, radius, height, ref velocity, mask, ref shoreHit);
 
             if (IsOverlapping(result, radius, height))
                 result = Depenetrate(result, radius, height);
@@ -161,7 +181,8 @@ namespace RoguePirates.V4.Foundation.World
             float radius,
             float height,
             ref Vector3 velocity,
-            int mask)
+            int mask,
+            ref ShoreHit shoreHit)
         {
             var result = position;
             var remaining = delta;
@@ -196,6 +217,16 @@ namespace RoguePirates.V4.Foundation.World
                 {
                     velocity -= hit.normal * inwardSpeed;
                     velocity.y = 0f;
+                    if (-inwardSpeed > shoreHit.InwardSpeed)
+                    {
+                        var n = hit.normal;
+                        n.y = 0f;
+                        if (n.sqrMagnitude > 1e-6f)
+                        {
+                            shoreHit.InwardSpeed = -inwardSpeed;
+                            shoreHit.Normal = n.normalized;
+                        }
+                    }
                 }
             }
 

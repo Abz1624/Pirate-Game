@@ -413,6 +413,10 @@
                 {
                     "path": "upgradeAxes[3].maxAccumulated",
                     "value": "1.5"
+                },
+                {
+                    "path": "mine.lifeSeconds",
+                    "value": "0"
                 }
             ]
         },
@@ -1325,6 +1329,18 @@
                 {
                     "path": "shipSpeedMultiplier",
                     "value": "1"
+                },
+                {
+                    "path": "islandBounceRestitution",
+                    "value": "0"
+                },
+                {
+                    "path": "islandBouncePushSpeed",
+                    "value": "0"
+                },
+                {
+                    "path": "islandImpactDamage",
+                    "value": "0"
                 }
             ]
         },

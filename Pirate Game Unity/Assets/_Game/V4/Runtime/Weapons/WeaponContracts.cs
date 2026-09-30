@@ -110,6 +110,8 @@ namespace RoguePirates.V4.Weapons
         void SideSalvo(string weaponId, Vector3 shipPosition, Vector3 sideDirection);
         int MineDropped(Vector3 position);
         void MineRemoved(int handle);
+        /// <summary>V5: an unblown keg sinks out of sight over <paramref name="seconds"/>, then its view goes back.</summary>
+        void MineSunk(int handle, float seconds) => MineRemoved(handle);
         void Explosion(Vector3 position, float radius);
         void LightningStrike(Vector3 position, float radius);
         void FlameBurst(Vector3 origin, Vector3 aim);

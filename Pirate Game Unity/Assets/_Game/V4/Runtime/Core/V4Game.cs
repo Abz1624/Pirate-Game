@@ -168,6 +168,8 @@ namespace RoguePirates.V4
             _context.Register<IStormArena>(playBounds);
             _context.Register<Views.IWorldView>(playBounds);
             var damageSink = new PlayerDamageService(ship); // M14.14 (was LegacyPlayerDamageSink)
+            // V5: island impacts cost hull through the build's incoming multiplier.
+            if (player != null) player.IslandImpactDamage += (at, amount) => damageSink.Impact(amount, at);
             _context.Register<IPlayerDamageSink>(damageSink);
             _context.Register<ISpawnRateSource>(encounters);
             // M14.14: one frame driver runs every run tick in the captured order (were legacy update slots).

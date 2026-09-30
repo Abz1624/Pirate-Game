@@ -1,0 +1,6 @@
+button: shown=True stickArt=True shade=0.00
+target: shark in range: True
+press: uses before 0 paused False
+after press: uses 1 cooldown 16.9s shade 0.94
+island: placed; hull 84.0 impacts 0
+after hit: hull 79.0 impacts 1 damaging 1 impact hull 5.0 speed 0.1

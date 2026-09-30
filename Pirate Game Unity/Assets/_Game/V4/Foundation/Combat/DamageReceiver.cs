@@ -76,6 +76,19 @@ namespace RoguePirates.V4.Foundation.Combat
             if (_currentHP <= 0f) Died?.Invoke();
         }
 
+        /// <summary>
+        /// V5 island impact: a knock that neither checks nor starts the contact hit immunity (an enemy hit right after a
+        /// bump still lands, and a bump right after an enemy hit still counts), but raises the usual Damaged and Died
+        /// events so the hit feedback, the items and the run see it.
+        /// </summary>
+        public void TakeImpact(float amount, Vector3 hitPoint)
+        {
+            if (!IsAlive || _playtestInvulnerable || amount <= 0f) return;
+            _currentHP = Mathf.Max(0f, _currentHP - amount);
+            Damaged?.Invoke(amount, false);
+            if (_currentHP <= 0f) Died?.Invoke();
+        }
+
         public void Heal(float amount)
         {
             _currentHP = Mathf.Min(maxHP, _currentHP + amount);

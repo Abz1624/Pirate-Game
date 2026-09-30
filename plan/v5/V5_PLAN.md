@@ -68,6 +68,16 @@ Every owner request (29 Sep 2026) and the phase(s) that deliver it. The reviewer
 | 22 | Island decorations sold in the store (web2 and web3); list them and add them to the art guide | M6 (catalogue), M14 (placement and store) |
 | 23 | Notifications and share cards to show off and invite on socials | M19 |
 | 24 | Retention loops and mechanics | M20 (+ section 8) |
+| 25 | (1 Oct) a: fewer level-ups, gaps growing like a Fibonacci series | M3c |
+| 26 | (1 Oct) b: unblown powder kegs sink and are gone after 45 s | M3b |
+| 27 | (1 Oct) c: a round touch button for the Captain's special ability | M3b (M7 keeps the other touch buttons) |
+| 28 | (1 Oct) d: pooling and garbage for everything spawned | M3e |
+| 29 | (1 Oct) e: a peak-valley difficulty curve rising to the 10:00 climax (sketch) | M3d |
+| 30 | (1 Oct) f, i: static and dynamic batching | M3e |
+| 31 | (1 Oct) g: an island hit bounces the ship back and costs hull | M3b |
+| 32 | (1 Oct) h: difficulty from enemy count, stronger distinct types, a higher cap | M3d (count, types), M3e (cap) |
+| 33 | (1 Oct) j: occlusion culling | M3e (assessed; frustum and cull distances instead) |
+| 34 | (1 Oct) k: an enemy that looks the same always behaves the same | M3d |
 
 ---
 
@@ -299,6 +309,105 @@ and items in their bands, volley and crit pieces flagged, synergy items not band
 `phase-03-builds/PLAN.md`.)
 Owner playtest: one run per Captain; name any weapon that feels useless or broken.
 
+#### M3b — Feel fixes: island impact, sinking kegs, ability button
+
+Added 1 Oct 2026 from the owner's notes (b, c, g), built while the owner was away (decisions in
+`plan/v5/DECISIONS-WHILE-AWAY.md`).
+
+- I3b.1 **Island impact** (g): a hit faster than 2 m/s into a shore pushes the ship back off it (60% of the impact speed
+  plus 3 m/s, fading over 0.5 s, at most every 0.75 s), so the player never has to reverse off a shore, and costs 5 hull
+  at most every 2 s, through the build's incoming-damage multiplier and with the usual hit feedback. Values in
+  `RunConfig`; all 0 under the v3-parity preset (V3 slid along the shore).
+- I3b.2 **Sinking kegs** (b): an unblown powder keg sinks (down and tilting over 1.5 s) and is gone 45 s after it was
+  dropped (`WeaponConfig.mine.lifeSeconds`; 0 = never, V3).
+- I3b.3 **Ability button** (c): on touch devices a round button bottom right, drawn with the touch stick's own art, fires
+  the Captain's special ability through the same frame step as the keys (pause and cooldown rules unchanged), with a
+  radial cooldown shade and a glow when ready. The actives are on in the data (checked).
+- T3b.x EditMode: keg lifetime and parity, the sinking view; PlayMode: an island hit bounces and costs hull, holding
+  into a shore costs hull at most every 2 s through the multiplier, V3 slides along, the button shows only on touch
+  devices, a real touch reaches the Captain, and it hides and comes back.
+
+Automated check: the targeted tests, both suites, a scripted run with screenshots (the button, an island hit).
+Owner playtest: steer into an island (bounce, hull), drop kegs and wait 45 s, use the button in a phone build.
+
+#### M3c — Level-up rhythm
+
+Added 1 Oct 2026 from the owner's note a and sketch ("1 1 2 3 5"): fewer level-ups whose gaps grow. Split from the
+pressure work after the plan review (P6), so each can be reverted alone.
+
+- I3c.1 **XP table**: a per-level XP table in `ProgressionConfig` (empty = the formula, as before; the v3-parity preset
+  empties it). Target gaps between level-ups: the first five follow the Fibonacci series × 5 s (5, 5, 10, 15, 25 s), then
+  each gap grows 5 s up to 60 s (about 15 level-ups by 10:00 for the Steady Captain instead of 24). A pure Fibonacci
+  series would leave 3-minute gaps by level 9 and stall builds (`DECISIONS-WHILE-AWAY.md` D6).
+- G3c.1 A DevTools tuner fits the table to those gaps in the simulator (the Steady Captain, damped iterations).
+- G3c.2 M3's goals re-checked on the new rhythm: evolution reachability (a focused build evolves in most runs by
+  minute 8: the evolution level, levels per rarity or the pity rule move if it misses), weapon parity at the evolution
+  level, Logbook ranks, items by 10:00, Captains within ±10%; M2's outcome targets (run length, boss wins) held;
+  its level and pace targets replaced by the new gaps (±20%, owner 1 Oct).
+- T3c.x EditMode: the table and its extrapolation, parity (formula restored), the gap targets in the simulator report.
+
+Automated check: the simulator report; a scripted run with the level and the clock at each level-up.
+Owner playtest: do level-ups come less often without builds feeling starved?
+
+#### M3d — Pressure from enemy count, peaks and valleys, distinct enemies
+
+Added 1 Oct 2026 from the owner's notes e, h, k and sketch: a difficulty curve rising in peaks and valleys (small close
+peaks early, a bigger one at 3–4 minutes, a long valley, then two big peaks to the 10:00 climax; logarithmic early,
+steeper late) with ~60 s waves riding on it; pressure from enemy count, never from time-scaled HP or damage; an enemy
+that looks the same always behaves the same.
+
+- I3d.1 **Fixed enemy stats** (h): no HP or damage growth with time in the voyage (per-minute and ordinary-time curves
+  flat); the director keeps only its count levers (spawn rate and floor) and elite chance (elites are drawn 2.15× larger
+  with the Rich affix); its toughness, cap-HP and focus levers stay at 1. Later minutes are harder through more enemies
+  and the stronger types that already enter them from today's roster (manta ray, gunner cog, boarding barge, kraken
+  spawn, shield frigate, powder barge: their own fixed stats); new enemy art is listed in the M6 art guide (plan review
+  P5). The Barnacle King, the Reef Crab and the elites get fixed HP that keeps their fight lengths at both the earliest
+  and the latest likely summon (the boss rises after the beacon summon, P4). Overtime (after 10:00) keeps its endless
+  ramp (`DECISIONS-WHILE-AWAY.md` D8).
+- I3d.2 **Peak-valley flow** (e): the M1 waves become keyframes that the floor and spawn rate follow smoothly, authored
+  to the sketch with ~60 s waves (about 40 s building, 20 s easing) and the hordes on the peaks. Floors stay shares of
+  the enemy cap (80 today), so a later cap change keeps the shape (P1).
+- I3d.3 **Distinct enemies** (k): every enemy id that attacks differently has its own look: its own model where one
+  exists, else its own tint and size (a look = model + tint + size); the per-band encounter overrides that changed an
+  anchor enemy's attack timing are removed; a test fails when two ids with different attacks share a look.
+- G3d.1 **Retune with the simulator**: counts (floors, rates, hordes), the fixed HP of the boss, miniboss and elites.
+  Outcome targets (run length, boss wins) stay; per-minute alive and kills targets follow the new shape; new targets:
+  some hull lost in minutes 1–3 (not on autopilot) and no minute after 5:00 that sinks an average build outright.
+- Every M3d change is off under the v3-parity preset (D16): the old curves, levers, waves and overrides (P7).
+- T3d.x EditMode: flat curves, lever limits, the keyframed floor, the distinct-look rule, the targets, parity;
+  PlayMode: the crowd at the sketch's peaks and valleys (clock jumped), enemy HP the same at 1:00 and 8:00.
+
+Automated check: the simulator report against the targets; a scripted run with screenshots at 0:45, 3:30, 5:00, 7:30
+and 9:30.
+Owner playtest: three runs: is minute 1–3 busy, is 6–8 fair, does each enemy read?
+
+#### M3e — Performance: pooling, garbage, batching, culling, then the enemy cap
+
+Added 1 Oct 2026 from the owner's notes d, f, i, j and the cap answer (h). Audit: `phase-03e-performance/AUDIT.md`.
+
+- I3e.1 **Pooling** (d): everything spawned per gameplay event already comes from a pool; the gaps close: capped pools
+  where a spike would instantiate, prewarmed VFX-profile effects and the flame stream, component stripping moved into
+  prewarm, marker glyphs reused; a test lists the per-event spawn sites.
+- I3e.2 **Garbage** (d): zero bytes allocated per frame in the run's hot paths in a steady state (enemy wake effects,
+  the spatial hash, config lookups, closures, event strings, HUD strings), measured with the profiler's GC allocation
+  counter in a scripted run; the O(n²) enemy overlap and projectile checks use the spatial hash.
+- I3e.3 **Batching** (f, i): the SRP Batcher is already on; the generated islands are combined once the stage is
+  built (static batching at run start); per-instance material copies that break batching are replaced; GPU instancing
+  only where a shader is not SRP-Batcher compatible (Unity's order: static batching, SRP Batcher, instancing).
+- I3e.4 **Culling** (j): baked occlusion culling does not apply (a stage generated at run start under a steep top-down
+  camera over open sea has nothing to bake and few occluders; WebGL has no GPU occlusion): recorded as not applicable
+  after measuring; the camera's far clip (1000 m for a ~32 m view) and per-layer cull distances are used instead.
+- I3e.5 Quick wins from the audit: the second realtime directional light, lights inside explosion prefabs, the mobile
+  opaque texture, shadows on pickups and effects, the damage-highlight shader.
+- I3e.6 **Enemy cap** (owner's answer to h): raised from 80 only if the measured frame time allows after the work
+  above, and only up to what a device near the reference phone can hold; the Pixel 9a is not a budget check (P2); the
+  final phone budget stays with M7.
+- T3e.x Draw calls, batches, frame time and GC allocations before and after in a scripted Editor run at 1, 5 and 9
+  minutes.
+
+Automated check: the before/after table; both suites.
+Owner playtest: a run in the Editor and on the Pixel 9a; does anything look different?
+
 #### M4 — New weapons, batch 1, and the missing evolutions
 
 Goal: the first new weapons exist with evolutions, balanced by the model and the simulator and unlockable with RUM, and
@@ -369,7 +478,7 @@ Owner check: read and hand over; comments on the doc are answered in place.
 Goal: the game plays well on phones and tablets in mobile browsers and on desktop browsers, with one UI.
 
 - I7.1 Input: the virtual joystick upgraded (floating, left or right, deadzone); touch buttons for boost, the Captain
-  active, interact (E/USE) and pause; keyboard, mouse and gamepad unchanged; `MoveInput` becomes an input router.
+  active (built in M3b), interact (E/USE) and pause; keyboard, mouse and gamepad unchanged; `MoveInput` becomes an input router.
 - I7.2 Safe area and scaling: a `SafeAreaFitter` on every canvas; the HUD reflows for 16:9 to 20:9 and 4:3 tablets; a
   UI scale setting; text minimums.
 - I7.3 Level-up cards, chest popup, results and menu buttons as 72 px targets; long-press instead of hover.

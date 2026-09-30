@@ -135,6 +135,10 @@ namespace RoguePirates.V4.Config
         public float backOffset = 1.5f, height = 0.55f, armSeconds = 0.2f;
         public float triggerRadius = 3f, blastRadius = 3.2f, blastDamageMultiplier = 0.72f;
         [Tooltip("Elites are reached this much further.")] public float eliteReachBonus = 0.75f;
+        [Tooltip("V5 (owner, 1 Oct 2026): an unblown keg sinks and is gone after this many seconds (0 = never, V3).")]
+        [Min(0f)] public float lifeSeconds = 45f;
+        [Tooltip("Seconds the sinking takes (visual only; the keg stops counting when it starts to sink).")]
+        [Min(0f)] public float sinkSeconds = 1.5f;
     }
 
     /// <summary>A strike on the target's position hitting everything around it (Lightning Mast).</summary>

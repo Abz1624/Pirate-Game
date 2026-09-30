@@ -20,6 +20,8 @@ namespace RoguePirates.V4.Presentation
         public RoguePirates.V4.Presentation.Hud.MinimapPresenter Minimap { get; private set; }
         public RoguePirates.V4.Presentation.Hud.CaptainActivePresenter CaptainActive { get; private set; }
         public RoguePirates.V4.Presentation.Hud.CaptainActiveEffectPresenter CaptainActiveEffect { get; private set; }
+        /// <summary>V5: the Captain ability's round touch button (touch devices only).</summary>
+        public RoguePirates.V4.Presentation.Hud.CaptainAbilityButtonPresenter CaptainAbilityButton { get; private set; }
         public RoguePirates.V4.Presentation.Hud.BeaconGuidePresenter BeaconGuide { get; private set; }
         public RoguePirates.V4.Presentation.Hud.ResultsPresenter Results { get; private set; }
         public RoguePirates.V4.Presentation.Hud.SpawnWarningPresenter SpawnWarnings { get; private set; }
@@ -348,6 +350,9 @@ namespace RoguePirates.V4.Presentation
                     CaptainActive.Bind(views);
                     CaptainActiveEffect = RoguePirates.V4.Presentation.Hud.CaptainActiveEffectPresenter.Create(authored.transform);
                     CaptainActiveEffect.Bind(views);
+                    // V5: the ability's round touch button (touch devices only; it hides itself elsewhere).
+                    CaptainAbilityButton = RoguePirates.V4.Presentation.Hud.CaptainAbilityButtonPresenter.Create(authored.transform);
+                    CaptainAbilityButton.Bind(views);
                 }
             }
 

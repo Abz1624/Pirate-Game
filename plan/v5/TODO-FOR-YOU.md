@@ -2,6 +2,12 @@
 
 ## Next
 
+- **Read what I did while you were away** (1 Oct): `plan/v5/DECISIONS-WHILE-AWAY.md` lists every decision I took on
+  your behalf (D1-D10 and on) and five questions for you. New phases M3b (feel fixes), M3c (level-up rhythm), M3d
+  (count-based pressure, peaks and valleys, distinct enemies) and M3e (performance, then the enemy cap) come before M4.
+- **Playtest M3b** (committed, awaiting your playtest): steer into an island (the ship bounces off and loses 5 hull,
+  at most every 2 s), drop powder kegs and wait 45 s (unblown ones sink), and on a phone build use the round ability
+  button bottom right.
 - ~~**Playtest M2 and M3 on the demo baseline.**~~ Done 1 Oct: "fine for now, we'll finetune it later". The demo round (30 Sep) changed the voyage and you chose to keep it:
   pickups give half XP, the ship is 1.625x faster (acceleration too), player shooting ranges are lower (Deck Cannons
   22 -> 16 and so on), enemies are smarter (they path around islands, cut you off, surround you and lead their shots),

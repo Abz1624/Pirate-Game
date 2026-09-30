@@ -16,6 +16,8 @@ namespace RoguePirates.V4.Spawning
         void HitHull(float amount, Vector3 source);
         /// <summary>Takes hull points without a hit (no immunity, no event).</summary>
         void DrainHull(float amount);
+        /// <summary>V5: a knock (island impact): the Damaged and Died events fire, the hit immunity is neither checked nor started.</summary>
+        void KnockHull(float amount, Vector3 source) => HitHull(amount, source);
     }
 
     /// <summary>
@@ -58,6 +60,22 @@ namespace RoguePirates.V4.Spawning
         public void Damage(float amount, Vector3 source)
         {
             if (Exists) _hull.HitHull(amount * Incoming, source);
+        }
+
+        /// <summary>
+        /// V5 island impact: one knock through the build's incoming multiplier (Brace!, Reinforced Keel) that does not use
+        /// the contact hit immunity, so an enemy hit right after a bump still lands; the hit feedback and items see it.
+        /// </summary>
+        /// <summary>Hull lost to island impacts this run, after the multiplier (tests and telemetry).</summary>
+        public float ImpactDamageTotal { get; private set; }
+
+        public void Impact(float amount, Vector3 source)
+        {
+            if (!IsAlive || _hull.HullInvulnerable) return;
+            amount *= Incoming;
+            if (amount <= 0f) return;
+            _hull.KnockHull(amount, source); // its Damaged event reaches the run's damage record and feedback
+            ImpactDamageTotal += amount;
         }
 
         public void DamageOverTime(float amount, Vector3 source)

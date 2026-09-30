@@ -71,6 +71,12 @@ namespace RoguePirates.V4.Composition
             if (player != null)
             {
                 player.RunSpeedMultiplier = runConfig != null && runConfig.shipSpeedMultiplier > 0f ? runConfig.shipSpeedMultiplier : 1f;
+                player.IslandImpact = runConfig == null ? default : new PlayerShipController.IslandImpactSettings
+                {
+                    MinSpeed = runConfig.islandImpactMinSpeed, Restitution = runConfig.islandBounceRestitution, PushSpeed = runConfig.islandBouncePushSpeed,
+                    Damage = runConfig.islandImpactDamage, Cooldown = runConfig.islandImpactCooldown,
+                    DamageCooldown = runConfig.islandDamageCooldown, BounceSeconds = runConfig.islandBounceSeconds,
+                };
                 player.SyncRunSpeedMultiplier();
             }
             _stageProfile = new StageProfilePort(config);

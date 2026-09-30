@@ -94,7 +94,7 @@ namespace RoguePirates.V4.Foundation.Player
         bool _acceptHumanInput = true;
 
         public Vector3 Position => transform.position;
-        public Vector3 Velocity => _velocity;
+        public Vector3 Velocity => _velocity + _knockback;
         public DamageReceiver Damage => _damage;
         public Transform VisualModel => visualModel;
         public Vector3 MovementForward => GetShipForward();
@@ -193,6 +193,85 @@ namespace RoguePirates.V4.Foundation.Player
         /// resolver": it is a per-map tuning factor (the demo's switch, now RunConfig), not a build modifier.</summary>
         public float RunSpeedMultiplier { get; set; } = 1f;
 
+        /// <summary>V5 (owner, 1 Oct 2026): hitting an island bounces the ship back and costs hull, so it never has to
+        /// reverse off a shore. Set by the run bootstrap from RunConfig; all 0 = V3 (slide along, no damage).</summary>
+        public IslandImpactSettings IslandImpact { get; set; }
+
+        [System.Serializable]
+        public struct IslandImpactSettings
+        {
+            /// <summary>Only hits faster than this (m/s into the shore) bounce and hurt.</summary>
+            public float MinSpeed;
+            /// <summary>Share of the impact speed given back as bounce, plus a fixed push-off speed (m/s).</summary>
+            public float Restitution, PushSpeed;
+            /// <summary>Hull lost per impact; seconds before another impact can bounce, and before another can hurt.</summary>
+            public float Damage, Cooldown, DamageCooldown;
+            /// <summary>Seconds the bounce's push takes to fade out.</summary>
+            public float BounceSeconds;
+            public bool Enabled => Restitution > 0f || PushSpeed > 0f || Damage > 0f;
+        }
+
+        /// <summary>Tests and the playable check: put the ship somewhere with a given velocity.</summary>
+        public void PlaceForTest(Vector3 position, Vector3 velocity)
+        {
+            position.y = _body != null ? _body.position.y : transform.position.y;
+            if (_body != null) _body.position = position;
+            transform.position = position;
+            _velocity = velocity;
+            _knockback = Vector3.zero;
+            _keptImpactAt = _nextIslandImpactAt;
+            _keptDamageAt = _nextIslandDamageAt;
+            _nextIslandImpactAt = _nextIslandDamageAt = float.NegativeInfinity;
+            var flat = new Vector3(velocity.x, 0f, velocity.z);
+            if (flat.sqrMagnitude > 1e-4f)
+            {
+                var rotation = Quaternion.LookRotation(modelForwardIsNegativeZ ? -flat : flat, Vector3.up);
+                if (_body != null) _body.rotation = rotation;
+                transform.rotation = rotation;
+            }
+        }
+
+        float _nextIslandImpactAt = float.NegativeInfinity, _nextIslandDamageAt = float.NegativeInfinity;
+        float _keptImpactAt = float.NegativeInfinity, _keptDamageAt = float.NegativeInfinity;
+
+        /// <summary>Tests: undo the cooldown reset of the last <see cref="PlaceForTest"/> (a stick held into a shore).</summary>
+        public void KeepIslandCooldownsForTest()
+        {
+            _nextIslandImpactAt = Mathf.Max(_nextIslandImpactAt, _keptImpactAt);
+            _nextIslandDamageAt = Mathf.Max(_nextIslandDamageAt, _keptDamageAt);
+        }
+        Vector3 _knockback;
+        float _knockbackDecay;
+        /// <summary>Impacts that bounced the ship this run (tests and the playable check).</summary>
+        public int IslandImpactCount { get; private set; }
+        /// <summary>Impacts that cost hull this run.</summary>
+        public int IslandDamageCount { get; private set; }
+        /// <summary>A bounce: the impact speed into the shore.</summary>
+        public event System.Action<float> IslandImpacted;
+        /// <summary>The hull an impact costs, before the build's incoming-damage multiplier (the run applies it); with no
+        /// listener the ship's own damage receiver takes it.</summary>
+        public event System.Action<Vector3, float> IslandImpactDamage;
+
+        void TryIslandImpact(Vector3 normal, float inwardSpeed, Vector3 at)
+        {
+            var s = IslandImpact;
+            if (!s.Enabled || normal == Vector3.zero || inwardSpeed < Mathf.Max(0.01f, s.MinSpeed)) return;
+            if (Time.time < _nextIslandImpactAt) return;
+            _nextIslandImpactAt = Time.time + Mathf.Max(0f, s.Cooldown);
+            // The resolver already took the inward speed out; push back off the shore (a fading push, see FixedUpdate).
+            var push = inwardSpeed * s.Restitution + s.PushSpeed;
+            _knockback = normal * push;
+            _knockbackDecay = push / Mathf.Max(0.05f, s.BounceSeconds);
+            IslandImpactCount++;
+            IslandImpacted?.Invoke(inwardSpeed);
+            if (s.Damage <= 0f || Time.time < _nextIslandDamageAt) return;
+            _nextIslandDamageAt = Time.time + Mathf.Max(0f, s.DamageCooldown);
+            IslandDamageCount++;
+            var contact = at - normal * GetHullWorldRadius();
+            if (IslandImpactDamage != null) IslandImpactDamage(contact, s.Damage);
+            else if (_damage != null) _damage.TakeDamage(s.Damage, contact, false);
+        }
+
         public void SyncRunSpeedMultiplier()
         {
             var statSpeed = RunManager.Instance != null
@@ -204,6 +283,7 @@ namespace RoguePirates.V4.Foundation.Player
         public void ResetMotion()
         {
             _velocity = Vector3.zero;
+            _knockback = Vector3.zero;
             _targetRoll = 0f;
             _currentRoll = 0f;
             _steerCommit = 0f;
@@ -381,7 +461,11 @@ namespace RoguePirates.V4.Foundation.Player
             _velocity = ClampSpeed(_velocity, forward, effectiveMaxSpeed, effectiveReverseMaxSpeed);
             _velocity = ApplyLateralGrip(_velocity, forward, dt);
 
-            var movementDelta = _velocity * dt;
+            // V5 island impact: the bounce is its own push that fades out, outside the steering's speed limits and grip
+            // (a push away from a shore the ship faces reads as reverse, which the limits would cut).
+            var movementDelta = (_velocity + _knockback) * dt;
+            if (_knockback != Vector3.zero)
+                _knockback = Vector3.MoveTowards(_knockback, Vector3.zero, _knockbackDecay * dt);
             var nextPosition = _body.position + movementDelta;
 
             var hullRadius = GetHullWorldRadius();
@@ -404,7 +488,14 @@ namespace RoguePirates.V4.Foundation.Player
                         movementDelta,
                         hullRadius,
                         hullHeight,
-                        ref _velocity);
+                        ref _velocity,
+                        out var shoreHit);
+                    if (shoreHit.Normal != Vector3.zero)
+                    {
+                        var into = Vector3.Dot(_knockback, shoreHit.Normal);
+                        if (into < 0f) _knockback -= shoreHit.Normal * into;
+                    }
+                    TryIslandImpact(shoreHit.Normal, shoreHit.InwardSpeed, nextPosition);
                 }
             }
             else
