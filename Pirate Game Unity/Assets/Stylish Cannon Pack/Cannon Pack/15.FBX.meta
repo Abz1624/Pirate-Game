@@ -1,143 +1,434 @@
 fileFormatVersion: 2
 guid: d1be5cbea130544f6b29523de1f28c65
+AssetOrigin:
+  serializedVersion: 1
+  productId: 174145
+  packageName: Stylish Cannon Pack
+  packageVersion: 1.0
+  assetPath: Assets/Stylish Cannon Pack/Cannon Pack/15.FBX
+  uploadId: 410225
 ModelImporter:
-  serializedVersion: 23
-  fileIDToRecycleName:
-    100000: //RootNode
-    100002: Box026
-    100004: Cylinder087
-    100006: Object131
-    100008: Object132
-    100010: Object133
-    100012: Sphere079
-    100014: Sphere080
-    100016: Sphere081
-    100018: Sphere082
-    100020: Sphere083
-    100022: Sphere084
-    100024: Sphere085
-    100026: Sphere086
-    100028: Sphere087
-    100030: Sphere088
-    100032: Sphere089
-    100034: Sphere090
-    100036: Sphere091
-    100038: Sphere092
-    100040: Sphere093
-    100042: Sphere094
-    400000: //RootNode
-    400002: Box026
-    400004: Cylinder087
-    400006: Object131
-    400008: Object132
-    400010: Object133
-    400012: Sphere079
-    400014: Sphere080
-    400016: Sphere081
-    400018: Sphere082
-    400020: Sphere083
-    400022: Sphere084
-    400024: Sphere085
-    400026: Sphere086
-    400028: Sphere087
-    400030: Sphere088
-    400032: Sphere089
-    400034: Sphere090
-    400036: Sphere091
-    400038: Sphere092
-    400040: Sphere093
-    400042: Sphere094
-    2100000: 'Material #41'
-    2100002: 'Material #26'
-    2100004: 'Material #29'
-    2100006: 'Material #27'
-    2300000: Box026
-    2300002: Cylinder087
-    2300004: Object131
-    2300006: Object132
-    2300008: Object133
-    2300010: Sphere079
-    2300012: Sphere080
-    2300014: Sphere081
-    2300016: Sphere082
-    2300018: Sphere083
-    2300020: Sphere084
-    2300022: Sphere085
-    2300024: Sphere086
-    2300026: Sphere087
-    2300028: Sphere088
-    2300030: Sphere089
-    2300032: Sphere090
-    2300034: Sphere091
-    2300036: Sphere092
-    2300038: Sphere093
-    2300040: Sphere094
-    3300000: Box026
-    3300002: Cylinder087
-    3300004: Object131
-    3300006: Object132
-    3300008: Object133
-    3300010: Sphere079
-    3300012: Sphere080
-    3300014: Sphere081
-    3300016: Sphere082
-    3300018: Sphere083
-    3300020: Sphere084
-    3300022: Sphere085
-    3300024: Sphere086
-    3300026: Sphere087
-    3300028: Sphere088
-    3300030: Sphere089
-    3300032: Sphere090
-    3300034: Sphere091
-    3300036: Sphere092
-    3300038: Sphere093
-    3300040: Sphere094
-    4300000: Sphere084
-    4300002: Box026
-    4300004: Sphere079
-    4300006: Cylinder087
-    4300008: Sphere093
-    4300010: Sphere081
-    4300012: Sphere082
-    4300014: Object132
-    4300016: Object133
-    4300018: Sphere083
-    4300020: Sphere094
-    4300022: Sphere085
-    4300024: Sphere086
-    4300026: Sphere087
-    4300028: Sphere088
-    4300030: Sphere089
-    4300032: Sphere090
-    4300034: Sphere091
-    4300036: Sphere092
-    4300038: Object131
-    4300040: Sphere080
-    6400000: Box026
-    6400002: Cylinder087
-    6400004: Object131
-    6400006: Object132
-    6400008: Object133
-    6400010: Sphere079
-    6400012: Sphere080
-    6400014: Sphere081
-    6400016: Sphere082
-    6400018: Sphere083
-    6400020: Sphere084
-    6400022: Sphere085
-    6400024: Sphere086
-    6400026: Sphere087
-    6400028: Sphere088
-    6400030: Sphere089
-    6400032: Sphere090
-    6400034: Sphere091
-    6400036: Sphere092
-    6400038: Sphere093
-    6400040: Sphere094
-  externalObjects: {}
+  serializedVersion: 24200
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: //RootNode
+  - first:
+      1: 100002
+    second: Box026
+  - first:
+      1: 100004
+    second: Cylinder087
+  - first:
+      1: 100006
+    second: Object131
+  - first:
+      1: 100008
+    second: Object132
+  - first:
+      1: 100010
+    second: Object133
+  - first:
+      1: 100012
+    second: Sphere079
+  - first:
+      1: 100014
+    second: Sphere080
+  - first:
+      1: 100016
+    second: Sphere081
+  - first:
+      1: 100018
+    second: Sphere082
+  - first:
+      1: 100020
+    second: Sphere083
+  - first:
+      1: 100022
+    second: Sphere084
+  - first:
+      1: 100024
+    second: Sphere085
+  - first:
+      1: 100026
+    second: Sphere086
+  - first:
+      1: 100028
+    second: Sphere087
+  - first:
+      1: 100030
+    second: Sphere088
+  - first:
+      1: 100032
+    second: Sphere089
+  - first:
+      1: 100034
+    second: Sphere090
+  - first:
+      1: 100036
+    second: Sphere091
+  - first:
+      1: 100038
+    second: Sphere092
+  - first:
+      1: 100040
+    second: Sphere093
+  - first:
+      1: 100042
+    second: Sphere094
+  - first:
+      4: 400000
+    second: //RootNode
+  - first:
+      4: 400002
+    second: Box026
+  - first:
+      4: 400004
+    second: Cylinder087
+  - first:
+      4: 400006
+    second: Object131
+  - first:
+      4: 400008
+    second: Object132
+  - first:
+      4: 400010
+    second: Object133
+  - first:
+      4: 400012
+    second: Sphere079
+  - first:
+      4: 400014
+    second: Sphere080
+  - first:
+      4: 400016
+    second: Sphere081
+  - first:
+      4: 400018
+    second: Sphere082
+  - first:
+      4: 400020
+    second: Sphere083
+  - first:
+      4: 400022
+    second: Sphere084
+  - first:
+      4: 400024
+    second: Sphere085
+  - first:
+      4: 400026
+    second: Sphere086
+  - first:
+      4: 400028
+    second: Sphere087
+  - first:
+      4: 400030
+    second: Sphere088
+  - first:
+      4: 400032
+    second: Sphere089
+  - first:
+      4: 400034
+    second: Sphere090
+  - first:
+      4: 400036
+    second: Sphere091
+  - first:
+      4: 400038
+    second: Sphere092
+  - first:
+      4: 400040
+    second: Sphere093
+  - first:
+      4: 400042
+    second: Sphere094
+  - first:
+      21: 2100000
+    second: Material #41
+  - first:
+      21: 2100002
+    second: Material #26
+  - first:
+      21: 2100004
+    second: Material #29
+  - first:
+      21: 2100006
+    second: Material #27
+  - first:
+      23: 2300000
+    second: Box026
+  - first:
+      23: 2300002
+    second: Cylinder087
+  - first:
+      23: 2300004
+    second: Object131
+  - first:
+      23: 2300006
+    second: Object132
+  - first:
+      23: 2300008
+    second: Object133
+  - first:
+      23: 2300010
+    second: Sphere079
+  - first:
+      23: 2300012
+    second: Sphere080
+  - first:
+      23: 2300014
+    second: Sphere081
+  - first:
+      23: 2300016
+    second: Sphere082
+  - first:
+      23: 2300018
+    second: Sphere083
+  - first:
+      23: 2300020
+    second: Sphere084
+  - first:
+      23: 2300022
+    second: Sphere085
+  - first:
+      23: 2300024
+    second: Sphere086
+  - first:
+      23: 2300026
+    second: Sphere087
+  - first:
+      23: 2300028
+    second: Sphere088
+  - first:
+      23: 2300030
+    second: Sphere089
+  - first:
+      23: 2300032
+    second: Sphere090
+  - first:
+      23: 2300034
+    second: Sphere091
+  - first:
+      23: 2300036
+    second: Sphere092
+  - first:
+      23: 2300038
+    second: Sphere093
+  - first:
+      23: 2300040
+    second: Sphere094
+  - first:
+      33: 3300000
+    second: Box026
+  - first:
+      33: 3300002
+    second: Cylinder087
+  - first:
+      33: 3300004
+    second: Object131
+  - first:
+      33: 3300006
+    second: Object132
+  - first:
+      33: 3300008
+    second: Object133
+  - first:
+      33: 3300010
+    second: Sphere079
+  - first:
+      33: 3300012
+    second: Sphere080
+  - first:
+      33: 3300014
+    second: Sphere081
+  - first:
+      33: 3300016
+    second: Sphere082
+  - first:
+      33: 3300018
+    second: Sphere083
+  - first:
+      33: 3300020
+    second: Sphere084
+  - first:
+      33: 3300022
+    second: Sphere085
+  - first:
+      33: 3300024
+    second: Sphere086
+  - first:
+      33: 3300026
+    second: Sphere087
+  - first:
+      33: 3300028
+    second: Sphere088
+  - first:
+      33: 3300030
+    second: Sphere089
+  - first:
+      33: 3300032
+    second: Sphere090
+  - first:
+      33: 3300034
+    second: Sphere091
+  - first:
+      33: 3300036
+    second: Sphere092
+  - first:
+      33: 3300038
+    second: Sphere093
+  - first:
+      33: 3300040
+    second: Sphere094
+  - first:
+      43: 4300000
+    second: Sphere084
+  - first:
+      43: 4300002
+    second: Box026
+  - first:
+      43: 4300004
+    second: Sphere079
+  - first:
+      43: 4300006
+    second: Cylinder087
+  - first:
+      43: 4300008
+    second: Sphere093
+  - first:
+      43: 4300010
+    second: Sphere081
+  - first:
+      43: 4300012
+    second: Sphere082
+  - first:
+      43: 4300014
+    second: Object132
+  - first:
+      43: 4300016
+    second: Object133
+  - first:
+      43: 4300018
+    second: Sphere083
+  - first:
+      43: 4300020
+    second: Sphere094
+  - first:
+      43: 4300022
+    second: Sphere085
+  - first:
+      43: 4300024
+    second: Sphere086
+  - first:
+      43: 4300026
+    second: Sphere087
+  - first:
+      43: 4300028
+    second: Sphere088
+  - first:
+      43: 4300030
+    second: Sphere089
+  - first:
+      43: 4300032
+    second: Sphere090
+  - first:
+      43: 4300034
+    second: Sphere091
+  - first:
+      43: 4300036
+    second: Sphere092
+  - first:
+      43: 4300038
+    second: Object131
+  - first:
+      43: 4300040
+    second: Sphere080
+  - first:
+      64: 6400000
+    second: Box026
+  - first:
+      64: 6400002
+    second: Cylinder087
+  - first:
+      64: 6400004
+    second: Object131
+  - first:
+      64: 6400006
+    second: Object132
+  - first:
+      64: 6400008
+    second: Object133
+  - first:
+      64: 6400010
+    second: Sphere079
+  - first:
+      64: 6400012
+    second: Sphere080
+  - first:
+      64: 6400014
+    second: Sphere081
+  - first:
+      64: 6400016
+    second: Sphere082
+  - first:
+      64: 6400018
+    second: Sphere083
+  - first:
+      64: 6400020
+    second: Sphere084
+  - first:
+      64: 6400022
+    second: Sphere085
+  - first:
+      64: 6400024
+    second: Sphere086
+  - first:
+      64: 6400026
+    second: Sphere087
+  - first:
+      64: 6400028
+    second: Sphere088
+  - first:
+      64: 6400030
+    second: Sphere089
+  - first:
+      64: 6400032
+    second: Sphere090
+  - first:
+      64: 6400034
+    second: Sphere091
+  - first:
+      64: 6400036
+    second: Sphere092
+  - first:
+      64: 6400038
+    second: Sphere093
+  - first:
+      64: 6400040
+    second: Sphere094
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material #26
+    second: {fileID: 2100000, guid: 29965b7418d7c4eb096a904da1ab0fbe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material #27
+    second: {fileID: 2100000, guid: c048534f9faa9400d81d63e6d73e1724, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material #29
+    second: {fileID: 2100000, guid: a9dbe034139994ff9a1db15e4b74a6fa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material #41
+    second: {fileID: 2100000, guid: 9e83c288aebbf4105ab7fefa3cfad108, type: 2}
   materials:
-    importMaterials: 1
+    materialImportMode: 1
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -146,9 +437,8 @@ ModelImporter:
     bakeSimulation: 0
     resampleCurves: 1
     optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -170,25 +460,39 @@ ModelImporter:
     meshCompression: 0
     addColliders: 1
     useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
     importVisibility: 1
     importBlendShapes: 1
     importCameras: 1
     importLights: 1
+    nodeNameCollisionStrategy: 0
+    fileIdsGeneration: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
-    optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
+    bakeAxisConversion: 0
     preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
+    meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 0
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
-    previousCalculatedGlobalScale: 1
-    hasPreviousCalculatedGlobalScale: 0
+    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -197,10 +501,10 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
+  referencedClips: []
   importAnimation: 1
-  copyAvatar: 0
   humanDescription:
-    serializedVersion: 2
+    serializedVersion: 3
     human: []
     skeleton: []
     armTwist: 0.5
@@ -210,21 +514,20 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
+    globalScale: 1
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 0
   humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 0
+  importBlendShapeDeformPercent: 0
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 174145
-  packageName: Stylish Cannon Pack
-  packageVersion: 1.0
-  assetPath: Assets/Stylish Cannon Pack/Cannon Pack/15.FBX
-  uploadId: 410225
