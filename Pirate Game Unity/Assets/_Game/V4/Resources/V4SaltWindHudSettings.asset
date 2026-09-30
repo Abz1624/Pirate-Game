@@ -43,6 +43,12 @@ MonoBehaviour:
   hideNarrative: 1
   hideBeaconGuide: 1
   weaponCardsOnly: 1
+  hideCaptainActive: 1
+  hideBoostMeter: 1
+  excludedWeapons:
+  - flamethrower
+  music: {fileID: 8300000, guid: cebcbf44b9aab174b978de42302033cf, type: 3}
+  musicVolume: 0.6
   weaponCards:
   - weaponId: broadside_battery
     cardPrefab: {fileID: 2751188906273833744, guid: 300a29baf4ecd914ab11b982437eb26e, type: 3}

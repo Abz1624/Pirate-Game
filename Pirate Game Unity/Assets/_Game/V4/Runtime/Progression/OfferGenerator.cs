@@ -113,6 +113,8 @@ namespace RoguePirates.V4.Progression
         /// level-up deals like any other. Set by the presentation from its demo settings; off in tests. The fallback
         /// cards (heal, damage, speed) still fill a deal when no weapon card is left.</summary>
         public static bool WeaponCardsOnly;
+        /// <summary>Demo: weapons never offered (set from the demo settings; empty in tests).</summary>
+        public static readonly HashSet<string> ExcludedWeapons = new HashSet<string>();
 
         /// <summary>A new run: the pity count starts again.</summary>
         public void ResetForRun() => DealsSinceRare = 0;
@@ -370,7 +372,7 @@ namespace RoguePirates.V4.Progression
 
         bool HasUnownedWeapon(IOfferState state)
         {
-            foreach (var w in _weapons()) if (!Contains(state.OwnedWeapons, w.weaponId)) return true;
+            foreach (var w in _weapons()) if (!Contains(state.OwnedWeapons, w.weaponId) && !ExcludedWeapons.Contains(w.weaponId)) return true;
             return false;
         }
 
@@ -414,6 +416,7 @@ namespace RoguePirates.V4.Progression
             foreach (var w in _weapons())
             {
                 if (Contains(state.OwnedWeapons, w.weaponId)) continue;
+                if (ExcludedWeapons.Contains(w.weaponId)) continue;
                 if (!ctx.IsWeaponOfferable(w.weaponId)) continue;
                 candidates.Add(w);
                 weights.Add(1f);

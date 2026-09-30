@@ -139,8 +139,11 @@ namespace RoguePirates.V4.Foundation.Player
             IgnoreIslandPhysicsCollisions();
             SyncRunSpeedMultiplier();
 
-            var joystickRoot = GameObject.Find("JoystickBG");
-            var joystick = joystickRoot != null ? joystickRoot.GetComponent<VirtualJoystick>() : null;
+            // The stick is authored inactive and switched on at run start in the mobile app: find it inactive too, or
+            // touch steering never reaches the ship (an inactive stick reads zero).
+            VirtualJoystick joystick = null;
+            foreach (var j in FindObjectsByType<VirtualJoystick>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (j.gameObject.scene == gameObject.scene) { joystick = j; break; }
             _compositeInput = new CompositeShipSteerInput(joystick);
         }
 

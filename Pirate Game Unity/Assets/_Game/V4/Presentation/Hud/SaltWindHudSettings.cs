@@ -33,6 +33,14 @@ namespace RoguePirates.V4.Presentation.Hud
         public bool weaponCardsOnly = true;
         [Tooltip("Hide the Captain's special ability button and its effect bar.")]
         public bool hideCaptainActive = true;
+        [Tooltip("Hide the boost meter.")]
+        public bool hideBoostMeter = true;
+        [Tooltip("Weapons never offered on level-up cards (weapon ids).")]
+        public string[] excludedWeapons = Array.Empty<string>();
+        [Header("Music")]
+        [Tooltip("Background music, looped in every scene.")]
+        public AudioClip music;
+        [Range(0f, 1f)] public float musicVolume = 0.6f;
         [Tooltip("One level-up card per weapon (Assets/_Game/V4/Demo/LevelUpCards): its Icon is the icon that weapon's cards show.")]
         public WeaponCard[] weaponCards = Array.Empty<WeaponCard>();
 

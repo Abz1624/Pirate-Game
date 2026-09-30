@@ -191,6 +191,10 @@ namespace RoguePirates.V4.Presentation
             LevelUp = RoguePirates.V4.Presentation.Hud.LevelUpPresenter.Create(FindRunCanvas(), game.Config);
             if (LevelUp == null) return;
             RoguePirates.V4.Progression.OfferGenerator.WeaponCardsOnly = RoguePirates.V4.Presentation.Hud.SaltWindHudSettings.Hides(s => s.weaponCardsOnly);
+            RoguePirates.V4.Progression.OfferGenerator.ExcludedWeapons.Clear();
+            var demo = RoguePirates.V4.Foundation.Core.DemoMode.Off ? null : RoguePirates.V4.Presentation.Hud.SaltWindHudSettings.Load();
+            if (demo != null && demo.excludedWeapons != null)
+                foreach (var id in demo.excludedWeapons) if (!string.IsNullOrEmpty(id)) RoguePirates.V4.Progression.OfferGenerator.ExcludedWeapons.Add(id);
             if (SaltWindHud != null && SaltWindHud.UpgradeSelection != null)
                 LevelUp.UseArtCards(SaltWindHud.UpgradeSelection, RoguePirates.V4.Presentation.Hud.IconCatalog.Load());
             game.Context.Replace<RoguePirates.V4.Progression.IOfferPresenter>(LevelUp);
@@ -378,7 +382,8 @@ namespace RoguePirates.V4.Presentation
 
         void OnDestroy()
         {
-            RoguePirates.V4.Progression.OfferGenerator.WeaponCardsOnly = false; // the demo switch never outlives the run
+            RoguePirates.V4.Progression.OfferGenerator.WeaponCardsOnly = false; // the demo switches never outlive the run
+            RoguePirates.V4.Progression.OfferGenerator.ExcludedWeapons.Clear();
             if (WeaponEffects != null) WeaponEffects.Clear();
             DisposeWorldTemplates();
             Pools?.Dispose();

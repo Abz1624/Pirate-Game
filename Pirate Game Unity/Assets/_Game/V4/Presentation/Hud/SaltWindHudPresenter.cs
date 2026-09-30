@@ -167,6 +167,11 @@ namespace RoguePirates.V4.Presentation.Hud
                 var t = transform.Find(Replaced[i]);
                 if (t != null && t.gameObject.activeSelf) t.gameObject.SetActive(false);
             }
+            if (_settings.hideBoostMeter)
+            {
+                var boost = transform.Find("Boost_Meter");
+                if (boost != null && boost.gameObject.activeSelf) boost.gameObject.SetActive(false);
+            }
             var show = _authored == null || _authored.ProfileVisible;
             if (_hud.activeSelf != show) _hud.SetActive(show);
             if (!show) return;
