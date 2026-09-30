@@ -274,6 +274,11 @@ power grows faster than enemies late (the survivor-like power fantasy) without t
   minute 8 in the model), regression tests for register rows touched.
 
 Automated check: model parity and Monte Carlo reports; a scripted run per Captain to 5:00 with no errors.
+(Built 30 Sep: evolution from level 8 with Rare/Epic +2 and Legendary +3 levels and a pity rule; a 40% chance that a
+chest gives a ready weapon's evolution item; weapons within ±20% of their role at levels 1, 4, 8 and 12; plain Logbooks
+and items in their bands, volley and crit pieces flagged, synergy items not banded; Captains within ±10% on run length;
+5 items by 10:00. Focused builds evolve around minute 6, not 7–9, with the confirmed rules. See
+`phase-03-builds/PLAN.md`.)
 Owner playtest: one run per Captain; name any weapon that feels useless or broken.
 
 #### M4 — New weapons, batch 1, and the missing evolutions

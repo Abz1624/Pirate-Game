@@ -478,8 +478,8 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void ChestPrices_FollowV3sSequence()
         {
-            var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
-            using var runtime = new ConfigSetRuntime(set);
+            // V5 M3 retuned the default prices; the v3-parity preset keeps V3's.
+            using var runtime = V4DifficultyM10Tests.Parity();
             var stage = runtime.Single<StageContentConfig>();
             CollectionAssert.AreEqual(new[] { 20, 31, 38, 46, 56 }, Enumerable.Range(0, 5).Select(n => ChestEconomy.ChestPrice(stage, n)).ToArray(), "V3's price sequence");
         }
@@ -790,8 +790,9 @@ namespace RoguePirates.V4.Tests
             // V3's Saltwind stage profile values.
             Assert.AreEqual(12, stage.salvageChestCount);
             Assert.AreEqual(20, stage.chestBasePrice);
-            Assert.AreEqual(1.22f, stage.chestPriceGrowth);
-            Assert.AreEqual(25, stage.chestPriceIncrementBase);
+            // V5 M3 retuned the chest price ladder (V3's 25 × 1.22^n is in the v3-parity preset, tested by ChestPrices_FollowV3sSequence).
+            Assert.AreEqual(1.35f, stage.chestPriceGrowth);
+            Assert.AreEqual(45, stage.chestPriceIncrementBase);
             Assert.IsTrue(stage.disableGoldTriggeredChestSpawn);
             Assert.AreEqual(8f, stage.signalBuoyChargeSeconds);
             Assert.AreEqual(20, stage.powderCacheBonusGold);

@@ -1,15 +1,15 @@
 {
   "updated": "30 Sep 2026",
-  "statusLine": "M1 and M2 built · awaiting your playtests · next: M3 build balance",
+  "statusLine": "M1, M2 and M3 built · awaiting your playtests · next: M4 new weapons",
   "statusOk": false,
   "facts": [
     [
       "Progress",
-      "M0 done; M1 and M2 built, reviewed and committed (awaiting your playtests)"
+      "M0 done; M1, M2 and M3 built, reviewed and committed (awaiting your playtests)"
     ],
     [
       "Tests",
-      "EditMode 352/352 · PlayMode 50/50"
+      "EditMode 367/367 · PlayMode 51/51"
     ],
     [
       "Gate",
@@ -30,6 +30,10 @@
       "chip": "built 30 Sep · awaiting your playtest"
     },
     "M2": {
+      "state": "playtest",
+      "chip": "built 30 Sep · awaiting your playtest"
+    },
+    "M3": {
       "state": "playtest",
       "chip": "built 30 Sep · awaiting your playtest"
     }
@@ -113,13 +117,18 @@
     {
       "when": "30 Sep",
       "what": "<strong>M2 balance model built</strong> (unattended): a Monte Carlo simulator written new on V4 (the real level-up, item and Captain code; ten player personalities), calibrated against the V4 autopilot's recorded runs (median death 7.8 vs 8.0 Observe, 6.4 vs 6.3 Adaptive). It found every personality sinking at the 2:30 Reef Crab, slow level-ups, a crowd stuck at the cap from 4:00, 1-second elites and overtime ending every run by ~13 min. Retuned: faster XP curve, a ~17 s Reef Crab, ~5.5 s elites, a ~55 s Barnacle King, gentler growth after 2:00, lower band rates from 4:00, a slower overtime ramp, the director's on-track curve re-measured. 72 of 76 revised targets met (66 of 76 of the first proposals). New F1 console Balance section. Review: 1 blocker (a boss HP change the game ignored), 7 majors, 8 minors; all fixed or recorded; second pass found 4 more, fixed.",
+      "commit": "4112e7af"
+    },
+    {
+      "when": "30 Sep",
+      "what": "<strong>M3 build balance built</strong> (unattended): evolutions reachable (the card from weapon level 8 with its item; Rare/Epic cards +2 levels, Legendary +3; a pity rule; a 40% chance that a chest gives a ready weapon's evolution item) — focused builds now evolve in ~60% of runs, around minute 6. All ten weapons within ±20% of their role at levels 1, 4, 8 and 12 (the Flamethrower no longer fades, the Powder Kegs no longer lag, the Lightning Mast no longer runs away). Plain Logbooks and items in their rarity bands; volley and crit pieces flagged; synergy items left for you. Captains within ±10% on run length (Flint's hull 90 → 120). 5 items by 10:00. Review: 3 majors, 10 minors, then 1 major and 3 minors on the fixes; all fixed or recorded.",
       "commit": ""
     }
   ],
   "todos": {
     "next": [
-      "<strong>Playtest M1</strong> (enemy flow) and <strong>M2</strong> (balance): see each phase's box on this page for what to look for.",
-      "<strong>M2 decisions</strong>: which balance targets stand, the Turtle personality, the 6:00 crowd (details on the M2 page).",
+      "<strong>Playtest M1</strong> (enemy flow), <strong>M2</strong> (balance) and <strong>M3</strong> (builds): see each phase's box on this page.",
+      "<strong>M2 and M3 decisions</strong>: targets, the Turtle, evolution level, Captains, synergy items, Epic +2, volley and crit pieces, pity and refreshes (details on each phase's page and in TODO-FOR-YOU.md).",
       "<strong>Get the reference phone</strong> (Galaxy A15 or A16 4G) before M7: today's build needs 344 MB of memory where the phone allows about 256 MB.",
       "<strong>Accounts</strong> (list and costs in the answers): Railway by M9; a domain, a Google Cloud project and Resend by M10b; Helius by M11; Firebase by M19."
     ],
@@ -280,6 +289,62 @@
       "check": "Independent review (v5-reviewer), two passes",
       "result": "1 blocker · 7 majors · 8 minors → fixed or recorded; second pass: 4 new, fixed",
       "evidence": "plan/v5/phase-02-model/PLAN.md → Independent review"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M3",
+      "check": "Weapon parity (the game's own upgrade path, 300 paths each)",
+      "result": "10 of 10 within ±20% at levels 1, 4, 8, 12",
+      "evidence": "plan/v5/phase-03-builds/evidence/weapon-parity.md"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M3",
+      "check": "Logbook and item bands",
+      "result": "plain pieces in band; 5 flagged (volley, crit); synergy items not banded",
+      "evidence": "plan/v5/phase-03-builds/evidence/build-pieces.md"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M3",
+      "check": "Captains (200 simulated runs each)",
+      "result": "run length ×0.92–×1.07; offense at 10:00 ×0.80–×1.16",
+      "evidence": "plan/v5/phase-03-builds/evidence/captains.md"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M3",
+      "check": "Simulator report (M2 targets after M3)",
+      "result": "74 of 76 met (was 72)",
+      "evidence": "plan/v5/phase-03-builds/model-report.md"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M3",
+      "check": "EditMode, all assemblies",
+      "result": "367/367 passed",
+      "evidence": "plan/v5/phase-03-builds/evidence/editmode.json"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M3",
+      "check": "PlayMode, all assemblies (incl. the evolution chain in the real run)",
+      "result": "51/51 passed",
+      "evidence": "plan/v5/phase-03-builds/evidence/playmode.json"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M3",
+      "check": "Playable check: each of the six Captains to 5:00 in a real Play session",
+      "result": "all six ran, actives used, 0 game errors",
+      "evidence": "plan/v5/phase-03-builds/evidence/playable/"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "M3",
+      "check": "Independent review (v5-reviewer), two passes",
+      "result": "3 majors · 10 minors, then 1 major · 3 minors → fixed or recorded",
+      "evidence": "plan/v5/phase-03-builds/PLAN.md → Independent review"
     }
   ],
   "phaseResults": {
@@ -331,6 +396,24 @@
       {
         "title": "Your playtest",
         "text": "Three runs. Do level-ups arrive at a good pace (roughly every 8 s at first, then every 15-20 s)? Is the Reef Crab a real but short fight? Do elites feel tougher (4-8 s) and the Barnacle King a proper fight? Does the late voyage feel powerful rather than drowning? F1 → Balance → Run model shows the targets, the model and your run on one graph."
+      }
+    ],
+    "M3": [
+      {
+        "title": "What changed",
+        "text": "Evolutions: the card from weapon level 8 with its item, rarer cards grant 2–3 levels, a pity rule, and chests favour a ready weapon's evolution item. Weapons rebalanced within their roles (base damage and how fast upgrades grow). Gunnery Manual, Carpenter's Notes and Dragon's Breath Nozzle retuned; chest prices steeper (5 items by 10:00); Flint's hull 90 → 120. The v3-parity preset restores every old value."
+      },
+      {
+        "title": "Tests",
+        "text": "EditMode 367/367, PlayMode 51/51 (incl. the whole evolution chain in the real run). All six Captains played to 5:00 with 0 game errors."
+      },
+      {
+        "title": "Your decisions",
+        "text": "Evolution at level 8 (focused builds evolve around minute 6) or 10; Captains balanced on run length or offense; the synergy items (Black Powder Keg, Powder Fuse, Sea Witch's Eye, Leviathan's Tooth, Stormglass, Golden Figurehead); Epic +2 levels; volley pieces (Extra Hands, Broadside Drum) and crit; refreshes and the pity rule."
+      },
+      {
+        "title": "Your playtest",
+        "text": "One run per Captain. Name any weapon that feels useless or broken. Do rarer cards feel like a big jump (+2/+3 levels)? Does an evolution arrive in a normal run, and does it feel earned? Is Flint too tanky now?"
       }
     ]
   },
@@ -906,6 +989,47 @@
           "where": "Second pass",
           "finding": "The test script could discard unsaved scenes; hordes modelled with the adaptive levers; a duplicated affix table; a stale comment.",
           "fix": "Fixed: the script now stops and names unsaved scenes."
+        }
+      ]
+    },
+    {
+      "title": "M3 build balance: implementation review (30 Sep)",
+      "summary": "<strong>No blockers; 3 majors, 10 minors</strong>, then on the fixes 1 major and 3 minors; all fixed or recorded.",
+      "rows": [
+        {
+          "n": "1",
+          "sev": "Major",
+          "where": "Captains",
+          "finding": "Balanced on run length, not power; offense spread not stated.",
+          "fix": "Recorded as your decision with the tested 200-run table (run length ×0.92–×1.07, offense ×0.80–×1.16)."
+        },
+        {
+          "n": "2",
+          "sev": "Major",
+          "where": "Synergy items",
+          "finding": "Five items retuned on a generic build that misprices them.",
+          "fix": "Reverted; marked 'not banded'; your decision."
+        },
+        {
+          "n": "3",
+          "sev": "Major",
+          "where": "Tests",
+          "finding": "New rules not tested through the game's code path.",
+          "fix": "Module-path tests and a PlayMode test of the whole evolution chain."
+        },
+        {
+          "n": "4–13",
+          "sev": "Minor",
+          "where": "Various",
+          "finding": "Pity counting and one-card rule, two level settings, preset and zero-draw tests, level 8 parity, claims, docs.",
+          "fix": "Fixed or recorded."
+        },
+        {
+          "n": "N1–N4",
+          "sev": "Major / Minor",
+          "where": "Second pass",
+          "finding": "Stale Captain numbers; a check's scene reload order; pity carry-over; a test accessor.",
+          "fix": "Fixed or recorded."
         }
       ]
     }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.swivel_guns
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   weaponId: swivel_guns
   displayName: Swivel Guns
   description: Rapid omni-directional cleanup fire.
@@ -24,7 +24,7 @@ MonoBehaviour:
   targeting: 0
   tags:
   - Gunnery
-  baseDamage: 6
+  baseDamage: 5.4652953
   baseCooldown: 0.6
   range: 16
   baseQuantity: 1
@@ -40,14 +40,14 @@ MonoBehaviour:
   validUpgradeAxes: 
   upgradeAxes:
   - axis: 0
-    baseIncrement: 0.08
+    baseIncrement: 0.14235395
     offerWeight: 1.2
-    maxAccumulated: 2
+    maxAccumulated: 3.5588498
     displayFormat: 
   - axis: 1
-    baseIncrement: 0.05
+    baseIncrement: 0.08897122
     offerWeight: 1
-    maxAccumulated: 0.6
+    maxAccumulated: 1.0676544
     displayFormat: 
   - axis: 2
     baseIncrement: 1
@@ -55,14 +55,14 @@ MonoBehaviour:
     maxAccumulated: 4
     displayFormat: 
   - axis: 3
-    baseIncrement: 0.06
+    baseIncrement: 0.1067655
     offerWeight: 0.7
-    maxAccumulated: 1.5
+    maxAccumulated: 2.6691356
     displayFormat: 
   - axis: 6
-    baseIncrement: 0.05
+    baseIncrement: 0.08897122
     offerWeight: 0.6
-    maxAccumulated: 1.5
+    maxAccumulated: 2.6691356
     displayFormat: 
   databaseOrder: 46
   procCoefficient: 0.35

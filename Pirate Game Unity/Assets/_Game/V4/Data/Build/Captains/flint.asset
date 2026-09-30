@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.CaptainConfig
   configId: captain.flint
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   captainKey: flint
   legacyId: 2
   displayName: Sparky
@@ -25,7 +25,7 @@ MonoBehaviour:
   activeSummary: "Light the Fuse (18s) \u2014 arm kegs, +20% blast radius 4s"
   themeColor: {r: 0.7490196, g: 0.11372549, b: 0.17254902, a: 1}
   menuOrder: 3
-  baseHull: 90
+  baseHull: 120
   baseMoveSpeed: 6.3
   startingWeaponId: powder_kegs
   v3StartingWeaponId: powder_kegs

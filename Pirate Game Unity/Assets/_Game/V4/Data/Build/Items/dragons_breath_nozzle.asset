@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
   configId: item.dragons_breath_nozzle
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   itemId: dragons_breath_nozzle
   displayName: Dragon's Breath Nozzle
   description: "Evolution synergy \u2014 Hellfire Nozzle."
@@ -26,5 +26,5 @@ MonoBehaviour:
   statModifiers:
   - stat: 10
     additive: 0
-    multiplicative: 1.08
+    multiplicative: 1.3205476
   effects: []

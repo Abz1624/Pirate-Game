@@ -1,0 +1,19 @@
+rook 1:00  t=70 captain=rook level=2 weapons=2 actives=1 alive=15
+rook 3:00  t=189 captain=rook level=5 weapons=3 actives=1 alive=8
+rook 5:00  t=315 captain=rook level=5 weapons=3 actives=2 alive=11
+brine 1:00  t=72 captain=brine level=2 weapons=2 actives=1 alive=14
+brine 3:00  t=189 captain=brine level=5 weapons=4 actives=1 alive=10
+brine 5:00  t=315 captain=brine level=6 weapons=5 actives=2 alive=13
+richie 1:00  t=68 captain=richie level=3 weapons=3 actives=1 alive=14
+richie 3:00  t=191 captain=richie level=6 weapons=5 actives=2 alive=10
+richie 5:00  t=315 captain=richie level=6 weapons=5 actives=3 alive=8
+flint 1:00  t=66 captain=flint level=5 weapons=3 actives=1 alive=14
+flint 3:00  t=191 captain=flint level=7 weapons=3 actives=1 alive=7
+flint 5:00  t=315 captain=flint level=7 weapons=3 actives=2 alive=11
+ember 1:00  t=70 captain=ember level=3 weapons=3 actives=1 alive=14
+ember 3:00  t=192 captain=ember level=4 weapons=3 actives=2 alive=9
+ember 5:00  t=312 captain=ember level=5 weapons=3 actives=2 alive=10
+roxie 1:00  t=72 captain=roxie level=2 weapons=2 actives=1 alive=14
+roxie 3:00  t=192 captain=roxie level=4 weapons=3 actives=2 alive=8
+roxie 5:00  t=315 captain=roxie level=4 weapons=3 actives=3 alive=14
+saved Captain choice restored to 0

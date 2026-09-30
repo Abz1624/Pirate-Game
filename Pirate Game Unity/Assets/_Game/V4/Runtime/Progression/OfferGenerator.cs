@@ -104,6 +104,50 @@ namespace RoguePirates.V4.Progression
 
         ProgressionConfig P => _progression();
 
+        /// <summary>V5 M3 pity rule: card deals since the last one holding a card of the pity rarity or better. A deal is
+        /// every set of cards shown (a refresh deals again); a Rare card shown but not taken still resets it.</summary>
+        public int DealsSinceRare { get; private set; }
+        bool _pityRaised; // the pity rule raises one weapon upgrade per deal
+
+        /// <summary>A new run: the pity count starts again.</summary>
+        public void ResetForRun() => DealsSinceRare = 0;
+
+        /// <summary>Weapon level the evolution card needs (V3: the max level).</summary>
+        public int EvolutionUnlockLevel => P.evolutionUnlockLevel > 0 ? P.evolutionUnlockLevel : P.maxWeaponLevel;
+
+        /// <summary>Levels a weapon-upgrade card of this rarity grants (V3: 1).</summary>
+        public int LevelsFor(int rarity)
+        {
+            var levels = P.levelsPerRarity;
+            return levels != null && rarity >= 0 && rarity < levels.Length ? Mathf.Max(1, levels[rarity]) : 1;
+        }
+
+        /// <summary>A weapon upgrade's rarity: the roll (one Loot draw, as V3), raised by the pity rule when it is due.</summary>
+        int RollUpgradeRarity(IOfferRandom rng, float luck)
+        {
+            var rarity = RollRarity(rng, luck);
+            var p = P;
+            if (!_pityRaised && p.rarePityLevelUps > 0 && DealsSinceRare >= p.rarePityLevelUps && rarity < p.pityMinRarity)
+            {
+                rarity = p.pityMinRarity;
+                _pityRaised = true;
+            }
+            return rarity;
+        }
+
+        void CountPity(List<Offer> offers)
+        {
+            var p = P;
+            if (p.rarePityLevelUps <= 0) return;
+            foreach (var o in offers)
+                if ((o.Kind == OfferKind.WeaponUpgrade || o.Kind == OfferKind.Logbook || o.Kind == OfferKind.WeaponEvolution) && o.Rarity >= p.pityMinRarity)
+                {
+                    DealsSinceRare = 0;
+                    return;
+                }
+            DealsSinceRare++;
+        }
+
         /// <summary>
         /// V3 LevelOfferGenerator.Generate with fill-state weighting (Saltwind). <paramref name="playerLevel"/> is the
         /// level after the XP grant (every pending level-up uses it, as V3).
@@ -113,10 +157,12 @@ namespace RoguePirates.V4.Progression
             var p = P;
             var count = p.cardsPerLevel;
             var result = new List<Offer>(count);
+            _pityRaised = false;
 
             if (isFirstLevelUp)
             {
                 AddFirstLevelOffers(result, rng, ctx, state, luck);
+                CountPity(result);
                 return FinalizeOffers(result, count, player);
             }
 
@@ -137,6 +183,7 @@ namespace RoguePirates.V4.Progression
             }
 
             ApplyNewWeaponGuarantee(result, rng, ctx, state, playerLevel, usedKeys);
+            CountPity(result);
             return FinalizeOffers(result, count, player);
         }
 
@@ -148,7 +195,7 @@ namespace RoguePirates.V4.Progression
             if (first != null)
             {
                 var level = state.WeaponLevel(first.weaponId);
-                result.Add(BuildWeaponUpgradeOffer(first, level, RollRarity(rng, luck), rng));
+                result.Add(BuildWeaponUpgradeOffer(first, level, RollUpgradeRarity(rng, luck), rng));
             }
 
             var newWeapon = PickNewWeapon(rng, ctx, state);
@@ -221,7 +268,7 @@ namespace RoguePirates.V4.Progression
             if (def == null) return default;
             var level = state.WeaponLevel(def.weaponId);
             if (level >= def.maxLevel) return default;
-            var offer = BuildWeaponUpgradeOffer(def, level, RollRarity(rng, luck), rng);
+            var offer = BuildWeaponUpgradeOffer(def, level, RollUpgradeRarity(rng, luck), rng);
             return usedKeys.Contains(offer.Key) ? default : offer;
         }
 
@@ -230,8 +277,8 @@ namespace RoguePirates.V4.Progression
             foreach (var weaponId in state.OwnedWeapons)
             {
                 var level = state.WeaponLevel(weaponId);
-                // V3 WeaponEvolutionCatalog.TryGetEligible: max level, not evolved, has an evolution, owns its item.
-                if (level < P.maxWeaponLevel || ctx.IsEvolved(weaponId)) continue;
+                // V3 WeaponEvolutionCatalog.TryGetEligible: max level (V5 M3: the unlock level), not evolved, has an evolution, owns its item.
+                if (level < EvolutionUnlockLevel || ctx.IsEvolved(weaponId)) continue;
                 var evo = _evolutions()?.FirstOrDefault(e => e != null && e.baseWeapon != null && e.baseWeapon.weaponId == weaponId);
                 if (evo == null || !ctx.HasItem(evo.requiredItemId)) continue;
                 var offer = new Offer
@@ -450,10 +497,14 @@ namespace RoguePirates.V4.Progression
             return 0;
         }
 
+        /// <summary>A weapon-upgrade card of this rarity (its package rolled on <paramref name="rng"/>), exactly as a level-up
+        /// deals one: for tools that model upgrade paths (V5 M3 weapon model). No other state changes.</summary>
+        public Offer WeaponUpgradeCard(WeaponConfig def, int currentLevel, int rarity, IOfferRandom rng) => BuildWeaponUpgradeOffer(def, currentLevel, rarity, rng);
+
         Offer BuildWeaponUpgradeOffer(WeaponConfig def, int currentLevel, int rarity, IOfferRandom rng) => new Offer
         {
             Kind = OfferKind.WeaponUpgrade, Id = def.weaponId, Rarity = rarity,
-            CurrentLevel = Mathf.Max(1, currentLevel), NextLevel = Mathf.Max(1, currentLevel) + 1,
+            CurrentLevel = Mathf.Max(1, currentLevel), NextLevel = Mathf.Min(Mathf.Max(def.maxLevel, 1), Mathf.Max(1, currentLevel) + LevelsFor(rarity)),
             IsWeapon = true, IsNew = false, Lines = RollUpgradePackage(def, rarity, rng),
         };
 

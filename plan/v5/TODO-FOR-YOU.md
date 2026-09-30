@@ -12,6 +12,13 @@
 
 ## Still open
 
+- **M2 and M3 balance decisions** (details on each phase's page): which balance targets stand (M2 widened nine after
+  the first run); the Turtle personality; evolution at level 8 (focused builds evolve around minute 6) or at 10;
+  Captains balanced on run length (all within ±10%) or on offense (Brine ×0.80, Roxie ×1.16 at 10:00; Flint's hull went 90 → 120); the synergy items (Black Powder Keg,
+  Powder Fuse, Sea Witch's Eye, Leviathan's Tooth, Stormglass, Golden Figurehead); Epic cards +2 levels; the volley
+  pieces (Extra Hands, Broadside Drum: fewer ranks?) and crit (a ×2 crit-damage base?); whether refreshes count toward
+  the pity rule.
+
 - **Phone memory (found in M1):** today's WebGL build needs a 344 MB WebAssembly heap and a 160 MB data download at the
   start of a run. A Galaxy A15/A16 (32-bit Chrome) allows about 256 MB, so the game would most likely not load there.
   M7 (mobile) must fix this; the phone checks from M1 moved there because there was no reference phone yet.

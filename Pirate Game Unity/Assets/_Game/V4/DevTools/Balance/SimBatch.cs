@@ -25,6 +25,7 @@ namespace RoguePirates.V4.DevTools.Balance
         public readonly List<SimRunResult> Runs = new List<SimRunResult>();
         /// <summary>Share of all hull lost, per enemy kind, most first.</summary>
         public readonly List<(string source, float share)> DamageSources = new List<(string, float)>();
+        public float ItemsBy10, EvolutionMinuteP25;
         public float DeathP10, DeathMedian, DeathP90, BossWinRate, BossMinuteMedian, LevelAt5, LevelAt10, KillsPerMinute, Gold, Rum, EvolutionRate,
             EvolutionMinuteMedian, SunkShare;
         public readonly List<TargetCheck> Checks = new List<TargetCheck>();
@@ -47,6 +48,8 @@ namespace RoguePirates.V4.DevTools.Balance
         public readonly List<TargetCheck> Pacing = new List<TargetCheck>();
         public readonly List<(string weapon, int runs, float deathMedian)> WeaponPicks = new List<(string, int, float)>();
         public readonly List<(string a, string b, float deathMedian, float bossWin)> WeaponPairs = new List<(string, string, float, float)>();
+        /// <summary>The baseline personality's runs per Captain: median end minute and offense at 10:00.</summary>
+        public readonly List<(string captain, int runs, float endMedian, float offenseAt10, float bossWin)> Captains = new List<(string, int, float, float, float)>();
         public string ConfigHash, DirectorMode;
         public int RunsPerPersonality, Seed;
         public double Seconds;
@@ -86,6 +89,9 @@ namespace RoguePirates.V4.DevTools.Balance
                 BuildModel(result, baseline, content);
                 BuildPacing(result, baseline, content);
                 BuildWeaponPicks(result, baseline);
+                foreach (var g in baseline.Runs.GroupBy(r => r.CaptainKey).OrderBy(g => g.Key))
+                    result.Captains.Add((g.Key, g.Count(), Median(g.Select(r => r.EndMinutes)),
+                        MedianOf(g.Where(r => r.OffenseAt10 > 0f).Select(r => r.OffenseAt10)), g.Count(r => r.BossWon) / (float)g.Count()));
                 if (weaponPairs) RunWeaponPairs(result, content, baseline.Personality, seed);
             }
             result.Seconds = watch.Elapsed.TotalSeconds;
@@ -130,6 +136,8 @@ namespace RoguePirates.V4.DevTools.Balance
             s.Gold = Median(s.Runs.Select(r => (float)r.GoldEarned));
             s.Rum = Median(s.Runs.Select(r => (float)r.Rum));
             s.EvolutionRate = s.Runs.Count(r => r.Evolutions.Count > 0) / (float)Mathf.Max(1, s.Runs.Count);
+            s.ItemsBy10 = Median(s.Runs.Where(r => r.EndSeconds >= 600f).Select(r => (float)r.ItemsBy10).DefaultIfEmpty(float.NaN));
+            s.EvolutionMinuteP25 = s.Runs.Any(r => r.Evolutions.Count > 0) ? Percentile(s.Runs.Where(r => r.Evolutions.Count > 0).Select(r => r.Evolutions[0].time / 60f).ToList(), 0.25f) : float.NaN;
             s.EvolutionMinuteMedian = s.Runs.Any(r => r.Evolutions.Count > 0) ? Median(s.Runs.Where(r => r.Evolutions.Count > 0).Select(r => r.Evolutions[0].time / 60f)) : float.NaN;
             var bySource = new Dictionary<string, float>();
             foreach (var r in s.Runs) foreach (var kv in r.DamageBySource) bySource[kv.Key] = (bySource.TryGetValue(kv.Key, out var v) ? v : 0f) + kv.Value;
@@ -331,6 +339,17 @@ namespace RoguePirates.V4.DevTools.Balance
             var weighted = r.Personalities.Sum(p => p.Personality.share * p.DeathMedian) / Mathf.Max(0.0001f, r.Personalities.Sum(p => p.Personality.share));
             sb.AppendLine();
             sb.AppendLine($"Most players (weighted by share): median end minute ≈ **{F(weighted)}**.");
+            sb.AppendLine();
+            sb.AppendLine("Items by 10:00 (runs that reached it) and evolutions: " + string.Join("; ", r.Personalities.Select(p => $"{p.Personality.displayName} {F(p.ItemsBy10)} items, evolved {p.EvolutionRate:P0} (first at {F(p.EvolutionMinuteP25)}–{F(p.EvolutionMinuteMedian)} min, p25–median)")) + ".");
+            if (r.Captains.Count > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine("## Captains (baseline personality)");
+                sb.AppendLine();
+                sb.AppendLine("| Captain | Runs | Median end minute | Offense at 10:00 | Boss won |");
+                sb.AppendLine("|---|---|---|---|---|");
+                foreach (var c2 in r.Captains) sb.AppendLine($"| {c2.captain} | {c2.runs} | {F(c2.endMedian)} | {F(c2.offenseAt10, "0")} | {c2.bossWin:P0} |");
+            }
             sb.AppendLine();
             sb.AppendLine("## Baseline per minute (model)");
             sb.AppendLine();

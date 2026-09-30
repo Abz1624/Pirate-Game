@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.LogbookConfig
   configId: logbook.carpenters_notes
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   logbookId: carpenters_notes
   displayName: Carpenter's Notes
   stat: 0
-  perLevelAdditive: 10
+  perLevelAdditive: 6.499998
   perLevelMultiplicative: 1
   maxLevel: 12
   inSaltwindPool: 1

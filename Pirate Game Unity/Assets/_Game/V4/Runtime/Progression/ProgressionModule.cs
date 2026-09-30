@@ -162,6 +162,7 @@ namespace RoguePirates.V4.Progression
             _state.Clear();
             _evolutions.Clear();
             _completedLevelUps = 0;
+            _offers.ResetForRun();
             _state.Weapons.Add(startingWeapon);
             _state.WeaponLevels[startingWeapon] = 1;
             _stateBeforeLevelUp = RunState.Playing;
@@ -333,7 +334,7 @@ namespace RoguePirates.V4.Progression
                     var index = Loadout.IndexOf(offer.Id);
                     if (index >= 0)
                     {
-                        Loadout.ApplyUpgradePackage(index, offer.Lines);
+                        Loadout.ApplyUpgradePackage(index, offer.Lines, Mathf.Max(1, offer.NextLevel - offer.CurrentLevel)); // V5 M3: rarer cards grant more levels
                         _state.WeaponLevels[offer.Id] = Loadout.Weapons[index].Level; // the loadout is the level's source (V3: the record)
                     }
                 }

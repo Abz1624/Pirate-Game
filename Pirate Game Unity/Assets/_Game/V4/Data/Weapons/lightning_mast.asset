@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.lightning_mast
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   weaponId: lightning_mast
   displayName: Lightning Mast
   description: Automatic ship weapon.
@@ -23,7 +23,7 @@ MonoBehaviour:
   behavior: 6
   targeting: 0
   tags: []
-  baseDamage: 14
+  baseDamage: 10.775537
   baseCooldown: 1.8
   range: 16
   baseQuantity: 1
@@ -39,14 +39,14 @@ MonoBehaviour:
   validUpgradeAxes: 000000000100000002000000
   upgradeAxes:
   - axis: 0
-    baseIncrement: 0.08
+    baseIncrement: 0.051577516
     offerWeight: 1.1
-    maxAccumulated: 2
+    maxAccumulated: 1.2894382
     displayFormat: 
   - axis: 1
-    baseIncrement: 0.05
+    baseIncrement: 0.03223594
     offerWeight: 1
-    maxAccumulated: 0.6
+    maxAccumulated: 0.38683137
     displayFormat: 
   - axis: 2
     baseIncrement: 1
@@ -54,9 +54,9 @@ MonoBehaviour:
     maxAccumulated: 4
     displayFormat: 
   - axis: 6
-    baseIncrement: 0.04
+    baseIncrement: 0.025788758
     offerWeight: 0.6
-    maxAccumulated: 1
+    maxAccumulated: 0.6447191
     displayFormat: 
   databaseOrder: 3
   procCoefficient: 0.5

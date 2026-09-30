@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.StageContentConfig
   configId: stage.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   killGold:
     ordinaryEnemyGoldChance: 0.5
     ordinaryEnemyGoldAmount: 1
@@ -55,6 +55,7 @@ MonoBehaviour:
     - flying_cutlasses
     - long_nine
     - swivel_guns
+    bossEnemyId: barnacle_king
     weaponUnlocks:
     - contentId: lightning_mast
       marksCost: 60
@@ -69,19 +70,29 @@ MonoBehaviour:
       marksCost: 100
     - contentId: flint
       marksCost: 140
-    bossEnemyId: barnacle_king
   salvageChestCount: 12
   explosiveBarrelCount: 0
   explosiveBarrelFuseSeconds: 1.2
   explosiveBarrelRadius: 4
   explosiveBarrelDamage: 20
   chestBasePrice: 20
-  chestPriceGrowth: 1.22
-  chestPriceIncrementBase: 25
+  chestPriceGrowth: 1.35
+  chestPriceIncrementBase: 45
+  chestRarityWeights:
+  - 35
+  - 45
+  - 12
+  - 2
+  - 0.2
+  chestRareBoostPerStageDepth: 0.15
+  chestStageDepth: 1
+  chestLootAttempts: 24
   disableGoldTriggeredChestSpawn: 1
   chestSpawnGoldFraction: 0.8
   chestInteractRange: 6
   chestPlanUsesLoadout: 1
+  evolutionItemChance: 0.4
+  evolutionItemMinWeaponLevel: 0
   forgetChestSkipWhenLeaving: 1
   promptReleasesUsedLandmark: 1
   interactRange: 4

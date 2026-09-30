@@ -93,6 +93,10 @@ namespace RoguePirates.V4.Config
         [Tooltip("Interaction range for chests (m).")] public float chestInteractRange = 6f;
         [Tooltip("R-47 fix (off = V3): the chest's loot roll knows your equipped weapons (V3 looked for them on the ship and never found any).")]
         public bool chestPlanUsesLoadout;
+        [Tooltip("V5 M3 (evolutions reachable): chance a chest gives the missing evolution item of a carried, unevolved weapon at evolutionItemMinWeaponLevel or higher, instead of its rarity roll. 0 = off (V3).")]
+        [Range(0f, 1f)] public float evolutionItemChance;
+        [Tooltip("Weapon level from which the chance applies; 0 = the level the evolution card needs (ProgressionConfig.evolutionUnlockLevel, or the max level).")]
+        public int evolutionItemMinWeaponLevel;
         [Tooltip("R-96 fix (off = V3): a skipped chest is offered again after the ship leaves its range and comes back (V3 dropped the target before it could forget the skip, so only skipping another chest cleared it).")]
         public bool forgetChestSkipWhenLeaving;
         [Tooltip("R-101 fix (off = V3): the prompt lets go of a landmark once it is used (V3 kept it while the ship stayed in range, so the used Beacon kept asking to hold E, looping 0-100% without effect).")]

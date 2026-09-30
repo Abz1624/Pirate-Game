@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.powder_kegs
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   weaponId: powder_kegs
   displayName: Powder Kegs
   description: Drops explosive kegs along your wake.
@@ -23,7 +23,7 @@ MonoBehaviour:
   behavior: 5
   targeting: 8
   tags: []
-  baseDamage: 14
+  baseDamage: 18.167765
   baseCooldown: 2.2
   range: 12
   baseQuantity: 1
@@ -39,24 +39,24 @@ MonoBehaviour:
   validUpgradeAxes: 000000000100000002000000
   upgradeAxes:
   - axis: 0
-    baseIncrement: 0.1
+    baseIncrement: 0.20531821
     offerWeight: 1.2
-    maxAccumulated: 2.5
+    maxAccumulated: 5.132953
     displayFormat: 
   - axis: 1
-    baseIncrement: 0.04
+    baseIncrement: 0.08212729
     offerWeight: 0.9
-    maxAccumulated: 0.5
+    maxAccumulated: 1.0265907
     displayFormat: 
   - axis: 4
-    baseIncrement: 0.08
+    baseIncrement: 0.16425458
     offerWeight: 1
-    maxAccumulated: 2
+    maxAccumulated: 4.106363
     displayFormat: 
   - axis: 6
-    baseIncrement: 0.06
+    baseIncrement: 0.12319096
     offerWeight: 0.7
-    maxAccumulated: 1.5
+    maxAccumulated: 3.0797734
     displayFormat: 
   databaseOrder: 2
   procCoefficient: 0.55

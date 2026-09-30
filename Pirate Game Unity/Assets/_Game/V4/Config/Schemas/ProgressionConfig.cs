@@ -35,6 +35,13 @@ namespace RoguePirates.V4.Config
         [Tooltip("Weapon level needed for an evolution offer.")] public int maxWeaponLevel = 12;
         [Tooltip("R-31 fix (off = V3): the weapon-upgrade card category stays open while a maxed weapon has an evolution it can take. V3 offered evolutions only through that category, which closes once every weapon is maxed, so evolutions became unreachable.")]
         public bool evolutionOffersWhenMaxed = true;
+        [Tooltip("V5 M3 (Q18b): weapon level from which the evolution card can appear (with its item); the evolved weapon keeps levelling to its max. 0 = maxWeaponLevel (V3).")]
+        public int evolutionUnlockLevel;
+        [Tooltip("V5 M3 (Q18b): weapon levels a weapon-upgrade card grants per rarity (Common … Legendary), capped at the weapon's max level. V3: 1 each.")]
+        public int[] levelsPerRarity = { 1, 1, 1, 1, 1 };
+        [Tooltip("V5 M3 pity rule: after this many card deals (level-ups and refreshes) without a card of pityMinRarity or better, the next weapon upgrade dealt is at least that rarity (one card per deal; if the new-weapon guarantee replaces that card, the pity carries to the next deal). 0 = off (V3).")]
+        public int rarePityLevelUps;
+        public int pityMinRarity = 2;
 
         [Header("Rarity")]
         [Tooltip("Common, Uncommon, Rare, Epic, Legendary base weights, each × (1 + Luck)^(luckExponent × tier).")]
@@ -78,6 +85,11 @@ namespace RoguePirates.V4.Config
                 for (var i = 1; i < newWeaponProtectionLevels.Length; i++)
                     if (newWeaponProtectionLevels[i] < newWeaponProtectionLevels[i - 1]) report.Error(this, nameof(newWeaponProtectionLevels), "levels must not decrease");
             report.Positive(this, nameof(maxWeaponLevel), maxWeaponLevel);
+            if (evolutionUnlockLevel < 0 || evolutionUnlockLevel > maxWeaponLevel) report.Error(this, nameof(evolutionUnlockLevel), "must be 0 (= max level) or at most maxWeaponLevel");
+            if (levelsPerRarity == null || levelsPerRarity.Length != 5) report.Error(this, nameof(levelsPerRarity), "needs 5 values");
+            else foreach (var n in levelsPerRarity) if (n < 1) report.Error(this, nameof(levelsPerRarity), "every rarity grants at least 1 level");
+            if (rarePityLevelUps < 0) report.Error(this, nameof(rarePityLevelUps), "must be 0 (off) or more");
+            if (pityMinRarity < 0 || pityMinRarity > 4) report.Error(this, nameof(pityMinRarity), "must be 0-4");
         }
     }
 }

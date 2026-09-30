@@ -256,9 +256,38 @@ namespace RoguePirates.V4.Tests
 
         // ---- Calibration against the V4 autopilot's real runs --------------------------------------------------------
 
-        /// <summary>The values the V4 autopilot measurement ran with (before the M2 retune).</summary>
+        /// <summary>The values the V4 autopilot measurement ran with (before the V5 M2 and M3 retunes).</summary>
         static void PreM2(ConfigSetRuntime rt)
         {
+            // M3: evolution rules, chests, weapons, Logbooks, items and Flint, back to their values before V5.
+            var prog = rt.Single<ProgressionConfig>();
+            prog.evolutionUnlockLevel = 0; prog.levelsPerRarity = new[] { 1, 1, 1, 1, 1 }; prog.rarePityLevelUps = 0;
+            var stage = rt.Single<StageContentConfig>();
+            stage.chestPriceIncrementBase = 25; stage.chestPriceGrowth = 1.22f; stage.evolutionItemChance = 0f;
+            var v4Weapons = new Dictionary<string, (float damage, (float inc, float cap)[] axes)>
+            {
+                ["broadside_battery"] = (8f, new[] { (0.07f, 1.8f), (0.05f, 0.6f), (1f, 5f), (0.06f, 1.5f) }),
+                ["deck_cannons"] = (11f, new[] { (0.08f, 2f), (0.05f, 0.6f), (1f, 4f), (0.06f, 1.5f), (0.05f, 1.5f) }),
+                ["flamethrower"] = (8f, new[] { (0.08f, 2f), (0.1f, 2f), (0.08f, 2f) }),
+                ["flying_cutlasses"] = (7f, new[] { (0.07f, 1.8f), (0.05f, 0.6f), (1f, 4f), (0.07f, 1.8f) }),
+                ["harpoon_gun"] = (16f, new[] { (0.08f, 2f), (0.05f, 0.6f), (1f, 4f), (0.06f, 1.5f), (0.05f, 1.5f) }),
+                ["lightning_mast"] = (14f, new[] { (0.08f, 2f), (0.05f, 0.6f), (1f, 4f), (0.04f, 1f) }),
+                ["long_nine"] = (28f, new[] { (0.08f, 2f), (0.05f, 0.6f), (1f, 4f), (0.06f, 1.5f), (0.05f, 1.5f) }),
+                ["mortar"] = (22f, new[] { (0.08f, 2f), (0.05f, 0.6f) }),
+                ["powder_kegs"] = (14f, new[] { (0.1f, 2.5f), (0.04f, 0.5f), (0.08f, 2f), (0.06f, 1.5f) }),
+                ["swivel_guns"] = (6f, new[] { (0.08f, 2f), (0.05f, 0.6f), (1f, 4f), (0.06f, 1.5f), (0.05f, 1.5f) }),
+            };
+            foreach (var w in rt.All<WeaponConfig>())
+            {
+                if (!v4Weapons.TryGetValue(w.weaponId, out var v)) continue;
+                w.baseDamage = v.damage;
+                for (var i = 0; i < v.axes.Length && i < w.upgradeAxes.Length; i++) { w.upgradeAxes[i].baseIncrement = v.axes[i].inc; w.upgradeAxes[i].maxAccumulated = v.axes[i].cap; }
+            }
+            rt.All<LogbookConfig>().Single(l => l.logbookId == "gunnery_manual").perLevelAdditive = 0.08f;
+            rt.All<LogbookConfig>().Single(l => l.logbookId == "carpenters_notes").perLevelAdditive = 10f;
+            rt.All<ItemConfig>().Single(i => i.itemId == "dragons_breath_nozzle").statModifiers[0].multiplicative = 1.08f;
+            rt.All<CaptainConfig>().Single(c => c.captainKey == "flint").baseHull = 90f;
+            // M2:
             var p = rt.Single<ProgressionConfig>();
             p.levelZeroToOneXp = 5; p.xpCurveOffset = 5f; p.xpCurveMultiplier = 5.325000286102295; p.xpCurveExponent = 1.065000057220459;
             var d = rt.Single<DifficultyCurveConfig>();
@@ -339,7 +368,7 @@ namespace RoguePirates.V4.Tests
         public void Retune_IsInTheData_AndTheParityPresetRestoresIt()
         {
             using var rt = new ConfigSetRuntime(Set);
-            Assert.AreEqual("saltwind-v5-m2", rt.Single<ProgressionConfig>().balanceVersion);
+            StringAssert.StartsWith("saltwind-v5-m", rt.Single<ProgressionConfig>().balanceVersion, "retuned in V5 (M2, then M3)");
             Assert.AreEqual(3, rt.Single<ProgressionConfig>().levelZeroToOneXp);
             Assert.AreEqual(0.08f, rt.Single<DifficultyCurveConfig>().ordinaryHp.c1, 1e-6f);
             var parity = new ConfigSetRuntime(Set);

@@ -175,7 +175,8 @@ namespace RoguePirates.V4.DevTools.Balance
                 if (w?.Config == null || Progression.EvolutionOf(w.Id) != null) continue;
                 var evolution = _content.EvolutionFor(w.Id);
                 if (evolution == null || string.IsNullOrEmpty(evolution.requiredItemId) || Items.HasItem(evolution.requiredItemId)) continue;
-                if (w.Level < Mathf.Max(1, _content.Progression.maxWeaponLevel - 2)) continue;
+                var unlock = _content.Progression.evolutionUnlockLevel > 0 ? _content.Progression.evolutionUnlockLevel : _content.Progression.maxWeaponLevel;
+                if (w.Level < Mathf.Max(1, unlock - 2)) continue; // close to the level its evolution card needs
                 itemId = evolution.requiredItemId;
                 return true;
             }

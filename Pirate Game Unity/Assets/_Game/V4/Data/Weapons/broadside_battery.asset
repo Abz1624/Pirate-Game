@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.broadside_battery
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   weaponId: broadside_battery
   displayName: Broadside Battery
   description: Side-arc volleys into nearby clusters.
@@ -23,7 +23,7 @@ MonoBehaviour:
   behavior: 1
   targeting: 9
   tags: []
-  baseDamage: 8
+  baseDamage: 11.059644
   baseCooldown: 1.5
   range: 14
   baseQuantity: 1
@@ -39,14 +39,14 @@ MonoBehaviour:
   validUpgradeAxes: 000000000100000002000000
   upgradeAxes:
   - axis: 0
-    baseIncrement: 0.07
+    baseIncrement: 0.0374929
     offerWeight: 1.1
-    maxAccumulated: 1.8
+    maxAccumulated: 0.9641028
     displayFormat: 
   - axis: 1
-    baseIncrement: 0.05
+    baseIncrement: 0.026780644
     offerWeight: 1
-    maxAccumulated: 0.6
+    maxAccumulated: 0.32136768
     displayFormat: 
   - axis: 2
     baseIncrement: 1
@@ -54,9 +54,9 @@ MonoBehaviour:
     maxAccumulated: 5
     displayFormat: 
   - axis: 4
-    baseIncrement: 0.06
+    baseIncrement: 0.03213678
     offerWeight: 0.8
-    maxAccumulated: 1.5
+    maxAccumulated: 0.80341977
     displayFormat: 
   databaseOrder: 1
   procCoefficient: 0.7

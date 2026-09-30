@@ -78,6 +78,8 @@ namespace RoguePirates.V4
         public RunBootstrapSequence Shell => _shell;
         /// <summary>M9: the build and progression modules (console sections, trace pilot).</summary>
         public BuildModule Build => _build;
+        /// <summary>The stage module (tests reach the chest economy through it).</summary>
+        public Composition.StageModule Stage => _stage;
         public bool IsRunning => _running;
         /// <summary>M14: the run lifecycle (death flow, damage record).</summary>
         public RunLifecycle Lifecycle => _lifecycle;
@@ -239,6 +241,7 @@ namespace RoguePirates.V4
             _enemies.KillTargets.BossKilled = _stage.Module.OnBossKilled; // V3 told POIManager right before TriggerBus.Kill
             _shell.Stage = _stage;
             _stage.Economy.AddItem = _build.Items.TryAddItem;
+            _stage.Economy.HasItem = _build.Items.HasItem; // V5 M3: the evolution-item chance
             _stage.Rewards.Telemetry = _telemetry;
             var unlocks = new Rewards.UnlockService(() => AppRoot.Instance != null ? AppRoot.Instance.Save : null, () => _config); // M12
             _damageShare = new Rewards.DamageShareTracker(); // M12: results damage share from the weapon hit records

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.harpoon_gun
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   weaponId: harpoon_gun
   displayName: Harpoon Gun
   description: Forward tether that slows priority targets.
@@ -25,7 +25,7 @@ MonoBehaviour:
   tags:
   - Hunter
   - Control
-  baseDamage: 16
+  baseDamage: 13.943096
   baseCooldown: 1.2
   range: 16
   baseQuantity: 1
@@ -41,14 +41,14 @@ MonoBehaviour:
   validUpgradeAxes: 
   upgradeAxes:
   - axis: 0
-    baseIncrement: 0.08
+    baseIncrement: 0.099028856
     offerWeight: 1.2
-    maxAccumulated: 2
+    maxAccumulated: 2.4757204
     displayFormat: 
   - axis: 1
-    baseIncrement: 0.05
+    baseIncrement: 0.06189304
     offerWeight: 1
-    maxAccumulated: 0.6
+    maxAccumulated: 0.74271655
     displayFormat: 
   - axis: 2
     baseIncrement: 1
@@ -56,14 +56,14 @@ MonoBehaviour:
     maxAccumulated: 4
     displayFormat: 
   - axis: 3
-    baseIncrement: 0.06
+    baseIncrement: 0.07427165
     offerWeight: 0.7
-    maxAccumulated: 1.5
+    maxAccumulated: 1.8567913
     displayFormat: 
   - axis: 6
-    baseIncrement: 0.05
+    baseIncrement: 0.06189304
     offerWeight: 0.6
-    maxAccumulated: 1.5
+    maxAccumulated: 1.8567913
     displayFormat: 
   databaseOrder: 48
   procCoefficient: 0.8

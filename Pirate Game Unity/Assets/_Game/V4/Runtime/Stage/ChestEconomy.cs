@@ -38,6 +38,9 @@ namespace RoguePirates.V4.Stage
         /// <summary>M9: the run's item module (V3RunItemInventory.TryAddItem's place).</summary>
         public Func<string, bool> AddItem;
 
+        /// <summary>V5 M3: the run's items (a chest's evolution-item chance skips items already carried).</summary>
+        public Func<string, bool> HasItem;
+
         /// <summary>Chests bought this run (the price steps with it).</summary>
         public int Purchases { get; private set; }
 
@@ -65,6 +68,8 @@ namespace RoguePirates.V4.Stage
             if (stage == null || _run == null || !_run.Exists) return new ChestPlan(false, 0, null, "missing export");
             var price = ChestPrice(stage, Purchases);
             if (_run.Gold < price) return new ChestPlan(false, 0, null, "insufficient gold");
+            var evolutionItem = RollEvolutionItem(stage);
+            if (evolutionItem != null) return new ChestPlan(true, price, evolutionItem, null);
             for (var attempt = 0; attempt < stage.chestLootAttempts; attempt++)
             {
                 var itemId = RollSalvageItem(stage, _run.Luck);
@@ -73,6 +78,41 @@ namespace RoguePirates.V4.Stage
                 return new ChestPlan(true, price, itemId, null);
             }
             return new ChestPlan(false, 0, null, "no eligible loot");
+        }
+
+        /// <summary>
+        /// V5 M3: with evolutionItemChance, the missing evolution item of a carried weapon that is not evolved and has reached
+        /// evolutionItemMinWeaponLevel (one Loot draw for the chance, one to pick when several qualify; no draws when off).
+        /// </summary>
+        string RollEvolutionItem(StageContentConfig stage)
+        {
+            if (stage.evolutionItemChance <= 0f || HasItem == null) return null;
+            var weapons = _weapons?.Invoke();
+            var config = _config?.Invoke();
+            if (weapons == null || config == null) return null;
+            _candidates.Clear();
+            var minLevel = EvolutionItemMinLevel(stage, config.Single<ProgressionConfig>());
+            foreach (var slot in weapons.Slots)
+            {
+                if (slot?.Config == null || slot.Evolution != null || slot.Level < minLevel) continue;
+                foreach (var evo in config.All<WeaponEvolutionConfig>())
+                {
+                    if (evo.baseWeapon == null || evo.baseWeapon.weaponId != slot.Id || string.IsNullOrEmpty(evo.requiredItemId)) continue;
+                    if (HasItem(evo.requiredItemId) || _candidates.Contains(evo.requiredItemId)) continue;
+                    if (Pool.Any(i => i.itemId == evo.requiredItemId)) _candidates.Add(evo.requiredItemId);
+                }
+            }
+            if (_candidates.Count == 0) return null;
+            if (_random.LootFloat() >= stage.evolutionItemChance) return null;
+            return _candidates[_candidates.Count == 1 ? 0 : _random.LootInt(0, _candidates.Count)];
+        }
+
+        /// <summary>The weapon level the evolution-item chance starts at: the stage's own, or the evolution card's.</summary>
+        public static int EvolutionItemMinLevel(StageContentConfig stage, ProgressionConfig progression)
+        {
+            if (stage.evolutionItemMinWeaponLevel > 0) return stage.evolutionItemMinWeaponLevel;
+            if (progression == null) return int.MaxValue;
+            return progression.evolutionUnlockLevel > 0 ? progression.evolutionUnlockLevel : progression.maxWeaponLevel;
         }
 
         public void RegisterChestPurchase() => Purchases++;

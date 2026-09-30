@@ -23,6 +23,9 @@ function Shot([string]$name) {
     if ($shot -match '"base64":"([^"]+)"') { [IO.File]::WriteAllBytes((Join-Path $out $name), [Convert]::FromBase64String($Matches[1])) }
 }
 
+# Scenes: refuse to start on unsaved edits (never anyone else's work); reload afterwards only what this check dirtied.
+$dirtyCheck = 'var d = false; for (var i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++) d |= UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).isDirty; return d ? "dirty" : "clean";'
+if ((Eval $dirtyCheck) -eq "dirty") { Write-Output "UNSAVED SCENES: save or discard them in the Editor first"; exit 5 }
 unity command clear_console | Out-Null
 unity command open_scene --path "Assets/_Game/Scenes/V4/V4SaltwindRun.unity" | Out-Null
 Start-Sleep -Seconds 3
@@ -108,6 +111,9 @@ Shot "console-balance.png"
 $lines | Set-Content (Join-Path $out "checkpoints.txt")
 unity command console --tail 200 --level error | Out-String | Set-Content (Join-Path $out "console-errors.txt")
 unity command editor_stop | Out-Null
+Start-Sleep -Seconds 3
+if ((Eval $dirtyCheck) -eq "dirty") { Eval 'UnityEditor.SceneManagement.EditorSceneManager.OpenScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().path, UnityEditor.SceneManagement.OpenSceneMode.Single); return 1;' | Out-Null; $lines += "the scene this check dirtied was reloaded from disk" }
+$lines | Set-Content (Join-Path $out "checkpoints.txt")
 $lines | ForEach-Object { Write-Output $_ }
 $errs = Get-Content (Join-Path $out "console-errors.txt") -Raw
 $game = ([regex]::Matches($errs, '"message":"([^"]*)') | ForEach-Object { $_.Groups[1].Value } | Where-Object { $_ -notmatch "^(Command '|Failed to handle /api|Main thread operation timed out)" })

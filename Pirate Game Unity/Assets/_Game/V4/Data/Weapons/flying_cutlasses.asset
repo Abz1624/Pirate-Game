@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.flying_cutlasses
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   weaponId: flying_cutlasses
   displayName: Flying Cutlasses
   description: Orbiting blades strike nearby foes.
@@ -23,7 +23,7 @@ MonoBehaviour:
   behavior: 2
   targeting: 5
   tags: []
-  baseDamage: 7
+  baseDamage: 6.555744
   baseCooldown: 1
   range: 6
   baseQuantity: 1
@@ -39,14 +39,14 @@ MonoBehaviour:
   validUpgradeAxes: 000000000100000002000000
   upgradeAxes:
   - axis: 0
-    baseIncrement: 0.07
+    baseIncrement: 0.034827992
     offerWeight: 1
-    maxAccumulated: 1.8
+    maxAccumulated: 0.8955768
     displayFormat: 
   - axis: 1
-    baseIncrement: 0.05
+    baseIncrement: 0.024877133
     offerWeight: 1
-    maxAccumulated: 0.6
+    maxAccumulated: 0.2985257
     displayFormat: 
   - axis: 2
     baseIncrement: 1
@@ -54,9 +54,9 @@ MonoBehaviour:
     maxAccumulated: 4
     displayFormat: 
   - axis: 4
-    baseIncrement: 0.07
+    baseIncrement: 0.034827992
     offerWeight: 0.9
-    maxAccumulated: 1.8
+    maxAccumulated: 0.8955768
     displayFormat: 
   databaseOrder: 4
   procCoefficient: 0.35

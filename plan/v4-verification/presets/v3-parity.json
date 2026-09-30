@@ -219,6 +219,42 @@
                 {
                     "path": "fan.quantityAddsPellets",
                     "value": "false"
+                },
+                {
+                    "path": "baseDamage",
+                    "value": "8"
+                },
+                {
+                    "path": "upgradeAxes[0].baseIncrement",
+                    "value": "0.07"
+                },
+                {
+                    "path": "upgradeAxes[0].maxAccumulated",
+                    "value": "1.8"
+                },
+                {
+                    "path": "upgradeAxes[1].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[1].maxAccumulated",
+                    "value": "0.6"
+                },
+                {
+                    "path": "upgradeAxes[2].baseIncrement",
+                    "value": "1"
+                },
+                {
+                    "path": "upgradeAxes[2].maxAccumulated",
+                    "value": "5"
+                },
+                {
+                    "path": "upgradeAxes[3].baseIncrement",
+                    "value": "0.06"
+                },
+                {
+                    "path": "upgradeAxes[3].maxAccumulated",
+                    "value": "1.5"
                 }
             ]
         },
@@ -229,6 +265,42 @@
                 {
                     "path": "levelDamageFactor",
                     "value": "false"
+                },
+                {
+                    "path": "baseDamage",
+                    "value": "7"
+                },
+                {
+                    "path": "upgradeAxes[0].baseIncrement",
+                    "value": "0.07"
+                },
+                {
+                    "path": "upgradeAxes[0].maxAccumulated",
+                    "value": "1.8"
+                },
+                {
+                    "path": "upgradeAxes[1].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[1].maxAccumulated",
+                    "value": "0.6"
+                },
+                {
+                    "path": "upgradeAxes[2].baseIncrement",
+                    "value": "1"
+                },
+                {
+                    "path": "upgradeAxes[2].maxAccumulated",
+                    "value": "4"
+                },
+                {
+                    "path": "upgradeAxes[3].baseIncrement",
+                    "value": "0.07"
+                },
+                {
+                    "path": "upgradeAxes[3].maxAccumulated",
+                    "value": "1.8"
                 }
             ]
         },
@@ -239,6 +311,34 @@
                 {
                     "path": "levelDamageFactor",
                     "value": "false"
+                },
+                {
+                    "path": "baseDamage",
+                    "value": "8"
+                },
+                {
+                    "path": "upgradeAxes[0].baseIncrement",
+                    "value": "0.08"
+                },
+                {
+                    "path": "upgradeAxes[0].maxAccumulated",
+                    "value": "2"
+                },
+                {
+                    "path": "upgradeAxes[1].baseIncrement",
+                    "value": "0.1"
+                },
+                {
+                    "path": "upgradeAxes[1].maxAccumulated",
+                    "value": "2"
+                },
+                {
+                    "path": "upgradeAxes[2].baseIncrement",
+                    "value": "0.08"
+                },
+                {
+                    "path": "upgradeAxes[2].maxAccumulated",
+                    "value": "2"
                 }
             ]
         },
@@ -249,6 +349,42 @@
                 {
                     "path": "levelDamageFactor",
                     "value": "false"
+                },
+                {
+                    "path": "baseDamage",
+                    "value": "14"
+                },
+                {
+                    "path": "upgradeAxes[0].baseIncrement",
+                    "value": "0.1"
+                },
+                {
+                    "path": "upgradeAxes[0].maxAccumulated",
+                    "value": "2.5"
+                },
+                {
+                    "path": "upgradeAxes[1].baseIncrement",
+                    "value": "0.04"
+                },
+                {
+                    "path": "upgradeAxes[1].maxAccumulated",
+                    "value": "0.5"
+                },
+                {
+                    "path": "upgradeAxes[2].baseIncrement",
+                    "value": "0.08"
+                },
+                {
+                    "path": "upgradeAxes[2].maxAccumulated",
+                    "value": "2"
+                },
+                {
+                    "path": "upgradeAxes[3].baseIncrement",
+                    "value": "0.06"
+                },
+                {
+                    "path": "upgradeAxes[3].maxAccumulated",
+                    "value": "1.5"
                 }
             ]
         },
@@ -263,6 +399,42 @@
                 {
                     "path": "areaStrike.chain",
                     "value": "false"
+                },
+                {
+                    "path": "baseDamage",
+                    "value": "14"
+                },
+                {
+                    "path": "upgradeAxes[0].baseIncrement",
+                    "value": "0.08"
+                },
+                {
+                    "path": "upgradeAxes[0].maxAccumulated",
+                    "value": "2"
+                },
+                {
+                    "path": "upgradeAxes[1].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[1].maxAccumulated",
+                    "value": "0.6"
+                },
+                {
+                    "path": "upgradeAxes[2].baseIncrement",
+                    "value": "1"
+                },
+                {
+                    "path": "upgradeAxes[2].maxAccumulated",
+                    "value": "4"
+                },
+                {
+                    "path": "upgradeAxes[3].baseIncrement",
+                    "value": "0.04"
+                },
+                {
+                    "path": "upgradeAxes[3].maxAccumulated",
+                    "value": "1"
                 }
             ]
         },
@@ -281,6 +453,26 @@
                 {
                     "path": "predictedArea.telegraphMatchesImpact",
                     "value": "false"
+                },
+                {
+                    "path": "baseDamage",
+                    "value": "22"
+                },
+                {
+                    "path": "upgradeAxes[0].baseIncrement",
+                    "value": "0.08"
+                },
+                {
+                    "path": "upgradeAxes[0].maxAccumulated",
+                    "value": "2"
+                },
+                {
+                    "path": "upgradeAxes[1].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[1].maxAccumulated",
+                    "value": "0.6"
                 }
             ]
         },
@@ -291,6 +483,50 @@
                 {
                     "path": "projectile.v3FullCooldownAfterFirstShot",
                     "value": "true"
+                },
+                {
+                    "path": "baseDamage",
+                    "value": "6"
+                },
+                {
+                    "path": "upgradeAxes[0].baseIncrement",
+                    "value": "0.08"
+                },
+                {
+                    "path": "upgradeAxes[0].maxAccumulated",
+                    "value": "2"
+                },
+                {
+                    "path": "upgradeAxes[1].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[1].maxAccumulated",
+                    "value": "0.6"
+                },
+                {
+                    "path": "upgradeAxes[2].baseIncrement",
+                    "value": "1"
+                },
+                {
+                    "path": "upgradeAxes[2].maxAccumulated",
+                    "value": "4"
+                },
+                {
+                    "path": "upgradeAxes[3].baseIncrement",
+                    "value": "0.06"
+                },
+                {
+                    "path": "upgradeAxes[3].maxAccumulated",
+                    "value": "1.5"
+                },
+                {
+                    "path": "upgradeAxes[4].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[4].maxAccumulated",
+                    "value": "1.5"
                 }
             ]
         },
@@ -383,6 +619,18 @@
                 {
                     "path": "powderCacheEliteChallenge",
                     "value": "false"
+                },
+                {
+                    "path": "chestPriceIncrementBase",
+                    "value": "25"
+                },
+                {
+                    "path": "chestPriceGrowth",
+                    "value": "1.22"
+                },
+                {
+                    "path": "evolutionItemChance",
+                    "value": "0"
                 }
             ]
         },
@@ -499,6 +747,34 @@
                 {
                     "path": "xpCurveExponent",
                     "value": "1.065000057220459"
+                },
+                {
+                    "path": "evolutionUnlockLevel",
+                    "value": "0"
+                },
+                {
+                    "path": "levelsPerRarity[0]",
+                    "value": "1"
+                },
+                {
+                    "path": "levelsPerRarity[1]",
+                    "value": "1"
+                },
+                {
+                    "path": "levelsPerRarity[2]",
+                    "value": "1"
+                },
+                {
+                    "path": "levelsPerRarity[3]",
+                    "value": "1"
+                },
+                {
+                    "path": "levelsPerRarity[4]",
+                    "value": "1"
+                },
+                {
+                    "path": "rarePityLevelUps",
+                    "value": "0"
                 }
             ]
         },
@@ -637,6 +913,10 @@
                 {
                     "path": "active.pickupRadiusApplied",
                     "value": "false"
+                },
+                {
+                    "path": "baseHull",
+                    "value": "90"
                 }
             ]
         },
@@ -775,6 +1055,186 @@
                 {
                     "path": "stats.baseHP",
                     "value": "800"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.deck_cannons",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "baseDamage",
+                    "value": "11"
+                },
+                {
+                    "path": "upgradeAxes[0].baseIncrement",
+                    "value": "0.08"
+                },
+                {
+                    "path": "upgradeAxes[0].maxAccumulated",
+                    "value": "2"
+                },
+                {
+                    "path": "upgradeAxes[1].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[1].maxAccumulated",
+                    "value": "0.6"
+                },
+                {
+                    "path": "upgradeAxes[2].baseIncrement",
+                    "value": "1"
+                },
+                {
+                    "path": "upgradeAxes[2].maxAccumulated",
+                    "value": "4"
+                },
+                {
+                    "path": "upgradeAxes[3].baseIncrement",
+                    "value": "0.06"
+                },
+                {
+                    "path": "upgradeAxes[3].maxAccumulated",
+                    "value": "1.5"
+                },
+                {
+                    "path": "upgradeAxes[4].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[4].maxAccumulated",
+                    "value": "1.5"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.harpoon_gun",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "baseDamage",
+                    "value": "16"
+                },
+                {
+                    "path": "upgradeAxes[0].baseIncrement",
+                    "value": "0.08"
+                },
+                {
+                    "path": "upgradeAxes[0].maxAccumulated",
+                    "value": "2"
+                },
+                {
+                    "path": "upgradeAxes[1].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[1].maxAccumulated",
+                    "value": "0.6"
+                },
+                {
+                    "path": "upgradeAxes[2].baseIncrement",
+                    "value": "1"
+                },
+                {
+                    "path": "upgradeAxes[2].maxAccumulated",
+                    "value": "4"
+                },
+                {
+                    "path": "upgradeAxes[3].baseIncrement",
+                    "value": "0.06"
+                },
+                {
+                    "path": "upgradeAxes[3].maxAccumulated",
+                    "value": "1.5"
+                },
+                {
+                    "path": "upgradeAxes[4].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[4].maxAccumulated",
+                    "value": "1.5"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.long_nine",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "baseDamage",
+                    "value": "28"
+                },
+                {
+                    "path": "upgradeAxes[0].baseIncrement",
+                    "value": "0.08"
+                },
+                {
+                    "path": "upgradeAxes[0].maxAccumulated",
+                    "value": "2"
+                },
+                {
+                    "path": "upgradeAxes[1].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[1].maxAccumulated",
+                    "value": "0.6"
+                },
+                {
+                    "path": "upgradeAxes[2].baseIncrement",
+                    "value": "1"
+                },
+                {
+                    "path": "upgradeAxes[2].maxAccumulated",
+                    "value": "4"
+                },
+                {
+                    "path": "upgradeAxes[3].baseIncrement",
+                    "value": "0.06"
+                },
+                {
+                    "path": "upgradeAxes[3].maxAccumulated",
+                    "value": "1.5"
+                },
+                {
+                    "path": "upgradeAxes[4].baseIncrement",
+                    "value": "0.05"
+                },
+                {
+                    "path": "upgradeAxes[4].maxAccumulated",
+                    "value": "1.5"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.gunnery_manual",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "perLevelAdditive",
+                    "value": "0.08"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.carpenters_notes",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "perLevelAdditive",
+                    "value": "10"
+                }
+            ]
+        },
+        {
+            "configId": "item.dragons_breath_nozzle",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "statModifiers[0].multiplicative",
+                    "value": "1.08"
                 }
             ]
         }

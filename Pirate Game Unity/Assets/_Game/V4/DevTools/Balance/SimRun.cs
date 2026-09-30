@@ -26,7 +26,9 @@ namespace RoguePirates.V4.DevTools.Balance
         public float EndSeconds;
         public bool Died;
         public string EndReason;
-        public int Kills, GoldEarned, Rum, FinalLevel, LevelAt5 = -1, LevelAt10 = -1, ChestsOpened, LandmarksUsed, ElitesSunk, Refreshes;
+        public int Kills, GoldEarned, Rum, FinalLevel, LevelAt5 = -1, LevelAt10 = -1, ChestsOpened, LandmarksUsed, ElitesSunk, Refreshes, ItemsBy10;
+        /// <summary>The build's offense index at 10:00 (the director's formula; 0 when the run ended before).</summary>
+        public float OffenseAt10;
         public float BossSummonSeconds = -1f, BossKillSeconds = -1f, DamageTaken, BossSpawnHp;
         /// <summary>Hull lost per enemy kind (what sinks this personality).</summary>
         public readonly Dictionary<string, float> DamageBySource = new Dictionary<string, float>();
@@ -333,6 +335,7 @@ namespace RoguePirates.V4.DevTools.Balance
             if (item == null) return;
             _b.AddItem(item);
             _r.ChestsOpened++;
+            if (_t <= 600f) _r.ItemsBy10++;
         }
 
         /// <summary>The V4 chest roll (ChestEconomy): a rarity by the weights (luck boosts uncommon and better), then an item of it.</summary>
@@ -355,11 +358,19 @@ namespace RoguePirates.V4.DevTools.Balance
             var roll = (float)_rng.NextDouble() * total;
             var rarity = minRarity;
             for (var i = 0; i < w.Length; i++) { roll -= w[i]; if (roll <= 0f && w[i] > 0f) { rarity = i; break; } }
-            // Evolution-minded players take the item their top weapon needs when the chest offers that rarity.
-            if ((_p.chests == PersonalityChests.Evolution || _p.cards == PersonalityCards.Focused) && _b.WantsEvolutionItem(out var wanted))
+            // V4 ChestEconomy's V5 M3 rule: a chance of the missing evolution item of a carried, unevolved weapon at the
+            // stage's minimum level (players cannot choose a chest's item).
+            if (s.evolutionItemChance > 0f && minRarity == 0) // bought chests only (the cache chest rolls its own pool)
             {
-                var config = _c.Item(wanted);
-                if (config != null && config.rarity <= rarity && _rng.NextDouble() < 0.5) return wanted;
+                var wanted = new List<string>();
+                foreach (var slot in _b.Weapons)
+                {
+                    if (slot.Evolution != null || slot.Level < RoguePirates.V4.Stage.ChestEconomy.EvolutionItemMinLevel(s, _c.Progression)) continue;
+                    var evo = _c.EvolutionFor(slot.Id);
+                    if (evo == null || string.IsNullOrEmpty(evo.requiredItemId) || _b.Items.HasItem(evo.requiredItemId) || wanted.Contains(evo.requiredItemId)) continue;
+                    if (pool.Any(i => i.itemId == evo.requiredItemId)) wanted.Add(evo.requiredItemId);
+                }
+                if (wanted.Count > 0 && _rng.NextDouble() < s.evolutionItemChance) return wanted[_rng.Next(wanted.Count)];
             }
             for (var tier = rarity; tier >= 0; tier--)
             {
@@ -1068,7 +1079,11 @@ namespace RoguePirates.V4.DevTools.Balance
             CloseMinute();
             _minuteIndex = minuteIndex;
             if (_minuteIndex == 5) _r.LevelAt5 = _b.Progression.Level;
-            if (_minuteIndex == 10) _r.LevelAt10 = _b.Progression.Level;
+            if (_minuteIndex == 10)
+            {
+                _r.LevelAt10 = _b.Progression.Level;
+                if (_c.Director != null) _r.OffenseAt10 = PlayerPowerIndex.Offense(_b, _c.Director, out _, DifficultyDirector.HitCap(_c.Director, _c.Curve, _t));
+            }
         }
 
         void CloseMinute()

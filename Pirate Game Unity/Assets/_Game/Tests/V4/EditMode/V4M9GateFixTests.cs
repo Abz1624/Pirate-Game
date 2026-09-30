@@ -233,11 +233,13 @@ namespace RoguePirates.V4.Tests
                     Assert.AreEqual(1f, items.SpawnDensityMultiplier(), tag);
                     continue;
                 }
-                Assert.AreEqual(1.12f * 1.35f, items.ExplosionDamageMultiplier(), 1e-4f, "Black Powder Keg and the charged Powder Fuse");
+                // V5 M3 retuned these values (V3's: 1.12, 1.35, 1.15, 1.2); the test reads the configured ones.
+                float Value(string id) => set.All<ItemConfig>().Single(i => i.itemId == id).effects[0].value;
+                Assert.AreEqual(Value("black_powder_keg") * Value("powder_fuse"), items.ExplosionDamageMultiplier(), 1e-4f, "Black Powder Keg and the charged Powder Fuse");
                 items.NotifyExplosionResolved();
-                Assert.AreEqual(1.12f, items.ExplosionDamageMultiplier(), 1e-4f, "the explosion used the fuse charge");
-                Assert.AreEqual(1.15f, items.StatusDamageMultiplier(), 1e-4f, "Sea Witch's Eye");
-                Assert.AreEqual(1.2f, items.ControlledTargetDamageMultiplier(), 1e-4f, "Leviathan's Tooth");
+                Assert.AreEqual(Value("black_powder_keg"), items.ExplosionDamageMultiplier(), 1e-4f, "the explosion used the fuse charge");
+                Assert.AreEqual(Value("sea_witchs_eye"), items.StatusDamageMultiplier(), 1e-4f, "Sea Witch's Eye");
+                Assert.AreEqual(Value("leviathan_tooth"), items.ControlledTargetDamageMultiplier(), 1e-4f, "Leviathan's Tooth");
                 Assert.AreEqual(1, items.ExtraLightningJumps(), "Stormglass");
                 Assert.AreEqual(1.18f, items.SpawnDensityMultiplier(), 1e-4f, "Cursed Compass");
             }

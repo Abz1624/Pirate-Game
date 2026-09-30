@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.flamethrower
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   weaponId: flamethrower
   displayName: Flamethrower
   description: Automatic ship weapon.
@@ -23,7 +23,7 @@ MonoBehaviour:
   behavior: 3
   targeting: 7
   tags: []
-  baseDamage: 8
+  baseDamage: 6.4179196
   baseCooldown: 0.7
   range: 9.5
   baseQuantity: 1
@@ -39,19 +39,19 @@ MonoBehaviour:
   validUpgradeAxes: 000000000100000002000000
   upgradeAxes:
   - axis: 0
-    baseIncrement: 0.08
+    baseIncrement: 0.11178002
     offerWeight: 1.1
-    maxAccumulated: 2
+    maxAccumulated: 2.7945018
     displayFormat: 
   - axis: 5
-    baseIncrement: 0.1
+    baseIncrement: 0.13972503
     offerWeight: 1
-    maxAccumulated: 2
+    maxAccumulated: 2.7945018
     displayFormat: 
   - axis: 4
-    baseIncrement: 0.08
+    baseIncrement: 0.11178002
     offerWeight: 1.1
-    maxAccumulated: 2
+    maxAccumulated: 2.7945018
     displayFormat: 
   databaseOrder: 5
   procCoefficient: 0.2

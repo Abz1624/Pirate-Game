@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.deck_cannons
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   weaponId: deck_cannons
   displayName: Deck Cannons
   description: Reliable forward cannon fire.
@@ -23,7 +23,7 @@ MonoBehaviour:
   behavior: 0
   targeting: 0
   tags: []
-  baseDamage: 11
+  baseDamage: 10.838604
   baseCooldown: 1.05
   range: 22
   baseQuantity: 1
@@ -39,14 +39,14 @@ MonoBehaviour:
   validUpgradeAxes: 000000000100000002000000
   upgradeAxes:
   - axis: 0
-    baseIncrement: 0.08
+    baseIncrement: 0.12592855
     offerWeight: 1.2
-    maxAccumulated: 2
+    maxAccumulated: 3.148212
     displayFormat: 
   - axis: 1
-    baseIncrement: 0.05
+    baseIncrement: 0.078705296
     offerWeight: 1
-    maxAccumulated: 0.6
+    maxAccumulated: 0.9444637
     displayFormat: 
   - axis: 2
     baseIncrement: 1
@@ -54,14 +54,14 @@ MonoBehaviour:
     maxAccumulated: 4
     displayFormat: 
   - axis: 3
-    baseIncrement: 0.06
+    baseIncrement: 0.094446406
     offerWeight: 0.7
-    maxAccumulated: 1.5
+    maxAccumulated: 2.3611593
     displayFormat: 
   - axis: 6
-    baseIncrement: 0.05
+    baseIncrement: 0.078705296
     offerWeight: 0.6
-    maxAccumulated: 1.5
+    maxAccumulated: 2.3611593
     displayFormat: 
   databaseOrder: 0
   procCoefficient: 1

@@ -78,14 +78,15 @@ namespace RoguePirates.V4.Progression
             return -1;
         }
 
-        /// <summary>V3 ApplyUpgradePackage: nothing at max level; else every line, then level + 1.</summary>
-        public void ApplyUpgradePackage(int index, UpgradeLine[] lines)
+        /// <summary>V3 ApplyUpgradePackage: nothing at max level; else every line, then level + 1 (V5 M3: + the card's levels,
+        /// capped at the weapon's max).</summary>
+        public void ApplyUpgradePackage(int index, UpgradeLine[] lines, int levels = 1)
         {
             if (index < 0 || index >= _weapons.Count || lines == null) return;
             var w = _weapons[index];
             if (w.Level >= w.Config.maxLevel) return;
             foreach (var line in lines) ApplyAxisValue(w, line.Axis, line.Value);
-            w.Level++;
+            w.Level = Mathf.Min(w.Config.maxLevel, w.Level + Mathf.Max(1, levels));
         }
 
         static void ApplyAxisValue(LoadoutWeapon w, ConfigEnums.UpgradeAxis axis, float value)

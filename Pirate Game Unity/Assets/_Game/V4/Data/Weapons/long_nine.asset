@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
   configId: weapon.long_nine
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3
   weaponId: long_nine
   displayName: Long Nine
   description: Long forward line for elite priority shots.
@@ -25,7 +25,7 @@ MonoBehaviour:
   tags:
   - Gunnery
   - Hunter
-  baseDamage: 28
+  baseDamage: 25.023508
   baseCooldown: 2.4
   range: 24
   baseQuantity: 1
@@ -41,14 +41,14 @@ MonoBehaviour:
   validUpgradeAxes: 
   upgradeAxes:
   - axis: 0
-    baseIncrement: 0.08
+    baseIncrement: 0.12167009
     offerWeight: 1.2
-    maxAccumulated: 2
+    maxAccumulated: 3.0417507
     displayFormat: 
   - axis: 1
-    baseIncrement: 0.05
+    baseIncrement: 0.076043755
     offerWeight: 1
-    maxAccumulated: 0.6
+    maxAccumulated: 0.91252536
     displayFormat: 
   - axis: 2
     baseIncrement: 1
@@ -56,14 +56,14 @@ MonoBehaviour:
     maxAccumulated: 4
     displayFormat: 
   - axis: 3
-    baseIncrement: 0.06
+    baseIncrement: 0.09125258
     offerWeight: 0.7
-    maxAccumulated: 1.5
+    maxAccumulated: 2.2813134
     displayFormat: 
   - axis: 6
-    baseIncrement: 0.05
+    baseIncrement: 0.076043755
     offerWeight: 0.6
-    maxAccumulated: 1.5
+    maxAccumulated: 2.2813134
     displayFormat: 
   databaseOrder: 47
   procCoefficient: 1
