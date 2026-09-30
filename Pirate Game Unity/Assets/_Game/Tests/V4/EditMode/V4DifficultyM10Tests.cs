@@ -32,9 +32,9 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void CurveDefaults_EqualV3sFormulas_BitForBit_AtAnyTime()
         {
-            foreach (var parity in new[] { false, true })
+            // V5 M2 retuned the default growth (per-minute damage); the v3-parity preset keeps V3's formulas bit for bit.
             {
-                using var set = parity ? Parity() : Default();
+                using var set = Parity();
                 var c = set.Single<DifficultyCurveConfig>();
                 for (var step = 0; step <= 12000; step++) // 0–20 minutes every 0.1 s
                 {

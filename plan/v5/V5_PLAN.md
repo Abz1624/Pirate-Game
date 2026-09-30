@@ -245,6 +245,11 @@ checks it against targets that are data.
 
 Automated check: the model report (`phase-02-model/model-report.md`) shows every target met; a scripted run confirms
 the live alive count stays inside the target band at 1, 3, 6 and 9 minutes.
+(Built 30 Sep: the simulator lives in the DevTools assembly, `V4/DevTools/Balance`, rather than a new assembly; it was
+calibrated against the V4 autopilot's recorded runs, no new traces. 72 of 76 revised targets met, 66 of 76 of the
+first proposals (nine bands were revised after the first run; the owner decides which set stands). The scripted run had
+4 of 4 alive checkpoints in band (6:00 on the ceiling) but could not confirm the live XP pace (a standing ship). See
+`phase-02-model/PLAN.md`.)
 Owner playtest: the same three runs; do level-ups arrive at a good pace and does the late voyage feel powerful?
 Done when: targets met, owner accepts the pacing.
 

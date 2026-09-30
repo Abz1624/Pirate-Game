@@ -106,7 +106,9 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void DifficultyDefaults_ReproduceTheV3Formulas()
         {
-            var d = Difficulty;
+            // V5 M2 retuned the default damage growth; the v3-parity preset holds V3's values.
+            using var parity = V4DifficultyM10Tests.Parity();
+            var d = parity.Single<DifficultyCurveConfig>();
             for (var minute = 0f; minute <= 20f; minute += 0.5f)
             {
                 var hp = 20f * d.enemyHpPerMinute.Evaluate(minute) * d.hpMultipliers.tier[0] * d.hpMultipliers.stage[0] * d.globalHpMultiplier;

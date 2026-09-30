@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ProgressionConfig
   configId: progression.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m2
   weaponSlots: 6
   logbookSlots: 4
   startLevel: 0
-  levelZeroToOneXp: 5
-  xpCurveOffset: 5
-  xpCurveMultiplier: 5.325000286102295
-  xpCurveExponent: 1.065000057220459
+  levelZeroToOneXp: 3
+  xpCurveOffset: 2
+  xpCurveMultiplier: 0.7
+  xpCurveExponent: 1.5
   cardsPerLevel: 3
   refreshesPerRun: 2
   attemptsPerCard: 24

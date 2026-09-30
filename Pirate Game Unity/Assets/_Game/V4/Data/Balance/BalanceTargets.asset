@@ -1,0 +1,377 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7df2766817b2ad8448d9b8a37fe8a536, type: 3}
+  m_Name: BalanceTargets
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.BalanceTargetsConfig
+  configId: balance_targets.saltwind
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  personalities:
+  - personalityId: first_timer
+    deathMinute:
+      min: 5.5
+      max: 9
+    bossWinRate:
+      min: 0
+      max: 0.15
+    levelAt10:
+      min: NaN
+      max: NaN
+  - personalityId: thumb_sailor
+    deathMinute:
+      min: 7
+      max: 12
+    bossWinRate:
+      min: 0.1
+      max: 0.6
+    levelAt10:
+      min: NaN
+      max: NaN
+  - personalityId: casual_cruiser
+    deathMinute:
+      min: 8
+      max: 12
+    bossWinRate:
+      min: 0.3
+      max: 0.7
+    levelAt10:
+      min: NaN
+      max: NaN
+  - personalityId: steady_captain
+    deathMinute:
+      min: 11
+      max: 15
+    bossWinRate:
+      min: 0.6
+      max: 0.85
+    levelAt10:
+      min: 30
+      max: 46
+  - personalityId: glass_cannon
+    deathMinute:
+      min: 8
+      max: 13
+    bossWinRate:
+      min: 0.6
+      max: 1
+    levelAt10:
+      min: NaN
+      max: NaN
+  - personalityId: turtle
+    deathMinute:
+      min: 8
+      max: 13
+    bossWinRate:
+      min: 0.3
+      max: 0.7
+    levelAt10:
+      min: NaN
+      max: NaN
+  - personalityId: treasure_hound
+    deathMinute:
+      min: 7.5
+      max: 12
+    bossWinRate:
+      min: 0.2
+      max: 0.6
+    levelAt10:
+      min: NaN
+      max: NaN
+  - personalityId: build_planner
+    deathMinute:
+      min: 13
+      max: 19
+    bossWinRate:
+      min: 0.8
+      max: 1
+    levelAt10:
+      min: NaN
+      max: NaN
+  - personalityId: sea_legend
+    deathMinute:
+      min: 17
+      max: NaN
+    bossWinRate:
+      min: 0.95
+      max: 1
+    levelAt10:
+      min: NaN
+      max: NaN
+  - personalityId: speedrunner
+    deathMinute:
+      min: 3
+      max: 8
+    bossWinRate:
+      min: 0.5
+      max: 1
+    levelAt10:
+      min: NaN
+      max: NaN
+  minutes:
+  - minute: 0
+    aliveShare:
+      min: 0.03
+      max: 0.3
+    killsPerMinute:
+      min: 8
+      max: 45
+    level:
+      min: 3
+      max: 9
+    damageTakenShare:
+      min: NaN
+      max: 0.35
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 1
+    aliveShare:
+      min: 0.1
+      max: 0.45
+    killsPerMinute:
+      min: 18
+      max: 90
+    level:
+      min: 6
+      max: 13
+    damageTakenShare:
+      min: NaN
+      max: 0.45
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 2
+    aliveShare:
+      min: 0.15
+      max: 0.55
+    killsPerMinute:
+      min: 25
+      max: 90
+    level:
+      min: 9
+      max: 17
+    damageTakenShare:
+      min: NaN
+      max: 0.6
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 3
+    aliveShare:
+      min: 0.12
+      max: 0.55
+    killsPerMinute:
+      min: 25
+      max: 100
+    level:
+      min: 12
+      max: 20
+    damageTakenShare:
+      min: NaN
+      max: 0.6
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 4
+    aliveShare:
+      min: 0.2
+      max: 0.65
+    killsPerMinute:
+      min: 35
+      max: 120
+    level:
+      min: 14
+      max: 23
+    damageTakenShare:
+      min: NaN
+      max: 0.7
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 5
+    aliveShare:
+      min: 0.18
+      max: 0.7
+    killsPerMinute:
+      min: 35
+      max: 130
+    level:
+      min: 16
+      max: 26
+    damageTakenShare:
+      min: NaN
+      max: 0.8
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 6
+    aliveShare:
+      min: 0.25
+      max: 0.75
+    killsPerMinute:
+      min: 30
+      max: 140
+    level:
+      min: 18
+      max: 29
+    damageTakenShare:
+      min: NaN
+      max: 0.9
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 7
+    aliveShare:
+      min: 0.3
+      max: 0.85
+    killsPerMinute:
+      min: 50
+      max: 160
+    level:
+      min: 21
+      max: 32
+    damageTakenShare:
+      min: NaN
+      max: 1
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 8
+    aliveShare:
+      min: 0.22
+      max: 0.8
+    killsPerMinute:
+      min: 45
+      max: 160
+    level:
+      min: 23
+      max: 35
+    damageTakenShare:
+      min: NaN
+      max: 1
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 9
+    aliveShare:
+      min: 0.35
+      max: 0.9
+    killsPerMinute:
+      min: 55
+      max: 180
+    level:
+      min: 25
+      max: 38
+    damageTakenShare:
+      min: NaN
+      max: 1.1
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 10
+    aliveShare:
+      min: 0.25
+      max: 1
+    killsPerMinute:
+      min: 30
+      max: 200
+    level:
+      min: 28
+      max: 42
+    damageTakenShare:
+      min: NaN
+      max: NaN
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 11
+    aliveShare:
+      min: 0.25
+      max: 1
+    killsPerMinute:
+      min: 30
+      max: 220
+    level:
+      min: 30
+      max: 45
+    damageTakenShare:
+      min: NaN
+      max: NaN
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  - minute: 12
+    aliveShare:
+      min: 0.25
+      max: 1
+    killsPerMinute:
+      min: 30
+      max: 240
+    level:
+      min: 32
+      max: 48
+    damageTakenShare:
+      min: NaN
+      max: NaN
+    goldPerMinute:
+      min: NaN
+      max: NaN
+  levelUpGapMinute1:
+    min: 4
+    max: 12
+  levelUpGapTo10:
+    min: 13
+    max: 20
+  fodderTtkSeconds:
+    min: NaN
+    max: 1
+  eliteTtkSeconds:
+    min: 4
+    max: 8
+  minibossTtkSeconds:
+    min: 15
+    max: 30
+  bossTtkSeconds:
+    min: 45
+    max: 90
+  baselinePersonalityId: steady_captain
+  runsPerPersonality: 200
+  stepSeconds: 0.25
+  maxMinutes: 30
+  calibration:
+    spawnDistance: 24
+    hitEfficiency: 0.22
+    contactDistance: 2.2
+    movementRetreat:
+    - 0.85
+    - 0.7
+    - 0.4
+    - -0.3
+    - 0.6
+    minClosingShare: 0.15
+    farClosingShare: 0.4
+    maxContacts: 5
+    contactHitShare: 0.015
+    eliteContactShare: 0.5
+    rangedAccuracy: 0.006
+    hazardAccuracy: 0.08
+    areaAccuracy: 0.02
+    rangedHoldShare: 0.8
+    volleyHitShare: 0.5
+    bossAccuracy: 0.2
+    bossAttackCycleSeconds: 3.9
+    xpBaseShare: 0.75
+    barrelBaseShare: 0.3
+    exploreMinutes: {x: 1.5, y: 8}
+    chestsFoundBaseShare: 0.5
+    hintSearchSeconds: 45
+    beaconTravelSeconds: 25

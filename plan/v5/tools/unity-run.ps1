@@ -37,6 +37,19 @@ if ($c -match '"compilationFailed":true') {
 Write-Output "compiled OK"
 if ($CompileOnly) { exit 0 }
 
+# A modified scene makes the test runner ask "save changes?" in a modal dialog that blocks the Editor (seen after a forced
+# restart's scene recovery). Never discard anyone's edits: stop and name the modified scenes instead.
+$check = Join-Path $env:TEMP "v5-dirty.cs"
+Set-Content -Path $check -Encoding UTF8 -Value @'
+var dirty = new System.Collections.Generic.List<string>();
+for (var i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++) { var sc = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i); if (sc.isDirty) dirty.Add(string.IsNullOrEmpty(sc.path) ? sc.name : sc.path); }
+return dirty.Count == 0 ? "clean" : "DIRTY: " + string.Join(", ", dirty);
+'@
+$d = unity command eval_file --file $check 2>&1 | Out-String
+if ($d -match '"result":"(DIRTY:[^"]*)"') {
+    Write-Output "UNSAVED SCENES ($($Matches[1])): save or discard them in the Editor, then run again (tests would block on a save prompt)"
+    exit 5
+}
 if (Test-Path $statusFile) { Remove-Item $statusFile -Force }
 $args = @("command", "run_tests", "--mode", $Mode, "--async_tests", "true")
 if ($Filter) { $args += @("--filter", $Filter) }
@@ -56,6 +69,9 @@ while ($true) {
     if ($p.CPU -gt $lastCpu + 1) { $lastCpu = $p.CPU; $lastChange = Get-Date }
     if (((Get-Date) - $lastChange).TotalMinutes -gt $StallMinutes) {
         Write-Output "STALLED: Editor CPU flat for $StallMinutes minutes"
+        # A modal Editor dialog is the usual cause: name it so it can be answered.
+        Add-Type -TypeDefinition 'using System; using System.Text; using System.Collections.Generic; using System.Runtime.InteropServices; public static class V5W { public delegate bool P(IntPtr h, IntPtr l); [DllImport("user32.dll")] public static extern bool EnumWindows(P f, IntPtr l); [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out uint p); [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h); [DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern int GetWindowText(IntPtr h, StringBuilder s, int n); [DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern int GetClassName(IntPtr h, StringBuilder s, int n); public static List<string> Dialogs(uint pid) { var r = new List<string>(); EnumWindows((h, l) => { uint p; GetWindowThreadProcessId(h, out p); if (p == pid && IsWindowVisible(h)) { var c = new StringBuilder(64); GetClassName(h, c, 64); if (c.ToString() == "#32770") { var t = new StringBuilder(256); GetWindowText(h, t, 256); r.Add(t.ToString()); } } return true; }, IntPtr.Zero); return r; } }' -ErrorAction SilentlyContinue
+        [V5W]::Dialogs([uint32]$editorPid) | ForEach-Object { Write-Output "OPEN DIALOG: $_" }
         unity command cancel_tests 2>$null | Out-Null
         exit 3
     }

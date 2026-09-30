@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemySpawnerConfig
   configId: spawner.saltwind_boss
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m2
   legacyProfileId: saltwind_boss
   anchor: {fileID: 11400000, guid: fc5ebf9015a31ff49ad0b0cdf5061800, type: 2}
   spawnMode: 0

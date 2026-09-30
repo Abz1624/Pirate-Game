@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WaveTimelineConfig
   configId: timeline.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m1
+  balanceVersion: saltwind-v5-m2
   stageDeadlineSeconds: 600
   graceSeconds: 2
   maxActiveEnemies: 80
@@ -175,7 +175,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: c032771fd8ba7b740b20a712b9d55ac7, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.8
+    ratePerSecond: 1.3
     budgetUnit: 0
     pools:
     - poolId: ordinary
@@ -254,7 +254,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 074c75ed23898cf4db854604d1fd8956, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 2.4
+    ratePerSecond: 1.5
     budgetUnit: 0
     pools:
     - poolId: ordinary
@@ -337,7 +337,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 754e07ebd1c2f4c439daac6b4942e39f, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 3
+    ratePerSecond: 2
     budgetUnit: 0
     pools:
     - poolId: ordinary
@@ -433,8 +433,8 @@ MonoBehaviour:
       ringDistance: 22
       affix: 4
       speedMultiplier: 1
-      hpMultiplier: 4
-      damageMultiplier: 1.15
+      hpMultiplier: 3.8
+      damageMultiplier: 0.8
       bossConflict: 1
       retryWindowSeconds: 0
       scheduledEliteIndex: -1
@@ -793,7 +793,7 @@ MonoBehaviour:
     harrierWeightAfterTwoMinutes: 0.4
     startToast: "DROWNED PURSUIT \u2014 spectral fleet incoming!"
     spawnStatRampStart: 1
-    spawnStatRampEnd: 2
+    spawnStatRampEnd: 1.5
     spawnStatRampSeconds: 300
   storm:
     safeRegionStartFraction: 1
@@ -836,7 +836,7 @@ MonoBehaviour:
       topUpIntervalSeconds: 0.75
       maxTopUpPerTick: 4
     - startSeconds: 300
-      minAliveShare: 0.3
+      minAliveShare: 0.26
       rateMultiplier: 0.95
       topUpIntervalSeconds: 1
       maxTopUpPerTick: 3
@@ -879,7 +879,7 @@ MonoBehaviour:
       timeSeconds: 330
       formation: 1
       archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
-      count: 16
+      count: 14
       distance: 22
       spacing: 1.8
       speedMultiplier: 1.2

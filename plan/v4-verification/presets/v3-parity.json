@@ -43,6 +43,26 @@
                 {
                     "path": "flow.enabled",
                     "value": "false"
+                },
+                {
+                    "path": "phases[2].ratePerSecond",
+                    "value": "1.8"
+                },
+                {
+                    "path": "phases[3].ratePerSecond",
+                    "value": "2.4"
+                },
+                {
+                    "path": "phases[4].ratePerSecond",
+                    "value": "3"
+                },
+                {
+                    "path": "phases[5].focus.hpMultiplier",
+                    "value": "4"
+                },
+                {
+                    "path": "phases[5].focus.damageMultiplier",
+                    "value": "1.15"
                 }
             ]
         },
@@ -147,6 +167,10 @@
                 {
                     "path": "elite.isElite",
                     "value": "false"
+                },
+                {
+                    "path": "elite.hpMultiplier",
+                    "value": "1"
                 }
             ]
         },
@@ -157,6 +181,10 @@
                 {
                     "path": "elite.isElite",
                     "value": "false"
+                },
+                {
+                    "path": "elite.hpMultiplier",
+                    "value": "1"
                 }
             ]
         },
@@ -455,6 +483,22 @@
                 {
                     "path": "evolutionOffersWhenMaxed",
                     "value": "false"
+                },
+                {
+                    "path": "levelZeroToOneXp",
+                    "value": "5"
+                },
+                {
+                    "path": "xpCurveOffset",
+                    "value": "5"
+                },
+                {
+                    "path": "xpCurveMultiplier",
+                    "value": "5.325000286102295"
+                },
+                {
+                    "path": "xpCurveExponent",
+                    "value": "1.065000057220459"
                 }
             ]
         },
@@ -677,6 +721,60 @@
                 {
                     "path": "mergeIntoNearestWhenFull",
                     "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "difficulty.saltwind",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "ordinaryHp.c1",
+                    "value": "0.11"
+                },
+                {
+                    "path": "ordinaryHp.c2",
+                    "value": "0.022"
+                },
+                {
+                    "path": "ordinaryDamage.c1",
+                    "value": "0.14"
+                },
+                {
+                    "path": "ordinaryDamage.c2",
+                    "value": "0.028"
+                },
+                {
+                    "path": "enemyDamagePerMinute.c1",
+                    "value": "0.055"
+                },
+                {
+                    "path": "overtimeHpMultiplierBase",
+                    "value": "2"
+                },
+                {
+                    "path": "overtimeHpMultiplierExponentPerMinute",
+                    "value": "0.5"
+                }
+            ]
+        },
+        {
+            "configId": "spawner.saltwind_boss",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "elite.hpMultiplier",
+                    "value": "1"
+                }
+            ]
+        },
+        {
+            "configId": "enemy.barnacle_king",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "stats.baseHP",
+                    "value": "800"
                 }
             ]
         }

@@ -1,0 +1,188 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d56633d71198d55448715f7b6964bafb, type: 3}
+  m_Name: PlayerPersonalities
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.PlayerPersonalityConfig
+  configId: personalities.saltwind
+  schemaVersion: 1
+  balanceVersion: saltwind-v3-parity
+  personalities:
+  - personalityId: first_timer
+    displayName: First-Timer
+    share: 0.15
+    dodgeSkill: 0.35
+    contactAvoidance: 0.3
+    engageDistance: 6
+    movement: 2
+    pickupGreed: 0.2
+    chests: 1
+    landmarks: 1
+    bossTiming: 3
+    bossMinute: 0
+    cards: 1
+    rerollUse: 0
+    activeUse: 3
+    stop: 0
+    stopMinutes: 0
+  - personalityId: thumb_sailor
+    displayName: Thumb Sailor
+    share: 0.15
+    dodgeSkill: 0.45
+    contactAvoidance: 0.4
+    engageDistance: 8
+    movement: 2
+    pickupGreed: 0.3
+    chests: 1
+    landmarks: 9
+    bossTiming: 2
+    bossMinute: 0
+    cards: 0
+    rerollUse: 0.1
+    activeUse: 2
+    stop: 2
+    stopMinutes: 12
+  - personalityId: casual_cruiser
+    displayName: Casual Cruiser
+    share: 0.2
+    dodgeSkill: 0.55
+    contactAvoidance: 0.5
+    engageDistance: 9
+    movement: 1
+    pickupGreed: 0.4
+    chests: 1
+    landmarks: 13
+    bossTiming: 2
+    bossMinute: 0
+    cards: 2
+    rerollUse: 0.2
+    activeUse: 2
+    stop: 0
+    stopMinutes: 0
+  - personalityId: steady_captain
+    displayName: Steady Captain
+    share: 0.2
+    dodgeSkill: 0.7
+    contactAvoidance: 0.65
+    engageDistance: 10
+    movement: 0
+    pickupGreed: 0.5
+    chests: 1
+    landmarks: 15
+    bossTiming: 0
+    bossMinute: 6
+    cards: 2
+    rerollUse: 0.4
+    activeUse: 0
+    stop: 0
+    stopMinutes: 0
+  - personalityId: glass_cannon
+    displayName: Glass Cannon
+    share: 0.07
+    dodgeSkill: 0.65
+    contactAvoidance: 0.45
+    engageDistance: 5
+    movement: 3
+    pickupGreed: 0.4
+    chests: 0
+    landmarks: 2
+    bossTiming: 0
+    bossMinute: 4
+    cards: 3
+    rerollUse: 0.5
+    activeUse: 0
+    stop: 0
+    stopMinutes: 0
+  - personalityId: turtle
+    displayName: Turtle
+    share: 0.06
+    dodgeSkill: 0.6
+    contactAvoidance: 0.7
+    engageDistance: 14
+    movement: 1
+    pickupGreed: 0.3
+    chests: 1
+    landmarks: 5
+    bossTiming: 2
+    bossMinute: 0
+    cards: 4
+    rerollUse: 0.3
+    activeUse: 1
+    stop: 0
+    stopMinutes: 0
+  - personalityId: treasure_hound
+    displayName: Treasure Hound
+    share: 0.06
+    dodgeSkill: 0.55
+    contactAvoidance: 0.5
+    engageDistance: 9
+    movement: 1
+    pickupGreed: 0.9
+    chests: 0
+    landmarks: 15
+    bossTiming: 2
+    bossMinute: 0
+    cards: 6
+    rerollUse: 0.3
+    activeUse: 0
+    stop: 0
+    stopMinutes: 0
+  - personalityId: build_planner
+    displayName: Build Planner
+    share: 0.05
+    dodgeSkill: 0.75
+    contactAvoidance: 0.7
+    engageDistance: 10
+    movement: 0
+    pickupGreed: 0.5
+    chests: 2
+    landmarks: 10
+    bossTiming: 0
+    bossMinute: 5
+    cards: 5
+    rerollUse: 0.9
+    activeUse: 0
+    stop: 0
+    stopMinutes: 0
+  - personalityId: sea_legend
+    displayName: Sea Legend
+    share: 0.04
+    dodgeSkill: 0.9
+    contactAvoidance: 0.9
+    engageDistance: 11
+    movement: 0
+    pickupGreed: 0.6
+    chests: 2
+    landmarks: 15
+    bossTiming: 0
+    bossMinute: 4
+    cards: 5
+    rerollUse: 1
+    activeUse: 1
+    stop: 0
+    stopMinutes: 0
+  - personalityId: speedrunner
+    displayName: Speedrunner
+    share: 0.02
+    dodgeSkill: 0.8
+    contactAvoidance: 0.75
+    engageDistance: 12
+    movement: 4
+    pickupGreed: 0.1
+    chests: 3
+    landmarks: 8
+    bossTiming: 0
+    bossMinute: 3
+    cards: 3
+    rerollUse: 0.6
+    activeUse: 0
+    stop: 1
+    stopMinutes: 0

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyArchetypeConfig
   configId: enemy.barnacle_king
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m2
   enemyId: barnacle_king
   displayName: Barnacle King
   category: 1
@@ -22,7 +22,7 @@ MonoBehaviour:
   behavior: 5
   biomeTag: emerald
   stats:
-    baseHP: 800
+    baseHP: 1400
     baseDamage: 18
     moveSpeed: 2.5
     radius: 2.8
@@ -76,7 +76,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 0
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:
       enabled: 0

@@ -701,6 +701,8 @@ namespace RoguePirates.V4.Tests
             var h = Make();
             using (h.Config)
             {
+                // The ramp's shape with end 2 (the V4 value; V5 M2's default is 1.5).
+                Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "overtime.spawnStatRampEnd", "2", 0f, out var e0), e0);
                 var t = h.Timeline;
                 Assert.AreEqual(1f, OvertimePhase.SpawnStatRamp(t, 600f), 1e-5f, "1x at the deadline");
                 Assert.AreEqual(1.5f, OvertimePhase.SpawnStatRamp(t, 750f), 1e-5f, "linear, evaluated per spawn (no minute steps)");
@@ -835,6 +837,9 @@ namespace RoguePirates.V4.Tests
             var h = Make();
             using (h.Config)
             {
+                // V5 M2 retuned the default ordinary-time growth; V3's values are the v3-parity preset's.
+                foreach (var (path, value) in new[] { ("ordinaryHp.c1", "0.11"), ("ordinaryHp.c2", "0.022"), ("ordinaryDamage.c1", "0.14"), ("ordinaryDamage.c2", "0.028") })
+                    Assert.IsTrue(h.Config.TryApplyEdit("difficulty.saltwind", path, value, 0f, out var error), error);
                 var executor = new SpawnExecutor(ServicesOf(h), null);
                 for (var time = 0f; time < 900f; time += 1.3f)
                 {
@@ -907,7 +912,8 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(reef.focus.enabled);
                 Assert.AreEqual(FocusPlacement.RingAroundPlayer, reef.focus.placement);
                 Assert.AreEqual("reef_crab_miniboss", reef.focus.archetype.enemyId);
-                Assert.AreEqual((22f, 4f, 1.15f), (reef.focus.ringDistance, reef.focus.hpMultiplier, reef.focus.damageMultiplier));
+                // V5 M2 retune (V3: ×4 HP, ×1.15 damage, kept in the v3-parity preset).
+                Assert.AreEqual((22f, 3.8f, 0.8f), (reef.focus.ringDistance, reef.focus.hpMultiplier, reef.focus.damageMultiplier));
                 Assert.AreEqual(BossConflict.WaitUntilBossEnds, reef.focus.bossConflict);
                 Assert.AreEqual(0f, reef.focus.retryWindowSeconds);
                 Assert.AreEqual(150f, reef.trigger.timeSeconds, "R-02: 150 s as V3");

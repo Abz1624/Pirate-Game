@@ -1,0 +1,5 @@
+1:05  t=66 level=2 alive=14 band=8-36 IN frame=5.2ms
+3:00  t=229 level=6 alive=20 band=10-44 IN frame=5.2ms  median-alive=17 (17,17,17,17,17,17,18,19) IN
+6:00  t=407 level=12 alive=62 band=20-60 OUT frame=5.3ms  median-alive=60 (55,57,60,59,61,60,61,62) IN
+9:00  t=593 level=13 alive=29 band=28-72 IN frame=6.6ms  median-alive=32 (37,36,34,32,30,29,29,29) IN
+console: model started
