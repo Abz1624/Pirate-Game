@@ -155,6 +155,8 @@ namespace RoguePirates.V4.Foundation.Data
         [Tooltip("Powder Cache landmark. Shown even while placeholder POI visuals are on.")]
         public GameObject merchantSkiffPrefab;
         public float merchantSkiffScale = 1f;
+        [Tooltip("Demo: no points of interest on the stage (chests, landmarks, the Treasury Beacon).")]
+        public bool hidePointsOfInterest = true;
 
         [Header("Player Feedback")]
         public Color playerDamageFlashColor = new(1f, 0.25f, 0.2f, 1f);

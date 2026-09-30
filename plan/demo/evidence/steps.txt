@@ -3,8 +3,8 @@ set sail: captain select open
 locked: CharacterSlot_Ember -> LOCKED
 rook: choice=0
 hud: SaltWind HUD shown
-landmarks: CursedIdol(mesh) GildedWreck(mesh) MerchantSkiff(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh) SalvageChest(mesh)
+landmarks: 
 level-up cards shown
 vfx preview: played 2
 vfx in play: profile effects played so far 2
-3:00 level=3 weapons=2 profileFx=3
+3:00 level=2 weapons=2 profileFx=3

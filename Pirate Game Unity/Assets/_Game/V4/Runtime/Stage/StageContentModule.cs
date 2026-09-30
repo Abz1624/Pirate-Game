@@ -106,6 +106,8 @@ namespace RoguePirates.V4.Stage
             _placeholderVisuals = placeholderVisuals;
             _layoutVersion++;
             ResetState();
+            // Demo: an open sea, no points of interest (the beacon discovery shares this layout, so it sees none either).
+            if (DemoMode.NoPointsOfInterest && layout?.pois != null) layout.pois.Clear();
             _layout = layout;
             var n = layout?.pois != null ? layout.pois.Count : 0;
             _used = new bool[n];

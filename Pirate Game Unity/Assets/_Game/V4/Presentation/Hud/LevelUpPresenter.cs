@@ -127,13 +127,13 @@ namespace RoguePirates.V4.Presentation.Hud
                     if (iconSprite != null) { img.sprite = iconSprite; img.preserveAspect = true; }
                 }
                 var title = b.transform.Find("Background/Title")?.GetComponent<TextMeshProUGUI>();
-                if (title != null) title.text = card.title;
+                if (title != null) title.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(card.title);
                 var description = b.transform.Find("Background/Description")?.GetComponent<TextMeshProUGUI>();
                 if (description != null)
                 {
                     var effect = card.effectLines != null && card.effectLines.Length > 0 ? string.Join("\n", card.effectLines) : card.description;
                     var level = card.LevelLabel;
-                    description.text = string.IsNullOrEmpty(level) ? effect : level + "\n" + effect;
+                    description.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(string.IsNullOrEmpty(level) ? effect : level + "\n" + effect);
                 }
             }
         }

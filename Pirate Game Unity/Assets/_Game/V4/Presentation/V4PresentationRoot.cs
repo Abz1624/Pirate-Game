@@ -338,10 +338,13 @@ namespace RoguePirates.V4.Presentation
                 SaltWindHud = RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Install(authored, Hud, views, RoguePirates.V4.Presentation.Hud.IconCatalog.Load(), Minimap);
                 if (SaltWindHud != null && Minimap != null) Minimap.FollowTarget = SaltWindHud.ArtMinimap;
                 // M9 playtest: the Captain's active and its cooldown, beside the boost meter.
-                CaptainActive = RoguePirates.V4.Presentation.Hud.CaptainActivePresenter.Create(authored.transform);
-                CaptainActive.Bind(views);
-                CaptainActiveEffect = RoguePirates.V4.Presentation.Hud.CaptainActiveEffectPresenter.Create(authored.transform);
-                CaptainActiveEffect.Bind(views);
+                if (!RoguePirates.V4.Presentation.Hud.SaltWindHudSettings.Hides(s => s.hideCaptainActive))
+                {
+                    CaptainActive = RoguePirates.V4.Presentation.Hud.CaptainActivePresenter.Create(authored.transform);
+                    CaptainActive.Bind(views);
+                    CaptainActiveEffect = RoguePirates.V4.Presentation.Hud.CaptainActiveEffectPresenter.Create(authored.transform);
+                    CaptainActiveEffect.Bind(views);
+                }
             }
 
             if (runCanvas == null) return;

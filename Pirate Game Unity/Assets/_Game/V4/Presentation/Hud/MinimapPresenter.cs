@@ -122,7 +122,15 @@ namespace RoguePirates.V4.Presentation.Hud
             rect.position = (_followCorners[0] + _followCorners[2]) * 0.5f;
             var size = (_followCorners[2] - _followCorners[0]) / scale;
             rect.sizeDelta = new Vector2(size.x, size.y);
-            RefreshClipInsets(rect);
+            // The map fills the art's mask exactly, clipped to the mask's own shape.
+            if (_mapClip != null)
+            {
+                _mapClip.offsetMin = Vector2.zero;
+                _mapClip.offsetMax = Vector2.zero;
+                var artMask = FollowTarget.GetComponent<Image>();
+                var clip = _mapClip.GetComponent<Image>();
+                if (artMask != null && artMask.sprite != null && clip != null && clip.sprite != artMask.sprite) clip.sprite = artMask.sprite;
+            }
             if (_frameOverlay != null && _frameOverlay.enabled) _frameOverlay.enabled = false;
         }
 

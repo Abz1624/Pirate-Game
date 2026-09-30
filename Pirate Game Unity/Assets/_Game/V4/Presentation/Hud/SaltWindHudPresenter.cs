@@ -48,7 +48,11 @@ namespace RoguePirates.V4.Presentation.Hud
 
         public GameObject Hud => _hud;
         /// <summary>Off: the authored HUD shows as before (the V4 HUD PlayMode tests cover those widgets).</summary>
-        public static bool Disabled;
+        public static bool Disabled
+        {
+            get => RoguePirates.V4.Foundation.Core.DemoMode.Off;
+            set => RoguePirates.V4.Foundation.Core.DemoMode.Off = value;
+        }
 
         /// <summary>Instantiates the HUD on the authored canvas; null when the settings or prefab are missing.</summary>
         public static SaltWindHudPresenter Install(Canvas authoredCanvas, AuthoredHudPresenter authored, IRunViews views, IconCatalog icons, MinimapPresenter minimap = null)
@@ -91,9 +95,11 @@ namespace RoguePirates.V4.Presentation.Hud
             _hud = root.gameObject;
             UpgradeSelection = Find(root, "UpgradeSelection");
             // The art's minimap is a frame: V4's minimap draws the map inside it (it follows ArtMinimap).
-            ArtMinimap = Find(root, "Minimap") as RectTransform;
-            SetActive(ArtMinimap, "MapContent", false);
-            SetActive(ArtMinimap, "PlayerMarker", false);
+            var minimap = Find(root, "Minimap");
+            SetActive(minimap, "MapContent", false);
+            SetActive(minimap, "PlayerMarker", false);
+            // V4's map sits in the frame's inner mask (the frame's compass points are outside it).
+            ArtMinimap = (Find(minimap, "Mask") ?? minimap) as RectTransform;
             // The HUD is display only (the level-up cards keep their buttons).
             foreach (var g in root.GetComponentsInChildren<Graphic>(true))
                 if (UpgradeSelection == null || !g.transform.IsChildOf(UpgradeSelection)) g.raycastTarget = false;

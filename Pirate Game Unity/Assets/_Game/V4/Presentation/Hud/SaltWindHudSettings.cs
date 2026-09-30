@@ -31,6 +31,8 @@ namespace RoguePirates.V4.Presentation.Hud
         public bool hideBeaconGuide = true;
         [Tooltip("Level-up cards offer weapons only (no Logbooks).")]
         public bool weaponCardsOnly = true;
+        [Tooltip("Hide the Captain's special ability button and its effect bar.")]
+        public bool hideCaptainActive = true;
         [Tooltip("One level-up card per weapon (Assets/_Game/V4/Demo/LevelUpCards): its Icon is the icon that weapon's cards show.")]
         public WeaponCard[] weaponCards = Array.Empty<WeaponCard>();
 

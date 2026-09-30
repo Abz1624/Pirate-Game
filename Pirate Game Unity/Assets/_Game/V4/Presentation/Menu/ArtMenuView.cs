@@ -210,7 +210,7 @@ namespace RoguePirates.V4.Presentation.Menu
             if (_setSailText != null)
             {
                 _setSailText.gameObject.SetActive(!plain);
-                _setSailText.text = label;
+                _setSailText.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(label);
             }
         }
 
@@ -230,7 +230,7 @@ namespace RoguePirates.V4.Presentation.Menu
             {
                 var e = _entries[slot.Entry];
                 _lockReason.gameObject.SetActive(e.Locked && !string.IsNullOrEmpty(e.LockReason));
-                _lockReason.text = e.Locked ? e.LockReason : "";
+                _lockReason.text = e.Locked ? RoguePirates.V4.Foundation.Core.DemoMode.Text(e.LockReason) : "";
             }
             if (notify) CaptainChanged?.Invoke(slot.Entry);
         }
@@ -259,13 +259,16 @@ namespace RoguePirates.V4.Presentation.Menu
 
         static void FillDetails(Transform details, CaptainMenuEntry e)
         {
+            // Demo: no "Special Ability" heading.
+            var heading = FindDeep(details, "SectionTitle");
+            if (heading != null) heading.gameObject.SetActive(false);
             var name = FindDeep(details, "CharacterName")?.GetComponent<TextMeshProUGUI>();
             if (name != null && !string.IsNullOrEmpty(e.Label)) name.text = e.Label.ToUpperInvariant();
             var ability = FindDeep(details, "AbilityName")?.GetComponent<TextMeshProUGUI>();
             if (ability != null && !string.IsNullOrEmpty(e.ActiveName)) ability.text = e.ActiveName.ToUpperInvariant();
             var description = FindDeep(details, "AbilityDescription")?.GetComponent<TextMeshProUGUI>();
             if (description != null && !string.IsNullOrEmpty(e.ActiveSummary))
-                description.text = string.IsNullOrEmpty(e.PassiveSummary) ? e.ActiveSummary : e.ActiveSummary + "\n<size=80%>" + e.PassiveSummary + "</size>";
+                description.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(string.IsNullOrEmpty(e.PassiveSummary) ? e.ActiveSummary : e.ActiveSummary + "\n<size=80%>" + e.PassiveSummary + "</size>");
         }
 
         TextMeshProUGUI AddLockText(Transform setSail)
