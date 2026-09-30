@@ -34,7 +34,7 @@ Grid searches: `before-retune/retune-grid-*.md`.
 | Lightning Mast base damage | 10.78 | 10.56 | −2%: at the new parity level 6 its extra strike put it at ×1.20 of its role (the band is ±20%) |
 | Director on-track growth | M2 curve | re-measured | The director's idea of an average build follows the slower levelling |
 | Level targets 6:00–12:00, Steady Captain level at 10:00 | 18–29 … 32–48; 30–46 | 15–26 … 23–39; 21–35 | Follow the chosen slower pace |
-| Seconds between level-ups (minute 1, 0–10 min) | 4–12, 13–20 | 10–20, 20–30 | Follow the chosen slower pace |
+| Seconds between level-ups (minute 1, 0–10 min) | 4–12, 13–20 | 12–18, 20–30 | ±20% around the chosen pace (15 s, 25 s); owner, 1 Oct |
 
 Outcome targets (how long runs last and how often the boss is beaten) were **not** changed.
 
@@ -111,8 +111,8 @@ Re-verification: all 10 fixed. It found 3 new minor issues, also fixed:
 - C. The director curve predated the XP-order fix. It was re-measured (the same up to 10:00 within 3%; 12:00 is 47.6,
   was 42.1) and the reports were re-run.
 
-Questions for the owner, from the review:
-- The two level-up pacing targets were set around the measured pace (15 s and 25 s against 10–20 and 20–30). Should
-  they describe the pace, or hold it to a tighter band?
-- Strong players' runs got longer (Steady Captain 12.2 → 13.8 min, Sea Legend 16.5 → 18.4). Check in the playtest
-  whether long runs drag.
+Owner's answers (1 Oct):
+- The level-up pace targets hold the pace: ±20% around 15 s and 25 s, so minute 1 is now 12–18 s (was 10–20; the
+  reports above still print 10–20) and 0–10 min stays 20–30 s. Measured 15 s and 25 s: met. `V5BalanceM2Tests` and
+  `V5DemoBaselineTests` pass on the new band.
+- Playtest of M1–M3 and the retune: "fine for now, we'll finetune it later".

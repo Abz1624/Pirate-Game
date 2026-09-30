@@ -57,9 +57,9 @@ namespace RoguePirates.V4.DevTools.Balance
             // Weapon parity is now also checked at level 6 (the evolution level): the Lightning Mast's extra strike put it at
             // ×1.20 of its role there; 2% off its base damage keeps every level in ±20%.
             ("weapon.lightning_mast", "baseDamage", "10.56", "10.775537"),
-            ("balance_targets.saltwind", "levelUpGapMinute1.min", "10", "4"),
-            ("balance_targets.saltwind", "levelUpGapMinute1.max", "20", "12"),
-            ("balance_targets.saltwind", "levelUpGapTo10.min", "20", "13"),
+            ("balance_targets.saltwind", "levelUpGapMinute1.min", "12", "4"), // ±20% around the chosen 15 s (owner, 1 Oct)
+            ("balance_targets.saltwind", "levelUpGapMinute1.max", "18", "12"),
+            ("balance_targets.saltwind", "levelUpGapTo10.min", "20", "13"), // ±20% around the chosen 25 s
             ("balance_targets.saltwind", "levelUpGapTo10.max", "30", "20"),
             ("balance_targets.saltwind", "personalities[3].levelAt10.min", "21", "30"),
             ("balance_targets.saltwind", "personalities[3].levelAt10.max", "35", "46"),

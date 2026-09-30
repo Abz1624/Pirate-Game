@@ -113,8 +113,8 @@ namespace RoguePirates.V4.Editor
                 MT(11, 0.25f, 1.0f, 30f, 220f, 22f, 37f, float.NaN),
                 MT(12, 0.25f, 1.0f, 30f, 240f, 23f, 39f, float.NaN),
             };
-            // The demo-baseline retune (XP ×0.5): were 4–12 and 13–20.
-            t.levelUpGapMinute1 = new TargetBand(10f, 20f);
+            // The demo-baseline retune (XP ×0.5), ±20% around the chosen 15 s and 25 s (owner, 1 Oct): were 4–12 and 13–20.
+            t.levelUpGapMinute1 = new TargetBand(12f, 18f);
             t.levelUpGapTo10 = new TargetBand(20f, 30f);
             t.fodderTtkSeconds = new TargetBand(float.NaN, 1f);
             t.eliteTtkSeconds = new TargetBand(4f, 8f);

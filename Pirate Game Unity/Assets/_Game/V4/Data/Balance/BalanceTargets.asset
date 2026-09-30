@@ -326,8 +326,8 @@ MonoBehaviour:
       min: NaN
       max: NaN
   levelUpGapMinute1:
-    min: 10
-    max: 20
+    min: 12
+    max: 18
   levelUpGapTo10:
     min: 20
     max: 30

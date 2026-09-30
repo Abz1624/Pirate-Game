@@ -2,7 +2,7 @@
 
 ## Next
 
-- **Playtest M2 and M3 on the demo baseline.** The demo round (30 Sep) changed the voyage and you chose to keep it:
+- ~~**Playtest M2 and M3 on the demo baseline.**~~ Done 1 Oct: "fine for now, we'll finetune it later". The demo round (30 Sep) changed the voyage and you chose to keep it:
   pickups give half XP, the ship is 1.625x faster (acceleration too), player shooting ranges are lower (Deck Cannons
   22 -> 16 and so on), enemies are smarter (they path around islands, cut you off, surround you and lead their shots),
   the hammerhead and rammer attack sooner, and cannon boats appear from 1:00. You kept half XP and chose a retune around
