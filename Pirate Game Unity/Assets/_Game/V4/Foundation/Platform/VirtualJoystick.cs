@@ -26,11 +26,12 @@ namespace RoguePirates.V4.Foundation.Platform
         public Vector2 ReadMove() => _input;
         public bool Floating => floating;
 
-        /// <summary>Touch controls belong to the mobile app only (Android and iOS players; the Editor's Device
-        /// Simulator counts, a mobile web browser does not).</summary>
+        /// <summary>Touch controls on phones and tablets: the Android and iOS apps and the web build in a mobile browser
+        /// (the Editor's Device Simulator counts); never on desktop.</summary>
         public static bool TouchControlsWanted =>
             UnityEngine.Device.Application.platform == RuntimePlatform.Android ||
-            UnityEngine.Device.Application.platform == RuntimePlatform.IPhonePlayer;
+            UnityEngine.Device.Application.platform == RuntimePlatform.IPhonePlayer ||
+            (UnityEngine.Device.Application.platform == RuntimePlatform.WebGLPlayer && UnityEngine.Device.Application.isMobilePlatform);
 
         void Awake()
         {

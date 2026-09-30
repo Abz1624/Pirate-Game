@@ -30,6 +30,19 @@ namespace RoguePirates.V4.Foundation.Core
             if (Application.isMobilePlatform) Application.targetFrameRate = 60;
         }
 
+        /// <summary>
+        /// The web build uses the mobile render settings (75% resolution) so phones keep up; a desktop browser renders at
+        /// full resolution instead (set on the pipeline asset through reflection: Foundation has no URP reference).
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void DesktopWebResolution()
+        {
+            if (Application.platform != RuntimePlatform.WebGLPlayer || Application.isMobilePlatform) return;
+            var pipeline = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline;
+            var scale = pipeline != null ? pipeline.GetType().GetProperty("renderScale") : null;
+            if (scale != null && scale.CanWrite) scale.SetValue(pipeline, 1f);
+        }
+
         /// <summary>UI text without em dashes (the demo's style): "A — B" reads "A: B".</summary>
         public static string Text(string s) => string.IsNullOrEmpty(s) ? s : s.Replace(" — ", ": ").Replace("—", ", ");
     }

@@ -203,6 +203,8 @@ MonoBehaviour:
   bossArrivalPrefab: {fileID: 5654319288947532959, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}
   bossArrivalScale: 1.6
   bossArrivalSeconds: 2.5
+  vfxGraphFallbackPrefab: {fileID: 7117905026468385747, guid: 9bf6488282dca46eda70d6338c3d982f, type: 3}
+  vfxGraphFallbackScale: 3
   shipSpeedMultiplier: 1.625
   xpMultiplier: 0.5
   mobileHudEdgeMargin: 0.035

@@ -165,6 +165,9 @@ namespace RoguePirates.V4.Foundation.Data
         public GameObject bossArrivalPrefab;
         [Min(0f)] public float bossArrivalScale = 1.6f;
         [Range(0.5f, 5f)] public float bossArrivalSeconds = 2.5f;
+        [Tooltip("Plays instead of VFX Graph effects (the whirlpool) where the device can't run them (WebGL: no compute shaders).")]
+        public GameObject vfxGraphFallbackPrefab;
+        [Min(0.01f)] public float vfxGraphFallbackScale = 0.6f;
         [Tooltip("Demo: the ship's top speed, times this.")]
         [Min(0.1f)] public float shipSpeedMultiplier = 1.625f;
         [Tooltip("Demo: XP from pickups, times this (0.5 = levelling at half the pace).")]

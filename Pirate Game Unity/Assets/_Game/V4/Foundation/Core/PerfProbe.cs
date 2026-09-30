@@ -3,8 +3,8 @@ using UnityEngine;
 namespace RoguePirates.V4.Foundation.Core
 {
     /// <summary>
-    /// Demo (30 Sep 2026): on phones, logs the frame rate every 5 s ("[Perf]" in logcat: average fps, worst frame,
-    /// frames over 25 ms) so performance can be read from a device without a development build.
+    /// Demo (30 Sep 2026): on phones and in the web build, logs the frame rate every 5 s ("[Perf]" in logcat or the
+    /// browser console: average fps, worst frame, frames over 25 ms) so performance can be read without a development build.
     /// </summary>
     public sealed class PerfProbe : MonoBehaviour
     {
@@ -14,7 +14,7 @@ namespace RoguePirates.V4.Foundation.Core
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Install()
         {
-            if (!Application.isMobilePlatform || DemoMode.Off) return;
+            if (DemoMode.Off || (!Application.isMobilePlatform && Application.platform != RuntimePlatform.WebGLPlayer)) return;
             var go = new GameObject("PerfProbe");
             DontDestroyOnLoad(go);
             go.AddComponent<PerfProbe>();

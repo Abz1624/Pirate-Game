@@ -51,8 +51,12 @@ namespace RoguePirates.V4.Presentation.Effects
         public bool Play(VfxSlot slot, Vector3 position, Quaternion rotation, float baseScale = 1f, Transform parent = null)
         {
             if (slot == null || !slot.HasPrefab || _fx == null) return false;
-            _fx.Register(slot.prefab, 2);
-            var go = _fx.Play(slot.prefab, position + rotation * slot.offset, rotation, baseScale * slot.ScaleOrOne, slot.lifetime, parent);
+            var prefab = slot.prefab;
+            var scale = baseScale * slot.ScaleOrOne;
+            if (NeedsFallback(prefab, out var fallback, out var fallbackScale)) { prefab = fallback; scale *= fallbackScale; }
+            if (prefab == null) return false;
+            _fx.Register(prefab, 2);
+            var go = _fx.Play(prefab, position + rotation * slot.offset, rotation, scale, slot.lifetime, parent);
             if (go == null) return false;
             Restart(go);
             VfxTint.Apply(go, slot.useTint, slot.tint);
@@ -92,6 +96,26 @@ namespace RoguePirates.V4.Presentation.Effects
             {
                 if (Application.isPlaying) Destroy(trail.go); else DestroyImmediate(trail.go); // play-mode exit tears down in edit mode
             }
+        }
+
+        readonly Dictionary<GameObject, bool> _usesVfxGraph = new Dictionary<GameObject, bool>();
+
+        /// <summary>
+        /// A VFX Graph effect (the whirlpool) on a device without compute shaders (WebGL) draws nothing: the demo settings'
+        /// particle stand-in plays instead.
+        /// </summary>
+        bool NeedsFallback(GameObject prefab, out GameObject fallback, out float scale)
+        {
+            fallback = null;
+            scale = 1f;
+            if (SystemInfo.supportsComputeShaders || prefab == null) return false;
+            if (!_usesVfxGraph.TryGetValue(prefab, out var graph))
+                _usesVfxGraph[prefab] = graph = prefab.GetComponentInChildren<UnityEngine.VFX.VisualEffect>(true) != null;
+            if (!graph) return false;
+            var settings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
+            fallback = settings != null ? settings.vfxGraphFallbackPrefab : null;
+            scale = settings != null ? settings.vfxGraphFallbackScale : 1f;
+            return true;
         }
 
         /// <summary>Effects that do not restart with their particle systems: VFX Graph effects (the whirlpool) and the
