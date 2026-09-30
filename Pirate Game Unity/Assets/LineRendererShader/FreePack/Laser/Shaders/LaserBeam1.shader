@@ -152,7 +152,7 @@ Shader "Unlit/LaserBeam1"
                 float4 outLerp4;
                 outLerp4=lerp(col1.xyzw, noiseAfterPower.xxxx*col1.a, _DissolveAmount);
                 fixed4 colResult=outLerp4*i.color*_Color*_ColorEmission;
-                UNITY_APPLY_FOG(i.fogCoord, col);
+                UNITY_APPLY_FOG(i.fogCoord, colResult);
                 return colResult*_Emission;
             }
             ENDCG
