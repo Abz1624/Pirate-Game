@@ -17,6 +17,7 @@ namespace RoguePirates.V4.Foundation.Core
         public static bool NoPointsOfInterest => !Off && Settings != null && Settings.hidePointsOfInterest;
 
         public static float ShipSpeedMultiplier => Off || Settings == null ? 1f : Settings.shipSpeedMultiplier;
+        public static float XpMultiplier => Off || Settings == null ? 1f : Settings.xpMultiplier;
         public static float MobileHudEdgeMargin => Off || Settings == null ? 0f : Settings.mobileHudEdgeMargin;
 
         /// <summary>Phones run at 60 fps (Android and iOS default to 30, which makes the ship feel sluggish).</summary>

@@ -106,6 +106,7 @@ namespace RoguePirates.V4.Progression
         readonly Queue<Pending> _pending = new Queue<Pending>();
         Agent[] _pool = new Agent[0];
         int _active, _pendingXp, _pendingGold, _pendingHeal;
+        float _demoXpCarry; // the demo's XP rate keeps its fractions between pickups
         float _time;
 
         public PickupModule(Func<PickupConfig> config, int capacity, IPickupRewards rewards, IPickupViews views, Func<bool> magneticTideOpensBarrels, Func<float> vfxDensity)
@@ -255,6 +256,7 @@ namespace RoguePirates.V4.Progression
         {
             _pending.Clear();
             _pendingXp = _pendingGold = _pendingHeal = 0;
+            _demoXpCarry = 0f;
             for (var i = 0; i < _pool.Length; i++) if (_pool[i].Active) Release(i);
         }
 
@@ -350,7 +352,20 @@ namespace RoguePirates.V4.Progression
 
         void FlushGrants()
         {
-            if (_pendingXp > 0) { var xp = _pendingXp; _pendingXp = 0; _rewards.GrantXp(xp); }
+            if (_pendingXp > 0)
+            {
+                var xp = _pendingXp;
+                _pendingXp = 0;
+                // Demo: levelling pace (0.5 = half the XP, twice as many pickups per level).
+                var rate = DemoMode.XpMultiplier;
+                if (!Mathf.Approximately(rate, 1f))
+                {
+                    _demoXpCarry += xp * rate;
+                    xp = Mathf.FloorToInt(_demoXpCarry);
+                    _demoXpCarry -= xp;
+                }
+                if (xp > 0) _rewards.GrantXp(xp);
+            }
             if (_pendingGold > 0) { var gold = _pendingGold; _pendingGold = 0; _rewards.GrantGold(gold); }
             if (_pendingHeal > 0) { var heal = _pendingHeal; _pendingHeal = 0; _rewards.HealShip(heal); }
         }
