@@ -44,3 +44,5 @@ sysinfo.txt
 *.unitypackage
 crashlytics-build.properties
 references/
+# Unity temp (Unity 6)
+.utmp/
