@@ -1,15 +1,15 @@
 {
-  "updated": "30 Sep 2026",
-  "statusLine": "Back from the demo: M1, M2 and M3 built, awaiting your playtests; next: re-check M2/M3 balance on the demo baseline, then M4 new weapons",
+  "updated": "1 Oct 2026",
+  "statusLine": "Balance re-checked and retuned for half XP: M1, M2, M3 and the retune await your playtests; next: M4 new weapons",
   "statusOk": false,
   "facts": [
     [
       "Progress",
-      "M0 done; M1, M2 and M3 built, reviewed and committed (awaiting your playtests)"
+      "M0 done; M1, M2, M3 and the demo-baseline retune built, reviewed and committed (awaiting your playtests)"
     ],
     [
       "Tests",
-      "EditMode 367/367 · PlayMode 51/51"
+      "EditMode 372/372 · PlayMode 53/53"
     ],
     [
       "Gate",
@@ -128,6 +128,11 @@
       "when": "30 Sep",
       "what": "<strong>Demo interlude, merged into V5</strong>: the art team's menu, Captain select, HUD and level-up cards; per-weapon, ship and enemy VFX profiles with an editor; POI and level-up card prefabs; music; the floating joystick (app and mobile browsers); safe-area HUD; mobile render settings (60 fps on a Pixel 9a); smarter enemies; shots stop at islands; APK and WebGL builds. Kept for V5: half XP, 1.625x ship speed, lower player ranges, the AI changes, cannon boats from 1:00, the boss rising out of a whirlpool after the beacon summon. Restored: POIs, Captain active, boost, barks, tutorial, Logbook cards, flamethrower. EditMode 367/367, PlayMode 51/51.",
       "commit": "86724e6b"
+    },
+    {
+      "when": "1 Oct",
+      "what": "<strong>Balance re-check on the demo baseline</strong>: half XP and the 1.625x ship speed moved into config and the simulator. Half XP alone took the model from 2 of 76 to 24 of 70 targets missed; you kept it and chose a retune: enemy HP growth x0.55, damage growth x0.7, the evolution card from weapon level 6 (was 8), Lightning Mast -2%, the director curve re-measured, level and level-up targets at the slower pace. Result: 2 of 76 missed, the same two as M3; median run 10.3 min (10.1); levels about 40% slower. Review: no blockers, 10 minors, then 3 minors on the fixes; all fixed. EditMode 372/372, PlayMode 53/53. Details: <code>plan/v5/balance-recheck/README.md</code>.",
+      "commit": "263fa59d"
     }
   ],
   "todos": {
