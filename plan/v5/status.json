@@ -1,6 +1,6 @@
 {
   "updated": "30 Sep 2026",
-  "statusLine": "M1, M2 and M3 built · awaiting your playtests · next: M4 new weapons",
+  "statusLine": "Back from the demo: M1, M2 and M3 built, awaiting your playtests; next: re-check M2/M3 balance on the demo baseline, then M4 new weapons",
   "statusOk": false,
   "facts": [
     [
@@ -123,23 +123,31 @@
       "when": "30 Sep",
       "what": "<strong>M3 build balance built</strong> (unattended): evolutions reachable (the card from weapon level 8 with its item; Rare/Epic cards +2 levels, Legendary +3; a pity rule; a 40% chance that a chest gives a ready weapon's evolution item) — focused builds now evolve in ~60% of runs, around minute 6. All ten weapons within ±20% of their role at levels 1, 4, 8 and 12 (the Flamethrower no longer fades, the Powder Kegs no longer lag, the Lightning Mast no longer runs away). Plain Logbooks and items in their rarity bands; volley and crit pieces flagged; synergy items left for you. Captains within ±10% on run length (Flint's hull 90 → 120). 5 items by 10:00. Review: 3 majors, 10 minors, then 1 major and 3 minors on the fixes; all fixed or recorded.",
       "commit": "e1195f7f"
+    },
+    {
+      "when": "30 Sep",
+      "what": "<strong>Demo interlude, merged into V5</strong>: the art team's menu, Captain select, HUD and level-up cards; per-weapon, ship and enemy VFX profiles with an editor; POI and level-up card prefabs; music; the floating joystick (app and mobile browsers); safe-area HUD; mobile render settings (60 fps on a Pixel 9a); smarter enemies; shots stop at islands; APK and WebGL builds. Kept for V5: half XP, 1.625x ship speed, lower player ranges, the AI changes, cannon boats from 1:00, the boss rising out of a whirlpool after the beacon summon. Restored: POIs, Captain active, boost, barks, tutorial, Logbook cards, flamethrower. EditMode 367/367, PlayMode 51/51.",
+      "commit": "86724e6b"
     }
   ],
   "todos": {
     "next": [
+      "<strong>Playtest M2 and M3 on the demo baseline</strong> (half XP, 1.625x ship speed, lower player ranges, smarter enemies, cannon boats from 1:00). Before M4 I re-run the balance model and simulator on it and report; nothing retuned without your OK.",
       "<strong>Playtest M1</strong> (enemy flow), <strong>M2</strong> (balance) and <strong>M3</strong> (builds): see each phase's box on this page.",
       "<strong>M2 and M3 decisions</strong>: targets, the Turtle, evolution level, Captains, synergy items, Epic +2, volley and crit pieces, pity and refreshes (details on each phase's page and in TODO-FOR-YOU.md).",
       "<strong>Get the reference phone</strong> (Galaxy A15 or A16 4G) before M7: today's build needs 344 MB of memory where the phone allows about 256 MB.",
       "<strong>Accounts</strong> (list and costs in the answers): Railway by M9; a domain, a Google Cloud project and Resend by M10b; Helius by M11; Firebase by M19."
     ],
     "open": [
+      "Flamethrower VFX is broken (offered again); fixed in M4.",
       "Earlier GDD questions (21 left) are still on the board; the raid entry fee (question 4) feeds M15 and the pass price (question 5) feeds M20."
     ],
     "done": [
       "<strong>V5 questions, round 3</strong> (30 Sep): netcode, treasury protection, reference phone, forfeits and checked RUM decided; every V5 question answered.",
       "<strong>V5 questions, round 2</strong> (30 Sep): 16 more decided (D17), personalities defined, the Hunt netcode and reference phone researched.",
       "<strong>V5 questions answered</strong> (30 Sep): 19 decided (D17), the rest explained on this page; the plan reviewed again (rev 5).",
-      "<strong>V5 M0 setup</strong> (29 Sep): branch, reviewer agent, plan and research, green baseline."
+      "<strong>V5 M0 setup</strong> (29 Sep): branch, reviewer agent, plan and research, green baseline.",
+      "Demo round (30 Sep) merged into V5; details in <code>plan/demo/README.md</code>."
     ]
   },
   "proof": [
@@ -345,6 +353,13 @@
       "check": "Independent review (v5-reviewer), two passes",
       "result": "3 majors · 10 minors, then 1 major · 3 minors → fixed or recorded",
       "evidence": "plan/v5/phase-03-builds/PLAN.md → Independent review"
+    },
+    {
+      "date": "30 Sep",
+      "phase": "Demo",
+      "check": "EditMode and PlayMode suites after merging the demo into V5 (demo switches off in tests)",
+      "result": "367/367 and 51/51",
+      "evidence": "plan/demo/evidence/editmode.json, playmode.json"
     }
   ],
   "phaseResults": {
