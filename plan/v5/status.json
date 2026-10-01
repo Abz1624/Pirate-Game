@@ -229,6 +229,11 @@
       "when": "1 Oct",
       "what": "<strong>M8 menu hub and shop built</strong> (awaiting your playtest): SET SAIL opens a mode select (Voyage; Raids, Race, Arena, Hunt coming), LEDGER the shop (weapons, Logbooks, items, Captains for RUM), PROFILE your stats and collection; meta services (account, RUM, inventory, store) over the local save behind interfaces for the server. Content out of every pool is not sold. Review: no blockers, 4 majors and 6 minors, fixed or recorded. Questions 36-38.",
       "commit": "c3f8ae50"
+    },
+    {
+      "when": "1 Oct",
+      "what": "<strong>The phone build</strong> (M7b): texture pass (881 textures capped at 1024 on WebGL), download 111 MB (163 MB in September). With 256 MB of heap it ran out of memory loading the menu, so it builds with 512 MB (D37, question 39). In a browser it reaches the menu, the mode select, the Captain select, a run and the pause menu. Serve it to your phone with <code>python plan/v5/tools/serve-webgl.py \"Pirate Game Unity/Builds/WebGL-Mobile/RoguePirates\"</code>.",
+      "commit": "0f0a7531"
     }
   ],
   "todos": {
@@ -661,6 +666,13 @@
       "check": "Independent review (v5-reviewer)",
       "result": "no blockers; 4 majors + 6 minors → fixed or recorded",
       "evidence": "plan/v5/phase-08-menu/PLAN.md → Independent review"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M7",
+      "check": "WebGL mobile build loaded in a browser (menu, hub, Captain select, run, pause)",
+      "result": "256 MB heap: out of memory at the menu; 512 MB: all screens reached, no errors",
+      "evidence": "plan/v5/phase-07-mobile/PLAN.md → The phone build"
     }
   ],
   "phaseResults": {

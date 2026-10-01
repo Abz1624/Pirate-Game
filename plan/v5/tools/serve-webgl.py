@@ -1,6 +1,6 @@
 """V5 M7: serve a WebGL build to phones on the local network.
 
-Usage:  python plan/v5/tools/serve-webgl.py [Builds/WebGL-Mobile] [port] [--cert cert.pem --key key.pem]
+Usage:  python plan/v5/tools/serve-webgl.py ["Pirate Game Unity/Builds/WebGL-Mobile/RoguePirates"] [port] [--cert cert.pem --key key.pem]
 
 Serves the folder with the headers Unity's Brotli and gzip files need. Phones on the same Wi-Fi open the printed URL.
 Plain HTTP works for play; HTTPS (some browser features, such as fullscreen and orientation lock, need it) needs a
@@ -56,7 +56,7 @@ def main():
         for flag in ('--cert', '--key'):
             i = args.index(flag)
             del args[i:i + 2]
-    folder = args[0] if args else os.path.join(ROOT, 'Builds', 'WebGL-Mobile')
+    folder = args[0] if args else os.path.join(ROOT, "Builds", "WebGL-Mobile", "RoguePirates")
     port = int(args[1]) if len(args) > 1 else 8443 if cert else 8080
     os.chdir(folder if os.path.isabs(folder) else os.path.join(os.getcwd(), folder))
     server = http.server.ThreadingHTTPServer(('0.0.0.0', port), Handler)

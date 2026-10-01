@@ -3,7 +3,7 @@
 ## Next
 
 - **Playtest M7 and M8 on the phone build** (committed, awaiting your playtest). Build: `Pirate Game Unity/Builds/WebGL-Mobile`
-  (made after M8); serve it to your phone on the Wi-Fi with `python plan/v5/tools/serve-webgl.py` and open the address it
+  (made after M8); serve it to your phone on the Wi-Fi with `python plan/v5/tools/serve-webgl.py "Pirate Game Unity/Builds/WebGL-Mobile/RoguePirates"` and open the address it
   prints. M7: the BOOST and PAUSE buttons, the pause menu, Settings (UI scale, stick on the right, quality), a notch phone.
   M8: SET SAIL (mode select, then Captains), LEDGER (buy a Logbook or item with RUM, then see it offered in a run),
   PROFILE (your collection). On the reference phone, note the frame rate and whether it ever stutters.
