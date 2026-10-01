@@ -1,15 +1,15 @@
 {
   "updated": "1 Oct 2026",
-  "statusLine": "You are away: M3b, M3c and M3d built (awaiting your playtest); M3e (performance) next; decisions logged",
+  "statusLine": "You are away: M3b, M3c, M3d and M3e built (awaiting your playtest); decisions logged; next steps are yours to pick",
   "statusOk": false,
   "facts": [
     [
       "Progress",
-      "M0–M3 done; M3b, M3c, M3d built and committed (awaiting your playtest); M3e next"
+      "M0–M3 done; M3b–M3e built and committed (awaiting your playtest)"
     ],
     [
       "Tests",
-      "EditMode 397/397 · PlayMode 59/59"
+      "EditMode 408/408 · PlayMode 60/60"
     ],
     [
       "Gate",
@@ -46,6 +46,10 @@
       "chip": "built 1 Oct · awaiting your playtest"
     },
     "M3d": {
+      "state": "playtest",
+      "chip": "built 1 Oct · awaiting your playtest"
+    },
+    "M3e": {
       "state": "playtest",
       "chip": "built 1 Oct · awaiting your playtest"
     }
@@ -170,14 +174,25 @@
       "when": "1 Oct",
       "what": "<strong>M3d pressure from enemy count built</strong> (awaiting your playtest): enemy HP and damage no longer grow with time (a cannon boat has 12 HP at 1:00 and at 8:00); the crowd follows your sketch in 22 keyframes (small early peaks, a big one at 3:35-3:45, a long valley rising in ~60 s waves, peaks at 7:30 and 9:35); stronger late types at fixed stats; every enemy that attacks differently looks different (tint, size), and hordes are ordinary ships. Per-minute targets now come from the design, not the simulator. Simulator: 2 of 76 targets missed (the First-Timer, minute 6 kills in the boss fight), both bounded and listed (D22); median run 11.0 min; in 15 s bins the crowd peaks at 3:45 (about 44) over a quieter valley (about 34) and rises to 65-69 at 7:30 and 9:30. Review: 1 blocker (the curve did not follow the sketch) and 10 majors (targets fitted to measurements, overtime understated, a heavy model, hordes, the look test, hitboxes, tint code), all fixed; the second pass found 1 major (the crowd, not only the floor, must show the peak) and 6 minors, fixed or recorded. EditMode 397/397, PlayMode 59/59.",
       "commit": "4ea07819"
+    },
+    {
+      "when": "1 Oct",
+      "what": "<strong>UI text without em dashes</strong>: about 60 toasts, prompts, menu labels and boss and tutorial texts now use a colon or a comma; the toast and the tutorial prompt clean any text that reaches them; a test guards it (D23).",
+      "commit": "3d934792"
+    },
+    {
+      "when": "1 Oct",
+      "what": "<strong>M3e performance built</strong> (awaiting your playtest): measured on the same map, three runs a side in the Editor. The game's garbage fell from 28 KB to 1.3 KB a frame (the ship wakes searched every enemy's children every frame), the enemy world's main-thread time from 1.42 to 0.67 ms, batches at 9:00 from 991 to 784, triangles from 1.57M to 1.45M (Mesh LODs for 14 heavy models: one chest was ~77,650 triangles). Pools now make nothing mid-run and enemy models are stripped in the pool (a NavMesh warning fell from 99 to 2 a run). Static batching of the islands was tried and taken out (+25 MB for ~50 batches); dynamic batching gave nothing; occlusion culling does not apply here (the far clip went 1000 → 250 m instead). The enemy cap stays 80 until the reference phone (D24). Review: 1 blocker (plan items left unrecorded) and 5 majors, fixed or recorded (D27).",
+      "commit": "3626aedc"
     }
   ],
   "todos": {
     "next": [
-      "<strong>Read what I decided while you were away</strong>: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code> (every decision with its reason and the alternatives, and 13 questions for you).",
+      "<strong>Read what I decided while you were away</strong>: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code> (D1-D27 with reasons and alternatives, and 16 questions for you).",
       "<strong>Playtest M3b</strong>: steer into an island (bounce, 5 hull at most every 2 s), drop powder kegs and wait 45 s (unblown ones sink), use the round ability button on a phone build.",
       "<strong>Playtest M3c</strong> (level-up rhythm): the first level with the first kill, then gaps of 10, 10, 20, 30, 50 s, then 60 s (about 13 level-ups by 10:00, was ~24); weapon cards worth more levels; evolutions from weapon level 5. Does the slower rhythm feel right, and do builds still feel strong?",
       "<strong>Playtest M3d</strong> (pressure from enemy count): is 0:00-3:00 busy now (an early horde at 0:35, small peaks, some hull lost), is 6:00-8:00 fair, and can you tell every enemy apart (the crimson gunner cog vs the white cannon boat, the orange net cutter, the yellow needle sloop)? Enemy HP no longer grows with time; overtime after 10:00 is much harder (question 10).",
+      "<strong>Playtest M3e</strong> (performance): does anything look different? Pickups no longer cast shadows; the heavy models (chests, buoys, the wreck) draw lighter versions at a distance; the camera draws nothing past 250 m. Same map, three runs a side in the Editor: game garbage 28 KB → 1.3 KB a frame, batches at 9:00 991 → 784. The enemy cap stays 80 until the reference phone (question 14).",
       "<strong>M2 and M3 decisions</strong>: targets, the Turtle, evolution level, Captains, synergy items, Epic +2, volley and crit pieces, pity and refreshes (details on each phase's page and in TODO-FOR-YOU.md).",
       "<strong>Get the reference phone</strong> (Galaxy A15 or A16 4G) before M7: today's build needs 344 MB of memory where the phone allows about 256 MB.",
       "<strong>Accounts</strong> (list and costs in the answers): Railway by M9; a domain, a Google Cloud project and Resend by M10b; Helius by M11; Firebase by M19."
@@ -476,6 +491,27 @@
       "check": "Independent review (v5-reviewer), two passes",
       "result": "1 blocker + 10 majors + 5 minors, then 1 major + 6 minors → fixed or recorded",
       "evidence": "plan/v5/phase-03d-pressure/PLAN.md"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3e",
+      "check": "EditMode and PlayMode suites",
+      "result": "408/408 and 60/60",
+      "evidence": "plan/v5/phase-03e-performance/editmode.json, playmode.json"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3e",
+      "check": "Perf check, same seed, 3 runs a side (frame, GC, batches, triangles, pools, profiler)",
+      "result": "game GC 28,325 → 1,342 B/frame; batches at 9:00 991 → 784; frame at 9:00 10.2 → 9.1 ms (Editor, indicative); 0 pool instances made mid-run",
+      "evidence": "plan/v5/phase-03e-performance/perf.md, gc-profile-*.txt, playable/"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3e",
+      "check": "Independent review (v5-reviewer), two passes",
+      "result": "1 blocker + 5 majors + 7 minors, then the second pass → fixed or recorded",
+      "evidence": "plan/v5/phase-03e-performance/PLAN.md"
     }
   ],
   "phaseResults": {
@@ -587,6 +623,20 @@
       {
         "title": "Simulator",
         "text": "2 of 76 targets missed, both bounded and listed for you (D22). Crowd per minute 0.20 to 0.76, a peak at 3:45 over a quieter valley; some hull lost in every minute from 0:00; median run 11.0 min."
+      }
+    ],
+    "M3e": [
+      {
+        "title": "What changed",
+        "text": "Garbage: ship wakes, the spatial hash, config lookups, delegates, enum names, HUD labels and settings loads no longer allocate every frame. Pools: enemy models stripped in the pool, VFX-profile effects prewarmed. Rendering: Mesh LODs for 14 heavy models, no pickup shadows, a 250 m far clip. Static and dynamic batching measured and left off; occlusion culling not applicable."
+      },
+      {
+        "title": "Measured",
+        "text": "Same seed, 3 runs a side, Editor: game GC 28 KB → 1.3 KB a frame; enemy world 1.42 → 0.67 ms; batches at 9:00 991 → 784; triangles 1.57M → 1.45M. At cap 120 (99 enemies) the cost is about what 72 cost before."
+      },
+      {
+        "title": "Left for you",
+        "text": "The enemy cap (question 14), health bars on every enemy (15), pickup sparkles (16), and the look-changing quick wins (D27)."
       }
     ]
   },
@@ -1347,6 +1397,54 @@
           "where": "Tint code",
           "finding": "Static, untested, burn-flash instances.",
           "fix": "EnemyViewTint owned by the presenter; 4 tests."
+        }
+      ]
+    },
+    {
+      "title": "M3e performance review (1 Oct)",
+      "summary": "<strong>1 blocker</strong> (plan items neither done nor recorded), 5 majors (allocation tests that could not fail, a contaminated 5:00 measurement, a stale wake cache on reused views, static batching's memory unmeasured, untested behaviour changes), 7 minors; all fixed or recorded (static batching measured at +25 MB and taken out).",
+      "rows": [
+        {
+          "n": "1",
+          "sev": "Blocker",
+          "where": "Plan items",
+          "finding": "Several M3e items neither done nor recorded.",
+          "fix": "A table of each item with reason and phase (D27)."
+        },
+        {
+          "n": "2",
+          "sev": "Major",
+          "where": "Tests",
+          "finding": "The thread byte counter can read 0 on Unity.",
+          "fix": "Unity's GC constraint, and a test that it catches an allocation."
+        },
+        {
+          "n": "3",
+          "sev": "Major",
+          "where": "Measurement",
+          "finding": "The profiler start stalled the 5:00 sample; one run a side.",
+          "fix": "Sampler stops first; 3 seeded runs a side; medians."
+        },
+        {
+          "n": "4",
+          "sev": "Major",
+          "where": "Wake cache",
+          "finding": "Stale on reused views.",
+          "fix": "Rebuilt per life; a test."
+        },
+        {
+          "n": "5",
+          "sev": "Major",
+          "where": "Static batching",
+          "finding": "Memory not measured.",
+          "fix": "Measured +25 MB for ~50 batches: taken out."
+        },
+        {
+          "n": "6",
+          "sev": "Major",
+          "where": "Tests",
+          "finding": "Behaviour changes untested.",
+          "fix": "HUD signature, VFX prewarm, pickup shadows tested (caught one)."
         }
       ]
     }
