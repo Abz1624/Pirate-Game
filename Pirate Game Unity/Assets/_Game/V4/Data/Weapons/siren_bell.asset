@@ -24,7 +24,7 @@ MonoBehaviour:
   behavior: 7
   targeting: 5
   tags: []
-  baseDamage: 35.18896
+  baseDamage: 33.40863
   baseCooldown: 3
   range: 5
   baseQuantity: 1
@@ -60,6 +60,8 @@ MonoBehaviour:
   aimOverlayColor: {r: 0.45, g: 0.95, b: 0.95, a: 1}
   levelDamageFactor: 1
   runtimeCatalogWeapon: 0
+  goldPerKill: 0
+  goldPerKillRunCap: 0
   projectileVisual:
     prefab: {fileID: 0}
     scaleMultiplier: 1
@@ -114,6 +116,7 @@ MonoBehaviour:
     damageMultiplier: 0.35
     knockbackMeters: 0
     perTargetIntervalSeconds: 0
+    beamSegments: 0
   stream:
     tickIntervalSeconds: 0.08
     streamSeconds: 2.75
@@ -159,6 +162,11 @@ MonoBehaviour:
     telegraphHeight: 0.2
     v3ImpactEffectDraws: 0
     telegraphMatchesImpact: 1
+    whirlpoolSeconds: 0
+    pullMetersPerSecond: 3
+    whirlpoolTickSeconds: 0.5
+    whirlpoolTickDamageMultiplier: 0.2
+    implodeDamageMultiplier: 1.5
   summon:
     backOffset: 5.5
     lateralOffset: 2.4
@@ -170,6 +178,12 @@ MonoBehaviour:
     moveSpeed: 9.5
     strikeRange: 1.35
     strikeInterval: 0.55
+    perQuantity: 0
+    retarget: 0
+    retargetRange: 12
+    shotSpeed: 0
+    shotSize: 0.3
+    maxAlive: 0
   visual:
     cannonMuzzle: 0
     fallbackMuzzleScale: 1

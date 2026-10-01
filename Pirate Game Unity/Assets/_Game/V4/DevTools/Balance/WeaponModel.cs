@@ -100,6 +100,7 @@ namespace RoguePirates.V4.DevTools.Balance
             // V5 M4: a weapon that strikes only while boosting (the Ramming Prow) is up only that share of the time.
             var rules = c.Config.All<WeaponRulesConfig>().FirstOrDefault();
             var uptime = w.behavior == ConfigEnums.WeaponBehavior.Aura && w.aura.requiresBoost && rules != null ? rules.modelBoostUptime : 1f;
+            uptime *= HitsPerFiring(w); // V5 M4b: a summon strikes many times, a whirlpool ticks, per firing
             for (var path = 0; path < paths; path++)
             {
                 var rng = new Rng(SimBatch.RunSeed(seed, w.weaponId, path));
@@ -242,6 +243,25 @@ namespace RoguePirates.V4.DevTools.Balance
                 tunes.Add(t);
             }
             return tunes;
+        }
+
+        /// <summary>
+        /// V5 M4b: hits one firing deals per target, beyond the first, so the model's damage per cooldown matches play: a
+        /// summon strikes over its life (busy half of it: travel and retargeting), a whirlpool ticks and implodes after its
+        /// impact. 1 for everything else (today's weapons).
+        /// </summary>
+        public static float HitsPerFiring(WeaponConfig w) => WeaponStatResolver.HitsPerFiring(w);
+
+        static float OldHitsPerFiring(WeaponConfig w)
+        {
+            if (w.behavior == ConfigEnums.WeaponBehavior.Summon && (w.summon.perQuantity || w.summon.retarget || w.summon.shotSpeed > 0f))
+                return Mathf.Max(1f, 0.5f * w.summon.lifetimeSeconds / Mathf.Max(0.05f, w.summon.strikeInterval));
+            if (w.behavior == ConfigEnums.WeaponBehavior.PredictedArea && w.predictedArea.whirlpoolSeconds > 0f)
+            {
+                var p = w.predictedArea;
+                return 1f + Mathf.Floor(p.whirlpoolSeconds / Mathf.Max(0.05f, p.whirlpoolTickSeconds)) * p.whirlpoolTickDamageMultiplier + p.implodeDamageMultiplier;
+            }
+            return 1f;
         }
 
         static bool LastsLonger(ConfigEnums.WeaponBehavior b) =>

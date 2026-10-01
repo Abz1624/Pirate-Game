@@ -117,6 +117,7 @@ namespace RoguePirates.V4.Weapons
             _c.OrbitVolleyTimer = Mathf.Max(0f, _c.OrbitVolleyTimer - dt);
             _mine.TickKegs(dt);
             TickDelayedStrikes(dt);
+            TickWhirlpools(dt);
             _summon.TickSkiffs(dt);
             _fan.TickFollowUps(dt);
             var itemAttackSpeed = _c.Mods.ItemAttackSpeedMultiplier;
@@ -210,10 +211,65 @@ namespace RoguePirates.V4.Weapons
                     if (strike.ImpactDraws) DrawV3ImpactNumbers();
                     _c.Effects?.AreaImpact(strike.Position, strike.Radius);
                     _c.Effects?.WaterSplash(strike.Position);
+                    if (strike.Whirlpool != null) OpenWhirlpool(strike);
                 }
                 else
                     _c.Effects?.Explosion(strike.Position, strike.Radius);
                 list.RemoveAt(i);
+            }
+        }
+
+        /// <summary>V5 M4b: the Maelstrom's whirlpool opens where its shell lands.</summary>
+        void OpenWhirlpool(in DelayedStrike strike)
+        {
+            var p = strike.Whirlpool.predictedArea;
+            _c.Whirlpools.Add(new Whirlpool
+            {
+                Active = true, Position = strike.Position, Radius = strike.Radius, Left = p.whirlpoolSeconds, TickTimer = p.whirlpoolTickSeconds,
+                BaseDamage = strike.BaseDamage, DamageBonus = strike.DamageBonus, ProcCoefficient = strike.ProcCoefficient, Config = strike.Whirlpool,
+            });
+            _c.Effects?.TimedRing(strike.Position, strike.Radius, p.whirlpoolSeconds);
+        }
+
+        /// <summary>V5 M4b: each tick a whirlpool drags the enemies inside toward its centre and hurts them; at the end it
+        /// implodes.</summary>
+        void TickWhirlpools(float dt)
+        {
+            var list = _c.Whirlpools;
+            for (var i = list.Count - 1; i >= 0; i--)
+            {
+                var pool = list[i];
+                var p = pool.Config.predictedArea;
+                pool.Left -= dt;
+                pool.TickTimer -= dt;
+                // Whole ticks (review: a float race between the two timers dropped or added the last one by frame rate);
+                // a long frame deals every tick it covered.
+                var ticks = WeaponStatResolver.WhirlpoolTicks(p);
+                while (pool.TickTimer <= 0f && pool.TicksDone < ticks)
+                {
+                    pool.TickTimer += p.whirlpoolTickSeconds;
+                    pool.TicksDone++;
+                    WhirlpoolHit(pool, p.whirlpoolTickDamageMultiplier, p.pullMetersPerSecond * p.whirlpoolTickSeconds);
+                }
+                if (pool.TicksDone >= ticks && pool.Left <= 0f)
+                {
+                    WhirlpoolHit(pool, p.implodeDamageMultiplier, 0f);
+                    _c.Effects?.AreaImpact(pool.Position, pool.Radius);
+                    list.RemoveAt(i);
+                }
+                else list[i] = pool;
+            }
+        }
+
+        void WhirlpoolHit(in Whirlpool pool, float multiplier, float pull)
+        {
+            for (var ai = 0; ai < _c.Enemies.Capacity; ai++)
+            {
+                if (!_c.Enemies.IsActive(ai) || !WeaponCombat.WithinHorizontalRadius(pool.Position, _c.Enemies.Position(ai), pool.Radius)) continue;
+                var isElite = _c.Enemies.IsElite(ai);
+                var dmg = _c.Calculator.RollAmount(pool.BaseDamage * multiplier, pool.DamageBonus, isElite, 0f, pool.ProcCoefficient, pool.Config.weaponId);
+                _c.DamageAndRecord(ai, pool.Config.weaponId, dmg, false, pool.Config.weaponId);
+                if (pull > 0f) _c.Damage.Pull(ai, pool.Position, pull);
             }
         }
 

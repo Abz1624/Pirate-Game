@@ -507,6 +507,16 @@ namespace RoguePirates.V4.Weapons
                 for (var index = 0; index < count; index++)
                 {
                     var angle = (time * o.angularSpeedDegrees + index * (360f / Mathf.Max(1, count))) * Mathf.Deg2Rad;
+                    if (o.beamSegments > 0)
+                    {
+                        // V5 M4b: a beam from the ship out to the radius (the Lighthouse Lantern), as a line of spheres.
+                        for (var seg = 1; seg <= o.beamSegments; seg++)
+                        {
+                            var r = orbitRadius * seg / o.beamSegments;
+                            hits.Add(new HitSphere { Position = C.Ship.TransformPoint(new Vector3(Mathf.Sin(angle) * r, o.heightOffset, Mathf.Cos(angle) * r)), Radius = o.hitRadius });
+                        }
+                        continue;
+                    }
                     var localOffset = new Vector3(Mathf.Sin(angle), o.heightOffset, Mathf.Cos(angle)) * orbitRadius;
                     hits.Add(new HitSphere { Position = C.Ship.TransformPoint(localOffset), Radius = o.hitRadius });
                 }
@@ -1156,6 +1166,7 @@ namespace RoguePirates.V4.Weapons
                 WeaponId = def.weaponId,
                 AreaShell = true,
                 ImpactDraws = def.predictedArea.v3ImpactEffectDraws,
+                Whirlpool = def.predictedArea.whirlpoolSeconds > 0f ? def : null,
             });
             return WeaponFireOutcome.Emitted;
         }
@@ -1180,10 +1191,30 @@ namespace RoguePirates.V4.Weapons
             back.Normalize();
             var lateral = Vector3.Cross(Vector3.up, back).normalized;
             var side = C.Random.CombatFloat() >= 0.5f ? 1f : -1f;
-            var spawn = C.Ship.Position + back * s.backOffset + lateral * side * s.lateralOffset;
+            // V5 M4b: one summon per point of quantity (parrots), fanned out to both sides.
+            var count = s.perQuantity ? Stats.ProjectileQuantity(w, C.Mods) : 1;
+            if (s.maxAlive > 0)
+            {
+                var alive = 0;
+                for (var k = 0; k < C.Skiffs.Count; k++) if (C.Skiffs[k].Active && C.Skiffs[k].WeaponId == def.weaponId) alive++;
+                count = Mathf.Min(count, s.maxAlive - alive); // the cap (review: a short cooldown and long lives piled up dozens)
+            }
+            for (var q = 0; q < count; q++)
+            {
+                var spread = 1f + (q >> 1) * 0.6f;
+                Spawn(w, target, back * s.backOffset + lateral * (q % 2 == 0 ? side : -side) * s.lateralOffset * spread, aim);
+            }
+            return WeaponFireOutcome.Emitted;
+        }
+
+        void Spawn(WeaponSlot w, int target, Vector3 offset, Vector3 aim)
+        {
+            var def = w.Config;
+            var s = def.summon;
+            var spawn = C.Ship.Position + offset;
             spawn.y = s.spawnDepth;
             C.Effects?.WaterSplash(spawn + Vector3.up * 0.35f);
-            var view = C.Effects != null ? C.Effects.SkiffSpawned(spawn, aim) : -1;
+            var view = C.Effects == null ? -1 : def.visual.summonModel != null ? C.Effects.SummonSpawned(def.weaponId, spawn, aim) : C.Effects.SkiffSpawned(spawn, aim);
             C.Skiffs.Add(new BoardingSkiff
             {
                 Active = true,
@@ -1203,8 +1234,12 @@ namespace RoguePirates.V4.Weapons
                 StrikeInterval = s.strikeInterval,
                 WeaponId = def.weaponId,
                 View = view,
+                Retarget = s.retarget,
+                RetargetRange = s.retargetRange,
+                ShotSpeed = s.shotSpeed,
+                ShotSize = s.shotSize,
+                ShotColor = def.projectileColor,
             });
-            return WeaponFireOutcome.Emitted;
         }
 
         public void TickSkiffs(float dt)
@@ -1216,12 +1251,29 @@ namespace RoguePirates.V4.Weapons
                 if (!skiff.Active) { list.RemoveAt(i); continue; }
 
                 skiff.LifeTime -= dt;
-                if (skiff.LifeTime <= 0f || skiff.TargetIndex < 0 || !C.Enemies.IsActive(skiff.TargetIndex))
+                var targetGone = skiff.TargetIndex < 0 || !C.Enemies.IsActive(skiff.TargetIndex);
+                if (skiff.LifeTime <= 0f || (targetGone && !skiff.Retarget))
                 {
                     if (skiff.View >= 0) C.Effects?.SkiffRemoved(skiff.View);
                     list.RemoveAt(i);
                     continue;
                 }
+                if (targetGone)
+                {
+                    // V5 M4b: a retargeting summon finds the nearest enemy, or waits (rising, then idle) until one comes.
+                    skiff.TargetIndex = C.Enemies.TryGetNearest(skiff.Position, skiff.RetargetRange, out var next) ? next : -1;
+                    if (skiff.TargetIndex < 0)
+                    {
+                        if (skiff.SpawnAnimTime > 0f) skiff.SpawnAnimTime -= dt;
+                        list[i] = skiff;
+                        continue;
+                    }
+                }
+
+                // V5 M4b: a turret (it cannot move) takes the nearest enemy within its range when its target is out of it.
+                if (skiff.ShotSpeed > 0f && WeaponCombat.HorizontalDistance(skiff.Position, C.Enemies.Position(skiff.TargetIndex)) > skiff.StrikeRange
+                    && C.Enemies.TryGetNearest(skiff.Position, skiff.StrikeRange, out var near))
+                    skiff.TargetIndex = near;
 
                 if (skiff.SpawnAnimTime > 0f)
                 {
@@ -1251,7 +1303,16 @@ namespace RoguePirates.V4.Weapons
                     skiff.StrikeCooldown = skiff.StrikeInterval;
                     var isElite = C.Enemies.IsElite(skiff.TargetIndex);
                     var dmg = C.Calculator.Roll(skiff.BaseDamage, skiff.DamageBonus, isElite, 0f, skiff.ProcCoefficient, skiff.WeaponId);
-                    C.ApplyWeaponDamage(skiff.TargetIndex, skiff.WeaponId, dmg, isElite, C.Enemies.IsBoss(skiff.TargetIndex));
+                    if (skiff.ShotSpeed > 0f)
+                    {
+                        // V5 M4b: the monkey turret fires a shot from range instead of striking alongside.
+                        var origin = skiff.Position + Vector3.up * 0.6f;
+                        var dir = dist > 0.05f ? toTarget / dist : Vector3.forward;
+                        C.Projectiles.TrySpawn(origin, dir, skiff.ShotSpeed, dmg.Amount, skiff.StrikeRange / skiff.ShotSpeed * 1.4f, skiff.ShotSize, dmg.IsCrit,
+                            skiff.ShotColor, skiff.WeaponId, ProjectileTraits.Credited(skiff.WeaponId), skiff.TargetIndex);
+                    }
+                    else
+                        C.ApplyWeaponDamage(skiff.TargetIndex, skiff.WeaponId, dmg, isElite, C.Enemies.IsBoss(skiff.TargetIndex));
                 }
 
                 list[i] = skiff;

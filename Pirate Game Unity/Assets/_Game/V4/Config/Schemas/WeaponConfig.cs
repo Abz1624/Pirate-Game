@@ -122,6 +122,8 @@ namespace RoguePirates.V4.Config
         [Min(0f)] public float knockbackMeters;
         [Tooltip("V5 M4: > 0 = each enemy can be hit once per this many seconds by this weapon, checked every frame (the Anchor Flail); 0 = the blades hit everything in contact every hitIntervalSeconds (the cutlasses).")]
         [Min(0f)] public float perTargetIntervalSeconds;
+        [Tooltip("V5 M4b: > 0 = each blade is a beam from the ship to orbitRadius, made of this many hit spheres (the Lighthouse Lantern); 0 = one sphere per blade.")]
+        [Min(0)] public int beamSegments;
     }
 
     /// <summary>A forward flame stream that runs, then recharges (Flamethrower).</summary>
@@ -190,6 +192,12 @@ namespace RoguePirates.V4.Config
         [Tooltip("V3 (register R-70): the impact effect drew from the combat stream. On only for exact V3 comparisons.")] public bool v3ImpactEffectDraws;
         [Tooltip("Register R-27 fix: the landing ring lasts exactly the impact delay (V3's reticle showed 1.1 s for a 0.6 s shell). Off = V3's reticle.")]
         public bool telegraphMatchesImpact = true;
+        [Tooltip("V5 M4b: > 0 = the impact opens a whirlpool for this many seconds that drags enemies in and hurts them, then implodes (the Maelstrom Charge).")]
+        [Min(0f)] public float whirlpoolSeconds;
+        [Min(0f)] public float pullMetersPerSecond = 3f;
+        [Min(0.05f)] public float whirlpoolTickSeconds = 0.5f;
+        [Tooltip("Each whirlpool tick's damage, × base damage.")] [Min(0f)] public float whirlpoolTickDamageMultiplier = 0.2f;
+        [Tooltip("The implosion's damage, × base damage.")] [Min(0f)] public float implodeDamageMultiplier = 1.5f;
     }
 
     /// <summary>Boarding skiffs that chase a target (Boarding Party).</summary>
@@ -198,6 +206,16 @@ namespace RoguePirates.V4.Config
     {
         public float backOffset = 5.5f, lateralOffset = 2.4f, spawnDepth = -0.7f, surfaceHeight = 0.12f, spawnSeconds = 0.55f;
         public float firstStrikeDelay = 0.15f, lifetimeSeconds = 9f, moveSpeed = 9.5f, strikeRange = 1.35f, strikeInterval = 0.55f;
+        [Tooltip("V5 M4b: one summon per point of quantity (parrots); off = one per firing (V3's skiffs).")]
+        public bool perQuantity;
+        [Tooltip("V5 M4b: when its target is gone the summon picks the nearest enemy within retargetRange and lives on until its lifetime ends; off = it leaves with its target (V3).")]
+        public bool retarget;
+        public float retargetRange = 12f;
+        [Tooltip("V5 M4b: > 0 = it fires a shot of this speed at its target from strikeRange instead of striking alongside (the monkey turret).")]
+        [Min(0f)] public float shotSpeed;
+        public float shotSize = 0.3f;
+        [Tooltip("V5 M4b: at most this many of this weapon's summons alive at once (0 = no cap, V3); further spawns are skipped.")]
+        [Min(0)] public int maxAlive;
     }
 
     /// <summary>
@@ -233,6 +251,9 @@ namespace RoguePirates.V4.Config
         [Tooltip("Damage per hit scales with weapon level (× damageBonus × level × 0.1 + 1). V3 applies this to projectiles and lanes only (register R-21).")]
         public bool levelDamageFactor;
         [Tooltip("True for weapons V3 created at runtime (no V3 asset).")] public bool runtimeCatalogWeapon;
+        [Tooltip("V5 M4b: extra gold a kill by this weapon drops (Cursed Doubloons), at most goldPerKillRunCap a run (anti-farming).")]
+        [Min(0)] public int goldPerKill;
+        [Min(0)] public int goldPerKillRunCap;
 
         public ProjectileVisual projectileVisual = new ProjectileVisual();
         [Tooltip("The hit/kill effect its hits play (V3: Deck Cannons, Broadside Battery and Swivel Guns a cannon impact; Powder Kegs none, their blast is their own).")]

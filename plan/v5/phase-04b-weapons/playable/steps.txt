@@ -1,0 +1,11 @@
+parrot_squadron: kills before 1; parrot_squadron evolution none quantity+0 burst+0 size x1.00, kills 16
+parrot_squadron:parrot_armada: kills before 20; parrot_squadron evolution parrot_armada quantity+4 burst+0 size x1.00, kills 32
+monkey_gunners: kills before 32; monkey_gunners evolution none quantity+0 burst+0 size x1.00, kills 36
+monkey_gunners:monkey_battery: kills before 38; monkey_gunners evolution monkey_battery quantity+1 burst+0 size x1.00, kills 46
+maelstrom_charge: kills before 46; maelstrom_charge evolution none quantity+0 burst+0 size x1.00, kills 55
+maelstrom_charge:abyssal_vortex: kills before 56; maelstrom_charge evolution abyssal_vortex quantity+0 burst+0 size x1.30, kills 63
+lighthouse_lantern: kills before 63; lighthouse_lantern evolution none quantity+0 burst+0 size x1.00, kills 72
+lighthouse_lantern:beacon_of_the_deep: kills before 72; lighthouse_lantern evolution beacon_of_the_deep quantity+1 burst+0 size x1.20, kills 80
+cursed_doubloons: kills before 80; cursed_doubloons evolution none quantity+0 burst+0 size x1.00, kills 87
+cursed_doubloons:pirate_kings_hoard: kills before 88; cursed_doubloons evolution pirate_kings_hoard quantity+2 burst+0 size x1.00, kills 104
+anchor_flail: kills before 104; anchor_flail evolution none quantity+0 burst+0 size x1.00, kills 116

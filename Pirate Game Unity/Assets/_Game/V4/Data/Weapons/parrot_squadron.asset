@@ -1,0 +1,200 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06723e8a88f2b914086ea82003602abc, type: 3}
+  m_Name: parrot_squadron
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
+  configId: weapon.parrot_squadron
+  schemaVersion: 1
+  balanceVersion: saltwind-v5-m4b
+  weaponId: parrot_squadron
+  displayName: Parrot Squadron
+  description: Trained parrots dive-bomb the nearest foes.
+  behaviorLine: Parrots hunt nearby enemies
+  pattern: 8
+  behavior: 9
+  targeting: 0
+  tags: []
+  baseDamage: 3.6574721
+  baseCooldown: 4
+  range: 12
+  baseQuantity: 2
+  projectileSpeed: 16
+  duration: 2
+  size: 4.25
+  knockback: 1
+  fanSpreadDegrees: 50
+  targetArcDegrees: 360
+  preferElite: 0
+  preferHighestHull: 0
+  maxLevel: 12
+  validUpgradeAxes: 000000000100000002000000
+  upgradeAxes:
+  - axis: 0
+    baseIncrement: 0.025788765
+    offerWeight: 1.1
+    maxAccumulated: 0.6447194
+    displayFormat: 
+  - axis: 1
+    baseIncrement: 0.016117971
+    offerWeight: 1
+    maxAccumulated: 0.19341573
+    displayFormat: 
+  - axis: 2
+    baseIncrement: 1
+    offerWeight: 1.1
+    maxAccumulated: 4
+    displayFormat: 
+  databaseOrder: 54
+  procCoefficient: 0.5
+  projectileColor: {r: 0.65, g: 1, b: 1, a: 1}
+  aimOverlayColor: {r: 0.4, g: 0.9, b: 0.35, a: 1}
+  levelDamageFactor: 1
+  runtimeCatalogWeapon: 0
+  goldPerKill: 0
+  goldPerKillRunCap: 0
+  projectileVisual:
+    prefab: {fileID: 0}
+    scaleMultiplier: 1
+    radiusMultiplier: 1
+  hitEffect: 0
+  projectile:
+    burstShots: 1
+    burstGapSeconds: 0.18
+    damageMultiplier: 1
+    sizeBase: 0.35
+    sizeMultiplier: 1
+    minSize: 0
+    lifeSeconds: 3
+    spreadStepDegrees: 4
+    leadWithActualSpeed: 1
+    homing: 0
+    closeDefenseTargeting: 0
+    tarOnHit: 0
+    tarSlow: 0.25
+    tarSlowBoss: 0.125
+    controlSecondsPerHit: 1.2
+    splashOnDespawn: 1
+    v3FullCooldownAfterFirstShot: 0
+    pierce: 0
+    slowFraction: 0
+    slowSeconds: 0
+  lane:
+    enabled: 0
+    beam: 0
+    beamHalfWidth: 0.32
+    volleySpreadDegrees: 4
+  fan:
+    basePellets: 3
+    quantityAddsPellets: 1
+    damageMultiplier: 0.6
+    minSpeed: 0
+    sizeBase: 0.38
+    hitRadius: 0.8
+    lifeSeconds: 2.5
+    muzzlePerPellet: 1
+    trackPelletTargets: 1
+    sideMuzzleOffset: 0.85
+    splashOnDespawn: 1
+  orbit:
+    baseBlades: 2
+    orbitRadius: 5
+    heightOffset: 0.35
+    angularSpeedDegrees: 180
+    hitRadius: 2.75
+    hitIntervalSeconds: 0.12
+    volleyHitIntervalSeconds: 0.096
+    damageMultiplier: 0.35
+    knockbackMeters: 0
+    perTargetIntervalSeconds: 0
+    beamSegments: 0
+  stream:
+    tickIntervalSeconds: 0.08
+    streamSeconds: 2.75
+    rechargeMinSeconds: 0.55
+    rechargeCooldownFactor: 0.75
+    forwardOffset: 1.65
+  trail:
+    backOffset: 1.4
+    height: 0.2
+    radiusBase: 2.8
+    damageMultiplier: 0.65
+  mine:
+    backOffset: 1.5
+    height: 0.55
+    armSeconds: 0.2
+    triggerRadius: 3
+    blastRadius: 3.2
+    blastDamageMultiplier: 0.72
+    eliteReachBonus: 0.75
+    lifeSeconds: 45
+    sinkSeconds: 1.5
+  areaStrike:
+    radiusBase: 3.5
+    radiusPerQuantity: 0.5
+    shockSeconds: 0.5
+    chain: 1
+    chainTargets: 4
+    chainTargetsPerQuantity: 1
+    chainRange: 7
+    chainFalloff: 0.85
+    chainStrikeRadius: 1.4
+  aura:
+    radiusBase: 4
+    damageMultiplier: 0.35
+    curseSeconds: 0.4
+    slowFraction: 0
+    slowSeconds: 0
+    requiresBoost: 0
+    forwardOffset: 0
+    knockbackMeters: 0
+  predictedArea:
+    impactDelaySeconds: 0.6
+    telegraphHeight: 0.2
+    v3ImpactEffectDraws: 0
+    telegraphMatchesImpact: 1
+    whirlpoolSeconds: 0
+    pullMetersPerSecond: 3
+    whirlpoolTickSeconds: 0.5
+    whirlpoolTickDamageMultiplier: 0.2
+    implodeDamageMultiplier: 1.5
+  summon:
+    backOffset: 0
+    lateralOffset: 1
+    spawnDepth: 1.8
+    surfaceHeight: 1.8
+    spawnSeconds: 0.2
+    firstStrikeDelay: 0.1
+    lifetimeSeconds: 6
+    moveSpeed: 14
+    strikeRange: 1.2
+    strikeInterval: 0.5
+    perQuantity: 1
+    retarget: 1
+    retargetRange: 12
+    shotSpeed: 0
+    shotSize: 0.3
+    maxAlive: 12
+  visual:
+    cannonMuzzle: 0
+    fallbackMuzzleScale: 1
+    aimShape: 0
+    aimTargetFanDegrees: 22
+    aimMinAreaRadius: 2
+    firePulseSeconds: 0.18
+    firePulseFades: 0
+    orbitRingTinted: 0
+    orbitRingColor: {r: 1, g: 0.88, b: 0.28, a: 1}
+    summonModel: {fileID: 1709254077376921, guid: 4483cd566c4a75e4d803a5b06ef28387, type: 3}
+    summonModelScale: 0.6
+    orbitModel: {fileID: 0}
+    orbitModelScale: 1
+    noHitHighlight: 0

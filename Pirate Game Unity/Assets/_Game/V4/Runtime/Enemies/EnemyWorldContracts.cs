@@ -157,6 +157,7 @@ namespace RoguePirates.V4.Enemies
 
         public void ApplySlow(int index, float fraction, float seconds) => _sim.ApplySlow(index, fraction, seconds);
         public void Knockback(int index, Vector3 from, float meters) => _sim.Knockback(index, from, meters);
+        public void Pull(int index, Vector3 toward, float meters) => _sim.Pull(index, toward, meters);
 
         // ---- IBossControl (was LegacyBossControl) ------------------------------------------------------------------
 

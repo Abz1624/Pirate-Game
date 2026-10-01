@@ -1,0 +1,62 @@
+{
+  "status": "completed",
+  "duration": 3.09,
+  "summary": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.Captains_HoldTheAdoptedStartingWeapons",
+      "Status": "Passed",
+      "Duration": 0.0587258,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.Items_HoldTheAdoptedEffects_AndTheParityPresetRestoresV3",
+      "Status": "Passed",
+      "Duration": 1.723258,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.Logbooks_PointAtTheIntendedStatsByDefault_AndTheParityPresetRestoresV3",
+      "Status": "Passed",
+      "Duration": 0.2570541,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.ParityPreset_RestoresV3ForEveryAdoptedDecision",
+      "Status": "Passed",
+      "Duration": 0.2910076,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.PowerupsAndUnlocks_HoldTheAdoptedRules_AndTheParityPresetRestoresV3",
+      "Status": "Passed",
+      "Duration": 0.3339704,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.StatResolver_GivesPlayerStatsNumbers_AndRemovesBySource",
+      "Status": "Passed",
+      "Duration": 0.0100739,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.TheSetHoldsEveryBuildConfig_AndValidates",
+      "Status": "Passed",
+      "Duration": 0.0883017,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

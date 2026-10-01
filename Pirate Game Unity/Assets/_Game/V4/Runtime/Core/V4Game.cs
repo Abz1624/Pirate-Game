@@ -40,6 +40,7 @@ namespace RoguePirates.V4
         public static event Action<V4Game> RunStarted;
 
         ConfigSetRuntime _config;
+        Weapons.WeaponKillGold _killGold;
         RunClock _clock;
         CombatEvents _events;
         RunContext _context;
@@ -198,6 +199,8 @@ namespace RoguePirates.V4
             _shell.RunPort = runState;
             _enemies.Telemetry = _telemetry;
             _enemies.KillTargets.WeaponKill = _telemetry.RecordKill;
+            _killGold = new Weapons.WeaponKillGold(() => _config);
+            _enemies.KillTargets.WeaponKillGold = _killGold.Bonus;
             // M9: level-ups, Logbooks, items, the Captain, floor powerups and pickups (replace LevelSystem, the weapon
             // record, PickupWorld, the V3 Captain/item/powerup components and the switched-off EncounterSpawner).
             _build = new BuildModule(_config, () => _shell != null ? _shell.Player : null, () => _shell?.Database);
@@ -305,6 +308,7 @@ namespace RoguePirates.V4
             _build.AttachShip(_shell.Player);
             _runPort.StateChanged += _resultsTelemetry.OnRunState; // M14.11 (was LegacyResultsTelemetry on the run manager)
             if (moduleLab) _shell.EnterModuleLab();
+            _killGold?.ResetForRun();
             _modules.BeginRunAll(new RunStart(seed, request.retry));
             _running = true;
             RunStarted?.Invoke(this);

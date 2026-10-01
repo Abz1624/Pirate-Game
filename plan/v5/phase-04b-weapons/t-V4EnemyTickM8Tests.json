@@ -1,0 +1,76 @@
+{
+  "status": "completed",
+  "duration": 2.36,
+  "summary": {
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.AKnockback_IsCappedAt3Meters",
+      "Status": "Passed",
+      "Duration": 0.7217074,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.AKnockback_PushesItsDistance_ElitesHalf_BossesNot",
+      "Status": "Passed",
+      "Duration": 0.2607555,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.AnEqualSlow_Extends_AndAStrongerOne_Replaces",
+      "Status": "Passed",
+      "Duration": 0.1378855,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.APull_DragsTowardItsPoint_NeverPastIt_BossesNot",
+      "Status": "Passed",
+      "Duration": 0.1538984,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.ASlow_IsCapped_AndTheStrongestHolds",
+      "Status": "Passed",
+      "Duration": 0.1000474,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.ASlowedEnemy_MovesSlower_ByItsShare",
+      "Status": "Passed",
+      "Duration": 0.0834271,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.HitPath_FeedbackAndKill_FollowV3sOrder",
+      "Status": "Passed",
+      "Duration": 0.1215607,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.R100_OnlyTheEliteHammerheadChargesTwice_AndTheSharedProfileStaysUnchanged",
+      "Status": "Passed",
+      "Duration": 0.1038338,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.TheWeaponSink_ReachesTheSimulation_AndReportsTheSlowedVelocity",
+      "Status": "Passed",
+      "Duration": 0.0860073,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

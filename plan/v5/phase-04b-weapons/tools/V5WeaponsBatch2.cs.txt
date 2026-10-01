@@ -1,0 +1,309 @@
+using System.Collections.Generic;
+using System.Linq;
+using RoguePirates.V4.Config;
+using RoguePirates.V4.Presentation.Hud;
+using UnityEditor;
+using UnityEngine;
+
+namespace RoguePirates.V4.Editor
+{
+    /// <summary>
+    /// V5 M4b: writes the second batch of new weapons (Parrot Squadron, Monkey Gunners, Maelstrom Charge, Lighthouse
+    /// Lantern, Cursed Doubloons), their five Empowered evolutions and chest items, registers them and tunes their damage
+    /// with the balance model, as <c>V5WeaponsBatch1</c> did for M4. A one-off content tool: it was run once and kept in
+    /// plan/v5/phase-04b-weapons/ (V4 code may not name content ids).
+    /// </summary>
+    public static class V5WeaponsBatch2
+    {
+        const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
+        const string WeaponDir = "Assets/_Game/V4/Data/Weapons/";
+        const string EvolutionDir = "Assets/_Game/V4/Data/Evolutions/";
+        const string ItemDir = "Assets/_Game/V4/Data/Build/Items/";
+        const string BalanceVersion = "saltwind-v5-m4b";
+
+        public static readonly (string id, int rum)[] Weapons =
+        {
+            ("parrot_squadron", 170), ("monkey_gunners", 180), ("maelstrom_charge", 190), ("lighthouse_lantern", 200), ("cursed_doubloons", 220),
+        };
+
+        static readonly string[] NewItems = { "captains_perch", "banana_crate", "storm_conch", "fresnel_lens", "cursed_chest_key" };
+
+        public static string Apply()
+        {
+            var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
+            if (set == null) return "config set not found";
+            var nextOrder = set.All<WeaponConfig>().Where(w => !Weapons.Any(n => n.id == w.weaponId)).Max(w => w.databaseOrder) + 1;
+            var cannonball = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GameObject/Cannonball.prefab");
+            var barrel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GameObject/CannonBarrel.prefab");
+
+            var parrots = Weapon("parrot_squadron", "mortar", w =>
+            {
+                w.displayName = "Parrot Squadron";
+                w.description = "Trained parrots dive-bomb the nearest foes.";
+                w.behaviorLine = "Parrots hunt nearby enemies";
+                w.pattern = ConfigEnums.WeaponPattern.SummonChase;
+                w.behavior = ConfigEnums.WeaponBehavior.Summon;
+                w.targeting = ConfigEnums.TargetingMode.Nearest;
+                w.baseDamage = 6f;
+                w.baseCooldown = 4f;
+                w.range = 12f;
+                w.baseQuantity = 2;
+                w.procCoefficient = 0.5f;
+                var s = w.summon;
+                s.backOffset = 0f; s.lateralOffset = 1f; s.spawnDepth = 1.8f; s.surfaceHeight = 1.8f; s.spawnSeconds = 0.2f;
+                s.firstStrikeDelay = 0.1f; s.lifetimeSeconds = 6f; s.moveSpeed = 14f; s.strikeRange = 1.2f; s.strikeInterval = 0.5f;
+                s.perQuantity = true; s.retarget = true; s.retargetRange = 12f; s.shotSpeed = 0f; s.maxAlive = 12;
+                w.visual.summonModel = cannonball; // placeholder until the parrot model (art guide)
+                w.visual.summonModelScale = 0.6f;
+                w.visual.cannonMuzzle = false;
+                Axes(w, ConfigEnums.UpgradeAxis.Quantity, 1f, size: false); // summons do not grow with size
+                w.aimOverlayColor = new Color(0.4f, 0.9f, 0.35f);
+            }, ref nextOrder);
+            var monkeys = Weapon("monkey_gunners", "mortar", w =>
+            {
+                w.displayName = "Monkey Gunners";
+                w.description = "Drops a floating barrel turret; its monkey fires at anything in range.";
+                w.behaviorLine = "Drops a turret astern";
+                w.pattern = ConfigEnums.WeaponPattern.SummonChase;
+                w.behavior = ConfigEnums.WeaponBehavior.Summon;
+                w.targeting = ConfigEnums.TargetingMode.Nearest;
+                w.baseDamage = 7f;
+                w.baseCooldown = 6f;
+                w.range = 10f;
+                w.baseQuantity = 1;
+                w.procCoefficient = 0.6f;
+                var s = w.summon;
+                s.backOffset = 2.5f; s.lateralOffset = 1.2f; s.spawnDepth = -0.7f; s.surfaceHeight = 0.12f; s.spawnSeconds = 0.4f;
+                s.firstStrikeDelay = 0.3f; s.lifetimeSeconds = 8f; s.moveSpeed = 0f; s.strikeRange = 10f; s.strikeInterval = 0.6f;
+                s.perQuantity = true; s.retarget = true; s.retargetRange = 10f; s.shotSpeed = 22f; s.shotSize = 0.3f; s.maxAlive = 3;
+                w.visual.summonModel = barrel; // placeholder until the turret model (art guide)
+                w.visual.summonModelScale = 1f;
+                w.visual.cannonMuzzle = false;
+                Axes(w, null, 2.2f, size: false); // no quantity card (the second turret comes with Monkey Battery), no size (summons do not grow)
+                w.aimOverlayColor = new Color(0.85f, 0.6f, 0.25f);
+            }, ref nextOrder);
+            var maelstrom = Weapon("maelstrom_charge", "mortar", w =>
+            {
+                w.displayName = "Maelstrom Charge";
+                w.description = "A lobbed charge opens a whirlpool that drags foes in, then implodes.";
+                w.behaviorLine = "Lobs at the densest crowd";
+                w.baseDamage = 10f;
+                w.baseCooldown = 5f;
+                w.size = 4f;
+                w.procCoefficient = 0.6f;
+                var p = w.predictedArea;
+                p.whirlpoolSeconds = 3f; p.pullMetersPerSecond = 3f; p.whirlpoolTickSeconds = 0.5f;
+                p.whirlpoolTickDamageMultiplier = 0.2f; p.implodeDamageMultiplier = 1.5f;
+                w.visual.cannonMuzzle = false;
+                w.aimOverlayColor = new Color(0.25f, 0.55f, 0.95f);
+            }, ref nextOrder);
+            var lantern = Weapon("lighthouse_lantern", "flying_cutlasses", w =>
+            {
+                w.displayName = "Lighthouse Lantern";
+                w.description = "A beam of light sweeps around the ship, burning all along its length.";
+                w.behaviorLine = "Sweeps a beam around the ship";
+                w.baseDamage = 5f;
+                w.baseCooldown = 0.5f; // the per-target interval follows the cooldown
+                w.range = 9f;
+                w.procCoefficient = 0.4f;
+                var o = w.orbit;
+                o.baseBlades = 1; o.orbitRadius = 9f; o.angularSpeedDegrees = 60f; o.hitRadius = 1f; o.damageMultiplier = 1f;
+                o.perTargetIntervalSeconds = 0.5f; o.knockbackMeters = 0f; o.beamSegments = 6;
+                w.visual.orbitModel = cannonball; // placeholder until the beam effect (art guide)
+                w.visual.orbitModelScale = 0.8f;
+                Axes(w, null, 2.2f); // no Duration card (nothing for a beam), no quantity (the second beam is Beacon of the Deep)
+                w.aimOverlayColor = new Color(1f, 0.95f, 0.6f);
+            }, ref nextOrder);
+            var doubloons = Weapon("cursed_doubloons", "lightning_mast", w =>
+            {
+                w.displayName = "Cursed Doubloons";
+                w.description = "Cursed coins ricochet between foes; kills drop a little extra gold.";
+                w.behaviorLine = "Coins bounce between enemies";
+                w.baseDamage = 8f;
+                w.baseCooldown = 2f;
+                w.range = 12f;
+                w.procCoefficient = 0.5f;
+                var a = w.areaStrike;
+                a.chain = true; a.chainTargets = 5; a.chainTargetsPerQuantity = 1; a.chainRange = 8f; a.chainFalloff = 0.9f; a.chainStrikeRadius = 1f;
+                Axes(w, null, 1.6f); // no Knockback (strikes do not knock back) and no Quantity card (the model would read a jump as a whole volley)
+                w.goldPerKill = 1;
+                w.goldPerKillRunCap = 40;
+                w.aimOverlayColor = new Color(0.95f, 0.8f, 0.2f);
+            }, ref nextOrder);
+
+            var items = new List<ItemConfig>();
+            var evolutions = new List<WeaponEvolutionConfig>();
+            var itemOrder = set.All<ItemConfig>().Where(i => !NewItems.Contains(i.itemId)).Max(i => i.chestPoolOrder) + 1;
+            var collection = set.All<ItemConfig>().Where(i => !NewItems.Contains(i.itemId)).Max(i => i.collectionOrder) + 1;
+
+            void Pair(string evoId, string evoName, string evoText, WeaponConfig weapon, string itemId, string itemName, int stat, float add, float mult, string statText, System.Action<EmpowerBlock> empower)
+            {
+                var item = Copy<ItemConfig>(ItemDir, "grapeshot_pouch", itemId);
+                item.configId = "item." + itemId;
+                item.itemId = itemId;
+                item.displayName = itemName;
+                item.description = $"{statText}; evolves {weapon.displayName} into {evoName}.";
+                item.rarity = 1;
+                item.inChestPool = true;
+                item.inLevelUpPool = false;
+                item.chestPoolOrder = itemOrder++;
+                item.collectionOrder = collection++;
+                item.statModifiers = new[] { new ItemStatModifier { stat = stat, additive = add, multiplicative = mult } };
+                item.effects = new ItemEffect[0];
+                item.balanceVersion = BalanceVersion;
+                EditorUtility.SetDirty(item);
+                items.Add(item);
+
+                var evo = Copy<WeaponEvolutionConfig>(EvolutionDir, "stormshot_cannon", evoId);
+                evo.configId = "evolution." + evoId;
+                evo.evolutionId = evoId;
+                evo.displayName = evoName;
+                evo.description = evoText;
+                evo.baseWeapon = weapon;
+                evo.requiredItemId = itemId;
+                evo.effect = ConfigEnums.EvolutionEffect.Empowered;
+                evo.empower = new EmpowerBlock();
+                empower(evo.empower);
+                evo.balanceVersion = BalanceVersion;
+                EditorUtility.SetDirty(evo);
+                evolutions.Add(evo);
+            }
+
+            Pair("parrot_armada", "Parrot Armada", "Two more parrots, and they hit harder.", parrots,
+                "captains_perch", "Captain's Perch", 5, 0f, 1.09f, "+9% damage",
+                e => { e.extraQuantity = 2; e.damageMultiplier = 1.2f; });
+            Pair("monkey_battery", "Monkey Battery", "A second turret, called down more often, hitting harder.", monkeys,
+                "banana_crate", "Banana Crate", 6, 0f, 1.09f, "+9% attack speed",
+                e => { e.extraQuantity = 1; e.cooldownMultiplier = 0.85f; e.damageMultiplier = 1.2f; });
+            Pair("abyssal_vortex", "Abyssal Vortex", "A wider whirlpool that hits and implodes harder.", maelstrom,
+                "storm_conch", "Storm Conch", 10, 0f, 1.12f, "+12% size",
+                e => { e.sizeMultiplier = 1.3f; e.damageMultiplier = 1.3f; });
+            Pair("beacon_of_the_deep", "Beacon of the Deep", "A second, longer beam.", lantern,
+                "fresnel_lens", "Fresnel Lens", 10, 0f, 1.12f, "+12% size",
+                e => { e.extraQuantity = 1; e.sizeMultiplier = 1.2f; e.damageMultiplier = 1.1f; });
+            Pair("pirate_kings_hoard", "Pirate King's Hoard", "Coins bounce two more times and hit harder.", doubloons,
+                "cursed_chest_key", "Cursed Chest Key", 5, 0f, 1.09f, "+9% damage",
+                e => { e.extraQuantity = 2; e.damageMultiplier = 1.25f; });
+
+            Undo.RecordObject(set, "V5 M4b weapons");
+            foreach (var c in new V4ConfigAsset[] { parrots, monkeys, maelstrom, lantern, doubloons }.Concat(evolutions).Concat(items))
+                if (!set.configs.Contains(c)) set.configs.Add(c);
+            EditorUtility.SetDirty(set);
+
+            var unlocks = set.All<UnlockConfig>().First();
+            var list = unlocks.weaponUnlocks.Where(u => !Weapons.Any(n => n.id == u.weaponId)).ToList();
+            list.AddRange(Weapons.Select(n => new WeaponUnlock { weaponId = n.id, rumCost = n.rum }));
+            unlocks.weaponUnlocks = list.ToArray();
+            EditorUtility.SetDirty(unlocks);
+            foreach (var stage in set.All<StageContentConfig>())
+            {
+                if (stage.sharedProfile == null) continue;
+                var shared = stage.sharedProfile.weaponUnlocks.Where(u => !Weapons.Any(n => n.id == u.contentId)).ToList();
+                shared.AddRange(Weapons.Select(n => new SharedUnlockEntry { contentId = n.id, marksCost = n.rum }));
+                stage.sharedProfile.weaponUnlocks = shared.ToArray();
+                EditorUtility.SetDirty(stage);
+            }
+
+            var icons = Resources.Load<IconCatalog>(IconCatalog.ResourcePath);
+            if (icons != null)
+            {
+                Icon(icons.weapons, "parrot_squadron", icons.Weapon("swivel_guns"));
+                Icon(icons.weapons, "monkey_gunners", icons.Weapon("deck_cannons"));
+                Icon(icons.weapons, "maelstrom_charge", icons.Weapon("mortar"));
+                Icon(icons.weapons, "lighthouse_lantern", icons.Weapon("lightning_mast"));
+                Icon(icons.weapons, "cursed_doubloons", icons.Weapon("harpoon_gun"));
+                foreach (var item in items) Icon(icons.items, item.itemId, icons.Item("grapeshot_pouch"));
+                EditorUtility.SetDirty(icons);
+            }
+            AssetDatabase.SaveAssets();
+            return $"ok: 5 weapons, {evolutions.Count} evolutions, {items.Count} items";
+        }
+
+        /// <summary>Tunes the five weapons with the balance model against the weapons a regular player owns.</summary>
+        public static string Tune()
+        {
+            var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
+            using var rt = new ConfigSetRuntime(set);
+            var content = new RoguePirates.V4.DevTools.Balance.SimContent(rt) { RegularPlayerRum = int.MaxValue };
+            var tunes = RoguePirates.V4.DevTools.Balance.WeaponModel.TuneOnly(content, Weapons.Select(w => w.id).ToList());
+            var report = new System.Text.StringBuilder();
+            foreach (var t in tunes)
+            {
+                var tuned = rt.All<WeaponConfig>().First(w => w.weaponId == t.WeaponId);
+                var asset = set.All<WeaponConfig>().First(w => w.weaponId == t.WeaponId);
+                Undo.RecordObject(asset, "V5 M4b tune");
+                asset.baseDamage = tuned.baseDamage;
+                for (var i = 0; i < asset.upgradeAxes.Length && i < tuned.upgradeAxes.Length; i++)
+                {
+                    asset.upgradeAxes[i].baseIncrement = tuned.upgradeAxes[i].baseIncrement;
+                    asset.upgradeAxes[i].maxAccumulated = tuned.upgradeAxes[i].maxAccumulated;
+                }
+                EditorUtility.SetDirty(asset);
+                report.AppendLine($"{t.WeaponId}: damage x{t.DamageScale:0.000} (now {asset.baseDamage:0.00}), growth x{t.GrowthScale:0.00}, worst {t.WorstBefore:0.00} -> {t.WorstAfter:0.00}");
+            }
+            AssetDatabase.SaveAssets();
+            System.IO.File.WriteAllText("../plan/v5/phase-04b-weapons/tune.txt", report.ToString());
+            return report.ToString();
+        }
+
+        /// <summary>Level-up lines: damage and cooldown from the Lightning Mast, size, and one more.</summary>
+        static void Axes(WeaponConfig w, ConfigEnums.UpgradeAxis? last, float growth = 1f, bool size = true)
+        {
+            var src = AssetDatabase.LoadAssetAtPath<WeaponConfig>(WeaponDir + "lightning_mast.asset");
+            WeaponUpgradeAxis Of(ConfigEnums.UpgradeAxis a) => src.upgradeAxes.First(x => x.axis == a);
+            WeaponUpgradeAxis Copy(WeaponUpgradeAxis a) => new WeaponUpgradeAxis { axis = a.axis, baseIncrement = a.axis == ConfigEnums.UpgradeAxis.Quantity ? a.baseIncrement : a.baseIncrement * growth, offerWeight = a.offerWeight, maxAccumulated = a.axis == ConfigEnums.UpgradeAxis.Quantity ? a.maxAccumulated : a.maxAccumulated * growth };
+            WeaponUpgradeAxis lastAxis = null;
+            if (last == ConfigEnums.UpgradeAxis.Quantity) lastAxis = Copy(Of(ConfigEnums.UpgradeAxis.Quantity));
+            else if (last.HasValue) lastAxis = new WeaponUpgradeAxis { axis = last.Value, baseIncrement = 0.034827992f, offerWeight = 0.8f, maxAccumulated = 0.8955768f };
+            w.upgradeAxes = new[]
+            {
+                Copy(Of(ConfigEnums.UpgradeAxis.Damage)), Copy(Of(ConfigEnums.UpgradeAxis.Cooldown)),
+                new WeaponUpgradeAxis { axis = ConfigEnums.UpgradeAxis.Size, baseIncrement = 0.034827992f * growth, offerWeight = 0.9f, maxAccumulated = 0.8955768f * growth },
+            };
+            if (!size) w.upgradeAxes = w.upgradeAxes.Where(a => a.axis != ConfigEnums.UpgradeAxis.Size).ToArray();
+            if (lastAxis != null) w.upgradeAxes = w.upgradeAxes.Append(lastAxis).ToArray();
+            w.validUpgradeAxes = w.upgradeAxes.Select(a => a.axis).ToArray();
+        }
+
+        static WeaponConfig Weapon(string id, string from, System.Action<WeaponConfig> set, ref int nextOrder)
+        {
+            var w = Copy<WeaponConfig>(WeaponDir, from, id);
+            var order = w.weaponId == id && w.databaseOrder >= 0 ? w.databaseOrder : nextOrder++;
+            w.configId = "weapon." + id;
+            w.weaponId = id;
+            w.databaseOrder = order;
+            w.tags = new string[0];
+            w.levelDamageFactor = true;
+            w.runtimeCatalogWeapon = false;
+            var source = AssetDatabase.LoadAssetAtPath<WeaponConfig>(WeaponDir + from + ".asset"); // start each run from the source's cards (no compounding tunes)
+            w.upgradeAxes = source.upgradeAxes.Select(a => new WeaponUpgradeAxis { axis = a.axis, baseIncrement = a.baseIncrement, offerWeight = a.offerWeight, maxAccumulated = a.maxAccumulated }).ToArray();
+            w.validUpgradeAxes = source.validUpgradeAxes.ToArray();
+            w.visual.aimShape = ConfigEnums.AimShape.ByTargeting; // the aim overlay's id branches were V3's four weapons
+            w.visual.aimMinAreaRadius = 2f;
+            w.visual.firePulseSeconds = 0.18f;
+            w.visual.firePulseFades = false;
+            w.visual.cannonMuzzle = false;
+            w.visual.fallbackMuzzleScale = 1f;
+            set(w);
+            w.balanceVersion = BalanceVersion;
+            EditorUtility.SetDirty(w);
+            return w;
+        }
+
+        static T Copy<T>(string dir, string from, string to) where T : ScriptableObject
+        {
+            var path = dir + to + ".asset";
+            var existing = AssetDatabase.LoadAssetAtPath<T>(path);
+            if (existing != null) return existing;
+            if (!AssetDatabase.CopyAsset(dir + from + ".asset", path)) throw new System.InvalidOperationException("copy failed: " + path);
+            AssetDatabase.ImportAsset(path);
+            return AssetDatabase.LoadAssetAtPath<T>(path);
+        }
+
+        static void Icon(List<IconCatalog.Entry> list, string id, Sprite sprite)
+        {
+            list.RemoveAll(e => e.id == id);
+            list.Add(new IconCatalog.Entry { id = id, sprite = sprite });
+        }
+    }
+}

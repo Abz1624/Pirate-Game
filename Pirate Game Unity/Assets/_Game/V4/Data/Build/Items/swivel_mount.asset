@@ -21,8 +21,8 @@ MonoBehaviour:
   rarity: 1
   inChestPool: 1
   inLevelUpPool: 0
-  chestPoolOrder: 26
-  collectionOrder: 26
+  chestPoolOrder: 39
+  collectionOrder: 39
   statModifiers:
   - stat: 6
     additive: 0

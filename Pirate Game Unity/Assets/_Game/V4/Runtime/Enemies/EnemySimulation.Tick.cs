@@ -355,6 +355,26 @@ namespace RoguePirates.V4.Enemies
             e.pushTimer = seconds;
         }
 
+        /// <summary>V5 M4b: drags the enemy up to <paramref name="meters"/> toward <paramref name="toward"/> (never past it),
+        /// with the knockback's rules: bosses not moved, elites half, at most <c>maxKnockbackMeters</c>.</summary>
+        public void Pull(int index, Vector3 toward, float meters)
+        {
+            if (index < 0 || index >= _agents.Length || !_agents[index].active || meters <= 0f) return;
+            ref var e = ref _agents[index];
+            var def = _definitions[e.definitionIndex];
+            if (e.isBoss || def.isBoss) return;
+            var rules = WeaponRules?.Invoke();
+            meters = Mathf.Min(meters, rules != null ? rules.maxKnockbackMeters : 3f);
+            if (e.isElite) meters *= rules != null ? rules.eliteKnockbackShare : 0.5f;
+            var to = toward - e.position;
+            to.y = 0f;
+            meters = Mathf.Min(meters, to.magnitude - 0.3f);
+            if (meters <= 0f) return;
+            var seconds = rules != null ? rules.knockbackSeconds : 0.15f;
+            e.pushVelocity = to.normalized * (meters / seconds);
+            e.pushTimer = seconds;
+        }
+
         /// <summary>This tick's slow multiplier and knockback displacement; counts both down.</summary>
         static float WeaponMotion(ref EnemyUnit e, float dt, out Vector3 push)
         {

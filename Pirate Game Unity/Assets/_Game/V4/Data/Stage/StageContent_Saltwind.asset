@@ -73,6 +73,16 @@ MonoBehaviour:
       marksCost: 150
     - contentId: ramming_prow
       marksCost: 160
+    - contentId: parrot_squadron
+      marksCost: 170
+    - contentId: monkey_gunners
+      marksCost: 180
+    - contentId: maelstrom_charge
+      marksCost: 190
+    - contentId: lighthouse_lantern
+      marksCost: 200
+    - contentId: cursed_doubloons
+      marksCost: 220
     captainUnlocks:
     - contentId: brine
       marksCost: 100

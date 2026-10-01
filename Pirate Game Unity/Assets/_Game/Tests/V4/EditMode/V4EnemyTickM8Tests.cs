@@ -380,5 +380,22 @@ namespace RoguePirates.V4.Tests
             }
             Assert.AreEqual(config.Single<WeaponRulesConfig>().maxKnockbackMeters, Pushed(8f) - Pushed(0f), 0.4f, "an 8 m push (stacked upgrades) is capped at 3 m");
         }
+
+        [Test]
+        public void APull_DragsTowardItsPoint_NeverPastIt_BossesNot()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            float Pulled(string id, Vector3 toward, float meters)
+            {
+                var (w, slot) = OneEnemy(config, id, new Vector3(12f, 0f, 0f));
+                if (meters > 0f) w.V4.Pull(slot, toward, meters);
+                Step(w, 15);
+                return w.V4.Agents[slot].position.x;
+            }
+            var still = Pulled("shark", Vector3.zero, 0f);
+            Assert.AreEqual(2f, Pulled("shark", new Vector3(30f, 0f, 0f), 2f) - still, 0.35f, "2 m toward the whirlpool (away from the ship here)");
+            Assert.Less(Pulled("shark", new Vector3(12.5f, 0f, 0f), 3f) - still, 0.6f, "never past the centre");
+            Assert.AreEqual(Pulled("barnacle_king", Vector3.zero, 0f), Pulled("barnacle_king", new Vector3(30f, 0f, 0f), 2f), 1e-3f, "a boss is not moved");
+        }
 }
 }

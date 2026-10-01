@@ -1,15 +1,15 @@
 {
   "updated": "1 Oct 2026",
-  "statusLine": "You are back: M4a and M4 built (awaiting your playtest); continuing to M8",
+  "statusLine": "You are back: M4a, M4 and M4b built (awaiting your playtest); continuing to M8",
   "statusOk": false,
   "facts": [
     [
       "Progress",
-      "M0-M3 done; M3b-M4 built and committed (awaiting your playtest)"
+      "M0-M3 done; M3b-M4b built and committed (awaiting your playtest)"
     ],
     [
       "Tests",
-      "EditMode 432/432 · PlayMode 60/60"
+      "EditMode 442/442 · PlayMode 60/60"
     ],
     [
       "Gate",
@@ -54,6 +54,10 @@
       "chip": "built 1 Oct · awaiting your playtest"
     },
     "M4": {
+      "state": "playtest",
+      "chip": "built 1 Oct · awaiting your playtest"
+    },
+    "M4b": {
       "state": "playtest",
       "chip": "built 1 Oct · awaiting your playtest"
     }
@@ -193,10 +197,16 @@
       "when": "1 Oct",
       "what": "<strong>M4a and M4 built</strong> (awaiting your playtest): slow, pierce, knockback, several orbit weapons and boost-gated auras (today's ten weapons proved unchanged); four new weapons (Anchor Flail, Chainshot, Siren Bell, Ramming Prow) at 120-160 Rum; eight evolutions (one generic Empowered kind) with their chest items; damage set by the balance model within 20% of each role. Decisions D28-D31.",
       "commit": ""
+    },
+    {
+      "when": "1 Oct",
+      "what": "<strong>M4b built</strong> (awaiting your playtest): Parrot Squadron, Monkey Gunners, Maelstrom Charge, Lighthouse Lantern, Cursed Doubloons (170-220 Rum) with five Empowered evolutions and their items; pull, whirlpools, sweeping beams, capped summons and capped kill gold; the balance model and the difficulty director now share how many hits a firing deals (the Anchor Flail re-tuned with it). D32.",
+      "commit": ""
     }
   ],
   "todos": {
     "next": [
+      "<strong>Playtest M4b</strong>: the Parrot Squadron, Monkey Gunners, Maelstrom Charge, Lighthouse Lantern and Cursed Doubloons (Tuning Console Weapon Lab, or buy them). Do the summons, whirlpool and beam read well with placeholder art?",
       "<strong>Playtest M4</strong>: buy (or use the Tuning Console's Weapon Lab) the Anchor Flail, Chainshot, Siren Bell and Ramming Prow (strikes only while you boost); evolve one with its item. Do they feel distinct, and are the prices (120-160 Rum) right?",
       "<strong>Read what I decided while you were away</strong>: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code> (D1-D27 with reasons and alternatives, and 16 questions for you).",
       "<strong>Playtest M3b</strong>: steer into an island (bounce, 5 hull at most every 2 s), drop powder kegs and wait 45 s (unblown ones sink), use the round ability button on a phone build.",
@@ -543,6 +553,27 @@
       "check": "Independent review (v5-reviewer)",
       "result": "2 blockers + 6 majors + 6 minors → fixed or recorded",
       "evidence": "plan/v5/phase-04-weapons/PLAN.md"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M4b",
+      "check": "EditMode / PlayMode (full, once)",
+      "result": "442/442 · 60/60",
+      "evidence": "plan/v5/phase-04b-weapons/"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M4b",
+      "check": "Weapon playable check (11 weapons and evolutions)",
+      "result": "all fire and kill; 0 game errors",
+      "evidence": "plan/v5/phase-04b-weapons/playable/"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M4b",
+      "check": "Independent review (v5-reviewer)",
+      "result": "0 blockers + 7 majors + 8 minors → fixed or recorded",
+      "evidence": "plan/v5/phase-04b-weapons/PLAN.md"
     }
   ],
   "phaseResults": {
@@ -682,6 +713,20 @@
       {
         "title": "Left for you",
         "text": "Prices and the Prow's boost rule (D31), placeholder art, question 9."
+      }
+    ],
+    "M4b": [
+      {
+        "title": "What changed",
+        "text": "Five weapons that summon, pull, sweep and bounce, each with an evolution and an item; summons capped (12 parrots, 3 turrets); coin gold capped at 40 a run."
+      },
+      {
+        "title": "Measured",
+        "text": "All nine new weapons within ±20% of their role at levels 1-12 by the corrected model."
+      },
+      {
+        "title": "Left for you",
+        "text": "Prices, placeholder art (cannonballs, barrel), whether parrots should spread over targets."
       }
     ]
   },
@@ -1496,6 +1541,11 @@
     {
       "title": "M4 weapons review (1 Oct)",
       "summary": "<strong>2 blockers</strong> (no green run on final data; Swivel Battery's shots did nothing), 6 majors (dead stat on an item, simulator ignoring evolutions, chest crowding, dead upgrade cards, weak tests, missing prewarm and playable check); all fixed or recorded.",
+      "rows": []
+    },
+    {
+      "title": "M4b weapons review (1 Oct)",
+      "summary": "No blockers; 7 majors (turret target out of reach, director missing hits per firing, dead size cards, slow sweeps overstated, no summon cap, frame-rate whirlpool ticks, missing evidence); all fixed or recorded.",
       "rows": []
     }
   ]

@@ -1,4 +1,4 @@
-anchor_flail: damage x0.543 (now 6.52), growth x2.00, worst 0.63 -> 0.17
+anchor_flail: damage x2.075 (now 24.90), growth x2.00, worst 1.01 -> 0.13
 chainshot: damage x1.493 (now 13.44), growth x1.00, worst 0.43 -> 0.11
-siren_bell: damage x2.932 (now 35.19), growth x2.00, worst 1.21 -> 0.15
-ramming_prow: damage x0.847 (now 11.86), growth x2.00, worst 0.29 -> 0.16
+siren_bell: damage x2.784 (now 33.41), growth x2.00, worst 1.24 -> 0.13
+ramming_prow: damage x0.797 (now 11.16), growth x2.00, worst 0.32 -> 0.13

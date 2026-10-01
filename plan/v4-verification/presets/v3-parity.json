@@ -1711,6 +1711,106 @@
                     "value": "false"
                 }
             ]
+        },
+        {
+            "configId": "weapon.parrot_squadron",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "databaseOrder",
+                    "value": "-1"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.monkey_gunners",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "databaseOrder",
+                    "value": "-1"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.maelstrom_charge",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "databaseOrder",
+                    "value": "-1"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.lighthouse_lantern",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "databaseOrder",
+                    "value": "-1"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.cursed_doubloons",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "databaseOrder",
+                    "value": "-1"
+                }
+            ]
+        },
+        {
+            "configId": "item.captains_perch",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.banana_crate",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.storm_conch",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.fresnel_lens",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.cursed_chest_key",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
         }
     ]
 }

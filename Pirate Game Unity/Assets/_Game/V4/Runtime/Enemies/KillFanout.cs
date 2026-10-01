@@ -28,6 +28,8 @@ namespace RoguePirates.V4.Enemies
         public Action BossKilled;
         public Action ItemKill;
         public Action<string> WeaponKill;
+        /// <summary>V5 M4b: extra gold a kill by this weapon drops (Cursed Doubloons; capped per run by the provider).</summary>
+        public Func<string, int> WeaponKillGold;
 
         public void OnKilled(in EnemyUnit e, EnemyDefinition def)
         {
@@ -41,6 +43,7 @@ namespace RoguePirates.V4.Enemies
             var gold = def.goldValue;
             var killGold = KillGold?.Invoke();
             if (killGold != null && Random != null) gold = ResolveKillGold(killGold, def, Random, rewardRich, rewardElite, e.isBoss);
+            if (WeaponKillGold != null && !string.IsNullOrEmpty(e.lastHitWeaponId)) gold += WeaponKillGold(e.lastHitWeaponId);
             SpawnKillDrops?.Invoke(e.position, def.xpValue, gold);
             RollPowerup?.Invoke(e.position, e.isBoss, rewardElite);
             Encounters?.RegisterKill(e.id);

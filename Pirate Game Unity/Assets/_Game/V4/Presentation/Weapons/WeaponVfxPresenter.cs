@@ -157,7 +157,8 @@ namespace RoguePirates.V4.Presentation.Weapons
         {
             if (config == null) return (null, 0.42f);
             foreach (var w in config.All<WeaponConfig>())
-                if (w != null && w.behavior == ConfigEnums.WeaponBehavior.Summon && w.visual != null && w.visual.summonModel != null)
+                if (w != null && w.behavior == ConfigEnums.WeaponBehavior.Summon && w.visual != null && w.visual.summonModel != null
+                    && !w.summon.perQuantity && !w.summon.retarget && w.summon.shotSpeed <= 0f) // V5 M4b summons draw their own models
                     return (w.visual.summonModel, w.visual.summonModelScale);
             return (null, 0.42f);
         }
@@ -449,6 +450,32 @@ namespace RoguePirates.V4.Presentation.Weapons
         {
             position.y = 0f;
             Explosion(position, blastRadius);
+        }
+
+        readonly Dictionary<string, string> _summonKinds = new Dictionary<string, string>();
+        string SummonKind(string weaponId)
+        {
+            if (!_summonKinds.TryGetValue(weaponId, out var kind)) _summonKinds[weaponId] = kind = KindSkiff + ":" + weaponId;
+            return kind;
+        }
+
+        /// <summary>V5 M4b: a summon with its weapon's own model (parrots, the monkey turret), pooled like the skiffs.</summary>
+        public int SummonSpawned(string weaponId, Vector3 position, Vector3 forward)
+        {
+            WeaponConfig config = null;
+            var slots = _weapons != null ? _weapons.Slots : null;
+            if (slots != null)
+                for (var i = 0; i < slots.Count; i++)
+                    if (slots[i]?.Config != null && slots[i].Config.weaponId == weaponId) { config = slots[i].Config; break; }
+            var model = config != null ? config.visual.summonModel : null;
+            if (model == null) return SkiffSpawned(position, forward);
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
+            var go = Spawn(SummonKind(weaponId), model, position + Vector3.up * 0.2f, Quaternion.LookRotation(forward.normalized, Vector3.up), config.visual.summonModelScale, out var pooled);
+            if (go == null) return SkiffSpawned(position, forward);
+            var prep = Prepare(go);
+            if (!prep.Done) { StripPhysics(go); prep.Done = true; }
+            return Track(new View { Go = go, Pooled = pooled });
         }
 
         /// <summary>V3 CreateBoardingSkiffVisual: the skiff model at 0.42 scale, colliders removed, or a brown box.</summary>
@@ -865,12 +892,20 @@ namespace RoguePirates.V4.Presentation.Weapons
         public void PrewarmModels(IEnumerable<WeaponConfig> weapons)
         {
             if (_pools == null || weapons == null) return;
+            // One pool per orbit model, sized to the most any weapon draws (an evolution may double the blades).
+            var orbit = new Dictionary<GameObject, int>();
             foreach (var w in weapons)
             {
                 if (w?.visual == null) continue;
                 if (w.behavior == ConfigEnums.WeaponBehavior.Orbit && w.visual.orbitModel != null)
-                    EnsurePool(KindOrbitModel, w.visual.orbitModel, Mathf.Max(1, w.orbit.baseBlades) + 2);
+                {
+                    var need = 2 * Mathf.Max(1, w.orbit.baseBlades) * Mathf.Max(1, w.orbit.beamSegments) + 2;
+                    orbit[w.visual.orbitModel] = orbit.TryGetValue(w.visual.orbitModel, out var n) ? Mathf.Max(n, need) : need;
+                }
+                if (w.behavior == ConfigEnums.WeaponBehavior.Summon && w.visual.summonModel != null)
+                    EnsurePool(SummonKind(w.weaponId), w.visual.summonModel, w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
             }
+            foreach (var pair in orbit) EnsurePool(KindOrbitModel, pair.Key, pair.Value);
         }
 
         void RegisterMuzzle(GameObject prefab)

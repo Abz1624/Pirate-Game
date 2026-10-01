@@ -74,7 +74,7 @@ namespace RoguePirates.V4.Difficulty
                 // Playtest round 1: crit and evolutions are part of the build too.
                 var crit = 1f + Mathf.Clamp01(m.CritChance + m.ItemCritChanceBonus) * Mathf.Max(0f, m.CritDamage - 1f);
                 var evolved = w.Evolution != null ? Mathf.Max(1f, d.evolutionOffenseMultiplier) : 1f;
-                var part = Mathf.Min(damage * crit * evolved, hitCap) / cooldown * quantity * coverage;
+                var part = Mathf.Min(damage * crit * evolved, hitCap) / cooldown * quantity * coverage * WeaponStatResolver.HitsPerFiring(w.Config); // V5 M4b
                 total += part;
                 if (d.closeRangeBehaviors != null && Array.IndexOf(d.closeRangeBehaviors, w.Config.behavior) >= 0) closeRange += part;
             }

@@ -231,7 +231,8 @@ namespace RoguePirates.V4.Tests
         }
 
         /// <summary>V5 M4's new weapons (not in V3; V5WeaponMechanicsTests covers them).</summary>
-        static readonly string[] V5Weapons = { "anchor_flail", "chainshot", "siren_bell", "ramming_prow" };
+        static readonly string[] V5Weapons = { "anchor_flail", "chainshot", "siren_bell", "ramming_prow",
+            "parrot_squadron", "monkey_gunners", "maelstrom_charge", "lighthouse_lantern", "cursed_doubloons" };
 
         [Test]
         public void Evolutions_AreConfig_WithTheirBaseWeaponAndEffect()

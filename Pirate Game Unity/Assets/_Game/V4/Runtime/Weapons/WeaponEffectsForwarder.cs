@@ -44,6 +44,7 @@ namespace RoguePirates.V4.Weapons
         public void BurningPatch(Vector3 position, float radius) => T?.BurningPatch(position, radius);
         public void WaterSplash(Vector3 position) => T?.WaterSplash(position);
         public int SkiffSpawned(Vector3 position, Vector3 forward) => T?.SkiffSpawned(position, forward) ?? -1;
+        public int SummonSpawned(string weaponId, Vector3 position, Vector3 forward) => T?.SummonSpawned(weaponId, position, forward) ?? -1;
         public void SkiffMoved(int handle, Vector3 position, Vector3 facing) => T?.SkiffMoved(handle, position, facing);
         public void SkiffRemoved(int handle) => T?.SkiffRemoved(handle);
     }

@@ -29,6 +29,7 @@ namespace RoguePirates.V4.Tests
             public readonly List<(int index, WeaponStatus status)> Statuses = new List<(int, WeaponStatus)>();
             public readonly List<(int index, float fraction, float seconds)> Slows = new List<(int, float, float)>();
             public readonly List<(int index, float meters)> Knocks = new List<(int, float)>();
+            public readonly List<(int index, Vector3 toward, float meters)> Pulls = new List<(int, Vector3, float)>();
             public int Add(Vector3 p) { List.Add(new Enemy { Position = p }); return List.Count - 1; }
             public bool Exists => true;
             public int Capacity => List.Count;
@@ -57,6 +58,7 @@ namespace RoguePirates.V4.Tests
             public void ApplyStatus(int index, WeaponStatus status, float strength) => Statuses.Add((index, status));
             public void ApplySlow(int index, float fraction, float seconds) => Slows.Add((index, fraction, seconds));
             public void Knockback(int index, Vector3 from, float meters) => Knocks.Add((index, meters));
+            public void Pull(int index, Vector3 toward, float meters) => Pulls.Add((index, toward, meters));
         }
 
         sealed class Ship : IShipState
@@ -320,7 +322,8 @@ namespace RoguePirates.V4.Tests
 
         // ---- M4 proper: the new weapons and the Empowered evolutions (real configs) ------------------------------------
 
-        static readonly string[] NewWeapons = { "anchor_flail", "chainshot", "siren_bell", "ramming_prow" };
+        static readonly string[] NewWeapons = { "anchor_flail", "chainshot", "siren_bell", "ramming_prow",
+            "parrot_squadron", "monkey_gunners", "maelstrom_charge", "lighthouse_lantern", "cursed_doubloons" };
 
         [Test]
         public void TheNewWeapons_AreBuyable_Offerable_AndEachEvolutionIsReachable()
@@ -347,7 +350,7 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(item.inChestPool, $"{item.itemId} drops from chests (ChestEconomy only rolls evolution items in its pool)");
                 Assert.IsNotNull(icons.Item(item.itemId), $"{item.itemId} has an icon");
             }
-            Assert.AreEqual(14, evolutions.Count, "the six from V3 and the eight from V5 M4");
+            Assert.AreEqual(19, evolutions.Count, "the six from V3, the eight from V5 M4 and the five from M4b");
             Assert.AreEqual(evolutions.Count, evolutions.Select(e => e.baseWeapon.weaponId).Distinct().Count(), "one evolution per weapon");
         }
 
@@ -516,6 +519,190 @@ namespace RoguePirates.V4.Tests
                 return r.Enemies.Hits.Distinct().Count();
             }
             Assert.Greater(LaneHits("ship_of_the_line"), LaneHits(null), "Ship of the Line: a wider beam reaches enemies beside the line");
+        }
+
+        // ---- M4b: the mechanics of the second batch (runtime copies turned into the new shapes) ---------------------
+
+        [Test]
+        public void AWhirlpoolShell_DragsAndHurts_ThenImplodes()
+        {
+            using var rig = new Rig();
+            var w = rig.Weapon("mortar");
+            var p = w.predictedArea;
+            p.whirlpoolSeconds = 2.25f; // ticks at 0.5, 1, 1.5 and 2 s, the implosion at 2.25 s
+            p.whirlpoolTickSeconds = 0.5f;
+            p.pullMetersPerSecond = 3f;
+            p.whirlpoolTickDamageMultiplier = 0.2f;
+            p.implodeDamageMultiplier = 1.5f;
+            w.baseCooldown = 100f; // one shell: the manager ticks would fire another
+            rig.Loadout.Entries.Add((new object(), "mortar"));
+            rig.Manager.SyncLoadout();
+            var e = rig.Enemies.Add(new Vector3(0f, 0f, 8f));
+            rig.Manager.FireSlot(0);
+            rig.Manager.Slots[0].CooldownTimer = 100f; // FireSlot ignores the cooldown; no second shell
+            const float dt = 1f / 60f;
+            var impactAt = p.impactDelaySeconds;
+            for (var t = 0f; t < impactAt + 0.05f; t += dt) rig.Manager.Tick(dt);
+            Assert.AreEqual(1, rig.Combat.Whirlpools.Count, "the shell's impact opened a whirlpool");
+            var impactHits = rig.Enemies.Hits.Count;
+            for (var t = 0f; t < p.whirlpoolSeconds + 0.1f; t += dt) rig.Manager.Tick(dt);
+            Assert.AreEqual(0, rig.Combat.Whirlpools.Count, "it imploded and closed");
+            Assert.AreEqual(4, rig.Enemies.Pulls.Count, "pulled every 0.5 s while open (not at the implosion)");
+            Assert.IsTrue(rig.Enemies.Pulls.All(x => x.index == e && Mathf.Approximately(x.meters, 1.5f)), "3 m/s × 0.5 s each tick");
+            Assert.AreEqual(impactHits + 5, rig.Enemies.Hits.Count, "four ticks and the implosion hurt it");
+        }
+
+        [Test]
+        public void ABeamOrbit_LaysItsSpheresAlongOneLine()
+        {
+            using var rig = new Rig();
+            var w = rig.Weapon("flying_cutlasses");
+            w.orbit.baseBlades = 1;
+            w.orbit.beamSegments = 4;
+            w.orbit.orbitRadius = 8f;
+            rig.Loadout.Entries.Add((new object(), "flying_cutlasses"));
+            rig.Manager.SyncLoadout();
+            rig.Manager.TickOrbitPositions(0f);
+            var hits = rig.Manager.OrbitHitsOf(rig.Manager.Slots[0]);
+            Assert.AreEqual(4, hits.Count, "one sphere per segment");
+            for (var i = 0; i < 4; i++)
+            {
+                var flat = new Vector3(hits[i].Position.x, 0f, hits[i].Position.z);
+                Assert.AreEqual(8f * (i + 1) / 4f, flat.magnitude, 1e-3f, "evenly out to the radius");
+                Assert.AreEqual(0f, Vector3.Cross(flat.normalized, new Vector3(hits[0].Position.x, 0f, hits[0].Position.z).normalized).magnitude, 1e-3f, "on one line");
+            }
+        }
+
+        WeaponConfig Summoner(Rig rig, bool shots)
+        {
+            var w = rig.Weapon("mortar"); // a runtime copy turned into a summon weapon
+            w.behavior = ConfigEnums.WeaponBehavior.Summon;
+            w.targeting = ConfigEnums.TargetingMode.Nearest;
+            w.range = 30f;
+            w.baseQuantity = 3;
+            w.baseCooldown = 100f; // one firing: the manager ticks would summon more
+            var s = w.summon;
+            s.perQuantity = true;
+            s.retarget = true;
+            s.retargetRange = 30f;
+            s.spawnSeconds = 0f;
+            s.firstStrikeDelay = 0f;
+            s.moveSpeed = shots ? 0f : 50f;
+            s.strikeRange = shots ? 30f : 1.5f;
+            s.shotSpeed = shots ? 20f : 0f;
+            rig.Loadout.Entries.Add((new object(), "mortar"));
+            rig.Manager.SyncLoadout();
+            return w;
+        }
+
+        [Test]
+        public void Summons_ComeOnePerQuantity_AndFindANewTarget()
+        {
+            using var rig = new Rig();
+            Summoner(rig, false);
+            var first = rig.Enemies.Add(new Vector3(0f, 0f, 6f));
+            var second = rig.Enemies.Add(new Vector3(8f, 0f, 0f));
+            rig.Manager.FireSlot(0);
+            rig.Manager.Slots[0].CooldownTimer = 100f; // no second summons
+            Assert.AreEqual(3, rig.Combat.Skiffs.Count, "one summon per point of quantity");
+            rig.Enemies.List[first].Active = false; // its target sinks
+            const float dt = 1f / 60f;
+            for (var f = 0; f < 60; f++) rig.Manager.Tick(dt);
+            Assert.AreEqual(3, rig.Combat.Skiffs.Count, "they stay");
+            Assert.Contains(second, rig.Enemies.Hits, "and strike the next enemy");
+        }
+
+        [Test]
+        public void ATurretSummon_FiresShots_InsteadOfStriking()
+        {
+            using var rig = new Rig();
+            Summoner(rig, true);
+            var target = rig.Enemies.Add(new Vector3(0f, 0f, 12f));
+            rig.Manager.FireSlot(0);
+            rig.Manager.Tick(1f / 60f);
+            Assert.Greater(rig.Combat.Projectiles.ActiveCount, 0, "a shot is in flight");
+            CollectionAssert.DoesNotContain(rig.Enemies.Hits, target, "no instant strike from 12 m");
+        }
+
+        [Test]
+        public void ATurret_TakesTheNearestEnemyInItsRange_WhenItsTargetIsOutOfReach()
+        {
+            using var rig = new Rig();
+            var w = Summoner(rig, true);
+            w.summon.strikeRange = 6f;
+            w.summon.backOffset = 0f;
+            w.summon.lateralOffset = 0f;
+            w.baseQuantity = 1;
+            var far = rig.Enemies.Add(new Vector3(0f, 0f, 14f)); // the ship's nearest at first
+            rig.Manager.FireSlot(0);
+            rig.Manager.Slots[0].CooldownTimer = 100f;
+            var near = rig.Enemies.Add(new Vector3(4f, 0f, 0f)); // then one comes within the turret's 6 m
+            rig.Manager.Tick(1f / 60f);
+            Assert.AreEqual(near, rig.Combat.Skiffs[0].TargetIndex, "it switched to the enemy it can reach");
+            Assert.AreNotEqual(far, rig.Combat.Skiffs[0].TargetIndex);
+            Assert.Greater(rig.Combat.Projectiles.ActiveCount, 0, "and fires at it");
+        }
+
+        [Test]
+        public void Summons_StopAtTheirCap()
+        {
+            using var rig = new Rig();
+            var w = Summoner(rig, false);
+            w.summon.maxAlive = 5;
+            rig.Enemies.Add(new Vector3(0f, 0f, 20f));
+            for (var i = 0; i < 4; i++) rig.Manager.FireSlot(0); // 3 a firing
+            Assert.AreEqual(5, rig.Combat.Skiffs.Count, "no more than the cap alive at once");
+        }
+
+        [Test]
+        public void AWhirlpool_DealsItsWholeTicks_AtAnyFrameRate()
+        {
+            foreach (var fps in new[] { 30f, 60f })
+            {
+                using var rig = new Rig();
+                var w = rig.Weapon("mortar");
+                var p = w.predictedArea;
+                p.whirlpoolSeconds = 3f;
+                p.whirlpoolTickSeconds = 0.5f;
+                w.baseCooldown = 100f;
+                rig.Loadout.Entries.Add((new object(), "mortar"));
+                rig.Manager.SyncLoadout();
+                rig.Enemies.Add(new Vector3(0f, 0f, 8f));
+                rig.Manager.FireSlot(0);
+                rig.Manager.Slots[0].CooldownTimer = 100f;
+                var dt = 1f / fps;
+                for (var t = 0f; t < p.impactDelaySeconds + p.whirlpoolSeconds + 0.5f; t += dt) rig.Manager.Tick(dt);
+                Assert.AreEqual(WeaponStatResolver.WhirlpoolTicks(p), rig.Enemies.Pulls.Count, $"6 ticks at {fps} fps");
+                Assert.AreEqual(1 + 6 + 1, rig.Enemies.Hits.Count, $"impact, 6 ticks, implosion at {fps} fps");
+            }
+        }
+
+        [Test]
+        public void HitsPerFiring_IsOneForTodaysWeapons_AndSharedWithTheModel()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            foreach (var w in config.All<WeaponConfig>())
+            {
+                Assert.AreEqual(RoguePirates.V4.DevTools.Balance.WeaponModel.HitsPerFiring(w), WeaponStatResolver.HitsPerFiring(w), 1e-6f, "the model and the director read one rule");
+                if (w.balanceVersion == null || !w.balanceVersion.StartsWith("saltwind-v5-m4"))
+                    Assert.AreEqual(1f, WeaponStatResolver.HitsPerFiring(w), 1e-6f, w.weaponId + ": today's weapons unchanged");
+            }
+            Assert.Less(WeaponStatResolver.HitsPerFiring(config.All<WeaponConfig>().First(x => x.weaponId == "lighthouse_lantern")), 0.5f, "a slow sweep hits an enemy far less often than its interval");
+            Assert.Greater(WeaponStatResolver.HitsPerFiring(config.All<WeaponConfig>().First(x => x.weaponId == "parrot_squadron")), 2f, "a summon strikes many times a firing");
+        }
+
+        [Test]
+        public void KillGold_IsPaidPerKill_UpToTheRunCap()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            var w = config.All<WeaponConfig>().First(x => x.weaponId == "lightning_mast");
+            Assert.AreEqual(0, new WeaponKillGold(() => config).Bonus("lightning_mast"), "today's weapons drop no extra gold");
+            w.goldPerKill = 2;
+            w.goldPerKillRunCap = 5;
+            var gold = new WeaponKillGold(() => config);
+            CollectionAssert.AreEqual(new[] { 2, 2, 1, 0 }, new[] { gold.Bonus("lightning_mast"), gold.Bonus("lightning_mast"), gold.Bonus("lightning_mast"), gold.Bonus("lightning_mast") }, "capped at 5 a run");
+            gold.ResetForRun();
+            Assert.AreEqual(2, gold.Bonus("lightning_mast"), "a new run pays again");
         }
 
         [Test]

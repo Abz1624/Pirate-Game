@@ -34,6 +34,8 @@ namespace RoguePirates.V4.Weapons
         void ApplySlow(int index, float fraction, float seconds) { }
         /// <summary>V5 M4: pushes the enemy a distance away from a point (bosses and minibosses are not moved).</summary>
         void Knockback(int index, Vector3 from, float meters) { }
+        /// <summary>V5 M4b: drags the enemy up to a distance toward a point (the Maelstrom; the knockback rules apply).</summary>
+        void Pull(int index, Vector3 toward, float meters) { }
     }
 
     /// <summary>The player ship as weapons read it.</summary>
@@ -132,6 +134,8 @@ namespace RoguePirates.V4.Weapons
         void BurningPatch(Vector3 position, float radius);
         void WaterSplash(Vector3 position);
         int SkiffSpawned(Vector3 position, Vector3 forward);
+        /// <summary>V5 M4b: a summon drawn with its weapon's own model (parrots, the monkey turret).</summary>
+        int SummonSpawned(string weaponId, Vector3 position, Vector3 forward) => SkiffSpawned(position, forward);
         void SkiffMoved(int handle, Vector3 position, Vector3 facing);
         void SkiffRemoved(int handle);
     }

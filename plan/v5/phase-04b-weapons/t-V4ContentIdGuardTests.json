@@ -1,0 +1,41 @@
+{
+  "status": "completed",
+  "duration": 0.94,
+  "summary": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ContentIdGuardTests.BothGameDatabases_AreValid_SoNoStubIsNeeded",
+      "Status": "Passed",
+      "Duration": 0.1250706,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ContentIdGuardTests.EveryWeapon_CarriesV3sAimOverlayColour",
+      "Status": "Passed",
+      "Duration": 0.2070346,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ContentIdGuardTests.TheHarpoonBinding_UsesTheHarpoonProjectile",
+      "Status": "Passed",
+      "Duration": 0.230036,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ContentIdGuardTests.TheStageProfileStarters_EqualTheUnlockConfig",
+      "Status": "Passed",
+      "Duration": 0.0549997,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

@@ -79,6 +79,41 @@ namespace RoguePirates.V4.Weapons
             slot.ExtraSlow = e.extraSlow;
         }
 
+        /// <summary>V5 M4b: the ticks a whirlpool deals before it implodes (whole ticks, whatever the frame rate).</summary>
+        public static int WhirlpoolTicks(PredictedAreaBlock p) =>
+            p.whirlpoolTickSeconds > 0f ? Mathf.FloorToInt(p.whirlpoolSeconds / p.whirlpoolTickSeconds + 1e-4f) : 0;
+
+        /// <summary>
+        /// V5 M4b: hits one firing deals per target relative to the nominal one, so damage per cooldown (the director's
+        /// offense, the balance model) matches play: a summon strikes over its life (busy half of it: travel and
+        /// retargeting); a whirlpool ticks, then implodes; a per-target orbit hits an enemy only while its blade or beam
+        /// sweeps past (an enemy at 60% of the radius), not every interval. 1 for today's ten weapons.
+        /// </summary>
+        public static float HitsPerFiring(WeaponConfig w)
+        {
+            if (w == null) return 1f;
+            if (w.behavior == ConfigEnums.WeaponBehavior.Summon && (w.summon.perQuantity || w.summon.retarget || w.summon.shotSpeed > 0f))
+                return Mathf.Max(1f, 0.5f * w.summon.lifetimeSeconds / Mathf.Max(0.05f, w.summon.strikeInterval));
+            if (w.behavior == ConfigEnums.WeaponBehavior.PredictedArea && w.predictedArea.whirlpoolSeconds > 0f)
+            {
+                var p = w.predictedArea;
+                return 1f + WhirlpoolTicks(p) * p.whirlpoolTickDamageMultiplier + p.implodeDamageMultiplier;
+            }
+            if (w.behavior == ConfigEnums.WeaponBehavior.Orbit && w.orbit.perTargetIntervalSeconds > 0f)
+            {
+                var o = w.orbit;
+                var omega = Mathf.Abs(o.angularSpeedDegrees) * Mathf.Deg2Rad;
+                if (omega <= 0f) return 1f;
+                var interval = o.perTargetIntervalSeconds;
+                var r = Mathf.Max(0.5f, o.orbitRadius * 0.6f);
+                var inContact = 2f * o.hitRadius / (r * omega);
+                var passes = omega / (2f * Mathf.PI) * Mathf.Max(1, o.baseBlades);
+                var hitsPerSecond = Mathf.Min(1f / interval, passes * Mathf.Max(1f, inContact / interval));
+                return hitsPerSecond * interval;
+            }
+            return 1f;
+        }
+
         public static int ProjectileQuantity(WeaponSlot w, IWeaponModifiers m) =>
             w.Config == null ? 1 : Mathf.Max(1, w.Config.baseQuantity + w.QuantityBonus + Mathf.FloorToInt(m.Quantity));
     }
@@ -103,6 +138,18 @@ namespace RoguePirates.V4.Weapons
         /// <summary>Mortar shells: horizontal radius, impact effect (and V3's effect draws); otherwise an explosion.</summary>
         public bool AreaShell;
         public bool ImpactDraws;
+        /// <summary>V5 M4b: the shell's weapon when its impact opens a whirlpool (null otherwise).</summary>
+        public WeaponConfig Whirlpool;
+    }
+
+    /// <summary>V5 M4b: a whirlpool that drags enemies in and hurts them, then implodes (Maelstrom Charge).</summary>
+    public struct Whirlpool
+    {
+        public bool Active;
+        public Vector3 Position;
+        public float Radius, Left, TickTimer, BaseDamage, DamageBonus, ProcCoefficient;
+        public int TicksDone;
+        public WeaponConfig Config;
     }
 
     public struct BoardingSkiff
@@ -114,6 +161,10 @@ namespace RoguePirates.V4.Weapons
         public float SurfaceHeight, MoveSpeed, StrikeRange, StrikeInterval;
         public string WeaponId;
         public int View;
+        /// <summary>V5 M4b: retargets when its target is gone (range), fires shots instead of striking (speed, size).</summary>
+        public bool Retarget;
+        public float RetargetRange, ShotSpeed, ShotSize;
+        public Color ShotColor;
     }
 
     public struct PendingFollowUp
@@ -148,6 +199,7 @@ namespace RoguePirates.V4.Weapons
         public readonly List<DelayedStrike> Strikes = new List<DelayedStrike>();
         public readonly List<BoardingSkiff> Skiffs = new List<BoardingSkiff>();
         public readonly List<PendingFollowUp> FollowUps = new List<PendingFollowUp>();
+        public readonly List<Whirlpool> Whirlpools = new List<Whirlpool>();
         public readonly List<Vector3> LaneHitScratch = new List<Vector3>();
         public readonly List<int> LaneIndexScratch = new List<int>();
         public float OrbitVolleyTimer;
@@ -268,6 +320,7 @@ namespace RoguePirates.V4.Weapons
             Strikes.Clear();
             Skiffs.Clear();
             FollowUps.Clear();
+            Whirlpools.Clear();
         }
     }
 }

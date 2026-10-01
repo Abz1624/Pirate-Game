@@ -103,6 +103,8 @@ content ids, so it is not left in `Assets/`). The model's tune and the final rat
 
 M4 results: EditMode 432/432 after the First-Timer tolerance note (431/432 before it: the recorded question-9 miss at 10.03 min, see DECISIONS), PlayMode 60/60 (`m4/editmode.json`, `m4/playmode.json`). Weapon check (`tools/weapon-check.ps1`, `m4/playable/`, 9 weapons and evolutions, 6 s each): every weapon fires and kills, evolutions apply (Kraken Chain +1 anchor, Bar Shot +2 shots, Choir and Ironclad ×1.4/×1.35 size, Swivel Battery +2 burst shots), 0 game errors; the plain Prow scored no kill in its 6 s (the scripted boost), its evolved form did.
 
+Since M4b the model counts how often a sweeping blade passes an enemy (`WeaponStatResolver.HitsPerFiring`): the Flail was re-tuned to 24.9 damage a hit (it hits an enemy about once per 3.6 s pass, not every 0.75 s), and all four were re-tuned against the corrected roles (`../phase-04b-weapons/tune-and-ratios.txt`).
+
 Not in M4 (recorded): the flame-stream prewarm (D27) is dropped, the flame going to the owner's VFX artist (owner, 1 Oct);
 the Prow's aim overlay is drawn around the ship, not at the bow (cosmetic, with the art pass); placeholder icons (Grapeshot
 Pouch's for the eight items, other weapons' for the four) until the art guide's icons (M6).
