@@ -1,0 +1,13 @@
+[
+ {"build":"Bench-A-base","label":"A base (BuildTimes code, mid, scale 0.7)","query":"q=mid"},
+ {"build":"Bench-B-speed","label":"B base (RuntimeSpeed code)","query":"q=mid"},
+ {"build":"Bench-B-speed","label":"B scale 1.0","query":"q=mid&rs=1.0"},
+ {"build":"Bench-B-speed","label":"B scale 0.5","query":"q=mid&rs=0.5"},
+ {"build":"Bench-B-speed","label":"B Low tier (scale 0.6, fewer effects)","query":"q=low"},
+ {"build":"Bench-B-speed","label":"B no shadows","query":"q=mid&shadows=0"},
+ {"build":"Bench-B-speed","label":"B no post-processing","query":"q=mid&post=0"},
+ {"build":"Bench-B-speed","label":"B no HDR, no MSAA","query":"q=mid&hdr=0&msaa=1"},
+ {"build":"Bench-B-speed","label":"B PC quality level","query":"q=mid&level=pc"},
+ {"build":"Bench-B-speed","label":"B capped at 30 fps","query":"q=mid&fps=30"},
+ {"build":"Bench-A-base","label":"A base again (heat drift)","query":"q=mid"}
+]

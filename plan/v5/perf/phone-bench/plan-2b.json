@@ -1,0 +1,6 @@
+[
+ {"build":"Bench-E1-speed-wasm23","label":"E1 DXT textures, crowd 80 (3)","query":"q=mid&crowd=80"},
+ {"build":"Bench-E2-speed-wasm23-astc","label":"E2 ASTC textures, crowd 80 (1)","query":"q=mid&crowd=80"},
+ {"build":"Bench-E1-speed-wasm23","label":"E1 DXT textures, crowd 80 (4)","query":"q=mid&crowd=80"},
+ {"build":"Bench-E2-speed-wasm23-astc","label":"E2 ASTC textures, crowd 80 (2)","query":"q=mid&crowd=80"}
+]

@@ -1,0 +1,6 @@
+[
+ {"build":"Bench-F-switches","label":"D5 before (F), crowd 80","query":"q=mid&crowd=80","coolSeconds":5},
+ {"build":"WebGL-Desktop-Bench","label":"D5 final desktop, crowd 80","query":"q=mid&crowd=80","coolSeconds":5},
+ {"build":"WebGL-Desktop-Bench","label":"D5 final desktop, natural","query":"q=mid","coolSeconds":5},
+ {"build":"Bench-F-switches","label":"D5 before (F), natural","query":"q=mid","coolSeconds":5}
+]

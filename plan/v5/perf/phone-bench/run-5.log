@@ -1,0 +1,18 @@
+Browser: Chrome/153.0.8010.53; 8 variants -> plan/v5/perf/phone-bench/results.jsonl
+[4:50:21 am] R5 before (F), crowd 80 (1) (Bench-F-switches) q=mid&crowd=80
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 34.5 p50 21 p95 113 p99 126 >33ms 10.9% enemies 22 heap 396.625
+  peak: fps 25.5 p50 27 p95 135 p99 142 >33ms 20.7% enemies 80 heap 396.625
+  -> ok | renderer 775 MB, GPU process 2275 MB | battery 39.7->39.4->39.4 C
+  cooled to 39.4 C in 307 s
+[4:57:50 am] R5 final mobile, crowd 80 (1) (WebGL-Mobile-Bench) q=mid&crowd=80
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 330.5 MB textures RGBA32:22/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB ASTC_6x6:254/0MB R8:9/0MB RGB24:2/0MB DXT5:1/0MB
+  early: fps 50.4 p50 19 p95 24 p99 31 >33ms 0.8% enemies 22 heap 330.5
+  peak: fps 35.7 p50 27 p95 39 p99 44 >33ms 25.4% enemies 80 heap 330.5
+  -> ok | renderer 752 MB, GPU process 1538 MB | battery 39.4->39.5->39.6 C
+  cooled to 39.4 C in 308 s
+[5:05:14 am] R5 final mobile, natural (1) (WebGL-Mobile-Bench) q=mid
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 330.5 MB textures RGBA32:22/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB ASTC_6x6:254/0MB R8:9/0MB RGB24:2/0MB DXT5:1/0MB
+  early: fps 47.8 p50 20 p95 27 p99 34 >33ms 1.3% enemies 23 heap 330.5
+  peak: fps 44.7 p50 22 p95 29 p99 37 >33ms 1.8% enemies 30 heap 330.5
+  -> ok | renderer 758 MB, GPU process 1503 MB | battery 39.4->39.6->39.7 C

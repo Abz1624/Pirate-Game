@@ -16,7 +16,7 @@
     "precompiledReferences": [],
     "autoReferenced": false,
     "defineConstraints": [
-        "UNITY_EDITOR || DEVELOPMENT_BUILD"
+        "UNITY_EDITOR || DEVELOPMENT_BUILD || V5_PHONE_BENCH"
     ],
     "versionDefines": [],
     "noEngineReferences": false

@@ -1,0 +1,12 @@
+[
+ {"build":"Bench-E1-speed-wasm23","label":"E1 speed+wasm23, crowd 80 (1)","query":"q=mid&crowd=80"},
+ {"build":"Bench-A-base","label":"A base (2)","query":"q=mid"},
+ {"build":"Bench-E1-speed-wasm23","label":"E1 speed+wasm23, crowd 80 (2)","query":"q=mid&crowd=80"},
+ {"build":"Bench-A-base","label":"A base (3)","query":"q=mid"},
+ {"build":"Bench-E1-speed-wasm23","label":"E1 crowd 160","query":"q=mid&crowd=160"},
+ {"build":"Bench-E1-speed-wasm23","label":"E1 crowd 260 (the pool cap)","query":"q=mid&crowd=260"},
+ {"build":"Bench-E1-speed-wasm23","label":"E1 crowd 80, 60 fps cap","query":"q=mid&crowd=80&fps=60"},
+ {"build":"Bench-E1-speed-wasm23","label":"E1 crowd 80, 30 fps cap","query":"q=mid&crowd=80&fps=30"},
+ {"build":"Bench-E1-speed-wasm23","label":"E1 crowd 80, scale 0.5","query":"q=mid&crowd=80&rs=0.5"},
+ {"build":"Bench-E1-speed-wasm23","label":"E1 crowd 80, Low tier","query":"q=low&crowd=80"}
+]

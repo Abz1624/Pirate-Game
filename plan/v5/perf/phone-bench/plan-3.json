@@ -1,0 +1,10 @@
+[
+ {"build":"Bench-F-switches","label":"F crowd 80, as is (1)","query":"q=mid&crowd=80"},
+ {"build":"Bench-F-switches","label":"F crowd 80, enemy bars off (1)","query":"q=mid&crowd=80&bars=0"},
+ {"build":"Bench-F-switches","label":"F crowd 80, minimap frozen (1)","query":"q=mid&crowd=80&minimap=0"},
+ {"build":"Bench-F-switches","label":"F crowd 80, both off (1)","query":"q=mid&crowd=80&bars=0&minimap=0"},
+ {"build":"Bench-F-switches","label":"F crowd 80, as is (2)","query":"q=mid&crowd=80"},
+ {"build":"Bench-F-switches","label":"F crowd 80, both off (2)","query":"q=mid&crowd=80&bars=0&minimap=0"},
+ {"build":"Bench-F-switches","label":"F natural game, as is","query":"q=mid"},
+ {"build":"Bench-F-switches","label":"F natural game, minimap frozen","query":"q=mid&minimap=0"}
+]

@@ -1,0 +1,10 @@
+[
+ {"build":"Bench-F-switches","label":"P4 before (F), crowd 80 (1)","query":"q=mid&crowd=80"},
+ {"build":"WebGL-Mobile-Bench","label":"P4 final mobile, crowd 80 (1)","query":"q=mid&crowd=80"},
+ {"build":"Bench-F-switches","label":"P4 before (F), natural (1)","query":"q=mid"},
+ {"build":"WebGL-Mobile-Bench","label":"P4 final mobile, natural (1)","query":"q=mid"},
+ {"build":"WebGL-Mobile-Bench","label":"P4 final mobile, crowd 80 (2)","query":"q=mid&crowd=80"},
+ {"build":"Bench-F-switches","label":"P4 before (F), crowd 80 (2)","query":"q=mid&crowd=80"},
+ {"build":"WebGL-Mobile-Bench","label":"P4 final mobile, natural (2)","query":"q=mid"},
+ {"build":"Bench-F-switches","label":"P4 before (F), natural (2)","query":"q=mid"}
+]

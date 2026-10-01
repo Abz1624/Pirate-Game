@@ -1,13 +1,25 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace RoguePirates.V4.Foundation.VFX
 {
+    /// <summary>
+    /// A health bar over a ship. V5 phone performance (2 Oct): bars no longer each keep their own world-space canvas and
+    /// LateUpdate (with 80 enemies that was 80 canvases re-batched and drawn every frame, about 60% of what the crowd
+    /// cost). <see cref="Bind"/> turns the bar's own canvas off and moves it under one shared canvas
+    /// (<see cref="WorldHealthBarBatch"/>) next to where it was, which places and billboards every bar in one LateUpdate.
+    /// The prefab, its sprites and the fill are unchanged.
+    /// </summary>
     public sealed class WorldHealthBar : MonoBehaviour
     {
         Image _fill;
         Transform _target;
         float _heightOffset;
+
+        internal Transform Target => _target;
+        internal WorldHealthBarBatch Batch;
+        internal float HeightOffset => _heightOffset;
 
         public void Bind(Transform target, float heightOffset)
         {
@@ -21,6 +33,7 @@ namespace RoguePirates.V4.Foundation.VFX
                 if (_fill == null)
                     _fill = GetComponentInChildren<Image>(true);
             }
+            WorldHealthBarBatch.Add(this);
         }
 
         public void SetFill(float normalized)
@@ -29,20 +42,6 @@ namespace RoguePirates.V4.Foundation.VFX
                 _fill.fillAmount = Mathf.Clamp01(normalized);
         }
 
-        void LateUpdate()
-        {
-            if (_target == null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            var pos = _target.position + Vector3.up * _heightOffset;
-            transform.position = pos;
-
-            var cam = Camera.main;
-            if (cam != null)
-                transform.rotation = Quaternion.LookRotation(transform.position - cam.transform.position);
-        }
+        void OnDisable() => WorldHealthBarBatch.Remove(this); // back in its pool: no longer placed
     }
 }

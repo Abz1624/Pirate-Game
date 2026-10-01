@@ -1,0 +1,145 @@
+<title>Rogue Pirates Phone Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+/* Layout: a single reading column of findings, each a short claim, its chart and the table behind it. Sea-chart palette. */
+:root {
+  --bg: #f4f6f7; --surface: #ffffff; --fg: #17222b; --muted: #5a6a76; --rule: #d7dee3;
+  --accent: #0f6b7a; --accent-soft: #d6ecef; --good: #1d7a46; --bad: #b4462f;
+  --font-head: "IBM Plex Serif", Georgia, serif; --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f171d; --surface: #16212a; --fg: #e3eaef; --muted: #93a4b0; --rule: #2a3843;
+  --accent: #5cc2d1; --accent-soft: #173a42; --good: #5fcf8e; --bad: #f08a72; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f171d; --surface: #16212a; --fg: #e3eaef; --muted: #93a4b0; --rule: #2a3843;
+  --accent: #5cc2d1; --accent-soft: #173a42; --good: #5fcf8e; --bad: #f08a72; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 920px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 40px; }
+header { display: grid; gap: 10px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-head); font-weight: 600; font-size: clamp(28px, 4vw, 40px); line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-head); font-weight: 600; font-size: 24px; margin: 0 0 6px; text-wrap: balance; }
+h3 { font-size: 16px; font-weight: 600; margin: 18px 0 6px; }
+p { margin: 0 0 10px; max-width: 68ch; }
+.lede { color: var(--muted); }
+section { display: grid; gap: 12px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; min-width: 0; }
+.t-title { font-size: 13px; color: var(--muted); }
+.t-vals { font-family: var(--font-mono); font-size: 22px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.before { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; font-size: 17px; }
+.arrow { color: var(--muted); font-size: 15px; }
+.after.good { color: var(--good); font-weight: 500; } .after.bad { color: var(--bad); font-weight: 500; }
+.t-note { font-size: 12px; color: var(--muted); }
+.scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+thead th { font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+tbody th { font-weight: 500; }
+.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.chart { width: 100%; height: auto; display: block; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 6px 4px; box-sizing: border-box; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--muted); font: 11px var(--font-mono); }
+.chart .lab { fill: var(--fg); font: 12.5px var(--font-body); }
+.chart .val { fill: var(--fg); font: 12px var(--font-mono); }
+.chart .bar { fill: var(--accent); opacity: .55; } .chart .bar.hi { opacity: 1; }
+.fixes { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.fixes li { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 16px; }
+.fixes b { font-weight: 600; }
+.note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; max-width: 72ch; }
+code { font-family: var(--font-mono); font-size: 12.5px; }
+.qs { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 72ch; }
+footer { color: var(--muted); font-size: 12.5px; }
+@media (max-width: 520px) { .wrap { padding-inline: 16px; } th, td { padding: 7px 9px; } }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Rogue Pirates · V5 performance · 1-2 Oct 2026</div>
+  <h1>What slowed the game on a phone, and what changed</h1>
+  <p class="lede">I ran the web build on a Pixel 9a over USB, about 50 runs in all: different settings, enemy counts and builds, each measured the same way. I also ran it on this PC's Chrome. Two game systems caused most of the slowdown and the regular freezes. Both are fixed, and phones now get the right texture format.</p>
+</header>
+
+<section aria-label="Before and after">
+  <div class="tiles">{{TILES}}</div>
+</section>
+
+<section id="changes">
+  <h2>What changed in the game</h2>
+  <ul class="fixes">
+    <li><b>Minimap fog of war.</b> Every newly explored cell made the minimap recompute its whole 160×160 fog texture in one frame, about 14 ms on a desktop and several times that on the phone. These were the regular freezes. It now redraws only the pixels around the new cells (about 100 instead of 25,600). A big reveal, such as a treasure chart, is spread over 8 frames. The result is the same image, pixel for pixel (tested).</li>
+    <li><b>Enemy health bars.</b> Each enemy's bar was its own canvas with its own script, so 80 enemies meant 80 canvases rebuilt and drawn every frame. All bars now share one canvas, placed by one script and sorted far to near. They use the same prefab, sprites and fill.</li>
+    <li><b>Phone textures.</b> Unity 6 was quietly resetting the build's texture format, so phones received desktop (DXT) textures, which they cannot use directly. Chrome expanded them, costing over a gigabyte of extra GPU memory. The mobile build now asks for ASTC through the build option, and 163 icons with a fixed DXT format now follow the build too. The desktop build keeps DXT.</li>
+    <li><b>Build settings.</b> Code is now optimized for speed rather than build time. The benchmark harness exists only in builds made with a separate flag, so normal builds don't include it.</li>
+  </ul>
+</section>
+
+<section id="final">
+  <h2>Before and after: final builds</h2>
+  <p>Build F has the same build settings without the fixes. Runs alternated before, after, after, before, with the phone cooled to 38 °C between runs. "80 enemies" means a crowd of 80 held around the ship from 3:35 on the run clock; "natural game" is the run as it plays.</p>
+  <h3>Phone (Pixel 9a, Chrome)</h3>
+  {{FINAL_PHONE_TABLE}}
+  <h3>Desktop (RTX 3050 laptop, Chrome)</h3>
+  {{FINAL_DESKTOP_TABLE}}
+  <p class="lede">The desktop holds 60 fps either way. The fix removes its hitches. Final phone memory with 80 enemies: {{FINAL_MEMORY}}.</p>
+</section>
+
+<section id="enemies">
+  <h2>Enemies drive the cost</h2>
+  <p>On the phone, frame time follows the number of enemies alive. With 80 the Pixel 9a fell to the low 20s before the fixes. 260, the current pool cap, is unplayable. This answers the open question about raising the enemy cap: not on phones.</p>
+  {{CROWD_CHART}}
+  {{CROWD_TABLE}}
+</section>
+
+<section id="systems">
+  <h2>Two systems caused most of it</h2>
+  <p>An Editor profile at 80 enemies pointed at two culprits: per-enemy health-bar canvases (about 60% of what the crowd added) and the minimap's fog rebuild (the spikes). Switching each off on the phone confirmed it. With both off, the slowest 1% of frames fell from about 145 ms to 36 ms.</p>
+  {{SWITCH_CHART}}
+  {{SWITCH_TABLE}}
+</section>
+
+<section id="settings">
+  <h2>Settings that barely mattered</h2>
+  <p>Render scale, shadows, post-processing, MSAA and HDR moved the frame rate less than heat did. The phone is limited by the CPU (game code compiled to WebAssembly), not by drawing pixels. The PC quality level was clearly worse. The phone build already uses the Mobile level.</p>
+  {{SETTINGS_CHART}}
+  {{SETTINGS_TABLE}}
+  <p class="note">Heat: the same build measured 46 fps at the start of this series and 33 fps 28 minutes later, as the battery went from 38 °C to 42.5 °C. After this, every comparison alternated builds and waited for the phone to cool. A phone in a player's hand will run at the warm figures.</p>
+</section>
+
+<section id="memory">
+  <h2>Textures and memory</h2>
+  <p>With DXT textures, Chrome's GPU process on the phone used about 1.3 GB, and the game's WebAssembly heap was 397 MB. With ASTC, the same scene used under 600 MB and 330 MB. The download fell from 111 MB to about 91 MB.</p>
+  {{TEXTURE_TABLE}}
+  <p>The heap is still above the 256 MB some older phones allow. Reaching it needs assets streamed in as needed instead of loaded up front, which is a phase of its own (questions 39 and 43). The phone build uses a 512 MB limit until then.</p>
+</section>
+
+<section id="dropped">
+  <h2>Tried and not kept</h2>
+  <ul class="qs">
+    <li><b>Lower render scale or the Low tier:</b> no gain (the phone is CPU-bound).</li>
+    <li><b>A 30 fps cap:</b> steadier frames, but lower frame rate and still frames over 33 ms. Not worth it.</li>
+    <li><b>WebAssembly 2023:</b> no measured gain, and it stops the game loading on Safari before 16.4. Left off (question 41).</li>
+    <li><b>Compressing "uncompressed UI art":</b> the art was already compressed. The build report lists uncompressed sizes. Reverted.</li>
+    <li><b>Dropping the developer Module Lab scene:</b> scenes are tiny, so no gain.</li>
+  </ul>
+</section>
+
+{{ANDROID}}
+
+<section id="open">
+  <h2>Still open</h2>
+  <ul class="qs">
+    <li>At 80 enemies the remaining cost is real game work: rendering (about 2.4 ms on a desktop) and the enemy simulation (1.4 ms, mostly movement and overlap checks). The next gains would come from the simulation itself.</li>
+    <li>The Galaxy A15 reference phone has a much slower CPU than the Pixel 9a. Expect roughly half these frame rates until it is measured.</li>
+    <li>Your questions in <code>plan/v5/DECISIONS-WHILE-AWAY.md</code>: 39 and 43 (the 256 MB heap), 40 (check the effects and art on the phone build), 41 (WebAssembly 2023), 42 (bar draw order).</li>
+  </ul>
+</section>
+
+<footer>
+  Data: <code>plan/v5/perf/</code> (phone and desktop results, Editor profiles). Tools: <code>plan/v5/tools/phone-bench.mjs</code> (drives Chrome on the phone over USB, a desktop Chrome, or the APK), <code>editor-profile.py</code>, <code>perf-report.py</code>. Harness: <code>V4/DevTools/Bench/PhoneBench.cs</code>.
+</footer>
+</div>

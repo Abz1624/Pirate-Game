@@ -55,7 +55,7 @@ namespace RoguePirates.V4.Editor
         /// A player build with the V4 scenes (release by default) into <paramref name="folder"/>; reports the result and
         /// whether the DevTools assembly made it into the player (it must not in a release build).
         /// </summary>
-        public static string BuildRelease(string folder, bool development = false)
+        public static string BuildRelease(string folder, bool development = false, string[] extraDefines = null, int subtarget = 0)
         {
             var target = EditorUserBuildSettings.activeBuildTarget;
             var options = development ? BuildOptions.Development : BuildOptions.None;
@@ -66,6 +66,10 @@ namespace RoguePirates.V4.Editor
                 locationPathName = exe,
                 target = target,
                 options = options,
+                extraScriptingDefines = extraDefines, // V5 phone bench: V5_PHONE_BENCH keeps the DevTools pilot in a release build
+                // V5 (2 Oct): the texture format for this build (WebGL: WebGLTextureSubtarget). The Editor's own setting is reset
+                // by the build in Unity 6, so phones got DXT, which they cannot use; this option is the one the build honours.
+                subtarget = subtarget,
             });
             var summary = report.summary;
             var dataFolder = Directory.Exists(folder) ? Directory.GetDirectories(folder, "*_Data").FirstOrDefault() : null;

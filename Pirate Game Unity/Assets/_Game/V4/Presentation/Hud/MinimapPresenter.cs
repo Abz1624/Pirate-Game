@@ -76,6 +76,23 @@ namespace RoguePirates.V4.Presentation.Hud
         Color _lastOutOfBoundsVeilColor;
         float _lastOutOfBoundsEdgeSoftnessUv;
         int _lastFogRevision = -1;
+        // V5 phone bench (2 Oct): a fog rebuild (every newly explored cell) is spread over frames, FogRowsPerFrame rows at a
+        // time, and uploaded once at the end; done in one frame it cost ~14 ms on a desktop and caused the phone's
+        // regular 100+ ms hitches. -1 = idle; the first fill of a texture is still immediate.
+        public const int FogRowsPerFrame = 20;
+        int _fogNextRow = -1;
+        bool _fogRestart;
+        bool _fogFillNow = true; // a new run or stage: fill at once, never show the previous stage's fog
+        // Incremental fog (2 Oct, after the final-build profile): the explored state of every cell as last drawn, so a new
+        // revision redraws only the pixels within two cells of the cells that changed (FogAlpha looks no further).
+        bool[] _fogCells;
+        int _fogCellX0, _fogCellZ0, _fogCellsX, _fogCellsZ;
+        float _fogCellSize;
+        readonly List<int> _fogChanged = new List<int>();
+        /// <summary>Above this many newly explored cells in one revision (a chart reveal), the whole mask is rebuilt over frames.</summary>
+        public const int FogIncrementalMaxCells = 48;
+        /// <summary>Pixels redrawn by the last incremental update (tests).</summary>
+        public int LastFogPixelsRedrawn { get; private set; }
         int _lastFogMaskResolution;
         float _lastFogEdgeSoftness;
         Color _lastFogTint;
@@ -139,6 +156,9 @@ namespace RoguePirates.V4.Presentation.Hud
             _views = views;
             _builtLayoutVersion = -1;
             _lastFogRevision = -1;
+            _fogNextRow = -1;
+            _fogRestart = false;
+            _fogFillNow = true;
         }
 
         public void RegisterSpawnPing(Vector3 worldPosition, float durationSeconds = 3f) =>
@@ -179,7 +199,11 @@ namespace RoguePirates.V4.Presentation.Hud
 
             _mapScale = ComputeMapScale();
             var stage = _views.Stage;
-            if (stage != null && stage.Exists && stage.LayoutVersion != _builtLayoutVersion) BuildMarkers(stage);
+            if (stage != null && stage.Exists && stage.LayoutVersion != _builtLayoutVersion)
+            {
+                BuildMarkers(stage);
+                _fogFillNow = true;
+            }
 
             var pos = ship.Position;
             var viewCenter = ComputeClampedMapViewCenter(pos);
@@ -200,6 +224,7 @@ namespace RoguePirates.V4.Presentation.Hud
             _playerIcon.localRotation = Quaternion.Euler(0f, 0f, headingDeg);
 
             RefreshFog(stage);
+            ContinueFogMask(stage);
             RefreshBoundsVeil();
             RefreshBeaconSector(stage, pos);
             RefreshMarkers(stage, ship);
@@ -395,12 +420,128 @@ namespace RoguePirates.V4.Presentation.Hud
             var changed = revision != _lastFogRevision || fogMaskResolution != _lastFogMaskResolution
                           || !Mathf.Approximately(fogEdgeSoftnessWorld, _lastFogEdgeSoftness) || _lastFogTint != fogTint;
             if (!changed) return;
+            var onlyExplored = fogMaskResolution == _lastFogMaskResolution && Mathf.Approximately(fogEdgeSoftnessWorld, _lastFogEdgeSoftness)
+                               && _lastFogTint == fogTint;
             _lastFogRevision = revision;
             _lastFogMaskResolution = fogMaskResolution;
             _lastFogEdgeSoftness = fogEdgeSoftnessWorld;
             _lastFogTint = fogTint;
-            EnsureFogTexture();
-            RebuildFogMask(stage);
+            if (EnsureFogTexture() || _fogFillNow || !FogGridMatches(stage))
+            {
+                // A new texture, run or stage: fill it at once.
+                _fogFillNow = false;
+                _fogNextRow = -1;
+                _fogRestart = false;
+                SnapshotFogCells(stage);
+                RebuildFogMask(stage);
+                return;
+            }
+            // Newly explored cells: redraw only around them (a few hundred pixels, not the whole mask).
+            if (onlyExplored && _fogNextRow < 0 && CollectChangedFogCells(stage) <= FogIncrementalMaxCells)
+            {
+                RedrawAroundChangedCells(stage);
+                return;
+            }
+            SnapshotFogCells(stage);
+            if (_fogNextRow < 0) _fogNextRow = 0;
+            else _fogRestart = true; // changed again mid-rebuild: one more pass once this one is uploaded
+        }
+
+        bool FogGridMatches(IStageView stage) => _fogCells != null && Mathf.Approximately(_fogCellSize, stage.ExploreCellSize);
+
+        /// <summary>The cell grid over the play area (two cells of margin), each cell's explored state now.</summary>
+        void SnapshotFogCells(IStageView stage)
+        {
+            var cs = Mathf.Max(0.5f, stage.ExploreCellSize);
+            var c = PlayBounds.Center;
+            var hx = Mathf.Max(1f, PlayBounds.HalfExtentX);
+            var hz = Mathf.Max(1f, PlayBounds.HalfExtentZ);
+            _fogCellSize = stage.ExploreCellSize;
+            _fogCellX0 = Mathf.FloorToInt((c.x - hx) / cs) - 2;
+            _fogCellZ0 = Mathf.FloorToInt((c.z - hz) / cs) - 2;
+            _fogCellsX = Mathf.FloorToInt((c.x + hx) / cs) + 3 - _fogCellX0;
+            _fogCellsZ = Mathf.FloorToInt((c.z + hz) / cs) + 3 - _fogCellZ0;
+            if (_fogCells == null || _fogCells.Length != _fogCellsX * _fogCellsZ) _fogCells = new bool[_fogCellsX * _fogCellsZ];
+            for (var z = 0; z < _fogCellsZ; z++)
+            for (var x = 0; x < _fogCellsX; x++)
+                _fogCells[z * _fogCellsX + x] = stage.IsCellExplored(FogCellCenter(x, z, cs));
+        }
+
+        Vector3 FogCellCenter(int x, int z, float cs) => new Vector3((_fogCellX0 + x) * cs + cs * 0.5f, 0f, (_fogCellZ0 + z) * cs + cs * 0.5f);
+
+        /// <summary>Cells whose explored state changed since the snapshot (updated in place); the count.</summary>
+        int CollectChangedFogCells(IStageView stage)
+        {
+            _fogChanged.Clear();
+            var cs = Mathf.Max(0.5f, _fogCellSize);
+            for (var z = 0; z < _fogCellsZ; z++)
+            for (var x = 0; x < _fogCellsX; x++)
+            {
+                var i = z * _fogCellsX + x;
+                var now = stage.IsCellExplored(FogCellCenter(x, z, cs));
+                if (now == _fogCells[i]) continue;
+                _fogCells[i] = now;
+                _fogChanged.Add(i);
+            }
+            return _fogChanged.Count;
+        }
+
+        void RedrawAroundChangedCells(IStageView stage)
+        {
+            LastFogPixelsRedrawn = 0;
+            if (_fogChanged.Count == 0 || _fogTexture == null || _fogPixels == null) return;
+            var cs = Mathf.Max(0.5f, _fogCellSize);
+            var width = _fogTexture.width;
+            var height = _fogTexture.height;
+            var c = PlayBounds.Center;
+            var hx = Mathf.Max(1f, PlayBounds.HalfExtentX);
+            var hz = Mathf.Max(1f, PlayBounds.HalfExtentZ);
+            foreach (var i in _fogChanged)
+            {
+                var cx = _fogCellX0 + i % _fogCellsX;
+                var cz = _fogCellZ0 + i / _fogCellsX;
+                // A pixel reads its own cell and the cells within two of it: a changed cell matters to pixels within two cells.
+                var x0 = Mathf.Clamp(Mathf.FloorToInt((((cx - 2) * cs - c.x) / hx + 1f) * 0.5f * width - 0.5f), 0, width);
+                var x1 = Mathf.Clamp(Mathf.CeilToInt((((cx + 3) * cs - c.x) / hx + 1f) * 0.5f * width - 0.5f) + 1, 0, width);
+                var y0 = Mathf.Clamp(Mathf.FloorToInt((((cz - 2) * cs - c.z) / hz + 1f) * 0.5f * height - 0.5f), 0, height);
+                var y1 = Mathf.Clamp(Mathf.CeilToInt((((cz + 3) * cs - c.z) / hz + 1f) * 0.5f * height - 0.5f) + 1, 0, height);
+                FillFogRect(stage, x0, x1, y0, y1);
+                LastFogPixelsRedrawn += Mathf.Max(0, x1 - x0) * Mathf.Max(0, y1 - y0);
+            }
+            _fogTexture.SetPixels32(_fogPixels);
+            _fogTexture.Apply(false);
+        }
+
+        /// <summary>Continues a spread-out fog rebuild: the next FogRowsPerFrame rows; uploads when the last row is done.</summary>
+        void ContinueFogMask(IStageView stage)
+        {
+            if (_fogNextRow < 0 || _fogTexture == null || _fogPixels == null || stage == null || !stage.HasDiscovery) return;
+            var height = _fogTexture.height;
+            var end = Mathf.Min(height, _fogNextRow + FogRowsPerFrame);
+            FillFogRows(stage, _fogNextRow, end);
+            _fogNextRow = end;
+            if (end < height) return;
+            _fogTexture.SetPixels32(_fogPixels);
+            _fogTexture.Apply(false);
+            _fogNextRow = _fogRestart ? 0 : -1;
+            _fogRestart = false;
+        }
+
+        /// <summary>True while a spread-out fog rebuild is in progress (tests).</summary>
+        public bool FogRebuildPending => _fogNextRow >= 0;
+
+        /// <summary>The fog mask's pixels as last uploaded (tests).</summary>
+        public Color32[] FogPixelsForTests() => _fogTexture != null ? _fogTexture.GetPixels32() : null;
+
+        /// <summary>The whole fog mask computed in one go, without uploading it (tests: the spread result must match).</summary>
+        public Color32[] FogMaskInOneGoForTests(IStageView stage)
+        {
+            if (_fogTexture == null || _fogPixels == null) return null;
+            var saved = (Color32[])_fogPixels.Clone();
+            FillFogRows(stage, 0, _fogTexture.height);
+            var result = (Color32[])_fogPixels.Clone();
+            System.Array.Copy(saved, _fogPixels, saved.Length);
+            return result;
         }
 
         void RefreshBoundsVeil()
@@ -441,21 +582,34 @@ namespace RoguePirates.V4.Presentation.Hud
             _boundsVeilTexture.Apply(false);
         }
 
-        void EnsureFogTexture()
+        /// <summary>Makes the fog texture match the resolution; true when it was (re)created.</summary>
+        bool EnsureFogTexture()
         {
             var width = Mathf.Clamp(fogMaskResolution, 64, 256);
             var aspect = PlayBounds.HalfExtentZ / Mathf.Max(1f, PlayBounds.HalfExtentX);
             var height = Mathf.Clamp(Mathf.RoundToInt(width * aspect), 64, 256);
-            if (_fogTexture != null && _fogTexture.width == width && _fogTexture.height == height) return;
+            if (_fogTexture != null && _fogTexture.width == width && _fogTexture.height == height) return false;
             DestroyTexture(ref _fogTexture);
             _fogTexture = new Texture2D(width, height, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
             _fogPixels = new Color32[width * height];
             _fogRawImage.texture = _fogTexture;
+            _fogNextRow = -1;
+            _fogRestart = false;
+            return true;
         }
 
         void RebuildFogMask(IStageView stage)
         {
             if (_fogTexture == null || _fogPixels == null) return;
+            FillFogRows(stage, 0, _fogTexture.height);
+            _fogTexture.SetPixels32(_fogPixels);
+            _fogTexture.Apply(false);
+        }
+
+        void FillFogRows(IStageView stage, int fromRow, int toRow) => FillFogRect(stage, 0, _fogTexture.width, fromRow, toRow);
+
+        void FillFogRect(IStageView stage, int fromX, int toX, int fromRow, int toRow)
+        {
             var width = _fogTexture.width;
             var height = _fogTexture.height;
             var center = PlayBounds.Center;
@@ -464,17 +618,15 @@ namespace RoguePirates.V4.Presentation.Hud
             var r = ToByte(fogTint.r);
             var g = ToByte(fogTint.g);
             var b = ToByte(fogTint.b);
-            for (var y = 0; y < height; y++)
+            for (var y = fromRow; y < toRow; y++)
             {
                 var wz = center.z + (((y + 0.5f) / height) * 2f - 1f) * halfZ;
-                for (var x = 0; x < width; x++)
+                for (var x = fromX; x < toX; x++)
                 {
                     var wx = center.x + (((x + 0.5f) / width) * 2f - 1f) * halfX;
                     _fogPixels[y * width + x] = new Color32(r, g, b, ToByte(FogAlpha(stage, new Vector3(wx, 0f, wz))));
                 }
             }
-            _fogTexture.SetPixels32(_fogPixels);
-            _fogTexture.Apply(false);
         }
 
         float FogAlpha(IStageView stage, Vector3 world)

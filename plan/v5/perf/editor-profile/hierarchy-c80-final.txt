@@ -1,0 +1,59 @@
+frames 0..1332
+1333 frames, 3 over 30 ms
+AVERAGE ms/frame:
+  2.182  UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]
+  1.456  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::MinimapPresenter.LateUpdate() [Invoke]
+  1.325  RoguePirates.V4.dll!RoguePirates.V4::V4Game.Update() [Invoke]
+  1.315  V4.Enemies.Frame
+  1.229  V4.Enemies.Simulation
+  0.528  V4.Sim.Move
+  0.238  V4.Sim.Overlaps
+  0.190  V4.Sim.Behavior
+  0.120  V4.Sim.View
+  0.113  RoguePirates.V4.Foundation.dll!RoguePirates.V4.Foundation.VFX::WorldHealthBarBatch.LateUpdate() [Invoke]
+  0.104  RoguePirates.V4.dll!RoguePirates.V4::V4FrameDriver.Update() [Invoke]
+  0.084  Canvas.RenderOverlays
+  0.074  UnityEngine.UIModule.dll!UnityEngine::Canvas.SendWillRenderCanvases() [Invoke]
+  0.072  RoguePirates.V4.DevTools.dll!RoguePirates.V4.DevTools.Console::TuningConsole.OnGUI() [Invoke]
+  0.070  RoguePirates.V4.Foundation.dll!RoguePirates.V4.Foundation.Player::PlayerShipController.FixedUpdate() [Invoke]
+  0.060  UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.BeginGUI() [Invoke]
+  0.055  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::SaltWindHudPresenter.LateUpdate() [Invoke]
+  0.054  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Effects::DamageNumberPresenter.LateUpdate() [Invoke]
+  0.052  V4.Frame.Weapons
+  0.042  V4.Enemies.PlayerProjectiles
+  0.040  V4.Sim.Combat
+  0.037  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::AuthoredHudPresenter.LateUpdate() [Invoke]
+  0.036  UnityEngine.UI.dll!UnityEngine.EventSystems::EventSystem.Update() [Invoke]
+  0.036  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Stage::PoiMarkerPresenter.LateUpdate() [Invoke]
+  0.029  UnityEngine.InputLegacyModule.dll!UnityEngine::SendMouseEvents.DoSendMouseEvents() [Invoke]
+  0.028  UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.SetSkin() [Invoke]
+  0.028  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.World::BoundsWallPresenter.Update() [Invoke]
+  0.028  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Effects::HazardRingPresenter.LateUpdate() [Invoke]
+  0.025  V4.Sim.Hash
+  0.024  V4.Sim.HullSeparation
+IN SPIKE FRAMES ms/spike:
+  3.49  GC.Collect
+  2.81  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::MinimapPresenter.LateUpdate() [Invoke]
+  2.35  UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]
+  1.36  RoguePirates.V4.dll!RoguePirates.V4::V4Game.Update() [Invoke]
+  1.34  V4.Enemies.Frame
+  1.23  V4.Enemies.Simulation
+  0.54  V4.Sim.Move
+  0.26  V4.Sim.Overlaps
+  0.23  RoguePirates.V4.Foundation.dll!RoguePirates.V4.Foundation.Player::PlayerShipController.FixedUpdate() [Invoke]
+  0.19  RoguePirates.V4.dll!RoguePirates.V4::V4FrameDriver.Update() [Invoke]
+  0.18  V4.Sim.Behavior
+  0.14  V4.Frame.Weapons
+  0.12  UnityEngine.UIModule.dll!UnityEngine::Canvas.SendWillRenderCanvases() [Invoke]
+  0.12  V4.Sim.View
+  0.11  RoguePirates.V4.Foundation.dll!RoguePirates.V4.Foundation.VFX::WorldHealthBarBatch.LateUpdate() [Invoke]
+  0.10  Canvas.RenderOverlays
+  0.09  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Effects::DamageNumberPresenter.LateUpdate() [Invoke]
+  0.07  RoguePirates.V4.DevTools.dll!RoguePirates.V4.DevTools.Console::TuningConsole.OnGUI() [Invoke]
+  0.06  UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.BeginGUI() [Invoke]
+  0.05  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::NarrativePresenter.LateUpdate() [Invoke]
+  0.05  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::SaltWindHudPresenter.LateUpdate() [Invoke]
+  0.05  V4.Enemies.Shots
+  0.04  V4.Sim.Combat
+  0.04  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Stage::PoiMarkerPresenter.LateUpdate() [Invoke]
+  0.03  RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::AuthoredHudPresenter.LateUpdate() [Invoke]

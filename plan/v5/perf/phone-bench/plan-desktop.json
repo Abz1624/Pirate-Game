@@ -1,0 +1,8 @@
+[
+ {"build":"Bench-F-switches","label":"desktop: before (build F), crowd 80 (1)","query":"q=mid&crowd=80","coolSeconds":5},
+ {"build":"WebGL-Desktop-Bench","label":"desktop: final build, crowd 80 (1)","query":"q=mid&crowd=80","coolSeconds":5},
+ {"build":"Bench-F-switches","label":"desktop: before (build F), natural","query":"q=mid","coolSeconds":5},
+ {"build":"WebGL-Desktop-Bench","label":"desktop: final build, natural","query":"q=mid","coolSeconds":5},
+ {"build":"Bench-F-switches","label":"desktop: before (build F), crowd 80 (2)","query":"q=mid&crowd=80","coolSeconds":5},
+ {"build":"WebGL-Desktop-Bench","label":"desktop: final build, crowd 80 (2)","query":"q=mid&crowd=80","coolSeconds":5}
+]

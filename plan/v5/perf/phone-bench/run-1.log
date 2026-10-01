@@ -1,0 +1,57 @@
+Phone Chrome: Chrome/153.0.8010.53; 11 variants -> plan/v5/perf/phone-bench/results.jsonl
+[11:30:54 pm] A base (BuildTimes code, mid, scale 0.7) (Bench-A-base) q=mid
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 46.2 p50 19 p95 29 p99 112 >33ms 2.9% enemies 23 heap 396.625
+  peak: fps 37.5 p50 20 p95 118 p99 135 >33ms 7.3% enemies 9 heap 396.625
+  -> ok | renderer 844 MB, GPU process 1284 MB | battery 37.9->38.3->38.7 C
+[11:33:36 pm] B base (RuntimeSpeed code) (Bench-B-speed) q=mid
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 37.7 p50 22 p95 87 p99 122 >33ms 7.6% enemies 22 heap 396.625
+  peak: fps 45.2 p50 21 p95 26 p99 116 >33ms 1.8% enemies 16 heap 396.625
+  -> ok | renderer 797 MB, GPU process 1266 MB | battery 38.8->39.4->39.6 C
+[11:36:26 pm] B scale 1.0 (Bench-B-speed) q=mid&rs=1.0
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 1 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 41.1 p50 22 p95 33 p99 116 >33ms 4.7% enemies 22 heap 396.625
+  peak: fps 38.3 p50 23 p95 38 p99 125 >33ms 6.2% enemies 28 heap 396.625
+  -> ok | renderer 784 MB, GPU process 1266 MB | battery 39.8->40.7->40.9 C
+[11:39:13 pm] B scale 0.5 (Bench-B-speed) q=mid&rs=0.5
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.5 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 32.9 p50 24 p95 119 p99 129 >33ms 11.9% enemies 21 heap 396.625
+  peak: fps 39.3 p50 23 p95 30 p99 119 >33ms 3.1% enemies 26 heap 396.625
+  -> ok | renderer 794 MB, GPU process 1282 MB | battery 40.8->40.6->40.8 C
+[11:42:01 pm] B Low tier (scale 0.6, fewer effects) (Bench-B-speed) q=low
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.6 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 33.2 p50 21 p95 117 p99 126 >33ms 12.6% enemies 21 heap 396.625
+  peak: fps 34.6 p50 25 p95 40 p99 157 >33ms 10.3% enemies 20 heap 396.625
+  -> ok | renderer 793 MB, GPU process 1253 MB | battery 40.7->40.7->40.8 C
+[11:44:49 pm] B no shadows (Bench-B-speed) q=mid&shadows=0
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 38.5 p50 22 p95 76 p99 119 >33ms 7.2% enemies 22 heap 396.625
+  peak: fps 45.0 p50 21 p95 27 p99 66 >33ms 1.4% enemies 26 heap 396.625
+  -> ok | renderer 847 MB, GPU process 1269 MB | battery 40.6->40.7->40.9 C
+[11:47:37 pm] B no post-processing (Bench-B-speed) q=mid&post=0
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 36.6 p50 20 p95 109 p99 128 >33ms 8.6% enemies 22 heap 396.625
+  peak: fps 38.7 p50 22 p95 32 p99 145 >33ms 4.8% enemies 17 heap 396.625
+  -> ok | renderer 784 MB, GPU process 1250 MB | battery 40.7->40.8->40.9 C
+[11:50:25 pm] B no HDR, no MSAA (Bench-B-speed) q=mid&hdr=0&msaa=1
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 34.8 p50 23 p95 112 p99 125 >33ms 9.3% enemies 22 heap 396.625
+  peak: fps 42.4 p50 21 p95 31 p99 105 >33ms 2.9% enemies 25 heap 396.625
+  -> ok | renderer 798 MB, GPU process 1258 MB | battery 40.7->40.7->40.8 C
+[11:53:13 pm] B PC quality level (Bench-B-speed) q=mid&level=pc
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 30.5 p50 25 p95 98 p99 122 >33ms 13.2% enemies 20 heap 396.625
+  peak: fps 34.9 p50 23 p95 43 p99 169 >33ms 19.9% enemies 29 heap 396.625
+  -> ok | renderer 798 MB, GPU process 1410 MB | battery 40.6->42.1->42.4 C
+[11:56:00 pm] B capped at 30 fps (Bench-B-speed) q=mid&fps=30
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 31.2 p50 26 p95 123 p99 144 >33ms 15.1% enemies 20 heap 396.625
+  peak: fps 37.1 p50 27 p95 37 p99 45 >33ms 9.4% enemies 14 heap 396.625
+  -> ok | renderer 805 MB, GPU process 1412 MB | battery 42->42.1->43 C
+[11:58:49 pm] A base again (heat drift) (Bench-A-base) q=mid
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 32.7 p50 25 p95 94 p99 145 >33ms 11.5% enemies 21 heap 396.625
+  peak: fps 39.2 p50 23 p95 36 p99 116 >33ms 10.1% enemies 21 heap 396.625
+  -> ok | renderer 800 MB, GPU process 1294 MB | battery 42.5->41.8->41.7 C
+all done

@@ -1,0 +1,26 @@
+Phone Chrome: Chrome/153.0.8010.53; 4 variants -> plan/v5/perf/phone-bench/results.jsonl
+[12:47:33 am] E1 DXT textures, crowd 80 (3) (Bench-E1-speed-wasm23) q=mid&crowd=80
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 52.7 p50 17 p95 33 p99 89 >33ms 5.0% enemies 22 heap 396.625
+  peak: fps 45.2 p50 17 p95 83 p99 111 >33ms 6.4% enemies 80 heap 396.625
+  -> ok | renderer 832 MB, GPU process 1315 MB | battery 32.4->35.8->36.7 C
+  cooled to 36.5 C in 20 s
+[12:50:07 am] E2 ASTC textures, crowd 80 (1) (Bench-E2-speed-wasm23-astc) q=mid&crowd=80
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 330.5 MB textures RGBA32:22/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB ASTC_6x6:259/0MB R8:3/0MB RGB24:2/0MB DXT5:1/0MB DXT1:1/0MB
+  early: fps 53.1 p50 17 p95 21 p99 81 >33ms 3.6% enemies 22 heap 330.5
+  peak: fps 26.8 p50 25 p95 122 p99 147 >33ms 21.6% enemies 80 heap 330.5
+  -> ok | renderer 750 MB, GPU process 586 MB | battery 36.5->36.9->37 C
+  cooled to 36.7 C in 20 s
+[12:52:40 am] E1 DXT textures, crowd 80 (4) (Bench-E1-speed-wasm23) q=mid&crowd=80
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 52.7 p50 17 p95 23 p99 86 >33ms 3.7% enemies 22 heap 396.625
+  peak: fps 24.9 p50 26 p95 136 p99 147 >33ms 25.4% enemies 80 heap 396.625
+  -> ok | renderer 778 MB, GPU process 1308 MB | battery 36.7->37.5->37.5 C
+  cooled to 37.2 C in 21 s
+[12:55:23 am] E2 ASTC textures, crowd 80 (2) (Bench-E2-speed-wasm23-astc) q=mid&crowd=80
+  info: ANGLE (ARM, Mali-G715, OpenGL ES 3.2) 2272x807 scale 0.7 heap 330.5 MB textures RGBA32:22/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB ASTC_6x6:259/0MB R8:3/0MB RGB24:2/0MB DXT5:1/0MB DXT1:1/0MB
+  early: fps 48.2 p50 17 p95 66 p99 94 >33ms 5.7% enemies 22 heap 330.5
+  peak: fps 31.5 p50 28 p95 49 p99 122 >33ms 29.0% enemies 80 heap 330.5
+  -> ok | renderer 753 MB, GPU process 592 MB | battery 37.2->37.9->38 C
+  cooled to 37.8 C in 24 s
+all done

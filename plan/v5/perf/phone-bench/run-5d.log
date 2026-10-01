@@ -1,0 +1,26 @@
+Browser: Chrome/154.0.8037.58; 4 variants -> plan/v5/perf/phone-bench/desktop.jsonl
+[4:49:12 am] D5 before (F), crowd 80 (Bench-F-switches) q=mid&crowd=80
+  info: ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025EC) Direct3D11 vs_5_0 ps_5_0, D3D11) 1200x750 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 53.8 p50 17 p95 47 p99 59 >33ms 6.3% enemies 19 heap 396.625
+  peak: fps 54.4 p50 17 p95 20 p99 66 >33ms 4.6% enemies 80 heap 396.625
+  -> ok
+  cooled to null C in 5 s
+[4:51:30 am] D5 final desktop, crowd 80 (WebGL-Desktop-Bench) q=mid&crowd=80
+  info: ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025EC) Direct3D11 vs_5_0 ps_5_0, D3D11) 1200x750 scale 1 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:158/0MB R8:9/0MB DXT1:73/0MB RGB24:5/0MB
+  early: fps 60.2 p50 17 p95 17 p99 17 >33ms 0.1% enemies 20 heap 396.625
+  peak: fps 60.2 p50 17 p95 17 p99 18 >33ms 0.0% enemies 80 heap 396.625
+  -> ok
+  cooled to null C in 5 s
+[4:53:48 am] D5 final desktop, natural (WebGL-Desktop-Bench) q=mid
+  info: ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025EC) Direct3D11 vs_5_0 ps_5_0, D3D11) 1200x750 scale 1 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:158/0MB R8:9/0MB DXT1:73/0MB RGB24:5/0MB
+  early: fps 60.2 p50 17 p95 17 p99 17 >33ms 0.1% enemies 20 heap 396.625
+  peak: fps 60.2 p50 17 p95 17 p99 17 >33ms 0.0% enemies 30 heap 396.625
+  -> ok
+  cooled to null C in 5 s
+[4:56:05 am] D5 before (F), natural (Bench-F-switches) q=mid
+  info: ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025EC) Direct3D11 vs_5_0 ps_5_0, D3D11) 1200x750 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 57.1 p50 17 p95 17 p99 55 >33ms 3.0% enemies 20 heap 396.625
+  peak: fps 57.6 p50 17 p95 17 p99 57 >33ms 2.2% enemies 14 heap 396.625
+  -> ok
+  cooled to null C in 5 s
+all done

@@ -1,0 +1,38 @@
+Phone Chrome: Chrome/154.0.8037.58; 6 variants -> plan/v5/perf/phone-bench/desktop.jsonl
+[3:21:59 am] desktop: before (build F), crowd 80 (1) (Bench-F-switches) q=mid&crowd=80
+  info: ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025EC) Direct3D11 vs_5_0 ps_5_0, D3D11) 1200x750 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 58.7 p50 17 p95 17 p99 35 >33ms 1.7% enemies 21 heap 396.625
+  peak: fps 56.4 p50 17 p95 36 p99 42 >33ms 6.3% enemies 80 heap 396.625
+  -> ok
+  cooled to null C in 5 s
+[3:24:13 am] desktop: final build, crowd 80 (1) (WebGL-Desktop-Bench) q=mid&crowd=80
+  info: ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025EC) Direct3D11 vs_5_0 ps_5_0, D3D11) 1200x750 scale 0.7 heap 396.625 MB textures RGBA32:42/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:165/0MB R8:9/0MB DXT1:68/0MB RGB24:4/0MB
+  early: fps 59.9 p50 17 p95 17 p99 17 >33ms 0.1% enemies 19 heap 396.625
+  peak: fps 60.2 p50 17 p95 17 p99 17 >33ms 0.0% enemies 80 heap 396.625
+  -> ok
+  cooled to null C in 5 s
+[3:26:27 am] desktop: before (build F), natural (Bench-F-switches) q=mid
+  info: ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025EC) Direct3D11 vs_5_0 ps_5_0, D3D11) 1200x750 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 58.6 p50 17 p95 30 p99 35 >33ms 1.8% enemies 20 heap 396.625
+  peak: fps 59.1 p50 17 p95 17 p99 37 >33ms 1.6% enemies 17 heap 396.625
+  -> ok
+  cooled to null C in 5 s
+[3:28:42 am] desktop: final build, natural (WebGL-Desktop-Bench) q=mid
+  info: ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025EC) Direct3D11 vs_5_0 ps_5_0, D3D11) 1200x750 scale 0.7 heap 396.625 MB textures RGBA32:42/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:165/0MB R8:9/0MB DXT1:68/0MB RGB24:4/0MB
+  early: fps 60.2 p50 17 p95 17 p99 17 >33ms 0.0% enemies 21 heap 396.625
+  peak: fps 60.1 p50 17 p95 17 p99 17 >33ms 0.0% enemies 30 heap 396.625
+  -> ok
+  cooled to null C in 5 s
+[3:30:54 am] desktop: before (build F), crowd 80 (2) (Bench-F-switches) q=mid&crowd=80
+  info: ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025EC) Direct3D11 vs_5_0 ps_5_0, D3D11) 1200x750 scale 0.7 heap 396.625 MB textures RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:164/0MB R8:9/0MB DXT1:67/0MB RGB24:5/0MB
+  early: fps 59.3 p50 17 p95 17 p99 33 >33ms 1.0% enemies 18 heap 396.625
+  peak: fps 57.7 p50 17 p95 17 p99 38 >33ms 4.0% enemies 80 heap 396.625
+  -> ok
+  cooled to null C in 5 s
+[3:33:07 am] desktop: final build, crowd 80 (2) (WebGL-Desktop-Bench) q=mid&crowd=80
+  info: ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025EC) Direct3D11 vs_5_0 ps_5_0, D3D11) 1200x750 scale 0.7 heap 396.625 MB textures RGBA32:42/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:165/0MB R8:9/0MB DXT1:68/0MB RGB24:4/0MB
+  early: fps 59.8 p50 17 p95 17 p99 17 >33ms 0.2% enemies 21 heap 396.625
+  peak: fps 60.2 p50 17 p95 17 p99 17 >33ms 0.0% enemies 80 heap 396.625
+  -> ok
+  cooled to null C in 5 s
+all done
