@@ -1,15 +1,15 @@
 {
   "updated": "1 Oct 2026",
-  "statusLine": "You are away: M3b and M3c built (awaiting your playtest); M3d (count-based pressure) next; decisions logged",
+  "statusLine": "You are away: M3b, M3c and M3d built (awaiting your playtest); M3e (performance) next; decisions logged",
   "statusOk": false,
   "facts": [
     [
       "Progress",
-      "M0–M3 done; M3b and M3c built and committed (awaiting your playtest); M3d next"
+      "M0–M3 done; M3b, M3c, M3d built and committed (awaiting your playtest); M3e next"
     ],
     [
       "Tests",
-      "EditMode 381/381 · PlayMode 57/57"
+      "EditMode 397/397 · PlayMode 59/59"
     ],
     [
       "Gate",
@@ -42,6 +42,10 @@
       "chip": "built 1 Oct · awaiting your playtest"
     },
     "M3c": {
+      "state": "playtest",
+      "chip": "built 1 Oct · awaiting your playtest"
+    },
+    "M3d": {
       "state": "playtest",
       "chip": "built 1 Oct · awaiting your playtest"
     }
@@ -161,13 +165,19 @@
       "when": "1 Oct",
       "what": "<strong>M3c level-up rhythm built</strong> (awaiting your playtest): your \"1 1 2 3 5\" as gaps of 10, 10, 20, 30, 50 s after the first kill, then 60 s: 4 level-ups in the first minute as before, about 13 by 10:00 (was ~24), through a per-level XP table fitted in the simulator. To keep builds strong with fewer picks: weapon cards grant 2/2/3/3/4 levels, evolutions from weapon level 5, Roxie's hull 104, and an interim flat enemy scale (×0.85) that M3d replaces. Simulator: 2 of 76 targets missed (the same two as M3), median run 10.6 min, focused builds evolve in 65% of runs. Review: one blocker (other personalities' boss wins) and several majors, all fixed and re-verified. EditMode 381/381, PlayMode 57/57.",
       "commit": "8107f965"
+    },
+    {
+      "when": "1 Oct",
+      "what": "<strong>M3d pressure from enemy count built</strong> (awaiting your playtest): enemy HP and damage no longer grow with time (a cannon boat has 12 HP at 1:00 and at 8:00); the crowd follows your sketch in 22 keyframes (small early peaks, a big one at 3:35-3:45, a long valley rising in ~60 s waves, peaks at 7:30 and 9:35); stronger late types at fixed stats; every enemy that attacks differently looks different (tint, size), and hordes are ordinary ships. Per-minute targets now come from the design, not the simulator. Simulator: 2 of 76 targets missed (the First-Timer, minute 6 kills in the boss fight), both bounded and listed (D22); median run 11.0 min; in 15 s bins the crowd peaks at 3:45 (about 44) over a quieter valley (about 34) and rises to 65-69 at 7:30 and 9:30. Review: 1 blocker (the curve did not follow the sketch) and 10 majors (targets fitted to measurements, overtime understated, a heavy model, hordes, the look test, hitboxes, tint code), all fixed; the second pass found 1 major (the crowd, not only the floor, must show the peak) and 6 minors, fixed or recorded. EditMode 397/397, PlayMode 59/59.",
+      "commit": "4ea07819"
     }
   ],
   "todos": {
     "next": [
-      "<strong>Read what I decided while you were away</strong>: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code> (every decision with its reason and the alternatives, and five questions for you).",
+      "<strong>Read what I decided while you were away</strong>: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code> (every decision with its reason and the alternatives, and 13 questions for you).",
       "<strong>Playtest M3b</strong>: steer into an island (bounce, 5 hull at most every 2 s), drop powder kegs and wait 45 s (unblown ones sink), use the round ability button on a phone build.",
       "<strong>Playtest M3c</strong> (level-up rhythm): the first level with the first kill, then gaps of 10, 10, 20, 30, 50 s, then 60 s (about 13 level-ups by 10:00, was ~24); weapon cards worth more levels; evolutions from weapon level 5. Does the slower rhythm feel right, and do builds still feel strong?",
+      "<strong>Playtest M3d</strong> (pressure from enemy count): is 0:00-3:00 busy now (an early horde at 0:35, small peaks, some hull lost), is 6:00-8:00 fair, and can you tell every enemy apart (the crimson gunner cog vs the white cannon boat, the orange net cutter, the yellow needle sloop)? Enemy HP no longer grows with time; overtime after 10:00 is much harder (question 10).",
       "<strong>M2 and M3 decisions</strong>: targets, the Turtle, evolution level, Captains, synergy items, Epic +2, volley and crit pieces, pity and refreshes (details on each phase's page and in TODO-FOR-YOU.md).",
       "<strong>Get the reference phone</strong> (Galaxy A15 or A16 4G) before M7: today's build needs 344 MB of memory where the phone allows about 256 MB.",
       "<strong>Accounts</strong> (list and costs in the answers): Railway by M9; a domain, a Google Cloud project and Resend by M10b; Helius by M11; Firebase by M19."
@@ -438,6 +448,34 @@
       "check": "Independent review (v5-reviewer), two passes",
       "result": "1 blocker + 4 majors + 6 minors, then 2 majors + 6 minors → fixed or recorded",
       "evidence": "plan/v5/phase-03c-levels/PLAN.md"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3d",
+      "check": "EditMode and PlayMode suites",
+      "result": "397/397 and 59/59",
+      "evidence": "plan/v5/phase-03d-pressure/editmode.json, playmode.json"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3d",
+      "check": "Simulator report (200 runs per personality, seed 1) and boss summons at 4:30 and 8:30",
+      "result": "2 of 76 targets missed (First-Timer, minute 6 kills in the boss fight), both bounded; boss fight 68 s, 119 s from a 4:30 summon (known), 64 s from 8:30",
+      "evidence": "plan/v5/phase-03d-pressure/model-report.md, tuning.md"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3d",
+      "check": "Playable check (clock jumped to 0:45, 3:30, 5:00, 7:30, 9:30)",
+      "result": "crowd and enemy mix with screenshots at each moment; 0 game errors",
+      "evidence": "plan/v5/phase-03d-pressure/playable/"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3d",
+      "check": "Independent review (v5-reviewer), two passes",
+      "result": "1 blocker + 10 majors + 5 minors, then 1 major + 6 minors → fixed or recorded",
+      "evidence": "plan/v5/phase-03d-pressure/PLAN.md"
     }
   ],
   "phaseResults": {
@@ -535,6 +573,20 @@
       {
         "title": "Tests",
         "text": "EditMode 381/381, PlayMode 57/57; new tests over every personality's outcomes and each level's time."
+      }
+    ],
+    "M3d": [
+      {
+        "title": "What changed",
+        "text": "Flat enemy HP and damage in the voyage; the director's HP levers off; 22 keyframes from your sketch (one scale, so the shape holds); hordes on the peaks and as ordinary ships; late types at fixed ×2 stats; set pieces at fixed HP (King 2800); overtime ramp ×6 to ×25 HP for the drowned fleet; every differently-attacking enemy has its own look, with shared tinted materials (batching kept) and a hitbox that follows its drawn size. The v3-parity preset turns it all off."
+      },
+      {
+        "title": "Tests",
+        "text": "EditMode 397/397 (new: V5PressureTests, V5EnemyViewTintTests); PlayMode 59/59 (new: V5PressurePlayModeTests)."
+      },
+      {
+        "title": "Simulator",
+        "text": "2 of 76 targets missed, both bounded and listed for you (D22). Crowd per minute 0.20 to 0.76, a peak at 3:45 over a quieter valley; some hull lost in every minute from 0:00; median run 11.0 min."
       }
     ]
   },
@@ -1240,6 +1292,61 @@
           "where": "Card levels",
           "finding": "Overrides Q18b.",
           "fix": "Your question 4."
+        }
+      ]
+    },
+    {
+      "title": "M3d pressure review (1 Oct)",
+      "summary": "<strong>1 blocker</strong> (the crowd did not follow your sketch: the valley climbed and the last peaks were clamped), 10 majors (targets moved to fit the simulator; the early-hull target narrowed; overtime numbers understated; the boss test looser than its target; hordes broke note k; the look test would have missed your cannon-boat example; drawn size vs hitbox; a heavy model that is Hank's boat; untested tint code; a lost editor menu), 5 minors; all fixed or recorded. Second pass: 1 major (show the crowd's peak, not only the floor's) and 6 minors, fixed or recorded.",
+      "rows": [
+        {
+          "n": "1",
+          "sev": "Blocker",
+          "where": "Curve",
+          "finding": "Valley climbed above the 3:35 peak; late peaks clamped.",
+          "fix": "Final keyframes under one scale; an order test."
+        },
+        {
+          "n": "2",
+          "sev": "Major",
+          "where": "Targets",
+          "finding": "Kill floors and crowd bands moved to fit measurements.",
+          "fix": "Derived from the keyframes; kill bands back to M2; misses listed."
+        },
+        {
+          "n": "4",
+          "sev": "Major",
+          "where": "Overtime",
+          "finding": "×2-×3.5 reported; real ×6-×25 HP.",
+          "fix": "D19 and question 10 corrected."
+        },
+        {
+          "n": "6",
+          "sev": "Major",
+          "where": "Hordes",
+          "finding": "Same ship, faster and weaker in a horde.",
+          "fix": "Horde multipliers 1; a test."
+        },
+        {
+          "n": "7",
+          "sev": "Major",
+          "where": "Look test",
+          "finding": "Compared prefab names; missed the cannon-boat case.",
+          "fix": "Meshes, tint distance, size step; every spawner; caught skiff vs needle sloop."
+        },
+        {
+          "n": "8-9",
+          "sev": "Major",
+          "where": "Models",
+          "finding": "Hitbox smaller than the drawn ship; the Brigg is heavy and Hank's boat.",
+          "fix": "Hitbox × view size; gunner cog back on its cog model in crimson."
+        },
+        {
+          "n": "10",
+          "sev": "Major",
+          "where": "Tint code",
+          "finding": "Static, untested, burn-flash instances.",
+          "fix": "EnemyViewTint owned by the presenter; 4 tests."
         }
       ]
     }
