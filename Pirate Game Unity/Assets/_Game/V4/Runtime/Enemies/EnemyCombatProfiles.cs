@@ -73,10 +73,15 @@ namespace RoguePirates.V4.Enemies
         static readonly SpawnMovementOverrides DefaultMovement = new SpawnMovementOverrides();
         static readonly SpawnAttackOverrides DefaultAttack = new SpawnAttackOverrides();
 
+        /// <summary>V3: a band's spawner overrides its anchor enemy's attack timing. V5 M3d: off (WaveTimelineConfig).</summary>
+        public bool SpawnerCombatOverrides { get; set; } = true;
+
         public EnemySpawnParamResolver(EnemyCombatProfiles profiles, ConfigSetRuntime config)
         {
             _profiles = profiles;
             if (config == null) return;
+            var timeline = config.Single<WaveTimelineConfig>();
+            if (timeline != null) SpawnerCombatOverrides = timeline.spawnerCombatOverrides;
             // V3 matched the exact id (a variant never inherits its base's rules).
             foreach (var a in config.All<EnemyArchetypeConfig>()) if (!string.IsNullOrEmpty(a.enemyId) && a.world != null) _rules[a.enemyId] = a.world;
             foreach (var v in config.All<EnemyVariantConfig>()) if (!string.IsNullOrEmpty(v.variantId) && v.world != null) _rules[v.variantId] = v.world;
@@ -138,7 +143,7 @@ namespace RoguePirates.V4.Enemies
             var p = TryGetCombatProfile(spawnedDef.id, out var combat)
                 ? FromProfile(combat, spawnedDef)
                 : BuildFromBlocks(DefaultMovement, DefaultAttack, spawnedDef); // V3 ResolveLegacyFromDefinition (a fresh profile)
-            if (encounterProfile != null) ApplyEncounterOverrides(ref p, encounterProfile, spawnedDef);
+            if (encounterProfile != null && SpawnerCombatOverrides) ApplyEncounterOverrides(ref p, encounterProfile, spawnedDef);
             return p;
         }
 

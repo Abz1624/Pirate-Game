@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyVariantConfig
   configId: variant.powder_barge
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3d
   variantId: powder_barge
   kind: 0
   databaseSlotOrder: 5
@@ -28,16 +28,20 @@ MonoBehaviour:
     value: 4
   baseHP:
     enabled: 1
-    value: 40
+    value: 80
   moveSpeed:
     enabled: 1
     value: 2.2
   baseDamage:
-    enabled: 0
-    value: 0
+    enabled: 1
+    value: 16
   tags:
   - specialist
   inheritBaseVisual: 1
+  look:
+    model: {fileID: 0}
+    tint: {r: 1, g: 0.6, b: 0.3, a: 1}
+    viewSize: 1.25
   concurrencyTags: []
   spawnTier: 0
   combat:

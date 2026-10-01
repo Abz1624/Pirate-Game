@@ -222,20 +222,31 @@ namespace RoguePirates.V4.Tests
 
         int AmbientCap(Harness h) => h.Timeline.maxActiveEnemies - h.Timeline.reservedEncounterSlots;
 
+        /// <summary>The flow's floor share and rate now (V5 M3d: between keyframes when smoothWaves is on).</summary>
+        static (float share, float rate) Now(Harness h, float? at = null)
+        {
+            h.Timeline.flow.Sample(at ?? h.Run.Elapsed, out var share, out var rate);
+            return (share, rate);
+        }
+
         // ---- Data ----------------------------------------------------------------------------------------------
 
         [Test]
-        public void DefaultFlow_IsOn_TenMinuteWaves_WithAJaggedFloor()
+        public void DefaultFlow_IsOn_KeyframesTo10Minutes_WithAJaggedFloor()
         {
+            // V5 M3d (owner's sketch): keyframes from 0:00 to 10:00 the floor moves between in a line (M1: one step a minute).
             using var config = new ConfigSetRuntime(_set);
             var flow = config.Single<WaveTimelineConfig>().flow;
             Assert.IsTrue(flow.enabled);
-            Assert.AreEqual(10, flow.waves.Count, "one wave per minute to 10:00");
-            for (var i = 0; i < flow.waves.Count; i++) Assert.AreEqual(i * 60f, flow.waves[i].startSeconds, 0.01f);
+            Assert.IsTrue(flow.smoothWaves);
+            Assert.GreaterOrEqual(flow.waves.Count, 10, "at least a keyframe a minute");
+            Assert.AreEqual(0f, flow.waves[0].startSeconds);
+            Assert.GreaterOrEqual(flow.waves[flow.waves.Count - 1].startSeconds, 600f, "keyframes to the deadline");
+            for (var i = 1; i < flow.waves.Count; i++) Assert.Greater(flow.waves[i].startSeconds, flow.waves[i - 1].startSeconds, "in time order");
             var drops = 0;
             for (var i = 1; i < flow.waves.Count; i++) if (flow.waves[i].minAliveShare < flow.waves[i - 1].minAliveShare) drops++;
             Assert.GreaterOrEqual(drops, 2, "the floor falls back after peaks (tension and release), it is not a ramp");
-            Assert.Greater(flow.waves[9].minAliveShare, flow.waves[0].minAliveShare * 4f, "the crowd grows over the stage");
+            Assert.Greater(flow.waves[flow.waves.Count - 1].minAliveShare, flow.waves[0].minAliveShare * 4f, "the crowd grows over the stage");
             Assert.IsTrue(flow.hordes.All(x => x.archetype != null), "every horde has an enemy");
             var report = new ConfigValidationReport();
             config.Single<WaveTimelineConfig>().Validate(report);
@@ -285,10 +296,11 @@ namespace RoguePirates.V4.Tests
             using (h.Config)
             {
                 NoArenas(h);
-                h.RunUntil(142f); // minute 2, after the 1:45 horde's release window (2:05-2:20)
-                Assert.AreEqual(2, h.Flow.WaveIndex);
+                h.RunUntil(142f); // between the 0:35 and 3:35 hordes, out of their release windows and lulls
+                h.Timeline.flow.WaveAt(h.Run.Elapsed, out var index);
+                Assert.AreEqual(index, h.Flow.WaveIndex);
                 Assert.IsFalse(h.Flow.InRelease);
-                var expected = Mathf.RoundToInt(h.Timeline.flow.waves[2].minAliveShare * AmbientCap(h));
+                var expected = Mathf.RoundToInt(Now(h).share * AmbientCap(h));
                 Assert.AreEqual(expected, h.Flow.Floor);
                 h.Sink.KillAll();
                 var before = h.Flow.ToppedUp;
@@ -359,7 +371,7 @@ namespace RoguePirates.V4.Tests
                 NoArenas(h);
                 h.RunUntil(420.5f); // minute 7: the high floor
                 h.Sink.KillAll();
-                var wave = h.Timeline.flow.waves[7];
+                var wave = h.Timeline.flow.WaveAt(h.Run.Elapsed, out _);
                 var before = h.Flow.ToppedUp;
                 h.RunUntil(420.5f + wave.topUpIntervalSeconds * 0.99f);
                 Assert.LessOrEqual(h.Flow.ToppedUp - before, wave.maxTopUpPerTick, "at most maxTopUpPerTick in one interval");
@@ -373,9 +385,8 @@ namespace RoguePirates.V4.Tests
             using (h.Config)
             {
                 NoArenas(h);
-                h.RunUntil(190f); // minute 3 (0.9×), past the 3:00 elite's arena check
-                var wave = h.Timeline.flow.waves[3];
-                var other = h.Spawn.EffectiveRateMultiplier / wave.rateMultiplier;
+                h.RunUntil(165f); // between keyframes, out of the hordes' release windows and lulls
+                var other = h.Spawn.EffectiveRateMultiplier / Now(h).rate;
                 h.Timeline.flow.enabled = false;
                 Assert.AreEqual(other, h.Spawn.EffectiveRateMultiplier, 1e-4f, "flow off removes exactly the wave's multiplier");
             }
@@ -392,7 +403,7 @@ namespace RoguePirates.V4.Tests
                 var normal = h.Flow.Floor;
                 h.Run.BossFight = true;
                 h.Frame();
-                Assert.AreEqual(Mathf.RoundToInt(h.Timeline.flow.waves[5].minAliveShare * h.Timeline.flow.release.bossFightFloorMultiplier * AmbientCap(h)), h.Flow.Floor);
+                Assert.AreEqual(Mathf.RoundToInt(Now(h).share * h.Timeline.flow.release.bossFightFloorMultiplier * AmbientCap(h)), h.Flow.Floor);
                 Assert.Less(h.Flow.Floor, normal);
             }
         }
@@ -614,12 +625,12 @@ namespace RoguePirates.V4.Tests
                 var release = h.Timeline.flow.release;
                 h.JumpTo(horde.timeSeconds - release.preHordeLullSeconds - 2f);
                 h.Frame();
-                var rate = h.Spawn.EffectiveRateMultiplier;
-                var floor = h.Flow.Floor;
+                var other = h.Spawn.EffectiveRateMultiplier / Now(h).rate; // all but the flow's own rate
                 h.JumpTo(horde.timeSeconds - release.preHordeLullSeconds / 2f);
                 h.Frame();
-                Assert.AreEqual(rate * release.rateMultiplier, h.Spawn.EffectiveRateMultiplier, 1e-4f);
-                Assert.Less(h.Flow.Floor, floor);
+                var (share, rate) = Now(h);
+                Assert.AreEqual(other * rate * release.rateMultiplier, h.Spawn.EffectiveRateMultiplier, 1e-4f);
+                Assert.Less(h.Flow.Floor, Mathf.RoundToInt(share * AmbientCap(h)), "the lull lowers the floor below the keyframes' line");
             }
         }
 

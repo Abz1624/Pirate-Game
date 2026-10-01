@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.DirectorConfig
   configId: director.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v5-demo
+  balanceVersion: saltwind-v5-m3d
   mode: 2
   version: director-1
   sampleIntervalSeconds: 1
@@ -180,10 +180,10 @@ MonoBehaviour:
   eliteSizeMultiplier: 1.15
   tierTimingLever: 1
   tierLeadSecondsAtMax: 90
-  toughnessLever: 1
+  toughnessLever: 0
   toughnessHpAtMax: 1.25
   toughnessDamageAtMax: 1.2
-  focusLever: 1
+  focusLever: 0
   focusHpAtMax: 1.5
   focusDamageAtMax: 1.2
   compositionLever: 1
@@ -195,7 +195,7 @@ MonoBehaviour:
   - enemyTag: swarm
     favouredBy: 1
     maxBoost: 0.6
-  capHpLever: 1
+  capHpLever: 0
   capHpMultiplierAtMax: 1.2
   capBlockedWindowSeconds: 5
   pressureConditionTriggers: 1

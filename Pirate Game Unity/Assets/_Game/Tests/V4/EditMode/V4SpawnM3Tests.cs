@@ -701,7 +701,8 @@ namespace RoguePirates.V4.Tests
             var h = Make();
             using (h.Config)
             {
-                // The ramp's shape with end 2 (the V4 value; V5 M2's default is 1.5).
+                // The ramp's shape with start 1 and end 2 (the V4 values; V5 M3d's default is 2 to 3.5).
+                Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "overtime.spawnStatRampStart", "1", 0f, out var s0), s0);
                 Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "overtime.spawnStatRampEnd", "2", 0f, out var e0), e0);
                 var t = h.Timeline;
                 Assert.AreEqual(1f, OvertimePhase.SpawnStatRamp(t, 600f), 1e-5f, "1x at the deadline");
@@ -912,8 +913,8 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(reef.focus.enabled);
                 Assert.AreEqual(FocusPlacement.RingAroundPlayer, reef.focus.placement);
                 Assert.AreEqual("reef_crab_miniboss", reef.focus.archetype.enemyId);
-                // V5 M2 retune (V3: ×4 HP, ×1.15 damage, kept in the v3-parity preset).
-                Assert.AreEqual((22f, 3.8f, 0.8f), (reef.focus.ringDistance, reef.focus.hpMultiplier, reef.focus.damageMultiplier));
+                // V5 M2 retune, HP raised to ×4.5 by V5 M3d (V3: ×4 HP, ×1.15 damage, kept in the v3-parity preset).
+                Assert.AreEqual((22f, 4.5f, 0.8f), (reef.focus.ringDistance, reef.focus.hpMultiplier, reef.focus.damageMultiplier));
                 Assert.AreEqual(BossConflict.WaitUntilBossEnds, reef.focus.bossConflict);
                 Assert.AreEqual(0f, reef.focus.retryWindowSeconds);
                 Assert.AreEqual(150f, reef.trigger.timeSeconds, "R-02: 150 s as V3");

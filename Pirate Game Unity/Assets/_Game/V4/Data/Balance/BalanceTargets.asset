@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.BalanceTargetsConfig
   configId: balance_targets.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m3c
+  balanceVersion: saltwind-v5-m3d
   personalities:
   - personalityId: first_timer
     deathMinute:
@@ -119,7 +119,7 @@ MonoBehaviour:
   minutes:
   - minute: 0
     aliveShare:
-      min: 0.03
+      min: 0.12
       max: 0.3
     killsPerMinute:
       min: 8
@@ -135,7 +135,7 @@ MonoBehaviour:
       max: NaN
   - minute: 1
     aliveShare:
-      min: 0.1
+      min: 0.17
       max: 0.45
     killsPerMinute:
       min: 18
@@ -144,14 +144,14 @@ MonoBehaviour:
       min: 4
       max: 6
     damageTakenShare:
-      min: NaN
+      min: 0.05
       max: 0.45
     goldPerMinute:
       min: NaN
       max: NaN
   - minute: 2
     aliveShare:
-      min: 0.15
+      min: 0.25
       max: 0.55
     killsPerMinute:
       min: 25
@@ -160,14 +160,14 @@ MonoBehaviour:
       min: 5
       max: 7
     damageTakenShare:
-      min: NaN
+      min: 0.05
       max: 0.6
     goldPerMinute:
       min: NaN
       max: NaN
   - minute: 3
     aliveShare:
-      min: 0.12
+      min: 0.28
       max: 0.55
     killsPerMinute:
       min: 25
@@ -176,14 +176,14 @@ MonoBehaviour:
       min: 6
       max: 8
     damageTakenShare:
-      min: NaN
+      min: 0.05
       max: 0.6
     goldPerMinute:
       min: NaN
       max: NaN
   - minute: 4
     aliveShare:
-      min: 0.2
+      min: 0.24
       max: 0.65
     killsPerMinute:
       min: 35
@@ -199,7 +199,7 @@ MonoBehaviour:
       max: NaN
   - minute: 5
     aliveShare:
-      min: 0.18
+      min: 0.31
       max: 0.7
     killsPerMinute:
       min: 35
@@ -209,13 +209,13 @@ MonoBehaviour:
       max: 11
     damageTakenShare:
       min: NaN
-      max: 0.8
+      max: 0.6
     goldPerMinute:
       min: NaN
       max: NaN
   - minute: 6
     aliveShare:
-      min: 0.25
+      min: 0.35
       max: 0.75
     killsPerMinute:
       min: 30
@@ -225,13 +225,13 @@ MonoBehaviour:
       max: 12
     damageTakenShare:
       min: NaN
-      max: 0.9
+      max: 0.6
     goldPerMinute:
       min: NaN
       max: NaN
   - minute: 7
     aliveShare:
-      min: 0.3
+      min: 0.37
       max: 0.85
     killsPerMinute:
       min: 50
@@ -241,13 +241,13 @@ MonoBehaviour:
       max: 13
     damageTakenShare:
       min: NaN
-      max: 1
+      max: 0.6
     goldPerMinute:
       min: NaN
       max: NaN
   - minute: 8
     aliveShare:
-      min: 0.22
+      min: 0.47
       max: 0.8
     killsPerMinute:
       min: 45
@@ -257,13 +257,13 @@ MonoBehaviour:
       max: 14
     damageTakenShare:
       min: NaN
-      max: 1
+      max: 0.6
     goldPerMinute:
       min: NaN
       max: NaN
   - minute: 9
     aliveShare:
-      min: 0.35
+      min: 0.5
       max: 0.9
     killsPerMinute:
       min: 55
@@ -273,7 +273,7 @@ MonoBehaviour:
       max: 16
     damageTakenShare:
       min: NaN
-      max: 1.1
+      max: 0.6
     goldPerMinute:
       min: NaN
       max: NaN

@@ -45,6 +45,16 @@ namespace RoguePirates.V4.DevTools.Balance
         public float FodderTtkSum, EliteTtkSum, MinibossTtkSum;
         public int FodderTtkCount, EliteTtkCount, MinibossTtkCount;
         public float EndMinutes => EndSeconds / 60f;
+        /// <summary>V5 M3d: the crowd in 15 s bins (sum of alive per step and steps), to see peaks shorter than a minute.</summary>
+        public const float BinSeconds = 15f;
+        public readonly float[] AliveBinSum = new float[96];
+        public readonly int[] AliveBinSteps = new int[96];
+        /// <summary>Mean enemies alive in the bin starting at <paramref name="seconds"/> (NaN when the run did not reach it).</summary>
+        public float AliveInBin(float seconds)
+        {
+            var b = (int)(seconds / BinSeconds);
+            return b >= 0 && b < AliveBinSteps.Length && AliveBinSteps[b] > 0 ? AliveBinSum[b] / AliveBinSteps[b] : float.NaN;
+        }
     }
 
     /// <summary>
@@ -548,8 +558,7 @@ namespace RoguePirates.V4.DevTools.Balance
             if (BossFight && (_b.Progression.Level == _bossLevel || (_c.Stage != null && _c.Stage.bossFightSurvivesLevelUp))) rate *= T.bossAmbientRateMultiplier;
             if (Flow != null)
             {
-                var wave = Flow.WaveAt(_t, out _);
-                if (wave != null) rate *= wave.rateMultiplier;
+                if (Flow.Sample(_t, out _, out var waveRate)) rate *= waveRate; // V5 M3d: smoothed keyframes, as the game
                 if (release) rate *= Flow.release.rateMultiplier;
             }
             // Ambient band: one spawn per interval (1 / rate), never faster than the global gap.
@@ -621,7 +630,8 @@ namespace RoguePirates.V4.DevTools.Balance
             }
             if (wave == null) return;
             // The floor: one top-up per global gap, at most maxTopUpPerTick per interval.
-            var floor = wave.minAliveShare * AmbientCap * ThreatRate * Density;
+            f.Sample(_t, out var floorShare, out _);
+            var floor = floorShare * AmbientCap * ThreatRate * Density;
             if (release) floor *= f.release.floorMultiplier;
             if (BossFight) floor *= f.release.bossFightFloorMultiplier;
             if (_t >= _topUpBudgetAt) { _topUpBudget = Mathf.Max(0, wave.maxTopUpPerTick); _topUpBudgetAt = _t + Mathf.Max(0.05f, wave.topUpIntervalSeconds); }
@@ -1077,6 +1087,8 @@ namespace RoguePirates.V4.DevTools.Balance
         {
             _aliveSum += _alive;
             _aliveSamples++;
+            var bin = (int)(_t / SimRunResult.BinSeconds);
+            if (bin >= 0 && bin < _r.AliveBinSteps.Length) { _r.AliveBinSum[bin] += _alive; _r.AliveBinSteps[bin]++; }
             var minuteIndex = (int)((_t + _dt) / 60f);
             if (minuteIndex == _minuteIndex) return;
             CloseMinute();

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyArchetypeConfig
   configId: enemy.manta_ray
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3d
   enemyId: manta_ray
   displayName: Manta Ray
   category: 1
@@ -22,8 +22,8 @@ MonoBehaviour:
   behavior: 6
   biomeTag: emerald
   stats:
-    baseHP: 22
-    baseDamage: 8
+    baseHP: 44
+    baseDamage: 16
     moveSpeed: 4.5
     radius: 1.4
     threatCost: 2
@@ -39,6 +39,8 @@ MonoBehaviour:
     visualYawOffset: 0
     visualHeightOffset: 0.82
     placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    viewSize: 1
     poolPrewarm: 0
   tags: []
   concurrencyTags: []
@@ -76,7 +78,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 1
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:
       enabled: 0

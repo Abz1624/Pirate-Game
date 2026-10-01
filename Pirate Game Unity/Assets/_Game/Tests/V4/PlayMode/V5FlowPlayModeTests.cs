@@ -13,7 +13,7 @@ namespace RoguePirates.V4.Tests
 {
     /// <summary>
     /// V5 M1 in the real run scene: jump the clock to minutes 1, 3, 6 and 9 (ship invulnerable, scripted arenas skipped so
-    /// ambient spawning runs) and check the current minute wave and that the crowd reaches its floor; then 13:00 (overtime)
+    /// ambient spawning runs) and check the current keyframe and that the crowd reaches its floor; then 13:00 (overtime)
     /// keeps running without errors. Frame times per checkpoint are logged for the phase evidence.
     /// </summary>
     [Category("V5")]
@@ -76,8 +76,10 @@ namespace RoguePirates.V4.Tests
 
             var run = RunManager.Instance;
             var log = new List<string>();
-            foreach (var (minute, wave) in new[] { (1, 1), (3, 3), (6, 6), (9, 9) })
+            var timeline = game.Config.Single<RoguePirates.V4.Config.WaveTimelineConfig>();
+            foreach (var minute in new[] { 1, 3, 6, 9 })
             {
+                var wave = -1; // V5 M3d: the keyframe current at the run time (M1: one wave per minute)
                 run.JumpClock(minute * 60f + 5f);
                 var deadline = Time.realtimeSinceStartup + 20f;
                 var frames = 0;
@@ -89,10 +91,11 @@ namespace RoguePirates.V4.Tests
                     yield return null;
                     frames++;
                     frameTime += Time.unscaledDeltaTime;
+                    timeline.flow.WaveAt(run.ElapsedSeconds, out wave);
                     if (flow.WaveIndex == wave && flow.Floor > 0 && sink.ActiveCount >= flow.Floor && frames > 30) { reached = true; break; }
                 }
                 log.Add($"{minute}:00 wave {flow.WaveIndex} floor {flow.Floor} alive {sink.ActiveCount} release {flow.InRelease} avg frame {1000f * frameTime / Mathf.Max(1, frames):0.0} ms");
-                Assert.AreEqual(wave, flow.WaveIndex, $"minute {minute}: the wave for that minute");
+                Assert.AreEqual(wave, flow.WaveIndex, $"minute {minute}: the keyframe for that time");
                 Assert.IsTrue(reached, $"minute {minute}: the crowd reached the floor ({flow.Floor}); alive {sink.ActiveCount}");
             }
 

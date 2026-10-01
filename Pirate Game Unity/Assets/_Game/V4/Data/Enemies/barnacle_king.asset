@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyArchetypeConfig
   configId: enemy.barnacle_king
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m2
+  balanceVersion: saltwind-v5-m3d
   enemyId: barnacle_king
   displayName: Barnacle King
   category: 1
@@ -22,7 +22,7 @@ MonoBehaviour:
   behavior: 5
   biomeTag: emerald
   stats:
-    baseHP: 1400
+    baseHP: 2800
     baseDamage: 18
     moveSpeed: 2.5
     radius: 2.8
@@ -39,6 +39,8 @@ MonoBehaviour:
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    viewSize: 1
     poolPrewarm: 0
   tags: []
   concurrencyTags: []

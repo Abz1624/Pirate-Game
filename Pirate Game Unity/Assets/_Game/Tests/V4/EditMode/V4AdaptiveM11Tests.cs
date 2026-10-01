@@ -55,6 +55,7 @@ namespace RoguePirates.V4.Tests
         {
             using var set = Default();
             var d = set.Single<DirectorConfig>();
+            d.toughnessLever = d.capHpLever = d.focusLever = true; // V5 M3d switched the HP and damage levers off in the data; the mechanism stays
             var (director, _, _) = Rig(set);
             IDifficultyLevers levers = director;
             director.ForcedPressure = 1.35f;
@@ -329,6 +330,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(ExpectedOffense.OnTrackBuild, d.expectedOffense);
             Assert.AreEqual(d.onTrackGrowth.Evaluate(4f), DifficultyDirector.ExpectedGrowth(d, set.Single<DifficultyCurveConfig>(), 240f), 1e-5f);
 
+            d.focusLever = true; // V5 M3d switched it off in the data; the mechanism stays
             IDifficultyLevers levers = Rig(set).director;
             Assert.IsTrue(levers.AdaptiveElitesPayEliteRewards, "playtest round 1: adaptive elites pay elite rewards");
             ((DifficultyDirector)levers).ForcedPressure = 1.35f;

@@ -119,7 +119,7 @@ namespace RoguePirates.V4.Tests
                     Assert.IsNotNull(d.visualPrefab, d.id + " has a model");
                 var proxies = new (string id, string model, float scale)[]
                 {
-                    ("cutthroat_skiff", "SmuggleBoat", 0.92f), ("deckhand_dinghy", "SmuggleBoat", 0.82f), ("gunner_cog", "CannonboatNavy", 1f),
+                    ("cutthroat_skiff", "SmuggleBoat", 0.92f), ("deckhand_dinghy", "SmuggleBoat", 0.82f), ("gunner_cog", "CannonboatNavy", 1f), // V5 M3d tells it apart by tint and size
                     ("bomb_boat", "FireBoat", 1f), ("rammer_raft", "RamShip", 1f), ("boarding_barge", "RamShip", 1.12f),
                     ("drowned_pursuer", "SmuggleBoat", 1.05f), ("drowned_harrier", "CannonboatNavy", 0.95f),
                 };
@@ -176,8 +176,9 @@ namespace RoguePirates.V4.Tests
                     var template = db.GetEnemy(v.baseArchetype.enemyId);
                     Assert.IsNotNull(template.visualPrefab, v.baseArchetype.enemyId + " has a model");
                     Assert.IsNotNull(alias.visualPrefab, v.variantId);
-                    Assert.AreEqual(template.visualPrefab.name, alias.visualPrefab.name, v.variantId + " uses the template model");
-                    Assert.AreEqual(template.visualPrefab.GetComponentsInChildren<Renderer>(true).Length, alias.visualPrefab.GetComponentsInChildren<Renderer>(true).Length, v.variantId);
+                    var expected = v.look?.model != null ? v.look.model.name : template.visualPrefab.name; // V5 M3d: a variant may wear its own model
+                    Assert.AreEqual(expected, alias.visualPrefab.name, v.variantId + " uses the template model or its own look");
+                    if (v.look?.model == null) Assert.AreEqual(template.visualPrefab.GetComponentsInChildren<Renderer>(true).Length, alias.visualPrefab.GetComponentsInChildren<Renderer>(true).Length, v.variantId);
                     CollectionAssert.IsEmpty(alias.visualPrefab.GetComponentsInChildren<Collider>(true), v.variantId + ": no colliders, like V3's cube (R-81)");
                     Assert.AreEqual(1f, alias.visualScale, v.variantId + " keeps the V3 scale, so its hitbox is unchanged");
                     Assert.AreEqual(template.visualHeightOffset, alias.visualHeightOffset, v.variantId);

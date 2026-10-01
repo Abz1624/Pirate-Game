@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyVariantConfig
   configId: variant.shield_frigate
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3d
   variantId: shield_frigate
   kind: 0
   databaseSlotOrder: 6
@@ -28,16 +28,20 @@ MonoBehaviour:
     value: 7
   baseHP:
     enabled: 1
-    value: 45
+    value: 90
   moveSpeed:
     enabled: 1
     value: 3
   baseDamage:
-    enabled: 0
-    value: 0
+    enabled: 1
+    value: 18
   tags:
   - specialist
   inheritBaseVisual: 1
+  look:
+    model: {fileID: 0}
+    tint: {r: 0.65, g: 0.7, b: 0.85, a: 1}
+    viewSize: 1.15
   concurrencyTags: []
   spawnTier: 0
   combat:

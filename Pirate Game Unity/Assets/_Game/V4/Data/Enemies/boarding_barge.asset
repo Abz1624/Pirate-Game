@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyArchetypeConfig
   configId: enemy.boarding_barge
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3d
   enemyId: boarding_barge
   displayName: Boarding Barge
   category: 0
@@ -22,8 +22,8 @@ MonoBehaviour:
   behavior: 3
   biomeTag: emerald
   stats:
-    baseHP: 24
-    baseDamage: 8
+    baseHP: 48
+    baseDamage: 16
     moveSpeed: 3.2
     radius: 1.25
     threatCost: 4
@@ -39,6 +39,8 @@ MonoBehaviour:
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    tint: {r: 0.6, g: 0.75, b: 1, a: 1}
+    viewSize: 1.15
     poolPrewarm: 0
   tags: []
   concurrencyTags: []
@@ -76,7 +78,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 0
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:
       enabled: 0

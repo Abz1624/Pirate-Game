@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.DifficultyCurveConfig
   configId: difficulty.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v5-demo
+  balanceVersion: saltwind-v5-m3d
   enemyHpPerMinute:
     mode: 0
     c0: 1
-    c1: 0.0495
-    c2: 0.0099
+    c1: 0
+    c2: 0
     keyframes:
       serializedVersion: 2
       m_Curve:
@@ -57,7 +57,7 @@ MonoBehaviour:
   enemyDamagePerMinute:
     mode: 0
     c0: 1
-    c1: 0.0175
+    c1: 0
     c2: 0
     keyframes:
       serializedVersion: 2
@@ -96,8 +96,8 @@ MonoBehaviour:
   ordinaryHp:
     mode: 0
     c0: 1
-    c1: 0.044
-    c2: 0.0055
+    c1: 0
+    c2: 0
     keyframes:
       serializedVersion: 2
       m_Curve:
@@ -125,8 +125,8 @@ MonoBehaviour:
   ordinaryDamage:
     mode: 0
     c0: 1
-    c1: 0.042
-    c2: 0.007
+    c1: 0
+    c2: 0
     keyframes:
       serializedVersion: 2
       m_Curve:
@@ -160,7 +160,7 @@ MonoBehaviour:
     minMinutes: 5
     minPlayerLevel: 5
     requireBoth: 1
-  overtimeHpMultiplierBase: 1.25
+  overtimeHpMultiplierBase: 3
   overtimeHpMultiplierExponentPerMinute: 0.25
   overtimeDamageBonusPerMinute: 0.12
   pressureMin: 0.85

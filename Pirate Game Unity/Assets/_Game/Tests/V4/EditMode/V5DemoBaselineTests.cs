@@ -33,6 +33,10 @@ namespace RoguePirates.V4.Tests
             // M3c's level rhythm replaced the pace targets and the evolution-era card levels after this retune.
             var superseded = new HashSet<string>(XpTableTuner.TargetEdits.Select(e => "balance_targets.saltwind." + e.path))
                 { "progression.saltwind.evolutionUnlockLevel" }; // M3c: 5 (fewer level-ups)
+            // M3d: count-based pressure replaced the time-scaled HP and damage, the per-minute targets and the tuned HP.
+            superseded.UnionWith(CountPressure.Edits.Select(e => e.configId + "." + e.path));
+            superseded.UnionWith(CountPressure.TunedBefore.Select(e => e.configId + "." + e.path));
+            superseded.UnionWith(CountPressure.TargetEdits.Select(e => "balance_targets.saltwind." + e.path));
             var wrong = DemoBaseline.Retune
                 .Where(e => !superseded.Contains(e.configId + "." + e.path))
                 .Where(e => Value(rt, e.configId, e.path) != Normal(rt, e.configId, e.path, e.value))

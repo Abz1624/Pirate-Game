@@ -377,7 +377,8 @@ that looks the same always behaves the same.
   anchor enemy's attack timing are removed; a test fails when two ids with different attacks share a look.
 - G3d.1 **Retune with the simulator**: counts (floors, rates, hordes), the fixed HP of the boss, miniboss and elites.
   Outcome targets (run length, boss wins) stay; per-minute alive and kills targets follow the new shape; new targets:
-  some hull lost in minutes 1–3 (not on autopilot) and no minute after 5:00 that sinks an average build outright.
+  some hull lost in each minute from 1:00 to 4:00 (not on autopilot) and no minute after 5:00 that sinks an average
+  build outright. Targets are derived from the design (the keyframes), never fitted to the simulator (review M3d).
 - Every M3d change is off under the v3-parity preset (D16): the old curves, levers, waves and overrides (P7).
 - M3d also closes M3c's exit items: the interim flat enemy scale goes (fixed per-type stats replace it) and the bounded
   known misses are cleared.

@@ -15,6 +15,15 @@ namespace RoguePirates.V4.Config
     [Serializable] public sealed class IntOverride { public bool enabled; public int value; }
     [Serializable] public sealed class BehaviorOverride { public bool enabled; public ConfigEnums.EnemyBehavior value; }
 
+    /// <summary>V5 M3d (owner, 1 Oct 2026): a variant that attacks differently from its base must look different.</summary>
+    [Serializable]
+    public sealed class VariantLook
+    {
+        [Tooltip("Its own model (empty = the base's, under inheritBaseVisual).")] public GameObject model;
+        [Tooltip("The model's colours × this (white = the base's tint).")] public Color tint = Color.white;
+        [Tooltip("The drawn size and the hitbox × this.")] [Min(0.1f)] public float viewSize = 1f;
+    }
+
     /// <summary>
     /// An enemy built on a base archetype. Database aliases follow the V3 specialist rule
     /// (V3's specialist catalog; M16: the runtime database creates them): category, damage, radius, xp, gold, preferred range, attack cooldown
@@ -39,6 +48,7 @@ namespace RoguePirates.V4.Config
         public string[] tags = Array.Empty<string>();
         [Tooltip("On (default, R-13 decision): the alias uses its base archetype's model (not its scale, which sets the hitbox) as a stand-in until it gets its own model. Off = V3 behavior (no visual prefab, rendered as a placeholder cube). Applies at run start: swapped models mid-run would skip the legacy NavMesh stripping.")]
         [AppliesFrom(0)] public bool inheritBaseVisual = true;
+        [Tooltip("V5 M3d: its own look (model, tint, size), applied at run start.")] [AppliesFrom(0)] public VariantLook look = new VariantLook();
         [Tooltip("Concurrency tags the timeline's tag caps count (e.g. charge_windup).")] public string[] concurrencyTags = Array.Empty<string>();
         [Tooltip("Tier the timeline pools unlock by (DifficultyCurve tierUnlocks).")] public ConfigEnums.EnemyTier spawnTier = ConfigEnums.EnemyTier.Soldier;
         [Tooltip("Aliases: copied into the legacy combat-profile registry at run start and on edits; reaches newly spawned enemies. Registry elites: the elite's own definition (appended to the run database) reads this profile when the timeline spawns the elite (R-03). V3's enemy-id behaviours are data in the world block (M8).")] public ArchetypeCombat combat = new ArchetypeCombat();

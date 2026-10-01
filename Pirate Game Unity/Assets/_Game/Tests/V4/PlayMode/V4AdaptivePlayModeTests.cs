@@ -67,6 +67,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(game.Context.TryGet<IPressureView>(out var view));
             Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "eliteLever", "false", 1f, out var error), error);
             Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "toughnessLever", "false", 1f, out error), error); // cap HP alone
+            Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "capHpLever", "true", 1f, out error), error); // V5 M3d switched it off in the data; the mechanism stays
             Assert.IsTrue(game.Config.TryApplyEdit("timeline.saltwind", "reservedEncounterSlots", "0", 1f, out error), error);
             Assert.IsTrue(game.Config.TryApplyEdit("timeline.saltwind", "maxActiveEnemies", "8", 1f, out error), error);
             Assert.IsTrue(game.Config.TryApplyEdit("timeline.saltwind", "phases[0].ratePerSecond", "6", 1f, out error), error);

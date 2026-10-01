@@ -121,7 +121,7 @@ namespace RoguePirates.V4.Ports
             // Stand-in models (R-13 specialists, V4-only enemies): the template ships carry colliders on the Island layer
             // (register R-81), which V3's spawn placement and island checks treat as obstacles. V3's placeholder cubes
             // have none, so these enemies get a copy of the model without colliders.
-            if ((variant != null && (variant.inheritBaseVisual || variant.kind == VariantKind.RegistryElite)) || _v4Only.Contains(id))
+            if ((variant != null && (variant.inheritBaseVisual || variant.kind == VariantKind.RegistryElite || variant.look?.model != null)) || _v4Only.Contains(id))
                 def.visualPrefab = ColliderFreeCopy(def.visualPrefab);
             return true;
         }
@@ -172,6 +172,8 @@ namespace RoguePirates.V4.Ports
             d.preferredRange = r.preferredRange;
             d.tags = r.tags != null ? (string[])r.tags.Clone() : null;
             d.placeholderColor = r.placeholderColor;
+            d.visualTint = r.visualTint;
+            d.viewSize = r.viewSize;
             d.isBoss = r.isBoss;
             d.isMiniboss = r.isMiniboss;
         }

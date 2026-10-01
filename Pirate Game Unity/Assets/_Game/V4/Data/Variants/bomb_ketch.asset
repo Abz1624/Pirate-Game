@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyVariantConfig
   configId: variant.bomb_ketch
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3d
   variantId: bomb_ketch
   kind: 0
   databaseSlotOrder: 2
@@ -38,6 +38,10 @@ MonoBehaviour:
   tags:
   - specialist
   inheritBaseVisual: 1
+  look:
+    model: {fileID: 0}
+    tint: {r: 0.8, g: 0.55, b: 1, a: 1}
+    viewSize: 1.2
   concurrencyTags: []
   spawnTier: 0
   combat:

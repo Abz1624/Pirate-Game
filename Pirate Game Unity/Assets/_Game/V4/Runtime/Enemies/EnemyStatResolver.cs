@@ -21,6 +21,9 @@ namespace RoguePirates.V4.Enemies
         public GameObject visualPrefab;
         public float visualScale, visualYawOffset, visualHeightOffset;
         public Color placeholderColor;
+        /// <summary>V5 M3d: the view's tint and size (white and 1 = as authored).</summary>
+        public Color visualTint = Color.white;
+        public float viewSize = 1f;
         public string[] tags;
         public bool isBoss, isMiniboss;
         public ArchetypeCombat combat;
@@ -61,6 +64,8 @@ namespace RoguePirates.V4.Enemies
             r.Set(ref r.visualYawOffset, archetype.visual.visualYawOffset, "visualYawOffset", a);
             r.Set(ref r.visualHeightOffset, archetype.visual.visualHeightOffset, "visualHeightOffset", a);
             r.Set(ref r.placeholderColor, archetype.visual.placeholderColor, "placeholderColor", a);
+            r.Set(ref r.visualTint, archetype.visual.tint, "visualTint", a);
+            r.Set(ref r.viewSize, archetype.visual.viewSize, "viewSize", a);
             r.Set(ref r.tags, archetype.tags, "tags", a);
             r.Set(ref r.isBoss, archetype.isBoss, "isBoss", a);
             r.Set(ref r.isMiniboss, archetype.isMiniboss, "isMiniboss", a);
@@ -130,6 +135,16 @@ namespace RoguePirates.V4.Enemies
                 r.Set(ref r.visualPrefab, b.visual.visualPrefab, "visualPrefab", v);
                 r.Set(ref r.visualYawOffset, b.visual.visualYawOffset, "visualYawOffset", v);
                 r.Set(ref r.visualHeightOffset, b.visual.visualHeightOffset, "visualHeightOffset", v);
+                r.Set(ref r.visualTint, b.visual.tint, "visualTint", a);
+                r.Set(ref r.viewSize, b.visual.viewSize, "viewSize", a);
+            }
+            // V5 M3d: the variant's own look (a different attack must look different).
+            var look = variant.look;
+            if (look != null)
+            {
+                if (look.model != null) r.Set(ref r.visualPrefab, look.model, "visualPrefab", v);
+                if (look.tint != Color.white) r.Set(ref r.visualTint, look.tint, "visualTint", v);
+                if (!Mathf.Approximately(look.viewSize, 1f)) r.Set(ref r.viewSize, r.viewSize * look.viewSize, "viewSize", v);
             }
             return r;
         }

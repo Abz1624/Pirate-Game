@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyVariantConfig
   configId: variant.needle_sloop
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3d
   variantId: needle_sloop
   kind: 0
   databaseSlotOrder: 0
@@ -38,6 +38,10 @@ MonoBehaviour:
   tags:
   - specialist
   inheritBaseVisual: 1
+  look:
+    model: {fileID: 0}
+    tint: {r: 1, g: 1, b: 0.35, a: 1}
+    viewSize: 0.9
   concurrencyTags: []
   spawnTier: 1
   combat:

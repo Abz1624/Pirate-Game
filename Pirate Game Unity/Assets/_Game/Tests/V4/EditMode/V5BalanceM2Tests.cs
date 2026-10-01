@@ -260,8 +260,10 @@ namespace RoguePirates.V4.Tests
         /// <summary>The values the V4 autopilot measurement ran with (before the V5 M2 and M3 retunes and the demo).</summary>
         static void PreM2(ConfigSetRuntime rt)
         {
+            // M3d: count-based pressure (flat enemy stats, the keyframed crowd, the late types, the looks), back to before.
+            var errors = CountPressure.Revert(id => rt.Get<V4ConfigAsset>(id));
+            Assert.IsEmpty(errors, string.Join("; ", errors));
             // The demo's changes and the retune around its slower levelling, back to V5 M3 (the steps below go on to V4).
-            var errors = new List<string>();
             Assert.IsTrue(DemoBaseline.Revert(rt, errors) && DemoBaseline.RevertRetune(rt, errors), string.Join("; ", errors));
             // M3c: the level rhythm (XP table), Roxie's hull and the interim enemy scale, back to before.
             rt.Single<ProgressionConfig>().xpToNextTable = System.Array.Empty<int>();
@@ -365,13 +367,11 @@ namespace RoguePirates.V4.Tests
             var result = SimBatch.Run(c, 200, 1, new[] { c.Personalities.Find(targets.baselinePersonalityId) });
             // Known miss, recorded in plan/v5/phase-02-model/PLAN.md for the owner: minute 6 is the baseline's boss fight,
             // when its hits go to the Barnacle King and the kills drop below the band.
-            // M3c (1 Oct): with fewer level-ups the crowd can sit a little above the alive-share bands and kills a little below
-            // the kill bands (seen from minute 5; bounded at every minute); M3d replaces the flow (count-based peaks and valleys) and must clear these. Until
-            // then they are bounded: alive share at most 0.05 over the band, kills at least 85% of the band's floor.
+            // Minute 6 kills (the boss fight, since M2) bounded to 60% of the floor. M3d (1 Oct): the boss fight also lowers minute 8's crowd (the floor × 0.3 while the King is up, then the release
+            // after it): bounded to 0.05 under the band's floor, for the owner. M3c's other bounds are cleared.
             bool Bounded(TargetCheck x) =>
-                x.Name == "minute 6: kills" ||
-                (x.Name.EndsWith(": alive share") && x.Value <= x.Band.max + 0.05f) ||
-                (x.Name.EndsWith(": kills") && x.Value >= x.Band.min * 0.85f);
+                (x.Name == "minute 6: kills" && x.Value >= x.Band.min * 0.6f) ||
+                (x.Name == "minute 8: alive share" && x.Value >= x.Band.min - 0.05f);
             var failed = result.Personalities[0].Checks.Concat(result.Pacing).Concat(result.Model.SelectMany(m => m.Checks))
                 .Where(x => !x.Met && !Bounded(x)).Select(x => x.ToString()).ToList();
             CollectionAssert.IsEmpty(failed, "baseline targets (per personality, per minute and pacing)");
@@ -385,7 +385,8 @@ namespace RoguePirates.V4.Tests
             using var rt = new ConfigSetRuntime(Set);
             StringAssert.StartsWith("saltwind-v5-", rt.Single<ProgressionConfig>().balanceVersion, "retuned in V5 (M2, M3, then the demo baseline)");
             Assert.AreEqual(3, rt.Single<ProgressionConfig>().levelZeroToOneXp);
-            Assert.AreEqual(0.044f, rt.Single<DifficultyCurveConfig>().ordinaryHp.c1, 1e-6f, "M2's 0.08, × 0.55 by the demo-baseline retune");
+            Assert.AreEqual(0f, rt.Single<DifficultyCurveConfig>().ordinaryHp.c1, 1e-6f, "M2's 0.08, × 0.55 by the demo-baseline retune, then flat in M3d (owner note h)");
+            Assert.AreEqual("0.044", CountPressure.Edits.Single(e => e.path == "ordinaryHp.c1").pre, "M3d keeps the retune's value as its value before");
             var parity = new ConfigSetRuntime(Set);
             try
             {
@@ -419,7 +420,7 @@ namespace RoguePirates.V4.Tests
             // the boss spawner is not, so the retune sits on the archetype's base HP.
             Assert.IsFalse(boss.elite.isElite);
             Assert.AreEqual(1f, boss.elite.hpMultiplier, "no multiplier the game would ignore");
-            Assert.AreEqual(1400f, boss.anchor.stats.baseHP);
+            Assert.AreEqual(CountPressure.Tuning.Default.BossBaseHp, boss.anchor.stats.baseHP, "V5 M3d's fixed boss HP (M2: 1400)");
             var c = new SimContent(rt);
             var p = Clone(c.Personalities.Find("sea_legend"), "boss_check");
             p.bossTiming = PersonalityBossTiming.Never; // the harness summons it at 5:00
@@ -428,7 +429,7 @@ namespace RoguePirates.V4.Tests
             Assert.GreaterOrEqual(r.BossSummonSeconds, 300f);
             var t = r.BossSummonSeconds;
             var d = rt.Single<DifficultyCurveConfig>();
-            var expected = CurveEvaluator.EnemyHp(d, 1400f, t / 60f, 1, 0) * d.ordinaryHp.Evaluate((t - d.ordinaryScalingDelaySeconds) / 60f) * rt.Single<ExperimentConfig>().enemyHpMultiplier;
+            var expected = CurveEvaluator.EnemyHp(d, boss.anchor.stats.baseHP, t / 60f, 1, 0) * d.ordinaryHp.Evaluate((t - d.ordinaryScalingDelaySeconds) / 60f) * rt.Single<ExperimentConfig>().enemyHpMultiplier;
             Assert.AreEqual(expected, r.BossSpawnHp, expected * 1e-4f, "curve × ordinary time, no spawner multiplier");
         }
 

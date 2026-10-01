@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyVariantConfig
   configId: variant.ram_raider
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3d
   variantId: ram_raider
   kind: 0
   databaseSlotOrder: 1
@@ -38,6 +38,10 @@ MonoBehaviour:
   tags:
   - specialist
   inheritBaseVisual: 1
+  look:
+    model: {fileID: 0}
+    tint: {r: 1, g: 0.45, b: 0.45, a: 1}
+    viewSize: 1.05
   concurrencyTags:
   - charge_windup
   spawnTier: 1

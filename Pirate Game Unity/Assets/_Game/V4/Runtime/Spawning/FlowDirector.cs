@@ -100,8 +100,7 @@ namespace RoguePirates.V4.Spawning
         {
             if (!FlowEnabled) return 1f;
             var flow = Flow;
-            var wave = flow.WaveAt(now, out _);
-            var multiplier = wave != null ? Mathf.Max(0f, wave.rateMultiplier) : 1f;
+            var multiplier = flow.Sample(now, out _, out var rate) ? Mathf.Max(0f, rate) : 1f;
             if (flow.release != null && (now < _releaseUntil || InLull(now))) multiplier *= Mathf.Max(0f, flow.release.rateMultiplier);
             return multiplier;
         }
@@ -172,7 +171,7 @@ namespace RoguePirates.V4.Spawning
             WaveIndex = index;
             if (wave == null) { Floor = 0; return; }
 
-            var share = wave.minAliveShare;
+            flow.Sample(now, out var share, out _); // V5 M3d: between keyframes when smoothWaves is on
             var release = flow.release;
             if (release != null && (now < _releaseUntil || InLull(now))) share *= release.floorMultiplier;
             if (release != null && bossFight) share *= release.bossFightFloorMultiplier;

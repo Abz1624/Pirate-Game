@@ -1,0 +1,5 @@
+t 60 s, alive 16, level 3: swordfish 8, cannonboat 1, deckhand_dinghy 7
+t 227 s, alive 6, level 5: swordfish 2, cannonboat 1, deckhand_dinghy 1, reef_crab_miniboss 1, elite_hammerhead 1
+t 319 s, alive 31, level 5: swordfish 2, cannonboat 4, cutthroat_skiff 12, gunner_cog 1, hammerhead 3, rammer_raft 3, shark 6
+t 468 s, alive 70, level 6: swordfish 1, boarding_barge 4, bomb_boat 8, cannonboat 4, cutthroat_skiff 32, gunner_cog 1, hammerhead 4, kraken_spawn 2, manta_ray 2, shark 6, net_cutter 3, repair_tender 3
+t 588 s, alive 54, level 6: swordfish 1, boarding_barge 2, bomb_boat 1, cannonboat 4, cutthroat_skiff 32, gunner_cog 1, hammerhead 1, kraken_spawn 1, manta_ray 3, shark 2, net_cutter 1, repair_tender 3, shield_frigate 2

@@ -25,6 +25,10 @@ namespace RoguePirates.V4.Config
         public GameObject visualPrefab;
         public float visualScale = 1f, visualYawOffset, visualHeightOffset;
         public Color placeholderColor = Color.red;
+        [Tooltip("V5 M3d (owner, 1 Oct 2026: an enemy that looks the same behaves the same): the model's colours × this (white = as authored).")]
+        public Color tint = Color.white;
+        [Tooltip("V5 M3d: the drawn size and the hitbox × this.")]
+        [Min(0.1f)] public float viewSize = 1f;
         [Tooltip("Views of this model to prewarm in the V4 view pool (0 = the pool catalog's default for its kind). Read by the pool catalog (M4); V4 enemy views use it from M8.")]
         [AppliesFrom(8)] public int poolPrewarm;
     }

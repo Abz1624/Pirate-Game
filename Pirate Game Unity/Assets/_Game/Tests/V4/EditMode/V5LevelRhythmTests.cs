@@ -64,7 +64,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(104f, rt.All<CaptainConfig>().Single(c => c.captainKey == "roxie").baseHull, "Roxie's hull (Captains within ±10%)");
             Assert.AreEqual(5, p.evolutionUnlockLevel, "the evolution card from weapon level 5 (focused builds evolve in most runs)");
             var e = rt.Single<ExperimentConfig>();
-            Assert.AreEqual((0.85f, 0.85f), (e.enemyHpMultiplier, e.enemyDamageMultiplier), "the interim flat enemy scale (until M3d)");
+            Assert.AreEqual((1f, 1f), (e.enemyHpMultiplier, e.enemyDamageMultiplier), "M3c's interim ×0.85 enemy scale, replaced by M3d's fixed per-type stats");
             Assert.AreEqual("saltwind-v5-m3c", p.balanceVersion);
             var t = rt.Get<V4ConfigAsset>("balance_targets.saltwind");
             var wrong = XpTableTuner.TargetEdits
@@ -111,13 +111,14 @@ namespace RoguePirates.V4.Tests
         public void EveryPersonality_KeepsItsRunLengthAndBossWins()
         {
             // G3c.2: M2's outcome targets held for every personality, not only the baseline. Known: the Glass Cannon runs a
-            // little long (since M3); the Build Planner's boss wins may sit up to 0.05 under its floor until M3d retunes.
+            // little long (since M3); since M3d (owner: the late game was too hard) the First-Timer may live up to 1 minute past
+            // its band (recorded for the owner's playtest, question 9). M3c's Build Planner bound is cleared by M3d.
             using var rt = new ConfigSetRuntime(Set);
             var c = new SimContent(rt);
             var r = SimBatch.Run(c, 200, 1);
             bool Known(TargetCheck x) =>
                 (x.Name.StartsWith("Glass Cannon: median end minute") && x.Value <= x.Band.max + 0.75f) ||
-                (x.Name.StartsWith("Build Planner: boss win rate") && x.Value >= x.Band.min - 0.05f);
+                (x.Name.StartsWith("First-Timer: median end minute") && x.Value <= x.Band.max + 1f);
             var failed = r.Personalities.SelectMany(p => p.Checks).Where(x => !x.Met && !x.Name.Contains("level at") && !Known(x)).Select(x => x.ToString()).ToList();
             CollectionAssert.IsEmpty(failed);
         }

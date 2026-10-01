@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyVariantConfig
   configId: variant.repair_tender
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3d
   variantId: repair_tender
   kind: 0
   databaseSlotOrder: 4
@@ -33,11 +33,15 @@ MonoBehaviour:
     enabled: 1
     value: 2.8
   baseDamage:
-    enabled: 0
-    value: 0
+    enabled: 1
+    value: 8
   tags:
   - specialist
   inheritBaseVisual: 1
+  look:
+    model: {fileID: 0}
+    tint: {r: 0.55, g: 1, b: 0.55, a: 1}
+    viewSize: 1
   concurrencyTags: []
   spawnTier: 0
   combat:

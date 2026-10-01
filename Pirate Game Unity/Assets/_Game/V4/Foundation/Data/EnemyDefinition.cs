@@ -29,6 +29,8 @@ namespace RoguePirates.V4.Foundation.Data
         public float preferredRange = 8f;
         public string[] tags;
         public Color placeholderColor = Color.red;
+        [Tooltip("V5 M3d: the view's colours × this (white = as authored).")] public Color visualTint = Color.white;
+        [Tooltip("V5 M3d: the drawn size and the gameplay radius × this.")] public float viewSize = 1f;
         public bool isBoss;
         public bool isMiniboss;
     }

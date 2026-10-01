@@ -71,6 +71,34 @@
                 {
                     "path": "phases[0].pools[1].share",
                     "value": "0"
+                },
+                {
+                    "path": "flow.smoothWaves",
+                    "value": "false"
+                },
+                {
+                    "path": "spawnerCombatOverrides",
+                    "value": "true"
+                },
+                {
+                    "path": "overtime.spawnStatRampStart",
+                    "value": "1"
+                },
+                {
+                    "path": "phases[3].pools[0].share",
+                    "value": "0.65"
+                },
+                {
+                    "path": "phases[3].pools[1].share",
+                    "value": "0.35"
+                },
+                {
+                    "path": "phases[4].pools[0].share",
+                    "value": "0.6"
+                },
+                {
+                    "path": "phases[4].pools[1].share",
+                    "value": "0.4"
                 }
             ]
         },
@@ -103,6 +131,14 @@
                 {
                     "path": "inheritBaseVisual",
                     "value": "false"
+                },
+                {
+                    "path": "look.tint",
+                    "value": "1,1,1,1"
+                },
+                {
+                    "path": "look.viewSize",
+                    "value": "1"
                 }
             ]
         },
@@ -113,6 +149,14 @@
                 {
                     "path": "inheritBaseVisual",
                     "value": "false"
+                },
+                {
+                    "path": "look.tint",
+                    "value": "1,1,1,1"
+                },
+                {
+                    "path": "look.viewSize",
+                    "value": "1"
                 }
             ]
         },
@@ -123,6 +167,10 @@
                 {
                     "path": "inheritBaseVisual",
                     "value": "false"
+                },
+                {
+                    "path": "look.tint",
+                    "value": "1,1,1,1"
                 }
             ]
         },
@@ -132,6 +180,22 @@
             "edits": [
                 {
                     "path": "inheritBaseVisual",
+                    "value": "false"
+                },
+                {
+                    "path": "look.tint",
+                    "value": "1,1,1,1"
+                },
+                {
+                    "path": "look.viewSize",
+                    "value": "1"
+                },
+                {
+                    "path": "baseHP.value",
+                    "value": "40"
+                },
+                {
+                    "path": "baseDamage.enabled",
                     "value": "false"
                 }
             ]
@@ -143,6 +207,14 @@
                 {
                     "path": "inheritBaseVisual",
                     "value": "false"
+                },
+                {
+                    "path": "look.tint",
+                    "value": "1,1,1,1"
+                },
+                {
+                    "path": "look.viewSize",
+                    "value": "1"
                 }
             ]
         },
@@ -153,6 +225,18 @@
                 {
                     "path": "inheritBaseVisual",
                     "value": "false"
+                },
+                {
+                    "path": "look.tint",
+                    "value": "1,1,1,1"
+                },
+                {
+                    "path": "baseDamage.enabled",
+                    "value": "false"
+                },
+                {
+                    "path": "baseDamage.value",
+                    "value": "0"
                 }
             ]
         },
@@ -162,6 +246,22 @@
             "edits": [
                 {
                     "path": "inheritBaseVisual",
+                    "value": "false"
+                },
+                {
+                    "path": "look.tint",
+                    "value": "1,1,1,1"
+                },
+                {
+                    "path": "look.viewSize",
+                    "value": "1"
+                },
+                {
+                    "path": "baseHP.value",
+                    "value": "45"
+                },
+                {
+                    "path": "baseDamage.enabled",
                     "value": "false"
                 }
             ]
@@ -1045,6 +1145,18 @@
                 {
                     "path": "mode",
                     "value": "Observe"
+                },
+                {
+                    "path": "toughnessLever",
+                    "value": "true"
+                },
+                {
+                    "path": "capHpLever",
+                    "value": "true"
+                },
+                {
+                    "path": "focusLever",
+                    "value": "true"
                 }
             ]
         },
@@ -1371,6 +1483,100 @@
                 {
                     "path": "combat.chargeCooldown",
                     "value": "2.2"
+                }
+            ]
+        },
+        {
+            "configId": "enemy.cutthroat_skiff",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "visual.tint",
+                    "value": "1,1,1,1"
+                }
+            ]
+        },
+        {
+            "configId": "enemy.boarding_barge",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "visual.tint",
+                    "value": "1,1,1,1"
+                },
+                {
+                    "path": "visual.viewSize",
+                    "value": "1"
+                },
+                {
+                    "path": "stats.baseHP",
+                    "value": "24"
+                },
+                {
+                    "path": "stats.baseDamage",
+                    "value": "8"
+                }
+            ]
+        },
+        {
+            "configId": "enemy.drowned_harrier",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "visual.tint",
+                    "value": "1,1,1,1"
+                }
+            ]
+        },
+        {
+            "configId": "enemy.drowned_pursuer",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "visual.tint",
+                    "value": "1,1,1,1"
+                }
+            ]
+        },
+        {
+            "configId": "enemy.manta_ray",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "stats.baseHP",
+                    "value": "22"
+                },
+                {
+                    "path": "stats.baseDamage",
+                    "value": "8"
+                }
+            ]
+        },
+        {
+            "configId": "enemy.kraken_spawn",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "stats.baseHP",
+                    "value": "28"
+                },
+                {
+                    "path": "stats.baseDamage",
+                    "value": "11"
+                }
+            ]
+        },
+        {
+            "configId": "enemy.gunner_cog",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "visual.tint",
+                    "value": "1,1,1,1"
+                },
+                {
+                    "path": "visual.viewSize",
+                    "value": "1"
                 }
             ]
         }

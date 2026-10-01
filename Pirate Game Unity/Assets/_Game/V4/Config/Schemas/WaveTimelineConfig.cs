@@ -220,9 +220,38 @@ namespace RoguePirates.V4.Config
     {
         [Tooltip("V5 M1 enemy flow (minute waves, floor, hordes, release). Off = V4 bands only (the v3-parity preset turns it off).")]
         public bool enabled;
+        [Tooltip("V5 M3d (owner's sketch, 1 Oct 2026): the floor and the rate multiplier follow a straight line from each wave to the next, so the waves are keyframes of a peak-and-valley curve. Off = each wave holds until the next (M1).")]
+        public bool smoothWaves;
         public List<MinuteWave> waves = new List<MinuteWave>();
         public List<HordeEvent> hordes = new List<HordeEvent>();
         public ReleaseSettings release = new ReleaseSettings();
+
+        /// <summary>
+        /// The floor share and the rate multiplier at <paramref name="seconds"/>: the current wave's, or with
+        /// <see cref="smoothWaves"/> on, a straight line towards the next wave's (V5 M3d). False before the first wave.
+        /// </summary>
+        public bool Sample(float seconds, out float floorShare, out float rateMultiplier)
+        {
+            floorShare = 0f;
+            rateMultiplier = 1f;
+            var current = WaveAt(seconds, out _);
+            if (current == null) return false;
+            floorShare = current.minAliveShare;
+            rateMultiplier = current.rateMultiplier;
+            if (!smoothWaves) return true;
+            MinuteWave next = null;
+            for (var i = 0; i < waves.Count; i++)
+            {
+                var w = waves[i];
+                if (w.startSeconds <= current.startSeconds) continue;
+                if (next == null || w.startSeconds < next.startSeconds) next = w;
+            }
+            if (next == null) return true;
+            var t = Mathf.Clamp01((seconds - current.startSeconds) / Mathf.Max(0.001f, next.startSeconds - current.startSeconds));
+            floorShare = Mathf.Lerp(current.minAliveShare, next.minAliveShare, t);
+            rateMultiplier = Mathf.Lerp(current.rateMultiplier, next.rateMultiplier, t);
+            return true;
+        }
 
         /// <summary>The wave current at <paramref name="seconds"/> (waves sorted by start time), or null.</summary>
         public MinuteWave WaveAt(float seconds, out int index)
@@ -251,6 +280,8 @@ namespace RoguePirates.V4.Config
         [Tooltip("No ambient spawns before this run time.")] public float graceSeconds = 2f;
         public int maxActiveEnemies = 80;
         [Tooltip("Slots kept free for Beacon and encounter spawns (ambient cap = max - reserved).")] public int reservedEncounterSlots = 8;
+        [Tooltip("V3 (on): a band's spawner overrides the attack timing (charge wind-up, cooldown, range) of its anchor enemy, so the same-looking enemy behaves differently by band. V5 M3d (owner, 1 Oct 2026): off, an enemy always attacks the way its own combat profile says.")]
+        public bool spawnerCombatOverrides = true;
         public float globalMinSpawnGapSeconds = 0.35f;
         public float spawnRetryIntervalSeconds = 0.35f;
         [Tooltip("A queued encounter (Beacon boss, Powder Cache) fails if it can't spawn within this many seconds.")] public float requiredEncounterTimeoutSeconds = 10f;

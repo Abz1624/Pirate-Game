@@ -35,9 +35,12 @@ namespace RoguePirates.V4.Presentation.Effects
         readonly HashSet<int> _prepared = new HashSet<int>();
         readonly Dictionary<int, (TrailRenderer[] trails, ParticleSystem[] particles)> _motion =
             new Dictionary<int, (TrailRenderer[], ParticleSystem[])>();
+        readonly EnemyViewTint _tint = new EnemyViewTint();
         GameObject _cube;
 
         public int LiveCount => _liveKey.Count;
+        /// <summary>V5 M3d: the views' tints (tests).</summary>
+        public EnemyViewTint Tint => _tint;
         /// <summary>Demo: the artists' per-enemy VFX profiles (trail, hit).</summary>
         public VfxProfilePlayer Profiles { get; set; }
 
@@ -71,7 +74,9 @@ namespace RoguePirates.V4.Presentation.Effects
             {
                 var view = Acquire(prefab, position, Quaternion.Euler(0f, def.visualYawOffset, 0f));
                 if (view == null) return null;
-                view.localScale = Vector3.one * scale;
+                view.localScale = Vector3.one * (scale * (def.viewSize > 0f ? def.viewSize : 1f));
+                _tint.Record(view); // its own materials, recorded on its first use (before any burn flash)
+                _tint.Apply(view, def.visualTint); // V5 M3d: a variant's own colours (pooled views share models)
                 EnemyViewAnimation.ApplySpawnVariation(view, animationSeed);
                 Profiles?.EnemyViewCreated(def.id, view);
                 return view;
@@ -125,6 +130,7 @@ namespace RoguePirates.V4.Presentation.Effects
 
         public void Dispose()
         {
+            _tint.Clear();
             if (_cube != null) Object.Destroy(_cube);
             _cube = null;
         }
