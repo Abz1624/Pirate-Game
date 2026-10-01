@@ -79,6 +79,7 @@ namespace RoguePirates.V4.Tests
             var uncapped = new List<(string id, float ratio)>();
             var capped = new List<(string id, float ratio)>();
             var collect = false;
+            var experimentHp = Object.FindFirstObjectByType<V4Game>().Config.Single<RoguePirates.V4.Config.ExperimentConfig>().enemyHpMultiplier;
             void OnEvents(IReadOnlyList<CombatEvent> batch)
             {
                 foreach (var e in batch)
@@ -86,7 +87,8 @@ namespace RoguePirates.V4.Tests
                     if (e.Kind != CombatEventKind.Spawned || (e.Flags & CombatEventFlags.AmbientSpawn) == 0) continue;
                     if (!world.TryGetAgentByUnitId(e.A, out var i) || world.Agents[i].isElite) continue;
                     var def = world.Definitions[world.Agents[i].definitionIndex];
-                    var expected = RoguePirates.V4.Difficulty.CurveEvaluator.EnemyHp(curve, def.baseHP, RunManager.Instance.ElapsedSeconds / 60f, 1, 0);
+                    // × the experiment's flat enemy HP (V5 M3c: an interim 0.85).
+                    var expected = RoguePirates.V4.Difficulty.CurveEvaluator.EnemyHp(curve, def.baseHP, RunManager.Instance.ElapsedSeconds / 60f, 1, 0) * experimentHp;
                     (collect ? capped : uncapped).Add((e.Tag, world.Agents[i].maxHp / expected));
                 }
             }

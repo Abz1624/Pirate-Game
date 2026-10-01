@@ -715,6 +715,14 @@
                 {
                     "path": "captainActiveHoldsWithoutTarget",
                     "value": "false"
+                },
+                {
+                    "path": "enemyHpMultiplier",
+                    "value": "1"
+                },
+                {
+                    "path": "enemyDamageMultiplier",
+                    "value": "1"
                 }
             ]
         },
@@ -776,6 +784,10 @@
             "configId": "progression.saltwind",
             "schemaVersion": 1,
             "edits": [
+                {
+                    "path": "xpToNextTable#count",
+                    "value": "0"
+                },
                 {
                     "path": "evolutionOffersWhenMaxed",
                     "value": "false"
@@ -1019,6 +1031,10 @@
                 {
                     "path": "active.pickupRadiusApplied",
                     "value": "false"
+                },
+                {
+                    "path": "baseHull",
+                    "value": "88"
                 }
             ]
         },

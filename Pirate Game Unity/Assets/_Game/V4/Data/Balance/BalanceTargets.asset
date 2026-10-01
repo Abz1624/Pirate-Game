@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.BalanceTargetsConfig
   configId: balance_targets.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v5-demo
+  balanceVersion: saltwind-v5-m3c
   personalities:
   - personalityId: first_timer
     deathMinute:
@@ -54,8 +54,8 @@ MonoBehaviour:
       min: 0.6
       max: 0.85
     levelAt10:
-      min: 21
-      max: 35
+      min: 10
+      max: 16
   - personalityId: glass_cannon
     deathMinute:
       min: 8
@@ -126,7 +126,7 @@ MonoBehaviour:
       max: 45
     level:
       min: 3
-      max: 9
+      max: 5
     damageTakenShare:
       min: NaN
       max: 0.35
@@ -141,8 +141,8 @@ MonoBehaviour:
       min: 18
       max: 90
     level:
-      min: 6
-      max: 13
+      min: 4
+      max: 6
     damageTakenShare:
       min: NaN
       max: 0.45
@@ -157,8 +157,8 @@ MonoBehaviour:
       min: 25
       max: 90
     level:
-      min: 9
-      max: 17
+      min: 5
+      max: 7
     damageTakenShare:
       min: NaN
       max: 0.6
@@ -173,8 +173,8 @@ MonoBehaviour:
       min: 25
       max: 100
     level:
-      min: 12
-      max: 20
+      min: 6
+      max: 8
     damageTakenShare:
       min: NaN
       max: 0.6
@@ -189,8 +189,8 @@ MonoBehaviour:
       min: 35
       max: 120
     level:
-      min: 14
-      max: 23
+      min: 7
+      max: 10
     damageTakenShare:
       min: NaN
       max: 0.7
@@ -205,8 +205,8 @@ MonoBehaviour:
       min: 35
       max: 130
     level:
-      min: 16
-      max: 26
+      min: 7
+      max: 11
     damageTakenShare:
       min: NaN
       max: 0.8
@@ -221,8 +221,8 @@ MonoBehaviour:
       min: 30
       max: 140
     level:
-      min: 15
-      max: 26
+      min: 8
+      max: 12
     damageTakenShare:
       min: NaN
       max: 0.9
@@ -237,8 +237,8 @@ MonoBehaviour:
       min: 50
       max: 160
     level:
-      min: 17
-      max: 29
+      min: 9
+      max: 13
     damageTakenShare:
       min: NaN
       max: 1
@@ -253,8 +253,8 @@ MonoBehaviour:
       min: 45
       max: 160
     level:
-      min: 18
-      max: 31
+      min: 10
+      max: 14
     damageTakenShare:
       min: NaN
       max: 1
@@ -269,8 +269,8 @@ MonoBehaviour:
       min: 55
       max: 180
     level:
-      min: 20
-      max: 33
+      min: 10
+      max: 16
     damageTakenShare:
       min: NaN
       max: 1.1
@@ -285,8 +285,8 @@ MonoBehaviour:
       min: 30
       max: 200
     level:
-      min: 21
-      max: 35
+      min: 11
+      max: 17
     damageTakenShare:
       min: NaN
       max: NaN
@@ -301,8 +301,8 @@ MonoBehaviour:
       min: 30
       max: 220
     level:
-      min: 22
-      max: 37
+      min: 12
+      max: 18
     damageTakenShare:
       min: NaN
       max: NaN
@@ -317,8 +317,8 @@ MonoBehaviour:
       min: 30
       max: 240
     level:
-      min: 23
-      max: 39
+      min: 13
+      max: 19
     damageTakenShare:
       min: NaN
       max: NaN
@@ -329,8 +329,8 @@ MonoBehaviour:
     min: 12
     max: 18
   levelUpGapTo10:
-    min: 20
-    max: 30
+    min: 37
+    max: 55
   fodderTtkSeconds:
     min: NaN
     max: 1

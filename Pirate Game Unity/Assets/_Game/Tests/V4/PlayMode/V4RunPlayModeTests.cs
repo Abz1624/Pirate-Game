@@ -640,7 +640,9 @@ namespace RoguePirates.V4.Tests
             yield return null;
             yield return null;
             Assert.IsFalse(RunManager.Instance.IsPaused, "picking resumes the run");
-            Assert.AreEqual(before + 1, Progress(), "the card was applied (a new weapon, an upgrade or a Logbook rank)");
+            // A new weapon or a Logbook rank adds 1; an upgrade card adds its rarity's levels (V5 M3c: 2/2/3/3/4).
+            var maxPerCard = game.Config.Single<RoguePirates.V4.Config.ProgressionConfig>().levelsPerRarity.Max();
+            Assert.That(Progress() - before, Is.InRange(1, maxPerCard), "the card was applied (a new weapon, an upgrade or a Logbook rank)");
             Assert.AreEqual(levels.Loadout.Count, Weapons().Slots.Count, "the weapon slots follow the loadout");
 
             var hank = game.Config.All<RoguePirates.V4.Config.CaptainConfig>().First(c => c.active != null && c.active.braceSeconds > 0f);

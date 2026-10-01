@@ -30,14 +30,18 @@ namespace RoguePirates.V4.Tests
         public void EveryRetunedValue_AndTheDirectorCurve_AreInTheData()
         {
             using var rt = new ConfigSetRuntime(Set);
+            // M3c's level rhythm replaced the pace targets and the evolution-era card levels after this retune.
+            var superseded = new HashSet<string>(XpTableTuner.TargetEdits.Select(e => "balance_targets.saltwind." + e.path))
+                { "progression.saltwind.evolutionUnlockLevel" }; // M3c: 5 (fewer level-ups)
             var wrong = DemoBaseline.Retune
+                .Where(e => !superseded.Contains(e.configId + "." + e.path))
                 .Where(e => Value(rt, e.configId, e.path) != Normal(rt, e.configId, e.path, e.value))
                 .Select(e => $"{e.configId}.{e.path} = {Value(rt, e.configId, e.path)} (retune {e.value})").ToList();
             CollectionAssert.IsEmpty(wrong);
             var curve = rt.Single<DirectorConfig>().onTrackGrowth;
             foreach (var (minute, growth) in DemoBaseline.OnTrackGrowth)
                 Assert.AreEqual(growth, curve.Evaluate(minute), 1e-3f, $"director growth at {minute}:00");
-            Assert.IsTrue(rt.Configs.Where(c => DemoBaseline.Retune.Any(e => e.configId == c.configId)).All(c => c.balanceVersion == "saltwind-v5-demo"), "retuned configs carry the balance version");
+            Assert.IsTrue(rt.Configs.Where(c => DemoBaseline.Retune.Any(e => e.configId == c.configId)).All(c => c.balanceVersion.StartsWith("saltwind-v5-")), "retuned configs carry a V5 balance version (the demo's, or a later phase's)");
         }
 
         [Test]

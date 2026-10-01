@@ -290,7 +290,7 @@ power grows faster than enemies late (the survivor-like power fantasy) without t
   for single-target and crowd scenarios.
 - G3.1 Weapon levels and evolutions: weapons keep 12 levels and logbooks 10–12 ranks (Q18). To make evolutions
   reachable (Q18b, confirmed): an evolution unlocks at weapon level 8 with its paired item and the evolved weapon keeps
-  levelling to 12; rarer cards grant more than one level (Rare +2, Legendary +3) with a pity rule. The Monte Carlo
+  levelling to 12; rarer cards grant more than one level (Rare +2, Legendary +3) with a pity rule (M3c, 1 Oct: 2/2/3/3/4 levels and the evolution from weapon level 5, for the slower level-up rhythm). The Monte Carlo
   simulator shows a focused build evolving around minute 7–9.
 - G3.2 Weapon parity band: each weapon's DPS per slot at levels 1, 4 and max within ±20% of its role's target curve
   (single-target, crowd, zone).
@@ -336,17 +336,22 @@ Added 1 Oct 2026 from the owner's note a and sketch ("1 1 2 3 5"): fewer level-u
 pressure work after the plan review (P6), so each can be reverted alone.
 
 - I3c.1 **XP table**: a per-level XP table in `ProgressionConfig` (empty = the formula, as before; the v3-parity preset
-  empties it). Target gaps between level-ups: the first five follow the Fibonacci series × 5 s (5, 5, 10, 15, 25 s), then
-  each gap grows 5 s up to 60 s (about 15 level-ups by 10:00 for the Steady Captain instead of 24). A pure Fibonacci
-  series would leave 3-minute gaps by level 9 and stall builds (`DECISIONS-WHILE-AWAY.md` D6).
-- G3c.1 A DevTools tuner fits the table to those gaps in the simulator (the Steady Captain, damped iterations).
-- G3c.2 M3's goals re-checked on the new rhythm: evolution reachability (a focused build evolves in most runs by
-  minute 8: the evolution level, levels per rarity or the pity rule move if it misses), weapon parity at the evolution
-  level, Logbook ranks, items by 10:00, Captains within ±10%; M2's outcome targets (run length, boss wins) held;
-  its level and pace targets replaced by the new gaps (±20%, owner 1 Oct).
-- T3c.x EditMode: the table and its extrapolation, parity (formula restored), the gap targets in the simulator report.
+  empties it). Target gaps: the first level with the first kill (~12 s), then 10, 10, 20, 30, 50 s (the Fibonacci series
+  × 10 s), then 60 s each: 4 level-ups in the first minute as before, then far fewer (about 13 by 10:00 instead of 24).
+  A first try in 5 s units gave minute 1 more level-ups and let one pickup chain cards (`DECISIONS-WHILE-AWAY.md` D6).
+- G3c.1 A DevTools tuner fits the table to those times in the simulator (unsinkable runs of the baseline personality,
+  from the curve, damped rounds scored on the mean time error over the 10-minute voyage).
+- G3c.2 M3's goals re-checked on the new rhythm and held: weapon cards grant 2/2/3/3/4 levels by rarity and the
+  evolution card comes from weapon level 5 (focused builds evolve in most runs by minute 6; supersedes M3's Q18b card
+  levels, a question for the owner), Roxie's hull 104 (Captains within ±10%), items by 10:00; M2's outcome targets (run
+  length, boss wins) held for every personality with an interim flat enemy scale (HP and damage × 0.85, not tied to
+  time) that M3d replaces; the pace targets follow the new gaps (±20%, owner 1 Oct).
+- T3c.x EditMode: the gap series, the table maths, the data, parity, each level near its target time on another seed,
+  every personality's outcome targets (two small known misses bounded), the level and pace targets.
 
 Automated check: the simulator report; a scripted run with the level and the clock at each level-up.
+Exit items carried to M3d: remove the interim enemy scale; clear the bounded known misses (Build Planner boss wins,
+per-minute crowd and kills from minute 5, the Reef Crab fight pushing the 3:00 elite beat).
 Owner playtest: do level-ups come less often without builds feeling starved?
 
 #### M3d — Pressure from enemy count, peaks and valleys, distinct enemies
@@ -374,6 +379,8 @@ that looks the same always behaves the same.
   Outcome targets (run length, boss wins) stay; per-minute alive and kills targets follow the new shape; new targets:
   some hull lost in minutes 1–3 (not on autopilot) and no minute after 5:00 that sinks an average build outright.
 - Every M3d change is off under the v3-parity preset (D16): the old curves, levers, waves and overrides (P7).
+- M3d also closes M3c's exit items: the interim flat enemy scale goes (fixed per-type stats replace it) and the bounded
+  known misses are cleared.
 - T3d.x EditMode: flat curves, lever limits, the keyframed floor, the distinct-look rule, the targets, parity;
   PlayMode: the crowd at the sketch's peaks and valleys (clock jumped), enemy HP the same at 1:00 and 8:00.
 

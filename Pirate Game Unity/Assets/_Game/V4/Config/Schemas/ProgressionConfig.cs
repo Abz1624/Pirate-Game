@@ -21,6 +21,8 @@ namespace RoguePirates.V4.Config
         public float xpCurveOffset = 5f;
         public double xpCurveMultiplier = 5.325000286102295;
         public double xpCurveExponent = 1.065000057220459;
+        [Tooltip("V5 M3c (owner, 1 Oct 2026): XP from level L to L + 1 for L = 0, 1, 2... While it has entries it replaces the curve above (and levelZeroToOneXp); past its end each level adds the average step of its last four levels. Empty = the curve (V3, V5 M2). Fitted by DevTools XpTableTuner to growing level-up gaps.")]
+        public int[] xpToNextTable = System.Array.Empty<int>();
 
         [Header("Cards")]
         [Tooltip("Cards per level-up.")] public int cardsPerLevel = 3;
@@ -76,6 +78,9 @@ namespace RoguePirates.V4.Config
             if (attemptsPerCard < 1) report.Error(this, nameof(attemptsPerCard), "must be at least 1");
             if (refreshesPerRun < 0) report.Error(this, nameof(refreshesPerRun), "must be 0 or more");
             if (levelZeroToOneXp < 1) report.Error(this, nameof(levelZeroToOneXp), "must be at least 1");
+            if (xpToNextTable != null)
+                for (var i = 0; i < xpToNextTable.Length; i++)
+                    if (xpToNextTable[i] < 1) report.Error(this, $"xpToNextTable[{i}]", "must be at least 1");
             if (rarityBaseWeights == null || rarityBaseWeights.Length != 5) report.Error(this, nameof(rarityBaseWeights), "needs 5 values (Common to Legendary)");
             else report.WeightsNotZero(this, nameof(rarityBaseWeights), rarityBaseWeights);
             if (rarityMultipliers == null || rarityMultipliers.Length != 5) report.Error(this, nameof(rarityMultipliers), "needs 5 values");

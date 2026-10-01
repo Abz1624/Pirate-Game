@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ExperimentConfig
   configId: experiment
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3c
   legacyProfileId: D_FULL_COMBAT_V2
   weaponSlotCap: 6
   startingWeaponCount: 1
@@ -27,7 +27,7 @@ MonoBehaviour:
   captainActiveHoldsWithoutTarget: 1
   weaponEvolutionsEnabled: 1
   spawnDensityMultiplier: 1
-  enemyHpMultiplier: 1
-  enemyDamageMultiplier: 1
+  enemyHpMultiplier: 0.85
+  enemyDamageMultiplier: 0.85
   playerVfxIntensityMultiplier: 1
   telemetryEnabled: 1

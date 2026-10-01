@@ -82,9 +82,12 @@ namespace RoguePirates.V4.DevTools.Balance
         public bool Alive => Hull > 0f;
         public float HullShare => MaxHull > 0f ? Hull / MaxHull : 0f;
 
+        /// <summary>Tuning harness (V5 M3c): the ship takes no damage, so a run measures every level's time.</summary>
+        public bool Unsinkable;
+
         public void Damage(float amount)
         {
-            if (amount <= 0f || Hull <= 0f) return;
+            if (amount <= 0f || Hull <= 0f || Unsinkable) return;
             Hull = Mathf.Max(0f, Hull - amount);
             Items.NotifyPlayerTookDamage();
         }

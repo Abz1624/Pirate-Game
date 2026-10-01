@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.CaptainConfig
   configId: captain.roxie
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m3c
   captainKey: roxie
   legacyId: 5
   displayName: Roxie
@@ -25,7 +25,7 @@ MonoBehaviour:
   activeSummary: "Ride the Gale (15s) \u2014 +40% speed 2.5s + bonus chain"
   themeColor: {r: 0.20392157, g: 0.52156866, b: 0.89411765, a: 1}
   menuOrder: 5
-  baseHull: 88
+  baseHull: 104
   baseMoveSpeed: 6.5
   startingWeaponId: lightning_mast
   v3StartingWeaponId: swivel_guns

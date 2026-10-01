@@ -1,0 +1,5 @@
+level 1 at ~52 s
+level 2 at ~66 s
+level 3 at ~72 s
+end: run 98 s, level 3, weapons 3, levels 3/1/1
+targets (level: s): 1 first kill (~12), 2 +10, 3 +10, 4 +20, 5 +30, 6 +50, then +60 each (12, 22, 32, 52, 82, 132, 192)

@@ -132,6 +132,8 @@ namespace RoguePirates.V4.DevTools.Balance
         }
 
         public SimBuild Build => _b;
+        /// <summary>Tuning harness (V5 M3c): the ship takes no damage (the level rhythm is fitted without deaths).</summary>
+        public bool Unsinkable { get => _b.Unsinkable; set => _b.Unsinkable = value; }
         /// <summary>Every hit the ship takes (time, damage, the enemy's id) — calibration and tests.</summary>
         public Action<float, float, string> HitTaken;
         /// <summary>Calibration harness (the V4 trace player's switches): sink an arena's enemy this long after it spawns (−1 = off).</summary>

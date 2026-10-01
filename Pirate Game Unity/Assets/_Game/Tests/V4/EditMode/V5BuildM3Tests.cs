@@ -88,11 +88,13 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void EvolutionCard_ComesFromWeaponLevel6_WithItsItem()
         {
-            // M3 set level 8; the demo-baseline retune (XP ×0.5) moved it to 6 so focused builds still evolve in most runs.
+            // M3 set level 8; the demo-baseline retune (XP ×0.5) moved it to 6 and M3c (fewer level-ups) to 5, so focused
+            // builds still evolve in most runs.
             using var rt = new ConfigSetRuntime(Set);
-            Assert.AreEqual(6, rt.Single<ProgressionConfig>().evolutionUnlockLevel);
-            Assert.IsFalse(DealsEvolution(rt, 5), "not at level 5");
-            Assert.IsTrue(DealsEvolution(rt, 6), "from level 6");
+            var evo = rt.Single<ProgressionConfig>().evolutionUnlockLevel;
+            Assert.AreEqual(5, evo);
+            Assert.IsFalse(DealsEvolution(rt, evo - 1), "not below the evolution level");
+            Assert.IsTrue(DealsEvolution(rt, evo), "from the evolution level");
             using var parity = V4DifficultyM10Tests.Parity();
             Assert.IsFalse(DealsEvolution(parity, 8), "V3 (the parity preset): only at the max level");
             Assert.IsTrue(DealsEvolution(parity, parity.Single<ProgressionConfig>().maxWeaponLevel));
@@ -106,7 +108,7 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void TakingARareCard_ThroughTheProgressionModule_GrantsTwoLevels()
+        public void TakingARareCard_ThroughTheProgressionModule_GrantsItsLevels()
         {
             using var rt = new ConfigSetRuntime(Set);
             var b = Build(rt, out var c);
@@ -114,8 +116,9 @@ namespace RoguePirates.V4.Tests
             var w = c.Weapon(id);
             var card = Generator(rt).WeaponUpgradeCard(w, b.WeaponLevel(id), 2, new Rng(4));
             b.Progression.Select(card);
-            Assert.AreEqual(3, b.WeaponLevel(id), "Rare: level 1 → 3 through Select");
-            Assert.AreEqual(3, b.Progression.Loadout.Weapons[b.Progression.Loadout.IndexOf(id)].Level, "the loadout agrees");
+            var rare = 1 + rt.Single<ProgressionConfig>().levelsPerRarity[2];
+            Assert.AreEqual(rare, b.WeaponLevel(id), "Rare: its levels through Select");
+            Assert.AreEqual(rare, b.Progression.Loadout.Weapons[b.Progression.Loadout.IndexOf(id)].Level, "the loadout agrees");
         }
 
         [Test]
@@ -143,7 +146,8 @@ namespace RoguePirates.V4.Tests
             using var rt = new ConfigSetRuntime(Set);
             var g = Generator(rt);
             var w = rt.All<WeaponConfig>().First(x => x.databaseOrder >= 0);
-            var levels = new[] { 1, 1, 2, 2, 3 };
+            var levels = rt.Single<ProgressionConfig>().levelsPerRarity; // M3: 1/1/2/2/3; M3c (fewer level-ups): 2/2/3/3/4
+            Assert.Less(levels[0], levels[4], "rarer cards grant more levels");
             for (var rarity = 0; rarity < 5; rarity++)
             {
                 var card = g.WeaponUpgradeCard(w, 3, rarity, new Rng(rarity));
@@ -156,7 +160,7 @@ namespace RoguePirates.V4.Tests
             loadout.Equip(w.weaponId);
             var legendary = g.WeaponUpgradeCard(w, 1, 4, new Rng(3));
             loadout.ApplyUpgradePackage(0, legendary.Lines, legendary.NextLevel - legendary.CurrentLevel);
-            Assert.AreEqual(4, loadout.Weapons[0].Level);
+            Assert.AreEqual(Mathf.Min(w.maxLevel, 1 + levels[4]), loadout.Weapons[0].Level);
             using var parity = V4DifficultyM10Tests.Parity();
             Assert.AreEqual(4, Generator(parity).WeaponUpgradeCard(w, 3, 4, new Rng(1)).NextLevel, "V3: one level whatever the rarity");
         }
@@ -261,11 +265,12 @@ namespace RoguePirates.V4.Tests
         {
             using var rt = new ConfigSetRuntime(Set);
             var stage = rt.Single<StageContentConfig>();
-            Assert.AreEqual((0.4f, 0), (stage.evolutionItemChance, stage.evolutionItemMinWeaponLevel), "0 = from the evolution card's level (6)");
-            Assert.That(EvolutionItemShare(rt, 6, false, false), Is.GreaterThan(0.35f), "about 40% (plus the ordinary roll's own chance)");
-            Assert.Less(EvolutionItemShare(rt, 5, false, false), 0.15f, "below level 6 only the ordinary roll");
-            Assert.Less(EvolutionItemShare(rt, 6, true, false), 0.15f, "not when the item is already carried");
-            Assert.Less(EvolutionItemShare(rt, 6, false, true), 0.15f, "not when the weapon has evolved");
+            var evo = rt.Single<ProgressionConfig>().evolutionUnlockLevel;
+            Assert.AreEqual((0.4f, 0), (stage.evolutionItemChance, stage.evolutionItemMinWeaponLevel), "0 = from the evolution card's level");
+            Assert.That(EvolutionItemShare(rt, evo, false, false), Is.GreaterThan(0.35f), "about 40% (plus the ordinary roll's own chance)");
+            Assert.Less(EvolutionItemShare(rt, evo - 1, false, false), 0.15f, "below the evolution level only the ordinary roll");
+            Assert.Less(EvolutionItemShare(rt, evo, true, false), 0.15f, "not when the item is already carried");
+            Assert.Less(EvolutionItemShare(rt, evo, false, true), 0.15f, "not when the weapon has evolved");
             using var parity = V4DifficultyM10Tests.Parity();
             Assert.Less(EvolutionItemShare(parity, 8, false, false), 0.15f, "V3: off");
         }
@@ -309,7 +314,7 @@ namespace RoguePirates.V4.Tests
             var stage = rt.Single<StageContentConfig>();
             var p = rt.Single<ProgressionConfig>();
             Assert.AreEqual(0, stage.evolutionItemMinWeaponLevel, "0 = follow the card");
-            Assert.AreEqual(6, ChestEconomy.EvolutionItemMinLevel(stage, p));
+            Assert.AreEqual(p.evolutionUnlockLevel, ChestEconomy.EvolutionItemMinLevel(stage, p));
             p.evolutionUnlockLevel = 10;
             Assert.AreEqual(10, ChestEconomy.EvolutionItemMinLevel(stage, p), "the two cannot disagree");
         }

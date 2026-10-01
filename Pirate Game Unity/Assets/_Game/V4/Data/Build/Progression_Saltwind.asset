@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ProgressionConfig
   configId: progression.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v5-demo
+  balanceVersion: saltwind-v5-m3c
   weaponSlots: 6
   logbookSlots: 4
   startLevel: 0
@@ -22,6 +22,7 @@ MonoBehaviour:
   xpCurveOffset: 2
   xpCurveMultiplier: 0.7
   xpCurveExponent: 1.5
+  xpToNextTable: 0100000004000000060000000b00000013000000260000003600000036000000410000004d0000004d0000004d000000500000007d000000
   cardsPerLevel: 3
   refreshesPerRun: 2
   attemptsPerCard: 24
@@ -32,8 +33,8 @@ MonoBehaviour:
   ownedLogbookWeight: 1.5
   maxWeaponLevel: 12
   evolutionOffersWhenMaxed: 1
-  evolutionUnlockLevel: 6
-  levelsPerRarity: 0100000001000000020000000200000003000000
+  evolutionUnlockLevel: 5
+  levelsPerRarity: 0200000002000000030000000300000004000000
   rarePityLevelUps: 6
   pityMinRarity: 2
   rarityBaseWeights:
