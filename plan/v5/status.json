@@ -1,15 +1,15 @@
 {
   "updated": "1 Oct 2026",
-  "statusLine": "You are away: building M3b-M3e from your notes a-k (decisions logged); M3b done, awaiting your playtest",
+  "statusLine": "You are away: M3b and M3c built (awaiting your playtest); M3d (count-based pressure) next; decisions logged",
   "statusOk": false,
   "facts": [
     [
       "Progress",
-      "M0–M3 done; M3b built and committed (awaiting your playtest); M3c-M3e next"
+      "M0–M3 done; M3b and M3c built and committed (awaiting your playtest); M3d next"
     ],
     [
       "Tests",
-      "EditMode 374/374 · PlayMode 56/57 (one known intermittent test)"
+      "EditMode 381/381 · PlayMode 57/57"
     ],
     [
       "Gate",
@@ -38,6 +38,10 @@
       "chip": "done 1 Oct · playtested"
     },
     "M3b": {
+      "state": "playtest",
+      "chip": "built 1 Oct · awaiting your playtest"
+    },
+    "M3c": {
       "state": "playtest",
       "chip": "built 1 Oct · awaiting your playtest"
     }
@@ -152,12 +156,18 @@
       "when": "1 Oct",
       "what": "<strong>M3b feel fixes built</strong> (awaiting your playtest): an island hit pushes the ship back off the shore and costs 5 hull at most every 2 s (through Brace! and the Keel, with the usual hit flash); unblown powder kegs sink after 45 s; the Captain's special ability has a round touch button in the joystick's art above the weapon grid, with a cooldown sweep (touch devices only). Review: no blockers; 9 code findings and 4 more on the fixes, all fixed (the button and the Captain bar could hide for good; the bounce was being cancelled by the reverse-speed limit). EditMode 374/374, PlayMode 56/57 (a known intermittent test).",
       "commit": "40d0dde7"
+    },
+    {
+      "when": "1 Oct",
+      "what": "<strong>M3c level-up rhythm built</strong> (awaiting your playtest): your \"1 1 2 3 5\" as gaps of 10, 10, 20, 30, 50 s after the first kill, then 60 s: 4 level-ups in the first minute as before, about 13 by 10:00 (was ~24), through a per-level XP table fitted in the simulator. To keep builds strong with fewer picks: weapon cards grant 2/2/3/3/4 levels, evolutions from weapon level 5, Roxie's hull 104, and an interim flat enemy scale (×0.85) that M3d replaces. Simulator: 2 of 76 targets missed (the same two as M3), median run 10.6 min, focused builds evolve in 65% of runs. Review: one blocker (other personalities' boss wins) and several majors, all fixed and re-verified. EditMode 381/381, PlayMode 57/57.",
+      "commit": "8107f965"
     }
   ],
   "todos": {
     "next": [
       "<strong>Read what I decided while you were away</strong>: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code> (every decision with its reason and the alternatives, and five questions for you).",
       "<strong>Playtest M3b</strong>: steer into an island (bounce, 5 hull at most every 2 s), drop powder kegs and wait 45 s (unblown ones sink), use the round ability button on a phone build.",
+      "<strong>Playtest M3c</strong> (level-up rhythm): the first level with the first kill, then gaps of 10, 10, 20, 30, 50 s, then 60 s (about 13 level-ups by 10:00, was ~24); weapon cards worth more levels; evolutions from weapon level 5. Does the slower rhythm feel right, and do builds still feel strong?",
       "<strong>M2 and M3 decisions</strong>: targets, the Turtle, evolution level, Captains, synergy items, Epic +2, volley and crit pieces, pity and refreshes (details on each phase's page and in TODO-FOR-YOU.md).",
       "<strong>Get the reference phone</strong> (Galaxy A15 or A16 4G) before M7: today's build needs 344 MB of memory where the phone allows about 256 MB.",
       "<strong>Accounts</strong> (list and costs in the answers): Railway by M9; a domain, a Google Cloud project and Resend by M10b; Helius by M11; Firebase by M19."
@@ -407,6 +417,27 @@
       "check": "Independent review (v5-reviewer), plan and code, two passes",
       "result": "no blockers; plan 7 majors + 5 minors; code 5 majors + 4 minors, then 1 major + 3 minors → fixed or recorded",
       "evidence": "plan/v5/phase-03b-feel/PLAN.md → Independent review"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3c",
+      "check": "EditMode and PlayMode suites",
+      "result": "381/381 and 57/57",
+      "evidence": "plan/v5/phase-03c-levels/editmode.json, playmode.json"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3c",
+      "check": "Simulator report (200 runs per personality, seed 1)",
+      "result": "2 of 76 targets missed (as M3); median run 10.6 min; level times within ±25% of the targets",
+      "evidence": "plan/v5/phase-03c-levels/model-report.md, level-times.md"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M3c",
+      "check": "Independent review (v5-reviewer), two passes",
+      "result": "1 blocker + 4 majors + 6 minors, then 2 majors + 6 minors → fixed or recorded",
+      "evidence": "plan/v5/phase-03c-levels/PLAN.md"
     }
   ],
   "phaseResults": {
@@ -490,6 +521,20 @@
       {
         "title": "Playable check",
         "text": "The button above the weapon grid, a real press firing All Guns! (17 s cooldown), one island hit costing exactly 5 hull, 0 game errors (<code>plan/v5/phase-03b-feel/playable/</code>)."
+      }
+    ],
+    "M3c": [
+      {
+        "title": "What changed",
+        "text": "A per-level XP table: the first level with the first kill, then 10, 10, 20, 30, 50 s, then 60 s (about 13 level-ups by 10:00). Weapon cards 2/2/3/3/4 levels, evolution from weapon level 5, Roxie's hull 104, an interim enemy scale ×0.85. The v3-parity preset restores the old values."
+      },
+      {
+        "title": "Simulator",
+        "text": "2 of 76 targets missed (as M3); median run 10.6 min; focused builds evolve in 65% of runs by minute 5.6."
+      },
+      {
+        "title": "Tests",
+        "text": "EditMode 381/381, PlayMode 57/57; new tests over every personality's outcomes and each level's time."
       }
     ]
   },
@@ -1161,6 +1206,40 @@
           "where": "Button",
           "finding": "Covered the SaltWind weapon grid; invisible when that HUD is off.",
           "fix": "On the canvas root, above the weapon grid, safe-area insets."
+        }
+      ]
+    },
+    {
+      "title": "M3c level-up rhythm review (1 Oct)",
+      "summary": "<strong>1 blocker</strong> (other personalities' boss wins fell out of band; only the baseline was tested), 4 majors (the tuner did not converge; minute 1 got more level-ups; the card levels override Q18b; evidence), 6 minors; then on the fixes 2 majors (evidence written to M3b's folder; a PlayMode test) and 6 minors. All fixed or recorded.",
+      "rows": [
+        {
+          "n": "1",
+          "sev": "Blocker",
+          "where": "Outcomes",
+          "finding": "Casual Cruiser and Build Planner boss wins out of band.",
+          "fix": "Interim enemy scale ×0.85, evolution level 5, a test over every personality."
+        },
+        {
+          "n": "2",
+          "sev": "Major",
+          "where": "Tuner",
+          "finding": "Did not converge; table not reproducible.",
+          "fix": "Fitted from the curve, scored on mean time error over the voyage; converged 4.9%."
+        },
+        {
+          "n": "3",
+          "sev": "Major",
+          "where": "Minute 1",
+          "finding": "5 level-ups instead of 4; one pickup chained cards.",
+          "fix": "10 s units: 4 in minute 1, none chained."
+        },
+        {
+          "n": "4",
+          "sev": "Major",
+          "where": "Card levels",
+          "finding": "Overrides Q18b.",
+          "fix": "Your question 4."
         }
       ]
     }
