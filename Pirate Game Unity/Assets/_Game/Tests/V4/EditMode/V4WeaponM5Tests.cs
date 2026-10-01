@@ -227,15 +227,18 @@ namespace RoguePirates.V4.Tests
             // V3's pellet lifetime (the demo baseline: 0.33 s for its shorter range).
             Assert.AreEqual((false, 42f, 1.05f, 1.2f, false, false, false), (fan.quantityAddsPellets, fan.minSpeed, fan.hitRadius, fan.lifeSeconds, fan.muzzlePerPellet, fan.trackPelletTargets, fan.splashOnDespawn));
             // R-21: the level damage factor only where V3 applied it.
-            CollectionAssert.AreEquivalent(new[] { "deck_cannons", "harpoon_gun", "long_nine", "swivel_guns" }, w.Values.Where(c => c.levelDamageFactor).Select(c => c.weaponId));
+            CollectionAssert.AreEquivalent(new[] { "deck_cannons", "harpoon_gun", "long_nine", "swivel_guns" }, w.Values.Where(c => c.levelDamageFactor && !V5Weapons.Contains(c.weaponId)).Select(c => c.weaponId));
         }
+
+        /// <summary>V5 M4's new weapons (not in V3; V5WeaponMechanicsTests covers them).</summary>
+        static readonly string[] V5Weapons = { "anchor_flail", "chainshot", "siren_bell", "ramming_prow" };
 
         [Test]
         public void Evolutions_AreConfig_WithTheirBaseWeaponAndEffect()
         {
             using var h = new Harness();
-            var e = h.Config.All<WeaponEvolutionConfig>().ToDictionary(c => c.evolutionId);
-            Assert.AreEqual(6, e.Count);
+            var e = h.Config.All<WeaponEvolutionConfig>().Where(c => c.effect != ConfigEnums.EvolutionEffect.Empowered).ToDictionary(c => c.evolutionId);
+            Assert.AreEqual(6, e.Count, "V3's six (V5 M4's Empowered ones: V5WeaponMechanicsTests)");
             // M16: V3's evolution catalog is deleted; its six rows, as they were.
             var rows = new[]
             {
@@ -548,7 +551,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(rules.itemAttackSpeedAppliedOnce && rules.carryCooldownOvershoot && rules.salvoUsesLightningWeapon && rules.salvoLevelFactor == 1f, "R-22, R-88");
             Assert.AreEqual(40f, fixedRun.Config.All<WeaponEvolutionConfig>().First(e => e.evolutionId == "stormshot_cannon").laneBurst.laneArcDegrees, "R-18");
 
-            CollectionAssert.AreEquivalent(new[] { "deck_cannons", "harpoon_gun", "long_nine", "swivel_guns" }, v3.Config.All<WeaponConfig>().Where(c => c.levelDamageFactor).Select(c => c.weaponId));
+            CollectionAssert.AreEquivalent(new[] { "deck_cannons", "harpoon_gun", "long_nine", "swivel_guns" }, v3.Config.All<WeaponConfig>().Where(c => c.levelDamageFactor && !V5Weapons.Contains(c.weaponId)).Select(c => c.weaponId));
             Assert.IsFalse(W(v3, "broadside_battery").fan.quantityAddsPellets);
             Assert.IsFalse(W(v3, "lightning_mast").areaStrike.chain);
             Assert.IsTrue(W(v3, "swivel_guns").projectile.v3FullCooldownAfterFirstShot);

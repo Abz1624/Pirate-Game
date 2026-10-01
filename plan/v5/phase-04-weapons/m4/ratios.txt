@@ -1,0 +1,10 @@
+ok: 4 weapons, 8 evolutions, 8 items
+anchor_flail: damage x0.543 (now 6.52), growth x2.00, worst 0.63 -> 0.17
+chainshot: damage x1.493 (now 13.44), growth x1.00, worst 0.43 -> 0.11
+siren_bell: damage x2.932 (now 35.19), growth x2.00, worst 1.21 -> 0.15
+ramming_prow: damage x0.847 (now 11.86), growth x2.00, worst 0.29 -> 0.16
+
+anchor_flail Crowd: Lv1=1.19 Lv4=0.92 Lv6=0.98 Lv8=0.99 Lv12=0.96
+chainshot SingleTarget: Lv1=0.89 Lv4=0.93 Lv6=1.13 Lv8=1.02 Lv12=1.12
+siren_bell Crowd: Lv1=1.17 Lv4=0.91 Lv6=0.95 Lv8=0.96 Lv12=0.94
+ramming_prow Crowd: Lv1=1.18 Lv4=0.91 Lv6=0.97 Lv8=0.98 Lv12=0.95

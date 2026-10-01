@@ -33,6 +33,14 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: fdf3a2cd22a594d8199cf7e099952a2d, type: 3}
   - id: swivel_guns
     sprite: {fileID: 21300000, guid: e79fb99fc2c174443bbbff78ba82ff63, type: 3}
+  - id: anchor_flail
+    sprite: {fileID: 21300000, guid: e002b0706aae84183ad9e1a1c091faab, type: 3}
+  - id: chainshot
+    sprite: {fileID: 21300000, guid: a024a598d32da4d16a9cdc5128a906ee, type: 3}
+  - id: siren_bell
+    sprite: {fileID: 21300000, guid: 70f0b662cc0b743a19815573537024d3, type: 3}
+  - id: ramming_prow
+    sprite: {fileID: 21300000, guid: e393d96a935ee438c862c3f06a29b227, type: 3}
   items:
   - id: admirals_ledger
     sprite: {fileID: 21300000, guid: 247089ed9f7a84d3ba0bb87ff455c145, type: 3}
@@ -72,3 +80,19 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 1ddbe4e774c41446eaccbc63e2f4de31, type: 3}
   - id: stormglass
     sprite: {fileID: 21300000, guid: 4e5dda0c241fe4ba7bf17bb2b5741993, type: 3}
+  - id: rusted_shackle
+    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+  - id: chain_locker
+    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+  - id: siren_scale
+    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+  - id: iron_figurehead
+    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+  - id: whale_oil_barrel
+    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+  - id: powder_horn_of_the_line
+    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+  - id: siege_quadrant
+    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+  - id: swivel_mount
+    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}

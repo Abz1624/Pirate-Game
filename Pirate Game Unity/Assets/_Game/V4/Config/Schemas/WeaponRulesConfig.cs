@@ -29,6 +29,8 @@ namespace RoguePirates.V4.Config
         [Tooltip("Elites take this share of a knockback's distance (bosses are not moved).")] [Range(0f, 1f)] public float eliteKnockbackShare = 0.5f;
         [Tooltip("The most one hit can push a regular enemy (m), whatever the upgrades.")] [Min(0f)] public float maxKnockbackMeters = 3f;
         [Tooltip("Seconds a knockback takes to push its distance.")] [Min(0.01f)] public float knockbackSeconds = 0.15f;
+        [Tooltip("V5 M4, balance model only: the share of the time the ship boosts, for weapons that strike only while boosting (2.5 s of boost every 8.5 s: it assumes the player boosts whenever the boost is ready).")]
+        [Range(0f, 1f)] public float modelBoostUptime = 0.3f;
 
         [Header("Effects (M6, presentation only)")]
         [Tooltip("Juice-settings weapon binding whose impact scale sizes every keg-style blast (V3: Powder Kegs').")]

@@ -23,7 +23,7 @@ namespace RoguePirates.V4.Config
         /// <summary>What an evolution changes in its base weapon's behavior.</summary>
         /// <summary>The hit and kill effect a weapon's hits play (V3 CombatVfxController: cannon weapons a cannon impact, powder kegs nothing).</summary>
         public enum WeaponHitEffect { Standard = 0, CannonImpact = 1, None = 2 }
-        public enum EvolutionEffect { None = 0, LaneWithBurst = 1, OppositeSideFollowUp = 2, WakeKegs = 3, PulsingOrbit = 4, WideConeWithPatches = 5, JumpAndDelayedStrike = 6 }
+        public enum EvolutionEffect { None = 0, LaneWithBurst = 1, OppositeSideFollowUp = 2, WakeKegs = 3, PulsingOrbit = 4, WideConeWithPatches = 5, JumpAndDelayedStrike = 6, Empowered = 7 }
         public enum UpgradeAxis { Damage, Cooldown, Quantity, Speed, Size, Duration, Knockback, Crit, CritDamage, Pierce }
         public enum SpawnMode { Single = 0, Sequence = 1, Burst = 2, Group = 3, Continuous = 4, TimedWave = 5, Triggered = 6 }
         public enum SpawnGroupLayout { Cluster = 0, Ring = 1, Line = 2, Arc = 3, FlankPair = 4, Scatter = 5 }

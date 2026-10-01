@@ -1,0 +1,191 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06723e8a88f2b914086ea82003602abc, type: 3}
+  m_Name: chainshot
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponConfig
+  configId: weapon.chainshot
+  schemaVersion: 1
+  balanceVersion: saltwind-v5-m4
+  weaponId: chainshot
+  displayName: Chainshot
+  description: Spinning chained balls that tear through a line of foes and slow them.
+  behaviorLine: Fires forward, passes through
+  pattern: 0
+  behavior: 0
+  targeting: 0
+  tags: []
+  baseDamage: 13.439162
+  baseCooldown: 1.5
+  range: 16
+  baseQuantity: 1
+  projectileSpeed: 18
+  duration: 2
+  size: 1.15
+  knockback: 1
+  fanSpreadDegrees: 50
+  targetArcDegrees: 360
+  preferElite: 0
+  preferHighestHull: 0
+  maxLevel: 12
+  validUpgradeAxes: 00000000010000000200000003000000
+  upgradeAxes:
+  - axis: 0
+    baseIncrement: 0.12592857
+    offerWeight: 1.2
+    maxAccumulated: 3.148212
+    displayFormat: 
+  - axis: 1
+    baseIncrement: 0.078705296
+    offerWeight: 1
+    maxAccumulated: 0.94446456
+    displayFormat: 
+  - axis: 2
+    baseIncrement: 1
+    offerWeight: 0.8
+    maxAccumulated: 4
+    displayFormat: 
+  - axis: 3
+    baseIncrement: 0.094446406
+    offerWeight: 0.7
+    maxAccumulated: 2.3611593
+    displayFormat: 
+  databaseOrder: 51
+  procCoefficient: 1
+  projectileColor: {r: 1, g: 0.82, b: 0.25, a: 1}
+  aimOverlayColor: {r: 0.85, g: 0.85, b: 0.92, a: 1}
+  levelDamageFactor: 1
+  runtimeCatalogWeapon: 0
+  projectileVisual:
+    prefab: {fileID: 7836255817071307116, guid: 00e79e7cf55e34082a44dbce82256ab6, type: 3}
+    scaleMultiplier: 1
+    radiusMultiplier: 1
+  hitEffect: 1
+  projectile:
+    burstShots: 1
+    burstGapSeconds: 0.18
+    damageMultiplier: 1
+    sizeBase: 0.75
+    sizeMultiplier: 1
+    minSize: 0
+    lifeSeconds: 1
+    spreadStepDegrees: 4
+    leadWithActualSpeed: 1
+    homing: 0
+    closeDefenseTargeting: 0
+    tarOnHit: 0
+    tarSlow: 0.25
+    tarSlowBoss: 0.125
+    controlSecondsPerHit: 1.2
+    splashOnDespawn: 1
+    v3FullCooldownAfterFirstShot: 0
+    pierce: 2
+    slowFraction: 0.25
+    slowSeconds: 2
+  lane:
+    enabled: 0
+    beam: 0
+    beamHalfWidth: 0.32
+    volleySpreadDegrees: 4
+  fan:
+    basePellets: 3
+    quantityAddsPellets: 1
+    damageMultiplier: 0.6
+    minSpeed: 0
+    sizeBase: 0.38
+    hitRadius: 0.8
+    lifeSeconds: 2.5
+    muzzlePerPellet: 1
+    trackPelletTargets: 1
+    sideMuzzleOffset: 0.85
+    splashOnDespawn: 1
+  orbit:
+    baseBlades: 2
+    orbitRadius: 5
+    heightOffset: 0.35
+    angularSpeedDegrees: 180
+    hitRadius: 2.75
+    hitIntervalSeconds: 0.12
+    volleyHitIntervalSeconds: 0.096
+    damageMultiplier: 0.35
+    knockbackMeters: 0
+    perTargetIntervalSeconds: 0
+  stream:
+    tickIntervalSeconds: 0.08
+    streamSeconds: 2.75
+    rechargeMinSeconds: 0.55
+    rechargeCooldownFactor: 0.75
+    forwardOffset: 1.65
+  trail:
+    backOffset: 1.4
+    height: 0.2
+    radiusBase: 2.8
+    damageMultiplier: 0.65
+  mine:
+    backOffset: 1.5
+    height: 0.55
+    armSeconds: 0.2
+    triggerRadius: 3
+    blastRadius: 3.2
+    blastDamageMultiplier: 0.72
+    eliteReachBonus: 0.75
+    lifeSeconds: 45
+    sinkSeconds: 1.5
+  areaStrike:
+    radiusBase: 3.5
+    radiusPerQuantity: 0.5
+    shockSeconds: 0.5
+    chain: 1
+    chainTargets: 4
+    chainTargetsPerQuantity: 1
+    chainRange: 7
+    chainFalloff: 0.85
+    chainStrikeRadius: 1.4
+  aura:
+    radiusBase: 4
+    damageMultiplier: 0.35
+    curseSeconds: 0.4
+    slowFraction: 0
+    slowSeconds: 0
+    requiresBoost: 0
+    forwardOffset: 0
+    knockbackMeters: 0
+  predictedArea:
+    impactDelaySeconds: 0.6
+    telegraphHeight: 0.2
+    v3ImpactEffectDraws: 0
+    telegraphMatchesImpact: 1
+  summon:
+    backOffset: 5.5
+    lateralOffset: 2.4
+    spawnDepth: -0.7
+    surfaceHeight: 0.12
+    spawnSeconds: 0.55
+    firstStrikeDelay: 0.15
+    lifetimeSeconds: 9
+    moveSpeed: 9.5
+    strikeRange: 1.35
+    strikeInterval: 0.55
+  visual:
+    cannonMuzzle: 1
+    fallbackMuzzleScale: 1
+    aimShape: 0
+    aimTargetFanDegrees: 22
+    aimMinAreaRadius: 2
+    firePulseSeconds: 0.18
+    firePulseFades: 0
+    orbitRingTinted: 0
+    orbitRingColor: {r: 1, g: 0.88, b: 0.28, a: 1}
+    summonModel: {fileID: 0}
+    summonModelScale: 0.42
+    orbitModel: {fileID: 0}
+    orbitModelScale: 1
+    noHitHighlight: 0

@@ -127,7 +127,7 @@ namespace RoguePirates.V4.Tests
                 .Select(g => AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(g)))
                 .ToDictionary(w => w.weaponId);
             // V3 WeaponJuiceController: the cannon muzzle for these ids; Broadside's 1.12 muzzle scale fallback.
-            var cannon = new[] { "long_nine", "deck_cannons", "broadside_battery", "swivel_guns", "mortar" };
+            var cannon = new[] { "long_nine", "deck_cannons", "broadside_battery", "swivel_guns", "mortar", "chainshot" }; // V5 M4: Chainshot is a cannon
             foreach (var w in configs.Values)
             {
                 Assert.AreEqual(cannon.Contains(w.weaponId), w.visual.cannonMuzzle, w.weaponId + " muzzle");

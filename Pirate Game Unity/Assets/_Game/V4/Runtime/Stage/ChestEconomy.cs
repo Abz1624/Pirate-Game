@@ -40,6 +40,8 @@ namespace RoguePirates.V4.Stage
 
         /// <summary>V5 M3: the run's items (a chest's evolution-item chance skips items already carried).</summary>
         public Func<string, bool> HasItem;
+        /// <summary>V5 M4: a weapon is unlocked (with <c>chestPoolOwnedEvolutionsOnly</c>, its evolution item may drop); null = all.</summary>
+        public Func<string, bool> WeaponUnlocked;
 
         /// <summary>Chests bought this run (the price steps with it).</summary>
         public int Purchases { get; private set; }
@@ -47,8 +49,19 @@ namespace RoguePirates.V4.Stage
         StageContentConfig Stage => _config?.Invoke()?.Single<StageContentConfig>();
 
         /// <summary>V3's chest pool: the items in it, in V3's catalog order (rolls index it).</summary>
-        IReadOnlyList<ItemConfig> Pool => _pool ??= _config?.Invoke()?.All<ItemConfig>()
+        IReadOnlyList<ItemConfig> Pool => WeaponUnlocked != null && Stage != null && Stage.chestPoolOwnedEvolutionsOnly ? Owned() : _pool ??= _config?.Invoke()?.All<ItemConfig>()
             .Where(i => i.inChestPool).OrderBy(i => i.chestPoolOrder).ToList() ?? new List<ItemConfig>();
+
+        /// <summary>V5 M4: the pool without the evolution items of locked weapons (rebuilt per chest: unlocks change between
+        /// runs, and chests are few).</summary>
+        List<ItemConfig> Owned()
+        {
+            var config = _config?.Invoke();
+            if (config == null) return new List<ItemConfig>();
+            var evolutions = config.All<WeaponEvolutionConfig>().ToList();
+            return config.All<ItemConfig>().Where(i => i.inChestPool && evolutions.All(e => e.requiredItemId != i.itemId || e.baseWeapon == null || WeaponUnlocked(e.baseWeapon.weaponId)))
+                .OrderBy(i => i.chestPoolOrder).ToList();
+        }
 
         /// <summary>V3 StageBalanceProfileExportCodec.ChestPriceForPurchaseIndex: the base price, then ceil(increment × growth^n).</summary>
         public static int ChestPrice(StageContentConfig s, int completedPurchases)

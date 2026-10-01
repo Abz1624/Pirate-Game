@@ -244,6 +244,7 @@ namespace RoguePirates.V4
             _shell.Stage = _stage;
             _stage.Economy.AddItem = _build.Items.TryAddItem;
             _stage.Economy.HasItem = _build.Items.HasItem; // V5 M3: the evolution-item chance
+            _stage.Economy.WeaponUnlocked = Ports.ContentPort.IsWeaponUnlocked; // V5 M4: evolution items of locked weapons stay out of chests
             _stage.Rewards.Telemetry = _telemetry;
             var unlocks = new Rewards.UnlockService(() => AppRoot.Instance != null ? AppRoot.Instance.Save : null, () => _config); // M12
             _damageShare = new Rewards.DamageShareTracker(); // M12: results damage share from the weapon hit records

@@ -65,6 +65,14 @@ MonoBehaviour:
       marksCost: 100
     - contentId: harpoon_gun
       marksCost: 100
+    - contentId: anchor_flail
+      marksCost: 120
+    - contentId: chainshot
+      marksCost: 130
+    - contentId: siren_bell
+      marksCost: 150
+    - contentId: ramming_prow
+      marksCost: 160
     captainUnlocks:
     - contentId: brine
       marksCost: 100
@@ -92,6 +100,7 @@ MonoBehaviour:
   chestInteractRange: 6
   chestPlanUsesLoadout: 1
   evolutionItemChance: 0.4
+  chestPoolOwnedEvolutionsOnly: 1
   evolutionItemMinWeaponLevel: 0
   forgetChestSkipWhenLeaving: 1
   promptReleasesUsedLandmark: 1

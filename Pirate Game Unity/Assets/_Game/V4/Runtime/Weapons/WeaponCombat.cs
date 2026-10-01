@@ -16,6 +16,11 @@ namespace RoguePirates.V4.Weapons
         public float DamageBonus = 1f;
         public int QuantityBonus;
         public float CooldownMult = 1f, SpeedMult = 1f, SizeMult = 1f, DurationMult = 1f, KnockbackMult = 1f;
+        /// <summary>V5 M4: an Empowered evolution's damage factor, extra pierce and extra slow (1, 0, 0 otherwise).</summary>
+        public float EvolutionDamage = 1f, ExtraSlow;
+        public int ExtraPierce;
+        /// <summary>V5 M4: an Empowered evolution's extra shots on a burst weapon (Swivel Battery), which fires bursts, not volleys.</summary>
+        public int ExtraBurstShots;
 
         public float CooldownTimer;
         /// <summary>Shots of the current burst still to fire (Swivel Guns' second shot).</summary>
@@ -40,7 +45,7 @@ namespace RoguePirates.V4.Weapons
             w.Config.baseCooldown * w.CooldownMult / (m.AttackSpeed * itemAttackSpeed);
 
         public static float LevelMult(WeaponSlot w) =>
-            w.Config.levelDamageFactor ? w.DamageBonus * w.Level * 0.1f + 1f : w.DamageBonus;
+            (w.Config.levelDamageFactor ? w.DamageBonus * w.Level * 0.1f + 1f : w.DamageBonus) * w.EvolutionDamage;
 
         public static float ProjectileSpeed(WeaponSlot w, IWeaponModifiers m) =>
             w.Config.projectileSpeed * w.SpeedMult * m.ProjectileSpeed;
@@ -50,6 +55,29 @@ namespace RoguePirates.V4.Weapons
         /// <summary>Volley size: base + upgrades + the Quantity stat (V3 does not clamp this one).</summary>
         public static int VolleyQuantity(WeaponSlot w, IWeaponModifiers m) =>
             w.Config.baseQuantity + w.QuantityBonus + Mathf.FloorToInt(m.Quantity);
+
+        /// <summary>
+        /// V5 M4: an Empowered evolution's numbers on top of the record's upgrades (the game's manager and the simulator
+        /// call it after copying the upgrades, every sync, so it never stacks). Extra quantity lengthens a burst weapon's
+        /// burst (its volley is one shot) and adds to everyone else's volley.
+        /// </summary>
+        public static void ApplyEvolution(WeaponSlot slot)
+        {
+            slot.EvolutionDamage = 1f;
+            slot.ExtraPierce = 0;
+            slot.ExtraSlow = 0f;
+            slot.ExtraBurstShots = 0;
+            if (slot.EvolutionEffect != ConfigEnums.EvolutionEffect.Empowered) return;
+            var e = slot.Evolution.empower;
+            if (slot.Config != null && slot.Config.projectile.burstShots > 1) slot.ExtraBurstShots = e.extraQuantity;
+            else slot.QuantityBonus += e.extraQuantity;
+            slot.EvolutionDamage = e.damageMultiplier;
+            slot.CooldownMult *= e.cooldownMultiplier;
+            slot.SizeMult *= e.sizeMultiplier;
+            slot.KnockbackMult *= e.knockbackMultiplier;
+            slot.ExtraPierce = e.extraPierce;
+            slot.ExtraSlow = e.extraSlow;
+        }
 
         public static int ProjectileQuantity(WeaponSlot w, IWeaponModifiers m) =>
             w.Config == null ? 1 : Mathf.Max(1, w.Config.baseQuantity + w.QuantityBonus + Mathf.FloorToInt(m.Quantity));
@@ -199,6 +227,19 @@ namespace RoguePirates.V4.Weapons
             var dx = target.x - center.x;
             var dz = target.z - center.z;
             return dx * dx + dz * dz <= radius * radius;
+        }
+
+        /// <summary>A slot's projectile traits: its config's plus an Empowered evolution's pierce and slow.</summary>
+        public ProjectileTraits TraitsOf(WeaponSlot w)
+        {
+            var t = TraitsOf(w.Config);
+            t.Pierce = Mathf.Min(7, t.Pierce + w.ExtraPierce);
+            if (w.ExtraSlow > 0f)
+            {
+                t.SlowFraction = Mathf.Min(0.9f, t.SlowFraction + w.ExtraSlow);
+                if (t.SlowSeconds <= 0f) t.SlowSeconds = 1.5f;
+            }
+            return t;
         }
 
         public ProjectileTraits TraitsOf(WeaponConfig config)

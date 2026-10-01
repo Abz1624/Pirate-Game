@@ -1,0 +1,83 @@
+{
+  "status": "completed",
+  "duration": 3.08,
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.CombatProfiles_AreTheRunsCopies_OfTheConfig",
+      "Status": "Passed",
+      "Duration": 0.501776,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.EditingAnArchetype_RewritesItsDefinitionAndItsAliases",
+      "Status": "Passed",
+      "Duration": 0.7018857,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.EveryRuntimeEnemy_HasAModel_AndTheArchetypesCarryV3sProxies",
+      "Status": "Passed",
+      "Duration": 0.2048981,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.NoV4Code_UsesContentIds",
+      "Status": "Passed",
+      "Duration": 0.6253989,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.Resolver_RecordsWhichLayerSetEachValue",
+      "Status": "Passed",
+      "Duration": 0.017352,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.RuntimeDatabase_AppendsTheAliases_InV3sOrder(True)",
+      "Status": "Passed",
+      "Duration": 0.1436017,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.RuntimeDatabase_AppendsTheAliases_InV3sOrder(False)",
+      "Status": "Passed",
+      "Duration": 0.1295971,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.RuntimeDatabase_ConfiguresEveryEnemy_AndAppendsTheV4OnlyOnes",
+      "Status": "Passed",
+      "Duration": 0.1590088,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.SpecialistAliases_UseTheirTemplateModel_ByDefault",
+      "Status": "Passed",
+      "Duration": 0.1260551,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.WarningTiers_FromConfig_EqualV3sTable",
+      "Status": "Passed",
+      "Duration": 0.1302202,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

@@ -163,7 +163,7 @@ namespace RoguePirates.V4.Weapons
         WeaponFireOutcome FirePattern(WeaponSlot w)
         {
             var behavior = BehaviorOf(w);
-            if (behavior == null) return WeaponFireOutcome.NoTarget;
+            if (behavior == null || !behavior.CanFire(w)) return WeaponFireOutcome.NoTarget;
             if (!_c.Targeting.TryResolveTarget(w.Config, out _, out _)
                 && behavior.NeedsTarget
                 && !_c.Hooks.TryResolveShipAim(w.Id, out _))
@@ -322,6 +322,7 @@ namespace RoguePirates.V4.Weapons
                 slot.SizeMult = e.SizeMult;
                 slot.DurationMult = e.DurationMult;
                 slot.KnockbackMult = e.KnockbackMult;
+                WeaponStatResolver.ApplyEvolution(slot);
                 _rebuild.Add(slot);
             }
 

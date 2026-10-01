@@ -36,7 +36,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(1, set.configs.OfType<ProgressionConfig>().Count());
             Assert.AreEqual(1, set.configs.OfType<OfferWeightsConfig>().Count());
             Assert.AreEqual(10, set.configs.OfType<LogbookConfig>().Count());
-            Assert.AreEqual(19, set.configs.OfType<ItemConfig>().Count());
+            Assert.AreEqual(27, set.configs.OfType<ItemConfig>().Count(), "V3's 19 and V5 M4's eight evolution items");
             Assert.AreEqual(1, set.configs.OfType<PowerupConfig>().Count());
             Assert.AreEqual(6, set.configs.OfType<CaptainConfig>().Count());
             Assert.AreEqual(1, set.configs.OfType<UnlockConfig>().Count());

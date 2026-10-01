@@ -95,6 +95,8 @@ namespace RoguePirates.V4.Config
         public bool chestPlanUsesLoadout;
         [Tooltip("V5 M3 (evolutions reachable): chance a chest gives the missing evolution item of a carried, unevolved weapon at evolutionItemMinWeaponLevel or higher, instead of its rarity roll. 0 = off (V3).")]
         [Range(0f, 1f)] public float evolutionItemChance;
+        [Tooltip("V5 M4 (off = V3): the chest pool leaves out the evolution items of weapons you have not unlocked (with 19 weapons their items would crowd it).")]
+        public bool chestPoolOwnedEvolutionsOnly = true;
         [Tooltip("Weapon level from which the chance applies; 0 = the level the evolution card needs (ProgressionConfig.evolutionUnlockLevel, or the max level).")]
         public int evolutionItemMinWeaponLevel;
         [Tooltip("R-96 fix (off = V3): a skipped chest is offered again after the ship leaves its range and comes back (V3 dropped the target before it could forget the skip, so only skipping another chest cleared it).")]

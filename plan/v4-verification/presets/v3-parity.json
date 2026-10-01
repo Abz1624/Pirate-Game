@@ -779,6 +779,14 @@
                 {
                     "path": "evolutionItemChance",
                     "value": "0"
+                },
+                {
+                    "path": "sharedProfile.weaponUnlocks#count",
+                    "value": "4"
+                },
+                {
+                    "path": "chestPoolOwnedEvolutionsOnly",
+                    "value": "false"
                 }
             ]
         },
@@ -837,6 +845,10 @@
                 {
                     "path": "captainLockRule",
                     "value": "V3Ownership"
+                },
+                {
+                    "path": "weaponUnlocks#count",
+                    "value": "4"
                 }
             ]
         },
@@ -1577,6 +1589,126 @@
                 {
                     "path": "visual.viewSize",
                     "value": "1"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.anchor_flail",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "databaseOrder",
+                    "value": "-1"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.chainshot",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "databaseOrder",
+                    "value": "-1"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.siren_bell",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "databaseOrder",
+                    "value": "-1"
+                }
+            ]
+        },
+        {
+            "configId": "weapon.ramming_prow",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "databaseOrder",
+                    "value": "-1"
+                }
+            ]
+        },
+        {
+            "configId": "item.rusted_shackle",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.chain_locker",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.siren_scale",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.iron_figurehead",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.whale_oil_barrel",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.powder_horn_of_the_line",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.siege_quadrant",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.swivel_mount",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
                 }
             ]
         }

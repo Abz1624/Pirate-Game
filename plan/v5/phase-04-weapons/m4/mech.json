@@ -1,0 +1,104 @@
+{
+  "status": "completed",
+  "duration": 5.53,
+  "summary": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.AnAura_PulsesWithoutATarget_SlowsWhatItHits_AndCursesOnlyWhenSet",
+      "Status": "Passed",
+      "Duration": 1.1285172,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.AnEmpoweredEvolution_AddsItsNumbers_OnTopOfTheUpgrades",
+      "Status": "Passed",
+      "Duration": 0.1004891,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.APerTargetOrbit_HitsEachEnemyOncePerInterval_AndKnocksBack",
+      "Status": "Passed",
+      "Duration": 0.1347758,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.APiercingShot_HitsOneMorePerPierce_EachEnemyOnce_AndSlows",
+      "Status": "Passed",
+      "Duration": 0.1389849,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.APlainShot_StopsAtItsFirstHit",
+      "Status": "Passed",
+      "Duration": 0.1907051,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheAnchorFlail_HitsEachEnemyOncePerInterval_AndKnocksBack",
+      "Status": "Passed",
+      "Duration": 0.2328505,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheFlame_ReachesTheConesRange_AndSpreadsToItsArc",
+      "Status": "Passed",
+      "Duration": 1.1438155,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheNewWeapons_AreBuyable_Offerable_AndEachEvolutionIsReachable",
+      "Status": "Passed",
+      "Duration": 0.5794882,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheProjectileBlock_CarriesPierceAndSlow_IntoItsShots",
+      "Status": "Passed",
+      "Duration": 0.3659584,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheRammingProw_StrikesAheadOnlyWhileBoosting_AndShoves",
+      "Status": "Passed",
+      "Duration": 0.3286771,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheShipState_IsNotBoosting_ByDefault",
+      "Status": "Passed",
+      "Duration": 0.0002751,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheSirenBell_SlowsAroundTheShip_AndItsChoir_WiderAndHarder",
+      "Status": "Passed",
+      "Duration": 0.275897,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TwoOrbitWeapons_EachHaveTheirBlades",
+      "Status": "Passed",
+      "Duration": 0.273231,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

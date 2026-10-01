@@ -75,18 +75,53 @@ Not in M4a (step 2, with their own tests): pull toward the ship, split-on-hit sh
 burst at the end of a lane, a delayed second pulse, the Ram behaviour and its wake (review #1); the balance model's
 per-behaviour terms (#3, #4); prices, offer-pool and chest-pool effects (#6-#9).
 
-## M4 proper: open for the owner (questions 17-26)
+## M4 proper: built (1 Oct, after "proceed till M8")
 
-Design numbers from `Rogue_Pirates_Combat_Content_v3_1.md` §4.7 set each weapon's shape and cadence; its damage comes
-from the M3 parity band (V4 damage runs at about 0.2-0.45× the design's), the existing ten weapons' role targets frozen
-(review #4, #5).
+Decisions on the owner's behalf (D31, `DECISIONS-WHILE-AWAY.md`): prices on today's ladder (120/130/150/160 Rum), the
+design's rank milestones dropped, the evolution level stays 5, the Ramming Prow strikes only while boosting, offer
+weights unchanged. Placeholder art (a cannonball for the anchor, other weapons' icons, the Grapeshot Pouch icon for the
+eight items) until the art guide's assets (M6).
 
-| Weapon | Behaviour | Design (rank 1) | Evolution (needs) |
-|---|---|---|---|
-| Anchor Flail | Orbit (own model), per-target 0.75 s, knockback 2 m | 1 anchor, radius 3 m, 100°/s, 35 contact damage | Kraken Chain (Rusted Shackle) |
-| Chainshot | Projectile, width 1.5 m, 2 pierces, 25% slow 2 s | every 1.5 s, 20 damage, 16 m, 18 m/s, 1 s life | Bar Shot Barrage (Chain Locker) |
-| Siren Bell | Aura, 20% slow 1.5 s | every 3 s, 26 damage within 5 m | Drowned Choir (Siren Scale) |
-| Ramming Prow | new Ram behaviour while boosting | new design | Ironclad Ram (Iron Figurehead) |
+| Item | What | Where |
+|---|---|---|
+| W1 Anchor Flail | Orbit, one anchor (model drawn at the blade, pooled and prewarmed), radius 3.5 m, hits each enemy once per 0.75 s and knocks it 2 m; the per-target interval follows the cooldown (Cooldown cards and attack speed shorten it); upgrades damage, cooldown, size, knockback (no quantity: the second anchor is Kraken Chain) | `Data/Weapons/anchor_flail.asset`, `OrbitBehavior.TickPerTarget`, `WeaponVfxPresenter.PrewarmModels` |
+| W2 Chainshot | Projectile, 0.75 m wide, passes through 2 more enemies, slows 25% for 2 s; cannon muzzle; no Knockback card (projectiles do not knock back) | `chainshot.asset` |
+| W3 Siren Bell | Aura, 5 m, every 3 s, slows 20% for 1.5 s, no curse; upgrades damage, cooldown, size (no Duration card: it would only lengthen the slow) | `siren_bell.asset` |
+| W4 Ramming Prow | Aura that pulses only while the ship boosts (it waits, cooldown kept and no target search, otherwise: `WeaponBehavior.CanFire`), 2.5 m ahead of the bow, 3 m radius, every 0.3 s, shoves 2.5 m; new `aura.requiresBoost`, `forwardOffset`, `knockbackMeters` | `ramming_prow.asset`, `AuraBehavior` |
+| E1 Empowered evolutions | One generic effect (`EvolutionEffect.Empowered`, `EmpowerBlock`): extra quantity (a burst weapon's burst, everyone else's volley), damage ×, cooldown ×, size ×, knockback ×, extra pierce, extra slow, applied on top of the level-ups at every loadout sync (not stacked), by the game and the simulator alike; one that changes nothing fails validation | `WeaponEvolutionConfig.cs`, `WeaponStatResolver.ApplyEvolution`, `LevelMult`, `WeaponCombat.TraitsOf(slot)`, `SimBuild.SyncSlots` |
+| E2 Eight evolutions | Kraken Chain (Flail: +1 anchor, ×1.3 damage, ×1.25 size and knockback), Bar Shot Barrage (Chainshot: +2 shots, +2 pierce, ×1.2), Drowned Choir (Bell: ×1.4 size, ×0.75 cooldown, +10% slow, ×1.25), Ironclad Ram (Prow: ×1.6, ×1.35 size, ×1.3 knockback, ×0.8 cooldown), Whaler's Volley (Harpoon: +1 shot, +1 pierce, ×1.25), Ship of the Line (Long Nine: ×1.5, ×1.5 width, ×0.85 cooldown), Siege Bombard (Mortar: ×1.35, ×1.35 size, ×0.85 cooldown), Swivel Battery (Swivel Guns: +2 shots, ×0.8 cooldown, ×1.15) | `Data/Evolutions/` |
+| E3 Eight items | Uncommon chest items, one per evolution, each within the M3 Uncommon band (7-11% by the build model): Rusted Shackle (+12% size), Chain Locker (+10% projectile speed), Siren Scale (+9% attack speed), Iron Figurehead, Whale Oil Barrel and Powder Horn of the Line (+9% damage), Siege Quadrant (+12% size), Swivel Mount (+9% attack speed). In the chest pool like V3's six, but (new switch `chestPoolOwnedEvolutionsOnly`, on; off in the parity preset) a chest leaves out the evolution items of weapons you have not unlocked, so they do not crowd out today's Uncommons | `Data/Build/Items/`, `ChestEconomy.Pool` |
+| B1 Balance | Damage and growth set by the M3 weapon model against the weapons a regular player owns, held fixed (`WeaponModel.TuneOnly`; the model counts the Prow only while boosting, `WeaponRulesConfig.modelBoostUptime` 0.3). All four within ±20% of their role at levels 1, 4, 6, 8 and 12. The model does not see pierce, slows or knockback (review #3): those are the weapons' identity, to judge in the playtest | `tune.txt`, `ratios.txt` |
+| B2 Simulator | A regular player owns the starters and every weapon priced at most `BalanceTargetsConfig.regularPlayerRum` (100): the dearer new weapons are checked by the model test; the chest pool follows the game's ownership rule for the player modelled (a fresh save: starters only); the simulator applies Empowered evolutions as the game does | `SimContent.cs`, `SimBuild.cs` |
+| B3 Parity preset | The new weapons out of the offers, the new items out of the chest pool, the unlock lists cut back to V3's four | `plan/v4-verification/presets/v3-parity.json` |
+| T | `V5WeaponMechanicsTests` (+8: content reachable; Empowered numbers applied once and removed; the Bell slows and its Choir reaches further; the Prow only while boosting and only ahead; the Flail ticked against an enemy, once per 0.75 s with a shove each, faster with a Cooldown card; Kraken Chain swings two anchors; Swivel Battery's burst and Whaler's Volley fire more shots; Siege Bombard's shell and Ship of the Line's beam are wider); `V5BuildM3Tests.TheNewWeapons_AreWithin20Percent_OfTheirRole`; guard tests extended (palette, item count, evolution table, cannon muzzles) | `Tests/V4/EditMode/` |
 
-Evolutions for Harpoon Gun, Long Nine, Mortar and Swivel Guns, each with a new item (Whale Oil Barrel, Powder Horn of
-the Line, Siege Quadrant, Swivel Mount), and the unlock prices, wait for the owner's answers.
+The content was written by a one-off Editor tool, kept as `tools/V5WeaponsBatch1.cs.txt` (V4 code may not name
+content ids, so it is not left in `Assets/`). The model's tune and the final ratios: `m4/tune-and-ratios.txt` (levels 1, 4,
+6, 8, 12: Flail 1.19/0.92/0.98/0.99/0.96, Chainshot 0.89/0.93/1.13/1.02/1.12, Bell 1.17/0.91/0.95/0.96/0.94, Prow
+1.18/0.91/0.97/0.98/0.95).
+
+M4 results: EditMode 432/432 after the First-Timer tolerance note (431/432 before it: the recorded question-9 miss at 10.03 min, see DECISIONS), PlayMode 60/60 (`m4/editmode.json`, `m4/playmode.json`). Weapon check (`tools/weapon-check.ps1`, `m4/playable/`, 9 weapons and evolutions, 6 s each): every weapon fires and kills, evolutions apply (Kraken Chain +1 anchor, Bar Shot +2 shots, Choir and Ironclad ×1.4/×1.35 size, Swivel Battery +2 burst shots), 0 game errors; the plain Prow scored no kill in its 6 s (the scripted boost), its evolved form did.
+
+Not in M4 (recorded): the flame-stream prewarm (D27) is dropped, the flame going to the owner's VFX artist (owner, 1 Oct);
+the Prow's aim overlay is drawn around the ship, not at the bow (cosmetic, with the art pass); placeholder icons (Grapeshot
+Pouch's for the eight items, other weapons' for the four) until the art guide's icons (M6).
+
+Code review (1 Oct, 2 blockers, 6 majors, 6 minors), all fixed or recorded:
+
+| # | Finding | Done |
+|---|---|---|
+| 1 | No green full run on the final data; `ratios.txt` cited but missing | Full suites run once on the final data (`m4/editmode.json`, `m4/playmode.json`); ratios written |
+| 2 | Swivel Battery's extra shots did nothing (bursts ignore quantity) | Extra quantity lengthens a burst weapon's burst (`ExtraBurstShots`); test |
+| 3 | Rusted Shackle's knockback stat is read by nothing | +12% size |
+| 4 | The simulator ignored Empowered evolutions | `WeaponStatResolver.ApplyEvolution`, shared by the manager and `SimBuild` |
+| 5 | Eight more Uncommons crowd the chest for everyone | Evolution items of locked weapons stay out of chests (game and simulator) |
+| 6 | Dead cards: Flail Cooldown, Bell Duration, Chainshot Knockback | The per-target interval follows the cooldown; Bell without Duration; Chainshot without Knockback; re-tuned |
+| 7 | Weak tests | Flail ticked; a play test per Empowered evolution kind |
+| 8 | Module Lab check, flame prewarm, orbit-model prewarm | Weapon check with screenshots (`tools/weapon-check.ps1`, `m4/playable/`); flame prewarm dropped (VFX artist); orbit models prewarmed at bind |
+| 9 | The waiting Prow searched for a target every frame | `CanFire` before the search |
+| 10 | D31 and the plan disagreed | D31 corrected |
+| 11 | The simulator's 100 Rum was a constant | `BalanceTargetsConfig.regularPlayerRum` |
+| 12 | Prow overlay; uptime assumption | Overlay recorded above; the 0.3 uptime (boosting whenever ready) in its tooltip |
+| 13 | Placeholder icons | Recorded above (M6) |
+| 14 | A neutral Empowered evolution passes validation | Validation error |

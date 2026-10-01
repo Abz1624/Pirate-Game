@@ -57,6 +57,20 @@ namespace RoguePirates.V4.Config
         public float delayedSeconds = 0.85f, delayedRadiusFactor = 0.8f, delayedDamageMultiplier = 0.55f, delayedProcMultiplier = 0.5f;
     }
 
+    /// <summary>V5 M4: an evolution that empowers its weapon's own behaviour (more of it, harder, wider) instead of a
+    /// bespoke mechanic. Each value applies on top of the weapon's level-ups.</summary>
+    [Serializable]
+    public sealed class EmpowerBlock
+    {
+        [Tooltip("Added to the weapon's quantity (shots, blades, pellets).")] [Min(0)] public int extraQuantity;
+        [Tooltip("Damage × this.")] [Min(0f)] public float damageMultiplier = 1f;
+        [Tooltip("Cooldown × this (below 1 = faster).")] [Min(0.05f)] public float cooldownMultiplier = 1f;
+        [Tooltip("Size (radius, area, width) × this.")] [Min(0f)] public float sizeMultiplier = 1f;
+        [Tooltip("Knockback distance × this.")] [Min(0f)] public float knockbackMultiplier = 1f;
+        [Tooltip("Added to a projectile's pierce.")] [Min(0)] public int extraPierce;
+        [Tooltip("Added to the weapon's slow (share of speed; the enemy caps still hold).")] [Range(0f, 0.9f)] public float extraSlow;
+    }
+
     /// <summary>
     /// A weapon evolution (M5, from V3's WeaponEvolutionCatalog). Which weapons are evolved still comes from the legacy
     /// level system until M9; this asset says what the evolution does to its weapon's behavior, with its numbers.
@@ -75,12 +89,17 @@ namespace RoguePirates.V4.Config
         public OrbitPulseBlock orbitPulse = new OrbitPulseBlock();
         public WideConeBlock wideCone = new WideConeBlock();
         public JumpStrikeBlock jumpStrike = new JumpStrikeBlock();
+        [Tooltip("V5 M4: the Empowered effect's numbers.")] public EmpowerBlock empower = new EmpowerBlock();
 
         public override void Validate(ConfigValidationReport report)
         {
             if (string.IsNullOrWhiteSpace(evolutionId)) report.Error(this, nameof(evolutionId), "missing evolution id");
             if (baseWeapon == null) report.Error(this, nameof(baseWeapon), "missing base weapon");
             if (effect == ConfigEnums.EvolutionEffect.None) report.Error(this, nameof(effect), "no effect");
+            if (effect == ConfigEnums.EvolutionEffect.Empowered && empower != null && empower.extraQuantity == 0 && empower.extraPierce == 0
+                && empower.extraSlow <= 0f && empower.damageMultiplier == 1f && empower.cooldownMultiplier == 1f && empower.sizeMultiplier == 1f
+                && empower.knockbackMultiplier == 1f)
+                report.Error(this, nameof(empower), "an Empowered evolution that changes nothing");
             if (wideCone != null && wideCone.patchesAlongStream)
             {
                 report.Positive(this, "wideCone.streamPatchIntervalSeconds", wideCone.streamPatchIntervalSeconds);

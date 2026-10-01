@@ -31,5 +31,14 @@ MonoBehaviour:
     rumCost: 100
   - weaponId: harpoon_gun
     rumCost: 100
+  - weaponId: anchor_flail
+    rumCost: 120
+  - weaponId: chainshot
+    rumCost: 130
+  - weaponId: siren_bell
+    rumCost: 150
+  - weaponId: ramming_prow
+    rumCost: 160
   firstConquestWeaponId: swivel_guns
   startingWeaponRule: 1
+  captainLockRule: 1

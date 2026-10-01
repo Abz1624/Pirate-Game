@@ -860,6 +860,19 @@ namespace RoguePirates.V4.Presentation.Weapons
             if (_skiffModel != null) EnsurePool(KindSkiff, _skiffModel, PrewarmSkiff);
         }
 
+        /// <summary>V5 M4: pools and prewarms the weapons' own models (orbit models: one per blade and two spare), so the
+        /// first use mid-run creates nothing.</summary>
+        public void PrewarmModels(IEnumerable<WeaponConfig> weapons)
+        {
+            if (_pools == null || weapons == null) return;
+            foreach (var w in weapons)
+            {
+                if (w?.visual == null) continue;
+                if (w.behavior == ConfigEnums.WeaponBehavior.Orbit && w.visual.orbitModel != null)
+                    EnsurePool(KindOrbitModel, w.visual.orbitModel, Mathf.Max(1, w.orbit.baseBlades) + 2);
+            }
+        }
+
         void RegisterMuzzle(GameObject prefab)
         {
             if (prefab == null) return;

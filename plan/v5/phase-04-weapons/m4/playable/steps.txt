@@ -1,0 +1,9 @@
+anchor_flail: kills before 0; anchor_flail evolution none quantity+0 burst+0 size x1.00, kills 5
+anchor_flail:kraken_chain: kills before 5; anchor_flail evolution kraken_chain quantity+1 burst+0 size x1.25, kills 17
+chainshot: kills before 17; chainshot evolution none quantity+0 burst+0 size x1.00, kills 24
+chainshot:bar_shot_barrage: kills before 25; chainshot evolution bar_shot_barrage quantity+2 burst+0 size x1.00, kills 36
+siren_bell: kills before 37; siren_bell evolution none quantity+0 burst+0 size x1.00, kills 53
+siren_bell:drowned_choir: kills before 53; siren_bell evolution drowned_choir quantity+0 burst+0 size x1.40, kills 59
+ramming_prow: kills before 61; ramming_prow evolution none quantity+0 burst+0 size x1.00, kills 61
+ramming_prow:ironclad_ram: kills before 61; ramming_prow evolution ironclad_ram quantity+0 burst+0 size x1.35, kills 65
+swivel_guns:swivel_battery: kills before 65; swivel_guns evolution swivel_battery quantity+0 burst+2 size x1.00, kills 77

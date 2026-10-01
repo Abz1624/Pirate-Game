@@ -279,9 +279,11 @@ namespace RoguePirates.V4.Tests
         {
             readonly System.Random _r = new System.Random(3);
             public int Draws;
-            public float LootFloat() { Draws++; return (float)_r.NextDouble(); }
-            public int LootInt(int min, int max) { Draws++; return _r.Next(min, max); }
-            public int MapInt(int min, int max) { Draws++; return _r.Next(min, max); }
+            /// <summary>Fixed values (0.5, the lowest index): the draw count then does not depend on what was drawn before.</summary>
+            public bool Constant;
+            public float LootFloat() { Draws++; return Constant ? 0.5f : (float)_r.NextDouble(); }
+            public int LootInt(int min, int max) { Draws++; return Constant ? min : _r.Next(min, max); }
+            public int MapInt(int min, int max) { Draws++; return Constant ? min : _r.Next(min, max); }
         }
 
         [Test]
@@ -294,7 +296,7 @@ namespace RoguePirates.V4.Tests
             int Draws(float chance)
             {
                 rt.Single<StageContentConfig>().evolutionItemChance = chance;
-                var rng = new CountingRng();
+                var rng = new CountingRng { Constant = true };
                 var economy = new ChestEconomy(() => rt, new Run(), rng, () => null, () => weapons) { HasItem = _ => false };
                 economy.PlanChest(new[] { evo.baseWeapon.weaponId });
                 return rng.Draws;
@@ -302,7 +304,7 @@ namespace RoguePirates.V4.Tests
             var off = Draws(0f);
             Assert.AreEqual(off + 1, Draws(0.0001f), "on: one draw for the chance (the ordinary roll follows when it misses)");
             rt.Single<StageContentConfig>().evolutionItemChance = 0f;
-            var rngOff = new CountingRng();
+            var rngOff = new CountingRng { Constant = true };
             new ChestEconomy(() => rt, new Run(), rngOff, () => null, () => weapons) { HasItem = null }.PlanChest(new[] { evo.baseWeapon.weaponId });
             Assert.AreEqual(off, rngOff.Draws, "off (V3): the same draws as without the feature");
         }
@@ -332,6 +334,30 @@ namespace RoguePirates.V4.Tests
             {
                 var ratio = WeaponModel.Ratio(curves, w, level);
                 if (Mathf.Abs(ratio - 1f) > 0.2f) outside.Add($"{w.Weapon.weaponId} Lv {level}: ×{ratio:0.00}");
+            }
+            CollectionAssert.IsEmpty(outside);
+        }
+
+        /// <summary>V5 M4: the dearer new weapons, against the roles of the weapons a regular player owns (held fixed).</summary>
+        [Test]
+        public void TheNewWeapons_AreWithin20Percent_OfTheirRole()
+        {
+            using var rt = new ConfigSetRuntime(Set);
+            var owned = new SimContent(rt);
+            var all = new SimContent(rt) { RegularPlayerRum = int.MaxValue };
+            var fixedCurves = WeaponModel.Curves(owned, 300);
+            var newWeapons = all.WeaponsInOrder.Where(w => owned.WeaponsInOrder.All(o => o.weaponId != w.weaponId)).ToList();
+            Assert.GreaterOrEqual(newWeapons.Count, 4, "the M4 weapons are priced above a regular player's ladder");
+            var outside = new List<string>();
+            foreach (var w in newWeapons)
+            {
+                var curve = WeaponModel.CurveFor(all, w, 300);
+                var curves = fixedCurves.Append(curve).ToList();
+                foreach (var level in WeaponModel.ParityLevels)
+                {
+                    var ratio = WeaponModel.Ratio(curves, curve, level);
+                    if (Mathf.Abs(ratio - 1f) > 0.2f) outside.Add($"{w.weaponId} Lv {level}: ×{ratio:0.00}");
+                }
             }
             CollectionAssert.IsEmpty(outside);
         }

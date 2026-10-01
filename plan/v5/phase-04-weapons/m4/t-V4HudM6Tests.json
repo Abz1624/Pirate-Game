@@ -1,0 +1,118 @@
+{
+  "status": "completed",
+  "duration": 2.8,
+  "summary": {
+    "total": 15,
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.EffectsForwarder_ReachesThePresenter_AndSkipsWhenItIsGone",
+      "Status": "Passed",
+      "Duration": 0.0280005,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.IconCatalog_HasAnIconForEveryWeaponAndChestItem",
+      "Status": "Passed",
+      "Duration": 0.3268207,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutLabels_AreCompactedAsV3(\"Deck Cannons\",\"Deck Canno…\")",
+      "Status": "Passed",
+      "Duration": 0.0025574,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutLabels_AreCompactedAsV3(\"Long Nine\",\"Long Nine\")",
+      "Status": "Passed",
+      "Duration": 7.21E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutLabels_AreCompactedAsV3(\"Flying Cutlasses\",\"Flying Cut…\")",
+      "Status": "Passed",
+      "Duration": 0.0001847,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutLabels_AreCompactedAsV3(\"  Mortar \",\"Mortar\")",
+      "Status": "Passed",
+      "Duration": 3.92E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutLabels_AreCompactedAsV3(\"\",\"\")",
+      "Status": "Passed",
+      "Duration": 2.35E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutRowScale_MatchesV3",
+      "Status": "Passed",
+      "Duration": 0.0006841,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.NoLegacyNamespace_AndNoTaggedTypes_Remain",
+      "Status": "Passed",
+      "Duration": 0.0341915,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.Presenters_ReadOnlyViewsAndEvents",
+      "Status": "Passed",
+      "Duration": 0.1314567,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.Results_OpenOnRunComplete_AndButtonsForwardCommands",
+      "Status": "Passed",
+      "Duration": 1.7263016,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.ResultsSummary_ReadsAtAGlance",
+      "Status": "Passed",
+      "Duration": 0.0057023,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.RuntimeNeverReferencesPresentation",
+      "Status": "Passed",
+      "Duration": 0.1012899,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.SpawnWarnings_OnlyForAmbientCaptainAndGeneralSpawns_Throttled",
+      "Status": "Passed",
+      "Duration": 0.0744341,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.WeaponVisuals_ReproduceV3sWeaponIdChoices",
+      "Status": "Passed",
+      "Duration": 0.0098397,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

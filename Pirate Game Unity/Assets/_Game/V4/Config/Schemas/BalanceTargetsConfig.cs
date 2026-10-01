@@ -78,6 +78,9 @@ namespace RoguePirates.V4.Config
     [CreateAssetMenu(menuName = "RoguePirates/V5/Balance Targets", fileName = "BalanceTargets")]
     public sealed class BalanceTargetsConfig : V4ConfigAsset
     {
+        [Tooltip("V5 M4: the simulator's regular player owns the starters and every weapon, Logbook and item priced at most this much Rum (today's weapon ladder tops out at 100); dearer content is checked by its own tests.")]
+        [Min(0)] public int regularPlayerRum = 100;
+
         [Header("Per personality (simulator)")]
         public List<PersonalityTargets> personalities = new List<PersonalityTargets>();
 

@@ -44,6 +44,9 @@ namespace RoguePirates.V4.Tests
                 ("flying_cutlasses", 0.75f, 0.95f, 0.35f), ("flamethrower", 1f, 0.4f, 0.1f), ("lightning_mast", 0.55f, 0.75f, 1f),
                 ("long_nine", 0.95f, 0.95f, 0.85f), ("swivel_guns", 0.65f, 0.55f, 1f), ("harpoon_gun", 0.35f, 0.95f, 0.75f),
                 ("mortar", 1f, 0.45f, 0.15f),
+                // V5 M4: the new weapons' own colours.
+                ("anchor_flail", 0.6f, 0.62f, 0.7f), ("chainshot", 0.85f, 0.85f, 0.92f), ("siren_bell", 0.45f, 0.95f, 0.95f),
+                ("ramming_prow", 0.95f, 0.75f, 0.35f),
             };
             var weapons = config.All<WeaponConfig>().ToDictionary(w => w.weaponId);
             Assert.AreEqual(palette.Length, weapons.Count, "one colour per weapon");

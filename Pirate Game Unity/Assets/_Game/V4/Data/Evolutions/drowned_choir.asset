@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 329a2dcb1c73a1b4a885a9948b88b3bc, type: 3}
+  m_Name: drowned_choir
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponEvolutionConfig
+  configId: evolution.drowned_choir
+  schemaVersion: 1
+  balanceVersion: saltwind-v5-m4
+  evolutionId: drowned_choir
+  displayName: Drowned Choir
+  description: The bell tolls faster and wider, and slows harder.
+  baseWeapon: {fileID: 11400000, guid: 379e4f9b06d223e4bb732a2603f85ee0, type: 2}
+  requiredItemId: siren_scale
+  effect: 7
+  laneBurst:
+    laneArcDegrees: 40
+    pellets: 5
+    spreadDegrees: 55
+    rayLength: 6
+    hitRadius: 0.75
+    damageMultiplier: 0.35
+    procCoefficient: 0.7
+    sizeBase: 0.22
+    lifeSeconds: 2
+  followUp:
+    delaySeconds: 0.12
+    minPellets: 2
+    angleStepDegrees: 6
+    damageMultiplier: 0.45
+    sizeBase: 0.2
+    lifeSeconds: 2.2
+    hitRadius: 0.75
+  wakeKegs:
+    sideOffset: 1.6
+    chainRadius: 4.2
+    chainArmSeconds: 0.08
+  orbitPulse:
+    minimum: 0.72
+    amplitude: 0.38
+    frequency: 1.75
+  wideCone:
+    arcMultiplier: 1.2
+    patchesOnKill: 1
+    patchesAlongStream: 0
+    streamPatchIntervalSeconds: 0.6
+    streamPatchRangeFraction: 0.75
+  jumpStrike:
+    jumpRange: 9
+    jumpRadiusFactor: 0.75
+    jumpDamageMultiplier: 0.65
+    jumpProcMultiplier: 0.8
+    extraChainTargets: 2
+    delayedSeconds: 0.85
+    delayedRadiusFactor: 0.8
+    delayedDamageMultiplier: 0.55
+    delayedProcMultiplier: 0.5
+  empower:
+    extraQuantity: 0
+    damageMultiplier: 1.25
+    cooldownMultiplier: 0.75
+    sizeMultiplier: 1.4
+    knockbackMultiplier: 1
+    extraPierce: 0
+    extraSlow: 0.1

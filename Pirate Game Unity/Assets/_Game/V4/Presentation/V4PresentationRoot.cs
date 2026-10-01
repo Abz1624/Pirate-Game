@@ -302,6 +302,7 @@ namespace RoguePirates.V4.Presentation
                 summon.model, AimOverlay, null,
                 () => rulesCache != null ? rulesCache : (rulesCache = config != null ? System.Linq.Enumerable.FirstOrDefault(config.All<RoguePirates.V4.Config.WeaponRulesConfig>()) : null),
                 summon.scale);
+            if (config != null) WeaponEffects.PrewarmModels(config.All<RoguePirates.V4.Config.WeaponConfig>()); // V5 M4
             game.Context.Replace<RoguePirates.V4.Weapons.IWeaponEffects>(WeaponEffects);
         }
 

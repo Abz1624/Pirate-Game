@@ -173,6 +173,12 @@ namespace RoguePirates.V4.Config
         [Tooltip("V5 M4: each pulse slows every enemy it hits by this share of its speed (0 = none) for slowSeconds.")]
         [Range(0f, 0.9f)] public float slowFraction;
         [Min(0f)] public float slowSeconds;
+        [Tooltip("V5 M4: pulses only while the ship boosts (the Ramming Prow); otherwise it waits, its cooldown kept.")]
+        public bool requiresBoost;
+        [Tooltip("V5 M4: the pulse is centred this far ahead of the ship (m; 0 = on the ship).")]
+        public float forwardOffset;
+        [Tooltip("V5 M4: each pulse pushes the enemies it hits this far away from the ship (m; 0 = none).")]
+        [Min(0f)] public float knockbackMeters;
     }
 
     /// <summary>A shell landing on the densest cluster after a delay (Mortar).</summary>

@@ -19,6 +19,8 @@ namespace RoguePirates.V4.Weapons
 
         /// <summary>Most weapons wait for a target before spending their cooldown (V3: all but orbit, mines, trails and streams).</summary>
         public virtual bool NeedsTarget => true;
+        /// <summary>V5 M4: false = the weapon waits this frame (checked before the target search; the cooldown is kept).</summary>
+        public virtual bool CanFire(WeaponSlot w) => true;
 
         /// <summary>A cooldown-driven shot. Emitted starts the cooldown.</summary>
         public abstract WeaponFireOutcome Fire(WeaponSlot w);
@@ -46,7 +48,7 @@ namespace RoguePirates.V4.Weapons
         {
             var outcome = FireBurstShot(w);
             if (outcome != WeaponFireOutcome.Emitted) return outcome;
-            w.BurstShotsLeft = w.Config.projectile.burstShots - 1;
+            w.BurstShotsLeft = w.Config.projectile.burstShots + w.ExtraBurstShots - 1;
             w.CooldownTimer = w.Config.projectile.burstGapSeconds; // V3: the manager then starts the full cooldown (R-87)
             return WeaponFireOutcome.Emitted;
         }
@@ -67,7 +69,7 @@ namespace RoguePirates.V4.Weapons
             var dmg = C.Calculator.Roll(def.baseDamage * p.damageMultiplier, Stats.LevelMult(w), isElite, 0f, def.procCoefficient, def.weaponId);
             var origin = Muzzle;
             C.Effects?.Fired(def.weaponId, origin, dir);
-            if (!C.Projectiles.TrySpawn(origin, dir, speed, dmg.Amount, p.lifeSeconds, size, dmg.IsCrit, def.projectileColor, def.weaponId, C.TraitsOf(def), target))
+            if (!C.Projectiles.TrySpawn(origin, dir, speed, dmg.Amount, p.lifeSeconds, size, dmg.IsCrit, def.projectileColor, def.weaponId, C.TraitsOf(w), target))
                 return WeaponFireOutcome.CapacityBlocked;
             return WeaponFireOutcome.Emitted;
         }
@@ -113,7 +115,7 @@ namespace RoguePirates.V4.Weapons
             if (p.leadWithActualSpeed && tetherEnemyIndex >= 0 && tetherEnemyIndex < C.Enemies.Capacity && C.Enemies.IsActive(tetherEnemyIndex))
                 dir = WeaponTargetingService.ComputeLeadDirection(C.Ship.Position, C.Enemies.Position(tetherEnemyIndex), C.Enemies.Velocity(tetherEnemyIndex), speed);
 
-            var traits = C.TraitsOf(def);
+            var traits = C.TraitsOf(w);
             var spawned = 0;
             for (var i = 0; i < qty; i++)
             {
@@ -337,7 +339,7 @@ namespace RoguePirates.V4.Weapons
             var size = f.sizeBase * w.SizeMult * C.Mods.Size;
             var spread = def.fanSpreadDegrees;
             var halfSpread = spread * 0.5f;
-            var traits = C.TraitsOf(def);
+            var traits = C.TraitsOf(w);
             traits.SplashOnDespawn = f.splashOnDespawn;
 
             var hits = 0;
@@ -577,7 +579,8 @@ namespace RoguePirates.V4.Weapons
                 state.LastUnit = units;
             }
             state.Clock += dt;
-            var interval = o.perTargetIntervalSeconds * (C.OrbitVolleyTimer > 0f ? 0.5f : 1f);
+            // The interval follows the weapon's cooldown: Cooldown cards and attack speed shorten it, as they would a cooldown.
+            var interval = o.perTargetIntervalSeconds * (C.OrbitVolleyTimer > 0f ? 0.5f : 1f) * w.CooldownMult / (C.Mods.AttackSpeed * C.Mods.ItemAttackSpeedMultiplier);
             for (var i = 0; i < capacity; i++)
             {
                 if (!C.Enemies.IsActive(i)) { state.LastHit[i] = float.NegativeInfinity; continue; }
@@ -1092,6 +1095,8 @@ namespace RoguePirates.V4.Weapons
         public AuraBehavior(WeaponCombat c) : base(c) { }
         /// <summary>V5 M4: a pulse around the ship needs no target (it pulses whether or not anything is near).</summary>
         public override bool NeedsTarget => false;
+        /// <summary>V5 M4: the Ramming Prow waits for the boost (checked before any target search).</summary>
+        public override bool CanFire(WeaponSlot w) => !w.Config.aura.requiresBoost || (C.Ship != null && C.Ship.IsBoosting);
 
         public override WeaponFireOutcome Fire(WeaponSlot w)
         {
@@ -1099,16 +1104,24 @@ namespace RoguePirates.V4.Weapons
             var a = def.aura;
             var radius = a.radiusBase * w.SizeMult * C.Mods.Size;
             if (C.Ship == null || !C.Ship.Exists) return WeaponFireOutcome.Emitted;
-            C.Effects?.AuraPulse(C.Ship.Position, radius);
+            // V5 M4: the Ramming Prow strikes only while boosting; it waits with its cooldown kept.
+            if (a.requiresBoost && !C.Ship.IsBoosting) return WeaponFireOutcome.NoTarget;
+            var center = C.Ship.Position;
+            if (a.forwardOffset != 0f) center += C.Ship.MovementForward * a.forwardOffset;
+            C.Effects?.AuraPulse(center, radius);
+            var slow = a.slowFraction > 0f || w.ExtraSlow > 0f ? Mathf.Min(0.9f, a.slowFraction + w.ExtraSlow) : 0f;
+            var slowSeconds = a.slowSeconds > 0f ? a.slowSeconds : 1.5f;
+            var push = a.knockbackMeters * w.KnockbackMult;
             for (var i = 0; i < C.Enemies.Capacity; i++)
             {
                 if (!C.Enemies.IsActive(i)) continue;
-                if (Vector3.Distance(C.Enemies.Position(i), C.Ship.Position) > radius) continue;
+                if (Vector3.Distance(C.Enemies.Position(i), center) > radius) continue;
                 var isElite = C.Enemies.IsElite(i);
                 var dmg = C.Calculator.Roll(def.baseDamage * a.damageMultiplier, Stats.LevelMult(w), isElite, 0f, def.procCoefficient, def.weaponId);
                 C.ApplyWeaponDamage(i, def.weaponId, dmg, isElite, C.Enemies.IsBoss(i));
                 if (a.curseSeconds > 0f) C.Damage.ApplyStatus(i, WeaponStatus.Curse, a.curseSeconds * w.DurationMult);
-                if (a.slowFraction > 0f) C.Damage.ApplySlow(i, a.slowFraction, a.slowSeconds * w.DurationMult);
+                if (slow > 0f) C.Damage.ApplySlow(i, slow, slowSeconds * w.DurationMult);
+                if (push > 0f) C.Damage.Knockback(i, C.Ship.Position, push);
             }
             return WeaponFireOutcome.Emitted;
         }

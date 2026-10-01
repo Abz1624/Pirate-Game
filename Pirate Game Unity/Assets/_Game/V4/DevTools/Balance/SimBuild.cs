@@ -144,6 +144,7 @@ namespace RoguePirates.V4.DevTools.Balance
                 slot.SizeMult = w.SizeMult;
                 slot.DurationMult = w.DurationMult;
                 slot.KnockbackMult = w.KnockbackMult;
+                WeaponStatResolver.ApplyEvolution(slot); // V5 M4: as the game's manager
                 _slots.Add(slot);
             }
         }

@@ -97,6 +97,9 @@ namespace RoguePirates.V4.DevTools.Balance
             var crowd = new List<float>[max + 1];
             for (var l = 1; l <= max; l++) { single[l] = new List<float>(paths); crowd[l] = new List<float>(paths); }
             var cover = coverage != null && (int)w.behavior < coverage.Length ? coverage[(int)w.behavior] : 1f;
+            // V5 M4: a weapon that strikes only while boosting (the Ramming Prow) is up only that share of the time.
+            var rules = c.Config.All<WeaponRulesConfig>().FirstOrDefault();
+            var uptime = w.behavior == ConfigEnums.WeaponBehavior.Aura && w.aura.requiresBoost && rules != null ? rules.modelBoostUptime : 1f;
             for (var path = 0; path < paths; path++)
             {
                 var rng = new Rng(SimBatch.RunSeed(seed, w.weaponId, path));
@@ -109,7 +112,7 @@ namespace RoguePirates.V4.DevTools.Balance
                 while (recorded < max && guard++ < 100)
                 {
                     // Record this state for every level reached since the last record (multi-level cards skip levels).
-                    var dps = Dps(lw, mods);
+                    var dps = Dps(lw, mods) * uptime;
                     // Crowd power: coverage widens with size (more targets in the cone, blast or orbit), and streams, trails,
                     // auras and mines hit for longer with duration (a model assumption; single-target power ignores both).
                     var area = cover * lw.SizeMult * (LastsLonger(w.behavior) ? lw.DurationMult : 1f);
@@ -196,6 +199,49 @@ namespace RoguePirates.V4.DevTools.Balance
             var after = Curves(c, paths);
             foreach (var w in after) { var t = tunes[w.Weapon.weaponId]; t.WorstAfter = Worst(after, w); tunes[w.Weapon.weaponId] = t; }
             return tunes.Values.ToList();
+        }
+
+        /// <summary>
+        /// V5 M4: <see cref="TuneParity"/> for some weapons only, against the others' curves held fixed (new weapons join
+        /// the roles without moving the tuned weapons). Edits the given weapons' configs of <paramref name="c"/>.
+        /// </summary>
+        public static List<ParityTune> TuneOnly(SimContent c, ICollection<string> weaponIds, int paths = 150, int rounds = 3)
+        {
+            var targets = c.WeaponsInOrder.Where(w => weaponIds.Contains(w.weaponId)).ToList();
+            var frozen = c.WeaponsInOrder.Where(w => !weaponIds.Contains(w.weaponId)).Select(w => CurveFor(c, w, paths)).ToList();
+            var tunes = new List<ParityTune>();
+            foreach (var w in targets)
+            {
+                var t = new ParityTune { WeaponId = w.weaponId, DamageScale = 1f, GrowthScale = 1f };
+                var start = CurveFor(c, w, paths);
+                t.WorstBefore = Worst(frozen.Append(start).ToList(), start);
+                for (var round = 0; round < rounds; round++)
+                {
+                    var bestG = 1f;
+                    var bestScore = float.MaxValue;
+                    var bestF = 1f;
+                    foreach (var g in GrowthGrid)
+                    {
+                        if (t.GrowthScale * g < MinGrowth - 1e-4f || t.GrowthScale * g > MaxGrowth + 1e-4f) continue;
+                        ScaleGrowth(w, g);
+                        var trial = CurveFor(c, w, paths);
+                        ScaleGrowth(w, 1f / g);
+                        var all = frozen.Append(trial).ToList();
+                        var logs = ParityLevels.Select(l => Mathf.Log(Ratio(all, trial, l))).ToList();
+                        var f = Mathf.Exp(-logs.Average());
+                        var score = logs.Max(x => Mathf.Abs(x + Mathf.Log(f)));
+                        if (score < bestScore - 1e-4f) { bestScore = score; bestG = g; bestF = f; }
+                    }
+                    ScaleGrowth(w, bestG);
+                    w.baseDamage *= bestF;
+                    t.GrowthScale *= bestG;
+                    t.DamageScale *= bestF;
+                }
+                var end = CurveFor(c, w, paths);
+                t.WorstAfter = Worst(frozen.Append(end).ToList(), end);
+                tunes.Add(t);
+            }
+            return tunes;
         }
 
         static bool LastsLonger(ConfigEnums.WeaponBehavior b) =>

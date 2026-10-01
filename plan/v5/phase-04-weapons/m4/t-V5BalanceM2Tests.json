@@ -1,0 +1,160 @@
+{
+  "status": "completed",
+  "duration": 16.89,
+  "summary": {
+    "total": 21,
+    "passed": 21,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.ABatch_DoesNotTouchTheConfigsItReads",
+      "Status": "Passed",
+      "Duration": 0.2089577,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.BossHp_ComesFromTheArchetype_WhichTheGameReads",
+      "Status": "Passed",
+      "Duration": 0.108876,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.Calibration_MatchesTheAutopilotsRealRuns",
+      "Status": "Passed",
+      "Duration": 2.2205664,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.DefaultConfig_MeetsTheBaselineTargets",
+      "Status": "Passed",
+      "Duration": 5.7892177,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.GreedierPlayers_LevelFaster",
+      "Status": "Passed",
+      "Duration": 1.4114231,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.HigherDodgeSkill_SurvivesLonger",
+      "Status": "Passed",
+      "Duration": 2.3700578,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.MoreContactAvoidance_TakesLessContactDamage",
+      "Status": "Passed",
+      "Duration": 1.050546,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.OnTrackGrowth_IsMeasuredFromTheBaseline",
+      "Status": "Passed",
+      "Duration": 0.5585689,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.OvertimeFormulas_EqualTheRuntimes",
+      "Status": "Passed",
+      "Duration": 0.0453305,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.Percentile_Interpolates",
+      "Status": "Passed",
+      "Duration": 0.0102358,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.Personalities_MatchThePersonalitiesDoc",
+      "Status": "Passed",
+      "Duration": 0.1174859,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.PersonalitiesAndTargets_AreInTheSet_AndValidate",
+      "Status": "Passed",
+      "Duration": 0.0516882,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.Retune_IsInTheData_AndTheParityPresetRestoresIt",
+      "Status": "Passed",
+      "Duration": 0.3144939,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.SameSeed_SameRun_AlsoOnAWorkerThread",
+      "Status": "Passed",
+      "Duration": 0.4785993,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.ScheduledElites_GetTheEliteMultiplierAndTheRichAffix_AsTheGameDoes",
+      "Status": "Passed",
+      "Duration": 0.1707787,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.SimulatedLevels_FollowTheProgressionConfigsXpCurve",
+      "Status": "Passed",
+      "Duration": 0.0646593,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.SomeChests_BuysOnlyWithTwiceThePrice",
+      "Status": "Passed",
+      "Duration": 1.3135473,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.SpawnHp_IsTheCurveTimesOrdinaryTime_HandComputed",
+      "Status": "Passed",
+      "Duration": 0.0563375,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.TargetBand_NaNIsUnchecked",
+      "Status": "Passed",
+      "Duration": 0.0002452,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.Targets_ValidationCatchesBrokenData",
+      "Status": "Passed",
+      "Duration": 0.0038888,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.ThePersonalityThatNeverSummons_NeverFightsTheBoss_AndStopRulesEndRuns",
+      "Status": "Passed",
+      "Duration": 0.2053746,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

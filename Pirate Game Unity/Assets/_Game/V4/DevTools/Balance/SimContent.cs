@@ -62,13 +62,61 @@ namespace RoguePirates.V4.DevTools.Balance
         public BalanceTargetsConfig Targets { get; }
         public PlayerPersonalityConfig Personalities { get; }
         public IReadOnlyList<CaptainConfig> Captains { get; }
-        public List<WeaponConfig> WeaponsInOrder { get; }
+        /// <summary>The weapons a regular player owns, in database order: the starters and every weapon priced at most
+        /// <see cref="RegularPlayerRum"/> (V5 M4: the calibrated baselines assume today's ladder; dearer new weapons join
+        /// when this is raised).</summary>
+        public List<WeaponConfig> WeaponsInOrder
+        {
+            get
+            {
+                if (_weaponsInOrder == null || _weaponsRum != RegularPlayerRum)
+                {
+                    _weaponsRum = RegularPlayerRum;
+                    _weaponsInOrder = _allWeaponsInOrder.Where(w => RumCost(w.weaponId) <= RegularPlayerRum).ToList();
+                }
+                return _weaponsInOrder;
+            }
+        }
+        readonly List<WeaponConfig> _allWeaponsInOrder;
+        List<WeaponConfig> _weaponsInOrder;
+        int _weaponsRum = -1;
+        /// <summary>The most Rum a weapon may cost for a regular player to own it (<see cref="BalanceTargetsConfig.regularPlayerRum"/>;
+        /// tests raise it to model everything).</summary>
+        public int RegularPlayerRum { get; set; } = 100;
+
+        /// <summary>A weapon's unlock price (0 for starters and unpriced weapons).</summary>
+        public int RumCost(string weaponId)
+        {
+            if (Unlocks?.weaponUnlocks == null) return 0;
+            foreach (var u in Unlocks.weaponUnlocks) if (u != null && u.weaponId == weaponId) return u.rumCost;
+            return 0;
+        }
         public List<LogbookConfig> LogbooksInOrder { get; }
         public List<WeaponEvolutionConfig> Evolutions { get; }
-        public List<ItemConfig> ChestPool { get; }
+        /// <summary>The chest pool for the player modelled: with <c>chestPoolOwnedEvolutionsOnly</c> (V5 M4, as the game) the
+        /// evolution items of weapons this player does not own stay out (rebuilt when the ownership settings change).</summary>
+        public List<ItemConfig> ChestPool
+        {
+            get
+            {
+                if (_chestPool == null || _chestAll != AllWeaponsUnlocked || _chestRum != RegularPlayerRum)
+                {
+                    _chestAll = AllWeaponsUnlocked;
+                    _chestRum = RegularPlayerRum;
+                    var ownedOnly = Stage == null || Stage.chestPoolOwnedEvolutionsOnly;
+                    _chestPool = _allChestItems.Where(i => !ownedOnly || Evolutions.All(e => e.requiredItemId != i.itemId || e.baseWeapon == null
+                        || IsWeaponAvailable(e.baseWeapon.weaponId))).ToList();
+                }
+                return _chestPool;
+            }
+        }
+        List<ItemConfig> _allChestItems, _chestPool;
+        bool _chestAll;
+        int _chestRum = -1;
         /// <summary>Director mode for this batch (null = the config's).</summary>
         public DirectorMode? DirectorModeOverride { get; set; }
-        /// <summary>Every weapon is unlocked (a regular player); off = the starter weapons only (a fresh save).</summary>
+        /// <summary>A regular player: the starters and every weapon priced at most <see cref="RegularPlayerRum"/>; off = the
+        /// starter weapons only (a fresh save).</summary>
         public bool AllWeaponsUnlocked { get; set; } = true;
 
         public SimContent(ConfigSetRuntime config)
@@ -89,12 +137,13 @@ namespace RoguePirates.V4.DevTools.Balance
             Unlocks = config.Single<UnlockConfig>();
             Boss = config.Single<BossConfig>();
             Targets = config.Single<BalanceTargetsConfig>();
+            if (Targets != null) RegularPlayerRum = Targets.regularPlayerRum;
             Personalities = config.Single<PlayerPersonalityConfig>();
             Captains = config.All<CaptainConfig>().OrderBy(c => c.menuOrder).ToList();
-            WeaponsInOrder = OfferGenerator.InDatabaseOrder(config.All<WeaponConfig>());
+            _allWeaponsInOrder = OfferGenerator.InDatabaseOrder(config.All<WeaponConfig>());
             LogbooksInOrder = OfferGenerator.InDatabaseOrder(config.All<LogbookConfig>());
             Evolutions = config.All<WeaponEvolutionConfig>().ToList();
-            ChestPool = config.All<ItemConfig>().Where(i => i.inChestPool).OrderBy(i => i.chestPoolOrder).ToList();
+            _allChestItems = config.All<ItemConfig>().Where(i => i.inChestPool).OrderBy(i => i.chestPoolOrder).ToList();
             foreach (var w in config.All<WeaponConfig>()) if (!string.IsNullOrEmpty(w.weaponId)) _weapons[w.weaponId] = w;
             foreach (var l in config.All<LogbookConfig>()) if (!string.IsNullOrEmpty(l.logbookId)) _logbooks[l.logbookId] = l;
             foreach (var i in config.All<ItemConfig>()) if (!string.IsNullOrEmpty(i.itemId)) _items[i.itemId] = i;
@@ -139,7 +188,7 @@ namespace RoguePirates.V4.DevTools.Balance
         public bool IsWeaponAvailable(string weaponId)
         {
             if (Weapon(weaponId) == null) return false;
-            if (AllWeaponsUnlocked) return true;
+            if (AllWeaponsUnlocked) return RumCost(weaponId) <= RegularPlayerRum;
             return Unlocks != null && Array.IndexOf(Unlocks.starterWeaponIds, weaponId) >= 0;
         }
 

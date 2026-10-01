@@ -1,0 +1,125 @@
+{
+  "status": "completed",
+  "duration": 43.95,
+  "summary": {
+    "total": 16,
+    "passed": 15,
+    "failed": 1,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.Captains_AreWithin10Percent_AndRunsSeeFourToSixItemsBy10",
+      "Status": "Failed",
+      "Duration": 35.9521437,
+      "Message": "  ember: 12.4 min against the median 13.9\r\n  Expected: in range (0.9,1.1)\r\n  But was:  0.896142006f\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5BuildM3Tests.Captains_AreWithin10Percent_AndRunsSeeFourToSixItemsBy10 () [0x0008b] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BuildM3Tests.cs:432\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.Chests_OftenGiveAReadyWeaponsEvolutionItem",
+      "Status": "Passed",
+      "Duration": 0.3744923,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EveryWeapon_IsWithin20Percent_OfItsRole_AtLevels1_4_And12",
+      "Status": "Passed",
+      "Duration": 0.2474784,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolutionCard_ComesFromWeaponLevel6_WithItsItem",
+      "Status": "Passed",
+      "Duration": 0.5024366,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolutionItemChance_Off_MakesNoExtraLootDraws",
+      "Status": "Passed",
+      "Duration": 0.0581325,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolutionItemLevel_FollowsTheEvolutionCardsLevel",
+      "Status": "Passed",
+      "Duration": 0.0525018,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolvedAtTheUnlockLevel_TheWeaponLevelsOnTo12_ThroughCards",
+      "Status": "Passed",
+      "Duration": 0.0743956,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.FocusedBuilds_ReachAnEvolution_InMostRuns",
+      "Status": "Passed",
+      "Duration": 5.0706437,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.LogbooksAndItems_AreInTheirRarityBands_ExceptTheFlaggedOnes",
+      "Status": "Passed",
+      "Duration": 0.0933428,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.ParityPreset_RestoresEveryM3Value",
+      "Status": "Passed",
+      "Duration": 0.3275066,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.PityCountsDeals_ARefreshIsADeal",
+      "Status": "Passed",
+      "Duration": 0.0775022,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.PityRule_RaisesTheNextWeaponUpgrade_AfterSixDealsWithoutARare",
+      "Status": "Passed",
+      "Duration": 0.0352146,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.RarerCards_GrantMoreLevels_CappedAtTheMax",
+      "Status": "Passed",
+      "Duration": 0.3129953,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.TakingARareCard_ThroughTheProgressionModule_GrantsItsLevels",
+      "Status": "Passed",
+      "Duration": 0.0927474,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.TheNewWeapons_AreWithin20Percent_OfTheirRole",
+      "Status": "Passed",
+      "Duration": 0.2814177,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.WeaponModel_UsesTheGamesUpgradePath",
+      "Status": "Passed",
+      "Duration": 0.0628652,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

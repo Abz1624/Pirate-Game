@@ -1,0 +1,216 @@
+{
+  "status": "completed",
+  "duration": 4.86,
+  "summary": {
+    "total": 29,
+    "passed": 29,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.BladedTide_PulsesTheOrbitRadius",
+      "Status": "Passed",
+      "Duration": 0.1125839,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.DevilsWake_DropsTwoKegs_AndBlastsArmNeighbours",
+      "Status": "Passed",
+      "Duration": 0.0536908,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.EveryWeapon_HasItsV3Behavior_AndConstants",
+      "Status": "Passed",
+      "Duration": 0.2393439,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.Evolutions_AreConfig_WithTheirBaseWeaponAndEffect",
+      "Status": "Passed",
+      "Duration": 0.0712733,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.FireAll_SpeedsOrbitHits_AndFiresTheOthers",
+      "Status": "Passed",
+      "Duration": 0.0698549,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.FlameStream_StartsOnlyWithAnEnemyInTheCone_ThenRecharges",
+      "Status": "Passed",
+      "Duration": 0.069684,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.HellfireNozzle_LeavesPatchesOnTheWaterWhileStreaming_NotUnderTheParityPreset",
+      "Status": "Passed",
+      "Duration": 0.4035762,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.HellfireNozzle_WidensTheCone",
+      "Status": "Passed",
+      "Duration": 0.1383776,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.KingsBroadside_QueuesAnOppositeSideVolley",
+      "Status": "Passed",
+      "Duration": 0.0590515,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.LightningSalvo_StrikesForOneDamage_AsV3Did",
+      "Status": "Passed",
+      "Duration": 0.240791,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.Loadout_NewEntriesGetFreshSlots_UpgradesFollow_StateIsMirrored",
+      "Status": "Passed",
+      "Duration": 0.0593877,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.Mortar_Impact_MakesV3sEffectDraws",
+      "Status": "Passed",
+      "Duration": 0.3654993,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.OrbitBlades_FollowTheShip_AndHitOnTheirInterval",
+      "Status": "Passed",
+      "Duration": 0.0643658,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.ParityPreset_TurnsEveryM5FixOff",
+      "Status": "Passed",
+      "Duration": 0.2608039,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.PlayerProjectiles_TakeTheLowestFreeSlot_HitOnce_AndHomeOnlyWhenAsked",
+      "Status": "Passed",
+      "Duration": 0.0048182,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.PowderKeg_ArmsTriggers_AndItsBlastHitsAtMostTwelve",
+      "Status": "Passed",
+      "Duration": 0.0547081,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.PowderKeg_Unblown_SinksAfter45Seconds_AndNeverUnderTheParityPreset",
+      "Status": "Passed",
+      "Duration": 0.32388,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R18_Stormshot_LaneHasANarrowArc",
+      "Status": "Passed",
+      "Duration": 0.1049463,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R19_ChainLightning_JumpsToTheNearestUnhitEnemies_WithFalloff",
+      "Status": "Passed",
+      "Duration": 0.0772506,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R22_ItemAttackSpeed_AppliesOnce_AndOvershootCarries",
+      "Status": "Passed",
+      "Duration": 0.2385976,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R40_Explosions_TakeTheExplosionMultiplier_AndResolveTheCharge",
+      "Status": "Passed",
+      "Duration": 0.4808583,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R40_Stormglass_AddsAChainJump",
+      "Status": "Passed",
+      "Duration": 0.0444685,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R70_Mortar_NoLongerDrawsForItsEffect",
+      "Status": "Passed",
+      "Duration": 0.0396505,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R87_SwivelBurst_KeepsItsGap",
+      "Status": "Passed",
+      "Duration": 0.0584485,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R88_Salvo_FiresTheLightningWeapon",
+      "Status": "Passed",
+      "Duration": 0.0528923,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.Stormshot_FiresArcLanes_WithABurstFromTheFirstHit",
+      "Status": "Passed",
+      "Duration": 0.2588262,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.SwivelGuns_UseTheFullCooldownBetweenShots_AsV3Did",
+      "Status": "Passed",
+      "Duration": 0.1859978,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.TargetedWeapons_KeepTheirCooldown_WithoutATarget",
+      "Status": "Passed",
+      "Duration": 0.3470457,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.TempestMast_JumpsToTheNextEnemy_AndQueuesADelayedStrike",
+      "Status": "Passed",
+      "Duration": 0.0465317,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

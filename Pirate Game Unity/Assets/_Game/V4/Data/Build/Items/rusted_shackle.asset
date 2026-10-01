@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5955df3a89aa96429cea5e68565b8be, type: 3}
+  m_Name: rusted_shackle
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
+  configId: item.rusted_shackle
+  schemaVersion: 1
+  balanceVersion: saltwind-v5-m4
+  itemId: rusted_shackle
+  displayName: Rusted Shackle
+  description: +12% size; evolves Anchor Flail into Kraken Chain.
+  rarity: 1
+  inChestPool: 1
+  inLevelUpPool: 0
+  chestPoolOrder: 19
+  collectionOrder: 19
+  statModifiers:
+  - stat: 10
+    additive: 0
+    multiplicative: 1.12
+  effects: []
