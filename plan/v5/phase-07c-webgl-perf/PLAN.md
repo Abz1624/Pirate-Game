@@ -34,10 +34,30 @@ laptop GPU, 1200×750 canvas, background throttling off, own profile.
 | The 256 MB heap is still out of reach (330 MB with ASTC) | info lines | question 39/43 (asset streaming) |
 | Tried and reverted: compressing "uncompressed UI art" (it was already compressed; the build report lists uncompressed sizes) | review | reverted |
 
+## Final result (run 5 phone, D5 desktop; builds alternated, phone cooled to 38 °C between runs)
+
+| | Build F (before) | Final build |
+|---|---|---|
+| Phone, 80 enemies: average fps | 26.0 | **37.5** (+44%) |
+| Phone, 80 enemies: slowest 1% / 5% of frames | 144 / 129 ms | **42 / 37 ms** |
+| Phone, 80 enemies: frames over 33 ms | 32% | **17%** |
+| Phone, natural game: fps, slowest 1% | 42.8, 130 ms | **47.2, 33 ms** |
+| Phone, first minute: fps, slowest 1% | ~36, 125 ms | **~49, 33 ms** |
+| Phone memory: Chrome GPU process, heap | 2,274 MB, 397 MB | **1,532 MB, 330 MB** |
+| Phone download | 111 MB | **87.5 MB** |
+| Desktop, 80 enemies: fps, slowest 1% | 54.4, 66 ms | **60.2 (the cap), 18 ms** |
+| Desktop, natural game: fps, slowest 1% | 57.6, 57 ms | **60.2, 17 ms** |
+
+Two runs per phone case, one per desktop case. The final build also contains a second fix found by profiling the first
+attempt: spreading the fog rebuild over frames moved the cost into every frame (1.46 ms a frame on a desktop while
+exploring), so the fog now redraws only around newly explored cells (0.14 ms). An intermediate build (shared-canvas bars,
+fog spread over frames, 55 textures still DXT) is in run 4.
+
 ## Code
 
-- `Presentation/Hud/MinimapPresenter.cs`: fog rebuild spread over `FogRowsPerFrame` rows a frame, uploaded once; immediate
-  on a new texture, run or stage; a change mid-rebuild runs one more pass.
+- `Presentation/Hud/MinimapPresenter.cs`: the fog redraws only the pixels within two cells of newly explored cells (it keeps
+  each cell's explored state); a big reveal (over 48 cells) is rebuilt over frames, `FogRowsPerFrame` rows at a time,
+  uploaded once; immediate on a new texture, run or stage.
 - `Foundation/VFX/WorldHealthBar.cs`, `WorldHealthBarBatch.cs`: bars turn off their own canvas and move under one shared
   world canvas beside the pool root; one LateUpdate places and billboards them, sorts them far to near every 8 frames;
   a bar whose ship is gone is destroyed (as before).
@@ -47,10 +67,11 @@ laptop GPU, 1200×750 canvas, background throttling off, own profile.
 
 ## Tests
 
-`V5PerfPlayModeTests` (2): the fog spread over frames, uploaded once, equal to a one-frame rebuild, and a restart;
+`V5PerfPlayModeTests` (3): the fog spread over frames, uploaded once, equal to a one-frame rebuild, and a restart; a small
+newly explored patch redrawn at once and only around it, a big reveal over frames, both pixel-equal to a full rebuild;
 bars under one shared canvas with their own canvas off, over their ships facing the camera, sorted far to near, a pool
-release and re-acquire placed once, a bar destroyed with its ship. Re-run green: V4HudPlayModeTests 8/8,
-V4HudM6Tests 15/15, V4WorldViewsM14Tests 12/12, V4EnemyTickM8Tests 9/9.
+release and re-acquire placed once, a bar destroyed with its ship. Full suites once (2 Oct, final code): EditMode 464/464,
+PlayMode 63/63 (`editmode.json`, `playmode.json`).
 
 ## Independent review (v5-reviewer, 2 Oct)
 

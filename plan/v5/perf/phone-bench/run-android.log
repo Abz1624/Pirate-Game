@@ -1,0 +1,5 @@
+Android app com.x2c.roguepirates; 9 variants -> plan/v5/perf/phone-bench/android.jsonl
+[6:18:11 am] APK Vulkan, crowd 80 (1) (C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Vulkan.apk) q=mid&crowd=80
+  installing C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Vulkan.apk
+  info: Mali-G715 2424x1080 scale 0.7 Vulkan 1.1.0 [54.3.0 (0x0d803000)]
+  early: fps 59.8 p50 16.644 p95 16.692 p99 16.748 >33ms 0.1% enemies 22
