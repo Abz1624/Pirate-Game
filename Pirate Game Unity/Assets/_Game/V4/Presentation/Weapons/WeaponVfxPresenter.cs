@@ -45,6 +45,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         const string KindKeg = "keg";
         const string KindCutlass = "cutlass";
         const string KindSkiff = "skiff";
+        const string KindOrbitModel = "orbit-model"; // V5 M4: an Orbit weapon's own model (the Anchor Flail)
 
         // V3 WeaponJuiceController constants.
         const float MortarReticleDiameterPerScale = 12.5f;
@@ -161,10 +162,10 @@ namespace RoguePirates.V4.Presentation.Weapons
             return (null, 0.42f);
         }
 
-        static Func<IReadOnlyList<OrbitBehavior.HitSphere>> DefaultBladeHits(IWeaponManager weapons)
+        Func<IReadOnlyList<OrbitBehavior.HitSphere>> DefaultBladeHits(IWeaponManager weapons)
         {
             if (weapons == null) return null;
-            return () => weapons.OrbitHits;
+            return () => weapons.OrbitHitsOf(OrbitSlot()); // the cutlass-style weapon's blades (V5 M4: not just the first Orbit)
         }
 
         public int LiveHandleCount => _handles.Count;
@@ -176,7 +177,11 @@ namespace RoguePirates.V4.Presentation.Weapons
 
         void Update() => Tick(Time.deltaTime);
 
-        void LateUpdate() => SyncBlades();
+        void LateUpdate()
+        {
+            SyncBlades();
+            SyncOrbitModels();
+        }
 
         /// <summary>Ends timed effects (V3 VfxAutoReturn / Destroy(go, t)): scaled time, starting the frame after spawn.</summary>
         public void Tick(float dt)
@@ -508,6 +513,8 @@ namespace RoguePirates.V4.Presentation.Weapons
             foreach (var s in _sinking) ReleaseView(s.View);
             _sinking.Clear();
             ReleaseBlades(0);
+            foreach (var list in _orbitModels.Values) foreach (var view in list) ReleaseView(view);
+            _orbitModels.Clear();
         }
 
         void OnDestroy() => Clear();
@@ -578,14 +585,72 @@ namespace RoguePirates.V4.Presentation.Weapons
             }
         }
 
+        /// <summary>The first Orbit weapon drawn as cutlass blades (one without its own orbit model).</summary>
         WeaponSlot OrbitSlot()
         {
             if (_weapons == null) return null;
             var slots = _weapons.Slots;
             if (slots == null) return null;
             for (var i = 0; i < slots.Count; i++)
-                if (slots[i] != null && slots[i].Config != null && slots[i].Config.behavior == ConfigEnums.WeaponBehavior.Orbit) return slots[i];
+                if (slots[i] != null && slots[i].Config != null && slots[i].Config.behavior == ConfigEnums.WeaponBehavior.Orbit
+                    && slots[i].Config.visual.orbitModel == null) return slots[i];
             return null;
+        }
+
+        // ---- V5 M4: Orbit weapons with their own model (the Anchor Flail) -------------------------------------------
+
+        readonly Dictionary<WeaponSlot, List<View>> _orbitModels = new Dictionary<WeaponSlot, List<View>>();
+        readonly List<WeaponSlot> _orbitModelGone = new List<WeaponSlot>();
+
+        /// <summary>Models drawn for an Orbit weapon (tests).</summary>
+        public int OrbitModelCount(WeaponSlot slot) => slot != null && _orbitModels.TryGetValue(slot, out var list) ? list.Count : 0;
+
+        /// <summary>Each Orbit weapon with an orbit model gets one pooled model per blade, where the simulation's blade is,
+        /// spinning about its own axis; models of weapons that left go back to their pool.</summary>
+        void SyncOrbitModels()
+        {
+            var slots = _weapons != null ? _weapons.Slots : null;
+            var shipGone = _ship != null && !_ship.Exists;
+            _orbitModelGone.Clear();
+            foreach (var key in _orbitModels.Keys)
+            {
+                var keep = !shipGone && slots != null;
+                if (keep)
+                {
+                    keep = false;
+                    for (var i = 0; i < slots.Count; i++) if (ReferenceEquals(slots[i], key)) { keep = true; break; }
+                }
+                if (!keep) _orbitModelGone.Add(key);
+            }
+            foreach (var key in _orbitModelGone)
+            {
+                foreach (var view in _orbitModels[key]) ReleaseView(view);
+                _orbitModels.Remove(key);
+            }
+            if (slots == null || shipGone) return;
+
+            for (var s = 0; s < slots.Count; s++)
+            {
+                var slot = slots[s];
+                if (slot == null || slot.Config == null || slot.Config.behavior != ConfigEnums.WeaponBehavior.Orbit) continue;
+                var model = slot.Config.visual.orbitModel;
+                if (model == null) continue;
+                var hits = _weapons.OrbitHitsOf(slot);
+                if (hits == null || hits.Count == 0) continue; // paused: they stay where they are
+                if (!_orbitModels.TryGetValue(slot, out var views)) _orbitModels[slot] = views = new List<View>();
+                while (views.Count > hits.Count) { ReleaseView(views[views.Count - 1]); views.RemoveAt(views.Count - 1); }
+                while (views.Count < hits.Count)
+                {
+                    var go = Spawn(KindOrbitModel, model, hits[views.Count].Position, Quaternion.identity, slot.Config.visual.orbitModelScale, out var pooled);
+                    if (go == null) break;
+                    var prep = Prepare(go);
+                    if (!prep.Done) { StripPhysics(go); prep.Done = true; }
+                    views.Add(new View { Go = go, Pooled = pooled, Particles = Array.Empty<ParticleSystem>() });
+                }
+                var spin = Quaternion.Euler(0f, Time.time * 540f, 0f);
+                for (var i = 0; i < views.Count && i < hits.Count; i++)
+                    if (views[i].Go != null) views[i].Go.transform.SetPositionAndRotation(hits[i].Position, spin);
+            }
         }
 
         /// <summary>The ship's flat heading (V3: MovementForward, else the ship transform's forward; V4 keeps the last one).</summary>

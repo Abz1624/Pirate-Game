@@ -28,7 +28,11 @@
   as in M3 and the boss is beaten as often; levels come about 40% slower. Check in the playtest: does the slower
   levelling feel good, do evolutions still arrive (around 6-7 minutes for a focused build), and is the mid-run still a
   fight with the gentler enemies?
-- **Flamethrower VFX:** it is offered again, but its effect is still broken; I fix it in M4 (weapon VFX work).
+- **Flamethrower VFX:** fixed in M4a (committed, awaiting your playtest): the flame now reaches exactly as far as its damage
+  (9.5 m) and is shaped from the first frame. Does it look right (question 26)?
+- **M4 weapons:** I built only the mechanics (M4a: slow, pierce, knockback, several orbit weapons, a pulsing aura); the
+  four weapons and eight evolutions wait for your answers to questions 17-26 in `DECISIONS-WHILE-AWAY.md` (prices, the
+  Ramming Prow's boost button, milestones, the evolution level, offer weights, minibosses).
 - **Read the Railway breakdown**: tracking page section "Your answers, explained", or `plan/v5/ANSWERS.md` (what runs
   on Railway, what each part costs, where to save).
 - **Get the reference phone** for M1's measurement: a Samsung Galaxy A15 or A16 4G (about $130–150; any Helio G99 phone

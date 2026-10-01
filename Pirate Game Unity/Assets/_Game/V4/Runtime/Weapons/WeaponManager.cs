@@ -21,6 +21,8 @@ namespace RoguePirates.V4.Weapons
         void ClearInFlight();
         /// <summary>Where the orbit blades are this frame (their hit spheres); presentation draws the blades there.</summary>
         IReadOnlyList<OrbitBehavior.HitSphere> OrbitHits { get; }
+        /// <summary>V5 M4: where a given Orbit weapon's blades are (each Orbit weapon has its own).</summary>
+        IReadOnlyList<OrbitBehavior.HitSphere> OrbitHitsOf(WeaponSlot slot) => OrbitHits;
     }
 
     /// <summary>
@@ -83,6 +85,9 @@ namespace RoguePirates.V4.Weapons
         public WeaponCombat Combat => _c;
         public OrbitBehavior Orbit => _orbit;
         public IReadOnlyList<OrbitBehavior.HitSphere> OrbitHits => _orbit.Hits;
+        public IReadOnlyList<OrbitBehavior.HitSphere> OrbitHitsOf(WeaponSlot slot) => _orbit.HitsOf(slot);
+        /// <summary>The orbit behaviour (tests).</summary>
+        public OrbitBehavior OrbitBehavior => _orbit;
 
         WeaponRulesConfig Rules => _c.Rules();
 

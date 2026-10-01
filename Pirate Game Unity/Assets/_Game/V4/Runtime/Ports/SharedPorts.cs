@@ -202,6 +202,7 @@ namespace RoguePirates.V4.Ports
             }
         }
         public float BoostNormalized => Boost != null ? Boost.BoostNormalized : 0f;
+        public bool IsBoosting => Boost != null && Boost.IsBoosting;
         public Transform Anchor => Ship != null ? Ship.transform : null;
         public Transform VisualModel => Ship == null ? null : Ship.VisualModel != null ? Ship.VisualModel : Ship.transform;
         public void RequestBoost() => Boost?.RequestBoost();

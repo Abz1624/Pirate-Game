@@ -41,6 +41,11 @@ namespace RoguePirates.V4.Enemies
         /// <summary>The last island that blocked this agent (centre and radius incl. margin; radius 0 = none known).</summary>
         public Vector3 islandCenter;
         public float islandRadius;
+        /// <summary>V5 M4: a weapon slow (the share of speed taken away) and its seconds left.</summary>
+        public float slowFraction, slowTimer;
+        /// <summary>V5 M4: a weapon knockback: a push velocity and its seconds left.</summary>
+        public Vector3 pushVelocity;
+        public float pushTimer;
     }
 
     /// <summary>Per-enemy combat state (port of V3's SaltwindCombatAgentState).</summary>

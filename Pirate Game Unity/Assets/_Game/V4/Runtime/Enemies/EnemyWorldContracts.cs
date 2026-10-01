@@ -124,12 +124,14 @@ namespace RoguePirates.V4.Enemies
         public bool IsActive(int i) => _sim.Agents[i].active;
         // Raw reads, active or not: V3 read a just-killed enemy's last position after damaging it.
         public Vector3 Position(int i) => _sim.Agents[i].position;
-        public Vector3 Velocity(int i) => _sim.Agents[i].velocity;
+        // V5 M4: a slowed enemy reports its slowed velocity (aim leads and hit sampling use it).
+        public Vector3 Velocity(int i) => _sim.Agents[i].velocity * _sim.SpeedMultiplier(i);
         public float Radius(int i) => _sim.Agents[i].radius;
         public float Hp(int i) => _sim.Agents[i].hp;
         public bool IsElite(int i) => _sim.Agents[i].isElite;
         public bool IsBoss(int i) => _sim.Agents[i].isBoss;
         public bool TryGetNearest(Vector3 from, float range, out int index, bool preferElite = false) => _sim.TryGetNearest(from, range, out index, preferElite);
+        public int UnitId(int i) => _sim.Agents[i].id;
 
         /// <summary>R-40: weapon damage × this against controlled enemies (Leviathan's Tooth; 1 unless the effect is on).</summary>
         public Func<float> ControlledTargetMultiplier;
@@ -152,6 +154,9 @@ namespace RoguePirates.V4.Enemies
             };
             _statuses.ApplyStatus(index, type, strength);
         }
+
+        public void ApplySlow(int index, float fraction, float seconds) => _sim.ApplySlow(index, fraction, seconds);
+        public void Knockback(int index, Vector3 from, float meters) => _sim.Knockback(index, from, meters);
 
         // ---- IBossControl (was LegacyBossControl) ------------------------------------------------------------------
 

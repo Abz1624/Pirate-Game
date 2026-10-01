@@ -418,6 +418,11 @@ Owner playtest: a run in the Editor and on the Pixel 9a; does anything look diff
 
 #### M4 — New weapons, batch 1, and the missing evolutions
 
+Split on 1 Oct 2026 while the owner was away (D30, `phase-04-weapons/PLAN.md`): **M4a** (built: the mechanics the new
+weapons need, opt-in with today's weapons proved unchanged, and the flamethrower VFX fix R-89) and **M4 proper** (the
+weapons and evolutions below, after the owner's answers to questions 17-26). The flame-stream prewarm left by M3e (D27)
+goes with M4 proper.
+
 Goal: the first new weapons exist with evolutions, balanced by the model and the simulator and unlockable with RUM, and
 every existing weapon has an evolution.
 

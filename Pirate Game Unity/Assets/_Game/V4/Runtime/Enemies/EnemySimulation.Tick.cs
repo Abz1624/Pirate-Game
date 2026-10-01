@@ -299,9 +299,86 @@ namespace RoguePirates.V4.Enemies
             }
         }
 
+        // ---- V5 M4: weapon slows and knockbacks ----------------------------------------------------------------------
+
+        /// <summary>Seconds a weapon knockback takes to push its distance.</summary>
+        public const float PushSeconds = 0.15f;
+        /// <summary>The slow and knockback rules (the weapon rules config; the design's values when there is none).</summary>
+        public System.Func<RoguePirates.V4.Config.WeaponRulesConfig> WeaponRules;
+
+        /// <summary>
+        /// Slows the enemy by <paramref name="fraction"/> of its speed for <paramref name="seconds"/>. The strongest slow
+        /// holds: a weaker one does nothing while it lasts; an equal one extends it; a stronger one replaces it. Regular
+        /// enemies (minibosses included) are slowed at most <c>maxSlow</c>; bosses take <c>bossSlowShare</c>, at most
+        /// <c>bossMaxSlow</c> (combat design 2.3, which names bosses only). A committed charge dash and the boss's forced
+        /// movement are not slowed (they keep their telegraphed reach).
+        /// </summary>
+        public void ApplySlow(int index, float fraction, float seconds)
+        {
+            if (index < 0 || index >= _agents.Length || !_agents[index].active || fraction <= 0f || seconds <= 0f) return;
+            ref var e = ref _agents[index];
+            var def = _definitions[e.definitionIndex];
+            var rules = WeaponRules?.Invoke();
+            var big = e.isBoss || def.isBoss;
+            fraction = big
+                ? Mathf.Min(rules != null ? rules.bossMaxSlow : 0.2f, fraction * (rules != null ? rules.bossSlowShare : 0.5f))
+                : Mathf.Min(rules != null ? rules.maxSlow : 0.6f, fraction);
+            if (fraction <= 0f) return;
+            if (e.slowTimer > 0f && e.slowFraction > fraction + 1e-4f) return;
+            if (e.slowTimer > 0f && Mathf.Abs(e.slowFraction - fraction) <= 1e-4f) e.slowTimer = Mathf.Max(e.slowTimer, seconds);
+            else { e.slowFraction = fraction; e.slowTimer = seconds; }
+        }
+
+        /// <summary>The enemy's speed multiplier from slows (1 = none).</summary>
+        public float SpeedMultiplier(int index) =>
+            index >= 0 && index < _agents.Length && _agents[index].slowTimer > 0f ? 1f - _agents[index].slowFraction : 1f;
+
+        /// <summary>Pushes the enemy <paramref name="meters"/> (at most <c>maxKnockbackMeters</c>) away from <paramref name="from"/>
+        /// over <c>knockbackSeconds</c> (islands still stop it). Bosses are not moved; elites go <c>eliteKnockbackShare</c>
+        /// of it (combat design 2.3).</summary>
+        public void Knockback(int index, Vector3 from, float meters)
+        {
+            if (index < 0 || index >= _agents.Length || !_agents[index].active || meters <= 0f) return;
+            ref var e = ref _agents[index];
+            var def = _definitions[e.definitionIndex];
+            if (e.isBoss || def.isBoss) return;
+            var rules = WeaponRules?.Invoke();
+            meters = Mathf.Min(meters, rules != null ? rules.maxKnockbackMeters : 3f);
+            if (e.isElite) meters *= rules != null ? rules.eliteKnockbackShare : 0.5f;
+            if (meters <= 0f) return;
+            var seconds = rules != null ? rules.knockbackSeconds : 0.15f;
+            var away = e.position - from;
+            away.y = 0f;
+            if (away.sqrMagnitude < 1e-4f) away = e.velocity.sqrMagnitude > 1e-4f ? -e.velocity : Vector3.forward;
+            away.y = 0f;
+            e.pushVelocity = away.normalized * (meters / seconds);
+            e.pushTimer = seconds;
+        }
+
+        /// <summary>This tick's slow multiplier and knockback displacement; counts both down.</summary>
+        static float WeaponMotion(ref EnemyUnit e, float dt, out Vector3 push)
+        {
+            push = Vector3.zero;
+            var multiplier = 1f;
+            if (e.slowTimer > 0f)
+            {
+                multiplier = 1f - e.slowFraction;
+                e.slowTimer -= dt;
+                if (e.slowTimer <= 0f) { e.slowTimer = 0f; e.slowFraction = 0f; }
+            }
+            if (e.pushTimer > 0f)
+            {
+                push = e.pushVelocity * Mathf.Min(dt, e.pushTimer);
+                e.pushTimer = Mathf.Max(0f, e.pushTimer - dt);
+            }
+            return multiplier;
+        }
+
         void MoveAgent(ref EnemyUnit e, float dt, Vector3 desiredVelocity, EnemyDefinition def, Vector3 playerPos)
         {
-            var delta = e.velocity * dt;
+            var speed = WeaponMotion(ref e, dt, out var push);
+            if (IsCommittedDash(e) || (e.isBoss && _bossUseForcedVelocity)) speed = 1f; // telegraphed moves keep their reach
+            var delta = e.velocity * (dt * speed) + push;
             if (!_settings.collideWithIslands || !IslandObstacles.IsAvailable)
             {
                 e.position += delta;
@@ -329,7 +406,7 @@ namespace RoguePirates.V4.Enemies
                 _settings.islandAvoidanceProbeDistance,
                 steerBias);
 
-            delta = e.velocity * dt;
+            delta = e.velocity * (dt * speed) + push;
             var height = IslandObstacles.GetCollisionHeight(collisionRadius);
             e.position = IslandObstacles.ResolveCapsuleMovement(
                 e.position,

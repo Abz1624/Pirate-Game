@@ -18,6 +18,8 @@ namespace RoguePirates.V4.Foundation.PlayerSystems
 
         public float BoostNormalized => _boostTimer > 0f ? _boostTimer / boostDuration : 0f;
         public bool CanBoost => _cooldownTimer <= 0f && _boostTimer <= 0f;
+        /// <summary>V5 M4: the ship is boosting now (the Ramming Prow hits while this is on).</summary>
+        public bool IsBoosting => _boostTimer > 0f;
 
         public void Bind(PlayerShipController ship) => _ship = ship;
 

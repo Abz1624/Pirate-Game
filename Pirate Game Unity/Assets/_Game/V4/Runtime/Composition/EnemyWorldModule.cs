@@ -111,6 +111,7 @@ namespace RoguePirates.V4.Composition
             Hellfire = new HellfirePatches(Simulation, Statuses, HellfireEnvironment);
             DifficultyCurveConfig curve = null; // cached: edits change the run's copy in place
             Simulation.Curve = () => curve ??= _config?.Single<DifficultyCurveConfig>(); // M10
+            Simulation.WeaponRules = () => _config?.Single<WeaponRulesConfig>(); // V5 M4: slow and knockback caps
 
             // V3 Despawn after the slot is freed: statuses by slot, the encounter mapping (the legacy spawner's count left with it in M9).
             Simulation.Despawned += (slot, unitId, profile) =>

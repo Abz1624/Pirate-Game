@@ -21,6 +21,8 @@ namespace RoguePirates.V4.Weapons
         bool IsElite(int index);
         bool IsBoss(int index);
         bool TryGetNearest(Vector3 from, float range, out int index, bool preferElite = false);
+        /// <summary>V5 M4: the enemy's unit id (stable for its life; a slot is reused by later spawns).</summary>
+        int UnitId(int index) => index;
     }
 
     /// <summary>Damage and statuses on enemies (V3 kill path until M8).</summary>
@@ -28,6 +30,10 @@ namespace RoguePirates.V4.Weapons
     {
         void ApplyDamage(int index, float amount, bool isCrit, bool showHitFeedback = true, string weaponId = null);
         void ApplyStatus(int index, WeaponStatus status, float strength);
+        /// <summary>V5 M4: slows the enemy by a share of its speed for some seconds (the strongest slow holds).</summary>
+        void ApplySlow(int index, float fraction, float seconds) { }
+        /// <summary>V5 M4: pushes the enemy a distance away from a point (bosses and minibosses are not moved).</summary>
+        void Knockback(int index, Vector3 from, float meters) { }
     }
 
     /// <summary>The player ship as weapons read it.</summary>
@@ -39,6 +45,8 @@ namespace RoguePirates.V4.Weapons
         Vector3 MovementForward { get; }
         /// <summary>A point in the ship's local space in world space (orbit blades circle the ship's transform).</summary>
         Vector3 TransformPoint(Vector3 local);
+        /// <summary>V5 M4: the ship is boosting (the Ramming Prow).</summary>
+        bool IsBoosting => false;
     }
 
     /// <summary>
@@ -119,6 +127,8 @@ namespace RoguePirates.V4.Weapons
         /// <summary>A landing ring that fills over exactly <paramref name="seconds"/> (mortar, R-27 fix).</summary>
         void TimedRing(Vector3 position, float radius, float seconds);
         void AreaImpact(Vector3 position, float radius);
+        /// <summary>V5 M4: an aura weapon's pulse around the ship (placeholder: the area impact ring).</summary>
+        void AuraPulse(Vector3 center, float radius) => AreaImpact(center, radius);
         void BurningPatch(Vector3 position, float radius);
         void WaterSplash(Vector3 position);
         int SkiffSpawned(Vector3 position, Vector3 forward);

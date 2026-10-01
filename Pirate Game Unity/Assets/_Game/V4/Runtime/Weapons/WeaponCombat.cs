@@ -23,6 +23,8 @@ namespace RoguePirates.V4.Weapons
         public float StreamRemaining, RechargeRemaining, StreamTickTimer;
         /// <summary>Time since the flame's last burning patch on the water (Hellfire Nozzle, M8 playtest).</summary>
         public float StreamPatchTimer;
+        /// <summary>V5 M4: the flame cone's reach from the ship (m) and full width (degrees) at its last tick, for its visual.</summary>
+        public float StreamRange, StreamArcDegrees;
 
         public string Id => Config != null ? Config.weaponId : null;
         public ConfigEnums.EvolutionEffect EvolutionEffect => Evolution != null ? Evolution.effect : ConfigEnums.EvolutionEffect.None;
@@ -211,6 +213,9 @@ namespace RoguePirates.V4.Weapons
                 TarSlowBoss = p.tarSlowBoss,
                 ControlSecondsPerHit = p.controlSecondsPerHit,
                 SplashOnDespawn = p.splashOnDespawn,
+                Pierce = p.pierce,
+                SlowFraction = p.slowFraction,
+                SlowSeconds = p.slowSeconds,
             };
         }
 

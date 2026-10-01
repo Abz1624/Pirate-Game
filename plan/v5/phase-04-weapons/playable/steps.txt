@@ -1,0 +1,3 @@
+flame 1: emitting True, shaped reach 9.50 m, arc 52, cone range 9.50 m (muzzle offset 1.65)
+flame 2: emitting True, shaped reach 9.50 m, arc 52, cone range 9.50 m (muzzle offset 1.65)
+flame 3: emitting True, shaped reach 9.50 m, arc 52, cone range 9.50 m (muzzle offset 1.65)

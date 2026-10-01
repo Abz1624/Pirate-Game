@@ -12,8 +12,10 @@ namespace RoguePirates.V4.Presentation.Weapons
     /// stream prefab, its flame particle system as V3's juice controller picked it), shown while a V4 stream weapon is
     /// streaming and posed ahead of the ship. V3's juice controller reset that particle system's emission to 1 particle a
     /// second (authored 60), so the stream was nearly invisible; this keeps the authored emission.
-    /// TODO (M5 playtest note, register R-89): the flamethrower visuals need a proper update later; this stream runs
-    /// past the 9.5 m damage cone and is not timed to the stream's start and end.
+    /// V5 M4 (register R-89): the flame now reaches as far as the damage cone, which is measured from the muzzle (each
+    /// particle system's start speed is scaled so its particles travel the cone's range in their authored lifetime, which
+    /// keeps the flame's density) and spreads as wide as the cone's arc (its cone shape's angle), both following the
+    /// slot's live range and arc (size, items, Hellfire).
     /// </summary>
     public sealed class FlameStreamPresenter : MonoBehaviour
     {
@@ -26,6 +28,9 @@ namespace RoguePirates.V4.Presentation.Weapons
         Vector3 _lastForward = Vector3.forward;
         Transform _mount;
         ParticleSystem[] _particles;
+        /// <summary>Each particle system's authored lifetime and start speed multipliers and cone-shape angle (-1 = no cone).</summary>
+        float[] _authoredLifetime, _authoredSpeed, _authoredAngle;
+        float _shapedRange = -1f, _shapedArc = -1f;
         bool _emitting;
         bool _unavailable;
 
@@ -58,6 +63,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 var offset = stream != null ? stream.Config.stream.forwardOffset : 1.65f;
                 _mount.SetPositionAndRotation(_ship.Position + forward * offset + Vector3.up * Height, Quaternion.LookRotation(forward, Vector3.up));
             }
+            if (stream != null) Shape(stream.StreamRange, stream.StreamArcDegrees); // the cone is measured from the muzzle
             SetEmitting(stream != null);
         }
 
@@ -93,7 +99,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 if (ps.name.IndexOf("Flame", System.StringComparison.OrdinalIgnoreCase) >= 0) { source = ps.transform; break; }
                 if (source == null) source = ps.transform;
             }
-            if (source == null) { Destroy(template); _unavailable = true; return false; }
+            if (source == null) { Kill(template); _unavailable = true; return false; }
 
             _mount = new GameObject("V4FlameStream").transform;
             _mount.SetParent(transform, false);
@@ -103,12 +109,23 @@ namespace RoguePirates.V4.Presentation.Weapons
             visual.transform.localRotation = source.localRotation;
             visual.transform.localScale = Vector3.one * ((_settings != null ? _settings.flamethrowerScale : 1f) * VisualScaleMult);
             visual.SetActive(true);
-            Destroy(template);
-            foreach (var c in visual.GetComponentsInChildren<Collider>(true)) Destroy(c);
-            foreach (var b in visual.GetComponentsInChildren<Rigidbody>(true)) Destroy(b);
+            Kill(template);
+            foreach (var c in visual.GetComponentsInChildren<Collider>(true)) Kill(c);
+            foreach (var b in visual.GetComponentsInChildren<Rigidbody>(true)) Kill(b);
             VfxParticleUtil.SetRenderersEnabled(visual, true);
 
             _particles = visual.GetComponentsInChildren<ParticleSystem>(true);
+            _authoredLifetime = new float[_particles.Length];
+            _authoredSpeed = new float[_particles.Length];
+            _authoredAngle = new float[_particles.Length];
+            for (var i = 0; i < _particles.Length; i++)
+            {
+                var main = _particles[i].main;
+                _authoredLifetime[i] = main.startLifetimeMultiplier;
+                _authoredSpeed[i] = main.startSpeedMultiplier;
+                var shape = _particles[i].shape;
+                _authoredAngle[i] = shape.enabled && shape.shapeType == ParticleSystemShapeType.Cone ? shape.angle : -1f;
+            }
             foreach (var ps in _particles)
             {
                 var main = ps.main;
@@ -122,6 +139,57 @@ namespace RoguePirates.V4.Presentation.Weapons
             }
             _emitting = false;
             return true;
+        }
+
+        /// <summary>The flame's reach past the muzzle (m) and full width (degrees): start speeds scaled so the particles
+        /// travel the reach in their lifetime, cone angles to the width (only when they change).</summary>
+        void Shape(float reach, float arcDegrees)
+        {
+            if (_particles == null || reach <= 0f) return;
+            if (Mathf.Abs(reach - _shapedRange) < 0.05f && Mathf.Abs(arcDegrees - _shapedArc) < 0.5f) return;
+            _shapedRange = reach;
+            _shapedArc = arcDegrees;
+            for (var i = 0; i < _particles.Length; i++)
+            {
+                var ps = _particles[i];
+                if (ps == null) continue;
+                var scale = SpeedScale(ps);
+                if (_authoredSpeed[i] > 0.01f && _authoredLifetime[i] > 0.01f)
+                {
+                    var main = ps.main;
+                    main.startSpeedMultiplier = reach / (_authoredLifetime[i] * scale);
+                }
+                if (_authoredAngle[i] >= 0f && arcDegrees > 0f)
+                {
+                    var shape = ps.shape;
+                    shape.angle = Mathf.Clamp(arcDegrees * 0.5f, 1f, 89f);
+                }
+            }
+        }
+
+        /// <summary>The flame's reach and width as last shaped (tests).</summary>
+        public float ShapedReach => _shapedRange;
+        public float ShapedArc => _shapedArc;
+
+        /// <summary>World units per unit of start speed: the system's scale when it scales its shape and speed
+        /// (Hierarchy or Local scaling), else 1.</summary>
+        static float SpeedScale(ParticleSystem ps)
+        {
+            if (ps.main.scalingMode == ParticleSystemScalingMode.Shape) return 1f;
+            var z = ps.transform.lossyScale.z;
+            return z > 0.0001f ? z : 1f;
+        }
+
+        /// <summary>Whether a particle system's particles travel (start speed above zero).</summary>
+        public bool Travels(int index) => _particles != null && index >= 0 && index < _particles.Length && _authoredSpeed[index] > 0.01f;
+        public ParticleSystem Particles(int index) => _particles != null && index >= 0 && index < _particles.Length ? _particles[index] : null;
+
+        public int ParticleSystemCount => _particles != null ? _particles.Length : 0;
+
+        static void Kill(Object o)
+        {
+            if (o == null) return;
+            if (Application.isPlaying) Destroy(o); else DestroyImmediate(o);
         }
 
         void SetEmitting(bool on)

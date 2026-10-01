@@ -12,6 +12,10 @@ namespace RoguePirates.V4.Weapons
         public bool SplashOnDespawn;
         /// <summary>Damage-ledger credit (bursts and follow-ups credit their weapon; V3 recorded no projectile hits).</summary>
         public string LedgerId;
+        /// <summary>V5 M4: enemies passed through after the first hit (0 = stop at the first).</summary>
+        public int Pierce;
+        /// <summary>V5 M4: a slow each hit applies (share of speed, seconds).</summary>
+        public float SlowFraction, SlowSeconds;
 
         public static ProjectileTraits Plain => new ProjectileTraits { SplashOnDespawn = true };
         public static ProjectileTraits Credited(string ledgerId) => new ProjectileTraits { SplashOnDespawn = true, LedgerId = ledgerId };
@@ -43,6 +47,40 @@ namespace RoguePirates.V4.Weapons
             public ProjectileTraits Traits;
             public int HomingEnemy;
             public int View;
+            /// <summary>V5 M4: the enemies this shot has hit (unit ids), so a piercing shot hits each once.</summary>
+            public int Hit0, Hit1, Hit2, Hit3, Hit4, Hit5, Hit6, Hit7, HitCount;
+        }
+
+        /// <summary>The most enemies one shot can hit (pierce is clamped to this minus one).</summary>
+        public const int MaxHitsPerShot = 8;
+
+        static bool HasHit(in Projectile p, int enemy)
+        {
+            if (p.HitCount > 0 && p.Hit0 == enemy) return true;
+            if (p.HitCount > 1 && p.Hit1 == enemy) return true;
+            if (p.HitCount > 2 && p.Hit2 == enemy) return true;
+            if (p.HitCount > 3 && p.Hit3 == enemy) return true;
+            if (p.HitCount > 4 && p.Hit4 == enemy) return true;
+            if (p.HitCount > 5 && p.Hit5 == enemy) return true;
+            if (p.HitCount > 6 && p.Hit6 == enemy) return true;
+            return p.HitCount > 7 && p.Hit7 == enemy;
+        }
+
+        static void RecordHit(ref Projectile p, int enemy)
+        {
+            switch (p.HitCount)
+            {
+                case 0: p.Hit0 = enemy; break;
+                case 1: p.Hit1 = enemy; break;
+                case 2: p.Hit2 = enemy; break;
+                case 3: p.Hit3 = enemy; break;
+                case 4: p.Hit4 = enemy; break;
+                case 5: p.Hit5 = enemy; break;
+                case 6: p.Hit6 = enemy; break;
+                case 7: p.Hit7 = enemy; break;
+                default: return;
+            }
+            p.HitCount++;
         }
 
         readonly Projectile[] _pool;
@@ -89,7 +127,7 @@ namespace RoguePirates.V4.Weapons
                 Damage = damage,
                 Life = life,
                 Radius = radius,
-                PierceLeft = 1,
+                PierceLeft = 1 + Mathf.Clamp(traits.Pierce, 0, MaxHitsPerShot - 1),
                 IsCrit = isCrit,
                 WeaponId = weaponId,
                 Traits = traits,
@@ -122,7 +160,7 @@ namespace RoguePirates.V4.Weapons
                 {
                     for (var ei = 0; ei < _enemies.Capacity; ei++)
                     {
-                        if (!_enemies.IsActive(ei)) continue;
+                        if (!_enemies.IsActive(ei) || (p.HitCount > 0 && HasHit(p, _enemies.UnitId(ei)))) continue;
                         var agentPos = _enemies.Position(ei) + _enemies.Velocity(ei) * (dt * 0.5f);
                         if (!TryHitAgentAlongSegment(segmentStart, p.Position, p.Radius, agentPos, _enemies.Radius(ei)))
                             continue;
@@ -135,6 +173,9 @@ namespace RoguePirates.V4.Weapons
                             _damage.ApplyStatus(ei, WeaponStatus.Tarred, slow);
                             _hooks.RecordControl(p.WeaponId, p.Traits.ControlSecondsPerHit);
                         }
+                        if (p.Traits.SlowFraction > 0f) _damage.ApplySlow(ei, p.Traits.SlowFraction, p.Traits.SlowSeconds);
+                        RecordHit(ref p, _enemies.UnitId(ei));
+                        p.HomingEnemy = -1; // a piercing shot flies on instead of turning back to the enemy it hit
                         p.PierceLeft--;
                         if (p.PierceLeft <= 0)
                             break;

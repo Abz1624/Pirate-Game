@@ -50,6 +50,9 @@ own commit on `v5-live-game`.
 | D25 | Batching and culling: the 14 game models over 6,000 triangles get Unity's generated Mesh LODs (the Salvage Chest model alone is ~77,650 triangles and a voyage shows about eleven); pickups cast no shadows; the top-down camera draws nothing past 250 m (was 1000 m for a view of ~60 m). Static batching of the islands was tried and taken out: it saved ~40-55 of ~500 batches for +25 MB of combined meshes on a build already over its memory budget. Dynamic batching stays off (no gain with the SRP Batcher on). Occlusion culling does not apply here (a stage generated at run start has nothing to bake, a steep top-down camera over open sea, no GPU occlusion on WebGL) | Unity's own order (static batching, then the SRP Batcher, then instancing), each measured on the same map, three runs a side: batches at 9:00 991 to 784, triangles 1.57M to 1.45M, frame 10.2 to 9.1 ms in the Editor | Keeping static batching for its batch count; baking occlusion data |
 | D26 | Left for you (they change the look): the 76 enemy health-bar canvases (one batch each) and the pickup sparkles (three particle systems per loot barrel) are now the biggest batch counts; and the audit's look-changing quick wins (the second directional light, bloom quality). Questions 15-16 | You check how the game looks at each playtest | Changing them while you were away |
 | D27 | Plan items of M3e not done, each with its reason (in plan/v5/phase-03e-performance/PLAN.md): capped pools (no pool makes anything mid-run now), the flame-stream prewarm and minimap glyph reuse (M4, M7), projectile checks on the spatial hash (measured under 0.05 ms), the last 1.3 KB a frame of garbage (listed by cause), per-instance material copies and per-layer cull distances (they change the look; M7), the explosion prefabs' zero-intensity point lights (no visible change; measured on the phone in M7), a test listing every per-event spawn site (replaced by the pool count after each perf run), and the audit's look-changing quick wins (your playtest, then M7) | Each was measured or changes how the game looks, which you check | Doing them all now |
+| D28 | M4's new mechanics (slow, pierce, knockback, several orbit weapons, an aura without a target, the boost flag) are opt-in fields whose defaults leave today's ten weapons and six evolutions exactly as they were, proved by a golden test written on the code before M4. The Knockback upgrade card, which six weapons can roll today and which does nothing, stays as it is; it now scales the new orbit knockback, so it does something only on weapons that knock back | You playtested today's weapons; changing them silently would undo that. Your call on the dead card: question 17 | Making knockback live on all weapons; removing the card from offers |
+| D29 | Slow and knockback follow the combat design 2.3, as data: a regular enemy (minibosses included) keeps at least 40% of its speed; bosses take half a slow, at most 20%, and are not knocked back; elites take half a knockback; one hit pushes at most 3 m. A committed charge dash and the boss's forced movement are not slowed (they keep their telegraphed reach). The strongest slow holds | The design's rules (it names bosses only); one slow slot per enemy keeps it simple (a weaker, longer slow is lost when a stronger one ends) | Two slow slots; boss rules for minibosses (question 24) |
+| D30 | M4 split: the mechanics and the flamethrower VFX fix (R-89) were built while you were away as M4a, their own commit; the four weapons and eight evolutions wait for your answers to questions 17-23 (the plan review found decisions only you can take) | Building weapons on guessed prices, a Ram that needs a button against "auto-attacks", and dropped design milestones would likely be redone | Building them all on my guesses |
 
 ## Questions for you (when you are back)
 
@@ -76,3 +79,18 @@ own commit on `v5-live-game`.
 15. Health bars (D26): show an enemy's bar only once it is damaged (fewer bars, fewer draw calls), or keep a bar on
     every enemy?
 16. Pickup sparkles (D26): fewer particles on loot barrels, or keep them?
+17. The Knockback upgrade card (D28): six of today's weapons can roll it and it does nothing. Keep it, take it out of
+    their upgrade pool, or make knockback live on them (changes how they play)?
+18. New weapon prices: the design's 650-900 Rum, or on today's ladder (60-100; runs earn about 22-82 Rum)?
+19. Ramming Prow: it needs the boost button, against the "auto-attacks" rule. Keep it? And should enemies still hurt
+    the ship while it rams?
+20. The design gives each new weapon rank 4/8/12 milestones (an extra anchor, a second pulse...). Keep them as upgrade
+    steps, or drop them (today's weapons have none)?
+21. Evolution level for the new evolutions: 5 (today's data, D11) or the 8 of your Q18b? (Question 4 again.)
+22. With 14 weapons in the pool instead of 10, focused builds will evolve less often. May I change offer weights to keep
+    the evolution rate, or accept the drop?
+23. Should the Harpoon's tar become a real slow now that one exists?
+24. Minibosses (the Reef Crab): slowed and knocked back like regular enemies, as the design says (bosses only get the
+    half slow and immunity)? Or treat them as bosses?
+25. Should slows also shorten enemies' charge dashes? (Built: no, a dash keeps its telegraphed reach.)
+26. The flame: it now reaches exactly the damage cone (9.5 m). Does it look right, and is it dense enough?

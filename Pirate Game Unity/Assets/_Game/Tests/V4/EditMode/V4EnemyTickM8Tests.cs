@@ -249,5 +249,136 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(w.V4.Agents[slot].active);
             Assert.AreEqual("deck_cannons", w.V4.Agents[slot].lastHitWeaponId, "the last hit's weapon is kept for the kill event");
         }
-    }
+    
+        // ---- V5 M4: weapon slows and knockbacks --------------------------------------------------------------------
+
+        (Worlds w, int slot) OneEnemy(ConfigSetRuntime config, string id, Vector3 at, EliteAffix affix = EliteAffix.None)
+        {
+            UnityEngine.TestTools.LogAssert.ignoreFailingMessages = true;
+            var w = Make(config);
+            w.V4.WeaponRules = () => config.Single<WeaponRulesConfig>();
+            var def = System.Array.FindIndex(w.Defs, d => d != null && d.id == id);
+            Assert.GreaterOrEqual(def, 0, id);
+            return (w, w.V4.Spawn(def, at, affix));
+        }
+
+        void Step(Worlds w, int frames)
+        {
+            for (var f = 0; f < frames; f++)
+            {
+                w.ShipB.transform.position = Vector3.zero;
+                IFrameUntil.SetValue(w.ShipB.Damage, 1e9f); // the ship takes no hits while we measure
+                w.V4.Tick(Dt, w.ShipB.Position, w.ShipB.Damage);
+            }
+        }
+
+        [Test]
+        public void ASlow_IsCapped_AndTheStrongestHolds()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            var rules = config.Single<WeaponRulesConfig>();
+            var (w, slot) = OneEnemy(config, "shark", new Vector3(30f, 0f, 0f));
+            w.V4.ApplySlow(slot, 0.9f, 2f);
+            Assert.AreEqual(1f - rules.maxSlow, w.V4.SpeedMultiplier(slot), 1e-4f, "an ordinary enemy keeps at least 40% of its speed");
+            w.V4.ApplySlow(slot, 0.3f, 10f);
+            Assert.AreEqual(1f - rules.maxSlow, w.V4.SpeedMultiplier(slot), 1e-4f, "a weaker slow does not replace a stronger one");
+            Step(w, 130); // > 2 s
+            Assert.AreEqual(1f, w.V4.SpeedMultiplier(slot), 1e-4f, "it wears off");
+
+            var (b, boss) = OneEnemy(config, "barnacle_king", new Vector3(30f, 0f, 0f));
+            b.V4.ApplySlow(boss, 0.6f, 2f);
+            Assert.AreEqual(1f - Mathf.Min(rules.bossMaxSlow, 0.6f * rules.bossSlowShare), b.V4.SpeedMultiplier(boss), 1e-4f, "a boss takes half, at most 20%");
+
+            var (m, crab) = OneEnemy(config, "reef_crab_miniboss", new Vector3(30f, 0f, 0f));
+            m.V4.ApplySlow(crab, 0.5f, 2f);
+            Assert.AreEqual(0.5f, m.V4.SpeedMultiplier(crab), 1e-4f, "a miniboss takes slows as a regular enemy (the design names bosses only)");
+        }
+
+        [Test]
+        public void AnEqualSlow_Extends_AndAStrongerOne_Replaces()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            var (w, slot) = OneEnemy(config, "shark", new Vector3(30f, 0f, 0f));
+            w.V4.ApplySlow(slot, 0.3f, 1f);
+            w.V4.ApplySlow(slot, 0.3f, 3f);
+            Step(w, 120); // 2 s
+            Assert.AreEqual(0.7f, w.V4.SpeedMultiplier(slot), 1e-4f, "an equal slow extended it to 3 s");
+            w.V4.ApplySlow(slot, 0.5f, 0.5f);
+            Assert.AreEqual(0.5f, w.V4.SpeedMultiplier(slot), 1e-4f, "a stronger one replaces it");
+            Step(w, 40);
+            Assert.AreEqual(1f, w.V4.SpeedMultiplier(slot), 1e-4f, "and ends with its own time (one slow slot: the weaker one is gone)");
+        }
+
+        [Test]
+        public void TheWeaponSink_ReachesTheSimulation_AndReportsTheSlowedVelocity()
+        {
+            // The real path a weapon uses: IEnemyDamageSink = EnemyWorldContracts → EnemySimulation (review: tests that
+            // called the simulation directly would pass if the forwarding fell back to the interface's no-op).
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            var (w, slot) = OneEnemy(config, "shark", new Vector3(30f, 0f, 0f));
+            Step(w, 30);
+            var contracts = new EnemyWorldContracts(w.V4, w.V4Statuses);
+            RoguePirates.V4.Weapons.IEnemyDamageSink sink = contracts;
+            RoguePirates.V4.Weapons.IEnemyQuery query = contracts;
+            var fullVelocity = query.Velocity(slot);
+            Assert.Greater(fullVelocity.magnitude, 0.5f, "it moves");
+            sink.ApplySlow(slot, 0.5f, 3f);
+            Assert.AreEqual(0.5f, w.V4.SpeedMultiplier(slot), 1e-4f, "the sink's slow reached the simulation");
+            Assert.AreEqual(fullVelocity.magnitude * 0.5f, query.Velocity(slot).magnitude, 1e-3f, "aim leads see the slowed velocity");
+            Assert.AreEqual(w.V4.Agents[slot].id, query.UnitId(slot), "unit ids for pierce and per-target memory");
+            sink.Knockback(slot, Vector3.zero, 2f);
+            Assert.Greater(w.V4.Agents[slot].pushTimer, 0f, "the sink's knockback reached the simulation");
+        }
+
+        [Test]
+        public void ASlowedEnemy_MovesSlower_ByItsShare()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            float Travel(bool slowed)
+            {
+                var (w, slot) = OneEnemy(config, "shark", new Vector3(40f, 0f, 0f));
+                Step(w, 30); // up to speed
+                if (slowed) w.V4.ApplySlow(slot, 0.5f, 5f);
+                var from = w.V4.Agents[slot].position;
+                Step(w, 30);
+                var d = w.V4.Agents[slot].position - from;
+                d.y = 0f;
+                return d.magnitude;
+            }
+            var normal = Travel(false);
+            var slow = Travel(true);
+            Assert.Greater(normal, 1f, "it moved");
+            Assert.AreEqual(0.5f, slow / normal, 0.08f, "half speed under a 50% slow");
+        }
+
+        [Test]
+        public void AKnockback_PushesItsDistance_ElitesHalf_BossesNot()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            float Pushed(string id, EliteAffix affix, bool knock)
+            {
+                var (w, slot) = OneEnemy(config, id, new Vector3(12f, 0f, 0f), affix);
+                if (knock) w.V4.Knockback(slot, Vector3.zero, 2f);
+                Step(w, 15); // 0.25 s > the 0.15 s push
+                return w.V4.Agents[slot].position.x;
+            }
+            Assert.AreEqual(2f, Pushed("shark", EliteAffix.None, true) - Pushed("shark", EliteAffix.None, false), 0.35f, "2 m away from the ship");
+            Assert.AreEqual(1f, Pushed("shark", EliteAffix.Rich, true) - Pushed("shark", EliteAffix.Rich, false), 0.35f, "an elite half");
+            Assert.AreEqual(Pushed("barnacle_king", EliteAffix.None, false), Pushed("barnacle_king", EliteAffix.None, true), 1e-3f, "a boss is not moved");
+        }
+
+        [Test]
+        public void AKnockback_IsCappedAt3Meters()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            float Pushed(float meters)
+            {
+                var (w, slot) = OneEnemy(config, "shark", new Vector3(12f, 0f, 0f));
+                if (meters > 0f) w.V4.Knockback(slot, Vector3.zero, meters);
+                Step(w, 15);
+                return w.V4.Agents[slot].position.x;
+            }
+            Assert.AreEqual(config.Single<WeaponRulesConfig>().maxKnockbackMeters, Pushed(8f) - Pushed(0f), 0.4f, "an 8 m push (stacked upgrades) is capped at 3 m");
+        }
+}
 }

@@ -429,77 +429,173 @@ namespace RoguePirates.V4.Weapons
             public float Radius;
         }
 
-        readonly List<HitSphere> _hits = new List<HitSphere>();
+        /// <summary>One Orbit weapon's blades and hit timer (V5 M4: each Orbit weapon has its own; only the first worked).</summary>
+        sealed class OrbitState
+        {
+            public readonly List<HitSphere> Hits = new List<HitSphere>();
+            public float HitTimer;
+            /// <summary>Per-target mode: this weapon's clock and the time each enemy slot was last hit.</summary>
+            public float Clock;
+            public float[] LastHit = System.Array.Empty<float>();
+            public int[] LastUnit = System.Array.Empty<int>();
+        }
+
+        static readonly List<HitSphere> NoHits = new List<HitSphere>();
+        readonly Dictionary<WeaponSlot, OrbitState> _states = new Dictionary<WeaponSlot, OrbitState>();
+        readonly List<WeaponSlot> _orbitSlots = new List<WeaponSlot>();
         readonly HashSet<int> _hitThisTick = new HashSet<int>();
-        float _hitTimer;
 
         public OrbitBehavior(WeaponCombat c) : base(c) { }
         public override bool NeedsTarget => false;
-        public IReadOnlyList<HitSphere> Hits => _hits;
+
+        /// <summary>The first Orbit weapon's blades (tests; the drawn cutlass blades use <see cref="HitsOf"/>).</summary>
+        public IReadOnlyList<HitSphere> Hits => _orbitSlots.Count > 0 && _states.TryGetValue(_orbitSlots[0], out var s) ? s.Hits : NoHits;
+
+        /// <summary>A given Orbit weapon's blades (empty when it has none).</summary>
+        public IReadOnlyList<HitSphere> HitsOf(WeaponSlot slot) => slot != null && _states.TryGetValue(slot, out var s) ? s.Hits : NoHits;
+
+        /// <summary>The Orbit weapons in slot order, as of the last <see cref="ComputeHits"/>.</summary>
+        public IReadOnlyList<WeaponSlot> OrbitSlots => _orbitSlots;
 
         /// <summary>Blades deal damage continuously (<see cref="TickHits"/>); the cooldown only counts emissions.</summary>
         public override WeaponFireOutcome Fire(WeaponSlot w) => WeaponFireOutcome.Emitted;
 
-        /// <summary>
-        /// Blade positions for the next hit tick. V3 computed them in a presentation Update at order 50 from Time.time and
-        /// the blade transforms parented to the ship, and the weapon read them the frame after; V4 keeps that timing
-        /// (its order-50 slot calls this).
-        /// </summary>
-        public void ComputeHits(IReadOnlyList<WeaponSlot> slots, float time)
+        void CollectOrbitSlots(IReadOnlyList<WeaponSlot> slots)
         {
-            WeaponSlot w = null;
+            _orbitSlots.Clear();
             for (var i = 0; i < slots.Count; i++)
-                if (slots[i].Config != null && slots[i].Config.behavior == ConfigEnums.WeaponBehavior.Orbit) { w = slots[i]; break; }
-            _hits.Clear();
-            if (w == null || C.Ship == null || !C.Ship.Exists) return;
-
-            var o = w.Config.orbit;
-            var count = o.baseBlades + w.QuantityBonus;
-            var orbitRadius = o.orbitRadius * w.SizeMult;
-            if (w.EvolutionEffect == Effect.PulsingOrbit)
+                if (slots[i] != null && slots[i].Config != null && slots[i].Config.behavior == ConfigEnums.WeaponBehavior.Orbit) _orbitSlots.Add(slots[i]);
+            // Forget weapons that left the loadout.
+            if (_states.Count > _orbitSlots.Count)
             {
-                var pulse = w.Evolution.orbitPulse;
-                orbitRadius *= pulse.minimum + pulse.amplitude * (0.5f + 0.5f * Mathf.Sin(time * pulse.frequency));
-            }
-            for (var index = 0; index < count; index++)
-            {
-                var angle = (time * o.angularSpeedDegrees + index * (360f / Mathf.Max(1, count))) * Mathf.Deg2Rad;
-                var localOffset = new Vector3(Mathf.Sin(angle), o.heightOffset, Mathf.Cos(angle)) * orbitRadius;
-                _hits.Add(new HitSphere { Position = C.Ship.TransformPoint(localOffset), Radius = o.hitRadius });
+                var gone = new List<WeaponSlot>();
+                foreach (var key in _states.Keys) if (!_orbitSlots.Contains(key)) gone.Add(key);
+                foreach (var key in gone) _states.Remove(key);
             }
         }
 
-        public void ClearHits() => _hits.Clear();
+        OrbitState StateOf(WeaponSlot slot)
+        {
+            if (!_states.TryGetValue(slot, out var state)) _states[slot] = state = new OrbitState();
+            return state;
+        }
+
+        /// <summary>
+        /// Blade positions for the next hit tick, for every Orbit weapon. V3 computed them in a presentation Update at order
+        /// 50 from Time.time and the blade transforms parented to the ship, and the weapon read them the frame after; V4
+        /// keeps that timing (its order-50 slot calls this).
+        /// </summary>
+        public void ComputeHits(IReadOnlyList<WeaponSlot> slots, float time)
+        {
+            CollectOrbitSlots(slots);
+            foreach (var s in _states.Values) s.Hits.Clear();
+            if (C.Ship == null || !C.Ship.Exists) return;
+            for (var k = 0; k < _orbitSlots.Count; k++)
+            {
+                var w = _orbitSlots[k];
+                var hits = StateOf(w).Hits;
+                var o = w.Config.orbit;
+                var count = o.baseBlades + w.QuantityBonus;
+                var orbitRadius = o.orbitRadius * w.SizeMult;
+                if (w.EvolutionEffect == Effect.PulsingOrbit)
+                {
+                    var pulse = w.Evolution.orbitPulse;
+                    orbitRadius *= pulse.minimum + pulse.amplitude * (0.5f + 0.5f * Mathf.Sin(time * pulse.frequency));
+                }
+                for (var index = 0; index < count; index++)
+                {
+                    var angle = (time * o.angularSpeedDegrees + index * (360f / Mathf.Max(1, count))) * Mathf.Deg2Rad;
+                    var localOffset = new Vector3(Mathf.Sin(angle), o.heightOffset, Mathf.Cos(angle)) * orbitRadius;
+                    hits.Add(new HitSphere { Position = C.Ship.TransformPoint(localOffset), Radius = o.hitRadius });
+                }
+            }
+        }
+
+        public void ClearHits()
+        {
+            foreach (var s in _states.Values) s.Hits.Clear();
+        }
 
         public void TickHits(IReadOnlyList<WeaponSlot> slots, float dt)
         {
-            if (_hits.Count == 0) return;
-            WeaponSlot w = null;
-            for (var i = 0; i < slots.Count; i++)
-                if (slots[i].Config != null && slots[i].Config.behavior == ConfigEnums.WeaponBehavior.Orbit) { w = slots[i]; break; }
-            if (w == null) return;
-
-            var o = w.Config.orbit;
-            _hitTimer -= dt;
-            if (_hitTimer > 0f) return;
-            _hitTimer = C.OrbitVolleyTimer > 0f ? o.volleyHitIntervalSeconds : o.hitIntervalSeconds;
-
-            var def = w.Config;
-            _hitThisTick.Clear();
-            for (var h = 0; h < _hits.Count; h++)
+            CollectOrbitSlots(slots); // a weapon removed since the positions were computed deals no more hits
+            for (var k = 0; k < _orbitSlots.Count; k++)
             {
-                var sphere = _hits[h];
-                var radius = sphere.Radius * w.SizeMult * C.Mods.Size;
-                var radiusSq = radius * radius;
-                for (var i = 0; i < C.Enemies.Capacity; i++)
+                var w = _orbitSlots[k];
+                if (!_states.TryGetValue(w, out var state) || state.Hits.Count == 0) continue;
+                var o = w.Config.orbit;
+                if (o.perTargetIntervalSeconds > 0f)
                 {
-                    if (!C.Enemies.IsActive(i) || _hitThisTick.Contains(i)) continue;
-                    var delta = C.Enemies.Position(i) - sphere.Position;
-                    if (delta.sqrMagnitude > radiusSq) continue;
-                    _hitThisTick.Add(i);
-                    var dmg = C.Calculator.RollAmount(def.baseDamage * o.damageMultiplier, Stats.LevelMult(w), C.Enemies.IsElite(i), 0f, def.procCoefficient, def.weaponId);
-                    C.DamageAndRecord(i, def.weaponId, dmg, false);
+                    TickPerTarget(w, state, dt);
+                    continue;
                 }
+                state.HitTimer -= dt;
+                if (state.HitTimer > 0f) continue;
+                state.HitTimer = C.OrbitVolleyTimer > 0f ? o.volleyHitIntervalSeconds : o.hitIntervalSeconds;
+
+                var def = w.Config;
+                _hitThisTick.Clear();
+                for (var h = 0; h < state.Hits.Count; h++)
+                {
+                    var sphere = state.Hits[h];
+                    var radius = sphere.Radius * w.SizeMult * C.Mods.Size;
+                    var radiusSq = radius * radius;
+                    for (var i = 0; i < C.Enemies.Capacity; i++)
+                    {
+                        if (!C.Enemies.IsActive(i) || _hitThisTick.Contains(i)) continue;
+                        var delta = C.Enemies.Position(i) - sphere.Position;
+                        if (delta.sqrMagnitude > radiusSq) continue;
+                        _hitThisTick.Add(i);
+                        var dmg = C.Calculator.RollAmount(def.baseDamage * o.damageMultiplier, Stats.LevelMult(w), C.Enemies.IsElite(i), 0f, def.procCoefficient, def.weaponId);
+                        C.DamageAndRecord(i, def.weaponId, dmg, false);
+                        // V5 M4: a heavy orbit (the Anchor Flail) knocks enemies away from the ship (0 = none, as before).
+                        if (o.knockbackMeters > 0f && C.Ship != null && C.Ship.Exists) C.Damage.Knockback(i, C.Ship.Position, o.knockbackMeters * w.KnockbackMult);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// V5 M4: every frame, each enemy touching any blade is hit if this weapon has not hit it within the per-target
+        /// interval ("fire all" halves it). A freed slot forgets its time, so the next enemy there is not protected.
+        /// </summary>
+        void TickPerTarget(WeaponSlot w, OrbitState state, float dt)
+        {
+            var o = w.Config.orbit;
+            var def = w.Config;
+            var capacity = C.Enemies.Capacity;
+            if (state.LastHit.Length < capacity)
+            {
+                var grown = new float[capacity];
+                var units = new int[capacity];
+                for (var i = 0; i < grown.Length; i++)
+                {
+                    grown[i] = i < state.LastHit.Length ? state.LastHit[i] : float.NegativeInfinity;
+                    units[i] = i < state.LastUnit.Length ? state.LastUnit[i] : -1;
+                }
+                state.LastHit = grown;
+                state.LastUnit = units;
+            }
+            state.Clock += dt;
+            var interval = o.perTargetIntervalSeconds * (C.OrbitVolleyTimer > 0f ? 0.5f : 1f);
+            for (var i = 0; i < capacity; i++)
+            {
+                if (!C.Enemies.IsActive(i)) { state.LastHit[i] = float.NegativeInfinity; continue; }
+                var unit = C.Enemies.UnitId(i);
+                if (state.LastUnit[i] != unit) { state.LastUnit[i] = unit; state.LastHit[i] = float.NegativeInfinity; } // a new enemy in the slot
+                if (state.Clock - state.LastHit[i] < interval) continue;
+                var position = C.Enemies.Position(i);
+                var touching = false;
+                for (var h = 0; h < state.Hits.Count && !touching; h++)
+                {
+                    var radius = state.Hits[h].Radius * w.SizeMult * C.Mods.Size;
+                    touching = (position - state.Hits[h].Position).sqrMagnitude <= radius * radius;
+                }
+                if (!touching) continue;
+                state.LastHit[i] = state.Clock;
+                var dmg = C.Calculator.RollAmount(def.baseDamage * o.damageMultiplier, Stats.LevelMult(w), C.Enemies.IsElite(i), 0f, def.procCoefficient, def.weaponId);
+                C.DamageAndRecord(i, def.weaponId, dmg, false);
+                if (o.knockbackMeters > 0f && C.Ship != null && C.Ship.Exists) C.Damage.Knockback(i, C.Ship.Position, o.knockbackMeters * w.KnockbackMult);
             }
         }
     }
@@ -549,6 +645,8 @@ namespace RoguePirates.V4.Weapons
                 w.StreamRemaining = StreamDuration(w);
                 w.StreamTickTimer = 0f;
                 w.StreamPatchTimer = 0f;
+                w.StreamRange = Range(w); // V5 M4: the visual is shaped from the stream's first frame
+                w.StreamArcDegrees = Arc(w);
                 C.RecordEmission(w);
                 C.NotifyAimed(w, C.Ship.MovementForward);
             }
@@ -634,6 +732,8 @@ namespace RoguePirates.V4.Weapons
             var origin = C.Ship.Position + forward * def.stream.forwardOffset;
             var range = Range(w);
             var halfAngle = Arc(w) * 0.5f;
+            w.StreamRange = range;
+            w.StreamArcDegrees = halfAngle * 2f;
             var burnDuration = def.duration * w.DurationMult * C.Mods.Duration;
             var damagePerTick = DamagePerTick(w, itemAttackSpeed);
             var patches = w.EvolutionEffect == Effect.WideConeWithPatches && w.Evolution.wideCone.patchesOnKill;
@@ -990,12 +1090,16 @@ namespace RoguePirates.V4.Weapons
     public sealed class AuraBehavior : WeaponBehavior
     {
         public AuraBehavior(WeaponCombat c) : base(c) { }
+        /// <summary>V5 M4: a pulse around the ship needs no target (it pulses whether or not anything is near).</summary>
+        public override bool NeedsTarget => false;
 
         public override WeaponFireOutcome Fire(WeaponSlot w)
         {
             var def = w.Config;
             var a = def.aura;
             var radius = a.radiusBase * w.SizeMult * C.Mods.Size;
+            if (C.Ship == null || !C.Ship.Exists) return WeaponFireOutcome.Emitted;
+            C.Effects?.AuraPulse(C.Ship.Position, radius);
             for (var i = 0; i < C.Enemies.Capacity; i++)
             {
                 if (!C.Enemies.IsActive(i)) continue;
@@ -1003,7 +1107,8 @@ namespace RoguePirates.V4.Weapons
                 var isElite = C.Enemies.IsElite(i);
                 var dmg = C.Calculator.Roll(def.baseDamage * a.damageMultiplier, Stats.LevelMult(w), isElite, 0f, def.procCoefficient, def.weaponId);
                 C.ApplyWeaponDamage(i, def.weaponId, dmg, isElite, C.Enemies.IsBoss(i));
-                C.Damage.ApplyStatus(i, WeaponStatus.Curse, a.curseSeconds * w.DurationMult);
+                if (a.curseSeconds > 0f) C.Damage.ApplyStatus(i, WeaponStatus.Curse, a.curseSeconds * w.DurationMult);
+                if (a.slowFraction > 0f) C.Damage.ApplySlow(i, a.slowFraction, a.slowSeconds * w.DurationMult);
             }
             return WeaponFireOutcome.Emitted;
         }

@@ -30,6 +30,11 @@ namespace RoguePirates.V4.Config
         public bool splashOnDespawn = true;
         [Tooltip("V3 (register R-87): the tick path overwrote the burst gap with the full cooldown, so the second shot came a cooldown later. Off = the burst keeps its gap (approved fix).")]
         public bool v3FullCooldownAfterFirstShot;
+        [Tooltip("V5 M4: enemies a shot passes through after its first hit (0 = it stops at the first, as before); each enemy is hit once per shot.")]
+        [Range(0, 7)] public int pierce;
+        [Tooltip("V5 M4: each hit slows the enemy by this share of its speed (0 = no slow) for slowSeconds; the strongest slow holds.")]
+        [Range(0f, 0.9f)] public float slowFraction;
+        [Min(0f)] public float slowSeconds;
     }
 
     /// <summary>How this weapon's projectiles look (V3 picked these by weapon id in ProjectileWorld).</summary>
@@ -68,6 +73,9 @@ namespace RoguePirates.V4.Config
         [Tooltip("Summon view model (V3 boarding skiffs used the Cannonboat model); empty = a brown box.")]
         public GameObject summonModel;
         public float summonModelScale = 0.42f;
+        [Tooltip("V5 M4: an Orbit weapon's own model, drawn at each blade (empty = the Flying Cutlasses' blades).")]
+        public GameObject orbitModel;
+        public float orbitModelScale = 1f;
         [Tooltip("Enemies hit by this weapon do not flash (V3: Powder Kegs). Read by the enemy world's hit path from M8.")]
         [AppliesFrom(8)] public bool noHitHighlight;
     }
@@ -110,6 +118,10 @@ namespace RoguePirates.V4.Config
         public float orbitRadius = 5f, heightOffset = 0.35f, angularSpeedDegrees = 180f;
         public float hitRadius = 2.75f, hitIntervalSeconds = 0.12f, volleyHitIntervalSeconds = 0.096f;
         public float damageMultiplier = 0.35f;
+        [Tooltip("V5 M4: each hit pushes the enemy this far away from the ship (0 = no push, as the cutlasses).")]
+        [Min(0f)] public float knockbackMeters;
+        [Tooltip("V5 M4: > 0 = each enemy can be hit once per this many seconds by this weapon, checked every frame (the Anchor Flail); 0 = the blades hit everything in contact every hitIntervalSeconds (the cutlasses).")]
+        [Min(0f)] public float perTargetIntervalSeconds;
     }
 
     /// <summary>A forward flame stream that runs, then recharges (Flamethrower).</summary>
@@ -158,6 +170,9 @@ namespace RoguePirates.V4.Config
     public sealed class AuraBlock
     {
         public float radiusBase = 4f, damageMultiplier = 0.35f, curseSeconds = 0.4f;
+        [Tooltip("V5 M4: each pulse slows every enemy it hits by this share of its speed (0 = none) for slowSeconds.")]
+        [Range(0f, 0.9f)] public float slowFraction;
+        [Min(0f)] public float slowSeconds;
     }
 
     /// <summary>A shell landing on the densest cluster after a delay (Mortar).</summary>
