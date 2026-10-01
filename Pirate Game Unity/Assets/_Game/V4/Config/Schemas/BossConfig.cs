@@ -25,7 +25,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Size of the shot's model.")] public float projectileVisualRadius = 0.45f;
         [Tooltip("Shots start this far beyond the boss's edge, towards the ship.")] public float muzzleForwardOffset = 1.4f;
         [Tooltip("Shots start this high above the boss's position.")] public float muzzleHeight = 0.6f;
-        [Tooltip("Warning toast while telegraphing. Empty = none.")] public string toastText = "Barnacle King — spread incoming";
+        [Tooltip("Warning toast while telegraphing. Empty = none.")] public string toastText = "Barnacle King: spread incoming";
     }
 
     /// <summary>Committed charge: the boss locks a direction and rushes along it.</summary>
@@ -37,7 +37,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Seconds the boss rests after the charge.")] public float recoverySeconds = 2f;
         [Tooltip("Charge speed = the boss's move speed × this.")] public float speedMultiplier = 2.6f;
         [Tooltip("In the last health phase every charge from the rotation is followed by a second charge.")] public bool finalPhaseSecondCharge = true;
-        [Tooltip("Warning toast while telegraphing. Empty = none.")] public string toastText = "Barnacle King — charge incoming";
+        [Tooltip("Warning toast while telegraphing. Empty = none.")] public string toastText = "Barnacle King: charge incoming";
     }
 
     /// <summary>Marked bombardment: a circle is marked where the ship was, then hit (no toast, as V3).</summary>
@@ -60,7 +60,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Seconds the boss rests after the slam.")] public float recoverySeconds = 2f;
         [Tooltip("Radius of the slam circle (and of its explosion effect).")] public float radius = 5f;
         [Tooltip("Damage to the ship inside the circle = boss damage × this.")] public float damageMultiplier = 1.35f;
-        [Tooltip("Warning toast while telegraphing. Empty = none.")] public string toastText = "Barnacle King — shell slam";
+        [Tooltip("Warning toast while telegraphing. Empty = none.")] public string toastText = "Barnacle King: shell slam";
     }
 
     /// <summary>

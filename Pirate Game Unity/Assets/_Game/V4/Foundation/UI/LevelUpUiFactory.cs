@@ -96,7 +96,7 @@ namespace RoguePirates.V4.Foundation.UI
             wiring.acceptButton = CreateFooterButton(modalRoot, "AcceptButton", "Take (E)", new Vector2(-220f, 48f), new Color(0.2f, 0.55f, 0.35f, 0.95f));
             wiring.rejectButton = CreateFooterButton(modalRoot, "RejectButton", "Skip (R)", new Vector2(0f, 48f), new Color(0.45f, 0.18f, 0.18f, 0.95f));
             wiring.refreshButton = CreateFooterButton(modalRoot, "RefreshButton", "Refresh (2)", new Vector2(220f, 48f), new Color(0.22f, 0.32f, 0.55f, 0.95f));
-            wiring.footerHint = CreateText(modalRoot, "FooterHint", "1 / 2 / 3 — pick a card", AnchorCenter(), new Vector2(0f, -CardHeight * 0.5f - 36f), new Vector2(640f, 28f), 16f, FontStyles.Normal);
+            wiring.footerHint = CreateText(modalRoot, "FooterHint", "1 / 2 / 3: pick a card", AnchorCenter(), new Vector2(0f, -CardHeight * 0.5f - 36f), new Vector2(640f, 28f), 16f, FontStyles.Normal);
             wiring.footerHint.color = new Color(0.75f, 0.82f, 0.9f, 0.95f);
 
             for (var i = 0; i < 3; i++)

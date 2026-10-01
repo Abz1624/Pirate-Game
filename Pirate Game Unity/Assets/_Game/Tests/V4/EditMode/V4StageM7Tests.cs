@@ -217,7 +217,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(rig.Layout.pois[0].used);
             Assert.IsTrue(rig.Stage.IsConsumed(0));
             Assert.AreEqual(1, rig.Stage.PaidChestCount);
-            CollectionAssert.Contains(rig.Toasts.Shown, "Salvage Chest — gained Item X.");
+            CollectionAssert.Contains(rig.Toasts.Shown, "Salvage Chest: gained Item X.");
             Assert.AreEqual((CombatEventKind.ChestOpened, 0), rig.Events.Single());
         }
 
@@ -229,7 +229,7 @@ namespace RoguePirates.V4.Tests
             rig.Stage.TryCompleteInteraction(0);
             Assert.AreEqual(1000, rig.Run.Gold, "refunded");
             Assert.IsFalse(rig.Layout.pois[0].used);
-            CollectionAssert.Contains(rig.Toasts.Shown, "Inventory full — chest unchanged.");
+            CollectionAssert.Contains(rig.Toasts.Shown, "Inventory full: chest unchanged.");
             rig.Economy.PlanError = ChestPlan.InsufficientGold;
             rig.Stage.TryCompleteInteraction(1);
             CollectionAssert.Contains(rig.Toasts.Shown, "Need 20 run gold to open chest.");
@@ -251,7 +251,7 @@ namespace RoguePirates.V4.Tests
         {
             var rig = Make((POIType.GildedWreck, Vector3.zero));
             rig.Stage.TryCompleteInteraction(0);
-            CollectionAssert.Contains(rig.Toasts.Shown, "Hull already full — wreck unchanged.");
+            CollectionAssert.Contains(rig.Toasts.Shown, "Hull already full: wreck unchanged.");
             Assert.IsFalse(rig.Layout.pois[0].used);
             rig.Ship.Hp = 50f;
             rig.Stage.TryCompleteInteraction(0);
@@ -275,7 +275,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(rig.Layout.pois[0].used);
             CollectionAssert.Contains(rig.Log.Lines, "map 3");
             CollectionAssert.Contains(rig.Log.Lines, "stat 14 +0.8 x1", "third reward: pickup radius");
-            Assert.AreEqual(1, rig.Toasts.Shown.Count(t => t == "Signal Buoy charging — stay in the circle!"));
+            Assert.AreEqual(1, rig.Toasts.Shown.Count(t => t == "Signal Buoy charging: stay in the circle!"));
             Assert.IsTrue(rig.Stage.IsConsumed(0));
         }
 
@@ -290,7 +290,7 @@ namespace RoguePirates.V4.Tests
             rig.Tick(0.1f);
             CollectionAssert.Contains(rig.Log.Lines, "trigger cache 3 1");
             Assert.IsTrue(rig.Stage.IsHidden(0));
-            CollectionAssert.Contains(rig.Toasts.Shown, "Powder Cache — ambush incoming!");
+            CollectionAssert.Contains(rig.Toasts.Shown, "Powder Cache: ambush incoming!");
             Assert.IsFalse(rig.Stage.CanInteract(0), "hidden while the ambush lasts");
 
             Assert.IsFalse(rig.Stage.Interact(POIType.MerchantSkiff, 0), "not cleared yet");
@@ -492,7 +492,7 @@ namespace RoguePirates.V4.Tests
             rig.Stage.TryCompleteInteraction(0);
             Assert.IsTrue(rig.Stage.Discovery.IsPoiVisible(1));
             Assert.IsTrue(rig.Stage.Discovery.IsPoiVisible(2), "three nearest: both chests");
-            CollectionAssert.Contains(rig.Toasts.Shown, "Treasure Chart — chests revealed; beacon bearing 0°.");
+            CollectionAssert.Contains(rig.Toasts.Shown, "Treasure Chart: chests revealed; beacon bearing 0°.");
         }
 
         // ---- Beacon and boss -----------------------------------------------------------------------------------------------
@@ -568,7 +568,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(rig.Stage.TrySummonBoss());
             rig.Tracker.Set(1, EncounterState.Completed);
             rig.Stage.OnBossKilled();
-            CollectionAssert.Contains(rig.Toasts.Shown, "TERRITORY CLAIMED — SURVIVE AS LONG AS YOU CAN.");
+            CollectionAssert.Contains(rig.Toasts.Shown, "TERRITORY CLAIMED: SURVIVE AS LONG AS YOU CAN.");
         }
 
         [Test]
@@ -699,7 +699,7 @@ namespace RoguePirates.V4.Tests
             var rig = Make((POIType.SalvageChest, new Vector3(3f, 0f, 0f)));
             rig.Run.Gold = 5;
             for (var i = 0; i < 5; i++) rig.Interaction.Tick(0.016f);
-            Assert.AreEqual(1, rig.Toasts.Shown.Count(t => t == "Not enough funds — need 20 gold."));
+            Assert.AreEqual(1, rig.Toasts.Shown.Count(t => t == "Not enough funds: need 20 gold."));
             Assert.AreEqual(PauseReason.None, rig.Run.PauseReason);
         }
 
@@ -772,7 +772,7 @@ namespace RoguePirates.V4.Tests
             var rig = Make((POIType.BossBeacon, new Vector3(0f, 0f, 3f)));
             rig.Interaction.Tick(0.016f);
             Assert.AreEqual(PromptLayout.CenterCompact, rig.Interaction.Layout);
-            Assert.AreEqual("Activate Treasury Beacon — hold E or USE (0.7s)", rig.Interaction.Text);
+            Assert.AreEqual("Activate Treasury Beacon: hold E or USE (0.7s)", rig.Interaction.Text);
             rig.Interaction.TouchHolding = true;
             for (var i = 0; i < 40; i++) rig.Interaction.Tick(0.016f);
             Assert.IsFalse(rig.Stage.IsTelegraphing(0), "0.64 s");

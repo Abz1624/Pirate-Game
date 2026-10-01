@@ -41,7 +41,7 @@ namespace RoguePirates.V4.Config
     public sealed class PhaseWarning
     {
         [Tooltip("Seconds before the trigger; 0 = no warning.")] public float leadSeconds;
-        [Tooltip("{label} is replaced with the phase label, {lead} with the lead seconds.")] public string template = "WARNING — {label} incoming!";
+        [Tooltip("{label} is replaced with the phase label, {lead} with the lead seconds.")] public string template = "WARNING: {label} incoming!";
     }
 
     [Serializable]
@@ -132,7 +132,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Stored for the profile hash; V3 rolls harrier as 1 - pursuer.")] public float harrierWeightFirstTwoMinutes = 0.2f;
         public float pursuerWeightAfterTwoMinutes = 0.6f;
         [Tooltip("Stored for the profile hash; V3 rolls harrier as 1 - pursuer.")] public float harrierWeightAfterTwoMinutes = 0.4f;
-        public string startToast = "DROWNED PURSUIT — spectral fleet incoming!";
+        public string startToast = "DROWNED PURSUIT: spectral fleet incoming!";
         [Tooltip("Extra HP and damage multiplier for overtime spawns, evaluated at each spawn: this at the deadline...")] public float spawnStatRampStart = 1f;
         [Tooltip("...rising linearly to this after spawnStatRampSeconds (then held). 1 and 1 = V3 (no ramp).")] public float spawnStatRampEnd = 2f;
         [Tooltip("Seconds after the deadline to reach spawnStatRampEnd.")] public float spawnStatRampSeconds = 300f;
@@ -148,13 +148,13 @@ namespace RoguePirates.V4.Config
         public float contractionEndSeconds = 900f;
         public float outsideDamagePerSecond = 8f;
         public StormDamageMode damageMode = StormDamageMode.Steady;
-        public string startToast = "DREAD TIDE — stay inside the safe water!";
-        public string edgeToast = "STORM EDGE — return to open water!";
+        public string startToast = "DREAD TIDE: stay inside the safe water!";
+        public string edgeToast = "STORM EDGE: return to open water!";
         [Tooltip("M15 playtest (off = V3: nothing happens past the red edge wall before the storm): steady damage while the ship is outside the edge wall, at any time. During the storm the storm's own edge damage applies instead.")]
         public bool edgeWallDamage;
         [Tooltip("Damage per second just outside the edge wall; it grows 8 % per metre further out, like the storm's.")]
         public float edgeWallDamagePerSecond = 8f;
-        public string edgeWallToast = "OFF THE MAP — turn back to open water!";
+        public string edgeWallToast = "OFF THE MAP: turn back to open water!";
     }
 
     public enum HordeFormation

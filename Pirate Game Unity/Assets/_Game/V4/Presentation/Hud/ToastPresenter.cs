@@ -55,7 +55,7 @@ namespace RoguePirates.V4.Presentation.Hud
 
         public void Show(string message, float seconds)
         {
-            if (_text != null) _text.text = message;
+            if (_text != null) _text.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(message); // no em dashes in UI text, whatever the data says
             _timer = seconds;
             gameObject.SetActive(true);
         }

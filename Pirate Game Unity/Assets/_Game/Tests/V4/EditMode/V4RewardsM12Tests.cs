@@ -357,7 +357,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(v3.Locks.IsLocked(C(v3, "ember")) || v3.Locks.IsLocked(C(v3, "roxie")) || v3.Locks.IsLocked(C(v3, "richie")), "V3: the rest are open");
 
             Assert.AreEqual(("SET SAIL", true), V4MainMenuController.PlayButton(CaptainLockState.Open, "RUM"));
-            Assert.AreEqual(("UNLOCK — 100 RUM", true), V4MainMenuController.PlayButton(new CaptainLockState(true, "100 Rum", 100, true), "RUM"));
+            Assert.AreEqual(("UNLOCK: 100 RUM", true), V4MainMenuController.PlayButton(new CaptainLockState(true, "100 Rum", 100, true), "RUM"));
             Assert.AreEqual(("LOCKED", false), V4MainMenuController.PlayButton(new CaptainLockState(true, "100 Rum", 100, false), "RUM"));
         }
 

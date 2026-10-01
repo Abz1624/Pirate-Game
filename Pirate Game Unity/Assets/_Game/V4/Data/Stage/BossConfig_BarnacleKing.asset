@@ -37,14 +37,14 @@ MonoBehaviour:
     projectileVisualRadius: 0.45
     muzzleForwardOffset: 1.4
     muzzleHeight: 0.6
-    toastText: "Barnacle King \u2014 spread incoming"
+    toastText: "Barnacle King: spread incoming"
   charge:
     telegraphSeconds: 1.5
     executeSeconds: 0.9
     recoverySeconds: 2
     speedMultiplier: 6
     finalPhaseSecondCharge: 1
-    toastText: "Barnacle King \u2014 charge incoming"
+    toastText: "Barnacle King: charge incoming"
   bombard:
     telegraphSeconds: 1.5
     executeSeconds: 0.35
@@ -57,7 +57,7 @@ MonoBehaviour:
     recoverySeconds: 2
     radius: 5
     damageMultiplier: 1.35
-    toastText: "Barnacle King \u2014 shell slam"
+    toastText: "Barnacle King: shell slam"
   toastIntervalSeconds: 1.2
   toastDurationSeconds: 1.1
   telegraphColor: {r: 1, g: 0.35, b: 0.1, a: 0.55}

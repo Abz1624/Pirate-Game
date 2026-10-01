@@ -102,7 +102,7 @@ namespace RoguePirates.V4.Presentation.Hud
             {
                 _seenBark = _view.BarkSerial;
                 _speaker.text = _view.BarkSpeaker;
-                _line.text = _view.BarkLine;
+                _line.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(_view.BarkLine); // no em dashes in UI text
                 FitHeight(_bark, _line, 36f, 12f); // speaker row + wrapped line
                 _barkTimer = Mathf.Max(0.5f, _view.BarkSeconds);
                 _bark.gameObject.SetActive(true);
@@ -110,7 +110,7 @@ namespace RoguePirates.V4.Presentation.Hud
             if (_view.PromptSerial != _seenPrompt)
             {
                 _seenPrompt = _view.PromptSerial;
-                _promptText.text = _view.PromptText;
+                _promptText.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(_view.PromptText);
                 FitHeight(_prompt, _promptText, 14f, 14f);
                 _promptTimer = Mathf.Max(0.5f, _view.PromptSeconds);
                 _prompt.gameObject.SetActive(true);

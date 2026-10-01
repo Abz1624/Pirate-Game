@@ -572,7 +572,7 @@ MonoBehaviour:
     showOnComplete: 0
     silent: 0
   - stepId: level_up
-    prompt: "Level up: pick one card \u2014 a new weapon, an upgrade or a Logbook."
+    prompt: "Level up: pick one card: a new weapon, an upgrade or a Logbook."
     completesOn: 2
     promptSeconds: 6
     skipAfterSeconds: 0
@@ -609,7 +609,7 @@ MonoBehaviour:
     showOnComplete: 0
     silent: 0
   - stepId: claim
-    prompt: "TERRITORY CLAIMED \u2014 SURVIVE AS LONG AS YOU CAN."
+    prompt: "TERRITORY CLAIMED: SURVIVE AS LONG AS YOU CAN."
     completesOn: 7
     promptSeconds: 6
     skipAfterSeconds: 0

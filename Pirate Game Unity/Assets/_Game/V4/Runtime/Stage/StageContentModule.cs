@@ -284,7 +284,7 @@ namespace RoguePirates.V4.Stage
             POIType.GildedWreck => "Repair Wreck",
             POIType.MerchantSkiff => !EliteChallenge ? "Powder Cache"
                 : _challengeChestReady.Contains(index) ? "Open Rare Treasure Chest"
-                : $"Powder Cache — spring the ambush ({C.powderCacheEliteCount} elites guard a rare chest)",
+                : $"Powder Cache: spring the ambush ({C.powderCacheEliteCount} elites guard a rare chest)",
             POIType.TrialBuoy => "Signal Buoy",
             POIType.CursedIdol => "Treasure Chart",
             POIType.BossBeacon => "Activate Treasury Beacon",
@@ -415,19 +415,19 @@ namespace RoguePirates.V4.Stage
                 case POIType.GildedWreck:
                     if (_ship.CurrentHp >= _run.MaxHull - 0.5f)
                     {
-                        _toasts?.Show("Hull already full — wreck unchanged.", 2f);
+                        _toasts?.Show("Hull already full: wreck unchanged.", 2f);
                         return false;
                     }
                     var missing = _run.MaxHull - _ship.CurrentHp;
                     _ship.Heal(Mathf.Min(_run.MaxHull * (c != null ? c.repairWreckHealFraction : 0.25f), missing));
-                    _toasts?.Show("Repair Wreck — hull restored 25%.", 2.5f);
+                    _toasts?.Show("Repair Wreck: hull restored 25%.", 2.5f);
                     break;
                 case POIType.MerchantSkiff:
                     return EliteChallenge ? TryPowderCacheChallenge(index) : TryCompletePowderCache(index);
                 case POIType.CursedIdol:
                     Discovery.RevealNearestChests(c != null ? c.treasureChartRevealCount : 3, _ship.Position);
                     var bearing = Discovery.BeaconBearingDegrees(_ship.Position);
-                    _toasts?.Show($"Treasure Chart — chests revealed; beacon bearing {bearing:0}°.", 3f);
+                    _toasts?.Show($"Treasure Chart: chests revealed; beacon bearing {bearing:0}°.", 3f);
                     break;
                 case POIType.BossBeacon:
                     return TrySummonBossAtBeacon();
@@ -442,7 +442,7 @@ namespace RoguePirates.V4.Stage
 
         public int QuoteChestPrice() => _economy.QuoteChestPrice();
         public bool CanAffordSalvageChest() => _run.Exists && _run.Gold >= QuoteChestPrice();
-        public string SalvageChestPromptLabel => $"{PromptOpenChest} — {QuoteChestPrice()} gold";
+        public string SalvageChestPromptLabel => $"{PromptOpenChest}: {QuoteChestPrice()} gold";
 
         bool TryOpenSalvageChest(int index)
         {
@@ -454,7 +454,7 @@ namespace RoguePirates.V4.Stage
             if (!plan.Valid)
             {
                 if (plan.Error == ChestPlan.InsufficientGold) _toasts?.Show($"Need {plan.Price} run gold to open chest.", 2f);
-                else if (plan.Error == ChestPlan.NoEligibleLoot) _toasts?.Show("Chest unavailable — no eligible reward.", 2f);
+                else if (plan.Error == ChestPlan.NoEligibleLoot) _toasts?.Show("Chest unavailable: no eligible reward.", 2f);
                 return false;
             }
             if (!_run.TrySpendGold(plan.Price))
@@ -467,10 +467,10 @@ namespace RoguePirates.V4.Stage
             if (!_economy.TryAddItem(plan.ItemId))
             {
                 _run.AddGold(plan.Price);
-                _toasts?.Show("Inventory full — chest unchanged.", 2.5f);
+                _toasts?.Show("Inventory full: chest unchanged.", 2.5f);
                 return false;
             }
-            _toasts?.Show($"Salvage Chest — gained {_economy.ItemName(plan.ItemId)}.", 2.5f);
+            _toasts?.Show($"Salvage Chest: gained {_economy.ItemName(plan.ItemId)}.", 2.5f);
             _rewards?.ChestOpened();
             Publish?.Invoke(CombatEventKind.ChestOpened, index, 0, Poi(index).position, null);
             _rewards?.PoiUsedTelemetry(POIType.SalvageChest);
@@ -485,13 +485,13 @@ namespace RoguePirates.V4.Stage
             if (Vector3.Distance(_ship.Position, Poi(index).position) > (C != null ? C.powderCacheTriggerRadius : 8f)) return;
             if (!SpawnPowderCacheFight())
             {
-                _toasts?.Show("Powder Cache — ambush failed to spawn, retrying...", 2f);
+                _toasts?.Show("Powder Cache: ambush failed to spawn, retrying...", 2f);
                 return;
             }
             _powderCacheAmbushStarted.Add(index);
             _powderCacheEncounterCount++;
             HideMarker(index);
-            _toasts?.Show("Powder Cache — ambush incoming!", 3.5f);
+            _toasts?.Show("Powder Cache: ambush incoming!", 3.5f);
         }
 
         bool TryCompletePowderCache(int index)
@@ -505,8 +505,8 @@ namespace RoguePirates.V4.Stage
             {
                 if (_powderCacheTrackerId > 0 && _encounters.Exists(_powderCacheTrackerId) && _encounters.State(_powderCacheTrackerId) == EncounterState.Failed)
                 {
-                    if (SpawnPowderCacheFight()) _toasts?.Show("Powder Cache — ambush retry!", 2.5f);
-                    else _toasts?.Show("Powder Cache — could not spawn reinforcements.", 2f);
+                    if (SpawnPowderCacheFight()) _toasts?.Show("Powder Cache: ambush retry!", 2.5f);
+                    else _toasts?.Show("Powder Cache: could not spawn reinforcements.", 2f);
                 }
                 return false;
             }
@@ -551,11 +551,11 @@ namespace RoguePirates.V4.Stage
             if (_challengeEncounters.ContainsKey(index)) return false;
             if (!SpawnPowderCacheElites(index))
             {
-                _toasts?.Show("Powder Cache — the ambush failed to spawn, try again.", 2f);
+                _toasts?.Show("Powder Cache: the ambush failed to spawn, try again.", 2f);
                 return false;
             }
             HideMarker(index);
-            _toasts?.Show($"Powder Cache — {C.powderCacheEliteCount} elites attack! Sink them all for a rare treasure chest.", 3.5f);
+            _toasts?.Show($"Powder Cache: {C.powderCacheEliteCount} elites attack! Sink them all for a rare treasure chest.", 3.5f);
             return false;
         }
 
@@ -588,14 +588,14 @@ namespace RoguePirates.V4.Stage
             if (_challengeChestReady.Contains(index) || !_challengeEncounters.TryGetValue(index, out var encounter)) return;
             if (!_encounters.Exists(encounter) || _encounters.State(encounter) == EncounterState.Failed)
             {
-                if (SpawnPowderCacheElites(index)) _toasts?.Show("Powder Cache — the elites regroup!", 2.5f);
+                if (SpawnPowderCacheElites(index)) _toasts?.Show("Powder Cache: the elites regroup!", 2.5f);
                 return;
             }
             if (_encounters.State(encounter) != EncounterState.Completed) return;
             _challengeChestReady.Add(index);
             _hidden[index] = false;
             ReplaceMarker(index, POIType.SalvageChest);
-            _toasts?.Show("Ambush sunk — a Rare Treasure Chest surfaced at the Powder Cache!", 3.5f);
+            _toasts?.Show("Ambush sunk: a Rare Treasure Chest surfaced at the Powder Cache!", 3.5f);
         }
 
         /// <summary>
@@ -621,11 +621,11 @@ namespace RoguePirates.V4.Stage
             var itemId = _economy.RollChestPoolItem(C.powderCacheChestMinRarity);
             if (!_economy.TryAddItem(itemId))
             {
-                _toasts?.Show("Inventory full — the treasure chest stays.", 2.5f);
+                _toasts?.Show("Inventory full: the treasure chest stays.", 2.5f);
                 return false;
             }
             _run.AddGold(C.powderCacheBonusGold);
-            _toasts?.Show($"Rare Treasure Chest — gained {_economy.ItemName(itemId)}.", 3f);
+            _toasts?.Show($"Rare Treasure Chest: gained {_economy.ItemName(itemId)}.", 3f);
             _rewards?.ChestOpened();
             Publish?.Invoke(CombatEventKind.ChestOpened, index, 0, Poi(index).position, null);
             _challengeChestReady.Remove(index);
@@ -646,7 +646,7 @@ namespace RoguePirates.V4.Stage
             if (!_signalBuoyCharges.ContainsKey(index)) _signalBuoyCharges[index] = 0f;
             if (Vector3.Distance(_ship.Position, Poi(index).position) > SignalBuoyRadius) return;
             if (_signalBuoyCharges[index] <= 0.05f && _signalBuoyChargeAnnounced.Add(index))
-                _toasts?.Show("Signal Buoy charging — stay in the circle!", 3f);
+                _toasts?.Show("Signal Buoy charging: stay in the circle!", 3f);
             _signalBuoyCharges[index] += dt;
             if (_signalBuoyCharges[index] >= SignalBuoyChargeRequired) TryCompleteSignalBuoy(index);
         }
@@ -909,7 +909,7 @@ namespace RoguePirates.V4.Stage
             var continueAfter = C == null || C.continueAfterBossVictory;
             if (continueAfter && _run.Exists && !LabMode) _rewards?.LockHomeSeed(_run.RunSeed);
             // Playtest round 1: the claim line on the player's first conquest ever, then the short banner.
-            _toasts?.Show(IsFirstConquest != null && IsFirstConquest() ? "TERRITORY CLAIMED — SURVIVE AS LONG AS YOU CAN." : "OBJECTIVE SECURED", 5f);
+            _toasts?.Show(IsFirstConquest != null && IsFirstConquest() ? "TERRITORY CLAIMED: SURVIVE AS LONG AS YOU CAN." : "OBJECTIVE SECURED", 5f);
             if (continueAfter && _run.Exists && !_run.IsRunEnded)
             {
                 _run.SetState(RunState.Playing);

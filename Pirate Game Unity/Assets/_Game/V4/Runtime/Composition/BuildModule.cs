@@ -91,14 +91,14 @@ namespace RoguePirates.V4.Composition
             Captain.ActiveUsed += OnActiveUsed;
             Captain.HoldWithoutTarget = () => Experiment?.captainActiveHoldsWithoutTarget ?? false;
             Captain.HasWeaponTarget = AnyEnemyInWeaponRange;
-            Captain.HeldWithoutTarget += c => Toasts?.Show($"{c.active.displayName} — no enemies in range", 2f);
+            Captain.HeldWithoutTarget += c => Toasts?.Show($"{c.active.displayName}: no enemies in range", 2f);
             Captain.FireAllWeapons += () => Weapons?.FireAllOnce();
             Captain.ArmPowderKegs += () => Weapons?.ArmAllKegs();
             Captain.FireLightningSalvo += () => Weapons?.FireLightningSalvo();
             // M14.14: the names from the powerup config (were V3FloorPowerupWorld's).
             Powerups.Dropped += kind => Toasts?.Show($"{PowerupName(kind)} dropped!", 2f);
             Powerups.Collected += kind => Toasts?.Show(kind == PowerupKind.MagneticTide
-                ? "Magnetic Tide — distant XP and gold pull toward you."
+                ? "Magnetic Tide: distant XP and gold pull toward you."
                 : $"{PowerupName(kind)} collected.", 2.5f);
             Powerups.AttractXp += Pickups.AttractAllXp;
             Powerups.AttractLooseRewards += Pickups.AttractLooseRewards;

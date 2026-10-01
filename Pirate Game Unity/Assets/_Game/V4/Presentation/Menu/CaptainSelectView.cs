@@ -69,7 +69,7 @@ namespace RoguePirates.V4.Presentation.Menu
         int _lastNotified = -1;
         readonly List<CaptainMenuEntry> _entries = new();
         TextMeshProUGUI _playLabel, _hint;
-        string _hintText = "Captain for this voyage — more weapons from level-ups";
+        string _hintText = "Captain for this voyage: more weapons from level-ups";
         bool _playEnabled = true;
 
         MenuVisuals.ThemeGradient _bgFrom;

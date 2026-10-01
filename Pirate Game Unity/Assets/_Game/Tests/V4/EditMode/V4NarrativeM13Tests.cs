@@ -102,7 +102,7 @@ namespace RoguePirates.V4.Tests
             foreach (BarkSpeaker s in System.Enum.GetValues(typeof(BarkSpeaker))) Assert.IsTrue(c.barks.Any(b => b.speaker == s), s.ToString());
             Assert.IsTrue(c.barks.All(b => b.lines.Length > 0 && b.lines.All(l => !string.IsNullOrWhiteSpace(l))));
             Assert.AreEqual(9, c.tutorial.Count);
-            Assert.AreEqual("TERRITORY CLAIMED — SURVIVE AS LONG AS YOU CAN.", c.tutorial[7].prompt);
+            Assert.AreEqual("TERRITORY CLAIMED: SURVIVE AS LONG AS YOU CAN.", c.tutorial[7].prompt);
             Assert.AreEqual(TutorialTrigger.RunEnded, c.tutorial[8].completesOn);
             StringAssert.Contains("Rum", c.tutorial[8].prompt);
             Assert.IsTrue(c.barks.Where(b => b.speaker == BarkSpeaker.Chipmunk).All(b => b.lines.All(l => l.StartsWith("*Chippy"))), "Chippy is silent: action captions");

@@ -326,7 +326,7 @@ namespace RoguePirates.V4.Tests
 
                 Spawn(1, true);
                 Assert.AreEqual(1, toasts.Shown.Count);
-                Assert.AreEqual(("Captain incoming — watch the horizon", 2.5f), toasts.Shown[0]);
+                Assert.AreEqual(("Captain incoming: watch the horizon", 2.5f), toasts.Shown[0]);
                 Assert.AreEqual(1, minimap.ActiveSpawnPings);
 
                 Spawn(2, true);

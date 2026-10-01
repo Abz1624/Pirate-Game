@@ -200,12 +200,12 @@ namespace RoguePirates.V4.Config
         {
             T("move", TutorialTrigger.ShipMoved, "Sail with WASD or the left stick."),
             T("autofire_xp", TutorialTrigger.XpCollected, "Your guns fire on their own. Sink ships and sail over the XP they drop."),
-            T("level_up", TutorialTrigger.LevelUp, "Level up: pick one card — a new weapon, an upgrade or a Logbook."),
+            T("level_up", TutorialTrigger.LevelUp, "Level up: pick one card: a new weapon, an upgrade or a Logbook."),
             T("chest", TutorialTrigger.ChestOpened, "Salvage chests hold items. Sail up to one and hold E to open it.", 150f),
             T("landmark", TutorialTrigger.LandmarkUsed, "The minimap marks landmarks. Use one: a Repair Wreck, a Signal Buoy or a Treasure Chart.", 150f),
             T("beacon", TutorialTrigger.BossSummoned, "Find the Treasury Beacon (the minimap points to it) and hold E to call its guardian."),
             T("boss_telegraph", TutorialTrigger.BossTelegraph, "Marked water shows where the Barnacle King will strike. Sail out of it."),
-            new TutorialStep { stepId = "claim", completesOn = TutorialTrigger.BossDefeated, prompt = "TERRITORY CLAIMED — SURVIVE AS LONG AS YOU CAN.", promptSeconds = 6f, showOnComplete = true, silent = true },
+            new TutorialStep { stepId = "claim", completesOn = TutorialTrigger.BossDefeated, prompt = "TERRITORY CLAIMED: SURVIVE AS LONG AS YOU CAN.", promptSeconds = 6f, showOnComplete = true, silent = true },
             T("death_summary", TutorialTrigger.RunEnded, "Leftover gold is banked as Rum. Rum is yours to keep: spend it on unlocks between voyages.", 0f, 8f, true),
         };
     }

@@ -390,7 +390,7 @@ namespace RoguePirates.V4.Tests
             while (rig.Director.Phase == BossPhase.Telegraph) rig.Step();
             var toasts = rig.Log.Where(l => l.StartsWith("toast ")).ToList();
             Assert.AreEqual(3, toasts.Count, "at 0, 1.2 and 2.4 s of a 3 s telegraph");
-            Assert.AreEqual($"toast Barnacle King — charge incoming {F(1.1f)}", toasts[0]);
+            Assert.AreEqual($"toast Barnacle King: charge incoming {F(1.1f)}", toasts[0]);
         }
 
         [Test]

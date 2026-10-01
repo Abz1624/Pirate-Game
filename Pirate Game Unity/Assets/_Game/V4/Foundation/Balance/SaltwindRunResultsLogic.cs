@@ -14,7 +14,7 @@ namespace RoguePirates.V4.Foundation.Balance
         {
             if (objectiveSecured)
                 return runEndedAfterDeath
-                    ? "VICTORY SECURED — RUN ENDED"
+                    ? "VICTORY SECURED: RUN ENDED"
                     : "TERRITORY OBJECTIVE SECURED";
             return "RUN ENDED";
         }
@@ -22,7 +22,7 @@ namespace RoguePirates.V4.Foundation.Balance
         public static string BuildOutcomeSubline(bool objectiveSecured, bool runEndedAfterDeath)
         {
             if (objectiveSecured && runEndedAfterDeath)
-                return "You secured the treasury, then were sunk — victory stays earned.";
+                return "You secured the treasury, then were sunk: victory stays earned.";
             if (objectiveSecured)
                 return "Treasury objective complete. Survive or keep farming.";
             return "Treasury not secured this voyage.";

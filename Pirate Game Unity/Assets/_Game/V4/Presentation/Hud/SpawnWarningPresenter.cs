@@ -106,7 +106,7 @@ namespace RoguePirates.V4.Presentation.Hud
 
             var label = tier switch
             {
-                EnemyTier.Captain => "Captain incoming — watch the horizon",
+                EnemyTier.Captain => "Captain incoming: watch the horizon",
                 EnemyTier.General => "Heavy contact approaching",
                 _ => "Enemy incoming"
             };

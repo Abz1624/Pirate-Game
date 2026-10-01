@@ -89,7 +89,7 @@ namespace RoguePirates.V4.Stage
             {
                 CancelHold();
                 Visible = true;
-                Text = $"{label} — summoning...";
+                Text = $"{label}: summoning...";
                 return;
             }
             var keyboard = Keyboard.current;
@@ -100,14 +100,14 @@ namespace RoguePirates.V4.Stage
                 if (_stage.SpringsOnPress(_target))
                 {
                     Visible = _stage.IsPlayerInRange(_target);
-                    Text = $"{label} — press E or USE";
+                    Text = $"{label}: press E or USE";
                     if (Visible && keyboard != null && keyboard.eKey.wasPressedThisFrame) _stage.TryCompleteInteraction(_target);
                     return;
                 }
                 if (_stage.UsesChargeInteraction(_target))
                 {
                     Visible = _stage.IsPlayerInRange(_target);
-                    Text = $"{label} — charging {_stage.SignalBuoyCharge01(_target):0%}";
+                    Text = $"{label}: charging {_stage.SignalBuoyCharge01(_target):0%}";
                     return;
                 }
                 if (_stage.UsesProximityAmbush(_target))
@@ -131,7 +131,7 @@ namespace RoguePirates.V4.Stage
                 _holding = true;
                 _holdTimer += dt;
                 Visible = true;
-                Text = $"{label} — hold {UnityEngine.Mathf.Clamp01(_holdTimer / holdDuration):0%}";
+                Text = $"{label}: hold {UnityEngine.Mathf.Clamp01(_holdTimer / holdDuration):0%}";
                 if (_holdTimer >= holdDuration)
                 {
                     _stage.TryCompleteInteraction(_target);
@@ -142,7 +142,7 @@ namespace RoguePirates.V4.Stage
             else
             {
                 Visible = true;
-                Text = $"{label} — hold E or USE ({holdDuration:0.#}s)";
+                Text = $"{label}: hold E or USE ({holdDuration:0.#}s)";
             }
         }
 
@@ -176,7 +176,7 @@ namespace RoguePirates.V4.Stage
                 if (_salvageChestInsufficientFundsNotifiedIndex != _target)
                 {
                     _salvageChestInsufficientFundsNotifiedIndex = _target;
-                    _toasts?.Show($"Not enough funds — need {_stage.QuoteChestPrice()} gold.", 2.5f);
+                    _toasts?.Show($"Not enough funds: need {_stage.QuoteChestPrice()} gold.", 2.5f);
                 }
                 return;
             }

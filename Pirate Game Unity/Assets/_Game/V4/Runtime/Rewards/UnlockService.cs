@@ -114,10 +114,10 @@ namespace RoguePirates.V4.Rewards
             if (save == null) return string.Empty;
             var goal = save.Meta.selectedUnlockGoal;
             if (string.IsNullOrEmpty(goal)) return "\nUnlock goal: not selected (choose one in menu or results).\n";
-            if (save.HasEffectiveContentOwned(goal)) return $"\nUnlock goal: {DisplayName(goal)} — owned.\n";
+            if (save.HasEffectiveContentOwned(goal)) return $"\nUnlock goal: {DisplayName(goal)}: owned.\n";
             var cost = CostOf(goal);
-            if (cost < 0) return $"\nUnlock goal: {DisplayName(goal)} — not a {Currency} unlock.\n";
-            return $"\nUnlock goal: {DisplayName(goal)} — {save.Meta.marks} / {cost} {Currency}\n";
+            if (cost < 0) return $"\nUnlock goal: {DisplayName(goal)}: not a {Currency} unlock.\n";
+            return $"\nUnlock goal: {DisplayName(goal)}: {save.Meta.marks} / {cost} {Currency}\n";
         }
     }
 

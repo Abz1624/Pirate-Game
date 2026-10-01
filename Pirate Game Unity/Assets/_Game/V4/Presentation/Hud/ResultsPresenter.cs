@@ -170,7 +170,7 @@ namespace RoguePirates.V4.Presentation.Hud
         void BuildUi(Transform canvas)
         {
             _panel = PlaceholderFactory.CreateUiPanel(transform, "run_results_panel", new Vector2(560f, 520f),
-                "Full-screen run results layout — replace with production UI art.");
+                "Full-screen run results layout: replace with production UI art.");
             var panelRect = _panel.GetComponent<RectTransform>();
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);

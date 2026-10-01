@@ -107,7 +107,7 @@ namespace RoguePirates.V4.Spawning
             _arenaFocus = unitId;
             _arenaActive = true;
             _arenaBlockedSince = _s.Run.ElapsedSeconds;
-            _s.Feedback.Toast($"MINI BOSS — {label}", 4f);
+            _s.Feedback.Toast($"MINI BOSS: {label}", 4f);
             _s.Feedback.Telemetry("miniboss_arena_begin", new Dictionary<string, object> { ["agentId"] = unitId, ["label"] = label, ["culled"] = 0 });
             return true;
         }
@@ -155,7 +155,7 @@ namespace RoguePirates.V4.Spawning
             {
                 state.Skipped = true;
                 _s.Feedback.Telemetry("pressure_elite_skipped", new Dictionary<string, object> { ["label"] = phase.label, ["reason"] = "boss_conflict" });
-                _s.Feedback.Toast($"{phase.label} skipped — boss active.", 3f);
+                _s.Feedback.Toast($"{phase.label} skipped: boss active.", 3f);
                 _s.Publish(CombatEventKind.PhaseChanged, 0, 0, default, phase.phaseId);
                 return;
             }
@@ -184,7 +184,7 @@ namespace RoguePirates.V4.Spawning
             {
                 state.Skipped = true;
                 _s.Feedback.Telemetry("pressure_elite_skipped", new Dictionary<string, object> { ["label"] = phase.label });
-                _s.Feedback.Toast($"{phase.label} skipped — no spawn slot.", 3f);
+                _s.Feedback.Toast($"{phase.label} skipped: no spawn slot.", 3f);
                 _s.Publish(CombatEventKind.PhaseChanged, 0, 0, default, phase.phaseId);
             }
         }
@@ -247,7 +247,7 @@ namespace RoguePirates.V4.Spawning
                     state.PulseTimer = duration;
                     _modifiers.SetTimedModifier(PulseKey(phase), phase.rateMultiplier, elapsed, duration);
                     _s.Feedback.Telemetry("pressure_pulse_started", new Dictionary<string, object> { ["beat"] = phase.phaseId });
-                    _s.Feedback.Toast($"SWARM PULSE — +{(phase.rateMultiplier - 1f) * 100f:F0}% spawn rate", 4f);
+                    _s.Feedback.Toast($"SWARM PULSE: +{(phase.rateMultiplier - 1f) * 100f:F0}% spawn rate", 4f);
                     _s.Publish(CombatEventKind.PhaseChanged, 0, 1, default, phase.phaseId);
                 }
             }

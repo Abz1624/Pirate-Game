@@ -108,8 +108,8 @@ namespace RoguePirates.V4
         {
             var rule = _config?.Single<UnlockConfig>()?.startingWeaponRule ?? StartingWeaponRule.CaptainWeapon;
             return rule == StartingWeaponRule.CaptainWeapon
-                ? "Captain for this voyage — each brings a starting weapon; more weapons from level-ups"
-                : "Captain for this voyage — all start with Swivel Guns; more weapons from level-ups";
+                ? "Captain for this voyage: each brings a starting weapon; more weapons from level-ups"
+                : "Captain for this voyage: all start with Swivel Guns; more weapons from level-ups";
         }
 
         void OnFocus(int index)
@@ -125,7 +125,7 @@ namespace RoguePirates.V4
         /// <summary>Set Sail for an open Captain, a Rum unlock when that is all that is missing, else locked.</summary>
         public static (string label, bool enabled) PlayButton(CaptainLockState state, string currency) =>
             !state.Locked ? ("SET SAIL", true)
-            : state.CanBuy ? ($"UNLOCK — {state.RumCost} {currency}", true)
+            : state.CanBuy ? ($"UNLOCK: {state.RumCost} {currency}", true)
             : ("LOCKED", false);
 
         string Currency => (_config?.Single<RewardConfig>()?.currencyName ?? "Rum").ToUpperInvariant();
