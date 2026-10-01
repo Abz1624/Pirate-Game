@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5955df3a89aa96429cea5e68565b8be, type: 3}
+  m_Name: shark_tooth_necklace
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
+  configId: item.shark_tooth_necklace
+  schemaVersion: 1
+  balanceVersion: saltwind-v5-m5
+  itemId: shark_tooth_necklace
+  displayName: Shark Tooth Necklace
+  description: +12% damage to enemies above 90% hull, more with copies (at most +80%).
+  rarity: 0
+  inChestPool: 1
+  inLevelUpPool: 0
+  chestPoolOrder: 47
+  collectionOrder: 47
+  statModifiers: []
+  effects:
+  - kind: 19
+    value: 0.12
+    threshold: 0.9
+    seconds: 0
+    cap: 0.8
+    active: 1

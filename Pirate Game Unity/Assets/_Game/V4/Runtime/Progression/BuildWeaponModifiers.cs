@@ -47,6 +47,7 @@ namespace RoguePirates.V4.Progression
             return mult;
         }
         public float ItemGlobalDamageMultiplier => _items.GlobalDamageMultiplier();
+        public float HealthyTargetDamageMultiplier(out float threshold) => _items.HealthyTargetDamageMultiplier(out threshold);
         public float ItemCritChanceBonus => _items.CritChanceBonus();
         public float ItemAttackSpeedMultiplier => _items.AttackSpeedMultiplier();
         public float FlameRangeMultiplier => _captain.FlameRangeMultiplier;

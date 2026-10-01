@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5955df3a89aa96429cea5e68565b8be, type: 3}
+  m_Name: leviathan_heart
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
+  configId: item.leviathan_heart
+  schemaVersion: 1
+  balanceVersion: saltwind-v5-m5
+  itemId: leviathan_heart
+  displayName: Leviathan Heart
+  description: Every 12 s a blast of 45 damage in 5 m on the densest crowd, after
+    a short warning (stronger with copies).
+  rarity: 4
+  inChestPool: 1
+  inLevelUpPool: 0
+  chestPoolOrder: 58
+  collectionOrder: 58
+  statModifiers: []
+  effects:
+  - kind: 15
+    value: 45
+    threshold: 12
+    seconds: 0.6
+    cap: 5
+    active: 1

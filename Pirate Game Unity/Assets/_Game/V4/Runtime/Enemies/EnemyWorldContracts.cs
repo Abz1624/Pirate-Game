@@ -132,6 +132,7 @@ namespace RoguePirates.V4.Enemies
         public bool IsBoss(int i) => _sim.Agents[i].isBoss;
         public bool TryGetNearest(Vector3 from, float range, out int index, bool preferElite = false) => _sim.TryGetNearest(from, range, out index, preferElite);
         public int UnitId(int i) => _sim.Agents[i].id;
+        public float HpFraction(int i) => _sim.Agents[i].maxHp > 0f ? _sim.Agents[i].hp / _sim.Agents[i].maxHp : 1f;
 
         /// <summary>R-40: weapon damage × this against controlled enemies (Leviathan's Tooth; 1 unless the effect is on).</summary>
         public Func<float> ControlledTargetMultiplier;

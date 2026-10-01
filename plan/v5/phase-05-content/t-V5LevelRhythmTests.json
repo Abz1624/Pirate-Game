@@ -1,0 +1,62 @@
+{
+  "status": "completed",
+  "duration": 70.33,
+  "summary": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.EachLevel_ComesNearItsTargetTime_OnAnotherSeed",
+      "Status": "Passed",
+      "Duration": 4.8264418,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.EveryPersonality_KeepsItsRunLengthAndBossWins",
+      "Status": "Passed",
+      "Duration": 58.4936047,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.TargetGaps_FollowTheFibonacciSeries_ThenGrowTo60",
+      "Status": "Passed",
+      "Duration": 0.0207001,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.TheData_HoldsTheFittedTable_TheCardLevels_AndThePaceTargets",
+      "Status": "Passed",
+      "Duration": 0.1481454,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.TheParityPreset_RestoresTheCurve_AndOneLevelPerCard",
+      "Status": "Passed",
+      "Duration": 0.3484816,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.TheSimulator_MeetsThePerMinuteLevelTargets_OnTheBaseline",
+      "Status": "Passed",
+      "Duration": 6.0945061,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.TheTable_ReplacesTheCurve_AndExtendsByItsLastStep",
+      "Status": "Passed",
+      "Duration": 0.0624792,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

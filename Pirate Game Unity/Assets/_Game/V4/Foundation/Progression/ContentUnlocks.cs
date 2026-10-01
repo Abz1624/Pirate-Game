@@ -35,5 +35,12 @@ namespace RoguePirates.V4.Foundation.Progression
             return AppRoot.Instance?.Save?.HasEffectiveContentOwned(weaponId) ?? false;
         }
 
+        /// <summary>V5 M5: a Logbook or item bought with Rum is owned in the save (or the playtest bypass is on).</summary>
+        public static bool IsContentOwned(string contentId)
+        {
+            if (string.IsNullOrEmpty(contentId)) return false;
+            if (BypassProgressionGates) return true;
+            return AppRoot.Instance?.Save?.HasEffectiveContentOwned(contentId) ?? false;
+        }
     }
 }

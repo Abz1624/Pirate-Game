@@ -25,6 +25,8 @@ namespace RoguePirates.V4.Progression
         int Gold { get; }
         /// <summary>The weapons the ship carries (for Admiral's Ledger's weapon families).</summary>
         IEnumerable<WeaponConfig> Weapons { get; }
+        /// <summary>V5 M5: enemies within this distance of the ship (Barnacle Crown).</summary>
+        int EnemiesNear(float radius) => 0;
     }
 
     /// <summary>
@@ -52,6 +54,14 @@ namespace RoguePirates.V4.Progression
         public event Action<string> Acquired;
         /// <summary>Captain's Bell rang: every weapon fires once.</summary>
         public event Action FireAllWeapons;
+        /// <summary>V5 M5 Leviathan Heart: (ledger id, damage, radius, telegraph seconds) on the densest crowd.</summary>
+        public event Action<string, float, float, float> PulseRequested;
+        /// <summary>V5 M5 Captain's Last Rum saved the ship (item id).</summary>
+        public event Action<string> CheatedDeath;
+
+        int _streakKills, _streakStacks;
+        bool _lastRumUsed;
+        float _frenzyTimer, _frenzyBonus, _pulseTimer, _surroundStacks;
 
         public ItemModule(Func<string, ItemConfig> item, IStatModifierSink stats, IItemWorld world)
         {
@@ -78,6 +88,13 @@ namespace RoguePirates.V4.Progression
             _explosionCharge = 0f;
             _distanceSinceHit = 0f;
             _lastPosition = Vector3.zero;
+            _streakKills = 0;
+            _streakStacks = 0;
+            _lastRumUsed = false;
+            _frenzyTimer = 0f;
+            _frenzyBonus = 0f;
+            _pulseTimer = 0f;
+            _surroundStacks = 0f;
         }
 
         /// <summary>V3 TryAddItem: another stack (uncapped) and its stat changes; always succeeds.</summary>
@@ -94,16 +111,21 @@ namespace RoguePirates.V4.Progression
             return true;
         }
 
-        ItemEffect Effect(ItemEffectKind kind)
+        ItemEffect Effect(ItemEffectKind kind) => Effect(kind, out _);
+
+        ItemEffect Effect(ItemEffectKind kind, out string itemId)
         {
             foreach (var id in _items)
             {
                 var config = _item(id);
                 if (config?.effects == null) continue;
-                foreach (var e in config.effects) if (e != null && e.kind == kind && e.active) return e;
+                foreach (var e in config.effects)
+                    if (e != null && e.kind == kind && e.active) { itemId = id; return e; }
             }
+            itemId = null;
             return null;
         }
+
 
         /// <summary>V3 Update (skipped while paused or after the run ends).</summary>
         public void Tick(float dt)
@@ -111,7 +133,86 @@ namespace RoguePirates.V4.Progression
             if (!_world.RunActive) return;
             _turnBuffTimer = Mathf.Max(0f, _turnBuffTimer - dt);
             _nearMissBuffTimer = Mathf.Max(0f, _nearMissBuffTimer - dt);
+            _frenzyTimer = Mathf.Max(0f, _frenzyTimer - dt);
             TrackHeadingAndMovement();
+            TickPulse(dt);
+            TickSurrounded(dt);
+        }
+
+        /// <summary>V5 M5 Leviathan Heart: a pulse every threshold seconds.</summary>
+        void TickPulse(float dt)
+        {
+            var e = Effect(ItemEffectKind.PeriodicPulse, out var id);
+            if (e == null || e.threshold <= 0f) return;
+            _pulseTimer += dt;
+            if (_pulseTimer < e.threshold) return;
+            _pulseTimer = 0f;
+            var copies = Mathf.Max(1, StackCount(id));
+            PulseRequested?.Invoke(id, e.value * Mathf.Min(2f, 1f + 0.2f * (copies - 1)), e.cap, e.seconds);
+        }
+
+        /// <summary>V5 M5 Barnacle Crown: stacks while surrounded, decays otherwise.</summary>
+        void TickSurrounded(float dt)
+        {
+            var e = Effect(ItemEffectKind.SurroundedDamage, out var id);
+            if (e == null) { _surroundStacks = 0f; return; }
+            var max = Mathf.Min(20f, e.cap + 2f * (Mathf.Max(1, StackCount(id)) - 1));
+            var surrounded = _world.ShipExists && _world.EnemiesNear(e.threshold) >= Mathf.Max(1f, e.seconds);
+            _surroundStacks = surrounded ? Mathf.Min(max, _surroundStacks + dt) : Mathf.Max(0f, _surroundStacks - 2f * dt);
+        }
+
+        /// <summary>V5 M5 Captain's Last Rum: once a run, a fatal hit restores the ship instead (DamageReceiver hook).</summary>
+        public bool TryCheatDeath(out float restoreFraction, out float immunitySeconds)
+        {
+            restoreFraction = 0f;
+            immunitySeconds = 0f;
+            var e = Effect(ItemEffectKind.CheatDeath, out var id);
+            if (e == null || _lastRumUsed) return false;
+            _lastRumUsed = true;
+            restoreFraction = e.value;
+            immunitySeconds = e.threshold;
+            _frenzyBonus = e.cap;
+            _frenzyTimer = e.seconds;
+            CheatedDeath?.Invoke(id);
+            return true;
+        }
+
+        /// <summary>The Last Rum's once-a-run save is spent (HUD and tests).</summary>
+        public bool LastRumUsed => _lastRumUsed;
+        /// <summary>Jolly Roger's and Barnacle Crown's stacks now (HUD and tests).</summary>
+        public int StreakStacks => _streakStacks;
+        public float SurroundStacks => _surroundStacks;
+
+        /// <summary>V5 M5 Shark Tooth Necklace: damage × this against enemies above the threshold share of their hull.</summary>
+        public float HealthyTargetDamageMultiplier(out float threshold)
+        {
+            var e = Effect(ItemEffectKind.HealthyTargetDamage, out var id);
+            threshold = e != null ? e.threshold : 1f;
+            return e == null ? 1f : 1f + Mathf.Min(e.cap, e.value * Mathf.Max(1, StackCount(id)));
+        }
+
+        /// <summary>V5 M5 Skeleton Key: the chance a chest is free.</summary>
+        public float FreeChestChance()
+        {
+            var e = Effect(ItemEffectKind.FreeChestChance, out var id);
+            return e == null ? 0f : Mathf.Min(e.cap, 1f - Mathf.Pow(1f - e.value, Mathf.Max(1, StackCount(id))));
+        }
+
+        /// <summary>V5 M5 Smuggler's Ledger: chest prices × this (once, whatever the copies).</summary>
+        public float ChestPriceMultiplier() => Effect(ItemEffectKind.ChestPriceAndRarity)?.value ?? 1f;
+
+        /// <summary>V5 M5 Smuggler's Ledger: non-Common chest rarity weights × this.</summary>
+        public float ChestRarityBoost()
+        {
+            var e = Effect(ItemEffectKind.ChestPriceAndRarity, out var id);
+            return e == null ? 1f : Mathf.Min(e.cap, 1f + e.threshold * Mathf.Max(1, StackCount(id)));
+        }
+
+        /// <summary>V5 M5 Black Spot: elite kill gold and XP × this.</summary>
+        public float EliteRewardMultiplier()
+        {
+            var e = Effect(ItemEffectKind.EliteRewards, out var id);
+            return e == null ? 1f : 1f + Mathf.Min(e.cap, e.value * Mathf.Max(1, StackCount(id)));
         }
 
         void TrackHeadingAndMovement()
@@ -154,6 +255,7 @@ namespace RoguePirates.V4.Progression
         {
             _distanceSinceHit = 0f;
             _explosionCharge = 0f;
+            _streakStacks -= (_streakStacks + 1) / 2; // V5 M5 Jolly Roger: a hit takes half the streak, rounded up
         }
 
         /// <summary>V3 NotifyNearMissDodge (V3 never calls it).</summary>
@@ -166,6 +268,13 @@ namespace RoguePirates.V4.Progression
         /// <summary>V3 NotifyKill: Captain's Bell counts kills.</summary>
         public void NotifyKill()
         {
+            var streak = Effect(ItemEffectKind.KillStreakDamage, out var streakId);
+            if (streak != null && streak.threshold >= 1f && ++_streakKills >= streak.threshold)
+            {
+                _streakKills = 0;
+                var max = Mathf.Min(40f, streak.cap + streak.seconds * (Mathf.Max(1, StackCount(streakId)) - 1));
+                _streakStacks = Mathf.Min(Mathf.FloorToInt(max), _streakStacks + 1);
+            }
             var bell = Effect(ItemEffectKind.FireAllEveryKills);
             if (bell == null) return;
             _bellKills++;
@@ -240,6 +349,10 @@ namespace RoguePirates.V4.Progression
             }
             var figurehead = Effect(ItemEffectKind.DamagePerGold);
             if (figurehead != null) mult *= 1f + Mathf.Min(figurehead.cap, _world.Gold / figurehead.threshold);
+            // V5 M5: Jolly Roger's streak, Barnacle Crown's stacks, the Last Rum's frenzy.
+            if (_streakStacks > 0) mult *= 1f + _streakStacks * (Effect(ItemEffectKind.KillStreakDamage)?.value ?? 0f);
+            if (_surroundStacks > 0f) mult *= 1f + Mathf.Floor(_surroundStacks + 1e-3f) * (Effect(ItemEffectKind.SurroundedDamage)?.value ?? 0f);
+            if (_frenzyTimer > 0f) mult *= 1f + _frenzyBonus;
             return mult;
         }
     }

@@ -29,6 +29,8 @@ namespace RoguePirates.V4.Weapons
     /// </summary>
     public sealed class PlayerProjectiles
     {
+        /// <summary>V5 M5: a hit's damage after target-dependent item bonuses (Shark Tooth Necklace); null = unchanged.</summary>
+        public System.Func<int, float, float> HitAdjust;
         const float MinGameplayHitRadius = 0.32f;
         const float HitSlop = 0.16f;
         const float MaxVerticalHitSeparation = 4f;
@@ -165,8 +167,9 @@ namespace RoguePirates.V4.Weapons
                         if (!TryHitAgentAlongSegment(segmentStart, p.Position, p.Radius, agentPos, _enemies.Radius(ei)))
                             continue;
 
-                        if (p.Traits.LedgerId != null) _hooks.RecordHit(p.Traits.LedgerId, p.Damage, p.IsCrit, _enemies.IsElite(ei), _enemies.IsBoss(ei));
-                        _damage.ApplyDamage(ei, p.Damage, p.IsCrit, weaponId: p.WeaponId);
+                        var amount = HitAdjust != null ? HitAdjust(ei, p.Damage) : p.Damage; // V5 M5: Shark Tooth Necklace
+                        if (p.Traits.LedgerId != null) _hooks.RecordHit(p.Traits.LedgerId, amount, p.IsCrit, _enemies.IsElite(ei), _enemies.IsBoss(ei));
+                        _damage.ApplyDamage(ei, amount, p.IsCrit, weaponId: p.WeaponId);
                         if (p.Traits.TarOnHit)
                         {
                             var slow = _enemies.IsBoss(ei) ? p.Traits.TarSlowBoss : p.Traits.TarSlow;

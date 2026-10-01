@@ -60,6 +60,11 @@ namespace RoguePirates.V4.DevTools.Balance
             [ItemEffectKind.ExplosionDamage] = (0.25f, "explosions are ~25% of damage"),
             [ItemEffectKind.ExplosionDamageAfterDistance] = (0.03f, "boosts one explosion per charge (18 m without a hit): a small share of damage"),
             [ItemEffectKind.ExtraLightningJumps] = (0.1f, "lightning ~10% of damage, a jump adds ~+1 target"),
+            // V5 M5
+            [ItemEffectKind.HealthyTargetDamage] = (0.5f, "half the hits land on enemies still above 90% hull"),
+            [ItemEffectKind.KillStreakDamage] = (0.5f, "half the streak cap held on average"),
+            [ItemEffectKind.SurroundedDamage] = (0.3f, "surrounded 30% of the time, stacks near half"),
+            [ItemEffectKind.PeriodicPulse] = (0.1f, "a 5 m blast every 12 s: ~10% of damage early, less late"),
         };
 
         sealed class Mods : Weapons.IWeaponModifiers
@@ -189,6 +194,10 @@ namespace RoguePirates.V4.DevTools.Balance
                         case ItemEffectKind.ExplosionDamage: extra += (e.value - 1f) * a.uptime; break;
                         case ItemEffectKind.ExplosionDamageAfterDistance: extra += (e.value - 1f) * a.uptime; break;
                         case ItemEffectKind.ExtraLightningJumps: extra += e.value * a.uptime; break;
+                        case ItemEffectKind.HealthyTargetDamage: extra += e.value * a.uptime; break;
+                        case ItemEffectKind.KillStreakDamage:
+                        case ItemEffectKind.SurroundedDamage: extra += e.value * e.cap * a.uptime; break;
+                        case ItemEffectKind.PeriodicPulse: extra += a.uptime; break;
                         default: notes.Add(e.kind + " (not scored)"); break;
                     }
                 }

@@ -248,6 +248,13 @@ namespace RoguePirates.V4
             _stage.Economy.AddItem = _build.Items.TryAddItem;
             _stage.Economy.HasItem = _build.Items.HasItem; // V5 M3: the evolution-item chance
             _stage.Economy.WeaponUnlocked = Ports.ContentPort.IsWeaponUnlocked; // V5 M4: evolution items of locked weapons stay out of chests
+            // V5 M5: bought items, Skeleton Key, Smuggler's Ledger, Black Spot, the Plunderer Logbook.
+            _stage.Economy.ItemUnlocked = id => Composition.BuildModule.IsBought(_config, id);
+            _stage.Economy.FreeChance = _build.Items.FreeChestChance;
+            _stage.Economy.PriceMultiplier = _build.Items.ChestPriceMultiplier;
+            _stage.Economy.RarityBoost = _build.Items.ChestRarityBoost;
+            _enemies.KillTargets.EliteRewardMultiplier = _build.Items.EliteRewardMultiplier;
+            _enemies.KillTargets.BossGoldMultiplier = () => RunManager.Instance != null ? RunManager.Instance.Stats.Get(StatId.DoubloonGain) : 1f;
             _stage.Rewards.Telemetry = _telemetry;
             var unlocks = new Rewards.UnlockService(() => AppRoot.Instance != null ? AppRoot.Instance.Save : null, () => _config); // M12
             _damageShare = new Rewards.DamageShareTracker(); // M12: results damage share from the weapon hit records

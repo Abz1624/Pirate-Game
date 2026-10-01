@@ -1,0 +1,55 @@
+{
+  "status": "completed",
+  "duration": 2.09,
+  "summary": {
+    "total": 6,
+    "passed": 5,
+    "failed": 1,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.BarnacleCrown_StacksWhileSurrounded_AndFades",
+      "Status": "Passed",
+      "Duration": 0.7310584,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.CaptainsLastRum_SavesTheShipOnce_WithAFrenzy",
+      "Status": "Failed",
+      "Duration": 0.1266748,
+      "Message": "  once a run\r\n  Expected: 1\r\n  But was:  0\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5ContentM5Tests.CaptainsLastRum_SavesTheShipOnce_WithAFrenzy () [0x00152] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5ContentM5Tests.cs:159\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.ChestAndRewardItems_ReportTheirMultipliers",
+      "Status": "Passed",
+      "Duration": 0.2267702,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.JollyRoger_StacksPerTenKills_AndAHitTakesHalf",
+      "Status": "Passed",
+      "Duration": 0.1266077,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.LeviathanHeart_PulsesEvery12Seconds",
+      "Status": "Passed",
+      "Duration": 0.1111915,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.TheNewContent_IsInThePools_AndPriced",
+      "Status": "Passed",
+      "Duration": 0.1955866,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

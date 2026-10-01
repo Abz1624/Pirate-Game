@@ -116,6 +116,9 @@ namespace RoguePirates.V4.Progression
         /// <summary>Demo: weapons never offered (set from the demo settings; empty in tests).</summary>
         public static readonly HashSet<string> ExcludedWeapons = new HashSet<string>();
 
+        /// <summary>V5 M5: a Logbook may be offered (bought with Rum, or free); null = every Logbook (tests, simulator).</summary>
+        public Func<string, bool> LogbookUnlocked;
+
         /// <summary>A new run: the pity count starts again.</summary>
         public void ResetForRun() => DealsSinceRare = 0;
 
@@ -394,7 +397,8 @@ namespace RoguePirates.V4.Progression
         bool CanOfferNewLogbook(IOfferState state)
         {
             if (state.OwnedLogbooks.Count >= P.logbookSlots) return false;
-            foreach (var lb in _logbooks()) if (!Contains(state.OwnedLogbooks, lb.logbookId)) return true;
+            foreach (var lb in _logbooks())
+                if (!Contains(state.OwnedLogbooks, lb.logbookId) && (LogbookUnlocked == null || LogbookUnlocked(lb.logbookId))) return true;
             return false;
         }
 
@@ -448,6 +452,7 @@ namespace RoguePirates.V4.Progression
             foreach (var lb in _logbooks())
             {
                 if (!lb.inSaltwindPool) continue;
+                if (LogbookUnlocked != null && !LogbookUnlocked(lb.logbookId)) continue;
                 var owned = Contains(state.OwnedLogbooks, lb.logbookId);
                 var level = levelsEmpty ? 0 : state.LogbookLevel(lb.logbookId);
                 if (newOnly && owned) continue;

@@ -49,6 +49,46 @@ MonoBehaviour:
     rumCost: 200
   - weaponId: cursed_doubloons
     rumCost: 220
+  logbookUnlocks:
+  - contentId: ironclad
+    rumCost: 180
+  - contentId: fortune
+    rumCost: 200
+  - contentId: tidecaller
+    rumCost: 220
+  - contentId: admiral
+    rumCost: 240
+  - contentId: plunderer
+    rumCost: 240
+  itemUnlocks:
+  - contentId: spare_planks
+    rumCost: 120
+  - contentId: powder_monkey
+    rumCost: 120
+  - contentId: shark_tooth_necklace
+    rumCost: 120
+  - contentId: manta_sail
+    rumCost: 120
+  - contentId: crows_nest
+    rumCost: 120
+  - contentId: skeleton_key
+    rumCost: 140
+  - contentId: smugglers_ledger
+    rumCost: 180
+  - contentId: black_spot
+    rumCost: 190
+  - contentId: dead_mans_compass
+    rumCost: 180
+  - contentId: cursed_coin
+    rumCost: 180
+  - contentId: barnacle_crown
+    rumCost: 240
+  - contentId: jolly_roger
+    rumCost: 240
+  - contentId: leviathan_heart
+    rumCost: 300
+  - contentId: captains_last_rum
+    rumCost: 300
   firstConquestWeaponId: swivel_guns
   startingWeaponRule: 1
   captainLockRule: 1

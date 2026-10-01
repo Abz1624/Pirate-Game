@@ -156,6 +156,8 @@ namespace RoguePirates.V4.Ports
         public static bool ConqueredForStartingWeapon => PlaytestFlags.UnlockAllContent || PlayerPrefs.HasKey(ContentUnlocks.FirstConquestKey);
         public static bool SaltwindDebugUnlockAll => PlaytestFlags.SaltwindDebugUnlockAll;
         public static bool IsWeaponUnlocked(string weaponId) => ContentUnlocks.IsWeaponUnlocked(weaponId);
+        /// <summary>V5 M5: a Logbook or item bought with Rum is owned.</summary>
+        public static bool IsContentOwned(string contentId) => ContentUnlocks.IsContentOwned(contentId);
         /// <summary>V3 LevelOfferGenerator.IsWeaponOfferEligible: the weapon's feature flag and, in V3-context runs, its unlock.</summary>
         public static bool IsWeaponOfferEligible(string weaponId) =>
             RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(weaponId) && (!RunContextActive || ContentUnlocks.IsWeaponUnlocked(weaponId));

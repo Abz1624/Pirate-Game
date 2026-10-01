@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5955df3a89aa96429cea5e68565b8be, type: 3}
+  m_Name: smugglers_ledger
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
+  configId: item.smugglers_ledger
+  schemaVersion: 1
+  balanceVersion: saltwind-v5-m5
+  itemId: smugglers_ledger
+  displayName: Smuggler's Ledger
+  description: Chests cost 20% more, but Uncommon and better items are 10% likelier
+    per copy (at most 50%).
+  rarity: 2
+  inChestPool: 1
+  inLevelUpPool: 0
+  chestPoolOrder: 52
+  collectionOrder: 52
+  statModifiers: []
+  effects:
+  - kind: 17
+    value: 1.2
+    threshold: 0.1
+    seconds: 0
+    cap: 1.5
+    active: 1

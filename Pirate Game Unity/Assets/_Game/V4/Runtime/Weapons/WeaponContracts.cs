@@ -23,6 +23,8 @@ namespace RoguePirates.V4.Weapons
         bool TryGetNearest(Vector3 from, float range, out int index, bool preferElite = false);
         /// <summary>V5 M4: the enemy's unit id (stable for its life; a slot is reused by later spawns).</summary>
         int UnitId(int index) => index;
+        /// <summary>V5 M5: the enemy's hull as a share of its maximum (Shark Tooth Necklace).</summary>
+        float HpFraction(int index) => 1f;
     }
 
     /// <summary>Damage and statuses on enemies (V3 kill path until M8).</summary>
@@ -57,6 +59,8 @@ namespace RoguePirates.V4.Weapons
     /// </summary>
     public interface IWeaponModifiers
     {
+        /// <summary>V5 M5 Shark Tooth Necklace: damage × this against enemies above <paramref name="threshold"/> of their hull.</summary>
+        float HealthyTargetDamageMultiplier(out float threshold) { threshold = 1f; return 1f; }
         float AttackSpeed { get; }
         float ProjectileSpeed { get; }
         float Size { get; }

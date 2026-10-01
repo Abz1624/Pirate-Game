@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5955df3a89aa96429cea5e68565b8be, type: 3}
+  m_Name: dead_mans_compass
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
+  configId: item.dead_mans_compass
+  schemaVersion: 1
+  balanceVersion: saltwind-v5-m5
+  itemId: dead_mans_compass
+  displayName: Dead Man's Compass
+  description: +5% XP; 10% more enemies.
+  rarity: 2
+  inChestPool: 1
+  inLevelUpPool: 0
+  chestPoolOrder: 54
+  collectionOrder: 54
+  statModifiers:
+  - stat: 16
+    additive: 0
+    multiplicative: 1.05
+  effects:
+  - kind: 12
+    value: 1.1
+    threshold: 0
+    seconds: 0
+    cap: 0
+    active: 1

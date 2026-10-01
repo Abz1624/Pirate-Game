@@ -1,0 +1,433 @@
+{
+  "status": "completed",
+  "duration": 355.37,
+  "summary": {
+    "total": 60,
+    "passed": 59,
+    "failed": 1,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptivePlayModeTests.CapHpLever_RaisesHp_OfSpawnsMadeWhileTheCapBlocks",
+      "Status": "Passed",
+      "Duration": 21.6889045,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptivePlayModeTests.Levers_BendAmbientSpawning_AndTheRunRecordIsWrittenAtDeath",
+      "Status": "Passed",
+      "Duration": 5.7289755,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.AreaDenialRelease_RunsInTheRun_AndNotUnderTheParityPreset",
+      "Status": "Passed",
+      "Duration": 9.638033,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.ConsoleGoTo_PowderCache_PutsTheShipInItsPromptRange_InTheRunAndTheLab",
+      "Status": "Passed",
+      "Duration": 4.9787882,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.EnemyContracts_MapTheSimulation_SlotBySlot_AndDevActionsUseTheHitPath",
+      "Status": "Passed",
+      "Duration": 7.1545116,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.HellfirePatch_ShowsAGroundMarker_UntilItBurnsOut",
+      "Status": "Passed",
+      "Duration": 5.1411491,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.ModuleLab_BossSummonAndKill_IsNotSaved",
+      "Status": "Passed",
+      "Duration": 2.9158928,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.ModuleLab_ClearAllDuringTheBossFight_LetsYouSummonAgain",
+      "Status": "Passed",
+      "Duration": 2.8344072,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.ModuleLab_PowderCacheChallenge_FourElites_ThenAFreeRareChest",
+      "Status": "Passed",
+      "Duration": 3.7698472,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.R103_AnExpiredMagneticTide_OpensNothing",
+      "Status": "Passed",
+      "Duration": 4.3609953,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.R103_MagneticTide_OpensEveryBarrel_AndPays_NotUnderTheParityPreset",
+      "Status": "Passed",
+      "Duration": 21.0647368,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.Switchover_ParityPresetBarrels_RunOnTheV4World",
+      "Status": "Passed",
+      "Duration": 3.9779598,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.Switchover_V3EnemyPiecesGone_V4ReplacementsWired",
+      "Status": "Passed",
+      "Duration": 3.1501508,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyPlayModeTests.TelemetrySlot_SamplesTheV4EnemyWorld",
+      "Status": "Passed",
+      "Duration": 5.0266455,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.AmbientSpawns_AreFlaggedForTheSpawnWarnings",
+      "Status": "Passed",
+      "Duration": 4.8783692,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.CaptainActive_ShowsOnTheHud_WithItsCooldown",
+      "Status": "Passed",
+      "Duration": 5.1030963,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.Hud_BarsFollowTheShip_AndResultsTelemetryIsWrittenOnce",
+      "Status": "Passed",
+      "Duration": 10.0359167,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.LegacyFeeds_PublishBeaconBossLandmarkAndOffers_Once",
+      "Status": "Passed",
+      "Duration": 8.3922958,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.PlaytestFixes_BoostMeterAboveTheWeaponRow_ResultsBodyClearOfTheButtons",
+      "Status": "Passed",
+      "Duration": 5.1124408,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.Presenters_ReplaceTheV3Views_AndShowTheRun",
+      "Status": "Failed",
+      "Duration": 7.6524114,
+      "Message": "  Expected string length 26 but was 29. Strings differ at index 0.\r\n  Expected: \"» Find the Treasury Beacon\"\r\n  But was:  \"[OK] Find the Treasury Beacon\"\r\n  -----------^\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4HudPlayModeTests+<Presenters_ReplaceTheV3Views_AndShowTheRun>d__6.MoveNext () [0x00200] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\PlayMode\\V4HudPlayModeTests.cs:92\r\nat UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\\Library\\PackageCache\\com.unity.test-framework@0b7a23ab2e1d\\UnityEngine.TestRunner\\NUnitExtensions\\Attributes\\TestEnumerator.cs:44\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.Results_OpenOnDeath_RetryReloadsTheV4Run_MenuLoadsTheV4Menu",
+      "Status": "Passed",
+      "Duration": 5.2394026,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.WeaponEffects_DrawThroughTheV4Presenter",
+      "Status": "Passed",
+      "Duration": 2.9975372,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4NarrativePlayModeTests.TutorialPrompt_AndBarks_ShowWithoutPausing",
+      "Status": "Passed",
+      "Duration": 3.0299549,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.AmbientSpawns_ComeFromTheV4SpawnController",
+      "Status": "Passed",
+      "Duration": 11.7425979,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.BootFlow_ReachesMenu_ThenRunPlays",
+      "Status": "Passed",
+      "Duration": 4.6131315,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.BuildWiring_CardPicksReachTheSlots_AndBraceReachesEnemyHits",
+      "Status": "Passed",
+      "Duration": 3.3166277,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.CreationProbe_CountsObjectsOutsideThePool_Only",
+      "Status": "Passed",
+      "Duration": 2.7639942,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.EliteBeat_AndOvertime_UseTheirOwnEnemies",
+      "Status": "Passed",
+      "Duration": 2.7132576,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.EnemyWorld_UsesTheConfigBuiltRuntimeDatabase",
+      "Status": "Passed",
+      "Duration": 2.9635481,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.EveryWeapon_Fires_InARun",
+      "Status": "Passed",
+      "Duration": 3.44726,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.FrameSteps_AllTickEveryFrame_AfterTheRunClock",
+      "Status": "Passed",
+      "Duration": 3.7343448,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.LiveConfigEdits_ReachTheLegacyRun",
+      "Status": "Passed",
+      "Duration": 3.6627444,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.LoadoutChanges_ReachTheV4WeaponSlots",
+      "Status": "Passed",
+      "Duration": 3.2747179,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.ModuleLab_SpawnsOnlyOnRequest",
+      "Status": "Passed",
+      "Duration": 8.7410277,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Overtime_SpawnsTheDrownedEnemies",
+      "Status": "Passed",
+      "Duration": 3.557613,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.PoolStress_InTheModuleLab_CreatesNothingAfterPrewarm",
+      "Status": "Passed",
+      "Duration": 10.9240188,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.PowderCache_StillSpawnsThroughTheEncounterExecutor",
+      "Status": "Passed",
+      "Duration": 4.8250899,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Preset_RequestedBeforeTheRun_AppliesFromTheStart",
+      "Status": "Passed",
+      "Duration": 4.4223703,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Run_BossKill_ThenDeath_SettlesOnce",
+      "Status": "Passed",
+      "Duration": 3.2463718,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Run_HasAViewPool_ThatCreatesNothingBeforeItsConsumersExist",
+      "Status": "Passed",
+      "Duration": 2.8845861,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.ShipSpeed_ComesFromRunConfig_AndSurvivesAStatChange",
+      "Status": "Passed",
+      "Duration": 3.0452965,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.ShipSpeed_TheParityPresetsFactor_AppliesFromTheStart",
+      "Status": "Passed",
+      "Duration": 3.8261374,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.SkippingTheLastLevelUp_HidesTheCards",
+      "Status": "Passed",
+      "Duration": 3.8151313,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.SteadyStormDamage_RespectsGodMode_ThrottlesFeedback_AndCanKill",
+      "Status": "Passed",
+      "Duration": 4.2469514,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Storm_OutsideTheSafeZone_DamagesTheShip",
+      "Status": "Passed",
+      "Duration": 7.3549767,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.VictoryThatEndsTheRun_PaysNothing_AndBanksNothing",
+      "Status": "Passed",
+      "Duration": 3.0590459,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RunPlayModeTests.Weapons_FireFromV4_OnTheV4Loadout",
+      "Status": "Passed",
+      "Duration": 5.6878048,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StagePlayModeTests.Beacon_SummonsTheBoss_AndTheV4DirectorAttacks",
+      "Status": "Passed",
+      "Duration": 13.8930891,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StagePlayModeTests.Chest_PromptPausesTheRun_AndSkipResumes",
+      "Status": "Passed",
+      "Duration": 4.6507255,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StagePlayModeTests.PowderCache_V3Ambush_UnderTheParityPreset_SpawnsThroughTheV4Executor",
+      "Status": "Passed",
+      "Duration": 3.030379,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StagePlayModeTests.StageContent_ReplacesPOIManager_AndBuildsTheMarkers",
+      "Status": "Passed",
+      "Duration": 2.9511218,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildPlayModeTests.EvolutionChain_Level8_ChestItem_Card_ThenLevellingOn",
+      "Status": "Passed",
+      "Duration": 2.9964515,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FeelPlayModeTests.AbilityButton_OnTouchDevices_ShowsAndFiresTheActive",
+      "Status": "Passed",
+      "Duration": 3.190146,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FeelPlayModeTests.HittingAnIsland_BouncesBack_AndCostsHull",
+      "Status": "Passed",
+      "Duration": 3.1880396,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FeelPlayModeTests.HoldingIntoAShore_CostsHullAtMostEveryDamageCooldown_ThroughTheIncomingMultiplier",
+      "Status": "Passed",
+      "Duration": 8.5946467,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FeelPlayModeTests.UnderTheParityPreset_IslandsDoNotBounceOrHurt",
+      "Status": "Passed",
+      "Duration": 5.0199098,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowPlayModeTests.Flow_AtMinutes1_3_6_9_ReachesTheWaveFloor_AndOvertimeRuns",
+      "Status": "Passed",
+      "Duration": 27.4516241,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PerformancePlayModeTests.TheTopDownFarClip_FitsTheView",
+      "Status": "Passed",
+      "Duration": 5.695747,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressurePlayModeTests.AnEnemy_HasTheSameHpAndDamage_At1And8Minutes",
+      "Status": "Passed",
+      "Duration": 3.8647961,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressurePlayModeTests.TheFloor_FollowsTheKeyframes_AtAPeakAndAValley",
+      "Status": "Passed",
+      "Duration": 3.812195,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

@@ -215,6 +215,7 @@ namespace RoguePirates.V4.Weapons
         {
             Hooks.BeginDamageResolution();
             if (!Hooks.TryRegisterProcEvent()) return;
+            dmg = new DamageRoll(Healthy(enemyIndex, dmg.Amount), dmg.IsCrit);
             Hooks.RecordHit(weaponId, dmg.Amount, dmg.IsCrit, isElite, isBoss);
             Damage.ApplyDamage(enemyIndex, dmg.Amount, dmg.IsCrit, weaponId: weaponId);
         }
@@ -225,8 +226,18 @@ namespace RoguePirates.V4.Weapons
         /// </summary>
         public void DamageAndRecord(int index, string ledgerId, float amount, bool isCrit, string weaponId = null)
         {
+            amount = Healthy(index, amount);
             if (ledgerId != null) Hooks.RecordHit(ledgerId, amount, isCrit, Enemies.IsElite(index), Enemies.IsBoss(index));
             Damage.ApplyDamage(index, amount, isCrit, weaponId: weaponId);
+        }
+
+        /// <summary>V5 M5 Shark Tooth Necklace: more damage to an enemy still above the threshold share of its hull (read
+        /// before the hit). × 1 without the item.</summary>
+        public float Healthy(int index, float amount)
+        {
+            var threshold = 1f;
+            var mult = Mods != null ? Mods.HealthyTargetDamageMultiplier(out threshold) : 1f;
+            return mult != 1f && Enemies.HpFraction(index) > threshold ? amount * mult : amount;
         }
 
         /// <summary>The aim overlay (V3 NotifyFire).</summary>

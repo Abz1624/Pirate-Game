@@ -40,6 +40,12 @@ namespace RoguePirates.V4.Stage
 
         /// <summary>V5 M3: the run's items (a chest's evolution-item chance skips items already carried).</summary>
         public Func<string, bool> HasItem;
+        /// <summary>V5 M5: an item may drop (bought with Rum, or free); null = every item in the pool.</summary>
+        public Func<string, bool> ItemUnlocked;
+        /// <summary>V5 M5 Skeleton Key: the chance a chest is free; Smuggler's Ledger: price × and rarity boost.</summary>
+        public Func<float> FreeChance, PriceMultiplier, RarityBoost;
+        /// <summary>The last planned chest was free (Skeleton Key): it is not counted as a purchase.</summary>
+        public bool LastPlanFree { get; private set; }
         /// <summary>V5 M4: a weapon is unlocked (with <c>chestPoolOwnedEvolutionsOnly</c>, its evolution item may drop); null = all.</summary>
         public Func<string, bool> WeaponUnlocked;
 
@@ -49,8 +55,17 @@ namespace RoguePirates.V4.Stage
         StageContentConfig Stage => _config?.Invoke()?.Single<StageContentConfig>();
 
         /// <summary>V3's chest pool: the items in it, in V3's catalog order (rolls index it).</summary>
-        IReadOnlyList<ItemConfig> Pool => WeaponUnlocked != null && Stage != null && Stage.chestPoolOwnedEvolutionsOnly ? Owned() : _pool ??= _config?.Invoke()?.All<ItemConfig>()
+        IReadOnlyList<ItemConfig> Pool => _frozen ?? Live;
+        /// <summary>The pool for the chest being planned (built once per chest: ownership reads the save).</summary>
+        List<ItemConfig> _frozen;
+        IReadOnlyList<ItemConfig> Live => (WeaponUnlocked != null && Stage != null && Stage.chestPoolOwnedEvolutionsOnly) || ItemUnlocked != null ? Owned() : _pool ??= _config?.Invoke()?.All<ItemConfig>()
             .Where(i => i.inChestPool).OrderBy(i => i.chestPoolOrder).ToList() ?? new List<ItemConfig>();
+
+        int Priced(int price)
+        {
+            var m = PriceMultiplier?.Invoke() ?? 1f;
+            return m == 1f ? price : Mathf.CeilToInt(price * m);
+        }
 
         /// <summary>V5 M4: the pool without the evolution items of locked weapons (rebuilt per chest: unlocks change between
         /// runs, and chests are few).</summary>
@@ -59,7 +74,9 @@ namespace RoguePirates.V4.Stage
             var config = _config?.Invoke();
             if (config == null) return new List<ItemConfig>();
             var evolutions = config.All<WeaponEvolutionConfig>().ToList();
-            return config.All<ItemConfig>().Where(i => i.inChestPool && evolutions.All(e => e.requiredItemId != i.itemId || e.baseWeapon == null || WeaponUnlocked(e.baseWeapon.weaponId)))
+            var ownedOnly = WeaponUnlocked != null && Stage != null && Stage.chestPoolOwnedEvolutionsOnly;
+            return config.All<ItemConfig>().Where(i => i.inChestPool && (ItemUnlocked == null || ItemUnlocked(i.itemId))
+                    && (!ownedOnly || evolutions.All(e => e.requiredItemId != i.itemId || e.baseWeapon == null || WeaponUnlocked(e.baseWeapon.weaponId))))
                 .OrderBy(i => i.chestPoolOrder).ToList();
         }
 
@@ -70,7 +87,7 @@ namespace RoguePirates.V4.Stage
             return (int)Math.Ceiling(s.chestPriceIncrementBase * Math.Pow(s.chestPriceGrowth, completedPurchases));
         }
 
-        public int QuoteChestPrice() => Stage != null ? ChestPrice(Stage, Purchases) : 0;
+        public int QuoteChestPrice() => Stage != null ? Priced(ChestPrice(Stage, Purchases)) : 0;
 
         /// <summary>V3 quirk kept: V3Economy.GetChestPrice returned the current price whatever count it was given.</summary>
         public int ProgressChestPrice(int paidChests) => QuoteChestPrice();
@@ -79,8 +96,18 @@ namespace RoguePirates.V4.Stage
         {
             var stage = Stage;
             if (stage == null || _run == null || !_run.Exists) return new ChestPlan(false, 0, null, "missing export");
-            var price = ChestPrice(stage, Purchases);
+            var price = Priced(ChestPrice(stage, Purchases));
+            LastPlanFree = false;
+            var free = FreeChance?.Invoke() ?? 0f;
+            if (free > 0f && _random.LootFloat() < free) { price = 0; LastPlanFree = true; } // decided before the gold check
             if (_run.Gold < price) return new ChestPlan(false, 0, null, "insufficient gold");
+            _frozen = new List<ItemConfig>(Live);
+            try { return PlanItem(stage, price, equippedWeaponIds); }
+            finally { _frozen = null; }
+        }
+
+        ChestPlan PlanItem(StageContentConfig stage, int price, IReadOnlyList<string> equippedWeaponIds)
+        {
             var evolutionItem = RollEvolutionItem(stage);
             if (evolutionItem != null) return new ChestPlan(true, price, evolutionItem, null);
             for (var attempt = 0; attempt < stage.chestLootAttempts; attempt++)
@@ -180,6 +207,7 @@ namespace RoguePirates.V4.Stage
                 var w = baseWeights[i];
                 if (i >= 2) w *= stageRareBoost; // Rare and better
                 if (i >= 1) w *= luckBoost;      // Uncommon and better
+                if (i >= 1 && RarityBoost != null) w *= RarityBoost(); // V5 M5 Smuggler's Ledger
                 _weights[i] = w;
                 total += w;
             }

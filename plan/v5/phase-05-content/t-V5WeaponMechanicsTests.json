@@ -1,0 +1,188 @@
+{
+  "status": "completed",
+  "duration": 3.89,
+  "summary": {
+    "total": 25,
+    "passed": 25,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.ABeamOrbit_LaysItsSpheresAlongOneLine",
+      "Status": "Passed",
+      "Duration": 0.3396686,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.AnAura_PulsesWithoutATarget_SlowsWhatItHits_AndCursesOnlyWhenSet",
+      "Status": "Passed",
+      "Duration": 0.1295904,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.AnEmpoweredEvolution_AddsItsNumbers_OnTopOfTheUpgrades",
+      "Status": "Passed",
+      "Duration": 0.1112568,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.APerTargetOrbit_HitsEachEnemyOncePerInterval_AndKnocksBack",
+      "Status": "Passed",
+      "Duration": 0.1261949,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.APiercingShot_HitsOneMorePerPierce_EachEnemyOnce_AndSlows",
+      "Status": "Passed",
+      "Duration": 0.1294556,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.APlainShot_StopsAtItsFirstHit",
+      "Status": "Passed",
+      "Duration": 0.1235221,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.ATurret_TakesTheNearestEnemyInItsRange_WhenItsTargetIsOutOfReach",
+      "Status": "Passed",
+      "Duration": 0.1204,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.ATurretSummon_FiresShots_InsteadOfStriking",
+      "Status": "Passed",
+      "Duration": 0.0874919,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.AWhirlpool_DealsItsWholeTicks_AtAnyFrameRate",
+      "Status": "Passed",
+      "Duration": 0.1999522,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.AWhirlpoolShell_DragsAndHurts_ThenImplodes",
+      "Status": "Passed",
+      "Duration": 0.1299739,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.EveryEmpoweredEvolution_ChangesItsWeaponInPlay",
+      "Status": "Passed",
+      "Duration": 0.1455073,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.HitsPerFiring_IsOneForTodaysWeapons_AndSharedWithTheModel",
+      "Status": "Passed",
+      "Duration": 0.1379638,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.KillGold_IsPaidPerKill_UpToTheRunCap",
+      "Status": "Passed",
+      "Duration": 0.0608049,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.SiegeBombard_AndShipOfTheLine_HitWider",
+      "Status": "Passed",
+      "Duration": 0.1778797,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.Summons_ComeOnePerQuantity_AndFindANewTarget",
+      "Status": "Passed",
+      "Duration": 0.0624539,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.Summons_StopAtTheirCap",
+      "Status": "Passed",
+      "Duration": 0.0416907,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.SwivelBattery_AndWhalersVolley_FireMoreShots",
+      "Status": "Passed",
+      "Duration": 0.1792338,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheAnchorFlail_HitsEachEnemyOncePerInterval_AndKnocksBack_AndItsCooldownCardsShortenIt",
+      "Status": "Passed",
+      "Duration": 0.1568245,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheFlame_ReachesTheConesRange_AndSpreadsToItsArc",
+      "Status": "Passed",
+      "Duration": 0.6061098,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheNewWeapons_AreBuyable_Offerable_AndEachEvolutionIsReachable",
+      "Status": "Passed",
+      "Duration": 0.2042401,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheProjectileBlock_CarriesPierceAndSlow_IntoItsShots",
+      "Status": "Passed",
+      "Duration": 0.0821078,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheRammingProw_StrikesAheadOnlyWhileBoosting_AndShoves",
+      "Status": "Passed",
+      "Duration": 0.0590931,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheShipState_IsNotBoosting_ByDefault",
+      "Status": "Passed",
+      "Duration": 0.0002549,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheSirenBell_SlowsAroundTheShip_AndItsChoir_WiderAndHarder",
+      "Status": "Passed",
+      "Duration": 0.0802224,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TwoOrbitWeapons_EachHaveTheirBlades",
+      "Status": "Passed",
+      "Duration": 0.0636302,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

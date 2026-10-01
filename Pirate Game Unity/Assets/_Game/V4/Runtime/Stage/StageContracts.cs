@@ -76,6 +76,8 @@ namespace RoguePirates.V4.Stage
         /// <summary>Price check and loot roll (24 attempts at an eligible item) on the loot stream.</summary>
         ChestPlan PlanChest(IReadOnlyList<string> equippedWeaponIds);
         void RegisterChestPurchase();
+        /// <summary>V5 M5: the last planned chest was free (Skeleton Key): not counted as a purchase.</summary>
+        bool LastPlanFree => false;
         bool TryAddItem(string itemId);
         string ItemName(string itemId);
         /// <summary>A uniformly drawn chest-pool item (map stream), for the Powder Cache.</summary>

@@ -28,6 +28,14 @@ namespace RoguePirates.V4.Config
         [Tooltip("Damage to controlled targets × value (Leviathan Tooth; never read in V3).")] ControlledTargetDamage = 10,
         [Tooltip("+ value lightning jumps (Stormglass; never read in V3).")] ExtraLightningJumps = 11,
         [Tooltip("Enemy spawn density × value (Cursed Compass; never read in V3).")] SpawnDensity = 12,
+        [Tooltip("V5 M5 (Jolly Roger): every threshold kills add a stack of + value damage, at most cap stacks (+ seconds per extra copy, at most 40); a hit on the ship removes half.")] KillStreakDamage = 13,
+        [Tooltip("V5 M5 (Captain's Last Rum): once a run, a fatal hit restores value of max hull, threshold seconds of immunity and + cap damage for seconds.")] CheatDeath = 14,
+        [Tooltip("V5 M5 (Leviathan Heart): every threshold seconds a value-damage pulse of radius cap on the densest crowd after a seconds-long telegraph; × min(2, 1 + 0.2 per extra copy).")] PeriodicPulse = 15,
+        [Tooltip("V5 M5 (Skeleton Key): a chest is free with chance 1 - (1 - value)^copies, at most cap.")] FreeChestChance = 16,
+        [Tooltip("V5 M5 (Smuggler's Ledger): chest prices × value (once); non-Common chest rarity weights × (1 + threshold per copy), at most cap.")] ChestPriceAndRarity = 17,
+        [Tooltip("V5 M5 (Barnacle Crown): with at least seconds enemies within threshold m, a stack of + value damage a second, at most cap (+2 per extra copy, at most 20); it loses 2 stacks a second otherwise.")] SurroundedDamage = 18,
+        [Tooltip("V5 M5 (Shark Tooth Necklace): + value damage per copy (at most cap) against enemies above threshold of their hull.")] HealthyTargetDamage = 19,
+        [Tooltip("V5 M5 (Black Spot): elite kills drop + value per copy (at most cap) more gold and XP.")] EliteRewards = 20,
     }
 
     /// <summary>One triggered effect of an item. Effects are per item, not per stack (V3 checked HasItem).</summary>

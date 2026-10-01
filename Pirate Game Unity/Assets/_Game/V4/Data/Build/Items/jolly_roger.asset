@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5955df3a89aa96429cea5e68565b8be, type: 3}
+  m_Name: jolly_roger
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
+  configId: item.jolly_roger
+  schemaVersion: 1
+  balanceVersion: saltwind-v5-m5
+  itemId: jolly_roger
+  displayName: Jolly Roger
+  description: Every 10 kills, +1% damage (up to +20%, +5 per extra copy, at most
+    +40%); a hit takes half the streak.
+  rarity: 3
+  inChestPool: 1
+  inLevelUpPool: 0
+  chestPoolOrder: 57
+  collectionOrder: 57
+  statModifiers: []
+  effects:
+  - kind: 13
+    value: 0.01
+    threshold: 10
+    seconds: 5
+    cap: 20
+    active: 1

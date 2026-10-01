@@ -30,6 +30,17 @@ namespace RoguePirates.V4.Enemies
         public Action<string> WeaponKill;
         /// <summary>V5 M4b: extra gold a kill by this weapon drops (Cursed Doubloons; capped per run by the provider).</summary>
         public Func<string, int> WeaponKillGold;
+        /// <summary>V5 M5: elite kill gold and XP × this (Black Spot); boss gold × this (the Plunderer Logbook).</summary>
+        public Func<float> EliteRewardMultiplier, BossGoldMultiplier;
+        float _xpCarry, _goldCarry;
+
+        static int Carry(float value, ref float carry)
+        {
+            value += carry;
+            var whole = Mathf.FloorToInt(value);
+            carry = value - whole;
+            return whole;
+        }
 
         public void OnKilled(in EnemyUnit e, EnemyDefinition def)
         {
@@ -43,8 +54,21 @@ namespace RoguePirates.V4.Enemies
             var gold = def.goldValue;
             var killGold = KillGold?.Invoke();
             if (killGold != null && Random != null) gold = ResolveKillGold(killGold, def, Random, rewardRich, rewardElite, e.isBoss);
+            var xp = def.xpValue;
+            if (rewardElite && EliteRewardMultiplier != null)
+            {
+                // V5 M5 Black Spot: +10% of a 2-6 XP elite rounds away, so the fraction carries to the next elite kill.
+                var m = EliteRewardMultiplier();
+                if (m != 1f) { xp = Carry(xp * m, ref _xpCarry); gold = Carry(gold * m, ref _goldCarry); }
+            }
+            if ((e.isBoss || def.isBoss) && BossGoldMultiplier != null)
+            {
+                var m = BossGoldMultiplier();
+                if (m != 1f) gold = Carry(gold * m, ref _goldCarry);
+            }
+            // The coins' bonus last: capped per run, never multiplied.
             if (WeaponKillGold != null && !string.IsNullOrEmpty(e.lastHitWeaponId)) gold += WeaponKillGold(e.lastHitWeaponId);
-            SpawnKillDrops?.Invoke(e.position, def.xpValue, gold);
+            SpawnKillDrops?.Invoke(e.position, xp, gold);
             RollPowerup?.Invoke(e.position, e.isBoss, rewardElite);
             Encounters?.RegisterKill(e.id);
             if (e.isBoss) BossKilled?.Invoke();

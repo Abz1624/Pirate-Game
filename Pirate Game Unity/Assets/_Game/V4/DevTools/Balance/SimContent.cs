@@ -89,7 +89,7 @@ namespace RoguePirates.V4.DevTools.Balance
         {
             if (Unlocks?.weaponUnlocks == null) return 0;
             foreach (var u in Unlocks.weaponUnlocks) if (u != null && u.weaponId == weaponId) return u.rumCost;
-            return 0;
+            return Unlocks.RumCost(weaponId); // V5 M5: Logbooks and items
         }
         public List<LogbookConfig> LogbooksInOrder { get; }
         public List<WeaponEvolutionConfig> Evolutions { get; }
@@ -104,7 +104,7 @@ namespace RoguePirates.V4.DevTools.Balance
                     _chestAll = AllWeaponsUnlocked;
                     _chestRum = RegularPlayerRum;
                     var ownedOnly = Stage == null || Stage.chestPoolOwnedEvolutionsOnly;
-                    _chestPool = _allChestItems.Where(i => !ownedOnly || Evolutions.All(e => e.requiredItemId != i.itemId || e.baseWeapon == null
+                    _chestPool = _allChestItems.Where(i => RumCost(i.itemId) <= RegularPlayerRum).Where(i => !ownedOnly || Evolutions.All(e => e.requiredItemId != i.itemId || e.baseWeapon == null
                         || IsWeaponAvailable(e.baseWeapon.weaponId))).ToList();
                 }
                 return _chestPool;
@@ -141,7 +141,7 @@ namespace RoguePirates.V4.DevTools.Balance
             Personalities = config.Single<PlayerPersonalityConfig>();
             Captains = config.All<CaptainConfig>().OrderBy(c => c.menuOrder).ToList();
             _allWeaponsInOrder = OfferGenerator.InDatabaseOrder(config.All<WeaponConfig>());
-            LogbooksInOrder = OfferGenerator.InDatabaseOrder(config.All<LogbookConfig>());
+            LogbooksInOrder = OfferGenerator.InDatabaseOrder(config.All<LogbookConfig>()).Where(l => RumCost(l.logbookId) <= RegularPlayerRum).ToList(); // V5 M5
             Evolutions = config.All<WeaponEvolutionConfig>().ToList();
             _allChestItems = config.All<ItemConfig>().Where(i => i.inChestPool).OrderBy(i => i.chestPoolOrder).ToList();
             foreach (var w in config.All<WeaponConfig>()) if (!string.IsNullOrEmpty(w.weaponId)) _weapons[w.weaponId] = w;

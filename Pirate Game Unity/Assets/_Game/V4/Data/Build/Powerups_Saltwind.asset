@@ -14,7 +14,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.PowerupConfig
   configId: powerups.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-v5-m5
+  names:
+  - kind: 0
+    displayName: Repair Supplies
+  - kind: 1
+    displayName: Battle Signal
+  - kind: 2
+    displayName: Tailwind
+  - kind: 3
+    displayName: Salvage Chime
+  - kind: 4
+    displayName: Full Sail
+  - kind: 5
+    displayName: Powder Rush
+  - kind: 6
+    displayName: Magnetic Tide
+  - kind: 7
+    displayName: Dead Calm
   dropChancePerKill: 0.01
   minIntervalSeconds: 20
   elitesAlwaysDrop: 1

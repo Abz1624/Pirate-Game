@@ -28,7 +28,7 @@ namespace RoguePirates.V4.Foundation.UI
             StatId.Shield => "Shield",
             StatId.Duration => "Duration",
             StatId.EliteDamage => "Elite Damage",
-            StatId.DoubloonGain => "Doubloon Gain",
+            StatId.DoubloonGain => "Boss Loot", // V5 M5: the Plunderer Logbook raises boss gold
             _ => stat.ToString()
         };
 

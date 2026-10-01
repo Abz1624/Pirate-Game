@@ -17,7 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: cursed_compass
   displayName: Cursed Compass
-  description: "More Luck and denser fights \u2014 higher reward under pressure."
+  description: "More Luck and denser fights : higher reward under pressure."
   rarity: 3
   inChestPool: 1
   inLevelUpPool: 1

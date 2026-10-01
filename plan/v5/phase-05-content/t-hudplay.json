@@ -1,0 +1,69 @@
+{
+  "status": "completed",
+  "duration": 53.18,
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.AmbientSpawns_AreFlaggedForTheSpawnWarnings",
+      "Status": "Passed",
+      "Duration": 19.9937861,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.CaptainActive_ShowsOnTheHud_WithItsCooldown",
+      "Status": "Passed",
+      "Duration": 7.1003359,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.Hud_BarsFollowTheShip_AndResultsTelemetryIsWrittenOnce",
+      "Status": "Passed",
+      "Duration": 5.0868694,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.LegacyFeeds_PublishBeaconBossLandmarkAndOffers_Once",
+      "Status": "Passed",
+      "Duration": 3.1974542,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.PlaytestFixes_BoostMeterAboveTheWeaponRow_ResultsBodyClearOfTheButtons",
+      "Status": "Passed",
+      "Duration": 2.6886948,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.Presenters_ReplaceTheV3Views_AndShowTheRun",
+      "Status": "Passed",
+      "Duration": 6.1522855,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.Results_OpenOnDeath_RetryReloadsTheV4Run_MenuLoadsTheV4Menu",
+      "Status": "Passed",
+      "Duration": 5.2496464,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.WeaponEffects_DrawThroughTheV4Presenter",
+      "Status": "Passed",
+      "Duration": 2.9327136,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

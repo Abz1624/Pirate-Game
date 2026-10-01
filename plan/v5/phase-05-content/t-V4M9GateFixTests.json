@@ -1,0 +1,76 @@
+{
+  "status": "completed",
+  "duration": 3.29,
+  "summary": {
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.LifetimeGold_AddsTheRunsGold_OncePerRun",
+      "Status": "Passed",
+      "Duration": 0.2544083,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R102_ALevelUpInTheBossFight_ResumesToTheBossFight",
+      "Status": "Passed",
+      "Duration": 0.4089716,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R31_EvolutionCards_StayReachable_WithEveryWeaponMaxed",
+      "Status": "Passed",
+      "Duration": 0.766484,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R40_AShotThatPassesClose_AndMisses_IsANearMiss",
+      "Status": "Passed",
+      "Duration": 0.0150191,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R40_ItemEffects_AreRead_OnlyWithTheFix",
+      "Status": "Passed",
+      "Duration": 0.4077456,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R40_Tarred_MarksAnEnemyControlled_UntilItWearsOff",
+      "Status": "Passed",
+      "Duration": 0.0148891,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R43_FullSail_StacksWithTailwind_AndPowderRushIsAttackSpeed",
+      "Status": "Passed",
+      "Duration": 0.3868015,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R49_HanksArmor_AndEmberAndRoxiesMultipliers_ApplyOnlyWithTheFix",
+      "Status": "Passed",
+      "Duration": 0.3810735,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.WeaponsOnlyActive_KeepsItsCharge_WithNothingInRange",
+      "Status": "Passed",
+      "Duration": 0.3206167,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

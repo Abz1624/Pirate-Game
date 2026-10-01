@@ -68,6 +68,8 @@ namespace RoguePirates.V4.Composition
                 () => OfferGenerator.InDatabaseOrder(config.All<LogbookConfig>()),
                 () => config.All<WeaponEvolutionConfig>().ToList(),
                 () => Experiment?.weaponEvolutionsEnabled ?? true);
+            // V5 M5: Logbooks bought with Rum are offered only once owned.
+            offers.LogbookUnlocked = id => IsBought(config, id);
             Progression = new ProgressionModule(() => config.Single<ProgressionConfig>(), WeaponConfig, Logbook, offers,
                 new RunStreams(), new OfferContext(this), Stats, Stats, run, world)
             {
@@ -88,6 +90,8 @@ namespace RoguePirates.V4.Composition
             Progression.OfferChosen += RecordOfferTelemetry;
             Items.Acquired += OnItemAcquired;
             Items.FireAllWeapons += () => _bellPending = true;
+            Items.PulseRequested += (id, damage, radius, telegraph) => Weapons?.ItemPulse(id, damage, radius, telegraph); // V5 M5 Leviathan Heart
+            Items.CheatedDeath += id => Toasts?.Show($"{ItemConfig(id)?.displayName ?? id}: back from the brink!", 3f);
             Captain.ActiveUsed += OnActiveUsed;
             Captain.HoldWithoutTarget = () => Experiment?.captainActiveHoldsWithoutTarget ?? false;
             Captain.HasWeaponTarget = AnyEnemyInWeaponRange;
@@ -105,6 +109,13 @@ namespace RoguePirates.V4.Composition
         }
 
         ExperimentConfig Experiment => _config?.Single<ExperimentConfig>();
+
+        /// <summary>V5 M5: free content, or bought with Rum and owned in the save.</summary>
+        public static bool IsBought(ConfigSetRuntime config, string contentId)
+        {
+            var unlocks = config?.Single<UnlockConfig>();
+            return unlocks == null || unlocks.RumCost(contentId) <= 0 || Ports.ContentPort.IsContentOwned(contentId);
+        }
         /// <summary>The active's key for the HUD: the gamepad button while a gamepad is connected (R-49: RB, V3: A), else SPACE.</summary>
         public string ActiveKeyHint() => Gamepad.current == null ? "SPACE" : Experiment != null && !Experiment.captainActiveOnGamepadSouth ? "RB" : "A";
 
@@ -312,7 +323,11 @@ namespace RoguePirates.V4.Composition
         /// <summary>V3 DamageReceiver.TakeDamage told the items after every hit it took.</summary>
         public void AttachShip(PlayerShipController ship)
         {
-            if (ship?.Damage != null) ship.Damage.Damaged += OnShipDamaged;
+            if (ship?.Damage != null)
+            {
+                ship.Damage.Damaged += OnShipDamaged;
+                ship.Damage.PreventDeath = Items.TryCheatDeath; // V5 M5 Captain's Last Rum
+            }
         }
 
         void OnShipDamaged(float amount, bool crit) => Items.NotifyPlayerTookDamage();
@@ -320,7 +335,11 @@ namespace RoguePirates.V4.Composition
         public void Dispose()
         {
             var ship = Ship;
-            if (ship != null && ship.Damage != null) ship.Damage.Damaged -= OnShipDamaged;
+            if (ship != null && ship.Damage != null)
+            {
+                ship.Damage.Damaged -= OnShipDamaged;
+                ship.Damage.PreventDeath = null;
+            }
             Pickups.ClearAll();
         }
 
@@ -426,6 +445,17 @@ namespace RoguePirates.V4.Composition
             public Vector3 ShipVelocity => Ship.Velocity;
             public int Gold => RunManager.Instance != null ? RunManager.Instance.Gold : 0;
             public IEnumerable<WeaponConfig> Weapons => _w.Progression.Loadout.Weapons.Select(l => l.Config);
+
+            public int EnemiesNear(float radius)
+            {
+                var enemies = _w.Enemies;
+                if (enemies == null || Ship == null) return 0;
+                var p = Ship.Position;
+                var count = 0;
+                for (var i = 0; i < enemies.Capacity; i++)
+                    if (enemies.IsActive(i) && WeaponCombat.WithinHorizontalRadius(p, enemies.Position(i), radius)) count++;
+                return count;
+            }
 
             public bool IsFreeSpot(Vector3 p, float margin, float clearance) =>
                 PlayBounds.IsInside(p, margin) && !(IslandObstacles.IsAvailable && IslandObstacles.IsPositionBlocked(p, clearance));

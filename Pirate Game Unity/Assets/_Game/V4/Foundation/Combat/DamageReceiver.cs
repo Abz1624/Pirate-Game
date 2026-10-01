@@ -33,6 +33,22 @@ namespace RoguePirates.V4.Foundation.Combat
         public event Action<float, bool> Damaged;
         public event Action Died;
 
+        /// <summary>V5 M5 (Captain's Last Rum): asked before a fatal hit sinks the ship; true = restore this share of max
+        /// hull with this many seconds of hit immunity instead.</summary>
+        public delegate bool DeathPrevention(out float restoreFraction, out float immunitySeconds);
+        public DeathPrevention PreventDeath;
+        float _rescuedUntil;
+
+        bool Sinks()
+        {
+            if (_currentHP > 0f) return false;
+            if (PreventDeath == null || !PreventDeath(out var restore, out var immunity)) return true;
+            _currentHP = Mathf.Max(1f, maxHP * restore);
+            _iframeUntil = Time.time + immunity;
+            _rescuedUntil = _iframeUntil;
+            return false;
+        }
+
         void Awake()
         {
             _currentHP = maxHP;
@@ -73,7 +89,7 @@ namespace RoguePirates.V4.Foundation.Combat
             _iframeUntil = Time.time + GameConstants.ContactIFrame;
             _currentHP = Mathf.Max(0f, _currentHP - amount);
             Damaged?.Invoke(amount, isCrit);
-            if (_currentHP <= 0f) Died?.Invoke();
+            if (Sinks()) Died?.Invoke();
         }
 
         /// <summary>
@@ -84,9 +100,10 @@ namespace RoguePirates.V4.Foundation.Combat
         public void TakeImpact(float amount, Vector3 hitPoint)
         {
             if (!IsAlive || _playtestInvulnerable || amount <= 0f) return;
+            if (Time.time < _rescuedUntil) return; // V5 M5: the Last Rum's safety covers island knocks too
             _currentHP = Mathf.Max(0f, _currentHP - amount);
             Damaged?.Invoke(amount, false);
-            if (_currentHP <= 0f) Died?.Invoke();
+            if (Sinks()) Died?.Invoke();
         }
 
         public void Heal(float amount)

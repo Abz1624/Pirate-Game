@@ -1,15 +1,15 @@
 {
   "updated": "1 Oct 2026",
-  "statusLine": "You are back: M4a, M4 and M4b built (awaiting your playtest); continuing to M8",
+  "statusLine": "You are back: M4a-M5 built and the Art Guide published (awaiting your playtest); M7 and M8 next",
   "statusOk": false,
   "facts": [
     [
       "Progress",
-      "M0-M3 done; M3b-M4b built and committed (awaiting your playtest)"
+      "M0-M3 done; M3b-M5 built and committed (awaiting your playtest); M6 Art Guide published"
     ],
     [
       "Tests",
-      "EditMode 442/442 · PlayMode 60/60"
+      "EditMode 448/448 · PlayMode 60/60 (one seed-dependent test rerun)"
     ],
     [
       "Gate",
@@ -58,6 +58,10 @@
       "chip": "built 1 Oct · awaiting your playtest"
     },
     "M4b": {
+      "state": "playtest",
+      "chip": "built 1 Oct · awaiting your playtest"
+    },
+    "M5": {
       "state": "playtest",
       "chip": "built 1 Oct · awaiting your playtest"
     }
@@ -202,10 +206,17 @@
       "when": "1 Oct",
       "what": "<strong>M4b built</strong> (awaiting your playtest): Parrot Squadron, Monkey Gunners, Maelstrom Charge, Lighthouse Lantern, Cursed Doubloons (170-220 Rum) with five Empowered evolutions and their items; pull, whirlpools, sweeping beams, capped summons and capped kill gold; the balance model and the difficulty director now share how many hits a firing deals (the Anchor Flail re-tuned with it). D32.",
       "commit": ""
+    },
+    {
+      "when": "1 Oct",
+      "what": "<strong>M5 built</strong> (awaiting your playtest): four Logbooks (Fortune, Tidecaller, Admiral, Plunderer; Ironclad waits for armor), thirteen items bought with Rum (Shark Tooth, Skeleton Key, Smuggler's Ledger, Black Spot, Barnacle Crown, Jolly Roger, Leviathan Heart, Captain's Last Rum and more); new item effects with tests. The free Commons and the four designed powerups would have pushed the balance bands, so they wait for you (D33, D34; questions 27-32).",
+      "commit": ""
     }
   ],
   "todos": {
     "next": [
+      "<strong>Playtest M5</strong>: turn on unlock-all (or wait for the M8 shop) and try Jolly Roger, Barnacle Crown, Leviathan Heart and Captain's Last Rum; answer questions 27-32 in DECISIONS-WHILE-AWAY.md.",
+      "<strong>Art Guide (M6)</strong>: read and share the Claude Doc with your art team: https://claude.ai/code/artifact/31acc17c-5ed0-4672-a891-7d923a0c7653",
       "<strong>Playtest M4b</strong>: the Parrot Squadron, Monkey Gunners, Maelstrom Charge, Lighthouse Lantern and Cursed Doubloons (Tuning Console Weapon Lab, or buy them). Do the summons, whirlpool and beam read well with placeholder art?",
       "<strong>Playtest M4</strong>: buy (or use the Tuning Console's Weapon Lab) the Anchor Flail, Chainshot, Siren Bell and Ramming Prow (strikes only while you boost); evolve one with its item. Do they feel distinct, and are the prices (120-160 Rum) right?",
       "<strong>Read what I decided while you were away</strong>: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code> (D1-D27 with reasons and alternatives, and 16 questions for you).",
@@ -574,6 +585,27 @@
       "check": "Independent review (v5-reviewer)",
       "result": "0 blockers + 7 majors + 8 minors → fixed or recorded",
       "evidence": "plan/v5/phase-04b-weapons/PLAN.md"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M5",
+      "check": "EditMode / PlayMode (full, once)",
+      "result": "448/448 · 59/60, the one a seed-dependent test that passes on rerun",
+      "evidence": "plan/v5/phase-05-content/"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M5",
+      "check": "Simulator A/B (as built, without the Commons, without the powerups, without both)",
+      "result": "only without both are the bands held",
+      "evidence": "plan/v5/phase-05-content/sim-ab.txt"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M5",
+      "check": "Independent review (v5-reviewer)",
+      "result": "3 blockers + 5 majors + 9 minors → fixed or recorded",
+      "evidence": "plan/v5/phase-05-content/PLAN.md"
     }
   ],
   "phaseResults": {
@@ -727,6 +759,20 @@
       {
         "title": "Left for you",
         "text": "Prices, placeholder art (cannonballs, barrel), whether parrots should spread over targets."
+      }
+    ],
+    "M5": [
+      {
+        "title": "What changed",
+        "text": "Logbooks and items bought with Rum (the shop comes in M8); the offers and chests skip them until owned. Item effects: kill streaks, surrounded stacks, a periodic blast, cheat death once, free chests, dearer but richer chests, elite rewards, damage to healthy targets."
+      },
+      {
+        "title": "Measured",
+        "text": "Balance bands held (the A/B showed the free Commons or the new powerups alone break them)."
+      },
+      {
+        "title": "Left for you",
+        "text": "Questions 27-32: Luck scale, the powerup mix, free Commons, armor, gold gain, Admiral on bosses."
       }
     ]
   },
@@ -1546,6 +1592,11 @@
     {
       "title": "M4b weapons review (1 Oct)",
       "summary": "No blockers; 7 majors (turret target out of reach, director missing hits per firing, dead size cards, slow sweeps overstated, no summon cap, frame-rate whirlpool ticks, missing evidence); all fixed or recorded.",
+      "rows": []
+    },
+    {
+      "title": "M5 content review (1 Oct)",
+      "summary": "<strong>3 blockers</strong> (Fortune on the wrong Luck scale; armor never applied; Cursed Coin's gold ignored), 5 majors; fixed by scale and by taking the dead-stat content out of the pools until you decide.",
       "rows": []
     }
   ]

@@ -462,7 +462,7 @@ namespace RoguePirates.V4.Stage
                 _toasts?.Show($"Need {plan.Price} run gold to open chest.", 2f);
                 return false;
             }
-            _economy.RegisterChestPurchase();
+            if (!_economy.LastPlanFree) _economy.RegisterChestPurchase(); // V5 M5: a Skeleton Key chest does not raise the price
             _paidChestCount++;
             if (!_economy.TryAddItem(plan.ItemId))
             {
@@ -470,7 +470,7 @@ namespace RoguePirates.V4.Stage
                 _toasts?.Show("Inventory full: chest unchanged.", 2.5f);
                 return false;
             }
-            _toasts?.Show($"Salvage Chest: gained {_economy.ItemName(plan.ItemId)}.", 2.5f);
+            _toasts?.Show(_economy.LastPlanFree ? $"Free chest (Skeleton Key): gained {_economy.ItemName(plan.ItemId)}." : $"Salvage Chest: gained {_economy.ItemName(plan.ItemId)}.", 2.5f);
             _rewards?.ChestOpened();
             Publish?.Invoke(CombatEventKind.ChestOpened, index, 0, Poi(index).position, null);
             _rewards?.PoiUsedTelemetry(POIType.SalvageChest);

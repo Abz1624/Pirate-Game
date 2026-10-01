@@ -1,0 +1,125 @@
+{
+  "status": "completed",
+  "duration": 59.2,
+  "summary": {
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.Captains_AreWithin10Percent_AndRunsSeeFourToSixItemsBy10",
+      "Status": "Passed",
+      "Duration": 49.0346592,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.Chests_OftenGiveAReadyWeaponsEvolutionItem",
+      "Status": "Passed",
+      "Duration": 1.1592186,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EveryWeapon_IsWithin20Percent_OfItsRole_AtLevels1_4_And12",
+      "Status": "Passed",
+      "Duration": 0.3220247,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolutionCard_ComesFromWeaponLevel6_WithItsItem",
+      "Status": "Passed",
+      "Duration": 0.5398351,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolutionItemChance_Off_MakesNoExtraLootDraws",
+      "Status": "Passed",
+      "Duration": 0.1294598,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolutionItemLevel_FollowsTheEvolutionCardsLevel",
+      "Status": "Passed",
+      "Duration": 0.2046824,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolvedAtTheUnlockLevel_TheWeaponLevelsOnTo12_ThroughCards",
+      "Status": "Passed",
+      "Duration": 0.112409,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.FocusedBuilds_ReachAnEvolution_InMostRuns",
+      "Status": "Passed",
+      "Duration": 5.2809461,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.LogbooksAndItems_AreInTheirRarityBands_ExceptTheFlaggedOnes",
+      "Status": "Passed",
+      "Duration": 0.1255458,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.ParityPreset_RestoresEveryM3Value",
+      "Status": "Passed",
+      "Duration": 0.3674046,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.PityCountsDeals_ARefreshIsADeal",
+      "Status": "Passed",
+      "Duration": 0.0626653,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.PityRule_RaisesTheNextWeaponUpgrade_AfterSixDealsWithoutARare",
+      "Status": "Passed",
+      "Duration": 0.069887,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.RarerCards_GrantMoreLevels_CappedAtTheMax",
+      "Status": "Passed",
+      "Duration": 0.3281147,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.TakingARareCard_ThroughTheProgressionModule_GrantsItsLevels",
+      "Status": "Passed",
+      "Duration": 0.1179286,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.TheNewWeapons_AreWithin20Percent_OfTheirRole",
+      "Status": "Passed",
+      "Duration": 0.3563217,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.WeaponModel_UsesTheGamesUpgradePath",
+      "Status": "Passed",
+      "Duration": 0.0826944,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

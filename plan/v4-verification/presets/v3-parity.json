@@ -1031,6 +1031,22 @@
                 {
                     "path": "fullSailOwnSlot",
                     "value": "false"
+                },
+                {
+                    "path": "pool[1].weight",
+                    "value": "25"
+                },
+                {
+                    "path": "pool[2].weight",
+                    "value": "25"
+                },
+                {
+                    "path": "pool[3].weight",
+                    "value": "25"
+                },
+                {
+                    "path": "pool#count",
+                    "value": "4"
                 }
             ]
         },
@@ -1804,6 +1820,206 @@
         },
         {
             "configId": "item.cursed_chest_key",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.ironclad",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inSaltwindPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.fortune",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inSaltwindPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.tidecaller",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inSaltwindPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.admiral",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inSaltwindPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "logbook.plunderer",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inSaltwindPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.spare_planks",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.powder_monkey",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.shark_tooth_necklace",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.manta_sail",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.reef_carapace",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.crows_nest",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.skeleton_key",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.smugglers_ledger",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.black_spot",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.dead_mans_compass",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.cursed_coin",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.barnacle_crown",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.jolly_roger",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.leviathan_heart",
+            "schemaVersion": 1,
+            "edits": [
+                {
+                    "path": "inChestPool",
+                    "value": "false"
+                }
+            ]
+        },
+        {
+            "configId": "item.captains_last_rum",
             "schemaVersion": 1,
             "edits": [
                 {

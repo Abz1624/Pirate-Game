@@ -1,0 +1,3 @@
+variant 0: | First-Timer: median end minute: 10.09 (target 5.5–9) MISSED | Thumb Sailor: median end minute: 4.31 (target 7–12) MISSED | Steady Captain: boss win rate: 0.88 (target 0.6–0.85) MISSED | Glass Cannon: median end minute: 13 (target 8–13) MISSED
+variant 1: | First-Timer: median end minute: 10.18 (target 5.5–9) MISSED | Thumb Sailor: median end minute: 3.71 (target 7–12) MISSED | Steady Captain: boss win rate: 0.87 (target 0.6–0.85) MISSED | Glass Cannon: median end minute: 13.49 (target 8–13) MISSED
+variant 2: | First-Timer: median end minute: 10.09 (target 5.5–9) MISSED | Thumb Sailor: median end minute: 4.88 (target 7–12) MISSED | Steady Captain: boss win rate: 0.88 (target 0.6–0.85) MISSED

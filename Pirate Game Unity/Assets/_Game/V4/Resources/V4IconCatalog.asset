@@ -116,3 +116,33 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
   - id: cursed_chest_key
     sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+  - id: spare_planks
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: powder_monkey
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: shark_tooth_necklace
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: manta_sail
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: reef_carapace
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: crows_nest
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: skeleton_key
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: smugglers_ledger
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: black_spot
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: dead_mans_compass
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: cursed_coin
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: barnacle_crown
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: jolly_roger
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: leviathan_heart
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+  - id: captains_last_rum
+    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}

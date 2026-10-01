@@ -35,8 +35,8 @@ namespace RoguePirates.V4.Tests
             var set = Set;
             Assert.AreEqual(1, set.configs.OfType<ProgressionConfig>().Count());
             Assert.AreEqual(1, set.configs.OfType<OfferWeightsConfig>().Count());
-            Assert.AreEqual(10, set.configs.OfType<LogbookConfig>().Count());
-            Assert.AreEqual(32, set.configs.OfType<ItemConfig>().Count(), "V3's 19, V5 M4's eight and M4b's five evolution items");
+            Assert.AreEqual(15, set.configs.OfType<LogbookConfig>().Count(), "V3's ten and M5's five");
+            Assert.AreEqual(47, set.configs.OfType<ItemConfig>().Count(), "V3's 19, V5 M4's eight, M4b's five, M5's fifteen");
             Assert.AreEqual(1, set.configs.OfType<PowerupConfig>().Count());
             Assert.AreEqual(6, set.configs.OfType<CaptainConfig>().Count());
             Assert.AreEqual(1, set.configs.OfType<UnlockConfig>().Count());
@@ -97,7 +97,14 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(v3pw.powderRushIsDamageInBattleSignalSlot, "the v3-parity preset restores V3's shared slot");
                 Assert.IsFalse(v3pw.fullSailOwnSlot);
             }
+            // V5 M5 (D34): the four designed kinds wait for a rebalance; V3's four at 25 each.
             CollectionAssert.AreEqual(new[] { PowerupKind.RepairSupplies, PowerupKind.PowderRush, PowerupKind.MagneticTide, PowerupKind.DeadCalm }, pw.pool.Select(e => e.kind));
+            using (var v3 = Parity())
+            {
+                var v3pool = v3.Single<PowerupConfig>().pool;
+                CollectionAssert.AreEqual(new[] { PowerupKind.RepairSupplies, PowerupKind.PowderRush, PowerupKind.MagneticTide, PowerupKind.DeadCalm }, v3pool.Select(e => e.kind));
+                Assert.IsTrue(v3pool.All(e => e.weight == 25f), "V3's 25 each");
+            }
             Assert.AreEqual((int)FloorPowerupKind.DeadCalm, (int)PowerupKind.DeadCalm, "enum order mirrors V3");
             var un = Set.configs.OfType<UnlockConfig>().Single();
             Assert.AreEqual(StartingWeaponRule.CaptainWeapon, un.startingWeaponRule, "D6");

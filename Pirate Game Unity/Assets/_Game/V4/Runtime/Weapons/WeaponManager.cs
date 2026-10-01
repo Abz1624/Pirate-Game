@@ -23,6 +23,8 @@ namespace RoguePirates.V4.Weapons
         IReadOnlyList<OrbitBehavior.HitSphere> OrbitHits { get; }
         /// <summary>V5 M4: where a given Orbit weapon's blades are (each Orbit weapon has its own).</summary>
         IReadOnlyList<OrbitBehavior.HitSphere> OrbitHitsOf(WeaponSlot slot) => OrbitHits;
+        /// <summary>V5 M5 Leviathan Heart: a telegraphed blast on the densest crowd within 20 m.</summary>
+        void ItemPulse(string ledgerId, float damage, float radius, float telegraphSeconds) { }
     }
 
     /// <summary>
@@ -65,6 +67,7 @@ namespace RoguePirates.V4.Weapons
             _mine = new MineBehavior(combat);
             _strike = new AreaStrikeBehavior(combat);
             _summon = new SummonBehavior(combat);
+            if (combat.Projectiles != null) combat.Projectiles.HitAdjust = combat.Healthy; // V5 M5
             _behaviors = new Dictionary<Behavior, WeaponBehavior>
             {
                 [Behavior.Projectile] = _projectile,
@@ -173,6 +176,19 @@ namespace RoguePirates.V4.Weapons
         }
 
         WeaponBehavior BehaviorOf(WeaponSlot w) => w.Config != null && _behaviors.TryGetValue(w.Config.behavior, out var b) ? b : null;
+
+        /// <summary>V5 M5 Leviathan Heart: a delayed blast on the densest crowd (no item procs: no proc coefficient).</summary>
+        public void ItemPulse(string ledgerId, float damage, float radius, float telegraphSeconds)
+        {
+            if (_c.Ship == null || !_c.Ship.Exists || damage <= 0f) return;
+            var target = _c.Targeting.PredictClusterGround(20f);
+            _c.Effects?.TimedRing(target, radius, telegraphSeconds);
+            _c.Strikes.Add(new DelayedStrike
+            {
+                Active = true, Position = target, Timer = telegraphSeconds, Radius = radius, BaseDamage = damage, DamageBonus = 1f,
+                ProcCoefficient = 0f, WeaponId = ledgerId,
+            });
+        }
 
         /// <summary>V3 TickDelayedStrikes: mortar shells and Tempest markers, one list.</summary>
         void TickDelayedStrikes(float dt)

@@ -1,0 +1,97 @@
+{
+  "status": "completed",
+  "duration": 8.27,
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.AnEnemy_HasTheSameHpAndDamage_At1And8Minutes",
+      "Status": "Passed",
+      "Duration": 0.0578091,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.EnemiesThatLookTheSame_AttackTheSame",
+      "Status": "Passed",
+      "Duration": 0.1801454,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.HordeShips_AreTheOrdinaryShipsTheyLookLike",
+      "Status": "Passed",
+      "Duration": 0.0596202,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheBossFight_KeepsItsLength_AtAnEarlyAndALateSummon",
+      "Status": "Passed",
+      "Duration": 4.6353814,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheCrowd_PeaksAt3m45_AboveTheValley",
+      "Status": "Passed",
+      "Duration": 2.0679972,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheCurve_KeepsTheSketchesOrder",
+      "Status": "Passed",
+      "Duration": 0.0818854,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheData_HoldsEveryM3dValue",
+      "Status": "Passed",
+      "Duration": 0.1130615,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheFloor_FollowsALine_BetweenKeyframes",
+      "Status": "Passed",
+      "Duration": 0.0014017,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheLookRule_WouldHaveCaughtTheOwnersExample",
+      "Status": "Passed",
+      "Duration": 0.0778745,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheParityPreset_TakesM3dBack",
+      "Status": "Passed",
+      "Duration": 0.2217905,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.ThePerMinuteTargets_ComeFromTheKeyframes",
+      "Status": "Passed",
+      "Duration": 0.1180991,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheSpawnersCombatOverrides_AreOff_AndOnUnderTheParityPreset",
+      "Status": "Passed",
+      "Duration": 0.3294772,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

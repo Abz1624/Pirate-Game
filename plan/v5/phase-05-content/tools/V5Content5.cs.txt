@@ -1,0 +1,159 @@
+using System.Collections.Generic;
+using System.Linq;
+using RoguePirates.V4.Config;
+using RoguePirates.V4.Presentation.Hud;
+using UnityEditor;
+using UnityEngine;
+
+namespace RoguePirates.V4.Editor
+{
+    /// <summary>
+    /// V5 M5: writes the five new Logbooks, the fifteen new items and the powerup pool, with their Rum prices (a one-off
+    /// content tool, kept in plan/v5/phase-05-content/tools/: V4 code may not name content ids). Idempotent.
+    /// </summary>
+    public static class V5Content5
+    {
+        const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
+        const string ItemDir = "Assets/_Game/V4/Data/Build/Items/";
+        const string LogbookDir = "Assets/_Game/V4/Data/Build/Logbooks/";
+        const string BalanceVersion = "saltwind-v5-m5";
+
+        public static string Apply()
+        {
+            var set = AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
+            var added = new List<V4ConfigAsset>();
+            var logbookPrices = new List<ContentUnlock>();
+            var itemPrices = new List<ContentUnlock>();
+
+            // ---- Logbooks (design 5.2; Chaos deferred, D33) ----
+            var order = set.All<LogbookConfig>().Where(l => !(l.balanceVersion ?? "").StartsWith("saltwind-v5-m5")).Max(l => l.databaseOrder) + 1;
+            void Logbook(string id, string name, int stat, float add, float mult, int maxLevel, int rum)
+            {
+                var lb = Copy<LogbookConfig>(LogbookDir, "lookouts_glass", id);
+                var existing = lb.logbookId == id;
+                lb.configId = "logbook." + id;
+                lb.logbookId = id;
+                lb.displayName = name;
+                lb.stat = stat;
+                lb.perLevelAdditive = add;
+                lb.perLevelMultiplicative = mult;
+                lb.maxLevel = maxLevel;
+                lb.inSaltwindPool = true;
+                if (!existing) lb.databaseOrder = order++;
+                lb.balanceVersion = BalanceVersion;
+                EditorUtility.SetDirty(lb);
+                added.Add(lb);
+                logbookPrices.Add(new ContentUnlock { contentId = id, rumCost = rum });
+            }
+            Logbook("ironclad", "Ironclad", 3, 2f, 1f, 10, 180);              // Armor +2 a rank
+            Logbook("fortune", "Fortune", 15, 5f, 1f, 10, 200);               // Luck +5 a rank (cap 100)
+            Logbook("tidecaller", "Tidecaller", 11, 0.05f, 1f, 10, 220);      // Duration +5% a rank
+            Logbook("admiral", "Admiral", 19, 0.03f, 1f, 10, 240);            // damage to elites and bosses +3% a rank
+            Logbook("plunderer", "Plunderer", 18, 0.03f, 1f, 20, 240);        // boss gold +3% a rank (Boss Loot), at most +60%
+
+            // ---- Items (design 7.1-7.5; five proc items deferred, D33) ----
+            var chestOrder = set.All<ItemConfig>().Where(i => !(i.balanceVersion ?? "").StartsWith("saltwind-v5-m5")).Max(i => i.chestPoolOrder) + 1;
+            var collection = set.All<ItemConfig>().Where(i => !(i.balanceVersion ?? "").StartsWith("saltwind-v5-m5")).Max(i => i.collectionOrder) + 1;
+            void Item(string id, string name, string text, int rarity, int rum, ItemStatModifier[] stats, ItemEffect[] effects)
+            {
+                var item = Copy<ItemConfig>(ItemDir, "grapeshot_pouch", id);
+                var existing = item.itemId == id;
+                item.configId = "item." + id;
+                item.itemId = id;
+                item.displayName = name;
+                item.description = text;
+                item.rarity = rarity;
+                item.inChestPool = true;
+                item.inLevelUpPool = false;
+                if (!existing) { item.chestPoolOrder = chestOrder++; item.collectionOrder = collection++; }
+                item.statModifiers = stats ?? new ItemStatModifier[0];
+                item.effects = effects ?? new ItemEffect[0];
+                item.balanceVersion = BalanceVersion;
+                EditorUtility.SetDirty(item);
+                added.Add(item);
+                if (rum > 0) itemPrices.Add(new ContentUnlock { contentId = id, rumCost = rum });
+            }
+            ItemStatModifier[] S(int stat, float add, float mult) => new[] { new ItemStatModifier { stat = stat, additive = add, multiplicative = mult } };
+            ItemEffect[] E(ItemEffectKind kind, float value, float threshold = 0f, float seconds = 0f, float cap = 0f) =>
+                new[] { new ItemEffect { kind = kind, value = value, threshold = threshold, seconds = seconds, cap = cap, active = true } };
+
+            // Common: the free starter pool.
+            Item("spare_planks", "Spare Planks", "+7 max hull.", 0, 0, S(0, 7f, 1f), null);
+            Item("powder_monkey", "Powder Monkey", "+6.5% attack speed.", 0, 0, S(6, 0f, 1.065f), null);
+            Item("shark_tooth_necklace", "Shark Tooth Necklace", "+12% damage to enemies above 90% hull, more with copies (at most +80%).", 0, 0, null,
+                E(ItemEffectKind.HealthyTargetDamage, 0.12f, 0.9f, 0f, 0.8f));
+            Item("manta_sail", "Manta Sail", "+3% speed.", 0, 0, S(20, 0f, 1.03f), null);
+            Item("reef_carapace", "Reef Carapace", "+4 armor.", 0, 0, S(3, 4f, 1f), null);
+            Item("crows_nest", "Crow's Nest", "+10% pickup radius.", 0, 0, S(14, 0f, 1.1f), null);
+            // Bought with Rum.
+            Item("skeleton_key", "Skeleton Key", "6% chance a chest is free, more with copies (at most 35%); a free chest does not raise the next price.", 1, 140, null,
+                E(ItemEffectKind.FreeChestChance, 0.06f, 0f, 0f, 0.35f));
+            Item("smugglers_ledger", "Smuggler's Ledger", "Chests cost 20% more, but Uncommon and better items are 10% likelier per copy (at most 50%).", 2, 180, null,
+                E(ItemEffectKind.ChestPriceAndRarity, 1.2f, 0.1f, 0f, 1.5f));
+            Item("black_spot", "Black Spot", "Elite kills drop 10% more gold and XP per copy (at most 50%).", 2, 190, null,
+                E(ItemEffectKind.EliteRewards, 0.1f, 0f, 0f, 0.5f));
+            Item("dead_mans_compass", "Dead Man's Compass", "+5% XP; 10% more enemies.", 2, 180, S(16, 0f, 1.05f),
+                E(ItemEffectKind.SpawnDensity, 1.1f));
+            Item("cursed_coin", "Cursed Coin", "+10% gold, -10% max hull.", 2, 180,
+                new[] { new ItemStatModifier { stat = 17, additive = 0f, multiplicative = 1.1f }, new ItemStatModifier { stat = 0, additive = 0f, multiplicative = 0.9f } }, null);
+            Item("barnacle_crown", "Barnacle Crown", "With 4 or more enemies within 5 m, +2% damage a second, up to +20% (+4% per extra copy, at most +40%); it fades when you break free.", 3, 240, null,
+                E(ItemEffectKind.SurroundedDamage, 0.02f, 5f, 4f, 10f));
+            Item("jolly_roger", "Jolly Roger", "Every 10 kills, +1% damage (up to +20%, +5 per extra copy, at most +40%); a hit takes half the streak.", 3, 240, null,
+                E(ItemEffectKind.KillStreakDamage, 0.01f, 10f, 5f, 20f));
+            Item("leviathan_heart", "Leviathan Heart", "Every 12 s a blast of 45 damage in 5 m on the densest crowd, after a short warning (stronger with copies).", 4, 300, null,
+                E(ItemEffectKind.PeriodicPulse, 45f, 12f, 0.6f, 5f));
+            Item("captains_last_rum", "Captain's Last Rum", "Once a run, a fatal hit leaves you at 25% hull with 2 s of safety and +30% damage for 8 s.", 4, 300, null,
+                E(ItemEffectKind.CheatDeath, 0.25f, 2f, 8f, 0.3f));
+
+            // ---- Register ----
+            Undo.RecordObject(set, "V5 M5 content");
+            foreach (var c in added) if (!set.configs.Contains(c)) set.configs.Add(c);
+            EditorUtility.SetDirty(set);
+            var unlocks = set.All<UnlockConfig>().First();
+            unlocks.logbookUnlocks = logbookPrices.ToArray();
+            unlocks.itemUnlocks = itemPrices.ToArray();
+            EditorUtility.SetDirty(unlocks);
+
+            // ---- Powerups: the four designed kinds join V3's four ----
+            var powerups = set.All<PowerupConfig>().First();
+            powerups.pool = new[]
+            {
+                new PowerupPoolEntry { kind = PowerupKind.RepairSupplies, weight = 25f },
+                new PowerupPoolEntry { kind = PowerupKind.PowderRush, weight = 10f },
+                new PowerupPoolEntry { kind = PowerupKind.MagneticTide, weight = 8f },
+                new PowerupPoolEntry { kind = PowerupKind.DeadCalm, weight = 7f },
+                new PowerupPoolEntry { kind = PowerupKind.BattleSignal, weight = 25f },
+                new PowerupPoolEntry { kind = PowerupKind.Tailwind, weight = 13f },
+                new PowerupPoolEntry { kind = PowerupKind.SalvageChime, weight = 7f },
+                new PowerupPoolEntry { kind = PowerupKind.FullSail, weight = 5f },
+            };
+            powerups.balanceVersion = BalanceVersion;
+            EditorUtility.SetDirty(powerups);
+
+            // ---- Icons: placeholders until the art guide's ----
+            var icons = Resources.Load<IconCatalog>(IconCatalog.ResourcePath);
+            if (icons != null)
+            {
+                var placeholder = icons.Item("lucky_doubloon");
+                foreach (var item in added.OfType<ItemConfig>())
+                {
+                    icons.items.RemoveAll(e => e.id == item.itemId);
+                    icons.items.Add(new IconCatalog.Entry { id = item.itemId, sprite = placeholder });
+                }
+                EditorUtility.SetDirty(icons);
+            }
+            AssetDatabase.SaveAssets();
+            return $"ok: {added.OfType<LogbookConfig>().Count()} logbooks, {added.OfType<ItemConfig>().Count()} items, 8 powerups";
+        }
+
+        static T Copy<T>(string dir, string from, string to) where T : ScriptableObject
+        {
+            var path = dir + to + ".asset";
+            var existing = AssetDatabase.LoadAssetAtPath<T>(path);
+            if (existing != null) return existing;
+            if (!AssetDatabase.CopyAsset(dir + from + ".asset", path)) throw new System.InvalidOperationException("copy failed: " + path);
+            AssetDatabase.ImportAsset(path);
+            return AssetDatabase.LoadAssetAtPath<T>(path);
+        }
+    }
+}

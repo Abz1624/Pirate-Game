@@ -1,0 +1,34 @@
+{
+  "status": "completed",
+  "duration": 2.97,
+  "summary": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5UiTextTests.GameCodeStrings_HaveNoEmDashes",
+      "Status": "Passed",
+      "Duration": 0.4891351,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5UiTextTests.TheShownDataTexts_HaveNoEmDashes",
+      "Status": "Passed",
+      "Duration": 0.181602,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5UiTextTests.TheToast_CleansWhatItShows",
+      "Status": "Passed",
+      "Duration": 1.9777938,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

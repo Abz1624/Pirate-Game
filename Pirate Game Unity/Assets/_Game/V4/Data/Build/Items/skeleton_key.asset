@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5955df3a89aa96429cea5e68565b8be, type: 3}
+  m_Name: skeleton_key
+  m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
+  configId: item.skeleton_key
+  schemaVersion: 1
+  balanceVersion: saltwind-v5-m5
+  itemId: skeleton_key
+  displayName: Skeleton Key
+  description: 6% chance a chest is free, more with copies (at most 35%); a free
+    chest does not raise the next price.
+  rarity: 1
+  inChestPool: 1
+  inLevelUpPool: 0
+  chestPoolOrder: 51
+  collectionOrder: 51
+  statModifiers: []
+  effects:
+  - kind: 16
+    value: 0.06
+    threshold: 0
+    seconds: 0
+    cap: 0.35
+    active: 1
