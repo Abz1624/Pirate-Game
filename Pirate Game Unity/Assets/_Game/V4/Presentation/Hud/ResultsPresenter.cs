@@ -169,7 +169,7 @@ namespace RoguePirates.V4.Presentation.Hud
 
         void BuildUi(Transform canvas)
         {
-            _panel = PlaceholderFactory.CreateUiPanel(transform, "run_results_panel", new Vector2(560f, 520f),
+            _panel = PlaceholderFactory.CreateUiPanel(transform, "run_results_panel", new Vector2(560f, 600f),
                 "Full-screen run results layout: replace with production UI art.");
             var panelRect = _panel.GetComponent<RectTransform>();
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -180,10 +180,10 @@ namespace RoguePirates.V4.Presentation.Hud
             _headline.text = "RESULTS";
             _summary = CreateScrollingBody();
 
-            _retry = CreateButton("run_results_restart", "Retry voyage", "Start a new voyage with a fresh layout.", new Vector2(-180f, 28f), OnRetryClicked);
-            _menu = CreateButton("run_results_menu", "Main menu", "Return to main menu.", new Vector2(0f, 28f), OnMenuClicked);
-            _selectGoal = CreateButton("run_results_goal", "Set unlock goal", "Choose next Rum unlock (does not spend Rum).", new Vector2(-90f, 78f), OnSelectGoalClicked);
-            _purchaseGoal = CreateButton("run_results_buy", "Purchase goal", "Spend Rum on selected unlock goal.", new Vector2(90f, 78f), OnPurchaseGoalClicked);
+            _retry = CreateButton("run_results_restart", "Retry voyage", "Start a new voyage with a fresh layout.", new Vector2(-115f, 12f), OnRetryClicked);
+            _menu = CreateButton("run_results_menu", "Main menu", "Return to main menu.", new Vector2(115f, 12f), OnMenuClicked);
+            _selectGoal = CreateButton("run_results_goal", "Set unlock goal", "Choose next Rum unlock (does not spend Rum).", new Vector2(-115f, 96f), OnSelectGoalClicked);
+            _purchaseGoal = CreateButton("run_results_buy", "Purchase goal", "Spend Rum on selected unlock goal.", new Vector2(115f, 96f), OnPurchaseGoalClicked);
             _panel.SetActive(false);
         }
 
@@ -195,7 +195,7 @@ namespace RoguePirates.V4.Presentation.Hud
         TextMeshProUGUI CreateScrollingBody()
         {
             const float top = 68f;     // below the headline (36 + 56/2 + 4)
-            const float bottom = 108f; // above the two button rows (78 + 44/2 + 8)
+            const float bottom = 176f; // above the two button rows (V5 M7: 72-unit buttons from 12 and 96, + 8)
             var viewport = new GameObject("run_results_body_viewport", typeof(RectTransform), typeof(RectMask2D), typeof(Image), typeof(ScrollRect));
             viewport.transform.SetParent(_panel.transform, false);
             var vr = viewport.GetComponent<RectTransform>();
@@ -250,10 +250,11 @@ namespace RoguePirates.V4.Presentation.Hud
 
         Button CreateButton(string id, string label, string hint, Vector2 position, UnityEngine.Events.UnityAction onClick)
         {
-            var button = PlaceholderFactory.CreateUiButton(_panel.transform, id, label, new Vector2(160f, 44f), hint);
+            var button = PlaceholderFactory.CreateUiButton(_panel.transform, id, label, new Vector2(220f, 72f), hint);
             var rect = button.GetComponent<RectTransform>();
             rect.anchorMin = new Vector2(0.5f, 0f);
             rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f); // V5 M7: the position is the button's bottom edge
             rect.anchoredPosition = position;
             button.onClick.AddListener(onClick);
             return button;

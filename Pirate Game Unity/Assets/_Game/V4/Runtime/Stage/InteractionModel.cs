@@ -18,6 +18,8 @@ namespace RoguePirates.V4.Stage
     {
         bool TouchHolding { set; }
         void TouchPressed();
+        /// <summary>V5 M7: the chest choice's touch Skip.</summary>
+        void TouchSkip() { }
     }
 
     /// <summary>
@@ -203,6 +205,8 @@ namespace RoguePirates.V4.Stage
             _salvageChestDismissedIndex = _target;
             EndSalvageChestChoicePause();
         }
+
+        public void TouchSkip() => SkipChest();
 
         /// <summary>The touch USE button's click (V3 OnTouchInteractPressed).</summary>
         public void TouchPressed()

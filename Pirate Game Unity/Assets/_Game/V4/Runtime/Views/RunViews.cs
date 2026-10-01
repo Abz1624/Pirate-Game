@@ -223,6 +223,8 @@ namespace RoguePirates.V4.Views
         string SelectNextUnlockGoal();
         /// <summary>Buys the selected goal; returns the message to show.</summary>
         string PurchaseUnlockGoal();
+        /// <summary>V5 M7: pauses a running run or resumes one the player paused; true when it is now paused by the player.</summary>
+        bool TogglePause() => false;
     }
 
     public sealed class RunViews : IRunViews

@@ -107,6 +107,17 @@ namespace RoguePirates.V4.Presentation.Hud
                 foreach (var t in transform.parent.GetComponentsInChildren<RectTransform>(true))
                     if (t.name == "WeaponLoadout") { _loadout = t; break; }
             }
+            if (GameSettings.Current.stickOnRight)
+            {
+                // V5 M7: the stick on the right puts the buttons bottom left.
+                if (_rect.anchorMin != Vector2.zero) { _rect.anchorMin = _rect.anchorMax = Vector2.zero; _rect.pivot = Vector2.zero; }
+                var s = Screen.safeArea;
+                if (_canvas == null) _canvas = GetComponentInParent<Canvas>();
+                var f = _canvas != null && _canvas.scaleFactor > 0f ? _canvas.scaleFactor : 1f;
+                _rect.anchoredPosition = new Vector2(Margin + Mathf.Max(0f, s.xMin) / f, Margin + Mathf.Max(0f, s.yMin) / f);
+                return;
+            }
+            if (_rect.pivot != new Vector2(1f, 0f)) _rect.pivot = new Vector2(1f, 0f);
             if (_loadout != null && _loadout.gameObject.activeInHierarchy)
             {
                 _loadout.GetWorldCorners(Corners); // 0 bottom-left, 1 top-left, 2 top-right, 3 bottom-right

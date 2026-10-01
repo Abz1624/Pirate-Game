@@ -25,7 +25,11 @@ namespace RoguePirates.V4.Foundation.PlayerSystems
 
         void Update()
         {
-            if (_ship == null || RunManager.Instance == null || RunManager.Instance.IsPaused) return;
+            if (_ship == null || RunManager.Instance == null || RunManager.Instance.IsPaused)
+            {
+                RoguePirates.V4.Foundation.Platform.TouchActionButton.Consume(RoguePirates.V4.Foundation.Platform.TouchAction.Boost); // V5 M7: a tap while paused does not fire later
+                return;
+            }
 
             _cooldownTimer = Mathf.Max(0f, _cooldownTimer - Time.deltaTime);
             if (_boostTimer > 0f)
@@ -39,6 +43,8 @@ namespace RoguePirates.V4.Foundation.PlayerSystems
             var boostPressed = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
             if (Gamepad.current != null && Gamepad.current.buttonSouth.isPressed)
                 boostPressed = true;
+            if (RoguePirates.V4.Foundation.Platform.TouchActionButton.Consume(RoguePirates.V4.Foundation.Platform.TouchAction.Boost))
+                boostPressed = true; // V5 M7: the touch boost button
             if (boostPressed && CanBoost)
                 StartBoost();
 

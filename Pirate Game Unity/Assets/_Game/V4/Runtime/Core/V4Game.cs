@@ -265,7 +265,7 @@ namespace RoguePirates.V4
                 Run = runState,
                 Ship = ship,
                 Toasts = _toasts,
-                Commands = new Views.HudCommands(ship.RequestBoost, RestartRun, GoToMenu, unlocks),
+                Commands = new Views.HudCommands(ship.RequestBoost, RestartRun, GoToMenu, unlocks, () => Views.HudCommands.TogglePause(RunManager.Instance)),
                 Enemies = _enemies.Contracts,
                 Weapons = _weapons.Manager,
                 Captain = _build.Captain,

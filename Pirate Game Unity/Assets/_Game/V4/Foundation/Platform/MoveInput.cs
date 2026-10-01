@@ -27,7 +27,8 @@ namespace RoguePirates.V4.Foundation.Platform
         // Touch stick as a heading (demo, 30 Sep 2026): full turn rate at this angle off the heading, none inside the dead zone.
         const float FullSteerAngle = 35f;
         const float SteerDeadZoneAngle = 4f;
-        const float StickDeadZone = 0.12f;
+        /// <summary>V5 M7: the player's stick dead zone (Settings; 0.12 by default).</summary>
+        static float StickDeadZone => GameSettings.Current.stickDeadZone;
         // Full speed from half the stick's reach (W on a keyboard is always full speed).
         const float FullThrottleReach = 0.5f;
         // Beyond this angle off the ship's heading the stick reverses instead of turning round.

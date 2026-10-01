@@ -1,0 +1,69 @@
+{
+  "status": "completed",
+  "duration": 33.72,
+  "summary": {
+    "total": 8,
+    "passed": 7,
+    "failed": 1,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.AmbientSpawns_AreFlaggedForTheSpawnWarnings",
+      "Status": "Passed",
+      "Duration": 7.7838706,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.CaptainActive_ShowsOnTheHud_WithItsCooldown",
+      "Status": "Passed",
+      "Duration": 4.8870764,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.Hud_BarsFollowTheShip_AndResultsTelemetryIsWrittenOnce",
+      "Status": "Passed",
+      "Duration": 4.1471761,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.LegacyFeeds_PublishBeaconBossLandmarkAndOffers_Once",
+      "Status": "Passed",
+      "Duration": 2.5011028,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.PlaytestFixes_BoostMeterAboveTheWeaponRow_ResultsBodyClearOfTheButtons",
+      "Status": "Passed",
+      "Duration": 2.9211945,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.Presenters_ReplaceTheV3Views_AndShowTheRun",
+      "Status": "Failed",
+      "Duration": 5.4430902,
+      "Message": "  Expected string length 26 but was 29. Strings differ at index 0.\r\n  Expected: \"» Find the Treasury Beacon\"\r\n  But was:  \"[OK] Find the Treasury Beacon\"\r\n  -----------^\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4HudPlayModeTests+<Presenters_ReplaceTheV3Views_AndShowTheRun>d__6.MoveNext () [0x00200] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\PlayMode\\V4HudPlayModeTests.cs:92\r\nat UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\\Library\\PackageCache\\com.unity.test-framework@0b7a23ab2e1d\\UnityEngine.TestRunner\\NUnitExtensions\\Attributes\\TestEnumerator.cs:44\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.Results_OpenOnDeath_RetryReloadsTheV4Run_MenuLoadsTheV4Menu",
+      "Status": "Passed",
+      "Duration": 3.8101777,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudPlayModeTests.WeaponEffects_DrawThroughTheV4Presenter",
+      "Status": "Passed",
+      "Duration": 2.1570206,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

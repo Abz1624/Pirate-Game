@@ -39,6 +39,23 @@ namespace RoguePirates.V4.Foundation.Platform
         /// <summary>Tests and the playable check: show touch controls on desktop too.</summary>
         public static bool ForceTouchControls;
 
+        /// <summary>V5 M7: the touch zone on the half of the screen the settings name (left by default).</summary>
+        public void ApplySide()
+        {
+            if (!floating || !(transform is RectTransform rt)) return;
+            var right = GameSettings.Current.stickOnRight;
+            rt.anchorMin = new Vector2(right ? 0.5f : 0f, 0f);
+            rt.anchorMax = new Vector2(right ? 1f : 0.5f, 1f);
+        }
+
+        void OnEnable()
+        {
+            ApplySide();
+            GameSettings.Changed += ApplySide;
+        }
+
+        void OnDisable() => GameSettings.Changed -= ApplySide;
+
         void Awake()
         {
             _zone = GetComponent<Graphic>();

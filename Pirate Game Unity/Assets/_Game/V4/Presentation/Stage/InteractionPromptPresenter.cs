@@ -17,6 +17,7 @@ namespace RoguePirates.V4.Presentation.Stage
     {
         IInteractionPromptView _view;
         IInteractionTouch _touch;
+        Button _skip;
         TextMeshProUGUI _text;
         Button _button;
         CanvasGroup _group;
@@ -73,8 +74,8 @@ namespace RoguePirates.V4.Presentation.Stage
             var buttonRect = buttonGo.AddComponent<RectTransform>();
             buttonRect.anchorMin = new Vector2(1f, 0.5f);
             buttonRect.anchorMax = new Vector2(1f, 0.5f);
-            buttonRect.anchoredPosition = new Vector2(-60f, 0f);
-            buttonRect.sizeDelta = new Vector2(96f, 48f);
+            buttonRect.anchoredPosition = new Vector2(-84f, 0f);
+            buttonRect.sizeDelta = new Vector2(144f, 72f); // V5 M7: touch targets
             _button = buttonGo.AddComponent<Button>();
             var buttonImage = buttonGo.AddComponent<Image>();
             buttonImage.color = PlaceholderFactory.UiAccent;
@@ -97,6 +98,10 @@ namespace RoguePirates.V4.Presentation.Stage
             AddPointerEvent(trigger, EventTriggerType.PointerUp, _ => SetTouchHolding(false));
             AddPointerEvent(trigger, EventTriggerType.PointerExit, _ => SetTouchHolding(false));
             _button.onClick.AddListener(() => _touch?.TouchPressed());
+            // V5 M7: Skip on the chest choice for touch (R on a keyboard).
+            _skip = PlaceholderFactory.CreateUiButton(panel.transform, "TouchSkip", "SKIP", new Vector2(200f, 72f), "Skip this chest");
+            _skip.onClick.AddListener(() => _touch?.TouchSkip());
+            _skip.gameObject.SetActive(false);
             SetVisible(false);
             _built = true;
         }
@@ -185,8 +190,16 @@ namespace RoguePirates.V4.Presentation.Stage
             tr.anchorMin = new Vector2(0.5f, 0f);
             tr.anchorMax = new Vector2(0.5f, 0f);
             tr.pivot = new Vector2(0.5f, 0f);
-            tr.anchoredPosition = new Vector2(0f, 28f);
-            tr.sizeDelta = new Vector2(200f, 64f);
+            tr.anchoredPosition = new Vector2(-120f, 28f);
+            tr.sizeDelta = new Vector2(200f, 72f);
+            if (_skip != null)
+            {
+                _skip.gameObject.SetActive(true);
+                var sr = (RectTransform)_skip.transform;
+                sr.anchorMin = sr.anchorMax = new Vector2(0.5f, 0f);
+                sr.pivot = new Vector2(0.5f, 0f);
+                sr.anchoredPosition = new Vector2(120f, 28f);
+            }
         }
 
         void PlaceButtonRight()
@@ -197,8 +210,9 @@ namespace RoguePirates.V4.Presentation.Stage
             tr.anchorMin = new Vector2(1f, 0.5f);
             tr.anchorMax = new Vector2(1f, 0.5f);
             tr.pivot = new Vector2(0.5f, 0.5f);
-            tr.anchoredPosition = new Vector2(-60f, 0f);
-            tr.sizeDelta = new Vector2(96f, 48f);
+            tr.anchoredPosition = new Vector2(-84f, 0f);
+            tr.sizeDelta = new Vector2(144f, 72f);
+            if (_skip != null) _skip.gameObject.SetActive(false);
         }
 
         void ApplyCompactTextLayout()

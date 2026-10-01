@@ -126,7 +126,7 @@ namespace RoguePirates.V4.Foundation.UI
             rt.anchorMax = new Vector2(0.5f, 0f);
             rt.pivot = new Vector2(0.5f, 0f);
             rt.anchoredPosition = pos;
-            rt.sizeDelta = new Vector2(200f, 52f);
+            rt.sizeDelta = new Vector2(200f, 72f); // V5 M7: touch targets
             var img = go.GetComponent<Image>();
             img.color = color;
             var button = go.GetComponent<Button>();

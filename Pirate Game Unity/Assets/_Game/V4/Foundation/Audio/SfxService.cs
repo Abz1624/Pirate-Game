@@ -27,7 +27,7 @@ namespace RoguePirates.V4.Foundation.Audio
         public void PlayOneShot(AudioClip clip, float volume = 1f)
         {
             if (clip == null || source == null) return;
-            source.PlayOneShot(clip, volume);
+            source.PlayOneShot(clip, volume * RoguePirates.V4.Foundation.Platform.GameSettings.Current.sfxVolume); // V5 M7
         }
 
         public static void PlayPlaceholder(string id) =>

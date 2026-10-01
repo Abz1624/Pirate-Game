@@ -21,6 +21,7 @@ namespace RoguePirates.V4.Foundation.UI
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
             scaler.matchWidthOrHeight = MatchWidthOrHeight;
             scaler.referencePixelsPerUnit = 100f;
+            UiScale.Apply(scaler, RoguePirates.V4.Foundation.Platform.GameSettings.Current.uiScale); // V5 M7: the player's UI scale survives a re-configure
         }
 
         public static void ConfigureFromComponent(Component component)

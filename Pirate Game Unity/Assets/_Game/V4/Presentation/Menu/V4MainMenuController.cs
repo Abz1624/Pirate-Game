@@ -49,6 +49,18 @@ namespace RoguePirates.V4
                     ? RoguePirates.V4.Foundation.Core.AppRoot.Instance.Save.Meta.marks : 0,
                 "RUM");
             if (_view == null) _view = CaptainSelectView.Ensure(menuCanvas.transform);
+            // V5 M7: the settings screen, the safe area and the UI scale.
+            _settings = SettingsPanel.Create(menuCanvas.transform);
+            if (_view is ArtMenuView art) art.HubRequested += OnHub;
+            RoguePirates.V4.Foundation.UI.SafeAreaFitter.Wrap(menuCanvas);
+            RoguePirates.V4.Foundation.UI.UiScale.ApplyAll();
+        }
+
+        SettingsPanel _settings;
+
+        void OnHub(string screen)
+        {
+            if (screen == "Settings") _settings.Open();
         }
 
         void Start()

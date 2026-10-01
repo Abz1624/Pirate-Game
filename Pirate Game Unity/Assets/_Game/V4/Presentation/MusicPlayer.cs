@@ -11,6 +11,8 @@ namespace RoguePirates.V4.Presentation
         static MusicPlayer _instance;
         AudioSource _source;
 
+        float _baseVolume = 1f;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Install()
         {
@@ -25,7 +27,8 @@ namespace RoguePirates.V4.Presentation
             _instance._source.loop = true;
             _instance._source.playOnAwake = false;
             _instance._source.spatialBlend = 0f;
-            _instance._source.volume = settings.musicVolume;
+            _instance._baseVolume = settings.musicVolume;
+            _instance._source.volume = settings.musicVolume * RoguePirates.V4.Foundation.Platform.GameSettings.Current.musicVolume;
             _instance._source.Play();
         }
 
@@ -33,6 +36,8 @@ namespace RoguePirates.V4.Presentation
         {
             // Tests switch the demo off at their start: stop the music then.
             if (RoguePirates.V4.Foundation.Core.DemoMode.Off && _source.isPlaying) _source.Stop();
+            var volume = _baseVolume * RoguePirates.V4.Foundation.Platform.GameSettings.Current.musicVolume; // V5 M7: Settings
+            if (!Mathf.Approximately(_source.volume, volume)) _source.volume = volume;
         }
 
         void OnDestroy()

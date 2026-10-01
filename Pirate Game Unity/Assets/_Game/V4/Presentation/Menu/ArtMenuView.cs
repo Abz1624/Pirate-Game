@@ -26,6 +26,9 @@ namespace RoguePirates.V4.Presentation.Menu
     /// </summary>
     public sealed class ArtMenuView : MonoBehaviour, ICaptainMenuView
     {
+        /// <summary>V5 M7/M8: a hub screen asked for ("Settings", "Ledger" for the shop, "Profile").</summary>
+        public event System.Action<string> HubRequested;
+
         public event Action<int> CaptainChanged;
         public event Action PlayRequested;
 
@@ -123,10 +126,15 @@ namespace RoguePirates.V4.Presentation.Menu
             }
             // Main menu.
             OnClick(_main.transform, "SetSail", () => ShowSelect(true));
+            // V5 M7/M8: Settings, the shop (the Ledger) and the Profile open the menu hub's screens; Raids and the
+            // leaderboard come later.
             foreach (var name in new[] { "Leaderboard", "Ledger", "Raid", "Settings", "Profile" })
             {
                 var b = FindDeep(_main.transform, name)?.GetComponent<Button>();
-                if (b != null) b.interactable = false;
+                if (b == null) continue;
+                var open = name == "Settings" || name == "Ledger" || name == "Profile";
+                b.interactable = open;
+                if (open) { var n = name; b.onClick.AddListener(() => HubRequested?.Invoke(n)); }
             }
             _rumLabel = FindDeep(_main.transform, "RumBg")?.GetComponentInChildren<TextMeshProUGUI>(true);
 

@@ -109,6 +109,10 @@ namespace RoguePirates.V4.Presentation
             }
             if (game.Context != null) InstallStage(game);
             if (game.Context != null) InstallNarrative(game);
+            // V5 M7: once every panel exists, the run canvas's content goes inside the safe area and the UI scale applies.
+            var run = GameObject.Find("RunCanvas");
+            if (run != null && run.TryGetComponent<Canvas>(out var runCanvasForSafeArea)) RoguePirates.V4.Foundation.UI.SafeAreaFitter.Wrap(runCanvasForSafeArea);
+            RoguePirates.V4.Foundation.UI.UiScale.ApplyAll();
         }
 
         /// <summary>Demo (30 Sep 2026): the artists' VFX profiles, handed to the presenters that play each moment.</summary>
@@ -355,6 +359,8 @@ namespace RoguePirates.V4.Presentation
                     CaptainAbilityButton = RoguePirates.V4.Presentation.Hud.CaptainAbilityButtonPresenter.Create(authored.transform);
                     CaptainAbilityButton.Bind(views);
                 }
+                // V5 M7: touch boost and the pause button.
+                TouchControls = RoguePirates.V4.Presentation.Hud.TouchControlsPresenter.Create(authored.transform, CaptainAbilityButton);
             }
 
             if (runCanvas == null) return;
@@ -363,7 +369,14 @@ namespace RoguePirates.V4.Presentation
             PlaceBelowPrompts(runCanvas.transform, Results.transform);
             SpawnWarnings = RoguePirates.V4.Presentation.Hud.SpawnWarningPresenter.Create(runCanvas.transform);
             SpawnWarnings.Bind(views, events, Minimap);
+            // V5 M7: the player's pause and settings, every panel inside the safe area, the UI scale, the quality tier.
+            PauseMenu = RoguePirates.V4.Presentation.Hud.PauseMenuPresenter.Create(runCanvas.transform);
+            PauseMenu.Bind(views);
+            RoguePirates.V4.Foundation.Platform.AutoQuality.Begin(gameObject);
         }
+
+        public RoguePirates.V4.Presentation.Hud.TouchControlsPresenter TouchControls { get; private set; }
+        public RoguePirates.V4.Presentation.Hud.PauseMenuPresenter PauseMenu { get; private set; }
 
         /// <summary>
         /// V3's results panel was built before the toast and interaction prompt views, so toasts (unlock goal messages)

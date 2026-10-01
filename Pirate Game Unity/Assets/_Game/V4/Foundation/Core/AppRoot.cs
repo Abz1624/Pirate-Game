@@ -39,6 +39,7 @@ namespace RoguePirates.V4.Foundation.Core
             Save = new SaveService();
             Config = new ConfigService();
             Audio = new AudioService();
+            RoguePirates.V4.Foundation.Platform.GameSettings.Current.Apply(); // V5 M7: the saved settings
         }
 
         public static void EndActiveSaltwindRunContext()
