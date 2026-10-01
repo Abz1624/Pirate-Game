@@ -3,7 +3,7 @@
 ## Next
 
 - **Read what I did while you were away** (1 Oct): `plan/v5/DECISIONS-WHILE-AWAY.md` lists every decision I took on
-  your behalf (D1-D22) and 13 questions for you. New phases M3b (feel fixes), M3c (level-up rhythm), M3d
+  your behalf (D1-D27) and 16 questions for you. New phases M3b (feel fixes), M3c (level-up rhythm), M3d
   (count-based pressure, peaks and valleys, distinct enemies) and M3e (performance, then the enemy cap) come before M4.
 - **Playtest M3b** (committed, awaiting your playtest): steer into an island (the ship bounces off and loses 5 hull,
   at most every 2 s), drop powder kegs and wait 45 s (unblown ones sink), and on a phone build use the round ability
@@ -16,6 +16,9 @@
   9:35). Is 0:00-3:00 busy enough, is 6:00-8:00 fair, do you feel the 3:45 peak, and can you tell every enemy apart
   (crimson gunner cog vs white cannon boat, orange net cutter, yellow needle sloop)? Overtime after 10:00 is much
   harder (question 10).
+- **Playtest M3e** (committed, awaiting your playtest): does anything look different? Pickups no longer cast shadows,
+  the heavy models (chests, buoys, the wreck) draw lighter versions at a distance, the camera draws nothing past 250 m.
+  Then answer questions 14-16 (enemy cap, health bars on every enemy, pickup sparkles).
 - ~~**Playtest M2 and M3 on the demo baseline.**~~ Done 1 Oct: "fine for now, we'll finetune it later". The demo round (30 Sep) changed the voyage and you chose to keep it:
   pickups give half XP, the ship is 1.625x faster (acceleration too), player shooting ranges are lower (Deck Cannons
   22 -> 16 and so on), enemies are smarter (they path around islands, cut you off, surround you and lead their shots),

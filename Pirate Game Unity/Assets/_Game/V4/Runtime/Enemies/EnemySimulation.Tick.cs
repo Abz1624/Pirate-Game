@@ -17,13 +17,28 @@ namespace RoguePirates.V4.Enemies
     /// </summary>
     public sealed partial class EnemySimulation
     {
+        // V5 M3e: profiler markers for the simulation's sections.
+        static readonly Unity.Profiling.ProfilerMarker BehaviorMarker = new Unity.Profiling.ProfilerMarker("V4.Sim.Behavior"),
+            MoveMarker = new Unity.Profiling.ProfilerMarker("V4.Sim.Move"),
+            ViewMarker = new Unity.Profiling.ProfilerMarker("V4.Sim.View"),
+            CombatMarker = new Unity.Profiling.ProfilerMarker("V4.Sim.Combat"),
+            HazardsMarker = new Unity.Profiling.ProfilerMarker("V4.Sim.Hazards"),
+            OverlapMarker = new Unity.Profiling.ProfilerMarker("V4.Sim.Overlaps"),
+            HashMarker = new Unity.Profiling.ProfilerMarker("V4.Sim.Hash"),
+            ContactMarker = new Unity.Profiling.ProfilerMarker("V4.Sim.Contact"),
+            SeparationMarker = new Unity.Profiling.ProfilerMarker("V4.Sim.HullSeparation");
+
         public void Tick(float dt, Vector3 playerPos, DamageReceiver playerDamage)
         {
             var playerVelocity = ResolvePlayerVelocity(playerDamage);
-            _hash.Clear();
-            for (var i = 0; i < _agents.Length; i++)
+            var frameContactRadius = GetPlayerContactRadius(playerDamage); // V5 M3e: once a frame (was once per enemy)
+            using (HashMarker.Auto())
             {
-                if (_agents[i].active) _hash.Insert(i, _agents[i].position);
+                _hash.Clear();
+                for (var i = 0; i < _agents.Length; i++)
+                {
+                    if (_agents[i].active) _hash.Insert(i, _agents[i].position);
+                }
             }
 
             for (var i = 0; i < _agents.Length; i++)
@@ -31,30 +46,41 @@ namespace RoguePirates.V4.Enemies
                 if (!_agents[i].active) continue;
                 ref var e = ref _agents[i];
                 var def = _definitions[e.definitionIndex];
-                _services.SpecialBehaviors.TickPreMovement(this, i, ref e, def, dt, playerPos, playerDamage);
-                var desiredVelocity = TickBehavior(i, ref e, def, dt, playerPos, playerVelocity, playerDamage);
-                if (e.spawnProfile != null)
+                Vector3 desiredVelocity;
+                using (BehaviorMarker.Auto())
                 {
-                    _services.SpecialBehaviors.TickPostMovement(this, ref e, ref e.patternParams, dt, playerPos);
-                    desiredVelocity = e.velocity;
+                    _services.SpecialBehaviors.TickPreMovement(this, i, ref e, def, dt, playerPos, playerDamage);
+                    desiredVelocity = TickBehavior(i, ref e, def, dt, playerPos, playerVelocity, playerDamage);
+                    if (e.spawnProfile != null)
+                    {
+                        _services.SpecialBehaviors.TickPostMovement(this, ref e, ref e.patternParams, dt, playerPos);
+                        desiredVelocity = e.velocity;
+                    }
                 }
 
-                MoveAgent(ref e, dt, desiredVelocity, def, playerPos);
-                e.position.y = def.visualHeightOffset;
-                if (_settings.collideWithIslands && IslandObstacles.IsAvailable)
+                using (MoveMarker.Auto())
                 {
-                    var collisionRadius = GetCollisionRadiusForAgent(e);
-                    var height = IslandObstacles.GetCollisionHeight(collisionRadius);
-                    e.position = IslandObstacles.Depenetrate(e.position, collisionRadius, height);
+                    MoveAgent(ref e, dt, desiredVelocity, def, playerPos);
+                    e.position.y = def.visualHeightOffset;
+                    if (_settings.collideWithIslands && IslandObstacles.IsAvailable)
+                    {
+                        var collisionRadius = GetCollisionRadiusForAgent(e);
+                        var height = IslandObstacles.GetCollisionHeight(collisionRadius);
+                        e.position = IslandObstacles.Depenetrate(e.position, collisionRadius, height);
+                    }
                 }
-                UpdateView(ref e, def, dt, playerPos);
+                using (ViewMarker.Auto()) UpdateView(ref e, def, dt, playerPos);
 
                 var dist = HorizontalDistance(e.position, playerPos);
-                if (_params.CombatEnabled && _params.UsesCombatBehavior(def.id))
-                    _services.Behaviors.TickCombat(this, i, ref e, def, dt, playerPos, playerDamage);
-                else
-                    TickRangedAttack(ref e, def, dt, playerPos, playerVelocity, dist, playerDamage);
-                var playerRadius = GetPlayerContactRadius(playerDamage);
+                using (CombatMarker.Auto())
+                {
+                    if (_params.CombatEnabled && _params.UsesCombatBehavior(def.id))
+                        _services.Behaviors.TickCombat(this, i, ref e, def, dt, playerPos, playerDamage);
+                    else
+                        TickRangedAttack(ref e, def, dt, playerPos, playerVelocity, dist, playerDamage);
+                }
+                using var contact = ContactMarker.Auto();
+                var playerRadius = frameContactRadius;
                 var contactRange = e.radius + playerRadius;
                 if (def.category == EnemyCategory.Creature && !def.isBoss && !def.isMiniboss)
                     contactRange = GetMinimumCreatureHullDistance(playerRadius, e.radius);
@@ -78,10 +104,10 @@ namespace RoguePirates.V4.Enemies
             }
 
             if (_params.CombatEnabled)
-                _services.Hazards.Tick(dt);
+                using (HazardsMarker.Auto()) _services.Hazards.Tick(dt);
 
-            ResolvePlayerHullSeparation(playerPos, playerDamage);
-            ResolveAgentOverlaps();
+            using (SeparationMarker.Auto()) ResolvePlayerHullSeparation(playerPos, playerDamage);
+            using (OverlapMarker.Auto()) ResolveAgentOverlaps();
         }
 
         void ResolvePlayerHullSeparation(Vector3 playerPos, DamageReceiver playerDamage)
@@ -126,10 +152,26 @@ namespace RoguePirates.V4.Enemies
         static float GetMinimumCreatureHullDistance(float playerRadius, float enemyRadius) =>
             playerRadius + enemyRadius + GameConstants.CreatureHullSeparationPadding;
 
-        static Vector3 ResolvePlayerVelocity(DamageReceiver playerDamage)
+        // V5 M3e: the player's ship for its damage receiver, looked up once per receiver (twice a frame before); per
+        // simulation, so nothing outlives the run.
+        DamageReceiver _shipOwner;
+        RoguePirates.V4.Foundation.Player.PlayerShipController _ship;
+
+        RoguePirates.V4.Foundation.Player.PlayerShipController ShipOf(DamageReceiver playerDamage)
+        {
+            if (playerDamage == null) return null;
+            if (!ReferenceEquals(playerDamage, _shipOwner) || _ship == null)
+            {
+                _shipOwner = playerDamage;
+                _ship = playerDamage.GetComponent<RoguePirates.V4.Foundation.Player.PlayerShipController>();
+            }
+            return _ship;
+        }
+
+        Vector3 ResolvePlayerVelocity(DamageReceiver playerDamage)
         {
             if (playerDamage == null) return Vector3.zero;
-            var ship = playerDamage.GetComponent<RoguePirates.V4.Foundation.Player.PlayerShipController>();
+            var ship = ShipOf(playerDamage);
             if (ship == null) return Vector3.zero;
             var velocity = ship.Velocity;
             velocity.y = 0f;
@@ -167,10 +209,10 @@ namespace RoguePirates.V4.Enemies
             return Mathf.Sqrt(dx * dx + dz * dz);
         }
 
-        static float GetPlayerContactRadius(DamageReceiver playerDamage)
+        float GetPlayerContactRadius(DamageReceiver playerDamage)
         {
             if (playerDamage == null) return 1.15f;
-            var ship = playerDamage.GetComponent<RoguePirates.V4.Foundation.Player.PlayerShipController>();
+            var ship = ShipOf(playerDamage);
             return ship != null ? ship.IslandCollisionRadius : 1.15f;
         }
 
@@ -211,19 +253,28 @@ namespace RoguePirates.V4.Enemies
             }
         }
 
+        /// <summary>V5 M3e: the active slots in slot order, so the overlap passes walk pairs of live enemies only (the same
+        /// pairs in the same order as walking every slot, so the result is unchanged).</summary>
+        int[] _activeSlots = new int[64];
+
         void ResolveAgentOverlaps()
         {
+            var count = 0;
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                if (!_agents[i].active) continue;
+                if (count == _activeSlots.Length) System.Array.Resize(ref _activeSlots, _activeSlots.Length * 2);
+                _activeSlots[count++] = i;
+            }
             for (var pass = 0; pass < 2; pass++)
             {
-                for (var i = 0; i < _agents.Length; i++)
+                for (var a = 0; a < count; a++)
                 {
-                    if (!_agents[i].active) continue;
-                    ref var self = ref _agents[i];
+                    ref var self = ref _agents[_activeSlots[a]];
 
-                    for (var j = i + 1; j < _agents.Length; j++)
+                    for (var b = a + 1; b < count; b++)
                     {
-                        if (!_agents[j].active) continue;
-                        ref var other = ref _agents[j];
+                        ref var other = ref _agents[_activeSlots[b]];
 
                         var delta = self.position - other.position;
                         delta.y = 0f;

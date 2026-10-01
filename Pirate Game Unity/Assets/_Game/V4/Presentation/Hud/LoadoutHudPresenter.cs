@@ -60,6 +60,7 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             _views = views;
             _icons = icons;
+            _shown = false;
             BindRows();
             Refresh();
         }
@@ -306,6 +307,34 @@ namespace RoguePirates.V4.Presentation.Hud
             }
         }
 
+        bool _shown;
+        int _signature;
+
+        /// <summary>What the slots show, as one number (public for tests): weapons, their names and levels, items, their
+        /// names and stacks, Logbooks and ranks, and the slot cap.</summary>
+        public static int Signature(RoguePirates.V4.Views.ILoadoutView loadout, RoguePirates.V4.Views.IProgressionView progression, int cap)
+        {
+            unchecked
+            {
+                var h = 17 * 31 + cap;
+                if (loadout != null)
+                {
+                    h = h * 31 + loadout.WeaponCount;
+                    for (var i = 0; i < loadout.WeaponCount; i++)
+                        h = ((h * 31 + (loadout.WeaponId(i)?.GetHashCode() ?? 0)) * 31 + (loadout.WeaponName(i)?.GetHashCode() ?? 0)) * 31 + loadout.WeaponLevel(i);
+                    h = h * 31 + loadout.ItemCount;
+                    for (var i = 0; i < loadout.ItemCount; i++)
+                        h = ((h * 31 + (loadout.ItemId(i)?.GetHashCode() ?? 0)) * 31 + (loadout.ItemName(i)?.GetHashCode() ?? 0)) * 31 + loadout.ItemStacks(i);
+                }
+                if (progression != null && progression.Exists)
+                {
+                    h = h * 31 + progression.LogbookCount;
+                    for (var i = 0; i < progression.LogbookCount; i++) h = (h * 31 + (progression.LogbookName(i)?.GetHashCode() ?? 0)) * 31 + progression.LogbookRank(i);
+                }
+                return h;
+            }
+        }
+
         void Refresh()
         {
             if (_weaponRow == null) return;
@@ -314,6 +343,11 @@ namespace RoguePirates.V4.Presentation.Hud
             var progression = _views.Progression;
 
             var cap = loadout != null ? loadout.WeaponSlotCap : 0;
+            // V5 M3e: the slots' labels are rebuilt only when what they show changes (they built strings every frame).
+            var signature = Signature(loadout, progression, cap);
+            if (_shown && signature == _signature) return;
+            _shown = true;
+            _signature = signature;
             for (var i = 0; i < _weaponSlots.Count; i++)
             {
                 var visible = i < cap;

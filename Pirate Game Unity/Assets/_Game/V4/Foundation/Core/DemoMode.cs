@@ -11,7 +11,22 @@ namespace RoguePirates.V4.Foundation.Core
     {
         public static bool Off;
 
-        static DemoJuiceSettings Settings => Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
+        // V5 M3e: loaded once (every property called Resources.Load, one of them every frame).
+        static DemoJuiceSettings _settings;
+        static bool _loaded;
+
+        static DemoJuiceSettings Settings
+        {
+            get
+            {
+                if (!_loaded || (_settings == null && !ReferenceEquals(_settings, null)))
+                {
+                    _settings = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings");
+                    _loaded = true;
+                }
+                return _settings;
+            }
+        }
 
         /// <summary>No points of interest on the stage (chests, landmarks, the Treasury Beacon).</summary>
         public static bool NoPointsOfInterest => !Off && Settings != null && Settings.hidePointsOfInterest;

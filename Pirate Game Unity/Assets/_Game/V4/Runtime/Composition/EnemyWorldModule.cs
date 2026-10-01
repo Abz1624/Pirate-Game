@@ -164,19 +164,37 @@ namespace RoguePirates.V4.Composition
         /// V3RunBootstrap.Update's enemy part, same calls and order as LegacyEnemyWorldPort.Tick: boss director, enemies,
         /// player projectiles, hostile shots, pickups and floor powerups (V4 modules since M9), statuses.
         /// </summary>
+        // V5 M3e: profiler markers for the enemy world's frame.
+        static readonly Unity.Profiling.ProfilerMarker BossMarker = new Unity.Profiling.ProfilerMarker("V4.Enemies.Boss"),
+            SimMarker = new Unity.Profiling.ProfilerMarker("V4.Enemies.Simulation"),
+            ProjectilesMarker = new Unity.Profiling.ProfilerMarker("V4.Enemies.PlayerProjectiles"),
+            ShotsMarker = new Unity.Profiling.ProfilerMarker("V4.Enemies.Shots"),
+            BuildMarker = new Unity.Profiling.ProfilerMarker("V4.Enemies.BuildWorld"),
+            StatusMarker = new Unity.Profiling.ProfilerMarker("V4.Enemies.Statuses");
+
         public void TickFrame(float dt, PlayerShipController player, Action<float> playerProjectiles, Action<float> bossDirector)
         {
             var playerPos = player != null ? player.Position : Vector3.zero;
-            bossDirector?.Invoke(dt);
-            Simulation.Tick(dt, playerPos, player?.Damage);
+            using (BossMarker.Auto()) bossDirector?.Invoke(dt);
+            using (SimMarker.Auto()) Simulation.Tick(dt, playerPos, player?.Damage);
             // V4 player projectiles tick here since M5 (V3's ProjectileWorld, which V4 no longer fills, needed V3's EnemyWorld).
-            playerProjectiles?.Invoke(dt);
+            using (ProjectilesMarker.Auto()) playerProjectiles?.Invoke(dt);
             Services.Shots.NearMissMargin = NearMissMargin != null ? NearMissMargin() : 0f;
-            Services.Shots.Tick(dt, player != null ? Target : null);
-            Build?.TickWorld(dt, playerPos); // Magnetic Tide opens the barrels when its switch is on (R-103)
-            var status = StatusDamage != null ? StatusDamage() : 1f;
-            Statuses.Tick(dt, Simulation.Agents, (i, damage) => Simulation.ApplyDamage(i, damage * status, false, false), (i, burning) => Simulation.SetBurnVisual(i, burning));
+            using (ShotsMarker.Auto()) Services.Shots.Tick(dt, player != null ? Target : null);
+            using (BuildMarker.Auto()) Build?.TickWorld(dt, playerPos); // Magnetic Tide opens the barrels when its switch is on (R-103)
+            _statusScale = StatusDamage != null ? StatusDamage() : 1f;
+            // V5 M3e: the two callbacks are cached (two closures a frame before).
+            if (_applyStatusDamage == null)
+            {
+                _applyStatusDamage = (i, damage) => Simulation.ApplyDamage(i, damage * _statusScale, false, false);
+                _setBurnVisual = (i, burning) => Simulation.SetBurnVisual(i, burning);
+            }
+            using (StatusMarker.Auto()) Statuses.Tick(dt, Simulation.Agents, _applyStatusDamage, _setBurnVisual);
         }
+
+        float _statusScale = 1f;
+        Action<int, float> _applyStatusDamage;
+        Action<int, bool> _setBurnVisual;
 
         /// <summary>The R-06 fix's release, where LegacyAreaDenialRelease ran (after the frame, with the run clock).</summary>
         public void TickAreaDenialRelease(float runSeconds) =>

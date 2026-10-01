@@ -101,41 +101,37 @@ namespace RoguePirates.V4.Tests
         [UnityTest]
         public IEnumerator AnEnemy_HasTheSameHpAndDamage_At1And8Minutes()
         {
+            // The same spawner (band 0's ambient spawner: a shark, not elite) spawned on purpose at 1:00 and at 8:00 through
+            // the game's spawn path; with no HP or damage growth over time both sharks match (owner note h).
             yield return StartRun();
-            var (_, _) = Setup();
+            var (game, spawn) = Setup();
             var sim = V4TestEnemies.Simulation();
             Assert.IsNotNull(sim);
-            var seen = new Dictionary<string, (float hp, float damage)>[] { new Dictionary<string, (float, float)>(), new Dictionary<string, (float, float)>() };
-            var windows = new[] { 60f, 480f };
-            for (var w = 0; w < windows.Length; w++)
+            var executor = (IEncounterExecutor)spawn;
+            Assert.IsTrue(game.Context.TryGet<IEncounterTracker>(out var tracker));
+            // Spawned through the encounter path, so the ambient levers are not exercised: they must stay off (M3d), else
+            // ambient enemies could still grow tougher with time.
+            var director = game.Config.Single<DirectorConfig>();
+            Assert.IsFalse(director.toughnessLever || director.capHpLever || director.focusLever, "the director's HP and damage levers are off");
+            var spawner = game.Config.Get<EnemySpawnerConfig>("spawner.saltwind_ambient_band_0");
+            Assert.IsNotNull(spawner);
+            Assert.IsFalse(spawner.elite.isElite);
+            var stats = new List<(float hp, float damage, string id)>();
+            foreach (var at in new[] { 60f, 480f })
             {
-                RunManager.Instance.JumpClock(windows[w]);
+                RunManager.Instance.JumpClock(at);
+                KeepRunning();
+                yield return null;
                 var known = new HashSet<int>(sim.Agents.Where(a => a.active).Select(a => a.id));
-                var deadline = Time.realtimeSinceStartup + 25f;
-                while (Time.realtimeSinceStartup < deadline)
-                {
-                    KeepRunning();
-                    yield return null;
-                    foreach (var a in sim.Agents)
-                    {
-                        // Fresh spawns without elite, affix or boss multipliers (the hordes' ships are swordfish, dinghies and
-                        // skiffs, none of which spawn at 8:00, so a shared id is an ambient spawn at both times).
-                        if (!a.active || known.Contains(a.id) || a.isElite || a.isBoss || a.affix != default) continue;
-                        known.Add(a.id);
-                        var id = sim.Definitions[a.definitionIndex].id;
-                        if (!seen[w].ContainsKey(id)) seen[w][id] = (a.maxHp, a.damage);
-                    }
-                    if (w == 1 && seen[0].Keys.Any(seen[1].ContainsKey)) break;
-                }
+                Assert.AreEqual(1, executor.TriggerImmediate(spawner, 1, tracker.Request(EncounterKind.PowderCache, 1)), $"spawned at {at} s");
+                var fresh = sim.Agents.Where(a => a.active && !known.Contains(a.id)).ToList();
+                Assert.AreEqual(1, fresh.Count, $"one new enemy at {at} s");
+                stats.Add((fresh[0].maxHp, fresh[0].damage, sim.Definitions[fresh[0].definitionIndex].id));
             }
-            var shared = seen[0].Keys.Where(seen[1].ContainsKey).ToList();
-            Debug.Log("[V5 M3d same enemy] 1:00 " + string.Join(", ", seen[0].Select(kv => kv.Key + " " + kv.Value.hp)) + " | 8:00 " + string.Join(", ", seen[1].Select(kv => kv.Key + " " + kv.Value.hp)));
-            Assert.IsNotEmpty(shared, "an enemy that spawns at both times (the cannon boat: band 0's specialist, band 4's ordinary)");
-            foreach (var id in shared)
-            {
-                Assert.AreEqual(seen[0][id].hp, seen[1][id].hp, 1e-3f, id + ": the same HP at 1:00 and 8:00");
-                Assert.AreEqual(seen[0][id].damage, seen[1][id].damage, 1e-3f, id + ": the same damage at 1:00 and 8:00");
-            }
+            Debug.Log($"[V5 M3d same enemy] {stats[0].id}: 1:00 HP {stats[0].hp} damage {stats[0].damage} | 8:00 HP {stats[1].hp} damage {stats[1].damage}");
+            Assert.AreEqual(stats[0].id, stats[1].id);
+            Assert.AreEqual(stats[0].hp, stats[1].hp, 1e-3f, "the same HP at 1:00 and 8:00");
+            Assert.AreEqual(stats[0].damage, stats[1].damage, 1e-3f, "the same damage at 1:00 and 8:00");
         }
     }
 }

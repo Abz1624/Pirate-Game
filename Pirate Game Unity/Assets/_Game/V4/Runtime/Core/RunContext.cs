@@ -59,6 +59,8 @@ namespace RoguePirates.V4
     {
         readonly List<IRunModule> _modules = new List<IRunModule>();
         readonly List<IRunModule> _ordered = new List<IRunModule>();
+        /// <summary>V5 M3e: a profiler marker per module ("V4.Module.&lt;id&gt;"), in tick order.</summary>
+        Unity.Profiling.ProfilerMarker[] _markers = Array.Empty<Unity.Profiling.ProfilerMarker>();
         bool _dirty;
         bool _iterating;
 
@@ -79,7 +81,18 @@ namespace RoguePirates.V4
 
         public void InitializeAll(RunContext context) { _iterating = true; try { foreach (var m in Modules) m.Initialize(context); } finally { _iterating = false; } }
         public void BeginRunAll(in RunStart start) { _iterating = true; try { foreach (var m in Modules) m.BeginRun(start); } finally { _iterating = false; } }
-        public void TickAll(in SimTick tick) { _iterating = true; try { foreach (var m in Modules) m.Tick(tick); } finally { _iterating = false; } }
+        public void TickAll(in SimTick tick)
+        {
+            // V5 M3e: an index loop (a foreach over the IReadOnlyList boxed its enumerator every tick) and a marker per module.
+            EnsureOrder();
+            _iterating = true;
+            try
+            {
+                for (var i = 0; i < _ordered.Count; i++)
+                    using (_markers[i].Auto()) _ordered[i].Tick(tick);
+            }
+            finally { _iterating = false; }
+        }
         public void EndRunAll(in RunEnd end) { _iterating = true; try { foreach (var m in Modules) m.EndRun(end); } finally { _iterating = false; } }
 
         void EnsureOrder()
@@ -100,6 +113,8 @@ namespace RoguePirates.V4
                 }
                 _ordered[j + 1] = item;
             }
+            _markers = new Unity.Profiling.ProfilerMarker[_ordered.Count];
+            for (var i = 0; i < _ordered.Count; i++) _markers[i] = new Unity.Profiling.ProfilerMarker("V4.Module." + _ordered[i].Id);
         }
     }
 }

@@ -92,6 +92,9 @@ namespace RoguePirates.V4.Tests
                                  PickupType.GoldBarrel, PickupType.XpBarrel, PickupType.Powerup, PickupType.FlyingHealth })
                         views.Add(presenter.Acquire(type, new Vector3(3f, 0f, 4f), 1));
                     Assert.IsTrue(views.TrueForAll(v => v is Transform), "every pickup type has a model");
+                    foreach (var v in views) // V5 M3e: pickups cast no shadows
+                        foreach (var r in ((Transform)v).GetComponentsInChildren<Renderer>(true))
+                            Assert.AreEqual(UnityEngine.Rendering.ShadowCastingMode.Off, r.shadowCastingMode, r.name);
                     for (var i = 0; i < views.Count; i++) presenter.Release(views[i], PickupType.Gold, 1);
                     views.Clear();
                 }
@@ -268,6 +271,27 @@ namespace RoguePirates.V4.Tests
         /// 14.10 (intended change 2): enemy models come from the view pool with their colliders removed at once (V3 left
         /// them until the end of the frame, R-81) and nothing toggles a shared root (R-72); bars are pooled too.
         /// </summary>
+        [Test]
+        public void PoolPreparers_RunOnEveryInstance_BeforeItIsActive()
+        {
+            // V5 M3e: a preparer runs on the instances already made (prewarm) and on later ones, each still inactive
+            // (an enemy model's NavMeshAgent woke and logged on first acquire before).
+            var pools = Pools();
+            var prefab = Host("prepared model");
+            pools.Register(new PoolDefinition("test/prepared", prefab, 2, 0, ConfigEnums.PoolOverflowPolicy.Grow, "test"));
+            pools.Register(new PoolDefinition("other/untouched", prefab, 1, 0, ConfigEnums.PoolOverflowPolicy.Grow, "test"));
+            pools.PrewarmAll();
+            var prepared = new List<GameObject>();
+            var wasActive = false;
+            pools.RegisterPreparer("test/", go => { prepared.Add(go); wasActive |= go.activeInHierarchy; });
+            Assert.AreEqual(2, prepared.Count, "the prewarmed instances, and only this prefix's");
+            var held = new List<GameObject>();
+            for (var i = 0; i < 3; i++) held.Add(pools.Acquire("test/prepared", Vector3.zero, Quaternion.identity));
+            Assert.AreEqual(3, prepared.Count, "the instance made past the prewarm too");
+            Assert.IsFalse(wasActive, "prepared while inactive");
+            foreach (var go in held) pools.Release(go);
+        }
+
         [Test]
         public void EnemyViews_ArePooled_WithoutColliders_AndBarsFollow()
         {

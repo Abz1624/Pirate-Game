@@ -1,4 +1,5 @@
 using System;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace RoguePirates.V4
@@ -48,6 +49,15 @@ namespace RoguePirates.V4
     public sealed class FramePipeline
     {
         static readonly int StepCount = Enum.GetValues(typeof(FrameStep)).Length;
+        /// <summary>V5 M3e: one profiler marker per step ("V4.Frame.Weapons"...), so time and garbage show per module.</summary>
+        static readonly ProfilerMarker[] Markers = BuildMarkers();
+
+        static ProfilerMarker[] BuildMarkers()
+        {
+            var markers = new ProfilerMarker[StepCount];
+            for (var i = 0; i < StepCount; i++) markers[i] = new ProfilerMarker("V4.Frame." + (FrameStep)i);
+            return markers;
+        }
 
         readonly Action<float>[] _ticks = new Action<float>[StepCount];
         readonly int[] _frameAt = new int[StepCount];
@@ -83,7 +93,7 @@ namespace RoguePirates.V4
                 if (tick == null) continue;
                 _frameAt[i] = frame;
                 _clockAt[i] = clock;
-                tick(i == (int)FrameStep.OrbitPositions ? time : dt);
+                using (Markers[i].Auto()) tick(i == (int)FrameStep.OrbitPositions ? time : dt);
             }
         }
     }

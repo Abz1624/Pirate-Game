@@ -9,6 +9,8 @@ namespace RoguePirates.V4.Enemies
         readonly Dictionary<long, List<int>> _cells = new();
         readonly float _cellSize;
         readonly List<int> _queryBuffer = new(64);
+        /// <summary>V5 M3e: emptied cell lists, reused (the hash is rebuilt every frame; it allocated a list per cell).</summary>
+        readonly Stack<List<int>> _free = new();
 
         public SpatialHash(float cellSize = 4f)
         {
@@ -17,14 +19,22 @@ namespace RoguePirates.V4.Enemies
 
         static long Key(int x, int z) => ((long)x << 32) | (uint)z;
 
-        public void Clear() => _cells.Clear();
+        public void Clear()
+        {
+            foreach (var list in _cells.Values)
+            {
+                list.Clear();
+                _free.Push(list);
+            }
+            _cells.Clear();
+        }
 
         public void Insert(int enemyId, Vector3 pos)
         {
             var key = Key(Mathf.FloorToInt(pos.x / _cellSize), Mathf.FloorToInt(pos.z / _cellSize));
             if (!_cells.TryGetValue(key, out var list))
             {
-                list = new List<int>(8);
+                list = _free.Count > 0 ? _free.Pop() : new List<int>(8);
                 _cells[key] = list;
             }
             list.Add(enemyId);

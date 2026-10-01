@@ -242,12 +242,18 @@ namespace RoguePirates.V4.Composition
 
 
         /// <summary>V3RunBootstrap.Update.</summary>
+        static readonly Unity.Profiling.ProfilerMarker EnemiesMarker = new Unity.Profiling.ProfilerMarker("V4.Enemies.Frame");
+        object _projectilesOwner, _bossOwner;
+        System.Action<float> _tickProjectiles, _tickBoss;
+
         public void Tick(float dt)
         {
             if (RunManager.Instance == null || RunManager.Instance.IsPaused) return;
             if (RunManager.Instance.IsRunEnded) return;
-            Enemies?.TickFrame(dt, _player, Weapons != null ? Weapons.TickProjectiles : (System.Action<float>)null,
-                Stage != null ? Stage.TickBoss : (System.Action<float>)null);
+            // V5 M3e: the two callbacks are made once per owner (two delegates a frame before).
+            if (_projectilesOwner != Weapons) { _projectilesOwner = Weapons; _tickProjectiles = Weapons != null ? Weapons.TickProjectiles : (System.Action<float>)null; }
+            if (_bossOwner != Stage) { _bossOwner = Stage; _tickBoss = Stage != null ? Stage.TickBoss : (System.Action<float>)null; }
+            using (EnemiesMarker.Auto()) Enemies?.TickFrame(dt, _player, _tickProjectiles, _tickBoss);
             Enemies?.TickAreaDenialRelease(RunManager.Instance.ElapsedSeconds);
             ResolveSameTickBossDeath();
         }

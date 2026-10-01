@@ -25,7 +25,16 @@ namespace RoguePirates.V4.Spawning
 
         public void OnEvents(IReadOnlyList<CombatEvent> events)
         {
-            for (var i = 0; i < events.Count; i++) _eventsSeen.Add(events[i].Kind.ToString());
+            for (var i = 0; i < events.Count; i++) _eventsSeen.Add(Name(events[i].Kind));
+        }
+
+        // V5 M3e: the kinds' names once (Enum.ToString allocated a string per event per tick).
+        static readonly Dictionary<int, string> Names = new Dictionary<int, string>();
+
+        static string Name(CombatEventKind kind)
+        {
+            if (!Names.TryGetValue((int)kind, out var name)) Names[(int)kind] = name = kind.ToString();
+            return name;
         }
 
         public bool IsTriggered(TimelinePhase phase, float elapsed)

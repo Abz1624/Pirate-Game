@@ -84,6 +84,7 @@ namespace RoguePirates.V4.Presentation.Effects
                 if (IsFlyingBurst(type)) PlayBurst(go);
             }
             UniformScale(type, view);
+            if (firstUse) NoShadows(go); // after the billboard has made its renderer
             LiveCount++;
             return view;
         }
@@ -261,6 +262,13 @@ namespace RoguePirates.V4.Presentation.Effects
             renderer.material.color = color;
             renderer.material.SetColor("_EmissionColor", color * 0.8f);
             renderer.material.EnableKeyword("_EMISSION");
+        }
+
+        /// <summary>V5 M3e (owner notes f, i): pickups cast no shadows (up to ~200 barrels drew each again into the shadow map).</summary>
+        static void NoShadows(GameObject root)
+        {
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
         static void StripColliders(GameObject root)

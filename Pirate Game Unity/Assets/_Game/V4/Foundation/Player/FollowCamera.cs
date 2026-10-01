@@ -455,8 +455,26 @@ namespace RoguePirates.V4.Foundation.Player
                 RestoreTopDownSettings();
 
             _viewMode = mode;
+            ApplyFarClip();
             SnapToTarget();
         }
+
+        [Tooltip("V5 M3e: the camera's far clip in the top-down view (m). The angled top-down view sees about 60 m of sea, so " +
+                 "nothing past this is drawn (was 1000 m); the third-person views keep the camera's own far clip.")]
+        public float topDownFarClip = 250f;
+
+        float _sceneFarClip = -1f;
+
+        void ApplyFarClip()
+        {
+            if (_viewCamera == null) _viewCamera = GetComponent<Camera>();
+            if (_viewCamera == null) return;
+            if (_sceneFarClip < 0f) _sceneFarClip = _viewCamera.farClipPlane;
+            _viewCamera.farClipPlane = _viewMode == CameraViewMode.TopDown && topDownFarClip > 0f ? Mathf.Min(_sceneFarClip, topDownFarClip) : _sceneFarClip;
+        }
+
+        /// <summary>The far clip the camera uses now (tests).</summary>
+        public float FarClip => _viewCamera != null ? _viewCamera.farClipPlane : -1f;
 
         void RestoreTopDownSettings()
         {

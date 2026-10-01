@@ -309,8 +309,20 @@ namespace RoguePirates.V4.Config
         [Header("Enemy flow (V5 M1)")]
         public FlowSettings flow = new FlowSettings();
 
-        public TimelinePhase Phase(string id) => phases.FirstOrDefault(p => p.phaseId == id);
-        public TagCap Cap(string tag) => tagCaps.FirstOrDefault(c => c.tag == tag);
+        // V5 M3e: plain loops (called per spawner run per frame; the LINQ forms allocated a closure and an enumerator).
+        public TimelinePhase Phase(string id)
+        {
+            if (phases == null) return null;
+            for (var i = 0; i < phases.Count; i++) if (phases[i].phaseId == id) return phases[i];
+            return null;
+        }
+
+        public TagCap Cap(string tag)
+        {
+            if (tagCaps == null) return null;
+            for (var i = 0; i < tagCaps.Count; i++) if (tagCaps[i].tag == tag) return tagCaps[i];
+            return null;
+        }
 
         public override void Validate(ConfigValidationReport report)
         {

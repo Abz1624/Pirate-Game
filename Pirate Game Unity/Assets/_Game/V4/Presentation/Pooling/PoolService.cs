@@ -273,6 +273,22 @@ namespace RoguePirates.V4.Presentation.Pooling
                 if (_pools.TryGetValue(key, out var p)) { p.Peak = p.InUse.Count; p.Recycled = 0; p.Rejected = 0; }
         }
 
+        readonly List<(string prefix, System.Action<GameObject> prepare)> _preparers = new List<(string, System.Action<GameObject>)>();
+
+        /// <summary>
+        /// V5 M3e: prepares every instance of the pools whose key starts with <paramref name="keyPrefix"/> while it is still
+        /// inactive: the instances already made (prewarm) now, later ones as they are made. A presenter strips components
+        /// here (an enemy model's NavMeshAgent woke on its first acquire and logged, a frame hitch each time).
+        /// </summary>
+        public void RegisterPreparer(string keyPrefix, System.Action<GameObject> prepare)
+        {
+            if (prepare == null) return;
+            _preparers.Add((keyPrefix ?? string.Empty, prepare));
+            foreach (var instance in _owned.Values)
+                if (instance.Go != null && instance.Pool.Definition.Key.StartsWith(keyPrefix ?? string.Empty, System.StringComparison.Ordinal))
+                    prepare(instance.Go);
+        }
+
         Instance Create(Pool pool, bool afterPrewarm)
         {
             // Under the inactive staging object the copy never becomes active here, so particles/audio set to play on
@@ -280,6 +296,8 @@ namespace RoguePirates.V4.Presentation.Pooling
             var go = Object.Instantiate(pool.Definition.Prefab, _staging, false);
             go.name = pool.Definition.Key;
             go.SetActive(false);
+            for (var i = 0; i < _preparers.Count; i++)
+                if (pool.Definition.Key.StartsWith(_preparers[i].prefix, System.StringComparison.Ordinal)) _preparers[i].prepare(go);
             go.transform.SetParent(_root, false);
             var instance = new Instance { Go = go, Id = go.GetInstanceID(), Pool = pool, Hooks = go.GetComponentsInChildren<IPoolable>(true) };
             instance.Node = new LinkedListNode<Instance>(instance);

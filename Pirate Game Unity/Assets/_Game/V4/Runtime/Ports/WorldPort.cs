@@ -92,6 +92,9 @@ namespace RoguePirates.V4.Ports
             _stageBuilder.SetIslandDensityMultiplier(1f);
         }
 
+        // V5 M3e: the islands were static-batched here once; measured on the same map it saved ~40-55 of ~500 batches for
+        // +25 MB of combined meshes (413k vertices) on a build already over its memory budget, so it was taken out
+        // (plan/v5/phase-03e-performance/PLAN.md, D25); the SRP Batcher batches the islands.
         public StageLayout Build(int seed) => _stageBuilder != null ? _stageBuilder.Build(seed, 0) : null;
 
         /// <summary>The storm region reset, hazards off (the storm ring and walls are V4 presenters).</summary>

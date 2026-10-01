@@ -34,7 +34,7 @@ namespace RoguePirates.V4.Enemies
         void Release(EnemyDefinition def, Transform view, Transform healthBar);
         /// <summary>Swordfish-style spring pose while dashing (V3 EnemyViewAnimation.TickSwordfish).</summary>
         void TickSpring(Transform view, ref bool springing, bool isSpringing);
-        /// <summary>Ship wake (V3 EnemyShipWakeJuice.Tick).</summary>
+        /// <summary>Ship wake (wake and foam parts on while moving).</summary>
         void TickWake(Transform view, EnemyCategory category, Vector3 velocity);
         void SetBurning(Transform view, bool burning);
         void SetHealthFill(Transform healthBar, float fill);

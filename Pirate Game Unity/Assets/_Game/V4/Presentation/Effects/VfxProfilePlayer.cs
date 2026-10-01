@@ -33,6 +33,34 @@ namespace RoguePirates.V4.Presentation.Effects
             Library = library;
             _ship = ship;
             _shipSpawned = false;
+            PrewarmLibrary();
+        }
+
+        /// <summary>Instances of each profile effect made at bind (V5 M3e: they were made on first use, mid-fight).</summary>
+        public const int PrewarmPerEffect = 2;
+
+        void PrewarmLibrary()
+        {
+            if (Library == null || Library.profiles == null || _fx == null || _pools == null) return;
+            foreach (var profile in Library.profiles)
+            {
+                if (profile == null) continue;
+                foreach (var kind in new[] { VfxSlotKind.Muzzle, VfxSlotKind.Hit, VfxSlotKind.Death, VfxSlotKind.Spawn })
+                {
+                    var slot = profile.Slot(kind);
+                    if (slot == null || !slot.HasPrefab) continue;
+                    var prefab = NeedsFallback(slot.prefab, out var fallback, out _) ? fallback : slot.prefab;
+                    if (prefab != null) _fx.Register(prefab, PrewarmPerEffect);
+                }
+                foreach (var kind in new[] { VfxSlotKind.Trail, VfxSlotKind.Projectile })
+                {
+                    var slot = profile.Slot(kind);
+                    if (slot == null || !slot.HasPrefab) continue;
+                    var key = "vfxprofile/" + slot.prefab.name;
+                    if (!_pools.Has(key)) _pools.Register(new Pooling.PoolDefinition(key, slot.prefab, PrewarmPerEffect, 0, RoguePirates.V4.Config.ConfigEnums.PoolOverflowPolicy.Grow, "vfx profile trails"));
+                }
+            }
+            _pools.PrewarmAll();
         }
 
         public VfxSlot Slot(VfxSubject subject, string id, VfxSlotKind kind)

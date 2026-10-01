@@ -76,7 +76,7 @@ Every owner request (29 Sep 2026) and the phase(s) that deliver it. The reviewer
 | 30 | (1 Oct) f, i: static and dynamic batching | M3e |
 | 31 | (1 Oct) g: an island hit bounces the ship back and costs hull | M3b |
 | 32 | (1 Oct) h: difficulty from enemy count, stronger distinct types, a higher cap | M3d (count, types), M3e (cap) |
-| 33 | (1 Oct) j: occlusion culling | M3e (assessed; frustum and cull distances instead) |
+| 33 | (1 Oct) j: occlusion culling | M3e (assessed, not applicable; the far clip and frustum culling instead; per-layer cull distances left for M7) |
 | 34 | (1 Oct) k: an enemy that looks the same always behaves the same | M3d |
 
 ---

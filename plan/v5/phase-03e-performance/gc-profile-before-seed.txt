@@ -1,0 +1,67 @@
+frames 225; total GC 28167 B/frame
+self GC per frame (bytes), by marker path:
+     20344  Update.ScriptRunBehaviourUpdate>BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4Game.Update() [Invoke]>GC.Alloc
+      4688  Update.ScriptRunBehaviourUpdate>BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4FrameDriver.Update() [Invoke]>GC.Alloc
+      1566  PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate>RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::LoadoutHudPresenter.LateUpdate() [Invoke]>GC.Alloc
+       368  DrawScreenSpaceUI>GUI.Repaint>UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.BeginGUI() [Invoke]>GC.Alloc
+       367  PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate>RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::AuthoredHudPresenter.LateUpdate() [Invoke]>GC.Alloc
+       293  PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate>RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::SaltWindHudPresenter.LateUpdate() [Invoke]>GC.Alloc
+        96  FixedUpdate.ScriptRunBehaviourFixedUpdate>FixedBehaviourUpdate>RoguePirates.V4.Foundation.dll!RoguePirates.V4.Foundation.Player::PlayerShipController.FixedUpdate() [Invoke]>GC.Alloc
+        96  PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate>RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::CaptainActivePresenter.LateUpdate() [Invoke]>GC.Alloc
+        78  DrawScreenSpaceUI>GUI.Repaint>RoguePirates.V4.DevTools.dll!RoguePirates.V4.DevTools.Console::TuningConsole.OnGUI() [Invoke]>GC.Alloc
+        69  GameObject.ActivateAwakeRecursively>LogStringToConsole>UnityEngine.CoreModule.dll!UnityEngine::StackTraceUtility.ExtractStackTrace() [Invoke]>GC.Alloc
+        67  GameObject.Activate>GameObject.ActivateAwakeRecursively>LogStringToConsole>GC.Alloc
+        58  BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4Game.Update() [Invoke]>UnityEditor.CoreModule.dll!UnityEditor::MaterialEditor.ApplyMaterialPropertyDrawersFromNative() [Invoke]>GC.Alloc
+        20  PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4Game.LateUpdate() [Invoke]>GC.Alloc
+        17  GameObject.Activate>GameObject.ActivateAwakeRecursively>UnityEngine.UI.dll!UnityEngine.UI::Image.OnEnable() [Invoke]>GC.Alloc
+        14  BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4Game.Update() [Invoke]>GetComponentNullErrorMessage>GC.Alloc
+        13  GameObject.Activate>GameObject.ActivateAwakeRecursively>UnityEngine.UI.dll!UnityEngine.UI::CanvasScaler.OnEnable() [Invoke]>GC.Alloc
+         6  BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4FrameDriver.Update() [Invoke]>GetComponentNullErrorMessage>GC.Alloc
+         5  GameObject.Deactivate>GameObject.ActivateAwakeRecursively>UnityEngine.UI.dll!UnityEngine.UI::CanvasScaler.OnDisable() [Invoke]>GC.Alloc
+         1  GameObject.ActivateAwakeRecursively>LogStringToConsole>UnityEngine.CoreModule.dll!UnityEngine::Application.CallLogCallback() [Invoke]>GC.Alloc
+         1  BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4Game.Update() [Invoke]>GetComponentNullErrorWrapper>GC.Alloc
+         0  BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4FrameDriver.Update() [Invoke]>GameObject.AddComponent>GC.Alloc
+         0  UnityEngine.UIModule.dll!UnityEngine::Canvas.SendWillRenderCanvases() [Invoke]>Render>CanvasUpdate.PreRender>GC.Alloc
+         0  GameObject.Activate>GameObject.ActivateAwakeRecursively>UnityEngine.UI.dll!UnityEngine.UI::Image.OnCanvasHierarchyChanged() [Invoke]>GC.Alloc
+         0  EndRenderQueueExtraction>QueuePrepareIntegrateMainThreadObjects>UnityEditor.WebGL.Extensions.dll!UnityEditor.WebGL::WebGLPlatformSettings.get_webGLTextureSubtarget() [Invoke]>GC.Alloc
+self time per frame (ms), by marker path:
+     3.507  EditorLoop
+     1.750  UpdateScene>Update.ScriptRunBehaviourUpdate>BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4Game.Update() [Invoke]
+     0.406  UpdateScene>Update.ScriptRunBehaviourUpdate>BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4FrameDriver.Update() [Invoke]
+     0.359  Profiler.FlushCounters>Profiler.FlushMemoryCounters
+     0.293  PostLateUpdate.PlayerUpdateCanvases>UIEvents.WillRenderCanvases>UGUI.Rendering.UpdateBatches>Canvas.BuildBatch
+     0.275  Inl_RenderCameraStack>Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera>Inl_RecordRenderGraph>Inl_On Record Render Graph
+     0.266  UpdateScene>PostLateUpdate.PlayerUpdateCanvases>UIEvents.WillRenderCanvases>UGUI.Rendering.UpdateBatches
+     0.247  Profiler.CollectEditorStats>Profiler.CollectUIStats
+     0.217  RenderPlayModeViewCameras>UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]>Inl_UniversalRenderTotal>Inl_RenderCameraStack
+     0.152  Update.ScriptRunBehaviourUpdate>BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4Game.Update() [Invoke]>Physics.CapsuleCast
+     0.132  UpdateScene>PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate>RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::MinimapPresenter.LateUpdate() [Invoke]
+     0.119  PlayerLoop>RenderPlayModeViewCameras>UGUI.Rendering.EmitWorldScreenspaceCameraGeometry
+     0.116  Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera>CullScriptable>TerrainManager.CullAllTerrains>Terrain.Details.Render
+     0.099  UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]>Inl_UniversalRenderTotal>Inl_RenderCameraStack>Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera
+     0.094  UpdateScene>PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate>RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::SaltWindHudPresenter.LateUpdate() [Invoke]
+     0.091  Update.ScriptRunBehaviourUpdate>BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4Game.Update() [Invoke]>Physics.OverlapCapsuleNonAlloc
+     0.084  UpdateScene>FixedUpdate.ScriptRunBehaviourFixedUpdate>FixedBehaviourUpdate>RoguePirates.V4.Foundation.dll!RoguePirates.V4.Foundation.Player::PlayerShipController.FixedUpdate() [Invoke]
+     0.082  DrawScreenSpaceUI>UI.RenderOverlays>Canvas.RenderOverlays>Material.SetPassFast
+     0.080  PlayerLoop>UpdateScene
+     0.079  FixedUpdate.PhysicsFixedUpdate>Physics.RunSimulationStage>Physics.Simulate>PxScene.simulate
+     0.074  PlayerLoop>RenderPlayModeViewCameras
+     0.073  UpdateScene>PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate>RoguePirates.V4.Foundation.dll!RoguePirates.V4.Foundation.VFX::WorldHealthBar.LateUpdate() [Invoke]
+     0.073  UpdateScene>PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate>RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::LoadoutHudPresenter.LateUpdate() [Invoke]
+     0.073  PlayerLoop>UpdateScene>PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate
+     0.071  UpdateScene>PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate>RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Hud::AuthoredHudPresenter.LateUpdate() [Invoke]
+     0.067  Inl_UniversalRenderTotal>Inl_RenderCameraStack>Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera>Inl_UniversalRenderPipeline.ComputeShadowCasterCullingInfos
+     0.064  PlayerLoop>UpdateScene>Update.ScriptRunBehaviourUpdate>BehaviourUpdate
+     0.063  Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera>Inl_RecordRenderGraph>Inl_On Record Render Graph>Inl_Forward+ Setup
+     0.062  UGUI.Rendering.UpdateBatches>UnityEngine.UIModule.dll!UnityEngine::Canvas.SendWillRenderCanvases() [Invoke]>Render>CanvasUpdate.PreRender
+     0.061  PlayerLoop>UpdateScene>PreLateUpdate.ParticleSystemBeginUpdateAll>ParticleSystem.Update
+     0.059  Update.ScriptRunBehaviourUpdate>BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4Game.Update() [Invoke]>Physics.OverlapSphereNonAlloc
+     0.058  CullScriptable>CullResults.CreateSharedRendererScene>EndRenderQueueExtraction>QueuePrepareIntegrateMainThreadObjects
+     0.055  ExecuteRenderGraph>DrawScreenSpaceUI>GUI.Repaint>RoguePirates.V4.DevTools.dll!RoguePirates.V4.DevTools.Console::TuningConsole.OnGUI() [Invoke]
+     0.055  ExecuteRenderGraph>DrawScreenSpaceUI>GUI.Repaint>UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.BeginGUI() [Invoke]
+     0.055  PostLateUpdate.PlayerUpdateCanvases>UIEvents.WillRenderCanvases>UGUI.Rendering.UpdateBatches>CanvasRenderer.SyncTransform
+     0.054  UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]>Inl_UniversalRenderTotal>Inl_RenderCameraStack>Inl_ScriptableRenderContext.Submit
+     0.051  UpdateScene>PreLateUpdate.ScriptRunBehaviourLateUpdate>LateBehaviourUpdate>RoguePirates.V4.Presentation.dll!RoguePirates.V4.Presentation.Stage::PoiMarkerPresenter.LateUpdate() [Invoke]
+     0.051  EndRenderQueueExtraction>WaitForJobGroupID>EngineJob>ExecuteRenderQueueJob
+     0.049  Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera>CullScriptable>TerrainManager.CullAllTerrains>Terrain.Heightmap.RenderStep3
+     0.049  Update.ScriptRunBehaviourUpdate>BehaviourUpdate>RoguePirates.V4.dll!RoguePirates.V4::V4Game.Update() [Invoke]>Physics.SphereCast

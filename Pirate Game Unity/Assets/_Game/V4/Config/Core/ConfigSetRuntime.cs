@@ -72,8 +72,33 @@ namespace RoguePirates.V4.Config
         public T Get<T>(string configId) where T : V4ConfigAsset =>
             _copies.TryGetValue(configId, out var c) ? c as T : null;
 
-        public T Single<T>() where T : V4ConfigAsset => _copies.Values.OfType<T>().FirstOrDefault();
-        public IEnumerable<T> All<T>() where T : V4ConfigAsset => _copies.Values.OfType<T>();
+        // V5 M3e: by-type lookups are cached (the copies are fixed after construction; a LINQ scan of ~110 configs ran
+        // on every call, several times a frame). Same results, same order.
+        readonly Dictionary<Type, object> _single = new Dictionary<Type, object>();
+        readonly Dictionary<Type, object> _all = new Dictionary<Type, object>();
+
+        // The caches are filled on first use under a lock (the balance console simulates on a worker thread).
+        public T Single<T>() where T : V4ConfigAsset
+        {
+            lock (_single)
+            {
+                if (_single.TryGetValue(typeof(T), out var cached)) return (T)cached;
+                var found = _copies.Values.OfType<T>().FirstOrDefault();
+                _single[typeof(T)] = found;
+                return found;
+            }
+        }
+
+        public IEnumerable<T> All<T>() where T : V4ConfigAsset
+        {
+            lock (_all)
+            {
+                if (_all.TryGetValue(typeof(T), out var cached)) return (T[])cached;
+                var found = _copies.Values.OfType<T>().ToArray();
+                _all[typeof(T)] = found;
+                return found;
+            }
+        }
         public V4ConfigAsset Source(string configId) => _sources.TryGetValue(configId, out var s) ? s : null;
 
         /// <summary>Sets one field from text (invariant format). Logs and raises ConfigChanged on success.</summary>
@@ -181,6 +206,8 @@ namespace RoguePirates.V4.Config
             foreach (var copy in _copies.Values)
                 if (copy != null) Object.DestroyImmediate(copy);
             _copies.Clear();
+            _single.Clear();
+            _all.Clear();
         }
     }
 }
