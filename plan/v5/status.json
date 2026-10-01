@@ -1,15 +1,15 @@
 {
   "updated": "1 Oct 2026",
-  "statusLine": "You are back: M4a-M5 built and the Art Guide published (awaiting your playtest); M7 and M8 next",
+  "statusLine": "M7 and M8 built and committed (awaiting your playtests); questions 1-38 and the phone build are waiting for you",
   "statusOk": false,
   "facts": [
     [
       "Progress",
-      "M0-M3 done; M3b-M5 built and committed (awaiting your playtest); M6 Art Guide published"
+      "M0-M8 built; M3b-M8 awaiting your playtest"
     ],
     [
       "Tests",
-      "EditMode 448/448 · PlayMode 60/60 (one seed-dependent test rerun)"
+      "EditMode 463 · PlayMode 60/60"
     ],
     [
       "Gate",
@@ -66,6 +66,10 @@
       "chip": "built 1 Oct · awaiting your playtest"
     },
     "M7": {
+      "state": "playtest",
+      "chip": "built 1 Oct · awaiting your playtest"
+    },
+    "M8": {
       "state": "playtest",
       "chip": "built 1 Oct · awaiting your playtest"
     }
@@ -220,10 +224,16 @@
       "when": "1 Oct",
       "what": "<strong>M7 mobile UI and input built</strong> (awaiting your playtest): touch BOOST and PAUSE buttons, a pause menu (Escape, gamepad Start, touch) with Resume, Settings and Quit; Settings (UI scale, music, effects, quality, reduced effects, shake, stick side and dead zone) from the menu and the pause menu; safe-area wrapping; 72-unit touch targets; automatic quality; WebGL mobile and desktop build profiles and a LAN server. Review: no blockers, 7 majors and 8 minors, fixed or recorded. Three questions for you (33-35).",
       "commit": "30b2e2e6"
+    },
+    {
+      "when": "1 Oct",
+      "what": "<strong>M8 menu hub and shop built</strong> (awaiting your playtest): SET SAIL opens a mode select (Voyage; Raids, Race, Arena, Hunt coming), LEDGER the shop (weapons, Logbooks, items, Captains for RUM), PROFILE your stats and collection; meta services (account, RUM, inventory, store) over the local save behind interfaces for the server. Content out of every pool is not sold. Review: no blockers, 4 majors and 6 minors, fixed or recorded. Questions 36-38.",
+      "commit": "c3f8ae50"
     }
   ],
   "todos": {
     "next": [
+      "<strong>Playtest M8</strong>: SET SAIL (mode select, then Captains), LEDGER (buy a Logbook or item with RUM, then see it offered in a run), PROFILE (your collection); answer questions 36-38.",
       "<strong>Playtest M7</strong> (with the phone build after M8): BOOST and PAUSE buttons, the pause menu, Settings (UI scale, stick on the right), notch phones; answer questions 33-35.",
       "<strong>Playtest M5</strong>: turn on unlock-all (or wait for the M8 shop) and try Jolly Roger, Barnacle Crown, Leviathan Heart and Captain's Last Rum; answer questions 27-32 in DECISIONS-WHILE-AWAY.md.",
       "<strong>Art Guide (M6)</strong>: read and share the Claude Doc with your art team: https://claude.ai/code/artifact/31acc17c-5ed0-4672-a891-7d923a0c7653",
@@ -630,6 +640,27 @@
       "check": "Independent review (v5-reviewer)",
       "result": "no blockers; 7 majors + 8 minors → fixed or recorded",
       "evidence": "plan/v5/phase-07-mobile/PLAN.md → Independent review"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M8",
+      "check": "EditMode and PlayMode suites",
+      "result": "462/463 (the architecture guard, fixed and re-run 15/15) and 60/60; the classes the review fixes touched re-run green",
+      "evidence": "plan/v5/phase-08-menu/editmode.json, playmode.json, t-*.json"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M8",
+      "check": "Scripted menu check (buy a Logbook, start a run; desktop and phone screenshots)",
+      "result": "4 Logbooks for sale, Fortune bought for 200 RUM, run started with it owned, save restored, 0 game errors",
+      "evidence": "plan/v5/phase-08-menu/menu-check/"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M8",
+      "check": "Independent review (v5-reviewer)",
+      "result": "no blockers; 4 majors + 6 minors → fixed or recorded",
+      "evidence": "plan/v5/phase-08-menu/PLAN.md → Independent review"
     }
   ],
   "phaseResults": {
@@ -811,6 +842,20 @@
       {
         "title": "Not built",
         "text": "Input-router refactor, PlayMode touch simulation, long-press, 4:3 reflow; the phone build comes once after M8 (see the phase page)."
+      }
+    ],
+    "M8": [
+      {
+        "title": "What changed",
+        "text": "A hub over the art menu: mode select, shop with four tabs (Buy N RUM, Owned, Not enough RUM), profile with your collection, settings. Purchases go through the save's guarded purchase (never drops ownership); Captains keep their weapon and gold locks; Ironclad and Cursed Coin are not sold until armor and gold gain work."
+      },
+      {
+        "title": "Tests",
+        "text": "V5MetaShopTests 5/5 (prices, not enough RUM, buying twice, stale saves, Captain locks, the hub). Full suites 462/463 then the guard fixed; PlayMode 60/60."
+      },
+      {
+        "title": "Not built",
+        "text": "New badges and sales (need your catalogue), the server-shaped async interface (M10), a PlayMode buy-then-offered test (your playtest checks it)."
       }
     ]
   },
@@ -1640,6 +1685,11 @@
     {
       "title": "M7 mobile review (1 Oct)",
       "summary": "<strong>No blockers; 7 majors, 8 minors.</strong> The safe area and UI scale missed late panels; settings rows too short; quality tiers changed combat caps; Brotli over HTTP; auto quality measured too early; unbuilt plan items. All fixed or recorded; questions 33-35 for you.",
+      "rows": []
+    },
+    {
+      "title": "M8 menu and shop review (1 Oct)",
+      "summary": "<strong>No blockers; 4 majors, 6 minors.</strong> A Captain bought in the shop stayed locked in the select; the shop skipped Captain locks; the interface is not yet server-shaped (recorded for M10); no PlayMode offer test (recorded). Fixed or recorded; questions 36-38.",
       "rows": []
     }
   ]

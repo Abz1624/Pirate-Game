@@ -44,3 +44,10 @@ No blockers; 7 majors, 8 minors. One pass (targeted re-tests on the fixes: `V5Mo
 - The safe area on the authored (scene) HUD canvas: it already keeps its own insets; the generated canvases are wrapped.
 - The texture pass and the WebGL mobile and desktop builds: built once after M8, so one phone build carries M7 and M8 for your playtest (decision logged).
 - Frame time, memory and the enemy cap on the reference and floor phones: yours, with that build.
+
+## The phone build (after M8, 1 Oct)
+
+Texture pass: 881 of 1,250 textures capped at 1024 on WebGL. Mobile build: 111 MB download (the September demo: 163 MB),
+Brotli with the decompression fallback. With the 256 MB heap ceiling it ran out of memory loading the main menu in a
+browser (`abort("OOM")`), so the mobile profile builds with 512 MB (D37, question 39). The ASTC setting does not take
+in Unity 6 (the build profile decides); recorded.

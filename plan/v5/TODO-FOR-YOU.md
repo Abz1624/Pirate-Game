@@ -2,6 +2,16 @@
 
 ## Next
 
+- **Playtest M7 and M8 on the phone build** (committed, awaiting your playtest). Build: `Pirate Game Unity/Builds/WebGL-Mobile`
+  (made after M8); serve it to your phone on the Wi-Fi with `python plan/v5/tools/serve-webgl.py` and open the address it
+  prints. M7: the BOOST and PAUSE buttons, the pause menu, Settings (UI scale, stick on the right, quality), a notch phone.
+  M8: SET SAIL (mode select, then Captains), LEDGER (buy a Logbook or item with RUM, then see it offered in a run),
+  PROFILE (your collection). On the reference phone, note the frame rate and whether it ever stutters.
+- **Playtest M4, M4b and M5** (committed): the nine new weapons with their Empowered evolutions, five new Logbooks and the
+  new items (all bought with RUM, so buy them in M8's shop first).
+- **Answer questions 1-38** in `DECISIONS-WHILE-AWAY.md` (decisions D1-D36 there say what I chose meanwhile; 33-35 are
+  M7's, 36-38 M8's).
+
 - **Read what I did while you were away** (1 Oct): `plan/v5/DECISIONS-WHILE-AWAY.md` lists every decision I took on
   your behalf (D1-D27) and 16 questions for you. New phases M3b (feel fixes), M3c (level-up rhythm), M3d
   (count-based pressure, peaks and valleys, distinct enemies) and M3e (performance, then the enemy cap) come before M4.
@@ -30,9 +40,7 @@
   fight with the gentler enemies?
 - **Flamethrower VFX:** fixed in M4a (committed, awaiting your playtest): the flame now reaches exactly as far as its damage
   (9.5 m) and is shaped from the first frame. Does it look right (question 26)?
-- **M4 weapons:** I built only the mechanics (M4a: slow, pierce, knockback, several orbit weapons, a pulsing aura); the
-  four weapons and eight evolutions wait for your answers to questions 17-26 in `DECISIONS-WHILE-AWAY.md` (prices, the
-  Ramming Prow's boost button, milestones, the evolution level, offer weights, minibosses).
+- **M4 weapons:** built on my defaults after your "proceed till M8" (D31, D32); questions 17-26 can still change them.
 - **Read the Railway breakdown**: tracking page section "Your answers, explained", or `plan/v5/ANSWERS.md` (what runs
   on Railway, what each part costs, where to save).
 - **Get the reference phone** for M1's measurement: a Samsung Galaxy A15 or A16 4G (about $130–150; any Helio G99 phone
