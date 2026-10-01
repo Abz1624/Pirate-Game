@@ -35,6 +35,7 @@ namespace RoguePirates.V4.Presentation.Menu
             rt.anchorMax = new Vector2(0.5f, 0.96f);
             rt.sizeDelta = new Vector2(Width, 0f);
             go.GetComponent<Image>().color = new Color(0.06f, 0.1f, 0.16f, 0.96f);
+            DrawOnTop(go, 210);
             var panel = go.AddComponent<SettingsPanel>();
             panel.Build(rt);
             go.SetActive(false);
@@ -73,6 +74,7 @@ namespace RoguePirates.V4.Presentation.Menu
             _rows.anchorMin = new Vector2(0f, 1f);
             _rows.anchorMax = new Vector2(1f, 1f);
             _rows.pivot = new Vector2(0.5f, 1f);
+            _rows.sizeDelta = Vector2.zero; // stretched: exactly the view's width
             var layout = content.GetComponent<VerticalLayoutGroup>();
             layout.padding = new RectOffset(32, 32, 24, 24);
             layout.spacing = 8f;
@@ -215,6 +217,18 @@ namespace RoguePirates.V4.Presentation.Menu
             t.alignment = TextAlignmentOptions.Center;
             t.color = new Color(0.08f, 0.06f, 0.04f, 1f);
             return b;
+        }
+
+        /// <summary>
+        /// Draws <paramref name="go"/> above the rest of its canvas (the art menu sits on its own sorted layers) and keeps it
+        /// clickable.
+        /// </summary>
+        public static void DrawOnTop(GameObject go, int order)
+        {
+            var c = go.AddComponent<Canvas>();
+            c.overrideSorting = true;
+            c.sortingOrder = order;
+            go.AddComponent<GraphicRaycaster>();
         }
 
         /// <summary>A button with a label (other menus reuse the look; 72 units tall).</summary>

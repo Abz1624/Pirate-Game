@@ -1,0 +1,90 @@
+{
+  "status": "completed",
+  "duration": 0.5,
+  "summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.EveryTouchTarget_IsAtLeast48Pixels_AtFivePhoneAndTabletSizes",
+      "Status": "Passed",
+      "Duration": 0.0052044,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.ReducedEffects_HalveTheEffectDensity",
+      "Status": "Passed",
+      "Duration": 0.000566,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.Settings_SaveAndLoad_WithinTheirLimits",
+      "Status": "Passed",
+      "Duration": 0.0068893,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TheAutomaticTier_FollowsTheFrameTime",
+      "Status": "Passed",
+      "Duration": 0.0006036,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TheGeneratedControls_AreTouchSized",
+      "Status": "Passed",
+      "Duration": 0.0451716,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.ThePlayersPause_NeverOverridesALevelUp",
+      "Status": "Passed",
+      "Duration": 0.0023724,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TheSafeArea_BecomesAnchors_InsideTheNotchAndTheHomeBar",
+      "Status": "Passed",
+      "Duration": 0.0019064,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TheSettingsRows_Keep72Units_OnAShortLandscapeScreen_AndScroll",
+      "Status": "Passed",
+      "Duration": 0.1231991,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TheUiScale_ShrinksTheReferenceResolution",
+      "Status": "Passed",
+      "Duration": 0.0021792,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TouchPresses_AreReadOnce",
+      "Status": "Passed",
+      "Duration": 0.0002602,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.Wrap_PutsTheCanvasContent_UnderOneSafeAreaRect",
+      "Status": "Passed",
+      "Duration": 0.0023881,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

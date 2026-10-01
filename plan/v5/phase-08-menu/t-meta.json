@@ -1,0 +1,48 @@
+{
+  "status": "completed",
+  "duration": 0.91,
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MetaShopTests.ACaptain_KeepsItsOtherLocks_InTheShop",
+      "Status": "Passed",
+      "Duration": 0.2216282,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MetaShopTests.Buying_SpendsTheRightRum_Once_AndNeedsEnough",
+      "Status": "Passed",
+      "Duration": 0.0419052,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MetaShopTests.Ownership_SurvivesAStaleSave",
+      "Status": "Passed",
+      "Duration": 0.0504203,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MetaShopTests.TheHub_ShowsTheShop_AndBuysThroughIt_WithTouchSizedButtons",
+      "Status": "Passed",
+      "Duration": 0.2267555,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MetaShopTests.TheShop_SellsEveryPricedThing_AndNeverTheStarters",
+      "Status": "Passed",
+      "Duration": 0.044956,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

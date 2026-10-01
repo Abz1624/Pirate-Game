@@ -42,6 +42,8 @@ namespace RoguePirates.V4.Rewards
             if (unlocks?.weaponUnlocks != null)
                 foreach (var u in unlocks.weaponUnlocks)
                     if (u != null && u.weaponId == contentId) return u.rumCost;
+            var other = unlocks != null ? unlocks.RumCost(contentId) : 0; // V5 M8: Logbooks and items
+            if (other > 0) return other;
             var config = _config();
             if (config != null)
                 foreach (var c in config.All<CaptainConfig>())
@@ -58,6 +60,10 @@ namespace RoguePirates.V4.Rewards
                     if (w != null && w.weaponId == contentId && !string.IsNullOrEmpty(w.displayName)) return w.displayName;
                 foreach (var c in config.All<CaptainConfig>())
                     if (c != null && c.captainKey == contentId && !string.IsNullOrEmpty(c.displayName)) return c.displayName;
+                foreach (var l in config.All<LogbookConfig>()) // V5 M8: Logbooks and items are priced too
+                    if (l != null && l.logbookId == contentId && !string.IsNullOrEmpty(l.displayName)) return l.displayName;
+                foreach (var i in config.All<ItemConfig>())
+                    if (i != null && i.itemId == contentId && !string.IsNullOrEmpty(i.displayName)) return i.displayName;
             }
             return contentId;
         }

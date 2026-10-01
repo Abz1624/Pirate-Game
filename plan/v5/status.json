@@ -64,6 +64,10 @@
     "M5": {
       "state": "playtest",
       "chip": "built 1 Oct · awaiting your playtest"
+    },
+    "M7": {
+      "state": "playtest",
+      "chip": "built 1 Oct · awaiting your playtest"
     }
   },
   "log": [
@@ -211,10 +215,16 @@
       "when": "1 Oct",
       "what": "<strong>M5 built</strong> (awaiting your playtest): four Logbooks (Fortune, Tidecaller, Admiral, Plunderer; Ironclad waits for armor), thirteen items bought with Rum (Shark Tooth, Skeleton Key, Smuggler's Ledger, Black Spot, Barnacle Crown, Jolly Roger, Leviathan Heart, Captain's Last Rum and more); new item effects with tests. The free Commons and the four designed powerups would have pushed the balance bands, so they wait for you (D33, D34; questions 27-32).",
       "commit": ""
+    },
+    {
+      "when": "1 Oct",
+      "what": "<strong>M7 mobile UI and input built</strong> (awaiting your playtest): touch BOOST and PAUSE buttons, a pause menu (Escape, gamepad Start, touch) with Resume, Settings and Quit; Settings (UI scale, music, effects, quality, reduced effects, shake, stick side and dead zone) from the menu and the pause menu; safe-area wrapping; 72-unit touch targets; automatic quality; WebGL mobile and desktop build profiles and a LAN server. Review: no blockers, 7 majors and 8 minors, fixed or recorded. Three questions for you (33-35).",
+      "commit": "30b2e2e6"
     }
   ],
   "todos": {
     "next": [
+      "<strong>Playtest M7</strong> (with the phone build after M8): BOOST and PAUSE buttons, the pause menu, Settings (UI scale, stick on the right), notch phones; answer questions 33-35.",
       "<strong>Playtest M5</strong>: turn on unlock-all (or wait for the M8 shop) and try Jolly Roger, Barnacle Crown, Leviathan Heart and Captain's Last Rum; answer questions 27-32 in DECISIONS-WHILE-AWAY.md.",
       "<strong>Art Guide (M6)</strong>: read and share the Claude Doc with your art team: https://claude.ai/code/artifact/31acc17c-5ed0-4672-a891-7d923a0c7653",
       "<strong>Playtest M4b</strong>: the Parrot Squadron, Monkey Gunners, Maelstrom Charge, Lighthouse Lantern and Cursed Doubloons (Tuning Console Weapon Lab, or buy them). Do the summons, whirlpool and beam read well with placeholder art?",
@@ -606,6 +616,20 @@
       "check": "Independent review (v5-reviewer)",
       "result": "3 blockers + 5 majors + 9 minors → fixed or recorded",
       "evidence": "plan/v5/phase-05-content/PLAN.md"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M7",
+      "check": "EditMode and PlayMode suites",
+      "result": "EditMode 459/459, PlayMode 60/60",
+      "evidence": "plan/v5/phase-07-mobile/editmode.json, playmode.json"
+    },
+    {
+      "date": "1 Oct",
+      "phase": "M7",
+      "check": "Independent review (v5-reviewer)",
+      "result": "no blockers; 7 majors + 8 minors → fixed or recorded",
+      "evidence": "plan/v5/phase-07-mobile/PLAN.md → Independent review"
     }
   ],
   "phaseResults": {
@@ -773,6 +797,20 @@
       {
         "title": "Left for you",
         "text": "Questions 27-32: Luck scale, the powerup mix, free Commons, armor, gold gain, Admiral on bosses."
+      }
+    ],
+    "M7": [
+      {
+        "title": "What changed",
+        "text": "Touch BOOST (beside the ability button) and PAUSE; a pause menu that never overrides a level-up; Settings saved in one value; the generated canvases inside the safe area with a UI scale (1.0-1.4); every new touch target at least 72 units; Auto quality picks effect density and the phone render scale from the frame time 20-30 s in (gameplay caps the same on every device); WebGL build profiles (mobile 256 MB, ASTC, Brotli with fallback)."
+      },
+      {
+        "title": "Tests",
+        "text": "EditMode 459/459, PlayMode 60/60. V5MobileUiTests 11/11 (safe area, 48 px at five screen sizes, UI scale, settings, the pause rules, real settings layout on a short screen)."
+      },
+      {
+        "title": "Not built",
+        "text": "Input-router refactor, PlayMode touch simulation, long-press, 4:3 reflow; the phone build comes once after M8 (see the phase page)."
       }
     ]
   },
@@ -1597,6 +1635,11 @@
     {
       "title": "M5 content review (1 Oct)",
       "summary": "<strong>3 blockers</strong> (Fortune on the wrong Luck scale; armor never applied; Cursed Coin's gold ignored), 5 majors; fixed by scale and by taking the dead-stat content out of the pools until you decide.",
+      "rows": []
+    },
+    {
+      "title": "M7 mobile review (1 Oct)",
+      "summary": "<strong>No blockers; 7 majors, 8 minors.</strong> The safe area and UI scale missed late panels; settings rows too short; quality tiers changed combat caps; Brotli over HTTP; auto quality measured too early; unbuilt plan items. All fixed or recorded; questions 33-35 for you.",
       "rows": []
     }
   ]

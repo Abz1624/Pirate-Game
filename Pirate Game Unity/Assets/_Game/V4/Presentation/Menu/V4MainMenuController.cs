@@ -58,9 +58,18 @@ namespace RoguePirates.V4
 
         SettingsPanel _settings;
 
+        MenuHubPresenter _hub;
+
+        /// <summary>V5 M8: the hub over the menu (also used by tests and the menu check).</summary>
+        public MenuHubPresenter Hub => _hub;
+
         void OnHub(string screen)
         {
-            if (screen == "Settings") _settings.Open();
+            if (screen == "Settings") { _settings.Open(); return; }
+            if (_hub == null) return;
+            if (screen == "Play") _hub.ShowModes();
+            else if (screen == "Ledger") _hub.ShowShop();
+            else if (screen == "Profile") _hub.ShowProfile();
         }
 
         void Start()
@@ -75,6 +84,17 @@ namespace RoguePirates.V4
             _captains.AddRange(_locks.MenuOrder());
             BuildEntries();
             (_view as ArtMenuView)?.SetCurrency(Currency);
+            // V5 M8: the shop, collection, profile and mode select, over the local save.
+            var meta = _services.Meta;
+            meta.BalanceChanged += _ =>
+            {
+                // A buy in the shop (a Captain too): the select shows it unlocked, as a buy there does.
+                (_view as ArtMenuView)?.SetCurrency(Currency);
+                BuildEntries();
+                _view.Refresh(_entries);
+                OnFocus(_focused);
+            };
+            _hub = MenuHubPresenter.Create(_settings.transform.parent, meta, () => (_view as ArtMenuView)?.OpenCaptainSelect());
 
             var selected = 0;
             for (var i = 0; i < _captains.Count; i++)

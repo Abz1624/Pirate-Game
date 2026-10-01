@@ -125,7 +125,7 @@ namespace RoguePirates.V4.Presentation.Menu
                 background.offsetMax = Vector2.zero;
             }
             // Main menu.
-            OnClick(_main.transform, "SetSail", () => ShowSelect(true));
+            OnClick(_main.transform, "SetSail", () => { if (HubRequested != null) HubRequested("Play"); else ShowSelect(true); }); // V5 M8: mode select first
             // V5 M7/M8: Settings, the shop (the Ledger) and the Profile open the menu hub's screens; Raids and the
             // leaderboard come later.
             foreach (var name in new[] { "Leaderboard", "Ledger", "Raid", "Settings", "Profile" })
@@ -258,6 +258,9 @@ namespace RoguePirates.V4.Presentation.Menu
             }
             if (notify) CaptainChanged?.Invoke(slot.Entry);
         }
+
+        /// <summary>V5 M8: the Captain select (a Voyage chosen in the mode select).</summary>
+        public void OpenCaptainSelect() => ShowSelect(true);
 
         void ShowSelect(bool select)
         {

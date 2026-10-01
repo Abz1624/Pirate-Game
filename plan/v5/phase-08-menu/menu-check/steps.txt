@@ -1,0 +1,5 @@
+before: RUM 50 -> 1050
+shop: 4 Logbooks for sale
+buy: fortune Bought (Unlocked Fortune!), RUM now 850
+in the run, the bought Logbook is owned (so offered): True
+restore: save restored

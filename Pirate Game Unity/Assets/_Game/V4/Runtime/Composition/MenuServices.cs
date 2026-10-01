@@ -17,12 +17,22 @@ namespace RoguePirates.V4.Composition
         public ConfigSetRuntime Config { get; }
         public CaptainLocks Locks { get; }
         public UnlockService Unlocks { get; }
+        /// <summary>V5 M8: the shop, inventory and RUM over the local save (the server's version replaces it in M10).</summary>
+        public RoguePirates.V5.Meta.LocalMetaServices Meta { get; }
 
         MenuServices(ConfigSetRuntime config)
         {
             Config = config;
             Locks = CreateLocks(() => Config);
             Unlocks = new UnlockService(Save, () => Config);
+            Meta = new RoguePirates.V5.Meta.LocalMetaServices(Save, () => Config, ContentPort.IsContentOwned, CaptainBuyable);
+        }
+
+        bool CaptainBuyable(string captainKey)
+        {
+            foreach (var c in Config.All<CaptainConfig>())
+                if (c != null && c.captainKey == captainKey) return Locks.StateOf(c).CanBuy;
+            return true;
         }
 
         static SaveService Save() => AppRoot.Instance != null ? AppRoot.Instance.Save : null;
