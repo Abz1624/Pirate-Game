@@ -404,6 +404,8 @@ namespace RoguePirates.V4.Difficulty
         public float CompositionWeight(IReadOnlyList<string> roleTags) =>
             CompositionActive ? LeverMath.Composition(roleTags, CloseRangeShare, LeverMath.Above(Pressure, PressureMax), Config) : 1f;
 
+        public float PlayerDps => _inputs != null && Config != null && !_failed ? Mathf.Max(0f, PlayerPowerIndex.Offense(_inputs, Config)) : 0f;
+
         public bool RollElite()
         {
             if (!Adaptive) return false;

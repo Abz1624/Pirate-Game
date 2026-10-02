@@ -17,10 +17,10 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m5
   itemId: smugglers_ledger
   displayName: Smuggler's Ledger
-  description: Chests cost 20% more, but Uncommon and better items are 10% likelier
-    per copy (at most 50%).
+  description: Chests cost 20% more. Uncommon and better items are 10% likelier per
+    copy, up to 50%.
   rarity: 2
-  inChestPool: 0
+  inChestPool: 1
   inLevelUpPool: 0
   chestPoolOrder: 52
   collectionOrder: 52

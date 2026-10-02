@@ -25,6 +25,8 @@ namespace RoguePirates.V4.Spawning
         int Spawn(int definitionIndex, Vector3 position, ConfigEnums.EliteAffix affix, float speedMultiplier, float hpMultiplier, float damageMultiplier);
         /// <summary>M11: the elite lever's spawn in <paramref name="slot"/> pays ordinary rewards if <paramref name="ordinaryRewards"/>, and belongs to <paramref name="sourceProfile"/>.</summary>
         void MarkAdaptiveElite(int slot, SpawnProfile sourceProfile, bool ordinaryRewards);
+        /// <summary>Playtest (3 Oct): raises a unit's HP (and max HP) to at least <paramref name="minHp"/>; never lowers it.</summary>
+        void EnsureMinimumHp(int unitId, float minHp) { }
         /// <summary>Unit id of the enemy in a slot returned by a spawn call.</summary>
         int UnitIdAt(int slot);
         bool IsUnitActive(int unitId);

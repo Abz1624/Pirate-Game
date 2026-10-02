@@ -18,8 +18,8 @@ MonoBehaviour:
   logbookId: navigators_charts
   displayName: Navigator's Charts
   stat: 20
-  perLevelAdditive: 0.03
+  perLevelAdditive: 0.62
   perLevelMultiplicative: 1
-  maxLevel: 12
+  maxLevel: 5
   inSaltwindPool: 1
   databaseOrder: 4

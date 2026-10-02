@@ -17,7 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: admirals_ledger
   displayName: Admiral's Ledger
-  description: "More distinct weapon families \u2014 modest global damage."
+  description: +4% damage. Another +3% damage for each different weapon family you
+    carry, up to +18%.
   rarity: 2
   inChestPool: 1
   inLevelUpPool: 1

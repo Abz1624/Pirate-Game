@@ -17,7 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: black_powder_keg
   displayName: Black Powder Keg
-  description: Critical hits amplify explosive weapon damage.
+  description: +10% crit damage. Powder Kegs explosions deal 12% more damage.
   rarity: 2
   inChestPool: 1
   inLevelUpPool: 1

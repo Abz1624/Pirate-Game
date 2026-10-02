@@ -17,9 +17,10 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m4b
   itemId: cursed_chest_key
   displayName: Cursed Chest Key
-  description: +9% damage; evolves Cursed Doubloons into Pirate King's Hoard.
+  description: +9% damage. Evolves Cursed Doubloons into Pirate King's Hoard at weapon
+    level 5.
   rarity: 1
-  inChestPool: 0
+  inChestPool: 1
   inLevelUpPool: 0
   chestPoolOrder: 44
   collectionOrder: 44

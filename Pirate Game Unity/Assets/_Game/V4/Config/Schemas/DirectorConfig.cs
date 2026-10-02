@@ -105,6 +105,13 @@ namespace RoguePirates.V4.Config
         [Tooltip("Chance an ambient spawn is an elite in the band after one at the high ratio (0 below it).")] public float killBandEliteChance = 0.06f;
         [Tooltip("Bands with fewer spawns than this are not judged (the next band runs at full rate, no elites).")] public int killBandMinSpawns = 6;
 
+        [Header("Time-to-kill floors (playtest, 3 Oct 2026)")]
+        [Tooltip("Bosses, minibosses and elites never die faster than this many seconds of the player's whole damage per second (single target, all weapons hitting), measured when they spawn: they can never be one-shot. HP is only ever raised. 0 = off.")]
+        public float bossMinSeconds = 25f;
+        [Tooltip("Arena minibosses and elites (the ones that clear the sea: the 2:30 crab, the 3:00 elite, the 5:00 and 10:00 fights).")] public float arenaFocusMinSeconds = 12f;
+        [Tooltip("Minibosses and scheduled elites that fight alongside the waves.")] public float focusMinSeconds = 7f;
+        [Tooltip("Elites the kill band adds to the waves.")] public float adaptiveEliteMinSeconds = 2.5f;
+
         [Header("Lever: tier timing (tougher tiers unlock earlier)")]
         [AppliesFrom(11)] public bool tierTimingLever = true;
         [Tooltip("Seconds earlier at the top of the band. Time-triggered beats never move.")] [AppliesFrom(11)] public float tierLeadSecondsAtMax = 90f;

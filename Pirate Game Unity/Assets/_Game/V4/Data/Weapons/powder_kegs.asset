@@ -140,7 +140,7 @@ MonoBehaviour:
     blastRadius: 3.2
     blastDamageMultiplier: 0.72
     eliteReachBonus: 0.75
-    lifeSeconds: 45
+    lifeSeconds: 30
     sinkSeconds: 1.5
   areaStrike:
     radiusBase: 3.5

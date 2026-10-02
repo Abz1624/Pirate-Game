@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Monkey Battery
   description: A second turret, called down more often, hitting harder.
   baseWeapon: {fileID: 11400000, guid: 222e59ef67d0cba41983a2d3501ef506, type: 2}
-  requiredItemId: lucky_doubloon
+  requiredItemId: banana_crate
   effect: 7
   laneBurst:
     laneArcDegrees: 40

@@ -17,9 +17,10 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m4b
   itemId: banana_crate
   displayName: Banana Crate
-  description: +9% attack speed; evolves Monkey Gunners into Monkey Battery.
+  description: +9% fire rate. Evolves Monkey Gunners into Monkey Battery at weapon
+    level 5.
   rarity: 1
-  inChestPool: 0
+  inChestPool: 1
   inLevelUpPool: 0
   chestPoolOrder: 41
   collectionOrder: 41

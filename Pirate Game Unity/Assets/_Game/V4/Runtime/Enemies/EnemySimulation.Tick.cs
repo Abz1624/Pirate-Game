@@ -31,6 +31,7 @@ namespace RoguePirates.V4.Enemies
         public void Tick(float dt, Vector3 playerPos, DamageReceiver playerDamage)
         {
             var playerVelocity = ResolvePlayerVelocity(playerDamage);
+            TickLeash(dt, playerPos, playerVelocity);
             var frameContactRadius = GetPlayerContactRadius(playerDamage); // V5 M3e: once a frame (was once per enemy)
             using (HashMarker.Auto())
             {
@@ -820,7 +821,7 @@ namespace RoguePirates.V4.Enemies
             return intent;
         }
 
-        const float PursuitMaxLead = 1.2f;
+        const float PursuitMaxLead = 3f; // playtest (3 Oct, owner: "intercept the player's path"): was 1.2 s, too short to cut a moving ship off from range
         const float SurroundRange = 12f;
         const float SurroundMaxAngle = 75f;
 
@@ -829,6 +830,41 @@ namespace RoguePirates.V4.Enemies
         /// <see cref="PursuitMaxLead"/> s) and, inside <paramref name="surroundRange"/>, at a slot beside that point picked
         /// by unit id (golden-ratio spread of bearings), so a pack closes from several sides instead of trailing in one line.
         /// </summary>
+        // Playtest (3 Oct, owner): on the big map, enemies left far behind (they cannot catch a sailing ship) filled the cap
+        // out of sight, so the player saw only a few. Ordinary enemies further than LeashDistance are moved back to just
+        // outside the view, ahead of the ship (bosses, minibosses and elites stay where they are).
+        const float LeashDistance = 45f, LeashReturnDistance = 26f, LeashCheckSeconds = 0.5f;
+        float _leashTimer;
+        readonly System.Random _leashRandom = new System.Random(0x1EA5);
+
+        void TickLeash(float dt, Vector3 playerPos, Vector3 playerVelocity)
+        {
+            _leashTimer -= dt;
+            if (_leashTimer > 0f) return;
+            _leashTimer = LeashCheckSeconds;
+            playerVelocity.y = 0f;
+            var heading = playerVelocity.sqrMagnitude > 1f ? playerVelocity.normalized : Vector3.forward;
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                ref var e = ref _agents[i];
+                if (!e.active || e.isBoss || e.isElite) continue;
+                var def = _definitions[e.definitionIndex];
+                if (def == null || def.isMiniboss) continue;
+                if (HorizontalDistance(e.position, playerPos) < LeashDistance) continue;
+                for (var attempt = 0; attempt < 6; attempt++)
+                {
+                    var angle = ((float)_leashRandom.NextDouble() * 2f - 1f) * 75f;
+                    var p = playerPos + Quaternion.Euler(0f, angle, 0f) * heading * LeashReturnDistance;
+                    p = PlayBounds.Clamp(p, e.radius + 1f);
+                    p.y = def.visualHeightOffset;
+                    if (IslandObstacles.IsAvailable && IslandObstacles.IsPositionBlocked(p, e.radius + 0.5f)) continue;
+                    e.position = p;
+                    if (e.view != null) e.view.position = p;
+                    break;
+                }
+            }
+        }
+
         internal static Vector3 GetPursuitDirection(
             int agentId,
             Vector3 agentPos,

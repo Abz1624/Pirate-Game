@@ -113,7 +113,7 @@ MonoBehaviour:
     baseBlades: 2
     orbitRadius: 5
     heightOffset: 0.35
-    angularSpeedDegrees: 180
+    angularSpeedDegrees: 120
     hitRadius: 2.75
     hitIntervalSeconds: 0.12
     volleyHitIntervalSeconds: 0.096

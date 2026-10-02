@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Beacon of the Deep
   description: A second, longer beam.
   baseWeapon: {fileID: 11400000, guid: 3fb1e9d74eeb7674fb681c03cb15f72b, type: 2}
-  requiredItemId: ghost_lantern
+  requiredItemId: fresnel_lens
   effect: 7
   laneBurst:
     laneArcDegrees: 40

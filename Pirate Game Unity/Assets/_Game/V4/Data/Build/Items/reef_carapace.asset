@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Reef Carapace
   description: +4 armor.
   rarity: 0
-  inChestPool: 0
+  inChestPool: 1
   inLevelUpPool: 0
   chestPoolOrder: 49
   collectionOrder: 49

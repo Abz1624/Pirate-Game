@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Abyssal Vortex
   description: A wider whirlpool that hits and implodes harder.
   baseWeapon: {fileID: 11400000, guid: 830a871cf99c1bd4d9c025060a670392, type: 2}
-  requiredItemId: stormglass
+  requiredItemId: storm_conch
   effect: 7
   laneBurst:
     laneArcDegrees: 40

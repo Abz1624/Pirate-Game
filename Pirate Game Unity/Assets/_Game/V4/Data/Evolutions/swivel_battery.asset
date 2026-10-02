@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Swivel Battery
   description: Two more swivel shots, faster.
   baseWeapon: {fileID: 11400000, guid: 8fc8eb12bb3d4004cadb1acda1333363, type: 2}
-  requiredItemId: powder_fuse
+  requiredItemId: swivel_mount
   effect: 7
   laneBurst:
     laneArcDegrees: 40

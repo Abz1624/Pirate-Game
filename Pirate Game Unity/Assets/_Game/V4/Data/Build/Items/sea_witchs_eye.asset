@@ -17,7 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: sea_witchs_eye
   displayName: Sea Witch's Eye
-  description: Status effects apply with higher proc pressure.
+  description: +4% Luck. Burn damage +15%.
   rarity: 2
   inChestPool: 1
   inLevelUpPool: 1

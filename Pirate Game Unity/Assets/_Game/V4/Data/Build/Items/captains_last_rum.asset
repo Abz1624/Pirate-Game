@@ -17,10 +17,10 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m5
   itemId: captains_last_rum
   displayName: Captain's Last Rum
-  description: Once a run, a fatal hit leaves you at 25% hull with 2 s of safety
-    and +30% damage for 8 s.
+  description: Once a run, a fatal hit leaves you at 25% hull instead, with 2 s of
+    immunity and +30% damage for 8 s.
   rarity: 4
-  inChestPool: 0
+  inChestPool: 1
   inLevelUpPool: 0
   chestPoolOrder: 59
   collectionOrder: 59

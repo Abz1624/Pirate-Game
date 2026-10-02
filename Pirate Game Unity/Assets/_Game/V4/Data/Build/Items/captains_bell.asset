@@ -17,7 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: captains_bell
   displayName: Captain's Bell
-  description: Every 12 kills triggers a free weapon emission burst.
+  description: +3% Luck. Every 12 kills, every weapon fires once for free.
   rarity: 1
   inChestPool: 1
   inLevelUpPool: 1

@@ -22,7 +22,7 @@ MonoBehaviour:
   behavior: 2
   biomeTag: emerald
   stats:
-    baseHP: 14
+    baseHP: 9.8
     baseDamage: 10
     moveSpeed: 5
     radius: 1.05
@@ -35,10 +35,12 @@ MonoBehaviour:
   visual:
     placeholderModel: 0
     visualPrefab: {fileID: 1709254077376921, guid: 7afb2627fae5f894faa010e4c9375b29, type: 3}
-    visualScale: 1
+    visualScale: 0.77726257
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 1, g: 0, b: 0, a: 1}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    viewSize: 1
     poolPrewarm: 0
   tags: []
   concurrencyTags: []

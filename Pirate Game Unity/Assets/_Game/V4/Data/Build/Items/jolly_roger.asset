@@ -17,10 +17,10 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m5
   itemId: jolly_roger
   displayName: Jolly Roger
-  description: Every 10 kills, +1% damage (up to +20%, +5 per extra copy, at most
-    +40%); a hit takes half the streak.
+  description: Every 10 kills, +1% damage, up to +20%. Each extra copy raises the
+    cap by +5%, up to +40%. Taking a hit removes half of the bonus.
   rarity: 3
-  inChestPool: 0
+  inChestPool: 1
   inLevelUpPool: 0
   chestPoolOrder: 57
   collectionOrder: 57

@@ -17,7 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: gunners_gloves
   displayName: Gunner's Gloves
-  description: Meaningful heading changes grant a brief attack-speed surge.
+  description: +3% Luck. Turning 28 degrees or more gives +12% fire rate for 2.5
+    s.
   rarity: 0
   inChestPool: 1
   inLevelUpPool: 1

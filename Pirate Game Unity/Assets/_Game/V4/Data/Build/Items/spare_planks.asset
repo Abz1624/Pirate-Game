@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Spare Planks
   description: +7 max hull.
   rarity: 0
-  inChestPool: 0
+  inChestPool: 1
   inLevelUpPool: 0
   chestPoolOrder: 45
   collectionOrder: 45

@@ -35,7 +35,7 @@ MonoBehaviour:
   visual:
     placeholderModel: 0
     visualPrefab: {fileID: 1709254077376921, guid: d2843682a53b8a2408650308a79b4c2d, type: 3}
-    visualScale: 1
+    visualScale: 1.1917815
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 0.75, g: 0.45, b: 0.2, a: 1}

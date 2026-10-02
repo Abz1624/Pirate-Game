@@ -177,7 +177,7 @@ MonoBehaviour:
   eliteAffix: 4
   eliteHpMultiplier: 8
   eliteDamageMultiplier: 1.1
-  eliteSizeMultiplier: 1.15
+  eliteSizeMultiplier: 1
   killBandLever: 1
   killBandSeconds: 30
   killBandHighRatio: 0.85
@@ -185,6 +185,10 @@ MonoBehaviour:
   killBandLowRateMultiplier: 0.6
   killBandEliteChance: 0.06
   killBandMinSpawns: 6
+  bossMinSeconds: 25
+  arenaFocusMinSeconds: 12
+  focusMinSeconds: 7
+  adaptiveEliteMinSeconds: 2.5
   tierTimingLever: 1
   tierLeadSecondsAtMax: 90
   toughnessLever: 0

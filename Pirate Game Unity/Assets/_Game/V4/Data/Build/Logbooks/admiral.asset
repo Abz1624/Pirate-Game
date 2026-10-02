@@ -18,8 +18,8 @@ MonoBehaviour:
   logbookId: admiral
   displayName: Admiral
   stat: 19
-  perLevelAdditive: 0.03
+  perLevelAdditive: 0.1
   perLevelMultiplicative: 1
-  maxLevel: 10
+  maxLevel: 5
   inSaltwindPool: 1
   databaseOrder: 13

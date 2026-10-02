@@ -17,8 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-playtest-survivorio
   stageDeadlineSeconds: 900
   graceSeconds: 2
-  maxActiveEnemies: 80
-  reservedEncounterSlots: 8
+  maxActiveEnemies: 120
+  reservedEncounterSlots: 12
   spawnerCombatOverrides: 0
   globalMinSpawnGapSeconds: 0.35
   spawnRetryIntervalSeconds: 0.35
@@ -50,7 +50,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: f81184cd12e1f8f45a7134e438d74845, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 0.6
+    ratePerSecond: 0.9
     budgetUnit: 0
     pools:
     - poolId: main
@@ -98,18 +98,18 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: c7f30690887e7514ab17715a36100ab5, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 0.9
+    ratePerSecond: 1.4
     budgetUnit: 0
     pools:
     - poolId: main
-      share: 0.85
+      share: 0.8
       entries:
       - enemyId: deckhand_dinghy
         archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
         variant: {fileID: 0}
         weight: 1
     - poolId: ranged
-      share: 0.15
+      share: 0.2
       entries:
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
@@ -153,11 +153,11 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: c032771fd8ba7b740b20a712b9d55ac7, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.1
+    ratePerSecond: 1.7
     budgetUnit: 0
     pools:
     - poolId: main
-      share: 0.85
+      share: 0.72
       entries:
       - enemyId: deckhand_dinghy
         archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
@@ -168,10 +168,17 @@ MonoBehaviour:
         variant: {fileID: 0}
         weight: 1
     - poolId: ranged
-      share: 0.15
+      share: 0.2
       entries:
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    - poolId: special
+      share: 0.08
+      entries:
+      - enemyId: bomb_boat
+        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
         variant: {fileID: 0}
         weight: 1
     pauseAmbient: 0
@@ -212,11 +219,11 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 074c75ed23898cf4db854604d1fd8956, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.25
+    ratePerSecond: 1.9
     budgetUnit: 0
     pools:
     - poolId: main
-      share: 0.85
+      share: 0.63
       entries:
       - enemyId: deckhand_dinghy
         archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
@@ -227,11 +234,26 @@ MonoBehaviour:
         variant: {fileID: 0}
         weight: 1
     - poolId: ranged
-      share: 0.15
+      share: 0.25
       entries:
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
         variant: {fileID: 0}
+        weight: 1
+      - enemyId: needle_sloop
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        variant: {fileID: 11400000, guid: c5abd483c1ea57a4eaf55da4f5bd7eea, type: 2}
+        weight: 1
+    - poolId: special
+      share: 0.12
+      entries:
+      - enemyId: bomb_boat
+        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: ram_raider
+        archetype: {fileID: 11400000, guid: 41ad36546b03afc40b3c5a33a868ff37, type: 2}
+        variant: {fileID: 11400000, guid: aef9357337bb23d4eac5fbd17599df5f, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -271,11 +293,11 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 754e07ebd1c2f4c439daac6b4942e39f, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.35
+    ratePerSecond: 2.1
     budgetUnit: 0
     pools:
     - poolId: main
-      share: 0.88
+      share: 0.6
       entries:
       - enemyId: cutthroat_skiff
         archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
@@ -286,11 +308,30 @@ MonoBehaviour:
         variant: {fileID: 0}
         weight: 1
     - poolId: ranged
-      share: 0.12
+      share: 0.25
       entries:
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
         variant: {fileID: 0}
+        weight: 1
+      - enemyId: gunner_cog
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    - poolId: special
+      share: 0.15
+      entries:
+      - enemyId: rammer_raft
+        archetype: {fileID: 11400000, guid: 41ad36546b03afc40b3c5a33a868ff37, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: bomb_ketch
+        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        variant: {fileID: 11400000, guid: c1d0a07fb62d55f428f69605d1f544cc, type: 2}
+        weight: 1
+      - enemyId: treasure_raider
+        archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
+        variant: {fileID: 11400000, guid: f6fc20f0a5d59284d9cb76f07c86e133, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -330,11 +371,11 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: cbeca7540901bce4abdf29851ffb7d11, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.5
+    ratePerSecond: 2.3
     budgetUnit: 0
     pools:
     - poolId: main
-      share: 0.88
+      share: 0.6
       entries:
       - enemyId: cutthroat_skiff
         archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
@@ -345,11 +386,30 @@ MonoBehaviour:
         variant: {fileID: 0}
         weight: 1
     - poolId: ranged
-      share: 0.12
+      share: 0.25
       entries:
-      - enemyId: cannonboat
-        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+      - enemyId: gunner_cog
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
         variant: {fileID: 0}
+        weight: 1
+      - enemyId: net_cutter
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 11400000, guid: 3b068cfeb41c78340a2edd50835b9898, type: 2}
+        weight: 1
+    - poolId: special
+      share: 0.15
+      entries:
+      - enemyId: boarding_barge
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: ram_raider
+        archetype: {fileID: 11400000, guid: 41ad36546b03afc40b3c5a33a868ff37, type: 2}
+        variant: {fileID: 11400000, guid: aef9357337bb23d4eac5fbd17599df5f, type: 2}
+        weight: 1
+      - enemyId: repair_tender
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        variant: {fileID: 11400000, guid: 1ce2c53b4e217ad478ea224410175be8, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -389,22 +449,41 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: da932b4b5ab14e64b81a347ffcadf67b, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.6
+    ratePerSecond: 2.4
     budgetUnit: 0
     pools:
     - poolId: main
-      share: 0.7
+      share: 0.53000003
       entries:
       - enemyId: cutthroat_skiff
         archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
         variant: {fileID: 0}
         weight: 1
     - poolId: ranged
-      share: 0.3
+      share: 0.35
       entries:
       - enemyId: gunner_cog
         archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
         variant: {fileID: 0}
+        weight: 1
+      - enemyId: needle_sloop
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        variant: {fileID: 11400000, guid: c5abd483c1ea57a4eaf55da4f5bd7eea, type: 2}
+        weight: 1
+      - enemyId: net_cutter
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 11400000, guid: 3b068cfeb41c78340a2edd50835b9898, type: 2}
+        weight: 1
+    - poolId: special
+      share: 0.12
+      entries:
+      - enemyId: powder_barge
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        variant: {fileID: 11400000, guid: d16a81d14b1dddf4fbef72c17747d940, type: 2}
+        weight: 1
+      - enemyId: shield_frigate
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 11400000, guid: 69d09e8af3b0224448976402532bdae6, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -444,22 +523,41 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 97904047ab853b84ebe123f928970ef6, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.8
+    ratePerSecond: 2.7
     budgetUnit: 0
     pools:
     - poolId: main
-      share: 0.85
+      share: 0.6
       entries:
       - enemyId: shark
         archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
         variant: {fileID: 0}
         weight: 1
     - poolId: ranged
-      share: 0.15
+      share: 0.25
       entries:
       - enemyId: gunner_cog
         archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
         variant: {fileID: 0}
+        weight: 1
+      - enemyId: needle_sloop
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        variant: {fileID: 11400000, guid: c5abd483c1ea57a4eaf55da4f5bd7eea, type: 2}
+        weight: 1
+    - poolId: special
+      share: 0.15
+      entries:
+      - enemyId: kraken_spawn
+        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: bomb_ketch
+        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        variant: {fileID: 11400000, guid: c1d0a07fb62d55f428f69605d1f544cc, type: 2}
+        weight: 1
+      - enemyId: ram_raider
+        archetype: {fileID: 11400000, guid: 41ad36546b03afc40b3c5a33a868ff37, type: 2}
+        variant: {fileID: 11400000, guid: aef9357337bb23d4eac5fbd17599df5f, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -499,11 +597,11 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: c92ca86fe396b494b96643a9cd3e4121, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 2
+    ratePerSecond: 3
     budgetUnit: 0
     pools:
     - poolId: main
-      share: 0.88
+      share: 0.57
       entries:
       - enemyId: cutthroat_skiff
         archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
@@ -514,11 +612,30 @@ MonoBehaviour:
         variant: {fileID: 0}
         weight: 1
     - poolId: ranged
-      share: 0.12
+      share: 0.25
       entries:
       - enemyId: gunner_cog
         archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
         variant: {fileID: 0}
+        weight: 1
+      - enemyId: net_cutter
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 11400000, guid: 3b068cfeb41c78340a2edd50835b9898, type: 2}
+        weight: 1
+    - poolId: special
+      share: 0.18
+      entries:
+      - enemyId: boarding_barge
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: shield_frigate
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 11400000, guid: 69d09e8af3b0224448976402532bdae6, type: 2}
+        weight: 1
+      - enemyId: powder_barge
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        variant: {fileID: 11400000, guid: d16a81d14b1dddf4fbef72c17747d940, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -558,11 +675,11 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 716cac02c473fe642ad734cd5f255207, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 2.2
+    ratePerSecond: 3.3
     budgetUnit: 0
     pools:
     - poolId: main
-      share: 0.88
+      share: 0.57
       entries:
       - enemyId: manta_ray
         archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
@@ -577,11 +694,34 @@ MonoBehaviour:
         variant: {fileID: 0}
         weight: 0.5
     - poolId: ranged
-      share: 0.12
+      share: 0.25
       entries:
       - enemyId: gunner_cog
         archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
         variant: {fileID: 0}
+        weight: 1
+      - enemyId: needle_sloop
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        variant: {fileID: 11400000, guid: c5abd483c1ea57a4eaf55da4f5bd7eea, type: 2}
+        weight: 1
+    - poolId: special
+      share: 0.18
+      entries:
+      - enemyId: kraken_spawn
+        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: shield_frigate
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 11400000, guid: 69d09e8af3b0224448976402532bdae6, type: 2}
+        weight: 1
+      - enemyId: repair_tender
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        variant: {fileID: 11400000, guid: 1ce2c53b4e217ad478ea224410175be8, type: 2}
+        weight: 1
+      - enemyId: bomb_ketch
+        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        variant: {fileID: 11400000, guid: c1d0a07fb62d55f428f69605d1f544cc, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -748,7 +888,7 @@ MonoBehaviour:
     budgetUnit: 0
     pools: []
     pauseAmbient: 0
-    rateMultiplier: 1.4
+    rateMultiplier: 1.8
     burstCount: 0
     warning:
       leadSeconds: 5
@@ -994,7 +1134,7 @@ MonoBehaviour:
     budgetUnit: 0
     pools: []
     pauseAmbient: 0
-    rateMultiplier: 1.4
+    rateMultiplier: 1.8
     burstCount: 0
     warning:
       leadSeconds: 5
@@ -1183,19 +1323,19 @@ MonoBehaviour:
     isStorm: 1
   tagCaps:
   - tag: ranged_gunner
-    max: 4
+    max: 14
     scope: 0
   - tag: area_denial
-    max: 2
+    max: 5
     scope: 1
   - tag: charge_windup
-    max: 2
+    max: 6
     scope: 1
   areaDenialReleaseSeconds: 2
   overtime:
-    initialSpawnIntervalSeconds: 1.4
-    intervalFloorSeconds: 0.35
-    intervalDecayPerStep: 0.85
+    initialSpawnIntervalSeconds: 0.45
+    intervalFloorSeconds: 0.12
+    intervalDecayPerStep: 0.8
     pressureStepSeconds: 30
     pursuerWeightFirstTwoMinutes: 0.8
     harrierWeightFirstTwoMinutes: 0.2
@@ -1222,157 +1362,157 @@ MonoBehaviour:
     smoothWaves: 1
     waves:
     - startSeconds: 0
-      minAliveShare: 0.1
+      minAliveShare: 0.13
       rateMultiplier: 1
       topUpIntervalSeconds: 0.935
-      maxTopUpPerTick: 2
+      maxTopUpPerTick: 3
     - startSeconds: 30
-      minAliveShare: 0.25
+      minAliveShare: 0.325
       rateMultiplier: 1.1
       topUpIntervalSeconds: 0.8375
-      maxTopUpPerTick: 3
+      maxTopUpPerTick: 5
     - startSeconds: 50
-      minAliveShare: 0.14
+      minAliveShare: 0.182
       rateMultiplier: 0.85
       topUpIntervalSeconds: 0.909
-      maxTopUpPerTick: 3
+      maxTopUpPerTick: 5
     - startSeconds: 60
-      minAliveShare: 0.2
+      minAliveShare: 0.26
       rateMultiplier: 1
       topUpIntervalSeconds: 0.87
-      maxTopUpPerTick: 3
+      maxTopUpPerTick: 5
     - startSeconds: 90
-      minAliveShare: 0.32
+      minAliveShare: 0.41599998
       rateMultiplier: 1.15
       topUpIntervalSeconds: 0.792
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 105
-      minAliveShare: 0.18
+      minAliveShare: 0.234
       rateMultiplier: 0.9
       topUpIntervalSeconds: 0.883
-      maxTopUpPerTick: 3
+      maxTopUpPerTick: 5
     - startSeconds: 140
-      minAliveShare: 0.36
+      minAliveShare: 0.468
       rateMultiplier: 1.15
       topUpIntervalSeconds: 0.766
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 185
-      minAliveShare: 0.26
+      minAliveShare: 0.33799997
       rateMultiplier: 0.95
       topUpIntervalSeconds: 0.83100003
-      maxTopUpPerTick: 3
+      maxTopUpPerTick: 5
     - startSeconds: 225
-      minAliveShare: 0.5
+      minAliveShare: 0.65
       rateMultiplier: 1.25
       topUpIntervalSeconds: 0.675
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 240
-      minAliveShare: 0.3
+      minAliveShare: 0.39000002
       rateMultiplier: 0.7
       topUpIntervalSeconds: 0.805
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 275
-      minAliveShare: 0.4
+      minAliveShare: 0.52
       rateMultiplier: 0.8
       topUpIntervalSeconds: 0.74
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 300
-      minAliveShare: 0.36
+      minAliveShare: 0.468
       rateMultiplier: 0.75
       topUpIntervalSeconds: 0.766
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 340
-      minAliveShare: 0.46
+      minAliveShare: 0.598
       rateMultiplier: 0.9
       topUpIntervalSeconds: 0.70100003
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 380
-      minAliveShare: 0.55
+      minAliveShare: 0.715
       rateMultiplier: 1.1
       topUpIntervalSeconds: 0.6425
-      maxTopUpPerTick: 5
+      maxTopUpPerTick: 8
     - startSeconds: 400
-      minAliveShare: 0.42
+      minAliveShare: 0.54599994
       rateMultiplier: 0.8
       topUpIntervalSeconds: 0.727
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 450
-      minAliveShare: 0.6
+      minAliveShare: 0.78000003
       rateMultiplier: 1.1
       topUpIntervalSeconds: 0.61
-      maxTopUpPerTick: 5
+      maxTopUpPerTick: 8
     - startSeconds: 475
-      minAliveShare: 0.45
+      minAliveShare: 0.585
       rateMultiplier: 0.75
       topUpIntervalSeconds: 0.70750004
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 510
-      minAliveShare: 0.6
+      minAliveShare: 0.78000003
       rateMultiplier: 1.05
       topUpIntervalSeconds: 0.61
-      maxTopUpPerTick: 5
+      maxTopUpPerTick: 8
     - startSeconds: 540
-      minAliveShare: 0.66
+      minAliveShare: 0.858
       rateMultiplier: 1.15
       topUpIntervalSeconds: 0.571
-      maxTopUpPerTick: 5
+      maxTopUpPerTick: 8
     - startSeconds: 585
-      minAliveShare: 0.5
+      minAliveShare: 0.65
       rateMultiplier: 0.85
       topUpIntervalSeconds: 0.675
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 620
-      minAliveShare: 0.66
+      minAliveShare: 0.858
       rateMultiplier: 1.1
       topUpIntervalSeconds: 0.571
-      maxTopUpPerTick: 5
+      maxTopUpPerTick: 8
     - startSeconds: 650
-      minAliveShare: 0.5
+      minAliveShare: 0.65
       rateMultiplier: 0.8
       topUpIntervalSeconds: 0.675
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 690
-      minAliveShare: 0.72
+      minAliveShare: 0.936
       rateMultiplier: 1.25
       topUpIntervalSeconds: 0.532
-      maxTopUpPerTick: 6
+      maxTopUpPerTick: 9
     - startSeconds: 720
-      minAliveShare: 0.6
+      minAliveShare: 0.78000003
       rateMultiplier: 0.95
       topUpIntervalSeconds: 0.61
-      maxTopUpPerTick: 5
+      maxTopUpPerTick: 8
     - startSeconds: 760
-      minAliveShare: 0.8
+      minAliveShare: 0.95
       rateMultiplier: 1.3
       topUpIntervalSeconds: 0.48000002
-      maxTopUpPerTick: 6
+      maxTopUpPerTick: 9
     - startSeconds: 800
-      minAliveShare: 0.7
+      minAliveShare: 0.90999997
       rateMultiplier: 1.05
       topUpIntervalSeconds: 0.545
-      maxTopUpPerTick: 6
+      maxTopUpPerTick: 9
     - startSeconds: 830
-      minAliveShare: 0.88
+      minAliveShare: 0.95
       rateMultiplier: 1.4
       topUpIntervalSeconds: 0.42800003
-      maxTopUpPerTick: 6
+      maxTopUpPerTick: 9
     - startSeconds: 840
-      minAliveShare: 0.4
+      minAliveShare: 0.52
       rateMultiplier: 0.6
       topUpIntervalSeconds: 0.74
-      maxTopUpPerTick: 4
+      maxTopUpPerTick: 6
     - startSeconds: 900
       minAliveShare: 0.95
       rateMultiplier: 1.45
       topUpIntervalSeconds: 0.4
-      maxTopUpPerTick: 7
+      maxTopUpPerTick: 11
     hordes:
     - hordeId: dogs_1m50
       label: dogs_1m50
       timeSeconds: 110
       formation: 0
       archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-      count: 12
+      count: 18
       distance: 20
       spacing: 1.8
       speedMultiplier: 1
@@ -1385,7 +1525,7 @@ MonoBehaviour:
       timeSeconds: 200
       formation: 2
       archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
-      count: 5
+      count: 8
       distance: 20
       spacing: 1.8
       speedMultiplier: 1
@@ -1398,7 +1538,7 @@ MonoBehaviour:
       timeSeconds: 240
       formation: 0
       archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-      count: 30
+      count: 45
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
@@ -1411,7 +1551,7 @@ MonoBehaviour:
       timeSeconds: 390
       formation: 1
       archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
-      count: 24
+      count: 36
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
@@ -1424,7 +1564,7 @@ MonoBehaviour:
       timeSeconds: 480
       formation: 0
       archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-      count: 34
+      count: 51
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
@@ -1437,7 +1577,7 @@ MonoBehaviour:
       timeSeconds: 665
       formation: 0
       archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
-      count: 24
+      count: 36
       distance: 18
       spacing: 1.8
       speedMultiplier: 1
@@ -1450,7 +1590,7 @@ MonoBehaviour:
       timeSeconds: 700
       formation: 1
       archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
-      count: 24
+      count: 36
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
@@ -1463,7 +1603,7 @@ MonoBehaviour:
       timeSeconds: 750
       formation: 2
       archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
-      count: 26
+      count: 39
       distance: 24
       spacing: 1.8
       speedMultiplier: 1
@@ -1476,7 +1616,7 @@ MonoBehaviour:
       timeSeconds: 780
       formation: 0
       archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
-      count: 26
+      count: 39
       distance: 18
       spacing: 1.8
       speedMultiplier: 1
@@ -1489,7 +1629,7 @@ MonoBehaviour:
       timeSeconds: 790
       formation: 1
       archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
-      count: 24
+      count: 36
       distance: 22
       spacing: 1.8
       speedMultiplier: 1

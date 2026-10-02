@@ -64,6 +64,16 @@ namespace RoguePirates.V4.Enemies
 
         public void MarkAdaptiveElite(int slot, SpawnProfile sourceProfile, bool ordinaryRewards) => _sim.MarkAdaptiveElite(slot, sourceProfile, ordinaryRewards);
 
+        public void EnsureMinimumHp(int unitId, float minHp)
+        {
+            if (!(minHp > 0f) || !_sim.TryGetAgentByUnitId(unitId, out var i)) return;
+            ref var a = ref _sim.Agents[i];
+            if (a.maxHp >= minHp) return;
+            var fraction = a.maxHp > 0f ? a.hp / a.maxHp : 1f;
+            a.maxHp = minHp;
+            a.hp = minHp * fraction;
+        }
+
         public int SpawnFromProfile(int definitionIndex, Vector3 position, SpawnProfile profile, int profileInstanceId,
             FormationRole role, int formationSlot, int leaderUnitId, float hpMultiplier, float damageMultiplier) =>
             _sim.SpawnFromProfile(definitionIndex, position, profile, profileInstanceId, role, formationSlot, leaderUnitId, hpMultiplier, damageMultiplier);
@@ -146,6 +156,8 @@ namespace RoguePirates.V4.Enemies
 
         public void ApplyStatus(int index, WeaponStatus status, float strength)
         {
+            // Playtest (3 Oct): a status from the killing hit must not land in the freed slot (the next enemy spawned there inherited the burn).
+            if (index < 0 || index >= _sim.Agents.Length || !_sim.Agents[index].active) return;
             var type = status switch
             {
                 WeaponStatus.Burn => StatusType.Burn,

@@ -265,7 +265,10 @@ namespace RoguePirates.V4.Foundation.World
 
         static Vector3 GetDepenetrationVector(Collider collider, Vector3 position, float radius)
         {
-            var closest = collider.ClosestPoint(position);
+            // Playtest (3 Oct): ClosestPoint only works on primitives and convex meshes; the islands' foliage colliders are
+            // concave (by design), so those use their bounds' nearest point (the console error and a wrong push otherwise).
+            var concave = collider is MeshCollider mesh && !mesh.convex;
+            var closest = concave ? collider.bounds.ClosestPoint(position) : collider.ClosestPoint(position);
             var away = position - closest;
             away.y = 0f;
             var dist = away.magnitude;

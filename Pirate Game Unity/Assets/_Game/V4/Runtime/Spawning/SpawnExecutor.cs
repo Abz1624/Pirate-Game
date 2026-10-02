@@ -130,6 +130,10 @@ namespace RoguePirates.V4.Spawning
 
                 spawned++;
                 var unitId = _s.Sink.UnitIdAt(slot);
+                // Playtest (3 Oct, owner): bosses and the kill band's elites can never be one-shot (time-to-kill floor).
+                var floorLevers = _s.Levers;
+                if (floorLevers != null && floorLevers.Config != null && (isBoss || adaptiveElite))
+                    _s.Sink.EnsureMinimumHp(unitId, floorLevers.PlayerDps * (isBoss ? floorLevers.Config.bossMinSeconds : floorLevers.Config.adaptiveEliteMinSeconds));
                 // M6: ambient spawns are flagged; the spawn warning presenter telegraphs them (was V3SpawnTelegraph).
                 _s.Publish(CombatEventKind.Spawned, unitId, definitionIndex, position, _s.Sink.DefinitionId(definitionIndex),
                     (ambient ? CombatEventFlags.AmbientSpawn : 0) | (adaptiveElite ? CombatEventFlags.AdaptiveElite : 0));

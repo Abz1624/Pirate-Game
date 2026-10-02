@@ -16,12 +16,25 @@ MonoBehaviour:
   schemaVersion: 1
   balanceVersion: saltwind-v3-parity
   starterWeaponIds:
-  - deck_cannons
   - broadside_battery
-  - powder_kegs
+  - deck_cannons
+  - flamethrower
   - flying_cutlasses
+  - harpoon_gun
+  - lightning_mast
   - long_nine
+  - mortar
+  - powder_kegs
   - swivel_guns
+  - anchor_flail
+  - chainshot
+  - siren_bell
+  - ramming_prow
+  - parrot_squadron
+  - monkey_gunners
+  - maelstrom_charge
+  - lighthouse_lantern
+  - cursed_doubloons
   weaponUnlocks:
   - weaponId: lightning_mast
     rumCost: 60

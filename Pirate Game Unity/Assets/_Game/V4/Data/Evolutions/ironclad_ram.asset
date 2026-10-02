@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Ironclad Ram
   description: 'A heavier prow: wider, harder strikes while boosting.'
   baseWeapon: {fileID: 11400000, guid: 74d40dd3f4312f945a81c3729aaf3a5f, type: 2}
-  requiredItemId: golden_figurehead
+  requiredItemId: iron_figurehead
   effect: 7
   laneBurst:
     laneArcDegrees: 40

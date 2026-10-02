@@ -103,6 +103,14 @@ namespace RoguePirates.V4.Presentation.Menu
                 if (settings.mainMenuBackdrop != null) _mainBackdrop = Instantiate(settings.mainMenuBackdrop);
                 if (settings.characterSelectBackdrop != null) _selectBackdrop = Instantiate(settings.characterSelectBackdrop);
             }
+            // Playtest (3 Oct): the captains' boats carry NavMeshAgents from the art scene and the menu has no NavMesh
+            // ("Failed to create agent because there is no valid NavMesh"): the backdrops are scenery, strip them.
+            foreach (var backdrop in new[] { _mainBackdrop, _selectBackdrop })
+            {
+                if (backdrop == null) continue;
+                foreach (var agent in backdrop.GetComponentsInChildren<UnityEngine.AI.NavMeshAgent>(true)) DestroyImmediate(agent);
+                foreach (var obstacle in backdrop.GetComponentsInChildren<UnityEngine.AI.NavMeshObstacle>(true)) DestroyImmediate(obstacle);
+            }
             // The panels' roots are zero-size in their prefabs (the art scene stretched them); stretch them over the canvas.
             if (_main == null) _main = Stretch(Instantiate(settings.mainMenuPanel, canvas, false));
             if (_select == null) _select = Stretch(Instantiate(settings.characterSelectionPanel, canvas, false));

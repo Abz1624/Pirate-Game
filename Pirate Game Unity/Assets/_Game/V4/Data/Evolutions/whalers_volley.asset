@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Whaler's Volley
   description: Two harpoons at once that pass through a foe.
   baseWeapon: {fileID: 11400000, guid: 57d7da32751565647b255cdce163e8c4, type: 2}
-  requiredItemId: reinforced_keel
+  requiredItemId: whale_oil_barrel
   effect: 7
   laneBurst:
     laneArcDegrees: 40

@@ -18,8 +18,8 @@ MonoBehaviour:
   logbookId: lookouts_glass
   displayName: Lookout's Glass
   stat: 7
-  perLevelAdditive: 0.02
+  perLevelAdditive: 0.05
   perLevelMultiplicative: 1
-  maxLevel: 12
+  maxLevel: 5
   inSaltwindPool: 1
   databaseOrder: 8

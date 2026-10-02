@@ -27,7 +27,7 @@ namespace RoguePirates.V4.Enemies
     /// </summary>
     public sealed partial class EnemySimulation
     {
-        const float EliteVisualScaleMultiplier = 2.15f;
+        const float EliteVisualScaleMultiplier = 1.6f; // playtest (3 Oct): elites 1.6x their enemy (was 2.15x: bigger than minibosses)
         const float MinibossVisualScaleMultiplier = 2.85f;
         const float PressureBeatVisualScaleMultiplier = 1.35f;
 

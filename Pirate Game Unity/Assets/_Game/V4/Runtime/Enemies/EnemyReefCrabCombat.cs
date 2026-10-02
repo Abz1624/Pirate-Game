@@ -79,7 +79,7 @@ namespace RoguePirates.V4.Enemies
                     state.phaseTimer -= dt;
                     if (state.phaseTimer <= 0f)
                     {
-                        FireCannonball(ref agent, playerPos, dir, dist);
+                        FireCannonball(ref agent, playerPos, dir, dist, playerDamage);
                         state.phase = EnemyCombatPhase.Approach;
                         state.phaseTimer = ShotInterval;
                     }
@@ -107,14 +107,17 @@ namespace RoguePirates.V4.Enemies
             }
         }
 
-        void FireCannonball(ref EnemyUnit agent, Vector3 playerPos, Vector3 dir, float dist)
+        void FireCannonball(ref EnemyUnit agent, Vector3 playerPos, Vector3 dir, float dist, DamageReceiver playerDamage)
         {
             var shots = Shots;
             if (shots == null || dist > ShotMaxRange) return;
+            // Aimed where the ship will be when the ball arrives (playtest, owner: enemies intercept, not chase).
+            var ship = playerDamage != null ? playerDamage.GetComponent<PlayerShipController>() : null;
+            var playerVelocity = ship != null ? ship.Velocity : Vector3.zero;
             var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
-            var target = playerPos - muzzle;
-            target.y = 0f;
-            shots.TrySpawn(muzzle, dir, ShotSpeed, agent.damage * ShotDamageMultiplier, ShotLife, ShotHitRadius, ShotVisualRadius, target.magnitude);
+            var led = EnemySimulation.AimLed(muzzle, playerPos, playerVelocity, ShotSpeed, dir);
+            shots.TrySpawn(muzzle, led, ShotSpeed, agent.damage * ShotDamageMultiplier, ShotLife, ShotHitRadius, ShotVisualRadius,
+                EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, ShotSpeed));
         }
 
         public float GetDirectHitMultiplier(Vector3 agentPos, Vector3 attackOrigin, bool guardActive)

@@ -17,7 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: grapeshot_pouch
   displayName: Grapeshot Pouch
-  description: +10% Deck Cannons damage; evolves into Stormshot Cannon.
+  description: +10% damage. Evolves Deck Cannons into Stormshot Cannon at weapon
+    level 5.
   rarity: 1
   inChestPool: 1
   inLevelUpPool: 0

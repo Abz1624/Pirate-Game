@@ -17,9 +17,9 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m5
   itemId: dead_mans_compass
   displayName: Dead Man's Compass
-  description: +5% XP; 10% more enemies.
+  description: +5% XP gain. 10% more enemies spawn.
   rarity: 2
-  inChestPool: 0
+  inChestPool: 1
   inLevelUpPool: 0
   chestPoolOrder: 54
   collectionOrder: 54

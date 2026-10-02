@@ -210,6 +210,7 @@ namespace RoguePirates.V4.Spawning
                 var slot = _s.Sink.Spawn(index, position, focus.affix, focus.speedMultiplier, hp, damage);
                 if (slot < 0) return false;
                 unitId = _s.Sink.UnitIdAt(slot);
+                ApplyTimeToKillFloor(phase, unitId);
                 if (unitId > 0) _s.Publish(CombatEventKind.Spawned, unitId, index, position, enemyId);
                 return unitId > 0;
             }
@@ -223,8 +224,18 @@ namespace RoguePirates.V4.Spawning
             var definitionIndex = !string.IsNullOrEmpty(variantId) && _s.Sink.FindDefinition(variantId) >= 0 ? _s.Sink.FindDefinition(variantId) : _s.Sink.IndexOf(profile.enemy);
             unitId = _s.Sink.NewestUnitAfter(before, definitionIndex);
             enemyId = _s.Sink.DefinitionId(definitionIndex);
+            ApplyTimeToKillFloor(phase, unitId);
             // M12: Rum registers the scheduled elite from the PhaseChanged event (unit id) published for this spawn.
             return unitId > 0;
+        }
+
+        /// <summary>Playtest (3 Oct, owner: "minibosses and elites never get one-shot"): at least N seconds of the build's DPS.</summary>
+        void ApplyTimeToKillFloor(TimelinePhase phase, int unitId)
+        {
+            var levers = _s.Levers;
+            if (unitId <= 0 || levers == null || levers.Config == null) return;
+            var seconds = phase.pauseAmbient ? levers.Config.arenaFocusMinSeconds : levers.Config.focusMinSeconds;
+            _s.Sink.EnsureMinimumHp(unitId, levers.PlayerDps * seconds);
         }
 
         void TickPulse(TimelinePhase phase, float elapsed, bool bossFight, float dt)

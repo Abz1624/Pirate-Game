@@ -175,7 +175,7 @@ namespace RoguePirates.V4.Enemies
         /// Where to aim so a shot at <paramref name="shotSpeed"/> meets a ship holding its course: the target's position
         /// plus its velocity times the flight time (refined twice, capped at <paramref name="maxLead"/> seconds).
         /// </summary>
-        public static Vector3 PredictAimPoint(Vector3 from, Vector3 targetPos, Vector3 targetVelocity, float shotSpeed, float maxLead = 1.5f)
+        public static Vector3 PredictAimPoint(Vector3 from, Vector3 targetPos, Vector3 targetVelocity, float shotSpeed, float maxLead = 2f)
         {
             targetVelocity.y = 0f;
             if (shotSpeed <= 0.01f || targetVelocity.sqrMagnitude < 0.04f)

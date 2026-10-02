@@ -43,6 +43,8 @@ namespace RoguePirates.V4.Presentation.Effects
         public EnemyViewTint Tint => _tint;
         /// <summary>Demo: the artists' per-enemy VFX profiles (trail, hit).</summary>
         public VfxProfilePlayer Profiles { get; set; }
+        /// <summary>Playtest (3 Oct, owner): the live boss's view (null when there is none), for the off-screen boss arrow.</summary>
+        public Transform BossView { get; private set; }
 
         public EnemyViewPresenter(PoolService pools, DemoJuiceSettings juice)
         {
@@ -69,6 +71,13 @@ namespace RoguePirates.V4.Presentation.Effects
         public float FallbackVisualScale(EnemyDefinition def) => EnemyVisualFallbackResolver.ResolveVisualScale(def);
 
         public Transform CreateView(EnemyDefinition def, Vector3 position, float scale, bool elite, int animationSeed)
+        {
+            var view = CreateModel(def, position, scale, elite, animationSeed);
+            if (view != null && def.isBoss) BossView = view;
+            return view;
+        }
+
+        Transform CreateModel(EnemyDefinition def, Vector3 position, float scale, bool elite, int animationSeed)
         {
             if (def == null || _pools == null) return null;
             var prefab = def.visualPrefab != null ? def.visualPrefab : EnemyVisualFallbackResolver.ResolvePrefab(def);
@@ -98,8 +107,8 @@ namespace RoguePirates.V4.Presentation.Effects
         public Transform AttachHealthBar(EnemyDefinition def, Transform view, bool elite)
         {
             if (view == null || _pools == null || !_pools.Has(HealthBarKey)) return null;
-            // Playtest (2 Oct, owner): health bars on the boss, minibosses and elites; ordinary enemies show none.
-            if (def == null || (!def.isBoss && !def.isMiniboss && !elite)) return null;
+            // Playtest (3 Oct, owner): health bars on the boss and minibosses only (not elites or ordinary enemies).
+            if (def == null || (!def.isBoss && !def.isMiniboss)) return null;
             var go = _pools.Acquire(HealthBarKey, view.position, Quaternion.identity);
             if (go == null) return null;
             var bar = go.GetComponent<WorldHealthBar>();
@@ -111,6 +120,7 @@ namespace RoguePirates.V4.Presentation.Effects
 
         public void Release(EnemyDefinition def, Transform view, Transform healthBar)
         {
+            if (view != null && view == BossView) BossView = null;
             if (view != null)
             {
                 Profiles?.EnemyViewReleased(view);

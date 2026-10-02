@@ -73,6 +73,13 @@ namespace RoguePirates.V4.Presentation.World
             _bar.Bind(anchor, _settings.playerHealthBarHeight);
         }
 
-        void OnDestroy() => Unbind();
+        // Playtest (3 Oct): on teardown the pool service is disposed first and destroys its own instances; releasing into it
+        // only logged "was not acquired from a pool". Just drop the references.
+        void OnDestroy()
+        {
+            _barGo = null;
+            _bar = null;
+            _anchor = null;
+        }
     }
 }

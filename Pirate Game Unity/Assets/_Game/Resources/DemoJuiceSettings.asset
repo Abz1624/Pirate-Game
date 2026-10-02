@@ -186,7 +186,7 @@ MonoBehaviour:
   trialBuoyPrefab: {fileID: 7973005631509961391, guid: f37b853dab48d7e4eb4a5c47893397f1, type: 3}
   bossBeaconPrefab: {fileID: 6426987305982235462, guid: ad7a84b4ee8c148408c8bef3f712e518, type: 3}
   bossTelegraphRingPrefab: {fileID: 1709254077376921, guid: 17bfaca54656ede499058479fd3b75ac, type: 3}
-  salvageChestScale: 1
+  salvageChestScale: 0.75
   lighthouseScale: 1
   trialBuoyScale: 1
   bossBeaconScale: 1

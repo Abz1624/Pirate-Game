@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Siege Bombard
   description: Bigger, harder shells, more often.
   baseWeapon: {fileID: 11400000, guid: 7c0420941c8b2004cb0a8c0d7d54296c, type: 2}
-  requiredItemId: admirals_ledger
+  requiredItemId: siege_quadrant
   effect: 7
   laneBurst:
     laneArcDegrees: 40

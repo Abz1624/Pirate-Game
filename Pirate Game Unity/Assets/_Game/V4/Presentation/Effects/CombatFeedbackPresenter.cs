@@ -140,7 +140,9 @@ namespace RoguePirates.V4.Presentation.Effects
         /// <summary>V3 CombatVfxController.OnKill → JuiceVfxBroker.PlayKill.</summary>
         void OnKill(Vector3 position, bool elite, bool boss, string weaponId)
         {
-            if (_s == null || HitEffect(weaponId) == ConfigEnums.WeaponHitEffect.None) return;
+            // Playtest (3 Oct, owner: "some enemies don't play the death explosion"): every kill explodes; a weapon's
+            // "no hit effect" (Powder Kegs, which have their own blast) only silences its hit sparks, not the kill.
+            if (_s == null) return;
             if (boss)
             {
                 var prefab = _s.bossKillExplosionPrefab != null ? _s.bossKillExplosionPrefab : _s.enemyKillPrefab;
