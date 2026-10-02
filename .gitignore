@@ -46,3 +46,6 @@ crashlytics-build.properties
 references/
 # Unity temp (Unity 6)
 .utmp/
+
+# Trailer workspace (Remotion): npm packages, recorded takes, renders and a game build (about 1.8 GB). Local only.
+trailer/
