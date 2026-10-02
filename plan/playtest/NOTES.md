@@ -91,3 +91,12 @@ Questions for you:
    Keep it as a "boss comes here" marker, let it call the boss early from 13:00, or remove it?
 2. Elites (the 3:00 Hammerhead, the 10:00 Kraken) have no health bar now. Should they?
 3. Rum for minutes: capped at 10 (as before), or pay for all 15?
+
+## Your answers (2 Oct)
+
+1. Beacon: removed. With the boss rising on its own at 14:00, the stage has no Treasury Beacon (no marker, minimap hint,
+   guide arrow or skylight).
+2. Health bars: on the boss, the minibosses and every elite (the 3:00 Hammerhead, the 10:00 Kraken, the 8:00 Hammerhead
+   and the elites the kill band adds); ordinary enemies still have none.
+3. Rum: pays for every qualifying minute to 15:00 (2 each, up to 30) and every overtime minute after it (3 each, the
+   old 15-Rum overtime cap removed).

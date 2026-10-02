@@ -35,7 +35,8 @@ foreach (var t in UnityEngine.Object.FindObjectsByType<UnityEngine.Transform>(Un
   if (n.Contains("kraken")) kraken += $"{t.lossyScale.x:0.00} ";
   if (n.Contains("crab")) crab += $"{t.lossyScale.x:0.00} ";
 }
-return $"t={run.ElapsedSeconds:0} state={run.State} level={game.Build?.Progression.Level} alive={sink.ActiveCount} bars={bars} band(last {dd?.LastBandRatio:0.00} rate x{dd?.KillBandRate:0.00} elite {dd?.KillBandEliteChance:0.00}) kraken[{kraken}] crab[{crab}]";
+var beacons = 0; var sv = game.Stage?.Module?.Layout; if (sv?.pois != null) foreach (var q in sv.pois) if (q.type == RoguePirates.V4.Foundation.Core.POIType.BossBeacon) beacons++;
+return $"beacons={beacons} t={run.ElapsedSeconds:0} state={run.State} level={game.Build?.Progression.Level} alive={sink.ActiveCount} bars={bars} band(last {dd?.LastBandRatio:0.00} rate x{dd?.KillBandRate:0.00} elite {dd?.KillBandEliteChance:0.00}) kraken[{kraken}] crab[{crab}]";
 '@
 
 $lines = @()

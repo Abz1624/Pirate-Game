@@ -117,7 +117,10 @@ namespace RoguePirates.V4.Stage
             for (var i = 0; i < revealCount; i++) _revealedChestIndices.Add(candidates[i].index);
         }
 
-        public Vector3? BeaconPosition => _layout != null ? _layout.bossBeacon : (Vector3?)null;
+        public Vector3? BeaconPosition => _layout != null && HasBeacon ? _layout.bossBeacon : (Vector3?)null;
+
+        /// <summary>The stage has a Treasury Beacon (the playtest removes it when the boss rises on its own).</summary>
+        bool HasBeacon => _layout?.pois != null && _layout.pois.Exists(p => p.type == POIType.BossBeacon);
 
         /// <summary>V3 GetBeaconBearingDegrees (compass bearing, 0 = +Z).</summary>
         public float BeaconBearingDegrees(Vector3 from)
@@ -149,7 +152,7 @@ namespace RoguePirates.V4.Stage
 
         void UpdateBeaconTimeline(Vector3 playerPos, float minute)
         {
-            if (_layout == null) return;
+            if (_layout == null || !HasBeacon) return; // no beacon: no hints, no marker, no guide
             var c = C;
             var sectorMinute = (c != null ? c.beaconDirectionHintSeconds : 420f) / 60f;
             var exactMinute = (c != null ? c.beaconExactMarkerSeconds : 540f) / 60f;

@@ -23,7 +23,7 @@ MonoBehaviour:
     source: 0
     rum: 2
     minKills: 10
-    maxCredits: 10
+    maxCredits: 0
     maxRum: 0
     goldForHalf: 350
   - rowId: landmarks
@@ -60,7 +60,7 @@ MonoBehaviour:
     rum: 3
     minKills: 10
     maxCredits: 0
-    maxRum: 15
+    maxRum: 0
     goldForHalf: 350
   - rowId: chests
     label: Chests opened
