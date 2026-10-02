@@ -22,7 +22,7 @@ MonoBehaviour:
   behavior: 3
   biomeTag: emerald
   stats:
-    baseHP: 8
+    baseHP: 2.8
     baseDamage: 8
     moveSpeed: 3.8
     radius: 1.2

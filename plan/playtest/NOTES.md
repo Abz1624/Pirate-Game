@@ -134,3 +134,13 @@ beetle ring 13:00 and green fly sweep 13:10. Minibosses: crab 2:30, armored elit
 - Elites and minibosses 12× a basic enemy (Elite Hammerhead 120, Reef Crab 120); boss slots 70× (the 5:00 crab and the
   10:00 Kraken, 700); the Barnacle King 140× (1,400, was 2,800); kill-band elites 8× their enemy (was 1.5×).
 - The XP table was refitted to the new enemy mix (simulator, within 6% of the Survivor.io level curve).
+
+## Round 3 (3 Oct): one-hit starting enemies
+
+Owner: "the starting weapon should kill the starting enemies in 1 hit". With equal DPS, fast weapons hit small: the
+Swivel Guns (Rook) hit for 3.84 at level 1, the Broadside for 4.9 a pellet, the Deck Cannons 10.4. The basic enemy (Dinghy)
+now has 3.5 HP, under the smallest starting hit, and every enemy scales by the same 0.35 (Survivor.io ratios kept): Swordfish
+2.3, Cannonboat 2.8, Hammerhead 1.75, Cutthroat Skiff 12.25, Gunner Cog 4.2, Shark 7, Manta Ray 8.75, Reef Crab and Elite
+Hammerhead 42, boss slots 245, Barnacle King 490. The time curve makes basic enemies take a second Swivel shot from about
+2:30 unless the weapon is upgraded (as in Survivor.io). The Flamethrower (Ember) is a stream (about 1 a tick), so it never
+one-shots. XP table refitted (within 6%).
