@@ -37,7 +37,7 @@ MonoBehaviour:
   minExplosiveWarningSeconds: 1.2
   phases:
   - phaseId: band_0
-    label: Band 0
+    label: Band 0 (0:00 basic only)
     trigger:
       kind: 0
       timeSeconds: 0
@@ -53,22 +53,11 @@ MonoBehaviour:
     ratePerSecond: 0.6
     budgetUnit: 0
     pools:
-    - poolId: ordinary
-      share: 0.95
+    - poolId: main
+      share: 1
       entries:
-      - enemyId: swordfish
-        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-        variant: {fileID: 0}
-        weight: 1
       - enemyId: deckhand_dinghy
         archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-    - poolId: specialist
-      share: 0.050000012
-      entries:
-      - enemyId: cannonboat
-        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
         variant: {fileID: 0}
         weight: 1
     pauseAmbient: 0
@@ -96,7 +85,7 @@ MonoBehaviour:
     isOvertime: 0
     isStorm: 0
   - phaseId: band_1
-    label: Band 1
+    label: Band 1 (1:00 + ranged)
     trigger:
       kind: 0
       timeSeconds: 60
@@ -112,19 +101,15 @@ MonoBehaviour:
     ratePerSecond: 0.9
     budgetUnit: 0
     pools:
-    - poolId: ordinary
-      share: 0.75
+    - poolId: main
+      share: 0.85
       entries:
-      - enemyId: swordfish
-        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-        variant: {fileID: 0}
-        weight: 1
       - enemyId: deckhand_dinghy
         archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
         variant: {fileID: 0}
         weight: 1
-    - poolId: specialist
-      share: 0.25
+    - poolId: ranged
+      share: 0.15
       entries:
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
@@ -155,7 +140,7 @@ MonoBehaviour:
     isOvertime: 0
     isStorm: 0
   - phaseId: band_2
-    label: Band 2
+    label: Band 2 (1:50 + dogs)
     trigger:
       kind: 0
       timeSeconds: 110
@@ -171,35 +156,23 @@ MonoBehaviour:
     ratePerSecond: 1.1
     budgetUnit: 0
     pools:
-    - poolId: ordinary
-      share: 0.75
+    - poolId: main
+      share: 0.85
       entries:
-      - enemyId: swordfish
-        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: swordfish
-        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: hammerhead
-        archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
-        variant: {fileID: 0}
-        weight: 1
       - enemyId: deckhand_dinghy
         archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
         variant: {fileID: 0}
+        weight: 2
+      - enemyId: swordfish
+        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+        variant: {fileID: 0}
         weight: 1
-    - poolId: specialist
-      share: 0.25
+    - poolId: ranged
+      share: 0.15
       entries:
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
         variant: {fileID: 0}
-        weight: 1
-      - enemyId: needle_sloop
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: c5abd483c1ea57a4eaf55da4f5bd7eea, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -226,7 +199,7 @@ MonoBehaviour:
     isOvertime: 0
     isStorm: 0
   - phaseId: band_3
-    label: Band 3
+    label: Band 3 (4:00 zombies and dogs)
     trigger:
       kind: 0
       timeSeconds: 240
@@ -242,38 +215,22 @@ MonoBehaviour:
     ratePerSecond: 1.25
     budgetUnit: 0
     pools:
-    - poolId: ordinary
-      share: 0.7
+    - poolId: main
+      share: 0.85
       entries:
-      - enemyId: cutthroat_skiff
-        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: hammerhead
-        archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: shark
-        archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
-        variant: {fileID: 0}
-        weight: 1
       - enemyId: deckhand_dinghy
         archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
         variant: {fileID: 0}
         weight: 1
-    - poolId: specialist
-      share: 0.3
+      - enemyId: swordfish
+        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    - poolId: ranged
+      share: 0.15
       entries:
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: ram_raider
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: aef9357337bb23d4eac5fbd17599df5f, type: 2}
-        weight: 1
-      - enemyId: bomb_boat
-        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
         variant: {fileID: 0}
         weight: 1
     pauseAmbient: 0
@@ -301,7 +258,7 @@ MonoBehaviour:
     isOvertime: 0
     isStorm: 0
   - phaseId: band_4
-    label: Band 4
+    label: Band 4 (5:40 armored replace basic)
     trigger:
       kind: 0
       timeSeconds: 340
@@ -317,38 +274,22 @@ MonoBehaviour:
     ratePerSecond: 1.35
     budgetUnit: 0
     pools:
-    - poolId: ordinary
-      share: 0.7
+    - poolId: main
+      share: 0.88
       entries:
       - enemyId: cutthroat_skiff
         archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
         variant: {fileID: 0}
-        weight: 1
-      - enemyId: cutthroat_skiff
-        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        weight: 3
+      - enemyId: swordfish
+        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
         variant: {fileID: 0}
         weight: 1
-      - enemyId: rammer_raft
-        archetype: {fileID: 11400000, guid: 41ad36546b03afc40b3c5a33a868ff37, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: shark
-        archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-    - poolId: specialist
-      share: 0.3
+    - poolId: ranged
+      share: 0.12
       entries:
-      - enemyId: gunner_cog
-        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: bomb_ketch
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: c1d0a07fb62d55f428f69605d1f544cc, type: 2}
-        weight: 1
-      - enemyId: bomb_boat
-        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+      - enemyId: cannonboat
+        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
         variant: {fileID: 0}
         weight: 1
     pauseAmbient: 0
@@ -376,7 +317,7 @@ MonoBehaviour:
     isOvertime: 0
     isStorm: 0
   - phaseId: band_5
-    label: Band 5
+    label: Band 5 (8:00 armored + dogs)
     trigger:
       kind: 0
       timeSeconds: 480
@@ -392,40 +333,20 @@ MonoBehaviour:
     ratePerSecond: 1.5
     budgetUnit: 0
     pools:
-    - poolId: ordinary
-      share: 0.65
+    - poolId: main
+      share: 0.88
       entries:
-      - enemyId: boarding_barge
-        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
-        variant: {fileID: 0}
-        weight: 1
       - enemyId: cutthroat_skiff
         archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
         variant: {fileID: 0}
-        weight: 1
-      - enemyId: hammerhead
-        archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+        weight: 2
+      - enemyId: swordfish
+        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
         variant: {fileID: 0}
         weight: 1
-      - enemyId: manta_ray
-        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-    - poolId: specialist
-      share: 0.35000002
+    - poolId: ranged
+      share: 0.12
       entries:
-      - enemyId: net_cutter
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: 3b068cfeb41c78340a2edd50835b9898, type: 2}
-        weight: 1
-      - enemyId: repair_tender
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: 1ce2c53b4e217ad478ea224410175be8, type: 2}
-        weight: 1
-      - enemyId: bomb_boat
-        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
-        variant: {fileID: 0}
-        weight: 1
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
         variant: {fileID: 0}
@@ -455,7 +376,7 @@ MonoBehaviour:
     isOvertime: 0
     isStorm: 0
   - phaseId: band_6
-    label: Band 6
+    label: Band 6 (9:00 purple ranged)
     trigger:
       kind: 0
       timeSeconds: 540
@@ -471,39 +392,19 @@ MonoBehaviour:
     ratePerSecond: 1.6
     budgetUnit: 0
     pools:
-    - poolId: ordinary
-      share: 0.5
+    - poolId: main
+      share: 0.7
       entries:
-      - enemyId: manta_ray
-        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
-        variant: {fileID: 0}
-        weight: 1
       - enemyId: cutthroat_skiff
         archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
         variant: {fileID: 0}
         weight: 1
-      - enemyId: shark
-        archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-    - poolId: specialist
-      share: 0.5
+    - poolId: ranged
+      share: 0.3
       entries:
       - enemyId: gunner_cog
         archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
         variant: {fileID: 0}
-        weight: 1
-      - enemyId: gunner_cog
-        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: cannonboat
-        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: needle_sloop
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: c5abd483c1ea57a4eaf55da4f5bd7eea, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -530,7 +431,7 @@ MonoBehaviour:
     isOvertime: 0
     isStorm: 0
   - phaseId: band_7
-    label: Band 7
+    label: Band 7 (11:00 red beetles replace)
     trigger:
       kind: 0
       timeSeconds: 660
@@ -546,38 +447,18 @@ MonoBehaviour:
     ratePerSecond: 1.8
     budgetUnit: 0
     pools:
-    - poolId: ordinary
-      share: 0.5
+    - poolId: main
+      share: 0.85
       entries:
-      - enemyId: manta_ray
-        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: boarding_barge
-        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
-        variant: {fileID: 0}
-        weight: 1
       - enemyId: shark
         archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
         variant: {fileID: 0}
         weight: 1
-    - poolId: specialist
-      share: 0.5
+    - poolId: ranged
+      share: 0.15
       entries:
-      - enemyId: kraken_spawn
-        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: shield_frigate
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: 69d09e8af3b0224448976402532bdae6, type: 2}
-        weight: 1
-      - enemyId: powder_barge
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: d16a81d14b1dddf4fbef72c17747d940, type: 2}
-        weight: 1
-      - enemyId: bomb_boat
-        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+      - enemyId: gunner_cog
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
         variant: {fileID: 0}
         weight: 1
     pauseAmbient: 0
@@ -605,7 +486,7 @@ MonoBehaviour:
     isOvertime: 0
     isStorm: 0
   - phaseId: band_8
-    label: Band 8
+    label: Band 8 (12:00 armored flood)
     trigger:
       kind: 0
       timeSeconds: 720
@@ -621,32 +502,20 @@ MonoBehaviour:
     ratePerSecond: 2
     budgetUnit: 0
     pools:
-    - poolId: ordinary
-      share: 0.45
+    - poolId: main
+      share: 0.88
       entries:
-      - enemyId: boarding_barge
-        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+      - enemyId: cutthroat_skiff
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        variant: {fileID: 0}
+        weight: 2
+      - enemyId: shark
+        archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
         variant: {fileID: 0}
         weight: 1
-      - enemyId: boarding_barge
-        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: manta_ray
-        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-    - poolId: specialist
-      share: 0.55
+    - poolId: ranged
+      share: 0.12
       entries:
-      - enemyId: kraken_spawn
-        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: shield_frigate
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: 69d09e8af3b0224448976402532bdae6, type: 2}
-        weight: 1
       - enemyId: gunner_cog
         archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
         variant: {fileID: 0}
@@ -676,7 +545,7 @@ MonoBehaviour:
     isOvertime: 0
     isStorm: 0
   - phaseId: band_9
-    label: Band 9
+    label: Band 9 (13:00 blue beetles + armored)
     trigger:
       kind: 0
       timeSeconds: 780
@@ -692,39 +561,27 @@ MonoBehaviour:
     ratePerSecond: 2.2
     budgetUnit: 0
     pools:
-    - poolId: ordinary
-      share: 0.4
+    - poolId: main
+      share: 0.88
       entries:
       - enemyId: manta_ray
         archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
         variant: {fileID: 0}
-        weight: 1
-      - enemyId: boarding_barge
-        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        weight: 2
+      - enemyId: cutthroat_skiff
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
         variant: {fileID: 0}
         weight: 1
-      - enemyId: hammerhead
-        archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+      - enemyId: swordfish
+        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
         variant: {fileID: 0}
-        weight: 1
-    - poolId: specialist
-      share: 0.6
+        weight: 0.5
+    - poolId: ranged
+      share: 0.12
       entries:
-      - enemyId: kraken_spawn
-        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
+      - enemyId: gunner_cog
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
         variant: {fileID: 0}
-        weight: 1
-      - enemyId: powder_barge
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: d16a81d14b1dddf4fbef72c17747d940, type: 2}
-        weight: 1
-      - enemyId: shield_frigate
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: 69d09e8af3b0224448976402532bdae6, type: 2}
-        weight: 1
-      - enemyId: net_cutter
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: 3b068cfeb41c78340a2edd50835b9898, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -781,7 +638,7 @@ MonoBehaviour:
       ringDistance: 22
       affix: 4
       speedMultiplier: 1
-      hpMultiplier: 4.5
+      hpMultiplier: 1
       damageMultiplier: 0.8
       bossConflict: 1
       retryWindowSeconds: 0
@@ -849,7 +706,7 @@ MonoBehaviour:
     ratePerSecond: 0
     budgetUnit: 0
     pools: []
-    pauseAmbient: 0
+    pauseAmbient: 1
     rateMultiplier: 1
     burstCount: 0
     warning:
@@ -863,7 +720,7 @@ MonoBehaviour:
       ringDistance: 22
       affix: 4
       speedMultiplier: 1
-      hpMultiplier: 5.85
+      hpMultiplier: 5.8333335
       damageMultiplier: 0.8
       bossConflict: 1
       retryWindowSeconds: 0
@@ -1000,7 +857,7 @@ MonoBehaviour:
     label: Reef Crab miniboss
     trigger:
       kind: 0
-      timeSeconds: 690
+      timeSeconds: 660
       eventName: 
       afterPhaseId: 
       conditionKind: 0
@@ -1027,7 +884,89 @@ MonoBehaviour:
       ringDistance: 22
       affix: 4
       speedMultiplier: 1
-      hpMultiplier: 8.099999
+      hpMultiplier: 1
+      damageMultiplier: 0.8
+      bossConflict: 1
+      retryWindowSeconds: 0
+      scheduledEliteIndex: -1
+      waitForOtherArena: 1
+      arrivalToast: 
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: elite_hammerhead_3
+    label: Elite Hammerhead
+    trigger:
+      kind: 0
+      timeSeconds: 720
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 2
+      seconds: 0
+    spawner: {fileID: 11400000, guid: 9e56b0f3a4700544d953ebc7ff532542, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 5
+      template: 'WARNING: {label} incoming!'
+    focus:
+      enabled: 1
+      placement: 0
+      archetype: {fileID: 0}
+      variant: {fileID: 11400000, guid: 3786b3c3281c9e447a1b3d7252dbcf57, type: 2}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: reef_crab_4
+    label: Reef Crab miniboss
+    trigger:
+      kind: 0
+      timeSeconds: 780
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 2
+      seconds: 0
+    spawner: {fileID: 0}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 5
+      template: 'WARNING: {label} incoming!'
+    focus:
+      enabled: 1
+      placement: 1
+      archetype: {fileID: 11400000, guid: 38ceb085c1591c441b8ab565d3da9590, type: 2}
+      variant: {fileID: 0}
+      ringDistance: 22
+      affix: 4
+      speedMultiplier: 1
+      hpMultiplier: 1
       damageMultiplier: 0.8
       bossConflict: 1
       retryWindowSeconds: 0
@@ -1041,7 +980,7 @@ MonoBehaviour:
     label: Swarm pulse
     trigger:
       kind: 0
-      timeSeconds: 690
+      timeSeconds: 700
       eventName: 
       afterPhaseId: 
       conditionKind: 0
@@ -1428,9 +1367,9 @@ MonoBehaviour:
       topUpIntervalSeconds: 0.4
       maxTopUpPerTick: 7
     hordes:
-    - hordeId: ring_1m45
-      label: ring_1m45
-      timeSeconds: 105
+    - hordeId: dogs_1m50
+      label: dogs_1m50
+      timeSeconds: 110
       formation: 0
       archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
       count: 12
@@ -1441,12 +1380,25 @@ MonoBehaviour:
       damageMultiplier: 1
       warningLeadSeconds: 3
       warningToast: 'HORDE: they''re circling you!'
-    - hordeId: ring_4m00
-      label: ring_4m00
+    - hordeId: shooters_3m20
+      label: shooters_3m20
+      timeSeconds: 200
+      formation: 2
+      archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+      count: 5
+      distance: 20
+      spacing: 1.8
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      warningLeadSeconds: 3
+      warningToast: 'HORDE: a pack from one side!'
+    - hordeId: dog_horde_4m00
+      label: dog_horde_4m00
       timeSeconds: 240
       formation: 0
-      archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
-      count: 24
+      archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+      count: 30
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
@@ -1454,12 +1406,12 @@ MonoBehaviour:
       damageMultiplier: 1
       warningLeadSeconds: 3
       warningToast: 'HORDE: they''re circling you!'
-    - hordeId: line_6m30
-      label: line_6m30
+    - hordeId: flies_6m30
+      label: flies_6m30
       timeSeconds: 390
       formation: 1
-      archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-      count: 20
+      archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+      count: 24
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
@@ -1467,25 +1419,25 @@ MonoBehaviour:
       damageMultiplier: 1
       warningLeadSeconds: 3
       warningToast: 'HORDE: a line incoming!'
-    - hordeId: cluster_8m00
-      label: cluster_8m00
+    - hordeId: dog_horde_8m00
+      label: dog_horde_8m00
       timeSeconds: 480
-      formation: 2
-      archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
-      count: 20
-      distance: 24
+      formation: 0
+      archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+      count: 34
+      distance: 22
       spacing: 1.8
       speedMultiplier: 1
       hpMultiplier: 1
       damageMultiplier: 1
       warningLeadSeconds: 3
-      warningToast: 'HORDE: a pack from one side!'
-    - hordeId: ring_11m00
-      label: ring_11m00
-      timeSeconds: 660
+      warningToast: 'HORDE: they''re circling you!'
+    - hordeId: beetle_ring_11m00
+      label: beetle_ring_11m00
+      timeSeconds: 665
       formation: 0
       archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
-      count: 22
+      count: 24
       distance: 18
       spacing: 1.8
       speedMultiplier: 1
@@ -1493,11 +1445,11 @@ MonoBehaviour:
       damageMultiplier: 1
       warningLeadSeconds: 3
       warningToast: 'HORDE: they''re circling you!'
-    - hordeId: line_11m40
-      label: line_11m40
+    - hordeId: flies_11m40
+      label: flies_11m40
       timeSeconds: 700
       formation: 1
-      archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+      archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
       count: 24
       distance: 22
       spacing: 1.8
@@ -1506,12 +1458,12 @@ MonoBehaviour:
       damageMultiplier: 1
       warningLeadSeconds: 3
       warningToast: 'HORDE: a line incoming!'
-    - hordeId: cluster_12m00
-      label: cluster_12m00
-      timeSeconds: 720
+    - hordeId: armored_flood_12m30
+      label: armored_flood_12m30
+      timeSeconds: 750
       formation: 2
       archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
-      count: 24
+      count: 26
       distance: 24
       spacing: 1.8
       speedMultiplier: 1
@@ -1519,11 +1471,11 @@ MonoBehaviour:
       damageMultiplier: 1
       warningLeadSeconds: 3
       warningToast: 'HORDE: a pack from one side!'
-    - hordeId: ring_13m00
-      label: ring_13m00
+    - hordeId: blue_ring_13m00
+      label: blue_ring_13m00
       timeSeconds: 780
       formation: 0
-      archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+      archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
       count: 26
       distance: 18
       spacing: 1.8
@@ -1532,6 +1484,19 @@ MonoBehaviour:
       damageMultiplier: 1
       warningLeadSeconds: 3
       warningToast: 'HORDE: they''re circling you!'
+    - hordeId: green_flies_13m10
+      label: green_flies_13m10
+      timeSeconds: 790
+      formation: 1
+      archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+      count: 24
+      distance: 22
+      spacing: 1.8
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      warningLeadSeconds: 3
+      warningToast: 'HORDE: a line incoming!'
     release:
       rateMultiplier: 0.35
       floorMultiplier: 0.4

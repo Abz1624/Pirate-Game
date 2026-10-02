@@ -39,6 +39,8 @@ MonoBehaviour:
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    viewSize: 1
     poolPrewarm: 0
   tags: []
   concurrencyTags: []
@@ -76,7 +78,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 0
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 1
     rangedMinRangeFactor:
       enabled: 0

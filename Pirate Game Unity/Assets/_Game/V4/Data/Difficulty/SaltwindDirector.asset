@@ -175,7 +175,7 @@ MonoBehaviour:
   eliteChanceAtMax: 0.12
   eliteLeverPaysEliteRewards: 1
   eliteAffix: 4
-  eliteHpMultiplier: 1.5
+  eliteHpMultiplier: 8
   eliteDamageMultiplier: 1.1
   eliteSizeMultiplier: 1.15
   killBandLever: 1

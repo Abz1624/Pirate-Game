@@ -22,7 +22,7 @@ MonoBehaviour:
   behavior: 1
   biomeTag: emerald
   stats:
-    baseHP: 14
+    baseHP: 5
     baseDamage: 7
     moveSpeed: 5
     radius: 1.1
@@ -39,6 +39,8 @@ MonoBehaviour:
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    viewSize: 1
     poolPrewarm: 0
   tags: []
   concurrencyTags: []

@@ -100,3 +100,37 @@ Questions for you:
    and the elites the kill band adds); ordinary enemies still have none.
 3. Rum: pays for every qualifying minute to 15:00 (2 each, up to 30) and every overtime minute after it (3 each, the
    old 15-Rum overtime cap removed).
+
+## Round 2 (3 Oct): Survivor.io composition and health
+
+**One main enemy at a time.** The bands mixed 3-5 enemy types from two pools ("ordinary" and "specialist"). Survivor.io
+fields one main enemy type at a time and replaces it as the run goes on, with a thin ranged layer. Each band now has a
+main pool (the Survivor.io type) and, from 1:00, a small ranged pool (12-30%):
+
+| Time | Survivor.io | Main enemy now | Ranged |
+|---|---|---|---|
+| 0:00 | basic zombies | Dinghy | none |
+| 1:00 | + pink-orb shooters | Dinghy | Cannonboat 15% |
+| 1:50 | + dogs | Dinghy, Swordfish | Cannonboat |
+| 5:40 | armored zombies replace basic | Cutthroat Skiff (+ Swordfish) | Cannonboat |
+| 9:00 | purple ranged | Cutthroat Skiff | Gunner Cog 30% |
+| 11:00 | red beetles replace zombies | Shark | Gunner Cog |
+| 12:00 | armored flood | Cutthroat Skiff, Shark | Gunner Cog |
+| 13:00 | blue beetles + armored (+ dogs) | Manta Ray, Cutthroat Skiff, Swordfish | Gunner Cog |
+
+Hordes and minibosses: dog ring 1:50; a pack of 5 shooters 3:20; dog horde from all sides 4:00; fly line (Hammerheads)
+6:30; dog horde 8:00 with the slug (Elite Hammerhead); beetle ring 11:05 and fly sweep 11:40; armored flood 12:30; blue
+beetle ring 13:00 and green fly sweep 13:10. Minibosses: crab 2:30, armored elite 3:00, boss slot 5:00 (crab, boss HP),
+8:00, Kraken 10:00 (boss slot), 11:00 (crab), 12:00 (Elite Hammerhead), 13:00 (crab). Only the 2:30 crab, 3:00 elite,
+5:00 and 10:00 boss slots clear the sea; the others fight alongside the waves, as in Survivor.io.
+
+**Health.** Survivor.io's exact numbers are not public (Habby does not publish them); the observable model is replicated:
+- A basic enemy dies to one or two early hits: Dinghy 10 HP (the starting cannon hits for about 10). Base HP is now the
+  real HP (the old 0.67 global multiplier is gone).
+- Each role has a fixed toughness against the basic enemy: dog 0.65× (Swordfish 6.5), ranged 0.8× (Cannonboat 8), fly
+  0.5× (Hammerhead 5), armored 3.5× (Cutthroat Skiff 35), purple ranged 1.2× (Gunner Cog 12), red beetle 2× (Shark 20),
+  blue beetle 2.5× (Manta Ray 25).
+- A gentle time curve for every enemy: HP × (1 + 0.035 t + 0.00167 t²), 1.9× at 15:00; damage × (1 + 0.02 t).
+- Elites and minibosses 12× a basic enemy (Elite Hammerhead 120, Reef Crab 120); boss slots 70× (the 5:00 crab and the
+  10:00 Kraken, 700); the Barnacle King 140× (1,400, was 2,800); kill-band elites 8× their enemy (was 1.5×).
+- The XP table was refitted to the new enemy mix (simulator, within 6% of the Survivor.io level curve).

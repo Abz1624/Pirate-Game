@@ -17,6 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   variantId: elite_kraken_spawn
   kind: 1
+  databaseSlotOrder: 0
   baseArchetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
   displayName: Elite Kraken Spawn
   behavior:
@@ -26,8 +27,8 @@ MonoBehaviour:
     enabled: 0
     value: 0
   baseHP:
-    enabled: 0
-    value: 0
+    enabled: 1
+    value: 58.333332
   moveSpeed:
     enabled: 0
     value: 0
@@ -36,6 +37,10 @@ MonoBehaviour:
     value: 0
   tags: []
   inheritBaseVisual: 0
+  look:
+    model: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    viewSize: 1
   concurrencyTags:
   - area_denial
   spawnTier: 2
@@ -69,7 +74,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 0
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 0
     rangedMinRangeFactor:
       enabled: 0
