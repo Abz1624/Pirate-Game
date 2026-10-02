@@ -65,8 +65,13 @@ namespace RoguePirates.V4.Editor
             var fallback = PlayerSettings.WebGL.decompressionFallback;
             var codeOptimization = EditorUserBuildSettings.GetPlatformSettings("WebGL", "CodeOptimization");
             var wasm2023 = PlayerSettings.WebGL.wasm2023;
+            var logTrace = PlayerSettings.GetStackTraceLogType(LogType.Log);
+            var warningTrace = PlayerSettings.GetStackTraceLogType(LogType.Warning);
             try
             {
+                // Release logs without stack traces (each one printed to the browser console with its trace); errors keep theirs.
+                PlayerSettings.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
+                PlayerSettings.SetStackTraceLogType(LogType.Warning, StackTraceLogType.None);
                 PlayerSettings.WebGL.initialMemorySize = 64;
                 PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
                 PlayerSettings.WebGL.dataCaching = true;
@@ -94,6 +99,8 @@ namespace RoguePirates.V4.Editor
                 PlayerSettings.WebGL.decompressionFallback = fallback;
                 EditorUserBuildSettings.SetPlatformSettings("WebGL", "CodeOptimization", codeOptimization);
                 PlayerSettings.WebGL.wasm2023 = wasm2023;
+                PlayerSettings.SetStackTraceLogType(LogType.Log, logTrace);
+                PlayerSettings.SetStackTraceLogType(LogType.Warning, warningTrace);
                 AssetDatabase.SaveAssets(); // the build saved its own values to ProjectSettings.asset: write the restored ones
             }
         }

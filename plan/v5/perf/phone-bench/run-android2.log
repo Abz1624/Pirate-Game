@@ -1,0 +1,20 @@
+Android app com.x2c.roguepirates; 3 variants -> plan/v5/perf/phone-bench/android.jsonl
+[7:24:54 am] APK capped textures, crowd 80 (1) (C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Capped.apk) q=mid&crowd=80
+  installing C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Capped.apk
+  info: Mali-G715 2424x1080 scale 0.7 Vulkan 1.1.0 [54.3.0 (0x0d803000)]
+  early: fps 59.7 p50 16.647 p95 16.7 p99 16.787 >33ms 0.1% enemies 21
+  peak: fps 59.9 p50 16.647 p95 16.692 p99 16.757 >33ms 0.0% enemies 80
+  -> ok | app 843 MB | battery 40.5->40.9->40.9 C
+  cooled to 40.6 C in 309 s
+[7:32:23 am] APK capped textures, natural (1) (C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Capped.apk) q=mid
+  info: Mali-G715 2424x1080 scale 0.7 Vulkan 1.1.0 [54.3.0 (0x0d803000)]
+  early: fps 60.0 p50 16.643 p95 16.699 p99 16.783 >33ms 0.0% enemies 22
+  peak: fps 60.0 p50 16.645 p95 16.697 p99 16.775 >33ms 0.0% enemies 30
+  -> ok | app 797 MB | battery 40.5->40.5->40.5 C
+  cooled to 40.3 C in 308 s
+[7:39:40 am] APK capped textures, crowd 80 (2) (C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Capped.apk) q=mid&crowd=80
+  info: Mali-G715 2424x1080 scale 0.7 Vulkan 1.1.0 [54.3.0 (0x0d803000)]
+  early: fps 60.0 p50 16.649 p95 16.696 p99 16.759 >33ms 0.0% enemies 23
+  -> timeout | app 802 MB | battery 40.3->40.6->40.8 C
+  cooled to 40.4 C in 308 s
+all done

@@ -48,6 +48,9 @@ namespace RoguePirates.V4.DevTools.Bench
         static void Boot()
         {
             var args = Parse(Application.absoluteURL);
+            // Android (the APK has no URL): "-v5bench <query>" on the command line, which the launch intent's "unity"
+            // extra provides (adb shell am start ... --es unity "-v5bench bench=...&crowd=80").
+            if (!args.ContainsKey("bench")) args = ParseCommandLine(Environment.GetCommandLineArgs());
 #if UNITY_EDITOR
             // In the Editor (profiling): the query comes from PlayerPrefs "v5_bench_args", used once.
             if (!args.ContainsKey("bench") && PlayerPrefs.HasKey("v5_bench_args"))
@@ -137,6 +140,9 @@ namespace RoguePirates.V4.DevTools.Bench
 
         readonly float[] _dt = new float[20000];
         int _frames, _enemySamples;
+        readonly FrameTiming[] _timing = new FrameTiming[1];
+        double _cpuMain, _cpuRender, _gpu;
+        int _timed;
         long _enemySum;
         int _enemyMax;
         string _phase = "start";
@@ -160,6 +166,9 @@ namespace RoguePirates.V4.DevTools.Bench
                 AppRoot.Instance.Config.Quality = Tier();
             }
             ApplyRendering();
+            var wanted = Int("fps", 0);
+            if (wanted > 60)
+                Screen.SetResolution(Screen.width, Screen.height, Screen.fullScreenMode, new RefreshRate { numerator = (uint)wanted, denominator = 1 });
             var ship = _ship = FindFirstObjectByType<PlayerShipController>();
             if (ship != null)
             {
@@ -181,6 +190,7 @@ namespace RoguePirates.V4.DevTools.Bench
 
         void Update()
         {
+            RestorePinnedPrefs(); // the run read them as it started; an install that is stopped early keeps none
             var run = RunManager.Instance;
             if (run == null) return;
             if (_game == null)
@@ -206,7 +216,6 @@ namespace RoguePirates.V4.DevTools.Bench
                     if (t >= WarmUp)
                     {
                         ApplyRendering(); // again: the HUD's quality setup may have run after Start
-                        RestorePinnedPrefs(); // the run has read them
                         Begin("early");
                     }
                     break;
@@ -232,10 +241,21 @@ namespace RoguePirates.V4.DevTools.Bench
             _enemySamples = 0;
             _enemySum = 0;
             _enemyMax = 0;
+            _cpuMain = _cpuRender = _gpu = 0;
+            _timed = 0;
         }
 
         void Sample()
         {
+            // Frame timing stats (on in benchmark Android builds; zero where the platform has none, as WebGL's GPU).
+            FrameTimingManager.CaptureFrameTimings();
+            if (FrameTimingManager.GetLatestTimings(1, _timing) > 0)
+            {
+                _cpuMain += _timing[0].cpuMainThreadFrameTime;
+                _cpuRender += _timing[0].cpuRenderThreadFrameTime;
+                _gpu += _timing[0].gpuFrameTime;
+                _timed++;
+            }
             if (_markers.Count > 0)
             {
                 _markerFrames++;
@@ -281,6 +301,9 @@ namespace RoguePirates.V4.DevTools.Bench
                 ("over33", 100f * over33 / n), ("over50", 100f * over50 / n),
                 ("enemiesAvg", _enemySamples > 0 ? (float)_enemySum / _enemySamples : -1f), ("enemiesMax", _enemySamples > 0 ? _enemyMax : -1),
                 ("runClock", run != null ? run.ElapsedSeconds : -1f), ("heapMB", HeapMB()),
+                ("cpuMainMs", _timed > 0 ? (float)(_cpuMain / _timed) : -1f), ("cpuRenderMs", _timed > 0 ? (float)(_cpuRender / _timed) : -1f),
+                ("gpuMs", _timed > 0 ? (float)(_gpu / _timed) : -1f),
+                ("refreshHz", (float)Screen.currentResolution.refreshRateRatio.value),
             }));
         }
 
@@ -448,6 +471,15 @@ namespace RoguePirates.V4.DevTools.Bench
         static string Get(string key) => _args != null && _args.TryGetValue(key, out var v) ? v : null;
         static int Int(string key, int fallback) => int.TryParse(Get(key), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : fallback;
         static float Float(string s) => float.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out var v) ? v : 1f;
+
+        /// <summary>The query after "-v5bench" on a command line (Android: the launch intent's "unity" extra); empty when absent.</summary>
+        public static Dictionary<string, string> ParseCommandLine(string[] line)
+        {
+            if (line != null)
+                for (var i = 0; i < line.Length - 1; i++)
+                    if (line[i] == "-v5bench") return Parse("?" + line[i + 1]);
+            return new Dictionary<string, string>();
+        }
 
         public static Dictionary<string, string> Parse(string url)
         {

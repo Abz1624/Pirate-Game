@@ -91,3 +91,8 @@ PlayMode 63/63 (`editmode.json`, `playmode.json`).
 | 10 | Minor | The bench forced 0.7 render scale on desktop | Only with rs= |
 | 11 | Minor | Heat and short cool-downs in run 2b | Cool-down to a set temperature, alternating builds |
 | 12 | Minor | Font atlases cleared by the build | Not committed |
+
+## After this phase
+
+M7d (Android) also made the web build profile log without stack traces (Log and Warning; errors keep theirs), restored
+after each build. The M7c measurements above were taken before that change; it only removes work, never adds it.

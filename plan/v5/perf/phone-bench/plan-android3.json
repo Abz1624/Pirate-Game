@@ -1,0 +1,8 @@
+[
+ {"build":"C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Vulkan.apk","label":"APK Vulkan, 120 fps cap, crowd 80 (1)","query":"q=mid&crowd=80&fps=120"},
+ {"build":"C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-GLES.apk","label":"APK GLES3, 120 fps cap, crowd 80 (1)","query":"q=mid&crowd=80&fps=120"},
+ {"build":"C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Pacing.apk","label":"APK Vulkan + frame pacing, 120 fps cap, crowd 80 (1)","query":"q=mid&crowd=80&fps=120"},
+ {"build":"C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Pacing.apk","label":"APK Vulkan + frame pacing, 120 fps cap, crowd 80 (2)","query":"q=mid&crowd=80&fps=120"},
+ {"build":"C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-GLES.apk","label":"APK GLES3, 120 fps cap, crowd 80 (2)","query":"q=mid&crowd=80&fps=120"},
+ {"build":"C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Vulkan.apk","label":"APK Vulkan, 120 fps cap, crowd 80 (2)","query":"q=mid&crowd=80&fps=120"}
+]

@@ -1,0 +1,27 @@
+{
+  "status": "completed",
+  "duration": 0.39,
+  "summary": {
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BenchToolsTests.AndroidCap_WorldAt1024_UiAt2048_NeverGrows_SkipsUncompressedAndTextAtlases",
+      "Status": "Passed",
+      "Duration": 0.0250868,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BenchToolsTests.BenchArguments_FromTheUrl_AndTheAndroidCommandLine",
+      "Status": "Passed",
+      "Duration": 0.0016087,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

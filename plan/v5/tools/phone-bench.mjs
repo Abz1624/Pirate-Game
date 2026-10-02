@@ -93,22 +93,36 @@ async function runAndroidVariant(v) {
   }
   const query = `bench=${encodeURIComponent(v.label)}&${v.query || ''}`;
   adb('shell', 'am', 'force-stop', PACKAGE);
-  adb('logcat', '-c');
+  // A launch while the old process is still exiting is delivered to it and its arguments are lost: wait until it is gone.
+  const running = () => { try { return adb('shell', 'pidof', PACKAGE).trim() !== ''; } catch { return false; } };
+  for (let i = 0; i < 20 && running(); i++) await sleep(500);
+  await sleep(1000);
+  // The phone's clock (logcat -T reads from here on). adb shell splits at spaces: the format is quoted for the phone's
+  // shell; adb logcat passes its arguments unchanged, so -T takes the time as is.
+  const since = adb('shell', 'date', "'+%m-%d %H:%M:%S.000'").trim();
   const started = Date.now();
   const temps = { startC: batteryC() };
   adb('shell', 'am', 'start', '-n', `${PACKAGE}/${ACTIVITY}`, '--es', 'unity', `"-v5bench ${query}"`);
+  let pid = '';
   const results = [];
-  let failure = null, finished = false, memory = null, seen = 0;
+  let failure = null, finished = false, memory = null;
+  const processed = new Set(); // lines already read, by content (positions shift when logcat inserts buffer headers)
   const short = /(^|&)short=/.test(v.query || '');
   const limit = (short ? 150 : 330) * 1000;
   let peakAt = 0;
   while (!finished && !failure && Date.now() - started < limit) {
     await sleep(3000);
-    const log = adb('logcat', '-d', '-s', 'Unity:I', 'Unity:E', 'CRASH:E', 'DEBUG:E', 'AndroidRuntime:E');
+    if (!pid) { try { pid = adb('shell', 'pidof', PACKAGE).trim(); } catch { pid = ''; } }
+    // One spec per tag (a later one for the same tag wins); only lines since this run started.
+    const log = adb('logcat', '-d', '-T', since, '-s', 'Unity:V', 'CRASH:E', 'DEBUG:E', 'AndroidRuntime:E');
     const lines = log.split('\n');
-    for (; seen < lines.length; seen++) {
-      const text = lines[seen];
-      if (/FATAL|SIGSEGV|SIGABRT|Out of memory/i.test(text)) failure = failure || text.slice(0, 300);
+    const complete = lines.length - 1; // the text after the last newline may be partial: read it next time
+    for (let n = 0; n < complete; n++) {
+      const text = lines[n];
+      if (processed.has(text)) continue;
+      processed.add(text);
+      // A crash counts only when it is ours: our process id or package on the line.
+      if (/FATAL|SIGSEGV|SIGABRT|Out of memory/i.test(text) && ((pid && text.includes(` ${pid} `)) || text.includes(PACKAGE))) failure = failure || text.slice(0, 300);
       const i = text.indexOf('[Bench] ');
       if (i < 0) continue;
       const body = text.slice(i + 8).trim();
@@ -122,7 +136,6 @@ async function runAndroidVariant(v) {
       if (r.phase === 'early') peakAt = Date.now() + (10 + (short ? 10 : 60) / 2) * 1000;
     }
     if (peakAt && !memory && Date.now() >= peakAt) { memory = appMemory(); temps.peakC = batteryC(); }
-    // logcat -d returns the whole buffer (cleared at start): "seen" skips the lines already read.
   }
   if (!memory) memory = appMemory();
   temps.endC = batteryC();

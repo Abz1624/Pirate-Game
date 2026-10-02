@@ -191,6 +191,10 @@ crowd_chart = bar_chart([(lbl, row_stats(rows)['fps'], 'hi' if lbl == '80' else 
 switch_chart = bar_chart([(lbl, row_stats(rows)['p99'], 'hi' if lbl == 'Both off' else '') for lbl, rows in switches], 'Slowest 1% of frames, ms', 160, ' ms')
 settings_chart = bar_chart([(lbl, row_stats(rows)['fps'], '') for lbl, rows in settings], 'Average fps, peak window', 60)
 
+ANDROID_NOTES = '''<p>Every variant is locked at the screen's 60 Hz, even with 80 enemies (the web build on the same phone: 37.5 fps), so the
+      graphics API and frame pacing make no measurable difference here. The project default stays (Vulkan, GLES3 fallback, pacing
+      off); the low-end Galaxy A15 should decide it. The texture cap is the win: APK 155.5 to 127.9 MB (-18%) and about 60 MB less
+      memory. The playtest APK (no benchmark code) is 126.9 MB and is installed on your phone.</p>'''
 android_section = ''
 if android:
     groups = {}

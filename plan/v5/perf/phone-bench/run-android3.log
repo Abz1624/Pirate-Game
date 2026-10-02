@@ -1,0 +1,8 @@
+Android app com.x2c.roguepirates; 6 variants -> plan/v5/perf/phone-bench/android.jsonl
+[7:50:34 am] APK Vulkan, 120 fps cap, crowd 80 (1) (C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Vulkan.apk) q=mid&crowd=80&fps=120
+  installing C:/Kshitij/Work/X2C/web3/GitHub/Pirate-Game/Pirate Game Unity/Builds/Android/Android-Bench-Vulkan.apk
+  info: Mali-G715 2424x1080 scale 0.7 Vulkan 1.1.0 [54.3.0 (0x0d803000)]
+  early: fps 59.7 p50 16.646 p95 16.695 p99 16.757 >33ms 0.1% enemies 22
+  peak: fps 60.0 p50 16.646 p95 16.684 p99 16.76 >33ms 0.0% enemies 80
+  -> ok | app 877 MB | battery 40.3->40.6->40.7 C
+== run 3 stopped by hand: 120 fps did not lift the 60 Hz display; see PLAN.md
