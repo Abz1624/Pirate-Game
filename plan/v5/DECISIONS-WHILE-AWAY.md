@@ -122,3 +122,10 @@ own commit on `v5-live-game`.
 43. The 256 MB heap: with ASTC the game needs about 330 MB at load (397 MB before). Reaching 256 MB needs asset streaming (a phase of its own). Same as question 39: 512 MB final, or plan that phase?
 44. Android texture cap: world textures at 1024, UI art at 2048 on the APK. Check the APK on your phone for blurry models, effects or water; and say if a 1024 cap on UI art is acceptable too (smaller download and memory).
 45. Android distribution: is the APK only for sideloading (playtests), or for Google Play? Play needs an AAB, an upload keystore (you hold it, stored outside the repo) and a target API level; none is set up yet.
+
+### Your answers (2 Oct)
+
+- 39 and 43 (heap): 512 MB is fine for now. Asset streaming and 256 MB phone support are in TODO-FOR-YOU.md for later.
+- 41 (WebAssembly 2023): no; it stays off (no measured gain, and it would stop Safari before 16.4).
+- 45 (Android distribution): playtests only (sideloaded APK); Google Play (AAB, upload keystore, target API) is in TODO-FOR-YOU.md for later.
+- Still open, asked again after your playtest: 40 (effects and UI art with ASTC on the phone build), 42 (health-bar draw order), 44 (Android texture cap, UI at 1024 too?).

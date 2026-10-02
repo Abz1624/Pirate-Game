@@ -55,6 +55,13 @@
 
 ## Still open
 
+- **Later: asset streaming and 256 MB phones** (your answer to questions 39/43, 2 Oct). The web build needs ~330 MB at load;
+  older 32-bit phone browsers allow 256 MB. Needs assets loaded as needed (Addressables) and a smaller first download: its own phase.
+- **Later: Google Play** (question 45, 2 Oct; playtests only for now): an Android App Bundle (AAB), an upload keystore that you
+  create and keep outside the repo, Play App Signing, a target API level and a store listing.
+- **After your playtest, answer**: question 40 (water, fire, smoke, distortion and UI art on the phone web build), 42 (health-bar
+  draw order), 44 (Android texture cap; UI art at 1024 too?).
+
 - **M2 and M3 balance decisions** (details on each phase's page): which balance targets stand (M2 widened nine after
   the first run); the Turtle personality; evolution at level 8 (focused builds evolve around minute 6) or at 10;
   Captains balanced on run length (all within ±10%) or on offense (Brine ×0.80, Roxie ×1.16 at 10:00; Flint's hull went 90 → 120); the synergy items (Black Powder Keg,
