@@ -150,8 +150,8 @@ MonoBehaviour:
   discoveryRadius: 24
   exploreCellSize: 6
   exploreRadius: 10
-  beaconDirectionHintSeconds: 300
-  beaconExactMarkerSeconds: 420
+  beaconDirectionHintSeconds: 720
+  beaconExactMarkerSeconds: 780
   beaconInteractRange: 6
   beaconHoldSeconds: 0.7
   bossTelegraphSeconds: 0.7

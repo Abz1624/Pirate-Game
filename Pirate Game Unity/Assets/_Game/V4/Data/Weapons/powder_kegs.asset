@@ -23,7 +23,7 @@ MonoBehaviour:
   behavior: 5
   targeting: 8
   tags: []
-  baseDamage: 18.167765
+  baseDamage: 27.37
   baseCooldown: 2.2
   range: 12
   baseQuantity: 1
@@ -64,6 +64,8 @@ MonoBehaviour:
   aimOverlayColor: {r: 0.95, g: 0.35, b: 0.25, a: 1}
   levelDamageFactor: 1
   runtimeCatalogWeapon: 0
+  goldPerKill: 0
+  goldPerKillRunCap: 0
   projectileVisual:
     prefab: {fileID: 0}
     scaleMultiplier: 1
@@ -87,6 +89,9 @@ MonoBehaviour:
     controlSecondsPerHit: 1.2
     splashOnDespawn: 1
     v3FullCooldownAfterFirstShot: 0
+    pierce: 0
+    slowFraction: 0
+    slowSeconds: 0
   lane:
     enabled: 0
     beam: 0
@@ -113,6 +118,9 @@ MonoBehaviour:
     hitIntervalSeconds: 0.12
     volleyHitIntervalSeconds: 0.096
     damageMultiplier: 0.35
+    knockbackMeters: 0
+    perTargetIntervalSeconds: 0
+    beamSegments: 0
   stream:
     tickIntervalSeconds: 0.08
     streamSeconds: 2.75
@@ -148,11 +156,21 @@ MonoBehaviour:
     radiusBase: 4
     damageMultiplier: 0.35
     curseSeconds: 0.4
+    slowFraction: 0
+    slowSeconds: 0
+    requiresBoost: 0
+    forwardOffset: 0
+    knockbackMeters: 0
   predictedArea:
     impactDelaySeconds: 0.6
     telegraphHeight: 0.2
     v3ImpactEffectDraws: 0
     telegraphMatchesImpact: 1
+    whirlpoolSeconds: 0
+    pullMetersPerSecond: 3
+    whirlpoolTickSeconds: 0.5
+    whirlpoolTickDamageMultiplier: 0.2
+    implodeDamageMultiplier: 1.5
   summon:
     backOffset: 5.5
     lateralOffset: 2.4
@@ -164,6 +182,12 @@ MonoBehaviour:
     moveSpeed: 9.5
     strikeRange: 1.35
     strikeInterval: 0.55
+    perQuantity: 0
+    retarget: 0
+    retargetRange: 12
+    shotSpeed: 0
+    shotSize: 0.3
+    maxAlive: 0
   visual:
     cannonMuzzle: 0
     fallbackMuzzleScale: 1
@@ -176,4 +200,6 @@ MonoBehaviour:
     orbitRingColor: {r: 1, g: 0.88, b: 0.28, a: 1}
     summonModel: {fileID: 0}
     summonModelScale: 0.42
+    orbitModel: {fileID: 0}
+    orbitModelScale: 1
     noHitHighlight: 1

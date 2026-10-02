@@ -23,7 +23,7 @@ MonoBehaviour:
     source: 0
     rum: 2
     minKills: 10
-    maxCredits: 0
+    maxCredits: 10
     maxRum: 0
     goldForHalf: 350
   - rowId: landmarks

@@ -45,7 +45,7 @@ MonoBehaviour:
     hpMultiplier: 12
     damageMultiplier: 1
     speedMultiplier: 1
-    sizeMultiplier: 1
+    sizeMultiplier: 1.5
     goldMultiplier: 1
     xpMultiplier: 1
   movement:

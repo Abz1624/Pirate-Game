@@ -12,6 +12,11 @@ namespace RoguePirates.V4.Config
         [Header("Kill drops")]
         [Tooltip("Chance a kill also drops a health barrel.")] public float healthDropChance = 0.12f;
         [Tooltip("Hull the health barrel restores.")] public int healthDropValue = 25;
+        [Tooltip("Playtest (2 Oct 2026, Survivor.io: a small heal about every 90-150 s): above 0, health drops come on a timer instead of the per-kill chance: the first kill after a random wait between the min and the max drops one.")]
+        public float healthDropIntervalMin;
+        public float healthDropIntervalMax;
+        [Tooltip("Below this hull fraction the wait is shortened (Survivor.io weights heals up when low).")] [Range(0f, 1f)] public float healthDropLowHullFraction = 0.35f;
+        [Tooltip("The wait × this while the hull is low.")] [Range(0.05f, 1f)] public float healthDropLowHullWaitMultiplier = 0.5f;
         [Tooltip("Several drops spread on a circle this wide (m), with angle and radius jitter.")] public float dropSpreadRadius = 1.6f;
         public float dropAngleJitterDegrees = 15f;
         public float dropRadiusJitter = 0.15f;
@@ -42,6 +47,8 @@ namespace RoguePirates.V4.Config
         public override void Validate(ConfigValidationReport report)
         {
             if (healthDropChance < 0f || healthDropChance > 1f) report.Error(this, nameof(healthDropChance), "must be 0-1");
+            if (healthDropIntervalMax > 0f && (healthDropIntervalMin <= 0f || healthDropIntervalMin > healthDropIntervalMax))
+                report.Error(this, nameof(healthDropIntervalMin), "the health drop wait needs 0 < min <= max");
             report.Positive(this, nameof(barrelTouchRadius), barrelTouchRadius);
             report.Positive(this, nameof(collectDistance), collectDistance);
             report.Positive(this, nameof(xpPickupMultiplier), xpPickupMultiplier);

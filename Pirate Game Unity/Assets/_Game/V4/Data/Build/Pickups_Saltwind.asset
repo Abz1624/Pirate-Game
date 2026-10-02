@@ -17,6 +17,10 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-demo
   healthDropChance: 0.12
   healthDropValue: 25
+  healthDropIntervalMin: 90
+  healthDropIntervalMax: 150
+  healthDropLowHullFraction: 0.35
+  healthDropLowHullWaitMultiplier: 0.5
   dropSpreadRadius: 1.6
   dropAngleJitterDegrees: 15
   dropRadiusJitter: 0.15

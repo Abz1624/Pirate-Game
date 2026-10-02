@@ -98,6 +98,8 @@ namespace RoguePirates.V4.Presentation.Effects
         public Transform AttachHealthBar(EnemyDefinition def, Transform view, bool elite)
         {
             if (view == null || _pools == null || !_pools.Has(HealthBarKey)) return null;
+            // Playtest (2 Oct): health bars only on bosses and minibosses; ordinary enemies and elites show none.
+            if (def == null || (!def.isBoss && !def.isMiniboss)) return null;
             var go = _pools.Acquire(HealthBarKey, view.position, Quaternion.identity);
             if (go == null) return null;
             var bar = go.GetComponent<WorldHealthBar>();

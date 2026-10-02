@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WaveTimelineConfig
   configId: timeline.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v5-m3d
-  stageDeadlineSeconds: 600
+  balanceVersion: saltwind-playtest-survivorio
+  stageDeadlineSeconds: 900
   graceSeconds: 2
   maxActiveEnemies: 80
   reservedEncounterSlots: 8
@@ -50,11 +50,11 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: f81184cd12e1f8f45a7134e438d74845, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 0.5
+    ratePerSecond: 0.6
     budgetUnit: 0
     pools:
     - poolId: ordinary
-      share: 0.8
+      share: 0.95
       entries:
       - enemyId: swordfish
         archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
@@ -65,7 +65,7 @@ MonoBehaviour:
         variant: {fileID: 0}
         weight: 1
     - poolId: specialist
-      share: 0.2
+      share: 0.050000012
       entries:
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
@@ -99,7 +99,7 @@ MonoBehaviour:
     label: Band 1
     trigger:
       kind: 0
-      timeSeconds: 120
+      timeSeconds: 60
       eventName: 
       afterPhaseId: 
       conditionKind: 0
@@ -109,11 +109,11 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: c7f30690887e7514ab17715a36100ab5, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.2
+    ratePerSecond: 0.9
     budgetUnit: 0
     pools:
     - poolId: ordinary
-      share: 0.8
+      share: 0.75
       entries:
       - enemyId: swordfish
         archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
@@ -123,24 +123,12 @@ MonoBehaviour:
         archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
         variant: {fileID: 0}
         weight: 1
-      - enemyId: cutthroat_skiff
-        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: hammerhead
-        archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
-        variant: {fileID: 0}
-        weight: 1
     - poolId: specialist
-      share: 0.19999999
+      share: 0.25
       entries:
-      - enemyId: needle_sloop
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: c5abd483c1ea57a4eaf55da4f5bd7eea, type: 2}
-        weight: 1
-      - enemyId: ram_raider
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: aef9357337bb23d4eac5fbd17599df5f, type: 2}
+      - enemyId: cannonboat
+        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+        variant: {fileID: 0}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -170,7 +158,7 @@ MonoBehaviour:
     label: Band 2
     trigger:
       kind: 0
-      timeSeconds: 240
+      timeSeconds: 110
       eventName: 
       afterPhaseId: 
       conditionKind: 0
@@ -180,46 +168,38 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: c032771fd8ba7b740b20a712b9d55ac7, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.3
+    ratePerSecond: 1.1
     budgetUnit: 0
     pools:
     - poolId: ordinary
-      share: 0.7
+      share: 0.75
       entries:
-      - enemyId: cutthroat_skiff
-        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+      - enemyId: swordfish
+        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: swordfish
+        archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
         variant: {fileID: 0}
         weight: 1
       - enemyId: hammerhead
         archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
         variant: {fileID: 0}
         weight: 1
-      - enemyId: shark
-        archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
+      - enemyId: deckhand_dinghy
+        archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
         variant: {fileID: 0}
         weight: 1
+    - poolId: specialist
+      share: 0.25
+      entries:
       - enemyId: cannonboat
         archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
         variant: {fileID: 0}
         weight: 1
-    - poolId: specialist
-      share: 0.3
-      entries:
-      - enemyId: bomb_boat
-        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: rammer_raft
-        archetype: {fileID: 11400000, guid: 41ad36546b03afc40b3c5a33a868ff37, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: bomb_ketch
+      - enemyId: needle_sloop
         archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: c1d0a07fb62d55f428f69605d1f544cc, type: 2}
-        weight: 1
-      - enemyId: gunner_cog
-        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
-        variant: {fileID: 0}
+        variant: {fileID: 11400000, guid: c5abd483c1ea57a4eaf55da4f5bd7eea, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -249,7 +229,7 @@ MonoBehaviour:
     label: Band 3
     trigger:
       kind: 0
-      timeSeconds: 360
+      timeSeconds: 240
       eventName: 
       afterPhaseId: 
       conditionKind: 0
@@ -259,18 +239,14 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 074c75ed23898cf4db854604d1fd8956, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.5
+    ratePerSecond: 1.25
     budgetUnit: 0
     pools:
     - poolId: ordinary
-      share: 0.45
+      share: 0.7
       entries:
-      - enemyId: manta_ray
-        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: cannonboat
-        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+      - enemyId: cutthroat_skiff
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
         variant: {fileID: 0}
         weight: 1
       - enemyId: hammerhead
@@ -281,27 +257,23 @@ MonoBehaviour:
         archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
         variant: {fileID: 0}
         weight: 1
+      - enemyId: deckhand_dinghy
+        archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
+        variant: {fileID: 0}
+        weight: 1
     - poolId: specialist
-      share: 0.55
+      share: 0.3
       entries:
+      - enemyId: cannonboat
+        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: ram_raider
+        archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: aef9357337bb23d4eac5fbd17599df5f, type: 2}
+        weight: 1
       - enemyId: bomb_boat
         archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: boarding_barge
-        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
-        variant: {fileID: 0}
-        weight: 1
-      - enemyId: net_cutter
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: 3b068cfeb41c78340a2edd50835b9898, type: 2}
-        weight: 1
-      - enemyId: repair_tender
-        archetype: {fileID: 0}
-        variant: {fileID: 11400000, guid: 1ce2c53b4e217ad478ea224410175be8, type: 2}
-        weight: 1
-      - enemyId: kraken_spawn
-        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
         variant: {fileID: 0}
         weight: 1
     pauseAmbient: 0
@@ -332,7 +304,7 @@ MonoBehaviour:
     label: Band 4
     trigger:
       kind: 0
-      timeSeconds: 480
+      timeSeconds: 340
       eventName: 
       afterPhaseId: 
       conditionKind: 0
@@ -342,27 +314,260 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 754e07ebd1c2f4c439daac6b4942e39f, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 2
+    ratePerSecond: 1.35
     budgetUnit: 0
     pools:
     - poolId: ordinary
-      share: 0.35000002
+      share: 0.7
       entries:
-      - enemyId: manta_ray
-        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
+      - enemyId: cutthroat_skiff
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
         variant: {fileID: 0}
         weight: 1
-      - enemyId: cannonboat
-        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+      - enemyId: cutthroat_skiff
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: rammer_raft
+        archetype: {fileID: 11400000, guid: 41ad36546b03afc40b3c5a33a868ff37, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: shark
+        archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    - poolId: specialist
+      share: 0.3
+      entries:
+      - enemyId: gunner_cog
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: bomb_ketch
+        archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: c1d0a07fb62d55f428f69605d1f544cc, type: 2}
+        weight: 1
+      - enemyId: bomb_boat
+        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: 'WARNING: {label} incoming!'
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      variant: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: band_5
+    label: Band 5
+    trigger:
+      kind: 0
+      timeSeconds: 480
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 11400000, guid: cbeca7540901bce4abdf29851ffb7d11, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 1.5
+    budgetUnit: 0
+    pools:
+    - poolId: ordinary
+      share: 0.65
+      entries:
+      - enemyId: boarding_barge
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: cutthroat_skiff
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
         variant: {fileID: 0}
         weight: 1
       - enemyId: hammerhead
         archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
         variant: {fileID: 0}
         weight: 1
+      - enemyId: manta_ray
+        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
+        variant: {fileID: 0}
+        weight: 1
     - poolId: specialist
-      share: 0.65
+      share: 0.35000002
       entries:
+      - enemyId: net_cutter
+        archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: 3b068cfeb41c78340a2edd50835b9898, type: 2}
+        weight: 1
+      - enemyId: repair_tender
+        archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: 1ce2c53b4e217ad478ea224410175be8, type: 2}
+        weight: 1
+      - enemyId: bomb_boat
+        archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: cannonboat
+        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: 'WARNING: {label} incoming!'
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      variant: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: band_6
+    label: Band 6
+    trigger:
+      kind: 0
+      timeSeconds: 540
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 11400000, guid: da932b4b5ab14e64b81a347ffcadf67b, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 1.6
+    budgetUnit: 0
+    pools:
+    - poolId: ordinary
+      share: 0.5
+      entries:
+      - enemyId: manta_ray
+        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: cutthroat_skiff
+        archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: shark
+        archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    - poolId: specialist
+      share: 0.5
+      entries:
+      - enemyId: gunner_cog
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: gunner_cog
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: cannonboat
+        archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: needle_sloop
+        archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: c5abd483c1ea57a4eaf55da4f5bd7eea, type: 2}
+        weight: 1
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: 'WARNING: {label} incoming!'
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      variant: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: band_7
+    label: Band 7
+    trigger:
+      kind: 0
+      timeSeconds: 660
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 11400000, guid: 97904047ab853b84ebe123f928970ef6, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 1.8
+    budgetUnit: 0
+    pools:
+    - poolId: ordinary
+      share: 0.5
+      entries:
+      - enemyId: manta_ray
+        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: boarding_barge
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: shark
+        archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    - poolId: specialist
+      share: 0.5
+      entries:
+      - enemyId: kraken_spawn
+        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
+        variant: {fileID: 0}
+        weight: 1
       - enemyId: shield_frigate
         archetype: {fileID: 0}
         variant: {fileID: 11400000, guid: 69d09e8af3b0224448976402532bdae6, type: 2}
@@ -371,17 +576,155 @@ MonoBehaviour:
         archetype: {fileID: 0}
         variant: {fileID: 11400000, guid: d16a81d14b1dddf4fbef72c17747d940, type: 2}
         weight: 1
-      - enemyId: kraken_spawn
-        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
-        variant: {fileID: 0}
-        weight: 1
       - enemyId: bomb_boat
         archetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: 'WARNING: {label} incoming!'
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      variant: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: band_8
+    label: Band 8
+    trigger:
+      kind: 0
+      timeSeconds: 720
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 11400000, guid: c92ca86fe396b494b96643a9cd3e4121, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 2
+    budgetUnit: 0
+    pools:
+    - poolId: ordinary
+      share: 0.45
+      entries:
+      - enemyId: boarding_barge
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
         variant: {fileID: 0}
         weight: 1
       - enemyId: boarding_barge
         archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
         variant: {fileID: 0}
+        weight: 1
+      - enemyId: manta_ray
+        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    - poolId: specialist
+      share: 0.55
+      entries:
+      - enemyId: kraken_spawn
+        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: shield_frigate
+        archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: 69d09e8af3b0224448976402532bdae6, type: 2}
+        weight: 1
+      - enemyId: gunner_cog
+        archetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 0
+      template: 'WARNING: {label} incoming!'
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      variant: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: band_9
+    label: Band 9
+    trigger:
+      kind: 0
+      timeSeconds: 780
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 0
+      seconds: 0
+    spawner: {fileID: 11400000, guid: 716cac02c473fe642ad734cd5f255207, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 2.2
+    budgetUnit: 0
+    pools:
+    - poolId: ordinary
+      share: 0.4
+      entries:
+      - enemyId: manta_ray
+        archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: boarding_barge
+        archetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: hammerhead
+        archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+    - poolId: specialist
+      share: 0.6
+      entries:
+      - enemyId: kraken_spawn
+        archetype: {fileID: 11400000, guid: ba83f719b00f8db468ed6b405ba54830, type: 2}
+        variant: {fileID: 0}
+        weight: 1
+      - enemyId: powder_barge
+        archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: d16a81d14b1dddf4fbef72c17747d940, type: 2}
+        weight: 1
+      - enemyId: shield_frigate
+        archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: 69d09e8af3b0224448976402532bdae6, type: 2}
+        weight: 1
+      - enemyId: net_cutter
+        archetype: {fileID: 0}
+        variant: {fileID: 11400000, guid: 3b068cfeb41c78340a2edd50835b9898, type: 2}
         weight: 1
     pauseAmbient: 0
     rateMultiplier: 1
@@ -489,11 +832,52 @@ MonoBehaviour:
     isBoss: 0
     isOvertime: 0
     isStorm: 0
+  - phaseId: reef_crab_2
+    label: Reef Crab miniboss
+    trigger:
+      kind: 0
+      timeSeconds: 300
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 2
+      seconds: 0
+    spawner: {fileID: 0}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 5
+      template: 'WARNING: {label} incoming!'
+    focus:
+      enabled: 1
+      placement: 1
+      archetype: {fileID: 11400000, guid: 38ceb085c1591c441b8ab565d3da9590, type: 2}
+      variant: {fileID: 0}
+      ringDistance: 22
+      affix: 4
+      speedMultiplier: 1
+      hpMultiplier: 5.85
+      damageMultiplier: 0.8
+      bossConflict: 1
+      retryWindowSeconds: 0
+      scheduledEliteIndex: -1
+      waitForOtherArena: 1
+      arrivalToast: 
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
   - phaseId: swarm_pulse_a
     label: Swarm pulse
     trigger:
       kind: 0
-      timeSeconds: 240
+      timeSeconds: 390
       eventName: 
       afterPhaseId: 
       conditionKind: 0
@@ -507,7 +891,7 @@ MonoBehaviour:
     budgetUnit: 0
     pools: []
     pauseAmbient: 0
-    rateMultiplier: 1.25
+    rateMultiplier: 1.4
     burstCount: 0
     warning:
       leadSeconds: 5
@@ -530,34 +914,34 @@ MonoBehaviour:
     isBoss: 0
     isOvertime: 0
     isStorm: 0
-  - phaseId: swarm_pulse_b
-    label: Swarm pulse
+  - phaseId: elite_hammerhead_2
+    label: Elite Hammerhead
     trigger:
       kind: 0
-      timeSeconds: 420
+      timeSeconds: 480
       eventName: 
       afterPhaseId: 
       conditionKind: 0
       conditionValue: 0
     duration:
-      kind: 1
-      seconds: 30
-    spawner: {fileID: 11400000, guid: 6de9f3eb9c2d2c8479a1eb1461a2a0d9, type: 2}
+      kind: 2
+      seconds: 0
+    spawner: {fileID: 11400000, guid: 9e56b0f3a4700544d953ebc7ff532542, type: 2}
     alternateSpawner: {fileID: 0}
     ratePerSecond: 0
     budgetUnit: 0
     pools: []
     pauseAmbient: 0
-    rateMultiplier: 1.25
+    rateMultiplier: 1
     burstCount: 0
     warning:
       leadSeconds: 5
       template: 'WARNING: {label} incoming!'
     focus:
-      enabled: 0
+      enabled: 1
       placement: 0
       archetype: {fileID: 0}
-      variant: {fileID: 0}
+      variant: {fileID: 11400000, guid: 3786b3c3281c9e447a1b3d7252dbcf57, type: 2}
       ringDistance: 22
       affix: 0
       speedMultiplier: 1
@@ -575,7 +959,7 @@ MonoBehaviour:
     label: Elite Kraken
     trigger:
       kind: 0
-      timeSeconds: 480
+      timeSeconds: 600
       eventName: 
       afterPhaseId: 
       conditionKind: 0
@@ -607,6 +991,88 @@ MonoBehaviour:
       bossConflict: 0
       retryWindowSeconds: 20
       scheduledEliteIndex: 1
+      waitForOtherArena: 0
+      arrivalToast: '{label} has arrived!'
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: reef_crab_3
+    label: Reef Crab miniboss
+    trigger:
+      kind: 0
+      timeSeconds: 690
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 2
+      seconds: 0
+    spawner: {fileID: 0}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 0
+    rateMultiplier: 1
+    burstCount: 0
+    warning:
+      leadSeconds: 5
+      template: 'WARNING: {label} incoming!'
+    focus:
+      enabled: 1
+      placement: 1
+      archetype: {fileID: 11400000, guid: 38ceb085c1591c441b8ab565d3da9590, type: 2}
+      variant: {fileID: 0}
+      ringDistance: 22
+      affix: 4
+      speedMultiplier: 1
+      hpMultiplier: 8.099999
+      damageMultiplier: 0.8
+      bossConflict: 1
+      retryWindowSeconds: 0
+      scheduledEliteIndex: -1
+      waitForOtherArena: 1
+      arrivalToast: 
+    isBoss: 0
+    isOvertime: 0
+    isStorm: 0
+  - phaseId: swarm_pulse_b
+    label: Swarm pulse
+    trigger:
+      kind: 0
+      timeSeconds: 690
+      eventName: 
+      afterPhaseId: 
+      conditionKind: 0
+      conditionValue: 0
+    duration:
+      kind: 1
+      seconds: 30
+    spawner: {fileID: 11400000, guid: 6de9f3eb9c2d2c8479a1eb1461a2a0d9, type: 2}
+    alternateSpawner: {fileID: 0}
+    ratePerSecond: 0
+    budgetUnit: 0
+    pools: []
+    pauseAmbient: 0
+    rateMultiplier: 1.4
+    burstCount: 0
+    warning:
+      leadSeconds: 5
+      template: 'WARNING: {label} incoming!'
+    focus:
+      enabled: 0
+      placement: 0
+      archetype: {fileID: 0}
+      variant: {fileID: 0}
+      ringDistance: 22
+      affix: 0
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      bossConflict: 0
+      retryWindowSeconds: 20
+      scheduledEliteIndex: -1
       waitForOtherArena: 0
       arrivalToast: '{label} has arrived!'
     isBoss: 0
@@ -698,7 +1164,7 @@ MonoBehaviour:
     label: Overtime
     trigger:
       kind: 0
-      timeSeconds: 600
+      timeSeconds: 900
       eventName: 
       afterPhaseId: 
       conditionKind: 0
@@ -739,7 +1205,7 @@ MonoBehaviour:
     label: Storm
     trigger:
       kind: 0
-      timeSeconds: 720
+      timeSeconds: 1020
       eventName: 
       afterPhaseId: 
       conditionKind: 0
@@ -803,8 +1269,8 @@ MonoBehaviour:
   storm:
     safeRegionStartFraction: 1
     safeRegionEndFraction: 0.4
-    contractionStartSeconds: 720
-    contractionEndSeconds: 900
+    contractionStartSeconds: 1020
+    contractionEndSeconds: 1200
     outsideDamagePerSecond: 8
     damageMode: 0
     startToast: 'DREAD TIDE: stay inside the safe water!'
@@ -819,120 +1285,155 @@ MonoBehaviour:
     - startSeconds: 0
       minAliveShare: 0.1
       rateMultiplier: 1
-      topUpIntervalSeconds: 1
+      topUpIntervalSeconds: 0.935
       maxTopUpPerTick: 2
-    - startSeconds: 25
-      minAliveShare: 0.3
-      rateMultiplier: 1.15
-      topUpIntervalSeconds: 0.8
+    - startSeconds: 30
+      minAliveShare: 0.25
+      rateMultiplier: 1.1
+      topUpIntervalSeconds: 0.8375
       maxTopUpPerTick: 3
-    - startSeconds: 45
+    - startSeconds: 50
       minAliveShare: 0.14
       rateMultiplier: 0.85
-      topUpIntervalSeconds: 1
-      maxTopUpPerTick: 2
-    - startSeconds: 80
-      minAliveShare: 0.34
-      rateMultiplier: 1.2
-      topUpIntervalSeconds: 0.8
+      topUpIntervalSeconds: 0.909
       maxTopUpPerTick: 3
-    - startSeconds: 100
+    - startSeconds: 60
+      minAliveShare: 0.2
+      rateMultiplier: 1
+      topUpIntervalSeconds: 0.87
+      maxTopUpPerTick: 3
+    - startSeconds: 90
+      minAliveShare: 0.32
+      rateMultiplier: 1.15
+      topUpIntervalSeconds: 0.792
+      maxTopUpPerTick: 4
+    - startSeconds: 105
       minAliveShare: 0.18
       rateMultiplier: 0.9
-      topUpIntervalSeconds: 1
-      maxTopUpPerTick: 2
-    - startSeconds: 140
-      minAliveShare: 0.38
-      rateMultiplier: 1.2
-      topUpIntervalSeconds: 0.75
+      topUpIntervalSeconds: 0.883
       maxTopUpPerTick: 3
+    - startSeconds: 140
+      minAliveShare: 0.36
+      rateMultiplier: 1.15
+      topUpIntervalSeconds: 0.766
+      maxTopUpPerTick: 4
     - startSeconds: 185
       minAliveShare: 0.26
       rateMultiplier: 0.95
-      topUpIntervalSeconds: 1
+      topUpIntervalSeconds: 0.83100003
       maxTopUpPerTick: 3
-    - startSeconds: 205
-      minAliveShare: 0.4
-      rateMultiplier: 1.1
-      topUpIntervalSeconds: 0.8
-      maxTopUpPerTick: 4
     - startSeconds: 225
-      minAliveShare: 0.66
-      rateMultiplier: 1.35
-      topUpIntervalSeconds: 0.6
-      maxTopUpPerTick: 5
-    - startSeconds: 250
+      minAliveShare: 0.5
+      rateMultiplier: 1.25
+      topUpIntervalSeconds: 0.675
+      maxTopUpPerTick: 4
+    - startSeconds: 240
       minAliveShare: 0.3
-      rateMultiplier: 0.65
-      topUpIntervalSeconds: 1
-      maxTopUpPerTick: 3
+      rateMultiplier: 0.7
+      topUpIntervalSeconds: 0.805
+      maxTopUpPerTick: 4
     - startSeconds: 275
       minAliveShare: 0.4
-      rateMultiplier: 0.75
-      topUpIntervalSeconds: 0.8
-      maxTopUpPerTick: 3
+      rateMultiplier: 0.8
+      topUpIntervalSeconds: 0.74
+      maxTopUpPerTick: 4
     - startSeconds: 300
-      minAliveShare: 0.34
-      rateMultiplier: 0.65
-      topUpIntervalSeconds: 1
-      maxTopUpPerTick: 3
-    - startSeconds: 335
-      minAliveShare: 0.46
-      rateMultiplier: 0.8
-      topUpIntervalSeconds: 0.75
+      minAliveShare: 0.36
+      rateMultiplier: 0.75
+      topUpIntervalSeconds: 0.766
       maxTopUpPerTick: 4
-    - startSeconds: 360
-      minAliveShare: 0.38
-      rateMultiplier: 0.7
-      topUpIntervalSeconds: 1
-      maxTopUpPerTick: 3
-    - startSeconds: 395
-      minAliveShare: 0.48
-      rateMultiplier: 0.8
-      topUpIntervalSeconds: 0.75
-      maxTopUpPerTick: 4
-    - startSeconds: 420
-      minAliveShare: 0.54
-      rateMultiplier: 1
-      topUpIntervalSeconds: 0.6
-      maxTopUpPerTick: 5
-    - startSeconds: 450
-      minAliveShare: 0.8
-      rateMultiplier: 1.35
-      topUpIntervalSeconds: 0.5
-      maxTopUpPerTick: 6
-    - startSeconds: 480
+    - startSeconds: 340
       minAliveShare: 0.46
       rateMultiplier: 0.9
-      topUpIntervalSeconds: 1
-      maxTopUpPerTick: 3
-    - startSeconds: 510
-      minAliveShare: 0.64
+      topUpIntervalSeconds: 0.70100003
+      maxTopUpPerTick: 4
+    - startSeconds: 380
+      minAliveShare: 0.55
       rateMultiplier: 1.1
-      topUpIntervalSeconds: 0.6
+      topUpIntervalSeconds: 0.6425
       maxTopUpPerTick: 5
-    - startSeconds: 545
-      minAliveShare: 0.82
-      rateMultiplier: 1.3
-      topUpIntervalSeconds: 0.5
+    - startSeconds: 400
+      minAliveShare: 0.42
+      rateMultiplier: 0.8
+      topUpIntervalSeconds: 0.727
+      maxTopUpPerTick: 4
+    - startSeconds: 450
+      minAliveShare: 0.6
+      rateMultiplier: 1.1
+      topUpIntervalSeconds: 0.61
+      maxTopUpPerTick: 5
+    - startSeconds: 475
+      minAliveShare: 0.45
+      rateMultiplier: 0.75
+      topUpIntervalSeconds: 0.70750004
+      maxTopUpPerTick: 4
+    - startSeconds: 510
+      minAliveShare: 0.6
+      rateMultiplier: 1.05
+      topUpIntervalSeconds: 0.61
+      maxTopUpPerTick: 5
+    - startSeconds: 540
+      minAliveShare: 0.66
+      rateMultiplier: 1.15
+      topUpIntervalSeconds: 0.571
+      maxTopUpPerTick: 5
+    - startSeconds: 585
+      minAliveShare: 0.5
+      rateMultiplier: 0.85
+      topUpIntervalSeconds: 0.675
+      maxTopUpPerTick: 4
+    - startSeconds: 620
+      minAliveShare: 0.66
+      rateMultiplier: 1.1
+      topUpIntervalSeconds: 0.571
+      maxTopUpPerTick: 5
+    - startSeconds: 650
+      minAliveShare: 0.5
+      rateMultiplier: 0.8
+      topUpIntervalSeconds: 0.675
+      maxTopUpPerTick: 4
+    - startSeconds: 690
+      minAliveShare: 0.72
+      rateMultiplier: 1.25
+      topUpIntervalSeconds: 0.532
       maxTopUpPerTick: 6
-    - startSeconds: 575
-      minAliveShare: 0.92
-      rateMultiplier: 1.45
-      topUpIntervalSeconds: 0.4
-      maxTopUpPerTick: 7
-    - startSeconds: 600
+    - startSeconds: 720
+      minAliveShare: 0.6
+      rateMultiplier: 0.95
+      topUpIntervalSeconds: 0.61
+      maxTopUpPerTick: 5
+    - startSeconds: 760
+      minAliveShare: 0.8
+      rateMultiplier: 1.3
+      topUpIntervalSeconds: 0.48000002
+      maxTopUpPerTick: 6
+    - startSeconds: 800
+      minAliveShare: 0.7
+      rateMultiplier: 1.05
+      topUpIntervalSeconds: 0.545
+      maxTopUpPerTick: 6
+    - startSeconds: 830
+      minAliveShare: 0.88
+      rateMultiplier: 1.4
+      topUpIntervalSeconds: 0.42800003
+      maxTopUpPerTick: 6
+    - startSeconds: 840
+      minAliveShare: 0.4
+      rateMultiplier: 0.6
+      topUpIntervalSeconds: 0.74
+      maxTopUpPerTick: 4
+    - startSeconds: 900
       minAliveShare: 0.95
       rateMultiplier: 1.45
       topUpIntervalSeconds: 0.4
       maxTopUpPerTick: 7
     hordes:
     - hordeId: ring_1m45
-      label: Ring horde
-      timeSeconds: 35
+      label: ring_1m45
+      timeSeconds: 105
       formation: 0
       archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-      count: 10
+      count: 12
       distance: 20
       spacing: 1.8
       speedMultiplier: 1
@@ -940,12 +1441,25 @@ MonoBehaviour:
       damageMultiplier: 1
       warningLeadSeconds: 3
       warningToast: 'HORDE: they''re circling you!'
-    - hordeId: line_5m30
-      label: Line horde
-      timeSeconds: 215
-      formation: 1
+    - hordeId: ring_4m00
+      label: ring_4m00
+      timeSeconds: 240
+      formation: 0
       archetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
-      count: 16
+      count: 24
+      distance: 22
+      spacing: 1.8
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      warningLeadSeconds: 3
+      warningToast: 'HORDE: they''re circling you!'
+    - hordeId: line_6m30
+      label: line_6m30
+      timeSeconds: 390
+      formation: 1
+      archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
+      count: 20
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
@@ -953,9 +1467,9 @@ MonoBehaviour:
       damageMultiplier: 1
       warningLeadSeconds: 3
       warningToast: 'HORDE: a line incoming!'
-    - hordeId: cluster_7m40
-      label: Pack horde
-      timeSeconds: 440
+    - hordeId: cluster_8m00
+      label: cluster_8m00
+      timeSeconds: 480
       formation: 2
       archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
       count: 20
@@ -966,13 +1480,52 @@ MonoBehaviour:
       damageMultiplier: 1
       warningLeadSeconds: 3
       warningToast: 'HORDE: a pack from one side!'
-    - hordeId: ring_9m15
-      label: Ring horde
-      timeSeconds: 560
+    - hordeId: ring_11m00
+      label: ring_11m00
+      timeSeconds: 660
       formation: 0
+      archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
+      count: 22
+      distance: 18
+      spacing: 1.8
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      warningLeadSeconds: 3
+      warningToast: 'HORDE: they''re circling you!'
+    - hordeId: line_11m40
+      label: line_11m40
+      timeSeconds: 700
+      formation: 1
       archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-      count: 28
-      distance: 21
+      count: 24
+      distance: 22
+      spacing: 1.8
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      warningLeadSeconds: 3
+      warningToast: 'HORDE: a line incoming!'
+    - hordeId: cluster_12m00
+      label: cluster_12m00
+      timeSeconds: 720
+      formation: 2
+      archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+      count: 24
+      distance: 24
+      spacing: 1.8
+      speedMultiplier: 1
+      hpMultiplier: 1
+      damageMultiplier: 1
+      warningLeadSeconds: 3
+      warningToast: 'HORDE: a pack from one side!'
+    - hordeId: ring_13m00
+      label: ring_13m00
+      timeSeconds: 780
+      formation: 0
+      archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+      count: 26
+      distance: 18
       spacing: 1.8
       speedMultiplier: 1
       hpMultiplier: 1

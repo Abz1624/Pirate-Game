@@ -488,6 +488,15 @@ namespace RoguePirates.V4.Composition
                 if (hull != null && hull.IsAlive) hull.Heal(Mathf.Min(amount, hull.MaxHP - hull.CurrentHP));
             }
             public bool RollHealthDrop(float chance) => Run != null && Run.Rng.DirectorFloat() < chance;
+            public float RunSeconds => Run != null ? Run.ElapsedSeconds : 0f;
+            public float HullFraction
+            {
+                get
+                {
+                    var hull = _w.Ship != null ? _w.Ship.Damage : null;
+                    return hull != null && hull.MaxHP > 0f ? hull.CurrentHP / hull.MaxHP : 1f;
+                }
+            }
             public void PlaySound(string id) { } // V3's SfxService only logged placeholder ids; V4 has no pickup sounds yet
         }
     }
