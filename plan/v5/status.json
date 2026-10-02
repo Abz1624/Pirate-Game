@@ -1,15 +1,15 @@
 {
-  "updated": "1 Oct 2026",
-  "statusLine": "M7 and M8 built and committed (awaiting your playtests); questions 1-38 and the phone build are waiting for you",
+  "updated": "2 Oct 2026",
+  "statusLine": "Phone performance done for web and Android (awaiting your playtests); report: claude.ai/artifact/RgXzkpGtFQ1GWicAx3LMSN",
   "statusOk": false,
   "facts": [
     [
       "Progress",
-      "M0-M8 built; M3b-M8 awaiting your playtest"
+      "M0-M8 built; performance phases M7c (web) and M7d (Android) done; all awaiting your playtest"
     ],
     [
       "Tests",
-      "EditMode 463 · PlayMode 60/60"
+      "EditMode 466/466 · PlayMode 63/63"
     ],
     [
       "Gate",
@@ -234,10 +234,21 @@
       "when": "1 Oct",
       "what": "<strong>The phone build</strong> (M7b): texture pass (881 textures capped at 1024 on WebGL), download 111 MB (163 MB in September). With 256 MB of heap it ran out of memory loading the menu, so it builds with 512 MB (D37, question 39). In a browser it reaches the menu, the mode select, the Captain select, a run and the pause menu. Serve it to your phone with <code>python plan/v5/tools/serve-webgl.py \"Pirate Game Unity/Builds/WebGL-Mobile/RoguePirates\"</code>.",
       "commit": "0f0a7531"
+    },
+    {
+      "when": "2 Oct",
+      "what": "<strong>Phone performance, web (M7c)</strong>: about 50 benchmark runs on your Pixel 9a over USB and a desktop Chrome found two costly systems and a texture bug. The minimap fog now redraws only around new cells (the regular 100+ ms freezes are gone), enemy health bars share one canvas, phones get ASTC textures. Phone with 80 enemies: 26.0 to 37.5 fps, slowest 1% of frames 144 to 42 ms; GPU memory 2.27 to 1.53 GB; download 111 to 87.5 MB. Desktop: locked 60 fps. Review: 1 blocker, 5 majors, 6 minors, fixed. Report: <a href=\"https://claude.ai/artifact/RgXzkpGtFQ1GWicAx3LMSN\">Rogue Pirates Phone Bench</a>.",
+      "commit": "bb7af23c"
+    },
+    {
+      "when": "2 Oct",
+      "what": "<strong>Android APK (M7d)</strong>: the native app holds a locked 60 fps on the Pixel 9a in every variant, even with 80 enemies; Vulkan, GLES3 and frame pacing make no difference there (the default kept). An Android texture cap cut the APK from 155.5 to 127.9 MB and about 60 MB of memory. The playtest APK (126.9 MB) is installed on your phone. Review: no blockers, 4 majors, 9 minors, fixed.",
+      "commit": "246db72c"
     }
   ],
   "todos": {
     "next": [
+      "<strong>Read the phone performance report</strong>: <a href=\"https://claude.ai/artifact/RgXzkpGtFQ1GWicAx3LMSN\">Rogue Pirates Phone Bench</a>, then playtest: the APK \"Rogue Pirates\" is installed on your phone; the web build is <code>Builds/WebGL-Mobile</code> (rebuild without the bench: menu RoguePirates/V5/Build WebGL (mobile)). Check effects, water and UI art on both (questions 40 and 44), and answer 39-45.",
       "<strong>Playtest M8</strong>: SET SAIL (mode select, then Captains), LEDGER (buy a Logbook or item with RUM, then see it offered in a run), PROFILE (your collection); answer questions 36-38.",
       "<strong>Playtest M7</strong> (with the phone build after M8): BOOST and PAUSE buttons, the pause menu, Settings (UI scale, stick on the right), notch phones; answer questions 33-35.",
       "<strong>Playtest M5</strong>: turn on unlock-all (or wait for the M8 shop) and try Jolly Roger, Barnacle Crown, Leviathan Heart and Captain's Last Rum; answer questions 27-32 in DECISIONS-WHILE-AWAY.md.",
@@ -673,6 +684,41 @@
       "check": "WebGL mobile build loaded in a browser (menu, hub, Captain select, run, pause)",
       "result": "256 MB heap: out of memory at the menu; 512 MB: all screens reached, no errors",
       "evidence": "plan/v5/phase-07-mobile/PLAN.md → The phone build"
+    },
+    {
+      "date": "2 Oct",
+      "phase": "M7c",
+      "check": "Phone benchmark, final builds (Pixel 9a, alternated, cooled)",
+      "result": "80 enemies 26.0 to 37.5 fps, slowest 1% 144 to 42 ms; natural game slowest 1% 130 to 33 ms; GPU 2.27 to 1.53 GB",
+      "evidence": "plan/v5/phase-07c-webgl-perf/PLAN.md, plan/v5/perf/"
+    },
+    {
+      "date": "2 Oct",
+      "phase": "M7c",
+      "check": "Desktop Chrome benchmark (RTX 3050)",
+      "result": "80 enemies 54.4 to 60.2 fps (the cap), slowest 1% 66 to 18 ms",
+      "evidence": "plan/v5/perf/phone-bench/desktop.jsonl"
+    },
+    {
+      "date": "2 Oct",
+      "phase": "M7c",
+      "check": "EditMode and PlayMode suites",
+      "result": "464/464 and 63/63",
+      "evidence": "plan/v5/phase-07c-webgl-perf/editmode.json, playmode.json"
+    },
+    {
+      "date": "2 Oct",
+      "phase": "M7d",
+      "check": "Android APK benchmark (Pixel 9a)",
+      "result": "locked 60 fps in every variant; capped APK 127.9 MB (was 155.5), ~60 MB less memory",
+      "evidence": "plan/v5/phase-07d-android-perf/PLAN.md"
+    },
+    {
+      "date": "2 Oct",
+      "phase": "M7d",
+      "check": "EditMode and PlayMode suites",
+      "result": "466/466 and 63/63",
+      "evidence": "plan/v5/phase-07d-android-perf/editmode.json, playmode.json"
     }
   ],
   "phaseResults": {
@@ -1702,6 +1748,16 @@
     {
       "title": "M8 menu and shop review (1 Oct)",
       "summary": "<strong>No blockers; 4 majors, 6 minors.</strong> A Captain bought in the shop stayed locked in the select; the shop skipped Captain locks; the interface is not yet server-shaped (recorded for M10); no PlayMode offer test (recorded). Fixed or recorded; questions 36-38.",
+      "rows": []
+    },
+    {
+      "title": "M7c web performance review (2 Oct)",
+      "summary": "<strong>1 blocker</strong> (the shipped code was not measured yet), 5 majors, 6 minors; all fixed: final builds measured, bench no longer touches your prefs or the render scale, the 'UI art' compression pass reverted, WebAssembly 2023 off (question 41).",
+      "rows": []
+    },
+    {
+      "title": "M7d Android review (2 Oct)",
+      "summary": "<strong>No blockers</strong>, 4 majors, 9 minors; fixed: the variants could not be told apart at 60 fps (default kept, A15 decides), tests for the cap and arguments, the Editor's target and Unity services restored after builds, benchmark APKs under their own package.",
       "rows": []
     }
   ]

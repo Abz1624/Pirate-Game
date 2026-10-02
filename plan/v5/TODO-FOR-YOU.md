@@ -2,6 +2,10 @@
 
 ## Next
 
+- **Phone performance (2 Oct, while you were away)**: read the report https://claude.ai/artifact/RgXzkpGtFQ1GWicAx3LMSN.
+  The APK "Rogue Pirates" is installed on your phone (the playtest build, no benchmark code). Playtest it and the web build;
+  check water, fire, smoke, distortion and the UI art (questions 40 and 44); answer questions 39-45 in `DECISIONS-WHILE-AWAY.md`
+  (256 MB heap, WebAssembly 2023, bar draw order, Android texture cap, Google Play).
 - **Playtest M7 and M8 on the phone build** (committed, awaiting your playtest). Build: `Pirate Game Unity/Builds/WebGL-Mobile`
   (made after M8); serve it to your phone on the Wi-Fi with `python plan/v5/tools/serve-webgl.py "Pirate Game Unity/Builds/WebGL-Mobile/RoguePirates"` and open the address it
   prints. M7: the BOOST and PAUSE buttons, the pause menu, Settings (UI scale, stick on the right, quality), a notch phone.
