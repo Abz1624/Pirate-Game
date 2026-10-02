@@ -1,0 +1,20 @@
+{
+    "name": "RoguePirates.V4.Trailer.Editor",
+    "rootNamespace": "RoguePirates.V4.Editor.Trailer",
+    "references": [
+        "Unity.Recorder",
+        "Unity.Recorder.Base",
+        "Unity.Recorder.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
