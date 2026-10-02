@@ -6,7 +6,7 @@ simulator (DevTools/Balance). Output: data.json next to this file.
 import glob, json, os, re, struct
 import yaml
 
-ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'Pirate Game Unity', 'Assets', '_Game')
+ROOT = os.environ.get('RP_GAME_ROOT') or os.path.join(os.path.dirname(__file__), '..', '..', '..', 'Pirate Game Unity', 'Assets', '_Game')
 V4 = os.path.join(ROOT, 'V4', 'Data')
 
 
@@ -150,8 +150,9 @@ data = dict(enemies=enemies, timeline=timeline, weapons=weapons, logbooks=logboo
                           high=float(director.get('killBandHighRatio', 0.85)), low=float(director.get('killBandLowRatio', 0.3)),
                           lowRate=float(director.get('killBandLowRateMultiplier', 0.6)), eliteChance=float(director.get('killBandEliteChance', 0.06)),
                           eliteHp=float(director.get('eliteHpMultiplier', 8)),
-                          ttk=dict(boss=float(director.get('bossMinSeconds', 25)), arena=float(director.get('arenaFocusMinSeconds', 12)),
-                                   focus=float(director.get('focusMinSeconds', 7)), elite=float(director.get('adaptiveEliteMinSeconds', 2.5)))))
-out = os.path.join(os.path.dirname(__file__), 'data.json')
+                          ttk=dict(boss=float(director.get('bossMinSeconds', 0)), arena=float(director.get('arenaFocusMinSeconds', 0)),
+                                   focus=float(director.get('focusMinSeconds', 0)), elite=float(director.get('adaptiveEliteMinSeconds', 0)))),
+            starterWeapons=list(load(os.path.join(V4, 'Build', 'Unlocks_Saltwind.asset')).get('starterWeaponIds') or []))
+out = os.environ.get('RP_OUT') or os.path.join(os.path.dirname(__file__), 'data.json')
 json.dump(data, open(out, 'w', encoding='utf-8'), indent=1)
 print('wrote', out, len(enemies), 'enemies', len(weapons), 'weapons', len(bands), 'bands', len(focus), 'focus', len(timeline['hordes']), 'hordes')

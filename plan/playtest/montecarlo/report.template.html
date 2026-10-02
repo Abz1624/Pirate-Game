@@ -1,0 +1,286 @@
+<title>Saltwind Balance Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a captain's log on chart paper: verdict first, then the live simulator, then the evidence tables. */
+:root {
+  --bg: #f3f5f2; --panel: #ffffff; --ink: #14212b; --muted: #5b6b74; --line: #d7dee0; --grid: #e7ecec;
+  --brass: #a8701c; --sea: #1f6f8b; --good: #2e7d4f; --warn: #b7791f; --bad: #b3362f; --chip: #eaf1f3;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e171d; --panel: #15222a; --ink: #e4ecef; --muted: #93a6ae; --line: #2a3a44; --grid: #1d2c35;
+  --brass: #e0a64a; --sea: #5cb3d1; --good: #5cc28a; --warn: #e3b04f; --bad: #ef6b62; --chip: #1c2d37; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0e171d; --panel: #15222a; --ink: #e4ecef; --muted: #93a6ae; --line: #2a3a44; --grid: #1d2c35;
+  --brass: #e0a64a; --sea: #5cb3d1; --good: #5cc28a; --warn: #e3b04f; --bad: #ef6b62; --chip: #1c2d37; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--body); margin: 0 }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 28px }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0 }
+h1 { font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -0.01em }
+h2 { font-size: 22px; font-weight: 800 }
+h3 { font-size: 16px; font-weight: 600 }
+p { margin: 0; max-width: 72ch }
+.eyebrow { font: 600 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--brass) }
+.lede { color: var(--muted); font-size: 16px }
+section { display: grid; gap: 14px; min-width: 0 }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; min-width: 0 }
+.verdicts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px }
+.verdict { display: grid; gap: 10px }
+.verdict .tag { font: 600 12px var(--mono); color: var(--muted) }
+.verdict.now { border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass) }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-variant-numeric: tabular-nums }
+.kv dt { color: var(--muted) } .kv dd { margin: 0; font: 600 14px var(--mono); text-align: right }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font: 600 12px var(--mono); background: var(--chip) }
+.pill.good { color: var(--good) } .pill.warn { color: var(--warn) } .pill.bad { color: var(--bad) }
+ul.findings { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 80ch }
+.controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 20px; align-items: end }
+.control { display: grid; gap: 4px }
+.control label { font: 600 12px var(--mono); color: var(--muted); display: flex; justify-content: space-between; gap: 8px }
+.control output { color: var(--ink) }
+input[type=range] { width: 100%; accent-color: var(--brass) }
+select, button { font: 600 14px var(--body); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink) }
+button.primary { background: var(--brass); color: #fff; border-color: var(--brass); cursor: pointer }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--sea); outline-offset: 2px }
+.chips { display: flex; flex-wrap: wrap; gap: 8px }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px }
+.chart { display: grid; gap: 6px; min-width: 0 }
+.chart svg { width: 100%; height: auto; display: block }
+.chart .note { font-size: 12px; color: var(--muted) }
+.scroll { overflow-x: auto }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 14px }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap }
+th { font: 600 12px var(--mono); color: var(--muted); letter-spacing: .03em; cursor: pointer; user-select: none }
+td.num, th.num { text-align: right }
+.bar { display: inline-block; height: 8px; border-radius: 2px; background: var(--sea); vertical-align: middle; margin-right: 6px }
+.heat { display: grid; gap: 4px }
+.heat-grid { display: grid; gap: 3px; grid-template-columns: 90px repeat(var(--cols), minmax(48px, 1fr)) }
+.heat-grid div { padding: 8px 4px; text-align: center; font: 600 13px var(--mono); border-radius: 4px }
+.heat-grid .hd { color: var(--muted); font-size: 12px; background: none }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px }
+.tabs button[aria-selected="true"] { border-color: var(--brass); color: var(--brass) }
+.small { font-size: 13px; color: var(--muted) }
+.status { font: 600 13px var(--mono); color: var(--muted) }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+
+<main class="wrap">
+  <header style="display:grid;gap:10px">
+    <span class="eyebrow">Rogue Pirates · Saltwind · playtest round 5 · 3 Oct 2026</span>
+    <h1>Saltwind Balance Simulator</h1>
+    <p class="lede">A numbers-only Monte Carlo of a 15-minute Saltwind voyage, written from scratch and calibrated on your playtest. It plays a captain who collects 80% of the loot and fights 90% of the enemies, then measures damage, kills, XP, levels and hull minute by minute. The settings it recommended are now in the game; the live simulator below lets you try others.</p>
+  </header>
+
+  <section>
+    <span class="eyebrow">Verdict</span>
+    <div class="verdicts" id="verdicts"></div>
+  </section>
+
+  <section class="panel">
+    <h2>What the simulation found</h2>
+    <ul class="findings">
+      <li><strong>The version you played was too easy.</strong> Calibrated on your run (about 515 kills and level 24 at 5:13, 702 kills and level 28 at 7:18), most voyages there beat the boss and sail on into overtime with little danger.</li>
+      <li><strong>Round 5's first pass overshot badly.</strong> With the denser waves, more shooters and the new time-to-kill floors, almost every voyage sank before 3:00.</li>
+      <li><strong>The cause was the time-to-kill floors.</strong> They are measured on the build's theoretical damage per second, every weapon hitting one target. In play only about 30% of that lands, so a "25 s" boss really took about 80 s and a "2.5 s" kill-band elite about 8 s. The elites then piled up faster than they could be sunk.</li>
+      <li><strong>Now in the game:</strong>
+        <ul>
+          <li>Floors ×0.3: real fights of about 25 s for the boss, 12 s for arena fights and 2.5 s for kill-band elites.</li>
+          <li>Wave density ×0.8 before 5:00 and ×0.5 after.</li>
+          <li>Enemy damage ×0.5 for every enemy, so an enemy that looks the same always has the same stats.</li>
+        </ul>
+        Ships now sink in overtime, after the boss, more often than in the version you played, with more time spent below half hull.</li>
+      <li><strong>Watch in play:</strong> about 60 kill-band elites per voyage when you keep up. Shooters (Cannonboats, Gunner Cogs) deal the most damage; see the enemy table.</li>
+    </ul>
+  </section>
+
+  <section class="panel" id="live">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:baseline">
+      <h2>Live simulator</h2>
+      <span class="status" id="status">Runs in your browser</span>
+    </div>
+    <p class="small">The game's current data (with the recommended settings applied). The sliders scale them further: 1 means the game as it is now.</p>
+    <div class="controls">
+      <div class="control"><label for="captain">Captain</label><select id="captain"></select></div>
+      <div class="control"><label for="ttk">Fight-length floors <output id="ttk-o"></output></label><input id="ttk" type="range" min="0" max="3" step="0.1" value="1"></div>
+      <div class="control"><label for="early">Waves before 5:00 <output id="early-o"></output></label><input id="early" type="range" min="0.3" max="2.5" step="0.05" value="1"></div>
+      <div class="control"><label for="late">Waves after 5:00 <output id="late-o"></output></label><input id="late" type="range" min="0.3" max="2.5" step="0.05" value="1"></div>
+      <div class="control"><label for="dmg">Enemy damage <output id="dmg-o"></output></label><input id="dmg" type="range" min="0.25" max="3" step="0.05" value="1"></div>
+      <div class="control"><label for="runs">Voyages <output id="runs-o"></output></label><input id="runs" type="range" min="30" max="600" step="30" value="180"></div>
+      <div class="control"><button class="primary" id="run" type="button">Run voyages</button></div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="charts" id="charts"></div>
+  </section>
+
+  <section class="panel heat">
+    <h2>Search: which settings gave the most fun</h2>
+    <p class="small">Fun score (0 to 100): highest when a voyage beats the boss and sinks in overtime (about 16:30), with real danger on the way (time below half hull) and few early sinkings. Measured on round 5's first-pass data; cells are its multipliers.</p>
+    <div class="tabs" id="heat-tabs"></div>
+    <div class="scroll"><div id="heat"></div></div>
+  </section>
+
+  <section class="panel">
+    <h2>Weapons at level 1 (d)</h2>
+    <p class="small">One target, every hit landing: the same damage per second for every weapon (owner's rule). The crowd column counts how many enemies a firing reaches in a dense crowd (pierce, fans, beams, orbits, areas).</p>
+    <div class="scroll"><table id="weapon-table"></table></div>
+  </section>
+
+  <section class="panel">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:baseline"><h2>What builds and enemies do</h2><div class="tabs" id="build-tabs"></div></div>
+    <p class="small" id="build-note"></p>
+    <div class="scroll"><table id="build-table"></table></div>
+  </section>
+
+  <section class="panel">
+    <h2>How the model works</h2>
+    <ul class="findings">
+      <li>One step per second. Enemies spawn from the real timeline (bands, pools, floors, hordes, swarm pulses, the kill band, minibosses, the boss at 14:00, Drowned Pursuit after 15:00) using the real HP, damage and XP.</li>
+      <li>The player's weapons, levels, upgrade cards, Logbooks, chest items and evolutions follow the game's tables. Each weapon's hits per cycle and crowd reach come from a review of its code.</li>
+      <li>Fitted to your playtest: about 30% of the build's theoretical damage lands, a new enemy needs about 4 s to come into range, and the floor tops up about 0.5 enemies a second.</li>
+      <li>Incoming damage: melee contacts grow with the crowd, and shooters fire every 2.5 s with a hit chance. Island bumps are not modelled.</li>
+      <li>Limits: it is a guide, not the game. It sinks early voyages more often than you did, so the real game should land a little easier than these numbers. Play is the final check.</li>
+    </ul>
+    <p class="small">Files: plan/playtest/montecarlo (export_data.py, sim.mjs, calibrate.mjs, batch.mjs). Generated <span id="gen"></span>.</p>
+  </section>
+</main>
+
+<script>
+/*SIM*/
+const DATA = /*DATA*/;
+const PLAYED = /*PLAYED*/;
+const RES = /*RESULTS*/;
+const N = RES.names;
+const nm = id => N[id] || (id.startsWith('elite_') ? 'Elite ' + (N[id.slice(6)] || id.slice(6)) : id.replace(/_/g, ' '));
+const pct = v => v == null ? '-' : Math.round(v * 100) + '%';
+const mins = v => v == null ? '-' : (Math.floor(v) + ':' + String(Math.round((v % 1) * 60)).padStart(2, '0'));
+document.getElementById('gen').textContent = new Date(RES.generated).toLocaleString();
+
+// Verdict cards.
+const card = (title, tag, s, now) => {
+  const fun = s.fun != null ? s.fun : null;
+  const cls = s.endMedian < 10 ? 'bad' : s.endMedian > 19 ? 'warn' : 'good';
+  return `<div class="panel verdict${now ? ' now' : ''}"><span class="tag">${tag}</span><h3>${title}</h3>
+  <dl class="kv"><dt>Median voyage</dt><dd><span class="pill ${cls}">${mins(s.endMedian)}</span></dd>
+  <dt>Boss beaten</dt><dd>${pct(s.bossWin)}</dd><dt>Time below half hull</dt><dd>${pct(s.tension)}</dd>
+  <dt>Sunk before 10:00</dt><dd>${pct(s.deathBefore10)}</dd><dt>Afloat at 20:00</dt><dd>${pct(s.survive20)}</dd></dl></div>`;
+};
+document.getElementById('verdicts').innerHTML =
+  card('What you played', 'commit eb538609', RES.played) +
+  card('Round 5 first pass', 'before the simulation', RES.current) +
+  card('Now in the game', 'recommended settings applied', RES.applied, true);
+
+// Live simulator.
+const capSel = document.getElementById('captain');
+capSel.innerHTML = '<option value="">All six captains</option>' + Object.values(DATA.captains).map(c => `<option value="${c.id}">${c.name} (${nm(c.weapon)})</option>`).join('');
+for (const id of ['ttk', 'early', 'late', 'dmg', 'runs']) {
+  const el = document.getElementById(id), out = document.getElementById(id + '-o');
+  const show = () => out.textContent = id === 'runs' ? el.value : '×' + (+el.value).toFixed(2);
+  el.addEventListener('input', show); show();
+}
+const chart = (title, rows, key, opts) => {
+  const W = 420, H = 190, L = 40, B = 26, T = 10, R = 10;
+  const xs = rows.map(r => r.m), maxX = Math.max(15, ...xs), vals = rows.map(r => r[key]).filter(v => v != null);
+  const maxY = opts.max ?? Math.max(1, ...vals) * 1.1;
+  const x = m => L + (m - 1) / (maxX - 1) * (W - L - R), y = v => H - B - v / maxY * (H - B - T);
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map(f => f * maxY);
+  let g = ticks.map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="10" fill="var(--muted)" font-family="var(--mono)">${opts.fmt(v)}</text>`).join('');
+  for (const m of [1, 5, 10, 14, maxX]) g += `<text x="${x(m)}" y="${H - 8}" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--mono)">${m}:00</text>`;
+  g += `<line x1="${x(14)}" x2="${x(14)}" y1="${T}" y2="${H - B}" stroke="var(--brass)" stroke-dasharray="3 3"/><text x="${x(14) + 3}" y="${T + 9}" font-size="9" fill="var(--brass)" font-family="var(--mono)">boss</text>`;
+  const pts = rows.filter(r => r[key] != null).map(r => `${x(r.m)},${y(r[key])}`).join(' ');
+  if (pts) {
+    const first = rows[0], last = rows[rows.length - 1];
+    g += `<polygon points="${x(first.m)},${y(0)} ${pts} ${x(last.m)},${y(0)}" fill="var(--sea)" opacity=".12"/><polyline points="${pts}" fill="none" stroke="var(--sea)" stroke-width="2"/>`;
+    g += `<circle cx="${x(last.m)}" cy="${y(last[key])}" r="3.5" fill="var(--sea)"/>`;
+  }
+  return `<div class="chart"><h3>${title}</h3><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">${g}</svg><span class="note">${opts.note || ''}</span></div>`;
+};
+function render(s) {
+  const rows = s.byMinute;
+  document.getElementById('chips').innerHTML = [
+    ['Median voyage', mins(s.endMedian)], ['10th to 90th percentile', mins(s.endP10) + ' to ' + mins(s.endP90)], ['Boss beaten', pct(s.bossWin)],
+    ['Below half hull', pct(s.tension)], ['Sunk before 10:00', pct(s.deathBefore10)], ['Afloat at 20:00', pct(s.survive20)]].map(([k, v]) => `<span class="pill">${k}: ${v}</span>`).join('');
+  document.getElementById('charts').innerHTML =
+    chart('Voyages still afloat', rows, 'alive', { max: 1, fmt: v => Math.round(v * 100) + '%', note: 'Share of voyages reaching each minute.' }) +
+    chart('Hull (median)', rows, 'hull', { max: 1, fmt: v => Math.round(v * 100) + '%', note: 'Of the voyages still afloat.' }) +
+    chart('Player level (median)', rows, 'level', { fmt: v => Math.round(v), note: 'Survivor.io curve: 5 at 1:00, 18 at 5:00, 31 at 10:00.' }) +
+    chart('Damage per second (median)', rows, 'dps', { fmt: v => Math.round(v), note: 'The build, one target, every hit landing.' }) +
+    chart('Kills per minute (median)', rows, 'kills', { fmt: v => Math.round(v) }) +
+    chart('Enemies on the sea (median)', rows, 'enemies', { fmt: v => Math.round(v), note: 'Cap 120.' });
+}
+function runLive() {
+  const btn = document.getElementById('run'), st = document.getElementById('status');
+  btn.disabled = true; st.textContent = 'Sailing…';
+  setTimeout(() => {
+    const t0 = performance.now(), d = JSON.parse(JSON.stringify(DATA)), k = +document.getElementById('ttk').value;
+    for (const key of Object.keys(d.director.ttk)) d.director.ttk[key] *= k;
+    const caps = capSel.value ? [capSel.value] : Object.keys(d.captains), n = +document.getElementById('runs').value, per = Math.max(1, Math.round(n / caps.length));
+    const params = { earlyMult: +document.getElementById('early').value, lateMult: +document.getElementById('late').value, enemyDamageMult: +document.getElementById('dmg').value, model: { lootShare: 0.8, engagement: 0.9 } };
+    const runs = []; let seed = 1;
+    for (const c of caps) for (let i = 0; i < per; i++) runs.push(simulateRun(d, { ...params, captain: c, seed: (seed++) * 7919 + 17 }));
+    render(summarise(runs));
+    st.textContent = `${runs.length} voyages in ${((performance.now() - t0) / 1000).toFixed(1)} s`;
+    btn.disabled = false;
+  }, 30);
+}
+document.getElementById('run').addEventListener('click', runLive);
+render(RES.applied);
+document.getElementById('status').textContent = `Showing ${RES.applied.runs} voyages of the game as it is now`;
+
+// Heatmap: early x late, one tab per (floor scale, enemy damage).
+const combos = [...new Set(RES.grid.map(g => g.ttkScale + '|' + g.enemyDamageMult))];
+const heatTabs = document.getElementById('heat-tabs');
+const best = RES.best;
+let active = best.ttkScale + '|' + best.enemyDamageMult;
+function heat() {
+  heatTabs.innerHTML = combos.map(c => { const [t, d] = c.split('|'); return `<button type="button" aria-selected="${c === active}" data-c="${c}">floors ×${t} · damage ×${d}</button>`; }).join('');
+  const [t, d] = active.split('|').map(Number), cells = RES.grid.filter(g => g.ttkScale === t && g.enemyDamageMult === d);
+  const early = [...new Set(cells.map(c => c.earlyMult))].sort((a, b) => a - b), late = [...new Set(cells.map(c => c.lateMult))].sort((a, b) => a - b);
+  let h = `<div class="heat-grid" style="--cols:${late.length}"><div class="hd">early ↓ late →</div>` + late.map(l => `<div class="hd">×${l}</div>`).join('');
+  for (const e of early) {
+    h += `<div class="hd">×${e}</div>`;
+    for (const l of late) {
+      const c = cells.find(x => x.earlyMult === e && x.lateMult === l); const f = c ? c.fun : 0;
+      const isBest = c && c.ttkScale === best.ttkScale && c.enemyDamageMult === best.enemyDamageMult && c.earlyMult === best.earlyMult && c.lateMult === best.lateMult;
+      h += `<div title="median ${mins(c?.end)} · boss ${pct(c?.bossWin)} · below half ${pct(c?.tension)}" style="background:color-mix(in srgb, var(--good) ${Math.round(f * 0.8)}%, var(--chip));${isBest ? 'outline:2px solid var(--brass)' : ''}">${f}<br><span style="font-weight:400;font-size:11px">${mins(c?.end)}</span></div>`;
+    }
+  }
+  document.getElementById('heat').innerHTML = h + '</div>';
+}
+heatTabs.addEventListener('click', e => { const b = e.target.closest('button'); if (b) { active = b.dataset.c; heat(); } });
+heat();
+
+// Tables.
+function table(el, cols, rows) {
+  let sortKey = null, dir = -1;
+  const draw = () => {
+    const r = sortKey ? [...rows].sort((a, b) => ((a[sortKey] ?? -1) > (b[sortKey] ?? -1) ? 1 : -1) * dir) : rows;
+    el.innerHTML = '<thead><tr>' + cols.map(c => `<th class="${c.num ? 'num' : ''}" data-k="${c.k}">${c.t}</th>`).join('') + '</tr></thead><tbody>' +
+      r.map(x => '<tr>' + cols.map(c => `<td class="${c.num ? 'num' : ''}">${c.f ? c.f(x[c.k], x) : x[c.k]}</td>`).join('') + '</tr>').join('') + '</tbody>';
+  };
+  el.onclick = e => { const th = e.target.closest('th'); if (!th) return; dir = sortKey === th.dataset.k ? -dir : -1; sortKey = th.dataset.k; draw(); };
+  draw();
+}
+table(document.getElementById('weapon-table'), [
+  { k: 'name', t: 'Weapon' }, { k: 'baseDamage', t: 'Base damage', num: 1, f: v => v.toFixed(2) }, { k: 'perHit', t: 'One hit', num: 1 },
+  { k: 'hitsPerCycle', t: 'Hits per cycle (× base)', num: 1 }, { k: 'cycle', t: 'Cycle (s)', num: 1 }, { k: 'dps', t: 'DPS, one target', num: 1 },
+  { k: 'crowdTargets', t: 'Crowd reach', num: 1 }, { k: 'crowdDps', t: 'DPS into a crowd', num: 1 }], RES.weaponTable);
+const buildTabs = { weapons: 'Weapons', logbooks: 'Logbooks', items: 'Items', enemies: 'Enemies', fights: 'Fights' };
+let tab = 'weapons';
+function builds() {
+  document.getElementById('build-tabs').innerHTML = Object.entries(buildTabs).map(([k, t]) => `<button type="button" aria-selected="${k === tab}" data-t="${k}">${t}</button>`).join('');
+  const el = document.getElementById('build-table'), note = document.getElementById('build-note');
+  const maxShare = Math.max(...RES.enemies.map(e => e.damageShare));
+  if (tab === 'enemies') { note.textContent = 'Share of all damage the player took, and kills per voyage (game as it is now).';
+    table(el, [{ k: 'id', t: 'Enemy', f: v => nm(v) }, { k: 'damageShare', t: 'Damage to the player', num: 1, f: v => `<span class="bar" style="width:${Math.round(v / maxShare * 90)}px"></span>${pct(v)}` }, { k: 'killsPerRun', t: 'Kills per voyage', num: 1, f: v => v.toFixed(1) }], RES.enemies); return; }
+  if (tab === 'fights') { note.textContent = 'Median length of each miniboss, elite and boss fight (game as it is now).';
+    table(el, [{ k: 'id', t: 'Fight', f: v => nm(v) }, { k: 'fights', t: 'Fights', num: 1 }, { k: 'medianSeconds', t: 'Median seconds', num: 1 }], RES.focusFights); return; }
+  note.textContent = 'Voyages where the build had it: median length and boss win rate (game as it is now). It shows association, not cause: a weapon taken late in long voyages looks good.';
+  const rows = RES[tab].map(x => ({ ...x, name: nm(x.id) }));
+  table(el, [{ k: 'name', t: buildTabs[tab].replace(/s$/, '') }, { k: 'runs', t: 'Voyages with it', num: 1 }, { k: 'end', t: 'Median voyage', num: 1, f: v => mins(v) }, { k: 'bossWin', t: 'Boss beaten', num: 1, f: v => pct(v) }].concat(tab === 'weapons' ? [{ k: 'evolved', t: 'Evolved', num: 1 }] : []), rows);
+}
+document.getElementById('build-tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { tab = b.dataset.t; builds(); } });
+builds();
+</script>

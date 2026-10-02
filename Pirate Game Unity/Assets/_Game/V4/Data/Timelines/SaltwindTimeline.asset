@@ -50,7 +50,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: f81184cd12e1f8f45a7134e438d74845, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 0.9
+    ratePerSecond: 0.71999997
     budgetUnit: 0
     pools:
     - poolId: main
@@ -98,7 +98,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: c7f30690887e7514ab17715a36100ab5, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.4
+    ratePerSecond: 1.12
     budgetUnit: 0
     pools:
     - poolId: main
@@ -153,7 +153,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: c032771fd8ba7b740b20a712b9d55ac7, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.7
+    ratePerSecond: 1.36
     budgetUnit: 0
     pools:
     - poolId: main
@@ -219,7 +219,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 074c75ed23898cf4db854604d1fd8956, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 1.9
+    ratePerSecond: 1.52
     budgetUnit: 0
     pools:
     - poolId: main
@@ -293,7 +293,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 754e07ebd1c2f4c439daac6b4942e39f, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 2.1
+    ratePerSecond: 1.05
     budgetUnit: 0
     pools:
     - poolId: main
@@ -371,7 +371,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: cbeca7540901bce4abdf29851ffb7d11, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 2.3
+    ratePerSecond: 1.15
     budgetUnit: 0
     pools:
     - poolId: main
@@ -449,7 +449,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: da932b4b5ab14e64b81a347ffcadf67b, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 2.4
+    ratePerSecond: 1.2
     budgetUnit: 0
     pools:
     - poolId: main
@@ -523,7 +523,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 97904047ab853b84ebe123f928970ef6, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 2.7
+    ratePerSecond: 1.35
     budgetUnit: 0
     pools:
     - poolId: main
@@ -597,7 +597,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: c92ca86fe396b494b96643a9cd3e4121, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 3
+    ratePerSecond: 1.5
     budgetUnit: 0
     pools:
     - poolId: main
@@ -675,7 +675,7 @@ MonoBehaviour:
       seconds: 0
     spawner: {fileID: 11400000, guid: 716cac02c473fe642ad734cd5f255207, type: 2}
     alternateSpawner: {fileID: 0}
-    ratePerSecond: 3.3
+    ratePerSecond: 1.65
     budgetUnit: 0
     pools:
     - poolId: main
@@ -1362,147 +1362,147 @@ MonoBehaviour:
     smoothWaves: 1
     waves:
     - startSeconds: 0
-      minAliveShare: 0.13
+      minAliveShare: 0.103999995
       rateMultiplier: 1
       topUpIntervalSeconds: 0.935
       maxTopUpPerTick: 3
     - startSeconds: 30
-      minAliveShare: 0.325
+      minAliveShare: 0.26
       rateMultiplier: 1.1
       topUpIntervalSeconds: 0.8375
       maxTopUpPerTick: 5
     - startSeconds: 50
-      minAliveShare: 0.182
+      minAliveShare: 0.1456
       rateMultiplier: 0.85
       topUpIntervalSeconds: 0.909
       maxTopUpPerTick: 5
     - startSeconds: 60
-      minAliveShare: 0.26
+      minAliveShare: 0.20799999
       rateMultiplier: 1
       topUpIntervalSeconds: 0.87
       maxTopUpPerTick: 5
     - startSeconds: 90
-      minAliveShare: 0.41599998
+      minAliveShare: 0.3328
       rateMultiplier: 1.15
       topUpIntervalSeconds: 0.792
       maxTopUpPerTick: 6
     - startSeconds: 105
-      minAliveShare: 0.234
+      minAliveShare: 0.1872
       rateMultiplier: 0.9
       topUpIntervalSeconds: 0.883
       maxTopUpPerTick: 5
     - startSeconds: 140
-      minAliveShare: 0.468
+      minAliveShare: 0.3744
       rateMultiplier: 1.15
       topUpIntervalSeconds: 0.766
       maxTopUpPerTick: 6
     - startSeconds: 185
-      minAliveShare: 0.33799997
+      minAliveShare: 0.2704
       rateMultiplier: 0.95
       topUpIntervalSeconds: 0.83100003
       maxTopUpPerTick: 5
     - startSeconds: 225
-      minAliveShare: 0.65
+      minAliveShare: 0.52
       rateMultiplier: 1.25
       topUpIntervalSeconds: 0.675
       maxTopUpPerTick: 6
     - startSeconds: 240
-      minAliveShare: 0.39000002
+      minAliveShare: 0.312
       rateMultiplier: 0.7
       topUpIntervalSeconds: 0.805
       maxTopUpPerTick: 6
     - startSeconds: 275
-      minAliveShare: 0.52
+      minAliveShare: 0.41599998
       rateMultiplier: 0.8
       topUpIntervalSeconds: 0.74
       maxTopUpPerTick: 6
     - startSeconds: 300
-      minAliveShare: 0.468
+      minAliveShare: 0.234
       rateMultiplier: 0.75
       topUpIntervalSeconds: 0.766
       maxTopUpPerTick: 6
     - startSeconds: 340
-      minAliveShare: 0.598
+      minAliveShare: 0.299
       rateMultiplier: 0.9
       topUpIntervalSeconds: 0.70100003
       maxTopUpPerTick: 6
     - startSeconds: 380
-      minAliveShare: 0.715
+      minAliveShare: 0.3575
       rateMultiplier: 1.1
       topUpIntervalSeconds: 0.6425
       maxTopUpPerTick: 8
     - startSeconds: 400
-      minAliveShare: 0.54599994
+      minAliveShare: 0.27299997
       rateMultiplier: 0.8
       topUpIntervalSeconds: 0.727
       maxTopUpPerTick: 6
     - startSeconds: 450
-      minAliveShare: 0.78000003
+      minAliveShare: 0.39000002
       rateMultiplier: 1.1
       topUpIntervalSeconds: 0.61
       maxTopUpPerTick: 8
     - startSeconds: 475
-      minAliveShare: 0.585
+      minAliveShare: 0.2925
       rateMultiplier: 0.75
       topUpIntervalSeconds: 0.70750004
       maxTopUpPerTick: 6
     - startSeconds: 510
-      minAliveShare: 0.78000003
+      minAliveShare: 0.39000002
       rateMultiplier: 1.05
       topUpIntervalSeconds: 0.61
       maxTopUpPerTick: 8
     - startSeconds: 540
-      minAliveShare: 0.858
+      minAliveShare: 0.429
       rateMultiplier: 1.15
       topUpIntervalSeconds: 0.571
       maxTopUpPerTick: 8
     - startSeconds: 585
-      minAliveShare: 0.65
+      minAliveShare: 0.325
       rateMultiplier: 0.85
       topUpIntervalSeconds: 0.675
       maxTopUpPerTick: 6
     - startSeconds: 620
-      minAliveShare: 0.858
+      minAliveShare: 0.429
       rateMultiplier: 1.1
       topUpIntervalSeconds: 0.571
       maxTopUpPerTick: 8
     - startSeconds: 650
-      minAliveShare: 0.65
+      minAliveShare: 0.325
       rateMultiplier: 0.8
       topUpIntervalSeconds: 0.675
       maxTopUpPerTick: 6
     - startSeconds: 690
-      minAliveShare: 0.936
+      minAliveShare: 0.468
       rateMultiplier: 1.25
       topUpIntervalSeconds: 0.532
       maxTopUpPerTick: 9
     - startSeconds: 720
-      minAliveShare: 0.78000003
+      minAliveShare: 0.39000002
       rateMultiplier: 0.95
       topUpIntervalSeconds: 0.61
       maxTopUpPerTick: 8
     - startSeconds: 760
-      minAliveShare: 0.95
+      minAliveShare: 0.475
       rateMultiplier: 1.3
       topUpIntervalSeconds: 0.48000002
       maxTopUpPerTick: 9
     - startSeconds: 800
-      minAliveShare: 0.90999997
+      minAliveShare: 0.45499998
       rateMultiplier: 1.05
       topUpIntervalSeconds: 0.545
       maxTopUpPerTick: 9
     - startSeconds: 830
-      minAliveShare: 0.95
+      minAliveShare: 0.475
       rateMultiplier: 1.4
       topUpIntervalSeconds: 0.42800003
       maxTopUpPerTick: 9
     - startSeconds: 840
-      minAliveShare: 0.52
+      minAliveShare: 0.26
       rateMultiplier: 0.6
       topUpIntervalSeconds: 0.74
       maxTopUpPerTick: 6
     - startSeconds: 900
-      minAliveShare: 0.95
+      minAliveShare: 0.475
       rateMultiplier: 1.45
       topUpIntervalSeconds: 0.4
       maxTopUpPerTick: 11
@@ -1512,7 +1512,7 @@ MonoBehaviour:
       timeSeconds: 110
       formation: 0
       archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-      count: 18
+      count: 14
       distance: 20
       spacing: 1.8
       speedMultiplier: 1
@@ -1525,7 +1525,7 @@ MonoBehaviour:
       timeSeconds: 200
       formation: 2
       archetype: {fileID: 11400000, guid: 0aef48449ffdbb04bbc497f71df51883, type: 2}
-      count: 8
+      count: 6
       distance: 20
       spacing: 1.8
       speedMultiplier: 1
@@ -1538,7 +1538,7 @@ MonoBehaviour:
       timeSeconds: 240
       formation: 0
       archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-      count: 45
+      count: 36
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
@@ -1551,7 +1551,7 @@ MonoBehaviour:
       timeSeconds: 390
       formation: 1
       archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
-      count: 36
+      count: 18
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
@@ -1564,7 +1564,7 @@ MonoBehaviour:
       timeSeconds: 480
       formation: 0
       archetype: {fileID: 11400000, guid: 15db787d0e9c1eb4696a78d60e32cd81, type: 2}
-      count: 51
+      count: 26
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
@@ -1577,7 +1577,7 @@ MonoBehaviour:
       timeSeconds: 665
       formation: 0
       archetype: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
-      count: 36
+      count: 18
       distance: 18
       spacing: 1.8
       speedMultiplier: 1
@@ -1590,7 +1590,7 @@ MonoBehaviour:
       timeSeconds: 700
       formation: 1
       archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
-      count: 36
+      count: 18
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
@@ -1603,7 +1603,7 @@ MonoBehaviour:
       timeSeconds: 750
       formation: 2
       archetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
-      count: 39
+      count: 20
       distance: 24
       spacing: 1.8
       speedMultiplier: 1
@@ -1616,7 +1616,7 @@ MonoBehaviour:
       timeSeconds: 780
       formation: 0
       archetype: {fileID: 11400000, guid: 3a6e1135862ea8c4cab61cf4d262fbc5, type: 2}
-      count: 39
+      count: 20
       distance: 18
       spacing: 1.8
       speedMultiplier: 1
@@ -1629,7 +1629,7 @@ MonoBehaviour:
       timeSeconds: 790
       formation: 1
       archetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
-      count: 36
+      count: 18
       distance: 22
       spacing: 1.8
       speedMultiplier: 1
