@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Storm Conch
   description: +12% size; evolves Maelstrom Charge into Abyssal Vortex.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 42
   collectionOrder: 42

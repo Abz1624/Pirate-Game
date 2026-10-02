@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Whale Oil Barrel
   description: +9% damage; evolves Harpoon Gun into Whaler's Volley.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 36
   collectionOrder: 36

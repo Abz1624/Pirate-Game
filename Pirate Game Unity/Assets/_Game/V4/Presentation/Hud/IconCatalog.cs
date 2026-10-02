@@ -25,14 +25,18 @@ namespace RoguePirates.V4.Presentation.Hud
 
         public List<Entry> weapons = new List<Entry>();
         public List<Entry> items = new List<Entry>();
+        [Tooltip("Playtest (3 Oct): Logbook icons (Tools > Rogue Pirates > Demo > Wire Art Team Assets fills them from Assets/UI/New_items/Logbooks). Without one, the name shows.")]
+        public List<Entry> logbooks = new List<Entry>();
 
         Dictionary<string, Sprite> _weaponLookup;
         Dictionary<string, Sprite> _itemLookup;
+        Dictionary<string, Sprite> _logbookLookup;
 
         public static IconCatalog Load() => Resources.Load<IconCatalog>(ResourcePath);
 
         public Sprite Weapon(string weaponId) => Find(ref _weaponLookup, weapons, weaponId);
         public Sprite Item(string itemId) => Find(ref _itemLookup, items, itemId);
+        public Sprite Logbook(string logbookId) => Find(ref _logbookLookup, logbooks, logbookId);
 
         static Sprite Find(ref Dictionary<string, Sprite> lookup, List<Entry> entries, string id)
         {
@@ -50,6 +54,7 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             _weaponLookup = null;
             _itemLookup = null;
+            _logbookLookup = null;
         }
     }
 }

@@ -20,7 +20,7 @@ MonoBehaviour:
   description: Every 12 s a blast of 45 damage in 5 m on the densest crowd, after
     a short warning (stronger with copies).
   rarity: 4
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 58
   collectionOrder: 58

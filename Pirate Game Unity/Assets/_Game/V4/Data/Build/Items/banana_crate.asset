@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Banana Crate
   description: +9% attack speed; evolves Monkey Gunners into Monkey Battery.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 41
   collectionOrder: 41

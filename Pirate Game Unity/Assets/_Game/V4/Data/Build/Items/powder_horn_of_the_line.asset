@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Powder Horn of the Line
   description: +9% damage; evolves Long Nine into Ship of the Line.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 37
   collectionOrder: 37

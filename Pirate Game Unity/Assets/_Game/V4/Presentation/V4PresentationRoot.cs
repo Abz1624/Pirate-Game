@@ -19,6 +19,7 @@ namespace RoguePirates.V4.Presentation
         public RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter SaltWindHud { get; private set; }
         public RoguePirates.V4.Presentation.Hud.MinimapPresenter Minimap { get; private set; }
         public RoguePirates.V4.Presentation.Hud.CaptainActivePresenter CaptainActive { get; private set; }
+        public RoguePirates.V4.Presentation.Hud.ItemRewardPresenter ItemReward { get; private set; }
         public RoguePirates.V4.Presentation.Hud.CaptainActiveEffectPresenter CaptainActiveEffect { get; private set; }
         /// <summary>V5: the Captain ability's round touch button (touch devices only).</summary>
         public RoguePirates.V4.Presentation.Hud.CaptainAbilityButtonPresenter CaptainAbilityButton { get; private set; }
@@ -349,6 +350,9 @@ namespace RoguePirates.V4.Presentation
                 SaltWindHud = RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Install(authored, Hud, views, RoguePirates.V4.Presentation.Hud.IconCatalog.Load(), Minimap);
                 if (SaltWindHud != null && Minimap != null) Minimap.FollowTarget = SaltWindHud.ArtMinimap;
                 // M9 playtest: the Captain's active and its cooldown, beside the boost meter.
+                // Playtest (3 Oct): an item won from a chest is shown with its icon, name and effect.
+                ItemReward = RoguePirates.V4.Presentation.Hud.ItemRewardPresenter.Create(authored.transform);
+                ItemReward.Bind(views, RoguePirates.V4.Presentation.Hud.IconCatalog.Load(), ItemDescription);
                 if (!RoguePirates.V4.Presentation.Hud.SaltWindHudSettings.Hides(s => s.hideCaptainActive))
                 {
                     CaptainActive = RoguePirates.V4.Presentation.Hud.CaptainActivePresenter.Create(authored.transform);
@@ -407,6 +411,15 @@ namespace RoguePirates.V4.Presentation
             DisposeWorldTemplates();
             Pools?.Dispose();
             Pools = null;
+        }
+
+        string ItemDescription(string itemId)
+        {
+            var config = Game != null ? Game.Config : null;
+            if (config == null) return null;
+            foreach (var item in config.All<RoguePirates.V4.Config.ItemConfig>())
+                if (item != null && item.itemId == itemId) return item.description;
+            return null;
         }
     }
 }

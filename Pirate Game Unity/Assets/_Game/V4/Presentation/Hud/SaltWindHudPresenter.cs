@@ -29,6 +29,10 @@ namespace RoguePirates.V4.Presentation.Hud
         Slider _hp, _xp;
         readonly List<Image> _markers = new List<Image>();
         readonly List<WeaponSlotView> _weapons = new List<WeaponSlotView>();
+        // Playtest (3 Oct, owner): the Logbooks in a copy of the weapon row, left of it; slots without art show the name.
+        readonly List<WeaponSlotView> _logbooks = new List<WeaponSlotView>();
+        readonly List<TextMeshProUGUI> _itemNames = new List<TextMeshProUGUI>();
+        TMP_FontAsset _font;
         readonly List<string> _quest = new List<string>(3);
         int _lastCaptain = -1;
         readonly List<Image> _items = new List<Image>();
@@ -44,6 +48,7 @@ namespace RoguePirates.V4.Presentation.Hud
             public Image Icon;
             public GameObject Empty, Badge, Locked, Selected;
             public TextMeshProUGUI Level;
+            public TextMeshProUGUI Name; // the name, when there is no icon
         }
 
         public GameObject Hud => _hud;
@@ -139,7 +144,9 @@ namespace RoguePirates.V4.Presentation.Hud
                 for (var i = 0; i < itemBar.childCount; i++)
                 {
                     var icon = Find(itemBar.GetChild(i), "Icon")?.GetComponent<Image>();
-                    if (icon != null) _items.Add(icon);
+                    if (icon == null) continue;
+                    _items.Add(icon);
+                    _itemNames.Add(NameLabel(icon.transform.parent, 13f));
                 }
 
             var panel = Find(root, "PlayerPanel");
@@ -165,25 +172,83 @@ namespace RoguePirates.V4.Presentation.Hud
             var loadout = Find(root, "WeaponLoadout");
             if (loadout != null)
             {
-                var slots = new List<Transform>();
-                for (var i = 0; i < loadout.childCount; i++) slots.Add(loadout.GetChild(i));
-                slots.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
-                foreach (var t in slots)
+                var levelText = Find(loadout, "Level");
+                _font = levelText != null && levelText.GetComponent<TextMeshProUGUI>() != null ? levelText.GetComponent<TextMeshProUGUI>().font : null;
+                var logbookRow = Find(root, "LogbookLoadout");
+                if (logbookRow == null)
                 {
-                    t.SetSiblingIndex(slots.IndexOf(t));
-                    var content = Find(t, "Content");
-                    _weapons.Add(new WeaponSlotView
-                    {
-                        Root = t.gameObject,
-                        Icon = Find(content, "Icon")?.GetComponent<Image>(),
-                        Empty = Find(content, "EmptyLabel")?.gameObject,
-                        Badge = Find(content, "LevelBadge")?.gameObject,
-                        Level = Find(Find(content, "LevelBadge"), "Level")?.GetComponent<TextMeshProUGUI>(),
-                        Locked = Find(t, "LockedOverlay")?.gameObject,
-                        Selected = Find(t, "SelectedFrame")?.gameObject,
-                    });
+                    logbookRow = Instantiate(loadout.gameObject, loadout.parent, false).transform;
+                    logbookRow.name = "LogbookLoadout";
+                    var lrt = (RectTransform)logbookRow;
+                    var wrt = (RectTransform)loadout;
+                    var grid = loadout.GetComponent<GridLayoutGroup>();
+                    var columns = grid != null && grid.constraint == GridLayoutGroup.Constraint.FixedColumnCount ? grid.constraintCount : 3;
+                    var width = grid != null ? columns * grid.cellSize.x + (columns - 1) * grid.spacing.x : 330f;
+                    lrt.anchoredPosition = wrt.anchoredPosition - new Vector2(width + 24f, 0f);
                 }
+                BindRow(loadout, _weapons);
+                BindRow(logbookRow, _logbooks);
             }
+        }
+
+        void BindRow(Transform row, List<WeaponSlotView> into)
+        {
+            var slots = new List<Transform>();
+            for (var i = 0; i < row.childCount; i++) slots.Add(row.GetChild(i));
+            slots.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+            foreach (var t in slots)
+            {
+                t.SetSiblingIndex(slots.IndexOf(t));
+                var content = Find(t, "Content");
+                into.Add(new WeaponSlotView
+                {
+                    Root = t.gameObject,
+                    Icon = Find(content, "Icon")?.GetComponent<Image>(),
+                    Empty = Find(content, "EmptyLabel")?.gameObject,
+                    Badge = Find(content, "LevelBadge")?.gameObject,
+                    Level = Find(Find(content, "LevelBadge"), "Level")?.GetComponent<TextMeshProUGUI>(),
+                    Locked = Find(t, "LockedOverlay")?.gameObject,
+                    Selected = Find(t, "SelectedFrame")?.gameObject,
+                    Name = NameLabel(content != null ? content : t, 15f),
+                });
+            }
+        }
+
+        /// <summary>A centred name label in a slot (shown when the slot has no icon).</summary>
+        TextMeshProUGUI NameLabel(Transform parent, float size)
+        {
+            var existing = parent.Find("NameLabel");
+            var go = existing != null ? existing.gameObject : new GameObject("NameLabel", typeof(RectTransform));
+            if (existing == null) go.transform.SetParent(parent, false);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = new Vector2(5f, 5f);
+            rt.offsetMax = new Vector2(-5f, -5f);
+            var t = go.GetComponent<TextMeshProUGUI>();
+            if (t == null) t = go.AddComponent<TextMeshProUGUI>();
+            if (_font != null) t.font = _font;
+            t.fontSize = size;
+            t.enableAutoSizing = true;
+            t.fontSizeMin = 8f;
+            t.fontSizeMax = size;
+            t.fontStyle = FontStyles.Bold;
+            t.alignment = TextAlignmentOptions.Center;
+            t.color = Color.white;
+            t.outlineWidth = 0.2f;
+            t.outlineColor = new Color32(0, 0, 0, 255);
+            t.raycastTarget = false;
+            t.text = string.Empty;
+            go.SetActive(false);
+            return t;
+        }
+
+        static void SetName(TextMeshProUGUI label, string name)
+        {
+            if (label == null) return;
+            var show = !string.IsNullOrEmpty(name);
+            if (label.gameObject.activeSelf != show) label.gameObject.SetActive(show);
+            if (show && label.text != name) label.text = name;
         }
 
         void LateUpdate()
@@ -248,7 +313,42 @@ namespace RoguePirates.V4.Presentation.Hud
 
             RefreshObjective();
             RefreshWeapons();
+            RefreshLogbooks();
             RefreshItems();
+        }
+
+        readonly int[] _shownLogbookRanks = new int[8];
+
+        void RefreshLogbooks()
+        {
+            var progression = _views.Progression;
+            var count = progression != null && progression.Exists ? progression.LogbookCount : 0;
+            for (var i = 0; i < _logbooks.Count; i++)
+            {
+                var w = _logbooks[i];
+                var filled = i < count;
+                if (w.Locked != null) w.Locked.SetActive(false);
+                if (w.Selected != null) w.Selected.SetActive(false);
+                if (w.Empty != null) w.Empty.SetActive(!filled);
+                if (w.Badge != null) w.Badge.SetActive(filled);
+                var id = filled ? progression.LogbookId(i) : null;
+                var sprite = filled && _icons != null ? _icons.Logbook(id) : null;
+                if (w.Icon != null)
+                {
+                    w.Icon.enabled = sprite != null;
+                    if (sprite != null && w.Icon.sprite != sprite) { w.Icon.sprite = sprite; w.Icon.preserveAspect = true; }
+                }
+                SetName(w.Name, filled && sprite == null ? progression.LogbookName(i) : null);
+                if (filled && w.Level != null)
+                {
+                    var rank = progression.LogbookRank(i);
+                    if (i >= _shownLogbookRanks.Length || _shownLogbookRanks[i] != rank)
+                    {
+                        if (i < _shownLogbookRanks.Length) _shownLogbookRanks[i] = rank;
+                        w.Level.text = rank.ToString();
+                    }
+                }
+            }
         }
 
         void RefreshItems()
@@ -257,10 +357,13 @@ namespace RoguePirates.V4.Presentation.Hud
             if (loadout == null) return;
             for (var i = 0; i < _items.Count; i++)
             {
-                var sprite = i < loadout.ItemCount && _icons != null ? _icons.Item(loadout.ItemId(i)) : null;
+                var has = i < loadout.ItemCount;
+                var sprite = has && _icons != null ? _icons.Item(loadout.ItemId(i)) : null;
                 var slot = _items[i].transform.parent.gameObject;
-                if (slot.activeSelf != (sprite != null)) slot.SetActive(sprite != null);
+                if (slot.activeSelf != has) slot.SetActive(has);
+                _items[i].enabled = sprite != null;
                 if (sprite != null && _items[i].sprite != sprite) { _items[i].sprite = sprite; _items[i].preserveAspect = true; }
+                if (i < _itemNames.Count) SetName(_itemNames[i], has && sprite == null ? loadout.ItemName(i) : null);
             }
         }
 
@@ -297,6 +400,7 @@ namespace RoguePirates.V4.Presentation.Hud
                     var sprite = filled && _icons != null ? _icons.Weapon(loadout.WeaponId(i)) : null;
                     w.Icon.enabled = sprite != null;
                     if (sprite != null && w.Icon.sprite != sprite) { w.Icon.sprite = sprite; w.Icon.preserveAspect = true; }
+                    SetName(w.Name, filled && sprite == null ? loadout.WeaponName(i) : null);
                 }
                 if (filled && w.Level != null)
                 {

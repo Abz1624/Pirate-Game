@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Shark Tooth Necklace
   description: +12% damage to enemies above 90% hull, more with copies (at most +80%).
   rarity: 0
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 47
   collectionOrder: 47

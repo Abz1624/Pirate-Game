@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Ship of the Line
   description: A wider, heavier beam that fires more often.
   baseWeapon: {fileID: 11400000, guid: 1e5f5dc93d035e245b9f4e9480fdb540, type: 2}
-  requiredItemId: powder_horn_of_the_line
+  requiredItemId: gunners_gloves
   effect: 7
   laneBurst:
     laneArcDegrees: 40

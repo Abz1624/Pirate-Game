@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Chain Locker
   description: +10% projectile speed; evolves Chainshot into Bar Shot Barrage.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 33
   collectionOrder: 33

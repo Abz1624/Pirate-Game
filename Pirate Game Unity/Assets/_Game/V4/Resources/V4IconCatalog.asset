@@ -91,58 +91,89 @@ MonoBehaviour:
   - id: stormglass
     sprite: {fileID: 21300000, guid: 4e5dda0c241fe4ba7bf17bb2b5741993, type: 3}
   - id: rusted_shackle
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: chain_locker
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: siren_scale
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: iron_figurehead
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: whale_oil_barrel
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: powder_horn_of_the_line
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: siege_quadrant
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: swivel_mount
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: captains_perch
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: banana_crate
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: storm_conch
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: fresnel_lens
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: cursed_chest_key
-    sprite: {fileID: 21300000, guid: 574fe9b3cef784d4a9bc28d9c6ba9b72, type: 3}
+    sprite: {fileID: 0}
   - id: spare_planks
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: powder_monkey
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: shark_tooth_necklace
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: manta_sail
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: reef_carapace
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: crows_nest
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: skeleton_key
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: smugglers_ledger
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: black_spot
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: dead_mans_compass
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: cursed_coin
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: barnacle_crown
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: jolly_roger
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: leviathan_heart
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
   - id: captains_last_rum
-    sprite: {fileID: 21300000, guid: 0b2f590913b814583aa512f7f33cfbb3, type: 3}
+    sprite: {fileID: 0}
+  logbooks:
+  - id: admiral
+    sprite: {fileID: 0}
+  - id: carpenters_notes
+    sprite: {fileID: 0}
+  - id: cartographers_folio
+    sprite: {fileID: 0}
+  - id: extra_hands
+    sprite: {fileID: 0}
+  - id: fortune
+    sprite: {fileID: 0}
+  - id: gunnery_manual
+    sprite: {fileID: 0}
+  - id: ironclad
+    sprite: {fileID: 0}
+  - id: lookouts_glass
+    sprite: {fileID: 0}
+  - id: navigators_charts
+    sprite: {fileID: 0}
+  - id: oversized_shot
+    sprite: {fileID: 0}
+  - id: plunderer
+    sprite: {fileID: 0}
+  - id: powder_drill
+    sprite: {fileID: 0}
+  - id: quartermasters_ledger
+    sprite: {fileID: 0}
+  - id: scavengers_net
+    sprite: {fileID: 0}
+  - id: tidecaller
+    sprite: {fileID: 0}

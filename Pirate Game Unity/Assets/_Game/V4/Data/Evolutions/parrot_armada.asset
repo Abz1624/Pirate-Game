@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Parrot Armada
   description: Two more parrots, and they hit harder.
   baseWeapon: {fileID: 11400000, guid: 990e9fac5ca9a6043b27a0cf1455a799, type: 2}
-  requiredItemId: captains_perch
+  requiredItemId: captains_bell
   effect: 7
   laneBurst:
     laneArcDegrees: 40

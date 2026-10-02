@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Bar Shot Barrage
   description: Three chained shots that pass through two more foes.
   baseWeapon: {fileID: 11400000, guid: 216bc2eb2d3894244be3e3bd3a8abd98, type: 2}
-  requiredItemId: chain_locker
+  requiredItemId: black_powder_keg
   effect: 7
   laneBurst:
     laneArcDegrees: 40

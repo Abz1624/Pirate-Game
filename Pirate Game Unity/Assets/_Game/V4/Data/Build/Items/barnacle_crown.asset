@@ -20,7 +20,7 @@ MonoBehaviour:
   description: With 4 or more enemies within 5 m, +2% damage a second, up to +20%
     (+4% per extra copy, at most +40%); it fades when you break free.
   rarity: 3
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 56
   collectionOrder: 56

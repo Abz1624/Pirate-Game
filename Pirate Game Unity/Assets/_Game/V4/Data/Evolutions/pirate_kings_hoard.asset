@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Pirate King's Hoard
   description: Coins bounce two more times and hit harder.
   baseWeapon: {fileID: 11400000, guid: de37266bf8fa6f94e8bf4a250e484862, type: 2}
-  requiredItemId: cursed_chest_key
+  requiredItemId: cursed_compass
   effect: 7
   laneBurst:
     laneArcDegrees: 40

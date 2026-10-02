@@ -20,7 +20,7 @@ MonoBehaviour:
   description: Chests cost 20% more, but Uncommon and better items are 10% likelier
     per copy (at most 50%).
   rarity: 2
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 52
   collectionOrder: 52

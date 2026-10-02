@@ -20,7 +20,7 @@ MonoBehaviour:
   description: Once a run, a fatal hit leaves you at 25% hull with 2 s of safety
     and +30% damage for 8 s.
   rarity: 4
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 59
   collectionOrder: 59

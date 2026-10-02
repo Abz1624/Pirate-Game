@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Swivel Mount
   description: +9% attack speed; evolves Swivel Guns into Swivel Battery.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 39
   collectionOrder: 39

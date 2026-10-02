@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Crow's Nest
   description: +10% pickup radius.
   rarity: 0
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 50
   collectionOrder: 50

@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Powder Monkey
   description: +6.5% attack speed.
   rarity: 0
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 46
   collectionOrder: 46

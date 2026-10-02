@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Iron Figurehead
   description: +9% damage; evolves Ramming Prow into Ironclad Ram.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 35
   collectionOrder: 35

@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Siren Scale
   description: +9% attack speed; evolves Siren Bell into Drowned Choir.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 34
   collectionOrder: 34

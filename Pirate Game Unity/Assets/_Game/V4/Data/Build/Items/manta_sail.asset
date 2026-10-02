@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Manta Sail
   description: +3% speed.
   rarity: 0
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 48
   collectionOrder: 48

@@ -144,3 +144,19 @@ now has 3.5 HP, under the smallest starting hit, and every enemy scales by the s
 Hammerhead 42, boss slots 245, Barnacle King 490. The time curve makes basic enemies take a second Swivel shot from about
 2:30 unless the weapon is upgraded (as in Survivor.io). The Flamethrower (Ember) is a stream (about 1 a tick), so it never
 one-shots. XP table refitted (within 6%).
+
+## Round 4 (3 Oct): items, Logbooks and level-up cards
+
+- Saltwind never deals items on level-up cards (only weapons and Logbooks); items come from Salvage Chests and the
+  Powder Cache. Owner: keep Logbooks on the cards; show items when they are won.
+- Item popup: a chest item shows near the top with its icon, name and effect for about 3 s ("NEW ITEM" or "ITEM UPGRADED").
+- Only the 19 items with art-team icons drop from chests; the 28 without are out of the chest pool. 13 evolutions needed
+  one of those; each now needs a themed item with an icon (e.g. Abyssal Vortex: Storm Conch to Stormglass, Kraken Chain:
+  Rusted Shackle to Leviathan Tooth, Parrot Armada: Captain's Perch to Captain's Bell).
+- HUD: the Logbooks have their own row (a copy of the weapon grid, left of it) with their rank; weapons, Logbooks and items
+  without icon art show their name in the slot.
+- Level-up cards: no descriptions; only the level and the changes from now to next ("Damage 3.8 → 4.4", "Reload 1.05s →
+  0.95s", "Max Hull 100 → 106", "Damage 100% → 106.5%"). Weapon damage is one hit's damage. Without icon art, the name
+  stands in the icon's place.
+- Logbook icons: put files in Assets/UI/New_items/Logbooks (named after the Logbook) and run Tools > Rogue Pirates > Demo >
+  Wire Art Team Assets.

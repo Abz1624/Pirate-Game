@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Siege Quadrant
   description: +12% size; evolves Mortar into Siege Bombard.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 38
   collectionOrder: 38

@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Dead Man's Compass
   description: +5% XP; 10% more enemies.
   rarity: 2
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 54
   collectionOrder: 54

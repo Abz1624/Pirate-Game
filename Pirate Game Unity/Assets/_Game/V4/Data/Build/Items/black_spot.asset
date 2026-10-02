@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Black Spot
   description: Elite kills drop 10% more gold and XP per copy (at most 50%).
   rarity: 2
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 53
   collectionOrder: 53

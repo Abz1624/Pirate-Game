@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Fresnel Lens
   description: +12% size; evolves Lighthouse Lantern into Beacon of the Deep.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 43
   collectionOrder: 43

@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Kraken Chain
   description: A second anchor; both swing wider and hit harder.
   baseWeapon: {fileID: 11400000, guid: 2d1afaa7856968640853c318381e5f9e, type: 2}
-  requiredItemId: rusted_shackle
+  requiredItemId: leviathan_tooth
   effect: 7
   laneBurst:
     laneArcDegrees: 40

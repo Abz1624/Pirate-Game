@@ -20,7 +20,7 @@ MonoBehaviour:
   description: Every 10 kills, +1% damage (up to +20%, +5 per extra copy, at most
     +40%); a hit takes half the streak.
   rarity: 3
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 57
   collectionOrder: 57

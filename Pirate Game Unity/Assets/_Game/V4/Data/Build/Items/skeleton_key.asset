@@ -20,7 +20,7 @@ MonoBehaviour:
   description: 6% chance a chest is free, more with copies (at most 35%); a free
     chest does not raise the next price.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 51
   collectionOrder: 51

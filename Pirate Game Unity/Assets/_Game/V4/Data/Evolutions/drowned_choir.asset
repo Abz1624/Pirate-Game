@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Drowned Choir
   description: The bell tolls faster and wider, and slows harder.
   baseWeapon: {fileID: 11400000, guid: 379e4f9b06d223e4bb732a2603f85ee0, type: 2}
-  requiredItemId: siren_scale
+  requiredItemId: sea_witchs_eye
   effect: 7
   laneBurst:
     laneArcDegrees: 40

@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Rusted Shackle
   description: +12% size; evolves Anchor Flail into Kraken Chain.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 32
   collectionOrder: 32

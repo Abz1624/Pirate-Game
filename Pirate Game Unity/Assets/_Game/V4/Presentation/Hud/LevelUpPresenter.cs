@@ -134,6 +134,8 @@ namespace RoguePirates.V4.Presentation.Hud
                     CopyLayout(img.rectTransform, source ?? DefaultLayout(path));
                 }
                 var title = b.transform.Find("Background/Title")?.GetComponent<TextMeshProUGUI>();
+                // Playtest (3 Oct, owner): no icon art yet: the name stands in the icon's place.
+                IconPlaceholder(b.transform, icon, title, iconSprite == null ? RoguePirates.V4.Foundation.Core.DemoMode.Text(card.title) : null);
                 if (title != null) title.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(card.title);
                 var description = b.transform.Find("Background/Description")?.GetComponent<TextMeshProUGUI>();
                 if (description != null)
@@ -143,6 +145,35 @@ namespace RoguePirates.V4.Presentation.Hud
                     description.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(string.IsNullOrEmpty(level) ? effect : level + "\n" + effect);
                 }
             }
+        }
+
+        /// <summary>The name in the icon's place on a card without icon art (hidden when the card has an icon).</summary>
+        void IconPlaceholder(Transform card, Image icon, TextMeshProUGUI title, string name)
+        {
+            var background = card.Find("Background");
+            if (background == null) return;
+            var label = background.Find("IconName")?.GetComponent<TextMeshProUGUI>();
+            if (label == null)
+            {
+                if (string.IsNullOrEmpty(name)) return;
+                var go = new GameObject("IconName", typeof(RectTransform));
+                go.transform.SetParent(background, false);
+                label = go.AddComponent<TextMeshProUGUI>();
+                if (title != null) { label.font = title.font; label.color = title.color; }
+                label.fontStyle = FontStyles.Bold;
+                label.alignment = TextAlignmentOptions.Center;
+                label.enableAutoSizing = true;
+                label.fontSizeMin = 14f;
+                label.fontSizeMax = 40f;
+                label.raycastTarget = false;
+            }
+            label.gameObject.SetActive(!string.IsNullOrEmpty(name));
+            if (string.IsNullOrEmpty(name)) return;
+            label.text = name;
+            var rt = label.rectTransform;
+            var source = icon != null ? icon.rectTransform : DefaultLayout("Background/Icon");
+            if (source != null) CopyLayout(rt, source);
+            rt.localRotation = Quaternion.identity; // the art's icon slots may be tilted; the name stays level
         }
 
         static bool IsWeapon(Offer offer) =>
@@ -187,6 +218,7 @@ namespace RoguePirates.V4.Presentation.Hud
                     var cardIcon = SaltWindHudSettings.Load()?.WeaponCardIcon(offer.Id);
                     return cardIcon != null ? cardIcon : _icons?.Weapon(offer.Id);
                 case OfferKind.NewRunItem: return _icons?.Item(offer.Id);
+                case OfferKind.Logbook: return _icons?.Logbook(offer.Id);
                 default: return null;
             }
         }

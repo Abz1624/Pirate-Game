@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Captain's Perch
   description: +9% damage; evolves Parrot Squadron into Parrot Armada.
   rarity: 1
-  inChestPool: 1
+  inChestPool: 0
   inLevelUpPool: 0
   chestPoolOrder: 40
   collectionOrder: 40
