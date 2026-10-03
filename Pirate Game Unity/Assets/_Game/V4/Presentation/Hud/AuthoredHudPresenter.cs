@@ -30,8 +30,11 @@ namespace RoguePirates.V4.Presentation.Hud
         TextMeshProUGUI _levelText;
         Slider _hpSlider;
         Slider _xpSlider;
-        Slider _boostSlider;
+        Image _boostFill;
+        TextMeshProUGUI _boostLabel;
         Button _boostButton;
+        RoguePirates.V4.Foundation.PlayerSystems.ShipBoostController _boostController;
+        int _lastBoostState = -1, _lastBoostSeconds = int.MinValue;
         RectTransform _timerRect;
         RectTransform _profileRect;
         RectTransform _questRect;
@@ -314,7 +317,7 @@ namespace RoguePirates.V4.Presentation.Hud
 
         void EnsureBoostHud(Transform root)
         {
-            if (_boostSlider != null) return;
+            if (_boostFill != null) return;
             var boostRoot = root.Find("Boost_Meter");
             _weaponRow = root.Find("Weapon_Slot") as RectTransform;
             if (boostRoot == null)
@@ -331,39 +334,70 @@ namespace RoguePirates.V4.Presentation.Hud
                 rt.sizeDelta = new Vector2(180f, 28f);
             }
 
-            _boostSlider = boostRoot.GetComponent<Slider>();
-            if (_boostSlider == null) _boostSlider = boostRoot.GetComponentInChildren<Slider>(true);
-            if (_boostSlider == null)
+            // Playtest (3 Oct, owner): the stand-in slider (a white bar with no fill) becomes a real meter in the Captain
+            // active's style: a dark frame, a fill that drains while boosting and refills over the cooldown, and a label
+            // (the key when ready, else the seconds left). The whole meter is the touch boost button.
+            for (var i = boostRoot.childCount - 1; i >= 0; i--)
             {
-                var sliderGo = new GameObject("Slider", typeof(RectTransform), typeof(Slider), typeof(Image));
-                sliderGo.transform.SetParent(boostRoot, false);
-                var srt = sliderGo.GetComponent<RectTransform>();
-                srt.anchorMin = Vector2.zero;
-                srt.anchorMax = Vector2.one;
-                srt.offsetMin = Vector2.zero;
-                srt.offsetMax = new Vector2(-52f, 0f);
-                _boostSlider = sliderGo.GetComponent<Slider>();
-                _boostSlider.minValue = 0f;
-                _boostSlider.maxValue = 1f;
+                var child = boostRoot.GetChild(i);
+                if (child.GetComponent<Slider>() != null || child.name == "BoostButton") child.gameObject.SetActive(false);
             }
+            var bg = boostRoot.GetComponent<Image>();
+            if (bg == null) bg = boostRoot.gameObject.AddComponent<Image>();
+            bg.color = new Color(0.06f, 0.1f, 0.16f, 0.75f);
+            bg.raycastTarget = true;
 
-            _boostButton = boostRoot.GetComponentInChildren<Button>(true);
-            if (_boostButton == null)
-            {
-                var btnGo = new GameObject("BoostButton", typeof(RectTransform), typeof(Image), typeof(Button));
-                btnGo.transform.SetParent(boostRoot, false);
-                var brt = btnGo.GetComponent<RectTransform>();
-                brt.anchorMin = new Vector2(1f, 0.5f);
-                brt.anchorMax = new Vector2(1f, 0.5f);
-                brt.pivot = new Vector2(1f, 0.5f);
-                brt.anchoredPosition = Vector2.zero;
-                brt.sizeDelta = new Vector2(44f, 28f);
-                btnGo.GetComponent<Image>().color = new Color(0.2f, 0.45f, 0.7f, 0.9f);
-                _boostButton = btnGo.GetComponent<Button>();
-            }
+            var fillGo = new GameObject("BoostFill", typeof(RectTransform), typeof(Image));
+            fillGo.transform.SetParent(boostRoot, false);
+            var frt = (RectTransform)fillGo.transform;
+            frt.anchorMin = Vector2.zero;
+            frt.anchorMax = Vector2.one;
+            frt.offsetMin = new Vector2(2f, 2f);
+            frt.offsetMax = new Vector2(-2f, -2f);
+            _boostFill = fillGo.GetComponent<Image>();
+            _boostFill.sprite = WhiteSprite();
+            _boostFill.type = Image.Type.Filled;
+            _boostFill.fillMethod = Image.FillMethod.Horizontal;
+            _boostFill.fillOrigin = 0;
+            _boostFill.raycastTarget = false;
+            _boostFill.color = BoostReadyColor;
+
+            var textGo = new GameObject("BoostLabel", typeof(RectTransform));
+            textGo.transform.SetParent(boostRoot, false);
+            var trt = (RectTransform)textGo.transform;
+            trt.anchorMin = Vector2.zero;
+            trt.anchorMax = Vector2.one;
+            trt.offsetMin = new Vector2(8f, 0f);
+            trt.offsetMax = new Vector2(-8f, 0f);
+            _boostLabel = textGo.AddComponent<TextMeshProUGUI>();
+            _boostLabel.fontSize = 15f;
+            _boostLabel.fontStyle = FontStyles.Bold;
+            _boostLabel.alignment = TextAlignmentOptions.Center;
+            _boostLabel.color = Color.white;
+            _boostLabel.raycastTarget = false;
+            _boostLabel.textWrappingMode = TextWrappingModes.NoWrap;
+            _boostLabel.overflowMode = TextOverflowModes.Ellipsis;
+            _boostLabel.text = "Boost  ·  SHIFT";
+
+            _boostButton = boostRoot.GetComponent<Button>();
+            if (_boostButton == null) _boostButton = boostRoot.gameObject.AddComponent<Button>();
+            _boostButton.targetGraphic = bg;
             // A reload keeps nothing, but a re-bind in the same scene must not stack listeners.
             _boostButton.onClick.RemoveListener(OnBoostClicked);
             _boostButton.onClick.AddListener(OnBoostClicked);
+        }
+
+        static readonly Color BoostReadyColor = new Color(0.25f, 0.75f, 0.95f, 0.95f);
+        static readonly Color BoostActiveColor = new Color(0.35f, 0.95f, 1f, 1f);
+        static readonly Color BoostCoolingColor = new Color(0.45f, 0.55f, 0.65f, 0.9f);
+        static Sprite _whiteSprite; // made once (a filled Image needs a sprite)
+
+        static Sprite WhiteSprite()
+        {
+            if (_whiteSprite != null) return _whiteSprite;
+            var tex = Texture2D.whiteTexture;
+            _whiteSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            return _whiteSprite;
         }
 
         static RectTransform rtOf(GameObject go) => go.GetComponent<RectTransform>();
@@ -393,8 +427,42 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             PlaceBoostAboveWeaponRow();
             var ship = _views.Ship;
-            if (_boostSlider == null || ship == null || !ship.Exists) return;
-            _boostSlider.value = ship.BoostNormalized;
+            if (_boostFill == null || ship == null || !ship.Exists) return;
+            if (_boostController == null && ship.Anchor != null)
+                _boostController = ship.Anchor.GetComponentInParent<RoguePirates.V4.Foundation.PlayerSystems.ShipBoostController>();
+            float fill;
+            Color color;
+            int state, seconds;
+            if (_boostController == null)
+            {
+                fill = ship.BoostNormalized; color = BoostActiveColor; state = 0; seconds = -1;
+            }
+            else if (_boostController.IsBoosting)
+            {
+                // Playtest (3 Oct, owner): the active time drains, then the cooldown refills.
+                fill = _boostController.BoostNormalized; color = BoostActiveColor; state = 1;
+                seconds = Mathf.CeilToInt(_boostController.BoostRemaining);
+            }
+            else if (_boostController.CooldownRemaining > 0f)
+            {
+                fill = _boostController.CooldownNormalized; color = BoostCoolingColor; state = 2;
+                seconds = Mathf.CeilToInt(_boostController.CooldownRemaining);
+            }
+            else
+            {
+                fill = 1f; color = BoostReadyColor; state = 3; seconds = -1;
+            }
+            if (!Mathf.Approximately(_boostFill.fillAmount, fill)) _boostFill.fillAmount = fill;
+            if (_boostFill.color != color) _boostFill.color = color;
+            if (state == _lastBoostState && seconds == _lastBoostSeconds) return;
+            _lastBoostState = state;
+            _lastBoostSeconds = seconds;
+            _boostLabel.text = state switch
+            {
+                1 => $"BOOST!  ·  {seconds}s",
+                2 => $"Boost  ·  {seconds}s",
+                _ => "Boost  ·  SHIFT"
+            };
         }
     }
 

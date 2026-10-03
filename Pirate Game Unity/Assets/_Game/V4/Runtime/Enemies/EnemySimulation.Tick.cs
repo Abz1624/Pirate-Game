@@ -169,11 +169,36 @@ namespace RoguePirates.V4.Enemies
             return _ship;
         }
 
+        /// <summary>
+        /// Playtest (3 Oct, owner: "when the player collided with an island, the enemies also reacted"): the ship's velocity
+        /// includes the island bounce's push, so every chaser's intercept point, the cannon leads and the leash heading
+        /// flipped with it. While a bounce lasts, enemies keep the velocity from just before the impact. Every enemy
+        /// behaviour reads this (it is set once a frame in <see cref="Tick"/>).
+        /// </summary>
+        public Vector3 PlayerVelocityForEnemies { get; private set; }
+
+        int _seenIslandImpacts = -1;
+        float _bounceUntil = float.NegativeInfinity;
+
         Vector3 ResolvePlayerVelocity(DamageReceiver playerDamage)
+        {
+            PlayerVelocityForEnemies = ReadPlayerVelocity(playerDamage);
+            return PlayerVelocityForEnemies;
+        }
+
+        Vector3 ReadPlayerVelocity(DamageReceiver playerDamage)
         {
             if (playerDamage == null) return Vector3.zero;
             var ship = ShipOf(playerDamage);
             if (ship == null) return Vector3.zero;
+            var impacts = ship.IslandImpactCount;
+            if (impacts != _seenIslandImpacts)
+            {
+                if (_seenIslandImpacts >= 0 && impacts > _seenIslandImpacts)
+                    _bounceUntil = Time.time + Mathf.Max(0.3f, ship.IslandImpact.BounceSeconds) + 0.25f;
+                _seenIslandImpacts = impacts;
+            }
+            if (Time.time < _bounceUntil) return PlayerVelocityForEnemies; // the velocity from before the bounce
             var velocity = ship.Velocity;
             velocity.y = 0f;
             return velocity;
@@ -821,7 +846,7 @@ namespace RoguePirates.V4.Enemies
             return intent;
         }
 
-        const float PursuitMaxLead = 3f; // playtest (3 Oct, owner: "intercept the player's path"): was 1.2 s, too short to cut a moving ship off from range
+        const float PursuitMaxLead = 3f; // playtest (3 Oct, owner: "intercept the player's path"): was 1.2 s; now only a cap (InterceptLead)
         const float SurroundRange = 12f;
         const float SurroundMaxAngle = 75f;
 
@@ -859,10 +884,62 @@ namespace RoguePirates.V4.Enemies
                     p.y = def.visualHeightOffset;
                     if (IslandObstacles.IsAvailable && IslandObstacles.IsPositionBlocked(p, e.radius + 0.5f)) continue;
                     e.position = p;
-                    if (e.view != null) e.view.position = p;
+                    if (e.view != null)
+                    {
+                        e.view.position = p;
+                        ClearTrails(e.view); // playtest (3 Oct, owner: "the enemy trails were behaving weirdly")
+                    }
                     break;
                 }
             }
+        }
+
+        static readonly System.Collections.Generic.List<TrailRenderer> TrailBuffer = new System.Collections.Generic.List<TrailRenderer>();
+        static readonly System.Collections.Generic.List<ParticleSystem> ParticleBuffer = new System.Collections.Generic.List<ParticleSystem>();
+
+        /// <summary>Playtest (3 Oct, owner): a leashed enemy jumps tens of metres in one frame; its wake trails (world
+        /// space) would draw a long streak across the sea from where it was, so their points and particles are dropped.</summary>
+        static void ClearTrails(Transform view)
+        {
+            view.GetComponentsInChildren(true, TrailBuffer);
+            for (var i = 0; i < TrailBuffer.Count; i++) if (TrailBuffer[i] != null) TrailBuffer[i].Clear();
+            view.GetComponentsInChildren(true, ParticleBuffer);
+            for (var i = 0; i < ParticleBuffer.Count; i++) if (ParticleBuffer[i] != null) ParticleBuffer[i].Clear(false);
+            TrailBuffer.Clear();
+            ParticleBuffer.Clear();
+        }
+
+        /// <summary>
+        /// Playtest (3 Oct, owner: the dinghy "syncs with the player on every turn"): the lead was the full travel time
+        /// (up to 3 s) even when the chaser could never get there, so packs aimed far ahead of a faster ship and swung with
+        /// every turn it made. Now the lead is the real intercept time when there is one (a ship sailing away gets a short
+        /// one), varied per unit (65 to 100 %) so a pack does not turn as one, and the point it aims at is never further
+        /// ahead of the ship than 60 % of the chaser's distance, so close in it heads for the ship itself.
+        /// </summary>
+        static float InterceptLead(int agentId, Vector3 toPlayer, float dist, float agentSpeed, Vector3 playerVelocity)
+        {
+            var playerSpeed = playerVelocity.magnitude;
+            // |toPlayer + v t| = s t  ->  (v.v - s^2) t^2 + 2 (toPlayer.v) t + toPlayer.toPlayer = 0
+            var a = playerSpeed * playerSpeed - agentSpeed * agentSpeed;
+            var b = 2f * Vector3.Dot(toPlayer, playerVelocity);
+            var c = dist * dist;
+            var lead = -1f;
+            if (Mathf.Abs(a) < 0.001f) { if (b < 0f) lead = -c / b; }
+            else
+            {
+                var disc = b * b - 4f * a * c;
+                if (disc >= 0f)
+                {
+                    var root = Mathf.Sqrt(disc);
+                    var t1 = (-b - root) / (2f * a);
+                    var t2 = (-b + root) / (2f * a);
+                    lead = t1 > 0f && (t1 < t2 || t2 <= 0f) ? t1 : t2;
+                }
+            }
+            if (!(lead > 0f)) lead = dist / (agentSpeed + playerSpeed); // cannot catch it: a short lead, then chase
+            lead *= 0.65f + 0.35f * Mathf.Repeat(agentId * 0.381966f, 1f);
+            lead = Mathf.Min(lead, PursuitMaxLead);
+            return Mathf.Min(lead, dist * 0.6f / Mathf.Max(0.01f, playerSpeed));
         }
 
         internal static Vector3 GetPursuitDirection(
@@ -882,14 +959,7 @@ namespace RoguePirates.V4.Enemies
             playerVelocity.y = 0f;
             var aim = playerPos;
             if (playerVelocity.sqrMagnitude > 0.12f)
-            {
-                var closing = Mathf.Max(1f, agentSpeed);
-                for (var pass = 0; pass < 2; pass++)
-                {
-                    var lead = Mathf.Min(PursuitMaxLead, HorizontalDistance(aim, agentPos) / closing);
-                    aim = playerPos + playerVelocity * lead;
-                }
-            }
+                aim = playerPos + playerVelocity * InterceptLead(agentId, toPlayer, dist, Mathf.Max(1f, agentSpeed), playerVelocity);
 
             if (surroundRange > 0f && dist < surroundRange && dist > 2.5f)
             {

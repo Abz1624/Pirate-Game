@@ -26,7 +26,7 @@ MonoBehaviour:
   - Hunter
   - Control
   baseDamage: 10.75
-  baseCooldown: 1.2
+  baseCooldown: 0.8
   range: 13
   baseQuantity: 1
   projectileSpeed: 16

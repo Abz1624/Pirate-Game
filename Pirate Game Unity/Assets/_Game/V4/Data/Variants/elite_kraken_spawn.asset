@@ -33,8 +33,8 @@ MonoBehaviour:
     enabled: 0
     value: 0
   baseDamage:
-    enabled: 0
-    value: 0
+    enabled: 1
+    value: 1.1
   tags: []
   inheritBaseVisual: 0
   look:

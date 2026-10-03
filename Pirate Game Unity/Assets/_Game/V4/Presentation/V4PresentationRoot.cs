@@ -165,6 +165,7 @@ namespace RoguePirates.V4.Presentation
             var run = views.Run;
             EnemyViews = new Effects.EnemyViewPresenter(Pools, juice);
             game.Context.Replace<RoguePirates.V4.Enemies.IEnemyViewSink>(EnemyViews);
+            if (CombatFeedback != null) CombatFeedback.NearestEnemyView = EnemyViews.NearestView; // Playtest (3 Oct, owner): grouped hit flashes
             HazardRings = Child<Effects.HazardRingPresenter>("V4HazardRings");
             HazardRings.Bind(game.Context.TryGet<RoguePirates.V4.Enemies.IHazardView>(out var hazards) ? hazards : null,
                 game.Context.TryGet<RoguePirates.V4.Enemies.IBurningPatchView>(out var patches) ? patches : null,

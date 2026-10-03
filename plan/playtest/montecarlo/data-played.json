@@ -2410,6 +2410,8 @@
  "pickups": {
   "xpMult": 0.5,
   "healValue": 25.0,
+  "healFraction": 0.0,
+  "lowWait": 0.5,
   "healMin": 90.0,
   "healMax": 150.0
  },
@@ -2441,6 +2443,7 @@
    "elite": 0.0
   }
  },
+ "armorWorks": false,
  "starterWeapons": [
   "deck_cannons",
   "broadside_battery",

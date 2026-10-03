@@ -207,6 +207,9 @@ namespace RoguePirates.V4.Spawning
                 var angle = _s.Random.LootFloat() * Mathf.PI * 2f;
                 var position = _s.Placement.PlayerPosition + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * focus.ringDistance;
                 position.y = _s.Sink.DefinitionHeightOffset(index);
+                // Playtest (3 Oct, owner): only a miniboss or boss may rise on screen; any other ring focus spawns off screen.
+                if (!_s.Sink.DefinitionIsBoss(index) && !_s.Sink.DefinitionIsMiniboss(index) &&
+                    !SpawnExecutor.PushOffScreen(_s.Placement, _s.Sink.DefinitionRadius(index) + 0.35f, ref position)) return false;
                 var slot = _s.Sink.Spawn(index, position, focus.affix, focus.speedMultiplier, hp, damage);
                 if (slot < 0) return false;
                 unitId = _s.Sink.UnitIdAt(slot);

@@ -36,6 +36,8 @@ namespace RoguePirates.V4.Progression
         float RunSeconds => 0f;
         /// <summary>Hull ÷ max hull (1 without a ship), for the timed health drops.</summary>
         float HullFraction => 1f;
+        /// <summary>The ship's max hull (100 without a ship), for heals given as a share of it.</summary>
+        float MaxHull => 100f;
         void PlaySound(string id);
     }
 
@@ -159,7 +161,8 @@ namespace RoguePirates.V4.Progression
             var index = 0;
             if (xp > 0) Spawn(PickupType.XpBarrel, Mathf.Max(1, Mathf.RoundToInt(xp * 1f)), basePos + DropOffset(index++, count));
             if (gold > 0) Spawn(PickupType.GoldBarrel, gold, basePos + DropOffset(index++, count));
-            if (health) Spawn(PickupType.Powerup, c.healthDropValue, basePos + DropOffset(index, count));
+            var heal = c.healthDropHullFraction > 0f ? Mathf.Max(1, Mathf.RoundToInt(c.healthDropHullFraction * _rewards.MaxHull)) : c.healthDropValue;
+            if (health) Spawn(PickupType.Powerup, heal, basePos + DropOffset(index, count));
         }
 
         /// <summary>Playtest (Survivor.io): one health drop per random wait, sooner while the hull is low.</summary>

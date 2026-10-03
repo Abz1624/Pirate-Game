@@ -105,10 +105,10 @@ MonoBehaviour:
     sideMuzzleOffset: 0.85
     splashOnDespawn: 1
   orbit:
-    baseBlades: 1
+    baseBlades: 3
     orbitRadius: 9
     heightOffset: 0.35
-    angularSpeedDegrees: 60
+    angularSpeedDegrees: 90
     hitRadius: 1
     hitIntervalSeconds: 0.12
     volleyHitIntervalSeconds: 0.096

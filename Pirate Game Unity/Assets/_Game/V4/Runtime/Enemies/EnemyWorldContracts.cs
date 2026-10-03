@@ -59,6 +59,7 @@ namespace RoguePirates.V4.Enemies
 
         public string DefinitionId(int index) => At(index)?.id;
         public bool DefinitionIsBoss(int index) => At(index) != null && At(index).isBoss;
+        public bool DefinitionIsMiniboss(int index) => At(index) != null && At(index).isMiniboss;
         public float DefinitionRadius(int index) => At(index) != null ? At(index).radius : 1f;
         public float DefinitionHeightOffset(int index) => At(index) != null ? At(index).visualHeightOffset : 0f;
 

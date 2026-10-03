@@ -83,12 +83,37 @@ namespace RoguePirates.V4.Presentation.Hud
             if (_panel != null) _panel.SetActive(true);
             var results = _views.Results;
             if (_headline != null) _headline.text = SaltwindRunResultsLogic.BuildHeadline(results.ObjectiveSecured, results.ObjectiveSecured && results.EndedByDeath);
+            SubmitOnline(); // Playtest (3 Oct, owner): before the text, so it shows "sending..."
             if (_summary != null) _summary.text = BuildSummary();
             if (_summaryScroll != null) _summaryScroll.verticalNormalizedPosition = 1f; // open at the top
         }
 
+        // Playtest (3 Oct, owner): the run goes to the weekly leaderboard in the background; the results text shows
+        // "Weekly rank #N (best K kills)" or "Not ranked: offline" when the API answers (never blocks the screen).
+        string _onlineLine;
+        bool _submitted;
+
+        void SubmitOnline()
+        {
+            if (_submitted || _views?.Run == null || _views.Run.WeaponPlaytestActive) return;
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == V4SceneNames.ModuleLab) return;
+            _submitted = true;
+            _onlineLine = RoguePirates.V4.Presentation.Online.RunSubmitter.Pending;
+            RoguePirates.V4.Presentation.Online.RunSubmitter.Submit(_views, line =>
+            {
+                if (this == null || !_submitted) return;
+                _onlineLine = line;
+                if (IsShowing && _summary != null) _summary.text = BuildSummary();
+            });
+        }
+
+        /// <summary>Playtest (3 Oct, owner): the weekly rank line (null before a submission).</summary>
+        public string OnlineLine => _onlineLine;
+
         public void Hide()
         {
+            _submitted = false; // Playtest (3 Oct, owner): the next run is submitted again
+            _onlineLine = null;
             if (_backdrop != null) _backdrop.SetActive(false);
             if (_panel != null) _panel.SetActive(false);
         }
@@ -110,6 +135,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 var level = _views.Progression != null ? _views.Progression.Level : 0;
                 sb.AppendLine($"Survived {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00} · {run.Kills} kills · level {level}");
             }
+            if (!string.IsNullOrEmpty(_onlineLine)) sb.AppendLine("<color=#FFD166>" + _onlineLine + "</color>"); // Playtest (3 Oct, owner)
 
             if (r.HasRewardSection)
             {

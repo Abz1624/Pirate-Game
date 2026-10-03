@@ -12,6 +12,8 @@ namespace RoguePirates.V4.Config
         [Header("Kill drops")]
         [Tooltip("Chance a kill also drops a health barrel.")] public float healthDropChance = 0.12f;
         [Tooltip("Hull the health barrel restores.")] public int healthDropValue = 25;
+        [Tooltip("Playtest (3 Oct, owner): above 0, a health barrel restores this share of the ship's max hull instead (0.2 = 20%).")]
+        [Range(0f, 1f)] public float healthDropHullFraction;
         [Tooltip("Playtest (2 Oct 2026, Survivor.io: a small heal about every 90-150 s): above 0, health drops come on a timer instead of the per-kill chance: the first kill after a random wait between the min and the max drops one.")]
         public float healthDropIntervalMin;
         public float healthDropIntervalMax;

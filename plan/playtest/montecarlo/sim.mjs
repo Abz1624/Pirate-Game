@@ -14,6 +14,12 @@ export const MODEL = {
     powder_kegs: [0.72, 2.2, 0.72, 3], lightning_mast: [1, 1.8, 1, 3], cursed_doubloons: [1, 2, 1, 3], ramming_prow: [0.3, 0.3, 1, 3],
     siren_bell: [1, 3, 1, 5], mortar: [1, 1.8, 1, 3], maelstrom_charge: [3.7, 5, 0.2, 4], monkey_gunners: [13, 6, 1, 1], parrot_squadron: [22, 4, 1, 1],
   },
+  // The cooldowns and orbit spins the weapon table above was measured at (2 Oct); the model scales its cycles by the data's.
+  refCooldown: { deck_cannons: 1.05, swivel_guns: 0.6, long_nine: 2.4, harpoon_gun: 1.2, chainshot: 1.5, broadside_battery: 1.5, flying_cutlasses: 1, anchor_flail: 0.75,
+    lighthouse_lantern: 0.5, flamethrower: 0.7, powder_kegs: 2.2, lightning_mast: 1.8, cursed_doubloons: 2, ramming_prow: 0.3, siren_bell: 3, mortar: 1.8, maelstrom_charge: 5,
+    monkey_gunners: 6, parrot_squadron: 4 },
+  refSpin: { flying_cutlasses: 120, anchor_flail: 100, lighthouse_lantern: 60 },
+  refBlades: { flying_cutlasses: 2, anchor_flail: 1, lighthouse_lantern: 1 },
   crowdForFullSplash: 25,      // area weapons reach their full target count at this many enemies alive
   engagement: 0.9,             // share of the enemies the player fights (the rest wander off)
   lootShare: 1,                // share of XP, gold and chests collected (the owner collected ~all; the report profile uses 0.8)
@@ -23,15 +29,16 @@ export const MODEL = {
   linesPerRarity: [1, 1, 2, 2, 3],
   cardMix: { upgrade: 0.5, newWeapon: 0.3, logbook: 0.2 },
   // Incoming damage: contacts/s = contactRate x (melee enemies alive)^0.6 x (1 - dodge); shots/s = enemies x 1/2.5 s x hit chance.
-  // Calibrated (harm 0.5 of the first guess): contactRate 0.09, shot hit 0.3, focus 0.25, boss 0.35 hits/s, all x0.5.
-  contactRate: 0.045, dodge: 0.7, shotHitChance: 0.15, shotInterval: 2.5,
-  bossHitsPerSecond: 0.175, focusHitsPerSecond: 0.125,
+  // Calibrated on two playtests (3 Oct): the first build (Rook afloat past 16:00 with ease) and round 5's (Rook sank at
+  // 3-4 min; the model reaches ~9 min there, so it under-states early danger: keep a margin).
+  contactRate: 0.1, dodge: 0.7, shotHitChance: 0.3, shotInterval: 2.5,
+  bossHitsPerSecond: 0.6, focusHitsPerSecond: 0.5,
   focusShareOfDps: 0.5,        // single-target DPS spent on a miniboss or elite while waves are still coming
   eliteXp: 2,                  // elites pay x XP
   maxMinutes: 20,
   // Calibrated against the owner's playtest (3 Oct, current data): level 24 and 515 kills at 5:13, level 28 and 702
   // kills at 7:18, hull mostly high (the game felt too easy). See calibrate.mjs.
-  accuracy: 0.3,              // share of the build's damage that lands on an enemy (misses, travel, overkill on the dying)
+  accuracy: 0.6,              // share of the build's damage that lands on an enemy (misses, travel, overkill on the dying)
   arrivalSeconds: 4,           // a new enemy spawns off-screen and needs this long to come into range
   topUpPerSecond: 0.5,         // the flow floor's top-up (fitted: kills are spawn-limited, as in the playtest)
 };
@@ -53,7 +60,7 @@ export function simulateRun(data, params) {
   let maxHull = cap.hull, hull = maxHull, level = 1, xp = 0, kills = 0, spawns = 0, damageTaken = 0;
   const weapons = [], logbooks = {}, items = [], evolved = [];
   const addWeapon = id => weapons.push({ id, level: 1, dmg: 1, cd: 1, qty: 0, size: 1, evo: false });
-  addWeapon(cap.weapon);
+  addWeapon(params.startWeapon || cap.weapon);
   const groups = []; // { id, hp, n, ranged, dmg, xp, elite, ready }
   const focus = [];  // single targets: { id, hp, maxHp, dmg, boss, arena, xp }
   let healAt = 90 + r() * 60, lastHeal = 0, chestAt = M.chestEverySeconds, bandKills = 0, bandSpawns = 0, bandStart = 0, bandRate = 1, bandElite = 0;
@@ -68,13 +75,18 @@ export function simulateRun(data, params) {
     const crit = 1 + Math.min(1, stats[S.CritChance]) * Math.max(0, stats[S.CritDamage] - 1);
     const dmgMult = lvl * stats[S.Damage] * crit * (w.evo ? M.evolutionMultiplier : 1);
     const qty = (base.quantity + w.qty + Math.floor(stats[S.Quantity])) / base.quantity;
-    const single = base.damage * m[0] * qty * dmgMult / (m[1] * w.cd / stats[S.AttackSpeed]);
+    // Orbits: passes per second follow the spin (their cooldown is unused); everything else follows the cooldown.
+    const cycleScale = M.refSpin[w.id] ? M.refSpin[w.id] / Math.max(1, base.spin || M.refSpin[w.id]) : (M.refCooldown[w.id] ? base.cooldown / M.refCooldown[w.id] : 1);
+    const blades = M.refBlades[w.id] ? (base.blades || M.refBlades[w.id]) / M.refBlades[w.id] : 1;
+    const single = base.damage * m[0] * qty * dmgMult * (base.rateScale || 1) * blades / (m[1] * cycleScale * w.cd / stats[S.AttackSpeed]);
     return { single, perHit: base.damage * m[2] * dmgMult, targets: m[3] * (1 + 0.5 * (w.size * stats[S.Size] - 1)) };
   };
   const singleDps = () => weapons.reduce((s, w) => s + weaponNumbers(w).single, 0);
 
-  const spawnEnemy = (id, t, hpMult = 1, eliteRoll = false) => {
-    const e = E[id]; if (!e) return;
+  const spawnEnemy = (id, t, hpMult = 1, eliteRoll = false, fallbackId = null) => {
+    let e = E[id]; if (!e) return;
+    const rangedCap = (tl.tagCaps && tl.tagCaps.ranged_gunner) || 99;
+    if (e.ranged && groups.reduce((s, g) => s + (g.ranged ? g.n : 0), 0) >= rangedCap) { if (!fallbackId || !E[fallbackId]) return; id = fallbackId; e = E[id]; }
     const alive = groups.reduce((s, g) => s + g.n, 0) + focus.length;
     if (alive >= tl.cap) return;
     let hp = e.hp * hpCurve(minuteOf(t)) * hpMult * (params.enemyHpMult || 1), elite = false;
@@ -87,6 +99,7 @@ export function simulateRun(data, params) {
     groups.push({ id, hp, n: 1, ranged: e.ranged, dmg: e.dmg * (elite ? 1.1 : 1), xp: e.xp * (elite ? M.eliteXp : 1), elite, ready: t + M.arrivalSeconds });
     spawns++; bandSpawns++;
   };
+  const mainOf = band => pickW(r, band.pools[0].entries, x => x[1])[0];
   const pickBandEnemy = band => {
     const pools = band.pools.filter(p => p.entries.length); let roll = r(), pool = pools[0];
     if (pools.length > 1 && roll > pools[0].share) { let th = pools[0].share; pool = pools[pools.length - 1]; for (let i = 1; i < pools.length; i++) { th += pools[i].share; if (roll <= th) { pool = pools[i]; break; } } }
@@ -99,7 +112,7 @@ export function simulateRun(data, params) {
     const evoReady = weapons.find(w => !w.evo && w.level >= P.evolutionLevel && Object.values(data.evolutions).some(e => e.weapon === w.id && items.includes(e.item)));
     if (evoReady) { evoReady.evo = true; evolved.push(evoReady.id); return; }
     const rarity = pickW(r, [0, 1, 2, 3, 4], i => M.rarityWeights[i]);
-    const canNew = weapons.length < P.weaponSlots, canBook = Object.keys(logbooks).length < P.logbookSlots || Object.entries(logbooks).some(([k, v]) => v < data.logbooks[k].max);
+    const canNew = !params.solo && weapons.length < P.weaponSlots, canBook = Object.keys(logbooks).length < P.logbookSlots || Object.entries(logbooks).some(([k, v]) => v < data.logbooks[k].max);
     const upgradable = weapons.filter(w => w.level < (data.weapons[w.id].maxLevel || P.maxWeaponLevel));
     const roll = r(), mix = M.cardMix;
     if (canNew && roll < mix.newWeapon) {
@@ -142,9 +155,9 @@ export function simulateRun(data, params) {
         const [floor, waveRate] = waveAt(t);
         const pulse = tl.pulses.find(p => t >= p.t && t < p.t + p.seconds);
         spawnAcc += band.rate * waveRate * (pulse ? pulse.mult : 1) * bandRate * density(t) * (bossSpawned && !bossDone ? 0.5 : 1);
-        while (spawnAcc >= 1) { spawnAcc -= 1; spawnEnemy(pickBandEnemy(band), t, 1, true); }
+        while (spawnAcc >= 1) { spawnAcc -= 1; spawnEnemy(pickBandEnemy(band), t, 1, true, mainOf(band)); }
         const want = floor * (tl.cap - tl.reserved) * bandRate * density(t) * (bossSpawned && !bossDone ? 0.3 : 1);
-        if (alive() < want) { topUpAcc += Math.min(M.topUpPerSecond, want - alive()); while (topUpAcc >= 1) { topUpAcc -= 1; spawnEnemy(pickBandEnemy(band), t, 1, true); } }
+        if (alive() < want) { topUpAcc += Math.min(M.topUpPerSecond, want - alive()); while (topUpAcc >= 1) { topUpAcc -= 1; spawnEnemy(pickBandEnemy(band), t, 1, true, mainOf(band)); } }
       }
       for (const h of tl.hordes) if (h[0] === t) for (let i = 0; i < Math.round(h[2] * density(t)); i++) spawnEnemy(h[1], t);
     } else {
@@ -211,10 +224,15 @@ export function simulateRun(data, params) {
       for (const g of groups) if (!g.ranged && g.ready <= t) { const d = contacts * (g.n * M.engagement / melee) * g.dmg; hits += d; damageBy[g.id] = (damageBy[g.id] ?? 0) + d; }
     }
     for (const f of focus) { const d = f.dmg * (f.boss ? M.bossHitsPerSecond : M.focusHitsPerSecond) * (1 - dodge * 0.6); hits += d; damageBy[f.id] = (damageBy[f.id] ?? 0) + d; }
-    const taken = hits * dmgCurve(minute) * (params.enemyDamageMult || 1);
+    const armor = data.armorWorks ? Math.max(0, stats[S.Armor] || 0) : 0;
+    const taken = hits * dmgCurve(minute) * (params.enemyDamageMult || 1) * (20 / (20 + armor));
     hull -= taken; damageTaken += taken; minuteDamage += taken;
     hull = Math.min(maxHull, hull + (stats[S.HullRegen] || 0));
-    if (t >= healAt) { hull = Math.min(maxHull, hull + data.pickups.healValue); lastHeal = t; healAt = t + (data.pickups.healMin + r() * (data.pickups.healMax - data.pickups.healMin)) * (hull / maxHull < 0.35 ? 0.5 : 1); }
+    if (t >= healAt) {
+      const heal = data.pickups.healFraction > 0 ? data.pickups.healFraction * maxHull : data.pickups.healValue;
+      hull = Math.min(maxHull, hull + heal); lastHeal = t;
+      healAt = t + (data.pickups.healMin + r() * (data.pickups.healMax - data.pickups.healMin)) * (hull / maxHull < 0.35 ? (data.pickups.lowWait ?? 0.5) : 1);
+    }
     if (t >= chestAt) {
       chestAt = t + M.chestEverySeconds / M.lootShare * 0.8;
       const pool = Object.values(data.items).filter(i => i.inChest);

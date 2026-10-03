@@ -1,0 +1,6 @@
+invulnerable: inv
+spawned: deckhand_dinghy r0c0; treasure_raider r0c1; cutthroat_skiff r0c2; needle_sloop r0c3; drowned_pursuer r0c4; cannonboat r0c5; gunner_cog r1c0; net_cutter r1c1; shield_frigate r1c2; drowned_harrier r1c3; bomb_boat r1c4; bomb_ketch r1c5; rammer_raft r2c0; ram_raider r2c1; boarding_barge r2c2; powder_barge r2c3; repair_tender r2c4; 
+parrot_squadron grouped before 0 after 0 coins=0 state=LevelUpPaused t=24
+cursed_doubloons grouped before 0 after 0 coins=0 state=Playing t=32
+powder_kegs grouped before 0 after 0 coins=0 state=LevelUpPaused t=40
+monkey_gunners grouped before 0 after 0 coins=0 state=Playing t=47

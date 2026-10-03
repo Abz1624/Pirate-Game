@@ -75,6 +75,22 @@ namespace RoguePirates.V4.Presentation.Menu
             return view;
         }
 
+        /// <summary>Playtest (3 Oct, owner): a backdrop made under an inactive holder and stripped of its NavMesh components
+        /// before it wakes (a plain Instantiate enabled the boats' agents, which logged "Failed to create agent because
+        /// there is no valid NavMesh" before the strip below ran).</summary>
+        static GameObject InstantiateScenery(GameObject prefab)
+        {
+            var holder = new GameObject("BackdropHolder");
+            holder.SetActive(false);
+            var go = Instantiate(prefab, holder.transform, false);
+            go.name = prefab.name;
+            foreach (var agent in go.GetComponentsInChildren<UnityEngine.AI.NavMeshAgent>(true)) DestroyImmediate(agent);
+            foreach (var obstacle in go.GetComponentsInChildren<UnityEngine.AI.NavMeshObstacle>(true)) DestroyImmediate(obstacle);
+            go.transform.SetParent(null, true);
+            Destroy(holder);
+            return go;
+        }
+
         static GameObject SceneRoot(string name)
         {
             foreach (var go in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
@@ -100,8 +116,8 @@ namespace RoguePirates.V4.Presentation.Menu
             _ownsBackdrops = _mainBackdrop == null && _selectBackdrop == null;
             if (_ownsBackdrops && settings != null)
             {
-                if (settings.mainMenuBackdrop != null) _mainBackdrop = Instantiate(settings.mainMenuBackdrop);
-                if (settings.characterSelectBackdrop != null) _selectBackdrop = Instantiate(settings.characterSelectBackdrop);
+                if (settings.mainMenuBackdrop != null) _mainBackdrop = InstantiateScenery(settings.mainMenuBackdrop);
+                if (settings.characterSelectBackdrop != null) _selectBackdrop = InstantiateScenery(settings.characterSelectBackdrop);
             }
             // Playtest (3 Oct): the captains' boats carry NavMeshAgents from the art scene and the menu has no NavMesh
             // ("Failed to create agent because there is no valid NavMesh"): the backdrops are scenery, strip them.
@@ -140,7 +156,7 @@ namespace RoguePirates.V4.Presentation.Menu
             {
                 var b = FindDeep(_main.transform, name)?.GetComponent<Button>();
                 if (b == null) continue;
-                var open = name == "Settings" || name == "Ledger" || name == "Profile";
+                var open = name == "Settings" || name == "Ledger" || name == "Profile" || name == "Leaderboard"; // Playtest (3 Oct, owner): the weekly leaderboard
                 b.interactable = open;
                 if (open) { var n = name; b.onClick.AddListener(() => HubRequested?.Invoke(n)); }
             }

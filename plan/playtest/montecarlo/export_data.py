@@ -109,7 +109,7 @@ for p in glob.glob(os.path.join(V4, 'Weapons', '*.asset')):
     if 'weaponId' not in a: continue  # WeaponRules
     wid = a['weaponId']
     weapons[wid] = dict(id=wid, name=a['displayName'], damage=float(a['baseDamage']), cooldown=float(a['baseCooldown']),
-                        quantity=int(a['baseQuantity']), behavior=int(a['behavior']), maxLevel=int(a['maxLevel']),
+                        quantity=int(a['baseQuantity']), behavior=int(a['behavior']), maxLevel=int(a['maxLevel']), spin=float(a['orbit'].get('angularSpeedDegrees', 0)), blades=int(a['orbit'].get('baseBlades', 1)),
                         pierce=int(a['projectile'].get('pierce', 0)), lane=bool(a['lane'].get('enabled', 0)),
                         axes=[dict(axis=int(x['axis']), inc=float(x['baseIncrement']), weight=float(x['offerWeight']), cap=float(x['maxAccumulated']))
                               for x in (a.get('upgradeAxes') or [])])
@@ -142,7 +142,8 @@ data = dict(enemies=enemies, timeline=timeline, weapons=weapons, logbooks=logboo
             progression=dict(xpTable=ints(raw_hex(PROG, 'xpToNextTable')), weaponSlots=int(prog['weaponSlots']), logbookSlots=int(prog['logbookSlots']),
                              levelsPerRarity=ints(raw_hex(PROG, 'levelsPerRarity')), rarityMult=[float(x) for x in prog['rarityMultipliers']],
                              evolutionLevel=int(prog['evolutionUnlockLevel']), maxWeaponLevel=int(prog['maxWeaponLevel'])),
-            pickups=dict(xpMult=float(pick['xpPickupMultiplier']), healValue=float(pick['healthDropValue']),
+            pickups=dict(xpMult=float(pick['xpPickupMultiplier']), healValue=float(pick['healthDropValue']), healFraction=float(pick.get('healthDropHullFraction', 0)),
+                         lowWait=float(pick.get('healthDropLowHullWaitMultiplier', 0.5)),
                          healMin=float(pick.get('healthDropIntervalMin', 0)), healMax=float(pick.get('healthDropIntervalMax', 0))),
             curve=dict(hp=[float(curve['enemyHpPerMinute'][k]) for k in ('c0', 'c1', 'c2')], dmg=[float(curve['enemyDamagePerMinute'][k]) for k in ('c0', 'c1', 'c2')],
                        global_hp=float(curve['globalHpMultiplier'])),
@@ -152,6 +153,7 @@ data = dict(enemies=enemies, timeline=timeline, weapons=weapons, logbooks=logboo
                           eliteHp=float(director.get('eliteHpMultiplier', 8)),
                           ttk=dict(boss=float(director.get('bossMinSeconds', 0)), arena=float(director.get('arenaFocusMinSeconds', 0)),
                                    focus=float(director.get('focusMinSeconds', 0)), elite=float(director.get('adaptiveEliteMinSeconds', 0)))),
+            armorWorks=bool(os.environ.get('RP_ARMOR', '1') == '1'),
             starterWeapons=list(load(os.path.join(V4, 'Build', 'Unlocks_Saltwind.asset')).get('starterWeaponIds') or []))
 out = os.environ.get('RP_OUT') or os.path.join(os.path.dirname(__file__), 'data.json')
 json.dump(data, open(out, 'w', encoding='utf-8'), indent=1)

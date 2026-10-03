@@ -101,7 +101,7 @@ namespace RoguePirates.V4.Weapons
                 var position = _enemies.Position(i);
                 var delta = position - origin;
                 delta.y = 0f;
-                if (delta.sqrMagnitude > range * range) continue;
+                if (delta.sqrMagnitude > Reach(range, i) * Reach(range, i)) continue;
                 if (IsWithinForwardArc(origin, forward, position, arcDegrees)) return true;
             }
             return false;
@@ -129,7 +129,7 @@ namespace RoguePirates.V4.Weapons
                 var delta = position - origin;
                 delta.y = 0f;
                 var dist = delta.magnitude;
-                if (dist > range) continue;
+                if (dist > Reach(range, i)) continue;
                 if (!IsWithinForwardArc(origin, forward, position, arc)) continue;
                 var hp = _enemies.Hp(i);
                 if (hp > bestHp || (Mathf.Approximately(hp, bestHp) && dist < bestDist))
@@ -157,7 +157,7 @@ namespace RoguePirates.V4.Weapons
                 var position = _enemies.Position(i);
                 var delta = position - origin;
                 delta.y = 0f;
-                if (delta.sqrMagnitude > range * range) continue;
+                if (delta.sqrMagnitude > Reach(range, i) * Reach(range, i)) continue;
                 if (!IsWithinForwardArc(origin, forward, position, arc)) continue;
 
                 var score = ScoreTarget(i, def.preferElite, def.preferHighestHull, delta.magnitude);
@@ -207,7 +207,7 @@ namespace RoguePirates.V4.Weapons
                 var delta = _enemies.Position(i) - origin;
                 delta.y = 0f;
                 var distSq = delta.sqrMagnitude;
-                if (distSq > range * range || distSq < 0.01f) continue;
+                if (distSq > Reach(range, i) * Reach(range, i) || distSq < 0.01f) continue;
 
                 var dir = delta.normalized;
                 var forwardDot = Vector3.Dot(dir, forward);
@@ -239,7 +239,7 @@ namespace RoguePirates.V4.Weapons
                 var position = _enemies.Position(i);
                 var delta = position - origin;
                 delta.y = 0f;
-                if (delta.sqrMagnitude > range * range) continue;
+                if (delta.sqrMagnitude > Reach(range, i) * Reach(range, i)) continue;
 
                 var count = 0;
                 for (var j = 0; j < _enemies.Capacity; j++)
@@ -272,7 +272,7 @@ namespace RoguePirates.V4.Weapons
                 var delta = _enemies.Position(i) - origin;
                 delta.y = 0f;
                 var dist = delta.magnitude;
-                if (dist > range) continue;
+                if (dist > Reach(range, i)) continue;
                 var score = -dist;
                 if (dist <= 6f) score += 100f;
                 if (score <= bestScore) continue;
@@ -295,7 +295,7 @@ namespace RoguePirates.V4.Weapons
                 if (!_enemies.IsActive(i)) continue;
                 var delta = _enemies.Position(i) - origin;
                 delta.y = 0f;
-                if (delta.sqrMagnitude > range * range) continue;
+                if (delta.sqrMagnitude > Reach(range, i) * Reach(range, i)) continue;
                 var score = ScoreTarget(i, preferElite, preferHighestHull, delta.magnitude);
                 if (score <= bestScore) continue;
                 bestScore = score;
@@ -306,6 +306,10 @@ namespace RoguePirates.V4.Weapons
             aimDirection = (_enemies.Position(targetIndex) - origin).normalized;
             return true;
         }
+
+        // Playtest (3 Oct, owner: "weapons were not attacking the crab"): a weapon reaches an enemy's hull, not only its
+        // centre, so big enemies (the Reef Crab, the boss) are in range when their edge is.
+        float Reach(float range, int index) => range + Mathf.Max(0f, _enemies.Radius(index));
 
         float ScoreTarget(int index, bool preferElite, bool preferHighestHull, float distance)
         {

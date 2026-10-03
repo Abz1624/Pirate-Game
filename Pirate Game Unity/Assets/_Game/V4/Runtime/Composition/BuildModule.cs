@@ -317,8 +317,17 @@ namespace RoguePirates.V4.Composition
 
         public static int LifetimeGold => RoguePirates.V4.Rewards.LifetimeGold.Total;
 
-        /// <summary>The build's incoming-damage multiplier on the ship (Brace!, Reinforced Keel).</summary>
-        public float IncomingDamageMultiplier() => Captain.IncomingDamageMultiplier * Items.IncomingDamageMultiplier();
+        /// <summary>The build's incoming-damage multiplier on the ship (Brace!, Reinforced Keel, Armor).</summary>
+        public float IncomingDamageMultiplier() => Captain.IncomingDamageMultiplier * Items.IncomingDamageMultiplier() * ArmorMultiplier();
+
+        /// <summary>Playtest (3 Oct, owner: "Armor does nothing"): Armor cuts every hit with diminishing returns, damage x
+        /// 20 / (20 + Armor): 4 Armor (Reef Carapace) takes 17% off, 15 (Ironclad at rank 5) about 43%.</summary>
+        public const float ArmorHalfPoint = 20f;
+        float ArmorMultiplier()
+        {
+            var armor = Mathf.Max(0f, Stats.Get((int)StatId.Armor));
+            return ArmorHalfPoint / (ArmorHalfPoint + armor);
+        }
 
         /// <summary>V3 DamageReceiver.TakeDamage told the items after every hit it took.</summary>
         public void AttachShip(PlayerShipController ship)
@@ -489,6 +498,7 @@ namespace RoguePirates.V4.Composition
             }
             public bool RollHealthDrop(float chance) => Run != null && Run.Rng.DirectorFloat() < chance;
             public float RunSeconds => Run != null ? Run.ElapsedSeconds : 0f;
+            public float MaxHull => _w.Ship != null && _w.Ship.Damage != null ? _w.Ship.Damage.MaxHP : 100f;
             public float HullFraction
             {
                 get

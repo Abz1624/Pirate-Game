@@ -133,7 +133,7 @@ namespace RoguePirates.V4.Enemies
 
             var state = State(agent.id, def);
             var dist = HorizontalDistance(agent.position, playerPos);
-            var playerVelocity = ResolvePlayerVelocity(playerDamage);
+            var playerVelocity = world != null ? world.PlayerVelocityForEnemies : ResolvePlayerVelocity(playerDamage); // playtest (3 Oct): not the island bounce
 
             if (agent.attackCooldown > 0f)
                 agent.attackCooldown -= dt;
@@ -196,6 +196,15 @@ namespace RoguePirates.V4.Enemies
             Vector3 playerPos,
             Vector3 playerVelocity)
         {
+            // Playtest (3 Oct, owner: the dinghy "is not doing anything to hurt the player; it runs away"): it backed off as
+            // soon as it came within 2.2 m of its own radius, before its hull could touch the ship, so it never rammed.
+            // Now it rams: it backs off only after its contact hit landed (the contact cooldown has just started), and
+            // peels away to one side for a moment before coming round again.
+            if (state.phase == EnemyCombatPhase.Approach && agent.contactCooldown > GameConstants.EnemyContactCooldown * 0.5f)
+            {
+                state.phase = EnemyCombatPhase.Recover;
+                state.phaseTimer = 0.6f;
+            }
             state.contactDisabled = state.phase == EnemyCombatPhase.Recover;
 
             if (state.phase == EnemyCombatPhase.Recover)
@@ -203,14 +212,8 @@ namespace RoguePirates.V4.Enemies
                 state.phaseTimer -= dt;
                 if (state.phaseTimer <= 0f)
                     state.phase = EnemyCombatPhase.Approach;
-                return -dir * (agent.moveSpeed * 0.65f);
-            }
-
-            if (dist < agent.radius + 2.2f && state.phase == EnemyCombatPhase.Approach)
-            {
-                state.phase = EnemyCombatPhase.Recover;
-                state.phaseTimer = 0.8f;
-                return -dir * (agent.moveSpeed * 0.9f);
+                var side = Vector3.Cross(Vector3.up, dir) * ((agent.id & 1) == 0 ? 1f : -1f);
+                return (side * 0.85f - dir * 0.5f).normalized * (agent.moveSpeed * 0.9f);
             }
 
             // Cut the player off and close from a ring slot (replaces the fixed per-id side bias).

@@ -4,7 +4,7 @@
    "id": "barnacle_king",
    "name": "Barnacle King",
    "hp": 490.0,
-   "dmg": 9.0,
+   "dmg": 0.90000004,
    "speed": 2.5,
    "xp": 100.0,
    "boss": true,
@@ -15,7 +15,7 @@
    "id": "boarding_barge",
    "name": "Boarding Barge",
    "hp": 14.0,
-   "dmg": 8.0,
+   "dmg": 4.0,
    "speed": 3.2,
    "xp": 5.0,
    "boss": false,
@@ -26,7 +26,7 @@
    "id": "bomb_boat",
    "name": "Bomb Boat",
    "hp": 2.8,
-   "dmg": 7.0,
+   "dmg": 3.5,
    "speed": 6.0,
    "xp": 4.0,
    "boss": false,
@@ -37,7 +37,7 @@
    "id": "cannonboat",
    "name": "Cannonboat",
    "hp": 2.8,
-   "dmg": 4.0,
+   "dmg": 2.0,
    "speed": 3.8,
    "xp": 3.0,
    "boss": false,
@@ -48,7 +48,7 @@
    "id": "cutthroat_skiff",
    "name": "Cutthroat Skiff",
    "hp": 12.25,
-   "dmg": 3.5,
+   "dmg": 1.75,
    "speed": 4.5,
    "xp": 3.0,
    "boss": false,
@@ -59,7 +59,7 @@
    "id": "deckhand_dinghy",
    "name": "Deckhand Dinghy",
    "hp": 3.5,
-   "dmg": 2.5,
+   "dmg": 1.25,
    "speed": 5.5,
    "xp": 2.0,
    "boss": false,
@@ -70,7 +70,7 @@
    "id": "drowned_harrier",
    "name": "drowned harrier",
    "hp": 5.25,
-   "dmg": 4.0,
+   "dmg": 2.0,
    "speed": 4.0,
    "xp": 4.0,
    "boss": false,
@@ -81,7 +81,7 @@
    "id": "drowned_pursuer",
    "name": "drowned pursuer",
    "hp": 7.0,
-   "dmg": 3.0,
+   "dmg": 1.5,
    "speed": 5.0,
    "xp": 3.0,
    "boss": false,
@@ -92,7 +92,7 @@
    "id": "gunner_cog",
    "name": "Gunner Cog",
    "hp": 4.2,
-   "dmg": 4.5,
+   "dmg": 2.25,
    "speed": 3.5,
    "xp": 4.0,
    "boss": false,
@@ -103,7 +103,7 @@
    "id": "hammerhead",
    "name": "Hammerhead",
    "hp": 1.75,
-   "dmg": 3.5,
+   "dmg": 1.75,
    "speed": 5.0,
    "xp": 3.0,
    "boss": false,
@@ -114,7 +114,7 @@
    "id": "kraken_spawn",
    "name": "Kraken Spawn",
    "hp": 17.5,
-   "dmg": 11.0,
+   "dmg": 5.5,
    "speed": 2.5,
    "xp": 6.0,
    "boss": false,
@@ -125,7 +125,7 @@
    "id": "manta_ray",
    "name": "Manta Ray",
    "hp": 8.75,
-   "dmg": 8.0,
+   "dmg": 4.0,
    "speed": 4.5,
    "xp": 5.0,
    "boss": false,
@@ -136,7 +136,7 @@
    "id": "rammer_raft",
    "name": "Rammer Raft",
    "hp": 9.8,
-   "dmg": 5.0,
+   "dmg": 2.5,
    "speed": 5.0,
    "xp": 3.0,
    "boss": false,
@@ -147,7 +147,7 @@
    "id": "reef_crab_miniboss",
    "name": "Reef Crab",
    "hp": 42.0,
-   "dmg": 7.0,
+   "dmg": 0.7,
    "speed": 4.6,
    "xp": 35.0,
    "boss": false,
@@ -158,7 +158,7 @@
    "id": "shark",
    "name": "Shark",
    "hp": 7.0,
-   "dmg": 3.0,
+   "dmg": 1.5,
    "speed": 4.2,
    "xp": 4.0,
    "boss": false,
@@ -169,7 +169,7 @@
    "id": "swordfish",
    "name": "Swordfish",
    "hp": 2.2749999,
-   "dmg": 3.0,
+   "dmg": 1.5,
    "speed": 6.5,
    "xp": 2.0,
    "boss": false,
@@ -180,7 +180,7 @@
    "id": "bomb_ketch",
    "name": "bomb ketch",
    "hp": 7.0,
-   "dmg": 7.0,
+   "dmg": 3.5,
    "speed": 3.2,
    "xp": 4.0,
    "boss": false,
@@ -192,7 +192,7 @@
    "id": "elite_hammerhead",
    "name": "Elite Hammerhead",
    "hp": 7.6363635,
-   "dmg": 3.5,
+   "dmg": 0.35,
    "speed": 5.0,
    "xp": 3.0,
    "boss": false,
@@ -204,7 +204,7 @@
    "id": "elite_kraken_spawn",
    "name": "Elite Kraken Spawn",
    "hp": 20.416666,
-   "dmg": 11.0,
+   "dmg": 1.1,
    "speed": 2.5,
    "xp": 6.0,
    "boss": false,
@@ -216,7 +216,7 @@
    "id": "needle_sloop",
    "name": "needle sloop",
    "hp": 4.2,
-   "dmg": 3.5,
+   "dmg": 1.75,
    "speed": 5.5,
    "xp": 3.0,
    "boss": false,
@@ -228,7 +228,7 @@
    "id": "net_cutter",
    "name": "net cutter",
    "hp": 5.25,
-   "dmg": 4.5,
+   "dmg": 2.25,
    "speed": 4.5,
    "xp": 4.0,
    "boss": false,
@@ -240,7 +240,7 @@
    "id": "powder_barge",
    "name": "powder barge",
    "hp": 14.0,
-   "dmg": 8.0,
+   "dmg": 4.0,
    "speed": 2.2,
    "xp": 5.0,
    "boss": false,
@@ -252,7 +252,7 @@
    "id": "ram_raider",
    "name": "ram raider",
    "hp": 7.0,
-   "dmg": 5.0,
+   "dmg": 2.5,
    "speed": 7.0,
    "xp": 3.0,
    "boss": false,
@@ -264,7 +264,7 @@
    "id": "repair_tender",
    "name": "repair tender",
    "hp": 8.75,
-   "dmg": 4.0,
+   "dmg": 2.0,
    "speed": 2.8,
    "xp": 5.0,
    "boss": false,
@@ -276,7 +276,7 @@
    "id": "shield_frigate",
    "name": "shield frigate",
    "hp": 14.0,
-   "dmg": 9.0,
+   "dmg": 4.5,
    "speed": 3.0,
    "xp": 4.0,
    "boss": false,
@@ -288,7 +288,7 @@
    "id": "treasure_raider",
    "name": "treasure raider",
    "hp": 5.25,
-   "dmg": 2.5,
+   "dmg": 1.25,
    "speed": 6.5,
    "xp": 2.0,
    "boss": false,
@@ -304,7 +304,7 @@
   "bands": [
    {
     "t": 0.0,
-    "rate": 0.71999997,
+    "rate": 0.32472,
     "pools": [
      {
       "share": 1.0,
@@ -319,7 +319,7 @@
    },
    {
     "t": 60.0,
-    "rate": 1.12,
+    "rate": 0.50512,
     "pools": [
      {
       "share": 0.8,
@@ -343,7 +343,7 @@
    },
    {
     "t": 110.0,
-    "rate": 1.36,
+    "rate": 0.61336005,
     "pools": [
      {
       "share": 0.72,
@@ -380,7 +380,7 @@
    },
    {
     "t": 240.0,
-    "rate": 1.52,
+    "rate": 0.68552,
     "pools": [
      {
       "share": 0.63,
@@ -425,7 +425,7 @@
    },
    {
     "t": 340.0,
-    "rate": 1.05,
+    "rate": 0.63,
     "pools": [
      {
       "share": 0.6,
@@ -474,7 +474,7 @@
    },
    {
     "t": 480.0,
-    "rate": 1.15,
+    "rate": 0.69,
     "pools": [
      {
       "share": 0.6,
@@ -523,7 +523,7 @@
    },
    {
     "t": 540.0,
-    "rate": 1.2,
+    "rate": 0.72,
     "pools": [
      {
       "share": 0.53000003,
@@ -568,7 +568,7 @@
    },
    {
     "t": 660.0,
-    "rate": 1.35,
+    "rate": 0.81000006,
     "pools": [
      {
       "share": 0.6,
@@ -613,7 +613,7 @@
    },
    {
     "t": 720.0,
-    "rate": 1.5,
+    "rate": 0.90000004,
     "pools": [
      {
       "share": 0.57,
@@ -662,7 +662,7 @@
    },
    {
     "t": 780.0,
-    "rate": 1.65,
+    "rate": 0.99,
     "pools": [
      {
       "share": 0.57,
@@ -799,147 +799,152 @@
   "waves": [
    [
     0.0,
-    0.103999995,
-    1.0
+    0.0,
+    0.25
+   ],
+   [
+    12.0,
+    0.011,
+    0.45
    ],
    [
     30.0,
-    0.26,
+    0.117259994,
     1.1
    ],
    [
     50.0,
-    0.1456,
+    0.0656656,
     0.85
    ],
    [
     60.0,
-    0.20799999,
+    0.093807995,
     1.0
    ],
    [
     90.0,
-    0.3328,
+    0.1500928,
     1.15
    ],
    [
     105.0,
-    0.1872,
+    0.0844272,
     0.9
    ],
    [
     140.0,
-    0.3744,
+    0.1688544,
     1.15
    ],
    [
     185.0,
-    0.2704,
+    0.121950395,
     0.95
    ],
    [
     225.0,
-    0.52,
+    0.23451999,
     1.25
    ],
    [
     240.0,
-    0.312,
+    0.14071201,
     0.7
    ],
    [
     275.0,
-    0.41599998,
+    0.18761599,
     0.8
    ],
    [
     300.0,
-    0.234,
+    0.1404,
     0.75
    ],
    [
     340.0,
-    0.299,
+    0.1794,
     0.9
    ],
    [
     380.0,
-    0.3575,
+    0.2145,
     1.1
    ],
    [
     400.0,
-    0.27299997,
+    0.16379999,
     0.8
    ],
    [
     450.0,
-    0.39000002,
+    0.23400001,
     1.1
    ],
    [
     475.0,
-    0.2925,
+    0.1755,
     0.75
    ],
    [
     510.0,
-    0.39000002,
+    0.23400001,
     1.05
    ],
    [
     540.0,
-    0.429,
+    0.2574,
     1.15
    ],
    [
     585.0,
-    0.325,
+    0.19500001,
     0.85
    ],
    [
     620.0,
-    0.429,
+    0.2574,
     1.1
    ],
    [
     650.0,
-    0.325,
+    0.19500001,
     0.8
    ],
    [
     690.0,
-    0.468,
+    0.2808,
     1.25
    ],
    [
     720.0,
-    0.39000002,
+    0.23400001,
     0.95
    ],
    [
     760.0,
-    0.475,
+    0.285,
     1.3
    ],
    [
     800.0,
-    0.45499998,
+    0.273,
     1.05
    ],
    [
     830.0,
-    0.475,
+    0.285,
     1.4
    ],
    [
     840.0,
-    0.26,
+    0.156,
     0.6
    ],
    [
     900.0,
-    0.475,
+    0.285,
     1.45
    ]
   ],
@@ -947,52 +952,52 @@
    [
     110.0,
     "swordfish",
-    14
+    8
    ],
    [
     200.0,
     "cannonboat",
-    6
+    4
    ],
    [
     240.0,
     "swordfish",
-    36
+    20
    ],
    [
     390.0,
     "hammerhead",
-    18
+    11
    ],
    [
     480.0,
     "swordfish",
-    26
+    16
    ],
    [
     665.0,
     "shark",
-    18
+    11
    ],
    [
     700.0,
     "hammerhead",
-    18
+    11
    ],
    [
     750.0,
     "cutthroat_skiff",
-    20
+    12
    ],
    [
     780.0,
     "manta_ray",
-    20
+    12
    ],
    [
     790.0,
     "hammerhead",
-    18
+    11
    ]
   ],
   "overtime": {
@@ -1002,7 +1007,7 @@
    "step": 30.0
   },
   "tagCaps": {
-   "ranged_gunner": 14,
+   "ranged_gunner": 6,
    "area_denial": 5,
    "charge_windup": 6
   }
@@ -1016,6 +1021,8 @@
    "quantity": 1,
    "behavior": 2,
    "maxLevel": 12,
+   "spin": 150.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1048,11 +1055,13 @@
   "broadside_battery": {
    "id": "broadside_battery",
    "name": "Broadside Battery",
-   "damage": 7.47,
+   "damage": 5.6025,
    "cooldown": 1.5,
    "quantity": 1,
    "behavior": 1,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1086,10 +1095,12 @@
    "id": "chainshot",
    "name": "Chainshot",
    "damage": 13.44,
-   "cooldown": 1.5,
+   "cooldown": 1.0,
    "quantity": 1,
    "behavior": 0,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 2,
    "lane": false,
    "axes": [
@@ -1123,10 +1134,12 @@
    "id": "cursed_doubloons",
    "name": "Cursed Doubloons",
    "damage": 17.92,
-   "cooldown": 2.0,
+   "cooldown": 1.0,
    "quantity": 1,
    "behavior": 6,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1154,10 +1167,12 @@
    "id": "deck_cannons",
    "name": "Deck Cannons",
    "damage": 9.41,
-   "cooldown": 1.05,
+   "cooldown": 0.7,
    "quantity": 1,
    "behavior": 0,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1196,11 +1211,13 @@
   "flamethrower": {
    "id": "flamethrower",
    "name": "Flamethrower",
-   "damage": 3.14,
+   "damage": 2.355,
    "cooldown": 0.7,
    "quantity": 1,
    "behavior": 3,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1227,11 +1244,13 @@
   "flying_cutlasses": {
    "id": "flying_cutlasses",
    "name": "Flying Cutlasses",
-   "damage": 10.24,
+   "damage": 7.68,
    "cooldown": 1.0,
    "quantity": 1,
    "behavior": 2,
    "maxLevel": 12,
+   "spin": 120.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1265,10 +1284,12 @@
    "id": "harpoon_gun",
    "name": "Harpoon Gun",
    "damage": 10.75,
-   "cooldown": 1.2,
+   "cooldown": 0.8,
    "quantity": 1,
    "behavior": 0,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1312,6 +1333,8 @@
    "quantity": 1,
    "behavior": 2,
    "maxLevel": 12,
+   "spin": 90.0,
+   "blades": 3,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1343,6 +1366,8 @@
    "quantity": 1,
    "behavior": 6,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1376,10 +1401,12 @@
    "id": "long_nine",
    "name": "Long Nine",
    "damage": 21.5,
-   "cooldown": 2.4,
+   "cooldown": 1.6371078,
    "quantity": 1,
    "behavior": 0,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": true,
    "axes": [
@@ -1418,11 +1445,13 @@
   "maelstrom_charge": {
    "id": "maelstrom_charge",
    "name": "Maelstrom Charge",
-   "damage": 12.11,
+   "damage": 9.0824995,
    "cooldown": 5.0,
    "quantity": 1,
    "behavior": 8,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1444,10 +1473,12 @@
    "id": "monkey_gunners",
    "name": "Monkey Gunners",
    "damage": 4.13,
-   "cooldown": 6.0,
+   "cooldown": 4.360465,
    "quantity": 1,
    "behavior": 9,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1469,10 +1500,12 @@
    "id": "mortar",
    "name": "Mortar",
    "damage": 16.13,
-   "cooldown": 1.8,
+   "cooldown": 1.1999999,
    "quantity": 1,
    "behavior": 8,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1498,6 +1531,8 @@
    "quantity": 2,
    "behavior": 9,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1525,10 +1560,12 @@
    "id": "powder_kegs",
    "name": "Powder Kegs",
    "damage": 27.37,
-   "cooldown": 2.2,
+   "cooldown": 1.1,
    "quantity": 1,
    "behavior": 5,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1566,6 +1603,8 @@
    "quantity": 1,
    "behavior": 7,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1599,10 +1638,12 @@
    "id": "siren_bell",
    "name": "Siren Bell",
    "damage": 26.88,
-   "cooldown": 3.0,
+   "cooldown": 2.0,
    "quantity": 1,
    "behavior": 7,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -1634,6 +1675,8 @@
    "quantity": 1,
    "behavior": 0,
    "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
    "pierce": 0,
    "lane": false,
    "axes": [
@@ -2566,6 +2609,8 @@
  "pickups": {
   "xpMult": 0.5,
   "healValue": 25.0,
+  "healFraction": 0.2,
+  "lowWait": 1.0,
   "healMin": 90.0,
   "healMax": 150.0
  },
@@ -2588,15 +2633,16 @@
   "high": 0.85,
   "low": 0.3,
   "lowRate": 0.6,
-  "eliteChance": 0.06,
+  "eliteChance": 0.01,
   "eliteHp": 8.0,
   "ttk": {
-   "boss": 7.5000005,
-   "arena": 3.6000001,
-   "focus": 2.1000001,
-   "elite": 0.75
+   "boss": 19.0,
+   "arena": 12.5,
+   "focus": 6.0,
+   "elite": 5.0
   }
  },
+ "armorWorks": true,
  "starterWeapons": [
   "broadside_battery",
   "deck_cannons",

@@ -30,7 +30,11 @@ namespace RoguePirates.V4.Enemies
         // Playtest (2 Oct 2026): the crab keeps its distance and lobs one big, medium-paced cannonball at a time (dodgeable),
         // instead of chasing the ship; the claw slam stays for a ship that sails into it.
         const float SlamTriggerDistance = 4.5f;
-        const float KeepMin = 10f, KeepMax = 14f;
+        // Playtest (3 Oct, owner: "my weapons were not attacking the crab miniboss"): it kept its centre 10 to 14 m away, but
+        // weapons pick targets by centre distance and most reach 6 to 13 m (orbiting blades 6, lantern 9, flamethrower 9.5,
+        // swivel guns and broadside 12), so most of a build never fired at it. It now holds its hull 3 to 5.5 m off
+        // (centre about 6.5 to 9 m at its drawn size), still at range for its cannonball but inside the weapons' reach.
+        const float KeepEdgeMin = 3f, KeepEdgeMax = 5.5f;
         const float ShotInterval = 2.5f;
         const float ShotWindup = 0.6f;
         const float ShotSpeed = 8f;
@@ -101,8 +105,10 @@ namespace RoguePirates.V4.Enemies
                         return Vector3.zero;
                     }
 
-                    if (dist > KeepMax) return dir * (def.moveSpeed * 0.65f);
-                    if (dist < KeepMin) return (-dir * 0.8f + tangent * 0.5f) * (def.moveSpeed * 0.6f); // back off
+                    var keepMin = agent.radius + KeepEdgeMin;
+                    var keepMax = agent.radius + KeepEdgeMax;
+                    if (dist > keepMax) return dir * (def.moveSpeed * (dist > keepMax + 6f ? 0.9f : 0.65f));
+                    if (dist < keepMin) return (-dir * 0.8f + tangent * 0.5f) * (def.moveSpeed * 0.6f); // back off
                     return tangent * (def.moveSpeed * 0.55f);
             }
         }
@@ -113,7 +119,7 @@ namespace RoguePirates.V4.Enemies
             if (shots == null || dist > ShotMaxRange) return;
             // Aimed where the ship will be when the ball arrives (playtest, owner: enemies intercept, not chase).
             var ship = playerDamage != null ? playerDamage.GetComponent<PlayerShipController>() : null;
-            var playerVelocity = ship != null ? ship.Velocity : Vector3.zero;
+            var playerVelocity = Sim != null ? Sim.PlayerVelocityForEnemies : ship != null ? ship.Velocity : Vector3.zero; // playtest (3 Oct): not the island bounce
             var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
             var led = EnemySimulation.AimLed(muzzle, playerPos, playerVelocity, ShotSpeed, dir);
             shots.TrySpawn(muzzle, led, ShotSpeed, agent.damage * ShotDamageMultiplier, ShotLife, ShotHitRadius, ShotVisualRadius,

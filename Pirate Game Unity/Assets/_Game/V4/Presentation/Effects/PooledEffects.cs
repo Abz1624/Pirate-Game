@@ -71,7 +71,7 @@ namespace RoguePirates.V4.Presentation.Effects
 
         public void ReleaseAll()
         {
-            foreach (var l in _live) if (l.Go != null) _pools.Release(l.Go);
+            foreach (var l in _live) if (l.Go != null && _pools.IsPooled(l.Go)) _pools.Release(l.Go); // the pools may be gone first at the scene's end
             _live.Clear();
         }
 
