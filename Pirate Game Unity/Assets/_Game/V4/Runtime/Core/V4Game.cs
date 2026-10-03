@@ -321,7 +321,11 @@ namespace RoguePirates.V4
             _modules.InitializeAll(_context);
             if (IsPvp && !PreparePvp()) return;
             if (!_shell.Start(seed, request.retry)) return;
-            if (_pvp != null) _pvp.Begin(_shipPort, _damageSink, _build, _enemies.Simulation, _toasts);
+            if (_pvp != null)
+            {
+                _pvp.Begin(_shipPort, _damageSink, _build, _enemies.Simulation, _toasts);
+                _pvp.AttachWeapons(_weapons.Effects, () => _context.TryGet<RoguePirates.V4.Weapons.IWeaponEffects>(out var fx) ? fx : null, _config);
+            }
 
             _runPort.AttachEvents(_publisher);
             _shipPort.AttachEvents(_publisher);

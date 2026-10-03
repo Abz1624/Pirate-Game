@@ -153,6 +153,20 @@ namespace RoguePirates.V4.Presentation.Effects
             return go.transform;
         }
 
+        /// <summary>Playtest (3 Oct, owner, round 7: "in pvp i couldn't see other player's ... health"): the enemy health bar
+        /// over the 1v1 opponent's ship (the caller sets its fill and releases it).</summary>
+        public WorldHealthBar AttachOpponentHealthBar(Transform view)
+        {
+            if (view == null || _pools == null || !_pools.Has(HealthBarKey)) return null;
+            var go = _pools.Acquire(HealthBarKey, view.position, Quaternion.identity);
+            if (go == null) return null;
+            var bar = go.GetComponent<WorldHealthBar>();
+            if (bar == null) bar = go.AddComponent<WorldHealthBar>();
+            bar.Bind(view, _juice != null ? _juice.enemyHealthBarHeight : 3f);
+            bar.SetFill(1f);
+            return bar;
+        }
+
         public void Release(EnemyDefinition def, Transform view, Transform healthBar)
         {
             if (view != null && view == BossView) BossView = null;

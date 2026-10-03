@@ -115,6 +115,11 @@ namespace RoguePirates.V4.Online
     }
 
     [Serializable] public sealed class HitMsg { public string t = "hit"; public float dmg; public string weaponId; public string from; public string to; public long st; public bool asBot; }
+    // Playtest (3 Oct, owner, round 7): cosmetic weapon effects and the loadout, relayed verbatim to the opponent ("fx").
+    // k: f fired, s side salvo, b beam (x/z: offset from the ship; dx/dz: direction), e explosion, l lightning,
+    // a area impact, m mortar reticle (x/z: arena point), p weapon pulse (around the ship); r: radius or range.
+    [Serializable] public sealed class PvpFx { public string k; public string w; public float x; public float z; public float dx; public float dz; public float r; }
+    [Serializable] public sealed class FxMsg { public string t = "fx"; public string from; public PvpFx[] e; public string[] lo; public int[] lv; }
     [Serializable] public sealed class PickupMsg { public string t = "pickup"; public int id; public bool asBot; }
     [Serializable] public sealed class PingMsg { public string t = "ping"; public long cs; }
     [Serializable] public sealed class PongMsg { public string t; public long cs; public long st; }

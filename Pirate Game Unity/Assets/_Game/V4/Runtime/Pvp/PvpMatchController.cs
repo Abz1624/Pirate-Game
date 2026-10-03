@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RoguePirates.V4.Composition;
+using RoguePirates.V4.Config;
 using RoguePirates.V4.Enemies;
 using RoguePirates.V4.Foundation.Data;
 using RoguePirates.V4.Foundation.Player;
@@ -8,6 +9,7 @@ using RoguePirates.V4.Foundation.World;
 using RoguePirates.V4.Online;
 using RoguePirates.V4.Ports;
 using RoguePirates.V4.Spawning;
+using RoguePirates.V4.Weapons;
 using UnityEngine;
 
 namespace RoguePirates.V4.Pvp
@@ -22,11 +24,14 @@ namespace RoguePirates.V4.Pvp
         internal float NextClaimAt;
     }
 
-    /// <summary>A bot volley in flight (for the presenter's cannonball).</summary>
+    /// <summary>A bot volley or an opponent's mirrored shot in flight (for the presenter's ball; its colour and arc
+    /// height).</summary>
     public struct PvpShot
     {
         public Vector3 From, To;
         public float Start, End;
+        public Color Color;
+        public float Arc;
     }
 
     /// <summary>What the match HUD and the world presenter read (and the buttons they press).</summary>
@@ -65,6 +70,9 @@ namespace RoguePirates.V4.Pvp
         int BarrelsTaken { get; }
         IReadOnlyCollection<PvpBarrel> Barrels { get; }
         IReadOnlyList<PvpShot> Shots { get; }
+        /// <summary>Playtest (3 Oct, owner, round 7): the opponent's weapons (id, name, level), from its "fx" loadout (the
+        /// bot: its cannons).</summary>
+        IReadOnlyList<(string id, string name, int level)> OpponentWeapons { get; }
         bool Ended { get; }
         MatchEndMsg End { get; }
         string EndJson { get; }
@@ -129,6 +137,14 @@ namespace RoguePirates.V4.Pvp
         string _rematchStatus = string.Empty;
         string _notice = string.Empty;
         int _noticeSerial;
+        WeaponEffectsForwarder _mirror;
+        Func<IWeaponEffects> _vfx;
+        ConfigSetRuntime _config;
+        readonly List<PvpFx> _fxOut = new List<PvpFx>();
+        readonly Dictionary<string, float> _fxLastByWeapon = new Dictionary<string, float>();
+        readonly List<(string id, string name, int level)> _oppWeapons = new List<(string, string, int)>();
+        Dictionary<string, WeaponConfig> _weaponConfigs;
+        float _fxAt, _loadoutAt;
 
         // ---- Setup (V4Game: Prepare before the run starts, Begin after) ----
 
@@ -241,6 +257,7 @@ namespace RoguePirates.V4.Pvp
                 _session.MatchStarted -= OnResync;
             }
             if (_sim != null) _sim.RemoteDamaged -= OnRemoteDamaged;
+            if (_mirror != null) _mirror.Mirror -= OnMyWeaponFx;
         }
 
         // ---- Frame ----
@@ -265,6 +282,7 @@ namespace RoguePirates.V4.Pvp
             TickStorm(dt, now);
             TickBarrels(now);
             FlushHits();
+            FlushFx();
             if (Time.time >= _stateAt)
             {
                 _stateAt = Time.time + 1f / PvpRules.StateHz;
@@ -290,7 +308,13 @@ namespace RoguePirates.V4.Pvp
                 if (_started && !_ended && _bot.TryFire(dt, _ship.Position, _ship.Velocity, _ship.IsAlive && !_sunk, out var aim, out var flight))
                 {
                     _botVolleys.Add((aim, Time.time + flight, _bot.VolleyDamage));
-                    _shots.Add(new PvpShot { From = _bot.Position, To = aim, Start = Time.time, End = Time.time + flight });
+                    _shots.Add(new PvpShot { From = _bot.Position, To = aim, Start = Time.time, End = Time.time + flight, Color = new Color(0.12f, 0.12f, 0.12f), Arc = 5f });
+                    // Playtest (3 Oct, owner, round 7): the bot's volley shows a muzzle flash too
+                    var vfx = _vfx?.Invoke();
+                    if (vfx is UnityEngine.Object unityObject && unityObject == null) vfx = null;
+                    var dir = aim - _bot.Position;
+                    dir.y = 0f;
+                    vfx?.Fired(PvpBot.WeaponId, _bot.Position + Vector3.up * 1.2f, dir.sqrMagnitude > 0.0001f ? dir.normalized : PvpRules.Forward(_bot.Yaw));
                 }
                 for (var i = _botVolleys.Count - 1; i >= 0; i--)
                 {
@@ -424,6 +448,163 @@ namespace RoguePirates.V4.Pvp
             Notice("The bot sank!");
         }
 
+        // ---- Playtest (3 Oct, owner, round 7: "in pvp i couldn't see other player's weapons, attacks"): weapon fx ----
+
+        const int FxPerMessage = 12;
+        const int FxMaxChars = 1800; // the relay refuses fx over 2048 bytes
+        const float FxSeconds = 0.1f, LoadoutSeconds = 2f, FiredGapSeconds = 0.08f;
+
+        /// <summary>After Begin: my weapon effects are mirrored to the opponent (cosmetic; damage stays on "hit"); the
+        /// opponent's are played here through the weapon presenter (never back through the mirror).</summary>
+        public void AttachWeapons(WeaponEffectsForwarder mirror, Func<IWeaponEffects> vfx, ConfigSetRuntime config)
+        {
+            _vfx = vfx;
+            _config = config;
+            _mirror = mirror;
+            if (_mirror != null && !IsBotMatch) _mirror.Mirror += OnMyWeaponFx;
+        }
+
+        void OnMyWeaponFx(char kind, string weaponId, Vector3 point, Vector3 direction, float radius)
+        {
+            if (!_started || _ended || _sunk || _ship == null || _fxOut.Count >= FxPerMessage * 2) return;
+            if (kind == 'f' || kind == 's' || kind == 'b' || kind == 'p')
+            {
+                // a burst fires many shots in a frame (an aura pulses often): one mirrored per weapon per gap
+                var key = (weaponId ?? string.Empty) + kind;
+                if (_fxLastByWeapon.TryGetValue(key, out var last) && Time.time - last < FiredGapSeconds) return;
+                _fxLastByWeapon[key] = Time.time;
+            }
+            var fx = new PvpFx { k = kind.ToString(), w = weaponId != null && weaponId.Length > 40 ? weaponId.Substring(0, 40) : weaponId, r = Round(radius) };
+            if (kind == 'f' || kind == 's' || kind == 'b')
+            {
+                var offset = point - _ship.Position;
+                fx.x = Round(offset.x);
+                fx.z = Round(offset.z);
+                var d = new Vector2(direction.x, direction.z).normalized;
+                fx.dx = Round(d.x);
+                fx.dz = Round(d.y);
+            }
+            else
+            {
+                var a = PvpRules.ToArena(_centre, point);
+                fx.x = Round(a.x);
+                fx.z = Round(a.y);
+            }
+            _fxOut.Add(fx);
+        }
+
+        /// <summary>At most one fx message per 0.1 s (the relay allows 30/s): the effects since the last, and every 2 s
+        /// the loadout.</summary>
+        void FlushFx()
+        {
+            if (Time.time < _fxAt || _session == null || IsBotMatch) return;
+            var loadout = Time.time >= _loadoutAt && _build != null;
+            if (_fxOut.Count == 0 && !loadout) return;
+            _fxAt = Time.time + FxSeconds;
+            var msg = new FxMsg { from = _myId };
+            if (loadout)
+            {
+                _loadoutAt = Time.time + LoadoutSeconds;
+                var weapons = _build.Progression.Loadout.Weapons;
+                msg.lo = new string[weapons.Count];
+                msg.lv = new int[weapons.Count];
+                for (var i = 0; i < weapons.Count; i++) { msg.lo[i] = weapons[i].Id; msg.lv[i] = weapons[i].Level; }
+            }
+            msg.e = _fxOut.GetRange(0, Mathf.Min(FxPerMessage, _fxOut.Count)).ToArray();
+            _fxOut.Clear();
+            var json = JsonUtility.ToJson(msg);
+            while (json.Length > FxMaxChars && msg.e.Length > 0)
+            {
+                Array.Resize(ref msg.e, msg.e.Length / 2);
+                json = JsonUtility.ToJson(msg);
+            }
+            if (json.Length <= FxMaxChars) _session.SendRaw(json);
+        }
+
+        void OnOpponentFx(FxMsg m)
+        {
+            if (m == null || _bot != null || (!string.IsNullOrEmpty(m.from) && m.from != _oppId)) return;
+            if (m.lo != null)
+            {
+                _oppWeapons.Clear();
+                for (var i = 0; i < m.lo.Length && i < 8; i++)
+                {
+                    if (string.IsNullOrEmpty(m.lo[i])) continue;
+                    var config = WeaponConfigOf(m.lo[i]);
+                    var name = config != null && !string.IsNullOrEmpty(config.displayName) ? config.displayName : m.lo[i];
+                    _oppWeapons.Add((m.lo[i], name, m.lv != null && i < m.lv.Length ? Mathf.Max(1, m.lv[i]) : 1));
+                }
+            }
+            if (m.e == null || _ended || !_oppAlive || !_began) return;
+            var vfx = _vfx?.Invoke();
+            if (vfx is UnityEngine.Object unityObject && unityObject == null) vfx = null;
+            foreach (var fx in m.e)
+            {
+                if (fx == null || string.IsNullOrEmpty(fx.k)) continue;
+                try { PlayOpponentFx(vfx, fx); }
+                catch (Exception e) { Debug.LogWarning("PvpMatchController: fx " + fx.k + ": " + e.Message); }
+            }
+        }
+
+        void PlayOpponentFx(IWeaponEffects vfx, PvpFx fx)
+        {
+            var origin = _oppPosition + new Vector3(fx.x, 1.2f, fx.z);
+            var dir = new Vector3(fx.dx, 0f, fx.dz);
+            if (dir.sqrMagnitude < 0.0001f) dir = _oppRotation * Vector3.forward;
+            dir.Normalize();
+            var point = PvpRules.ToWorld(_centre, fx.x, fx.z);
+            var radius = Mathf.Clamp(fx.r, 0.5f, 30f);
+            switch (fx.k[0])
+            {
+                case 'f':
+                {
+                    vfx?.Fired(fx.w, origin, dir);
+                    // the shot flies at my ship when it was aimed my way, else 18 m along its line
+                    var toMe = _ship.Position - origin;
+                    toMe.y = 0f;
+                    var target = toMe.magnitude < 60f && Vector3.Dot(toMe.normalized, dir) > 0.8f ? _ship.Position : origin + dir * 18f;
+                    AddShot(origin, target, WeaponColour(fx.w), 1.2f);
+                    return;
+                }
+                case 's':
+                    vfx?.SideSalvo(fx.w, _oppPosition, dir);
+                    AddShot(_oppPosition + dir * 1.1f, _oppPosition + dir * 16f, WeaponColour(fx.w), 2f);
+                    return;
+                case 'b': vfx?.Beam(origin, dir, Mathf.Clamp(fx.r, 1f, 60f), 0.6f); return;
+                case 'e': vfx?.Explosion(point, radius); return;
+                case 'l': vfx?.LightningStrike(point, radius); return;
+                case 'a': vfx?.AreaImpact(point, radius); return;
+                case 'm': vfx?.AreaTelegraph(point, radius); return;
+                case 'p': vfx?.WeaponPulse(fx.w, _oppPosition, radius); return;
+            }
+        }
+
+        void AddShot(Vector3 from, Vector3 to, Color color, float arc)
+        {
+            if (_shots.Count >= 48) return;
+            var flight = Mathf.Clamp(Flat(to - from) / 45f, 0.12f, 0.8f);
+            _shots.Add(new PvpShot { From = from, To = to, Start = Time.time, End = Time.time + flight, Color = color, Arc = arc });
+        }
+
+        WeaponConfig WeaponConfigOf(string id)
+        {
+            if (string.IsNullOrEmpty(id) || _config == null) return null;
+            if (_weaponConfigs == null)
+            {
+                _weaponConfigs = new Dictionary<string, WeaponConfig>();
+                foreach (var c in _config.All<WeaponConfig>()) if (c != null && !string.IsNullOrEmpty(c.weaponId)) _weaponConfigs[c.weaponId] = c;
+            }
+            return _weaponConfigs.TryGetValue(id, out var config) ? config : null;
+        }
+
+        Color WeaponColour(string id)
+        {
+            var config = WeaponConfigOf(id);
+            var c = config != null ? config.aimOverlayColor : new Color(1f, 0.55f, 0.2f);
+            c.a = 1f;
+            return c;
+        }
+
         // ---- Receiving ----
 
         void OnResync(MatchStartMsg start)
@@ -476,6 +657,9 @@ namespace RoguePirates.V4.Pvp
                     else if (_bot != null && h.to == _match.bot.playerId) BotTakesHit(h.dmg);
                     return;
                 }
+                case "fx":
+                    OnOpponentFx(JsonUtility.FromJson<FxMsg>(json));
+                    return;
                 case "barrel_spawn":
                     AddBarrel(JsonUtility.FromJson<BarrelMsg>(json));
                     return;
@@ -625,6 +809,16 @@ namespace RoguePirates.V4.Pvp
         public int BarrelsTaken => _barrelsTaken;
         public IReadOnlyCollection<PvpBarrel> Barrels => _barrels.Values;
         public IReadOnlyList<PvpShot> Shots => _shots;
+        public IReadOnlyList<(string id, string name, int level)> OpponentWeapons
+        {
+            get
+            {
+                if (_bot == null) return _oppWeapons;
+                if (_oppWeapons.Count == 0) _oppWeapons.Add((PvpBot.WeaponId, "Cannons", 1));
+                _oppWeapons[0] = (PvpBot.WeaponId, "Cannons", _bot.Level);
+                return _oppWeapons;
+            }
+        }
         public bool Ended => _ended;
         public MatchEndMsg End => _session?.LastMatchEnd;
         public string EndJson => _session?.LastMatchEndJson;

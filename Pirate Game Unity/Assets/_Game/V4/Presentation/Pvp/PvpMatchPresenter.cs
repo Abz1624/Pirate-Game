@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 using RoguePirates.V4.Foundation.UI;
+using RoguePirates.V4.Foundation.VFX;
+using RoguePirates.V4.Presentation.Effects;
+using RoguePirates.V4.Presentation.Hud;
 using RoguePirates.V4.Online;
 using RoguePirates.V4.Presentation.Online;
 using RoguePirates.V4.Pvp;
@@ -36,12 +39,21 @@ namespace RoguePirates.V4.Presentation.Pvp
         readonly List<RectTransform> _arrows = new List<RectTransform>();
         readonly List<GameObject> _hidden = new List<GameObject>();
         bool _endShown;
+        // Playtest (3 Oct, owner, round 7: "in pvp i couldn't see other player's weapons, attacks, and health"): a world
+        // health bar over the opponent, its hull in numbers, its weapons as chips, coloured shots with trails.
+        EnemyViewPresenter _enemyViews;
+        WorldHealthBar _oppWorldBar;
+        RectTransform _chips;
+        TextMeshProUGUI _plateHp;
+        IconCatalog _icons;
+        string _chipsKey;
+        readonly List<Color> _ballColors = new List<Color>();
 
         public bool EndShown => _endShown;
         public string ClockText => _clock != null ? _clock.text : null;
         public string EndText => _endShown ? _endTitle.text + " | " + _endReason.text + " | " + _endStats.text.Replace("\n", " / ") + " | " + _endRating.text : null;
 
-        public static PvpMatchPresenter Create(Canvas runCanvas, IPvpMatchView view)
+        public static PvpMatchPresenter Create(Canvas runCanvas, IPvpMatchView view, EnemyViewPresenter enemyViews = null)
         {
             var go = new GameObject("V4PvpMatch", typeof(RectTransform));
             go.transform.SetParent(runCanvas.transform, false);
@@ -51,6 +63,7 @@ namespace RoguePirates.V4.Presentation.Pvp
             rt.offsetMin = rt.offsetMax = Vector2.zero;
             var p = go.AddComponent<PvpMatchPresenter>();
             p._view = view;
+            p._enemyViews = enemyViews;
             p._canvas = rt;
             p.Build();
             return p;
@@ -104,6 +117,59 @@ namespace RoguePirates.V4.Presentation.Pvp
             _myBar = Bar(_hud, new Vector2(0.02f, 0.44f), new Vector2(0.38f, 0.6f), OnlineUi.Good, false);
             _oppBar = Bar(_hud, new Vector2(0.62f, 0.44f), new Vector2(0.98f, 0.6f), Red, true);
             _storm = OnlineUi.TextAt(_hud, "Storm", string.Empty, 24, TextAlignmentOptions.Center, OnlineUi.Dim, new Vector2(0f, 0.04f), new Vector2(1f, 0.4f));
+            // The opponent's weapons: a row of chips under the HUD's right half.
+            _chips = OnlineUi.Area(_hud, "OpponentWeapons", new Vector2(0.5f, 0f), new Vector2(1f, 0f));
+            _chips.pivot = new Vector2(1f, 1f);
+            _chips.offsetMin = new Vector2(0f, -44f);
+            _chips.offsetMax = new Vector2(0f, -6f);
+            var row = _chips.gameObject.AddComponent<HorizontalLayoutGroup>();
+            row.childAlignment = TextAnchor.UpperRight;
+            row.spacing = 6f;
+            row.childControlWidth = row.childControlHeight = true;
+            row.childForceExpandWidth = row.childForceExpandHeight = false;
+            try { _icons = IconCatalog.Load(); } catch { _icons = null; }
+        }
+
+        void UpdateChips()
+        {
+            var weapons = _view.OpponentWeapons;
+            var key = string.Empty;
+            if (weapons != null) foreach (var w in weapons) key += w.id + ":" + w.level + ";";
+            if (key == _chipsKey) return;
+            _chipsKey = key;
+            for (var i = _chips.childCount - 1; i >= 0; i--) Destroy(_chips.GetChild(i).gameObject);
+            if (weapons == null) return;
+            foreach (var w in weapons) Chip(w.id, w.name, w.level);
+        }
+
+        void Chip(string id, string name, int level)
+        {
+            var chip = (RectTransform)new GameObject("Chip", typeof(RectTransform)).transform;
+            chip.SetParent(_chips, false);
+            var bg = chip.gameObject.AddComponent<Image>();
+            bg.color = new Color(0.45f, 0.08f, 0.06f, 0.85f);
+            bg.raycastTarget = false;
+            var layout = chip.gameObject.AddComponent<HorizontalLayoutGroup>();
+            layout.padding = new RectOffset(8, 8, 3, 3);
+            layout.spacing = 4f;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childControlWidth = layout.childControlHeight = true;
+            layout.childForceExpandWidth = layout.childForceExpandHeight = false;
+            var icon = _icons != null ? _icons.Weapon(id) : null;
+            if (icon != null)
+            {
+                var img = new GameObject("Icon", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+                img.transform.SetParent(chip, false);
+                var image = img.GetComponent<Image>();
+                image.sprite = icon;
+                image.preserveAspect = true;
+                image.raycastTarget = false;
+                var le = img.GetComponent<LayoutElement>();
+                le.preferredWidth = le.preferredHeight = 28f;
+            }
+            var text = OnlineUi.Text(chip, "Name", $"{name} <color=#ffd166>{level}</color>", 20, TextAlignmentOptions.Center, Color.white);
+            text.textWrappingMode = TextWrappingModes.NoWrap;
+            text.raycastTarget = false;
         }
 
         static Image Bar(RectTransform parent, Vector2 min, Vector2 max, Color color, bool fromRight)
@@ -131,6 +197,9 @@ namespace RoguePirates.V4.Presentation.Pvp
             _plateName.outlineWidth = 0.25f;
             _plateName.outlineColor = new Color32(0, 0, 0, 255);
             _plateBar = Bar(_plate, new Vector2(0.1f, 0.05f), new Vector2(0.9f, 0.38f), Red, false);
+            _plateHp = OnlineUi.TextAt(_plate, "Hp", string.Empty, 16, TextAlignmentOptions.Center, Color.white, new Vector2(0.1f, 0.05f), new Vector2(0.9f, 0.38f));
+            _plateHp.outlineWidth = 0.25f;
+            _plateHp.outlineColor = new Color32(0, 0, 0, 255);
         }
 
         void BuildEnd()
@@ -174,6 +243,8 @@ namespace RoguePirates.V4.Presentation.Pvp
             UpdateBarrels();
             UpdateBalls();
             UpdatePlate();
+            UpdateWorldBar();
+            UpdateChips();
             UpdateArrows();
             if (_view.Ended && !_endShown) ShowEnd();
             if (_endShown)
@@ -191,7 +262,7 @@ namespace RoguePirates.V4.Presentation.Pvp
             _clock.text = _view.Ended ? "0:00" : PvpRules.Clock(left);
             _clock.color = left < 30000 ? OnlineUi.Bad : Color.white;
             _myLine.text = $"{_view.MyName}  <color=#ffd166>Lv {_view.MyLevel}</color>";
-            _oppLine.text = $"<color=#ffd166>Lv {_view.OpponentLevel}</color>  {_view.OpponentName}" + (_view.OpponentConnected ? string.Empty : "  <color=#ff8c73>(away)</color>");
+            _oppLine.text = $"<color=#ffd166>Lv {_view.OpponentLevel}</color>  {_view.OpponentName}  <size=80%>HP {Mathf.CeilToInt(Mathf.Max(0f, _view.OpponentHp))}/{Mathf.RoundToInt(_view.OpponentMaxHp)}</size>" + (_view.OpponentConnected ? string.Empty : "  <color=#ff8c73>(away)</color>");
             _myBar.fillAmount = _view.MyMaxHp > 0f ? _view.MyHp / _view.MyMaxHp : 0f;
             _oppBar.fillAmount = _view.OpponentMaxHp > 0f ? _view.OpponentHp / _view.OpponentMaxHp : 0f;
             if (_view.OutsideStorm) { _storm.text = "Outside the storm! Get back inside the ring"; _storm.color = OnlineUi.Bad; }
@@ -285,18 +356,39 @@ namespace RoguePirates.V4.Presentation.Pvp
                 Destroy(ball.GetComponent<Collider>());
                 ball.transform.SetParent(_world, false);
                 ball.transform.localScale = Vector3.one * 0.8f;
-                Tint(ball, new Color(0.12f, 0.12f, 0.12f));
+                var trail = ball.AddComponent<TrailRenderer>();
+                trail.time = 0.25f;
+                trail.widthMultiplier = 0.45f;
+                trail.widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+                trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                trail.material = _ringMaterial;
+                ball.SetActive(false);
                 _balls.Add(ball);
+                _ballColors.Add(Color.clear);
             }
             for (var i = 0; i < _balls.Count; i++)
             {
                 var on = i < shots.Count && Time.time <= shots[i].End;
-                if (_balls[i].activeSelf != on) _balls[i].SetActive(on);
+                if (_balls[i].activeSelf != on)
+                {
+                    _balls[i].SetActive(on);
+                    if (on) _balls[i].GetComponent<TrailRenderer>().Clear();
+                }
                 if (!on) continue;
                 var s = shots[i];
+                var color = s.Color.a > 0f ? s.Color : new Color(0.12f, 0.12f, 0.12f);
+                if (_ballColors[i] != color)
+                {
+                    _ballColors[i] = color;
+                    Tint(_balls[i], color);
+                    var trail = _balls[i].GetComponent<TrailRenderer>();
+                    var smoke = color.grayscale < 0.3f ? new Color(0.85f, 0.85f, 0.85f) : color; // a dark cannonball leaves pale smoke
+                    trail.startColor = new Color(smoke.r, smoke.g, smoke.b, 0.8f);
+                    trail.endColor = new Color(smoke.r, smoke.g, smoke.b, 0f);
+                }
                 var k = Mathf.InverseLerp(s.Start, s.End, Time.time);
                 var p = Vector3.Lerp(s.From, s.To, k);
-                p.y = 1.5f + Mathf.Sin(k * Mathf.PI) * 5f;
+                p.y = 1.5f + Mathf.Sin(k * Mathf.PI) * (s.Arc > 0f ? s.Arc : 5f);
                 _balls[i].transform.position = p;
             }
         }
@@ -307,7 +399,7 @@ namespace RoguePirates.V4.Presentation.Pvp
             var show = _opponent != null && cam != null && _view.OpponentKnown && !_endShown;
             if (show)
             {
-                var vp = cam.WorldToViewportPoint(_view.OpponentPosition + Vector3.up * 6f);
+                var vp = cam.WorldToViewportPoint(_view.OpponentPosition + Vector3.up * 8f);
                 show = vp.z > 0f && vp.x > 0f && vp.x < 1f && vp.y > 0f && vp.y < 1f;
                 if (show)
                 {
@@ -319,6 +411,31 @@ namespace RoguePirates.V4.Presentation.Pvp
             if (!show) return;
             _plateName.text = $"{_view.OpponentName}  <color=#ffd166>Lv {_view.OpponentLevel}</color>  <size=80%>{_view.OpponentRating}</size>";
             _plateBar.fillAmount = _view.OpponentMaxHp > 0f ? _view.OpponentHp / _view.OpponentMaxHp : 0f;
+            _plateHp.text = $"{Mathf.CeilToInt(Mathf.Max(0f, _view.OpponentHp))} / {Mathf.RoundToInt(_view.OpponentMaxHp)}";
+        }
+
+        /// <summary>The enemy health bar over the opponent's ship (until it sinks or the match ends).</summary>
+        void UpdateWorldBar()
+        {
+            if (_worldBarDone) return;
+            if (_view.Ended || _endShown || (_view.OpponentKnown && !_view.OpponentAlive))
+            {
+                ReleaseWorldBar();
+                _worldBarDone = true;
+                return;
+            }
+            if (_oppWorldBar == null && _opponent != null && _enemyViews != null) _oppWorldBar = _enemyViews.AttachOpponentHealthBar(_opponent);
+            if (_oppWorldBar != null) _oppWorldBar.SetFill(_view.OpponentMaxHp > 0f ? _view.OpponentHp / _view.OpponentMaxHp : 0f);
+        }
+
+        bool _worldBarDone;
+
+        void ReleaseWorldBar()
+        {
+            if (_oppWorldBar == null) return;
+            if (_enemyViews != null) _enemyViews.Release(null, null, _oppWorldBar.transform);
+            else Destroy(_oppWorldBar.gameObject);
+            _oppWorldBar = null;
         }
 
         /// <summary>Edge arrows: red to the opponent, gold to XP barrels, green to health barrels (while off-screen).</summary>
@@ -475,6 +592,7 @@ namespace RoguePirates.V4.Presentation.Pvp
 
         void OnDestroy()
         {
+            ReleaseWorldBar();
             if (_ringMaterial != null) Destroy(_ringMaterial);
             if (_world != null) Destroy(_world.gameObject);
             foreach (var go in _hidden) if (go != null) go.SetActive(true);

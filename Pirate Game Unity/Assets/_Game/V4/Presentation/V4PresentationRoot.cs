@@ -227,7 +227,7 @@ namespace RoguePirates.V4.Presentation
             if (!game.IsPvp || !game.Context.TryGet<RoguePirates.V4.Pvp.IPvpMatchView>(out var match)) return;
             var run = FindRunCanvas();
             if (run == null) return;
-            PvpMatch = Pvp.PvpMatchPresenter.Create(run, match);
+            PvpMatch = Pvp.PvpMatchPresenter.Create(run, match, EnemyViews);
             if (BossArrow != null) BossArrow.gameObject.SetActive(false);
         }
 

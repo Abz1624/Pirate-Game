@@ -175,7 +175,7 @@ MonoBehaviour:
   eliteChanceAtMax: 0.12
   eliteLeverPaysEliteRewards: 1
   eliteAffix: 4
-  eliteHpMultiplier: 8
+  eliteHpMultiplier: 6
   eliteDamageMultiplier: 1.1
   eliteSizeMultiplier: 1
   killBandLever: 1
@@ -186,9 +186,9 @@ MonoBehaviour:
   killBandEliteChance: 0.01
   killBandMinSpawns: 6
   bossMinSeconds: 19
-  arenaFocusMinSeconds: 12.5
-  focusMinSeconds: 6
-  adaptiveEliteMinSeconds: 5
+  arenaFocusMinSeconds: 6
+  focusMinSeconds: 3
+  adaptiveEliteMinSeconds: 2.5
   tierTimingLever: 1
   tierLeadSecondsAtMax: 90
   toughnessLever: 0
