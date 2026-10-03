@@ -11,6 +11,7 @@ namespace RoguePirates.V4.Foundation.World
             DisableCapsuleColliders(islandRoot);
             ConfigureMeshColliders(islandRoot);
             RegisterExclusion(islandRoot);
+            IslandObstacles.RegisterIsland(islandRoot);
         }
 
         static void ConfigureMeshColliders(GameObject islandRoot)

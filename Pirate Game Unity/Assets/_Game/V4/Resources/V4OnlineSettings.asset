@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 908cff8b68fa6d74bbda231abf1214e4, type: 3}
   m_Name: V4OnlineSettings
   m_EditorClassIdentifier: RoguePirates.V4::RoguePirates.V4.Online.OnlineSettings
-  editorApiBaseUrl: http://localhost:8080
-  productionApiBaseUrl: 
+  editorApiBaseUrl: https://api-production-dad8.up.railway.app
+  productionApiBaseUrl: https://api-production-dad8.up.railway.app
   developmentBuildsUseEditorUrl: 0
   allowedQueryHosts:
   - localhost
