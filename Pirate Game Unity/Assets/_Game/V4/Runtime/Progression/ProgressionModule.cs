@@ -398,7 +398,8 @@ namespace RoguePirates.V4.Progression
         public void BeginPvp(IReadOnlyList<string> weapons, IReadOnlyList<string> logbooks)
         {
             var ids = new List<string>();
-            if (weapons != null) foreach (var w in weapons) if (!string.IsNullOrEmpty(w) && !ids.Contains(w)) ids.Add(w);
+            // Playtest (4 Oct, review): a switched-off weapon (an old saved draft's flamethrower) never enters the match.
+            if (weapons != null) foreach (var w in weapons) if (RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(w) && !ids.Contains(w)) ids.Add(w);
             if (ids.Count > 0)
             {
                 Loadout.EnsureSlotCapacity(ids.Count);

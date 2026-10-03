@@ -20,7 +20,7 @@ namespace RoguePirates.V4.Online
         [Tooltip("Development builds use the Editor URL (a local API) instead of the production one.")]
         public bool developmentBuildsUseEditorUrl;
         [Tooltip("Hosts a release WebGL build accepts from ?api= (\"*.example.com\" also matches example.com).")]
-        public string[] allowedQueryHosts = { "localhost", "127.0.0.1", "*.roguepirates.fun", "*.up.railway.app" };
+        public string[] allowedQueryHosts = { "localhost", "127.0.0.1", "*.roguepirates.fun", "api-production-dad8.up.railway.app" }; // Playtest (4 Oct, review): not any railway app
         [Tooltip("Seconds before an API request is given up (offline).")]
         [Min(1)] public int requestTimeoutSeconds = 10;
         [Tooltip("Seconds for the health check on launch.")]

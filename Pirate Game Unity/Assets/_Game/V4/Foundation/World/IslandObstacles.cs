@@ -23,6 +23,22 @@ namespace RoguePirates.V4.Foundation.World
         static readonly System.Collections.Generic.HashSet<int> IslandRoots = new System.Collections.Generic.HashSet<int>();
         static readonly System.Collections.Generic.Dictionary<int, bool> IslandColliderCache = new System.Collections.Generic.Dictionary<int, bool>();
 
+        // Playtest (4 Oct, review): the registry is per scene (it grew with every run and kept the layer fallback off).
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetIslands()
+        {
+            IslandRoots.Clear();
+            IslandColliderCache.Clear();
+            UnityEngine.SceneManagement.SceneManager.sceneUnloaded -= OnSceneUnloaded;
+            UnityEngine.SceneManagement.SceneManager.sceneUnloaded += OnSceneUnloaded;
+        }
+
+        static void OnSceneUnloaded(UnityEngine.SceneManagement.Scene _)
+        {
+            IslandRoots.Clear();
+            IslandColliderCache.Clear();
+        }
+
         public static void RegisterIsland(GameObject islandRoot)
         {
             if (islandRoot == null) return;

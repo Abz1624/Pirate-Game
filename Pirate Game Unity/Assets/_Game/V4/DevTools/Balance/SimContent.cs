@@ -187,7 +187,7 @@ namespace RoguePirates.V4.DevTools.Balance
 
         public bool IsWeaponAvailable(string weaponId)
         {
-            if (Weapon(weaponId) == null) return false;
+            if (Weapon(weaponId) == null || !RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(weaponId)) return false;
             if (AllWeaponsUnlocked) return RumCost(weaponId) <= RegularPlayerRum;
             return Unlocks != null && Array.IndexOf(Unlocks.starterWeaponIds, weaponId) >= 0;
         }

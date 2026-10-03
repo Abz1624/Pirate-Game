@@ -319,7 +319,11 @@ namespace RoguePirates.V4
             _seed = seed;
 
             _modules.InitializeAll(_context);
-            if (IsPvp && !PreparePvp()) return;
+            // Playtest (4 Oct, review): a 1v1 run without its match goes back to the menu instead of hanging.
+            if (IsPvp && !PreparePvp()) { Debug.LogWarning("V4Game: no 1v1 match to start; back to the menu."); GoToMenu(); return; }
+            // Playtest (4 Oct): a voyage started while still seated in a 1v1 lobby leaves it (a match starting there could
+            // not be played from the voyage and would be lost on time).
+            if (!IsPvp && !moduleLab && Online.PvpSession.Exists && Online.PvpSession.Instance.InLobby) _ = Online.PvpSession.Instance.Leave();
             if (!_shell.Start(seed, request.retry)) return;
             if (_pvp != null)
             {

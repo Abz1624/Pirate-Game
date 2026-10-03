@@ -3,8 +3,8 @@
   "barnacle_king": {
    "id": "barnacle_king",
    "name": "Barnacle King",
-   "hp": 490.0,
-   "dmg": 0.5625,
+   "hp": 245.0,
+   "dmg": 1.125,
    "speed": 2.5,
    "xp": 100.0,
    "boss": true,
@@ -2603,10 +2603,10 @@
   "eliteChance": 0.01,
   "eliteHp": 6.0,
   "ttk": {
-   "boss": 19.0,
-   "arena": 6.0,
-   "focus": 3.0,
-   "elite": 2.5
+   "boss": 4.75,
+   "arena": 3.0,
+   "focus": 1.5,
+   "elite": 1.25
   }
  },
  "armorWorks": true,
@@ -2618,8 +2618,8 @@
     "role": "Boss",
     "kind": "Creature",
     "base": null,
-    "hp": 490.0,
-    "dmg": 0.5625,
+    "hp": 245.0,
+    "dmg": 1.125,
     "speed": 2.5,
     "radius": 2.8,
     "xp": 100.0,

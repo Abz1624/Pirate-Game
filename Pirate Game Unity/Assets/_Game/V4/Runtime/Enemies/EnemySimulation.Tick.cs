@@ -1212,7 +1212,7 @@ namespace RoguePirates.V4.Enemies
 
         internal static Vector3 Spread(Vector3 dir, in EnemyUnit agent)
         {
-            if (agent.isElite) return dir;
+            if (agent.isElite || agent.isBoss) return dir;
             var h = Mathf.Sin(agent.id * 12.9898f + agent.position.x * 78.233f + agent.position.z * 37.719f) * 43758.5453f;
             var u = h - Mathf.Floor(h); // 0..1
             return Quaternion.Euler(0f, (u * 2f - 1f) * ShotSpreadDegrees, 0f) * dir;

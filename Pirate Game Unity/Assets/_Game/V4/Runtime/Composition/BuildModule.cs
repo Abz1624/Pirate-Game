@@ -267,7 +267,9 @@ namespace RoguePirates.V4.Composition
         public void BeginProgression(string startingWeapon)
         {
             var slots = Experiment != null ? Experiment.weaponSlotCap : 6;
-            if (PvpWeapons != null && PvpWeapons.Count > 0) startingWeapon = PvpWeapons[0];
+            if (PvpWeapons != null)
+                foreach (var w in PvpWeapons)
+                    if (RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(w)) { startingWeapon = w; break; }
             Progression.BeginRun(startingWeapon, slots, _config.Single<ProgressionConfig>().newWeaponDamageBonus);
             if (PvpWeapons != null) Progression.BeginPvp(PvpWeapons, PvpLogbooks);
         }

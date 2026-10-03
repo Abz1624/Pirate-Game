@@ -19,7 +19,7 @@ MonoBehaviour:
   - localhost
   - 127.0.0.1
   - '*.roguepirates.fun'
-  - '*.up.railway.app'
+  - api-production-dad8.up.railway.app
   requestTimeoutSeconds: 10
   healthTimeoutSeconds: 5
   mapId: saltwind
