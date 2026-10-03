@@ -10,6 +10,7 @@ public sealed class LobbyBroadcaster
     sealed class Connection
     {
         public required WebSocket Socket { get; init; }
+        public Guid PlayerId { get; init; }
         public SemaphoreSlim SendLock { get; } = new(1, 1);
     }
 
@@ -18,11 +19,51 @@ public sealed class LobbyBroadcaster
 
     public LobbyBroadcaster(ILogger<LobbyBroadcaster> log) => _log = log;
 
-    public Guid Add(Guid lobbyId, WebSocket socket)
+    public Guid Add(Guid lobbyId, Guid playerId, WebSocket socket)
     {
         var id = Guid.NewGuid();
-        _lobbies.GetOrAdd(lobbyId, _ => new()).TryAdd(id, new Connection { Socket = socket });
+        _lobbies.GetOrAdd(lobbyId, _ => new()).TryAdd(id, new Connection { Socket = socket, PlayerId = playerId });
         return id;
+    }
+
+    /// <summary>True while the player has at least one open socket on the lobby.</summary>
+    public bool IsConnected(Guid lobbyId, Guid playerId) =>
+        _lobbies.TryGetValue(lobbyId, out var set)
+        && set.Values.Any(c => c.PlayerId == playerId && c.Socket.State == WebSocketState.Open);
+
+    /// <summary>Sends a message to every socket the player has open on the lobby.</summary>
+    public async Task SendToPlayerAsync(Guid lobbyId, Guid playerId, string json)
+    {
+        if (!_lobbies.TryGetValue(lobbyId, out var set)) return;
+        await Task.WhenAll(set.Where(kv => kv.Value.PlayerId == playerId)
+            .Select(kv => SendAsync(lobbyId, kv.Key, kv.Value, json, close: false)));
+    }
+
+    /// <summary>Closes every socket of the lobby (end of the rematch window).</summary>
+    public async Task CloseAllAsync(Guid lobbyId)
+    {
+        if (!_lobbies.TryGetValue(lobbyId, out var set)) return;
+        await Task.WhenAll(set.Select(async kv =>
+        {
+            await kv.Value.SendLock.WaitAsync();
+            try
+            {
+                if (kv.Value.Socket.State == WebSocketState.Open)
+                {
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    await kv.Value.Socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "lobby ended", cts.Token);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogDebug(ex, "Lobby socket close failed");
+            }
+            finally
+            {
+                kv.Value.SendLock.Release();
+                Remove(lobbyId, kv.Key);
+            }
+        }));
     }
 
     public void Remove(Guid lobbyId, Guid connectionId)

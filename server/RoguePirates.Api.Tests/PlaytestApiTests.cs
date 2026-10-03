@@ -382,7 +382,7 @@ public class LobbyTests : IDisposable
         Assert.NotEqual(Guid.Empty, match.GetProperty("matchId").GetGuid());
         Assert.True(match.GetProperty("seed").GetInt64() >= 0);
         Assert.Equal(JsonValueKind.Null, match.GetProperty("matchServer").ValueKind);
-        Assert.Equal("client_host", match.GetProperty("hostMode").GetString());
+        Assert.Equal("relay", match.GetProperty("hostMode").GetString());
         Assert.Equal("hw1", started.GetProperty("seats")[0].GetProperty("draft").GetProperty("weapons")[0].GetString());
         Assert.Equal("gl6", started.GetProperty("seats")[1].GetProperty("draft").GetProperty("logbooks")[5].GetString());
 
@@ -568,18 +568,23 @@ public class LobbyWebSocketTests : IDisposable
     readonly ApiHost _api = new();
     public void Dispose() => _api.Dispose();
 
+    /// <summary>The next lobby state ("t": "lobby"), skipping match messages such as "match_start".</summary>
     static async Task<JsonElement> Receive(WebSocket ws)
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         var buffer = new byte[16 * 1024];
-        using var ms = new MemoryStream();
-        WebSocketReceiveResult r;
-        do
+        while (true)
         {
-            r = await ws.ReceiveAsync(buffer, cts.Token);
-            ms.Write(buffer, 0, r.Count);
-        } while (!r.EndOfMessage);
-        return JsonDocument.Parse(Encoding.UTF8.GetString(ms.ToArray())).RootElement.Clone();
+            using var ms = new MemoryStream();
+            WebSocketReceiveResult r;
+            do
+            {
+                r = await ws.ReceiveAsync(buffer, cts.Token);
+                ms.Write(buffer, 0, r.Count);
+            } while (!r.EndOfMessage);
+            var msg = JsonDocument.Parse(Encoding.UTF8.GetString(ms.ToArray())).RootElement.Clone();
+            if (msg.GetProperty("t").GetString() == "lobby") return msg;
+        }
     }
 
     [Fact]

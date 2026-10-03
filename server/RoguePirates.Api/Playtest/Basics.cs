@@ -119,6 +119,14 @@ public static class Elo
         var delta = (int)Math.Round(K * (1 - expectedWinner), MidpointRounding.AwayFromZero);
         return (winnerRating + delta, loserRating - delta);
     }
+
+    /// <summary>A draw: each side scores 0.5 (equal ratings do not move).</summary>
+    public static (int a, int b) Draw(int a, int b)
+    {
+        var expectedA = 1.0 / (1.0 + Math.Pow(10, (b - a) / 400.0));
+        var delta = (int)Math.Round(K * (0.5 - expectedA), MidpointRounding.AwayFromZero);
+        return (a + delta, b - delta);
+    }
 }
 
 /// <summary>Resolves the player from "Authorization: Bearer &lt;token&gt;".</summary>

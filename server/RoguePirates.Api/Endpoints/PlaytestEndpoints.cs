@@ -68,7 +68,15 @@ public static class PlaytestEndpoints
 
         // WebSocket: pushes the full lobby state (same JSON as GET /api/lobbies/{id}) on connect and on every change.
         // Browsers cannot set headers on WebSockets, so the token comes in the query string (kept out of request logs).
-        app.Map("/ws/lobbies/{id:guid}", async (HttpContext ctx, Guid id, PlayerAuth auth, LobbyService lobbies, LobbyBroadcaster broadcaster, ApiSettings settings) =>
+        // Practice bot in seat 1 (host only, lobby waiting); the host's client simulates the bot's ship.
+        app.MapPost("/api/lobbies/{id:guid}/bot", async (HttpContext ctx, Guid id, PlayerAuth auth, LobbyService lobbies) =>
+            Results.Ok(await lobbies.AddBotAsync(id, await auth.RequireAsync(ctx))));
+
+        // Rematch after a refereed match (same as the WebSocket message {"t":"rematch"}).
+        app.MapPost("/api/lobbies/{id:guid}/rematch", async (HttpContext ctx, Guid id, PlayerAuth auth, MatchRelay relay) =>
+            Results.Ok(await relay.RequestRematchAsync(id, (await auth.RequireAsync(ctx)).Id)));
+
+        app.Map("/ws/lobbies/{id:guid}", async (HttpContext ctx, Guid id, PlayerAuth auth, LobbyService lobbies, LobbyBroadcaster broadcaster, MatchRelay relay, ApiSettings settings) =>
         {
             if (!ctx.WebSockets.IsWebSocketRequest)
                 return Results.Json(new { error = "websocket_required", message = "Connect with a WebSocket." }, statusCode: 400);
@@ -85,6 +93,8 @@ public static class PlaytestEndpoints
             try
             {
                 var buffer = new byte[1024];
+                var message = new MemoryStream();
+                var oversized = false;
                 while (socket.State == WebSocketState.Open)
                 {
                     var msg = await socket.ReceiveAsync(buffer, ctx.RequestAborted);
@@ -94,14 +104,23 @@ public static class PlaytestEndpoints
                             await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "bye", CancellationToken.None);
                         break;
                     }
-                    // any text message (e.g. "ping") asks for the current state again
-                    if (msg.EndOfMessage)
+                    if (message.Length + msg.Count > ArenaRules.MaxMessageBytes) oversized = true;
+                    else message.Write(buffer, 0, msg.Count);
+                    if (!msg.EndOfMessage) continue;
+
+                    var text = System.Text.Encoding.UTF8.GetString(message.GetBuffer(), 0, (int)message.Length);
+                    message.SetLength(0);
+                    if (oversized)
                     {
-                        // fresh scope: this request's DbContext would hand back the entity it tracked at connect time
-                        using var scope = ctx.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
-                        var state = await scope.ServiceProvider.GetRequiredService<LobbyService>().GetAsync(id, player);
-                        await broadcaster.SendToAsync(id, connection, System.Text.Json.JsonSerializer.Serialize(state, LobbyService.Json));
+                        oversized = false; // dropped: over 4 KB
+                        continue;
                     }
+                    // match messages ({"t": ...}) go to the relay; anything else (e.g. "ping") asks for the lobby state again
+                    if (await relay.HandleAsync(id, player.Id, text)) continue;
+                    // fresh scope: this request's DbContext would hand back the entity it tracked at connect time
+                    using var scope = ctx.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+                    var state = await scope.ServiceProvider.GetRequiredService<LobbyService>().GetAsync(id, player);
+                    await broadcaster.SendToAsync(id, connection, LobbyService.SocketJson(state));
                 }
             }
             catch (Exception ex) when (ex is WebSocketException or OperationCanceledException) { }

@@ -30,7 +30,9 @@ builder.Services.AddScoped<RunService>();
 builder.Services.AddScoped<LobbyService>();
 builder.Services.AddScoped<MatchService>();
 builder.Services.AddSingleton<LobbyBroadcaster>();
+builder.Services.AddSingleton<MatchRelay>();
 builder.Services.AddHostedService<PlaytestSweeper>();
+builder.Services.AddHostedService<ArenaTicker>();
 
 builder.Services.AddCors();
 builder.Services.AddOptions<CorsOptions>().Configure<IServiceProvider>((o, sp) =>

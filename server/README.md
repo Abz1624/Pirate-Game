@@ -1,8 +1,11 @@
 # Rogue Pirates playtest API
 
 ASP.NET Core (.NET 8) API for the playtest: guest profiles, the weekly kills leaderboard, and 1v1 Arena lobbies
-(invites, seat status, drafts, real-time state, results and Elo). The match itself runs elsewhere (a Unity headless
-server, or the host's client); this API only handles the lobby around it.
+(invites, seat status, drafts, real-time state, results and Elo). For 1v1 matches it is also the **relay and
+referee**: both players run the game locally (each simulates its own ship and weapons), the API forwards their messages
+over the lobby WebSocket and decides everything shared (countdown, spawns, barrels, storm clock, hits tally, the end and
+the result). See [1v1 match protocol](#1v1-match-protocol-relay). With `MATCH_SERVER_URL` set, a dedicated match server
+runs the match instead and the API only handles the lobby around it.
 
 - `RoguePirates.Api/` the API (`Program.cs`, `Endpoints/PlaytestEndpoints.cs`, `Playtest/`, `Data/`)
 - `RoguePirates.Api.Tests/` xUnit tests (in-memory test server, throwaway SQLite file, injected clock)
@@ -32,10 +35,11 @@ dotnet test server/RoguePirates.Api.Tests
 | `DATABASE_URL` | unset | Postgres URL (`postgresql://user:pass@host:port/db`, optional `?sslmode=require`). Set: Postgres. Unset: SQLite. |
 | `SQLITE_PATH` | `roguepirates.db` | SQLite file when `DATABASE_URL` is unset (`/tmp/roguepirates.db` in the Docker image). |
 | `ALLOWED_ORIGINS` | `https://www.roguepirates.fun,https://roguepirates.fun,http://localhost:*,http://127.0.0.1:*` | Comma-separated CORS and WebSocket origins. `scheme://host:*` allows any port. |
-| `MATCH_SERVER_URL` | empty | Match server address returned in the lobby when a match starts. Empty: the host's client hosts the match (`hostMode: "client_host"`). |
+| `MATCH_SERVER_URL` | empty | Match server address returned in the lobby when a match starts. Empty: this API relays and referees the match (`hostMode: "relay"`). |
 | `PLAY_URL` | `https://www.roguepirates.fun/play/` | Base of invite links (`?join=CODE` is appended). |
 | `RATE_LIMIT_PER_MINUTE` | `60` | Writes (POST/PUT/PATCH) allowed per client IP per minute. Reads and WebSockets are not limited. |
 | `SWEEP_SECONDS` | `30` | How often idle lobbies expire and single-report matches are decided in the background (both also happen on read). |
+| `ARENA_TICK_MS` | `100` | How often the 1v1 relay advances its clock (countdown, barrels, end on time, disconnect forfeits). |
 
 No secrets live in code. The schema is created on startup with EF Core `EnsureCreated` (all tables on an empty
 database, nothing otherwise). A later schema change needs a migration or a fresh database; there is no data worth
@@ -128,9 +132,10 @@ without a run this week.
 
 ### 1v1 lobbies
 
-Lobby `status`: `waiting` (host alone), `full`, `starting` (both ready; match assigned), `in_match` (both seats
-reported `in_match`), `finished` (result decided), `closed` (host left), `expired` (15 minutes without activity while
-`waiting` or `full`). Seat `status`: `joined`, `drafting`, `ready`, `in_match`, `left`.
+Lobby `status`: `waiting` (host alone), `full`, `starting` (both ready; match assigned; 3-second countdown),
+`in_match` (the countdown ended, or both seats reported `in_match`), `finished` (result decided), `closed` (host left
+before the match), `expired` (15 minutes without activity while `waiting` or `full`). Seat `status`: `joined`,
+`drafting`, `ready`, `in_match`, `left`.
 
 Lobby state (returned by every lobby endpoint and pushed on the WebSocket):
 ```json
@@ -138,15 +143,24 @@ Lobby state (returned by every lobby endpoint and pushed on the WebSocket):
  "status":"starting","hostPlayerId":"8b0c...","guestPlayerId":"c2d4...",
  "createdAt":"...","updatedAt":"...","expiresAt":null,
  "seats":[
-  {"seat":"host","playerId":"8b0c...","name":"Anne Bonny","tag":"#4821","rating":1000,"status":"ready","ready":true,
+  {"seat":"host","playerId":"8b0c...","name":"Anne Bonny","tag":"#4821","rating":1000,"bot":false,"status":"ready","ready":true,
    "hasDraft":true,"draft":{"weapons":["w1","w2","w3","w4","w5","w6"],"logbooks":["l1","l2","l3","l4","l5","l6"]}},
-  {"seat":"guest","playerId":"c2d4...","name":"Calico_Jack","tag":"#0193","rating":1000,"status":"ready","ready":true,
+  {"seat":"guest","playerId":"c2d4...","name":"Calico_Jack","tag":"#0193","rating":1000,"bot":false,"status":"ready","ready":true,
    "hasDraft":true,"draft":{"weapons":["..."],"logbooks":["..."]}}],
- "match":{"matchId":"91aa...","seed":1234567,"matchServer":null,"hostMode":"client_host","hostPlayerId":"8b0c..."}}
+ "match":{"matchId":"91aa...","seed":1234567,"matchServer":null,"hostMode":"relay","hostPlayerId":"8b0c...",
+  "serverNow":1790856000000,"countdownMs":3000,"startsAt":1790856003000,"startedAt":null,"endsAt":1790856303000,
+  "durationMs":300000,"arena":{"centerX":0,"centerZ":0,"radius":120},
+  "spawns":[{"seat":0,"playerId":"8b0c...","x":-45,"z":0,"yaw":90},{"seat":1,"playerId":"c2d4...","x":45,"z":0,"yaw":270}],
+  "storm":{"shrinkStartMs":1790856153000,"shrinkEndMs":1790856303000,"startRadius":120,"endRadius":25,
+   "damagePerSecond":8,"damageGrowthPerSecond":2},
+  "botSeat":null}}
 ```
-`seats` has one entry until a guest joins. `draft` stays `null` (only `hasDraft`) until the lobby is `starting`, so
-neither player sees the other's picks early. `match` is `null` until `starting`. `expiresAt` is set while `waiting`
-or `full`. `seed` fits in 31 bits.
+`seats` has one entry until a guest joins. `draft` stays `null` (only `hasDraft`) until the lobby is `starting`; from
+then on both drafts (weapons and logbooks, in priority order) are visible to both players. `match` is `null` until
+`starting`. `expiresAt` is set while `waiting` or `full`. `seed` fits in 31 bits. All `*Ms`/`*At` numbers in `match`
+are server UTC milliseconds since the Unix epoch; `startedAt` is set once the lobby is `in_match`. `hostMode` is
+`relay` (this API referees, see below) or `dedicated` (a `MATCH_SERVER_URL` is configured). `botSeat` is `1` when the
+practice bot holds the guest seat.
 
 `POST /api/lobbies` (auth) `{"public":true}` (body optional, default private) -> `201` lobby state.
 
@@ -169,15 +183,32 @@ returns the state.
 -> `200` lobby state. `draft` is optional with any status; when sent it must have exactly 6 distinct, non-empty ids
 (max 64 characters) in each list, in priority order (the game validates them against content). `ready` needs a draft
 (sent now or earlier). When both seats are `ready` the lobby becomes `starting` with a `matchId`, `seed` and the
-`MATCH_SERVER_URL` (if empty, the host's client hosts). `joined`/`drafting`/`ready` are only accepted before
-`starting` (`409 already_started`); `in_match` only after it (`409 not_started`). `left`: the host leaving closes the
-lobby; the guest leaving before `starting` frees the seat (lobby back to `waiting`), after it marks the seat `left`.
-Any change resets the 15-minute idle timer.
+`MATCH_SERVER_URL` (if empty, this API relays the match). `joined`/`drafting`/`ready` are only accepted before
+`starting` (`409 already_started`); `in_match` only after it (`409 not_started`). `left`: the host leaving before the
+match closes the lobby; the guest leaving before `starting` frees the seat (lobby back to `waiting`), after it marks
+the seat `left`. Leaving a refereed match that is running (either seat) forfeits it (`match_end` with
+`reason: "forfeit"`; the lobby becomes `finished`). Any change resets the 15-minute idle timer.
+
+`POST /api/lobbies/{lobbyId}/bot` (auth, host only, lobby `waiting`) -> `200` lobby state. Seats the **practice bot**
+as the guest: `bot: true`, name `Practice Bot`, rating 1000, already `ready` with a fixed draft (weapons
+`deck_cannons, mortar, chainshot, swivel_guns, harpoon_gun, long_nine`; logbooks `gunnery_manual, ironclad, admiral,
+carpenters_notes, lookouts_glass, oversized_shot`). The lobby becomes `full` (it leaves the public list); it starts when
+the host is `ready`. `403 not_host` / `not_in_lobby`, `409 not_waiting`. The bot's player id is the fixed
+`00000000-0000-0000-0000-0000000000b0`; it has no profile row and never connects. See [Bot matches](#bot-matches).
+
+`POST /api/lobbies/{lobbyId}/rematch` (auth, a player of the finished refereed match, within 60 s of its end) -> `200`
+`{"status":"requested","by":"8b0c...","waitingFor":"c2d4..."}` or, once both asked (the bot always agrees),
+`{"status":"created","lobbyId":"77ab...","code":"P3QX9M"}`. Same as the WebSocket message `{"t":"rematch"}`. The new
+lobby is private and `full` with the same two players (drafts kept, seats `joined`; the bot stays `ready`): both
+connect to the new lobby's WebSocket and press ready again. `409 match_not_over` / `no_rematch` (window over or no
+refereed match), `403 not_in_match`. A rematch is optional: the match is a single round.
 
 `WS /ws/lobbies/{lobbyId}?token=<token>` (seated players only; the browser `Origin` must be allowed). Sends the lobby
-state as a text message on connect and after every change. Send any text (for example `ping`) to get the state again.
-The server closes the socket after pushing a final `finished`, `closed` or `expired` state. Rejected handshakes:
-401 (token), 403 (not seated or origin), 404 (lobby).
+state (the JSON above plus `"t":"lobby"`) as a text message on connect and after every change. Any text that is not a
+JSON object with a string `"t"` (for example `ping`) asks for the lobby state again. JSON messages with `"t"` are the
+match protocol below. The server closes the socket after pushing a final `closed` or `expired` state, and after
+`finished` (a refereed match keeps it open 60 s longer for the rematch). Messages over 4 KB are dropped. Rejected
+handshakes: 401 (token), 403 (not seated or origin), 404 (lobby).
 
 ### Matches
 
@@ -188,7 +219,9 @@ The server closes the socket after pushing a final `finished`, `closed` or `expi
   "8b0c...":{"damageDealt":900,"damageTaken":400,"kills":3,"level":12,"weapons":["w1","w2"],"logbooks":["l1"]},
   "c2d4...":{"damageDealt":420,"damageTaken":900,"level":11,"weapons":["w4"],"logbooks":[]}}}
 ```
--> `200` match view. Rules: `winnerPlayerId` must be one of the two players; `durationSeconds` 0..7200; `stats` keys
+-> `200` match view. For a match the relay referees (a player's socket was connected during it, or a bot match) the
+server's decision replaces this flow: reports are still accepted and stored, but decide nothing (`status` stays
+`pending` until the relay ends the match). Otherwise, for clients that never use the relay: `winnerPlayerId` must be one of the two players; `durationSeconds` 0..7200; `stats` keys
 are the players' ids, numbers non-negative, `level` 1..200, `kills` optional, at most 12 ids per list. One report per
 player (`409 already_reported`). The match is decided when both reports name the same winner (`decidedBy:
 "agreement"`), or with the single report 60 s after it arrived if the other never comes (`"timeout"`). Different
@@ -207,10 +240,107 @@ to `finished`.
    "stats":{"damageDealt":420,"damageTaken":900,"kills":null,"level":11,"weapons":["w4"],"logbooks":[]}}]}
 ```
 `status` is `pending` (no report), `awaiting_opponent` (one report; `decideAfter` says when it is decided alone),
-`decided` or `disputed`.
+`decided` or `disputed`. Matches decided by the relay have `decidedBy` `server_sunk`, `server_time`, `server_forfeit`
+or `server_draw` and `reason` (`sunk`, `time`, `forfeit`, `draw`; `null` for report-decided matches); their stats come
+from the server tallies and add `barrelsTaken` and `finalHp` (`kills` is `null`). A draw (`winnerPlayerId: null`)
+scores 0.5 each for Elo (equal ratings do not move) and counts as neither a win nor a loss. Bot matches and matches
+both players abandoned are recorded without rating, win or loss changes. Each player entry also has `bot`.
+
+## 1v1 match protocol (relay)
+
+Applies when `hostMode` is `"relay"`. Both clients simulate their own ship, weapons and the PvP damage rules locally;
+the server forwards their messages and decides everything shared. All messages are JSON text frames on the lobby
+WebSocket with a type field `"t"`. `st` is the server time (UTC ms) when the server handled the message; clients
+estimate the clock offset with `ping`/`pong`. Positions are metres on the XZ plane, relative to the arena centre
+(0, 0); `yaw` is degrees about +Y (Unity), 0 = facing +Z, 90 = facing +X.
+
+### Arena and timeline (server constants, `Playtest/ArenaRules.cs`)
+
+| Item | Value |
+|---|---|
+| Arena | centre (0, 0), radius 120 m |
+| Spawns | seat 0 (host) (-45, 0) yaw 90; seat 1 (guest or bot) (45, 0) yaw 270; mirrored, both facing the centre |
+| Countdown | 3 s from both seats ready (`startsAt` = ready time + 3 s); then the lobby is `in_match` with `startedAt` |
+| Match length | 5:00 from `startsAt` (`endsAt`) |
+| Storm | radius 120 m until 2:30, then shrinks linearly to 25 m at 5:00 (`shrinkStartMs`, `shrinkEndMs`). Clients render it and apply the outside damage themselves: 8 hp/s, +2 hp/s for every second spent outside without a break |
+| XP barrel | every 5 s (first at 0:05); taker gets one guaranteed level-up (client applies it) |
+| Health barrel | every 30 s (first at 0:30); taker heals 20% of max hull (client applies it) |
+| Barrel placement | on the perpendicular bisector of the two ships' last reported positions (equidistant from both), at least 3 m inside the current storm ring, at least 15 m from both ships when the ring allows (else as far as it allows); the arena centre when the bisector misses the ring. Random along the bisector, seeded by the match seed |
+| Barrel lifetime | 20 s unclaimed, then `barrel_gone` |
+| Claim radius | 6 m from the claimer's last reported position |
+| Disconnect | a player with no open socket for more than 20 s forfeits (both away: the match is abandoned, no winner, unrated) |
+| Rematch window | 60 s after `match_end` |
+
+Timeline: both `ready` -> lobby `starting` (lobby state + `match_start` to each player) -> 3 s countdown (states are
+relayed, hits and pickups are refused) -> `in_match` (lobby state with `startedAt`) -> barrels at 0:05, 0:10, ...;
+health barrels at 0:30, 1:00, ... -> storm shrinks 2:30 to 5:00 -> `match_end` on a sinking, a forfeit, or at 5:00 ->
+lobby `finished` -> optional `rematch` within 60 s -> sockets closed.
+
+### Client to server
+
+| `t` | Fields | Rate | Server action |
+|---|---|---|---|
+| `state` | `x`, `z` (required), `yaw`, `vx`, `vz`, `hp`, `maxHp`, `level`, `alive`, `boosting`, optional `asBot` | send ~15 Hz; cap 30/s per ship, extras dropped silently | Stores the last position, hp, maxHp, level; forwards to the opponent (see below). `alive: false` after the countdown = this ship is sunk (match ends). Positions beyond 10 km are dropped. |
+| `fx` | anything (cosmetic: weapon fired, ids, positions) | cap 30/s, max 2 KB | Forwarded to the opponent unchanged (the exact text). Over 2 KB: `reject` `too_large`. |
+| `hit` | `dmg` (0..500), `weaponId` (1-64 chars), optional `asBot` | cap 20/s (extras get `reject` `rate`) | Validates: match started and not over, attacker alive, damage range, weapon id. Adds `dmg` to the attacker's damage dealt and the victim's damage taken, then forwards `hit` to the victim. Send the weapon's raw damage; the victim's client applies the PvP rules (scaling, invulnerability frames, no one-shots) and reports its hp in `state`. |
+| `pickup` | `id` (barrel id), optional `asBot` | cap 10/s | First valid claim wins: barrel live and unclaimed, claimer alive, within 6 m of the claimer's last reported `state` position (send a fresh `state` first). Broadcasts `barrel_taken`; otherwise `reject` (`gone`, `taken`, `too_far`, `dead`, `not_started`, `rate`). |
+| `dead` | optional `asBot` | once | This ship is sunk (same as `state` with `alive: false`). Ignored during the countdown. |
+| `leave` | | once | Forfeits the match (also `PUT .../status` `left`). |
+| `rematch` | | | See `POST /api/lobbies/{id}/rematch`. |
+| `ping` | optional `cs` (client time) | | Answers `pong`. |
+
+Unknown types get `reject` `unknown_type`; any match message without a running refereed match gets `reject` `no_match`;
+`hit`/`pickup` after the end get `reject` `match_over`.
+
+### Server to client
+
+| `t` | To | Fields |
+|---|---|---|
+| `lobby` | both | The lobby state (on connect, after every change). |
+| `match_start` | each player | `matchId`, `lobbyId`, `seed`, `you` (your seat 0/1), `youPlayerId`, `serverNow`, `countdownMs`, `startsAt`, `endsAt`, `durationMs`, `arena`, `spawns`, `storm` (as in the lobby state), `barrels` (`xpEveryMs`, `healthEveryMs`, `firstXpMs`, `firstHealthMs`, `ttlMs`, `claimRadius`, `healthHealFraction`), `limits` (rates and caps), `players` (per seat: `seat`, `playerId`, `name`, `tag`, `rating`, `bot`, `draft`), `bot` (`{seat:1, playerId, simulatedBy}` or `null`), `live` (`ended`, unclaimed `barrels` as `barrel_spawn` objects, damage `tallies`). Sent when the match is assigned and again on every (re)connect during it. |
+| `state` | opponent | `from` (player id), `st`, `x`, `z`, `yaw`, `vx`, `vz`, `hp`, `maxHp`, `level`, `alive`, `boosting`. |
+| `fx` | opponent | The sender's message, unchanged. |
+| `hit` | victim (the host for a bot victim) | `dmg`, `weaponId`, `from` (attacker id), `to` (victim id), `st`. |
+| `barrel_spawn` | both | `id` (int), `kind` (`xp` or `health`), `x`, `z`, `st` (spawn time), `expiresAt`. |
+| `barrel_taken` | both | `id`, `kind`, `by` (player id; the bot's id for a bot claim), `st`. |
+| `barrel_gone` | both | `id` (despawned unclaimed). |
+| `presence` | both | `playerId`, `connected`, `forfeitAt` (UTC ms when a disconnected player forfeits; `null` on reconnect). |
+| `match_end` | both | `matchId`, `winnerPlayerId` (`null` for a draw or an abandoned match), `reason` (`sunk`, `time`, `forfeit`, `draw`), `rated`, `durationSeconds`, `stats` (per player id: `damageDealt`, `damageTaken`, `level`, `barrelsTaken`, `finalHp`, `maxHp`, `bot`), `ratings` (per player id: `before`, `after`, `change`; humans only), `rematchUntil`. |
+| `rematch` | both | `status` `requested` (`by`) or `created` (`lobbyId`, `code`). |
+| `reject` | sender | `of` (message type), `reason`, `id` (pickups). |
+| `pong` | sender | `cs` (echoed), `st`. |
+
+### How the match ends
+
+1. **Sunk**: a ship reports `alive: false` (or `dead`) after the countdown: it loses.
+2. **Time**: at 5:00 the higher damage dealt (server tally of accepted hits) wins; equal damage: the higher remaining hp
+   share (last reported `hp / maxHp`; no report = full) wins; still equal: `draw`.
+3. **Forfeit**: `leave`, `PUT status left`, or no open socket for more than 20 s (a `presence` message announces the
+   deadline). Both players away: abandoned (no winner, unrated).
+
+The server then writes the Match record (`decidedBy: "server_<reason>"`) and Elo (K 32; draws 0.5 each; bot matches
+unrated), moves the lobby to `finished` and broadcasts `match_end`.
+
+### Bot matches
+
+`POST /api/lobbies/{id}/bot` puts the practice bot in seat 1. The server does not expect messages from the bot seat and
+never forfeits it. The **host's client simulates the bot's ship** and speaks for it with `"asBot": true` on `state`,
+`hit` (the bot hitting the host; forwarded back to the host like any hit), `pickup` (a barrel claim for the bot, checked
+against the bot's last reported position) and `dead` (the bot sank). Hits on the bot are forwarded to the host with
+`to` = the bot's id. Only the host of a bot match may use `asBot` (`reject` `not_bot_host`). The server still runs the
+barrels, the clock and the end; bot matches are recorded but unrated. A rematch needs only the host.
+
+### Notes
+
+- Rooms live in memory (one API instance). After an API restart a client reconnecting to a running match gets a fresh
+  room (same timeline, tallies and barrels reset); matches nobody reconnects to stay `pending`.
+- A match where no player ever opened the WebSocket during it is left to the old two-report result flow.
 
 ## Limits of this playtest API
 
 Results are client-reported (no server authority yet, see V5 plan D6 and M13b/M18/M22): the run sanity checks and the
-two-report agreement only stop obvious mistakes and casual cheating. Nothing here moves value; leaderboard prizes,
+two-report agreement only stop obvious mistakes and casual cheating. The 1v1 relay referees the shared parts (clock,
+barrels and their distance check, the end, the tallies), but each client still simulates its own ship: positions, hp
+and hits are client-reported within the caps above, so a modified client can still lie about them. Nothing here moves
+value; leaderboard prizes,
 RUM rewards and wagers need the authoritative match server first.

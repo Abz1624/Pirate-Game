@@ -15,6 +15,8 @@ public sealed class ApiSettings
     public string PlayUrl { get; init; } = "https://www.roguepirates.fun/play/";
     public int RateLimitPerMinute { get; init; } = 60;
     public int SweepSeconds { get; init; } = 30;
+    /// <summary>How often the 1v1 relay ticks (countdown, barrels, storm end, disconnect forfeits).</summary>
+    public int ArenaTickMs { get; init; } = 100;
 
     public bool UsePostgres => !string.IsNullOrWhiteSpace(DatabaseUrl);
     public string DbKind => UsePostgres ? "postgres" : "sqlite";
@@ -31,6 +33,7 @@ public sealed class ApiSettings
         PlayUrl = NullIfEmpty(c["PLAY_URL"]) ?? "https://www.roguepirates.fun/play/",
         RateLimitPerMinute = int.TryParse(c["RATE_LIMIT_PER_MINUTE"], out var r) && r > 0 ? r : 60,
         SweepSeconds = int.TryParse(c["SWEEP_SECONDS"], out var s) && s > 0 ? s : 30,
+        ArenaTickMs = int.TryParse(c["ARENA_TICK_MS"], out var t) && t > 0 ? t : 100,
     };
 
     static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();

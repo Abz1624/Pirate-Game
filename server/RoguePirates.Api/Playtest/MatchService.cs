@@ -14,13 +14,81 @@ public sealed class MatchService
     readonly IClock _clock;
     readonly LobbyService _lobbies;
     readonly ILogger<MatchService> _log;
+    readonly MatchRelay _relay;
 
-    public MatchService(GameDb db, IClock clock, LobbyService lobbies, ILogger<MatchService> log)
+    public const string ServerDecisionPrefix = "server_";
+
+    public MatchService(GameDb db, IClock clock, LobbyService lobbies, ILogger<MatchService> log, MatchRelay relay)
     {
         _db = db;
         _clock = clock;
         _lobbies = lobbies;
         _log = log;
+        _relay = relay;
+    }
+
+    /// <summary>
+    /// Records the relay's decision (sunk, time, forfeit, draw): replaces the two-report agreement for refereed matches.
+    /// Rated matches update Elo (a draw scores 0.5 each); bot matches and abandoned matches do not. Returns the rating
+    /// change per player id. A match already decided or disputed is left as it is.
+    /// </summary>
+    public async Task<Dictionary<string, object>> DecideByServerAsync(Guid matchId, RelayEnd end)
+    {
+        await GameLocks.Lobby.WaitAsync();
+        try
+        {
+            var match = await _db.Matches.FirstAsync(m => m.Id == matchId);
+            var ratings = new Dictionary<string, object>();
+            if (match.Status is MatchStates.Decided or MatchStates.Disputed) return ratings;
+
+            var host = await _db.Players.FirstOrDefaultAsync(p => p.Id == match.HostPlayerId);
+            var guest = await _db.Players.FirstOrDefaultAsync(p => p.Id == match.GuestPlayerId);
+            match.HostRatingBefore = host?.Rating;
+            match.GuestRatingBefore = guest?.Rating;
+            if (end.Rated && host != null && guest != null)
+            {
+                if (end.Winner is { } winnerId)
+                {
+                    var winner = winnerId == host.Id ? host : guest;
+                    var loser = winnerId == host.Id ? guest : host;
+                    (winner.Rating, loser.Rating) = Elo.Update(winner.Rating, loser.Rating);
+                    winner.Wins++;
+                    loser.Losses++;
+                }
+                else
+                    (host.Rating, guest.Rating) = Elo.Draw(host.Rating, guest.Rating);
+            }
+            match.HostRatingAfter = host?.Rating;
+            match.GuestRatingAfter = guest?.Rating;
+
+            match.Status = MatchStates.Decided;
+            match.WinnerPlayerId = end.Winner;
+            match.DurationSeconds = end.DurationSeconds;
+            match.FinalStatsJson = JsonSerializer.Serialize(end.Stats, LobbyService.Json);
+            match.DecidedBy = ServerDecisionPrefix + end.Reason;
+            match.DecidedAt = _clock.UtcNow;
+
+            var lobby = await _db.Lobbies.FirstOrDefaultAsync(l => l.Id == match.LobbyId);
+            if (lobby != null && lobby.Status is LobbyStates.Starting or LobbyStates.InMatch)
+            {
+                lobby.Status = LobbyStates.Finished;
+                lobby.UpdatedAt = _clock.UtcNow;
+            }
+            await _db.SaveChangesAsync();
+            if (lobby != null) await _lobbies.PublishAsync(lobby);
+
+            foreach (var (id, before, after) in new[]
+                     {
+                         (match.HostPlayerId, match.HostRatingBefore, match.HostRatingAfter),
+                         (match.GuestPlayerId, match.GuestRatingBefore, match.GuestRatingAfter),
+                     })
+                if (before != null) ratings[id.ToString()] = new { before, after, change = after - before };
+            return ratings;
+        }
+        finally
+        {
+            GameLocks.Lobby.Release();
+        }
     }
 
     public async Task<object> SubmitAsync(Guid matchId, Player player, MatchResultRequest req)
@@ -48,7 +116,13 @@ public sealed class MatchService
                 StatsJson = statsJson, SubmittedAt = now,
             });
 
-            if (match.Status is MatchStates.Pending)
+            if (match.Status is MatchStates.Pending or MatchStates.AwaitingOpponent
+                && (_relay.IsRelayed(matchId) || PracticeBot.Is(match.GuestPlayerId)))
+            {
+                // the server referees this match: the report is kept for the record and decides nothing
+                await _db.SaveChangesAsync();
+            }
+            else if (match.Status is MatchStates.Pending)
             {
                 match.Status = MatchStates.AwaitingOpponent;
                 match.FirstReportAt = now;
@@ -204,7 +278,7 @@ public sealed class MatchService
             players.TryGetValue(id, out var p);
             return new
             {
-                playerId = id, name = p?.Name, tag = PlayerTags.For(id),
+                playerId = id, name = PracticeBot.Is(id) ? PracticeBot.Name : p?.Name, tag = PlayerTags.For(id), bot = PracticeBot.Is(id),
                 won = match.WinnerPlayerId == null ? (bool?)null : match.WinnerPlayerId == id,
                 ratingBefore = before, ratingAfter = after, ratingChange = after - before,
                 stats = stats.GetValueOrDefault(id.ToString()),
@@ -215,6 +289,7 @@ public sealed class MatchService
         {
             matchId = match.Id, lobbyId = match.LobbyId, status = match.Status, winnerPlayerId = match.WinnerPlayerId,
             durationSeconds = match.DurationSeconds, decidedBy = match.DecidedBy, decidedAt = match.DecidedAt,
+            reason = match.DecidedBy is { } by && by.StartsWith(ServerDecisionPrefix, StringComparison.Ordinal) ? by[ServerDecisionPrefix.Length..] : null,
             reportsReceived = reports,
             decideAfter = match.Status == MatchStates.AwaitingOpponent ? match.FirstReportAt + SingleReportTimeout : null,
             players = new[]

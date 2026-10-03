@@ -35,6 +35,7 @@ public sealed class ApiHost : WebApplicationFactory<Program>
             ["RATE_LIMIT_PER_MINUTE"] = "100000",
             ["SWEEP_SECONDS"] = "3600",
             ["MATCH_SERVER_URL"] = "",
+            ["ARENA_TICK_MS"] = "3600000", // tests drive the relay clock with MatchRelay.TickAsync
         };
         if (settings != null)
             foreach (var (k, v) in settings) _settings[k] = v;
