@@ -368,8 +368,11 @@ namespace RoguePirates.V4.Online
                         RematchRequestedBy = null;
                     }
                     if (start.live != null && start.live.ended) { MatchMessage?.Invoke(t, json); return; }
-                    if (SceneManager.GetActiveScene().name != V4SceneNames.SaltwindRun) StartRunScene(start);
-                    else MatchStarted?.Invoke(start);
+                    // Playtest (3 Oct, owner, round 7: a solo voyage came up as a 1v1): a late match_start only opens the
+                    // match from the menu, and only for the lobby we are still in; in a run it is the running match's.
+                    var scene = SceneManager.GetActiveScene().name;
+                    if (scene == V4SceneNames.SaltwindRun) MatchStarted?.Invoke(start);
+                    else if (scene == V4SceneNames.MainMenu && Lobby != null && (string.IsNullOrEmpty(start.lobbyId) || start.lobbyId == Lobby.lobbyId)) StartRunScene(start);
                     return;
                 }
                 case "match_end":

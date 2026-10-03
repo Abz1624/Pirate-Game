@@ -277,7 +277,7 @@ namespace RoguePirates.V4
                 Run = runState,
                 Ship = ship,
                 Toasts = _toasts,
-                Commands = new Views.HudCommands(ship.RequestBoost, RestartRun, GoToMenu, unlocks, () => Views.HudCommands.TogglePause(RunManager.Instance)),
+                Commands = new Views.HudCommands(ship.RequestBoost, pvp ? (System.Action)LeavePvp : RestartRun, pvp ? (System.Action)LeavePvp : GoToMenu, unlocks, () => Views.HudCommands.TogglePause(RunManager.Instance)),
                 Enemies = _enemies.Contracts,
                 Weapons = _weapons.Manager,
                 Captain = _build.Captain,
@@ -483,5 +483,14 @@ namespace RoguePirates.V4
             SceneManager.GetActiveScene().name == V4SceneNames.ModuleLab ? V4SceneNames.ModuleLab : V4SceneNames.SaltwindRun;
 
         public static void GoToMenu() => SceneManager.LoadScene(V4SceneNames.MainMenu);
+
+        /// <summary>Playtest (3 Oct, owner, round 7): a 1v1's Retry and Main Menu leave the match and its lobby, so nothing of
+        /// it follows the player into the next voyage.</summary>
+        void LeavePvp()
+        {
+            if (_pvp != null) { _pvp.MainMenu(); return; }
+            if (Online.PvpSession.Exists) Online.PvpSession.Instance.ReturnToMenu(true);
+            else GoToMenu();
+        }
     }
 }

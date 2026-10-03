@@ -59,6 +59,9 @@ namespace RoguePirates.V4
             IsRetry = false;
         }
 
+        /// <summary>The next run is a voyage (the menu's Play).</summary>
+        public static void ClearPvp() => Mode = RunMode.Voyage;
+
         /// <summary>Reads and clears the mode.</summary>
         public static RunMode ConsumeMode()
         {

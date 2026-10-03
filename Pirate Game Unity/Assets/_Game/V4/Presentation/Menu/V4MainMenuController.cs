@@ -184,6 +184,10 @@ namespace RoguePirates.V4
                 return;
             }
             RoguePirates.V4.Progression.CaptainChoice.LegacyId = captain.legacyId;
+            // Playtest (3 Oct, owner, round 7: a solo voyage came up as a 1v1): a voyage leaves any 1v1 lobby first.
+            if (RoguePirates.V4.Online.PvpSession.Exists && RoguePirates.V4.Online.PvpSession.Instance.Lobby != null)
+                _ = RoguePirates.V4.Online.PvpSession.Instance.Leave();
+            RunRequest.ClearPvp();
             MenuServices.BeginSaltwindExperiment();
             SceneManager.LoadScene(V4SceneNames.SaltwindRun);
         }
