@@ -185,7 +185,7 @@ MonoBehaviour:
   killBandLowRateMultiplier: 0.6
   killBandEliteChance: 0.01
   killBandMinSpawns: 6
-  bossMinSeconds: 19
+  bossMinSeconds: 9.5
   arenaFocusMinSeconds: 6
   focusMinSeconds: 3
   adaptiveEliteMinSeconds: 2.5
