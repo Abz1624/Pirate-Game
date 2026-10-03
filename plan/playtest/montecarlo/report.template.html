@@ -82,17 +82,17 @@ td.num, th.num { text-align: right }
   <section class="panel">
     <h2>What the simulation found</h2>
     <ul class="findings">
-      <li><strong>The version you played was too easy.</strong> Calibrated on your run (about 515 kills and level 24 at 5:13, 702 kills and level 28 at 7:18), most voyages there beat the boss and sail on into overtime with little danger.</li>
-      <li><strong>Round 5's first pass overshot badly.</strong> With the denser waves, more shooters and the new time-to-kill floors, almost every voyage sank before 3:00.</li>
-      <li><strong>The cause was the time-to-kill floors.</strong> They are measured on the build's theoretical damage per second, every weapon hitting one target. In play only about 30% of that lands, so a "25 s" boss really took about 80 s and a "2.5 s" kill-band elite about 8 s. The elites then piled up faster than they could be sunk.</li>
-      <li><strong>Now in the game:</strong>
+      <li><strong>Updated for round 7 (3 Oct, afternoon).</strong> The data is the game as it is now:
         <ul>
-          <li>Floors ×0.3: real fights of about 25 s for the boss, 12 s for arena fights and 2.5 s for kill-band elites.</li>
-          <li>Wave density ×0.8 before 5:00 and ×0.5 after.</li>
-          <li>Enemy damage ×0.5 for every enemy, so an enemy that looks the same always has the same stats.</li>
-        </ul>
-        Ships now sink in overtime, after the boss, more often than in the version you played, with more time spent below half hull.</li>
-      <li><strong>Watch in play:</strong> about 60 kill-band elites per voyage when you keep up. Shooters (Cannonboats, Gunner Cogs) deal the most damage; see the enemy table.</li>
+          <li>Flamethrower switched off (Ember starts with Swivel Guns).</li>
+          <li>Enemy base damage +25% for every enemy, variant and elite.</li>
+          <li>Miniboss and elite fight-length floors halved: arena fights 6 s, scheduled elites 3 s and kill-band elites 2.5 s of the build's theoretical damage per second (elite hull ×6). The boss is unchanged at 19 s.</li>
+          <li>Levels 1 to 2 now cost 5 XP, the same as 2 to 3.</li>
+        </ul></li>
+      <li><strong>Fights now:</strong> the crab and the scheduled elites take a median of 9 to 11 s, kill-band elites about 8 s and the Barnacle King about 37 s (see the Fights tab below).</li>
+      <li><strong>The model still finds the voyage easy.</strong> On your profile (80% of the loot, 90% of the enemies engaged), 97% of voyages beat the boss, under 1% sink before 10:00 and the hull rarely drops below half. Treat this as a floor on difficulty: in round 6 the model also could not reproduce sinkings at 3 to 4 minutes, so real play is harder than it shows.</li>
+      <li><strong>Most damage to you</strong> comes from elite Cutthroat Skiffs, the Barnacle King, elite Manta Rays and Drowned Harriers (see the Enemies tab below).</li>
+      <li><strong>New: the full stat sheet</strong> of every weapon and enemy is further down.</li>
     </ul>
   </section>
 
@@ -132,6 +132,12 @@ td.num, th.num { text-align: right }
     <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:baseline"><h2>What builds and enemies do</h2><div class="tabs" id="build-tabs"></div></div>
     <p class="small" id="build-note"></p>
     <div class="scroll"><table id="build-table"></table></div>
+  </section>
+
+  <section class="panel">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:baseline"><h2>Weapon and enemy stats</h2><div class="tabs" id="sheet-tabs"></div></div>
+    <p class="small" id="sheet-note"></p>
+    <div class="scroll"><table id="sheet-table"></table></div>
   </section>
 
   <section class="panel">
@@ -283,4 +289,28 @@ function builds() {
 }
 document.getElementById('build-tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { tab = b.dataset.t; builds(); } });
 builds();
+// Stat sheet (every weapon and enemy, from the game data).
+const sheetTabs = { weapons: 'Weapons', enemies: 'Enemies' };
+let sheetTab = 'weapons';
+const f1 = v => v ? (+v).toFixed(v % 1 ? (Math.abs(v) < 10 ? 2 : 1) : 0) : '0', hpAt = (hp, m) => hp * (DATA.curve.hp[0] + DATA.curve.hp[1] * m + DATA.curve.hp[2] * m * m), dmgAt = (d, m) => d * (DATA.curve.dmg[0] + DATA.curve.dmg[1] * m + DATA.curve.dmg[2] * m * m);
+function sheet() {
+  document.getElementById('sheet-tabs').innerHTML = Object.entries(sheetTabs).map(([k, t]) => `<button type="button" aria-selected="${k === sheetTab}" data-t="${k}">${t}</button>`).join('');
+  const el = document.getElementById('sheet-table'), note = document.getElementById('sheet-note');
+  if (sheetTab === 'weapons') {
+    note.textContent = 'Level 1 values from each weapon’s config. Damage is per hit; cooldown is seconds between firings; quantity is shots, pellets or summons per firing; blades and spin apply to orbits. Unlock is the Rum price (Starter = always open). Off = switched off for now.';
+    table(el, [{ k: 'name', t: 'Weapon' }, { k: 'type', t: 'Type' }, { k: 'damage', t: 'Damage', num: 1, f: f1 }, { k: 'cooldown', t: 'Cooldown (s)', num: 1, f: f1 },
+      { k: 'quantity', t: 'Quantity', num: 1 }, { k: 'range', t: 'Range (m)', num: 1, f: f1 }, { k: 'speed', t: 'Shot speed', num: 1, f: f1 }, { k: 'pierce', t: 'Pierce', num: 1 },
+      { k: 'blades', t: 'Blades', num: 1 }, { k: 'spin', t: 'Spin (°/s)', num: 1, f: f1 }, { k: 'maxLevel', t: 'Max level', num: 1 },
+      { k: 'rum', t: 'Unlock', num: 1, f: (v, x) => x.off ? 'Off' : v ? v + ' Rum' : 'Starter' }, { k: 'text', t: 'What it does' }], DATA.sheet.weapons.map(w => ({ ...w, text: w.off ? '(switched off) ' + w.text : w.text })));
+    return;
+  }
+  note.textContent = 'Base values from each enemy’s config (variants inherit what they do not set). Hull grows with time (hull at 5 and 10 min shown); damage per hit grows slowly (at 10 min shown). Elites get ×' + DATA.director.eliteHp + ' hull and minibosses, elites and the boss also get the fight-length floor on top. Contact = rams or touches for damage.';
+  table(el, [{ k: 'name', t: 'Enemy', f: (v, x) => v.charAt(0).toUpperCase() + v.slice(1) }, { k: 'role', t: 'Role' }, { k: 'kind', t: 'Kind' }, { k: 'hp', t: 'Hull', num: 1, f: f1 },
+    { k: 'hp5', t: 'Hull 5:00', num: 1, f: f1 }, { k: 'hp10', t: 'Hull 10:00', num: 1, f: f1 }, { k: 'dmg', t: 'Damage', num: 1, f: f1 }, { k: 'dmg10', t: 'Damage 10:00', num: 1, f: f1 },
+    { k: 'attack', t: 'Attack' }, { k: 'behavior', t: 'Behaviour' }, { k: 'range', t: 'Attack range (m)', num: 1, f: f1 }, { k: 'cooldown', t: 'Attack every (s)', num: 1, f: f1 },
+    { k: 'windup', t: 'Wind-up (s)', num: 1, f: f1 }, { k: 'speed', t: 'Speed', num: 1, f: f1 }, { k: 'contact', t: 'Contact', f: v => v ? 'Yes' : 'No' }, { k: 'xp', t: 'XP', num: 1, f: f1 }, { k: 'threat', t: 'Threat cost', num: 1, f: f1 }],
+    DATA.sheet.enemies.map(e => ({ ...e, hp5: hpAt(e.hp, 5), hp10: hpAt(e.hp, 10), dmg10: dmgAt(e.dmg, 10) })).sort((a, b) => ['Ordinary', 'Variant', 'Elite', 'Miniboss', 'Boss'].indexOf(a.role) - ['Ordinary', 'Variant', 'Elite', 'Miniboss', 'Boss'].indexOf(b.role)));
+}
+document.getElementById('sheet-tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { sheetTab = b.dataset.t; sheet(); } });
+sheet();
 </script>

@@ -103,11 +103,13 @@ timeline = dict(deadline=float(t['stageDeadlineSeconds']), cap=int(t['maxActiveE
                               decay=float(t['overtime']['intervalDecayPerStep']), step=float(t['overtime']['pressureStepSeconds'])),
                 tagCaps={c['tag']: int(c['max']) for c in t['tagCaps']})
 
+DISABLED_WEAPONS = {'flamethrower'}  # WeaponFeatureFlags (playtest round 7: switched off in voyages and 1v1s)
 weapons = {}
 for p in glob.glob(os.path.join(V4, 'Weapons', '*.asset')):
     a = load(p)
     if 'weaponId' not in a: continue  # WeaponRules
     wid = a['weaponId']
+    if wid in DISABLED_WEAPONS: continue
     weapons[wid] = dict(id=wid, name=a['displayName'], damage=float(a['baseDamage']), cooldown=float(a['baseCooldown']),
                         quantity=int(a['baseQuantity']), behavior=int(a['behavior']), maxLevel=int(a['maxLevel']), spin=float(a['orbit'].get('angularSpeedDegrees', 0)), blades=int(a['orbit'].get('baseBlades', 1)),
                         pierce=int(a['projectile'].get('pierce', 0)), lane=bool(a['lane'].get('enabled', 0)),
@@ -134,9 +136,50 @@ for p in glob.glob(os.path.join(V4, 'Evolutions', '*.asset')):
 captains = {}
 for p in glob.glob(os.path.join(V4, 'Build', 'Captains', '*.asset')):
     a = load(p)
-    captains[a['captainKey']] = dict(id=a['captainKey'], name=a.get('displayName', a['captainKey']), weapon=a['startingWeaponId'], hull=float(a['baseHull']))
+    captains[a['captainKey']] = dict(id=a['captainKey'], name=a.get('displayName', a['captainKey']), weapon=a['startingWeaponId'] if a['startingWeaponId'] in weapons else 'swivel_guns', hull=float(a['baseHull']))
 curve = load(os.path.join(V4, 'Difficulty', 'SaltwindDifficulty.asset'))
 director = load(os.path.join(V4, 'Difficulty', 'SaltwindDirector.asset'))
+
+
+# The report's stat sheet (playtest round 7, owner: "list all health, attack, type etc for weapons and enemies").
+BEHAVIOR = ['Direct chaser', 'Flanking chaser', 'Telegraphed charge', 'Keeps range', 'Suicide approach', 'Tank chaser', 'Strafe burst',
+            'Formation ranged', 'Fast swarm', 'Dive lunge', 'Drift pulse', 'Stationary turret', 'Phase dash', 'Tentacle zone', 'Support buff']
+MOVE = ['Default', 'Direct chase', 'Intercept', 'Flank', 'Orbit', 'Keeps range', 'Strafe', 'Telegraphed charge', 'Dive lunge', 'Swarm', 'Drift', 'Stationary']
+ATTACK = ['Default', 'Contact', 'Single shot', 'Burst volley', 'Spread volley', 'Charge', 'Area denial', 'Explodes', 'None']
+WTYPE = ['Projectile', 'Fan', 'Orbit', 'Cone stream', 'Trail', 'Mine', 'Area strike', 'Aura', 'Predicted area', 'Summon']
+pick_ = lambda names, i: names[i] if 0 <= i < len(names) else str(i)
+unl = load(os.path.join(V4, 'Build', 'Unlocks_Saltwind.asset'))
+rum = {u['weaponId']: int(u['rumCost']) for u in (unl.get('weaponUnlocks') or []) if u}
+sheet_e, raw_e = [], {}
+for p in glob.glob(os.path.join(V4, 'Enemies', '*.asset')):
+    a = load(p); raw_e[guid(p)] = a
+for p in glob.glob(os.path.join(V4, 'Enemies', '*.asset')) + glob.glob(os.path.join(V4, 'Variants', '*.asset')):
+    a = load(p); eid = os.path.basename(p)[:-6]; e = enemies.get(eid)
+    if not e: continue
+    variant = 'variantId' in a
+    b = raw_e.get(ref(a.get('baseArchetype'))) if variant else a
+    if b is None: continue
+    st, c = b.get('stats', {}), b.get('combat', {})
+    beh = int(a['behavior']['value']) if variant and a.get('behavior', {}).get('enabled') else int(b.get('behavior', 0))
+    role = 'Boss' if e['boss'] else 'Miniboss' if e['miniboss'] else ('Elite' if eid.startswith('elite_') else 'Variant' if variant else 'Ordinary')
+    sheet_e.append(dict(id=eid, name=e['name'], role=role, kind=['Ship', 'Creature'][int(b.get('category', 0))], base=e.get('base'),
+                        hp=e['hp'], dmg=e['dmg'], speed=e['speed'], radius=float(st.get('radius', 1)), xp=e['xp'],
+                        gold=float(b.get('rewards', {}).get('goldValue', 0)), behavior=pick_(BEHAVIOR, beh),
+                        move=pick_(MOVE, int(c.get('movementPattern', 0))), attack=pick_(ATTACK, int(c.get('attackPattern', 0))),
+                        range=float(c.get('attackRange', 0)), cooldown=float(c.get('attackCooldown', st.get('attackCooldown', 0))),
+                        windup=float(c.get('attackWindUp', 0)), shots=int(c.get('projectileCount', 0)), shotSpeed=float(c.get('projectileSpeed', 0)),
+                        contact=bool(c.get('contactDamageEnabled', 1)), ranged=e.get('ranged', False), threat=float(st.get('threatCost', 0))))
+sheet_w = []
+for p in glob.glob(os.path.join(V4, 'Weapons', '*.asset')):
+    a = load(p)
+    if 'weaponId' not in a: continue
+    wid = a['weaponId']; pr = a.get('projectile', {}); orb = a.get('orbit', {})
+    sheet_w.append(dict(id=wid, name=a['displayName'], type=pick_(WTYPE, int(a['behavior'])), tags=a.get('tags') or [],
+                        damage=float(a['baseDamage']), cooldown=float(a['baseCooldown']), quantity=int(a['baseQuantity']),
+                        range=float(a.get('range', 0)), speed=float(a.get('projectileSpeed', 0)), pierce=int(pr.get('pierce', 0)),
+                        blades=int(orb.get('baseBlades', 0)) if int(a['behavior']) == 2 else 0, spin=float(orb.get('angularSpeedDegrees', 0)) if int(a['behavior']) == 2 else 0,
+                        maxLevel=int(a['maxLevel']), rum=rum.get(wid, 0), starter=wid in (unl.get('starterWeaponIds') or []) and wid not in rum,
+                        off=wid in DISABLED_WEAPONS, text=a.get('description', '')))
 
 data = dict(enemies=enemies, timeline=timeline, weapons=weapons, logbooks=logbooks, items=items, evolutions=evolutions, captains=captains,
             progression=dict(xpTable=ints(raw_hex(PROG, 'xpToNextTable')), weaponSlots=int(prog['weaponSlots']), logbookSlots=int(prog['logbookSlots']),
@@ -154,6 +197,7 @@ data = dict(enemies=enemies, timeline=timeline, weapons=weapons, logbooks=logboo
                           ttk=dict(boss=float(director.get('bossMinSeconds', 0)), arena=float(director.get('arenaFocusMinSeconds', 0)),
                                    focus=float(director.get('focusMinSeconds', 0)), elite=float(director.get('adaptiveEliteMinSeconds', 0)))),
             armorWorks=bool(os.environ.get('RP_ARMOR', '1') == '1'),
+            sheet=dict(enemies=sheet_e, weapons=sheet_w),
             starterWeapons=list(load(os.path.join(V4, 'Build', 'Unlocks_Saltwind.asset')).get('starterWeaponIds') or []))
 out = os.environ.get('RP_OUT') or os.path.join(os.path.dirname(__file__), 'data.json')
 json.dump(data, open(out, 'w', encoding='utf-8'), indent=1)
