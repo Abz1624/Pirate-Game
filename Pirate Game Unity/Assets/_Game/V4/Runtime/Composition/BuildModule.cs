@@ -209,6 +209,8 @@ namespace RoguePirates.V4.Composition
             var all = _config.All<CaptainConfig>().OrderBy(c => c.menuOrder).ToList();
             var chosen = all.FirstOrDefault(c => c.legacyId == id);
             var locks = MenuServices.CreateLocks(() => _config);
+            // Playtest (3 Oct, owner): in a 1v1 both players sail the same ship whatever their Captain: the first one.
+            if (PvpWeapons != null) return all.FirstOrDefault();
             var allowLocked = RunRequest.ConsumeAllowLockedCaptain(); // the console's "restart as" (dev tools)
             if (chosen != null && (allowLocked || !locks.IsLocked(chosen))) return chosen;
             return all.FirstOrDefault(c => !locks.IsLocked(c)) ?? all.FirstOrDefault();
@@ -256,8 +258,15 @@ namespace RoguePirates.V4.Composition
         public void BeginProgression(string startingWeapon)
         {
             var slots = Experiment != null ? Experiment.weaponSlotCap : 6;
+            if (PvpWeapons != null && PvpWeapons.Count > 0) startingWeapon = PvpWeapons[0];
             Progression.BeginRun(startingWeapon, slots, _config.Single<ProgressionConfig>().newWeaponDamageBonus);
+            if (PvpWeapons != null) Progression.BeginPvp(PvpWeapons, PvpLogbooks);
         }
+
+        /// <summary>Playtest (3 Oct, owner): the 1v1 draft (six weapons and six Logbooks in priority order); null in a voyage.
+        /// Set, the run starts with it and the first Captain.</summary>
+        public IReadOnlyList<string> PvpWeapons { get; set; }
+        public IReadOnlyList<string> PvpLogbooks { get; set; }
 
         /// <summary>V3 EnsureItemSystems: the item triggers (V3RunItemEffects.Update) in the frame's Items step.</summary>
         public void BeginItems() => Frame?.Register(FrameStep.Items, Items.Tick);

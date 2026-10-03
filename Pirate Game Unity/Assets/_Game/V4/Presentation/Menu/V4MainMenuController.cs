@@ -101,6 +101,7 @@ namespace RoguePirates.V4
                 OnFocus(_focused);
             };
             _hub = MenuHubPresenter.Create(_settings.transform.parent, meta, () => (_view as ArtMenuView)?.OpenCaptainSelect());
+            _online?.SetConfig(() => _config); // Playtest (3 Oct, owner): the 1v1 draft lists the content
 
             var selected = 0;
             for (var i = 0; i < _captains.Count; i++)

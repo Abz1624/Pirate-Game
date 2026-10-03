@@ -132,7 +132,7 @@ without a run this week.
 
 ### 1v1 lobbies
 
-Lobby `status`: `waiting` (host alone), `full`, `starting` (both ready; match assigned; 3-second countdown),
+Lobby `status`: `waiting` (host alone), `full`, `starting` (both ready; match assigned; 6-second countdown),
 `in_match` (the countdown ended, or both seats reported `in_match`), `finished` (result decided), `closed` (host left
 before the match), `expired` (15 minutes without activity while `waiting` or `full`). Seat `status`: `joined`,
 `drafting`, `ready`, `in_match`, `left`.

@@ -78,10 +78,22 @@ namespace RoguePirates.V4.Spawning
             ImpactDamageTotal += amount;
         }
 
-        public void DamageOverTime(float amount, Vector3 source)
+        /// <summary>Playtest (3 Oct, owner): a 1v1 hit whose hull loss the PvP rules already decided (their own invulnerability
+        /// window, the build's multiplier included): taken as is, with the usual Damaged and Died events.</summary>
+        public void ExactHit(float amount, Vector3 source)
+        {
+            if (!IsAlive || _hull.HullInvulnerable || amount <= 0f) return;
+            _hull.KnockHull(amount, source);
+        }
+
+        /// <summary>Playtest (3 Oct, owner): the 1v1 storm, exactly its hp per second (no build multiplier).</summary>
+        public void ExactOverTime(float amount, Vector3 source) => DrainSteady(amount, source, 1f);
+
+        public void DamageOverTime(float amount, Vector3 source) => DrainSteady(amount * Incoming, source, Incoming);
+
+        void DrainSteady(float amount, Vector3 source, float lethalHit)
         {
             if (!IsAlive || _hull.HullInvulnerable) return;
-            amount *= Incoming;
             if (amount <= 0f) return;
             var hp = _hull.HullHp;
             if (amount < hp)
@@ -95,7 +107,7 @@ namespace RoguePirates.V4.Spawning
             _steadyPending += hp - 0.001f;
             ReportSteady(true);
             _hull.DrainHull(hp - 0.001f);
-            _hull.HitHull(Incoming, source); // retried next frame if the ship is inside its hit immunity
+            _hull.HitHull(lethalHit, source); // retried next frame if the ship is inside its hit immunity
         }
 
         void ReportSteady(bool force)

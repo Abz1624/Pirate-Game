@@ -194,7 +194,7 @@ public class RelayTests : IDisposable
         Assert.Equal(1, d.GuestStart.GetProperty("you").GetInt32());
         Assert.Equal(startsAt, s.GetProperty("startsAt").GetInt64());
         Assert.Equal(startsAt + 300_000, s.GetProperty("endsAt").GetInt64());
-        Assert.Equal(3000, s.GetProperty("countdownMs").GetInt64());
+        Assert.Equal((long)ArenaRules.Countdown.TotalMilliseconds, s.GetProperty("countdownMs").GetInt64());
         Assert.Equal(120, s.GetProperty("arena").GetProperty("radius").GetDouble());
         var spawns = s.GetProperty("spawns");
         Assert.Equal(-45, spawns[0].GetProperty("x").GetDouble());

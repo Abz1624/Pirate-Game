@@ -13,7 +13,7 @@ public static class ArenaRules
     public const double SpawnOffset = 45; // seat 0 at (-45, 0), seat 1 at (45, 0), both facing the centre
 
     // ---- timeline ----
-    public static readonly TimeSpan Countdown = TimeSpan.FromSeconds(3);
+    public static readonly TimeSpan Countdown = TimeSpan.FromSeconds(6); // playtest (3 Oct): the match scene loads in ~3 s; players should still see 3-2-1
     public static readonly TimeSpan MatchLength = TimeSpan.FromMinutes(5);
     public static readonly TimeSpan StormShrinkStart = TimeSpan.FromSeconds(150);
     public static readonly TimeSpan StormShrinkEnd = TimeSpan.FromSeconds(300);

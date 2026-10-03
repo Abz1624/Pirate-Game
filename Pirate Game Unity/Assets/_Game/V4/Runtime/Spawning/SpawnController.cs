@@ -38,6 +38,10 @@ namespace RoguePirates.V4.Spawning
         /// <summary>Module Lab: nothing spawns by itself (the lab spawns from the console).</summary>
         public bool LabMode { get; set; }
 
+        /// <summary>Playtest (3 Oct, owner): a 1v1 match. Nothing spawns, no timeline phase, overtime or storm runs (the match
+        /// has its own storm ring); only the stage content's encounter queue would still run (empty: no points of interest).</summary>
+        public bool PvpMode { get; set; }
+
         public void Initialize(RunContext context)
         {
             _s.Resolve(context);
@@ -130,6 +134,7 @@ namespace RoguePirates.V4.Spawning
             // M7: the encounter queue (EncounterSpawner.Update ran it here, before its ambient tick). Also in the lab (M8
             // playtest), where only the stage content's requests (Powder Cache, Beacon boss) fill it.
             _encounters.Tick();
+            if (PvpMode) return;
             var run = _s.Run;
             if (!run.Exists || run.IsPaused || run.IsRunEnded || !run.IsGameplayActive) return;
             _scripted.PollArena();
@@ -169,7 +174,7 @@ namespace RoguePirates.V4.Spawning
         /// <summary>Overtime spawns, in V3OvertimeDirector's slot (before the run clock advances).</summary>
         public void TickOvertime(float dt)
         {
-            if (!_running || LabMode) return;
+            if (!_running || LabMode || PvpMode) return;
             var run = _s.Run;
             if (!run.Exists || run.IsPaused) return;
             _scripted.PollArena();
@@ -180,7 +185,7 @@ namespace RoguePirates.V4.Spawning
         /// <summary>The storm's warning, start and contraction, in V3SaltwindStormDirector's slot.</summary>
         public void TickStorm(float dt)
         {
-            if (!_running) return;
+            if (!_running || PvpMode) return;
             var run = _s.Run;
             if (!run.Exists || run.IsPaused || run.IsRunEnded) return;
             _storm.Tick(FirstActive(p => p.isStorm));
@@ -189,7 +194,7 @@ namespace RoguePirates.V4.Spawning
         /// <summary>Focus spawns and pulses, in V3PressureBeatDirector's slot.</summary>
         public void TickBeats(float dt)
         {
-            if (!_running) return;
+            if (!_running || PvpMode) return;
             var run = _s.Run;
             if (!run.Exists || run.IsPaused || !run.IsGameplayActive) return;
             _scripted.Tick(dt, LabMode);
@@ -198,7 +203,7 @@ namespace RoguePirates.V4.Spawning
         /// <summary>Storm edge damage, in V3StormEdgeDamage's slot on the ship.</summary>
         public void TickStormEdge(float dt)
         {
-            if (!_running) return;
+            if (!_running || PvpMode) return;
             var run = _s.Run;
             if (!run.Exists || run.IsRunEnded || run.IsPaused) return;
             _storm.TickEdge(dt, FirstActive(p => p.isStorm));

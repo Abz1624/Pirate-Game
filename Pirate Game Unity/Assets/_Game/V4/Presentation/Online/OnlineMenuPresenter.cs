@@ -9,7 +9,8 @@ namespace RoguePirates.V4.Presentation.Online
     /// <summary>
     /// Playtest (3 Oct, owner): the online pieces of the main menu: the profile chip (name#tag and the connection; opens
     /// the profile panel), the leaderboard panel (the art menu's Leaderboard button), and a "PvP (1v1)" button next to it
-    /// with a placeholder panel (the PvP task replaces it). Connects to the API on start; the first launch asks for a name.
+    /// opening the 1v1 menu (<see cref="PvpMenu"/>). Connects to the API on start; the first launch asks for a name. An
+    /// invite link (?join=CODE on WebGL) asks for a name first when there is no profile, then joins and opens the draft.
     /// </summary>
     public sealed class OnlineMenuPresenter : MonoBehaviour
     {
@@ -19,7 +20,7 @@ namespace RoguePirates.V4.Presentation.Online
 
         public LeaderboardPanel Leaderboard { get; private set; }
         public ProfilePanel Profile { get; private set; }
-        public RectTransform PvpPanel { get; private set; }
+        public PvpMenu Pvp { get; private set; }
         public Button PvpButton { get; private set; }
         public string ChipText => _chipName != null ? _chipName.text + " | " + _chipStatus.text : null;
 
@@ -46,7 +47,7 @@ namespace RoguePirates.V4.Presentation.Online
             PvpButton = BuildPvpButton(canvas, main);
             Leaderboard = LeaderboardPanel.Create(canvas);
             Profile = ProfilePanel.Create(canvas);
-            PvpPanel = BuildPvpPanel(canvas);
+            Pvp = PvpMenu.Create(canvas, null);
         }
 
         void BuildChip(Transform parent)
@@ -113,20 +114,6 @@ namespace RoguePirates.V4.Presentation.Online
             return button;
         }
 
-        RectTransform BuildPvpPanel(Transform canvas)
-        {
-            var rt = OnlineUi.Panel(canvas, "PlaytestPvp", new Vector2(0.28f, 0.3f), new Vector2(0.72f, 0.7f), 222);
-            var header = OnlineUi.TopStrip(rt, "Header", 16f, 80f);
-            OnlineUi.TextAt(header, "Title", "PvP (1v1)", 44, TextAlignmentOptions.MidlineLeft, OnlineUi.Gold, Vector2.zero, new Vector2(0.7f, 1f), true);
-            OnlineUi.Button(header, "Close", () => rt.gameObject.SetActive(false), new Vector2(0.72f, 0.05f), new Vector2(1f, 0.95f));
-            var body = OnlineUi.TextAt(rt, "Body", "Coming next: host a match, join with a code.\nDuel another captain with a drafted build.", 32,
-                TextAlignmentOptions.Center, OnlineUi.TextColor, Vector2.zero, Vector2.one);
-            body.textWrappingMode = TextWrappingModes.Normal;
-            body.rectTransform.offsetMin = new Vector2(32f, 32f);
-            body.rectTransform.offsetMax = new Vector2(-32f, -112f);
-            return rt;
-        }
-
         void OnEnable() => OnlineService.Changed += RefreshChip;
         void OnDisable() => OnlineService.Changed -= RefreshChip;
 
@@ -136,11 +123,56 @@ namespace RoguePirates.V4.Presentation.Online
             Connect();
             // First launch: ask for a name (a default is filled in; closing keeps it).
             if (OnlineService.Profiles.Profiles.Count == 0) Profile.Open();
+            // Playtest (3 Oct, owner): an invite link, or back from a match with a rematch lobby.
+            var code = JoinCodeFromUrl();
+            if (!string.IsNullOrEmpty(code)) JoinFromInvite(code);
+            else if (PvpSession.Exists && PvpSession.Instance.OpenLobbyInMenu)
+            {
+                PvpSession.Instance.OpenLobbyInMenu = false;
+                Pvp.ShowLobby();
+            }
+        }
+
+        /// <summary>The menu's config (the draft lists the content from it).</summary>
+        public void SetConfig(Func<RoguePirates.V4.Config.ConfigSetRuntime> config) => Pvp?.SetConfig(config);
+
+        /// <summary>?join=CODE of the page (WebGL), or a code set for testing (<see cref="PvpSession.PendingJoinCode"/>).</summary>
+        static string JoinCodeFromUrl()
+        {
+            var code = PvpSession.PendingJoinCode;
+            PvpSession.PendingJoinCode = null;
+#if UNITY_WEBGL && !UNITY_EDITOR
+            if (string.IsNullOrEmpty(code))
+            {
+                code = OnlineRules.QueryValue(Application.absoluteURL, "join");
+                if (!string.IsNullOrEmpty(code)) LobbySockets.DropJoinFromUrl();
+            }
+#endif
+            return string.IsNullOrEmpty(code) ? null : code.Trim();
+        }
+
+        /// <summary>A player without a profile names their captain first (the profile panel), then joins.</summary>
+        async void JoinFromInvite(string code)
+        {
+            try
+            {
+                while (this != null && (OnlineService.Profiles.Profiles.Count == 0 || Profile.IsOpen || Profile.Busy)) await Awaitable.NextFrameAsync();
+                if (this == null) return;
+                await OnlineService.EnsureConnected();
+                if (this == null) return;
+                Pvp.JoinCode(code);
+            }
+            catch (Exception e) { Debug.LogWarning("OnlineMenuPresenter.JoinFromInvite: " + e.Message); }
         }
 
         async void Connect()
         {
-            try { await OnlineService.EnsureConnected(); }
+            try
+            {
+                // Already online (back from a match): read the profile again, its rating may have changed.
+                if (OnlineService.IsOnline) await OnlineService.SyncActive();
+                else await OnlineService.EnsureConnected();
+            }
             catch (Exception e) { Debug.LogWarning("OnlineMenuPresenter: " + e.Message); }
             if (this != null) RefreshChip();
         }
@@ -148,11 +180,7 @@ namespace RoguePirates.V4.Presentation.Online
         public void OpenLeaderboard() => Leaderboard.Open();
         public void OpenProfile() => Profile.Open();
 
-        public void OpenPvp()
-        {
-            PvpPanel.gameObject.SetActive(true);
-            PvpPanel.SetAsLastSibling();
-        }
+        public void OpenPvp() => Pvp.Open();
 
         void RefreshChip()
         {

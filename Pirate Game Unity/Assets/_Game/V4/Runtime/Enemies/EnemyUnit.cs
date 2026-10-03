@@ -46,6 +46,9 @@ namespace RoguePirates.V4.Enemies
         /// <summary>V5 M4: a weapon knockback: a push velocity and its seconds left.</summary>
         public Vector3 pushVelocity;
         public float pushTimer;
+        /// <summary>Playtest (3 Oct, owner): the 1v1 opponent's ship. Moved by the network (no AI, no contact, no knockback),
+        /// never killed here: weapon damage on it is handed to <see cref="EnemySimulation.RemoteDamaged"/>.</summary>
+        public bool remote;
     }
 
     /// <summary>Per-enemy combat state (port of V3's SaltwindCombatAgentState).</summary>

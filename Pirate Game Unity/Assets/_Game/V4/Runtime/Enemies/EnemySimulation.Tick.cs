@@ -46,6 +46,7 @@ namespace RoguePirates.V4.Enemies
             {
                 if (!_agents[i].active) continue;
                 ref var e = ref _agents[i];
+                if (e.remote) continue; // Playtest (3 Oct): the 1v1 opponent moves by the network (SetRemoteState)
                 var def = _definitions[e.definitionIndex];
                 Vector3 desiredVelocity;
                 using (BehaviorMarker.Auto())
@@ -288,7 +289,7 @@ namespace RoguePirates.V4.Enemies
             var count = 0;
             for (var i = 0; i < _agents.Length; i++)
             {
-                if (!_agents[i].active) continue;
+                if (!_agents[i].active || _agents[i].remote) continue;
                 if (count == _activeSlots.Length) System.Array.Resize(ref _activeSlots, _activeSlots.Length * 2);
                 _activeSlots[count++] = i;
             }
@@ -341,7 +342,7 @@ namespace RoguePirates.V4.Enemies
         /// </summary>
         public void ApplySlow(int index, float fraction, float seconds)
         {
-            if (index < 0 || index >= _agents.Length || !_agents[index].active || fraction <= 0f || seconds <= 0f) return;
+            if (index < 0 || index >= _agents.Length || !_agents[index].active || _agents[index].remote || fraction <= 0f || seconds <= 0f) return;
             ref var e = ref _agents[index];
             var def = _definitions[e.definitionIndex];
             var rules = WeaponRules?.Invoke();
@@ -364,7 +365,7 @@ namespace RoguePirates.V4.Enemies
         /// of it (combat design 2.3).</summary>
         public void Knockback(int index, Vector3 from, float meters)
         {
-            if (index < 0 || index >= _agents.Length || !_agents[index].active || meters <= 0f) return;
+            if (index < 0 || index >= _agents.Length || !_agents[index].active || _agents[index].remote || meters <= 0f) return;
             ref var e = ref _agents[index];
             var def = _definitions[e.definitionIndex];
             if (e.isBoss || def.isBoss) return;
@@ -385,7 +386,7 @@ namespace RoguePirates.V4.Enemies
         /// with the knockback's rules: bosses not moved, elites half, at most <c>maxKnockbackMeters</c>.</summary>
         public void Pull(int index, Vector3 toward, float meters)
         {
-            if (index < 0 || index >= _agents.Length || !_agents[index].active || meters <= 0f) return;
+            if (index < 0 || index >= _agents.Length || !_agents[index].active || _agents[index].remote || meters <= 0f) return;
             ref var e = ref _agents[index];
             var def = _definitions[e.definitionIndex];
             if (e.isBoss || def.isBoss) return;
@@ -872,7 +873,7 @@ namespace RoguePirates.V4.Enemies
             for (var i = 0; i < _agents.Length; i++)
             {
                 ref var e = ref _agents[i];
-                if (!e.active || e.isBoss || e.isElite) continue;
+                if (!e.active || e.isBoss || e.isElite || e.remote) continue;
                 var def = _definitions[e.definitionIndex];
                 if (def == null || def.isMiniboss) continue;
                 if (HorizontalDistance(e.position, playerPos) < LeashDistance) continue;
@@ -1341,6 +1342,16 @@ namespace RoguePirates.V4.Enemies
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
             ref var e = ref _agents[index];
+            if (e.remote)
+            {
+                // Playtest (3 Oct, owner): the 1v1 opponent's hull is its own client's; the hit goes to the server instead.
+                RemoteDamaged?.Invoke(index, damage, weaponId);
+                if (showHitFeedback && e.view != null && !(SuppressHitHighlight != null && SuppressHitHighlight(weaponId)))
+                    _feedback?.DamageHighlight(e.view);
+                HitPublished?.Invoke(damage, isCrit, e.position, weaponId);
+                if (showHitFeedback && damage >= 0.5f) _feedback?.DamageNumber(e.position, damage, isCrit);
+                return;
+            }
             if (!string.IsNullOrEmpty(weaponId))
                 e.lastHitWeaponId = weaponId;
             e.hp -= damage;

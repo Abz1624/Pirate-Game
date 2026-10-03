@@ -1,5 +1,8 @@
 namespace RoguePirates.V4
 {
+    /// <summary>What the next run is: the Saltwind voyage, or a 1v1 match (Playtest, 3 Oct, owner).</summary>
+    public enum RunMode { Voyage, Pvp }
+
     /// <summary>
     /// Scene-transition payload for the next V4 run (seed, retry flag, config preset). The only static in V4 besides constants;
     /// it survives a scene reload because the domain is not reloaded between scenes in a Play session.
@@ -41,6 +44,28 @@ namespace RoguePirates.V4
         }
 
         public static void MarkRetry() => IsRetry = true;
+
+        /// <summary>
+        /// Playtest (3 Oct, owner): the one PvP switch. The next run is a 1v1 match on the match seed (the match itself is
+        /// <see cref="Online.PvpSession"/>'s); everything PvE is off in it. Read and cleared by the run at its start, so the
+        /// voyage after it is a voyage again.
+        /// </summary>
+        public static RunMode Mode { get; private set; }
+
+        public static void RequestPvp(int seed)
+        {
+            Mode = RunMode.Pvp;
+            Seed = seed;
+            IsRetry = false;
+        }
+
+        /// <summary>Reads and clears the mode.</summary>
+        public static RunMode ConsumeMode()
+        {
+            var mode = Mode;
+            Mode = RunMode.Voyage;
+            return mode;
+        }
 
         /// <summary>Dev tools: the next run may start with a locked Captain (the console's "restart as").</summary>
         public static void AllowLockedCaptainOnce() => _allowLockedCaptain = true;

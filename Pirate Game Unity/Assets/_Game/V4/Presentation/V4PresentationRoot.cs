@@ -110,6 +110,7 @@ namespace RoguePirates.V4.Presentation
             }
             if (game.Context != null) InstallStage(game);
             if (game.Context != null) InstallNarrative(game);
+            if (game.Context != null) InstallPvp(game);
             // V5 M7: once every panel exists, the run canvas's content goes inside the safe area and the UI scale applies.
             var run = GameObject.Find("RunCanvas");
             if (run != null && run.TryGetComponent<Canvas>(out var runCanvasForSafeArea)) RoguePirates.V4.Foundation.UI.SafeAreaFitter.Wrap(runCanvasForSafeArea);
@@ -216,6 +217,18 @@ namespace RoguePirates.V4.Presentation
                 LevelUp.UseArtCards(SaltWindHud.UpgradeSelection, RoguePirates.V4.Presentation.Hud.IconCatalog.Load());
             game.Context.Replace<RoguePirates.V4.Progression.IOfferPresenter>(LevelUp);
             game.Context.Replace<RoguePirates.V4.Progression.IOfferChoice>(LevelUp);
+        }
+
+        /// <summary>Playtest (3 Oct, owner): the 1v1 match's HUD, opponent ship, barrels, storm ring and end screen.</summary>
+        public Pvp.PvpMatchPresenter PvpMatch { get; private set; }
+
+        void InstallPvp(V4Game game)
+        {
+            if (!game.IsPvp || !game.Context.TryGet<RoguePirates.V4.Pvp.IPvpMatchView>(out var match)) return;
+            var run = FindRunCanvas();
+            if (run == null) return;
+            PvpMatch = Pvp.PvpMatchPresenter.Create(run, match);
+            if (BossArrow != null) BossArrow.gameObject.SetActive(false);
         }
 
         /// <summary>A presenter on its own child object (created once, kept across runs of this root).</summary>

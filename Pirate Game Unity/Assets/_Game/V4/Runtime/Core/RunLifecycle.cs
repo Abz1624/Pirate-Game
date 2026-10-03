@@ -72,10 +72,15 @@ namespace RoguePirates.V4
             _telemetry?.RecordDamageTaken(amount);
         }
 
+        /// <summary>Playtest (3 Oct, owner): set in a 1v1 match: a sinking is the match's (reported to the server, which ends
+        /// the match); the voyage's death flow (Rum, results) does not run.</summary>
+        public Action PvpSunk;
+
         public void OnPlayerDied(Action trySecureIfBossDead, Action cancelPendingLevelUps)
         {
             cancelPendingLevelUps?.Invoke();
             SetShipMovement?.Invoke(false);
+            if (PvpSunk != null) { PvpSunk(); return; }
             trySecureIfBossDead?.Invoke();
             ApplyConquestUnlockIfSecured();
             if (_run == null || !_run.Exists || _run.State == RunState.RunComplete) return; // V3: FinalizeRunOnDeath ran once
