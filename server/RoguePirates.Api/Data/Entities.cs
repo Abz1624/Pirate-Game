@@ -1,0 +1,132 @@
+namespace RoguePirates.Api.Data;
+
+/// <summary>A guest profile. No sign-in; the client holds the bearer token.</summary>
+public sealed class Player
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = "";
+    /// <summary>SHA-256 (hex) of the bearer token. The token itself is never stored.</summary>
+    public string TokenHash { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
+    public int Rating { get; set; } = 1000;
+    public int Wins { get; set; }
+    public int Losses { get; set; }
+}
+
+/// <summary>Every accepted run (counts runs played).</summary>
+public sealed class RunRecord
+{
+    public long Id { get; set; }
+    public Guid PlayerId { get; set; }
+    public int Kills { get; set; }
+    public int RunSeconds { get; set; }
+    public int Level { get; set; }
+    public string? Captain { get; set; }
+    public string MapId { get; set; } = "";
+    public string? BuildHash { get; set; }
+    public string? ClientVersion { get; set; }
+    public DateTime WeekStart { get; set; }
+    public DateTime SubmittedAt { get; set; }
+}
+
+/// <summary>A player's best run of one ISO week on one map (one row per player, week and map).</summary>
+public sealed class WeeklyBest
+{
+    public long Id { get; set; }
+    public Guid PlayerId { get; set; }
+    public DateTime WeekStart { get; set; }
+    public string MapId { get; set; } = "";
+    public int Kills { get; set; }
+    public int RunSeconds { get; set; }
+    public int Level { get; set; }
+    public string? Captain { get; set; }
+    public long RunId { get; set; }
+    public DateTime AchievedAt { get; set; }
+}
+
+public sealed class Lobby
+{
+    public Guid Id { get; set; }
+    public string Code { get; set; } = "";
+    public bool IsPublic { get; set; }
+    /// <summary>waiting, full, starting, in_match, finished, closed, expired.</summary>
+    public string Status { get; set; } = LobbyStates.Waiting;
+    public Guid HostPlayerId { get; set; }
+    public string HostStatus { get; set; } = SeatStates.Joined;
+    public string? HostDraftJson { get; set; }
+    public Guid? GuestPlayerId { get; set; }
+    public string? GuestStatus { get; set; }
+    public string? GuestDraftJson { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public DateTime LastActivityAt { get; set; }
+    public Guid? MatchId { get; set; }
+    public long? Seed { get; set; }
+    public string? MatchServer { get; set; }
+}
+
+public sealed class Match
+{
+    public Guid Id { get; set; }
+    public Guid LobbyId { get; set; }
+    public Guid HostPlayerId { get; set; }
+    public Guid GuestPlayerId { get; set; }
+    public long Seed { get; set; }
+    /// <summary>pending, awaiting_opponent, decided, disputed.</summary>
+    public string Status { get; set; } = MatchStates.Pending;
+    public Guid? WinnerPlayerId { get; set; }
+    public int? DurationSeconds { get; set; }
+    public string? FinalStatsJson { get; set; }
+    /// <summary>agreement or timeout.</summary>
+    public string? DecidedBy { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? FirstReportAt { get; set; }
+    public DateTime? DecidedAt { get; set; }
+    public int? HostRatingBefore { get; set; }
+    public int? HostRatingAfter { get; set; }
+    public int? GuestRatingBefore { get; set; }
+    public int? GuestRatingAfter { get; set; }
+}
+
+public sealed class MatchReport
+{
+    public long Id { get; set; }
+    public Guid MatchId { get; set; }
+    public Guid PlayerId { get; set; }
+    public Guid WinnerPlayerId { get; set; }
+    public int DurationSeconds { get; set; }
+    public string StatsJson { get; set; } = "{}";
+    public DateTime SubmittedAt { get; set; }
+}
+
+public static class LobbyStates
+{
+    public const string Waiting = "waiting";
+    public const string Full = "full";
+    public const string Starting = "starting";
+    public const string InMatch = "in_match";
+    public const string Finished = "finished";
+    public const string Closed = "closed";
+    public const string Expired = "expired";
+
+    public static bool IsTerminal(string s) => s is Finished or Closed or Expired;
+}
+
+public static class SeatStates
+{
+    public const string Joined = "joined";
+    public const string Drafting = "drafting";
+    public const string Ready = "ready";
+    public const string InMatch = "in_match";
+    public const string Left = "left";
+
+    public static readonly string[] All = { Joined, Drafting, Ready, InMatch, Left };
+}
+
+public static class MatchStates
+{
+    public const string Pending = "pending";
+    public const string AwaitingOpponent = "awaiting_opponent";
+    public const string Decided = "decided";
+    public const string Disputed = "disputed";
+}
