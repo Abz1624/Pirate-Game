@@ -142,8 +142,10 @@ namespace RoguePirates.V4.Presentation.Effects
         public Transform AttachHealthBar(EnemyDefinition def, Transform view, bool elite)
         {
             if (view == null || _pools == null || !_pools.Has(HealthBarKey)) return null;
-            // Playtest (3 Oct, owner): health bars on the boss and minibosses only (not elites or ordinary enemies).
-            if (def == null || (!def.isBoss && !def.isMiniboss)) return null;
+            // Playtest (4 Oct, owner): health bars on elites, minibosses and the boss only (not ordinary enemies). An elite is
+            // a unit with an elite affix or an elite variant (elite_hammerhead, elite_kraken_spawn).
+            var isElite = elite || (def != null && def.id != null && def.id.StartsWith("elite_", System.StringComparison.Ordinal));
+            if (def == null || (!def.isBoss && !def.isMiniboss && !isElite)) return null;
             var go = _pools.Acquire(HealthBarKey, view.position, Quaternion.identity);
             if (go == null) return null;
             var bar = go.GetComponent<WorldHealthBar>();
