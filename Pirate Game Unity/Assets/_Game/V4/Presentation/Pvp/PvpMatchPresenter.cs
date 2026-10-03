@@ -39,6 +39,7 @@ namespace RoguePirates.V4.Presentation.Pvp
         readonly List<RectTransform> _arrows = new List<RectTransform>();
         readonly List<GameObject> _hidden = new List<GameObject>();
         bool _endShown;
+        float _endSeenAt = -1f;
         // Playtest (3 Oct, owner, round 7: "in pvp i couldn't see other player's weapons, attacks, and health"): a world
         // health bar over the opponent, its hull in numbers, its weapons as chips, coloured shots with trails.
         EnemyViewPresenter _enemyViews;
@@ -246,7 +247,12 @@ namespace RoguePirates.V4.Presentation.Pvp
             UpdateWorldBar();
             UpdateChips();
             UpdateArrows();
-            if (_view.Ended && !_endShown) ShowEnd();
+            // Playtest (4 Oct): an end seen on a resync waits a moment for its "match_end" (the result) before showing.
+            if (_view.Ended && !_endShown)
+            {
+                if (_endSeenAt < 0f) _endSeenAt = Time.unscaledTime;
+                if (_view.End != null || Time.unscaledTime - _endSeenAt > 3f) ShowEnd();
+            }
             if (_endShown)
             {
                 _endRematch.text = _view.RematchStatus;

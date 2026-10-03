@@ -524,6 +524,23 @@ public class RelayTests : IDisposable
     }
 
     [Fact]
+    public async Task Reconnecting_AfterTheEnd_GetsTheResultAgain()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        await At(d, 10);
+        await d.G.Ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye", CancellationToken.None);
+        d.G.Dispose();
+        await h.Send(new { t = "leave" });
+        var end = await h.Next("match_end");
+        using var g2 = await Connect(d.LobbyId, d.Guest);
+        var start = await g2.Next("match_start");
+        Assert.True(start.GetProperty("live").GetProperty("ended").GetBoolean());
+        var again = await g2.Next("match_end");
+        Assert.Equal(end.GetRawText(), again.GetRawText());
+    }
+
+    [Fact]
     public async Task Reconnecting_InTime_KeepsTheMatch()
     {
         var d = await StartDuel();

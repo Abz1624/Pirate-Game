@@ -458,7 +458,11 @@ public sealed class LobbyService
             // a (re)connect during a refereed match gets the match-start message again, with live barrels and tallies
             if (lobby.Status is LobbyStates.Starting or LobbyStates.InMatch or LobbyStates.Finished
                 && await _relay.OnConnectedAsync(lobbyId, player.Id) is { } start)
+            {
                 await _broadcaster.SendToAsync(lobbyId, connection, start);
+                // Playtest (4 Oct): a socket back after the end (it missed "match_end") gets the result again
+                if (_relay.EndJson(lobbyId) is { } end) await _broadcaster.SendToAsync(lobbyId, connection, end);
+            }
             return connection;
         }
         finally

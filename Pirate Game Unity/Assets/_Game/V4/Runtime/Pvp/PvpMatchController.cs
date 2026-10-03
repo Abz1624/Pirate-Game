@@ -206,6 +206,8 @@ namespace RoguePirates.V4.Pvp
             _began = true;
             _ready = true;
             if (_match.live != null && _match.live.ended) _ended = true;
+            // Playtest (4 Oct): a match that ended while this scene loaded (an early forfeit) shows its result at once.
+            if (_session.LastMatchEnd != null && (string.IsNullOrEmpty(_session.LastMatchEnd.matchId) || _session.LastMatchEnd.matchId == _match.matchId)) _ended = true;
         }
 
         /// <summary>An ordinary ship definition for the opponent unit (its own model replaces the enemy's).</summary>
@@ -612,7 +614,11 @@ namespace RoguePirates.V4.Pvp
             if (start == null || start.matchId != _match.matchId) return;
             _match = start;
             AdoptLiveBarrels(start);
-            if (start.live != null && start.live.ended) _ended = true;
+            if (start.live != null && start.live.ended)
+            {
+                _ended = true;
+                _ship?.SetMovementEnabled(false);
+            }
         }
 
         void AdoptLiveBarrels(MatchStartMsg start)

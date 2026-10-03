@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RoguePirates.V4.Config;
+using RoguePirates.V4.Foundation.Core;
+using RoguePirates.V4.Foundation.UI;
 using RoguePirates.V4.Online;
 using RoguePirates.V4.Presentation.Hud;
 using RoguePirates.V4.Progression;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace RoguePirates.V4.Presentation.Online
@@ -26,7 +29,7 @@ namespace RoguePirates.V4.Presentation.Online
         static readonly Color CardTint = new Color(1f, 1f, 1f, 0.06f);
 
         RectTransform _hub, _lobby, _draft;
-        TextMeshProUGUI _hubMessage, _lobbyTitle, _lobbyMessage, _code, _draftStrip, _draftMessage, _weaponCount, _logbookCount;
+        TextMeshProUGUI _hubMessage, _lobbyTitle, _lobbyMessage, _code, _draftStrip, _draftMessage, _weaponCount, _logbookCount, _draftDetail;
         TMP_InputField _codeInput;
         RectTransform _publicList, _seatList, _weaponGrid, _logbookGrid, _weaponOrder, _logbookOrder;
         Button _readyButton, _draftButton, _botButton, _copyButton, _draftReady;
@@ -48,6 +51,7 @@ namespace RoguePirates.V4.Presentation.Online
         public string HubMessage => _hubMessage != null ? _hubMessage.text : null;
         public string LobbyMessage => _lobbyMessage != null ? _lobbyMessage.text : null;
         public string DraftMessage => _draftMessage != null ? _draftMessage.text : null;
+        public string DraftDetail => _draftDetail != null ? _draftDetail.text : null;
         public int PublicRowCount => _publicRows.Count;
 
         public static PvpMenu Create(Transform canvas, Func<ConfigSetRuntime> config)
@@ -271,7 +275,8 @@ namespace RoguePirates.V4.Presentation.Online
             if (this == null) return;
             if (LobbyOpen) RefreshLobby(state);
             if (DraftOpen) RefreshDraftStrip(state);
-            if (state == null && (LobbyOpen || DraftOpen)) { Show(_hub); }
+            // Playtest (4 Oct): a closed or expired lobby goes back to the hub too (its notice shows there).
+            if ((state == null || !PvpSession.Instance.InLobby) && (LobbyOpen || DraftOpen)) { Show(_hub); RefreshPublic(); }
         }
 
         void OnNotice(string text)
@@ -370,6 +375,7 @@ namespace RoguePirates.V4.Presentation.Online
 
         async void ReadyFromLobby()
         {
+            EnsureGrids(); // the content's ids, to check the saved draft against
             var draft = SavedDraftOrNull();
             if (!DraftComplete(draft)) { ShowDraft(); return; }
             await SendReady(draft, m => _lobbyMessage.text = m);
@@ -388,7 +394,7 @@ namespace RoguePirates.V4.Presentation.Online
             _draftReady = OnlineUi.Button(header, "Ready", ReadyFromDraft, new Vector2(0.82f, 0.05f), new Vector2(1f, 0.95f));
 
             // Left: the content to pick from (weapons above, Logbooks below). Right: the two priority lists.
-            var left = OnlineUi.Area(_draft, "Pick", new Vector2(0f, 0f), new Vector2(0.62f, 1f), new Vector4(20f, 64f, 8f, 96f));
+            var left = OnlineUi.Area(_draft, "Pick", new Vector2(0f, 0f), new Vector2(0.62f, 1f), new Vector4(20f, 156f, 8f, 96f));
             var wLabel = OnlineUi.Area(left, "WeaponsLabel", new Vector2(0f, 1f), new Vector2(1f, 1f));
             wLabel.offsetMin = new Vector2(0f, -40f);
             _weaponCount = OnlineUi.Text(wLabel, "Label", "Weapons", 28, TextAlignmentOptions.MidlineLeft, OnlineUi.Dim);
@@ -398,7 +404,7 @@ namespace RoguePirates.V4.Presentation.Online
             _logbookCount = OnlineUi.Text(lLabel, "Label", "Logbooks", 28, TextAlignmentOptions.MidlineLeft, OnlineUi.Dim);
             _logbookGrid = Grid(OnlineUi.Area(left, "Logbooks", new Vector2(0f, 0f), new Vector2(1f, 0.5f), new Vector4(0f, 0f, 0f, 44f)));
 
-            var right = OnlineUi.Area(_draft, "Order", new Vector2(0.62f, 0f), new Vector2(1f, 1f), new Vector4(8f, 64f, 20f, 96f));
+            var right = OnlineUi.Area(_draft, "Order", new Vector2(0.62f, 0f), new Vector2(1f, 1f), new Vector4(8f, 156f, 20f, 96f));
             var orderLabel = OnlineUi.Area(right, "Label", new Vector2(0f, 1f), new Vector2(1f, 1f));
             orderLabel.offsetMin = new Vector2(0f, -40f);
             OnlineUi.Text(orderLabel, "Text", "Priority (level-ups go weapon 1, Logbook 1, weapon 2, ...)", 22, TextAlignmentOptions.MidlineLeft, OnlineUi.Dim);
@@ -408,14 +414,28 @@ namespace RoguePirates.V4.Presentation.Online
             _draftMessage = OnlineUi.TextAt(_draft, "Message", string.Empty, 26, TextAlignmentOptions.Center, OnlineUi.Gold, new Vector2(0f, 0f), new Vector2(1f, 0f));
             _draftMessage.rectTransform.offsetMin = new Vector2(24f, 12f);
             _draftMessage.rectTransform.offsetMax = new Vector2(-24f, 60f);
+
+            // Playtest (4 Oct, owner): the full description of the hovered or last tapped weapon or Logbook.
+            var detail = OnlineUi.Area(_draft, "Detail", new Vector2(0f, 0f), new Vector2(1f, 0f));
+            detail.offsetMin = new Vector2(20f, 62f);
+            detail.offsetMax = new Vector2(-20f, 150f);
+            detail.gameObject.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.05f);
+            _draftDetail = OnlineUi.Text(detail, "Text", DetailHint, 24, TextAlignmentOptions.MidlineLeft, OnlineUi.TextColor);
+            _draftDetail.margin = new Vector4(16f, 4f, 16f, 4f);
+            _draftDetail.textWrappingMode = TextWrappingModes.Normal;
+            _draftDetail.enableAutoSizing = true;
+            _draftDetail.fontSizeMin = 18f;
+            _draftDetail.fontSizeMax = 24f;
         }
+
+        const string DetailHint = "<color=#9aa4ad>Hover or tap a weapon or Logbook to read what it does.</color>";
 
         static RectTransform Grid(RectTransform area)
         {
             var list = OnlineUi.ScrollList(area, "Scroll", Vector4.zero);
             DestroyImmediate(list.GetComponent<VerticalLayoutGroup>());
             var grid = list.gameObject.AddComponent<GridLayoutGroup>();
-            grid.cellSize = new Vector2(262f, 76f);
+            grid.cellSize = new Vector2(262f, 96f);
             grid.spacing = new Vector2(8f, 8f);
             grid.padding = new RectOffset(8, 8, 8, 8);
             grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
@@ -431,6 +451,7 @@ namespace RoguePirates.V4.Presentation.Online
             RefreshDraft();
             RefreshDraftStrip(PvpSession.Instance.Lobby);
             _draftMessage.text = "Pick 6 weapons and 6 Logbooks (all start at level 1), then order them.";
+            if (_draftDetail != null) _draftDetail.text = DetailHint;
             var me = PvpSession.Instance.MySeat;
             if (me != null && me.status != "drafting" && PvpSession.Instance.Lobby?.status != "starting") _ = PvpSession.Instance.SetStatus("drafting");
         }
@@ -443,20 +464,58 @@ namespace RoguePirates.V4.Presentation.Online
             _gridsBuilt = true;
             _allWeapons = OfferGenerator.InDatabaseOrder(config.All<WeaponConfig>()).Where(w => w != null && !string.IsNullOrEmpty(w.weaponId)).ToList();
             _allLogbooks = OfferGenerator.InDatabaseOrder(config.All<LogbookConfig>()).Where(l => l != null && !string.IsNullOrEmpty(l.logbookId)).ToList();
-            foreach (var w in _allWeapons) if (RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(w.weaponId)) Card(_weaponGrid, w.weaponId, Name(w), _icons != null ? _icons.Weapon(w.weaponId) : null, true);
-            foreach (var l in _allLogbooks) Card(_logbookGrid, l.logbookId, Name(l), _icons != null ? _icons.Logbook(l.logbookId) : null, false);
+            foreach (var w in _allWeapons) if (RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(w.weaponId)) Card(_weaponGrid, w.weaponId, Name(w), ShortLine(w), _icons != null ? _icons.Weapon(w.weaponId) : null, true);
+            foreach (var l in _allLogbooks) Card(_logbookGrid, l.logbookId, Name(l), ShortLine(l), _icons != null ? _icons.Logbook(l.logbookId) : null, false);
         }
 
         static string Name(WeaponConfig w) => string.IsNullOrEmpty(w.displayName) ? w.weaponId : w.displayName;
         static string Name(LogbookConfig l) => string.IsNullOrEmpty(l.displayName) ? l.logbookId : l.displayName;
 
-        void Card(RectTransform grid, string id, string label, Sprite icon, bool weapon)
+        // Playtest (4 Oct, owner): the descriptions while drafting (a short line on each card, the full text in the detail strip).
+        static string Plain(string s) => string.IsNullOrEmpty(s) ? string.Empty : s.Replace(" \u2014 ", ", ").Replace("\u2014", ", ").Replace("\u2013", "-").Trim();
+
+        static string ShortLine(WeaponConfig w) => Plain(!string.IsNullOrEmpty(w.behaviorLine) ? w.behaviorLine : w.description);
+
+        static string ShortLine(LogbookConfig l) =>
+            l.stat < 0 ? "No effect" : StatDisplay.FormatLogbookBonus((StatId)l.stat, l.perLevelAdditive) + " per rank";
+
+        static string Detail(WeaponConfig w)
+        {
+            var parts = new List<string>();
+            var d = Plain(w.description);
+            var b = Plain(w.behaviorLine);
+            if (d.Length > 0) parts.Add(d);
+            if (b.Length > 0 && !d.Contains(b)) parts.Add(b + ".");
+            var stats = CardStatLines.NewWeapon(w);
+            if (stats != null && stats.Length > 0) parts.Add("<color=#9aa4ad>Level 1: " + string.Join(", ", stats) + "</color>");
+            return "<color=#ffd166><b>" + Name(w) + "</b></color>  <color=#9aa4ad>Weapon</color>\n" + string.Join("  ", parts);
+        }
+
+        static string Detail(LogbookConfig l)
+        {
+            var body = l.stat < 0 ? "Does nothing in this build."
+                : StatDisplay.FormatLogbookBonus((StatId)l.stat, l.perLevelAdditive) + (l.stat == (int)StatId.Hull ? " (also heals)" : string.Empty)
+                  + " for each rank, up to " + l.maxLevel + " ranks.";
+            return "<color=#ffd166><b>" + Name(l) + "</b></color>  <color=#9aa4ad>Logbook</color>\n" + body;
+        }
+
+        /// <summary>Shows the full description of a weapon or Logbook in the draft's detail strip.</summary>
+        public void ShowDetail(string id, bool weapon)
+        {
+            if (_draftDetail == null) return;
+            if (weapon) { var w = _allWeapons.Find(x => x.weaponId == id); if (w != null) _draftDetail.text = Detail(w); }
+            else { var l = _allLogbooks.Find(x => x.logbookId == id); if (l != null) _draftDetail.text = Detail(l); }
+        }
+
+        void Card(RectTransform grid, string id, string label, string line, Sprite icon, bool weapon)
         {
             var go = new GameObject(id, typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(grid, false);
             var image = go.GetComponent<Image>();
             image.color = CardTint;
-            go.GetComponent<Button>().onClick.AddListener(() => Toggle(id, weapon));
+            go.GetComponent<Button>().onClick.AddListener(() => { Toggle(id, weapon); ShowDetail(id, weapon); });
+            // Hover (desktop) shows the description too; a tap (phone) shows it with the pick.
+            go.AddComponent<HoverRelay>().Enter = () => ShowDetail(id, weapon);
             if (icon != null)
             {
                 var ig = new GameObject("Icon", typeof(RectTransform), typeof(Image));
@@ -471,9 +530,13 @@ namespace RoguePirates.V4.Presentation.Online
                 img.preserveAspect = true;
                 img.raycastTarget = false;
             }
-            var text = OnlineUi.TextAt(go.transform, "Name", label, 22, TextAlignmentOptions.MidlineLeft, OnlineUi.TextColor, Vector2.zero, Vector2.one);
-            text.margin = new Vector4(icon != null ? 76f : 12f, 0f, 40f, 0f);
-            text.textWrappingMode = TextWrappingModes.Normal;
+            var left = icon != null ? 76f : 12f;
+            var text = OnlineUi.TextAt(go.transform, "Name", label, 22, TextAlignmentOptions.BottomLeft, OnlineUi.TextColor, new Vector2(0f, 0.56f), Vector2.one);
+            text.margin = new Vector4(left, 0f, 40f, 0f);
+            text.fontStyle = FontStyles.Bold;
+            var desc = OnlineUi.TextAt(go.transform, "Line", line ?? string.Empty, 17, TextAlignmentOptions.TopLeft, OnlineUi.Dim, Vector2.zero, new Vector2(1f, 0.54f));
+            desc.margin = new Vector4(left, 0f, 10f, 4f);
+            desc.textWrappingMode = TextWrappingModes.Normal;
             var badge = OnlineUi.TextAt(go.transform, "Badge", string.Empty, 26, TextAlignmentOptions.MidlineRight, OnlineUi.Gold, Vector2.zero, Vector2.one);
             badge.margin = new Vector4(0f, 0f, 10f, 0f);
             badge.fontStyle = FontStyles.Bold;
@@ -481,7 +544,28 @@ namespace RoguePirates.V4.Presentation.Online
             (weapon ? _weaponBadges : _logbookBadges)[id] = badge;
         }
 
-        PvpDraft SavedDraftOrNull() => PvpSession.Instance.SavedDraft;
+        /// <summary>Pointer enter only (an EventTrigger would also take the drag and scroll events from the card grid's ScrollRect).</summary>
+        sealed class HoverRelay : MonoBehaviour, IPointerEnterHandler
+        {
+            public Action Enter;
+            public void OnPointerEnter(PointerEventData eventData) => Enter?.Invoke();
+        }
+
+        /// <summary>The saved draft without switched-off weapons (the Flamethrower) or ids the content no longer has; fewer
+        /// than six left makes it incomplete (Ready then asks for the draft again).</summary>
+        PvpDraft SavedDraftOrNull()
+        {
+            var d = PvpSession.Instance.SavedDraft;
+            if (d == null) return null;
+            return new PvpDraft
+            {
+                weapons = (d.weapons ?? Array.Empty<string>()).Where(w => !string.IsNullOrEmpty(w)
+                    && RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(w)
+                    && (_allWeapons.Count == 0 || _allWeapons.Exists(x => x.weaponId == w))).Distinct().ToArray(),
+                logbooks = (d.logbooks ?? Array.Empty<string>()).Where(l => !string.IsNullOrEmpty(l)
+                    && (_allLogbooks.Count == 0 || _allLogbooks.Exists(x => x.logbookId == l))).Distinct().ToArray(),
+            };
+        }
 
         void LoadDraft()
         {

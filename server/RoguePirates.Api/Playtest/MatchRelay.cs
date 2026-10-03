@@ -146,6 +146,13 @@ public sealed class MatchRelay
     /// <summary>A refereed match whose result is not in yet.</summary>
     public bool IsLive(Guid lobbyId) => Get(lobbyId) is { } r && r.Relayed && !r.Ended;
 
+    /// <summary>The "match_end" of an ended room (sent again to a socket that reconnects after the end), or null.</summary>
+    public string? EndJson(Guid lobbyId)
+    {
+        if (Get(lobbyId) is not { } room) return null;
+        lock (room) return room.EndMessage is { } m ? J(m) : null;
+    }
+
     /// <summary>Relayed lobbies keep their sockets open after "finished" for the rematch window.</summary>
     public bool KeepSocketsOpen(Guid lobbyId) => Get(lobbyId) is { Relayed: true };
 
