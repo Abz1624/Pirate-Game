@@ -34,7 +34,7 @@ MonoBehaviour:
     value: 0
   baseDamage:
     enabled: 1
-    value: 0.35
+    value: 0.4375
   tags: []
   inheritBaseVisual: 0
   look:

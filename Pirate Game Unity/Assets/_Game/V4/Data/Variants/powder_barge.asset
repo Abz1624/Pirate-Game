@@ -34,7 +34,7 @@ MonoBehaviour:
     value: 2.2
   baseDamage:
     enabled: 1
-    value: 4
+    value: 5
   tags:
   - specialist
   inheritBaseVisual: 1

@@ -443,7 +443,7 @@ namespace RoguePirates.V4.Presentation.Online
             _gridsBuilt = true;
             _allWeapons = OfferGenerator.InDatabaseOrder(config.All<WeaponConfig>()).Where(w => w != null && !string.IsNullOrEmpty(w.weaponId)).ToList();
             _allLogbooks = OfferGenerator.InDatabaseOrder(config.All<LogbookConfig>()).Where(l => l != null && !string.IsNullOrEmpty(l.logbookId)).ToList();
-            foreach (var w in _allWeapons) Card(_weaponGrid, w.weaponId, Name(w), _icons != null ? _icons.Weapon(w.weaponId) : null, true);
+            foreach (var w in _allWeapons) if (RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(w.weaponId)) Card(_weaponGrid, w.weaponId, Name(w), _icons != null ? _icons.Weapon(w.weaponId) : null, true);
             foreach (var l in _allLogbooks) Card(_logbookGrid, l.logbookId, Name(l), _icons != null ? _icons.Logbook(l.logbookId) : null, false);
         }
 

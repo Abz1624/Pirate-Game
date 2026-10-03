@@ -243,6 +243,15 @@ namespace RoguePirates.V4.Composition
         /// <summary>The starting weapon by the unlock rule (V3: Saltwind always starts with the First Conquest weapon).</summary>
         public string ResolveStartingWeapon(CaptainConfig captain)
         {
+            var weapon = ResolveConfiguredStartingWeapon(captain);
+            // Playtest (3 Oct, owner, round 7): a switched-off weapon (Ember's flamethrower) starts as the First Conquest weapon.
+            if (RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(weapon)) return weapon;
+            var unlocks = _config.Single<UnlockConfig>();
+            return unlocks != null ? unlocks.firstConquestWeaponId : weapon;
+        }
+
+        string ResolveConfiguredStartingWeapon(CaptainConfig captain)
+        {
             var unlocks = _config.Single<UnlockConfig>();
             var firstConquest = unlocks != null ? unlocks.firstConquestWeaponId : null;
             var conquered = ContentPort.ConqueredForStartingWeapon;

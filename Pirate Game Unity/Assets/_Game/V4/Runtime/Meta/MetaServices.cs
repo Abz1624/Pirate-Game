@@ -111,8 +111,8 @@ namespace RoguePirates.V5.Meta
                 }
                 if (unlocks != null)
                 {
-                    foreach (var id in unlocks.starterWeaponIds) Add(id, StoreCategory.Weapon, 0, WeaponName(config, id), 0, true);
-                    foreach (var u in unlocks.weaponUnlocks) if (u != null) Add(u.weaponId, StoreCategory.Weapon, u.rumCost, WeaponName(config, u.weaponId), 1, false);
+                    foreach (var id in unlocks.starterWeaponIds) if (RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(id)) Add(id, StoreCategory.Weapon, 0, WeaponName(config, id), 0, true);
+                    foreach (var u in unlocks.weaponUnlocks) if (u != null && RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(u.weaponId)) Add(u.weaponId, StoreCategory.Weapon, u.rumCost, WeaponName(config, u.weaponId), 1, false);
                     // D34: content held out of every pool (its stat does nothing yet) is not sold.
                     foreach (var u in unlocks.logbookUnlocks) if (u != null && InAPool(config, u.contentId)) Add(u.contentId, StoreCategory.Logbook, u.rumCost, LogbookName(config, u.contentId), 1, false);
                     foreach (var u in unlocks.itemUnlocks) if (u != null && InAPool(config, u.contentId)) Add(u.contentId, StoreCategory.Item, u.rumCost, ItemName(config, u.contentId, out var r), r, false);
