@@ -23,11 +23,30 @@ minibosses and bosses; (c) independent review of the project; (d) Android APK fo
 - Earlier today (for reference): Barnacle King hull halved `ebe52d58`; all fight-length floors halved `dc0f3f7c`
   (boss 4.75 s, arena 3 s, scheduled 1.5 s, kill-band elites 1.25 s).
 
-## In progress
+- **a. PvP** (commit `9103bbd7`, compiled in the Editor, server tests 70/70):
+  - **Draft descriptions**: each card shows its name and a short line (weapons: their firing line; Logbooks: e.g. "+10%
+    Damage per rank"). A detail strip above the message line shows the hovered card (desktop) or last tapped card (phone):
+    full description and level 1 numbers for weapons; bonus per rank and rank cap for Logbooks. Picking works as before.
+  - Saved drafts drop switched-off weapons (flamethrower); a draft left short counts as incomplete. Card hover no longer
+    blocks scrolling on phones.
+  - **Bugs fixed** from reading the whole 1v1 flow:
+    1. A player who reconnected around the end got no result and kept sailing. **Needs the server redeploy** (see below);
+       until then the client shows the end screen after 3 s without real stats.
+    2. A match that ended while the run scene was loading (opponent left during the countdown) never ended.
+    3. A voyage started while still sitting in a lobby could lose a rated match on time; voyages now leave the lobby.
+    4. A guest stayed on a dead lobby after the host closed it; now goes back to the PvP hub with the message.
+  - Left as is: pausing in a 1v1 stops your own ship while hits still land (pause is the only in-match menu; Quit forfeits).
 
-- **a.** The PvP agent: descriptions on the draft cards, a full read of the PvP flow, and two reviewer findings on the draft
-  screen (saved drafts can still send the flamethrower; the card hover blocked scrolling on phones).
-- **d.** The APK starts once (a) is in.
+## Build
+
+- **d. Android APK**: built 03:23 (37 min, succeeded, 0 errors; IL2CPP ARM64, ASTC textures, 131.6 MB). Copy for testing:
+  `Pirate Game Unity/Builds/Playtest-2026-10-03/RoguePirates-Playtest-Android-r8.apk` (same file as
+  `Builds/Android/RoguePirates-Playtest.apk`). Includes everything up to commit `9103bbd7`. Not installed or run on a phone.
+
+## Needs you
+
+- **Railway redeploy of the API** (for PvP fix 1). My deploy was blocked by the permission check (production deploy), so I
+  left it. From `server/`, with `.env` loaded: `railway up --service api --ci`. Everything else works without it.
 
 ## Decisions
 
@@ -43,6 +62,7 @@ minibosses and bosses; (c) independent review of the project; (d) Android APK fo
    - Attack warnings share 48 slots with damaging circles and mines; if all are full a damaging hazard is dropped.
    - Elites are recognised by the `elite_` id prefix (a config flag would be cleaner).
    - Dragon's Breath Nozzle (the flamethrower's evolution item) may still drop from chests.
+   - One server test failed once and passed on three reruns (timing-sensitive; worth hardening later).
 
 ## Questions for you
 
