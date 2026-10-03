@@ -134,9 +134,14 @@ namespace RoguePirates.V4.Enemies
             public float slowStrength;
             public float slowDuration;
             public bool armed;
+            public float duration;
+            public Vector3 direction;
+            public float length;
+            public int owner;
         }
 
-        readonly PendingHazard[] _slots = new PendingHazard[24];
+        // Playtest (3 Oct, owner, round 7): 48 slots (was 24): every telegraphed enemy attack now has a ground warning.
+        readonly PendingHazard[] _slots = new PendingHazard[48];
         readonly IEnemyTarget _player;
         readonly IEnemyEffects _effects;
 
@@ -154,7 +159,11 @@ namespace RoguePirates.V4.Enemies
             if (index < 0 || index >= _slots.Length) return false;
             var slot = _slots[index];
             if (slot == null || !slot.active) return false;
-            hazard = new HazardSnapshot { kind = slot.kind, center = slot.center, radius = slot.radius, timer = slot.timer, armed = slot.armed };
+            hazard = new HazardSnapshot
+            {
+                kind = slot.kind, center = slot.center, radius = slot.radius, timer = slot.timer, armed = slot.armed,
+                duration = slot.duration, direction = slot.direction, length = slot.length,
+            };
             return true;
         }
 
@@ -194,6 +203,11 @@ namespace RoguePirates.V4.Enemies
                 }
 
                 slot.timer -= dt;
+                if (slot.kind == HazardKind.Warning || slot.kind == HazardKind.WarningLine)
+                {
+                    if (slot.timer <= 0f) slot.active = false; // visual only: the attacker deals its own damage
+                    continue;
+                }
                 if (slot.kind == HazardKind.NetSlow && slot.timer <= 0f)
                 {
                     slot.active = false;
@@ -211,14 +225,13 @@ namespace RoguePirates.V4.Enemies
                         if (slot.kind == HazardKind.NetSlow)
                             player.ApplySlow(1f - slot.slowStrength, slot.slowDuration);
                         else if (player.HasDamageReceiver)
-                        {
                             player.TakeDamage(slot.damage, slot.center, false);
-                            if (slot.kind == HazardKind.Explosion || slot.kind == HazardKind.Mine)
-                                _effects?.PlayExplosion(slot.center, slot.radius);
-                        }
                     }
                 }
 
+                // Playtest (3 Oct, owner, round 7: "I could see the powder keg explosion smoke on the player ship but not
+                // what caused it"): a trap or bomb circle always bursts where its ring was, hit or miss.
+                if (slot.kind == HazardKind.Explosion) _effects?.PlayExplosion(slot.center, slot.radius);
                 slot.active = false;
             }
         }
@@ -237,6 +250,8 @@ namespace RoguePirates.V4.Enemies
                 _slots[i].timer = activeSeconds;
                 _slots[i].slowStrength = slowStrength;
                 _slots[i].slowDuration = slowDuration;
+                _slots[i].duration = activeSeconds;
+                _slots[i].owner = 0;
                 return;
             }
         }
@@ -256,6 +271,8 @@ namespace RoguePirates.V4.Enemies
                 _slots[i].damage = damage;
                 _slots[i].armed = false;
                 _slots[i].slowDuration = lifeSeconds;
+                _slots[i].duration = armSeconds;
+                _slots[i].owner = 0;
                 return;
             }
         }
@@ -274,8 +291,65 @@ namespace RoguePirates.V4.Enemies
                 _slots[i].radius = radius;
                 _slots[i].timer = fuseSeconds;
                 _slots[i].damage = damage;
+                _slots[i].duration = fuseSeconds;
+                _slots[i].owner = 0;
                 return;
             }
+        }
+
+        /// <summary>
+        /// Playtest (3 Oct, owner, round 7): a visual-only warning circle on the water for <paramref name="seconds"/> (its
+        /// inner ring fills as the attack comes). With an <paramref name="owner"/> (the unit id) a later call moves and
+        /// re-times that unit's warning instead of adding another, so a warning can follow a moving attacker.
+        /// </summary>
+        public void Warn(Vector3 center, float radius, float seconds, int owner = 0) =>
+            Place(HazardKind.Warning, center, Vector3.zero, 0f, radius, seconds, owner);
+
+        /// <summary>Playtest (3 Oct, owner, round 7): a visual-only warning lane from <paramref name="start"/> along
+        /// <paramref name="direction"/> (a charge's path, an aimed cannonball's line).</summary>
+        public void WarnLine(Vector3 start, Vector3 direction, float length, float halfWidth, float seconds, int owner = 0)
+        {
+            direction.y = 0f;
+            if (direction.sqrMagnitude < 0.0001f || length <= 0.05f) return;
+            Place(HazardKind.WarningLine, start, direction.normalized, length, halfWidth, seconds, owner);
+        }
+
+        /// <summary>Removes a unit's warnings (its attack ended early: it died, exploded or gave up).</summary>
+        public void ClearWarnings(int owner)
+        {
+            if (owner == 0) return;
+            foreach (var slot in _slots)
+                if (slot != null && slot.active && slot.owner == owner && (slot.kind == HazardKind.Warning || slot.kind == HazardKind.WarningLine))
+                    slot.active = false;
+        }
+
+        void Place(HazardKind kind, Vector3 center, Vector3 direction, float length, float radius, float seconds, int owner)
+        {
+            if (seconds <= 0f) return;
+            center.y = 0f;
+            PendingHazard target = null;
+            if (owner != 0)
+                foreach (var slot in _slots)
+                    if (slot != null && slot.active && slot.owner == owner && slot.kind == kind) { target = slot; break; }
+            var fresh = target == null;
+            if (fresh)
+                for (var i = 0; i < _slots.Length && target == null; i++)
+                {
+                    _slots[i] ??= new PendingHazard();
+                    if (!_slots[i].active) target = _slots[i];
+                }
+            if (target == null) return;
+            target.active = true;
+            target.kind = kind;
+            target.center = center;
+            target.direction = direction;
+            target.length = length;
+            target.radius = radius;
+            target.timer = seconds;
+            target.owner = owner;
+            target.damage = 0f;
+            target.armed = false;
+            if (fresh || seconds > target.duration) target.duration = seconds;
         }
 
         public void ClearAll()

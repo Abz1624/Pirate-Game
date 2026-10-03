@@ -13,22 +13,23 @@ namespace RoguePirates.V4.Presentation.Effects
     /// Enemy shots (M14.9b; port of V3's ProjectileViewPool as the hostile shots used it: V3's scale formula) through the
     /// V4 view pool, key "hostile/&lt;model&gt;", prewarmed at bind. The impact splash is the weapon presenter's water splash
     /// (V3 shared the broker's splash and its merge window).
-    /// <para>Playtest (3 Oct, owner: enemy cannonballs looked like the player's): an enemy shot is no longer the player's
-    /// cannonball model. It is a glowing danger orb built once here: a hot red-orange core, a translucent crimson glow
-    /// around it and a dark red trail, so it reads as "dodge this" at a glance. Every shot shares the same three
-    /// materials (no per-shot material instances).</para>
+    /// <para>Playtest (3 Oct, owner, round 7: the glowing red-orange orbs "look like powerups and are easy to miss"): an
+    /// enemy shot is a dark iron cannonball (a little larger than the player's) trailing bright orange-red fire and smoke,
+    /// so its path reads as danger (owner: no red marker under it). Every shot shares the same two materials (no
+    /// per-shot material instances).</para>
     /// </summary>
     public sealed class HostileShotPresenter : IHostileShotViews
     {
         public const string KeyPrefix = "hostile/";
         const int Prewarm = 24;
-        const float GlowScale = 1.75f;
-        const float TrailWidth = 0.7f; // of the shot's diameter
+        const float SizeBoost = 1.6f;   // of the old size: a little larger than the player's cannonball
+        const float MinSize = 0.45f;
+        const float TrailWidth = 0.8f;  // of the ball's diameter
 
-        static readonly Color CoreColor = new Color(1f, 0.32f, 0.08f, 1f) * 2.2f; // HDR: blooms where bloom is on
-        static readonly Color GlowColor = new Color(1f, 0.12f, 0.3f, 0.38f);
-        static readonly Color TrailHead = new Color(0.85f, 0.12f, 0.08f, 0.85f);
-        static readonly Color TrailTail = new Color(0.18f, 0.02f, 0.06f, 0f);
+        static readonly Color IronColor = new Color(0.09f, 0.09f, 0.1f, 1f);
+        static readonly Color TrailHead = new Color(1f, 0.55f, 0.12f, 1f);   // fire at the ball
+        static readonly Color TrailMid = new Color(1f, 0.2f, 0.05f, 0.85f);  // red-orange
+        static readonly Color TrailTail = new Color(0.25f, 0.22f, 0.2f, 0f); // grey smoke fading out
 
         readonly PoolService _pools;
         readonly DemoJuiceSettings _settings;
@@ -63,7 +64,7 @@ namespace RoguePirates.V4.Presentation.Effects
             if (go == null) return null;
             var sizeMult = _settings != null ? _settings.projectileSizeMultiplier : 1.2f;
             var radius = visualRadius * (_settings != null ? _settings.projectileRadiusMultiplier : 1f);
-            var size = Mathf.Max(0.2f, radius * 2f * sizeMult);
+            var size = Mathf.Max(MinSize, radius * 2f * sizeMult * SizeBoost);
             go.transform.localScale = Vector3.one * size;
             var trail = Trail(go);
             if (trail != null)
@@ -104,59 +105,53 @@ namespace RoguePirates.V4.Presentation.Effects
             return trail;
         }
 
-        /// <summary>The danger orb: a collider-less core sphere, a glow shell and a trail, as the pool template.</summary>
+        /// <summary>The iron ball: a collider-less sphere, its fire-and-smoke trail, as the pool template.</summary>
         GameObject BuildTemplate()
         {
-            var root = new GameObject("HostileShotOrb");
+            var root = new GameObject("HostileCannonball");
             root.SetActive(false);
 
-            var core = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            core.name = "Core";
-            Object.DestroyImmediate(core.GetComponent<Collider>()); // before the pool clones the template
-            core.transform.SetParent(root.transform, false);
-            var coreRenderer = core.GetComponent<MeshRenderer>();
-            coreRenderer.sharedMaterial = Unlit(CoreColor);
-            coreRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-
-            var glow = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            glow.name = "Glow";
-            Object.DestroyImmediate(glow.GetComponent<Collider>());
-            glow.transform.SetParent(root.transform, false);
-            glow.transform.localScale = Vector3.one * GlowScale;
-            var glowRenderer = glow.GetComponent<MeshRenderer>();
-            glowRenderer.sharedMaterial = Translucent(GlowColor);
-            glowRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            glowRenderer.receiveShadows = false;
+            var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            ball.name = "Iron";
+            Object.DestroyImmediate(ball.GetComponent<Collider>()); // before the pool clones the template
+            ball.transform.SetParent(root.transform, false);
+            var ballRenderer = ball.GetComponent<MeshRenderer>();
+            ballRenderer.sharedMaterial = Iron();
+            ballRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
             var trail = root.AddComponent<TrailRenderer>();
-            trail.sharedMaterial = Translucent(Color.white);
-            trail.time = 0.32f;
-            trail.minVertexDistance = 0.12f;
-            trail.widthCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0.15f));
+            trail.sharedMaterial = Translucent(Color.white, "HostileShotTrail");
+            trail.time = 0.5f;
+            trail.minVertexDistance = 0.1f;
+            trail.widthCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(0.4f, 0.75f), new Keyframe(1f, 0.25f));
             trail.colorGradient = new Gradient
             {
-                colorKeys = new[] { new GradientColorKey(TrailHead, 0f), new GradientColorKey(TrailTail, 1f) },
-                alphaKeys = new[] { new GradientAlphaKey(TrailHead.a, 0f), new GradientAlphaKey(0f, 1f) },
+                colorKeys = new[] { new GradientColorKey(TrailHead, 0f), new GradientColorKey(TrailMid, 0.35f), new GradientColorKey(TrailTail, 1f) },
+                alphaKeys = new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(TrailMid.a, 0.35f), new GradientAlphaKey(0f, 1f) },
             };
             trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             trail.emitting = false;
             return root;
         }
 
-        Material Unlit(Color color)
+        /// <summary>Dark iron with a little shine (lit, so it reads as a solid ball, not a glowing pickup).</summary>
+        Material Iron()
         {
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null) shader = Shader.Find("Unlit/Color");
-            var m = new Material(shader) { name = "HostileShotCore", hideFlags = HideFlags.DontSave };
-            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color);
-            if (m.HasProperty("_Color")) m.SetColor("_Color", color);
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) shader = Shader.Find("Standard");
+            var m = new Material(shader) { name = "HostileShotIron", hideFlags = HideFlags.DontSave };
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", IronColor);
+            if (m.HasProperty("_Color")) m.SetColor("_Color", IronColor);
+            if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", 0.7f);
+            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.55f);
+            if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", 0.55f);
             _materials.Add(m);
             return m;
         }
 
-        Material Translucent(Color color)
+        Material Translucent(Color color, string name)
         {
-            var m = new Material(Shader.Find("Sprites/Default")) { name = "HostileShotGlow", hideFlags = HideFlags.DontSave, color = color };
+            var m = new Material(Shader.Find("Sprites/Default")) { name = name, hideFlags = HideFlags.DontSave, color = color };
             _materials.Add(m);
             return m;
         }

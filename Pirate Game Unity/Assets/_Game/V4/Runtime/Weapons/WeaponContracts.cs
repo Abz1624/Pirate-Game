@@ -135,6 +135,8 @@ namespace RoguePirates.V4.Weapons
         void AreaImpact(Vector3 position, float radius);
         /// <summary>V5 M4: an aura weapon's pulse around the ship (placeholder: the area impact ring).</summary>
         void AuraPulse(Vector3 center, float radius) => AreaImpact(center, radius);
+        /// <summary>Playtest (3 Oct, owner, round 7): an aura weapon's pulse, knowing which weapon (its own colour and look).</summary>
+        void WeaponPulse(string weaponId, Vector3 center, float radius) => AuraPulse(center, radius);
         void BurningPatch(Vector3 position, float radius);
         void WaterSplash(Vector3 position);
         int SkiffSpawned(Vector3 position, Vector3 forward);

@@ -81,14 +81,15 @@ namespace RoguePirates.V4.Enemies
             if (state.phase != EnemyCombatPhase.Telegraph)
             {
                 state.phase = EnemyCombatPhase.Telegraph;
-                state.phaseTimer = profile.attackWindUp;
+                state.phaseTimer = Mathf.Max(profile.attackWindUp, EncounterBudget.MinChargeWarning);
                 return;
             }
 
             state.phaseTimer -= dt;
-            if (state.phaseTimer > 0f) return;
+            // Playtest (3 Oct, owner, round 7): the grapples' 10 m reach shows round the barge during the windup.
+            if (state.phaseTimer > 0f) { Hazards.Warn(agent.position, BoardingReach, state.phaseTimer, agent.id); return; }
 
-            if (dist <= 10f && playerDamage != null)
+            if (dist <= BoardingReach && playerDamage != null)
             {
                 var ship = playerDamage.GetComponent<PlayerShipController>();
                 ship?.ApplySlow(0.75f, 2f);
@@ -98,6 +99,8 @@ namespace RoguePirates.V4.Enemies
             state.phase = EnemyCombatPhase.Approach;
             agent.attackCooldown = profile.attackCooldown;
         }
+
+        const float BoardingReach = 10f;
 
         void TickNetCutter(
             ref EnemyUnit agent,
@@ -122,6 +125,7 @@ namespace RoguePirates.V4.Enemies
                 state.phase = EnemyCombatPhase.Telegraph;
                 state.phaseTimer = 0.85f;
                 state.committedPosition = ahead;
+                Hazards.Warn(ahead, 3f, 0.85f); // Playtest (3 Oct, owner, round 7): where the net falls
                 return;
             }
 
@@ -226,8 +230,8 @@ namespace RoguePirates.V4.Enemies
             if (hostiles != null)
             {
                 // Lead the volley at firing time and fan it (-6, 0, +6 degrees) instead of stacking three shots on one line.
-                var aim = EnemySimulation.AimLed(
-                    agent.position, playerPos, playerVelocity, profile.projectileSpeed, state.committedDirection);
+                var aim = EnemySimulation.Spread(EnemySimulation.AimLed(
+                    agent.position, playerPos, playerVelocity, profile.projectileSpeed, state.committedDirection), agent);
                 var muzzle = agent.position + aim * (agent.radius + 1.2f) + Vector3.up * 0.55f;
                 var shotDistance = EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, profile.projectileSpeed);
                 for (var shot = 0; shot < 3; shot++)
@@ -270,7 +274,7 @@ namespace RoguePirates.V4.Enemies
                 dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
                 {
-                    dir = EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, profile.projectileSpeed, dir);
+                    dir = EnemySimulation.Spread(EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, profile.projectileSpeed, dir), agent);
                     var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
                     hostiles.TrySpawn(muzzle, dir, profile.projectileSpeed, agent.damage, 1.4f, 0.45f, 0.35f,
                         EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, profile.projectileSpeed));
@@ -307,8 +311,10 @@ namespace RoguePirates.V4.Enemies
             state.phaseTimer -= dt;
             if (state.phaseTimer > 0f) return;
 
+            // Playtest (3 Oct, owner, round 7: "I could see the powder keg explosion smoke on the player ship but not what
+            // caused it"): the blast went off where the bomb was aimed the moment it was thrown, 1.2 s before its damage.
+            // Now only the red circle shows there, and the blast plays when it lands (HazardTelegraphs).
             Hazards.SpawnCircle(state.committedPosition, 3f, 1.2f, agent.damage * 1.1f);
-            Effects.PlayExplosion(state.committedPosition, 3f);
             state.phase = EnemyCombatPhase.Approach;
             agent.attackCooldown = profile.attackCooldown;
         }
@@ -342,7 +348,7 @@ namespace RoguePirates.V4.Enemies
                 dir.y = 0f;
                 if (dir.sqrMagnitude > 0.01f)
                 {
-                    dir = EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, NeedleShotSpeed, dir);
+                    dir = EnemySimulation.Spread(EnemySimulation.AimLed(agent.position, playerPos, playerVelocity, NeedleShotSpeed, dir), agent);
                     var muzzle = agent.position + dir * (agent.radius + 1.3f) + Vector3.up * 0.55f;
                     hostiles.TrySpawn(muzzle, dir, NeedleShotSpeed, agent.damage, 1.2f, 0.35f, 0.28f,
                         EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, NeedleShotSpeed));

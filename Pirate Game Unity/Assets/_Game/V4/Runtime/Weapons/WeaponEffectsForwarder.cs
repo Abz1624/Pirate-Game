@@ -41,6 +41,7 @@ namespace RoguePirates.V4.Weapons
         public void TimedRing(Vector3 position, float radius, float seconds) => T?.TimedRing(position, radius, seconds);
         public void AreaImpact(Vector3 position, float radius) => T?.AreaImpact(position, radius);
         public void AuraPulse(Vector3 center, float radius) => T?.AuraPulse(center, radius);
+        public void WeaponPulse(string weaponId, Vector3 center, float radius) => T?.WeaponPulse(weaponId, center, radius);
         public void BurningPatch(Vector3 position, float radius) => T?.BurningPatch(position, radius);
         public void WaterSplash(Vector3 position) => T?.WaterSplash(position);
         public int SkiffSpawned(Vector3 position, Vector3 forward) => T?.SkiffSpawned(position, forward) ?? -1;

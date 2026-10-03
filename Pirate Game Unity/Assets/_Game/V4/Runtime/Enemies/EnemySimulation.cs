@@ -509,6 +509,7 @@ namespace RoguePirates.V4.Enemies
             var releasedAgentId = _agents[index].id;
             ClearUnitState(releasedAgentId);
             _states.Clear(releasedAgentId);
+            _services?.Hazards?.ClearWarnings(releasedAgentId); // Playtest (3 Oct): its attack warnings go with it
             _agents[index].active = false;
             _activeCount--;
             Despawned?.Invoke(index, releasedAgentId, despawnProfile);

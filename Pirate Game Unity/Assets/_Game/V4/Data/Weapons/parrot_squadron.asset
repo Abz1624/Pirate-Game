@@ -24,7 +24,7 @@ MonoBehaviour:
   targeting: 0
   tags: []
   baseDamage: 1.63
-  baseCooldown: 4
+  baseCooldown: 1.5
   range: 12
   baseQuantity: 2
   projectileSpeed: 16

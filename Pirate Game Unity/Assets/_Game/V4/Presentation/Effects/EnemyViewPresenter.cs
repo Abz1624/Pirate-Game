@@ -91,75 +91,6 @@ namespace RoguePirates.V4.Presentation.Effects
         };
         const float HullTintStrength = 0.6f;
 
-        // Playtest (3 Oct, owner): a pennant in the type's colour at the masthead of every ship type in the table, so the
-        // small boats (whose sails are their flags, dark cloth a tint barely changes) read at a glance too. One flat
-        // unlit cuboid per pooled view, made on its first use; one shared material per colour.
-        const string PennantName = "TypePennant";
-        static readonly Vector3 PennantSize = new Vector3(0.08f, 0.55f, 1.1f); // world metres: thin, tall, long
-        readonly Dictionary<Transform, Transform> _pennants = new Dictionary<Transform, Transform>();
-        readonly Dictionary<Color, Material> _pennantMaterials = new Dictionary<Color, Material>();
-
-        void SetPennant(Transform view, EnemyDefinition def, Color accent)
-        {
-            var show = def.category == EnemyCategory.Ship && def.id != null && ShipTypeColors.ContainsKey(def.id);
-            _pennants.TryGetValue(view, out var pennant);
-            if (!show)
-            {
-                if (pennant != null && pennant.gameObject.activeSelf) pennant.gameObject.SetActive(false);
-                return;
-            }
-            if (pennant == null)
-            {
-                pennant = MakePennant(view);
-                _pennants[view] = pennant;
-            }
-            if (!pennant.gameObject.activeSelf) pennant.gameObject.SetActive(true);
-            var renderer = pennant.GetComponent<MeshRenderer>();
-            var material = PennantMaterial(accent);
-            var current = renderer.sharedMaterial;
-            if (current == material) return;
-            // The burn flash's renderer.material left a per-view copy: destroyed, not leaked.
-            if (current != null && current.name.EndsWith("(Instance)")) Object.Destroy(current);
-            renderer.sharedMaterial = material;
-        }
-
-        static Transform MakePennant(Transform view)
-        {
-            // The masthead: the top of the model's meshes (its own pose and scale, measured once per pooled view).
-            var top = 0f;
-            var found = false;
-            foreach (var r in view.GetComponentsInChildren<MeshRenderer>(true))
-            {
-                var y = r.bounds.max.y - view.position.y;
-                if (!found || y > top) { top = y; found = true; }
-            }
-            var scale = Mathf.Max(0.05f, Mathf.Abs(view.lossyScale.x));
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = PennantName;
-            Object.DestroyImmediate(go.GetComponent<Collider>());
-            var t = go.transform;
-            t.SetParent(view, false);
-            t.localPosition = new Vector3(0f, (found ? top : 2.5f) / scale + PennantSize.y * 0.5f / scale, -PennantSize.z * 0.45f / scale);
-            t.localRotation = Quaternion.identity;
-            t.localScale = PennantSize / scale;
-            var renderer = go.GetComponent<MeshRenderer>();
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            renderer.receiveShadows = false;
-            return t;
-        }
-
-        Material PennantMaterial(Color color)
-        {
-            if (_pennantMaterials.TryGetValue(color, out var m) && m != null) return m;
-            var shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null) shader = Shader.Find("Unlit/Color");
-            m = new Material(shader) { name = "TypePennant", hideFlags = HideFlags.DontSave };
-            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color);
-            if (m.HasProperty("_Color")) m.SetColor("_Color", color);
-            _pennantMaterials[color] = m;
-            return m;
-        }
-
         /// <summary>The enemy type's colour (its data tint when it has none in the table).</summary>
         public static Color TypeColor(EnemyDefinition def) =>
             def != null && def.id != null && ShipTypeColors.TryGetValue(def.id, out var c) ? c : def != null ? def.visualTint : Color.white;
@@ -187,11 +118,11 @@ namespace RoguePirates.V4.Presentation.Effects
                 _tint.Record(view); // its own materials, recorded on its first use (before any burn flash)
                 // V5 M3d: a variant's own colours (pooled views share models). Playtest (3 Oct, owner: "most of the ships
                 // were visually the same"): each ship type has its own colour on its sails and flags, and its hull leans
-                // towards it; a creature keeps its data tint.
+                // towards it; a creature keeps its data tint. Playtest (3 Oct, owner, round 7): no masthead pennant ("a coloured
+                // bar above almost every enemy").
                 var accent = TypeColor(def);
                 var hullTint = accent == def.visualTint ? def.visualTint : Color.Lerp(Color.white, accent, HullTintStrength);
                 _tint.Apply(view, hullTint, accent);
-                SetPennant(view, def, accent);
                 EnemyViewAnimation.ApplySpawnVariation(view, animationSeed);
                 Profiles?.EnemyViewCreated(def.id, view);
                 return view;
@@ -362,9 +293,6 @@ namespace RoguePirates.V4.Presentation.Effects
         {
             _tint.Clear();
             _wakes.Clear();
-            _pennants.Clear();
-            foreach (var m in _pennantMaterials.Values) if (m != null) Object.Destroy(m);
-            _pennantMaterials.Clear();
             _trailWidths.Clear();
             if (_cube != null) Object.Destroy(_cube);
             _cube = null;

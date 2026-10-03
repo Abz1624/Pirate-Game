@@ -1130,7 +1130,7 @@ namespace RoguePirates.V4.Enemies
                 if (hostiles == null) return;
 
                 GetHostileShotProfile(def, rules, out var speed, out var life, out var hitRadius, out var visualRadius);
-                dir = AimLed(e.position, playerPos, playerVelocity, speed, dir);
+                dir = Spread(AimLed(e.position, playerPos, playerVelocity, speed, dir), e);
                 var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
                 if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius,
                         LedShotDistance(muzzle, playerPos, playerVelocity, speed)))
@@ -1173,7 +1173,7 @@ namespace RoguePirates.V4.Enemies
             if (hostiles == null) return;
 
             GetHostileShotProfile(def, rules, out var speed, out var life, out var hitRadius, out var visualRadius);
-            dir = AimLed(e.position, playerPos, playerVelocity, speed, dir);
+            dir = Spread(AimLed(e.position, playerPos, playerVelocity, speed, dir), e);
             var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
             var shotDistance = LedShotDistance(muzzle, playerPos, playerVelocity, speed);
             if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius, shotDistance))
@@ -1200,6 +1200,22 @@ namespace RoguePirates.V4.Enemies
             if (aim.sqrMagnitude > 0.01f) return aim.normalized;
             fallback.y = 0f;
             return fallback.sqrMagnitude > 0.0001f ? fallback.normalized : Vector3.forward;
+        }
+
+        /// <summary>
+        /// Playtest (3 Oct, owner, round 7: "firing something too accurate"): an ordinary shooter's aim wanders up to
+        /// <see cref="ShotSpreadDegrees"/> either side of the led line, so holding a course is not a certain hit. Elites,
+        /// minibosses and the boss keep the exact line (their shots are slow and telegraphed). Deterministic: from the
+        /// unit's id and position, no random draw.
+        /// </summary>
+        internal const float ShotSpreadDegrees = 8f;
+
+        internal static Vector3 Spread(Vector3 dir, in EnemyUnit agent)
+        {
+            if (agent.isElite) return dir;
+            var h = Mathf.Sin(agent.id * 12.9898f + agent.position.x * 78.233f + agent.position.z * 37.719f) * 43758.5453f;
+            var u = h - Mathf.Floor(h); // 0..1
+            return Quaternion.Euler(0f, (u * 2f - 1f) * ShotSpreadDegrees, 0f) * dir;
         }
 
         /// <summary>Horizontal distance from the muzzle to the led aim point, so the shot's arc lands there.</summary>

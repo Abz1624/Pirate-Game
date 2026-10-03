@@ -56,7 +56,10 @@ namespace RoguePirates.V4.Enemies
         bool TryGet(int index, out HostileShotSnapshot shot);
     }
 
-    public enum HazardKind { Explosion, NetSlow, Mine }
+    /// <summary>Playtest (3 Oct, owner, round 7): <see cref="Warning"/> and <see cref="WarningLine"/> are visual-only ground
+    /// telegraphs (a circle, or a lane from <c>center</c> along <c>direction</c>) for attacks whose damage the attacker
+    /// itself deals (charges, slams, bomb boats, aimed cannonballs).</summary>
+    public enum HazardKind { Explosion, NetSlow, Mine, Warning, WarningLine }
 
     public struct HazardSnapshot
     {
@@ -65,6 +68,11 @@ namespace RoguePirates.V4.Enemies
         public float radius;
         public float timer;
         public bool armed;
+        /// <summary>The fuse or warning's full length in seconds (0 = unknown: the view uses the first timer it saw).</summary>
+        public float duration;
+        /// <summary>WarningLine: the lane's flat unit direction and length (radius = its half width).</summary>
+        public Vector3 direction;
+        public float length;
     }
 
     /// <summary>Telegraphed hazard circles (Kraken traps, mines, nets), in slot order.</summary>

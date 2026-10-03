@@ -34,23 +34,23 @@ MonoBehaviour:
   - id: swivel_guns
     sprite: {fileID: 21300000, guid: e79fb99fc2c174443bbbff78ba82ff63, type: 3}
   - id: anchor_flail
-    sprite: {fileID: 21300000, guid: e002b0706aae84183ad9e1a1c091faab, type: 3}
+    sprite: {fileID: 0}
   - id: chainshot
-    sprite: {fileID: 21300000, guid: a024a598d32da4d16a9cdc5128a906ee, type: 3}
+    sprite: {fileID: 0}
   - id: siren_bell
-    sprite: {fileID: 21300000, guid: 70f0b662cc0b743a19815573537024d3, type: 3}
+    sprite: {fileID: 0}
   - id: ramming_prow
-    sprite: {fileID: 21300000, guid: e393d96a935ee438c862c3f06a29b227, type: 3}
+    sprite: {fileID: 0}
   - id: parrot_squadron
-    sprite: {fileID: 21300000, guid: e79fb99fc2c174443bbbff78ba82ff63, type: 3}
+    sprite: {fileID: 0}
   - id: monkey_gunners
-    sprite: {fileID: 21300000, guid: a024a598d32da4d16a9cdc5128a906ee, type: 3}
+    sprite: {fileID: 0}
   - id: maelstrom_charge
-    sprite: {fileID: 21300000, guid: b06f322bd137e4a6ab7bb2dcc1ab54bd, type: 3}
+    sprite: {fileID: 0}
   - id: lighthouse_lantern
-    sprite: {fileID: 21300000, guid: 70f0b662cc0b743a19815573537024d3, type: 3}
+    sprite: {fileID: 0}
   - id: cursed_doubloons
-    sprite: {fileID: 21300000, guid: 03abb08fd651b48e49da93fbe7b56f66, type: 3}
+    sprite: {fileID: 0}
   items:
   - id: admirals_ledger
     sprite: {fileID: 21300000, guid: 247089ed9f7a84d3ba0bb87ff455c145, type: 3}

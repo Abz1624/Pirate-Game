@@ -139,6 +139,13 @@ namespace RoguePirates.V4.Weapons
                     continue;
                 }
 
+                // Playtest (3 Oct, owner): a summon weapon's cooldown starts when its last summon despawns (held full meanwhile).
+                if (w.Config.behavior == Behavior.Summon && _summon.HasAlive(w.Config.weaponId))
+                {
+                    w.CooldownTimer = Mathf.Max(w.CooldownTimer, WeaponStatResolver.Cooldown(w, _c.Mods, itemAttackSpeed));
+                    continue;
+                }
+
                 w.CooldownTimer -= dt * countdown;
                 if (w.CooldownTimer > 0f) continue;
 

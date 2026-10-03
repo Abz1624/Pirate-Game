@@ -190,6 +190,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         {
             TickSinking(dt);
             TickCoins(dt);
+            TickPulses(dt);
             for (var i = _timed.Count - 1; i >= 0; i--)
             {
                 var t = _timed[i];
@@ -487,6 +488,104 @@ namespace RoguePirates.V4.Presentation.Weapons
             }
         }
 
+        // ---- Aura pulses (Playtest, 3 Oct, owner, round 7: "Siren Bell may have no visible effect") ---------------------
+        // An aura weapon's pulse was the mortar's four small bursts round the ship, lost under the hull. It is now a ring
+        // on the water in the weapon's own colour that sweeps out to the pulse's exact radius and fades, with a second
+        // ring just behind it; a pulse that needs the boost (the Ramming Prow) is a white bow shockwave with a splash.
+        // Pooled line renderers, one shared material.
+
+        struct Pulse
+        {
+            public Vector3 Center;
+            public float Radius, Left, Total, Width, StartFraction;
+            public Color Color;
+        }
+
+        const int PulseSegments = 48;
+        const float PulseHeight = 0.2f;
+        static readonly Color BowPulseColor = new Color(1f, 1f, 1f, 0.95f);
+        static readonly Color AuraPulseColor = new Color(1f, 0.82f, 0.3f, 0.95f);
+        readonly List<Pulse> _pulses = new List<Pulse>();
+        readonly List<LineRenderer> _pulseLines = new List<LineRenderer>();
+        Material _pulseMaterial;
+        public int PulseCount => _pulses.Count;
+
+        /// <summary>An aura pulse without its weapon: a gold ring.</summary>
+        public void AuraPulse(Vector3 center, float radius) => AddPulse(center, radius, AuraPulseColor, 0.5f, 0.3f, 0.45f);
+
+        public void WeaponPulse(string weaponId, Vector3 center, float radius)
+        {
+            WeaponConfig config = null;
+            var slots = _weapons != null ? _weapons.Slots : null;
+            if (slots != null)
+                for (var i = 0; i < slots.Count; i++)
+                    if (slots[i]?.Config != null && slots[i].Config.weaponId == weaponId) { config = slots[i].Config; break; }
+            if (config != null && config.aura.requiresBoost)
+            {
+                AddPulse(center, radius, BowPulseColor, 0.35f, 0.25f, 0.6f);
+                WaterSplash(center);
+                return;
+            }
+            var color = config != null ? config.aimOverlayColor : AuraPulseColor;
+            color.a = 0.95f;
+            AddPulse(center, radius, color, 0.6f, 0.15f, 0.5f);
+            AddPulse(center, radius * 0.8f, new Color(color.r, color.g, color.b, 0.6f), 0.75f, 0.05f, 0.3f);
+        }
+
+        void AddPulse(Vector3 center, float radius, Color color, float seconds, float startFraction, float width)
+        {
+            if (radius <= 0.05f) return;
+            _pulses.Add(new Pulse { Center = center, Radius = radius, Left = seconds, Total = seconds, Width = width, StartFraction = startFraction, Color = color });
+        }
+
+        void TickPulses(float dt)
+        {
+            for (var i = _pulses.Count - 1; i >= 0; i--)
+            {
+                var p = _pulses[i];
+                p.Left -= dt;
+                if (p.Left <= 0f) { _pulses.RemoveAt(i); continue; }
+                _pulses[i] = p;
+            }
+            while (_pulseLines.Count < _pulses.Count) _pulseLines.Add(CreatePulseLine(_pulseLines.Count));
+            for (var i = 0; i < _pulseLines.Count; i++)
+            {
+                var line = _pulseLines[i];
+                var visible = i < _pulses.Count;
+                if (line.gameObject.activeSelf != visible) line.gameObject.SetActive(visible);
+                if (!visible) continue;
+                var p = _pulses[i];
+                var t = 1f - p.Left / p.Total;                 // 0 → 1
+                var eased = 1f - (1f - t) * (1f - t);          // fast out, slow at the edge
+                var r = p.Radius * Mathf.Lerp(p.StartFraction, 1f, eased);
+                var c = p.Color;
+                c.a *= t < 0.7f ? 1f : 1f - (t - 0.7f) / 0.3f; // holds at the full radius, then fades
+                line.startColor = line.endColor = c;
+                line.widthMultiplier = p.Width * Mathf.Lerp(1.2f, 0.7f, t);
+                for (var s = 0; s < PulseSegments; s++)
+                {
+                    var a = s * Mathf.PI * 2f / PulseSegments;
+                    line.SetPosition(s, new Vector3(p.Center.x + Mathf.Cos(a) * r, PulseHeight, p.Center.z + Mathf.Sin(a) * r));
+                }
+            }
+        }
+
+        LineRenderer CreatePulseLine(int index)
+        {
+            if (_pulseMaterial == null) _pulseMaterial = new Material(Shader.Find("Sprites/Default")) { name = "WeaponPulse", hideFlags = HideFlags.DontSave };
+            var go = new GameObject("WeaponPulse" + index);
+            go.transform.SetParent(transform, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = true;
+            line.loop = true;
+            line.positionCount = PulseSegments;
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            line.sharedMaterial = _pulseMaterial;
+            go.SetActive(false);
+            return line;
+        }
+
         /// <summary>V3 OnBurningOilDropped: the burning trail prefab sized by the patch radius, for 1.6 s.</summary>
         public void BurningPatch(Vector3 position, float radius)
         {
@@ -607,12 +706,18 @@ namespace RoguePirates.V4.Presentation.Weapons
             _sinking.Clear();
             foreach (var c in _coins) ReleaseView(c.View);
             _coins.Clear();
+            _pulses.Clear();
+            foreach (var line in _pulseLines) if (line != null) line.gameObject.SetActive(false);
             ReleaseBlades(0);
             foreach (var list in _orbitModels.Values) foreach (var view in list) ReleaseView(view);
             _orbitModels.Clear();
         }
 
-        void OnDestroy() => Clear();
+        void OnDestroy()
+        {
+            Clear();
+            if (_pulseMaterial != null) Destroy(_pulseMaterial);
+        }
 
         // ---- Orbit blades ---------------------------------------------------------------------------------------
 
