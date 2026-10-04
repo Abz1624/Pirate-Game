@@ -99,6 +99,7 @@ namespace RoguePirates.V4.Presentation.Online
                 button.interactable = true;
                 foreach (var t in copy.GetComponentsInChildren<TextMeshProUGUI>(true)) t.text = "PVP (1V1)";
                 foreach (var t in copy.GetComponentsInChildren<Text>(true)) t.text = "PVP (1V1)";
+                RoguePirates.V4.Presentation.Menu.ArtMenuView.FitSideButtons(main); // Playtest (4 Oct, owner): one width for the column
             }
             else
             {

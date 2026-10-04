@@ -149,7 +149,8 @@ namespace RoguePirates.V4.Presentation.Menu
                 background.offsetMax = Vector2.zero;
             }
             // Main menu.
-            OnClick(_main.transform, "SetSail", () => { if (HubRequested != null) HubRequested("Play"); else ShowSelect(true); }); // V5 M8: mode select first
+            // Playtest (4 Oct, owner): Set Sail goes straight to the Captain select (no mode panel); PvP has its own button.
+            OnClick(_main.transform, "SetSail", () => ShowSelect(true));
             // V5 M7/M8: Settings, the shop (the Ledger) and the Profile open the menu hub's screens; Raids and the
             // leaderboard come later.
             foreach (var name in new[] { "Leaderboard", "Ledger", "Raid", "Settings", "Profile" })
@@ -160,6 +161,7 @@ namespace RoguePirates.V4.Presentation.Menu
                 b.interactable = open;
                 if (open) { var n = name; b.onClick.AddListener(() => HubRequested?.Invoke(n)); }
             }
+            FitSideButtons(_main.transform);
             _rumLabel = FindDeep(_main.transform, "RumBg")?.GetComponentInChildren<TextMeshProUGUI>(true);
 
             // Captain select.
@@ -358,6 +360,42 @@ namespace RoguePirates.V4.Presentation.Menu
             rt.offsetMax = Vector2.zero;
             rt.localScale = Vector3.one;
             return go;
+        }
+
+        /// <summary>
+        /// Playtest (4 Oct, owner: "the leaderboard text is overflowing the button"): the right-hand buttons (PvP, Leaderboard,
+        /// Ledger, Raid) share one width that fits the widest label, and the column keeps its right edge. Called again when
+        /// the PvP button is added.
+        /// </summary>
+        public static void FitSideButtons(Transform main)
+        {
+            var menu = main != null ? FindDeep(main, "RightMenu") as RectTransform : null;
+            if (menu == null) return;
+            const float padding = 34f, minWidth = 232f;
+            var width = minWidth;
+            foreach (Transform child in menu)
+                foreach (var label in child.GetComponentsInChildren<TextMeshProUGUI>(true))
+                    width = Mathf.Max(width, Mathf.Ceil(label.GetPreferredValues(label.text).x) + padding * 2f);
+            // The art keeps its aspect, so the buttons also need their full height: the column grows with the PvP button
+            // (it squeezed all four to 41 units, which also made the art narrower).
+            var height = 0f;
+            var count = 0;
+            foreach (Transform child in menu)
+            {
+                if (!child.gameObject.activeSelf) continue;
+                var element = child.GetComponent<LayoutElement>();
+                if (element != null) { element.preferredWidth = width; height += element.preferredHeight > 0f ? element.preferredHeight : 65f; }
+                else height += 65f;
+                var art = child.GetComponent<Image>();
+                if (art != null) art.preserveAspect = false; // stretches to the shared width (a few percent wider than the art)
+                count++;
+            }
+            var layout = menu.GetComponent<VerticalLayoutGroup>();
+            if (layout != null && count > 0) height += layout.spacing * (count - 1) + layout.padding.vertical;
+            var right = menu.anchoredPosition.x + menu.sizeDelta.x * (1f - menu.pivot.x);
+            menu.sizeDelta = new Vector2(width, Mathf.Max(menu.sizeDelta.y, height));
+            menu.anchoredPosition = new Vector2(right - width * (1f - menu.pivot.x), menu.anchoredPosition.y);
+            LayoutRebuilder.MarkLayoutForRebuild(menu);
         }
 
         static Transform FindDeep(Transform root, string name)
