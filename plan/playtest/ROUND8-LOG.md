@@ -79,3 +79,41 @@ minibosses and bosses; (c) independent review of the project; (d) Android APK fo
 - `V5FeelPlayModeTests.HittingAnIsland_BouncesBack_AndCostsHull`: may pick an enemy model as the "shore".
 - From round 7: `V4HudM6Tests.IconCatalog_HasAnIconForEveryWeaponAndChestItem`, `V5WeaponMechanicsTests.TheNewWeapons_AreBuyable...`
   (icons removed on purpose), possibly `V4WorldViewsM14Tests` (hazard and shot shapes).
+
+---
+
+# Rounds 8b and 9 (4-5 Oct)
+
+## Changes
+
+- **8b** (`5225c24e`): Set Sail opens the Captain select directly (no mode panel); PvP keeps its own menu button; PvP,
+  Leaderboard, Ledger and Raid share one width that fits "LEADERBOARD" (the PvP button had squeezed the column).
+  Builds r9: Android, WebGL desktop and WebGL mobile in `Builds/Playtest-2026-10-03/`.
+- **9** (`203e1874`): salvage chests are back (landmarks, the Beacon and the Powder Cache stay out); the flamethrower is
+  back on, so Ember is locked behind owning it again (supersedes Decision 2 and Question 1 above).
+- **Review fixes** (`955b82ea`): "chests only" is a DemoJuiceSettings switch (`chestsOnlyPointsOfInterest`, on), so the
+  Module Lab and tests keep every point of interest; the landmark tutorial step is skipped and the Beacon step stays
+  silent until the boss rises; the quest line reads "Survive until the Barnacle King rises (14:00)"; a PvP player who
+  reconnects after the end sees "Match over" (not "Draw") until the result arrives, and the panel refreshes when it does.
+
+## Unity tests (5 Oct, in the Editor; no builds)
+
+- **EditMode: 438/499 pass** (`plan/playtest/tests/editmode-r9c.json`). The first run had 90 failures; about 30 came from
+  one stale entry in the v3-parity test preset (it zeroed an opening-wave pool that round 6 removed), fixed in
+  `9e8e01ae`. Before the playtest rounds (1 Oct) 462/463 passed.
+- **PlayMode: 51/63 pass** (`plan/playtest/tests/playmode-r9.json`).
+- **Every remaining failure asserts an old rule or number the playtest changed on purpose**; none shows a crash or broken
+  behaviour: balance values and pacing targets (enemy HP and damage, XP table, boss HP, spawn density, levers), all
+  weapons free starters (shop and Ember-lock tests), icons removed on purpose, health bars only on elites, minibosses and
+  the boss, summons waiting for their set to despawn, evolution at max level, the 15-minute voyage (overtime 15:00, storm
+  17:00; tests jump to the old 10:00), content ids in the enemy colour table (architecture rule), and CardStatLines
+  reading RunManager (architecture rule).
+- These tests need rewriting to the playtest rules once the playtest settles (or the playtest values moved into a preset).
+
+## Still open
+
+- **Railway redeploy** of the API (PvP result resend after a reconnect): `railway up --service api --ci` from `server/`.
+- The balance simulators (in-engine SimRun and `plan/playtest/montecarlo`) still model landmarks and the Beacon, so
+  forecasts are a bit optimistic (no Repair Wreck heal, Signal Buoy boosts or landmark Rum in voyages now).
+- Losing landmarks removes the in-run Repair Wreck heal and landmark Rum. Question: move a heal or Rum to chests?
+- On phones, reading a draft card's description in PvP also picks it (tap twice to undo); a separate info button would fix it.
