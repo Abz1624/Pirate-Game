@@ -69,10 +69,6 @@
                     "value": "1"
                 },
                 {
-                    "path": "phases[0].pools[1].share",
-                    "value": "0"
-                },
-                {
                     "path": "flow.smoothWaves",
                     "value": "false"
                 },
