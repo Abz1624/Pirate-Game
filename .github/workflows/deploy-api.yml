@@ -1,0 +1,39 @@
+# Deploys the playtest API to Railway whenever server/ changes on the playtest or main branch (tests first).
+# Needs one repository secret: Settings > Secrets and variables > Actions > New secret RAILWAY_TOKEN (the project token
+# from .env). Can also be run by hand from the Actions tab (Run workflow).
+name: Deploy API
+
+on:
+  push:
+    branches: [playtest, main]
+    paths: ['server/**', '.github/workflows/deploy-api.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Server tests
+        run: dotnet test server/RoguePirates.Api.Tests --nologo
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install the Railway CLI
+        run: npm install -g @railway/cli
+      - name: Deploy
+        working-directory: server
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service api --ci
+      - name: Health check
+        run: |
+          sleep 20
+          curl --fail --silent --show-error https://api-production-dad8.up.railway.app/health
