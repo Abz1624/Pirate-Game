@@ -103,7 +103,7 @@ timeline = dict(deadline=float(t['stageDeadlineSeconds']), cap=int(t['maxActiveE
                               decay=float(t['overtime']['intervalDecayPerStep']), step=float(t['overtime']['pressureStepSeconds'])),
                 tagCaps={c['tag']: int(c['max']) for c in t['tagCaps']})
 
-DISABLED_WEAPONS = {'flamethrower'}  # WeaponFeatureFlags (playtest round 7: switched off in voyages and 1v1s)
+DISABLED_WEAPONS = set()  # WeaponFeatureFlags (the flamethrower was off 3-5 Oct)
 weapons = {}
 for p in glob.glob(os.path.join(V4, 'Weapons', '*.asset')):
     a = load(p)

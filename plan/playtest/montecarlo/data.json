@@ -1208,6 +1208,39 @@
     }
    ]
   },
+  "flamethrower": {
+   "id": "flamethrower",
+   "name": "Flamethrower",
+   "damage": 2.355,
+   "cooldown": 0.7,
+   "quantity": 1,
+   "behavior": 3,
+   "maxLevel": 12,
+   "spin": 180.0,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.11178002,
+     "weight": 1.1,
+     "cap": 2.7945018
+    },
+    {
+     "axis": 5,
+     "inc": 0.13972503,
+     "weight": 1.0,
+     "cap": 2.7945018
+    },
+    {
+     "axis": 4,
+     "inc": 0.11178002,
+     "weight": 1.1,
+     "cap": 2.7945018
+    }
+   ]
+  },
   "flying_cutlasses": {
    "id": "flying_cutlasses",
    "name": "Flying Cutlasses",
@@ -2397,7 +2430,7 @@
   "hellfire_nozzle": {
    "id": "hellfire_nozzle",
    "name": "Hellfire Nozzle",
-   "weapon": null,
+   "weapon": "flamethrower",
    "item": "dragons_breath_nozzle"
   },
   "ironclad_ram": {
@@ -2483,7 +2516,7 @@
   "ember": {
    "id": "ember",
    "name": "Ember",
-   "weapon": "swivel_guns",
+   "weapon": "flamethrower",
    "hull": 92.0
   },
   "flint": {
@@ -3349,7 +3382,7 @@
     "maxLevel": 12,
     "rum": 80,
     "starter": false,
-    "off": true,
+    "off": false,
     "text": "Automatic ship weapon."
    },
    {
