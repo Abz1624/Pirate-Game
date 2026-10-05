@@ -296,7 +296,7 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             var stage = _views.Stage;
             if (_questLines.Count == 0 || _views.Run == null || !_views.Run.Exists || stage == null) return;
-            QuestLines.Build(stage.Beacon, stage.BossSummoned, stage.BossDefeated, _visibleQuestLines);
+            QuestLines.Build(stage.Beacon, stage.BossSummoned, stage.BossDefeated, _visibleQuestLines, RoguePirates.V4.Foundation.Core.DemoMode.AutoBossSeconds);
             for (var i = 0; i < _questSlotRoots.Count; i++)
             {
                 var show = i < _visibleQuestLines.Count;
@@ -472,9 +472,18 @@ namespace RoguePirates.V4.Presentation.Hud
         const string ActivateLabel = "Activate the Beacon to summon the boss";
         const string DefeatLabel = "Defeat the Treasury Boss";
 
-        public static void Build(BeaconReveal beacon, bool bossSummoned, bool bossDefeated, List<string> into)
+        public static void Build(BeaconReveal beacon, bool bossSummoned, bool bossDefeated, List<string> into, float bossRisesAtSeconds = 0f)
         {
             into.Clear();
+            // Playtest (5 Oct, review): with no Treasury Beacon the boss rises on its own; the quest says when.
+            if (bossRisesAtSeconds > 0f)
+            {
+                var rises = $"Survive until the Barnacle King rises ({Mathf.FloorToInt(bossRisesAtSeconds / 60f)}:{Mathf.FloorToInt(bossRisesAtSeconds % 60f):00})";
+                if (!bossSummoned) { into.Add(FormatStep(rises, complete: false, active: true)); return; }
+                into.Add(FormatStep(rises, complete: true));
+                into.Add(bossDefeated ? FormatStep(DefeatLabel, complete: true) : FormatStep(DefeatLabel, complete: false, active: true));
+                return;
+            }
             var findLabel = beacon switch
             {
                 BeaconReveal.DirectionSector => "Find the Treasury Beacon (sector hint)",

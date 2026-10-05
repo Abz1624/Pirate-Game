@@ -207,7 +207,7 @@ namespace RoguePirates.V4.Pvp
             _ready = true;
             if (_match.live != null && _match.live.ended) _ended = true;
             // Playtest (4 Oct): a match that ended while this scene loaded (an early forfeit) shows its result at once.
-            if (_session.LastMatchEnd != null && (string.IsNullOrEmpty(_session.LastMatchEnd.matchId) || _session.LastMatchEnd.matchId == _match.matchId)) _ended = true;
+            if (_session.LastMatchEnd != null && _session.LastMatchEnd.matchId == _match.matchId) _ended = true;
         }
 
         /// <summary>An ordinary ship definition for the opponent unit (its own model replaces the enemy's).</summary>

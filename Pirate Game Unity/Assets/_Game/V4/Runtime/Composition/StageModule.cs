@@ -103,8 +103,11 @@ namespace RoguePirates.V4.Composition
             }
             _active = true;
             // Playtest (4-5 Oct, owner): no points of interest in a voyage except the salvage chests (the only item source):
-            // no landmarks, Beacon or Powder Cache. The module stays on: the boss still rises on its own timer.
-            layout?.pois?.RemoveAll(p => p.type != RoguePirates.V4.Foundation.Core.POIType.SalvageChest);
+            // no landmarks, Beacon or Powder Cache (a DemoJuiceSettings switch; the Module Lab keeps them). The module stays
+            // on: the boss still rises on its own timer.
+            if (RoguePirates.V4.Foundation.Core.DemoMode.ChestsOnlyPointsOfInterest &&
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != V4SceneNames.ModuleLab)
+                layout?.pois?.RemoveAll(p => p.type != RoguePirates.V4.Foundation.Core.POIType.SalvageChest);
             // M14.12: the module keeps the marker state; the marker presenter draws it (was LegacyPoiMarkers, which also
             // cleared /Systems' children like V3's POIManager, R-98 — nothing V4 keeps there needs clearing).
             Module.Initialize(layout, enabled: true, placeholderVisuals: _usePlaceholderVisuals);

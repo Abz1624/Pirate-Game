@@ -198,6 +198,7 @@ MonoBehaviour:
   merchantSkiffPrefab: {fileID: 5977866536508745395, guid: b545069ce52125447b906c22b0b8485b, type: 3}
   merchantSkiffScale: 1
   hidePointsOfInterest: 0
+  chestsOnlyPointsOfInterest: 1
   hideVoyageToast: 1
   autoBossSeconds: 840
   bossArrivalPrefab: {fileID: 5654319288947532959, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}

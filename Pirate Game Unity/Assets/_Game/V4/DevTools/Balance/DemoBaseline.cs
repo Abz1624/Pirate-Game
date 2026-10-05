@@ -17,7 +17,6 @@ namespace RoguePirates.V4.DevTools.Balance
             ("pickups.saltwind", "xpPickupMultiplier", "1"),
             ("run", "shipSpeedMultiplier", "1"),
             ("timeline.saltwind", "phases[0].pools[0].share", "1"),
-            ("timeline.saltwind", "phases[0].pools[1].share", "0"),
             ("difficulty.saltwind", "tierUnlocks[0].minMinutes", "1.5"),
             ("enemy.hammerhead", "combat.chargeWindUp", "1.2"),
             ("enemy.hammerhead", "combat.chargeCooldown", "2"),

@@ -1,0 +1,90 @@
+V4.Tests.V4AdaptiveM11Tests.EliteLever_UsesItsOwnSeededStream_AtTheConfiguredRate |   the stream is seed-derived   Expected: not equal to < False, False, False, False, False, False, False, False, False, False... >   But was:  < False, False, False, False
+V4.Tests.V4AdaptiveM11Tests.Levers_AreNeutral_UnlessAdaptive_AndEachSwitchTurnsItsLeverOff |   Expected: 1.75d +/- 9.9999997473787516E-06d   But was:  1.0d 
+V4.Tests.V4BossM7Tests.BarnacleKingAsset_HasTheApprovedChargeTuning_AndTheParityPresetRestoresV3 |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4BuildM9Tests.Items_HoldTheAdoptedEffects_AndTheParityPresetRestoresV3 |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4BuildM9Tests.Logbooks_PointAtTheIntendedStatsByDefault_AndTheParityPresetRestoresV3 |   R-34 fix (approved at the M9 gate)   Expected: 0.0199999996f   But was:  0.0500000007f 
+V4.Tests.V4BuildM9Tests.ParityPreset_RestoresV3ForEveryAdoptedDecision |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4BuildM9Tests.PowerupsAndUnlocks_HoldTheAdoptedRules_AndTheParityPresetRestoresV3 |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4ConfigM1Tests.DifficultyDefaults_ReproduceTheV3Formulas |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4ConfigM1Tests.ParityPreset_PhaseIndices_TargetTheElitePhases |   Expected: equivalent to < "elite_hammerhead", "elite_kraken" >   But was:  < "band_6", "band_9" > 
+V4.Tests.V4ConfigM1Tests.StageProfile_UnderTheParityPreset_KeepsTheTracedContentHash |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4DifficultyM10Tests.CurveDefaults_EqualV3sFormulas_BitForBit_AtAnyTime |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4DifficultyM10Tests.ObserveMode_NothingReadsPressure |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4EnemyM2Tests.EveryRuntimeEnemy_HasAModel_AndTheArchetypesCarryV3sProxies |   cutthroat_skiff   Expected: 0.92000001668930054d +/- 9.9999997473787516E-06d   But was:  1.4781908988952637d 
+V4.Tests.V4EnemyM2Tests.NoV4Code_UsesContentIds |   content ids in V4 code   Expected: <empty>   But was:  < "Presentation/Effects/EnemyViewPresenter.cs:74 "deckhand_dinghy"", "Presentation/Effects/EnemyViewPresenter.cs:
+V4.Tests.V4HudM6Tests.IconCatalog_HasAnIconForEveryWeaponAndChestItem |   anchor_flail has no icon   Expected: not null   But was:  null 
+V4.Tests.V4HudM6Tests.Presenters_ReadOnlyViewsAndEvents |   Presenters must read IRunViews/events, not legacy hubs: CardStatLines.cs: RunManager   Expected: <empty>   But was:  < "CardStatLines.cs: RunManager" > 
+V4.Tests.V4M9GateFixTests.R102_ALevelUpInTheBossFight_ResumesToTheBossFight |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4M9GateFixTests.R31_EvolutionCards_StayReachable_WithEveryWeaponMaxed |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4M9GateFixTests.R40_ItemEffects_AreRead_OnlyWithTheFix |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4M9GateFixTests.R43_FullSail_StacksWithTailwind_AndPowderRushIsAttackSpeed |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4M9GateFixTests.R49_HanksArmor_AndEmberAndRoxiesMultipliers_ApplyOnlyWithTheFix |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4M9GateFixTests.WeaponsOnlyActive_KeepsItsCharge_WithNothingInRange |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4PickupTests.AKillsBarrels_WaitForTheShip_ThenPayOutOnce |   the XP value, once   Expected: 7   But was:  8 
+V4.Tests.V4RewardsM12Tests.Caps_EliteTwo_BossOnce_OvertimeFifteen_AndUnregisteredElitesNeverPay |   8 qualifying overtime minutes, capped at 15   Expected: 15   But was:  9 
+V4.Tests.V4RewardsM12Tests.CaptainLocks_FollowTheAdoptedRule_AndV3sUnderThePreset |   Expected: True   But was:  False 
+V4.Tests.V4RewardsM12Tests.DefaultRows_AreV3sMarksEconomy |   Expected: 15   But was:  0 
+V4.Tests.V4RewardsM12Tests.Fixture_Pays57_TheSameBreakdownAsV3 |   Expected: 57   But was:  55 
+V4.Tests.V4RewardsM12Tests.GoldLeftAtDeath_IsBankedAsRum |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4RewardsM12Tests.MenuServices_ApplyTheSessionPreset_ToTheCaptainLocks |   adopted rule: Ember waits for the Flamethrower   Expected: True   But was:  False 
+V4.Tests.V4RewardsM12Tests.MinuteRules_MatchV3 |   Expected: 1   But was:  0 
+V4.Tests.V4SpawnM3Tests.Ambient_WaitsForTheGrace_ThenSpawnsAtTheBandRate |   Expected: in range (28,30)   But was:  20 
+V4.Tests.V4SpawnM3Tests.AmbientCap_KeepsTheReservedEncounterSlotsFree |   Expected: 72   But was:  108 
+V4.Tests.V4SpawnM3Tests.BossFight_HalvesTheAmbientRate_AndPulsesRaiseIt |   swarm pulse A (4:00, 30 s)   Expected: 1.25d +/- 9.9999999747524271E-07d   But was:  1.0d 
+V4.Tests.V4SpawnM3Tests.EventAndAfterClearedTriggers_StartPulses |   pulse A on the event, pulse B once A is done   Expected: 1.5625d +/- 9.9999997473787516E-06d   But was:  3.2399997711181641d 
+V4.Tests.V4SpawnM3Tests.OvertimeSpawnRamp_RisesSmoothlyFromTheDeadline |   linear, evaluated per spawn (no minute steps)   Expected: 1.5d +/- 9.9999997473787516E-06d   But was:  1.0d 
+V4.Tests.V4SpawnM3Tests.Storm_Contracts_AndDamagesOutsideAfterTheGrace |   Expected: greater than 0.0f   But was:  0.0f 
+V4.Tests.V4SpawnM3Tests.Timeline_ScriptedPhases_CarryV3Values |   Expected: (22, 4.5, 0.8)   But was:  (22, 1, 0.8) 
+V4.Tests.V4SpawnM3Tests.TriggerNowAndSkip_ControlPhasesByHand |   Expected: 1.25d +/- 9.9999999747524271E-07d   But was:  1.7999999523162842d 
+V4.Tests.V4StageM7Tests.ChestPrices_FollowV3sSequence |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4StageM7Tests.StageConfig_HoldsV3sValues_ExceptTheAdoptedNoBarrels |   Expected: 300.0f   But was:  720.0f 
+V4.Tests.V4WeaponM5Tests.EveryWeapon_HasItsV3Behavior_AndConstants |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4WeaponM5Tests.HellfireNozzle_LeavesPatchesOnTheWaterWhileStreaming_NotUnderTheParityPreset |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4WeaponM5Tests.LightningSalvo_StrikesForOneDamage_AsV3Did |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4WeaponM5Tests.Mortar_Impact_MakesV3sEffectDraws |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4WeaponM5Tests.ParityPreset_TurnsEveryM5FixOff |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4WeaponM5Tests.PowderKeg_Unblown_SinksAfter45Seconds_AndNeverUnderTheParityPreset |   Expected: 45.0f   But was:  30.0f 
+V4.Tests.V4WeaponM5Tests.R22_ItemAttackSpeed_AppliesOnce_AndOvershootCarries |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4WeaponM5Tests.R40_Explosions_TakeTheExplosionMultiplier_AndResolveTheCharge |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4WeaponM5Tests.Stormshot_FiresArcLanes_WithABurstFromTheFirstHit |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4WeaponM5Tests.SwivelGuns_UseTheFullCooldownBetweenShots_AsV3Did |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V4WorldViewsM14Tests.EnemyViews_ArePooled_WithoutColliders_AndBarsFollow |   the health bar comes from its pool   Expected: not null   But was:  null 
+V4.Tests.V5BalanceM2Tests.BossHp_ComesFromTheArchetype_WhichTheGameReads |   V5 M3d's fixed boss HP (M2: 1400)   Expected: 2800.0f   But was:  245.0f 
+V4.Tests.V5BalanceM2Tests.Calibration_MatchesTheAutopilotsRealRuns |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V5BalanceM2Tests.DefaultConfig_MeetsTheBaselineTargets |   baseline targets (per personality, per minute and pacing)   Expected: <empty>   But was:  < "Steady Captain: median end minute: 27.88 (target 11–15) MISSED", "Steady 
+V4.Tests.V5BalanceM2Tests.MoreContactAvoidance_TakesLessContactDamage |   a charging player who never avoids contact takes much of its damage from it   Expected: greater than 0.200000003f   But was:  0.0458504297f 
+V4.Tests.V5BalanceM2Tests.OnTrackGrowth_IsMeasuredFromTheBaseline |   Expected: in range (0.6,1.6)   But was:  0.595856965f 
+V4.Tests.V5BalanceM2Tests.Retune_IsInTheData_AndTheParityPresetRestoresIt |   retuned in V5 (M2, M3, then the demo baseline)   Expected: String starting with "saltwind-v5-"   But was:  "saltwind-playtest-survivorio" 
+V4.Tests.V5BuildM3Tests.Chests_OftenGiveAReadyWeaponsEvolutionItem |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V5BuildM3Tests.EveryWeapon_IsWithin20Percent_OfItsRole_AtLevels1_4_And12 |   Expected: <empty>   But was:  < "broadside_battery Lv 1: ×0.80", "powder_kegs Lv 1: ×1.61", "powder_kegs Lv 4: ×1.41", "powder_kegs Lv 6: ×1.49", "powder_kegs Lv 8:
+V4.Tests.V5BuildM3Tests.EvolutionCard_ComesFromWeaponLevel6_WithItsItem |   from the evolution level   Expected: True   But was:  False 
+V4.Tests.V5BuildM3Tests.LogbooksAndItems_AreInTheirRarityBands_ExceptTheFlaggedOnes |   Expected: <empty>   But was:  < "gunnery_manual +10.0% (0.05–0.08)", "powder_drill +8.0% (0.05–0.08)", "carpenters_notes +20.0% (0.05–0.08)", "reef_carapace +0.0%
+V4.Tests.V5BuildM3Tests.ParityPreset_RestoresEveryM3Value |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V5BuildM3Tests.RarerCards_GrantMoreLevels_CappedAtTheMax |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V5BuildM3Tests.TheNewWeapons_AreWithin20Percent_OfTheirRole |   Expected: <empty>   But was:  < "anchor_flail Lv 1: ×4.06", "anchor_flail Lv 4: ×3.16", "anchor_flail Lv 6: ×3.35", "anchor_flail Lv 8: ×3.39", "anchor_flail Lv 12:
+V4.Tests.V5ContentM5Tests.TheNewContent_IsInThePools_AndPriced |   spare_planks has an icon   Expected: not null   But was:  null 
+V4.Tests.V5DemoBaselineTests.EveryRetunedValue_AndTheDirectorCurve_AreInTheData |   Expected: <empty>   But was:  < "weapon.lightning_mast.baseDamage = 16.13 (retune 10.56)" > 
+V4.Tests.V5DemoBaselineTests.TheDemosValues_AreInTheData_AndDifferFromBefore | System.ArgumentOutOfRangeException : Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index
+V4.Tests.V5DemoBaselineTests.TheParityPreset_TakesEveryDemoValueBackToV3 |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V5FlowM1Tests.Floor_TopsUpToTheCurrentWave_AfterTheCrowdIsCleared |   Expected: False   But was:  True 
+V4.Tests.V5FlowM1Tests.Horde_AtTheAmbientCap_StillUsesHalfTheReservedSlots |   room for part of the horde, the Beacon keeps the rest   Expected: 6   But was:  4 
+V4.Tests.V5FlowM1Tests.ParityPreset_TurnsFlowAndPickupMergeOff |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V5LevelRhythmTests.EachLevel_ComesNearItsTargetTime_OnAnotherSeed |   Expected: <empty>   But was:  < "level 6: 80 s against 140 s", "level 7: 99 s against 200 s", "level 8: 115 s against 260 s", "level 9: 130 s against 320 s", "level 10:
+V4.Tests.V5LevelRhythmTests.EveryPersonality_KeepsItsRunLengthAndBossWins |   Expected: <empty>   But was:  < "First-Timer: median end minute: 20.51 (target 5.5–9) MISSED", "Thumb Sailor: boss win rate: 0 (target 0.1–0.6) MISSED", "Casual Cru
+V4.Tests.V5LevelRhythmTests.TheData_HoldsTheFittedTable_TheCardLevels_AndThePaceTargets |   Expected string length 15 but was 28. Strings differ at index 9.   Expected: "saltwind-v5-m3c"   But was:  "saltwind-playtest-survivorio"   --------------------^ 
+V4.Tests.V5LevelRhythmTests.TheParityPreset_RestoresTheCurve_AndOneLevelPerCard |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V5LevelRhythmTests.TheSimulator_MeetsThePerMinuteLevelTargets_OnTheBaseline |   the level at each minute follows the rhythm   Expected: <empty>   But was:  < "minute 1: level: 8 (target 4–6) MISSED", "minute 2: level: 11 (target 5–7) MISSED", "
+V4.Tests.V5MetaShopTests.TheHub_ShowsTheShop_AndBuysThroughIt_WithTouchSizedButtons | System.InvalidOperationException : Sequence contains no matching element
+V4.Tests.V5MetaShopTests.TheShop_SellsEveryPricedThing_AndNeverTheStarters |   starters are not sold   Expected: null   But was:  <RoguePirates.V5.Meta.StoreEntry> 
+V4.Tests.V5PressureTests.AnEnemy_HasTheSameHpAndDamage_At1And8Minutes |   no HP growth with time   Expected: 20.733400344848633d +/- 9.9999997473787516E-05d   But was:  27.737600326538086d 
+V4.Tests.V5PressureTests.EnemiesThatLookTheSame_AttackTheSame |   same look, different attack   Expected: <empty>   But was:  < "deckhand_dinghy (DeckhandDinghy|Contact|1|2.0|12|1.0) and bomb_boat (BombBoat|SuicideExplosion|1|99.0|3|1
+V4.Tests.V5PressureTests.TheBossFight_KeepsItsLength_AtAnEarlyAndALateSummon |   the fight from a summon at 270 s (known: target 45-90)   Expected: in range (45,130)   But was:  15.625f 
+V4.Tests.V5PressureTests.TheCrowd_PeaksAt3m45_AboveTheValley |   the 7:15-7:30 peak is bigger (growing upwards)   Expected: greater than 16.041666f   But was:  10.916666f 
+V4.Tests.V5PressureTests.TheCurve_KeepsTheSketchesOrder | System.InvalidOperationException : Sequence contains no matching element
+V4.Tests.V5PressureTests.TheData_HoldsEveryM3dValue |   Expected: <empty>   But was:  < "difficulty.saltwind.enemyHpPerMinute.c1", "difficulty.saltwind.enemyHpPerMinute.c2", "difficulty.saltwind.enemyDamagePerMinute.c1" > 
+V4.Tests.V5PressureTests.TheParityPreset_TakesM3dBack |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V5PressureTests.TheSpawnersCombatOverrides_AreOff_AndOnUnderTheParityPreset |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V5WeaponGoldenTests.TodaysWeaponsAndEvolutions_FireExactlyAsBefore |   timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index   Expected: Tru
+V4.Tests.V5WeaponMechanicsTests.EveryEmpoweredEvolution_ChangesItsWeaponInPlay |   Expected: 1   But was:  2 
+V4.Tests.V5WeaponMechanicsTests.Summons_StopAtTheirCap |   no more than the cap alive at once   Expected: 5   But was:  3 
+V4.Tests.V5WeaponMechanicsTests.TheNewWeapons_AreBuyable_Offerable_AndEachEvolutionIsReachable |   anchor_flail is bought, not a starter   Expected: False   But was:  True 

@@ -157,6 +157,8 @@ namespace RoguePirates.V4.Foundation.Data
         public float merchantSkiffScale = 1f;
         [Tooltip("Demo: no points of interest on the stage (chests, landmarks, the Treasury Beacon).")]
         public bool hidePointsOfInterest = true;
+        [Tooltip("Playtest (4-5 Oct, owner): of the points of interest only the salvage chests (no landmarks, Beacon or Powder Cache).")]
+        public bool chestsOnlyPointsOfInterest;
         [Tooltip("Demo: no voyage message at run start (it shows the seed and mentions chests and the Beacon).")]
         public bool hideVoyageToast = true;
         [Tooltip("Demo: the boss rises on its own at this run time (seconds; 0 = only at the Treasury Beacon).")]

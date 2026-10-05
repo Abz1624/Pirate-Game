@@ -374,7 +374,8 @@ namespace RoguePirates.V4.Presentation.Menu
             const float padding = 34f, minWidth = 232f;
             var width = minWidth;
             foreach (Transform child in menu)
-                foreach (var label in child.GetComponentsInChildren<TextMeshProUGUI>(true))
+                if (child.gameObject.activeSelf)
+                    foreach (var label in child.GetComponentsInChildren<TextMeshProUGUI>(true))
                     width = Mathf.Max(width, Mathf.Ceil(label.GetPreferredValues(label.text).x) + padding * 2f);
             // The art keeps its aspect, so the buttons also need their full height: the column grows with the PvP button
             // (it squeezed all four to 41 units, which also made the art narrower).

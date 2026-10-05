@@ -38,7 +38,7 @@ namespace RoguePirates.V4.Presentation.Pvp
         readonly List<GameObject> _balls = new List<GameObject>();
         readonly List<RectTransform> _arrows = new List<RectTransform>();
         readonly List<GameObject> _hidden = new List<GameObject>();
-        bool _endShown;
+        bool _endShown, _endHadResult;
         float _endSeenAt = -1f;
         // Playtest (3 Oct, owner, round 7: "in pvp i couldn't see other player's weapons, attacks, and health"): a world
         // health bar over the opponent, its hull in numbers, its weapons as chips, coloured shots with trails.
@@ -253,6 +253,7 @@ namespace RoguePirates.V4.Presentation.Pvp
                 if (_endSeenAt < 0f) _endSeenAt = Time.unscaledTime;
                 if (_view.End != null || Time.unscaledTime - _endSeenAt > 3f) ShowEnd();
             }
+            if (_endShown && !_endHadResult && _view.End != null) ShowEnd(); // Playtest (5 Oct, review): the late result
             if (_endShown)
             {
                 _endRematch.text = _view.RematchStatus;
@@ -551,11 +552,12 @@ namespace RoguePirates.V4.Presentation.Pvp
         {
             _endShown = true;
             var end = _view.End;
+            _endHadResult = end != null;
             var json = _view.EndJson;
             var me = _view.MyPlayerId;
             var opp = _view.OpponentPlayerId;
             var winner = end != null ? end.winnerPlayerId : null;
-            _endTitle.text = string.IsNullOrEmpty(winner) ? "Draw" : winner == me ? "Victory!" : "Defeat";
+            _endTitle.text = end == null ? "Match over" : string.IsNullOrEmpty(winner) ? "Draw" : winner == me ? "Victory!" : "Defeat";
             _endTitle.color = string.IsNullOrEmpty(winner) ? OnlineUi.TextColor : winner == me ? OnlineUi.Good : OnlineUi.Bad;
             _endReason.text = Reason(end != null ? end.reason : null, winner == me) + (end != null ? $"   ({OnlineRules.RunTime(end.durationSeconds)})" : string.Empty);
             var mine = PvpJson.Entry<EndStats>(json, "stats", me);
