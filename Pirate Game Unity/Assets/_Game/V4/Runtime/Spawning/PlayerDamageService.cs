@@ -57,9 +57,23 @@ namespace RoguePirates.V4.Spawning
         public bool IsAlive => Exists && _hull.HullAlive;
         public Vector3 Position => _hull != null ? _hull.HullPosition : Vector3.zero;
 
+        /// <summary>Playtest (6 Oct, owner): who is hitting the ship (the session recorder's damage by source).</summary>
+        public RoguePirates.V4.Events.PlayerDamageSource DamageSource;
+
         public void Damage(float amount, Vector3 source)
         {
-            if (Exists) _hull.HitHull(amount * Incoming, source);
+            if (!Exists) return;
+            var before = Tag("stage_hit"); // boss slams and marks, the storm in hit mode
+            _hull.HitHull(amount * Incoming, source);
+            if (DamageSource != null) DamageSource.Current = before;
+        }
+
+        /// <summary>Sets the damage source when none is set; returns the one to restore.</summary>
+        string Tag(string fallback)
+        {
+            var before = DamageSource?.Current;
+            if (DamageSource != null && before == null) DamageSource.Current = fallback;
+            return before;
         }
 
         /// <summary>
@@ -74,7 +88,9 @@ namespace RoguePirates.V4.Spawning
             if (!IsAlive || _hull.HullInvulnerable) return;
             amount *= Incoming;
             if (amount <= 0f) return;
+            var before = Tag("island");
             _hull.KnockHull(amount, source); // its Damaged event reaches the run's damage record and feedback
+            if (DamageSource != null) DamageSource.Current = before;
             ImpactDamageTotal += amount;
         }
 
@@ -107,7 +123,9 @@ namespace RoguePirates.V4.Spawning
             _steadyPending += hp - 0.001f;
             ReportSteady(true);
             _hull.DrainHull(hp - 0.001f);
+            var before = Tag("storm");
             _hull.HitHull(lethalHit, source); // retried next frame if the ship is inside its hit immunity
+            if (DamageSource != null) DamageSource.Current = before;
         }
 
         void ReportSteady(bool force)

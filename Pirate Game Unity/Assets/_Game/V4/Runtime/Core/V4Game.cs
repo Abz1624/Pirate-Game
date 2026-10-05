@@ -309,7 +309,52 @@ namespace RoguePirates.V4
             damageSink.SteadyDamageReported += _publisher.SteadyDamage;
             _runPort = runState;
             _shipPort = ship;
+            if (!moduleLab && !pvp) AddSessionRecorder(runState, ship, damageSink);
             _shell.Awake();
+        }
+
+        Telemetry.SessionRecorder _session;
+
+        /// <summary>
+        /// Playtest (6 Oct, owner: "let me play a session, then use that data to verify if the simulations are accurate"):
+        /// the voyage's session file for plan/playtest/montecarlo/compare_session.mjs. The damage source tag rides on the
+        /// enemy simulation, the hostile shots and the stage damage so PlayerDamaged events say who hit the ship.
+        /// </summary>
+        void AddSessionRecorder(RunPort runState, ShipPort ship, PlayerDamageService damageSink)
+        {
+            var source = new PlayerDamageSource();
+            ship.DamageSource = source;
+            damageSink.DamageSource = source;
+            _enemies.Services.DamageSource = source;
+            if (_enemies.Services.Shots != null) _enemies.Services.Shots.DamageSource = source;
+            var progression = _build.Progression;
+            _session = new Telemetry.SessionRecorder
+            {
+                RunTime = () => runState.ElapsedSeconds,
+                RunExists = () => runState.Exists,
+                Level = () => progression.Level,
+                Xp = () => progression.CurrentXp,
+                XpToNext = () => progression.XpToNext,
+                Kills = () => runState.Kills,
+                Gold = () => runState.Gold,
+                HullKnown = () => ship.HasDamageReceiver,
+                Hull = () => ship.Hp,
+                MaxHull = () => ship.MaxHp,
+                SunkNow = () => (ship.HasDamageReceiver && ship.Hp <= 0f) || runState.EndedByDeath,
+                RunEnded = () => runState.IsRunEnded,
+                ObjectiveSecured = () => runState.ObjectiveSecured,
+                Captain = () => _build.Captain?.Config != null ? _build.Captain.Config.captainKey : null,
+                StartingWeapon = () => progression.OwnedWeapons.Count > 0 ? progression.OwnedWeapons[0] : null,
+                ConfigHash = () => _config?.Hash,
+                StageProfile = () => _lifecycle.StageProfile?.Invoke(),
+                IsMiniboss = _enemies.Contracts.DefinitionIsMiniboss,
+                Telemetry = _telemetry,
+            };
+            _telemetry.PoiUsed = _session.OnPoiUsed;
+            _telemetry.ItemAcquired = _session.OnItemAcquired;
+            progression.OfferChosen += _session.OnOfferChosen;
+            progression.Evolved += _session.OnEvolved;
+            _modules.Add(_session);
         }
 
         void Start()
@@ -336,6 +381,7 @@ namespace RoguePirates.V4
             _publisher.AttachProgression(_build.Progression);
             _build.AttachShip(_shell.Player);
             _runPort.StateChanged += _resultsTelemetry.OnRunState; // M14.11 (was LegacyResultsTelemetry on the run manager)
+            if (_session != null) _runPort.StateChanged += _session.OnRunState; // Playtest (6 Oct, owner): saved when the results show
             if (moduleLab) _shell.EnterModuleLab();
             _killGold?.ResetForRun();
             _modules.BeginRunAll(new RunStart(seed, request.retry));
@@ -442,6 +488,13 @@ namespace RoguePirates.V4
             _runPort?.DetachEvents();
             _shipPort?.DetachEvents();
             if (_runPort != null && _resultsTelemetry != null) _runPort.StateChanged -= _resultsTelemetry.OnRunState;
+            if (_session != null)
+            {
+                if (_runPort != null) _runPort.StateChanged -= _session.OnRunState;
+                _build.Progression.OfferChosen -= _session.OnOfferChosen;
+                _build.Progression.Evolved -= _session.OnEvolved;
+                _session.Detach();
+            }
             _damageShare?.Dispose();
             _spawnerProfiles?.Dispose();
             _stage?.Dispose();

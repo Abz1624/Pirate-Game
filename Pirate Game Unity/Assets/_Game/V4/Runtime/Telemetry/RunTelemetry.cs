@@ -87,10 +87,24 @@ namespace RoguePirates.V4.Telemetry
         }
 
         public void RecordOfferChoice(string kind, string id) => RecordChoice(_offerChoices, (kind ?? "unknown") + ":" + (id ?? "unknown"));
-        public void RecordPoiInteraction(string poiType) => RecordChoice(_poiChoices, poiType ?? "unknown");
+        public void RecordPoiInteraction(string poiType)
+        {
+            RecordChoice(_poiChoices, poiType ?? "unknown");
+            PoiUsed?.Invoke(poiType ?? "unknown");
+        }
+
+        /// <summary>Playtest (6 Oct, owner): the session recorder's taps on points of interest used and items gained.</summary>
+        public Action<string> PoiUsed, ItemAcquired;
+
+        /// <summary>Playtest (6 Oct, owner): per weapon damage, kills and hits so far (the session recorder, at its save).</summary>
+        public void WeaponTotals(Action<string, float, int, int> each)
+        {
+            foreach (var kv in _weapons) each(kv.Key, kv.Value.totalDamage, kv.Value.kills, kv.Value.hits);
+        }
 
         public void RecordItemAcquired(string itemId)
         {
+            ItemAcquired?.Invoke(itemId);
             if (_enabled) _itemsAcquired++;
             Record("item_acquired", new Dictionary<string, object> { ["id"] = itemId });
         }

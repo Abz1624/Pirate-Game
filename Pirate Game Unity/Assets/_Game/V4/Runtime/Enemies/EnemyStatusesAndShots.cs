@@ -115,6 +115,8 @@ namespace RoguePirates.V4.Enemies
         public Transform view;
         /// <summary>R-40: passed within the near-miss margin of the ship without hitting.</summary>
         public bool closePass;
+        /// <summary>Playtest (6 Oct, owner): who fired it (<see cref="RoguePirates.V4.Events.PlayerDamageSource"/>), for the session recorder.</summary>
+        public string source;
     }
 
     /// <summary>Hostile shot models and the impact splash (V3's ProjectileViewPool and JuiceVfxBroker until M14).</summary>
@@ -156,7 +158,10 @@ namespace RoguePirates.V4.Enemies
         public int ActiveCount => _active;
         bool RoguePirates.V4.Stage.IHostileProjectileSink.Exists => true;
         bool RoguePirates.V4.Stage.IHostileProjectileSink.TrySpawn(Vector3 position, Vector3 direction, float speed, float damage, float life, float hitRadius, float visualRadius) =>
-            TrySpawn(position, direction, speed, damage, life, hitRadius, visualRadius);
+            TrySpawn(position, direction, speed, damage, life, hitRadius, visualRadius, source: "boss_director");
+
+        /// <summary>Playtest (6 Oct, owner): who is hitting the ship (shots carry their shooter's id; the session recorder).</summary>
+        public RoguePirates.V4.Events.PlayerDamageSource DamageSource;
         public HostileShot[] Pool => _pool;
 
         public bool TryGet(int index, out HostileShotSnapshot shot)
@@ -198,7 +203,7 @@ namespace RoguePirates.V4.Enemies
         /// to muzzle height at that distance: the old fixed arc splashed down after about 7.6 m, well short of the 12-22 m
         /// firing ranges.
         /// </param>
-        public bool TrySpawn(Vector3 position, Vector3 direction, float speed, float damage, float life, float hitRadius, float visualRadius = -1f, float targetDistance = -1f)
+        public bool TrySpawn(Vector3 position, Vector3 direction, float speed, float damage, float life, float hitRadius, float visualRadius = -1f, float targetDistance = -1f, string source = null)
         {
             if (_active >= _pool.Length) return false;
 
@@ -255,7 +260,8 @@ namespace RoguePirates.V4.Enemies
                 damage = damage,
                 radius = hitRadius,
                 gravity = gravity,
-                view = view
+                view = view,
+                source = source ?? DamageSource?.Current
             };
             _active++;
             return true;
@@ -294,7 +300,11 @@ namespace RoguePirates.V4.Enemies
 
                 if (target != null && target.IsAlive && TryHitPlayer(ref shot, target.HullPosition))
                 {
+                    var by = DamageSource;
+                    var before = by?.Current;
+                    if (by != null) by.Current = shot.source;
                     target.TakeDamage(shot.damage, shot.position, false);
+                    if (by != null) by.Current = before;
                     Despawn(i, shot.position);
                     continue;
                 }

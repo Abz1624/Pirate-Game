@@ -36,6 +36,10 @@ export const MODEL = {
   focusShareOfDps: 0.5,        // single-target DPS spent on a miniboss or elite while waves are still coming
   eliteXp: 2,                  // elites pay x XP
   maxMinutes: 20,
+  // The boss is summoned at the Treasury Beacon (since 3e2fdd03; no timed boss), so its time is the player's: the
+  // Beacon's exact marker shows at 13:00 (StageContent_Saltwind), so 14:00 is assumed. params.bossAt overrides it
+  // (seconds; null = never summoned): compare_session.mjs passes the session's summon time (6 Oct).
+  bossAtSeconds: 840,
   // Calibrated against the owner's playtest (3 Oct, current data): level 24 and 515 kills at 5:13, level 28 and 702
   // kills at 7:18, hull mostly high (the game felt too easy). See calibrate.mjs.
   accuracy: 0.6,              // share of the build's damage that lands on an enemy (misses, travel, overkill on the dying)
@@ -65,7 +69,9 @@ export function simulateRun(data, params) {
   const focus = [];  // single targets: { id, hp, maxHp, dmg, boss, arena, xp }
   let healAt = 90 + r() * 60, lastHeal = 0, chestAt = M.chestEverySeconds, bandKills = 0, bandSpawns = 0, bandStart = 0, bandRate = 1, bandElite = 0;
   let spawnAcc = 0, topUpAcc = 0, overtimeAcc = 0, bossDone = false, bossSpawned = false, bossKill = -1, died = false, minHull = 1;
-  const minutes = [], focusLog = [], damageBy = {}, killsBy = {};
+  const minutes = [], focusLog = [], damageBy = {}, killsBy = {}, levelAt = []; // levelAt[i] = second level i + 2 was reached
+  const bossAt = params.bossAt !== undefined ? params.bossAt : M.bossAtSeconds;
+  let now = 0;
   const xpToNext = lv => { const t = P.xpTable; if (lv - 1 < t.length) return t[lv - 1]; const n = t.length; return t[n - 1] + (lv - n) * ((t[n - 1] - t[n - 5]) / 4); };
   const minuteOf = t => t / 60, hpCurve = m => data.curve.hp[0] + data.curve.hp[1] * m + data.curve.hp[2] * m * m, dmgCurve = m => data.curve.dmg[0] + data.curve.dmg[1] * m;
 
@@ -108,7 +114,7 @@ export function simulateRun(data, params) {
   const waveAt = t => { const w = tl.waves; let a = w[0], b = null; for (const x of w) { if (x[0] <= t) a = x; else { b = x; break; } } if (!b) return [a[1], a[2]]; const k = (t - a[0]) / (b[0] - a[0]); return [a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]; };
 
   const levelUp = () => {
-    level++;
+    level++; levelAt.push(now);
     const evoReady = weapons.find(w => !w.evo && w.level >= P.evolutionLevel && Object.values(data.evolutions).some(e => e.weapon === w.id && items.includes(e.item)));
     if (evoReady) { evoReady.evo = true; evolved.push(evoReady.id); return; }
     const rarity = pickW(r, [0, 1, 2, 3, 4], i => M.rarityWeights[i]);
@@ -140,6 +146,7 @@ export function simulateRun(data, params) {
   const density = t => (params.spawnMult || 1) * (t < 300 ? (params.earlyMult ?? 1) : (params.lateMult ?? 1));
   let minuteKills = 0, minuteDamage = 0, minuteSpawns = 0;
   for (let t = 0; t < T; t++) {
+    now = t;
     const minute = minuteOf(t), alive = () => groups.reduce((s, g) => s + g.n, 0);
     const arena = focus.some(f => f.arena && !f.boss);
     // Kill band (30 s): next band's rate and elite chance.
@@ -173,7 +180,7 @@ export function simulateRun(data, params) {
       const hp = Math.max(hp0, singleDps() * (f.arena ? D.ttk.arena : D.ttk.focus));
       focus.push({ id: f.id, hp, maxHp: hp, dmg: e.dmg, boss: false, arena: f.arena, xp: e.xp * 5, start: t });
     }
-    if (!bossSpawned && t >= 840) {
+    if (!bossSpawned && bossAt != null && t >= bossAt) {
       bossSpawned = true; const e = E.barnacle_king; const hp = Math.max(e.hp * hpCurve(minute) * (params.enemyHpMult || 1), singleDps() * D.ttk.boss);
       focus.push({ id: 'barnacle_king', hp, maxHp: hp, dmg: e.dmg, boss: true, arena: true, xp: e.xp, start: t });
     }
@@ -253,7 +260,7 @@ export function simulateRun(data, params) {
 
   function finish(t) {
     return { captain: cap.id, end: t / 60, died, bossKill: bossKill >= 0 ? bossKill / 60 : null, kills, level, dps: singleDps(), damageTaken, minHull,
-      weapons: weapons.map(w => w.id), evolved, logbooks: Object.keys(logbooks), items, minutes, focus: focusLog, damageBy, killsBy, spawns };
+      weapons: weapons.map(w => w.id), evolved, logbooks: Object.keys(logbooks), items, minutes, focus: focusLog, damageBy, killsBy, spawns, levelAt };
   }
 }
 

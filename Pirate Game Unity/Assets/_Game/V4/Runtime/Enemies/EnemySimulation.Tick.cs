@@ -42,12 +42,14 @@ namespace RoguePirates.V4.Enemies
                 }
             }
 
+            var damageSource = _services.DamageSource; // Playtest (6 Oct, owner): the session recorder's damage by source
             for (var i = 0; i < _agents.Length; i++)
             {
                 if (!_agents[i].active) continue;
                 ref var e = ref _agents[i];
                 if (e.remote) continue; // Playtest (3 Oct): the 1v1 opponent moves by the network (SetRemoteState)
                 var def = _definitions[e.definitionIndex];
+                if (damageSource != null) damageSource.Current = def.id;
                 Vector3 desiredVelocity;
                 using (BehaviorMarker.Auto())
                 {
@@ -105,8 +107,10 @@ namespace RoguePirates.V4.Enemies
                 if (e.contactCooldown > 0f) e.contactCooldown -= dt;
             }
 
+            if (damageSource != null) damageSource.Current = "hazard";
             if (_params.CombatEnabled)
                 using (HazardsMarker.Auto()) _services.Hazards.Tick(dt);
+            if (damageSource != null) damageSource.Current = null;
 
             using (SeparationMarker.Auto()) ResolvePlayerHullSeparation(playerPos, playerDamage);
             using (OverlapMarker.Auto()) ResolveAgentOverlaps();

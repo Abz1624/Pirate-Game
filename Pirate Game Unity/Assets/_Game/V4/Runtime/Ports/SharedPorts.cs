@@ -239,7 +239,10 @@ namespace RoguePirates.V4.Ports
             _attachedDamage = null;
         }
 
-        void OnDamaged(float amount, bool crit) => _publisher?.PlayerDamaged(amount, crit);
+        /// <summary>Playtest (6 Oct, owner): who is hitting the ship (the PlayerDamaged event's tag; the session recorder).</summary>
+        public RoguePirates.V4.Events.PlayerDamageSource DamageSource;
+
+        void OnDamaged(float amount, bool crit) => _publisher?.PlayerDamaged(amount, crit, DamageSource?.Current);
     }
 
     /// <summary>
