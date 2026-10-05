@@ -1,1764 +1,1886 @@
 {
-  "updated": "2 Oct 2026",
-  "statusLine": "Phone performance done for web and Android (awaiting your playtests); report: claude.ai/artifact/RgXzkpGtFQ1GWicAx3LMSN",
-  "statusOk": false,
-  "facts": [
-    [
-      "Progress",
-      "M0-M8 built; performance phases M7c (web) and M7d (Android) done; all awaiting your playtest"
-    ],
-    [
-      "Tests",
-      "EditMode 466/466 · PlayMode 63/63"
-    ],
-    [
-      "Gate",
-      "Tests, playable check, reviewer, your playtest"
-    ],
-    [
-      "Branch",
-      "<code>v5-live-game</code>"
-    ]
+ "updated": "6 Oct 2026",
+ "statusLine": "Playtest rounds 1-9 done on branch <code>playtest</code>; next: M8z, bring that work under the gate before M9. Questions P1-P10 are open (section 9).",
+ "statusOk": false,
+ "facts": [
+  [
+   "Progress",
+   "M0-M8 built; playtest rounds 1-9 (1-6 Oct) outside the gate; M8z (integration) next"
   ],
-  "phases": {
-    "M0": {
-      "state": "done",
-      "chip": "done 29 Sep"
-    },
-    "M1": {
-      "state": "done",
-      "chip": "done 1 Oct · playtested"
-    },
-    "M2": {
-      "state": "done",
-      "chip": "done 1 Oct · playtested"
-    },
-    "M3": {
-      "state": "done",
-      "chip": "done 1 Oct · playtested"
-    },
-    "M3b": {
-      "state": "playtest",
-      "chip": "built 1 Oct · awaiting your playtest"
-    },
-    "M3c": {
-      "state": "playtest",
-      "chip": "built 1 Oct · awaiting your playtest"
-    },
-    "M3d": {
-      "state": "playtest",
-      "chip": "built 1 Oct · awaiting your playtest"
-    },
-    "M3e": {
-      "state": "playtest",
-      "chip": "built 1 Oct · awaiting your playtest"
-    },
-    "M4": {
-      "state": "playtest",
-      "chip": "built 1 Oct · awaiting your playtest"
-    },
-    "M4b": {
-      "state": "playtest",
-      "chip": "built 1 Oct · awaiting your playtest"
-    },
-    "M5": {
-      "state": "playtest",
-      "chip": "built 1 Oct · awaiting your playtest"
-    },
-    "M7": {
-      "state": "playtest",
-      "chip": "built 1 Oct · awaiting your playtest"
-    },
-    "M8": {
-      "state": "playtest",
-      "chip": "built 1 Oct · awaiting your playtest"
-    }
-  },
-  "log": [
-    {
-      "when": "29 Sep",
-      "what": "Your 24 requests received. Branch <code>v5-live-game</code> created from the V4 tip (<code>f1b9a4cf</code>).",
-      "commit": ""
-    },
-    {
-      "when": "29 Sep",
-      "what": "Mapped the current game with three read-only searches (content and balance; menu, backend and web3; art) and two web research tasks (survivor-like balance; Solana, MagicBlock, wallets and multiplayer). Research saved in <code>plan/v5/research/</code>.",
-      "commit": ""
-    },
-    {
-      "when": "29 Sep",
-      "what": "Independent reviewer agent written: <code>.claude/agents/v5-reviewer.md</code> (read-only; reviews the plan and each phase's code).",
-      "commit": ""
-    },
-    {
-      "when": "29 Sep",
-      "what": "Baseline in the open Editor: EditMode <strong>307/307</strong>, PlayMode <strong>49/49</strong>, console clean.",
-      "commit": ""
-    },
-    {
-      "when": "29 Sep",
-      "what": "Plan written: 26 phases in six stages, 14 proposed decisions, 20 questions for you.",
-      "commit": ""
-    },
-    {
-      "when": "29 Sep",
-      "what": "Independent plan review: <strong>3 blockers, 12 majors, 7 minors</strong>. All fixed in plan rev 2: a replay-verification spike before accounts, pending RUM until verified, no RUM-to-token bridge through items, anti-collusion rules, wager formats per mode, split phases (now 29, M0–M28). Details under Review findings.",
-      "commit": ""
-    },
-    {
-      "when": "29 Sep",
-      "what": "GDD updated: three Decision log rows (V5 direction, reversals, two economies and custody), the roadmap's V5 track, the Not now and Never lists, and 27 V5 questions on the board.",
-      "commit": ""
-    },
-    {
-      "when": "30 Sep",
-      "what": "Plan re-review of rev 2: <strong>no blockers</strong>, 5 majors and 6 minors (server-issued seeds, capped legacy RUM on migration, the fallback that would amend D6, two oversized phases, the real-time no-go path). All fixed in <strong>plan rev 3</strong>: M9b (conditional kinematic port), M10/M10b and M26/M26b splits, an early netcode measurement in M9.",
-      "commit": ""
-    },
-    {
-      "when": "30 Sep",
-      "what": "Your answers to the V5 questions applied as <strong>plan rev 4</strong>: custody on our Railway server, a Monte Carlo balance simulator instead of autopilot runs, one enemy cap sized for a low-end phone, endless overtime, RUM treasury and vault, anti-collusion deferred, and more (decision D17). Researched and explained what you asked about: Photon and the other multiplayer options with costs, sign-in, hosting, Megabonk's levels, the four weapons plus eight more ideas, replay verification, and a cost breakdown of every third-party account (about $5–20 a month at 100 players). See <em>Your answers, explained</em>.",
-      "commit": ""
-    },
-    {
-      "when": "30 Sep",
-      "what": "Independent review of your answers (rev 4): <strong>no blockers</strong>, 6 majors, 7 minors, all fixed in <strong>rev 5</strong>: custody safeguards (master-key backup and rotation, separate secrets, one-time key export), numeric pass limits for the Photon test in M9, the enemy cap set on your reference phone in M1, deferred anti-collusion switches still tested. Three new questions (Q31–Q33).",
-      "commit": ""
-    },
-    {
-      "when": "30 Sep",
-      "what": "Your second round of answers applied as <strong>plan rev 7</strong>: 6 full-loot AI raids a day, uncapped PvP RUM, Google + email sign-in, Railway only, evolutions at level 8 with multi-level rare cards, nine new weapons (M4, M4b), a new Monte Carlo simulator written from scratch on V4 with ten player personalities, plausibility checks with value-moving modes played on our match server (moved up to M13b), no key export. Researched the 4-player Hunt netcode (recommendation now <strong>Fish-Net + Bayou</strong>: Photon calls its server mode \"not recommended\" for browsers) and the reference phone (<strong>Galaxy A15 / A16 4G at a steady 30 fps</strong>; browser memory near 256 MB is the big constraint).",
-      "commit": ""
-    },
-    {
-      "when": "30 Sep",
-      "what": "Independent review of rev 7: <strong>no blockers</strong>, 8 majors, 10 minors, all fixed in <strong>rev 8</strong>: plausibility bounds from the balance model, a hard 256 MB mobile memory limit, a prediction-ready ship controller, server-session costs measured in M9 (Railway estimate ~$30–60/month once sessions run), the multi-ship lobby as its own phase (M21), fully specified personalities. Two new questions (Q34, Q35).",
-      "commit": ""
-    },
-    {
-      "when": "30 Sep",
-      "what": "Your third round of answers applied as <strong>plan rev 9</strong>: Unity Netcode for GameObjects for multiplayer (free; we write nearby-enemy filtering and lag compensation), treasury protection (vault 80% / treasury 20%, 8 h shield, 10% daily loss cap, 72 h for new players), the reference phone (Galaxy A15 / A16 4G at 30 fps), forfeits pay nothing but a genuine short match does, checked voyage RUM usable on devnet. <strong>Every V5 question is now answered.</strong> Added a per-service Railway cost breakdown with savings (about $20–25/month if ~30 of 100 players play daily; $40–45 if all do; about $14–33 with the three biggest savings).",
-      "commit": ""
-    },
-    {
-      "when": "30 Sep",
-      "what": "You chose: carry on while away, commit and push each phase that passes its tests and review, stand-in instead of the phone, Unity restarts allowed. M0 committed and pushed.",
-      "commit": "0b523f0d"
-    },
-    {
-      "when": "30 Sep",
-      "what": "<strong>M1 enemy flow built</strong> (unattended): a minimum crowd per minute (ten 1-minute waves with a jagged floor), four telegraphed hordes (ring, line, pack) with a lull before each and edge markers, breathing room after arenas, the boss kill and hordes, a lower floor during the boss fight, XP that merges instead of being lost. Off under the v3-parity preset. Independent review: 3 blockers, 4 majors, 9 minors, all fixed. EditMode 331/331, PlayMode 50/50, playable check 0 game errors. Found: today's WebGL build needs a 344 MB heap and a 160 MB download, above the phone budget (moved to M7).",
-      "commit": "69cda9bf"
-    },
-    {
-      "when": "30 Sep",
-      "what": "<strong>M2 balance model built</strong> (unattended): a Monte Carlo simulator written new on V4 (the real level-up, item and Captain code; ten player personalities), calibrated against the V4 autopilot's recorded runs (median death 7.8 vs 8.0 Observe, 6.4 vs 6.3 Adaptive). It found every personality sinking at the 2:30 Reef Crab, slow level-ups, a crowd stuck at the cap from 4:00, 1-second elites and overtime ending every run by ~13 min. Retuned: faster XP curve, a ~17 s Reef Crab, ~5.5 s elites, a ~55 s Barnacle King, gentler growth after 2:00, lower band rates from 4:00, a slower overtime ramp, the director's on-track curve re-measured. 72 of 76 revised targets met (66 of 76 of the first proposals). New F1 console Balance section. Review: 1 blocker (a boss HP change the game ignored), 7 majors, 8 minors; all fixed or recorded; second pass found 4 more, fixed.",
-      "commit": "4112e7af"
-    },
-    {
-      "when": "30 Sep",
-      "what": "<strong>M3 build balance built</strong> (unattended): evolutions reachable (the card from weapon level 8 with its item; Rare/Epic cards +2 levels, Legendary +3; a pity rule; a 40% chance that a chest gives a ready weapon's evolution item) — focused builds now evolve in ~60% of runs, around minute 6. All ten weapons within ±20% of their role at levels 1, 4, 8 and 12 (the Flamethrower no longer fades, the Powder Kegs no longer lag, the Lightning Mast no longer runs away). Plain Logbooks and items in their rarity bands; volley and crit pieces flagged; synergy items left for you. Captains within ±10% on run length (Flint's hull 90 → 120). 5 items by 10:00. Review: 3 majors, 10 minors, then 1 major and 3 minors on the fixes; all fixed or recorded.",
-      "commit": "e1195f7f"
-    },
-    {
-      "when": "30 Sep",
-      "what": "<strong>Demo interlude, merged into V5</strong>: the art team's menu, Captain select, HUD and level-up cards; per-weapon, ship and enemy VFX profiles with an editor; POI and level-up card prefabs; music; the floating joystick (app and mobile browsers); safe-area HUD; mobile render settings (60 fps on a Pixel 9a); smarter enemies; shots stop at islands; APK and WebGL builds. Kept for V5: half XP, 1.625x ship speed, lower player ranges, the AI changes, cannon boats from 1:00, the boss rising out of a whirlpool after the beacon summon. Restored: POIs, Captain active, boost, barks, tutorial, Logbook cards, flamethrower. EditMode 367/367, PlayMode 51/51.",
-      "commit": "86724e6b"
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>Balance re-check on the demo baseline</strong>: half XP and the 1.625x ship speed moved into config and the simulator. Half XP alone took the model from 2 of 76 to 24 of 70 targets missed; you kept it and chose a retune: enemy HP growth x0.55, damage growth x0.7, the evolution card from weapon level 6 (was 8), Lightning Mast -2%, the director curve re-measured, level and level-up targets at the slower pace. Result: 2 of 76 missed, the same two as M3; median run 10.3 min (10.1); levels about 40% slower. Review: no blockers, 10 minors, then 3 minors on the fixes; all fixed. EditMode 372/372, PlayMode 53/53. Details: <code>plan/v5/balance-recheck/README.md</code>.",
-      "commit": "263fa59d"
-    },
-    {
-      "when": "1 Oct",
-      "what": "Your answers: M1–M3 and the retune are fine for now (finetuning later), and the level-up pace targets hold the pace at ±20% (minute 1: 12–18 s; 0–10 min: 20–30 s).",
-      "commit": ""
-    },
-    {
-      "when": "1 Oct",
-      "what": "You left notes a-k and a sketch before going away for 7-8 hours and asked me to keep going and decide on your behalf. Plan: four new phases before M4: <strong>M3b</strong> feel fixes, <strong>M3c</strong> level-up rhythm, <strong>M3d</strong> pressure from enemy count with peaks and valleys and distinct enemies, <strong>M3e</strong> performance and the enemy cap. Decisions and questions: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code>. The plan review found no blockers, 7 majors and 5 minors, all fixed (M3c split, the cap after measuring, M3's evolution goals re-checked).",
-      "commit": ""
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>M3b feel fixes built</strong> (awaiting your playtest): an island hit pushes the ship back off the shore and costs 5 hull at most every 2 s (through Brace! and the Keel, with the usual hit flash); unblown powder kegs sink after 45 s; the Captain's special ability has a round touch button in the joystick's art above the weapon grid, with a cooldown sweep (touch devices only). Review: no blockers; 9 code findings and 4 more on the fixes, all fixed (the button and the Captain bar could hide for good; the bounce was being cancelled by the reverse-speed limit). EditMode 374/374, PlayMode 56/57 (a known intermittent test).",
-      "commit": "40d0dde7"
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>M3c level-up rhythm built</strong> (awaiting your playtest): your \"1 1 2 3 5\" as gaps of 10, 10, 20, 30, 50 s after the first kill, then 60 s: 4 level-ups in the first minute as before, about 13 by 10:00 (was ~24), through a per-level XP table fitted in the simulator. To keep builds strong with fewer picks: weapon cards grant 2/2/3/3/4 levels, evolutions from weapon level 5, Roxie's hull 104, and an interim flat enemy scale (×0.85) that M3d replaces. Simulator: 2 of 76 targets missed (the same two as M3), median run 10.6 min, focused builds evolve in 65% of runs. Review: one blocker (other personalities' boss wins) and several majors, all fixed and re-verified. EditMode 381/381, PlayMode 57/57.",
-      "commit": "8107f965"
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>M3d pressure from enemy count built</strong> (awaiting your playtest): enemy HP and damage no longer grow with time (a cannon boat has 12 HP at 1:00 and at 8:00); the crowd follows your sketch in 22 keyframes (small early peaks, a big one at 3:35-3:45, a long valley rising in ~60 s waves, peaks at 7:30 and 9:35); stronger late types at fixed stats; every enemy that attacks differently looks different (tint, size), and hordes are ordinary ships. Per-minute targets now come from the design, not the simulator. Simulator: 2 of 76 targets missed (the First-Timer, minute 6 kills in the boss fight), both bounded and listed (D22); median run 11.0 min; in 15 s bins the crowd peaks at 3:45 (about 44) over a quieter valley (about 34) and rises to 65-69 at 7:30 and 9:30. Review: 1 blocker (the curve did not follow the sketch) and 10 majors (targets fitted to measurements, overtime understated, a heavy model, hordes, the look test, hitboxes, tint code), all fixed; the second pass found 1 major (the crowd, not only the floor, must show the peak) and 6 minors, fixed or recorded. EditMode 397/397, PlayMode 59/59.",
-      "commit": "4ea07819"
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>UI text without em dashes</strong>: about 60 toasts, prompts, menu labels and boss and tutorial texts now use a colon or a comma; the toast and the tutorial prompt clean any text that reaches them; a test guards it (D23).",
-      "commit": "3d934792"
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>M3e performance built</strong> (awaiting your playtest): measured on the same map, three runs a side in the Editor. The game's garbage fell from 28 KB to 1.3 KB a frame (the ship wakes searched every enemy's children every frame), the enemy world's main-thread time from 1.42 to 0.67 ms, batches at 9:00 from 991 to 784, triangles from 1.57M to 1.45M (Mesh LODs for 14 heavy models: one chest was ~77,650 triangles). Pools now make nothing mid-run and enemy models are stripped in the pool (a NavMesh warning fell from 99 to 2 a run). Static batching of the islands was tried and taken out (+25 MB for ~50 batches); dynamic batching gave nothing; occlusion culling does not apply here (the far clip went 1000 → 250 m instead). The enemy cap stays 80 until the reference phone (D24). Review: 1 blocker (plan items left unrecorded) and 5 majors, fixed or recorded (D27).",
-      "commit": "3626aedc"
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>M4a and M4 built</strong> (awaiting your playtest): slow, pierce, knockback, several orbit weapons and boost-gated auras (today's ten weapons proved unchanged); four new weapons (Anchor Flail, Chainshot, Siren Bell, Ramming Prow) at 120-160 Rum; eight evolutions (one generic Empowered kind) with their chest items; damage set by the balance model within 20% of each role. Decisions D28-D31.",
-      "commit": ""
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>M4b built</strong> (awaiting your playtest): Parrot Squadron, Monkey Gunners, Maelstrom Charge, Lighthouse Lantern, Cursed Doubloons (170-220 Rum) with five Empowered evolutions and their items; pull, whirlpools, sweeping beams, capped summons and capped kill gold; the balance model and the difficulty director now share how many hits a firing deals (the Anchor Flail re-tuned with it). D32.",
-      "commit": ""
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>M5 built</strong> (awaiting your playtest): four Logbooks (Fortune, Tidecaller, Admiral, Plunderer; Ironclad waits for armor), thirteen items bought with Rum (Shark Tooth, Skeleton Key, Smuggler's Ledger, Black Spot, Barnacle Crown, Jolly Roger, Leviathan Heart, Captain's Last Rum and more); new item effects with tests. The free Commons and the four designed powerups would have pushed the balance bands, so they wait for you (D33, D34; questions 27-32).",
-      "commit": ""
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>M7 mobile UI and input built</strong> (awaiting your playtest): touch BOOST and PAUSE buttons, a pause menu (Escape, gamepad Start, touch) with Resume, Settings and Quit; Settings (UI scale, music, effects, quality, reduced effects, shake, stick side and dead zone) from the menu and the pause menu; safe-area wrapping; 72-unit touch targets; automatic quality; WebGL mobile and desktop build profiles and a LAN server. Review: no blockers, 7 majors and 8 minors, fixed or recorded. Three questions for you (33-35).",
-      "commit": "30b2e2e6"
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>M8 menu hub and shop built</strong> (awaiting your playtest): SET SAIL opens a mode select (Voyage; Raids, Race, Arena, Hunt coming), LEDGER the shop (weapons, Logbooks, items, Captains for RUM), PROFILE your stats and collection; meta services (account, RUM, inventory, store) over the local save behind interfaces for the server. Content out of every pool is not sold. Review: no blockers, 4 majors and 6 minors, fixed or recorded. Questions 36-38.",
-      "commit": "c3f8ae50"
-    },
-    {
-      "when": "1 Oct",
-      "what": "<strong>The phone build</strong> (M7b): texture pass (881 textures capped at 1024 on WebGL), download 111 MB (163 MB in September). With 256 MB of heap it ran out of memory loading the menu, so it builds with 512 MB (D37, question 39). In a browser it reaches the menu, the mode select, the Captain select, a run and the pause menu. Serve it to your phone with <code>python plan/v5/tools/serve-webgl.py \"Pirate Game Unity/Builds/WebGL-Mobile/RoguePirates\"</code>.",
-      "commit": "0f0a7531"
-    },
-    {
-      "when": "2 Oct",
-      "what": "<strong>Phone performance, web (M7c)</strong>: about 50 benchmark runs on your Pixel 9a over USB and a desktop Chrome found two costly systems and a texture bug. The minimap fog now redraws only around new cells (the regular 100+ ms freezes are gone), enemy health bars share one canvas, phones get ASTC textures. Phone with 80 enemies: 26.0 to 37.5 fps, slowest 1% of frames 144 to 42 ms; GPU memory 2.27 to 1.53 GB; download 111 to 87.5 MB. Desktop: locked 60 fps. Review: 1 blocker, 5 majors, 6 minors, fixed. Report: <a href=\"https://claude.ai/artifact/RgXzkpGtFQ1GWicAx3LMSN\">Rogue Pirates Phone Bench</a>.",
-      "commit": "bb7af23c"
-    },
-    {
-      "when": "2 Oct",
-      "what": "<strong>Android APK (M7d)</strong>: the native app holds a locked 60 fps on the Pixel 9a in every variant, even with 80 enemies; Vulkan, GLES3 and frame pacing make no difference there (the default kept). An Android texture cap cut the APK from 155.5 to 127.9 MB and about 60 MB of memory. The playtest APK (126.9 MB) is installed on your phone. Review: no blockers, 4 majors, 9 minors, fixed.",
-      "commit": "246db72c"
-    }
+  [
+   "Tests",
+   "On <code>playtest</code> 5 Oct: EditMode 438/499 · PlayMode 51/63 · server 70/70 (failures pin old values; 4 real rule violations)"
   ],
-  "todos": {
-    "next": [
-      "<strong>Read the phone performance report</strong>: <a href=\"https://claude.ai/artifact/RgXzkpGtFQ1GWicAx3LMSN\">Rogue Pirates Phone Bench</a>, then playtest: the APK \"Rogue Pirates\" is installed on your phone; the web build is <code>Builds/WebGL-Mobile</code> (rebuild without the bench: menu RoguePirates/V5/Build WebGL (mobile)). Check effects, water and UI art on both (questions 40 and 44), and answer 39-45.",
-      "<strong>Playtest M8</strong>: SET SAIL (mode select, then Captains), LEDGER (buy a Logbook or item with RUM, then see it offered in a run), PROFILE (your collection); answer questions 36-38.",
-      "<strong>Playtest M7</strong> (with the phone build after M8): BOOST and PAUSE buttons, the pause menu, Settings (UI scale, stick on the right), notch phones; answer questions 33-35.",
-      "<strong>Playtest M5</strong>: turn on unlock-all (or wait for the M8 shop) and try Jolly Roger, Barnacle Crown, Leviathan Heart and Captain's Last Rum; answer questions 27-32 in DECISIONS-WHILE-AWAY.md.",
-      "<strong>Art Guide (M6)</strong>: read and share the Claude Doc with your art team: https://claude.ai/code/artifact/31acc17c-5ed0-4672-a891-7d923a0c7653",
-      "<strong>Playtest M4b</strong>: the Parrot Squadron, Monkey Gunners, Maelstrom Charge, Lighthouse Lantern and Cursed Doubloons (Tuning Console Weapon Lab, or buy them). Do the summons, whirlpool and beam read well with placeholder art?",
-      "<strong>Playtest M4</strong>: buy (or use the Tuning Console's Weapon Lab) the Anchor Flail, Chainshot, Siren Bell and Ramming Prow (strikes only while you boost); evolve one with its item. Do they feel distinct, and are the prices (120-160 Rum) right?",
-      "<strong>Read what I decided while you were away</strong>: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code> (D1-D27 with reasons and alternatives, and 16 questions for you).",
-      "<strong>Playtest M3b</strong>: steer into an island (bounce, 5 hull at most every 2 s), drop powder kegs and wait 45 s (unblown ones sink), use the round ability button on a phone build.",
-      "<strong>Playtest M3c</strong> (level-up rhythm): the first level with the first kill, then gaps of 10, 10, 20, 30, 50 s, then 60 s (about 13 level-ups by 10:00, was ~24); weapon cards worth more levels; evolutions from weapon level 5. Does the slower rhythm feel right, and do builds still feel strong?",
-      "<strong>Playtest M3d</strong> (pressure from enemy count): is 0:00-3:00 busy now (an early horde at 0:35, small peaks, some hull lost), is 6:00-8:00 fair, and can you tell every enemy apart (the crimson gunner cog vs the white cannon boat, the orange net cutter, the yellow needle sloop)? Enemy HP no longer grows with time; overtime after 10:00 is much harder (question 10).",
-      "<strong>Playtest M3e</strong> (performance): does anything look different? Pickups no longer cast shadows; the heavy models (chests, buoys, the wreck) draw lighter versions at a distance; the camera draws nothing past 250 m. Same map, three runs a side in the Editor: game garbage 28 KB → 1.3 KB a frame, batches at 9:00 991 → 784. The enemy cap stays 80 until the reference phone (question 14).",
-      "<strong>M2 and M3 decisions</strong>: targets, the Turtle, evolution level, Captains, synergy items, Epic +2, volley and crit pieces, pity and refreshes (details on each phase's page and in TODO-FOR-YOU.md).",
-      "<strong>Get the reference phone</strong> (Galaxy A15 or A16 4G) before M7: today's build needs 344 MB of memory where the phone allows about 256 MB.",
-      "<strong>Accounts</strong> (list and costs in the answers): Railway by M9; a domain, a Google Cloud project and Resend by M10b; Helius by M11; Firebase by M19."
-    ],
-    "open": [
-      "Flamethrower VFX is broken (offered again); fixed in M4.",
-      "Earlier GDD questions (21 left) are still on the board; the raid entry fee (question 4) feeds M15 and the pass price (question 5) feeds M20."
-    ],
-    "done": [
-      "<strong>Balance re-check</strong> (1 Oct): half XP kept, retune around it; see <code>plan/v5/balance-recheck/README.md</code>.",
-      "<strong>Playtest M1-M3 and the half-XP retune</strong> (1 Oct): fine for now, finetuning later; the level-up pace targets hold the pace at ±20%.",
-      "<strong>V5 questions, round 3</strong> (30 Sep): netcode, treasury protection, reference phone, forfeits and checked RUM decided; every V5 question answered.",
-      "<strong>V5 questions, round 2</strong> (30 Sep): 16 more decided (D17), personalities defined, the Hunt netcode and reference phone researched.",
-      "<strong>V5 questions answered</strong> (30 Sep): 19 decided (D17), the rest explained on this page; the plan reviewed again (rev 5).",
-      "<strong>V5 M0 setup</strong> (29 Sep): branch, reviewer agent, plan and research, green baseline.",
-      "Demo round (30 Sep) merged into V5; details in <code>plan/demo/README.md</code>."
-    ]
-  },
-  "proof": [
-    {
-      "date": "29 Sep",
-      "phase": "M0",
-      "check": "EditMode, all assemblies (baseline)",
-      "result": "307 / 307 passed · 32.7 s",
-      "evidence": "plan/v5/phase-00-setup/evidence/baseline-editmode.json"
-    },
-    {
-      "date": "29 Sep",
-      "phase": "M0",
-      "check": "PlayMode, all assemblies (baseline)",
-      "result": "49 / 49 passed · 177 s",
-      "evidence": "plan/v5/phase-00-setup/evidence/baseline-playmode.json"
-    },
-    {
-      "date": "29 Sep",
-      "phase": "M0",
-      "check": "Editor console after compile",
-      "result": "0 errors",
-      "evidence": "unity command console"
-    },
-    {
-      "date": "29 Sep",
-      "phase": "M0",
-      "check": "Independent plan review, rev 1",
-      "result": "3 blockers · 12 majors · 7 minors → all addressed in rev 2",
-      "evidence": "plan/v5/status.json → reviews[0]"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M0",
-      "check": "Independent plan re-review, rev 2",
-      "result": "No blockers · 5 majors · 6 minors → all addressed in rev 3",
-      "evidence": "plan/v5/status.json → reviews[1]"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M0",
-      "check": "Pricing and Megabonk research for your follow-up questions",
-      "result": "Saved; all prices from the vendors' pricing pages",
-      "evidence": "plan/v5/research/PRICING_RESEARCH.md, MEGABONK_LEVELS.md"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M0",
-      "check": "Independent review of your answers (rev 4)",
-      "result": "No blockers · 6 majors · 7 minors → all addressed in rev 5",
-      "evidence": "plan/v5/status.json → reviews[2]"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M0",
-      "check": "Hunt netcode and device research",
-      "result": "Saved with sources",
-      "evidence": "plan/v5/research/HUNT_NETCODE.md, DEVICE_TARGETS.md"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M0",
-      "check": "Independent review of rev 7",
-      "result": "No blockers · 8 majors · 10 minors → all addressed in rev 8",
-      "evidence": "plan/v5/status.json → reviews[3]"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M0",
-      "check": "Independent review of rev 9 (incl. a recomputation of the Railway costs)",
-      "result": "No blockers · 2 majors · 4 minors → addressed",
-      "evidence": "plan/v5/status.json → reviews[4]"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M1",
-      "check": "EditMode, all assemblies (incl. 24 flow tests)",
-      "result": "331 / 331 passed · 51.6 s",
-      "evidence": "plan/v5/phase-01-flow/evidence/editmode.json"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M1",
-      "check": "PlayMode, all assemblies (incl. the flow checkpoints in the real scene)",
-      "result": "50 / 50 passed · 167.9 s",
-      "evidence": "plan/v5/phase-01-flow/evidence/playmode.json"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M1",
-      "check": "Playable check: real Play session, clock jumps to 1, 3, 5:30 (horde), 6, 9, 13 min, screenshots",
-      "result": "0 game errors; alive 15 / 25 / 51 / 72 / 71; the 5:30 horde on screen",
-      "evidence": "plan/v5/phase-01-flow/evidence/playable/"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M1",
-      "check": "Stand-in phone memory (last WebGL build, read in the browser)",
-      "result": "WebAssembly heap 344 MB, JS heap 277 MB, data 160 MB: above the 256 MB phone budget (M7)",
-      "evidence": "plan/v5/phase-01-flow/PLAN.md → Measurement"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M1",
-      "check": "Independent review (v5-reviewer)",
-      "result": "3 blockers · 4 majors · 9 minors → all fixed or recorded",
-      "evidence": "plan/v5/phase-01-flow/PLAN.md → Independent review"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M2",
-      "check": "Model report: 10 personalities × 200 runs, the baseline per minute, pacing, weapon pairs",
-      "result": "72 of 76 revised targets (66 of 76 original); baseline sinks at 12.2 min, beats the boss 80%, level 34 at 10:00",
-      "evidence": "plan/v5/phase-02-model/model-report.md"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M2",
-      "check": "Calibration against the V4 autopilot's recorded real runs (no new traces)",
-      "result": "median death 7.8 vs 8.0 (Observe), 6.4 vs 6.3 (Adaptive); per-minute spawns, kills, alive, level and offense match",
-      "evidence": "plan/v5/phase-02-model/PLAN.md → Calibration"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M2",
-      "check": "EditMode, all assemblies (incl. 21 balance tests)",
-      "result": "352/352 passed",
-      "evidence": "plan/v5/phase-02-model/evidence/editmode.json"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M2",
-      "check": "PlayMode, all assemblies",
-      "result": "50/50 passed",
-      "evidence": "plan/v5/phase-02-model/evidence/playmode.json"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M2",
-      "check": "Playable check: real Play session, crowd at 1, 3, 6, 9 min against the targets; the console's Balance section run in-game",
-      "result": "0 game errors; 4 of 4 checkpoints in band (6:00 on the ceiling); XP pace not confirmable with a standing ship (your playtest)",
-      "evidence": "plan/v5/phase-02-model/evidence/playable/"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M2",
-      "check": "Independent review (v5-reviewer), two passes",
-      "result": "1 blocker · 7 majors · 8 minors → fixed or recorded; second pass: 4 new, fixed",
-      "evidence": "plan/v5/phase-02-model/PLAN.md → Independent review"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M3",
-      "check": "Weapon parity (the game's own upgrade path, 300 paths each)",
-      "result": "10 of 10 within ±20% at levels 1, 4, 8, 12",
-      "evidence": "plan/v5/phase-03-builds/evidence/weapon-parity.md"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M3",
-      "check": "Logbook and item bands",
-      "result": "plain pieces in band; 5 flagged (volley, crit); synergy items not banded",
-      "evidence": "plan/v5/phase-03-builds/evidence/build-pieces.md"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M3",
-      "check": "Captains (200 simulated runs each)",
-      "result": "run length ×0.92–×1.07; offense at 10:00 ×0.80–×1.16",
-      "evidence": "plan/v5/phase-03-builds/evidence/captains.md"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M3",
-      "check": "Simulator report (M2 targets after M3)",
-      "result": "74 of 76 met (was 72)",
-      "evidence": "plan/v5/phase-03-builds/model-report.md"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M3",
-      "check": "EditMode, all assemblies",
-      "result": "367/367 passed",
-      "evidence": "plan/v5/phase-03-builds/evidence/editmode.json"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M3",
-      "check": "PlayMode, all assemblies (incl. the evolution chain in the real run)",
-      "result": "51/51 passed",
-      "evidence": "plan/v5/phase-03-builds/evidence/playmode.json"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M3",
-      "check": "Playable check: each of the six Captains to 5:00 in a real Play session",
-      "result": "all six ran, actives used, 0 game errors",
-      "evidence": "plan/v5/phase-03-builds/evidence/playable/"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "M3",
-      "check": "Independent review (v5-reviewer), two passes",
-      "result": "3 majors · 10 minors, then 1 major · 3 minors → fixed or recorded",
-      "evidence": "plan/v5/phase-03-builds/PLAN.md → Independent review"
-    },
-    {
-      "date": "30 Sep",
-      "phase": "Demo",
-      "check": "EditMode and PlayMode suites after merging the demo into V5 (demo switches off in tests)",
-      "result": "367/367 and 51/51",
-      "evidence": "plan/demo/evidence/editmode.json, playmode.json"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3b",
-      "check": "EditMode and PlayMode suites",
-      "result": "374/374 and 56/57 (the known intermittent powder-cache test); V5FeelPlayModeTests 4/4 three runs in a row after the last change",
-      "evidence": "plan/v5/phase-03b-feel/editmode.json, playmode.json"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3b",
-      "check": "Playable check (boot → menu → run; button, real press, island hit)",
-      "result": "button above the weapon grid; All Guns! fired (17 s cooldown); one hit = 5 hull; 0 game errors",
-      "evidence": "plan/v5/phase-03b-feel/playable/"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3b",
-      "check": "Independent review (v5-reviewer), plan and code, two passes",
-      "result": "no blockers; plan 7 majors + 5 minors; code 5 majors + 4 minors, then 1 major + 3 minors → fixed or recorded",
-      "evidence": "plan/v5/phase-03b-feel/PLAN.md → Independent review"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3c",
-      "check": "EditMode and PlayMode suites",
-      "result": "381/381 and 57/57",
-      "evidence": "plan/v5/phase-03c-levels/editmode.json, playmode.json"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3c",
-      "check": "Simulator report (200 runs per personality, seed 1)",
-      "result": "2 of 76 targets missed (as M3); median run 10.6 min; level times within ±25% of the targets",
-      "evidence": "plan/v5/phase-03c-levels/model-report.md, level-times.md"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3c",
-      "check": "Independent review (v5-reviewer), two passes",
-      "result": "1 blocker + 4 majors + 6 minors, then 2 majors + 6 minors → fixed or recorded",
-      "evidence": "plan/v5/phase-03c-levels/PLAN.md"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3d",
-      "check": "EditMode and PlayMode suites",
-      "result": "397/397 and 59/59",
-      "evidence": "plan/v5/phase-03d-pressure/editmode.json, playmode.json"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3d",
-      "check": "Simulator report (200 runs per personality, seed 1) and boss summons at 4:30 and 8:30",
-      "result": "2 of 76 targets missed (First-Timer, minute 6 kills in the boss fight), both bounded; boss fight 68 s, 119 s from a 4:30 summon (known), 64 s from 8:30",
-      "evidence": "plan/v5/phase-03d-pressure/model-report.md, tuning.md"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3d",
-      "check": "Playable check (clock jumped to 0:45, 3:30, 5:00, 7:30, 9:30)",
-      "result": "crowd and enemy mix with screenshots at each moment; 0 game errors",
-      "evidence": "plan/v5/phase-03d-pressure/playable/"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3d",
-      "check": "Independent review (v5-reviewer), two passes",
-      "result": "1 blocker + 10 majors + 5 minors, then 1 major + 6 minors → fixed or recorded",
-      "evidence": "plan/v5/phase-03d-pressure/PLAN.md"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3e",
-      "check": "EditMode and PlayMode suites",
-      "result": "408/408 and 60/60",
-      "evidence": "plan/v5/phase-03e-performance/editmode.json, playmode.json"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3e",
-      "check": "Perf check, same seed, 3 runs a side (frame, GC, batches, triangles, pools, profiler)",
-      "result": "game GC 28,325 → 1,342 B/frame; batches at 9:00 991 → 784; frame at 9:00 10.2 → 9.1 ms (Editor, indicative); 0 pool instances made mid-run",
-      "evidence": "plan/v5/phase-03e-performance/perf.md, gc-profile-*.txt, playable/"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M3e",
-      "check": "Independent review (v5-reviewer), two passes",
-      "result": "1 blocker + 5 majors + 7 minors, then the second pass → fixed or recorded",
-      "evidence": "plan/v5/phase-03e-performance/PLAN.md"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M4",
-      "check": "EditMode / PlayMode (full, once)",
-      "result": "432/432 · 60/60",
-      "evidence": "plan/v5/phase-04-weapons/m4/"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M4",
-      "check": "Weapon playable check (9 weapons and evolutions)",
-      "result": "all fire and kill; 0 game errors",
-      "evidence": "plan/v5/phase-04-weapons/m4/playable/"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M4",
-      "check": "Independent review (v5-reviewer)",
-      "result": "2 blockers + 6 majors + 6 minors → fixed or recorded",
-      "evidence": "plan/v5/phase-04-weapons/PLAN.md"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M4b",
-      "check": "EditMode / PlayMode (full, once)",
-      "result": "442/442 · 60/60",
-      "evidence": "plan/v5/phase-04b-weapons/"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M4b",
-      "check": "Weapon playable check (11 weapons and evolutions)",
-      "result": "all fire and kill; 0 game errors",
-      "evidence": "plan/v5/phase-04b-weapons/playable/"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M4b",
-      "check": "Independent review (v5-reviewer)",
-      "result": "0 blockers + 7 majors + 8 minors → fixed or recorded",
-      "evidence": "plan/v5/phase-04b-weapons/PLAN.md"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M5",
-      "check": "EditMode / PlayMode (full, once)",
-      "result": "448/448 · 59/60, the one a seed-dependent test that passes on rerun",
-      "evidence": "plan/v5/phase-05-content/"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M5",
-      "check": "Simulator A/B (as built, without the Commons, without the powerups, without both)",
-      "result": "only without both are the bands held",
-      "evidence": "plan/v5/phase-05-content/sim-ab.txt"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M5",
-      "check": "Independent review (v5-reviewer)",
-      "result": "3 blockers + 5 majors + 9 minors → fixed or recorded",
-      "evidence": "plan/v5/phase-05-content/PLAN.md"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M7",
-      "check": "EditMode and PlayMode suites",
-      "result": "EditMode 459/459, PlayMode 60/60",
-      "evidence": "plan/v5/phase-07-mobile/editmode.json, playmode.json"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M7",
-      "check": "Independent review (v5-reviewer)",
-      "result": "no blockers; 7 majors + 8 minors → fixed or recorded",
-      "evidence": "plan/v5/phase-07-mobile/PLAN.md → Independent review"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M8",
-      "check": "EditMode and PlayMode suites",
-      "result": "462/463 (the architecture guard, fixed and re-run 15/15) and 60/60; the classes the review fixes touched re-run green",
-      "evidence": "plan/v5/phase-08-menu/editmode.json, playmode.json, t-*.json"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M8",
-      "check": "Scripted menu check (buy a Logbook, start a run; desktop and phone screenshots)",
-      "result": "4 Logbooks for sale, Fortune bought for 200 RUM, run started with it owned, save restored, 0 game errors",
-      "evidence": "plan/v5/phase-08-menu/menu-check/"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M8",
-      "check": "Independent review (v5-reviewer)",
-      "result": "no blockers; 4 majors + 6 minors → fixed or recorded",
-      "evidence": "plan/v5/phase-08-menu/PLAN.md → Independent review"
-    },
-    {
-      "date": "1 Oct",
-      "phase": "M7",
-      "check": "WebGL mobile build loaded in a browser (menu, hub, Captain select, run, pause)",
-      "result": "256 MB heap: out of memory at the menu; 512 MB: all screens reached, no errors",
-      "evidence": "plan/v5/phase-07-mobile/PLAN.md → The phone build"
-    },
-    {
-      "date": "2 Oct",
-      "phase": "M7c",
-      "check": "Phone benchmark, final builds (Pixel 9a, alternated, cooled)",
-      "result": "80 enemies 26.0 to 37.5 fps, slowest 1% 144 to 42 ms; natural game slowest 1% 130 to 33 ms; GPU 2.27 to 1.53 GB",
-      "evidence": "plan/v5/phase-07c-webgl-perf/PLAN.md, plan/v5/perf/"
-    },
-    {
-      "date": "2 Oct",
-      "phase": "M7c",
-      "check": "Desktop Chrome benchmark (RTX 3050)",
-      "result": "80 enemies 54.4 to 60.2 fps (the cap), slowest 1% 66 to 18 ms",
-      "evidence": "plan/v5/perf/phone-bench/desktop.jsonl"
-    },
-    {
-      "date": "2 Oct",
-      "phase": "M7c",
-      "check": "EditMode and PlayMode suites",
-      "result": "464/464 and 63/63",
-      "evidence": "plan/v5/phase-07c-webgl-perf/editmode.json, playmode.json"
-    },
-    {
-      "date": "2 Oct",
-      "phase": "M7d",
-      "check": "Android APK benchmark (Pixel 9a)",
-      "result": "locked 60 fps in every variant; capped APK 127.9 MB (was 155.5), ~60 MB less memory",
-      "evidence": "plan/v5/phase-07d-android-perf/PLAN.md"
-    },
-    {
-      "date": "2 Oct",
-      "phase": "M7d",
-      "check": "EditMode and PlayMode suites",
-      "result": "466/466 and 63/63",
-      "evidence": "plan/v5/phase-07d-android-perf/editmode.json, playmode.json"
-    }
+  [
+   "Gate",
+   "Tests, playable check, reviewer, your playtest; builds: desktop WebGL (mobile and Android on request)"
   ],
-  "phaseResults": {
-    "M0": [
-      {
-        "title": "Tests",
-        "text": "Baseline green: EditMode 307/307 and PlayMode 49/49 in Unity 6000.3.11f1; no compile errors."
-      },
-      {
-        "title": "Reviewer",
-        "text": "Agent file in place; it ran the plan review (below). In this session it runs through a general agent loading the same file; new sessions list it as <code>v5-reviewer</code>."
-      },
-      {
-        "title": "Plan reviews",
-        "text": "Two independent reviews: rev 1 had 3 blockers, 12 majors, 7 minors; rev 2 had no blockers, 5 majors, 6 minors. All addressed in rev 3."
-      }
-    ],
-    "M1": [
-      {
-        "title": "What changed",
-        "text": "Ten 1-minute waves keep a minimum crowd alive (topped up one enemy every 0.35 s), four hordes (1:45 ring, 5:30 line, 7:40 pack, 9:15 ring) with a 10 s lull and edge markers, breathing room after big moments, XP merging. Data in the Saltwind timeline; the v3-parity preset turns it off."
-      },
-      {
-        "title": "Tests",
-        "text": "EditMode 331/331 (24 new), PlayMode 50/50 (1 new: the crowd reaches each minute's floor in the real scene). Playable check with screenshots at 1, 3, 5:30, 6, 9 and 13 minutes: 0 game errors."
-      },
-      {
-        "title": "Review",
-        "text": "3 blockers (spawn gap, missing edge markers, stale evidence), 4 majors, 9 minors: all fixed. Table on this page under Review findings."
-      },
-      {
-        "title": "Your playtest",
-        "text": "Play three runs (a weak, an average and a strong build). Does the crowd feel constant but changing minute to minute? Do the hordes (1:45, 5:30, 7:40, 9:15) read, with the arrow at the screen edge? Is there breathing room after the Reef Crab, the elites and the boss? F1 → Wave Timeline shows the flow line."
-      }
-    ],
-    "M2": [
-      {
-        "title": "What changed",
-        "text": "Level-ups much faster (about every 8.6 s in minute 1, 17.7 s on average to 10:00; level ~34 at 10:00). The Reef Crab is a ~17 s fight (was ~50 s and sank almost everyone), elites take ~5.5 s, the Barnacle King ~55 s. Enemies grow more gently after 2:00, bands spawn a little slower from 4:00, overtime ramps more slowly (still endless). The v3-parity preset restores every old value."
-      },
-      {
-        "title": "Tests",
-        "text": "EditMode 352/352, PlayMode 50/50. Model report: 72 of 76 revised targets (66 of 76 of the first proposals). Playable check: 0 game errors, the crowd inside its band at 1, 3, 6 and 9 minutes."
-      },
-      {
-        "title": "Your decisions",
-        "text": "Which targets stand (nine were widened after the first run; both counts are on the M2 page); whether the Turtle ('careful survivor', but it dodges less than the average player and sinks earlier) should change; whether 6:00's crowd on the band ceiling is fine."
-      },
-      {
-        "title": "Your playtest",
-        "text": "Three runs. Do level-ups arrive at a good pace (roughly every 8 s at first, then every 15-20 s)? Is the Reef Crab a real but short fight? Do elites feel tougher (4-8 s) and the Barnacle King a proper fight? Does the late voyage feel powerful rather than drowning? F1 → Balance → Run model shows the targets, the model and your run on one graph."
-      }
-    ],
-    "M3": [
-      {
-        "title": "What changed",
-        "text": "Evolutions: the card from weapon level 8 with its item, rarer cards grant 2–3 levels, a pity rule, and chests favour a ready weapon's evolution item. Weapons rebalanced within their roles (base damage and how fast upgrades grow). Gunnery Manual, Carpenter's Notes and Dragon's Breath Nozzle retuned; chest prices steeper (5 items by 10:00); Flint's hull 90 → 120. The v3-parity preset restores every old value."
-      },
-      {
-        "title": "Tests",
-        "text": "EditMode 367/367, PlayMode 51/51 (incl. the whole evolution chain in the real run). All six Captains played to 5:00 with 0 game errors."
-      },
-      {
-        "title": "Your decisions",
-        "text": "Evolution at level 8 (focused builds evolve around minute 6) or 10; Captains balanced on run length or offense; the synergy items (Black Powder Keg, Powder Fuse, Sea Witch's Eye, Leviathan's Tooth, Stormglass, Golden Figurehead); Epic +2 levels; volley pieces (Extra Hands, Broadside Drum) and crit; refreshes and the pity rule."
-      },
-      {
-        "title": "Your playtest",
-        "text": "One run per Captain. Name any weapon that feels useless or broken. Do rarer cards feel like a big jump (+2/+3 levels)? Does an evolution arrive in a normal run, and does it feel earned? Is Flint too tanky now?"
-      }
-    ],
-    "M3b": [
-      {
-        "title": "What changed",
-        "text": "Island hits push the ship back off the shore and cost 5 hull at most every 2 s (RunConfig); unblown kegs sink after 45 s (mine.lifeSeconds); a round touch button for the Captain's ability above the weapon grid. The v3-parity preset turns all three off."
-      },
-      {
-        "title": "Tests",
-        "text": "EditMode 374/374; PlayMode 56/57 (a known intermittent test, flagged separately); V5FeelPlayModeTests 4/4 three times after the last change."
-      },
-      {
-        "title": "Playable check",
-        "text": "The button above the weapon grid, a real press firing All Guns! (17 s cooldown), one island hit costing exactly 5 hull, 0 game errors (<code>plan/v5/phase-03b-feel/playable/</code>)."
-      }
-    ],
-    "M3c": [
-      {
-        "title": "What changed",
-        "text": "A per-level XP table: the first level with the first kill, then 10, 10, 20, 30, 50 s, then 60 s (about 13 level-ups by 10:00). Weapon cards 2/2/3/3/4 levels, evolution from weapon level 5, Roxie's hull 104, an interim enemy scale ×0.85. The v3-parity preset restores the old values."
-      },
-      {
-        "title": "Simulator",
-        "text": "2 of 76 targets missed (as M3); median run 10.6 min; focused builds evolve in 65% of runs by minute 5.6."
-      },
-      {
-        "title": "Tests",
-        "text": "EditMode 381/381, PlayMode 57/57; new tests over every personality's outcomes and each level's time."
-      }
-    ],
-    "M3d": [
-      {
-        "title": "What changed",
-        "text": "Flat enemy HP and damage in the voyage; the director's HP levers off; 22 keyframes from your sketch (one scale, so the shape holds); hordes on the peaks and as ordinary ships; late types at fixed ×2 stats; set pieces at fixed HP (King 2800); overtime ramp ×6 to ×25 HP for the drowned fleet; every differently-attacking enemy has its own look, with shared tinted materials (batching kept) and a hitbox that follows its drawn size. The v3-parity preset turns it all off."
-      },
-      {
-        "title": "Tests",
-        "text": "EditMode 397/397 (new: V5PressureTests, V5EnemyViewTintTests); PlayMode 59/59 (new: V5PressurePlayModeTests)."
-      },
-      {
-        "title": "Simulator",
-        "text": "2 of 76 targets missed, both bounded and listed for you (D22). Crowd per minute 0.20 to 0.76, a peak at 3:45 over a quieter valley; some hull lost in every minute from 0:00; median run 11.0 min."
-      }
-    ],
-    "M3e": [
-      {
-        "title": "What changed",
-        "text": "Garbage: ship wakes, the spatial hash, config lookups, delegates, enum names, HUD labels and settings loads no longer allocate every frame. Pools: enemy models stripped in the pool, VFX-profile effects prewarmed. Rendering: Mesh LODs for 14 heavy models, no pickup shadows, a 250 m far clip. Static and dynamic batching measured and left off; occlusion culling not applicable."
-      },
-      {
-        "title": "Measured",
-        "text": "Same seed, 3 runs a side, Editor: game GC 28 KB → 1.3 KB a frame; enemy world 1.42 → 0.67 ms; batches at 9:00 991 → 784; triangles 1.57M → 1.45M. At cap 120 (99 enemies) the cost is about what 72 cost before."
-      },
-      {
-        "title": "Left for you",
-        "text": "The enemy cap (question 14), health bars on every enemy (15), pickup sparkles (16), and the look-changing quick wins (D27)."
-      }
-    ],
-    "M4": [
-      {
-        "title": "What changed",
-        "text": "Four new weapons, eight Empowered evolutions and eight Uncommon evolution items; chests leave out the evolution items of weapons you have not unlocked."
-      },
-      {
-        "title": "Measured",
-        "text": "Balance model: all four new weapons within ±20% of their role at levels 1-12. Simulator baselines unchanged except the First-Timer, 10.03 min (question 9)."
-      },
-      {
-        "title": "Left for you",
-        "text": "Prices and the Prow's boost rule (D31), placeholder art, question 9."
-      }
-    ],
-    "M4b": [
-      {
-        "title": "What changed",
-        "text": "Five weapons that summon, pull, sweep and bounce, each with an evolution and an item; summons capped (12 parrots, 3 turrets); coin gold capped at 40 a run."
-      },
-      {
-        "title": "Measured",
-        "text": "All nine new weapons within ±20% of their role at levels 1-12 by the corrected model."
-      },
-      {
-        "title": "Left for you",
-        "text": "Prices, placeholder art (cannonballs, barrel), whether parrots should spread over targets."
-      }
-    ],
-    "M5": [
-      {
-        "title": "What changed",
-        "text": "Logbooks and items bought with Rum (the shop comes in M8); the offers and chests skip them until owned. Item effects: kill streaks, surrounded stacks, a periodic blast, cheat death once, free chests, dearer but richer chests, elite rewards, damage to healthy targets."
-      },
-      {
-        "title": "Measured",
-        "text": "Balance bands held (the A/B showed the free Commons or the new powerups alone break them)."
-      },
-      {
-        "title": "Left for you",
-        "text": "Questions 27-32: Luck scale, the powerup mix, free Commons, armor, gold gain, Admiral on bosses."
-      }
-    ],
-    "M7": [
-      {
-        "title": "What changed",
-        "text": "Touch BOOST (beside the ability button) and PAUSE; a pause menu that never overrides a level-up; Settings saved in one value; the generated canvases inside the safe area with a UI scale (1.0-1.4); every new touch target at least 72 units; Auto quality picks effect density and the phone render scale from the frame time 20-30 s in (gameplay caps the same on every device); WebGL build profiles (mobile 256 MB, ASTC, Brotli with fallback)."
-      },
-      {
-        "title": "Tests",
-        "text": "EditMode 459/459, PlayMode 60/60. V5MobileUiTests 11/11 (safe area, 48 px at five screen sizes, UI scale, settings, the pause rules, real settings layout on a short screen)."
-      },
-      {
-        "title": "Not built",
-        "text": "Input-router refactor, PlayMode touch simulation, long-press, 4:3 reflow; the phone build comes once after M8 (see the phase page)."
-      }
-    ],
-    "M8": [
-      {
-        "title": "What changed",
-        "text": "A hub over the art menu: mode select, shop with four tabs (Buy N RUM, Owned, Not enough RUM), profile with your collection, settings. Purchases go through the save's guarded purchase (never drops ownership); Captains keep their weapon and gold locks; Ironclad and Cursed Coin are not sold until armor and gold gain work."
-      },
-      {
-        "title": "Tests",
-        "text": "V5MetaShopTests 5/5 (prices, not enough RUM, buying twice, stale saves, Captain locks, the hub). Full suites 462/463 then the guard fixed; PlayMode 60/60."
-      },
-      {
-        "title": "Not built",
-        "text": "New badges and sales (need your catalogue), the server-shaped async interface (M10), a PlayMode buy-then-offered test (your playtest checks it)."
-      }
-    ]
-  },
-  "reviews": [
-    {
-      "title": "Plan review, rev 1 → rev 2 (29 Sep)",
-      "summary": "The independent reviewer read the plan against your 24 requests, the research, the handoff rules, the GDD's never list and the current code. It found 3 blockers, 12 majors and 7 minors, and confirmed that the plan's claims about the existing code were accurate. All 22 are addressed in rev 2 (now 29 phases, M0–M28). A second review checks the fixes.",
-      "rows": [
-        {
-          "n": "1",
-          "sev": "Blocker",
-          "where": "M10 (was M8) run settlement",
-          "finding": "Server RUM trusted a client-uploaded run summary before any verification existed, against D6 and the handoff's rule on client-trust fallbacks.",
-          "fix": "Run RUM is now <em>pending</em> until verified and cannot be spent, transferred or wagered (D6, I10b.4)."
-        },
-        {
-          "n": "2",
-          "sev": "Blocker",
-          "where": "Verification",
-          "finding": "Replay verification was assumed, not proven: unseeded draws (<code>PickupModule</code>, <code>WorldPort</code>), Rigidbody physics, no cost measured.",
-          "fix": "New <strong>M9 replay verification spike</strong> before accounts: seeding fixes, WebGL vs headless agreement over 10 runs, CPU per minute, go/no-go with named fallbacks (Q29)."
-        },
-        {
-          "n": "3",
-          "sev": "Blocker",
-          "where": "D4, sails and island NFTs",
-          "finding": "RUM-bought items could be minted and sold for tokens: an indirect RUM-to-token bridge.",
-          "fix": "D4 now tracks item origin: anything bought, earned or traded with RUM stays web2 forever; island sales return RUM-bought parts to the seller (Q24)."
-        },
-        {
-          "n": "4",
-          "sev": "Major",
-          "where": "D8",
-          "finding": "The list of reversals missed token winnings (play-to-earn), token balances and the Arena draft.",
-          "fix": "D8 names all six reversals; Q26 asks you to confirm them."
-        },
-        {
-          "n": "5",
-          "sev": "Major",
-          "where": "Wallet migration",
-          "finding": "NFT migration was planned before NFTs exist; royalty allow-lists block transfers by unlisted programs.",
-          "fix": "M13 migrates tokens, records and inventory; NFT migration moves to M26 through the game program."
-        },
-        {
-          "n": "6",
-          "sev": "Major",
-          "where": "Marketplace",
-          "finding": "No ownership sync for NFTs sold elsewhere; devnet external markets unconfirmed.",
-          "fix": "M26 adds an indexer or webhook with a reconcile job, and an honest devnet exit criterion (Tensor's open program)."
-        },
-        {
-          "n": "7",
-          "sev": "Major",
-          "where": "Raids, wagers, market",
-          "finding": "No anti-collusion policy.",
-          "fix": "New D15 (linked accounts blocked, price bands, daily caps, review flags) wired into M15, M24, M26, M27; defaults in Q27."
-        },
-        {
-          "n": "8",
-          "sev": "Major",
-          "where": "Wagers",
-          "finding": "Race and Hunt wager formats were undefined.",
-          "fix": "M24 defines Arena, Hunt and Race formats: entry windows, minimum entrants, refunds, unverified finishes."
-        },
-        {
-          "n": "9",
-          "sev": "Major",
-          "where": "Order",
-          "finding": "A web3 playtest bought a decoration before decorations exist; phone measurement before the mobile build; an unrealistic hackathon option.",
-          "fix": "Playtest buys a store item; the cap is measured on desktop in M1 and on a phone in M7; Q1 option B rewritten."
-        },
-        {
-          "n": "10",
-          "sev": "Major",
-          "where": "AI captains",
-          "finding": "The planned brain reused DevTools autopilots that never ship.",
-          "fix": "M16 rewrites the brain in Runtime with a test that Runtime never references DevTools (D10)."
-        },
-        {
-          "n": "11",
-          "sev": "Major",
-          "where": "Raid schedule",
-          "finding": "Player schedules stored as the designer-owned timeline asset (read as a singleton, hashed).",
-          "fix": "A schedule DTO in the base snapshot becomes an in-memory overlay at raid start; its hash enters raid records."
-        },
-        {
-          "n": "12",
-          "sev": "Major",
-          "where": "Phase size",
-          "finding": "M1 and the old netcode-plus-Arena phase were too big for one gate.",
-          "fix": "Split: M1 enemy flow and M2 balance model; M21 netcode spike and M22 Arena."
-        },
-        {
-          "n": "13",
-          "sev": "Major",
-          "where": "Every phase",
-          "finding": "Several phases lacked a playtest line or an automated check.",
-          "fix": "Every phase now has both (or an owner check for document and spike phases)."
-        },
-        {
-          "n": "14",
-          "sev": "Major",
-          "where": "Server",
-          "finding": "The .NET 8 target ends support on 10 Nov 2026.",
-          "fix": "The server moves to .NET 10 LTS in M10."
-        },
-        {
-          "n": "15",
-          "sev": "Major",
-          "where": "Raids",
-          "finding": "Raid loot currency undefined.",
-          "fix": "New question Q23 (suggested: RUM, split into an exposed treasury and a safe vault)."
-        },
-        {
-          "n": "16",
-          "sev": "Minor",
-          "where": "Cross-references",
-          "finding": "Wrong question numbers in two tasks.",
-          "fix": "Fixed in rev 2."
-        },
-        {
-          "n": "17",
-          "sev": "Minor",
-          "where": "M4",
-          "finding": "Siren Bell was said to charm; Grapeshot is an item, not a weapon.",
-          "fix": "Siren Bell slows and stuns; Grapeshot removed from the weapon options."
-        },
-        {
-          "n": "18",
-          "sev": "Minor",
-          "where": "M12",
-          "finding": "Onchain record rent and scope undefined.",
-          "fix": "Only value-bearing results are recorded; ordinary runs batch into the player record; match accounts close after settlement."
-        },
-        {
-          "n": "19",
-          "sev": "Minor",
-          "where": "M19",
-          "finding": "Web push needs a Firebase account, against the local-only rule.",
-          "fix": "D11 now covers third-party accounts; Q30 asks when to create them."
-        },
-        {
-          "n": "20",
-          "sev": "Minor",
-          "where": "Presets",
-          "finding": "The v3-parity preset's status was unclear.",
-          "fix": "D16: it stays as a regression baseline until M28; new mechanics switch off under it."
-        },
-        {
-          "n": "21",
-          "sev": "Minor",
-          "where": "Q3",
-          "finding": "Privy's server-held custody flow was unclear.",
-          "fix": "Q3 and M10/M11 spell out Privy server wallets with a server-verified token."
-        },
-        {
-          "n": "22",
-          "sev": "Minor",
-          "where": "Q16",
-          "finding": "'Saltwind only' narrowed the global kill board.",
-          "fix": "Option A is now every voyage biome as it ships."
-        }
-      ]
-    },
-    {
-      "title": "Plan re-review, rev 2 → rev 3 (30 Sep)",
-      "summary": "The reviewer re-checked rev 2: <strong>no blockers</strong>. 17 of the first 22 findings were fully resolved and 5 partly; it found 5 new majors and 6 minors, mostly about value integrity (seeds, migrated RUM, fallbacks) and phase size. All are addressed in rev 3 (31 phases plus the conditional M9b).",
-      "rows": [
-        {
-          "n": "N1",
-          "sev": "Major",
-          "where": "M9 fallback B, D6",
-          "finding": "Fallback B (statistical checks) would pay RUM without a verified replay, and async modes would then need the later match server.",
-          "fix": "Choosing B now explicitly amends D6 and moves Stage E ahead of Stage C; fallback A got its own conditional phase <strong>M9b kinematic port</strong>."
-        },
-        {
-          "n": "N2",
-          "sev": "Major",
-          "where": "Seeds",
-          "finding": "The client picks the run seed, so a verified run could still be a rerolled easy seed.",
-          "fix": "Every value-earning run uses a server-issued seed that verification checks (D6, I10.2, M18)."
-        },
-        {
-          "n": "N3",
-          "sev": "Major",
-          "where": "Save migration",
-          "finding": "Migration copied the editable local RUM balance into the server account.",
-          "fix": "Local RUM becomes capped <em>legacy RUM</em>: store-only, never transferred, wagered or exposed to raids (I10b.3)."
-        },
-        {
-          "n": "N4",
-          "sev": "Major",
-          "where": "Phase size",
-          "finding": "The server phase and the marketplace phase were too big for one gate.",
-          "fix": "Split into <strong>M10</strong> server and ledger / <strong>M10b</strong> accounts and migration, and <strong>M26</strong> NFTs and ownership sync / <strong>M26b</strong> marketplace."
-        },
-        {
-          "n": "N5",
-          "sev": "Minor",
-          "where": "Cross-references",
-          "finding": "Stale references (the V4 save guard, art-guide updates, invites, question tags, D14 vs Q15, Q1 wording, assembly direction).",
-          "fix": "All corrected; art-guide update tasks added to M14, M25 and M27; invite tasks added to M22–M24."
-        },
-        {
-          "n": "N6",
-          "sev": "Minor",
-          "where": "Verification notes",
-          "finding": "The list of unseeded draws was out of date; the placeholder verifier project was not mentioned; client and server are two builds.",
-          "fix": "Corrected list; M10 replaces the placeholder with a verifier worker; both build ids are recorded."
-        },
-        {
-          "n": "N7",
-          "sev": "Minor",
-          "where": "M24 playtest",
-          "finding": "Self-contradicting playtest wording.",
-          "fix": "Against a second tester's account."
-        },
-        {
-          "n": "N8",
-          "sev": "Minor",
-          "where": "D15",
-          "finding": "Race base owners could wager on their own base; referrals were not covered.",
-          "fix": "Both covered by D15."
-        },
-        {
-          "n": "N9",
-          "sev": "Minor",
-          "where": "M20",
-          "finding": "Brand bounty events depended on a later phase.",
-          "fix": "Marked as wired in M27."
-        },
-        {
-          "n": "N10",
-          "sev": "Minor",
-          "where": "Gate",
-          "finding": "Determinism was proved once and never re-checked.",
-          "fix": "A standing replay-determinism test joins gate step 6 from M10 on."
-        },
-        {
-          "n": "N11",
-          "sev": "Minor",
-          "where": "M1",
-          "finding": "Six mechanics in one phase.",
-          "fix": "Accepted; watched when M1 is detailed."
-        },
-        {
-          "n": "R2",
-          "sev": "Major",
-          "where": "M21",
-          "finding": "The netcode spike had no no-go path, no multi-ship runtime task, and its risk was measured last.",
-          "fix": "No-go path (Arena with light PvE, Hunt reduced or dropped), a multi-ship runtime task, and an early bandwidth measurement in M9 (I9.5)."
-        },
-        {
-          "n": "R3",
-          "sev": "Minor",
-          "where": "M4",
-          "finding": "Siren Bell's stun was not in the design doc.",
-          "fix": "Now a damaging pulse with a 20% slow, per the design."
-        }
-      ]
-    },
-    {
-      "title": "Review of your answers, rev 4 → rev 5 (30 Sep)",
-      "summary": "The reviewer checked that every answer is reflected in the plan and that the explanations are accurate and plain. <strong>No blockers</strong>, 6 majors and 7 minors, all addressed in rev 5. It raised three new questions for you (Q31 reference phone, Q32 key export, Q33 master-key backup).",
-      "rows": [
-        {
-          "n": "1",
-          "sev": "Major",
-          "where": "M1, M2",
-          "finding": "Overtime tiers and a run-ending pursuer were still mentioned after you chose the endless ramp.",
-          "fix": "Removed; M1 and M2 keep the endless ramp (Q22)."
-        },
-        {
-          "n": "2",
-          "sev": "Major",
-          "where": "Custody (D7), risks",
-          "finding": "Keys on Railway: the master key and the database share one Railway project; no backup or rotation; fee payer and settle keys not separated.",
-          "fix": "D7 and a new risk row: offline master-key backup (Q33), a key id for rotation, separate secrets for the fee payer, treasury and settle authority."
-        },
-        {
-          "n": "3",
-          "sev": "Major",
-          "where": "D7 vs key export",
-          "finding": "Key export contradicted \"keys never reach the client\".",
-          "fix": "One-time export after a fresh sign-in, logged; the account then becomes self-custody (Q32)."
-        },
-        {
-          "n": "4",
-          "sev": "Major",
-          "where": "Photon (M9, M21)",
-          "finding": "Photon's docs call client-server modes on WebGL \"not recommended\"; the free plan caps relayed traffic at 0.3 TB a month.",
-          "fix": "New risk row; M9's test has numeric pass limits (≤ 60 ms added latency, ≤ 30 KB/s per player, ≤ 150 MB per 4-player match); Fish-Net + Bayou fallback; ANSWERS corrected."
-        },
-        {
-          "n": "5",
-          "sev": "Major",
-          "where": "Enemy cap",
-          "finding": "One cap sized for a low-end phone was set only in M7, after M1–M3 tuning; no reference phone or frame rate.",
-          "fix": "The cap is set in M1 on your reference phone (new Q31); targets are shares of the cap; Hunt clients see at most the cap."
-        },
-        {
-          "n": "6",
-          "sev": "Major",
-          "where": "Anti-collusion",
-          "finding": "Referrals were still blocked though D15 turns limits off; AI raids, prizes and referrals missing from the risk; off-switches untested.",
-          "fix": "Hooks off (D15), each tested with its switch on; risk row lists every value flow."
-        },
-        {
-          "n": "7",
-          "sev": "Minor",
-          "where": "Accounts",
-          "finding": "Photon is needed for the M9 test, not only M21.",
-          "fix": "ANSWERS and TODOs say Photon from M9."
-        },
-        {
-          "n": "8",
-          "sev": "Minor",
-          "where": "M18",
-          "finding": "Leaderboard scope adopted before Q16 is answered.",
-          "fix": "Marked proposed."
-        },
-        {
-          "n": "9",
-          "sev": "Minor",
-          "where": "Q29 wording",
-          "finding": "\"Cheating stays impossible\" overclaimed; option B's stage-order effect missing.",
-          "fix": "\"A changed result is always caught\"; bots need separate checks; B moves the real-time stage earlier."
-        },
-        {
-          "n": "10",
-          "sev": "Minor",
-          "where": "M25",
-          "finding": "Tests still listed moderation states.",
-          "fix": "A stored report flag only on devnet."
-        },
-        {
-          "n": "11",
-          "sev": "Minor",
-          "where": "M26",
-          "finding": "Treasury and vault RUM on a plot sale unspecified.",
-          "fix": "They stay with the seller."
-        },
-        {
-          "n": "12",
-          "sev": "Minor",
-          "where": "Decisions",
-          "finding": "Dangling Q4/Q8/Q14 note; D17 missed Q3, Q18, Q23 and was out of order.",
-          "fix": "Inlined; D17 completed and reordered."
-        },
-        {
-          "n": "13",
-          "sev": "Minor",
-          "where": "ANSWERS",
-          "finding": "Megabonk claim stated as fact; the Balance Lab's editor window no longer exists.",
-          "fix": "Qualified as an estimate; M2 gives the lab a front end in the Tuning Console."
-        }
-      ]
-    },
-    {
-      "title": "Review of rev 7 (30 Sep)",
-      "summary": "Checked your second round of answers against the plan. <strong>No blockers</strong>, 8 majors and 10 minors, all addressed in rev 8 (33 phases). Two new questions for you: Q34 (forfeits) and Q35 (when checked voyage RUM can be wagered or sold).",
-      "rows": [
-        {
-          "n": "1",
-          "sev": "Major",
-          "where": "M9 plausibility",
-          "finding": "\"Kills can't exceed spawns\" is weak: the game spawns more as you kill more.",
-          "fix": "Bounds now come from the balance model and simulator; tested against a forged but consistent 99th-percentile log."
-        },
-        {
-          "n": "2",
-          "sev": "Major",
-          "where": "D6",
-          "finding": "Plausibility-checked RUM can still reach other players through wagers, the market and raids.",
-          "fix": "Stated in D6 and the risks; new question Q35."
-        },
-        {
-          "n": "3",
-          "sev": "Major",
-          "where": "Arena, Hunt",
-          "finding": "With uncapped PvP RUM (Q10) and collusion checks off, instant forfeits mint RUM.",
-          "fix": "Suggested rule: forfeits and matches under a minimum length pay nothing (Q34)."
-        },
-        {
-          "n": "4",
-          "sev": "Major",
-          "where": "M7 memory",
-          "finding": "\"Heap near 256 MB, max 512\" would crash 32-bit Chrome on the reference phone.",
-          "fix": "Hard 256 MB limit for mobile browsers (budget ~200 MB); 512 only on 64-bit browsers."
-        },
-        {
-          "n": "5",
-          "sev": "Major",
-          "where": "M13b",
-          "finding": "Too big for one gate.",
-          "fix": "Split: M13b single-player server sessions; new M21 multi-ship runtime and lobby before the Arena."
-        },
-        {
-          "n": "6",
-          "sev": "Major",
-          "where": "Prediction",
-          "finding": "Client prediction needs a deterministic ship controller; the physics ship had no task.",
-          "fix": "M13b adds a prediction-ready ship controller; M9 tests responsiveness at 150 ms."
-        },
-        {
-          "n": "7",
-          "sev": "Major",
-          "where": "Server sessions",
-          "finding": "No measure of session cost, sessions per process or mobile latency.",
-          "fix": "M9 go-limits added; AI raids run headless faster than real time; Railway cost estimate (~$30–60/month) before M13b closes."
-        },
-        {
-          "n": "8",
-          "sev": "Major",
-          "where": "Personalities",
-          "finding": "Parameters incomplete and values outside the declared enums.",
-          "fix": "Every personality has all 12 parameters with defined enums; avoidable damage and boss timing defined."
-        },
-        {
-          "n": "9–18",
-          "sev": "Minor",
-          "where": "Various",
-          "finding": "D11 timing, D4 AI-raid wording, a stale tag, floor-phone and 95% frame checks, assembly direction, invite order, request map rows, Quantum re-plan note, stale page cards, task order and profile mapping.",
-          "fix": "All corrected."
-        }
-      ]
-    },
-    {
-      "title": "Review of rev 9 (30 Sep)",
-      "summary": "Checked your third round: the Netcode for GameObjects choice, the forfeit rule and the Railway arithmetic (all within 20% of a recomputation). <strong>No blockers</strong>, 2 majors, 4 minors, all addressed.",
-      "rows": [
-        {
-          "n": "1",
-          "sev": "Major",
-          "where": "TODOs, status",
-          "finding": "Read before the round-3 update landed (Fish-Net Pro, open questions).",
-          "fix": "Already current; confirmed."
-        },
-        {
-          "n": "2",
-          "sev": "Major",
-          "where": "Railway savings",
-          "finding": "\"Ranked only on request\" was already in the baseline, so it double-counted.",
-          "fix": "Removed; reduced totals restated: ~$26–33 busy, ~$14–20 quiet."
-        },
-        {
-          "n": "3–4",
-          "sev": "Minor",
-          "where": "Forfeit rule (M22, M23)",
-          "finding": "Winner's pay on a forfeit, idle players, PvE sinkings and the Hunt's version were undefined.",
-          "fix": "One rule for both modes, with tests: nobody paid if others leave within 60 s; after that the remaining player is paid; 30 s idle counts as leaving; PvE, storm and edge wall count as combat."
-        },
-        {
-          "n": "5–6",
-          "sev": "Minor",
-          "where": "Wording",
-          "finding": "Stale Quantum and \"still open\" text; Serverless listed as an extra saving.",
-          "fix": "Reworded; Serverless marked as already assumed, wake-up time measured in M9."
-        }
-      ]
-    },
-    {
-      "title": "M1 enemy flow: implementation review (30 Sep)",
-      "summary": "The reviewer checked the diff against the plan, the V4 rules and the evidence. <strong>3 blockers, 4 majors, 9 minors</strong>; all fixed or recorded.",
-      "rows": [
-        {
-          "n": "1",
-          "sev": "Blocker",
-          "where": "Evidence",
-          "finding": "The PlayMode results predated the new M1 PlayMode test.",
-          "fix": "Both suites re-run after the last change; the test is in the evidence."
-        },
-        {
-          "n": "2",
-          "sev": "Blocker",
-          "where": "Floor top-ups",
-          "finding": "Several enemies could spawn in one frame, ignoring the 0.35 s spawn gap.",
-          "fix": "One top-up per gap; a flow-on gap test."
-        },
-        {
-          "n": "3",
-          "sev": "Blocker",
-          "where": "Hordes",
-          "finding": "The planned edge markers were missing.",
-          "fix": "Horde warnings carry a direction; the HUD shows the edge arrow and a minimap ping."
-        },
-        {
-          "n": "4",
-          "sev": "Major",
-          "where": "Hordes",
-          "finding": "Late hordes found no room at the enemy cap but still counted.",
-          "fix": "A 10 s lull before each horde, headroom above the cap, counted only when something spawns."
-        },
-        {
-          "n": "5",
-          "sev": "Major",
-          "where": "Horde placement",
-          "finding": "Members could be skipped on screen or placed without bounds checks.",
-          "fix": "Formed just beyond the view; islands and bounds always checked."
-        },
-        {
-          "n": "6",
-          "sev": "Major",
-          "where": "Plan",
-          "finding": "The phone deferral was not recorded.",
-          "fix": "Recorded in the plan (M1, M7) and your TODOs, with the memory finding."
-        },
-        {
-          "n": "7",
-          "sev": "Major",
-          "where": "Pickups",
-          "finding": "Merging applied to all pickups; merged views kept old values.",
-          "fix": "XP only; the view is re-drawn."
-        },
-        {
-          "n": "8–16",
-          "sev": "Minor",
-          "where": "Various",
-          "finding": "Dead code, untested holds and releases, adaptive lever, version tag, stale status, text, a weak cap test, warning timing, a tool error, a magenta effect.",
-          "fix": "Fixed, or recorded as pre-existing (the magenta flame effect is V4's known placeholder)."
-        }
-      ]
-    },
-    {
-      "title": "M2 balance model: implementation review (30 Sep)",
-      "summary": "<strong>1 blocker, 7 majors, 8 minors</strong>, all fixed or recorded; a second pass on the fixes found 4 more (1 major: the test script could discard unsaved scene edits), all fixed.",
-      "rows": [
-        {
-          "n": "1",
-          "sev": "Blocker",
-          "where": "Boss HP",
-          "finding": "The Barnacle King's HP change was on a spawner multiplier the game ignores (the boss spawner is not elite); only the simulator applied it.",
-          "fix": "Moved to the boss's base HP (800 → 1,400), which the game reads; the simulator follows the game's rule; tested."
-        },
-        {
-          "n": "2",
-          "sev": "Major",
-          "where": "Elites",
-          "finding": "The game gives scheduled elites the Rich affix (×1.25 HP); the simulator did not.",
-          "fix": "Mirrored and tested; elite HP retuned ×8 → ×6. Also fixed: the Reef Crab and overtime spawn paths."
-        },
-        {
-          "n": "3",
-          "sev": "Major",
-          "where": "Playable check",
-          "finding": "The 6:00 crowd checkpoint missed and the live XP pace was not confirmed.",
-          "fix": "XP now pulled to the ship; 4 of 4 in band; the XP pace is left to your playtest (stated)."
-        },
-        {
-          "n": "4",
-          "sev": "Major",
-          "where": "Targets",
-          "finding": "Nine bands were widened just enough to include the results.",
-          "fix": "Results shown against both sets; your decision."
-        },
-        {
-          "n": "5–8",
-          "sev": "Major",
-          "where": "Tests, chests, report, director",
-          "finding": "Per-minute checks untested; the 'Some' chest rule wrong; two elite kill-time figures; the director curve's caveats.",
-          "fix": "Fixed or recorded."
-        },
-        {
-          "n": "9–16",
-          "sev": "Minor",
-          "where": "Various",
-          "finding": "Scope deferrals, copied formulas, evidence notes, font asset, validation, targeting, WebGL, a dead loop.",
-          "fix": "Fixed or recorded."
-        },
-        {
-          "n": "N1–N4",
-          "sev": "Major / Minor",
-          "where": "Second pass",
-          "finding": "The test script could discard unsaved scenes; hordes modelled with the adaptive levers; a duplicated affix table; a stale comment.",
-          "fix": "Fixed: the script now stops and names unsaved scenes."
-        }
-      ]
-    },
-    {
-      "title": "M3 build balance: implementation review (30 Sep)",
-      "summary": "<strong>No blockers; 3 majors, 10 minors</strong>, then on the fixes 1 major and 3 minors; all fixed or recorded.",
-      "rows": [
-        {
-          "n": "1",
-          "sev": "Major",
-          "where": "Captains",
-          "finding": "Balanced on run length, not power; offense spread not stated.",
-          "fix": "Recorded as your decision with the tested 200-run table (run length ×0.92–×1.07, offense ×0.80–×1.16)."
-        },
-        {
-          "n": "2",
-          "sev": "Major",
-          "where": "Synergy items",
-          "finding": "Five items retuned on a generic build that misprices them.",
-          "fix": "Reverted; marked 'not banded'; your decision."
-        },
-        {
-          "n": "3",
-          "sev": "Major",
-          "where": "Tests",
-          "finding": "New rules not tested through the game's code path.",
-          "fix": "Module-path tests and a PlayMode test of the whole evolution chain."
-        },
-        {
-          "n": "4–13",
-          "sev": "Minor",
-          "where": "Various",
-          "finding": "Pity counting and one-card rule, two level settings, preset and zero-draw tests, level 8 parity, claims, docs.",
-          "fix": "Fixed or recorded."
-        },
-        {
-          "n": "N1–N4",
-          "sev": "Major / Minor",
-          "where": "Second pass",
-          "finding": "Stale Captain numbers; a check's scene reload order; pity carry-over; a test accessor.",
-          "fix": "Fixed or recorded."
-        }
-      ]
-    },
-    {
-      "title": "M3b-M3e plan and M3b code review (1 Oct)",
-      "summary": "<strong>No blockers.</strong> Plan: 7 majors, 5 minors (the cap against the reference phone, M3's evolution goals, the boss fight at any summon time, where the stronger types come from, M3c too big, parity, logging); all fixed. Code: 5 majors, 4 minors, then 1 major and 3 minors on the fixes; all fixed or recorded.",
-      "rows": [
-        {
-          "n": "C1",
-          "sev": "Major",
-          "where": "Ability button, Captain bar",
-          "finding": "The presenters deactivated themselves and could never come back.",
-          "fix": "Hidden through a CanvasGroup; hide-then-show tested."
-        },
-        {
-          "n": "C2",
-          "sev": "Major",
-          "where": "Island damage",
-          "finding": "Skipped Brace!/Keel and used the contact immunity.",
-          "fix": "Through the incoming multiplier; DamageReceiver.TakeImpact (no immunity, the hit event fires)."
-        },
-        {
-          "n": "C3",
-          "sev": "Major",
-          "where": "Holding into a shore",
-          "finding": "Could cost hull every 0.75 s.",
-          "fix": "A separate 2 s damage cooldown; a 5 s hold test."
-        },
-        {
-          "n": "C5",
-          "sev": "Major",
-          "where": "Button test",
-          "finding": "Bypassed the EventSystem.",
-          "fix": "A real raycast and pointer-down at the button's centre."
-        },
-        {
-          "n": "N1",
-          "sev": "Major",
-          "where": "Island damage",
-          "finding": "No hit feedback, items not told.",
-          "fix": "The hit event fires (TakeImpact)."
-        },
-        {
-          "n": "-",
-          "sev": "Found",
-          "where": "Bounce",
-          "finding": "The push was cut by the reverse-speed limit.",
-          "fix": "A fading push outside the steering limits."
-        },
-        {
-          "n": "-",
-          "sev": "Found",
-          "where": "Button",
-          "finding": "Covered the SaltWind weapon grid; invisible when that HUD is off.",
-          "fix": "On the canvas root, above the weapon grid, safe-area insets."
-        }
-      ]
-    },
-    {
-      "title": "M3c level-up rhythm review (1 Oct)",
-      "summary": "<strong>1 blocker</strong> (other personalities' boss wins fell out of band; only the baseline was tested), 4 majors (the tuner did not converge; minute 1 got more level-ups; the card levels override Q18b; evidence), 6 minors; then on the fixes 2 majors (evidence written to M3b's folder; a PlayMode test) and 6 minors. All fixed or recorded.",
-      "rows": [
-        {
-          "n": "1",
-          "sev": "Blocker",
-          "where": "Outcomes",
-          "finding": "Casual Cruiser and Build Planner boss wins out of band.",
-          "fix": "Interim enemy scale ×0.85, evolution level 5, a test over every personality."
-        },
-        {
-          "n": "2",
-          "sev": "Major",
-          "where": "Tuner",
-          "finding": "Did not converge; table not reproducible.",
-          "fix": "Fitted from the curve, scored on mean time error over the voyage; converged 4.9%."
-        },
-        {
-          "n": "3",
-          "sev": "Major",
-          "where": "Minute 1",
-          "finding": "5 level-ups instead of 4; one pickup chained cards.",
-          "fix": "10 s units: 4 in minute 1, none chained."
-        },
-        {
-          "n": "4",
-          "sev": "Major",
-          "where": "Card levels",
-          "finding": "Overrides Q18b.",
-          "fix": "Your question 4."
-        }
-      ]
-    },
-    {
-      "title": "M3d pressure review (1 Oct)",
-      "summary": "<strong>1 blocker</strong> (the crowd did not follow your sketch: the valley climbed and the last peaks were clamped), 10 majors (targets moved to fit the simulator; the early-hull target narrowed; overtime numbers understated; the boss test looser than its target; hordes broke note k; the look test would have missed your cannon-boat example; drawn size vs hitbox; a heavy model that is Hank's boat; untested tint code; a lost editor menu), 5 minors; all fixed or recorded. Second pass: 1 major (show the crowd's peak, not only the floor's) and 6 minors, fixed or recorded.",
-      "rows": [
-        {
-          "n": "1",
-          "sev": "Blocker",
-          "where": "Curve",
-          "finding": "Valley climbed above the 3:35 peak; late peaks clamped.",
-          "fix": "Final keyframes under one scale; an order test."
-        },
-        {
-          "n": "2",
-          "sev": "Major",
-          "where": "Targets",
-          "finding": "Kill floors and crowd bands moved to fit measurements.",
-          "fix": "Derived from the keyframes; kill bands back to M2; misses listed."
-        },
-        {
-          "n": "4",
-          "sev": "Major",
-          "where": "Overtime",
-          "finding": "×2-×3.5 reported; real ×6-×25 HP.",
-          "fix": "D19 and question 10 corrected."
-        },
-        {
-          "n": "6",
-          "sev": "Major",
-          "where": "Hordes",
-          "finding": "Same ship, faster and weaker in a horde.",
-          "fix": "Horde multipliers 1; a test."
-        },
-        {
-          "n": "7",
-          "sev": "Major",
-          "where": "Look test",
-          "finding": "Compared prefab names; missed the cannon-boat case.",
-          "fix": "Meshes, tint distance, size step; every spawner; caught skiff vs needle sloop."
-        },
-        {
-          "n": "8-9",
-          "sev": "Major",
-          "where": "Models",
-          "finding": "Hitbox smaller than the drawn ship; the Brigg is heavy and Hank's boat.",
-          "fix": "Hitbox × view size; gunner cog back on its cog model in crimson."
-        },
-        {
-          "n": "10",
-          "sev": "Major",
-          "where": "Tint code",
-          "finding": "Static, untested, burn-flash instances.",
-          "fix": "EnemyViewTint owned by the presenter; 4 tests."
-        }
-      ]
-    },
-    {
-      "title": "M3e performance review (1 Oct)",
-      "summary": "<strong>1 blocker</strong> (plan items neither done nor recorded), 5 majors (allocation tests that could not fail, a contaminated 5:00 measurement, a stale wake cache on reused views, static batching's memory unmeasured, untested behaviour changes), 7 minors; all fixed or recorded (static batching measured at +25 MB and taken out).",
-      "rows": [
-        {
-          "n": "1",
-          "sev": "Blocker",
-          "where": "Plan items",
-          "finding": "Several M3e items neither done nor recorded.",
-          "fix": "A table of each item with reason and phase (D27)."
-        },
-        {
-          "n": "2",
-          "sev": "Major",
-          "where": "Tests",
-          "finding": "The thread byte counter can read 0 on Unity.",
-          "fix": "Unity's GC constraint, and a test that it catches an allocation."
-        },
-        {
-          "n": "3",
-          "sev": "Major",
-          "where": "Measurement",
-          "finding": "The profiler start stalled the 5:00 sample; one run a side.",
-          "fix": "Sampler stops first; 3 seeded runs a side; medians."
-        },
-        {
-          "n": "4",
-          "sev": "Major",
-          "where": "Wake cache",
-          "finding": "Stale on reused views.",
-          "fix": "Rebuilt per life; a test."
-        },
-        {
-          "n": "5",
-          "sev": "Major",
-          "where": "Static batching",
-          "finding": "Memory not measured.",
-          "fix": "Measured +25 MB for ~50 batches: taken out."
-        },
-        {
-          "n": "6",
-          "sev": "Major",
-          "where": "Tests",
-          "finding": "Behaviour changes untested.",
-          "fix": "HUD signature, VFX prewarm, pickup shadows tested (caught one)."
-        }
-      ]
-    },
-    {
-      "title": "M4 weapons review (1 Oct)",
-      "summary": "<strong>2 blockers</strong> (no green run on final data; Swivel Battery's shots did nothing), 6 majors (dead stat on an item, simulator ignoring evolutions, chest crowding, dead upgrade cards, weak tests, missing prewarm and playable check); all fixed or recorded.",
-      "rows": []
-    },
-    {
-      "title": "M4b weapons review (1 Oct)",
-      "summary": "No blockers; 7 majors (turret target out of reach, director missing hits per firing, dead size cards, slow sweeps overstated, no summon cap, frame-rate whirlpool ticks, missing evidence); all fixed or recorded.",
-      "rows": []
-    },
-    {
-      "title": "M5 content review (1 Oct)",
-      "summary": "<strong>3 blockers</strong> (Fortune on the wrong Luck scale; armor never applied; Cursed Coin's gold ignored), 5 majors; fixed by scale and by taking the dead-stat content out of the pools until you decide.",
-      "rows": []
-    },
-    {
-      "title": "M7 mobile review (1 Oct)",
-      "summary": "<strong>No blockers; 7 majors, 8 minors.</strong> The safe area and UI scale missed late panels; settings rows too short; quality tiers changed combat caps; Brotli over HTTP; auto quality measured too early; unbuilt plan items. All fixed or recorded; questions 33-35 for you.",
-      "rows": []
-    },
-    {
-      "title": "M8 menu and shop review (1 Oct)",
-      "summary": "<strong>No blockers; 4 majors, 6 minors.</strong> A Captain bought in the shop stayed locked in the select; the shop skipped Captain locks; the interface is not yet server-shaped (recorded for M10); no PlayMode offer test (recorded). Fixed or recorded; questions 36-38.",
-      "rows": []
-    },
-    {
-      "title": "M7c web performance review (2 Oct)",
-      "summary": "<strong>1 blocker</strong> (the shipped code was not measured yet), 5 majors, 6 minors; all fixed: final builds measured, bench no longer touches your prefs or the render scale, the 'UI art' compression pass reverted, WebAssembly 2023 off (question 41).",
-      "rows": []
-    },
-    {
-      "title": "M7d Android review (2 Oct)",
-      "summary": "<strong>No blockers</strong>, 4 majors, 9 minors; fixed: the variants could not be told apart at 60 fps (default kept, A15 decides), tests for the cap and arguments, the Editor's target and Unity services restored after builds, benchmark APKs under their own package.",
-      "rows": []
-    }
+  [
+   "Branch",
+   "<code>playtest</code> = <code>v5-live-game</code> + 32 commits (merge planned in M8z)"
   ]
+ ],
+ "phases": {
+  "M0": {
+   "state": "done",
+   "chip": "done 29 Sep"
+  },
+  "M1": {
+   "state": "done",
+   "chip": "done 1 Oct · playtested"
+  },
+  "M2": {
+   "state": "done",
+   "chip": "done 1 Oct · playtested"
+  },
+  "M3": {
+   "state": "done",
+   "chip": "done 1 Oct · playtested"
+  },
+  "M3b": {
+   "state": "playtest",
+   "chip": "built 1 Oct · awaiting your playtest"
+  },
+  "M3c": {
+   "state": "playtest",
+   "chip": "built 1 Oct · superseded by the playtest XP curve (P1)"
+  },
+  "M3d": {
+   "state": "playtest",
+   "chip": "built 1 Oct · partly superseded: HP grows, 15-min timeline (P1)"
+  },
+  "M3e": {
+   "state": "playtest",
+   "chip": "built 1 Oct · awaiting your playtest"
+  },
+  "M4": {
+   "state": "playtest",
+   "chip": "built · role ±20% replaced by equal level-1 damage"
+  },
+  "M4b": {
+   "state": "playtest",
+   "chip": "built 1 Oct · awaiting your playtest"
+  },
+  "M5": {
+   "state": "playtest",
+   "chip": "built 1 Oct · awaiting your playtest"
+  },
+  "M7": {
+   "state": "playtest",
+   "chip": "built · Esc pause, minimap, barks removed in the playtest"
+  },
+  "M8": {
+   "state": "playtest",
+   "chip": "built · mode select removed; weapon shop empty (P3)"
+  },
+  "M8z": {
+   "state": "next",
+   "chip": "next: playtest integration"
+  }
+ },
+ "log": [
+  {
+   "when": "29 Sep",
+   "what": "Your 24 requests received. Branch <code>v5-live-game</code> created from the V4 tip (<code>f1b9a4cf</code>).",
+   "commit": ""
+  },
+  {
+   "when": "29 Sep",
+   "what": "Mapped the current game with three read-only searches (content and balance; menu, backend and web3; art) and two web research tasks (survivor-like balance; Solana, MagicBlock, wallets and multiplayer). Research saved in <code>plan/v5/research/</code>.",
+   "commit": ""
+  },
+  {
+   "when": "29 Sep",
+   "what": "Independent reviewer agent written: <code>.claude/agents/v5-reviewer.md</code> (read-only; reviews the plan and each phase's code).",
+   "commit": ""
+  },
+  {
+   "when": "29 Sep",
+   "what": "Baseline in the open Editor: EditMode <strong>307/307</strong>, PlayMode <strong>49/49</strong>, console clean.",
+   "commit": ""
+  },
+  {
+   "when": "29 Sep",
+   "what": "Plan written: 26 phases in six stages, 14 proposed decisions, 20 questions for you.",
+   "commit": ""
+  },
+  {
+   "when": "29 Sep",
+   "what": "Independent plan review: <strong>3 blockers, 12 majors, 7 minors</strong>. All fixed in plan rev 2: a replay-verification spike before accounts, pending RUM until verified, no RUM-to-token bridge through items, anti-collusion rules, wager formats per mode, split phases (now 29, M0–M28). Details under Review findings.",
+   "commit": ""
+  },
+  {
+   "when": "29 Sep",
+   "what": "GDD updated: three Decision log rows (V5 direction, reversals, two economies and custody), the roadmap's V5 track, the Not now and Never lists, and 27 V5 questions on the board.",
+   "commit": ""
+  },
+  {
+   "when": "30 Sep",
+   "what": "Plan re-review of rev 2: <strong>no blockers</strong>, 5 majors and 6 minors (server-issued seeds, capped legacy RUM on migration, the fallback that would amend D6, two oversized phases, the real-time no-go path). All fixed in <strong>plan rev 3</strong>: M9b (conditional kinematic port), M10/M10b and M26/M26b splits, an early netcode measurement in M9.",
+   "commit": ""
+  },
+  {
+   "when": "30 Sep",
+   "what": "Your answers to the V5 questions applied as <strong>plan rev 4</strong>: custody on our Railway server, a Monte Carlo balance simulator instead of autopilot runs, one enemy cap sized for a low-end phone, endless overtime, RUM treasury and vault, anti-collusion deferred, and more (decision D17). Researched and explained what you asked about: Photon and the other multiplayer options with costs, sign-in, hosting, Megabonk's levels, the four weapons plus eight more ideas, replay verification, and a cost breakdown of every third-party account (about $5–20 a month at 100 players). See <em>Your answers, explained</em>.",
+   "commit": ""
+  },
+  {
+   "when": "30 Sep",
+   "what": "Independent review of your answers (rev 4): <strong>no blockers</strong>, 6 majors, 7 minors, all fixed in <strong>rev 5</strong>: custody safeguards (master-key backup and rotation, separate secrets, one-time key export), numeric pass limits for the Photon test in M9, the enemy cap set on your reference phone in M1, deferred anti-collusion switches still tested. Three new questions (Q31–Q33).",
+   "commit": ""
+  },
+  {
+   "when": "30 Sep",
+   "what": "Your second round of answers applied as <strong>plan rev 7</strong>: 6 full-loot AI raids a day, uncapped PvP RUM, Google + email sign-in, Railway only, evolutions at level 8 with multi-level rare cards, nine new weapons (M4, M4b), a new Monte Carlo simulator written from scratch on V4 with ten player personalities, plausibility checks with value-moving modes played on our match server (moved up to M13b), no key export. Researched the 4-player Hunt netcode (recommendation now <strong>Fish-Net + Bayou</strong>: Photon calls its server mode \"not recommended\" for browsers) and the reference phone (<strong>Galaxy A15 / A16 4G at a steady 30 fps</strong>; browser memory near 256 MB is the big constraint).",
+   "commit": ""
+  },
+  {
+   "when": "30 Sep",
+   "what": "Independent review of rev 7: <strong>no blockers</strong>, 8 majors, 10 minors, all fixed in <strong>rev 8</strong>: plausibility bounds from the balance model, a hard 256 MB mobile memory limit, a prediction-ready ship controller, server-session costs measured in M9 (Railway estimate ~$30–60/month once sessions run), the multi-ship lobby as its own phase (M21), fully specified personalities. Two new questions (Q34, Q35).",
+   "commit": ""
+  },
+  {
+   "when": "30 Sep",
+   "what": "Your third round of answers applied as <strong>plan rev 9</strong>: Unity Netcode for GameObjects for multiplayer (free; we write nearby-enemy filtering and lag compensation), treasury protection (vault 80% / treasury 20%, 8 h shield, 10% daily loss cap, 72 h for new players), the reference phone (Galaxy A15 / A16 4G at 30 fps), forfeits pay nothing but a genuine short match does, checked voyage RUM usable on devnet. <strong>Every V5 question is now answered.</strong> Added a per-service Railway cost breakdown with savings (about $20–25/month if ~30 of 100 players play daily; $40–45 if all do; about $14–33 with the three biggest savings).",
+   "commit": ""
+  },
+  {
+   "when": "30 Sep",
+   "what": "You chose: carry on while away, commit and push each phase that passes its tests and review, stand-in instead of the phone, Unity restarts allowed. M0 committed and pushed.",
+   "commit": "0b523f0d"
+  },
+  {
+   "when": "30 Sep",
+   "what": "<strong>M1 enemy flow built</strong> (unattended): a minimum crowd per minute (ten 1-minute waves with a jagged floor), four telegraphed hordes (ring, line, pack) with a lull before each and edge markers, breathing room after arenas, the boss kill and hordes, a lower floor during the boss fight, XP that merges instead of being lost. Off under the v3-parity preset. Independent review: 3 blockers, 4 majors, 9 minors, all fixed. EditMode 331/331, PlayMode 50/50, playable check 0 game errors. Found: today's WebGL build needs a 344 MB heap and a 160 MB download, above the phone budget (moved to M7).",
+   "commit": "69cda9bf"
+  },
+  {
+   "when": "30 Sep",
+   "what": "<strong>M2 balance model built</strong> (unattended): a Monte Carlo simulator written new on V4 (the real level-up, item and Captain code; ten player personalities), calibrated against the V4 autopilot's recorded runs (median death 7.8 vs 8.0 Observe, 6.4 vs 6.3 Adaptive). It found every personality sinking at the 2:30 Reef Crab, slow level-ups, a crowd stuck at the cap from 4:00, 1-second elites and overtime ending every run by ~13 min. Retuned: faster XP curve, a ~17 s Reef Crab, ~5.5 s elites, a ~55 s Barnacle King, gentler growth after 2:00, lower band rates from 4:00, a slower overtime ramp, the director's on-track curve re-measured. 72 of 76 revised targets met (66 of 76 of the first proposals). New F1 console Balance section. Review: 1 blocker (a boss HP change the game ignored), 7 majors, 8 minors; all fixed or recorded; second pass found 4 more, fixed.",
+   "commit": "4112e7af"
+  },
+  {
+   "when": "30 Sep",
+   "what": "<strong>M3 build balance built</strong> (unattended): evolutions reachable (the card from weapon level 8 with its item; Rare/Epic cards +2 levels, Legendary +3; a pity rule; a 40% chance that a chest gives a ready weapon's evolution item) — focused builds now evolve in ~60% of runs, around minute 6. All ten weapons within ±20% of their role at levels 1, 4, 8 and 12 (the Flamethrower no longer fades, the Powder Kegs no longer lag, the Lightning Mast no longer runs away). Plain Logbooks and items in their rarity bands; volley and crit pieces flagged; synergy items left for you. Captains within ±10% on run length (Flint's hull 90 → 120). 5 items by 10:00. Review: 3 majors, 10 minors, then 1 major and 3 minors on the fixes; all fixed or recorded.",
+   "commit": "e1195f7f"
+  },
+  {
+   "when": "30 Sep",
+   "what": "<strong>Demo interlude, merged into V5</strong>: the art team's menu, Captain select, HUD and level-up cards; per-weapon, ship and enemy VFX profiles with an editor; POI and level-up card prefabs; music; the floating joystick (app and mobile browsers); safe-area HUD; mobile render settings (60 fps on a Pixel 9a); smarter enemies; shots stop at islands; APK and WebGL builds. Kept for V5: half XP, 1.625x ship speed, lower player ranges, the AI changes, cannon boats from 1:00, the boss rising out of a whirlpool after the beacon summon. Restored: POIs, Captain active, boost, barks, tutorial, Logbook cards, flamethrower. EditMode 367/367, PlayMode 51/51.",
+   "commit": "86724e6b"
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>Balance re-check on the demo baseline</strong>: half XP and the 1.625x ship speed moved into config and the simulator. Half XP alone took the model from 2 of 76 to 24 of 70 targets missed; you kept it and chose a retune: enemy HP growth x0.55, damage growth x0.7, the evolution card from weapon level 6 (was 8), Lightning Mast -2%, the director curve re-measured, level and level-up targets at the slower pace. Result: 2 of 76 missed, the same two as M3; median run 10.3 min (10.1); levels about 40% slower. Review: no blockers, 10 minors, then 3 minors on the fixes; all fixed. EditMode 372/372, PlayMode 53/53. Details: <code>plan/v5/balance-recheck/README.md</code>.",
+   "commit": "263fa59d"
+  },
+  {
+   "when": "1 Oct",
+   "what": "Your answers: M1–M3 and the retune are fine for now (finetuning later), and the level-up pace targets hold the pace at ±20% (minute 1: 12–18 s; 0–10 min: 20–30 s).",
+   "commit": ""
+  },
+  {
+   "when": "1 Oct",
+   "what": "You left notes a-k and a sketch before going away for 7-8 hours and asked me to keep going and decide on your behalf. Plan: four new phases before M4: <strong>M3b</strong> feel fixes, <strong>M3c</strong> level-up rhythm, <strong>M3d</strong> pressure from enemy count with peaks and valleys and distinct enemies, <strong>M3e</strong> performance and the enemy cap. Decisions and questions: <code>plan/v5/DECISIONS-WHILE-AWAY.md</code>. The plan review found no blockers, 7 majors and 5 minors, all fixed (M3c split, the cap after measuring, M3's evolution goals re-checked).",
+   "commit": ""
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>M3b feel fixes built</strong> (awaiting your playtest): an island hit pushes the ship back off the shore and costs 5 hull at most every 2 s (through Brace! and the Keel, with the usual hit flash); unblown powder kegs sink after 45 s; the Captain's special ability has a round touch button in the joystick's art above the weapon grid, with a cooldown sweep (touch devices only). Review: no blockers; 9 code findings and 4 more on the fixes, all fixed (the button and the Captain bar could hide for good; the bounce was being cancelled by the reverse-speed limit). EditMode 374/374, PlayMode 56/57 (a known intermittent test).",
+   "commit": "40d0dde7"
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>M3c level-up rhythm built</strong> (awaiting your playtest): your \"1 1 2 3 5\" as gaps of 10, 10, 20, 30, 50 s after the first kill, then 60 s: 4 level-ups in the first minute as before, about 13 by 10:00 (was ~24), through a per-level XP table fitted in the simulator. To keep builds strong with fewer picks: weapon cards grant 2/2/3/3/4 levels, evolutions from weapon level 5, Roxie's hull 104, and an interim flat enemy scale (×0.85) that M3d replaces. Simulator: 2 of 76 targets missed (the same two as M3), median run 10.6 min, focused builds evolve in 65% of runs. Review: one blocker (other personalities' boss wins) and several majors, all fixed and re-verified. EditMode 381/381, PlayMode 57/57.",
+   "commit": "8107f965"
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>M3d pressure from enemy count built</strong> (awaiting your playtest): enemy HP and damage no longer grow with time (a cannon boat has 12 HP at 1:00 and at 8:00); the crowd follows your sketch in 22 keyframes (small early peaks, a big one at 3:35-3:45, a long valley rising in ~60 s waves, peaks at 7:30 and 9:35); stronger late types at fixed stats; every enemy that attacks differently looks different (tint, size), and hordes are ordinary ships. Per-minute targets now come from the design, not the simulator. Simulator: 2 of 76 targets missed (the First-Timer, minute 6 kills in the boss fight), both bounded and listed (D22); median run 11.0 min; in 15 s bins the crowd peaks at 3:45 (about 44) over a quieter valley (about 34) and rises to 65-69 at 7:30 and 9:30. Review: 1 blocker (the curve did not follow the sketch) and 10 majors (targets fitted to measurements, overtime understated, a heavy model, hordes, the look test, hitboxes, tint code), all fixed; the second pass found 1 major (the crowd, not only the floor, must show the peak) and 6 minors, fixed or recorded. EditMode 397/397, PlayMode 59/59.",
+   "commit": "4ea07819"
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>UI text without em dashes</strong>: about 60 toasts, prompts, menu labels and boss and tutorial texts now use a colon or a comma; the toast and the tutorial prompt clean any text that reaches them; a test guards it (D23).",
+   "commit": "3d934792"
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>M3e performance built</strong> (awaiting your playtest): measured on the same map, three runs a side in the Editor. The game's garbage fell from 28 KB to 1.3 KB a frame (the ship wakes searched every enemy's children every frame), the enemy world's main-thread time from 1.42 to 0.67 ms, batches at 9:00 from 991 to 784, triangles from 1.57M to 1.45M (Mesh LODs for 14 heavy models: one chest was ~77,650 triangles). Pools now make nothing mid-run and enemy models are stripped in the pool (a NavMesh warning fell from 99 to 2 a run). Static batching of the islands was tried and taken out (+25 MB for ~50 batches); dynamic batching gave nothing; occlusion culling does not apply here (the far clip went 1000 → 250 m instead). The enemy cap stays 80 until the reference phone (D24). Review: 1 blocker (plan items left unrecorded) and 5 majors, fixed or recorded (D27).",
+   "commit": "3626aedc"
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>M4a and M4 built</strong> (awaiting your playtest): slow, pierce, knockback, several orbit weapons and boost-gated auras (today's ten weapons proved unchanged); four new weapons (Anchor Flail, Chainshot, Siren Bell, Ramming Prow) at 120-160 Rum; eight evolutions (one generic Empowered kind) with their chest items; damage set by the balance model within 20% of each role. Decisions D28-D31.",
+   "commit": ""
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>M4b built</strong> (awaiting your playtest): Parrot Squadron, Monkey Gunners, Maelstrom Charge, Lighthouse Lantern, Cursed Doubloons (170-220 Rum) with five Empowered evolutions and their items; pull, whirlpools, sweeping beams, capped summons and capped kill gold; the balance model and the difficulty director now share how many hits a firing deals (the Anchor Flail re-tuned with it). D32.",
+   "commit": ""
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>M5 built</strong> (awaiting your playtest): four Logbooks (Fortune, Tidecaller, Admiral, Plunderer; Ironclad waits for armor), thirteen items bought with Rum (Shark Tooth, Skeleton Key, Smuggler's Ledger, Black Spot, Barnacle Crown, Jolly Roger, Leviathan Heart, Captain's Last Rum and more); new item effects with tests. The free Commons and the four designed powerups would have pushed the balance bands, so they wait for you (D33, D34; questions 27-32).",
+   "commit": ""
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>M7 mobile UI and input built</strong> (awaiting your playtest): touch BOOST and PAUSE buttons, a pause menu (Escape, gamepad Start, touch) with Resume, Settings and Quit; Settings (UI scale, music, effects, quality, reduced effects, shake, stick side and dead zone) from the menu and the pause menu; safe-area wrapping; 72-unit touch targets; automatic quality; WebGL mobile and desktop build profiles and a LAN server. Review: no blockers, 7 majors and 8 minors, fixed or recorded. Three questions for you (33-35).",
+   "commit": "30b2e2e6"
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>M8 menu hub and shop built</strong> (awaiting your playtest): SET SAIL opens a mode select (Voyage; Raids, Race, Arena, Hunt coming), LEDGER the shop (weapons, Logbooks, items, Captains for RUM), PROFILE your stats and collection; meta services (account, RUM, inventory, store) over the local save behind interfaces for the server. Content out of every pool is not sold. Review: no blockers, 4 majors and 6 minors, fixed or recorded. Questions 36-38.",
+   "commit": "c3f8ae50"
+  },
+  {
+   "when": "1 Oct",
+   "what": "<strong>The phone build</strong> (M7b): texture pass (881 textures capped at 1024 on WebGL), download 111 MB (163 MB in September). With 256 MB of heap it ran out of memory loading the menu, so it builds with 512 MB (D37, question 39). In a browser it reaches the menu, the mode select, the Captain select, a run and the pause menu. Serve it to your phone with <code>python plan/v5/tools/serve-webgl.py \"Pirate Game Unity/Builds/WebGL-Mobile/RoguePirates\"</code>.",
+   "commit": "0f0a7531"
+  },
+  {
+   "when": "2 Oct",
+   "what": "<strong>Phone performance, web (M7c)</strong>: about 50 benchmark runs on your Pixel 9a over USB and a desktop Chrome found two costly systems and a texture bug. The minimap fog now redraws only around new cells (the regular 100+ ms freezes are gone), enemy health bars share one canvas, phones get ASTC textures. Phone with 80 enemies: 26.0 to 37.5 fps, slowest 1% of frames 144 to 42 ms; GPU memory 2.27 to 1.53 GB; download 111 to 87.5 MB. Desktop: locked 60 fps. Review: 1 blocker, 5 majors, 6 minors, fixed. Report: <a href=\"https://claude.ai/artifact/RgXzkpGtFQ1GWicAx3LMSN\">Rogue Pirates Phone Bench</a>.",
+   "commit": "bb7af23c"
+  },
+  {
+   "when": "2 Oct",
+   "what": "<strong>Android APK (M7d)</strong>: the native app holds a locked 60 fps on the Pixel 9a in every variant, even with 80 enemies; Vulkan, GLES3 and frame pacing make no difference there (the default kept). An Android texture cap cut the APK from 155.5 to 127.9 MB and about 60 MB of memory. The playtest APK (126.9 MB) is installed on your phone. Review: no blockers, 4 majors, 9 minors, fixed.",
+   "commit": "246db72c"
+  },
+  {
+   "when": "3 Oct",
+   "what": "<strong>Playtest rounds 5-7</strong> (branch <code>playtest</code>): Survivor.io-style 15-minute voyage, Monte Carlo balance model (<a href=\"https://claude.ai/artifact/Gg1bmU3cYCQZQ7kxpSnYRQ\">Saltwind Balance Simulator</a>), weapon roles, armor, timed heals; guest profiles, weekly leaderboard and 1v1 PvP (lobby, invites, draft, relayed match, bot, rematch) on an API live on Railway; island hits only from real islands; attack warnings for non-projectile attacks, dark cannonballs; desktop WebGL build.",
+   "commit": "6e5822b6"
+  },
+  {
+   "when": "4 Oct",
+   "what": "<strong>Playtest round 8</strong>: PvP draft descriptions and four PvP fixes, the opponent's health, attacks and loadout on both screens, health bars on elites, minibosses and the boss, fight floors and Barnacle King health halved, enemy damage +25%; independent review (no blockers, fixes applied); Android APK.",
+   "commit": "4909be9a"
+  },
+  {
+   "when": "5 Oct",
+   "what": "<strong>Round 9</strong>: Set Sail goes to the Captain select, side buttons widened; chests back, flamethrower back on; review fixes; Unity tests EditMode 438/499 and PlayMode 51/63 (one stale parity-preset entry had broken about 30 tests).",
+   "commit": "9e8e01ae"
+  },
+  {
+   "when": "6 Oct",
+   "what": "All points of interest and the Beacon boss summon back (no timed boss); PowerShell deploy script and a GitHub Action for the API; a session recorder and <code>compare_session.mjs</code> to check the simulator against your play; <strong>back-to-V5 review</strong> (3 blockers, M8z added, plan rev 10).",
+   "commit": "57480a7b"
+  }
+ ],
+ "todos": {
+  "next": [
+   "<strong>Answer questions P1-P10</strong> (section 9): playtest rules vs M3c/M3d/D17, overtime Rum cap, weapon unlocks, the parity preset, the PvP relay, anti-cheat, boss timing, touch rules, auto-deploy approval, the merge.",
+   "<strong>Deploy the API</strong>: add the <code>RAILWAY_TOKEN</code> repository secret in GitHub (the Deploy API workflow then runs on each server change), or run <code>powershell -NoProfile -ExecutionPolicy Bypass -File server/deploy.ps1</code>; send me the error if it fails.",
+   "<strong>Play a recorded voyage</strong> in the Editor or the new desktop WebGL build; the session file lands in <code>plan/playtest/sessions/</code> (or downloads in the browser); I compare it with the simulator."
+  ],
+  "open": [
+   "PvP draft on phones: tapping a card to read it also picks it (later).",
+   "PvP referee trusts client-reported damage (P6); rematch creation can't be retried after a server error; attack warnings share hazard slots with damaging hazards.",
+   "Flamethrower VFX is broken (offered again); fixed in M4.",
+   "Earlier GDD questions (21 left) are still on the board; the raid entry fee (question 4) feeds M15 and the pass price (question 5) feeds M20."
+  ],
+  "done": [
+   "<strong>Playtest rounds 1-9</strong> (1-6 Oct): see the progress log; notes in <code>plan/playtest/NOTES.md</code> and <code>ROUND8-LOG.md</code>.",
+   "<strong>Balance re-check</strong> (1 Oct): half XP kept, retune around it; see <code>plan/v5/balance-recheck/README.md</code>.",
+   "<strong>Playtest M1-M3 and the half-XP retune</strong> (1 Oct): fine for now, finetuning later; the level-up pace targets hold the pace at ±20%.",
+   "<strong>V5 questions, round 3</strong> (30 Sep): netcode, treasury protection, reference phone, forfeits and checked RUM decided; every V5 question answered.",
+   "<strong>V5 questions, round 2</strong> (30 Sep): 16 more decided (D17), personalities defined, the Hunt netcode and reference phone researched.",
+   "<strong>V5 questions answered</strong> (30 Sep): 19 decided (D17), the rest explained on this page; the plan reviewed again (rev 5).",
+   "<strong>V5 M0 setup</strong> (29 Sep): branch, reviewer agent, plan and research, green baseline.",
+   "Demo round (30 Sep) merged into V5; details in <code>plan/demo/README.md</code>."
+  ]
+ },
+ "proof": [
+  {
+   "date": "29 Sep",
+   "phase": "M0",
+   "check": "EditMode, all assemblies (baseline)",
+   "result": "307 / 307 passed · 32.7 s",
+   "evidence": "plan/v5/phase-00-setup/evidence/baseline-editmode.json"
+  },
+  {
+   "date": "29 Sep",
+   "phase": "M0",
+   "check": "PlayMode, all assemblies (baseline)",
+   "result": "49 / 49 passed · 177 s",
+   "evidence": "plan/v5/phase-00-setup/evidence/baseline-playmode.json"
+  },
+  {
+   "date": "29 Sep",
+   "phase": "M0",
+   "check": "Editor console after compile",
+   "result": "0 errors",
+   "evidence": "unity command console"
+  },
+  {
+   "date": "29 Sep",
+   "phase": "M0",
+   "check": "Independent plan review, rev 1",
+   "result": "3 blockers · 12 majors · 7 minors → all addressed in rev 2",
+   "evidence": "plan/v5/status.json → reviews[0]"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M0",
+   "check": "Independent plan re-review, rev 2",
+   "result": "No blockers · 5 majors · 6 minors → all addressed in rev 3",
+   "evidence": "plan/v5/status.json → reviews[1]"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M0",
+   "check": "Pricing and Megabonk research for your follow-up questions",
+   "result": "Saved; all prices from the vendors' pricing pages",
+   "evidence": "plan/v5/research/PRICING_RESEARCH.md, MEGABONK_LEVELS.md"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M0",
+   "check": "Independent review of your answers (rev 4)",
+   "result": "No blockers · 6 majors · 7 minors → all addressed in rev 5",
+   "evidence": "plan/v5/status.json → reviews[2]"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M0",
+   "check": "Hunt netcode and device research",
+   "result": "Saved with sources",
+   "evidence": "plan/v5/research/HUNT_NETCODE.md, DEVICE_TARGETS.md"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M0",
+   "check": "Independent review of rev 7",
+   "result": "No blockers · 8 majors · 10 minors → all addressed in rev 8",
+   "evidence": "plan/v5/status.json → reviews[3]"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M0",
+   "check": "Independent review of rev 9 (incl. a recomputation of the Railway costs)",
+   "result": "No blockers · 2 majors · 4 minors → addressed",
+   "evidence": "plan/v5/status.json → reviews[4]"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M1",
+   "check": "EditMode, all assemblies (incl. 24 flow tests)",
+   "result": "331 / 331 passed · 51.6 s",
+   "evidence": "plan/v5/phase-01-flow/evidence/editmode.json"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M1",
+   "check": "PlayMode, all assemblies (incl. the flow checkpoints in the real scene)",
+   "result": "50 / 50 passed · 167.9 s",
+   "evidence": "plan/v5/phase-01-flow/evidence/playmode.json"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M1",
+   "check": "Playable check: real Play session, clock jumps to 1, 3, 5:30 (horde), 6, 9, 13 min, screenshots",
+   "result": "0 game errors; alive 15 / 25 / 51 / 72 / 71; the 5:30 horde on screen",
+   "evidence": "plan/v5/phase-01-flow/evidence/playable/"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M1",
+   "check": "Stand-in phone memory (last WebGL build, read in the browser)",
+   "result": "WebAssembly heap 344 MB, JS heap 277 MB, data 160 MB: above the 256 MB phone budget (M7)",
+   "evidence": "plan/v5/phase-01-flow/PLAN.md → Measurement"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M1",
+   "check": "Independent review (v5-reviewer)",
+   "result": "3 blockers · 4 majors · 9 minors → all fixed or recorded",
+   "evidence": "plan/v5/phase-01-flow/PLAN.md → Independent review"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M2",
+   "check": "Model report: 10 personalities × 200 runs, the baseline per minute, pacing, weapon pairs",
+   "result": "72 of 76 revised targets (66 of 76 original); baseline sinks at 12.2 min, beats the boss 80%, level 34 at 10:00",
+   "evidence": "plan/v5/phase-02-model/model-report.md"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M2",
+   "check": "Calibration against the V4 autopilot's recorded real runs (no new traces)",
+   "result": "median death 7.8 vs 8.0 (Observe), 6.4 vs 6.3 (Adaptive); per-minute spawns, kills, alive, level and offense match",
+   "evidence": "plan/v5/phase-02-model/PLAN.md → Calibration"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M2",
+   "check": "EditMode, all assemblies (incl. 21 balance tests)",
+   "result": "352/352 passed",
+   "evidence": "plan/v5/phase-02-model/evidence/editmode.json"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M2",
+   "check": "PlayMode, all assemblies",
+   "result": "50/50 passed",
+   "evidence": "plan/v5/phase-02-model/evidence/playmode.json"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M2",
+   "check": "Playable check: real Play session, crowd at 1, 3, 6, 9 min against the targets; the console's Balance section run in-game",
+   "result": "0 game errors; 4 of 4 checkpoints in band (6:00 on the ceiling); XP pace not confirmable with a standing ship (your playtest)",
+   "evidence": "plan/v5/phase-02-model/evidence/playable/"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M2",
+   "check": "Independent review (v5-reviewer), two passes",
+   "result": "1 blocker · 7 majors · 8 minors → fixed or recorded; second pass: 4 new, fixed",
+   "evidence": "plan/v5/phase-02-model/PLAN.md → Independent review"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M3",
+   "check": "Weapon parity (the game's own upgrade path, 300 paths each)",
+   "result": "10 of 10 within ±20% at levels 1, 4, 8, 12",
+   "evidence": "plan/v5/phase-03-builds/evidence/weapon-parity.md"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M3",
+   "check": "Logbook and item bands",
+   "result": "plain pieces in band; 5 flagged (volley, crit); synergy items not banded",
+   "evidence": "plan/v5/phase-03-builds/evidence/build-pieces.md"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M3",
+   "check": "Captains (200 simulated runs each)",
+   "result": "run length ×0.92–×1.07; offense at 10:00 ×0.80–×1.16",
+   "evidence": "plan/v5/phase-03-builds/evidence/captains.md"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M3",
+   "check": "Simulator report (M2 targets after M3)",
+   "result": "74 of 76 met (was 72)",
+   "evidence": "plan/v5/phase-03-builds/model-report.md"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M3",
+   "check": "EditMode, all assemblies",
+   "result": "367/367 passed",
+   "evidence": "plan/v5/phase-03-builds/evidence/editmode.json"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M3",
+   "check": "PlayMode, all assemblies (incl. the evolution chain in the real run)",
+   "result": "51/51 passed",
+   "evidence": "plan/v5/phase-03-builds/evidence/playmode.json"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M3",
+   "check": "Playable check: each of the six Captains to 5:00 in a real Play session",
+   "result": "all six ran, actives used, 0 game errors",
+   "evidence": "plan/v5/phase-03-builds/evidence/playable/"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "M3",
+   "check": "Independent review (v5-reviewer), two passes",
+   "result": "3 majors · 10 minors, then 1 major · 3 minors → fixed or recorded",
+   "evidence": "plan/v5/phase-03-builds/PLAN.md → Independent review"
+  },
+  {
+   "date": "30 Sep",
+   "phase": "Demo",
+   "check": "EditMode and PlayMode suites after merging the demo into V5 (demo switches off in tests)",
+   "result": "367/367 and 51/51",
+   "evidence": "plan/demo/evidence/editmode.json, playmode.json"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3b",
+   "check": "EditMode and PlayMode suites",
+   "result": "374/374 and 56/57 (the known intermittent powder-cache test); V5FeelPlayModeTests 4/4 three runs in a row after the last change",
+   "evidence": "plan/v5/phase-03b-feel/editmode.json, playmode.json"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3b",
+   "check": "Playable check (boot → menu → run; button, real press, island hit)",
+   "result": "button above the weapon grid; All Guns! fired (17 s cooldown); one hit = 5 hull; 0 game errors",
+   "evidence": "plan/v5/phase-03b-feel/playable/"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3b",
+   "check": "Independent review (v5-reviewer), plan and code, two passes",
+   "result": "no blockers; plan 7 majors + 5 minors; code 5 majors + 4 minors, then 1 major + 3 minors → fixed or recorded",
+   "evidence": "plan/v5/phase-03b-feel/PLAN.md → Independent review"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3c",
+   "check": "EditMode and PlayMode suites",
+   "result": "381/381 and 57/57",
+   "evidence": "plan/v5/phase-03c-levels/editmode.json, playmode.json"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3c",
+   "check": "Simulator report (200 runs per personality, seed 1)",
+   "result": "2 of 76 targets missed (as M3); median run 10.6 min; level times within ±25% of the targets",
+   "evidence": "plan/v5/phase-03c-levels/model-report.md, level-times.md"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3c",
+   "check": "Independent review (v5-reviewer), two passes",
+   "result": "1 blocker + 4 majors + 6 minors, then 2 majors + 6 minors → fixed or recorded",
+   "evidence": "plan/v5/phase-03c-levels/PLAN.md"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3d",
+   "check": "EditMode and PlayMode suites",
+   "result": "397/397 and 59/59",
+   "evidence": "plan/v5/phase-03d-pressure/editmode.json, playmode.json"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3d",
+   "check": "Simulator report (200 runs per personality, seed 1) and boss summons at 4:30 and 8:30",
+   "result": "2 of 76 targets missed (First-Timer, minute 6 kills in the boss fight), both bounded; boss fight 68 s, 119 s from a 4:30 summon (known), 64 s from 8:30",
+   "evidence": "plan/v5/phase-03d-pressure/model-report.md, tuning.md"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3d",
+   "check": "Playable check (clock jumped to 0:45, 3:30, 5:00, 7:30, 9:30)",
+   "result": "crowd and enemy mix with screenshots at each moment; 0 game errors",
+   "evidence": "plan/v5/phase-03d-pressure/playable/"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3d",
+   "check": "Independent review (v5-reviewer), two passes",
+   "result": "1 blocker + 10 majors + 5 minors, then 1 major + 6 minors → fixed or recorded",
+   "evidence": "plan/v5/phase-03d-pressure/PLAN.md"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3e",
+   "check": "EditMode and PlayMode suites",
+   "result": "408/408 and 60/60",
+   "evidence": "plan/v5/phase-03e-performance/editmode.json, playmode.json"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3e",
+   "check": "Perf check, same seed, 3 runs a side (frame, GC, batches, triangles, pools, profiler)",
+   "result": "game GC 28,325 → 1,342 B/frame; batches at 9:00 991 → 784; frame at 9:00 10.2 → 9.1 ms (Editor, indicative); 0 pool instances made mid-run",
+   "evidence": "plan/v5/phase-03e-performance/perf.md, gc-profile-*.txt, playable/"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M3e",
+   "check": "Independent review (v5-reviewer), two passes",
+   "result": "1 blocker + 5 majors + 7 minors, then the second pass → fixed or recorded",
+   "evidence": "plan/v5/phase-03e-performance/PLAN.md"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M4",
+   "check": "EditMode / PlayMode (full, once)",
+   "result": "432/432 · 60/60",
+   "evidence": "plan/v5/phase-04-weapons/m4/"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M4",
+   "check": "Weapon playable check (9 weapons and evolutions)",
+   "result": "all fire and kill; 0 game errors",
+   "evidence": "plan/v5/phase-04-weapons/m4/playable/"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M4",
+   "check": "Independent review (v5-reviewer)",
+   "result": "2 blockers + 6 majors + 6 minors → fixed or recorded",
+   "evidence": "plan/v5/phase-04-weapons/PLAN.md"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M4b",
+   "check": "EditMode / PlayMode (full, once)",
+   "result": "442/442 · 60/60",
+   "evidence": "plan/v5/phase-04b-weapons/"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M4b",
+   "check": "Weapon playable check (11 weapons and evolutions)",
+   "result": "all fire and kill; 0 game errors",
+   "evidence": "plan/v5/phase-04b-weapons/playable/"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M4b",
+   "check": "Independent review (v5-reviewer)",
+   "result": "0 blockers + 7 majors + 8 minors → fixed or recorded",
+   "evidence": "plan/v5/phase-04b-weapons/PLAN.md"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M5",
+   "check": "EditMode / PlayMode (full, once)",
+   "result": "448/448 · 59/60, the one a seed-dependent test that passes on rerun",
+   "evidence": "plan/v5/phase-05-content/"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M5",
+   "check": "Simulator A/B (as built, without the Commons, without the powerups, without both)",
+   "result": "only without both are the bands held",
+   "evidence": "plan/v5/phase-05-content/sim-ab.txt"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M5",
+   "check": "Independent review (v5-reviewer)",
+   "result": "3 blockers + 5 majors + 9 minors → fixed or recorded",
+   "evidence": "plan/v5/phase-05-content/PLAN.md"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M7",
+   "check": "EditMode and PlayMode suites",
+   "result": "EditMode 459/459, PlayMode 60/60",
+   "evidence": "plan/v5/phase-07-mobile/editmode.json, playmode.json"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M7",
+   "check": "Independent review (v5-reviewer)",
+   "result": "no blockers; 7 majors + 8 minors → fixed or recorded",
+   "evidence": "plan/v5/phase-07-mobile/PLAN.md → Independent review"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M8",
+   "check": "EditMode and PlayMode suites",
+   "result": "462/463 (the architecture guard, fixed and re-run 15/15) and 60/60; the classes the review fixes touched re-run green",
+   "evidence": "plan/v5/phase-08-menu/editmode.json, playmode.json, t-*.json"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M8",
+   "check": "Scripted menu check (buy a Logbook, start a run; desktop and phone screenshots)",
+   "result": "4 Logbooks for sale, Fortune bought for 200 RUM, run started with it owned, save restored, 0 game errors",
+   "evidence": "plan/v5/phase-08-menu/menu-check/"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M8",
+   "check": "Independent review (v5-reviewer)",
+   "result": "no blockers; 4 majors + 6 minors → fixed or recorded",
+   "evidence": "plan/v5/phase-08-menu/PLAN.md → Independent review"
+  },
+  {
+   "date": "1 Oct",
+   "phase": "M7",
+   "check": "WebGL mobile build loaded in a browser (menu, hub, Captain select, run, pause)",
+   "result": "256 MB heap: out of memory at the menu; 512 MB: all screens reached, no errors",
+   "evidence": "plan/v5/phase-07-mobile/PLAN.md → The phone build"
+  },
+  {
+   "date": "2 Oct",
+   "phase": "M7c",
+   "check": "Phone benchmark, final builds (Pixel 9a, alternated, cooled)",
+   "result": "80 enemies 26.0 to 37.5 fps, slowest 1% 144 to 42 ms; natural game slowest 1% 130 to 33 ms; GPU 2.27 to 1.53 GB",
+   "evidence": "plan/v5/phase-07c-webgl-perf/PLAN.md, plan/v5/perf/"
+  },
+  {
+   "date": "2 Oct",
+   "phase": "M7c",
+   "check": "Desktop Chrome benchmark (RTX 3050)",
+   "result": "80 enemies 54.4 to 60.2 fps (the cap), slowest 1% 66 to 18 ms",
+   "evidence": "plan/v5/perf/phone-bench/desktop.jsonl"
+  },
+  {
+   "date": "2 Oct",
+   "phase": "M7c",
+   "check": "EditMode and PlayMode suites",
+   "result": "464/464 and 63/63",
+   "evidence": "plan/v5/phase-07c-webgl-perf/editmode.json, playmode.json"
+  },
+  {
+   "date": "2 Oct",
+   "phase": "M7d",
+   "check": "Android APK benchmark (Pixel 9a)",
+   "result": "locked 60 fps in every variant; capped APK 127.9 MB (was 155.5), ~60 MB less memory",
+   "evidence": "plan/v5/phase-07d-android-perf/PLAN.md"
+  },
+  {
+   "date": "2 Oct",
+   "phase": "M7d",
+   "check": "EditMode and PlayMode suites",
+   "result": "466/466 and 63/63",
+   "evidence": "plan/v5/phase-07d-android-perf/editmode.json, playmode.json"
+  },
+  {
+   "date": "5 Oct",
+   "phase": "Playtest",
+   "check": "EditMode suite (playtest branch)",
+   "result": "438/499 (61 pin old values or rules)",
+   "evidence": "plan/playtest/tests/editmode-r9c.json"
+  },
+  {
+   "date": "5 Oct",
+   "phase": "Playtest",
+   "check": "PlayMode suite (playtest branch)",
+   "result": "51/63 (12 pin old values or rules)",
+   "evidence": "plan/playtest/tests/playmode-r9.json"
+  },
+  {
+   "date": "6 Oct",
+   "phase": "Playtest",
+   "check": "Server tests (RoguePirates.Api.Tests)",
+   "result": "70/70",
+   "evidence": "dotnet test server/RoguePirates.Api.Tests"
+  },
+  {
+   "date": "6 Oct",
+   "phase": "Playtest",
+   "check": "Session recorder test",
+   "result": "1/1",
+   "evidence": "V4SessionRecorderTests"
+  }
+ ],
+ "phaseResults": {
+  "M0": [
+   {
+    "title": "Tests",
+    "text": "Baseline green: EditMode 307/307 and PlayMode 49/49 in Unity 6000.3.11f1; no compile errors."
+   },
+   {
+    "title": "Reviewer",
+    "text": "Agent file in place; it ran the plan review (below). In this session it runs through a general agent loading the same file; new sessions list it as <code>v5-reviewer</code>."
+   },
+   {
+    "title": "Plan reviews",
+    "text": "Two independent reviews: rev 1 had 3 blockers, 12 majors, 7 minors; rev 2 had no blockers, 5 majors, 6 minors. All addressed in rev 3."
+   }
+  ],
+  "M1": [
+   {
+    "title": "What changed",
+    "text": "Ten 1-minute waves keep a minimum crowd alive (topped up one enemy every 0.35 s), four hordes (1:45 ring, 5:30 line, 7:40 pack, 9:15 ring) with a 10 s lull and edge markers, breathing room after big moments, XP merging. Data in the Saltwind timeline; the v3-parity preset turns it off."
+   },
+   {
+    "title": "Tests",
+    "text": "EditMode 331/331 (24 new), PlayMode 50/50 (1 new: the crowd reaches each minute's floor in the real scene). Playable check with screenshots at 1, 3, 5:30, 6, 9 and 13 minutes: 0 game errors."
+   },
+   {
+    "title": "Review",
+    "text": "3 blockers (spawn gap, missing edge markers, stale evidence), 4 majors, 9 minors: all fixed. Table on this page under Review findings."
+   },
+   {
+    "title": "Your playtest",
+    "text": "Play three runs (a weak, an average and a strong build). Does the crowd feel constant but changing minute to minute? Do the hordes (1:45, 5:30, 7:40, 9:15) read, with the arrow at the screen edge? Is there breathing room after the Reef Crab, the elites and the boss? F1 → Wave Timeline shows the flow line."
+   }
+  ],
+  "M2": [
+   {
+    "title": "What changed",
+    "text": "Level-ups much faster (about every 8.6 s in minute 1, 17.7 s on average to 10:00; level ~34 at 10:00). The Reef Crab is a ~17 s fight (was ~50 s and sank almost everyone), elites take ~5.5 s, the Barnacle King ~55 s. Enemies grow more gently after 2:00, bands spawn a little slower from 4:00, overtime ramps more slowly (still endless). The v3-parity preset restores every old value."
+   },
+   {
+    "title": "Tests",
+    "text": "EditMode 352/352, PlayMode 50/50. Model report: 72 of 76 revised targets (66 of 76 of the first proposals). Playable check: 0 game errors, the crowd inside its band at 1, 3, 6 and 9 minutes."
+   },
+   {
+    "title": "Your decisions",
+    "text": "Which targets stand (nine were widened after the first run; both counts are on the M2 page); whether the Turtle ('careful survivor', but it dodges less than the average player and sinks earlier) should change; whether 6:00's crowd on the band ceiling is fine."
+   },
+   {
+    "title": "Your playtest",
+    "text": "Three runs. Do level-ups arrive at a good pace (roughly every 8 s at first, then every 15-20 s)? Is the Reef Crab a real but short fight? Do elites feel tougher (4-8 s) and the Barnacle King a proper fight? Does the late voyage feel powerful rather than drowning? F1 → Balance → Run model shows the targets, the model and your run on one graph."
+   }
+  ],
+  "M3": [
+   {
+    "title": "What changed",
+    "text": "Evolutions: the card from weapon level 8 with its item, rarer cards grant 2–3 levels, a pity rule, and chests favour a ready weapon's evolution item. Weapons rebalanced within their roles (base damage and how fast upgrades grow). Gunnery Manual, Carpenter's Notes and Dragon's Breath Nozzle retuned; chest prices steeper (5 items by 10:00); Flint's hull 90 → 120. The v3-parity preset restores every old value."
+   },
+   {
+    "title": "Tests",
+    "text": "EditMode 367/367, PlayMode 51/51 (incl. the whole evolution chain in the real run). All six Captains played to 5:00 with 0 game errors."
+   },
+   {
+    "title": "Your decisions",
+    "text": "Evolution at level 8 (focused builds evolve around minute 6) or 10; Captains balanced on run length or offense; the synergy items (Black Powder Keg, Powder Fuse, Sea Witch's Eye, Leviathan's Tooth, Stormglass, Golden Figurehead); Epic +2 levels; volley pieces (Extra Hands, Broadside Drum) and crit; refreshes and the pity rule."
+   },
+   {
+    "title": "Your playtest",
+    "text": "One run per Captain. Name any weapon that feels useless or broken. Do rarer cards feel like a big jump (+2/+3 levels)? Does an evolution arrive in a normal run, and does it feel earned? Is Flint too tanky now?"
+   }
+  ],
+  "M3b": [
+   {
+    "title": "What changed",
+    "text": "Island hits push the ship back off the shore and cost 5 hull at most every 2 s (RunConfig); unblown kegs sink after 45 s (mine.lifeSeconds); a round touch button for the Captain's ability above the weapon grid. The v3-parity preset turns all three off."
+   },
+   {
+    "title": "Tests",
+    "text": "EditMode 374/374; PlayMode 56/57 (a known intermittent test, flagged separately); V5FeelPlayModeTests 4/4 three times after the last change."
+   },
+   {
+    "title": "Playable check",
+    "text": "The button above the weapon grid, a real press firing All Guns! (17 s cooldown), one island hit costing exactly 5 hull, 0 game errors (<code>plan/v5/phase-03b-feel/playable/</code>)."
+   }
+  ],
+  "M3c": [
+   {
+    "title": "What changed",
+    "text": "A per-level XP table: the first level with the first kill, then 10, 10, 20, 30, 50 s, then 60 s (about 13 level-ups by 10:00). Weapon cards 2/2/3/3/4 levels, evolution from weapon level 5, Roxie's hull 104, an interim enemy scale ×0.85. The v3-parity preset restores the old values."
+   },
+   {
+    "title": "Simulator",
+    "text": "2 of 76 targets missed (as M3); median run 10.6 min; focused builds evolve in 65% of runs by minute 5.6."
+   },
+   {
+    "title": "Tests",
+    "text": "EditMode 381/381, PlayMode 57/57; new tests over every personality's outcomes and each level's time."
+   }
+  ],
+  "M3d": [
+   {
+    "title": "What changed",
+    "text": "Flat enemy HP and damage in the voyage; the director's HP levers off; 22 keyframes from your sketch (one scale, so the shape holds); hordes on the peaks and as ordinary ships; late types at fixed ×2 stats; set pieces at fixed HP (King 2800); overtime ramp ×6 to ×25 HP for the drowned fleet; every differently-attacking enemy has its own look, with shared tinted materials (batching kept) and a hitbox that follows its drawn size. The v3-parity preset turns it all off."
+   },
+   {
+    "title": "Tests",
+    "text": "EditMode 397/397 (new: V5PressureTests, V5EnemyViewTintTests); PlayMode 59/59 (new: V5PressurePlayModeTests)."
+   },
+   {
+    "title": "Simulator",
+    "text": "2 of 76 targets missed, both bounded and listed for you (D22). Crowd per minute 0.20 to 0.76, a peak at 3:45 over a quieter valley; some hull lost in every minute from 0:00; median run 11.0 min."
+   }
+  ],
+  "M3e": [
+   {
+    "title": "What changed",
+    "text": "Garbage: ship wakes, the spatial hash, config lookups, delegates, enum names, HUD labels and settings loads no longer allocate every frame. Pools: enemy models stripped in the pool, VFX-profile effects prewarmed. Rendering: Mesh LODs for 14 heavy models, no pickup shadows, a 250 m far clip. Static and dynamic batching measured and left off; occlusion culling not applicable."
+   },
+   {
+    "title": "Measured",
+    "text": "Same seed, 3 runs a side, Editor: game GC 28 KB → 1.3 KB a frame; enemy world 1.42 → 0.67 ms; batches at 9:00 991 → 784; triangles 1.57M → 1.45M. At cap 120 (99 enemies) the cost is about what 72 cost before."
+   },
+   {
+    "title": "Left for you",
+    "text": "The enemy cap (question 14), health bars on every enemy (15), pickup sparkles (16), and the look-changing quick wins (D27)."
+   }
+  ],
+  "M4": [
+   {
+    "title": "What changed",
+    "text": "Four new weapons, eight Empowered evolutions and eight Uncommon evolution items; chests leave out the evolution items of weapons you have not unlocked."
+   },
+   {
+    "title": "Measured",
+    "text": "Balance model: all four new weapons within ±20% of their role at levels 1-12. Simulator baselines unchanged except the First-Timer, 10.03 min (question 9)."
+   },
+   {
+    "title": "Left for you",
+    "text": "Prices and the Prow's boost rule (D31), placeholder art, question 9."
+   }
+  ],
+  "M4b": [
+   {
+    "title": "What changed",
+    "text": "Five weapons that summon, pull, sweep and bounce, each with an evolution and an item; summons capped (12 parrots, 3 turrets); coin gold capped at 40 a run."
+   },
+   {
+    "title": "Measured",
+    "text": "All nine new weapons within ±20% of their role at levels 1-12 by the corrected model."
+   },
+   {
+    "title": "Left for you",
+    "text": "Prices, placeholder art (cannonballs, barrel), whether parrots should spread over targets."
+   }
+  ],
+  "M5": [
+   {
+    "title": "What changed",
+    "text": "Logbooks and items bought with Rum (the shop comes in M8); the offers and chests skip them until owned. Item effects: kill streaks, surrounded stacks, a periodic blast, cheat death once, free chests, dearer but richer chests, elite rewards, damage to healthy targets."
+   },
+   {
+    "title": "Measured",
+    "text": "Balance bands held (the A/B showed the free Commons or the new powerups alone break them)."
+   },
+   {
+    "title": "Left for you",
+    "text": "Questions 27-32: Luck scale, the powerup mix, free Commons, armor, gold gain, Admiral on bosses."
+   }
+  ],
+  "M7": [
+   {
+    "title": "What changed",
+    "text": "Touch BOOST (beside the ability button) and PAUSE; a pause menu that never overrides a level-up; Settings saved in one value; the generated canvases inside the safe area with a UI scale (1.0-1.4); every new touch target at least 72 units; Auto quality picks effect density and the phone render scale from the frame time 20-30 s in (gameplay caps the same on every device); WebGL build profiles (mobile 256 MB, ASTC, Brotli with fallback)."
+   },
+   {
+    "title": "Tests",
+    "text": "EditMode 459/459, PlayMode 60/60. V5MobileUiTests 11/11 (safe area, 48 px at five screen sizes, UI scale, settings, the pause rules, real settings layout on a short screen)."
+   },
+   {
+    "title": "Not built",
+    "text": "Input-router refactor, PlayMode touch simulation, long-press, 4:3 reflow; the phone build comes once after M8 (see the phase page)."
+   }
+  ],
+  "M8": [
+   {
+    "title": "What changed",
+    "text": "A hub over the art menu: mode select, shop with four tabs (Buy N RUM, Owned, Not enough RUM), profile with your collection, settings. Purchases go through the save's guarded purchase (never drops ownership); Captains keep their weapon and gold locks; Ironclad and Cursed Coin are not sold until armor and gold gain work."
+   },
+   {
+    "title": "Tests",
+    "text": "V5MetaShopTests 5/5 (prices, not enough RUM, buying twice, stale saves, Captain locks, the hub). Full suites 462/463 then the guard fixed; PlayMode 60/60."
+   },
+   {
+    "title": "Not built",
+    "text": "New badges and sales (need your catalogue), the server-shaped async interface (M10), a PlayMode buy-then-offered test (your playtest checks it)."
+   }
+  ]
+ },
+ "reviews": [
+  {
+   "title": "Plan review, rev 1 → rev 2 (29 Sep)",
+   "summary": "The independent reviewer read the plan against your 24 requests, the research, the handoff rules, the GDD's never list and the current code. It found 3 blockers, 12 majors and 7 minors, and confirmed that the plan's claims about the existing code were accurate. All 22 are addressed in rev 2 (now 29 phases, M0–M28). A second review checks the fixes.",
+   "rows": [
+    {
+     "n": "1",
+     "sev": "Blocker",
+     "where": "M10 (was M8) run settlement",
+     "finding": "Server RUM trusted a client-uploaded run summary before any verification existed, against D6 and the handoff's rule on client-trust fallbacks.",
+     "fix": "Run RUM is now <em>pending</em> until verified and cannot be spent, transferred or wagered (D6, I10b.4)."
+    },
+    {
+     "n": "2",
+     "sev": "Blocker",
+     "where": "Verification",
+     "finding": "Replay verification was assumed, not proven: unseeded draws (<code>PickupModule</code>, <code>WorldPort</code>), Rigidbody physics, no cost measured.",
+     "fix": "New <strong>M9 replay verification spike</strong> before accounts: seeding fixes, WebGL vs headless agreement over 10 runs, CPU per minute, go/no-go with named fallbacks (Q29)."
+    },
+    {
+     "n": "3",
+     "sev": "Blocker",
+     "where": "D4, sails and island NFTs",
+     "finding": "RUM-bought items could be minted and sold for tokens: an indirect RUM-to-token bridge.",
+     "fix": "D4 now tracks item origin: anything bought, earned or traded with RUM stays web2 forever; island sales return RUM-bought parts to the seller (Q24)."
+    },
+    {
+     "n": "4",
+     "sev": "Major",
+     "where": "D8",
+     "finding": "The list of reversals missed token winnings (play-to-earn), token balances and the Arena draft.",
+     "fix": "D8 names all six reversals; Q26 asks you to confirm them."
+    },
+    {
+     "n": "5",
+     "sev": "Major",
+     "where": "Wallet migration",
+     "finding": "NFT migration was planned before NFTs exist; royalty allow-lists block transfers by unlisted programs.",
+     "fix": "M13 migrates tokens, records and inventory; NFT migration moves to M26 through the game program."
+    },
+    {
+     "n": "6",
+     "sev": "Major",
+     "where": "Marketplace",
+     "finding": "No ownership sync for NFTs sold elsewhere; devnet external markets unconfirmed.",
+     "fix": "M26 adds an indexer or webhook with a reconcile job, and an honest devnet exit criterion (Tensor's open program)."
+    },
+    {
+     "n": "7",
+     "sev": "Major",
+     "where": "Raids, wagers, market",
+     "finding": "No anti-collusion policy.",
+     "fix": "New D15 (linked accounts blocked, price bands, daily caps, review flags) wired into M15, M24, M26, M27; defaults in Q27."
+    },
+    {
+     "n": "8",
+     "sev": "Major",
+     "where": "Wagers",
+     "finding": "Race and Hunt wager formats were undefined.",
+     "fix": "M24 defines Arena, Hunt and Race formats: entry windows, minimum entrants, refunds, unverified finishes."
+    },
+    {
+     "n": "9",
+     "sev": "Major",
+     "where": "Order",
+     "finding": "A web3 playtest bought a decoration before decorations exist; phone measurement before the mobile build; an unrealistic hackathon option.",
+     "fix": "Playtest buys a store item; the cap is measured on desktop in M1 and on a phone in M7; Q1 option B rewritten."
+    },
+    {
+     "n": "10",
+     "sev": "Major",
+     "where": "AI captains",
+     "finding": "The planned brain reused DevTools autopilots that never ship.",
+     "fix": "M16 rewrites the brain in Runtime with a test that Runtime never references DevTools (D10)."
+    },
+    {
+     "n": "11",
+     "sev": "Major",
+     "where": "Raid schedule",
+     "finding": "Player schedules stored as the designer-owned timeline asset (read as a singleton, hashed).",
+     "fix": "A schedule DTO in the base snapshot becomes an in-memory overlay at raid start; its hash enters raid records."
+    },
+    {
+     "n": "12",
+     "sev": "Major",
+     "where": "Phase size",
+     "finding": "M1 and the old netcode-plus-Arena phase were too big for one gate.",
+     "fix": "Split: M1 enemy flow and M2 balance model; M21 netcode spike and M22 Arena."
+    },
+    {
+     "n": "13",
+     "sev": "Major",
+     "where": "Every phase",
+     "finding": "Several phases lacked a playtest line or an automated check.",
+     "fix": "Every phase now has both (or an owner check for document and spike phases)."
+    },
+    {
+     "n": "14",
+     "sev": "Major",
+     "where": "Server",
+     "finding": "The .NET 8 target ends support on 10 Nov 2026.",
+     "fix": "The server moves to .NET 10 LTS in M10."
+    },
+    {
+     "n": "15",
+     "sev": "Major",
+     "where": "Raids",
+     "finding": "Raid loot currency undefined.",
+     "fix": "New question Q23 (suggested: RUM, split into an exposed treasury and a safe vault)."
+    },
+    {
+     "n": "16",
+     "sev": "Minor",
+     "where": "Cross-references",
+     "finding": "Wrong question numbers in two tasks.",
+     "fix": "Fixed in rev 2."
+    },
+    {
+     "n": "17",
+     "sev": "Minor",
+     "where": "M4",
+     "finding": "Siren Bell was said to charm; Grapeshot is an item, not a weapon.",
+     "fix": "Siren Bell slows and stuns; Grapeshot removed from the weapon options."
+    },
+    {
+     "n": "18",
+     "sev": "Minor",
+     "where": "M12",
+     "finding": "Onchain record rent and scope undefined.",
+     "fix": "Only value-bearing results are recorded; ordinary runs batch into the player record; match accounts close after settlement."
+    },
+    {
+     "n": "19",
+     "sev": "Minor",
+     "where": "M19",
+     "finding": "Web push needs a Firebase account, against the local-only rule.",
+     "fix": "D11 now covers third-party accounts; Q30 asks when to create them."
+    },
+    {
+     "n": "20",
+     "sev": "Minor",
+     "where": "Presets",
+     "finding": "The v3-parity preset's status was unclear.",
+     "fix": "D16: it stays as a regression baseline until M28; new mechanics switch off under it."
+    },
+    {
+     "n": "21",
+     "sev": "Minor",
+     "where": "Q3",
+     "finding": "Privy's server-held custody flow was unclear.",
+     "fix": "Q3 and M10/M11 spell out Privy server wallets with a server-verified token."
+    },
+    {
+     "n": "22",
+     "sev": "Minor",
+     "where": "Q16",
+     "finding": "'Saltwind only' narrowed the global kill board.",
+     "fix": "Option A is now every voyage biome as it ships."
+    }
+   ]
+  },
+  {
+   "title": "Plan re-review, rev 2 → rev 3 (30 Sep)",
+   "summary": "The reviewer re-checked rev 2: <strong>no blockers</strong>. 17 of the first 22 findings were fully resolved and 5 partly; it found 5 new majors and 6 minors, mostly about value integrity (seeds, migrated RUM, fallbacks) and phase size. All are addressed in rev 3 (31 phases plus the conditional M9b).",
+   "rows": [
+    {
+     "n": "N1",
+     "sev": "Major",
+     "where": "M9 fallback B, D6",
+     "finding": "Fallback B (statistical checks) would pay RUM without a verified replay, and async modes would then need the later match server.",
+     "fix": "Choosing B now explicitly amends D6 and moves Stage E ahead of Stage C; fallback A got its own conditional phase <strong>M9b kinematic port</strong>."
+    },
+    {
+     "n": "N2",
+     "sev": "Major",
+     "where": "Seeds",
+     "finding": "The client picks the run seed, so a verified run could still be a rerolled easy seed.",
+     "fix": "Every value-earning run uses a server-issued seed that verification checks (D6, I10.2, M18)."
+    },
+    {
+     "n": "N3",
+     "sev": "Major",
+     "where": "Save migration",
+     "finding": "Migration copied the editable local RUM balance into the server account.",
+     "fix": "Local RUM becomes capped <em>legacy RUM</em>: store-only, never transferred, wagered or exposed to raids (I10b.3)."
+    },
+    {
+     "n": "N4",
+     "sev": "Major",
+     "where": "Phase size",
+     "finding": "The server phase and the marketplace phase were too big for one gate.",
+     "fix": "Split into <strong>M10</strong> server and ledger / <strong>M10b</strong> accounts and migration, and <strong>M26</strong> NFTs and ownership sync / <strong>M26b</strong> marketplace."
+    },
+    {
+     "n": "N5",
+     "sev": "Minor",
+     "where": "Cross-references",
+     "finding": "Stale references (the V4 save guard, art-guide updates, invites, question tags, D14 vs Q15, Q1 wording, assembly direction).",
+     "fix": "All corrected; art-guide update tasks added to M14, M25 and M27; invite tasks added to M22–M24."
+    },
+    {
+     "n": "N6",
+     "sev": "Minor",
+     "where": "Verification notes",
+     "finding": "The list of unseeded draws was out of date; the placeholder verifier project was not mentioned; client and server are two builds.",
+     "fix": "Corrected list; M10 replaces the placeholder with a verifier worker; both build ids are recorded."
+    },
+    {
+     "n": "N7",
+     "sev": "Minor",
+     "where": "M24 playtest",
+     "finding": "Self-contradicting playtest wording.",
+     "fix": "Against a second tester's account."
+    },
+    {
+     "n": "N8",
+     "sev": "Minor",
+     "where": "D15",
+     "finding": "Race base owners could wager on their own base; referrals were not covered.",
+     "fix": "Both covered by D15."
+    },
+    {
+     "n": "N9",
+     "sev": "Minor",
+     "where": "M20",
+     "finding": "Brand bounty events depended on a later phase.",
+     "fix": "Marked as wired in M27."
+    },
+    {
+     "n": "N10",
+     "sev": "Minor",
+     "where": "Gate",
+     "finding": "Determinism was proved once and never re-checked.",
+     "fix": "A standing replay-determinism test joins gate step 6 from M10 on."
+    },
+    {
+     "n": "N11",
+     "sev": "Minor",
+     "where": "M1",
+     "finding": "Six mechanics in one phase.",
+     "fix": "Accepted; watched when M1 is detailed."
+    },
+    {
+     "n": "R2",
+     "sev": "Major",
+     "where": "M21",
+     "finding": "The netcode spike had no no-go path, no multi-ship runtime task, and its risk was measured last.",
+     "fix": "No-go path (Arena with light PvE, Hunt reduced or dropped), a multi-ship runtime task, and an early bandwidth measurement in M9 (I9.5)."
+    },
+    {
+     "n": "R3",
+     "sev": "Minor",
+     "where": "M4",
+     "finding": "Siren Bell's stun was not in the design doc.",
+     "fix": "Now a damaging pulse with a 20% slow, per the design."
+    }
+   ]
+  },
+  {
+   "title": "Review of your answers, rev 4 → rev 5 (30 Sep)",
+   "summary": "The reviewer checked that every answer is reflected in the plan and that the explanations are accurate and plain. <strong>No blockers</strong>, 6 majors and 7 minors, all addressed in rev 5. It raised three new questions for you (Q31 reference phone, Q32 key export, Q33 master-key backup).",
+   "rows": [
+    {
+     "n": "1",
+     "sev": "Major",
+     "where": "M1, M2",
+     "finding": "Overtime tiers and a run-ending pursuer were still mentioned after you chose the endless ramp.",
+     "fix": "Removed; M1 and M2 keep the endless ramp (Q22)."
+    },
+    {
+     "n": "2",
+     "sev": "Major",
+     "where": "Custody (D7), risks",
+     "finding": "Keys on Railway: the master key and the database share one Railway project; no backup or rotation; fee payer and settle keys not separated.",
+     "fix": "D7 and a new risk row: offline master-key backup (Q33), a key id for rotation, separate secrets for the fee payer, treasury and settle authority."
+    },
+    {
+     "n": "3",
+     "sev": "Major",
+     "where": "D7 vs key export",
+     "finding": "Key export contradicted \"keys never reach the client\".",
+     "fix": "One-time export after a fresh sign-in, logged; the account then becomes self-custody (Q32)."
+    },
+    {
+     "n": "4",
+     "sev": "Major",
+     "where": "Photon (M9, M21)",
+     "finding": "Photon's docs call client-server modes on WebGL \"not recommended\"; the free plan caps relayed traffic at 0.3 TB a month.",
+     "fix": "New risk row; M9's test has numeric pass limits (≤ 60 ms added latency, ≤ 30 KB/s per player, ≤ 150 MB per 4-player match); Fish-Net + Bayou fallback; ANSWERS corrected."
+    },
+    {
+     "n": "5",
+     "sev": "Major",
+     "where": "Enemy cap",
+     "finding": "One cap sized for a low-end phone was set only in M7, after M1–M3 tuning; no reference phone or frame rate.",
+     "fix": "The cap is set in M1 on your reference phone (new Q31); targets are shares of the cap; Hunt clients see at most the cap."
+    },
+    {
+     "n": "6",
+     "sev": "Major",
+     "where": "Anti-collusion",
+     "finding": "Referrals were still blocked though D15 turns limits off; AI raids, prizes and referrals missing from the risk; off-switches untested.",
+     "fix": "Hooks off (D15), each tested with its switch on; risk row lists every value flow."
+    },
+    {
+     "n": "7",
+     "sev": "Minor",
+     "where": "Accounts",
+     "finding": "Photon is needed for the M9 test, not only M21.",
+     "fix": "ANSWERS and TODOs say Photon from M9."
+    },
+    {
+     "n": "8",
+     "sev": "Minor",
+     "where": "M18",
+     "finding": "Leaderboard scope adopted before Q16 is answered.",
+     "fix": "Marked proposed."
+    },
+    {
+     "n": "9",
+     "sev": "Minor",
+     "where": "Q29 wording",
+     "finding": "\"Cheating stays impossible\" overclaimed; option B's stage-order effect missing.",
+     "fix": "\"A changed result is always caught\"; bots need separate checks; B moves the real-time stage earlier."
+    },
+    {
+     "n": "10",
+     "sev": "Minor",
+     "where": "M25",
+     "finding": "Tests still listed moderation states.",
+     "fix": "A stored report flag only on devnet."
+    },
+    {
+     "n": "11",
+     "sev": "Minor",
+     "where": "M26",
+     "finding": "Treasury and vault RUM on a plot sale unspecified.",
+     "fix": "They stay with the seller."
+    },
+    {
+     "n": "12",
+     "sev": "Minor",
+     "where": "Decisions",
+     "finding": "Dangling Q4/Q8/Q14 note; D17 missed Q3, Q18, Q23 and was out of order.",
+     "fix": "Inlined; D17 completed and reordered."
+    },
+    {
+     "n": "13",
+     "sev": "Minor",
+     "where": "ANSWERS",
+     "finding": "Megabonk claim stated as fact; the Balance Lab's editor window no longer exists.",
+     "fix": "Qualified as an estimate; M2 gives the lab a front end in the Tuning Console."
+    }
+   ]
+  },
+  {
+   "title": "Review of rev 7 (30 Sep)",
+   "summary": "Checked your second round of answers against the plan. <strong>No blockers</strong>, 8 majors and 10 minors, all addressed in rev 8 (33 phases). Two new questions for you: Q34 (forfeits) and Q35 (when checked voyage RUM can be wagered or sold).",
+   "rows": [
+    {
+     "n": "1",
+     "sev": "Major",
+     "where": "M9 plausibility",
+     "finding": "\"Kills can't exceed spawns\" is weak: the game spawns more as you kill more.",
+     "fix": "Bounds now come from the balance model and simulator; tested against a forged but consistent 99th-percentile log."
+    },
+    {
+     "n": "2",
+     "sev": "Major",
+     "where": "D6",
+     "finding": "Plausibility-checked RUM can still reach other players through wagers, the market and raids.",
+     "fix": "Stated in D6 and the risks; new question Q35."
+    },
+    {
+     "n": "3",
+     "sev": "Major",
+     "where": "Arena, Hunt",
+     "finding": "With uncapped PvP RUM (Q10) and collusion checks off, instant forfeits mint RUM.",
+     "fix": "Suggested rule: forfeits and matches under a minimum length pay nothing (Q34)."
+    },
+    {
+     "n": "4",
+     "sev": "Major",
+     "where": "M7 memory",
+     "finding": "\"Heap near 256 MB, max 512\" would crash 32-bit Chrome on the reference phone.",
+     "fix": "Hard 256 MB limit for mobile browsers (budget ~200 MB); 512 only on 64-bit browsers."
+    },
+    {
+     "n": "5",
+     "sev": "Major",
+     "where": "M13b",
+     "finding": "Too big for one gate.",
+     "fix": "Split: M13b single-player server sessions; new M21 multi-ship runtime and lobby before the Arena."
+    },
+    {
+     "n": "6",
+     "sev": "Major",
+     "where": "Prediction",
+     "finding": "Client prediction needs a deterministic ship controller; the physics ship had no task.",
+     "fix": "M13b adds a prediction-ready ship controller; M9 tests responsiveness at 150 ms."
+    },
+    {
+     "n": "7",
+     "sev": "Major",
+     "where": "Server sessions",
+     "finding": "No measure of session cost, sessions per process or mobile latency.",
+     "fix": "M9 go-limits added; AI raids run headless faster than real time; Railway cost estimate (~$30–60/month) before M13b closes."
+    },
+    {
+     "n": "8",
+     "sev": "Major",
+     "where": "Personalities",
+     "finding": "Parameters incomplete and values outside the declared enums.",
+     "fix": "Every personality has all 12 parameters with defined enums; avoidable damage and boss timing defined."
+    },
+    {
+     "n": "9–18",
+     "sev": "Minor",
+     "where": "Various",
+     "finding": "D11 timing, D4 AI-raid wording, a stale tag, floor-phone and 95% frame checks, assembly direction, invite order, request map rows, Quantum re-plan note, stale page cards, task order and profile mapping.",
+     "fix": "All corrected."
+    }
+   ]
+  },
+  {
+   "title": "Review of rev 9 (30 Sep)",
+   "summary": "Checked your third round: the Netcode for GameObjects choice, the forfeit rule and the Railway arithmetic (all within 20% of a recomputation). <strong>No blockers</strong>, 2 majors, 4 minors, all addressed.",
+   "rows": [
+    {
+     "n": "1",
+     "sev": "Major",
+     "where": "TODOs, status",
+     "finding": "Read before the round-3 update landed (Fish-Net Pro, open questions).",
+     "fix": "Already current; confirmed."
+    },
+    {
+     "n": "2",
+     "sev": "Major",
+     "where": "Railway savings",
+     "finding": "\"Ranked only on request\" was already in the baseline, so it double-counted.",
+     "fix": "Removed; reduced totals restated: ~$26–33 busy, ~$14–20 quiet."
+    },
+    {
+     "n": "3–4",
+     "sev": "Minor",
+     "where": "Forfeit rule (M22, M23)",
+     "finding": "Winner's pay on a forfeit, idle players, PvE sinkings and the Hunt's version were undefined.",
+     "fix": "One rule for both modes, with tests: nobody paid if others leave within 60 s; after that the remaining player is paid; 30 s idle counts as leaving; PvE, storm and edge wall count as combat."
+    },
+    {
+     "n": "5–6",
+     "sev": "Minor",
+     "where": "Wording",
+     "finding": "Stale Quantum and \"still open\" text; Serverless listed as an extra saving.",
+     "fix": "Reworded; Serverless marked as already assumed, wake-up time measured in M9."
+    }
+   ]
+  },
+  {
+   "title": "M1 enemy flow: implementation review (30 Sep)",
+   "summary": "The reviewer checked the diff against the plan, the V4 rules and the evidence. <strong>3 blockers, 4 majors, 9 minors</strong>; all fixed or recorded.",
+   "rows": [
+    {
+     "n": "1",
+     "sev": "Blocker",
+     "where": "Evidence",
+     "finding": "The PlayMode results predated the new M1 PlayMode test.",
+     "fix": "Both suites re-run after the last change; the test is in the evidence."
+    },
+    {
+     "n": "2",
+     "sev": "Blocker",
+     "where": "Floor top-ups",
+     "finding": "Several enemies could spawn in one frame, ignoring the 0.35 s spawn gap.",
+     "fix": "One top-up per gap; a flow-on gap test."
+    },
+    {
+     "n": "3",
+     "sev": "Blocker",
+     "where": "Hordes",
+     "finding": "The planned edge markers were missing.",
+     "fix": "Horde warnings carry a direction; the HUD shows the edge arrow and a minimap ping."
+    },
+    {
+     "n": "4",
+     "sev": "Major",
+     "where": "Hordes",
+     "finding": "Late hordes found no room at the enemy cap but still counted.",
+     "fix": "A 10 s lull before each horde, headroom above the cap, counted only when something spawns."
+    },
+    {
+     "n": "5",
+     "sev": "Major",
+     "where": "Horde placement",
+     "finding": "Members could be skipped on screen or placed without bounds checks.",
+     "fix": "Formed just beyond the view; islands and bounds always checked."
+    },
+    {
+     "n": "6",
+     "sev": "Major",
+     "where": "Plan",
+     "finding": "The phone deferral was not recorded.",
+     "fix": "Recorded in the plan (M1, M7) and your TODOs, with the memory finding."
+    },
+    {
+     "n": "7",
+     "sev": "Major",
+     "where": "Pickups",
+     "finding": "Merging applied to all pickups; merged views kept old values.",
+     "fix": "XP only; the view is re-drawn."
+    },
+    {
+     "n": "8–16",
+     "sev": "Minor",
+     "where": "Various",
+     "finding": "Dead code, untested holds and releases, adaptive lever, version tag, stale status, text, a weak cap test, warning timing, a tool error, a magenta effect.",
+     "fix": "Fixed, or recorded as pre-existing (the magenta flame effect is V4's known placeholder)."
+    }
+   ]
+  },
+  {
+   "title": "M2 balance model: implementation review (30 Sep)",
+   "summary": "<strong>1 blocker, 7 majors, 8 minors</strong>, all fixed or recorded; a second pass on the fixes found 4 more (1 major: the test script could discard unsaved scene edits), all fixed.",
+   "rows": [
+    {
+     "n": "1",
+     "sev": "Blocker",
+     "where": "Boss HP",
+     "finding": "The Barnacle King's HP change was on a spawner multiplier the game ignores (the boss spawner is not elite); only the simulator applied it.",
+     "fix": "Moved to the boss's base HP (800 → 1,400), which the game reads; the simulator follows the game's rule; tested."
+    },
+    {
+     "n": "2",
+     "sev": "Major",
+     "where": "Elites",
+     "finding": "The game gives scheduled elites the Rich affix (×1.25 HP); the simulator did not.",
+     "fix": "Mirrored and tested; elite HP retuned ×8 → ×6. Also fixed: the Reef Crab and overtime spawn paths."
+    },
+    {
+     "n": "3",
+     "sev": "Major",
+     "where": "Playable check",
+     "finding": "The 6:00 crowd checkpoint missed and the live XP pace was not confirmed.",
+     "fix": "XP now pulled to the ship; 4 of 4 in band; the XP pace is left to your playtest (stated)."
+    },
+    {
+     "n": "4",
+     "sev": "Major",
+     "where": "Targets",
+     "finding": "Nine bands were widened just enough to include the results.",
+     "fix": "Results shown against both sets; your decision."
+    },
+    {
+     "n": "5–8",
+     "sev": "Major",
+     "where": "Tests, chests, report, director",
+     "finding": "Per-minute checks untested; the 'Some' chest rule wrong; two elite kill-time figures; the director curve's caveats.",
+     "fix": "Fixed or recorded."
+    },
+    {
+     "n": "9–16",
+     "sev": "Minor",
+     "where": "Various",
+     "finding": "Scope deferrals, copied formulas, evidence notes, font asset, validation, targeting, WebGL, a dead loop.",
+     "fix": "Fixed or recorded."
+    },
+    {
+     "n": "N1–N4",
+     "sev": "Major / Minor",
+     "where": "Second pass",
+     "finding": "The test script could discard unsaved scenes; hordes modelled with the adaptive levers; a duplicated affix table; a stale comment.",
+     "fix": "Fixed: the script now stops and names unsaved scenes."
+    }
+   ]
+  },
+  {
+   "title": "M3 build balance: implementation review (30 Sep)",
+   "summary": "<strong>No blockers; 3 majors, 10 minors</strong>, then on the fixes 1 major and 3 minors; all fixed or recorded.",
+   "rows": [
+    {
+     "n": "1",
+     "sev": "Major",
+     "where": "Captains",
+     "finding": "Balanced on run length, not power; offense spread not stated.",
+     "fix": "Recorded as your decision with the tested 200-run table (run length ×0.92–×1.07, offense ×0.80–×1.16)."
+    },
+    {
+     "n": "2",
+     "sev": "Major",
+     "where": "Synergy items",
+     "finding": "Five items retuned on a generic build that misprices them.",
+     "fix": "Reverted; marked 'not banded'; your decision."
+    },
+    {
+     "n": "3",
+     "sev": "Major",
+     "where": "Tests",
+     "finding": "New rules not tested through the game's code path.",
+     "fix": "Module-path tests and a PlayMode test of the whole evolution chain."
+    },
+    {
+     "n": "4–13",
+     "sev": "Minor",
+     "where": "Various",
+     "finding": "Pity counting and one-card rule, two level settings, preset and zero-draw tests, level 8 parity, claims, docs.",
+     "fix": "Fixed or recorded."
+    },
+    {
+     "n": "N1–N4",
+     "sev": "Major / Minor",
+     "where": "Second pass",
+     "finding": "Stale Captain numbers; a check's scene reload order; pity carry-over; a test accessor.",
+     "fix": "Fixed or recorded."
+    }
+   ]
+  },
+  {
+   "title": "M3b-M3e plan and M3b code review (1 Oct)",
+   "summary": "<strong>No blockers.</strong> Plan: 7 majors, 5 minors (the cap against the reference phone, M3's evolution goals, the boss fight at any summon time, where the stronger types come from, M3c too big, parity, logging); all fixed. Code: 5 majors, 4 minors, then 1 major and 3 minors on the fixes; all fixed or recorded.",
+   "rows": [
+    {
+     "n": "C1",
+     "sev": "Major",
+     "where": "Ability button, Captain bar",
+     "finding": "The presenters deactivated themselves and could never come back.",
+     "fix": "Hidden through a CanvasGroup; hide-then-show tested."
+    },
+    {
+     "n": "C2",
+     "sev": "Major",
+     "where": "Island damage",
+     "finding": "Skipped Brace!/Keel and used the contact immunity.",
+     "fix": "Through the incoming multiplier; DamageReceiver.TakeImpact (no immunity, the hit event fires)."
+    },
+    {
+     "n": "C3",
+     "sev": "Major",
+     "where": "Holding into a shore",
+     "finding": "Could cost hull every 0.75 s.",
+     "fix": "A separate 2 s damage cooldown; a 5 s hold test."
+    },
+    {
+     "n": "C5",
+     "sev": "Major",
+     "where": "Button test",
+     "finding": "Bypassed the EventSystem.",
+     "fix": "A real raycast and pointer-down at the button's centre."
+    },
+    {
+     "n": "N1",
+     "sev": "Major",
+     "where": "Island damage",
+     "finding": "No hit feedback, items not told.",
+     "fix": "The hit event fires (TakeImpact)."
+    },
+    {
+     "n": "-",
+     "sev": "Found",
+     "where": "Bounce",
+     "finding": "The push was cut by the reverse-speed limit.",
+     "fix": "A fading push outside the steering limits."
+    },
+    {
+     "n": "-",
+     "sev": "Found",
+     "where": "Button",
+     "finding": "Covered the SaltWind weapon grid; invisible when that HUD is off.",
+     "fix": "On the canvas root, above the weapon grid, safe-area insets."
+    }
+   ]
+  },
+  {
+   "title": "M3c level-up rhythm review (1 Oct)",
+   "summary": "<strong>1 blocker</strong> (other personalities' boss wins fell out of band; only the baseline was tested), 4 majors (the tuner did not converge; minute 1 got more level-ups; the card levels override Q18b; evidence), 6 minors; then on the fixes 2 majors (evidence written to M3b's folder; a PlayMode test) and 6 minors. All fixed or recorded.",
+   "rows": [
+    {
+     "n": "1",
+     "sev": "Blocker",
+     "where": "Outcomes",
+     "finding": "Casual Cruiser and Build Planner boss wins out of band.",
+     "fix": "Interim enemy scale ×0.85, evolution level 5, a test over every personality."
+    },
+    {
+     "n": "2",
+     "sev": "Major",
+     "where": "Tuner",
+     "finding": "Did not converge; table not reproducible.",
+     "fix": "Fitted from the curve, scored on mean time error over the voyage; converged 4.9%."
+    },
+    {
+     "n": "3",
+     "sev": "Major",
+     "where": "Minute 1",
+     "finding": "5 level-ups instead of 4; one pickup chained cards.",
+     "fix": "10 s units: 4 in minute 1, none chained."
+    },
+    {
+     "n": "4",
+     "sev": "Major",
+     "where": "Card levels",
+     "finding": "Overrides Q18b.",
+     "fix": "Your question 4."
+    }
+   ]
+  },
+  {
+   "title": "M3d pressure review (1 Oct)",
+   "summary": "<strong>1 blocker</strong> (the crowd did not follow your sketch: the valley climbed and the last peaks were clamped), 10 majors (targets moved to fit the simulator; the early-hull target narrowed; overtime numbers understated; the boss test looser than its target; hordes broke note k; the look test would have missed your cannon-boat example; drawn size vs hitbox; a heavy model that is Hank's boat; untested tint code; a lost editor menu), 5 minors; all fixed or recorded. Second pass: 1 major (show the crowd's peak, not only the floor's) and 6 minors, fixed or recorded.",
+   "rows": [
+    {
+     "n": "1",
+     "sev": "Blocker",
+     "where": "Curve",
+     "finding": "Valley climbed above the 3:35 peak; late peaks clamped.",
+     "fix": "Final keyframes under one scale; an order test."
+    },
+    {
+     "n": "2",
+     "sev": "Major",
+     "where": "Targets",
+     "finding": "Kill floors and crowd bands moved to fit measurements.",
+     "fix": "Derived from the keyframes; kill bands back to M2; misses listed."
+    },
+    {
+     "n": "4",
+     "sev": "Major",
+     "where": "Overtime",
+     "finding": "×2-×3.5 reported; real ×6-×25 HP.",
+     "fix": "D19 and question 10 corrected."
+    },
+    {
+     "n": "6",
+     "sev": "Major",
+     "where": "Hordes",
+     "finding": "Same ship, faster and weaker in a horde.",
+     "fix": "Horde multipliers 1; a test."
+    },
+    {
+     "n": "7",
+     "sev": "Major",
+     "where": "Look test",
+     "finding": "Compared prefab names; missed the cannon-boat case.",
+     "fix": "Meshes, tint distance, size step; every spawner; caught skiff vs needle sloop."
+    },
+    {
+     "n": "8-9",
+     "sev": "Major",
+     "where": "Models",
+     "finding": "Hitbox smaller than the drawn ship; the Brigg is heavy and Hank's boat.",
+     "fix": "Hitbox × view size; gunner cog back on its cog model in crimson."
+    },
+    {
+     "n": "10",
+     "sev": "Major",
+     "where": "Tint code",
+     "finding": "Static, untested, burn-flash instances.",
+     "fix": "EnemyViewTint owned by the presenter; 4 tests."
+    }
+   ]
+  },
+  {
+   "title": "M3e performance review (1 Oct)",
+   "summary": "<strong>1 blocker</strong> (plan items neither done nor recorded), 5 majors (allocation tests that could not fail, a contaminated 5:00 measurement, a stale wake cache on reused views, static batching's memory unmeasured, untested behaviour changes), 7 minors; all fixed or recorded (static batching measured at +25 MB and taken out).",
+   "rows": [
+    {
+     "n": "1",
+     "sev": "Blocker",
+     "where": "Plan items",
+     "finding": "Several M3e items neither done nor recorded.",
+     "fix": "A table of each item with reason and phase (D27)."
+    },
+    {
+     "n": "2",
+     "sev": "Major",
+     "where": "Tests",
+     "finding": "The thread byte counter can read 0 on Unity.",
+     "fix": "Unity's GC constraint, and a test that it catches an allocation."
+    },
+    {
+     "n": "3",
+     "sev": "Major",
+     "where": "Measurement",
+     "finding": "The profiler start stalled the 5:00 sample; one run a side.",
+     "fix": "Sampler stops first; 3 seeded runs a side; medians."
+    },
+    {
+     "n": "4",
+     "sev": "Major",
+     "where": "Wake cache",
+     "finding": "Stale on reused views.",
+     "fix": "Rebuilt per life; a test."
+    },
+    {
+     "n": "5",
+     "sev": "Major",
+     "where": "Static batching",
+     "finding": "Memory not measured.",
+     "fix": "Measured +25 MB for ~50 batches: taken out."
+    },
+    {
+     "n": "6",
+     "sev": "Major",
+     "where": "Tests",
+     "finding": "Behaviour changes untested.",
+     "fix": "HUD signature, VFX prewarm, pickup shadows tested (caught one)."
+    }
+   ]
+  },
+  {
+   "title": "M4 weapons review (1 Oct)",
+   "summary": "<strong>2 blockers</strong> (no green run on final data; Swivel Battery's shots did nothing), 6 majors (dead stat on an item, simulator ignoring evolutions, chest crowding, dead upgrade cards, weak tests, missing prewarm and playable check); all fixed or recorded.",
+   "rows": []
+  },
+  {
+   "title": "M4b weapons review (1 Oct)",
+   "summary": "No blockers; 7 majors (turret target out of reach, director missing hits per firing, dead size cards, slow sweeps overstated, no summon cap, frame-rate whirlpool ticks, missing evidence); all fixed or recorded.",
+   "rows": []
+  },
+  {
+   "title": "M5 content review (1 Oct)",
+   "summary": "<strong>3 blockers</strong> (Fortune on the wrong Luck scale; armor never applied; Cursed Coin's gold ignored), 5 majors; fixed by scale and by taking the dead-stat content out of the pools until you decide.",
+   "rows": []
+  },
+  {
+   "title": "M7 mobile review (1 Oct)",
+   "summary": "<strong>No blockers; 7 majors, 8 minors.</strong> The safe area and UI scale missed late panels; settings rows too short; quality tiers changed combat caps; Brotli over HTTP; auto quality measured too early; unbuilt plan items. All fixed or recorded; questions 33-35 for you.",
+   "rows": []
+  },
+  {
+   "title": "M8 menu and shop review (1 Oct)",
+   "summary": "<strong>No blockers; 4 majors, 6 minors.</strong> A Captain bought in the shop stayed locked in the select; the shop skipped Captain locks; the interface is not yet server-shaped (recorded for M10); no PlayMode offer test (recorded). Fixed or recorded; questions 36-38.",
+   "rows": []
+  },
+  {
+   "title": "M7c web performance review (2 Oct)",
+   "summary": "<strong>1 blocker</strong> (the shipped code was not measured yet), 5 majors, 6 minors; all fixed: final builds measured, bench no longer touches your prefs or the render scale, the 'UI art' compression pass reverted, WebAssembly 2023 off (question 41).",
+   "rows": []
+  },
+  {
+   "title": "M7d Android review (2 Oct)",
+   "summary": "<strong>No blockers</strong>, 4 majors, 9 minors; fixed: the variants could not be told apart at 60 fps (default kept, A15 decides), tests for the cap and arguments, the Editor's target and Unity services restored after builds, benchmark APKs under their own package.",
+   "rows": []
+  },
+  {
+   "title": "Playtest review (4 Oct)",
+   "summary": "<strong>No blockers</strong>, 5 majors, 10 minors. Fixed: the Barnacle King's damage had been halved by mistake (restored), switched-off weapons could enter a 1v1 through an old draft, island registry per scene, the boss aims exactly, release builds trust only the production API host, a 1v1 with no match returns to the menu. Logged: client-reported PvP damage, rematch retry, hazard slots.",
+   "rows": []
+  },
+  {
+   "title": "Playtest review (5 Oct)",
+   "summary": "<strong>No blockers</strong>, 3 majors, 5 minors. Fixed: chests-only made a switch (the Module Lab and tests keep every POI), no landmark or Beacon tutorial nag without them, the quest line names the boss time, the PvP end shows 'Match over' until the result arrives.",
+   "rows": []
+  },
+  {
+   "title": "Back-to-V5 review (6 Oct)",
+   "summary": "<strong>3 blockers</strong> (process, not crashes): 13k lines outside the gate with few tests; tests run with the shipped switches off; overtime Rum uncapped against D4. Plan: merge and gate as <strong>M8z</strong> before M9. Full report: <code>plan/playtest/V5-RESUME.md</code>.",
+   "rows": [
+    {
+     "n": 1,
+     "sev": "Blocker",
+     "where": "branch <code>playtest</code>",
+     "finding": "About 13k lines went in without a phase gate and only 24 new unit tests; no tests for the kill band, timed heals, PvP match controller, item popup or island registry.",
+     "fix": "M8z before M9"
+    },
+    {
+     "n": 2,
+     "sev": "Blocker",
+     "where": "<code>DemoOffForTests.cs</code>",
+     "finding": "Every PlayMode test runs with the demo switches off, so what you play is never tested.",
+     "fix": "Switches into a playtest preset; test both (I8z.3)"
+    },
+    {
+     "n": 3,
+     "sev": "Blocker",
+     "where": "<code>SaltwindRewards.asset</code>",
+     "finding": "Overtime Rum is uncapped (D4).",
+     "fix": "Your decision (P2)"
+    },
+    {
+     "n": 4,
+     "sev": "Major",
+     "where": "<code>EnemyViewPresenter</code>, <code>CardStatLines</code>",
+     "finding": "Content ids in code and a presenter reading RunManager: real rule violations.",
+     "fix": "I8z.2"
+    },
+    {
+     "n": 5,
+     "sev": "Major",
+     "where": "<code>MetaServices</code>, <code>Unlocks_Saltwind</code>",
+     "finding": "Every weapon is a starter and a priced unlock: the shop lists each twice and Ember's lock is always met.",
+     "fix": "Your decision (P3), then I8z.6"
+    },
+    {
+     "n": 6,
+     "sev": "Major",
+     "where": "simulators",
+     "finding": "Both simulators model the old rules (a steady player survives about 28 min).",
+     "fix": "One simulator, calibrated on your sessions (I8z.7)"
+    },
+    {
+     "n": 7,
+     "sev": "Major",
+     "where": "tests",
+     "finding": "Tests jump to hard-coded times of the old 10-minute voyage.",
+     "fix": "Read times from config (I8z.5)"
+    },
+    {
+     "n": 8,
+     "sev": "Major",
+     "where": "<code>deploy-api.yml</code>",
+     "finding": "Deploys production on every push with no approval.",
+     "fix": "Approval step (P9), branch <code>v5-live-game</code>"
+    },
+    {
+     "n": 9,
+     "sev": "Major",
+     "where": "server",
+     "finding": ".NET 8 support ends 10 Nov 2026; EnsureCreated cannot evolve the schema.",
+     "fix": "First M10 task: .NET 10 and migrations"
+    }
+   ]
+  }
+ ]
 }

@@ -1,5 +1,14 @@
 # Your TODOs — V5 (updated 1 Oct)
 
+# Now (6 Oct): back from the playtest detour
+
+- [ ] Answer questions P1-P10 (plan section 9, or `plan/playtest/V5-RESUME.md`).
+- [ ] Deploy the API: add the `RAILWAY_TOKEN` repository secret in GitHub, or run
+      `powershell -NoProfile -ExecutionPolicy Bypass -File server/deploy.ps1` (send the error if it fails).
+- [ ] Play a recorded voyage (Editor or the desktop WebGL build); the session file goes to `plan/playtest/sessions/`.
+- [x] Playtest rounds 1-9 (1-6 Oct), see `plan/playtest/NOTES.md` and `ROUND8-LOG.md`.
+
+
 ## Next
 
 - **Phone performance (2 Oct, while you were away)**: read the report https://claude.ai/artifact/RgXzkpGtFQ1GWicAx3LMSN.
