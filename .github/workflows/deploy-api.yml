@@ -1,11 +1,11 @@
-# Deploys the playtest API to Railway whenever server/ changes on the playtest or main branch (tests first).
+# Deploys the playtest API to Railway whenever server/ changes on the v5-live-game or main branch (tests first).
 # Needs one repository secret: Settings > Secrets and variables > Actions > New secret RAILWAY_TOKEN (the project token
 # from .env). Can also be run by hand from the Actions tab (Run workflow).
 name: Deploy API
 
 on:
   push:
-    branches: [playtest, main]
+    branches: [v5-live-game, main]
     paths: ['server/**', '.github/workflows/deploy-api.yml']
   workflow_dispatch:
 

@@ -97,6 +97,11 @@ namespace RoguePirates.V4.Spawning
             profileInstanceId = profileInstanceId > 0 ? profileInstanceId : NextInstanceId();
             var spawnRadius = _s.Sink.DefinitionRadius(definitionIndex) + 0.35f;
             var isBoss = _s.Sink.DefinitionIsBoss(definitionIndex);
+            // V5 M8z (6 Oct, owner): a boss summoned early at the Beacon keeps the hull it would have at its usual time.
+            var asIfAt = isBoss && _s.Levers != null && _s.Levers.Config != null ? _s.Levers.Config.bossHpAsIfAtSeconds : 0f;
+            if (asIfAt > elapsed && _s.Difficulty != null)
+                hpMultiplier *= RoguePirates.V4.Difficulty.CurveEvaluator.ExpectedHpScale(_s.Difficulty, asIfAt)
+                                / Mathf.Max(0.0001f, RoguePirates.V4.Difficulty.CurveEvaluator.ExpectedHpScale(_s.Difficulty, elapsed));
             // Playtest (3 Oct, owner): only bosses and minibosses may appear on screen (out of their whirlpool); every
             // other spawn (ambient, encounter elites, kill-band elites, scheduled elites) is placed outside the view.
             var mayAppearOnScreen = isBoss || _s.Sink.DefinitionIsMiniboss(definitionIndex);

@@ -31,6 +31,7 @@ namespace RoguePirates.V4.Foundation.Progression
 
         public static bool BypassProgressionGates =>
             DeveloperPresetActive
+            || RoguePirates.V4.Foundation.Core.DemoMode.UnlockEverything // V5 M8z (6 Oct, owner): all free for now
             || (UnlockAllContent && !Balance.StageBalanceProfileContext.IsActive);
 
         public static void SetDeveloperPresetEnabled(bool enabled)

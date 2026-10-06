@@ -31,6 +31,7 @@ namespace RoguePirates.V4.Foundation.Core
         /// <summary>No points of interest on the stage (chests, landmarks, the Treasury Beacon).</summary>
         public static bool NoPointsOfInterest => !Off && Settings != null && Settings.hidePointsOfInterest;
 
+        public static bool UnlockEverything => !Off && Settings != null && Settings.unlockEverything;
         public static bool ChestsOnlyPointsOfInterest => !Off && Settings != null && Settings.chestsOnlyPointsOfInterest;
         public static bool HideVoyageToast => !Off && Settings != null && Settings.hideVoyageToast;
         public static float AutoBossSeconds => Off || Settings == null ? 0f : Settings.autoBossSeconds;
