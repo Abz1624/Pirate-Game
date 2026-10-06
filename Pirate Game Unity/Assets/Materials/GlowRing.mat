@@ -27,7 +27,7 @@ Material:
     m_Floats:
     - _GlowStrength: 0.3
     - _GlowWidth: 0.05
-    - _Intensity: 1.5
+    - _Intensity: 3.38
     - _PulseMin: 0.85
     - _PulseSpeed: 2
     - _Radius: 0.8
