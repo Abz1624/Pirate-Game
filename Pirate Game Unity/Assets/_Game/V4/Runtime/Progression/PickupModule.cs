@@ -162,26 +162,7 @@ namespace RoguePirates.V4.Progression
             if (xp > 0) Spawn(PickupType.XpBarrel, Mathf.Max(1, Mathf.RoundToInt(xp * 1f)), basePos + DropOffset(index++, count));
             if (gold > 0) Spawn(PickupType.GoldBarrel, gold, basePos + DropOffset(index++, count));
             var heal = c.healthDropHullFraction > 0f ? Mathf.Max(1, Mathf.RoundToInt(c.healthDropHullFraction * _rewards.MaxHull)) : c.healthDropValue;
-            // V5 M8z (6 Oct, owner: "I didn't see any health pickups"): the timed health drop lands in view, a few metres
-            // ahead of the ship on open water, not where the kill was (often 15-25 m away behind the crowd).
-            if (health) Spawn(PickupType.Powerup, heal, c.healthDropIntervalMax > 0f ? HealthDropNearShip(basePos) : basePos + DropOffset(index, count));
-        }
-
-        Vector3 _shipPos, _shipHeading = Vector3.forward;
-        bool _shipKnown;
-
-        Vector3 HealthDropNearShip(Vector3 fallback)
-        {
-            if (!_shipKnown) return fallback;
-            const float distance = 7f;
-            for (var i = 0; i < 8; i++)
-            {
-                var dir = Quaternion.Euler(0f, (i % 2 == 0 ? 1 : -1) * (i + 1) / 2 * 35f, 0f) * _shipHeading;
-                var p = _shipPos + dir * distance;
-                p.y = 0f;
-                if (!RoguePirates.V4.Foundation.World.IslandObstacles.IsPositionBlocked(p, 2f)) return p;
-            }
-            return fallback;
+            if (health) Spawn(PickupType.Powerup, heal, basePos + DropOffset(index, count));
         }
 
         /// <summary>Playtest (Survivor.io): one health drop per random wait, sooner while the hull is low.</summary>
@@ -317,11 +298,6 @@ namespace RoguePirates.V4.Progression
             var c = C;
             ProcessPending();
             _time += dt;
-            var moved = playerPos - _shipPos;
-            moved.y = 0f;
-            if (_shipKnown && moved.sqrMagnitude > 0.0004f) _shipHeading = moved.normalized;
-            _shipPos = playerPos;
-            _shipKnown = true;
             var xpRadius = Mathf.Max(c.xpAutoPickupRadius, pickupRadius > 0f ? pickupRadius : GameConstants.DefaultPickupRadius);
             var goldRadius = c.goldAutoPickupRadius;
             var touchRadius = c.barrelTouchRadius;

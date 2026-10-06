@@ -94,6 +94,9 @@ namespace RoguePirates.V4.Spawning
         public void PollArena()
         {
             if (_arenaActive && !_s.Sink.IsUnitActive(_arenaFocus)) EndArena();
+            // V5 M8z (6 Oct, owner: a 3:00 elite stalled a run): past this long the waves come back while the fight goes on.
+            var maxPause = _s.Levers != null && _s.Levers.Config != null ? _s.Levers.Config.arenaMaxPauseSeconds : 0f;
+            if (_arenaActive && maxPause > 0f && _s.Run.ElapsedSeconds - _arenaBlockedSince > maxPause) EndArena();
         }
 
         bool BeginArena(int unitId, string label)

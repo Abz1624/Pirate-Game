@@ -187,7 +187,8 @@ MonoBehaviour:
   killBandMinSpawns: 6
   bossMinSeconds: 4.75
   bossHpAsIfAtSeconds: 840
-  arenaFocusMinSeconds: 3
+  arenaMaxPauseSeconds: 20
+  arenaFocusMinSeconds: 2
   focusMinSeconds: 1.5
   adaptiveEliteMinSeconds: 1.25
   tierTimingLever: 1

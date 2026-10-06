@@ -110,6 +110,8 @@ namespace RoguePirates.V4.Config
         public float bossMinSeconds = 25f;
         [Tooltip("V5 M8z (6 Oct, owner): a boss summoned before this run time gets the hull it would have at this time (0 = off).")]
         public float bossHpAsIfAtSeconds;
+        [Tooltip("V5 M8z (6 Oct, owner): an arena fight pauses the waves for at most this long (0 = until the focus dies).")]
+        public float arenaMaxPauseSeconds;
         [Tooltip("Arena minibosses and elites (the ones that clear the sea: the 2:30 crab, the 3:00 elite, the 5:00 and 10:00 fights).")] public float arenaFocusMinSeconds = 12f;
         [Tooltip("Minibosses and scheduled elites that fight alongside the waves.")] public float focusMinSeconds = 7f;
         [Tooltip("Elites the kill band adds to the waves.")] public float adaptiveEliteMinSeconds = 2.5f;
