@@ -1,6 +1,6 @@
 {
  "updated": "6 Oct 2026",
- "statusLine": "M8z (playtest integration) in progress on <code>v5-live-game</code>; your answers P1-P10 recorded as D18; P11 (economy) open.",
+ "statusLine": "M8z (playtest integration) in progress on <code>v5-live-game</code>; all questions answered (D18, D19).",
  "statusOk": false,
  "facts": [
   [
@@ -273,13 +273,16 @@
    "when": "6 Oct",
    "commit": "dd213d1f",
    "what": "<strong>Your answers P1-P10 (D18)</strong>: playtest merged into <code>v5-live-game</code>; everything unlocked for now; timed heals now drop in view; an early-summoned boss keeps its 14:00 hull; PvP anti-cheat on the server (weapon in draft, range, damage cap by level, accepted damage decides time-outs) and rematch retry; attack warnings in their own slots; API deployed to Railway. First recorded session compared with the simulator: islands did 54% of the damage, the 3:00 elite Hammerhead stalled the run, the simulator is far off (recalibration in M8z)."
+  },
+  {
+   "when": "6 Oct",
+   "commit": "3e618074",
+   "what": "Island hits 3 hull at most every 4 s (were 10 every 2 s); arena fights pause the waves for at most 20 s and their floor is 2 s of DPS; health pickups back as before; raid economy B with 4-hour shields and server-authoritative Netcode recorded (D19); anti-cheat audit per weapon in progress."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Answer P11</strong>: the raid economy, options A, B or C in <code>plan/playtest/ECONOMY-P11.md</code>.",
    "<strong>Add the <code>RAILWAY_TOKEN</code> secret in GitHub</strong> so the API deploys on every push (the local <code>server/deploy.ps1</code> works).",
-   "<strong>Decide</strong>: cheaper island hits and elites that can't stall a run (found in your recorded session)?",
    "<strong>Play more recorded voyages</strong> (the file downloads in the browser; put it in <code>plan/playtest/sessions/</code>) to calibrate the simulator."
   ],
   "open": [
@@ -288,6 +291,7 @@
    "Earlier GDD questions (21 left) are still on the board; the raid entry fee (question 4) feeds M15 and the pass price (question 5) feeds M20."
   ],
   "done": [
+   "<strong>Answered P11</strong> (6 Oct): raid economy option B with 4-hour shields (D19); Netcode matches server-authoritative (D19).",
    "<strong>Answered P1-P10</strong> (6 Oct, D18); playtest merged; API deployed.",
    "<strong>Playtest rounds 1-9</strong> (1-6 Oct): see the progress log; notes in <code>plan/playtest/NOTES.md</code> and <code>ROUND8-LOG.md</code>.",
    "<strong>Balance re-check</strong> (1 Oct): half XP kept, retune around it; see <code>plan/v5/balance-recheck/README.md</code>.",
