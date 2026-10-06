@@ -62,7 +62,7 @@ MonoBehaviour:
   tornadoBaseRadius: 2
   waistRadius: 1
   tornadoTopRadius: 3.5
-  lean: 0.12
+  lean: 0.18
   rotationSpeed: 1.6
   verticalSpeed: 1
   turbulence: 1
