@@ -405,7 +405,7 @@ namespace RoguePirates.V4.Tests
                     Assert.AreEqual(pool[i].position, s.position);
                     Assert.AreEqual(pool[i].velocity, s.velocity);
                 }
-                Assert.AreEqual(24, hazards.Capacity);
+                Assert.AreEqual(HazardTelegraphs.DamagingSlots + HazardTelegraphs.WarningSlots, hazards.Capacity); // V5 M8z (6 Oct, owner): warnings have their own slots
             }
             Assert.IsTrue(sawShot, "the cannonboats fired, so the shot view was compared on live shots");
 

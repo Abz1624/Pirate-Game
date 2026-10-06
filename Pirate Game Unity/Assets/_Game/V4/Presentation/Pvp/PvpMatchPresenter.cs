@@ -594,6 +594,8 @@ namespace RoguePirates.V4.Presentation.Pvp
                 case "time": return won ? "Time: you dealt more damage" : "Time: they dealt more damage";
                 case "forfeit": return won ? "Your opponent left the match" : "You left the match";
                 case "draw": return "Time: dead even";
+                // V5 M8z (6 Oct, owner): the server forfeited a player whose hits it kept refusing
+                case "anticheat": return won ? "Opponent disqualified: invalid hits" : "Disqualified: too many invalid hits";
                 default: return string.IsNullOrEmpty(reason) ? "Match over" : reason;
             }
         }

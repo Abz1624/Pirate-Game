@@ -393,6 +393,8 @@ namespace RoguePirates.V4.Online
                     if (m == null) return;
                     if (m.status == "requested") { RematchRequestedBy = m.by; MatchMessage?.Invoke(t, json); return; }
                     if (m.status == "created" && !string.IsNullOrEmpty(m.lobbyId)) { MatchMessage?.Invoke(t, json); MoveToRematch(m.lobbyId); }
+                    // V5 M8z (6 Oct, owner): the server could not create it; the requests stand and Rematch tries again
+                    if (m.status == "failed") MatchMessage?.Invoke(t, json);
                     return;
                 }
                 case null:

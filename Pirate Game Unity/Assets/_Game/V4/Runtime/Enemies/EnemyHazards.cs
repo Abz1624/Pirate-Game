@@ -117,7 +117,8 @@ namespace RoguePirates.V4.Enemies
 
     /// <summary>
     /// Telegraphed hazard circles: Kraken trap explosions, Net Cutter slow nets and Powder Barge mines (port of
-    /// SaltwindHazardTelegraph, per run). 24 slots created lazily and filled lowest-free first; a reused slot keeps
+    /// SaltwindHazardTelegraph, per run), and visual-only attack warnings in slots of their own. Slots created lazily and
+    /// filled lowest-free first; a reused slot keeps
     /// the fields its new kind does not set, as in V3. V3 cached the player statically, so from the second run in a
     /// process its hazards never hurt (R-99); here the target is the run's ship.
     /// </summary>
@@ -141,7 +142,10 @@ namespace RoguePirates.V4.Enemies
         }
 
         // Playtest (3 Oct, owner, round 7): 48 slots (was 24): every telegraphed enemy attack now has a ground warning.
-        readonly PendingHazard[] _slots = new PendingHazard[48];
+        // V5 M8z (6 Oct, owner): the visual-only warnings have their own slots, so a full set of warnings never drops a
+        // damaging circle, mine or net: slots [0, DamagingSlots) are damaging, the rest are warnings.
+        public const int DamagingSlots = 32, WarningSlots = 48;
+        readonly PendingHazard[] _slots = new PendingHazard[DamagingSlots + WarningSlots];
         readonly IEnemyTarget _player;
         readonly IEnemyEffects _effects;
 
@@ -239,7 +243,7 @@ namespace RoguePirates.V4.Enemies
         public void SpawnNetSegment(Vector3 center, float length, float activeSeconds, float slowStrength, float slowDuration)
         {
             center.y = 0f;
-            for (var i = 0; i < _slots.Length; i++)
+            for (var i = 0; i < DamagingSlots; i++)
             {
                 _slots[i] ??= new PendingHazard();
                 if (_slots[i].active) continue;
@@ -259,7 +263,7 @@ namespace RoguePirates.V4.Enemies
         public void SpawnMine(Vector3 center, float armSeconds, float lifeSeconds, float damage)
         {
             center.y = 0f;
-            for (var i = 0; i < _slots.Length; i++)
+            for (var i = 0; i < DamagingSlots; i++)
             {
                 _slots[i] ??= new PendingHazard();
                 if (_slots[i].active) continue;
@@ -281,7 +285,7 @@ namespace RoguePirates.V4.Enemies
         {
             center.y = 0f;
             fuseSeconds = Mathf.Max(fuseSeconds, EncounterBudget.MinExplosiveWarning);
-            for (var i = 0; i < _slots.Length; i++)
+            for (var i = 0; i < DamagingSlots; i++)
             {
                 _slots[i] ??= new PendingHazard();
                 if (_slots[i].active) continue;
@@ -329,11 +333,14 @@ namespace RoguePirates.V4.Enemies
             center.y = 0f;
             PendingHazard target = null;
             if (owner != 0)
-                foreach (var slot in _slots)
-                    if (slot != null && slot.active && slot.owner == owner && slot.kind == kind) { target = slot; break; }
+                for (var i = DamagingSlots; i < _slots.Length && target == null; i++)
+                {
+                    var slot = _slots[i];
+                    if (slot != null && slot.active && slot.owner == owner && slot.kind == kind) target = slot;
+                }
             var fresh = target == null;
             if (fresh)
-                for (var i = 0; i < _slots.Length && target == null; i++)
+                for (var i = DamagingSlots; i < _slots.Length && target == null; i++)
                 {
                     _slots[i] ??= new PendingHazard();
                     if (!_slots[i].active) target = _slots[i];

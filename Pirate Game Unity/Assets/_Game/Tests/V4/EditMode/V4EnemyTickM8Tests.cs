@@ -397,5 +397,43 @@ namespace RoguePirates.V4.Tests
             Assert.Less(Pulled("shark", new Vector3(12.5f, 0f, 0f), 3f) - still, 0.6f, "never past the centre");
             Assert.AreEqual(Pulled("barnacle_king", Vector3.zero, 0f), Pulled("barnacle_king", new Vector3(30f, 0f, 0f), 2f), 1e-3f, "a boss is not moved");
         }
+
+        [Test]
+        public void M8z_AttackWarnings_HaveTheirOwnSlots_SoADamagingHazardIsNeverDropped()
+        {
+            // V5 M8z (6 Oct, owner): a screen full of warnings used to fill all 48 shared slots and silently drop the next
+            // damaging circle or mine
+            var hazards = new HazardTelegraphs(null, null);
+            for (var i = 0; i < 200; i++) hazards.Warn(new Vector3(i, 0f, 0f), 3f, 5f);
+            for (var i = 0; i < 200; i++) hazards.WarnLine(Vector3.zero, Vector3.forward, 10f, 1f, 5f);
+            hazards.SpawnCircle(new Vector3(5f, 0f, 5f), 4f, 2f, 30f);
+            hazards.SpawnMine(new Vector3(-5f, 0f, 5f), 1f, 10f, 20f);
+            hazards.SpawnNetSegment(new Vector3(0f, 0f, -5f), 6f, 3f, 0.5f, 2f);
+
+            int Count(HazardKind kind)
+            {
+                var n = 0;
+                for (var i = 0; i < hazards.Capacity; i++) if (hazards.TryGet(i, out var h) && h.kind == kind) n++;
+                return n;
+            }
+            Assert.AreEqual(HazardTelegraphs.DamagingSlots + HazardTelegraphs.WarningSlots, hazards.Capacity);
+            Assert.AreEqual(HazardTelegraphs.WarningSlots, Count(HazardKind.Warning) + Count(HazardKind.WarningLine), "the warnings fill only their own slots");
+            Assert.AreEqual(1, Count(HazardKind.Explosion));
+            Assert.AreEqual(1, Count(HazardKind.Mine));
+            Assert.AreEqual(1, Count(HazardKind.NetSlow));
+
+            // and the other way round: damaging hazards filling their slots leave the warnings alone
+            for (var i = 0; i < 100; i++) hazards.SpawnCircle(new Vector3(i, 0f, 0f), 2f, 2f, 10f);
+            Assert.AreEqual(HazardTelegraphs.DamagingSlots, Count(HazardKind.Explosion) + Count(HazardKind.Mine) + Count(HazardKind.NetSlow));
+            Assert.AreEqual(HazardTelegraphs.WarningSlots, Count(HazardKind.Warning) + Count(HazardKind.WarningLine));
+
+            // a unit's warning follows it in its own slot; clearing it frees a warning slot
+            hazards.ClearAll();
+            hazards.Warn(Vector3.zero, 3f, 2f, owner: 7);
+            hazards.Warn(new Vector3(4f, 0f, 0f), 3f, 2f, owner: 7);
+            Assert.AreEqual(1, Count(HazardKind.Warning));
+            hazards.ClearWarnings(7);
+            Assert.AreEqual(0, Count(HazardKind.Warning));
+        }
 }
 }

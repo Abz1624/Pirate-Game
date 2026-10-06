@@ -710,17 +710,39 @@ namespace RoguePirates.V4.Pvp
                     if (m == null) return;
                     if (m.status == "requested") _rematchStatus = m.by == _myId ? "Waiting for opponent..." : "Opponent wants a rematch!";
                     else if (m.status == "created") _rematchStatus = "Rematch ready: back to the lobby";
+                    else if (m.status == "failed") _rematchStatus = RematchFailed; // V5 M8z (6 Oct, owner)
                     return;
                 }
                 case "reject":
                 {
                     var r = JsonUtility.FromJson<RejectMsg>(json);
-                    if (r != null && r.of != "pickup" && r.of != "state") Debug.Log($"PvP: server refused {r.of}: {r.reason}");
-                    if (r != null && r.of == "rematch") _rematchStatus = "Rematch not possible (" + r.reason + ")";
+                    if (r == null) return;
+                    if (r.of == "hit")
+                    {
+                        OnHitRefused(r);
+                        return;
+                    }
+                    if (r.of != "pickup" && r.of != "state") Debug.Log($"PvP: server refused {r.of}: {r.reason}");
+                    if (r.of == "rematch") _rematchStatus = r.reason == "rematch_failed" ? RematchFailed : "Rematch not possible (" + r.reason + ")";
                     return;
                 }
             }
         }
+
+        const string RematchFailed = "Rematch failed on the server: press Rematch to try again";
+
+        /// <summary>V5 M8z (6 Oct, owner): the server refused all or part of a hit batch (not in the draft, out of range, over
+        /// the level's damage cap...): "damage dealt" counts only what it accepted. Logged once per reason, not per batch.</summary>
+        void OnHitRefused(RejectMsg r)
+        {
+            if (!r.asBot && r.dropped > 0f) _dealt = Mathf.Max(0f, _dealt - r.dropped);
+            var reason = string.IsNullOrEmpty(r.reason) ? "unknown" : r.reason;
+            _hitRefusals.TryGetValue(reason, out var n);
+            _hitRefusals[reason] = n + 1;
+            if (n == 0) Debug.Log($"PvP: the server refused hit damage ({reason}); further refusals for this reason are counted, not logged");
+        }
+
+        readonly Dictionary<string, int> _hitRefusals = new Dictionary<string, int>();
 
         float HealFraction => _match.barrels != null && _match.barrels.healthHealFraction > 0f ? _match.barrels.healthHealFraction : 0.2f;
 

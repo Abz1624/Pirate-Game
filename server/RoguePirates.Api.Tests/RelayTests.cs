@@ -3,7 +3,9 @@ using System.Net.Http.Json;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using RoguePirates.Api.Data;
 using RoguePirates.Api.Playtest;
 using Xunit;
 
@@ -133,6 +135,43 @@ public class ArenaRulesTests
     static double Dist((double x, double z) p, (double x, double z) q) => Math.Sqrt((p.x - q.x) * (p.x - q.x) + (p.z - q.z) * (p.z - q.z));
 }
 
+/// <summary>V5 M8z (6 Oct, owner): the anti-cheat numbers without a server.</summary>
+public class HitRulesTests
+{
+    [Fact]
+    public void SustainedDps_StartsAt600_Grows12PercentALevel_UpToWhatAClientCanSend()
+    {
+        Assert.Equal(600, HitRules.SustainedDps(1), 6);
+        Assert.Equal(600 * Math.Pow(1.12, 9), HitRules.SustainedDps(10), 6);
+        Assert.Equal(10000, HitRules.SustainedDps(60), 6);
+    }
+
+    [Fact]
+    public void DamageWindow_CapsOneSecondAndFiveSeconds_AndDropsOnlyTheExcess()
+    {
+        var w = new DamageWindow();
+        var t0 = new DateTime(2026, 10, 6, 12, 0, 0, DateTimeKind.Utc);
+        Assert.Equal(500, w.Accept(t0, 500, 1));
+        Assert.Equal(500, w.Accept(t0.AddSeconds(0.1), 500, 1));
+        Assert.Equal(200, w.Accept(t0.AddSeconds(0.2), 500, 1), 6); // 1200 in 1 s
+        Assert.Equal(0, w.Accept(t0.AddSeconds(0.9), 10, 1));
+        Assert.Equal(500, w.Accept(t0.AddSeconds(1.0), 500, 1)); // the first left the 1 s window
+        Assert.Equal(500, w.Accept(t0.AddSeconds(2.0), 500, 1));
+        Assert.Equal(500, w.Accept(t0.AddSeconds(3.0), 500, 1));
+        Assert.Equal(300, w.Accept(t0.AddSeconds(4.0), 500, 1), 6); // 3000 in 5 s
+        Assert.Equal(0, w.Accept(t0.AddSeconds(4.5), 50, 1));
+        Assert.Equal(500, w.Accept(t0.AddSeconds(5.1), 500, 2)); // the first two left the 5 s window; level 2 allows 3360
+    }
+
+    [Fact]
+    public void Reach_Is80m_PlusMovementSinceTheLastReports()
+    {
+        Assert.Equal(80, HitRules.Reach(TimeSpan.Zero, TimeSpan.Zero), 6);
+        Assert.Equal(90, HitRules.Reach(TimeSpan.Zero, TimeSpan.FromSeconds(0.5)), 6);
+        Assert.Equal(100, HitRules.Reach(TimeSpan.Zero, TimeSpan.FromSeconds(30)), 6); // the victim's staleness counts up to 1 s
+    }
+}
+
 public class RelayTests : IDisposable
 {
     readonly ApiHost _api = new();
@@ -177,7 +216,17 @@ public class RelayTests : IDisposable
     static object State(double x, double z, double hp = 100, double maxHp = 100, bool alive = true, int level = 1, bool asBot = false) =>
         new { t = "state", x, z, yaw = 90, vx = 1.5, vz = 0, hp, maxHp, level, alive, boosting = false, asBot };
 
-    static object Hit(double dmg, string? weaponId = "deck_cannons", bool asBot = false) => new { t = "hit", dmg, weaponId, asBot };
+    // V5 M8z (6 Oct, owner): hits must name a drafted weapon (the test drafts are hw1..hw6 and gw1..gw6)
+    static object Hit(double dmg, string? weaponId = "hw1", bool asBot = false) => new { t = "hit", dmg, weaponId, asBot };
+
+    /// <summary>Both ships report a position (the range check reads them) and the relay has processed both.</summary>
+    static async Task Place(Duel d, (double x, double z) host, (double x, double z) guest)
+    {
+        await d.H.Send(State(host.x, host.z));
+        await d.G.Send(State(guest.x, guest.z));
+        await d.H.Sync();
+        await d.G.Sync();
+    }
 
     async Task<JsonElement> GetJson(TestPlayer p, string url) => await (await p.Http.GetAsync(url)).ReadJson();
 
@@ -274,6 +323,7 @@ public class RelayTests : IDisposable
         Assert.Equal("not_started", (await h.Next("reject")).GetProperty("reason").GetString());
 
         await At(d, 1);
+        await Place(d, (-5, 0), (5, 0));
         await h.Send(Hit(600));
         Assert.Equal("bad_damage", (await h.Next("reject")).GetProperty("reason").GetString());
         await h.Send(Hit(-1));
@@ -284,14 +334,15 @@ public class RelayTests : IDisposable
         await h.Send(Hit(40));
         var hit = await g.Next("hit");
         Assert.Equal(40, hit.GetProperty("dmg").GetDouble());
-        Assert.Equal("deck_cannons", hit.GetProperty("weaponId").GetString());
+        Assert.Equal("hw1", hit.GetProperty("weaponId").GetString());
         Assert.Equal(d.Host.Id, hit.GetProperty("from").GetGuid());
         Assert.Equal(d.Guest.Id, hit.GetProperty("to").GetGuid());
-        await g.Send(Hit(15, "mortar"));
+        await g.Send(Hit(15, "gw2"));
         Assert.Equal(15, (await h.Next("hit")).GetProperty("dmg").GetDouble());
 
         // rate cap: 20 hits per second (the bucket is full again 2 s later); the rest are rejected and not tallied
         await At(d, 3);
+        await Place(d, (-5, 0), (5, 0));
         for (var i = 0; i < 25; i++) await h.Send(Hit(1));
         var seen = await h.Sync();
         Assert.Equal(5, seen.Count(m => m.GetProperty("t").GetString() == "reject" && m.GetProperty("reason").GetString() == "rate"));
@@ -340,8 +391,9 @@ public class RelayTests : IDisposable
         using var h = d.H;
         using var g = d.G;
         await At(d, 1);
+        await Place(d, (-5, 0), (5, 0));
         await h.Send(Hit(30));
-        await g.Send(Hit(30));
+        await g.Send(Hit(30, "gw1"));
         await h.Send(State(-45, 0, hp: 50, maxHp: 200)); // 25 %
         await g.Send(State(45, 0, hp: 30, maxHp: 100));  // 30 %
         await h.Sync();
@@ -438,7 +490,7 @@ public class RelayTests : IDisposable
         await h.Send(State(-45, 0, alive: false)); // during the countdown: ignored
         await h.Sync();
         await At(d, 12);
-        await g.Send(Hit(120));
+        await g.Send(Hit(120, "gw1"));
         await h.Send(State(-45, 0, hp: 0, alive: false));
         var end = await g.Next("match_end");
         Assert.Equal("sunk", end.GetProperty("reason").GetString());
@@ -455,7 +507,7 @@ public class RelayTests : IDisposable
         Assert.Equal(1, (await GetJson(d.Host, "/api/profiles/me")).GetProperty("losses").GetInt32());
 
         // a hit after the end is refused; the old result endpoint still answers with the decided match
-        await g.Send(Hit(5));
+        await g.Send(Hit(5, "gw1"));
         Assert.Equal("match_over", (await g.Next("reject")).GetProperty("reason").GetString());
 
         // rematch: both press it (sockets stay open after "finished" for the rematch window)
@@ -601,10 +653,16 @@ public class RelayTests : IDisposable
         Assert.Equal(botId, (await h.Next("barrel_taken")).GetProperty("by").GetGuid());
 
         // hits both ways come back to the host, which simulates the bot
+        await h.Send(State(bx, bz - 4));
+        await h.Sync();
         await h.Send(Hit(25));
         var onBot = await h.Next("hit");
         Assert.Equal(botId, onBot.GetProperty("to").GetGuid());
-        await h.Send(Hit(10, "mortar", asBot: true));
+        await h.Send(Hit(10, "mortar", asBot: true)); // V5 M8z: the bot fires only its cannons
+        var notCannons = await h.Next("reject");
+        Assert.Equal("not_in_draft", notCannons.GetProperty("reason").GetString());
+        Assert.Equal(10, notCannons.GetProperty("dropped").GetDouble());
+        await h.Send(Hit(10, HitRules.BotWeaponId, asBot: true));
         var onHost = await h.Next("hit");
         Assert.Equal(botId, onHost.GetProperty("from").GetGuid());
         Assert.Equal(host.Id, onHost.GetProperty("to").GetGuid());
@@ -632,6 +690,237 @@ public class RelayTests : IDisposable
         var fresh = await GetJson(host, $"/api/lobbies/{created.GetProperty("lobbyId").GetGuid()}");
         Assert.True(fresh.GetProperty("seats")[1].GetProperty("bot").GetBoolean());
         Assert.True(fresh.GetProperty("seats")[1].GetProperty("ready").GetBoolean());
+    }
+
+    // ---------------------------------------------------------------- V5 M8z (6 Oct, owner): anti-cheat
+
+    static int Count(List<JsonElement> msgs, string t, string? reason = null) =>
+        msgs.Count(m => m.GetProperty("t").GetString() == t && (reason == null || m.GetProperty("reason").GetString() == reason));
+
+    static double[] Forwarded(List<JsonElement> msgs) =>
+        msgs.Where(m => m.GetProperty("t").GetString() == "hit").Select(m => m.GetProperty("dmg").GetDouble()).ToArray();
+
+    [Fact]
+    public async Task Hit_WeaponOutsideTheDraft_IsRefused_NotForwarded_NotTallied()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 1);
+        await Place(d, (-5, 0), (5, 0));
+
+        await h.Send(Hit(40, "gw1")); // the guest's weapon
+        var reject = await h.Next("reject");
+        Assert.Equal("not_in_draft", reject.GetProperty("reason").GetString());
+        Assert.Equal(40, reject.GetProperty("dropped").GetDouble());
+        await h.Send(Hit(40, "lighthouse_lantern"));
+        Assert.Equal("not_in_draft", (await h.Next("reject")).GetProperty("reason").GetString());
+        await h.Send(Hit(7, "hw6"));
+        await h.Send(Hit(3, HitRules.GenericWeaponId)); // burns and hazards carry no weapon id
+        Assert.Equal(0, Count(await h.Sync(), "reject"));
+        Assert.Equal(new[] { 7.0, 3.0 }, Forwarded(await g.Sync()));
+
+        await At(d, 300);
+        var end = await h.Next("match_end");
+        Assert.Equal(10, end.GetProperty("stats").GetProperty(d.Host.Id.ToString()).GetProperty("damageDealt").GetDouble());
+    }
+
+    [Fact]
+    public async Task Hit_OutOfRange_OrWithoutAFreshPosition_IsRefused()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 1);
+        await Place(d, (-45, 0), (45, 0)); // 90 m apart, both fresh: reach is 80 m
+        await h.Send(Hit(20));
+        var far = await h.Next("reject");
+        Assert.Equal("out_of_range", far.GetProperty("reason").GetString());
+        Assert.Equal(20, far.GetProperty("dropped").GetDouble());
+
+        await Place(d, (-40, 0), (39, 0)); // 79 m
+        await h.Send(Hit(20));
+        Assert.Equal(20, (await g.Next("hit")).GetProperty("dmg").GetDouble());
+
+        // the victim's last position is 0.5 s old: it may have sailed 10 m since
+        await At(d, 1.5, tick: false);
+        await h.Send(State(-45, 0));
+        await h.Send(Hit(20)); // 84 m <= 80 + 20 x 0.5
+        Assert.Equal(20, (await g.Next("hit")).GetProperty("dmg").GetDouble());
+
+        // the attacker stopped reporting its position for over 2 s
+        await At(d, 4, tick: false);
+        await g.Send(State(39, 0));
+        await g.Sync();
+        await h.Send(Hit(20));
+        Assert.Equal("stale_state", (await h.Next("reject")).GetProperty("reason").GetString());
+    }
+
+    [Fact]
+    public async Task Hit_OverTheLevelsDamageCap_DropsOnlyTheExcess()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 1);
+        await Place(d, (-5, 0), (5, 0));
+
+        // level 1: 600 raw a second sustained, 1200 in any 1 s: 500 + 500 + 200 of the third
+        for (var i = 0; i < 3; i++) await h.Send(Hit(500));
+        var capped = Assert.Single(await h.Sync(), m => m.GetProperty("t").GetString() == "reject");
+        Assert.Equal("dps_cap", capped.GetProperty("reason").GetString());
+        Assert.Equal(300, capped.GetProperty("dropped").GetDouble(), 6);
+        Assert.Equal(new[] { 500.0, 500.0, 200.0 }, Forwarded(await g.Sync()));
+
+        // a full 1 s window refuses the whole batch
+        await h.Send(Hit(50));
+        var full = await h.Next("reject");
+        Assert.Equal("dps_cap", full.GetProperty("reason").GetString());
+        Assert.Equal(50, full.GetProperty("dropped").GetDouble());
+        Assert.Equal(1, Relay.Get(d.LobbyId)!.Seats[0].ServerLevel); // levels come only from XP barrels the server gave
+
+        await At(d, 300);
+        var end = await h.Next("match_end");
+        Assert.Equal(1200, end.GetProperty("stats").GetProperty(d.Host.Id.ToString()).GetProperty("damageDealt").GetDouble(), 6);
+    }
+
+    [Fact]
+    public async Task Time_IsDecidedByServerAcceptedDamage_NotByClaims()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 1);
+        await Place(d, (-30, 0), (60, 0)); // 90 m
+
+        // the host claims 2000 from out of range and with a weapon it never drafted; the guest lands 50
+        for (var i = 0; i < 3; i++) await h.Send(Hit(400));
+        for (var i = 0; i < 2; i++) await h.Send(Hit(400, "mortar"));
+        var rejected = await h.Sync();
+        Assert.Equal(3, Count(rejected, "reject", "out_of_range"));
+        Assert.Equal(2, Count(rejected, "reject", "not_in_draft"));
+        await Place(d, (-30, 0), (30, 0));
+        await g.Send(Hit(50, "gw1"));
+        await g.Sync();
+
+        await At(d, 300);
+        var end = await h.Next("match_end");
+        Assert.Equal("time", end.GetProperty("reason").GetString());
+        Assert.Equal(d.Guest.Id, end.GetProperty("winnerPlayerId").GetGuid());
+        Assert.Equal(0, end.GetProperty("stats").GetProperty(d.Host.Id.ToString()).GetProperty("damageDealt").GetDouble());
+        Assert.Equal(50, end.GetProperty("stats").GetProperty(d.Guest.Id.ToString()).GetProperty("damageDealt").GetDouble());
+        var seat = Relay.Get(d.LobbyId)!.Seats[0];
+        Assert.Equal(2000, seat.RejectedDamage, 6);
+        Assert.True(seat.Flagged); // logged: over 500 refused and over half its claims
+    }
+
+    [Fact]
+    public async Task ManyRefusedHits_ForfeitARatedMatch()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 1);
+        await Place(d, (-5, 0), (5, 0));
+        await h.Send(Hit(100)); // one real hit: the refused share stays over 75 %
+        for (var i = 0; i < 19; i++) await h.Send(Hit(200, "not_mine"));
+        await h.Sync();
+        await At(d, 2, tick: false);
+        await Place(d, (-5, 0), (5, 0));
+        for (var i = 0; i < 10; i++) await h.Send(Hit(200, "not_mine"));
+        await h.Sync();
+        Assert.Equal("pending", (await (await _api.Anon().GetAsync($"/api/matches/{d.MatchId}")).ReadJson()).GetProperty("status").GetString());
+        await h.Send(Hit(200, "not_mine")); // the 30th refused hit
+        var end = await g.Next("match_end");
+        Assert.Equal("anticheat", end.GetProperty("reason").GetString());
+        Assert.Equal(d.Guest.Id, end.GetProperty("winnerPlayerId").GetGuid());
+        Assert.True(end.GetProperty("rated").GetBoolean());
+        Assert.Equal(1016, (await GetJson(d.Guest, "/api/profiles/me")).GetProperty("rating").GetInt32());
+    }
+
+    [Fact]
+    public async Task LegitPlay_IsNeverRefused()
+    {
+        // 60 s of a close fight at level 1: both ships circle 15 to 40 m apart reporting 10 states a second; each sends a
+        // batch in about half of the 0.1 s slots of 5 to 70 raw (about 200 raw a second, over twice the measured 70),
+        // across its drafted weapons and untagged burns, and the host adds a 300 crit burst every 7 s
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        var rng = new Random(11);
+        string[] hostWeapons = { "hw1", "hw2", "hw3", "hw4", "hw5", "hw6", HitRules.GenericWeaponId };
+        string[] guestWeapons = { "gw1", "gw2", "gw3", "gw4", "gw5", "gw6", HitRules.GenericWeaponId };
+        double hostSent = 0, guestSent = 0;
+        var replies = new List<JsonElement>();
+        for (var step = 0; step < 600; step++)
+        {
+            var t = 0.1 * step;
+            await At(d, t, tick: false);
+            var angle = t * 0.4;
+            var gap = 15 + 25 * (0.5 + 0.5 * Math.Sin(t * 0.7));
+            await h.Send(State(Math.Cos(angle) * 30, Math.Sin(angle) * 30));
+            await g.Send(State(Math.Cos(angle) * 30 + gap, Math.Sin(angle) * 30));
+            if (rng.NextDouble() < 0.5)
+            {
+                var dmg = step % 70 == 35 ? 300 : Math.Round(5 + rng.NextDouble() * 65, 1);
+                await h.Send(Hit(dmg, hostWeapons[rng.Next(hostWeapons.Length)]));
+                hostSent += dmg;
+            }
+            if (rng.NextDouble() < 0.5)
+            {
+                var dmg = Math.Round(5 + rng.NextDouble() * 65, 1);
+                await g.Send(Hit(dmg, guestWeapons[rng.Next(guestWeapons.Length)]));
+                guestSent += dmg;
+            }
+            if (step % 10 == 9)
+            {
+                replies.AddRange(await h.Sync());
+                replies.AddRange(await g.Sync());
+            }
+        }
+        Assert.Equal(0, Count(replies, "reject"));
+        Assert.True(hostSent > 60 * 150, $"the test should send well over the measured rate: {hostSent}");
+
+        await At(d, 300);
+        var end = await h.Next("match_end");
+        Assert.Equal(hostSent, end.GetProperty("stats").GetProperty(d.Host.Id.ToString()).GetProperty("damageDealt").GetDouble(), 3);
+        Assert.Equal(guestSent, end.GetProperty("stats").GetProperty(d.Guest.Id.ToString()).GetProperty("damageDealt").GetDouble(), 3);
+        Assert.Equal(0, Relay.Get(d.LobbyId)!.Seats[0].RejectedHits);
+    }
+
+    [Fact]
+    public async Task Rematch_CreationFails_BothAreTold_AndTheNextRequestRetries()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 5);
+        await h.Send(new { t = "leave" });
+        await g.Next("match_end");
+
+        // the new lobby's insert fails (a database error) until the trigger is dropped
+        using (var scope = _api.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GameDb>();
+            var table = db.Model.FindEntityType(typeof(Lobby))!.GetTableName()!;
+            var sql = "CREATE TRIGGER fail_lobby BEFORE INSERT ON \"" + table + "\" BEGIN SELECT RAISE(ABORT, 'boom'); END;";
+            await db.Database.ExecuteSqlRawAsync(sql);
+        }
+        await h.Send(new { t = "rematch" });
+        await g.Next("rematch", m => m.GetProperty("status").GetString() == "requested");
+        await g.Send(new { t = "rematch" });
+        var failed = await h.Next("rematch", m => m.GetProperty("status").GetString() == "failed");
+        Assert.Equal("server_error", failed.GetProperty("reason").GetString());
+        Assert.Equal("rematch_failed", (await g.Next("reject")).GetProperty("reason").GetString());
+        Assert.False(Relay.Get(d.LobbyId)!.RematchCreating);
+        Assert.Null(Relay.Get(d.LobbyId)!.RematchLobbyId);
+
+        using (var scope = _api.Services.CreateScope())
+            await scope.ServiceProvider.GetRequiredService<GameDb>().Database.ExecuteSqlRawAsync("DROP TRIGGER fail_lobby;");
+        await h.Send(new { t = "rematch" }); // both requests are still on record: this one creates it
+        var created = await g.Next("rematch", m => m.GetProperty("status").GetString() == "created");
+        var fresh = await GetJson(d.Host, $"/api/lobbies/{created.GetProperty("lobbyId").GetGuid()}");
+        Assert.Equal("full", fresh.GetProperty("status").GetString());
     }
 
     [Fact]

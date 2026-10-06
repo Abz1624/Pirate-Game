@@ -132,8 +132,10 @@ namespace RoguePirates.V4.Online
     }
 
     [Serializable] public sealed class PresenceMsg { public string t; public string playerId; public bool connected; public long forfeitAt; }
-    [Serializable] public sealed class RejectMsg { public string t; public string of; public string reason; public int id; }
-    [Serializable] public sealed class RematchMsg { public string t; public string status; public string by; public string lobbyId; public string code; }
+    // V5 M8z (6 Oct, owner): a refused "hit" says how much raw damage the server dropped (all of it, or the part over the
+    // level's damage cap) and whether it was the bot's; a "rematch" can come back "failed" (retry with Rematch).
+    [Serializable] public sealed class RejectMsg { public string t; public string of; public string reason; public int id; public float dropped; public bool asBot; }
+    [Serializable] public sealed class RematchMsg { public string t; public string status; public string by; public string lobbyId; public string code; public string reason; }
 
     [Serializable]
     public sealed class EndStats

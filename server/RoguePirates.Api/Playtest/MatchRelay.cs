@@ -19,6 +19,14 @@ public sealed class RelaySeat
     public bool Alive = true;
     public double DamageDealt, DamageTaken;
     public int BarrelsTaken;
+    // V5 M8z (6 Oct, owner): anti-cheat. Only XP barrels level a PvP ship, so 1 + XpBarrels is the server's own level.
+    public int XpBarrels;
+    public DateTime StateAt;
+    public readonly DamageWindow Window = new();
+    public double RejectedDamage;
+    public int RejectedHits;
+    public bool Flagged;
+    public int ServerLevel => 1 + XpBarrels;
     /// <summary>When the player's last socket closed (or match creation if they never connected); null while connected.</summary>
     public DateTime? AwaySince;
     public bool AnnouncedAway;
@@ -118,7 +126,7 @@ public sealed class MatchRelay
                 var connected = !bot && _broadcaster.IsConnected(lobbyId, playerId);
                 return new RelaySeat
                 {
-                    Index = index, PlayerId = playerId, IsBot = bot, X = x, Z = z, Yaw = yaw, Draft = draft,
+                    Index = index, PlayerId = playerId, IsBot = bot, X = x, Z = z, Yaw = yaw, Draft = draft, StateAt = createdAt,
                     StateRate = new RateBucket(ArenaRules.StateMessagesPerSecond, createdAt),
                     FxRate = new RateBucket(ArenaRules.FxMessagesPerSecond, createdAt),
                     HitRate = new RateBucket(ArenaRules.HitMessagesPerSecond, createdAt),
@@ -314,6 +322,7 @@ public sealed class MatchRelay
                 if (!Num(root, "x", out var x) || !Num(root, "z", out var z) || Math.Abs(x) > 10000 || Math.Abs(z) > 10000) return null;
                 actor.X = x;
                 actor.Z = z;
+                actor.StateAt = now;
                 actor.Yaw = Num(root, "yaw", out var yaw) ? yaw : actor.Yaw;
                 var vx = Num(root, "vx", out var v1) ? v1 : 0;
                 var vz = Num(root, "vz", out var v2) ? v2 : 0;
@@ -340,17 +349,38 @@ public sealed class MatchRelay
             }
             case "hit":
             {
-                if (!started) { Rej("not_started"); return null; }
-                if (!actor.HitRate.Take(now)) { Rej("rate"); return null; }
-                if (!actor.Alive) { Rej("attacker_dead"); return null; }
-                if (!Num(root, "dmg", out var dmg) || dmg < 0 || dmg > ArenaRules.MaxHitDamage) { Rej("bad_damage"); return null; }
+                // V5 M8z (6 Oct, owner): every hit reject says how much raw damage was dropped, so the sender's own
+                // "damage dealt" counts only what the server accepted
+                var claimed = Num(root, "dmg", out var dmg) ? dmg : 0;
+                void RejHit(string reason, double dropped) =>
+                    outs.Add(new Out(playerId, J(new { t = "reject", of = t, reason, dropped = Math.Max(0, dropped), asBot = actor.IsBot })));
+                if (!started) { RejHit("not_started", claimed); return null; }
+                if (!actor.HitRate.Take(now)) { RejHit("rate", claimed); return null; }
+                if (!actor.Alive) { RejHit("attacker_dead", claimed); return null; }
+                if (!Num(root, "dmg", out _) || dmg < 0 || dmg > ArenaRules.MaxHitDamage) { RejHit("bad_damage", Math.Clamp(claimed, 0, ArenaRules.MaxHitDamage)); return null; }
                 var weaponId = root.TryGetProperty("weaponId", out var w) && w.ValueKind == JsonValueKind.String ? w.GetString()! : "";
-                if (weaponId.Length is 0 or > 64) { Rej("bad_weapon"); return null; }
-                actor.DamageDealt += dmg;
-                opponent.DamageTaken += dmg;
+                if (weaponId.Length is 0 or > 64) { RejHit("bad_weapon", dmg); return null; }
+
+                // V5 M8z (6 Oct, owner): the anti-cheat checks; refused damage is counted against the sender
+                string? refused = null;
+                if (!HitRules.WeaponAllowed(actor, weaponId)) refused = "not_in_draft";
+                else if (now - actor.StateAt > HitRules.AttackerStateMaxAge) refused = "stale_state";
+                else if (HitRules.Distance(actor, opponent) > HitRules.Reach(now - actor.StateAt, now - opponent.StateAt)) refused = "out_of_range";
+                var accepted = refused == null ? actor.Window.Accept(now, dmg, actor.ServerLevel) : 0;
+                if (refused == null && accepted <= 0 && dmg > 0) refused = "dps_cap";
+                var dropped = dmg - accepted;
+                if (dropped > 1e-9)
+                {
+                    RejHit(refused ?? "dps_cap", dropped);
+                    if (Refused(room, actor, dropped, now) is { } cheatEnd) return cheatEnd;
+                }
+                if (refused != null) return null;
+
+                actor.DamageDealt += accepted;
+                opponent.DamageTaken += accepted;
                 // the victim's client applies the hit; a bot victim is simulated by the host
                 var recipient = opponent.IsBot ? room.HostId : opponent.PlayerId;
-                outs.Add(new Out(recipient, J(new { t = "hit", dmg, weaponId, from = actor.PlayerId, to = opponent.PlayerId, st = ArenaRules.Ms(now) })));
+                outs.Add(new Out(recipient, J(new { t = "hit", dmg = accepted, weaponId, from = actor.PlayerId, to = opponent.PlayerId, st = ArenaRules.Ms(now) })));
                 return null;
             }
             case "pickup":
@@ -366,6 +396,7 @@ public sealed class MatchRelay
                 if (Math.Sqrt(dx * dx + dz * dz) > ArenaRules.ClaimRadius) { Rej("too_far", id); return null; }
                 barrel.TakenBy = actor.PlayerId;
                 actor.BarrelsTaken++;
+                if (barrel.Kind == "xp") actor.XpBarrels++;
                 outs.Add(new Out(null, J(new { t = "barrel_taken", id = barrel.Id, kind = barrel.Kind, by = actor.PlayerId, st = ArenaRules.Ms(now) })));
                 return null;
             }
@@ -385,6 +416,27 @@ public sealed class MatchRelay
         value = 0;
         if (!root.TryGetProperty(name, out var el) || el.ValueKind != JsonValueKind.Number || !el.TryGetDouble(out value)) return false;
         return double.IsFinite(value);
+    }
+
+    /// <summary>V5 M8z (6 Oct, owner): counts refused damage; logs a seat once most of its damage is refused, and in a
+    /// rated match forfeits it past <see cref="HitRules.ForfeitRejectedDamage"/>, <see cref="HitRules.ForfeitRejectedShare"/>
+    /// and <see cref="HitRules.ForfeitRejectedHits"/> together (reason "anticheat").</summary>
+    RelayEnd? Refused(MatchRoom room, RelaySeat actor, double dropped, DateTime now)
+    {
+        actor.RejectedDamage += dropped;
+        actor.RejectedHits++;
+        var share = actor.RejectedDamage / Math.Max(1e-9, actor.RejectedDamage + actor.DamageDealt);
+        if (!actor.Flagged && actor.RejectedDamage >= HitRules.FlagRejectedDamage && share >= HitRules.FlagRejectedShare)
+        {
+            actor.Flagged = true;
+            _log.LogWarning("Anti-cheat: player {PlayerId} (bot {Bot}) in match {MatchId}: {Rejected:0} raw damage refused in {Hits} hits, {Share:P0} of its claims",
+                actor.PlayerId, actor.IsBot, room.MatchId, actor.RejectedDamage, actor.RejectedHits, share);
+        }
+        if (room.GuestIsBot || actor.RejectedDamage < HitRules.ForfeitRejectedDamage || share < HitRules.ForfeitRejectedShare
+            || actor.RejectedHits < HitRules.ForfeitRejectedHits) return null;
+        _log.LogWarning("Anti-cheat: player {PlayerId} forfeits match {MatchId} ({Rejected:0} raw damage refused, {Share:P0})",
+            actor.PlayerId, room.MatchId, actor.RejectedDamage, share);
+        return End(room, 1 - actor.Index, "anticheat", now);
     }
 
     RelayEnd Sink(MatchRoom room, RelaySeat loser, DateTime now)
@@ -423,6 +475,8 @@ public sealed class MatchRelay
         return new RelayEnd(winner, reason, rated, duration, stats, view);
     }
 
+    /// <summary>V5 M8z (6 Oct, owner): DamageDealt counts only damage the server accepted (in the draft, in range, under
+    /// the level's damage cap), so a client's claims cannot win on time.</summary>
     static RelayEnd EndOnTime(MatchRoom room, DateTime now)
     {
         RelaySeat a = room.Seats[0], b = room.Seats[1];
@@ -626,12 +680,28 @@ public sealed class MatchRelay
             return new { status = "requested", by = playerId, waitingFor };
         }
 
-        using var scope = _scopes.CreateScope();
-        var (newId, code) = await scope.ServiceProvider.GetRequiredService<LobbyService>().CreateRematchAsync(lobbyId);
-        lock (room)
+        Guid newId;
+        string code;
+        try
         {
-            room.RematchLobbyId = newId;
-            room.RematchCode = code;
+            using var scope = _scopes.CreateScope();
+            (newId, code) = await scope.ServiceProvider.GetRequiredService<LobbyService>().CreateRematchAsync(lobbyId);
+            lock (room)
+            {
+                room.RematchLobbyId = newId;
+                room.RematchCode = code;
+                room.RematchCreating = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            // V5 M8z (6 Oct, owner): a failed creation must not block the rematch for good: both requests stay, the
+            // flag is cleared and both players are told; the next "rematch" from either of them tries again
+            lock (room) room.RematchCreating = false;
+            _log.LogError(ex, "Could not create the rematch of lobby {LobbyId}", lobbyId);
+            await _broadcaster.PublishAsync(lobbyId, J(new { t = "rematch", status = "failed", reason = ex is ApiException api ? api.Code : "server_error" }), close: false);
+            if (ex is ApiException) throw;
+            throw new ApiException(503, "rematch_failed", "The rematch could not be created; try again.");
         }
         await _broadcaster.PublishAsync(lobbyId, J(new { t = "rematch", status = "created", lobbyId = newId, code }), close: false);
         return new { status = "created", lobbyId = newId, code };
