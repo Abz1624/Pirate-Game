@@ -1,5 +1,8 @@
 # P11: a livelier raid economy (proposal, 6 Oct)
 
+**Decided (6 Oct, D19):** option B with 4-hour shields, without the daily loss cap, the new-player protection and the
+free revenge raid. Vault 60%, a raid takes 25% of the exposed treasury, attacking ends your shield, a small raid fee.
+
 You asked to revisit the treasury rules (Q23b) because you want an economy where things happen. Today's rule protects
 so much that raids barely matter. Example: with 1,000 RUM, a raid takes 40 and the worst day costs 100.
 

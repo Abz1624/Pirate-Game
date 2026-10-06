@@ -21,7 +21,7 @@ MonoBehaviour:
   islandImpactMinSpeed: 2
   islandBounceRestitution: 0.95
   islandBouncePushSpeed: 6
-  islandImpactDamage: 3
+  islandImpactDamage: 5
   islandImpactCooldown: 0.75
-  islandDamageCooldown: 4
+  islandDamageCooldown: 2
   islandBounceSeconds: 0.5

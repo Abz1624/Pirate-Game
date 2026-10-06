@@ -278,11 +278,15 @@
    "when": "6 Oct",
    "commit": "3e618074",
    "what": "Island hits 3 hull at most every 4 s (were 10 every 2 s); arena fights pause the waves for at most 20 s and their floor is 2 s of DPS; health pickups back as before; raid economy B with 4-hour shields and server-authoritative Netcode recorded (D19); anti-cheat audit per weapon in progress."
+  },
+  {
+   "when": "6 Oct",
+   "commit": "",
+   "what": "Owner follow-ups: arena fights keep the waves paused until they end (the 20 s limit removed) and get an off-screen pointer (in progress); island hits 5 hull at most every 2 s; raid economy without the daily loss cap, new-player protection or revenge raid; deploys stay manual (the agent runs <code>server/deploy.ps1</code>); PvP range rule edge-case audit in progress."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Add the <code>RAILWAY_TOKEN</code> secret in GitHub</strong> so the API deploys on every push (the local <code>server/deploy.ps1</code> works).",
    "<strong>Play more recorded voyages</strong> (the file downloads in the browser; put it in <code>plan/playtest/sessions/</code>) to calibrate the simulator."
   ],
   "open": [
