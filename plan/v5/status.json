@@ -1,11 +1,11 @@
 {
  "updated": "6 Oct 2026",
- "statusLine": "Playtest rounds 1-9 done on branch <code>playtest</code>; next: M8z, bring that work under the gate before M9. Questions P1-P10 are open (section 9).",
+ "statusLine": "M8z (playtest integration) in progress on <code>v5-live-game</code>; your answers P1-P10 recorded as D18; P11 (economy) open.",
  "statusOk": false,
  "facts": [
   [
    "Progress",
-   "M0-M8 built; playtest rounds 1-9 (1-6 Oct) outside the gate; M8z (integration) next"
+   "M0-M8 built; playtest merged into <code>v5-live-game</code> (6 Oct); M8z in progress"
   ],
   [
    "Tests",
@@ -17,7 +17,7 @@
   ],
   [
    "Branch",
-   "<code>playtest</code> = <code>v5-live-game</code> + 32 commits (merge planned in M8z)"
+   "<code>v5-live-game</code> (playtest merged at <code>b5936c4d</code>, tag <code>playtest-r10</code>)"
   ]
  ],
  "phases": {
@@ -74,8 +74,8 @@
    "chip": "built · mode select removed; weapon shop empty (P3)"
   },
   "M8z": {
-   "state": "next",
-   "chip": "next: playtest integration"
+   "state": "building",
+   "chip": "in progress since 6 Oct"
   }
  },
  "log": [
@@ -268,21 +268,27 @@
    "when": "6 Oct",
    "what": "All points of interest and the Beacon boss summon back (no timed boss); PowerShell deploy script and a GitHub Action for the API; a session recorder and <code>compare_session.mjs</code> to check the simulator against your play; <strong>back-to-V5 review</strong> (3 blockers, M8z added, plan rev 10).",
    "commit": "57480a7b"
+  },
+  {
+   "when": "6 Oct",
+   "commit": "dd213d1f",
+   "what": "<strong>Your answers P1-P10 (D18)</strong>: playtest merged into <code>v5-live-game</code>; everything unlocked for now; timed heals now drop in view; an early-summoned boss keeps its 14:00 hull; PvP anti-cheat on the server (weapon in draft, range, damage cap by level, accepted damage decides time-outs) and rematch retry; attack warnings in their own slots; API deployed to Railway. First recorded session compared with the simulator: islands did 54% of the damage, the 3:00 elite Hammerhead stalled the run, the simulator is far off (recalibration in M8z)."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Answer questions P1-P10</strong> (section 9): playtest rules vs M3c/M3d/D17, overtime Rum cap, weapon unlocks, the parity preset, the PvP relay, anti-cheat, boss timing, touch rules, auto-deploy approval, the merge.",
-   "<strong>Deploy the API</strong>: add the <code>RAILWAY_TOKEN</code> repository secret in GitHub (the Deploy API workflow then runs on each server change), or run <code>powershell -NoProfile -ExecutionPolicy Bypass -File server/deploy.ps1</code>; send me the error if it fails.",
-   "<strong>Play a recorded voyage</strong> in the Editor or the new desktop WebGL build; the session file lands in <code>plan/playtest/sessions/</code> (or downloads in the browser); I compare it with the simulator."
+   "<strong>Answer P11</strong>: the raid economy, options A, B or C in <code>plan/playtest/ECONOMY-P11.md</code>.",
+   "<strong>Add the <code>RAILWAY_TOKEN</code> secret in GitHub</strong> so the API deploys on every push (the local <code>server/deploy.ps1</code> works).",
+   "<strong>Decide</strong>: cheaper island hits and elites that can't stall a run (found in your recorded session)?",
+   "<strong>Play more recorded voyages</strong> (the file downloads in the browser; put it in <code>plan/playtest/sessions/</code>) to calibrate the simulator."
   ],
   "open": [
    "PvP draft on phones: tapping a card to read it also picks it (later).",
-   "PvP referee trusts client-reported damage (P6); rematch creation can't be retried after a server error; attack warnings share hazard slots with damaging hazards.",
    "Flamethrower VFX is broken (offered again); fixed in M4.",
    "Earlier GDD questions (21 left) are still on the board; the raid entry fee (question 4) feeds M15 and the pass price (question 5) feeds M20."
   ],
   "done": [
+   "<strong>Answered P1-P10</strong> (6 Oct, D18); playtest merged; API deployed.",
    "<strong>Playtest rounds 1-9</strong> (1-6 Oct): see the progress log; notes in <code>plan/playtest/NOTES.md</code> and <code>ROUND8-LOG.md</code>.",
    "<strong>Balance re-check</strong> (1 Oct): half XP kept, retune around it; see <code>plan/v5/balance-recheck/README.md</code>.",
    "<strong>Playtest M1-M3 and the half-XP retune</strong> (1 Oct): fine for now, finetuning later; the level-up pace targets hold the pace at ±20%.",
@@ -762,6 +768,20 @@
    "check": "Session recorder test",
    "result": "1/1",
    "evidence": "V4SessionRecorderTests"
+  },
+  {
+   "date": "6 Oct",
+   "phase": "M8z",
+   "check": "Server tests after the anti-cheat",
+   "result": "80/80",
+   "evidence": "dotnet test server/RoguePirates.Api.Tests"
+  },
+  {
+   "date": "6 Oct",
+   "phase": "M8z",
+   "check": "Hazard slots test",
+   "result": "1/1",
+   "evidence": "V4EnemyTickM8Tests"
   }
  ],
  "phaseResults": {
