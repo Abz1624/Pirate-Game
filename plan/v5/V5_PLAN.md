@@ -1,6 +1,6 @@
 # Rogue Pirates — V5 Plan (Live Game)
 
-Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; questions P1-P10 open
+Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P10 answered (D18), P11 open
 (section 9)**. Explanations of every answer: `plan/v5/ANSWERS.md`.
 
 **Demo interlude (30 Sep, merged at `27a238bc`, V5 resumed at `86724e6b`).** Work paused after M3 for a demo on
@@ -116,6 +116,7 @@ Proposed decisions (P) take effect when the owner approves the plan. Owner-confi
 | D15 | **Anti-collusion, deferred** (Q27: "not for now"). The data model keeps linked-account signals (device, wallet, payment trail) and config switches for limits (linked-account wagers and trades, RUM price bands, daily transfer caps, referral rules, race-owner wagers), all off by default. Every phase that adds a hook also tests it with its switch on. The M28 audit revisits them before anything has real value. (C) |
 | D16 | **The v3-parity preset** stays as a regression baseline until M28; every new V5 mechanic is switched off under it. (P) |
 | D17 | **Owner answers of 30 Sep** (explained in `ANSWERS.md`): stage order as planned (Q1); fixed token prices (Q5); 5% royalty only (Q6); island NFT = a plot (Q7); bounty split top 10 on a curve (Q11); no sail moderation on devnet (Q13); four new weapons (Q19); one enemy cap for every device, sized for a low-end phone (Q21); endless overtime ramp (Q22); RUM items never become tokens (Q24); tokens buy cosmetics and RUM-equivalent unlocks only (Q25); reversals confirmed (Q26); Hunt wager winner takes all (Q28); custody on our Railway server, no key export, owner keeps the master-key backup (Q3, Q32, Q33, D7); AI captains raid 6 times a day at full loot (Q9); unwagered PvP pays fixed RUM per match with no cap, plus a rating (Q10); Sign in with Google plus email codes (Q12); one weekly board across voyage maps with adaptive difficulty (Q16); Railway only (Q17); evolution at level 8 plus multi-level rare cards (Q18b); weapons: Anchor Flail, Chainshot, Siren Bell, Parrot Squadron, Maelstrom Charge, Lighthouse Lantern, Ramming Prow, Cursed Doubloons, Monkey Gunners, no Ghost Cannons (Q19, Q19b); web3 players earn RUM too (Q24b); plausibility checks unless Quantum (Q29); Unity Netcode for GameObjects for multiplayer (Q2, chosen over Fish-Net to avoid the $60 Pro licence); treasury protection: vault 80%, treasury 20%, a raid takes 20% of the treasury, 8-hour shield, at most 10% of RUM lost per day, 72 hours for new players (Q23b); reference phone Galaxy A15 / A16 4G at a steady 30 fps, floor Galaxy A06 at 20+ fps, iPhone 11 and desktop at 60 fps (Q31); forfeits pay no RUM but a genuine short match does (Q34); plausibility-checked voyage RUM usable right away on devnet, revisited in M28 (Q35); 12 weapon levels and 10–12 logbook ranks kept (Q18, M3); raids steal RUM from an exposed treasury, a vault stays safe, with shields (Q23, M14). (C) |
+| D18 | **Owner answers of 6 Oct (after the playtest detour, P1-P10)**: the plan always follows the game as played: the playtest rules replace M3c, M3d and D17's evolution level and Logbook ranks (P1); overtime Rum stays uncapped, a recorded exception to D4 (P2); every weapon, Captain, Logbook and item is free for now (`DemoJuiceSettings.unlockEverything`), locks come back later (P3); the v3-parity preset is retired, and D16 with it (P4); multiplayer moves to Unity Netcode for GameObjects only, the API relay stays until the Netcode 1v1 replaces it (P5, D17 Q2); rated 1v1 gets server anti-cheat now (P6); an early Beacon summon keeps the boss's 14:00 hull (`DirectorConfig.bossHpAsIfAtSeconds`, P7); the D9 touch rules still bind new screens (P8); the API deploys on every push (P9); the playtest is merged into `v5-live-game` and work continues there (P10, merge `b5936c4d`, tag `playtest-r10`). Also: anti-collusion stays off for now (Q27 trade-off accepted); Railway and the domain (roguepirates.fun) exist; Alchemy replaces Helius as the devnet RPC (Q30); the treasury rules (Q23b) are reopened for a livelier economy (question P11). (C) |
 
 ---
 
@@ -1081,13 +1082,14 @@ questions below (6 Oct, `plan/playtest/V5-RESUME.md`).
 
 | # | Question | Options (suggested first) |
 |---|---|---|
-| P1 | Do the playtest rules replace M3c (level rhythm), M3d (no HP growth, 10-minute sketch) and D17 (Logbook ranks 10-12, evolution at level 8)? | Yes, the playtest rules are the game · Bring some back (say which) |
-| P2 | Overtime Rum has no cap since the playtest (D4 says it must flatten and cap). | Cap it again before Rum is server value (M10) · Record an exception |
-| P3 | Weapons: all 19 are free starters now (no weapon shop, Ember's lock always met). | Back to Rum unlocks (name the starters) · Keep all free |
-| P4 | The v3-parity preset (D16, "matches V3" regression baseline) no longer fits the game. | Retire it · Keep and repair it |
-| P5 | Multiplayer: the playtest built a WebSocket relay on the API for 1v1. | Keep the relay for unwagered 1v1; test Netcode for GameObjects in M9 for Hunt and wagers · Replace the relay |
-| P6 | PvP anti-cheat for rated 1v1 now (clients report their damage). | Three cheap server checks (DPS cap by level, weapon in your draft, range) · Later, before anything of value |
-| P7 | Boss: summonable at the Beacon at any time (now); its health was halved for a 14:00 arrival. | Re-check its health for an earlier fight · Add a minimum time |
-| P8 | With desktop WebGL as the main test build, do the D9 touch rules still bind new screens? | Yes, keep them · Desktop first, phones later |
-| P9 | API auto-deploy: on every push, or after a manual approval in GitHub? | After approval · Every push |
-| P10 | Merge `playtest` into `v5-live-game` and continue there (M8z)? | Yes · Keep working on `playtest` |
+| P1 | Do the playtest rules replace M3c (level rhythm), M3d (no HP growth, 10-minute sketch) and D17 (Logbook ranks 10-12, evolution at level 8)? | Answered 6 Oct: yes, the plan follows the game as played (D18) |
+| P2 | Overtime Rum has no cap since the playtest (D4 says it must flatten and cap). | Answered 6 Oct: keep it uncapped (D18) |
+| P3 | Weapons: all 19 are free starters now (no weapon shop, Ember's lock always met). | Answered 6 Oct: all free for now, including Captains, Logbooks and items; locks later (D18) |
+| P4 | The v3-parity preset (D16, "matches V3" regression baseline) no longer fits the game. | Answered 6 Oct: retire it (D18) |
+| P5 | Multiplayer: the playtest built a WebSocket relay on the API for 1v1. | Answered 6 Oct: Netcode for GameObjects only; the relay stays until the Netcode 1v1 replaces it (D18) |
+| P6 | PvP anti-cheat for rated 1v1 now (clients report their damage). | Answered 6 Oct: add anti-cheat now (D18) |
+| P7 | Boss: summonable at the Beacon at any time (now); its health was halved for a 14:00 arrival. | Answered 6 Oct: an early summon keeps the 14:00 hull (D18) |
+| P8 | With desktop WebGL as the main test build, do the D9 touch rules still bind new screens? | Answered 6 Oct: yes (D18) |
+| P9 | API auto-deploy: on every push, or after a manual approval in GitHub? | Answered 6 Oct: every push (D18) |
+| P10 | Merge `playtest` into `v5-live-game` and continue there (M8z)? | Answered 6 Oct: yes, merged (D18) |
+| P11 | Treasury and raids (Q23b reopened, 6 Oct): you want a livelier economy than vault 80% / treasury 20%, a raid takes 20% of the treasury, 8 h shield, at most 10% lost a day. | Proposal in `plan/playtest/ECONOMY-P11.md` · Keep Q23b |
