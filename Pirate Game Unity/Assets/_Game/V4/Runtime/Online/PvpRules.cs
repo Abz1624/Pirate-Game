@@ -28,8 +28,29 @@ namespace RoguePirates.V4.Online
         public const float StateHz = 15f;
         /// <summary>The opponent is drawn this far in the past (two state intervals), between two received states.</summary>
         public const float InterpolationDelaySeconds = 0.12f;
-        /// <summary>The server refuses a hit above this.</summary>
+        /// <summary>The server refuses a hit above this unless its match_start announces more (limits.maxHitDamage; 2500 since
+        /// V5 M8z, 6 Oct). Damage over the limit is not lost: the batch carries it to the next one.</summary>
         public const float MaxHitDamage = 500f;
+
+        /// <summary>The largest batch the server takes: its announced limit, or <see cref="MaxHitDamage"/> (an older server).</summary>
+        public static float HitLimit(float announced) => announced > 0f ? announced : MaxHitDamage;
+
+        /// <summary>
+        /// V5 M8z (6 Oct, owner: "check if this is applicable for all the weapons and scenarios"): the weapon id a hit on the
+        /// opponent is reported under. The server takes a drafted weapon's id or "weapon" (untagged: burns, flame patches)
+        /// only, so anything else is mapped: an evolution's id to its base weapon (should one ever tag its damage so), any
+        /// other id (an item's pulse) to "weapon". Today every weapon already tags with its own base id.
+        /// </summary>
+        public static string HitTag(string weaponId, ICollection<string> draftWeapons, Func<string, string> evolutionBase = null)
+        {
+            if (string.IsNullOrEmpty(weaponId)) return GenericHitTag;
+            if (draftWeapons == null || draftWeapons.Count == 0 || draftWeapons.Contains(weaponId)) return weaponId;
+            var baseId = evolutionBase?.Invoke(weaponId);
+            return !string.IsNullOrEmpty(baseId) && draftWeapons.Contains(baseId) ? baseId : GenericHitTag;
+        }
+
+        /// <summary>The id of damage without a weapon (the server's HitRules.GenericWeaponId).</summary>
+        public const string GenericHitTag = "weapon";
 
         /// <summary>Hull taken by one incoming PvP hit: raw x <see cref="DamageScale"/> x the build's incoming multiplier
         /// (Armor, Brace!), capped at <see cref="MaxHitFraction"/> of max hull. 0 while invulnerable.</summary>
@@ -44,7 +65,10 @@ namespace RoguePirates.V4.Online
         public static bool Invulnerable(float now, float lastHitAt) => now - lastHitAt < InvulnerableSeconds;
 
         /// <summary>The raw damage of a batch as the server takes it (0..500, rounded to 0.1).</summary>
-        public static float ClampHit(float raw) => Mathf.Clamp(Mathf.Round(raw * 10f) / 10f, 0f, MaxHitDamage);
+        public static float ClampHit(float raw) => ClampHit(raw, MaxHitDamage);
+
+        /// <summary>The raw damage of a batch as the server takes it (0..<paramref name="limit"/>, rounded to 0.1).</summary>
+        public static float ClampHit(float raw, float limit) => Mathf.Clamp(Mathf.Round(raw * 10f) / 10f, 0f, limit);
 
         // ---- Storm ----
 

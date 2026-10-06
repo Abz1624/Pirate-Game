@@ -22,7 +22,10 @@ public sealed class RelaySeat
     // V5 M8z (6 Oct, owner): anti-cheat. Only XP barrels level a PvP ship, so 1 + XpBarrels is the server's own level.
     public int XpBarrels;
     public DateTime StateAt;
-    public readonly DamageWindow Window = new();
+    /// <summary>V5 M8z (6 Oct, audit): the raw damage this seat may still deal (fills by its level from the match start).</summary>
+    public required DamageBudget Budget { get; init; }
+    /// <summary>V5 M8z (6 Oct, audit): where it was over the last 45 s (what it left behind can still hit).</summary>
+    public readonly PositionTrail Trail = new();
     public double RejectedDamage;
     public int RejectedHits;
     public bool Flagged;
@@ -71,6 +74,8 @@ public sealed class MatchRoom
     public int NextBarrelId = 1;
     public DateTime NextXpAt;
     public DateTime NextHealthAt;
+    /// <summary>V5 M8z (6 Oct, audit): the last reported moment the two ships were within reach of each other.</summary>
+    public DateTime EngagedAt = DateTime.MinValue;
     public readonly HashSet<Guid> RematchRequests = new();
     public bool RematchCreating;
     public Guid? RematchLobbyId;
@@ -124,15 +129,18 @@ public sealed class MatchRelay
                 var (x, z, yaw) = ArenaRules.Spawn(index);
                 var bot = PracticeBot.Is(playerId);
                 var connected = !bot && _broadcaster.IsConnected(lobbyId, playerId);
-                return new RelaySeat
+                var seat = new RelaySeat
                 {
                     Index = index, PlayerId = playerId, IsBot = bot, X = x, Z = z, Yaw = yaw, Draft = draft, StateAt = createdAt,
+                    Budget = new DamageBudget(createdAt + ArenaRules.Countdown),
                     StateRate = new RateBucket(ArenaRules.StateMessagesPerSecond, createdAt),
                     FxRate = new RateBucket(ArenaRules.FxMessagesPerSecond, createdAt),
                     HitRate = new RateBucket(ArenaRules.HitMessagesPerSecond, createdAt),
                     PickupRate = new RateBucket(ArenaRules.PickupMessagesPerSecond, createdAt),
                     AwaySince = bot || connected ? null : createdAt,
                 };
+                seat.Trail.Add(createdAt, x, z);
+                return seat;
             }
 
             var room = new MatchRoom
@@ -323,6 +331,9 @@ public sealed class MatchRelay
                 actor.X = x;
                 actor.Z = z;
                 actor.StateAt = now;
+                // V5 M8z (6 Oct, audit): the range check's memory (what the ship left behind, when the two last engaged)
+                actor.Trail.Add(now, x, z);
+                if (HitRules.Distance(actor, opponent) <= HitRules.MaxHitDistance) room.EngagedAt = now;
                 actor.Yaw = Num(root, "yaw", out var yaw) ? yaw : actor.Yaw;
                 var vx = Num(root, "vx", out var v1) ? v1 : 0;
                 var vz = Num(root, "vz", out var v2) ? v2 : 0;
@@ -364,9 +375,8 @@ public sealed class MatchRelay
                 // V5 M8z (6 Oct, owner): the anti-cheat checks; refused damage is counted against the sender
                 string? refused = null;
                 if (!HitRules.WeaponAllowed(actor, weaponId)) refused = "not_in_draft";
-                else if (now - actor.StateAt > HitRules.AttackerStateMaxAge) refused = "stale_state";
-                else if (HitRules.Distance(actor, opponent) > HitRules.Reach(now - actor.StateAt, now - opponent.StateAt)) refused = "out_of_range";
-                var accepted = refused == null ? actor.Window.Accept(now, dmg, actor.ServerLevel) : 0;
+                else if (!HitRules.InReach(now, room.EngagedAt, actor, opponent)) refused = "out_of_range";
+                var accepted = refused == null ? actor.Budget.Accept(now, dmg, actor.ServerLevel) : 0;
                 if (refused == null && accepted <= 0 && dmg > 0) refused = "dps_cap";
                 var dropped = dmg - accepted;
                 if (dropped > 1e-9)

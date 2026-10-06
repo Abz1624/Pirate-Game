@@ -135,40 +135,72 @@ public class ArenaRulesTests
     static double Dist((double x, double z) p, (double x, double z) q) => Math.Sqrt((p.x - q.x) * (p.x - q.x) + (p.z - q.z) * (p.z - q.z));
 }
 
-/// <summary>V5 M8z (6 Oct, owner): the anti-cheat numbers without a server.</summary>
+/// <summary>V5 M8z (6 Oct, owner; audited the same day): the anti-cheat numbers without a server.</summary>
 public class HitRulesTests
 {
+    static readonly DateTime T0 = new(2026, 10, 6, 12, 0, 0, DateTimeKind.Utc);
+
+    /// <summary>The worst legitimate raw damage a second by ship level, measured with the game's weapon code by the Unity
+    /// test PvpDamageCapTests (6 Oct; see HitRules): (level, raw/s).</summary>
+    static readonly (int level, double worst)[] MeasuredWorst =
+    {
+        (1, 354), (2, 427), (3, 505), (4, 551), (5, 598), (6, 644), (7, 702), (8, 779), (9, 985), (10, 1075), (11, 1250),
+        (12, 1965), (13, 2303), (14, 2646), (15, 2883), (20, 4149), (25, 5095), (30, 6985), (35, 8926), (40, 9640),
+        (45, 12193), (50, 13363), (55, 14488), (60, 15884),
+    };
+
     [Fact]
-    public void SustainedDps_StartsAt600_Grows12PercentALevel_UpToWhatAClientCanSend()
+    public void SustainedDps_Is600Plus420ALevel_AtLeastOneAndAHalfTimesTheMeasuredWorst()
     {
         Assert.Equal(600, HitRules.SustainedDps(1), 6);
-        Assert.Equal(600 * Math.Pow(1.12, 9), HitRules.SustainedDps(10), 6);
-        Assert.Equal(10000, HitRules.SustainedDps(60), 6);
+        Assert.Equal(600 + 420 * 9, HitRules.SustainedDps(10), 6);
+        Assert.Equal(600 + 420 * 60, HitRules.SustainedDps(61), 6);
+        Assert.True(HitRules.SustainedDps(61) < HitRules.MaxRawDps);
+        foreach (var (level, worst) in MeasuredWorst)
+            Assert.True(HitRules.SustainedDps(level) >= 1.5 * worst, $"level {level}: {HitRules.SustainedDps(level)} < 1.5 x {worst}");
+        // a client sends a batch every 0.1 s: ten of the largest carry the worst level 60 build with the same margin
+        Assert.True(10 * ArenaRules.MaxHitDamage >= 1.5 * MeasuredWorst[^1].worst);
     }
 
     [Fact]
-    public void DamageWindow_CapsOneSecondAndFiveSeconds_AndDropsOnlyTheExcess()
+    public void DamageBudget_Starts10sFull_FillsAtTheLevelsRate_Holds50s()
     {
-        var w = new DamageWindow();
-        var t0 = new DateTime(2026, 10, 6, 12, 0, 0, DateTimeKind.Utc);
-        Assert.Equal(500, w.Accept(t0, 500, 1));
-        Assert.Equal(500, w.Accept(t0.AddSeconds(0.1), 500, 1));
-        Assert.Equal(200, w.Accept(t0.AddSeconds(0.2), 500, 1), 6); // 1200 in 1 s
-        Assert.Equal(0, w.Accept(t0.AddSeconds(0.9), 10, 1));
-        Assert.Equal(500, w.Accept(t0.AddSeconds(1.0), 500, 1)); // the first left the 1 s window
-        Assert.Equal(500, w.Accept(t0.AddSeconds(2.0), 500, 1));
-        Assert.Equal(500, w.Accept(t0.AddSeconds(3.0), 500, 1));
-        Assert.Equal(300, w.Accept(t0.AddSeconds(4.0), 500, 1), 6); // 3000 in 5 s
-        Assert.Equal(0, w.Accept(t0.AddSeconds(4.5), 50, 1));
-        Assert.Equal(500, w.Accept(t0.AddSeconds(5.1), 500, 2)); // the first two left the 5 s window; level 2 allows 3360
+        var b = new DamageBudget(T0);
+        Assert.Equal(6000, b.Accept(T0, 6500, 1), 6); // 10 s of 600 at the start; the rest is dropped
+        Assert.Equal(0, b.Accept(T0, 10, 1));
+        Assert.Equal(600, b.Accept(T0.AddSeconds(1), 1000, 1), 6);
+        Assert.Equal(30000, b.Available(T0.AddSeconds(200), 1), 6); // 50 s of 600
+        Assert.Equal(51000, b.Available(T0.AddSeconds(300), 2), 6); // level 2: 50 s of 1020
     }
 
     [Fact]
-    public void Reach_Is80m_PlusMovementSinceTheLastReports()
+    public void DamageBudget_LegitWorstCase_WithKegFieldAndFireAll_IsNeverShort()
     {
-        Assert.Equal(80, HitRules.Reach(TimeSpan.Zero, TimeSpan.Zero), 6);
-        Assert.Equal(90, HitRules.Reach(TimeSpan.Zero, TimeSpan.FromSeconds(0.5)), 6);
-        Assert.Equal(100, HitRules.Reach(TimeSpan.Zero, TimeSpan.FromSeconds(30)), 6); // the victim's staleness counts up to 1 s
+        // the worst build at each level fights for 60 s in 0.1 s batches, then a fire-all (2.1 s of its damage) and a keg
+        // field (30 s of its damage, though kegs are one weapon of six) land at once; then it fights on at the next level
+        foreach (var (level, worst) in MeasuredWorst)
+        {
+            var b = new DamageBudget(T0);
+            var t = T0;
+            double sent = 0, accepted = 0;
+            void Send(double dmg) { sent += dmg; accepted += b.Accept(t, dmg, level); }
+            for (var i = 0; i < 600; i++) { t = t.AddSeconds(0.1); Send(worst * 0.1); }
+            for (var burst = (2.1 + 30) * worst; burst > 0; burst -= ArenaRules.MaxHitDamage) Send(Math.Min(burst, ArenaRules.MaxHitDamage));
+            for (var i = 0; i < 300; i++) { t = t.AddSeconds(0.1); Send(worst * 0.1); }
+            Assert.True(Math.Abs(sent - accepted) < 1e-6, $"level {level}: {sent - accepted:0.0} of {sent:0} refused");
+        }
+    }
+
+    [Fact]
+    public void PositionTrail_KeepsOnePointPer200ms_ForTheLast45s()
+    {
+        var trail = new PositionTrail();
+        for (var i = 0; i <= 600; i++) trail.Add(T0.AddSeconds(i / 15.0), i, 0); // 40 s of 15 states a second
+        Assert.InRange(trail.Count, 195, 205);
+        Assert.True(trail.AnyWithin(T0, 0, 30, 80)); // the start, 30 m off
+        trail.Add(T0.AddSeconds(50), 600, 0);
+        Assert.False(trail.AnyWithin(T0.AddSeconds(5), 0, 0, 70)); // the first 5 s left the window (x = 15 t: 75 m and on)
+        Assert.True(trail.AnyWithin(T0.AddSeconds(5), 100, 0, 10));
     }
 }
 
@@ -324,7 +356,7 @@ public class RelayTests : IDisposable
 
         await At(d, 1);
         await Place(d, (-5, 0), (5, 0));
-        await h.Send(Hit(600));
+        await h.Send(Hit(ArenaRules.MaxHitDamage + 1));
         Assert.Equal("bad_damage", (await h.Next("reject")).GetProperty("reason").GetString());
         await h.Send(Hit(-1));
         Assert.Equal("bad_damage", (await h.Next("reject")).GetProperty("reason").GetString());
@@ -697,6 +729,9 @@ public class RelayTests : IDisposable
     static int Count(List<JsonElement> msgs, string t, string? reason = null) =>
         msgs.Count(m => m.GetProperty("t").GetString() == t && (reason == null || m.GetProperty("reason").GetString() == reason));
 
+    static string[] Rejects(List<JsonElement> msgs) =>
+        msgs.Where(m => m.GetProperty("t").GetString() == "reject").Select(m => m.GetRawText()).ToArray();
+
     static double[] Forwarded(List<JsonElement> msgs) =>
         msgs.Where(m => m.GetProperty("t").GetString() == "hit").Select(m => m.GetProperty("dmg").GetDouble()).ToArray();
 
@@ -726,38 +761,34 @@ public class RelayTests : IDisposable
     }
 
     [Fact]
-    public async Task Hit_OutOfRange_OrWithoutAFreshPosition_IsRefused()
+    public async Task Hit_NeverWithinReach_IsRefused_AndSoIsOneAfterTheEngagementWindow()
     {
         var d = await StartDuel();
         using var h = d.H;
         using var g = d.G;
         await At(d, 1);
-        await Place(d, (-45, 0), (45, 0)); // 90 m apart, both fresh: reach is 80 m
+        await Place(d, (-45, 0), (45, 0)); // 90 m apart since the spawn: never within 80 m
         await h.Send(Hit(20));
         var far = await h.Next("reject");
         Assert.Equal("out_of_range", far.GetProperty("reason").GetString());
         Assert.Equal(20, far.GetProperty("dropped").GetDouble());
 
-        await Place(d, (-40, 0), (39, 0)); // 79 m
+        await Place(d, (-40, 0), (39, 0)); // 79 m: engaged
         await h.Send(Hit(20));
         Assert.Equal(20, (await g.Next("hit")).GetProperty("dmg").GetDouble());
 
-        // the victim's last position is 0.5 s old: it may have sailed 10 m since
-        await At(d, 1.5, tick: false);
-        await h.Send(State(-45, 0));
-        await h.Send(Hit(20)); // 84 m <= 80 + 20 x 0.5
-        Assert.Equal(20, (await g.Next("hit")).GetProperty("dmg").GetDouble());
-
-        // the attacker stopped reporting its position for over 2 s
-        await At(d, 4, tick: false);
-        await g.Send(State(39, 0));
-        await g.Sync();
+        // apart from then on: 45 s later nothing of the host's can still be hitting the guest
+        for (var t = 2; t <= 47; t++)
+        {
+            await At(d, t, tick: false);
+            await Place(d, (-60, 0), (60, 0));
+        }
         await h.Send(Hit(20));
-        Assert.Equal("stale_state", (await h.Next("reject")).GetProperty("reason").GetString());
+        Assert.Equal("out_of_range", (await h.Next("reject")).GetProperty("reason").GetString());
     }
 
     [Fact]
-    public async Task Hit_OverTheLevelsDamageCap_DropsOnlyTheExcess()
+    public async Task Hit_OverTheLevelsDamageBudget_DropsOnlyTheExcess()
     {
         var d = await StartDuel();
         using var h = d.H;
@@ -765,23 +796,213 @@ public class RelayTests : IDisposable
         await At(d, 1);
         await Place(d, (-5, 0), (5, 0));
 
-        // level 1: 600 raw a second sustained, 1200 in any 1 s: 500 + 500 + 200 of the third
-        for (var i = 0; i < 3; i++) await h.Send(Hit(500));
+        // level 1: 10 s of 600 a second at the start, plus 1 s of filling: 6600
+        for (var i = 0; i < 3; i++) await h.Send(Hit(2500));
         var capped = Assert.Single(await h.Sync(), m => m.GetProperty("t").GetString() == "reject");
         Assert.Equal("dps_cap", capped.GetProperty("reason").GetString());
-        Assert.Equal(300, capped.GetProperty("dropped").GetDouble(), 6);
-        Assert.Equal(new[] { 500.0, 500.0, 200.0 }, Forwarded(await g.Sync()));
+        Assert.Equal(900, capped.GetProperty("dropped").GetDouble(), 6);
+        Assert.Equal(new[] { 2500.0, 2500.0, 1600.0 }, Forwarded(await g.Sync()));
 
-        // a full 1 s window refuses the whole batch
+        // an empty bucket refuses the whole batch; a second later it holds 600 more
         await h.Send(Hit(50));
-        var full = await h.Next("reject");
-        Assert.Equal("dps_cap", full.GetProperty("reason").GetString());
-        Assert.Equal(50, full.GetProperty("dropped").GetDouble());
+        var empty = await h.Next("reject");
+        Assert.Equal("dps_cap", empty.GetProperty("reason").GetString());
+        Assert.Equal(50, empty.GetProperty("dropped").GetDouble());
+        await At(d, 2, tick: false);
+        await h.Send(Hit(700));
+        Assert.Equal(100, (await h.Next("reject")).GetProperty("dropped").GetDouble(), 6);
         Assert.Equal(1, Relay.Get(d.LobbyId)!.Seats[0].ServerLevel); // levels come only from XP barrels the server gave
 
         await At(d, 300);
         var end = await h.Next("match_end");
-        Assert.Equal(1200, end.GetProperty("stats").GetProperty(d.Host.Id.ToString()).GetProperty("damageDealt").GetDouble(), 6);
+        Assert.Equal(7200, end.GetProperty("stats").GetProperty(d.Host.Id.ToString()).GetProperty("damageDealt").GetDouble(), 6);
+    }
+
+    [Fact]
+    public async Task Cheat_ClaimingTheMostEveryBatch_IsHeldToTheLevelsRate_AndForfeits()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await Place(d, (-5, 0), (5, 0)); // in the countdown: engaged from the start
+        var replies = new List<JsonElement>();
+        for (var step = 1; step <= 40 && !replies.Any(m => m.GetProperty("t").GetString() == "match_end"); step++)
+        {
+            await At(d, step * 0.1, tick: false);
+            await h.Send(Hit(ArenaRules.MaxHitDamage));
+            replies.AddRange(await h.Sync());
+        }
+        var seat = Relay.Get(d.LobbyId)!.Seats[0];
+        Assert.True(seat.DamageDealt <= 6000 + 600 * 4 + 1e-6, $"accepted {seat.DamageDealt}"); // the bucket, never more
+        Assert.True(Count(replies, "reject", "dps_cap") >= 30);
+        var end = await g.Next("match_end");
+        Assert.Equal("anticheat", end.GetProperty("reason").GetString());
+        Assert.Equal(d.Guest.Id, end.GetProperty("winnerPlayerId").GetGuid());
+    }
+
+    // ---- V5 M8z (6 Oct, owner: "check if this is applicable for all the weapons and scenarios"): legit play that
+    // outlives the contact, bursts, lag and background tabs, none of which may lose a single point of damage ----
+
+    /// <summary>Sends <paramref name="dmg"/> from the host (asks the sync) and returns the replies.</summary>
+    static async Task<List<JsonElement>> HostHit(Duel d, double dmg, string weaponId)
+    {
+        await d.H.Send(Hit(dmg, weaponId));
+        return await d.H.Sync();
+    }
+
+    [Fact]
+    public async Task Scenario_KegsLeftBehind_HitAfterTheShipSailedAway()
+    {
+        // the host sails through (0, 0) dropping Powder Kegs (30 s afloat) while the guest is 100 m off, and keeps going
+        // west; 29 s later the guest sails into the kegs, the host 102 m away: the ships were never within 80 m
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 1, tick: false);
+        await g.Send(State(100, 0)); // the guest first: the host at (0, 0) would be 45 m from the guest's spawn
+        await g.Sync();
+        await Place(d, (0, 0), (100, 0));
+        var replies = new List<JsonElement>();
+        for (var t = 2; t <= 25; t++)
+        {
+            await At(d, t, tick: false);
+            await Place(d, (-4 * t, 0), (100, 0));
+        }
+        await At(d, 30, tick: false);
+        await Place(d, (-100, 0), (2, 0));
+        replies.AddRange(await HostHit(d, 450, "hw1")); // a field of kegs goes off together
+        await At(d, 30.1, tick: false);
+        replies.AddRange(await HostHit(d, 120, HitRules.GenericWeaponId)); // their burn
+        Assert.Empty(Rejects(replies));
+        Assert.Equal(new[] { 450.0, 120.0 }, Forwarded(await g.Sync()));
+    }
+
+    [Fact]
+    public async Task Scenario_BurnsAndChasingSummons_HitAfterTheShipsParted()
+    {
+        // contact at 1 s (5 m), then the ships race apart at 15 m/s each; a full burn ticks for 40 s and parrots chase for
+        // 6 s, all of it while the ships are far apart and the guest nowhere near the host's track
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 1, tick: false);
+        await Place(d, (0, 0), (5, 0));
+        var replies = new List<JsonElement>();
+        for (var step = 0; step < 80; step++)
+        {
+            var t = 1.5 + step * 0.5;
+            await At(d, t, tick: false);
+            await Place(d, (-15 * (t - 1), 0), (5 + 15 * (t - 1), 0));
+            replies.AddRange(await HostHit(d, 5, HitRules.GenericWeaponId)); // burn: up to 10 raw a second
+            if (t <= 7) replies.AddRange(await HostHit(d, 12, "hw2")); // parrots
+        }
+        Assert.Empty(Rejects(replies));
+        Assert.Equal(0, Relay.Get(d.LobbyId)!.Seats[0].RejectedHits);
+    }
+
+    [Fact]
+    public async Task Scenario_EvolvedAndMaxedWeapons_AllGunsAndAKegField_AtTheWorstRate()
+    {
+        // level 12 (the first level a weapon can be maxed and evolved): the worst build deals 1965 raw a second. 30 s of
+        // that in 0.1 s batches tagged with base weapon ids (an evolved weapon reports its base id), then "All Guns!" (2.1 s
+        // of it) and a keg field of 30 s of it detonate together, sent at the client's pace of one batch each 0.1 s
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        Relay.Get(d.LobbyId)!.Seats[0].XpBarrels = 11;
+        await At(d, 0.5, tick: false);
+        await Place(d, (-5, 0), (5, 0));
+        const double worst = 1965;
+        string[] tags = { "hw1", "hw2", "hw3", "hw4", "hw5", "hw6", HitRules.GenericWeaponId };
+        var replies = new List<JsonElement>();
+        double sent = 0;
+        var t = 0.5;
+        for (var i = 0; i < 300; i++)
+        {
+            t += 0.1;
+            await At(d, t, tick: false);
+            await h.Send(Hit(worst * 0.1, tags[i % tags.Length]));
+            sent += worst * 0.1;
+            replies.AddRange(await h.Sync());
+            if (i % 20 == 19) await Place(d, (-5, 0), (5, 0));
+        }
+        for (var burst = (2.1 + 30) * worst; burst > 1e-9; burst -= ArenaRules.MaxHitDamage)
+        {
+            t += 0.1;
+            await At(d, t, tick: false);
+            var dmg = Math.Min(burst, ArenaRules.MaxHitDamage);
+            await h.Send(Hit(dmg, "hw1"));
+            sent += dmg;
+            replies.AddRange(await h.Sync()); // one at a time: the server reads the test clock when it handles each
+        }
+        replies.AddRange(await h.Sync());
+        Assert.Empty(Rejects(replies));
+        Assert.Equal(sent, Relay.Get(d.LobbyId)!.Seats[0].DamageDealt, 3);
+    }
+
+    [Fact]
+    public async Task Scenario_Level30_SustainedWorstRate()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        Relay.Get(d.LobbyId)!.Seats[0].XpBarrels = 29; // level 30: 6985 raw a second at worst
+        await At(d, 1, tick: false);
+        await Place(d, (-5, 0), (5, 0));
+        var replies = new List<JsonElement>();
+        for (var i = 0; i < 200; i++)
+        {
+            await At(d, 1 + 0.1 * (i + 1), tick: false);
+            await h.Send(Hit(698.5, "hw4"));
+            replies.AddRange(await h.Sync());
+        }
+        Assert.Empty(Rejects(replies));
+    }
+
+    [Fact]
+    public async Task Scenario_LagSpikes_NoStatesForSeconds_ThenQueuedHitsTogether()
+    {
+        // a 3 s spike on the attacker's side (no states; its hits arrive late and together) and a 3 s one on the victim's
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 1, tick: false);
+        await Place(d, (-10, 0), (10, 0));
+        var replies = new List<JsonElement>();
+        await At(d, 4, tick: false);
+        for (var i = 0; i < 15; i++) await h.Send(Hit(30, "hw5")); // 3 s of batches at once (under the 20 a second cap)
+        replies.AddRange(await h.Sync());
+        await h.Send(State(-12, 0));
+        await At(d, 7, tick: false); // the victim has not reported since 1 s
+        replies.AddRange(await HostHit(d, 30, "hw5"));
+        await At(d, 8, tick: false);
+        replies.AddRange(await HostHit(d, 30, HitRules.GenericWeaponId));
+        Assert.Empty(Rejects(replies));
+        Assert.Equal(17, Forwarded(await g.Sync()).Length);
+    }
+
+    [Fact]
+    public async Task Scenario_BackgroundTab_ThrottledTo1Hz_ThenPausedAMinute_ThenBack()
+    {
+        // a hidden WebGL tab: the game runs once a second (one state, then one batch of that second's damage), then not at
+        // all for 60 s (no states, no hits); back in front, the client reports its position before its hits
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        var replies = new List<JsonElement>();
+        for (var t = 1; t <= 20; t++)
+        {
+            await At(d, t, tick: false);
+            await g.Send(State(10 + t, 0));
+            await h.Send(State(-10 + t, 0));
+            replies.AddRange(await HostHit(d, 300, "hw6"));
+        }
+        await At(d, 80, tick: false); // paused 60 s; the guest moved on
+        await g.Send(State(60, 40));
+        await h.Send(State(40, 40));
+        replies.AddRange(await HostHit(d, 300, "hw6"));
+        Assert.Empty(Rejects(replies));
+        Assert.Equal(21, Forwarded(await g.Sync()).Length);
     }
 
     [Fact]
@@ -791,7 +1012,7 @@ public class RelayTests : IDisposable
         using var h = d.H;
         using var g = d.G;
         await At(d, 1);
-        await Place(d, (-30, 0), (60, 0)); // 90 m
+        await Place(d, (-45, 0), (60, 0)); // 105 m (the host first: the guest still at its spawn is 90 m off)
 
         // the host claims 2000 from out of range and with a weapon it never drafted; the guest lands 50
         for (var i = 0; i < 3; i++) await h.Send(Hit(400));
@@ -878,7 +1099,7 @@ public class RelayTests : IDisposable
                 replies.AddRange(await g.Sync());
             }
         }
-        Assert.Equal(0, Count(replies, "reject"));
+        Assert.Empty(Rejects(replies));
         Assert.True(hostSent > 60 * 150, $"the test should send well over the measured rate: {hostSent}");
 
         await At(d, 300);

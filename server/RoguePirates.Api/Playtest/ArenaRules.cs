@@ -38,7 +38,9 @@ public static class ArenaRules
     public const int PickupMessagesPerSecond = 10;
     public const int FxMaxBytes = 2048;
     public const int MaxMessageBytes = 4096;
-    public const double MaxHitDamage = 500;
+    /// <summary>V5 M8z (6 Oct, audit): 2500 (was 500) so 20 batches a second carry the worst legit build (about 16000 raw/s
+    /// at level 60, x1.5); the client sends at most what the server announces in match_start.limits.</summary>
+    public const double MaxHitDamage = 2500;
     public static readonly TimeSpan DisconnectForfeit = TimeSpan.FromSeconds(20);
     public static readonly TimeSpan RematchWindow = TimeSpan.FromSeconds(60);
 

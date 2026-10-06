@@ -83,6 +83,7 @@ namespace RoguePirates.V4.Online
 
     [Serializable] public sealed class BotInfo { public int seat; public string playerId; public string simulatedBy; }
     [Serializable] public sealed class LiveInfo { public bool ended; public BarrelMsg[] barrels; }
+    [Serializable] public sealed class MatchLimits { public float maxHitDamage; public int maxHitsPerSecond; }
 
     [Serializable]
     public sealed class MatchStartMsg
@@ -91,6 +92,8 @@ namespace RoguePirates.V4.Online
         public long serverNow; public long countdownMs; public long startsAt; public long endsAt; public long durationMs;
         public ArenaInfo arena; public SpawnInfo[] spawns; public StormInfo storm; public BarrelRules barrels;
         public MatchPlayer[] players; public BotInfo bot; public LiveInfo live;
+        /// <summary>V5 M8z (6 Oct): the server's message limits (only the largest hit batch is read).</summary>
+        public MatchLimits limits;
 
         public bool HasBot => bot != null && !string.IsNullOrEmpty(bot.playerId);
         public MatchPlayer Player(int seat)

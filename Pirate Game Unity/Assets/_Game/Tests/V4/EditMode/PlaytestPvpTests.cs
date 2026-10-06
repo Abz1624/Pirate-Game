@@ -91,6 +91,23 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(500f, PvpRules.ClampHit(9999f));
             Assert.AreEqual(0f, PvpRules.ClampHit(-3f));
             Assert.AreEqual(12.3f, PvpRules.ClampHit(12.34f), 1e-4f);
+            // V5 M8z (6 Oct, audit): the server's announced limit (2500), or 500 from an older server
+            Assert.AreEqual(2500f, PvpRules.ClampHit(9999f, PvpRules.HitLimit(2500f)));
+            Assert.AreEqual(500f, PvpRules.HitLimit(0f));
+        }
+
+        [Test]
+        public void Hits_are_tagged_with_a_drafted_weapon_or_weapon()
+        {
+            // V5 M8z (6 Oct, audit): the server refuses any other id
+            var draft = new[] { "deck_cannons", "powder_kegs" };
+            string Base(string id) => id == "devils_wake" ? "powder_kegs" : id == "stormshot_cannon" ? "deck_cannons" : null;
+            Assert.AreEqual("powder_kegs", PvpRules.HitTag("powder_kegs", draft, Base));
+            Assert.AreEqual("powder_kegs", PvpRules.HitTag("devils_wake", draft, Base)); // an evolution: its base weapon
+            Assert.AreEqual("weapon", PvpRules.HitTag("leviathan_heart", draft, Base)); // an item's pulse
+            Assert.AreEqual("weapon", PvpRules.HitTag("mortar", draft, Base)); // not drafted
+            Assert.AreEqual("weapon", PvpRules.HitTag(null, draft, Base)); // a burn tick
+            Assert.AreEqual("mortar", PvpRules.HitTag("mortar", new string[0], Base)); // no draft on record: as is
         }
 
         [Test]

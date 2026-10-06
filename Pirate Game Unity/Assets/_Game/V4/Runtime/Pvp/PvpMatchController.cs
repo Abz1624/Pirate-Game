@@ -117,6 +117,8 @@ namespace RoguePirates.V4.Pvp
         readonly List<PvpShot> _shots = new List<PvpShot>();
         readonly List<(Vector3 aim, float lands, float damage)> _botVolleys = new List<(Vector3, float, float)>();
         readonly Dictionary<string, float> _batchByWeapon = new Dictionary<string, float>();
+        HashSet<string> _draftWeapons;
+        Dictionary<string, string> _evolutionBase;
         Vector3 _centre;
         int _mySeat, _oppSeat;
         string _myId, _oppId;
@@ -164,6 +166,7 @@ namespace RoguePirates.V4.Pvp
             _oppId = _match.Player(_oppSeat)?.playerId;
             var mine = _match.Player(_mySeat)?.draft;
             _order = new PvpLevelOrder(mine?.weapons ?? Array.Empty<string>(), mine?.logbooks ?? Array.Empty<string>());
+            _draftWeapons = new HashSet<string>(mine?.weapons ?? Array.Empty<string>());
             _session.MatchMessage += OnMessage;
             _session.MatchStarted += OnResync;
             return true;
@@ -283,14 +286,16 @@ namespace RoguePirates.V4.Pvp
             TickPooledHits();
             TickStorm(dt, now);
             TickBarrels(now);
-            FlushHits();
-            FlushFx();
+            // V5 M8z (6 Oct, audit): the position goes out before the hits, so after a stall (a background tab, a hitch)
+            // the server reads the hits against where the ship is now
             if (Time.time >= _stateAt)
             {
                 _stateAt = Time.time + 1f / PvpRules.StateHz;
                 if (!_ended) SendMyState(false);
                 if (_bot != null && !_ended) SendBotState();
             }
+            FlushHits();
+            FlushFx();
             for (var i = _shots.Count - 1; i >= 0; i--) if (Time.time > _shots[i].End + 0.3f) _shots.RemoveAt(i);
         }
 
@@ -324,7 +329,7 @@ namespace RoguePirates.V4.Pvp
                     var v = _botVolleys[i];
                     _botVolleys.RemoveAt(i);
                     if (!_ended && _bot.Alive && PvpBot.Lands(v.aim, _ship.Position))
-                        _session.Send(new HitMsg { dmg = PvpRules.ClampHit(v.damage), weaponId = PvpBot.WeaponId, asBot = true });
+                        _session.Send(new HitMsg { dmg = PvpRules.ClampHit(v.damage, HitLimit), weaponId = PvpBot.WeaponId, asBot = true });
                 }
             }
             else if (_interp.Sample(Time.time, out var p, out var yaw))
@@ -387,18 +392,29 @@ namespace RoguePirates.V4.Pvp
             if (gone != null) foreach (var id in gone) _barrels.Remove(id);
         }
 
+        /// <summary>The largest batch the server takes (announced in match_start; 500 from an older server).</summary>
+        float HitLimit => PvpRules.HitLimit(_match?.limits != null ? _match.limits.maxHitDamage : 0f);
+
         void FlushHits()
         {
             if (_batch <= 0f || Time.time < _batchAt) return;
-            var weapon = "weapon";
+            var weapon = PvpRules.GenericHitTag;
             var best = 0f;
             foreach (var kv in _batchByWeapon) if (kv.Value > best) { best = kv.Value; weapon = kv.Key; }
-            var dmg = PvpRules.ClampHit(_batch);
+            var dmg = PvpRules.ClampHit(_batch, HitLimit);
+            var rest = _batch - dmg;
             _batch = 0f;
             _batchByWeapon.Clear();
             if (dmg <= 0f || _ended || _sunk) return;
             _session.Send(new HitMsg { dmg = dmg, weaponId = weapon.Length > 64 ? weapon.Substring(0, 64) : weapon });
             _dealt += dmg;
+            // V5 M8z (6 Oct, audit): a batch over the limit (a keg field going off at once) is not cut: the rest goes next
+            if (rest > 0.05f)
+            {
+                _batch = rest;
+                _batchByWeapon[weapon] = rest;
+                _batchAt = Time.time + PvpRules.HitBatchSeconds;
+            }
         }
 
         void OnRemoteDamaged(int slot, float damage, string weaponId)
@@ -406,9 +422,23 @@ namespace RoguePirates.V4.Pvp
             if (slot != _oppSlot || !_started || _ended || _sunk || !_oppAlive || damage <= 0f) return;
             if (_batch <= 0f) _batchAt = Time.time + PvpRules.HitBatchSeconds;
             _batch += damage;
-            var key = string.IsNullOrEmpty(weaponId) ? "weapon" : weaponId;
+            // V5 M8z (6 Oct, audit): only drafted weapon ids or "weapon" reach the server (it refuses anything else)
+            var key = PvpRules.HitTag(weaponId, _draftWeapons, EvolutionBase);
             _batchByWeapon.TryGetValue(key, out var sum);
             _batchByWeapon[key] = sum + damage;
+        }
+
+        /// <summary>The base weapon of an evolution id (null for anything else).</summary>
+        string EvolutionBase(string id)
+        {
+            if (_config == null || string.IsNullOrEmpty(id)) return null;
+            if (_evolutionBase == null)
+            {
+                _evolutionBase = new Dictionary<string, string>();
+                foreach (var e in _config.All<WeaponEvolutionConfig>())
+                    if (e != null && e.baseWeapon != null && !string.IsNullOrEmpty(e.evolutionId)) _evolutionBase[e.evolutionId] = e.baseWeapon.weaponId;
+            }
+            return _evolutionBase.TryGetValue(id, out var b) ? b : null;
         }
 
         // ---- Sending ----
