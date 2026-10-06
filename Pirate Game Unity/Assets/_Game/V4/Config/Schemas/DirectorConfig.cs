@@ -95,6 +95,23 @@ namespace RoguePirates.V4.Config
         [AppliesFrom(11)] public float eliteDamageMultiplier = 1.1f;
         [AppliesFrom(11)] public float eliteSizeMultiplier = 1.15f;
 
+        [Header("Lever: kill band (playtest, 2 Oct 2026)")]
+        [Tooltip("Every killBandSeconds the kills are compared with the spawns of that band: a player who kept up gets elites in the next band, one who fell behind gets fewer spawns and no elites. Adaptive mode only.")]
+        public bool killBandLever;
+        [Tooltip("Length of one band (s).")] public float killBandSeconds = 30f;
+        [Tooltip("Kills ÷ spawns at or above this: the player kept up (elites next band, full rate).")] public float killBandHighRatio = 0.85f;
+        [Tooltip("Kills ÷ spawns at or below this: the player fell behind (no elites, the lowest rate next band).")] public float killBandLowRatio = 0.3f;
+        [Tooltip("Ambient rate and floor multiplier in the band after one at or below the low ratio (rises linearly to 1 at the high ratio).")] public float killBandLowRateMultiplier = 0.6f;
+        [Tooltip("Chance an ambient spawn is an elite in the band after one at the high ratio (0 below it).")] public float killBandEliteChance = 0.06f;
+        [Tooltip("Bands with fewer spawns than this are not judged (the next band runs at full rate, no elites).")] public int killBandMinSpawns = 6;
+
+        [Header("Time-to-kill floors (playtest, 3 Oct 2026)")]
+        [Tooltip("Bosses, minibosses and elites never die faster than this many seconds of the player's whole damage per second (single target, all weapons hitting), measured when they spawn: they can never be one-shot. HP is only ever raised. 0 = off.")]
+        public float bossMinSeconds = 25f;
+        [Tooltip("Arena minibosses and elites (the ones that clear the sea: the 2:30 crab, the 3:00 elite, the 5:00 and 10:00 fights).")] public float arenaFocusMinSeconds = 12f;
+        [Tooltip("Minibosses and scheduled elites that fight alongside the waves.")] public float focusMinSeconds = 7f;
+        [Tooltip("Elites the kill band adds to the waves.")] public float adaptiveEliteMinSeconds = 2.5f;
+
         [Header("Lever: tier timing (tougher tiers unlock earlier)")]
         [AppliesFrom(11)] public bool tierTimingLever = true;
         [Tooltip("Seconds earlier at the top of the band. Time-triggered beats never move.")] [AppliesFrom(11)] public float tierLeadSecondsAtMax = 90f;
@@ -156,6 +173,8 @@ namespace RoguePirates.V4.Config
             if (behaviorCoverage == null || behaviorCoverage.Length == 0) report.Error(this, nameof(behaviorCoverage), "needs a weight per behaviour");
             if (threatRateMin <= 0f || threatRateMax < threatRateMin) report.Error(this, nameof(threatRateMin), "threat band must be 0 < min <= max");
             if (eliteChanceAtMax < 0f || eliteChanceAtMax > 1f) report.Error(this, nameof(eliteChanceAtMax), "chance must be 0..1");
+            if (killBandLever && (killBandSeconds <= 0f || killBandLowRatio >= killBandHighRatio || killBandLowRateMultiplier <= 0f || killBandEliteChance < 0f || killBandEliteChance > 1f))
+                report.Error(this, nameof(killBandSeconds), "kill band needs a positive length, low ratio < high ratio, a positive rate and a 0..1 elite chance");
             if (tierLeadSecondsAtMax < 0f) report.Error(this, nameof(tierLeadSecondsAtMax), "negative lead");
             if (capHpMultiplierAtMax < 1f) report.Error(this, nameof(capHpMultiplierAtMax), "the cap HP lever only raises HP");
             if (pressureFloor <= 0f) report.Error(this, nameof(pressureFloor), "must be positive (it is clamped to the curve's Pressure band at runtime)");

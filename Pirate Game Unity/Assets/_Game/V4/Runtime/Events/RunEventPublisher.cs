@@ -33,11 +33,11 @@ namespace RoguePirates.V4.Events
         public void RunState(int state) => Publish(CombatEventKind.RunState, state);
         public void GoldChanged(int gold) => Publish(CombatEventKind.GoldChanged, gold);
 
-        /// <summary>PlayerDamaged — A crit (1), Z amount.</summary>
-        public void PlayerDamaged(float amount, bool crit) => Publish(CombatEventKind.PlayerDamaged, crit ? 1 : 0, 0, 0f, 0f, amount);
+        /// <summary>PlayerDamaged — A crit (1), Z amount, tag the source (<see cref="PlayerDamageSource"/>; null = unknown).</summary>
+        public void PlayerDamaged(float amount, bool crit, string source = null) => Publish(CombatEventKind.PlayerDamaged, crit ? 1 : 0, 0, 0f, 0f, amount, source);
 
         /// <summary>Steady damage (storm, R-57) bypasses the damage receiver's event; B = 1 marks it.</summary>
-        public void SteadyDamage(float amount) => Publish(CombatEventKind.PlayerDamaged, 0, 1, 0f, 0f, amount);
+        public void SteadyDamage(float amount) => Publish(CombatEventKind.PlayerDamaged, 0, 1, 0f, 0f, amount, "storm"); // Playtest (6 Oct, owner): tagged for the session recorder
 
         /// <summary>Level-ups and offers from the V4 progression module.</summary>
         public void AttachProgression(Progression.ProgressionModule levels)

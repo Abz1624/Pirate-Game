@@ -17,7 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: ghost_lantern
   displayName: Ghost Lantern
-  description: Dodging telegraphed threats raises crit chance briefly.
+  description: +3% Luck. Dodging an enemy shot by a near miss gives +8% crit chance
+    for 2 s.
   rarity: 1
   inChestPool: 1
   inLevelUpPool: 1

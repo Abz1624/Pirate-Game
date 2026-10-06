@@ -119,7 +119,9 @@ namespace RoguePirates.V4.Presentation.Hud
                 if (bg != null && cardArt != null && cardArt.TryGet(card.rarity, out var sprite, out _) && sprite != null) bg.sprite = sprite;
                 var icon = b.transform.Find("Background/Icon")?.GetComponent<Image>();
                 var shadow = b.transform.Find("Background/Shadow")?.GetComponent<Image>();
-                var iconSprite = IconOf(offer);
+                // Playtest (3 Oct, owner): an evolution has no art yet, so its card shows its own name, not the base weapon's icon.
+                var evolution = offer.Kind == OfferKind.WeaponEvolution;
+                var iconSprite = evolution ? null : IconOf(offer);
                 // The weapon's card prefab sets the icon's whole look (rotation, size, position, scale): the art's six
                 // card slots each carry the layout of the sample picture they were made with.
                 var prefab = IsWeapon(offer) ? SaltWindHudSettings.Load()?.WeaponCardPrefab(offer.Id) : null;
@@ -134,15 +136,90 @@ namespace RoguePirates.V4.Presentation.Hud
                     CopyLayout(img.rectTransform, source ?? DefaultLayout(path));
                 }
                 var title = b.transform.Find("Background/Title")?.GetComponent<TextMeshProUGUI>();
+                // Playtest (3 Oct, owner): no icon art yet: the name stands in the icon's place.
+                IconPlaceholder(b.transform, icon, title, iconSprite == null ? RoguePirates.V4.Foundation.Core.DemoMode.Text(card.title) : null);
                 if (title != null) title.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(card.title);
                 var description = b.transform.Find("Background/Description")?.GetComponent<TextMeshProUGUI>();
                 if (description != null)
                 {
                     var effect = card.effectLines != null && card.effectLines.Length > 0 ? string.Join("\n", card.effectLines) : card.description;
-                    var level = card.LevelLabel;
-                    description.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(string.IsNullOrEmpty(level) ? effect : level + "\n" + effect);
+                    // Playtest (3 Oct, owner): an evolution reads "Evolution" (its level does not change).
+                    var level = evolution ? "Evolution" : card.LevelLabel;
+                    var text = RoguePirates.V4.Foundation.Core.DemoMode.Text(string.IsNullOrEmpty(level) ? effect : level + "\n" + effect);
+                    // A wrapped stat line breaks before its numbers, never inside "current → next".
+                    description.text = text.Replace(" \u2192 ", "\u00A0\u2192\u00A0");
+                    FitDescription(description);
                 }
             }
+        }
+
+        /// <summary>
+        /// The name in the icon's place on a card without icon art (hidden when the card has an icon). Playtest (3 Oct,
+        /// owner): black, inside the card's art area (above the title banner) with 5% padding on each side, auto-sized so a
+        /// long name never runs off the card.
+        /// </summary>
+        void IconPlaceholder(Transform card, Image icon, TextMeshProUGUI title, string name)
+        {
+            var background = card.Find("Background") as RectTransform;
+            if (background == null) return;
+            var label = background.Find("IconName")?.GetComponent<TextMeshProUGUI>();
+            if (label == null)
+            {
+                if (string.IsNullOrEmpty(name)) return;
+                var go = new GameObject("IconName", typeof(RectTransform));
+                go.transform.SetParent(background, false);
+                label = go.AddComponent<TextMeshProUGUI>();
+                if (title != null) label.font = title.font;
+                label.fontStyle = FontStyles.Bold;
+                label.alignment = TextAlignmentOptions.Center;
+                label.enableAutoSizing = true;
+                label.fontSizeMin = 10f;
+                label.fontSizeMax = 44f;
+                label.textWrappingMode = TextWrappingModes.Normal;
+                label.overflowMode = TextOverflowModes.Truncate; // auto-size shrinks first; this only guards the edges
+                label.raycastTarget = false;
+            }
+            label.color = Color.black;
+            label.gameObject.SetActive(!string.IsNullOrEmpty(name));
+            if (string.IsNullOrEmpty(name)) return;
+            label.text = name;
+            // The art area is the base card's icon box (the Background is square and wider than the paper card), down
+            // to the title banner's top edge at most; the name keeps 5% of that box clear on each side.
+            var art = DefaultLayout("Background/Icon") ?? (icon != null ? icon.rectTransform : null);
+            var min = art != null ? art.anchorMin : new Vector2(0.17f, 0.46f);
+            var max = art != null ? art.anchorMax : new Vector2(0.83f, 0.97f);
+            if (title != null)
+            {
+                var bg = background.rect;
+                title.rectTransform.GetWorldCorners(_corners);
+                var top = float.MinValue;
+                for (var c = 0; c < 4; c++) top = Mathf.Max(top, background.InverseTransformPoint(_corners[c]).y);
+                min.y = Mathf.Max(min.y, Mathf.Clamp01((top - bg.yMin) / Mathf.Max(1f, bg.height)));
+            }
+            var pad = (max - min) * 0.05f;
+            var rt = label.rectTransform;
+            rt.anchorMin = min + pad;
+            rt.anchorMax = max - pad;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            rt.localRotation = Quaternion.identity; // the art's icon slots may be tilted; the name stays level
+            rt.localScale = Vector3.one;
+        }
+
+        readonly Vector3[] _corners = new Vector3[4];
+
+        /// <summary>
+        /// Playtest (3 Oct, owner): the level and stat lines larger and bold, auto-sized to stay inside the art's
+        /// description box (wrapped, never past its sides or bottom).
+        /// </summary>
+        static void FitDescription(TextMeshProUGUI description)
+        {
+            description.fontStyle = FontStyles.Bold;
+            description.enableAutoSizing = true;
+            description.fontSizeMin = 10f;
+            description.fontSizeMax = 30f;
+            description.textWrappingMode = TextWrappingModes.Normal;
+            description.overflowMode = TextOverflowModes.Truncate;
         }
 
         static bool IsWeapon(Offer offer) =>
@@ -187,6 +264,7 @@ namespace RoguePirates.V4.Presentation.Hud
                     var cardIcon = SaltWindHudSettings.Load()?.WeaponCardIcon(offer.Id);
                     return cardIcon != null ? cardIcon : _icons?.Weapon(offer.Id);
                 case OfferKind.NewRunItem: return _icons?.Item(offer.Id);
+                case OfferKind.Logbook: return _icons?.Logbook(offer.Id);
                 default: return null;
             }
         }

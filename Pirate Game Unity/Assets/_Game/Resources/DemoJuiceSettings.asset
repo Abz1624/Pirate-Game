@@ -184,9 +184,9 @@ MonoBehaviour:
   salvageChestGlowScale: 0.55
   lighthousePrefab: {fileID: 1798196872801479414, guid: aa2a7a16eeb6681438eec7e916631ddd, type: 3}
   trialBuoyPrefab: {fileID: 7973005631509961391, guid: f37b853dab48d7e4eb4a5c47893397f1, type: 3}
-  bossBeaconPrefab: {fileID: 7984652697451324182, guid: 044b1d26a9f097d41a0bab7db1505bf6, type: 3}
+  bossBeaconPrefab: {fileID: 6426987305982235462, guid: ad7a84b4ee8c148408c8bef3f712e518, type: 3}
   bossTelegraphRingPrefab: {fileID: 1709254077376921, guid: 17bfaca54656ede499058479fd3b75ac, type: 3}
-  salvageChestScale: 1
+  salvageChestScale: 0.75
   lighthouseScale: 1
   trialBuoyScale: 1
   bossBeaconScale: 1
@@ -198,6 +198,7 @@ MonoBehaviour:
   merchantSkiffPrefab: {fileID: 5977866536508745395, guid: b545069ce52125447b906c22b0b8485b, type: 3}
   merchantSkiffScale: 1
   hidePointsOfInterest: 0
+  chestsOnlyPointsOfInterest: 0
   hideVoyageToast: 1
   autoBossSeconds: 0
   bossArrivalPrefab: {fileID: 5654319288947532959, guid: e2a326ea6a1fe4439b797b4c8c009591, type: 3}

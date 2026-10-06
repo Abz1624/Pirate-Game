@@ -17,7 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m5
   itemId: shark_tooth_necklace
   displayName: Shark Tooth Necklace
-  description: +12% damage to enemies above 90% hull, more with copies (at most +80%).
+  description: +12% damage per copy to enemies above 90% hull, up to +80%.
   rarity: 0
   inChestPool: 1
   inLevelUpPool: 0

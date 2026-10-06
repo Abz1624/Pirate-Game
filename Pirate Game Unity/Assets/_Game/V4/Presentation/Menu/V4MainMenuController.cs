@@ -52,6 +52,7 @@ namespace RoguePirates.V4
             // V5 M7: the settings screen, the safe area and the UI scale.
             _settings = SettingsPanel.Create(menuCanvas.transform);
             if (_view is ArtMenuView art) art.HubRequested += OnHub;
+            _online = RoguePirates.V4.Presentation.Online.OnlineMenuPresenter.Create(menuCanvas.transform); // Playtest (3 Oct, owner)
             RoguePirates.V4.Foundation.UI.SafeAreaFitter.Wrap(menuCanvas);
             RoguePirates.V4.Foundation.UI.UiScale.ApplyAll();
         }
@@ -70,7 +71,12 @@ namespace RoguePirates.V4
             if (screen == "Play") _hub.ShowModes();
             else if (screen == "Ledger") _hub.ShowShop();
             else if (screen == "Profile") _hub.ShowProfile();
+            else if (screen == "Leaderboard") _online?.OpenLeaderboard(); // Playtest (3 Oct, owner)
         }
+
+        // Playtest (3 Oct, owner): guest profiles, the weekly leaderboard and the PvP placeholder (Presentation/Online).
+        RoguePirates.V4.Presentation.Online.OnlineMenuPresenter _online;
+        public RoguePirates.V4.Presentation.Online.OnlineMenuPresenter Online => _online;
 
         void Start()
         {
@@ -95,6 +101,7 @@ namespace RoguePirates.V4
                 OnFocus(_focused);
             };
             _hub = MenuHubPresenter.Create(_settings.transform.parent, meta, () => (_view as ArtMenuView)?.OpenCaptainSelect());
+            _online?.SetConfig(() => _config); // Playtest (3 Oct, owner): the 1v1 draft lists the content
 
             var selected = 0;
             for (var i = 0; i < _captains.Count; i++)
@@ -177,6 +184,10 @@ namespace RoguePirates.V4
                 return;
             }
             RoguePirates.V4.Progression.CaptainChoice.LegacyId = captain.legacyId;
+            // Playtest (3 Oct, owner, round 7: a solo voyage came up as a 1v1): a voyage leaves any 1v1 lobby first.
+            if (RoguePirates.V4.Online.PvpSession.Exists && RoguePirates.V4.Online.PvpSession.Instance.Lobby != null)
+                _ = RoguePirates.V4.Online.PvpSession.Instance.Leave();
+            RunRequest.ClearPvp();
             MenuServices.BeginSaltwindExperiment();
             SceneManager.LoadScene(V4SceneNames.SaltwindRun);
         }

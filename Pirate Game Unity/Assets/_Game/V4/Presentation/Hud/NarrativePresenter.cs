@@ -23,6 +23,8 @@ namespace RoguePirates.V4.Presentation.Hud
 
         public bool BarkShown => _bark != null && _bark.gameObject.activeSelf;
         public string BarkText => _speaker != null ? _speaker.text + ": " + _line.text : string.Empty;
+        /// <summary>Playtest (3 Oct, owner): off in the demo: the character barks are not shown (tutorial prompts still are).</summary>
+        public bool ShowBarks { get; set; } = true;
         public bool PromptShown => _prompt != null && _prompt.gameObject.activeSelf;
         public string PromptText => _promptText != null ? _promptText.text : string.Empty;
 
@@ -98,6 +100,7 @@ namespace RoguePirates.V4.Presentation.Hud
         void LateUpdate()
         {
             if (_view == null) return;
+            if (_view.BarkSerial != _seenBark && !ShowBarks) _seenBark = _view.BarkSerial;
             if (_view.BarkSerial != _seenBark)
             {
                 _seenBark = _view.BarkSerial;

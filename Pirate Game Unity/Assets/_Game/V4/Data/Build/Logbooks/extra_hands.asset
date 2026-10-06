@@ -20,6 +20,6 @@ MonoBehaviour:
   stat: 9
   perLevelAdditive: 1
   perLevelMultiplicative: 1
-  maxLevel: 10
+  maxLevel: 3
   inSaltwindPool: 1
   databaseOrder: 3

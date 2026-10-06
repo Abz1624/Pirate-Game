@@ -27,6 +27,22 @@ namespace RoguePirates.V4.Enemies
         const float SlamWindup = 1.2f;
         const float SlamRecovery = 2f;
         const float GuardReduction = 0.3f;
+        // Playtest (2 Oct 2026): the crab keeps its distance and lobs one big, medium-paced cannonball at a time (dodgeable),
+        // instead of chasing the ship; the claw slam stays for a ship that sails into it.
+        const float SlamTriggerDistance = 4.5f;
+        // Playtest (3 Oct, owner: "my weapons were not attacking the crab miniboss"): it kept its centre 10 to 14 m away, but
+        // weapons pick targets by centre distance and most reach 6 to 13 m (orbiting blades 6, lantern 9, flamethrower 9.5,
+        // swivel guns and broadside 12), so most of a build never fired at it. It now holds its hull 3 to 5.5 m off
+        // (centre about 6.5 to 9 m at its drawn size), still at range for its cannonball but inside the weapons' reach.
+        const float KeepEdgeMin = 3f, KeepEdgeMax = 5.5f;
+        const float ShotInterval = 2.5f;
+        const float ShotWindup = 0.6f;
+        const float ShotSpeed = 8f;
+        const float ShotLife = 2.8f;
+        const float ShotHitRadius = 1.0f;
+        const float ShotVisualRadius = 0.9f;
+        const float ShotDamageMultiplier = 1.2f;
+        const float ShotMaxRange = 20f;
 
         public Vector3 TickMovement(
             int agentIndex,
@@ -47,6 +63,8 @@ namespace RoguePirates.V4.Enemies
             {
                 case EnemyCombatPhase.Telegraph:
                     state.phaseTimer -= dt;
+                    // Playtest (3 Oct, owner, round 7): the claw slam's reach shows round the crab for its windup.
+                    if (state.phaseTimer > 0f) Hazards.Warn(agent.position, SlamRadius, state.phaseTimer, agent.id);
                     if (state.phaseTimer <= 0f)
                     {
                         if (HorizontalDistance(agent.position, playerPos) <= SlamRadius && playerDamage != null)
@@ -58,20 +76,77 @@ namespace RoguePirates.V4.Enemies
                 case EnemyCombatPhase.Recover:
                     state.phaseTimer -= dt;
                     if (state.phaseTimer <= 0f)
+                    {
                         state.phase = EnemyCombatPhase.Approach;
+                        state.phaseTimer = ShotInterval * 0.5f; // the cannon is ready again soon after the slam
+                    }
                     return Vector3.zero;
+                case EnemyCombatPhase.Execute: // aiming the cannon: almost still, then one big shot
+                    state.phaseTimer -= dt;
+                    if (state.phaseTimer <= 0f)
+                    {
+                        FireCannonball(ref agent, state, dist);
+                        state.phase = EnemyCombatPhase.Approach;
+                        state.phaseTimer = ShotInterval;
+                    }
+                    return tangent * (def.moveSpeed * 0.1f);
                 default:
-                    if (dist < 5.5f)
+                    if (dist < SlamTriggerDistance)
                     {
                         state.phase = EnemyCombatPhase.Telegraph;
                         state.phaseTimer = SlamWindup;
                         return Vector3.zero;
                     }
 
-                    if (dist > 9f)
-                        return dir * (def.moveSpeed * 0.65f);
+                    if (dist > ShotMaxRange && state.phaseTimer < ShotWindup) state.phaseTimer = ShotWindup; // the first shot comes a moment after it is in range
+                    state.phaseTimer -= dt;
+                    if (state.phaseTimer <= 0f && dist <= ShotMaxRange)
+                    {
+                        state.phase = EnemyCombatPhase.Execute;
+                        state.phaseTimer = ShotWindup;
+                        AimCannonball(ref agent, state, playerPos, dir, playerDamage);
+                        return Vector3.zero;
+                    }
+
+                    var keepMin = agent.radius + KeepEdgeMin;
+                    var keepMax = agent.radius + KeepEdgeMax;
+                    if (dist > keepMax) return dir * (def.moveSpeed * (dist > keepMax + 6f ? 0.9f : 0.65f));
+                    if (dist < keepMin) return (-dir * 0.8f + tangent * 0.5f) * (def.moveSpeed * 0.6f); // back off
                     return tangent * (def.moveSpeed * 0.55f);
             }
+        }
+
+        /// <summary>
+        /// Playtest (3 Oct, owner, round 7: "the crab was firing something too accurate with no visual indicator"): the
+        /// cannonball is aimed when the windup starts (where the ship will be when the ball leaves and arrives) and then
+        /// flies exactly along that line at 8 m/s, so a ship that turns dodges it. It used to be re-aimed at the instant
+        /// it fired. Owner (round 7): no ground marker for cannonballs; the ball and its trail are the warning.
+        /// </summary>
+        void AimCannonball(ref EnemyUnit agent, CombatAgentState state, Vector3 playerPos, Vector3 dir, DamageReceiver playerDamage)
+        {
+            var ship = playerDamage != null ? playerDamage.GetComponent<PlayerShipController>() : null;
+            var playerVelocity = Sim != null ? Sim.PlayerVelocityForEnemies : ship != null ? ship.Velocity : Vector3.zero; // playtest (3 Oct): not the island bounce
+            var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
+            playerPos += new Vector3(playerVelocity.x, 0f, playerVelocity.z) * ShotWindup; // where the ship is when the ball leaves
+            var led = EnemySimulation.AimLed(muzzle, playerPos, playerVelocity, ShotSpeed, dir);
+            var distance = Mathf.Min(ShotMaxRange + 4f, EnemySimulation.LedShotDistance(muzzle, playerPos, playerVelocity, ShotSpeed));
+            state.committedDirection = led;
+            state.committedPosition = muzzle + led * distance;
+        }
+
+        void FireCannonball(ref EnemyUnit agent, CombatAgentState state, float dist)
+        {
+            var shots = Shots;
+            if (shots == null || dist > ShotMaxRange + 4f) return;
+            var dir = state.committedDirection;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.01f) return;
+            dir.Normalize();
+            var muzzle = agent.position + dir * (agent.radius + 1.2f) + Vector3.up * 0.55f;
+            var target = state.committedPosition;
+            target.y = muzzle.y;
+            shots.TrySpawn(muzzle, dir, ShotSpeed, agent.damage * ShotDamageMultiplier, ShotLife, ShotHitRadius, ShotVisualRadius,
+                Vector3.Distance(muzzle, target));
         }
 
         public float GetDirectHitMultiplier(Vector3 agentPos, Vector3 attackOrigin, bool guardActive)

@@ -17,7 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: leviathan_tooth
   displayName: Leviathan Tooth
-  description: Crowd-controlled enemies take increased damage.
+  description: +3% Luck. Enemies hit by Harpoon Gun tar in the last 1.2 s take 20%
+    more damage.
   rarity: 2
   inChestPool: 1
   inLevelUpPool: 1

@@ -20,6 +20,9 @@ namespace RoguePirates.V4.Presentation.Effects
         static readonly Color TrapColor = new Color(1f, 0.25f, 0.15f, 0.95f);
         static readonly Color MineColor = new Color(1f, 0.7f, 0.1f, 0.95f);
         static readonly Color NetColor = new Color(0.35f, 0.8f, 1f, 0.9f);
+        // Playtest (3 Oct, owner, round 7: enemy attacks must be readable): the warning circle and lane of an attack the
+        // enemy deals itself (charges, slams, bomb boats, aimed cannonballs), a strong red.
+        static readonly Color WarningColor = new Color(1f, 0.12f, 0.08f, 0.95f);
 
         IHazardView _hazards;
         IBurningPatchView _patches;
@@ -119,11 +122,19 @@ namespace RoguePirates.V4.Presentation.Effects
                 var center = hazard.center;
                 var radius = hazard.radius;
                 var timer = hazard.timer;
-                if (!_wasActive[i] || center != _lastCenter[i]) _fuseTotal[i] = Mathf.Max(0.01f, timer); // a new hazard in this slot
+                if (hazard.duration > 0f) _fuseTotal[i] = hazard.duration; // Playtest (3 Oct): the hazard's own length (moving warnings)
+                else if (!_wasActive[i] || center != _lastCenter[i]) _fuseTotal[i] = Mathf.Max(0.01f, timer); // a new hazard in this slot
                 _wasActive[i] = true;
                 _lastCenter[i] = center;
 
-                var color = kind == HazardKind.Mine ? MineColor : kind == HazardKind.NetSlow ? NetColor : TrapColor;
+                if (kind == HazardKind.WarningLine)
+                {
+                    Show(i, true);
+                    SetLane(_outline[i], _fill[i], center, hazard.direction, hazard.length, radius, 1f - Mathf.Clamp01(timer / _fuseTotal[i]));
+                    continue;
+                }
+
+                var color = kind == HazardKind.Mine ? MineColor : kind == HazardKind.NetSlow ? NetColor : kind == HazardKind.Warning ? WarningColor : TrapColor;
                 // Mines: fill while arming, then a full ring while armed. Traps: fill as the fuse runs down. Nets: full.
                 var armed = kind == HazardKind.Mine && hazard.armed;
                 var progress = kind == HazardKind.NetSlow || armed ? 1f : 1f - Mathf.Clamp01(timer / _fuseTotal[i]);
@@ -196,8 +207,33 @@ namespace RoguePirates.V4.Presentation.Effects
 
         void Show(int i, bool visible) => ShowPair(_outline[i], _fill[i], visible);
 
+        /// <summary>Playtest (3 Oct, owner, round 7): a lane: its outline as a rectangle and a translucent strip that runs
+        /// from the attacker to the lane's end as the attack comes.</summary>
+        static void SetLane(LineRenderer outline, LineRenderer fill, Vector3 start, Vector3 direction, float length, float halfWidth, float progress)
+        {
+            var side = Vector3.Cross(Vector3.up, direction) * halfWidth;
+            var end = start + direction * length;
+            start.y = end.y = Height;
+            outline.loop = true;
+            outline.positionCount = 4;
+            outline.startColor = outline.endColor = WarningColor;
+            outline.widthMultiplier = 0.3f;
+            outline.SetPosition(0, start + side);
+            outline.SetPosition(1, end + side);
+            outline.SetPosition(2, end - side);
+            outline.SetPosition(3, start - side);
+            fill.loop = false;
+            fill.positionCount = 2;
+            var c = new Color(WarningColor.r, WarningColor.g, WarningColor.b, 0.3f + 0.35f * progress);
+            fill.startColor = fill.endColor = c;
+            fill.widthMultiplier = halfWidth * 2f * 0.85f;
+            fill.SetPosition(0, start);
+            fill.SetPosition(1, Vector3.Lerp(start, end, Mathf.Max(0.05f, progress)));
+        }
+
         static void SetCircle(LineRenderer line, Vector3 center, float radius, Color color, float width)
         {
+            if (line.positionCount != Segments) { line.positionCount = Segments; line.loop = true; } // after a lane
             line.startColor = color;
             line.endColor = color;
             line.widthMultiplier = width;

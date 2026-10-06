@@ -28,7 +28,7 @@ MonoBehaviour:
     value: 4
   baseHP:
     enabled: 1
-    value: 16
+    value: 5.25
   moveSpeed:
     enabled: 1
     value: 6.5
@@ -38,6 +38,10 @@ MonoBehaviour:
   tags:
   - specialist
   inheritBaseVisual: 1
+  look:
+    model: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    viewSize: 1
   concurrencyTags: []
   spawnTier: 0
   combat:

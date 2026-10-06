@@ -17,8 +17,9 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m5
   itemId: leviathan_heart
   displayName: Leviathan Heart
-  description: Every 12 s a blast of 45 damage in 5 m on the densest crowd, after
-    a short warning (stronger with copies).
+  description: Every 12 s, a blast hits the densest group of enemies for 45 damage
+    in a 5 m radius after a 0.6 s warning. Each extra copy adds +20% damage, up to
+    double.
   rarity: 4
   inChestPool: 1
   inLevelUpPool: 0

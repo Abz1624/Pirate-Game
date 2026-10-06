@@ -23,7 +23,7 @@ MonoBehaviour:
   behavior: 2
   targeting: 5
   tags: []
-  baseDamage: 24.895908
+  baseDamage: 32.25
   baseCooldown: 0.75
   range: 6
   baseQuantity: 1
@@ -110,10 +110,10 @@ MonoBehaviour:
     sideMuzzleOffset: 0.85
     splashOnDespawn: 1
   orbit:
-    baseBlades: 1
+    baseBlades: 2
     orbitRadius: 3.5
     heightOffset: 0.35
-    angularSpeedDegrees: 100
+    angularSpeedDegrees: 150
     hitRadius: 1.6
     hitIntervalSeconds: 0.12
     volleyHitIntervalSeconds: 0.096

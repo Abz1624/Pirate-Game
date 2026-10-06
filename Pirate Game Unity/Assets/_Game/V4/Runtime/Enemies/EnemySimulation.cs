@@ -27,7 +27,7 @@ namespace RoguePirates.V4.Enemies
     /// </summary>
     public sealed partial class EnemySimulation
     {
-        const float EliteVisualScaleMultiplier = 2.15f;
+        const float EliteVisualScaleMultiplier = 1.6f; // playtest (3 Oct): elites 1.6x their enemy (was 2.15x: bigger than minibosses)
         const float MinibossVisualScaleMultiplier = 2.85f;
         const float PressureBeatVisualScaleMultiplier = 1.35f;
 
@@ -392,6 +392,59 @@ namespace RoguePirates.V4.Enemies
             return def.attackCooldown > 0f ? def.attackCooldown * 0.5f : 1f;
         }
 
+        // ---- Playtest (3 Oct, owner): the 1v1 opponent ------------------------------------------------------------------
+
+        /// <summary>Weapon damage that reached a remote unit (slot, damage, weapon id); its hull does not change here.</summary>
+        public Action<int, float, string> RemoteDamaged;
+
+        /// <summary>
+        /// The 1v1 opponent as a unit every weapon can target: spawned from an ordinary definition, then made remote (no
+        /// AI, contact, knockback or kill; its model is attached later by <see cref="SetRemoteView"/>). Returns the slot.
+        /// </summary>
+        public int SpawnRemote(int definitionIndex, Vector3 position, float radius)
+        {
+            var slot = Spawn(definitionIndex, position);
+            if (slot < 0) return -1;
+            ref var e = ref _agents[slot];
+            _views.Release(_definitions[definitionIndex], e.view, e.healthBar);
+            _states.Clear(e.id);
+            e.view = null;
+            e.healthBar = null;
+            e.remote = true;
+            e.radius = radius;
+            e.moveSpeed = 0f;
+            e.damage = 0f;
+            e.attackCooldown = float.MaxValue;
+            e.chargeTimer = float.MaxValue;
+            e.spawnProfile = null;
+            e.patternParams = default;
+            return slot;
+        }
+
+        public void SetRemoteView(int slot, Transform view)
+        {
+            if (slot < 0 || slot >= _agents.Length || !_agents[slot].active || !_agents[slot].remote) return;
+            _agents[slot].view = view;
+            if (view != null) view.position = _agents[slot].position;
+        }
+
+        /// <summary>Where the opponent is, its heading and the hull it reported (kept above 0 while it is in the match).</summary>
+        public void SetRemoteState(int slot, Vector3 position, Quaternion rotation, Vector3 velocity, float hp, float maxHp)
+        {
+            if (slot < 0 || slot >= _agents.Length || !_agents[slot].active || !_agents[slot].remote) return;
+            ref var e = ref _agents[slot];
+            position.y = _definitions[e.definitionIndex].visualHeightOffset;
+            e.position = position;
+            e.velocity = velocity;
+            e.maxHp = Mathf.Max(1f, maxHp);
+            e.hp = Mathf.Clamp(hp, 1f, e.maxHp);
+            if (e.view != null)
+            {
+                e.view.position = new Vector3(position.x, e.view.position.y, position.z);
+                e.view.rotation = rotation;
+            }
+        }
+
         // ---- Despawning ------------------------------------------------------------------------------------------------
 
         public void DespawnAllActive()
@@ -456,6 +509,7 @@ namespace RoguePirates.V4.Enemies
             var releasedAgentId = _agents[index].id;
             ClearUnitState(releasedAgentId);
             _states.Clear(releasedAgentId);
+            _services?.Hazards?.ClearWarnings(releasedAgentId); // Playtest (3 Oct): its attack warnings go with it
             _agents[index].active = false;
             _activeCount--;
             Despawned?.Invoke(index, releasedAgentId, despawnProfile);

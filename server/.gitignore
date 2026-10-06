@@ -1,0 +1,9 @@
+# The repo root ignores *.csproj (Unity-generated projects); the server projects must be tracked.
+!*.csproj
+
+bin/
+obj/
+*.db
+*.db-shm
+*.db-wal
+TestResults/

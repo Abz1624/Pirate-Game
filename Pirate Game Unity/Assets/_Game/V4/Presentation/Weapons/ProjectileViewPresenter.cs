@@ -42,7 +42,10 @@ namespace RoguePirates.V4.Presentation.Weapons
         public int Acquire(string weaponId, Vector3 position, Color color, float radius)
         {
             var visual = VisualOf(weaponId);
-            var prefab = visual != null && visual.prefab != null ? visual.prefab : _settings != null ? _settings.projectilePrefab : null;
+            // Playtest (3 Oct, owner): a weapon that is not a cannon and has no projectile model of its own (the Monkey
+            // Gunners' shots) gets its coloured placeholder, not the default cannonball.
+            var placeholder = visual != null && visual.prefab != null ? null : WeaponPlaceholderModels.Projectile(weaponId, _pools != null ? _pools.Staging : null);
+            var prefab = placeholder != null ? placeholder : visual != null && visual.prefab != null ? visual.prefab : _settings != null ? _settings.projectilePrefab : null;
             var scaleMult = visual != null ? visual.scaleMultiplier : 1f;
             var visualRadius = radius * (visual != null ? visual.radiusMultiplier : 1f);
             var sizeMult = _settings != null ? _settings.projectileSizeMultiplier : 1.2f;
@@ -82,7 +85,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                 VfxParticleUtil.ClearMotionTrails(go);
                 VfxParticleUtil.SetTrailEmitting(go, true);
             }
-            Tint(go.transform, color);
+            if (placeholder == null) Tint(go.transform, color); // a placeholder keeps its own colours (shared materials)
 
             Profiles?.Attach(Profiles.Slot(VfxSubject.Weapon, weaponId, VfxSlotKind.Trail), go.transform);
             var handle = _next++;

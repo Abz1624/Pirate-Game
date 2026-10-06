@@ -18,8 +18,8 @@ MonoBehaviour:
   logbookId: powder_drill
   displayName: Powdermaster's Drill
   stat: 6
-  perLevelAdditive: 0.075
+  perLevelAdditive: 0.08
   perLevelMultiplicative: 1
-  maxLevel: 10
+  maxLevel: 5
   inSaltwindPool: 1
   databaseOrder: 1

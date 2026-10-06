@@ -17,7 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: golden_figurehead
   displayName: Golden Figurehead
-  description: Unspent Gold raises Luck during the stage.
+  description: +5% gold gain. +1% damage for every 20 gold you hold, up to +15% at
+    300 gold.
   rarity: 2
   inChestPool: 1
   inLevelUpPool: 1

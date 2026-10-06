@@ -17,7 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: powder_fuse
   displayName: Powder Fuse
-  description: Distance sailed without hits charges the next explosion.
+  description: +3% Luck. Sail 18 m without being hit to charge your next Powder Kegs
+    explosion for 35% more damage.
   rarity: 2
   inChestPool: 1
   inLevelUpPool: 1

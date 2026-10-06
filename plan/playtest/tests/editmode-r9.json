@@ -1,0 +1,3506 @@
+{
+  "status": "completed",
+  "duration": 345.45,
+  "summary": {
+    "total": 499,
+    "passed": 409,
+    "failed": 90,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.Tests.BalanceGateTests.BatchSimulation_NoRunawayKillsOnShortRuns",
+      "Status": "Passed",
+      "Duration": 0.0190916,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.BalanceGateTests.ContentManifest_Validates",
+      "Status": "Passed",
+      "Duration": 0.0024372,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.BalanceGateTests.MandatoryPickGate_ThresholdEnforced",
+      "Status": "Passed",
+      "Duration": 0.0008848,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.BalanceGateTests.RaidSettlement_IsIdempotent",
+      "Status": "Passed",
+      "Duration": 0.0034946,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.BalanceGateTests.SoakSimulation_CompletesWithoutException",
+      "Status": "Passed",
+      "Duration": 0.0035841,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.CiGate_ReportsTargetBandResultDeterministically",
+      "Status": "Passed",
+      "Duration": 0.0078333,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.Clone_DoesNotShareEditableLoadoutData",
+      "Status": "Passed",
+      "Duration": 0.0003724,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.KitingAutoplayer_AutoTargetsAndProducesCombatProgress",
+      "Status": "Passed",
+      "Duration": 0.0045713,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.MoreActiveWeapons_IncreasesShortRunKills",
+      "Status": "Passed",
+      "Duration": 0.0282994,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.SameScenarioAndSeeds_ProducesSameSummary",
+      "Status": "Passed",
+      "Duration": 0.0036281,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.BalanceLabRunnerTests.Scenario_NormalizesInvalidInputsWithoutMutatingCaller",
+      "Status": "Passed",
+      "Duration": 0.0003926,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.ProfileBalanceMatrixTests.ComputeV3SpawnRate_MatchesDocSamples",
+      "Status": "Passed",
+      "Duration": 0.0004432,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_DeterministicPerProfile",
+      "Status": "Passed",
+      "Duration": 0.0048683,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_SixSlotProfiles_OutkillBaselineOnAverage",
+      "Status": "Passed",
+      "Duration": 0.0037135,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.ProfileBalanceMatrixTests.ProfileMatrix_WritesBalanceReportArtifact",
+      "Status": "Passed",
+      "Duration": 0.0144295,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.SimulationFixtureTests.BossPlayerSameTick_SecuresObjectiveBeforeRunEnd",
+      "Status": "Passed",
+      "Duration": 0.0013278,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.SimulationFixtureTests.LastRum_ConsumesOnceOnSameTickDoubleLethal",
+      "Status": "Passed",
+      "Duration": 0.0002769,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.SimulationFixtureTests.PauseSet_ClearingOneReason_DoesNotClearOthers",
+      "Status": "Passed",
+      "Duration": 0.0001656,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.SimulationFixtureTests.RenderFps30_60_120_YieldsIdenticalOutcomes",
+      "Status": "Passed",
+      "Duration": 0.0010697,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.SimulationFixtureTests.SameSeed_ProducesStableStateHash",
+      "Status": "Passed",
+      "Duration": 0.0012463,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.SimulationFixtureTests.SimMath_DamageMatchesGoldenVector",
+      "Status": "Passed",
+      "Duration": 0.0001725,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.Tests.SimulationFixtureTests.SimRng_LegendaryRateCapped",
+      "Status": "Passed",
+      "Duration": 0.0022727,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.CombatEventsTests.EndTick_DeliversBatchInPublishOrder",
+      "Status": "Passed",
+      "Duration": 0.0026441,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.CombatEventsTests.EndTick_StartsAFreshBatch",
+      "Status": "Passed",
+      "Duration": 0.0007184,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.CombatEventsTests.PublishingFromAReader_Throws",
+      "Status": "Passed",
+      "Duration": 0.0008249,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.Context_ResolvesInterfaceContracts_Only",
+      "Status": "Passed",
+      "Duration": 0.0011713,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.DuplicateIds_AreRejected",
+      "Status": "Passed",
+      "Duration": 0.0007009,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.RegisteringDuringATick_IsRejected",
+      "Status": "Passed",
+      "Duration": 0.0007525,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.ModuleRegistryTests.Ticks_RunInTickOrder_TiesKeepRegistrationOrder",
+      "Status": "Passed",
+      "Duration": 0.0004014,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.Base_url_resolution_order",
+      "Status": "Passed",
+      "Duration": 0.0006982,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.Build_hash_is_stable_and_order_independent",
+      "Status": "Passed",
+      "Duration": 0.0017339,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.CleanName_accepts_the_api_rules(\"  Anne Bonny \",\"Anne Bonny\")",
+      "Status": "Passed",
+      "Duration": 0.0004864,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.CleanName_accepts_the_api_rules(\"Calico_Jack\",\"Calico_Jack\")",
+      "Status": "Passed",
+      "Duration": 0.0001055,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.CleanName_accepts_the_api_rules(\"abc\",\"abc\")",
+      "Status": "Passed",
+      "Duration": 5.39E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.CleanName_accepts_the_api_rules(\"a-b-c-d-e-f-g-h-\",\"a-b-c-d-e-f-g-h-\")",
+      "Status": "Passed",
+      "Duration": 4.32E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.CleanName_refuses_bad_names(\"ab\")",
+      "Status": "Passed",
+      "Duration": 0.0006581,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.CleanName_refuses_bad_names(\"seventeen chars!!\")",
+      "Status": "Passed",
+      "Duration": 8.74E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.CleanName_refuses_bad_names(\"bad!name\")",
+      "Status": "Passed",
+      "Duration": 8.56E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.CleanName_refuses_bad_names(\"\")",
+      "Status": "Passed",
+      "Duration": 5.4E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.CleanName_refuses_bad_names(null)",
+      "Status": "Passed",
+      "Duration": 4.38E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.Countdown_and_run_time_labels",
+      "Status": "Passed",
+      "Duration": 0.0005259,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.DefaultName_is_valid",
+      "Status": "Passed",
+      "Duration": 0.0003161,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.Profile_store_keeps_a_list_and_the_active_profile",
+      "Status": "Passed",
+      "Duration": 0.0023869,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.Profile_store_survives_bad_json",
+      "Status": "Passed",
+      "Duration": 0.0025204,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.Query_value_reads_the_api_override",
+      "Status": "Passed",
+      "Duration": 0.0004365,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestOnlineTests.Weekly_reset_is_the_next_monday_utc",
+      "Status": "Passed",
+      "Duration": 0.0007401,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Clock_offset_uses_the_round_trip_midpoint",
+      "Status": "Passed",
+      "Duration": 0.0003069,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Hit_window_pools_hits_inside_it_and_lands_them_capped_when_it_ends",
+      "Status": "Passed",
+      "Duration": 0.0010342,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Hits_are_clamped_to_what_the_server_takes",
+      "Status": "Passed",
+      "Duration": 0.0002101,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Incoming_damage_is_scaled_by_the_build_and_capped",
+      "Status": "Passed",
+      "Duration": 0.0001387,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Interpolator_draws_between_two_states",
+      "Status": "Passed",
+      "Duration": 0.0006469,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Invulnerability_lasts_its_window",
+      "Status": "Passed",
+      "Duration": 0.0032908,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Json_scanner_ignores_keys_inside_strings_and_deeper_objects",
+      "Status": "Passed",
+      "Duration": 0.0010012,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Level_order_handles_uneven_drafts",
+      "Status": "Passed",
+      "Duration": 0.001086,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Level_order_interleaves_weapons_and_logbooks",
+      "Status": "Passed",
+      "Duration": 0.000162,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Level_order_skips_maxed_and_ends_when_all_are_maxed",
+      "Status": "Passed",
+      "Duration": 0.0007552,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Level_order_walks_round_robin_and_wraps",
+      "Status": "Passed",
+      "Duration": 0.0002723,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Lobby_state_reads_seats_and_match",
+      "Status": "Passed",
+      "Duration": 0.000907,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Match_end_reads_both_players",
+      "Status": "Passed",
+      "Duration": 0.0003277,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Storm_shrinks_linearly_between_its_times",
+      "Status": "Passed",
+      "Duration": 0.0002732,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Ws_base_follows_the_http_scheme",
+      "Status": "Passed",
+      "Duration": 0.0001737,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.PlaytestPvpTests.Yaw_matches_the_server_convention",
+      "Status": "Passed",
+      "Duration": 0.000832,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.RunClockTests.Advance_CapsStepsPerFrame_AndDropsBacklog",
+      "Status": "Passed",
+      "Duration": 0.0002779,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.RunClockTests.Advance_YieldsWholeTicks_AndCarriesRemainder",
+      "Status": "Passed",
+      "Duration": 0.0001379,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.RunClockTests.NextTick_CountsTicksAndSimTime",
+      "Status": "Passed",
+      "Duration": 0.0002154,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.RunClockTests.Pause_IsASet_ClearingOneReasonKeepsTheOther",
+      "Status": "Passed",
+      "Duration": 0.0001729,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Exact_IgnoresHeaderAndFrameNumbers",
+      "Status": "Passed",
+      "Duration": 0.0018121,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Exact_RejectsTracesWithDifferentKeyHeaderFields",
+      "Status": "Passed",
+      "Duration": 0.0003938,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Exact_ReportsTheFirstDifferentLine",
+      "Status": "Passed",
+      "Duration": 0.0002589,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Parity_AcceptsSmallMinuteDrift_RejectsLargeOne",
+      "Status": "Passed",
+      "Duration": 0.0084723,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.TraceComparerTests.Parity_ChecksEventTimes",
+      "Status": "Passed",
+      "Duration": 0.0003394,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ActiveRunTests.EndingTheRunContext_ClearsTheFlag_AndTheRunScale",
+      "Status": "Passed",
+      "Duration": 0.0022485,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ActiveRunTests.HomeSeed_DoesNotLock_OutsideARun",
+      "Status": "Passed",
+      "Duration": 0.0019808,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptiveM11Tests.Adaptive_Replay_GivesTheSamePressure_AndTheSameElites",
+      "Status": "Passed",
+      "Duration": 0.3111671,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptiveM11Tests.Composition_CloseRangeBuilds_DrawRangedShips_LongRangeBuilds_DrawSwarms",
+      "Status": "Passed",
+      "Duration": 0.0791324,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptiveM11Tests.EliteLever_UsesItsOwnSeededStream_AtTheConfiguredRate",
+      "Status": "Failed",
+      "Duration": 0.1574497,
+      "Message": "  the stream is seed-derived\r\n  Expected: not equal to < False, False, False, False, False, False, False, False, False, False... >\r\n  But was:  < False, False, False, False, False, False, False, False, False, False... >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.AreNotEqual (System.Collections.IEnumerable expected, System.Collections.IEnumerable actual, System.String message, System.Object[] args) [0x0000c] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V4AdaptiveM11Tests.EliteLever_UsesItsOwnSeededStream_AtTheConfiguredRate () [0x00043] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4AdaptiveM11Tests.cs:112\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptiveM11Tests.ForcedPressure_IsClampedToTheBand_AndClears",
+      "Status": "Passed",
+      "Duration": 0.0373086,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptiveM11Tests.LeverMath_StaysInsideItsClamps_AtTheBandEdges",
+      "Status": "Passed",
+      "Duration": 0.0387049,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptiveM11Tests.Levers_AreNeutral_UnlessAdaptive_AndEachSwitchTurnsItsLeverOff",
+      "Status": "Failed",
+      "Duration": 0.0402875,
+      "Message": "  Expected: 1.75d +/- 9.9999997473787516E-06d\r\n  But was:  1.0d\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4AdaptiveM11Tests.Levers_AreNeutral_UnlessAdaptive_AndEachSwitchTurnsItsLeverOff () [0x00074] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4AdaptiveM11Tests.cs:63\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptiveM11Tests.NeverAdapt_BossBeatsEncountersAndRewards_DoNotReadTheLevers",
+      "Status": "Passed",
+      "Duration": 0.0466531,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptiveM11Tests.PlaytestRound1_Floor_CritAndEvolutions_EliteRewards_AndFocusLevers",
+      "Status": "Passed",
+      "Duration": 0.038921,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptiveM11Tests.ReviewFixes_EnumOrder_NaN_ConditionsNeverLater_AndConsoleUnranks",
+      "Status": "Passed",
+      "Duration": 0.038293,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptiveM11Tests.RunRecord_StoresPressureBesideKills_AndRankedNeedsAClean_AdaptiveRun",
+      "Status": "Passed",
+      "Duration": 0.0386632,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4AdaptiveM11Tests.RunRecordStore_KeepsTheLastFifty_InItsOwnKey",
+      "Status": "Passed",
+      "Duration": 0.0279555,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.Attacks_FireOnceAtTheStartOfExecute_WithV3Numbers",
+      "Status": "Passed",
+      "Duration": 0.0067862,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.BarnacleKingAsset_HasTheApprovedChargeTuning_AndTheParityPresetRestoresV3",
+      "Status": "Failed",
+      "Duration": 0.1858131,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4BossM7Tests.BarnacleKingAsset_HasTheApprovedChargeTuning_AndTheParityPresetRestoresV3 () [0x00084] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4BossM7Tests.cs:505\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.DefaultConfig_EqualsV3Constants",
+      "Status": "Passed",
+      "Duration": 0.0021555,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.Director_DrawsNoRandomNumbers",
+      "Status": "Passed",
+      "Duration": 0.024383,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.EnragedRest_IsShortened_ExceptAfterShellSlam",
+      "Status": "Passed",
+      "Duration": 0.0033438,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.FinalPhase_EveryRotationChargeIsFollowedByASecondCharge",
+      "Status": "Passed",
+      "Duration": 0.0045788,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.Gates_PauseKeepsState_ObjectiveAndLostBossReset",
+      "Status": "Passed",
+      "Duration": 0.0010955,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.HealthPhase_ChangesOnlyAfterTheCurrentAttacksRest",
+      "Status": "Passed",
+      "Duration": 0.0008772,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.LiveConfigEdits_ApplyFromTheNextAttack",
+      "Status": "Passed",
+      "Duration": 0.0008882,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.MissingConfig_FallsBackToV3Values",
+      "Status": "Passed",
+      "Duration": 0.0018388,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.Movement_PausedInTelegraphAndRest_ForcedDuringCharge",
+      "Status": "Passed",
+      "Duration": 0.0011351,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.SunkShip_TakesNoBombardment_ButTheSlamStillCallsDamage",
+      "Status": "Passed",
+      "Duration": 0.0015858,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.TelegraphPresenter_DrawsTheV3Circle_AndCleansUp",
+      "Status": "Passed",
+      "Duration": 0.0139589,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.Toasts_RepeatEvery1_2Seconds_WhileTelegraphing",
+      "Status": "Passed",
+      "Duration": 0.0008861,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BossM7Tests.Validation_AcceptsDefaults_RejectsBrokenPatterns",
+      "Status": "Passed",
+      "Duration": 0.0030838,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.Captains_HoldTheAdoptedStartingWeapons",
+      "Status": "Passed",
+      "Duration": 0.0031068,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.Items_HoldTheAdoptedEffects_AndTheParityPresetRestoresV3",
+      "Status": "Failed",
+      "Duration": 0.2847146,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4BuildM9Tests.Parity () [0x00025] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4BuildM9Tests.cs:28\r\nat RoguePirates.V4.Tests.V4BuildM9Tests.Items_HoldTheAdoptedEffects_AndTheParityPresetRestoresV3 () [0x0011c] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4BuildM9Tests.cs:70\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.Logbooks_PointAtTheIntendedStatsByDefault_AndTheParityPresetRestoresV3",
+      "Status": "Failed",
+      "Duration": 0.0009629,
+      "Message": "  R-34 fix (approved at the M9 gate)\r\n  Expected: 0.0199999996f\r\n  But was:  0.0500000007f\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4BuildM9Tests.Logbooks_PointAtTheIntendedStatsByDefault_AndTheParityPresetRestoresV3 () [0x000e0] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4BuildM9Tests.cs:56\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.ParityPreset_RestoresV3ForEveryAdoptedDecision",
+      "Status": "Failed",
+      "Duration": 0.1742722,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4BuildM9Tests.Parity () [0x00025] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4BuildM9Tests.cs:28\r\nat RoguePirates.V4.Tests.V4BuildM9Tests.ParityPreset_RestoresV3ForEveryAdoptedDecision () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4BuildM9Tests.cs:148\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.PowerupsAndUnlocks_HoldTheAdoptedRules_AndTheParityPresetRestoresV3",
+      "Status": "Failed",
+      "Duration": 0.1743699,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4BuildM9Tests.Parity () [0x00025] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4BuildM9Tests.cs:28\r\nat RoguePirates.V4.Tests.V4BuildM9Tests.PowerupsAndUnlocks_HoldTheAdoptedRules_AndTheParityPresetRestoresV3 () [0x0003f] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4BuildM9Tests.cs:94\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.StatResolver_GivesPlayerStatsNumbers_AndRemovesBySource",
+      "Status": "Passed",
+      "Duration": 0.004936,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4BuildM9Tests.TheSetHoldsEveryBuildConfig_AndValidates",
+      "Status": "Passed",
+      "Duration": 0.0447297,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Edits_RejectEnumNumbersThatNameNoMember",
+      "Status": "Passed",
+      "Duration": 0.0022573,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Hash_IsStable_AndChangesWithAnyValue",
+      "Status": "Passed",
+      "Duration": 0.0018096,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Preset_FromOlderSchemaWithoutMigration_IsRejected",
+      "Status": "Passed",
+      "Duration": 0.0017144,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Preset_RoundTrip_ReproducesTheEditedSet",
+      "Status": "Passed",
+      "Duration": 0.0068982,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.ResetConfig_RestoresListLengths_AndPresetsApplyOnDefaults",
+      "Status": "Passed",
+      "Duration": 0.0020831,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Runtime_EditsCopies_LogsChanges_AndResets",
+      "Status": "Passed",
+      "Duration": 0.0013904,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Runtime_RemapsReferencesToTheCopies",
+      "Status": "Passed",
+      "Duration": 0.0009846,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.SetHash_IgnoresOrder_ButNotValues",
+      "Status": "Passed",
+      "Duration": 0.0010395,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Validator_ReportsIds_References_AndConfigRules",
+      "Status": "Passed",
+      "Duration": 0.0026279,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigCoreTests.Validator_StatIdHelper_RejectsIdsOutsideTheStatTable",
+      "Status": "Passed",
+      "Duration": 0.0008205,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.ConfigEnums_MirrorTheV3Enums",
+      "Status": "Passed",
+      "Duration": 0.0021384,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.DifficultyDefaults_ReproduceTheV3Formulas",
+      "Status": "Failed",
+      "Duration": 0.1720309,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4DifficultyM10Tests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:28\r\nat RoguePirates.V4.Tests.V4ConfigM1Tests.DifficultyDefaults_ReproduceTheV3Formulas () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4ConfigM1Tests.cs:110\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.EveryConfigField_HasAConsoleRenderer",
+      "Status": "Passed",
+      "Duration": 0.0027879,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.MirrorCopies_LeaveNoFieldUnmatched",
+      "Status": "Passed",
+      "Duration": 0.0023906,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.ParityPreset_PhaseIndices_TargetTheElitePhases",
+      "Status": "Failed",
+      "Duration": 0.0039756,
+      "Message": "  Expected: equivalent to < \"elite_hammerhead\", \"elite_kraken\" >\r\n  But was:  < \"band_6\", \"band_9\" >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.AreEquivalent (System.Collections.IEnumerable expected, System.Collections.IEnumerable actual, System.String message, System.Object[] args) [0x00007] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat NUnit.Framework.CollectionAssert.AreEquivalent (System.Collections.IEnumerable expected, System.Collections.IEnumerable actual) [0x00000] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V4ConfigM1Tests.ParityPreset_PhaseIndices_TargetTheElitePhases () [0x0005f] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4ConfigM1Tests.cs:100\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.SaltwindSet_IsValid_AndPresetRoundTrips",
+      "Status": "Passed",
+      "Duration": 0.4191582,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.StageProfile_UnderTheParityPreset_KeepsTheTracedContentHash",
+      "Status": "Failed",
+      "Duration": 0.1605232,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4ConfigM1Tests.StageProfile_UnderTheParityPreset_KeepsTheTracedContentHash () [0x00027] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4ConfigM1Tests.cs:60\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Validator_RemainingTimelineRules",
+      "Status": "Passed",
+      "Duration": 0.0014871,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Validator_SpawnerWeaponDifficultyRules",
+      "Status": "Passed",
+      "Duration": 0.0007252,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ConfigM1Tests.Validator_TimelineRules",
+      "Status": "Passed",
+      "Duration": 0.0010231,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ContentIdGuardTests.BothGameDatabases_AreValid_SoNoStubIsNeeded",
+      "Status": "Passed",
+      "Duration": 0.0492837,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ContentIdGuardTests.EveryWeapon_CarriesV3sAimOverlayColour",
+      "Status": "Passed",
+      "Duration": 0.0383111,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ContentIdGuardTests.TheHarpoonBinding_UsesTheHarpoonProjectile",
+      "Status": "Passed",
+      "Duration": 0.1615085,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4ContentIdGuardTests.TheStageProfileStarters_EqualTheUnlockConfig",
+      "Status": "Passed",
+      "Duration": 0.0377132,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4DifficultyM10Tests.CurveDefaults_EqualV3sFormulas_BitForBit_AtAnyTime",
+      "Status": "Failed",
+      "Duration": 0.1606429,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4DifficultyM10Tests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:28\r\nat RoguePirates.V4.Tests.V4DifficultyM10Tests.CurveDefaults_EqualV3sFormulas_BitForBit_AtAnyTime () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:37\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4DifficultyM10Tests.Director_Clamps_SlopeLimits_AndSmooths",
+      "Status": "Passed",
+      "Duration": 0.0391296,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4DifficultyM10Tests.Director_Replay_GivesTheSamePressureSeries",
+      "Status": "Passed",
+      "Duration": 0.0452569,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4DifficultyM10Tests.Director_SamplesOncePerInterval_PublishesPower_AndStaysInTheBand",
+      "Status": "Passed",
+      "Duration": 0.079983,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4DifficultyM10Tests.KeyframeCurves_AreEvaluated",
+      "Status": "Passed",
+      "Duration": 0.038003,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4DifficultyM10Tests.ObserveMode_NothingReadsPressure",
+      "Status": "Failed",
+      "Duration": 0.2831122,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4DifficultyM10Tests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:28\r\nat RoguePirates.V4.Tests.V4DifficultyM10Tests.ObserveMode_NothingReadsPressure () [0x00119] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:286\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4DifficultyM10Tests.OffMode_KeepsPressureAtOne_AndForgetsWhatHappenedMeanwhile",
+      "Status": "Passed",
+      "Duration": 0.0387827,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4DifficultyM10Tests.Performance_ComesFromTheEventStream",
+      "Status": "Passed",
+      "Duration": 0.0372133,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4DifficultyM10Tests.Performance_RewardsKillingFaster_AndPunishesHullLoss",
+      "Status": "Passed",
+      "Duration": 0.0366181,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4DifficultyM10Tests.PowerIndex_GrowsWithTheBuild_AndDefenseFollowsTheHull",
+      "Status": "Passed",
+      "Duration": 0.0370186,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.CombatProfiles_AreTheRunsCopies_OfTheConfig",
+      "Status": "Passed",
+      "Duration": 0.0435455,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.EditingAnArchetype_RewritesItsDefinitionAndItsAliases",
+      "Status": "Passed",
+      "Duration": 0.0606816,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.EveryRuntimeEnemy_HasAModel_AndTheArchetypesCarryV3sProxies",
+      "Status": "Failed",
+      "Duration": 0.0425781,
+      "Message": "  cutthroat_skiff\r\n  Expected: 0.92000001668930054d +/- 9.9999997473787516E-06d\r\n  But was:  1.4781908988952637d\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4EnemyM2Tests.EveryRuntimeEnemy_HasAModel_AndTheArchetypesCarryV3sProxies () [0x001b7] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4EnemyM2Tests.cs:130\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.NoV4Code_UsesContentIds",
+      "Status": "Failed",
+      "Duration": 0.2465796,
+      "Message": "  content ids in V4 code\r\n  Expected: <empty>\r\n  But was:  < \"Presentation/Effects/EnemyViewPresenter.cs:74 \"deckhand_dinghy\"\", \"Presentation/Effects/EnemyViewPresenter.cs:75 \"treasure_raider\"\", \"Presentation/Effects/EnemyViewPresenter.cs:76 \"cutthroat_skiff\"\", \"Presentation/Effects/EnemyViewPresenter.cs:77 \"needle_sloop\"\", \"Presentation/Effects/EnemyViewPresenter.cs:78 \"drowned_pursuer\"\", \"Presentation/Effects/EnemyViewPresenter.cs:79 \"cannonboat\"\", \"Presentation/Effects/EnemyViewPresenter.cs:80 \"gunner_cog\"\", \"Presentation/Effects/EnemyViewPresenter.cs:81 \"net_cutter\"\", \"Presentation/Effects/EnemyViewPresenter.cs:82 \"shield_frigate\"\", \"Presentation/Effects/EnemyViewPresenter.cs:83 \"drowned_harrier\"\"... >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection, System.String message, System.Object[] args) [0x00006] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V4EnemyM2Tests.NoV4Code_UsesContentIds () [0x00218] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4EnemyM2Tests.cs:290\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.Resolver_RecordsWhichLayerSetEachValue",
+      "Status": "Passed",
+      "Duration": 0.0012355,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.RuntimeDatabase_AppendsTheAliases_InV3sOrder(True)",
+      "Status": "Passed",
+      "Duration": 0.0451236,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.RuntimeDatabase_AppendsTheAliases_InV3sOrder(False)",
+      "Status": "Passed",
+      "Duration": 0.0629383,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.RuntimeDatabase_ConfiguresEveryEnemy_AndAppendsTheV4OnlyOnes",
+      "Status": "Passed",
+      "Duration": 0.0647302,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.SpecialistAliases_UseTheirTemplateModel_ByDefault",
+      "Status": "Passed",
+      "Duration": 0.0413017,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyM2Tests.WarningTiers_FromConfig_EqualV3sTable",
+      "Status": "Passed",
+      "Duration": 0.0410633,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.AKnockback_IsCappedAt3Meters",
+      "Status": "Passed",
+      "Duration": 0.072237,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.AKnockback_PushesItsDistance_ElitesHalf_BossesNot",
+      "Status": "Passed",
+      "Duration": 0.0546512,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.AnEqualSlow_Extends_AndAStrongerOne_Replaces",
+      "Status": "Passed",
+      "Duration": 0.0417768,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.APull_DragsTowardItsPoint_NeverPastIt_BossesNot",
+      "Status": "Passed",
+      "Duration": 0.0520689,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.ASlow_IsCapped_AndTheStrongestHolds",
+      "Status": "Passed",
+      "Duration": 0.0468446,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.ASlowedEnemy_MovesSlower_ByItsShare",
+      "Status": "Passed",
+      "Duration": 0.0485867,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.HitPath_FeedbackAndKill_FollowV3sOrder",
+      "Status": "Passed",
+      "Duration": 0.0520223,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.R100_OnlyTheEliteHammerheadChargesTwice_AndTheSharedProfileStaysUnchanged",
+      "Status": "Passed",
+      "Duration": 0.0623326,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyTickM8Tests.TheWeaponSink_ReachesTheSimulation_AndReportsTheSlowedVelocity",
+      "Status": "Passed",
+      "Duration": 0.041903,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyWorldM8Tests.FlameKillHook_SpawnsV4HellfirePatches_OnlyForTheHellfireEvolution",
+      "Status": "Passed",
+      "Duration": 0.0410196,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyWorldM8Tests.IdRules_ComeFromTheExactArchetypeOrVariant",
+      "Status": "Passed",
+      "Duration": 0.0402129,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4EnemyWorldM8Tests.RunScenes_CarryV3sEnemyWorldSceneValues_OnV4Game",
+      "Status": "Passed",
+      "Duration": 0.016178,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.EffectsForwarder_ReachesThePresenter_AndSkipsWhenItIsGone",
+      "Status": "Passed",
+      "Duration": 0.0030361,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.IconCatalog_HasAnIconForEveryWeaponAndChestItem",
+      "Status": "Failed",
+      "Duration": 0.0513274,
+      "Message": "  anchor_flail has no icon\r\n  Expected: not null\r\n  But was:  null\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4HudM6Tests.IconCatalog_HasAnIconForEveryWeaponAndChestItem () [0x00041] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4HudM6Tests.cs:96\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutLabels_AreCompactedAsV3(\"Deck Cannons\",\"Deck Canno…\")",
+      "Status": "Passed",
+      "Duration": 0.0003526,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutLabels_AreCompactedAsV3(\"Long Nine\",\"Long Nine\")",
+      "Status": "Passed",
+      "Duration": 7.99E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutLabels_AreCompactedAsV3(\"Flying Cutlasses\",\"Flying Cut…\")",
+      "Status": "Passed",
+      "Duration": 6.53E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutLabels_AreCompactedAsV3(\"  Mortar \",\"Mortar\")",
+      "Status": "Passed",
+      "Duration": 4.62E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutLabels_AreCompactedAsV3(\"\",\"\")",
+      "Status": "Passed",
+      "Duration": 4.19E-05,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.LoadoutRowScale_MatchesV3",
+      "Status": "Passed",
+      "Duration": 0.0002175,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.NoLegacyNamespace_AndNoTaggedTypes_Remain",
+      "Status": "Passed",
+      "Duration": 0.0056217,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.Presenters_ReadOnlyViewsAndEvents",
+      "Status": "Failed",
+      "Duration": 0.0526025,
+      "Message": "  Presenters must read IRunViews/events, not legacy hubs:\nCardStatLines.cs: RunManager\r\n  Expected: <empty>\r\n  But was:  < \"CardStatLines.cs: RunManager\" >\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4HudM6Tests.Presenters_ReadOnlyViewsAndEvents () [0x00098] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4HudM6Tests.cs:59\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.Results_OpenOnRunComplete_AndButtonsForwardCommands",
+      "Status": "Passed",
+      "Duration": 0.4635506,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.ResultsSummary_ReadsAtAGlance",
+      "Status": "Passed",
+      "Duration": 0.0029618,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.RuntimeNeverReferencesPresentation",
+      "Status": "Passed",
+      "Duration": 0.0485951,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.SpawnWarnings_OnlyForAmbientCaptainAndGeneralSpawns_Throttled",
+      "Status": "Passed",
+      "Duration": 0.025447,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4HudM6Tests.WeaponVisuals_ReproduceV3sWeaponIdChoices",
+      "Status": "Passed",
+      "Duration": 0.0059311,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.LifetimeGold_AddsTheRunsGold_OncePerRun",
+      "Status": "Passed",
+      "Duration": 0.0657397,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R102_ALevelUpInTheBossFight_ResumesToTheBossFight",
+      "Status": "Failed",
+      "Duration": 0.2892857,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4M9GateFixTests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:30\r\nat RoguePirates.V4.Tests.V4M9GateFixTests.R102_ALevelUpInTheBossFight_ResumesToTheBossFight () [0x0006e] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:197\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R31_EvolutionCards_StayReachable_WithEveryWeaponMaxed",
+      "Status": "Failed",
+      "Duration": 0.206761,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4M9GateFixTests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:30\r\nat RoguePirates.V4.Tests.V4M9GateFixTests.Set (System.Boolean parity) [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:34\r\nat RoguePirates.V4.Tests.V4M9GateFixTests.EvolutionCards (System.Boolean parity, System.Boolean hasItems) [0x00006] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:77\r\nat RoguePirates.V4.Tests.V4M9GateFixTests.R31_EvolutionCards_StayReachable_WithEveryWeaponMaxed () [0x00017] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:98\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R40_AShotThatPassesClose_AndMisses_IsANearMiss",
+      "Status": "Passed",
+      "Duration": 0.0028875,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R40_ItemEffects_AreRead_OnlyWithTheFix",
+      "Status": "Failed",
+      "Duration": 0.3376357,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4M9GateFixTests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:30\r\nat RoguePirates.V4.Tests.V4M9GateFixTests.Set (System.Boolean parity) [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:34\r\nat RoguePirates.V4.Tests.V4M9GateFixTests.R40_ItemEffects_AreRead_OnlyWithTheFix () [0x0001c] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:220\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R40_Tarred_MarksAnEnemyControlled_UntilItWearsOff",
+      "Status": "Passed",
+      "Duration": 0.0026776,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R43_FullSail_StacksWithTailwind_AndPowderRushIsAttackSpeed",
+      "Status": "Failed",
+      "Duration": 0.677258,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4M9GateFixTests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:30\r\nat RoguePirates.V4.Tests.V4M9GateFixTests.Set (System.Boolean parity) [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:34\r\nat RoguePirates.V4.Tests.V4M9GateFixTests.SpeedAfterTailwindAndFullSail (System.Boolean parity) [0x00006] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:119\r\nat RoguePirates.V4.Tests.V4M9GateFixTests.R43_FullSail_StacksWithTailwind_AndPowderRushIsAttackSpeed () [0x0005d] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:137\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.R49_HanksArmor_AndEmberAndRoxiesMultipliers_ApplyOnlyWithTheFix",
+      "Status": "Failed",
+      "Duration": 0.2465444,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4M9GateFixTests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:30\r\nat RoguePirates.V4.Tests.V4M9GateFixTests.R49_HanksArmor_AndEmberAndRoxiesMultipliers_ApplyOnlyWithTheFix () [0x001cd] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:401\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4M9GateFixTests.WeaponsOnlyActive_KeepsItsCharge_WithNothingInRange",
+      "Status": "Failed",
+      "Duration": 0.2224123,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4M9GateFixTests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:30\r\nat RoguePirates.V4.Tests.V4M9GateFixTests.WeaponsOnlyActive_KeepsItsCharge_WithNothingInRange () [0x00224] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4M9GateFixTests.cs:325\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4NarrativeM13Tests.Barks_HullLow_AndPhaseTags",
+      "Status": "Passed",
+      "Duration": 0.0446191,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4NarrativeM13Tests.Barks_KillStreak_PerBarkCooldown_OncePerRun_Replay_AndConsolePlay",
+      "Status": "Passed",
+      "Duration": 0.0422906,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4NarrativeM13Tests.Barks_RespectCooldowns_Priority_AndStayQuietWhilePaused",
+      "Status": "Passed",
+      "Duration": 0.0387937,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4NarrativeM13Tests.Config_HasAboutThirtyBarks_AllSpeakers_AndNineTutorialSteps",
+      "Status": "Passed",
+      "Duration": 0.0463229,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4NarrativeM13Tests.Narrative_NeverPauses_AndV3OnboardingIsRetired",
+      "Status": "Passed",
+      "Duration": 0.1226103,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4NarrativeM13Tests.Tutorial_CatchesUp_WhenTheBossComesEarly",
+      "Status": "Passed",
+      "Duration": 0.0393278,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4NarrativeM13Tests.Tutorial_SkipsAStalledStep_WithoutCompletingIt_AndIsOffInTheLab",
+      "Status": "Passed",
+      "Duration": 0.0461061,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4NarrativeM13Tests.Tutorial_StepsCompleteOnlyInOrder_AndProgressIsSaved",
+      "Status": "Passed",
+      "Duration": 0.0398734,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PickupTests.AKillsBarrels_WaitForTheShip_ThenPayOutOnce",
+      "Status": "Failed",
+      "Duration": 0.0439702,
+      "Message": "  the XP value, once\r\n  Expected: 7\r\n  But was:  8\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4PickupTests.AKillsBarrels_WaitForTheShip_ThenPayOutOnce () [0x00182] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4PickupTests.cs:81\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PickupTests.TheSameSeed_ScattersTheSameBarrels",
+      "Status": "Passed",
+      "Duration": 0.0387916,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PickupTests.XpPickupMultiplier_PacesTheXp_WithoutLosingFractions",
+      "Status": "Passed",
+      "Duration": 0.0386779,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PoolM4Tests.Catalog_DerivesOnePoolPerReachableEnemyModel_NotPrewarmedUntilM8",
+      "Status": "Passed",
+      "Duration": 0.0546256,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PoolM4Tests.CatalogValidator_RejectsDuplicateKeys_AndPrewarmAboveCap",
+      "Status": "Passed",
+      "Duration": 0.000824,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PoolM4Tests.Grow_PastPrewarmAndCap_CreatesAndCountsIt",
+      "Status": "Passed",
+      "Duration": 0.0039808,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PoolM4Tests.Prewarm_CreatesInactiveInstances_AndAcquiringWithinItCreatesNothing",
+      "Status": "Passed",
+      "Duration": 0.0028303,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PoolM4Tests.RecycleOldest_AtTheCap_ReusesTheFirstAcquired",
+      "Status": "Passed",
+      "Duration": 0.0012129,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PoolM4Tests.Reject_AtTheCap_ReturnsNull",
+      "Status": "Passed",
+      "Duration": 0.0006731,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PoolM4Tests.Release_ReturnsTheInstance_AndRefusesForeignObjects",
+      "Status": "Passed",
+      "Duration": 0.0029444,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PoolM4Tests.SlotPool_ActiveIteration_CoversExactlyTheActiveSlots",
+      "Status": "Passed",
+      "Duration": 0.0017299,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PoolM4Tests.SlotPool_AllocatesUntilFull_ThenRefuses",
+      "Status": "Passed",
+      "Duration": 0.000547,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PoolM4Tests.SlotPool_FreeReusesTheSlot_ResetsIt_AndBumpsTheGeneration",
+      "Status": "Passed",
+      "Duration": 0.0005268,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4PoolM4Tests.SlotPoolCapacities_FollowTheQualityTier",
+      "Status": "Passed",
+      "Duration": 0.0018665,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.Caps_EliteTwo_BossOnce_OvertimeFifteen_AndUnregisteredElitesNeverPay",
+      "Status": "Failed",
+      "Duration": 0.0422114,
+      "Message": "  8 qualifying overtime minutes, capped at 15\r\n  Expected: 15\r\n  But was:  9\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4RewardsM12Tests.Caps_EliteTwo_BossOnce_OvertimeFifteen_AndUnregisteredElitesNeverPay () [0x0015b] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4RewardsM12Tests.cs:192\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.CaptainLocks_FollowTheAdoptedRule_AndV3sUnderThePreset",
+      "Status": "Failed",
+      "Duration": 0.0436615,
+      "Message": "  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4RewardsM12Tests.CaptainLocks_FollowTheAdoptedRule_AndV3sUnderThePreset () [0x00218] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4RewardsM12Tests.cs:321\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.DamageShare_CountsEveryRecordedWeaponHit",
+      "Status": "Passed",
+      "Duration": 0.0018843,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.DefaultRows_AreV3sMarksEconomy",
+      "Status": "Failed",
+      "Duration": 0.0385657,
+      "Message": "  Expected: 15\r\n  But was:  0\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4RewardsM12Tests.DefaultRows_AreV3sMarksEconomy () [0x000ef] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4RewardsM12Tests.cs:95\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.Fixture_Pays57_TheSameBreakdownAsV3",
+      "Status": "Failed",
+      "Duration": 0.0372417,
+      "Message": "  Expected: 57\r\n  But was:  55\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4RewardsM12Tests.Fixture_Pays57_TheSameBreakdownAsV3 () [0x00025] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4RewardsM12Tests.cs:108\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.GoldLeftAtDeath_IsBankedAsRum",
+      "Status": "Failed",
+      "Duration": 0.169749,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4RewardsM12Tests.GoldLeftAtDeath_IsBankedAsRum () [0x002a9] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4RewardsM12Tests.cs:253\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.MenuServices_ApplyTheSessionPreset_ToTheCaptainLocks",
+      "Status": "Failed",
+      "Duration": 0.0456023,
+      "Message": "  adopted rule: Ember waits for the Flamethrower\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4RewardsM12Tests.MenuServices_ApplyTheSessionPreset_ToTheCaptainLocks () [0x00034] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4RewardsM12Tests.cs:350\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.MinuteRules_MatchV3",
+      "Status": "Failed",
+      "Duration": 0.065483,
+      "Message": "  Expected: 1\r\n  But was:  0\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4RewardsM12Tests.MinuteRules_MatchV3 () [0x001d9] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4RewardsM12Tests.cs:166\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.ModuleLab_NeverSettles",
+      "Status": "Passed",
+      "Duration": 0.063492,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.NoV4Code_UsesTheV3MarksPaths_OrSaysMarks",
+      "Status": "Passed",
+      "Duration": 0.074116,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.Settlement_ReadsEventsNotYetDelivered_AndTheChestRowShowsWhenOn",
+      "Status": "Passed",
+      "Duration": 0.0403865,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.SettlesOncePerRunId_AndAFailedRunStillPaysWhatItEarned",
+      "Status": "Passed",
+      "Duration": 0.0462248,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4RewardsM12Tests.Unlocks_CostWhatV3Charged_AndSelectingNeverSpends",
+      "Status": "Passed",
+      "Duration": 0.0417232,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SaveSafetyTests.AStaleCopyOfTheSave_CannotDropAnUnlock",
+      "Status": "Passed",
+      "Duration": 0.0030163,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SaveSafetyTests.AStaleTraceSnapshot_IsDiscarded_NeverRestored(\"EnteredEditMode\")",
+      "Status": "Passed",
+      "Duration": 0.0072391,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SaveSafetyTests.AStaleTraceSnapshot_IsDiscarded_NeverRestored(\"CrashRecovery\")",
+      "Status": "Passed",
+      "Duration": 0.0088001,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SaveSafetyTests.NormalWrites_ReportNothing",
+      "Status": "Passed",
+      "Duration": 0.0012819,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SaveSafetyTests.RestoringASnapshot_BringsValuesBack_ButKeepsNewUnlocks",
+      "Status": "Passed",
+      "Duration": 0.0032639,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Ambient_AtTheCap_RetriesWithoutStoringDebt",
+      "Status": "Passed",
+      "Duration": 0.1455613,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Ambient_Interval_IsClampedToTheGlobalGap",
+      "Status": "Passed",
+      "Duration": 0.0694647,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Ambient_WaitsForTheGrace_ThenSpawnsAtTheBandRate",
+      "Status": "Failed",
+      "Duration": 0.2129512,
+      "Message": "  Expected: in range (28,30)\r\n  But was:  20\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4SpawnM3Tests.Ambient_WaitsForTheGrace_ThenSpawnsAtTheBandRate () [0x0004e] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4SpawnM3Tests.cs:332\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.AmbientCap_KeepsTheReservedEncounterSlotsFree",
+      "Status": "Failed",
+      "Duration": 0.0394052,
+      "Message": "  Expected: 72\r\n  But was:  108\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4SpawnM3Tests.AmbientCap_KeepsTheReservedEncounterSlotsFree () [0x00026] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4SpawnM3Tests.cs:595\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.AreaDenialSlots_AreReleasedAfterTheConfiguredHold",
+      "Status": "Passed",
+      "Duration": 0.0415034,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.BossFight_HalvesTheAmbientRate_AndPulsesRaiseIt",
+      "Status": "Failed",
+      "Duration": 0.6010279,
+      "Message": "  swarm pulse A (4:00, 30 s)\r\n  Expected: 1.25d +/- 9.9999999747524271E-07d\r\n  But was:  1.0d\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4SpawnM3Tests.BossFight_HalvesTheAmbientRate_AndPulsesRaiseIt () [0x00080] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4SpawnM3Tests.cs:383\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.ConditionTrigger_EliteWaitsForPlayerLevel",
+      "Status": "Passed",
+      "Duration": 0.5660863,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.ConfigReferences_CanBeEdited_AndTravelInPresets",
+      "Status": "Passed",
+      "Duration": 0.3468231,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.DeadCalmRate_IsThePowerupModulesMultiplier_WithoutTheBossFactor",
+      "Status": "Passed",
+      "Duration": 0.0007361,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.EdgeWall_DamagesOutsideItAtAnyTime_ButNotTwiceInTheStorm",
+      "Status": "Passed",
+      "Duration": 0.0998534,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.EliteBeat_IsAnnouncedForRum_AndIsSkippedForGoodDuringTheBossFight",
+      "Status": "Passed",
+      "Duration": 1.0592927,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.EliteBeat_SpawnsTheEliteVariant_FlaggedByItsSpawner",
+      "Status": "Passed",
+      "Duration": 0.5871893,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Encounter_AtTheHardCap_RetriesThenFailsAfterTheTimeout",
+      "Status": "Passed",
+      "Duration": 0.068818,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Encounter_DuringAnArena_SpawnsByDefault_AndWaitsWithTheV3Switch",
+      "Status": "Passed",
+      "Duration": 0.9165627,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Encounter_Immediate_SpawnsNow",
+      "Status": "Passed",
+      "Duration": 0.0416288,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Encounter_Paused_WaitsAndTerminalEncountersLeaveTheQueue",
+      "Status": "Passed",
+      "Duration": 0.0759462,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Encounter_Queued_SpawnsOnTheNextPass_IgnoringTheAmbientCap",
+      "Status": "Passed",
+      "Duration": 0.0482574,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.EventAndAfterClearedTriggers_StartPulses",
+      "Status": "Failed",
+      "Duration": 0.0951813,
+      "Message": "  pulse A on the event, pulse B once A is done\r\n  Expected: 1.5625d +/- 9.9999997473787516E-06d\r\n  But was:  3.2399997711181641d\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4SpawnM3Tests.EventAndAfterClearedTriggers_StartPulses () [0x000ca] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4SpawnM3Tests.cs:565\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.LiveEdit_AnAmbientPhaseAddedMidRun_StartsOnTime_AndEndsThePreviousBand",
+      "Status": "Passed",
+      "Duration": 0.5135836,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.LiveEdit_RetimingABandBeforeItStarts_KeepsTheBandsSequential",
+      "Status": "Passed",
+      "Duration": 0.6281761,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.ModuleLab_RunsNoTimelineSpawnsOrPulses",
+      "Status": "Passed",
+      "Duration": 0.4117516,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.OrdinaryTimeMultipliers_EqualV3",
+      "Status": "Passed",
+      "Duration": 0.0532688,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Overtime_IsNotHeldBackByAnArena",
+      "Status": "Passed",
+      "Duration": 0.6095685,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Overtime_StopsAmbient_AndSpawnsOnItsOwnInterval",
+      "Status": "Passed",
+      "Duration": 0.1477415,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.OvertimeAndStormFormulas_EqualV3",
+      "Status": "Passed",
+      "Duration": 0.0844057,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.OvertimeSpawnRamp_RisesSmoothlyFromTheDeadline",
+      "Status": "Failed",
+      "Duration": 0.0407211,
+      "Message": "  linear, evaluated per spawn (no minute steps)\r\n  Expected: 1.5d +/- 9.9999997473787516E-06d\r\n  But was:  1.0d\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4SpawnM3Tests.OvertimeSpawnRamp_RisesSmoothlyFromTheDeadline () [0x0009c] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4SpawnM3Tests.cs:709\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.ReefCrab_PausesAmbientUntilItDies_ThenAmbientResumesAtOnce",
+      "Status": "Passed",
+      "Duration": 0.5251352,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Storm_Contracts_AndDamagesOutsideAfterTheGrace",
+      "Status": "Failed",
+      "Duration": 1.6267392,
+      "Message": "  Expected: greater than 0.0f\r\n  But was:  0.0f\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4SpawnM3Tests.Storm_Contracts_AndDamagesOutsideAfterTheGrace () [0x000ec] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4SpawnM3Tests.cs:472\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.StormEdge_WaitsForTheGraceAndTheStorm_ThenDamagesByDepth",
+      "Status": "Passed",
+      "Duration": 0.1462618,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Timeline_ScriptedPhases_CarryV3Values",
+      "Status": "Failed",
+      "Duration": 0.0535775,
+      "Message": "  Expected: (22, 4.5, 0.8)\r\n  But was:  (22, 1, 0.8)\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4SpawnM3Tests.Timeline_ScriptedPhases_CarryV3Values () [0x00064] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4SpawnM3Tests.cs:917\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.TriggerNowAndSkip_ControlPhasesByHand",
+      "Status": "Failed",
+      "Duration": 0.0679975,
+      "Message": "  Expected: 1.25d +/- 9.9999999747524271E-07d\r\n  But was:  1.7999999523162842d\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4SpawnM3Tests.TriggerNowAndSkip_ControlPhasesByHand () [0x00034] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4SpawnM3Tests.cs:578\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SpawnM3Tests.Warnings_AreGeneratedFromTemplates_NoHardCodedTimes",
+      "Status": "Passed",
+      "Duration": 0.04786,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.Beacon_FailedSummon_Toasts_AndV3sStickyTelegraphIsKept",
+      "Status": "Passed",
+      "Duration": 0.0089996,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.Beacon_R96Fix_CanBeRetriedAfterAFailedSummon",
+      "Status": "Passed",
+      "Duration": 0.0013715,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.Beacon_TelegraphsThenSummons_AndTheBossFightStarts",
+      "Status": "Passed",
+      "Duration": 0.000921,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.Beacon_WhileTheSummonTelegraphs_ThePromptOffersNoSecondHold",
+      "Status": "Passed",
+      "Duration": 0.0031019,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.BeaconPrompt_AfterTheSummon_LoopsAsV3_AndTheR101FixHidesIt",
+      "Status": "Passed",
+      "Duration": 0.001455,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.BeaconPrompt_NeedsA0_7sHold",
+      "Status": "Passed",
+      "Duration": 0.0004281,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.BeaconTimeline_Fixes_WhenSwitchedOn",
+      "Status": "Passed",
+      "Duration": 0.0014988,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.BeaconTimeline_KeepsV3sQuirks_ByDefault",
+      "Status": "Passed",
+      "Duration": 0.000407,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.BossVictory_FirstConquest_ShowsTheClaimLine",
+      "Status": "Passed",
+      "Duration": 0.0010664,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.BossVictory_FollowsV3sOrder_AndTheRunContinues",
+      "Status": "Passed",
+      "Duration": 0.0004787,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.Chest_Purchase_SpendsBuysAndConsumes_AsV3",
+      "Status": "Passed",
+      "Duration": 0.0020946,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.Chest_R47Fix_PassesTheEquippedWeapons",
+      "Status": "Passed",
+      "Duration": 0.000327,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.Chest_RefundsWhenTheInventoryIsFull_AndNamesMissingGold",
+      "Status": "Passed",
+      "Duration": 0.000516,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.ChestPrices_FollowV3sSequence",
+      "Status": "Failed",
+      "Duration": 0.1943656,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4DifficultyM10Tests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:28\r\nat RoguePirates.V4.Tests.V4StageM7Tests.ChestPrices_FollowV3sSequence () [0x00006] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4StageM7Tests.cs:482\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.ChestPrompt_PausesForTheChoice_AndSkipResumes",
+      "Status": "Passed",
+      "Duration": 0.0020331,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.ChestPrompt_R96Fix_OffersASkippedChestAgainAfterLeaving",
+      "Status": "Passed",
+      "Duration": 0.0004622,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.ChestPrompt_WithoutGold_ToastsOncePerApproach",
+      "Status": "Passed",
+      "Duration": 0.0004727,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.Discovery_FindsPoisInRadius_AndTheBeaconOnlyWhenDiscovered",
+      "Status": "Passed",
+      "Duration": 0.0005825,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.Interaction_KeepsAUsedTarget_WhileInRange_AsV3",
+      "Status": "Passed",
+      "Duration": 0.0003974,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.LevelUpDuringTheBossFight_EndsItAsV3_AndTheR102FixRestoresIt",
+      "Status": "Passed",
+      "Duration": 0.0006094,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.PowderCache_AmbushesOnApproach_AndItsPayoutIsOnlyReachableByDirectUse",
+      "Status": "Passed",
+      "Duration": 0.0012862,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.PowderCache_R97Fix_PaysWhenTheAmbushIsCleared",
+      "Status": "Passed",
+      "Duration": 0.0010804,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.PowderCacheChallenge_AFailedSpawn_Regroups",
+      "Status": "Passed",
+      "Duration": 0.001199,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.PowderCacheChallenge_AllElitesSunk_TheCacheBecomesAFreeRareChest",
+      "Status": "Passed",
+      "Duration": 0.0017024,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.PowderCacheChallenge_ClearAll_BringsTheCacheBack",
+      "Status": "Passed",
+      "Duration": 0.0033415,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.PowderCacheChallenge_HoldSpringsFourElites_NotByProximity",
+      "Status": "Passed",
+      "Duration": 0.0017623,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.PowderCacheChallenge_NothingQueued_FailsCleanly",
+      "Status": "Passed",
+      "Duration": 0.0008643,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.PowderCacheChallenge_SpringsOnPress_NoHold_NotByProximity",
+      "Status": "Passed",
+      "Duration": 0.0015327,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.R102Fix_LeavesTheRunInPlaying_OnceTheBossIsDead",
+      "Status": "Passed",
+      "Duration": 0.0007787,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.RepairWreck_HealsAQuarter_OrRefusesAtFullHull",
+      "Status": "Passed",
+      "Duration": 0.0010947,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.SameTickDeath_CountsTheWin_OnlyIfTheBossWasSummoned",
+      "Status": "Passed",
+      "Duration": 0.0007687,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.SignalBuoy_ChargesInsideTheCircle_ThenDrawsItsReward",
+      "Status": "Passed",
+      "Duration": 0.0049903,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.StageConfig_HoldsV3sValues_ExceptTheAdoptedNoBarrels",
+      "Status": "Failed",
+      "Duration": 0.0016507,
+      "Message": "  Expected: 300.0f\r\n  But was:  720.0f\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4StageM7Tests.StageConfig_HoldsV3sValues_ExceptTheAdoptedNoBarrels () [0x000b6] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4StageM7Tests.cs:799\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.StageOff_RefusesTheBossSummon",
+      "Status": "Passed",
+      "Duration": 0.0010385,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StageM7Tests.TreasureChart_RevealsTheNearestChests_AndGivesTheBeaconBearing",
+      "Status": "Passed",
+      "Duration": 0.0033769,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StructureTests.AssemblyReferences_FollowTheLayering",
+      "Status": "Passed",
+      "Duration": 0.0098031,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StructureTests.DevTools_IsCompiledOnlyInEditorAndDevelopmentBuilds",
+      "Status": "Passed",
+      "Duration": 0.0006647,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StructureTests.NoAdapter_OutlivesItsDeletionPhase",
+      "Status": "Passed",
+      "Duration": 0.0100653,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StructureTests.NoV4Code_UsesTheV3BuildSystems",
+      "Status": "Passed",
+      "Duration": 0.2190259,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4StructureTests.NoV4Code_UsesTheV3SpawnDirectors",
+      "Status": "Passed",
+      "Duration": 0.1772092,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SwitchoverM14Tests.EliteCopy_IsReused_AndCurrent",
+      "Status": "Passed",
+      "Duration": 0.0544061,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4SwitchoverM14Tests.PickupStream_IsSeeded_AndIndependentOfUnitysRandom",
+      "Status": "Passed",
+      "Duration": 0.0014917,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.BladedTide_PulsesTheOrbitRadius",
+      "Status": "Passed",
+      "Duration": 0.0570871,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.DevilsWake_DropsTwoKegs_AndBlastsArmNeighbours",
+      "Status": "Passed",
+      "Duration": 0.0491278,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.EveryWeapon_HasItsV3Behavior_AndConstants",
+      "Status": "Failed",
+      "Duration": 0.1791252,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4WeaponM5Tests+Harness..ctor (System.Boolean v3Parity, System.String[] weaponIds) [0x000b2] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:178\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.EveryWeapon_HasItsV3Behavior_AndConstants () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:211\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.Evolutions_AreConfig_WithTheirBaseWeaponAndEffect",
+      "Status": "Passed",
+      "Duration": 0.0381493,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.FireAll_SpeedsOrbitHits_AndFiresTheOthers",
+      "Status": "Passed",
+      "Duration": 0.0475768,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.FlameStream_StartsOnlyWithAnEnemyInTheCone_ThenRecharges",
+      "Status": "Passed",
+      "Duration": 0.0731476,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.HellfireNozzle_LeavesPatchesOnTheWaterWhileStreaming_NotUnderTheParityPreset",
+      "Status": "Failed",
+      "Duration": 0.290938,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4WeaponM5Tests+Harness..ctor (System.Boolean v3Parity, System.String[] weaponIds) [0x000b2] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:178\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.Evolved (System.String weaponId, System.String evolutionId, System.Boolean v3Parity) [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:439\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.HellfireNozzle_LeavesPatchesOnTheWaterWhileStreaming_NotUnderTheParityPreset () [0x00016] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:513\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.HellfireNozzle_WidensTheCone",
+      "Status": "Passed",
+      "Duration": 0.0820424,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.KingsBroadside_QueuesAnOppositeSideVolley",
+      "Status": "Passed",
+      "Duration": 0.0541711,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.LightningSalvo_StrikesForOneDamage_AsV3Did",
+      "Status": "Failed",
+      "Duration": 0.1821402,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4WeaponM5Tests+Harness..ctor (System.Boolean v3Parity, System.String[] weaponIds) [0x000b2] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:178\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.LightningSalvo_StrikesForOneDamage_AsV3Did () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:428\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.Loadout_NewEntriesGetFreshSlots_UpgradesFollow_StateIsMirrored",
+      "Status": "Passed",
+      "Duration": 0.044928,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.Mortar_Impact_MakesV3sEffectDraws",
+      "Status": "Failed",
+      "Duration": 0.3779763,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4WeaponM5Tests+Harness..ctor (System.Boolean v3Parity, System.String[] weaponIds) [0x000b2] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:178\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.Mortar_Impact_MakesV3sEffectDraws () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:365\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.OrbitBlades_FollowTheShip_AndHitOnTheirInterval",
+      "Status": "Passed",
+      "Duration": 0.1105764,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.ParityPreset_TurnsEveryM5FixOff",
+      "Status": "Failed",
+      "Duration": 0.3242214,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4WeaponM5Tests+Harness..ctor (System.Boolean v3Parity, System.String[] weaponIds) [0x000b2] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:178\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.ParityPreset_TurnsEveryM5FixOff () [0x0000b] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:543\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.PlayerProjectiles_TakeTheLowestFreeSlot_HitOnce_AndHomeOnlyWhenAsked",
+      "Status": "Passed",
+      "Duration": 0.0010855,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.PowderKeg_ArmsTriggers_AndItsBlastHitsAtMostTwelve",
+      "Status": "Passed",
+      "Duration": 0.0479766,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.PowderKeg_Unblown_SinksAfter45Seconds_AndNeverUnderTheParityPreset",
+      "Status": "Failed",
+      "Duration": 0.0447574,
+      "Message": "  Expected: 45.0f\r\n  But was:  30.0f\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4WeaponM5Tests.PowderKeg_Unblown_SinksAfter45Seconds_AndNeverUnderTheParityPreset () [0x0004d] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:319\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R18_Stormshot_LaneHasANarrowArc",
+      "Status": "Passed",
+      "Duration": 0.0464931,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R19_ChainLightning_JumpsToTheNearestUnhitEnemies_WithFalloff",
+      "Status": "Passed",
+      "Duration": 0.0583812,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R22_ItemAttackSpeed_AppliesOnce_AndOvershootCarries",
+      "Status": "Failed",
+      "Duration": 0.198549,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4WeaponM5Tests+Harness..ctor (System.Boolean v3Parity, System.String[] weaponIds) [0x000b2] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:178\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.R22_ItemAttackSpeed_AppliesOnce_AndOvershootCarries () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:647\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R40_Explosions_TakeTheExplosionMultiplier_AndResolveTheCharge",
+      "Status": "Failed",
+      "Duration": 0.4463903,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4WeaponM5Tests+Harness..ctor (System.Boolean v3Parity, System.String[] weaponIds) [0x000b2] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:178\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.<R40_Explosions_TakeTheExplosionMultiplier_AndResolveTheCharge>g__MortarHit|34_1 (System.Single explosion) [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:597\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.R40_Explosions_TakeTheExplosionMultiplier_AndResolveTheCharge () [0x00034] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:605\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R40_Stormglass_AddsAChainJump",
+      "Status": "Passed",
+      "Duration": 0.1741303,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R70_Mortar_NoLongerDrawsForItsEffect",
+      "Status": "Passed",
+      "Duration": 0.0834549,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R87_SwivelBurst_KeepsItsGap",
+      "Status": "Passed",
+      "Duration": 0.0500943,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.R88_Salvo_FiresTheLightningWeapon",
+      "Status": "Passed",
+      "Duration": 0.0435288,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.Stormshot_FiresArcLanes_WithABurstFromTheFirstHit",
+      "Status": "Failed",
+      "Duration": 0.2696499,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4WeaponM5Tests+Harness..ctor (System.Boolean v3Parity, System.String[] weaponIds) [0x000b2] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:178\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.Evolved (System.String weaponId, System.String evolutionId, System.Boolean v3Parity) [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:439\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.Stormshot_FiresArcLanes_WithABurstFromTheFirstHit () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:449\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.SwivelGuns_UseTheFullCooldownBetweenShots_AsV3Did",
+      "Status": "Failed",
+      "Duration": 0.2043243,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4WeaponM5Tests+Harness..ctor (System.Boolean v3Parity, System.String[] weaponIds) [0x000b2] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:178\r\nat RoguePirates.V4.Tests.V4WeaponM5Tests.SwivelGuns_UseTheFullCooldownBetweenShots_AsV3Did () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WeaponM5Tests.cs:280\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.TargetedWeapons_KeepTheirCooldown_WithoutATarget",
+      "Status": "Passed",
+      "Duration": 0.3632998,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponM5Tests.TempestMast_JumpsToTheNextEnemy_AndQueuesADelayedStrike",
+      "Status": "Passed",
+      "Duration": 0.0394649,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponVfxM6Tests.AimOverlay_ShowsSlotShapes_OnlyWhileTheDebugOverlaysAreOn",
+      "Status": "Passed",
+      "Duration": 0.0114092,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponVfxM6Tests.Blades_AreDrawnAtTheSimulationsHitSpheres_AndReturnToThePool",
+      "Status": "Passed",
+      "Duration": 0.0124471,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponVfxM6Tests.EveryEffect_WithNothingBoundOrNoPrefabs_DoesNotThrow",
+      "Status": "Passed",
+      "Duration": 0.00839,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponVfxM6Tests.FallbackBladeFormula_MatchesTheSimulationsHitSpheres",
+      "Status": "Passed",
+      "Duration": 0.0012961,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponVfxM6Tests.MineAndSkiffHandles_AreUnique_AndRemovalReleasesViewsToThePool",
+      "Status": "Passed",
+      "Duration": 0.0024898,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponVfxM6Tests.MuzzleGun_ShowsOnlyItsCannonSmoke",
+      "Status": "Passed",
+      "Duration": 0.0039526,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponVfxM6Tests.Presenter_DrawsNoRandomNumbers_AndReadsNoLegacyHub",
+      "Status": "Passed",
+      "Duration": 0.0081549,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponVfxM6Tests.RepeatedEffects_ComeFromThePool_WithoutNewObjectsAfterPrewarm",
+      "Status": "Passed",
+      "Duration": 0.0052807,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponVfxM6Tests.SunkKeg_GoesDownAndTilts_ThenReturnsToThePool",
+      "Status": "Passed",
+      "Duration": 0.0022995,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WeaponVfxM6Tests.TimedEffects_EndAfterTheirV3Lifetimes",
+      "Status": "Passed",
+      "Duration": 0.0012202,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.EnemyViews_ArePooled_WithoutColliders_AndBarsFollow",
+      "Status": "Failed",
+      "Duration": 0.0434853,
+      "Message": "  the health bar comes from its pool\r\n  Expected: not null\r\n  But was:  null\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4WorldViewsM14Tests.EnemyViews_ArePooled_WithoutColliders_AndBarsFollow () [0x000f5] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4WorldViewsM14Tests.cs:313\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.Forwarders_DrawNothingWithoutAPresenter",
+      "Status": "Passed",
+      "Duration": 0.0027951,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.HostileShots_ArePooledTintedViews_AndSplashThroughTheSink",
+      "Status": "Passed",
+      "Duration": 0.0073407,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.Pickups_ComeFromPrewarmedPools_AndAreReused",
+      "Status": "Passed",
+      "Duration": 0.0571435,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.PoiMarkers_FollowTheMarkerView",
+      "Status": "Passed",
+      "Duration": 0.0234888,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.PoolPreparers_RunOnEveryInstance_BeforeItIsActive",
+      "Status": "Passed",
+      "Duration": 0.0011879,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.Powerups_ArePooledPlaceholders_PerKind",
+      "Status": "Passed",
+      "Duration": 0.0228522,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.ShipHealthBar_FollowsTheShipView",
+      "Status": "Passed",
+      "Duration": 0.0085829,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.ShipWake_OnWhileTheShipMoves",
+      "Status": "Passed",
+      "Duration": 0.0017904,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.StormRing_And_EdgeWalls_ReadTheWorldView",
+      "Status": "Passed",
+      "Duration": 0.0095777,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.TimedAndHazardRings_AreDrawnFromTheViews",
+      "Status": "Passed",
+      "Duration": 0.003439,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V4WorldViewsM14Tests.WaterSplash_MergesNearbySplashes_AndBlastsPlayAtSeaLevel",
+      "Status": "Passed",
+      "Duration": 0.0379855,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.ABatch_DoesNotTouchTheConfigsItReads",
+      "Status": "Passed",
+      "Duration": 0.3052534,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.BossHp_ComesFromTheArchetype_WhichTheGameReads",
+      "Status": "Failed",
+      "Duration": 0.0430967,
+      "Message": "  V5 M3d's fixed boss HP (M2: 1400)\r\n  Expected: 2800.0f\r\n  But was:  245.0f\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5BalanceM2Tests.BossHp_ComesFromTheArchetype_WhichTheGameReads () [0x00079] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BalanceM2Tests.cs:423\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.Calibration_MatchesTheAutopilotsRealRuns",
+      "Status": "Failed",
+      "Duration": 0.0525956,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5BalanceM2Tests.PreM2 (RoguePirates.V4.Config.ConfigSetRuntime rt) [0x00036] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BalanceM2Tests.cs:267\r\nat RoguePirates.V4.Tests.V5BalanceM2Tests.PilotRuns (RoguePirates.V4.Config.DirectorMode mode, System.Int32 runs) [0x00011] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BalanceM2Tests.cs:332\r\nat RoguePirates.V4.Tests.V5BalanceM2Tests.Calibration_MatchesTheAutopilotsRealRuns () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BalanceM2Tests.cs:344\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.DefaultConfig_MeetsTheBaselineTargets",
+      "Status": "Failed",
+      "Duration": 15.2291423,
+      "Message": "  baseline targets (per personality, per minute and pacing)\r\n  Expected: <empty>\r\n  But was:  < \"Steady Captain: median end minute: 27.88 (target 11–15) MISSED\", \"Steady Captain: boss win rate: 1 (target 0.6–0.85) MISSED\", \"Steady Captain: level at 10:00: 29 (target 10–16) MISSED\", \"seconds between level-ups over 0:00–10:00: 20.69 (target 37–55) MISSED\", \"miniboss time to kill (s): 1.38 (target 15–30) MISSED\", \"scheduled elite time to kill (s): 2.13 (target 4–8) MISSED\", \"Barnacle King fight (s, summon to sunk): 14.75 (target 45–90) MISSED\", \"minute 0: alive share: 0.05 (target 0.12–0.3) MISSED\", \"minute 1: alive share: 0.1 (target 0.17–0.45) MISSED\", \"minute 1: level: 8 (target 4–6) MISSED\"... >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection, System.String message, System.Object[] args) [0x00006] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V5BalanceM2Tests.DefaultConfig_MeetsTheBaselineTargets () [0x000d9] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BalanceM2Tests.cs:377\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.GreedierPlayers_LevelFaster",
+      "Status": "Passed",
+      "Duration": 2.9165668,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.HigherDodgeSkill_SurvivesLonger",
+      "Status": "Passed",
+      "Duration": 4.2873503,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.MoreContactAvoidance_TakesLessContactDamage",
+      "Status": "Failed",
+      "Duration": 3.1645854,
+      "Message": "  a charging player who never avoids contact takes much of its damage from it\r\n  Expected: greater than 0.200000003f\r\n  But was:  0.0458504297f\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5BalanceM2Tests.MoreContactAvoidance_TakesLessContactDamage () [0x0004d] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BalanceM2Tests.cs:228\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.OnTrackGrowth_IsMeasuredFromTheBaseline",
+      "Status": "Failed",
+      "Duration": 1.1024514,
+      "Message": "  Expected: in range (0.6,1.6)\r\n  But was:  0.595856965f\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5BalanceM2Tests.OnTrackGrowth_IsMeasuredFromTheBaseline () [0x00092] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BalanceM2Tests.cs:496\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.OvertimeFormulas_EqualTheRuntimes",
+      "Status": "Passed",
+      "Duration": 0.0401873,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.Percentile_Interpolates",
+      "Status": "Passed",
+      "Duration": 0.0008717,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.Personalities_MatchThePersonalitiesDoc",
+      "Status": "Passed",
+      "Duration": 0.004257,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.PersonalitiesAndTargets_AreInTheSet_AndValidate",
+      "Status": "Passed",
+      "Duration": 0.0448881,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.Retune_IsInTheData_AndTheParityPresetRestoresIt",
+      "Status": "Failed",
+      "Duration": 0.0409423,
+      "Message": "  retuned in V5 (M2, M3, then the demo baseline)\r\n  Expected: String starting with \"saltwind-v5-\"\r\n  But was:  \"saltwind-playtest-survivorio\"\r\n",
+      "StackTrace": "at NUnit.Framework.StringAssert.StartsWith (System.String expected, System.String actual, System.String message, System.Object[] args) [0x00007] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V5BalanceM2Tests.Retune_IsInTheData_AndTheParityPresetRestoresIt () [0x0000b] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BalanceM2Tests.cs:386\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.SameSeed_SameRun_AlsoOnAWorkerThread",
+      "Status": "Passed",
+      "Duration": 0.4116719,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.ScheduledElites_GetTheEliteMultiplierAndTheRichAffix_AsTheGameDoes",
+      "Status": "Passed",
+      "Duration": 0.1737784,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.SimulatedLevels_FollowTheProgressionConfigsXpCurve",
+      "Status": "Passed",
+      "Duration": 0.0521017,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.SomeChests_BuysOnlyWithTwiceThePrice",
+      "Status": "Passed",
+      "Duration": 3.0441711,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.SpawnHp_IsTheCurveTimesOrdinaryTime_HandComputed",
+      "Status": "Passed",
+      "Duration": 0.0888666,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.TargetBand_NaNIsUnchecked",
+      "Status": "Passed",
+      "Duration": 0.0003937,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.Targets_ValidationCatchesBrokenData",
+      "Status": "Passed",
+      "Duration": 0.0009415,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BalanceM2Tests.ThePersonalityThatNeverSummons_NeverFightsTheBoss_AndStopRulesEndRuns",
+      "Status": "Passed",
+      "Duration": 0.4513061,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BenchToolsTests.AndroidCap_WorldAt1024_UiAt2048_NeverGrows_SkipsUncompressedAndTextAtlases",
+      "Status": "Passed",
+      "Duration": 0.0005496,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BenchToolsTests.BenchArguments_FromTheUrl_AndTheAndroidCommandLine",
+      "Status": "Passed",
+      "Duration": 0.0012879,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.Captains_AreWithin10Percent_AndRunsSeeFourToSixItemsBy10",
+      "Status": "Passed",
+      "Duration": 95.85245,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.Chests_OftenGiveAReadyWeaponsEvolutionItem",
+      "Status": "Failed",
+      "Duration": 0.2562142,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4DifficultyM10Tests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:28\r\nat RoguePirates.V4.Tests.V5BuildM3Tests.Chests_OftenGiveAReadyWeaponsEvolutionItem () [0x000d3] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BuildM3Tests.cs:274\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EveryWeapon_IsWithin20Percent_OfItsRole_AtLevels1_4_And12",
+      "Status": "Failed",
+      "Duration": 0.1584226,
+      "Message": "  Expected: <empty>\r\n  But was:  < \"broadside_battery Lv 1: ×0.80\", \"powder_kegs Lv 1: ×1.61\", \"powder_kegs Lv 4: ×1.41\", \"powder_kegs Lv 6: ×1.49\", \"powder_kegs Lv 8: ×1.57\", \"powder_kegs Lv 12: ×1.52\", \"lightning_mast Lv 1: ×0.66\", \"lightning_mast Lv 8: ×0.79\", \"flying_cutlasses Lv 1: ×1.85\", \"flying_cutlasses Lv 4: ×2.12\"... >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection, System.String message, System.Object[] args) [0x00006] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection) [0x00000] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V5BuildM3Tests.EveryWeapon_IsWithin20Percent_OfItsRole_AtLevels1_4_And12 () [0x000b9] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BuildM3Tests.cs:338\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolutionCard_ComesFromWeaponLevel6_WithItsItem",
+      "Status": "Failed",
+      "Duration": 0.0654657,
+      "Message": "  from the evolution level\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5BuildM3Tests.EvolutionCard_ComesFromWeaponLevel6_WithItsItem () [0x00040] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BuildM3Tests.cs:97\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolutionItemChance_Off_MakesNoExtraLootDraws",
+      "Status": "Passed",
+      "Duration": 0.0494283,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolutionItemLevel_FollowsTheEvolutionCardsLevel",
+      "Status": "Passed",
+      "Duration": 0.0411814,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.EvolvedAtTheUnlockLevel_TheWeaponLevelsOnTo12_ThroughCards",
+      "Status": "Passed",
+      "Duration": 0.0534156,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.FocusedBuilds_ReachAnEvolution_InMostRuns",
+      "Status": "Passed",
+      "Duration": 12.8387327,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.LogbooksAndItems_AreInTheirRarityBands_ExceptTheFlaggedOnes",
+      "Status": "Failed",
+      "Duration": 0.0682506,
+      "Message": "  Expected: <empty>\r\n  But was:  < \"gunnery_manual +10.0% (0.05–0.08)\", \"powder_drill +8.0% (0.05–0.08)\", \"carpenters_notes +20.0% (0.05–0.08)\", \"reef_carapace +0.0% (0.05–0.08)\" >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection, System.String message, System.Object[] args) [0x00006] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection) [0x00000] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V5BuildM3Tests.LogbooksAndItems_AreInTheirRarityBands_ExceptTheFlaggedOnes () [0x00065] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BuildM3Tests.cs:420\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.ParityPreset_RestoresEveryM3Value",
+      "Status": "Failed",
+      "Duration": 0.2398031,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4DifficultyM10Tests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:28\r\nat RoguePirates.V4.Tests.V5BuildM3Tests.ParityPreset_RestoresEveryM3Value () [0x00006] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BuildM3Tests.cs:450\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.PityCountsDeals_ARefreshIsADeal",
+      "Status": "Passed",
+      "Duration": 0.056311,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.PityRule_RaisesTheNextWeaponUpgrade_AfterSixDealsWithoutARare",
+      "Status": "Passed",
+      "Duration": 0.0854899,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.RarerCards_GrantMoreLevels_CappedAtTheMax",
+      "Status": "Failed",
+      "Duration": 0.2455324,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4DifficultyM10Tests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:28\r\nat RoguePirates.V4.Tests.V5BuildM3Tests.RarerCards_GrantMoreLevels_CappedAtTheMax () [0x001c4] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BuildM3Tests.cs:164\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.TakingARareCard_ThroughTheProgressionModule_GrantsItsLevels",
+      "Status": "Passed",
+      "Duration": 0.0559297,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.TheNewWeapons_AreWithin20Percent_OfTheirRole",
+      "Status": "Failed",
+      "Duration": 0.1327155,
+      "Message": "  Expected: <empty>\r\n  But was:  < \"anchor_flail Lv 1: ×4.06\", \"anchor_flail Lv 4: ×3.16\", \"anchor_flail Lv 6: ×3.35\", \"anchor_flail Lv 8: ×3.39\", \"anchor_flail Lv 12: ×3.29\", \"chainshot Lv 6: ×1.33\", \"chainshot Lv 8: ×1.21\", \"chainshot Lv 12: ×1.32\", \"siren_bell Lv 1: ×1.89\", \"siren_bell Lv 4: ×1.48\"... >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection, System.String message, System.Object[] args) [0x00006] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection) [0x00000] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V5BuildM3Tests.TheNewWeapons_AreWithin20Percent_OfTheirRole () [0x00132] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5BuildM3Tests.cs:362\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5BuildM3Tests.WeaponModel_UsesTheGamesUpgradePath",
+      "Status": "Passed",
+      "Duration": 0.0569517,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.BarnacleCrown_StacksWhileSurrounded_AndFades",
+      "Status": "Passed",
+      "Duration": 0.0553834,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.CaptainsLastRum_SavesTheShipOnce_WithAFrenzy",
+      "Status": "Passed",
+      "Duration": 0.0904008,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.ChestAndRewardItems_ReportTheirMultipliers",
+      "Status": "Passed",
+      "Duration": 0.0764384,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.JollyRoger_StacksPerTenKills_AndAHitTakesHalf",
+      "Status": "Passed",
+      "Duration": 0.0471175,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.LeviathanHeart_PulsesEvery12Seconds",
+      "Status": "Passed",
+      "Duration": 0.0513113,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5ContentM5Tests.TheNewContent_IsInThePools_AndPriced",
+      "Status": "Failed",
+      "Duration": 0.046023,
+      "Message": "  spare_planks has an icon\r\n  Expected: not null\r\n  But was:  null\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5ContentM5Tests.TheNewContent_IsInThePools_AndPriced () [0x00121] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5ContentM5Tests.cs:82\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5DemoBaselineTests.EveryRetunedValue_AndTheDirectorCurve_AreInTheData",
+      "Status": "Failed",
+      "Duration": 0.0455573,
+      "Message": "  Expected: <empty>\r\n  But was:  < \"weapon.lightning_mast.baseDamage = 16.13 (retune 10.56)\" >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection, System.String message, System.Object[] args) [0x00006] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection) [0x00000] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V5DemoBaselineTests.EveryRetunedValue_AndTheDirectorCurve_AreInTheData () [0x0012f] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5DemoBaselineTests.cs:44\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5DemoBaselineTests.TheDemosValues_AreInTheData_AndDifferFromBefore",
+      "Status": "Failed",
+      "Duration": 0.0458647,
+      "Message": "System.ArgumentOutOfRangeException : Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index",
+      "StackTrace": "  at System.Collections.Generic.List`1[T].get_Item (System.Int32 index) [0x00009] in <41d29b352f6a475ab1bf7c6628b82790>:0 \r\n  at System.Collections.Generic.List`1[T].System.Collections.IList.get_Item (System.Int32 index) [0x00000] in <41d29b352f6a475ab1bf7c6628b82790>:0 \r\n  at RoguePirates.V4.Config.ConfigPath.Get (System.Object root, System.String path) [0x0001f] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\V4\\Config\\Core\\ConfigPath.cs:66 \r\n  at RoguePirates.V4.Tests.V5DemoBaselineTests.Value (RoguePirates.V4.Config.ConfigSetRuntime rt, System.String configId, System.String path) [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5DemoBaselineTests.cs:21 \r\n  at RoguePirates.V4.Tests.V5DemoBaselineTests+<>c__DisplayClass6_0.<TheDemosValues_AreInTheData_AndDifferFromBefore>b__0 (System.ValueTuple`3[T1,T2,T3] e) [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5DemoBaselineTests.cs:55 \r\n  at System.Linq.Enumerable+WhereSelectArrayIterator`2[TSource,TResult].ToList () [0x00019] in <80564d689e48448fa2a7101993ee7201>:0 \r\n  at System.Linq.Enumerable.ToList[TSource] (System.Collections.Generic.IEnumerable`1[T] source) [0x0001f] in <80564d689e48448fa2a7101993ee7201>:0 \r\n  at RoguePirates.V4.Tests.V5DemoBaselineTests.TheDemosValues_AreInTheData_AndDifferFromBefore () [0x00016] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5DemoBaselineTests.cs:55 \r\n  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)\r\n  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <41d29b352f6a475ab1bf7c6628b82790>:0 "
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5DemoBaselineTests.TheParityPreset_TakesEveryDemoValueBackToV3",
+      "Status": "Failed",
+      "Duration": 0.189422,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4DifficultyM10Tests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:28\r\nat RoguePirates.V4.Tests.V5DemoBaselineTests.TheParityPreset_TakesEveryDemoValueBackToV3 () [0x00115] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5DemoBaselineTests.cs:73\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5DemoBaselineTests.XpPace_AndShipSpeed_MustBePositive",
+      "Status": "Passed",
+      "Duration": 0.0368834,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5EnemyViewTintTests.AnUnchangedTint_LeavesTheViewsMaterialsAlone",
+      "Status": "Passed",
+      "Duration": 0.0049553,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5EnemyViewTintTests.APerViewInstance_IsNotTakenForTheOriginal_AndIsDestroyedWhenTheTintChanges",
+      "Status": "Passed",
+      "Duration": 0.001456,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5EnemyViewTintTests.Clear_DestroysTheCopies",
+      "Status": "Passed",
+      "Duration": 0.000665,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5EnemyViewTintTests.ViewsOfATint_ShareOneCopy_AndAReusedViewGoesBackToItsOwnMaterial",
+      "Status": "Passed",
+      "Duration": 0.0015399,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.BossFight_LowersTheFloor",
+      "Status": "Passed",
+      "Duration": 0.990144,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.DefaultFlow_IsOn_KeyframesTo10Minutes_WithAJaggedFloor",
+      "Status": "Passed",
+      "Duration": 0.0961131,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Floor_NeverPassesTheAmbientCap",
+      "Status": "Passed",
+      "Duration": 0.2960981,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Floor_TopsUpToTheCurrentWave_AfterTheCrowdIsCleared",
+      "Status": "Failed",
+      "Duration": 0.5175857,
+      "Message": "  Expected: False\r\n  But was:  True\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5FlowM1Tests.Floor_TopsUpToTheCurrentWave_AfterTheCrowdIsCleared () [0x00059] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5FlowM1Tests.cs:302\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Floor_TopUps_KeepTheGlobalSpawnGap",
+      "Status": "Passed",
+      "Duration": 1.5885396,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Floor_TopUpsAreLimitedPerTick",
+      "Status": "Passed",
+      "Duration": 1.2181338,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Horde_AtTheAmbientCap_StillUsesHalfTheReservedSlots",
+      "Status": "Failed",
+      "Duration": 0.0471375,
+      "Message": "  room for part of the horde, the Beacon keeps the rest\r\n  Expected: 6\r\n  But was:  4\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5FlowM1Tests.Horde_AtTheAmbientCap_StillUsesHalfTheReservedSlots () [0x00094] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5FlowM1Tests.cs:595\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Horde_IsSkippedDuringTheBossFight",
+      "Status": "Passed",
+      "Duration": 0.05768,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Horde_IsWarned_ThenArrivesAsOneFormation",
+      "Status": "Passed",
+      "Duration": 0.4412218,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Horde_MoreThan30sLate_IsSkipped",
+      "Status": "Passed",
+      "Duration": 0.0452449,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Horde_ThatCannotSpawn_IsNotCounted",
+      "Status": "Passed",
+      "Duration": 0.1514787,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Horde_WaitsForAnOpenRelease_ThenArrives",
+      "Status": "Passed",
+      "Duration": 0.1128957,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.HordeFormations_HaveTheirShape",
+      "Status": "Passed",
+      "Duration": 0.0021862,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.HordeWarning_CarriesItsDirection_ForTheEdgeMarker",
+      "Status": "Passed",
+      "Duration": 0.4130211,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Lull_BeforeAHorde_LowersRateAndFloor",
+      "Status": "Passed",
+      "Duration": 0.0441784,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.MinuteWaves_ScaleTheBandRate",
+      "Status": "Passed",
+      "Duration": 0.5747092,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.ParityPreset_TurnsFlowAndPickupMergeOff",
+      "Status": "Failed",
+      "Duration": 0.2118115,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5FlowM1Tests.Make (System.Boolean parity) [0x00035] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5FlowM1Tests.cs:199\r\nat RoguePirates.V4.Tests.V5FlowM1Tests.ParityPreset_TurnsFlowAndPickupMergeOff () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5FlowM1Tests.cs:259\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.PickupsFull_XpMergesIntoTheNearest_GoldKeepsTheV4Rule",
+      "Status": "Passed",
+      "Duration": 0.0445911,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Release_FollowsAHorde_AfterItsDelay",
+      "Status": "Passed",
+      "Duration": 0.0991899,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Release_OpensAfterTheBossIsSunk_AndCutsRateAndFloor",
+      "Status": "Passed",
+      "Duration": 1.3647433,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Release_OpensWhenAnArenaEnds",
+      "Status": "Passed",
+      "Duration": 0.6813574,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.ReleaseWindows_Overlap_ToTheLatestEnd",
+      "Status": "Passed",
+      "Duration": 0.5900679,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Status_ReadsNotRunning_DuringAnArena",
+      "Status": "Passed",
+      "Duration": 0.4938864,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5FlowM1Tests.Validation_RejectsBrokenFlowData",
+      "Status": "Passed",
+      "Duration": 0.0449808,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.EachLevel_ComesNearItsTargetTime_OnAnotherSeed",
+      "Status": "Failed",
+      "Duration": 4.9918765,
+      "Message": "  Expected: <empty>\r\n  But was:  < \"level 6: 80 s against 140 s\", \"level 7: 99 s against 200 s\", \"level 8: 115 s against 260 s\", \"level 9: 130 s against 320 s\", \"level 10: 147 s against 380 s\", \"level 11: 164 s against 440 s\", \"level 12: 186 s against 500 s\", \"level 13: 216 s against 560 s\" >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection, System.String message, System.Object[] args) [0x00006] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection) [0x00000] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V5LevelRhythmTests.EachLevel_ComesNearItsTargetTime_OnAnotherSeed () [0x000a2] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5LevelRhythmTests.cs:107\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.EveryPersonality_KeepsItsRunLengthAndBossWins",
+      "Status": "Failed",
+      "Duration": 127.4373358,
+      "Message": "  Expected: <empty>\r\n  But was:  < \"First-Timer: median end minute: 20.51 (target 5.5–9) MISSED\", \"Thumb Sailor: boss win rate: 0 (target 0.1–0.6) MISSED\", \"Casual Cruiser: median end minute: 24.58 (target 8–12) MISSED\", \"Casual Cruiser: boss win rate: 1 (target 0.3–0.7) MISSED\", \"Steady Captain: median end minute: 27.88 (target 11–15) MISSED\", \"Steady Captain: boss win rate: 1 (target 0.6–0.85) MISSED\", \"Glass Cannon: median end minute: 27.55 (target 8–13) MISSED\", \"Turtle: median end minute: 25.45 (target 8–13) MISSED\", \"Turtle: boss win rate: 1 (target 0.3–0.7) MISSED\", \"Treasure Hound: median end minute: 24.27 (target 7.5–12) MISSED\"... >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection, System.String message, System.Object[] args) [0x00006] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection) [0x00000] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V5LevelRhythmTests.EveryPersonality_KeepsItsRunLengthAndBossWins () [0x00094] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5LevelRhythmTests.cs:125\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.TargetGaps_FollowTheFibonacciSeries_ThenGrowTo60",
+      "Status": "Passed",
+      "Duration": 0.001314,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.TheData_HoldsTheFittedTable_TheCardLevels_AndThePaceTargets",
+      "Status": "Failed",
+      "Duration": 0.0591216,
+      "Message": "  Expected string length 15 but was 28. Strings differ at index 9.\r\n  Expected: \"saltwind-v5-m3c\"\r\n  But was:  \"saltwind-playtest-survivorio\"\r\n  --------------------^\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5LevelRhythmTests.TheData_HoldsTheFittedTable_TheCardLevels_AndThePaceTargets () [0x0016c] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5LevelRhythmTests.cs:68\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.TheParityPreset_RestoresTheCurve_AndOneLevelPerCard",
+      "Status": "Failed",
+      "Duration": 0.2110725,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4DifficultyM10Tests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:28\r\nat RoguePirates.V4.Tests.V5LevelRhythmTests.TheParityPreset_RestoresTheCurve_AndOneLevelPerCard () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5LevelRhythmTests.cs:85\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.TheSimulator_MeetsThePerMinuteLevelTargets_OnTheBaseline",
+      "Status": "Failed",
+      "Duration": 18.1835997,
+      "Message": "  the level at each minute follows the rhythm\r\n  Expected: <empty>\r\n  But was:  < \"minute 1: level: 8 (target 4–6) MISSED\", \"minute 2: level: 11 (target 5–7) MISSED\", \"minute 3: level: 13 (target 6–8) MISSED\", \"minute 4: level: 16 (target 7–10) MISSED\", \"minute 5: level: 18 (target 7–11) MISSED\", \"minute 6: level: 22 (target 8–12) MISSED\", \"minute 7: level: 24 (target 9–13) MISSED\", \"minute 8: level: 26 (target 10–14) MISSED\", \"minute 9: level: 29 (target 10–16) MISSED\", \"minute 10: level: 31 (target 11–17) MISSED\"... >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection, System.String message, System.Object[] args) [0x00006] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V5LevelRhythmTests.TheSimulator_MeetsThePerMinuteLevelTargets_OnTheBaseline () [0x000a8] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5LevelRhythmTests.cs:136\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5LevelRhythmTests.TheTable_ReplacesTheCurve_AndExtendsByItsLastStep",
+      "Status": "Passed",
+      "Duration": 0.0008403,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MetaShopTests.ACaptain_KeepsItsOtherLocks_InTheShop",
+      "Status": "Passed",
+      "Duration": 0.0532793,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MetaShopTests.Buying_SpendsTheRightRum_Once_AndNeedsEnough",
+      "Status": "Passed",
+      "Duration": 0.078932,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MetaShopTests.Ownership_SurvivesAStaleSave",
+      "Status": "Passed",
+      "Duration": 0.0511263,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MetaShopTests.TheHub_ShowsTheShop_AndBuysThroughIt_WithTouchSizedButtons",
+      "Status": "Failed",
+      "Duration": 0.0923397,
+      "Message": "System.InvalidOperationException : Sequence contains no matching element",
+      "StackTrace": "  at System.Linq.Enumerable.First[TSource] (System.Collections.Generic.IEnumerable`1[T] source, System.Func`2[T,TResult] predicate) [0x00011] in <80564d689e48448fa2a7101993ee7201>:0 \r\n  at RoguePirates.V4.Tests.V5MetaShopTests.TheHub_ShowsTheShop_AndBuysThroughIt_WithTouchSizedButtons () [0x00114] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5MetaShopTests.cs:132 \r\n  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)\r\n  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <41d29b352f6a475ab1bf7c6628b82790>:0 "
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MetaShopTests.TheShop_SellsEveryPricedThing_AndNeverTheStarters",
+      "Status": "Failed",
+      "Duration": 0.0600566,
+      "Message": "  starters are not sold\r\n  Expected: null\r\n  But was:  <RoguePirates.V5.Meta.StoreEntry>\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5MetaShopTests.TheShop_SellsEveryPricedThing_AndNeverTheStarters () [0x002c9] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5MetaShopTests.cs:45\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.EveryTouchTarget_IsAtLeast48Pixels_AtFivePhoneAndTabletSizes",
+      "Status": "Passed",
+      "Duration": 0.0017925,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.ReducedEffects_HalveTheEffectDensity",
+      "Status": "Passed",
+      "Duration": 0.0002419,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.Settings_SaveAndLoad_WithinTheirLimits",
+      "Status": "Passed",
+      "Duration": 0.0027282,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TheAutomaticTier_FollowsTheFrameTime",
+      "Status": "Passed",
+      "Duration": 0.0003123,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TheGeneratedControls_AreTouchSized",
+      "Status": "Passed",
+      "Duration": 0.0329853,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.ThePlayersPause_NeverOverridesALevelUp",
+      "Status": "Passed",
+      "Duration": 0.0007202,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TheSafeArea_BecomesAnchors_InsideTheNotchAndTheHomeBar",
+      "Status": "Passed",
+      "Duration": 0.00226,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TheSettingsRows_Keep72Units_OnAShortLandscapeScreen_AndScroll",
+      "Status": "Passed",
+      "Duration": 0.0280701,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TheUiScale_ShrinksTheReferenceResolution",
+      "Status": "Passed",
+      "Duration": 0.0022957,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.TouchPresses_AreReadOnce",
+      "Status": "Passed",
+      "Duration": 0.0003129,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5MobileUiTests.Wrap_PutsTheCanvasContent_UnderOneSafeAreaRect",
+      "Status": "Passed",
+      "Duration": 0.0019703,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PerformanceTests.ConfigLookups_ReturnWhatLinqReturns_AndAllocateNothing",
+      "Status": "Passed",
+      "Duration": 0.0474424,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PerformanceTests.HeavyModels_HaveMeshLods",
+      "Status": "Passed",
+      "Duration": 3.4500744,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PerformanceTests.ShipWake_SwitchesOnMovement_AndAllocatesNothingWhileItHolds",
+      "Status": "Passed",
+      "Duration": 0.006014,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PerformanceTests.SpatialHash_ReusesItsCells_AndQueriesTheSame",
+      "Status": "Passed",
+      "Duration": 0.0019992,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PerformanceTests.TheAllocationCheck_CatchesAnAllocation",
+      "Status": "Passed",
+      "Duration": 0.0003585,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PerformanceTests.TheLoadoutHud_RebuildsWhenAnythingItShowsChanges",
+      "Status": "Passed",
+      "Duration": 0.0022814,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PerformanceTests.VfxProfileEffects_ArePrewarmedAtBind",
+      "Status": "Passed",
+      "Duration": 0.0127915,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.AnEnemy_HasTheSameHpAndDamage_At1And8Minutes",
+      "Status": "Failed",
+      "Duration": 0.0575139,
+      "Message": "  no HP growth with time\r\n  Expected: 20.733400344848633d +/- 9.9999997473787516E-05d\r\n  But was:  27.737600326538086d\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5PressureTests.AnEnemy_HasTheSameHpAndDamage_At1And8Minutes () [0x00012] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5PressureTests.cs:70\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.EnemiesThatLookTheSame_AttackTheSame",
+      "Status": "Failed",
+      "Duration": 0.1424687,
+      "Message": "  same look, different attack\r\n  Expected: <empty>\r\n  But was:  < \"deckhand_dinghy (DeckhandDinghy|Contact|1|2.0|12|1.0) and bomb_boat (BombBoat|SuicideExplosion|1|99.0|3|1.0)\", \"deckhand_dinghy (DeckhandDinghy|Contact|1|2.0|12|1.0) and treasure_raider (TreasureRaider|Contact|1|2.0|12|1.0)\" >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection, System.String message, System.Object[] args) [0x00006] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V5PressureTests.EnemiesThatLookTheSame_AttackTheSame () [0x00470] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5PressureTests.cs:229\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.HordeShips_AreTheOrdinaryShipsTheyLookLike",
+      "Status": "Passed",
+      "Duration": 0.0735709,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheBossFight_KeepsItsLength_AtAnEarlyAndALateSummon",
+      "Status": "Failed",
+      "Duration": 3.5852263,
+      "Message": "  the fight from a summon at 270 s (known: target 45-90)\r\n  Expected: in range (45,130)\r\n  But was:  15.625f\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5PressureTests.TheBossFight_KeepsItsLength_AtAnEarlyAndALateSummon () [0x00126] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5PressureTests.cs:280\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheCrowd_PeaksAt3m45_AboveTheValley",
+      "Status": "Failed",
+      "Duration": 5.1768333,
+      "Message": "  the 7:15-7:30 peak is bigger (growing upwards)\r\n  Expected: greater than 16.041666f\r\n  But was:  10.916666f\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5PressureTests.TheCrowd_PeaksAt3m45_AboveTheValley () [0x000dd] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5PressureTests.cs:124\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheCurve_KeepsTheSketchesOrder",
+      "Status": "Failed",
+      "Duration": 0.058466,
+      "Message": "System.InvalidOperationException : Sequence contains no matching element",
+      "StackTrace": "  at System.Linq.Enumerable.Single[TSource] (System.Collections.Generic.IEnumerable`1[T] source, System.Func`2[T,TResult] predicate) [0x00070] in <80564d689e48448fa2a7101993ee7201>:0 \r\n  at RoguePirates.V4.Tests.V5PressureTests.<TheCurve_KeepsTheSketchesOrder>g__At|8_0 (System.Single t, RoguePirates.V4.Tests.V5PressureTests+<>c__DisplayClass8_0& ) [0x0000d] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5PressureTests.cs:101 \r\n  at RoguePirates.V4.Tests.V5PressureTests.TheCurve_KeepsTheSketchesOrder () [0x00109] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5PressureTests.cs:105 \r\n  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)\r\n  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <41d29b352f6a475ab1bf7c6628b82790>:0 "
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheData_HoldsEveryM3dValue",
+      "Status": "Failed",
+      "Duration": 0.0821251,
+      "Message": "  Expected: <empty>\r\n  But was:  < \"difficulty.saltwind.enemyHpPerMinute.c1\", \"difficulty.saltwind.enemyHpPerMinute.c2\", \"difficulty.saltwind.enemyDamagePerMinute.c1\" >\r\n",
+      "StackTrace": "at NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection, System.String message, System.Object[] args) [0x00006] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat NUnit.Framework.CollectionAssert.IsEmpty (System.Collections.IEnumerable collection) [0x00000] in <f577cd9686154d6ab10efd7e65e64366>:0\r\nat RoguePirates.V4.Tests.V5PressureTests.TheData_HoldsEveryM3dValue () [0x00055] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5PressureTests.cs:35\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheFloor_FollowsALine_BetweenKeyframes",
+      "Status": "Passed",
+      "Duration": 0.0007772,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheLookRule_WouldHaveCaughtTheOwnersExample",
+      "Status": "Passed",
+      "Duration": 0.0466954,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheParityPreset_TakesM3dBack",
+      "Status": "Failed",
+      "Duration": 0.2178526,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4DifficultyM10Tests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:28\r\nat RoguePirates.V4.Tests.V5PressureTests.TheParityPreset_TakesM3dBack () [0x00000] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5PressureTests.cs:248\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.ThePerMinuteTargets_ComeFromTheKeyframes",
+      "Status": "Passed",
+      "Duration": 0.0388534,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5PressureTests.TheSpawnersCombatOverrides_AreOff_AndOnUnderTheParityPreset",
+      "Status": "Failed",
+      "Duration": 0.2910934,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V4DifficultyM10Tests.Parity () [0x00020] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V4DifficultyM10Tests.cs:28\r\nat RoguePirates.V4.Tests.V5PressureTests.TheSpawnersCombatOverrides_AreOff_AndOnUnderTheParityPreset () [0x00026] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5PressureTests.cs:161\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5UiTextTests.GameCodeStrings_HaveNoEmDashes",
+      "Status": "Passed",
+      "Duration": 0.2227523,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5UiTextTests.TheShownDataTexts_HaveNoEmDashes",
+      "Status": "Passed",
+      "Duration": 0.1630164,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5UiTextTests.TheToast_CleansWhatItShows",
+      "Status": "Passed",
+      "Duration": 0.0035114,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponGoldenTests.TodaysWeaponsAndEvolutions_FireExactlyAsBefore",
+      "Status": "Failed",
+      "Duration": 0.5081806,
+      "Message": "  timeline.saltwind.phases[0].pools[1].share: Index was out of range. Must be non-negative and less than the size of the collection.\r\nParameter name: index\r\n  Expected: True\r\n  But was:  False\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5WeaponGoldenTests.All () [0x00084] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5WeaponGoldenTests.cs:207\r\nat RoguePirates.V4.Tests.V5WeaponGoldenTests.TodaysWeaponsAndEvolutions_FireExactlyAsBefore () [0x00006] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5WeaponGoldenTests.cs:224\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.ABeamOrbit_LaysItsSpheresAlongOneLine",
+      "Status": "Passed",
+      "Duration": 0.0428766,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.AnAura_PulsesWithoutATarget_SlowsWhatItHits_AndCursesOnlyWhenSet",
+      "Status": "Passed",
+      "Duration": 0.0463999,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.AnEmpoweredEvolution_AddsItsNumbers_OnTopOfTheUpgrades",
+      "Status": "Passed",
+      "Duration": 0.0682517,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.APerTargetOrbit_HitsEachEnemyOncePerInterval_AndKnocksBack",
+      "Status": "Passed",
+      "Duration": 0.0416483,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.APiercingShot_HitsOneMorePerPierce_EachEnemyOnce_AndSlows",
+      "Status": "Passed",
+      "Duration": 0.0385447,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.APlainShot_StopsAtItsFirstHit",
+      "Status": "Passed",
+      "Duration": 0.0375958,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.ATurret_TakesTheNearestEnemyInItsRange_WhenItsTargetIsOutOfReach",
+      "Status": "Passed",
+      "Duration": 0.0457744,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.ATurretSummon_FiresShots_InsteadOfStriking",
+      "Status": "Passed",
+      "Duration": 0.0366929,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.AWhirlpool_DealsItsWholeTicks_AtAnyFrameRate",
+      "Status": "Passed",
+      "Duration": 0.1607634,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.AWhirlpoolShell_DragsAndHurts_ThenImplodes",
+      "Status": "Passed",
+      "Duration": 0.0458634,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.EveryEmpoweredEvolution_ChangesItsWeaponInPlay",
+      "Status": "Failed",
+      "Duration": 0.0613188,
+      "Message": "  Expected: 1\r\n  But was:  2\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5WeaponMechanicsTests.EveryEmpoweredEvolution_ChangesItsWeaponInPlay () [0x00040] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5WeaponMechanicsTests.cs:461\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.HitsPerFiring_IsOneForTodaysWeapons_AndSharedWithTheModel",
+      "Status": "Passed",
+      "Duration": 0.0391445,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.KillGold_IsPaidPerKill_UpToTheRunCap",
+      "Status": "Passed",
+      "Duration": 0.0401483,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.SiegeBombard_AndShipOfTheLine_HitWider",
+      "Status": "Passed",
+      "Duration": 0.1350639,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.Summons_ComeOnePerQuantity_AndFindANewTarget",
+      "Status": "Passed",
+      "Duration": 0.0420374,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.Summons_StopAtTheirCap",
+      "Status": "Failed",
+      "Duration": 0.040385,
+      "Message": "  no more than the cap alive at once\r\n  Expected: 5\r\n  But was:  3\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5WeaponMechanicsTests.Summons_StopAtTheirCap () [0x00052] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5WeaponMechanicsTests.cs:654\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.SwivelBattery_AndWhalersVolley_FireMoreShots",
+      "Status": "Passed",
+      "Duration": 0.1640196,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheAnchorFlail_HitsEachEnemyOncePerInterval_AndKnocksBack_AndItsCooldownCardsShortenIt",
+      "Status": "Passed",
+      "Duration": 0.1268275,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheFlame_ReachesTheConesRange_AndSpreadsToItsArc",
+      "Status": "Passed",
+      "Duration": 0.014051,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheNewWeapons_AreBuyable_Offerable_AndEachEvolutionIsReachable",
+      "Status": "Failed",
+      "Duration": 0.0402905,
+      "Message": "  anchor_flail is bought, not a starter\r\n  Expected: False\r\n  But was:  True\r\n",
+      "StackTrace": "at RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheNewWeapons_AreBuyable_Offerable_AndEachEvolutionIsReachable () [0x000bb] in C:\\Kshitij\\Work\\X2C\\web3\\GitHub\\Pirate-Game\\Pirate Game Unity\\Assets\\_Game\\Tests\\V4\\EditMode\\V5WeaponMechanicsTests.cs:339\r\n"
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheProjectileBlock_CarriesPierceAndSlow_IntoItsShots",
+      "Status": "Passed",
+      "Duration": 0.051594,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheRammingProw_StrikesAheadOnlyWhileBoosting_AndShoves",
+      "Status": "Passed",
+      "Duration": 0.0966538,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheShipState_IsNotBoosting_ByDefault",
+      "Status": "Passed",
+      "Duration": 0.0001884,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TheSirenBell_SlowsAroundTheShip_AndItsChoir_WiderAndHarder",
+      "Status": "Passed",
+      "Duration": 0.0481519,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V4.Tests.V5WeaponMechanicsTests.TwoOrbitWeapons_EachHaveTheirBlades",
+      "Status": "Passed",
+      "Duration": 0.0429566,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

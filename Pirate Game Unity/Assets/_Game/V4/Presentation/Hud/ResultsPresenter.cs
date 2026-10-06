@@ -21,6 +21,7 @@ namespace RoguePirates.V4.Presentation.Hud
     public sealed class ResultsPresenter : MonoBehaviour
     {
         GameObject _panel;
+        GameObject _backdrop;
         TextMeshProUGUI _headline;
         TextMeshProUGUI _summary;
         Button _retry;
@@ -78,15 +79,42 @@ namespace RoguePirates.V4.Presentation.Hud
         {
             if (_views?.Results == null) return;
             if (_hud != null) _hud.SetProfileVisible(false);
+            if (_backdrop != null) _backdrop.SetActive(true);
             if (_panel != null) _panel.SetActive(true);
             var results = _views.Results;
             if (_headline != null) _headline.text = SaltwindRunResultsLogic.BuildHeadline(results.ObjectiveSecured, results.ObjectiveSecured && results.EndedByDeath);
+            SubmitOnline(); // Playtest (3 Oct, owner): before the text, so it shows "sending..."
             if (_summary != null) _summary.text = BuildSummary();
             if (_summaryScroll != null) _summaryScroll.verticalNormalizedPosition = 1f; // open at the top
         }
 
+        // Playtest (3 Oct, owner): the run goes to the weekly leaderboard in the background; the results text shows
+        // "Weekly rank #N (best K kills)" or "Not ranked: offline" when the API answers (never blocks the screen).
+        string _onlineLine;
+        bool _submitted;
+
+        void SubmitOnline()
+        {
+            if (_submitted || _views?.Run == null || _views.Run.WeaponPlaytestActive) return;
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == V4SceneNames.ModuleLab) return;
+            _submitted = true;
+            _onlineLine = RoguePirates.V4.Presentation.Online.RunSubmitter.Pending;
+            RoguePirates.V4.Presentation.Online.RunSubmitter.Submit(_views, line =>
+            {
+                if (this == null || !_submitted) return;
+                _onlineLine = line;
+                if (IsShowing && _summary != null) _summary.text = BuildSummary();
+            });
+        }
+
+        /// <summary>Playtest (3 Oct, owner): the weekly rank line (null before a submission).</summary>
+        public string OnlineLine => _onlineLine;
+
         public void Hide()
         {
+            _submitted = false; // Playtest (3 Oct, owner): the next run is submitted again
+            _onlineLine = null;
+            if (_backdrop != null) _backdrop.SetActive(false);
             if (_panel != null) _panel.SetActive(false);
         }
 
@@ -107,6 +135,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 var level = _views.Progression != null ? _views.Progression.Level : 0;
                 sb.AppendLine($"Survived {Mathf.FloorToInt(t / 60f)}:{Mathf.FloorToInt(t % 60f):00} · {run.Kills} kills · level {level}");
             }
+            if (!string.IsNullOrEmpty(_onlineLine)) sb.AppendLine("<color=#FFD166>" + _onlineLine + "</color>"); // Playtest (3 Oct, owner)
 
             if (r.HasRewardSection)
             {
@@ -169,8 +198,20 @@ namespace RoguePirates.V4.Presentation.Hud
 
         void BuildUi(Transform canvas)
         {
+            // Playtest (3 Oct, owner): the end screen looked broken (the art HUD hides, stray widgets stayed on the sea).
+            // A full-screen dim now sits behind an opaque panel, so the screen reads as one intentional results page.
+            _backdrop = new GameObject("run_results_backdrop", typeof(RectTransform), typeof(Image));
+            _backdrop.transform.SetParent(transform, false);
+            var br = (RectTransform)_backdrop.transform;
+            br.anchorMin = Vector2.zero;
+            br.anchorMax = Vector2.one;
+            br.offsetMin = br.offsetMax = Vector2.zero;
+            _backdrop.GetComponent<Image>().color = new Color(0.01f, 0.03f, 0.06f, 0.78f);
+            _backdrop.SetActive(false);
+
             _panel = PlaceholderFactory.CreateUiPanel(transform, "run_results_panel", new Vector2(560f, 600f),
                 "Full-screen run results layout: replace with production UI art.");
+            _panel.GetComponent<Image>().color = new Color(0.06f, 0.11f, 0.17f, 0.97f);
             var panelRect = _panel.GetComponent<RectTransform>();
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -178,12 +219,17 @@ namespace RoguePirates.V4.Presentation.Hud
 
             _headline = CreateText("PLACEHOLDER_v3_ui_run_results_headline", new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(520f, 56f), 26, TextAlignmentOptions.Center);
             _headline.text = "RESULTS";
+            _headline.fontStyle = FontStyles.Bold;
+            _headline.color = new Color(1f, 0.82f, 0.4f);
             _summary = CreateScrollingBody();
 
-            _retry = CreateButton("run_results_restart", "Retry voyage", "Start a new voyage with a fresh layout.", new Vector2(-115f, 12f), OnRetryClicked);
-            _menu = CreateButton("run_results_menu", "Main menu", "Return to main menu.", new Vector2(115f, 12f), OnMenuClicked);
+            // Playtest (3 Oct, owner): only Retry Voyage and Main Menu; the unlock goal buttons stay hidden.
+            _retry = CreateButton("run_results_restart", "Retry Voyage", "Start a new voyage with a fresh layout.", new Vector2(-115f, 12f), OnRetryClicked);
+            _menu = CreateButton("run_results_menu", "Main Menu", "Return to main menu.", new Vector2(115f, 12f), OnMenuClicked);
             _selectGoal = CreateButton("run_results_goal", "Set unlock goal", "Choose next Rum unlock (does not spend Rum).", new Vector2(-115f, 96f), OnSelectGoalClicked);
             _purchaseGoal = CreateButton("run_results_buy", "Purchase goal", "Spend Rum on selected unlock goal.", new Vector2(115f, 96f), OnPurchaseGoalClicked);
+            _selectGoal.gameObject.SetActive(false);
+            _purchaseGoal.gameObject.SetActive(false);
             _panel.SetActive(false);
         }
 
@@ -195,7 +241,7 @@ namespace RoguePirates.V4.Presentation.Hud
         TextMeshProUGUI CreateScrollingBody()
         {
             const float top = 68f;     // below the headline (36 + 56/2 + 4)
-            const float bottom = 176f; // above the two button rows (V5 M7: 72-unit buttons from 12 and 96, + 8)
+            const float bottom = 92f; // above the button row (72-unit buttons from 12, + 8; the goal row is hidden)
             var viewport = new GameObject("run_results_body_viewport", typeof(RectTransform), typeof(RectMask2D), typeof(Image), typeof(ScrollRect));
             viewport.transform.SetParent(_panel.transform, false);
             var vr = viewport.GetComponent<RectTransform>();
@@ -215,7 +261,8 @@ namespace RoguePirates.V4.Presentation.Hud
             rect.sizeDelta = new Vector2(0f, 0f);
             var text = go.AddComponent<TextMeshProUGUI>();
             text.alignment = TextAlignmentOptions.TopLeft;
-            text.fontSize = 20;
+            text.fontSize = 21;
+            text.color = new Color(0.94f, 0.95f, 0.97f);
             text.raycastTarget = false;
             var fitter = go.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;

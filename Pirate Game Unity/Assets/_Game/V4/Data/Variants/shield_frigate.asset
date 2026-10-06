@@ -28,13 +28,13 @@ MonoBehaviour:
     value: 7
   baseHP:
     enabled: 1
-    value: 90
+    value: 14
   moveSpeed:
     enabled: 1
     value: 3
   baseDamage:
     enabled: 1
-    value: 18
+    value: 5.625
   tags:
   - specialist
   inheritBaseVisual: 1

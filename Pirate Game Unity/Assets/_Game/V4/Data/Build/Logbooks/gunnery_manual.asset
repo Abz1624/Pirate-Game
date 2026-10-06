@@ -18,8 +18,8 @@ MonoBehaviour:
   logbookId: gunnery_manual
   displayName: Gunner's Manual
   stat: 5
-  perLevelAdditive: 0.06499994
+  perLevelAdditive: 0.1
   perLevelMultiplicative: 1
-  maxLevel: 12
+  maxLevel: 5
   inSaltwindPool: 1
   databaseOrder: 0

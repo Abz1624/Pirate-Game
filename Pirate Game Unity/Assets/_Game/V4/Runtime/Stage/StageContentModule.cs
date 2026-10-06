@@ -108,6 +108,8 @@ namespace RoguePirates.V4.Stage
             ResetState();
             // Demo: an open sea, no points of interest (the beacon discovery shares this layout, so it sees none either).
             if (DemoMode.NoPointsOfInterest && layout?.pois != null) layout.pois.Clear();
+            // Playtest (2 Oct, owner): with the boss rising on its own (14:00) there is no Treasury Beacon on the stage.
+            if (DemoMode.AutoBossSeconds > 0f && layout?.pois != null) layout.pois.RemoveAll(p => p.type == POIType.BossBeacon);
             _layout = layout;
             var n = layout?.pois != null ? layout.pois.Count : 0;
             _used = new bool[n];
@@ -715,12 +717,12 @@ namespace RoguePirates.V4.Stage
                 _toasts?.Show("Boss already summoned.", 2f);
                 return false;
             }
-            if (!TrySummonBossAtBeacon()) return false;
+            if (!TrySummonBossAtBeacon(ignoreTimeGate: true)) return false; // console and dev key: any time
             _toasts?.Show("Treasury Beacon: boss incoming! (B)", 3f);
             return true;
         }
 
-        bool TrySummonBossAtBeacon()
+        bool TrySummonBossAtBeacon(bool ignoreTimeGate = false)
         {
             if (_bossSummoned)
             {
@@ -733,6 +735,14 @@ namespace RoguePirates.V4.Stage
                 return false;
             }
             if (_bossArriving) return true;
+            // Playtest (2 Oct 2026): the boss comes at the auto-boss time (14:00); the beacon cannot call it earlier.
+            var at = DemoMode.AutoBossSeconds;
+            if (!ignoreTimeGate && at > 0f && _run != null && _run.ElapsedSeconds < at)
+            {
+                var left = Mathf.CeilToInt(at - _run.ElapsedSeconds);
+                _toasts?.Show($"The beacon is quiet. The boss rises in {left / 60}:{left % 60:00}.", 2.5f);
+                return false;
+            }
             // With the whirlpool on, the boss rises out of it near the ship a moment later (TickBossArrival).
             if (DemoMode.BossWhirlpool && _ship != null && _ship.Exists)
             {

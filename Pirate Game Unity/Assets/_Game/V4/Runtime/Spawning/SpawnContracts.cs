@@ -18,6 +18,8 @@ namespace RoguePirates.V4.Spawning
         int IndexOf(RoguePirates.V4.Foundation.Data.EnemyDefinition definition);
         string DefinitionId(int index);
         bool DefinitionIsBoss(int index);
+        /// <summary>Playtest (3 Oct, owner): a miniboss may rise on screen (its whirlpool); everything else spawns off screen.</summary>
+        bool DefinitionIsMiniboss(int index) => false;
         float DefinitionRadius(int index);
         float DefinitionHeightOffset(int index);
         int SpawnFromProfile(int definitionIndex, Vector3 position, SpawnProfile profile, int profileInstanceId,
@@ -25,6 +27,8 @@ namespace RoguePirates.V4.Spawning
         int Spawn(int definitionIndex, Vector3 position, ConfigEnums.EliteAffix affix, float speedMultiplier, float hpMultiplier, float damageMultiplier);
         /// <summary>M11: the elite lever's spawn in <paramref name="slot"/> pays ordinary rewards if <paramref name="ordinaryRewards"/>, and belongs to <paramref name="sourceProfile"/>.</summary>
         void MarkAdaptiveElite(int slot, SpawnProfile sourceProfile, bool ordinaryRewards);
+        /// <summary>Playtest (3 Oct): raises a unit's HP (and max HP) to at least <paramref name="minHp"/>; never lowers it.</summary>
+        void EnsureMinimumHp(int unitId, float minHp) { }
         /// <summary>Unit id of the enemy in a slot returned by a spawn call.</summary>
         int UnitIdAt(int slot);
         bool IsUnitActive(int unitId);
@@ -38,8 +42,8 @@ namespace RoguePirates.V4.Spawning
         void SetExperimentMultipliers(float hpMultiplier, float damageMultiplier);
     }
 
-    /// <summary>Spawn positions: off-screen ring around the ship, group offsets and validity (islands, bounds, view).</summary>
-    /// <summary>Demo (30 Sep 2026): a one-shot spawn point for the next pick (the boss rises where its whirlpool swirled).</summary>
+    /// <summary>Demo (30 Sep 2026): a one-shot spawn point for the next pick (the boss rises where its whirlpool swirled).
+    /// Playtest (3 Oct, owner): only a boss or miniboss pick takes it (SpawnExecutor); ordinary enemies never rise from it.</summary>
     public static class SpawnPointOverride
     {
         static Vector3? _next;
@@ -54,6 +58,7 @@ namespace RoguePirates.V4.Spawning
         }
     }
 
+    /// <summary>Spawn positions: off-screen ring around the ship, group offsets and validity (islands, bounds, view).</summary>
     public interface ISpawnPlacement
     {
         bool Ready { get; }

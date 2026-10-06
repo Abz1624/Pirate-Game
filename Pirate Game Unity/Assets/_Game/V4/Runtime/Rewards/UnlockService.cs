@@ -74,7 +74,7 @@ namespace RoguePirates.V4.Rewards
             var unlocks = Unlocks;
             if (save == null || unlocks?.weaponUnlocks == null) return null;
             foreach (var u in unlocks.weaponUnlocks)
-                if (u != null && !string.IsNullOrEmpty(u.weaponId) && !save.HasEffectiveContentOwned(u.weaponId)) return u.weaponId;
+                if (u != null && RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(u.weaponId) && !save.HasEffectiveContentOwned(u.weaponId)) return u.weaponId;
             return null;
         }
 

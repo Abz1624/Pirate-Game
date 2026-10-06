@@ -280,6 +280,9 @@ namespace RoguePirates.V4.Spawning
                 if (_s.Sink.ActiveCount >= cap) break;
                 var position = player + Offset(shaped, i, angle);
                 position.y = _s.Sink.DefinitionHeightOffset(index);
+                // Playtest (3 Oct, owner): horde members never appear on screen (a cluster's inner members and a moving
+                // camera could put them inside the view); each is pushed out past the view edge, or skipped.
+                if (!SpawnExecutor.PushOffScreen(_s.Placement, radius, ref position)) continue;
                 if (!_s.Placement.IsFormationPositionValid(position, radius, HordePlacement)) continue; // islands, bounds
                 var slot = _s.Sink.Spawn(index, position, ConfigEnums.EliteAffix.None, horde.speedMultiplier, hp, damage);
                 if (slot < 0) continue;

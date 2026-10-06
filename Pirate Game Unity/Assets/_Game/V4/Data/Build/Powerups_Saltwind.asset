@@ -45,7 +45,7 @@ MonoBehaviour:
   islandClearance: 0.45
   pool:
   - kind: 0
-    weight: 25
+    weight: 0
   - kind: 5
     weight: 25
   - kind: 6

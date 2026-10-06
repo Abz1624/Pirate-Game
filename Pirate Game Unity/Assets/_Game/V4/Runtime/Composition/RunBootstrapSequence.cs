@@ -57,6 +57,8 @@ namespace RoguePirates.V4.Composition
         public BuildModule Build { get; set; }
         /// <summary>M12: Rum, settled at death.</summary>
         public RoguePirates.V4.Rewards.RewardModule Rewards { get; set; }
+        /// <summary>Playtest (3 Oct, owner): places the ship at run start instead of the stage's safe spawn (the 1v1 seat).</summary>
+        public System.Action<PlayerShipController> PlaceShip { get; set; }
 
         public RunBootstrapSequence(MonoBehaviour host, GameDatabase database, StageBuilder stageBuilder,
             PlayerShipController player, IslandLayoutDefinition islandLayout, bool usePlaceholderPoiVisuals,
@@ -181,7 +183,8 @@ namespace RoguePirates.V4.Composition
             if (_player == null) _player = Object.FindFirstObjectByType<PlayerShipController>();
             if (_player != null && _layout != null)
             {
-                _world.PlacePlayerAtSafeSpawn(_player, _layout, seed);
+                if (PlaceShip != null) PlaceShip(_player); // Playtest (3 Oct, owner): the 1v1 seat's spawn
+                else _world.PlacePlayerAtSafeSpawn(_player, _layout, seed);
                 _player.SetMovementEnabled(true);
             }
 
@@ -223,7 +226,7 @@ namespace RoguePirates.V4.Composition
             Stage?.BindManagerSlot();
 
             RunManager.Instance.EnterPlaying();
-            Lifecycle?.ShowStartToast(!isRetry, seed, WorldPort.HomeSeedLocked);
+            if (PlaceShip == null) Lifecycle?.ShowStartToast(!isRetry, seed, WorldPort.HomeSeedLocked); // (a 1v1 has no voyage toast)
 
             var seedLabel = !isRetry && WorldPort.HomeSeedLocked ? "locked" : "random";
             Debug.Log($"V4Game: run seed={seed} ({seedLabel}), POI rng={seed + 404}.");

@@ -58,33 +58,50 @@ namespace RoguePirates.V4.Presentation.Effects
             _pools.Prewarm(PoolKey);
         }
 
-        public void ShowEnemyDamage(Vector3 worldPosition, float damage, bool crit)
+        /// <summary>Shows an enemy hit's number; false when none showed (no damage, or over the per-frame cap).</summary>
+        public bool ShowEnemyDamage(Vector3 worldPosition, float damage, bool crit)
+        {
+            if (damage <= 0f) return false;
+            if (_frame != Time.frameCount) { _frame = Time.frameCount; _enemyNumbersThisFrame = 0; }
+            if (_enemyNumbersThisFrame >= EnemyNumbersPerFrame) return false;
+            _enemyNumbersThisFrame++;
+            Spawn(worldPosition + Vector3.up * (1.35f + UnityEngine.Random.Range(0f, 0.45f)), damage, crit ? Style.Crit : Style.Hit);
+            return true;
+        }
+
+        /// <summary>Playtest (3 Oct, owner): damage gathered over a moment (burn ticks, flame patches, barrels, small or
+        /// capped hits): a smaller orange number, not counted against the per-frame cap (at most one per enemy each half
+        /// second).</summary>
+        public void ShowGroupedDamage(Vector3 worldPosition, float damage)
         {
             if (damage <= 0f) return;
-            if (_frame != Time.frameCount) { _frame = Time.frameCount; _enemyNumbersThisFrame = 0; }
-            if (_enemyNumbersThisFrame >= EnemyNumbersPerFrame) return;
-            _enemyNumbersThisFrame++;
-            Spawn(worldPosition + Vector3.up * (1.35f + UnityEngine.Random.Range(0f, 0.45f)), damage, crit, false);
+            Spawn(worldPosition + Vector3.up * (1.1f + UnityEngine.Random.Range(0f, 0.35f)), damage, Style.Grouped);
         }
+
+        enum Style { Hit, Crit, Player, Grouped }
 
         public void ShowPlayerDamage(float amount)
         {
             if (amount <= 0f) return;
             var ship = _shipPosition?.Invoke();
             if (!ship.HasValue) return;
-            Spawn(ship.Value + Vector3.up * 3.75f, amount, false, true);
+            Spawn(ship.Value + Vector3.up * 3.75f, amount, Style.Player);
         }
 
-        void Spawn(Vector3 position, float damage, bool crit, bool onPlayer)
+        void Spawn(Vector3 position, float damage, Style style)
         {
+            var crit = style == Style.Crit;
+            var onPlayer = style == Style.Player;
             var go = _pools != null ? _pools.Acquire(PoolKey, position, Quaternion.identity) : null;
             if (go == null) return;
             var text = go.GetComponent<TextMesh>();
             text.text = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
-            text.fontSize = crit ? 72 : onPlayer ? 64 : 60;
-            text.characterSize = crit ? 0.26f : onPlayer ? 0.24f : 0.22f;
-            text.fontStyle = crit ? FontStyle.Bold : FontStyle.Normal;
-            text.color = onPlayer ? new Color(1f, 0.35f, 0.3f, 1f) : crit ? new Color(1f, 0.88f, 0.25f, 1f) : new Color(1f, 0.97f, 0.92f, 1f);
+            var grouped = style == Style.Grouped;
+            text.fontSize = crit ? 72 : onPlayer ? 64 : grouped ? 54 : 60;
+            text.characterSize = crit ? 0.26f : onPlayer ? 0.24f : grouped ? 0.19f : 0.22f;
+            text.fontStyle = crit || grouped ? FontStyle.Bold : FontStyle.Normal;
+            text.color = onPlayer ? new Color(1f, 0.35f, 0.3f, 1f) : crit ? new Color(1f, 0.88f, 0.25f, 1f)
+                : grouped ? new Color(1f, 0.62f, 0.22f, 1f) : new Color(1f, 0.97f, 0.92f, 1f);
             FaceCamera(go.transform);
             var lifetime = onPlayer ? PlayerLifetime : EnemyLifetime;
             _floaters.Add(new Floater
@@ -128,7 +145,8 @@ namespace RoguePirates.V4.Presentation.Effects
 
         void OnDestroy()
         {
-            foreach (var f in _floaters) if (f.Go != null) _pools?.Release(f.Go);
+            // Playtest (3 Oct): at the scene's end the pools may be gone first (no "not acquired from a pool" warnings).
+            foreach (var f in _floaters) if (f.Go != null && _pools != null && _pools.IsPooled(f.Go)) _pools.Release(f.Go);
             _floaters.Clear();
         }
     }

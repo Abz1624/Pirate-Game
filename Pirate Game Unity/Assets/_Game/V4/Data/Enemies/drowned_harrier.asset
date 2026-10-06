@@ -22,8 +22,8 @@ MonoBehaviour:
   behavior: 3
   biomeTag: emerald
   stats:
-    baseHP: 18
-    baseDamage: 8
+    baseHP: 5.25
+    baseDamage: 2.5
     moveSpeed: 4
     radius: 1.2
     threatCost: 3
@@ -35,7 +35,7 @@ MonoBehaviour:
   visual:
     placeholderModel: 1
     visualPrefab: {fileID: 1709254077376921, guid: 56edd4f3c823adc4ebd4220035b6a937, type: 3}
-    visualScale: 0.95
+    visualScale: 1.3168261
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 0.75, g: 0.45, b: 0.2, a: 1}

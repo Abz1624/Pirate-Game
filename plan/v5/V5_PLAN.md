@@ -1,6 +1,6 @@
 # Rogue Pirates — V5 Plan (Live Game)
 
-Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 9 (30 Sep): all V5 questions answered (three rounds); stage order approved; a few confirmations open
+Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; questions P1-P10 open
 (section 9)**. Explanations of every answer: `plan/v5/ANSWERS.md`.
 
 **Demo interlude (30 Sep, merged at `27a238bc`, V5 resumed at `86724e6b`).** Work paused after M3 for a demo on
@@ -20,6 +20,18 @@ missed again, the same two as M3. Plan effects: **M4** fixes the flamethrower VF
 data download still needs M7's budget work); **M8** builds its hub on the art menu (its Leaderboard, Ledger, Raid,
 Profile and Settings buttons are placeholders). Later: fold the remaining switches into configs and retire
 `DemoMode`.
+
+**Playtest detour (1-6 Oct, branch `playtest` = `v5-live-game` + 32 commits; logs `plan/playtest/NOTES.md`,
+`ROUND8-LOG.md`, review `plan/playtest/V5-RESUME.md`).** Nine owner playtest rounds outside the phase gate turned the
+voyage into a Survivor.io-style 15-minute run (one main enemy per band, hordes, crab and Kraken minibosses, a kill-band
+difficulty, timed heals, equal level-1 weapon damage, all 19 weapons free, Survivor.io XP curve, HP growing with time),
+reworked enemies, weapons and visuals, and built ahead of the plan: guest profiles, a weekly kills leaderboard, and 1v1
+PvP (lobby, invites, draft, relayed match, bot, rematch) on an ASP.NET API live on Railway. This **supersedes** parts of
+M3c (level rhythm), M3d (no HP growth, the 10-minute sketch), M4 (role ±20%), M7 (Esc pause, minimap, barks) and M8
+(mode select), and D17's evolution level and Logbook ranks (pending the owner's confirmation, question P1). Tests on
+5 Oct: EditMode 438/499, PlayMode 51/63 (the failures pin old values; four are real rule violations), server 70/70.
+Before M9 the playtest work is merged and gated as **M8z** (below). Desktop WebGL is the main test build; WebGL mobile
+and Android only on request.
 
 V5 turns the finished V4 voyage into a live game: a balanced voyage, a menu with a shop, the rest of the content, mobile
 controls, verified accounts with custodial Solana devnet wallets, a player island with defenses, async raids and races,
@@ -528,6 +540,32 @@ version (M10) and token prices (M11) drop in.
 
 Automated check: scripted menu session (buy, equip, start a run) with screenshots on desktop and phone layouts.
 Owner playtest: buy something, play, see it in a run.
+
+#### M8z — Playtest integration (rounds 1-9)
+
+Goal: bring the playtest work (branch `playtest`) under the gate before M9: merged, architecture rules restored, the
+shipped switches tested, a scenario lab for fast tests, the test suite describing the game again, the economy rules
+settled and one simulator calibrated on the owner's play.
+
+- I8z.1 Tag `playtest-r9`, merge `playtest` into `v5-live-game` (`--no-ff`, no conflicts possible); point the API deploy
+  workflow at `v5-live-game` with an approval step.
+- I8z.2 Architecture fixes: enemy colours and an elite flag in the enemy config (no content ids in code), card stat lines
+  through `IRunViews`, the weapon switch-off list in config, `PvpSession`/`OnlineService` owned by the composition root.
+- I8z.3 The `DemoMode` switches the owner plays (Beacon or timed boss, chests-only, whirlpool) as a "playtest" config
+  preset, so tests cover what ships.
+- I8z.4 Scenario Lab: a `ScenarioConfig` asset, a `V5ScenarioLab` scene and a `ScenarioRunner` (seed, Captain, loadout and
+  level, clock time, chosen enemies at a set distance, forced points of interest, switches, a PvP bot over a fake relay);
+  the same scenarios from the F1 console and in 2-10 s PlayMode tests.
+- I8z.5 Test triage of the 73 failing tests: fix the real ones, rewrite value pins as rules reading a balance-targets
+  asset, retire the rest; slow full-loop tests marked `Slow` (gate only).
+- I8z.6 Shop and economy data after the owner's answers (starters vs unlocks, Ember's lock, the overtime Rum cap, D4).
+- I8z.7 One simulator, recalibrated on recorded owner sessions (`plan/playtest/sessions`, `compare_session.mjs`).
+- T8z.x Fast scenario tests per area: combat (starter one-shots a dinghy, equal level-1 DPS, bars only on elites,
+  minibosses and the boss), director (beats at their times, kill band), stage (Beacon summon, POIs, overtime and storm
+  from config), economy (Rum caps, no duplicate store rows), PvP (draft to end over a fake relay, reconnect after the end).
+
+Automated check: both suites green except tests retired with a reason; a desktop WebGL build.
+Owner playtest: a recorded voyage compared with the simulator; a PvP match against the bot.
 
 ### Stage B — Accounts and chain
 
@@ -1038,8 +1076,18 @@ milestones, and returning-player bonuses — all paying capped RUM (D4) or cosme
 
 ## 9. Questions for the owner
 
-All V5 questions are answered (three rounds on 30 Sep; decision D17 and `ANSWERS.md`). New questions will appear here
-and on the GDD board as phases are detailed.
+All V5 questions are answered (three rounds on 30 Sep; decision D17 and `ANSWERS.md`). The playtest detour raised the
+questions below (6 Oct, `plan/playtest/V5-RESUME.md`).
 
 | # | Question | Options (suggested first) |
 |---|---|---|
+| P1 | Do the playtest rules replace M3c (level rhythm), M3d (no HP growth, 10-minute sketch) and D17 (Logbook ranks 10-12, evolution at level 8)? | Yes, the playtest rules are the game · Bring some back (say which) |
+| P2 | Overtime Rum has no cap since the playtest (D4 says it must flatten and cap). | Cap it again before Rum is server value (M10) · Record an exception |
+| P3 | Weapons: all 19 are free starters now (no weapon shop, Ember's lock always met). | Back to Rum unlocks (name the starters) · Keep all free |
+| P4 | The v3-parity preset (D16, "matches V3" regression baseline) no longer fits the game. | Retire it · Keep and repair it |
+| P5 | Multiplayer: the playtest built a WebSocket relay on the API for 1v1. | Keep the relay for unwagered 1v1; test Netcode for GameObjects in M9 for Hunt and wagers · Replace the relay |
+| P6 | PvP anti-cheat for rated 1v1 now (clients report their damage). | Three cheap server checks (DPS cap by level, weapon in your draft, range) · Later, before anything of value |
+| P7 | Boss: summonable at the Beacon at any time (now); its health was halved for a 14:00 arrival. | Re-check its health for an earlier fight · Add a minimum time |
+| P8 | With desktop WebGL as the main test build, do the D9 touch rules still bind new screens? | Yes, keep them · Desktop first, phones later |
+| P9 | API auto-deploy: on every push, or after a manual approval in GitHub? | After approval · Every push |
+| P10 | Merge `playtest` into `v5-live-game` and continue there (M8z)? | Yes · Keep working on `playtest` |

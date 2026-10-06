@@ -17,7 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: reinforced_keel
   displayName: Reinforced Keel
-  description: Damage reduction while moving above cruise speed.
+  description: +3% Luck. Take 12% less damage while sailing at 4.2 m/s or faster.
   rarity: 1
   inChestPool: 1
   inLevelUpPool: 1

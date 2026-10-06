@@ -159,8 +159,21 @@ namespace RoguePirates.V4.Editor
                 var sprite = Match("Assets/UI/New_items/Items", catalog.items[k].id);
                 if (sprite != null) { catalog.items[k] = new IconCatalog.Entry { id = catalog.items[k].id, sprite = sprite }; i++; }
             }
+            // Playtest (3 Oct): Logbook icons by file name from New_items/Logbooks (one entry per Logbook; no file: the HUD and cards show the name).
+            var lb = 0;
+            foreach (var guid in AssetDatabase.FindAssets("t:LogbookConfig"))
+            {
+                var logbook = AssetDatabase.LoadAssetAtPath<LogbookConfig>(AssetDatabase.GUIDToAssetPath(guid));
+                if (logbook == null || string.IsNullOrEmpty(logbook.logbookId)) continue;
+                var index = catalog.logbooks.FindIndex(e => e.id == logbook.logbookId);
+                if (index < 0) { catalog.logbooks.Add(new IconCatalog.Entry { id = logbook.logbookId }); index = catalog.logbooks.Count - 1; }
+                var sprite = AssetDatabase.IsValidFolder("Assets/UI/New_items/Logbooks") ? Match("Assets/UI/New_items/Logbooks", logbook.logbookId) : null;
+                if (sprite == null) sprite = AssetDatabase.IsValidFolder("Assets/UI/New_items/Logbooks") ? Match("Assets/UI/New_items/Logbooks", logbook.displayName) : null;
+                catalog.logbooks[index] = new IconCatalog.Entry { id = logbook.logbookId, sprite = sprite };
+                if (sprite != null) lb++;
+            }
             EditorUtility.SetDirty(catalog);
-            log.Add($"Icons: {w}/{catalog.weapons.Count} weapons, {i}/{catalog.items.Count} items from New_items");
+            log.Add($"Icons: {w}/{catalog.weapons.Count} weapons, {i}/{catalog.items.Count} items, {lb}/{catalog.logbooks.Count} Logbooks from New_items");
         }
 
         static void WireCards(List<string> log)

@@ -31,6 +31,37 @@ namespace RoguePirates.V4.Presentation.Effects
         float _flashTimer;
 
         public int EffectsPlayed { get; private set; }
+        /// <summary>Playtest (3 Oct, owner): the live enemy view nearest a point within a radius (the enemy view presenter's
+        /// lookup), so damage without its own hit feedback (burn ticks, flame patches, barrels) can flash its enemy.</summary>
+        public Func<Vector3, float, Transform> NearestEnemyView { get; set; }
+        /// <summary>Playtest (3 Oct, owner): grouped numbers shown so far (tests and the playable check).</summary>
+        public int GroupedNumbersShown { get; private set; }
+
+        // Playtest (3 Oct, owner: "every damage should show a number and a flash"). The simulation calls DamageNumber for the
+        // hits that have their own feedback; every hit also arrives as a Hit event at the end of the tick. A Hit event with
+        // no DamageNumber call of its own (burn ticks, Hellfire flame patches, barrel blasts, hits under half a point, and
+        // numbers over the per-frame cap) is grouped by place: one number and one flash per enemy every half second at most.
+        readonly struct HitKey : IEquatable<HitKey>
+        {
+            readonly float _x, _z, _damage;
+            public HitKey(float x, float z, float damage) { _x = x; _z = z; _damage = damage; }
+            public bool Equals(HitKey o) => _x == o._x && _z == o._z && _damage == o._damage;
+            public override bool Equals(object obj) => obj is HitKey k && Equals(k);
+            public override int GetHashCode() => (_x.GetHashCode() * 397 ^ _z.GetHashCode()) * 397 ^ _damage.GetHashCode();
+        }
+
+        struct Group
+        {
+            public Vector3 Position;
+            public float Damage, Age, Quiet;
+        }
+
+        const float GroupRadius = 2.2f;      // a moving enemy stays in its group for the window
+        const float GroupWindow = 0.5f;      // a steady burn shows one number every half second
+        const float GroupQuietFlush = 0.08f; // a one-off hit (a flame patch tick, a barrel) shows almost at once
+        const int MaxGroups = 96;
+        readonly Dictionary<HitKey, int> _covered = new Dictionary<HitKey, int>(64);
+        readonly List<Group> _groups = new List<Group>(MaxGroups);
         /// <summary>Demo: the artists' VFX profiles (weapon hits and kills, enemy spawns and deaths, the ship's hits and sinking).</summary>
         public VfxProfilePlayer Profiles { get; set; }
 
@@ -69,6 +100,8 @@ namespace RoguePirates.V4.Presentation.Effects
             if (_events != null) _events.TickPublished -= OnEvents;
             _events = null;
             _fx?.ReleaseAll();
+            _covered.Clear();
+            _groups.Clear();
         }
 
         ConfigEnums.WeaponHitEffect HitEffect(string weaponId) =>
@@ -81,7 +114,10 @@ namespace RoguePirates.V4.Presentation.Effects
                 var e = batch[i];
                 switch (e.Kind)
                 {
-                    case CombatEventKind.Hit: OnHit(new Vector3(e.X, 0f, e.Y), e.A == 1, e.Tag); break;
+                    case CombatEventKind.Hit:
+                        if (Uncover(new HitKey(e.X, e.Y, e.Z))) OnHit(new Vector3(e.X, 0f, e.Y), e.A == 1, e.Tag);
+                        else AddToGroup(new Vector3(e.X, 0f, e.Y), e.Z);
+                        break;
                     case CombatEventKind.Killed:
                         // A profile may replace the kill effect, but a boss keeps its multi-burst.
                         if (Profiles != null && Profiles.Killed(e.A, e.Tag, new Vector3(e.X, 0.25f, e.Y)) && (e.B & 2) == 0) break;
@@ -98,6 +134,59 @@ namespace RoguePirates.V4.Presentation.Effects
                         break;
                     case CombatEventKind.LevelUp: OnLevelUp(); break;
                 }
+            }
+            _covered.Clear(); // every DamageNumber call of this tick has met its Hit event
+        }
+
+        bool Uncover(HitKey key)
+        {
+            if (!_covered.TryGetValue(key, out var count)) return false;
+            if (count <= 1) _covered.Remove(key); else _covered[key] = count - 1;
+            return true;
+        }
+
+        void AddToGroup(Vector3 position, float damage)
+        {
+            if (damage <= 0f) return;
+            var best = -1;
+            var bestSqr = GroupRadius * GroupRadius;
+            for (var i = 0; i < _groups.Count; i++)
+            {
+                var d = (_groups[i].Position - position).sqrMagnitude;
+                if (d <= bestSqr) { bestSqr = d; best = i; }
+            }
+            if (best < 0)
+            {
+                if (_groups.Count >= MaxGroups) return;
+                _groups.Add(new Group { Position = position, Damage = damage });
+                return;
+            }
+            var g = _groups[best];
+            g.Position = position;
+            g.Damage += damage;
+            g.Quiet = 0f;
+            _groups[best] = g;
+        }
+
+        void TickGroups(float dt)
+        {
+            for (var i = _groups.Count - 1; i >= 0; i--)
+            {
+                var g = _groups[i];
+                g.Age += dt;
+                g.Quiet += dt;
+                if (g.Age < GroupWindow && !(g.Age >= GroupQuietFlush && g.Quiet >= GroupQuietFlush))
+                {
+                    _groups[i] = g;
+                    continue;
+                }
+                _groups.RemoveAt(i);
+                if (g.Damage < 0.5f) continue; // a tick too small to read yet; the next window starts afresh
+                GroupedNumbersShown++;
+                _numbers?.ShowGroupedDamage(g.Position, g.Damage);
+                var view = NearestEnemyView?.Invoke(g.Position, GroupRadius);
+                if (view != null) DamageHighlight(view);
+                else if (_s != null && _s.enemyHitPrefab != null) Play(_s.enemyHitPrefab, g.Position + Vector3.up * 0.35f, _s.enemyHitScale * 0.75f);
             }
         }
 
@@ -126,7 +215,13 @@ namespace RoguePirates.V4.Presentation.Effects
                 if (profile.SuppressesDefault) return;
             }
             var effect = HitEffect(weaponId);
-            if (effect == ConfigEnums.WeaponHitEffect.None) return;
+            // Playtest (3 Oct, owner): a weapon with no hit effect (the Powder Kegs, which have their own blast) still
+            // shows a small spark on each enemy it hits, so every hit reads.
+            if (effect == ConfigEnums.WeaponHitEffect.None)
+            {
+                if (_s.enemyHitPrefab != null) Play(_s.enemyHitPrefab, position + Vector3.up * 0.35f, _s.enemyHitScale * 0.8f);
+                return;
+            }
             var mult = profile != null && !profile.HasPrefab ? profile.ScaleOrOne : 1f;
             if (effect == ConfigEnums.WeaponHitEffect.CannonImpact)
             {
@@ -140,7 +235,9 @@ namespace RoguePirates.V4.Presentation.Effects
         /// <summary>V3 CombatVfxController.OnKill → JuiceVfxBroker.PlayKill.</summary>
         void OnKill(Vector3 position, bool elite, bool boss, string weaponId)
         {
-            if (_s == null || HitEffect(weaponId) == ConfigEnums.WeaponHitEffect.None) return;
+            // Playtest (3 Oct, owner: "some enemies don't play the death explosion"): every kill explodes; a weapon's
+            // "no hit effect" (Powder Kegs, which have their own blast) only silences its hit sparks, not the kill.
+            if (_s == null) return;
             if (boss)
             {
                 var prefab = _s.bossKillExplosionPrefab != null ? _s.bossKillExplosionPrefab : _s.enemyKillPrefab;
@@ -194,7 +291,13 @@ namespace RoguePirates.V4.Presentation.Effects
         /// <summary>V3 enemy hit feedback: a small shake (the hit sound was a placeholder log in V3).</summary>
         public void HitShakeAndSound(float damage) => _shake?.Shake(Mathf.Min(0.08f, damage * 0.01f), 0.1f);
 
-        public void DamageNumber(Vector3 position, float damage, bool isCrit) => _numbers?.ShowEnemyDamage(position, damage, isCrit);
+        public void DamageNumber(Vector3 position, float damage, bool isCrit)
+        {
+            // Playtest (3 Oct, owner): a number over the per-frame cap is not lost; its hit joins the grouped numbers.
+            if (_numbers == null || !_numbers.ShowEnemyDamage(position, damage, isCrit)) return;
+            var key = new HitKey(position.x, position.z, damage);
+            _covered[key] = _covered.TryGetValue(key, out var count) ? count + 1 : 1;
+        }
 
         /// <summary>V3 PlayerDamageFlash: the ship's renderers tint towards the flash colour and back.</summary>
         void Flash(Transform ship)
@@ -231,6 +334,7 @@ namespace RoguePirates.V4.Presentation.Effects
         void LateUpdate()
         {
             _fx?.Tick();
+            TickGroups(Time.deltaTime);
             if (_flashTimer <= 0f) return;
             _flashTimer -= Time.deltaTime;
             ApplyFlash(_s != null && _s.playerDamageFlashDuration > 0f ? Mathf.Clamp01(_flashTimer / _s.playerDamageFlashDuration) : 0f);

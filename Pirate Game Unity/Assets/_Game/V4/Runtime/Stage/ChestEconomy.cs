@@ -167,7 +167,7 @@ namespace RoguePirates.V4.Stage
         public string RollChestPoolItem()
         {
             var pool = Pool;
-            return pool[_random.MapInt(0, pool.Count)].itemId;
+            return pool[_random.LootInt(0, pool.Count)].itemId; // playtest (3 Oct): the loot stream, not the map's (the same layout gave the same item)
         }
 
         public string RollChestPoolItem(int minRarity)
@@ -175,7 +175,7 @@ namespace RoguePirates.V4.Stage
             _candidates.Clear();
             foreach (var item in Pool) if (item.rarity >= minRarity) _candidates.Add(item.itemId);
             if (_candidates.Count == 0) return RollChestPoolItem();
-            return _candidates[_random.MapInt(0, _candidates.Count)];
+            return _candidates[_random.LootInt(0, _candidates.Count)];
         }
 
         public int MapInt(int maxExclusive) => _random.MapInt(0, maxExclusive);

@@ -1,0 +1,2621 @@
+{
+ "enemies": {
+  "barnacle_king": {
+   "id": "barnacle_king",
+   "name": "Barnacle King",
+   "hp": 490.0,
+   "dmg": 18.0,
+   "speed": 2.5,
+   "xp": 100.0,
+   "boss": true,
+   "miniboss": false,
+   "ranged": false
+  },
+  "boarding_barge": {
+   "id": "boarding_barge",
+   "name": "Boarding Barge",
+   "hp": 14.0,
+   "dmg": 16.0,
+   "speed": 3.2,
+   "xp": 5.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": false
+  },
+  "bomb_boat": {
+   "id": "bomb_boat",
+   "name": "Bomb Boat",
+   "hp": 2.8,
+   "dmg": 14.0,
+   "speed": 6.0,
+   "xp": 4.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": false
+  },
+  "cannonboat": {
+   "id": "cannonboat",
+   "name": "Cannonboat",
+   "hp": 2.8,
+   "dmg": 8.0,
+   "speed": 3.8,
+   "xp": 3.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": true
+  },
+  "cutthroat_skiff": {
+   "id": "cutthroat_skiff",
+   "name": "Cutthroat Skiff",
+   "hp": 12.25,
+   "dmg": 7.0,
+   "speed": 4.5,
+   "xp": 3.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": false
+  },
+  "deckhand_dinghy": {
+   "id": "deckhand_dinghy",
+   "name": "Deckhand Dinghy",
+   "hp": 3.5,
+   "dmg": 5.0,
+   "speed": 5.5,
+   "xp": 2.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": false
+  },
+  "drowned_harrier": {
+   "id": "drowned_harrier",
+   "name": "drowned harrier",
+   "hp": 5.25,
+   "dmg": 8.0,
+   "speed": 4.0,
+   "xp": 4.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": true
+  },
+  "drowned_pursuer": {
+   "id": "drowned_pursuer",
+   "name": "drowned pursuer",
+   "hp": 7.0,
+   "dmg": 6.0,
+   "speed": 5.0,
+   "xp": 3.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": false
+  },
+  "gunner_cog": {
+   "id": "gunner_cog",
+   "name": "Gunner Cog",
+   "hp": 4.2,
+   "dmg": 9.0,
+   "speed": 3.5,
+   "xp": 4.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": true
+  },
+  "hammerhead": {
+   "id": "hammerhead",
+   "name": "Hammerhead",
+   "hp": 1.75,
+   "dmg": 7.0,
+   "speed": 5.0,
+   "xp": 3.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": false
+  },
+  "kraken_spawn": {
+   "id": "kraken_spawn",
+   "name": "Kraken Spawn",
+   "hp": 17.5,
+   "dmg": 22.0,
+   "speed": 2.5,
+   "xp": 6.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": false
+  },
+  "manta_ray": {
+   "id": "manta_ray",
+   "name": "Manta Ray",
+   "hp": 8.75,
+   "dmg": 16.0,
+   "speed": 4.5,
+   "xp": 5.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": false
+  },
+  "rammer_raft": {
+   "id": "rammer_raft",
+   "name": "Rammer Raft",
+   "hp": 9.8,
+   "dmg": 10.0,
+   "speed": 5.0,
+   "xp": 3.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": false
+  },
+  "reef_crab_miniboss": {
+   "id": "reef_crab_miniboss",
+   "name": "Reef Crab",
+   "hp": 42.0,
+   "dmg": 14.0,
+   "speed": 4.6,
+   "xp": 35.0,
+   "boss": false,
+   "miniboss": true,
+   "ranged": false
+  },
+  "shark": {
+   "id": "shark",
+   "name": "Shark",
+   "hp": 7.0,
+   "dmg": 6.0,
+   "speed": 4.2,
+   "xp": 4.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": false
+  },
+  "swordfish": {
+   "id": "swordfish",
+   "name": "Swordfish",
+   "hp": 2.2749999,
+   "dmg": 6.0,
+   "speed": 6.5,
+   "xp": 2.0,
+   "boss": false,
+   "miniboss": false,
+   "ranged": false
+  },
+  "bomb_ketch": {
+   "id": "bomb_ketch",
+   "name": "bomb ketch",
+   "hp": 7.0,
+   "dmg": 14.0,
+   "speed": 3.2,
+   "xp": 4.0,
+   "boss": false,
+   "miniboss": false,
+   "base": "bomb_boat",
+   "ranged": false
+  },
+  "elite_hammerhead": {
+   "id": "elite_hammerhead",
+   "name": "Elite Hammerhead",
+   "hp": 7.6363635,
+   "dmg": 7.0,
+   "speed": 5.0,
+   "xp": 3.0,
+   "boss": false,
+   "miniboss": false,
+   "base": "hammerhead",
+   "ranged": false
+  },
+  "elite_kraken_spawn": {
+   "id": "elite_kraken_spawn",
+   "name": "Elite Kraken Spawn",
+   "hp": 20.416666,
+   "dmg": 22.0,
+   "speed": 2.5,
+   "xp": 6.0,
+   "boss": false,
+   "miniboss": false,
+   "base": "kraken_spawn",
+   "ranged": false
+  },
+  "needle_sloop": {
+   "id": "needle_sloop",
+   "name": "needle sloop",
+   "hp": 4.2,
+   "dmg": 7.0,
+   "speed": 5.5,
+   "xp": 3.0,
+   "boss": false,
+   "miniboss": false,
+   "base": "cutthroat_skiff",
+   "ranged": true
+  },
+  "net_cutter": {
+   "id": "net_cutter",
+   "name": "net cutter",
+   "hp": 5.25,
+   "dmg": 9.0,
+   "speed": 4.5,
+   "xp": 4.0,
+   "boss": false,
+   "miniboss": false,
+   "base": "gunner_cog",
+   "ranged": true
+  },
+  "powder_barge": {
+   "id": "powder_barge",
+   "name": "powder barge",
+   "hp": 14.0,
+   "dmg": 16.0,
+   "speed": 2.2,
+   "xp": 5.0,
+   "boss": false,
+   "miniboss": false,
+   "base": "boarding_barge",
+   "ranged": false
+  },
+  "ram_raider": {
+   "id": "ram_raider",
+   "name": "ram raider",
+   "hp": 7.0,
+   "dmg": 10.0,
+   "speed": 7.0,
+   "xp": 3.0,
+   "boss": false,
+   "miniboss": false,
+   "base": "rammer_raft",
+   "ranged": false
+  },
+  "repair_tender": {
+   "id": "repair_tender",
+   "name": "repair tender",
+   "hp": 8.75,
+   "dmg": 8.0,
+   "speed": 2.8,
+   "xp": 5.0,
+   "boss": false,
+   "miniboss": false,
+   "base": "boarding_barge",
+   "ranged": false
+  },
+  "shield_frigate": {
+   "id": "shield_frigate",
+   "name": "shield frigate",
+   "hp": 14.0,
+   "dmg": 18.0,
+   "speed": 3.0,
+   "xp": 4.0,
+   "boss": false,
+   "miniboss": false,
+   "base": "gunner_cog",
+   "ranged": true
+  },
+  "treasure_raider": {
+   "id": "treasure_raider",
+   "name": "treasure raider",
+   "hp": 5.25,
+   "dmg": 5.0,
+   "speed": 6.5,
+   "xp": 2.0,
+   "boss": false,
+   "miniboss": false,
+   "base": "deckhand_dinghy",
+   "ranged": false
+  }
+ },
+ "timeline": {
+  "deadline": 900.0,
+  "cap": 120,
+  "reserved": 12,
+  "bands": [
+   {
+    "t": 0.0,
+    "rate": 0.9,
+    "pools": [
+     {
+      "share": 1.0,
+      "entries": [
+       [
+        "deckhand_dinghy",
+        1.0
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 60.0,
+    "rate": 1.4,
+    "pools": [
+     {
+      "share": 0.8,
+      "entries": [
+       [
+        "deckhand_dinghy",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.2,
+      "entries": [
+       [
+        "cannonboat",
+        1.0
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 110.0,
+    "rate": 1.7,
+    "pools": [
+     {
+      "share": 0.72,
+      "entries": [
+       [
+        "deckhand_dinghy",
+        2.0
+       ],
+       [
+        "swordfish",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.2,
+      "entries": [
+       [
+        "cannonboat",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.08,
+      "entries": [
+       [
+        "bomb_boat",
+        1.0
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 240.0,
+    "rate": 1.9,
+    "pools": [
+     {
+      "share": 0.63,
+      "entries": [
+       [
+        "deckhand_dinghy",
+        1.0
+       ],
+       [
+        "swordfish",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "cannonboat",
+        1.0
+       ],
+       [
+        "needle_sloop",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.12,
+      "entries": [
+       [
+        "bomb_boat",
+        1.0
+       ],
+       [
+        "ram_raider",
+        1.0
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 340.0,
+    "rate": 2.1,
+    "pools": [
+     {
+      "share": 0.6,
+      "entries": [
+       [
+        "cutthroat_skiff",
+        3.0
+       ],
+       [
+        "swordfish",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "cannonboat",
+        1.0
+       ],
+       [
+        "gunner_cog",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.15,
+      "entries": [
+       [
+        "rammer_raft",
+        1.0
+       ],
+       [
+        "bomb_ketch",
+        1.0
+       ],
+       [
+        "treasure_raider",
+        1.0
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 480.0,
+    "rate": 2.3,
+    "pools": [
+     {
+      "share": 0.6,
+      "entries": [
+       [
+        "cutthroat_skiff",
+        2.0
+       ],
+       [
+        "swordfish",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "gunner_cog",
+        1.0
+       ],
+       [
+        "net_cutter",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.15,
+      "entries": [
+       [
+        "boarding_barge",
+        1.0
+       ],
+       [
+        "ram_raider",
+        1.0
+       ],
+       [
+        "repair_tender",
+        1.0
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 540.0,
+    "rate": 2.4,
+    "pools": [
+     {
+      "share": 0.53000003,
+      "entries": [
+       [
+        "cutthroat_skiff",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.35,
+      "entries": [
+       [
+        "gunner_cog",
+        1.0
+       ],
+       [
+        "needle_sloop",
+        1.0
+       ],
+       [
+        "net_cutter",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.12,
+      "entries": [
+       [
+        "powder_barge",
+        1.0
+       ],
+       [
+        "shield_frigate",
+        1.0
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 660.0,
+    "rate": 2.7,
+    "pools": [
+     {
+      "share": 0.6,
+      "entries": [
+       [
+        "shark",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "gunner_cog",
+        1.0
+       ],
+       [
+        "needle_sloop",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.15,
+      "entries": [
+       [
+        "kraken_spawn",
+        1.0
+       ],
+       [
+        "bomb_ketch",
+        1.0
+       ],
+       [
+        "ram_raider",
+        1.0
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 720.0,
+    "rate": 3.0,
+    "pools": [
+     {
+      "share": 0.57,
+      "entries": [
+       [
+        "cutthroat_skiff",
+        2.0
+       ],
+       [
+        "shark",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "gunner_cog",
+        1.0
+       ],
+       [
+        "net_cutter",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.18,
+      "entries": [
+       [
+        "boarding_barge",
+        1.0
+       ],
+       [
+        "shield_frigate",
+        1.0
+       ],
+       [
+        "powder_barge",
+        1.0
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 780.0,
+    "rate": 3.3,
+    "pools": [
+     {
+      "share": 0.57,
+      "entries": [
+       [
+        "manta_ray",
+        2.0
+       ],
+       [
+        "cutthroat_skiff",
+        1.0
+       ],
+       [
+        "swordfish",
+        0.5
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "gunner_cog",
+        1.0
+       ],
+       [
+        "needle_sloop",
+        1.0
+       ]
+      ]
+     },
+     {
+      "share": 0.18,
+      "entries": [
+       [
+        "kraken_spawn",
+        1.0
+       ],
+       [
+        "shield_frigate",
+        1.0
+       ],
+       [
+        "repair_tender",
+        1.0
+       ],
+       [
+        "bomb_ketch",
+        1.0
+       ]
+      ]
+     }
+    ]
+   }
+  ],
+  "focus": [
+   {
+    "id": "reef_crab",
+    "t": 150.0,
+    "enemy": "reef_crab_miniboss",
+    "hpMult": 1.0,
+    "arena": true,
+    "elite": false
+   },
+   {
+    "id": "elite_hammerhead",
+    "t": 180.0,
+    "enemy": "elite_hammerhead",
+    "hpMult": 5.5,
+    "arena": true,
+    "elite": true
+   },
+   {
+    "id": "reef_crab_2",
+    "t": 300.0,
+    "enemy": "reef_crab_miniboss",
+    "hpMult": 5.8333335,
+    "arena": true,
+    "elite": false
+   },
+   {
+    "id": "elite_hammerhead_2",
+    "t": 480.0,
+    "enemy": "elite_hammerhead",
+    "hpMult": 5.5,
+    "arena": false,
+    "elite": true
+   },
+   {
+    "id": "elite_kraken",
+    "t": 600.0,
+    "enemy": "elite_kraken_spawn",
+    "hpMult": 12.0,
+    "arena": true,
+    "elite": true
+   },
+   {
+    "id": "reef_crab_3",
+    "t": 660.0,
+    "enemy": "reef_crab_miniboss",
+    "hpMult": 1.0,
+    "arena": false,
+    "elite": false
+   },
+   {
+    "id": "elite_hammerhead_3",
+    "t": 720.0,
+    "enemy": "elite_hammerhead",
+    "hpMult": 5.5,
+    "arena": false,
+    "elite": true
+   },
+   {
+    "id": "reef_crab_4",
+    "t": 780.0,
+    "enemy": "reef_crab_miniboss",
+    "hpMult": 1.0,
+    "arena": false,
+    "elite": false
+   }
+  ],
+  "pulses": [
+   {
+    "t": 390.0,
+    "seconds": 30.0,
+    "mult": 1.8
+   },
+   {
+    "t": 700.0,
+    "seconds": 30.0,
+    "mult": 1.8
+   }
+  ],
+  "waves": [
+   [
+    0.0,
+    0.13,
+    1.0
+   ],
+   [
+    30.0,
+    0.325,
+    1.1
+   ],
+   [
+    50.0,
+    0.182,
+    0.85
+   ],
+   [
+    60.0,
+    0.26,
+    1.0
+   ],
+   [
+    90.0,
+    0.41599998,
+    1.15
+   ],
+   [
+    105.0,
+    0.234,
+    0.9
+   ],
+   [
+    140.0,
+    0.468,
+    1.15
+   ],
+   [
+    185.0,
+    0.33799997,
+    0.95
+   ],
+   [
+    225.0,
+    0.65,
+    1.25
+   ],
+   [
+    240.0,
+    0.39000002,
+    0.7
+   ],
+   [
+    275.0,
+    0.52,
+    0.8
+   ],
+   [
+    300.0,
+    0.468,
+    0.75
+   ],
+   [
+    340.0,
+    0.598,
+    0.9
+   ],
+   [
+    380.0,
+    0.715,
+    1.1
+   ],
+   [
+    400.0,
+    0.54599994,
+    0.8
+   ],
+   [
+    450.0,
+    0.78000003,
+    1.1
+   ],
+   [
+    475.0,
+    0.585,
+    0.75
+   ],
+   [
+    510.0,
+    0.78000003,
+    1.05
+   ],
+   [
+    540.0,
+    0.858,
+    1.15
+   ],
+   [
+    585.0,
+    0.65,
+    0.85
+   ],
+   [
+    620.0,
+    0.858,
+    1.1
+   ],
+   [
+    650.0,
+    0.65,
+    0.8
+   ],
+   [
+    690.0,
+    0.936,
+    1.25
+   ],
+   [
+    720.0,
+    0.78000003,
+    0.95
+   ],
+   [
+    760.0,
+    0.95,
+    1.3
+   ],
+   [
+    800.0,
+    0.90999997,
+    1.05
+   ],
+   [
+    830.0,
+    0.95,
+    1.4
+   ],
+   [
+    840.0,
+    0.52,
+    0.6
+   ],
+   [
+    900.0,
+    0.95,
+    1.45
+   ]
+  ],
+  "hordes": [
+   [
+    110.0,
+    "swordfish",
+    18
+   ],
+   [
+    200.0,
+    "cannonboat",
+    8
+   ],
+   [
+    240.0,
+    "swordfish",
+    45
+   ],
+   [
+    390.0,
+    "hammerhead",
+    36
+   ],
+   [
+    480.0,
+    "swordfish",
+    51
+   ],
+   [
+    665.0,
+    "shark",
+    36
+   ],
+   [
+    700.0,
+    "hammerhead",
+    36
+   ],
+   [
+    750.0,
+    "cutthroat_skiff",
+    39
+   ],
+   [
+    780.0,
+    "manta_ray",
+    39
+   ],
+   [
+    790.0,
+    "hammerhead",
+    36
+   ]
+  ],
+  "overtime": {
+   "interval": 0.45,
+   "floor": 0.12,
+   "decay": 0.8,
+   "step": 30.0
+  },
+  "tagCaps": {
+   "ranged_gunner": 14,
+   "area_denial": 5,
+   "charge_windup": 6
+  }
+ },
+ "weapons": {
+  "anchor_flail": {
+   "id": "anchor_flail",
+   "name": "Anchor Flail",
+   "damage": 32.25,
+   "cooldown": 0.75,
+   "quantity": 1,
+   "behavior": 2,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.22694117,
+     "weight": 1.1,
+     "cap": 5.6735296
+    },
+    {
+     "axis": 1,
+     "inc": 0.064471886,
+     "weight": 1.0,
+     "cap": 0.77366304
+    },
+    {
+     "axis": 4,
+     "inc": 0.15324317,
+     "weight": 0.9,
+     "cap": 3.9405382
+    },
+    {
+     "axis": 6,
+     "inc": 0.15324317,
+     "weight": 0.8,
+     "cap": 3.9405382
+    }
+   ]
+  },
+  "broadside_battery": {
+   "id": "broadside_battery",
+   "name": "Broadside Battery",
+   "damage": 7.47,
+   "cooldown": 1.5,
+   "quantity": 1,
+   "behavior": 1,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.0374929,
+     "weight": 1.1,
+     "cap": 0.9641028
+    },
+    {
+     "axis": 1,
+     "inc": 0.026780644,
+     "weight": 1.0,
+     "cap": 0.32136768
+    },
+    {
+     "axis": 2,
+     "inc": 1.0,
+     "weight": 1.2,
+     "cap": 5.0
+    },
+    {
+     "axis": 4,
+     "inc": 0.03213678,
+     "weight": 0.8,
+     "cap": 0.80341977
+    }
+   ]
+  },
+  "chainshot": {
+   "id": "chainshot",
+   "name": "Chainshot",
+   "damage": 13.44,
+   "cooldown": 1.5,
+   "quantity": 1,
+   "behavior": 0,
+   "maxLevel": 12,
+   "pierce": 2,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.12592857,
+     "weight": 1.2,
+     "cap": 3.148212
+    },
+    {
+     "axis": 1,
+     "inc": 0.078705296,
+     "weight": 1.0,
+     "cap": 0.94446456
+    },
+    {
+     "axis": 2,
+     "inc": 1.0,
+     "weight": 0.8,
+     "cap": 4.0
+    },
+    {
+     "axis": 3,
+     "inc": 0.094446406,
+     "weight": 0.7,
+     "cap": 2.3611593
+    }
+   ]
+  },
+  "cursed_doubloons": {
+   "id": "cursed_doubloons",
+   "name": "Cursed Doubloons",
+   "damage": 17.92,
+   "cooldown": 2.0,
+   "quantity": 1,
+   "behavior": 6,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.16504808,
+     "weight": 1.1,
+     "cap": 4.126203
+    },
+    {
+     "axis": 1,
+     "inc": 0.10315502,
+     "weight": 1.0,
+     "cap": 1.2378604
+    },
+    {
+     "axis": 4,
+     "inc": 0.11144962,
+     "weight": 0.9,
+     "cap": 2.865846
+    }
+   ]
+  },
+  "deck_cannons": {
+   "id": "deck_cannons",
+   "name": "Deck Cannons",
+   "damage": 9.41,
+   "cooldown": 1.05,
+   "quantity": 1,
+   "behavior": 0,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.12592855,
+     "weight": 1.2,
+     "cap": 3.148212
+    },
+    {
+     "axis": 1,
+     "inc": 0.078705296,
+     "weight": 1.0,
+     "cap": 0.9444637
+    },
+    {
+     "axis": 2,
+     "inc": 1.0,
+     "weight": 0.8,
+     "cap": 4.0
+    },
+    {
+     "axis": 3,
+     "inc": 0.094446406,
+     "weight": 0.7,
+     "cap": 2.3611593
+    },
+    {
+     "axis": 6,
+     "inc": 0.078705296,
+     "weight": 0.6,
+     "cap": 2.3611593
+    }
+   ]
+  },
+  "flamethrower": {
+   "id": "flamethrower",
+   "name": "Flamethrower",
+   "damage": 3.14,
+   "cooldown": 0.7,
+   "quantity": 1,
+   "behavior": 3,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.11178002,
+     "weight": 1.1,
+     "cap": 2.7945018
+    },
+    {
+     "axis": 5,
+     "inc": 0.13972503,
+     "weight": 1.0,
+     "cap": 2.7945018
+    },
+    {
+     "axis": 4,
+     "inc": 0.11178002,
+     "weight": 1.1,
+     "cap": 2.7945018
+    }
+   ]
+  },
+  "flying_cutlasses": {
+   "id": "flying_cutlasses",
+   "name": "Flying Cutlasses",
+   "damage": 10.24,
+   "cooldown": 1.0,
+   "quantity": 1,
+   "behavior": 2,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.034827992,
+     "weight": 1.0,
+     "cap": 0.8955768
+    },
+    {
+     "axis": 1,
+     "inc": 0.024877133,
+     "weight": 1.0,
+     "cap": 0.2985257
+    },
+    {
+     "axis": 2,
+     "inc": 1.0,
+     "weight": 1.2,
+     "cap": 4.0
+    },
+    {
+     "axis": 4,
+     "inc": 0.034827992,
+     "weight": 0.9,
+     "cap": 0.8955768
+    }
+   ]
+  },
+  "harpoon_gun": {
+   "id": "harpoon_gun",
+   "name": "Harpoon Gun",
+   "damage": 10.75,
+   "cooldown": 1.2,
+   "quantity": 1,
+   "behavior": 0,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.099028856,
+     "weight": 1.2,
+     "cap": 2.4757204
+    },
+    {
+     "axis": 1,
+     "inc": 0.06189304,
+     "weight": 1.0,
+     "cap": 0.74271655
+    },
+    {
+     "axis": 2,
+     "inc": 1.0,
+     "weight": 0.8,
+     "cap": 4.0
+    },
+    {
+     "axis": 3,
+     "inc": 0.07427165,
+     "weight": 0.7,
+     "cap": 1.8567913
+    },
+    {
+     "axis": 6,
+     "inc": 0.06189304,
+     "weight": 0.6,
+     "cap": 1.8567913
+    }
+   ]
+  },
+  "lighthouse_lantern": {
+   "id": "lighthouse_lantern",
+   "name": "Lighthouse Lantern",
+   "damage": 53.75,
+   "cooldown": 0.5,
+   "quantity": 1,
+   "behavior": 2,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.14751172,
+     "weight": 1.1,
+     "cap": 3.6877952
+    },
+    {
+     "axis": 1,
+     "inc": 0.092194796,
+     "weight": 1.0,
+     "cap": 1.1063378
+    },
+    {
+     "axis": 4,
+     "inc": 0.09960806,
+     "weight": 0.9,
+     "cap": 2.5613496
+    }
+   ]
+  },
+  "lightning_mast": {
+   "id": "lightning_mast",
+   "name": "Lightning Mast",
+   "damage": 16.13,
+   "cooldown": 1.8,
+   "quantity": 1,
+   "behavior": 6,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.051577516,
+     "weight": 1.1,
+     "cap": 1.2894382
+    },
+    {
+     "axis": 1,
+     "inc": 0.03223594,
+     "weight": 1.0,
+     "cap": 0.38683137
+    },
+    {
+     "axis": 2,
+     "inc": 1.0,
+     "weight": 1.1,
+     "cap": 4.0
+    },
+    {
+     "axis": 6,
+     "inc": 0.025788758,
+     "weight": 0.6,
+     "cap": 0.6447191
+    }
+   ]
+  },
+  "long_nine": {
+   "id": "long_nine",
+   "name": "Long Nine",
+   "damage": 21.5,
+   "cooldown": 2.4,
+   "quantity": 1,
+   "behavior": 0,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": true,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.12167009,
+     "weight": 1.2,
+     "cap": 3.0417507
+    },
+    {
+     "axis": 1,
+     "inc": 0.076043755,
+     "weight": 1.0,
+     "cap": 0.91252536
+    },
+    {
+     "axis": 2,
+     "inc": 1.0,
+     "weight": 0.8,
+     "cap": 4.0
+    },
+    {
+     "axis": 3,
+     "inc": 0.09125258,
+     "weight": 0.7,
+     "cap": 2.2813134
+    },
+    {
+     "axis": 6,
+     "inc": 0.076043755,
+     "weight": 0.6,
+     "cap": 2.2813134
+    }
+   ]
+  },
+  "maelstrom_charge": {
+   "id": "maelstrom_charge",
+   "name": "Maelstrom Charge",
+   "damage": 12.11,
+   "cooldown": 5.0,
+   "quantity": 1,
+   "behavior": 8,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.15300313,
+     "weight": 1.0,
+     "cap": 3.825078
+    },
+    {
+     "axis": 1,
+     "inc": 0.09562698,
+     "weight": 1.0,
+     "cap": 1.1475232
+    }
+   ]
+  },
+  "monkey_gunners": {
+   "id": "monkey_gunners",
+   "name": "Monkey Gunners",
+   "damage": 4.13,
+   "cooldown": 6.0,
+   "quantity": 1,
+   "behavior": 9,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.14751172,
+     "weight": 1.1,
+     "cap": 3.6877952
+    },
+    {
+     "axis": 1,
+     "inc": 0.092194796,
+     "weight": 1.0,
+     "cap": 1.1063378
+    }
+   ]
+  },
+  "mortar": {
+   "id": "mortar",
+   "name": "Mortar",
+   "damage": 16.13,
+   "cooldown": 1.8,
+   "quantity": 1,
+   "behavior": 8,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.13304618,
+     "weight": 1.0,
+     "cap": 3.3261542
+    },
+    {
+     "axis": 1,
+     "inc": 0.08315389,
+     "weight": 1.0,
+     "cap": 0.9978463
+    }
+   ]
+  },
+  "parrot_squadron": {
+   "id": "parrot_squadron",
+   "name": "Parrot Squadron",
+   "damage": 1.63,
+   "cooldown": 4.0,
+   "quantity": 2,
+   "behavior": 9,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.025788765,
+     "weight": 1.1,
+     "cap": 0.6447194
+    },
+    {
+     "axis": 1,
+     "inc": 0.016117971,
+     "weight": 1.0,
+     "cap": 0.19341573
+    },
+    {
+     "axis": 2,
+     "inc": 1.0,
+     "weight": 1.1,
+     "cap": 4.0
+    }
+   ]
+  },
+  "powder_kegs": {
+   "id": "powder_kegs",
+   "name": "Powder Kegs",
+   "damage": 27.37,
+   "cooldown": 2.2,
+   "quantity": 1,
+   "behavior": 5,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.20531821,
+     "weight": 1.2,
+     "cap": 5.132953
+    },
+    {
+     "axis": 1,
+     "inc": 0.08212729,
+     "weight": 0.9,
+     "cap": 1.0265907
+    },
+    {
+     "axis": 4,
+     "inc": 0.16425458,
+     "weight": 1.0,
+     "cap": 4.106363
+    },
+    {
+     "axis": 6,
+     "inc": 0.12319096,
+     "weight": 0.7,
+     "cap": 3.0797734
+    }
+   ]
+  },
+  "ramming_prow": {
+   "id": "ramming_prow",
+   "name": "Ramming Prow",
+   "damage": 8.96,
+   "cooldown": 0.3,
+   "quantity": 1,
+   "behavior": 7,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.22694117,
+     "weight": 1.1,
+     "cap": 5.6735296
+    },
+    {
+     "axis": 1,
+     "inc": 0.064471886,
+     "weight": 1.0,
+     "cap": 0.77366304
+    },
+    {
+     "axis": 4,
+     "inc": 0.15324317,
+     "weight": 0.9,
+     "cap": 3.9405382
+    },
+    {
+     "axis": 6,
+     "inc": 0.15324317,
+     "weight": 0.8,
+     "cap": 3.9405382
+    }
+   ]
+  },
+  "siren_bell": {
+   "id": "siren_bell",
+   "name": "Siren Bell",
+   "damage": 26.88,
+   "cooldown": 3.0,
+   "quantity": 1,
+   "behavior": 7,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.16504808,
+     "weight": 1.1,
+     "cap": 4.126203
+    },
+    {
+     "axis": 1,
+     "inc": 0.064471886,
+     "weight": 1.0,
+     "cap": 0.77366304
+    },
+    {
+     "axis": 4,
+     "inc": 0.11144962,
+     "weight": 0.9,
+     "cap": 2.865846
+    }
+   ]
+  },
+  "swivel_guns": {
+   "id": "swivel_guns",
+   "name": "Swivel Guns",
+   "damage": 6.35,
+   "cooldown": 0.6,
+   "quantity": 1,
+   "behavior": 0,
+   "maxLevel": 12,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.14235395,
+     "weight": 1.2,
+     "cap": 3.5588498
+    },
+    {
+     "axis": 1,
+     "inc": 0.08897122,
+     "weight": 1.0,
+     "cap": 1.0676544
+    },
+    {
+     "axis": 2,
+     "inc": 1.0,
+     "weight": 0.8,
+     "cap": 4.0
+    },
+    {
+     "axis": 3,
+     "inc": 0.1067655,
+     "weight": 0.7,
+     "cap": 2.6691356
+    },
+    {
+     "axis": 6,
+     "inc": 0.08897122,
+     "weight": 0.6,
+     "cap": 2.6691356
+    }
+   ]
+  }
+ },
+ "logbooks": {
+  "admiral": {
+   "id": "admiral",
+   "name": "Admiral",
+   "stat": 19,
+   "add": 0.1,
+   "max": 5
+  },
+  "carpenters_notes": {
+   "id": "carpenters_notes",
+   "name": "Carpenter's Notes",
+   "stat": 0,
+   "add": 20.0,
+   "max": 5
+  },
+  "cartographers_folio": {
+   "id": "cartographers_folio",
+   "name": "Cartographer's Folio",
+   "stat": 16,
+   "add": 0.1,
+   "max": 5
+  },
+  "extra_hands": {
+   "id": "extra_hands",
+   "name": "Extra Hands",
+   "stat": 9,
+   "add": 1.0,
+   "max": 3
+  },
+  "fortune": {
+   "id": "fortune",
+   "name": "Fortune",
+   "stat": 15,
+   "add": 0.05,
+   "max": 5
+  },
+  "gunnery_manual": {
+   "id": "gunnery_manual",
+   "name": "Gunner's Manual",
+   "stat": 5,
+   "add": 0.1,
+   "max": 5
+  },
+  "ironclad": {
+   "id": "ironclad",
+   "name": "Ironclad",
+   "stat": 3,
+   "add": 3.0,
+   "max": 5
+  },
+  "lookouts_glass": {
+   "id": "lookouts_glass",
+   "name": "Lookout's Glass",
+   "stat": 7,
+   "add": 0.05,
+   "max": 5
+  },
+  "navigators_charts": {
+   "id": "navigators_charts",
+   "name": "Navigator's Charts",
+   "stat": 20,
+   "add": 0.62,
+   "max": 5
+  },
+  "oversized_shot": {
+   "id": "oversized_shot",
+   "name": "Oversized Shot",
+   "stat": 10,
+   "add": 0.1,
+   "max": 5
+  },
+  "plunderer": {
+   "id": "plunderer",
+   "name": "Plunderer",
+   "stat": 18,
+   "add": 0.1,
+   "max": 5
+  },
+  "powder_drill": {
+   "id": "powder_drill",
+   "name": "Powdermaster's Drill",
+   "stat": 6,
+   "add": 0.08,
+   "max": 5
+  },
+  "quartermasters_ledger": {
+   "id": "quartermasters_ledger",
+   "name": "Quartermaster's Ledger",
+   "stat": 17,
+   "add": 0.1,
+   "max": 5
+  },
+  "scavengers_net": {
+   "id": "scavengers_net",
+   "name": "Scavenger's Net",
+   "stat": 14,
+   "add": 1.2,
+   "max": 5
+  },
+  "tidecaller": {
+   "id": "tidecaller",
+   "name": "Tidecaller",
+   "stat": 11,
+   "add": 0.1,
+   "max": 5
+  }
+ },
+ "items": {
+  "admirals_ledger": {
+   "id": "admirals_ledger",
+   "name": "Admiral's Ledger",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0.0,
+     1.04
+    ]
+   ]
+  },
+  "banana_crate": {
+   "id": "banana_crate",
+   "name": "Banana Crate",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     6,
+     0.0,
+     1.09
+    ]
+   ]
+  },
+  "barnacle_crown": {
+   "id": "barnacle_crown",
+   "name": "Barnacle Crown",
+   "rarity": 3,
+   "inChest": true,
+   "mods": []
+  },
+  "black_powder_keg": {
+   "id": "black_powder_keg",
+   "name": "Black Powder Keg",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     8,
+     0.0,
+     1.1
+    ]
+   ]
+  },
+  "black_spot": {
+   "id": "black_spot",
+   "name": "Black Spot",
+   "rarity": 2,
+   "inChest": true,
+   "mods": []
+  },
+  "broadside_drum": {
+   "id": "broadside_drum",
+   "name": "Broadside Drum",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [
+    [
+     9,
+     1.0,
+     1.0
+    ]
+   ]
+  },
+  "captains_bell": {
+   "id": "captains_bell",
+   "name": "Captain's Bell",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1.0
+    ]
+   ]
+  },
+  "captains_last_rum": {
+   "id": "captains_last_rum",
+   "name": "Captain's Last Rum",
+   "rarity": 4,
+   "inChest": true,
+   "mods": []
+  },
+  "captains_perch": {
+   "id": "captains_perch",
+   "name": "Captain's Perch",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0.0,
+     1.09
+    ]
+   ]
+  },
+  "chain_locker": {
+   "id": "chain_locker",
+   "name": "Chain Locker",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     12,
+     0.0,
+     1.1
+    ]
+   ]
+  },
+  "copper_conductor": {
+   "id": "copper_conductor",
+   "name": "Copper Conductor",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [
+    [
+     12,
+     0.0,
+     1.1
+    ]
+   ]
+  },
+  "crows_nest": {
+   "id": "crows_nest",
+   "name": "Crow's Nest",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     14,
+     0.0,
+     1.1
+    ]
+   ]
+  },
+  "cursed_chest_key": {
+   "id": "cursed_chest_key",
+   "name": "Cursed Chest Key",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0.0,
+     1.09
+    ]
+   ]
+  },
+  "cursed_coin": {
+   "id": "cursed_coin",
+   "name": "Cursed Coin",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     17,
+     0.0,
+     1.1
+    ],
+    [
+     0,
+     0.0,
+     0.9
+    ]
+   ]
+  },
+  "cursed_compass": {
+   "id": "cursed_compass",
+   "name": "Cursed Compass",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.08,
+     1.0
+    ]
+   ]
+  },
+  "dead_mans_compass": {
+   "id": "dead_mans_compass",
+   "name": "Dead Man's Compass",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     16,
+     0.0,
+     1.05
+    ]
+   ]
+  },
+  "double_fuse_cord": {
+   "id": "double_fuse_cord",
+   "name": "Double-Fuse Cord",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     6,
+     0.0,
+     1.08
+    ]
+   ]
+  },
+  "dragons_breath_nozzle": {
+   "id": "dragons_breath_nozzle",
+   "name": "Dragon's Breath Nozzle",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [
+    [
+     10,
+     0.0,
+     1.3205476
+    ]
+   ]
+  },
+  "fresnel_lens": {
+   "id": "fresnel_lens",
+   "name": "Fresnel Lens",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     10,
+     0.0,
+     1.12
+    ]
+   ]
+  },
+  "ghost_lantern": {
+   "id": "ghost_lantern",
+   "name": "Ghost Lantern",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1.0
+    ]
+   ]
+  },
+  "golden_figurehead": {
+   "id": "golden_figurehead",
+   "name": "Golden Figurehead",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     17,
+     0.0,
+     1.05
+    ]
+   ]
+  },
+  "grapeshot_pouch": {
+   "id": "grapeshot_pouch",
+   "name": "Grapeshot Pouch",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0.0,
+     1.1
+    ]
+   ]
+  },
+  "gunners_gloves": {
+   "id": "gunners_gloves",
+   "name": "Gunner's Gloves",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1.0
+    ]
+   ]
+  },
+  "iron_figurehead": {
+   "id": "iron_figurehead",
+   "name": "Iron Figurehead",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0.0,
+     1.09
+    ]
+   ]
+  },
+  "jolly_roger": {
+   "id": "jolly_roger",
+   "name": "Jolly Roger",
+   "rarity": 3,
+   "inChest": true,
+   "mods": []
+  },
+  "leviathan_heart": {
+   "id": "leviathan_heart",
+   "name": "Leviathan Heart",
+   "rarity": 4,
+   "inChest": true,
+   "mods": []
+  },
+  "leviathan_tooth": {
+   "id": "leviathan_tooth",
+   "name": "Leviathan Tooth",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1.0
+    ]
+   ]
+  },
+  "lucky_doubloon": {
+   "id": "lucky_doubloon",
+   "name": "Lucky Doubloon",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1.0
+    ]
+   ]
+  },
+  "manta_sail": {
+   "id": "manta_sail",
+   "name": "Manta Sail",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     20,
+     0.0,
+     1.03
+    ]
+   ]
+  },
+  "powder_fuse": {
+   "id": "powder_fuse",
+   "name": "Powder Fuse",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1.0
+    ]
+   ]
+  },
+  "powder_horn_of_the_line": {
+   "id": "powder_horn_of_the_line",
+   "name": "Powder Horn of the Line",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0.0,
+     1.09
+    ]
+   ]
+  },
+  "powder_monkey": {
+   "id": "powder_monkey",
+   "name": "Powder Monkey",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     6,
+     0.0,
+     1.065
+    ]
+   ]
+  },
+  "reef_carapace": {
+   "id": "reef_carapace",
+   "name": "Reef Carapace",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     3,
+     4.0,
+     1.0
+    ]
+   ]
+  },
+  "reinforced_keel": {
+   "id": "reinforced_keel",
+   "name": "Reinforced Keel",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1.0
+    ]
+   ]
+  },
+  "rusted_shackle": {
+   "id": "rusted_shackle",
+   "name": "Rusted Shackle",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     10,
+     0.0,
+     1.12
+    ]
+   ]
+  },
+  "sea_witchs_eye": {
+   "id": "sea_witchs_eye",
+   "name": "Sea Witch's Eye",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.04,
+     1.0
+    ]
+   ]
+  },
+  "serrated_scabbard": {
+   "id": "serrated_scabbard",
+   "name": "Serrated Scabbard",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     7,
+     0.04,
+     1.0
+    ]
+   ]
+  },
+  "shark_tooth_necklace": {
+   "id": "shark_tooth_necklace",
+   "name": "Shark Tooth Necklace",
+   "rarity": 0,
+   "inChest": true,
+   "mods": []
+  },
+  "siege_quadrant": {
+   "id": "siege_quadrant",
+   "name": "Siege Quadrant",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     10,
+     0.0,
+     1.12
+    ]
+   ]
+  },
+  "siren_scale": {
+   "id": "siren_scale",
+   "name": "Siren Scale",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     6,
+     0.0,
+     1.09
+    ]
+   ]
+  },
+  "skeleton_key": {
+   "id": "skeleton_key",
+   "name": "Skeleton Key",
+   "rarity": 1,
+   "inChest": true,
+   "mods": []
+  },
+  "smugglers_ledger": {
+   "id": "smugglers_ledger",
+   "name": "Smuggler's Ledger",
+   "rarity": 2,
+   "inChest": true,
+   "mods": []
+  },
+  "spare_planks": {
+   "id": "spare_planks",
+   "name": "Spare Planks",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     0,
+     7.0,
+     1.0
+    ]
+   ]
+  },
+  "stormglass": {
+   "id": "stormglass",
+   "name": "Stormglass",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     9,
+     0.5,
+     1.0
+    ]
+   ]
+  },
+  "storm_conch": {
+   "id": "storm_conch",
+   "name": "Storm Conch",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     10,
+     0.0,
+     1.12
+    ]
+   ]
+  },
+  "swivel_mount": {
+   "id": "swivel_mount",
+   "name": "Swivel Mount",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     6,
+     0.0,
+     1.09
+    ]
+   ]
+  },
+  "whale_oil_barrel": {
+   "id": "whale_oil_barrel",
+   "name": "Whale Oil Barrel",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0.0,
+     1.09
+    ]
+   ]
+  }
+ },
+ "evolutions": {
+  "abyssal_vortex": {
+   "id": "abyssal_vortex",
+   "name": "Abyssal Vortex",
+   "weapon": "maelstrom_charge",
+   "item": "storm_conch"
+  },
+  "bar_shot_barrage": {
+   "id": "bar_shot_barrage",
+   "name": "Bar Shot Barrage",
+   "weapon": "chainshot",
+   "item": "chain_locker"
+  },
+  "beacon_of_the_deep": {
+   "id": "beacon_of_the_deep",
+   "name": "Beacon of the Deep",
+   "weapon": "lighthouse_lantern",
+   "item": "fresnel_lens"
+  },
+  "bladed_tide": {
+   "id": "bladed_tide",
+   "name": "Bladed Tide",
+   "weapon": "flying_cutlasses",
+   "item": "serrated_scabbard"
+  },
+  "devils_wake": {
+   "id": "devils_wake",
+   "name": "Devil's Wake",
+   "weapon": "powder_kegs",
+   "item": "double_fuse_cord"
+  },
+  "drowned_choir": {
+   "id": "drowned_choir",
+   "name": "Drowned Choir",
+   "weapon": "siren_bell",
+   "item": "siren_scale"
+  },
+  "hellfire_nozzle": {
+   "id": "hellfire_nozzle",
+   "name": "Hellfire Nozzle",
+   "weapon": "flamethrower",
+   "item": "dragons_breath_nozzle"
+  },
+  "ironclad_ram": {
+   "id": "ironclad_ram",
+   "name": "Ironclad Ram",
+   "weapon": "ramming_prow",
+   "item": "iron_figurehead"
+  },
+  "kings_broadside": {
+   "id": "kings_broadside",
+   "name": "King's Broadside",
+   "weapon": "broadside_battery",
+   "item": "broadside_drum"
+  },
+  "kraken_chain": {
+   "id": "kraken_chain",
+   "name": "Kraken Chain",
+   "weapon": "anchor_flail",
+   "item": "rusted_shackle"
+  },
+  "monkey_battery": {
+   "id": "monkey_battery",
+   "name": "Monkey Battery",
+   "weapon": "monkey_gunners",
+   "item": "banana_crate"
+  },
+  "parrot_armada": {
+   "id": "parrot_armada",
+   "name": "Parrot Armada",
+   "weapon": "parrot_squadron",
+   "item": "captains_perch"
+  },
+  "pirate_kings_hoard": {
+   "id": "pirate_kings_hoard",
+   "name": "Pirate King's Hoard",
+   "weapon": "cursed_doubloons",
+   "item": "cursed_chest_key"
+  },
+  "ship_of_the_line": {
+   "id": "ship_of_the_line",
+   "name": "Ship of the Line",
+   "weapon": "long_nine",
+   "item": "powder_horn_of_the_line"
+  },
+  "siege_bombard": {
+   "id": "siege_bombard",
+   "name": "Siege Bombard",
+   "weapon": "mortar",
+   "item": "siege_quadrant"
+  },
+  "stormshot_cannon": {
+   "id": "stormshot_cannon",
+   "name": "Stormshot Cannon",
+   "weapon": "deck_cannons",
+   "item": "grapeshot_pouch"
+  },
+  "swivel_battery": {
+   "id": "swivel_battery",
+   "name": "Swivel Battery",
+   "weapon": "swivel_guns",
+   "item": "swivel_mount"
+  },
+  "tempest_mast": {
+   "id": "tempest_mast",
+   "name": "Tempest Mast",
+   "weapon": "lightning_mast",
+   "item": "copper_conductor"
+  },
+  "whalers_volley": {
+   "id": "whalers_volley",
+   "name": "Whaler's Volley",
+   "weapon": "harpoon_gun",
+   "item": "whale_oil_barrel"
+  }
+ },
+ "captains": {
+  "brine": {
+   "id": "brine",
+   "name": "Hank",
+   "weapon": "deck_cannons",
+   "hull": 110.0
+  },
+  "ember": {
+   "id": "ember",
+   "name": "Ember",
+   "weapon": "flamethrower",
+   "hull": 92.0
+  },
+  "flint": {
+   "id": "flint",
+   "name": "Sparky",
+   "weapon": "powder_kegs",
+   "hull": 120.0
+  },
+  "richie": {
+   "id": "richie",
+   "name": "Richie",
+   "weapon": "broadside_battery",
+   "hull": 95.0
+  },
+  "rook": {
+   "id": "rook",
+   "name": "Rook",
+   "weapon": "swivel_guns",
+   "hull": 100.0
+  },
+  "roxie": {
+   "id": "roxie",
+   "name": "Roxie",
+   "weapon": "lightning_mast",
+   "hull": 104.0
+  }
+ },
+ "progression": {
+  "xpTable": [
+   1,
+   1,
+   5,
+   10,
+   14,
+   14,
+   18,
+   20,
+   22,
+   22,
+   33,
+   34,
+   41,
+   41,
+   41,
+   41,
+   41,
+   51,
+   51,
+   51,
+   51,
+   57,
+   78,
+   78,
+   78,
+   78,
+   78,
+   78,
+   85,
+   85,
+   85,
+   85,
+   118,
+   118,
+   135,
+   135,
+   149,
+   168,
+   171,
+   185
+  ],
+  "weaponSlots": 6,
+  "logbookSlots": 4,
+  "levelsPerRarity": [
+   2,
+   2,
+   3,
+   3,
+   4
+  ],
+  "rarityMult": [
+   1.0,
+   1.25,
+   1.55,
+   1.9,
+   2.5
+  ],
+  "evolutionLevel": 5,
+  "maxWeaponLevel": 12
+ },
+ "pickups": {
+  "xpMult": 0.5,
+  "healValue": 25.0,
+  "healMin": 90.0,
+  "healMax": 150.0
+ },
+ "curve": {
+  "hp": [
+   1.0,
+   0.035,
+   0.00167
+  ],
+  "dmg": [
+   1.0,
+   0.02,
+   0.0
+  ],
+  "global_hp": 1.0
+ },
+ "director": {
+  "killBand": true,
+  "bandSeconds": 30.0,
+  "high": 0.85,
+  "low": 0.3,
+  "lowRate": 0.6,
+  "eliteChance": 0.06,
+  "eliteHp": 8.0,
+  "ttk": {
+   "boss": 25.0,
+   "arena": 12.0,
+   "focus": 7.0,
+   "elite": 2.5
+  }
+ },
+ "starterWeapons": [
+  "broadside_battery",
+  "deck_cannons",
+  "flamethrower",
+  "flying_cutlasses",
+  "harpoon_gun",
+  "lightning_mast",
+  "long_nine",
+  "mortar",
+  "powder_kegs",
+  "swivel_guns",
+  "anchor_flail",
+  "chainshot",
+  "siren_bell",
+  "ramming_prow",
+  "parrot_squadron",
+  "monkey_gunners",
+  "maelstrom_charge",
+  "lighthouse_lantern",
+  "cursed_doubloons"
+ ]
+}

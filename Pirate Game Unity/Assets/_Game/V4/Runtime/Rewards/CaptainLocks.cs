@@ -76,7 +76,7 @@ namespace RoguePirates.V4.Rewards
 
             var reasons = new List<string>();
             var prerequisiteMet = true;
-            if (!string.IsNullOrEmpty(captain.prerequisiteWeaponId) && !WeaponOwned(captain.prerequisiteWeaponId, save))
+            if (RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(captain.prerequisiteWeaponId) && !WeaponOwned(captain.prerequisiteWeaponId, save))
             {
                 prerequisiteMet = false;
                 reasons.Add($"Unlock {WeaponName(captain.prerequisiteWeaponId)} first");

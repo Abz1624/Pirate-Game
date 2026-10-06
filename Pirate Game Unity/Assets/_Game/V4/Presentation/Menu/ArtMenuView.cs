@@ -75,6 +75,22 @@ namespace RoguePirates.V4.Presentation.Menu
             return view;
         }
 
+        /// <summary>Playtest (3 Oct, owner): a backdrop made under an inactive holder and stripped of its NavMesh components
+        /// before it wakes (a plain Instantiate enabled the boats' agents, which logged "Failed to create agent because
+        /// there is no valid NavMesh" before the strip below ran).</summary>
+        static GameObject InstantiateScenery(GameObject prefab)
+        {
+            var holder = new GameObject("BackdropHolder");
+            holder.SetActive(false);
+            var go = Instantiate(prefab, holder.transform, false);
+            go.name = prefab.name;
+            foreach (var agent in go.GetComponentsInChildren<UnityEngine.AI.NavMeshAgent>(true)) DestroyImmediate(agent);
+            foreach (var obstacle in go.GetComponentsInChildren<UnityEngine.AI.NavMeshObstacle>(true)) DestroyImmediate(obstacle);
+            go.transform.SetParent(null, true);
+            Destroy(holder);
+            return go;
+        }
+
         static GameObject SceneRoot(string name)
         {
             foreach (var go in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
@@ -100,8 +116,16 @@ namespace RoguePirates.V4.Presentation.Menu
             _ownsBackdrops = _mainBackdrop == null && _selectBackdrop == null;
             if (_ownsBackdrops && settings != null)
             {
-                if (settings.mainMenuBackdrop != null) _mainBackdrop = Instantiate(settings.mainMenuBackdrop);
-                if (settings.characterSelectBackdrop != null) _selectBackdrop = Instantiate(settings.characterSelectBackdrop);
+                if (settings.mainMenuBackdrop != null) _mainBackdrop = InstantiateScenery(settings.mainMenuBackdrop);
+                if (settings.characterSelectBackdrop != null) _selectBackdrop = InstantiateScenery(settings.characterSelectBackdrop);
+            }
+            // Playtest (3 Oct): the captains' boats carry NavMeshAgents from the art scene and the menu has no NavMesh
+            // ("Failed to create agent because there is no valid NavMesh"): the backdrops are scenery, strip them.
+            foreach (var backdrop in new[] { _mainBackdrop, _selectBackdrop })
+            {
+                if (backdrop == null) continue;
+                foreach (var agent in backdrop.GetComponentsInChildren<UnityEngine.AI.NavMeshAgent>(true)) DestroyImmediate(agent);
+                foreach (var obstacle in backdrop.GetComponentsInChildren<UnityEngine.AI.NavMeshObstacle>(true)) DestroyImmediate(obstacle);
             }
             // The panels' roots are zero-size in their prefabs (the art scene stretched them); stretch them over the canvas.
             if (_main == null) _main = Stretch(Instantiate(settings.mainMenuPanel, canvas, false));
@@ -125,17 +149,19 @@ namespace RoguePirates.V4.Presentation.Menu
                 background.offsetMax = Vector2.zero;
             }
             // Main menu.
-            OnClick(_main.transform, "SetSail", () => { if (HubRequested != null) HubRequested("Play"); else ShowSelect(true); }); // V5 M8: mode select first
+            // Playtest (4 Oct, owner): Set Sail goes straight to the Captain select (no mode panel); PvP has its own button.
+            OnClick(_main.transform, "SetSail", () => ShowSelect(true));
             // V5 M7/M8: Settings, the shop (the Ledger) and the Profile open the menu hub's screens; Raids and the
             // leaderboard come later.
             foreach (var name in new[] { "Leaderboard", "Ledger", "Raid", "Settings", "Profile" })
             {
                 var b = FindDeep(_main.transform, name)?.GetComponent<Button>();
                 if (b == null) continue;
-                var open = name == "Settings" || name == "Ledger" || name == "Profile";
+                var open = name == "Settings" || name == "Ledger" || name == "Profile" || name == "Leaderboard"; // Playtest (3 Oct, owner): the weekly leaderboard
                 b.interactable = open;
                 if (open) { var n = name; b.onClick.AddListener(() => HubRequested?.Invoke(n)); }
             }
+            FitSideButtons(_main.transform);
             _rumLabel = FindDeep(_main.transform, "RumBg")?.GetComponentInChildren<TextMeshProUGUI>(true);
 
             // Captain select.
@@ -334,6 +360,43 @@ namespace RoguePirates.V4.Presentation.Menu
             rt.offsetMax = Vector2.zero;
             rt.localScale = Vector3.one;
             return go;
+        }
+
+        /// <summary>
+        /// Playtest (4 Oct, owner: "the leaderboard text is overflowing the button"): the right-hand buttons (PvP, Leaderboard,
+        /// Ledger, Raid) share one width that fits the widest label, and the column keeps its right edge. Called again when
+        /// the PvP button is added.
+        /// </summary>
+        public static void FitSideButtons(Transform main)
+        {
+            var menu = main != null ? FindDeep(main, "RightMenu") as RectTransform : null;
+            if (menu == null) return;
+            const float padding = 34f, minWidth = 232f;
+            var width = minWidth;
+            foreach (Transform child in menu)
+                if (child.gameObject.activeSelf)
+                    foreach (var label in child.GetComponentsInChildren<TextMeshProUGUI>(true))
+                    width = Mathf.Max(width, Mathf.Ceil(label.GetPreferredValues(label.text).x) + padding * 2f);
+            // The art keeps its aspect, so the buttons also need their full height: the column grows with the PvP button
+            // (it squeezed all four to 41 units, which also made the art narrower).
+            var height = 0f;
+            var count = 0;
+            foreach (Transform child in menu)
+            {
+                if (!child.gameObject.activeSelf) continue;
+                var element = child.GetComponent<LayoutElement>();
+                if (element != null) { element.preferredWidth = width; height += element.preferredHeight > 0f ? element.preferredHeight : 65f; }
+                else height += 65f;
+                var art = child.GetComponent<Image>();
+                if (art != null) art.preserveAspect = false; // stretches to the shared width (a few percent wider than the art)
+                count++;
+            }
+            var layout = menu.GetComponent<VerticalLayoutGroup>();
+            if (layout != null && count > 0) height += layout.spacing * (count - 1) + layout.padding.vertical;
+            var right = menu.anchoredPosition.x + menu.sizeDelta.x * (1f - menu.pivot.x);
+            menu.sizeDelta = new Vector2(width, Mathf.Max(menu.sizeDelta.y, height));
+            menu.anchoredPosition = new Vector2(right - width * (1f - menu.pivot.x), menu.anchoredPosition.y);
+            LayoutRebuilder.MarkLayoutForRebuild(menu);
         }
 
         static Transform FindDeep(Transform root, string name)

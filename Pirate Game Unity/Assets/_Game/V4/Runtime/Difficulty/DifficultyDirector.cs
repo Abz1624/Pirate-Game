@@ -148,6 +148,13 @@ namespace RoguePirates.V4.Difficulty
         float _pressureSum, _pressurePeak = 1f;
         int _pressureSamples;
         System.Random _eliteRng = new System.Random(EliteStreamSalt);
+        // Kill band (playtest): kills and spawns in the current fixed band, and what the last judged band set for this one.
+        int _bandKills, _bandSpawns;
+        float _bandStart;
+        public float KillBandRate { get; private set; } = 1f;
+        public float KillBandEliteChance { get; private set; }
+        /// <summary>Kills ÷ spawns of the last judged band (-1 before the first), for the console.</summary>
+        public float LastBandRatio { get; private set; } = -1f;
 
         public string Id => "difficulty";
         public int TickOrder => 50; // after the clock, before spawning (plan §4.4)
@@ -207,6 +214,11 @@ namespace RoguePirates.V4.Difficulty
             _pendingKills = _pendingSpawns = 0;
             _pendingHullLost = 0f;
             _failed = false;
+            _bandKills = _bandSpawns = 0;
+            _bandStart = 0f;
+            KillBandRate = 1f;
+            KillBandEliteChance = 0f;
+            LastBandRatio = -1f;
         }
 
         void OnEvents(IReadOnlyList<CombatEvent> batch)
@@ -215,8 +227,8 @@ namespace RoguePirates.V4.Difficulty
             {
                 switch (e.Kind)
                 {
-                    case CombatEventKind.Killed: _pendingKills++; break;
-                    case CombatEventKind.Spawned: _pendingSpawns++; break;
+                    case CombatEventKind.Killed: _pendingKills++; _bandKills++; break;
+                    case CombatEventKind.Spawned: _pendingSpawns++; _bandSpawns++; break;
                     case CombatEventKind.PlayerDamaged:
                         if (_inputs != null && _inputs.MaxHull > 0f) _pendingHullLost += e.Z / _inputs.MaxHull;
                         break;
@@ -239,6 +251,7 @@ namespace RoguePirates.V4.Difficulty
                 _sampleTimer = 0f;
                 return;
             }
+            TickKillBand(d);
             _sampleTimer += tick.Dt;
             while (_sampleTimer + 0.0001f >= d.sampleIntervalSeconds) // 60 × (1/60) falls just short of 1 in floats
             {
@@ -298,6 +311,52 @@ namespace RoguePirates.V4.Difficulty
                 (int)d.mode, 0, Pressure, OffenseNorm, DefenseNorm, d.version));
         }
 
+        /// <summary>
+        /// Kill band (playtest, 2 Oct 2026): at the end of each fixed band, kills ÷ spawns of that band sets the next band.
+        /// At or above the high ratio: full rate and elites; at or below the low ratio: the low rate and no elites; between:
+        /// the rate rises linearly, no elites. A jump of the clock (console) restarts the band.
+        /// </summary>
+        void TickKillBand(DirectorConfig d)
+        {
+            if (!d.killBandLever)
+            {
+                KillBandRate = 1f;
+                KillBandEliteChance = 0f;
+                return;
+            }
+            var len = Mathf.Max(1f, d.killBandSeconds);
+            if (_simTime < _bandStart || _simTime - _bandStart > len * 2f)
+            {
+                _bandStart = _simTime;
+                _bandKills = _bandSpawns = 0;
+                KillBandRate = 1f; // a clock jump: neutral until a band is judged again
+                KillBandEliteChance = 0f;
+                return;
+            }
+            if (_simTime - _bandStart < len) return;
+            _bandStart += len;
+            JudgeKillBand(_bandKills, _bandSpawns, d, out var rate, out var elite, out var ratio);
+            KillBandRate = rate;
+            KillBandEliteChance = elite;
+            LastBandRatio = ratio;
+            _bandKills = _bandSpawns = 0;
+        }
+
+        /// <summary>The next band's rate multiplier and elite chance from this band's kills and spawns (pure, tested).</summary>
+        public static void JudgeKillBand(int kills, int spawns, DirectorConfig d, out float rate, out float eliteChance, out float ratio)
+        {
+            ratio = spawns > 0 ? kills / (float)spawns : -1f;
+            if (spawns < Mathf.Max(1, d.killBandMinSpawns))
+            {
+                rate = 1f;
+                eliteChance = 0f;
+                return;
+            }
+            var t = Mathf.InverseLerp(d.killBandLowRatio, d.killBandHighRatio, ratio);
+            rate = Mathf.Lerp(Mathf.Clamp(d.killBandLowRateMultiplier, 0.05f, 1f), 1f, t);
+            eliteChance = ratio >= d.killBandHighRatio ? Mathf.Clamp01(d.killBandEliteChance) : 0f;
+        }
+
         public void EndRun(in RunEnd end)
         {
             if (_events != null) _events.TickPublished -= OnEvents;
@@ -322,7 +381,8 @@ namespace RoguePirates.V4.Difficulty
         public bool Adaptive => !_failed && Config != null && Config.mode == DirectorMode.Adaptive;
         DirectorConfig IDifficultyLevers.Config => Config;
 
-        public float ThreatRateMultiplier => Adaptive && Config.threatRateLever ? LeverMath.ThreatRate(Pressure, Config) : 1f;
+        public float ThreatRateMultiplier => !Adaptive ? 1f
+            : (Config.threatRateLever ? LeverMath.ThreatRate(Pressure, Config) : 1f) * (Config.killBandLever ? KillBandRate : 1f);
         public float TierLeadSeconds => Adaptive && Config.tierTimingLever ? LeverMath.TierLead(Pressure, PressureMax, Config) : 0f;
         public float CapHpMultiplier => Adaptive && Config.capHpLever ? LeverMath.CapHp(Pressure, PressureMax, Config) : 1f;
         // Never below 1: a weak build must not delay a "Pressure at least" phase that fired without the director (early, never later).
@@ -344,10 +404,13 @@ namespace RoguePirates.V4.Difficulty
         public float CompositionWeight(IReadOnlyList<string> roleTags) =>
             CompositionActive ? LeverMath.Composition(roleTags, CloseRangeShare, LeverMath.Above(Pressure, PressureMax), Config) : 1f;
 
+        public float PlayerDps => _inputs != null && Config != null && !_failed ? Mathf.Max(0f, PlayerPowerIndex.Offense(_inputs, Config)) : 0f;
+
         public bool RollElite()
         {
-            if (!Adaptive || !Config.eliteLever) return false;
-            var chance = LeverMath.EliteChance(Pressure, PressureMax, Config);
+            if (!Adaptive) return false;
+            var chance = Config.eliteLever ? LeverMath.EliteChance(Pressure, PressureMax, Config) : 0f;
+            if (Config.killBandLever) chance = Mathf.Max(chance, KillBandEliteChance);
             return chance > 0f && _eliteRng.NextDouble() < chance; // no draw at or below Pressure 1
         }
 

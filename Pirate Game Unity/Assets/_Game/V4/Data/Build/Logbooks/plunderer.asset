@@ -18,8 +18,8 @@ MonoBehaviour:
   logbookId: plunderer
   displayName: Plunderer
   stat: 18
-  perLevelAdditive: 0.03
+  perLevelAdditive: 0.1
   perLevelMultiplicative: 1
-  maxLevel: 20
+  maxLevel: 5
   inSaltwindPool: 1
   databaseOrder: 14

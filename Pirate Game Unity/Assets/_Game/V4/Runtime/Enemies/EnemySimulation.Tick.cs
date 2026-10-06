@@ -31,6 +31,7 @@ namespace RoguePirates.V4.Enemies
         public void Tick(float dt, Vector3 playerPos, DamageReceiver playerDamage)
         {
             var playerVelocity = ResolvePlayerVelocity(playerDamage);
+            TickLeash(dt, playerPos, playerVelocity);
             var frameContactRadius = GetPlayerContactRadius(playerDamage); // V5 M3e: once a frame (was once per enemy)
             using (HashMarker.Auto())
             {
@@ -41,11 +42,14 @@ namespace RoguePirates.V4.Enemies
                 }
             }
 
+            var damageSource = _services.DamageSource; // Playtest (6 Oct, owner): the session recorder's damage by source
             for (var i = 0; i < _agents.Length; i++)
             {
                 if (!_agents[i].active) continue;
                 ref var e = ref _agents[i];
+                if (e.remote) continue; // Playtest (3 Oct): the 1v1 opponent moves by the network (SetRemoteState)
                 var def = _definitions[e.definitionIndex];
+                if (damageSource != null) damageSource.Current = def.id;
                 Vector3 desiredVelocity;
                 using (BehaviorMarker.Auto())
                 {
@@ -103,8 +107,10 @@ namespace RoguePirates.V4.Enemies
                 if (e.contactCooldown > 0f) e.contactCooldown -= dt;
             }
 
+            if (damageSource != null) damageSource.Current = "hazard";
             if (_params.CombatEnabled)
                 using (HazardsMarker.Auto()) _services.Hazards.Tick(dt);
+            if (damageSource != null) damageSource.Current = null;
 
             using (SeparationMarker.Auto()) ResolvePlayerHullSeparation(playerPos, playerDamage);
             using (OverlapMarker.Auto()) ResolveAgentOverlaps();
@@ -168,11 +174,36 @@ namespace RoguePirates.V4.Enemies
             return _ship;
         }
 
+        /// <summary>
+        /// Playtest (3 Oct, owner: "when the player collided with an island, the enemies also reacted"): the ship's velocity
+        /// includes the island bounce's push, so every chaser's intercept point, the cannon leads and the leash heading
+        /// flipped with it. While a bounce lasts, enemies keep the velocity from just before the impact. Every enemy
+        /// behaviour reads this (it is set once a frame in <see cref="Tick"/>).
+        /// </summary>
+        public Vector3 PlayerVelocityForEnemies { get; private set; }
+
+        int _seenIslandImpacts = -1;
+        float _bounceUntil = float.NegativeInfinity;
+
         Vector3 ResolvePlayerVelocity(DamageReceiver playerDamage)
+        {
+            PlayerVelocityForEnemies = ReadPlayerVelocity(playerDamage);
+            return PlayerVelocityForEnemies;
+        }
+
+        Vector3 ReadPlayerVelocity(DamageReceiver playerDamage)
         {
             if (playerDamage == null) return Vector3.zero;
             var ship = ShipOf(playerDamage);
             if (ship == null) return Vector3.zero;
+            var impacts = ship.IslandImpactCount;
+            if (impacts != _seenIslandImpacts)
+            {
+                if (_seenIslandImpacts >= 0 && impacts > _seenIslandImpacts)
+                    _bounceUntil = Time.time + Mathf.Max(0.3f, ship.IslandImpact.BounceSeconds) + 0.25f;
+                _seenIslandImpacts = impacts;
+            }
+            if (Time.time < _bounceUntil) return PlayerVelocityForEnemies; // the velocity from before the bounce
             var velocity = ship.Velocity;
             velocity.y = 0f;
             return velocity;
@@ -262,7 +293,7 @@ namespace RoguePirates.V4.Enemies
             var count = 0;
             for (var i = 0; i < _agents.Length; i++)
             {
-                if (!_agents[i].active) continue;
+                if (!_agents[i].active || _agents[i].remote) continue;
                 if (count == _activeSlots.Length) System.Array.Resize(ref _activeSlots, _activeSlots.Length * 2);
                 _activeSlots[count++] = i;
             }
@@ -315,7 +346,7 @@ namespace RoguePirates.V4.Enemies
         /// </summary>
         public void ApplySlow(int index, float fraction, float seconds)
         {
-            if (index < 0 || index >= _agents.Length || !_agents[index].active || fraction <= 0f || seconds <= 0f) return;
+            if (index < 0 || index >= _agents.Length || !_agents[index].active || _agents[index].remote || fraction <= 0f || seconds <= 0f) return;
             ref var e = ref _agents[index];
             var def = _definitions[e.definitionIndex];
             var rules = WeaponRules?.Invoke();
@@ -338,7 +369,7 @@ namespace RoguePirates.V4.Enemies
         /// of it (combat design 2.3).</summary>
         public void Knockback(int index, Vector3 from, float meters)
         {
-            if (index < 0 || index >= _agents.Length || !_agents[index].active || meters <= 0f) return;
+            if (index < 0 || index >= _agents.Length || !_agents[index].active || _agents[index].remote || meters <= 0f) return;
             ref var e = ref _agents[index];
             var def = _definitions[e.definitionIndex];
             if (e.isBoss || def.isBoss) return;
@@ -359,7 +390,7 @@ namespace RoguePirates.V4.Enemies
         /// with the knockback's rules: bosses not moved, elites half, at most <c>maxKnockbackMeters</c>.</summary>
         public void Pull(int index, Vector3 toward, float meters)
         {
-            if (index < 0 || index >= _agents.Length || !_agents[index].active || meters <= 0f) return;
+            if (index < 0 || index >= _agents.Length || !_agents[index].active || _agents[index].remote || meters <= 0f) return;
             ref var e = ref _agents[index];
             var def = _definitions[e.definitionIndex];
             if (e.isBoss || def.isBoss) return;
@@ -820,7 +851,7 @@ namespace RoguePirates.V4.Enemies
             return intent;
         }
 
-        const float PursuitMaxLead = 1.2f;
+        const float PursuitMaxLead = 3f; // playtest (3 Oct, owner: "intercept the player's path"): was 1.2 s; now only a cap (InterceptLead)
         const float SurroundRange = 12f;
         const float SurroundMaxAngle = 75f;
 
@@ -829,6 +860,93 @@ namespace RoguePirates.V4.Enemies
         /// <see cref="PursuitMaxLead"/> s) and, inside <paramref name="surroundRange"/>, at a slot beside that point picked
         /// by unit id (golden-ratio spread of bearings), so a pack closes from several sides instead of trailing in one line.
         /// </summary>
+        // Playtest (3 Oct, owner): on the big map, enemies left far behind (they cannot catch a sailing ship) filled the cap
+        // out of sight, so the player saw only a few. Ordinary enemies further than LeashDistance are moved back to just
+        // outside the view, ahead of the ship (bosses, minibosses and elites stay where they are).
+        const float LeashDistance = 45f, LeashReturnDistance = 26f, LeashCheckSeconds = 0.5f;
+        float _leashTimer;
+        readonly System.Random _leashRandom = new System.Random(0x1EA5);
+
+        void TickLeash(float dt, Vector3 playerPos, Vector3 playerVelocity)
+        {
+            _leashTimer -= dt;
+            if (_leashTimer > 0f) return;
+            _leashTimer = LeashCheckSeconds;
+            playerVelocity.y = 0f;
+            var heading = playerVelocity.sqrMagnitude > 1f ? playerVelocity.normalized : Vector3.forward;
+            for (var i = 0; i < _agents.Length; i++)
+            {
+                ref var e = ref _agents[i];
+                if (!e.active || e.isBoss || e.isElite || e.remote) continue;
+                var def = _definitions[e.definitionIndex];
+                if (def == null || def.isMiniboss) continue;
+                if (HorizontalDistance(e.position, playerPos) < LeashDistance) continue;
+                for (var attempt = 0; attempt < 6; attempt++)
+                {
+                    var angle = ((float)_leashRandom.NextDouble() * 2f - 1f) * 75f;
+                    var p = playerPos + Quaternion.Euler(0f, angle, 0f) * heading * LeashReturnDistance;
+                    p = PlayBounds.Clamp(p, e.radius + 1f);
+                    p.y = def.visualHeightOffset;
+                    if (IslandObstacles.IsAvailable && IslandObstacles.IsPositionBlocked(p, e.radius + 0.5f)) continue;
+                    e.position = p;
+                    if (e.view != null)
+                    {
+                        e.view.position = p;
+                        ClearTrails(e.view); // playtest (3 Oct, owner: "the enemy trails were behaving weirdly")
+                    }
+                    break;
+                }
+            }
+        }
+
+        static readonly System.Collections.Generic.List<TrailRenderer> TrailBuffer = new System.Collections.Generic.List<TrailRenderer>();
+        static readonly System.Collections.Generic.List<ParticleSystem> ParticleBuffer = new System.Collections.Generic.List<ParticleSystem>();
+
+        /// <summary>Playtest (3 Oct, owner): a leashed enemy jumps tens of metres in one frame; its wake trails (world
+        /// space) would draw a long streak across the sea from where it was, so their points and particles are dropped.</summary>
+        static void ClearTrails(Transform view)
+        {
+            view.GetComponentsInChildren(true, TrailBuffer);
+            for (var i = 0; i < TrailBuffer.Count; i++) if (TrailBuffer[i] != null) TrailBuffer[i].Clear();
+            view.GetComponentsInChildren(true, ParticleBuffer);
+            for (var i = 0; i < ParticleBuffer.Count; i++) if (ParticleBuffer[i] != null) ParticleBuffer[i].Clear(false);
+            TrailBuffer.Clear();
+            ParticleBuffer.Clear();
+        }
+
+        /// <summary>
+        /// Playtest (3 Oct, owner: the dinghy "syncs with the player on every turn"): the lead was the full travel time
+        /// (up to 3 s) even when the chaser could never get there, so packs aimed far ahead of a faster ship and swung with
+        /// every turn it made. Now the lead is the real intercept time when there is one (a ship sailing away gets a short
+        /// one), varied per unit (65 to 100 %) so a pack does not turn as one, and the point it aims at is never further
+        /// ahead of the ship than 60 % of the chaser's distance, so close in it heads for the ship itself.
+        /// </summary>
+        static float InterceptLead(int agentId, Vector3 toPlayer, float dist, float agentSpeed, Vector3 playerVelocity)
+        {
+            var playerSpeed = playerVelocity.magnitude;
+            // |toPlayer + v t| = s t  ->  (v.v - s^2) t^2 + 2 (toPlayer.v) t + toPlayer.toPlayer = 0
+            var a = playerSpeed * playerSpeed - agentSpeed * agentSpeed;
+            var b = 2f * Vector3.Dot(toPlayer, playerVelocity);
+            var c = dist * dist;
+            var lead = -1f;
+            if (Mathf.Abs(a) < 0.001f) { if (b < 0f) lead = -c / b; }
+            else
+            {
+                var disc = b * b - 4f * a * c;
+                if (disc >= 0f)
+                {
+                    var root = Mathf.Sqrt(disc);
+                    var t1 = (-b - root) / (2f * a);
+                    var t2 = (-b + root) / (2f * a);
+                    lead = t1 > 0f && (t1 < t2 || t2 <= 0f) ? t1 : t2;
+                }
+            }
+            if (!(lead > 0f)) lead = dist / (agentSpeed + playerSpeed); // cannot catch it: a short lead, then chase
+            lead *= 0.65f + 0.35f * Mathf.Repeat(agentId * 0.381966f, 1f);
+            lead = Mathf.Min(lead, PursuitMaxLead);
+            return Mathf.Min(lead, dist * 0.6f / Mathf.Max(0.01f, playerSpeed));
+        }
+
         internal static Vector3 GetPursuitDirection(
             int agentId,
             Vector3 agentPos,
@@ -846,14 +964,7 @@ namespace RoguePirates.V4.Enemies
             playerVelocity.y = 0f;
             var aim = playerPos;
             if (playerVelocity.sqrMagnitude > 0.12f)
-            {
-                var closing = Mathf.Max(1f, agentSpeed);
-                for (var pass = 0; pass < 2; pass++)
-                {
-                    var lead = Mathf.Min(PursuitMaxLead, HorizontalDistance(aim, agentPos) / closing);
-                    aim = playerPos + playerVelocity * lead;
-                }
-            }
+                aim = playerPos + playerVelocity * InterceptLead(agentId, toPlayer, dist, Mathf.Max(1f, agentSpeed), playerVelocity);
 
             if (surroundRange > 0f && dist < surroundRange && dist > 2.5f)
             {
@@ -1023,7 +1134,7 @@ namespace RoguePirates.V4.Enemies
                 if (hostiles == null) return;
 
                 GetHostileShotProfile(def, rules, out var speed, out var life, out var hitRadius, out var visualRadius);
-                dir = AimLed(e.position, playerPos, playerVelocity, speed, dir);
+                dir = Spread(AimLed(e.position, playerPos, playerVelocity, speed, dir), e);
                 var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
                 if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius,
                         LedShotDistance(muzzle, playerPos, playerVelocity, speed)))
@@ -1066,7 +1177,7 @@ namespace RoguePirates.V4.Enemies
             if (hostiles == null) return;
 
             GetHostileShotProfile(def, rules, out var speed, out var life, out var hitRadius, out var visualRadius);
-            dir = AimLed(e.position, playerPos, playerVelocity, speed, dir);
+            dir = Spread(AimLed(e.position, playerPos, playerVelocity, speed, dir), e);
             var muzzle = e.position + dir * Mathf.Max(e.radius + 1.1f, 1.6f) + Vector3.up * 0.55f;
             var shotDistance = LedShotDistance(muzzle, playerPos, playerVelocity, speed);
             if (!hostiles.TrySpawn(muzzle, dir, speed, e.damage, life, hitRadius, visualRadius, shotDistance))
@@ -1093,6 +1204,22 @@ namespace RoguePirates.V4.Enemies
             if (aim.sqrMagnitude > 0.01f) return aim.normalized;
             fallback.y = 0f;
             return fallback.sqrMagnitude > 0.0001f ? fallback.normalized : Vector3.forward;
+        }
+
+        /// <summary>
+        /// Playtest (3 Oct, owner, round 7: "firing something too accurate"): an ordinary shooter's aim wanders up to
+        /// <see cref="ShotSpreadDegrees"/> either side of the led line, so holding a course is not a certain hit. Elites,
+        /// minibosses and the boss keep the exact line (their shots are slow and telegraphed). Deterministic: from the
+        /// unit's id and position, no random draw.
+        /// </summary>
+        internal const float ShotSpreadDegrees = 8f;
+
+        internal static Vector3 Spread(Vector3 dir, in EnemyUnit agent)
+        {
+            if (agent.isElite || agent.isBoss) return dir;
+            var h = Mathf.Sin(agent.id * 12.9898f + agent.position.x * 78.233f + agent.position.z * 37.719f) * 43758.5453f;
+            var u = h - Mathf.Floor(h); // 0..1
+            return Quaternion.Euler(0f, (u * 2f - 1f) * ShotSpreadDegrees, 0f) * dir;
         }
 
         /// <summary>Horizontal distance from the muzzle to the led aim point, so the shot's arc lands there.</summary>
@@ -1235,6 +1362,16 @@ namespace RoguePirates.V4.Enemies
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active) return;
             ref var e = ref _agents[index];
+            if (e.remote)
+            {
+                // Playtest (3 Oct, owner): the 1v1 opponent's hull is its own client's; the hit goes to the server instead.
+                RemoteDamaged?.Invoke(index, damage, weaponId);
+                if (showHitFeedback && e.view != null && !(SuppressHitHighlight != null && SuppressHitHighlight(weaponId)))
+                    _feedback?.DamageHighlight(e.view);
+                HitPublished?.Invoke(damage, isCrit, e.position, weaponId);
+                if (showHitFeedback && damage >= 0.5f) _feedback?.DamageNumber(e.position, damage, isCrit);
+                return;
+            }
             if (!string.IsNullOrEmpty(weaponId))
                 e.lastHitWeaponId = weaponId;
             e.hp -= damage;

@@ -125,6 +125,15 @@ namespace RoguePirates.V4.Progression
         /// <summary>Weapon level the evolution card needs (V3: the max level).</summary>
         public int EvolutionUnlockLevel => P.evolutionUnlockLevel > 0 ? P.evolutionUnlockLevel : P.maxWeaponLevel;
 
+        /// <summary>Playtest (3 Oct, owner): the level a weapon's evolution card needs, its max level (the config's
+        /// maxWeaponLevel when the weapon is unknown), never below the unlock level.</summary>
+        public int EvolutionCardLevel(string weaponId)
+        {
+            var def = FindWeapon(weaponId);
+            var max = def != null && def.maxLevel > 0 ? def.maxLevel : P.maxWeaponLevel;
+            return Mathf.Max(EvolutionUnlockLevel, max);
+        }
+
         /// <summary>Levels a weapon-upgrade card of this rarity grants (V3: 1).</summary>
         public int LevelsFor(int rarity)
         {
@@ -287,8 +296,10 @@ namespace RoguePirates.V4.Progression
             foreach (var weaponId in state.OwnedWeapons)
             {
                 var level = state.WeaponLevel(weaponId);
-                // V3 WeaponEvolutionCatalog.TryGetEligible: max level (V5 M3: the unlock level), not evolved, has an evolution, owns its item.
-                if (level < EvolutionUnlockLevel || ctx.IsEvolved(weaponId)) continue;
+                // V3 WeaponEvolutionCatalog.TryGetEligible: max level, not evolved, has an evolution, owns its item.
+                // Playtest (3 Oct, owner): the evolution card only at the weapon's MAX level (not the earlier unlock level;
+                // the chest may still hand out the evolution item from the unlock level on).
+                if (level < EvolutionCardLevel(weaponId) || ctx.IsEvolved(weaponId)) continue;
                 var evo = _evolutions()?.FirstOrDefault(e => e != null && e.baseWeapon != null && e.baseWeapon.weaponId == weaponId);
                 if (evo == null || !ctx.HasItem(evo.requiredItemId)) continue;
                 var offer = new Offer

@@ -209,6 +209,8 @@ namespace RoguePirates.V4.Composition
             var all = _config.All<CaptainConfig>().OrderBy(c => c.menuOrder).ToList();
             var chosen = all.FirstOrDefault(c => c.legacyId == id);
             var locks = MenuServices.CreateLocks(() => _config);
+            // Playtest (3 Oct, owner): in a 1v1 both players sail the same ship whatever their Captain: the first one.
+            if (PvpWeapons != null) return all.FirstOrDefault();
             var allowLocked = RunRequest.ConsumeAllowLockedCaptain(); // the console's "restart as" (dev tools)
             if (chosen != null && (allowLocked || !locks.IsLocked(chosen))) return chosen;
             return all.FirstOrDefault(c => !locks.IsLocked(c)) ?? all.FirstOrDefault();
@@ -241,6 +243,15 @@ namespace RoguePirates.V4.Composition
         /// <summary>The starting weapon by the unlock rule (V3: Saltwind always starts with the First Conquest weapon).</summary>
         public string ResolveStartingWeapon(CaptainConfig captain)
         {
+            var weapon = ResolveConfiguredStartingWeapon(captain);
+            // Playtest (3 Oct, owner, round 7): a switched-off weapon (Ember's flamethrower) starts as the First Conquest weapon.
+            if (RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(weapon)) return weapon;
+            var unlocks = _config.Single<UnlockConfig>();
+            return unlocks != null ? unlocks.firstConquestWeaponId : weapon;
+        }
+
+        string ResolveConfiguredStartingWeapon(CaptainConfig captain)
+        {
             var unlocks = _config.Single<UnlockConfig>();
             var firstConquest = unlocks != null ? unlocks.firstConquestWeaponId : null;
             var conquered = ContentPort.ConqueredForStartingWeapon;
@@ -256,8 +267,17 @@ namespace RoguePirates.V4.Composition
         public void BeginProgression(string startingWeapon)
         {
             var slots = Experiment != null ? Experiment.weaponSlotCap : 6;
+            if (PvpWeapons != null)
+                foreach (var w in PvpWeapons)
+                    if (RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(w)) { startingWeapon = w; break; }
             Progression.BeginRun(startingWeapon, slots, _config.Single<ProgressionConfig>().newWeaponDamageBonus);
+            if (PvpWeapons != null) Progression.BeginPvp(PvpWeapons, PvpLogbooks);
         }
+
+        /// <summary>Playtest (3 Oct, owner): the 1v1 draft (six weapons and six Logbooks in priority order); null in a voyage.
+        /// Set, the run starts with it and the first Captain.</summary>
+        public IReadOnlyList<string> PvpWeapons { get; set; }
+        public IReadOnlyList<string> PvpLogbooks { get; set; }
 
         /// <summary>V3 EnsureItemSystems: the item triggers (V3RunItemEffects.Update) in the frame's Items step.</summary>
         public void BeginItems() => Frame?.Register(FrameStep.Items, Items.Tick);
@@ -317,8 +337,17 @@ namespace RoguePirates.V4.Composition
 
         public static int LifetimeGold => RoguePirates.V4.Rewards.LifetimeGold.Total;
 
-        /// <summary>The build's incoming-damage multiplier on the ship (Brace!, Reinforced Keel).</summary>
-        public float IncomingDamageMultiplier() => Captain.IncomingDamageMultiplier * Items.IncomingDamageMultiplier();
+        /// <summary>The build's incoming-damage multiplier on the ship (Brace!, Reinforced Keel, Armor).</summary>
+        public float IncomingDamageMultiplier() => Captain.IncomingDamageMultiplier * Items.IncomingDamageMultiplier() * ArmorMultiplier();
+
+        /// <summary>Playtest (3 Oct, owner: "Armor does nothing"): Armor cuts every hit with diminishing returns, damage x
+        /// 20 / (20 + Armor): 4 Armor (Reef Carapace) takes 17% off, 15 (Ironclad at rank 5) about 43%.</summary>
+        public const float ArmorHalfPoint = 20f;
+        float ArmorMultiplier()
+        {
+            var armor = Mathf.Max(0f, Stats.Get((int)StatId.Armor));
+            return ArmorHalfPoint / (ArmorHalfPoint + armor);
+        }
 
         /// <summary>V3 DamageReceiver.TakeDamage told the items after every hit it took.</summary>
         public void AttachShip(PlayerShipController ship)
@@ -488,6 +517,16 @@ namespace RoguePirates.V4.Composition
                 if (hull != null && hull.IsAlive) hull.Heal(Mathf.Min(amount, hull.MaxHP - hull.CurrentHP));
             }
             public bool RollHealthDrop(float chance) => Run != null && Run.Rng.DirectorFloat() < chance;
+            public float RunSeconds => Run != null ? Run.ElapsedSeconds : 0f;
+            public float MaxHull => _w.Ship != null && _w.Ship.Damage != null ? _w.Ship.Damage.MaxHP : 100f;
+            public float HullFraction
+            {
+                get
+                {
+                    var hull = _w.Ship != null ? _w.Ship.Damage : null;
+                    return hull != null && hull.MaxHP > 0f ? hull.CurrentHP / hull.MaxHP : 1f;
+                }
+            }
             public void PlaySound(string id) { } // V3's SfxService only logged placeholder ids; V4 has no pickup sounds yet
         }
     }

@@ -18,8 +18,8 @@ MonoBehaviour:
   logbookId: carpenters_notes
   displayName: Carpenter's Notes
   stat: 0
-  perLevelAdditive: 6.499998
+  perLevelAdditive: 20
   perLevelMultiplicative: 1
-  maxLevel: 12
+  maxLevel: 5
   inSaltwindPool: 1
   databaseOrder: 5

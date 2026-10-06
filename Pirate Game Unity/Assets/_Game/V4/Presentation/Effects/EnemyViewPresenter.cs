@@ -43,6 +43,8 @@ namespace RoguePirates.V4.Presentation.Effects
         public EnemyViewTint Tint => _tint;
         /// <summary>Demo: the artists' per-enemy VFX profiles (trail, hit).</summary>
         public VfxProfilePlayer Profiles { get; set; }
+        /// <summary>Playtest (3 Oct, owner): the live boss's view (null when there is none), for the off-screen boss arrow.</summary>
+        public Transform BossView { get; private set; }
 
         public EnemyViewPresenter(PoolService pools, DemoJuiceSettings juice)
         {
@@ -64,11 +66,47 @@ namespace RoguePirates.V4.Presentation.Effects
             Register(_cube, PrewarmCubes, "placeholder cubes");
         }
 
+        // Playtest (3 Oct, owner): one colour per enemy ship type and variant, readable at a glance from the camera (sails
+        // and flags in the colour, the hull leaning towards it). A variant's colour is its data tint made vivid. Ids not
+        // listed (creatures, the boss) keep their data tint.
+        static readonly Dictionary<string, Color> ShipTypeColors = new Dictionary<string, Color>
+        {
+            { "deckhand_dinghy", new Color(0.95f, 0.85f, 0.55f) }, // sand
+            { "treasure_raider", new Color(1f, 0.78f, 0.1f) },     // gold
+            { "cutthroat_skiff", new Color(1f, 0.28f, 0.22f) },    // red
+            { "needle_sloop", new Color(0.8f, 1f, 0.2f) },         // lime
+            { "drowned_pursuer", new Color(0.35f, 1f, 0.55f) },    // sea green
+            { "cannonboat", new Color(0.3f, 0.5f, 1f) },           // navy blue
+            { "gunner_cog", new Color(0.9f, 0.15f, 0.3f) },        // crimson
+            { "net_cutter", new Color(1f, 0.6f, 0.15f) },          // orange
+            { "shield_frigate", new Color(0.75f, 0.85f, 1f) },     // steel white
+            { "drowned_harrier", new Color(0.2f, 1f, 0.85f) },     // teal
+            { "bomb_boat", new Color(1f, 0.42f, 0.05f) },          // fire orange
+            { "bomb_ketch", new Color(0.7f, 0.3f, 1f) },           // purple
+            { "rammer_raft", new Color(0.92f, 0.88f, 0.78f) },     // bone
+            { "ram_raider", new Color(1f, 0.3f, 0.35f) },          // rose red
+            { "boarding_barge", new Color(0.4f, 0.72f, 1f) },      // sky blue
+            { "powder_barge", new Color(1f, 0.55f, 0.1f) },        // powder orange
+            { "repair_tender", new Color(0.35f, 1f, 0.35f) },      // green
+        };
+        const float HullTintStrength = 0.6f;
+
+        /// <summary>The enemy type's colour (its data tint when it has none in the table).</summary>
+        public static Color TypeColor(EnemyDefinition def) =>
+            def != null && def.id != null && ShipTypeColors.TryGetValue(def.id, out var c) ? c : def != null ? def.visualTint : Color.white;
+
         public void Prepare(EnemyDefinition[] definitions) { } // V3 only recorded the model ids; models are stripped per instance
 
         public float FallbackVisualScale(EnemyDefinition def) => EnemyVisualFallbackResolver.ResolveVisualScale(def);
 
         public Transform CreateView(EnemyDefinition def, Vector3 position, float scale, bool elite, int animationSeed)
+        {
+            var view = CreateModel(def, position, scale, elite, animationSeed);
+            if (view != null && def.isBoss) BossView = view;
+            return view;
+        }
+
+        Transform CreateModel(EnemyDefinition def, Vector3 position, float scale, bool elite, int animationSeed)
         {
             if (def == null || _pools == null) return null;
             var prefab = def.visualPrefab != null ? def.visualPrefab : EnemyVisualFallbackResolver.ResolvePrefab(def);
@@ -78,7 +116,13 @@ namespace RoguePirates.V4.Presentation.Effects
                 if (view == null) return null;
                 view.localScale = Vector3.one * (scale * (def.viewSize > 0f ? def.viewSize : 1f));
                 _tint.Record(view); // its own materials, recorded on its first use (before any burn flash)
-                _tint.Apply(view, def.visualTint); // V5 M3d: a variant's own colours (pooled views share models)
+                // V5 M3d: a variant's own colours (pooled views share models). Playtest (3 Oct, owner: "most of the ships
+                // were visually the same"): each ship type has its own colour on its sails and flags, and its hull leans
+                // towards it; a creature keeps its data tint. Playtest (3 Oct, owner, round 7): no masthead pennant ("a coloured
+                // bar above almost every enemy").
+                var accent = TypeColor(def);
+                var hullTint = accent == def.visualTint ? def.visualTint : Color.Lerp(Color.white, accent, HullTintStrength);
+                _tint.Apply(view, hullTint, accent);
                 EnemyViewAnimation.ApplySpawnVariation(view, animationSeed);
                 Profiles?.EnemyViewCreated(def.id, view);
                 return view;
@@ -98,6 +142,10 @@ namespace RoguePirates.V4.Presentation.Effects
         public Transform AttachHealthBar(EnemyDefinition def, Transform view, bool elite)
         {
             if (view == null || _pools == null || !_pools.Has(HealthBarKey)) return null;
+            // Playtest (4 Oct, owner): health bars on elites, minibosses and the boss only (not ordinary enemies). An elite is
+            // a unit with an elite affix or an elite variant (elite_hammerhead, elite_kraken_spawn).
+            var isElite = elite || (def != null && def.id != null && def.id.StartsWith("elite_", System.StringComparison.Ordinal));
+            if (def == null || (!def.isBoss && !def.isMiniboss && !isElite)) return null;
             var go = _pools.Acquire(HealthBarKey, view.position, Quaternion.identity);
             if (go == null) return null;
             var bar = go.GetComponent<WorldHealthBar>();
@@ -107,8 +155,23 @@ namespace RoguePirates.V4.Presentation.Effects
             return go.transform;
         }
 
+        /// <summary>Playtest (3 Oct, owner, round 7: "in pvp i couldn't see other player's ... health"): the enemy health bar
+        /// over the 1v1 opponent's ship (the caller sets its fill and releases it).</summary>
+        public WorldHealthBar AttachOpponentHealthBar(Transform view)
+        {
+            if (view == null || _pools == null || !_pools.Has(HealthBarKey)) return null;
+            var go = _pools.Acquire(HealthBarKey, view.position, Quaternion.identity);
+            if (go == null) return null;
+            var bar = go.GetComponent<WorldHealthBar>();
+            if (bar == null) bar = go.AddComponent<WorldHealthBar>();
+            bar.Bind(view, _juice != null ? _juice.enemyHealthBarHeight : 3f);
+            bar.SetFill(1f);
+            return bar;
+        }
+
         public void Release(EnemyDefinition def, Transform view, Transform healthBar)
         {
+            if (view != null && view == BossView) BossView = null;
             if (view != null)
             {
                 Profiles?.EnemyViewReleased(view);
@@ -118,6 +181,23 @@ namespace RoguePirates.V4.Presentation.Effects
                 if (!_pools.Release(view.gameObject)) Object.Destroy(view.gameObject);
             }
             if (healthBar != null && !_pools.Release(healthBar.gameObject)) Object.Destroy(healthBar.gameObject);
+        }
+
+        /// <summary>Playtest (3 Oct, owner): the live enemy view nearest a point within a radius (null when none), for the
+        /// grouped hit feedback (burn ticks and other damage without a view of its own).</summary>
+        public Transform NearestView(Vector3 position, float radius)
+        {
+            Transform best = null;
+            var bestSqr = radius * radius;
+            foreach (var view in _liveKey.Keys)
+            {
+                if (view == null) continue;
+                var d = view.position - position;
+                d.y = 0f;
+                var sqr = d.sqrMagnitude;
+                if (sqr <= bestSqr) { bestSqr = sqr; best = view; }
+            }
+            return best;
         }
 
         public void TickSpring(Transform view, ref bool springing, bool isSpringing) => EnemyViewAnimation.TickSwordfish(view, ref springing, isSpringing);
@@ -131,7 +211,16 @@ namespace RoguePirates.V4.Presentation.Effects
         {
             if (view == null || category != EnemyCategory.Ship) return;
             if (!_wakes.TryGetValue(view, out var wake)) _wakes[view] = wake = FindWake(view);
-            var moving = velocity.sqrMagnitude > WakeSpeedSqr;
+            // Playtest (3 Oct, owner: "the enemy trails were behaving weirdly"). A new life sizes the trails to the
+            // enemy's drawn size (they were the model's 2 m whatever the enemy's scale); a jump (the leash moving a far
+            // enemy ahead of the player, a respawn) clears them instead of drawing a line across the sea; and the wake
+            // starts and stops with some slack, fading out rather than vanishing when a ship slows.
+            var position = view.position;
+            if (wake.State == -1) ScaleTrails(view, wake);
+            else if ((position - wake.LastPosition).sqrMagnitude > WakeJumpSqr) ClearWake(wake);
+            wake.LastPosition = position;
+            var speedSqr = velocity.sqrMagnitude;
+            var moving = wake.State == 1 ? speedSqr > WakeStopSpeedSqr : speedSqr > WakeSpeedSqr;
             if (moving)
                 for (var i = 0; i < wake.Roots.Length; i++)
                     if (wake.Roots[i] != null && !wake.Roots[i].activeSelf) wake.Roots[i].SetActive(true);
@@ -143,7 +232,6 @@ namespace RoguePirates.V4.Presentation.Effects
                 var trail = wake.Trails[i];
                 if (trail == null || !trail.gameObject.activeInHierarchy) continue;
                 trail.emitting = moving;
-                if (!moving) trail.Clear();
             }
             for (var i = 0; i < wake.Particles.Length; i++)
             {
@@ -155,6 +243,28 @@ namespace RoguePirates.V4.Presentation.Effects
         }
 
         const float WakeSpeedSqr = 0.35f;
+        const float WakeStopSpeedSqr = 0.12f;
+        const float WakeJumpSqr = 4f * 4f; // no ship moves 4 m in a frame
+        readonly Dictionary<TrailRenderer, float> _trailWidths = new Dictionary<TrailRenderer, float>();
+
+        void ScaleTrails(Transform view, Wake wake)
+        {
+            var scale = Mathf.Abs(view.lossyScale.x);
+            for (var i = 0; i < wake.Trails.Length; i++)
+            {
+                var trail = wake.Trails[i];
+                if (trail == null) continue;
+                if (!_trailWidths.TryGetValue(trail, out var width)) _trailWidths[trail] = width = trail.widthMultiplier; // the model's own
+                trail.widthMultiplier = width * scale;
+                trail.Clear();
+            }
+        }
+
+        static void ClearWake(Wake wake)
+        {
+            for (var i = 0; i < wake.Trails.Length; i++) if (wake.Trails[i] != null) wake.Trails[i].Clear();
+            for (var i = 0; i < wake.Particles.Length; i++) if (wake.Particles[i] != null) wake.Particles[i].Clear(true);
+        }
 
         sealed class Wake
         {
@@ -163,6 +273,7 @@ namespace RoguePirates.V4.Presentation.Effects
             public ParticleSystem[] Particles;
             /// <summary>-1 unknown (a fresh or reused view), 0 still, 1 moving.</summary>
             public int State = -1;
+            public Vector3 LastPosition;
         }
 
         readonly Dictionary<Transform, Wake> _wakes = new Dictionary<Transform, Wake>();
@@ -184,7 +295,7 @@ namespace RoguePirates.V4.Presentation.Effects
             var particles = new List<ParticleSystem>();
             foreach (var ps in view.GetComponentsInChildren<ParticleSystem>(true))
                 if (IsWakePart(ps.gameObject.name)) particles.Add(ps);
-            return new Wake { Roots = roots.ToArray(), Trails = view.GetComponentsInChildren<TrailRenderer>(true), Particles = particles.ToArray() };
+            return new Wake { Roots = roots.ToArray(), Trails = view.GetComponentsInChildren<TrailRenderer>(true), Particles = particles.ToArray(), LastPosition = view.position };
         }
         public void SetBurning(Transform view, bool burning) => EnemyBurnFlash.SetBurning(view, burning);
 
@@ -198,6 +309,7 @@ namespace RoguePirates.V4.Presentation.Effects
         {
             _tint.Clear();
             _wakes.Clear();
+            _trailWidths.Clear();
             if (_cube != null) Object.Destroy(_cube);
             _cube = null;
         }

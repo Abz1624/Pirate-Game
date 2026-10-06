@@ -17,8 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m5
   itemId: skeleton_key
   displayName: Skeleton Key
-  description: 6% chance a chest is free, more with copies (at most 35%); a free
-    chest does not raise the next price.
+  description: 6% chance a chest is free, more with copies, up to 35%. A free chest
+    does not raise the next price.
   rarity: 1
   inChestPool: 1
   inLevelUpPool: 0

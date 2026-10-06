@@ -1,0 +1,434 @@
+[
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.045,
+  "focus": 0.5,
+  "oldEnd": 20,
+  "oldAfloat16": 0.625,
+  "curEnd": 7.8,
+  "err": 1.474
+ },
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.2,
+  "focus": 0.5,
+  "oldEnd": 14.6,
+  "oldAfloat16": 0.475,
+  "curEnd": 6.8,
+  "err": 1.567
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.045,
+  "focus": 0.5,
+  "oldEnd": 20,
+  "oldAfloat16": 0.7,
+  "curEnd": 8.7,
+  "err": 1.595
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.2,
+  "focus": 0.5,
+  "oldEnd": 20,
+  "oldAfloat16": 0.5,
+  "curEnd": 7.5,
+  "err": 1.629
+ },
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.1,
+  "focus": 0.5,
+  "oldEnd": 19.9,
+  "oldAfloat16": 0.5,
+  "curEnd": 7.5,
+  "err": 1.633
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.1,
+  "focus": 0.5,
+  "oldEnd": 20,
+  "oldAfloat16": 0.7,
+  "curEnd": 8.9,
+  "err": 1.638
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.1,
+  "focus": 0.5,
+  "oldEnd": 20,
+  "oldAfloat16": 0.575,
+  "curEnd": 8.1,
+  "err": 1.655
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.1,
+  "focus": 0.5,
+  "oldEnd": 20,
+  "oldAfloat16": 0.75,
+  "curEnd": 9.4,
+  "err": 1.69
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.045,
+  "focus": 0.5,
+  "oldEnd": 20,
+  "oldAfloat16": 0.775,
+  "curEnd": 9.4,
+  "err": 1.69
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.045,
+  "focus": 0.5,
+  "oldEnd": 20,
+  "oldAfloat16": 0.775,
+  "curEnd": 9.7,
+  "err": 1.771
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.35,
+  "focus": 0.5,
+  "oldEnd": 14,
+  "oldAfloat16": 0.4,
+  "curEnd": 6.9,
+  "err": 1.806
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.2,
+  "focus": 0.5,
+  "oldEnd": 20,
+  "oldAfloat16": 0.575,
+  "curEnd": 8.7,
+  "err": 1.836
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.35,
+  "focus": 0.5,
+  "oldEnd": 13.9,
+  "oldAfloat16": 0.325,
+  "curEnd": 6.5,
+  "err": 1.842
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.2,
+  "focus": 0.5,
+  "oldEnd": 20,
+  "oldAfloat16": 0.55,
+  "curEnd": 8.6,
+  "err": 1.862
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.35,
+  "focus": 0.5,
+  "oldEnd": 13,
+  "oldAfloat16": 0.2,
+  "curEnd": 5.6,
+  "err": 1.879
+ },
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.35,
+  "focus": 0.5,
+  "oldEnd": 10.8,
+  "oldAfloat16": 0.125,
+  "curEnd": 5.4,
+  "err": 2.12
+ },
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.1,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.8,
+  "curEnd": 12.2,
+  "err": 2.471
+ },
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.045,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.95,
+  "curEnd": 12.2,
+  "err": 2.486
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.2,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.8,
+  "curEnd": 12.4,
+  "err": 2.543
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.1,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.95,
+  "curEnd": 12.5,
+  "err": 2.562
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.2,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.7,
+  "curEnd": 12.3,
+  "err": 2.605
+ },
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.2,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.65,
+  "curEnd": 12.1,
+  "err": 2.657
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.2,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.875,
+  "curEnd": 13.1,
+  "err": 2.738
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.045,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.95,
+  "curEnd": 13.1,
+  "err": 2.738
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.1,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.95,
+  "curEnd": 13.1,
+  "err": 2.752
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.35,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.625,
+  "curEnd": 12.4,
+  "err": 2.807
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.1,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.95,
+  "curEnd": 13.6,
+  "err": 2.89
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.045,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.975,
+  "curEnd": 13.6,
+  "err": 2.89
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.35,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.5,
+  "curEnd": 12.2,
+  "err": 2.99
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.045,
+  "focus": 0.25,
+  "oldEnd": 20,
+  "oldAfloat16": 0.975,
+  "curEnd": 14,
+  "err": 3.01
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.35,
+  "focus": 0.25,
+  "oldEnd": 14,
+  "oldAfloat16": 0.375,
+  "curEnd": 11.8,
+  "err": 3.256
+ },
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.2,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 0.8,
+  "curEnd": 15.4,
+  "err": 3.39
+ },
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.35,
+  "focus": 0.25,
+  "oldEnd": 13.1,
+  "oldAfloat16": 0.175,
+  "curEnd": 11.2,
+  "err": 3.523
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.35,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 0.525,
+  "curEnd": 14.8,
+  "err": 3.674
+ },
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.35,
+  "focus": 0.125,
+  "oldEnd": 14.1,
+  "oldAfloat16": 0.325,
+  "curEnd": 14.1,
+  "err": 3.983
+ },
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.1,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 0.95,
+  "curEnd": 18.3,
+  "err": 4.224
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.2,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 0.95,
+  "curEnd": 18.6,
+  "err": 4.31
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.35,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 0.675,
+  "curEnd": 18.5,
+  "err": 4.436
+ },
+ {
+  "shotHitChance": 0.75,
+  "contactRate": 0.045,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 1,
+  "curEnd": 19.1,
+  "err": 4.452
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.045,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 1,
+  "curEnd": 20,
+  "err": 4.714
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.1,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 1,
+  "curEnd": 20,
+  "err": 4.714
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.2,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 0.975,
+  "curEnd": 20,
+  "err": 4.714
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.045,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 1,
+  "curEnd": 20,
+  "err": 4.714
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.1,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 1,
+  "curEnd": 20,
+  "err": 4.714
+ },
+ {
+  "shotHitChance": 0.3,
+  "contactRate": 0.2,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 0.95,
+  "curEnd": 20,
+  "err": 4.714
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.045,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 1,
+  "curEnd": 20,
+  "err": 4.714
+ },
+ {
+  "shotHitChance": 0.5,
+  "contactRate": 0.1,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 1,
+  "curEnd": 20,
+  "err": 4.714
+ },
+ {
+  "shotHitChance": 0.15,
+  "contactRate": 0.35,
+  "focus": 0.125,
+  "oldEnd": 20,
+  "oldAfloat16": 0.725,
+  "curEnd": 20,
+  "err": 4.764
+ }
+]

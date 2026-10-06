@@ -89,9 +89,25 @@ namespace RoguePirates.V4.Composition
         /// <summary>
         /// Where V3 initialized POIManager: markers, then V3's barrels (only when the stage config places them).
         /// </summary>
+        /// <summary>Playtest (3 Oct, owner): a 1v1 match: no chests, landmarks, Beacon, barrels or boss on the stage.</summary>
+        public bool PvpMode { get; set; }
+
         public void InitializePoi(StageLayout layout)
         {
+            if (PvpMode)
+            {
+                _active = false;
+                layout?.pois?.Clear(); // the discovery and the minimap share the layout: they see none either
+                Module.Initialize(layout, enabled: false, placeholderVisuals: _usePlaceholderVisuals);
+                return;
+            }
             _active = true;
+            // Playtest (4-5 Oct, owner): no points of interest in a voyage except the salvage chests (the only item source):
+            // no landmarks, Beacon or Powder Cache (a DemoJuiceSettings switch; the Module Lab keeps them). The module stays
+            // on: the boss still rises on its own timer.
+            if (RoguePirates.V4.Foundation.Core.DemoMode.ChestsOnlyPointsOfInterest &&
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != V4SceneNames.ModuleLab)
+                layout?.pois?.RemoveAll(p => p.type != RoguePirates.V4.Foundation.Core.POIType.SalvageChest);
             // M14.12: the module keeps the marker state; the marker presenter draws it (was LegacyPoiMarkers, which also
             // cleared /Systems' children like V3's POIManager, R-98 — nothing V4 keeps there needs clearing).
             Module.Initialize(layout, enabled: true, placeholderVisuals: _usePlaceholderVisuals);

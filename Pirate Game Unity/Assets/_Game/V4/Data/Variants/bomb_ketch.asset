@@ -28,7 +28,7 @@ MonoBehaviour:
     value: 5
   baseHP:
     enabled: 1
-    value: 28
+    value: 7
   moveSpeed:
     enabled: 1
     value: 3.2

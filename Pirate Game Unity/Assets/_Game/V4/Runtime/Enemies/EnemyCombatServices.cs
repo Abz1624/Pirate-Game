@@ -34,6 +34,10 @@ namespace RoguePirates.V4.Enemies
         /// </summary>
         public Func<float> PlayerIncomingDamage;
 
+        /// <summary>Playtest (6 Oct, owner): who is hitting the ship; the simulation sets it to each enemy's id while that
+        /// enemy acts (contact, specials, the shots it fires), for the session recorder. Null without a recorder.</summary>
+        public RoguePirates.V4.Events.PlayerDamageSource DamageSource;
+
         /// <summary>An enemy hit on the ship: DamageReceiver.TakeDamage with the build's incoming multiplier.</summary>
         public void HitPlayer(DamageReceiver receiver, float amount, Vector3 source)
         {

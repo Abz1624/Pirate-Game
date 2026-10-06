@@ -17,7 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m4
   itemId: iron_figurehead
   displayName: Iron Figurehead
-  description: +9% damage; evolves Ramming Prow into Ironclad Ram.
+  description: +9% damage. Evolves Ramming Prow into Ironclad Ram at weapon level
+    5.
   rarity: 1
   inChestPool: 1
   inLevelUpPool: 0

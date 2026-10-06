@@ -18,8 +18,8 @@ MonoBehaviour:
   logbookId: scavengers_net
   displayName: Scavenger's Net
   stat: 14
-  perLevelAdditive: 0.1
+  perLevelAdditive: 1.2
   perLevelMultiplicative: 1
-  maxLevel: 12
+  maxLevel: 5
   inSaltwindPool: 1
   databaseOrder: 9

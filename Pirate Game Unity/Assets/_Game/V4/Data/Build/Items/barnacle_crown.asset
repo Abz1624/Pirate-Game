@@ -17,8 +17,9 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m5
   itemId: barnacle_crown
   displayName: Barnacle Crown
-  description: With 4 or more enemies within 5 m, +2% damage a second, up to +20%
-    (+4% per extra copy, at most +40%); it fades when you break free.
+  description: While 4 or more enemies are within 5 m, gain +2% damage every second,
+    up to +20%. Each extra copy raises the cap by +4%, up to +40%. Loses 4% a second
+    when you break free.
   rarity: 3
   inChestPool: 1
   inLevelUpPool: 0

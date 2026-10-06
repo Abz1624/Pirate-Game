@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RoguePirates.V4.Foundation.Enemies;
 using RoguePirates.V4.Config;
 using RoguePirates.V4.Events;
@@ -96,6 +97,10 @@ namespace RoguePirates.V4.Spawning
             profileInstanceId = profileInstanceId > 0 ? profileInstanceId : NextInstanceId();
             var spawnRadius = _s.Sink.DefinitionRadius(definitionIndex) + 0.35f;
             var isBoss = _s.Sink.DefinitionIsBoss(definitionIndex);
+            // Playtest (3 Oct, owner): only bosses and minibosses may appear on screen (out of their whirlpool); every
+            // other spawn (ambient, encounter elites, kill-band elites, scheduled elites) is placed outside the view.
+            var mayAppearOnScreen = isBoss || _s.Sink.DefinitionIsMiniboss(definitionIndex);
+            var placement = mayAppearOnScreen ? profile.placement : OffScreen(profile.placement);
             // M11 lever: while the cap keeps blocking, bodies cannot be added, so new ambient spawns get more HP instead.
             if (levers != null && !isBoss && elapsed - _capBlockedAt <= levers.Config.capBlockedWindowSeconds) hpMultiplier *= levers.CapHpMultiplier;
             // Playtest round 1: every ambient spawn gets tougher toward the top of the band.
@@ -113,11 +118,13 @@ namespace RoguePirates.V4.Spawning
                 var role = ResolveFormationRole(profile, i, count);
                 if (role == FormationRole.Leader) leaderUnitId = -1;
 
-                // V3: encounters (and bosses) may fall back to spots near the ship.
-                if (!SpawnPointOverride.TryTake(out var position) &&
-                    !_s.Placement.TryPick(profile.placement, spawnRadius, runEncounterId > 0 || isBoss, out position)) continue;
-                _s.Placement.OffsetGroup(profile.groupLayout, i, count, profile.placement.groupSpacing, ref position);
-                if (!_s.Placement.IsFormationPositionValid(position, spawnRadius, profile.placement)) continue;
+                // V3: encounters (and bosses) may fall back to spots near the ship (off screen still, for non-bosses:
+                // the off-screen settings push that ring beyond the view). The whirlpool's point is the boss's alone.
+                var position = default(Vector3);
+                if (!(mayAppearOnScreen && SpawnPointOverride.TryTake(out position)) &&
+                    !_s.Placement.TryPick(placement, spawnRadius, runEncounterId > 0 || isBoss, out position)) continue;
+                _s.Placement.OffsetGroup(profile.groupLayout, i, count, placement.groupSpacing, ref position);
+                if (!_s.Placement.IsFormationPositionValid(position, spawnRadius, placement)) continue;
 
                 // M11 elite lever (its own seeded stream); a profile that is already elite stays as it is.
                 var adaptiveElite = levers != null && !isBoss && !(profile.elite != null && profile.elite.isElite) && levers.RollElite();
@@ -130,6 +137,10 @@ namespace RoguePirates.V4.Spawning
 
                 spawned++;
                 var unitId = _s.Sink.UnitIdAt(slot);
+                // Playtest (3 Oct, owner): bosses and the kill band's elites can never be one-shot (time-to-kill floor).
+                var floorLevers = _s.Levers;
+                if (floorLevers != null && floorLevers.Config != null && (isBoss || adaptiveElite))
+                    _s.Sink.EnsureMinimumHp(unitId, floorLevers.PlayerDps * (isBoss ? floorLevers.Config.bossMinSeconds : floorLevers.Config.adaptiveEliteMinSeconds));
                 // M6: ambient spawns are flagged; the spawn warning presenter telegraphs them (was V3SpawnTelegraph).
                 _s.Publish(CombatEventKind.Spawned, unitId, definitionIndex, position, _s.Sink.DefinitionId(definitionIndex),
                     (ambient ? CombatEventFlags.AmbientSpawn : 0) | (adaptiveElite ? CombatEventFlags.AdaptiveElite : 0));
@@ -138,6 +149,50 @@ namespace RoguePirates.V4.Spawning
             }
             return spawned;
         }
+
+        static readonly Dictionary<SpawnPlacementSettings, SpawnPlacementSettings> OffScreenCopies =
+            new Dictionary<SpawnPlacementSettings, SpawnPlacementSettings>();
+
+        /// <summary>Playtest (3 Oct, owner): these placement settings, but always outside the player's view (a cached
+        /// copy when the asset allows on-screen spawns, e.g. the Powder Cache elites and the elite Kraken).</summary>
+        public static SpawnPlacementSettings OffScreen(SpawnPlacementSettings settings)
+        {
+            if (settings == null) return new SpawnPlacementSettings();
+            if (settings.requireOutsidePlayerFov) return settings;
+            if (OffScreenCopies.TryGetValue(settings, out var copy)) return copy;
+            copy = new SpawnPlacementSettings
+            {
+                requireOutsidePlayerFov = true, distanceMin = settings.distanceMin, distanceMax = settings.distanceMax,
+                viewportMargin = settings.viewportMargin, positionAttempts = settings.positionAttempts,
+                allowedArcDegrees = settings.allowedArcDegrees, arcYawOffset = settings.arcYawOffset,
+                groupSpacing = settings.groupSpacing, fallbackPolicy = settings.fallbackPolicy,
+            };
+            OffScreenCopies[settings] = copy;
+            return copy;
+        }
+
+        /// <summary>Playtest (3 Oct, owner): pushes a spot straight away from the ship until it is outside the view
+        /// (hordes and ring spawns are placed by distance, which can still land on screen). False when no spot is clear.</summary>
+        public static bool PushOffScreen(ISpawnPlacement placement, float spawnRadius, ref Vector3 position)
+        {
+            var player = placement.PlayerPosition;
+            var offset = position - player;
+            var height = position.y;
+            offset.y = 0f;
+            var dir = offset.sqrMagnitude > 0.01f ? offset.normalized : Vector3.forward;
+            var distance = Mathf.Max(offset.magnitude, placement.ViewEdgeDistance);
+            for (var step = 0; step < 8; step++, distance += 2f)
+            {
+                var candidate = player + dir * distance;
+                candidate.y = height;
+                if (!placement.IsFormationPositionValid(candidate, spawnRadius, OffScreenSettings)) continue;
+                position = candidate;
+                return true;
+            }
+            return false;
+        }
+
+        static readonly SpawnPlacementSettings OffScreenSettings = new SpawnPlacementSettings();
 
         static FormationRole ResolveFormationRole(SpawnProfile profile, int index, int count)
         {

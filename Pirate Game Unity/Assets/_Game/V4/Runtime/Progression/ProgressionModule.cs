@@ -229,6 +229,18 @@ namespace RoguePirates.V4.Progression
                 PendingLevelUps = 0;
                 return;
             }
+            if (AutoLevelUp != null)
+            {
+                // Playtest (3 Oct, owner): PvP does not pause; each level-up raises the next pick of the player's priority.
+                while (PendingLevelUps > 0)
+                {
+                    PendingLevelUps--;
+                    AutoLevelUp();
+                    _completedLevelUps++;
+                }
+                LoadoutChanged?.Invoke();
+                return;
+            }
             var offers = GenerateOffers();
             var before = _run.Exists ? _run.State : RunState.Playing;
             if (Presenter != null && Presenter.TryShow(offers, Select, Skip, Refresh, RefreshesRemaining))
@@ -375,6 +387,74 @@ namespace RoguePirates.V4.Progression
             _stats.Add("logbook:" + def.logbookId, def.stat, def.perLevelAdditive * mult, def.perLevelMultiplicative);
             if (def.stat == (int)StatId.Hull) _ship?.SyncMaxHull(def.perLevelAdditive * mult);
         }
+
+        // ---- Playtest (3 Oct, owner): the 1v1 build --------------------------------------------------------------------------
+
+        /// <summary>Set (PvP): level-ups apply at once through this instead of showing cards (the run never pauses).</summary>
+        public Action AutoLevelUp { get; set; }
+
+        /// <summary>PvP start: the six drafted weapons and six drafted Logbooks, all at level 1, in priority order (the
+        /// Logbook slot limit of the voyage does not apply).</summary>
+        public void BeginPvp(IReadOnlyList<string> weapons, IReadOnlyList<string> logbooks)
+        {
+            var ids = new List<string>();
+            // Playtest (4 Oct, review): a switched-off weapon (an old saved draft's flamethrower) never enters the match.
+            if (weapons != null) foreach (var w in weapons) if (RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(w) && !ids.Contains(w)) ids.Add(w);
+            if (ids.Count > 0)
+            {
+                Loadout.EnsureSlotCapacity(ids.Count);
+                Loadout.Rebuild(ids);
+                _state.Weapons.Clear();
+                foreach (var w in Loadout.Weapons)
+                {
+                    _state.Weapons.Add(w.Id);
+                    _state.WeaponLevels[w.Id] = w.Level;
+                }
+            }
+            if (logbooks != null)
+                foreach (var id in logbooks)
+                {
+                    if (string.IsNullOrEmpty(id) || _state.Logbooks.Contains(id) || _logbook(id) == null) continue;
+                    _state.Logbooks.Add(id);
+                    _state.LogbookLevels[id] = 1;
+                    ApplyLogbook(new Offer { Kind = OfferKind.Logbook, Id = id, Rarity = 0, CurrentLevel = 0, NextLevel = 1 });
+                }
+            LoadoutChanged?.Invoke();
+        }
+
+        /// <summary>The pick cannot rise any more (or is not carried).</summary>
+        public bool IsMaxed(bool isWeapon, string id)
+        {
+            if (isWeapon)
+            {
+                var index = Loadout.IndexOf(id);
+                if (index < 0) return true;
+                var w = Loadout.Weapons[index];
+                return w.Level >= Mathf.Max(1, w.Config.maxLevel);
+            }
+            var def = _logbook(id);
+            return def == null || !_state.Logbooks.Contains(id) || _state.LogbookLevel(id) >= Mathf.Max(1, def.maxLevel);
+        }
+
+        /// <summary>One level on a carried weapon (a Common upgrade package, as a level-up card) or one Logbook rank.</summary>
+        public bool RaisePick(bool isWeapon, string id)
+        {
+            if (IsMaxed(isWeapon, id)) return false;
+            if (isWeapon)
+            {
+                var w = Loadout.Weapons[Loadout.IndexOf(id)];
+                ApplyOffer(_offers.WeaponUpgradeCard(w.Config, w.Level, 0, _rng));
+            }
+            else
+            {
+                var level = _state.LogbookLevel(id);
+                ApplyOffer(new Offer { Kind = OfferKind.Logbook, Id = id, Rarity = 0, CurrentLevel = level, NextLevel = level + 1 });
+            }
+            return true;
+        }
+
+        /// <summary>Exactly one level-up (the XP to the next level).</summary>
+        public void GrantLevelUp() => AddXp(Mathf.Max(1, Mathf.CeilToInt(XpToNext - CurrentXp)));
 
         // ---- Console and Module Lab edits (dev tools; not V3 paths) -------------------------------------------------------
 

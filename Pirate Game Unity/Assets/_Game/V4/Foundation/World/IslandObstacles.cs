@@ -15,6 +15,49 @@ namespace RoguePirates.V4.Foundation.World
         static int? _cachedLayer;
         static readonly Collider[] OverlapBuffer = new Collider[16];
         static readonly Collider[] OverlapScratch = new Collider[16];
+        static readonly RaycastHit[] CastScratch = new RaycastHit[16];
+
+        // Playtest (3 Oct, owner: "I sank to an island with no island nearby"): enemy models, effects and pickups were
+        // authored on the Island layer too, so any of their colliders could block and damage the ship like a shore.
+        // Only colliders under a registered island root count (when any island is registered; other scenes keep the layer rule).
+        static readonly System.Collections.Generic.HashSet<int> IslandRoots = new System.Collections.Generic.HashSet<int>();
+        static readonly System.Collections.Generic.Dictionary<int, bool> IslandColliderCache = new System.Collections.Generic.Dictionary<int, bool>();
+
+        // Playtest (4 Oct, review): the registry is per scene (it grew with every run and kept the layer fallback off).
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetIslands()
+        {
+            IslandRoots.Clear();
+            IslandColliderCache.Clear();
+            UnityEngine.SceneManagement.SceneManager.sceneUnloaded -= OnSceneUnloaded;
+            UnityEngine.SceneManagement.SceneManager.sceneUnloaded += OnSceneUnloaded;
+        }
+
+        static void OnSceneUnloaded(UnityEngine.SceneManagement.Scene _)
+        {
+            IslandRoots.Clear();
+            IslandColliderCache.Clear();
+        }
+
+        public static void RegisterIsland(GameObject islandRoot)
+        {
+            if (islandRoot == null) return;
+            IslandRoots.Add(islandRoot.transform.GetInstanceID());
+            IslandColliderCache.Clear();
+        }
+
+        public static bool IsIslandCollider(Collider c)
+        {
+            if (c == null) return false;
+            if (IslandRoots.Count == 0) return true;
+            var id = c.GetInstanceID();
+            if (IslandColliderCache.TryGetValue(id, out var known)) return known;
+            var island = false;
+            for (var t = c.transform; t != null; t = t.parent)
+                if (IslandRoots.Contains(t.GetInstanceID())) { island = true; break; }
+            IslandColliderCache[id] = island;
+            return island;
+        }
 
         public static int Layer
         {
@@ -265,7 +308,10 @@ namespace RoguePirates.V4.Foundation.World
 
         static Vector3 GetDepenetrationVector(Collider collider, Vector3 position, float radius)
         {
-            var closest = collider.ClosestPoint(position);
+            // Playtest (3 Oct): ClosestPoint only works on primitives and convex meshes; the islands' foliage colliders are
+            // concave (by design), so those use their bounds' nearest point (the console error and a wrong push otherwise).
+            var concave = collider is MeshCollider mesh && !mesh.convex;
+            var closest = concave ? collider.bounds.ClosestPoint(position) : collider.ClosestPoint(position);
             var away = position - closest;
             away.y = 0f;
             var dist = away.magnitude;
@@ -290,28 +336,24 @@ namespace RoguePirates.V4.Foundation.World
             int mask,
             out RaycastHit hit)
         {
-            if (Physics.CapsuleCast(
-                    pointA,
-                    pointB,
-                    castRadius,
-                    direction,
-                    out hit,
-                    distance,
-                    mask,
-                    QueryTriggerInteraction.Ignore))
-            {
-                return true;
-            }
-
+            var n = Physics.CapsuleCastNonAlloc(pointA, pointB, castRadius, direction, CastScratch, distance, mask, QueryTriggerInteraction.Ignore);
+            if (NearestIslandHit(n, out hit)) return true;
             var sphereCenter = (pointA + pointB) * 0.5f;
-            return Physics.SphereCast(
-                sphereCenter,
-                castRadius,
-                direction,
-                out hit,
-                distance,
-                mask,
-                QueryTriggerInteraction.Ignore);
+            n = Physics.SphereCastNonAlloc(sphereCenter, castRadius, direction, CastScratch, distance, mask, QueryTriggerInteraction.Ignore);
+            return NearestIslandHit(n, out hit);
+        }
+
+        static bool NearestIslandHit(int count, out RaycastHit hit)
+        {
+            hit = default;
+            var found = false;
+            for (var i = 0; i < count; i++)
+            {
+                var h = CastScratch[i];
+                if (!IsIslandCollider(h.collider)) continue;
+                if (!found || h.distance < hit.distance) { hit = h; found = true; }
+            }
+            return found;
         }
 
         static int CollectBlockingColliders(Vector3 position, float radius, float height, Collider[] buffer)
@@ -325,6 +367,7 @@ namespace RoguePirates.V4.Foundation.World
                 buffer,
                 Mask,
                 QueryTriggerInteraction.Ignore);
+            count = KeepIslands(buffer, count);
 
             var sphereCount = Physics.OverlapSphereNonAlloc(
                 GetSphereProbeCenter(position, height),
@@ -337,12 +380,21 @@ namespace RoguePirates.V4.Foundation.World
             {
                 if (count >= buffer.Length)
                     break;
-                if (ContainsCollider(buffer, count, OverlapScratch[i]))
+                if (ContainsCollider(buffer, count, OverlapScratch[i]) || !IsIslandCollider(OverlapScratch[i]))
                     continue;
                 buffer[count++] = OverlapScratch[i];
             }
 
             return count;
+        }
+
+        static int KeepIslands(Collider[] buffer, int count)
+        {
+            var kept = 0;
+            for (var i = 0; i < count; i++)
+                if (IsIslandCollider(buffer[i])) buffer[kept++] = buffer[i];
+            for (var i = kept; i < count; i++) buffer[i] = null;
+            return kept;
         }
 
         static bool ContainsCollider(Collider[] buffer, int count, Collider candidate)

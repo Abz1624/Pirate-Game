@@ -18,8 +18,8 @@ MonoBehaviour:
   enemyHpPerMinute:
     mode: 0
     c0: 1
-    c1: 0
-    c2: 0
+    c1: 0.035
+    c2: 0.00167
     keyframes:
       serializedVersion: 2
       m_Curve:
@@ -53,11 +53,11 @@ MonoBehaviour:
     - 1
     - 1.22
     - 1.5
-  globalHpMultiplier: 0.6666667
+  globalHpMultiplier: 1
   enemyDamagePerMinute:
     mode: 0
     c0: 1
-    c1: 0
+    c1: 0.02
     c2: 0
     keyframes:
       serializedVersion: 2

@@ -17,7 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: cursed_compass
   displayName: Cursed Compass
-  description: "More Luck and denser fights : higher reward under pressure."
+  description: +8% Luck. 18% more enemies spawn.
   rarity: 3
   inChestPool: 1
   inLevelUpPool: 1

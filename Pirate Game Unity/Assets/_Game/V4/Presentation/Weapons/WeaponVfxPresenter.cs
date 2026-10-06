@@ -46,6 +46,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         const string KindCutlass = "cutlass";
         const string KindSkiff = "skiff";
         const string KindOrbitModel = "orbit-model"; // V5 M4: an Orbit weapon's own model (the Anchor Flail)
+        const string KindCoin = "coin";               // Playtest (3 Oct, owner): the Cursed Doubloons' coins
 
         // V3 WeaponJuiceController constants.
         const float MortarReticleDiameterPerScale = 12.5f;
@@ -188,6 +189,8 @@ namespace RoguePirates.V4.Presentation.Weapons
         public void Tick(float dt)
         {
             TickSinking(dt);
+            TickCoins(dt);
+            TickPulses(dt);
             for (var i = _timed.Count - 1; i >= 0; i--)
             {
                 var t = _timed[i];
@@ -225,6 +228,67 @@ namespace RoguePirates.V4.Presentation.Weapons
         public void Aimed(string weaponId, Vector3 aimDirection, Vector3 targetPosition, bool hasTarget)
         {
             if (_overlay != null) _overlay.NotifyAimed(weaponId);
+            _aimedWeapon = weaponId;
+            _aimedFrame = Time.frameCount;
+        }
+
+        // Playtest (3 Oct, owner: no cannonball or shared placeholder for weapons that are not cannons). The strike a
+        // weapon fires right after it aims (same frame) is that weapon's: the Cursed Doubloons' strikes fling gold coins
+        // instead of the Lightning Mast's bolt.
+        string _aimedWeapon;
+        int _aimedFrame = -1;
+
+        struct Coin
+        {
+            public View View;
+            public Vector3 Velocity;
+            public float Left;
+        }
+
+        const int CoinsPerStrike = 5;
+        const float CoinGravity = 24f;
+        readonly List<Coin> _coins = new List<Coin>();
+        public int CoinCount => _coins.Count;
+
+        bool StrikeIsDoubloons() => _aimedFrame == Time.frameCount && _aimedWeapon == WeaponPlaceholderModels.CursedDoubloons;
+
+        void CoinBurst(Vector3 position, float radius)
+        {
+            var coin = WeaponPlaceholderModels.Coin(_pools != null ? _pools.Staging : null);
+            var spread = Mathf.Clamp(radius, 1f, 4f) * 1.4f;
+            var start = Mathf.Repeat(position.x * 37f + position.z * 11f, 360f); // no random draw (the presenter draws none)
+            for (var i = 0; i < CoinsPerStrike; i++)
+            {
+                var angle = (start + i * (360f / CoinsPerStrike)) * Mathf.Deg2Rad;
+                var outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+                var go = Spawn(KindCoin, coin, position + Vector3.up * 0.4f + outward * 0.3f, Quaternion.Euler(0f, angle * Mathf.Rad2Deg, 0f), 1f, out var pooled);
+                if (go == null) break;
+                _coins.Add(new Coin { View = new View { Go = go, Pooled = pooled }, Velocity = outward * spread + Vector3.up * 7.5f, Left = 0.75f });
+            }
+            WaterSplash(position);
+        }
+
+        void TickCoins(float dt)
+        {
+            for (var i = _coins.Count - 1; i >= 0; i--)
+            {
+                var c = _coins[i];
+                c.Left -= dt;
+                var go = c.View.Go;
+                if (c.Left <= 0f || go == null)
+                {
+                    _coins.RemoveAt(i);
+                    ReleaseView(c.View);
+                    continue;
+                }
+                c.Velocity.y -= CoinGravity * dt;
+                var t = go.transform;
+                var p = t.position + c.Velocity * dt;
+                if (p.y < 0.05f) { p.y = 0.05f; c.Velocity = Vector3.zero; }
+                t.position = p;
+                t.rotation = Quaternion.Euler(0f, 900f * dt, 0f) * t.rotation;
+                _coins[i] = c;
+            }
         }
 
         /// <summary>V3 OnLongNineBeam: the laser beam prefab's line from the muzzle for laserBeamDuration.</summary>
@@ -348,6 +412,7 @@ namespace RoguePirates.V4.Presentation.Weapons
         /// <summary>V3 OnLightningStrike: the strike prefab on the water, sized by the strike radius, for 1.15 s.</summary>
         public void LightningStrike(Vector3 position, float radius)
         {
+            if (StrikeIsDoubloons()) { CoinBurst(position, radius); return; }
             if (_settings == null || _settings.lightningStrikePrefab == null) return;
             var strikePos = position;
             strikePos.y = 0.05f;
@@ -423,6 +488,104 @@ namespace RoguePirates.V4.Presentation.Weapons
             }
         }
 
+        // ---- Aura pulses (Playtest, 3 Oct, owner, round 7: "Siren Bell may have no visible effect") ---------------------
+        // An aura weapon's pulse was the mortar's four small bursts round the ship, lost under the hull. It is now a ring
+        // on the water in the weapon's own colour that sweeps out to the pulse's exact radius and fades, with a second
+        // ring just behind it; a pulse that needs the boost (the Ramming Prow) is a white bow shockwave with a splash.
+        // Pooled line renderers, one shared material.
+
+        struct Pulse
+        {
+            public Vector3 Center;
+            public float Radius, Left, Total, Width, StartFraction;
+            public Color Color;
+        }
+
+        const int PulseSegments = 48;
+        const float PulseHeight = 0.2f;
+        static readonly Color BowPulseColor = new Color(1f, 1f, 1f, 0.95f);
+        static readonly Color AuraPulseColor = new Color(1f, 0.82f, 0.3f, 0.95f);
+        readonly List<Pulse> _pulses = new List<Pulse>();
+        readonly List<LineRenderer> _pulseLines = new List<LineRenderer>();
+        Material _pulseMaterial;
+        public int PulseCount => _pulses.Count;
+
+        /// <summary>An aura pulse without its weapon: a gold ring.</summary>
+        public void AuraPulse(Vector3 center, float radius) => AddPulse(center, radius, AuraPulseColor, 0.5f, 0.3f, 0.45f);
+
+        public void WeaponPulse(string weaponId, Vector3 center, float radius)
+        {
+            WeaponConfig config = null;
+            var slots = _weapons != null ? _weapons.Slots : null;
+            if (slots != null)
+                for (var i = 0; i < slots.Count; i++)
+                    if (slots[i]?.Config != null && slots[i].Config.weaponId == weaponId) { config = slots[i].Config; break; }
+            if (config != null && config.aura.requiresBoost)
+            {
+                AddPulse(center, radius, BowPulseColor, 0.35f, 0.25f, 0.6f);
+                WaterSplash(center);
+                return;
+            }
+            var color = config != null ? config.aimOverlayColor : AuraPulseColor;
+            color.a = 0.95f;
+            AddPulse(center, radius, color, 0.6f, 0.15f, 0.5f);
+            AddPulse(center, radius * 0.8f, new Color(color.r, color.g, color.b, 0.6f), 0.75f, 0.05f, 0.3f);
+        }
+
+        void AddPulse(Vector3 center, float radius, Color color, float seconds, float startFraction, float width)
+        {
+            if (radius <= 0.05f) return;
+            _pulses.Add(new Pulse { Center = center, Radius = radius, Left = seconds, Total = seconds, Width = width, StartFraction = startFraction, Color = color });
+        }
+
+        void TickPulses(float dt)
+        {
+            for (var i = _pulses.Count - 1; i >= 0; i--)
+            {
+                var p = _pulses[i];
+                p.Left -= dt;
+                if (p.Left <= 0f) { _pulses.RemoveAt(i); continue; }
+                _pulses[i] = p;
+            }
+            while (_pulseLines.Count < _pulses.Count) _pulseLines.Add(CreatePulseLine(_pulseLines.Count));
+            for (var i = 0; i < _pulseLines.Count; i++)
+            {
+                var line = _pulseLines[i];
+                var visible = i < _pulses.Count;
+                if (line.gameObject.activeSelf != visible) line.gameObject.SetActive(visible);
+                if (!visible) continue;
+                var p = _pulses[i];
+                var t = 1f - p.Left / p.Total;                 // 0 → 1
+                var eased = 1f - (1f - t) * (1f - t);          // fast out, slow at the edge
+                var r = p.Radius * Mathf.Lerp(p.StartFraction, 1f, eased);
+                var c = p.Color;
+                c.a *= t < 0.7f ? 1f : 1f - (t - 0.7f) / 0.3f; // holds at the full radius, then fades
+                line.startColor = line.endColor = c;
+                line.widthMultiplier = p.Width * Mathf.Lerp(1.2f, 0.7f, t);
+                for (var s = 0; s < PulseSegments; s++)
+                {
+                    var a = s * Mathf.PI * 2f / PulseSegments;
+                    line.SetPosition(s, new Vector3(p.Center.x + Mathf.Cos(a) * r, PulseHeight, p.Center.z + Mathf.Sin(a) * r));
+                }
+            }
+        }
+
+        LineRenderer CreatePulseLine(int index)
+        {
+            if (_pulseMaterial == null) _pulseMaterial = new Material(Shader.Find("Sprites/Default")) { name = "WeaponPulse", hideFlags = HideFlags.DontSave };
+            var go = new GameObject("WeaponPulse" + index);
+            go.transform.SetParent(transform, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = true;
+            line.loop = true;
+            line.positionCount = PulseSegments;
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            line.sharedMaterial = _pulseMaterial;
+            go.SetActive(false);
+            return line;
+        }
+
         /// <summary>V3 OnBurningOilDropped: the burning trail prefab sized by the patch radius, for 1.6 s.</summary>
         public void BurningPatch(Vector3 position, float radius)
         {
@@ -467,7 +630,9 @@ namespace RoguePirates.V4.Presentation.Weapons
             if (slots != null)
                 for (var i = 0; i < slots.Count; i++)
                     if (slots[i]?.Config != null && slots[i].Config.weaponId == weaponId) { config = slots[i].Config; break; }
-            var model = config != null ? config.visual.summonModel : null;
+            // Playtest (3 Oct, owner): a cannon asset standing in for a summon (the parrots' cannonball, the monkeys'
+            // cannon barrel) is drawn as the weapon's coloured placeholder instead.
+            var model = config != null ? WeaponPlaceholderModels.Summon(weaponId, config.visual.summonModel, _pools != null ? _pools.Staging : null) : null;
             if (model == null) return SkiffSpawned(position, forward);
             forward.y = 0f;
             if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
@@ -539,12 +704,20 @@ namespace RoguePirates.V4.Presentation.Weapons
             _handles.Clear();
             foreach (var s in _sinking) ReleaseView(s.View);
             _sinking.Clear();
+            foreach (var c in _coins) ReleaseView(c.View);
+            _coins.Clear();
+            _pulses.Clear();
+            foreach (var line in _pulseLines) if (line != null) line.gameObject.SetActive(false);
             ReleaseBlades(0);
             foreach (var list in _orbitModels.Values) foreach (var view in list) ReleaseView(view);
             _orbitModels.Clear();
         }
 
-        void OnDestroy() => Clear();
+        void OnDestroy()
+        {
+            Clear();
+            if (_pulseMaterial != null) Destroy(_pulseMaterial);
+        }
 
         // ---- Orbit blades ---------------------------------------------------------------------------------------
 
@@ -660,7 +833,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             {
                 var slot = slots[s];
                 if (slot == null || slot.Config == null || slot.Config.behavior != ConfigEnums.WeaponBehavior.Orbit) continue;
-                var model = slot.Config.visual.orbitModel;
+                var model = WeaponPlaceholderModels.Orbit(slot.Config.weaponId, slot.Config.visual.orbitModel, _pools != null ? _pools.Staging : null); // Playtest (3 Oct, owner)
                 if (model == null) continue;
                 var hits = _weapons.OrbitHitsOf(slot);
                 if (hits == null || hits.Count == 0) continue; // paused: they stay where they are
@@ -897,13 +1070,16 @@ namespace RoguePirates.V4.Presentation.Weapons
             foreach (var w in weapons)
             {
                 if (w?.visual == null) continue;
-                if (w.behavior == ConfigEnums.WeaponBehavior.Orbit && w.visual.orbitModel != null)
+                var staging = _pools.Staging;
+                var orbitModel = WeaponPlaceholderModels.Orbit(w.weaponId, w.visual.orbitModel, staging); // Playtest (3 Oct, owner)
+                if (w.behavior == ConfigEnums.WeaponBehavior.Orbit && orbitModel != null)
                 {
                     var need = 2 * Mathf.Max(1, w.orbit.baseBlades) * Mathf.Max(1, w.orbit.beamSegments) + 2;
-                    orbit[w.visual.orbitModel] = orbit.TryGetValue(w.visual.orbitModel, out var n) ? Mathf.Max(n, need) : need;
+                    orbit[orbitModel] = orbit.TryGetValue(orbitModel, out var n) ? Mathf.Max(n, need) : need;
                 }
                 if (w.behavior == ConfigEnums.WeaponBehavior.Summon && w.visual.summonModel != null)
-                    EnsurePool(SummonKind(w.weaponId), w.visual.summonModel, w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
+                    EnsurePool(SummonKind(w.weaponId), WeaponPlaceholderModels.Summon(w.weaponId, w.visual.summonModel, staging), w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
+                if (w.weaponId == WeaponPlaceholderModels.CursedDoubloons) EnsurePool(KindCoin, WeaponPlaceholderModels.Coin(staging), CoinsPerStrike * 3);
             }
             foreach (var pair in orbit) EnsurePool(KindOrbitModel, pair.Key, pair.Value);
         }

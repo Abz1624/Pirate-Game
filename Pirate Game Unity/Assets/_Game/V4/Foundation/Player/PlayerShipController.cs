@@ -297,6 +297,20 @@ namespace RoguePirates.V4.Foundation.Player
             }
         }
 
+        /// <summary>Playtest (3 Oct, owner): turns the ship to sail along <paramref name="forward"/> (the 1v1 spawn heading).</summary>
+        public void SetHeading(Vector3 forward)
+        {
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 1e-4f) return;
+            var rotation = Quaternion.LookRotation(modelForwardIsNegativeZ ? -forward.normalized : forward.normalized, Vector3.up);
+            transform.rotation = rotation;
+            if (_body != null) _body.rotation = rotation;
+            ResetMotion();
+        }
+
+        /// <summary>The model faces -Z (the opponent's copy of the model turns the same way).</summary>
+        public bool ModelForwardIsNegativeZ => modelForwardIsNegativeZ;
+
         public void SetWorldPosition(Vector3 position)
         {
             position = ResolveSpawnPosition(position, GetHullWorldRadius());

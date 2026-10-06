@@ -17,7 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v5-m5
   itemId: black_spot
   displayName: Black Spot
-  description: Elite kills drop 10% more gold and XP per copy (at most 50%).
+  description: Elite kills drop 10% more gold and XP per copy, up to 50% more.
   rarity: 2
   inChestPool: 1
   inLevelUpPool: 0

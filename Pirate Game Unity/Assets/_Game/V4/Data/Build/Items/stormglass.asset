@@ -17,7 +17,8 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: stormglass
   displayName: Stormglass
-  description: Chain lightning effects gain +1 jump target.
+  description: Lightning Mast chains to 1 more enemy. +1 projectile for every weapon
+    per 2 copies.
   rarity: 2
   inChestPool: 1
   inLevelUpPool: 1

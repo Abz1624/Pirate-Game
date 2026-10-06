@@ -26,6 +26,9 @@ namespace RoguePirates.V4.Difficulty
         bool CompositionActive { get; }
         /// <summary>Rolls the elite lever on the director's own seeded stream; false when not adaptive (no draw is made).</summary>
         bool RollElite();
+        /// <summary>Playtest (3 Oct): the build's damage per second against one target (every weapon hitting), for the
+        /// time-to-kill floors of bosses, minibosses and elites. 0 when unknown.</summary>
+        float PlayerDps => 0f;
         /// <summary>HP multiplier for an ambient spawn made while the enemy cap blocked a spawn recently (1 otherwise).</summary>
         float CapHpMultiplier { get; }
         /// <summary>Ambient spawns' HP and damage × these (toughness lever; 1 unless Adaptive).</summary>

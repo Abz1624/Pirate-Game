@@ -19,6 +19,7 @@ namespace RoguePirates.V4.Presentation
         public RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter SaltWindHud { get; private set; }
         public RoguePirates.V4.Presentation.Hud.MinimapPresenter Minimap { get; private set; }
         public RoguePirates.V4.Presentation.Hud.CaptainActivePresenter CaptainActive { get; private set; }
+        public RoguePirates.V4.Presentation.Hud.ItemRewardPresenter ItemReward { get; private set; }
         public RoguePirates.V4.Presentation.Hud.CaptainActiveEffectPresenter CaptainActiveEffect { get; private set; }
         /// <summary>V5: the Captain ability's round touch button (touch devices only).</summary>
         public RoguePirates.V4.Presentation.Hud.CaptainAbilityButtonPresenter CaptainAbilityButton { get; private set; }
@@ -109,6 +110,7 @@ namespace RoguePirates.V4.Presentation
             }
             if (game.Context != null) InstallStage(game);
             if (game.Context != null) InstallNarrative(game);
+            if (game.Context != null) InstallPvp(game);
             // V5 M7: once every panel exists, the run canvas's content goes inside the safe area and the UI scale applies.
             var run = GameObject.Find("RunCanvas");
             if (run != null && run.TryGetComponent<Canvas>(out var runCanvasForSafeArea)) RoguePirates.V4.Foundation.UI.SafeAreaFitter.Wrap(runCanvasForSafeArea);
@@ -164,6 +166,7 @@ namespace RoguePirates.V4.Presentation
             var run = views.Run;
             EnemyViews = new Effects.EnemyViewPresenter(Pools, juice);
             game.Context.Replace<RoguePirates.V4.Enemies.IEnemyViewSink>(EnemyViews);
+            if (CombatFeedback != null) CombatFeedback.NearestEnemyView = EnemyViews.NearestView; // Playtest (3 Oct, owner): grouped hit flashes
             HazardRings = Child<Effects.HazardRingPresenter>("V4HazardRings");
             HazardRings.Bind(game.Context.TryGet<RoguePirates.V4.Enemies.IHazardView>(out var hazards) ? hazards : null,
                 game.Context.TryGet<RoguePirates.V4.Enemies.IBurningPatchView>(out var patches) ? patches : null,
@@ -189,7 +192,16 @@ namespace RoguePirates.V4.Presentation
             StormRing.Bind(world);
             BoundsWalls = Child<World.BoundsWallPresenter>("V4BoundsWalls");
             BoundsWalls.Bind(world, views.Ship);
+            // Playtest (3 Oct, owner): an arrow at the screen edge towards the boss while it is off-screen.
+            var runCanvas = FindRunCanvas();
+            if (runCanvas != null)
+            {
+                BossArrow = RoguePirates.V4.Presentation.Hud.BossArrowPresenter.Create(runCanvas.transform);
+                BossArrow.Bind(views, () => EnemyViews != null ? EnemyViews.BossView : null);
+            }
         }
+
+        public RoguePirates.V4.Presentation.Hud.BossArrowPresenter BossArrow { get; private set; }
 
         /// <summary>M14.11: the level-up cards on the run canvas; the progression module and the tools reach them through the context.</summary>
         void InstallLevelUp(V4Game game)
@@ -205,6 +217,18 @@ namespace RoguePirates.V4.Presentation
                 LevelUp.UseArtCards(SaltWindHud.UpgradeSelection, RoguePirates.V4.Presentation.Hud.IconCatalog.Load());
             game.Context.Replace<RoguePirates.V4.Progression.IOfferPresenter>(LevelUp);
             game.Context.Replace<RoguePirates.V4.Progression.IOfferChoice>(LevelUp);
+        }
+
+        /// <summary>Playtest (3 Oct, owner): the 1v1 match's HUD, opponent ship, barrels, storm ring and end screen.</summary>
+        public Pvp.PvpMatchPresenter PvpMatch { get; private set; }
+
+        void InstallPvp(V4Game game)
+        {
+            if (!game.IsPvp || !game.Context.TryGet<RoguePirates.V4.Pvp.IPvpMatchView>(out var match)) return;
+            var run = FindRunCanvas();
+            if (run == null) return;
+            PvpMatch = Pvp.PvpMatchPresenter.Create(run, match, EnemyViews);
+            if (BossArrow != null) BossArrow.gameObject.SetActive(false);
         }
 
         /// <summary>A presenter on its own child object (created once, kept across runs of this root).</summary>
@@ -244,6 +268,8 @@ namespace RoguePirates.V4.Presentation
             Narrative = RoguePirates.V4.Presentation.Hud.NarrativePresenter.Create(parent);
             Narrative.transform.SetAsLastSibling();
             Narrative.Bind(narrative);
+            // Playtest (3 Oct, owner): no character barks in the demo (the tutorial prompts stay).
+            Narrative.ShowBarks = RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Disabled;
         }
 
         /// <summary>
@@ -348,7 +374,12 @@ namespace RoguePirates.V4.Presentation
                 // Demo (30 Sep 2026): the art team's HUD over the authored canvas, when its settings are present.
                 SaltWindHud = RoguePirates.V4.Presentation.Hud.SaltWindHudPresenter.Install(authored, Hud, views, RoguePirates.V4.Presentation.Hud.IconCatalog.Load(), Minimap);
                 if (SaltWindHud != null && Minimap != null) Minimap.FollowTarget = SaltWindHud.ArtMinimap;
+                // Playtest (3 Oct, owner): no minimap for now (the art's frame hides in the HUD presenter).
+                if (SaltWindHud != null && Minimap != null) Minimap.gameObject.SetActive(false);
                 // M9 playtest: the Captain's active and its cooldown, beside the boost meter.
+                // Playtest (3 Oct): an item won from a chest is shown with its icon, name and effect.
+                ItemReward = RoguePirates.V4.Presentation.Hud.ItemRewardPresenter.Create(authored.transform);
+                ItemReward.Bind(views, RoguePirates.V4.Presentation.Hud.IconCatalog.Load(), ItemDescription);
                 if (!RoguePirates.V4.Presentation.Hud.SaltWindHudSettings.Hides(s => s.hideCaptainActive))
                 {
                     CaptainActive = RoguePirates.V4.Presentation.Hud.CaptainActivePresenter.Create(authored.transform);
@@ -361,6 +392,8 @@ namespace RoguePirates.V4.Presentation
                 }
                 // V5 M7: touch boost and the pause button.
                 TouchControls = RoguePirates.V4.Presentation.Hud.TouchControlsPresenter.Create(authored.transform, CaptainAbilityButton);
+                // Playtest (3 Oct, owner): no on-screen pause button (Esc and the back button still pause).
+                if (SaltWindHud != null && TouchControls.Pause != null) TouchControls.Pause.gameObject.SetActive(false);
             }
 
             if (runCanvas == null) return;
@@ -368,7 +401,7 @@ namespace RoguePirates.V4.Presentation
             Results.Bind(views, events, Hud);
             PlaceBelowPrompts(runCanvas.transform, Results.transform);
             SpawnWarnings = RoguePirates.V4.Presentation.Hud.SpawnWarningPresenter.Create(runCanvas.transform);
-            SpawnWarnings.Bind(views, events, Minimap);
+            SpawnWarnings.Bind(views, events, Minimap != null && Minimap.gameObject.activeSelf ? Minimap : null); // no pings into a hidden map
             // V5 M7: the player's pause and settings, every panel inside the safe area, the UI scale, the quality tier.
             PauseMenu = RoguePirates.V4.Presentation.Hud.PauseMenuPresenter.Create(runCanvas.transform);
             PauseMenu.Bind(views);
@@ -407,6 +440,15 @@ namespace RoguePirates.V4.Presentation
             DisposeWorldTemplates();
             Pools?.Dispose();
             Pools = null;
+        }
+
+        string ItemDescription(string itemId)
+        {
+            var config = Game != null ? Game.Config : null;
+            if (config == null) return null;
+            foreach (var item in config.All<RoguePirates.V4.Config.ItemConfig>())
+                if (item != null && item.itemId == itemId) return item.description;
+            return null;
         }
     }
 }

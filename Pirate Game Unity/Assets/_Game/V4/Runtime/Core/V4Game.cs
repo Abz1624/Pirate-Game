@@ -88,8 +88,18 @@ namespace RoguePirates.V4
         public Telemetry.RunTelemetry Telemetry => _telemetry;
         public bool IsModuleLab => moduleLab;
 
+        /// <summary>Playtest (3 Oct, owner): the run's mode (<see cref="RunRequest.Mode"/>): a voyage, or a 1v1 match.</summary>
+        public RunMode Mode { get; private set; }
+        public bool IsPvp => Mode == RunMode.Pvp;
+        /// <summary>The 1v1 match (null in a voyage).</summary>
+        public RoguePirates.V4.Pvp.PvpMatchController PvpMatch => _pvp;
+        RoguePirates.V4.Pvp.PvpMatchController _pvp;
+        PlayerDamageService _damageSink;
+
         void Awake()
         {
+            Mode = moduleLab ? RunMode.Voyage : RunRequest.ConsumeMode();
+            var pvp = IsPvp;
             _config = configSet != null ? new ConfigSetRuntime(configSet) : null;
             ApplyRequestedPreset();
             var run = _config?.Single<RunConfig>();
@@ -100,7 +110,7 @@ namespace RoguePirates.V4
             _modules = new ModuleRegistry();
             // Each phase registers its module here and removes the legacy piece it replaces.
             // M3: the spawn controller (replaces the legacy ambient spawner and the V3 spawn directors).
-            _spawn = new SpawnController { LabMode = moduleLab };
+            _spawn = new SpawnController { LabMode = moduleLab, PvpMode = pvp };
             _modules.Add(_spawn);
             // M10: the difficulty director (measures the player's power, logs Pressure). M11: Adaptive by default; the levers
             // bend ambient spawning only.
@@ -112,7 +122,7 @@ namespace RoguePirates.V4
             _context.Register<Rewards.IRumBank>(new Rewards.SaveRumBank(() => AppRoot.Instance != null ? AppRoot.Instance.Save : null));
             _rewards = new Rewards.RewardModule
             {
-                LabMode = moduleLab,
+                LabMode = moduleLab || pvp, // no Rum in a 1v1
                 RunTime = () => RunManager.Instance != null ? RunManager.Instance.ElapsedSeconds : 0f,
                 RunGold = () => RunManager.Instance != null ? RunManager.Instance.Gold : 0,
             };
@@ -121,7 +131,7 @@ namespace RoguePirates.V4
             // M13: barks and the First Conquest tutorial (replace V3OnboardingDirector); presentation reads the narrative view.
             var narrative = new Narrative.NarrativeView();
             _barks = new Narrative.BarkDirector { View = narrative, CaptainKey = () => _build?.Captain?.Config?.captainKey };
-            _tutorial = new Narrative.TutorialDirector { View = narrative, LabMode = moduleLab };
+            _tutorial = new Narrative.TutorialDirector { View = narrative, LabMode = moduleLab || pvp };
             _modules.Add(_barks);
             _modules.Add(_tutorial);
             _context.Register<Narrative.INarrativeView>(narrative);
@@ -169,6 +179,7 @@ namespace RoguePirates.V4
             _context.Register<IStormArena>(playBounds);
             _context.Register<Views.IWorldView>(playBounds);
             var damageSink = new PlayerDamageService(ship); // M14.14 (was LegacyPlayerDamageSink)
+            _damageSink = damageSink;
             // V5: island impacts cost hull through the build's incoming multiplier.
             if (player != null) player.IslandImpactDamage += (at, amount) => damageSink.Impact(amount, at);
             _context.Register<IPlayerDamageSink>(damageSink);
@@ -243,6 +254,7 @@ namespace RoguePirates.V4
             // M7: stage content (chests, landmarks, Beacon, discovery, interaction, boss director) replaces POIManager.
             _stage = new StageModule(_context, _config, runState, ship, damageSink, _spawn, () => _shell.Player, () => _weapons.Manager, usePlaceholderPoiVisuals, _enemies, encounterTracker, _toasts);
             _stage.Frame = _frame;
+            _stage.PvpMode = pvp; // Playtest (3 Oct, owner): no points of interest, barrels or boss in a 1v1
             _enemies.KillTargets.BossKilled = _stage.Module.OnBossKilled; // V3 told POIManager right before TriggerBus.Kill
             _shell.Stage = _stage;
             _stage.Economy.AddItem = _build.Items.TryAddItem;
@@ -265,7 +277,7 @@ namespace RoguePirates.V4
                 Run = runState,
                 Ship = ship,
                 Toasts = _toasts,
-                Commands = new Views.HudCommands(ship.RequestBoost, RestartRun, GoToMenu, unlocks, () => Views.HudCommands.TogglePause(RunManager.Instance)),
+                Commands = new Views.HudCommands(ship.RequestBoost, pvp ? (System.Action)LeavePvp : RestartRun, pvp ? (System.Action)LeavePvp : GoToMenu, unlocks, () => Views.HudCommands.TogglePause(RunManager.Instance)),
                 Enemies = _enemies.Contracts,
                 Weapons = _weapons.Manager,
                 Captain = _build.Captain,
@@ -297,7 +309,52 @@ namespace RoguePirates.V4
             damageSink.SteadyDamageReported += _publisher.SteadyDamage;
             _runPort = runState;
             _shipPort = ship;
+            if (!moduleLab && !pvp) AddSessionRecorder(runState, ship, damageSink);
             _shell.Awake();
+        }
+
+        Telemetry.SessionRecorder _session;
+
+        /// <summary>
+        /// Playtest (6 Oct, owner: "let me play a session, then use that data to verify if the simulations are accurate"):
+        /// the voyage's session file for plan/playtest/montecarlo/compare_session.mjs. The damage source tag rides on the
+        /// enemy simulation, the hostile shots and the stage damage so PlayerDamaged events say who hit the ship.
+        /// </summary>
+        void AddSessionRecorder(RunPort runState, ShipPort ship, PlayerDamageService damageSink)
+        {
+            var source = new PlayerDamageSource();
+            ship.DamageSource = source;
+            damageSink.DamageSource = source;
+            _enemies.Services.DamageSource = source;
+            if (_enemies.Services.Shots != null) _enemies.Services.Shots.DamageSource = source;
+            var progression = _build.Progression;
+            _session = new Telemetry.SessionRecorder
+            {
+                RunTime = () => runState.ElapsedSeconds,
+                RunExists = () => runState.Exists,
+                Level = () => progression.Level,
+                Xp = () => progression.CurrentXp,
+                XpToNext = () => progression.XpToNext,
+                Kills = () => runState.Kills,
+                Gold = () => runState.Gold,
+                HullKnown = () => ship.HasDamageReceiver,
+                Hull = () => ship.Hp,
+                MaxHull = () => ship.MaxHp,
+                SunkNow = () => (ship.HasDamageReceiver && ship.Hp <= 0f) || runState.EndedByDeath,
+                RunEnded = () => runState.IsRunEnded,
+                ObjectiveSecured = () => runState.ObjectiveSecured,
+                Captain = () => _build.Captain?.Config != null ? _build.Captain.Config.captainKey : null,
+                StartingWeapon = () => progression.OwnedWeapons.Count > 0 ? progression.OwnedWeapons[0] : null,
+                ConfigHash = () => _config?.Hash,
+                StageProfile = () => _lifecycle.StageProfile?.Invoke(),
+                IsMiniboss = _enemies.Contracts.DefinitionIsMiniboss,
+                Telemetry = _telemetry,
+            };
+            _telemetry.PoiUsed = _session.OnPoiUsed;
+            _telemetry.ItemAcquired = _session.OnItemAcquired;
+            progression.OfferChosen += _session.OnOfferChosen;
+            progression.Evolved += _session.OnEvolved;
+            _modules.Add(_session);
         }
 
         void Start()
@@ -307,13 +364,24 @@ namespace RoguePirates.V4
             _seed = seed;
 
             _modules.InitializeAll(_context);
+            // Playtest (4 Oct, review): a 1v1 run without its match goes back to the menu instead of hanging.
+            if (IsPvp && !PreparePvp()) { Debug.LogWarning("V4Game: no 1v1 match to start; back to the menu."); GoToMenu(); return; }
+            // Playtest (4 Oct): a voyage started while still seated in a 1v1 lobby leaves it (a match starting there could
+            // not be played from the voyage and would be lost on time).
+            if (!IsPvp && !moduleLab && Online.PvpSession.Exists && Online.PvpSession.Instance.InLobby) _ = Online.PvpSession.Instance.Leave();
             if (!_shell.Start(seed, request.retry)) return;
+            if (_pvp != null)
+            {
+                _pvp.Begin(_shipPort, _damageSink, _build, _enemies.Simulation, _toasts);
+                _pvp.AttachWeapons(_weapons.Effects, () => _context.TryGet<RoguePirates.V4.Weapons.IWeaponEffects>(out var fx) ? fx : null, _config);
+            }
 
             _runPort.AttachEvents(_publisher);
             _shipPort.AttachEvents(_publisher);
             _publisher.AttachProgression(_build.Progression);
             _build.AttachShip(_shell.Player);
             _runPort.StateChanged += _resultsTelemetry.OnRunState; // M14.11 (was LegacyResultsTelemetry on the run manager)
+            if (_session != null) _runPort.StateChanged += _session.OnRunState; // Playtest (6 Oct, owner): saved when the results show
             if (moduleLab) _shell.EnterModuleLab();
             _killGold?.ResetForRun();
             _modules.BeginRunAll(new RunStart(seed, request.retry));
@@ -365,8 +433,8 @@ namespace RoguePirates.V4
         void EndRun()
         {
             _ended = true;
-            if (!moduleLab) _build?.RecordRunGold(); // lifetime gold (Richie's unlock)
-            if (!moduleLab) RecordRunScore();
+            if (!moduleLab && !IsPvp) _build?.RecordRunGold(); // lifetime gold (Richie's unlock)
+            if (!moduleLab && !IsPvp) RecordRunScore();
             _modules.EndRunAll(new RunEnd(_clock.SimTime, _objectiveSecured));
         }
 
@@ -384,6 +452,25 @@ namespace RoguePirates.V4
             catch (System.Exception e) { Debug.LogException(e); } // a record failure never blocks the run end
         }
 
+        /// <summary>
+        /// Playtest (3 Oct, owner): a 1v1 run: the match controller places the ship at its seat, the draft is the starting
+        /// build (first Captain for both), level-ups apply by priority without cards, a sinking is the match's. The rest
+        /// of the PvE switches were set in Awake (spawns, stage content, Rum, tutorial).
+        /// </summary>
+        bool PreparePvp()
+        {
+            _pvp = gameObject.AddComponent<RoguePirates.V4.Pvp.PvpMatchController>();
+            if (!_pvp.Prepare(Online.PvpSession.Instance)) return false;
+            var draft = _pvp.MyDraft;
+            _build.PvpWeapons = draft?.weapons ?? System.Array.Empty<string>();
+            _build.PvpLogbooks = draft?.logbooks ?? System.Array.Empty<string>();
+            _build.Progression.AutoLevelUp = _pvp.AutoLevel;
+            _shell.PlaceShip = _pvp.PlaceShip;
+            _lifecycle.PvpSunk = _pvp.OnSunk;
+            _context.Register<RoguePirates.V4.Pvp.IPvpMatchView>(_pvp);
+            return true;
+        }
+
         /// <summary>M11: where run records go (tests swap it).</summary>
         public Difficulty.IRunRecordStore RunRecords { get; set; } = new Difficulty.PlayerPrefsRunRecordStore();
 
@@ -393,7 +480,7 @@ namespace RoguePirates.V4
             if (_running && !_ended)
             {
                 _ended = true;
-                if (!moduleLab) _build?.RecordRunGold(); // a run left mid-way (restart, menu) still earned its gold
+                if (!moduleLab && !IsPvp) _build?.RecordRunGold(); // a run left mid-way (restart, menu) still earned its gold
                 _modules.EndRunAll(new RunEnd(_clock.SimTime, _objectiveSecured));
             }
 
@@ -401,6 +488,13 @@ namespace RoguePirates.V4
             _runPort?.DetachEvents();
             _shipPort?.DetachEvents();
             if (_runPort != null && _resultsTelemetry != null) _runPort.StateChanged -= _resultsTelemetry.OnRunState;
+            if (_session != null)
+            {
+                if (_runPort != null) _runPort.StateChanged -= _session.OnRunState;
+                _build.Progression.OfferChosen -= _session.OnOfferChosen;
+                _build.Progression.Evolved -= _session.OnEvolved;
+                _session.Detach();
+            }
             _damageShare?.Dispose();
             _spawnerProfiles?.Dispose();
             _stage?.Dispose();
@@ -450,5 +544,14 @@ namespace RoguePirates.V4
             SceneManager.GetActiveScene().name == V4SceneNames.ModuleLab ? V4SceneNames.ModuleLab : V4SceneNames.SaltwindRun;
 
         public static void GoToMenu() => SceneManager.LoadScene(V4SceneNames.MainMenu);
+
+        /// <summary>Playtest (3 Oct, owner, round 7): a 1v1's Retry and Main Menu leave the match and its lobby, so nothing of
+        /// it follows the player into the next voyage.</summary>
+        void LeavePvp()
+        {
+            if (_pvp != null) { _pvp.MainMenu(); return; }
+            if (Online.PvpSession.Exists) Online.PvpSession.Instance.ReturnToMenu(true);
+            else GoToMenu();
+        }
     }
 }

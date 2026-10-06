@@ -1670,21 +1670,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4234689007601248638, guid: d82bd5c313c074c448cd49526e4267be, type: 3}
   m_PrefabInstance: {fileID: 203891021}
   m_PrefabAsset: {fileID: 0}
---- !u!115 &211505910
-MonoScript:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 7
-  m_DefaultReferences: {}
-  m_Icon: {fileID: 0}
-  m_Type: 0
-  m_ExecutionOrder: 0
-  m_ClassName: WeaponLevelStripHud
-  m_Namespace: HighSeas.UI
-  m_AssemblyName: HighSeas.Runtime
 --- !u!1 &211992304
 GameObject:
   m_ObjectHideFlags: 0
@@ -4018,21 +4003,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 493243549}
   m_CullTransparentMesh: 1
---- !u!115 &496009827
-MonoScript:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 7
-  m_DefaultReferences: {}
-  m_Icon: {fileID: 0}
-  m_Type: 0
-  m_ExecutionOrder: 0
-  m_ClassName: UiScaleToFitParent
-  m_Namespace: HighSeas.UI
-  m_AssemblyName: HighSeas.Runtime
 --- !u!1 &496099430
 GameObject:
   m_ObjectHideFlags: 0
@@ -16361,9 +16331,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1632881007}
-  - component: {fileID: 1632881010}
   - component: {fileID: 1632881009}
-  - component: {fileID: 1632881008}
   m_Layer: 0
   m_Name: WeaponLevelStrip
   m_TagString: Untagged
@@ -16392,28 +16360,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 20}
   m_SizeDelta: {x: 500, y: 52}
   m_Pivot: {x: 0.5, y: 0}
---- !u!114 &1632881008
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1632881006}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 211505910}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.WeaponLevelStripHud
-  stripRoot: {fileID: 1632881007}
-  slotLabels:
-  - {fileID: 1622254226}
-  - {fileID: 755922470}
-  slotLevels:
-  - {fileID: 1927598452}
-  - {fileID: 1710741928}
-  slotBorders:
-  - {fileID: 813970399}
-  - {fileID: 236161686}
 --- !u!114 &1632881009
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16440,21 +16386,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &1632881010
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1632881006}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 496009827}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.UiScaleToFitParent
-  horizontalPadding: 64
-  minScale: 0.55
-  contentWidth: 500
 --- !u!1 &1641023133
 GameObject:
   m_ObjectHideFlags: 0
@@ -18879,6 +18810,9 @@ MonoBehaviour:
   thirdPersonRotationSmoothing: 0
   thirdPersonHighOffset: {x: 0, y: 8, z: -15}
   thirdPersonHighLookAtOffset: {x: 0, y: 0, z: 0}
+  clampToPlayArea: 1
+  shipViewMargin: 4
+  topDownFarClip: 250
 --- !u!81 &1960317720
 AudioListener:
   m_ObjectHideFlags: 0
@@ -19355,7 +19289,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2012237839}
-  - component: {fileID: 2012237841}
   - component: {fileID: 2012237840}
   m_Layer: 0
   m_Name: CardRow
@@ -19412,21 +19345,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &2012237841
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2012237838}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 496009827}
-  m_Name: 
-  m_EditorClassIdentifier: HighSeas.Runtime::HighSeas.UI.UiScaleToFitParent
-  horizontalPadding: 64
-  minScale: 0.55
-  contentWidth: 796
 --- !u!1001 &2030312899
 PrefabInstance:
   m_ObjectHideFlags: 0

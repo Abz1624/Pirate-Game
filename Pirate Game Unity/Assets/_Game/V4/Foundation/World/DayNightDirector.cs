@@ -21,7 +21,10 @@ namespace RoguePirates.V4.Foundation.World
         void Update()
         {
             if (!_initialized || RunManager.Instance == null) return;
-            var t = Mathf.Clamp01(RunManager.Instance.ElapsedSeconds / stageDurationSeconds);
+            // Playtest (2 Oct 2026): the arc spans the stage's real length (the timeline's deadline, 15:00 now), not a fixed 10:00.
+            var duration = RoguePirates.V4.Foundation.Balance.SaltwindFinaleLogic.ResolveStageDeadlineSeconds(RoguePirates.V4.Foundation.Balance.StageBalanceProfileContext.Export);
+            if (duration <= 0f) duration = stageDurationSeconds;
+            var t = Mathf.Clamp01(RunManager.Instance.ElapsedSeconds / duration);
             var hour = (_startHour + t * 8f) % 24f;
             var daylight = Mathf.Clamp01(Mathf.Sin((hour / 24f) * Mathf.PI * 2f) * 0.5f + 0.5f);
             if (sun != null)

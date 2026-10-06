@@ -373,6 +373,8 @@ namespace RoguePirates.V4.Narrative
         {
             _lastShown = now;
             if (step.silent) return;
+            // Playtest (5 Oct, review): without a Treasury Beacon (the boss rises on its own) the Beacon step waits silently.
+            if (step.completesOn == TutorialTrigger.BossSummoned && (RoguePirates.V4.Foundation.Core.DemoMode.ChestsOnlyPointsOfInterest || RoguePirates.V4.Foundation.Core.DemoMode.AutoBossSeconds > 0f)) return;
             View?.ShowPrompt(step.prompt, step.promptSeconds);
         }
 
@@ -476,6 +478,15 @@ namespace RoguePirates.V4.Narrative
                     break;
             }
 
+            // Playtest (5 Oct, review): a step that waits for a landmark the stage no longer has is skipped at once.
+            if (step.completesOn == TutorialTrigger.LandmarkUsed && RoguePirates.V4.Foundation.Core.DemoMode.ChestsOnlyPointsOfInterest)
+            {
+                SkippedThisRun.Add(step.stepId);
+                Store.Progress = Index + 1;
+                if (Active) Enter(now);
+                PublishState();
+                return;
+            }
             if (step.skipAfterSeconds > 0f && now - _enteredAt >= step.skipAfterSeconds)
             {
                 SkippedThisRun.Add(step.stepId);

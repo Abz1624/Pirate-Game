@@ -17,7 +17,7 @@ MonoBehaviour:
   balanceVersion: saltwind-v3-parity
   itemId: lucky_doubloon
   displayName: Lucky Doubloon
-  description: Increases Luck for chests and offers.
+  description: +3% Luck (better level-up card rarity).
   rarity: 0
   inChestPool: 1
   inLevelUpPool: 0

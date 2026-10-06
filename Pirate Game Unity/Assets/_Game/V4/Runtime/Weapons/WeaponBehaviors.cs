@@ -1118,7 +1118,7 @@ namespace RoguePirates.V4.Weapons
             if (a.requiresBoost && !C.Ship.IsBoosting) return WeaponFireOutcome.NoTarget;
             var center = C.Ship.Position;
             if (a.forwardOffset != 0f) center += C.Ship.MovementForward * a.forwardOffset;
-            C.Effects?.AuraPulse(center, radius);
+            C.Effects?.WeaponPulse(def.weaponId, center, radius);
             var slow = a.slowFraction > 0f || w.ExtraSlow > 0f ? Mathf.Min(0.9f, a.slowFraction + w.ExtraSlow) : 0f;
             var slowSeconds = a.slowSeconds > 0f ? a.slowSeconds : 1.5f;
             var push = a.knockbackMeters * w.KnockbackMult;
@@ -1178,10 +1178,23 @@ namespace RoguePirates.V4.Weapons
     {
         public SummonBehavior(WeaponCombat c) : base(c) { }
 
+        /// <summary>Playtest (3 Oct, owner): true while any summon of this weapon is still out (parrots, monkey turrets, skiffs).</summary>
+        public bool HasAlive(string weaponId)
+        {
+            var list = C.Skiffs;
+            for (var k = 0; k < list.Count; k++) if (list[k].Active && list[k].WeaponId == weaponId) return true;
+            return false;
+        }
+
+        /// <summary>Playtest (3 Oct, owner): "only after the existing spawned parrots despawn, we spawn the new set".</summary>
+        public override bool CanFire(WeaponSlot w) => !HasAlive(w.Config.weaponId);
+
         public override WeaponFireOutcome Fire(WeaponSlot w)
         {
             var def = w.Config;
             var s = def.summon;
+            // Playtest (3 Oct, owner): never a new set while the last one is out (also "fire all weapons").
+            if (HasAlive(def.weaponId)) return WeaponFireOutcome.NoTarget;
             if (!C.Targeting.TryResolveTarget(def, out var target, out var aim))
                 return WeaponFireOutcome.NoTarget;
             C.NotifyAimed(w, aim, target);

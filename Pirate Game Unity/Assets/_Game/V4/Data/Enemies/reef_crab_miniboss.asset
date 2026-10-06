@@ -22,8 +22,8 @@ MonoBehaviour:
   behavior: 2
   biomeTag: emerald
   stats:
-    baseHP: 120
-    baseDamage: 14
+    baseHP: 42
+    baseDamage: 0.875
     moveSpeed: 4.6
     radius: 2.2
     threatCost: 3
@@ -35,10 +35,12 @@ MonoBehaviour:
   visual:
     placeholderModel: 0
     visualPrefab: {fileID: 1709254077376921, guid: a954b4e7ac63bf946a8fe2f1c4b4f146, type: 3}
-    visualScale: 1
+    visualScale: 0.6408716
     visualYawOffset: 0
     visualHeightOffset: 0
     placeholderColor: {r: 0.2, g: 0.65, b: 0.85, a: 1}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    viewSize: 1
     poolPrewarm: 0
   tags: []
   concurrencyTags: []
@@ -76,7 +78,9 @@ MonoBehaviour:
     swordfishSpringDash: 0
     excludedFromRepair: 0
     eliteLatchesSecondChargeForAll: 0
+    eliteChargesTwice: 0
     alwaysRanged: 0
+    defaultAttackSingleShot: 0
     noProfilelessRangedAttack: 1
     rangedMinRangeFactor:
       enabled: 0

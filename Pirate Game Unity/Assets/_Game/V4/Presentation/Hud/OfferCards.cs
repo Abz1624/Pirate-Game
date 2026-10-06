@@ -50,11 +50,12 @@ namespace RoguePirates.V4.Presentation.Hud
                     if (weapon == null) return Plain(o, "New Weapon", config);
                     // V3 LevelOfferGenerator.BuildNewWeaponOffer (stat summary from V3ContentDescriptions.GetWeaponStatSummary).
                     var behavior = string.IsNullOrEmpty(weapon.behaviorLine) ? "Auto-attacks nearby enemies" : weapon.behaviorLine;
-                    var stats = $"{weapon.baseDamage:0.#} dmg · {weapon.baseCooldown:0.##}s · range {weapon.range:0.#}";
+                    // Playtest (3 Oct): the card shows numbers only (CardStatLines), no description.
+                    var statLines = CardStatLines.NewWeapon(weapon);
                     return new LevelOffer
                     {
                         kind = LevelOfferKind.NewWeapon, id = weapon.weaponId, title = weapon.displayName, categoryLabel = "New Weapon",
-                        description = $"{stats}\n{behavior}", behaviorLine = behavior, effectLines = new[] { stats },
+                        description = string.Join("\n", statLines), behaviorLine = behavior, effectLines = statLines,
                         rarity = Rarity.Common, hideRarity = true, currentLevel = 0, nextLevel = 1, isWeapon = true, isNew = true,
                         upgradeLines = Array.Empty<WeaponUpgradeLine>(),
                     };
@@ -72,14 +73,10 @@ namespace RoguePirates.V4.Presentation.Hud
                             displayFormat = weapon?.upgradeAxes?.FirstOrDefault(a => a.axis == l.Axis)?.displayFormat,
                         }.FormatValue(l.Value),
                     }).ToArray();
-                    var upgradeText = string.Join("\n", lines.Select(l => l.displayText));
                     var card = Plain(o, "Weapon Upgrade", config);
-                    if (weapon != null)
-                    {
-                        var description = string.IsNullOrEmpty(weapon.description) ? "Automatic ship weapon." : weapon.description;
-                        card.description = $"{description}\n{upgradeText}";
-                    }
-                    else card.description = upgradeText;
+                    // Playtest (3 Oct): current to next numbers only (no weapon description).
+                    card.effectLines = CardStatLines.WeaponUpgrade(weapon, o.Lines, o.NextLevel) ?? lines.Select(l => l.displayText).ToArray();
+                    card.description = string.Join("\n", card.effectLines);
                     card.upgradeLines = lines;
                     return card;
                 }
@@ -91,8 +88,9 @@ namespace RoguePirates.V4.Presentation.Hud
                     if (logbook != null && logbook.stat == (int)StatId.Hull) line += " (also heals)";
                     var card = Plain(o, o.CurrentLevel > 0 ? "Logbook Upgrade" : "New Logbook", config);
                     card.title = logbook != null ? logbook.displayName : o.Id;
-                    card.description = line;
-                    card.effectLines = new[] { line };
+                    // Playtest (3 Oct): the stat from its current value to the next.
+                    card.effectLines = CardStatLines.Logbook(logbook, logbook != null ? logbook.perLevelAdditive * mult : 0f) ?? new[] { line };
+                    card.description = string.Join("\n", card.effectLines);
                     card.upgradeLines = Array.Empty<WeaponUpgradeLine>();
                     return card;
                 }

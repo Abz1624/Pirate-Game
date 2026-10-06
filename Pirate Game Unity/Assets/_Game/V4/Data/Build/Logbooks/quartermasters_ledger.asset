@@ -18,8 +18,8 @@ MonoBehaviour:
   logbookId: quartermasters_ledger
   displayName: Quartermaster's Ledger
   stat: 17
-  perLevelAdditive: 0.08
+  perLevelAdditive: 0.1
   perLevelMultiplicative: 1
-  maxLevel: 12
+  maxLevel: 5
   inSaltwindPool: 1
   databaseOrder: 7

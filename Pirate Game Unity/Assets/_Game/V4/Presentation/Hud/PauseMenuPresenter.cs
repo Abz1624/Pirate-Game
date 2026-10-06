@@ -8,7 +8,7 @@ using UnityEngine.UI;
 namespace RoguePirates.V4.Presentation.Hud
 {
     /// <summary>
-    /// V5 M7: the player's pause (Escape, the gamepad Start button or the touch pause button): Resume, Settings and Quit to
+    /// V5 M7: the player's pause (the gamepad Start button or the touch pause button): Resume, Settings and Quit to
     /// the menu. It pauses only a running run (never over the level-up cards or a chest choice) through
     /// <see cref="IHudCommands.TogglePause"/>.
     /// </summary>
@@ -66,8 +66,12 @@ namespace RoguePirates.V4.Presentation.Hud
             var run = RoguePirates.V4.Foundation.Core.RunManager.Instance;
             if (IsOpen && run != null && run.PauseReason != RoguePirates.V4.Foundation.Core.PauseReason.UserPause && (_settings == null || !_settings.IsOpen))
                 _panel.gameObject.SetActive(false);
+            // Playtest (3 Oct, owner): Escape (and Android Back, which arrives as Escape) no longer pauses a running run; it
+            // only closes the settings panel or the pause menu when one is already open.
+            var escape = Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
+            if (escape && _settings != null && _settings.IsOpen) { _settings.Close(); return; }
+            if (escape && IsOpen) { Toggle(); return; }
             var wanted = TouchActionButton.Consume(TouchAction.Pause)
-                || (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
                 || (Gamepad.current != null && Gamepad.current.startButton.wasPressedThisFrame);
             if (!wanted) return;
             if (_settings != null && _settings.IsOpen) { _settings.Close(); return; }

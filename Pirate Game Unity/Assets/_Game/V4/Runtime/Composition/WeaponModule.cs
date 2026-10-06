@@ -32,6 +32,8 @@ namespace RoguePirates.V4.Composition
         ExperimentConfig _experiment;
 
         public WeaponManager Manager { get; }
+        /// <summary>Playtest (3 Oct, owner, round 7): the effects sink (the 1v1 match mirrors it to the opponent).</summary>
+        public WeaponEffectsForwarder Effects => _effects;
         /// <summary>M14.14: the run's frame (ticks register here instead of legacy update slots).</summary>
         public FramePipeline Frame { get; set; }
 

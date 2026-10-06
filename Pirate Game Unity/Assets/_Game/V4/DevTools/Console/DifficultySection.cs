@@ -37,6 +37,8 @@ namespace RoguePirates.V4.DevTools.Console
                 GUILayout.Label($"Levers{(levers.Adaptive ? "" : " (neutral: not Adaptive)")}: threat rate ×{levers.ThreatRateMultiplier:0.00}  ·  tier lead {levers.TierLeadSeconds:0}s  ·  " +
                     $"cap HP ×{levers.CapHpMultiplier:0.00}  ·  composition {(levers.CompositionActive ? "on" : "off")} (close-range build {view.CloseRangeShare:P0})" +
                     (spawn != null ? $"  ·  ambient rate now ×{spawn.EffectiveRateMultiplier:0.00}" : ""), _wrap, GUILayout.Width(Width));
+                if (levers is DifficultyDirector dd && levers.Config != null && levers.Config.killBandLever)
+                    GUILayout.Label($"Kill band: last band killed {(dd.LastBandRatio < 0f ? "-" : dd.LastBandRatio.ToString("P0"))} of its spawns  ·  this band: rate ×{dd.KillBandRate:0.00}, elite chance {dd.KillBandEliteChance:P0}", _wrap, GUILayout.Width(Width));
             }
 
             var rect = GUILayoutUtility.GetRect(Width, GraphHeight, GUILayout.Width(Width));

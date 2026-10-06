@@ -43,6 +43,9 @@ namespace RoguePirates.V4.Foundation.Core
 
         public void ClearModifiers() => _modifiers.Clear();
 
+        /// <summary>The stat's base value (before modifiers); 0 when unset.</summary>
+        public float GetBase(StatId stat) => _base.TryGetValue(stat, out var v) ? v : 0f;
+
         public float Get(StatId stat)
         {
             _base.TryGetValue(stat, out var baseVal);

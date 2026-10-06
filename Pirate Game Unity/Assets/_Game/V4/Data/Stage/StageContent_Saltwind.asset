@@ -45,16 +45,29 @@ MonoBehaviour:
     marksPerScheduledElite: 5
     marksBossVictory: 25
     marksPerOvertimeMinute: 3
-    marksOvertimeCap: 15
+    marksOvertimeCap: 9999
     runGoldExpiresAtRunEnd: 1
     bankRunGoldToDoubloons: 0
     starterWeaponIds:
-    - deck_cannons
     - broadside_battery
-    - powder_kegs
+    - deck_cannons
+    - flamethrower
     - flying_cutlasses
+    - harpoon_gun
+    - lightning_mast
     - long_nine
+    - mortar
+    - powder_kegs
     - swivel_guns
+    - anchor_flail
+    - chainshot
+    - siren_bell
+    - ramming_prow
+    - parrot_squadron
+    - monkey_gunners
+    - maelstrom_charge
+    - lighthouse_lantern
+    - cursed_doubloons
     bossEnemyId: barnacle_king
     weaponUnlocks:
     - contentId: lightning_mast
@@ -110,7 +123,7 @@ MonoBehaviour:
   chestInteractRange: 6
   chestPlanUsesLoadout: 1
   evolutionItemChance: 0.4
-  chestPoolOwnedEvolutionsOnly: 1
+  chestPoolOwnedEvolutionsOnly: 0
   evolutionItemMinWeaponLevel: 0
   forgetChestSkipWhenLeaving: 1
   promptReleasesUsedLandmark: 1
@@ -150,8 +163,8 @@ MonoBehaviour:
   discoveryRadius: 24
   exploreCellSize: 6
   exploreRadius: 10
-  beaconDirectionHintSeconds: 300
-  beaconExactMarkerSeconds: 420
+  beaconDirectionHintSeconds: 720
+  beaconExactMarkerSeconds: 780
   beaconInteractRange: 6
   beaconHoldSeconds: 0.7
   bossTelegraphSeconds: 0.7
