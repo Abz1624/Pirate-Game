@@ -29,6 +29,8 @@ namespace RoguePirates.V4.Spawning
         void MarkAdaptiveElite(int slot, SpawnProfile sourceProfile, bool ordinaryRewards);
         /// <summary>Playtest (3 Oct): raises a unit's HP (and max HP) to at least <paramref name="minHp"/>; never lowers it.</summary>
         void EnsureMinimumHp(int unitId, float minHp) { }
+        /// <summary>V5 M8z (6 Oct, owner): marks a unit spawned by a focus phase (the HUD points an arrow at it off screen).</summary>
+        void MarkFocus(int unitId) { }
         /// <summary>Unit id of the enemy in a slot returned by a spawn call.</summary>
         int UnitIdAt(int slot);
         bool IsUnitActive(int unitId);

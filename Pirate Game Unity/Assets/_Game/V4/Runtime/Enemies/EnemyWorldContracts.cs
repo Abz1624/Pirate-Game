@@ -75,6 +75,11 @@ namespace RoguePirates.V4.Enemies
             a.hp = minHp * fraction;
         }
 
+        public void MarkFocus(int unitId)
+        {
+            if (_sim.TryGetAgentByUnitId(unitId, out var i)) _sim.Agents[i].focus = true;
+        }
+
         public int SpawnFromProfile(int definitionIndex, Vector3 position, SpawnProfile profile, int profileInstanceId,
             FormationRole role, int formationSlot, int leaderUnitId, float hpMultiplier, float damageMultiplier) =>
             _sim.SpawnFromProfile(definitionIndex, position, profile, profileInstanceId, role, formationSlot, leaderUnitId, hpMultiplier, damageMultiplier);
@@ -257,8 +262,13 @@ namespace RoguePirates.V4.Enemies
                 if (!agent.active) continue;
                 if (agent.definitionIndex < 0 || agent.definitionIndex >= defs.Length) continue;
                 var def = defs[agent.definitionIndex];
-                if (def == null || (!def.isBoss && !def.isMiniboss)) continue;
-                into.Add(new ThreatMarker { position = agent.position, isBoss = def.isBoss });
+                // V5 M8z (6 Oct, owner): focus units too (scheduled elites), for the HUD's off-screen arrows.
+                if (def == null || (!def.isBoss && !def.isMiniboss && !agent.focus)) continue;
+                into.Add(new ThreatMarker
+                {
+                    position = agent.position, isBoss = def.isBoss, isMiniboss = def.isMiniboss, isFocus = agent.focus,
+                    unitId = agent.id, name = def.displayName
+                });
             }
         }
 

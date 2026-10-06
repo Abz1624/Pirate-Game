@@ -170,6 +170,7 @@ namespace RoguePirates.V4.Spawning
                 state.Done = true;
                 state.StartedAt = elapsed;
                 state.FocusUnitId = unitId;
+                _s.Sink.MarkFocus(unitId);
                 if (phase.pauseAmbient) BeginArena(unitId, phase.label);
                 if (focus.scheduledEliteIndex >= 0)
                     _s.Feedback.Telemetry("pressure_elite_spawned", new Dictionary<string, object> { ["label"] = phase.label });

@@ -192,16 +192,17 @@ namespace RoguePirates.V4.Presentation
             StormRing.Bind(world);
             BoundsWalls = Child<World.BoundsWallPresenter>("V4BoundsWalls");
             BoundsWalls.Bind(world, views.Ship);
-            // Playtest (3 Oct, owner): an arrow at the screen edge towards the boss while it is off-screen.
+            // Playtest (3 Oct, owner): an arrow at the screen edge towards the boss while it is off-screen. V5 M8z (6 Oct,
+            // owner): and towards minibosses and scheduled elites.
             var runCanvas = FindRunCanvas();
             if (runCanvas != null)
             {
-                BossArrow = RoguePirates.V4.Presentation.Hud.BossArrowPresenter.Create(runCanvas.transform);
-                BossArrow.Bind(views, () => EnemyViews != null ? EnemyViews.BossView : null);
+                ThreatArrows = RoguePirates.V4.Presentation.Hud.ThreatArrowPresenter.Create(runCanvas.transform);
+                ThreatArrows.Bind(views);
             }
         }
 
-        public RoguePirates.V4.Presentation.Hud.BossArrowPresenter BossArrow { get; private set; }
+        public RoguePirates.V4.Presentation.Hud.ThreatArrowPresenter ThreatArrows { get; private set; }
 
         /// <summary>M14.11: the level-up cards on the run canvas; the progression module and the tools reach them through the context.</summary>
         void InstallLevelUp(V4Game game)
@@ -228,7 +229,7 @@ namespace RoguePirates.V4.Presentation
             var run = FindRunCanvas();
             if (run == null) return;
             PvpMatch = Pvp.PvpMatchPresenter.Create(run, match, EnemyViews);
-            if (BossArrow != null) BossArrow.gameObject.SetActive(false);
+            if (ThreatArrows != null) ThreatArrows.gameObject.SetActive(false);
         }
 
         /// <summary>A presenter on its own child object (created once, kept across runs of this root).</summary>

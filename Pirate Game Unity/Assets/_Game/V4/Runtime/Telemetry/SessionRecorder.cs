@@ -195,12 +195,15 @@ namespace RoguePirates.V4.Telemetry
                 if (_enemies != null && !_enemies.TryFindByUnitId(f.unitId, out _)) { f.despawn = _lastT; continue; }
                 if (f.kind == "elite") elites++;
             }
+            // V5 M8z (6 Oct): at teardown the run manager may be gone (its Stats feed the DPS): keep the last values.
             _samples.Add(new Sample
             {
                 t = t, level = _lastLevel, xp = Xp != null ? Xp() : 0f, xpToNext = XpToNext != null ? XpToNext() : 0, kills = _lastKills, gold = _lastGold,
                 hull = _lastHull, maxHull = _lastMaxHull, enemies = _enemies != null ? _enemies.ActiveCount : 0, elitesAlive = elites,
-                damageTaken = _damageTotal, healed = _healTotal, dps = _levers != null ? _levers.PlayerDps : 0f, offense = _pressure != null ? _pressure.Offense : 0f, pressure = _pressure != null ? _pressure.Pressure : 0f,
+                damageTaken = _damageTotal, healed = _healTotal, dps = SafeFloat(() => _levers != null ? _levers.PlayerDps : 0f, _lastDps), offense = SafeFloat(() => _pressure != null ? _pressure.Offense : 0f, _lastOffense), pressure = SafeFloat(() => _pressure != null ? _pressure.Pressure : 0f, _lastPressure),
             });
+            var last = _samples[_samples.Count - 1];
+            _lastDps = last.dps; _lastOffense = last.offense; _lastPressure = last.pressure;
         }
 
         void OnEvents(IReadOnlyList<CombatEvent> batch)
@@ -268,6 +271,13 @@ namespace RoguePirates.V4.Telemetry
             var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
             try { Save?.Invoke($"session-{stamp}-{Clean(_captain)}.json", json); }
             catch (Exception ex) { Debug.LogException(ex); } // a failed save never blocks the run end
+        }
+
+        float _lastDps, _lastOffense, _lastPressure = 1f;
+
+        float SafeFloat(Func<float> f, float last)
+        {
+            try { return f(); } catch { return last; }
         }
 
         static bool SafeBool(Func<bool> f)

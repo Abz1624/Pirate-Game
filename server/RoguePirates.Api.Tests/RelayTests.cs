@@ -195,12 +195,13 @@ public class HitRulesTests
     public void PositionTrail_KeepsOnePointPer200ms_ForTheLast45s()
     {
         var trail = new PositionTrail();
-        for (var i = 0; i <= 600; i++) trail.Add(T0.AddSeconds(i / 15.0), i, 0); // 40 s of 15 states a second
+        // times are the seat's game clock (seconds)
+        for (var i = 0; i <= 600; i++) trail.Add(i / 15.0, i, 0); // 40 s of 15 states a second
         Assert.InRange(trail.Count, 195, 205);
-        Assert.True(trail.AnyWithin(T0, 0, 30, 80)); // the start, 30 m off
-        trail.Add(T0.AddSeconds(50), 600, 0);
-        Assert.False(trail.AnyWithin(T0.AddSeconds(5), 0, 0, 70)); // the first 5 s left the window (x = 15 t: 75 m and on)
-        Assert.True(trail.AnyWithin(T0.AddSeconds(5), 100, 0, 10));
+        Assert.True(trail.AnyWithin(0, 0, 30, 80)); // the start, 30 m off
+        trail.Add(50, 600, 0);
+        Assert.False(trail.AnyWithin(5, 0, 0, 70)); // the first 5 s left the window (x = 15 t: 75 m and on)
+        Assert.True(trail.AnyWithin(5, 100, 0, 10));
     }
 }
 
@@ -454,6 +455,7 @@ public class RelayTests : IDisposable
         var d = await StartDuel();
         using var h = d.H;
         using var g = d.G;
+        await At(d, 1, tick: false); // ships sail from the start (the speed check holds them at the spawn in the countdown)
         await h.Send(State(-30, 20));
         await g.Send(State(40, -10));
         await h.Sync();
@@ -777,8 +779,9 @@ public class RelayTests : IDisposable
         await h.Send(Hit(20));
         Assert.Equal(20, (await g.Next("hit")).GetProperty("dmg").GetDouble());
 
-        // apart from then on: 45 s later nothing of the host's can still be hitting the guest
-        for (var t = 2; t <= 47; t++)
+        // apart from then on: 48 s of play later nothing of the host's can still be hitting the guest (a running client
+        // reports at least every 0.085 s: its game clock then runs with the wall clock)
+        for (var t = 1.08; t <= 50; t += 0.08)
         {
             await At(d, t, tick: false);
             await Place(d, (-60, 0), (60, 0));
@@ -1152,5 +1155,349 @@ public class RelayTests : IDisposable
         using var g = d.G;
         await h.Send(State(0, 0, asBot: true));
         Assert.Equal("not_bot_host", (await h.Next("reject")).GetProperty("reason").GetString());
+    }
+
+    // ---- V5 M8z (6 Oct, owner: "ensure that we're not missing any edge case in this. so check all the possibilities"):
+    // the range rule's edge cases. Legit play loses nothing; cheats are refused. Each step sets the clock and waits for the
+    // relay (the server reads the test clock when it handles a message) ----
+
+    /// <summary>At <paramref name="t"/> s of match time: the given ships report (null: silent) and the relay has read them.</summary>
+    async Task Step(Duel d, double t, (double x, double z)? host, (double x, double z)? guest)
+    {
+        await At(d, t, tick: false);
+        if (host is { } hp) await d.H.Send(State(hp.x, hp.z));
+        if (guest is { } gp) await d.G.Send(State(gp.x, gp.z));
+        if (host != null) await d.H.Sync();
+        if (guest != null) await d.G.Sync();
+    }
+
+    MatchRoom Room(Duel d) => Relay.Get(d.LobbyId)!;
+
+    [Fact]
+    public async Task Edge_Countdown_NoHits_AndATeleportIsHeldNearTheSpawn()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, -3, tick: false); // in the countdown the ships cannot move; a client reports itself next to the victim
+        await h.Send(State(40, 0));
+        await h.Send(Hit(50));
+        Assert.Equal("not_started", (await h.Next("reject")).GetProperty("reason").GetString());
+        var host = Room(d).Seats[0];
+        Assert.Equal(40, host.ReportedX);
+        Assert.Equal(-45 + HitRules.SpeedSlack, host.X, 6); // held within the slack of the spawn
+        Assert.Equal(double.NegativeInfinity, host.EngagedClock);
+        Assert.Equal(1, host.Speed.Clamps);
+    }
+
+    [Fact]
+    public async Task Edge_FirstContact_FromTheSpawns90mApart()
+    {
+        // no state yet: both ships at their spawns, 90 m apart: nothing reaches; once they close to 80 m, hits land
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await At(d, 0.5, tick: false);
+        await h.Send(Hit(20));
+        Assert.Equal("out_of_range", (await h.Next("reject")).GetProperty("reason").GetString());
+        await Step(d, 1, (-40, 0), null); // 85 m
+        await h.Send(Hit(20));
+        Assert.Equal("out_of_range", (await h.Next("reject")).GetProperty("reason").GetString());
+        await Step(d, 1.3, (-35, 0), null); // 80 m
+        await h.Send(Hit(20));
+        Assert.Equal(20, (await g.Next("hit")).GetProperty("dmg").GetDouble());
+        // the guest's first hit back, before it ever reported (its own reach runs from its spawn)
+        await g.Send(Hit(15, "gw1"));
+        Assert.Equal(15, (await h.Next("hit")).GetProperty("dmg").GetDouble());
+    }
+
+    [Fact]
+    public async Task Edge_SailingAtTheFastestSpeed_WithKnockbacks_IsNeverClamped()
+    {
+        // 15 states a second at the fastest speed, a 12 m knockback every 2 s, a turn, the arena crossed
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        double x = -45, z = 0, dir = 1;
+        for (var i = 1; i <= 120; i++)
+        {
+            var t = i / 15.0;
+            x += dir * HitRules.MaxShipSpeed / 15.0;
+            if (i % 30 == 0) z += 12;
+            if (x > 100) dir = -1;
+            await Step(d, t, (x, z), null);
+        }
+        Assert.Equal(0, Room(d).Seats[0].Speed.Clamps);
+        Assert.Equal(x, Room(d).Seats[0].X, 6);
+    }
+
+    [Fact]
+    public async Task Edge_LagSpike_HoldsBackAState_ThenTheRestArriveAtOnce_IsNotClamped()
+    {
+        // the host sails at the fastest speed; a 3 s spike holds back its states: the first arrives 3 s late, the rest
+        // (3 s of sailing) right after it, then normal again; and a 6 s spike with a burst of 90 queued states
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        double X(double sentAt) => -100 + HitRules.MaxShipSpeed * sentAt;
+        await Step(d, 0.5, (X(0.5), 0), null);
+        for (var i = 8; i <= 45; i++) await Step(d, i / 15.0, (X(i / 15.0), 0), null);
+        await Step(d, 6, (X(3.07), 0), null); // the delayed anchor
+        await Step(d, 6.07, (X(6.07), 0), null); // 3 s of sailing 0.07 s later
+        for (var i = 92; i <= 105; i++) await Step(d, i / 15.0, (X(i / 15.0), 0), null);
+        // the ship turns back (the arena's edge); 6 s of queued states arrive within 0.1 s
+        double Y(double s) => X(7) - HitRules.MaxShipSpeed * (s - 7);
+        for (var k = 1; k <= 90; k++) await Step(d, 13 + k * 0.001, (Y(7 + k / 15.0), 0), null);
+        Assert.Equal(0, Room(d).Seats[0].Speed.Clamps);
+    }
+
+    [Fact]
+    public async Task Cheat_TeleportingNextToTheVictim_ForOneState_IsClamped_AndOpensNoEngagement()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        for (var t = 0.1; t <= 3; t += 0.1) await Step(d, t, (-60, 0), (60, 0));
+        await Step(d, 3.05, (55, 0), null); // a blink next to the guest
+        await Step(d, 3.1, (-60, 0), null); // and back
+        var host = Room(d).Seats[0];
+        Assert.True(host.Speed.Clamps >= 1);
+        Assert.Equal(double.NegativeInfinity, host.EngagedClock);
+        await h.Send(Hit(100));
+        Assert.Equal("out_of_range", (await h.Next("reject")).GetProperty("reason").GetString());
+
+        // reporting the blink for good walks the checked position there no faster than the fastest ship x 1.5
+        var replies = new List<JsonElement>();
+        double t2 = 3.1;
+        for (var i = 0; i < 10; i++)
+        {
+            t2 += 0.1;
+            await Step(d, t2, (55, 0), null);
+            await h.Send(Hit(10));
+            replies.AddRange(await h.Sync());
+        }
+        Assert.True(Count(replies, "reject", "out_of_range") >= 2, string.Join("\n", Rejects(replies)));
+    }
+
+    [Fact]
+    public async Task Cheat_TeleportingOntoABarrel_CannotClaimIt()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        for (var t = 0.25; t <= 4.9; t += 0.25) await Step(d, t, (-45, 0), (45, 0));
+        await At(d, 5);
+        var spawn = await h.Next("barrel_spawn");
+        double bx = spawn.GetProperty("x").GetDouble(), bz = spawn.GetProperty("z").GetDouble();
+        Assert.True(HitRules.Distance(bx, bz, -45, 0) > 40);
+        await At(d, 5.05, tick: false);
+        await h.Send(State(bx, bz));
+        await h.Send(new { t = "pickup", id = spawn.GetProperty("id").GetInt32() });
+        Assert.Equal("too_far", (await h.Next("reject")).GetProperty("reason").GetString());
+        Assert.Equal(0, Room(d).Seats[0].XpBarrels);
+    }
+
+    [Fact]
+    public async Task Edge_VictimBlinks_TheHonestAttackersHitsStillCount_TheBlinkersDoNot()
+    {
+        // the guest reports itself next to the host for a moment: the host's client draws it there and hits it (accepted:
+        // the victim's reported position counts for hits on it); the guest's own hits from there are refused
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        for (var t = 0.1; t <= 3; t += 0.1) await Step(d, t, (-60, 0), (60, 0));
+        await Step(d, 3.05, null, (-55, 0));
+        await h.Send(Hit(30));
+        Assert.Equal(30, (await g.Next("hit")).GetProperty("dmg").GetDouble());
+        await g.Send(Hit(30, "gw1"));
+        Assert.Equal("out_of_range", (await g.Next("reject")).GetProperty("reason").GetString());
+        Assert.True(Room(d).Seats[1].Speed.Clamps >= 1);
+    }
+
+    [Fact]
+    public async Task Edge_AttackersTabPaused60s_ItsBurnsAndKegsStillCount_ThenTheWindowRunsOnItsPlay()
+    {
+        // contact at 1 s; the host's tab is hidden and its game paused (no states, no hits) for 60 s while the guest sails
+        // 150 m off; back in front the host's burns tick on (its own game time) and count until 45 s of its play passed
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await Step(d, 1, (-10, 0), (10, 0));
+        await h.Send(Hit(40));
+        await h.Sync();
+        for (var t = 2; t <= 61; t += 2) await Step(d, t, null, (Math.Min(140, 10 + 5 * t), 0));
+        var replies = new List<JsonElement>();
+        double t2 = 61;
+        for (var i = 0; i < 525; i++) // 42 s of play at 0.08 s steps: within 48 s of play after the contact
+        {
+            t2 += 0.08;
+            await Step(d, t2, (-10, 0), null);
+            await h.Send(Hit(3, HitRules.GenericWeaponId));
+            replies.AddRange(await h.Sync());
+        }
+        Assert.Empty(Rejects(replies));
+        for (var i = 0; i < 90; i++) // 7.2 s more: past the window of play
+        {
+            t2 += 0.08;
+            await Step(d, t2, (-10, 0), null);
+        }
+        await h.Send(Hit(3, HitRules.GenericWeaponId));
+        Assert.Equal("out_of_range", (await h.Next("reject")).GetProperty("reason").GetString());
+    }
+
+    [Fact]
+    public async Task Edge_AttackersTabThrottledTo1Hz_ItsSlowedBurnsStillCount()
+    {
+        // a hidden tab runs one frame a second (0.33 s of game time each): a 40 s burn lasts 2 minutes of wall time
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await Step(d, 1, (-10, 0), (10, 0));
+        var replies = new List<JsonElement>();
+        for (var t = 2; t <= 121; t++)
+        {
+            await Step(d, t, (-10 + 0.3 * (t - 1), 0), (Math.Min(140, 10 + 5 * t), 0));
+            await h.Send(Hit(3.3, HitRules.GenericWeaponId));
+            replies.AddRange(await h.Sync());
+        }
+        Assert.Empty(Rejects(replies));
+    }
+
+    [Fact]
+    public async Task Edge_ReconnectMidMatch_KeepsTheEngagementAndTheTrail()
+    {
+        var d = await StartDuel();
+        var g = d.G;
+        await Step(d, 1, (-10, 0), (10, 0));
+        d.H.Dispose(); // the socket drops (a new seat socket comes back; the seat's server state is the same)
+        await At(d, 8);
+        using var h2 = await Connect(d.LobbyId, d.Host);
+        await h2.Next("match_start");
+        await At(d, 9, tick: false);
+        await g.Send(State(120, 0));
+        await g.Sync();
+        await h2.Send(State(-10, 0));
+        await h2.Send(Hit(25, "hw3"));
+        Assert.Empty(Rejects(await h2.Sync()));
+        Assert.Equal(25, (await g.Next("hit")).GetProperty("dmg").GetDouble());
+        g.Dispose();
+    }
+
+    [Fact]
+    public async Task Edge_KegFieldCarriedOver20s_AtLevel60_FromTheEndOfTheWindow_LandsWhole()
+    {
+        // the worst burst (a keg field of 30 s of the level 60 worst build plus a fire-all: 510k raw) goes off near the end of the
+        // 48 s window after the contact; the client sends it as full batches each 0.1 s for 20 s while the ships part
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        Room(d).Seats[0].XpBarrels = 59;
+        await Step(d, 1, (-10, 0), (10, 0)); // contact; the host drops its kegs here and sails off
+        double t = 1;
+        while (t < 49) { t += 0.08; await Step(d, t, (Math.Max(-110, -10 - 10 * (t - 1)), 0), (Math.Min(110, 10 + 10 * (t - 1)), 0)); }
+        var burst = (2.1 + 30) * 15884;
+        var replies = new List<JsonElement>();
+        var i = 0;
+        double sent = 0;
+        while (burst > 1e-6)
+        {
+            t += 0.1;
+            await At(d, t, tick: false);
+            if (i++ % 3 == 0) await h.Send(State(-110, 0));
+            var dmg = Math.Min(burst, ArenaRules.MaxHitDamage);
+            await h.Send(Hit(dmg, "hw1"));
+            burst -= dmg;
+            sent += dmg;
+            replies.AddRange(await h.Sync());
+        }
+        Assert.Empty(Rejects(replies));
+        var host = Room(d).Seats[0];
+        Assert.True(host.Clock - host.EngagedClock > HitRules.EngagementWindow.TotalSeconds + 12, $"the burst should run well past the window: {host.Clock - host.EngagedClock}");
+        // a fresh batch after the burst ended is out of reach again
+        t += 1;
+        await Step(d, t, (-110, 0), null);
+        await h.Send(Hit(10, "hw1"));
+        Assert.Equal("out_of_range", (await h.Next("reject")).GetProperty("reason").GetString());
+    }
+
+    [Fact]
+    public async Task Cheat_EndlessFullBatches_AfterOneContact_StopAt30sOfCarry()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        Room(d).Seats[0].XpBarrels = 59; // level 60: the bucket alone would allow 25000 raw a second
+        await Step(d, 1, (-10, 0), (10, 0));
+        double t = 1;
+        while (t < 49) { t += 0.08; await Step(d, t, (Math.Max(-110, -10 - 10 * (t - 1)), 0), (Math.Min(110, 10 + 10 * (t - 1)), 0)); }
+        var replies = new List<JsonElement>();
+        double firstRefusal = 0;
+        for (var i = 0; i < 500 && firstRefusal == 0; i++)
+        {
+            t += 0.1;
+            await At(d, t, tick: false);
+            if (i % 3 == 0) await h.Send(State(Math.Max(-110, -10 - 10 * (t - 1)), 0));
+            await h.Send(Hit(ArenaRules.MaxHitDamage, "hw1"));
+            var r = await h.Sync();
+            if (Count(r, "reject", "out_of_range") > 0) { firstRefusal = t; break; }
+        }
+        // the chain began in reach (the last batch before the contact left its 48 s of play) and ran 30 s of play more
+        var seat = Room(d).Seats[0];
+        Assert.True(firstRefusal > 0);
+        Assert.InRange(seat.Clock - seat.ReachClock, HitRules.MaxCarry, HitRules.MaxCarry + 0.2);
+        Assert.InRange(seat.ReachClock - seat.EngagedClock, HitRules.EngagementWindow.TotalSeconds - 0.2, HitRules.EngagementWindow.TotalSeconds);
+    }
+
+    [Fact]
+    public async Task Edge_HitClaimingTheOtherSeatsId_IsTheSendersOwn_AndAfterTheEndRefused()
+    {
+        var d = await StartDuel();
+        using var h = d.H;
+        using var g = d.G;
+        await Step(d, 1, (-10, 0), (10, 0));
+        await g.Send(new { t = "hit", dmg = 30, weaponId = "gw2", from = d.Host.Id, to = d.Guest.Id });
+        var hit = await h.Next("hit");
+        Assert.Equal(d.Guest.Id, hit.GetProperty("from").GetGuid());
+        Assert.Equal(d.Host.Id, hit.GetProperty("to").GetGuid());
+        await g.Send(new { t = "state", x = -10.0, z = 0.0, asBot = true }); // the guest cannot speak for a bot
+        Assert.Equal("not_bot_host", (await g.Next("reject")).GetProperty("reason").GetString());
+        await h.Send(new { t = "leave" });
+        await g.Next("match_end");
+        await g.Send(Hit(30, "gw1"));
+        Assert.Equal("match_over", (await g.Next("reject")).GetProperty("reason").GetString());
+    }
+
+    [Fact]
+    public async Task Edge_BotMatch_BotAndPlayerHitsInReach_ABotTeleportIsClamped()
+    {
+        var host = await _api.NewPlayerAsync("Host");
+        var lobby = await (await host.Http.PostAsJsonAsync("/api/lobbies", new { @public = false })).ReadJson();
+        var id = lobby.GetProperty("lobbyId").GetGuid();
+        using var h = await Connect(id, host);
+        await host.Http.PostAsync($"/api/lobbies/{id}/bot", null);
+        var startAt = _api.Clock.UtcNow + ArenaRules.Countdown;
+        await host.Http.PutAsJsonAsync($"/api/lobbies/{id}/status", new { status = "ready", draft = JsonHelpers.Draft("h") });
+        var start = await h.Next("match_start");
+        var d = new Duel(host, host, id, start.GetProperty("matchId").GetGuid(), h, h, start, start, startAt);
+
+        // the host's client reports both ships at 15 a second; the bot closes to its 26 m firing range
+        for (var i = 1; i <= 60; i++)
+        {
+            await At(d, i / 15.0, tick: false);
+            await h.Send(State(-45 + i * 0.5, 0));
+            await h.Send(State(45 - i * 0.5, 0, asBot: true));
+            await h.Sync();
+        }
+        await h.Send(Hit(50, HitRules.BotWeaponId, asBot: true));
+        await h.Send(Hit(40));
+        var replies = await h.Sync();
+        Assert.Empty(Rejects(replies));
+        Assert.Equal(2, Count(replies, "hit"));
+
+        // a bot report beyond its speed is clamped like any other
+        await At(d, 4.05, tick: false);
+        await h.Send(State(-200, 0, asBot: true));
+        await h.Sync();
+        Assert.Equal(1, Room(d).Seats[1].Speed.Clamps);
     }
 }

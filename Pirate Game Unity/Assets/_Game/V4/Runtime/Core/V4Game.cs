@@ -309,7 +309,8 @@ namespace RoguePirates.V4
             damageSink.SteadyDamageReported += _publisher.SteadyDamage;
             _runPort = runState;
             _shipPort = ship;
-            if (!moduleLab && !pvp) AddSessionRecorder(runState, ship, damageSink);
+            // V5 M8z (6 Oct): tests run with DemoMode.Off; they don't write session files.
+            if (!moduleLab && !pvp && !RoguePirates.V4.Foundation.Core.DemoMode.Off) AddSessionRecorder(runState, ship, damageSink);
             _shell.Awake();
         }
 

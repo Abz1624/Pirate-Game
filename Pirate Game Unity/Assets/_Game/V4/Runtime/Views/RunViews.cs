@@ -154,11 +154,18 @@ namespace RoguePirates.V4.Views
     {
         public Vector3 position;
         public bool isBoss;
+        /// <summary>V5 M8z (6 Oct, owner): the off-screen arrows tell minibosses from scheduled elites (focus units).</summary>
+        public bool isMiniboss;
+        public bool isFocus;
+        public int unitId;
+        /// <summary>The definition's display name (may be empty).</summary>
+        public string name;
     }
 
     public interface IEnemyView
     {
-        /// <summary>Fills the live boss and miniboss positions (the minimap's threat glyphs).</summary>
+        /// <summary>Fills the live boss, miniboss and focus-unit (scheduled elite) positions (the minimap's threat glyphs, the
+        /// off-screen arrows).</summary>
         void CollectThreats(List<ThreatMarker> into);
         /// <summary>Tier of an enemy definition (Spawned events carry the definition index).</summary>
         EnemyTier TierOf(int definitionIndex);

@@ -684,6 +684,7 @@ namespace RoguePirates.V4.Presentation.Hud
             for (var i = 0; i < _threats.Count; i++)
             {
                 var threat = _threats[i];
+                if (!threat.isBoss && !threat.isMiniboss) continue; // scheduled elites are for the edge arrows only
                 if (stage != null && stage.HasDiscovery && !stage.IsCellExplored(threat.position)) continue;
                 var glyph = GlyphAt(_threatIcons, write++, "Threat_", 18f);
                 SetGlyph(glyph, threat.isBoss ? MinimapMarkerGraphics.GlyphKind.Boss : MinimapMarkerGraphics.GlyphKind.Miniboss);

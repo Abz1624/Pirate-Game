@@ -26,6 +26,19 @@ public sealed class RelaySeat
     public required DamageBudget Budget { get; init; }
     /// <summary>V5 M8z (6 Oct, audit): where it was over the last 45 s (what it left behind can still hit).</summary>
     public readonly PositionTrail Trail = new();
+    /// <summary>V5 M8z (6 Oct, edge-case audit): X and Z are the speed-checked position (<see cref="Speed"/>); this is what
+    /// the client last reported (forwarded to the opponent, whose client draws and hits it there).</summary>
+    public double ReportedX, ReportedZ;
+    public required SpeedCheck Speed { get; init; }
+    /// <summary>V5 M8z (6 Oct, edge-case audit): the seat's game clock in seconds (<see cref="HitRules.Heard"/>): it runs
+    /// while its client is sending and stands still while its game is stalled.</summary>
+    public double Clock;
+    public DateTime HeardAt;
+    /// <summary>Its <see cref="Clock"/> the last time the two ships were within reach (this seat's attacks can still land).</summary>
+    public double EngagedClock = double.NegativeInfinity;
+    /// <summary>Its <see cref="Clock"/> at its last hit that passed <see cref="HitRules.InReach"/>, and at its last accepted
+    /// full batch (<see cref="ArenaRules.MaxHitDamage"/>): the rest of a burst is carried in the batches after it.</summary>
+    public double ReachClock = double.NegativeInfinity, LastHitFullAt = double.NegativeInfinity;
     public double RejectedDamage;
     public int RejectedHits;
     public bool Flagged;
@@ -74,8 +87,6 @@ public sealed class MatchRoom
     public int NextBarrelId = 1;
     public DateTime NextXpAt;
     public DateTime NextHealthAt;
-    /// <summary>V5 M8z (6 Oct, audit): the last reported moment the two ships were within reach of each other.</summary>
-    public DateTime EngagedAt = DateTime.MinValue;
     public readonly HashSet<Guid> RematchRequests = new();
     public bool RematchCreating;
     public Guid? RematchLobbyId;
@@ -132,6 +143,8 @@ public sealed class MatchRelay
                 var seat = new RelaySeat
                 {
                     Index = index, PlayerId = playerId, IsBot = bot, X = x, Z = z, Yaw = yaw, Draft = draft, StateAt = createdAt,
+                    ReportedX = x, ReportedZ = z, HeardAt = createdAt + ArenaRules.Countdown,
+                    Speed = new SpeedCheck(x, z, createdAt + ArenaRules.Countdown - HitRules.StartSkew),
                     Budget = new DamageBudget(createdAt + ArenaRules.Countdown),
                     StateRate = new RateBucket(ArenaRules.StateMessagesPerSecond, createdAt),
                     FxRate = new RateBucket(ArenaRules.FxMessagesPerSecond, createdAt),
@@ -139,7 +152,7 @@ public sealed class MatchRelay
                     PickupRate = new RateBucket(ArenaRules.PickupMessagesPerSecond, createdAt),
                     AwaySince = bot || connected ? null : createdAt,
                 };
-                seat.Trail.Add(createdAt, x, z);
+                seat.Trail.Add(0, x, z);
                 return seat;
             }
 
@@ -321,6 +334,8 @@ public sealed class MatchRelay
             if (t is "hit" or "pickup") Rej("match_over");
             return null;
         }
+        // V5 M8z (6 Oct, edge-case audit): the actor's game is running (its engagement window runs on this clock)
+        if (t is "state" or "hit" or "fx" or "pickup") HitRules.Heard(actor, now);
 
         switch (t)
         {
@@ -328,12 +343,25 @@ public sealed class MatchRelay
             {
                 if (!actor.StateRate.Take(now)) return null; // over the cap: dropped silently
                 if (!Num(root, "x", out var x) || !Num(root, "z", out var z) || Math.Abs(x) > 10000 || Math.Abs(z) > 10000) return null;
-                actor.X = x;
-                actor.Z = z;
+                // V5 M8z (6 Oct, edge-case audit): the referee reads the speed-checked position; the report is forwarded
+                var (cx, cz, clamped) = actor.Speed.Report(now, x, z);
+                if (clamped && started && actor.Speed.Clamps is 1 or 10 or 100)
+                    _log.LogWarning("Anti-cheat: player {PlayerId} (bot {Bot}) in match {MatchId} reported a position beyond its speed ({Clamps} times)",
+                        actor.PlayerId, actor.IsBot, room.MatchId, actor.Speed.Clamps);
+                actor.X = cx;
+                actor.Z = cz;
+                actor.ReportedX = x;
+                actor.ReportedZ = z;
                 actor.StateAt = now;
-                // V5 M8z (6 Oct, audit): the range check's memory (what the ship left behind, when the two last engaged)
-                actor.Trail.Add(now, x, z);
-                if (HitRules.Distance(actor, opponent) <= HitRules.MaxHitDistance) room.EngagedAt = now;
+                // V5 M8z (6 Oct, audit): the range check's memory (what the ship left behind, when the two last engaged):
+                // each side's attacks count from its own checked position to the other's checked or reported one
+                // (from the start: in the countdown the ships cannot move or fire, so a report there opens nothing)
+                if (started)
+                {
+                    actor.Trail.Add(actor.Clock, cx, cz);
+                    if (HitRules.Near(actor.X, actor.Z, opponent)) actor.EngagedClock = actor.Clock;
+                    if (HitRules.Near(opponent.X, opponent.Z, actor)) opponent.EngagedClock = opponent.Clock;
+                }
                 actor.Yaw = Num(root, "yaw", out var yaw) ? yaw : actor.Yaw;
                 var vx = Num(root, "vx", out var v1) ? v1 : 0;
                 var vz = Num(root, "vz", out var v2) ? v2 : 0;
@@ -375,7 +403,10 @@ public sealed class MatchRelay
                 // V5 M8z (6 Oct, owner): the anti-cheat checks; refused damage is counted against the sender
                 string? refused = null;
                 if (!HitRules.WeaponAllowed(actor, weaponId)) refused = "not_in_draft";
-                else if (!HitRules.InReach(now, room.EngagedAt, actor, opponent)) refused = "out_of_range";
+                else if (HitRules.InReach(actor, opponent)) actor.ReachClock = actor.Clock;
+                else if (!HitRules.CarriedOn(actor)) refused = "out_of_range";
+                // V5 M8z (6 Oct, edge-case audit): a full batch may have more of the same burst carried behind it
+                actor.LastHitFullAt = refused == null && dmg >= ArenaRules.MaxHitDamage - 0.01 ? actor.Clock : double.NegativeInfinity;
                 var accepted = refused == null ? actor.Budget.Accept(now, dmg, actor.ServerLevel) : 0;
                 if (refused == null && accepted <= 0 && dmg > 0) refused = "dps_cap";
                 var dropped = dmg - accepted;

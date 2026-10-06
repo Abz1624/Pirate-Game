@@ -49,6 +49,9 @@ namespace RoguePirates.V4.Enemies
         /// <summary>Playtest (3 Oct, owner): the 1v1 opponent's ship. Moved by the network (no AI, no contact, no knockback),
         /// never killed here: weapon damage on it is handed to <see cref="EnemySimulation.RemoteDamaged"/>.</summary>
         public bool remote;
+        /// <summary>V5 M8z (6 Oct, owner): spawned by a timeline focus phase (the miniboss, a scheduled elite); its off-screen
+        /// arrow reads this through the threat view.</summary>
+        public bool focus;
     }
 
     /// <summary>Per-enemy combat state (port of V3's SaltwindCombatAgentState).</summary>
