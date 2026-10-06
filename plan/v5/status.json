@@ -283,6 +283,11 @@
    "when": "6 Oct",
    "commit": "",
    "what": "Owner follow-ups: arena fights keep the waves paused until they end (the 20 s limit removed) and get an off-screen pointer (in progress); island hits 5 hull at most every 2 s; raid economy without the daily loss cap, new-player protection or revenge raid; deploys stay manual (the agent runs <code>server/deploy.ps1</code>); PvP range rule edge-case audit in progress."
+  },
+  {
+   "when": "6 Oct",
+   "commit": "7c13f552",
+   "what": "Off-screen arrows to the boss, minibosses and scheduled elites; session recorder fixed at teardown; PvP range rule audited for every edge case (game-clock window, speed-checked positions, long bursts, barrel claims), server tests 102/102, API redeployed; desktop WebGL build for your recorded playtest."
   }
  ],
  "todos": {
@@ -790,6 +795,20 @@
    "check": "Hazard slots test",
    "result": "1/1",
    "evidence": "V4EnemyTickM8Tests"
+  },
+  {
+   "date": "6 Oct",
+   "phase": "M8z",
+   "check": "Server tests after the range audit",
+   "result": "102/102",
+   "evidence": "dotnet test server/RoguePirates.Api.Tests"
+  },
+  {
+   "date": "6 Oct",
+   "phase": "M8z",
+   "check": "Off-screen arrow tests",
+   "result": "EditMode 5/5, PlayMode 1/1",
+   "evidence": "V5ThreatArrowTests, V5ThreatArrowPlayModeTests; plan/playtest/evidence/offscreen-arrow.png"
   }
  ],
  "phaseResults": {
