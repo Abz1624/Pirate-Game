@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa115c363c73ef24fa57f0fbf8fe6509, type: 3}
+  m_Name: island_hit
+  m_EditorClassIdentifier: RoguePirates.V4.DevTools::RoguePirates.V4.DevTools.Scenarios.ScenarioConfig
+  description: 'The ship driven into the nearest island shore at 12 m/s and held there (not invulnerable, nothing spawns): each hull cost is RunConfig''s islandImpactDamage (5), at most one per islandDamageCooldown (2 s).'
+  seed: 1050
+  captain: {fileID: 0}
+  playtest: 0
+  invulnerable: 0
+  skipLevelUpCards: 1
+  clockSeconds: 60
+  scriptedPhases: 2
+  ambientSpawning: 0
+  triggerPhases: []
+  loadout:
+    replaceWeapons: 0
+    weapons: []
+    logbooks: []
+    items: []
+    playerLevel: 0
+    xpIntoLevel: 0
+  shipStart: 1
+  holdIntoShore: 1
+  enemies: []
+  pointsOfInterest: []
+  boss: 0
+  sinkOtherEnemies: 0
+  configEdits: []
+  pvp:
+    enabled: 0
+    weapons: []
+    logbooks: []
+    countdownSeconds: 1
+    matchSeconds: 6
+    stormStartSeconds: 0

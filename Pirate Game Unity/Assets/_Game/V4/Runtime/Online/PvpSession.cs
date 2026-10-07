@@ -219,6 +219,22 @@ namespace RoguePirates.V4.Online
             LobbyChanged?.Invoke(null);
         }
 
+        /// <summary>
+        /// V5 M8z (7 Oct, I8z.4): a match over a relay the caller supplies instead of the server's lobby socket (the
+        /// Scenario Lab's in-process fake relay in the dev tools; no API calls, no reconnects). The run's match controller
+        /// then plays it exactly as a server match: it reads <see cref="Match"/> and talks through the socket.
+        /// </summary>
+        public void UseRelay(LobbyState lobby, MatchStartMsg match, ILobbySocket relay)
+        {
+            Forget();
+            Lobby = lobby;
+            Match = match;
+            _socket = relay;
+            _socketLobbyId = lobby != null ? lobby.lobbyId : null;
+            _wantSocket = false;
+            if (match != null) { _offsetMs = match.serverNow - UtcNowMs; _offsetMeasured = true; }
+        }
+
         /// <summary>Asks for a rematch (the other player, or the bot, must agree within 60 s of the end). Returns why it
         /// cannot be sent, or null.</summary>
         public string RequestRematch()

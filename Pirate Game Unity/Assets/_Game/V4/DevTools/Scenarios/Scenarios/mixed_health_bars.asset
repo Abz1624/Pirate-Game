@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa115c363c73ef24fa57f0fbf8fe6509, type: 3}
+  m_Name: mixed_health_bars
+  m_EditorClassIdentifier: RoguePirates.V4.DevTools::RoguePirates.V4.DevTools.Scenarios.ScenarioConfig
+  description: 'Around the ship at 4:00: an ordinary shark, a shark with the Rich elite affix, an Elite Hammerhead, the Reef Crab miniboss and the boss: health bars on all but the ordinary shark.'
+  seed: 1080
+  captain: {fileID: 0}
+  playtest: 0
+  invulnerable: 1
+  skipLevelUpCards: 1
+  clockSeconds: 240
+  scriptedPhases: 2
+  ambientSpawning: 0
+  triggerPhases: []
+  loadout:
+    replaceWeapons: 0
+    weapons: []
+    logbooks: []
+    items: []
+    playerLevel: 0
+    xpIntoLevel: 0
+  shipStart: 0
+  holdIntoShore: 0
+  enemies:
+  - enemyId: shark
+    count: 1
+    distance: 12
+    bearing: 0
+    spread: 15
+    eliteAffix: 0
+    focus: 0
+    hpMultiplier: 50
+  - enemyId: shark
+    count: 1
+    distance: 12
+    bearing: 90
+    spread: 15
+    eliteAffix: 4
+    focus: 0
+    hpMultiplier: 50
+  - enemyId: elite_hammerhead
+    count: 1
+    distance: 14
+    bearing: 180
+    spread: 15
+    eliteAffix: 0
+    focus: 0
+    hpMultiplier: 50
+  - enemyId: reef_crab_miniboss
+    count: 1
+    distance: 14
+    bearing: 270
+    spread: 15
+    eliteAffix: 0
+    focus: 0
+    hpMultiplier: 50
+  pointsOfInterest: []
+  boss: 1
+  sinkOtherEnemies: 0
+  configEdits: []
+  pvp:
+    enabled: 0
+    weapons: []
+    logbooks: []
+    countdownSeconds: 1
+    matchSeconds: 6
+    stormStartSeconds: 0

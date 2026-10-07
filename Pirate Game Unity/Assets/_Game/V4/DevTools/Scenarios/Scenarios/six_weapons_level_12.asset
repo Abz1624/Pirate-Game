@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa115c363c73ef24fa57f0fbf8fe6509, type: 3}
+  m_Name: six_weapons_level_12
+  m_EditorClassIdentifier: RoguePirates.V4.DevTools::RoguePirates.V4.DevTools.Scenarios.ScenarioConfig
+  description: 'Six weapons (level 4 each), player level 12, no Logbooks yet, at 6:00: level-up cards should still offer new Logbooks.'
+  seed: 1040
+  captain: {fileID: 0}
+  playtest: 0
+  invulnerable: 1
+  skipLevelUpCards: 1
+  clockSeconds: 360
+  scriptedPhases: 2
+  ambientSpawning: 0
+  triggerPhases: []
+  loadout:
+    replaceWeapons: 1
+    weapons:
+    - weaponId: deck_cannons
+      level: 4
+      evolutionId: 
+    - weaponId: swivel_guns
+      level: 4
+      evolutionId: 
+    - weaponId: broadside_battery
+      level: 4
+      evolutionId: 
+    - weaponId: flamethrower
+      level: 4
+      evolutionId: 
+    - weaponId: mortar
+      level: 4
+      evolutionId: 
+    - weaponId: harpoon_gun
+      level: 4
+      evolutionId: 
+    logbooks: []
+    items: []
+    playerLevel: 12
+    xpIntoLevel: 0
+  shipStart: 0
+  holdIntoShore: 0
+  enemies: []
+  pointsOfInterest: []
+  boss: 0
+  sinkOtherEnemies: 0
+  configEdits: []
+  pvp:
+    enabled: 0
+    weapons: []
+    logbooks: []
+    countdownSeconds: 1
+    matchSeconds: 6
+    stormStartSeconds: 0

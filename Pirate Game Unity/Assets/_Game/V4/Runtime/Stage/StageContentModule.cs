@@ -893,6 +893,29 @@ namespace RoguePirates.V4.Stage
             if (_run.Exists && _run.State == RunState.BossFight) _run.SetState(RunState.Playing);
         }
 
+        /// <summary>
+        /// V5 M8z (7 Oct, I8z.4): the Scenario Lab (dev tools) places a point of interest: the first unused one of this
+        /// type moves there (its marker is redrawn), or, when the stage has none, one is added and the stage content is
+        /// set up again (call it at a scenario's start: that resets the stage's run state). Returns its index, or -1.
+        /// </summary>
+        public int DevPlacePoi(POIType type, Vector3 position)
+        {
+            if (_layout?.pois == null) return -1;
+            position.y = 0f;
+            for (var i = 0; i < _layout.pois.Count; i++)
+            {
+                if (_layout.pois[i].type != type || (_used != null && i < _used.Length && _used[i])) continue;
+                var slot = _layout.pois[i];
+                slot.position = position;
+                _layout.pois[i] = slot;
+                _layoutVersion++;
+                return i;
+            }
+            _layout.pois.Add(new POISlot { type = type, position = position });
+            Initialize(_layout, _enabled, _placeholderVisuals);
+            return _layout.pois.Count - 1;
+        }
+
         /// <summary>Same-tick boss and player death counts as a win (V3 DEC-024).</summary>
         public void TrySecureIfBossDead()
         {

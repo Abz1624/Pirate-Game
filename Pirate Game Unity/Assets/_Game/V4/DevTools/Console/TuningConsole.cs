@@ -66,6 +66,7 @@ namespace RoguePirates.V4.DevTools.Console
                 AddSection(new NarrativeSection()); // M13
                 AddSection(new EventsSection(game));
                 AddSection(new StageSection());
+                AddSection(new ScenariosSection()); // V5 M8z (7 Oct, I8z.4): the Scenario Lab
                 if (game.IsModuleLab) AddSection(new ModuleLabSection());
             }
             if (CreationProbe == null) CreationProbe = GetComponent<Diagnostics.SceneObjectCreationProbe>();
