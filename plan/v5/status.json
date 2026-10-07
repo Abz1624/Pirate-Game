@@ -430,12 +430,17 @@
    "when": "8 Oct",
    "commit": "3eef8749",
    "what": "<strong>M9a C9a.0 done and deployed</strong>: the API runs on .NET 10 with EF Core migrations instead of EnsureCreated. On Railway the existing database was recognised and recorded as baselined without changing any data; the leaderboard still serves your runs. 111 server tests pass. No backup was taken (no outside access to the database; your call: deploy without one)."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "You set the Railway workspace limits: $15 hard limit, $10 alert (D23)."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Railway spend</strong>: a $15 hard limit and a $10 alert (workspace Settings &gt; Usage; covers the live API and Postgres too).",
-   "<strong>Keep recording voyages</strong> when you play."
+   "<strong>Keep recording voyages</strong> when you play.",
+   "Nothing else needed until the M9a playtest."
   ],
   "open": [
    "PvP draft on phones: tapping a card to read it also picks it (later)."

@@ -4,7 +4,7 @@
 
 - [x] Install the .NET 10 SDK (installed by the agent, 8 Oct) (`winget install Microsoft.DotNet.SDK.10`, then `dotnet --list-sdks` shows 10.0.x) so the
       M9a server upgrade can continue; Docker Desktop is optional.
-- [ ] Railway spend: a $15 hard limit and a $10 alert (workspace Settings > Usage; D23). The limit covers the whole
+- [x] Railway spend (set by you, 8 Oct): a $15 hard limit and a $10 alert (workspace Settings > Usage; D23). The limit covers the whole
       workspace, including the live API and Postgres.
 - [x] Answer (8 Oct, D24: they pay out, flagged and logged): while run checks are in shadow mode, does a flagged voyage's Rum settle, or stay pending until you decide
       on enforcement? (Needed before M10.)
