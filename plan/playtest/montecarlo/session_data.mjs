@@ -78,6 +78,10 @@ function build() {
   // Today's check: data.json against the snapshot of the session on today's balance.
   const now = JSON.parse(fs.readFileSync(path.join(here, 'data.json'), 'utf8')), today = JSON.parse(fs.readFileSync(snapshotPath(SESSIONS.find(x => x.today)), 'utf8'));
   delete now.meta; delete today.meta;
+  // V5 M9a (I9a.3): fields the export gained after S5's snapshot (the run checks' gold and personalities): not balance changes
+  const later = d => { delete d.personalities; for (const k of ['killGold', 'powderCacheBonusGold', 'powderCacheEliteCount']) if (d.stage) delete d.stage[k];
+    for (const w of Object.values(d.weapons || {})) { delete w.goldPerKill; delete w.goldPerKillRunCap; } };
+  later(now); later(today);
   console.log(JSON.stringify(now) === JSON.stringify(today) ? "data.json equals the S5 snapshot (today's balance)" : 'WARNING: data.json differs from the S5 snapshot: the game changed since the last recorded session');
 }
 

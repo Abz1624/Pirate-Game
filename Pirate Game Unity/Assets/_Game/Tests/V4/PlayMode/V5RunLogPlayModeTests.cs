@@ -114,6 +114,34 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(first, second, "same seed and same scripted inputs: the same per-minute log");
         }
 
+        /// <summary>
+        /// V5 M9a (I9a.3): a scripted voyage (the wander pilot, two full minutes and a partial one) passes the run checks'
+        /// bounds (server/RoguePirates.Api/Plausibility/plausibility-rules.json, the game's checker RunLogPlausibility), and every
+        /// kill was of an enemy whose spawn the log counted (the run checks' kills-within-spawns rule: every runtime spawn
+        /// path, the boss and the Powder Cache included, goes through FlowDirector, ScriptedPhases or SpawnExecutor, which
+        /// publish Spawned; only the dev tools' spawns do not).
+        /// </summary>
+        [UnityTest]
+        public IEnumerator ScriptedVoyage_PassesTheRunChecks()
+        {
+            yield return Play(6161, 130f);
+            var recorder = Scenario.Current.Game.RunLog;
+            var log = recorder.Close();
+            Assert.IsNotNull(log, "the voyage closed its log");
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "..", "server", "RoguePirates.Api", "Plausibility", "plausibility-rules.json"));
+            var rules = RunLogPlausibility.ParseRules(System.IO.File.ReadAllText(path));
+            var sameConfig = log.ConfigHash == rules.configHash;
+            var verdict = RunLogPlausibility.Evaluate(rules, log.Json, checkConfig: false);
+            Debug.Log($"[V5 M9a] scripted voyage: {log.Kills} kills in {log.Seconds:0.0} s, level {log.Level}; run checks (bounds): {verdict}; same config as the rules: {sameConfig}");
+            Assert.AreEqual(RunLogPlausibility.Pass, verdict.Status, verdict.ToString());
+            Assert.IsTrue(sameConfig, "the scenario voyage runs on the config the rules were made for");
+            Assert.AreEqual(RunLogPlausibility.Pass, RunLogPlausibility.Evaluate(rules, log.Json).Status);
+            Assert.Greater(log.Kills, 0);
+            var spawns = 0;
+            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(log.Json, "\"spawns\":(\\d+)")) spawns += int.Parse(m.Groups[1].Value);
+            Assert.LessOrEqual(log.Kills, spawns, "every kill was of a spawn the log counted");
+        }
+
         /// <summary>Closes the log at exactly 70 s of run time (the first frame past it) and returns its minutes.</summary>
         static string Close()
         {

@@ -319,6 +319,51 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.ToTable("Runs");
                 });
 
+            modelBuilder.Entity("RoguePirates.Api.Data.RunVerdict", b =>
+                {
+                    b.Property<long>("RunId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ClientBuild")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ConfigHash")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("DetailsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("EvaluatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReasonCodes")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<string>("RuleIds")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<int>("RulesVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.HasKey("RunId");
+
+                    b.HasIndex("RulesVersion");
+
+                    b.ToTable("RunVerdicts");
+                });
+
             modelBuilder.Entity("RoguePirates.Api.Data.WeeklyBest", b =>
                 {
                     b.Property<long>("Id")
@@ -372,6 +417,15 @@ namespace RoguePirates.Api.Data.Migrations.Postgres
                     b.HasOne("RoguePirates.Api.Data.RunRecord", null)
                         .WithOne()
                         .HasForeignKey("RoguePirates.Api.Data.RunLog", "RunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.RunVerdict", b =>
+                {
+                    b.HasOne("RoguePirates.Api.Data.RunRecord", null)
+                        .WithOne()
+                        .HasForeignKey("RoguePirates.Api.Data.RunVerdict", "RunId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -28,6 +28,10 @@ builder.Services.AddScoped<GameDb>(sp => sp.GetRequiredService<ApiSettings>().Us
     : sp.GetRequiredService<SqliteGameDb>());
 builder.Services.AddScoped<PlayerAuth>();
 builder.Services.AddScoped<RunService>();
+// V5 M9a (I9a.3): the run checks (shadow mode): the embedded rules, the checker, and the startup re-scoring pass.
+builder.Services.AddSingleton(_ => RoguePirates.Api.Plausibility.PlausibilityRuleSet.LoadEmbedded());
+builder.Services.AddSingleton<RoguePirates.Api.Plausibility.PlausibilityService>();
+builder.Services.AddHostedService<RoguePirates.Api.Plausibility.PlausibilityRescorer>();
 builder.Services.AddScoped<LobbyService>();
 builder.Services.AddScoped<MatchService>();
 builder.Services.AddSingleton<LobbyBroadcaster>();

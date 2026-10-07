@@ -103,6 +103,7 @@ namespace RoguePirates.V4.Editor
             var run = rt.Single<RunConfig>();
             var stage = rt.Single<StageContentConfig>();
             var experiment = rt.Single<ExperimentConfig>();
+            var personalities = rt.Single<PlayerPersonalityConfig>();
             var disabled = new HashSet<string>(unlocks != null && unlocks.disabledWeaponIds != null ? unlocks.disabledWeaponIds : Array.Empty<string>());
 
             // Enemies: archetypes, then variants resolved the game's way.
@@ -260,6 +261,8 @@ namespace RoguePirates.V4.Editor
                         }).ToList(),
                         ["levelDamageFactor"] = w.levelDamageFactor, ["hitsPerFiring"] = WeaponStatResolver.HitsPerFiring(w), ["coverage"] = coverage,
                         ["databaseOrder"] = w.databaseOrder, ["rum"] = rum.TryGetValue(w.weaponId, out var cost) ? cost : 0,
+                        // V5 M9a (I9a.3): the Cursed Doubloons' bonus gold per kill and its cap a run (the run checks' gold bound).
+                        ["goldPerKill"] = w.goldPerKill, ["goldPerKillRunCap"] = w.goldPerKillRunCap,
                         // V5 M8z (7 Oct, Q20): the rank milestones (the simulator applies them from their level on).
                         ["milestones"] = (w.milestones ?? Array.Empty<WeaponMilestone>()).Where(m => m != null).Select(m => (object)new Dictionary<string, object>
                         {
@@ -393,7 +396,23 @@ namespace RoguePirates.V4.Editor
                     ["evolutionItemChance"] = stage.evolutionItemChance, ["chestBasePrice"] = stage.chestBasePrice, ["chestPriceGrowth"] = stage.chestPriceGrowth,
                     ["chestPriceIncrementBase"] = stage.chestPriceIncrementBase, ["salvageChests"] = stage.salvageChestCount, ["repairWreckHealFraction"] = stage.repairWreckHealFraction,
                     ["beaconHintSeconds"] = stage.beaconDirectionHintSeconds, ["beaconMarkerSeconds"] = stage.beaconExactMarkerSeconds,
+                    // V5 M9a (I9a.3): the gold a kill drops (KillFanout.ResolveKillGold) and a cleared Powder Cache's gold.
+                    ["killGold"] = stage.killGold == null ? null : new Dictionary<string, object>
+                    {
+                        ["ordinaryChance"] = stage.killGold.ordinaryEnemyGoldChance, ["ordinaryAmount"] = stage.killGold.ordinaryEnemyGoldAmount,
+                        ["specialistAmount"] = stage.killGold.specialistEnemyGoldAmount, ["scheduledEliteAmount"] = stage.killGold.scheduledEliteGoldAmount,
+                    },
+                    ["powderCacheBonusGold"] = stage.powderCacheBonusGold, ["powderCacheEliteCount"] = stage.powderCacheEliteCount,
                 },
+                // V5 M9a (I9a.3): the player personalities (plan/v5/PLAYER_PERSONALITIES.md); the run checks' bounds come from
+                // the strongest one (plan/playtest/montecarlo/plausibility.mjs).
+                ["personalities"] = (personalities != null ? personalities.personalities : new List<PlayerPersonality>()).Select(p => (object)new Dictionary<string, object>
+                {
+                    ["id"] = p.personalityId, ["name"] = p.displayName, ["share"] = p.share, ["dodgeSkill"] = p.dodgeSkill, ["contactAvoidance"] = p.contactAvoidance,
+                    ["movement"] = p.movement.ToString(), ["pickupGreed"] = p.pickupGreed, ["chests"] = p.chests.ToString(), ["landmarks"] = (int)p.landmarks,
+                    ["bossTiming"] = p.bossTiming.ToString(), ["bossMinute"] = p.bossMinute, ["cards"] = p.cards.ToString(), ["stop"] = p.stop.ToString(),
+                    ["stopMinutes"] = p.stopMinutes,
+                }).ToList(),
                 ["experiment"] = experiment == null ? null : new Dictionary<string, object>
                 {
                     ["spawnDensity"] = experiment.spawnDensityMultiplier, ["enemyHp"] = experiment.enemyHpMultiplier, ["enemyDamage"] = experiment.enemyDamageMultiplier,

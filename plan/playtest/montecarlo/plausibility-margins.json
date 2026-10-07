@@ -1,0 +1,17 @@
+{
+  "_comment": "V5 M9a (I9a.3): the run checks' config margins (owner-editable; read by plausibility.mjs). Every bound is max(config margin, p99.9 of the strongest personality's simulated voyages x multiplier). The margins here are floors for the per-minute and run-total bounds, the tolerances of the consistency rules, and the simulator settings. They are not gameplay config, so changing them does not move the game's config hash; regenerate the rules after any change (node plausibility.mjs).",
+  "quantile": 0.999,
+  "multiplier": 1.25,
+  "runs": 30000,
+  "screenRuns": 600,
+  "checkRuns": 10000,
+  "fixtureRuns": 10000,
+  "maxMinutes": 45,
+  "minSamples": 400,
+  "perMinute": { "kills": 60, "xp": 80, "gold": 60, "dealt": 6000, "chests": 3, "pois": 3 },
+  "runTotal": { "kills": 60, "xp": 80, "gold": 60, "dealt": 6000, "chestsExtra": 4, "pois": 8 },
+  "level": 3,
+  "overtimeSeconds": 90,
+  "killsOverSpawns": 5,
+  "hullLedger": { "absolute": 5, "fractionOfMaxHull": 0.05 }
+}

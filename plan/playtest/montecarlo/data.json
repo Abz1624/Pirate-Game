@@ -1604,6 +1604,8 @@
    "coverage": 1.8,
    "databaseOrder": 50,
    "rum": 120,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": [
     {
      "level": 4,
@@ -1683,6 +1685,8 @@
    "coverage": 1.6,
    "databaseOrder": 1,
    "rum": 0,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": []
   },
   "chainshot": {
@@ -1728,6 +1732,8 @@
    "coverage": 1,
    "databaseOrder": 51,
    "rum": 130,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": [
     {
      "level": 4,
@@ -1801,6 +1807,8 @@
    "coverage": 1.6,
    "databaseOrder": 58,
    "rum": 220,
+   "goldPerKill": 1,
+   "goldPerKillRunCap": 40,
    "milestones": [
     {
      "level": 4,
@@ -1880,6 +1888,8 @@
    "coverage": 1,
    "databaseOrder": 0,
    "rum": 0,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": []
   },
   "flamethrower": {
@@ -1919,6 +1929,8 @@
    "coverage": 1.5,
    "databaseOrder": 5,
    "rum": 80,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": []
   },
   "flying_cutlasses": {
@@ -1964,6 +1976,8 @@
    "coverage": 1.8,
    "databaseOrder": 4,
    "rum": 0,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": []
   },
   "harpoon_gun": {
@@ -2009,6 +2023,8 @@
    "coverage": 1,
    "databaseOrder": 48,
    "rum": 100,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": []
   },
   "lighthouse_lantern": {
@@ -2048,6 +2064,8 @@
    "coverage": 1.8,
    "databaseOrder": 57,
    "rum": 200,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": [
     {
      "level": 4,
@@ -2121,6 +2139,8 @@
    "coverage": 1.6,
    "databaseOrder": 3,
    "rum": 60,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": []
   },
   "long_nine": {
@@ -2166,6 +2186,8 @@
    "coverage": 1,
    "databaseOrder": 47,
    "rum": 0,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": []
   },
   "maelstrom_charge": {
@@ -2199,6 +2221,8 @@
    "coverage": 1.5,
    "databaseOrder": 56,
    "rum": 190,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": [
     {
      "level": 4,
@@ -2266,6 +2290,8 @@
    "coverage": 1,
    "databaseOrder": 55,
    "rum": 180,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": [
     {
      "level": 4,
@@ -2333,6 +2359,8 @@
    "coverage": 1.5,
    "databaseOrder": 49,
    "rum": 100,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": []
   },
   "parrot_squadron": {
@@ -2372,6 +2400,8 @@
    "coverage": 1,
    "databaseOrder": 54,
    "rum": 170,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": [
     {
      "level": 4,
@@ -2445,6 +2475,8 @@
    "coverage": 1.4,
    "databaseOrder": 2,
    "rum": 0,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": []
   },
   "siren_bell": {
@@ -2484,6 +2516,8 @@
    "coverage": 1.3,
    "databaseOrder": 52,
    "rum": 150,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": [
     {
      "level": 4,
@@ -2563,6 +2597,8 @@
    "coverage": 1.5,
    "databaseOrder": 53,
    "rum": 160,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": [
     {
      "level": 4,
@@ -2642,6 +2678,8 @@
    "coverage": 1,
    "databaseOrder": 46,
    "rum": 0,
+   "goldPerKill": 0,
+   "goldPerKillRunCap": 0,
    "milestones": []
   }
  },
@@ -4711,8 +4749,178 @@
   "salvageChests": 12,
   "repairWreckHealFraction": 0.25,
   "beaconHintSeconds": 720,
-  "beaconMarkerSeconds": 780
+  "beaconMarkerSeconds": 780,
+  "killGold": {
+   "ordinaryChance": 0.5,
+   "ordinaryAmount": 1,
+   "specialistAmount": 2,
+   "scheduledEliteAmount": 25
+  },
+  "powderCacheBonusGold": 20,
+  "powderCacheEliteCount": 4
  },
+ "personalities": [
+  {
+   "id": "first_timer",
+   "name": "First-Timer",
+   "share": 0.15,
+   "dodgeSkill": 0.35,
+   "contactAvoidance": 0.3,
+   "movement": "StopGo",
+   "pickupGreed": 0.2,
+   "chests": "Some",
+   "landmarks": 1,
+   "bossTiming": "Never",
+   "bossMinute": 0,
+   "cards": "Shiny",
+   "stop": "Death",
+   "stopMinutes": 0
+  },
+  {
+   "id": "thumb_sailor",
+   "name": "Thumb Sailor",
+   "share": 0.15,
+   "dodgeSkill": 0.45,
+   "contactAvoidance": 0.4,
+   "movement": "StopGo",
+   "pickupGreed": 0.3,
+   "chests": "Some",
+   "landmarks": 9,
+   "bossTiming": "OnMarker",
+   "bossMinute": 0,
+   "cards": "Random",
+   "stop": "Time",
+   "stopMinutes": 12
+  },
+  {
+   "id": "casual_cruiser",
+   "name": "Casual Cruiser",
+   "share": 0.2,
+   "dodgeSkill": 0.55,
+   "contactAvoidance": 0.5,
+   "movement": "Loose",
+   "pickupGreed": 0.4,
+   "chests": "Some",
+   "landmarks": 13,
+   "bossTiming": "OnMarker",
+   "bossMinute": 0,
+   "cards": "Balanced",
+   "stop": "Death",
+   "stopMinutes": 0
+  },
+  {
+   "id": "steady_captain",
+   "name": "Steady Captain",
+   "share": 0.2,
+   "dodgeSkill": 0.7,
+   "contactAvoidance": 0.65,
+   "movement": "Kite",
+   "pickupGreed": 0.5,
+   "chests": "Some",
+   "landmarks": 15,
+   "bossTiming": "Minute",
+   "bossMinute": 6,
+   "cards": "Balanced",
+   "stop": "Death",
+   "stopMinutes": 0
+  },
+  {
+   "id": "glass_cannon",
+   "name": "Glass Cannon",
+   "share": 0.07,
+   "dodgeSkill": 0.65,
+   "contactAvoidance": 0.45,
+   "movement": "Charge",
+   "pickupGreed": 0.4,
+   "chests": "All",
+   "landmarks": 2,
+   "bossTiming": "Minute",
+   "bossMinute": 4,
+   "cards": "Damage",
+   "stop": "Death",
+   "stopMinutes": 0
+  },
+  {
+   "id": "turtle",
+   "name": "Turtle",
+   "share": 0.06,
+   "dodgeSkill": 0.6,
+   "contactAvoidance": 0.7,
+   "movement": "Loose",
+   "pickupGreed": 0.3,
+   "chests": "Some",
+   "landmarks": 5,
+   "bossTiming": "OnMarker",
+   "bossMinute": 0,
+   "cards": "Defense",
+   "stop": "Death",
+   "stopMinutes": 0
+  },
+  {
+   "id": "treasure_hound",
+   "name": "Treasure Hound",
+   "share": 0.06,
+   "dodgeSkill": 0.55,
+   "contactAvoidance": 0.5,
+   "movement": "Loose",
+   "pickupGreed": 0.9,
+   "chests": "All",
+   "landmarks": 15,
+   "bossTiming": "OnMarker",
+   "bossMinute": 0,
+   "cards": "Economy",
+   "stop": "Death",
+   "stopMinutes": 0
+  },
+  {
+   "id": "build_planner",
+   "name": "Build Planner",
+   "share": 0.05,
+   "dodgeSkill": 0.75,
+   "contactAvoidance": 0.7,
+   "movement": "Kite",
+   "pickupGreed": 0.5,
+   "chests": "Evolution",
+   "landmarks": 10,
+   "bossTiming": "Minute",
+   "bossMinute": 5,
+   "cards": "Focused",
+   "stop": "Death",
+   "stopMinutes": 0
+  },
+  {
+   "id": "sea_legend",
+   "name": "Sea Legend",
+   "share": 0.04,
+   "dodgeSkill": 0.9,
+   "contactAvoidance": 0.9,
+   "movement": "Kite",
+   "pickupGreed": 0.6,
+   "chests": "Evolution",
+   "landmarks": 15,
+   "bossTiming": "Minute",
+   "bossMinute": 4,
+   "cards": "Focused",
+   "stop": "Death",
+   "stopMinutes": 0
+  },
+  {
+   "id": "speedrunner",
+   "name": "Speedrunner",
+   "share": 0.02,
+   "dodgeSkill": 0.8,
+   "contactAvoidance": 0.75,
+   "movement": "Beeline",
+   "pickupGreed": 0.1,
+   "chests": "None",
+   "landmarks": 8,
+   "bossTiming": "Minute",
+   "bossMinute": 3,
+   "cards": "Damage",
+   "stop": "AfterBoss",
+   "stopMinutes": 0
+  }
+ ],
  "experiment": {
   "spawnDensity": 1,
   "enemyHp": 1,
@@ -4727,7 +4935,7 @@
   "setId": "saltwind-default",
   "configHash": "9d5657cf1d5db3d74c959fc496a7e98465d4d4ae21ea9db5510129d923011f38",
   "preset": null,
-  "exported": "2026-10-07T18:38:43Z",
+  "exported": "2026-10-07T22:29:38Z",
   "unity": "6000.3.11f1"
  }
 }

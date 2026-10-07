@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using RoguePirates.Api.Data;
+using RoguePirates.Api.Plausibility;
 
 namespace RoguePirates.Api.Playtest;
 
@@ -16,12 +17,14 @@ public sealed partial class RunService
     readonly GameDb _db;
     readonly IClock _clock;
     readonly ILogger<RunService> _log;
+    readonly PlausibilityService _checks;
 
-    public RunService(GameDb db, IClock clock, ILogger<RunService> log)
+    public RunService(GameDb db, IClock clock, ILogger<RunService> log, PlausibilityService checks)
     {
         _db = db;
         _clock = clock;
         _log = log;
+        _checks = checks;
     }
 
     public static string NormalizeMap(string? mapId)
@@ -70,6 +73,7 @@ public sealed partial class RunService
 
         var now = _clock.UtcNow;
         var week = WeekMath.WeekStart(now);
+        RunVerdict verdict;
 
         await GameLocks.Runs.WaitAsync();
         try
@@ -93,7 +97,12 @@ public sealed partial class RunService
                     });
                     await _db.SaveChangesAsync();
                 }
-                await tx.CommitAsync(); // the run and its log together
+                // V5 M9a (I9a.3): the run checks' verdict, in shadow mode (D23): stored, never a reason to reject; a flagged
+                // run still counts on the board and still pays out (D24).
+                verdict = _checks.Score(run, log?.Json, log?.Header.BuildId, log?.Header.ConfigHash, now);
+                _db.RunVerdicts.Add(verdict);
+                await _db.SaveChangesAsync();
+                await tx.CommitAsync(); // the run, its log and its verdict together
             }
 
             var best = await _db.WeeklyBests.FirstOrDefaultAsync(b => b.PlayerId == player.Id && b.WeekStart == week && b.MapId == map);
@@ -122,6 +131,7 @@ public sealed partial class RunService
                 weekEnd = week.AddDays(7),
                 isNewWeeklyBest = isNewBest,
                 logStored = log != null,
+                @checked = verdict.Status == Verdicts.Pass,
                 weeklyBest = new { kills = best.Kills, runSeconds = best.RunSeconds, level = best.Level, captain = best.Captain },
             };
         }
@@ -136,18 +146,21 @@ public sealed partial class RunService
         var map = NormalizeMap(mapId);
         var take = Math.Clamp(limit ?? 50, 1, 100);
 
+        // V5 M9a (I9a.3): "checked" = the entry's run passed the run checks (shadow mode: unchecked runs still rank, D23).
         var rows = await (from b in _db.WeeklyBests
                           join p in _db.Players on b.PlayerId equals p.Id
+                          join v in _db.RunVerdicts on b.RunId equals v.RunId into vs
+                          from v in vs.DefaultIfEmpty()
                           where b.WeekStart == weekStart && b.MapId == map
                           orderby b.Kills descending, b.RunSeconds, b.AchievedAt, b.Id
-                          select new { b.PlayerId, p.Name, b.Kills, b.RunSeconds, b.Level, b.Captain })
+                          select new { b.PlayerId, p.Name, b.Kills, b.RunSeconds, b.Level, b.Captain, Checked = v != null && v.Status == Verdicts.Pass })
             .Take(take)
             .ToListAsync();
 
         var entries = rows.Select((r, i) => new
         {
             rank = i + 1, playerId = r.PlayerId, name = r.Name, tag = PlayerTags.For(r.PlayerId),
-            kills = r.Kills, runSeconds = r.RunSeconds, level = r.Level, captain = r.Captain,
+            kills = r.Kills, runSeconds = r.RunSeconds, level = r.Level, captain = r.Captain, @checked = r.Checked,
         }).ToList();
 
         object? meView = null;
@@ -161,7 +174,8 @@ public sealed partial class RunService
                     || (b.Kills == mine.Kills && b.RunSeconds < mine.RunSeconds)
                     || (b.Kills == mine.Kills && b.RunSeconds == mine.RunSeconds && b.AchievedAt < mine.AchievedAt)
                     || (b.Kills == mine.Kills && b.RunSeconds == mine.RunSeconds && b.AchievedAt == mine.AchievedAt && b.Id < mine.Id)));
-                meView = new { rank = better + 1, kills = mine.Kills, runSeconds = mine.RunSeconds, level = mine.Level };
+                var mineChecked = await _db.RunVerdicts.AnyAsync(v => v.RunId == mine.RunId && v.Status == Verdicts.Pass);
+                meView = new { rank = better + 1, kills = mine.Kills, runSeconds = mine.RunSeconds, level = mine.Level, @checked = mineChecked };
             }
         }
 

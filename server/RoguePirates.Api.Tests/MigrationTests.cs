@@ -103,6 +103,7 @@ public sealed class MigrationTests : IDisposable
         Assert.Equal(all, History(db));
         foreach (var table in DatabaseMigrator.BaselineSchema.Keys) Assert.True(TableExists(path, table), table);
         Assert.True(TableExists(path, "RunLogs"));
+        Assert.True(TableExists(path, "RunVerdicts")); // V5 M9a (I9a.3)
         Assert.Empty(db.Database.GetPendingMigrations());
     }
 
@@ -128,6 +129,7 @@ public sealed class MigrationTests : IDisposable
             Assert.Equal(later, history.Skip(1));
             Assert.True(TableExists(path, "MigrationProbe"));
             Assert.True(TableExists(path, "RunLogs"));
+            Assert.True(TableExists(path, "RunVerdicts"));
             var old = db.Players.Single();
             Assert.Equal("OldSalt", old.Name);
             Assert.Equal(1032, old.Rating);
@@ -191,6 +193,50 @@ public sealed class MigrationTests : IDisposable
         Assert.False(TableExists(path, "__EFMigrationsHistory"));
     }
 
+    /// <summary>
+    /// V5 M9a (I9a.3): a database migrated up to AddRunLogs (what is live after I9a.1) holding runs with and without a log:
+    /// the app start adds RunVerdicts, keeps every row, and the startup pass scores the runs uploaded before the checks.
+    /// </summary>
+    [Fact]
+    public async Task AppStart_OnTheRunLogsSchema_AddsVerdicts_KeepsRuns_AndScoresThemInTheBackground()
+    {
+        var path = NewDbPath();
+        string addRunLogs;
+        using (var db = Sqlite(path))
+        {
+            addRunLogs = db.Database.GetMigrations().Single(m => m.EndsWith("_AddRunLogs"));
+            db.GetService<IMigrator>().Migrate(addRunLogs);
+            Assert.False(TableExists(path, "RunVerdicts"));
+            using var conn = new SqliteConnection(ConnString(path));
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText =
+                "INSERT INTO \"Players\" (\"Id\",\"Name\",\"TokenHash\",\"CreatedAt\",\"Rating\",\"Wins\",\"Losses\") VALUES ('6F1C1F0E-0000-4000-8000-000000000002','Logger',$h,'2026-10-07 10:00:00',1000,0,0);" +
+                "INSERT INTO \"Runs\" (\"Id\",\"PlayerId\",\"Kills\",\"RunSeconds\",\"Level\",\"MapId\",\"ClientVersion\",\"WeekStart\",\"SubmittedAt\") VALUES " +
+                "(1,'6F1C1F0E-0000-4000-8000-000000000002',120,300,9,'saltwind','0.1.0','2026-10-05 00:00:00','2026-10-07 10:05:00')," +
+                "(2,'6F1C1F0E-0000-4000-8000-000000000002',50,130,4,'saltwind','0.1.0','2026-10-05 00:00:00','2026-10-07 10:09:00');" +
+                "INSERT INTO \"RunLogs\" (\"RunId\",\"Version\",\"Seed\",\"SeedSource\",\"ConfigHash\",\"BuildId\",\"Bytes\",\"Json\") VALUES " +
+                "(2,1,77,'local','cfg-old','0.1.0+abc',10,'{\"v\":1,\"configHash\":\"cfg-old\",\"seconds\":130,\"minutes\":[]}');";
+            cmd.Parameters.AddWithValue("$h", Tokens.Hash("logger-token"));
+            cmd.ExecuteNonQuery();
+        }
+
+        using var host = new ApiHost(new Dictionary<string, string?> { ["SQLITE_PATH"] = path });
+        Assert.Equal(HttpStatusCode.OK, (await host.Anon().GetAsync("/health")).StatusCode);
+        using var scope = host.Services.CreateScope();
+        var db2 = scope.ServiceProvider.GetRequiredService<GameDb>();
+        Assert.Equal(db2.Database.GetMigrations(), History(db2));
+        Assert.True(TableExists(path, "RunVerdicts"));
+        Assert.Equal(2, await db2.Runs.CountAsync());
+        Assert.Equal(1, await db2.RunLogs.CountAsync());
+        var deadline = DateTime.UtcNow.AddSeconds(20);
+        while (await db2.RunVerdicts.CountAsync() < 2 && DateTime.UtcNow < deadline) await Task.Delay(50);
+        var verdicts = await db2.RunVerdicts.AsNoTracking().OrderBy(v => v.RunId).ToListAsync();
+        Assert.Equal(2, verdicts.Count);
+        Assert.Equal(("outdated_client", "no_log", "0.1.0"), (verdicts[0].Status, verdicts[0].ReasonCodes, verdicts[0].ClientBuild));
+        Assert.Equal(("outdated_client", "config_not_in_rules", "0.1.0+abc", "cfg-old"), (verdicts[1].Status, verdicts[1].ReasonCodes, verdicts[1].ClientBuild, verdicts[1].ConfigHash));
+    }
+
     /// <summary>The real app start (Program.cs) on a database the old EnsureCreated built, then a restart.</summary>
     [Fact]
     public async Task AppStart_OnEnsureCreatedDatabase_BaselinesKeepsDataAndRestartsCleanly()
@@ -214,6 +260,7 @@ public sealed class MigrationTests : IDisposable
             Assert.IsType<SqliteGameDb>(db);
             Assert.Equal(db.Database.GetMigrations(), History(db)); // baselined, then the later migrations applied
             Assert.True(TableExists(path, "RunLogs"));
+            Assert.True(TableExists(path, "RunVerdicts"));
             Assert.Equal(2, await db.Players.CountAsync());
         }
 

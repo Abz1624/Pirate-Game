@@ -78,6 +78,14 @@ export const MODEL = {
   linesPerRarity: [1, 1, 2, 2, 3], // fallback when the data has no progression.linesPerRarity
   legacyXpBurst: false,        // true: the pre-D20 XP payout (pieces of at least 1 XP, more with vfxDensity), for old comparisons
   maxMinutes: 20,
+  // V5 M9a (I9a.3): gold coins home in on the ship from further than XP barrels are sailed over: the share of the dropped
+  // gold collected is the barrel share x this (capped at 1). Not fitted: the sessions' gross gold sits inside the model's
+  // spread with it (plausibility.mjs --sessions).
+  goldPickupBoost: 1.2,
+  // V5 M9a (I9a.3): the share of the model's landed damage the game's weapon ledger counts as damage dealt (the run log's
+  // "dealt"): the recorded voyages' totals are 0.66, 0.53, 0.50, 0.30 and 0.45 of the model's median replay (S1-S5);
+  // the largest, rounded up. Only the minute records' "dealt" uses it.
+  dealtLedgerShare: 0.7,
   // The boss is summoned at the Treasury Beacon (no timed boss; its exact marker shows at the data's
   // stage.beaconMarkerSeconds, 13:00). The owner's sessions never summoned it, so 14:00 is assumed.
   // params.bossAt overrides it (seconds; null = never summoned): compare_session.mjs passes the session's summon time.
@@ -117,7 +125,12 @@ export function xpPaidTable(data, legacyDensity = null) {
   return table;
 }
 
-/** One voyage. params: { captain, startWeapon, weaponOrder, pickPlan, spawnMult, enemyDamageMult, enemyHpMult, earlyMult, lateMult, seed, bossAt, model } -> run record. */
+/**
+ * One voyage. params: { captain, startWeapon, weaponOrder, pickPlan, spawnMult, enemyDamageMult, enemyHpMult, earlyMult, lateMult, seed, bossAt, model,
+ * stopAt, stopAfterBoss, powderCacheAt } -> run record. V5 M9a (I9a.3): stopAt (seconds) ends the voyage there (a player who quits), stopAfterBoss
+ * (seconds) ends it that long after the boss falls; powderCacheAt (seconds, null = never) pays the Powder Cache's gold then. Each minute record also
+ * carries the run log's numbers (RunLogBuilder): spawns, elite and boss kills, XP, gold, damage dealt and taken, healed, chests, hull and max hull.
+ */
 export function simulateRun(data, params) {
   const r = rng(params.seed || 1), M = { ...MODEL, ...(params.model || {}) };
   // This voyage's play (MODEL.playSpread): log-normal multipliers on aim, barrel pickup and exposure to enemy hits.
@@ -297,7 +310,25 @@ export function simulateRun(data, params) {
   const T = M.maxMinutes * 60;
   const density = t => (params.spawnMult || 1) * (data.experiment?.spawnDensity ?? 1) * (t < 300 ? (params.earlyMult ?? 1) : (params.lateMult ?? 1));
   let minuteKills = 0, minuteDamage = 0;
-  const killWindow = new Array(60).fill(0); let killWindowSum = 0; // kills over the last 60 s (barrels left behind)
+  // V5 M9a (I9a.3): the run log's per-minute numbers. Gold draws use their own stream, so the voyage itself (and every
+  // fitted result) is what it was before gold was modelled.
+  const rg = rng(((params.seed || 1) ^ 0x5bd1e995) >>> 0);
+  const KG = (data.stage && data.stage.killGold) || { ordinaryChance: 0.5, ordinaryAmount: 1, specialistAmount: 2, scheduledEliteAmount: 25 };
+  const isSpecialist = e => !!e && ((e.tags || []).includes('specialist') || ((e.threat ?? 0) >= 3 && !e.boss && !e.miniboss));
+  const coinWeapon = Object.values(data.weapons).find(w => (w.goldPerKill ?? 0) > 0);
+  let chestsOpened = 0, coinGold = 0, gold = 0, mElite = 0, mBoss = 0, mXp = 0, mGold = 0, mDealt = 0, mHealed = 0, mChests = 0, spawnsAtMinute = 0;
+  const binom = (n, p) => { let k = 0; for (let i = 0; i < n; i++) if (rg() < p) k++; return k; };
+  // KillFanout.ResolveKillGold (before the coins are picked up). Elites are counted as Rich (x2): an upper estimate.
+  const killGold = (e, kind, n) => {
+    if (!e || n <= 0) return 0;
+    if (kind === 'boss' || e.boss) return n * (e.gold ?? 0);
+    const elite = kind === 'elite' || kind === 'focus' || kind === 'arena', rich = elite ? 2 : 1;
+    if (e.miniboss || (elite && (e.threat ?? 0) >= 3)) return n * KG.scheduledEliteAmount * (e.miniboss ? 1 : rich);
+    if (isSpecialist(e)) return n * KG.specialistAmount * rich;
+    return binom(n, KG.ordinaryChance) * KG.ordinaryAmount * rich;
+  };
+  const goldShare = () => Math.min(1, barrelShareNow * M.goldPickupBoost); // coins home in from further than XP barrels
+  const killWindow = new Array(60).fill(0); let killWindowSum = 0, barrelShareNow = 1; // kills over the last 60 s (barrels left behind)
   for (let t = 0; t < T; t++) {
     now = t;
     const minute = minuteOf(t);
@@ -373,6 +404,7 @@ export function simulateRun(data, params) {
     // auras hit the crowd.
     const killsBefore = kills;
     const barrelShare = () => lootShare * Math.min(1, M.barrelsPerMinute / Math.max(1, killWindowSum));
+    barrelShareNow = barrelShare();
     const n = groups.reduce((s, g) => s + (g.ready <= t ? g.n : 0), 0), splash = Math.min(1, n / M.crowdForFullSplash);
     const share = f => f.kind === 'arena' ? M.arenaShareOfDps : f.kind === 'boss' ? M.bossShareOfDps : f.kind === 'focus' ? M.focusShareOfDps : M.eliteShareOfDps;
     let toFocus = focus.reduce((s, f) => s + share(f), 0); const focusScale = toFocus > 0.95 ? 0.95 / toFocus : 1; toFocus = Math.min(0.95, toFocus);
@@ -384,9 +416,13 @@ export function simulateRun(data, params) {
     }
     const single = singleSum;
     for (let i = focus.length - 1; i >= 0; i--) {
-      const f = focus[i]; f.hp -= single * accuracy * share(f) * focusScale * stats[S.EliteDamage];
+      const f = focus[i], hitFocus = single * accuracy * share(f) * focusScale * stats[S.EliteDamage];
+      f.hp -= hitFocus; mDealt += hitFocus;
       if (f.hp > 0) continue;
       focus.splice(i, 1); kills++; minuteKills++; bandKills++;
+      if (f.kind === 'boss') mBoss++; else if (f.kind === 'elite' || (tl.focus.find(x => x.id === f.id) || {}).elite) mElite++;
+      { const fe = E[f.id.startsWith('adaptive:') ? f.id.slice(9) : ((tl.focus.find(x => x.id === f.id) || {}).enemy || f.id)];
+        const g = killGold(fe, f.kind, 1); gold += g; mGold += g; } // a big payout: its coins are always collected
       xpCarry += (xpPaid[Math.min(400, Math.round(f.xp))] || 1) * barrelShare() * stats[S.XPGain] * xpPace;
       focusLog.push([f.id, f.start, t - f.start, Math.round(f.maxHp), f.kind]);
       if (f.kind === 'boss') { bossDone = true; bossKill = t; if (release.afterBoss > 0) releaseUntil = Math.max(releaseUntil, t + release.afterBoss); }
@@ -396,6 +432,7 @@ export function simulateRun(data, params) {
     // Crowd: damage spread over the engaged enemies by count; a kill costs its HP rounded up to whole hits (overkill).
     const engagedTotal = n;
     if (engagedTotal > 0 && crowdDamage > 0) {
+      mDealt += crowdDamage;
       for (const g of groups) {
         if (g.ready > t) continue;
         const eng = g.n, part = crowdDamage * eng / engagedTotal;
@@ -404,6 +441,17 @@ export function simulateRun(data, params) {
         if (!killed) continue;
         g.n -= killed; kills += killed; minuteKills += killed; bandKills += killed;
         killsBy[g.id] = (killsBy[g.id] ?? 0) + killed;
+        {
+          let gg = killGold(E[g.id], 'crowd', killed);
+          // The Cursed Doubloons' bonus gold per kill (its share of the kills), at most goldPerKillRunCap a run.
+          const coin = coinWeapon && weapons.find(w => w.id === coinWeapon.id);
+          if (coin && coinGold < (coinWeapon.goldPerKillRunCap ?? 0)) {
+            const own = weaponNumbers(coin).single / Math.max(1e-6, singleDps());
+            const c = Math.min((coinWeapon.goldPerKillRunCap ?? 0) - coinGold, Math.round(coinWeapon.goldPerKill * killed * own));
+            coinGold += c; gg += c;
+          }
+          gg = binom(gg, goldShare()); gold += gg; mGold += gg;
+        }
         xpCarry += killed * (xpPaid[Math.min(400, Math.round(g.xp))] || 1) * barrelShare() * stats[S.XPGain] * xpPace;
         // Timed health drops (Survivor.io): the first kill after a random wait drops a health barrel.
         if (PK.healMax > 0) {
@@ -411,14 +459,14 @@ export function simulateRun(data, params) {
           const due = hull / maxHull < (PK.lowHull ?? 0.35) ? lastHeal + (healAt - lastHeal) * (PK.lowWait ?? 1) : healAt;
           if (t >= due) {
             lastHeal = t; healAt = t + PK.healMin + r() * (PK.healMax - PK.healMin);
-            if (r() < Math.min(1, M.healShare * form.heal)) { const heal = Math.min(maxHull - hull, PK.healFraction > 0 ? Math.max(1, Math.round(PK.healFraction * maxHull)) : PK.healValue); hull += heal; healed += heal; }
+            if (r() < Math.min(1, M.healShare * form.heal)) { const heal = Math.min(maxHull - hull, PK.healFraction > 0 ? Math.max(1, Math.round(PK.healFraction * maxHull)) : PK.healValue); hull += heal; healed += heal; mHealed += heal; }
           }
         }
       }
       for (let i = groups.length - 1; i >= 0; i--) if (groups[i].n <= 0) groups.splice(i, 1);
     }
     const slot = t % 60; killWindowSum += (kills - killsBefore) - killWindow[slot]; killWindow[slot] = kills - killsBefore;
-    const whole = Math.floor(xpCarry); xp += whole; xpCarry -= whole;
+    const whole = Math.floor(xpCarry); xp += whole; xpCarry -= whole; mXp += whole;
     while (xp >= xpToNext(level)) { xp -= xpToNext(level); levelUp(); }
 
     // Incoming damage: each source's hit rate (hits/s) x its damage, drawn as whole hits (Poisson).
@@ -447,10 +495,15 @@ export function simulateRun(data, params) {
     // The storm edge and enemy hazards (traps, mines, bomb circles), at a measured rate.
     if (M.hazardHitsPerMinute > 0 && r() < M.hazardHitsPerMinute / 60) { taken += M.hazardHit; damageBy.hazard = (damageBy.hazard ?? 0) + M.hazardHit; }
     hull -= taken; damageTaken += taken; minuteDamage += taken;
-    hull = Math.min(maxHull, hull + (stats[S.HullRegen] || 0));
-    if (t === M.repairAtSeconds && (data.stage?.repairWreckHealFraction ?? 0) > 0) { const heal = Math.min(maxHull - hull, data.stage.repairWreckHealFraction * maxHull); hull += heal; healed += heal; }
-    if (t >= chestAt) {
-      chestAt = t + M.chestEverySeconds;
+    { const before = hull; hull = Math.min(maxHull, hull + (stats[S.HullRegen] || 0)); if (hull > before) mHealed += hull - before; }
+    if (t === M.repairAtSeconds && (data.stage?.repairWreckHealFraction ?? 0) > 0) { const heal = Math.min(maxHull - hull, data.stage.repairWreckHealFraction * maxHull); hull += heal; healed += heal; mHealed += heal; }
+    // The Powder Cache challenge (a landmark): its elites (stage.powderCacheEliteCount, each paying the scheduled-elite gold,
+    // counted as Rich) and the cache's bonus gold, at params.powderCacheAt. Gold only: its few kills are left out.
+    if (params.powderCacheAt != null && t === params.powderCacheAt) {
+      const g = (data.stage?.powderCacheBonusGold ?? 20) + (data.stage?.powderCacheEliteCount ?? 4) * KG.scheduledEliteAmount * 2; gold += g; mGold += g;
+    }
+    if (t >= chestAt && chestsOpened < (data.stage?.salvageChests ?? Infinity)) { // V5 M9a: the map holds stage.salvageChests chests
+      chestAt = t + M.chestEverySeconds; mChests++; chestsOpened++;
       const pool = Object.values(data.items).filter(i => i.inChest);
       const want = weapons.filter(w => !w.evo && w.level >= P.evolutionLevel).map(w => Object.values(data.evolutions).find(e => e.weapon === w.id)).filter(e => e && !items.includes(e.item));
       const item = want.length && r() < (data.stage?.evolutionItemChance ?? 0.4) ? want[0].item : pickW(r, pool, i => (P.rarityWeights || [60, 26, 10, 3.2, 0.8])[i.rarity] ?? 1).id;
@@ -458,17 +511,22 @@ export function simulateRun(data, params) {
       for (const [stat, add, mul] of data.items[item].mods) { if (stat === S.Hull) { maxHull += add; hull += add; } else statAdd(stat, add, mul); }
     }
     minHull = Math.min(minHull, hull / maxHull);
-    if ((t + 1) % 60 === 0 || hull <= 0) {
+    const stopping = (params.stopAt != null && t + 1 >= params.stopAt) || (params.stopAfterBoss != null && bossKill >= 0 && t + 1 >= bossKill + params.stopAfterBoss);
+    if ((t + 1) % 60 === 0 || hull <= 0 || stopping) {
       minutes.push({ m: Math.round((t + 1) / 60), kills: minuteKills, level, dps: Math.round(singleDps() * 10) / 10, gameDps: Math.round(gameDps()), alive: alive(), hull: Math.max(0, hull / maxHull), dmg: Math.round(minuteDamage * 10) / 10, weapons: weapons.length,
-        elites: focus.filter(f => f.kind === 'elite' || (tl.focus.find(x => x.id === f.id) || {}).elite).length });
-      minuteKills = 0; minuteDamage = 0;
+        elites: focus.filter(f => f.kind === 'elite' || (tl.focus.find(x => x.id === f.id) || {}).elite).length,
+        // V5 M9a (I9a.3): the run log's numbers for this minute (the last one may be partial: `seconds`).
+        seconds: (t + 1) - Math.floor(t / 60) * 60, spawns: spawns - spawnsAtMinute, eliteKills: mElite, bossKills: mBoss, xp: mXp, gold: mGold, dealt: mDealt * M.dealtLedgerShare,
+        taken: minuteDamage, healed: mHealed, chests: mChests, hullAbs: Math.max(0, hull), maxHull });
+      minuteKills = 0; minuteDamage = 0; spawnsAtMinute = spawns; mElite = mBoss = mXp = mGold = mDealt = mHealed = mChests = 0;
     }
     if (hull <= 0) { died = true; return finish(t); }
+    if (stopping) return finish(t + 1);
   }
   return finish(T);
 
   function finish(t) {
-    return { captain: cap.id, end: t / 60, died, bossKill: bossKill >= 0 ? bossKill / 60 : null, kills, level, dps: singleDps(), gameDps: gameDps(), damageTaken, healed, islandDamage, minHull,
+    return { captain: cap.id, end: t / 60, endSeconds: t, died, gold, bossAt: bossSpawned ? bossAt : null, bossKill: bossKill >= 0 ? bossKill / 60 : null, kills, level, dps: singleDps(), gameDps: gameDps(), damageTaken, healed, islandDamage, minHull,
       weapons: weapons.map(w => w.id), evolved, logbooks: Object.keys(logbooks), items, minutes, focus: focusLog, damageBy, killsBy, spawns, levelAt };
   }
 }

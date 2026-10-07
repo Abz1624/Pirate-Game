@@ -68,9 +68,11 @@ namespace RoguePirates.V4.Online
     {
         public int rank; public string playerId; public string name; public string tag;
         public int kills; public int runSeconds; public int level; public string captain;
+        /// <summary>V5 M9a (I9a.3): the run passed the server's run checks (shadow mode: unchecked runs still rank).</summary>
+        public bool @checked;
     }
 
-    [Serializable] public sealed class LeaderboardMe { public int rank; public int kills; public int runSeconds; public int level; }
+    [Serializable] public sealed class LeaderboardMe { public int rank; public int kills; public int runSeconds; public int level; public bool @checked; }
 
     [Serializable]
     public sealed class LeaderboardResponse

@@ -1,0 +1,207 @@
+{
+ "rulesVersion": 1,
+ "configHash": "9d5657cf1d5db3d74c959fc496a7e98465d4d4ae21ea9db5510129d923011f38",
+ "sessions": [
+  {
+   "file": "session-log-20261006-152859-rook.json",
+   "session": "session-20261006-152859-rook.json",
+   "id": "S1",
+   "rules": "rules-S1.json",
+   "ownVerdict": "pass",
+   "ownReasons": [],
+   "verdict": "outdated_client",
+   "reasons": [
+    "config_not_in_rules"
+   ],
+   "boundsVerdict": "flagged",
+   "boundsReasons": [
+    {
+     "code": "xp_per_minute",
+     "rule": "PR-XP-MIN",
+     "minute": 0,
+     "value": 134,
+     "bound": 103
+    },
+    {
+     "code": "xp_run_total",
+     "rule": "PR-XP-RUN",
+     "minute": 0,
+     "value": 134,
+     "bound": 103
+    },
+    {
+     "code": "level",
+     "rule": "PR-LEVEL",
+     "minute": 1,
+     "value": 20,
+     "bound": 18
+    }
+   ]
+  },
+  {
+   "file": "session-log-20261007-122453-rook.json",
+   "session": "session-20261007-122453-rook.json",
+   "id": "S2",
+   "rules": "rules-S2.json",
+   "ownVerdict": "pass",
+   "ownReasons": [],
+   "verdict": "outdated_client",
+   "reasons": [
+    "config_not_in_rules"
+   ],
+   "boundsVerdict": "flagged",
+   "boundsReasons": [
+    {
+     "code": "xp_per_minute",
+     "rule": "PR-XP-MIN",
+     "minute": 0,
+     "value": 190,
+     "bound": 103
+    },
+    {
+     "code": "xp_run_total",
+     "rule": "PR-XP-RUN",
+     "minute": 0,
+     "value": 190,
+     "bound": 103
+    },
+    {
+     "code": "level",
+     "rule": "PR-LEVEL",
+     "minute": 1,
+     "value": 20,
+     "bound": 18
+    }
+   ]
+  },
+  {
+   "file": "session-log-20261007-123345-rook.json",
+   "session": "session-20261007-123345-rook.json",
+   "id": "S2",
+   "rules": "rules-S2.json",
+   "ownVerdict": "pass",
+   "ownReasons": [],
+   "verdict": "outdated_client",
+   "reasons": [
+    "config_not_in_rules"
+   ],
+   "boundsVerdict": "pass",
+   "boundsReasons": []
+  },
+  {
+   "file": "session-log-20261007-123913-rook.json",
+   "session": "session-20261007-123913-rook.json",
+   "id": "S2",
+   "rules": "rules-S2.json",
+   "ownVerdict": "pass",
+   "ownReasons": [],
+   "verdict": "outdated_client",
+   "reasons": [
+    "config_not_in_rules"
+   ],
+   "boundsVerdict": "pass",
+   "boundsReasons": []
+  },
+  {
+   "file": "session-log-20261007-124035-rook.json",
+   "session": "session-20261007-124035-rook.json",
+   "id": "S3",
+   "rules": "rules-S3.json",
+   "ownVerdict": "pass",
+   "ownReasons": [],
+   "verdict": "outdated_client",
+   "reasons": [
+    "config_not_in_rules"
+   ],
+   "boundsVerdict": "flagged",
+   "boundsReasons": [
+    {
+     "code": "xp_per_minute",
+     "rule": "PR-XP-MIN",
+     "minute": 0,
+     "value": 201,
+     "bound": 103
+    },
+    {
+     "code": "xp_run_total",
+     "rule": "PR-XP-RUN",
+     "minute": 0,
+     "value": 201,
+     "bound": 103
+    }
+   ]
+  },
+  {
+   "file": "session-log-20261007-141608-rook.json",
+   "session": "session-20261007-141608-rook.json",
+   "id": "S3",
+   "rules": "rules-S3.json",
+   "ownVerdict": "pass",
+   "ownReasons": [],
+   "verdict": "outdated_client",
+   "reasons": [
+    "config_not_in_rules"
+   ],
+   "boundsVerdict": "flagged",
+   "boundsReasons": [
+    {
+     "code": "xp_per_minute",
+     "rule": "PR-XP-MIN",
+     "minute": 0,
+     "value": 182,
+     "bound": 103
+    },
+    {
+     "code": "xp_run_total",
+     "rule": "PR-XP-RUN",
+     "minute": 0,
+     "value": 182,
+     "bound": 103
+    },
+    {
+     "code": "level",
+     "rule": "PR-LEVEL",
+     "minute": 2,
+     "value": 23,
+     "bound": 22
+    }
+   ]
+  },
+  {
+   "file": "session-log-20261007-204854-rook.json",
+   "session": "session-20261007-204854-rook.json",
+   "id": "S4",
+   "rules": "rules-S4.json",
+   "ownVerdict": "pass",
+   "ownReasons": [],
+   "verdict": "outdated_client",
+   "reasons": [
+    "config_not_in_rules"
+   ],
+   "boundsVerdict": "flagged",
+   "boundsReasons": [
+    {
+     "code": "xp_run_total",
+     "rule": "PR-XP-RUN",
+     "minute": 2,
+     "value": 503,
+     "bound": 405
+    }
+   ]
+  },
+  {
+   "file": "session-log-20261008-001147-rook.json",
+   "session": "session-20261008-001147-rook.json",
+   "id": "S5",
+   "rules": "rules-S5.json",
+   "ownVerdict": "pass",
+   "ownReasons": [],
+   "verdict": "outdated_client",
+   "reasons": [
+    "config_not_in_rules"
+   ],
+   "boundsVerdict": "pass",
+   "boundsReasons": []
+  }
+ ]
+}

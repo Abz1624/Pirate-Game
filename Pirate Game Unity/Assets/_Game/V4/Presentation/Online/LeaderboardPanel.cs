@@ -144,7 +144,9 @@ namespace RoguePirates.V4.Presentation.Online
                     var tint = mine ? new Color(1f, 0.82f, 0.4f, 0.22f) : (e.rank % 2 == 0 ? new Color(1f, 1f, 1f, 0.03f) : new Color(1f, 1f, 1f, 0.07f));
                     var row = OnlineUi.Row(_list, 60f, tint);
                     var color = e.rank == 1 ? OnlineUi.Gold : OnlineUi.TextColor;
-                    Cells(row, color, 28, "#" + e.rank, e.name + "<color=#9aa4ad>" + e.tag + "</color>", e.kills.ToString(), OnlineRules.RunTime(e.runSeconds), e.level.ToString(), Captain(e.captain));
+                    // V5 M9a (I9a.3): "checked" when the run passed the server's run checks (shadow mode: the rest still rank)
+                    Cells(row, color, 28, "#" + e.rank, e.name + "<color=#9aa4ad>" + e.tag + "</color>" + (e.@checked ? CheckedMark : ""), e.kills.ToString(),
+                        OnlineRules.RunTime(e.runSeconds), e.level.ToString(), Captain(e.captain));
                     _rows.Add(row.gameObject);
                 }
             }
@@ -152,10 +154,13 @@ namespace RoguePirates.V4.Presentation.Online
             if (RowCount == 0) Message(_previous ? "No runs were ranked last week." : "No runs this week yet. Set sail and claim the top spot!");
             var me = OnlineService.Active;
             if (data.HasMe)
-                _me.text = $"You ({(me != null ? me.Display : "you")}): #{data.me.rank}   {data.me.kills} kills   {OnlineRules.RunTime(data.me.runSeconds)}   level {data.me.level}";
+                _me.text = $"You ({(me != null ? me.Display : "you")}): #{data.me.rank}   {data.me.kills} kills   {OnlineRules.RunTime(data.me.runSeconds)}   level {data.me.level}" +
+                           (data.me.@checked ? CheckedMark : "");
             else
                 _me.text = me == null ? "Make a profile to join the board." : $"You ({me.Display}): no run {(_previous ? "last week" : "this week yet")}";
         }
+
+        const string CheckedMark = "  <size=70%><color=#7fd68b>checked</color></size>";
 
         static string Captain(string key) =>
             string.IsNullOrEmpty(key) ? "-" : char.ToUpperInvariant(key[0]) + key.Substring(1);

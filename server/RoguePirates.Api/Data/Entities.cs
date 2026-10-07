@@ -52,6 +52,31 @@ public sealed class RunLog
     public string Json { get; set; } = "";
 }
 
+/// <summary>
+/// V5 M9a (I9a.3): a run's plausibility verdict (one row per run), in shadow mode (D23): stored and shown as the weekly
+/// board's "checked" flag, never used to reject or withhold anything; a flagged run still counts and still pays out (D24).
+/// Re-scored when the rules version changes (<c>PlausibilityService.RescoreAsync</c>).
+/// </summary>
+public sealed class RunVerdict
+{
+    /// <summary>The run's id (<see cref="RunRecord.Id"/>).</summary>
+    public long RunId { get; set; }
+    /// <summary>pass, flagged or outdated_client (<c>Plausibility.Verdicts</c>).</summary>
+    public string Status { get; set; } = "";
+    /// <summary>The reason codes, comma separated (empty on a pass).</summary>
+    public string ReasonCodes { get; set; } = "";
+    /// <summary>The broken rules' ids, comma separated, in the order of <see cref="ReasonCodes"/>.</summary>
+    public string RuleIds { get; set; } = "";
+    /// <summary>The reasons with where each rule broke (JSON array of {code, rule, minute, value, bound}).</summary>
+    public string DetailsJson { get; set; } = "[]";
+    public int RulesVersion { get; set; }
+    /// <summary>The client build: the log's buildId, else the run's client version or build hash.</summary>
+    public string? ClientBuild { get; set; }
+    /// <summary>The config hash the log names (null without a log).</summary>
+    public string? ConfigHash { get; set; }
+    public DateTime EvaluatedAt { get; set; }
+}
+
 /// <summary>A player's best run of one ISO week on one map (one row per player, week and map).</summary>
 public sealed class WeeklyBest
 {
