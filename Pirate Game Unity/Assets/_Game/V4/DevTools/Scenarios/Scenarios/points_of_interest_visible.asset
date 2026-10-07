@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa115c363c73ef24fa57f0fbf8fe6509, type: 3}
+  m_Name: points_of_interest_visible
+  m_EditorClassIdentifier: RoguePirates.V4.DevTools::RoguePirates.V4.DevTools.Scenarios.ScenarioConfig
+  description: 'At 3:00 the Treasury Beacon 10 m ahead and a chest, the Lighthouse, the Signal Buoy, a Powder Cache, a Repair Wreck and a Cursed Idol around the ship: each one''s model is drawn on screen.'
+  seed: 1090
+  captain: {fileID: 0}
+  playtest: 1
+  invulnerable: 1
+  skipLevelUpCards: 1
+  clockSeconds: 180
+  scriptedPhases: 2
+  ambientSpawning: 0
+  triggerPhases: []
+  loadout:
+    replaceWeapons: 0
+    weapons: []
+    logbooks: []
+    items: []
+    playerLevel: 0
+    xpIntoLevel: 0
+  shipStart: 0
+  holdIntoShore: 0
+  enemies: []
+  pointsOfInterest:
+  - type: 3
+    distance: 10
+    bearing: 0
+  - type: 0
+    distance: 10
+    bearing: 90
+  - type: 1
+    distance: 12
+    bearing: 180
+  - type: 2
+    distance: 10
+    bearing: 270
+  - type: 5
+    distance: 14
+    bearing: 45
+  - type: 4
+    distance: 14
+    bearing: 135
+  - type: 6
+    distance: 14
+    bearing: 225
+  boss: 0
+  sinkOtherEnemies: 0
+  configEdits: []
+  pvp:
+    enabled: 0
+    weapons: []
+    logbooks: []
+    countdownSeconds: 1
+    matchSeconds: 6
+    stormStartSeconds: 0

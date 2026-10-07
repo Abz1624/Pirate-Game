@@ -204,6 +204,93 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(Runner.Spawned.Any(s => s.enemyId == "shark"), "an ordinary enemy is in the scenario");
             Assert.IsTrue(world.TryFindActiveBoss(out _, out var boss), "the boss is up");
             Assert.IsNotNull(boss.healthBar, "the boss has its health bar");
+
+            // V5 M8z (7 Oct, playtest: "not seeing any health bars on top of minibosses, elites, and bosses"): the bars
+            // were acquired but never drawn. Each one is on screen: drawn by a canvas, at a non-zero scale, in front of the
+            // camera, above its model and full.
+            yield return new WaitForEndOfFrame();
+            foreach (var (enemyId, unit) in Runner.Spawned)
+            {
+                Assert.IsTrue(world.TryGetAgentByUnitId(unit, out var i), enemyId + " alive");
+                if (world.Agents[i].healthBar != null) AssertBarOnScreen($"{enemyId} (affix {world.Agents[i].affix})", world.Agents[i]);
+            }
+            // The boss rises 50 m off: the ship sails up to it.
+            Ship.SetWorldPosition(boss.position + new Vector3(0f, 0f, -14f));
+            for (var f = 0; f < 30; f++) yield return null;
+            yield return new WaitForEndOfFrame();
+            Assert.IsTrue(world.TryFindActiveBoss(out _, out boss), "the boss is still up");
+            AssertBarOnScreen("the boss", boss);
+        }
+
+        static void AssertBarOnScreen(string who, EnemyUnit agent)
+        {
+            Assert.IsNotNull(agent.healthBar, who + " has a health bar");
+            var bar = agent.healthBar.GetComponent<RoguePirates.V4.Foundation.VFX.WorldHealthBar>();
+            Assert.IsNotNull(bar, who + ": a world health bar");
+            var cam = Camera.main;
+            Assert.IsTrue(RoguePirates.V4.Foundation.VFX.WorldHealthBarBatch.IsDrawn(bar, cam, out var why), $"{who}: the bar is drawn on screen ({why})");
+            Assert.Greater(bar.Fill, 0f, who + ": the bar shows hull left");
+            Assert.Greater(bar.transform.lossyScale.x, 0.001f, who + ": the bar has its size");
+            if (agent.view != null)
+            {
+                var top = float.MinValue;
+                foreach (var r in agent.view.GetComponentsInChildren<Renderer>(false))
+                    if (r.enabled && (r is MeshRenderer || r is SkinnedMeshRenderer)) top = Mathf.Max(top, r.bounds.max.y);
+                if (top > float.MinValue) Assert.Greater(bar.transform.position.y, top, who + ": the bar sits above its model, not inside it");
+            }
+            Debug.Log($"[V5 Scenario health bars] {who}: bar at {bar.transform.position}, viewport {cam.WorldToViewportPoint(bar.transform.position)}, fill {bar.Fill:0.##}");
+        }
+
+        /// <summary>
+        /// V5 M8z (7 Oct, playtest: "the boss beacon is invisible, but can be triggered when the player is near it"). The
+        /// Beacon's marker is FlexUnit's whirlpool, a one-shot spell whose animator faded it out about 7 s after it
+        /// appeared. Ten seconds on, the whirlpool and every other point of interest around the ship are still drawn.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator PointsOfInterest_StayVisible_TheBeaconsWhirlpoolDoesNotFadeOut()
+        {
+            yield return Load("points_of_interest_visible");
+            Assert.IsTrue(Game.Context.TryGet<IStageContent>(out var stage));
+            var markers = Object.FindFirstObjectByType<RoguePirates.V4.Presentation.Stage.PoiMarkerPresenter>();
+            Assert.IsNotNull(markers, "the POI marker presenter");
+            yield return new WaitForSeconds(10f); // past the whirlpool's "finish" (its animator's exit time, about 6.7 s)
+            yield return new WaitForEndOfFrame();
+            var cam = Camera.main;
+            var pois = stage.Module.Layout.pois;
+            foreach (var wanted in Runner.Config.pointsOfInterest)
+            {
+                var index = -1;
+                var best = float.MaxValue;
+                for (var i = 0; i < pois.Count; i++)
+                {
+                    if (pois[i].type != wanted.type) continue;
+                    var d = Flat(pois[i].position - Ship.Position);
+                    if (d < best) { best = d; index = i; }
+                }
+                Assert.GreaterOrEqual(index, 0, wanted.type + " on the stage");
+                var marker = markers.Shown(index);
+                Assert.IsNotNull(marker, $"{wanted.type} has a marker showing");
+                var drawn = marker.GetComponentsInChildren<Renderer>(false).Where(r => r.enabled && !(r is ParticleSystemRenderer)).ToList();
+                Assert.IsNotEmpty(drawn, wanted.type + ": a model is drawn");
+                var vp = cam.WorldToViewportPoint(marker.transform.position);
+                Assert.IsTrue(vp.z > cam.nearClipPlane && vp.x > 0f && vp.x < 1f && vp.y > 0f && vp.y < 1f, $"{wanted.type} on screen (viewport {vp})");
+                Assert.IsTrue(drawn.Any(r => r.isVisible), wanted.type + ": rendered by a camera");
+                foreach (var r in drawn)
+                {
+                    var block = new MaterialPropertyBlock();
+                    r.GetPropertyBlock(block);
+                    if (r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Opacity") && !block.isEmpty)
+                        Assert.Greater(block.GetFloat("_Opacity"), 0.5f, $"{wanted.type}: {r.name} is not faded out");
+                }
+                var hold = marker.GetComponent<RoguePirates.V4.Presentation.Stage.PoiMarkerAnimationHold>();
+                if (marker.GetComponentInChildren<Animator>() != null)
+                {
+                    Assert.IsNotNull(hold, wanted.type + ": its animation is held");
+                    Assert.IsTrue(hold.Holding, wanted.type + ": held at the end of its first state, not playing its fade-out");
+                }
+                Debug.Log($"[V5 Scenario POIs] {wanted.type} at {best:0.0} m: {drawn.Count} renderers, viewport {vp}");
+            }
+            Assert.IsTrue(stage.Module.CanInteract(pois.FindIndex(p => p.type == POIType.BossBeacon)), "the Beacon can be used");
         }
 
         [UnityTest]

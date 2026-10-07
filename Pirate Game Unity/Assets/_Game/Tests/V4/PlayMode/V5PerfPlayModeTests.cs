@@ -128,7 +128,8 @@ namespace RoguePirates.V4.Tests
                 var batch = bar.transform.parent != null ? bar.transform.parent.GetComponent<RoguePirates.V4.Foundation.VFX.WorldHealthBarBatch>() : null;
                 Assert.IsNotNull(batch, bar.name + " is under a shared canvas");
                 batches.Add(batch);
-                Assert.IsFalse(bar.GetComponent<Canvas>().enabled, "its own canvas is off");
+                Assert.IsNull(bar.GetComponent<Canvas>(), "its own canvas is removed"); // V5 M8z (7 Oct, playtest): a switched-off one kept the bar from drawing
+                Assert.IsTrue(RoguePirates.V4.Foundation.VFX.WorldHealthBarBatch.IsDrawn(bar, null, out var why), bar.name + " is drawn by the shared canvas: " + why);
                 Assert.AreEqual(0.01f, bar.transform.localScale.x, 1e-5f, "the prefab's scale is kept");
             }
             Assert.LessOrEqual(batches.Count, 2, "one shared canvas (two at most: enemy and player pools)");

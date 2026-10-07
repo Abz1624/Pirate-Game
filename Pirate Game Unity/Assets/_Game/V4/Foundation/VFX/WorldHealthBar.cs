@@ -20,6 +20,8 @@ namespace RoguePirates.V4.Foundation.VFX
         internal Transform Target => _target;
         internal WorldHealthBarBatch Batch;
         internal float HeightOffset => _heightOffset;
+        /// <summary>V5 M8z (7 Oct, playtest): the fill shown (0 to 1; 0 without a fill image) (tests).</summary>
+        public float Fill => _fill != null ? _fill.fillAmount : 0f;
 
         public void Bind(Transform target, float heightOffset)
         {

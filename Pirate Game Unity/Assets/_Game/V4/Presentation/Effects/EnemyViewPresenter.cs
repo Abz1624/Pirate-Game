@@ -146,10 +146,31 @@ namespace RoguePirates.V4.Presentation.Effects
             if (go == null) return null;
             var bar = go.GetComponent<WorldHealthBar>();
             if (bar == null) bar = go.AddComponent<WorldHealthBar>();
-            bar.Bind(view, _juice.enemyHealthBarHeight);
+            bar.Bind(view, BarHeight(view));
             bar.SetFill(1f);
             return go.transform;
         }
+
+        /// <summary>V5 M8z (7 Oct, playtest): the bar sits above the model's top, not at a fixed height that a large
+        /// enemy (the Reef Crab at 1.6x, its elite at 2.4x, the boss) hides inside its own model.</summary>
+        float BarHeight(Transform view)
+        {
+            var height = _juice != null ? _juice.enemyHealthBarHeight : 3f;
+            var found = false;
+            var top = float.MinValue;
+            view.GetComponentsInChildren(false, _renderers);
+            foreach (var r in _renderers)
+            {
+                if (!r.enabled || !(r is MeshRenderer || r is SkinnedMeshRenderer)) continue;
+                top = Mathf.Max(top, r.bounds.max.y);
+                found = true;
+            }
+            _renderers.Clear();
+            return found ? Mathf.Max(height, top - view.position.y + BarClearance) : height;
+        }
+
+        const float BarClearance = 0.8f;
+        readonly List<Renderer> _renderers = new List<Renderer>();
 
         /// <summary>Playtest (3 Oct, owner, round 7: "in pvp i couldn't see other player's ... health"): the enemy health bar
         /// over the 1v1 opponent's ship (the caller sets its fill and releases it).</summary>

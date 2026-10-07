@@ -214,6 +214,7 @@ namespace RoguePirates.V4.Presentation.Stage
                 SalvageChestTreasureGlow.Attach(go, _juice);
             }
             StripColliders(go);
+            PoiMarkerAnimationHold.AttachIfAnimated(go); // V5 M8z (7 Oct, playtest): the Beacon's whirlpool stays drawn
             return go;
         }
 

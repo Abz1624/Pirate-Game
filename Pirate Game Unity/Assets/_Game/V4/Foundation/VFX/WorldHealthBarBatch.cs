@@ -27,14 +27,57 @@ namespace RoguePirates.V4.Foundation.VFX
             var batch = bar.Batch;
             if (batch == null) batch = bar.transform.parent != null ? bar.transform.parent.GetComponent<WorldHealthBarBatch>() : null;
             if (batch == null) batch = For(bar.transform.parent);
-            if (bar.transform.parent != batch.transform) bar.transform.SetParent(batch.transform, false); // keeps the prefab's local scale (0.01)
-            // The bar's own canvas off: its images now draw as part of the shared canvas.
-            if (bar.TryGetComponent<Canvas>(out var own)) own.enabled = false;
-            if (bar.TryGetComponent<CanvasScaler>(out var scaler)) scaler.enabled = false;
-            if (bar.TryGetComponent<GraphicRaycaster>(out var raycaster)) raycaster.enabled = false;
+            // V5 M8z (7 Oct, playtest: "not seeing any health bars on top of minibosses, elites, and bosses"). The bar's own
+            // canvas is removed, then the bar is parented under the shared canvas. It used to be parented first and its
+            // canvas only switched off: the bar's images stayed in the switched-off canvas's draw list (CanvasRenderer
+            // absoluteDepth -1), so no enemy, elite, miniboss or boss bar (nor the player's) was drawn since V5 M7c. A
+            // reparent is what makes Unity move the images to the shared canvas, so a bar that lost its canvas is
+            // reparented even when it already sits under the batch.
+            var removed = RemoveOwnCanvas(bar.gameObject);
+            if (bar.transform.parent != batch.transform || removed)
+            {
+                if (bar.transform.parent == batch.transform) bar.transform.SetParent(batch.transform.parent, false);
+                bar.transform.SetParent(batch.transform, false); // keeps the prefab's local scale (0.01)
+            }
             bar.Batch = batch;
             if (!batch._bars.Contains(bar)) batch._bars.Add(bar);
             batch.Place(bar, Camera.main);
+        }
+
+        /// <summary>Removes the bar's own canvas (raycaster and scaler first: they require it). True when there was one.</summary>
+        static bool RemoveOwnCanvas(GameObject bar)
+        {
+            if (!bar.TryGetComponent<Canvas>(out var own)) return false;
+            if (bar.TryGetComponent<GraphicRaycaster>(out var raycaster)) DestroyImmediate(raycaster);
+            if (bar.TryGetComponent<CanvasScaler>(out var scaler)) DestroyImmediate(scaler);
+            DestroyImmediate(own);
+            return true;
+        }
+
+        /// <summary>V5 M8z (7 Oct, playtest): true when the bar is drawn by a canvas (its images are in a canvas's draw
+        /// list, not left in a switched-off one), active, at a non-zero scale and in front of <paramref name="cam"/> (tests).</summary>
+        public static bool IsDrawn(WorldHealthBar bar, Camera cam, out string why)
+        {
+            why = null;
+            if (bar == null || !bar.isActiveAndEnabled) { why = "inactive"; return false; }
+            var scale = bar.transform.lossyScale;
+            if (Mathf.Abs(scale.x) < 1e-5f || Mathf.Abs(scale.y) < 1e-5f) { why = "zero scale"; return false; }
+            if (bar.TryGetComponent<Canvas>(out var own) && !own.enabled) { why = "under its own switched-off canvas"; return false; }
+            var images = bar.GetComponentsInChildren<Image>(false);
+            if (images.Length == 0) { why = "no images"; return false; }
+            foreach (var image in images)
+            {
+                if (!image.enabled || image.canvas == null || !image.canvas.isActiveAndEnabled) { why = image.name + " has no live canvas"; return false; }
+                if (image.canvasRenderer.absoluteDepth < 0) { why = image.name + " is not in a canvas's draw list"; return false; }
+                if (image.canvasRenderer.GetAlpha() <= 0f || image.color.a <= 0f) { why = image.name + " is transparent"; return false; }
+            }
+            if (cam != null)
+            {
+                var vp = cam.WorldToViewportPoint(bar.transform.position);
+                if (vp.z <= cam.nearClipPlane || vp.x < 0f || vp.x > 1f || vp.y < 0f || vp.y > 1f) { why = $"off screen (viewport {vp})"; return false; }
+                if ((cam.cullingMask & (1 << bar.gameObject.layer)) == 0) { why = "on a layer the camera does not draw"; return false; }
+            }
+            return true;
         }
 
         internal static void Remove(WorldHealthBar bar)
