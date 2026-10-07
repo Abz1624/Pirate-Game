@@ -298,6 +298,11 @@
    "when": "7 Oct",
    "commit": "90f59681",
    "what": "Logbooks were never offered once a ship held six weapons (that weight row had 0 for new Logbooks): fixed, and Logbook cards say LOGBOOK. Second recorded session (14:01, level 41): islands did 46% of the damage; elites piled up after 9:00; the simulator again levels about half as fast and takes about a quarter of the damage (recalibration in M8z). New desktop build served locally."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "0b67ca95",
+   "what": "Gentler island bounce (owner): restitution 0.95 to 0.45, push 6 to 3 m/s, hit damage unchanged; a console snippet recovers the last voyage's session file from the browser (<code>plan/playtest/sessions/recover-last-session.js</code>)."
   }
  ],
  "todos": {
