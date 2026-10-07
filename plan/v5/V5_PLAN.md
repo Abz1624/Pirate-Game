@@ -1099,3 +1099,21 @@ questions below (6 Oct, `plan/playtest/V5-RESUME.md`).
 | P9 | API auto-deploy: on every push, or after a manual approval in GitHub? | Answered 6 Oct: every push (D18); changed 6 Oct: manual deploys by the agent (D19) |
 | P10 | Merge `playtest` into `v5-live-game` and continue there (M8z)? | Answered 6 Oct: yes, merged (D18) |
 | P11 | Treasury and raids (Q23b reopened, 6 Oct): you want a livelier economy than vault 80% / treasury 20%, a raid takes 20% of the treasury, 8 h shield, at most 10% lost a day. | Answered 6 Oct: option B with 4-hour shields (D19) |
+| Q16 | Pickup sparkles on loot barrels: fewer particles, or keep them? | Keep (desktop is the main target now) · Other (say which) |
+| Q17 | The Knockback upgrade card: six weapons can roll it and it does nothing for them. | Take it out of those weapons' upgrade pools · Other (say which) |
+| Q19 | Ramming Prow needs the boost button, against the "auto-attacks" rule. Keep it? Should enemies still hurt the ship while it rams? | Keep it; the ship takes no contact damage while ramming · Other (say which) |
+| Q20 | New weapons' rank 4/8/12 milestones (an extra anchor, a second pulse...): keep as upgrade steps, or drop? | Keep · Other (say which) |
+| Q23 | Should the Harpoon's tar become a real slow? | Yes · Other (say which) |
+| Q24 | The Reef Crab (miniboss): slowed and knocked back like regular enemies, or treated like the boss (half slow, immune to knockback)? | Like the boss · Other (say which) |
+| Q25 | Should slows also shorten enemies' charge dashes? | No (a dash keeps its telegraphed reach) · Other (say which) |
+| Q26 | The flame reaches exactly its damage cone (9.5 m). Does it look right and dense enough? | Check in your playtest · Other (say which) |
+| Q27 | Luck: one scale for level-up cards and chests? | One scale (a fraction) · Other (say which) |
+| Q28 | The four designed powerups (Battle Signal, Tailwind, Salvage Chime, Full Sail): which mix? | All four, at today's numbers · Other (say which) |
+| Q32 | Admiral: elites only, or the boss too? | Elites and the boss · Other (say which) |
+| Q5 | New enemy types with new art: which phase, and who makes the models? | After M9; the art team · Other (say which) |
+| Q37 | Collection: from Profile (built), or its own button on the art menu (needs the art team)? | From Profile · Other (say which) |
+| Q38 | "New" badges and sales: which content, and when? | Later, when locks come back · Other (say which) |
+| Q33 | Quality tiers: the same gameplay caps on every device, or fewer player projectiles on a Low phone? | Same caps everywhere · Other (say which) |
+| Q34 | The 1024 texture cap: mobile only, or the desktop web build too? | Mobile only (desktop gets sharper textures) · Other (say which) |
+| Q42 | Health bars sort far to near every 8 frames (a near bar can sit under a far one briefly). Fine, or every frame? | Every 8 frames · Other (say which) |
+| Q40, Q44 | Phone builds: ASTC effects and UI art; the Android 1024 UI cap. | When you next ask for a phone build · Other (say which) |
