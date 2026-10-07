@@ -1,6 +1,6 @@
 {
  "updated": "6 Oct 2026",
- "statusLine": "M8z (playtest integration) in progress on <code>v5-live-game</code>; all questions answered (D18, D19).",
+ "statusLine": "M8z (playtest integration) in progress on <code>v5-live-game</code>: merge, PvP anti-cheat, playtest fixes and the session recorder done; architecture fixes, the playtest preset, the Scenario Lab, test triage and the simulator recalibration next.",
  "statusOk": false,
  "facts": [
   [
@@ -308,11 +308,16 @@
    "when": "7 Oct",
    "commit": "",
    "what": "Third recorded session recovered (11:32, level 40, 12 Logbooks picked: the Logbook fix works; islands still 47% of the damage, before the gentler bounce). \"Download voyage data\" on the results screen and \"Download last voyage\" on the main menu, so a missed download can be fetched again."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "",
+   "what": "Island bounce back to its previous strength (owner). Next: the rest of M8z, starting with the architecture fixes and the Scenario Lab."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Play more recorded voyages</strong> (the file downloads in the browser; put it in <code>plan/playtest/sessions/</code>) to calibrate the simulator."
+   "<strong>Keep recording voyages</strong> when you play (the file downloads at the end; <em>Download last voyage</em> on the main menu fetches it again)."
   ],
   "open": [
    "PvP draft on phones: tapping a card to read it also picks it (later).",
@@ -1024,6 +1029,20 @@
    {
     "title": "Not built",
     "text": "New badges and sales (need your catalogue), the server-shaped async interface (M10), a PlayMode buy-then-offered test (your playtest checks it)."
+   }
+  ],
+  "M8z": [
+   {
+    "title": "Done",
+    "text": "I8z.1 merge (<code>b5936c4d</code>, tag <code>playtest-r10</code>); PvP anti-cheat with a per-weapon and edge-case audit (server tests 102/102, deployed); everything unlocked for now; arena fights pause the waves until they end, with off-screen arrows; island hits 5 hull at most every 2 s; an early boss keeps its 14:00 hull; Logbooks offered with six weapons; session recorder, voyage download buttons and <code>compare_session.mjs</code>; three recorded sessions."
+   },
+   {
+    "title": "Next",
+    "text": "I8z.2 architecture fixes (enemy colours and an elite flag in config, card stat lines through views, the weapon switch-off list in config, online services owned by the composition root); I8z.3 the playtest switches as a config preset tested both ways; I8z.4 Scenario Lab scene and fast scenario tests; I8z.5 triage of the failing tests (fix, rewrite as rules, retire; the v3-parity preset retired); I8z.7 one simulator recalibrated on the recorded sessions; then the reviewer, your playtest and the M8z commit."
+   },
+   {
+    "title": "What the sessions showed",
+    "text": "Three voyages (4:25, 14:01, 11:32): islands did 46-54% of the damage taken; elites pile up after 9:00 with 3,000-7,000 hull; the simulator levels about half as fast, kills about half as many and takes about a quarter of the damage, with miniboss and elite hull about 8 times lower than the game's."
    }
   ]
  },
