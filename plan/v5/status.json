@@ -348,6 +348,11 @@
    "when": "7 Oct",
    "commit": "",
    "what": "M3b-M8 marked done: playtested through rounds 1-10 (superseded parts per D18-D20). Your playtest of the M8z build: XP drops halved (levelling twice as slow), health bars and the invisible Beacon being fixed; fourth recorded session (13:15, level 37, islands 49% of damage). Older questions reviewed: 17 still open in <code>plan/v5/OPEN-QUESTIONS.md</code>."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "5711b244",
+   "what": "Fixed from your playtest: health bars were never drawn (since M7c the shared bar canvas left them in a switched-off canvas; bars now also sit above tall models); the Beacon's whirlpool faded out 7 s after the run started (POI marker animations now hold their open frame). Scenario tests now assert bars and POIs are actually on screen. New desktop build started."
   }
  ],
  "todos": {
