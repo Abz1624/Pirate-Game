@@ -38,40 +38,40 @@
    "chip": "done 1 Oct · playtested"
   },
   "M3b": {
-   "state": "playtest",
-   "chip": "built 1 Oct · awaiting your playtest"
+   "state": "done",
+   "chip": "done · playtested in rounds 1-10 (1-7 Oct)"
   },
   "M3c": {
-   "state": "playtest",
-   "chip": "built 1 Oct · superseded by the playtest XP curve (P1)"
+   "state": "done",
+   "chip": "done · replaced by the playtest XP curve (D18)"
   },
   "M3d": {
-   "state": "playtest",
-   "chip": "built 1 Oct · partly superseded: HP grows, 15-min timeline (P1)"
+   "state": "done",
+   "chip": "done · replaced by the 15-min playtest timeline (D18)"
   },
   "M3e": {
-   "state": "playtest",
-   "chip": "built 1 Oct · awaiting your playtest"
+   "state": "done",
+   "chip": "done · playtested in rounds 1-10"
   },
   "M4": {
-   "state": "playtest",
-   "chip": "built · role ±20% replaced by equal level-1 damage"
+   "state": "done",
+   "chip": "done · playtested; equal level-1 DPS (D20)"
   },
   "M4b": {
-   "state": "playtest",
-   "chip": "built 1 Oct · awaiting your playtest"
+   "state": "done",
+   "chip": "done · playtested in rounds 1-10"
   },
   "M5": {
-   "state": "playtest",
-   "chip": "built 1 Oct · awaiting your playtest"
+   "state": "done",
+   "chip": "done · playtested in rounds 1-10"
   },
   "M7": {
-   "state": "playtest",
-   "chip": "built · Esc pause, minimap, barks removed in the playtest"
+   "state": "done",
+   "chip": "done · playtested; Esc pause, minimap, barks removed"
   },
   "M8": {
-   "state": "playtest",
-   "chip": "built · mode select removed; weapon shop empty (P3)"
+   "state": "done",
+   "chip": "done · playtested; mode select removed, all free (D18)"
   },
   "M8z": {
    "state": "review",
@@ -343,17 +343,21 @@
    "when": "7 Oct",
    "commit": "7bfb9403",
    "what": "<strong>D20 done</strong>: XP per kill exact at every graphics quality (pace kept: XP x0.8 and a retuned table); Ironclad in the Logbook pool; session downloads behind a playtest-build switch; every weapon at 14.78 level-1 single-target DPS (goldens re-recorded; PvP cap margin still 1.57x). The model now gives an 84% boss win rate (69% before): worth watching in your playtest. Desktop build for the M8z playtest started."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "",
+   "what": "M3b-M8 marked done: playtested through rounds 1-10 (superseded parts per D18-D20). Your playtest of the M8z build: XP drops halved (levelling twice as slow), health bars and the invisible Beacon being fixed; fourth recorded session (13:15, level 37, islands 49% of damage). Older questions reviewed: 17 still open in <code>plan/v5/OPEN-QUESTIONS.md</code>."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Playtest M8z</strong> on the desktop build at http://localhost:8090 once the review fixes are in.",
-   "<strong>Keep recording voyages</strong> when you play (the file downloads at the end; <em>Download last voyage</em> on the main menu fetches it again)."
+   "<strong>Answer the open questions</strong> in <code>plan/v5/OPEN-QUESTIONS.md</code> (17, each with a suggestion; \"go with your suggestions\" is fine).",
+   "<strong>Playtest M8z</strong> once the health bar and Beacon fixes are in (a new desktop build follows).",
+   "<strong>Keep recording voyages</strong> when you play (<em>Download last voyage</em> on the main menu fetches a missed one)."
   ],
   "open": [
-   "PvP draft on phones: tapping a card to read it also picks it (later).",
-   "Flamethrower VFX is broken (offered again); fixed in M4.",
-   "Earlier GDD questions (21 left) are still on the board; the raid entry fee (question 4) feeds M15 and the pass price (question 5) feeds M20."
+   "PvP draft on phones: tapping a card to read it also picks it (later)."
   ],
   "done": [
    "<strong>Answered P11</strong> (6 Oct): raid economy option B with 4-hour shields (D19); Netcode matches server-authoritative (D19).",

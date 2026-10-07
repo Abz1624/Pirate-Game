@@ -27,7 +27,7 @@ MonoBehaviour:
   dropRadiusJitter: 0.15
   mergeRadius: 2
   mergeIntoNearestWhenFull: 1
-  xpPickupMultiplier: 0.8
+  xpPickupMultiplier: 0.4
   xpAutoPickupRadius: 4.25
   goldAutoPickupRadius: 26
   barrelTouchRadius: 5
