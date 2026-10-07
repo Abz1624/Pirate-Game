@@ -51,7 +51,7 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
-        public IEnumerator EvolutionChain_Level8_ChestItem_Card_ThenLevellingOn()
+        public IEnumerator EvolutionChain_AtTheCardLevel_ChestItem_Card_ThenLevellingOn()
         {
             SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return null;
@@ -63,7 +63,11 @@ namespace RoguePirates.V4.Tests
             var weaponId = evo.baseWeapon.weaponId;
             progression.DevSetWeapons(new[] { weaponId });
             var index = progression.Loadout.IndexOf(weaponId);
-            while (progression.WeaponLevel(weaponId) < 8) progression.DevRankUp(index);
+            // V5 M8z (7 Oct, I8z.5): the card's level is the game's rule (the weapon's max level since the playtest, 3 Oct;
+            // it was 8), read from the run's offer generator.
+            var offers = (OfferGenerator)typeof(ProgressionModule).GetField("_offers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(progression);
+            var cardLevel = offers.EvolutionCardLevel(weaponId);
+            while (progression.WeaponLevel(weaponId) < cardLevel) progression.DevRankUp(index);
             yield return null; // the weapon module mirrors the loadout
             yield return null;
 
@@ -72,7 +76,7 @@ namespace RoguePirates.V4.Tests
             RunManager.Instance.AddGold(10000);
             var plan = game.Stage.Economy.PlanChest(new[] { weaponId });
             Assert.IsTrue(plan.Valid, plan.Error);
-            Assert.AreEqual(evo.requiredItemId, plan.ItemId, "the chest gives the level-8 weapon's evolution item");
+            Assert.AreEqual(evo.requiredItemId, plan.ItemId, "the chest gives the ready weapon's evolution item");
             Assert.IsTrue(game.Build.Items.TryAddItem(plan.ItemId));
             Assert.IsTrue(game.Build.Items.HasItem(evo.requiredItemId), "the build carries it (the chest skips carried items: EditMode test)");
 
@@ -86,12 +90,13 @@ namespace RoguePirates.V4.Tests
                 var deal = progression.GenerateOffers();
                 if (deal.Any(o => o.Kind == OfferKind.WeaponEvolution && o.Id == weaponId)) card = deal.First(o => o.Kind == OfferKind.WeaponEvolution && o.Id == weaponId);
             }
-            Assert.AreEqual(OfferKind.WeaponEvolution, card.Kind, "the evolution card is dealt at level 8");
+            Assert.AreEqual(OfferKind.WeaponEvolution, card.Kind, "the evolution card is dealt at its level");
             progression.Select(card);
             Assert.AreEqual(evo.evolutionId, progression.EvolutionOf(weaponId));
-            while (progression.WeaponLevel(weaponId) < 12) progression.DevRankUp(index);
-            Assert.AreEqual(12, progression.WeaponLevel(weaponId));
-            Assert.AreEqual(evo.evolutionId, progression.EvolutionOf(weaponId), "still evolved at level 12");
+            var max = evo.baseWeapon.maxLevel;
+            while (progression.WeaponLevel(weaponId) < max) progression.DevRankUp(index);
+            Assert.AreEqual(max, progression.WeaponLevel(weaponId));
+            Assert.AreEqual(evo.evolutionId, progression.EvolutionOf(weaponId), "still evolved at the max level");
             yield return null;
         }
     }

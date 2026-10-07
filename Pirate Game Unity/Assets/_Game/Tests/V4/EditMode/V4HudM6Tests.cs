@@ -86,20 +86,25 @@ namespace RoguePirates.V4.Tests
         // ---- Loadout HUD ------------------------------------------------------------------------------------------
 
         [Test]
-        public void IconCatalog_HasAnIconForEveryWeaponAndChestItem()
+        public void IconCatalog_HasAnIconOrAName_ForEveryWeaponAndChestItem()
         {
+            // V5 M8z (7 Oct, I8z.5): playtest round 7 removed the borrowed placeholder icons of the new content on purpose;
+            // their cards fall back to the name. So every weapon and chest item shows an icon or its name.
             var catalog = IconCatalog.Load();
             Assert.IsNotNull(catalog, "Assets/_Game/V4/Resources/V4IconCatalog.asset");
             foreach (var guid in AssetDatabase.FindAssets("t:WeaponConfig", new[] { "Assets/_Game/V4/Data/Weapons" }))
             {
                 var config = AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(guid));
-                Assert.IsNotNull(catalog.Weapon(config.weaponId), $"{config.weaponId} has no icon");
+                Assert.IsTrue(catalog.Weapon(config.weaponId) != null || !string.IsNullOrWhiteSpace(config.displayName), $"{config.weaponId} has neither an icon nor a name");
             }
             foreach (var guid in AssetDatabase.FindAssets("t:ItemConfig", new[] { "Assets/_Game/V4/Data/Build/Items" }))
             {
                 var item = AssetDatabase.LoadAssetAtPath<ItemConfig>(AssetDatabase.GUIDToAssetPath(guid));
-                if (item.inChestPool) Assert.IsNotNull(catalog.Item(item.itemId), $"{item.itemId} has no icon (R-90: V3 missed three apostrophe names)");
+                if (item.inChestPool) Assert.IsTrue(catalog.Item(item.itemId) != null || !string.IsNullOrWhiteSpace(item.displayName), $"{item.itemId} has neither an icon nor a name (R-90: V3 missed three apostrophe names)");
             }
+            // R-90 stays: V3's chest items (apostrophe names included) keep their art icons.
+            foreach (var id in new[] { "captains_bell", "sea_witchs_eye", "admirals_ledger" })
+                Assert.IsNotNull(catalog.Item(id), id + " keeps its icon");
         }
 
         [TestCase("Deck Cannons", "Deck Canno…")]

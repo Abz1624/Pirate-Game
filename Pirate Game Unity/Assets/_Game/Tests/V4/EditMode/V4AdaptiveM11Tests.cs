@@ -56,11 +56,12 @@ namespace RoguePirates.V4.Tests
             using var set = Default();
             var d = set.Single<DirectorConfig>();
             d.toughnessLever = d.capHpLever = d.focusLever = true; // V5 M3d switched the HP and damage levers off in the data; the mechanism stays
+            d.threatRateLever = d.eliteLever = true; // V5 M8z (7 Oct, I8z.5): the playtest switched these off in the data too
             var (director, _, _) = Rig(set);
             IDifficultyLevers levers = director;
             director.ForcedPressure = 1.35f;
             Assert.IsTrue(levers.Adaptive);
-            Assert.AreEqual(1.75f, levers.ThreatRateMultiplier, 1e-5f);
+            Assert.AreEqual(d.threatRateMax, levers.ThreatRateMultiplier, 1e-5f);
             Assert.AreEqual(90f, levers.TierLeadSeconds, 1e-3f);
             Assert.AreEqual(d.toughnessHpAtMax, levers.AmbientHpMultiplier, 1e-5f);
             Assert.AreEqual(d.focusHpAtMax, levers.FocusHpMultiplier, 1e-5f);
@@ -101,6 +102,7 @@ namespace RoguePirates.V4.Tests
         {
             using var set = Default();
             var d = set.Single<DirectorConfig>();
+            d.eliteLever = true; // V5 M8z (7 Oct, I8z.5): off in the playtest data; the mechanism stays
             List<bool> Rolls(int seed, float pressure)
             {
                 var (director, _, _) = Rig(set, seed);

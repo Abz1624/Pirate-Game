@@ -325,14 +325,22 @@ namespace RoguePirates.V4.Tests
             var h = Make();
             using (h.Config)
             {
-                h.RunUntil(1.9f);
-                Assert.AreEqual(0, h.Sink.Spawns.Count, "no spawns inside the 2 s grace");
-                h.RunUntil(60f);
-                // Band 0 = 0.5/s (R-01): first at 2 s, then every 2 s.
-                Assert.That(h.Sink.Spawns.Count, Is.InRange(28, 30));
-                var first = h.Sink.Spawns[0].t;
-                Assert.That(first, Is.InRange(2f, 2f + 2 * Dt));
-                Assert.That(h.Sink.Spawns[1].t - first, Is.InRange(2f - Dt, 2f + 2 * Dt), "interval = 1 / rate");
+                // V5 M8z (7 Oct, I8z.5): the grace and band 0's rate come from the timeline (the playtest retuned the rate).
+                var grace = h.Timeline.graceSeconds;
+                var band0 = h.Timeline.Phase("band_0");
+                var end = h.Timeline.phases.Where(p => p.ratePerSecond > 0f && p.trigger.timeSeconds > 0f).Min(p => p.trigger.timeSeconds);
+                var interval = Mathf.Max(1f / band0.ratePerSecond, h.Timeline.globalMinSpawnGapSeconds);
+                h.RunUntil(grace - 0.1f);
+                Assert.AreEqual(0, h.Sink.Spawns.Count, "no spawns inside the grace");
+                h.RunUntil(end);
+                // First at the grace, then every 1 / rate until band 1.
+                // Counted per spawn time (a band's spawner may send a small group at once).
+                var times = h.Sink.Spawns.Select(s => s.t).Where(t => t < end).Distinct().OrderBy(t => t).ToList();
+                var expected = 1 + Mathf.FloorToInt((end - grace) / interval);
+                Assert.That(times.Count, Is.InRange(expected - 2, expected), string.Join(", ", times.Select(t => t.ToString("0.00"))));
+                var first = times[0];
+                Assert.That(first, Is.InRange(grace, grace + 2 * Dt));
+                Assert.That(times[1] - first, Is.InRange(interval - Dt, interval + 2 * Dt), "interval = 1 / rate");
             }
         }
 
@@ -379,9 +387,11 @@ namespace RoguePirates.V4.Tests
                 h.Run.BossFight = true;
                 Assert.AreEqual(h.Timeline.bossAmbientRateMultiplier, h.Spawn.EffectiveRateMultiplier);
                 h.Run.BossFight = false;
-                h.RunUntil(245f);
-                Assert.AreEqual(1.25f, h.Spawn.EffectiveRateMultiplier, 1e-6f, "swarm pulse A (4:00, 30 s)");
-                h.RunUntil(275f);
+                // V5 M8z (7 Oct, I8z.5): pulse A's time, length and multiplier come from the timeline.
+                var pulse = h.Timeline.Phase("swarm_pulse_a");
+                h.RunUntil(pulse.trigger.timeSeconds + 5f);
+                Assert.AreEqual(pulse.rateMultiplier, h.Spawn.EffectiveRateMultiplier, 1e-6f, "swarm pulse A");
+                h.RunUntil(pulse.trigger.timeSeconds + pulse.duration.seconds + 5f);
                 Assert.AreEqual(1f, h.Spawn.EffectiveRateMultiplier, "pulse ended");
             }
         }
@@ -467,7 +477,7 @@ namespace RoguePirates.V4.Tests
                 h.RunUntil(storm.trigger.timeSeconds - storm.warning.leadSeconds + Dt);
                 Assert.IsTrue(h.Feedback.Toasts.Any(t => t.Contains("10 seconds")), "V3's storm warning text from the template");
                 h.Storm.Inside = false;
-                h.RunUntil(800f);
+                h.RunUntil(storm.trigger.timeSeconds + 140f); // V5 M8z (7 Oct, I8z.5): after the timeline's storm start, not V3's
                 Assert.AreEqual(StormPhase.SafeScale(h.Timeline.storm, h.Run.Elapsed), h.Storm.Scale, 1e-5f);
                 Assert.Greater(h.Storm.Damage, 0f);
             }
@@ -562,7 +572,7 @@ namespace RoguePirates.V4.Tests
                 Assert.AreEqual(1f, h.Spawn.EffectiveRateMultiplier);
                 h.Events.Publish(new CombatEvent(CombatEventKind.LevelUp, 0, 10f));
                 h.RunUntil(10.5f);
-                Assert.AreEqual(1.25f * 1.25f, h.Spawn.EffectiveRateMultiplier, 1e-5f, "pulse A on the event, pulse B once A is done");
+                Assert.AreEqual(a.rateMultiplier * b.rateMultiplier, h.Spawn.EffectiveRateMultiplier, 1e-5f, "pulse A on the event, pulse B once A is done");
             }
         }
 
@@ -575,7 +585,7 @@ namespace RoguePirates.V4.Tests
                 h.RunUntil(10f);
                 Assert.IsTrue(h.Spawn.TriggerNow("swarm_pulse_a"));
                 h.Frame();
-                Assert.AreEqual(1.25f, h.Spawn.EffectiveRateMultiplier, 1e-6f);
+                Assert.AreEqual(h.Timeline.Phase("swarm_pulse_a").rateMultiplier, h.Spawn.EffectiveRateMultiplier, 1e-6f);
                 Assert.IsTrue(h.Spawn.Skip("band_0"));
                 var before = h.Sink.Spawns.Count;
                 h.RunUntil(30f);
@@ -591,17 +601,18 @@ namespace RoguePirates.V4.Tests
             var h = Make();
             using (h.Config)
             {
+                // V5 M8z (7 Oct, I8z.5): the cap is the timeline's (the playtest raised it), not V3's 72.
                 var cap = h.Timeline.maxActiveEnemies - h.Timeline.reservedEncounterSlots;
-                Assert.AreEqual(72, cap);
+                Assert.Greater(cap, 0);
                 h.RunUntil(10f);
                 h.Sink.KillAll();
                 h.Sink.Blockers = cap;
                 var before = h.Sink.Spawns.Count;
                 h.RunUntil(20f);
-                Assert.AreEqual(before, h.Sink.Spawns.Count, "72 alive: no ambient spawn");
+                Assert.AreEqual(before, h.Sink.Spawns.Count, "the ambient cap alive: no ambient spawn");
                 h.Sink.Blockers = cap - 1;
                 h.RunUntil(30f);
-                Assert.AreEqual(before + 1, h.Sink.Spawns.Count, "71 alive: exactly one more, then the cap holds");
+                Assert.AreEqual(before + 1, h.Sink.Spawns.Count, "one below the cap: exactly one more, then the cap holds");
             }
         }
 
@@ -666,7 +677,7 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "storm.edgeWallDamage", "false", 11f, out var e), e);
                 var off = h.Storm.Damage;
                 for (var i = 0; i < 30; i++) h.Frame();
-                Assert.AreEqual(off, h.Storm.Damage, "switched off (the v3-parity preset): nothing past the wall");
+                Assert.AreEqual(off, h.Storm.Damage, "switched off: nothing past the wall");
 
                 Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "storm.edgeWallDamage", "true", 12f, out e), e);
                 Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", $"phases[{h.Timeline.phases.FindIndex(p => p.isStorm)}].trigger.timeSeconds", "20", 12f, out e), e);
@@ -705,13 +716,17 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "overtime.spawnStatRampStart", "1", 0f, out var s0), s0);
                 Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "overtime.spawnStatRampEnd", "2", 0f, out var e0), e0);
                 var t = h.Timeline;
-                Assert.AreEqual(1f, OvertimePhase.SpawnStatRamp(t, 600f), 1e-5f, "1x at the deadline");
-                Assert.AreEqual(1.5f, OvertimePhase.SpawnStatRamp(t, 750f), 1e-5f, "linear, evaluated per spawn (no minute steps)");
-                Assert.AreEqual(1.0033f, OvertimePhase.SpawnStatRamp(t, 601f), 1e-4f);
-                Assert.AreEqual(2f, OvertimePhase.SpawnStatRamp(t, 900f), 1e-5f, "2x five minutes in");
-                Assert.AreEqual(2f, OvertimePhase.SpawnStatRamp(t, 1200f), 1e-5f, "then held");
+                // V5 M8z (7 Oct, I8z.5): from the timeline's deadline and ramp length (V3's 10:00 and 5 minutes before).
+                var d = t.stageDeadlineSeconds;
+                var ramp = t.overtime.spawnStatRampSeconds;
+                Assert.Greater(ramp, 0f);
+                Assert.AreEqual(1f, OvertimePhase.SpawnStatRamp(t, d), 1e-5f, "1x at the deadline");
+                Assert.AreEqual(1.5f, OvertimePhase.SpawnStatRamp(t, d + ramp * 0.5f), 1e-5f, "linear, evaluated per spawn (no minute steps)");
+                Assert.AreEqual(1f + 1f / ramp, OvertimePhase.SpawnStatRamp(t, d + 1f), 1e-4f);
+                Assert.AreEqual(2f, OvertimePhase.SpawnStatRamp(t, d + ramp), 1e-5f, "2x at the ramp's end");
+                Assert.AreEqual(2f, OvertimePhase.SpawnStatRamp(t, d + ramp * 2f), 1e-5f, "then held");
                 Assert.IsTrue(h.Config.TryApplyEdit("timeline.saltwind", "overtime.spawnStatRampEnd", "1", 0f, out var e), e);
-                Assert.AreEqual(1f, OvertimePhase.SpawnStatRamp(h.Timeline, 900f), 1e-5f, "end 1 = V3 (the v3-parity preset)");
+                Assert.AreEqual(1f, OvertimePhase.SpawnStatRamp(h.Timeline, d + ramp), 1e-5f, "end 1 = no ramp (V3)");
             }
         }
 
@@ -838,7 +853,7 @@ namespace RoguePirates.V4.Tests
             var h = Make();
             using (h.Config)
             {
-                // V5 M2 retuned the default ordinary-time growth; V3's values are the v3-parity preset's.
+                // V5 M2 retuned the default ordinary-time growth; the formula is checked at V3's values, set here.
                 foreach (var (path, value) in new[] { ("ordinaryHp.c1", "0.11"), ("ordinaryHp.c2", "0.022"), ("ordinaryDamage.c1", "0.14"), ("ordinaryDamage.c2", "0.028") })
                     Assert.IsTrue(h.Config.TryApplyEdit("difficulty.saltwind", path, value, 0f, out var error), error);
                 var executor = new SpawnExecutor(ServicesOf(h), null);
@@ -913,8 +928,10 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(reef.focus.enabled);
                 Assert.AreEqual(FocusPlacement.RingAroundPlayer, reef.focus.placement);
                 Assert.AreEqual("reef_crab_miniboss", reef.focus.archetype.enemyId);
-                // V5 M2 retune, HP raised to ×4.5 by V5 M3d (V3: ×4 HP, ×1.15 damage, kept in the v3-parity preset).
-                Assert.AreEqual((22f, 4.5f, 0.8f), (reef.focus.ringDistance, reef.focus.hpMultiplier, reef.focus.damageMultiplier));
+                // V5 M8z (7 Oct, I8z.5): the multipliers are tuning (M2, M3d, then the playtest); only the ring is V3's.
+                Assert.AreEqual(22f, reef.focus.ringDistance);
+                Assert.Greater(reef.focus.hpMultiplier, 0f);
+                Assert.Greater(reef.focus.damageMultiplier, 0f);
                 Assert.AreEqual(BossConflict.WaitUntilBossEnds, reef.focus.bossConflict);
                 Assert.AreEqual(0f, reef.focus.retryWindowSeconds);
                 Assert.AreEqual(150f, reef.trigger.timeSeconds, "R-02: 150 s as V3");

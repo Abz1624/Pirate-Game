@@ -493,19 +493,13 @@ namespace RoguePirates.V4.Tests
         // ---- Config ---------------------------------------------------------------------------------------------
 
         [Test]
-        public void BarnacleKingAsset_HasTheApprovedChargeTuning_AndTheParityPresetRestoresV3()
+        public void BarnacleKingAsset_HasTheApprovedChargeTuning()
         {
+            // V5 M8z (7 Oct, I8z.5): the half that checked the v3-parity preset restoring V3's charge was retired with it (D18).
             var set = UnityEditor.AssetDatabase.LoadAssetAtPath<ConfigSet>("Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset");
             var asset = set.configs.OfType<BossConfig>().Single();
             Assert.AreEqual(6f, asset.charge.speedMultiplier, "approved at the M7 playtest: a more noticeable charge");
             Assert.AreEqual(0.9f, asset.charge.executeSeconds);
-            using var parity = new ConfigSetRuntime(set);
-            var errors = new List<string>();
-            var preset = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
-            Assert.IsTrue(PresetCodec.Apply(parity, PresetCodec.FromJson(preset), 0f, errors), string.Join("\n", errors));
-            var v3 = parity.Single<BossConfig>();
-            Assert.AreEqual(2.6f, v3.charge.speedMultiplier);
-            Assert.AreEqual(BarnacleKingBossAttackLogic.ChargeCommitSeconds, v3.charge.executeSeconds);
         }
 
         /// <summary>One of V3's private attack rotations (Phase1-3 in BarnacleKingBossAttackLogic), converted by value.</summary>

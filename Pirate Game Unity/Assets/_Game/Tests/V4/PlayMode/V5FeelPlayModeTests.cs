@@ -170,27 +170,7 @@ namespace RoguePirates.V4.Tests
             Assert.GreaterOrEqual(knocks, hits, "each knock raises the hit (feedback, items)");
         }
 
-        [UnityTest]
-        public IEnumerator UnderTheParityPreset_IslandsDoNotBounceOrHurt()
-        {
-            var preset = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
-            RunRequest.RequestPreset(preset);
-            yield return StartRun();
-            var ship = Object.FindFirstObjectByType<PlayerShipController>();
-            Assert.IsFalse(ship.IslandImpact.Enabled, "V3: slide along the shore, no damage");
-            Assert.IsTrue(FindShore(ship.transform.position, out var shore, out var normal));
-            var hull = ship.Damage.CurrentHP;
-            yield return Unpause();
-            // Into the shore at an angle: V3 slides along it.
-            var tangent = Vector3.Cross(Vector3.up, normal).normalized;
-            var from = shore + normal * (ship.IslandCollisionRadius + 1f);
-            ship.PlaceForTest(from, (-normal + tangent).normalized * 12f);
-            yield return LiveFixedFrames(20);
-            Assert.AreEqual(0, ship.IslandImpactCount);
-            Assert.AreEqual(0, ship.IslandDamageCount);
-            // (How far it slides depends on the random island's shape; what V3 guarantees is no push-off.)
-            Assert.LessOrEqual(Vector3.Dot(ship.Velocity, normal), 0.5f, "no push off the shore");
-        }
+        // V5 M8z (7 Oct, I8z.5): "under the v3-parity preset islands do not bounce or hurt" was retired with the preset (D18).
 
         [UnityTest]
         public IEnumerator AbilityButton_OnTouchDevices_ShowsAndFiresTheActive()

@@ -28,53 +28,23 @@ namespace RoguePirates.V4.Tests
             return ConfigFieldWalker.Format(v);
         }
 
-        [Test]
-        public void TheData_HoldsEveryM3dValue()
-        {
-            using var rt = new ConfigSetRuntime(Set);
-            var wrong = CountPressure.Edits.Where(e => Value(rt.Get<V4ConfigAsset>(e.configId), e.path) != Normal(rt.Get<V4ConfigAsset>(e.configId), e.path, e.value))
-                .Select(e => e.configId + "." + e.path).ToList();
-            CollectionAssert.IsEmpty(wrong);
-            var t = CountPressure.Tuning.Default;
-            Assert.AreEqual(t.BossBaseHp, rt.All<EnemyArchetypeConfig>().Single(a => a.enemyId == "barnacle_king").stats.baseHP);
-            var timeline = rt.Single<WaveTimelineConfig>();
-            Assert.IsTrue(timeline.flow.smoothWaves);
-            Assert.AreEqual(CountPressure.Keyframes.Length, timeline.flow.waves.Count, "the keyframes");
-            for (var i = 0; i < CountPressure.Keyframes.Length; i++)
-            {
-                var k = CountPressure.Keyframes[i];
-                var w = timeline.flow.waves[i];
-                Assert.AreEqual((k.t, Mathf.Clamp01(k.share * t.FloorScale), k.rate * t.RateScale, k.interval, k.perTick),
-                    (w.startSeconds, w.minAliveShare, w.rateMultiplier, w.topUpIntervalSeconds, w.maxTopUpPerTick), $"keyframe {i} (the targets are built from these)");
-            }
-            Assert.AreEqual(CountPressure.Hordes.Select(h => h.t), timeline.flow.hordes.Select(h => h.timeSeconds).OrderBy(x => x), "the hordes on the peaks");
-            Assert.AreEqual("CannonboatNavy", rt.All<EnemyArchetypeConfig>().Single(a => a.enemyId == "gunner_cog").visual.visualPrefab.name, "the gunner cog keeps its light cog model (review: not the Brigg)");
-            foreach (var (id, hp, damage) in CountPressure.LateTypes)
-                switch (rt.Get<V4ConfigAsset>(id))
-                {
-                    case EnemyArchetypeConfig a: Assert.AreEqual((hp * t.LateHp, damage * t.LateDamage), (a.stats.baseHP, a.stats.baseDamage), id); break;
-                    case EnemyVariantConfig v: Assert.AreEqual((hp * t.LateHp, damage * t.LateDamage), (v.baseHP.value, v.baseDamage.value), id); break;
-                }
-            var tender = rt.Get<V4ConfigAsset>(CountPressure.RepairTender) as EnemyVariantConfig;
-            Assert.AreEqual((true, CountPressure.RepairTenderDamage), (tender.baseDamage.enabled, tender.baseDamage.value), "the repair tender keeps the barge's old damage");
-            Assert.AreEqual(t.Band3Specialists, timeline.phases.Single(p => p.phaseId == "band_3").pools[1].share, 1e-5f);
-            Assert.AreEqual(t.Band4Specialists, timeline.phases.Single(p => p.phaseId == "band_4").pools[1].share, 1e-5f);
-            Assert.AreEqual(CountPressure.Hordes.Select(h => h.count), timeline.flow.hordes.OrderBy(h => h.timeSeconds).Select(h => h.count), "the horde sizes");
-            var targets = rt.Get<V4ConfigAsset>("balance_targets.saltwind");
-            CollectionAssert.IsEmpty(CountPressure.TargetEdits.Where(e => Value(targets, e.path) != Normal(targets, e.path, e.value)).Select(e => e.path).ToList(), "the per-minute targets");
-        }
+        // V5 M8z (7 Oct, I8z.5): the playtest replaced M3d's rules (D18 P1): enemy HP grows with time again and the keyframes,
+        // hordes and late types were retuned. The checks that the data held M3d's values (CountPressure's tables) and that
+        // HP and damage were flat are retired; what stays is that the curve never makes an enemy weaker with time.
 
         [Test]
-        public void AnEnemy_HasTheSameHpAndDamage_At1And8Minutes()
+        public void AnEnemy_NeverGetsWeakerWithTime()
         {
             using var rt = new ConfigSetRuntime(Set);
             var d = rt.Single<DifficultyCurveConfig>();
-            Assert.AreEqual(CurveEvaluator.EnemyHp(d, 20f, 1f, 1, 0), CurveEvaluator.EnemyHp(d, 20f, 8f, 1, 0), 1e-4f, "no HP growth with time");
-            Assert.AreEqual(CurveEvaluator.EnemyDamage(d, 8f, 1f, 1, 0), CurveEvaluator.EnemyDamage(d, 8f, 8f, 1, 0), 1e-4f, "no damage growth with time");
-            Assert.AreEqual(d.ordinaryHp.Evaluate(0f), d.ordinaryHp.Evaluate(6f), 1e-5f, "ordinary time is flat too");
+            var deadline = rt.Single<WaveTimelineConfig>().stageDeadlineSeconds / 60f;
+            for (var minute = 0f; minute < deadline; minute += 0.5f)
+            {
+                Assert.LessOrEqual(CurveEvaluator.EnemyHp(d, 20f, minute, 1, 0), CurveEvaluator.EnemyHp(d, 20f, minute + 0.5f, 1, 0) + 1e-4f, $"HP at {minute} min");
+                Assert.LessOrEqual(CurveEvaluator.EnemyDamage(d, 8f, minute, 1, 0), CurveEvaluator.EnemyDamage(d, 8f, minute + 0.5f, 1, 0) + 1e-4f, $"damage at {minute} min");
+            }
             var director = rt.Single<DirectorConfig>();
             Assert.IsFalse(director.toughnessLever || director.capHpLever || director.focusLever, "the director's HP and damage levers are off");
-            Assert.IsTrue(director.threatRateLever && director.eliteLever, "it keeps its count lever and elite chance");
             Assert.AreEqual((1f, 1f), (rt.Single<ExperimentConfig>().enemyHpMultiplier, rt.Single<ExperimentConfig>().enemyDamageMultiplier), "M3c's interim scale is gone");
         }
 
@@ -94,18 +64,18 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void TheCurve_KeepsTheSketchesOrder()
+        public void TheCurve_RisesOverTheVoyage_InPeaksAndValleys()
         {
-            // Review M3d #1 (owner's sketch): small early peaks, a bigger one at 3:35 above the whole valley after it
-            // (4:00-7:00), then peaks rising to the climax; nothing clamped at the cap.
+            // Review M3d #1 (owner's sketch): peaks and valleys growing upwards; nothing clamped at the cap.
+            // V5 M8z (7 Oct, I8z.5): the playtest moved the keyframes to the 15-minute voyage, so the rule reads them
+            // instead of M3d's times (3:35, 4:00-7:00).
             using var rt = new ConfigSetRuntime(Set);
-            var waves = rt.Single<WaveTimelineConfig>().flow.waves;
-            float At(float t) => waves.Single(w => Mathf.Approximately(w.startSeconds, t)).minAliveShare;
-            var bigPeak = At(225f);
-            Assert.That(waves.Where(w => w.startSeconds < 225f).Select(w => w.minAliveShare), Has.All.LessThan(bigPeak), "the early peaks are smaller");
-            Assert.That(waves.Where(w => w.startSeconds >= 240f && w.startSeconds <= 420f).Select(w => w.minAliveShare), Has.All.LessThan(bigPeak), "the long valley stays under the 3:35-3:45 peak");
-            Assert.Less(At(250f), At(480f), "the valley floor rises (growing upwards)");
-            Assert.LessOrEqual(At(450f), At(575f), "the second late peak is at least the first");
+            var waves = rt.Single<WaveTimelineConfig>().flow.waves.OrderBy(w => w.startSeconds).ToList();
+            var half = waves.Count / 2;
+            Assert.Less(waves.Take(half).Max(w => w.minAliveShare), waves.Skip(half).Max(w => w.minAliveShare), "the late peaks are higher than the early ones");
+            var drops = 0;
+            for (var i = 1; i < waves.Count; i++) if (waves[i].minAliveShare < waves[i - 1].minAliveShare) drops++;
+            Assert.GreaterOrEqual(drops, 2, "valleys after peaks");
             Assert.That(waves.Select(w => w.minAliveShare), Has.All.LessThan(1f), "no keyframe is clamped at the cap");
         }
 
@@ -138,12 +108,12 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void TheSpawnersCombatOverrides_AreOff_AndOnUnderTheParityPreset()
+        public void TheSpawnersCombatOverrides_AreOff_AndFollowTheirSwitch()
         {
             using var rt = new ConfigSetRuntime(Set);
             Assert.IsFalse(new EnemySpawnParamResolver(null, rt).SpawnerCombatOverrides, "an enemy attacks by its own profile in every band");
-            using var parity = V4DifficultyM10Tests.Parity();
-            Assert.IsTrue(new EnemySpawnParamResolver(null, parity).SpawnerCombatOverrides, "V3");
+            rt.Single<WaveTimelineConfig>().spawnerCombatOverrides = true; // V3 (was the v3-parity preset; V5 M8z, 7 Oct, I8z.5)
+            Assert.IsTrue(new EnemySpawnParamResolver(null, rt).SpawnerCombatOverrides, "V3");
         }
 
         /// <summary>The meshes a model draws (two prefabs with the same meshes are the same ship, whatever their materials).</summary>
@@ -224,22 +194,6 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(Distinct((Meshes(cannonboat.visualPrefab), Color.white, 1f, false), (Meshes(cog.visualPrefab), Color.white, 1f, false)), "untinted they read the same");
             Assert.IsTrue(Distinct((Meshes(cannonboat.visualPrefab), cannonboat.visualTint, cannonboat.visualScale * cannonboat.viewSize, false),
                 (Meshes(cog.visualPrefab), cog.visualTint, cog.visualScale * cog.viewSize, false)), "M3d's tint and size tell them apart");
-        }
-
-        [Test]
-        public void TheParityPreset_TakesM3dBack()
-        {
-            using var parity = V4DifficultyM10Tests.Parity();
-            var t = parity.Single<WaveTimelineConfig>();
-            Assert.IsFalse(t.flow.smoothWaves);
-            Assert.IsTrue(t.spawnerCombatOverrides);
-            var d = parity.Single<DifficultyCurveConfig>();
-            Assert.Greater(d.enemyHpPerMinute.c1, 0f, "V3's HP growth");
-            Assert.AreEqual(22f, parity.All<EnemyArchetypeConfig>().Single(a => a.enemyId == "manta_ray").stats.baseHP, "the late types' V3 stats");
-            Assert.AreEqual(Color.white, parity.All<EnemyArchetypeConfig>().Single(a => a.enemyId == "boarding_barge").visual.tint);
-            Assert.AreEqual(800f, parity.All<EnemyArchetypeConfig>().Single(a => a.enemyId == "barnacle_king").stats.baseHP, "V3's boss");
-            var director = parity.Single<DirectorConfig>();
-            Assert.IsTrue(director.toughnessLever && director.capHpLever && director.focusLever);
         }
     }
 }

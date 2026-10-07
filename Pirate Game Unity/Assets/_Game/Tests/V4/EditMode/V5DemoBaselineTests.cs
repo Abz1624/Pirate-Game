@@ -1,80 +1,18 @@
-using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
-using RoguePirates.V4.DevTools.Balance;
 using UnityEditor;
-using UnityEngine;
 
 namespace RoguePirates.V4.Tests
 {
     /// <summary>
-    /// V5 after the demo (1 Oct 2026): the demo's tuning is the baseline and a retune went around its slower levelling.
-    /// Every retuned value is in the data, the demo's values are in the data, and the v3-parity preset still takes all of
-    /// them back to V3 (review of the balance re-check, findings 2 and 9).
+    /// V5 after the demo (1 Oct 2026): the demo's XP pace and ship speed are config values that must stay positive.
+    /// V5 M8z (7 Oct, I8z.5): the checks that the demo's retune was in the data and that the v3-parity preset took it back
+    /// were retired with the preset (D18); the game as played is the baseline.
     /// </summary>
     public sealed class V5DemoBaselineTests
     {
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
         static ConfigSet Set => AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
-
-        static string Value(ConfigSetRuntime rt, string configId, string path) => ConfigFieldWalker.Format(ConfigPath.Get(rt.Get<V4ConfigAsset>(configId), path));
-
-        static string Normal(ConfigSetRuntime rt, string configId, string path, string text)
-        {
-            Assert.IsTrue(ConfigFieldWalker.TryParse(ConfigPath.TypeAt(rt.Get<V4ConfigAsset>(configId), path), text, out var parsed), $"{configId}.{path}: '{text}'");
-            return ConfigFieldWalker.Format(parsed);
-        }
-
-        [Test]
-        public void EveryRetunedValue_AndTheDirectorCurve_AreInTheData()
-        {
-            using var rt = new ConfigSetRuntime(Set);
-            // M3c's level rhythm replaced the pace targets and the evolution-era card levels after this retune.
-            var superseded = new HashSet<string>(XpTableTuner.TargetEdits.Select(e => "balance_targets.saltwind." + e.path))
-                { "progression.saltwind.evolutionUnlockLevel" }; // M3c: 5 (fewer level-ups)
-            // M3d: count-based pressure replaced the time-scaled HP and damage, the per-minute targets and the tuned HP.
-            superseded.UnionWith(CountPressure.Edits.Select(e => e.configId + "." + e.path));
-            superseded.UnionWith(CountPressure.TunedBefore.Select(e => e.configId + "." + e.path));
-            superseded.UnionWith(CountPressure.TargetEdits.Select(e => "balance_targets.saltwind." + e.path));
-            var wrong = DemoBaseline.Retune
-                .Where(e => !superseded.Contains(e.configId + "." + e.path))
-                .Where(e => Value(rt, e.configId, e.path) != Normal(rt, e.configId, e.path, e.value))
-                .Select(e => $"{e.configId}.{e.path} = {Value(rt, e.configId, e.path)} (retune {e.value})").ToList();
-            CollectionAssert.IsEmpty(wrong);
-            var curve = rt.Single<DirectorConfig>().onTrackGrowth;
-            foreach (var (minute, growth) in DemoBaseline.OnTrackGrowth)
-                Assert.AreEqual(growth, curve.Evaluate(minute), 1e-3f, $"director growth at {minute}:00");
-            Assert.IsTrue(rt.Configs.Where(c => DemoBaseline.Retune.Any(e => e.configId == c.configId)).All(c => c.balanceVersion.StartsWith("saltwind-v5-")), "retuned configs carry a V5 balance version (the demo's, or a later phase's)");
-        }
-
-        [Test]
-        public void TheDemosValues_AreInTheData_AndDifferFromBefore()
-        {
-            using var rt = new ConfigSetRuntime(Set);
-            var unchanged = DemoBaseline.PreDemo.Where(e => Value(rt, e.configId, e.path) == Normal(rt, e.configId, e.path, e.value)).Select(e => e.configId + "." + e.path).ToList();
-            CollectionAssert.IsEmpty(unchanged, "every listed demo change is still in the data");
-            Assert.AreEqual((0.5f, 1.625f), (rt.Single<PickupConfig>().xpPickupMultiplier, rt.Single<RunConfig>().shipSpeedMultiplier));
-            var w = rt.All<WeaponConfig>().ToDictionary(c => c.weaponId);
-            Assert.AreEqual((0.86f, 0.33f), (w["swivel_guns"].projectile.lifeSeconds, w["broadside_battery"].fan.lifeSeconds), "the shorter shot lifetimes of the shorter ranges");
-            Assert.AreEqual((16f, 12f, 13f), (w["deck_cannons"].range, w["swivel_guns"].range, w["lightning_mast"].range));
-        }
-
-        [Test]
-        public void TheParityPreset_TakesEveryDemoValueBackToV3()
-        {
-            var preset = PresetCodec.FromJson(System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json")));
-            var edits = preset.configs.SelectMany(c => c.edits.Select(e => (c.configId, e.path, e.value))).ToList();
-            var missing = DemoBaseline.PreDemo.Where(p => !edits.Any(e => e.configId == p.configId && e.path == p.path && e.value == p.value)).Select(p => $"{p.configId}.{p.path} = {p.value}").ToList();
-            CollectionAssert.IsEmpty(missing, "the pre-demo value (V3's, as the demo changed only V3-valued fields) is in the preset");
-            var retuned = DemoBaseline.Retune.Where(e => e.configId != "balance_targets.saltwind")
-                .Where(e => !edits.Any(x => x.configId == e.configId && x.path == e.path)).Select(e => e.configId + "." + e.path).ToList();
-            CollectionAssert.IsEmpty(retuned, "every retuned game value has its V3 value in the preset");
-            using var parity = V4DifficultyM10Tests.Parity();
-            Assert.AreEqual((1f, 1f), (parity.Single<PickupConfig>().xpPickupMultiplier, parity.Single<RunConfig>().shipSpeedMultiplier));
-            var d = parity.Single<DifficultyCurveConfig>();
-            Assert.AreEqual((0.09f, 0.018f), (d.enemyHpPerMinute.c1, d.enemyHpPerMinute.c2));
-        }
 
         [Test]
         public void XpPace_AndShipSpeed_MustBePositive()

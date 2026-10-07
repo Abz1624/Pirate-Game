@@ -101,6 +101,15 @@ namespace RoguePirates.V4.Tests
         {
             yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
             yield return WaitForPlaying();
+            // V5 M8z (7 Oct, I8z.5): bars are on elites, minibosses and the boss only since the playtest (4 Oct), so the
+            // test places four slow, tough elites near the ship instead of waiting for ordinary spawns.
+            var game = Object.FindFirstObjectByType<V4Game>();
+            var ship = Object.FindFirstObjectByType<RoguePirates.V4.Foundation.Player.PlayerShipController>();
+            ship.Damage.SetPlaytestInvulnerable(true);
+            Assert.IsTrue(game.Context.TryGet<RoguePirates.V4.Spawning.IEnemySpawnSink>(out var sink));
+            var shark = sink.FindDefinition("shark");
+            for (var i = 0; i < 4; i++)
+                sink.Spawn(shark, ship.Position + new Vector3(-12f + 8f * i, 0f, 14f), RoguePirates.V4.Config.ConfigEnums.EliteAffix.Armored, 0.01f, 1000f, 0f);
             var deadline = Time.realtimeSinceStartup + 20f;
             RoguePirates.V4.Foundation.VFX.WorldHealthBar[] bars = null;
             while (Time.realtimeSinceStartup < deadline)

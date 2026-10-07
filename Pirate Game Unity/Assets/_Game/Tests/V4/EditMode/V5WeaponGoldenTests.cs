@@ -13,16 +13,14 @@ using UnityEngine;
 namespace RoguePirates.V4.Tests
 {
     /// <summary>
-    /// V5 M4 (plan review #10): today's ten weapons and six evolutions must work exactly as before the M4 mechanics. Each is
-    /// fired for 10 s (600 frames of 1/60 s) at a fixed ring of enemies, at levels 1 and 6, with the default data and with
-    /// the v3-parity preset, and every hit (enemy, amount, crit) and status is folded into a fingerprint. The goldens were
-    /// written by this test on the code before M4 (commit d3184a3d) to plan/v5/phase-04-weapons/weapon-goldens.txt; a
-    /// missing file is written and the test is inconclusive.
+    /// V5 M4 (plan review #10): each weapon and evolution is fired for 10 s (600 frames of 1/60 s) at a fixed ring of
+    /// enemies, at levels 1 and 6, and every hit (enemy, amount, crit) and status is folded into a fingerprint. Until V5 M8z
+    /// the fingerprints were compared with goldens recorded before M4 (commit d3184a3d, default data and the v3-parity
+    /// preset); see the test for what it checks now.
     /// </summary>
     public sealed class V5WeaponGoldenTests
     {
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
-        static string GoldenPath => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "plan", "v5", "phase-04-weapons", "weapon-goldens.txt"));
 
         sealed class Enemy { public bool Active = true; public Vector3 Position; public float Hp = 1e6f; }
 
@@ -79,6 +77,7 @@ namespace RoguePirates.V4.Tests
             public Vector3 Position => Pos;
             public Vector3 Velocity => Moving ? Vector3.forward * 4f : Vector3.zero;
             public bool Moving;
+            public bool IsBoosting => Moving; // V5 M8z (7 Oct, I8z.5): sailing through the ring boosts (the Ramming Prow needs it)
             public Vector3 MovementForward => Vector3.forward;
             public Vector3 TransformPoint(Vector3 local) => Pos + local;
         }
@@ -194,44 +193,42 @@ namespace RoguePirates.V4.Tests
             }
         }
 
-        static List<string> All()
+        /// <summary>Every weapon and evolution in the offers, at levels 1 and 6, still and moving.</summary>
+        static List<(string key, string fingerprint, bool acted)> All(ConfigSetRuntime config)
         {
-            var lines = new List<string>();
-            foreach (var parity in new[] { false, true })
+            var lines = new List<(string, string, bool)>();
+            var weapons = config.All<WeaponConfig>().Where(w => w.databaseOrder >= 0).Select(w => w.weaponId).OrderBy(id => id).ToList();
+            var evolutions = config.All<WeaponEvolutionConfig>().Where(e => e.baseWeapon != null).OrderBy(e => e.evolutionId).ToList();
+            void Add(string id, string evolution, int level, bool moving)
             {
-                using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
-                if (parity)
-                {
-                    var errors = new List<string>();
-                    var preset = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "plan", "v4-verification", "presets", "v3-parity.json"));
-                    Assert.IsTrue(PresetCodec.Apply(config, PresetCodec.FromJson(File.ReadAllText(preset)), 0f, errors), string.Join("\n", errors));
-                }
-                var weapons = config.All<WeaponConfig>().Where(w => w.databaseOrder >= 0).Select(w => w.weaponId).OrderBy(id => id).ToList();
-                var evolutions = config.All<WeaponEvolutionConfig>().Where(e => e.baseWeapon != null).OrderBy(e => e.evolutionId).ToList();
-                foreach (var moving in new[] { false, true })
-                    foreach (var level in new[] { 1, 6 })
-                    {
-                        foreach (var id in weapons) lines.Add((parity ? "v3 " : "default ") + Fingerprint(config, id, null, level, moving));
-                        foreach (var e in evolutions) lines.Add((parity ? "v3 " : "default ") + Fingerprint(config, e.baseWeapon.weaponId, e.evolutionId, level, moving));
-                    }
+                var f = Fingerprint(config, id, evolution, level, moving);
+                lines.Add((f.Substring(0, f.IndexOf(':')), f, !f.Contains("hits 0, statuses 0,")));
             }
+            foreach (var moving in new[] { false, true })
+                foreach (var level in new[] { 1, 6 })
+                {
+                    foreach (var id in weapons) Add(id, null, level, moving);
+                    foreach (var e in evolutions) Add(e.baseWeapon.weaponId, e.evolutionId, level, moving);
+                }
             return lines;
         }
 
+        /// <summary>
+        /// V5 M8z (7 Oct, I8z.5): the goldens recorded before M4 (plan/v5/phase-04-weapons/weapon-goldens.txt) served M4;
+        /// the playtest retuned the weapons on purpose since, and the v3-parity preset is retired (D18). The rule kept:
+        /// every weapon and evolution the offers deal hits the ring (still or sailing through it) at levels 1 and 6, and
+        /// the same inputs give the same hits (no unseeded draw).
+        /// </summary>
         [Test]
-        public void TodaysWeaponsAndEvolutions_FireExactlyAsBefore()
+        public void EveryWeaponAndEvolution_HitsTheRing_AndIsDeterministic()
         {
-            var lines = All();
-            if (!File.Exists(GoldenPath))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(GoldenPath));
-                File.WriteAllLines(GoldenPath, lines);
-                Assert.Inconclusive("goldens written to " + GoldenPath);
-            }
-            var golden = File.ReadAllLines(GoldenPath).Where(l => l.Length > 0).ToList();
-            var changed = golden.Where(g => !lines.Contains(g)).Select(g => "was " + g + "\n now " + (lines.FirstOrDefault(l => l.Split(':')[0] == g.Split(':')[0]) ?? "missing")).ToList();
-            CollectionAssert.IsEmpty(changed, "today's weapons fire as before M4");
-            Assert.GreaterOrEqual(golden.Count, 2 * 2 * 2 * 16, "ten weapons and six evolutions, two levels, two configs, still and moving");
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            var lines = All(config);
+            var silent = lines.GroupBy(l => l.key.Replace("|moving", "")).Where(g => !g.Any(l => l.acted)).Select(g => g.Key).ToList();
+            CollectionAssert.IsEmpty(silent, "never hits anything, still or moving");
+            var again = All(config);
+            CollectionAssert.AreEqual(lines.Select(l => l.fingerprint), again.Select(l => l.fingerprint), "the same hits on a second run");
+            Assert.GreaterOrEqual(lines.Count, 2 * 2 * 19, "every weapon, two levels, still and moving");
         }
     }
 }

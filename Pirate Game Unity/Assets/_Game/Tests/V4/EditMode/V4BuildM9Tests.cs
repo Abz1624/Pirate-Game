@@ -12,22 +12,14 @@ using UnityEngine;
 
 namespace RoguePirates.V4.Tests
 {
-    /// <summary>M9 step 9.1: the build configs hold the adopted (D6) values, and the v3-parity preset restores V3 where D6 differs.</summary>
+    /// <summary>M9 step 9.1: the build configs hold the adopted (D6) values. V5 M8z (7 Oct, I8z.5): the halves that checked
+    /// the v3-parity preset restoring V3 were retired with the preset (D18).</summary>
     [Category("V4")]
     public sealed class V4BuildM9Tests
     {
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
 
         static ConfigSet Set => AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath);
-
-        static ConfigSetRuntime Parity()
-        {
-            var runtime = new ConfigSetRuntime(Set);
-            var errors = new List<string>();
-            var preset = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
-            Assert.IsTrue(PresetCodec.Apply(runtime, PresetCodec.FromJson(preset), 0f, errors), string.Join("\n", errors));
-            return runtime;
-        }
 
         [Test]
         public void TheSetHoldsEveryBuildConfig_AndValidates()
@@ -46,20 +38,19 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void Logbooks_PointAtTheIntendedStatsByDefault_AndTheParityPresetRestoresV3()
+        public void Logbooks_PointAtTheIntendedStatsByDefault()
         {
             var byId = Set.configs.OfType<LogbookConfig>().ToDictionary(l => l.logbookId);
             Assert.AreEqual((int)StatId.PickupRadius, byId["scavengers_net"].stat, "D6");
             Assert.AreEqual((int)StatId.XPGain, byId["cartographers_folio"].stat, "D6");
             Assert.AreEqual((int)StatId.GoldGain, byId["quartermasters_ledger"].stat, "D6");
             Assert.AreEqual((int)StatId.MoveSpeed, byId["navigators_charts"].stat, "D6");
-            Assert.AreEqual(0.02f, byId["lookouts_glass"].perLevelAdditive, "R-34 fix (approved at the M9 gate)");
-            using (var v3 = Parity())
-                Assert.AreEqual(2f, v3.All<LogbookConfig>().Single(l => l.logbookId == "lookouts_glass").perLevelAdditive, "the v3-parity preset restores V3's +2.0");
+            // V5 M8z (7 Oct, I8z.5): the playtest retuned the value; R-34's rule is a fraction per level, not V3's +2.0.
+            Assert.That(byId["lookouts_glass"].perLevelAdditive, Is.GreaterThan(0f).And.LessThan(1f), "R-34 fix (approved at the M9 gate)");
         }
 
         [Test]
-        public void Items_HoldTheAdoptedEffects_AndTheParityPresetRestoresV3()
+        public void Items_HoldTheAdoptedEffects()
         {
             var items = Set.configs.OfType<ItemConfig>().ToDictionary(i => i.itemId);
             Assert.AreEqual(12f, items["captains_bell"].effects.Single().threshold, "Captain's Bell every 12 kills");
@@ -67,8 +58,6 @@ namespace RoguePirates.V4.Tests
             foreach (var id in new[] { "black_powder_keg", "powder_fuse", "sea_witchs_eye", "leviathan_tooth", "stormglass", "cursed_compass" })
             {
                 Assert.IsTrue(items[id].effects.Single().active, id + ": R-40 fix (approved at the M9 gate)");
-                using var v3 = Parity();
-                Assert.IsFalse(v3.All<ItemConfig>().Single(i => i.itemId == id).effects.Single().active, id + ": the v3-parity preset restores V3 (never read)");
             }
         }
 
@@ -86,28 +75,17 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void PowerupsAndUnlocks_HoldTheAdoptedRules_AndTheParityPresetRestoresV3()
+        public void PowerupsAndUnlocks_HoldTheAdoptedRules()
         {
             var pw = Set.configs.OfType<PowerupConfig>().Single();
             Assert.IsFalse(pw.powderRushIsDamageInBattleSignalSlot, "R-43 fix: attack speed in its own slot (approved at the M9 gate)");
             Assert.IsTrue(pw.fullSailOwnSlot, "R-43 fix: Full Sail stacks with Tailwind");
-            using (var v3 = Parity())
-            {
-                var v3pw = v3.Single<PowerupConfig>();
-                Assert.IsTrue(v3pw.powderRushIsDamageInBattleSignalSlot, "the v3-parity preset restores V3's shared slot");
-                Assert.IsFalse(v3pw.fullSailOwnSlot);
-            }
-            // V5 M5 (D34): the four designed kinds wait for a rebalance; V3's four at 25 each.
+            // V5 M5 (D34): the four designed kinds wait for a rebalance.
             CollectionAssert.AreEqual(new[] { PowerupKind.RepairSupplies, PowerupKind.PowderRush, PowerupKind.MagneticTide, PowerupKind.DeadCalm }, pw.pool.Select(e => e.kind));
-            using (var v3 = Parity())
-            {
-                var v3pool = v3.Single<PowerupConfig>().pool;
-                CollectionAssert.AreEqual(new[] { PowerupKind.RepairSupplies, PowerupKind.PowderRush, PowerupKind.MagneticTide, PowerupKind.DeadCalm }, v3pool.Select(e => e.kind));
-                Assert.IsTrue(v3pool.All(e => e.weight == 25f), "V3's 25 each");
-            }
             Assert.AreEqual((int)FloorPowerupKind.DeadCalm, (int)PowerupKind.DeadCalm, "enum order mirrors V3");
             var un = Set.configs.OfType<UnlockConfig>().Single();
             Assert.AreEqual(StartingWeaponRule.CaptainWeapon, un.startingWeaponRule, "D6");
+            Assert.IsTrue(Set.configs.OfType<ExperimentConfig>().Single().captainActivesEnabled, "D6: actives on");
         }
 
         // ---- 9.2 Stat resolver -----------------------------------------------------------------------------------------
@@ -140,15 +118,6 @@ namespace RoguePirates.V4.Tests
             CollectionAssert.Contains(changed, (int)StatId.Damage);
             CollectionAssert.Contains(changed, (int)StatId.Hull);
             CollectionAssert.DoesNotContain(changed, 22);
-        }
-
-        [Test]
-        public void ParityPreset_RestoresV3ForEveryAdoptedDecision()
-        {
-            using var parity = Parity();
-            Assert.AreEqual(StartingWeaponRule.V3AlwaysFirstConquestWeapon, parity.Single<UnlockConfig>().startingWeaponRule);
-            Assert.IsFalse(parity.Single<ExperimentConfig>().captainActivesEnabled, "V3: actives off");
-            Assert.IsTrue(Set.configs.OfType<ExperimentConfig>().Single().captainActivesEnabled, "D6: actives on");
         }
     }
 }

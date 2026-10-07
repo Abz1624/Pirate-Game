@@ -15,8 +15,8 @@ namespace RoguePirates.V4.Tests
 {
     /// <summary>
     /// V5 M3d in the real run scene (owner, 1 Oct 2026, notes e and h): the clock jumped to a peak and a valley of the
-    /// keyframed crowd gives the floor the keyframes' line says; an enemy spawned at 1:00 and the same enemy spawned at
-    /// 8:00 have the same HP and damage.
+    /// keyframed crowd gives the floor the keyframes' line says; an enemy spawned at 8:00 is never weaker than the same
+    /// enemy spawned at 1:00 (V5 M8z: M3d's "the same" was replaced by the playtest's HP growth, D18).
     /// </summary>
     [Category("V5")]
     public sealed class V5PressurePlayModeTests
@@ -66,8 +66,9 @@ namespace RoguePirates.V4.Tests
             var game = Object.FindFirstObjectByType<V4Game>();
             Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
             Assert.IsTrue(game.Context.TryGet<ISpawnController>(out var spawn));
-            foreach (var phase in spawn.Phases)
-                if (phase.PhaseId == "reef_crab" || phase.PhaseId.StartsWith("elite_")) spawn.Skip(phase.PhaseId);
+            // V5 M8z (7 Oct, I8z.5): every arena fight in the timeline (the playtest added more), read from the config.
+            foreach (var phase in game.Config.Single<WaveTimelineConfig>().phases)
+                if (phase.focus != null && phase.focus.enabled) spawn.Skip(phase.phaseId);
             return (game, spawn);
         }
 
@@ -99,10 +100,11 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
-        public IEnumerator AnEnemy_HasTheSameHpAndDamage_At1And8Minutes()
+        public IEnumerator AnEnemy_IsNeverWeakerAt8MinutesThanAt1()
         {
             // The same spawner (band 0's ambient spawner: a shark, not elite) spawned on purpose at 1:00 and at 8:00 through
-            // the game's spawn path; with no HP or damage growth over time both sharks match (owner note h).
+            // the game's spawn path. V5 M8z (7 Oct, I8z.5): M3d's "no growth" (owner note h) was replaced by the playtest's
+            // HP growth (D18 P1); the rule kept is that the later one is never weaker.
             yield return StartRun();
             var (game, spawn) = Setup();
             var sim = V4TestEnemies.Simulation();
@@ -130,8 +132,8 @@ namespace RoguePirates.V4.Tests
             }
             Debug.Log($"[V5 M3d same enemy] {stats[0].id}: 1:00 HP {stats[0].hp} damage {stats[0].damage} | 8:00 HP {stats[1].hp} damage {stats[1].damage}");
             Assert.AreEqual(stats[0].id, stats[1].id);
-            Assert.AreEqual(stats[0].hp, stats[1].hp, 1e-3f, "the same HP at 1:00 and 8:00");
-            Assert.AreEqual(stats[0].damage, stats[1].damage, 1e-3f, "the same damage at 1:00 and 8:00");
+            Assert.GreaterOrEqual(stats[1].hp, stats[0].hp - 1e-3f, "no less HP at 8:00 than at 1:00");
+            Assert.GreaterOrEqual(stats[1].damage, stats[0].damage - 1e-3f, "no less damage at 8:00 than at 1:00");
         }
     }
 }

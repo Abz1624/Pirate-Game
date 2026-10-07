@@ -15,7 +15,7 @@ namespace RoguePirates.V4.Tests
     /// <summary>
     /// V5 M3 build balance: evolutions reachable (the card from weapon level 6 with its item since the demo-baseline retune, 8 in M3; rarer cards granting more
     /// levels, the pity rule, the chest's evolution-item chance), weapon parity per role, Logbook and item bands, Captains
-    /// within ±10%, the item flow, and the v3-parity preset restoring every M3 value.
+    /// within ±10% and the item flow (the v3-parity preset's checks were retired with it in V5 M8z, D18).
     /// V5 M8z (I8z.7, owner 7 Oct 2026: one simulator): the checks that ran the in-engine simulator and its weapon and build
     /// models (weapon parity per role, the new weapons' parity, Logbook and item bands, Captains within ±10% and items by
     /// 10:00, focused builds evolving) were retired with it; the game-rule checks here drive the game's own modules.
@@ -88,18 +88,16 @@ namespace RoguePirates.V4.Tests
         // ---- Evolutions reachable (G3.1) ---------------------------------------------------------------------------
 
         [Test]
-        public void EvolutionCard_ComesFromWeaponLevel6_WithItsItem()
+        public void EvolutionCard_ComesAtTheWeaponsCardLevel_WithItsItem()
         {
-            // M3 set level 8; the demo-baseline retune (XP ×0.5) moved it to 6 and M3c (fewer level-ups) to 5, so focused
-            // builds still evolve in most runs.
+            // M3 set level 8, the demo-baseline retune 6 and M3c 5. V5 M8z (7 Oct, I8z.5): since the playtest (3 Oct, owner)
+            // the card needs the weapon's max level (never below the unlock level); the level is read from the game's rule.
             using var rt = new ConfigSetRuntime(Set);
-            var evo = rt.Single<ProgressionConfig>().evolutionUnlockLevel;
-            Assert.AreEqual(5, evo);
-            Assert.IsFalse(DealsEvolution(rt, evo - 1), "not below the evolution level");
-            Assert.IsTrue(DealsEvolution(rt, evo), "from the evolution level");
-            using var parity = V4DifficultyM10Tests.Parity();
-            Assert.IsFalse(DealsEvolution(parity, 8), "V3 (the parity preset): only at the max level");
-            Assert.IsTrue(DealsEvolution(parity, parity.Single<ProgressionConfig>().maxWeaponLevel));
+            var (_, _, evo) = OneEvolvingWeapon(rt, 1);
+            var level = Generator(rt).EvolutionCardLevel(evo.baseWeapon.weaponId);
+            Assert.GreaterOrEqual(level, rt.Single<ProgressionConfig>().evolutionUnlockLevel, "never below the unlock level");
+            Assert.IsFalse(DealsEvolution(rt, level - 1), "not below the evolution card's level");
+            Assert.IsTrue(DealsEvolution(rt, level), "from the evolution card's level");
         }
 
         /// <summary>
@@ -211,8 +209,8 @@ namespace RoguePirates.V4.Tests
             var legendary = g.WeaponUpgradeCard(w, 1, 4, new Rng(3));
             loadout.ApplyUpgradePackage(0, legendary.Lines, legendary.NextLevel - legendary.CurrentLevel);
             Assert.AreEqual(Mathf.Min(w.maxLevel, 1 + levels[4]), loadout.Weapons[0].Level);
-            using var parity = V4DifficultyM10Tests.Parity();
-            Assert.AreEqual(4, Generator(parity).WeaponUpgradeCard(w, 3, 4, new Rng(1)).NextLevel, "V3: one level whatever the rarity");
+            rt.Single<ProgressionConfig>().levelsPerRarity = new[] { 1, 1, 1, 1, 1 }; // V3 (was the v3-parity preset; V5 M8z, 7 Oct, I8z.5)
+            Assert.AreEqual(4, g.WeaponUpgradeCard(w, 3, 4, new Rng(1)).NextLevel, "V3: one level whatever the rarity");
         }
 
         [Test]
@@ -321,8 +319,8 @@ namespace RoguePirates.V4.Tests
             Assert.Less(EvolutionItemShare(rt, evo - 1, false, false), 0.15f, "below the evolution level only the ordinary roll");
             Assert.Less(EvolutionItemShare(rt, evo, true, false), 0.15f, "not when the item is already carried");
             Assert.Less(EvolutionItemShare(rt, evo, false, true), 0.15f, "not when the weapon has evolved");
-            using var parity = V4DifficultyM10Tests.Parity();
-            Assert.Less(EvolutionItemShare(parity, 8, false, false), 0.15f, "V3: off");
+            stage.evolutionItemChance = 0f; // V3: off (was the v3-parity preset; V5 M8z, 7 Oct, I8z.5)
+            Assert.Less(EvolutionItemShare(rt, evo, false, false), 0.15f, "V3: off");
         }
 
         sealed class CountingRng : IStageRandom
@@ -371,53 +369,6 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(10, ChestEconomy.EvolutionItemMinLevel(stage, p), "the two cannot disagree");
         }
 
-        // ---- Parity and bands (G3.2, G3.3, G3.4, I3.2) ---------------------------------------------------------------
-
-        [Test]
-        public void ParityPreset_RestoresEveryM3Value()
-        {
-            using var parity = V4DifficultyM10Tests.Parity();
-            var p = parity.Single<ProgressionConfig>();
-            Assert.AreEqual(0, p.evolutionUnlockLevel);
-            CollectionAssert.AreEqual(new[] { 1, 1, 1, 1, 1 }, p.levelsPerRarity);
-            Assert.AreEqual(0, p.rarePityLevelUps);
-            var s = parity.Single<StageContentConfig>();
-            Assert.AreEqual((25, 1.22f, 0f), (s.chestPriceIncrementBase, s.chestPriceGrowth, s.evolutionItemChance));
-            Assert.AreEqual(90f, parity.All<CaptainConfig>().Single(c => c.captainKey == "flint").baseHull);
-            var v3Damage = new Dictionary<string, float>
-            {
-                ["broadside_battery"] = 8, ["deck_cannons"] = 11, ["flamethrower"] = 8, ["flying_cutlasses"] = 7, ["harpoon_gun"] = 16,
-                ["lightning_mast"] = 14, ["long_nine"] = 28, ["mortar"] = 22, ["powder_kegs"] = 14, ["swivel_guns"] = 6,
-            };
-            using var current = new ConfigSetRuntime(Set);
-            foreach (var w in parity.All<WeaponConfig>().Where(w => v3Damage.ContainsKey(w.weaponId)))
-            {
-                Assert.AreEqual(v3Damage[w.weaponId], w.baseDamage, 1e-4f, w.weaponId);
-                StringAssert.StartsWith("saltwind-v5-", current.All<WeaponConfig>().Single(x => x.weaponId == w.weaponId).balanceVersion, "retuned in M3 (the Lightning Mast again in the demo-baseline retune)");
-            }
-            Assert.AreEqual(0.08f, parity.All<LogbookConfig>().Single(l => l.logbookId == "gunnery_manual").perLevelAdditive, 1e-5f);
-            Assert.AreEqual(10f, parity.All<LogbookConfig>().Single(l => l.logbookId == "carpenters_notes").perLevelAdditive, 1e-5f);
-            Assert.AreEqual(1.08f, parity.All<ItemConfig>().Single(i => i.itemId == "dragons_breath_nozzle").statModifiers[0].multiplicative, 1e-5f);
-            // Every weapon's upgrade increments and caps (V3's values).
-            var v3Axes = new Dictionary<string, (float inc, float cap)[]>
-            {
-                ["broadside_battery"] = new[] { (0.07f, 1.8f), (0.05f, 0.6f), (1f, 5f), (0.06f, 1.5f) },
-                ["deck_cannons"] = new[] { (0.08f, 2f), (0.05f, 0.6f), (1f, 4f), (0.06f, 1.5f), (0.05f, 1.5f) },
-                ["flamethrower"] = new[] { (0.08f, 2f), (0.1f, 2f), (0.08f, 2f) },
-                ["flying_cutlasses"] = new[] { (0.07f, 1.8f), (0.05f, 0.6f), (1f, 4f), (0.07f, 1.8f) },
-                ["harpoon_gun"] = new[] { (0.08f, 2f), (0.05f, 0.6f), (1f, 4f), (0.06f, 1.5f), (0.05f, 1.5f) },
-                ["lightning_mast"] = new[] { (0.08f, 2f), (0.05f, 0.6f), (1f, 4f), (0.04f, 1f) },
-                ["long_nine"] = new[] { (0.08f, 2f), (0.05f, 0.6f), (1f, 4f), (0.06f, 1.5f), (0.05f, 1.5f) },
-                ["mortar"] = new[] { (0.08f, 2f), (0.05f, 0.6f) },
-                ["powder_kegs"] = new[] { (0.1f, 2.5f), (0.04f, 0.5f), (0.08f, 2f), (0.06f, 1.5f) },
-                ["swivel_guns"] = new[] { (0.08f, 2f), (0.05f, 0.6f), (1f, 4f), (0.06f, 1.5f), (0.05f, 1.5f) },
-            };
-            foreach (var w in parity.All<WeaponConfig>().Where(w => v3Axes.ContainsKey(w.weaponId)))
-                for (var i = 0; i < v3Axes[w.weaponId].Length; i++)
-                {
-                    Assert.AreEqual(v3Axes[w.weaponId][i].inc, w.upgradeAxes[i].baseIncrement, 1e-5f, $"{w.weaponId} axis {i} increment");
-                    Assert.AreEqual(v3Axes[w.weaponId][i].cap, w.upgradeAxes[i].maxAccumulated, 1e-5f, $"{w.weaponId} axis {i} cap");
-                }
-        }
+        // V5 M8z (7 Oct, I8z.5): the check that the v3-parity preset restores every M3 value was retired with the preset (D18).
     }
 }

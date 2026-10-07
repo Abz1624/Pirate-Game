@@ -20,34 +20,7 @@ namespace RoguePirates.V4.Tests
 
         internal static ConfigSetRuntime Default() => new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
 
-        internal static ConfigSetRuntime Parity()
-        {
-            var runtime = Default();
-            var errors = new List<string>();
-            var preset = File.ReadAllText(Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
-            Assert.IsTrue(PresetCodec.Apply(runtime, PresetCodec.FromJson(preset), 0f, errors), string.Join("; ", errors));
-            return runtime;
-        }
-
-        [Test]
-        public void CurveDefaults_EqualV3sFormulas_BitForBit_AtAnyTime()
-        {
-            // V5 M2 retuned the default growth (per-minute damage); the v3-parity preset keeps V3's formulas bit for bit.
-            {
-                using var set = Parity();
-                var c = set.Single<DifficultyCurveConfig>();
-                for (var step = 0; step <= 12000; step++) // 0–20 minutes every 0.1 s
-                {
-                    var minute = step * 0.1f / 60f;
-                    foreach (var tier in new[] { 0, 1, 2, 3 })
-                    foreach (var stage in new[] { -1, 0, 1, 2, 3 })
-                    {
-                        Assert.AreEqual(GameMath.EnemyHP(37f, minute, tier, stage), CurveEvaluator.EnemyHp(c, 37f, minute, tier, stage), $"HP at {minute} min, tier {tier}, stage {stage}");
-                        Assert.AreEqual(GameMath.EnemyDamage(9f, minute, tier, stage), CurveEvaluator.EnemyDamage(c, 9f, minute, tier, stage), $"damage at {minute} min");
-                    }
-                }
-            }
-        }
+        // V5 M8z (7 Oct, I8z.5): V3's curve formulas bit for bit under the v3-parity preset were retired with the preset (D18).
 
         [Test]
         public void KeyframeCurves_AreEvaluated()
@@ -272,19 +245,18 @@ namespace RoguePirates.V4.Tests
         {
             var root = Path.Combine(Application.dataPath, "_Game/V4/Runtime");
             bool Reads(string text) => text.Contains("IPressureView") || text.Contains("DifficultyDirector") || text.Contains("PowerChanged");
+            // V5 M8z (7 Oct, I8z.5): the playtest's session recorder (Telemetry) logs the pressure for the balance model; a
+            // recorder only writes logs, so it changes nothing in play.
             var readers = Directory.GetFiles(root, "*.cs", SearchOption.AllDirectories)
-                .Where(f => !f.Replace('\\', '/').Contains("/Difficulty/") && Reads(File.ReadAllText(f)))
+                .Where(f => !f.Replace('\\', '/').Contains("/Difficulty/") && !f.Replace('\\', '/').Contains("/Telemetry/") && Reads(File.ReadAllText(f)))
                 .Select(f => f.Substring(root.Length + 1)).ToList();
             CollectionAssert.AreEquivalent(new[] { Path.Combine("Core", "V4Game.cs"), Path.Combine("Events", "CombatEvents.cs") }, readers,
                 "only the composition root holds the director, and only the event enum names PowerChanged");
             var presentation = Path.Combine(Application.dataPath, "_Game/V4/Presentation");
             Assert.IsFalse(Directory.GetFiles(presentation, "*.cs", SearchOption.AllDirectories).Any(f => Reads(File.ReadAllText(f))), "no presenter reads Pressure");
-            // M11: the default is Adaptive (the levers read Pressure through IDifficultyLevers, never IPressureView); the
-            // v3-parity preset keeps Observe, which the trace sets prove changes nothing.
+            // M11: the default is Adaptive (the levers read Pressure through IDifficultyLevers, never IPressureView).
             using var set = Default();
             Assert.AreEqual(DirectorMode.Adaptive, set.Single<DirectorConfig>().mode, "M11 ships Adaptive");
-            using var parity = Parity();
-            Assert.AreEqual(DirectorMode.Observe, parity.Single<DirectorConfig>().mode, "the v3-parity preset observes only");
         }
     }
 }

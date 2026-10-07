@@ -58,8 +58,19 @@ namespace RoguePirates.V4.Tests
             return r;
         }
 
+        /// <summary>The stage deadline overtime starts from (V5 M8z, 7 Oct, I8z.5: the timeline's, not V3's 10:00).</summary>
+        static float Deadline(ConfigSetRuntime set) => set.Single<WaveTimelineConfig>().stageDeadlineSeconds;
+
+        /// <summary>The overtime row's Rum for so many minutes (maxRum 0 = uncapped, D18 P2).</summary>
+        static int OvertimeRum(RewardConfig c, int minutes)
+        {
+            var row = c.Row("overtime");
+            var rum = minutes * row.rum;
+            return row.maxRum > 0 ? Mathf.Min(rum, row.maxRum) : rum;
+        }
+
         /// <summary>V3's approved fixture: 5 qualifying minutes, 2 special landmarks, 2 scheduled elites, the boss, 2 overtime minutes.</summary>
-        static void PlayFixture(Rig r)
+        static void PlayFixture(Rig r, float deadline)
         {
             for (var m = 0; m < 5; m++) for (var k = 0; k < 10; k++) r.Kill(m * 60f + 1f + k);
             r.Kill(5 * 60f + 1f); // minute 5: one kill, does not qualify
@@ -73,18 +84,19 @@ namespace RoguePirates.V4.Tests
             r.Kill(410f, 102);
             r.Publish(CombatEventKind.BossState, 2);
             r.Flush();
-            for (var m = 0; m < 3; m++) for (var k = 0; k < 10; k++) r.Kill(601f + m * 60f + k); // overtime minutes 0, 1, 2
+            for (var m = 0; m < 3; m++) for (var k = 0; k < 10; k++) r.Kill(deadline + 1f + m * 60f + k); // overtime minutes 0, 1, 2
             r.Flush();
-            r.Time = 600f + 2 * 60f + 5f; // overtime minute 2 in progress: minutes 0 and 1 are paid
+            r.Time = deadline + 2 * 60f + 5f; // overtime minute 2 in progress: minutes 0 and 1 are paid
         }
 
         [Test]
-        public void DefaultRows_AreV3sMarksEconomy()
+        public void DefaultRows_AreTheRumEconomy()
         {
             using var set = Default();
             var c = set.Single<RewardConfig>();
             // V3's Saltwind Marks economy (its stage profile): 2 per minute of 10+ kills, 3 per special POI, 5 per
-            // scheduled elite, 25 for the boss, 3 per overtime minute up to 15.
+            // scheduled elite, 25 for the boss, 3 per overtime minute. V5 M8z (7 Oct, I8z.5): overtime Rum is uncapped
+            // since the playtest (D18 P2, a recorded exception to D4).
             Assert.AreEqual(2, c.Row("minutes").rum);
             Assert.AreEqual(10, c.Row("minutes").minKills);
             Assert.AreEqual(3, c.Row("landmarks").rum);
@@ -92,27 +104,29 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(2, c.Row("elites").maxCredits);
             Assert.AreEqual(25, c.Row("boss").rum);
             Assert.AreEqual(3, c.Row("overtime").rum);
-            Assert.AreEqual(15, c.Row("overtime").maxRum);
+            Assert.AreEqual(0, c.Row("overtime").maxRum, "D18 P2: no overtime cap");
             Assert.IsFalse(c.Row("chests").enabled, "the chest row is an extra, off by default");
             Assert.AreEqual("Rum", c.currencyName);
         }
 
         [Test]
-        public void Fixture_Pays57_TheSameBreakdownAsV3()
+        public void Fixture_PaysEachRowItsRum()
         {
             using var set = Default();
+            var c = set.Single<RewardConfig>();
             var r = Make(set);
-            PlayFixture(r);
+            PlayFixture(r, Deadline(set));
             var total = r.Rum.Settle("run-1", true);
-            // V3's approved fixture breakdown: 5 minutes × 2, 2 POIs × 3, 2 elites × 5, boss 25, 2 overtime minutes × 3.
-            Assert.AreEqual(57, total);
-            Assert.AreEqual(10, r.Rum.SettledRumOf(RumSource.QualifyingMinute));
-            Assert.AreEqual(6, r.Rum.SettledRumOf(RumSource.SpecialLandmark));
-            Assert.AreEqual(10, r.Rum.SettledRumOf(RumSource.ScheduledElite));
-            Assert.AreEqual(25, r.Rum.SettledRumOf(RumSource.BossVictory));
-            Assert.AreEqual(6, r.Rum.SettledRumOf(RumSource.OvertimeMinute));
+            // V3's approved fixture breakdown (57 Rum at V3's values): 5 minutes, 2 POIs, 2 elites, the boss, 2 overtime minutes.
+            var expected = 5 * c.Row("minutes").rum + 2 * c.Row("landmarks").rum + 2 * c.Row("elites").rum + c.Row("boss").rum + OvertimeRum(c, 2);
+            Assert.AreEqual(expected, total);
+            Assert.AreEqual(5 * c.Row("minutes").rum, r.Rum.SettledRumOf(RumSource.QualifyingMinute));
+            Assert.AreEqual(2 * c.Row("landmarks").rum, r.Rum.SettledRumOf(RumSource.SpecialLandmark));
+            Assert.AreEqual(2 * c.Row("elites").rum, r.Rum.SettledRumOf(RumSource.ScheduledElite));
+            Assert.AreEqual(c.Row("boss").rum, r.Rum.SettledRumOf(RumSource.BossVictory));
+            Assert.AreEqual(OvertimeRum(c, 2), r.Rum.SettledRumOf(RumSource.OvertimeMinute));
             Assert.IsTrue(r.Rum.SettlementApplied);
-            Assert.AreEqual(57, r.Bank.Treasury);
+            Assert.AreEqual(expected, r.Bank.Treasury);
         }
 
         [Test]
@@ -144,32 +158,34 @@ namespace RoguePirates.V4.Tests
         public void MinuteRules_MatchV3()
         {
             using var set = Default();
+            var d = Deadline(set); // V5 M8z (7 Oct, I8z.5): read from the timeline
             var r = Make(set);
             for (var k = 0; k < 10; k++) r.Kill(61f + k); // minute 1: 10 kills
             for (var k = 0; k < 9; k++) r.Kill(121f + k); // minute 2: 9 kills
             for (var k = 0; k < 15; k++) r.Kill(185f + k); // minute 3 (in progress at settlement)
-            for (var k = 0; k < 10; k++) r.Kill(595f + k * 0.4f); // minute 9, the last pre-deadline minute
+            for (var k = 0; k < 10; k++) r.Kill(d - 5f + k * 0.4f); // the last pre-deadline minute
             r.Flush();
             r.Time = 199f;
             var live = r.Rum.Live.First(x => x.Source == RumSource.QualifyingMinute);
             Assert.AreEqual(1, live.Credits, "minute 1 only: minute 2 has 9 kills, minute 3 is still running");
 
             // The console jump closes skipped minutes with no kills; overtime kills never count as ordinary minutes.
-            r.Time = 605f;
+            r.Time = d + 5f;
             live = r.Rum.Live.First(x => x.Source == RumSource.QualifyingMinute);
-            Assert.AreEqual(3, live.Credits, "minutes 1, 3 and 9");
-            for (var k = 0; k < 20; k++) r.Kill(605f + k);
+            Assert.AreEqual(3, live.Credits, "minutes 1, 3 and the last before the deadline");
+            for (var k = 0; k < 20; k++) r.Kill(d + 5f + k);
             r.Flush();
-            r.Time = 659f;
+            r.Time = d + 59f;
             Assert.AreEqual(0, r.Rum.Live.First(x => x.Source == RumSource.OvertimeMinute).Credits, "overtime minute 0 is paid only once minute 1 begins");
-            r.Time = 661f;
+            r.Time = d + 61f;
             Assert.AreEqual(1, r.Rum.Live.First(x => x.Source == RumSource.OvertimeMinute).Credits);
         }
 
         [Test]
-        public void Caps_EliteTwo_BossOnce_OvertimeFifteen_AndUnregisteredElitesNeverPay()
+        public void Caps_EliteTwo_BossOnce_OvertimeByItsRow_AndUnregisteredElitesNeverPay()
         {
             using var set = Default();
+            var d = Deadline(set); // V5 M8z (7 Oct, I8z.5): overtime starts at the timeline's deadline
             var r = Make(set);
             r.Publish(CombatEventKind.PhaseChanged, 5, 1, 0f, "elite_hammerhead");
             r.Publish(CombatEventKind.PhaseChanged, 6, 1, 0f, "elite_kraken");
@@ -183,13 +199,21 @@ namespace RoguePirates.V4.Tests
             r.Publish(CombatEventKind.BossState, 1); // summoned: not a victory
             r.Publish(CombatEventKind.BossState, 2);
             r.Publish(CombatEventKind.BossState, 2);
-            for (var m = 0; m < 8; m++) for (var k = 0; k < 10; k++) r.Kill(601f + m * 60f + k);
+            for (var m = 0; m < 8; m++) for (var k = 0; k < 10; k++) r.Kill(d + 1f + m * 60f + k);
             r.Flush();
-            r.Time = 600f + 8 * 60f + 1f;
+            r.Time = d + 8 * 60f + 1f;
             r.Rum.Settle("caps", true);
-            Assert.AreEqual(10, r.Rum.SettledRumOf(RumSource.ScheduledElite), "two elites × 5");
-            Assert.AreEqual(25, r.Rum.SettledRumOf(RumSource.BossVictory), "once");
-            Assert.AreEqual(15, r.Rum.SettledRumOf(RumSource.OvertimeMinute), "8 qualifying overtime minutes, capped at 15");
+            var c = set.Single<RewardConfig>();
+            Assert.AreEqual(c.Row("elites").maxCredits * c.Row("elites").rum, r.Rum.SettledRumOf(RumSource.ScheduledElite), "two elites");
+            Assert.AreEqual(c.Row("boss").rum, r.Rum.SettledRumOf(RumSource.BossVictory), "once");
+            Assert.AreEqual(OvertimeRum(c, 8), r.Rum.SettledRumOf(RumSource.OvertimeMinute), "8 qualifying overtime minutes, capped only when the row has a cap");
+            c.Row("overtime").maxRum = 15; // a cap still caps
+            var capped = Make(set);
+            for (var m = 0; m < 8; m++) for (var k = 0; k < 10; k++) capped.Kill(d + 1f + m * 60f + k);
+            capped.Flush();
+            capped.Time = d + 8 * 60f + 1f;
+            capped.Rum.Settle("capped", true);
+            Assert.AreEqual(Mathf.Min(15, 8 * c.Row("overtime").rum), capped.Rum.SettledRumOf(RumSource.OvertimeMinute), "maxRum caps the row");
         }
 
         [Test]
@@ -215,7 +239,7 @@ namespace RoguePirates.V4.Tests
             StringAssert.DoesNotContain("Marks", text);
         }
 
-        /// <summary>Playtest round 1: the gold left at death is banked as Rum (1 per 10 gold); the v3-parity preset turns it off.</summary>
+        /// <summary>Playtest round 1: the gold left at death is banked as Rum (on a flattening curve); the row can be switched off.</summary>
         [Test]
         public void GoldLeftAtDeath_IsBankedAsRum()
         {
@@ -248,10 +272,13 @@ namespace RoguePirates.V4.Tests
                 Assert.LessOrEqual(gain, previousGain + 1, "each further 1,500 gold pays less (flattens)");
                 previousGain = gain;
             }
-            var preset = File.ReadAllText(Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
-            var errors = new List<string>();
-            Assert.IsTrue(PresetCodec.Apply(set, PresetCodec.FromJson(preset), 0f, errors), string.Join("; ", errors));
-            Assert.IsFalse(set.Single<RewardConfig>().Row("gold").enabled, "V3 banked nothing: off under the parity preset");
+            // V5 M8z (7 Oct, I8z.5): the switch-off check under the v3-parity preset was retired with the preset (D18).
+            row.enabled = false;
+            var off = Make(set);
+            off.Rum.RunGold = () => 500;
+            off.Time = 30f;
+            off.Rum.Settle("gold-off", true);
+            Assert.AreEqual(0, off.Rum.SettledTotal, "the row switched off banks nothing");
         }
 
         [Test]
@@ -291,13 +318,18 @@ namespace RoguePirates.V4.Tests
 
         /// <summary>
         /// M14.13: the menu's Captain locks. Adopted rule: Hank 100 and Sparky 140 Rum (buyable when the treasury holds
-        /// it), Ember and Roxie until their weapon is owned, Richie until 5,000 lifetime gold. V3 rule (preset): Hank and
-        /// Sparky by save ownership (Sparky also by a First Conquest), the rest open.
+        /// it), Ember and Roxie until their weapon is owned, Richie until 5,000 lifetime gold. V3 rule (the V3Ownership
+        /// config switch): Hank and Sparky by save ownership (Sparky also by a First Conquest), the rest open.
+        /// V5 M8z (7 Oct, I8z.5): every weapon is a free starter for now (D18 P3), so Ember's and Roxie's weapon locks are
+        /// always met in the shipped data; the test takes the Flamethrower out of the starters to check the rule.
         /// </summary>
         [Test]
-        public void CaptainLocks_FollowTheAdoptedRule_AndV3sUnderThePreset()
+        public void CaptainLocks_FollowTheAdoptedRule_AndV3sByItsSwitch()
         {
             using var set = Default();
+            var starters = set.Single<UnlockConfig>().starterWeaponIds;
+            Assert.IsTrue(starters.Contains("flamethrower"), "D18 P3: every weapon is a starter for now");
+            set.Single<UnlockConfig>().starterWeaponIds = starters.Where(id => id != "flamethrower").ToArray();
             var save = new SaveService(new MemorySaveBackend());
             var lifetime = 0;
             var conquest = false;
@@ -337,8 +369,9 @@ namespace RoguePirates.V4.Tests
         }
 
         /// <summary>
-        /// M14.13 review fix: the menu's services apply the session's preset, so the v3-parity preset switches the
-        /// menu's Captain locks back to V3's rule (Ember open again), and the Set Sail button follows the lock state.
+        /// M14.13 review fix: the menu's services apply the session's preset (to the Captain locks too), and the Set Sail
+        /// button follows the lock state. V5 M8z (7 Oct, I8z.5): checked with a small preset of its own (the v3-parity
+        /// preset is retired, D18).
         /// </summary>
         [Test]
         public void MenuServices_ApplyTheSessionPreset_ToTheCaptainLocks()
@@ -347,14 +380,20 @@ namespace RoguePirates.V4.Tests
             using var defaults = RoguePirates.V4.Composition.MenuServices.ForConfig(set, null);
             CaptainConfig C(RoguePirates.V4.Composition.MenuServices m, string key) => m.Config.All<CaptainConfig>().Single(c => c.captainKey == key);
             Assert.AreEqual(CaptainLockRule.CaptainConfig, defaults.Config.Single<UnlockConfig>().captainLockRule);
-            Assert.IsTrue(defaults.Locks.IsLocked(C(defaults, "ember")), "adopted rule: Ember waits for the Flamethrower");
 
-            var parity = File.ReadAllText(Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
+            string preset;
+            using (var edited = new ConfigSetRuntime(set))
+            {
+                Assert.IsTrue(edited.TryApplyEdit("captain.richie", "unlockLifetimeGold", "1234", 0f, out var error), error);
+                Assert.IsTrue(edited.TryApplyEdit(edited.Single<UnlockConfig>().configId, "captainLockRule", "V3Ownership", 0f, out error), error);
+                preset = PresetCodec.ToJson(PresetCodec.Capture(edited, "menu-test", edited.Hash));
+            }
             var errors = new List<string>();
-            using var v3 = RoguePirates.V4.Composition.MenuServices.ForConfig(set, parity, errors);
+            using var withPreset = RoguePirates.V4.Composition.MenuServices.ForConfig(set, preset, errors);
             Assert.IsEmpty(errors, string.Join("\n", errors));
-            Assert.AreEqual(CaptainLockRule.V3Ownership, v3.Config.Single<UnlockConfig>().captainLockRule, "the preset reaches the menu's configs");
-            Assert.IsFalse(v3.Locks.IsLocked(C(v3, "ember")) || v3.Locks.IsLocked(C(v3, "roxie")) || v3.Locks.IsLocked(C(v3, "richie")), "V3: the rest are open");
+            Assert.AreEqual(1234, C(withPreset, "richie").unlockLifetimeGold, "the preset reaches the menu's configs");
+            Assert.AreEqual(CaptainLockRule.V3Ownership, withPreset.Config.Single<UnlockConfig>().captainLockRule, "and the menu's Captain lock rule");
+            Assert.AreEqual(5000, C(defaults, "richie").unlockLifetimeGold, "the defaults are untouched");
 
             Assert.AreEqual(("SET SAIL", true), V4MainMenuController.PlayButton(CaptainLockState.Open, "RUM"));
             Assert.AreEqual(("UNLOCK: 100 RUM", true), V4MainMenuController.PlayButton(new CaptainLockState(true, "100 Rum", 100, true), "RUM"));

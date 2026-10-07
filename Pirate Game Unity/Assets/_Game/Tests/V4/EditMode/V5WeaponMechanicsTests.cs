@@ -335,10 +335,10 @@ namespace RoguePirates.V4.Tests
             foreach (var id in NewWeapons)
             {
                 Assert.IsTrue(weapons.ContainsKey(id), id);
-                Assert.GreaterOrEqual(weapons[id].databaseOrder, 0, $"{id} is in the level-up offers once bought");
-                Assert.IsFalse(unlocks.starterWeaponIds.Contains(id), $"{id} is bought, not a starter");
-                Assert.Greater(unlocks.weaponUnlocks.Single(u => u.weaponId == id).rumCost, 0, $"{id} has a Rum price");
-                Assert.IsNotNull(icons.Weapon(id), $"{id} has an icon");
+                Assert.GreaterOrEqual(weapons[id].databaseOrder, 0, $"{id} is in the level-up offers once owned");
+                // V5 M8z (7 Oct, I8z.5): every weapon is a free starter for now (D18 P3); a weapon is a starter or has a price.
+                Assert.IsTrue(unlocks.starterWeaponIds.Contains(id) || unlocks.weaponUnlocks.Any(u => u.weaponId == id && u.rumCost > 0), $"{id} is a starter or has a Rum price");
+                Assert.IsTrue(icons.Weapon(id) != null || !string.IsNullOrWhiteSpace(weapons[id].displayName), $"{id} has an icon or a name (playtest round 7)");
             }
             var items = config.All<ItemConfig>().ToDictionary(i => i.itemId);
             var evolutions = config.All<WeaponEvolutionConfig>().ToList();
@@ -348,7 +348,7 @@ namespace RoguePirates.V4.Tests
                 Assert.AreEqual(ConfigEnums.EvolutionEffect.Empowered, evo.effect, id);
                 Assert.IsTrue(items.TryGetValue(evo.requiredItemId, out var item), $"{evo.evolutionId} needs {evo.requiredItemId}");
                 Assert.IsTrue(item.inChestPool, $"{item.itemId} drops from chests (ChestEconomy only rolls evolution items in its pool)");
-                Assert.IsNotNull(icons.Item(item.itemId), $"{item.itemId} has an icon");
+                Assert.IsTrue(icons.Item(item.itemId) != null || !string.IsNullOrWhiteSpace(item.displayName), $"{item.itemId} has an icon or a name (playtest round 7)");
             }
             Assert.AreEqual(19, evolutions.Count, "the six from V3, the eight from V5 M4 and the five from M4b");
             Assert.AreEqual(evolutions.Count, evolutions.Select(e => e.baseWeapon.weaponId).Distinct().Count(), "one evolution per weapon");
@@ -458,11 +458,13 @@ namespace RoguePirates.V4.Tests
             rig.Loadout.Entries.Add((new object(), "anchor_flail"));
             rig.Manager.SyncLoadout();
             rig.Manager.TickOrbitPositions(0f);
-            Assert.AreEqual(1, rig.Manager.OrbitHitsOf(rig.Manager.Slots[0]).Count);
+            // V5 M8z (7 Oct, I8z.5): the playtest gave the flail more anchors; the evolution's rule is one more, not "two".
+            var plain = rig.Manager.OrbitHitsOf(rig.Manager.Slots[0]).Count;
+            Assert.GreaterOrEqual(plain, 1);
             rig.Loadout.Evolution = "kraken_chain";
             rig.Manager.SyncLoadout();
             rig.Manager.TickOrbitPositions(0f);
-            Assert.AreEqual(2, rig.Manager.OrbitHitsOf(rig.Manager.Slots[0]).Count, "Kraken Chain swings two anchors");
+            Assert.Greater(rig.Manager.OrbitHitsOf(rig.Manager.Slots[0]).Count, plain, "Kraken Chain swings another anchor");
         }
 
         /// <summary>Shots of the first volley or burst (the target is far enough that none lands before it ends).</summary>
@@ -644,14 +646,24 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void Summons_StopAtTheirCap()
+        public void Summons_StopAtTheirCap_AndANewSetWaitsForTheLast()
         {
+            // V5 M8z (7 Oct, I8z.5): since the playtest (3 Oct, owner) a new set comes only after the last one is gone, so
+            // more firings never add to a set that is out; the cap still trims a set larger than it.
             using var rig = new Rig();
             var w = Summoner(rig, false);
-            w.summon.maxAlive = 5;
+            w.summon.maxAlive = 2;
             rig.Enemies.Add(new Vector3(0f, 0f, 20f));
-            for (var i = 0; i < 4; i++) rig.Manager.FireSlot(0); // 3 a firing
-            Assert.AreEqual(5, rig.Combat.Skiffs.Count, "no more than the cap alive at once");
+            rig.Manager.FireSlot(0); // 3 a firing
+            Assert.AreEqual(2, rig.Combat.Skiffs.Count, "no more than the cap alive at once");
+            for (var i = 0; i < 3; i++) rig.Manager.FireSlot(0);
+            Assert.AreEqual(2, rig.Combat.Skiffs.Count, "the next set waits for the last");
+
+            using var uncapped = new Rig();
+            Summoner(uncapped, false).summon.maxAlive = 0;
+            uncapped.Enemies.Add(new Vector3(0f, 0f, 20f));
+            for (var i = 0; i < 4; i++) uncapped.Manager.FireSlot(0);
+            Assert.AreEqual(3, uncapped.Combat.Skiffs.Count, "one set of three, however often it fires");
         }
 
         [Test]

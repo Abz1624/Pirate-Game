@@ -44,23 +44,8 @@ namespace RoguePirates.V4.Tests
         WaveTimelineConfig Timeline => _set.All<WaveTimelineConfig>().Single();
         DifficultyCurveConfig Difficulty => _set.All<DifficultyCurveConfig>().Single();
 
-        // ---- the shared stage profile ------------------------------------------------------------------------
-
-        /// <summary>
-        /// M15 (replaces the retired V3 field-ownership and profile-equality tests): the stage profile the run builds from
-        /// the V4 configs, under the v3-parity preset, has the content hash the M14 and M15 trace sets recorded in their
-        /// headers. Any change to how a profile field is filled (or to a config value it reads) changes the hash.
-        /// </summary>
-        [Test]
-        public void StageProfile_UnderTheParityPreset_KeepsTheTracedContentHash()
-        {
-            using var runtime = new ConfigSetRuntime(_set);
-            var preset = File.ReadAllText(Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
-            var errors = new List<string>();
-            Assert.IsTrue(PresetCodec.Apply(runtime, PresetCodec.FromJson(preset), 0f, errors), string.Join("\n", errors));
-            using var port = new StageProfilePort(runtime);
-            Assert.AreEqual("07c5c03eaa4afe98f0e3f4023b69980ee13ef279132b122f1666a60ebb17ab62", port.Profile.ToExport().ContentHash);
-        }
+        // V5 M8z (7 Oct, I8z.5): the stage profile's traced content hash under the v3-parity preset, the preset's phase
+        // indices and V3's difficulty formulas under it were retired with the preset (D18).
 
         // ---- enum mirrors ----------------------------------------------------------------------------------
 
@@ -82,39 +67,6 @@ namespace RoguePirates.V4.Tests
                 var a = Enum.GetNames(mine).Select(n => $"{n}={(int)Enum.Parse(mine, n)}");
                 var b = Enum.GetNames(v3).Select(n => $"{n}={(int)Enum.Parse(v3, n)}");
                 CollectionAssert.AreEqual(b, a, $"{mine.Name} differs from V3");
-            }
-        }
-
-        // ---- the v3-parity preset --------------------------------------------------------------------------
-
-        static string ParityPresetPath => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "plan", "v4-verification", "presets", "v3-parity.json"));
-
-        [Test]
-        public void ParityPreset_PhaseIndices_TargetTheElitePhases()
-        {
-            // The preset addresses timeline phases by index; reordering the phases must not silently retarget it.
-            var timeline = _set.All<WaveTimelineConfig>().Single();
-            var json = File.ReadAllText(ParityPresetPath);
-            var indices = System.Text.RegularExpressions.Regex.Matches(json, @"phases\[(\d+)\]\.focus\.variant")
-                .Cast<System.Text.RegularExpressions.Match>().Select(m => int.Parse(m.Groups[1].Value)).ToList();
-            CollectionAssert.AreEquivalent(new[] { "elite_hammerhead", "elite_kraken" }, indices.Select(i => timeline.phases[i].phaseId));
-            foreach (var i in indices) Assert.IsNotNull(timeline.phases[i].focus.variant, timeline.phases[i].phaseId + " spawns its elite variant by default (R-03)");
-        }
-
-        // ---- difficulty curve ------------------------------------------------------------------------------
-
-        [Test]
-        public void DifficultyDefaults_ReproduceTheV3Formulas()
-        {
-            // V5 M2 retuned the default damage growth; the v3-parity preset holds V3's values.
-            using var parity = V4DifficultyM10Tests.Parity();
-            var d = parity.Single<DifficultyCurveConfig>();
-            for (var minute = 0f; minute <= 20f; minute += 0.5f)
-            {
-                var hp = 20f * d.enemyHpPerMinute.Evaluate(minute) * d.hpMultipliers.tier[0] * d.hpMultipliers.stage[0] * d.globalHpMultiplier;
-                Assert.AreEqual(GameMath.EnemyHP(20f, minute, 1, 0), hp, 1e-4f, $"hp at minute {minute}");
-                var dmg = 8f * d.enemyDamagePerMinute.Evaluate(minute) * d.damageMultipliers.tier[0] * d.damageMultipliers.stage[0];
-                Assert.AreEqual(GameMath.EnemyDamage(8f, minute, 1, 0), dmg, 1e-4f, $"damage at minute {minute}");
             }
         }
 

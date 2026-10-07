@@ -190,7 +190,7 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
-        public IEnumerator ShipSpeed_TheParityPresetsFactor_AppliesFromTheStart()
+        public IEnumerator ShipSpeed_APresetsFactor_AppliesFromTheStart()
         {
             var set = Resources.FindObjectsOfTypeAll<RoguePirates.V4.Config.ConfigSet>().FirstOrDefault(s => s.setId == "saltwind-default");
             if (set == null)
@@ -297,7 +297,9 @@ namespace RoguePirates.V4.Tests
             Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
             // Jump past the stage deadline (the console's forward jump), then overtime must spawn Drowned enemies (R-05).
             var run = RunManager.Instance;
-            run.JumpClock(601f);
+            // V5 M8z (7 Oct, I8z.5): the deadline is the timeline's (the 15-minute voyage), not V3's 10:00.
+            var timeline = Object.FindFirstObjectByType<V4Game>().Config.Single<RoguePirates.V4.Config.WaveTimelineConfig>();
+            run.JumpClock(timeline.stageDeadlineSeconds + 1f);
             var deadline = Time.realtimeSinceStartup + 30f;
             var found = false;
             while (!found && Time.realtimeSinceStartup < deadline)
@@ -321,10 +323,12 @@ namespace RoguePirates.V4.Tests
             var ship = Object.FindFirstObjectByType<PlayerShipController>();
             ship.Damage.SetPlaytestInvulnerable(false);
             for (var i = 0; i < 10; i++) yield return null;
-            run.JumpClock(800f);
+            // V5 M8z (7 Oct, I8z.5): 140 s into the timeline's storm (was a fixed 13:20 from V3's 10:00 deadline).
+            var storm = game.Config.Single<RoguePirates.V4.Config.WaveTimelineConfig>().phases.First(p => p.isStorm);
+            run.JumpClock(storm.trigger.timeSeconds + 140f);
             var deadline = Time.realtimeSinceStartup + 20f;
             while (!game.Context.Get<RoguePirates.V4.Views.IWorldView>().StormRingVisible && Time.realtimeSinceStartup < deadline) { KeepRunningStorm(); yield return null; }
-            Assert.IsTrue(game.Context.Get<RoguePirates.V4.Views.IWorldView>().StormRingVisible, "the storm ring is up at 13:20");
+            Assert.IsTrue(game.Context.Get<RoguePirates.V4.Views.IWorldView>().StormRingVisible, "the storm ring is up 140 s into the storm");
             var outside = RoguePirates.V4.Foundation.World.PlayBounds.Center + new Vector3(RoguePirates.V4.Foundation.World.PlayBounds.HalfExtentX - 10f, 0f, 0f);
             ship.SetMovementEnabled(false);
             ship.SetWorldPosition(outside);

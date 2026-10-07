@@ -121,7 +121,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(1.1f, Of("cannonboat").initialAttackCooldown.value);
             Assert.AreEqual(2f, Of("powder_barge").initialCombatPhaseTimer);
             Assert.IsTrue(Of("repair_tender").excludedFromRepair);
-            Assert.IsFalse(Of("hammerhead").eliteLatchesSecondChargeForAll, "R-100 fix: no shared latch (the v3-parity preset turns V3's back on)");
+            Assert.IsFalse(Of("hammerhead").eliteLatchesSecondChargeForAll, "R-100 fix: no shared latch (V3's is a config switch)");
             Assert.IsTrue(Of("hammerhead").eliteChargesTwice, "R-100 fix: an elite hammerhead charges twice itself");
             Assert.IsFalse(Of("elite_hammerhead").eliteLatchesSecondChargeForAll, "V3 matched the exact id");
             foreach (var id in new[] { "cannonboat", "gunner_cog", "bomb_boat", "manta_ray" }) Assert.IsTrue(Of(id).alwaysRanged, id);

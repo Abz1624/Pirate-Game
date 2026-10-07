@@ -129,29 +129,6 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(RunState.Playing, RunManager.Instance.State);
         }
 
-        [UnityTest]
-        public IEnumerator PowderCache_V3Ambush_UnderTheParityPreset_SpawnsThroughTheV4Executor()
-        {
-            // V3's proximity ambush of 3 (the default is the elite challenge since the M8 playtest).
-            RunRequest.RequestPreset(System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json")));
-            yield return StartRun();
-            var stage = Stage();
-            var ship = Ship();
-            var cache = stage.Module.Layout.pois.FindIndex(p => p.type == POIType.MerchantSkiff);
-            if (cache < 0) Assert.Ignore("no Powder Cache on this seed");
-            var world = V4TestEnemies.Simulation();
-            var before = world.ActiveCount;
-            ship.SetWorldPosition(stage.Module.Layout.pois[cache].position + new Vector3(4f, 0f, 0f));
-            var deadline = Time.realtimeSinceStartup + 3f;
-            while (stage.Module.PowderCacheEncounterId == 0 && Time.realtimeSinceStartup < deadline) yield return null;
-            Assert.Greater(stage.Module.PowderCacheEncounterId, 0, "the ambush started on approach");
-            Assert.IsTrue(stage.Module.IsHidden(cache));
-            deadline = Time.realtimeSinceStartup + 3f;
-            // M14: the run's V4 encounter tracker (was V3's static RunEncounterTracker).
-            Object.FindFirstObjectByType<V4Game>().Context.TryGet<RoguePirates.V4.Spawning.IEncounterTracker>(out var tracker);
-            while (tracker.SpawnedCount(stage.Module.PowderCacheEncounterId) < 3 && Time.realtimeSinceStartup < deadline) yield return null;
-            Assert.AreEqual(3, tracker.SpawnedCount(stage.Module.PowderCacheEncounterId), "three ambushers, registered for the kill path");
-            Assert.GreaterOrEqual(world.ActiveCount, before + 3);
-        }
+        // V5 M8z (7 Oct, I8z.5): V3's Powder Cache ambush under the v3-parity preset was retired with the preset (D18).
     }
 }

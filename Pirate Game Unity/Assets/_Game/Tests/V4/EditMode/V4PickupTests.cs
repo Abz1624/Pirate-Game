@@ -66,7 +66,12 @@ namespace RoguePirates.V4.Tests
             var views = new Views();
             var pickups = Make(config, rewards, views, 101);
             var kill = new Vector3(10f, 0f, 10f);
-            pickups.SpawnFromEnemy(kill, 7, 3);
+            // V5 M8z (7 Oct, I8z.5): a barrel bursts into burstCountMin-burstCountMax pieces of at least 1 XP each, so a
+            // value below the piece count pays one per piece. Values above the most pieces pay exactly once.
+            var c = config.Single<PickupConfig>();
+            var xp = 3 * Mathf.Max(c.burstCountMax, c.burstMinimum) + 1;
+            var gold = 2 * Mathf.Max(c.burstCountMax, c.burstMinimum) + 1;
+            pickups.SpawnFromEnemy(kill, xp, gold);
             Assert.AreEqual(2, pickups.ActiveCount, "an XP barrel and a gold barrel");
             Assert.AreEqual(2, views.Live);
 
@@ -78,12 +83,12 @@ namespace RoguePirates.V4.Tests
             for (var i = 0; i < 600 && (pickups.ActiveCount > 0 || rewards.Xp == 0 || rewards.Gold == 0); i++) pickups.Tick(Dt, kill, 1f);
             Assert.AreEqual(0, pickups.ActiveCount, "both barrels were collected");
             Assert.AreEqual(0, views.Live, "their views went back");
-            Assert.AreEqual(7, rewards.Xp, "the XP value, once");
-            Assert.AreEqual(3, rewards.Gold, "the gold value, once");
+            Assert.AreEqual(xp, rewards.Xp, "the XP value, once");
+            Assert.AreEqual(gold, rewards.Gold, "the gold value, once");
 
             for (var i = 0; i < 120; i++) pickups.Tick(Dt, kill, 1f);
-            Assert.AreEqual(7, rewards.Xp, "no second payout");
-            Assert.AreEqual(3, rewards.Gold);
+            Assert.AreEqual(xp, rewards.Xp, "no second payout");
+            Assert.AreEqual(gold, rewards.Gold);
         }
 
         [Test]

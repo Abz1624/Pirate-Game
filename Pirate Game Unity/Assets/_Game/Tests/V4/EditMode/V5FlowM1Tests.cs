@@ -18,13 +18,12 @@ namespace RoguePirates.V4.Tests
 {
     /// <summary>
     /// V5 M1 enemy flow: the minimum-alive floor, minute waves, hordes, release windows and the pickup merge, each with
-    /// in-memory fakes and targeted clock jumps (no whole-run traces). Off under the v3-parity preset.
+    /// in-memory fakes and targeted clock jumps (no whole-run traces). Off with the flow's switch.
     /// </summary>
     [Category("V5")]
     public sealed class V5FlowM1Tests
     {
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
-        const string ParityPreset = "../../plan/v4-verification/presets/v3-parity.json";
         const float Dt = 1f / 60f;
 
         ConfigSet _set;
@@ -189,15 +188,11 @@ namespace RoguePirates.V4.Tests
             public void JumpTo(float seconds) => Run.Elapsed = seconds;
         }
 
-        Harness Make(bool parity = false)
+        /// <param name="flowOff">The flow's switch off (V5 M8z, 7 Oct, I8z.5: was the v3-parity preset, retired with D18).</param>
+        Harness Make(bool flowOff = false)
         {
             var h = new Harness { Config = new ConfigSetRuntime(_set) };
-            if (parity)
-            {
-                var preset = File.ReadAllText(Path.Combine(Application.dataPath, ParityPreset));
-                var errors = new List<string>();
-                Assert.IsTrue(PresetCodec.Apply(h.Config, PresetCodec.FromJson(preset), 0f, errors), string.Join("\n", errors));
-            }
+            if (flowOff) h.Config.Single<WaveTimelineConfig>().flow.enabled = false;
             h.Sink = new FakeSink(h.Config) { Run = h.Run };
             h.Context = new RunContext(new RunClock(), h.Events, h.Config);
             h.Context.Register<IEnemySpawnSink>(h.Sink);
@@ -221,6 +216,24 @@ namespace RoguePirates.V4.Tests
         }
 
         int AmbientCap(Harness h) => h.Timeline.maxActiveEnemies - h.Timeline.reservedEncounterSlots;
+
+        /// <summary>
+        /// The first time after the first minute when no horde's lull or release window touches the next
+        /// <paramref name="seconds"/> and the floor is above zero (V5 M8z, 7 Oct, I8z.5: read from the data, not fixed times).
+        /// </summary>
+        static float QuietTime(Harness h, float seconds)
+        {
+            var flow = h.Timeline.flow;
+            var r = flow.release;
+            for (var t = 61f; t < h.Timeline.stageDeadlineSeconds - seconds; t += 1f)
+            {
+                var clear = flow.hordes.All(x => t + seconds < x.timeSeconds - r.preHordeLullSeconds - 1f
+                    || t > x.timeSeconds + r.hordeReleaseDelaySeconds + r.afterHordeSeconds + 1f);
+                if (clear && Now(h, t).share > 0.05f) return t;
+            }
+            Assert.Fail("no quiet stretch between the hordes");
+            return 0f;
+        }
 
         /// <summary>The flow's floor share and rate now (V5 M3d: between keyframes when smoothWaves is on).</summary>
         static (float share, float rate) Now(Harness h, float? at = null)
@@ -254,13 +267,12 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void ParityPreset_TurnsFlowAndPickupMergeOff()
+        public void FlowSwitchedOff_RunsNoFloorHordesOrWaves()
         {
-            var h = Make(parity: true);
+            var h = Make(flowOff: true);
             using (h.Config)
             {
                 Assert.IsFalse(h.Timeline.flow.enabled);
-                Assert.IsFalse(h.Config.Single<PickupConfig>().mergeIntoNearestWhenFull);
                 h.RunUntil(125f);
                 Assert.IsFalse(h.Flow.FlowEnabled);
                 Assert.AreEqual(0, h.Flow.ToppedUp, "no floor top-ups");
@@ -296,18 +308,22 @@ namespace RoguePirates.V4.Tests
             using (h.Config)
             {
                 NoArenas(h);
-                h.RunUntil(142f); // between the 0:35 and 3:35 hordes, out of their release windows and lulls
+                // V5 M8z (7 Oct, I8z.5): a time between hordes, out of their lulls and release windows, read from the data
+                // (the playtest moved the hordes; this was a fixed 2:22).
+                var at = QuietTime(h, 12f);
+                h.RunUntil(at);
                 h.Timeline.flow.WaveAt(h.Run.Elapsed, out var index);
                 Assert.AreEqual(index, h.Flow.WaveIndex);
                 Assert.IsFalse(h.Flow.InRelease);
                 var expected = Mathf.RoundToInt(Now(h).share * AmbientCap(h));
+                Assert.Greater(expected, 0, "a floor to restore");
                 Assert.AreEqual(expected, h.Flow.Floor);
                 h.Sink.KillAll();
                 var before = h.Flow.ToppedUp;
-                h.RunUntil(152f);
-                Assert.GreaterOrEqual(h.Sink.Alive, expected, "the floor is restored within ten seconds");
+                h.RunUntil(at + 10f);
+                Assert.GreaterOrEqual(h.Sink.Alive, Mathf.Min(expected, Mathf.RoundToInt(Now(h).share * AmbientCap(h))), "the floor is restored within ten seconds");
                 Assert.Greater(h.Flow.ToppedUp, before, "the floor, not only the band rate, refilled it");
-                var topUps = h.Sink.Spawns.Where(s => s.t >= 142f && s.viaProfile).Select(s => s.id).Distinct().ToList();
+                var topUps = h.Sink.Spawns.Where(s => s.t >= at && s.viaProfile).Select(s => s.id).Distinct().ToList();
                 Assert.IsNotEmpty(topUps, "top-ups come from the band's spawner and pools");
             }
         }
@@ -587,12 +603,13 @@ namespace RoguePirates.V4.Tests
             using (h.Config)
             {
                 NoArenas(h);
-                var horde = h.Timeline.flow.hordes[1];
+                var horde = h.Timeline.flow.hordes.OrderByDescending(x => x.count).First(); // V5 M8z: the largest, so the slots limit it
                 h.JumpTo(horde.timeSeconds - 0.5f);
                 h.Sink.Blockers = AmbientCap(h);
                 h.RunUntil(horde.timeSeconds + 0.2f);
                 var members = h.Sink.Spawns.Count(x => !x.viaProfile && x.id == horde.archetype.enemyId && x.t >= horde.timeSeconds);
-                Assert.AreEqual(h.Timeline.reservedEncounterSlots / 2, members, "room for part of the horde, the Beacon keeps the rest");
+                // V5 M8z (7 Oct, I8z.5): a horde smaller than half the reserved slots fits whole (the playtest's are).
+                Assert.AreEqual(Mathf.Min(horde.count, h.Timeline.reservedEncounterSlots / 2), members, "room for part of the horde, the Beacon keeps the rest");
                 Assert.AreEqual(1, h.Flow.HordesSpawned);
             }
         }

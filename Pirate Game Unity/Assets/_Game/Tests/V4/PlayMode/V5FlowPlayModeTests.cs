@@ -58,6 +58,7 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
+        [Category("Slow")] // V5 M8z (7 Oct, I8z.5): a checkpoint sweep through the voyage (~16 s); gate only
         public IEnumerator Flow_AtMinutes1_3_6_9_ReachesTheWaveFloor_AndOvertimeRuns()
         {
             SceneManager.LoadScene(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
@@ -71,12 +72,14 @@ namespace RoguePirates.V4.Tests
             Assert.IsNotNull(flow);
             Assert.IsTrue(flow.FlowEnabled, "the default config runs the V5 flow");
             Assert.IsTrue(game.Context.TryGet<IEnemySpawnSink>(out var sink));
-            foreach (var phase in spawn.Phases)
-                if (phase.PhaseId == "reef_crab" || phase.PhaseId.StartsWith("elite_")) spawn.Skip(phase.PhaseId);
+            var timeline = game.Config.Single<RoguePirates.V4.Config.WaveTimelineConfig>();
+            // V5 M8z (7 Oct, I8z.5): every arena fight in the timeline (the playtest added more Reef Crabs and elites), read
+            // from the config instead of a list of ids.
+            foreach (var phase in timeline.phases)
+                if (phase.focus != null && phase.focus.enabled) spawn.Skip(phase.phaseId);
 
             var run = RunManager.Instance;
             var log = new List<string>();
-            var timeline = game.Config.Single<RoguePirates.V4.Config.WaveTimelineConfig>();
             foreach (var minute in new[] { 1, 3, 6, 9 })
             {
                 var wave = -1; // V5 M3d: the keyframe current at the run time (M1: one wave per minute)
@@ -99,11 +102,12 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(reached, $"minute {minute}: the crowd reached the floor ({flow.Floor}); alive {sink.ActiveCount}");
             }
 
-            run.JumpClock(13 * 60f);
+            var overtimeAt = timeline.stageDeadlineSeconds + 180f; // V5 M8z: three minutes into overtime (was a fixed 13:00)
+            run.JumpClock(overtimeAt);
             var until = Time.realtimeSinceStartup + 5f;
             while (Time.realtimeSinceStartup < until) { KeepRunning(); yield return null; }
             Assert.Greater(sink.ActiveCount, 0, "overtime keeps spawning");
-            log.Add($"13:00 alive {sink.ActiveCount}");
+            log.Add($"{overtimeAt / 60f:0}:00 alive {sink.ActiveCount}");
             Debug.Log("[V5 M1 flow checkpoints] " + string.Join(" | ", log));
             Assert.Greater(flow.ToppedUp, 0, "the floor topped the crowd up at least once");
         }

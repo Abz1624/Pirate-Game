@@ -10,7 +10,7 @@ using UnityEngine;
 namespace RoguePirates.V4.Tests
 {
     /// <summary>
-    /// V5 M2 balance data: the personalities and targets data and the v3-parity preset restoring the pre-M2 values.
+    /// V5 M2 balance data: the personalities and targets data.
     /// V5 M8z (I8z.7, owner 7 Oct 2026: one simulator): the in-engine simulator's tests (its math, determinism,
     /// personalities, the autopilot calibration, the baseline targets, its spawn rules) were retired with it; the balance
     /// model is the JavaScript Monte Carlo (plan/playtest/montecarlo), checked by <see cref="V5MonteCarloExportTests"/>.
@@ -85,34 +85,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(new TargetBand(2f, 3f).Contains(1.9f));
         }
 
-        [Test]
-        public void Retune_IsInTheData_AndTheParityPresetRestoresIt()
-        {
-            using var rt = new ConfigSetRuntime(Set);
-            StringAssert.StartsWith("saltwind-v5-", rt.Single<ProgressionConfig>().balanceVersion, "retuned in V5 (M2, M3, then the demo baseline)");
-            Assert.AreEqual(3, rt.Single<ProgressionConfig>().levelZeroToOneXp);
-            Assert.AreEqual(0f, rt.Single<DifficultyCurveConfig>().ordinaryHp.c1, 1e-6f, "M2's 0.08, × 0.55 by the demo-baseline retune, then flat in M3d (owner note h)");
-            Assert.AreEqual("0.044", CountPressure.Edits.Single(e => e.path == "ordinaryHp.c1").pre, "M3d keeps the retune's value as its value before");
-            var parity = new ConfigSetRuntime(Set);
-            try
-            {
-                var errors = new List<string>();
-                var preset = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
-                Assert.IsTrue(PresetCodec.Apply(parity, PresetCodec.FromJson(preset), 0f, errors), string.Join("\n", errors));
-                var p = parity.Single<ProgressionConfig>();
-                Assert.AreEqual((5, 5f, 5.325000286102295, 1.065000057220459), (p.levelZeroToOneXp, p.xpCurveOffset, p.xpCurveMultiplier, p.xpCurveExponent));
-                var d = parity.Single<DifficultyCurveConfig>();
-                Assert.AreEqual((0.11f, 0.022f, 0.14f, 0.028f, 0.055f, 2f, 0.5f), (d.ordinaryHp.c1, d.ordinaryHp.c2, d.ordinaryDamage.c1, d.ordinaryDamage.c2, d.enemyDamagePerMinute.c1, d.overtimeHpMultiplierBase, d.overtimeHpMultiplierExponentPerMinute));
-                var t = parity.Single<WaveTimelineConfig>();
-                var bands = t.phases.Where(x => x.ratePerSecond > 0f && !x.isOvertime).OrderBy(x => x.trigger.timeSeconds).Select(x => x.ratePerSecond).ToList();
-                CollectionAssert.AreEqual(new[] { 0.6f, 1.2f, 1.8f, 2.4f, 3f }, bands);
-                foreach (var x in t.phases.Where(x => x.focus != null && x.focus.enabled))
-                    if (x.focus.scheduledEliteIndex < 0) Assert.AreEqual((4f, 1.15f), (x.focus.hpMultiplier, x.focus.damageMultiplier));
-                    else Assert.AreEqual(1f, x.spawner.elite.hpMultiplier);
-                Assert.AreEqual(1f, t.phases.Single(x => x.isBoss).spawner.elite.hpMultiplier);
-                Assert.AreEqual(800f, t.phases.Single(x => x.isBoss).spawner.anchor.stats.baseHP, "the Barnacle King's pre-M2 base HP");
-            }
-            finally { parity.Dispose(); }
-        }
+        // V5 M8z (7 Oct, I8z.5): the retune's values and balance version (a value pin on data the playtest changed on
+        // purpose) and the v3-parity preset restoring the pre-M2 values were retired (D18).
     }
 }

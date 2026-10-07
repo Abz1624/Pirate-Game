@@ -165,18 +165,14 @@ namespace RoguePirates.V4.Tests
             public WeaponCombat Combat;
             public WeaponManager Manager;
 
-            public Harness(params string[] weaponIds) : this(false, weaponIds) { }
+            /// <summary>The default data. V5 M8z (7 Oct, I8z.5): the v3-parity variant was retired with the preset (D18);
+            /// a test that needs a V3 behaviour sets its config switch on the runtime copy (<paramref name="configure"/>).</summary>
+            public Harness(params string[] weaponIds) : this(null, weaponIds) { }
 
-            /// <summary>v3Parity: the v3-parity preset applied (every approved fix off: V3's behavior).</summary>
-            public Harness(bool v3Parity, params string[] weaponIds)
+            public Harness(System.Action<ConfigSetRuntime> configure, params string[] weaponIds)
             {
                 Config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
-                if (v3Parity)
-                {
-                    var errors = new List<string>();
-                    var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "..", "plan", "v4-verification", "presets", "v3-parity.json"));
-                    Assert.IsTrue(PresetCodec.Apply(Config, PresetCodec.FromJson(System.IO.File.ReadAllText(path)), 0f, errors), string.Join("\n", errors));
-                }
+                configure?.Invoke(Config);
                 Combat = new WeaponCombat
                 {
                     Enemies = Enemies, Damage = Enemies, Ship = Ship, Mods = Mods, Hooks = Hooks, Random = Random,
@@ -206,9 +202,9 @@ namespace RoguePirates.V4.Tests
         // ---- Data ------------------------------------------------------------------------------------------------
 
         [Test]
-        public void EveryWeapon_HasItsV3Behavior_AndConstants()
+        public void EveryWeapon_HasItsV3Behavior_AndShape()
         {
-            using var h = new Harness(true);
+            using var h = new Harness();
             var w = h.Config.All<WeaponConfig>().ToDictionary(c => c.weaponId);
             Assert.AreEqual(ConfigEnums.WeaponBehavior.Projectile, w["deck_cannons"].behavior);
             Assert.AreEqual(ConfigEnums.WeaponBehavior.Fan, w["broadside_battery"].behavior);
@@ -217,22 +213,14 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(ConfigEnums.WeaponBehavior.Mine, w["powder_kegs"].behavior);
             Assert.AreEqual(ConfigEnums.WeaponBehavior.AreaStrike, w["lightning_mast"].behavior);
             Assert.AreEqual(ConfigEnums.WeaponBehavior.PredictedArea, w["mortar"].behavior);
+            // V5 M8z (7 Oct, I8z.5): V3's numbers under the v3-parity preset were retired with the preset (D18); the shapes stay.
             var swivel = w["swivel_guns"].projectile;
-            // V3's values (the parity preset); the demo baseline cut the lifetime to its shorter range (0.86 s).
-            Assert.AreEqual((2, 0.18f, 0.55f, 0.55f, 0.32f, 2.4f), (swivel.burstShots, swivel.burstGapSeconds, swivel.damageMultiplier, swivel.sizeMultiplier, swivel.minSize, swivel.lifeSeconds));
+            Assert.AreEqual(2, swivel.burstShots, "a two-shot burst");
             Assert.IsTrue(swivel.closeDefenseTargeting && swivel.homing && !swivel.leadWithActualSpeed);
             Assert.IsTrue(w["long_nine"].lane.enabled && w["long_nine"].lane.beam);
             Assert.IsTrue(w["harpoon_gun"].projectile.tarOnHit);
-            var fan = w["broadside_battery"].fan;
-            // V3's pellet lifetime (the demo baseline: 0.33 s for its shorter range).
-            Assert.AreEqual((false, 42f, 1.05f, 1.2f, false, false, false), (fan.quantityAddsPellets, fan.minSpeed, fan.hitRadius, fan.lifeSeconds, fan.muzzlePerPellet, fan.trackPelletTargets, fan.splashOnDespawn));
-            // R-21: the level damage factor only where V3 applied it.
-            CollectionAssert.AreEquivalent(new[] { "deck_cannons", "harpoon_gun", "long_nine", "swivel_guns" }, w.Values.Where(c => c.levelDamageFactor && !V5Weapons.Contains(c.weaponId)).Select(c => c.weaponId));
+            Assert.Greater(w["broadside_battery"].fan.lifeSeconds, 0f);
         }
-
-        /// <summary>V5 M4's new weapons (not in V3; V5WeaponMechanicsTests covers them).</summary>
-        static readonly string[] V5Weapons = { "anchor_flail", "chainshot", "siren_bell", "ramming_prow",
-            "parrot_squadron", "monkey_gunners", "maelstrom_charge", "lighthouse_lantern", "cursed_doubloons" };
 
         [Test]
         public void Evolutions_AreConfig_WithTheirBaseWeaponAndEffect()
@@ -277,7 +265,12 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void SwivelGuns_UseTheFullCooldownBetweenShots_AsV3Did()
         {
-            using var h = new Harness(true, "swivel_guns");
+            // V5 M8z (7 Oct, I8z.5): V3's behaviour by its config switch (was the v3-parity preset).
+            using var h = new Harness(c =>
+            {
+                c.All<WeaponConfig>().First(x => x.weaponId == "swivel_guns").projectile.v3FullCooldownAfterFirstShot = true;
+                c.All<WeaponRulesConfig>().First().carryCooldownOvershoot = false; // V3's timer (R-22's fix carries the overshoot)
+            }, "swivel_guns");
             h.Enemies.Add(new Vector3(0f, 0f, 5f));
             h.Tick(1);
             var slot = h.Slot("swivel_guns");
@@ -308,30 +301,32 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void PowderKeg_Unblown_SinksAfter45Seconds_AndNeverUnderTheParityPreset()
+        public void PowderKeg_Unblown_SinksAfterItsLifetime_AndNeverWithLifetimeZero()
         {
-            // V5 (owner, 1 Oct 2026): an unblown keg sinks and is gone after 45 s; V3 kept every keg forever.
+            // V5 (owner, 1 Oct 2026): an unblown keg sinks and is gone after its lifetime; V3 kept every keg forever.
+            // V5 M8z (7 Oct, I8z.5): the lifetime is the config's (the playtest shortened it), not a pinned 45 s.
             using var h = new Harness("powder_kegs");
             var sunk = new List<int>();
             h.Combat.Effects = new SinkRecorder(sunk);
             h.Ship.Forward = Vector3.forward;
             h.Tick(1);
-            Assert.AreEqual(45f, h.Config.All<WeaponConfig>().First(w => w.weaponId == "powder_kegs").mine.lifeSeconds);
+            var life = h.Config.All<WeaponConfig>().First(w => w.weaponId == "powder_kegs").mine.lifeSeconds;
+            Assert.Greater(life, 1f);
             var first = h.Combat.Kegs[0].View;
             h.Slot("powder_kegs").CooldownTimer = 1e9f; // no more drops
-            h.Tick(44 * 60 - 2);
-            Assert.IsTrue(h.Combat.Kegs.Any(k => k.View == first), "still afloat at 44 s");
+            h.Tick(Mathf.FloorToInt((life - 1f) * 60f) - 2);
+            Assert.IsTrue(h.Combat.Kegs.Any(k => k.View == first), "still afloat a second before its lifetime");
             h.Tick(70);
-            Assert.IsFalse(h.Combat.Kegs.Any(k => k.View == first), "gone after 45 s");
+            Assert.IsFalse(h.Combat.Kegs.Any(k => k.View == first), "gone after its lifetime");
             CollectionAssert.Contains(sunk, first, "its view sinks (not a blast)");
             Assert.AreEqual(0, h.Enemies.Damage.Count, "sinking deals no damage");
 
-            using var v3 = new Harness(true, "powder_kegs");
+            using var v3 = new Harness(c => c.All<WeaponConfig>().First(w => w.weaponId == "powder_kegs").mine.lifeSeconds = 0f, "powder_kegs");
             v3.Ship.Forward = Vector3.forward;
             v3.Tick(1);
             v3.Slot("powder_kegs").CooldownTimer = 1e9f;
             v3.Tick(120 * 60);
-            Assert.AreEqual(1, v3.Combat.Kegs.Count, "V3: an unblown keg stays");
+            Assert.AreEqual(1, v3.Combat.Kegs.Count, "lifetime 0 (V3): an unblown keg stays");
         }
 
         sealed class SinkRecorder : IWeaponEffects
@@ -362,7 +357,8 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void Mortar_Impact_MakesV3sEffectDraws()
         {
-            using var h = new Harness(true, "mortar");
+            // V5 M8z (7 Oct, I8z.5): V3's draws by their config switch (was the v3-parity preset).
+            using var h = new Harness(c => c.All<WeaponConfig>().First(x => x.weaponId == "mortar").predictedArea.v3ImpactEffectDraws = true, "mortar");
             h.Enemies.Add(new Vector3(0f, 0f, 10f));
             h.Tick(1);
             Assert.AreEqual(1, h.Combat.Strikes.Count);
@@ -425,7 +421,8 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void LightningSalvo_StrikesForOneDamage_AsV3Did()
         {
-            using var h = new Harness(true, "lightning_mast");
+            // V5 M8z (7 Oct, I8z.5): V3's salvo by its config switches (was the v3-parity preset).
+            using var h = new Harness(c => { var r = c.All<WeaponRulesConfig>().First(); r.salvoUsesLightningWeapon = false; r.salvoLevelFactor = 0f; }, "lightning_mast");
             h.Enemies.Add(new Vector3(0f, 0f, 5f));
             h.Manager.FireLightningSalvo();
             Assert.AreEqual(1, h.Enemies.Damage.Count, "the fallback strike, not the lightning weapon (register R-88)");
@@ -434,9 +431,9 @@ namespace RoguePirates.V4.Tests
 
         // ---- Evolutions (data on the behaviors) ------------------------------------------------------------------
 
-        static Harness Evolved(string weaponId, string evolutionId, bool v3Parity = false)
+        static Harness Evolved(string weaponId, string evolutionId, System.Action<ConfigSetRuntime> configure = null)
         {
-            var h = new Harness(v3Parity, weaponId);
+            var h = new Harness(configure, weaponId);
             h.Loadout.Entries[0].Evolution = evolutionId;
             h.Manager.SyncLoadout();
             Assert.IsNotNull(h.Slot(weaponId).Evolution, evolutionId + " resolved from config");
@@ -446,7 +443,8 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void Stormshot_FiresArcLanes_WithABurstFromTheFirstHit()
         {
-            using var h = Evolved("deck_cannons", "stormshot_cannon", v3Parity: true);
+            // V5 M8z (7 Oct, I8z.5): V3's 360° lane by its config value (was the v3-parity preset).
+            using var h = Evolved("deck_cannons", "stormshot_cannon", c => c.All<WeaponEvolutionConfig>().First(e => e.evolutionId == "stormshot_cannon").laneBurst.laneArcDegrees = 0f);
             for (var i = 0; i < 4; i++) h.Enemies.Add(new Vector3(-3f + 2f * i, 0f, 8f + i));
             h.Manager.Tick(1f / 60f);
             Assert.AreEqual(4, h.Enemies.Damage.Count(d => d.weapon == "deck_cannons"), "the lane hits every enemy in its arc and range (R-18: arc 360)");
@@ -506,15 +504,16 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void HellfireNozzle_LeavesPatchesOnTheWaterWhileStreaming_NotUnderTheParityPreset()
+        public void HellfireNozzle_LeavesPatchesOnTheWaterWhileStreaming_AndNotWithTheSwitchOff()
         {
-            foreach (var parity in new[] { false, true })
+            foreach (var off in new[] { false, true })
             {
-                using var h = Evolved("flamethrower", "hellfire_nozzle", parity);
+                // V5 M8z (7 Oct, I8z.5): V3's behaviour by its config switch (was the v3-parity preset).
+                using var h = Evolved("flamethrower", "hellfire_nozzle", off ? c => c.All<WeaponEvolutionConfig>().First(e => e.evolutionId == "hellfire_nozzle").wideCone.patchesAlongStream = false : (System.Action<ConfigSetRuntime>)null);
                 h.Enemies.Add(Vector3.forward * 4f, 1e9f); // starts the stream and never dies (no kill patches)
                 h.Tick(120); // 2 s of streaming
                 var cone = h.Config.All<WeaponEvolutionConfig>().First(e => e.evolutionId == "hellfire_nozzle").wideCone;
-                if (parity) { Assert.IsFalse(cone.patchesAlongStream); Assert.IsEmpty(h.Hooks.FlamePatches, "V3: patches only where the flame kills"); continue; }
+                if (off) { Assert.IsEmpty(h.Hooks.FlamePatches, "V3: patches only where the flame kills"); continue; }
                 Assert.IsTrue(cone.patchesAlongStream, "M8 playtest: on by default");
                 var expected = Mathf.FloorToInt(2f / cone.streamPatchIntervalSeconds);
                 Assert.That(h.Hooks.FlamePatches.Count, Is.InRange(expected - 1, expected + 1), "one patch per interval while the flame streams");
@@ -534,13 +533,13 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(h.Combat.Strikes[0].AreaShell);
         }
 
-        // ---- Fixes approved at the M5 gate (on by default; the v3-parity preset turns them off) ---------------------
+        // ---- Fixes approved at the M5 gate (on by default; each has a config switch) ---------------------------------
 
         [Test]
-        public void ParityPreset_TurnsEveryM5FixOff()
+        public void EveryM5Fix_IsOnByDefault()
         {
+            // V5 M8z (7 Oct, I8z.5): the half that checked the v3-parity preset turning them off was retired with it (D18).
             using var fixedRun = new Harness();
-            using var v3 = new Harness(true);
             WeaponConfig W(Harness h, string id) => h.Config.All<WeaponConfig>().First(c => c.weaponId == id);
             Assert.IsTrue(fixedRun.Config.All<WeaponConfig>().All(c => c.levelDamageFactor), "R-21: the level factor on every weapon");
             Assert.IsTrue(W(fixedRun, "broadside_battery").fan.quantityAddsPellets, "R-22: Broadside takes Quantity");
@@ -551,16 +550,6 @@ namespace RoguePirates.V4.Tests
             var rules = fixedRun.Config.All<WeaponRulesConfig>().First();
             Assert.IsTrue(rules.itemAttackSpeedAppliedOnce && rules.carryCooldownOvershoot && rules.salvoUsesLightningWeapon && rules.salvoLevelFactor == 1f, "R-22, R-88");
             Assert.AreEqual(40f, fixedRun.Config.All<WeaponEvolutionConfig>().First(e => e.evolutionId == "stormshot_cannon").laneBurst.laneArcDegrees, "R-18");
-
-            CollectionAssert.AreEquivalent(new[] { "deck_cannons", "harpoon_gun", "long_nine", "swivel_guns" }, v3.Config.All<WeaponConfig>().Where(c => c.levelDamageFactor && !V5Weapons.Contains(c.weaponId)).Select(c => c.weaponId));
-            Assert.IsFalse(W(v3, "broadside_battery").fan.quantityAddsPellets);
-            Assert.IsFalse(W(v3, "lightning_mast").areaStrike.chain);
-            Assert.IsTrue(W(v3, "swivel_guns").projectile.v3FullCooldownAfterFirstShot);
-            Assert.IsTrue(W(v3, "mortar").predictedArea.v3ImpactEffectDraws);
-            var v3Rules = v3.Config.All<WeaponRulesConfig>().First();
-            Assert.IsFalse(v3Rules.itemAttackSpeedAppliedOnce || v3Rules.carryCooldownOvershoot || v3Rules.salvoUsesLightningWeapon);
-            Assert.AreEqual(0f, v3Rules.salvoLevelFactor);
-            Assert.AreEqual(0f, v3.Config.All<WeaponEvolutionConfig>().First(e => e.evolutionId == "stormshot_cannon").laneBurst.laneArcDegrees);
         }
 
         [Test]
@@ -594,7 +583,7 @@ namespace RoguePirates.V4.Tests
 
             float MortarHit(float explosion)
             {
-                using var h = new Harness(true, "mortar");
+                using var h = new Harness("mortar");
                 h.Mods.ExplosionDamageMultiplier = explosion;
                 h.Mods.CritChance = 0f;
                 h.Enemies.Add(new Vector3(0f, 0f, 10f));
@@ -644,7 +633,8 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void R22_ItemAttackSpeed_AppliesOnce_AndOvershootCarries()
         {
-            using var v3 = new Harness(true, "deck_cannons");
+            // V5 M8z (7 Oct, I8z.5): V3's behaviour by its config switches (was the v3-parity preset).
+            using var v3 = new Harness(c => { var r = c.All<WeaponRulesConfig>().First(); r.itemAttackSpeedAppliedOnce = false; r.carryCooldownOvershoot = false; }, "deck_cannons");
             using var fixedRun = new Harness("deck_cannons");
             foreach (var h in new[] { v3, fixedRun })
             {

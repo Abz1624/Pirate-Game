@@ -34,7 +34,10 @@ namespace RoguePirates.V4.Tests
             using (config)
             {
                 var unlocks = config.Single<UnlockConfig>();
-                foreach (var u in unlocks.weaponUnlocks) Assert.IsNotNull(meta.Entries(StoreCategory.Weapon).FirstOrDefault(e => e.ContentId == u.weaponId), u.weaponId);
+                // V5 M8z (7 Oct, I8z.5): a priced weapon is sold unless it is a starter (every weapon is one for now, D18 P3).
+                foreach (var u in unlocks.weaponUnlocks.Where(u => !unlocks.starterWeaponIds.Contains(u.weaponId)))
+                    Assert.IsNotNull(meta.Entries(StoreCategory.Weapon).FirstOrDefault(e => e.ContentId == u.weaponId), u.weaponId);
+                Assert.AreEqual(meta.All.Count, meta.All.Select(e => e.ContentId).Distinct().Count(), "one store row per thing (no starter sold twice)");
                 foreach (var u in unlocks.logbookUnlocks.Where(u => LocalMetaServices.InAPool(config, u.contentId))) Assert.AreEqual(u.rumCost, meta.Entries(StoreCategory.Logbook).Single(e => e.ContentId == u.contentId).Price, u.contentId);
                 foreach (var u in unlocks.itemUnlocks.Where(u => LocalMetaServices.InAPool(config, u.contentId))) Assert.IsNotNull(meta.Entries(StoreCategory.Item).FirstOrDefault(e => e.ContentId == u.contentId), u.contentId);
                 foreach (var c in config.All<CaptainConfig>().Where(c => c.rumCost > 0))
@@ -116,7 +119,7 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void TheHub_ShowsTheShop_AndBuysThroughIt_WithTouchSizedButtons()
         {
-            var (meta, save, config) = Rig(1000);
+            var (meta, save, config) = Rig(1000000);
             using (config)
             {
                 var canvas = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas));
@@ -124,12 +127,15 @@ namespace RoguePirates.V4.Tests
                 {
                     var voyages = 0;
                     var hub = MenuHubPresenter.Create(canvas.transform, meta, () => voyages++);
-                    hub.ShowShop(StoreCategory.Weapon);
+                    // V5 M8z (7 Oct, I8z.5): the first tab with something to buy (every weapon is a free starter for now, D18 P3).
+                    var category = new[] { StoreCategory.Weapon, StoreCategory.Logbook, StoreCategory.Item, StoreCategory.Captain }
+                        .First(c => meta.Entries(c).Any(e => !meta.Owns(e.ContentId) && string.IsNullOrEmpty(e.Requires)));
+                    hub.ShowShop(category);
                     Assert.AreEqual(MenuHubPresenter.Screen.Shop, hub.Showing);
-                    Assert.AreEqual(meta.Entries(StoreCategory.Weapon).Count, hub.RowCount, "one row per weapon for sale");
+                    Assert.AreEqual(meta.Entries(category).Count, hub.RowCount, "one row per thing for sale");
                     foreach (var b in hub.GetComponentsInChildren<Button>(true))
                         Assert.GreaterOrEqual(b.GetComponent<LayoutElement>().preferredHeight, 72f, b.name);
-                    var id = meta.Entries(StoreCategory.Weapon).First(e => !meta.Owns(e.ContentId)).ContentId;
+                    var id = meta.Entries(category).First(e => !meta.Owns(e.ContentId) && string.IsNullOrEmpty(e.Requires)).ContentId;
                     Assert.AreEqual(PurchaseResult.Bought, hub.Buy(id));
                     StringAssert.StartsWith("Unlocked", hub.LastMessage);
                     var list = (RectTransform)hub.GetComponentInChildren<ScrollRect>().content;

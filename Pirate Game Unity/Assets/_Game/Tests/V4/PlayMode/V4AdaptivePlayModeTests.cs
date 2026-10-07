@@ -64,6 +64,9 @@ namespace RoguePirates.V4.Tests
             yield return WaitForPlaying();
             var game = Object.FindFirstObjectByType<V4Game>();
             Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
+            // V5 M8z (7 Oct, I8z.5): no weapons, so the cap stays full (the playtest's starter weapons one-shot the first
+            // band's dinghies and emptied the cap before it could block, so the lever never applied).
+            game.Build.Progression.DevSetWeapons(System.Array.Empty<string>());
             Assert.IsTrue(game.Context.TryGet<IPressureView>(out var view));
             Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "eliteLever", "false", 1f, out var error), error);
             Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "toughnessLever", "false", 1f, out error), error); // cap HP alone
@@ -90,7 +93,7 @@ namespace RoguePirates.V4.Tests
                     var def = world.Definitions[world.Agents[i].definitionIndex];
                     // × the experiment's flat enemy HP (V5 M3c: an interim 0.85).
                     var expected = RoguePirates.V4.Difficulty.CurveEvaluator.EnemyHp(curve, def.baseHP, RunManager.Instance.ElapsedSeconds / 60f, 1, 0) * experimentHp;
-                    (collect ? capped : uncapped).Add((e.Tag, world.Agents[i].maxHp / expected));
+                    (collect ? capped : uncapped).Add((e.Tag + $" (alive {world.ActiveCount})", world.Agents[i].maxHp / expected));
                 }
             }
             game.Events.TickPublished += OnEvents;
@@ -107,6 +110,7 @@ namespace RoguePirates.V4.Tests
             deadline = Time.realtimeSinceStartup + 10f;
             while (capped.Count == 0 && Time.realtimeSinceStartup < deadline)
             {
+                if (RunManager.Instance.IsPaused) RunManager.Instance.SetPause(PauseReason.None); // no level-up card holds the clock
                 for (var i = 0; i < world.Agents.Length; i++)
                     if (world.Agents[i].active && !world.Agents[i].isBoss) { world.ApplyDamage(i, world.Agents[i].maxHp + 1000f, false, weaponId: "deck_cannons"); break; }
                 yield return null;
@@ -115,7 +119,7 @@ namespace RoguePirates.V4.Tests
             game.Events.TickPublished -= OnEvents;
             Assert.Greater(uncapped.Count, 0);
             foreach (var (id, ratio) in uncapped) Assert.AreEqual(1f, ratio, 0.03f, $"{id}: ordinary HP at Pressure 1");
-            Assert.Greater(capped.Count, 0, "an ambient spawn filled the freed slot");
+            Assert.Greater(capped.Count, 0, $"an ambient spawn filled the freed slot (alive {world.ActiveCount}, t {RunManager.Instance.ElapsedSeconds:0.0}, paused {RunManager.Instance.IsPaused}, state {RunManager.Instance.State})");
             foreach (var (id, ratio) in capped) Assert.AreEqual(1.2f, ratio, 0.03f, $"{id}: cap HP ×1.2 at Pressure 1.35");
         }
 
@@ -130,15 +134,19 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(game.Context.TryGet<ISpawnController>(out var spawn));
             Assert.IsTrue(game.Context.TryGet<IPressureView>(out var view));
             Assert.AreEqual(RoguePirates.V4.Config.DirectorMode.Adaptive, view.Mode, "Adaptive is the shipping default");
+            // V5 M8z (7 Oct, I8z.5): the playtest switched the count and elite levers off in the data; the mechanism stays.
+            Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "threatRateLever", "true", 1f, out var error), error);
+            Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "eliteLever", "true", 1f, out error), error);
+            var director = game.Config.Single<RoguePirates.V4.Config.DirectorConfig>();
 
             // Threat rate: forced Pressure moves the ambient rate inside its band.
             view.ForcedPressure = 1f;
             var baseRate = spawn.EffectiveRateMultiplier;
             view.ForcedPressure = 1.35f;
-            Assert.AreEqual(baseRate * 1.75f, spawn.EffectiveRateMultiplier, 1e-4f, "+75 % at the top (playtest round 1)");
+            Assert.AreEqual(baseRate * director.threatRateMax, spawn.EffectiveRateMultiplier, 1e-4f, "the band's top (playtest round 1: +75 %)");
             view.ForcedPressure = 0.85f;
-            Assert.AreEqual(baseRate * 0.85f, spawn.EffectiveRateMultiplier, 1e-4f, "−15 % at the bottom");
-            Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "mode", "Observe", 1f, out var error), error);
+            Assert.AreEqual(baseRate * director.threatRateMin, spawn.EffectiveRateMultiplier, 1e-4f, "the band's bottom (−15 %)");
+            Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "mode", "Observe", 1f, out error), error);
             view.ForcedPressure = 1.35f;
             Assert.AreEqual(baseRate, spawn.EffectiveRateMultiplier, 1e-6f, "Observe: no effect");
             Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "mode", "Adaptive", 1f, out error), error);

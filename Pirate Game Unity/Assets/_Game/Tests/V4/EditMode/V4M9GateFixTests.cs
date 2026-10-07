@@ -13,25 +13,34 @@ namespace RoguePirates.V4.Tests
 {
     /// <summary>
     /// M9 gate (28 Sep): the fixes approved at the gate — R-31, R-40, R-43, R-49, R-84/R-102 — each on by default and off
-    /// under the v3-parity preset. Targeted module tests (no runs).
+    /// with its config switch. Targeted module tests (no runs).
     /// </summary>
     [Category("V4")]
     public sealed class V4M9GateFixTests
     {
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
 
+        static readonly string[] R40Items = { "black_powder_keg", "powder_fuse", "sea_witchs_eye", "leviathan_tooth", "stormglass", "cursed_compass" };
+
         static ConfigSetRuntime Default() => new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
 
-        static ConfigSetRuntime Parity()
+        /// <summary>
+        /// The defaults with the R-31, R-40 and R-43 switches off (V3's behaviour). V5 M8z (7 Oct, I8z.5): was the v3-parity
+        /// preset, retired with D18; the switches it set stay in the configs.
+        /// </summary>
+        static ConfigSetRuntime FixesOff()
         {
             var runtime = Default();
-            var errors = new List<string>();
-            var preset = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
-            Assert.IsTrue(PresetCodec.Apply(runtime, PresetCodec.FromJson(preset), 0f, errors), string.Join("; ", errors));
+            runtime.Single<ProgressionConfig>().evolutionOffersWhenMaxed = false;
+            var pw = runtime.Single<PowerupConfig>();
+            pw.powderRushIsDamageInBattleSignalSlot = true;
+            pw.fullSailOwnSlot = false;
+            foreach (var item in runtime.All<ItemConfig>().Where(i => R40Items.Contains(i.itemId)))
+                foreach (var effect in item.effects) effect.active = false;
             return runtime;
         }
 
-        static ConfigSetRuntime Set(bool parity) => parity ? Parity() : Default();
+        static ConfigSetRuntime Set(bool parity) => parity ? FixesOff() : Default();
 
         sealed class Stats : IStatModifierSink, IStatReader
         {
@@ -194,8 +203,8 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(RunState.BossFight, StateAfterALevelUpInTheBossFight(true));
             Assert.AreEqual(RunState.Playing, StateAfterALevelUpInTheBossFight(false), "V3: always Playing");
             Assert.AreEqual(RunState.Playing, StateAfterALevelUpInTheBossFight(true, RunState.Playing), "the boss died during the pause: the fight is over");
-            using var parity = Parity();
-            Assert.IsFalse(parity.Single<StageContentConfig>().bossFightSurvivesLevelUp, "the v3-parity preset turns it off");
+            using var set = Default();
+            Assert.IsTrue(set.Single<StageContentConfig>().bossFightSurvivesLevelUp, "on by default");
         }
 
         // ---- R-40: items ---------------------------------------------------------------------------------------------
@@ -321,9 +330,7 @@ namespace RoguePirates.V4.Tests
             var v3 = Captain(set, "rook");
             v3.HasWeaponTarget = () => false; // no HoldWithoutTarget: V3 fires whatever is in range
             Assert.IsTrue(v3.TryActivate(), "V3 behaviour: All Guns! fires with nothing in range");
-
-            using var parity = Parity();
-            Assert.IsFalse(parity.Single<ExperimentConfig>().captainActiveHoldsWithoutTarget, "the v3-parity preset turns it off");
+            Assert.IsTrue(set.Single<ExperimentConfig>().captainActiveHoldsWithoutTarget, "on by default");
         }
 
         [Test]
@@ -384,7 +391,7 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void R49_HanksArmor_AndEmberAndRoxiesMultipliers_ApplyOnlyWithTheFix()
+        public void R49_HanksArmor_AndEmberAndRoxiesMultipliers_Apply()
         {
             using (var set = Default())
             {
@@ -398,15 +405,7 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(set.Single<ExperimentConfig>().captainActiveOnGamepadSouth, "playtest round 2: the gamepad active stays on South for now (no gamepad to test the RB rebind)");
                 Assert.AreEqual(5000, set.All<CaptainConfig>().Single(c => c.captainKey == "richie").unlockLifetimeGold, "Richie unlocks with 5,000 lifetime gold");
             }
-            using (var set = Parity())
-            {
-                Assert.AreEqual(1f, Captain(set, "brine").IncomingDamageMultiplier, "V3: armor never applied");
-                Assert.AreEqual(1f, Captain(set, "ember").PassiveBurnMultiplier);
-                Assert.AreEqual(1f, Captain(set, "roxie").LightningDamageMultiplier);
-                Assert.IsFalse(set.All<CaptainConfig>().Single(c => c.captainKey == "richie").active.pickupRadiusApplied);
-                Assert.IsTrue(set.Single<ExperimentConfig>().captainActiveOnGamepadSouth);
-                Assert.AreEqual(0f, set.Single<ExperimentConfig>().nearMissMargin);
-            }
+            // V5 M8z (7 Oct, I8z.5): the half that checked the v3-parity preset turning these off was retired with it (D18).
         }
     }
 }

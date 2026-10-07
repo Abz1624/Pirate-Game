@@ -478,9 +478,13 @@ namespace RoguePirates.V4.Tests
         [Test]
         public void ChestPrices_FollowV3sSequence()
         {
-            // V5 M3 retuned the default prices; the v3-parity preset keeps V3's.
-            using var runtime = V4DifficultyM10Tests.Parity();
+            // V5 M3 retuned the default prices; the formula is checked at V3's values, set here (V5 M8z, 7 Oct, I8z.5: was
+            // the v3-parity preset, retired with D18).
+            using var runtime = V4DifficultyM10Tests.Default();
             var stage = runtime.Single<StageContentConfig>();
+            stage.chestBasePrice = 20;
+            stage.chestPriceIncrementBase = 25;
+            stage.chestPriceGrowth = 1.22f;
             CollectionAssert.AreEqual(new[] { 20, 31, 38, 46, 56 }, Enumerable.Range(0, 5).Select(n => ChestEconomy.ChestPrice(stage, n)).ToArray(), "V3's price sequence");
         }
 
@@ -790,21 +794,25 @@ namespace RoguePirates.V4.Tests
             // V3's Saltwind stage profile values.
             Assert.AreEqual(12, stage.salvageChestCount);
             Assert.AreEqual(20, stage.chestBasePrice);
-            // V5 M3 retuned the chest price ladder (V3's 25 × 1.22^n is in the v3-parity preset, tested by ChestPrices_FollowV3sSequence).
+            // V5 M3 retuned the chest price ladder (V3's 25 × 1.22^n formula is tested by ChestPrices_FollowV3sSequence).
             Assert.AreEqual(1.35f, stage.chestPriceGrowth);
             Assert.AreEqual(45, stage.chestPriceIncrementBase);
             Assert.IsTrue(stage.disableGoldTriggeredChestSpawn);
             Assert.AreEqual(8f, stage.signalBuoyChargeSeconds);
             Assert.AreEqual(20, stage.powderCacheBonusGold);
-            Assert.AreEqual(300f, stage.beaconDirectionHintSeconds);
-            Assert.AreEqual(420f, stage.beaconExactMarkerSeconds);
+            // V5 M8z (7 Oct, I8z.5): the Beacon's hint times follow the 15-minute voyage (V3: 5:00 and 7:00); the rule is
+            // the hint, then the exact marker, both before the stage deadline.
+            var deadline = set.configs.OfType<WaveTimelineConfig>().Single().stageDeadlineSeconds;
+            Assert.Greater(stage.beaconDirectionHintSeconds, 0f);
+            Assert.Less(stage.beaconDirectionHintSeconds, stage.beaconExactMarkerSeconds, "the direction hint before the exact marker");
+            Assert.LessOrEqual(stage.beaconExactMarkerSeconds, deadline, "the Beacon is marked before overtime");
             Assert.AreEqual(0, stage.explosiveBarrelCount, "adopted decision: no barrels (V3 had 2)");
             Assert.IsNotNull(stage.bossSpawner);
             Assert.IsNotNull(stage.powderCacheSpawner);
             Assert.IsTrue(stage.chestPlanUsesLoadout && stage.beaconExactMarkerAfterHint && stage.beaconFoundByProximityAfterHints && stage.forgetChestSkipWhenLeaving
                 && stage.beaconRetryAfterFailedSummon && stage.powderCachePaysWhenCleared && stage.promptReleasesUsedLandmark && stage.bossFightSurvivesLevelUp,
-                "fixes approved at the M7 playtest (R-47, R-93, R-94, R-96, R-97, R-101) are on; the v3-parity preset turns them off");
-            Assert.IsTrue(stage.magneticTideOpensBarrels, "R-103 fix (M8 playtest) is on; the v3-parity preset turns it off");
+                "fixes approved at the M7 playtest (R-47, R-93, R-94, R-96, R-97, R-101) are on");
+            Assert.IsTrue(stage.magneticTideOpensBarrels, "R-103 fix (M8 playtest) is on");
             Assert.IsNotNull(set.configs.OfType<BossConfig>().SingleOrDefault(), "boss config in the set");
         }
     }

@@ -87,27 +87,24 @@ namespace RoguePirates.V4.Tests
         }
 
         [UnityTest]
-        public IEnumerator AreaDenialRelease_RunsInTheRun_AndNotUnderTheParityPreset()
+        public IEnumerator AreaDenialRelease_RunsInTheRun()
         {
-            foreach (var parity in new[] { false, true })
+            // V5 M8z (7 Oct, I8z.5): the v3-parity half was retired with the preset (D18); the release's switch-off is the
+            // EditMode AreaDenialSlots test.
+            yield return StartRun();
+            Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
+            var budget = Object.FindFirstObjectByType<V4Game>().Shell.Enemies.Services.Budget;
+            while (budget.TryReserveAreaDenial(0)) { } // fill it (the Kraken casts' cap)
+            var full = budget.ActiveAreaDenial;
+            var t0 = RunManager.Instance.ElapsedSeconds;
+            var deadline = Time.realtimeSinceStartup + 8f;
+            while (RunManager.Instance.ElapsedSeconds < t0 + 2.3f && Time.realtimeSinceStartup < deadline)
             {
-                if (parity)
-                    RunRequest.RequestPreset(System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json")));
-                yield return StartRun();
-                Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
-                var budget = Object.FindFirstObjectByType<V4Game>().Shell.Enemies.Services.Budget;
-                while (budget.TryReserveAreaDenial(0)) { } // fill it (two Kraken casts)
-                var t0 = RunManager.Instance.ElapsedSeconds;
-                var deadline = Time.realtimeSinceStartup + 8f;
-                while (RunManager.Instance.ElapsedSeconds < t0 + 2.3f && Time.realtimeSinceStartup < deadline)
-                {
-                    if (RunManager.Instance.IsPaused) RunManager.Instance.SetPause(PauseReason.None); // no level-up card holds the clock
-                    yield return null;
-                }
-                Assert.GreaterOrEqual(RunManager.Instance.ElapsedSeconds, t0 + 2.3f);
-                if (parity) Assert.AreEqual(2, budget.ActiveAreaDenial, "v3-parity: never released (R-06 off)");
-                else Assert.Less(budget.ActiveAreaDenial, 2, "R-06: the shell frees each cast 2 s later on the run clock");
+                if (RunManager.Instance.IsPaused) RunManager.Instance.SetPause(PauseReason.None); // no level-up card holds the clock
+                yield return null;
             }
+            Assert.GreaterOrEqual(RunManager.Instance.ElapsedSeconds, t0 + 2.3f);
+            Assert.Less(budget.ActiveAreaDenial, full, "R-06: the shell frees each cast 2 s later on the run clock");
         }
 
         static IEnumerator StartLab()
@@ -147,44 +144,31 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(Build().Powerups.DevSpawn(RoguePirates.V4.Config.PowerupKind.MagneticTide, position, lifetime), "the tide was placed");
 
         [UnityTest]
-        public IEnumerator R103_MagneticTide_OpensEveryBarrel_AndPays_NotUnderTheParityPreset()
+        public IEnumerator R103_MagneticTide_OpensEveryBarrel_AndPays()
         {
-            foreach (var parity in new[] { false, true })
-            {
-                if (parity)
-                    RunRequest.RequestPreset(System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json")));
-                yield return StartLab(); // no ambient spawns, so no other pickups
-                var ship = Object.FindFirstObjectByType<PlayerShipController>();
-                var pickups = Build().Pickups;
-                var far = ship.Position + new Vector3(30f, 0f, 0f);
-                for (var i = 0; i < 3; i++) pickups.Spawn(PickupType.XpBarrel, 5, far + new Vector3(0f, 0f, i * 3f));
-                for (var i = 0; i < 2; i++) pickups.Spawn(PickupType.GoldBarrel, 7, far + new Vector3(4f, 0f, i * 3f));
-                pickups.Spawn(PickupType.Powerup, 3, far + new Vector3(-4f, 0f, 0f));
-                var levels = Build().Progression;
-                var gold = RunManager.Instance.Gold;
-                var xp = levels.Level * 100000f + levels.CurrentXp;
-                ship.Damage.SetPlaytestInvulnerable(false); // the lab ship is invulnerable: make room for the health barrel
-                ship.Damage.TakeDamage(20f, ship.Position, false);
-                ship.Damage.SetPlaytestInvulnerable(true);
-                var hull = ship.Damage.CurrentHP;
-                Assert.Less(hull, ship.Damage.MaxHP, "room to heal");
-                DropMagneticTideAt(ship.Position);
-                var deadline = Time.realtimeSinceStartup + 8f;
-                while (Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
-                if (parity)
-                {
-                    Assert.AreEqual(0, CountBarrels(PickupType.XpBarrel) + CountBarrels(PickupType.GoldBarrel), "V3: XP and gold barrels are pulled and vanish");
-                    Assert.AreEqual(1, CountBarrels(PickupType.Powerup), "V3: health barrels are not pulled");
-                    Assert.AreEqual(gold, RunManager.Instance.Gold, "V3: the pulled barrels pay nothing");
-                }
-                else
-                {
-                    Assert.AreEqual(0, CountBarrels(PickupType.XpBarrel) + CountBarrels(PickupType.GoldBarrel) + CountBarrels(PickupType.Powerup), "every barrel opened");
-                    Assert.Greater(RunManager.Instance.Gold, gold, "gold paid");
-                    Assert.Greater(levels.Level * 100000f + levels.CurrentXp, xp, "XP paid");
-                    Assert.Greater(ship.Damage.CurrentHP, hull, "health paid");
-                }
-            }
+            // V5 M8z (7 Oct, I8z.5): the v3-parity half was retired with the preset (D18).
+            yield return StartLab(); // no ambient spawns, so no other pickups
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            var pickups = Build().Pickups;
+            var far = ship.Position + new Vector3(30f, 0f, 0f);
+            for (var i = 0; i < 3; i++) pickups.Spawn(PickupType.XpBarrel, 5, far + new Vector3(0f, 0f, i * 3f));
+            for (var i = 0; i < 2; i++) pickups.Spawn(PickupType.GoldBarrel, 7, far + new Vector3(4f, 0f, i * 3f));
+            pickups.Spawn(PickupType.Powerup, 3, far + new Vector3(-4f, 0f, 0f));
+            var levels = Build().Progression;
+            var gold = RunManager.Instance.Gold;
+            var xp = levels.Level * 100000f + levels.CurrentXp;
+            ship.Damage.SetPlaytestInvulnerable(false); // the lab ship is invulnerable: make room for the health barrel
+            ship.Damage.TakeDamage(20f, ship.Position, false);
+            ship.Damage.SetPlaytestInvulnerable(true);
+            var hull = ship.Damage.CurrentHP;
+            Assert.Less(hull, ship.Damage.MaxHP, "room to heal");
+            DropMagneticTideAt(ship.Position);
+            var deadline = Time.realtimeSinceStartup + 8f;
+            while (Time.realtimeSinceStartup < deadline) { KeepRunning(); yield return null; }
+            Assert.AreEqual(0, CountBarrels(PickupType.XpBarrel) + CountBarrels(PickupType.GoldBarrel) + CountBarrels(PickupType.Powerup), "every barrel opened");
+            Assert.Greater(RunManager.Instance.Gold, gold, "gold paid");
+            Assert.Greater(levels.Level * 100000f + levels.CurrentXp, xp, "XP paid");
+            Assert.Greater(ship.Damage.CurrentHP, hull, "health paid");
         }
 
         [UnityTest]
@@ -330,21 +314,38 @@ namespace RoguePirates.V4.Tests
         public IEnumerator TelemetrySlot_SamplesTheV4EnemyWorld()
         {
             yield return StartRun();
-            Object.FindFirstObjectByType<PlayerShipController>().Damage.SetPlaytestInvulnerable(true);
+            var ship = Object.FindFirstObjectByType<PlayerShipController>();
+            ship.Damage.SetPlaytestInvulnerable(true);
             var sim = V4TestEnemies.Simulation();
-            var deadline = Time.realtimeSinceStartup + 10f;
+            // V5 M8z (7 Oct, I8z.5): three enemies placed out of weapon range (the playtest's slower first band and its
+            // starter weapons left too few alive in the first seconds to wait for ambient spawns).
+            var sink = Get<IEnemySpawnSink>();
+            var shark = sink.FindDefinition("shark");
+            for (var i = 0; i < 3; i++) sink.Spawn(shark, ship.Position + new Vector3(45f + 4f * i, 0f, 30f), ConfigEnums.EliteAffix.None, 0.01f, 1f, 1f);
+            var deadline = Time.realtimeSinceStartup + 3f;
             while (sim.ActiveCount < 3 && Time.realtimeSinceStartup < deadline) yield return null;
-            Assert.GreaterOrEqual(sim.ActiveCount, 3, "ambient spawns arrived");
+            Assert.GreaterOrEqual(sim.ActiveCount, 3, "the enemies are in the V4 world");
+            yield return null;
             yield return null;
             var peak = Object.FindFirstObjectByType<V4Game>().Telemetry.PeakEnemies; // M14: the V4 telemetry
             Assert.GreaterOrEqual(peak, 3, "the telemetry slot counts the V4 world's enemies (V3's driver would read 0 now)");
         }
 
         [UnityTest]
-        public IEnumerator Switchover_ParityPresetBarrels_RunOnTheV4World()
+        public IEnumerator Switchover_PresetBarrels_RunOnTheV4World()
         {
-            var preset = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "../../plan/v4-verification/presets/v3-parity.json"));
-            RunRequest.RequestPreset(preset);
+            // V5 M8z (7 Oct, I8z.5): a preset of its own places V3's two barrels (was the v3-parity preset, retired with D18).
+            var set = Resources.FindObjectsOfTypeAll<RoguePirates.V4.Config.ConfigSet>().FirstOrDefault(s => s.setId == "saltwind-default");
+            if (set == null)
+            {
+                yield return StartRun();
+                set = Resources.FindObjectsOfTypeAll<RoguePirates.V4.Config.ConfigSet>().First(s => s.setId == "saltwind-default");
+            }
+            using (var runtime = new RoguePirates.V4.Config.ConfigSetRuntime(set))
+            {
+                Assert.IsTrue(runtime.TryApplyEdit("stage.saltwind", "explosiveBarrelCount", "2", 0f, out var error), error);
+                RunRequest.RequestPreset(RoguePirates.V4.Config.PresetCodec.ToJson(RoguePirates.V4.Config.PresetCodec.Capture(runtime, "barrels", runtime.Hash)));
+            }
             yield return StartRun();
             Assert.IsTrue(Object.FindFirstObjectByType<V4Game>().Frame.Has(FrameStep.Barrels), "the V4 barrels tick in the frame");
             Assert.AreEqual(2, Object.FindFirstObjectByType<V4Game>().Shell.Enemies.Barrels.Count);

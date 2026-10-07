@@ -117,18 +117,18 @@ namespace RoguePirates.V4.Tests
                 var db = runtime.Build(LoadedDatabase());
                 foreach (var d in db.enemies.Where(e => e != null))
                     Assert.IsNotNull(d.visualPrefab, d.id + " has a model");
-                var proxies = new (string id, string model, float scale)[]
+                // V5 M8z (7 Oct, I8z.5): the playtest resized the ships on purpose; the sizes are the config's, so only the
+                // proxy models are pinned and every size must be drawable.
+                var proxies = new (string id, string model)[]
                 {
-                    ("cutthroat_skiff", "SmuggleBoat", 0.92f), ("deckhand_dinghy", "SmuggleBoat", 0.82f), ("gunner_cog", "CannonboatNavy", 1f), // V5 M3d tells it apart by tint and size
-                    ("bomb_boat", "FireBoat", 1f), ("rammer_raft", "RamShip", 1f), ("boarding_barge", "RamShip", 1.12f),
-                    ("drowned_pursuer", "SmuggleBoat", 1.05f), ("drowned_harrier", "CannonboatNavy", 0.95f),
+                    ("cutthroat_skiff", "SmuggleBoat"), ("deckhand_dinghy", "SmuggleBoat"), ("gunner_cog", "CannonboatNavy"), // V5 M3d tells it apart by tint and size
+                    ("bomb_boat", "FireBoat"), ("rammer_raft", "RamShip"), ("boarding_barge", "RamShip"),
+                    ("drowned_pursuer", "SmuggleBoat"), ("drowned_harrier", "CannonboatNavy"),
                 };
-                foreach (var (id, model, scale) in proxies)
-                {
-                    var d = db.GetEnemy(id);
-                    Assert.AreEqual(model, d.visualPrefab.name, id);
-                    Assert.AreEqual(scale, d.visualScale, 1e-5f, id);
-                }
+                foreach (var (id, model) in proxies)
+                    Assert.AreEqual(model, db.GetEnemy(id).visualPrefab.name, id);
+                foreach (var d in db.enemies.Where(e => e != null))
+                    Assert.Greater(d.visualScale, 0f, d.id + " has a drawable size");
             }
         }
 

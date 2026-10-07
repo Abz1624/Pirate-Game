@@ -309,8 +309,11 @@ namespace RoguePirates.V4.Tests
                 Assert.IsNull(view.GetComponentInChildren<Collider>(true), "no island collider on a new model, not even for a frame");
                 Assert.IsNull(view.GetComponentInChildren<Rigidbody>(true));
                 Assert.AreEqual(new Vector3(4f, 0f, 2f), view.position);
-                var bar = presenter.AttachHealthBar(modelled, view, false);
-                Assert.IsNotNull(bar, "the health bar comes from its pool");
+                // V5 M8z (7 Oct, I8z.5): bars only on elites, minibosses and the boss (playtest, 4 Oct).
+                var ordinary = !modelled.isBoss && !modelled.isMiniboss && !modelled.isElite;
+                if (ordinary) Assert.IsNull(presenter.AttachHealthBar(modelled, view, false), "an ordinary enemy has no bar");
+                var bar = presenter.AttachHealthBar(modelled, view, true);
+                Assert.IsNotNull(bar, "an elite's health bar comes from its pool");
                 presenter.SetHealthFill(bar, 0.4f);
                 Assert.AreEqual(1, presenter.LiveCount);
                 presenter.Release(modelled, view, bar);
