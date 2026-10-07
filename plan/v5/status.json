@@ -415,13 +415,17 @@
    "when": "8 Oct",
    "commit": "",
    "what": "Plan rev 12 reviewed: no blockers. Wording fixed (treasury text now D19 option B, match server on Railway in the 1v1/Hunt checks, no-go holds M21-M23). M9a: the .NET 10 server upgrade waits for the .NET 10 SDK on your machine; the simulator refit is running."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "<strong>Your answers (D24)</strong>: attacking no longer ends your own shield; while run checks are in shadow mode a flagged voyage still pays out, with the flag logged. .NET 10 SDK installed; the M9a server upgrade resumes."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Install the .NET 10 SDK</strong> (<code>winget install Microsoft.DotNet.SDK.10</code>) so the M9a server upgrade can continue; Docker Desktop optional.",
    "<strong>Railway spend</strong>: a $15 hard limit and a $10 alert (workspace Settings &gt; Usage; covers the live API and Postgres too).",
-   "<strong>Answer</strong>: while run checks are in shadow mode, does a flagged voyage's Rum settle, or stay pending until you decide on enforcement? (Needed before M10.)"
+   "<strong>Keep recording voyages</strong> when you play."
   ],
   "open": [
    "PvP draft on phones: tapping a card to read it also picks it (later)."

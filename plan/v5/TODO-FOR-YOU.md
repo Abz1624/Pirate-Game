@@ -2,11 +2,11 @@
 
 # Now (8 Oct): M8z closed, M9a next
 
-- [ ] Install the .NET 10 SDK (`winget install Microsoft.DotNet.SDK.10`, then `dotnet --list-sdks` shows 10.0.x) so the
+- [x] Install the .NET 10 SDK (installed by the agent, 8 Oct) (`winget install Microsoft.DotNet.SDK.10`, then `dotnet --list-sdks` shows 10.0.x) so the
       M9a server upgrade can continue; Docker Desktop is optional.
 - [ ] Railway spend: a $15 hard limit and a $10 alert (workspace Settings > Usage; D23). The limit covers the whole
       workspace, including the live API and Postgres.
-- [ ] Answer: while run checks are in shadow mode, does a flagged voyage's Rum settle, or stay pending until you decide
+- [x] Answer (8 Oct, D24: they pay out, flagged and logged): while run checks are in shadow mode, does a flagged voyage's Rum settle, or stay pending until you decide
       on enforcement? (Needed before M10.)
 - [x] Answer questions P1-P10 (answered 6-7 Oct: D18, D19, D20).
 - [ ] Answer the open questions in `plan/v5/OPEN-QUESTIONS.md` (17, each with a suggestion).

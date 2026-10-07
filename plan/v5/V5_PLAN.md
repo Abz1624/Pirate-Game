@@ -1,6 +1,6 @@
 # Rogue Pirates — V5 Plan (Live Game)
 
-Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 12 (8 Oct): M9 split into M9a/M9b/M9c; stages reordered (1v1 after M13b); run checks start in shadow mode; $15 workspace limit (D23). rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
+Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 13 (8 Oct): attacking keeps your shield; flagged runs pay out in shadow mode (D24). rev 12 (8 Oct): M9 split into M9a/M9b/M9c; stages reordered (1v1 after M13b); run checks start in shadow mode; $15 workspace limit (D23). rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
 (section 9)**. Explanations of every answer: `plan/v5/ANSWERS.md`.
 
 **Demo interlude (30 Sep, merged at `27a238bc`, V5 resumed at `86724e6b`).** Work paused after M3 for a demo on
@@ -122,6 +122,7 @@ Proposed decisions (P) take effect when the owner approves the plan. Owner-confi
 | D21 | **Owner answers of 7 Oct (open questions)**: loot-barrel sparkles removed (Q16); the Knockback card removed from weapons it does nothing for (Q17); **Ramming Prow removed** and replaced by an auto-attacking weapon that slows enemies, especially the back of the pack, as a strategic tool (Q19, plus the owner's slow-weapon idea; the plan and the art guide follow); the new weapons' rank 4/8/12 milestones stay (Q20); the Harpoon's tar becomes a real slow (Q23); the Reef Crab takes slows and knockback like the boss (half slow, no knockback) (Q24); slows don't shorten charge dashes (Q25); the flame's look is replaced by the owner later (Q26); one Luck scale for cards and chests (Q27); Admiral works on elites and the boss (Q32); new enemy types later, models by the art team (Q5); Collection from Profile (Q37); New badges and sales when locks return (Q38); the same gameplay caps on every device (Q33); the 1024 texture cap on every web build, desktop too (Q34); health bars sort every 8 frames (Q42); phone texture checks at the next phone build (Q40, Q44). Q28: Battle Signal and Full Sail join Powder Rush, Magnetic Tide and Dead Calm in the drop pool (Tailwind and Salvage Chime stay out); the Unity splash logo is off (Unity 6 allows it without Pro); the 1024 texture cap on desktop is fine for now. (C) |
 | D22 | **Owner answers of 8 Oct (M9, N1-N8)**: multi-ship play is pulled into M9 (the multi-ship runtime, M21's I21.1, is built there and the 4-client test uses real ships) (N1); M21 and M22 (no wagers) move forward to right after M13b, so rated 1v1 leaves the relay sooner (N2); .NET 10 and EF Core migrations are M9's first item (N3); implausible leaderboard runs are rejected as soon as M9 ships (no shadow period) (N4, superseded by D23); direct secure WebSockets to the Railway match server, no Unity Relay (N5); a new Elo season when server-authoritative 1v1 arrives (N6); no phone in M9, desktop WebGL is the target (N7); about $1 of extra Railway usage for M9 tests and a $10 hard spend limit on the Railway project (N8, superseded by D23). (C) |
 | D23 | **Owner answers of 8 Oct (plan rev 12, after the rev 11 review)**: (a) **spend**: a $15 hard limit with a $10 email alert on the Railway workspace, set by the owner; the limit covers the whole workspace, including the live API and Postgres (about $6-9/month baseline), so test services are deleted after each test session and usage is checked against the month's baseline before every Railway test (replaces N8's $10 project limit); (b) **run checks start in shadow mode** (reverses N4): every verdict is stored with a reason code, the rule id, the rules version and the client build, the weekly board shows a "checked" flag, and the owner decides later when to enforce; the enforcement safeguards are built now (per-minute rate bounds plus a survival-time bound for overtime, upper bounds on output only, margin = max(config margin, p99.9 of the strongest personality x 1.25), older builds marked `outdated_client`, re-scoring on a rules version change, a 0.1% false-positive budget test); a dispute endpoint is needed before enforcement; (c) **M9 split into M9a, M9b and M9c**, each with its own gate, owner playtest and commit. Stages reordered: Stage C (real-time 1v1: M21, M22) follows M13b. (C) |
+| D24 | **Owner answers of 8 Oct (after plan rev 12)**: (a) **attacking does not end your own shield**; this changes D19(1), the rest of option B stands (vault 60%, a raid takes 25% of the exposed treasury, half on a partial raid, a 4-hour shield after being raided, a small raid entry fee, no daily loss cap, no new-player protection); (b) **while run checks are in shadow mode, a flagged voyage still pays out its RUM**; the flag and its reason are logged for the owner's review, and enforcement stays the owner's decision (D23). (C) |
 
 ---
 
@@ -625,7 +626,8 @@ plausibility, in shadow mode first (D23): verdicts are stored and shown, and the
 - I9a.2 Seeding: every gameplay draw on the run's seeded streams; the seed injectable from outside (server-issued from
   M10); a source-scan test.
 - I9a.3 Plausibility rules v1 in **shadow mode** (D23): every verdict stored with a reason code, the rule id, the rules
-  version and the client build; the weekly board shows a "checked" flag; no run is rejected until the owner enforces.
+  version and the client build; the weekly board shows a "checked" flag; no run is rejected until the owner enforces;
+  a flagged run still pays out (D24).
   Rules exported from config to JSON and read by both the client and the API. Ready for enforcement: rate bounds per
   minute plus a survival-time bound for overtime; upper bounds on output only; margin = max(config margin, p99.9 of the
   refit simulator's strongest personality x 1.25); runs from older builds marked `outdated_client`; stored runs
@@ -699,9 +701,9 @@ accounts.
 - I10.2 Server-issued seeds: every run that earns value starts with a seed and run id from the server (D6).
 - I10.3 Plausibility checker: moves the M9a check into a queued background worker, replacing the placeholder
   `server/RoguePirates.Verifier`; its results settle pending RUM (usually within seconds). Enforcement of the run checks
-  (rejecting instead of flagging) is decided by the owner (D23); until then flagged runs are recorded, not rejected.
+  (rejecting instead of flagging) is decided by the owner (D23); until then flagged runs are recorded and still settle their RUM (D24).
 - T10.x `dotnet test` (idempotency, double settlement, forged totals rejected, pending never spendable, seed mismatch
-  rejected, flagged runs recorded with their reasons, concurrent purchases, worker retries).
+  rejected, flagged runs recorded with their reasons and settled, concurrent purchases, worker retries).
 
 Automated check: a scripted run with a server seed is recorded, uploaded, checked by the worker and settled.
 Owner check: read the phase report (no player-facing change yet).
@@ -876,7 +878,7 @@ treasury and decorations.
   schedule's hash enters raid records. Validation: budget, max alive, the first 20 s quiet.
 - I14.4 Treasury (D19, option B with 4-hour shields; replaces Q23b): a vault holds 60% of the island's RUM and is never
   raidable; the rest is the exposed treasury; a successful raid takes 25% of it (half on a partial raid); a 4-hour
-  shield after being raided; attacking ends your own shield; a small raid entry fee (a RUM sink); no daily loss cap
+  shield after being raided; attacking does not end your own shield (D24); a small raid entry fee (a RUM sink); no daily loss cap
   and no new-player protection.
 - I14.5 Decorations (request 22): placed on decoration sockets and free slots, rotation and scale steps, cosmetic only
   (D14); a Decorations shop tab (RUM; tokens for web3 accounts, marked web3-origin per D4).
