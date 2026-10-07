@@ -40,6 +40,7 @@ MonoBehaviour:
     visualHeightOffset: 0
     placeholderColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
     tint: {r: 1, g: 0.62, b: 0.55, a: 1}
+    typeColor: {r: 1, g: 0.12, b: 0.1, a: 1}
     viewSize: 1
     poolPrewarm: 60
   tags: []

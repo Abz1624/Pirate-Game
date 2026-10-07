@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
-using RoguePirates.V4.DevTools.Balance;
 using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Progression;
 using RoguePirates.V4.Stage;
@@ -17,6 +16,9 @@ namespace RoguePirates.V4.Tests
     /// V5 M3 build balance: evolutions reachable (the card from weapon level 6 with its item since the demo-baseline retune, 8 in M3; rarer cards granting more
     /// levels, the pity rule, the chest's evolution-item chance), weapon parity per role, Logbook and item bands, Captains
     /// within ±10%, the item flow, and the v3-parity preset restoring every M3 value.
+    /// V5 M8z (I8z.7, owner 7 Oct 2026: one simulator): the checks that ran the in-engine simulator and its weapon and build
+    /// models (weapon parity per role, the new weapons' parity, Logbook and item bands, Captains within ±10% and items by
+    /// 10:00, focused builds evolving) were retired with it; the game-rule checks here drive the game's own modules.
     /// </summary>
     [Category("V5")]
     public sealed class V5BuildM3Tests
@@ -100,20 +102,68 @@ namespace RoguePirates.V4.Tests
             Assert.IsTrue(DealsEvolution(parity, parity.Single<ProgressionConfig>().maxWeaponLevel));
         }
 
-        /// <summary>A simulated build: the game's own ProgressionModule, ItemModule and CaptainModule behind small ports.</summary>
-        static SimBuild Build(ConfigSetRuntime rt, out SimContent c)
+        /// <summary>
+        /// The game's own ProgressionModule behind small ports (V5 M8z: was the retired in-engine simulator's SimBuild),
+        /// starting with the first Captain's weapon.
+        /// </summary>
+        sealed class TestBuild : IOfferRandom, IOfferContext, IProgressionRun, IProgressionShip, IOfferPresenter
         {
-            c = new SimContent(rt);
-            return new SimBuild(c, c.Personalities.Find("steady_captain"), new System.Random(1), c.Captains[0]);
+            readonly System.Random _rng = new System.Random(1);
+            readonly PlayerStats _stats = new PlayerStats();
+            readonly ConfigSetRuntime _rt;
+            float _hull;
+            public ProgressionModule Progression { get; }
+
+            public TestBuild(ConfigSetRuntime rt)
+            {
+                _rt = rt;
+                var stats = new StatResolver(() => _stats);
+                Progression = new ProgressionModule(() => rt.Single<ProgressionConfig>(), id => Weapon(rt, id), id => rt.All<LogbookConfig>().FirstOrDefault(l => l.logbookId == id),
+                    Generator(rt), this, this, stats, stats, this, this)
+                {
+                    Presenter = this,
+                    ResumeToBossFight = () => false,
+                };
+                _hull = _stats.MaxHull;
+                var p = rt.Single<ProgressionConfig>();
+                var captain = rt.All<CaptainConfig>().OrderBy(c => c.captainKey, StringComparer.Ordinal).First();
+                Progression.BeginRun(captain.startingWeaponId, p.weaponSlots, p.newWeaponDamageBonus);
+            }
+
+            public int WeaponLevel(string id) => Progression.WeaponLevel(id);
+
+            public float LootFloat() => (float)_rng.NextDouble();
+            public bool IsWeaponOfferable(string weaponId) => true;
+            public bool IsWeaponUnlocked(string weaponId) => true;
+            public bool HasItem(string itemId) => false;
+            public bool IsEvolved(string weaponId) => Progression.EvolutionOf(weaponId) != null;
+            public bool Exists => true;
+            public bool IsRunEnded => false;
+            public RunState State => RunState.Playing;
+            public void SetPause(PauseReason reason) { }
+            public void SetState(RunState state) { }
+            public void EnterPlaying() { }
+            public bool IsAlive => true;
+            public float Hull => _hull;
+            public float MaxHull => _stats.MaxHull;
+            public void Heal(float amount) => _hull = Mathf.Min(MaxHull, _hull + Mathf.Max(0f, amount));
+            public void SyncSpeed() { }
+            public void SyncMaxHull(float healFlat) { _hull = Mathf.Min(_hull, MaxHull); Heal(healFlat); }
+            public bool TryShow(List<Offer> offers, Action<Offer> selected, Action skipped, Action refreshed, int refreshesRemaining) => true;
+            public void Hide() { }
         }
+
+        static WeaponConfig Weapon(ConfigSetRuntime rt, string id) => rt.All<WeaponConfig>().FirstOrDefault(w => w.weaponId == id);
+
+        static TestBuild Build(ConfigSetRuntime rt) => new TestBuild(rt);
 
         [Test]
         public void TakingARareCard_ThroughTheProgressionModule_GrantsItsLevels()
         {
             using var rt = new ConfigSetRuntime(Set);
-            var b = Build(rt, out var c);
+            var b = Build(rt);
             var id = b.Progression.OwnedWeapons[0];
-            var w = c.Weapon(id);
+            var w = Weapon(rt, id);
             var card = Generator(rt).WeaponUpgradeCard(w, b.WeaponLevel(id), 2, new Rng(4));
             b.Progression.Select(card);
             var rare = 1 + rt.Single<ProgressionConfig>().levelsPerRarity[2];
@@ -125,8 +175,8 @@ namespace RoguePirates.V4.Tests
         public void EvolvedAtTheUnlockLevel_TheWeaponLevelsOnTo12_ThroughCards()
         {
             using var rt = new ConfigSetRuntime(Set);
-            var b = Build(rt, out var c);
-            var evo = c.Evolutions.First(e => e.baseWeapon != null);
+            var b = Build(rt);
+            var evo = rt.All<WeaponEvolutionConfig>().First(e => e.baseWeapon != null);
             var id = evo.baseWeapon.weaponId;
             b.Progression.DevSetWeapons(new[] { id });
             var index = b.Progression.Loadout.IndexOf(id);
@@ -134,9 +184,9 @@ namespace RoguePirates.V4.Tests
             b.Progression.DevEvolve(id, evo.evolutionId);
             var g = Generator(rt);
             var rng = new Rng(7);
-            for (var i = 0; i < 12 && b.WeaponLevel(id) < c.Weapon(id).maxLevel; i++)
-                b.Progression.Select(g.WeaponUpgradeCard(c.Weapon(id), b.WeaponLevel(id), 0, rng));
-            Assert.AreEqual(c.Weapon(id).maxLevel, b.WeaponLevel(id), "upgrade cards take the evolved weapon to its max");
+            for (var i = 0; i < 12 && b.WeaponLevel(id) < Weapon(rt, id).maxLevel; i++)
+                b.Progression.Select(g.WeaponUpgradeCard(Weapon(rt, id), b.WeaponLevel(id), 0, rng));
+            Assert.AreEqual(Weapon(rt, id).maxLevel, b.WeaponLevel(id), "upgrade cards take the evolved weapon to its max");
             Assert.AreEqual(evo.evolutionId, b.Progression.EvolutionOf(id), "and it stays evolved");
         }
 
@@ -200,7 +250,7 @@ namespace RoguePirates.V4.Tests
         {
             using var rt = new ConfigSetRuntime(Set);
             rt.Single<ProgressionConfig>().rarityBaseWeights = new[] { 1f, 0.0001f, 0.0001f, 0.0001f, 0.0001f };
-            var b = Build(rt, out _);
+            var b = Build(rt);
             var before = 0;
             b.Progression.GenerateOffers(); // a level-up's deal
             var g = typeof(ProgressionModule).GetField("_offers", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(b.Progression) as OfferGenerator;
@@ -322,127 +372,6 @@ namespace RoguePirates.V4.Tests
         }
 
         // ---- Parity and bands (G3.2, G3.3, G3.4, I3.2) ---------------------------------------------------------------
-
-        [Test]
-        public void EveryWeapon_IsWithin20Percent_OfItsRole_AtLevels1_4_And12()
-        {
-            using var rt = new ConfigSetRuntime(Set);
-            var curves = WeaponModel.Curves(new SimContent(rt), 300);
-            var outside = new List<string>();
-            foreach (var w in curves)
-            foreach (var level in WeaponModel.ParityLevels)
-            {
-                var ratio = WeaponModel.Ratio(curves, w, level);
-                if (Mathf.Abs(ratio - 1f) > 0.2f) outside.Add($"{w.Weapon.weaponId} Lv {level}: ×{ratio:0.00}");
-            }
-            CollectionAssert.IsEmpty(outside);
-        }
-
-        /// <summary>V5 M4: the dearer new weapons, against the roles of the weapons a regular player owns (held fixed).</summary>
-        [Test]
-        public void TheNewWeapons_AreWithin20Percent_OfTheirRole()
-        {
-            using var rt = new ConfigSetRuntime(Set);
-            var owned = new SimContent(rt);
-            var all = new SimContent(rt) { RegularPlayerRum = int.MaxValue };
-            var fixedCurves = WeaponModel.Curves(owned, 300);
-            var newWeapons = all.WeaponsInOrder.Where(w => owned.WeaponsInOrder.All(o => o.weaponId != w.weaponId)).ToList();
-            Assert.GreaterOrEqual(newWeapons.Count, 4, "the M4 weapons are priced above a regular player's ladder");
-            var outside = new List<string>();
-            foreach (var w in newWeapons)
-            {
-                var curve = WeaponModel.CurveFor(all, w, 300);
-                var curves = fixedCurves.Append(curve).ToList();
-                foreach (var level in WeaponModel.ParityLevels)
-                {
-                    var ratio = WeaponModel.Ratio(curves, curve, level);
-                    if (Mathf.Abs(ratio - 1f) > 0.2f) outside.Add($"{w.weaponId} Lv {level}: ×{ratio:0.00}");
-                }
-            }
-            CollectionAssert.IsEmpty(outside);
-        }
-
-        [Test]
-        public void WeaponModel_UsesTheGamesUpgradePath()
-        {
-            using var rt = new ConfigSetRuntime(Set);
-            var c = new SimContent(rt);
-            var w = c.WeaponsInOrder.First(x => x.behavior == ConfigEnums.WeaponBehavior.Projectile);
-            var curve = WeaponModel.CurveFor(c, w, 50);
-            Assert.AreEqual(w.maxLevel, curve.Levels.Count);
-            var slot = new WeaponSlot { Config = w, Level = 1, DamageBonus = c.Progression.newWeaponDamageBonus };
-            var mods = new BuildModelProbe();
-            var expected = w.baseDamage * WeaponStatResolver.LevelMult(slot) * (1f + 0.05f * 0.5f) * WeaponStatResolver.ProjectileQuantity(slot, mods) / WeaponStatResolver.Cooldown(slot, mods, 1f);
-            Assert.AreEqual(expected, curve.At(1).SingleDps, expected * 1e-4f, "level 1 = the fresh weapon with neutral stats");
-            for (var l = 2; l <= w.maxLevel; l++) Assert.GreaterOrEqual(curve.At(l).SingleDps, curve.At(l - 1).SingleDps * 0.999f, $"power never drops (Lv {l})");
-        }
-
-        sealed class BuildModelProbe : IWeaponModifiers
-        {
-            public float AttackSpeed => 1f;
-            public float ProjectileSpeed => 1f;
-            public float Size => 1f;
-            public float Duration => 1f;
-            public float Quantity => 0f;
-            public float CritChance => 0.05f;
-            public float CritDamage => 1.5f;
-            public float EliteDamage => 1f;
-            public float GlobalDamage => 1f;
-            public float CaptainAdditiveDamage => 0f;
-            public float CaptainWeaponMultiplier(string weaponId) => 1f;
-            public float ItemGlobalDamageMultiplier => 1f;
-            public float ItemCritChanceBonus => 0f;
-            public float ItemAttackSpeedMultiplier => 1f;
-            public float FlameRangeMultiplier => 1f;
-            public float BurnDamageMultiplier => 1f;
-            public float PowderKegBlastRadiusMultiplier => 1f;
-            public float ExplosionDamageMultiplier => 1f;
-            public void ExplosionResolved() { }
-            public int ExtraLightningJumps => 0;
-        }
-
-        /// <summary>Pieces the M3 retune leaves out of band on purpose, for the owner (plan/v5/phase-03-builds/PLAN.md).</summary>
-        static readonly Dictionary<string, string> FlaggedPieces = new Dictionary<string, string>
-        {
-            ["extra_hands"] = "volley step (+1 projectile) cannot be fractional",
-            ["broadside_drum"] = "volley step",
-            ["lookouts_glass"] = "crit is weak everywhere (×1.5 crit damage)",
-            ["serrated_scabbard"] = "crit",
-            ["ghost_lantern"] = "crit",
-        };
-
-        [Test]
-        public void LogbooksAndItems_AreInTheirRarityBands_ExceptTheFlaggedOnes()
-        {
-            using var rt = new ConfigSetRuntime(Set);
-            var pieces = BuildModel.Pieces(new SimContent(rt));
-            var outside = pieces.Where(p => !p.InBand && !FlaggedPieces.ContainsKey(p.Id)).Select(p => $"{p.Id} {p.Power:+0.0%} ({p.Band})").ToList();
-            CollectionAssert.IsEmpty(outside);
-            foreach (var id in FlaggedPieces.Keys) Assert.IsFalse(pieces.Single(p => p.Id == id).InBand, id + " is still out of band: drop it from the flagged list");
-        }
-
-        [Test]
-        public void Captains_AreWithin10Percent_AndRunsSeeFourToSixItemsBy10()
-        {
-            using var rt = new ConfigSetRuntime(Set);
-            var c = new SimContent(rt);
-            var r = SimBatch.Run(c, 1200, 1, new[] { c.Personalities.Find("steady_captain") }); // 200 runs per Captain: fewer move a Captain's median by ~0.5 min between seeds
-            var median = SimBatch.Percentile(r.Captains.Select(x => x.endMedian).ToList(), 0.5f);
-            foreach (var cap in r.Captains)
-                Assert.That(cap.endMedian / median, Is.InRange(0.9f, 1.1f), $"{cap.captain}: {cap.endMedian:0.0} min against the median {median:0.0}");
-            Assert.That(r.Personalities[0].ItemsBy10, Is.InRange(4f, 6f), "items by 10:00");
-        }
-
-        [Test]
-        public void FocusedBuilds_ReachAnEvolution_InMostRuns()
-        {
-            using var rt = new ConfigSetRuntime(Set);
-            var c = new SimContent(rt);
-            var r = SimBatch.Run(c, 150, 1, new[] { c.Personalities.Find("build_planner") });
-            var planner = r.Personalities[0];
-            Assert.GreaterOrEqual(planner.EvolutionRate, 0.5f, "a focused build evolves in most runs");
-            Assert.LessOrEqual(planner.EvolutionMinuteMedian, 8f, "by minute 8 (T3.x)");
-        }
 
         [Test]
         public void ParityPreset_RestoresEveryM3Value()

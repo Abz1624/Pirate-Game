@@ -102,6 +102,8 @@ namespace RoguePirates.V4
             var pvp = IsPvp;
             _config = configSet != null ? new ConfigSetRuntime(configSet) : null;
             ApplyRequestedPreset();
+            // V5 M8z (7 Oct): the weapon switch-off list is config (the run's, with its preset).
+            if (_config != null) RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.Register(_config.Single<UnlockConfig>()?.disabledWeaponIds);
             var run = _config?.Single<RunConfig>();
             _clock = run != null ? new RunClock(run.tickRate, run.maxStepsPerFrame) : new RunClock();
             _events = new CombatEvents();
@@ -297,6 +299,7 @@ namespace RoguePirates.V4
                 GoldEarned = () => runState.GrossGoldEarned,
                 GoldSpent = () => runState.GrossGoldSpent,
                 GoldRemaining = () => runState.Gold,
+                Stats = () => RunManager.Instance != null ? RunManager.Instance.Stats : null, // V5 M8z (7 Oct): the level-up cards
             });
             views.Stage = _stage.View;
             _context.Register<Views.IRunViews>(views);
@@ -315,6 +318,9 @@ namespace RoguePirates.V4
         }
 
         Telemetry.SessionRecorder _session;
+        /// <summary>V5 M8z (7 Oct): the voyage's session recorder (null when it records none: PvP, the Module Lab, DemoMode
+        /// off), for the playtest-preset tests.</summary>
+        public Telemetry.SessionRecorder Session => _session;
 
         /// <summary>
         /// Playtest (6 Oct, owner: "let me play a session, then use that data to verify if the simulations are accurate"):

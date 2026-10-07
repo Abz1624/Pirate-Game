@@ -6,8 +6,10 @@
 //
 //   node compare_session.mjs <session.json> [--seeds 200] [--set accuracy=0.5 ...] [--export]
 //
-// --export first runs `python export_data.py` (data.json from the Unity assets); without it the script warns when the
-// assets are newer than data.json. Sessions come from the game (Telemetry/SessionRecorder.cs): plan/playtest/sessions/.
+// data.json is the Unity Editor's export of the game's resolved configs (MonteCarloExport; see check_export.mjs). --export
+// rebuilds it from the YAML fallback (`python export_data.py`) when no Editor is open; without it the script warns when
+// the assets are newer than data.json. Sessions come from the game (Telemetry/SessionRecorder.cs): plan/playtest/sessions/.
+// Levels count from the game's start level (0), as the session does.
 import fs from 'fs';
 import path from 'path';
 import { spawnSync } from 'child_process';
@@ -35,7 +37,7 @@ if (opt.exportData) {
   const r = spawnSync('python', ['export_data.py'], { cwd: here, stdio: 'inherit' });
   if (r.status !== 0) { console.log('export_data.py failed; using the existing data.json.'); }
 } else if (newestAsset(assets) > fs.statSync(dataPath).mtimeMs) {
-  console.log('WARNING: Unity data assets are newer than data.json. Run with --export (or `python export_data.py`) first.');
+  console.log('WARNING: Unity data assets are newer than data.json. Re-export it from the Editor (RoguePirates > V5 > Balance: export the Monte Carlo data), or run with --export (the YAML fallback).');
 }
 const data = JSON.parse(fs.readFileSync(dataPath));
 const session = JSON.parse(fs.readFileSync(opt.file));
@@ -59,18 +61,22 @@ const samples = session.samples || [];
 const sampleAt = t => { let best = null; for (const s of samples) if (s.t <= t + 0.01) best = s; return best; };
 const events = session.events || [];
 const bossAt = H.bossSummoned != null && H.bossSummoned >= 0 ? Math.round(H.bossSummoned) : null;
+// The session's new-weapon picks, in order: the model replays that build (its other cards follow the offer weights).
+const weaponOrder = events.filter(e => e.type === 'pick' && e.kind === 'NewWeapon').map(e => e.id);
+// ...and all its level-up picks (kind and id): the model replays them in order when they are possible.
+const pickPlan = events.filter(e => e.type === 'pick').map(e => ({ kind: e.kind, id: e.id }));
 
 console.log(`\nSession  ${opt.file}`);
 console.log(`  ${H.captain} (${H.startingWeapon}), seed ${H.seed}, ${H.platform}${H.editor ? ' editor' : ''}, balance ${H.balanceVersion || '-'}, config ${String(H.configHash || '').slice(0, 10)}`);
 console.log(`  ended: ${H.endReason} at ${clock(end)}, level ${H.finalLevel}, ${H.finalKills} kills; boss summoned ${clock(H.bossSummoned)}, defeated ${clock(H.bossDefeated)}`);
 if (!data.captains[H.captain]) console.log(`  (captain "${H.captain}" is not in data.json; using ${captain})`);
-console.log(`Model    sim.mjs on data.json, ${opt.seeds} seeds, boss summoned ${bossAt == null ? 'never (the session did not summon it)' : 'at ' + clock(bossAt) + ' (the session\'s Beacon summon)'}`);
+console.log(`Model    sim.mjs on data.json, ${opt.seeds} seeds, replaying the session's ${pickPlan.length} level-up picks (weapons ${weaponOrder.join(', ') || '-'}), boss summoned ${bossAt == null ? 'never (the session did not summon it)' : 'at ' + clock(bossAt) + ' (the session\'s Beacon summon)'}`);
 if (Object.keys(opt.set).length) console.log(`  overrides: ${JSON.stringify(opt.set)}`);
 
 // ---- the model ----
 const batch = (model, n, maxMinutes) => {
   const runs = [];
-  for (let i = 0; i < n; i++) runs.push(simulateRun(data, { captain, startWeapon, seed: (i + 1) * 7919 + 17, bossAt, model: { ...opt.set, ...model, ...(maxMinutes ? { maxMinutes } : {}) } }));
+  for (let i = 0; i < n; i++) runs.push(simulateRun(data, { captain, startWeapon, weaponOrder, pickPlan, seed: (i + 1) * 7919 + 17, bossAt, model: { ...opt.set, ...model, ...(maxMinutes ? { maxMinutes } : {}) } }));
   return runs;
 };
 const full = batch({}, opt.seeds);
@@ -102,7 +108,7 @@ for (const s of samples) for (let l = 2; l <= s.level; l++) if (gameLevelAt[l] =
 console.log('\nFirst level-ups (time reached: game | model median (p10-p90))');
 const lvRows = [];
 for (const l of [2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30]) {
-  const simT = full.map(r => r.levelAt[l - 2]).filter(x => x != null);
+  const simT = full.map(r => r.levelAt[l - 1]).filter(x => x != null);
   if (gameLevelAt[l] == null && simT.length < full.length * 0.5) continue;
   const reached = simT.length / full.length;
   lvRows.push({ l, g: gameLevelAt[l], sim: simT });
@@ -110,22 +116,22 @@ for (const l of [2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30]) {
 }
 
 // ---- focus fights ----
-// The model names a scheduled fight by its timeline phase id and a kill band elite 'elite_' + enemy id (the two can
-// collide: a phase is told apart by its start time).
-const phaseOf = (id, start) => data.timeline.focus.find(x => x.id === id && (start == null || x.t === start));
-const simKind = (id, start) => {
-  if (id === 'barnacle_king' || (data.enemies[id] && data.enemies[id].boss)) return 'boss';
-  const phase = phaseOf(id, start);
+// The model names a scheduled fight by its timeline phase id and a kill band elite 'adaptive:' + enemy id.
+const phaseOf = id => data.timeline.focus.find(x => x.id === id);
+const simKind = id => {
+  if (id.startsWith('adaptive:')) return 'adaptive elite';
+  if (data.enemies[id] && data.enemies[id].boss) return 'boss';
+  const phase = phaseOf(id);
   if (phase) return data.enemies[phase.enemy] && data.enemies[phase.enemy].miniboss ? 'miniboss' : 'elite';
-  return id.startsWith('elite_') ? 'adaptive elite' : 'elite';
+  return 'elite';
 };
-const simEnemy = (id, start) => { const phase = phaseOf(id, start); return phase ? phase.enemy : id.startsWith('elite_') && !data.enemies[id] ? id.slice(6) : id; };
+const simEnemy = id => { if (id.startsWith('adaptive:')) return id.slice(9); const phase = phaseOf(id); return phase ? phase.enemy : id; };
 const gameFights = {}, simFights = {};
 for (const fo of session.focus || []) {
   const kind = fo.kind === 'elite' && fo.adaptive ? 'adaptive elite' : fo.kind;
   (gameFights[kind] ??= []).push({ id: fo.id, spawn: fo.spawn, secs: fo.kill >= 0 ? fo.kill - fo.spawn : null, hp: fo.maxHp, despawn: fo.despawn });
 }
-for (const r of cut) for (const [id, start, secs, hp] of r.focus) (simFights[simKind(id, start)] ??= []).push({ id: simEnemy(id, start), start, secs, hp });
+for (const r of cut) for (const [id, start, secs, hp] of r.focus) (simFights[simKind(id)] ??= []).push({ id: simEnemy(id), start, secs, hp });
 console.log('\nElite / miniboss / boss fights to the session end (count per run, seconds to kill, HP at spawn: game | model)');
 const fightRows = [];
 for (const kind of ['miniboss', 'elite', 'adaptive elite', 'boss']) {
@@ -141,15 +147,15 @@ for (const kind of ['miniboss', 'elite', 'adaptive elite', 'boss']) {
 // ---- damage by source ----
 const gameBy = (session.damageTaken && session.damageTaken.bySource) || {};
 const gameTotal = Object.values(gameBy).reduce((s, x) => s + x.damage, 0);
-const notModelledKeys = ['island', 'storm', 'stage_hit', 'hazard', 'other'];
+const notModelledKeys = ['storm', 'stage_hit', 'hazard', 'other'];
 const simBy = {}; let simRaw = 0;
 for (const r of cut) for (const [id, v] of Object.entries(r.damageBy)) { const k = simEnemy(id); simBy[k] = (simBy[k] ?? 0) + v; simRaw += v; }
 const simTotals = cut.map(r => r.damageTaken);
 const unmodelled = Object.entries(gameBy).filter(([k]) => notModelledKeys.includes(k)).reduce((s, [, v]) => s + v.damage, 0);
 const modelledShare = gameTotal > 0 ? (gameTotal - unmodelled) / gameTotal : 1;
-console.log(`\nDamage taken to the session end: game ${f(gameTotal)} (${f(gameTotal * modelledShare)} from enemies and the boss) | model ${range(simTotals)}`);
+console.log(`\nDamage taken to the session end: game ${f(gameTotal)} (${f(gameTotal * modelledShare)} from enemies, the boss and islands) | model ${range(simTotals)}`);
 console.log('  by source, share of the total (game | model; the model\'s shares are raw hits before its per-minute damage curve)');
-const notModelled = { island: 'island impacts', storm: 'the storm', stage_hit: 'stage hits (storm hit mode)', boss_director: 'the boss\'s slams, marks and spread shots', hazard: 'enemy hazards (traps, mines, bomb circles)', other: 'unattributed (barrels and the rest)' };
+const notModelled = { storm: 'the storm', stage_hit: 'stage hits (storm hit mode)', boss_director: 'the boss\'s slams, marks and spread shots', hazard: 'enemy hazards (traps, mines, bomb circles)', other: 'unattributed (barrels and the rest)' };
 const keys = [...new Set([...Object.keys(gameBy), ...Object.keys(simBy)])].sort((a, b) => ((gameBy[b]?.damage ?? 0) / (gameTotal || 1) + (simBy[b] ?? 0) / (simRaw || 1)) - ((gameBy[a]?.damage ?? 0) / (gameTotal || 1) + (simBy[a] ?? 0) / (simRaw || 1)));
 let shown = 0, restG = 0, restS = 0;
 for (const k of keys) {
@@ -166,17 +172,16 @@ const died = full.filter(r => r.died);
 console.log(`\nEnd: game ${H.endReason} at ${clock(end)} | model sinks by then in ${f(full.filter(r => r.died && r.end * 60 <= end).length / full.length * 100)}% of runs; median end ${clock(med(full.map(r => r.end * 60)))}` +
   ` (p10 ${clock(q(full.map(r => r.end * 60), 0.1))}), ${f((full.length - died.length) / full.length * 100)}% afloat at ${MODEL.maxMinutes}:00, boss beaten in ${f(full.filter(r => r.bossKill != null).length / full.length * 100)}%`);
 const chests = events.filter(e => e.type === 'chest').length;
-console.log(`Chests opened: game ${chests} | model ${range(cut.map(r => r.items.length))} (a chest every ${MODEL.chestEverySeconds}s x0.8 / lootShare)`);
+console.log(`Chests opened: game ${chests} | model ${range(cut.map(r => r.items.length))} (a chest every ${opt.set.chestEverySeconds ?? MODEL.chestEverySeconds}s)`);
 const pois = {}; for (const e of events) if (e.type === 'poi' && e.id !== 'SalvageChest') pois[e.id] = (pois[e.id] ?? 0) + 1;
 const landmarks = events.filter(e => e.type === 'landmark').length;
 if (Object.keys(pois).length || landmarks) console.log(`Points of interest used in the game: ${Object.entries(pois).map(([k, v]) => `${k} x${v}`).join(', ') || '-'}${landmarks ? `, landmarks x${landmarks}` : ''}. Not in the model (only chests, as a timer).`);
-if (session.heals) console.log(`Heals in the game: ${f(session.heals.total)} hull (${f(session.heals.pickupsAndRepairs)} pickups and repairs, ${f(session.heals.regen)} regen). The model heals on a timer (pickups) and does not report totals.`);
+if (session.heals) console.log(`Heals: game ${f(session.heals.total)} hull (${f(session.heals.pickupsAndRepairs)} pickups and repairs, ${f(session.heals.regen)} regen) | model ${range(cut.map(r => r.healed))} (timed health drops at kills)`);
 if (H.bossSummoned >= 0) console.log(`Boss: summoned at the Beacon ${clock(H.bossSummoned)}; the model summons it then too.`);
 const picks = events.filter(e => e.type === 'pick');
 if (picks.length) {
   const kinds = {}; for (const p of picks) kinds[p.kind] = (kinds[p.kind] ?? 0) + 1;
-  const mix = MODEL.cardMix;
-  console.log(`Level-up picks in the game: ${Object.entries(kinds).map(([k, v]) => `${k} ${f(v / picks.length * 100)}%`).join(', ')} | model card mix: upgrade ${mix.upgrade * 100}%, new weapon ${mix.newWeapon * 100}%, Logbook ${mix.logbook * 100}%`);
+  console.log(`Level-up picks in the game: ${Object.entries(kinds).map(([k, v]) => `${k} ${f(v / picks.length * 100)}%`).join(', ')} | model: cards from the data's offer weights by weapons carried; a new weapon whenever offered, a Logbook over an upgrade ${f((opt.set.logbookPickChance ?? MODEL.logbookPickChance) * 100)}% of the time`);
 }
 const weapons = session.weapons || {};
 const wTotal = Object.values(weapons).reduce((s, w) => s + w.damage, 0);
@@ -212,26 +217,26 @@ const metricOf = (runs, key) => {
   if (key === 'killsMid') return med(runs.filter(r => r.minutes.some(x => x.m === mid.m)).map(r => simCumKills(r, mid.m)));
   if (key === 'level') return med(runs.map(r => (r.minutes.find(x => x.m === mm) || {}).level));
   if (key === 'dmg') return med(runs.filter(r => r.minutes.some(x => x.m === mm)).map(r => simCumDmg(r, mm)));
-  if (key === 'lv5') return med(runs.map(r => r.levelAt[3]));
+  if (key === 'lv5') return med(runs.map(r => r.levelAt[4]));
   if (key === 'end') return med(runs.map(r => r.end * 60));
-  if (key.startsWith('fight:')) { const k = key.slice(6); return med(runs.flatMap(r => r.focus.filter(x => simKind(x[0], x[1]) === k).map(x => x[2]))); }
+  if (key.startsWith('fight:')) { const k = key.slice(6); return med(runs.flatMap(r => r.focus.filter(x => simKind(x[0]) === k).map(x => x[2]))); }
   return null;
 };
-const knobs = ['accuracy', 'engagement', 'lootShare', 'topUpPerSecond', 'arrivalSeconds', 'contactRate', 'dodge', 'shotHitChance', 'focusHitsPerSecond', 'bossHitsPerSecond', 'focusShareOfDps', 'eliteXp', 'chestEverySeconds'];
+const knobs = ['accuracy', 'engagement', 'lootShare', 'vfxDensity', 'arrivalSeconds', 'contactRate', 'dodge', 'shotHitChance', 'focusHitsPerSecond', 'bossHitsPerSecond', 'arenaShareOfDps', 'focusShareOfDps', 'eliteShareOfDps', 'islandHitsPerMinute', 'chestEverySeconds'];
 const hints = {
-  kills: 'kill throughput: accuracy, engagement, topUpPerSecond (kills are spawn-limited), arrivalSeconds',
-  killsMid: 'kill throughput: accuracy, engagement, topUpPerSecond, arrivalSeconds',
-  level: 'XP: lootShare, accuracy (kills), eliteXp; data: Pickups xpPickupMultiplier, the XP table',
-  dmg: 'incoming damage: contactRate, dodge (melee), shotHitChance, shotInterval (ranged), focusHitsPerSecond, bossHitsPerSecond',
-  lv5: 'early XP: lootShare, accuracy, arrivalSeconds',
-  end: 'survival: contactRate, shotHitChance, focusHitsPerSecond, bossHitsPerSecond, dodge; and the kill side (accuracy)',
+  kills: 'kill throughput: accuracy, engagement, arrivalSeconds; data: the wave floors and top-ups, band rates',
+  killsMid: 'kill throughput: accuracy, engagement, arrivalSeconds',
+  level: 'XP: lootShare, vfxDensity (XP barrel pieces), accuracy (kills); data: Pickups xpPickupMultiplier and burst counts, the XP table',
+  dmg: 'incoming damage: contactRate, dodge (melee), shotHitChance, shotInterval (ranged), focusHitsPerSecond, bossHitsPerSecond, islandHitsPerMinute',
+  lv5: 'early XP: lootShare, vfxDensity, accuracy, arrivalSeconds',
+  end: 'survival: contactRate, shotHitChance, focusHitsPerSecond, bossHitsPerSecond, islandHitsPerMinute, dodge; and the kill side (accuracy)',
 };
 const n = Math.max(40, Math.round(opt.seeds / 4));
 const baseSmall = batch({}, n, MODEL.maxMinutes);
 const effects = {};
 for (const k of knobs) {
   const v = (opt.set[k] ?? MODEL[k]) * 1.3;
-  const runs = batch({ [k]: k === 'dodge' ? Math.min(0.95, v) : k === 'focusShareOfDps' || k === 'engagement' || k === 'lootShare' || k === 'accuracy' ? Math.min(1, v) : v }, n, MODEL.maxMinutes);
+  const runs = batch({ [k]: k === 'dodge' ? Math.min(0.95, v) : /ShareOfDps$/.test(k) || k === 'engagement' || k === 'lootShare' || k === 'accuracy' || k === 'vfxDensity' ? Math.min(1, v) : v }, n, MODEL.maxMinutes);
   effects[k] = {}; for (const m of metrics) { const a = metricOf(baseSmall, m.key), b = metricOf(runs, m.key); effects[k][m.key] = a != null && b != null ? b - a : 0; }
 }
 console.log('\nBiggest mismatches (game vs model median; z = gap in model spreads) and the constants that close them');
@@ -240,7 +245,7 @@ for (const m of metrics.filter(x => !close.includes(x)).slice(0, 6)) {
   console.log(`  ${pad(m.name, 26)} game ${f(m.g, 1)} | model ${f(m.med, 1)}  (${m.rel >= 0 ? '+' : ''}${f(m.rel * 100)}%, z ${f(m.z, 1)})`);
   const movers = knobs.map(k => ({ k, e: effects[k][m.key] })).filter(x => Math.abs(x.e) > 1e-6).sort((a, b) => Math.abs(b.e) - Math.abs(a.e)).slice(0, 4);
   if (movers.length) console.log(`      ${movers.map(x => { const dir = Math.sign(x.e) === Math.sign(gap) ? 'raise' : 'lower'; const steps = Math.abs(gap / x.e); return `${dir} ${x.k} (+30% moves it ${x.e >= 0 ? '+' : ''}${f(x.e, 1)}${steps < 5 ? `, ~${f(steps * 30)}% to close` : ''})`; }).join('; ')}`);
-  const base = m.key.startsWith('fight:') ? 'fight length: focusShareOfDps, accuracy (min 0.6 on a focus target); data: SaltwindDirector time-to-kill floors (ttk)' : hints[m.key];
+  const base = m.key.startsWith('fight:') ? 'fight length: arenaShareOfDps, focusShareOfDps, eliteShareOfDps, bossShareOfDps, accuracy; data: SaltwindDirector time-to-kill floors (ttk) on the theoretical DPS' : hints[m.key];
   if (base) console.log(`      levers: ${base}`);
 }
 
@@ -249,7 +254,7 @@ if (close.length) console.log(`  close enough (within the model's spread or 5%):
 // ---- what the model leaves out ----
 const missing = [];
 if (Object.keys(pois).length || landmarks) missing.push('points of interest other than chests (merchant skiff, trial buoy, repair wrecks, landmarks)');
-if (Object.keys(gameBy).some(k => notModelled[k] && k !== 'boss_director')) missing.push('island, storm, hazard and barrel damage (game sources: ' + Object.keys(gameBy).filter(k => notModelled[k] && k !== 'boss_director').join(', ') + ')');
+if (Object.keys(gameBy).some(k => notModelled[k] && k !== 'boss_director')) missing.push('storm, hazard and barrel damage (game sources: ' + Object.keys(gameBy).filter(k => notModelled[k] && k !== 'boss_director').join(', ') + ')');
 if (gameBy.boss_director) missing.push('the boss director\'s slams and spread shots (the model has one boss hit rate: bossHitsPerSecond)');
-missing.push('the walk to the Beacon (the boss time comes from the session), movement and dodging (one dodge constant), pickups out of reach (lootShare)');
+missing.push('the walk to the Beacon (the boss time comes from the session), movement and dodging (one dodge constant; island hits at a fitted rate), pickups out of reach (lootShare)');
 console.log(`\nNot in the model: ${missing.join('; ')}.`);

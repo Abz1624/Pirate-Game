@@ -22,6 +22,9 @@ namespace RoguePirates.V4.Config
         [Tooltip("Its own model (empty = the base's, under inheritBaseVisual).")] public GameObject model;
         [Tooltip("The model's colours × this (white = the base's tint).")] public Color tint = Color.white;
         [Tooltip("The drawn size and the hitbox × this.")] [Min(0.1f)] public float viewSize = 1f;
+        // V5 M8z (7 Oct): the variant's type colour moved here from the enemy view presenter's table keyed by enemy id.
+        [Tooltip("V5 M8z: the variant's own colour on its sails and flags (alpha 0 = none: the view keeps its tint; not inherited from the base).")]
+        public Color typeColor = new Color(0f, 0f, 0f, 0f);
     }
 
     /// <summary>
@@ -39,6 +42,8 @@ namespace RoguePirates.V4.Config
         [AppliesFrom(0, "structural: the alias's slot in the runtime database")] [Tooltip("Database aliases: their order after the loaded enemies in the runtime database (M16: was V3's specialist catalog order).")]
         public int databaseSlotOrder;
         [AppliesFrom(0)] public EnemyArchetypeConfig baseArchetype;
+        // V5 M8z (7 Oct): replaces the "elite_" id prefix the presenters checked.
+        [Tooltip("V5 M8z: an elite (a health bar over it; its VFX profile falls back to its base enemy's).")] public bool isElite;
         public string displayName;
         public BehaviorOverride behavior = new BehaviorOverride();
         public IntOverride threatCost = new IntOverride();

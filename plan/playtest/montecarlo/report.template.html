@@ -69,9 +69,9 @@ td.num, th.num { text-align: right }
 
 <main class="wrap">
   <header style="display:grid;gap:10px">
-    <span class="eyebrow">Rogue Pirates · Saltwind · playtest round 5 · 3 Oct 2026</span>
+    <span class="eyebrow">Rogue Pirates · Saltwind · V5 M8z · 7 Oct 2026</span>
     <h1>Saltwind Balance Simulator</h1>
-    <p class="lede">A numbers-only Monte Carlo of a 15-minute Saltwind voyage, written from scratch and calibrated on your playtest. It plays a captain who collects 80% of the loot and fights 90% of the enemies, then measures damage, kills, XP, levels and hull minute by minute. The settings it recommended are now in the game; the live simulator below lets you try others.</p>
+    <p class="lede">The one balance simulator: a numbers-only Monte Carlo of a 15-minute Saltwind voyage. It reads the game's real configs (exported by the Unity Editor from the config set the game runs on) and is calibrated on your three recorded voyages. It measures damage, kills, XP, levels and hull minute by minute; the live simulator below lets you try other settings.</p>
   </header>
 
   <section>
@@ -82,18 +82,21 @@ td.num, th.num { text-align: right }
   <section class="panel">
     <h2>What the simulation found</h2>
     <ul class="findings">
-      <li><strong>Updated for round 7 (3 Oct, afternoon).</strong> The data is the game as it is now:
-        <ul>
-          <li>Flamethrower switched off (Ember starts with Swivel Guns).</li>
-          <li>Enemy base damage +25% for every enemy, variant and elite.</li>
-          <li>Miniboss and elite fight-length floors halved: arena fights 6 s, scheduled elites 3 s and kill-band elites 2.5 s of the build's theoretical damage per second (elite hull ×6). The boss is unchanged at 19 s.</li>
-          <li>Levels 1 to 2 now cost 5 XP, the same as 2 to 3.</li>
-        </ul></li>
-      <li><strong>Fights now:</strong> the crab and the scheduled elites take a median of 9 to 11 s, kill-band elites about 8 s and the Barnacle King about 37 s (see the Fights tab below).</li>
-      <li><strong>The model still finds the voyage easy.</strong> On your profile (80% of the loot, 90% of the enemies engaged), 97% of voyages beat the boss, under 1% sink before 10:00 and the hull rarely drops below half. Treat this as a floor on difficulty: in round 6 the model also could not reproduce sinkings at 3 to 4 minutes, so real play is harder than it shows.</li>
-      <li><strong>Most damage to you</strong> comes from elite Cutthroat Skiffs, the Barnacle King, elite Manta Rays and Drowned Harriers (see the Enemies tab below).</li>
-      <li><strong>New: the full stat sheet</strong> of every weapon and enemy is further down.</li>
+      <li><strong>One simulator, on the game's real configs (7 Oct).</strong> The in-engine simulator is retired. This model's data now comes from the Unity Editor (the config set the game runs on, with variants, elite spawners and the XP table resolved the way the game resolves them). The old YAML reader is kept as a fallback, and a check lists any field where the two disagree. That check found three drifts in the old reader, all now fixed: the registry elites (Hammerhead, Kraken Spawn) had their variant's HP and damage instead of their base's, variants had their base's attack and threat, and elite spawners were missing the Rich affix's ×1.25 hull.</li>
+      <li><strong>New rules, as the game plays now:</strong> island hits (5 hull, at most one every 2 s, at the rate measured in your voyages); fight-length floors on the game's own theoretical damage per second; arena fights pause the waves until they end; the wave floor tops up at the game's pace; level-up cards from the offer weights by weapons carried (new Logbooks also with six weapons); the 15-minute timeline; timed health drops at kills; the Beacon boss at 14:00 unless a voyage says otherwise.</li>
+      <li><strong>Calibrated on your three voyages.</strong> The old model levelled about half as fast, killed half as many enemies, never sank and ended fights in 5 s. Now level, kills, damage taken and hull follow your voyages minute by minute, and the second voyage's sinking at 14:00 is reproduced (62% of the model's runs sink by then). See the calibration table below.</li>
+      <li><strong>Found in the game: XP from a kill depends on the effects quality.</strong> An enemy's XP barrel bursts into 3 or more pieces, each worth at least 1 XP, so a 2-XP enemy pays about 4 to 6 XP before the half-XP pace. The number of pieces follows the quality tier's effects density, so the same voyage levels faster on High than on Low. The model fits a density of 0.6.</li>
+      <li><strong>Islands are the biggest source of damage:</strong> about 45% of the hull you lost in your voyages, and 43% in the model. Then come Drowned Pursuers (overtime), Cutthroat Skiffs and Drowned Harriers.</li>
+      <li><strong>With your play profile on all six Captains,</strong> the median voyage lasts about 18 minutes and 69% beat the boss (summoned at 14:00). 3% sink before 10:00 and 21% before 14:00. The Captains land within about ±10% of each other (16.0 to 18.3 minutes).</li>
     </ul>
+  </section>
+
+  <section class="panel">
+    <h2>Calibration on your recorded voyages</h2>
+    <p class="small">Each voyage beside the model before this change (the old rules and data) and now (the game's configs, the new rules, the fitted constants). The model replays each voyage's level-up picks and is run 200 times; its numbers are the median of the runs still afloat. The three voyages were played on slightly different configs: the first had island hits of 10 hull, so it sank sooner than the model can.</p>
+    <div class="tabs" id="cal-tabs"></div>
+    <p class="small" id="cal-note"></p>
+    <div class="scroll"><table id="cal-table"></table></div>
   </section>
 
   <section class="panel" id="live">
@@ -101,7 +104,7 @@ td.num, th.num { text-align: right }
       <h2>Live simulator</h2>
       <span class="status" id="status">Runs in your browser</span>
     </div>
-    <p class="small">The game's current data (with the recommended settings applied). The sliders scale them further: 1 means the game as it is now.</p>
+    <p class="small">The game's current data (the Unity export) with the calibrated model. The sliders scale them: 1 means the game as it is now.</p>
     <div class="controls">
       <div class="control"><label for="captain">Captain</label><select id="captain"></select></div>
       <div class="control"><label for="ttk">Fight-length floors <output id="ttk-o"></output></label><input id="ttk" type="range" min="0" max="3" step="0.1" value="1"></div>
@@ -117,14 +120,14 @@ td.num, th.num { text-align: right }
 
   <section class="panel heat">
     <h2>Search: which settings gave the most fun</h2>
-    <p class="small">Fun score (0 to 100): highest when a voyage beats the boss and sinks in overtime (about 16:30), with real danger on the way (time below half hull) and few early sinkings. Measured on round 5's first-pass data; cells are its multipliers.</p>
+    <p class="small">Fun score (0 to 100): highest when a voyage beats the boss and sinks in overtime (about 16:30), with real danger on the way (time below half hull) and few early sinkings. Measured on the current data; cells are multipliers on it.</p>
     <div class="tabs" id="heat-tabs"></div>
     <div class="scroll"><div id="heat"></div></div>
   </section>
 
   <section class="panel">
     <h2>Weapons at level 1 (d)</h2>
-    <p class="small">One target, every hit landing: the same damage per second for every weapon (owner's rule). The crowd column counts how many enemies a firing reaches in a dense crowd (pierce, fans, beams, orbits, areas).</p>
+    <p class="small">One target, every hit landing: the model's realistic numbers (from the code review of each weapon). The crowd column counts how many enemies a firing reaches in a dense crowd (pierce, fans, beams, orbits, areas). The last column is the game's own theoretical damage per second, which sets the fight-length floors (coverage and hits per firing included).</p>
     <div class="scroll"><table id="weapon-table"></table></div>
   </section>
 
@@ -143,20 +146,20 @@ td.num, th.num { text-align: right }
   <section class="panel">
     <h2>How the model works</h2>
     <ul class="findings">
-      <li>One step per second. Enemies spawn from the real timeline (bands, pools, floors, hordes, swarm pulses, the kill band, minibosses, the boss at 14:00, Drowned Pursuit after 15:00) using the real HP, damage and XP.</li>
-      <li>The player's weapons, levels, upgrade cards, Logbooks, chest items and evolutions follow the game's tables. Each weapon's hits per cycle and crowd reach come from a review of its code.</li>
-      <li>Fitted to your playtest: about 30% of the build's theoretical damage lands, a new enemy needs about 4 s to come into range, and the floor tops up about 0.5 enemies a second.</li>
-      <li>Incoming damage: melee contacts grow with the crowd, and shooters fire every 2.5 s with a hit chance. Island bumps are not modelled.</li>
-      <li>Limits: it is a guide, not the game. It sinks early voyages more often than you did, so the real game should land a little easier than these numbers. Play is the final check.</li>
+      <li>One step per second. Enemies spawn from the real timeline: bands and pools, the minute waves' floors (topped up one per spawn gap, up to each wave's limit), release windows, hordes, swarm pulses, the kill band and its elites, minibosses and scheduled elites (arena fights pause the waves until they end), the boss at the Beacon, and the Drowned Pursuit after 15:00. HP, damage and XP are the game's own.</li>
+      <li>Minibosses, elites and the boss get the game's fight-length floor: a number of seconds of the build's theoretical damage per second, computed the way the game computes it.</li>
+      <li>The player's weapons, levels, upgrade cards (offer weights by weapons carried, lines per rarity, axis caps), Logbooks, chest items and Empowered evolutions follow the game's data. XP comes from barrels that burst into pieces, as in the game; health drops come at a kill after a random wait.</li>
+      <li>Fitted to your three voyages (fit_sessions.mjs): 40% of the build's realistic damage lands, a new enemy needs 1.5 s to come into range, you sail over 95% of the barrels (at most 140 a minute), 30% of your damage goes to an arena fight, 10% to a scheduled elite and 6% to each kill-band elite. Island hits come 1.45 times a minute, as measured in your voyages.</li>
+      <li>Incoming damage: melee contacts grow with the crowd, shooters fire every 2.5 s with a hit chance, focus enemies hit at a fixed rate, and island hits cost the game's 5 hull.</li>
+      <li>Limits: it is a guide, not the game. Storm, hazards and barrels are not modelled, and your third voyage took more damage than the model gives it. Play is the final check.</li>
     </ul>
-    <p class="small">Files: plan/playtest/montecarlo (export_data.py, sim.mjs, calibrate.mjs, batch.mjs). Generated <span id="gen"></span>.</p>
+    <p class="small">Files: plan/playtest/montecarlo: data.json (Unity Editor: RoguePirates ▸ V5 ▸ Balance: export the Monte Carlo data), export_data.py (YAML fallback), check_export.mjs, sim.mjs, fit_sessions.mjs, compare_session.mjs, batch.mjs, finalize.mjs. Generated <span id="gen"></span>.</p>
   </section>
 </main>
 
 <script>
 /*SIM*/
 const DATA = /*DATA*/;
-const PLAYED = /*PLAYED*/;
 const RES = /*RESULTS*/;
 const N = RES.names;
 const nm = id => N[id] || (id.startsWith('elite_') ? 'Elite ' + (N[id.slice(6)] || id.slice(6)) : id.replace(/_/g, ' '));
@@ -173,10 +176,31 @@ const card = (title, tag, s, now) => {
   <dt>Boss beaten</dt><dd>${pct(s.bossWin)}</dd><dt>Time below half hull</dt><dd>${pct(s.tension)}</dd>
   <dt>Sunk before 10:00</dt><dd>${pct(s.deathBefore10)}</dd><dt>Afloat at 20:00</dt><dd>${pct(s.survive20)}</dd></dl></div>`;
 };
+const bestCard = { endMedian: RES.best.end, bossWin: RES.best.bossWin, tension: RES.best.tension, deathBefore10: RES.best.deathBefore10, survive20: RES.best.survive20 };
 document.getElementById('verdicts').innerHTML =
-  card('What you played', 'commit eb538609', RES.played) +
-  card('Round 5 first pass', 'before the simulation', RES.current) +
-  card('Now in the game', 'recommended settings applied', RES.applied, true);
+  card('Now in the game', 'your play profile, all six Captains', RES.applied, true) +
+  card('Most fun in the search', `floors ×${RES.best.ttkScale} · early ×${RES.best.earlyMult} · late ×${RES.best.lateMult} · damage ×${RES.best.enemyDamageMult}`, bestCard);
+
+// Calibration: each recorded voyage, the model before and now.
+const calTabs = document.getElementById('cal-tabs');
+let calActive = 0;
+const lvl = v => v == null ? '-' : Math.round(v);
+function cal() {
+  const S = RES.calibration.sessions;
+  calTabs.innerHTML = S.map((x, i) => `<button type="button" aria-selected="${i === calActive}" data-i="${i}">Voyage ${i + 1} (${x.file.slice(8, 16)}, ${x.sunk ? 'sunk' : 'ended'} ${mins(x.end / 60)})</button>`).join('');
+  const x = S[calActive], f = x.fights;
+  const fl = o => o ? ['miniboss', 'elite', 'adaptive elite'].map(k => `${k} ${o[k] != null ? Math.round(o[k]) + ' s' : '-'}`).join(', ') : '-';
+  document.getElementById('cal-note').innerHTML = `Config ${x.configHash}. Sunk by the voyage's end (+1 min): game ${x.sunk ? 'yes' : 'no'}, model before ${pct(x.sunkBy.before)}, now ${pct(x.sunkBy.now)}.<br>Median fight lengths: game ${fl(f.game)}; before ${fl(f.before)}; now ${fl(f.now)}.`;
+  const rows = x.minutes.map(r => ({ m: r.m, gl: r.game.level, bl: r.before?.level, nl: r.now.level, gk: r.game.kills, bk: r.before?.kills, nk: r.now.kills,
+    gh: r.game.hull, bh: r.before?.hull, nh: r.now.hull, gd: r.game.dmg, bd: r.before?.dmg, nd: r.now.dmg, gp: r.game.dps, np: r.now.dps, af: r.now.afloat }));
+  table(document.getElementById('cal-table'), [{ k: 'm', t: 'Minute', num: 1 },
+    { k: 'gl', t: 'Level: game', num: 1 }, { k: 'bl', t: 'before', num: 1, f: lvl }, { k: 'nl', t: 'now', num: 1, f: lvl },
+    { k: 'gk', t: 'Kills: game', num: 1 }, { k: 'bk', t: 'before', num: 1, f: lvl }, { k: 'nk', t: 'now', num: 1, f: lvl },
+    { k: 'gh', t: 'Hull: game', num: 1, f: pct }, { k: 'bh', t: 'before', num: 1, f: pct }, { k: 'nh', t: 'now', num: 1, f: pct },
+    { k: 'gd', t: 'Damage taken: game', num: 1 }, { k: 'bd', t: 'before', num: 1, f: lvl }, { k: 'nd', t: 'now', num: 1, f: lvl },
+    { k: 'gp', t: 'Theoretical DPS: game', num: 1 }, { k: 'np', t: 'now', num: 1, f: lvl }, { k: 'af', t: 'Model afloat', num: 1, f: pct }], rows);
+}
+calTabs.addEventListener('click', e => { const b = e.target.closest('button'); if (b) { calActive = +b.dataset.i; cal(); } });
 
 // Live simulator.
 const capSel = document.getElementById('captain');
@@ -211,8 +235,8 @@ function render(s) {
   document.getElementById('charts').innerHTML =
     chart('Voyages still afloat', rows, 'alive', { max: 1, fmt: v => Math.round(v * 100) + '%', note: 'Share of voyages reaching each minute.' }) +
     chart('Hull (median)', rows, 'hull', { max: 1, fmt: v => Math.round(v * 100) + '%', note: 'Of the voyages still afloat.' }) +
-    chart('Player level (median)', rows, 'level', { fmt: v => Math.round(v), note: 'Survivor.io curve: 5 at 1:00, 18 at 5:00, 31 at 10:00.' }) +
-    chart('Damage per second (median)', rows, 'dps', { fmt: v => Math.round(v), note: 'The build, one target, every hit landing.' }) +
+    chart('Player level (median)', rows, 'level', { fmt: v => Math.round(v), note: 'Your voyages: about 11 at 1:00, 32 at 5:00, 38 to 40 at 10:00.' }) +
+    chart('Theoretical damage per second (median)', rows, 'gameDps', { fmt: v => Math.round(v), note: 'The game\'s own number (sets the fight-length floors).' }) +
     chart('Kills per minute (median)', rows, 'kills', { fmt: v => Math.round(v) }) +
     chart('Enemies on the sea (median)', rows, 'enemies', { fmt: v => Math.round(v), note: 'Cap 120.' });
 }
@@ -223,7 +247,7 @@ function runLive() {
     const t0 = performance.now(), d = JSON.parse(JSON.stringify(DATA)), k = +document.getElementById('ttk').value;
     for (const key of Object.keys(d.director.ttk)) d.director.ttk[key] *= k;
     const caps = capSel.value ? [capSel.value] : Object.keys(d.captains), n = +document.getElementById('runs').value, per = Math.max(1, Math.round(n / caps.length));
-    const params = { earlyMult: +document.getElementById('early').value, lateMult: +document.getElementById('late').value, enemyDamageMult: +document.getElementById('dmg').value, model: { lootShare: 0.8, engagement: 0.9 } };
+    const params = { earlyMult: +document.getElementById('early').value, lateMult: +document.getElementById('late').value, enemyDamageMult: +document.getElementById('dmg').value };
     const runs = []; let seed = 1;
     for (const c of caps) for (let i = 0; i < per; i++) runs.push(simulateRun(d, { ...params, captain: c, seed: (seed++) * 7919 + 17 }));
     render(summarise(runs));
@@ -272,7 +296,8 @@ function table(el, cols, rows) {
 table(document.getElementById('weapon-table'), [
   { k: 'name', t: 'Weapon' }, { k: 'baseDamage', t: 'Base damage', num: 1, f: v => v.toFixed(2) }, { k: 'perHit', t: 'One hit', num: 1 },
   { k: 'hitsPerCycle', t: 'Hits per cycle (× base)', num: 1 }, { k: 'cycle', t: 'Cycle (s)', num: 1 }, { k: 'dps', t: 'DPS, one target', num: 1 },
-  { k: 'crowdTargets', t: 'Crowd reach', num: 1 }, { k: 'crowdDps', t: 'DPS into a crowd', num: 1 }], RES.weaponTable);
+  { k: 'crowdTargets', t: 'Crowd reach', num: 1 }, { k: 'crowdDps', t: 'DPS into a crowd', num: 1 }, { k: 'gameDps', t: 'Theoretical DPS (game)', num: 1 }], RES.weaponTable);
+cal();
 const buildTabs = { weapons: 'Weapons', logbooks: 'Logbooks', items: 'Items', enemies: 'Enemies', fights: 'Fights' };
 let tab = 'weapons';
 function builds() {

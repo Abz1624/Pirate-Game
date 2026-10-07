@@ -1,7 +1,11 @@
-"""Exports the Saltwind numbers the Monte Carlo model needs straight from the Unity assets (no Editor).
+"""Exports the Saltwind numbers the Monte Carlo model needs straight from the Unity assets' YAML (no Editor).
 
-Playtest round 5 (3 Oct 2026). Written fresh for the numbers-only simulation (sim.mjs); it does not use the V5
-simulator (DevTools/Balance). Output: data.json next to this file.
+Playtest round 5 (3 Oct 2026). Written fresh for the numbers-only simulation (sim.mjs).
+V5 M8z (I8z.7, 7 Oct 2026): the primary source of data.json is now the Unity Editor export (MonteCarloExport: the
+game's config set resolved the game's way, plus the fields only the game resolves). This script is the fallback when no
+Editor is open; it follows the game's resolution rules (EnemyStatResolver, the elite spawner's affix) for the shared
+fields, and check_export.mjs lists any field where the two disagree. Output: data.json next to this file (RP_OUT
+overrides the path).
 """
 import glob, json, os, re, struct
 import yaml
@@ -48,29 +52,43 @@ for p in glob.glob(os.path.join(V4, 'Enemies', '*.asset')):
                         boss=bool(a.get('isBoss', 0)), miniboss=bool(a.get('isMiniboss', 0)))
     by_guid[guid(p)] = eid
 
+raw_enemy = {}  # id -> (asset, is variant)
+for p in glob.glob(os.path.join(V4, 'Enemies', '*.asset')):
+    raw_enemy[os.path.basename(p)[:-6]] = (load(p), False)
 for p in glob.glob(os.path.join(V4, 'Variants', '*.asset')):
     a = load(p)
     vid = os.path.basename(p)[:-6]
     base = by_guid.get(ref(a.get('baseArchetype')))
     b = enemies.get(base, {})
-    hp = a['baseHP']['value'] if a['baseHP']['enabled'] else b.get('hp', 1)
-    dmg = a['baseDamage']['value'] if a['baseDamage']['enabled'] else b.get('dmg', 1)
-    spd = a['moveSpeed']['value'] if a['moveSpeed']['enabled'] else b.get('speed', 4)
-    enemies[vid] = dict(id=vid, name=a.get('displayName', vid), hp=float(hp), dmg=float(dmg), speed=float(spd), xp=b.get('xp', 1),
+    # EnemyStatResolver: a registry elite (kind 1) keeps its base's stats (only its combat profile is its own); a database
+    # alias (kind 0) takes HP, speed and damage from its overrides when they are on.
+    alias = int(a.get('kind', 0)) == 0
+    hp = a['baseHP']['value'] if alias and a['baseHP']['enabled'] else b.get('hp', 1)
+    dmg = a['baseDamage']['value'] if alias and a['baseDamage']['enabled'] else b.get('dmg', 1)
+    spd = a['moveSpeed']['value'] if alias and a['moveSpeed']['enabled'] else b.get('speed', 4)
+    enemies[vid] = dict(id=vid, name=a.get('displayName', vid) or ('Elite ' + b.get('name', vid) if not alias else vid), hp=float(hp), dmg=float(dmg), speed=float(spd), xp=b.get('xp', 1),
                         boss=False, miniboss=False, base=base, ranged=False)
     by_guid[guid(p)] = vid
+    raw_enemy[vid] = (a, True)
 
-RANGED = {'cannonboat', 'gunner_cog', 'needle_sloop', 'net_cutter', 'shield_frigate', 'drowned_harrier'}
+# Ranged as the Editor export derives it: a shooting attack pattern (single shot, burst or spread volley), the world rule
+# alwaysRanged, or the ranged_gunner concurrency tag. Combat and world blocks are the enemy's own (not inherited).
 for e in enemies.values():
-    e['ranged'] = e['id'] in RANGED
+    a, _ = raw_enemy[e['id']]
+    c = a.get('combat') or {}
+    e['ranged'] = int(c.get('attackPattern', 0)) in (2, 3, 4) or bool((a.get('world') or {}).get('alwaysRanged', 0)) or 'ranged_gunner' in (a.get('concurrencyTags') or [])
 
 # Spawners: the elite multipliers of the scheduled elites.
 spawners = {}
 for p in glob.glob(os.path.join(V4, 'Spawners', '*.asset')):
     a = load(p)
     el = a.get('elite', {})
+    # An elite spawner's HP multiplier and its affix (none = Rich, x1.25; Armored x1.8, Swift x0.9), as EnemySimulation
+    # spawns it.
+    affix = int(el.get('affix', 0))
+    affix_hp = {1: 1.8, 2: 0.9, 4: 1.25}.get(affix, 1.25 if affix == 0 else 1.0)
     spawners[guid(p)] = dict(id=os.path.basename(p)[:-6], anchor=by_guid.get(ref(a.get('anchor'))),
-                             eliteHp=float(el.get('hpMultiplier', 1)) if el.get('isElite') else 1.0, elite=bool(el.get('isElite', 0)))
+                             eliteHp=float(el.get('hpMultiplier', 1)) * affix_hp if el.get('isElite') else 1.0, elite=bool(el.get('isElite', 0)))
 
 t = load(os.path.join(V4, 'Timelines', 'SaltwindTimeline.asset'))
 bands, focus, pulses = [], [], []
@@ -89,7 +107,10 @@ for ph in t['phases']:
         f = ph['focus']
         sp = spawners.get(ref(ph.get('spawner')), {})
         eid = by_guid.get(ref(f.get('variant'))) or by_guid.get(ref(f.get('archetype'))) or sp.get('anchor')
-        focus.append(dict(id=pid, t=float(ph['trigger']['timeSeconds']), enemy=eid, hpMult=float(f['hpMultiplier']) * sp.get('eliteHp', 1.0),
+        # Spawner placement: the elite spawner's multiplier and affix; ring placement: the focus's own affix.
+        ring = int(f.get('placement', 0)) == 1
+        mult = {1: 1.8, 2: 0.9, 4: 1.25}.get(int(f.get('affix', 0)), 1.0) if ring else sp.get('eliteHp', 1.0)
+        focus.append(dict(id=pid, t=float(ph['trigger']['timeSeconds']), enemy=eid, hpMult=float(f['hpMultiplier']) * mult,
                           arena=bool(ph['pauseAmbient']), elite=sp.get('elite', False)))
     elif pid.startswith('swarm_pulse'):
         pulses.append(dict(t=float(ph['trigger']['timeSeconds']), seconds=float(ph['duration']['seconds']), mult=float(ph['rateMultiplier'])))
@@ -159,16 +180,18 @@ for p in glob.glob(os.path.join(V4, 'Enemies', '*.asset')) + glob.glob(os.path.j
     variant = 'variantId' in a
     b = raw_e.get(ref(a.get('baseArchetype'))) if variant else a
     if b is None: continue
-    st, c = b.get('stats', {}), b.get('combat', {})
-    beh = int(a['behavior']['value']) if variant and a.get('behavior', {}).get('enabled') else int(b.get('behavior', 0))
+    alias = variant and int(a.get('kind', 0)) == 0
+    st, c = b.get('stats', {}), a.get('combat', {})  # the combat profile is the enemy's own (EnemyStatResolver)
+    beh = int(a['behavior']['value']) if alias and a.get('behavior', {}).get('enabled') else int(b.get('behavior', 0))
+    threat = a['threatCost']['value'] if alias and a.get('threatCost', {}).get('enabled') else st.get('threatCost', 0)
     role = 'Boss' if e['boss'] else 'Miniboss' if e['miniboss'] else ('Elite' if eid.startswith('elite_') else 'Variant' if variant else 'Ordinary')
     sheet_e.append(dict(id=eid, name=e['name'], role=role, kind=['Ship', 'Creature'][int(b.get('category', 0))], base=e.get('base'),
                         hp=e['hp'], dmg=e['dmg'], speed=e['speed'], radius=float(st.get('radius', 1)), xp=e['xp'],
                         gold=float(b.get('rewards', {}).get('goldValue', 0)), behavior=pick_(BEHAVIOR, beh),
                         move=pick_(MOVE, int(c.get('movementPattern', 0))), attack=pick_(ATTACK, int(c.get('attackPattern', 0))),
-                        range=float(c.get('attackRange', 0)), cooldown=float(c.get('attackCooldown', st.get('attackCooldown', 0))),
+                        range=float(c.get('attackRange', 0)), cooldown=float(c.get('attackCooldown') or st.get('attackCooldown', 0)),
                         windup=float(c.get('attackWindUp', 0)), shots=int(c.get('projectileCount', 0)), shotSpeed=float(c.get('projectileSpeed', 0)),
-                        contact=bool(c.get('contactDamageEnabled', 1)), ranged=e.get('ranged', False), threat=float(st.get('threatCost', 0))))
+                        contact=bool(c.get('contactDamageEnabled', 1)), ranged=e.get('ranged', False), threat=float(threat)))
 sheet_w = []
 for p in glob.glob(os.path.join(V4, 'Weapons', '*.asset')):
     a = load(p)
@@ -187,7 +210,9 @@ data = dict(enemies=enemies, timeline=timeline, weapons=weapons, logbooks=logboo
                              evolutionLevel=int(prog['evolutionUnlockLevel']), maxWeaponLevel=int(prog['maxWeaponLevel'])),
             pickups=dict(xpMult=float(pick['xpPickupMultiplier']), healValue=float(pick['healthDropValue']), healFraction=float(pick.get('healthDropHullFraction', 0)),
                          lowWait=float(pick.get('healthDropLowHullWaitMultiplier', 0.5)),
-                         healMin=float(pick.get('healthDropIntervalMin', 0)), healMax=float(pick.get('healthDropIntervalMax', 0))),
+                         healMin=float(pick.get('healthDropIntervalMin', 0)), healMax=float(pick.get('healthDropIntervalMax', 0)),
+                         lowHull=float(pick.get('healthDropLowHullFraction', 0.35)), healChance=float(pick.get('healthDropChance', 0.12)),
+                         burstMin=int(pick.get('burstCountMin', 6)), burstMax=int(pick.get('burstCountMax', 10)), burstMinimum=int(pick.get('burstMinimum', 3))),
             curve=dict(hp=[float(curve['enemyHpPerMinute'][k]) for k in ('c0', 'c1', 'c2')], dmg=[float(curve['enemyDamagePerMinute'][k]) for k in ('c0', 'c1', 'c2')],
                        global_hp=float(curve['globalHpMultiplier'])),
             director=dict(killBand=bool(director.get('killBandLever', 0)), bandSeconds=float(director.get('killBandSeconds', 30)),

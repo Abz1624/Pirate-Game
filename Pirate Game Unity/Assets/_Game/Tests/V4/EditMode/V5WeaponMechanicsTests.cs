@@ -681,9 +681,13 @@ namespace RoguePirates.V4.Tests
         public void HitsPerFiring_IsOneForTodaysWeapons_AndSharedWithTheModel()
         {
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            // V5 M8z (I8z.7): the balance model is the JavaScript Monte Carlo; it reads each weapon's hits per firing from the
+            // Editor export, which takes them from the director's rule.
+            var exported = (System.Collections.Generic.Dictionary<string, object>)RoguePirates.V4.Editor.MonteCarloExport.Build(config)["weapons"];
             foreach (var w in config.All<WeaponConfig>())
             {
-                Assert.AreEqual(RoguePirates.V4.DevTools.Balance.WeaponModel.HitsPerFiring(w), WeaponStatResolver.HitsPerFiring(w), 1e-6f, "the model and the director read one rule");
+                if (exported.TryGetValue(w.weaponId, out var row))
+                    Assert.AreEqual(WeaponStatResolver.HitsPerFiring(w), (float)((System.Collections.Generic.Dictionary<string, object>)row)["hitsPerFiring"], 1e-6f, "the model and the director read one rule");
                 if (w.balanceVersion == null || !w.balanceVersion.StartsWith("saltwind-v5-m4"))
                     Assert.AreEqual(1f, WeaponStatResolver.HitsPerFiring(w), 1e-6f, w.weaponId + ": today's weapons unchanged");
             }

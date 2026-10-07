@@ -102,6 +102,18 @@ namespace RoguePirates.V4.Views
         string LogbookId(int index);
         string LogbookName(int index);
         int LogbookRank(int index);
+        /// <summary>V5 M8z (7 Oct): the player's stat now and its base (the level-up cards' "current → next" lines; was
+        /// read from the run manager by the card texts). 0 without stats.</summary>
+        float StatValue(StatId stat) => 0f;
+        float StatBase(StatId stat) => 0f;
+    }
+
+    /// <summary>V5 M8z (7 Oct): an owned weapon's level and upgrade multipliers (the level-up cards' "current → next"
+    /// lines; was read from the game's progression loadout by the card texts).</summary>
+    public struct WeaponModifiersView
+    {
+        public int Level, QuantityBonus;
+        public float DamageBonus, CooldownMult, SpeedMult, SizeMult, DurationMult;
     }
 
     public interface ILoadoutView
@@ -119,6 +131,8 @@ namespace RoguePirates.V4.Views
         string ItemId(int index);
         string ItemName(int index);
         int ItemStacks(int index);
+        /// <summary>V5 M8z (7 Oct): the owned weapon's level and upgrade multipliers; false when it is not owned.</summary>
+        bool TryWeaponModifiers(string weaponId, out WeaponModifiersView modifiers) { modifiers = default; return false; }
     }
 
     public enum BeaconReveal { Hidden, DirectionSector, ExactMarker, Discovered }

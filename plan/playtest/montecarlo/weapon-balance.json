@@ -1,154 +1,154 @@
 [
  {
-  "id": "anchor_flail",
-  "name": "Anchor Flail",
-  "scale": 1.249,
-  "end": 13.6,
-  "cooldownFrom": 0.75,
-  "cooldownTo": 0.6
- },
- {
-  "id": "harpoon_gun",
-  "name": "Harpoon Gun",
-  "scale": 1.198,
-  "end": 14.3,
-  "cooldownFrom": 0.8,
-  "cooldownTo": 0.668
- },
- {
-  "id": "ramming_prow",
-  "name": "Ramming Prow",
-  "scale": 1.158,
-  "end": 14.8,
-  "cooldownFrom": 0.3,
-  "cooldownTo": 0.259
+  "id": "lightning_mast",
+  "name": "Lightning Mast",
+  "scale": 1.264,
+  "end": 9.5,
+  "cooldownFrom": 1.8,
+  "cooldownTo": 1.424
  },
  {
   "id": "siren_bell",
   "name": "Siren Bell",
-  "scale": 1.144,
-  "end": 15,
+  "scale": 1.233,
+  "end": 9.8,
   "cooldownFrom": 2,
-  "cooldownTo": 1.748
- },
- {
-  "id": "mortar",
-  "name": "Mortar",
-  "scale": 1.142,
-  "end": 15,
-  "cooldownFrom": 1.1999999,
-  "cooldownTo": 1.051
- },
- {
-  "id": "deck_cannons",
-  "name": "Deck Cannons",
-  "scale": 1.124,
-  "end": 15.3,
-  "cooldownFrom": 0.7,
-  "cooldownTo": 0.623
- },
- {
-  "id": "swivel_guns",
-  "name": "Swivel Guns",
-  "scale": 1.075,
-  "end": 16.1,
-  "cooldownFrom": 0.6,
-  "cooldownTo": 0.558
- },
- {
-  "id": "parrot_squadron",
-  "name": "Parrot Squadron",
-  "scale": 1.055,
-  "end": 16.4,
-  "cooldownFrom": 4,
-  "cooldownTo": 3.793
- },
- {
-  "id": "monkey_gunners",
-  "name": "Monkey Gunners",
-  "scale": 1.011,
-  "end": 17.2,
-  "cooldownFrom": 4.360465,
-  "cooldownTo": 4.312
- },
- {
-  "id": "flamethrower",
-  "name": "Flamethrower",
-  "scale": 1,
-  "end": 17.4,
-  "cooldownFrom": 0.7,
-  "cooldownTo": 0.7
- },
- {
-  "id": "powder_kegs",
-  "name": "Powder Kegs",
-  "scale": 0.96,
-  "end": 18.2,
-  "cooldownFrom": 1.1,
-  "cooldownTo": 1.146
- },
- {
-  "id": "lightning_mast",
-  "name": "Lightning Mast",
-  "scale": 0.956,
-  "end": 18.3,
-  "cooldownFrom": 1.8,
-  "cooldownTo": 1.884
- },
- {
-  "id": "cursed_doubloons",
-  "name": "Cursed Doubloons",
-  "scale": 0.94,
-  "end": 18.6,
-  "cooldownFrom": 1,
-  "cooldownTo": 1.064
- },
- {
-  "id": "maelstrom_charge",
-  "name": "Maelstrom Charge",
-  "scale": 0.936,
-  "end": 18.8,
-  "cooldownFrom": 5,
-  "cooldownTo": 5.343
- },
- {
-  "id": "flying_cutlasses",
-  "name": "Flying Cutlasses",
-  "scale": 0.925,
-  "end": 19,
-  "cooldownFrom": 1,
-  "cooldownTo": 1.081
- },
- {
-  "id": "lighthouse_lantern",
-  "name": "Lighthouse Lantern",
-  "scale": 0.925,
-  "end": 19,
-  "cooldownFrom": 0.5,
-  "cooldownTo": 0.541
- },
- {
-  "id": "broadside_battery",
-  "name": "Broadside Battery",
-  "scale": 0.917,
-  "end": 19.2,
-  "cooldownFrom": 1.5,
-  "cooldownTo": 1.636
+  "cooldownTo": 1.622
  },
  {
   "id": "long_nine",
   "name": "Long Nine",
-  "scale": 0.903,
-  "end": 19.5,
-  "cooldownFrom": 1.6371078,
-  "cooldownTo": 1.814
+  "scale": 1.191,
+  "end": 10.2,
+  "cooldownFrom": 1.63710785,
+  "cooldownTo": 1.374
+ },
+ {
+  "id": "ramming_prow",
+  "name": "Ramming Prow",
+  "scale": 1.152,
+  "end": 10.6,
+  "cooldownFrom": 0.3,
+  "cooldownTo": 0.26
+ },
+ {
+  "id": "mortar",
+  "name": "Mortar",
+  "scale": 1.111,
+  "end": 11,
+  "cooldownFrom": 1.19999993,
+  "cooldownTo": 1.08
+ },
+ {
+  "id": "deck_cannons",
+  "name": "Deck Cannons",
+  "scale": 1.062,
+  "end": 11.6,
+  "cooldownFrom": 0.7,
+  "cooldownTo": 0.659
+ },
+ {
+  "id": "lighthouse_lantern",
+  "name": "Lighthouse Lantern",
+  "scale": 1.062,
+  "end": 11.6,
+  "cooldownFrom": 0.5,
+  "cooldownTo": 0.471
+ },
+ {
+  "id": "powder_kegs",
+  "name": "Powder Kegs",
+  "scale": 1.043,
+  "end": 11.8,
+  "cooldownFrom": 1.1,
+  "cooldownTo": 1.054
+ },
+ {
+  "id": "harpoon_gun",
+  "name": "Harpoon Gun",
+  "scale": 1.022,
+  "end": 12.1,
+  "cooldownFrom": 0.8,
+  "cooldownTo": 0.782
+ },
+ {
+  "id": "anchor_flail",
+  "name": "Anchor Flail",
+  "scale": 1,
+  "end": 12.3,
+  "cooldownFrom": 0.75,
+  "cooldownTo": 0.75
+ },
+ {
+  "id": "cursed_doubloons",
+  "name": "Cursed Doubloons",
+  "scale": 0.945,
+  "end": 13.2,
+  "cooldownFrom": 1,
+  "cooldownTo": 1.058
+ },
+ {
+  "id": "maelstrom_charge",
+  "name": "Maelstrom Charge",
+  "scale": 0.915,
+  "end": 13.6,
+  "cooldownFrom": 5,
+  "cooldownTo": 5.465
  },
  {
   "id": "chainshot",
   "name": "Chainshot",
-  "scale": 0.883,
-  "end": 20,
+  "scale": 0.887,
+  "end": 14.1,
   "cooldownFrom": 1,
-  "cooldownTo": 1.133
+  "cooldownTo": 1.128
+ },
+ {
+  "id": "flying_cutlasses",
+  "name": "Flying Cutlasses",
+  "scale": 0.862,
+  "end": 14.6,
+  "cooldownFrom": 1,
+  "cooldownTo": 1.16
+ },
+ {
+  "id": "flamethrower",
+  "name": "Flamethrower",
+  "scale": 0.833,
+  "end": 15.1,
+  "cooldownFrom": 0.7,
+  "cooldownTo": 0.841
+ },
+ {
+  "id": "swivel_guns",
+  "name": "Swivel Guns",
+  "scale": 0.797,
+  "end": 15.9,
+  "cooldownFrom": 0.6,
+  "cooldownTo": 0.753
+ },
+ {
+  "id": "broadside_battery",
+  "name": "Broadside Battery",
+  "scale": 0.791,
+  "end": 16,
+  "cooldownFrom": 1.5,
+  "cooldownTo": 1.897
+ },
+ {
+  "id": "parrot_squadron",
+  "name": "Parrot Squadron",
+  "scale": 0.769,
+  "end": 16.5,
+  "cooldownFrom": 1.5,
+  "cooldownTo": 1.95
+ },
+ {
+  "id": "monkey_gunners",
+  "name": "Monkey Gunners",
+  "scale": 0.733,
+  "end": 17.4,
+  "cooldownFrom": 2,
+  "cooldownTo": 2.728
  }
 ]

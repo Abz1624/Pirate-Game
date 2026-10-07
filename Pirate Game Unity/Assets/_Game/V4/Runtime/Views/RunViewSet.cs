@@ -91,6 +91,20 @@ namespace RoguePirates.V4.Views
         }
 
         public int ItemStacks(int index) => _items.StackCount(ItemId(index));
+
+        /// <summary>V5 M8z (7 Oct): the progression loadout's weapon by id (the level-up cards' numbers).</summary>
+        public Func<string, LoadoutWeapon> OwnedWeapon;
+
+        public bool TryWeaponModifiers(string weaponId, out WeaponModifiersView modifiers)
+        {
+            var w = OwnedWeapon?.Invoke(weaponId);
+            modifiers = w == null ? default : new WeaponModifiersView
+            {
+                Level = w.Level, QuantityBonus = w.QuantityBonus, DamageBonus = w.DamageBonus, CooldownMult = w.CooldownMult,
+                SpeedMult = w.SpeedMult, SizeMult = w.SizeMult, DurationMult = w.DurationMult,
+            };
+            return w != null;
+        }
     }
 
     /// <summary>What the run's view set is built from (the kept run manager's facts come in as delegates).</summary>
@@ -117,6 +131,8 @@ namespace RoguePirates.V4.Views
         public Func<bool> ObjectiveSecured;
         public Func<string> ResultsFooter;
         public Func<int> GoldEarned, GoldSpent, GoldRemaining;
+        /// <summary>V5 M8z (7 Oct): the player's stats (the level-up cards' Logbook lines).</summary>
+        public Func<RoguePirates.V4.Foundation.Core.PlayerStats> Stats;
     }
 
     /// <summary>Builds the run's view set (M14.11; was LegacyViewFactory over the legacy hubs).</summary>
@@ -133,6 +149,13 @@ namespace RoguePirates.V4.Views
                 return id;
             }
             var progression = s.Progression;
+            LoadoutWeapon FindOwned(string id) // V5 M8z (7 Oct)
+            {
+                var loadout = progression?.Loadout;
+                if (loadout == null || id == null) return null;
+                foreach (var w in loadout.Weapons) if (w != null && w.Id == id) return w;
+                return null;
+            }
             var results = new RunResultsView(s.Rum, s.Unlocks, s.Damage)
             {
                 Objective = s.ObjectiveSecured,
@@ -156,8 +179,8 @@ namespace RoguePirates.V4.Views
                 Run = s.Run,
                 Ship = s.Ship,
                 Captain = new CaptainView(s.Captain, s.ActivesOn) { KeyHint = s.ActiveKeyHint },
-                Progression = progression != null ? new ProgressionView(progression, s.Logbook) : null,
-                Loadout = new LoadoutView(s.Weapons, s.Items, s.WeaponSlotCap, s.Item),
+                Progression = progression != null ? new ProgressionView(progression, s.Logbook) { Stats = s.Stats } : null,
+                Loadout = new LoadoutView(s.Weapons, s.Items, s.WeaponSlotCap, s.Item) { OwnedWeapon = progression != null ? FindOwned : (Func<string, LoadoutWeapon>)null },
                 Enemies = s.Enemies,
                 Results = results,
                 WeaponAim = s.Weapons is WeaponManager manager ? new WeaponAimView(manager.Combat) : null,

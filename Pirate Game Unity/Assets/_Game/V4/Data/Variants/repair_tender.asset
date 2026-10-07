@@ -19,6 +19,7 @@ MonoBehaviour:
   kind: 0
   databaseSlotOrder: 4
   baseArchetype: {fileID: 11400000, guid: 0e967eacf89539f48bd071a9d2962980, type: 2}
+  isElite: 0
   displayName: repair tender
   behavior:
     enabled: 1
@@ -42,6 +43,7 @@ MonoBehaviour:
     model: {fileID: 0}
     tint: {r: 0.55, g: 1, b: 0.55, a: 1}
     viewSize: 1
+    typeColor: {r: 0.35, g: 1, b: 0.35, a: 1}
   concurrencyTags: []
   spawnTier: 0
   combat:

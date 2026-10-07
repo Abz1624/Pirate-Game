@@ -17,7 +17,8 @@ namespace RoguePirates.V4.Presentation.Hud
     /// </summary>
     public static class OfferCards
     {
-        public static LevelOffer ToCard(Offer o, ConfigSetRuntime config)
+        /// <param name="views">V5 M8z (7 Oct): the run views the "current → next" numbers read (null: no numbers).</param>
+        public static LevelOffer ToCard(Offer o, ConfigSetRuntime config, RoguePirates.V4.Views.IRunViews views = null)
         {
             var progression = config?.Single<ProgressionConfig>();
             switch (o.Kind)
@@ -75,7 +76,7 @@ namespace RoguePirates.V4.Presentation.Hud
                     }).ToArray();
                     var card = Plain(o, "Weapon Upgrade", config);
                     // Playtest (3 Oct): current to next numbers only (no weapon description).
-                    card.effectLines = CardStatLines.WeaponUpgrade(weapon, o.Lines, o.NextLevel) ?? lines.Select(l => l.displayText).ToArray();
+                    card.effectLines = CardStatLines.WeaponUpgrade(weapon, o.Lines, o.NextLevel, views) ?? lines.Select(l => l.displayText).ToArray();
                     card.description = string.Join("\n", card.effectLines);
                     card.upgradeLines = lines;
                     return card;
@@ -89,7 +90,7 @@ namespace RoguePirates.V4.Presentation.Hud
                     var card = Plain(o, o.CurrentLevel > 0 ? "Logbook Upgrade" : "New Logbook", config);
                     card.title = logbook != null ? logbook.displayName : o.Id;
                     // Playtest (3 Oct): the stat from its current value to the next.
-                    card.effectLines = CardStatLines.Logbook(logbook, logbook != null ? logbook.perLevelAdditive * mult : 0f) ?? new[] { line };
+                    card.effectLines = CardStatLines.Logbook(logbook, logbook != null ? logbook.perLevelAdditive * mult : 0f, views) ?? new[] { line };
                     card.description = string.Join("\n", card.effectLines);
                     card.upgradeLines = Array.Empty<WeaponUpgradeLine>();
                     return card;

@@ -19,6 +19,7 @@ MonoBehaviour:
   kind: 0
   databaseSlotOrder: 2
   baseArchetype: {fileID: 11400000, guid: c45351615dd001b4fa8f3dbdc97e7df4, type: 2}
+  isElite: 0
   displayName: bomb ketch
   behavior:
     enabled: 1
@@ -42,6 +43,7 @@ MonoBehaviour:
     model: {fileID: 0}
     tint: {r: 0.8, g: 0.55, b: 1, a: 1}
     viewSize: 1.2
+    typeColor: {r: 0.7, g: 0.3, b: 1, a: 1}
   concurrencyTags: []
   spawnTier: 0
   combat:

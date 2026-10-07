@@ -32,14 +32,20 @@ cd plan/playtest/montecarlo
 node compare_session.mjs ../sessions/session-20261006-153000-rook.json
 ```
 
-The script runs `sim.mjs` on `data.json` for the session's captain and starting weapon. It uses 200 seeds and summons the
+`data.json` is the game's config set exported by the Unity Editor (menu RoguePirates > V5 > Balance: export the Monte
+Carlo data, or `unity command eval "return RoguePirates.V4.Editor.MonteCarloExport.Run();"`); `node check_export.mjs`
+compares it with the YAML fallback (`export_data.py`) and lists any field that differs. `node fit_sessions.mjs` refits
+the model's constants on the recorded sessions in this folder.
+
+The script runs `sim.mjs` on `data.json` for the session's captain and starting weapon, replaying the session's
+level-up picks. It uses 200 seeds and summons the
 boss at the session's Beacon time. It prints the session and the model side by side: level, kills, hull and damage each
 minute, level-up times, elite, miniboss and boss fights, damage by source, chests and the end. Then it lists the biggest
 mismatches and which model constants would close them. It measures this by changing each constant by +30%.
 
 Options:
 
-- `--export` rebuilds `data.json` from the Unity assets first (`python export_data.py`). The script warns you when the
+- `--export` rebuilds `data.json` from the YAML fallback first (`python export_data.py`), when no Editor is open. The script warns you when the
   assets are newer than `data.json`.
 - `--seeds 400` runs more seeds.
 - `--set accuracy=0.5` tries a model constant. You can repeat it.

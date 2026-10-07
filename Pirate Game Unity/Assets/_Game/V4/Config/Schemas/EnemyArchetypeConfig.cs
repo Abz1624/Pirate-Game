@@ -27,6 +27,9 @@ namespace RoguePirates.V4.Config
         public Color placeholderColor = Color.red;
         [Tooltip("V5 M3d (owner, 1 Oct 2026: an enemy that looks the same behaves the same): the model's colours × this (white = as authored).")]
         public Color tint = Color.white;
+        // V5 M8z (7 Oct): the ship type's colour moved here from the enemy view presenter's table keyed by enemy id.
+        [Tooltip("V5 M8z (playtest 3 Oct, owner): the enemy type's colour on its sails and flags, its hull leaning towards it, readable at a glance from the camera (alpha 0 = none: the view keeps its tint).")]
+        public Color typeColor = new Color(0f, 0f, 0f, 0f);
         [Tooltip("V5 M3d: the drawn size and the hitbox × this.")]
         [Min(0.1f)] public float viewSize = 1f;
         [Tooltip("Views of this model to prewarm in the V4 view pool (0 = the pool catalog's default for its kind). Read by the pool catalog (M4); V4 enemy views use it from M8.")]

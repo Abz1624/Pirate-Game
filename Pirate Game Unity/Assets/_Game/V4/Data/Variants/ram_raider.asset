@@ -19,6 +19,7 @@ MonoBehaviour:
   kind: 0
   databaseSlotOrder: 1
   baseArchetype: {fileID: 11400000, guid: 41ad36546b03afc40b3c5a33a868ff37, type: 2}
+  isElite: 0
   displayName: ram raider
   behavior:
     enabled: 1
@@ -42,6 +43,7 @@ MonoBehaviour:
     model: {fileID: 0}
     tint: {r: 1, g: 0.45, b: 0.45, a: 1}
     viewSize: 1.05
+    typeColor: {r: 1, g: 0.3, b: 0.35, a: 1}
   concurrencyTags:
   - charge_windup
   spawnTier: 1

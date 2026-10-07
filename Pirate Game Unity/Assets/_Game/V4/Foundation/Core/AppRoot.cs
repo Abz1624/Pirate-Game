@@ -16,6 +16,21 @@ namespace RoguePirates.V4.Foundation.Core
         public ConfigService Config { get; private set; }
         public AudioService Audio { get; private set; }
 
+        // V5 M8z (7 Oct): app-lifetime services the outer assemblies own (the online services, the 1v1 session), created
+        // once by their composition code and registered here, so they live and die with the app root (they were a lazy
+        // DontDestroyOnLoad singleton and a static class with mutable state).
+        readonly System.Collections.Generic.Dictionary<Type, object> _services = new System.Collections.Generic.Dictionary<Type, object>();
+
+        /// <summary>V5 M8z (7 Oct): registers an app-lifetime service (replaces one of the same type).</summary>
+        public void Register<T>(T service) where T : class => _services[typeof(T)] = service ?? throw new ArgumentNullException(nameof(service));
+
+        /// <summary>V5 M8z (7 Oct): the registered app-lifetime service of this type.</summary>
+        public bool TryGet<T>(out T service) where T : class
+        {
+            service = _services.TryGetValue(typeof(T), out var s) ? s as T : null;
+            return service != null;
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void AutoBootstrap() => EnsureInitialized();
 

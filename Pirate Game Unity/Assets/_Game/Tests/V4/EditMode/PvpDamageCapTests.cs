@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
-using RoguePirates.V4.DevTools.Balance;
 using RoguePirates.V4.Progression;
 using RoguePirates.V4.Spawning;
 using RoguePirates.V4.Weapons;
@@ -209,18 +208,19 @@ namespace RoguePirates.V4.Tests
         }
 
         /// <summary>Per level 1..max: the best value of every upgrade axis over many Common paths (RaisePick's cards).</summary>
-        static LoadoutEntry[] UpperUpgrades(SimContent c, WeaponConfig w, int paths = 300)
+        static LoadoutEntry[] UpperUpgrades(ConfigSetRuntime c, WeaponConfig w, int paths = 300)
         {
             var max = Mathf.Max(1, w.maxLevel);
             var best = new LoadoutEntry[max + 1];
             for (var l = 1; l <= max; l++)
                 best[l] = new LoadoutEntry { Key = w, WeaponId = w.weaponId, Level = l, DamageBonus = 0f, QuantityBonus = 0, CooldownMult = float.MaxValue,
                     SpeedMult = 0f, SizeMult = 0f, DurationMult = 0f, KnockbackMult = 1f };
-            var generator = new OfferGenerator(() => c.Progression, () => c.OfferWeights, () => c.WeaponsInOrder, () => c.LogbooksInOrder, () => c.Evolutions, () => false);
+            var generator = new OfferGenerator(() => c.Single<ProgressionConfig>(), () => c.Single<OfferWeightsConfig>(), () => OfferGenerator.InDatabaseOrder(c.All<WeaponConfig>()),
+                () => OfferGenerator.InDatabaseOrder(c.All<LogbookConfig>()), () => c.All<WeaponEvolutionConfig>().ToList(), () => false);
             for (var path = 0; path < paths; path++)
             {
                 var rng = new Rng(9000 + path * 31 + w.weaponId.GetHashCode());
-                var loadout = new ProgressionLoadout(id => id == w.weaponId ? w : null, _ => null) { NewWeaponDamageBonus = c.Progression.newWeaponDamageBonus };
+                var loadout = new ProgressionLoadout(id => id == w.weaponId ? w : null, _ => null) { NewWeaponDamageBonus = c.Single<ProgressionConfig>().newWeaponDamageBonus };
                 loadout.EnsureSlotCapacity(1);
                 loadout.Equip(w.weaponId);
                 var lw = loadout.Weapons[0];
@@ -258,14 +258,14 @@ namespace RoguePirates.V4.Tests
 
         const int MaxExtraQuantity = 3; // Extra Hands: +1 a level, three levels
 
-        static List<WeaponPower> MeasureAll(ConfigSetRuntime config, SimContent c, StringBuilder log)
+        static List<WeaponPower> MeasureAll(ConfigSetRuntime config, StringBuilder log)
         {
             var powers = new List<WeaponPower>();
             var weapons = config.All<WeaponConfig>().Where(w => w != null && !string.IsNullOrEmpty(w.weaponId) && w.databaseOrder >= 0
                 && Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(w.weaponId)).OrderBy(w => w.databaseOrder).ToList();
             foreach (var w in weapons)
             {
-                var ups = UpperUpgrades(c, w);
+                var ups = UpperUpgrades(config, w);
                 var max = ups.Length - 1;
                 // the best three placements at levels 1 and 12 (most quantity) are tried at every level and quantity
                 var bestAt = new List<Placement>();
@@ -281,7 +281,7 @@ namespace RoguePirates.V4.Tests
                 var top = bestAt.Select(p => (p, d: Measure(config, ups[max], p, false, MaxExtraQuantity).dps)).OrderByDescending(x => x.d).First().p;
                 var line = new StringBuilder($"{w.weaponId,-20} L1 {power.Dps[1, 1],7:0.0}  L6 {power.Dps[1, Mathf.Min(6, max)],7:0.0}  L12 {power.Dps[1, max],7:0.0}  L12+3 hands {power.Dps[MaxExtraQuantity, max],7:0.0} raw/s");
                 // evolutions (not dealt in a 1v1 today, where level-ups never offer one; counted at the top level anyway)
-                foreach (var e in c.Evolutions.Where(e => e.baseWeapon == w))
+                foreach (var e in config.All<WeaponEvolutionConfig>().Where(e => e.baseWeapon == w))
                 {
                     var evolved = ups[max];
                     evolved.EvolutionId = e.evolutionId;
@@ -354,9 +354,8 @@ namespace RoguePirates.V4.Tests
         public void ServerDamageCap_IsAboveTheMeasuredWorstCase_AtEveryLevel()
         {
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
-            var c = new SimContent(config) { RegularPlayerRum = int.MaxValue };
             var log = new StringBuilder();
-            var powers = MeasureAll(config, c, log);
+            var powers = MeasureAll(config, log); // every weapon (V5 M8z: was the retired simulator's content with all weapons owned)
             var worst = WorstByLevel(powers);
             log.AppendLine("level | worst raw/s | server sustained | margin");
             var failures = new List<string>();

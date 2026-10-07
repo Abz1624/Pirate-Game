@@ -60,7 +60,8 @@ namespace RoguePirates.V4.DevTools.Console
                 AddSection(new WeaponsSection());
                 AddSection(new BuildSection()); // M9
                 AddSection(new DifficultySection()); // M10
-                AddSection(new BalanceSection(game)); // V5 M2
+                // V5 M8z (I8z.7): the in-engine simulator's Balance section is retired; the balance model is the JavaScript
+                // Monte Carlo (plan/playtest/montecarlo), fed by the Editor export of these configs.
                 AddSection(new RumSection()); // M12
                 AddSection(new NarrativeSection()); // M13
                 AddSection(new EventsSection(game));

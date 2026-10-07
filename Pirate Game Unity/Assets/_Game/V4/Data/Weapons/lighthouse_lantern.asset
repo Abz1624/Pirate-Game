@@ -197,4 +197,5 @@ MonoBehaviour:
     summonModelScale: 0.42
     orbitModel: {fileID: 1709254077376921, guid: 4483cd566c4a75e4d803a5b06ef28387, type: 3}
     orbitModelScale: 0.8
+    placeholderLook: 4
     noHitHighlight: 0

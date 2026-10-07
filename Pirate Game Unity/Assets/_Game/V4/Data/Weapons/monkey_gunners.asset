@@ -192,4 +192,5 @@ MonoBehaviour:
     summonModelScale: 1
     orbitModel: {fileID: 0}
     orbitModelScale: 1
+    placeholderLook: 2
     noHitHighlight: 0

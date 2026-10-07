@@ -102,7 +102,7 @@ namespace RoguePirates.V4.Presentation
                 InstallHud(views, game.Events);
                 InstallWeaponEffects(game, views);
                 InstallWorld(game, views);
-                InstallLevelUp(game);
+                InstallLevelUp(game, views);
                 InstallVfxProfiles(views);
                 // Demo: the chosen Captain's sail and flag on the player ship.
                 if (views.Ship != null && views.Captain != null)
@@ -205,10 +205,11 @@ namespace RoguePirates.V4.Presentation
         public RoguePirates.V4.Presentation.Hud.ThreatArrowPresenter ThreatArrows { get; private set; }
 
         /// <summary>M14.11: the level-up cards on the run canvas; the progression module and the tools reach them through the context.</summary>
-        void InstallLevelUp(V4Game game)
+        void InstallLevelUp(V4Game game, Views.IRunViews views)
         {
             LevelUp = RoguePirates.V4.Presentation.Hud.LevelUpPresenter.Create(FindRunCanvas(), game.Config);
             if (LevelUp == null) return;
+            LevelUp.Views = views; // V5 M8z (7 Oct): the cards' numbers through the run views
             RoguePirates.V4.Progression.OfferGenerator.WeaponCardsOnly = RoguePirates.V4.Presentation.Hud.SaltWindHudSettings.Hides(s => s.weaponCardsOnly);
             RoguePirates.V4.Progression.OfferGenerator.ExcludedWeapons.Clear();
             var demo = RoguePirates.V4.Foundation.Core.DemoMode.Off ? null : RoguePirates.V4.Presentation.Hud.SaltWindHudSettings.Load();

@@ -19,6 +19,7 @@ MonoBehaviour:
   kind: 0
   databaseSlotOrder: 3
   baseArchetype: {fileID: 11400000, guid: efb5cfc0a40b6f944a972187f58cab10, type: 2}
+  isElite: 0
   displayName: net cutter
   behavior:
     enabled: 1
@@ -42,6 +43,7 @@ MonoBehaviour:
     model: {fileID: 0}
     tint: {r: 1, g: 0.7, b: 0.4, a: 1}
     viewSize: 1
+    typeColor: {r: 1, g: 0.6, b: 0.15, a: 1}
   concurrencyTags: []
   spawnTier: 0
   combat:

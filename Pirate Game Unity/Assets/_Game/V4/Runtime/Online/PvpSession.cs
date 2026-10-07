@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace RoguePirates.V4.Online
 {
@@ -11,6 +10,9 @@ namespace RoguePirates.V4.Online
     /// seat status and the draft), the lobby WebSocket (lobby pushes and the relay's match messages), the server clock,
     /// and the scene changes (the run scene when the match starts, the menu after it). The run's match controller and the
     /// menu panels listen to its events; everything runs on the main thread.
+    /// V5 M8z (7 Oct): owned by the app root (<see cref="OnlineComposition"/> adds it to the app root's object, gives it
+    /// the online services and the scene navigation); it was a lazy DontDestroyOnLoad object of its own that called the
+    /// scene manager itself.
     /// </summary>
     public sealed class PvpSession : MonoBehaviour
     {
@@ -18,22 +20,24 @@ namespace RoguePirates.V4.Online
         const float PingSeconds = 2f;
         const float ReconnectSeconds = 1.5f;
 
-        static PvpSession _instance;
+        /// <summary>The app root's session (composed on first use, kept across scenes with the app root).</summary>
+        public static PvpSession Instance => OnlineComposition.Pvp;
 
-        /// <summary>The session (created on first use, kept across scenes).</summary>
-        public static PvpSession Instance
+        public static bool Exists => OnlineComposition.HasPvp;
+
+        OnlineServices _online;
+        PvpSceneNavigation _scenes;
+
+        /// <summary>V5 M8z (7 Oct): the composition root's online services and scene navigation.</summary>
+        public void Bind(OnlineServices online, PvpSceneNavigation scenes)
         {
-            get
-            {
-                if (_instance != null) return _instance;
-                var go = new GameObject("PvpSession");
-                DontDestroyOnLoad(go);
-                _instance = go.AddComponent<PvpSession>();
-                return _instance;
-            }
+            _online = online;
+            _scenes = scenes;
         }
 
-        public static bool Exists => _instance != null;
+        OnlineServices Online => _online ?? OnlineComposition.Online;
+        string ActiveScene => _scenes != null ? _scenes.ActiveScene : string.Empty;
+        void LoadScene(string scene) => _scenes?.Load(scene);
 
         /// <summary>A lobby code from an invite link (?join=CODE on WebGL), waiting for the menu to join it.</summary>
         public static string PendingJoinCode { get; set; }
@@ -41,7 +45,6 @@ namespace RoguePirates.V4.Online
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
-            _instance = null;
             PendingJoinCode = null;
         }
 
@@ -75,8 +78,8 @@ namespace RoguePirates.V4.Online
         /// <summary>A player-facing note (errors, the lobby closing).</summary>
         public event Action<string> Notice;
 
-        public string MyPlayerId => OnlineService.Active != null ? OnlineService.Active.playerId : null;
-        string Token => OnlineService.Active != null ? OnlineService.Active.token : null;
+        public string MyPlayerId => Online.Active != null ? Online.Active.playerId : null;
+        string Token => Online.Active != null ? Online.Active.token : null;
         public bool IsHost => Lobby != null && !string.IsNullOrEmpty(MyPlayerId) && Lobby.hostPlayerId == MyPlayerId;
         public LobbySeat MySeat => Lobby != null ? Lobby.Seat(MyPlayerId) : null;
         public LobbySeat OpponentSeat
@@ -117,16 +120,16 @@ namespace RoguePirates.V4.Online
 
         // ---- API ----
 
-        ApiClient Client => OnlineService.Client;
+        ApiClient Client => Online.Client;
 
         /// <summary>Online with a registered profile, or a player-facing reason.</summary>
         public async Awaitable<string> EnsureReady()
         {
-            if (!await OnlineService.EnsureConnected()) return "Offline: the PvP server is not reachable.";
-            var p = OnlineService.Active;
+            if (!await Online.EnsureConnected()) return "Offline: the PvP server is not reachable.";
+            var p = Online.Active;
             if (p == null) return "Make a captain profile first.";
-            if (!p.Registered) await OnlineService.SyncActive();
-            return OnlineService.Active != null && OnlineService.Active.Registered ? null : "Your profile is not online yet.";
+            if (!p.Registered) await Online.SyncActive();
+            return Online.Active != null && Online.Active.Registered ? null : "Your profile is not online yet.";
         }
 
         public async Awaitable<string> Host(bool isPublic)
@@ -174,7 +177,7 @@ namespace RoguePirates.V4.Online
 
         public async Awaitable<ApiResult<PublicLobbiesResponse>> PublicLobbies()
         {
-            await OnlineService.EnsureConnected();
+            await Online.EnsureConnected();
             return await Client.Get<PublicLobbiesResponse>("/api/lobbies/public");
         }
 
@@ -367,7 +370,7 @@ namespace RoguePirates.V4.Online
                         LastMatchEndJson = null;
                         RematchRequestedBy = null;
                     }
-                    var scene = SceneManager.GetActiveScene().name;
+                    var scene = ActiveScene;
                     if (start.live != null && start.live.ended)
                     {
                         // Playtest (4 Oct): back after the end (the socket dropped): the running match ends too (the
@@ -415,7 +418,7 @@ namespace RoguePirates.V4.Online
                 Lobby = null; // a new lobby: SetLobby resets the match and reconnects
                 SetLobby(r.Data);
                 OpenLobbyInMenu = true;
-                if (SceneManager.GetActiveScene().name != V4SceneNames.MainMenu) SceneManager.LoadScene(V4SceneNames.MainMenu);
+                if (ActiveScene != V4SceneNames.MainMenu) LoadScene(V4SceneNames.MainMenu);
             }
             catch (Exception e) { Debug.LogWarning("PvpSession.MoveToRematch: " + e.Message); }
         }
@@ -424,20 +427,19 @@ namespace RoguePirates.V4.Online
         {
             RunRequest.RequestPvp(start.seed);
             Composition.MenuServices.BeginSaltwindExperiment();
-            SceneManager.LoadScene(V4SceneNames.SaltwindRun);
+            LoadScene(V4SceneNames.SaltwindRun);
         }
 
         /// <summary>The run's end screen: back to the menu (the lobby is left when the match is over).</summary>
         public void ReturnToMenu(bool leaveLobby)
         {
             if (leaveLobby) Forget();
-            SceneManager.LoadScene(V4SceneNames.MainMenu);
+            LoadScene(V4SceneNames.MainMenu);
         }
 
         void OnDestroy()
         {
             CloseSocket();
-            if (_instance == this) _instance = null;
         }
 
         void OnApplicationQuit() => CloseSocket();

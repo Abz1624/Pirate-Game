@@ -33,5 +33,12 @@ namespace RoguePirates.V4.Foundation.Data
         [Tooltip("V5 M3d: the drawn size and the gameplay radius × this.")] public float viewSize = 1f;
         public bool isBoss;
         public bool isMiniboss;
+        // V5 M8z (7 Oct): data the presenters keyed by enemy id before (the type colour table, the "elite_" prefix).
+        [Tooltip("V5 M8z: the type colour on sails and flags (alpha 0 = none: the view keeps its tint).")] public Color typeColor = new Color(0f, 0f, 0f, 0f);
+        [Tooltip("V5 M8z: an elite variant (health bar; its VFX profile falls back to its base enemy's).")] public bool isElite;
+        [Tooltip("V5 M8z: an elite variant's base enemy id (its VFX profile fallback).")] public string baseEnemyId;
+
+        /// <summary>V5 M8z (7 Oct): the colour a player sees on the enemy (its type colour, else its tint).</summary>
+        public Color SeenColor => typeColor.a > 0f ? typeColor : visualTint;
     }
 }

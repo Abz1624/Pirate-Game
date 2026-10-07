@@ -13,6 +13,9 @@ namespace RoguePirates.V4.Tests
     /// V5 M3c (owner, 1 Oct 2026: "1 1 2 3 5"): fewer level-ups whose gaps grow: the first level with the first kill,
     /// then 10, 10, 20, 30, 50 s, then 60 s, through a fitted XP table; weapon cards worth more levels (evolutions stay
     /// reachable) and an interim flat enemy scale (every personality's run length and boss wins held until M3d).
+    /// V5 M8z (I8z.7): the three checks that ran the in-engine simulator (level times on another seed, every personality's
+    /// run length, the per-minute level targets) were retired with it; the JavaScript model is checked on the owner's
+    /// recorded sessions instead (plan/playtest/montecarlo/compare_session.mjs).
     /// </summary>
     public sealed class V5LevelRhythmTests
     {
@@ -90,51 +93,5 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual((1f, 1f), (parity.Single<ExperimentConfig>().enemyHpMultiplier, parity.Single<ExperimentConfig>().enemyDamageMultiplier));
         }
 
-        [Test]
-        public void EachLevel_ComesNearItsTargetTime_OnAnotherSeed()
-        {
-            // The growing-gap shape, not only the averages: each level to 13 (10:00) within ±25% of its target time, measured
-            // on seed 1 (the table was fitted on seed 11).
-            using var rt = new ConfigSetRuntime(Set);
-            var c = new SimContent(rt);
-            var median = XpTableTuner.MedianLevelTimes(c, c.Personalities.Find(c.Targets.baselinePersonalityId), 60, 1, 13);
-            var off = new List<string>();
-            for (var l = 2; l <= 13; l++)
-            {
-                var target = XpTableTuner.TargetTime(l, median[1]);
-                if (float.IsNaN(median[l]) || Mathf.Abs(median[l] / target - 1f) > 0.25f) off.Add($"level {l}: {median[l]:0} s against {target:0} s");
-            }
-            CollectionAssert.IsEmpty(off);
-        }
-
-        [Test]
-        public void EveryPersonality_KeepsItsRunLengthAndBossWins()
-        {
-            // G3c.2: M2's outcome targets held for every personality, not only the baseline. Known: the Glass Cannon runs a
-            // little long (since M3); since M3d (owner: the late game was too hard) the First-Timer may live up to 1 minute past
-            // its band (recorded for the owner's playtest, question 9). M3c's Build Planner bound is cleared by M3d.
-            // V5 M4: chests no longer roll the evolution items of weapons a fresh save does not own, so the First-Timer gets
-            // general items more often and lives 2 s longer (10.03 min): the recorded miss is 1.1 minutes, still question 9.
-            using var rt = new ConfigSetRuntime(Set);
-            var c = new SimContent(rt);
-            var r = SimBatch.Run(c, 200, 1);
-            bool Known(TargetCheck x) =>
-                (x.Name.StartsWith("Glass Cannon: median end minute") && x.Value <= x.Band.max + 0.75f) ||
-                (x.Name.StartsWith("First-Timer: median end minute") && x.Value <= x.Band.max + 1.1f);
-            var failed = r.Personalities.SelectMany(p => p.Checks).Where(x => !x.Met && !x.Name.Contains("level at") && !Known(x)).Select(x => x.ToString()).ToList();
-            CollectionAssert.IsEmpty(failed);
-        }
-
-        [Test]
-        public void TheSimulator_MeetsThePerMinuteLevelTargets_OnTheBaseline()
-        {
-            using var rt = new ConfigSetRuntime(Set);
-            var c = new SimContent(rt);
-            var r = SimBatch.Run(c, 200, 1, new[] { c.Personalities.Find(c.Targets.baselinePersonalityId) });
-            var levels = r.Model.SelectMany(m => m.Checks).Where(x => x.Name.EndsWith(": level")).ToList();
-            Assert.GreaterOrEqual(levels.Count, 10, "the level checks ran");
-            CollectionAssert.IsEmpty(levels.Where(x => !x.Met).Select(x => x.ToString()).ToList(), "the level at each minute follows the rhythm");
-            CollectionAssert.IsEmpty(r.Pacing.Where(x => x.Name.StartsWith("seconds between level-ups") && !x.Met).Select(x => x.ToString()).ToList());
-        }
     }
 }

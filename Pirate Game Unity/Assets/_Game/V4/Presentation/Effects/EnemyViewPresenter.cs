@@ -42,7 +42,8 @@ namespace RoguePirates.V4.Presentation.Effects
         /// <summary>V5 M3d: the views' tints (tests).</summary>
         public EnemyViewTint Tint => _tint;
         /// <summary>Demo: the artists' per-enemy VFX profiles (trail, hit).</summary>
-        public VfxProfilePlayer Profiles { get; set; }
+        public VfxProfilePlayer Profiles { get => _profiles; set { _profiles = value; RegisterEliteBases(); } }
+        VfxProfilePlayer _profiles;
         /// <summary>Playtest (3 Oct, owner): the live boss's view (null when there is none), for the off-screen boss arrow.</summary>
         public Transform BossView { get; private set; }
 
@@ -67,35 +68,30 @@ namespace RoguePirates.V4.Presentation.Effects
         }
 
         // Playtest (3 Oct, owner): one colour per enemy ship type and variant, readable at a glance from the camera (sails
-        // and flags in the colour, the hull leaning towards it). A variant's colour is its data tint made vivid. Ids not
-        // listed (creatures, the boss) keep their data tint.
-        static readonly Dictionary<string, Color> ShipTypeColors = new Dictionary<string, Color>
-        {
-            { "deckhand_dinghy", new Color(0.95f, 0.85f, 0.55f) }, // sand
-            { "treasure_raider", new Color(1f, 0.78f, 0.1f) },     // gold
-            { "cutthroat_skiff", new Color(1f, 0.28f, 0.22f) },    // red
-            { "needle_sloop", new Color(0.8f, 1f, 0.2f) },         // lime
-            { "drowned_pursuer", new Color(0.35f, 1f, 0.55f) },    // sea green
-            { "cannonboat", new Color(0.3f, 0.5f, 1f) },           // navy blue
-            { "gunner_cog", new Color(0.9f, 0.15f, 0.3f) },        // crimson
-            { "net_cutter", new Color(1f, 0.6f, 0.15f) },          // orange
-            { "shield_frigate", new Color(0.75f, 0.85f, 1f) },     // steel white
-            { "drowned_harrier", new Color(0.2f, 1f, 0.85f) },     // teal
-            { "bomb_boat", new Color(1f, 0.42f, 0.05f) },          // fire orange
-            { "bomb_ketch", new Color(0.7f, 0.3f, 1f) },           // purple
-            { "rammer_raft", new Color(0.92f, 0.88f, 0.78f) },     // bone
-            { "ram_raider", new Color(1f, 0.3f, 0.35f) },          // rose red
-            { "boarding_barge", new Color(0.4f, 0.72f, 1f) },      // sky blue
-            { "powder_barge", new Color(1f, 0.55f, 0.1f) },        // powder orange
-            { "repair_tender", new Color(0.35f, 1f, 0.35f) },      // green
-        };
+        // and flags in the colour, the hull leaning towards it). V5 M8z (7 Oct): the colours are enemy data (the archetype's
+        // visual.typeColor, a variant's look.typeColor), no longer a table keyed by enemy id here; an enemy without one
+        // (creatures, the boss) keeps its data tint.
         const float HullTintStrength = 0.6f;
 
-        /// <summary>The enemy type's colour (its data tint when it has none in the table).</summary>
-        public static Color TypeColor(EnemyDefinition def) =>
-            def != null && def.id != null && ShipTypeColors.TryGetValue(def.id, out var c) ? c : def != null ? def.visualTint : Color.white;
+        /// <summary>The enemy type's colour (its data tint when it has none). V5 M8z (7 Oct): read from the definition.</summary>
+        public static Color TypeColor(EnemyDefinition def) => def != null ? def.SeenColor : Color.white;
 
-        public void Prepare(EnemyDefinition[] definitions) { } // V3 only recorded the model ids; models are stripped per instance
+        EnemyDefinition[] _definitions;
+
+        /// <summary>V3 only recorded the model ids; models are stripped per instance. V5 M8z (7 Oct): the elites' base
+        /// enemies go to the VFX profiles (an elite without its own profile uses its base enemy's).</summary>
+        public void Prepare(EnemyDefinition[] definitions)
+        {
+            _definitions = definitions;
+            RegisterEliteBases();
+        }
+
+        void RegisterEliteBases()
+        {
+            if (_profiles == null || _definitions == null) return;
+            foreach (var def in _definitions)
+                if (def != null && def.isElite && !string.IsNullOrEmpty(def.baseEnemyId)) _profiles.SetEnemyFallback(def.id, def.baseEnemyId);
+        }
 
         public float FallbackVisualScale(EnemyDefinition def) => EnemyVisualFallbackResolver.ResolveVisualScale(def);
 
@@ -143,8 +139,8 @@ namespace RoguePirates.V4.Presentation.Effects
         {
             if (view == null || _pools == null || !_pools.Has(HealthBarKey)) return null;
             // Playtest (4 Oct, owner): health bars on elites, minibosses and the boss only (not ordinary enemies). An elite is
-            // a unit with an elite affix or an elite variant (elite_hammerhead, elite_kraken_spawn).
-            var isElite = elite || (def != null && def.id != null && def.id.StartsWith("elite_", System.StringComparison.Ordinal));
+            // a unit with an elite affix or an elite variant (V5 M8z, 7 Oct: the variant's isElite flag, not its id prefix).
+            var isElite = elite || (def != null && def.isElite);
             if (def == null || (!def.isBoss && !def.isMiniboss && !isElite)) return null;
             var go = _pools.Acquire(HealthBarKey, view.position, Quaternion.identity);
             if (go == null) return null;

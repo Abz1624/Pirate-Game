@@ -19,6 +19,7 @@ MonoBehaviour:
   kind: 0
   databaseSlotOrder: 0
   baseArchetype: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
+  isElite: 0
   displayName: needle sloop
   behavior:
     enabled: 1
@@ -42,6 +43,7 @@ MonoBehaviour:
     model: {fileID: 0}
     tint: {r: 1, g: 1, b: 0.35, a: 1}
     viewSize: 0.9
+    typeColor: {r: 0.6, g: 1, b: 0.15, a: 1}
   concurrencyTags: []
   spawnTier: 1
   combat:

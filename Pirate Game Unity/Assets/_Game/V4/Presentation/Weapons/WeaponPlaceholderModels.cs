@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RoguePirates.V4.Config;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -12,15 +13,11 @@ namespace RoguePirates.V4.Presentation.Weapons
     /// Anchor Flail's anchors, the Lighthouse Lantern's lanterns and the Cursed Doubloons' coins. Each template is built
     /// once per weapon (inactive, under the pool staging) and pooled by the presenters like any model; colours are shared
     /// materials (one per colour, no per-instance copies). Once real art is set in the weapon's data (a model whose name
-    /// is not a cannon's) it is used instead.
+    /// is not a cannon's) it is used instead. V5 M8z (7 Oct): which stand-in a weapon gets is its data
+    /// (WeaponEffectsVisual.placeholderLook), no longer a switch on its weapon id here.
     /// </summary>
     public static class WeaponPlaceholderModels
     {
-        public const string ParrotSquadron = "parrot_squadron";
-        public const string MonkeyGunners = "monkey_gunners";
-        public const string AnchorFlail = "anchor_flail";
-        public const string LighthouseLantern = "lighthouse_lantern";
-        public const string CursedDoubloons = "cursed_doubloons";
 
         static readonly Dictionary<string, GameObject> Templates = new Dictionary<string, GameObject>();
         static readonly Dictionary<Color, Material> Materials = new Dictionary<Color, Material>();
@@ -31,35 +28,35 @@ namespace RoguePirates.V4.Presentation.Weapons
             model == null || model.name.IndexOf("Cannon", StringComparison.OrdinalIgnoreCase) >= 0;
 
         /// <summary>The summon model to draw: the placeholder when the data's model is a cannon stand-in, else the data's.</summary>
-        public static GameObject Summon(string weaponId, GameObject dataModel, Transform staging)
+        public static GameObject Summon(WeaponPlaceholderLook look, GameObject dataModel, Transform staging)
         {
             if (!IsCannonStandIn(dataModel)) return dataModel;
-            return weaponId switch
+            return look switch
             {
-                ParrotSquadron => Get("Placeholder_Parrot", BuildParrot, staging),
-                MonkeyGunners => Get("Placeholder_Monkey", BuildMonkey, staging),
+                WeaponPlaceholderLook.Parrots => Get("Placeholder_Parrot", BuildParrot, staging),
+                WeaponPlaceholderLook.MonkeyGunners => Get("Placeholder_Monkey", BuildMonkey, staging),
                 _ => dataModel,
             };
         }
 
         /// <summary>The orbit model to draw: the placeholder when the data's model is a cannon stand-in, else the data's.</summary>
-        public static GameObject Orbit(string weaponId, GameObject dataModel, Transform staging)
+        public static GameObject Orbit(WeaponPlaceholderLook look, GameObject dataModel, Transform staging)
         {
             if (dataModel == null || !IsCannonStandIn(dataModel)) return dataModel; // no model: drawn as cutlass blades
-            return weaponId switch
+            return look switch
             {
-                AnchorFlail => Get("Placeholder_Anchor", BuildAnchor, staging),
-                LighthouseLantern => Get("Placeholder_Lantern", BuildLantern, staging),
+                WeaponPlaceholderLook.Anchors => Get("Placeholder_Anchor", BuildAnchor, staging),
+                WeaponPlaceholderLook.Lanterns => Get("Placeholder_Lantern", BuildLantern, staging),
                 _ => dataModel,
             };
         }
 
         /// <summary>A projectile model for a weapon with none in its data (which would fall back to the cannonball); null
         /// for cannon weapons, which keep the cannonball.</summary>
-        public static GameObject Projectile(string weaponId, Transform staging) => weaponId switch
+        public static GameObject Projectile(WeaponPlaceholderLook look, Transform staging) => look switch
         {
-            MonkeyGunners => Get("Placeholder_MonkeyShot", BuildMonkeyShot, staging),
-            ParrotSquadron => Get("Placeholder_ParrotShot", BuildParrotShot, staging),
+            WeaponPlaceholderLook.MonkeyGunners => Get("Placeholder_MonkeyShot", BuildMonkeyShot, staging),
+            WeaponPlaceholderLook.Parrots => Get("Placeholder_ParrotShot", BuildParrotShot, staging),
             _ => null,
         };
 

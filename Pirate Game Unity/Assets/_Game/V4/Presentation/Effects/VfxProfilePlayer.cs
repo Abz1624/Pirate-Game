@@ -67,13 +67,22 @@ namespace RoguePirates.V4.Presentation.Effects
         {
             if (Library == null) return null;
             var slot = Library.Slot(subject, id, kind);
-            // An elite variant without its own profile uses its base enemy's ("elite_x" → "x").
-            if (slot == null && subject == VfxSubject.Enemy && id != null && id.StartsWith(ElitePrefix, System.StringComparison.Ordinal))
-                slot = Library.Slot(subject, id.Substring(ElitePrefix.Length), kind);
+            // An elite variant without its own profile uses its base enemy's (V5 M8z, 7 Oct: from the enemy data, see
+            // SetEnemyFallback; it was the "elite_x" → "x" id prefix).
+            if (slot == null && subject == VfxSubject.Enemy && id != null && _enemyFallback.TryGetValue(id, out var baseId))
+                slot = Library.Slot(subject, baseId, kind);
             return slot;
         }
 
-        const string ElitePrefix = "elite_";
+        readonly Dictionary<string, string> _enemyFallback = new Dictionary<string, string>();
+
+        /// <summary>V5 M8z (7 Oct): an enemy whose VFX profile falls back to another's (an elite variant to its base
+        /// enemy, from the definition's isElite and baseEnemyId).</summary>
+        public void SetEnemyFallback(string enemyId, string baseEnemyId)
+        {
+            if (string.IsNullOrEmpty(enemyId) || string.IsNullOrEmpty(baseEnemyId)) return;
+            _enemyFallback[enemyId] = baseEnemyId;
+        }
 
         /// <summary>Plays the slot's prefab at the pose (offset in the pose's frame); false when the slot has none.</summary>
         public bool Play(VfxSlot slot, Vector3 position, Quaternion rotation, float baseScale = 1f, Transform parent = null)

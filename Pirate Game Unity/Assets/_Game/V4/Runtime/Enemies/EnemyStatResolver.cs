@@ -24,8 +24,15 @@ namespace RoguePirates.V4.Enemies
         /// <summary>V5 M3d: the view's tint and size (white and 1 = as authored).</summary>
         public Color visualTint = Color.white;
         public float viewSize = 1f;
+        /// <summary>V5 M8z (7 Oct): the type colour on sails and flags (alpha 0 = none), the elite flag and an elite's base enemy.</summary>
+        public Color typeColor = new Color(0f, 0f, 0f, 0f);
+        public bool isElite;
+        public string baseEnemyId;
         public string[] tags;
         public bool isBoss, isMiniboss;
+
+        /// <summary>V5 M8z (7 Oct): the colour a player sees on the enemy (its type colour, else its tint).</summary>
+        public Color SeenColor => typeColor.a > 0f ? typeColor : visualTint;
         public ArchetypeCombat combat;
         public readonly Dictionary<string, StatLayer> Provenance = new Dictionary<string, StatLayer>();
 
@@ -66,6 +73,7 @@ namespace RoguePirates.V4.Enemies
             r.Set(ref r.placeholderColor, archetype.visual.placeholderColor, "placeholderColor", a);
             r.Set(ref r.visualTint, archetype.visual.tint, "visualTint", a);
             r.Set(ref r.viewSize, archetype.visual.viewSize, "viewSize", a);
+            r.Set(ref r.typeColor, archetype.visual.typeColor, "typeColor", a); // V5 M8z (7 Oct)
             r.Set(ref r.tags, archetype.tags, "tags", a);
             r.Set(ref r.isBoss, archetype.isBoss, "isBoss", a);
             r.Set(ref r.isMiniboss, archetype.isMiniboss, "isMiniboss", a);
@@ -89,6 +97,10 @@ namespace RoguePirates.V4.Enemies
                 elite.Set(ref elite.combat, variant.combat, "combat", StatLayer.Variant);
                 // V3's tier table did not list the registry elites, so they read as Soldier.
                 elite.Set(ref elite.tier, ConfigEnums.EnemyTier.Soldier, "tier", StatLayer.Variant);
+                // V5 M8z (7 Oct): the elite flag and its base enemy (VFX profile fallback) from data, not the id prefix.
+                elite.Set(ref elite.isElite, variant.isElite, "isElite", StatLayer.Variant);
+                elite.Set(ref elite.baseEnemyId, variant.baseArchetype.enemyId, "baseEnemyId", StatLayer.Variant);
+                elite.Set(ref elite.typeColor, variant.look != null ? variant.look.typeColor : new Color(0f, 0f, 0f, 0f), "typeColor", StatLayer.Variant);
                 return elite;
             }
 
@@ -123,6 +135,7 @@ namespace RoguePirates.V4.Enemies
             r.Set(ref r.displayName, variant.displayName, "displayName", v);
             r.Set(ref r.tags, variant.tags, "tags", v);
             r.Set(ref r.combat, variant.combat, "combat", v);
+            r.Set(ref r.isElite, variant.isElite, "isElite", v); // V5 M8z (7 Oct)
             if (variant.behavior.enabled) r.Set(ref r.behavior, variant.behavior.value, "behavior", v);
             if (variant.threatCost.enabled) r.Set(ref r.threatCost, variant.threatCost.value, "threatCost", v);
             if (variant.baseHP.enabled) r.Set(ref r.baseHP, variant.baseHP.value, "baseHP", v);
@@ -145,6 +158,7 @@ namespace RoguePirates.V4.Enemies
                 if (look.model != null) r.Set(ref r.visualPrefab, look.model, "visualPrefab", v);
                 if (look.tint != Color.white) r.Set(ref r.visualTint, look.tint, "visualTint", v);
                 if (!Mathf.Approximately(look.viewSize, 1f)) r.Set(ref r.viewSize, r.viewSize * look.viewSize, "viewSize", v);
+                r.Set(ref r.typeColor, look.typeColor, "typeColor", v); // V5 M8z (7 Oct): its own, not the base's
             }
             return r;
         }

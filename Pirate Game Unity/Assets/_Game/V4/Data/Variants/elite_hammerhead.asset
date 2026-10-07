@@ -19,6 +19,7 @@ MonoBehaviour:
   kind: 1
   databaseSlotOrder: 0
   baseArchetype: {fileID: 11400000, guid: 436853d953ea8be4e997135959b95c57, type: 2}
+  isElite: 1
   displayName: Elite Hammerhead
   behavior:
     enabled: 0
@@ -41,6 +42,7 @@ MonoBehaviour:
     model: {fileID: 0}
     tint: {r: 1, g: 1, b: 1, a: 1}
     viewSize: 1
+    typeColor: {r: 0, g: 0, b: 0, a: 0}
   concurrencyTags: []
   spawnTier: 0
   combat:

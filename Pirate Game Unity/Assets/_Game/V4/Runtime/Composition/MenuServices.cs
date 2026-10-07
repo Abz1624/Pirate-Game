@@ -23,6 +23,8 @@ namespace RoguePirates.V4.Composition
         MenuServices(ConfigSetRuntime config)
         {
             Config = config;
+            // V5 M8z (7 Oct): the weapon switch-off list is config.
+            RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.Register(config?.Single<UnlockConfig>()?.disabledWeaponIds);
             Locks = CreateLocks(() => Config);
             Unlocks = new UnlockService(Save, () => Config);
             Meta = new RoguePirates.V5.Meta.LocalMetaServices(Save, () => Config, ContentPort.IsContentOwned, CaptainBuyable);

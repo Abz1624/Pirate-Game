@@ -31,5 +31,10 @@ namespace RoguePirates.V4.Progression
         }
 
         public int LogbookRank(int index) => _levels.LogbookLevel(LogbookId(index));
+
+        /// <summary>V5 M8z (7 Oct): the player's stats (the level-up cards' Logbook lines).</summary>
+        public Func<RoguePirates.V4.Foundation.Core.PlayerStats> Stats;
+        public float StatValue(RoguePirates.V4.Foundation.Core.StatId stat) { var s = Stats?.Invoke(); return s != null ? s.Get(stat) : 0f; }
+        public float StatBase(RoguePirates.V4.Foundation.Core.StatId stat) { var s = Stats?.Invoke(); return s != null ? s.GetBase(stat) : 0f; }
     }
 }

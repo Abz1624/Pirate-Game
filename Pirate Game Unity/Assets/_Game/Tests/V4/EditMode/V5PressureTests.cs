@@ -13,6 +13,8 @@ namespace RoguePirates.V4.Tests
     /// <summary>
     /// V5 M3d (owner, 1 Oct 2026, notes e, h, k and the sketch): pressure from enemy count, not time-scaled HP or damage;
     /// a peak-and-valley crowd from keyframes; stronger types late; an enemy that looks the same behaves the same.
+    /// V5 M8z (I8z.7): the two checks that ran the in-engine simulator (the crowd's 3:45 peak, the boss fight's length at
+    /// an early and a late summon) were retired with it; the JavaScript model (plan/playtest/montecarlo) reports both.
     /// </summary>
     public sealed class V5PressureTests
     {
@@ -108,24 +110,6 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void TheCrowd_PeaksAt3m45_AboveTheValley()
-        {
-            // Review M3d (second pass): the crowd itself, not only the floor, must show the sketch's big early peak over
-            // the long valley. Baseline personality, 60 runs, the median crowd in 15 s bins.
-            using var rt = new ConfigSetRuntime(Set);
-            var c = new SimContent(rt);
-            var p = c.Personalities.Find(c.Targets.baselinePersonalityId);
-            var runs = Enumerable.Range(0, 60).Select(i => new SimRun(c, p, 1 + i, c.Captains[i % c.Captains.Count].captainKey).Play()).ToList();
-            float Bin(float seconds) => SimBatch.Percentile(runs.Select(r => r.AliveInBin(seconds)).Where(x => !float.IsNaN(x)).ToList(), 0.5f);
-            var peak = Mathf.Max(Bin(225f), Bin(240f));
-            var valley = SimBatch.Percentile(Enumerable.Range(0, 8).Select(i => Bin(270f + 15f * i)).ToList(), 0.5f); // 4:30-6:15
-            TestContext.WriteLine($"crowd at 3:45-4:15 {peak:0.0}, valley 4:30-6:15 {valley:0.0}");
-            Assert.Greater(peak, valley * 1.15f, "the 3:45 peak stands over the valley");
-            Assert.Greater(Mathf.Max(Bin(435f), Bin(450f)), peak, "the 7:15-7:30 peak is bigger (growing upwards)");
-            Assert.Greater(Mathf.Max(Bin(570f), Bin(585f)), valley, "and the climax");
-        }
-
-        [Test]
         public void HordeShips_AreTheOrdinaryShipsTheyLookLike()
         {
             // Review M3d #6 (note k): a horde is more of the same ship, not a faster or weaker copy of it.
@@ -213,12 +197,12 @@ namespace RoguePirates.V4.Tests
                 var v = rt.All<EnemyVariantConfig>().FirstOrDefault(x => x.variantId == id && x.kind == VariantKind.DatabaseAlias);
                 var s = a != null ? EnemyStatResolver.Resolve(a) : v != null ? EnemyStatResolver.Resolve(v) : null;
                 if (s == null) continue;
-                enemies.Add((s, (Meshes(s.visualPrefab), s.visualTint, s.visualScale * s.viewSize, false)));
+                enemies.Add((s, (Meshes(s.visualPrefab), s.SeenColor, s.visualScale * s.viewSize, s.isElite))); // V5 M8z (7 Oct): the colour players see (type colour, else tint)
             }
             foreach (var v in rt.All<EnemyVariantConfig>().Where(x => x.kind == VariantKind.RegistryElite))
             {
                 var s = EnemyStatResolver.Resolve(v);
-                enemies.Add((s, (Meshes(s.visualPrefab), s.visualTint, s.visualScale * s.viewSize, true)));
+                enemies.Add((s, (Meshes(s.visualPrefab), s.SeenColor, s.visualScale * s.viewSize, s.isElite)));
             }
             Assert.GreaterOrEqual(enemies.Count, 20, "the voyage's enemies, its spawners' and the elites");
             var clashes = new List<string>();
@@ -256,30 +240,6 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(800f, parity.All<EnemyArchetypeConfig>().Single(a => a.enemyId == "barnacle_king").stats.baseHP, "V3's boss");
             var director = parity.Single<DirectorConfig>();
             Assert.IsTrue(director.toughnessLever && director.capHpLever && director.focusLever);
-        }
-
-        [Test]
-        public void TheBossFight_KeepsItsLength_AtAnEarlyAndALateSummon()
-        {
-            // Plan review P4: with fixed HP the fight must hold at both ends of the likely summon times.
-            using var rt = new ConfigSetRuntime(Set);
-            var c = new SimContent(rt);
-            var p = c.Personalities.Find("steady_captain");
-            foreach (var summon in new[] { 270f, 510f })
-            {
-                var fights = new List<float>();
-                for (var i = 0; i < 30; i++)
-                {
-                    var r = new SimRun(c, p, 700 + i, c.Captains[i % c.Captains.Count].captainKey) { SummonBossAtSeconds = summon, Unsinkable = true }.Play();
-                    if (r.BossWon) fights.Add(r.BossKillSeconds - r.BossSummonSeconds);
-                }
-                Assert.GreaterOrEqual(fights.Count, 20, $"the boss is beaten from a summon at {summon} s");
-                var median = SimBatch.Percentile(fights, 0.5f);
-                TestContext.WriteLine($"Barnacle King fight from a summon at {summon} s: median {median:0} s over {fights.Count} wins");
-                // Known miss (owner question): with fixed HP an early summon meets a weaker build, so its fight runs long; bounded.
-                if (summon < 300f) Assert.That(median, Is.InRange(45f, 130f), $"the fight from a summon at {summon} s (known: target 45-90)");
-                else Assert.That(median, Is.InRange(45f, 90f), $"the fight from a summon at {summon} s (the pacing target)");
-            }
         }
     }
 }

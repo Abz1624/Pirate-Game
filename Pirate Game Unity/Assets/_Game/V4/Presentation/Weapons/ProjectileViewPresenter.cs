@@ -44,7 +44,9 @@ namespace RoguePirates.V4.Presentation.Weapons
             var visual = VisualOf(weaponId);
             // Playtest (3 Oct, owner): a weapon that is not a cannon and has no projectile model of its own (the Monkey
             // Gunners' shots) gets its coloured placeholder, not the default cannonball.
-            var placeholder = visual != null && visual.prefab != null ? null : WeaponPlaceholderModels.Projectile(weaponId, _pools != null ? _pools.Staging : null);
+            // V5 M8z (7 Oct): which placeholder is the weapon's data (visual.placeholderLook).
+            var look = ConfigOf(weaponId)?.visual?.placeholderLook ?? WeaponPlaceholderLook.None;
+            var placeholder = visual != null && visual.prefab != null ? null : WeaponPlaceholderModels.Projectile(look, _pools != null ? _pools.Staging : null);
             var prefab = placeholder != null ? placeholder : visual != null && visual.prefab != null ? visual.prefab : _settings != null ? _settings.projectilePrefab : null;
             var scaleMult = visual != null ? visual.scaleMultiplier : 1f;
             var visualRadius = radius * (visual != null ? visual.radiusMultiplier : 1f);
@@ -111,7 +113,9 @@ namespace RoguePirates.V4.Presentation.Weapons
             _pools.Release(go);
         }
 
-        ProjectileVisual VisualOf(string weaponId)
+        ProjectileVisual VisualOf(string weaponId) => ConfigOf(weaponId)?.projectileVisual;
+
+        WeaponConfig ConfigOf(string weaponId)
         {
             if (string.IsNullOrEmpty(weaponId) || _config == null) return null;
             if (!_weapons.TryGetValue(weaponId, out var config))
@@ -120,7 +124,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                     if (w.weaponId == weaponId) { config = w; break; }
                 _weapons[weaponId] = config;
             }
-            return config != null ? config.projectileVisual : null;
+            return config;
         }
 
         static void Tint(Transform view, Color color)

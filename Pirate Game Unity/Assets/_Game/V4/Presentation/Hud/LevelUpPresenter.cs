@@ -44,6 +44,9 @@ namespace RoguePirates.V4.Presentation.Hud
         public Button SkipButton => _ui.rejectButton;
 
         /// <summary>Takes the run canvas's level-up panel (or makes one) and lays out the cards.</summary>
+        /// <summary>V5 M8z (7 Oct): the run views the cards' "current → next" numbers read.</summary>
+        public RoguePirates.V4.Views.IRunViews Views { get; set; }
+
         public static LevelUpPresenter Create(Canvas canvas, ConfigSetRuntime config)
         {
             if (canvas == null) return null;
@@ -278,7 +281,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 foreach (var o in offers)
                 {
                     _offers.Add(o);
-                    _cards.Add(OfferCards.ToCard(o, _config));
+                    _cards.Add(OfferCards.ToCard(o, _config, Views));
                 }
             _selected = selected;
             _skipped = skipped;

@@ -19,6 +19,7 @@ MonoBehaviour:
   kind: 0
   databaseSlotOrder: 7
   baseArchetype: {fileID: 11400000, guid: 525c4eb68b7fa2a46a96d4943dd56d09, type: 2}
+  isElite: 0
   displayName: treasure raider
   behavior:
     enabled: 1
@@ -42,6 +43,7 @@ MonoBehaviour:
     model: {fileID: 0}
     tint: {r: 1, g: 1, b: 1, a: 1}
     viewSize: 1
+    typeColor: {r: 1, g: 0.78, b: 0.1, a: 1}
   concurrencyTags: []
   spawnTier: 0
   combat:

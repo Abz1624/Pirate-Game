@@ -50,6 +50,9 @@ namespace RoguePirates.V4.Config
     /// How the weapon's effects look (M6): the choices V3's juice controller and aim overlay made by weapon id,
     /// as data. Presentation only; nothing here changes gameplay.
     /// </summary>
+    /// <summary>V5 M8z (7 Oct): a weapon's coloured stand-in model (presentation only).</summary>
+    public enum WeaponPlaceholderLook { None, Parrots, MonkeyGunners, Anchors, Lanterns, Doubloons }
+
     [Serializable]
     public sealed class WeaponEffectsVisual
     {
@@ -76,6 +79,9 @@ namespace RoguePirates.V4.Config
         [Tooltip("V5 M4: an Orbit weapon's own model, drawn at each blade (empty = the Flying Cutlasses' blades).")]
         public GameObject orbitModel;
         public float orbitModelScale = 1f;
+        // V5 M8z (7 Oct): which stand-in the presenters draw, moved from a weapon-id switch in WeaponPlaceholderModels.
+        [Tooltip("V5 M8z (playtest 3 Oct, owner: no cannonballs for weapons that are not cannons): the coloured stand-in drawn while the weapon's model is a cannon asset or missing (summons, orbit models, projectiles, the strike's coins).")]
+        public WeaponPlaceholderLook placeholderLook = WeaponPlaceholderLook.None;
         [Tooltip("Enemies hit by this weapon do not flash (V3: Powder Kegs). Read by the enemy world's hit path from M8.")]
         [AppliesFrom(8)] public bool noHitHighlight;
     }

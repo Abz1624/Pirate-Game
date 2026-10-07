@@ -1,24 +1,30 @@
-// Adds the applied game data's results and the weapon table to results.json (for the report).
+// Adds the calibration evidence to results.json (for the report): each recorded session (plan/playtest/sessions) beside
+// the model before I8z.7 (calibration-before.json: the old sim.mjs and data.json) and the model now (sim.mjs on the
+// Unity export, fitted with fit_sessions.mjs), per minute and for the fights.
+//
+//   node finalize.mjs   (after batch.mjs)
 import fs from 'fs';
-import { simulateRun, summarise, MODEL } from './sim.mjs';
+import { simulateRun } from './sim.mjs';
+import { loadSessions, gameSide, modelSide, kindOfNew } from './fit_sessions.mjs';
 const out = JSON.parse(fs.readFileSync(new URL('./results.json', import.meta.url)));
 const data = JSON.parse(fs.readFileSync(new URL('./data.json', import.meta.url)));
-const runs = []; let seed = 1;
-for (const c of Object.keys(data.captains)) for (let i = 0; i < 150; i++) runs.push(simulateRun(data, { captain: c, seed: (seed++) * 7919 + 17, model: { lootShare: 0.8, engagement: 0.9 } }));
-out.applied = summarise(runs);
-out.appliedCaptains = {};
-for (const c of Object.keys(data.captains)) { const s = summarise(runs.filter(r => r.captain === c)); s.weapon = data.captains[c].weapon; out.appliedCaptains[c] = s; }
-const stat = (has) => { const a = runs.filter(has); const s = a.map(r => r.end).sort((x, y) => x - y); return { runs: a.length, end: s.length ? s[Math.floor(s.length / 2)] : null, bossWin: a.length ? a.filter(r => r.bossKill != null).length / a.length : null }; };
-out.weapons = Object.keys(data.weapons).map(id => ({ id, ...stat(r => r.weapons.includes(id)), evolved: runs.filter(r => r.evolved.includes(id)).length }));
-out.logbooks = Object.keys(data.logbooks).map(id => ({ id, ...stat(r => r.logbooks.includes(id)) }));
-out.items = Object.keys(data.items).map(id => ({ id, ...stat(r => r.items.includes(id)) }));
-const dmg = {}, kills = {}; for (const r of runs) { for (const [k, v] of Object.entries(r.damageBy)) dmg[k] = (dmg[k] ?? 0) + v; for (const [k, v] of Object.entries(r.killsBy)) kills[k] = (kills[k] ?? 0) + v; }
-const total = Object.values(dmg).reduce((a, b) => a + b, 0);
-out.enemies = Object.keys(dmg).map(id => ({ id, damageShare: dmg[id] / total, killsPerRun: (kills[id] ?? 0) / runs.length })).sort((a, b) => b.damageShare - a.damageShare);
-const focus = {}; for (const r of runs) for (const [id, , secs] of r.focus) (focus[id.startsWith('elite_') && !id.startsWith('elite_hammerhead') && !id.startsWith('elite_kraken') ? 'kill-band elites' : id] ??= []).push(secs);
-out.focusFights = Object.entries(focus).map(([id, a]) => ({ id, fights: a.length, medianSeconds: a.sort((x, y) => x - y)[Math.floor(a.length / 2)] }));
-// d. Weapon table: level 1, single target, the model's per-weapon behaviour numbers.
-out.weaponTable = Object.values(data.weapons).map(w => { const m = MODEL.weapons[w.id]; const lvl = 1.1; return { id: w.id, name: w.name, baseDamage: w.damage, perHit: +(w.damage * m[2] * lvl).toFixed(2), cycle: m[1], hitsPerCycle: m[0], dps: +(w.damage * m[0] * lvl / m[1]).toFixed(2), crowdTargets: m[3], crowdDps: +(w.damage * m[0] * lvl / m[1] * m[3]).toFixed(1) }; }).sort((a, b) => a.name.localeCompare(b.name));
-out.appliedChange = { ttk: data.director.ttk, bands: data.timeline.bands.map(b => [b.t, b.rate]) };
+const before = JSON.parse(fs.readFileSync(new URL('./calibration-before.json', import.meta.url))).sessions;
+const fitted = fs.existsSync(new URL('./calibration-sessions.json', import.meta.url)) ? JSON.parse(fs.readFileSync(new URL('./calibration-sessions.json', import.meta.url))) : null;
+out.calibration = { fitted: fitted && fitted.fitted, loss: fitted && fitted.loss, sessions: [] };
+for (const { file, s } of loadSessions()) {
+  const g = gameSide(s), now = modelSide(simulateRun, data, g, {}, 200, kindOfNew(data)), was = before[file];
+  out.calibration.sessions.push({
+    file, end: g.end, sunk: g.sunk, configHash: String(s.header.configHash || '').slice(0, 10),
+    minutes: g.minutes.map((a, i) => ({ m: a.m, game: { level: a.level, kills: a.kills, hull: a.hull, dmg: Math.round(a.dmg), dps: Math.round(a.dps) },
+      before: was && was.minutes[i] ? { level: was.minutes[i].level, kills: was.minutes[i].kills, hull: was.minutes[i].hull, dmg: was.minutes[i].dmg, afloat: was.minutes[i].afloat } : null,
+      now: { level: now.minutes[i].level, kills: now.minutes[i].kills, hull: now.minutes[i].hull, dmg: now.minutes[i].dmg, dps: now.minutes[i].dps, afloat: now.minutes[i].afloat, levelP: now.minutes[i].levelP, killsP: now.minutes[i].killsP } })),
+    fights: { game: g.fights, before: was ? was.fights : null, now: now.fights },
+    sunkBy: { before: was ? was.sunkBy : null, now: now.sunkBy },
+  });
+}
 fs.writeFileSync(new URL('./results.json', import.meta.url), JSON.stringify(out));
-console.log('applied', out.applied.endMedian.toFixed(1), out.applied.bossWin.toFixed(2), 'weapons', out.weaponTable.length, 'focus', JSON.stringify(out.focusFights));
+for (const c of out.calibration.sessions) {
+  const last = c.minutes[c.minutes.length - 1];
+  console.log(`${c.file}: at ${last.m}:00 level ${last.game.level} | before ${last.before?.level ?? '-'} | now ${last.now.level}; kills ${last.game.kills} | ${last.before?.kills ?? '-'} | ${last.now.kills}; ` +
+    `hull ${Math.round(last.game.hull * 100)}% | ${last.before?.hull != null ? Math.round(last.before.hull * 100) + '%' : '-'} | ${last.now.hull != null ? Math.round(last.now.hull * 100) + '%' : '-'}; sunk by the end ${c.sunk ? 'yes' : 'no'} | ${Math.round((c.sunkBy.before ?? 0) * 100)}% | ${Math.round(c.sunkBy.now * 100)}%`);
+}

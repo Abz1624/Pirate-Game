@@ -4,6 +4,7 @@ using RoguePirates.V4.Config;
 using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Foundation.UI;
 using RoguePirates.V4.Progression;
+using RoguePirates.V4.Views;
 using UnityEngine;
 
 namespace RoguePirates.V4.Presentation.Hud
@@ -11,21 +12,12 @@ namespace RoguePirates.V4.Presentation.Hud
     /// <summary>
     /// Playtest (3 Oct 2026, owner): level-up cards read at a glance: no descriptions, only what changes, from the current
     /// value to the next ("Damage 10.4 → 12.0", "Max Hull 100 → 106"). Reads the run's live loadout and stats.
+    /// V5 M8z (7 Oct): through the run views (IRunViews: the loadout's weapon modifiers, the progression's stats), no
+    /// longer the game object and the run manager.
     /// </summary>
     public static class CardStatLines
     {
         const string Arrow = " → ";
-
-        static V4Game Game => Object.FindFirstObjectByType<V4Game>();
-        static PlayerStats Stats => RunManager.Instance != null ? RunManager.Instance.Stats : null;
-
-        static LoadoutWeapon Owned(string weaponId)
-        {
-            var loadout = Game?.Build?.Progression?.Loadout;
-            if (loadout == null) return null;
-            foreach (var w in loadout.Weapons) if (w != null && w.Id == weaponId) return w;
-            return null;
-        }
 
         /// <summary>One hit's damage (what the damage numbers show): base x level x the behaviour's per-hit multiplier.</summary>
         static float WeaponDamage(WeaponConfig c, int level, float damageBonus) =>
@@ -46,10 +38,10 @@ namespace RoguePirates.V4.Presentation.Hud
         }
 
         /// <summary>A weapon upgrade: damage (the level raises it on every upgrade) and each upgraded axis, current to next.</summary>
-        public static string[] WeaponUpgrade(WeaponConfig c, IReadOnlyList<UpgradeLine> lines, int nextLevel)
+        public static string[] WeaponUpgrade(WeaponConfig c, IReadOnlyList<UpgradeLine> lines, int nextLevel, IRunViews views)
         {
-            var w = c != null ? Owned(c.weaponId) : null;
-            if (c == null || w == null) return null;
+            var loadout = views?.Loadout;
+            if (c == null || loadout == null || !loadout.TryWeaponModifiers(c.weaponId, out var w)) return null;
             var result = new List<string>();
             float damageNext = w.DamageBonus, cooldownNext = w.CooldownMult, speedNext = w.SpeedMult, sizeNext = w.SizeMult, durationNext = w.DurationMult;
             var quantityNext = w.QuantityBonus;
@@ -86,13 +78,13 @@ namespace RoguePirates.V4.Presentation.Hud
         }
 
         /// <summary>A Logbook: its stat, current to next (flat stats as numbers, chances as percentages, the rest against their base).</summary>
-        public static string[] Logbook(LogbookConfig logbook, float bonus)
+        public static string[] Logbook(LogbookConfig logbook, float bonus, IRunViews views)
         {
             if (logbook == null) return null;
             var stat = (StatId)logbook.stat;
             var name = StatDisplay.GetDisplayName(stat);
-            var stats = Stats;
-            var now = stats != null ? stats.Get(stat) : 0f;
+            var stats = views?.Progression;
+            var now = stats != null ? stats.StatValue(stat) : 0f;
             var next = (now + bonus) * Mathf.Max(0.0001f, logbook.perLevelMultiplicative);
             switch (stat)
             {
@@ -106,7 +98,7 @@ namespace RoguePirates.V4.Presentation.Hud
                     return new[] { $"{name} {now * 100f:0.#}%{Arrow}{next * 100f:0.#}%" };
                 default:
                 {
-                    var b = stats != null ? stats.GetBase(stat) : 0f;
+                    var b = stats != null ? stats.StatBase(stat) : 0f;
                     if (b <= 0f) b = 1f;
                     return new[] { $"{name} {now / b * 100f:0.#}%{Arrow}{next / b * 100f:0.#}%" };
                 }

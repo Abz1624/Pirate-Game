@@ -40,6 +40,9 @@ namespace RoguePirates.V4.Config
     public sealed class UnlockConfig : V4ConfigAsset
     {
         [Tooltip("Always unlocked.")] public string[] starterWeaponIds = Array.Empty<string>();
+        // V5 M8z (7 Oct): the weapon switch-off list, moved from code (WeaponFeatureFlags) to config.
+        [Tooltip("V5 M8z: weapons switched off in voyages and 1v1s (level-up cards, chests, the draft, the shop, starting weapons). Applied when the menu or a run loads the config.")]
+        [AppliesFrom(0, "read when the menu or a run starts")] public string[] disabledWeaponIds = Array.Empty<string>();
         public WeaponUnlock[] weaponUnlocks = Array.Empty<WeaponUnlock>();
         [Tooltip("V5 M5: Logbooks bought with Rum; the others are always in the level-up pool.")]
         public ContentUnlock[] logbookUnlocks = Array.Empty<ContentUnlock>();

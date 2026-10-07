@@ -250,7 +250,8 @@ namespace RoguePirates.V4.Presentation.Weapons
         readonly List<Coin> _coins = new List<Coin>();
         public int CoinCount => _coins.Count;
 
-        bool StrikeIsDoubloons() => _aimedFrame == Time.frameCount && _aimedWeapon == WeaponPlaceholderModels.CursedDoubloons;
+        // V5 M8z (7 Oct): the coins are the weapon's data (visual.placeholderLook), not its id.
+        bool StrikeIsDoubloons() => _aimedFrame == Time.frameCount && VisualOf(_aimedWeapon)?.placeholderLook == WeaponPlaceholderLook.Doubloons;
 
         void CoinBurst(Vector3 position, float radius)
         {
@@ -632,7 +633,7 @@ namespace RoguePirates.V4.Presentation.Weapons
                     if (slots[i]?.Config != null && slots[i].Config.weaponId == weaponId) { config = slots[i].Config; break; }
             // Playtest (3 Oct, owner): a cannon asset standing in for a summon (the parrots' cannonball, the monkeys'
             // cannon barrel) is drawn as the weapon's coloured placeholder instead.
-            var model = config != null ? WeaponPlaceholderModels.Summon(weaponId, config.visual.summonModel, _pools != null ? _pools.Staging : null) : null;
+            var model = config != null ? WeaponPlaceholderModels.Summon(config.visual.placeholderLook, config.visual.summonModel, _pools != null ? _pools.Staging : null) : null;
             if (model == null) return SkiffSpawned(position, forward);
             forward.y = 0f;
             if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
@@ -833,7 +834,7 @@ namespace RoguePirates.V4.Presentation.Weapons
             {
                 var slot = slots[s];
                 if (slot == null || slot.Config == null || slot.Config.behavior != ConfigEnums.WeaponBehavior.Orbit) continue;
-                var model = WeaponPlaceholderModels.Orbit(slot.Config.weaponId, slot.Config.visual.orbitModel, _pools != null ? _pools.Staging : null); // Playtest (3 Oct, owner)
+                var model = WeaponPlaceholderModels.Orbit(slot.Config.visual.placeholderLook, slot.Config.visual.orbitModel, _pools != null ? _pools.Staging : null); // Playtest (3 Oct, owner)
                 if (model == null) continue;
                 var hits = _weapons.OrbitHitsOf(slot);
                 if (hits == null || hits.Count == 0) continue; // paused: they stay where they are
@@ -1071,15 +1072,15 @@ namespace RoguePirates.V4.Presentation.Weapons
             {
                 if (w?.visual == null) continue;
                 var staging = _pools.Staging;
-                var orbitModel = WeaponPlaceholderModels.Orbit(w.weaponId, w.visual.orbitModel, staging); // Playtest (3 Oct, owner)
+                var orbitModel = WeaponPlaceholderModels.Orbit(w.visual.placeholderLook, w.visual.orbitModel, staging); // Playtest (3 Oct, owner)
                 if (w.behavior == ConfigEnums.WeaponBehavior.Orbit && orbitModel != null)
                 {
                     var need = 2 * Mathf.Max(1, w.orbit.baseBlades) * Mathf.Max(1, w.orbit.beamSegments) + 2;
                     orbit[orbitModel] = orbit.TryGetValue(orbitModel, out var n) ? Mathf.Max(n, need) : need;
                 }
                 if (w.behavior == ConfigEnums.WeaponBehavior.Summon && w.visual.summonModel != null)
-                    EnsurePool(SummonKind(w.weaponId), WeaponPlaceholderModels.Summon(w.weaponId, w.visual.summonModel, staging), w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
-                if (w.weaponId == WeaponPlaceholderModels.CursedDoubloons) EnsurePool(KindCoin, WeaponPlaceholderModels.Coin(staging), CoinsPerStrike * 3);
+                    EnsurePool(SummonKind(w.weaponId), WeaponPlaceholderModels.Summon(w.visual.placeholderLook, w.visual.summonModel, staging), w.summon.maxAlive > 0 ? w.summon.maxAlive : 4); // V5 M4b: parrots, the turret
+                if (w.visual.placeholderLook == WeaponPlaceholderLook.Doubloons) EnsurePool(KindCoin, WeaponPlaceholderModels.Coin(staging), CoinsPerStrike * 3);
             }
             foreach (var pair in orbit) EnsurePool(KindOrbitModel, pair.Key, pair.Value);
         }

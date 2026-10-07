@@ -176,6 +176,9 @@ namespace RoguePirates.V4.Ports
             d.viewSize = r.viewSize;
             d.isBoss = r.isBoss;
             d.isMiniboss = r.isMiniboss;
+            d.typeColor = r.typeColor; // V5 M8z (7 Oct)
+            d.isElite = r.isElite;
+            d.baseEnemyId = r.baseEnemyId;
         }
 
         void OnConfigChanged(ConfigChange change)
