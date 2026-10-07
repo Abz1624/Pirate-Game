@@ -679,7 +679,7 @@ real-time modes.
 - D9c.1 Go/no-go memo (`phase-09c-multiship/REPORT.md`) at 4 real ships and 200 enemies against: down <= 20 KB/s per
   client (p95 <= 30), up <= 2 KB/s; server tick p95 <= 16 ms on Railway; client steady 60 fps on desktop WebGL;
   prediction error as M9b; cost per match-hour. NGO and Unity Transport versions pinned from the result.
-  No-go: the relay stays, the owner chooses light-PvE 1v1 or a netcode rethink, and M21-M22 wait.
+  No-go: the relay stays, the owner chooses light-PvE 1v1 or a netcode rethink, and M21-M23 wait (M24 wagers too).
 
 Automated check: the 4-client load test on local Docker and on Railway; the full EditMode and PlayMode suites and the
 goldens green.
@@ -820,7 +820,7 @@ Owner check: play one server-run voyage from your browser and your phone; does t
 
 ### Stage C — Real-time 1v1
 
-The match server comes from M9/M13b. This stage replaces the API relay with the server-authoritative 1v1 (D22).
+The match server comes from M9b/M9c and M13b. This stage replaces the API relay with the server-authoritative 1v1 (D22).
 
 #### M21 — Lobby and matchmaking
 
@@ -834,7 +834,7 @@ codes, ready for the Arena and the Hunt.
 - T21.x Lobby flows, disconnect of one of four players.
 
 Automated check: four headless clients join one lobby by code and play 5 minutes; per-player results recorded.
-Owner check: two browsers on the local network join one match by invite code.
+Owner check: two browsers join one match by invite code on the Railway match server (or local Docker).
 
 #### M22 — 1v1 Arena
 
@@ -856,7 +856,7 @@ Goal: a fair 1v1 fight where both players draft any weapons and logbooks from th
   a player idle for 30 s at 90 s is treated as leaving; the relay endpoints gone.
 
 Automated check: two scripted clients draft and play a best of three to a recorded result.
-Owner playtest: two browsers on the local network: draft and fight.
+Owner playtest: two browsers on the Railway match server (or local Docker): draft and fight.
 
 ### Stage D — The island
 
@@ -874,9 +874,10 @@ treasury and decorations.
   side random) within a threat budget by island rank. Stored in the base snapshot as a schedule DTO and turned into an
   in-memory timeline overlay at raid start (the designer-owned `WaveTimelineConfig` asset is never written); the
   schedule's hash enters raid records. Validation: budget, max alive, the first 20 s quiet.
-- I14.4 Treasury (Q23, Q23b confirmed): a vault holds 80% of the island's RUM and is never raidable;
-  the treasury holds 20%, capped by island rank; a raid takes 20% of the treasury; an 8-hour shield after any raid;
-  a daily loss cap of 10% of total RUM; 72 hours of new-player protection.
+- I14.4 Treasury (D19, option B with 4-hour shields; replaces Q23b): a vault holds 60% of the island's RUM and is never
+  raidable; the rest is the exposed treasury; a successful raid takes 25% of it (half on a partial raid); a 4-hour
+  shield after being raided; attacking ends your own shield; a small raid entry fee (a RUM sink); no daily loss cap
+  and no new-player protection.
 - I14.5 Decorations (request 22): placed on decoration sockets and free slots, rotation and scale steps, cosmetic only
   (D14); a Decorations shop tab (RUM; tokens for web3 accounts, marked web3-origin per D4).
 - I14.6 Base editor (mobile-first): section view, drag to socket, and a test raid of your own base before a changed
@@ -918,7 +919,7 @@ Goal: an AI captain defends your island and raids for you, and you tune how it p
 - I16.3 Defend: your AI captain's ship patrols and fights during raids on your island (a defense slot), simulated as an
   enemy unit driven by the AI brain, so it needs no second player ship.
 - I16.4 Raid for you: up to **6 AI raids a day at full loot** (Q9), run headless on the server against real
-  snapshots; defenders stay protected by the treasury shield and daily loss cap (M14).
+  snapshots; defenders stay protected by the treasury shield and 4-hour shield (M14).
 - I16.5 UI: sliders and presets (Cautious, Balanced, Reckless), a test arena, raid reports.
 - T16.x Parameters change behaviour measurably (engage distance, retreats), daily caps, headless raids repeatable.
 
@@ -1011,7 +1012,7 @@ Goal: four players on one sea, enemies and bosses everywhere, last ship afloat w
   captains (M16) fill seats in tests only.
 
 Automated check: four scripted clients (or AI seats) play to a winner; bandwidth and CPU logged.
-Owner playtest: a 4-player match on the local network (with AI fills if needed).
+Owner playtest: a 4-player match on the Railway match server (or local Docker), with AI fills if needed.
 
 #### M24 — Wagers
 
@@ -1121,7 +1122,7 @@ Owner check: read the audit and decide what is next.
 | Server-run sessions for raids, races, ranked voyages and 6 AI raids per player per day cost server CPU and memory, and need a steady connection | M9b, M9c, M13b, M15–M18 | Sessions per process and memory measured in M9b and M9c; AI raids run headless faster than real time; the per-component Railway estimate in `ANSWERS.md` (about $20–25/month if ~30 of 100 players play daily, $40–45 if all do), measured before M13b closes; Serverless sleeping and a spend limit; reconnect handling |
 | Real-time multiplayer in WebGL is the largest single item (server authority, WebSockets only, hundreds of enemies) | M9b, M9c, M13b, M22, M23 | Go/no-go spike first, split into M9a-M9c with a gate each; interest management; Railway test service approved (D22) |
 | Custodial keys, held on our Railway server, and the fee payer are attack targets; the master key and the database live in the same Railway project, so one leaked Railway account exposes both | M11 | Devnet only; encrypted keys with the master key in a Railway secret; an offline master-key backup and rotation (key id); separate secrets for the fee payer, treasury and settle authority; allow-listed instructions and rate limits; a key vault or provider before any mainnet (D7) |
-| Netcode for GameObjects has no built-in interest management or lag compensation, and version 3.0 is brand new | M9, M13b, M22, M23 | We write both (budgeted in M13b); pin a tested 2.x release; measured in M9b and M9c against numeric limits (D9b.1, D9c.1); enemies sent as our own batched messages, so a later netcode switch keeps most of our code |
+| Netcode for GameObjects has no built-in interest management or lag compensation, and version 3.0 is brand new | M9b, M9c, M13b, M22, M23 | We write both (budgeted in M13b); pin a tested 2.x release; measured in M9b and M9c against numeric limits (D9b.1, D9c.1); enemies sent as our own batched messages, so a later netcode switch keeps most of our code |
 | Browser memory: Chrome on 4–6 GB Android phones is 32-bit, capping the game near 256 MB (today's build allows 2 GB) | M1, M7 | Measured on the reference phone in M1; the budget enforced in M7 (`research/DEVICE_TARGETS.md`) |
 | Real-value wagering is regulated | M24 | Devnet only; legal review, geo-fencing and age checks before any mainnet (D8) |
 | RUM leaking into tokens through items | M14, M25, M26 | Origin flags and tests (D4) |

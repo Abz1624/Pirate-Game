@@ -324,7 +324,7 @@ def build(out_path):
   <ol>
     <li><a href="#progress"><span class="code">·</span><span>Progress</span></a></li>
     <li><a href="#todos"><span class="code">·</span><span>Your TODOs</span></a></li>
-    <li><a href="#requests"><span class="code">·</span><span>Your 24 requests</span></a></li>
+    <li><a href="#requests"><span class="code">·</span><span>Your requests</span></a></li>
     <li><a href="#answers"><span class="code">·</span><span>Your answers</span></a></li>
     <li><a href="#questions"><span class="code">·</span><span>Open questions</span></a></li>
     <li><a href="#personalities"><span class="code">·</span><span>Player personalities</span></a></li>
@@ -351,7 +351,7 @@ def build(out_path):
   <div class="eyebrow">Rogue Pirates · Pirate Game Unity · after V4</div>
   <h1>V5 Live Game Plan</h1>
   <span class="status{" ok" if status.get("statusOk") else ""}">{status["statusLine"]}</span>
-  <p class="lede">Your 24 requests as {n} phases in seven stages: a balanced voyage, a shop and mobile controls, accounts with custodial Solana devnet wallets and MagicBlock records, a server-run 1v1 Arena, your island with defenses, raids and races, social and retention, the Hunt with wagers, and a creator economy with sails, islands and brand bounties. Same way of working as V4: one module per phase, config as data, and a gate after every phase with tests, an independent review and your playtest.</p>
+  <p class="lede">Your requests as {n} phases in seven stages: a balanced voyage, a shop and mobile controls, accounts with custodial Solana devnet wallets and MagicBlock records, a server-run 1v1 Arena, your island with defenses, raids and races, social and retention, the Hunt with wagers, and a creator economy with sails, islands and brand bounties. Same way of working as V4: one module per phase, config as data, and a gate after every phase with tests, an independent review and your playtest.</p>
   <dl class="facts">{facts}</dl>
 </header>
 
@@ -369,7 +369,7 @@ def build(out_path):
 </section>
 
 <section class="block" id="requests">
-  <div class="sec-head"><div class="eyebrow">Coverage</div><h2>Your 24 requests</h2>
+  <div class="sec-head"><div class="eyebrow">Coverage</div><h2>Your requests</h2>
   <p>Where each request is built. The independent reviewer checks this map at every plan review.</p></div>
   {req}
 </section>

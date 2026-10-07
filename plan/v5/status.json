@@ -410,12 +410,18 @@
    "when": "8 Oct",
    "commit": "",
    "what": "<strong>Plan rev 12 (D23)</strong>: the rev 11 review found M21/M22 not yet moved, M9 too big, a workspace-wide Railway limit, M13b duplicating M9, forward references to M19, a missing Elo season and relay retirement, no M9 no-go path and stale .NET text. Your answers: a $15 hard limit and $10 alert on the Railway workspace; run checks in shadow mode first (verdicts with reasons, a \"checked\" flag, you enforce later); M9 split into M9a (server foundation and run checks), M9b (Netcode server voyage, single ship) and M9c (multi-ship runtime and the go/no-go). Stages reordered: Stage C (real-time 1v1, M21-M22) follows M13b, then the island, social and retention, Hunt and wagers, creator economy."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "Plan rev 12 reviewed: no blockers. Wording fixed (treasury text now D19 option B, match server on Railway in the 1v1/Hunt checks, no-go holds M21-M23). M9a: the .NET 10 server upgrade waits for the .NET 10 SDK on your machine; the simulator refit is running."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Set the Railway spend limit</strong>: Railway, your workspace Settings, Usage: a $15 hard limit and a $10 email alert (D23). The limit covers the whole workspace, so the live API and Postgres stop if it is hit; I delete test services after each session. I can't change account settings for you.",
-   "<strong>Keep recording voyages</strong> when you play."
+   "<strong>Install the .NET 10 SDK</strong> (<code>winget install Microsoft.DotNet.SDK.10</code>) so the M9a server upgrade can continue; Docker Desktop optional.",
+   "<strong>Railway spend</strong>: a $15 hard limit and a $10 alert (workspace Settings &gt; Usage; covers the live API and Postgres too).",
+   "<strong>Answer</strong>: while run checks are in shadow mode, does a flagged voyage's Rum settle, or stay pending until you decide on enforcement? (Needed before M10.)"
   ],
   "open": [
    "PvP draft on phones: tapping a card to read it also picks it (later)."
