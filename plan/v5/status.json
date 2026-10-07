@@ -1,11 +1,11 @@
 {
- "updated": "6 Oct 2026",
- "statusLine": "M9 approved (D22): .NET 10 and migrations first, then run checks that reject implausible runs, then the Netcode match server with multi-ship play on Railway. The plan review runs first.",
+ "updated": "8 Oct 2026",
+ "statusLine": "Plan rev 12 (D23): M9 split into M9a, M9b and M9c; M9a (server foundation and run checks in shadow mode) starts next. Stage C (real-time 1v1) now follows M13b.",
  "statusOk": false,
  "facts": [
   [
    "Progress",
-   "M0-M8z done (M8z closed 8 Oct); M9 drafted for Netcode, waiting for your answers N1-N8"
+   "M0-M8z done (M8z closed 8 Oct); plan rev 12: M9 split into M9a/M9b/M9c, M9a next"
   ],
   [
    "Tests",
@@ -77,9 +77,17 @@
    "state": "done",
    "chip": "done 8 Oct · playtested"
   },
-  "M9": {
-   "state": "building",
-   "chip": "started 8 Oct · plan review first"
+  "M9a": {
+   "state": "next",
+   "chip": "next: server foundation and run checks"
+  },
+  "M9b": {
+   "state": "planned",
+   "chip": "planned"
+  },
+  "M9c": {
+   "state": "planned",
+   "chip": "planned"
   }
  },
  "log": [
@@ -397,11 +405,16 @@
    "when": "8 Oct",
    "commit": "",
    "what": "<strong>Your M9 answers (D22)</strong>: multi-ship play pulled into M9; M21-M22 move forward to right after M13b; .NET 10 and migrations first; implausible runs rejected from the start; direct WebSockets; a new Elo season with server-run 1v1; no phone in M9; a $10 Railway spend limit. M9 starts with a plan review."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "<strong>Plan rev 12 (D23)</strong>: the rev 11 review found M21/M22 not yet moved, M9 too big, a workspace-wide Railway limit, M13b duplicating M9, forward references to M19, a missing Elo season and relay retirement, no M9 no-go path and stale .NET text. Your answers: a $15 hard limit and $10 alert on the Railway workspace; run checks in shadow mode first (verdicts with reasons, a \"checked\" flag, you enforce later); M9 split into M9a (server foundation and run checks), M9b (Netcode server voyage, single ship) and M9c (multi-ship runtime and the go/no-go). Stages reordered: Stage C (real-time 1v1, M21-M22) follows M13b, then the island, social and retention, Hunt and wagers, creator economy."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Set the Railway spend limit</strong>: Railway, your workspace Settings, Usage: a usage alert and a $10 hard limit (D22; I can't change account settings for you).",
+   "<strong>Set the Railway spend limit</strong>: Railway, your workspace Settings, Usage: a $15 hard limit and a $10 email alert (D23). The limit covers the whole workspace, so the live API and Postgres stop if it is hit; I delete test services after each session. I can't change account settings for you.",
    "<strong>Keep recording voyages</strong> when you play."
   ],
   "open": [

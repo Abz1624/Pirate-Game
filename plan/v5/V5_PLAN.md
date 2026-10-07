@@ -1,6 +1,6 @@
 # Rogue Pirates — V5 Plan (Live Game)
 
-Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
+Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 12 (8 Oct): M9 split into M9a/M9b/M9c; stages reordered (1v1 after M13b); run checks start in shadow mode; $15 workspace limit (D23). rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
 (section 9)**. Explanations of every answer: `plan/v5/ANSWERS.md`.
 
 **Demo interlude (30 Sep, merged at `27a238bc`, V5 resumed at `86724e6b`).** Work paused after M3 for a demo on
@@ -63,12 +63,12 @@ Every owner request (29 Sep 2026) and the phase(s) that deliver it. The reviewer
 | 5 | Mobile UI for mobile and desktop browsers | M7 (touch controls, responsive HUD, safe area, WebGL mobile profile); every later screen follows D9 |
 | 6 | Base building: defenses plus a defender-authored spawn schedule (when and how many, not where) | M14 |
 | 7 | Island raiding of other players' bases | M13b (server sessions), M15 |
-| 8 | 1v1 Arena with a free pick of every weapon and logbook | M13b, M21 (multi-ship runtime, lobby), M22 |
-| 9 | Hunt: 4-player free-for-all, last one standing, with enemies and bosses | M13b, M21, M23 |
+| 8 | 1v1 Arena with a free pick of every weapon and logbook | M9c (multi-ship runtime), M13b, M21 (lobby), M22 |
+| 9 | Hunt: 4-player free-for-all, last one standing, with enemies and bosses | M9c, M13b, M21, M23 |
 | 10 | Async Island Race: one attempt to conquer a base in the fastest time | M13b (server sessions), M17 |
 | 11 | Wagers in SOL/SKR/ORE (web3) or RUM (web2) on Arena, Hunt and Race; winner takes all; 5% house cut | M24 |
-| 12 | Invites to raids, Arena, Hunt and Race (web2 and web3) | M19 (links, friends, raid and race invites), M21 (lobby by invite code), M22 and M23 (Arena and Hunt invites), M24 (wagered invites) |
-| 13 | Weekly leaderboard by kills in a single run | M13b (ranked server sessions), M18 |
+| 12 | Invites to raids, Arena, Hunt and Race (web2 and web3) | M19 (links, friends, raid and race invites; Arena links), M21-M22 (Arena by code), M23 (Hunt invites), M24 (wagered invites) |
+| 13 | Weekly leaderboard by kills in a single run | M9a (run checks, shadow mode first), M13b (ranked server sessions), M18 |
 | 14 | AI captains that raid and defend for the player, with configurable parameters | M16 |
 | 15 | Design and paint sails; trade them for RUM and tokens | M25 (designer), M26 (trading) |
 | 16 | Email sign-up that creates a server (custodial) wallet; the game pays devnet fees | M10 (server), M10b (sign-up), M11 (wallets, fee payer) |
@@ -120,7 +120,8 @@ Proposed decisions (P) take effect when the owner approves the plan. Owner-confi
 | D19 | **Owner answers of 6 Oct, second batch**: (1) **Raid economy (P11) is option B with 4-hour shields**, replacing Q23b: the vault keeps 60% of an island's RUM (never raidable), a successful raid takes 25% of the exposed treasury (half on a partial raid), a 4-hour shield after being raided, attacking ends your own shield, and a small raid entry fee as a RUM sink; no daily loss cap, no new-player protection and no free revenge raid (owner, 6 Oct); all in config, built in M14/M15. (2) **Netcode matches are server-authoritative**: the match server runs the simulation and owns hull, damage, armor, regeneration, items and sinking; clients send inputs only and render the server's state, so no client report decides a result (M9 proves it, M13b hosts it, M21/M22 use it). Until then the API relay's referee checks hits (weapon in draft, range, damage cap) but sinking stays client-reported. (3) Health pickups stay as they were (dropped at kills). (4) Accounts beyond Railway and the domain are created when their phase needs them. (5) The API is deployed by the agent with `server/deploy.ps1` when a server change needs to go live; no automatic deploy on push (CI runs the server tests only). (6) Arena fights (minibosses, scheduled elites) keep the waves paused until they end, however long they take; an on-screen pointer shows them when off screen (no limit on the number of arrows). (7) Every weapon is allowed in PvP, Mortar and Maelstrom included. (8) The relay's damage cap stays until the Netcode match server replaces the relay; no further work on relay exploits, since server-authoritative Netcode removes them (7 Oct). (C) |
 | D20 | **Owner answers of 7 Oct (M8z review)**: XP per kill is the same at every graphics quality and with Reduced Effects (the burst pieces split the barrel's XP exactly; the XP table is retuned to keep the measured pace); the darker red Cutthroat Skiff and greener Needle Sloop are kept; Ironclad joins the Saltwind Logbook pool; voyage session files download only in playtest builds (a build switch; the owner says when a public build is made); every weapon has the same level-1 single-target DPS (round 6's weapon roles are undone; the test is enforced again). (C) |
 | D21 | **Owner answers of 7 Oct (open questions)**: loot-barrel sparkles removed (Q16); the Knockback card removed from weapons it does nothing for (Q17); **Ramming Prow removed** and replaced by an auto-attacking weapon that slows enemies, especially the back of the pack, as a strategic tool (Q19, plus the owner's slow-weapon idea; the plan and the art guide follow); the new weapons' rank 4/8/12 milestones stay (Q20); the Harpoon's tar becomes a real slow (Q23); the Reef Crab takes slows and knockback like the boss (half slow, no knockback) (Q24); slows don't shorten charge dashes (Q25); the flame's look is replaced by the owner later (Q26); one Luck scale for cards and chests (Q27); Admiral works on elites and the boss (Q32); new enemy types later, models by the art team (Q5); Collection from Profile (Q37); New badges and sales when locks return (Q38); the same gameplay caps on every device (Q33); the 1024 texture cap on every web build, desktop too (Q34); health bars sort every 8 frames (Q42); phone texture checks at the next phone build (Q40, Q44). Q28: Battle Signal and Full Sail join Powder Rush, Magnetic Tide and Dead Calm in the drop pool (Tailwind and Salvage Chime stay out); the Unity splash logo is off (Unity 6 allows it without Pro); the 1024 texture cap on desktop is fine for now. (C) |
-| D22 | **Owner answers of 8 Oct (M9, N1-N8)**: multi-ship play is pulled into M9 (the multi-ship runtime, M21's I21.1, is built there and the 4-client test uses real ships) (N1); M21 and M22 (no wagers) move forward to right after M13b, so rated 1v1 leaves the relay sooner (N2); .NET 10 and EF Core migrations are M9's first item (N3); implausible leaderboard runs are rejected as soon as M9 ships (no shadow period) (N4); direct secure WebSockets to the Railway match server, no Unity Relay (N5); a new Elo season when server-authoritative 1v1 arrives (N6); no phone in M9, desktop WebGL is the target (N7); about $1 of extra Railway usage for M9 tests and a $10 hard spend limit on the Railway project (N8). (C) |
+| D22 | **Owner answers of 8 Oct (M9, N1-N8)**: multi-ship play is pulled into M9 (the multi-ship runtime, M21's I21.1, is built there and the 4-client test uses real ships) (N1); M21 and M22 (no wagers) move forward to right after M13b, so rated 1v1 leaves the relay sooner (N2); .NET 10 and EF Core migrations are M9's first item (N3); implausible leaderboard runs are rejected as soon as M9 ships (no shadow period) (N4, superseded by D23); direct secure WebSockets to the Railway match server, no Unity Relay (N5); a new Elo season when server-authoritative 1v1 arrives (N6); no phone in M9, desktop WebGL is the target (N7); about $1 of extra Railway usage for M9 tests and a $10 hard spend limit on the Railway project (N8, superseded by D23). (C) |
+| D23 | **Owner answers of 8 Oct (plan rev 12, after the rev 11 review)**: (a) **spend**: a $15 hard limit with a $10 email alert on the Railway workspace, set by the owner; the limit covers the whole workspace, including the live API and Postgres (about $6-9/month baseline), so test services are deleted after each test session and usage is checked against the month's baseline before every Railway test (replaces N8's $10 project limit); (b) **run checks start in shadow mode** (reverses N4): every verdict is stored with a reason code, the rule id, the rules version and the client build, the weekly board shows a "checked" flag, and the owner decides later when to enforce; the enforcement safeguards are built now (per-minute rate bounds plus a survival-time bound for overtime, upper bounds on output only, margin = max(config margin, p99.9 of the strongest personality x 1.25), older builds marked `outdated_client`, re-scoring on a rules version change, a 0.1% false-positive budget test); a dispute endpoint is needed before enforcement; (c) **M9 split into M9a, M9b and M9c**, each with its own gate, owner playtest and commit. Stages reordered: Stage C (real-time 1v1: M21, M22) follows M13b. (C) |
 
 ---
 
@@ -146,9 +147,8 @@ Presentation (uGUI, mobile-first)                                          ├�
 - **New assemblies**: `RoguePirates.V5.Meta` (service contracts, local fakes, client), `RoguePirates.V5.Chain` (client
   wallet connect only; no keys), `RoguePirates.V5.Net` (netcode client), `RoguePirates.V5.Presentation.Meta` (menus,
   shop, base editor). Direction: Config ← Runtime ← Meta, Chain, Net ← Presentation ← DevTools (as D10).
-- **Server**: the existing `server/RoguePirates.Api` stub (.NET 8, in-memory) moves to .NET 10 LTS (.NET 8 support ends
-  10 Nov 2026) and grows into a modular monolith with Postgres (`server/migrations/001_initial.sql` is the starting
-  schema). Money-moving commands: authenticated, idempotency key, expected version, typed results, one settlement
+- **Server**: the existing `server/RoguePirates.Api` stub (.NET 8, EF Core on Postgres with EnsureCreated) moves to .NET 10 LTS (.NET 8 support ends
+  10 Nov 2026) and grows into a modular monolith with Postgres (M9a baselines migrations from the live schema). Money-moving commands: authenticated, idempotency key, expected version, typed results, one settlement
   enforced by database constraints.
 - **Onchain**: one Anchor 1.0 program `rogue_pirates` (player record, match record, wager escrow, bounty escrow, NFT
   listings), MagicBlock delegation for live match records and VRF for seeds; Metaplex Core for sails and islands
@@ -160,8 +160,8 @@ Presentation (uGUI, mobile-first)                                          ├�
   of the same project; both build ids are recorded with every run. Known obstacles today:
   the run seed is chosen on the client (`HomeSeed.cs:24`, `WorldPort.cs:57`; value-earning runs will use server-issued
   seeds), a visual-only global draw (`SalvageChestWaterFloat.cs:35`), and Rigidbody physics for the ship and enemies.
-  `server/RoguePirates.Verifier` is a placeholder (it hashes a seed, it does not replay); M10 replaces it with the
-  plausibility checker.
+  `server/RoguePirates.Verifier` is a placeholder (it hashes a seed, it does not replay); M9a replaces it with the
+  plausibility checker (shadow mode first, D23).
 
 ---
 
@@ -607,69 +607,101 @@ Owner playtest: a recorded voyage compared with the simulator; a PvP match again
 
 Stack research: `plan/v5/research/STACK_RESEARCH.md`.
 
-#### M9 — Run checks and the Netcode test (go/no-go)
+#### M9a — Server foundation and run checks
 
-(Rewritten 8 Oct after the playtest detour, D18-D21; approved with the owner's answers, D22.)
+(Rewritten 8 Oct after the playtest detour, D18-D21; approved with D22; split into M9a, M9b and M9c by rev 12, D23.
+Each of the three has its own gate, owner playtest and commit `V5 M9a/M9b/M9c: <module>`.)
 
-Goal: before any account holds value, (a) check voyages for plausibility on the server and (b) prove with measurements
-that browser players can play on an authoritative Unity Netcode for GameObjects match server on Railway (D18 P5, D19):
-the server runs the simulation and owns hull, damage, armor, regeneration, items and sinking; clients send inputs.
+Goal: before any account holds value, the server moves to .NET 10 with migrations and checks every uploaded voyage for
+plausibility, in shadow mode first (D23): verdicts are stored and shown, and the owner decides when to enforce them.
 
-- C9.0 Server on .NET 10 LTS with EF Core migrations (baseline from today's live schema, replacing EnsureCreated);
-  the Dockerfile on the 10.0 images; deployed by the agent (D19). Pulled from I10.1 (.NET 8 support ends 10 Nov).
-- C9.1 Prerequisite: the simulator refit on the recorded sessions (levels, kills, damage taken and survival within the
-  model's p10-p90), since the plausibility bounds come from it.
-- I9.1 Run log: seed, config hash, balance version, build id; per-minute spawns, kills (per weapon), gold, XP, level,
+- C9a.0 Server on .NET 10 LTS with EF Core migrations baselined from the live schema (replacing EnsureCreated); the
+  Dockerfile on the 10.0 images; deployed by the agent (D19). Pulled from I10.1 (.NET 8 support ends 10 Nov).
+- C9a.1 Prerequisite: the simulator refit on the recorded sessions, since the plausibility bounds come from it. Done
+  when the model's p10-p90 contains the levels, kills and survival time of every recorded session.
+- I9a.1 Run log: seed, config hash, balance version, build id; per-minute spawns, kills (per weapon), gold, XP, level,
   damage taken and dealt, pickups, chests, points of interest; inputs sampled for disputes; compact, uploaded with
   POST /api/runs.
-- I9.2 Seeding: every gameplay draw on the run's seeded streams; the seed injectable from outside (server-issued from
+- I9a.2 Seeding: every gameplay draw on the run's seeded streams; the seed injectable from outside (server-issued from
   M10); a source-scan test.
-- I9.3 Plausibility rules v1 from the refit simulator's strongest personality at the enemy cap (+ margin), exported from
-  config to JSON and read by both the client and the API; the API rejects an implausible run from the start (D22) and
-  keeps the verdict and the reason for disputes.
-- I9.4 Netcode spike (assembly RoguePirates.V5.Net, scene V5NetSpike, kept out of release builds): NGO + Unity Transport
-  WebSockets; a Linux Dedicated Server build of the same project in Docker, locally and as a Railway test service; a
-  server composition with no presenters; fixed 30 Hz simulation, 15-20 Hz snapshots; enemies as batched, quantized,
-  interest-managed custom messages; a signed one-time join ticket from the API lobby.
-  (a) A single-player server voyage with a spike kinematic ship: client prediction and reconciliation.
-  (b) The multi-ship runtime (pulled from M21's I21.1, D22): several ships in one simulation, each with its own build,
-  damage, pickups and XP; the RunManager singleton split per ship. Load test: 2 then 4 real ships on one server.
-  Direct secure WebSockets only, no Unity Relay (D22).
-- D9.1 Go/no-go memo (phase-09-checks/REPORT.md) against: down <= 20 KB/s per client (p95 <= 30), up <= 2 KB/s; server
-  tick p95 <= 16 ms at 4 ships and 200 enemies on Railway (<= 8 ms for a single-player voyage); client steady 60 fps on
-  desktop WebGL while connected; prediction error <= 0.5 m and no visible snap at 150 ms RTT with 2% loss; a dropped
-  socket and a Railway redeploy resume the session within 10 s; cold start measured; memory and sessions per process;
-  cost per match-hour. NGO and Unity Transport versions pinned from the result.
-- T9.x Plausibility: scripted runs and the recorded sessions accepted; edited logs and a consistent forgery above the
-  strongest personality's p99 rejected. Netcode: in-process server-plus-clients PlayMode tests (spawn, input to
-  authoritative move, damage only from the server, a client-sent hull ignored, reconnect), each from a Scenario Lab
-  state. Server: dotnet test (migrations on an empty database and a copy of the live schema, run-log upload, verdicts,
-  join-ticket expiry and replay).
+- I9a.3 Plausibility rules v1 in **shadow mode** (D23): every verdict stored with a reason code, the rule id, the rules
+  version and the client build; the weekly board shows a "checked" flag; no run is rejected until the owner enforces.
+  Rules exported from config to JSON and read by both the client and the API. Ready for enforcement: rate bounds per
+  minute plus a survival-time bound for overtime; upper bounds on output only; margin = max(config margin, p99.9 of the
+  refit simulator's strongest personality x 1.25); runs from older builds marked `outdated_client`; stored runs
+  re-scored when the rules version changes. A dispute endpoint is needed before enforcement, not in shadow mode.
+- T9a.x Every recorded session and scripted run passes; at most 0.1% of 10,000 simulated strongest-personality runs
+  flagged (the false-positive budget); edited logs and a consistent forgery flagged with their reasons; re-scoring after
+  a rules change; `dotnet test` with migrations on an empty database and on a copy of the live schema.
 - Reuse from the playtest: guest profiles and tokens, lobbies and invites, the draft, Elo, the bot, the weekly board.
-  Retire now: the unauthenticated stub endpoints. Retire when the Netcode 1v1 ships: the relay referee, client-posted
-  match results and the remote mirroring.
+  Retire now: the unauthenticated stub endpoints.
 
-Automated check: the scripted server voyage and the 4-client load test on local Docker and on Railway; measurements and
-a Railway usage export in REPORT.md.
-Owner playtest: play one server-run voyage from desktop Chrome on Railway; does the ship feel the same? Read the memo
-and confirm go or no-go.
-Cost: tests about 5-10 server-hours (about $0.20-0.60 above the Hobby $5, up to about $1 approved); a usage alert and
-a $10 hard limit on the Railway project (D22).
-Estimate per hour at 0.25 vCPU / 0.4 GB: a 1v1 about $0.018, a 4-player match about $0.03.
+Automated check: an uploaded run is stored with a pass verdict and a forgery with its reason; the migration deployed to
+Railway.
+Owner playtest: play a run and see it on the weekly board as "checked"; read the reason on a forged run.
+
+#### M9b — Netcode server voyage (single ship)
+
+Goal: prove with measurements that a browser player can play a voyage on an authoritative Unity Netcode for GameObjects
+server on Railway (D18 P5, D19): the server runs the simulation and owns hull, damage, armor, regeneration, items and
+sinking; the client sends inputs.
+
+- I9b.1 Netcode spike up to a single-player server voyage (assembly `RoguePirates.V5.Net`, scene V5NetSpike, kept out of
+  release builds): NGO + Unity Transport WebSockets; a Linux Dedicated Server build of the same project in Docker,
+  locally and as a Railway test service; a server composition with no presenters; fixed 30 Hz simulation, 15-20 Hz
+  snapshots; enemies as batched, quantized, interest-managed custom messages; a signed one-time join ticket from the
+  API lobby; a kinematic ship with client prediction and reconciliation. Railway terminates TLS at its edge: the server
+  listens on plain WS on `$PORT` behind Railway's proxy and the browser connects with secure WebSockets
+  (`WithSecureClientParameters(serverName)`). No Unity Relay (D22).
+- D9b.1 Single-ship measurements (`phase-09b-netcode/REPORT.md`): down and up bandwidth per client; server tick p95
+  (<= 8 ms for a single-player voyage on Railway); client steady 60 fps on desktop WebGL while connected; prediction
+  error <= 0.5 m and no correction above 0.5 m within a single frame at 150 ms RTT and 2% loss; a dropped socket
+  resumes within 10 s; a Railway redeploy ends the session cleanly (no settlement, back to the lobby); cold start,
+  memory and sessions per process measured.
+- T9b.x In-process server-plus-clients PlayMode tests (spawn, input to authoritative move, damage only from the server,
+  a client-sent hull ignored, reconnect), each from a Scenario Lab state; `dotnet test` for join-ticket expiry and
+  replay.
+
+Automated check: the scripted server voyage on local Docker and on a Railway test service; measurements and a Railway
+usage export in REPORT.md.
+Owner playtest: play one server-run voyage from desktop Chrome on Railway; does the ship feel the same?
+
+#### M9c — Multi-ship runtime and the go/no-go
+
+Goal: several ships in one simulation in the shipped runtime, measured at 4 real ships, and a go or no-go for the
+real-time modes.
+
+- I9c.1 Multi-ship runtime in the shipped Runtime and Foundation (pulled from M21's I21.1, D22): ships, stats, pickups,
+  damage, XP and level-ups become per-ship; `RunManager` per ship behind a contract, no new singleton; the
+  single-player voyage unchanged (the full suites and the goldens prove it).
+- T9c.x Per-ship isolation (one ship's level-up, pickups or damage never affect another); a 2 then 4 real-ship load test
+  on one server.
+- D9c.1 Go/no-go memo (`phase-09c-multiship/REPORT.md`) at 4 real ships and 200 enemies against: down <= 20 KB/s per
+  client (p95 <= 30), up <= 2 KB/s; server tick p95 <= 16 ms on Railway; client steady 60 fps on desktop WebGL;
+  prediction error as M9b; cost per match-hour. NGO and Unity Transport versions pinned from the result.
+  No-go: the relay stays, the owner chooses light-PvE 1v1 or a netcode rethink, and M21-M22 wait.
+
+Automated check: the 4-client load test on local Docker and on Railway; the full EditMode and PlayMode suites and the
+goldens green.
+Owner playtest: two browsers in one server-run voyage on Railway; read the memo and confirm go or no-go.
+Cost: all of M9 about $1 of Railway usage (about 5-10 server-hours); the test service deleted after each session and
+usage checked against the month's baseline before every Railway test; the workspace's $15 hard limit and $10 alert
+(D23). Estimate per hour at 0.25 vCPU / 0.4 GB: a 1v1 about $0.018, a 4-player match about $0.03.
 
 #### M10 — Game server foundation and ledger
 
 Goal: a local game server that owns RUM, inventory and receipts, settles runs only after verification, and is ready for
 accounts.
 
-- I10.1 Server on .NET 10 LTS (the three server projects target net8.0 today): `server/RoguePirates.Api` on Postgres
-  (Docker compose locally; Railway when hosted); migrations from `001_initial.sql`; modules Ledger (RUM with pending, settled and legacy balances),
-  Inventory, Store, Receipts; a command envelope (idempotency key, expected version, typed results); rate limits.
+- I10.1 On the M9a server (.NET 10, EF Core migrations): `server/RoguePirates.Api` on Postgres (Docker compose
+  locally, Railway hosted); modules Ledger (RUM with pending, settled and legacy balances), Inventory, Store, Receipts; a
+  command envelope (idempotency key, expected version, typed results); rate limits.
 - I10.2 Server-issued seeds: every run that earns value starts with a seed and run id from the server (D6).
-- I10.3 Plausibility checker: the M9 rules as a queued background worker, replacing the placeholder
-  `server/RoguePirates.Verifier`; its results settle pending RUM (usually within seconds).
+- I10.3 Plausibility checker: moves the M9a check into a queued background worker, replacing the placeholder
+  `server/RoguePirates.Verifier`; its results settle pending RUM (usually within seconds). Enforcement of the run checks
+  (rejecting instead of flagging) is decided by the owner (D23); until then flagged runs are recorded, not rejected.
 - T10.x `dotnet test` (idempotency, double settlement, forged totals rejected, pending never spendable, seed mismatch
-  rejected, implausible runs rejected, concurrent purchases, worker retries).
+  rejected, flagged runs recorded with their reasons, concurrent purchases, worker retries).
 
 Automated check: a scripted run with a server seed is recorded, uploaded, checked by the worker and settled.
 Owner check: read the phase report (no player-facing change yet).
@@ -766,28 +798,67 @@ Goal: an authoritative match server on Railway that browser players connect to, 
 sessions: because results are not replay-verified (Q29), every session that moves value between players is played on
 it (raids, races, ranked voyages for the leaderboard, bounties).
 
-- I13b.1 Unity Netcode for GameObjects (Q2) with Unity Transport WebSockets: server authority, client prediction for
-  your ship, interpolation for enemies; our own interest management (each client receives only nearby enemies, never
-  more than the device cap) and our own lag compensation for player-vs-player hits (NGO has neither built in); enemies
-  sent as batched, quantized custom messages rather than one network object each.
-- I13b.2 Prediction-ready ship controller: the ship's movement (today Rigidbody physics) stepped deterministically each
-  tick so the client can predict and reconcile with the server, keeping the current feel (speed curves, turn rates,
-  knockback) within measured tolerances.
+- I13b.1 Promote `RoguePirates.V5.Net` and the M9 server composition from spike to release (no rewrite: the M9b
+  transport, prediction and interest management and the M9c multi-ship runtime stay as built); add our own lag
+  compensation for player-vs-player hits (NGO has none built in).
+- I13b.2 Redeploys: a running session is snapshotted and resumed, or the server drains (no new sessions, running ones
+  finish) before a redeploy.
 - I13b.3 Server sessions: a single-player session mode (the player's browser is a client of a server-run voyage) for
   raids (M15), races (M17), ranked voyages (M18) and bounties (M27); AI raids (M16) run headless on the server faster
   than real time, with no client.
 - I13b.4 Hosting on Railway (Q17): a match-server service in Railway's Serverless mode (sleeps when no session runs, so
-  idle time costs nothing), several sessions per process (the number measured in M9), reconnect on redeploys; the
-  measured cost per session checked against the estimate in `ANSWERS.md` before the phase closes; a Railway usage alert
-  and spend limit set.
-- T13b.x Server tick tests, prediction and reconciliation, disconnect and reconnect, a server-run voyage's outcome inside
+  idle time costs nothing), several sessions per process (the number measured in M9b and M9c); the measured cost per
+  session checked against the estimate in `ANSWERS.md` before the phase closes; the workspace's $10 alert and $15 hard
+  limit (D23) checked against the new baseline.
+- D13b.1 One reference-phone run (Galaxy A15 / A16 4G) of a server-run voyage, measured against Q31 (D22 N7).
+- T13b.x Lag compensation for player-vs-player hits, snapshot or drain on redeploy, a server-run voyage's outcome inside
   the plausibility bounds, sessions per process under load.
 
 Automated check: a scripted single-player server voyage completes on a local server and on Railway; bandwidth, CPU and
 memory per session logged.
 Owner check: play one server-run voyage from your browser and your phone; does the ship feel the same?
 
-### Stage C — The island
+### Stage C — Real-time 1v1
+
+The match server comes from M9/M13b. This stage replaces the API relay with the server-authoritative 1v1 (D22).
+
+#### M21 — Lobby and matchmaking
+
+Goal: two to four player ships in one server session (the M9c multi-ship runtime), with a lobby, matchmaking and invite
+codes, ready for the Arena and the Hunt.
+
+- I21.2 Lobby and matchmaking on the playtest lobbies and invite codes: quick match, private match by invite code, ready
+  check; M19 adds shareable links later.
+- D21.1 No-go path: this stage starts only after a go in the M9c memo; on a no-go the relay stays and the owner chooses
+  light-PvE 1v1 or a netcode rethink (M9c).
+- T21.x Lobby flows, disconnect of one of four players.
+
+Automated check: four headless clients join one lobby by code and play 5 minutes; per-player results recorded.
+Owner check: two browsers on the local network join one match by invite code.
+
+#### M22 — 1v1 Arena
+
+Goal: a fair 1v1 fight where both players draft any weapons and logbooks from the whole game (request 8).
+
+- I22.1 Draft: each player picks N weapons and M logbooks from the full catalogue, ignoring unlocks (request 8; D8f).
+- I22.2 Arena map, PvP damage scaling and invulnerability frames (no one-shots), light PvE, best of three rounds.
+- I22.3 Results from the match server (M13b, M9c), onchain match record (M12), a seasonal rating; a new Elo season
+  (D22 N6), the playtest ratings archived; unwagered matches pay a fixed RUM amount per match (for example 10 for a win, 3 for a loss) with
+  no daily cap (Q10), plus the rating and cosmetic season ranks; Q34 payout rule (Arena and Hunt, unwagered): a player who surrenders, leaves or fails to reconnect gets nothing,
+  and a player idle for 30 s (no inputs) counts as having left, at any point in the match; if a match ends within 60 s
+  because the opponents left, nobody is paid (this is what stops instant-forfeit farming), and after 60 s the players
+  still in the match are paid normally; a match that ends in under 60 s by real combat (every player active, the loser
+  sunk by a player's weapons, PvE, the storm or the edge wall) pays in full.
+- I22.4 Invites: challenge a friend by code (links in M19).
+- I22.5 Retire the relay referee, `POST /api/matches/{id}/result` and the remote mirroring.
+- T22.x Draft validation, PvP damage rules, forfeit and reconnect, Q34 payouts: a genuine 40-second win pays both
+  players; a loser sunk by PvE at 45 s is paid; an instant forfeit pays nobody; a forfeit at 90 s pays only the winner;
+  a player idle for 30 s at 90 s is treated as leaving; the relay endpoints gone.
+
+Automated check: two scripted clients draft and play a best of three to a recorded result.
+Owner playtest: two browsers on the local network: draft and fight.
+
+### Stage D — The island
 
 #### M14 — Home island: base building and decorations
 
@@ -869,7 +940,7 @@ Goal: a speed-run on a published base with one attempt per player; the fastest v
 Automated check: two scripted entrants finish a race; a third attempt by the same account is refused.
 Owner playtest: enter a race twice (the second is refused) and check the board.
 
-### Stage D — Social and retention
+### Stage E — Social and retention
 
 #### M18 — Weekly leaderboard (kills in a single run)
 
@@ -880,7 +951,8 @@ Goal: a fair weekly board of each player's best single-run kills (request 13).
   the V4 `RunScoreRecord`); a run counts for prizes only when played as a ranked server session (M13b).
 - I18.2 Client: global, friends and around-me views; the reset timer; last week's podium.
 - I18.3 Capped RUM rewards and titles; the weekly top 10 recorded onchain.
-- T18.x Week boundaries, ties, failed verification removes an entry, reward caps.
+- T18.x Week boundaries, ties, the "checked" flag from the M9a verdict, failed verification removes an entry once the
+  owner enforces the run checks (D23), reward caps.
 
 Automated check: scripted entries across a week boundary; the board and rewards match expectations.
 Owner playtest: play two runs and see the better one ranked; check the reset timer.
@@ -892,8 +964,8 @@ Goal: players hear about what matters to them and bring friends in with links an
 - I19.1 Notifications: an in-game inbox; web push (service worker + FCM on desktop and Android; iOS only as an installed
   web app; needs a Firebase project, Q30); opt-in email digests; events: raided, shield ending, race closing, rank
   changes, invites, sales.
-- I19.2 Friends and invites: the invite-link framework (`/join/<code>`, OG image) with raid and race links (Arena and
-  Hunt links arrive with those modes in M22 and M23); a Solana
+- I19.2 Friends and invites: the invite-link framework (`/join/<code>`, OG image) with raid and race links (links for
+  Arena challenges and lobby codes from M21-M22; Hunt links in M23); a Solana
   Actions endpoint on the same URL for wallet users (optional; Blinks need Dialect registration to unfurl on X).
 - I19.3 Share cards: server-rendered PNG (SkiaSharp) for run results, raid wins, ranks and sails, with a link; Web
   Share where the browser allows, else copy link and save image; referral rewards capped for both players; linked-account hook, off (D15).
@@ -918,46 +990,9 @@ Goal: reasons to come back every day, every week and every season, paying capped
 Automated check: a scripted clock-skip session across days and a week shows streaks, quests and resets.
 Owner playtest: play two "days" (clock skip in dev builds) and claim the rewards.
 
-### Stage E — Real-time modes
+### Stage F — Hunt and wagers
 
-The match server and single-player server sessions moved up to M13b (raids, races and ranked runs need them); this
-stage adds several ships per session.
-
-#### M21 — Multi-ship runtime and lobby
-
-Goal: two to four player ships in one server session, with a lobby, matchmaking and invite codes, ready for the Arena
-and the Hunt.
-
-- I21.1 Multi-ship runtime: the V4 run assumes one player ship (`RunManager.Instance`); ships, stats, pickups, damage,
-  XP and level-ups become per-player.
-- I21.2 Lobby and matchmaking: quick match, private match by invite code (the M19 link framework), ready check.
-- D21.1 No-go path: if M9's four-client test failed, the Arena ships with light or no PvE and the Hunt is reduced
-  (fewer enemies, a smaller sea); the owner decides from the M9 memo.
-- T21.x Per-player state isolation (one ship's level-up never affects another), lobby flows, disconnect of one of four
-  players.
-
-Automated check: four headless clients join one lobby by code and play 5 minutes; per-player results recorded.
-Owner check: two browsers on the local network join one match by invite code.
-
-#### M22 — 1v1 Arena
-
-Goal: a fair 1v1 fight where both players draft any weapons and logbooks from the whole game (request 8).
-
-- I22.1 Draft: each player picks N weapons and M logbooks from the full catalogue, ignoring unlocks (request 8; D8f).
-- I22.2 Arena map, PvP damage scaling and invulnerability frames (no one-shots), light PvE, best of three rounds.
-- I22.3 Results from the match server (M13b, M21), onchain match record (M12), a seasonal rating; unwagered matches pay a fixed RUM amount per match (for example 10 for a win, 3 for a loss) with
-  no daily cap (Q10), plus the rating and cosmetic season ranks; Q34 payout rule (Arena and Hunt, unwagered): a player who surrenders, leaves or fails to reconnect gets nothing,
-  and a player idle for 30 s (no inputs) counts as having left, at any point in the match; if a match ends within 60 s
-  because the opponents left, nobody is paid (this is what stops instant-forfeit farming), and after 60 s the players
-  still in the match are paid normally; a match that ends in under 60 s by real combat (every player active, the loser
-  sunk by a player's weapons, PvE, the storm or the edge wall) pays in full.
-- I22.4 Invites: challenge a friend with an M19 link or code.
-- T22.x Draft validation, PvP damage rules, forfeit and reconnect, Q34 payouts: a genuine 40-second win pays both
-  players; a loser sunk by PvE at 45 s is paid; an instant forfeit pays nobody; a forfeit at 90 s pays only the winner;
-  a player idle for 30 s at 90 s is treated as leaving.
-
-Automated check: two scripted clients draft and play a best of three to a recorded result.
-Owner playtest: two browsers on the local network: draft and fight.
+Uses the multi-ship runtime (M9c) and the lobby (M21).
 
 #### M23 — Hunt (4-player free-for-all)
 
@@ -999,7 +1034,7 @@ Goal: optional stakes on Arena, Hunt and Race, winner takes all, 5% house cut; f
 Automated check: scripted wagered Arena, Hunt and Race matches settle on devnet with explorer links saved.
 Owner playtest: wager devnet SKR in an Arena match against a second tester's account.
 
-### Stage F — Creator economy and brands
+### Stage G — Creator economy and brands
 
 #### M25 — Sail designer
 
@@ -1083,18 +1118,22 @@ Owner check: read the audit and decide what is next.
 | Risk | Where | Mitigation |
 |---|---|---|
 | Plausibility checks can be fooled by results that look believable (a modified client or a bot), and that voyage RUM can then reach other players through wagers, the marketplace or raids | M10, M15, M24, M26b | Bounds from the balance model and simulator, tested against forged logs; modes that move value between players are played on the match server (D6); Q35 decides whether checked voyage RUM is usable there right away |
-| Server-run sessions for raids, races, ranked voyages and 6 AI raids per player per day cost server CPU and memory, and need a steady connection | M9, M13b, M15–M18 | Sessions per process and memory measured in M9; AI raids run headless faster than real time; the per-component Railway estimate in `ANSWERS.md` (about $20–25/month if ~30 of 100 players play daily, $40–45 if all do), measured before M13b closes; Serverless sleeping and a spend limit; reconnect handling |
-| Real-time multiplayer in WebGL is the largest single item (server authority, WebSockets only, hundreds of enemies) | M9, M13b, M22, M23 | Go/no-go spike first; interest management; local only until hosting is approved |
+| Server-run sessions for raids, races, ranked voyages and 6 AI raids per player per day cost server CPU and memory, and need a steady connection | M9b, M9c, M13b, M15–M18 | Sessions per process and memory measured in M9b and M9c; AI raids run headless faster than real time; the per-component Railway estimate in `ANSWERS.md` (about $20–25/month if ~30 of 100 players play daily, $40–45 if all do), measured before M13b closes; Serverless sleeping and a spend limit; reconnect handling |
+| Real-time multiplayer in WebGL is the largest single item (server authority, WebSockets only, hundreds of enemies) | M9b, M9c, M13b, M22, M23 | Go/no-go spike first, split into M9a-M9c with a gate each; interest management; Railway test service approved (D22) |
 | Custodial keys, held on our Railway server, and the fee payer are attack targets; the master key and the database live in the same Railway project, so one leaked Railway account exposes both | M11 | Devnet only; encrypted keys with the master key in a Railway secret; an offline master-key backup and rotation (key id); separate secrets for the fee payer, treasury and settle authority; allow-listed instructions and rate limits; a key vault or provider before any mainnet (D7) |
-| Netcode for GameObjects has no built-in interest management or lag compensation, and version 3.0 is brand new | M9, M13b, M22, M23 | We write both (budgeted in M13b); pin a tested 2.x release; measured in M9 against numeric limits (I9.4); enemies sent as our own batched messages, so a later netcode switch keeps most of our code |
+| Netcode for GameObjects has no built-in interest management or lag compensation, and version 3.0 is brand new | M9, M13b, M22, M23 | We write both (budgeted in M13b); pin a tested 2.x release; measured in M9b and M9c against numeric limits (D9b.1, D9c.1); enemies sent as our own batched messages, so a later netcode switch keeps most of our code |
 | Browser memory: Chrome on 4–6 GB Android phones is 32-bit, capping the game near 256 MB (today's build allows 2 GB) | M1, M7 | Measured on the reference phone in M1; the budget enforced in M7 (`research/DEVICE_TARGETS.md`) |
 | Real-value wagering is regulated | M24 | Devnet only; legal review, geo-fencing and age checks before any mainnet (D8) |
 | RUM leaking into tokens through items | M14, M25, M26 | Origin flags and tests (D4) |
 | Collusion between alt accounts to move RUM or tokens (raids, AI raids, leaderboard prizes, referrals, wagers, the marketplace, bounties) | M15, M16, M18, M19, M24, M26b, M27 | Deferred by the owner (D15); hooks kept, each tested with its switch on; audit in M28 before real value |
 | Hosting vendors changed in 2026 (Multiplay, Hathora gone); Railway has no inbound UDP | M13b | Railway only (Q17): browser clients use secure WebSockets, which Railway supports; the match server is a headless build that could move elsewhere |
 | Royalty enforcement blocks unlisted programs | M26 | Allow-list includes our program, Tensor and Magic Eden; migration through our program |
-| .NET 8 end of support on 10 Nov 2026 | M10 | Target .NET 10 LTS |
-| Scope: 33 phases | all | Stage cut lines; the owner can reorder stages (Q1) |
+| .NET 8 end of support on 10 Nov 2026 | M9a | Target .NET 10 LTS with EF Core migrations (C9a.0) |
+| Scope: 40 phases | all | Stage cut lines; the owner can reorder stages (Q1) |
+| Shadow-mode run checks let implausible runs onto the weekly board until enforced | M9a, M18 | Every verdict stored with its reason; a "checked" flag on the board; the owner enforces later (D23); a dispute endpoint before enforcement |
+| The Railway hard limit ($15) covers the whole workspace, so hitting it stops the live API and Postgres too | M9a-M13b | A $10 alert; usage checked against the month's baseline before every Railway test; test services deleted after each session (D23) |
+| The multi-ship refactor regresses the single-player voyage | M9c | Its own gate; the goldens and the full suites; no new singleton |
+| Railway WebSocket connections drop | M9b, M13b | Resume within 10 s (D9b.1); snapshot or drain on redeploy (I13b.2) |
 | Art lags content | M4, M5, M14, M25 | Placeholders + the M6 art guide |
 | Mobile browser memory and frame rate | M1, M7, M23 | One enemy cap set on the reference low-end phone in M1 (Q21, Q31); quality tiers reduce effects, never the cap |
 
@@ -1166,8 +1205,9 @@ questions below (6 Oct, `plan/playtest/V5-RESUME.md`).
 | N1 | M9's 4-client test: observer ships (move, receive their own enemies, take server hits; no build) with full multi-ship play left to M21, or pull multi-ship play into M9 (much bigger)? | Answered 8 Oct: Multi-ship play in M9 (D22) |
 | N2 | When does the relay go? Keep the plan (Netcode 1v1 in M22, after Stages C and D), or bring M21 and M22 (no wagers) forward right after M13b so rated 1v1 stops relying on client-reported sinking sooner? | Answered 8 Oct: Bring M21-M22 forward after M13b (D22) |
 | N3 | .NET 10 and database migrations: as M9's first item, or move M10 ahead of M9? | Answered 8 Oct: First item of M9 (D22) |
-| N4 | Leaderboard run checks: record a verdict only (shadow mode) at first, or reject implausible runs as soon as M9 ships? | Answered 8 Oct: Reject at once (D22) |
+| N4 | Leaderboard run checks: record a verdict only (shadow mode) at first, or reject implausible runs as soon as M9 ships? | Answered 8 Oct: Reject at once (D22); changed 8 Oct: shadow mode first (D23) |
 | N5 | Transport: direct secure WebSockets to Railway (free), with Unity Relay only as a fallback (needs a Unity Gaming Services account)? | Answered 8 Oct: Direct WebSockets (D22) |
 | N6 | Elo: a new season when server-authoritative 1v1 arrives, or carry today's client-reported ratings over? | Answered 8 Oct: New season (D22) |
 | N7 | Phone in M9: one reference-phone run in the go criteria, or leave the phone to M13b? | Answered 8 Oct: Leave to M13b (D22) |
-| N8 | Spend: about $1 of extra Railway usage for M9 tests and a $10 hard spend limit on the Railway project? | Answered 8 Oct: Approve ($10 limit) (D22) |
+| N8 | Spend: about $1 of extra Railway usage for M9 tests and a $10 hard spend limit on the Railway project? | Answered 8 Oct: Approve ($10 limit) (D22); changed 8 Oct: $15 workspace limit, $10 alert (D23) |
+| Q-A, Q-B, Q-C | Plan rev 11 review: spend limit on the whole workspace; reject at once or shadow mode first; one M9 or a split? | Answered 8 Oct: $15 hard limit and $10 alert on the workspace; shadow mode first, the owner enforces later; split into M9a, M9b, M9c (D23) |

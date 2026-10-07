@@ -351,7 +351,7 @@ def build(out_path):
   <div class="eyebrow">Rogue Pirates · Pirate Game Unity · after V4</div>
   <h1>V5 Live Game Plan</h1>
   <span class="status{" ok" if status.get("statusOk") else ""}">{status["statusLine"]}</span>
-  <p class="lede">Your 24 requests as {n} phases in six stages: a balanced voyage, a shop and mobile controls, accounts with custodial Solana devnet wallets and MagicBlock records, your island with defenses, raids and races, real-time Arena and Hunt with wagers, and a creator economy with sails, islands and brand bounties. Same way of working as V4: one module per phase, config as data, and a gate after every phase with tests, an independent review and your playtest.</p>
+  <p class="lede">Your 24 requests as {n} phases in seven stages: a balanced voyage, a shop and mobile controls, accounts with custodial Solana devnet wallets and MagicBlock records, a server-run 1v1 Arena, your island with defenses, raids and races, social and retention, the Hunt with wagers, and a creator economy with sails, islands and brand bounties. Same way of working as V4: one module per phase, config as data, and a gate after every phase with tests, an independent review and your playtest.</p>
   <dl class="facts">{facts}</dl>
 </header>
 
