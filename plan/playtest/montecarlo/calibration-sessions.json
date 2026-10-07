@@ -1,20 +1,66 @@
 {
- "fitted": "2026-10-07T09:30:44.622Z",
- "loss": 0.9292275533369577,
+ "fitted": "2026-10-07T19:29:24.487Z",
+ "loss": 1.19,
+ "weights": {
+  "S1": 0.5,
+  "S2": 0.8,
+  "S3": 0.8,
+  "S4": 1.5,
+  "S5": 2.5
+ },
+ "sessions": [
+  {
+   "id": "S1",
+   "file": "session-20261006-152859-rook.json",
+   "configHash": "1cc1b64e",
+   "playedOn": "2d55fed4",
+   "today": false
+  },
+  {
+   "id": "S2",
+   "file": "session-20261007-122453-rook.json",
+   "configHash": "1ca9fe47",
+   "playedOn": "45a37c07",
+   "today": false
+  },
+  {
+   "id": "S3",
+   "file": "session-20261007-141608-rook.json",
+   "configHash": "5ce95e3f",
+   "playedOn": "63a2708a",
+   "today": false
+  },
+  {
+   "id": "S4",
+   "file": "session-20261007-204854-rook.json",
+   "configHash": "2ebb45e6",
+   "playedOn": "3bd86f6d",
+   "today": false
+  },
+  {
+   "id": "S5",
+   "file": "session-20261008-001147-rook.json",
+   "configHash": "daa47525",
+   "playedOn": "23227d5f",
+   "today": true
+  }
+ ],
  "model": {
-  "accuracy": 0.4,
+  "accuracy": 0.35,
   "engagement": 0.9,
-  "arrivalSeconds": 1.5,
-  "lootShare": 0.95,
-  "vfxDensity": 0.6,
-  "barrelsPerMinute": 140,
-  "arenaShareOfDps": 0.3,
-  "focusShareOfDps": 0.1,
-  "eliteShareOfDps": 0.06,
-  "contactRate": 0.08,
-  "shotHitChance": 0.02,
+  "arrivalSeconds": 0.5,
+  "lootShare": 0.7,
+  "barrelsPerMinute": 100,
+  "arenaShareOfDps": 0.45,
+  "focusShareOfDps": 0.05,
+  "eliteShareOfDps": 0.03,
+  "contactRate": 0.045,
+  "shotHitChance": 0.16,
   "focusHitsPerSecond": 0.05,
   "logbookPickChance": 0.5,
-  "islandHitsPerMinute": 1.45
- }
+  "playSpread": 0.15,
+  "exposureSpread": 0.8,
+  "healShare": 0.8
+ },
+ "note": "Fitted with fit_sessions.mjs (coordinate search, 80 seeds a voyage, final loss on 200). logbookPickChance is not fitted (the voyages replay their own picks) and stays 0.5."
 }

@@ -51,8 +51,11 @@ Carlo data, or `unity command eval "return RoguePirates.V4.Editor.MonteCarloExpo
 compares it with the YAML fallback (`export_data.py`) and lists any field that differs. `node fit_sessions.mjs` refits
 the model's constants on the recorded sessions in this folder.
 
-The script runs `sim.mjs` on `data.json` for the session's captain and starting weapon, replaying the session's
-level-up picks. It uses 200 seeds and summons the
+The script runs `sim.mjs` for the session's captain and starting weapon, replaying the session's level-up picks. A
+voyage listed in `montecarlo/session_data.mjs` (the five fitted voyages) is replayed on the config it was played on
+(`montecarlo/session-data/`, rebuilt with `node session_data.mjs`; `--today` forces `data.json`); any other session runs
+on `data.json`, today's config. When you record a new voyage, add it to `SESSIONS` in `session_data.mjs` (its commit and
+the export to snapshot) and rerun `node fit_sessions.mjs`. It uses 200 seeds and summons the
 boss at the session's Beacon time. It prints the session and the model side by side: level, kills, hull and damage each
 minute, level-up times, elite, miniboss and boss fights, damage by source, chests and the end. Then it lists the biggest
 mismatches and which model constants would close them. It measures this by changing each constant by +30%.

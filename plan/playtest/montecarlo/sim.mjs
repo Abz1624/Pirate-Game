@@ -32,26 +32,47 @@ export const MODEL = {
   refSpin: { flying_cutlasses: 120, anchor_flail: 100, lighthouse_lantern: 60 },
   refBlades: { flying_cutlasses: 2, anchor_flail: 1, lighthouse_lantern: 1 },
   crowdForFullSplash: 25,      // area weapons reach their full target count at this many enemies alive
-  // ---- Fitted on the owner's three recorded voyages (fit_sessions.mjs, 7 Oct 2026) ----
-  accuracy: 0.4,               // share of the build's realistic damage that lands on an enemy (misses, travel, overkill)
-  engagement: 0.9,             // share of the enemies the player fights (the rest wander off)
-  arrivalSeconds: 1.5,         // a new enemy spawns off-screen and needs this long to come into range
-  lootShare: 0.95,            // share of XP and health barrels the player sails over (barrels must be touched)
-  barrelsPerMinute: 140,       // the most XP barrels the ship sails over in a minute: past it, barrels are left behind
-                               // (sessions: ~2.3 XP a kill at 90-150 kills a minute, ~1.6 at 150-190)
-  vfxDensity: 0.6,             // the quality tier's effects density (0.45 Low, 0.75 Mid, 1 High). V5 M8z (7 Oct, D20): no effect on
-                               // the XP any more: a barrel's pieces split its value exactly (PickupModule.Burst). Before D20 each
-                               // piece paid at least 1, so the XP per kill grew with it (the sessions measured like 0.6).
-  arenaShareOfDps: 0.3,        // share of the single-target damage spent on an arena miniboss or elite (the waves are paused)
-  focusShareOfDps: 0.1,        // ... on a scheduled miniboss or elite that fights alongside the waves
-  eliteShareOfDps: 0.06,       // ... on each kill-band elite (they mingle with the crowd; nobody turns on them)
-  bossShareOfDps: 0.6,         // ... on the Barnacle King
-  // Incoming damage: contacts/s = contactRate x (melee enemies in range)^0.6 x (1 - dodge); shots/s = shooters x
-  // shotHitChance / shotInterval; a focus enemy hits focusHitsPerSecond (the boss bossHitsPerSecond) x (1 - 0.6 dodge).
-  contactRate: 0.08, dodge: 0.7, shotHitChance: 0.02, shotInterval: 2.5,
-  bossHitsPerSecond: 0.6, focusHitsPerSecond: 0.05, // scheduled minibosses and elites; a kill-band elite hits like one more enemy of its type
-  islandHitsPerMinute: 1.45,   // measured: sessions 2-3 island damage / 5 hull per impact; island impacts that cost hull (data: run.islandImpactDamage, at most one per islandDamageCooldown)
+  // ---- Fitted on the owner's five recorded voyages (fit_sessions.mjs, V5 M9a C9a.1, 8 Oct 2026), each voyage replayed
+  // on the config it was played on (session_data.mjs). Old values (7 Oct fit on three voyages) in brackets. ----
+  accuracy: 0.35,              // [0.4] share of the build's realistic damage that lands on an enemy (misses, travel, overkill)
+  engagement: 0.9,             // [0.9, new meaning] share of the wave enemies that come to fight; the rest miss the ship and
+                               // wander off: they hold a place in the alive count for wanderSeconds, then leave unkilled
+                               // (which also lowers the kill band's kill ratio). Before C9a.1 it scaled the fight instead.
+  wanderSeconds: 20,           // how long a wanderer stays before it leaves the despawn range (assumed, not fitted)
+  arrivalSeconds: 0.5,         // [1.5] a new enemy spawns off-screen and needs this long to come into range
+  lootShare: 0.7,              // [0.95] share of the XP barrels the player sails over (barrels must be touched)
+  barrelsPerMinute: 100,       // [140] the most XP barrels the ship sails over in a minute: past it, barrels are left behind
+  vfxDensity: 1,               // [0.6 fitted] not fitted any more: the device's effects density (0.45 Low, 0.75 Mid, 1 High). Since
+                               // D20 it does not move the XP (a barrel's pieces split its value exactly); for the pre-D20
+                               // voyages (legacyXpBurst) session_data.mjs sets the tier they were played at (High).
+  arenaShareOfDps: 0.45,       // [0.3] share of the single-target damage spent on an arena miniboss or elite (the waves are paused)
+  focusShareOfDps: 0.05,       // [0.1] ... on a scheduled miniboss or elite that fights alongside the waves
+  eliteShareOfDps: 0.03,       // [0.06] ... on each kill-band elite (they mingle with the crowd; nobody turns on them, so they pile up)
+  bossShareOfDps: 0.6,         // ... on the Barnacle King (no voyage summoned it: not fitted)
+  // Incoming damage, drawn as whole hits (Poisson): contacts/s = contactRate x (melee enemies in range)^0.6 x (1 - dodge);
+  // shots/s = shooters x shotHitChance / shotInterval; a focus enemy hits focusHitsPerSecond (the boss bossHitsPerSecond)
+  // x (1 - 0.6 dodge). [contactRate 0.08, shotHitChance 0.02]: the voyages take about half their enemy damage from
+  // shooters (cannonboats, gunner cogs, needle sloops), so shots now land 8 times as often and contacts about half as often.
+  contactRate: 0.045, dodge: 0.7, shotHitChance: 0.16, shotInterval: 2.5,
+  bossHitsPerSecond: 0.6, focusHitsPerSecond: 0.05, // [0.05] scheduled minibosses and elites; a kill-band elite hits like one more enemy of its type
+  islandHitsPerMinute: 1.4,    // [1.45] measured: 84 island hits that cost hull in 59.8 minutes of the five voyages (data:
+                               // run.islandImpactDamage hull each, at most one per islandDamageCooldown)
+  // New in C9a.1, measured straight from the voyages (not searched): the storm edge (8 hull/s while off the map) and enemy
+  // hazards (traps, mines, bomb circles): 29 hits and 76 hull in 59.8 minutes of play.
+  hazardHitsPerMinute: 0.49, hazardHit: 2.6,
+  // Share of the timed health barrels picked up (they drop ahead, in view). Measured lower bound 0.6 (S2-S5 show 15-16
+  // pickups where the timer gives 26; a barrel taken at full hull leaves no heal event); fitted within [0.6, 1].
+  healShare: 0.8,
+  // Run-to-run play: each voyage draws its own aim (x accuracy) and barrel pickup (x lootShare) from a log-normal with
+  // sigma playSpread (at most 0.15: two voyages on one config, S2 and S3, differ by 4% in kills at 10:00), and its
+  // exposure (x incoming hit rates) and health-barrel luck (x healShare) with sigma exposureSpread. The survival spread is
+  // wide on purpose: on the older configs the model's median voyage sinks earlier than the owner's (see the report).
+  playSpread: 0.15, exposureSpread: 0.8,
+  // A Gilded Wreck repair (a landmark: data stage.repairWreckHealFraction of the max hull): one per voyage, at the
+  // median time of the voyages' repairs (S2-S5: 3:40, 3:45, 6:29, 7:38). Measured, not searched.
+  repairAtSeconds: 300,
   logbookPickChance: 0.5,      // with a Logbook card and a weapon upgrade on offer, the player takes the Logbook this often
+                               // (not fitted: the fit replays the voyages' own picks; the owner took Logbooks in 35-44% of picks in S4-S5)
   chestEverySeconds: 105,      // a salvage chest opened this often (sessions: 6-7 chests in 11-14 min)
   evolutionMultiplier: 1.6,    // an evolved weapon's realistic damage, x (its Empowered numbers come from the data)
   linesPerRarity: [1, 1, 2, 2, 3], // fallback when the data has no progression.linesPerRarity
@@ -71,6 +92,8 @@ const AX = { Damage: 0, Cooldown: 1, Quantity: 2, Speed: 3, Size: 4, Duration: 5
 
 export function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
 const pickW = (r, items, w) => { let t = 0; for (const x of items) t += Math.max(0, w(x)); let v = r() * t; for (const x of items) { v -= Math.max(0, w(x)); if (v <= 0) return x; } return items[items.length - 1]; };
+// Unity's Mathf.RoundToInt rounds halves to even (4.5 -> 4, 7.5 -> 8).
+const roundEven = x => { const f = Math.floor(x), d = x - f; return d > 0.5 || (d === 0.5 && f % 2 !== 0) ? f + 1 : f; };
 const poly = (c, x) => (c[0] ?? 1) + (c[1] ?? 0) * x + (c[2] ?? 0) * x * x;
 
 /**
@@ -86,7 +109,7 @@ export function xpPaidTable(data, legacyDensity = null) {
   for (let v = 0; v <= 400; v++) {
     let sum = 0;
     for (let k = lo; k <= hi; k++) {
-      const count = Math.max(minimum, Math.round(k * density)), per = Math.max(1, Math.floor(v / count)), rem = v - per * count;
+      const count = Math.max(minimum, roundEven(k * density)), per = Math.max(1, Math.floor(v / count)), rem = v - per * count;
       sum += Math.max(1, per + rem) + Math.max(1, per) * (count - 1);
     }
     table.push(v > 0 ? sum / (hi - lo + 1) : 0);
@@ -97,6 +120,12 @@ export function xpPaidTable(data, legacyDensity = null) {
 /** One voyage. params: { captain, startWeapon, weaponOrder, pickPlan, spawnMult, enemyDamageMult, enemyHpMult, earlyMult, lateMult, seed, bossAt, model } -> run record. */
 export function simulateRun(data, params) {
   const r = rng(params.seed || 1), M = { ...MODEL, ...(params.model || {}) };
+  // This voyage's play (MODEL.playSpread): log-normal multipliers on aim, barrel pickup and exposure to enemy hits.
+  const normal = () => Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(2 * Math.PI * r());
+  const form = { aim: Math.exp(M.playSpread * normal()), loot: Math.exp(M.playSpread * normal()), exposure: Math.exp(M.exposureSpread * normal()), heal: Math.exp(M.exposureSpread * normal()) };
+  const accuracy = M.accuracy * form.aim, lootShare = Math.min(1, M.lootShare * form.loot);
+  // Poisson hit counts: incoming damage comes in whole hits (a quiet minute or a bad one), not a smooth expected value.
+  const poisson = mean => { if (mean <= 0) return 0; if (mean > 30) return Math.max(0, Math.round(mean + Math.sqrt(mean) * normal())); let k = 0, p = Math.exp(-mean), c = p, u = r(); while (u > c && k < 200) { k++; p *= mean / k; c += p; } return k; };
   const tl = data.timeline, P = data.progression, E = data.enemies, D = data.director, C = data.curve, PK = data.pickups;
   const flow = tl.flow || { enabled: true, smooth: false, waves: tl.waves.map(w => ({ t: w[0], share: w[1], rate: w[2], topUpInterval: 1, maxTopUp: 4 })), hordes: tl.hordes.map(h => ({ id: String(h[0]), t: h[0], enemy: h[1], count: h[2], hpMult: 1, dmgMult: 1 })), release: null };
   const release = flow.release || { rate: 1, floor: 1, afterArena: 0, afterBoss: 0, hordeDelay: 0, afterHorde: 0, bossFightFloor: 0.3, preHordeLull: 0 };
@@ -161,7 +190,8 @@ export function simulateRun(data, params) {
   };
   const singleDps = () => weapons.reduce((s, w) => s + weaponNumbers(w).single, 0);
   const gameDps = () => weapons.reduce((s, w) => s + weaponNumbers(w).game, 0);
-  const alive = () => groups.reduce((s, g) => s + g.n, 0) + focus.length;
+  const wanderers = []; // leave times of the enemies that wander off
+  const alive = () => groups.reduce((s, g) => s + g.n, 0) + focus.length + wanderers.length;
   const arenaActive = () => focus.some(f => f.kind === 'arena');
 
   const spawnEnemy = (id, t, opts = {}) => {
@@ -177,6 +207,8 @@ export function simulateRun(data, params) {
       focus.push({ id: 'adaptive:' + id, kind: 'elite', hp: ehp, maxHp: ehp, dmg: dmg * (D.eliteDamage ?? 1.1), xp: e.xp, start: t });
       return true;
     }
+    // A wave enemy that misses the ship (1 - engagement) wanders: it holds a place in the alive count, then leaves.
+    if (!opts.overtime && !opts.horde && r() > M.engagement) { wanderers.push(t + M.wanderSeconds); return true; }
     groups.push({ id, hp, n: 1, ranged: e.ranged, dmg, xp: e.xp, ready: t + M.arrivalSeconds });
     return true;
   };
@@ -270,6 +302,7 @@ export function simulateRun(data, params) {
     now = t;
     const minute = minuteOf(t);
     const bossFight = bossSpawned && !bossDone;
+    for (let i = wanderers.length - 1; i >= 0; i--) if (t >= wanderers[i]) wanderers.splice(i, 1);
     // Kill band (fixed bands): next band's rate and elite chance (DifficultyDirector.JudgeKillBand).
     if (D.killBand && t - bandStart >= D.bandSeconds) {
       if (bandSpawns < (D.minSpawns ?? 6)) { bandRate = 1; bandElite = 0; }
@@ -303,7 +336,7 @@ export function simulateRun(data, params) {
             if (bossFight || t - h.t > 30) { hordesDone.add(h.id); continue; }
             if (t < releaseUntil) continue;
             hordesDone.add(h.id);
-            let n = 0; for (let i = 0; i < Math.round(h.count); i++) if (spawnEnemy(h.enemy, t, { hpMult: (h.hpMult ?? 1), dmgMult: h.dmgMult ?? 1, cap: Math.min(tl.cap, ambientCap + Math.floor(tl.reserved / 2)) })) n++;
+            let n = 0; for (let i = 0; i < Math.round(h.count); i++) if (spawnEnemy(h.enemy, t, { hpMult: (h.hpMult ?? 1), dmgMult: h.dmgMult ?? 1, cap: Math.min(tl.cap, ambientCap + Math.floor(tl.reserved / 2)), horde: true })) n++;
             if (n > 0 && release.afterHorde > 0) pendingReleases.push([t + release.hordeDelay, release.afterHorde]);
           }
         }
@@ -315,7 +348,7 @@ export function simulateRun(data, params) {
       overtimeAcc += (params.spawnMult || 1) / interval;
       const ramp = (o.rampStart ?? 1) + ((o.rampEnd ?? 1) - (o.rampStart ?? 1)) * Math.min(1, o.rampSeconds > 0 ? ot / o.rampSeconds : 1);
       const hpm = (C.overtimeHpBase ?? 3) * Math.pow(2, ot / 60 * (C.overtimeHpExponent ?? 0.25)) * ramp, dm = (1 + ot / 60 * (C.overtimeDamagePerMinute ?? 0.12)) * ramp;
-      while (overtimeAcc >= 1) { overtimeAcc -= 1; spawnEnemy(r() < (ot < 120 ? (o.pursuerFirst ?? 0.8) : (o.pursuerAfter ?? 0.6)) ? 'drowned_pursuer' : 'drowned_harrier', t, { hpMult: hpm, dmgMult: dm, cap: tl.cap }); }
+      while (overtimeAcc >= 1) { overtimeAcc -= 1; spawnEnemy(r() < (ot < 120 ? (o.pursuerFirst ?? 0.8) : (o.pursuerAfter ?? 0.6)) ? 'drowned_pursuer' : 'drowned_harrier', t, { hpMult: hpm, dmgMult: dm, cap: tl.cap, overtime: true }); }
     }
     // Minibosses and scheduled elites (time-to-kill floors on the build's theoretical DPS at spawn).
     for (const f of tl.focus) {
@@ -339,19 +372,19 @@ export function simulateRun(data, params) {
     // Player damage: shares of the single-target damage go to the focus targets; the rest, splash, pierce, orbits and
     // auras hit the crowd.
     const killsBefore = kills;
-    const barrelShare = () => M.lootShare * Math.min(1, M.barrelsPerMinute / Math.max(1, killWindowSum));
+    const barrelShare = () => lootShare * Math.min(1, M.barrelsPerMinute / Math.max(1, killWindowSum));
     const n = groups.reduce((s, g) => s + (g.ready <= t ? g.n : 0), 0), splash = Math.min(1, n / M.crowdForFullSplash);
     const share = f => f.kind === 'arena' ? M.arenaShareOfDps : f.kind === 'boss' ? M.bossShareOfDps : f.kind === 'focus' ? M.focusShareOfDps : M.eliteShareOfDps;
     let toFocus = focus.reduce((s, f) => s + share(f), 0); const focusScale = toFocus > 0.95 ? 0.95 / toFocus : 1; toFocus = Math.min(0.95, toFocus);
     let crowdDamage = 0, hitWeighted = 0, singleSum = 0;
     for (const w of weapons) {
       const x = weaponNumbers(w);
-      crowdDamage += x.single * M.accuracy * ((1 - toFocus) + (x.targets - 1) * splash);
+      crowdDamage += x.single * accuracy * ((1 - toFocus) + (x.targets - 1) * splash);
       hitWeighted += x.single * x.perHit; singleSum += x.single;
     }
     const single = singleSum;
     for (let i = focus.length - 1; i >= 0; i--) {
-      const f = focus[i]; f.hp -= single * M.accuracy * share(f) * focusScale * stats[S.EliteDamage];
+      const f = focus[i]; f.hp -= single * accuracy * share(f) * focusScale * stats[S.EliteDamage];
       if (f.hp > 0) continue;
       focus.splice(i, 1); kills++; minuteKills++; bandKills++;
       xpCarry += (xpPaid[Math.min(400, Math.round(f.xp))] || 1) * barrelShare() * stats[S.XPGain] * xpPace;
@@ -361,11 +394,11 @@ export function simulateRun(data, params) {
     }
     const perHit = singleSum > 0 ? hitWeighted / singleSum : 1; // a typical hit (damage-weighted over the weapons)
     // Crowd: damage spread over the engaged enemies by count; a kill costs its HP rounded up to whole hits (overkill).
-    const engagedTotal = n * M.engagement;
+    const engagedTotal = n;
     if (engagedTotal > 0 && crowdDamage > 0) {
       for (const g of groups) {
         if (g.ready > t) continue;
-        const eng = g.n * M.engagement, part = crowdDamage * eng / engagedTotal;
+        const eng = g.n, part = crowdDamage * eng / engagedTotal;
         const cost = Math.max(1, Math.ceil(g.hp / Math.max(0.01, perHit))) * Math.max(0.01, perHit);
         const k = Math.min(eng, part / cost), killed = Math.min(g.n, Math.floor(k) + (r() < k - Math.floor(k) ? 1 : 0));
         if (!killed) continue;
@@ -378,7 +411,7 @@ export function simulateRun(data, params) {
           const due = hull / maxHull < (PK.lowHull ?? 0.35) ? lastHeal + (healAt - lastHeal) * (PK.lowWait ?? 1) : healAt;
           if (t >= due) {
             lastHeal = t; healAt = t + PK.healMin + r() * (PK.healMax - PK.healMin);
-            if (r() < M.lootShare) { const heal = Math.min(maxHull - hull, PK.healFraction > 0 ? Math.max(1, Math.round(PK.healFraction * maxHull)) : PK.healValue); hull += heal; healed += heal; }
+            if (r() < Math.min(1, M.healShare * form.heal)) { const heal = Math.min(maxHull - hull, PK.healFraction > 0 ? Math.max(1, Math.round(PK.healFraction * maxHull)) : PK.healValue); hull += heal; healed += heal; }
           }
         }
       }
@@ -388,30 +421,34 @@ export function simulateRun(data, params) {
     const whole = Math.floor(xpCarry); xp += whole; xpCarry -= whole;
     while (xp >= xpToNext(level)) { xp -= xpToNext(level); levelUp(); }
 
-    // Incoming damage.
+    // Incoming damage: each source's hit rate (hits/s) x its damage, drawn as whole hits (Poisson).
     const dodge = Math.min(0.95, M.dodge * (0.85 + 0.15 * stats[S.MoveSpeed]));
-    let melee = 0, hits = 0;
+    const dScale = dmgScale(t) * (params.enemyDamageMult || 1);
+    const armor = data.armorWorks ? Math.max(0, stats[S.Armor] || 0) : 0, armorFactor = 20 / (20 + armor);
+    let taken = 0;
+    const hit = (key, rate, dmg) => { const n = poisson(rate * form.exposure); if (!n) return; const d = n * dmg; taken += d * dScale * armorFactor; damageBy[key] = (damageBy[key] ?? 0) + d; };
+    let melee = 0;
+    for (const g of groups) if (g.ready <= t && !g.ranged) melee += g.n;
+    const contacts = melee > 0 ? M.contactRate * Math.pow(melee, 0.6) * (1 - dodge) : 0;
     for (const g of groups) {
       if (g.ready > t) continue;
-      if (g.ranged) { const d = g.n * M.engagement / M.shotInterval * M.shotHitChance * g.dmg; hits += d; damageBy[g.id] = (damageBy[g.id] ?? 0) + d; }
-      else melee += g.n * M.engagement;
-    }
-    if (melee > 0) {
-      const contacts = M.contactRate * Math.pow(melee, 0.6) * (1 - dodge);
-      for (const g of groups) if (!g.ranged && g.ready <= t) { const d = contacts * (g.n * M.engagement / melee) * g.dmg; hits += d; damageBy[g.id] = (damageBy[g.id] ?? 0) + d; }
+      if (g.ranged) hit(g.id, g.n / M.shotInterval * M.shotHitChance, g.dmg);
+      else hit(g.id, contacts * g.n / melee, g.dmg);
     }
     for (const f of focus) {
-      let d;
-      if (f.kind === 'elite') { const e = E[f.id.slice(9)] || {}; d = e.ranged ? M.engagement / M.shotInterval * M.shotHitChance * f.dmg : M.contactRate * (1 - dodge) * M.engagement * f.dmg; }
-      else d = f.dmg * (f.kind === 'boss' ? M.bossHitsPerSecond : M.focusHitsPerSecond) * (1 - dodge * 0.6);
-      hits += d; const k = f.id.startsWith('adaptive:') ? f.id.slice(9) : (tl.focus.find(x => x.id === f.id) || {}).enemy || f.id; damageBy[k] = (damageBy[k] ?? 0) + d; }
-    const armor = data.armorWorks ? Math.max(0, stats[S.Armor] || 0) : 0, armorFactor = 20 / (20 + armor);
-    let taken = hits * dmgScale(t) * (params.enemyDamageMult || 1) * armorFactor;
-    // Island impacts (V5 M8z: islandImpactDamage hull, at most one per islandDamageCooldown s), at a fitted rate.
+      const k = f.id.startsWith('adaptive:') ? f.id.slice(9) : (tl.focus.find(x => x.id === f.id) || {}).enemy || f.id;
+      // A kill-band elite hits like one more enemy of its type (it mingles with the crowd); scheduled fights at a fixed rate.
+      if (f.kind === 'elite') { const e = E[k] || {}; hit(k, e.ranged ? M.shotHitChance / M.shotInterval : M.contactRate * (1 - dodge), f.dmg); }
+      else hit(k, (f.kind === 'boss' ? M.bossHitsPerSecond : M.focusHitsPerSecond) * (1 - dodge * 0.6), f.dmg);
+    }
+    // Island impacts (V5 M8z: islandImpactDamage hull, at most one per islandDamageCooldown s), at a measured rate.
     const islandHit = (data.run?.islandImpactDamage ?? 0) * armorFactor;
     if (islandHit > 0 && t >= islandReadyAt && r() < M.islandHitsPerMinute / 60) { taken += islandHit; islandDamage += islandHit; damageBy.island = (damageBy.island ?? 0) + islandHit / armorFactor; islandReadyAt = t + (data.run.islandDamageCooldown ?? 0); }
+    // The storm edge and enemy hazards (traps, mines, bomb circles), at a measured rate.
+    if (M.hazardHitsPerMinute > 0 && r() < M.hazardHitsPerMinute / 60) { taken += M.hazardHit; damageBy.hazard = (damageBy.hazard ?? 0) + M.hazardHit; }
     hull -= taken; damageTaken += taken; minuteDamage += taken;
     hull = Math.min(maxHull, hull + (stats[S.HullRegen] || 0));
+    if (t === M.repairAtSeconds && (data.stage?.repairWreckHealFraction ?? 0) > 0) { const heal = Math.min(maxHull - hull, data.stage.repairWreckHealFraction * maxHull); hull += heal; healed += heal; }
     if (t >= chestAt) {
       chestAt = t + M.chestEverySeconds;
       const pool = Object.values(data.items).filter(i => i.inChest);
@@ -422,7 +459,8 @@ export function simulateRun(data, params) {
     }
     minHull = Math.min(minHull, hull / maxHull);
     if ((t + 1) % 60 === 0 || hull <= 0) {
-      minutes.push({ m: Math.round((t + 1) / 60), kills: minuteKills, level, dps: Math.round(singleDps() * 10) / 10, gameDps: Math.round(gameDps()), alive: alive(), hull: Math.max(0, hull / maxHull), dmg: Math.round(minuteDamage), weapons: weapons.length });
+      minutes.push({ m: Math.round((t + 1) / 60), kills: minuteKills, level, dps: Math.round(singleDps() * 10) / 10, gameDps: Math.round(gameDps()), alive: alive(), hull: Math.max(0, hull / maxHull), dmg: Math.round(minuteDamage * 10) / 10, weapons: weapons.length,
+        elites: focus.filter(f => f.kind === 'elite' || (tl.focus.find(x => x.id === f.id) || {}).elite).length });
       minuteKills = 0; minuteDamage = 0;
     }
     if (hull <= 0) { died = true; return finish(t); }

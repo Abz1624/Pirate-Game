@@ -69,9 +69,9 @@ td.num, th.num { text-align: right }
 
 <main class="wrap">
   <header style="display:grid;gap:10px">
-    <span class="eyebrow">Rogue Pirates · Saltwind · V5 M8z · 7 Oct 2026</span>
+    <span class="eyebrow">Rogue Pirates · Saltwind · V5 M9a (C9a.1 refit) · 8 Oct 2026</span>
     <h1>Saltwind Balance Simulator</h1>
-    <p class="lede">The one balance simulator: a numbers-only Monte Carlo of a 15-minute Saltwind voyage. It reads the game's real configs (exported by the Unity Editor from the config set the game runs on) and is calibrated on your three recorded voyages. It measures damage, kills, XP, levels and hull minute by minute; the live simulator below lets you try other settings.</p>
+    <p class="lede">The one balance simulator: a numbers-only Monte Carlo of a 15-minute Saltwind voyage. It reads the game's real configs (exported by the Unity Editor from the config set the game runs on) and is calibrated on your five recorded voyages, each replayed on the config it was played on. It measures damage, kills, XP, levels and hull minute by minute; the live simulator below lets you try other settings.</p>
   </header>
 
   <section>
@@ -82,18 +82,18 @@ td.num, th.num { text-align: right }
   <section class="panel">
     <h2>What the simulation found</h2>
     <ul class="findings">
-      <li><strong>One simulator, on the game's real configs (7 Oct).</strong> The in-engine simulator is retired. This model's data now comes from the Unity Editor (the config set the game runs on, with variants, elite spawners and the XP table resolved the way the game resolves them). The old YAML reader is kept as a fallback, and a check lists any field where the two disagree. That check found three drifts in the old reader, all now fixed: the registry elites (Hammerhead, Kraken Spawn) had their variant's HP and damage instead of their base's, variants had their base's attack and threat, and elite spawners were missing the Rich affix's ×1.25 hull.</li>
-      <li><strong>New rules, as the game plays now:</strong> island hits (5 hull, at most one every 2 s, at the rate measured in your voyages); fight-length floors on the game's own theoretical damage per second; arena fights pause the waves until they end; the wave floor tops up at the game's pace; level-up cards from the offer weights by weapons carried (new Logbooks also with six weapons); the 15-minute timeline; timed health drops at kills; the Beacon boss at 14:00 unless a voyage says otherwise.</li>
-      <li><strong>Calibrated on your three voyages.</strong> The old model levelled about half as fast, killed half as many enemies, never sank and ended fights in 5 s. Now level, kills, damage taken and hull follow your voyages minute by minute, and the second voyage's sinking at 14:00 is reproduced (62% of the model's runs sink by then). See the calibration table below.</li>
-      <li><strong>Found in the game: XP from a kill depends on the effects quality.</strong> An enemy's XP barrel bursts into 3 or more pieces, each worth at least 1 XP, so a 2-XP enemy pays about 4 to 6 XP before the half-XP pace. The number of pieces follows the quality tier's effects density, so the same voyage levels faster on High than on Low. The model fits a density of 0.6.</li>
-      <li><strong>Islands are the biggest source of damage:</strong> about 45% of the hull you lost in your voyages, and 43% in the model. Then come Drowned Pursuers (overtime), Cutthroat Skiffs and Drowned Harriers.</li>
-      <li><strong>With your play profile on all six Captains,</strong> the median voyage lasts about 18 minutes and 69% beat the boss (summoned at 14:00). 3% sink before 10:00 and 21% before 14:00. The Captains land within about ±10% of each other (16.0 to 18.3 minutes).</li>
+      <li><strong>Refit on your five voyages, each on its own config (8 Oct, C9a.1).</strong> The voyages span four builds: island hits of 10 then 5 hull, XP at 0.5 (old per-piece payout), 0.8 and 0.4, weapon damage before and after D20. Each voyage is now replayed on a snapshot of the config it was played on (two are exact Unity exports with the voyage's config hash), so the fitted constants describe your play, not the config changes. Your last voyage (16:38, today's balance) weighs most.</li>
+      <li><strong>On today's balance the model now contains your voyage:</strong> level, kills and survival sit inside the model's 10th-90th percentile band at every minute (level 100%, kills 100%, damage taken 88%, hull 88% of minutes), and your sinking at 16:38 sits at the 39th percentile of the model's sinking times (before: the model never sank, levelled 7 levels faster and took half the damage).</li>
+      <li><strong>Where it still misses:</strong> on the three oldest builds (before D20) you killed 20-35% more in the first minutes than the model (and through S2), and on S2-S4 the model's median voyage sinks 3-5 minutes before you did (inside its band, which is wide because of that). Hull right before a sinking runs below the band (the model's per-minute band is for the voyages still afloat).</li>
+      <li><strong>New in the model:</strong> enemies that miss the ship and wander off (they hold a place in the crowd, then leave unkilled), damage as whole hits, the storm edge and enemy hazards (measured: about one hit every two minutes), the Gilded Wreck repair, health barrels you miss, the Drowned Pursuit engaging fully, kill-band elites piling up (they get 3% of your damage each), and voyage-to-voyage variation in aim, pickup and exposure.</li>
+      <li><strong>Shooters do half the enemy damage.</strong> Your voyages took about half their enemy damage from cannonboats, gunner cogs and needle sloops; the model now lands 16% of shots (was 2%) and half as many rams. Islands stay the largest single source (about a third of the hull lost).</li>
+      <li><strong>Builds decide survival.</strong> With your picks on today's balance (Logbook-heavy: Ironclad, Carpenter's Notes), the model's Rook sinks at a median 18:31. With the model's generic picker (a new weapon whenever offered, random Logbooks), all six Captains sink at a median of about 10:50, 43% before 10:00, and 28% beat the boss: the Logbooks you chose are worth about eight minutes.</li>
     </ul>
   </section>
 
   <section class="panel">
     <h2>Calibration on your recorded voyages</h2>
-    <p class="small">Each voyage beside the model before this change (the old rules and data) and now (the game's configs, the new rules, the fitted constants). The model replays each voyage's level-up picks and is run 200 times; its numbers are the median of the runs still afloat. The three voyages were played on slightly different configs: the first had island hits of 10 hull, so it sank sooner than the model can.</p>
+    <p class="small">Each voyage beside the model before this refit (the 7 Oct model on today's data, as compare_session.mjs ran it) and now (the refit, each voyage on the config it was played on). The model replays each voyage's level-up picks and is run 200 times; its numbers are the median and the 10th-90th percentile band of the runs still afloat. "out" marks a minute where the voyage is outside the band.</p>
     <div class="tabs" id="cal-tabs"></div>
     <p class="small" id="cal-note"></p>
     <div class="scroll"><table id="cal-table"></table></div>
@@ -149,11 +149,11 @@ td.num, th.num { text-align: right }
       <li>One step per second. Enemies spawn from the real timeline: bands and pools, the minute waves' floors (topped up one per spawn gap, up to each wave's limit), release windows, hordes, swarm pulses, the kill band and its elites, minibosses and scheduled elites (arena fights pause the waves until they end), the boss at the Beacon, and the Drowned Pursuit after 15:00. HP, damage and XP are the game's own.</li>
       <li>Minibosses, elites and the boss get the game's fight-length floor: a number of seconds of the build's theoretical damage per second, computed the way the game computes it.</li>
       <li>The player's weapons, levels, upgrade cards (offer weights by weapons carried, lines per rarity, axis caps), Logbooks, chest items and Empowered evolutions follow the game's data. XP comes from barrels that burst into pieces, as in the game; health drops come at a kill after a random wait.</li>
-      <li>Fitted to your three voyages (fit_sessions.mjs): 40% of the build's realistic damage lands, a new enemy needs 1.5 s to come into range, you sail over 95% of the barrels (at most 140 a minute), 30% of your damage goes to an arena fight, 10% to a scheduled elite and 6% to each kill-band elite. Island hits come 1.45 times a minute, as measured in your voyages.</li>
-      <li>Incoming damage: melee contacts grow with the crowd, shooters fire every 2.5 s with a hit chance, focus enemies hit at a fixed rate, and island hits cost the game's 5 hull.</li>
-      <li>Limits: it is a guide, not the game. Storm, hazards and barrels are not modelled, and your third voyage took more damage than the model gives it. Play is the final check.</li>
+      <li>Fitted to your five voyages (fit_sessions.mjs, each on its own config from session_data.mjs, a proper score on level, kills, damage, hull, elites and enemies alive each minute plus the survival time): 35% of the build's realistic damage lands, 90% of the wave enemies come to fight (the rest wander off for 20 s), a new enemy needs 0.5 s to come into range, you sail over 70% of the XP barrels (at most 100 a minute) and 80% of the health barrels, 45% of your damage goes to an arena fight, 5% to a scheduled elite and 3% to each kill-band elite. Measured from the voyages: island hits 1.4 a minute, storm-edge and hazard hits 0.49 a minute (2.6 hull each), one wreck repair at 5:00. Each voyage draws its own aim and pickup (spread 0.15) and exposure and heal luck (spread 0.8).</li>
+      <li>Incoming damage, in whole hits: melee contacts grow with the crowd, shooters fire every 2.5 s with a 16% hit chance, focus enemies hit at a fixed rate, island hits cost the game's island damage, and the storm edge and hazards hit at the measured rate.</li>
+      <li>Limits: it is a guide, not the game. Points of interest other than chests and the wreck repair, the boss director's attacks and movement are not modelled; the survival band is wide because on the older builds the model sinks earlier than you did. Play is the final check.</li>
     </ul>
-    <p class="small">Files: plan/playtest/montecarlo: data.json (Unity Editor: RoguePirates ▸ V5 ▸ Balance: export the Monte Carlo data), export_data.py (YAML fallback), check_export.mjs, sim.mjs, fit_sessions.mjs, compare_session.mjs, batch.mjs, finalize.mjs. Generated <span id="gen"></span>.</p>
+    <p class="small">Files: plan/playtest/montecarlo: data.json (Unity Editor: RoguePirates ▸ V5 ▸ Balance: export the Monte Carlo data), export_data.py (YAML fallback), check_export.mjs, sim.mjs, session_data.mjs and session-data/ (each voyage's config), fit_sessions.mjs, calibration-sessions.json, compare_session.mjs, batch.mjs, finalize.mjs. Generated <span id="gen"></span>.</p>
   </section>
 </main>
 
@@ -181,24 +181,28 @@ document.getElementById('verdicts').innerHTML =
   card('Now in the game', 'your play profile, all six Captains', RES.applied, true) +
   card('Most fun in the search', `floors ×${RES.best.ttkScale} · early ×${RES.best.earlyMult} · late ×${RES.best.lateMult} · damage ×${RES.best.enemyDamageMult}`, bestCard);
 
-// Calibration: each recorded voyage, the model before and now.
+// Calibration: each recorded voyage (on the config it was played on), the model before (7 Oct) and now (C9a.1).
 const calTabs = document.getElementById('cal-tabs');
-let calActive = 0;
+let calActive = RES.calibration.sessions.length - 1;
 const lvl = v => v == null ? '-' : Math.round(v);
+const endClock = s => s == null ? '&gt;20:00' : mins(s / 60);
+const bandCell = (g, b, fmt) => { if (!b) return '-'; const out = g < b[0] || g > b[2]; return `${fmt(b[1])} <span class="small">(${fmt(b[0])}-${fmt(b[2])})</span>${out ? ' <span class="pill bad" title="outside the model p10-p90">out</span>' : ''}`; };
+const bandMed = b => b == null ? null : Array.isArray(b) ? b[1] : b;
 function cal() {
   const S = RES.calibration.sessions;
-  calTabs.innerHTML = S.map((x, i) => `<button type="button" aria-selected="${i === calActive}" data-i="${i}">Voyage ${i + 1} (${x.file.slice(8, 16)}, ${x.sunk ? 'sunk' : 'ended'} ${mins(x.end / 60)})</button>`).join('');
-  const x = S[calActive], f = x.fights;
-  const fl = o => o ? ['miniboss', 'elite', 'adaptive elite'].map(k => `${k} ${o[k] != null ? Math.round(o[k]) + ' s' : '-'}`).join(', ') : '-';
-  document.getElementById('cal-note').innerHTML = `Config ${x.configHash}. Sunk by the voyage's end (+1 min): game ${x.sunk ? 'yes' : 'no'}, model before ${pct(x.sunkBy.before)}, now ${pct(x.sunkBy.now)}.<br>Median fight lengths: game ${fl(f.game)}; before ${fl(f.before)}; now ${fl(f.now)}.`;
-  const rows = x.minutes.map(r => ({ m: r.m, gl: r.game.level, bl: r.before?.level, nl: r.now.level, gk: r.game.kills, bk: r.before?.kills, nk: r.now.kills,
-    gh: r.game.hull, bh: r.before?.hull, nh: r.now.hull, gd: r.game.dmg, bd: r.before?.dmg, nd: r.now.dmg, gp: r.game.dps, np: r.now.dps, af: r.now.afloat }));
+  calTabs.innerHTML = S.map((x, i) => `<button type="button" aria-selected="${i === calActive}" data-i="${i}">${x.id}${x.today ? ' (today)' : ''}: ${x.file.slice(8, 16)}, ${x.sunk ? 'sunk' : 'ended'} ${mins(x.end / 60)}</button>`).join('');
+  const x = S[calActive], sv = x.survival, b4 = sv.before, nw = sv.now;
+  const surv = s => s ? `end p10 ${endClock(s.end[0])}, median ${endClock(s.end[1])}, p90 ${endClock(s.end[2])}; sunk by ${mins(x.end / 60)} in ${pct(s.sunkBy)} of runs` : '-';
+  document.getElementById('cal-note').innerHTML = `Config ${x.configHash}: ${x.note}.<br>Survival: game ${x.sunk ? 'sunk' : 'ended'} at ${mins(x.end / 60)}. Model before: ${surv(b4)}. Now: ${surv(nw)}.<br>` +
+    `Minutes inside the model's p10-p90 now: level ${pct(x.inside.level)}, kills ${pct(x.inside.kills)}, damage taken ${pct(x.inside.dmg)}, hull ${pct(x.inside.hull)}.`;
+  const rows = x.minutes.map(r => ({ m: r.m, gl: r.game.level, bl: bandMed(r.before?.level), nl: r.now.level, gk: r.game.kills, bk: bandMed(r.before?.kills), nk: r.now.kills,
+    gh: r.game.hull, bh: bandMed(r.before?.hull), nh: r.now.hull, gd: r.game.dmg, bd: bandMed(r.before?.dmg), nd: r.now.dmg, ge: r.game.elites, ne: r.now.elites, af: r.now.afloat }));
   table(document.getElementById('cal-table'), [{ k: 'm', t: 'Minute', num: 1 },
-    { k: 'gl', t: 'Level: game', num: 1 }, { k: 'bl', t: 'before', num: 1, f: lvl }, { k: 'nl', t: 'now', num: 1, f: lvl },
-    { k: 'gk', t: 'Kills: game', num: 1 }, { k: 'bk', t: 'before', num: 1, f: lvl }, { k: 'nk', t: 'now', num: 1, f: lvl },
-    { k: 'gh', t: 'Hull: game', num: 1, f: pct }, { k: 'bh', t: 'before', num: 1, f: pct }, { k: 'nh', t: 'now', num: 1, f: pct },
-    { k: 'gd', t: 'Damage taken: game', num: 1 }, { k: 'bd', t: 'before', num: 1, f: lvl }, { k: 'nd', t: 'now', num: 1, f: lvl },
-    { k: 'gp', t: 'Theoretical DPS: game', num: 1 }, { k: 'np', t: 'now', num: 1, f: lvl }, { k: 'af', t: 'Model afloat', num: 1, f: pct }], rows);
+    { k: 'gl', t: 'Level: game', num: 1 }, { k: 'bl', t: 'before', num: 1, f: lvl }, { k: 'nl', t: 'now (p10-p90)', num: 1, f: (b, r) => bandCell(r.gl, b, lvl) },
+    { k: 'gk', t: 'Kills: game', num: 1 }, { k: 'bk', t: 'before', num: 1, f: lvl }, { k: 'nk', t: 'now (p10-p90)', num: 1, f: (b, r) => bandCell(r.gk, b, lvl) },
+    { k: 'gh', t: 'Hull: game', num: 1, f: pct }, { k: 'bh', t: 'before', num: 1, f: pct }, { k: 'nh', t: 'now (p10-p90)', num: 1, f: (b, r) => bandCell(r.gh, b, pct) },
+    { k: 'gd', t: 'Damage taken: game', num: 1, f: lvl }, { k: 'bd', t: 'before', num: 1, f: lvl }, { k: 'nd', t: 'now (p10-p90)', num: 1, f: (b, r) => bandCell(r.gd, b, lvl) },
+    { k: 'ge', t: 'Elites alive: game', num: 1 }, { k: 'ne', t: 'now', num: 1, f: (b, r) => bandCell(r.ge, b, lvl) }, { k: 'af', t: 'Model afloat', num: 1, f: pct }], rows);
 }
 calTabs.addEventListener('click', e => { const b = e.target.closest('button'); if (b) { calActive = +b.dataset.i; cal(); } });
 
@@ -235,7 +239,7 @@ function render(s) {
   document.getElementById('charts').innerHTML =
     chart('Voyages still afloat', rows, 'alive', { max: 1, fmt: v => Math.round(v * 100) + '%', note: 'Share of voyages reaching each minute.' }) +
     chart('Hull (median)', rows, 'hull', { max: 1, fmt: v => Math.round(v * 100) + '%', note: 'Of the voyages still afloat.' }) +
-    chart('Player level (median)', rows, 'level', { fmt: v => Math.round(v), note: 'Your voyages: about 11 at 1:00, 32 at 5:00, 38 to 40 at 10:00.' }) +
+    chart('Player level (median)', rows, 'level', { fmt: v => Math.round(v), note: 'Your voyage on the current balance: 7 at 1:00, 18 at 5:00, 25 at 10:00.' }) +
     chart('Theoretical damage per second (median)', rows, 'gameDps', { fmt: v => Math.round(v), note: 'The game\'s own number (sets the fight-length floors).' }) +
     chart('Kills per minute (median)', rows, 'kills', { fmt: v => Math.round(v) }) +
     chart('Enemies on the sea (median)', rows, 'enemies', { fmt: v => Math.round(v), note: 'Cap 120.' });

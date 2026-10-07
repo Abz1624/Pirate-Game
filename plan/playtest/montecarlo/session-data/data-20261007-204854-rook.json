@@ -1,0 +1,5300 @@
+{
+ "enemies": {
+  "barnacle_king": {
+   "id": "barnacle_king",
+   "name": "Barnacle King",
+   "hp": 245,
+   "dmg": 1.125,
+   "speed": 2.5,
+   "xp": 100,
+   "gold": 150,
+   "boss": true,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": false,
+   "tier": 3,
+   "behavior": 5,
+   "radius": 2.8,
+   "threat": 9,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 0,
+    "attack": 0,
+    "range": 0,
+    "cooldown": 1.5,
+    "windup": 0,
+    "shots": 1,
+    "shotSpeed": 0,
+    "contact": true,
+    "chargeCooldown": 0
+   }
+  },
+  "boarding_barge": {
+   "id": "boarding_barge",
+   "name": "Boarding Barge",
+   "hp": 14,
+   "dmg": 5,
+   "speed": 3.2,
+   "xp": 5,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": true,
+   "tier": 2,
+   "behavior": 3,
+   "radius": 1.25,
+   "threat": 4,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 5,
+    "attack": 2,
+    "range": 9,
+    "cooldown": 3,
+    "windup": 1,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "chargeCooldown": 2
+   }
+  },
+  "bomb_boat": {
+   "id": "bomb_boat",
+   "name": "Bomb Boat",
+   "hp": 2.8,
+   "dmg": 4.375,
+   "speed": 6,
+   "xp": 4,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": true,
+   "tier": 1,
+   "behavior": 4,
+   "radius": 1,
+   "threat": 3,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 1,
+    "attack": 7,
+    "range": 3,
+    "cooldown": 99,
+    "windup": 1.2,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "chargeCooldown": 2
+   }
+  },
+  "cannonboat": {
+   "id": "cannonboat",
+   "name": "Cannonboat",
+   "hp": 2.8,
+   "dmg": 2.5,
+   "speed": 3.8,
+   "xp": 3,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": true,
+   "tier": 1,
+   "behavior": 3,
+   "radius": 1.2,
+   "threat": 3,
+   "tags": [],
+   "concurrency": [
+    "ranged_gunner"
+   ],
+   "combat": {
+    "move": 5,
+    "attack": 2,
+    "range": 14,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "chargeCooldown": 2
+   }
+  },
+  "cutthroat_skiff": {
+   "id": "cutthroat_skiff",
+   "name": "Cutthroat Skiff",
+   "hp": 12.25,
+   "dmg": 2.1875,
+   "speed": 4.5,
+   "xp": 3,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": false,
+   "tier": 0,
+   "behavior": 1,
+   "radius": 1,
+   "threat": 2,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 3,
+    "attack": 1,
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "chargeCooldown": 2
+   }
+  },
+  "deckhand_dinghy": {
+   "id": "deckhand_dinghy",
+   "name": "Deckhand Dinghy",
+   "hp": 3.5,
+   "dmg": 1.5625,
+   "speed": 5.5,
+   "xp": 2,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": false,
+   "tier": 0,
+   "behavior": 8,
+   "radius": 0.9,
+   "threat": 1,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 9,
+    "attack": 1,
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "chargeCooldown": 2
+   }
+  },
+  "drowned_harrier": {
+   "id": "drowned_harrier",
+   "name": "drowned harrier",
+   "hp": 5.25,
+   "dmg": 2.5,
+   "speed": 4,
+   "xp": 4,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": true,
+   "tier": 0,
+   "behavior": 3,
+   "radius": 1.2,
+   "threat": 3,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 5,
+    "attack": 3,
+    "range": 18,
+    "cooldown": 2.5,
+    "windup": 1,
+    "shots": 2,
+    "shotSpeed": 0,
+    "contact": false,
+    "chargeCooldown": 0
+   }
+  },
+  "drowned_pursuer": {
+   "id": "drowned_pursuer",
+   "name": "drowned pursuer",
+   "hp": 7,
+   "dmg": 1.875,
+   "speed": 5,
+   "xp": 3,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": false,
+   "tier": 0,
+   "behavior": 0,
+   "radius": 1,
+   "threat": 2,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 1,
+    "attack": 1,
+    "range": 0,
+    "cooldown": 1.5,
+    "windup": 0,
+    "shots": 0,
+    "shotSpeed": 0,
+    "contact": true,
+    "chargeCooldown": 0
+   }
+  },
+  "gunner_cog": {
+   "id": "gunner_cog",
+   "name": "Gunner Cog",
+   "hp": 4.2,
+   "dmg": 2.8125,
+   "speed": 3.5,
+   "xp": 4,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": true,
+   "tier": 1,
+   "behavior": 7,
+   "radius": 1.15,
+   "threat": 3,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 5,
+    "attack": 3,
+    "range": 14,
+    "cooldown": 3,
+    "windup": 0.6,
+    "shots": 3,
+    "shotSpeed": 9,
+    "contact": true,
+    "chargeCooldown": 2
+   }
+  },
+  "hammerhead": {
+   "id": "hammerhead",
+   "name": "Hammerhead",
+   "hp": 1.75,
+   "dmg": 2.1875,
+   "speed": 5,
+   "xp": 3,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": false,
+   "tier": 0,
+   "behavior": 1,
+   "radius": 1.1,
+   "threat": 3,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 7,
+    "attack": 1,
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "chargeCooldown": 1.4
+   }
+  },
+  "kraken_spawn": {
+   "id": "kraken_spawn",
+   "name": "Kraken Spawn",
+   "hp": 17.5,
+   "dmg": 6.875,
+   "speed": 2.5,
+   "xp": 6,
+   "gold": 2,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": false,
+   "tier": 2,
+   "behavior": 5,
+   "radius": 1.6,
+   "threat": 6,
+   "tags": [],
+   "concurrency": [
+    "area_denial"
+   ],
+   "combat": {
+    "move": 1,
+    "attack": 6,
+    "range": 8,
+    "cooldown": 6,
+    "windup": 1.2,
+    "shots": 2,
+    "shotSpeed": 9,
+    "contact": false,
+    "chargeCooldown": 2
+   }
+  },
+  "manta_ray": {
+   "id": "manta_ray",
+   "name": "Manta Ray",
+   "hp": 8.75,
+   "dmg": 5,
+   "speed": 4.5,
+   "xp": 5,
+   "gold": 2,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": true,
+   "tier": 1,
+   "behavior": 6,
+   "radius": 1.4,
+   "threat": 2,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 6,
+    "attack": 4,
+    "range": 10,
+    "cooldown": 2.2,
+    "windup": 0.9,
+    "shots": 3,
+    "shotSpeed": 9,
+    "contact": true,
+    "chargeCooldown": 2
+   }
+  },
+  "rammer_raft": {
+   "id": "rammer_raft",
+   "name": "Rammer Raft",
+   "hp": 9.8,
+   "dmg": 3.125,
+   "speed": 5,
+   "xp": 3,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": false,
+   "tier": 1,
+   "behavior": 2,
+   "radius": 1.05,
+   "threat": 2,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 7,
+    "attack": 1,
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "chargeCooldown": 1.6
+   }
+  },
+  "reef_crab_miniboss": {
+   "id": "reef_crab_miniboss",
+   "name": "Reef Crab",
+   "hp": 42,
+   "dmg": 0.875,
+   "speed": 4.6,
+   "xp": 35,
+   "gold": 50,
+   "boss": false,
+   "miniboss": true,
+   "elite": false,
+   "base": null,
+   "ranged": false,
+   "tier": 2,
+   "behavior": 2,
+   "radius": 2.2,
+   "threat": 3,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 5,
+    "attack": 1,
+    "range": 0,
+    "cooldown": 1.2,
+    "windup": 0,
+    "shots": 0,
+    "shotSpeed": 0,
+    "contact": true,
+    "chargeCooldown": 0
+   }
+  },
+  "shark": {
+   "id": "shark",
+   "name": "Shark",
+   "hp": 7,
+   "dmg": 1.875,
+   "speed": 4.2,
+   "xp": 4,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": false,
+   "tier": 1,
+   "behavior": 0,
+   "radius": 1.1,
+   "threat": 4,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 1,
+    "attack": 1,
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "chargeCooldown": 2
+   }
+  },
+  "swordfish": {
+   "id": "swordfish",
+   "name": "Swordfish",
+   "hp": 2.27499986,
+   "dmg": 1.875,
+   "speed": 6.5,
+   "xp": 2,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": null,
+   "ranged": false,
+   "tier": 0,
+   "behavior": 8,
+   "radius": 0.9,
+   "threat": 2,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 8,
+    "attack": 1,
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "chargeCooldown": 1.2
+   }
+  },
+  "bomb_ketch": {
+   "id": "bomb_ketch",
+   "name": "bomb ketch",
+   "hp": 7,
+   "dmg": 4.375,
+   "speed": 3.2,
+   "xp": 4,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": "bomb_boat",
+   "ranged": false,
+   "tier": 0,
+   "behavior": 3,
+   "radius": 1,
+   "threat": 5,
+   "tags": [
+    "specialist"
+   ],
+   "concurrency": [],
+   "combat": {
+    "move": 5,
+    "attack": 6,
+    "range": 16,
+    "cooldown": 4,
+    "windup": 0.5,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "chargeCooldown": 2
+   }
+  },
+  "elite_hammerhead": {
+   "id": "elite_hammerhead",
+   "name": "Elite Hammerhead",
+   "hp": 1.75,
+   "dmg": 2.1875,
+   "speed": 5,
+   "xp": 3,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": true,
+   "base": "hammerhead",
+   "ranged": false,
+   "tier": 0,
+   "behavior": 1,
+   "radius": 1.1,
+   "threat": 3,
+   "tags": [],
+   "concurrency": [],
+   "combat": {
+    "move": 7,
+    "attack": 1,
+    "range": 0,
+    "cooldown": 1.5,
+    "windup": 0,
+    "shots": 0,
+    "shotSpeed": 0,
+    "contact": true,
+    "chargeCooldown": 3
+   }
+  },
+  "elite_kraken_spawn": {
+   "id": "elite_kraken_spawn",
+   "name": "Elite Kraken Spawn",
+   "hp": 17.5,
+   "dmg": 6.875,
+   "speed": 2.5,
+   "xp": 6,
+   "gold": 2,
+   "boss": false,
+   "miniboss": false,
+   "elite": true,
+   "base": "kraken_spawn",
+   "ranged": false,
+   "tier": 0,
+   "behavior": 5,
+   "radius": 1.6,
+   "threat": 6,
+   "tags": [],
+   "concurrency": [
+    "area_denial"
+   ],
+   "combat": {
+    "move": 1,
+    "attack": 6,
+    "range": 0,
+    "cooldown": 6,
+    "windup": 1.2,
+    "shots": 3,
+    "shotSpeed": 0,
+    "contact": false,
+    "chargeCooldown": 0
+   }
+  },
+  "needle_sloop": {
+   "id": "needle_sloop",
+   "name": "needle sloop",
+   "hp": 4.2,
+   "dmg": 2.1875,
+   "speed": 5.5,
+   "xp": 3,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": "cutthroat_skiff",
+   "ranged": true,
+   "tier": 1,
+   "behavior": 1,
+   "radius": 1,
+   "threat": 2,
+   "tags": [
+    "specialist"
+   ],
+   "concurrency": [],
+   "combat": {
+    "move": 5,
+    "attack": 2,
+    "range": 20,
+    "cooldown": 2.5,
+    "windup": 1,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "chargeCooldown": 2
+   }
+  },
+  "net_cutter": {
+   "id": "net_cutter",
+   "name": "net cutter",
+   "hp": 5.25,
+   "dmg": 2.8125,
+   "speed": 4.5,
+   "xp": 4,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": "gunner_cog",
+   "ranged": false,
+   "tier": 0,
+   "behavior": 7,
+   "radius": 1.15,
+   "threat": 4,
+   "tags": [
+    "specialist"
+   ],
+   "concurrency": [],
+   "combat": {
+    "move": 3,
+    "attack": 6,
+    "range": 6,
+    "cooldown": 4,
+    "windup": 1.2,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "chargeCooldown": 2
+   }
+  },
+  "powder_barge": {
+   "id": "powder_barge",
+   "name": "powder barge",
+   "hp": 14,
+   "dmg": 5,
+   "speed": 2.2,
+   "xp": 5,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": "boarding_barge",
+   "ranged": false,
+   "tier": 0,
+   "behavior": 4,
+   "radius": 1.25,
+   "threat": 4,
+   "tags": [
+    "specialist"
+   ],
+   "concurrency": [],
+   "combat": {
+    "move": 1,
+    "attack": 6,
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "chargeCooldown": 2
+   }
+  },
+  "ram_raider": {
+   "id": "ram_raider",
+   "name": "ram raider",
+   "hp": 7,
+   "dmg": 3.125,
+   "speed": 7,
+   "xp": 3,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": "rammer_raft",
+   "ranged": false,
+   "tier": 1,
+   "behavior": 2,
+   "radius": 1.05,
+   "threat": 3,
+   "tags": [
+    "specialist"
+   ],
+   "concurrency": [
+    "charge_windup"
+   ],
+   "combat": {
+    "move": 7,
+    "attack": 1,
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "chargeCooldown": 2
+   }
+  },
+  "repair_tender": {
+   "id": "repair_tender",
+   "name": "repair tender",
+   "hp": 8.75,
+   "dmg": 2.5,
+   "speed": 2.8,
+   "xp": 5,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": "boarding_barge",
+   "ranged": false,
+   "tier": 0,
+   "behavior": 3,
+   "radius": 1.25,
+   "threat": 6,
+   "tags": [
+    "specialist"
+   ],
+   "concurrency": [],
+   "combat": {
+    "move": 5,
+    "attack": 8,
+    "range": 8,
+    "cooldown": 4,
+    "windup": 1,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "chargeCooldown": 2
+   }
+  },
+  "shield_frigate": {
+   "id": "shield_frigate",
+   "name": "shield frigate",
+   "hp": 14,
+   "dmg": 5.625,
+   "speed": 3,
+   "xp": 4,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": "gunner_cog",
+   "ranged": true,
+   "tier": 0,
+   "behavior": 5,
+   "radius": 1.15,
+   "threat": 7,
+   "tags": [
+    "specialist"
+   ],
+   "concurrency": [],
+   "combat": {
+    "move": 5,
+    "attack": 3,
+    "range": 12,
+    "cooldown": 5,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "chargeCooldown": 2
+   }
+  },
+  "treasure_raider": {
+   "id": "treasure_raider",
+   "name": "treasure raider",
+   "hp": 5.25,
+   "dmg": 1.5625,
+   "speed": 6.5,
+   "xp": 2,
+   "gold": 1,
+   "boss": false,
+   "miniboss": false,
+   "elite": false,
+   "base": "deckhand_dinghy",
+   "ranged": false,
+   "tier": 0,
+   "behavior": 8,
+   "radius": 0.9,
+   "threat": 4,
+   "tags": [
+    "specialist"
+   ],
+   "concurrency": [],
+   "combat": {
+    "move": 9,
+    "attack": 1,
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "chargeCooldown": 2
+   }
+  }
+ },
+ "timeline": {
+  "deadline": 900,
+  "cap": 120,
+  "reserved": 12,
+  "bands": [
+   {
+    "t": 0,
+    "rate": 0.32472,
+    "id": "band_0",
+    "pools": [
+     {
+      "share": 1,
+      "entries": [
+       [
+        "deckhand_dinghy",
+        1
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 60,
+    "rate": 0.50512,
+    "id": "band_1",
+    "pools": [
+     {
+      "share": 0.8,
+      "entries": [
+       [
+        "deckhand_dinghy",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.2,
+      "entries": [
+       [
+        "cannonboat",
+        1
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 110,
+    "rate": 0.613360047,
+    "id": "band_2",
+    "pools": [
+     {
+      "share": 0.72,
+      "entries": [
+       [
+        "deckhand_dinghy",
+        2
+       ],
+       [
+        "swordfish",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.2,
+      "entries": [
+       [
+        "cannonboat",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.08,
+      "entries": [
+       [
+        "bomb_boat",
+        1
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 240,
+    "rate": 0.68552,
+    "id": "band_3",
+    "pools": [
+     {
+      "share": 0.63,
+      "entries": [
+       [
+        "deckhand_dinghy",
+        1
+       ],
+       [
+        "swordfish",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "cannonboat",
+        1
+       ],
+       [
+        "needle_sloop",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.12,
+      "entries": [
+       [
+        "bomb_boat",
+        1
+       ],
+       [
+        "ram_raider",
+        1
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 340,
+    "rate": 0.63,
+    "id": "band_4",
+    "pools": [
+     {
+      "share": 0.6,
+      "entries": [
+       [
+        "cutthroat_skiff",
+        3
+       ],
+       [
+        "swordfish",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "cannonboat",
+        1
+       ],
+       [
+        "gunner_cog",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.15,
+      "entries": [
+       [
+        "rammer_raft",
+        1
+       ],
+       [
+        "bomb_ketch",
+        1
+       ],
+       [
+        "treasure_raider",
+        1
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 480,
+    "rate": 0.69,
+    "id": "band_5",
+    "pools": [
+     {
+      "share": 0.6,
+      "entries": [
+       [
+        "cutthroat_skiff",
+        2
+       ],
+       [
+        "swordfish",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "gunner_cog",
+        1
+       ],
+       [
+        "net_cutter",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.15,
+      "entries": [
+       [
+        "boarding_barge",
+        1
+       ],
+       [
+        "ram_raider",
+        1
+       ],
+       [
+        "repair_tender",
+        1
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 540,
+    "rate": 0.72,
+    "id": "band_6",
+    "pools": [
+     {
+      "share": 0.530000031,
+      "entries": [
+       [
+        "cutthroat_skiff",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.35,
+      "entries": [
+       [
+        "gunner_cog",
+        1
+       ],
+       [
+        "needle_sloop",
+        1
+       ],
+       [
+        "net_cutter",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.12,
+      "entries": [
+       [
+        "powder_barge",
+        1
+       ],
+       [
+        "shield_frigate",
+        1
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 660,
+    "rate": 0.810000062,
+    "id": "band_7",
+    "pools": [
+     {
+      "share": 0.6,
+      "entries": [
+       [
+        "shark",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "gunner_cog",
+        1
+       ],
+       [
+        "needle_sloop",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.15,
+      "entries": [
+       [
+        "kraken_spawn",
+        1
+       ],
+       [
+        "bomb_ketch",
+        1
+       ],
+       [
+        "ram_raider",
+        1
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 720,
+    "rate": 0.900000036,
+    "id": "band_8",
+    "pools": [
+     {
+      "share": 0.57,
+      "entries": [
+       [
+        "cutthroat_skiff",
+        2
+       ],
+       [
+        "shark",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "gunner_cog",
+        1
+       ],
+       [
+        "net_cutter",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.18,
+      "entries": [
+       [
+        "boarding_barge",
+        1
+       ],
+       [
+        "shield_frigate",
+        1
+       ],
+       [
+        "powder_barge",
+        1
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "t": 780,
+    "rate": 0.99,
+    "id": "band_9",
+    "pools": [
+     {
+      "share": 0.57,
+      "entries": [
+       [
+        "manta_ray",
+        2
+       ],
+       [
+        "cutthroat_skiff",
+        1
+       ],
+       [
+        "swordfish",
+        0.5
+       ]
+      ]
+     },
+     {
+      "share": 0.25,
+      "entries": [
+       [
+        "gunner_cog",
+        1
+       ],
+       [
+        "needle_sloop",
+        1
+       ]
+      ]
+     },
+     {
+      "share": 0.18,
+      "entries": [
+       [
+        "kraken_spawn",
+        1
+       ],
+       [
+        "shield_frigate",
+        1
+       ],
+       [
+        "repair_tender",
+        1
+       ],
+       [
+        "bomb_ketch",
+        1
+       ]
+      ]
+     }
+    ]
+   }
+  ],
+  "focus": [
+   {
+    "id": "reef_crab",
+    "t": 150,
+    "enemy": "reef_crab_miniboss",
+    "hpMult": 1.25,
+    "dmgMult": 0.8,
+    "arena": true,
+    "elite": false,
+    "scheduledElite": false,
+    "waitForOtherArena": true
+   },
+   {
+    "id": "elite_hammerhead",
+    "t": 180,
+    "enemy": "elite_hammerhead",
+    "hpMult": 6.875,
+    "dmgMult": 1,
+    "arena": true,
+    "elite": true,
+    "scheduledElite": true,
+    "waitForOtherArena": false
+   },
+   {
+    "id": "reef_crab_2",
+    "t": 300,
+    "enemy": "reef_crab_miniboss",
+    "hpMult": 7.291667,
+    "dmgMult": 0.8,
+    "arena": true,
+    "elite": false,
+    "scheduledElite": false,
+    "waitForOtherArena": true
+   },
+   {
+    "id": "elite_hammerhead_2",
+    "t": 480,
+    "enemy": "elite_hammerhead",
+    "hpMult": 6.875,
+    "dmgMult": 1,
+    "arena": false,
+    "elite": true,
+    "scheduledElite": false,
+    "waitForOtherArena": false
+   },
+   {
+    "id": "elite_kraken",
+    "t": 600,
+    "enemy": "elite_kraken_spawn",
+    "hpMult": 15,
+    "dmgMult": 1,
+    "arena": true,
+    "elite": true,
+    "scheduledElite": true,
+    "waitForOtherArena": false
+   },
+   {
+    "id": "reef_crab_3",
+    "t": 660,
+    "enemy": "reef_crab_miniboss",
+    "hpMult": 1.25,
+    "dmgMult": 0.8,
+    "arena": false,
+    "elite": false,
+    "scheduledElite": false,
+    "waitForOtherArena": true
+   },
+   {
+    "id": "elite_hammerhead_3",
+    "t": 720,
+    "enemy": "elite_hammerhead",
+    "hpMult": 6.875,
+    "dmgMult": 1,
+    "arena": false,
+    "elite": true,
+    "scheduledElite": false,
+    "waitForOtherArena": false
+   },
+   {
+    "id": "reef_crab_4",
+    "t": 780,
+    "enemy": "reef_crab_miniboss",
+    "hpMult": 1.25,
+    "dmgMult": 0.8,
+    "arena": false,
+    "elite": false,
+    "scheduledElite": false,
+    "waitForOtherArena": true
+   }
+  ],
+  "pulses": [
+   {
+    "t": 390,
+    "seconds": 30,
+    "mult": 1.8,
+    "id": "swarm_pulse_a"
+   },
+   {
+    "t": 700,
+    "seconds": 30,
+    "mult": 1.8,
+    "id": "swarm_pulse_b"
+   }
+  ],
+  "waves": [
+   [
+    0,
+    0,
+    0.25
+   ],
+   [
+    12,
+    0.011,
+    0.45
+   ],
+   [
+    30,
+    0.117259994,
+    1.1
+   ],
+   [
+    50,
+    0.0656656,
+    0.85
+   ],
+   [
+    60,
+    0.0938079953,
+    1
+   ],
+   [
+    90,
+    0.1500928,
+    1.15
+   ],
+   [
+    105,
+    0.0844272,
+    0.9
+   ],
+   [
+    140,
+    0.1688544,
+    1.15
+   ],
+   [
+    185,
+    0.121950395,
+    0.95
+   ],
+   [
+    225,
+    0.234519988,
+    1.25
+   ],
+   [
+    240,
+    0.140712008,
+    0.7
+   ],
+   [
+    275,
+    0.187615991,
+    0.8
+   ],
+   [
+    300,
+    0.1404,
+    0.75
+   ],
+   [
+    340,
+    0.1794,
+    0.9
+   ],
+   [
+    380,
+    0.2145,
+    1.1
+   ],
+   [
+    400,
+    0.163799986,
+    0.8
+   ],
+   [
+    450,
+    0.234000012,
+    1.1
+   ],
+   [
+    475,
+    0.1755,
+    0.75
+   ],
+   [
+    510,
+    0.234000012,
+    1.05
+   ],
+   [
+    540,
+    0.2574,
+    1.15
+   ],
+   [
+    585,
+    0.195000008,
+    0.85
+   ],
+   [
+    620,
+    0.2574,
+    1.1
+   ],
+   [
+    650,
+    0.195000008,
+    0.8
+   ],
+   [
+    690,
+    0.2808,
+    1.25
+   ],
+   [
+    720,
+    0.234000012,
+    0.95
+   ],
+   [
+    760,
+    0.285,
+    1.3
+   ],
+   [
+    800,
+    0.273,
+    1.05
+   ],
+   [
+    830,
+    0.285,
+    1.4
+   ],
+   [
+    840,
+    0.156,
+    0.6
+   ],
+   [
+    900,
+    0.285,
+    1.45
+   ]
+  ],
+  "hordes": [
+   [
+    110,
+    "swordfish",
+    8
+   ],
+   [
+    200,
+    "cannonboat",
+    4
+   ],
+   [
+    240,
+    "swordfish",
+    20
+   ],
+   [
+    390,
+    "hammerhead",
+    11
+   ],
+   [
+    480,
+    "swordfish",
+    16
+   ],
+   [
+    665,
+    "shark",
+    11
+   ],
+   [
+    700,
+    "hammerhead",
+    11
+   ],
+   [
+    750,
+    "cutthroat_skiff",
+    12
+   ],
+   [
+    780,
+    "manta_ray",
+    12
+   ],
+   [
+    790,
+    "hammerhead",
+    11
+   ]
+  ],
+  "overtime": {
+   "interval": 0.45,
+   "floor": 0.12,
+   "decay": 0.8,
+   "step": 30,
+   "pursuerFirst": 0.8,
+   "pursuerAfter": 0.6,
+   "rampStart": 2,
+   "rampEnd": 3.5,
+   "rampSeconds": 300
+  },
+  "tagCaps": {
+   "ranged_gunner": 6,
+   "area_denial": 5,
+   "charge_windup": 6
+  },
+  "grace": 2,
+  "spawnGap": 0.35,
+  "bossAmbientRate": 0.5,
+  "flow": {
+   "enabled": true,
+   "smooth": true,
+   "waves": [
+    {
+     "t": 0,
+     "share": 0,
+     "rate": 0.25,
+     "topUpInterval": 2,
+     "maxTopUp": 1
+    },
+    {
+     "t": 12,
+     "share": 0.011,
+     "rate": 0.45,
+     "topUpInterval": 1.5,
+     "maxTopUp": 1
+    },
+    {
+     "t": 30,
+     "share": 0.117259994,
+     "rate": 1.1,
+     "topUpInterval": 0.8375,
+     "maxTopUp": 5
+    },
+    {
+     "t": 50,
+     "share": 0.0656656,
+     "rate": 0.85,
+     "topUpInterval": 0.909,
+     "maxTopUp": 5
+    },
+    {
+     "t": 60,
+     "share": 0.0938079953,
+     "rate": 1,
+     "topUpInterval": 0.87,
+     "maxTopUp": 5
+    },
+    {
+     "t": 90,
+     "share": 0.1500928,
+     "rate": 1.15,
+     "topUpInterval": 0.792,
+     "maxTopUp": 6
+    },
+    {
+     "t": 105,
+     "share": 0.0844272,
+     "rate": 0.9,
+     "topUpInterval": 0.883,
+     "maxTopUp": 5
+    },
+    {
+     "t": 140,
+     "share": 0.1688544,
+     "rate": 1.15,
+     "topUpInterval": 0.766,
+     "maxTopUp": 6
+    },
+    {
+     "t": 185,
+     "share": 0.121950395,
+     "rate": 0.95,
+     "topUpInterval": 0.83100003,
+     "maxTopUp": 5
+    },
+    {
+     "t": 225,
+     "share": 0.234519988,
+     "rate": 1.25,
+     "topUpInterval": 0.675,
+     "maxTopUp": 6
+    },
+    {
+     "t": 240,
+     "share": 0.140712008,
+     "rate": 0.7,
+     "topUpInterval": 0.805,
+     "maxTopUp": 6
+    },
+    {
+     "t": 275,
+     "share": 0.187615991,
+     "rate": 0.8,
+     "topUpInterval": 0.74,
+     "maxTopUp": 6
+    },
+    {
+     "t": 300,
+     "share": 0.1404,
+     "rate": 0.75,
+     "topUpInterval": 0.766,
+     "maxTopUp": 6
+    },
+    {
+     "t": 340,
+     "share": 0.1794,
+     "rate": 0.9,
+     "topUpInterval": 0.701000035,
+     "maxTopUp": 6
+    },
+    {
+     "t": 380,
+     "share": 0.2145,
+     "rate": 1.1,
+     "topUpInterval": 0.6425,
+     "maxTopUp": 8
+    },
+    {
+     "t": 400,
+     "share": 0.163799986,
+     "rate": 0.8,
+     "topUpInterval": 0.727,
+     "maxTopUp": 6
+    },
+    {
+     "t": 450,
+     "share": 0.234000012,
+     "rate": 1.1,
+     "topUpInterval": 0.61,
+     "maxTopUp": 8
+    },
+    {
+     "t": 475,
+     "share": 0.1755,
+     "rate": 0.75,
+     "topUpInterval": 0.707500041,
+     "maxTopUp": 6
+    },
+    {
+     "t": 510,
+     "share": 0.234000012,
+     "rate": 1.05,
+     "topUpInterval": 0.61,
+     "maxTopUp": 8
+    },
+    {
+     "t": 540,
+     "share": 0.2574,
+     "rate": 1.15,
+     "topUpInterval": 0.571,
+     "maxTopUp": 8
+    },
+    {
+     "t": 585,
+     "share": 0.195000008,
+     "rate": 0.85,
+     "topUpInterval": 0.675,
+     "maxTopUp": 6
+    },
+    {
+     "t": 620,
+     "share": 0.2574,
+     "rate": 1.1,
+     "topUpInterval": 0.571,
+     "maxTopUp": 8
+    },
+    {
+     "t": 650,
+     "share": 0.195000008,
+     "rate": 0.8,
+     "topUpInterval": 0.675,
+     "maxTopUp": 6
+    },
+    {
+     "t": 690,
+     "share": 0.2808,
+     "rate": 1.25,
+     "topUpInterval": 0.532,
+     "maxTopUp": 9
+    },
+    {
+     "t": 720,
+     "share": 0.234000012,
+     "rate": 0.95,
+     "topUpInterval": 0.61,
+     "maxTopUp": 8
+    },
+    {
+     "t": 760,
+     "share": 0.285,
+     "rate": 1.3,
+     "topUpInterval": 0.480000019,
+     "maxTopUp": 9
+    },
+    {
+     "t": 800,
+     "share": 0.273,
+     "rate": 1.05,
+     "topUpInterval": 0.545,
+     "maxTopUp": 9
+    },
+    {
+     "t": 830,
+     "share": 0.285,
+     "rate": 1.4,
+     "topUpInterval": 0.428000033,
+     "maxTopUp": 9
+    },
+    {
+     "t": 840,
+     "share": 0.156,
+     "rate": 0.6,
+     "topUpInterval": 0.74,
+     "maxTopUp": 6
+    },
+    {
+     "t": 900,
+     "share": 0.285,
+     "rate": 1.45,
+     "topUpInterval": 0.4,
+     "maxTopUp": 11
+    }
+   ],
+   "hordes": [
+    {
+     "id": "dogs_1m50",
+     "t": 110,
+     "enemy": "swordfish",
+     "count": 8,
+     "hpMult": 1,
+     "dmgMult": 1
+    },
+    {
+     "id": "shooters_3m20",
+     "t": 200,
+     "enemy": "cannonboat",
+     "count": 4,
+     "hpMult": 1,
+     "dmgMult": 1
+    },
+    {
+     "id": "dog_horde_4m00",
+     "t": 240,
+     "enemy": "swordfish",
+     "count": 20,
+     "hpMult": 1,
+     "dmgMult": 1
+    },
+    {
+     "id": "flies_6m30",
+     "t": 390,
+     "enemy": "hammerhead",
+     "count": 11,
+     "hpMult": 1,
+     "dmgMult": 1
+    },
+    {
+     "id": "dog_horde_8m00",
+     "t": 480,
+     "enemy": "swordfish",
+     "count": 16,
+     "hpMult": 1,
+     "dmgMult": 1
+    },
+    {
+     "id": "beetle_ring_11m00",
+     "t": 665,
+     "enemy": "shark",
+     "count": 11,
+     "hpMult": 1,
+     "dmgMult": 1
+    },
+    {
+     "id": "flies_11m40",
+     "t": 700,
+     "enemy": "hammerhead",
+     "count": 11,
+     "hpMult": 1,
+     "dmgMult": 1
+    },
+    {
+     "id": "armored_flood_12m30",
+     "t": 750,
+     "enemy": "cutthroat_skiff",
+     "count": 12,
+     "hpMult": 1,
+     "dmgMult": 1
+    },
+    {
+     "id": "blue_ring_13m00",
+     "t": 780,
+     "enemy": "manta_ray",
+     "count": 12,
+     "hpMult": 1,
+     "dmgMult": 1
+    },
+    {
+     "id": "green_flies_13m10",
+     "t": 790,
+     "enemy": "hammerhead",
+     "count": 11,
+     "hpMult": 1,
+     "dmgMult": 1
+    }
+   ],
+   "release": {
+    "rate": 0.35,
+    "floor": 0.4,
+    "afterArena": 20,
+    "afterBoss": 25,
+    "hordeDelay": 20,
+    "afterHorde": 15,
+    "bossFightFloor": 0.3,
+    "preHordeLull": 10
+   }
+  },
+  "storm": {
+   "start": 1020,
+   "end": 1200,
+   "dps": 8
+  },
+  "boss": {
+   "id": "boss",
+   "t": 0,
+   "enemy": "barnacle_king",
+   "trigger": "Event"
+  }
+ },
+ "weapons": {
+  "anchor_flail": {
+   "id": "anchor_flail",
+   "name": "Anchor Flail",
+   "damage": 16.12,
+   "cooldown": 0.75,
+   "quantity": 1,
+   "behavior": 2,
+   "maxLevel": 12,
+   "spin": 150,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.226941168,
+     "weight": 1.1,
+     "cap": 5.67352962
+    },
+    {
+     "axis": 1,
+     "inc": 0.0644718856,
+     "weight": 1,
+     "cap": 0.773663044
+    },
+    {
+     "axis": 4,
+     "inc": 0.153243169,
+     "weight": 0.9,
+     "cap": 3.94053817
+    },
+    {
+     "axis": 6,
+     "inc": 0.153243169,
+     "weight": 0.8,
+     "cap": 3.94053817
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 0.625,
+   "coverage": 1.8,
+   "databaseOrder": 50,
+   "rum": 120
+  },
+  "broadside_battery": {
+   "id": "broadside_battery",
+   "name": "Broadside Battery",
+   "damage": 20.15,
+   "cooldown": 1.5,
+   "quantity": 1,
+   "behavior": 1,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.0374929,
+     "weight": 1.1,
+     "cap": 0.9641028
+    },
+    {
+     "axis": 1,
+     "inc": 0.0267806444,
+     "weight": 1,
+     "cap": 0.321367681
+    },
+    {
+     "axis": 2,
+     "inc": 1,
+     "weight": 1.2,
+     "cap": 5
+    },
+    {
+     "axis": 4,
+     "inc": 0.03213678,
+     "weight": 0.8,
+     "cap": 0.803419769
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1.6,
+   "databaseOrder": 1,
+   "rum": 0
+  },
+  "chainshot": {
+   "id": "chainshot",
+   "name": "Chainshot",
+   "damage": 13.44,
+   "cooldown": 1,
+   "quantity": 1,
+   "behavior": 0,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 2,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.125928566,
+     "weight": 1.2,
+     "cap": 3.148212
+    },
+    {
+     "axis": 1,
+     "inc": 0.0787052959,
+     "weight": 1,
+     "cap": 0.944464564
+    },
+    {
+     "axis": 2,
+     "inc": 1,
+     "weight": 0.8,
+     "cap": 4
+    },
+    {
+     "axis": 3,
+     "inc": 0.0944464058,
+     "weight": 0.7,
+     "cap": 2.36115932
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1,
+   "databaseOrder": 51,
+   "rum": 130
+  },
+  "cursed_doubloons": {
+   "id": "cursed_doubloons",
+   "name": "Cursed Doubloons",
+   "damage": 13.44,
+   "cooldown": 1,
+   "quantity": 1,
+   "behavior": 6,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.165048078,
+     "weight": 1.1,
+     "cap": 4.126203
+    },
+    {
+     "axis": 1,
+     "inc": 0.103155017,
+     "weight": 1,
+     "cap": 1.23786044
+    },
+    {
+     "axis": 4,
+     "inc": 0.111449622,
+     "weight": 0.9,
+     "cap": 2.865846
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1.6,
+   "databaseOrder": 58,
+   "rum": 220
+  },
+  "deck_cannons": {
+   "id": "deck_cannons",
+   "name": "Deck Cannons",
+   "damage": 9.41,
+   "cooldown": 0.7,
+   "quantity": 1,
+   "behavior": 0,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.125928551,
+     "weight": 1.2,
+     "cap": 3.148212
+    },
+    {
+     "axis": 1,
+     "inc": 0.0787052959,
+     "weight": 1,
+     "cap": 0.9444637
+    },
+    {
+     "axis": 2,
+     "inc": 1,
+     "weight": 0.8,
+     "cap": 4
+    },
+    {
+     "axis": 3,
+     "inc": 0.0944464058,
+     "weight": 0.7,
+     "cap": 2.36115932
+    },
+    {
+     "axis": 6,
+     "inc": 0.0787052959,
+     "weight": 0.6,
+     "cap": 2.36115932
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1,
+   "databaseOrder": 0,
+   "rum": 0
+  },
+  "flamethrower": {
+   "id": "flamethrower",
+   "name": "Flamethrower",
+   "damage": 9.41,
+   "cooldown": 0.7,
+   "quantity": 1,
+   "behavior": 3,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.111780018,
+     "weight": 1.1,
+     "cap": 2.79450178
+    },
+    {
+     "axis": 5,
+     "inc": 0.139725029,
+     "weight": 1,
+     "cap": 2.79450178
+    },
+    {
+     "axis": 4,
+     "inc": 0.111780018,
+     "weight": 1.1,
+     "cap": 2.79450178
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1.5,
+   "databaseOrder": 5,
+   "rum": 80
+  },
+  "flying_cutlasses": {
+   "id": "flying_cutlasses",
+   "name": "Flying Cutlasses",
+   "damage": 13.44,
+   "cooldown": 1,
+   "quantity": 1,
+   "behavior": 2,
+   "maxLevel": 12,
+   "spin": 120,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.0348279923,
+     "weight": 1,
+     "cap": 0.8955768
+    },
+    {
+     "axis": 1,
+     "inc": 0.0248771328,
+     "weight": 1,
+     "cap": 0.2985257
+    },
+    {
+     "axis": 2,
+     "inc": 1,
+     "weight": 1.2,
+     "cap": 4
+    },
+    {
+     "axis": 4,
+     "inc": 0.0348279923,
+     "weight": 0.9,
+     "cap": 0.8955768
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1.8,
+   "databaseOrder": 4,
+   "rum": 0
+  },
+  "harpoon_gun": {
+   "id": "harpoon_gun",
+   "name": "Harpoon Gun",
+   "damage": 10.75,
+   "cooldown": 0.8,
+   "quantity": 1,
+   "behavior": 0,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.0990288556,
+     "weight": 1.2,
+     "cap": 2.47572041
+    },
+    {
+     "axis": 1,
+     "inc": 0.06189304,
+     "weight": 1,
+     "cap": 0.742716551
+    },
+    {
+     "axis": 2,
+     "inc": 1,
+     "weight": 0.8,
+     "cap": 4
+    },
+    {
+     "axis": 3,
+     "inc": 0.07427165,
+     "weight": 0.7,
+     "cap": 1.85679126
+    },
+    {
+     "axis": 6,
+     "inc": 0.06189304,
+     "weight": 0.6,
+     "cap": 1.85679126
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1,
+   "databaseOrder": 48,
+   "rum": 100
+  },
+  "lighthouse_lantern": {
+   "id": "lighthouse_lantern",
+   "name": "Lighthouse Lantern",
+   "damage": 17.92,
+   "cooldown": 0.5,
+   "quantity": 1,
+   "behavior": 2,
+   "maxLevel": 12,
+   "spin": 90,
+   "blades": 3,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.147511721,
+     "weight": 1.1,
+     "cap": 3.68779516
+    },
+    {
+     "axis": 1,
+     "inc": 0.0921947956,
+     "weight": 1,
+     "cap": 1.10633779
+    },
+    {
+     "axis": 4,
+     "inc": 0.09960806,
+     "weight": 0.9,
+     "cap": 2.56134963
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 0.375,
+   "coverage": 1.8,
+   "databaseOrder": 57,
+   "rum": 200
+  },
+  "lightning_mast": {
+   "id": "lightning_mast",
+   "name": "Lightning Mast",
+   "damage": 24.19,
+   "cooldown": 1.8,
+   "quantity": 1,
+   "behavior": 6,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.0515775159,
+     "weight": 1.1,
+     "cap": 1.28943825
+    },
+    {
+     "axis": 1,
+     "inc": 0.03223594,
+     "weight": 1,
+     "cap": 0.386831373
+    },
+    {
+     "axis": 2,
+     "inc": 1,
+     "weight": 1.1,
+     "cap": 4
+    },
+    {
+     "axis": 6,
+     "inc": 0.025788758,
+     "weight": 0.6,
+     "cap": 0.6447191
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1.6,
+   "databaseOrder": 3,
+   "rum": 60
+  },
+  "long_nine": {
+   "id": "long_nine",
+   "name": "Long Nine",
+   "damage": 22,
+   "cooldown": 1.63710785,
+   "quantity": 1,
+   "behavior": 0,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": true,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.12167009,
+     "weight": 1.2,
+     "cap": 3.04175067
+    },
+    {
+     "axis": 1,
+     "inc": 0.0760437548,
+     "weight": 1,
+     "cap": 0.912525356
+    },
+    {
+     "axis": 2,
+     "inc": 1,
+     "weight": 0.8,
+     "cap": 4
+    },
+    {
+     "axis": 3,
+     "inc": 0.09125258,
+     "weight": 0.7,
+     "cap": 2.28131342
+    },
+    {
+     "axis": 6,
+     "inc": 0.0760437548,
+     "weight": 0.6,
+     "cap": 2.28131342
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1,
+   "databaseOrder": 47,
+   "rum": 0
+  },
+  "maelstrom_charge": {
+   "id": "maelstrom_charge",
+   "name": "Maelstrom Charge",
+   "damage": 18.16,
+   "cooldown": 5,
+   "quantity": 1,
+   "behavior": 8,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.153003126,
+     "weight": 1,
+     "cap": 3.825078
+    },
+    {
+     "axis": 1,
+     "inc": 0.09562698,
+     "weight": 1,
+     "cap": 1.14752316
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 3.7,
+   "coverage": 1.5,
+   "databaseOrder": 56,
+   "rum": 190
+  },
+  "monkey_gunners": {
+   "id": "monkey_gunners",
+   "name": "Monkey Gunners",
+   "damage": 4.03,
+   "cooldown": 2,
+   "quantity": 1,
+   "behavior": 9,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.147511721,
+     "weight": 1.1,
+     "cap": 3.68779516
+    },
+    {
+     "axis": 1,
+     "inc": 0.0921947956,
+     "weight": 1,
+     "cap": 1.10633779
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 6.66666651,
+   "coverage": 1,
+   "databaseOrder": 55,
+   "rum": 180
+  },
+  "mortar": {
+   "id": "mortar",
+   "name": "Mortar",
+   "damage": 16.13,
+   "cooldown": 1.19999993,
+   "quantity": 1,
+   "behavior": 8,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.13304618,
+     "weight": 1,
+     "cap": 3.32615423
+    },
+    {
+     "axis": 1,
+     "inc": 0.08315389,
+     "weight": 1,
+     "cap": 0.9978463
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1.5,
+   "databaseOrder": 49,
+   "rum": 100
+  },
+  "parrot_squadron": {
+   "id": "parrot_squadron",
+   "name": "Parrot Squadron",
+   "damage": 1.68,
+   "cooldown": 1.5,
+   "quantity": 2,
+   "behavior": 9,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.0257887654,
+     "weight": 1.1,
+     "cap": 0.6447194
+    },
+    {
+     "axis": 1,
+     "inc": 0.0161179714,
+     "weight": 1,
+     "cap": 0.193415731
+    },
+    {
+     "axis": 2,
+     "inc": 1,
+     "weight": 1.1,
+     "cap": 4
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 6,
+   "coverage": 1,
+   "databaseOrder": 54,
+   "rum": 170
+  },
+  "powder_kegs": {
+   "id": "powder_kegs",
+   "name": "Powder Kegs",
+   "damage": 14.78,
+   "cooldown": 1.1,
+   "quantity": 1,
+   "behavior": 5,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.205318213,
+     "weight": 1.2,
+     "cap": 5.132953
+    },
+    {
+     "axis": 1,
+     "inc": 0.08212729,
+     "weight": 0.9,
+     "cap": 1.0265907
+    },
+    {
+     "axis": 4,
+     "inc": 0.164254576,
+     "weight": 1,
+     "cap": 4.106363
+    },
+    {
+     "axis": 6,
+     "inc": 0.123190962,
+     "weight": 0.7,
+     "cap": 3.07977343
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1.4,
+   "databaseOrder": 2,
+   "rum": 0
+  },
+  "ramming_prow": {
+   "id": "ramming_prow",
+   "name": "Ramming Prow",
+   "damage": 4.03,
+   "cooldown": 0.3,
+   "quantity": 1,
+   "behavior": 7,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.226941168,
+     "weight": 1.1,
+     "cap": 5.67352962
+    },
+    {
+     "axis": 1,
+     "inc": 0.0644718856,
+     "weight": 1,
+     "cap": 0.773663044
+    },
+    {
+     "axis": 4,
+     "inc": 0.153243169,
+     "weight": 0.9,
+     "cap": 3.94053817
+    },
+    {
+     "axis": 6,
+     "inc": 0.153243169,
+     "weight": 0.8,
+     "cap": 3.94053817
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1.3,
+   "databaseOrder": 53,
+   "rum": 160
+  },
+  "siren_bell": {
+   "id": "siren_bell",
+   "name": "Siren Bell",
+   "damage": 26.88,
+   "cooldown": 2,
+   "quantity": 1,
+   "behavior": 7,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.165048078,
+     "weight": 1.1,
+     "cap": 4.126203
+    },
+    {
+     "axis": 1,
+     "inc": 0.0644718856,
+     "weight": 1,
+     "cap": 0.773663044
+    },
+    {
+     "axis": 4,
+     "inc": 0.111449622,
+     "weight": 0.9,
+     "cap": 2.865846
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1.3,
+   "databaseOrder": 52,
+   "rum": 150
+  },
+  "swivel_guns": {
+   "id": "swivel_guns",
+   "name": "Swivel Guns",
+   "damage": 8.06,
+   "cooldown": 0.6,
+   "quantity": 1,
+   "behavior": 0,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 0,
+     "inc": 0.142353952,
+     "weight": 1.2,
+     "cap": 3.55884981
+    },
+    {
+     "axis": 1,
+     "inc": 0.08897122,
+     "weight": 1,
+     "cap": 1.06765437
+    },
+    {
+     "axis": 2,
+     "inc": 1,
+     "weight": 0.8,
+     "cap": 4
+    },
+    {
+     "axis": 3,
+     "inc": 0.1067655,
+     "weight": 0.7,
+     "cap": 2.66913557
+    },
+    {
+     "axis": 6,
+     "inc": 0.08897122,
+     "weight": 0.6,
+     "cap": 2.66913557
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1,
+   "coverage": 1,
+   "databaseOrder": 46,
+   "rum": 0
+  }
+ },
+ "logbooks": {
+  "admiral": {
+   "id": "admiral",
+   "name": "Admiral",
+   "stat": 19,
+   "add": 0.1,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "carpenters_notes": {
+   "id": "carpenters_notes",
+   "name": "Carpenter's Notes",
+   "stat": 0,
+   "add": 20,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "cartographers_folio": {
+   "id": "cartographers_folio",
+   "name": "Cartographer's Folio",
+   "stat": 16,
+   "add": 0.1,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "extra_hands": {
+   "id": "extra_hands",
+   "name": "Extra Hands",
+   "stat": 9,
+   "add": 1,
+   "max": 3,
+   "mult": 1,
+   "inPool": true
+  },
+  "fortune": {
+   "id": "fortune",
+   "name": "Fortune",
+   "stat": 15,
+   "add": 0.05,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "gunnery_manual": {
+   "id": "gunnery_manual",
+   "name": "Gunner's Manual",
+   "stat": 5,
+   "add": 0.1,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "ironclad": {
+   "id": "ironclad",
+   "name": "Ironclad",
+   "stat": 3,
+   "add": 3,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "lookouts_glass": {
+   "id": "lookouts_glass",
+   "name": "Lookout's Glass",
+   "stat": 7,
+   "add": 0.05,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "navigators_charts": {
+   "id": "navigators_charts",
+   "name": "Navigator's Charts",
+   "stat": 20,
+   "add": 0.62,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "oversized_shot": {
+   "id": "oversized_shot",
+   "name": "Oversized Shot",
+   "stat": 10,
+   "add": 0.1,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "plunderer": {
+   "id": "plunderer",
+   "name": "Plunderer",
+   "stat": 18,
+   "add": 0.1,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "powder_drill": {
+   "id": "powder_drill",
+   "name": "Powdermaster's Drill",
+   "stat": 6,
+   "add": 0.08,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "quartermasters_ledger": {
+   "id": "quartermasters_ledger",
+   "name": "Quartermaster's Ledger",
+   "stat": 17,
+   "add": 0.1,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "scavengers_net": {
+   "id": "scavengers_net",
+   "name": "Scavenger's Net",
+   "stat": 14,
+   "add": 1.2,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  },
+  "tidecaller": {
+   "id": "tidecaller",
+   "name": "Tidecaller",
+   "stat": 11,
+   "add": 0.1,
+   "max": 5,
+   "mult": 1,
+   "inPool": true
+  }
+ },
+ "items": {
+  "admirals_ledger": {
+   "id": "admirals_ledger",
+   "name": "Admiral's Ledger",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0,
+     1.04
+    ]
+   ],
+   "effects": [
+    [
+     "DamagePerWeaponFamily",
+     0.03
+    ]
+   ]
+  },
+  "banana_crate": {
+   "id": "banana_crate",
+   "name": "Banana Crate",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     6,
+     0,
+     1.09
+    ]
+   ],
+   "effects": []
+  },
+  "barnacle_crown": {
+   "id": "barnacle_crown",
+   "name": "Barnacle Crown",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    [
+     "SurroundedDamage",
+     0.02
+    ]
+   ]
+  },
+  "black_powder_keg": {
+   "id": "black_powder_keg",
+   "name": "Black Powder Keg",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     8,
+     0,
+     1.1
+    ]
+   ],
+   "effects": [
+    [
+     "ExplosionDamage",
+     1.12
+    ]
+   ]
+  },
+  "black_spot": {
+   "id": "black_spot",
+   "name": "Black Spot",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    [
+     "EliteRewards",
+     0.1
+    ]
+   ]
+  },
+  "broadside_drum": {
+   "id": "broadside_drum",
+   "name": "Broadside Drum",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [
+    [
+     9,
+     1,
+     1
+    ]
+   ],
+   "effects": []
+  },
+  "captains_bell": {
+   "id": "captains_bell",
+   "name": "Captain's Bell",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1
+    ]
+   ],
+   "effects": [
+    [
+     "FireAllEveryKills",
+     1
+    ]
+   ]
+  },
+  "captains_last_rum": {
+   "id": "captains_last_rum",
+   "name": "Captain's Last Rum",
+   "rarity": 4,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    [
+     "CheatDeath",
+     0.25
+    ]
+   ]
+  },
+  "captains_perch": {
+   "id": "captains_perch",
+   "name": "Captain's Perch",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0,
+     1.09
+    ]
+   ],
+   "effects": []
+  },
+  "chain_locker": {
+   "id": "chain_locker",
+   "name": "Chain Locker",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     12,
+     0,
+     1.1
+    ]
+   ],
+   "effects": []
+  },
+  "copper_conductor": {
+   "id": "copper_conductor",
+   "name": "Copper Conductor",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [
+    [
+     12,
+     0,
+     1.1
+    ]
+   ],
+   "effects": []
+  },
+  "crows_nest": {
+   "id": "crows_nest",
+   "name": "Crow's Nest",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     14,
+     0,
+     1.1
+    ]
+   ],
+   "effects": []
+  },
+  "cursed_chest_key": {
+   "id": "cursed_chest_key",
+   "name": "Cursed Chest Key",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0,
+     1.09
+    ]
+   ],
+   "effects": []
+  },
+  "cursed_coin": {
+   "id": "cursed_coin",
+   "name": "Cursed Coin",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     17,
+     0,
+     1.1
+    ],
+    [
+     0,
+     0,
+     0.9
+    ]
+   ],
+   "effects": []
+  },
+  "cursed_compass": {
+   "id": "cursed_compass",
+   "name": "Cursed Compass",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.08,
+     1
+    ]
+   ],
+   "effects": [
+    [
+     "SpawnDensity",
+     1.18
+    ]
+   ]
+  },
+  "dead_mans_compass": {
+   "id": "dead_mans_compass",
+   "name": "Dead Man's Compass",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     16,
+     0,
+     1.05
+    ]
+   ],
+   "effects": [
+    [
+     "SpawnDensity",
+     1.1
+    ]
+   ]
+  },
+  "double_fuse_cord": {
+   "id": "double_fuse_cord",
+   "name": "Double-Fuse Cord",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     6,
+     0,
+     1.08
+    ]
+   ],
+   "effects": []
+  },
+  "dragons_breath_nozzle": {
+   "id": "dragons_breath_nozzle",
+   "name": "Dragon's Breath Nozzle",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [
+    [
+     10,
+     0,
+     1.32054758
+    ]
+   ],
+   "effects": []
+  },
+  "fresnel_lens": {
+   "id": "fresnel_lens",
+   "name": "Fresnel Lens",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     10,
+     0,
+     1.12
+    ]
+   ],
+   "effects": []
+  },
+  "ghost_lantern": {
+   "id": "ghost_lantern",
+   "name": "Ghost Lantern",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1
+    ]
+   ],
+   "effects": [
+    [
+     "CritAfterNearMiss",
+     0.08
+    ]
+   ]
+  },
+  "golden_figurehead": {
+   "id": "golden_figurehead",
+   "name": "Golden Figurehead",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     17,
+     0,
+     1.05
+    ]
+   ],
+   "effects": [
+    [
+     "DamagePerGold",
+     1
+    ]
+   ]
+  },
+  "grapeshot_pouch": {
+   "id": "grapeshot_pouch",
+   "name": "Grapeshot Pouch",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0,
+     1.1
+    ]
+   ],
+   "effects": []
+  },
+  "gunners_gloves": {
+   "id": "gunners_gloves",
+   "name": "Gunner's Gloves",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1
+    ]
+   ],
+   "effects": [
+    [
+     "AttackSpeedAfterTurn",
+     1.12
+    ]
+   ]
+  },
+  "iron_figurehead": {
+   "id": "iron_figurehead",
+   "name": "Iron Figurehead",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0,
+     1.09
+    ]
+   ],
+   "effects": []
+  },
+  "jolly_roger": {
+   "id": "jolly_roger",
+   "name": "Jolly Roger",
+   "rarity": 3,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    [
+     "KillStreakDamage",
+     0.01
+    ]
+   ]
+  },
+  "leviathan_heart": {
+   "id": "leviathan_heart",
+   "name": "Leviathan Heart",
+   "rarity": 4,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    [
+     "PeriodicPulse",
+     45
+    ]
+   ]
+  },
+  "leviathan_tooth": {
+   "id": "leviathan_tooth",
+   "name": "Leviathan Tooth",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1
+    ]
+   ],
+   "effects": [
+    [
+     "ControlledTargetDamage",
+     1.2
+    ]
+   ]
+  },
+  "lucky_doubloon": {
+   "id": "lucky_doubloon",
+   "name": "Lucky Doubloon",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1
+    ]
+   ],
+   "effects": []
+  },
+  "manta_sail": {
+   "id": "manta_sail",
+   "name": "Manta Sail",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     20,
+     0,
+     1.03
+    ]
+   ],
+   "effects": []
+  },
+  "powder_fuse": {
+   "id": "powder_fuse",
+   "name": "Powder Fuse",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1
+    ]
+   ],
+   "effects": [
+    [
+     "ExplosionDamageAfterDistance",
+     1.35
+    ]
+   ]
+  },
+  "powder_horn_of_the_line": {
+   "id": "powder_horn_of_the_line",
+   "name": "Powder Horn of the Line",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0,
+     1.09
+    ]
+   ],
+   "effects": []
+  },
+  "powder_monkey": {
+   "id": "powder_monkey",
+   "name": "Powder Monkey",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     6,
+     0,
+     1.065
+    ]
+   ],
+   "effects": []
+  },
+  "reef_carapace": {
+   "id": "reef_carapace",
+   "name": "Reef Carapace",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     3,
+     4,
+     1
+    ]
+   ],
+   "effects": []
+  },
+  "reinforced_keel": {
+   "id": "reinforced_keel",
+   "name": "Reinforced Keel",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.03,
+     1
+    ]
+   ],
+   "effects": [
+    [
+     "IncomingDamageAtSpeed",
+     0.88
+    ]
+   ]
+  },
+  "rusted_shackle": {
+   "id": "rusted_shackle",
+   "name": "Rusted Shackle",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     10,
+     0,
+     1.12
+    ]
+   ],
+   "effects": []
+  },
+  "sea_witchs_eye": {
+   "id": "sea_witchs_eye",
+   "name": "Sea Witch's Eye",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     15,
+     0.04,
+     1
+    ]
+   ],
+   "effects": [
+    [
+     "StatusDamage",
+     1.15
+    ]
+   ]
+  },
+  "serrated_scabbard": {
+   "id": "serrated_scabbard",
+   "name": "Serrated Scabbard",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     7,
+     0.04,
+     1
+    ]
+   ],
+   "effects": []
+  },
+  "shark_tooth_necklace": {
+   "id": "shark_tooth_necklace",
+   "name": "Shark Tooth Necklace",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    [
+     "HealthyTargetDamage",
+     0.12
+    ]
+   ]
+  },
+  "siege_quadrant": {
+   "id": "siege_quadrant",
+   "name": "Siege Quadrant",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     10,
+     0,
+     1.12
+    ]
+   ],
+   "effects": []
+  },
+  "siren_scale": {
+   "id": "siren_scale",
+   "name": "Siren Scale",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     6,
+     0,
+     1.09
+    ]
+   ],
+   "effects": []
+  },
+  "skeleton_key": {
+   "id": "skeleton_key",
+   "name": "Skeleton Key",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    [
+     "FreeChestChance",
+     0.06
+    ]
+   ]
+  },
+  "smugglers_ledger": {
+   "id": "smugglers_ledger",
+   "name": "Smuggler's Ledger",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [],
+   "effects": [
+    [
+     "ChestPriceAndRarity",
+     1.2
+    ]
+   ]
+  },
+  "spare_planks": {
+   "id": "spare_planks",
+   "name": "Spare Planks",
+   "rarity": 0,
+   "inChest": true,
+   "mods": [
+    [
+     0,
+     7,
+     1
+    ]
+   ],
+   "effects": []
+  },
+  "storm_conch": {
+   "id": "storm_conch",
+   "name": "Storm Conch",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     10,
+     0,
+     1.12
+    ]
+   ],
+   "effects": []
+  },
+  "stormglass": {
+   "id": "stormglass",
+   "name": "Stormglass",
+   "rarity": 2,
+   "inChest": true,
+   "mods": [
+    [
+     9,
+     0.5,
+     1
+    ]
+   ],
+   "effects": [
+    [
+     "ExtraLightningJumps",
+     1
+    ]
+   ]
+  },
+  "swivel_mount": {
+   "id": "swivel_mount",
+   "name": "Swivel Mount",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     6,
+     0,
+     1.09
+    ]
+   ],
+   "effects": []
+  },
+  "whale_oil_barrel": {
+   "id": "whale_oil_barrel",
+   "name": "Whale Oil Barrel",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [
+     5,
+     0,
+     1.09
+    ]
+   ],
+   "effects": []
+  }
+ },
+ "evolutions": {
+  "abyssal_vortex": {
+   "id": "abyssal_vortex",
+   "name": "Abyssal Vortex",
+   "weapon": "maelstrom_charge",
+   "item": "storm_conch",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.3,
+    "cooldown": 1,
+    "quantity": 0,
+    "size": 1.3
+   }
+  },
+  "bar_shot_barrage": {
+   "id": "bar_shot_barrage",
+   "name": "Bar Shot Barrage",
+   "weapon": "chainshot",
+   "item": "chain_locker",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.2,
+    "cooldown": 1,
+    "quantity": 2,
+    "size": 1
+   }
+  },
+  "beacon_of_the_deep": {
+   "id": "beacon_of_the_deep",
+   "name": "Beacon of the Deep",
+   "weapon": "lighthouse_lantern",
+   "item": "fresnel_lens",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.1,
+    "cooldown": 1,
+    "quantity": 1,
+    "size": 1.2
+   }
+  },
+  "bladed_tide": {
+   "id": "bladed_tide",
+   "name": "Bladed Tide",
+   "weapon": "flying_cutlasses",
+   "item": "serrated_scabbard",
+   "effect": "PulsingOrbit",
+   "empower": null
+  },
+  "devils_wake": {
+   "id": "devils_wake",
+   "name": "Devil's Wake",
+   "weapon": "powder_kegs",
+   "item": "double_fuse_cord",
+   "effect": "WakeKegs",
+   "empower": null
+  },
+  "drowned_choir": {
+   "id": "drowned_choir",
+   "name": "Drowned Choir",
+   "weapon": "siren_bell",
+   "item": "siren_scale",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.25,
+    "cooldown": 0.75,
+    "quantity": 0,
+    "size": 1.4
+   }
+  },
+  "hellfire_nozzle": {
+   "id": "hellfire_nozzle",
+   "name": "Hellfire Nozzle",
+   "weapon": "flamethrower",
+   "item": "dragons_breath_nozzle",
+   "effect": "WideConeWithPatches",
+   "empower": null
+  },
+  "ironclad_ram": {
+   "id": "ironclad_ram",
+   "name": "Ironclad Ram",
+   "weapon": "ramming_prow",
+   "item": "iron_figurehead",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.6,
+    "cooldown": 0.8,
+    "quantity": 0,
+    "size": 1.35
+   }
+  },
+  "kings_broadside": {
+   "id": "kings_broadside",
+   "name": "King's Broadside",
+   "weapon": "broadside_battery",
+   "item": "broadside_drum",
+   "effect": "OppositeSideFollowUp",
+   "empower": null
+  },
+  "kraken_chain": {
+   "id": "kraken_chain",
+   "name": "Kraken Chain",
+   "weapon": "anchor_flail",
+   "item": "rusted_shackle",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.3,
+    "cooldown": 1,
+    "quantity": 1,
+    "size": 1.25
+   }
+  },
+  "monkey_battery": {
+   "id": "monkey_battery",
+   "name": "Monkey Battery",
+   "weapon": "monkey_gunners",
+   "item": "banana_crate",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.2,
+    "cooldown": 0.85,
+    "quantity": 1,
+    "size": 1
+   }
+  },
+  "parrot_armada": {
+   "id": "parrot_armada",
+   "name": "Parrot Armada",
+   "weapon": "parrot_squadron",
+   "item": "captains_perch",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.2,
+    "cooldown": 1,
+    "quantity": 2,
+    "size": 1
+   }
+  },
+  "pirate_kings_hoard": {
+   "id": "pirate_kings_hoard",
+   "name": "Pirate King's Hoard",
+   "weapon": "cursed_doubloons",
+   "item": "cursed_chest_key",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.25,
+    "cooldown": 1,
+    "quantity": 2,
+    "size": 1
+   }
+  },
+  "ship_of_the_line": {
+   "id": "ship_of_the_line",
+   "name": "Ship of the Line",
+   "weapon": "long_nine",
+   "item": "powder_horn_of_the_line",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.5,
+    "cooldown": 0.85,
+    "quantity": 0,
+    "size": 1.5
+   }
+  },
+  "siege_bombard": {
+   "id": "siege_bombard",
+   "name": "Siege Bombard",
+   "weapon": "mortar",
+   "item": "siege_quadrant",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.35,
+    "cooldown": 0.85,
+    "quantity": 0,
+    "size": 1.35
+   }
+  },
+  "stormshot_cannon": {
+   "id": "stormshot_cannon",
+   "name": "Stormshot Cannon",
+   "weapon": "deck_cannons",
+   "item": "grapeshot_pouch",
+   "effect": "LaneWithBurst",
+   "empower": null
+  },
+  "swivel_battery": {
+   "id": "swivel_battery",
+   "name": "Swivel Battery",
+   "weapon": "swivel_guns",
+   "item": "swivel_mount",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.15,
+    "cooldown": 0.8,
+    "quantity": 2,
+    "size": 1
+   }
+  },
+  "tempest_mast": {
+   "id": "tempest_mast",
+   "name": "Tempest Mast",
+   "weapon": "lightning_mast",
+   "item": "copper_conductor",
+   "effect": "JumpAndDelayedStrike",
+   "empower": null
+  },
+  "whalers_volley": {
+   "id": "whalers_volley",
+   "name": "Whaler's Volley",
+   "weapon": "harpoon_gun",
+   "item": "whale_oil_barrel",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.25,
+    "cooldown": 1,
+    "quantity": 1,
+    "size": 1
+   }
+  }
+ },
+ "captains": {
+  "brine": {
+   "id": "brine",
+   "name": "Hank",
+   "weapon": "deck_cannons",
+   "hull": 110,
+   "damagePerLevel": 0,
+   "damageCap": 0
+  },
+  "ember": {
+   "id": "ember",
+   "name": "Ember",
+   "weapon": "flamethrower",
+   "hull": 92,
+   "damagePerLevel": 0.004,
+   "damageCap": 0.18
+  },
+  "flint": {
+   "id": "flint",
+   "name": "Sparky",
+   "weapon": "powder_kegs",
+   "hull": 120,
+   "damagePerLevel": 0.005,
+   "damageCap": 0.25
+  },
+  "richie": {
+   "id": "richie",
+   "name": "Richie",
+   "weapon": "broadside_battery",
+   "hull": 95,
+   "damagePerLevel": 0,
+   "damageCap": 0
+  },
+  "rook": {
+   "id": "rook",
+   "name": "Rook",
+   "weapon": "swivel_guns",
+   "hull": 100,
+   "damagePerLevel": 0.005,
+   "damageCap": 0.25
+  },
+  "roxie": {
+   "id": "roxie",
+   "name": "Roxie",
+   "weapon": "lightning_mast",
+   "hull": 104,
+   "damagePerLevel": 0.003,
+   "damageCap": 0.15
+  }
+ },
+ "progression": {
+  "xpTable": [
+   1,
+   2,
+   2,
+   5,
+   7,
+   8,
+   10,
+   12,
+   13,
+   14,
+   21,
+   25,
+   32,
+   35,
+   38,
+   41,
+   41,
+   42,
+   42,
+   42,
+   42,
+   42,
+   55,
+   60,
+   65,
+   70,
+   72,
+   73,
+   82,
+   83,
+   85,
+   86,
+   122,
+   124,
+   144,
+   146,
+   164,
+   185,
+   188,
+   204
+  ],
+  "weaponSlots": 6,
+  "logbookSlots": 4,
+  "levelsPerRarity": [
+   2,
+   2,
+   3,
+   3,
+   4
+  ],
+  "rarityMult": [
+   1,
+   1.25,
+   1.55,
+   1.9,
+   2.5
+  ],
+  "evolutionLevel": 5,
+  "maxWeaponLevel": 12,
+  "startLevel": 0,
+  "xpToNext": [
+   1,
+   2,
+   2,
+   5,
+   7,
+   8,
+   10,
+   12,
+   13,
+   14,
+   21,
+   25,
+   32,
+   35,
+   38,
+   41,
+   41,
+   42,
+   42,
+   42,
+   42,
+   42,
+   55,
+   60,
+   65,
+   70,
+   72,
+   73,
+   82,
+   83,
+   85,
+   86,
+   122,
+   124,
+   144,
+   146,
+   164,
+   185,
+   188,
+   204,
+   219,
+   234,
+   249,
+   264,
+   279,
+   294,
+   309,
+   324,
+   339,
+   354,
+   369,
+   384,
+   399,
+   414,
+   429,
+   444,
+   459,
+   474,
+   489,
+   504,
+   519,
+   534,
+   549,
+   564,
+   579,
+   594,
+   609,
+   624,
+   639,
+   654,
+   669,
+   684,
+   699,
+   714,
+   729,
+   744,
+   759,
+   774,
+   789,
+   804,
+   819,
+   834,
+   849,
+   864,
+   879,
+   894,
+   909,
+   924,
+   939,
+   954,
+   969,
+   984,
+   999,
+   1014,
+   1029,
+   1044,
+   1059,
+   1074,
+   1089,
+   1104,
+   1119,
+   1134,
+   1149,
+   1164,
+   1179,
+   1194,
+   1209,
+   1224,
+   1239,
+   1254,
+   1269,
+   1284,
+   1299,
+   1314,
+   1329,
+   1344,
+   1359,
+   1374,
+   1389,
+   1404,
+   1419,
+   1434,
+   1449,
+   1464,
+   1479,
+   1494,
+   1509,
+   1524,
+   1539,
+   1554,
+   1569,
+   1584,
+   1599,
+   1614,
+   1629,
+   1644,
+   1659,
+   1674,
+   1689,
+   1704,
+   1719,
+   1734,
+   1749,
+   1764,
+   1779,
+   1794,
+   1809,
+   1824,
+   1839,
+   1854
+  ],
+  "newWeaponDamageBonus": 1.1,
+  "cardsPerLevel": 3,
+  "refreshesPerRun": 2,
+  "rarityWeights": [
+   60,
+   26,
+   10,
+   3.2,
+   0.8
+  ],
+  "upgradePowerMultiplier": 1.44,
+  "linesPerRarity": [
+   1,
+   1,
+   2,
+   2,
+   3
+  ],
+  "rarePityLevelUps": 6,
+  "pityMinRarity": 2
+ },
+ "pickups": {
+  "xpMult": 0.8,
+  "healValue": 25,
+  "healFraction": 0.2,
+  "lowWait": 1,
+  "healMin": 90,
+  "healMax": 150,
+  "lowHull": 0.35,
+  "healChance": 0.12,
+  "burstMin": 6,
+  "burstMax": 10,
+  "burstMinimum": 3
+ },
+ "curve": {
+  "hp": [
+   1,
+   0.035,
+   0.00167
+  ],
+  "dmg": [
+   1,
+   0.02,
+   0
+  ],
+  "global_hp": 1,
+  "ordinaryDelay": 120,
+  "ordinaryHp": [
+   1,
+   0,
+   0
+  ],
+  "ordinaryDmg": [
+   1,
+   0,
+   0
+  ],
+  "overtimeHpBase": 3,
+  "overtimeHpExponent": 0.25,
+  "overtimeDamagePerMinute": 0.12,
+  "pressureMin": 0.85,
+  "pressureMax": 1.35,
+  "polynomial": true
+ },
+ "director": {
+  "killBand": true,
+  "bandSeconds": 30,
+  "high": 0.85,
+  "low": 0.3,
+  "lowRate": 0.6,
+  "eliteChance": 0.01,
+  "eliteHp": 6,
+  "ttk": {
+   "boss": 4.75,
+   "arena": 2,
+   "focus": 1.5,
+   "elite": 1.25
+  },
+  "mode": "Adaptive",
+  "minSpawns": 6,
+  "bossHpAsIfAtSeconds": 840,
+  "arenaMaxPauseSeconds": 0,
+  "eliteAffixHp": 1.25,
+  "eliteDamage": 1.1,
+  "threatRate": {
+   "on": false,
+   "gain": 2.2,
+   "min": 0.85,
+   "max": 1.75
+  },
+  "eliteLever": {
+   "on": false,
+   "chanceAtMax": 0.12
+  },
+  "toughness": {
+   "on": false,
+   "hpAtMax": 1.25,
+   "dmgAtMax": 1.2
+  },
+  "focusLever": {
+   "on": false,
+   "hpAtMax": 1.5,
+   "dmgAtMax": 1.2
+  },
+  "capHp": {
+   "on": false,
+   "atMax": 1.2
+  },
+  "coverage": [
+   1,
+   1.6,
+   1.8,
+   1.5,
+   1.2,
+   1.4,
+   1.6,
+   1.3,
+   1.5,
+   1
+  ],
+  "evolutionOffense": 1.6
+ },
+ "armorWorks": true,
+ "sheet": {
+  "enemies": [
+   {
+    "id": "barnacle_king",
+    "name": "Barnacle King",
+    "role": "Boss",
+    "kind": "Creature",
+    "base": null,
+    "hp": 245,
+    "dmg": 1.125,
+    "speed": 2.5,
+    "radius": 2.8,
+    "xp": 100,
+    "gold": 150,
+    "behavior": "Tank chaser",
+    "move": "Default",
+    "attack": "Default",
+    "range": 0,
+    "cooldown": 1.5,
+    "windup": 0,
+    "shots": 1,
+    "shotSpeed": 0,
+    "contact": true,
+    "ranged": false,
+    "threat": 9
+   },
+   {
+    "id": "boarding_barge",
+    "name": "Boarding Barge",
+    "role": "Ordinary",
+    "kind": "Ship",
+    "base": null,
+    "hp": 14,
+    "dmg": 5,
+    "speed": 3.2,
+    "radius": 1.25,
+    "xp": 5,
+    "gold": 1,
+    "behavior": "Keeps range",
+    "move": "Keeps range",
+    "attack": "Single shot",
+    "range": 9,
+    "cooldown": 3,
+    "windup": 1,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "ranged": true,
+    "threat": 4
+   },
+   {
+    "id": "bomb_boat",
+    "name": "Bomb Boat",
+    "role": "Ordinary",
+    "kind": "Ship",
+    "base": null,
+    "hp": 2.8,
+    "dmg": 4.375,
+    "speed": 6,
+    "radius": 1,
+    "xp": 4,
+    "gold": 1,
+    "behavior": "Suicide approach",
+    "move": "Direct chase",
+    "attack": "Explodes",
+    "range": 3,
+    "cooldown": 99,
+    "windup": 1.2,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "ranged": true,
+    "threat": 3
+   },
+   {
+    "id": "cannonboat",
+    "name": "Cannonboat",
+    "role": "Ordinary",
+    "kind": "Ship",
+    "base": null,
+    "hp": 2.8,
+    "dmg": 2.5,
+    "speed": 3.8,
+    "radius": 1.2,
+    "xp": 3,
+    "gold": 1,
+    "behavior": "Keeps range",
+    "move": "Keeps range",
+    "attack": "Single shot",
+    "range": 14,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "ranged": true,
+    "threat": 3
+   },
+   {
+    "id": "cutthroat_skiff",
+    "name": "Cutthroat Skiff",
+    "role": "Ordinary",
+    "kind": "Ship",
+    "base": null,
+    "hp": 12.25,
+    "dmg": 2.1875,
+    "speed": 4.5,
+    "radius": 1,
+    "xp": 3,
+    "gold": 1,
+    "behavior": "Flanking chaser",
+    "move": "Flank",
+    "attack": "Contact",
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "ranged": false,
+    "threat": 2
+   },
+   {
+    "id": "deckhand_dinghy",
+    "name": "Deckhand Dinghy",
+    "role": "Ordinary",
+    "kind": "Ship",
+    "base": null,
+    "hp": 3.5,
+    "dmg": 1.5625,
+    "speed": 5.5,
+    "radius": 0.9,
+    "xp": 2,
+    "gold": 1,
+    "behavior": "Fast swarm",
+    "move": "Swarm",
+    "attack": "Contact",
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "ranged": false,
+    "threat": 1
+   },
+   {
+    "id": "drowned_harrier",
+    "name": "drowned harrier",
+    "role": "Ordinary",
+    "kind": "Ship",
+    "base": null,
+    "hp": 5.25,
+    "dmg": 2.5,
+    "speed": 4,
+    "radius": 1.2,
+    "xp": 4,
+    "gold": 1,
+    "behavior": "Keeps range",
+    "move": "Keeps range",
+    "attack": "Burst volley",
+    "range": 18,
+    "cooldown": 2.5,
+    "windup": 1,
+    "shots": 2,
+    "shotSpeed": 0,
+    "contact": false,
+    "ranged": true,
+    "threat": 3
+   },
+   {
+    "id": "drowned_pursuer",
+    "name": "drowned pursuer",
+    "role": "Ordinary",
+    "kind": "Creature",
+    "base": null,
+    "hp": 7,
+    "dmg": 1.875,
+    "speed": 5,
+    "radius": 1,
+    "xp": 3,
+    "gold": 1,
+    "behavior": "Direct chaser",
+    "move": "Direct chase",
+    "attack": "Contact",
+    "range": 0,
+    "cooldown": 1.5,
+    "windup": 0,
+    "shots": 0,
+    "shotSpeed": 0,
+    "contact": true,
+    "ranged": false,
+    "threat": 2
+   },
+   {
+    "id": "gunner_cog",
+    "name": "Gunner Cog",
+    "role": "Ordinary",
+    "kind": "Ship",
+    "base": null,
+    "hp": 4.2,
+    "dmg": 2.8125,
+    "speed": 3.5,
+    "radius": 1.15,
+    "xp": 4,
+    "gold": 1,
+    "behavior": "Formation ranged",
+    "move": "Keeps range",
+    "attack": "Burst volley",
+    "range": 14,
+    "cooldown": 3,
+    "windup": 0.6,
+    "shots": 3,
+    "shotSpeed": 9,
+    "contact": true,
+    "ranged": true,
+    "threat": 3
+   },
+   {
+    "id": "hammerhead",
+    "name": "Hammerhead",
+    "role": "Ordinary",
+    "kind": "Creature",
+    "base": null,
+    "hp": 1.75,
+    "dmg": 2.1875,
+    "speed": 5,
+    "radius": 1.1,
+    "xp": 3,
+    "gold": 1,
+    "behavior": "Flanking chaser",
+    "move": "Telegraphed charge",
+    "attack": "Contact",
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "ranged": false,
+    "threat": 3
+   },
+   {
+    "id": "kraken_spawn",
+    "name": "Kraken Spawn",
+    "role": "Ordinary",
+    "kind": "Creature",
+    "base": null,
+    "hp": 17.5,
+    "dmg": 6.875,
+    "speed": 2.5,
+    "radius": 1.6,
+    "xp": 6,
+    "gold": 2,
+    "behavior": "Tank chaser",
+    "move": "Direct chase",
+    "attack": "Area denial",
+    "range": 8,
+    "cooldown": 6,
+    "windup": 1.2,
+    "shots": 2,
+    "shotSpeed": 9,
+    "contact": false,
+    "ranged": false,
+    "threat": 6
+   },
+   {
+    "id": "manta_ray",
+    "name": "Manta Ray",
+    "role": "Ordinary",
+    "kind": "Creature",
+    "base": null,
+    "hp": 8.75,
+    "dmg": 5,
+    "speed": 4.5,
+    "radius": 1.4,
+    "xp": 5,
+    "gold": 2,
+    "behavior": "Strafe burst",
+    "move": "Strafe",
+    "attack": "Spread volley",
+    "range": 10,
+    "cooldown": 2.2,
+    "windup": 0.9,
+    "shots": 3,
+    "shotSpeed": 9,
+    "contact": true,
+    "ranged": true,
+    "threat": 2
+   },
+   {
+    "id": "rammer_raft",
+    "name": "Rammer Raft",
+    "role": "Ordinary",
+    "kind": "Ship",
+    "base": null,
+    "hp": 9.8,
+    "dmg": 3.125,
+    "speed": 5,
+    "radius": 1.05,
+    "xp": 3,
+    "gold": 1,
+    "behavior": "Telegraphed charge",
+    "move": "Telegraphed charge",
+    "attack": "Contact",
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "ranged": false,
+    "threat": 2
+   },
+   {
+    "id": "reef_crab_miniboss",
+    "name": "Reef Crab",
+    "role": "Miniboss",
+    "kind": "Creature",
+    "base": null,
+    "hp": 42,
+    "dmg": 0.875,
+    "speed": 4.6,
+    "radius": 2.2,
+    "xp": 35,
+    "gold": 50,
+    "behavior": "Telegraphed charge",
+    "move": "Keeps range",
+    "attack": "Contact",
+    "range": 0,
+    "cooldown": 1.2,
+    "windup": 0,
+    "shots": 0,
+    "shotSpeed": 0,
+    "contact": true,
+    "ranged": false,
+    "threat": 3
+   },
+   {
+    "id": "shark",
+    "name": "Shark",
+    "role": "Ordinary",
+    "kind": "Creature",
+    "base": null,
+    "hp": 7,
+    "dmg": 1.875,
+    "speed": 4.2,
+    "radius": 1.1,
+    "xp": 4,
+    "gold": 1,
+    "behavior": "Direct chaser",
+    "move": "Direct chase",
+    "attack": "Contact",
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "ranged": false,
+    "threat": 4
+   },
+   {
+    "id": "swordfish",
+    "name": "Swordfish",
+    "role": "Ordinary",
+    "kind": "Creature",
+    "base": null,
+    "hp": 2.27499986,
+    "dmg": 1.875,
+    "speed": 6.5,
+    "radius": 0.9,
+    "xp": 2,
+    "gold": 1,
+    "behavior": "Fast swarm",
+    "move": "Dive lunge",
+    "attack": "Contact",
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "ranged": false,
+    "threat": 2
+   },
+   {
+    "id": "bomb_ketch",
+    "name": "bomb ketch",
+    "role": "Variant",
+    "kind": "Ship",
+    "base": "bomb_boat",
+    "hp": 7,
+    "dmg": 4.375,
+    "speed": 3.2,
+    "radius": 1,
+    "xp": 4,
+    "gold": 1,
+    "behavior": "Keeps range",
+    "move": "Keeps range",
+    "attack": "Area denial",
+    "range": 16,
+    "cooldown": 4,
+    "windup": 0.5,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "ranged": false,
+    "threat": 5
+   },
+   {
+    "id": "elite_hammerhead",
+    "name": "Elite Hammerhead",
+    "role": "Elite",
+    "kind": "Creature",
+    "base": "hammerhead",
+    "hp": 1.75,
+    "dmg": 2.1875,
+    "speed": 5,
+    "radius": 1.1,
+    "xp": 3,
+    "gold": 1,
+    "behavior": "Flanking chaser",
+    "move": "Telegraphed charge",
+    "attack": "Contact",
+    "range": 0,
+    "cooldown": 1.5,
+    "windup": 0,
+    "shots": 0,
+    "shotSpeed": 0,
+    "contact": true,
+    "ranged": false,
+    "threat": 3
+   },
+   {
+    "id": "elite_kraken_spawn",
+    "name": "Elite Kraken Spawn",
+    "role": "Elite",
+    "kind": "Creature",
+    "base": "kraken_spawn",
+    "hp": 17.5,
+    "dmg": 6.875,
+    "speed": 2.5,
+    "radius": 1.6,
+    "xp": 6,
+    "gold": 2,
+    "behavior": "Tank chaser",
+    "move": "Direct chase",
+    "attack": "Area denial",
+    "range": 0,
+    "cooldown": 6,
+    "windup": 1.2,
+    "shots": 3,
+    "shotSpeed": 0,
+    "contact": false,
+    "ranged": false,
+    "threat": 6
+   },
+   {
+    "id": "needle_sloop",
+    "name": "needle sloop",
+    "role": "Variant",
+    "kind": "Ship",
+    "base": "cutthroat_skiff",
+    "hp": 4.2,
+    "dmg": 2.1875,
+    "speed": 5.5,
+    "radius": 1,
+    "xp": 3,
+    "gold": 1,
+    "behavior": "Flanking chaser",
+    "move": "Keeps range",
+    "attack": "Single shot",
+    "range": 20,
+    "cooldown": 2.5,
+    "windup": 1,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "ranged": true,
+    "threat": 2
+   },
+   {
+    "id": "net_cutter",
+    "name": "net cutter",
+    "role": "Variant",
+    "kind": "Ship",
+    "base": "gunner_cog",
+    "hp": 5.25,
+    "dmg": 2.8125,
+    "speed": 4.5,
+    "radius": 1.15,
+    "xp": 4,
+    "gold": 1,
+    "behavior": "Formation ranged",
+    "move": "Flank",
+    "attack": "Area denial",
+    "range": 6,
+    "cooldown": 4,
+    "windup": 1.2,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "ranged": false,
+    "threat": 4
+   },
+   {
+    "id": "powder_barge",
+    "name": "powder barge",
+    "role": "Variant",
+    "kind": "Ship",
+    "base": "boarding_barge",
+    "hp": 14,
+    "dmg": 5,
+    "speed": 2.2,
+    "radius": 1.25,
+    "xp": 5,
+    "gold": 1,
+    "behavior": "Suicide approach",
+    "move": "Direct chase",
+    "attack": "Area denial",
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "ranged": false,
+    "threat": 4
+   },
+   {
+    "id": "ram_raider",
+    "name": "ram raider",
+    "role": "Variant",
+    "kind": "Ship",
+    "base": "rammer_raft",
+    "hp": 7,
+    "dmg": 3.125,
+    "speed": 7,
+    "radius": 1.05,
+    "xp": 3,
+    "gold": 1,
+    "behavior": "Telegraphed charge",
+    "move": "Telegraphed charge",
+    "attack": "Contact",
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "ranged": false,
+    "threat": 3
+   },
+   {
+    "id": "repair_tender",
+    "name": "repair tender",
+    "role": "Variant",
+    "kind": "Ship",
+    "base": "boarding_barge",
+    "hp": 8.75,
+    "dmg": 2.5,
+    "speed": 2.8,
+    "radius": 1.25,
+    "xp": 5,
+    "gold": 1,
+    "behavior": "Keeps range",
+    "move": "Keeps range",
+    "attack": "None",
+    "range": 8,
+    "cooldown": 4,
+    "windup": 1,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "ranged": false,
+    "threat": 6
+   },
+   {
+    "id": "shield_frigate",
+    "name": "shield frigate",
+    "role": "Variant",
+    "kind": "Ship",
+    "base": "gunner_cog",
+    "hp": 14,
+    "dmg": 5.625,
+    "speed": 3,
+    "radius": 1.15,
+    "xp": 4,
+    "gold": 1,
+    "behavior": "Tank chaser",
+    "move": "Keeps range",
+    "attack": "Burst volley",
+    "range": 12,
+    "cooldown": 5,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": false,
+    "ranged": true,
+    "threat": 7
+   },
+   {
+    "id": "treasure_raider",
+    "name": "treasure raider",
+    "role": "Variant",
+    "kind": "Ship",
+    "base": "deckhand_dinghy",
+    "hp": 5.25,
+    "dmg": 1.5625,
+    "speed": 6.5,
+    "radius": 0.9,
+    "xp": 2,
+    "gold": 1,
+    "behavior": "Fast swarm",
+    "move": "Swarm",
+    "attack": "Contact",
+    "range": 12,
+    "cooldown": 2,
+    "windup": 0.8,
+    "shots": 1,
+    "shotSpeed": 9,
+    "contact": true,
+    "ranged": false,
+    "threat": 4
+   }
+  ],
+  "weapons": [
+   {
+    "id": "anchor_flail",
+    "name": "Anchor Flail",
+    "type": "Orbit",
+    "tags": [],
+    "damage": 16.12,
+    "cooldown": 0.75,
+    "quantity": 1,
+    "range": 6,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 2,
+    "spin": 150,
+    "maxLevel": 12,
+    "rum": 120,
+    "starter": false,
+    "off": false,
+    "text": "A heavy anchor swings around the ship, battering and shoving foes."
+   },
+   {
+    "id": "broadside_battery",
+    "name": "Broadside Battery",
+    "type": "Fan",
+    "tags": [],
+    "damage": 20.15,
+    "cooldown": 1.5,
+    "quantity": 1,
+    "range": 12,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 0,
+    "starter": true,
+    "off": false,
+    "text": "Side-arc volleys into nearby clusters."
+   },
+   {
+    "id": "chainshot",
+    "name": "Chainshot",
+    "type": "Projectile",
+    "tags": [],
+    "damage": 13.44,
+    "cooldown": 1,
+    "quantity": 1,
+    "range": 16,
+    "speed": 18,
+    "pierce": 2,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 130,
+    "starter": false,
+    "off": false,
+    "text": "Spinning chained balls that tear through a line of foes and slow them."
+   },
+   {
+    "id": "cursed_doubloons",
+    "name": "Cursed Doubloons",
+    "type": "Area strike",
+    "tags": [],
+    "damage": 13.44,
+    "cooldown": 1,
+    "quantity": 1,
+    "range": 12,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 220,
+    "starter": false,
+    "off": false,
+    "text": "Cursed coins ricochet between foes; kills drop a little extra gold."
+   },
+   {
+    "id": "deck_cannons",
+    "name": "Deck Cannons",
+    "type": "Projectile",
+    "tags": [],
+    "damage": 9.41,
+    "cooldown": 0.7,
+    "quantity": 1,
+    "range": 16,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 0,
+    "starter": true,
+    "off": false,
+    "text": "Reliable forward cannon fire."
+   },
+   {
+    "id": "flamethrower",
+    "name": "Flamethrower",
+    "type": "Cone stream",
+    "tags": [],
+    "damage": 9.41,
+    "cooldown": 0.7,
+    "quantity": 1,
+    "range": 9.5,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 80,
+    "starter": false,
+    "off": false,
+    "text": "Automatic ship weapon."
+   },
+   {
+    "id": "flying_cutlasses",
+    "name": "Flying Cutlasses",
+    "type": "Orbit",
+    "tags": [],
+    "damage": 13.44,
+    "cooldown": 1,
+    "quantity": 1,
+    "range": 6,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 2,
+    "spin": 120,
+    "maxLevel": 12,
+    "rum": 0,
+    "starter": true,
+    "off": false,
+    "text": "Orbiting blades strike nearby foes."
+   },
+   {
+    "id": "harpoon_gun",
+    "name": "Harpoon Gun",
+    "type": "Projectile",
+    "tags": [
+     "Hunter",
+     "Control"
+    ],
+    "damage": 10.75,
+    "cooldown": 0.8,
+    "quantity": 1,
+    "range": 13,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 100,
+    "starter": false,
+    "off": false,
+    "text": "Forward tether that slows priority targets."
+   },
+   {
+    "id": "lighthouse_lantern",
+    "name": "Lighthouse Lantern",
+    "type": "Orbit",
+    "tags": [],
+    "damage": 17.92,
+    "cooldown": 0.5,
+    "quantity": 1,
+    "range": 9,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 3,
+    "spin": 90,
+    "maxLevel": 12,
+    "rum": 200,
+    "starter": false,
+    "off": false,
+    "text": "A beam of light sweeps around the ship, burning all along its length."
+   },
+   {
+    "id": "lightning_mast",
+    "name": "Lightning Mast",
+    "type": "Area strike",
+    "tags": [],
+    "damage": 24.19,
+    "cooldown": 1.8,
+    "quantity": 1,
+    "range": 13,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 60,
+    "starter": false,
+    "off": false,
+    "text": "Automatic ship weapon."
+   },
+   {
+    "id": "long_nine",
+    "name": "Long Nine",
+    "type": "Projectile",
+    "tags": [
+     "Gunnery",
+     "Hunter"
+    ],
+    "damage": 22,
+    "cooldown": 1.63710785,
+    "quantity": 1,
+    "range": 18,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 0,
+    "starter": true,
+    "off": false,
+    "text": "Long forward line for elite priority shots."
+   },
+   {
+    "id": "maelstrom_charge",
+    "name": "Maelstrom Charge",
+    "type": "Predicted area",
+    "tags": [],
+    "damage": 18.16,
+    "cooldown": 5,
+    "quantity": 1,
+    "range": 15,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 190,
+    "starter": false,
+    "off": false,
+    "text": "A lobbed charge opens a whirlpool that drags foes in, then implodes."
+   },
+   {
+    "id": "monkey_gunners",
+    "name": "Monkey Gunners",
+    "type": "Summon",
+    "tags": [],
+    "damage": 4.03,
+    "cooldown": 2,
+    "quantity": 1,
+    "range": 10,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 180,
+    "starter": false,
+    "off": false,
+    "text": "Drops a floating barrel turret; its monkey fires at anything in range."
+   },
+   {
+    "id": "mortar",
+    "name": "Mortar",
+    "type": "Predicted area",
+    "tags": [
+     "Explosive"
+    ],
+    "damage": 16.13,
+    "cooldown": 1.19999993,
+    "quantity": 1,
+    "range": 15,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 100,
+    "starter": false,
+    "off": false,
+    "text": "Delayed cluster bombardment."
+   },
+   {
+    "id": "parrot_squadron",
+    "name": "Parrot Squadron",
+    "type": "Summon",
+    "tags": [],
+    "damage": 1.68,
+    "cooldown": 1.5,
+    "quantity": 2,
+    "range": 12,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 170,
+    "starter": false,
+    "off": false,
+    "text": "Trained parrots dive-bomb the nearest foes."
+   },
+   {
+    "id": "powder_kegs",
+    "name": "Powder Kegs",
+    "type": "Mine",
+    "tags": [],
+    "damage": 14.78,
+    "cooldown": 1.1,
+    "quantity": 1,
+    "range": 12,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 0,
+    "starter": true,
+    "off": false,
+    "text": "Drops explosive kegs along your wake."
+   },
+   {
+    "id": "ramming_prow",
+    "name": "Ramming Prow",
+    "type": "Aura",
+    "tags": [],
+    "damage": 4.03,
+    "cooldown": 0.3,
+    "quantity": 1,
+    "range": 4,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 160,
+    "starter": false,
+    "off": false,
+    "text": "An iron prow: while you boost, it smashes and shoves everything ahead."
+   },
+   {
+    "id": "siren_bell",
+    "name": "Siren Bell",
+    "type": "Aura",
+    "tags": [],
+    "damage": 26.88,
+    "cooldown": 2,
+    "quantity": 1,
+    "range": 5,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 150,
+    "starter": false,
+    "off": false,
+    "text": "A cursed bell tolls around the ship, hurting and slowing everything near."
+   },
+   {
+    "id": "swivel_guns",
+    "name": "Swivel Guns",
+    "type": "Projectile",
+    "tags": [
+     "Gunnery"
+    ],
+    "damage": 8.06,
+    "cooldown": 0.6,
+    "quantity": 1,
+    "range": 12,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 0,
+    "starter": true,
+    "off": false,
+    "text": "Rapid omni-directional cleanup fire."
+   }
+  ]
+ },
+ "starterWeapons": [
+  "broadside_battery",
+  "deck_cannons",
+  "flamethrower",
+  "flying_cutlasses",
+  "harpoon_gun",
+  "lightning_mast",
+  "long_nine",
+  "mortar",
+  "powder_kegs",
+  "swivel_guns",
+  "anchor_flail",
+  "chainshot",
+  "siren_bell",
+  "ramming_prow",
+  "parrot_squadron",
+  "monkey_gunners",
+  "maelstrom_charge",
+  "lighthouse_lantern",
+  "cursed_doubloons"
+ ],
+ "offerWeights": [
+  {
+   "maxWeapons": 2,
+   "weaponUpgrade": 20,
+   "newWeapon": 40,
+   "logbookUpgrade": 15,
+   "newLogbook": 25,
+   "runItem": 0
+  },
+  {
+   "maxWeapons": 3,
+   "weaponUpgrade": 30,
+   "newWeapon": 30,
+   "logbookUpgrade": 20,
+   "newLogbook": 20,
+   "runItem": 0
+  },
+  {
+   "maxWeapons": 4,
+   "weaponUpgrade": 30,
+   "newWeapon": 30,
+   "logbookUpgrade": 20,
+   "newLogbook": 20,
+   "runItem": 0
+  },
+  {
+   "maxWeapons": 5,
+   "weaponUpgrade": 40,
+   "newWeapon": 16,
+   "logbookUpgrade": 18,
+   "newLogbook": 12,
+   "runItem": 0
+  },
+  {
+   "maxWeapons": 6,
+   "weaponUpgrade": 45,
+   "newWeapon": 0,
+   "logbookUpgrade": 30,
+   "newLogbook": 25,
+   "runItem": 0
+  }
+ ],
+ "run": {
+  "islandImpactDamage": 5,
+  "islandDamageCooldown": 2,
+  "islandImpactMinSpeed": 2,
+  "shipSpeedMultiplier": 1.625
+ },
+ "unlocks": {
+  "disabled": [],
+  "unlockEverything": true,
+  "rum": {
+   "anchor_flail": 120,
+   "chainshot": 130,
+   "cursed_doubloons": 220,
+   "flamethrower": 80,
+   "harpoon_gun": 100,
+   "lighthouse_lantern": 200,
+   "lightning_mast": 60,
+   "maelstrom_charge": 190,
+   "monkey_gunners": 180,
+   "mortar": 100,
+   "parrot_squadron": 170,
+   "ramming_prow": 160,
+   "siren_bell": 150
+  }
+ },
+ "stage": {
+  "evolutionItemChance": 0.4,
+  "chestBasePrice": 20,
+  "chestPriceGrowth": 1.35,
+  "chestPriceIncrementBase": 45,
+  "salvageChests": 12,
+  "repairWreckHealFraction": 0.25,
+  "beaconHintSeconds": 720,
+  "beaconMarkerSeconds": 780
+ },
+ "experiment": {
+  "spawnDensity": 1,
+  "enemyHp": 1,
+  "enemyDamage": 1,
+  "evolutions": true
+ },
+ "demo": {
+  "autoBossSeconds": 0
+ },
+ "meta": {
+  "source": "unity",
+  "setId": "saltwind-default",
+  "configHash": "2ebb45e648a2d3f230f4df018f47cbaab153d401269bfa1c5447267639726a73",
+  "preset": null,
+  "exported": "2026-10-07T12:36:51Z",
+  "unity": "6000.3.11f1",
+  "session": {
+   "id": "S4",
+   "file": "session-20261007-204854-rook.json",
+   "sessionConfigHash": "2ebb45e6",
+   "playedOn": "3bd86f6d",
+   "exportFrom": "7bfb9403",
+   "exportConfigHash": "2ebb45e6",
+   "patches": [],
+   "model": {},
+   "note": "D20: XP 0.8 (exact payout, new table), equal weapon DPS; Ramming Prow, no Q20 milestones"
+  }
+ }
+}
