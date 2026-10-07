@@ -1,6 +1,6 @@
 {
  "updated": "8 Oct 2026",
- "statusLine": "M9a in progress: simulator refit done (C9a.1); server upgrade to .NET 10 with migrations (C9a.0) running; then the run log, seeding and the shadow-mode run checks.",
+ "statusLine": "M9a in progress: simulator refit (C9a.1) and the .NET 10 server with migrations (C9a.0, live) done; next the run log, seeding and the shadow-mode run checks.",
  "statusOk": false,
  "facts": [
   [
@@ -79,7 +79,7 @@
   },
   "M9a": {
    "state": "building",
-   "chip": "started 8 Oct · C9a.1 done, C9a.0 running"
+   "chip": "building · C9a.0 and C9a.1 done"
   },
   "M9b": {
    "state": "planned",
@@ -425,6 +425,11 @@
    "when": "8 Oct",
    "commit": "29e8dc12",
    "what": "<strong>M9a C9a.1 done: simulator refit</strong> on your five voyages, each replayed on the config it was played on. On today's balance the model's p10-p90 contains your level, kills and survival at every minute (before: level and kills outside at every minute, and the model never sank). Older builds still miss on early kills (you killed 20-35% more; no config difference found) and the model sinks 3-5 min earlier on them. Finding: with a generic build every Captain sinks at a median of about 10:50; with your Logbook-heavy picks Rook lasts about 18:30. C9a.0 (.NET 10 and migrations) restarted after the laptop crash."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "3eef8749",
+   "what": "<strong>M9a C9a.0 done and deployed</strong>: the API runs on .NET 10 with EF Core migrations instead of EnsureCreated. On Railway the existing database was recognised and recorded as baselined without changing any data; the leaderboard still serves your runs. 111 server tests pass. No backup was taken (no outside access to the database; your call: deploy without one)."
   }
  ],
  "todos": {

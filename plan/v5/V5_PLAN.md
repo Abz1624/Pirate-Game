@@ -616,7 +616,7 @@ Each of the three has its own gate, owner playtest and commit `V5 M9a/M9b/M9c: <
 Goal: before any account holds value, the server moves to .NET 10 with migrations and checks every uploaded voyage for
 plausibility, in shadow mode first (D23): verdicts are stored and shown, and the owner decides when to enforce them.
 
-- C9a.0 Server on .NET 10 LTS with EF Core migrations baselined from the live schema (replacing EnsureCreated); the
+- C9a.0 (done 8 Oct, `3eef8749`, deployed; live database baselined, data kept) Server on .NET 10 LTS with EF Core migrations baselined from the live schema (replacing EnsureCreated); the
   Dockerfile on the 10.0 images; deployed by the agent (D19). Pulled from I10.1 (.NET 8 support ends 10 Nov).
 - C9a.1 (done 8 Oct, `29e8dc12`: today's balance inside p10-p90 for level, kills and survival; older builds miss on
   early kills, see `plan/playtest/montecarlo/report.html`) Prerequisite: the simulator refit on the recorded sessions, since the plausibility bounds come from it. Done
