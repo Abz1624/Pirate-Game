@@ -85,7 +85,7 @@ namespace RoguePirates.V4.Enemies
 
         /// <summary>
         /// R-06 fix (was LegacyAreaDenialRelease on V3's static budget, M3-M7): each area-denial reservation is freed <paramref name="holdSeconds"/>
-        /// after it was seen; 0 keeps V3's never-released budget (the v3-parity preset). Called once per frame where the
+        /// after it was seen; 0 keeps V3's never-released budget (V3's behaviour, by config; V5 M8z (7 Oct, review)). Called once per frame where the
         /// legacy release ran (after the enemy frame), with the run clock.
         /// </summary>
         public void TickAreaDenialRelease(float runSeconds, float holdSeconds)

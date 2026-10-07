@@ -284,7 +284,7 @@ namespace RoguePirates.V4.Progression
         }
 
         // ---- R-40 (V3 computed these in RefreshDynamicMultipliers but nothing read them; each counts only while its
-        // item effect is active, which the v3-parity preset switches off) ----------------------------------------------
+        // item effect is active, which its config switch can turn off) ----------------------------------------------
 
         /// <summary>Black Powder Keg ×1.12 on explosions, and Powder Fuse's one-shot ×1.35 once charged (V3 RefreshDynamicMultipliers).</summary>
         public float ExplosionDamageMultiplier()

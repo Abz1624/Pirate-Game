@@ -540,7 +540,8 @@ public class MatchTests : IDisposable
     public async Task DisagreeingReports_AreDisputed_NoRatingChange()
     {
         var (host, guest, _, matchId) = await StartedMatch();
-        await host.Http.PostAsJsonAsync($"/api/matches/{matchId}/result", Report(host.Id, host, guest));
+        // V5 M8z (7 Oct, review): the first report is checked too, so a failure says which step went wrong
+        Assert.Equal("awaiting_opponent", (await (await host.Http.PostAsJsonAsync($"/api/matches/{matchId}/result", Report(host.Id, host, guest))).ReadJson()).GetProperty("status").GetString());
         var res = await (await guest.Http.PostAsJsonAsync($"/api/matches/{matchId}/result", Report(guest.Id, host, guest))).ReadJson();
         Assert.Equal("disputed", res.GetProperty("status").GetString());
         _api.Clock.Advance(TimeSpan.FromMinutes(5));
@@ -571,7 +572,7 @@ public class LobbyWebSocketTests : IDisposable
     /// <summary>The next lobby state ("t": "lobby"), skipping match messages such as "match_start".</summary>
     static async Task<JsonElement> Receive(WebSocket ws)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var cts = new CancellationTokenSource(Peer.Failsafe); // V5 M8z (7 Oct, review): a failsafe, not a pacing timeout
         var buffer = new byte[16 * 1024];
         while (true)
         {

@@ -182,7 +182,7 @@ namespace RoguePirates.V4.Enemies
     }
 
     /// <summary>
-    /// Explosive barrels (port of V3ExplosiveBarrelWorld's update; only placed by the v3-parity preset, the adopted
+    /// Explosive barrels (port of V3ExplosiveBarrelWorld's update; only placed when the stage config asks, as the retired v3-parity preset did; the adopted
     /// decision removed them): sailing within 2.5 m arms a barrel, its fuse burns, the blast hurts the ship and every
     /// enemy within the radius. The barrel markers stay V3's (made when V3 made them: they bob with Unity's global
     /// random state).

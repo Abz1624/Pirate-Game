@@ -70,6 +70,9 @@ namespace RoguePirates.V4.DevTools.Scenarios
             _sim = game.Shell != null && game.Shell.Enemies != null ? game.Shell.Enemies.Simulation : null;
             if (Ship == null) { Errors.Add("no player ship"); return; }
             Ship.Damage.SetPlaytestInvulnerable(scenario.invulnerable);
+            // V5 M8z (7 Oct, review): with the shipped switches the run records a session; a scenario is not a voyage, so its
+            // session is never written (plan/playtest/sessions holds the owner's voyages the simulator is fitted on).
+            if (game.Session != null) game.Session.Save = (fileName, json) => { };
 
             relay?.StartClock();
             ApplySwitches(scenario, game);

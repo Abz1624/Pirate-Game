@@ -15,7 +15,7 @@ MonoBehaviour:
   description: 'A scheduled Elite Hammerhead (a focus unit) 90 m to the right at 3:00, off screen: the HUD''s edge arrow should point at it.'
   seed: 1020
   captain: {fileID: 0}
-  playtest: 0
+  playtest: 1
   invulnerable: 1
   skipLevelUpCards: 1
   clockSeconds: 180

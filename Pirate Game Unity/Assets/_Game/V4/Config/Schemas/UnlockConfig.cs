@@ -58,7 +58,7 @@ namespace RoguePirates.V4.Config
         }
         [Tooltip("The weapon of a First Conquest run (no conquest recorded yet).")] public string firstConquestWeaponId;
         public StartingWeaponRule startingWeaponRule = StartingWeaponRule.CaptainWeapon;
-        [Tooltip("M14.13: the menu's Captain lock rule (the v3-parity preset sets V3Ownership).")] [AppliesFrom(14)]
+        [Tooltip("M14.13: the menu's Captain lock rule (V3Ownership is V3's).")] [AppliesFrom(14)]
         public CaptainLockRule captainLockRule = CaptainLockRule.CaptainConfig;
 
         public override void Validate(ConfigValidationReport report)

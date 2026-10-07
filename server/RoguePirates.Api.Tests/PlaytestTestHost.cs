@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using RoguePirates.Api.Playtest;
 
 namespace RoguePirates.Api.Tests;
@@ -41,6 +42,20 @@ public sealed class ApiHost : WebApplicationFactory<Program>
             foreach (var (k, v) in settings) _settings[k] = v;
     }
 
+    /// <summary>
+    /// V5 M8z (7 Oct, review): one host starts at a time. With a top-level Program, WebApplicationFactory finds the app's
+    /// host through a process-wide DiagnosticListener while Program runs; two factories starting at once on xUnit's
+    /// parallel test classes could each take the other's host, so a test drove a clock or settings its server never used
+    /// (flaky: RelayTests.Death_EndsMatch... waiting forever for match_end, MatchTests.DisagreeingReports..., a 429
+    /// instead of 401 from the rate-limit test's settings).
+    /// </summary>
+    static readonly object StartLock = new();
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        lock (StartLock) return base.CreateHost(builder);
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         foreach (var (k, v) in _settings) builder.UseSetting(k, v);
@@ -54,7 +69,11 @@ public sealed class ApiHost : WebApplicationFactory<Program>
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        SqliteConnection.ClearAllPools();
+        // V5 M8z (7 Oct, review): only this host's pool (the connection string Program.cs builds). ClearAllPools closed
+        // every host's pooled connections, so a test running in parallel failed with a 500 (ObjectDisposedException on
+        // SQLitePCL.sqlite3) on its next query.
+        using (var mine = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = _dbPath, Pooling = true }.ToString()))
+            SqliteConnection.ClearPool(mine);
         foreach (var f in new[] { _dbPath, _dbPath + "-wal", _dbPath + "-shm" })
             try { File.Delete(f); } catch { /* best effort */ }
     }
@@ -71,7 +90,9 @@ public sealed class ApiHost : WebApplicationFactory<Program>
     public async Task<TestPlayer> NewPlayerAsync(string name = "Blackbeard")
     {
         var res = await Anon().PostAsJsonAsync("/api/profiles", new { name });
-        res.EnsureSuccessStatusCode();
+        // V5 M8z (7 Oct, review): a failure names the server's answer (the Development host returns the exception)
+        if (!res.IsSuccessStatusCode)
+            throw new HttpRequestException($"POST /api/profiles: {(int)res.StatusCode} {res.StatusCode}: {await res.Content.ReadAsStringAsync()}");
         var body = await res.ReadJson();
         var token = body.GetProperty("token").GetString()!;
         return new TestPlayer(body.GetProperty("playerId").GetGuid(), token, As(token));

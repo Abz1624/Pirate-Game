@@ -142,7 +142,7 @@ namespace RoguePirates.V4.Editor
         /// <summary>
         /// V5 M2 G2.1: the retune the balance model and simulator asked for (plan/v5/phase-02-model/PLAN.md). Phases are
         /// found by their role (ambient bands by start time, the miniboss arena, the scheduled elite beats, the boss), not
-        /// by id. Every value changed here has its pre-M2 value in the v3-parity preset.
+        /// by id. Every value changed here had its pre-M2 value in the v3-parity preset (retired, D18; V5 M8z (7 Oct, review)).
         /// </summary>
         [MenuItem("RoguePirates/V5/Write M2 retune")]
         public static string ApplyRetune()

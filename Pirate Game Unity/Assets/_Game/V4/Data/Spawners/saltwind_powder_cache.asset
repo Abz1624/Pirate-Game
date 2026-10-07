@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemySpawnerConfig
   configId: spawner.saltwind_powder_cache
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   legacyProfileId: saltwind_powder_cache
   anchor: {fileID: 11400000, guid: 9e901432b24d00e48bb2aba86021ad42, type: 2}
   spawnMode: 3

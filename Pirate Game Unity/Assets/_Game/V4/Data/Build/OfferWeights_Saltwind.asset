@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.OfferWeightsConfig
   configId: offer_weights.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   rows:
   - maxWeapons: 2
     weaponUpgrade: 20

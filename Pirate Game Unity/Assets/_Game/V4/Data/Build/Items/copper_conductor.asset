@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
   configId: item.copper_conductor
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   itemId: copper_conductor
   displayName: Copper Conductor
   description: +10% projectile speed. Evolves Lightning Mast into Tempest Mast at

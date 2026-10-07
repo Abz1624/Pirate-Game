@@ -331,7 +331,7 @@ namespace RoguePirates.V4.Tests
             StringAssert.EndsWith("summoning...", rig.Interaction.Text, "no second 0-100% hold while the boss is summoned");
             rig.Config.promptReleasesUsedLandmark = false;
             rig.Interaction.Tick(0.1f);
-            StringAssert.Contains("hold", rig.Interaction.Text, "v3-parity: V3's second hold");
+            StringAssert.Contains("hold", rig.Interaction.Text, "V3's second hold");
         }
 
         Rig MakeChallenge()
@@ -385,7 +385,7 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(2, rig.Log.Count("trigger"), "one press springs the challenge");
             Assert.IsFalse(rig.Stage.SpringsOnPress(0) && rig.Stage.CanInteract(0), "not again while the elites fight");
 
-            var off = MakeChallenge(); // off: V4's hold (the v3-parity preset has no challenge at all)
+            var off = MakeChallenge(); // off: V4's hold (V3 had no challenge at all; V5 M8z (7 Oct, review))
             Assert.IsFalse(off.Stage.SpringsOnPress(0));
             Assert.AreEqual(off.Config.powderCacheHoldSeconds, off.Stage.RequiredHoldSeconds(0));
         }

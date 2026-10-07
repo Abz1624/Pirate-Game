@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.NarrativeConfig
   configId: narrative.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   barksEnabled: 1
   tutorialEnabled: 1
   globalCooldownSeconds: 10

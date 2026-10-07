@@ -15,7 +15,7 @@ MonoBehaviour:
   description: 'The Reef Crab miniboss at 10:00, 16 m to the right of a ship that holds still; nothing else spawns. It should settle at its fighting distance (hull 3 to 5.5 m off the ship) and lob cannonballs.'
   seed: 1010
   captain: {fileID: 0}
-  playtest: 0
+  playtest: 1
   invulnerable: 1
   skipLevelUpCards: 1
   clockSeconds: 600

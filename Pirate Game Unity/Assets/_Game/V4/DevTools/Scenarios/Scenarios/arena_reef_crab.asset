@@ -15,7 +15,7 @@ MonoBehaviour:
   description: '2:00 with the waves on; the Reef Crab''s focus phase is triggered: its arena pauses the waves until the crab sinks, then they come back.'
   seed: 1090
   captain: {fileID: 0}
-  playtest: 0
+  playtest: 1
   invulnerable: 1
   skipLevelUpCards: 1
   clockSeconds: 120

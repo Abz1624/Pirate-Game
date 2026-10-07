@@ -16,7 +16,7 @@ namespace RoguePirates.V4.Tests
     /// V5 M4 (plan review #10): each weapon and evolution is fired for 10 s (600 frames of 1/60 s) at a fixed ring of
     /// enemies, at levels 1 and 6, and every hit (enemy, amount, crit) and status is folded into a fingerprint. Until V5 M8z
     /// the fingerprints were compared with goldens recorded before M4 (commit d3184a3d, default data and the v3-parity
-    /// preset); see the test for what it checks now.
+    /// preset); since V5 M8z (7 Oct, review) with goldens recorded on today's data (plan/v5/goldens/weapon-goldens.txt).
     /// </summary>
     public sealed class V5WeaponGoldenTests
     {
@@ -214,13 +214,25 @@ namespace RoguePirates.V4.Tests
         }
 
         /// <summary>
-        /// V5 M8z (7 Oct, I8z.5): the goldens recorded before M4 (plan/v5/phase-04-weapons/weapon-goldens.txt) served M4;
-        /// the playtest retuned the weapons on purpose since, and the v3-parity preset is retired (D18). The rule kept:
-        /// every weapon and evolution the offers deal hits the ring (still or sailing through it) at levels 1 and 6, and
-        /// the same inputs give the same hits (no unseeded draw).
+        /// V5 M8z (7 Oct, review): today's goldens. Recorded on the playtest data (saltwind-playtest-r10, the default
+        /// config set) after the playtest retuned the weapons and the v3-parity preset was retired (D18); the goldens
+        /// recorded before M4 stay in plan/v5/phase-04-weapons/weapon-goldens.txt as M4's evidence.
+        /// <para>
+        /// To re-record after a deliberate change to a weapon's numbers or behaviour: delete the golden file, run this
+        /// test once (it writes the file and reports Inconclusive), check the diff of the file in git names only the
+        /// weapons you meant to change, then run it again (it passes).
+        /// </para>
+        /// </summary>
+        static string GoldenPath => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "plan", "v5", "goldens", "weapon-goldens.txt"));
+
+        /// <summary>
+        /// V5 M8z (7 Oct, review): every weapon and evolution in the offers, at levels 1 and 6, still and sailing through
+        /// the ring, fires exactly as recorded (hits, statuses, total damage and the hash of every hit in order). Any change
+        /// to a weapon's numbers or behaviour fails here until the goldens are re-recorded (see <see cref="GoldenPath"/>).
+        /// It also checks that every weapon hits something and that the same inputs give the same hits (no unseeded draw).
         /// </summary>
         [Test]
-        public void EveryWeaponAndEvolution_HitsTheRing_AndIsDeterministic()
+        public void TodaysWeaponsAndEvolutions_FireExactlyAsRecorded()
         {
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
             var lines = All(config);
@@ -229,6 +241,32 @@ namespace RoguePirates.V4.Tests
             var again = All(config);
             CollectionAssert.AreEqual(lines.Select(l => l.fingerprint), again.Select(l => l.fingerprint), "the same hits on a second run");
             Assert.GreaterOrEqual(lines.Count, 2 * 2 * 19, "every weapon, two levels, still and moving");
+
+            var today = lines.Select(l => l.fingerprint).ToList();
+            if (!File.Exists(GoldenPath))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(GoldenPath));
+                var header = new[]
+                {
+                    "# V5WeaponGoldenTests: each weapon and evolution fired for 10 s at a fixed ring of enemies (levels 1 and 6, still and moving).",
+                    "# Recorded " + System.DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " on " + SetPath + ". Re-record: delete this file, run the test once, review the diff.",
+                };
+                File.WriteAllLines(GoldenPath, header.Concat(today));
+                Assert.Inconclusive("goldens written to " + GoldenPath + ": review them, then run again");
+            }
+            var golden = File.ReadAllLines(GoldenPath).Where(l => l.Length > 0 && !l.StartsWith("#")).ToList();
+            string Key(string line) => line.Substring(0, line.IndexOf(':'));
+            var todayByKey = today.ToDictionary(Key);
+            var goldenKeys = new HashSet<string>(golden.Select(Key));
+            var problems = new List<string>();
+            foreach (var g in golden)
+            {
+                if (!todayByKey.TryGetValue(Key(g), out var now)) problems.Add("gone:    " + g);
+                else if (now != g) problems.Add("was " + g + "\n    now " + now);
+            }
+            problems.AddRange(today.Where(l => !goldenKeys.Contains(Key(l))).Select(l => "new:     " + l));
+            CollectionAssert.IsEmpty(problems, "a weapon fires differently from its golden (re-record only for a deliberate change: see GoldenPath)");
+            Assert.AreEqual(golden.Count, today.Count);
         }
     }
 }

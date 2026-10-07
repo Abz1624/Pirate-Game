@@ -12,7 +12,7 @@ namespace RoguePirates.V4.Editor
     /// <summary>
     /// V5 M3d (owner, 1 Oct 2026, notes e, h, k): writes <see cref="CountPressure"/> (fixed enemy stats, the peak-valley
     /// crowd, distinct looks, the tuned HP and late types, the per-minute targets) to the assets (V5 M8z: its simulator report
-    /// retired with the in-engine simulator; the balance model is plan/playtest/montecarlo). Every value keeps its value before M3d in CountPressure (and its V3 value in the v3-parity preset).
+    /// retired with the in-engine simulator; the balance model is plan/playtest/montecarlo). Every value keeps its value before M3d in CountPressure (its V3 value was in the v3-parity preset, retired with D18; V5 M8z (7 Oct, review)).
     /// </summary>
     public static class V5CountPressure
     {

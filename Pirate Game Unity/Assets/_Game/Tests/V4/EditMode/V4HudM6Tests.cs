@@ -85,26 +85,54 @@ namespace RoguePirates.V4.Tests
 
         // ---- Loadout HUD ------------------------------------------------------------------------------------------
 
-        [Test]
-        public void IconCatalog_HasAnIconOrAName_ForEveryWeaponAndChestItem()
+        /// <summary>V5 M8z (7 Oct, review): the content with the art team's icons (V4IconCatalog). Art for more content goes here.</summary>
+        static readonly string[] ArtWeapons =
         {
-            // V5 M8z (7 Oct, I8z.5): playtest round 7 removed the borrowed placeholder icons of the new content on purpose;
-            // their cards fall back to the name. So every weapon and chest item shows an icon or its name.
+            "broadside_battery", "deck_cannons", "flamethrower", "flying_cutlasses", "harpoon_gun", "lightning_mast", "long_nine",
+            "mortar", "powder_kegs", "swivel_guns",
+        };
+
+        static readonly string[] ArtItems =
+        {
+            "admirals_ledger", "black_powder_keg", "broadside_drum", "captains_bell", "copper_conductor", "cursed_compass",
+            "double_fuse_cord", "dragons_breath_nozzle", "ghost_lantern", "golden_figurehead", "grapeshot_pouch", "gunners_gloves",
+            "leviathan_tooth", "lucky_doubloon", "powder_fuse", "reinforced_keel", "sea_witchs_eye", "serrated_scabbard", "stormglass",
+        };
+
+        [Test]
+        public void IconCatalog_ArtContentHasItsIcon_EverythingElseFallsBackToItsName()
+        {
+            // V5 M8z (7 Oct, review): the 10 weapons and 19 items with art show their icon (R-90: V3 missed three apostrophe
+            // names); playtest round 7 removed the borrowed placeholder icons of the rest on purpose, so they have no icon
+            // and their slot and card show the name instead (it must not be empty).
             var catalog = IconCatalog.Load();
             Assert.IsNotNull(catalog, "Assets/_Game/V4/Resources/V4IconCatalog.asset");
-            foreach (var guid in AssetDatabase.FindAssets("t:WeaponConfig", new[] { "Assets/_Game/V4/Data/Weapons" }))
+            Assert.AreEqual(10, ArtWeapons.Length);
+            Assert.AreEqual(19, ArtItems.Length);
+            var weapons = AssetDatabase.FindAssets("t:WeaponConfig", new[] { "Assets/_Game/V4/Data/Weapons" })
+                .Select(g => AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(g))).ToList();
+            var items = AssetDatabase.FindAssets("t:ItemConfig", new[] { "Assets/_Game/V4/Data/Build/Items" })
+                .Select(g => AssetDatabase.LoadAssetAtPath<ItemConfig>(AssetDatabase.GUIDToAssetPath(g))).ToList();
+            CollectionAssert.IsSubsetOf(ArtWeapons, weapons.Select(w => w.weaponId).ToList());
+            CollectionAssert.IsSubsetOf(ArtItems, items.Select(i => i.itemId).ToList());
+            foreach (var w in weapons)
             {
-                var config = AssetDatabase.LoadAssetAtPath<WeaponConfig>(AssetDatabase.GUIDToAssetPath(guid));
-                Assert.IsTrue(catalog.Weapon(config.weaponId) != null || !string.IsNullOrWhiteSpace(config.displayName), $"{config.weaponId} has neither an icon nor a name");
+                if (ArtWeapons.Contains(w.weaponId)) Assert.IsNotNull(catalog.Weapon(w.weaponId), w.weaponId + " shows its art icon");
+                else
+                {
+                    Assert.IsNull(catalog.Weapon(w.weaponId), w.weaponId + ": no art (an icon here means new art: add it to ArtWeapons)");
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(w.displayName), w.weaponId + ": the name stands in for the icon");
+                }
             }
-            foreach (var guid in AssetDatabase.FindAssets("t:ItemConfig", new[] { "Assets/_Game/V4/Data/Build/Items" }))
+            foreach (var item in items.Where(i => i.inChestPool || ArtItems.Contains(i.itemId)))
             {
-                var item = AssetDatabase.LoadAssetAtPath<ItemConfig>(AssetDatabase.GUIDToAssetPath(guid));
-                if (item.inChestPool) Assert.IsTrue(catalog.Item(item.itemId) != null || !string.IsNullOrWhiteSpace(item.displayName), $"{item.itemId} has neither an icon nor a name (R-90: V3 missed three apostrophe names)");
+                if (ArtItems.Contains(item.itemId)) Assert.IsNotNull(catalog.Item(item.itemId), item.itemId + " shows its art icon");
+                else
+                {
+                    Assert.IsNull(catalog.Item(item.itemId), item.itemId + ": no art (an icon here means new art: add it to ArtItems)");
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(item.displayName), item.itemId + ": the name stands in for the icon");
+                }
             }
-            // R-90 stays: V3's chest items (apostrophe names included) keep their art icons.
-            foreach (var id in new[] { "captains_bell", "sea_witchs_eye", "admirals_ledger" })
-                Assert.IsNotNull(catalog.Item(id), id + " keeps its icon");
         }
 
         [TestCase("Deck Cannons", "Deck Canno…")]

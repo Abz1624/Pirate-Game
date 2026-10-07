@@ -46,7 +46,7 @@ namespace RoguePirates.V4.Spawning
     /// retries each spawn-retry interval until it has spawned its count, ignoring the ambient soft cap and allowed to
     /// fall back to spots near the ship; past the deadline (requiredEncounterTimeoutSeconds, V3 10 s) it fails. The
     /// queue is walked from the end, as V3 did. V3's queue stopped during miniboss arenas; V4's does not (an intended
-    /// difference since M3) unless <c>encountersWaitDuringArenas</c> is on (the v3-parity preset).
+    /// difference since M3) unless <c>encountersWaitDuringArenas</c> is on (V3's behaviour; V5 M8z (7 Oct, review)).
     /// </summary>
     internal sealed class EncounterExecutor : IEncounterExecutor
     {

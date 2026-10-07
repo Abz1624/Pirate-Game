@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemySpawnerConfig
   configId: spawner.saltwind_swarm_pulse
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   legacyProfileId: saltwind_swarm_pulse
   anchor: {fileID: 11400000, guid: 84261a6bf7abcd34099be5578fdfb084, type: 2}
   spawnMode: 2

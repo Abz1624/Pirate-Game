@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponRulesConfig
   configId: weapon_rules
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   fireAllOrbitVolleySeconds: 2
   itemAttackSpeedAppliedOnce: 1
   carryCooldownOvershoot: 1

@@ -5,7 +5,7 @@ namespace RoguePirates.V4.Config
     /// <summary>
     /// A Logbook (M9): each rank taken adds <c>perLevelAdditive × rarity power</c> to one stat (and multiplies it by
     /// <c>perLevelMultiplicative</c>). From V3's GameDatabase logbooks; the four Logbooks whose stats were wrong in V3
-    /// (register R-35 to R-38) point at their intended stats by default and the v3-parity preset restores V3's.
+    /// (register R-35 to R-38) point at their intended stats by default and a config edit restores V3's (the v3-parity preset that did is retired, D18; V5 M8z (7 Oct, review)).
     /// </summary>
     [CreateAssetMenu(menuName = "RoguePirates/V4/Logbook", fileName = "Logbook")]
     public sealed class LogbookConfig : V4ConfigAsset

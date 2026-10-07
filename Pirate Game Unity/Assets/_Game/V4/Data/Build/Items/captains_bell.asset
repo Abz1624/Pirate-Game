@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
   configId: item.captains_bell
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   itemId: captains_bell
   displayName: Captain's Bell
   description: +3% Luck. Every 12 kills, every weapon fires once for free.

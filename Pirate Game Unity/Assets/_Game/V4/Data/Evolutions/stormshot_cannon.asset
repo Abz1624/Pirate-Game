@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponEvolutionConfig
   configId: evolution.stormshot_cannon
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   evolutionId: stormshot_cannon
   displayName: Stormshot Cannon
   description: Forward arc pierce; first hit emits a bounded grapeshot burst.

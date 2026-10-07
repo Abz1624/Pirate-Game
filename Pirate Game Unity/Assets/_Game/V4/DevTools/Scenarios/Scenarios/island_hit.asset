@@ -15,7 +15,7 @@ MonoBehaviour:
   description: 'The ship driven into the nearest island shore at 12 m/s and held there (not invulnerable, nothing spawns): each hull cost is RunConfig''s islandImpactDamage (5), at most one per islandDamageCooldown (2 s).'
   seed: 1050
   captain: {fileID: 0}
-  playtest: 0
+  playtest: 1
   invulnerable: 0
   skipLevelUpCards: 1
   clockSeconds: 60

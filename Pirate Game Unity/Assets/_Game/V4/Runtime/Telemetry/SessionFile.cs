@@ -21,14 +21,39 @@ namespace RoguePirates.V4.Telemetry
         [DllImport("__Internal")] static extern void RPSession_Download(string fileName, string text);
 #endif
 
+        /// <summary>
+        /// V5 M8z (7 Oct, review): the largest session kept in PlayerPrefs (characters, about 256 KB of JSON). PlayerPrefs on
+        /// WebGL hold about 1 MB in all, shared with the saves and the profile: a larger session is not kept (it is still
+        /// downloaded or written to its file).
+        /// </summary>
+        public const int MaxKeptChars = 256 * 1024;
+
+        /// <summary>V5 M8z (7 Oct, review): whether a session this size is kept for "Download last voyage".</summary>
+        public static bool Keeps(string json) => !string.IsNullOrEmpty(json) && json.Length <= MaxKeptChars;
+
         public static void Save(string fileName, string json)
         {
             // V5 M8z (7 Oct, owner): the last voyage is kept on every platform, for the "Download last voyage" buttons.
-            if (json.Length < 900_000) // PlayerPrefs on WebGL hold about 1 MB in all
+            // V5 M8z (7 Oct, review): capped at MaxKeptChars, and a failed write (a full store) never stops the download below.
+            try
             {
-                PlayerPrefs.SetString(LastSessionKey, json);
-                PlayerPrefs.SetString(LastSessionNameKey, fileName);
+                if (Keeps(json))
+                {
+                    PlayerPrefs.SetString(LastSessionKey, json);
+                    PlayerPrefs.SetString(LastSessionNameKey, fileName);
+                }
+                else
+                {
+                    // Not kept: the previous voyage's copy goes too, so "Download last voyage" never hands out an older one.
+                    PlayerPrefs.DeleteKey(LastSessionKey);
+                    PlayerPrefs.DeleteKey(LastSessionNameKey);
+                    Debug.LogWarning($"Session {fileName} ({json?.Length ?? 0} characters) is over {MaxKeptChars} and is not kept for 'Download last voyage'.");
+                }
                 PlayerPrefs.Save();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Session {fileName}: could not keep it in PlayerPrefs ({e.Message}); it is still saved below.");
             }
 #if UNITY_WEBGL && !UNITY_EDITOR
             RPSession_Download(fileName, json);

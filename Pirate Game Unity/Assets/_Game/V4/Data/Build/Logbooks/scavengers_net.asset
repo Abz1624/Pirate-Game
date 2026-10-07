@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.LogbookConfig
   configId: logbook.scavengers_net
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   logbookId: scavengers_net
   displayName: Scavenger's Net
   stat: 14

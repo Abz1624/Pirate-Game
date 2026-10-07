@@ -32,7 +32,7 @@ namespace RoguePirates.V4.Rewards
     /// Captain locks for the menu (M14.13; the V4 menu enforces the adopted locks decided at the M9 gate). With
     /// <see cref="CaptainLockRule.CaptainConfig"/> (default): Rum Captains until bought (Hank 100, Sparky 140), Ember and
     /// Roxie until their weapon is owned, Richie until 5,000 gold has been earned across voyages. With
-    /// <see cref="CaptainLockRule.V3Ownership"/> (the v3-parity preset): V3CaptainCatalog.IsLocked — Hank until the save
+    /// <see cref="CaptainLockRule.V3Ownership"/> (V3's rule, by config; V5 M8z (7 Oct, review)): V3CaptainCatalog.IsLocked — Hank until the save
     /// owns "brine", Sparky until it owns "flint" or the First Conquest is done, the rest open. V3's playtest bypass opens
     /// every Captain under both rules.
     /// </summary>

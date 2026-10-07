@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.PoolCatalogConfig
   configId: pools.saltwind
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   entries:
   - key: lab/stress_recycle
     prefab: {fileID: 3681178431521355356, guid: 877afd22d1b823c4c98710fca3640ded, type: 3}

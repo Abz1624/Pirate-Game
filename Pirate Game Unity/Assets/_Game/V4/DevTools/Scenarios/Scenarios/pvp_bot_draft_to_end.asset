@@ -15,7 +15,7 @@ MonoBehaviour:
   description: 'A 1v1 against the practice bot over the in-process relay (no server): a three-weapon, two-Logbook draft, a 1 s countdown and a 6 s fight that the relay ends on time.'
   seed: 1070
   captain: {fileID: 0}
-  playtest: 0
+  playtest: 1
   invulnerable: 1
   skipLevelUpCards: 1
   clockSeconds: 0

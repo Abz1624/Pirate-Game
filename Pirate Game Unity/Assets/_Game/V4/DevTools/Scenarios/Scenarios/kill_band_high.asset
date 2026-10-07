@@ -15,7 +15,7 @@ MonoBehaviour:
   description: '5:00 with the waves on and every arriving enemy sunk at once (a player who kills everything): the kill band (shortened to 3 s bands, elite chance 1) judges the band high and the next waves bring kill-band elites.'
   seed: 1060
   captain: {fileID: 0}
-  playtest: 0
+  playtest: 1
   invulnerable: 1
   skipLevelUpCards: 1
   clockSeconds: 300

@@ -8,7 +8,7 @@ namespace RoguePirates.V4.Presentation.Hud
     /// <summary>
     /// The Captain's active on the HUD (M9 playtest): a small bar beside the boost meter with the active's name, a fill
     /// that refills over the cooldown, and its key when ready (SPACE, or the gamepad button; else the seconds left). Hidden when actives are off
-    /// (the v3-parity preset) or the Captain has none. Reads only the Captain view.
+    /// (ExperimentConfig.captainActivesEnabled; V5 M8z (7 Oct, review)) or the Captain has none. Reads only the Captain view.
     /// </summary>
     public sealed class CaptainActivePresenter : MonoBehaviour
     {

@@ -67,6 +67,9 @@ namespace RoguePirates.V4.Tests
             // V5 M8z (7 Oct, I8z.5): no weapons, so the cap stays full (the playtest's starter weapons one-shot the first
             // band's dinghies and emptied the cap before it could block, so the lever never applied).
             game.Build.Progression.DevSetWeapons(System.Array.Empty<string>());
+            // V5 M8z (7 Oct, review): level-ups from the kills below apply without a card (a card left the run in
+            // LevelUpPaused, where nothing spawns: flaky, about 1 run in 3).
+            game.Build.Progression.AutoLevelUp = () => { };
             Assert.IsTrue(game.Context.TryGet<IPressureView>(out var view));
             Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "eliteLever", "false", 1f, out var error), error);
             Assert.IsTrue(game.Config.TryApplyEdit("director.saltwind", "toughnessLever", "false", 1f, out error), error); // cap HP alone

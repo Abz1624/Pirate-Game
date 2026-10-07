@@ -113,7 +113,7 @@ namespace RoguePirates.V4.Composition
             Module.Initialize(layout, enabled: true, placeholderVisuals: _usePlaceholderVisuals);
             if (layout == null) return;
             // V3 always added the barrel world; V4 places none by default (adopted decision), so it only adds it when
-            // the config asks for barrels (the v3-parity preset does).
+            // the config asks for barrels (none does by default; the retired v3-parity preset did, V5 M8z (7 Oct, review)).
             var c = _config();
             if (c == null || c.explosiveBarrelCount > 0)
             {

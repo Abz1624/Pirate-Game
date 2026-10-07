@@ -15,7 +15,7 @@ MonoBehaviour:
   description: 'Six weapons (level 4 each), player level 12, no Logbooks yet, at 6:00: level-up cards should still offer new Logbooks.'
   seed: 1040
   captain: {fileID: 0}
-  playtest: 0
+  playtest: 1
   invulnerable: 1
   skipLevelUpCards: 1
   clockSeconds: 360

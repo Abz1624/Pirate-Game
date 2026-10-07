@@ -19,20 +19,32 @@ public sealed class Peer : IDisposable
 
     public Peer(WebSocket ws) => Ws = ws;
 
+    /// <summary>
+    /// V5 M8z (7 Oct, review): the longest a test waits for a message that must come. Not a pacing timeout: every wait in
+    /// these tests is for a message the server sends once the test's own (awaited) actions are processed, so this only
+    /// turns a hang into a readable failure (it was a bare 10 s cancellation, OperationCanceledException in Receive).
+    /// </summary>
+    public static readonly TimeSpan Failsafe = TimeSpan.FromSeconds(60);
+
     public Task Send(object message) => SendRaw(JsonSerializer.Serialize(message));
 
-    public Task SendRaw(string text) =>
-        Ws.SendAsync(Encoding.UTF8.GetBytes(text), WebSocketMessageType.Text, true, CancellationToken.None);
+    /// <summary>V5 M8z (7 Oct, review): the send completes before the next one starts (one send at a time per socket).</summary>
+    public async Task SendRaw(string text) =>
+        await Ws.SendAsync(Encoding.UTF8.GetBytes(text), WebSocketMessageType.Text, true, CancellationToken.None);
 
-    public async Task<JsonElement> Receive()
+    public async Task<JsonElement> Receive(string? waitingFor = null)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var cts = new CancellationTokenSource(Failsafe);
         var buffer = new byte[16 * 1024];
         using var ms = new MemoryStream();
         WebSocketReceiveResult r;
         do
         {
-            r = await Ws.ReceiveAsync(buffer, cts.Token);
+            try { r = await Ws.ReceiveAsync(buffer, cts.Token); }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"no message in {Failsafe.TotalSeconds:0} s while waiting for \"{waitingFor ?? "any"}\" (last received: {LastRaw})");
+            }
             if (r.MessageType == WebSocketMessageType.Close) throw new InvalidOperationException("socket closed");
             ms.Write(buffer, 0, r.Count);
         } while (!r.EndOfMessage);
@@ -46,7 +58,7 @@ public sealed class Peer : IDisposable
         var before = new List<JsonElement>();
         while (true)
         {
-            var msg = await Receive();
+            var msg = await Receive(t);
             if (msg.GetProperty("t").GetString() == t && (where == null || where(msg))) return (msg, before);
             before.Add(msg);
         }
@@ -63,11 +75,13 @@ public sealed class Peer : IDisposable
 
     public async Task ExpectClosed()
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var cts = new CancellationTokenSource(Failsafe);
         var buffer = new byte[16 * 1024];
         while (true)
         {
-            var r = await Ws.ReceiveAsync(buffer, cts.Token);
+            WebSocketReceiveResult r;
+            try { r = await Ws.ReceiveAsync(buffer, cts.Token); }
+            catch (OperationCanceledException) { throw new TimeoutException($"the socket did not close in {Failsafe.TotalSeconds:0} s"); }
             if (r.MessageType == WebSocketMessageType.Close) return;
         }
     }
@@ -219,7 +233,12 @@ public class RelayTests : IDisposable
     {
         var ws = await _api.Server.CreateWebSocketClient()
             .ConnectAsync(new Uri($"ws://localhost/ws/lobbies/{lobbyId}?token={Uri.EscapeDataString(p.Token)}"), CancellationToken.None);
-        return new Peer(ws);
+        var peer = new Peer(ws);
+        // V5 M8z (7 Oct, review): the handshake returns before the server registers the socket (LobbyService.AttachAsync
+        // runs after AcceptWebSocketAsync); a push in between (match_start on ready) missed it. The attach sends the lobby
+        // state first: once it is here, the socket receives every later push.
+        await peer.Next("lobby");
+        return peer;
     }
 
     async Task<Duel> StartDuel()

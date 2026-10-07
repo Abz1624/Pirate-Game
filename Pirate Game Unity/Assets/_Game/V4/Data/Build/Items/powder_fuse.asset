@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
   configId: item.powder_fuse
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   itemId: powder_fuse
   displayName: Powder Fuse
   description: +3% Luck. Sail 18 m without being hit to charge your next Powder Kegs

@@ -35,7 +35,7 @@ namespace RoguePirates.V4.Spawning
     /// <item>Release windows: after an arena ends, after the boss is sunk and a while after each horde, the rate and the
     /// floor back off; during the boss fight the floor is lowered.</item>
     /// </list>
-    /// Off (the whole class does nothing) unless <see cref="FlowSettings.enabled"/>; the v3-parity preset turns it off.
+    /// Off (the whole class does nothing) unless <see cref="FlowSettings.enabled"/> (off: V4's bands only; V5 M8z (7 Oct, review)).
     /// </summary>
     internal sealed class FlowDirector : IFlowStatus
     {

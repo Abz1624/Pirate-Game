@@ -82,7 +82,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Powder Rush: the bonus for seconds.")] public float powderRushBonus = 0.3f;
         public float powderRushSeconds = 8f;
         [Tooltip("V3 (register R-43): Powder Rush gives damage × (1 + bonus) in Battle Signal's slot despite its attack-speed name. Off: attack speed × (1 + bonus) in its own slot.")]
-        public bool powderRushIsDamageInBattleSignalSlot = true; // R-43 fix: false (attack speed, own slot); the v3-parity preset sets true
+        public bool powderRushIsDamageInBattleSignalSlot = true; // R-43 fix: false (attack speed, own slot); true is V3's (V5 M8z (7 Oct, review))
         [Tooltip("Dead Calm: enemy spawn rate × (1 − slow) for seconds (not during the boss fight).")] public float deadCalmSlowFraction = 0.3f;
         public float deadCalmSeconds = 5f;
 

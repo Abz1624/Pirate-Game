@@ -74,7 +74,7 @@ namespace RoguePirates.V4.Composition
                 new RunStreams(), new OfferContext(this), Stats, Stats, run, world)
             {
                 Presenter = new OfferPresenterForwarder(() => OfferPresenterTarget?.Invoke()), // M14.11 (was LegacyLevelUpPresenter)
-                // R-84/R-102: the stage switch decides (the v3-parity preset turns it off).
+                // R-84/R-102: the stage switch decides (off: V3's behaviour; V5 M8z (7 Oct, review)).
                 ResumeToBossFight = () => config.Single<StageContentConfig>()?.bossFightSurvivesLevelUp ?? false,
             };
             Items = new ItemModule(ItemConfig, Stats, world);
@@ -119,7 +119,7 @@ namespace RoguePirates.V4.Composition
         /// <summary>The active's key for the HUD: the gamepad button while a gamepad is connected (R-49: RB, V3: A), else SPACE.</summary>
         public string ActiveKeyHint() => Gamepad.current == null ? "SPACE" : Experiment != null && !Experiment.captainActiveOnGamepadSouth ? "RB" : "A";
 
-        /// <summary>Captain actives switched on (ExperimentConfig; off under the v3-parity preset).</summary>
+        /// <summary>Captain actives switched on (ExperimentConfig.captainActivesEnabled; V5 M8z (7 Oct, review)).</summary>
         public bool ActivesEnabled() => Experiment?.captainActivesEnabled ?? false;
 
         // Items are looked up on every damage roll and hit (ItemModule.Effect): a dictionary, rebuilt when configs change.

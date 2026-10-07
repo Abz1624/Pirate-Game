@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponEvolutionConfig
   configId: evolution.kings_broadside
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   evolutionId: kings_broadside
   displayName: King's Broadside
   description: Volley fires a delayed opposite-side follow-up.

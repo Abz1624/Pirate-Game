@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
   configId: item.admirals_ledger
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   itemId: admirals_ledger
   displayName: Admiral's Ledger
   description: +4% damage. Another +3% damage for each different weapon family you

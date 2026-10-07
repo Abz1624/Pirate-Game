@@ -15,7 +15,7 @@ MonoBehaviour:
   description: 'The Treasury Beacon 10 m ahead at 3:00; the ship uses it and the boss rises early. The boss keeps the hull it would have at 14:00 (director bossHpAsIfAtSeconds); the boss''s one-shot floor is off so only the time scaling shows.'
   seed: 1030
   captain: {fileID: 0}
-  playtest: 0
+  playtest: 1
   invulnerable: 1
   skipLevelUpCards: 1
   clockSeconds: 180

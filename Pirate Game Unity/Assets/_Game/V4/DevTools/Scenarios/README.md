@@ -63,8 +63,10 @@ file is the scenario's name. Fields:
   for example `director.saltwind` / `killBandSeconds` / `3`.
 - **1v1:** `pvp.enabled` with the player's draft (`weapons` and `logbooks` in priority order), `countdownSeconds`,
   `matchSeconds` and `stormStartSeconds`. The match runs against the practice bot (simulated on this client) over
-  `FakePvpRelay`. The relay answers as the server's relay does: it relays hits, ends the match on time or on a sinking,
-  and answers pings. It drops no barrels and checks no rules.
+  `FakePvpRelay`. The relay answers as the server's relay does: it relays hits, ends the match on time (a draw
+  when both hulls are even) or on a sinking, and answers pings. It drops no barrels and checks no rules. `Drop()` and
+  `Reconnect()` play a lost connection and the server's answer to the reconnect: the match start again (ended, when it
+  ended meanwhile), then the stored result (V5 M8z, 7 Oct, review).
 
 Ids are the configs' own ids. An unknown id is reported in `ScenarioRunner.Errors` (and in the console). It is never
 guessed.

@@ -15,7 +15,7 @@ MonoBehaviour:
   description: 'Around the ship at 4:00: an ordinary shark, a shark with the Rich elite affix, an Elite Hammerhead, the Reef Crab miniboss and the boss: health bars on all but the ordinary shark.'
   seed: 1080
   captain: {fileID: 0}
-  playtest: 0
+  playtest: 1
   invulnerable: 1
   skipLevelUpCards: 1
   clockSeconds: 240

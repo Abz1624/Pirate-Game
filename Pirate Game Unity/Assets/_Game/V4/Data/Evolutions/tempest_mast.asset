@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponEvolutionConfig
   configId: evolution.tempest_mast
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   evolutionId: tempest_mast
   displayName: Tempest Mast
   description: Extra chain jump and delayed cluster marker.

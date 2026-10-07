@@ -218,7 +218,7 @@ namespace RoguePirates.V4.Config
     [Serializable]
     public sealed class FlowSettings
     {
-        [Tooltip("V5 M1 enemy flow (minute waves, floor, hordes, release). Off = V4 bands only (the v3-parity preset turns it off).")]
+        [Tooltip("V5 M1 enemy flow (minute waves, floor, hordes, release). Off = V4 bands only.")]
         public bool enabled;
         [Tooltip("V5 M3d (owner's sketch, 1 Oct 2026): the floor and the rate multiplier follow a straight line from each wave to the next, so the waves are keyframes of a peak-and-valley curve. Off = each wave holds until the next (M1).")]
         public bool smoothWaves;
@@ -285,7 +285,7 @@ namespace RoguePirates.V4.Config
         public float globalMinSpawnGapSeconds = 0.35f;
         public float spawnRetryIntervalSeconds = 0.35f;
         [Tooltip("A queued encounter (Beacon boss, Powder Cache) fails if it can't spawn within this many seconds.")] public float requiredEncounterTimeoutSeconds = 10f;
-        [Tooltip("V3: the encounter queue waited during miniboss arenas (and could time out). V4 default off (an intended difference since M3); the v3-parity preset turns it on.")]
+        [Tooltip("V3: the encounter queue waited during miniboss arenas (and could time out). V4 default off (an intended difference since M3); on is V3's.")]
         public bool encountersWaitDuringArenas;
         public float bossAmbientRateMultiplier = 0.5f;
         public float eventWarningSeconds = 5f;

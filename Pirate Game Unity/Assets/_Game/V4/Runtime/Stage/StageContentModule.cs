@@ -786,7 +786,10 @@ namespace RoguePirates.V4.Stage
             SpawnPointOverride.Set(_bossArrivalPoint);
             SummonBoss();
             SpawnPointOverride.Clear();
-            if (!_bossSummoned) _bossArrivalTimer = 0.5f; // a failed spawn tries again shortly, at the same spot
+            // V5 M8z (7 Oct, review): the arrival is over once the boss is up (it stayed "arriving", so after the console's
+            // despawn and ForgetDespawnedBoss a second summon was refused as "already summoned").
+            if (_bossSummoned) _bossArriving = false;
+            else _bossArrivalTimer = 0.5f; // a failed spawn tries again shortly, at the same spot
         }
 
         /// <summary>On screen near the ship (ahead of it on the screen first), on open water inside the play area.</summary>

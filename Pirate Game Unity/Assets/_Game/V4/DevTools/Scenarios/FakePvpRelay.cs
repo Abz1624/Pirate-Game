@@ -11,7 +11,8 @@ namespace RoguePirates.V4.DevTools.Scenarios
     /// answers as server/README.md's match protocol does for a bot match: the bot is simulated by this client (asBot), a
     /// "hit" is relayed to the other player, "dead" ends the match (sunk), the clock ends it at endsAt (time), "leave"
     /// forfeits, pings are answered on this machine's clock. No barrels are dropped and nothing is checked (the server's
-    /// range and damage rules have their own tests).
+    /// range and damage rules have their own tests). V5 M8z (7 Oct, review): <see cref="Drop"/> and <see cref="Reconnect"/>
+    /// play a lost connection and the server's answer to the reconnect (the match start again, then the stored result).
     /// </summary>
     public sealed class FakePvpRelay : ILobbySocket
     {
@@ -96,9 +97,48 @@ namespace RoguePirates.V4.DevTools.Scenarios
         public void Close() => IsOpen = false;
         public void Dispose() => IsOpen = false;
 
+        // V5 M8z (7 Oct, review): a dropped socket and the reconnect, as the server's relay answers it.
+        bool _dropped;
+        string _endJson;
+
+        /// <summary>The connection drops (the client sees the socket close): the match goes on without this client, and
+        /// what the relay sends meanwhile (the end on time) never arrives.</summary>
+        public void Drop()
+        {
+            if (_dropped) return;
+            _dropped = true;
+            IsOpen = false;
+            _events.Enqueue(new SocketEvent { Kind = SocketEventKind.Closed });
+        }
+
+        /// <summary>
+        /// The client is back: as LobbyService.AttachAsync does, the socket opens, the match's "match_start" comes again
+        /// (live.ended when it ended meanwhile), then the stored "match_end" when there is one.
+        /// </summary>
+        public void Reconnect()
+        {
+            if (!_dropped) return;
+            _dropped = false;
+            IsOpen = true;
+            _events.Clear(); // what was sent while the socket was down is lost
+            _events.Enqueue(new SocketEvent { Kind = SocketEventKind.Opened });
+            Match.live = new LiveInfo { ended = Ended, barrels = new BarrelMsg[0] };
+            Push(JsonUtility.ToJson(Match));
+            if (_endJson != null) Push(_endJson);
+        }
+
         public bool Poll(out SocketEvent e)
         {
-            if (_clockStarted && !Ended && PvpSession.UtcNowMs >= Match.endsAt) EndMatch(TimeWinner(), "time");
+            if (_clockStarted && !Ended && PvpSession.UtcNowMs >= Match.endsAt)
+            {
+                var winner = TimeWinner();
+                EndMatch(winner, winner == null ? "draw" : "time"); // V5 M8z (7 Oct, review): as the server (MatchRelay.EndOnTime)
+            }
+            if (_dropped)
+            {
+                // Only the close reaches the client while the socket is down.
+                while (_events.Count > 0 && _events.Peek().Kind != SocketEventKind.Closed) _events.Dequeue();
+            }
             if (_events.Count > 0) { e = _events.Dequeue(); return true; }
             e = default;
             return false;
@@ -166,11 +206,12 @@ namespace RoguePirates.V4.DevTools.Scenarios
                 "{\"damageDealt\":" + dealt.ToString("0.##", inv) + ",\"damageTaken\":" + taken.ToString("0.##", inv) + ",\"level\":" + level.ToString(inv) +
                 ",\"barrelsTaken\":0,\"finalHp\":" + hp.ToString("0.##", inv) + ",\"maxHp\":" + max.ToString("0.##", inv) + ",\"bot\":" + (bot ? "true" : "false") + "}";
             var duration = (int)Mathf.Max(0f, (PvpSession.UtcNowMs - Match.startsAt) / 1000f);
-            Push("{\"t\":\"match_end\",\"matchId\":\"" + Match.matchId + "\",\"winnerPlayerId\":" + (winner == null ? "null" : "\"" + winner + "\"") +
-                 ",\"reason\":\"" + reason + "\",\"rated\":false,\"durationSeconds\":" + duration.ToString(inv) +
-                 ",\"stats\":{\"" + PlayerId + "\":" + Stats(PlayerDealt, BotDealt, _myLevel, _myHp, _myMaxHp, false) +
-                 ",\"" + BotId + "\":" + Stats(BotDealt, PlayerDealt, _botLevel, _botHp, _botMaxHp, true) + "}" +
-                 ",\"rematchUntil\":" + (PvpSession.UtcNowMs + 60000).ToString(inv) + "}");
+            _endJson = "{\"t\":\"match_end\",\"matchId\":\"" + Match.matchId + "\",\"winnerPlayerId\":" + (winner == null ? "null" : "\"" + winner + "\"") +
+                       ",\"reason\":\"" + reason + "\",\"rated\":false,\"durationSeconds\":" + duration.ToString(inv) +
+                       ",\"stats\":{\"" + PlayerId + "\":" + Stats(PlayerDealt, BotDealt, _myLevel, _myHp, _myMaxHp, false) +
+                       ",\"" + BotId + "\":" + Stats(BotDealt, PlayerDealt, _botLevel, _botHp, _botMaxHp, true) + "}" +
+                       ",\"rematchUntil\":" + (PvpSession.UtcNowMs + 60000).ToString(inv) + "}";
+            Push(_endJson);
         }
 
         void Push(string json) => _events.Enqueue(new SocketEvent { Kind = SocketEventKind.Message, Text = json });

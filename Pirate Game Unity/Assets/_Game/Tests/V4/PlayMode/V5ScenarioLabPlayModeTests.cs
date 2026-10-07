@@ -58,6 +58,15 @@ namespace RoguePirates.V4.Tests
             yield return Scenario.Load(name);
             Assert.IsNotNull(Runner, name + " is loaded");
             CollectionAssert.IsEmpty(Runner.Errors, name + " set up without problems");
+            // V5 M8z (7 Oct, review): the scenarios run with the playtest switches the owner plays (Resources/DemoJuiceSettings).
+            Assert.AreEqual(Runner.Config.playtest == ScenarioConfig.PlaytestSwitches.Off, DemoMode.Off, name + ": the scenario's playtest switches");
+        }
+
+        /// <summary>V5 M8z (7 Oct, review): with the shipped switches the boss rises from its whirlpool a moment after the summon.</summary>
+        static IEnumerator WaitForBoss(float seconds = 8f)
+        {
+            var deadline = Time.time + seconds;
+            while (!World.TryFindActiveBoss(out _, out _) && Time.time < deadline) yield return null;
         }
 
         static float Flat(Vector3 v) => new Vector2(v.x, v.z).magnitude;
@@ -115,6 +124,7 @@ namespace RoguePirates.V4.Tests
             var summonedAt = RunManager.Instance.ElapsedSeconds;
             var asIf = Game.Config.Single<DirectorConfig>().bossHpAsIfAtSeconds;
             Assert.Greater(asIf, summonedAt + 60f, "summoned well before its usual time");
+            yield return WaitForBoss();
             Assert.IsTrue(World.TryFindActiveBoss(out _, out var early));
 
             // The same boss summoned at its usual time, for comparison.
@@ -126,6 +136,7 @@ namespace RoguePirates.V4.Tests
             yield return null;
             Assert.IsTrue(stage.TrySummonBoss(), "summoned again at " + asIf);
             yield return null;
+            yield return WaitForBoss();
             Assert.IsTrue(World.TryFindActiveBoss(out _, out var onTime));
             var curve = Game.Config.Single<DifficultyCurveConfig>();
             var without = onTime.maxHp * Difficulty.CurveEvaluator.ExpectedHpScale(curve, summonedAt) / Difficulty.CurveEvaluator.ExpectedHpScale(curve, asIf);
@@ -179,6 +190,8 @@ namespace RoguePirates.V4.Tests
         {
             yield return Load("mixed_health_bars");
             yield return null;
+            yield return WaitForBoss();
+            yield return null; // its health bar binds the frame after it rises
             var world = World;
             foreach (var (enemyId, unit) in Runner.Spawned)
             {
@@ -308,10 +321,153 @@ namespace RoguePirates.V4.Tests
             Debug.Log($"[V5 Scenario pvp] ended: {relay.EndReason}, winner {relay.Winner ?? "none"}; relay got " +
                       string.Join(", ", relay.Received.Select(kv => kv.Key + " " + kv.Value)) + $"; dealt {relay.PlayerDealt:0}, taken {relay.BotDealt:0}");
             Assert.IsTrue(match.Ended, "the match ended");
-            Assert.IsTrue(relay.EndReason == "time" || relay.EndReason == "sunk", "ended on time or by a sinking: " + relay.EndReason);
+            Assert.IsTrue(relay.EndReason == "time" || relay.EndReason == "draw" || relay.EndReason == "sunk", "ended on time (or a draw) or by a sinking: " + relay.EndReason);
             Assert.IsNotNull(PvpSession.Instance.LastMatchEnd, "the session has the result");
             Assert.AreEqual(relay.Match.matchId, PvpSession.Instance.LastMatchEnd.matchId);
             Assert.Greater(relay.Received.TryGetValue("state", out var states) ? states : 0, 0, "the ship's state went through the relay");
+        }
+
+        // ---- V5 M8z (7 Oct, review): the planned T8z.x tests still missing --------------------------------------------
+
+        /// <summary>T8z.x combat (owner, round 3: "the starting weapon should kill the starting enemies in 1 hit").</summary>
+        [UnityTest]
+        public IEnumerator StartingWeapon_OneShotsADeckhandDinghy_At0()
+        {
+            var hits = new List<(float damage, string weapon)>();
+            var hitsBeforeKill = -1;
+            var unit = -1;
+            System.Action<IReadOnlyList<CombatEvent>> onTick = batch =>
+            {
+                for (var i = 0; i < batch.Count; i++)
+                {
+                    var e = batch[i];
+                    if (hitsBeforeKill >= 0) return;
+                    if (e.Kind == CombatEventKind.Hit) hits.Add((e.Z, e.Tag)); // the only enemy on the sea: every hit is on it
+                    else if (e.Kind == CombatEventKind.Killed && e.A == unit) hitsBeforeKill = hits.Count;
+                }
+            };
+            yield return Load("starter_vs_dinghy");
+            // The weapon the run started with (a new save: the First Conquest weapon; a conquered one: the Captain's).
+            Assert.AreEqual(1, Game.Build.Progression.OwnedWeapons.Count, "only the starting weapon");
+            var starter = Game.Build.Progression.OwnedWeapons[0];
+            var starting = new HashSet<string>(Game.Config.All<CaptainConfig>().Select(c => c.startingWeaponId)) { Game.Config.Single<UnlockConfig>().firstConquestWeaponId };
+            Assert.IsTrue(starting.Contains(starter), starter + " is a starting weapon");
+            Assert.AreEqual(1, Game.Build.Progression.WeaponLevel(starter), "at level 1");
+            Assert.Less(RunManager.Instance.ElapsedSeconds, 1f, "at 0:00");
+            unit = Runner.Spawned.Single().unitId;
+            Assert.IsTrue(World.TryGetAgentByUnitId(unit, out var index), "the dinghy is up");
+            var maxHp = World.Agents[index].maxHp;
+            Assert.AreEqual(maxHp, World.Agents[index].hp, 1e-4f, "untouched so far");
+            var events = Game.Events;
+            events.TickPublished += onTick;
+            try
+            {
+                var deadline = Time.time + 8f;
+                while (hitsBeforeKill < 0 && Time.time < deadline) yield return null;
+            }
+            finally { events.TickPublished -= onTick; }
+            Debug.Log($"[V5 Scenario starter] {starter} vs a {maxHp:0.##}-hull dinghy: " + string.Join(", ", hits.Select(h => $"{h.weapon} {h.damage:0.##}")));
+            Assert.GreaterOrEqual(hitsBeforeKill, 1, "the dinghy sank to the starting weapon");
+            Assert.AreEqual(starter, hits[0].weapon);
+            Assert.GreaterOrEqual(hits[0].damage, maxHp, "one hit is at least its whole hull");
+            Assert.AreEqual(1, hitsBeforeKill, "the first hit sank it");
+        }
+
+        /// <summary>
+        /// T8z.x director: two of the timeline's timed beats (a pulse or a focus phase, times read from the timeline) fire
+        /// at their configured time. The clock jumps to 2 s before each; the beats in between are skipped first (as the
+        /// console's Skip), else the jump fires them all at once.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator DirectorBeats_FireAtTheirConfiguredTimes()
+        {
+            var fired = new List<(string id, float at)>();
+            System.Action<IReadOnlyList<CombatEvent>> onTick = batch =>
+            {
+                for (var i = 0; i < batch.Count; i++)
+                    if (batch[i].Kind == CombatEventKind.PhaseChanged && batch[i].B == 1) fired.Add((batch[i].Tag, batch[i].SimTime));
+            };
+            yield return Load("director_beats");
+            var timeline = Game.Config.Single<WaveTimelineConfig>();
+            Assert.IsNotNull(timeline);
+            bool Timed(TimelinePhase p) => p != null && (PhaseKinds.IsFocus(p) || PhaseKinds.IsPulse(p)) && p.trigger != null && p.trigger.kind == PhaseTriggerKind.Time;
+            var beats = timeline.phases.Where(p => Timed(p) && p.trigger.timeSeconds >= 30f && p.trigger.timeSeconds < timeline.stageDeadlineSeconds)
+                .OrderBy(p => p.trigger.timeSeconds).ToList();
+            Assert.GreaterOrEqual(beats.Count, 2, "the timeline has timed beats");
+            // The first beat and one well into the run (a different kind when there is one).
+            var first = beats[0];
+            var second = beats.Skip(1).Where(p => p.trigger.timeSeconds > first.trigger.timeSeconds + 30f)
+                             .OrderBy(p => PhaseKinds.IsFocus(p) == PhaseKinds.IsFocus(first) ? 1 : 0).ThenBy(p => p.trigger.timeSeconds).FirstOrDefault() ?? beats[1];
+            Assert.IsTrue(Game.Context.TryGet<ISpawnController>(out var spawn));
+            Assert.IsTrue(Game.Context.TryGet<IEnemyDevControl>(out var dev));
+            var events = Game.Events;
+            events.TickPublished += onTick;
+            try
+            {
+                foreach (var beat in new[] { first, second })
+                {
+                    var at = beat.trigger.timeSeconds;
+                    foreach (var p in timeline.phases)
+                        if (Timed(p) && p != beat && p.trigger.timeSeconds < at + 3f && !fired.Any(f => f.id == p.phaseId)) spawn.Skip(p.phaseId);
+                    RunManager.Instance.JumpClock(at - 2f);
+                    yield return null;
+                    Assert.IsFalse(fired.Any(f => f.id == beat.phaseId), $"{beat.phaseId} not before its time ({at:0} s)");
+                    var deadline = Time.time + 6f;
+                    while (!fired.Any(f => f.id == beat.phaseId) && Time.time < deadline) yield return null;
+                    var hit = fired.FirstOrDefault(f => f.id == beat.phaseId);
+                    Debug.Log($"[V5 Scenario director] {beat.phaseId} ({(PhaseKinds.IsFocus(beat) ? "focus" : "pulse")}) configured at {at:0.0} s, fired at {(hit.id != null ? hit.at.ToString("0.00") : "never")}");
+                    Assert.IsNotNull(hit.id, $"{beat.phaseId} fired");
+                    Assert.GreaterOrEqual(hit.at, at - 0.01f, $"{beat.phaseId} not early");
+                    Assert.LessOrEqual(hit.at, at + 0.5f, $"{beat.phaseId} on time");
+                    dev.DespawnAll(); // a focus beat's arena would hold the next one
+                    yield return null;
+                }
+            }
+            finally { events.TickPublished -= onTick; }
+        }
+
+        /// <summary>
+        /// T8z.x PvP: the connection drops during the fight and the match ends on time meanwhile; when the client is back
+        /// (the relay sends the match start again, ended, then the stored result) the end screen shows the real result, not
+        /// "Match over".
+        /// </summary>
+        [UnityTest]
+        public IEnumerator PvpReconnectAfterTheEnd_ShowsTheRealResult()
+        {
+            yield return Load("pvp_bot_draft_to_end");
+            var match = Game.PvpMatch;
+            var relay = Runner.Relay;
+            var draft = Runner.Config.pvp;
+            var deadline = Time.time + draft.countdownSeconds + 3f;
+            while (!match.Started && Time.time < deadline) yield return null;
+            Assert.IsTrue(match.Started, "the fight began");
+            // A hit on the bot first, so the match has a winner on time (the bot's hull share goes down).
+            PvpSession.Instance.Send(new HitMsg { dmg = 30f, weaponId = draft.weapons[0] });
+            yield return new WaitForSeconds(1.5f);
+            Assert.Less(match.OpponentHp, match.OpponentMaxHp, "the bot took the hit");
+            relay.Drop();
+            deadline = Time.time + draft.matchSeconds + 5f;
+            while (!relay.Ended && Time.time < deadline) yield return null;
+            Assert.IsTrue(relay.Ended, "the relay ended the match on time while the client was away");
+            yield return new WaitForSeconds(0.5f);
+            Assert.IsFalse(match.Ended, "the client did not hear the end");
+            Assert.IsNull(PvpSession.Instance.LastMatchEnd);
+
+            relay.Reconnect();
+            var presenter = Object.FindFirstObjectByType<RoguePirates.V4.Presentation.Pvp.PvpMatchPresenter>();
+            Assert.IsNotNull(presenter, "the match HUD");
+            deadline = Time.time + 5f;
+            while (!presenter.EndShown && Time.time < deadline) yield return null;
+            var end = PvpSession.Instance.LastMatchEnd;
+            Debug.Log($"[V5 Scenario pvp reconnect] relay: {relay.EndReason}, winner {relay.Winner ?? "none"}; end screen: {presenter.EndText}");
+            Assert.IsTrue(match.Ended, "the match ended on the client");
+            Assert.IsNotNull(end, "the result came with the reconnect");
+            Assert.AreEqual(relay.Match.matchId, end.matchId);
+            Assert.AreEqual("time", end.reason);
+            Assert.AreEqual(FakePvpRelay.PlayerId, relay.Winner, "the player won on time (more of its hull left)");
+            Assert.AreEqual(relay.Winner, end.winnerPlayerId, "the relay's winner");
+            Assert.IsTrue(presenter.EndShown, "the end screen is up");
+            StringAssert.StartsWith("Victory! | Time: you dealt more damage", presenter.EndText, "the real result, not \"Match over\"");
         }
     }
 }

@@ -22,7 +22,7 @@ namespace RoguePirates.V4
 
         /// <summary>
         /// The preset of this Play session (M14.13 review fix): set with the request and kept after the run consumed it,
-        /// so the menu (which has no run) reads the same configs — e.g. the v3-parity preset's Captain lock rule.
+        /// so the menu (which has no run) reads the same configs — e.g. a preset's Captain lock rule (V5 M8z (7 Oct, review)).
         /// </summary>
         public static string ActivePresetJson { get; private set; }
 

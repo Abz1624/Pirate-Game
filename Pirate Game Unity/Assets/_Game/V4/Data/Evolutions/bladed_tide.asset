@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.WeaponEvolutionConfig
   configId: evolution.bladed_tide
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   evolutionId: bladed_tide
   displayName: Bladed Tide
   description: Cutlass orbit pulses between close and medium radius.

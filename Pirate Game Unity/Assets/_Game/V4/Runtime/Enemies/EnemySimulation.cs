@@ -223,7 +223,7 @@ namespace RoguePirates.V4.Enemies
             if (def.visualPrefab == null)
                 defVisualScale = _views.FallbackVisualScale(def);
             var appearanceScale = defVisualScale * v3Scale * GetThreatVisualScaleMultiplier(def, affix);
-            // V5 M3d: a type drawn larger (viewSize) is hit and collides at its drawn size (1 under the v3-parity preset).
+            // V5 M3d: a type drawn larger (viewSize) is hit and collides at its drawn size (viewSize 1 is V3's; V5 M8z (7 Oct, review)).
             var gameplayRadius = def.radius * appearanceScale * (def.viewSize > 0f ? def.viewSize : 1f);
             position = PlayBounds.Clamp(position, gameplayRadius + 1f);
             position.y = def.visualHeightOffset;

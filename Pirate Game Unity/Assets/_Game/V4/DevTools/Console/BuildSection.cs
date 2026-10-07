@@ -19,7 +19,7 @@ namespace RoguePirates.V4.DevTools.Console
         {
             var captain = b.Captain.Config;
             if (captain?.active == null) return "No Captain active.";
-            if (!b.ActivesEnabled()) return "Captain actives are off (ExperimentConfig.captainActivesEnabled; the v3-parity preset turns them off).";
+            if (!b.ActivesEnabled()) return "Captain actives are off (ExperimentConfig.captainActivesEnabled).";
             if (!b.Captain.IsReady) return $"{captain.active.displayName} is cooling down: {b.Captain.CooldownRemaining:0.0} s left.";
             if (!b.Captain.TryActivate())
                 return RoguePirates.V4.Progression.CaptainModule.OnlyFiresWeapons(captain.active) && !b.AnyEnemyInWeaponRange()

@@ -61,5 +61,16 @@ namespace RoguePirates.V4.Tests
             StringAssert.Contains("\"t\":60,", json);
             recorder.Detach();
         }
+
+        /// <summary>V5 M8z (7 Oct, review): only a session up to about 256 KB is kept in PlayerPrefs (WebGL holds ~1 MB in all).</summary>
+        [Test]
+        public void KeptSession_IsCappedAtAbout256KB()
+        {
+            Assert.AreEqual(256 * 1024, SessionFile.MaxKeptChars);
+            Assert.IsTrue(SessionFile.Keeps("{}"));
+            Assert.IsTrue(SessionFile.Keeps(new string('x', SessionFile.MaxKeptChars)));
+            Assert.IsFalse(SessionFile.Keeps(new string('x', SessionFile.MaxKeptChars + 1)), "a larger session is not kept");
+            Assert.IsFalse(SessionFile.Keeps(null));
+        }
     }
 }

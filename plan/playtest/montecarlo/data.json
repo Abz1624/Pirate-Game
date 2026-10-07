@@ -4436,9 +4436,9 @@
  "meta": {
   "source": "unity",
   "setId": "saltwind-default",
-  "configHash": "f366ef1947662dc64023392a280275876ce90fa77612d22a56e350db3607200d",
+  "configHash": "f0b57ee70363628befea0a59c3bf3476fbccfec2944f5d8964454f623f549be3",
   "preset": null,
-  "exported": "2026-10-07T09:26:22Z",
+  "exported": "2026-10-07T11:42:51Z",
   "unity": "6000.3.11f1"
  }
 }

@@ -13,7 +13,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("Bumped when fields are added, renamed or change meaning; old presets are migrated or rejected.")]
         public int schemaVersion = V4ConfigInfo.SchemaVersion;
         [Tooltip("Designer-facing balance label, stamped into run headers.")]
-        public string balanceVersion = "saltwind-v3-parity";
+        public string balanceVersion = "saltwind-playtest-r10"; // V5 M8z (7 Oct, review): the playtest data; v3-parity is retired (D18)
 
         /// <summary>Adds rule violations for this asset. Called by <see cref="ConfigValidator"/>.</summary>
         public virtual void Validate(ConfigValidationReport report) { }

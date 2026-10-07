@@ -9,7 +9,7 @@ namespace RoguePirates.V4.Composition
 {
     /// <summary>
     /// What the V4 menu needs (M14.13 review fix): the config set with the session's active preset applied (so the
-    /// v3-parity preset switches the Captain lock rule back to V3's), the Captain locks and the Rum unlocks, wired to the
+    /// a preset can switch the Captain lock rule, e.g. back to V3's; V5 M8z (7 Oct, review)), the Captain locks and the Rum unlocks, wired to the
     /// shared save and V3's progression state through the ports. The run validates the saved Captain with the same locks.
     /// </summary>
     public sealed class MenuServices : IDisposable

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.EnemyVariantConfig
   configId: variant.elite_hammerhead
   schemaVersion: 1
-  balanceVersion: saltwind-v3-parity
+  balanceVersion: saltwind-playtest-r10
   variantId: elite_hammerhead
   kind: 1
   databaseSlotOrder: 0

@@ -13,7 +13,7 @@ namespace RoguePirates.V4
 {
     /// <summary>
     /// V4 main menu (M14.13; was V3's carousel with V3's locks): the Captain cards from the Captain configs in menu order,
-    /// locked by <see cref="CaptainLocks"/> (the adopted locks; the session's v3-parity preset restores V3's, through
+    /// locked by <see cref="CaptainLocks"/> (the adopted locks; a session preset can switch to V3's, through
     /// <see cref="MenuServices"/>). A locked Captain whose
     /// only missing piece is Rum turns Set Sail into an unlock for that Rum. Set Sail saves the Captain (the shared
     /// selection the run reads) and loads the V4 run scene.

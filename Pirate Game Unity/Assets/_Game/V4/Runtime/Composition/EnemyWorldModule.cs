@@ -205,7 +205,7 @@ namespace RoguePirates.V4.Composition
         public void CreateHellfireSlot() => Frame?.Register(FrameStep.Hellfire, Hellfire.Tick);
 
         /// <summary>
-        /// The explosive barrels (only when the stage config places them, e.g. the v3-parity preset): V3's barrel world
+        /// The explosive barrels (only when the stage config places them, none does by default; the retired v3-parity preset did, V5 M8z (7 Oct, review)): V3's barrel world
         /// keeps its markers with its update off, and the V4 barrels run in the frame's Barrels step against V4 enemies.
         /// </summary>
         public void TakeOverBarrels(StageLayout layout)

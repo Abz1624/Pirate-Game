@@ -9,7 +9,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("\"Fire all weapons\" (captain active, Captain's Bell) speeds orbit blades' hits for this long instead of firing them.")]
         public float fireAllOrbitVolleySeconds = 2f;
 
-        [Header("V3 fixes (approved at the M5 gate; the v3-parity preset turns them off)")]
+        [Header("V3 fixes (approved at the M5 gate; off is V3's)")]
         [Tooltip("R-22: item attack speed shortened the cooldown and sped up its countdown (applied twice). On = once.")]
         public bool itemAttackSpeedAppliedOnce = true;
         [Tooltip("R-22: the time a cooldown ran past zero was dropped. On = carried into the next cooldown (at most one frame's worth).")]
