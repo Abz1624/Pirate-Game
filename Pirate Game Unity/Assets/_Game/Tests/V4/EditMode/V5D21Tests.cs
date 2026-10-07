@@ -110,6 +110,49 @@ namespace RoguePirates.V4.Tests
 
         sealed class NoCrit : ICombatRandom { public float CombatFloat() => 0.999f; }
 
+        // V5 M8z (8 Oct, close): the Luck test's real rolls. Every loot float is one value (a grid point), loot ints cycle
+        // (a chest retrying an ineligible item picks another of the same rarity).
+        const int Grid = 4000;
+
+        sealed class FixedRoll : RoguePirates.V4.Progression.IOfferRandom, IStageRandom
+        {
+            readonly float _value;
+            int _next;
+            public FixedRoll(float value) => _value = value;
+            public float LootFloat() => _value;
+            public int LootInt(int minInclusive, int maxExclusive) => maxExclusive <= minInclusive ? minInclusive : minInclusive + _next++ % (maxExclusive - minInclusive);
+            public int MapInt(int minInclusive, int maxExclusive) => minInclusive;
+        }
+
+        /// <summary>The share of grid rolls in (0, 1) for which <paramref name="hit"/> holds.</summary>
+        static float GridShare(System.Func<float, bool> hit)
+        {
+            var hits = 0;
+            for (var k = 0; k < Grid; k++) if (hit((k + 0.5f) / Grid)) hits++;
+            return hits / (float)Grid;
+        }
+
+        sealed class LuckRun : IStageRun
+        {
+            public float Luck { get; set; }
+            public bool Exists => true;
+            public bool IsRunEnded => false;
+            public bool IsPaused => false;
+            public RoguePirates.V4.Foundation.Core.PauseReason PauseReason => RoguePirates.V4.Foundation.Core.PauseReason.None;
+            public RoguePirates.V4.Foundation.Core.RunState State => RoguePirates.V4.Foundation.Core.RunState.Playing;
+            public float ElapsedSeconds => 300f;
+            public int Gold => 1000000;
+            public int RunSeed => 1;
+            public float MaxHull => 100f;
+            public void SetState(RoguePirates.V4.Foundation.Core.RunState state) { }
+            public void SetPause(RoguePirates.V4.Foundation.Core.PauseReason reason) { }
+            public void AddGold(int amount) { }
+            public bool TrySpendGold(int amount) => true;
+            public void SecureObjective() { }
+            public void CompleteRun(bool victory) { }
+            public void AddStatModifier(int stat, float add, float multiply) { }
+        }
+
         sealed class Run : IRunStatus
         {
             public bool Exists => true;
@@ -372,9 +415,49 @@ namespace RoguePirates.V4.Tests
             var luck = doubloon.statModifiers.Single(m => m.stat == (int)RoguePirates.V4.Foundation.Core.StatId.Luck).additive;
             Assert.AreEqual(0.03f, luck, 1e-6f, "the data: +3% Luck as a fraction");
             Assert.AreEqual(1.03f, ChestEconomy.LuckBoost(luck), 1e-6f, "chests: +3% to the Uncommon-and-better weights (was +0.03%)");
-            // Level-up cards: (1 + Luck)^(luckExponent × tier) on the same fraction (OfferGenerator.RollRarity).
+            // V5 M8z (8 Oct, close): the real rolls, not the formula. Level-up cards (OfferGenerator.RollRarity): weights ×
+            // (1 + Luck)^(luckExponent × tier), Legendary clamped, on the same fraction.
             var p = config.Single<ProgressionConfig>();
-            Assert.AreEqual(Mathf.Pow(1.03f, p.luckExponent), Mathf.Pow(1f + luck, p.luckExponent * 1), 1e-6f);
+            var offers = new RoguePirates.V4.Progression.OfferGenerator(() => p, () => config.Single<OfferWeightsConfig>(),
+                () => RoguePirates.V4.Progression.OfferGenerator.InDatabaseOrder(config.All<WeaponConfig>()),
+                () => RoguePirates.V4.Progression.OfferGenerator.InDatabaseOrder(config.All<LogbookConfig>()),
+                () => config.All<WeaponEvolutionConfig>().ToList(), () => true);
+            float CardShare(float l) => GridShare(r => offers.RollRarity(new FixedRoll(r), l) >= 1);
+            float ExpectedCardShare(float l)
+            {
+                var w = new float[5];
+                var before = 0f;
+                for (var i = 0; i < 5; i++) { w[i] = p.rarityBaseWeights[i] * Mathf.Pow(1f + l, p.luckExponent * i); before += w[i]; }
+                if (w[4] / before > p.legendaryMaxShare) w[4] = before * p.legendaryMaxShare;
+                var total = w.Sum();
+                return (total - w[0]) / total;
+            }
+            Assert.AreEqual(ExpectedCardShare(luck), CardShare(luck), 2f / Grid, "cards: Uncommon-or-better at +3% Luck, as a fraction");
+            Assert.Greater(CardShare(luck), CardShare(0f) + 10f / Grid, "cards: +3% Luck raises the share");
+            Assert.Greater(Mathf.Abs(CardShare(luck) - ExpectedCardShare(luck / 100f)), 10f / Grid, "cards: not the old points scale");
+
+            // Chests (ChestEconomy.RollSalvageItem through PlanChest): Uncommon and better × (1 + Luck), Rare+ × the depth boost.
+            var stage = config.Single<StageContentConfig>();
+            var allWeapons = config.All<WeaponConfig>().Select(x => x.weaponId).ToArray();
+            var rarityOf = config.All<ItemConfig>().ToDictionary(i => i.itemId, i => i.rarity);
+            Assert.IsTrue(config.All<ItemConfig>().Any(i => i.inChestPool && i.rarity == 1), "the chest pool has Uncommon items (no fallback to Common)");
+            float ChestShare(float l) => GridShare(r =>
+            {
+                var plan = new ChestEconomy(() => config, new LuckRun { Luck = l }, new FixedRoll(r), () => null, () => null).PlanChest(allWeapons);
+                Assert.IsTrue(plan.Valid, plan.Error);
+                return rarityOf[plan.ItemId] >= 1;
+            });
+            float ExpectedChestShare(float l)
+            {
+                var weights = stage.chestRarityWeights;
+                var depth = 1f + stage.chestRareBoostPerStageDepth * Mathf.Max(0, stage.chestStageDepth - 1);
+                float common = weights[0], better = 0f;
+                for (var i = 1; i < weights.Length; i++) better += weights[i] * (i >= 2 ? depth : 1f) * (1f + l);
+                return better / (common + better);
+            }
+            Assert.AreEqual(ExpectedChestShare(luck), ChestShare(luck), 2f / Grid, "chests: Uncommon-or-better at +3% Luck, as a fraction");
+            Assert.Greater(ChestShare(luck), ChestShare(0f) + 10f / Grid, "chests: +3% Luck raises the share");
+            Assert.Greater(Mathf.Abs(ChestShare(luck) - ExpectedChestShare(luck / 100f)), 10f / Grid, "chests: not the old points scale (V3 read luck / 100)");
             // Every Luck source in the data is on the fraction scale (no point values left).
             foreach (var item in config.All<ItemConfig>())
                 foreach (var m in item.statModifiers ?? new ItemStatModifier[0])

@@ -4725,9 +4725,9 @@
  "meta": {
   "source": "unity",
   "setId": "saltwind-default",
-  "configHash": "daa47525dbbf94d5317b8ea53410eab547aba8a871cb3a288389729eef963daa",
+  "configHash": "9d5657cf1d5db3d74c959fc496a7e98465d4d4ae21ea9db5510129d923011f38",
   "preset": null,
-  "exported": "2026-10-07T15:57:58Z",
+  "exported": "2026-10-07T17:41:49Z",
   "unity": "6000.3.11f1"
  }
 }

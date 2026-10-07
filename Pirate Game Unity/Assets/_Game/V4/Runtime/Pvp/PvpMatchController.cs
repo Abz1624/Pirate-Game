@@ -627,7 +627,8 @@ namespace RoguePirates.V4.Pvp
                 _weaponConfigs = new Dictionary<string, WeaponConfig>();
                 foreach (var c in _config.All<WeaponConfig>()) if (c != null && !string.IsNullOrEmpty(c.weaponId)) _weaponConfigs[c.weaponId] = c;
             }
-            return _weaponConfigs.TryGetValue(id, out var config) ? config : null;
+            // V5 M8z (8 Oct, close): an opponent on an older build may still send a removed id (its replacement's config).
+            return _weaponConfigs.TryGetValue(RoguePirates.V4.Foundation.Core.ContentIdAliases.Resolve(id), out var config) ? config : null;
         }
 
         Color WeaponColour(string id)

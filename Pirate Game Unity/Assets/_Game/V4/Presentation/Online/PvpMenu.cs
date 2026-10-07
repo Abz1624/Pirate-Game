@@ -559,10 +559,11 @@ namespace RoguePirates.V4.Presentation.Online
             if (d == null) return null;
             return new PvpDraft
             {
-                weapons = (d.weapons ?? Array.Empty<string>()).Where(w => !string.IsNullOrEmpty(w)
+                // V5 M8z (8 Oct, close): an old id in the saved draft is its replacement (the Ramming Prow is the Ink Pots).
+                weapons = (d.weapons ?? Array.Empty<string>()).Select(RoguePirates.V4.Foundation.Core.ContentIdAliases.Resolve).Where(w => !string.IsNullOrEmpty(w)
                     && RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.IsWeaponEnabled(w)
                     && (_allWeapons.Count == 0 || _allWeapons.Exists(x => x.weaponId == w))).Distinct().ToArray(),
-                logbooks = (d.logbooks ?? Array.Empty<string>()).Where(l => !string.IsNullOrEmpty(l)
+                logbooks = (d.logbooks ?? Array.Empty<string>()).Select(RoguePirates.V4.Foundation.Core.ContentIdAliases.Resolve).Where(l => !string.IsNullOrEmpty(l)
                     && (_allLogbooks.Count == 0 || _allLogbooks.Exists(x => x.logbookId == l))).Distinct().ToArray(),
             };
         }

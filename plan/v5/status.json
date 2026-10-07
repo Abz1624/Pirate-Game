@@ -1,15 +1,15 @@
 {
  "updated": "6 Oct 2026",
- "statusLine": "M8z: final check passed (no blockers); closing fixes and the final test run in progress. M9 rewritten for Netcode (draft): 8 questions (N1-N8) for you before it starts.",
+ "statusLine": "M8z closed (8 Oct). Next: M9 (run checks and the Netcode go/no-go), drafted; it starts when you answer N1-N8.",
  "statusOk": false,
  "facts": [
   [
    "Progress",
-   "M0-M8 built; playtest merged into <code>v5-live-game</code> (6 Oct); M8z in progress"
+   "M0-M8z done (M8z closed 8 Oct); M9 drafted for Netcode, waiting for your answers N1-N8"
   ],
   [
    "Tests",
-   "7 Oct (M8z, D20): EditMode 477/477 · PlayMode 81/81 · server 102/102"
+   "8 Oct (M8z close): EditMode 561/561 · PlayMode 88/88 · server 102/102"
   ],
   [
    "Gate",
@@ -74,8 +74,8 @@
    "chip": "done · playtested; mode select removed, all free (D18)"
   },
   "M8z": {
-   "state": "review",
-   "chip": "playtested 8 Oct · final check"
+   "state": "done",
+   "chip": "done 8 Oct · playtested"
   },
   "M9": {
    "state": "next",
@@ -387,6 +387,11 @@
    "when": "8 Oct",
    "commit": "",
    "what": "M8z final check: no blockers; closing fixes and the final suites running. M9 rewritten for Unity Netcode with a server-authoritative match server on Railway (draft), with 8 questions for you (N1-N8)."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "<strong>M8z closed</strong>: kill credit for every weapon (Lantern, Doubloons, Anchor Flail and others now count their kills; Cursed Doubloons' kill gold now pays), old saves map the Ramming Prow to the Squid Ink Pots, real Luck and Ironclad checks, an echo validator; EditMode 561/561, PlayMode 88/88. Tag <code>v5-m8z</code>."
   }
  ],
  "todos": {
@@ -949,6 +954,13 @@
    "check": "Suites after D21",
    "result": "PlayMode 88/88; EditMode 484/487 then the 2 stale expectations and 1 stale export fixed (classes re-run: pass)",
    "evidence": "plan/playtest/tests/playmode-d21.json, editmode-d21.json"
+  },
+  {
+   "date": "8 Oct",
+   "phase": "M8z",
+   "check": "Closing suites",
+   "result": "EditMode 561/561, PlayMode 88/88",
+   "evidence": "plan/playtest/tests/editmode-m8z-close.json, playmode-m8z-close.json"
   }
  ],
  "phaseResults": {
@@ -1153,7 +1165,7 @@
    },
    {
     "title": "Next",
-    "text": "Your M8z playtest on the desktop build, then the M8z commit. Evidence: <code>plan/v5/phase-08z-integration/README.md</code>."
+    "text": "Closed 8 Oct (tag <code>v5-m8z</code>). Carried into M9: the simulator refit (C9.1)."
    },
    {
     "title": "What the sessions showed",

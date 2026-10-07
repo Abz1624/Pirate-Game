@@ -26,11 +26,11 @@ Branch `v5-live-game`. Start: merge `b5936c4d` (playtest rounds 1-10, tag `playt
 | D21: sparkles, Knockback card, Harpoon tar slow, miniboss slows, one Luck scale, Admiral, Squid Ink Pots, texture cap | `b28a8c3d` |
 | Battle Signal and Full Sail powerups; splash logo off | `0ab026cc` |
 | Q20 rank milestones for the nine new weapons | `7f84c1da` |
+| Close fixes: kill credit for every weapon, Ramming Prow save alias, real Luck and Ironclad assertions, echo validator | M8z close commit |
 
 ## Gate
 
-- Tests: EditMode 498/498 (`editmode-q20.json`), PlayMode 88/88 (`playmode-d21.json`); final run on the closing code in
-  `plan/playtest/tests/*-m8z-close.json`.
+- Tests on the closing code: EditMode 561/561, PlayMode 88/88 (`plan/playtest/tests/*-m8z-close.json`); server 102/102.
 - Playable check: desktop WebGL builds served locally; the owner's five recorded voyages in `plan/playtest/sessions/`.
 - Independent review: pass with fixes (7 Oct), fixes done; final check of the later changes (8 Oct): no blockers.
 - Owner playtest: done (8 Oct, session `session-20261008-001147-rook.json`).

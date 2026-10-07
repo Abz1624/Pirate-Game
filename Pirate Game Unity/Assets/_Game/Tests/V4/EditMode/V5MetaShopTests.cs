@@ -52,9 +52,14 @@ namespace RoguePirates.V4.Tests
                 foreach (var e in meta.All)
                     Assert.IsTrue(LocalMetaServices.InAPool(config, e.ContentId), e.ContentId + ": content out of every pool (D34) is not sold");
                 // V5 M8z (7 Oct, D20): Ironclad is in the Logbook pool now, so it is sold like the others when it has a price.
+                // V5 M8z (8 Oct, close): asserted unconditionally (the data prices it), at its price.
                 Assert.IsTrue(LocalMetaServices.InAPool(config, "ironclad"), "Ironclad is in the Logbook pool");
-                if (unlocks.logbookUnlocks.Any(u => u.contentId == "ironclad"))
-                    Assert.IsNotNull(meta.Entries(StoreCategory.Logbook).FirstOrDefault(e => e.ContentId == "ironclad"), "Ironclad is sold");
+                var ironclad = unlocks.logbookUnlocks.SingleOrDefault(u => u.contentId == "ironclad");
+                Assert.IsNotNull(ironclad, "Ironclad has a Logbook unlock entry (a price)");
+                Assert.Greater(ironclad.rumCost, 0, "Ironclad is priced");
+                var row = meta.Entries(StoreCategory.Logbook).FirstOrDefault(e => e.ContentId == "ironclad");
+                Assert.IsNotNull(row, "Ironclad is sold");
+                Assert.AreEqual(ironclad.rumCost, row.Price, "at its price");
             }
         }
 

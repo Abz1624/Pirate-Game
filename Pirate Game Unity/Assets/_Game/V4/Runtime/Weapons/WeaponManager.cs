@@ -176,7 +176,7 @@ namespace RoguePirates.V4.Weapons
         /// <summary>V5 M8z (7 Oct, Q20): a milestone's echoes: the firing repeats (the Siren Bell's second pulse 0.35 s later).</summary>
         void QueueEchoes(WeaponSlot w)
         {
-            if (w.Echoes <= 0 || w.Config == null || w.Config.behavior == Behavior.Orbit || w.Config.behavior == Behavior.ConeStream) return;
+            if (w.Echoes <= 0 || w.Config == null || !WeaponConfig.Echoes(w.Config.behavior)) return; // V5 M8z (8 Oct, close): one rule with the director and validator
             _c.Echoes.Add(new PendingEcho { Weapon = w, Timer = w.EchoDelaySeconds, Left = w.Echoes });
         }
 

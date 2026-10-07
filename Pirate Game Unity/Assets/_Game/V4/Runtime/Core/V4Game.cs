@@ -104,6 +104,7 @@ namespace RoguePirates.V4
             ApplyRequestedPreset();
             // V5 M8z (7 Oct): the weapon switch-off list is config (the run's, with its preset).
             if (_config != null) RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.Register(_config.Single<UnlockConfig>()?.disabledWeaponIds);
+            if (_config != null) RoguePirates.V4.Composition.MenuServices.RegisterContentAliases(_config); // V5 M8z (8 Oct, close)
             var run = _config?.Single<RunConfig>();
             _clock = run != null ? new RunClock(run.tickRate, run.maxStepsPerFrame) : new RunClock();
             _events = new CombatEvents();

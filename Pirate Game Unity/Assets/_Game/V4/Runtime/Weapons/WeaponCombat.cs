@@ -87,7 +87,9 @@ namespace RoguePirates.V4.Weapons
             slot.CooldownMult *= e.cooldownMultiplier;
             slot.SizeMult *= e.sizeMultiplier;
             slot.KnockbackMult *= e.knockbackMultiplier;
-            // V5 M8z (7 Oct, Q20): on top of the milestones' (Black Tide's slow replaced the Ink Pots' rank 12 slow).
+            // V5 M8z (7 Oct, Q20): on top of the milestones'. V5 M8z (8 Oct, close): Black Tide's slow stacks with the Ink
+            // Pots' rank 12 slow (both add to ExtraSlow); Slow() caps the share at 0.9 and the enemy world at the weapon
+            // rules' maxSlow.
             slot.ExtraPierce += e.extraPierce;
             slot.ExtraSlow += e.extraSlow;
         }
@@ -294,12 +296,14 @@ namespace RoguePirates.V4.Weapons
         /// <summary>
         /// A weapon hit outside the proc path. V3 recorded only lane, aura, strike and skiff hits in the damage ledger; V4
         /// records every weapon hit so the results' damage share covers all weapons (M5 intended difference; ledger only).
+        /// V5 M8z (8 Oct, close): the hit's weapon (kill credit, the Hit event, the coins' kill gold) defaults to the ledger
+        /// id, so orbit, strike, trail, cone and whirlpool kills are credited to their weapon (they were left uncredited).
         /// </summary>
         public void DamageAndRecord(int index, string ledgerId, float amount, bool isCrit, string weaponId = null)
         {
             amount = Healthy(index, amount);
             if (ledgerId != null) Hooks.RecordHit(ledgerId, amount, isCrit, Enemies.IsElite(index), Enemies.IsBoss(index));
-            Damage.ApplyDamage(index, amount, isCrit, weaponId: weaponId);
+            Damage.ApplyDamage(index, amount, isCrit, weaponId: weaponId ?? ledgerId); // V5 M8z (8 Oct, close)
         }
 
         /// <summary>V5 M5 Shark Tooth Necklace: more damage to an enemy still above the threshold share of its hull (read

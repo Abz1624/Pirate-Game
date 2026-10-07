@@ -102,6 +102,11 @@ MonoBehaviour:
     rumCost: 300
   - contentId: captains_last_rum
     rumCost: 300
+  contentIdAliases:
+  - fromId: ramming_prow
+    toId: squid_ink_pots
+  - fromId: ironclad_ram
+    toId: black_tide
   firstConquestWeaponId: swivel_guns
   startingWeaponRule: 1
   captainLockRule: 1

@@ -25,6 +25,7 @@ namespace RoguePirates.V4.Composition
             Config = config;
             // V5 M8z (7 Oct): the weapon switch-off list is config.
             RoguePirates.V4.Foundation.Combat.WeaponFeatureFlags.Register(config?.Single<UnlockConfig>()?.disabledWeaponIds);
+            RegisterContentAliases(config); // V5 M8z (8 Oct, close)
             Locks = CreateLocks(() => Config);
             Unlocks = new UnlockService(Save, () => Config);
             Meta = new RoguePirates.V5.Meta.LocalMetaServices(Save, () => Config, ContentPort.IsContentOwned, CaptainBuyable);
@@ -38,6 +39,14 @@ namespace RoguePirates.V4.Composition
         }
 
         static SaveService Save() => AppRoot.Instance != null ? AppRoot.Instance.Save : null;
+
+        /// <summary>V5 M8z (8 Oct, close): the config's content id aliases, registered and applied to the loaded save (the
+        /// menu and the run call it when they load their config set).</summary>
+        public static void RegisterContentAliases(ConfigSetRuntime config)
+        {
+            ContentIdAliases.Register(config?.Single<UnlockConfig>()?.AliasPairs());
+            Save()?.ApplyContentAliases();
+        }
 
         /// <summary>The Captain locks over a config (the menu's, or the run's).</summary>
         public static CaptainLocks CreateLocks(Func<ConfigSetRuntime> config) =>

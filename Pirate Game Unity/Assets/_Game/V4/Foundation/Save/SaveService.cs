@@ -176,11 +176,32 @@ namespace RoguePirates.V4.Foundation.Core
                 data.version = 2;
             }
 
+            ResolveAliases(data); // V5 M8z (8 Oct, close)
+
             if (data.version >= GameConstants.SaveVersion)
                 return data;
 
             data.version = GameConstants.SaveVersion;
             return data;
+        }
+
+        /// <summary>V5 M8z (8 Oct, close): owned ids and the unlock goal under their current ids (the config's content id
+        /// aliases: a save that bought the Ramming Prow owns the Squid Ink Pots). Nothing is dropped: an old id becomes its
+        /// new one.</summary>
+        static void ResolveAliases(MetaSaveData data)
+        {
+            if (!ContentIdAliases.Any) return;
+            data.unlockedIds = ContentIdAliases.ResolveAll(data.unlockedIds);
+            data.purchasedIds = ContentIdAliases.ResolveAll(data.purchasedIds);
+            data.marksOwnedContentIds = ContentIdAliases.ResolveAll(data.marksOwnedContentIds);
+            data.selectedUnlockGoal = ContentIdAliases.Resolve(data.selectedUnlockGoal) ?? string.Empty;
+        }
+
+        /// <summary>V5 M8z (8 Oct, close): applies the aliases registered after this save loaded (the app's save loads before
+        /// the config); written back on the next save.</summary>
+        public void ApplyContentAliases()
+        {
+            if (Meta != null) ResolveAliases(Meta);
         }
 
         public bool TryPurchase(string id, int cost)
@@ -201,9 +222,14 @@ namespace RoguePirates.V4.Foundation.Core
         public bool HasEffectiveContentOwned(string contentId)
         {
             if (string.IsNullOrEmpty(contentId)) return false;
+            contentId = ContentIdAliases.Resolve(contentId); // V5 M8z (8 Oct, close): an old id asks for its new one
             if (HasMarksOwned(contentId)) return true;
             if (ContainsId(Meta.unlockedIds, contentId)) return true;
             if (ContainsId(Meta.purchasedIds, contentId)) return true;
+
+            // V5 M8z (8 Oct, close): data still under an old id (not yet resolved) owns its new one.
+            foreach (var old in ContentIdAliases.OldIdsOf(contentId))
+                if (HasMarksOwned(old) || ContainsId(Meta.unlockedIds, old) || ContainsId(Meta.purchasedIds, old)) return true;
 
             foreach (var alias in ContentOwnershipAliases(contentId))
             {

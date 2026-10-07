@@ -313,6 +313,11 @@ namespace RoguePirates.V4.Config
         public SummonBlock summon = new SummonBlock();
         [Tooltip("Effect looks (M6, presentation only).")] public WeaponEffectsVisual visual = new WeaponEffectsVisual();
 
+        /// <summary>V5 M8z (8 Oct, close): a milestone's echoes repeat this behavior's firing (not an orbit's or a flame
+        /// stream's: they never stop firing). The weapon manager, the director and the validator share this rule.</summary>
+        public static bool Echoes(ConfigEnums.WeaponBehavior behavior) =>
+            behavior != ConfigEnums.WeaponBehavior.Orbit && behavior != ConfigEnums.WeaponBehavior.ConeStream;
+
         public override void Validate(ConfigValidationReport report)
         {
             if (string.IsNullOrWhiteSpace(weaponId)) report.Error(this, nameof(weaponId), "missing weapon id");
@@ -330,6 +335,9 @@ namespace RoguePirates.V4.Config
             {
                 if (m == null) { report.Error(this, nameof(milestones), "empty milestone"); continue; }
                 if (m.level <= last || m.level > maxLevel) report.Error(this, nameof(milestones), $"milestone level {m.level} must rise and be at most maxLevel {maxLevel}");
+                // V5 M8z (8 Oct, close): an orbit or a flame stream has no discrete firing to repeat (the manager skips them).
+                if (m.echoes > 0 && !Echoes(behavior))
+                    report.Error(this, nameof(milestones), $"milestone level {m.level}: echoes on a {behavior} weapon never fire (Orbit and ConeStream do not echo)");
                 last = m.level;
             }
         }

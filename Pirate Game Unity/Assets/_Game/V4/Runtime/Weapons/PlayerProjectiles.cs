@@ -171,7 +171,9 @@ namespace RoguePirates.V4.Weapons
 
                         var amount = HitAdjust != null ? HitAdjust(ei, p.Damage) : p.Damage; // V5 M5: Shark Tooth Necklace
                         if (p.Traits.LedgerId != null) _hooks.RecordHit(p.Traits.LedgerId, amount, p.IsCrit, _enemies.IsElite(ei), _enemies.IsBoss(ei));
-                        _damage.ApplyDamage(ei, amount, p.IsCrit, weaponId: p.WeaponId);
+                        // V5 M8z (8 Oct, close): a credited pellet (lane bursts, follow-ups) has no weapon id (its look is the
+                        // plain shot's), so its hit and kill go to its ledger id, its weapon.
+                        _damage.ApplyDamage(ei, amount, p.IsCrit, weaponId: p.WeaponId ?? p.Traits.LedgerId);
                         if (p.Traits.TarOnHit)
                         {
                             var slow = _enemies.IsBoss(ei) ? p.Traits.TarSlowBoss : p.Traits.TarSlow;

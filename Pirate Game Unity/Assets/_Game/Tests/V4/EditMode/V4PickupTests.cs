@@ -120,7 +120,8 @@ namespace RoguePirates.V4.Tests
         {
             // V5 demo baseline (30 Sep 2026): XP from pickups ×0.5, the fractions carried from orb to orb.
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
-            // V5 M8z (7 Oct, D20): 0.8 with the exact barrel payout and the retuned XP table (the sessions' levelling pace).
+            // V5 M8z (7 Oct, D20): 0.8 with the exact barrel payout and the retuned XP table; V5 M8z (8 Oct, close): 0.4
+            // since the owner halved the XP drops (7 Oct).
             Assert.AreEqual(0.4f, config.Single<PickupConfig>().xpPickupMultiplier, "the playtest pace in the data (the owner halved the XP drops, 7 Oct)");
             int Collect(float rate, int barrels)
             {
