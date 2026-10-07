@@ -217,6 +217,51 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                     b.ToTable("Players");
                 });
 
+            modelBuilder.Entity("RoguePirates.Api.Data.RunLog", b =>
+                {
+                    b.Property<long>("RunId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("BalanceVersion")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BuildId")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Bytes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ClientRunId")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ConfigHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Json")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Seed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SeedSource")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("RunId");
+
+                    b.ToTable("RunLogs");
+                });
+
             modelBuilder.Entity("RoguePirates.Api.Data.RunRecord", b =>
                 {
                     b.Property<long>("Id")
@@ -309,6 +354,15 @@ namespace RoguePirates.Api.Data.Migrations.Sqlite
                         .IsUnique();
 
                     b.ToTable("WeeklyBests");
+                });
+
+            modelBuilder.Entity("RoguePirates.Api.Data.RunLog", b =>
+                {
+                    b.HasOne("RoguePirates.Api.Data.RunRecord", null)
+                        .WithOne()
+                        .HasForeignKey("RoguePirates.Api.Data.RunLog", "RunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

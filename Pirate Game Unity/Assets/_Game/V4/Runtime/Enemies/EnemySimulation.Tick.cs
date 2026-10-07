@@ -714,7 +714,8 @@ namespace RoguePirates.V4.Enemies
                         dist,
                         dt,
                         ref e.chargeTimer,
-                        playerVelocity);
+                        playerVelocity,
+                        RunSeconds);
                 }
 
                 var patternIntent = patternVel;
@@ -868,7 +869,16 @@ namespace RoguePirates.V4.Enemies
         // outside the view, ahead of the ship (bosses, minibosses and elites stay where they are).
         const float LeashDistance = 45f, LeashReturnDistance = 26f, LeashCheckSeconds = 0.5f;
         float _leashTimer;
-        readonly System.Random _leashRandom = new System.Random(0x1EA5);
+        const int LeashStreamSalt = 0x1EA5;
+        // V5 M9a (I9a.2): the leash's own stream, seeded from the run seed at the run start (was a fixed System.Random(0x1EA5)).
+        RoguePirates.V4.Foundation.Core.RunStream _leashRandom = new RoguePirates.V4.Foundation.Core.RunStream(LeashStreamSalt);
+
+        /// <summary>V5 M9a (I9a.2): seeds the run's own streams of the enemy world (the leash) from the run seed.</summary>
+        public void SeedRun(int runSeed)
+        {
+            _leashRandom = new RoguePirates.V4.Foundation.Core.RunStream(runSeed ^ LeashStreamSalt);
+            _leashTimer = 0f;
+        }
 
         void TickLeash(float dt, Vector3 playerPos, Vector3 playerVelocity)
         {

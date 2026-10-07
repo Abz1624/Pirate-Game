@@ -118,6 +118,8 @@ namespace RoguePirates.V4.Progression
         public int Level { get; private set; }
         public float CurrentXp { get; private set; }
         public int XpToNext { get; private set; }
+        /// <summary>V5 M9a (I9a.1): XP granted this run (every accepted grant; the run log's per-minute XP).</summary>
+        public long TotalXp { get; private set; }
         public int PendingLevelUps { get; private set; }
         public int RefreshesRemaining { get; private set; }
         public IReadOnlyList<string> OwnedWeapons => _state.Weapons;
@@ -168,6 +170,7 @@ namespace RoguePirates.V4.Progression
             _stateBeforeLevelUp = RunState.Playing;
             Level = c.startLevel;
             CurrentXp = 0f;
+            TotalXp = 0;
             PendingLevelUps = 0;
             RefreshesRemaining = c.refreshesPerRun;
             XpToNext = ProgressionMath.XpToNext(c, Level);
@@ -187,6 +190,7 @@ namespace RoguePirates.V4.Progression
             if (amount <= 0) return;
             if (_run.Exists && _run.IsRunEnded) return;
             if (_ship != null && _ship.Exists && !_ship.IsAlive) return;
+            TotalXp += amount;
             var c = C;
             var gained = 0;
             var remaining = (float)amount;

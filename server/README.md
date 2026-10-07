@@ -112,12 +112,21 @@ Week = ISO week, Monday 00:00 UTC to the next Monday 00:00 UTC (`weekEnd` is exc
 -> `200`
 ```json
 {"accepted":true,"runId":42,"weekStart":"2026-09-28T00:00:00Z","weekEnd":"2026-10-05T00:00:00Z",
- "isNewWeeklyBest":true,"weeklyBest":{"kills":640,"runSeconds":900,"level":34,"captain":"anne"}}
+ "isNewWeeklyBest":true,"logStored":true,"weeklyBest":{"kills":640,"runSeconds":900,"level":34,"captain":"anne"}}
 ```
 `mapId` defaults to `saltwind` (1-32 of `a-z 0-9 _ -`); `captain` up to 32 characters, `buildHash` 128,
 `clientVersion` 32. Sanity rules (otherwise `422 {"error":"implausible_run"}`, logged): `kills >= 0`,
 `runSeconds` 10..7200, `level` 1..200, at most 600 kills per minute. Each player keeps one best per week and map
 (more kills wins; equal kills, the shorter run wins).
+
+Run log (V5 M9a, I9a.1): the game also sends `"log":{...}`, the voyage's compact run log (format `rp-runlog` v1,
+documented in `RoguePirates.Api/Playtest/RunLogRules.cs`: seed, seed source, config hash, balance version, build id,
+per-minute spawns, kills and kills per weapon, gold, XP, level, damage taken and dealt, pickups, chests, points of
+interest, and input samples). It is optional (older clients send none; the reply's `logStored` says whether one was
+kept) and stored in the `RunLogs` table with its run. Structural checks only, each a `400` with its code, nothing
+stored: `log_too_large` (over 64 KB), `malformed_log`, `unsupported_log_version`, `log_missing_seed`,
+`log_missing_config_hash`, `log_mismatch` (the minutes' kills must sum to `kills`, the last minute's level must equal
+`level`, and the log's seconds must match `runSeconds` within 1 s). Plausibility (I9a.3) reads the stored log.
 
 `GET /api/leaderboard/weekly?mapId=saltwind&limit=50` (auth optional; `limit` 1..100, default 50) -> `200`
 ```json

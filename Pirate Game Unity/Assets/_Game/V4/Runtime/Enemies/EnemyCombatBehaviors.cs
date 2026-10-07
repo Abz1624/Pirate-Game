@@ -114,7 +114,7 @@ namespace RoguePirates.V4.Enemies
                     return true;
                 default:
                     velocity = EnemyPatternMovement.ComputeVelocity(
-                        agent, agent.patternParams, dir, dir, dist, dt, ref agent.chargeTimer, playerVelocity);
+                        agent, agent.patternParams, dir, dir, dist, dt, ref agent.chargeTimer, playerVelocity, Sim.RunSeconds);
                     return true;
             }
         }
@@ -218,7 +218,7 @@ namespace RoguePirates.V4.Enemies
 
             // Cut the player off and close from a ring slot (replaces the fixed per-id side bias).
             var pursuit = EnemySimulation.GetPursuitDirection(agent.id, agent.position, agent.moveSpeed, playerPos, playerVelocity);
-            var wobble = Vector3.Cross(Vector3.up, pursuit) * Mathf.Sin(agent.id * 0.7f + Time.time * 2.2f) * 0.18f;
+            var wobble = Vector3.Cross(Vector3.up, pursuit) * Mathf.Sin(agent.id * 0.7f + Sim.RunSeconds * 2.2f) /* V5 M9a: run time, not Time.time */ * 0.18f;
             var approach = (pursuit + wobble).normalized;
             var speedMult = dist > 10f ? 1.02f : dist > 5f ? 1.12f : 1.22f;
             return approach * (agent.moveSpeed * speedMult);

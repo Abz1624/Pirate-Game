@@ -151,6 +151,7 @@ namespace RoguePirates.V4.Composition
         public void ResetAndDefine(GameDatabase database)
         {
             Simulation.DespawnAllActive(); // V3 ResetAllAgentsForPromo (nothing alive at a run start)
+            Simulation.SeedRun(_run.RunSeed); // V5 M9a (I9a.2): after RunManager.BeginRun (RunBootstrapSequence)
             ClearTransientWorlds();
             Simulation.SetDefinitions(database.enemies, EnemySimulation.BuildRules(_config, database.enemies));
         }

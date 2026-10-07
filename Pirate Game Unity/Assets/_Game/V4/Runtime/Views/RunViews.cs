@@ -228,6 +228,8 @@ namespace RoguePirates.V4.Views
         IWeaponAimView WeaponAim { get; }
         IToastSink Toasts { get; }
         IHudCommands Commands { get; }
+        /// <summary>V5 M9a (I9a.1): the voyage's run log for the upload (null in a 1v1 or the Module Lab).</summary>
+        Telemetry.IRunLogSource RunLog => null;
     }
 
     /// <summary>On-screen messages (the kept toast view until M14).</summary>
@@ -263,5 +265,6 @@ namespace RoguePirates.V4.Views
         public IWeaponAimView WeaponAim { get; set; }
         public IToastSink Toasts { get; set; }
         public IHudCommands Commands { get; set; }
+        public Telemetry.IRunLogSource RunLog { get; set; }
     }
 }

@@ -303,6 +303,8 @@ namespace RoguePirates.V4
                 Stats = () => RunManager.Instance != null ? RunManager.Instance.Stats : null, // V5 M8z (7 Oct): the level-up cards
             });
             views.Stage = _stage.View;
+            // V5 M9a (I9a.1): every voyage keeps its run log (uploaded with the run), whatever the playtest switches.
+            if (!moduleLab && !pvp) views.RunLog = AddRunLog(runState, ship);
             _context.Register<Views.IRunViews>(views);
             _resultsTelemetry = new Telemetry.ResultsTelemetry(_telemetry, _rewards, () => runState.ObjectiveSecured);
             _shell.Rewards = _rewards;
@@ -317,6 +319,46 @@ namespace RoguePirates.V4
             // V5 M8z (7 Oct, D20): and only in playtest builds (DemoJuiceSettings.downloadSessionFiles).
             if (!moduleLab && !pvp && RoguePirates.V4.Foundation.Core.DemoMode.DownloadSessionFiles) AddSessionRecorder(runState, ship, damageSink);
             _shell.Awake();
+        }
+
+        Telemetry.RunLogRecorder _runLog;
+        /// <summary>V5 M9a (I9a.1): the voyage's run log (null in a 1v1 or the Module Lab).</summary>
+        public Telemetry.RunLogRecorder RunLog => _runLog;
+
+        /// <summary>V5 M9a (I9a.1): the run log recorder over the run's counters, the ship and the weapon ledger.</summary>
+        Telemetry.RunLogRecorder AddRunLog(RunPort runState, ShipPort ship)
+        {
+            var progression = _build.Progression;
+            _runLog = new Telemetry.RunLogRecorder
+            {
+                RunTime = () => runState.ElapsedSeconds,
+                Seed = () => runState.RunSeed,
+                Kills = () => runState.Kills,
+                Gold = () => runState.GrossGoldEarned,
+                Level = () => progression.Level,
+                Xp = () => progression.TotalXp,
+                Pickups = () => _build.Pickups.Collected,
+                HullKnown = () => ship.HasDamageReceiver,
+                Hull = () => ship.Hp,
+                MaxHull = () => ship.MaxHp,
+                SunkNow = () => (ship.HasDamageReceiver && ship.Hp <= 0f) || runState.EndedByDeath,
+                RunEnded = () => runState.IsRunEnded,
+                ObjectiveSecured = () => runState.ObjectiveSecured,
+                ConfigHash = () => _config?.Hash,
+                RunId = () => runState.RunId,
+                Captain = () => _build.Captain?.Config != null ? _build.Captain.Config.captainKey : null,
+                StartingWeapon = () => progression.OwnedWeapons.Count > 0 ? progression.OwnedWeapons[0] : null,
+                BuildId = RoguePirates.V4.Telemetry.RunLogRecorder.BuildIdOfThisBuild,
+                StageProfile = () => _lifecycle.StageProfile?.Invoke(),
+                SeedOrigin = () => RunRequest.ConsumedOrigin,
+                ShipPosition = () => ship.Position,
+                ShipForward = () => ship.MovementForward,
+                SteerThrottle = () => ship.SteerThrottle,
+                Boosting = () => ship.IsBoosting,
+                Telemetry = _telemetry,
+            };
+            _modules.Add(_runLog);
+            return _runLog;
         }
 
         Telemetry.SessionRecorder _session;
@@ -391,6 +433,7 @@ namespace RoguePirates.V4
             _build.AttachShip(_shell.Player);
             _runPort.StateChanged += _resultsTelemetry.OnRunState; // M14.11 (was LegacyResultsTelemetry on the run manager)
             if (_session != null) _runPort.StateChanged += _session.OnRunState; // Playtest (6 Oct, owner): saved when the results show
+            if (_runLog != null) _runPort.StateChanged += _runLog.OnRunState; // V5 M9a (I9a.1): a sinking is the log's end reason
             if (moduleLab) _shell.EnterModuleLab();
             _killGold?.ResetForRun();
             _modules.BeginRunAll(new RunStart(seed, request.retry));
@@ -503,6 +546,11 @@ namespace RoguePirates.V4
                 _build.Progression.OfferChosen -= _session.OnOfferChosen;
                 _build.Progression.Evolved -= _session.OnEvolved;
                 _session.Detach();
+            }
+            if (_runLog != null)
+            {
+                if (_runPort != null) _runPort.StateChanged -= _runLog.OnRunState;
+                _runLog.Detach();
             }
             _damageShare?.Dispose();
             _spawnerProfiles?.Dispose();

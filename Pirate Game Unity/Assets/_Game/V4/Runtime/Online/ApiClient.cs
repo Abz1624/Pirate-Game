@@ -74,7 +74,8 @@ namespace RoguePirates.V4.Online
                 request.downloadHandler = new DownloadHandlerBuffer();
                 if (body != null)
                 {
-                    request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonUtility.ToJson(body)));
+                    var json = body is RawJsonBody raw ? raw.Json : JsonUtility.ToJson(body); // V5 M9a: the run log rides as raw JSON
+                    request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
                     request.SetRequestHeader("Content-Type", "application/json");
                 }
                 if (!string.IsNullOrEmpty(token)) request.SetRequestHeader("Authorization", "Bearer " + token);

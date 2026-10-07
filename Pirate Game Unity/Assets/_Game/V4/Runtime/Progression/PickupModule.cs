@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Config;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace RoguePirates.V4.Progression
 {
@@ -52,8 +51,8 @@ namespace RoguePirates.V4.Progression
     /// <summary>A seed-derived stream for the pickup draws (M14; its own, so presentation can never move a pickup).</summary>
     public sealed class SeededPickupRandom : IPickupRandom
     {
-        readonly System.Random _random;
-        public SeededPickupRandom(int seed) { _random = new System.Random(seed); }
+        readonly RunStream _random; // V5 M9a (I9a.2): the sanctioned stream class (same sequence as before)
+        public SeededPickupRandom(int seed) { _random = new RunStream(seed); }
         public float Range(float min, float max) => min + (float)_random.NextDouble() * (max - min);
         public int Range(int minInclusive, int maxExclusive) => _random.Next(minInclusive, maxExclusive);
 
@@ -76,16 +75,20 @@ namespace RoguePirates.V4.Progression
     /// </summary>
     public sealed class PickupModule
     {
-        /// <summary>The pickup draws (a seeded stream in runs; a parity test plugs in UnityEngine.Random, V3's source).</summary>
+        /// <summary>The pickup draws (the run-seeded stream; V5 M9a: a test may plug in its own stream).</summary>
         public IPickupRandom Random = new SeededPickupRandom(0);
 
         /// <summary>Seeds the pickup stream for a run (run start; the run seed decides every scatter and delay).</summary>
         public void Seed(int runSeed)
         {
             Random = new SeededPickupRandom(runSeed ^ 0x71C0B5);
+            Collected = 0;
             _lastHealthAt = 0f;
             _nextHealthAt = -1f;
         }
+
+        /// <summary>V5 M9a (I9a.1): pickups collected this run (barrels opened and pieces that paid; the run log).</summary>
+        public int Collected { get; private set; }
 
         // Timed health drops (playtest): the last drop's run time and when the next one is due (-1 = not drawn yet).
         float _lastHealthAt, _nextHealthAt = -1f;
@@ -376,7 +379,11 @@ namespace RoguePirates.V4.Progression
                     _pendingHeal += _pool[i].Value;
                     _rewards.PlaySound("pickup_health");
                     break;
+                default:
+                    Release(i);
+                    return;
             }
+            Collected++;
             Release(i); // a homing barrel pays nothing (V3; Magnetic Tide's R-103 fix opens barrels instead)
         }
 
@@ -413,6 +420,7 @@ namespace RoguePirates.V4.Progression
                 case PickupType.Powerup: Burst(PickupType.FlyingHealth, p.Position, p.Value); break;
                 default: return;
             }
+            Collected++;
             Release(i);
         }
 

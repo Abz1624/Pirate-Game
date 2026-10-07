@@ -96,10 +96,13 @@ public sealed class MigrationTests : IDisposable
         var outcome = DatabaseMigrator.Migrate(db, NullLogger.Instance);
 
         Assert.False(outcome.Baselined);
-        var baseline = Assert.Single(outcome.Applied);
-        Assert.EndsWith(DatabaseMigrator.BaselineSuffix, baseline);
-        Assert.Equal(new[] { baseline }, History(db));
+        // V5 M9a (I9a.1): every migration runs on an empty database, the baseline first (then AddRunLogs, ...).
+        var all = db.Database.GetMigrations().ToList();
+        Assert.Equal(all, outcome.Applied);
+        Assert.EndsWith(DatabaseMigrator.BaselineSuffix, all[0]);
+        Assert.Equal(all, History(db));
         foreach (var table in DatabaseMigrator.BaselineSchema.Keys) Assert.True(TableExists(path, table), table);
+        Assert.True(TableExists(path, "RunLogs"));
         Assert.Empty(db.Database.GetPendingMigrations());
     }
 
@@ -115,12 +118,16 @@ public sealed class MigrationTests : IDisposable
             var outcome = DatabaseMigrator.Migrate(db, NullLogger.Instance);
 
             Assert.True(outcome.Baselined);
-            Assert.Equal(new[] { WithProbeMigration.Id }, outcome.Applied); // the baseline was recorded, not re-run
+            // the baseline was recorded, not re-run; the real later migrations (AddRunLogs, ...) and the probe ran
+            var later = db.Database.GetMigrations().Skip(1).ToList();
+            Assert.Equal(WithProbeMigration.Id, later[^1]);
+            Assert.Equal(later, outcome.Applied);
             var history = History(db);
-            Assert.Equal(2, history.Count);
+            Assert.Equal(later.Count + 1, history.Count);
             Assert.EndsWith(DatabaseMigrator.BaselineSuffix, history[0]);
-            Assert.Equal(WithProbeMigration.Id, history[1]);
+            Assert.Equal(later, history.Skip(1));
             Assert.True(TableExists(path, "MigrationProbe"));
+            Assert.True(TableExists(path, "RunLogs"));
             var old = db.Players.Single();
             Assert.Equal("OldSalt", old.Name);
             Assert.Equal(1032, old.Rating);
@@ -131,7 +138,7 @@ public sealed class MigrationTests : IDisposable
             var again = DatabaseMigrator.Migrate(db, NullLogger.Instance);
             Assert.False(again.Baselined);
             Assert.Empty(again.Applied);
-            Assert.Equal(2, History(db).Count);
+            Assert.Equal(db.Database.GetMigrations().Count(), History(db).Count);
             Assert.Single(db.Players);
         }
     }
@@ -146,7 +153,7 @@ public sealed class MigrationTests : IDisposable
             var again = DatabaseMigrator.Migrate(db, NullLogger.Instance);
             Assert.False(again.Baselined);
             Assert.Empty(again.Applied);
-            Assert.Single(History(db));
+            Assert.Equal(db.Database.GetMigrations(), History(db));
         }
     }
 
@@ -205,7 +212,8 @@ public sealed class MigrationTests : IDisposable
             using var scope = host.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<GameDb>();
             Assert.IsType<SqliteGameDb>(db);
-            Assert.Single(History(db));
+            Assert.Equal(db.Database.GetMigrations(), History(db)); // baselined, then the later migrations applied
+            Assert.True(TableExists(path, "RunLogs"));
             Assert.Equal(2, await db.Players.CountAsync());
         }
 
@@ -214,7 +222,7 @@ public sealed class MigrationTests : IDisposable
             Assert.Equal(HttpStatusCode.OK, (await host.Anon().GetAsync("/health")).StatusCode);
             using var scope = host.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<GameDb>();
-            Assert.Single(History(db));
+            Assert.Equal(db.Database.GetMigrations(), History(db));
             Assert.Equal(new[] { "Fresh", "NewSalt" }, await db.Players.Select(p => p.Name).OrderBy(n => n).ToListAsync());
         }
     }

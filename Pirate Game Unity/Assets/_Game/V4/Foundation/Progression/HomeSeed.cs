@@ -21,7 +21,7 @@ namespace RoguePirates.V4.Foundation.Progression
             if (HasLockedHomeSeed)
                 return GetLockedHomeSeed();
 
-            return Random.Range(1, int.MaxValue);
+            return RunSeeds.NewLocalSeed(); // V5 M9a (I9a.2): not UnityEngine.Random
         }
 
         public static void TryLockFromRun(int runSeed)

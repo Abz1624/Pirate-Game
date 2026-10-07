@@ -14,6 +14,7 @@ public abstract class GameDb : DbContext
 
     public DbSet<Player> Players => Set<Player>();
     public DbSet<RunRecord> Runs => Set<RunRecord>();
+    public DbSet<RunLog> RunLogs => Set<RunLog>();
     public DbSet<WeeklyBest> WeeklyBests => Set<WeeklyBest>();
     public DbSet<Lobby> Lobbies => Set<Lobby>();
     public DbSet<Match> Matches => Set<Match>();
@@ -34,6 +35,17 @@ public abstract class GameDb : DbContext
             e.Property(x => x.Captain).HasMaxLength(32);
             e.Property(x => x.BuildHash).HasMaxLength(128);
             e.Property(x => x.ClientVersion).HasMaxLength(32);
+        });
+        b.Entity<RunLog>(e =>
+        {
+            e.HasKey(x => x.RunId);
+            e.Property(x => x.RunId).ValueGeneratedNever();
+            e.HasOne<RunRecord>().WithOne().HasForeignKey<RunLog>(x => x.RunId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.SeedSource).HasMaxLength(16);
+            e.Property(x => x.ConfigHash).HasMaxLength(128);
+            e.Property(x => x.BalanceVersion).HasMaxLength(64);
+            e.Property(x => x.BuildId).HasMaxLength(64);
+            e.Property(x => x.ClientRunId).HasMaxLength(64);
         });
         b.Entity<WeeklyBest>(e =>
         {

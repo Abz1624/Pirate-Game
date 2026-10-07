@@ -32,7 +32,9 @@ namespace RoguePirates.V4.Foundation.POI
         void Initialize(DemoJuiceSettings settings)
         {
             _settings = settings;
-            _bobPhase = Random.Range(0f, Mathf.PI * 2f);
+            // V5 M9a (I9a.2): the bob phase from where the chest sits (was a global UnityEngine.Random draw; visual only).
+            var p = transform.position;
+            _bobPhase = Mathf.Repeat(p.x * 1.618f + p.z * 2.718f, Mathf.PI * 2f);
             AlignToWaterSurface();
         }
 

@@ -56,7 +56,7 @@ namespace RoguePirates.V4.Foundation.Core
 
         public void BeginRun(int seed, int stageIndex = 0, int tier = 1)
         {
-            RunSeed = seed == 0 ? Environment.TickCount : seed;
+            RunSeed = seed == 0 ? RunSeeds.NewLocalSeed() : seed; // V5 M9a (I9a.2): was Environment.TickCount
             RunId = Guid.NewGuid().ToString("N");
             Rng = new RunRng(RunSeed);
             Stats = new PlayerStats();

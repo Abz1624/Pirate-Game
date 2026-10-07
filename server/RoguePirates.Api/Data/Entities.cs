@@ -29,6 +29,29 @@ public sealed class RunRecord
     public DateTime SubmittedAt { get; set; }
 }
 
+/// <summary>
+/// V5 M9a (I9a.1): the compact run log uploaded with a run (one row per run that sent one; older clients send none).
+/// The header fields are copied out of the JSON for queries; <see cref="Json"/> is the log as received (structurally
+/// checked by <c>RunLogRules</c>, at most <c>RunLogRules.MaxLogBytes</c>). The plausibility checker (I9a.3) reads it.
+/// </summary>
+public sealed class RunLog
+{
+    /// <summary>The run's id (<see cref="RunRecord.Id"/>); one log per run.</summary>
+    public long RunId { get; set; }
+    public int Version { get; set; }
+    public int Seed { get; set; }
+    /// <summary>Where the seed came from: local, requested or issued (server-issued from M10).</summary>
+    public string SeedSource { get; set; } = "";
+    public string ConfigHash { get; set; } = "";
+    public string? BalanceVersion { get; set; }
+    public string? BuildId { get; set; }
+    /// <summary>The client's own run id (RunManager.RunId).</summary>
+    public string? ClientRunId { get; set; }
+    /// <summary>UTF-8 size of <see cref="Json"/>.</summary>
+    public int Bytes { get; set; }
+    public string Json { get; set; } = "";
+}
+
 /// <summary>A player's best run of one ISO week on one map (one row per player, week and map).</summary>
 public sealed class WeeklyBest
 {

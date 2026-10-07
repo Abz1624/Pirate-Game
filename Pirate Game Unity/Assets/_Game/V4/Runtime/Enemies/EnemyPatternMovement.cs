@@ -14,7 +14,8 @@ namespace RoguePirates.V4.Enemies
             float dist,
             float dt,
             ref float chargeTimer,
-            Vector3 playerVelocity = default)
+            Vector3 playerVelocity = default,
+            float runSeconds = 0f)
         {
             if (p.ambushHidden)
                 return Vector3.zero;
@@ -89,7 +90,7 @@ namespace RoguePirates.V4.Enemies
                     return chaseDir * (speed * 1.2f);
                 case EnemyMovementPattern.Drift:
                 {
-                    var pulse = 0.78f + 0.32f * Mathf.Sin(Time.time * 3.2f + agent.id * 0.37f);
+                    var pulse = 0.78f + 0.32f * Mathf.Sin(runSeconds * 3.2f + agent.id * 0.37f) /* V5 M9a: run time, not Time.time */;
                     return chaseDir * (speed * pulse);
                 }
                 case EnemyMovementPattern.Stationary:

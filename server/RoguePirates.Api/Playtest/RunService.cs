@@ -58,6 +58,16 @@ public sealed partial class RunService
             throw new ApiException(422, "implausible_run", reason);
         }
 
+        // V5 M9a (I9a.1): the run log, when the client sent one (older clients do not): structural checks only (400).
+        RunLogRules.Checked? log;
+        try { log = RunLogRules.Check(req.Log, req); }
+        catch (ApiException ex)
+        {
+            _log.LogWarning("Rejected run log from player {PlayerId}: {Code} {Reason} (kills {Kills}, seconds {Seconds}, level {Level}, client {Client})",
+                player.Id, ex.Code, ex.Message, req.Kills, req.RunSeconds, req.Level, clientVersion);
+            throw;
+        }
+
         var now = _clock.UtcNow;
         var week = WeekMath.WeekStart(now);
 
@@ -69,8 +79,22 @@ public sealed partial class RunService
                 PlayerId = player.Id, Kills = req.Kills, RunSeconds = req.RunSeconds, Level = req.Level, Captain = captain,
                 MapId = map, BuildHash = buildHash, ClientVersion = clientVersion, WeekStart = week, SubmittedAt = now,
             };
-            _db.Runs.Add(run);
-            await _db.SaveChangesAsync();
+            await using (var tx = await _db.Database.BeginTransactionAsync())
+            {
+                _db.Runs.Add(run);
+                await _db.SaveChangesAsync();
+                if (log != null)
+                {
+                    var h = log.Header;
+                    _db.RunLogs.Add(new RunLog
+                    {
+                        RunId = run.Id, Version = h.Version, Seed = h.Seed, SeedSource = h.SeedSource, ConfigHash = h.ConfigHash,
+                        BalanceVersion = h.BalanceVersion, BuildId = h.BuildId, ClientRunId = h.ClientRunId, Bytes = log.Bytes, Json = log.Json,
+                    });
+                    await _db.SaveChangesAsync();
+                }
+                await tx.CommitAsync(); // the run and its log together
+            }
 
             var best = await _db.WeeklyBests.FirstOrDefaultAsync(b => b.PlayerId == player.Id && b.WeekStart == week && b.MapId == map);
             var isNewBest = best == null || req.Kills > best.Kills || (req.Kills == best.Kills && req.RunSeconds < best.RunSeconds);
@@ -97,6 +121,7 @@ public sealed partial class RunService
                 weekStart = week,
                 weekEnd = week.AddDays(7),
                 isNewWeeklyBest = isNewBest,
+                logStored = log != null,
                 weeklyBest = new { kills = best.Kills, runSeconds = best.RunSeconds, level = best.Level, captain = best.Captain },
             };
         }

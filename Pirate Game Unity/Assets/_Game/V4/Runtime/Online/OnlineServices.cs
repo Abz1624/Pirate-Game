@@ -227,7 +227,7 @@ namespace RoguePirates.V4.Online
                         var error = await SyncActive();
                         if (!p.Registered) { outcome.Line = IsOnline ? "Not ranked: " + (error ?? "no profile") : "Not ranked: offline"; return outcome; }
                     }
-                    var r = await Client.Post<RunSubmitResponse>("/api/runs", run, p.token);
+                    var r = await Client.Post<RunSubmitResponse>("/api/runs", new RawJsonBody(run.ToJson()), p.token); // V5 M9a: with the run log
                     Observe(r);
                     if (r.Status == 401) { Profiles.Unregister(p.localId); continue; }
                     if (r.IsOffline) return outcome;

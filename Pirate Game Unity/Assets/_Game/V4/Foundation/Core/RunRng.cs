@@ -3,6 +3,13 @@ using UnityEngine;
 
 namespace RoguePirates.V4.Foundation.Core
 {
+    /// <summary>
+    /// The run's seeded random streams: the one place gameplay draws come from (V5 M9a, I9a.2). Five shared streams
+    /// (map, loot, director, combat, powerup) derived from the run seed, plus <see cref="RunStream"/> for a module's own
+    /// stream (seed ^ its salt) and <see cref="RunSeeds"/> for choosing a new local seed. No gameplay code under V4/Runtime
+    /// or V4/Foundation may use UnityEngine.Random or System.Random directly (V5RunSeedingTests scans for it), so the same
+    /// seed and the same inputs give the same run, and a seed issued by the server (M10) decides every draw.
+    /// </summary>
     public sealed class RunRng
     {
         readonly System.Random _map;
@@ -78,6 +85,42 @@ namespace RoguePirates.V4.Foundation.Core
             }
 
             return weights.Length - 1;
+        }
+    }
+
+    /// <summary>
+    /// V5 M9a (I9a.2): a module's own seeded stream (the elite lever, barks, the leash, pickups, the practice bot), the
+    /// same sequence as the <c>System.Random(seed)</c> each used before, so behaviour is unchanged. Construct it from the
+    /// run seed mixed with the module's salt; never from the clock.
+    /// </summary>
+    public sealed class RunStream
+    {
+        readonly System.Random _random;
+
+        public RunStream(int seed) { _random = new System.Random(seed); }
+
+        /// <summary>[0, 1) as a double.</summary>
+        public double NextDouble() => _random.NextDouble();
+        /// <summary>[0, 1) as a float.</summary>
+        public float NextFloat() => (float)_random.NextDouble();
+        /// <summary>[0, maxExclusive).</summary>
+        public int Next(int maxExclusive) => _random.Next(maxExclusive);
+        /// <summary>[minInclusive, maxExclusive).</summary>
+        public int Next(int minInclusive, int maxExclusive) => _random.Next(minInclusive, maxExclusive);
+    }
+
+    /// <summary>
+    /// V5 M9a (I9a.2): where a run's seed comes from when nobody supplied one (a first run, a retry). Not a gameplay draw:
+    /// it picks the seed every stream then derives from. A server-issued seed (M10) replaces it through
+    /// <c>RunRequest.RequestIssuedSeed</c>.
+    /// </summary>
+    public static class RunSeeds
+    {
+        /// <summary>A fresh positive, non-zero seed (from a new GUID; independent of UnityEngine.Random's global state).</summary>
+        public static int NewLocalSeed()
+        {
+            var seed = Guid.NewGuid().GetHashCode() & int.MaxValue;
+            return seed == 0 ? 1 : seed;
         }
     }
 }

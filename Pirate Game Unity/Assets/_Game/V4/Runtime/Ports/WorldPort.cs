@@ -59,11 +59,12 @@ namespace RoguePirates.V4.Ports
         }
 
         /// <summary>
-        /// Seed for the run, as V3 resolves it: explicit request, else a random seed on Retry (V3RunBootstrap.RestartRun),
-        /// else the locked home seed / random first-run seed (HomeSeed).
+        /// Seed for the run, as V3 resolves it: explicit request, else a new seed on Retry (V3RunBootstrap.RestartRun),
+        /// else the locked home seed / new first-run seed (HomeSeed). V5 M9a (I9a.2): new seeds come from RunSeeds, not
+        /// UnityEngine.Random's global state.
         /// </summary>
         public static int ResolveSeed(int requestedSeed, bool retry) =>
-            requestedSeed != 0 ? requestedSeed : retry ? Random.Range(1, int.MaxValue) : HomeSeed.ResolveRunSeed();
+            requestedSeed != 0 ? requestedSeed : retry ? RunSeeds.NewLocalSeed() : HomeSeed.ResolveRunSeed();
 
         public static bool HomeSeedLocked => HomeSeed.HasLockedHomeSeed;
         public static void LockHomeSeed(int runSeed) => HomeSeed.TryLockFromRun(runSeed);

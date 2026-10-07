@@ -90,7 +90,7 @@ namespace RoguePirates.V4.Narrative
         Difficulty.IPowerInputs _power;
         IRunViews _views;
         NarrativeConfig _config;
-        System.Random _rng = new System.Random(Salt);
+        RoguePirates.V4.Foundation.Core.RunStream _rng = new RoguePirates.V4.Foundation.Core.RunStream(Salt); // V5 M9a (I9a.2)
         float _lastBark = float.NegativeInfinity, _lastKill, _bossDefeatedAt = float.NegativeInfinity;
         bool _runStartDone;
         int _gold;
@@ -119,7 +119,7 @@ namespace RoguePirates.V4.Narrative
             _lastPlayed.Clear();
             _playedThisRun.Clear();
             _killTimes.Clear();
-            _rng = new System.Random(start.Seed ^ Salt);
+            _rng = new RoguePirates.V4.Foundation.Core.RunStream(start.Seed ^ Salt);
             _lastBark = _bossDefeatedAt = float.NegativeInfinity;
             _lastKill = 0f;
             _runStartDone = false;

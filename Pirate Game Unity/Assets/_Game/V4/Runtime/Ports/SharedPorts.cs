@@ -176,6 +176,8 @@ namespace RoguePirates.V4.Ports
             }
         }
         public Vector3 MovementForward => Ship != null ? Ship.MovementForward : Vector3.forward;
+        /// <summary>V5 M9a (I9a.1): the steer (x) and throttle (y) input the ship last sailed on.</summary>
+        public Vector2 SteerThrottle => Ship != null ? Ship.LastSteerThrottle : Vector2.zero;
         public Vector3 TransformPoint(Vector3 local) => Ship.transform.TransformPoint(local);
 
         public float ContactRadius => Ship != null ? Ship.IslandCollisionRadius : 1.15f;

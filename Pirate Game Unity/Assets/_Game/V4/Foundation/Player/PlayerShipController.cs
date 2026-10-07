@@ -157,6 +157,9 @@ namespace RoguePirates.V4.Foundation.Player
 
         public void SetMovementEnabled(bool enabled) => _movementEnabled = enabled;
 
+        /// <summary>V5 M9a (I9a.1): the steer and throttle the last physics step used (the run log samples it).</summary>
+        public Vector2 LastSteerThrottle { get; private set; }
+
         public void ConfigureBotControl(IShipSteerInput botInput)
         {
             _botSteerInput = botInput;
@@ -381,6 +384,7 @@ namespace RoguePirates.V4.Foundation.Player
             var moveMult = _slowMultiplier * _moveEffectMultiplier;
             var dt = Time.fixedDeltaTime;
             var input = ReadShipInput();
+            LastSteerThrottle = new Vector2(input.steer, input.throttle);
             var forward = GetShipForward();
             var forwardSpeed = Vector3.Dot(_velocity, forward);
             var effectiveMaxSpeed = maxSpeed * _moveSpeedMultiplier * moveMult;

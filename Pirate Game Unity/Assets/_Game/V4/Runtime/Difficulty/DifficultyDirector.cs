@@ -148,7 +148,7 @@ namespace RoguePirates.V4.Difficulty
         bool _everForced;
         float _pressureSum, _pressurePeak = 1f;
         int _pressureSamples;
-        System.Random _eliteRng = new System.Random(EliteStreamSalt);
+        RoguePirates.V4.Foundation.Core.RunStream _eliteRng = new RoguePirates.V4.Foundation.Core.RunStream(EliteStreamSalt); // V5 M9a (I9a.2): the sanctioned stream class
         // Kill band (playtest): kills and spawns in the current fixed band, and what the last judged band set for this one.
         int _bandKills, _bandSpawns;
         float _bandStart;
@@ -204,7 +204,7 @@ namespace RoguePirates.V4.Difficulty
             _pressurePeak = 1f;
             _pressureSamples = 0;
             CloseRangeShare = 0f;
-            _eliteRng = new System.Random(start.Seed ^ EliteStreamSalt);
+            _eliteRng = new RoguePirates.V4.Foundation.Core.RunStream(start.Seed ^ EliteStreamSalt);
             Unranked = false;
             OffenseNorm = DefenseNorm = Performance = 1f;
             Offense = _offense0 = 0f;

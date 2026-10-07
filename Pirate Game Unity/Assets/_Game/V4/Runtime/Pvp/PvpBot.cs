@@ -32,12 +32,12 @@ namespace RoguePirates.V4.Pvp
         /// <summary>The bot's incoming hits (the same PvP rules as a player's).</summary>
         public readonly PvpHitWindow Hits = new PvpHitWindow();
 
-        readonly System.Random _rng;
+        readonly RoguePirates.V4.Foundation.Core.RunStream _rng; // V5 M9a (I9a.2): seeded from the match seed
         float _boostLeft, _boostCooldown = 6f, _fireTimer = 2f, _strafeSign = 1f, _strafeTimer = 4f, _stuckTimer;
 
         public PvpBot(int seed, Vector3 position, float yaw, float maxHp)
         {
-            _rng = new System.Random(seed);
+            _rng = new RoguePirates.V4.Foundation.Core.RunStream(seed);
             Position = position;
             Yaw = yaw;
             Hp = MaxHp = maxHp;

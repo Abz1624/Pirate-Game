@@ -87,6 +87,9 @@ namespace RoguePirates.V4.Enemies
         public EnemyCombatServices Services => _services;
 
         public int ActiveCount => _activeCount;
+        /// <summary>V5 M9a (I9a.2): run time for the movement wobbles (was the Editor/player clock Time.time, which made two
+        /// runs of the same seed differ).</summary>
+        public float RunSeconds => _run != null && _run.Exists ? _run.ElapsedSeconds : 0f;
         public EnemyUnit[] Agents => _agents;
         public EnemyDefinition[] Definitions => _definitions;
         public CombatStateStore CombatStates => _states;

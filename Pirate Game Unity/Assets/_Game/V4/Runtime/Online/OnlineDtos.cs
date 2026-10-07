@@ -32,6 +32,26 @@ namespace RoguePirates.V4.Online
     {
         public int kills; public int runSeconds; public int level;
         public string captain; public string mapId; public string buildHash; public string clientVersion;
+
+        /// <summary>V5 M9a (I9a.1): the run log's JSON (an object), sent as the "log" field; null sends none (as older
+        /// clients). Not a JsonUtility field: <see cref="ToJson"/> splices it in as raw JSON.</summary>
+        [NonSerialized] public string logJson;
+
+        /// <summary>The request body: the summary fields, plus "log" when there is one.</summary>
+        public string ToJson()
+        {
+            var json = UnityEngine.JsonUtility.ToJson(this);
+            if (string.IsNullOrEmpty(logJson)) return json;
+            var end = json.LastIndexOf('}');
+            return json.Substring(0, end) + ",\"log\":" + logJson + "}";
+        }
+    }
+
+    /// <summary>V5 M9a (I9a.1): a request body that is already JSON (sent as is, not through JsonUtility).</summary>
+    public sealed class RawJsonBody
+    {
+        public readonly string Json;
+        public RawJsonBody(string json) { Json = json; }
     }
 
     [Serializable] public sealed class RunBest { public int kills; public int runSeconds; public int level; public string captain; }

@@ -6,6 +6,7 @@ using RoguePirates.V4.Enemies;
 using RoguePirates.V4.Events;
 using RoguePirates.V4.Foundation.Core;
 using UnityEngine;
+using static RoguePirates.V4.Telemetry.TelemetryJson;
 
 namespace RoguePirates.V4.Telemetry
 {
@@ -380,44 +381,6 @@ namespace RoguePirates.V4.Telemetry
             });
             sb.Append("}}");
             return sb.ToString();
-        }
-
-        static void Key(StringBuilder sb, string key, bool first)
-        {
-            if (!first) sb.Append(',');
-            sb.Append('"').Append(key).Append("\":");
-        }
-
-        static void Str(StringBuilder sb, string key, string value, bool first = false)
-        {
-            Key(sb, key, first);
-            if (value == null) sb.Append("null");
-            else sb.Append('"').Append(Esc(value)).Append('"');
-        }
-
-        static void Num(StringBuilder sb, string key, float value, bool first = false)
-        {
-            Key(sb, key, first);
-            if (float.IsNaN(value) || float.IsInfinity(value)) sb.Append("null");
-            else sb.Append(value.ToString("0.###", CultureInfo.InvariantCulture));
-        }
-
-        static void Int(StringBuilder sb, string key, int value, bool first = false)
-        {
-            Key(sb, key, first);
-            sb.Append(value.ToString(CultureInfo.InvariantCulture));
-        }
-
-        static void Bool(StringBuilder sb, string key, bool value, bool first = false)
-        {
-            Key(sb, key, first);
-            sb.Append(value ? "true" : "false");
-        }
-
-        static string Esc(string s)
-        {
-            if (s.IndexOfAny(new[] { '"', '\\', '\n', '\r', '\t' }) < 0) return s;
-            return s.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r").Replace("\t", "\\t");
         }
 
         public void Detach()

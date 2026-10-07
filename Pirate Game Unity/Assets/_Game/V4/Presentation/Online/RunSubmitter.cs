@@ -9,7 +9,7 @@ namespace RoguePirates.V4.Presentation.Online
 {
     /// <summary>
     /// Playtest (3 Oct, owner): sends a finished Saltwind run to the weekly leaderboard (kills, run time, level, Captain,
-    /// a build hash) and reports the line the results screen shows ("Weekly rank #N (best K kills)" or "Not ranked:
+    /// a build hash; V5 M9a: and the run log) and reports the line the results screen shows ("Weekly rank #N (best K kills)" or "Not ranked:
     /// offline"). Never blocks: the line arrives when the API answers.
     /// </summary>
     public static class RunSubmitter
@@ -28,7 +28,7 @@ namespace RoguePirates.V4.Presentation.Online
             var progression = views.Progression;
             if (progression != null)
                 for (var i = 0; i < progression.LogbookCount; i++) parts.Add("l:" + progression.LogbookId(i) + ":" + progression.LogbookRank(i));
-            return new RunSubmitRequest
+            var request = new RunSubmitRequest
             {
                 kills = Mathf.Max(0, run.Kills),
                 runSeconds = Mathf.Max(0, Mathf.FloorToInt(run.ElapsedSeconds)),
@@ -38,6 +38,29 @@ namespace RoguePirates.V4.Presentation.Online
                 buildHash = OnlineRules.BuildHash(parts),
                 clientVersion = Application.version,
             };
+            AttachLog(request, views.RunLog);
+            return request;
+        }
+
+        /// <summary>
+        /// V5 M9a (I9a.1): closes the run log and sends it with the run. The summary's kills, run time and level are the
+        /// ones the log was closed with, so the API finds them equal to the log's sums (both read the same counters).
+        /// </summary>
+        public static void AttachLog(RunSubmitRequest request, RoguePirates.V4.Telemetry.IRunLogSource source)
+        {
+            if (request == null || source == null) return;
+            RoguePirates.V4.Telemetry.RunLogResult log;
+            try { log = source.Close(); }
+            catch (Exception e)
+            {
+                Debug.LogWarning("RunSubmitter: run log not closed: " + e.Message);
+                return;
+            }
+            if (log == null || string.IsNullOrEmpty(log.Json)) return;
+            request.kills = Mathf.Max(0, log.Kills);
+            request.runSeconds = Mathf.Max(0, Mathf.FloorToInt(log.Seconds));
+            request.level = Mathf.Clamp(log.Level, 1, 200);
+            request.logJson = log.Json;
         }
 
         /// <summary>The Captain's save key (rook, brine, ...): the Foundation Captain id's name, lower case.</summary>
