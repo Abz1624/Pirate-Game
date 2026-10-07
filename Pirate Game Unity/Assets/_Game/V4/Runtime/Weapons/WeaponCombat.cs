@@ -24,6 +24,10 @@ namespace RoguePirates.V4.Weapons
         public int ExtraPierce;
         /// <summary>V5 M4: an Empowered evolution's extra shots on a burst weapon (Swivel Battery), which fires bursts, not volleys.</summary>
         public int ExtraBurstShots;
+        /// <summary>V5 M8z (7 Oct, Q20): the reached milestones' orbit spin factor, extra slow seconds, and echoes (every
+        /// firing repeats <see cref="Echoes"/> more times, <see cref="EchoDelaySeconds"/> apart). 1, 0, 0 without milestones.</summary>
+        public float SpinMult = 1f, ExtraSlowSeconds, EchoDelaySeconds;
+        public int Echoes;
 
         public float CooldownTimer;
         /// <summary>Shots of the current burst still to fire (Swivel Guns' second shot).</summary>
@@ -70,6 +74,10 @@ namespace RoguePirates.V4.Weapons
             slot.ExtraPierce = 0;
             slot.ExtraSlow = 0f;
             slot.ExtraBurstShots = 0;
+            slot.SpinMult = 1f; // V5 M8z (7 Oct, Q20)
+            slot.ExtraSlowSeconds = 0f;
+            slot.Echoes = 0;
+            slot.EchoDelaySeconds = 0f;
             ApplyMilestones(slot);
             if (slot.EvolutionEffect != ConfigEnums.EvolutionEffect.Empowered) return;
             var e = slot.Evolution.empower;
@@ -79,8 +87,9 @@ namespace RoguePirates.V4.Weapons
             slot.CooldownMult *= e.cooldownMultiplier;
             slot.SizeMult *= e.sizeMultiplier;
             slot.KnockbackMult *= e.knockbackMultiplier;
-            slot.ExtraPierce = e.extraPierce;
-            slot.ExtraSlow = e.extraSlow;
+            // V5 M8z (7 Oct, Q20): on top of the milestones' (Black Tide's slow replaced the Ink Pots' rank 12 slow).
+            slot.ExtraPierce += e.extraPierce;
+            slot.ExtraSlow += e.extraSlow;
         }
 
         /// <summary>
@@ -99,8 +108,21 @@ namespace RoguePirates.V4.Weapons
                 slot.SizeMult *= m.sizeMultiplier;
                 slot.DurationMult *= m.durationMultiplier;
                 slot.ExtraSlow += m.extraSlow;
+                // V5 M8z (7 Oct, Q20): the other new weapons' milestones.
+                slot.ExtraPierce += m.extraPierce;
+                slot.SpinMult *= m.spinMultiplier > 0f ? m.spinMultiplier : 1f;
+                slot.ExtraSlowSeconds += m.extraSlowSeconds;
+                if (m.echoes > 0)
+                {
+                    slot.Echoes += m.echoes;
+                    slot.EchoDelaySeconds = Mathf.Max(0.05f, m.echoDelaySeconds);
+                }
             }
         }
+
+        /// <summary>V5 M8z (7 Oct, Q20): a slow's seconds with the milestones' extra seconds, × the Duration card.</summary>
+        public static float SlowSeconds(WeaponSlot w, float baseSeconds) =>
+            w.ExtraSlowSeconds > 0f ? (baseSeconds + w.ExtraSlowSeconds) * w.DurationMult : baseSeconds * w.DurationMult;
 
         /// <summary>V5 M8z (7 Oct, D21): a weapon's slow share with the Slow cards, milestones and evolution (0 when the
         /// weapon itself does not slow), at most 0.9 (the enemy world caps it further).</summary>
@@ -178,6 +200,14 @@ namespace RoguePirates.V4.Weapons
         public bool PulseImpact;
     }
 
+    /// <summary>V5 M8z (7 Oct, Q20): a weapon's firing to repeat after <see cref="Timer"/> seconds, <see cref="Left"/> more times.</summary>
+    public struct PendingEcho
+    {
+        public WeaponSlot Weapon;
+        public float Timer;
+        public int Left;
+    }
+
     /// <summary>V5 M4b: a whirlpool that drags enemies in and hurts them, then implodes (Maelstrom Charge).</summary>
     public struct Whirlpool
     {
@@ -239,6 +269,8 @@ namespace RoguePirates.V4.Weapons
         public readonly List<BoardingSkiff> Skiffs = new List<BoardingSkiff>();
         public readonly List<PendingFollowUp> FollowUps = new List<PendingFollowUp>();
         public readonly List<Whirlpool> Whirlpools = new List<Whirlpool>();
+        /// <summary>V5 M8z (7 Oct, Q20): firings still to repeat (a milestone's echoes: the Siren Bell's second pulse).</summary>
+        public readonly List<PendingEcho> Echoes = new List<PendingEcho>();
         public readonly List<Vector3> LaneHitScratch = new List<Vector3>();
         public readonly List<int> LaneIndexScratch = new List<int>();
         public float OrbitVolleyTimer;
@@ -341,6 +373,8 @@ namespace RoguePirates.V4.Weapons
                 t.SlowFraction = WeaponStatResolver.Slow(w, t.SlowFraction);
                 if (t.SlowSeconds <= 0f) t.SlowSeconds = 1.5f;
             }
+            // V5 M8z (7 Oct, Q20): a milestone's longer slow (Chainshot rank 12); the shots' slow is not on the Duration card.
+            if (t.SlowFraction > 0f && w.ExtraSlowSeconds > 0f) t.SlowSeconds += w.ExtraSlowSeconds;
             return t;
         }
 
@@ -372,6 +406,7 @@ namespace RoguePirates.V4.Weapons
             Skiffs.Clear();
             FollowUps.Clear();
             Whirlpools.Clear();
+            Echoes.Clear();
         }
     }
 }

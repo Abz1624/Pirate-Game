@@ -140,15 +140,24 @@ export function simulateRun(data, params) {
     const crit = 1 + Math.min(1, stats[S.CritChance]) * Math.max(0, stats[S.CritDamage] - 1);
     const emp = w.evo && w.evo.empower;
     const dmgMult = lvl * (stats[S.Damage] + captainDamage()) * crit * (w.evo ? (emp ? emp.damage : M.evolutionMultiplier) : 1);
-    const qty = Math.max(1, base.quantity + w.qty + (emp ? emp.quantity : 0) + Math.floor(stats[S.Quantity]));
+    // V5 M8z (7 Oct, Q20): the rank milestones reached (WeaponStatResolver.ApplyMilestones): extra quantity (a shot, summon,
+    // blade or bounce, like a Quantity card), echoes (every firing repeats), a faster orbit spin, a wider area (more targets),
+    // extra pierce (one more target), a longer whirlpool (its ticks are about half a Maelstrom's hits). A summon's longer life
+    // is not counted (its cooldown waits for it, so its damage a second barely moves); slows are not modelled (no enemy speed).
+    let msQty = 0, msEcho = 0, msSize = 1, msSpin = 1, msDur = 1, msPierce = 0;
+    for (const ms of base.milestones || []) if (w.level >= ms.level) {
+      msQty += ms.quantity || 0; msEcho += ms.echoes || 0; msSize *= ms.size || 1; msSpin *= ms.spin || 1; msDur *= ms.duration || 1; msPierce += ms.pierce || 0;
+    }
+    const qty = Math.max(1, base.quantity + w.qty + msQty + (emp ? emp.quantity : 0) + Math.floor(stats[S.Quantity]));
     const cd = w.cd * (emp ? emp.cooldown : 1);
     // Orbits: passes per second follow the spin (their cooldown is unused); everything else follows the cooldown.
-    const cycleScale = M.refSpin[w.id] ? M.refSpin[w.id] / Math.max(1, base.spin || M.refSpin[w.id]) : (M.refCooldown[w.id] ? base.cooldown / M.refCooldown[w.id] : 1);
+    const cycleScale = M.refSpin[w.id] ? M.refSpin[w.id] / Math.max(1, (base.spin || M.refSpin[w.id]) * msSpin) : (M.refCooldown[w.id] ? base.cooldown / M.refCooldown[w.id] : 1);
     const blades = M.refBlades[w.id] ? (base.blades || M.refBlades[w.id]) / M.refBlades[w.id] : 1;
-    const single = base.damage * m[0] * (qty / base.quantity) * dmgMult * blades / (m[1] * cycleScale * cd / stats[S.AttackSpeed]);
+    const repeat = (1 + msEcho) * (base.behavior === 8 ? 1 + 0.5 * (msDur - 1) : 1);
+    const single = base.damage * m[0] * (qty / base.quantity) * dmgMult * blades * repeat / (m[1] * cycleScale * cd / stats[S.AttackSpeed]);
     const game = base.damage * lvl * (stats[S.Damage] + captainDamage()) * crit * (w.evo ? Math.max(1, evoOffense) * (emp ? emp.damage : 1) : 1)
-      / Math.max(0.05, base.cooldown * cd / stats[S.AttackSpeed]) * qty * (base.coverage ?? coverage[base.behavior] ?? 1) * (base.hitsPerFiring ?? 1);
-    return { single, game, perHit: base.damage * m[2] * dmgMult, targets: m[3] * (1 + 0.5 * (w.size * stats[S.Size] - 1)) };
+      / Math.max(0.05, base.cooldown * cd / stats[S.AttackSpeed]) * qty * (base.coverage ?? coverage[base.behavior] ?? 1) * (base.hitsPerFiring ?? 1) * (1 + msEcho);
+    return { single, game, perHit: base.damage * m[2] * dmgMult, targets: m[3] * (1 + 0.5 * (w.size * msSize * stats[S.Size] - 1)) + msPierce };
   };
   const singleDps = () => weapons.reduce((s, w) => s + weaponNumbers(w).single, 0);
   const gameDps = () => weapons.reduce((s, w) => s + weaponNumbers(w).game, 0);

@@ -260,6 +260,12 @@ namespace RoguePirates.V4.Editor
                         }).ToList(),
                         ["levelDamageFactor"] = w.levelDamageFactor, ["hitsPerFiring"] = WeaponStatResolver.HitsPerFiring(w), ["coverage"] = coverage,
                         ["databaseOrder"] = w.databaseOrder, ["rum"] = rum.TryGetValue(w.weaponId, out var cost) ? cost : 0,
+                        // V5 M8z (7 Oct, Q20): the rank milestones (the simulator applies them from their level on).
+                        ["milestones"] = (w.milestones ?? Array.Empty<WeaponMilestone>()).Where(m => m != null).Select(m => (object)new Dictionary<string, object>
+                        {
+                            ["level"] = m.level, ["quantity"] = m.extraQuantity, ["size"] = m.sizeMultiplier, ["duration"] = m.durationMultiplier, ["slow"] = m.extraSlow,
+                            ["pierce"] = m.extraPierce, ["spin"] = m.spinMultiplier, ["slowSeconds"] = m.extraSlowSeconds, ["echoes"] = m.echoes,
+                        }).ToList(),
                     };
                 sheetWeapons.Add(new Dictionary<string, object>
                 {

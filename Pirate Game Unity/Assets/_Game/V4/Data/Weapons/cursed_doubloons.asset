@@ -61,6 +61,40 @@ MonoBehaviour:
   runtimeCatalogWeapon: 0
   goldPerKill: 1
   goldPerKillRunCap: 40
+  milestones:
+  - level: 4
+    extraQuantity: 1
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: +1 bounce
+  - level: 8
+    extraQuantity: 1
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: +1 bounce
+  - level: 12
+    extraQuantity: 0
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 1
+    echoDelaySeconds: 0.35
+    description: a second coin 0.35 s later
   projectileVisual:
     prefab: {fileID: 0}
     scaleMultiplier: 1

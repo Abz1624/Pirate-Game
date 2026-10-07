@@ -226,7 +226,21 @@ namespace RoguePirates.V4.Weapons
             return bestScore;
         }
 
-        bool TryDensestCluster(Vector3 origin, float range, float size, out int targetIndex, out Vector3 aimDirection)
+        /// <summary>
+        /// V5 M8z (7 Oct, Q20): the densest pack in range whose centre enemy is farther than <paramref name="takenRadius"/>
+        /// from every point in <paramref name="taken"/> (a further shell on the next pack, the Maelstrom's rank 12).
+        /// </summary>
+        public bool TryClusterGroundAwayFrom(float range, System.Collections.Generic.IReadOnlyList<Vector3> taken, float takenRadius, out Vector3 point)
+        {
+            point = Vector3.zero;
+            if (_enemies == null || !_enemies.Exists || _ship == null || !_ship.Exists) return false;
+            if (!TryDensestCluster(_ship.Position, range, ClusterProbeSize, out var index, out _, taken, takenRadius)) return false;
+            point = _enemies.Position(index);
+            return true;
+        }
+
+        bool TryDensestCluster(Vector3 origin, float range, float size, out int targetIndex, out Vector3 aimDirection,
+            System.Collections.Generic.IReadOnlyList<Vector3> taken = null, float takenRadius = 0f)
         {
             targetIndex = -1;
             aimDirection = Vector3.forward;
@@ -240,6 +254,7 @@ namespace RoguePirates.V4.Weapons
                 var delta = position - origin;
                 delta.y = 0f;
                 if (delta.sqrMagnitude > Reach(range, i) * Reach(range, i)) continue;
+                if (taken != null && IsTaken(position, taken, takenRadius)) continue; // V5 M8z (Q20)
 
                 var count = 0;
                 for (var j = 0; j < _enemies.Capacity; j++)
@@ -259,6 +274,17 @@ namespace RoguePirates.V4.Weapons
             if (targetIndex < 0) return false;
             aimDirection = (_enemies.Position(targetIndex) - origin).normalized;
             return true;
+        }
+
+        static bool IsTaken(Vector3 position, System.Collections.Generic.IReadOnlyList<Vector3> taken, float radius)
+        {
+            for (var t = 0; t < taken.Count; t++)
+            {
+                var d = position - taken[t];
+                d.y = 0f;
+                if (d.sqrMagnitude <= radius * radius) return true;
+            }
+            return false;
         }
 
         bool TryCloseDefense(Vector3 origin, float range, out int targetIndex, out Vector3 aimDirection)

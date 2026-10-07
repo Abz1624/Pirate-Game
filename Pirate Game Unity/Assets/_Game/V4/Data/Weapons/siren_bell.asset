@@ -62,6 +62,40 @@ MonoBehaviour:
   runtimeCatalogWeapon: 0
   goldPerKill: 0
   goldPerKillRunCap: 0
+  milestones:
+  - level: 4
+    extraQuantity: 0
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0.5
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: the slow lasts 0.5 s longer
+  - level: 8
+    extraQuantity: 0
+    sizeMultiplier: 1.2
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: +1 m radius
+  - level: 12
+    extraQuantity: 0
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 1
+    echoDelaySeconds: 0.35
+    description: a second pulse 0.35 s later
   projectileVisual:
     prefab: {fileID: 0}
     scaleMultiplier: 1

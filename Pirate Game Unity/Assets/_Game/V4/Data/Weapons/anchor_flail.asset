@@ -66,6 +66,40 @@ MonoBehaviour:
   runtimeCatalogWeapon: 0
   goldPerKill: 0
   goldPerKillRunCap: 0
+  milestones:
+  - level: 4
+    extraQuantity: 0
+    sizeMultiplier: 1.1428572
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: a wider swing (+0.5 m reach)
+  - level: 8
+    extraQuantity: 1
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: another anchor
+  - level: 12
+    extraQuantity: 0
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1.1666666
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: a faster swing (+25 degrees a second)
   projectileVisual:
     prefab: {fileID: 3274285418519690880, guid: a56db32405bb24ee290e68352d967ccd, type: 3}
     scaleMultiplier: 1

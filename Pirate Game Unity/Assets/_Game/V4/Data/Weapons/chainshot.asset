@@ -66,6 +66,40 @@ MonoBehaviour:
   runtimeCatalogWeapon: 0
   goldPerKill: 0
   goldPerKillRunCap: 0
+  milestones:
+  - level: 4
+    extraQuantity: 0
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 1
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: +1 pierce
+  - level: 8
+    extraQuantity: 0
+    sizeMultiplier: 1.3333334
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: a wider shot (+0.5 m)
+  - level: 12
+    extraQuantity: 0
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 1
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: the slow lasts 1 s longer
   projectileVisual:
     prefab: {fileID: 7836255817071307116, guid: 00e79e7cf55e34082a44dbce82256ab6, type: 3}
     scaleMultiplier: 1

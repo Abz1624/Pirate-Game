@@ -135,7 +135,12 @@ for p in glob.glob(os.path.join(V4, 'Weapons', '*.asset')):
                         quantity=int(a['baseQuantity']), behavior=int(a['behavior']), maxLevel=int(a['maxLevel']), spin=float(a['orbit'].get('angularSpeedDegrees', 0)), blades=int(a['orbit'].get('baseBlades', 1)),
                         pierce=int(a['projectile'].get('pierce', 0)), lane=bool(a['lane'].get('enabled', 0)),
                         axes=[dict(axis=int(x['axis']), inc=float(x['baseIncrement']), weight=float(x['offerWeight']), cap=float(x['maxAccumulated']))
-                              for x in (a.get('upgradeAxes') or [])])
+                              for x in (a.get('upgradeAxes') or [])],
+                        # V5 M8z (7 Oct, Q20): the rank milestones (WeaponConfig.milestones), as MonteCarloExport writes them.
+                        milestones=[dict(level=int(m['level']), quantity=int(m.get('extraQuantity', 0)), size=float(m.get('sizeMultiplier', 1)),
+                                         duration=float(m.get('durationMultiplier', 1)), slow=float(m.get('extraSlow', 0)), pierce=int(m.get('extraPierce', 0)),
+                                         spin=float(m.get('spinMultiplier', 1)), slowSeconds=float(m.get('extraSlowSeconds', 0)), echoes=int(m.get('echoes', 0)))
+                                    for m in (a.get('milestones') or []) if m])
 
 PROG = os.path.join(V4, 'Build', 'Progression_Saltwind.asset')
 prog = load(PROG)

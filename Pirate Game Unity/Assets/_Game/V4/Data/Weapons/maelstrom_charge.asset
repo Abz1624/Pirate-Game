@@ -56,6 +56,40 @@ MonoBehaviour:
   runtimeCatalogWeapon: 0
   goldPerKill: 0
   goldPerKillRunCap: 0
+  milestones:
+  - level: 4
+    extraQuantity: 0
+    sizeMultiplier: 1.2
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: 20% wider whirlpools
+  - level: 8
+    extraQuantity: 0
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1.3333334
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: whirlpools last 1 s longer
+  - level: 12
+    extraQuantity: 1
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: a second charge, on the next pack
   projectileVisual:
     prefab: {fileID: 0}
     scaleMultiplier: 1

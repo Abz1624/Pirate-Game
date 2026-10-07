@@ -461,6 +461,21 @@ every existing weapon has an evolution.
   aura (`requiresBoost`) went with the Prow; the Ink Pots are a predicted-area shell with `rearTargeting` and a slowing,
   pull-free whirlpool (`predictedArea.slowFraction`); rank milestones are data (`WeaponConfig.milestones`, Q20); a new
   upgrade axis `Slow`.
+- I4.3 Rank milestones for every new weapon (Q20, 7 Oct, `// V5 M8z (7 Oct, Q20)`), data in `WeaponConfig.milestones`,
+  shown on the upgrade card as "Rank N: ..." (CardStatLines). From the design (§4.7): **Anchor Flail** 4 a wider swing
+  (+0.5 m), 8 another anchor (three), 12 +25°/s; **Chainshot** 4 +1 pierce, 8 a 0.5 m wider shot, 12 the slow lasts
+  1 s longer; **Siren Bell** 4 the slow lasts 0.5 s longer, 8 +1 m radius, 12 a second pulse 0.35 s later. Chosen (no
+  design numbers; "more of its thing"): **Parrot Squadron** 4 and 12 one more parrot, 8 parrots stay 25% longer;
+  **Monkey Gunners** 4 turrets stay 25% longer, 8 a second turret, 12 a third (cap 3 -> 4 so the Monkey Battery still
+  adds one); **Maelstrom Charge** 4 20% wider whirlpools, 8 whirlpools last 1 s longer, 12 a second charge on the next
+  densest pack; **Lighthouse Lantern** 4 15% longer beams, 8 a 25% faster sweep, 12 one more beam; **Cursed Doubloons**
+  4 and 8 one more jump each, 12 a second coin 0.35 s later. The milestone gained generic fields for these
+  (`extraPierce`, `spinMultiplier`, `extraSlowSeconds`, `echoes` + `echoDelaySeconds`: a firing repeats, queued in
+  `WeaponCombat.Echoes`); a summon's life and a cluster-shell's whirlpool now follow the weapon's Duration (milestones
+  only: no summon or Maelstrom has the Duration card); the Mortar-style cluster path lobs one more shell per point of
+  the weapon's own quantity at the next densest pack (the Quantity stat is still not read there, as before); an
+  evolution's extra pierce and slow now add to the milestones' (Black Tide used to replace the Ink Pots' rank 12 slow).
+  Level 1 is unchanged (D20); the simulator export carries the milestones and `sim.mjs` applies them.
 - G4.1 Evolutions for every weapon without one: Harpoon Gun, Long Nine, Mortar, Swivel Guns and the four new ones (each
   unlocks at level 8 with its paired item, per Q18b).
 - G4.2 Unlock prices in `UnlockConfig` (RUM), cards, placeholder icons and VFX.

@@ -440,6 +440,9 @@ namespace RoguePirates.V4.Weapons
             public float Clock;
             public float[] LastHit = System.Array.Empty<float>();
             public int[] LastUnit = System.Array.Empty<int>();
+            /// <summary>V5 M8z (7 Oct, Q20): the spin factor in use and the angle carried over when it changed, so a milestone's
+            /// faster spin speeds the blades up where they are instead of jumping them.</summary>
+            public float SpinMult = 1f, SpinOffsetDegrees;
         }
 
         static readonly List<HitSphere> NoHits = new List<HitSphere>();
@@ -478,7 +481,7 @@ namespace RoguePirates.V4.Weapons
 
         OrbitState StateOf(WeaponSlot slot)
         {
-            if (!_states.TryGetValue(slot, out var state)) _states[slot] = state = new OrbitState();
+            if (!_states.TryGetValue(slot, out var state)) _states[slot] = state = new OrbitState { SpinMult = slot.SpinMult }; // V5 M8z (Q20): a new weapon starts at its spin
             return state;
         }
 
@@ -495,8 +498,14 @@ namespace RoguePirates.V4.Weapons
             for (var k = 0; k < _orbitSlots.Count; k++)
             {
                 var w = _orbitSlots[k];
-                var hits = StateOf(w).Hits;
+                var state = StateOf(w);
+                var hits = state.Hits;
                 var o = w.Config.orbit;
+                if (!Mathf.Approximately(state.SpinMult, w.SpinMult))
+                {
+                    state.SpinOffsetDegrees += time * o.angularSpeedDegrees * (state.SpinMult - w.SpinMult);
+                    state.SpinMult = w.SpinMult;
+                }
                 var count = o.baseBlades + w.QuantityBonus;
                 var orbitRadius = o.orbitRadius * w.SizeMult;
                 if (w.EvolutionEffect == Effect.PulsingOrbit)
@@ -506,7 +515,7 @@ namespace RoguePirates.V4.Weapons
                 }
                 for (var index = 0; index < count; index++)
                 {
-                    var angle = (time * o.angularSpeedDegrees + index * (360f / Mathf.Max(1, count))) * Mathf.Deg2Rad;
+                    var angle = (time * o.angularSpeedDegrees * state.SpinMult + state.SpinOffsetDegrees + index * (360f / Mathf.Max(1, count))) * Mathf.Deg2Rad;
                     if (o.beamSegments > 0)
                     {
                         // V5 M4b: a beam from the ship out to the radius (the Lighthouse Lantern), as a line of spheres.
@@ -1126,7 +1135,7 @@ namespace RoguePirates.V4.Weapons
                 var dmg = C.Calculator.Roll(def.baseDamage * a.damageMultiplier, Stats.LevelMult(w), isElite, 0f, def.procCoefficient, def.weaponId);
                 C.ApplyWeaponDamage(i, def.weaponId, dmg, C.Enemies.IsElite(i), C.Enemies.IsBoss(i));
                 if (a.curseSeconds > 0f) C.Damage.ApplyStatus(i, WeaponStatus.Curse, a.curseSeconds * w.DurationMult);
-                if (slow > 0f) C.Damage.ApplySlow(i, slow, slowSeconds * w.DurationMult);
+                if (slow > 0f) C.Damage.ApplySlow(i, slow, Stats.SlowSeconds(w, slowSeconds)); // V5 M8z (7 Oct, Q20): + a milestone's seconds
                 if (push > 0f) C.Damage.Knockback(i, C.Ship.Position, push);
             }
             return WeaponFireOutcome.Emitted;
@@ -1150,6 +1159,28 @@ namespace RoguePirates.V4.Weapons
             target.y = def.predictedArea.telegraphHeight;
             C.NotifyAimed(w, (target - C.Ship.Position).normalized);
             var radius = def.size * w.SizeMult * C.Mods.Size;
+            LobAtCluster(w, target, radius);
+            // V5 M8z (7 Oct, Q20): each point of the weapon's own quantity (milestones, evolutions; not the Quantity stat, as
+            // before) lobs one more shell at the next densest pack, away from the ones already hit (the Maelstrom's rank 12).
+            var extra = Mathf.Max(0, w.QuantityBonus);
+            if (extra > 0)
+            {
+                _landed.Clear();
+                _landed.Add(target);
+                for (var k = 0; k < extra; k++)
+                {
+                    if (!C.Targeting.TryClusterGroundAwayFrom(def.range, _landed, radius * 1.5f, out var next)) break;
+                    _landed.Add(next);
+                    next.y = def.predictedArea.telegraphHeight;
+                    LobAtCluster(w, next, radius);
+                }
+            }
+            return WeaponFireOutcome.Emitted;
+        }
+
+        void LobAtCluster(WeaponSlot w, Vector3 target, float radius)
+        {
+            var def = w.Config;
             // R-27 fix: a ring that lasts exactly the impact delay (V3's reticle showed 1.1 s for a 0.6 s shell).
             if (def.predictedArea.telegraphMatchesImpact) C.Effects?.TimedRing(target, radius, def.predictedArea.impactDelaySeconds);
             else C.Effects?.AreaTelegraph(target, radius);
@@ -1158,7 +1189,7 @@ namespace RoguePirates.V4.Weapons
                 Active = true,
                 Position = target,
                 Timer = def.predictedArea.impactDelaySeconds,
-                Radius = def.size * w.SizeMult * C.Mods.Size,
+                Radius = radius,
                 BaseDamage = def.baseDamage,
                 DamageBonus = Stats.LevelMult(w),
                 ProcCoefficient = def.procCoefficient,
@@ -1166,9 +1197,8 @@ namespace RoguePirates.V4.Weapons
                 AreaShell = true,
                 ImpactDraws = def.predictedArea.v3ImpactEffectDraws,
                 Whirlpool = def.predictedArea.whirlpoolSeconds > 0f ? def : null,
-                DurationMult = 1f,
+                DurationMult = w.DurationMult, // V5 M8z (7 Oct, Q20): a milestone's longer whirlpool (1 for the Mortar and the Maelstrom's cards)
             });
-            return WeaponFireOutcome.Emitted;
         }
 
         /// <summary>
@@ -1183,7 +1213,7 @@ namespace RoguePirates.V4.Weapons
             var radius = def.size * w.SizeMult * C.Mods.Size;
             var shells = Stats.ProjectileQuantity(w, C.Mods);
             var slow = Stats.Slow(w, p.slowFraction);
-            var slowSeconds = p.slowSeconds * w.DurationMult;
+            var slowSeconds = Stats.SlowSeconds(w, p.slowSeconds); // V5 M8z (7 Oct, Q20): + a milestone's seconds
             _landed.Clear();
             for (var k = 0; k < shells; k++)
             {
@@ -1281,7 +1311,7 @@ namespace RoguePirates.V4.Weapons
                 SpawnAnimTime = s.spawnSeconds,
                 SpawnAnimDuration = s.spawnSeconds,
                 StrikeCooldown = s.firstStrikeDelay,
-                LifeTime = s.lifetimeSeconds,
+                LifeTime = s.lifetimeSeconds * w.DurationMult, // V5 M8z (7 Oct, Q20): a milestone's longer life (no summon has the Duration card)
                 BaseDamage = def.baseDamage,
                 DamageBonus = Stats.LevelMult(w),
                 ProcCoefficient = def.procCoefficient,

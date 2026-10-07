@@ -61,6 +61,40 @@ MonoBehaviour:
   runtimeCatalogWeapon: 0
   goldPerKill: 0
   goldPerKillRunCap: 0
+  milestones:
+  - level: 4
+    extraQuantity: 0
+    sizeMultiplier: 1.15
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: 15% longer beams
+  - level: 8
+    extraQuantity: 0
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1.25
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: a 25% faster sweep
+  - level: 12
+    extraQuantity: 1
+    sizeMultiplier: 1
+    extraSlow: 0
+    durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
+    description: one more beam
   projectileVisual:
     prefab: {fileID: 3274285418519690880, guid: a56db32405bb24ee290e68352d967ccd, type: 3}
     scaleMultiplier: 1

@@ -1603,7 +1603,42 @@
    "hitsPerFiring": 0.625,
    "coverage": 1.8,
    "databaseOrder": 50,
-   "rum": 120
+   "rum": 120,
+   "milestones": [
+    {
+     "level": 4,
+     "quantity": 0,
+     "size": 1.14285719,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 8,
+     "quantity": 1,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 12,
+     "quantity": 0,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1.16666663,
+     "slowSeconds": 0,
+     "echoes": 0
+    }
+   ]
   },
   "broadside_battery": {
    "id": "broadside_battery",
@@ -1647,7 +1682,8 @@
    "hitsPerFiring": 1,
    "coverage": 1.6,
    "databaseOrder": 1,
-   "rum": 0
+   "rum": 0,
+   "milestones": []
   },
   "chainshot": {
    "id": "chainshot",
@@ -1691,7 +1727,42 @@
    "hitsPerFiring": 1,
    "coverage": 1,
    "databaseOrder": 51,
-   "rum": 130
+   "rum": 130,
+   "milestones": [
+    {
+     "level": 4,
+     "quantity": 0,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 1,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 8,
+     "quantity": 0,
+     "size": 1.33333337,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 12,
+     "quantity": 0,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 1,
+     "echoes": 0
+    }
+   ]
   },
   "cursed_doubloons": {
    "id": "cursed_doubloons",
@@ -1729,7 +1800,42 @@
    "hitsPerFiring": 1,
    "coverage": 1.6,
    "databaseOrder": 58,
-   "rum": 220
+   "rum": 220,
+   "milestones": [
+    {
+     "level": 4,
+     "quantity": 1,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 8,
+     "quantity": 1,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 12,
+     "quantity": 0,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 1
+    }
+   ]
   },
   "deck_cannons": {
    "id": "deck_cannons",
@@ -1773,7 +1879,8 @@
    "hitsPerFiring": 1,
    "coverage": 1,
    "databaseOrder": 0,
-   "rum": 0
+   "rum": 0,
+   "milestones": []
   },
   "flamethrower": {
    "id": "flamethrower",
@@ -1811,7 +1918,8 @@
    "hitsPerFiring": 1,
    "coverage": 1.5,
    "databaseOrder": 5,
-   "rum": 80
+   "rum": 80,
+   "milestones": []
   },
   "flying_cutlasses": {
    "id": "flying_cutlasses",
@@ -1855,7 +1963,8 @@
    "hitsPerFiring": 1,
    "coverage": 1.8,
    "databaseOrder": 4,
-   "rum": 0
+   "rum": 0,
+   "milestones": []
   },
   "harpoon_gun": {
    "id": "harpoon_gun",
@@ -1899,7 +2008,8 @@
    "hitsPerFiring": 1,
    "coverage": 1,
    "databaseOrder": 48,
-   "rum": 100
+   "rum": 100,
+   "milestones": []
   },
   "lighthouse_lantern": {
    "id": "lighthouse_lantern",
@@ -1937,7 +2047,42 @@
    "hitsPerFiring": 0.375,
    "coverage": 1.8,
    "databaseOrder": 57,
-   "rum": 200
+   "rum": 200,
+   "milestones": [
+    {
+     "level": 4,
+     "quantity": 0,
+     "size": 1.15,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 8,
+     "quantity": 0,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1.25,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 12,
+     "quantity": 1,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    }
+   ]
   },
   "lightning_mast": {
    "id": "lightning_mast",
@@ -1975,7 +2120,8 @@
    "hitsPerFiring": 1,
    "coverage": 1.6,
    "databaseOrder": 3,
-   "rum": 60
+   "rum": 60,
+   "milestones": []
   },
   "long_nine": {
    "id": "long_nine",
@@ -2019,7 +2165,8 @@
    "hitsPerFiring": 1,
    "coverage": 1,
    "databaseOrder": 47,
-   "rum": 0
+   "rum": 0,
+   "milestones": []
   },
   "maelstrom_charge": {
    "id": "maelstrom_charge",
@@ -2051,7 +2198,42 @@
    "hitsPerFiring": 3.7,
    "coverage": 1.5,
    "databaseOrder": 56,
-   "rum": 190
+   "rum": 190,
+   "milestones": [
+    {
+     "level": 4,
+     "quantity": 0,
+     "size": 1.2,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 8,
+     "quantity": 0,
+     "size": 1,
+     "duration": 1.33333337,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 12,
+     "quantity": 1,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    }
+   ]
   },
   "monkey_gunners": {
    "id": "monkey_gunners",
@@ -2083,7 +2265,42 @@
    "hitsPerFiring": 6.66666651,
    "coverage": 1,
    "databaseOrder": 55,
-   "rum": 180
+   "rum": 180,
+   "milestones": [
+    {
+     "level": 4,
+     "quantity": 0,
+     "size": 1,
+     "duration": 1.25,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 8,
+     "quantity": 1,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 12,
+     "quantity": 1,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    }
+   ]
   },
   "mortar": {
    "id": "mortar",
@@ -2115,7 +2332,8 @@
    "hitsPerFiring": 1,
    "coverage": 1.5,
    "databaseOrder": 49,
-   "rum": 100
+   "rum": 100,
+   "milestones": []
   },
   "parrot_squadron": {
    "id": "parrot_squadron",
@@ -2153,7 +2371,42 @@
    "hitsPerFiring": 6,
    "coverage": 1,
    "databaseOrder": 54,
-   "rum": 170
+   "rum": 170,
+   "milestones": [
+    {
+     "level": 4,
+     "quantity": 1,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 8,
+     "quantity": 0,
+     "size": 1,
+     "duration": 1.25,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 12,
+     "quantity": 1,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    }
+   ]
   },
   "powder_kegs": {
    "id": "powder_kegs",
@@ -2191,7 +2444,8 @@
    "hitsPerFiring": 1,
    "coverage": 1.4,
    "databaseOrder": 2,
-   "rum": 0
+   "rum": 0,
+   "milestones": []
   },
   "siren_bell": {
    "id": "siren_bell",
@@ -2229,7 +2483,42 @@
    "hitsPerFiring": 1,
    "coverage": 1.3,
    "databaseOrder": 52,
-   "rum": 150
+   "rum": 150,
+   "milestones": [
+    {
+     "level": 4,
+     "quantity": 0,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0.5,
+     "echoes": 0
+    },
+    {
+     "level": 8,
+     "quantity": 0,
+     "size": 1.2,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 12,
+     "quantity": 0,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 1
+    }
+   ]
   },
   "squid_ink_pots": {
    "id": "squid_ink_pots",
@@ -2273,7 +2562,42 @@
    "hitsPerFiring": 1.9000001,
    "coverage": 1.5,
    "databaseOrder": 53,
-   "rum": 160
+   "rum": 160,
+   "milestones": [
+    {
+     "level": 4,
+     "quantity": 1,
+     "size": 1,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 8,
+     "quantity": 0,
+     "size": 1.25,
+     "duration": 1,
+     "slow": 0,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    },
+    {
+     "level": 12,
+     "quantity": 0,
+     "size": 1,
+     "duration": 1,
+     "slow": 0.1,
+     "pierce": 0,
+     "spin": 1,
+     "slowSeconds": 0,
+     "echoes": 0
+    }
+   ]
   },
   "swivel_guns": {
    "id": "swivel_guns",
@@ -2317,7 +2641,8 @@
    "hitsPerFiring": 1,
    "coverage": 1,
    "databaseOrder": 46,
-   "rum": 0
+   "rum": 0,
+   "milestones": []
   }
  },
  "logbooks": {
@@ -4400,9 +4725,9 @@
  "meta": {
   "source": "unity",
   "setId": "saltwind-default",
-  "configHash": "a3895ab880218879f08bfc1afb7ffe8b91bb1a057be0c920b0d2c6e13a439946",
+  "configHash": "daa47525dbbf94d5317b8ea53410eab547aba8a871cb3a288389729eef963daa",
   "preset": null,
-  "exported": "2026-10-07T15:25:20Z",
+  "exported": "2026-10-07T15:57:58Z",
   "unity": "6000.3.11f1"
  }
 }

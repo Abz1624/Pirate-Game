@@ -229,7 +229,14 @@ namespace RoguePirates.V4.Config
         [Tooltip("Extra quantity (one more shell, shot or summon).")] [Min(0)] public int extraQuantity;
         [Tooltip("Size (radius) × this.")] [Min(0.1f)] public float sizeMultiplier = 1f;
         [Tooltip("Added to the weapon's slow (share of speed).")] [Range(0f, 0.9f)] public float extraSlow;
-        [Tooltip("Duration × this.")] [Min(0.1f)] public float durationMultiplier = 1f;
+        [Tooltip("Duration × this (a summon's life, a whirlpool's or slick's seconds, a slow's seconds where the Duration card reaches it).")] [Min(0.1f)] public float durationMultiplier = 1f;
+        // V5 M8z (7 Oct, Q20): the effects the other new weapons' milestones need (the design's "another pierce", "+25°/s",
+        // "+0.5 s slow", "a second pulse after 0.35 s"), generic: any weapon whose behaviour reads them takes them.
+        [Tooltip("V5 M8z (Q20): extra enemies a shot passes through (a projectile's pierce).")] [Min(0)] public int extraPierce;
+        [Tooltip("V5 M8z (Q20): an Orbit weapon's spin × this (blades, anchors and beams sweep faster).")] [Min(0.1f)] public float spinMultiplier = 1f;
+        [Tooltip("V5 M8z (Q20): seconds added to the weapon's slow (before the Duration card).")] [Min(0f)] public float extraSlowSeconds;
+        [Tooltip("V5 M8z (Q20): every firing repeats this many more times, echoDelaySeconds apart (a second pulse, a second coin).")] [Min(0)] public int echoes;
+        [Min(0.05f)] public float echoDelaySeconds = 0.35f;
         [Tooltip("The card's line when the milestone is reached (\"a second pot\").")] public string description = string.Empty;
     }
 
@@ -247,7 +254,7 @@ namespace RoguePirates.V4.Config
         [Tooltip("V5 M4b: > 0 = it fires a shot of this speed at its target from strikeRange instead of striking alongside (the monkey turret).")]
         [Min(0f)] public float shotSpeed;
         public float shotSize = 0.3f;
-        [Tooltip("V5 M4b: at most this many of this weapon's summons alive at once (0 = no cap, V3); further spawns are skipped.")]
+        [Tooltip("V5 M4b: at most this many of this weapon's summons alive at once (0 = no cap, V3); further spawns are skipped. V5 M8z (7 Oct, Q20): a summon lives lifetimeSeconds × the weapon's Duration (its milestones; no summon has the Duration card).")]
         [Min(0)] public int maxAlive;
     }
 

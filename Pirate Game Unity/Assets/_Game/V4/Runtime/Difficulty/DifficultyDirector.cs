@@ -75,6 +75,7 @@ namespace RoguePirates.V4.Difficulty
                 var crit = 1f + Mathf.Clamp01(m.CritChance + m.ItemCritChanceBonus) * Mathf.Max(0f, m.CritDamage - 1f);
                 var evolved = w.Evolution != null ? Mathf.Max(1f, d.evolutionOffenseMultiplier) : 1f;
                 var part = Mathf.Min(damage * crit * evolved, hitCap) / cooldown * quantity * coverage * WeaponStatResolver.HitsPerFiring(w.Config); // V5 M4b
+                if (w.Echoes > 0) part *= 1 + w.Echoes; // V5 M8z (7 Oct, Q20): a milestone's echoes repeat every firing
                 total += part;
                 if (d.closeRangeBehaviors != null && Array.IndexOf(d.closeRangeBehaviors, w.Config.behavior) >= 0) closeRange += part;
             }

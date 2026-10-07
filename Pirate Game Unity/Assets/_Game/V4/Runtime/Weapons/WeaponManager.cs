@@ -123,6 +123,7 @@ namespace RoguePirates.V4.Weapons
             TickWhirlpools(dt);
             _summon.TickSkiffs(dt);
             _fan.TickFollowUps(dt);
+            TickEchoes(dt);
             var itemAttackSpeed = _c.Mods.ItemAttackSpeedMultiplier;
             var rules = Rules;
             // R-22 fixes: item attack speed once (V3 also sped up the countdown), and the overshoot past zero carried
@@ -167,7 +168,32 @@ namespace RoguePirates.V4.Weapons
                     // R-87 fix: a burst that just started keeps its gap (V3 overwrote it with the full cooldown).
                     if (!(w.BurstShotsLeft > 0 && !w.Config.projectile.v3FullCooldownAfterFirstShot)) w.CooldownTimer = next;
                     _c.RecordEmission(w);
+                    QueueEchoes(w);
                 }
+            }
+        }
+
+        /// <summary>V5 M8z (7 Oct, Q20): a milestone's echoes: the firing repeats (the Siren Bell's second pulse 0.35 s later).</summary>
+        void QueueEchoes(WeaponSlot w)
+        {
+            if (w.Echoes <= 0 || w.Config == null || w.Config.behavior == Behavior.Orbit || w.Config.behavior == Behavior.ConeStream) return;
+            _c.Echoes.Add(new PendingEcho { Weapon = w, Timer = w.EchoDelaySeconds, Left = w.Echoes });
+        }
+
+        void TickEchoes(float dt)
+        {
+            var list = _c.Echoes;
+            for (var i = list.Count - 1; i >= 0; i--)
+            {
+                var echo = list[i];
+                echo.Timer -= dt;
+                if (echo.Timer > 0f) { list[i] = echo; continue; }
+                var w = echo.Weapon;
+                var behavior = w != null && _slots.Contains(w) ? BehaviorOf(w) : null; // a weapon that left the loadout does not echo
+                if (behavior == null) { list.RemoveAt(i); continue; }
+                behavior.FireOnce(w); // part of the same firing: no emission counted
+                if (--echo.Left > 0) { echo.Timer += Mathf.Max(0.05f, w.EchoDelaySeconds); list[i] = echo; }
+                else list.RemoveAt(i);
             }
         }
 
@@ -341,6 +367,7 @@ namespace RoguePirates.V4.Weapons
                 }
                 behavior.FireOnce(w);
                 _c.RecordEmission(w);
+                QueueEchoes(w); // V5 M8z (7 Oct, Q20)
             }
             MirrorLoadout();
         }
@@ -379,6 +406,7 @@ namespace RoguePirates.V4.Weapons
             if (w.Config.behavior == Behavior.Orbit) { _c.OrbitVolleyTimer = Rules != null ? Rules.fireAllOrbitVolleySeconds : 2f; return true; }
             behavior.FireOnce(w);
             _c.RecordEmission(w);
+            QueueEchoes(w); // V5 M8z (7 Oct, Q20)
             MirrorLoadout();
             return true;
         }

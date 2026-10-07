@@ -73,18 +73,33 @@ MonoBehaviour:
     sizeMultiplier: 1
     extraSlow: 0
     durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
     description: a second pot, on the next pack back
   - level: 8
     extraQuantity: 0
     sizeMultiplier: 1.25
     extraSlow: 0
     durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
     description: 25% wider slicks
   - level: 12
     extraQuantity: 0
     sizeMultiplier: 1
     extraSlow: 0.1
     durationMultiplier: 1
+    extraPierce: 0
+    spinMultiplier: 1
+    extraSlowSeconds: 0
+    echoes: 0
+    echoDelaySeconds: 0.35
     description: +10% slow
   projectileVisual:
     prefab: {fileID: 0}
