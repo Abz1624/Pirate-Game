@@ -1,6 +1,6 @@
 {
  "updated": "6 Oct 2026",
- "statusLine": "M8z (playtest integration) built and reviewed (pass with fixes); review fixes in progress, then your playtest and the M8z commit. Five decisions open (see your to-dos).",
+ "statusLine": "M8z playtested by you on 8 Oct; a final check of the post-review changes and an M9 readiness review are running, then the M8z close and the M9 plan update for your approval.",
  "statusOk": false,
  "facts": [
   [
@@ -75,7 +75,11 @@
   },
   "M8z": {
    "state": "review",
-   "chip": "built 7 Oct · in review"
+   "chip": "playtested 8 Oct · final check"
+  },
+  "M9": {
+   "state": "next",
+   "chip": "next: plan update for Netcode (D19)"
   }
  },
  "log": [
@@ -373,12 +377,17 @@
    "when": "7 Oct",
    "commit": "",
    "what": "<strong>Q20 milestones</strong> for all nine new weapons (Anchor Flail, Chainshot, Siren Bell from the design; Parrots, Monkeys, Maelstrom, Lantern, Doubloons chosen; Squid Ink Pots); second pulses and coins work through generic echoes; EditMode 498/498; level 1 unchanged; PvP cap margin 1.57x."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "Fifth recorded session (16:38, level 32, 2,340 kills; levelling half as fast as before, as asked; Beacon reached at 12:00, boss not summoned; islands 25% and storm 13% of damage). The simulator still levels faster and takes about half the damage: refit on all five sessions next. M8z: final check of the post-review changes and an M9 readiness review started."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Playtest M8z</strong> once the health bar and Beacon fixes are in (a new desktop build follows).",
-   "<strong>Keep recording voyages</strong> when you play (<em>Download last voyage</em> on the main menu fetches a missed one)."
+   "<strong>Wait for the M9 plan</strong>: I'll bring the rewritten M9 (Netcode, server-authoritative) and a few questions for your approval before starting it.",
+   "<strong>Keep recording voyages</strong> when you play (<em>Download last voyage</em> fetches a missed one)."
   ],
   "open": [
    "PvP draft on phones: tapping a card to read it also picks it (later)."
