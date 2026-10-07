@@ -368,6 +368,11 @@
    "when": "7 Oct",
    "commit": "b28a8c3d",
    "what": "<strong>D21 done</strong>: barrel sparkles off; the Knockback card only on the Anchor Flail; Harpoon tar a real slow; minibosses take slows and knockback like the boss; one Luck scale (chests now feel Luck); Admiral on the boss and minibosses; <strong>Squid Ink Pots</strong> replace the Ramming Prow (lobs ink onto the back of the pack, 35% slow, evolution Black Tide, rank milestones); the 1024 texture cap on every web build; plan and art guide updated. Tests: PlayMode 88/88, EditMode all pass after two expected values were updated."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "",
+   "what": "<strong>Q20 milestones</strong> for all nine new weapons (Anchor Flail, Chainshot, Siren Bell from the design; Parrots, Monkeys, Maelstrom, Lantern, Doubloons chosen; Squid Ink Pots); second pulses and coins work through generic echoes; EditMode 498/498; level 1 unchanged; PvP cap margin 1.57x."
   }
  ],
  "todos": {
@@ -376,7 +381,6 @@
    "<strong>Keep recording voyages</strong> when you play (<em>Download last voyage</em> on the main menu fetches a missed one)."
   ],
   "open": [
-   "Rank 4/8/12 milestones (Q20, keep): only the Squid Ink Pots have them in data; the other new weapons need theirs added (a data job).",
    "PvP draft on phones: tapping a card to read it also picks it (later)."
   ],
   "done": [
