@@ -353,11 +353,16 @@
    "when": "7 Oct",
    "commit": "5711b244",
    "what": "Fixed from your playtest: health bars were never drawn (since M7c the shared bar canvas left them in a switched-off canvas; bars now also sit above tall models); the Beacon's whirlpool faded out 7 s after the run started (POI marker animations now hold their open frame). Scenario tests now assert bars and POIs are actually on screen. New desktop build started."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "",
+   "what": "Your answers to the open questions recorded (D21): sparkles and the useless Knockback card removed, Ramming Prow replaced by an auto-attacking slowing weapon, real Harpoon slow, the crab treated like the boss for slows, one Luck scale, Admiral on the boss too, the 1024 texture cap everywhere. The powerup mix (Q28) explained; your answer pending. Implementing now."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Answer the open questions</strong> in <code>plan/v5/OPEN-QUESTIONS.md</code> (17, each with a suggestion; \"go with your suggestions\" is fine).",
+   "<strong>Answer Q28</strong> (which powerups drop) and the splash-logo question; the rest of the open questions are answered (D21).",
    "<strong>Playtest M8z</strong> once the health bar and Beacon fixes are in (a new desktop build follows).",
    "<strong>Keep recording voyages</strong> when you play (<em>Download last voyage</em> on the main menu fetches a missed one)."
   ],
