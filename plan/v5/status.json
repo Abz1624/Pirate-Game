@@ -9,7 +9,7 @@
   ],
   [
    "Tests",
-   "7 Oct (M8z): EditMode 474/474 · PlayMode 77/77 · server 102/102 · Scenario Lab 10/10"
+   "7 Oct (M8z final): EditMode 475/476 (1 skipped pending your DPS decision) · PlayMode 80/80 · server 102/102 (5 runs)"
   ],
   [
    "Gate",
@@ -328,11 +328,16 @@
    "when": "7 Oct",
    "commit": "dd5dfb54",
    "what": "<strong>M8z I8z.5 test triage</strong>: both full suites green (EditMode 474/474, PlayMode 77/77; before 46 and 11 failures). The v3-parity preset retired with DemoBaseline; value pins rewritten as rules that read config; one game bug fixed (the shop listed starter weapons twice). Independent review of M8z and a desktop build for your playtest started."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "afad2196",
+   "what": "<strong>M8z review fixes</strong>: weapon goldens re-recorded with the exact comparison; scenarios run with your playtest settings; new scenario tests (dinghy one-shot, director beats, PvP reconnect); server test harness made reliable (5 runs 102/102); balance version saltwind-playtest-r10; session file capped. Found: the equal level-1 DPS rule no longer holds (round 6 weapon roles); a boss could not be summoned twice after a dev despawn (fixed)."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Decide (M8z)</strong>: (1) same XP per kill at every graphics quality (suggested); (2) keep the darker red Cutthroat Skiff and greener Needle Sloop?; (3) Ironclad into the Logbook pool now that armor applies?; (4) should shipped (non-playtest) web builds still download a session file at the end of every voyage?; (5) commit the WebGL memory and stack-trace settings Unity changed in ProjectSettings?",
+   "<strong>Decide (M8z)</strong>: (1) same XP per kill at every graphics quality (suggested); (2) keep the darker red Cutthroat Skiff and greener Needle Sloop?; (3) Ironclad into the Logbook pool now that armor applies?; (4) should shipped (non-playtest) web builds still download a session file at the end of every voyage?; (5) equal level-1 DPS for every weapon, or role bands (round 6 moved weapons off the equal rule)?; (6) commit the WebGL memory and stack-trace settings Unity changed in ProjectSettings?",
    "<strong>Playtest M8z</strong> on the desktop build at http://localhost:8090 once the review fixes are in.",
    "<strong>Keep recording voyages</strong> when you play (the file downloads at the end; <em>Download last voyage</em> on the main menu fetches it again)."
   ],
@@ -872,6 +877,13 @@
    "check": "EditMode and PlayMode suites",
    "result": "474/474 and 77/77",
    "evidence": "plan/playtest/tests/editmode-m8z-after.json, playmode-m8z-after.json"
+  },
+  {
+   "date": "7 Oct",
+   "phase": "M8z",
+   "check": "Final suites after the review fixes",
+   "result": "EditMode 475/476 (1 skipped), PlayMode 80/80, server 102/102 x5",
+   "evidence": "plan/playtest/tests/editmode-m8z-final.json, playmode-m8z-final.json"
   }
  ],
  "phaseResults": {
@@ -1076,7 +1088,7 @@
    },
    {
     "title": "Next",
-    "text": "Review fixes (in progress), then your playtest on the desktop build, then the M8z commit. Evidence: <code>plan/v5/phase-08z-integration/README.md</code>."
+    "text": "Your decisions (six) and your playtest on the desktop build, then the M8z commit. Evidence: <code>plan/v5/phase-08z-integration/README.md</code>."
    },
    {
     "title": "What the sessions showed",
@@ -2029,21 +2041,21 @@
      "sev": "Major",
      "where": "<code>V5WeaponGoldenTests</code>",
      "finding": "Weapon goldens replaced by a weak check: weapon changes pass silently.",
-     "fix": "Re-record goldens on today's data (in progress)"
+     "fix": "Re-record goldens on today's data Done (<code>afad2196</code>)."
     },
     {
      "n": 4,
      "sev": "Major",
      "where": "I8z.3",
      "finding": "Playtest preset narrowed to a test attribute used by 4 tests; scenarios run with the switches off.",
-     "fix": "Recorded in the plan; key scenarios to run with the shipped settings (in progress)"
+     "fix": "Recorded in the plan; key scenarios to run with the shipped settings Done (<code>afad2196</code>)."
     },
     {
      "n": 5,
      "sev": "Major",
      "where": "T8z.x",
      "finding": "Planned scenario tests missing (dinghy one-shot, equal level-1 DPS, director beats, PvP reconnect).",
-     "fix": "Adding them (in progress)"
+     "fix": "Adding them Done (<code>afad2196</code>)."
     },
     {
      "n": 6,
@@ -2057,7 +2069,7 @@
      "sev": "Major",
      "where": "server tests",
      "finding": "Flaky under load (2 of 5 runs had one failure).",
-     "fix": "Fixing the test harness (in progress)"
+     "fix": "Fixing the test harness Done (<code>afad2196</code>)."
     },
     {
      "n": 8,
@@ -2078,21 +2090,21 @@
      "sev": "Minor",
      "where": "icon tests",
      "finding": "\"Icon or name\" tests can't fail.",
-     "fix": "Tightening (in progress)"
+     "fix": "Tightening Done (<code>afad2196</code>)."
     },
     {
      "n": 11,
      "sev": "Minor",
      "where": "67 config assets",
      "finding": "Balance version still saltwind-v3-parity; comments mention the retired preset.",
-     "fix": "Bumping to saltwind-playtest-r10 (in progress)"
+     "fix": "Bumping to saltwind-playtest-r10 Done (<code>afad2196</code>)."
     },
     {
      "n": 12,
      "sev": "Minor",
      "where": "<code>SessionFile.cs</code>",
      "finding": "Session size guard ignores the save; an overflow would skip the download.",
-     "fix": "Cap at 256 KB, try/catch (in progress); shipped-build downloads: your decision"
+     "fix": "Cap at 256 KB, try/catch ; shipped-build downloads: your decision Done (<code>afad2196</code>)."
     },
     {
      "n": 13,
