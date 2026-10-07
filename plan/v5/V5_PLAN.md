@@ -561,7 +561,9 @@ settled and one simulator calibrated on the owner's play.
 - I8z.5 Test triage of the 73 failing tests: fix the real ones, rewrite value pins as rules reading a balance-targets
   asset, retire the rest; slow full-loop tests marked `Slow` (gate only).
 - I8z.6 Shop and economy data after the owner's answers (starters vs unlocks, Ember's lock, the overtime Rum cap, D4).
-- I8z.7 One simulator, recalibrated on recorded owner sessions (`plan/playtest/sessions`, `compare_session.mjs`).
+- I8z.7 One simulator (owner, 7 Oct): the JavaScript Monte Carlo model (`plan/playtest/montecarlo`) is kept and the in-engine
+  SimRun retired; the model reads the game's real configs (an Editor export of the resolved config values, checked against
+  `export_data.py`), and is recalibrated on the recorded owner sessions (`plan/playtest/sessions`, `compare_session.mjs`).
 - T8z.x Fast scenario tests per area: combat (starter one-shots a dinghy, equal level-1 DPS, bars only on elites,
   minibosses and the boss), director (beats at their times, kill band), stage (Beacon summon, POIs, overtime and storm
   from config), economy (Rum caps, no duplicate store rows), PvP (draft to end over a fake relay, reconnect after the end).
