@@ -35,8 +35,9 @@ export const MODEL = {
   lootShare: 0.95,            // share of XP and health barrels the player sails over (barrels must be touched)
   barrelsPerMinute: 140,       // the most XP barrels the ship sails over in a minute: past it, barrels are left behind
                                // (sessions: ~2.3 XP a kill at 90-150 kills a minute, ~1.6 at 150-190)
-  vfxDensity: 0.6,             // the quality tier's effects density: a kill's XP barrel bursts into max(3, round(6..10 x this))
-                               // pieces of at least 1 XP each (PickupModule.Burst). 0.45 Low, 0.75 Mid, 1 High (fitted 0.6).
+  vfxDensity: 0.6,             // the quality tier's effects density (0.45 Low, 0.75 Mid, 1 High). V5 M8z (7 Oct, D20): no effect on
+                               // the XP any more: a barrel's pieces split its value exactly (PickupModule.Burst). Before D20 each
+                               // piece paid at least 1, so the XP per kill grew with it (the sessions measured like 0.6).
   arenaShareOfDps: 0.3,        // share of the single-target damage spent on an arena miniboss or elite (the waves are paused)
   focusShareOfDps: 0.1,        // ... on a scheduled miniboss or elite that fights alongside the waves
   eliteShareOfDps: 0.06,       // ... on each kill-band elite (they mingle with the crowd; nobody turns on them)
@@ -50,6 +51,7 @@ export const MODEL = {
   chestEverySeconds: 105,      // a salvage chest opened this often (sessions: 6-7 chests in 11-14 min)
   evolutionMultiplier: 1.6,    // an evolved weapon's realistic damage, x (its Empowered numbers come from the data)
   linesPerRarity: [1, 1, 2, 2, 3], // fallback when the data has no progression.linesPerRarity
+  legacyXpBurst: false,        // true: the pre-D20 XP payout (pieces of at least 1 XP, more with vfxDensity), for old comparisons
   maxMinutes: 20,
   // The boss is summoned at the Treasury Beacon (no timed boss; its exact marker shows at the data's
   // stage.beaconMarkerSeconds, 13:00). The owner's sessions never summoned it, so 14:00 is assumed.
@@ -67,9 +69,16 @@ export function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13
 const pickW = (r, items, w) => { let t = 0; for (const x of items) t += Math.max(0, w(x)); let v = r() * t; for (const x of items) { v -= Math.max(0, w(x)); if (v <= 0) return x; } return items[items.length - 1]; };
 const poly = (c, x) => (c[0] ?? 1) + (c[1] ?? 0) * x + (c[2] ?? 0) * x * x;
 
-/** XP the game pays for a kill worth `value` (PickupModule: the barrel bursts into pieces, each at least 1), before the pace. */
-export function xpPaidTable(data, density) {
-  const p = data.pickups, lo = p.burstMin ?? 6, hi = Math.max(lo, p.burstMax ?? 10), minimum = p.burstMinimum ?? 3, table = [];
+/**
+ * XP the game pays for a kill worth `value`, before the pace. V5 M8z (7 Oct, D20): exactly the value at any effects density
+ * (the barrel's pieces split it). `legacyDensity` (a number) gives the pre-D20 payout instead, where each of the
+ * max(3, round(6..10 x density)) pieces paid at least 1 (kept to compare with the sessions recorded before D20).
+ */
+export function xpPaidTable(data, legacyDensity = null) {
+  const table = [];
+  if (legacyDensity == null) { for (let v = 0; v <= 400; v++) table.push(v); return table; }
+  const density = legacyDensity;
+  const p = data.pickups, lo = p.burstMin ?? 6, hi = Math.max(lo, p.burstMax ?? 10), minimum = p.burstMinimum ?? 3;
   for (let v = 0; v <= 400; v++) {
     let sum = 0;
     for (let k = lo; k <= hi; k++) {
@@ -93,7 +102,7 @@ export function simulateRun(data, params) {
   const stats = { [S.Damage]: 1, [S.AttackSpeed]: 1, [S.CritChance]: 0.05, [S.CritDamage]: 1.5, [S.Quantity]: 0, [S.Size]: 1, [S.XPGain]: 1, [S.EliteDamage]: 1, [S.HullRegen]: 0, [S.MoveSpeed]: 1, [S.PickupRadius]: 1, [S.Duration]: 1 };
   const statAdd = (id, add, mul = 1) => { stats[id] = ((stats[id] ?? 0) + add) * mul; };
   const ambientCap = tl.cap - tl.reserved, spawnGap = Math.max(0.05, tl.spawnGap ?? 0.35), grace = tl.grace ?? 0;
-  const xpPaid = xpPaidTable(data, M.vfxDensity), xpPace = PK.xpMult ?? 1;
+  const xpPaid = xpPaidTable(data, M.legacyXpBurst ? M.vfxDensity : null), xpPace = PK.xpMult ?? 1;
   const newBonus = P.newWeaponDamageBonus ?? 1, coverage = D.coverage || [], evoOffense = D.evolutionOffense ?? 1.6;
   const disabled = new Set((data.unlocks && data.unlocks.disabled) || []);
   const offerable = Object.keys(data.weapons).filter(id => !disabled.has(id) && (data.unlocks?.unlockEverything !== false || !data.starterWeapons?.length || data.starterWeapons.includes(id)));

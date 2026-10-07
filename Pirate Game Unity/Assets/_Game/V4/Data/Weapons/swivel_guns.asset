@@ -24,7 +24,7 @@ MonoBehaviour:
   targeting: 0
   tags:
   - Gunnery
-  baseDamage: 6.35
+  baseDamage: 8.06
   baseCooldown: 0.6
   range: 12
   baseQuantity: 1

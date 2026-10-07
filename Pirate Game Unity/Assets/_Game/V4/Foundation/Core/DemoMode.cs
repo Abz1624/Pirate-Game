@@ -32,6 +32,9 @@ namespace RoguePirates.V4.Foundation.Core
         public static bool NoPointsOfInterest => !Off && Settings != null && Settings.hidePointsOfInterest;
 
         public static bool UnlockEverything => !Off && Settings != null && Settings.unlockEverything;
+        /// <summary>V5 M8z (7 Oct, D20): voyages record and download their session files, and the download buttons show
+        /// (playtest builds only; DemoJuiceSettings.downloadSessionFiles off for a public build).</summary>
+        public static bool DownloadSessionFiles => !Off && Settings != null && Settings.downloadSessionFiles;
         public static bool ChestsOnlyPointsOfInterest => !Off && Settings != null && Settings.chestsOnlyPointsOfInterest;
         public static bool HideVoyageToast => !Off && Settings != null && Settings.hideVoyageToast;
         public static float AutoBossSeconds => Off || Settings == null ? 0f : Settings.autoBossSeconds;

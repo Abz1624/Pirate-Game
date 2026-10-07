@@ -18,12 +18,6 @@ namespace RoguePirates.V4.Tests
     {
         const string SetPath = "Assets/_Game/V4/Data/ConfigSets/SaltwindDefault.asset";
 
-        const string PendingReason =
-            "V5 M8z (7 Oct, review): fails on today's data, owner decision pending. Playtest round 6 (commit 0bd92afb, owner " +
-            "feedback 'weapon roles': heavy hitters fire faster, crowd weapons -25% damage) moved the starters off the round-2 " +
-            "equal 8.96 DPS; the plan (T8z.x, V5_PLAN.md line 27) still names the equal rule. Un-ignore when the owner confirms " +
-            "the rule (then retune the data), or rewrite it as the role bands he picks.";
-
         sealed class NoMods : IWeaponModifiers
         {
             public float AttackSpeed => 1f;
@@ -59,8 +53,9 @@ namespace RoguePirates.V4.Tests
             return damage * WeaponStatResolver.ProjectileQuantity(slot, mods) * WeaponStatResolver.HitsPerFiring(config) / cooldown;
         }
 
+        // V5 M8z (7 Oct, D20): enforced again. The owner undid round 6's weapon roles: every starter's level-1 numbers were
+        // retuned (baseDamage) to the old median, 14.78 DPS on one target.
         [Test]
-        [Ignore(PendingReason)]
         public void EveryStartingWeapon_HasTheSameLevelOneSingleTargetDps_Within5Percent()
         {
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));

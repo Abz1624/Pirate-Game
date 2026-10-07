@@ -153,6 +153,24 @@ namespace RoguePirates.V4.Tests
             StringAssert.Contains("\"samples\":[", session.LastJson);
         }
 
+        // V5 M8z (7 Oct, D20): session files only in playtest builds. The shipped switches with downloadSessionFiles off (a
+        // public build): no recorder, so nothing is recorded, saved or downloaded.
+        [UnityTest, UseShippedPlaytestSettings]
+        public IEnumerator Shipped_DownloadSessionFilesOff_RecordsNoSession()
+        {
+            var shipped = ShippedPlaytestSettings.Asset;
+            Assert.IsTrue(shipped.downloadSessionFiles, "the playtest build downloads session files (switch off for a public build)");
+            shipped.downloadSessionFiles = false;
+            try
+            {
+                Assert.IsFalse(DemoMode.DownloadSessionFiles);
+                yield return StartVoyage();
+                Assert.IsNull(Game().Session, "no session recorder with downloadSessionFiles off");
+                Assert.AreEqual(0, _sessionFiles.Count);
+            }
+            finally { shipped.downloadSessionFiles = true; }
+        }
+
         [UnityTest]
         public IEnumerator SwitchesOff_SoloVoyage_RecordsNoSession()
         {

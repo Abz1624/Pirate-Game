@@ -313,7 +313,8 @@ namespace RoguePirates.V4
             _runPort = runState;
             _shipPort = ship;
             // V5 M8z (6 Oct): tests run with DemoMode.Off; they don't write session files.
-            if (!moduleLab && !pvp && !RoguePirates.V4.Foundation.Core.DemoMode.Off) AddSessionRecorder(runState, ship, damageSink);
+            // V5 M8z (7 Oct, D20): and only in playtest builds (DemoJuiceSettings.downloadSessionFiles).
+            if (!moduleLab && !pvp && RoguePirates.V4.Foundation.Core.DemoMode.DownloadSessionFiles) AddSessionRecorder(runState, ship, damageSink);
             _shell.Awake();
         }
 

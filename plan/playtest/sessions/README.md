@@ -5,6 +5,20 @@ One JSON file per voyage, written by the game's session recorder
 the Module Lab. The file is saved once, when the ship sinks, when the results screen shows, or when you leave the voyage
 (menu or restart).
 
+## Playtest builds only (switch it off for a public build)
+
+Session files are for playtest builds (V5 M8z, 7 Oct, D20). One switch controls them:
+`downloadSessionFiles` on `Pirate Game Unity/Assets/_Game/Resources/DemoJuiceSettings.asset` (Inspector: the "Download Session Files" box,
+under "Unlock Everything"). It is **on** now.
+
+- **On:** every voyage records its session; the finished voyage saves or downloads its file (below), and the results
+  screen shows "Download voyage data" and the main menu shows "Download last voyage".
+- **Off (public build):** nothing is recorded, saved or downloaded, and both buttons are hidden. To make a public
+  build, untick the box (or set `downloadSessionFiles: 0` in the asset), save, then build. Tick it again for the next
+  playtest build.
+
+Tests run with the demo switches off, so they never record sessions.
+
 ## Where the files land
 
 - **Editor:** in this folder, as `session-<yyyyMMdd-HHmmss>-<captain>.json`. The Console logs the full path.

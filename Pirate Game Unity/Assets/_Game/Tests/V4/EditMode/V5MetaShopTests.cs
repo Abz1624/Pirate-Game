@@ -51,7 +51,10 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(meta.All.All(e => e.Origin == ContentOrigin.Web2), "D4: RUM content is web2");
                 foreach (var e in meta.All)
                     Assert.IsTrue(LocalMetaServices.InAPool(config, e.ContentId), e.ContentId + ": content out of every pool (D34) is not sold");
-                Assert.IsFalse(meta.All.Any(e => e.ContentId == "ironclad"), "Ironclad waits for armor (D34)");
+                // V5 M8z (7 Oct, D20): Ironclad is in the Logbook pool now, so it is sold like the others when it has a price.
+                Assert.IsTrue(LocalMetaServices.InAPool(config, "ironclad"), "Ironclad is in the Logbook pool");
+                if (unlocks.logbookUnlocks.Any(u => u.contentId == "ironclad"))
+                    Assert.IsNotNull(meta.Entries(StoreCategory.Logbook).FirstOrDefault(e => e.ContentId == "ironclad"), "Ironclad is sold");
             }
         }
 

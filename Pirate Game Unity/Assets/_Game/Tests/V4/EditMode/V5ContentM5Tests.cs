@@ -90,7 +90,8 @@ namespace RoguePirates.V4.Tests
             // V5 M8z (7 Oct, I8z.5): playtest round 5 put every item in play once armor and gold gain applied in runs
             // (BuildModule reads both), so D34's two held-back items are in the chest pool now.
             foreach (var id in new[] { "reef_carapace", "cursed_coin" }) Assert.IsTrue(items[id].inChestPool, id + " is in play (its stat applies in runs)");
-            Assert.IsFalse(logbooks["ironclad"].inSaltwindPool, "Ironclad waits for armor");
+            // V5 M8z (7 Oct, D20): Ironclad joins the Saltwind Logbook pool (armor applies in runs since round 5).
+            Assert.IsTrue(logbooks["ironclad"].inSaltwindPool, "Ironclad is in the Logbook pool");
             // The playtest's Survivor.io-style Logbooks retuned the value (round 5); the rule is the Luck scale's fraction, not V3's whole points.
             Assert.That(logbooks["fortune"].perLevelAdditive, Is.GreaterThan(0f).And.LessThan(1f), "Fortune on the level-up Luck scale (a fraction per rank)");
         }

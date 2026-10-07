@@ -23,7 +23,7 @@ MonoBehaviour:
   behavior: 9
   targeting: 0
   tags: []
-  baseDamage: 4.13
+  baseDamage: 4.03
   baseCooldown: 2
   range: 10
   baseQuantity: 1

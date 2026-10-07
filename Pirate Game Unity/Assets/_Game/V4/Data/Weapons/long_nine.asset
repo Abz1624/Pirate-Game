@@ -25,7 +25,7 @@ MonoBehaviour:
   tags:
   - Gunnery
   - Hunter
-  baseDamage: 21.5
+  baseDamage: 22
   baseCooldown: 1.6371078
   range: 18
   baseQuantity: 1

@@ -222,13 +222,13 @@ const metricOf = (runs, key) => {
   if (key.startsWith('fight:')) { const k = key.slice(6); return med(runs.flatMap(r => r.focus.filter(x => simKind(x[0]) === k).map(x => x[2]))); }
   return null;
 };
-const knobs = ['accuracy', 'engagement', 'lootShare', 'vfxDensity', 'arrivalSeconds', 'contactRate', 'dodge', 'shotHitChance', 'focusHitsPerSecond', 'bossHitsPerSecond', 'arenaShareOfDps', 'focusShareOfDps', 'eliteShareOfDps', 'islandHitsPerMinute', 'chestEverySeconds'];
+const knobs = ['accuracy', 'engagement', 'lootShare', 'arrivalSeconds', 'contactRate', 'dodge', 'shotHitChance', 'focusHitsPerSecond', 'bossHitsPerSecond', 'arenaShareOfDps', 'focusShareOfDps', 'eliteShareOfDps', 'islandHitsPerMinute', 'chestEverySeconds'];
 const hints = {
   kills: 'kill throughput: accuracy, engagement, arrivalSeconds; data: the wave floors and top-ups, band rates',
   killsMid: 'kill throughput: accuracy, engagement, arrivalSeconds',
-  level: 'XP: lootShare, vfxDensity (XP barrel pieces), accuracy (kills); data: Pickups xpPickupMultiplier and burst counts, the XP table',
+  level: 'XP: lootShare, accuracy (kills); data: Pickups xpPickupMultiplier, the XP table',
   dmg: 'incoming damage: contactRate, dodge (melee), shotHitChance, shotInterval (ranged), focusHitsPerSecond, bossHitsPerSecond, islandHitsPerMinute',
-  lv5: 'early XP: lootShare, vfxDensity, accuracy, arrivalSeconds',
+  lv5: 'early XP: lootShare, accuracy, arrivalSeconds',
   end: 'survival: contactRate, shotHitChance, focusHitsPerSecond, bossHitsPerSecond, islandHitsPerMinute, dodge; and the kill side (accuracy)',
 };
 const n = Math.max(40, Math.round(opt.seeds / 4));

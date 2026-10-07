@@ -119,7 +119,8 @@ namespace RoguePirates.V4.Progression
         readonly Func<float> _vfxDensity;
         readonly Queue<Pending> _pending = new Queue<Pending>();
         Agent[] _pool = new Agent[0];
-        int _active, _pendingXp, _pendingGold, _pendingHeal;
+        int _active, _pendingGold, _pendingHeal;
+        float _pendingXp; // V5 M8z (7 Oct, D20): XP gathers as a float so a piece's XP gain is never rounded per piece
         float _xpCarry; // the XP pace (PickupConfig.xpPickupMultiplier) keeps its fractions between pickups
         float _time;
 
@@ -285,7 +286,8 @@ namespace RoguePirates.V4.Progression
         public void ClearAll()
         {
             _pending.Clear();
-            _pendingXp = _pendingGold = _pendingHeal = 0;
+            _pendingXp = 0f;
+            _pendingGold = _pendingHeal = 0;
             _xpCarry = 0f;
             for (var i = 0; i < _pool.Length; i++) if (_pool[i].Active) Release(i);
         }
@@ -378,22 +380,21 @@ namespace RoguePirates.V4.Progression
             Release(i); // a homing barrel pays nothing (V3; Magnetic Tide's R-103 fix opens barrels instead)
         }
 
-        int XpGrant(int value) => Mathf.Max(1, Mathf.RoundToInt(value * _rewards.XpGain));
+        // V5 M8z (7 Oct, D20): a piece pays exactly its value x the XP gain (a 0-XP piece pays nothing); the old
+        // Max(1, round(...)) paid at least 1 per piece, so the XP per kill grew with the effects density.
+        float XpGrant(int value) => value > 0 ? value * _rewards.XpGain : 0f;
 
         void FlushGrants()
         {
-            if (_pendingXp > 0)
+            if (_pendingXp > 0f)
             {
-                var xp = _pendingXp;
-                _pendingXp = 0;
-                // V5 baseline: levelling pace (0.5 = half the XP, twice as many pickups per level).
+                // V5 baseline: levelling pace (0.5 = half the XP, twice as many pickups per level). V5 M8z (7 Oct, D20):
+                // the fractions (pace and XP gain) are carried from pickup to pickup.
                 var rate = _config() != null ? _config().xpPickupMultiplier : 1f;
-                if (!Mathf.Approximately(rate, 1f))
-                {
-                    _xpCarry += xp * rate;
-                    xp = Mathf.FloorToInt(_xpCarry);
-                    _xpCarry -= xp;
-                }
+                _xpCarry += _pendingXp * rate;
+                _pendingXp = 0f;
+                var xp = Mathf.FloorToInt(_xpCarry + 1e-4f);
+                _xpCarry = Mathf.Max(0f, _xpCarry - xp);
                 if (xp > 0) _rewards.GrantXp(xp);
             }
             if (_pendingGold > 0) { var gold = _pendingGold; _pendingGold = 0; _rewards.GrantGold(gold); }
@@ -420,9 +421,12 @@ namespace RoguePirates.V4.Progression
             var c = C;
             var min = c.burstCountMin;
             var max = Mathf.Max(min, c.burstCountMax);
-            var count = Mathf.Max(c.burstMinimum, Mathf.RoundToInt(Range(min, max + 1) * _vfxDensity()));
-            var perPiece = Mathf.Max(1, total / count);
-            var remainder = total - perPiece * count;
+            var count = Mathf.Max(1, Mathf.Max(c.burstMinimum, Mathf.RoundToInt(Range(min, max + 1) * _vfxDensity())));
+            // V5 M8z (7 Oct, D20): the pieces split the barrel's value exactly at any effects density (the density sets only
+            // how many pieces fly): each carries total / count, the first total % count one more, so a piece may carry 0.
+            var total0 = Mathf.Max(0, total);
+            var perPiece = total0 / count;
+            var remainder = total0 - perPiece * count;
             for (var k = 0; k < count; k++)
             {
                 var scatter = InsideUnitSphere() * 0.8f;
@@ -431,7 +435,7 @@ namespace RoguePirates.V4.Progression
                 pos.y = 0.45f;
                 _pending.Enqueue(new Pending
                 {
-                    Type = flying, Position = pos, Value = perPiece + (k == 0 ? remainder : 0),
+                    Type = flying, Position = pos, Value = perPiece + (k < remainder ? 1 : 0),
                     FlyDelay = Range(0.05f, 0.25f) + k * 0.02f,
                 });
             }

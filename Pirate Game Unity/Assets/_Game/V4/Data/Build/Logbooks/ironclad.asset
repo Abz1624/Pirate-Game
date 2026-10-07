@@ -21,5 +21,5 @@ MonoBehaviour:
   perLevelAdditive: 3
   perLevelMultiplicative: 1
   maxLevel: 5
-  inSaltwindPool: 0
+  inSaltwindPool: 1
   databaseOrder: 10

@@ -42,9 +42,9 @@ namespace RoguePirates.V4.Tests
             public void Release(object view, PickupType type, int value) => _at.Remove(view);
         }
 
-        static PickupModule Make(ConfigSetRuntime config, Rewards rewards, Views views, int seed)
+        static PickupModule Make(ConfigSetRuntime config, Rewards rewards, Views views, int seed, float vfxDensity = 1f)
         {
-            var module = new PickupModule(() => config.Single<PickupConfig>(), 64, rewards, views, () => false, () => 1f);
+            var module = new PickupModule(() => config.Single<PickupConfig>(), 64, rewards, views, () => false, () => vfxDensity);
             module.Seed(seed);
             return module;
         }
@@ -66,11 +66,8 @@ namespace RoguePirates.V4.Tests
             var views = new Views();
             var pickups = Make(config, rewards, views, 101);
             var kill = new Vector3(10f, 0f, 10f);
-            // V5 M8z (7 Oct, I8z.5): a barrel bursts into burstCountMin-burstCountMax pieces of at least 1 XP each, so a
-            // value below the piece count pays one per piece. Values above the most pieces pay exactly once.
-            var c = config.Single<PickupConfig>();
-            var xp = 3 * Mathf.Max(c.burstCountMax, c.burstMinimum) + 1;
-            var gold = 2 * Mathf.Max(c.burstCountMax, c.burstMinimum) + 1;
+            // V5 M8z (7 Oct, D20): a barrel pays exactly its value, whatever the number of pieces it bursts into.
+            const int xp = 3, gold = 2;
             pickups.SpawnFromEnemy(kill, xp, gold);
             Assert.AreEqual(2, pickups.ActiveCount, "an XP barrel and a gold barrel");
             Assert.AreEqual(2, views.Live);
@@ -91,12 +88,40 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(gold, rewards.Gold);
         }
 
+        // V5 M8z (7 Oct, D20, owner): the same XP per kill at every graphics quality and with Reduced Effects. The effects
+        // density (Low 0.45, Mid 0.75, High 1, each halved by Reduced Effects) sets only how many pieces a barrel bursts
+        // into; the pieces split the barrel's value exactly (a piece may carry 0), for XP, gold and health alike.
+        [Test]
+        public void ABarrel_PaysExactlyItsValue_AtEveryEffectsDensity()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            config.Single<PickupConfig>().xpPickupMultiplier = 1f; // the barrel's own value (the XP pace has its own test)
+            foreach (var density in new[] { 0.225f, 0.375f, 0.45f, 0.5f, 0.75f, 1f })
+                for (var value = 1; value <= 13; value++)
+                {
+                    var rewards = new Rewards();
+                    var views = new Views();
+                    var pickups = Make(config, rewards, views, 300 + value, density);
+                    var kill = new Vector3(10f, 0f, 10f);
+                    pickups.Spawn(PickupType.XpBarrel, value, kill);
+                    pickups.Spawn(PickupType.GoldBarrel, value, kill + Vector3.right);
+                    pickups.Spawn(PickupType.Powerup, value, kill + Vector3.left);
+                    for (var i = 0; i < 900 && pickups.ActiveCount > 0; i++) pickups.Tick(Dt, kill, 1f);
+                    for (var i = 0; i < 120; i++) pickups.Tick(Dt, kill, 1f);
+                    Assert.AreEqual(0, pickups.ActiveCount, $"density {density}, value {value}: every piece collected");
+                    Assert.AreEqual(value, rewards.Xp, $"density {density}: an XP barrel worth {value} pays exactly {value}");
+                    Assert.AreEqual(value, rewards.Gold, $"density {density}: a gold barrel worth {value} pays exactly {value}");
+                    Assert.AreEqual(value, rewards.Heal, $"density {density}: a health barrel worth {value} heals exactly {value}");
+                }
+        }
+
         [Test]
         public void XpPickupMultiplier_PacesTheXp_WithoutLosingFractions()
         {
             // V5 demo baseline (30 Sep 2026): XP from pickups ×0.5, the fractions carried from orb to orb.
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
-            Assert.AreEqual(0.5f, config.Single<PickupConfig>().xpPickupMultiplier, "the demo baseline's pace in the data");
+            // V5 M8z (7 Oct, D20): 0.8 with the exact barrel payout and the retuned XP table (the sessions' levelling pace).
+            Assert.AreEqual(0.8f, config.Single<PickupConfig>().xpPickupMultiplier, "the playtest pace in the data");
             int Collect(float rate, int barrels)
             {
                 config.Single<PickupConfig>().xpPickupMultiplier = rate;

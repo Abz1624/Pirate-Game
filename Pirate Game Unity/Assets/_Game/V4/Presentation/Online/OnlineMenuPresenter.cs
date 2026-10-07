@@ -54,7 +54,8 @@ namespace RoguePirates.V4.Presentation.Online
         /// <summary>V5 M8z (7 Oct, owner): "Download last voyage" under the profile chip, once a voyage was recorded.</summary>
         void BuildLastVoyageButton(Transform parent)
         {
-            if (!RoguePirates.V4.Telemetry.SessionFile.HasLast) return;
+            // V5 M8z (7 Oct, D20): playtest builds only (DemoJuiceSettings.downloadSessionFiles).
+            if (!RoguePirates.V4.Foundation.Core.DemoMode.DownloadSessionFiles || !RoguePirates.V4.Telemetry.SessionFile.HasLast) return;
             TextMeshProUGUI note = null;
             var button = OnlineUi.Button(parent, "Download last voyage", () =>
             {
