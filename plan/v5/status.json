@@ -1,6 +1,6 @@
 {
  "updated": "6 Oct 2026",
- "statusLine": "M8z closed (8 Oct). Next: M9 (run checks and the Netcode go/no-go), drafted; it starts when you answer N1-N8.",
+ "statusLine": "M9 approved (D22): .NET 10 and migrations first, then run checks that reject implausible runs, then the Netcode match server with multi-ship play on Railway. The plan review runs first.",
  "statusOk": false,
  "facts": [
   [
@@ -78,8 +78,8 @@
    "chip": "done 8 Oct · playtested"
   },
   "M9": {
-   "state": "next",
-   "chip": "next: draft plan, your answers N1-N8"
+   "state": "building",
+   "chip": "started 8 Oct · plan review first"
   }
  },
  "log": [
@@ -392,11 +392,16 @@
    "when": "8 Oct",
    "commit": "",
    "what": "<strong>M8z closed</strong>: kill credit for every weapon (Lantern, Doubloons, Anchor Flail and others now count their kills; Cursed Doubloons' kill gold now pays), old saves map the Ramming Prow to the Squid Ink Pots, real Luck and Ironclad checks, an echo validator; EditMode 561/561, PlayMode 88/88. Tag <code>v5-m8z</code>."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "<strong>Your M9 answers (D22)</strong>: multi-ship play pulled into M9; M21-M22 move forward to right after M13b; .NET 10 and migrations first; implausible runs rejected from the start; direct WebSockets; a new Elo season with server-run 1v1; no phone in M9; a $10 Railway spend limit. M9 starts with a plan review."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Answer N1-N8</strong> (section 9) so M9 can start: observer ships vs multi-ship, when the relay goes, .NET 10 first, shadow-mode run checks, direct WebSockets, a new Elo season, phone in M9, the Railway spend limit.",
+   "<strong>Set the Railway spend limit</strong>: Railway, your workspace Settings, Usage: a usage alert and a $10 hard limit (D22; I can't change account settings for you).",
    "<strong>Keep recording voyages</strong> when you play."
   ],
   "open": [

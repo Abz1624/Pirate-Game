@@ -1,6 +1,6 @@
 # Rogue Pirates — V5 Plan (Live Game)
 
-Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
+Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
 (section 9)**. Explanations of every answer: `plan/v5/ANSWERS.md`.
 
 **Demo interlude (30 Sep, merged at `27a238bc`, V5 resumed at `86724e6b`).** Work paused after M3 for a demo on
@@ -120,6 +120,7 @@ Proposed decisions (P) take effect when the owner approves the plan. Owner-confi
 | D19 | **Owner answers of 6 Oct, second batch**: (1) **Raid economy (P11) is option B with 4-hour shields**, replacing Q23b: the vault keeps 60% of an island's RUM (never raidable), a successful raid takes 25% of the exposed treasury (half on a partial raid), a 4-hour shield after being raided, attacking ends your own shield, and a small raid entry fee as a RUM sink; no daily loss cap, no new-player protection and no free revenge raid (owner, 6 Oct); all in config, built in M14/M15. (2) **Netcode matches are server-authoritative**: the match server runs the simulation and owns hull, damage, armor, regeneration, items and sinking; clients send inputs only and render the server's state, so no client report decides a result (M9 proves it, M13b hosts it, M21/M22 use it). Until then the API relay's referee checks hits (weapon in draft, range, damage cap) but sinking stays client-reported. (3) Health pickups stay as they were (dropped at kills). (4) Accounts beyond Railway and the domain are created when their phase needs them. (5) The API is deployed by the agent with `server/deploy.ps1` when a server change needs to go live; no automatic deploy on push (CI runs the server tests only). (6) Arena fights (minibosses, scheduled elites) keep the waves paused until they end, however long they take; an on-screen pointer shows them when off screen (no limit on the number of arrows). (7) Every weapon is allowed in PvP, Mortar and Maelstrom included. (8) The relay's damage cap stays until the Netcode match server replaces the relay; no further work on relay exploits, since server-authoritative Netcode removes them (7 Oct). (C) |
 | D20 | **Owner answers of 7 Oct (M8z review)**: XP per kill is the same at every graphics quality and with Reduced Effects (the burst pieces split the barrel's XP exactly; the XP table is retuned to keep the measured pace); the darker red Cutthroat Skiff and greener Needle Sloop are kept; Ironclad joins the Saltwind Logbook pool; voyage session files download only in playtest builds (a build switch; the owner says when a public build is made); every weapon has the same level-1 single-target DPS (round 6's weapon roles are undone; the test is enforced again). (C) |
 | D21 | **Owner answers of 7 Oct (open questions)**: loot-barrel sparkles removed (Q16); the Knockback card removed from weapons it does nothing for (Q17); **Ramming Prow removed** and replaced by an auto-attacking weapon that slows enemies, especially the back of the pack, as a strategic tool (Q19, plus the owner's slow-weapon idea; the plan and the art guide follow); the new weapons' rank 4/8/12 milestones stay (Q20); the Harpoon's tar becomes a real slow (Q23); the Reef Crab takes slows and knockback like the boss (half slow, no knockback) (Q24); slows don't shorten charge dashes (Q25); the flame's look is replaced by the owner later (Q26); one Luck scale for cards and chests (Q27); Admiral works on elites and the boss (Q32); new enemy types later, models by the art team (Q5); Collection from Profile (Q37); New badges and sales when locks return (Q38); the same gameplay caps on every device (Q33); the 1024 texture cap on every web build, desktop too (Q34); health bars sort every 8 frames (Q42); phone texture checks at the next phone build (Q40, Q44). Q28: Battle Signal and Full Sail join Powder Rush, Magnetic Tide and Dead Calm in the drop pool (Tailwind and Salvage Chime stay out); the Unity splash logo is off (Unity 6 allows it without Pro); the 1024 texture cap on desktop is fine for now. (C) |
+| D22 | **Owner answers of 8 Oct (M9, N1-N8)**: multi-ship play is pulled into M9 (the multi-ship runtime, M21's I21.1, is built there and the 4-client test uses real ships) (N1); M21 and M22 (no wagers) move forward to right after M13b, so rated 1v1 leaves the relay sooner (N2); .NET 10 and EF Core migrations are M9's first item (N3); implausible leaderboard runs are rejected as soon as M9 ships (no shadow period) (N4); direct secure WebSockets to the Railway match server, no Unity Relay (N5); a new Elo season when server-authoritative 1v1 arrives (N6); no phone in M9, desktop WebGL is the target (N7); about $1 of extra Railway usage for M9 tests and a $10 hard spend limit on the Railway project (N8). (C) |
 
 ---
 
@@ -608,7 +609,7 @@ Stack research: `plan/v5/research/STACK_RESEARCH.md`.
 
 #### M9 — Run checks and the Netcode test (go/no-go)
 
-(Rewritten 8 Oct after the playtest detour, D18-D21; draft until the owner answers questions N1-N8 in section 9.)
+(Rewritten 8 Oct after the playtest detour, D18-D21; approved with the owner's answers, D22.)
 
 Goal: before any account holds value, (a) check voyages for plausibility on the server and (b) prove with measurements
 that browser players can play on an authoritative Unity Netcode for GameObjects match server on Railway (D18 P5, D19):
@@ -624,15 +625,16 @@ the server runs the simulation and owns hull, damage, armor, regeneration, items
 - I9.2 Seeding: every gameplay draw on the run's seeded streams; the seed injectable from outside (server-issued from
   M10); a source-scan test.
 - I9.3 Plausibility rules v1 from the refit simulator's strongest personality at the enemy cap (+ margin), exported from
-  config to JSON and read by both the client and the API; the API stores a verdict per run (shadow mode first, N4).
+  config to JSON and read by both the client and the API; the API rejects an implausible run from the start (D22) and
+  keeps the verdict and the reason for disputes.
 - I9.4 Netcode spike (assembly RoguePirates.V5.Net, scene V5NetSpike, kept out of release builds): NGO + Unity Transport
   WebSockets; a Linux Dedicated Server build of the same project in Docker, locally and as a Railway test service; a
   server composition with no presenters; fixed 30 Hz simulation, 15-20 Hz snapshots; enemies as batched, quantized,
   interest-managed custom messages; a signed one-time join ticket from the API lobby.
   (a) A single-player server voyage with a spike kinematic ship: client prediction and reconciliation.
-  (b) Load test: 2 then 4 clients, each with an observer ship (moves, receives its own interest set, takes server hits;
-  no build); the full multi-ship runtime stays in M21 (N1).
-  (c) Relay fallback measured only if direct secure WebSockets fail (N5).
+  (b) The multi-ship runtime (pulled from M21's I21.1, D22): several ships in one simulation, each with its own build,
+  damage, pickups and XP; the RunManager singleton split per ship. Load test: 2 then 4 real ships on one server.
+  Direct secure WebSockets only, no Unity Relay (D22).
 - D9.1 Go/no-go memo (phase-09-checks/REPORT.md) against: down <= 20 KB/s per client (p95 <= 30), up <= 2 KB/s; server
   tick p95 <= 16 ms at 4 ships and 200 enemies on Railway (<= 8 ms for a single-player voyage); client steady 60 fps on
   desktop WebGL while connected; prediction error <= 0.5 m and no visible snap at 150 ms RTT with 2% loss; a dropped
@@ -651,7 +653,8 @@ Automated check: the scripted server voyage and the 4-client load test on local 
 a Railway usage export in REPORT.md.
 Owner playtest: play one server-run voyage from desktop Chrome on Railway; does the ship feel the same? Read the memo
 and confirm go or no-go.
-Cost: tests about 5-10 server-hours (about $0.20-0.60 above the Hobby $5); a Railway usage alert and a hard limit (N8).
+Cost: tests about 5-10 server-hours (about $0.20-0.60 above the Hobby $5, up to about $1 approved); a usage alert and
+a $10 hard limit on the Railway project (D22).
 Estimate per hour at 0.25 vCPU / 0.4 GB: a 1v1 about $0.018, a 4-player match about $0.03.
 
 #### M10 — Game server foundation and ledger
@@ -1160,11 +1163,11 @@ questions below (6 Oct, `plan/playtest/V5-RESUME.md`).
 | Q34 | The 1024 texture cap: mobile only, or the desktop web build too? | Answered 7 Oct: All web builds, desktop too (D21) |
 | Q42 | Health bars sort far to near every 8 frames (a near bar can sit under a far one briefly). Fine, or every frame? | Answered 7 Oct: Every 8 frames (D21) |
 | Q40, Q44 | Phone builds: ASTC effects and UI art; the Android 1024 UI cap. | Answered 7 Oct: At the next phone build (D21) |
-| N1 | M9's 4-client test: observer ships (move, receive their own enemies, take server hits; no build) with full multi-ship play left to M21, or pull multi-ship play into M9 (much bigger)? | Observer ships in M9 · Multi-ship in M9 |
-| N2 | When does the relay go? Keep the plan (Netcode 1v1 in M22, after Stages C and D), or bring M21 and M22 (no wagers) forward right after M13b so rated 1v1 stops relying on client-reported sinking sooner? | Bring M21-M22 forward after M13b · Keep the plan |
-| N3 | .NET 10 and database migrations: as M9's first item, or move M10 ahead of M9? | First item of M9 · M10 first |
-| N4 | Leaderboard run checks: record a verdict only (shadow mode) at first, or reject implausible runs as soon as M9 ships? | Shadow mode first · Reject at once |
-| N5 | Transport: direct secure WebSockets to Railway (free), with Unity Relay only as a fallback (needs a Unity Gaming Services account)? | Direct WebSockets · Relay |
-| N6 | Elo: a new season when server-authoritative 1v1 arrives, or carry today's client-reported ratings over? | New season · Carry over |
-| N7 | Phone in M9: one reference-phone run in the go criteria, or leave the phone to M13b? | Leave to M13b (desktop is the main target) · One phone run |
-| N8 | Spend: about $1 of extra Railway usage for M9 tests and a $10 hard spend limit on the Railway project? | Approve · Lower limit (say how much) |
+| N1 | M9's 4-client test: observer ships (move, receive their own enemies, take server hits; no build) with full multi-ship play left to M21, or pull multi-ship play into M9 (much bigger)? | Answered 8 Oct: Multi-ship play in M9 (D22) |
+| N2 | When does the relay go? Keep the plan (Netcode 1v1 in M22, after Stages C and D), or bring M21 and M22 (no wagers) forward right after M13b so rated 1v1 stops relying on client-reported sinking sooner? | Answered 8 Oct: Bring M21-M22 forward after M13b (D22) |
+| N3 | .NET 10 and database migrations: as M9's first item, or move M10 ahead of M9? | Answered 8 Oct: First item of M9 (D22) |
+| N4 | Leaderboard run checks: record a verdict only (shadow mode) at first, or reject implausible runs as soon as M9 ships? | Answered 8 Oct: Reject at once (D22) |
+| N5 | Transport: direct secure WebSockets to Railway (free), with Unity Relay only as a fallback (needs a Unity Gaming Services account)? | Answered 8 Oct: Direct WebSockets (D22) |
+| N6 | Elo: a new season when server-authoritative 1v1 arrives, or carry today's client-reported ratings over? | Answered 8 Oct: New season (D22) |
+| N7 | Phone in M9: one reference-phone run in the go criteria, or leave the phone to M13b? | Answered 8 Oct: Leave to M13b (D22) |
+| N8 | Spend: about $1 of extra Railway usage for M9 tests and a $10 hard spend limit on the Railway project? | Answered 8 Oct: Approve ($10 limit) (D22) |
