@@ -46,6 +46,10 @@ MonoBehaviour:
   pool:
   - kind: 0
     weight: 0
+  - kind: 1
+    weight: 25
+  - kind: 4
+    weight: 25
   - kind: 5
     weight: 25
   - kind: 6

@@ -358,11 +358,15 @@
    "when": "7 Oct",
    "commit": "",
    "what": "Your answers to the open questions recorded (D21): sparkles and the useless Knockback card removed, Ramming Prow replaced by an auto-attacking slowing weapon, real Harpoon slow, the crab treated like the boss for slows, one Luck scale, Admiral on the boss too, the 1024 texture cap everywhere. The powerup mix (Q28) explained; your answer pending. Implementing now."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "",
+   "what": "Powerups: Battle Signal (+25% damage, 8 s) and Full Sail (+45% speed, 8 s) now drop alongside Powder Rush, Magnetic Tide and Dead Calm; the Unity splash logo is off; the 1024 texture cap on desktop accepted for now."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Answer Q28</strong> (which powerups drop) and the splash-logo question; the rest of the open questions are answered (D21).",
    "<strong>Playtest M8z</strong> once the health bar and Beacon fixes are in (a new desktop build follows).",
    "<strong>Keep recording voyages</strong> when you play (<em>Download last voyage</em> on the main menu fetches a missed one)."
   ],
