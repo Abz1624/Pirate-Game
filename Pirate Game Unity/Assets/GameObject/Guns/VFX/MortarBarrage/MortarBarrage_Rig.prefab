@@ -115,12 +115,12 @@ MonoBehaviour:
   impactPrefab: {fileID: 5021453304944166231, guid: a70395ad4d0003a4aa01336fb1c4bc2b, type: 3}
   splashPrefab: {fileID: 7117905026468385747, guid: 9bf6488282dca46eda70d6338c3d982f, type: 3}
   telegraphPrefab: {fileID: 4121415595090070111, guid: a34c16df173f24485b2f792c1acaa553, type: 3}
-  shellCount: 8
+  shellCount: 3
   flightSeconds: 1.5
   launchWindow: 0.45
   landingSpread: 0.5
-  blastRadius: 4
-  scatter: 0.8
+  blastRadius: 7
+  scatter: 1
   deckSpread: 0.9
   muzzleEvery: 2
   shellScale: 1
