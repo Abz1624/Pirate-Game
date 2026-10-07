@@ -606,38 +606,53 @@ Owner playtest: a recorded voyage compared with the simulator; a PvP match again
 
 Stack research: `plan/v5/research/STACK_RESEARCH.md`.
 
-#### M9 — Run checks and the netcode test (go/no-go)
+#### M9 — Run checks and the Netcode test (go/no-go)
 
-Goal: before any account holds value, decide how runs are checked and prove that browser players can reach an
-authoritative match server well enough for the Arena and the Hunt.
+(Rewritten 8 Oct after the playtest detour, D18-D21; draft until the owner answers questions N1-N8 in section 9.)
 
-- I9.1 Run log: seed, config hash, both build ids, per-minute summaries (spawns, kills, gold, XP, damage taken and dealt,
-  level, pickups) and the inputs (for disputes and future replay), compact.
-- I9.2 Seeding: every gameplay draw goes through the run's seeded streams (the remaining client-side seed choices are
-  `HomeSeed.cs:24` and `WorldPort.cs:57`; the draw in `SalvageChestWaterFloat.cs:35` is visual only); the run seed can be
-  injected from outside (the server, from M10).
-- I9.3 Plausibility rules (D6, Q29): bounds taken from the M2 balance model and simulator, not from the seed alone
-  (the minimum-alive floor and the adaptive director spawn more as a player kills more): the most kills per minute any
-  build can reach at the enemy cap, the most gold, XP and level per minute, consistency between them (level follows XP,
-  XP follows kills, gold follows kills and chests), and the reported build checked against the level and the offers the
-  seed allows; written as shared config so the client and the server compute the same limits.
-- I9.4 Netcode test with the headless build (Q2: Unity Netcode for GameObjects with Unity Transport WebSockets;
-  `research/HUNT_NETCODE.md`): a headless server on Railway and two, then four, WebGL clients (one on the reference
-  phone) over secure WebSockets; ~200 enemies simulated, each client receiving only nearby enemies as batched, quantized
-  snapshots. Also a single-player server voyage (the mode raids, races and ranked runs use) with a prediction-ready
-  ship: movement predicted on the client and reconciled with the server. Go limits: ≤ 20 KB/s per client; server tick
-  ≤ 16 ms at 4 players and 200 enemies; the reference phone still at a steady 30 fps while connected; the ship feels
-  responsive at 150 ms round trip (a simulated mobile network); how many single-player sessions one headless process
-  hosts and the memory per session (for the Railway cost estimate); reconnect after a Railway redeploy.
-- D9.1 Report and go/no-go memo: Netcode for GameObjects against the limits above (Q2). Photon Quantum (the only option with exact replays) is not
-  recommended (full rewrite; every phone simulates every enemy), so runs use plausibility checks and server-played
-  sessions (D6).
-- T9.x Plausibility rules accept 20 scripted real runs and reject edited logs (inflated kills, gold, impossible
-  levels) and a forged log that is internally consistent at the 99th percentile of the simulator's strongest
-  personality; a source scan shows every gameplay draw uses the seeded streams.
+Goal: before any account holds value, (a) check voyages for plausibility on the server and (b) prove with measurements
+that browser players can play on an authoritative Unity Netcode for GameObjects match server on Railway (D18 P5, D19):
+the server runs the simulation and owns hull, damage, armor, regeneration, items and sinking; clients send inputs.
 
-Automated check: the plausibility report and the netcode measurements in `phase-09-checks/REPORT.md`.
-Owner check: read the report and confirm the netcode choice. No playtest needed (no gameplay change beyond seeding).
+- C9.0 Server on .NET 10 LTS with EF Core migrations (baseline from today's live schema, replacing EnsureCreated);
+  the Dockerfile on the 10.0 images; deployed by the agent (D19). Pulled from I10.1 (.NET 8 support ends 10 Nov).
+- C9.1 Prerequisite: the simulator refit on the recorded sessions (levels, kills, damage taken and survival within the
+  model's p10-p90), since the plausibility bounds come from it.
+- I9.1 Run log: seed, config hash, balance version, build id; per-minute spawns, kills (per weapon), gold, XP, level,
+  damage taken and dealt, pickups, chests, points of interest; inputs sampled for disputes; compact, uploaded with
+  POST /api/runs.
+- I9.2 Seeding: every gameplay draw on the run's seeded streams; the seed injectable from outside (server-issued from
+  M10); a source-scan test.
+- I9.3 Plausibility rules v1 from the refit simulator's strongest personality at the enemy cap (+ margin), exported from
+  config to JSON and read by both the client and the API; the API stores a verdict per run (shadow mode first, N4).
+- I9.4 Netcode spike (assembly RoguePirates.V5.Net, scene V5NetSpike, kept out of release builds): NGO + Unity Transport
+  WebSockets; a Linux Dedicated Server build of the same project in Docker, locally and as a Railway test service; a
+  server composition with no presenters; fixed 30 Hz simulation, 15-20 Hz snapshots; enemies as batched, quantized,
+  interest-managed custom messages; a signed one-time join ticket from the API lobby.
+  (a) A single-player server voyage with a spike kinematic ship: client prediction and reconciliation.
+  (b) Load test: 2 then 4 clients, each with an observer ship (moves, receives its own interest set, takes server hits;
+  no build); the full multi-ship runtime stays in M21 (N1).
+  (c) Relay fallback measured only if direct secure WebSockets fail (N5).
+- D9.1 Go/no-go memo (phase-09-checks/REPORT.md) against: down <= 20 KB/s per client (p95 <= 30), up <= 2 KB/s; server
+  tick p95 <= 16 ms at 4 ships and 200 enemies on Railway (<= 8 ms for a single-player voyage); client steady 60 fps on
+  desktop WebGL while connected; prediction error <= 0.5 m and no visible snap at 150 ms RTT with 2% loss; a dropped
+  socket and a Railway redeploy resume the session within 10 s; cold start measured; memory and sessions per process;
+  cost per match-hour. NGO and Unity Transport versions pinned from the result.
+- T9.x Plausibility: scripted runs and the recorded sessions accepted; edited logs and a consistent forgery above the
+  strongest personality's p99 rejected. Netcode: in-process server-plus-clients PlayMode tests (spawn, input to
+  authoritative move, damage only from the server, a client-sent hull ignored, reconnect), each from a Scenario Lab
+  state. Server: dotnet test (migrations on an empty database and a copy of the live schema, run-log upload, verdicts,
+  join-ticket expiry and replay).
+- Reuse from the playtest: guest profiles and tokens, lobbies and invites, the draft, Elo, the bot, the weekly board.
+  Retire now: the unauthenticated stub endpoints. Retire when the Netcode 1v1 ships: the relay referee, client-posted
+  match results and the remote mirroring.
+
+Automated check: the scripted server voyage and the 4-client load test on local Docker and on Railway; measurements and
+a Railway usage export in REPORT.md.
+Owner playtest: play one server-run voyage from desktop Chrome on Railway; does the ship feel the same? Read the memo
+and confirm go or no-go.
+Cost: tests about 5-10 server-hours (about $0.20-0.60 above the Hobby $5); a Railway usage alert and a hard limit (N8).
+Estimate per hour at 0.25 vCPU / 0.4 GB: a 1v1 about $0.018, a 4-player match about $0.03.
 
 #### M10 — Game server foundation and ledger
 
@@ -1145,3 +1160,11 @@ questions below (6 Oct, `plan/playtest/V5-RESUME.md`).
 | Q34 | The 1024 texture cap: mobile only, or the desktop web build too? | Answered 7 Oct: All web builds, desktop too (D21) |
 | Q42 | Health bars sort far to near every 8 frames (a near bar can sit under a far one briefly). Fine, or every frame? | Answered 7 Oct: Every 8 frames (D21) |
 | Q40, Q44 | Phone builds: ASTC effects and UI art; the Android 1024 UI cap. | Answered 7 Oct: At the next phone build (D21) |
+| N1 | M9's 4-client test: observer ships (move, receive their own enemies, take server hits; no build) with full multi-ship play left to M21, or pull multi-ship play into M9 (much bigger)? | Observer ships in M9 · Multi-ship in M9 |
+| N2 | When does the relay go? Keep the plan (Netcode 1v1 in M22, after Stages C and D), or bring M21 and M22 (no wagers) forward right after M13b so rated 1v1 stops relying on client-reported sinking sooner? | Bring M21-M22 forward after M13b · Keep the plan |
+| N3 | .NET 10 and database migrations: as M9's first item, or move M10 ahead of M9? | First item of M9 · M10 first |
+| N4 | Leaderboard run checks: record a verdict only (shadow mode) at first, or reject implausible runs as soon as M9 ships? | Shadow mode first · Reject at once |
+| N5 | Transport: direct secure WebSockets to Railway (free), with Unity Relay only as a fallback (needs a Unity Gaming Services account)? | Direct WebSockets · Relay |
+| N6 | Elo: a new season when server-authoritative 1v1 arrives, or carry today's client-reported ratings over? | New season · Carry over |
+| N7 | Phone in M9: one reference-phone run in the go criteria, or leave the phone to M13b? | Leave to M13b (desktop is the main target) · One phone run |
+| N8 | Spend: about $1 of extra Railway usage for M9 tests and a $10 hard spend limit on the Railway project? | Approve · Lower limit (say how much) |

@@ -15,17 +15,27 @@ Branch `v5-live-game`. Start: merge `b5936c4d` (playtest rounds 1-10, tag `playt
 | I8z.7 one simulator | done | `88b21724`; JS model on a Unity export (`MonteCarloExport`), `check_export.mjs` 0 differing fields; recalibrated on three sessions. Levels and kills calibrated; survival not yet (the latest session sank at 11:33, the model in 2% of runs). |
 | PvP anti-cheat (owner request) | done | server tests 102; deployed 6 Oct; cap kept until Netcode (D19) |
 
+## After the review (7-8 Oct)
+
+| Item | Commit |
+|---|---|
+| Review fixes (goldens, shipped-settings scenarios, new scenario tests, server harness, balance version, session cap) | `afad2196` |
+| D20: exact XP payout, Ironclad pooled, session downloads switch, equal level-1 DPS 14.78 | `7bfb9403` |
+| XP drops halved (owner) | `a6f61b46` |
+| Health bars drawn again; the Beacon's whirlpool stays visible | `5711b244` |
+| D21: sparkles, Knockback card, Harpoon tar slow, miniboss slows, one Luck scale, Admiral, Squid Ink Pots, texture cap | `b28a8c3d` |
+| Battle Signal and Full Sail powerups; splash logo off | `0ab026cc` |
+| Q20 rank milestones for the nine new weapons | `7f84c1da` |
+
 ## Gate
 
-- Tests: EditMode 474/474, PlayMode 77/77 (7 Oct); final run after the review fixes in `plan/playtest/tests/*-m8z-final.json`.
-- Playable check: the desktop WebGL build (`Builds/Playtest-2026-10-03/`), served at http://localhost:8090; the owner's recorded voyages in `plan/playtest/sessions/`.
-- Independent review (7 Oct): pass with fixes, 0 blockers, 7 major, 7 minor (see `plan/v5/status.json` reviews). Fixes in progress.
-- Owner playtest: pending.
+- Tests: EditMode 498/498 (`editmode-q20.json`), PlayMode 88/88 (`playmode-d21.json`); final run on the closing code in
+  `plan/playtest/tests/*-m8z-close.json`.
+- Playable check: desktop WebGL builds served locally; the owner's five recorded voyages in `plan/playtest/sessions/`.
+- Independent review: pass with fixes (7 Oct), fixes done; final check of the later changes (8 Oct): no blockers.
+- Owner playtest: done (8 Oct, session `session-20261008-001147-rook.json`).
+- Carried into M9: the simulator refit on the recorded sessions (C9.1).
 
-## Owner decisions open
+## Decisions
 
-1. XP per kill depends on the graphics quality and Reduced Effects (the review recommends fixing it in M8z, then refitting the simulator).
-2. Two enemy colours changed when they moved into config (Cutthroat Skiff redder, Needle Sloop greener).
-3. Ironclad into the Logbook pool now that armor applies in runs.
-4. Shipped (non-playtest) web builds downloading a session file at the end of every voyage.
-5. The uncommitted WebGL memory and stack-trace settings in `ProjectSettings.asset` (64 MB initial, 1024 MB max; no stack traces for warnings and logs).
+D18, D19, D20, D21 (plan section 2). No owner decisions open for M8z.

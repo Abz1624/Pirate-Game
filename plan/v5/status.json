@@ -1,6 +1,6 @@
 {
  "updated": "6 Oct 2026",
- "statusLine": "M8z playtested by you on 8 Oct; a final check of the post-review changes and an M9 readiness review are running, then the M8z close and the M9 plan update for your approval.",
+ "statusLine": "M8z: final check passed (no blockers); closing fixes and the final test run in progress. M9 rewritten for Netcode (draft): 8 questions (N1-N8) for you before it starts.",
  "statusOk": false,
  "facts": [
   [
@@ -79,7 +79,7 @@
   },
   "M9": {
    "state": "next",
-   "chip": "next: plan update for Netcode (D19)"
+   "chip": "next: draft plan, your answers N1-N8"
   }
  },
  "log": [
@@ -382,12 +382,17 @@
    "when": "8 Oct",
    "commit": "",
    "what": "Fifth recorded session (16:38, level 32, 2,340 kills; levelling half as fast as before, as asked; Beacon reached at 12:00, boss not summoned; islands 25% and storm 13% of damage). The simulator still levels faster and takes about half the damage: refit on all five sessions next. M8z: final check of the post-review changes and an M9 readiness review started."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "M8z final check: no blockers; closing fixes and the final suites running. M9 rewritten for Unity Netcode with a server-authoritative match server on Railway (draft), with 8 questions for you (N1-N8)."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Wait for the M9 plan</strong>: I'll bring the rewritten M9 (Netcode, server-authoritative) and a few questions for your approval before starting it.",
-   "<strong>Keep recording voyages</strong> when you play (<em>Download last voyage</em> fetches a missed one)."
+   "<strong>Answer N1-N8</strong> (section 9) so M9 can start: observer ships vs multi-ship, when the relay goes, .NET 10 first, shadow-mode run checks, direct WebSockets, a new Elo season, phone in M9, the Railway spend limit.",
+   "<strong>Keep recording voyages</strong> when you play."
   ],
   "open": [
    "PvP draft on phones: tapping a card to read it also picks it (later)."
@@ -2181,6 +2186,11 @@
      "fix": "Accepted until Netcode (D19)"
     }
    ]
+  },
+  {
+   "title": "M8z final check (8 Oct)",
+   "summary": "<strong>No blockers.</strong> Close after: suites re-run on the final code, the evidence README updated, the working tree clean. Fixing now: kill credit for orbit/strike/whirlpool weapons (Lantern, Doubloons, Anchor Flail showed 0 kills), a save alias for the removed Ramming Prow, three weak assertions, an echo validator, stale comments. Carried into M9: the simulator refit.",
+   "rows": []
   }
  ]
 }
