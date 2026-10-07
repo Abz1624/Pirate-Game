@@ -137,7 +137,7 @@ namespace RoguePirates.V4.Presentation.Hud
                 }
                 var title = b.transform.Find("Background/Title")?.GetComponent<TextMeshProUGUI>();
                 // Playtest (3 Oct, owner): no icon art yet: the name stands in the icon's place.
-                IconPlaceholder(b.transform, icon, title, iconSprite == null ? RoguePirates.V4.Foundation.Core.DemoMode.Text(card.title) : null);
+                IconPlaceholder(b.transform, icon, title, iconSprite == null ? (offer.Kind == OfferKind.Logbook ? "<size=60%>LOGBOOK</size>\n" : string.Empty) + RoguePirates.V4.Foundation.Core.DemoMode.Text(card.title) : null); // V5 M8z (7 Oct): Logbooks say so
                 if (title != null) title.text = RoguePirates.V4.Foundation.Core.DemoMode.Text(card.title);
                 var description = b.transform.Find("Background/Description")?.GetComponent<TextMeshProUGUI>();
                 if (description != null)

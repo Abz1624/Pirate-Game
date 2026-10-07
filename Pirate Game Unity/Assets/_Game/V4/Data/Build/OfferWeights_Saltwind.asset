@@ -41,8 +41,8 @@ MonoBehaviour:
     newLogbook: 12
     runItem: 0
   - maxWeapons: 6
-    weaponUpgrade: 55
+    weaponUpgrade: 45
     newWeapon: 0
-    logbookUpgrade: 45
-    newLogbook: 0
+    logbookUpgrade: 30
+    newLogbook: 25
     runItem: 0
