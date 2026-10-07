@@ -14,6 +14,17 @@ namespace RoguePirates.V4.Editor
     {
         public enum Profile { Mobile, Desktop }
 
+        /// <summary>
+        /// V5 M8z (7 Oct, D21, Q34, owner: "the 1024 texture cap on every web build, desktop too"): the largest texture any
+        /// WebGL build ships, mobile and desktop alike. Applied per build through the build's max texture size override
+        /// (on top of <see cref="TextureDiet"/>'s WebGL importer overrides, which already hold most textures at 1024, it
+        /// also catches the few overridden higher or deliberately uncompressed) and restored after the build.
+        /// </summary>
+        public const int WebTextureCap = 1024;
+
+        /// <summary>The texture cap of a profile's build (the same for every web build since D21).</summary>
+        public static int TextureCapFor(Profile profile) => WebTextureCap;
+
         [MenuItem("RoguePirates/V5/Build WebGL (mobile)")]
         public static void BuildMobile() => Build(Profile.Mobile);
 
@@ -32,6 +43,7 @@ namespace RoguePirates.V4.Editor
             // Mobile: 512 MB. The 256 MB ceiling (32-bit mobile Chrome) ran out of memory loading the menu on 1 Oct (the
             // game needs ~344 MB); 64-bit phones such as the reference Galaxy A15 grow past it. 256 needs asset streaming.
             PlayerSettings.WebGL.maximumMemorySize = profile == Profile.Mobile ? 512 : 1024;
+            EditorUserBuildSettings.overrideMaxTextureSize = TextureCapFor(profile); // V5 M8z (D21, Q34): desktop too
             EditorUserBuildSettings.SetPlatformSettings("WebGL", "CodeOptimization", "RuntimeSpeed");
             PlayerSettings.WebGL.wasm2023 = wasm2023;
         }, (profile == Profile.Mobile ? "WebGL-Mobile" : "WebGL-Desktop") + (bench ? "-Bench" : ""), $"V5WebGL-{profile}{(bench ? "-Bench" : "")}",
@@ -47,6 +59,7 @@ namespace RoguePirates.V4.Editor
         public static string BuildBench(string name, string codeOptimization, bool wasm2023, bool astc) => WithSettings(() =>
         {
             PlayerSettings.WebGL.maximumMemorySize = 512;
+            EditorUserBuildSettings.overrideMaxTextureSize = WebTextureCap; // V5 M8z (D21, Q34)
             EditorUserBuildSettings.webGLBuildSubtarget = astc ? WebGLTextureSubtarget.ASTC : WebGLTextureSubtarget.Generic;
             if (!string.IsNullOrEmpty(codeOptimization)) EditorUserBuildSettings.SetPlatformSettings("WebGL", "CodeOptimization", codeOptimization);
             PlayerSettings.WebGL.wasm2023 = wasm2023;
@@ -67,6 +80,7 @@ namespace RoguePirates.V4.Editor
             var wasm2023 = PlayerSettings.WebGL.wasm2023;
             var logTrace = PlayerSettings.GetStackTraceLogType(LogType.Log);
             var warningTrace = PlayerSettings.GetStackTraceLogType(LogType.Warning);
+            var textureCap = EditorUserBuildSettings.overrideMaxTextureSize; // V5 M8z (D21): restored after the build
             try
             {
                 // Release logs without stack traces (each one printed to the browser console with its trace); errors keep theirs.
@@ -84,7 +98,7 @@ namespace RoguePirates.V4.Editor
                 var download = Directory.Exists(folder)
                     ? Directory.GetFiles(folder, "*", SearchOption.AllDirectories).Where(f => Path.GetFileName(Path.GetDirectoryName(f)) == "Build")
                         .Sum(f => new FileInfo(f).Length) / (1024f * 1024f) : 0f;
-                result += $" {label} download={download:0.0}MB maxMemory={PlayerSettings.WebGL.maximumMemorySize}MB textures={(WebGLTextureSubtarget)subtarget}";
+                result += $" {label} download={download:0.0}MB maxMemory={PlayerSettings.WebGL.maximumMemorySize}MB textures={(WebGLTextureSubtarget)subtarget} textureCap={EditorUserBuildSettings.overrideMaxTextureSize}";
                 File.WriteAllText(Path.Combine(Path.GetDirectoryName(Application.dataPath), "Builds", reportName + "-report.txt"), result);
                 Debug.Log("V5 WebGL build: " + result);
                 return result;
@@ -101,6 +115,7 @@ namespace RoguePirates.V4.Editor
                 PlayerSettings.WebGL.wasm2023 = wasm2023;
                 PlayerSettings.SetStackTraceLogType(LogType.Log, logTrace);
                 PlayerSettings.SetStackTraceLogType(LogType.Warning, warningTrace);
+                EditorUserBuildSettings.overrideMaxTextureSize = textureCap;
                 AssetDatabase.SaveAssets(); // the build saved its own values to ProjectSettings.asset: write the restored ones
             }
         }

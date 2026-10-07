@@ -289,9 +289,12 @@ namespace RoguePirates.V4.Tests
             b.V4.ApplySlow(boss, 0.6f, 2f);
             Assert.AreEqual(1f - Mathf.Min(rules.bossMaxSlow, 0.6f * rules.bossSlowShare), b.V4.SpeedMultiplier(boss), 1e-4f, "a boss takes half, at most 20%");
 
+            // V5 M8z (7 Oct, D21, Q24): the Reef Crab takes slows like the boss (half, at most bossMaxSlow).
             var (m, crab) = OneEnemy(config, "reef_crab_miniboss", new Vector3(30f, 0f, 0f));
             m.V4.ApplySlow(crab, 0.5f, 2f);
-            Assert.AreEqual(0.5f, m.V4.SpeedMultiplier(crab), 1e-4f, "a miniboss takes slows as a regular enemy (the design names bosses only)");
+            Assert.AreEqual(1f - Mathf.Min(rules.bossMaxSlow, 0.5f * rules.bossSlowShare), m.V4.SpeedMultiplier(crab), 1e-4f, "a miniboss takes the boss's share of a slow");
+            m.V4.ApplySlow(crab, 0.3f, 2f);
+            Assert.AreEqual(1f - Mathf.Min(rules.bossMaxSlow, 0.5f * rules.bossSlowShare), m.V4.SpeedMultiplier(crab), 1e-4f, "a weaker slow on the crab does not replace it");
         }
 
         [Test]
@@ -365,6 +368,8 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(2f, Pushed("shark", EliteAffix.None, true) - Pushed("shark", EliteAffix.None, false), 0.35f, "2 m away from the ship");
             Assert.AreEqual(1f, Pushed("shark", EliteAffix.Rich, true) - Pushed("shark", EliteAffix.Rich, false), 0.35f, "an elite half");
             Assert.AreEqual(Pushed("barnacle_king", EliteAffix.None, false), Pushed("barnacle_king", EliteAffix.None, true), 1e-3f, "a boss is not moved");
+            // V5 M8z (7 Oct, D21, Q24): nor the Reef Crab (a miniboss, by its definition's flag).
+            Assert.AreEqual(Pushed("reef_crab_miniboss", EliteAffix.None, false), Pushed("reef_crab_miniboss", EliteAffix.None, true), 1e-3f, "a miniboss is not moved");
         }
 
         [Test]
@@ -396,6 +401,24 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(2f, Pulled("shark", new Vector3(30f, 0f, 0f), 2f) - still, 0.35f, "2 m toward the whirlpool (away from the ship here)");
             Assert.Less(Pulled("shark", new Vector3(12.5f, 0f, 0f), 3f) - still, 0.6f, "never past the centre");
             Assert.AreEqual(Pulled("barnacle_king", Vector3.zero, 0f), Pulled("barnacle_king", new Vector3(30f, 0f, 0f), 2f), 1e-3f, "a boss is not moved");
+            Assert.AreEqual(Pulled("reef_crab_miniboss", Vector3.zero, 0f), Pulled("reef_crab_miniboss", new Vector3(30f, 0f, 0f), 2f), 1e-3f, "nor a miniboss (D21, Q24)");
+        }
+
+        /// <summary>V5 M8z (7 Oct, D21, Q32): elite damage (the Admiral Logbook) reaches elites, the boss and minibosses.</summary>
+        [Test]
+        public void EliteDamage_ReachesElites_TheBoss_AndMinibosses_NotOrdinaryEnemies()
+        {
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            bool Takes(string id, EliteAffix affix)
+            {
+                var (w, slot) = OneEnemy(config, id, new Vector3(30f, 0f, 0f), affix);
+                RoguePirates.V4.Weapons.IEnemyQuery query = new EnemyWorldContracts(w.V4, w.V4Statuses);
+                return query.IsEliteDamageTarget(slot);
+            }
+            Assert.IsFalse(Takes("shark", EliteAffix.None), "an ordinary enemy");
+            Assert.IsTrue(Takes("shark", EliteAffix.Rich), "an elite");
+            Assert.IsTrue(Takes("barnacle_king", EliteAffix.None), "the boss");
+            Assert.IsTrue(Takes("reef_crab_miniboss", EliteAffix.None), "the Reef Crab");
         }
 
         [Test]

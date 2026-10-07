@@ -68,8 +68,6 @@ namespace RoguePirates.V4.Tests
             public Vector3 Velocity => Vector3.zero;
             public Vector3 MovementForward => Vector3.forward;
             public Vector3 TransformPoint(Vector3 local) => local;
-            public bool Boosting;
-            public bool IsBoosting => Boosting;
         }
 
         sealed class Mods : IWeaponModifiers
@@ -322,7 +320,7 @@ namespace RoguePirates.V4.Tests
 
         // ---- M4 proper: the new weapons and the Empowered evolutions (real configs) ------------------------------------
 
-        static readonly string[] NewWeapons = { "anchor_flail", "chainshot", "siren_bell", "ramming_prow",
+        static readonly string[] NewWeapons = { "anchor_flail", "chainshot", "siren_bell", "squid_ink_pots",
             "parrot_squadron", "monkey_gunners", "maelstrom_charge", "lighthouse_lantern", "cursed_doubloons" };
 
         [Test]
@@ -350,7 +348,7 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(item.inChestPool, $"{item.itemId} drops from chests (ChestEconomy only rolls evolution items in its pool)");
                 Assert.IsTrue(icons.Item(item.itemId) != null || !string.IsNullOrWhiteSpace(item.displayName), $"{item.itemId} has an icon or a name (playtest round 7)");
             }
-            Assert.AreEqual(19, evolutions.Count, "the six from V3, the eight from V5 M4 and the five from M4b");
+            Assert.AreEqual(19, evolutions.Count, "the six from V3, the eight from V5 M4 (the Prow's replaced by the Ink Pots' in M8z, D21) and the five from M4b");
             Assert.AreEqual(evolutions.Count, evolutions.Select(e => e.baseWeapon.weaponId).Distinct().Count(), "one evolution per weapon");
         }
 
@@ -399,27 +397,6 @@ namespace RoguePirates.V4.Tests
             var e = rig.Manager.Slots[0].Evolution.empower;
             CollectionAssert.AreEqual(new[] { near, outside }, rig.Enemies.Hits, "the choir reaches further");
             Assert.AreEqual(bell.aura.slowFraction + e.extraSlow, rig.Enemies.Slows[0].fraction, 1e-5f, "and slows harder");
-        }
-
-        [Test]
-        public void TheRammingProw_StrikesAheadOnlyWhileBoosting_AndShoves()
-        {
-            using var rig = new Rig();
-            var prow = rig.Weapon("ramming_prow");
-            rig.Loadout.Entries.Add((new object(), "ramming_prow"));
-            rig.Manager.SyncLoadout();
-            var ahead = rig.Enemies.Add(new Vector3(0f, 0f, prow.aura.forwardOffset + 0.5f));
-            rig.Enemies.Add(new Vector3(0f, 0f, -prow.aura.forwardOffset)); // behind: inside a ship-centred pulse, not the prow's
-            const float dt = 1f / 60f;
-            for (var f = 0; f < 60; f++) rig.Manager.Tick(dt);
-            CollectionAssert.IsEmpty(rig.Enemies.Hits, "no boost, no strike");
-
-            rig.Ship.Boosting = true;
-            for (var f = 0; f < 60; f++) rig.Manager.Tick(dt);
-            Assert.Greater(rig.Enemies.Hits.Count, 1, "strikes again and again while boosting");
-            Assert.IsTrue(rig.Enemies.Hits.All(i => i == ahead), "only what is ahead");
-            Assert.IsTrue(rig.Enemies.Knocks.All(k => k.index == ahead && Mathf.Approximately(k.meters, prow.aura.knockbackMeters)), "and shoves it");
-            Assert.AreEqual(rig.Enemies.Hits.Count, rig.Enemies.Knocks.Count);
         }
 
         [Test]
@@ -700,7 +677,8 @@ namespace RoguePirates.V4.Tests
             {
                 if (exported.TryGetValue(w.weaponId, out var row))
                     Assert.AreEqual(WeaponStatResolver.HitsPerFiring(w), (float)((System.Collections.Generic.Dictionary<string, object>)row)["hitsPerFiring"], 1e-6f, "the model and the director read one rule");
-                if (w.balanceVersion == null || !w.balanceVersion.StartsWith("saltwind-v5-m4"))
+                // V5 M8z (7 Oct, D21): the Squid Ink Pots (saltwind-v5-m8z-d21) is a new weapon too.
+                if (w.balanceVersion == null || !(w.balanceVersion.StartsWith("saltwind-v5-m4") || w.balanceVersion.StartsWith("saltwind-v5-m8z-d21")))
                     Assert.AreEqual(1f, WeaponStatResolver.HitsPerFiring(w), 1e-6f, w.weaponId + ": today's weapons unchanged");
             }
             Assert.Less(WeaponStatResolver.HitsPerFiring(config.All<WeaponConfig>().First(x => x.weaponId == "lighthouse_lantern")), 0.5f, "a slow sweep hits an enemy far less often than its interval");
@@ -719,13 +697,6 @@ namespace RoguePirates.V4.Tests
             CollectionAssert.AreEqual(new[] { 2, 2, 1, 0 }, new[] { gold.Bonus("lightning_mast"), gold.Bonus("lightning_mast"), gold.Bonus("lightning_mast"), gold.Bonus("lightning_mast") }, "capped at 5 a run");
             gold.ResetForRun();
             Assert.AreEqual(2, gold.Bonus("lightning_mast"), "a new run pays again");
-        }
-
-        [Test]
-        public void TheShipState_IsNotBoosting_ByDefault()
-        {
-            IShipState ship = new Ship();
-            Assert.IsFalse(ship.IsBoosting);
         }
     }
 }

@@ -16,7 +16,10 @@ namespace RoguePirates.V4.Weapons
         public float DamageBonus = 1f;
         public int QuantityBonus;
         public float CooldownMult = 1f, SpeedMult = 1f, SizeMult = 1f, DurationMult = 1f, KnockbackMult = 1f;
-        /// <summary>V5 M4: an Empowered evolution's damage factor, extra pierce and extra slow (1, 0, 0 otherwise).</summary>
+        /// <summary>V5 M8z (7 Oct, D21): the Slow cards' total from the record (added to the weapon's slow share).</summary>
+        public float SlowBonus;
+        /// <summary>V5 M4: an Empowered evolution's damage factor, extra pierce and extra slow (1, 0, 0 otherwise); V5 M8z
+        /// (D21): the reached milestones' extra slow is in <see cref="ExtraSlow"/> too.</summary>
         public float EvolutionDamage = 1f, ExtraSlow;
         public int ExtraPierce;
         /// <summary>V5 M4: an Empowered evolution's extra shots on a burst weapon (Swivel Battery), which fires bursts, not volleys.</summary>
@@ -67,6 +70,7 @@ namespace RoguePirates.V4.Weapons
             slot.ExtraPierce = 0;
             slot.ExtraSlow = 0f;
             slot.ExtraBurstShots = 0;
+            ApplyMilestones(slot);
             if (slot.EvolutionEffect != ConfigEnums.EvolutionEffect.Empowered) return;
             var e = slot.Evolution.empower;
             if (slot.Config != null && slot.Config.projectile.burstShots > 1) slot.ExtraBurstShots = e.extraQuantity;
@@ -79,9 +83,36 @@ namespace RoguePirates.V4.Weapons
             slot.ExtraSlow = e.extraSlow;
         }
 
+        /// <summary>
+        /// V5 M8z (7 Oct, D21, Q20): the milestones the weapon's level has reached, on top of the record's upgrades (called
+        /// from <see cref="ApplyEvolution"/> after the upgrades were copied, every sync, so they never stack).
+        /// </summary>
+        public static void ApplyMilestones(WeaponSlot slot)
+        {
+            var milestones = slot.Config != null ? slot.Config.milestones : null;
+            if (milestones == null) return;
+            for (var i = 0; i < milestones.Length; i++)
+            {
+                var m = milestones[i];
+                if (m == null || slot.Level < m.level) continue;
+                slot.QuantityBonus += m.extraQuantity;
+                slot.SizeMult *= m.sizeMultiplier;
+                slot.DurationMult *= m.durationMultiplier;
+                slot.ExtraSlow += m.extraSlow;
+            }
+        }
+
+        /// <summary>V5 M8z (7 Oct, D21): a weapon's slow share with the Slow cards, milestones and evolution (0 when the
+        /// weapon itself does not slow), at most 0.9 (the enemy world caps it further).</summary>
+        public static float Slow(WeaponSlot w, float baseFraction) =>
+            baseFraction > 0f || w.ExtraSlow > 0f || w.SlowBonus > 0f ? Mathf.Min(0.9f, baseFraction + w.ExtraSlow + w.SlowBonus) : 0f;
+
         /// <summary>V5 M4b: the ticks a whirlpool deals before it implodes (whole ticks, whatever the frame rate).</summary>
-        public static int WhirlpoolTicks(PredictedAreaBlock p) =>
-            p.whirlpoolTickSeconds > 0f ? Mathf.FloorToInt(p.whirlpoolSeconds / p.whirlpoolTickSeconds + 1e-4f) : 0;
+        public static int WhirlpoolTicks(PredictedAreaBlock p) => WhirlpoolTicks(p, 1f);
+
+        /// <summary>V5 M8z (7 Oct, D21): the ticks of a whirlpool lengthened by the Duration card (× <paramref name="durationMult"/>).</summary>
+        public static int WhirlpoolTicks(PredictedAreaBlock p, float durationMult) =>
+            p.whirlpoolTickSeconds > 0f ? Mathf.FloorToInt(p.whirlpoolSeconds * durationMult / p.whirlpoolTickSeconds + 1e-4f) : 0;
 
         /// <summary>
         /// V5 M4b: hits one firing deals per target relative to the nominal one, so damage per cooldown (the director's
@@ -140,6 +171,11 @@ namespace RoguePirates.V4.Weapons
         public bool ImpactDraws;
         /// <summary>V5 M4b: the shell's weapon when its impact opens a whirlpool (null otherwise).</summary>
         public WeaponConfig Whirlpool;
+        /// <summary>V5 M8z (7 Oct, D21): the slow the shell and its whirlpool apply (share, seconds; 0 = none) and the
+        /// whirlpool's Duration multiplier, resolved when it was fired.</summary>
+        public float SlowFraction, SlowSeconds, DurationMult;
+        /// <summary>V5 M8z (D21): lands as a ring in its weapon's colour, not an explosion (WeaponEffectsVisual.pulseImpact).</summary>
+        public bool PulseImpact;
     }
 
     /// <summary>V5 M4b: a whirlpool that drags enemies in and hurts them, then implodes (Maelstrom Charge).</summary>
@@ -150,6 +186,9 @@ namespace RoguePirates.V4.Weapons
         public float Radius, Left, TickTimer, BaseDamage, DamageBonus, ProcCoefficient;
         public int TicksDone;
         public WeaponConfig Config;
+        /// <summary>V5 M8z (7 Oct, D21): its whole ticks (the Duration card lengthens it) and the slow each tick applies.</summary>
+        public int Ticks;
+        public float SlowFraction, SlowSeconds;
     }
 
     public struct BoardingSkiff
@@ -297,9 +336,9 @@ namespace RoguePirates.V4.Weapons
         {
             var t = TraitsOf(w.Config);
             t.Pierce = Mathf.Min(7, t.Pierce + w.ExtraPierce);
-            if (w.ExtraSlow > 0f)
+            if (w.ExtraSlow > 0f || w.SlowBonus > 0f)
             {
-                t.SlowFraction = Mathf.Min(0.9f, t.SlowFraction + w.ExtraSlow);
+                t.SlowFraction = WeaponStatResolver.Slow(w, t.SlowFraction);
                 if (t.SlowSeconds <= 0f) t.SlowSeconds = 1.5f;
             }
             return t;
@@ -315,6 +354,7 @@ namespace RoguePirates.V4.Weapons
                 TarOnHit = p.tarOnHit,
                 TarSlow = p.tarSlow,
                 TarSlowBoss = p.tarSlowBoss,
+                TarSlowSeconds = p.tarSlowSeconds,
                 ControlSecondsPerHit = p.controlSecondsPerHit,
                 SplashOnDespawn = p.splashOnDespawn,
                 Pierce = p.pierce,

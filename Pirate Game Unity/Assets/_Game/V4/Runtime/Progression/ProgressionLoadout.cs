@@ -14,6 +14,8 @@ namespace RoguePirates.V4.Progression
         public float DamageBonus = 1f;
         public int QuantityBonus;
         public float CooldownMult = 1f, SpeedMult = 1f, SizeMult = 1f, DurationMult = 1f, KnockbackMult = 1f;
+        /// <summary>V5 M8z (7 Oct, D21): the Slow cards' total (a share of speed added to the weapon's slow).</summary>
+        public float SlowBonus;
         public readonly Dictionary<ConfigEnums.UpgradeAxis, float> Accumulated = new Dictionary<ConfigEnums.UpgradeAxis, float>();
         public string Id => Config != null ? Config.weaponId : null;
     }
@@ -110,6 +112,7 @@ namespace RoguePirates.V4.Progression
                 case ConfigEnums.UpgradeAxis.Size: w.SizeMult *= 1f + value; break;
                 case ConfigEnums.UpgradeAxis.Duration: w.DurationMult *= 1f + value; break;
                 case ConfigEnums.UpgradeAxis.Knockback: w.KnockbackMult *= 1f + value; break;
+                case ConfigEnums.UpgradeAxis.Slow: w.SlowBonus += value; break; // V5 M8z (7 Oct, D21)
             }
         }
 
@@ -125,6 +128,7 @@ namespace RoguePirates.V4.Progression
                 Key = w, WeaponId = w.Id, EvolutionId = _evolution?.Invoke(w.Id), Level = w.Level,
                 DamageBonus = w.DamageBonus, QuantityBonus = w.QuantityBonus, CooldownMult = w.CooldownMult,
                 SpeedMult = w.SpeedMult, SizeMult = w.SizeMult, DurationMult = w.DurationMult, KnockbackMult = w.KnockbackMult,
+                SlowBonus = w.SlowBonus,
             };
         }
 

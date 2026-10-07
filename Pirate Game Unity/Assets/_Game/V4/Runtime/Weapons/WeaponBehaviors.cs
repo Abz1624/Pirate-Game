@@ -61,7 +61,7 @@ namespace RoguePirates.V4.Weapons
                 return WeaponFireOutcome.NoTarget;
             if (C.Projectiles.ActiveCount >= C.Projectiles.Capacity) return WeaponFireOutcome.CapacityBlocked;
 
-            var isElite = C.Enemies.IsElite(target);
+            var isElite = C.Enemies.IsEliteDamageTarget(target);
             C.NotifyAimed(w, dir, target);
             var p = def.projectile;
             var speed = Stats.ProjectileSpeed(w, C.Mods);
@@ -97,7 +97,7 @@ namespace RoguePirates.V4.Weapons
                 return true;
             }
 
-            var isElite = C.Enemies.IsElite(target);
+            var isElite = C.Enemies.IsEliteDamageTarget(target);
             C.NotifyAimed(w, dir, target);
             return FireVolley(w, dir, isElite, target) > 0;
         }
@@ -177,7 +177,7 @@ namespace RoguePirates.V4.Weapons
                 var index = hits[i];
                 if (!C.Enemies.IsActive(index)) continue;
                 hitCount++;
-                var isElite = C.Enemies.IsElite(index);
+                var isElite = C.Enemies.IsEliteDamageTarget(index);
                 var dmg = C.Calculator.Roll(def.baseDamage, Stats.LevelMult(w), isElite, 0f, def.procCoefficient, def.weaponId);
                 C.ApplyWeaponDamage(index, def.weaponId, dmg, C.Enemies.IsElite(index), C.Enemies.IsBoss(index));
                 if (!def.lane.beam)
@@ -275,7 +275,7 @@ namespace RoguePirates.V4.Weapons
                 var end = origin + dir * b.rayLength;
                 var hitIndex = C.FindFirstEnemyAlongRay(origin, end, b.hitRadius);
                 if (hitIndex < 0) continue;
-                var dmg = C.Calculator.Roll(def.baseDamage * b.damageMultiplier, w.DamageBonus, C.Enemies.IsElite(hitIndex), 0f, b.procCoefficient, def.weaponId);
+                var dmg = C.Calculator.Roll(def.baseDamage * b.damageMultiplier, w.DamageBonus, C.Enemies.IsEliteDamageTarget(hitIndex), 0f, b.procCoefficient, def.weaponId);
                 C.Projectiles.TrySpawn(origin, dir, speed, dmg.Amount, b.lifeSeconds, size, dmg.IsCrit, def.projectileColor, null, ProjectileTraits.Credited(def.weaponId));
             }
         }
@@ -357,7 +357,7 @@ namespace RoguePirates.V4.Weapons
 
                 var end = origin + dir * def.range;
                 var hitIndex = C.FindFirstEnemyAlongRay(origin, end, f.hitRadius);
-                var isElite = hitIndex >= 0 && C.Enemies.IsActive(hitIndex) && C.Enemies.IsElite(hitIndex);
+                var isElite = hitIndex >= 0 && C.Enemies.IsActive(hitIndex) && C.Enemies.IsEliteDamageTarget(hitIndex);
                 var dmg = C.Calculator.Roll(def.baseDamage * f.damageMultiplier, Stats.LevelMult(w), isElite, 0f, def.procCoefficient, def.weaponId);
                 if (f.muzzlePerPellet)
                     C.Effects?.Fired(def.weaponId, origin, dir);
@@ -411,7 +411,7 @@ namespace RoguePirates.V4.Weapons
                     var hitIndex = C.FindFirstEnemyAlongRay(origin, end, f.hitRadius);
                     if (hitIndex < 0) continue;
                     hits++;
-                    var dmg = C.Calculator.Roll(def.baseDamage * f.damageMultiplier, w.DamageBonus, C.Enemies.IsElite(hitIndex), 0f, def.procCoefficient, def.weaponId);
+                    var dmg = C.Calculator.Roll(def.baseDamage * f.damageMultiplier, w.DamageBonus, C.Enemies.IsEliteDamageTarget(hitIndex), 0f, def.procCoefficient, def.weaponId);
                     C.Projectiles.TrySpawn(origin, dir, speed, dmg.Amount, f.lifeSeconds, size, dmg.IsCrit, def.projectileColor, null, ProjectileTraits.Credited(def.weaponId));
                 }
 
@@ -558,7 +558,7 @@ namespace RoguePirates.V4.Weapons
                         var delta = C.Enemies.Position(i) - sphere.Position;
                         if (delta.sqrMagnitude > radiusSq) continue;
                         _hitThisTick.Add(i);
-                        var dmg = C.Calculator.RollAmount(def.baseDamage * o.damageMultiplier, Stats.LevelMult(w), C.Enemies.IsElite(i), 0f, def.procCoefficient, def.weaponId);
+                        var dmg = C.Calculator.RollAmount(def.baseDamage * o.damageMultiplier, Stats.LevelMult(w), C.Enemies.IsEliteDamageTarget(i), 0f, def.procCoefficient, def.weaponId);
                         C.DamageAndRecord(i, def.weaponId, dmg, false);
                         // V5 M4: a heavy orbit (the Anchor Flail) knocks enemies away from the ship (0 = none, as before).
                         if (o.knockbackMeters > 0f && C.Ship != null && C.Ship.Exists) C.Damage.Knockback(i, C.Ship.Position, o.knockbackMeters * w.KnockbackMult);
@@ -606,7 +606,7 @@ namespace RoguePirates.V4.Weapons
                 }
                 if (!touching) continue;
                 state.LastHit[i] = state.Clock;
-                var dmg = C.Calculator.RollAmount(def.baseDamage * o.damageMultiplier, Stats.LevelMult(w), C.Enemies.IsElite(i), 0f, def.procCoefficient, def.weaponId);
+                var dmg = C.Calculator.RollAmount(def.baseDamage * o.damageMultiplier, Stats.LevelMult(w), C.Enemies.IsEliteDamageTarget(i), 0f, def.procCoefficient, def.weaponId);
                 C.DamageAndRecord(i, def.weaponId, dmg, false);
                 if (o.knockbackMeters > 0f && C.Ship != null && C.Ship.Exists) C.Damage.Knockback(i, C.Ship.Position, o.knockbackMeters * w.KnockbackMult);
             }
@@ -763,7 +763,7 @@ namespace RoguePirates.V4.Weapons
                 if (Vector3.Angle(forward, toEnemy) > halfAngle) continue;
 
                 var hpBefore = C.Enemies.Hp(i);
-                var dmg = C.Calculator.RollAmount(damagePerTick, Stats.LevelMult(w), C.Enemies.IsElite(i), 0f,
+                var dmg = C.Calculator.RollAmount(damagePerTick, Stats.LevelMult(w), C.Enemies.IsEliteDamageTarget(i), 0f,
                     def.procCoefficient * (tickSeconds / def.stream.tickIntervalSeconds), def.weaponId);
                 dmg *= C.Mods.BurnDamageMultiplier;
                 C.DamageAndRecord(i, def.weaponId, dmg, false);
@@ -796,7 +796,7 @@ namespace RoguePirates.V4.Weapons
             {
                 if (!C.Enemies.IsActive(i)) continue;
                 if (Vector3.Distance(C.Enemies.Position(i), pos) > radius) continue;
-                var dmg = C.Calculator.RollAmount(def.baseDamage * t.damageMultiplier, Stats.LevelMult(w), C.Enemies.IsElite(i), 0f, def.procCoefficient, def.weaponId);
+                var dmg = C.Calculator.RollAmount(def.baseDamage * t.damageMultiplier, Stats.LevelMult(w), C.Enemies.IsEliteDamageTarget(i), 0f, def.procCoefficient, def.weaponId);
                 C.DamageAndRecord(i, def.weaponId, dmg, false);
                 C.Damage.ApplyStatus(i, WeaponStatus.Burn, burnDuration);
             }
@@ -905,7 +905,7 @@ namespace RoguePirates.V4.Weapons
             {
                 if (!C.Enemies.IsActive(ai)) continue;
                 if (!Touches(keg.Position, blastRadius, ai, keg.EliteReach)) continue;
-                var dmg = C.Calculator.RollAmount(keg.BaseDamage * keg.BlastDamageMultiplier, keg.DamageBonus, C.Enemies.IsElite(ai), 0f,
+                var dmg = C.Calculator.RollAmount(keg.BaseDamage * keg.BlastDamageMultiplier, keg.DamageBonus, C.Enemies.IsEliteDamageTarget(ai), 0f,
                     keg.ProcCoefficient, id, WeaponDamageKind.TriggeredItem) * explosion;
                 if (C.Hooks.TryRegisterProcEvent()) C.DamageAndRecord(ai, id, dmg, false, id);
             }
@@ -980,7 +980,7 @@ namespace RoguePirates.V4.Weapons
             {
                 if (!C.Enemies.IsActive(i)) continue;
                 if (Vector3.Distance(C.Enemies.Position(i), strikePos) > radius) continue;
-                var dmg = C.Calculator.RollAmount(def.baseDamage, Stats.LevelMult(w), C.Enemies.IsElite(i), 0f, def.procCoefficient, def.weaponId);
+                var dmg = C.Calculator.RollAmount(def.baseDamage, Stats.LevelMult(w), C.Enemies.IsEliteDamageTarget(i), 0f, def.procCoefficient, def.weaponId);
                 C.DamageAndRecord(i, def.weaponId, dmg, false);
                 C.Damage.ApplyStatus(i, WeaponStatus.Shock, a.shockSeconds * w.DurationMult);
             }
@@ -1009,7 +1009,7 @@ namespace RoguePirates.V4.Weapons
                 {
                     if (!C.Enemies.IsActive(i)) continue;
                     if (Vector3.Distance(C.Enemies.Position(i), jumpPos) > jumpRadius) continue;
-                    var dmg = C.Calculator.RollAmount(def.baseDamage * j.jumpDamageMultiplier, Stats.LevelMult(w), C.Enemies.IsElite(i), 0f,
+                    var dmg = C.Calculator.RollAmount(def.baseDamage * j.jumpDamageMultiplier, Stats.LevelMult(w), C.Enemies.IsEliteDamageTarget(i), 0f,
                         def.procCoefficient * j.jumpProcMultiplier, def.weaponId);
                     C.DamageAndRecord(i, def.weaponId, dmg, false);
                 }
@@ -1060,7 +1060,7 @@ namespace RoguePirates.V4.Weapons
                 var at = C.Enemies.Position(current);
                 at.y = 0f;
                 C.Effects?.LightningStrike(at, strikeRadius);
-                var dmg = C.Calculator.RollAmount(def.baseDamage * damageScale, Stats.LevelMult(w), C.Enemies.IsElite(current), 0f, def.procCoefficient, def.weaponId);
+                var dmg = C.Calculator.RollAmount(def.baseDamage * damageScale, Stats.LevelMult(w), C.Enemies.IsEliteDamageTarget(current), 0f, def.procCoefficient, def.weaponId);
                 C.DamageAndRecord(current, def.weaponId, dmg, false);
                 C.Damage.ApplyStatus(current, WeaponStatus.Shock, a.shockSeconds * w.DurationMult);
                 damageScale *= a.chainFalloff;
@@ -1092,7 +1092,7 @@ namespace RoguePirates.V4.Weapons
                 if (!C.Enemies.IsActive(i)) continue;
                 if (Vector3.Distance(C.Enemies.Position(i), strikePos) > radius) continue;
                 // V3 passes 0 as the weapon level factor, so every salvo hit deals the 1-damage floor (register R-88).
-                var dmg = C.Calculator.RollAmount(rules.salvoDamage, rules.salvoLevelFactor, C.Enemies.IsElite(i), 0f, rules.salvoProcCoefficient, rules.salvoLedgerId);
+                var dmg = C.Calculator.RollAmount(rules.salvoDamage, rules.salvoLevelFactor, C.Enemies.IsEliteDamageTarget(i), 0f, rules.salvoProcCoefficient, rules.salvoLedgerId);
                 C.Damage.ApplyDamage(i, dmg, false);
             }
         }
@@ -1105,8 +1105,6 @@ namespace RoguePirates.V4.Weapons
         public AuraBehavior(WeaponCombat c) : base(c) { }
         /// <summary>V5 M4: a pulse around the ship needs no target (it pulses whether or not anything is near).</summary>
         public override bool NeedsTarget => false;
-        /// <summary>V5 M4: the Ramming Prow waits for the boost (checked before any target search).</summary>
-        public override bool CanFire(WeaponSlot w) => !w.Config.aura.requiresBoost || (C.Ship != null && C.Ship.IsBoosting);
 
         public override WeaponFireOutcome Fire(WeaponSlot w)
         {
@@ -1114,21 +1112,19 @@ namespace RoguePirates.V4.Weapons
             var a = def.aura;
             var radius = a.radiusBase * w.SizeMult * C.Mods.Size;
             if (C.Ship == null || !C.Ship.Exists) return WeaponFireOutcome.Emitted;
-            // V5 M4: the Ramming Prow strikes only while boosting; it waits with its cooldown kept.
-            if (a.requiresBoost && !C.Ship.IsBoosting) return WeaponFireOutcome.NoTarget;
             var center = C.Ship.Position;
             if (a.forwardOffset != 0f) center += C.Ship.MovementForward * a.forwardOffset;
             C.Effects?.WeaponPulse(def.weaponId, center, radius);
-            var slow = a.slowFraction > 0f || w.ExtraSlow > 0f ? Mathf.Min(0.9f, a.slowFraction + w.ExtraSlow) : 0f;
+            var slow = Stats.Slow(w, a.slowFraction); // V5 M8z (D21): with the Slow cards and milestones
             var slowSeconds = a.slowSeconds > 0f ? a.slowSeconds : 1.5f;
             var push = a.knockbackMeters * w.KnockbackMult;
             for (var i = 0; i < C.Enemies.Capacity; i++)
             {
                 if (!C.Enemies.IsActive(i)) continue;
                 if (Vector3.Distance(C.Enemies.Position(i), center) > radius) continue;
-                var isElite = C.Enemies.IsElite(i);
+                var isElite = C.Enemies.IsEliteDamageTarget(i);
                 var dmg = C.Calculator.Roll(def.baseDamage * a.damageMultiplier, Stats.LevelMult(w), isElite, 0f, def.procCoefficient, def.weaponId);
-                C.ApplyWeaponDamage(i, def.weaponId, dmg, isElite, C.Enemies.IsBoss(i));
+                C.ApplyWeaponDamage(i, def.weaponId, dmg, C.Enemies.IsElite(i), C.Enemies.IsBoss(i));
                 if (a.curseSeconds > 0f) C.Damage.ApplyStatus(i, WeaponStatus.Curse, a.curseSeconds * w.DurationMult);
                 if (slow > 0f) C.Damage.ApplySlow(i, slow, slowSeconds * w.DurationMult);
                 if (push > 0f) C.Damage.Knockback(i, C.Ship.Position, push);
@@ -1141,12 +1137,15 @@ namespace RoguePirates.V4.Weapons
 
     public sealed class PredictedAreaBehavior : WeaponBehavior
     {
+        readonly List<Vector3> _landed = new List<Vector3>(4);
+
         public PredictedAreaBehavior(WeaponCombat c) : base(c) { }
 
         public override WeaponFireOutcome Fire(WeaponSlot w)
         {
             if (C.Hooks.IsPvP) return WeaponFireOutcome.Emitted;
             var def = w.Config;
+            if (def.predictedArea.rearTargeting) return FireAtTheRear(w);
             var target = C.Targeting.PredictClusterGround(def.range);
             target.y = def.predictedArea.telegraphHeight;
             C.NotifyAimed(w, (target - C.Ship.Position).normalized);
@@ -1167,8 +1166,53 @@ namespace RoguePirates.V4.Weapons
                 AreaShell = true,
                 ImpactDraws = def.predictedArea.v3ImpactEffectDraws,
                 Whirlpool = def.predictedArea.whirlpoolSeconds > 0f ? def : null,
+                DurationMult = 1f,
             });
             return WeaponFireOutcome.Emitted;
+        }
+
+        /// <summary>
+        /// V5 M8z (7 Oct, D21, owner: "a weapon that slows down the enemies, especially those in the back"): one shell per
+        /// point of quantity, each on the back of a pack (the next pack back for each further shell), landing where its
+        /// target will be. The shell and the slick it leaves (a whirlpool with no pull) slow what they touch.
+        /// </summary>
+        WeaponFireOutcome FireAtTheRear(WeaponSlot w)
+        {
+            var def = w.Config;
+            var p = def.predictedArea;
+            var radius = def.size * w.SizeMult * C.Mods.Size;
+            var shells = Stats.ProjectileQuantity(w, C.Mods);
+            var slow = Stats.Slow(w, p.slowFraction);
+            var slowSeconds = p.slowSeconds * w.DurationMult;
+            _landed.Clear();
+            for (var k = 0; k < shells; k++)
+            {
+                if (!C.Targeting.TryRearCluster(def.range, radius, p.rearNeighbourMeters, p.leadTarget ? p.impactDelaySeconds : 0f, _landed, radius * 1.5f, out _, out var target))
+                    break;
+                _landed.Add(target);
+                target.y = p.telegraphHeight;
+                if (k == 0) C.Effects?.Aimed(def.weaponId, (target - C.Ship.Position).normalized, target, true);
+                C.Effects?.TimedRing(target, radius, p.impactDelaySeconds);
+                C.Strikes.Add(new DelayedStrike
+                {
+                    Active = true,
+                    Position = target,
+                    Timer = p.impactDelaySeconds,
+                    Radius = radius,
+                    BaseDamage = def.baseDamage,
+                    DamageBonus = Stats.LevelMult(w),
+                    ProcCoefficient = def.procCoefficient,
+                    WeaponId = def.weaponId,
+                    AreaShell = true,
+                    ImpactDraws = p.v3ImpactEffectDraws,
+                    Whirlpool = p.whirlpoolSeconds > 0f ? def : null,
+                    SlowFraction = slow,
+                    SlowSeconds = slowSeconds,
+                    DurationMult = w.DurationMult,
+                    PulseImpact = def.visual.pulseImpact,
+                });
+            }
+            return _landed.Count > 0 ? WeaponFireOutcome.Emitted : WeaponFireOutcome.NoTarget;
         }
     }
 
@@ -1314,7 +1358,7 @@ namespace RoguePirates.V4.Weapons
                 if (dist <= skiff.StrikeRange && skiff.StrikeCooldown <= 0f)
                 {
                     skiff.StrikeCooldown = skiff.StrikeInterval;
-                    var isElite = C.Enemies.IsElite(skiff.TargetIndex);
+                    var isElite = C.Enemies.IsEliteDamageTarget(skiff.TargetIndex);
                     var dmg = C.Calculator.Roll(skiff.BaseDamage, skiff.DamageBonus, isElite, 0f, skiff.ProcCoefficient, skiff.WeaponId);
                     if (skiff.ShotSpeed > 0f)
                     {
@@ -1325,7 +1369,7 @@ namespace RoguePirates.V4.Weapons
                             skiff.ShotColor, skiff.WeaponId, ProjectileTraits.Credited(skiff.WeaponId), skiff.TargetIndex);
                     }
                     else
-                        C.ApplyWeaponDamage(skiff.TargetIndex, skiff.WeaponId, dmg, isElite, C.Enemies.IsBoss(skiff.TargetIndex));
+                        C.ApplyWeaponDamage(skiff.TargetIndex, skiff.WeaponId, dmg, C.Enemies.IsElite(skiff.TargetIndex), C.Enemies.IsBoss(skiff.TargetIndex));
                 }
 
                 list[i] = skiff;

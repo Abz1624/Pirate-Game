@@ -26,7 +26,10 @@ namespace RoguePirates.V4.Config
         [Tooltip("Projectiles curve slightly toward the targeted enemy (V3: Swivel Guns, Deck Cannons, Long Nine).")] public bool homing;
         [Tooltip("Targets the closest enemy, strongly preferring those within 6 m (V3 Swivel Guns defense bias).")] public bool closeDefenseTargeting;
         [Tooltip("Hits apply Tarred and count control time (V3 Harpoon Gun).")] public bool tarOnHit;
+        [Tooltip("The tar's slow (share of speed). V5 M8z (7 Oct, D21): a real slow through the enemy world's slow rules, so bosses and minibosses take its boss share (tarSlowBoss is only the Tarred status's strength on bosses, the same value).")]
         public float tarSlow = 0.25f, tarSlowBoss = 0.125f, controlSecondsPerHit = 1.2f;
+        [Tooltip("V5 M8z (7 Oct, D21): seconds the tar's slow lasts after each hit (0 = the tar does not slow, as before D21).")]
+        [Min(0f)] public float tarSlowSeconds;
         public bool splashOnDespawn = true;
         [Tooltip("V3 (register R-87): the tick path overwrote the burst gap with the full cooldown, so the second shot came a cooldown later. Off = the burst keeps its gap (approved fix).")]
         public bool v3FullCooldownAfterFirstShot;
@@ -82,6 +85,8 @@ namespace RoguePirates.V4.Config
         // V5 M8z (7 Oct): which stand-in the presenters draw, moved from a weapon-id switch in WeaponPlaceholderModels.
         [Tooltip("V5 M8z (playtest 3 Oct, owner: no cannonballs for weapons that are not cannons): the coloured stand-in drawn while the weapon's model is a cannon asset or missing (summons, orbit models, projectiles, the strike's coins).")]
         public WeaponPlaceholderLook placeholderLook = WeaponPlaceholderLook.None;
+        [Tooltip("V5 M8z (7 Oct, D21): a predicted-area shell lands as a ring in the weapon's own colour and its whirlpool ticks pulse in it (the Squid Ink Pots' ink), instead of the mortar's blast; the shell is then not an explosion (no explosion items).")]
+        public bool pulseImpact;
         [Tooltip("Enemies hit by this weapon do not flash (V3: Powder Kegs). Read by the enemy world's hit path from M8.")]
         [AppliesFrom(8)] public bool noHitHighlight;
     }
@@ -181,8 +186,6 @@ namespace RoguePirates.V4.Config
         [Tooltip("V5 M4: each pulse slows every enemy it hits by this share of its speed (0 = none) for slowSeconds.")]
         [Range(0f, 0.9f)] public float slowFraction;
         [Min(0f)] public float slowSeconds;
-        [Tooltip("V5 M4: pulses only while the ship boosts (the Ramming Prow); otherwise it waits, its cooldown kept.")]
-        public bool requiresBoost;
         [Tooltip("V5 M4: the pulse is centred this far ahead of the ship (m; 0 = on the ship).")]
         public float forwardOffset;
         [Tooltip("V5 M4: each pulse pushes the enemies it hits this far away from the ship (m; 0 = none).")]
@@ -204,6 +207,30 @@ namespace RoguePirates.V4.Config
         [Min(0.05f)] public float whirlpoolTickSeconds = 0.5f;
         [Tooltip("Each whirlpool tick's damage, × base damage.")] [Min(0f)] public float whirlpoolTickDamageMultiplier = 0.2f;
         [Tooltip("The implosion's damage, × base damage.")] [Min(0f)] public float implodeDamageMultiplier = 1.5f;
+        // V5 M8z (7 Oct, D21): the slowing slick (the Squid Ink Pots), a whirlpool with no pull and no implosion that slows.
+        [Tooltip("V5 M8z (D21): the shell and every whirlpool tick slow the enemies they hit by this share of their speed (0 = none) for slowSeconds; the Slow card and milestones add to it, the Duration card lengthens the whirlpool and the slow.")]
+        [Range(0f, 0.9f)] public float slowFraction;
+        [Min(0f)] public float slowSeconds;
+        [Tooltip("V5 M8z (D21): aim at the back of the pack: the enemy in range scoring highest on distance + rearNeighbourMeters per neighbour within the shell's radius (off = the densest cluster, the Mortar). Each point of quantity lobs one more shell at the next pack back.")]
+        public bool rearTargeting;
+        [Min(0f)] public float rearNeighbourMeters = 1f;
+        [Tooltip("V5 M8z (D21): rear targeting lands where the target will be when the shell lands (its velocity × the impact delay).")]
+        public bool leadTarget = true;
+    }
+
+    /// <summary>
+    /// V5 M8z (7 Oct, D21, Q20): a weapon's rank milestone. From weapon level <see cref="level"/> on, the weapon has these
+    /// extras on top of its upgrades (applied at every loadout sync with the evolution, so they never stack).
+    /// </summary>
+    [Serializable]
+    public sealed class WeaponMilestone
+    {
+        [Min(1)] public int level = 4;
+        [Tooltip("Extra quantity (one more shell, shot or summon).")] [Min(0)] public int extraQuantity;
+        [Tooltip("Size (radius) × this.")] [Min(0.1f)] public float sizeMultiplier = 1f;
+        [Tooltip("Added to the weapon's slow (share of speed).")] [Range(0f, 0.9f)] public float extraSlow;
+        [Tooltip("Duration × this.")] [Min(0.1f)] public float durationMultiplier = 1f;
+        [Tooltip("The card's line when the milestone is reached (\"a second pot\").")] public string description = string.Empty;
     }
 
     /// <summary>Boarding skiffs that chase a target (Boarding Party).</summary>
@@ -260,6 +287,8 @@ namespace RoguePirates.V4.Config
         [Tooltip("V5 M4b: extra gold a kill by this weapon drops (Cursed Doubloons), at most goldPerKillRunCap a run (anti-farming).")]
         [Min(0)] public int goldPerKill;
         [Min(0)] public int goldPerKillRunCap;
+        [Tooltip("V5 M8z (7 Oct, D21, Q20): rank milestones (weapon levels 4, 8 and 12 for the new weapons), in level order.")]
+        public WeaponMilestone[] milestones = Array.Empty<WeaponMilestone>();
 
         public ProjectileVisual projectileVisual = new ProjectileVisual();
         [Tooltip("The hit/kill effect its hits play (V3: Deck Cannons, Broadside Battery and Swivel Guns a cannon impact; Powder Kegs none, their blast is their own).")]
@@ -288,6 +317,14 @@ namespace RoguePirates.V4.Config
             if (projectile.burstShots < 1) report.Error(this, "projectile.burstShots", "must be at least 1");
             if (fan.basePellets < 1) report.Error(this, "fan.basePellets", "must be at least 1");
             if (behavior == ConfigEnums.WeaponBehavior.ConeStream) report.Positive(this, "stream.tickIntervalSeconds", stream.tickIntervalSeconds);
+            // V5 M8z (7 Oct, D21): milestones within the weapon's levels, in order.
+            var last = 0;
+            foreach (var m in milestones ?? Array.Empty<WeaponMilestone>())
+            {
+                if (m == null) { report.Error(this, nameof(milestones), "empty milestone"); continue; }
+                if (m.level <= last || m.level > maxLevel) report.Error(this, nameof(milestones), $"milestone level {m.level} must rise and be at most maxLevel {maxLevel}");
+                last = m.level;
+            }
         }
     }
 }

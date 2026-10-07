@@ -77,7 +77,6 @@ namespace RoguePirates.V4.Tests
             public Vector3 Position => Pos;
             public Vector3 Velocity => Moving ? Vector3.forward * 4f : Vector3.zero;
             public bool Moving;
-            public bool IsBoosting => Moving; // V5 M8z (7 Oct, I8z.5): sailing through the ring boosts (the Ramming Prow needs it)
             public Vector3 MovementForward => Vector3.forward;
             public Vector3 TransformPoint(Vector3 local) => Pos + local;
         }

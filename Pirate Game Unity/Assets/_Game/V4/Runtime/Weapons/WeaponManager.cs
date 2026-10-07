@@ -210,7 +210,7 @@ namespace RoguePirates.V4.Weapons
                 if (strike.Timer > 0f) { list[i] = strike; continue; }
 
                 var hits = 0;
-                var explosion = strike.AreaShell ? _c.Mods.ExplosionDamageMultiplier : 1f;
+                var explosion = strike.AreaShell && !strike.PulseImpact ? _c.Mods.ExplosionDamageMultiplier : 1f;
                 for (var ai = 0; ai < _c.Enemies.Capacity; ai++)
                 {
                     if (!_c.Enemies.IsActive(ai)) continue;
@@ -222,17 +222,19 @@ namespace RoguePirates.V4.Weapons
                     else if (Vector3.Distance(position, strike.Position) > strike.Radius)
                         continue;
                     hits++;
-                    var isElite = _c.Enemies.IsElite(ai);
-                    var dmg = _c.Calculator.Roll(strike.BaseDamage, strike.DamageBonus, isElite, 0f, strike.ProcCoefficient, strike.WeaponId);
+                    // V5 M8z (7 Oct, D21, Q32): elite damage (Admiral) on elites, the boss and minibosses; the ledger keeps elites.
+                    var dmg = _c.Calculator.Roll(strike.BaseDamage, strike.DamageBonus, _c.Enemies.IsEliteDamageTarget(ai), 0f, strike.ProcCoefficient, strike.WeaponId);
                     if (strike.AreaShell && explosion != 1f) dmg = new DamageRoll(dmg.Amount * explosion, dmg.IsCrit); // R-40: mortar shells explode
-                    _c.ApplyWeaponDamage(ai, strike.WeaponId, dmg, isElite, _c.Enemies.IsBoss(ai));
+                    _c.ApplyWeaponDamage(ai, strike.WeaponId, dmg, _c.Enemies.IsElite(ai), _c.Enemies.IsBoss(ai));
+                    if (strike.SlowFraction > 0f) _c.Damage.ApplySlow(ai, strike.SlowFraction, strike.SlowSeconds); // V5 M8z (D21): the ink pot's splash slows at once
                 }
                 _c.Hooks.RecordConcurrentTargets(strike.WeaponId, hits);
                 if (strike.AreaShell)
                 {
-                    _c.Mods.ExplosionResolved();
+                    if (!strike.PulseImpact) _c.Mods.ExplosionResolved();
                     if (strike.ImpactDraws) DrawV3ImpactNumbers();
-                    _c.Effects?.AreaImpact(strike.Position, strike.Radius);
+                    if (strike.PulseImpact) _c.Effects?.WeaponPulse(strike.WeaponId, strike.Position, strike.Radius); // V5 M8z (D21): the ink lands
+                    else _c.Effects?.AreaImpact(strike.Position, strike.Radius);
                     _c.Effects?.WaterSplash(strike.Position);
                     if (strike.Whirlpool != null) OpenWhirlpool(strike);
                 }
@@ -242,16 +244,20 @@ namespace RoguePirates.V4.Weapons
             }
         }
 
-        /// <summary>V5 M4b: the Maelstrom's whirlpool opens where its shell lands.</summary>
+        /// <summary>V5 M4b: the Maelstrom's whirlpool opens where its shell lands. V5 M8z (7 Oct, D21): the Duration card
+        /// lengthens it (the Maelstrom has none, so it is as before) and it carries the shell's slow (the ink slick).</summary>
         void OpenWhirlpool(in DelayedStrike strike)
         {
             var p = strike.Whirlpool.predictedArea;
+            var duration = strike.DurationMult > 0f ? strike.DurationMult : 1f;
+            var seconds = p.whirlpoolSeconds * duration;
             _c.Whirlpools.Add(new Whirlpool
             {
-                Active = true, Position = strike.Position, Radius = strike.Radius, Left = p.whirlpoolSeconds, TickTimer = p.whirlpoolTickSeconds,
+                Active = true, Position = strike.Position, Radius = strike.Radius, Left = seconds, TickTimer = p.whirlpoolTickSeconds,
                 BaseDamage = strike.BaseDamage, DamageBonus = strike.DamageBonus, ProcCoefficient = strike.ProcCoefficient, Config = strike.Whirlpool,
+                Ticks = WeaponStatResolver.WhirlpoolTicks(p, duration), SlowFraction = strike.SlowFraction, SlowSeconds = strike.SlowSeconds,
             });
-            _c.Effects?.TimedRing(strike.Position, strike.Radius, p.whirlpoolSeconds);
+            _c.Effects?.TimedRing(strike.Position, strike.Radius, seconds);
         }
 
         /// <summary>V5 M4b: each tick a whirlpool drags the enemies inside toward its centre and hurts them; at the end it
@@ -267,32 +273,38 @@ namespace RoguePirates.V4.Weapons
                 pool.TickTimer -= dt;
                 // Whole ticks (review: a float race between the two timers dropped or added the last one by frame rate);
                 // a long frame deals every tick it covered.
-                var ticks = WeaponStatResolver.WhirlpoolTicks(p);
+                var ticks = pool.Ticks;
                 while (pool.TickTimer <= 0f && pool.TicksDone < ticks)
                 {
                     pool.TickTimer += p.whirlpoolTickSeconds;
                     pool.TicksDone++;
-                    WhirlpoolHit(pool, p.whirlpoolTickDamageMultiplier, p.pullMetersPerSecond * p.whirlpoolTickSeconds);
+                    WhirlpoolHit(pool, p.whirlpoolTickDamageMultiplier, p.pullMetersPerSecond * p.whirlpoolTickSeconds, true);
+                    if (pool.Config.visual.pulseImpact) _c.Effects?.WeaponPulse(pool.Config.weaponId, pool.Position, pool.Radius);
                 }
                 if (pool.TicksDone >= ticks && pool.Left <= 0f)
                 {
-                    WhirlpoolHit(pool, p.implodeDamageMultiplier, 0f);
-                    _c.Effects?.AreaImpact(pool.Position, pool.Radius);
+                    // V5 M8z (D21): a slick with no implosion just ends.
+                    if (p.implodeDamageMultiplier > 0f)
+                    {
+                        WhirlpoolHit(pool, p.implodeDamageMultiplier, 0f, false);
+                        _c.Effects?.AreaImpact(pool.Position, pool.Radius);
+                    }
                     list.RemoveAt(i);
                 }
                 else list[i] = pool;
             }
         }
 
-        void WhirlpoolHit(in Whirlpool pool, float multiplier, float pull)
+        void WhirlpoolHit(in Whirlpool pool, float multiplier, float pull, bool tick)
         {
             for (var ai = 0; ai < _c.Enemies.Capacity; ai++)
             {
                 if (!_c.Enemies.IsActive(ai) || !WeaponCombat.WithinHorizontalRadius(pool.Position, _c.Enemies.Position(ai), pool.Radius)) continue;
-                var isElite = _c.Enemies.IsElite(ai);
+                var isElite = _c.Enemies.IsEliteDamageTarget(ai);
                 var dmg = _c.Calculator.RollAmount(pool.BaseDamage * multiplier, pool.DamageBonus, isElite, 0f, pool.ProcCoefficient, pool.Config.weaponId);
                 _c.DamageAndRecord(ai, pool.Config.weaponId, dmg, false, pool.Config.weaponId);
                 if (pull > 0f) _c.Damage.Pull(ai, pool.Position, pull);
+                if (tick && pool.SlowFraction > 0f) _c.Damage.ApplySlow(ai, pool.SlowFraction, pool.SlowSeconds); // V5 M8z (D21)
             }
         }
 
@@ -401,7 +413,8 @@ namespace RoguePirates.V4.Weapons
                 slot.SizeMult = e.SizeMult;
                 slot.DurationMult = e.DurationMult;
                 slot.KnockbackMult = e.KnockbackMult;
-                WeaponStatResolver.ApplyEvolution(slot);
+                slot.SlowBonus = e.SlowBonus; // V5 M8z (7 Oct, D21)
+                WeaponStatResolver.ApplyEvolution(slot); // and the reached milestones (Q20)
                 _rebuild.Add(slot);
             }
 

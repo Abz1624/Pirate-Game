@@ -39,7 +39,7 @@ MonoBehaviour:
     sprite: {fileID: 0}
   - id: siren_bell
     sprite: {fileID: 0}
-  - id: ramming_prow
+  - id: squid_ink_pots
     sprite: {fileID: 0}
   - id: parrot_squadron
     sprite: {fileID: 0}

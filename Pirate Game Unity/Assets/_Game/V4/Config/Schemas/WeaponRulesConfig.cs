@@ -24,13 +24,11 @@ namespace RoguePirates.V4.Config
         [Header("V5 M4: slows and knockbacks (combat design 2.3)")]
         [Tooltip("The most an ordinary enemy can be slowed (0.6 = it keeps at least 40% of its speed).")]
         [Range(0f, 0.9f)] public float maxSlow = 0.6f;
-        [Tooltip("Bosses and minibosses take this share of a slow...")] [Range(0f, 1f)] public float bossSlowShare = 0.5f;
+        [Tooltip("Bosses and minibosses take this share of a slow (V5 M8z, D21: minibosses too, by their definition's flag)...")] [Range(0f, 1f)] public float bossSlowShare = 0.5f;
         [Tooltip("...and are never slowed by more than this in total.")] [Range(0f, 0.9f)] public float bossMaxSlow = 0.2f;
         [Tooltip("Elites take this share of a knockback's distance (bosses are not moved).")] [Range(0f, 1f)] public float eliteKnockbackShare = 0.5f;
         [Tooltip("The most one hit can push a regular enemy (m), whatever the upgrades.")] [Min(0f)] public float maxKnockbackMeters = 3f;
         [Tooltip("Seconds a knockback takes to push its distance.")] [Min(0.01f)] public float knockbackSeconds = 0.15f;
-        [Tooltip("V5 M4, balance model only: the share of the time the ship boosts, for weapons that strike only while boosting (2.5 s of boost every 8.5 s: it assumes the player boosts whenever the boost is ready).")]
-        [Range(0f, 1f)] public float modelBoostUptime = 0.3f;
 
         [Header("Effects (M6, presentation only)")]
         [Tooltip("Juice-settings weapon binding whose impact scale sizes every keg-style blast (V3: Powder Kegs').")]

@@ -114,6 +114,8 @@ namespace RoguePirates.V4.Views
     {
         public int Level, QuantityBonus;
         public float DamageBonus, CooldownMult, SpeedMult, SizeMult, DurationMult;
+        /// <summary>V5 M8z (7 Oct, D21): the Slow cards' total.</summary>
+        public float SlowBonus;
     }
 
     public interface ILoadoutView

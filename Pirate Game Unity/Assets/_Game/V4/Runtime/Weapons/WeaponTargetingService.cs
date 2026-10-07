@@ -362,6 +362,60 @@ namespace RoguePirates.V4.Weapons
             return aim.sqrMagnitude > 0.0001f ? aim.normalized : toTarget.normalized;
         }
 
+        /// <summary>
+        /// V5 M8z (7 Oct, D21): the back of the pack. Of the enemies in range (their hull's edge, as every weapon reaches),
+        /// the one scoring highest on its distance from the ship + <paramref name="neighbourMeters"/> for every other enemy
+        /// within <paramref name="clusterRadius"/> of it, so a lone straggler a little further out does not beat the rear of a
+        /// pack. Enemies within <paramref name="takenRadius"/> of an already chosen point are skipped (the next shell goes to
+        /// the next pack back). The point is where the enemy will be in <paramref name="leadSeconds"/>. Allocates nothing.
+        /// </summary>
+        public bool TryRearCluster(float range, float clusterRadius, float neighbourMeters, float leadSeconds,
+            System.Collections.Generic.IReadOnlyList<Vector3> taken, float takenRadius, out int targetIndex, out Vector3 point)
+        {
+            targetIndex = -1;
+            point = Vector3.zero;
+            if (_enemies == null || !_enemies.Exists || _ship == null || !_ship.Exists) return false;
+            var origin = _ship.Position;
+            var bestScore = float.MinValue;
+            var clusterSq = clusterRadius * clusterRadius;
+            var takenSq = takenRadius * takenRadius;
+            for (var i = 0; i < _enemies.Capacity; i++)
+            {
+                if (!_enemies.IsActive(i)) continue;
+                var position = _enemies.Position(i);
+                var delta = position - origin;
+                delta.y = 0f;
+                var reach = Reach(range, i);
+                if (delta.sqrMagnitude > reach * reach) continue;
+                var skip = false;
+                for (var t = 0; taken != null && t < taken.Count && !skip; t++)
+                {
+                    var d = position - taken[t];
+                    d.y = 0f;
+                    skip = d.sqrMagnitude <= takenSq;
+                }
+                if (skip) continue;
+                var neighbours = 0;
+                for (var j = 0; j < _enemies.Capacity; j++)
+                {
+                    if (j == i || !_enemies.IsActive(j)) continue;
+                    var d = _enemies.Position(j) - position;
+                    d.y = 0f;
+                    if (d.sqrMagnitude <= clusterSq) neighbours++;
+                }
+                var score = delta.magnitude + neighbourMeters * neighbours;
+                if (score <= bestScore) continue;
+                bestScore = score;
+                targetIndex = i;
+            }
+            if (targetIndex < 0) return false;
+            var velocity = _enemies.Velocity(targetIndex);
+            velocity.y = 0f;
+            point = _enemies.Position(targetIndex) + velocity * Mathf.Max(0f, leadSeconds);
+            point.y = 0f;
+            return true;
+        }
+
         /// <summary>The densest enemy cluster in range (a 3 m probe), else a point ahead of the ship.</summary>
         public Vector3 PredictClusterGround(float range)
         {

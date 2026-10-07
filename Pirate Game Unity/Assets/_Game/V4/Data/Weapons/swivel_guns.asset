@@ -59,11 +59,6 @@ MonoBehaviour:
     offerWeight: 0.7
     maxAccumulated: 2.6691356
     displayFormat: 
-  - axis: 6
-    baseIncrement: 0.08897122
-    offerWeight: 0.6
-    maxAccumulated: 2.6691356
-    displayFormat: 
   databaseOrder: 46
   procCoefficient: 0.35
   projectileColor: {r: 0.65, g: 1, b: 1, a: 1}

@@ -76,7 +76,8 @@ namespace RoguePirates.V4.Foundation.Core
         Knockback,
         Crit,
         CritDamage,
-        Pierce
+        Pierce,
+        Slow // V5 M8z (7 Oct, D21): mirrors ConfigEnums.UpgradeAxis.Slow
     }
 
     public enum EnemyCategory

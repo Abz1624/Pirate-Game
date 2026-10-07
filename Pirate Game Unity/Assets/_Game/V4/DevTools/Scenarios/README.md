@@ -15,6 +15,7 @@ development builds).
 | 1v1 relay without a server | `FakePvpRelay.cs` |
 | Console | F1, section **Scenarios** (`Console/ScenariosSection.cs`) |
 | Tests | `Assets/_Game/Tests/V4/PlayMode/V5ScenarioLabPlayModeTests.cs` |
+| D21 tests (7 Oct) | `Assets/_Game/Tests/V4/PlayMode/V5D21ScenarioPlayModeTests.cs` with `harpoon_tar_slow`, `ink_pots_rear_of_pack`, `ink_pots_vs_crab`, `ink_pots_vs_boss`, `dash_under_slow`, `loot_barrels` |
 
 **Scene:** scenarios load into the real run scene, `V4SaltwindRun`, so they test what ships. There is no separate
 scene and `V4ModuleLab` is not used, because:

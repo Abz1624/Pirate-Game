@@ -1767,12 +1767,6 @@
      "inc": 0.0944464058,
      "weight": 0.7,
      "cap": 2.36115932
-    },
-    {
-     "axis": 6,
-     "inc": 0.0787052959,
-     "weight": 0.6,
-     "cap": 2.36115932
     }
    ],
    "levelDamageFactor": true,
@@ -1899,12 +1893,6 @@
      "inc": 0.07427165,
      "weight": 0.7,
      "cap": 1.85679126
-    },
-    {
-     "axis": 6,
-     "inc": 0.06189304,
-     "weight": 0.6,
-     "cap": 1.85679126
     }
    ],
    "levelDamageFactor": true,
@@ -1981,12 +1969,6 @@
      "inc": 1,
      "weight": 1.1,
      "cap": 4
-    },
-    {
-     "axis": 6,
-     "inc": 0.025788758,
-     "weight": 0.6,
-     "cap": 0.6447191
     }
    ],
    "levelDamageFactor": true,
@@ -2030,12 +2012,6 @@
      "axis": 3,
      "inc": 0.09125258,
      "weight": 0.7,
-     "cap": 2.28131342
-    },
-    {
-     "axis": 6,
-     "inc": 0.0760437548,
-     "weight": 0.6,
      "cap": 2.28131342
     }
    ],
@@ -2209,12 +2185,6 @@
      "inc": 0.164254576,
      "weight": 1,
      "cap": 4.106363
-    },
-    {
-     "axis": 6,
-     "inc": 0.123190962,
-     "weight": 0.7,
-     "cap": 3.07977343
     }
    ],
    "levelDamageFactor": true,
@@ -2222,50 +2192,6 @@
    "coverage": 1.4,
    "databaseOrder": 2,
    "rum": 0
-  },
-  "ramming_prow": {
-   "id": "ramming_prow",
-   "name": "Ramming Prow",
-   "damage": 4.03,
-   "cooldown": 0.3,
-   "quantity": 1,
-   "behavior": 7,
-   "maxLevel": 12,
-   "spin": 180,
-   "blades": 2,
-   "pierce": 0,
-   "lane": false,
-   "axes": [
-    {
-     "axis": 0,
-     "inc": 0.226941168,
-     "weight": 1.1,
-     "cap": 5.67352962
-    },
-    {
-     "axis": 1,
-     "inc": 0.0644718856,
-     "weight": 1,
-     "cap": 0.773663044
-    },
-    {
-     "axis": 4,
-     "inc": 0.153243169,
-     "weight": 0.9,
-     "cap": 3.94053817
-    },
-    {
-     "axis": 6,
-     "inc": 0.153243169,
-     "weight": 0.8,
-     "cap": 3.94053817
-    }
-   ],
-   "levelDamageFactor": true,
-   "hitsPerFiring": 1,
-   "coverage": 1.3,
-   "databaseOrder": 53,
-   "rum": 160
   },
   "siren_bell": {
    "id": "siren_bell",
@@ -2305,6 +2231,50 @@
    "databaseOrder": 52,
    "rum": 150
   },
+  "squid_ink_pots": {
+   "id": "squid_ink_pots",
+   "name": "Squid Ink Pots",
+   "damage": 17.68,
+   "cooldown": 2.5,
+   "quantity": 1,
+   "behavior": 8,
+   "maxLevel": 12,
+   "spin": 180,
+   "blades": 2,
+   "pierce": 0,
+   "lane": false,
+   "axes": [
+    {
+     "axis": 5,
+     "inc": 0.15,
+     "weight": 1,
+     "cap": 1.2
+    },
+    {
+     "axis": 10,
+     "inc": 0.04,
+     "weight": 1,
+     "cap": 0.2
+    },
+    {
+     "axis": 4,
+     "inc": 0.12,
+     "weight": 0.9,
+     "cap": 1.2
+    },
+    {
+     "axis": 1,
+     "inc": 0.064,
+     "weight": 1,
+     "cap": 0.6
+    }
+   ],
+   "levelDamageFactor": true,
+   "hitsPerFiring": 1.9000001,
+   "coverage": 1.5,
+   "databaseOrder": 53,
+   "rum": 160
+  },
   "swivel_guns": {
    "id": "swivel_guns",
    "name": "Swivel Guns",
@@ -2340,12 +2310,6 @@
      "axis": 3,
      "inc": 0.1067655,
      "weight": 0.7,
-     "cap": 2.66913557
-    },
-    {
-     "axis": 6,
-     "inc": 0.08897122,
-     "weight": 0.6,
      "cap": 2.66913557
     }
    ],
@@ -3032,6 +2996,19 @@
     "size": 1.2
    }
   },
+  "black_tide": {
+   "id": "black_tide",
+   "name": "Black Tide",
+   "weapon": "squid_ink_pots",
+   "item": "iron_figurehead",
+   "effect": "Empowered",
+   "empower": {
+    "damage": 1.3,
+    "cooldown": 0.85,
+    "quantity": 1,
+    "size": 1.3
+   }
+  },
   "bladed_tide": {
    "id": "bladed_tide",
    "name": "Bladed Tide",
@@ -3068,19 +3045,6 @@
    "item": "dragons_breath_nozzle",
    "effect": "WideConeWithPatches",
    "empower": null
-  },
-  "ironclad_ram": {
-   "id": "ironclad_ram",
-   "name": "Ironclad Ram",
-   "weapon": "ramming_prow",
-   "item": "iron_figurehead",
-   "effect": "Empowered",
-   "empower": {
-    "damage": 1.6,
-    "cooldown": 0.8,
-    "quantity": 0,
-    "size": 1.35
-   }
   },
   "kings_broadside": {
    "id": "kings_broadside",
@@ -3281,7 +3245,7 @@
   "pityMinRarity": 2
  },
  "pickups": {
-  "xpMult": 0.8,
+  "xpMult": 0.4,
   "healValue": 25,
   "healFraction": 0.2,
   "lowWait": 1,
@@ -4288,25 +4252,6 @@
     "text": "Drops explosive kegs along your wake."
    },
    {
-    "id": "ramming_prow",
-    "name": "Ramming Prow",
-    "type": "Aura",
-    "tags": [],
-    "damage": 4.03,
-    "cooldown": 0.3,
-    "quantity": 1,
-    "range": 4,
-    "speed": 16,
-    "pierce": 0,
-    "blades": 0,
-    "spin": 0,
-    "maxLevel": 12,
-    "rum": 160,
-    "starter": false,
-    "off": false,
-    "text": "An iron prow: while you boost, it smashes and shoves everything ahead."
-   },
-   {
     "id": "siren_bell",
     "name": "Siren Bell",
     "type": "Aura",
@@ -4324,6 +4269,25 @@
     "starter": false,
     "off": false,
     "text": "A cursed bell tolls around the ship, hurting and slowing everything near."
+   },
+   {
+    "id": "squid_ink_pots",
+    "name": "Squid Ink Pots",
+    "type": "Predicted area",
+    "tags": ["Control"],
+    "damage": 17.68,
+    "cooldown": 2.5,
+    "quantity": 1,
+    "range": 22,
+    "speed": 16,
+    "pierce": 0,
+    "blades": 0,
+    "spin": 0,
+    "maxLevel": 12,
+    "rum": 160,
+    "starter": false,
+    "off": false,
+    "text": "Lobs clay pots of squid ink onto the back of the pack: the slick slows every ship sailing through it."
    },
    {
     "id": "swivel_guns",
@@ -4346,7 +4310,7 @@
    }
   ]
  },
- "starterWeapons": ["broadside_battery", "deck_cannons", "flamethrower", "flying_cutlasses", "harpoon_gun", "lightning_mast", "long_nine", "mortar", "powder_kegs", "swivel_guns", "anchor_flail", "chainshot", "siren_bell", "ramming_prow", "parrot_squadron", "monkey_gunners", "maelstrom_charge", "lighthouse_lantern", "cursed_doubloons"],
+ "starterWeapons": ["broadside_battery", "deck_cannons", "flamethrower", "flying_cutlasses", "harpoon_gun", "lightning_mast", "long_nine", "mortar", "powder_kegs", "swivel_guns", "anchor_flail", "chainshot", "siren_bell", "squid_ink_pots", "parrot_squadron", "monkey_gunners", "maelstrom_charge", "lighthouse_lantern", "cursed_doubloons"],
  "offerWeights": [
   {
    "maxWeapons": 2,
@@ -4410,8 +4374,8 @@
    "monkey_gunners": 180,
    "mortar": 100,
    "parrot_squadron": 170,
-   "ramming_prow": 160,
-   "siren_bell": 150
+   "siren_bell": 150,
+   "squid_ink_pots": 160
   }
  },
  "stage": {
@@ -4436,9 +4400,9 @@
  "meta": {
   "source": "unity",
   "setId": "saltwind-default",
-  "configHash": "2ebb45e648a2d3f230f4df018f47cbaab153d401269bfa1c5447267639726a73",
+  "configHash": "a3895ab880218879f08bfc1afb7ffe8b91bb1a057be0c920b0d2c6e13a439946",
   "preset": null,
-  "exported": "2026-10-07T12:36:51Z",
+  "exported": "2026-10-07T15:25:20Z",
   "unity": "6000.3.11f1"
  }
 }

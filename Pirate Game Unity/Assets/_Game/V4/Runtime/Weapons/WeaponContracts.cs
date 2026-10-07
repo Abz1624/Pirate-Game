@@ -25,6 +25,8 @@ namespace RoguePirates.V4.Weapons
         int UnitId(int index) => index;
         /// <summary>V5 M5: the enemy's hull as a share of its maximum (Shark Tooth Necklace).</summary>
         float HpFraction(int index) => 1f;
+        /// <summary>V5 M8z (7 Oct, D21, Q32): elite damage (the Admiral Logbook) applies to elites, the boss and minibosses.</summary>
+        bool IsEliteDamageTarget(int index) => IsElite(index) || IsBoss(index);
     }
 
     /// <summary>Damage and statuses on enemies (V3 kill path until M8).</summary>
@@ -49,8 +51,6 @@ namespace RoguePirates.V4.Weapons
         Vector3 MovementForward { get; }
         /// <summary>A point in the ship's local space in world space (orbit blades circle the ship's transform).</summary>
         Vector3 TransformPoint(Vector3 local);
-        /// <summary>V5 M4: the ship is boosting (the Ramming Prow).</summary>
-        bool IsBoosting => false;
     }
 
     /// <summary>
@@ -165,6 +165,8 @@ namespace RoguePirates.V4.Weapons
         public float DamageBonus;
         public int QuantityBonus;
         public float CooldownMult, SpeedMult, SizeMult, DurationMult, KnockbackMult;
+        /// <summary>V5 M8z (7 Oct, D21): the Slow cards' total (added to the weapon's slow share).</summary>
+        public float SlowBonus;
     }
 
     /// <summary>Runtime state the weapon module writes back so legacy readers (HUD, flame visuals) stay live.</summary>

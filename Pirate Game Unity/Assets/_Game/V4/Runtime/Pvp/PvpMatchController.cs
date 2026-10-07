@@ -607,7 +607,8 @@ namespace RoguePirates.V4.Pvp
                 case 'l': vfx?.LightningStrike(point, radius); return;
                 case 'a': vfx?.AreaImpact(point, radius); return;
                 case 'm': vfx?.AreaTelegraph(point, radius); return;
-                case 'p': vfx?.WeaponPulse(fx.w, _oppPosition, radius); return;
+                // V5 M8z (7 Oct, D21): an aura pulses on the rival's ship; a pulse elsewhere (the Squid Ink Pots' slick) where it was.
+                case 'p': vfx?.WeaponPulse(fx.w, WeaponConfigOf(fx.w)?.behavior == RoguePirates.V4.Config.ConfigEnums.WeaponBehavior.Aura ? _oppPosition : point, radius); return;
             }
         }
 

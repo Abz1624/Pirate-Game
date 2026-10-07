@@ -492,7 +492,8 @@ namespace RoguePirates.V4.Presentation.Weapons
         // ---- Aura pulses (Playtest, 3 Oct, owner, round 7: "Siren Bell may have no visible effect") ---------------------
         // An aura weapon's pulse was the mortar's four small bursts round the ship, lost under the hull. It is now a ring
         // on the water in the weapon's own colour that sweeps out to the pulse's exact radius and fades, with a second
-        // ring just behind it; a pulse that needs the boost (the Ramming Prow) is a white bow shockwave with a splash.
+        // ring just behind it. V5 M8z (7 Oct, D21): the boost-only bow pulse went with the Ramming Prow; the Squid Ink Pots'
+        // shell and slick pulse the same way (WeaponEffectsVisual.pulseImpact).
         // Pooled line renderers, one shared material.
 
         struct Pulse
@@ -504,7 +505,6 @@ namespace RoguePirates.V4.Presentation.Weapons
 
         const int PulseSegments = 48;
         const float PulseHeight = 0.2f;
-        static readonly Color BowPulseColor = new Color(1f, 1f, 1f, 0.95f);
         static readonly Color AuraPulseColor = new Color(1f, 0.82f, 0.3f, 0.95f);
         readonly List<Pulse> _pulses = new List<Pulse>();
         readonly List<LineRenderer> _pulseLines = new List<LineRenderer>();
@@ -521,12 +521,6 @@ namespace RoguePirates.V4.Presentation.Weapons
             if (slots != null)
                 for (var i = 0; i < slots.Count; i++)
                     if (slots[i]?.Config != null && slots[i].Config.weaponId == weaponId) { config = slots[i].Config; break; }
-            if (config != null && config.aura.requiresBoost)
-            {
-                AddPulse(center, radius, BowPulseColor, 0.35f, 0.25f, 0.6f);
-                WaterSplash(center);
-                return;
-            }
             var color = config != null ? config.aimOverlayColor : AuraPulseColor;
             color.a = 0.95f;
             AddPulse(center, radius, color, 0.6f, 0.15f, 0.5f);

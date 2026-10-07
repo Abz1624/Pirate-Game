@@ -45,6 +45,7 @@ namespace RoguePirates.V4.Presentation.Hud
             var result = new List<string>();
             float damageNext = w.DamageBonus, cooldownNext = w.CooldownMult, speedNext = w.SpeedMult, sizeNext = w.SizeMult, durationNext = w.DurationMult;
             var quantityNext = w.QuantityBonus;
+            var slowNext = w.SlowBonus;
             var other = new List<string>();
             foreach (var l in lines ?? new UpgradeLine[0])
                 switch (l.Axis)
@@ -55,6 +56,7 @@ namespace RoguePirates.V4.Presentation.Hud
                     case ConfigEnums.UpgradeAxis.Speed: speedNext *= 1f + l.Value; break;
                     case ConfigEnums.UpgradeAxis.Size: sizeNext *= 1f + l.Value; break;
                     case ConfigEnums.UpgradeAxis.Duration: durationNext *= 1f + l.Value; break;
+                    case ConfigEnums.UpgradeAxis.Slow: slowNext += l.Value; break; // V5 M8z (7 Oct, D21)
                     default: other.Add($"{l.Axis} +{l.Value * 100f:0.#}%"); break;
                 }
             var dNow = WeaponDamage(c, w.Level, w.DamageBonus);
@@ -65,15 +67,29 @@ namespace RoguePirates.V4.Presentation.Hud
             if (!Mathf.Approximately(speedNext, w.SpeedMult)) result.Add($"Shot Speed {w.SpeedMult * 100f:0}%{Arrow}{speedNext * 100f:0}%");
             if (!Mathf.Approximately(sizeNext, w.SizeMult)) result.Add($"Size {w.SizeMult * 100f:0}%{Arrow}{sizeNext * 100f:0}%");
             if (!Mathf.Approximately(durationNext, w.DurationMult)) result.Add($"Duration {w.DurationMult * 100f:0}%{Arrow}{durationNext * 100f:0}%");
+            if (!Mathf.Approximately(slowNext, w.SlowBonus))
+            {
+                var slow = BaseSlow(c);
+                result.Add($"Slow {(slow + w.SlowBonus) * 100f:0}%{Arrow}{(slow + slowNext) * 100f:0}%");
+            }
+            // V5 M8z (7 Oct, D21, Q20): a rank milestone the upgrade reaches.
+            var reached = Mathf.Min(c.maxLevel, Mathf.Max(w.Level + 1, nextLevel));
+            foreach (var m in c.milestones ?? new WeaponMilestone[0])
+                if (m != null && m.level > w.Level && m.level <= reached && !string.IsNullOrEmpty(m.description)) result.Add($"Rank {m.level}: {m.description}");
             result.AddRange(other);
             return result.ToArray();
         }
+
+        /// <summary>V5 M8z (7 Oct, D21): the weapon's own slow share (its slowing block's), 0 when it does not slow.</summary>
+        static float BaseSlow(WeaponConfig c) =>
+            Mathf.Max(c.predictedArea.slowFraction, Mathf.Max(c.aura.slowFraction, c.projectile.slowFraction));
 
         /// <summary>A new weapon: its level 1 numbers.</summary>
         public static string[] NewWeapon(WeaponConfig c)
         {
             var lines = new List<string> { $"Damage {WeaponDamage(c, 1, 1f):0.#}", $"Reload {c.baseCooldown:0.##}s" };
             if (c.baseQuantity > 1) lines.Add($"Shots {c.baseQuantity}");
+            if (BaseSlow(c) > 0f) lines.Add($"Slow {BaseSlow(c) * 100f:0}%"); // V5 M8z (7 Oct, D21)
             return lines.ToArray();
         }
 

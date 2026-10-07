@@ -118,6 +118,8 @@ namespace RoguePirates.V4.Foundation.Data
         [Range(0f, 0.9f)]
         [Tooltip("Fraction of barrel height below the water surface (0.15 = 15% submerged).")]
         public float barrelSubmergedFraction = 0.15f;
+        [Tooltip("V5 M8z (7 Oct, D21, Q16): the sparkle particles on the loot barrels (gold, XP and health). Off = removed (owner); the barrels stay.")]
+        public bool barrelSparkles;
         public float xpBarrelPickupScale = 1.05f;
         [Tooltip("Scale for gems that fly out of an XP barrel.")]
         public float xpFlyingGemScale = 0.6375f;

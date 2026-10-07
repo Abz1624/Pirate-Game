@@ -32,6 +32,7 @@ namespace RoguePirates.V4.Foundation.Data
                 UpgradeAxis.Crit => $"+{rolledValue * 100f:0}% Crit Chance",
                 UpgradeAxis.CritDamage => $"+{rolledValue * 100f:0}% Crit Damage",
                 UpgradeAxis.Pierce => $"+{Mathf.RoundToInt(rolledValue)} Pierce",
+                UpgradeAxis.Slow => $"+{rolledValue * 100f:0}% Slow", // V5 M8z (7 Oct, D21)
                 _ => $"+{rolledValue:0.##} {axis}"
             };
         }

@@ -62,7 +62,7 @@ MonoBehaviour:
     - anchor_flail
     - chainshot
     - siren_bell
-    - ramming_prow
+    - squid_ink_pots
     - parrot_squadron
     - monkey_gunners
     - maelstrom_charge
@@ -84,7 +84,7 @@ MonoBehaviour:
       marksCost: 130
     - contentId: siren_bell
       marksCost: 150
-    - contentId: ramming_prow
+    - contentId: squid_ink_pots
       marksCost: 160
     - contentId: parrot_squadron
       marksCost: 170

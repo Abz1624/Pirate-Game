@@ -60,6 +60,7 @@ namespace RoguePirates.V4.Presentation.Effects
             var view = go.transform;
             var firstUse = _prepared.Add(go.GetInstanceID());
             if (firstUse && prefab != _gem && prefab != _flyingHealth) StripColliders(go);
+            if (firstUse && IsBarrel(type) && _s != null && !_s.barrelSparkles) RemoveSparkles(go); // V5 M8z (7 Oct, D21, Q16)
 
             if (prefab == _flyingHealth)
             {
@@ -269,6 +270,32 @@ namespace RoguePirates.V4.Presentation.Effects
         {
             foreach (var r in root.GetComponentsInChildren<Renderer>(true))
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+
+        /// <summary>
+        /// V5 M8z (7 Oct, D21, Q16, owner: "remove them"): a loot barrel's sparkle particles (star glow and twinkle, the
+        /// health barrel's blessing) are switched off once per pooled barrel: each particle object is stopped, cleared and
+        /// deactivated. The barrel's model stays.
+        /// </summary>
+        static void RemoveSparkles(GameObject root)
+        {
+            foreach (var ps in root.GetComponentsInChildren<ParticleSystem>(true))
+            {
+                if (ps == null) continue;
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                if (ps.gameObject != root) ps.gameObject.SetActive(false);
+                else { var r = ps.GetComponent<ParticleSystemRenderer>(); if (r != null) r.enabled = false; }
+            }
+        }
+
+        /// <summary>V5 M8z (D21, Q16): active particle systems under a pickup view (tests: none on a barrel).</summary>
+        public static int ActiveParticleSystems(Transform view)
+        {
+            var n = 0;
+            if (view == null) return 0;
+            foreach (var ps in view.GetComponentsInChildren<ParticleSystem>(false))
+                if (ps != null && ps.gameObject.activeInHierarchy) n++;
+            return n;
         }
 
         static void StripColliders(GameObject root)

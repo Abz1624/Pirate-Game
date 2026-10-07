@@ -9,6 +9,8 @@ namespace RoguePirates.V4.Weapons
         public bool Homing;
         public bool TarOnHit;
         public float TarSlow, TarSlowBoss, ControlSecondsPerHit;
+        /// <summary>V5 M8z (7 Oct, D21): seconds the tar slows its enemy (0 = the tar does not slow).</summary>
+        public float TarSlowSeconds;
         public bool SplashOnDespawn;
         /// <summary>Damage-ledger credit (bursts and follow-ups credit their weapon; V3 recorded no projectile hits).</summary>
         public string LedgerId;
@@ -175,6 +177,9 @@ namespace RoguePirates.V4.Weapons
                             var slow = _enemies.IsBoss(ei) ? p.Traits.TarSlowBoss : p.Traits.TarSlow;
                             _damage.ApplyStatus(ei, WeaponStatus.Tarred, slow);
                             _hooks.RecordControl(p.WeaponId, p.Traits.ControlSecondsPerHit);
+                            // V5 M8z (7 Oct, D21, Q23): the tar is a real slow. The enemy world gives bosses and minibosses
+                            // their share of it (half, at most bossMaxSlow), which is the tarSlowBoss the status records.
+                            if (p.Traits.TarSlowSeconds > 0f) _damage.ApplySlow(ei, p.Traits.TarSlow, p.Traits.TarSlowSeconds);
                         }
                         if (p.Traits.SlowFraction > 0f) _damage.ApplySlow(ei, p.Traits.SlowFraction, p.Traits.SlowSeconds);
                         RecordHit(ref p, _enemies.UnitId(ei));

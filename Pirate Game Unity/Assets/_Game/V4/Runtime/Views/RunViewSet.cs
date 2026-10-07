@@ -101,7 +101,7 @@ namespace RoguePirates.V4.Views
             modifiers = w == null ? default : new WeaponModifiersView
             {
                 Level = w.Level, QuantityBonus = w.QuantityBonus, DamageBonus = w.DamageBonus, CooldownMult = w.CooldownMult,
-                SpeedMult = w.SpeedMult, SizeMult = w.SizeMult, DurationMult = w.DurationMult,
+                SpeedMult = w.SpeedMult, SizeMult = w.SizeMult, DurationMult = w.DurationMult, SlowBonus = w.SlowBonus,
             };
             return w != null;
         }

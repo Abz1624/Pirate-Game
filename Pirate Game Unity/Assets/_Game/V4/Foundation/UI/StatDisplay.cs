@@ -52,8 +52,7 @@ namespace RoguePirates.V4.Foundation.UI
                 return value >= 0.15f;
             if (stat == StatId.CritChance && value <= 0.25f)
                 return true;
-            if (stat == StatId.Luck && value <= 0.2f)
-                return true;
+            // V5 M8z (7 Oct, D21, Q27): Luck is a fraction everywhere, shown as a percentage (it was shown as points).
             if (stat == StatId.Shield)
                 return value >= 1f;
             return false;

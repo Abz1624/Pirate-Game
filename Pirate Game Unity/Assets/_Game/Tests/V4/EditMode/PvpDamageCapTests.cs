@@ -74,7 +74,6 @@ namespace RoguePirates.V4.Tests
             public Vector3 Velocity => Vel;
             public Vector3 MovementForward => Vector3.forward;
             public Vector3 TransformPoint(Vector3 local) => Pos + local;
-            public bool IsBoosting => true; // the Ramming Prow strikes only while boosting
         }
 
         /// <summary>Size and duration at their Logbook maximum, Extra Hands as measured; damage, attack speed and crits

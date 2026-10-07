@@ -22,7 +22,7 @@ namespace RoguePirates.V4.Foundation.PlayerSystems
 
         public float BoostNormalized => _boostTimer > 0f ? _boostTimer / boostDuration : 0f;
         public bool CanBoost => _cooldownTimer <= 0f && _boostTimer <= 0f;
-        /// <summary>V5 M4: the ship is boosting now (the Ramming Prow hits while this is on).</summary>
+        /// <summary>V5 M4: the ship is boosting now (the HUD and the 1v1 read it).</summary>
         public bool IsBoosting => _boostTimer > 0f;
         /// <summary>Playtest (3 Oct, owner): seconds of boost left (0 when not boosting), for the HUD meter.</summary>
         public float BoostRemaining => Mathf.Max(0f, _boostTimer);

@@ -193,6 +193,9 @@ namespace RoguePirates.V4.Stage
             }
         }
 
+        /// <summary>V5 M8z (7 Oct, D21, Q27): the chest's Uncommon-and-better weight factor for a Luck fraction (1 + Luck).</summary>
+        public static float LuckBoost(float luck) => 1f + Mathf.Max(0f, luck);
+
         /// <summary>V3 V3ChestLoot.RollSalvageItem: a rarity by the weights (rare+ boosted by stage depth, uncommon+ by luck),
         /// then a uniform item of that rarity, falling back to lower rarities.</summary>
         string RollSalvageItem(StageContentConfig stage, float luck)
@@ -200,7 +203,9 @@ namespace RoguePirates.V4.Stage
             var baseWeights = stage.chestRarityWeights;
             var count = Mathf.Min(baseWeights?.Length ?? 0, _weights.Length);
             var stageRareBoost = 1f + stage.chestRareBoostPerStageDepth * Mathf.Max(0, stage.chestStageDepth - 1);
-            var luckBoost = 1f + Mathf.Max(0f, luck) / 100f;
+            // V5 M8z (7 Oct, D21, Q27): one Luck scale, a fraction, as the level-up cards read it (Lucky Doubloon +0.03 =
+            // +3% to the Uncommon-and-better weights). V3 read points here (luck / 100), so +3% Luck gave +0.03%.
+            var luckBoost = LuckBoost(luck);
             var total = 0f;
             for (var i = 0; i < count; i++)
             {

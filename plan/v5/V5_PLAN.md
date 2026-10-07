@@ -58,7 +58,7 @@ Every owner request (29 Sep 2026) and the phase(s) that deliver it. The reviewer
 |---|---|---|
 | 1 | Balance the game; Vampire Survivors / Survivor.io enemy flow and curves | M1 (flow), M2 (model and retune), M3 (builds); every content phase balances against the M2 model |
 | 2 | Main menu with shops and items | M8 (web2, local RUM) → M10b (server) → M11 (token prices) |
-| 3 | Remaining weapons, logbooks and items, unlockable in the shop | M4, M4b (nine new weapons), M5 (logbooks, items; unlock prices), M8 (shop) |
+| 3 | Remaining weapons, logbooks and items, unlockable in the shop | M4, M4b (nine new weapons; D21: the Ramming Prow replaced by the Squid Ink Pots in M8z), M5 (logbooks, items; unlock prices), M8 (shop) |
 | 4 | Art guide for weapons, effects, items, logbooks, POIs; what exists and what is missing | M6 (Claude Doc); updated in M14 (defenses, decorations), M25 (sail stickers), M27 (brand kits) |
 | 5 | Mobile UI for mobile and desktop browsers | M7 (touch controls, responsive HUD, safe area, WebGL mobile profile); every later screen follows D9 |
 | 6 | Base building: defenses plus a defender-authored spawn schedule (when and how many, not where) | M14 |
@@ -444,11 +444,23 @@ every existing weapon has an evolution.
 
 - I4.1 Weapons (Q19): **Anchor Flail** (an anchor on a chain circles the ship, smashes and knocks back), **Chainshot**
   (a wide spinning shot that cuts through a line and slows), **Siren Bell** (a damaging pulse around the ship with a 20%
-  slow; no charm), all from `Rogue_Pirates_Combat_Content_v3_1.md` §4.7 (design numbers only), and **Ramming Prow**
-  (boosting turns the ship into a battering ram; new design). Ghost Cannons is dropped (it reads as an evolution of the
-  cannons).
-- I4.2 New behaviours as needed (`Trail`, `Aura`, `Summon` exist in the V4 code but are unused; a contact-damage-on-boost
-  behaviour for the Prow).
+  slow; no charm), all from `Rogue_Pirates_Combat_Content_v3_1.md` §4.7 (design numbers only), and ~~Ramming Prow~~
+  (boosting turned the ship into a battering ram) **replaced by the Squid Ink Pots** (D21, 7 Oct: the Prow needed the
+  boost button, against the auto-attack rule; the owner asked for "a weapon that slows down the enemies, especially those
+  in the back"): it auto-fires every 2.5 s, lobs a pot of ink (0.9 s flight, landing where the target will be) onto the
+  back of the pack (the enemy in its 22 m range scoring highest on distance + 1 m per neighbour within the slick, so not a
+  lone straggler), and leaves a 3.5 m ink slick for 3 s that slows everything in it by 35% (each 0.5 s tick renews a 1 s
+  slow) and deals modest damage (17.68 x level factor on landing, 0.15 of it each tick: 14.78 level-1 single-target DPS,
+  the D20 rule). Bosses and minibosses take half the slow (at most 20%). Cards: Duration (slick and slow), Slow (+4% a
+  card, at most +20%), Size, Cooldown; rank milestones 4 (a second pot on the next pack back), 8 (25% wider slicks),
+  12 (+10% slow); evolution Black Tide with the Iron Figurehead (the Prow's item, reused): one more pot, x1.3 damage,
+  x0.85 cooldown, x1.3 size, +10% slow. Placeholder look: violet rings on the water. Chosen over a tide wave pushed out
+  from the ship because a wave hits the front of the pack first, while a lob reaches the rear directly and lets the
+  front still come to the guns. Ghost Cannons is dropped (it reads as an evolution of the cannons).
+- I4.2 New behaviours as needed (`Trail`, `Aura`, `Summon` exist in the V4 code but are unused). D21: the boost-only
+  aura (`requiresBoost`) went with the Prow; the Ink Pots are a predicted-area shell with `rearTargeting` and a slowing,
+  pull-free whirlpool (`predictedArea.slowFraction`); rank milestones are data (`WeaponConfig.milestones`, Q20); a new
+  upgrade axis `Slow`.
 - G4.1 Evolutions for every weapon without one: Harpoon Gun, Long Nine, Mortar, Swivel Guns and the four new ones (each
   unlocks at level 8 with its paired item, per Q18b).
 - G4.2 Unlock prices in `UnlockConfig` (RUM), cards, placeholder icons and VFX.

@@ -340,9 +340,9 @@ namespace RoguePirates.V4.Enemies
         /// <summary>
         /// Slows the enemy by <paramref name="fraction"/> of its speed for <paramref name="seconds"/>. The strongest slow
         /// holds: a weaker one does nothing while it lasts; an equal one extends it; a stronger one replaces it. Regular
-        /// enemies (minibosses included) are slowed at most <c>maxSlow</c>; bosses take <c>bossSlowShare</c>, at most
-        /// <c>bossMaxSlow</c> (combat design 2.3, which names bosses only). A committed charge dash and the boss's forced
-        /// movement are not slowed (they keep their telegraphed reach).
+        /// enemies are slowed at most <c>maxSlow</c>; bosses and minibosses take <c>bossSlowShare</c>, at most
+        /// <c>bossMaxSlow</c> (V5 M8z, 7 Oct, D21, Q24: the Reef Crab like the boss, by the definition's flags). A committed
+        /// charge dash and the boss's forced movement are not slowed (they keep their telegraphed reach; D21, Q25).
         /// </summary>
         public void ApplySlow(int index, float fraction, float seconds)
         {
@@ -350,7 +350,7 @@ namespace RoguePirates.V4.Enemies
             ref var e = ref _agents[index];
             var def = _definitions[e.definitionIndex];
             var rules = WeaponRules?.Invoke();
-            var big = e.isBoss || def.isBoss;
+            var big = IsBossLike(e, def);
             fraction = big
                 ? Mathf.Min(rules != null ? rules.bossMaxSlow : 0.2f, fraction * (rules != null ? rules.bossSlowShare : 0.5f))
                 : Mathf.Min(rules != null ? rules.maxSlow : 0.6f, fraction);
@@ -360,19 +360,22 @@ namespace RoguePirates.V4.Enemies
             else { e.slowFraction = fraction; e.slowTimer = seconds; }
         }
 
+        /// <summary>V5 M8z (7 Oct, D21, Q24): bosses and minibosses share the slow and knockback rules (definition flags, no ids).</summary>
+        static bool IsBossLike(in EnemyUnit e, EnemyDefinition def) => e.isBoss || (def != null && (def.isBoss || def.isMiniboss));
+
         /// <summary>The enemy's speed multiplier from slows (1 = none).</summary>
         public float SpeedMultiplier(int index) =>
             index >= 0 && index < _agents.Length && _agents[index].slowTimer > 0f ? 1f - _agents[index].slowFraction : 1f;
 
         /// <summary>Pushes the enemy <paramref name="meters"/> (at most <c>maxKnockbackMeters</c>) away from <paramref name="from"/>
-        /// over <c>knockbackSeconds</c> (islands still stop it). Bosses are not moved; elites go <c>eliteKnockbackShare</c>
-        /// of it (combat design 2.3).</summary>
+        /// over <c>knockbackSeconds</c> (islands still stop it). Bosses and minibosses are not moved (V5 M8z, D21, Q24);
+        /// elites go <c>eliteKnockbackShare</c> of it (combat design 2.3).</summary>
         public void Knockback(int index, Vector3 from, float meters)
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active || _agents[index].remote || meters <= 0f) return;
             ref var e = ref _agents[index];
             var def = _definitions[e.definitionIndex];
-            if (e.isBoss || def.isBoss) return;
+            if (IsBossLike(e, def)) return;
             var rules = WeaponRules?.Invoke();
             meters = Mathf.Min(meters, rules != null ? rules.maxKnockbackMeters : 3f);
             if (e.isElite) meters *= rules != null ? rules.eliteKnockbackShare : 0.5f;
@@ -387,13 +390,13 @@ namespace RoguePirates.V4.Enemies
         }
 
         /// <summary>V5 M4b: drags the enemy up to <paramref name="meters"/> toward <paramref name="toward"/> (never past it),
-        /// with the knockback's rules: bosses not moved, elites half, at most <c>maxKnockbackMeters</c>.</summary>
+        /// with the knockback's rules: bosses and minibosses not moved, elites half, at most <c>maxKnockbackMeters</c>.</summary>
         public void Pull(int index, Vector3 toward, float meters)
         {
             if (index < 0 || index >= _agents.Length || !_agents[index].active || _agents[index].remote || meters <= 0f) return;
             ref var e = ref _agents[index];
             var def = _definitions[e.definitionIndex];
-            if (e.isBoss || def.isBoss) return;
+            if (IsBossLike(e, def)) return;
             var rules = WeaponRules?.Invoke();
             meters = Mathf.Min(meters, rules != null ? rules.maxKnockbackMeters : 3f);
             if (e.isElite) meters *= rules != null ? rules.eliteKnockbackShare : 0.5f;

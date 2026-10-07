@@ -81,7 +81,7 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(pw.powderRushIsDamageInBattleSignalSlot, "R-43 fix: attack speed in its own slot (approved at the M9 gate)");
             Assert.IsTrue(pw.fullSailOwnSlot, "R-43 fix: Full Sail stacks with Tailwind");
             // V5 M5 (D34): the four designed kinds wait for a rebalance.
-            CollectionAssert.AreEqual(new[] { PowerupKind.RepairSupplies, PowerupKind.PowderRush, PowerupKind.MagneticTide, PowerupKind.DeadCalm }, pw.pool.Select(e => e.kind));
+            CollectionAssert.AreEqual(new[] { PowerupKind.RepairSupplies, PowerupKind.BattleSignal, PowerupKind.FullSail, PowerupKind.PowderRush, PowerupKind.MagneticTide, PowerupKind.DeadCalm } /* D21 Q28 */, pw.pool.Select(e => e.kind));
             Assert.AreEqual((int)FloorPowerupKind.DeadCalm, (int)PowerupKind.DeadCalm, "enum order mirrors V3");
             var un = Set.configs.OfType<UnlockConfig>().Single();
             Assert.AreEqual(StartingWeaponRule.CaptainWeapon, un.startingWeaponRule, "D6");

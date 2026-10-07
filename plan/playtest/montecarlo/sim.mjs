@@ -18,12 +18,16 @@ export const MODEL = {
     deck_cannons: [1, 1.05, 1, 1], swivel_guns: [1.1, 0.78, 0.55, 1], long_nine: [1, 2.4, 1, 3], harpoon_gun: [1, 1.2, 1, 1],
     chainshot: [1, 1.5, 1, 2], broadside_battery: [1.8, 1.5, 0.6, 1.8], flying_cutlasses: [0.875, 1, 0.35, 3],
     anchor_flail: [1, 3.6, 1, 3], lighthouse_lantern: [1, 6, 1, 4], flamethrower: [9.4, 3.3, 0.28, 3],
-    powder_kegs: [0.72, 2.2, 0.72, 3], lightning_mast: [1, 1.8, 1, 3], cursed_doubloons: [1, 2, 1, 3], ramming_prow: [0.3, 0.3, 1, 3],
+    powder_kegs: [0.72, 2.2, 0.72, 3], lightning_mast: [1, 1.8, 1, 3], cursed_doubloons: [1, 2, 1, 3],
+    // V5 M8z (7 Oct, D21): the Squid Ink Pots replaced the Ramming Prow: a pot on the back of the pack, then a 3 s slick
+    // ticking 0.15 x base every 0.5 s (an enemy sails out of it: about half the ticks land); the slow itself is not modelled,
+    // as for Chainshot, the Siren Bell and the Harpoon's tar (the model has no enemy speed).
+    squid_ink_pots: [1.45, 2.5, 0.5, 3],
     siren_bell: [1, 3, 1, 5], mortar: [1, 1.8, 1, 3], maelstrom_charge: [3.7, 5, 0.2, 4], monkey_gunners: [13, 6, 1, 1], parrot_squadron: [22, 4, 1, 1],
   },
   // The cooldowns and orbit spins the weapon table above was measured at (2 Oct); the model scales its cycles by the data's.
   refCooldown: { deck_cannons: 1.05, swivel_guns: 0.6, long_nine: 2.4, harpoon_gun: 1.2, chainshot: 1.5, broadside_battery: 1.5, flying_cutlasses: 1, anchor_flail: 0.75,
-    lighthouse_lantern: 0.5, flamethrower: 0.7, powder_kegs: 2.2, lightning_mast: 1.8, cursed_doubloons: 2, ramming_prow: 0.3, siren_bell: 3, mortar: 1.8, maelstrom_charge: 5,
+    lighthouse_lantern: 0.5, flamethrower: 0.7, powder_kegs: 2.2, lightning_mast: 1.8, cursed_doubloons: 2, squid_ink_pots: 2.5, siren_bell: 3, mortar: 1.8, maelstrom_charge: 5,
     monkey_gunners: 6, parrot_squadron: 4 },
   refSpin: { flying_cutlasses: 120, anchor_flail: 100, lighthouse_lantern: 60 },
   refBlades: { flying_cutlasses: 2, anchor_flail: 1, lighthouse_lantern: 1 },
