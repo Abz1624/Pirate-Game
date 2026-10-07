@@ -555,6 +555,8 @@ settled and one simulator calibrated on the owner's play.
   through `IRunViews`, the weapon switch-off list in config, `PvpSession`/`OnlineService` owned by the composition root.
 - I8z.3 The `DemoMode` switches the owner plays (Beacon or timed boss, chests-only, whirlpool) as a "playtest" config
   preset, so tests cover what ships.
+  (7 Oct, as built: a `[UseShippedPlaytestSettings]` test attribute plus scenarios with `playtest: Shipped`; the switches stay
+  in `DemoJuiceSettings` behind `DemoMode`, moving them into a V4 config preset is left for later.)
 - I8z.4 Scenario Lab: a `ScenarioConfig` asset, a `V5ScenarioLab` scene and a `ScenarioRunner` (seed, Captain, loadout and
   level, clock time, chosen enemies at a set distance, forced points of interest, switches, a PvP bot over a fake relay);
   the same scenarios from the F1 console and in 2-10 s PlayMode tests.

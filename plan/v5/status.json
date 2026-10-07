@@ -1,6 +1,6 @@
 {
  "updated": "6 Oct 2026",
- "statusLine": "M8z (playtest integration) in progress on <code>v5-live-game</code>: merge, PvP anti-cheat, playtest fixes and the session recorder done; architecture fixes, the playtest preset, the Scenario Lab, test triage and the simulator recalibration next.",
+ "statusLine": "M8z (playtest integration) built and reviewed (pass with fixes); review fixes in progress, then your playtest and the M8z commit. Five decisions open (see your to-dos).",
  "statusOk": false,
  "facts": [
   [
@@ -332,6 +332,8 @@
  ],
  "todos": {
   "next": [
+   "<strong>Decide (M8z)</strong>: (1) same XP per kill at every graphics quality (suggested); (2) keep the darker red Cutthroat Skiff and greener Needle Sloop?; (3) Ironclad into the Logbook pool now that armor applies?; (4) should shipped (non-playtest) web builds still download a session file at the end of every voyage?; (5) commit the WebGL memory and stack-trace settings Unity changed in ProjectSettings?",
+   "<strong>Playtest M8z</strong> on the desktop build at http://localhost:8090 once the review fixes are in.",
    "<strong>Keep recording voyages</strong> when you play (the file downloads at the end; <em>Download last voyage</em> on the main menu fetches it again)."
   ],
   "open": [
@@ -1074,7 +1076,7 @@
    },
    {
     "title": "Next",
-    "text": "The independent review (running), then your playtest on the desktop build, then the M8z commit."
+    "text": "Review fixes (in progress), then your playtest on the desktop build, then the M8z commit. Evidence: <code>plan/v5/phase-08z-integration/README.md</code>."
    },
    {
     "title": "What the sessions showed",
@@ -2001,6 +2003,110 @@
      "where": "server",
      "finding": ".NET 8 support ends 10 Nov 2026; EnsureCreated cannot evolve the schema.",
      "fix": "First M10 task: .NET 10 and migrations"
+    }
+   ]
+  },
+  {
+   "title": "M8z review (7 Oct)",
+   "summary": "<strong>Pass with fixes</strong>: 0 blockers, 7 majors, 7 minors. Suites confirmed (474/474, 77/77). Fine: no content ids, elite flag and colours in config, DevTools dev-only, Scenario Lab seeded and sound, economy rewrites are real rules, no secrets.",
+   "rows": [
+    {
+     "n": 1,
+     "sev": "Major",
+     "where": "<code>PickupModule.cs</code>, <code>QualityProfile.cs</code>",
+     "finding": "XP per kill depends on graphics quality and Reduced Effects (each burst piece pays at least 1 XP).",
+     "fix": "Your decision; then refit the simulator"
+    },
+    {
+     "n": 2,
+     "sev": "Major",
+     "where": "evidence",
+     "finding": "No M8z evidence folder; status out of date.",
+     "fix": "Done: <code>plan/v5/phase-08z-integration/</code>"
+    },
+    {
+     "n": 3,
+     "sev": "Major",
+     "where": "<code>V5WeaponGoldenTests</code>",
+     "finding": "Weapon goldens replaced by a weak check: weapon changes pass silently.",
+     "fix": "Re-record goldens on today's data (in progress)"
+    },
+    {
+     "n": 4,
+     "sev": "Major",
+     "where": "I8z.3",
+     "finding": "Playtest preset narrowed to a test attribute used by 4 tests; scenarios run with the switches off.",
+     "fix": "Recorded in the plan; key scenarios to run with the shipped settings (in progress)"
+    },
+    {
+     "n": 5,
+     "sev": "Major",
+     "where": "T8z.x",
+     "finding": "Planned scenario tests missing (dinghy one-shot, equal level-1 DPS, director beats, PvP reconnect).",
+     "fix": "Adding them (in progress)"
+    },
+    {
+     "n": 6,
+     "sev": "Major",
+     "where": "simulator",
+     "finding": "Calibration: levels and kills fit, survival does not (11:33 sinking: model 2%).",
+     "fix": "Reported; refit after the XP decision"
+    },
+    {
+     "n": 7,
+     "sev": "Major",
+     "where": "server tests",
+     "finding": "Flaky under load (2 of 5 runs had one failure).",
+     "fix": "Fixing the test harness (in progress)"
+    },
+    {
+     "n": 8,
+     "sev": "Minor",
+     "where": "enemy colours",
+     "finding": "Two colours changed in the move to config.",
+     "fix": "Your decision"
+    },
+    {
+     "n": 9,
+     "sev": "Minor",
+     "where": "<code>V5ContentM5Tests</code>",
+     "finding": "Ironclad kept out of the pool \"waiting for armor\" while armor applies.",
+     "fix": "Your decision"
+    },
+    {
+     "n": 10,
+     "sev": "Minor",
+     "where": "icon tests",
+     "finding": "\"Icon or name\" tests can't fail.",
+     "fix": "Tightening (in progress)"
+    },
+    {
+     "n": 11,
+     "sev": "Minor",
+     "where": "67 config assets",
+     "finding": "Balance version still saltwind-v3-parity; comments mention the retired preset.",
+     "fix": "Bumping to saltwind-playtest-r10 (in progress)"
+    },
+    {
+     "n": 12,
+     "sev": "Minor",
+     "where": "<code>SessionFile.cs</code>",
+     "finding": "Session size guard ignores the save; an overflow would skip the download.",
+     "fix": "Cap at 256 KB, try/catch (in progress); shipped-build downloads: your decision"
+    },
+    {
+     "n": 13,
+     "sev": "Minor",
+     "where": "online services",
+     "finding": "Static facades still act as a service locator.",
+     "fix": "Later (M9/M13)"
+    },
+    {
+     "n": 14,
+     "sev": "Minor",
+     "where": "PvP referee",
+     "finding": "Untagged damage skips the draft check; cap about 8x real level-1 damage.",
+     "fix": "Accepted until Netcode (D19)"
     }
    ]
   }
