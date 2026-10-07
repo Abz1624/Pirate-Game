@@ -9,7 +9,7 @@
   ],
   [
    "Tests",
-   "7 Oct (M8z final): EditMode 475/476 (1 skipped pending your DPS decision) · PlayMode 80/80 · server 102/102 (5 runs)"
+   "7 Oct (M8z, D20): EditMode 477/477 · PlayMode 81/81 · server 102/102"
   ],
   [
    "Gate",
@@ -338,6 +338,11 @@
    "when": "7 Oct",
    "commit": "",
    "what": "Your answers (D20): same XP per kill at every graphics quality; the two colours kept; Ironclad into the Logbook pool; session downloads only in playtest builds; every weapon back to the same level-1 DPS. Leftover test files deleted. Implementing now."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "7bfb9403",
+   "what": "<strong>D20 done</strong>: XP per kill exact at every graphics quality (pace kept: XP x0.8 and a retuned table); Ironclad in the Logbook pool; session downloads behind a playtest-build switch; every weapon at 14.78 level-1 single-target DPS (goldens re-recorded; PvP cap margin still 1.57x). The model now gives an 84% boss win rate (69% before): worth watching in your playtest. Desktop build for the M8z playtest started."
   }
  ],
  "todos": {
@@ -888,6 +893,13 @@
    "check": "Final suites after the review fixes",
    "result": "EditMode 475/476 (1 skipped), PlayMode 80/80, server 102/102 x5",
    "evidence": "plan/playtest/tests/editmode-m8z-final.json, playmode-m8z-final.json"
+  },
+  {
+   "date": "7 Oct",
+   "phase": "M8z",
+   "check": "Full suites after D20",
+   "result": "EditMode 477/477, PlayMode 81/81",
+   "evidence": "plan/playtest/tests/editmode-m8z-d20.json, playmode-m8z-d20.json"
   }
  ],
  "phaseResults": {
@@ -1092,7 +1104,7 @@
    },
    {
     "title": "Next",
-    "text": "Your decisions (six) and your playtest on the desktop build, then the M8z commit. Evidence: <code>plan/v5/phase-08z-integration/README.md</code>."
+    "text": "Your M8z playtest on the desktop build, then the M8z commit. Evidence: <code>plan/v5/phase-08z-integration/README.md</code>."
    },
    {
     "title": "What the sessions showed",
