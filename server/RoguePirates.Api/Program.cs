@@ -17,14 +17,15 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{(string.IsNullOrWhiteSpace(port) ? "80
 // Settings are read when first resolved, so test hosts can override configuration.
 builder.Services.AddSingleton(sp => ApiSettings.From(sp.GetRequiredService<IConfiguration>()));
 builder.Services.AddSingleton<IClock, SystemClock>();
-builder.Services.AddDbContext<GameDb>((sp, options) =>
-{
-    var settings = sp.GetRequiredService<ApiSettings>();
-    if (settings.UsePostgres)
-        options.UseNpgsql(ApiSettings.PostgresConnectionString(settings.DatabaseUrl!));
-    else
-        options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = settings.SqlitePath, Pooling = true }.ToString());
-});
+// One context per provider (each has its own migrations, see server/MIGRATIONS.md); services ask for GameDb and get
+// the one the settings pick. Only the active provider's context is ever resolved.
+builder.Services.AddDbContext<PostgresGameDb>((sp, options) =>
+    options.UseNpgsql(ApiSettings.PostgresConnectionString(sp.GetRequiredService<ApiSettings>().DatabaseUrl!)));
+builder.Services.AddDbContext<SqliteGameDb>((sp, options) =>
+    options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = sp.GetRequiredService<ApiSettings>().SqlitePath, Pooling = true }.ToString()));
+builder.Services.AddScoped<GameDb>(sp => sp.GetRequiredService<ApiSettings>().UsePostgres
+    ? sp.GetRequiredService<PostgresGameDb>()
+    : sp.GetRequiredService<SqliteGameDb>());
 builder.Services.AddScoped<PlayerAuth>();
 builder.Services.AddScoped<RunService>();
 builder.Services.AddScoped<LobbyService>();
@@ -64,7 +65,7 @@ builder.Services.AddRateLimiter(o =>
 builder.Services.Configure<ForwardedHeadersOptions>(o =>
 {
     o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    o.KnownNetworks.Clear();
+    o.KnownIPNetworks.Clear();
     o.KnownProxies.Clear();
     o.ForwardLimit = 1;
 });
@@ -79,12 +80,13 @@ builder.Services.AddSingleton<RoguePirates.Api.Services.DeploymentService>();
 
 var app = builder.Build();
 
-// Create the schema on startup (EnsureCreated: creates all tables on an empty database, no-op otherwise).
+// Bring the schema up to date on startup with EF Core migrations: an empty database gets everything, a database the
+// old EnsureCreated built is baselined first (tables kept), then any pending migration is applied. See MIGRATIONS.md.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<GameDb>();
     var settings = scope.ServiceProvider.GetRequiredService<ApiSettings>();
-    db.Database.EnsureCreated();
+    DatabaseMigrator.Migrate(db, app.Logger);
     if (!settings.UsePostgres) db.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
     app.Logger.LogInformation("Rogue Pirates API using {Db}", settings.DbKind);
 }

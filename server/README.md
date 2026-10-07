@@ -1,6 +1,6 @@
 # Rogue Pirates playtest API
 
-ASP.NET Core (.NET 8) API for the playtest: guest profiles, the weekly kills leaderboard, and 1v1 Arena lobbies
+ASP.NET Core (.NET 10 LTS) API for the playtest: guest profiles, the weekly kills leaderboard, and 1v1 Arena lobbies
 (invites, seat status, drafts, real-time state, results and Elo). For 1v1 matches it is also the **relay and
 referee**: both players run the game locally (each simulates its own ship and weapons), the API forwards their messages
 over the lobby WebSocket and decides everything shared (countdown, spawns, barrels, storm clock, hits tally, the end and
@@ -13,7 +13,7 @@ runs the match instead and the API only handles the lobby around it.
 
 ## Run locally
 
-Requires the .NET 8 SDK. No Docker: locally the API uses SQLite (`roguepirates.db`, created on first start).
+Requires the .NET 10 SDK. No Docker: locally the API uses SQLite (`roguepirates.db`, created and migrated on first start).
 
 ```powershell
 cd server/RoguePirates.Api
@@ -41,9 +41,9 @@ dotnet test server/RoguePirates.Api.Tests
 | `SWEEP_SECONDS` | `30` | How often idle lobbies expire and single-report matches are decided in the background (both also happen on read). |
 | `ARENA_TICK_MS` | `100` | How often the 1v1 relay advances its clock (countdown, barrels, end on time, disconnect forfeits). |
 
-No secrets live in code. The schema is created on startup with EF Core `EnsureCreated` (all tables on an empty
-database, nothing otherwise). A later schema change needs a migration or a fresh database; there is no data worth
-keeping across such a change during the playtest, but say so before wiping it.
+No secrets live in code. The schema is managed with EF Core migrations, applied on startup (an empty database gets
+every table; the database the old `EnsureCreated` built is baselined first, keeping its data). How to add a migration
+and the deploy steps: [MIGRATIONS.md](MIGRATIONS.md).
 
 The API is meant to run as **one instance** (lobby and match writes are serialized in-process and WebSocket pushes
 come from that process). Keep Railway replicas at 1.

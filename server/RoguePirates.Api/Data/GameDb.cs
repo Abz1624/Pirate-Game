@@ -3,9 +3,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace RoguePirates.Api.Data;
 
-public sealed class GameDb : DbContext
+/// <summary>
+/// The playtest database. Abstract: the app runs one of the provider subclasses below (Postgres on Railway, SQLite
+/// locally and in tests), each with its own migrations folder, since migration SQL is provider specific. Services keep
+/// depending on <see cref="GameDb"/>; Program.cs resolves it to the active subclass. See server/MIGRATIONS.md.
+/// </summary>
+public abstract class GameDb : DbContext
 {
-    public GameDb(DbContextOptions<GameDb> options) : base(options) { }
+    protected GameDb(DbContextOptions options) : base(options) { }
 
     public DbSet<Player> Players => Set<Player>();
     public DbSet<RunRecord> Runs => Set<RunRecord>();
@@ -68,4 +73,16 @@ public sealed class GameDb : DbContext
             else if (prop.ClrType == typeof(DateTime?)) prop.SetValueConverter(utcNullable);
         }
     }
+}
+
+/// <summary>Postgres (Railway). Migrations: Data/Migrations/Postgres.</summary>
+public sealed class PostgresGameDb : GameDb
+{
+    public PostgresGameDb(DbContextOptions<PostgresGameDb> options) : base(options) { }
+}
+
+/// <summary>SQLite (local runs and tests). Migrations: Data/Migrations/Sqlite.</summary>
+public sealed class SqliteGameDb : GameDb
+{
+    public SqliteGameDb(DbContextOptions<SqliteGameDb> options) : base(options) { }
 }
