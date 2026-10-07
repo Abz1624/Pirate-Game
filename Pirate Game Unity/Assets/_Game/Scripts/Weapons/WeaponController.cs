@@ -1421,12 +1421,16 @@ namespace HighSeas.Weapons
             var target = WeaponTargeting.PredictClusterGround(_enemies, _player, w.def.range);
             target.y = 0.2f;
             NotifyFire(w.def, (target - _player.Position).normalized);
+            var mortarFlight = JuiceVfxBroker.Instance != null && JuiceVfxBroker.Instance.Settings != null
+                ? JuiceVfxBroker.Instance.Settings.mortarFlightSeconds
+                : 1.1f;
             _juice?.OnMortarTelegraph(target, w.def.size * w.sizeMult * stats.Size);
+            _juice?.OnMortarLaunch(HighSeas.VFX.MortarShellFlight.FindLaunchPoint(_player.transform), target, mortarFlight, w.def.size * w.sizeMult * stats.Size);
             _delayedStrikes.Add(new DelayedStrike
             {
                 active = true,
                 position = target,
-                timer = 1.1f,
+                timer = mortarFlight,
                 radius = w.def.size * w.sizeMult * stats.Size,
                 baseDamage = w.def.baseDamage,
                 damageBonus = w.damageBonus,

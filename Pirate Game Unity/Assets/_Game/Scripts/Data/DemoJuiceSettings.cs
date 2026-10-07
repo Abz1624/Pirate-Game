@@ -57,6 +57,25 @@ namespace HighSeas.Data
         public GameObject mortarExplosionPrefab;
         [Tooltip("Extra scale on mortar impact bursts (+200% = 3).")]
         [Min(0.1f)] public float mortarExplosionScaleMult = 3f;
+        [Header("Mortar Barrage (raining fire)")]
+        [Tooltip("Seconds from firing to impact. Drives shell flight, telegraph and the damage tick.")]
+        [Range(0.6f, 3f)] public float mortarFlightSeconds = 1.5f;
+        [Tooltip("Fire shells per mortar volley. 1 = single shell.")]
+        [Range(1, 16)] public int mortarBarrageCount = 8;
+        [Tooltip("Seconds over which the volley leaves the deck (ripple fire).")]
+        [Min(0f)] public float mortarBarrageLaunchWindow = 0.45f;
+        [Tooltip("Shells land spread across this many seconds, centred on the damage tick.")]
+        [Min(0f)] public float mortarBarrageLandingSpread = 0.5f;
+        [Tooltip("Fraction of blast radius that shells scatter over.")]
+        [Range(0f, 1f)] public float mortarBarrageScatter = 0.8f;
+        [Tooltip("Sideways spread of the barrels on deck (m).")]
+        [Min(0f)] public float mortarBarrageDeckSpread = 0.9f;
+        [Tooltip("Multiplier on the normal mortar burst size for each shell's impact.")]
+        [Min(0.05f)] public float mortarBarrageImpactScale = 0.8f;
+        [Tooltip("Muzzle puff every N shells (1 = every shell).")]
+        [Min(1)] public int mortarBarrageMuzzleEvery = 2;
+        [Tooltip("Size of the barrel smoke puff on deck.")]
+        [Min(0.05f)] public float mortarBarrageMuzzleScale = 1f;
         [Tooltip("Continuous flamethrower stream (particle-only; not the full gun rig).")]
         public GameObject flamethrowerStreamPrefab;
         [Tooltip("Per-weapon projectile / muzzle / impact prefabs for the playtest pool.")]

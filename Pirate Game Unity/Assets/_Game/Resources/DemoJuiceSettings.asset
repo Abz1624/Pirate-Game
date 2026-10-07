@@ -48,6 +48,13 @@ MonoBehaviour:
   powderKegExplosionPrefab: {fileID: 5021453304944166231, guid: ef5eb902e84e07b47b07fabe204d36a1, type: 3}
   mortarExplosionPrefab: {fileID: 5021453304944166231, guid: a70395ad4d0003a4aa01336fb1c4bc2b, type: 3}
   mortarExplosionScaleMult: 3
+  mortarBarrageCount: 8
+  mortarBarrageLaunchWindow: 0.45
+  mortarBarrageLandingSpread: 0.5
+  mortarBarrageScatter: 0.8
+  mortarBarrageDeckSpread: 0.9
+  mortarBarrageImpactScale: 0.8
+  mortarBarrageMuzzleEvery: 2
   flamethrowerStreamPrefab: {fileID: 7948998522927659192, guid: 0e5d3fdb8a56e3e4893951587b18eb1a, type: 3}
   weaponVfxBindings:
   - weaponId: deck_cannons
@@ -123,7 +130,7 @@ MonoBehaviour:
     impactScaleMult: 1
     projectileLifeMult: 1
   - weaponId: mortar
-    projectilePrefab: {fileID: 0}
+    projectilePrefab: {fileID: 8537944227872499987, guid: f13774702c98b4a66ac0908d6d8c25fd, type: 3}
     muzzleVfxPrefab: {fileID: 1709254077376921, guid: e56a34430267a4646b7b33ad79a0bde3, type: 3}
     impactVfxPrefab: {fileID: 5021453304944166231, guid: a70395ad4d0003a4aa01336fb1c4bc2b, type: 3}
     projectileScaleMult: 1

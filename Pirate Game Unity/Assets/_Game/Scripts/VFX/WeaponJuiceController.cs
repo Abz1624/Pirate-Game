@@ -323,7 +323,7 @@ namespace HighSeas.VFX
         {
             position.y = 0.15f;
             var scale = MortarTelegraphScaleForRadius(radius, settings.mortarTelegraphScale);
-            var lifetime = MortarWindupSeconds + 0.12f;
+            var lifetime = (settings != null ? settings.mortarFlightSeconds : MortarWindupSeconds) + 0.12f;
             var template = settings.mortarTelegraphPrefab != null
                 ? settings.mortarTelegraphPrefab
                 : settings.lightningStrikePrefab;
@@ -340,6 +340,121 @@ namespace HighSeas.VFX
             if (settings.burningTrailPrefab == null) return;
             scale = settings.burningTrailScale * Mathf.Clamp(radius / 8f, 0.55f, 0.95f);
             _broker?.Play(settings.burningTrailPrefab, position, Quaternion.identity, scale, lifetime);
+        }
+
+        /// <summary>
+        /// Mortar volley from the ship. With mortarBarrageCount &gt; 1 this is a ripple-fired barrage of fire shells
+        /// raining across the blast area (each with its own small burst + splash), landing around the damage tick.
+        /// </summary>
+        public void OnMortarLaunch(Vector3 origin, Vector3 target, float flightSeconds) =>
+            OnMortarLaunch(origin, target, flightSeconds, 0f);
+
+        public void OnMortarLaunch(Vector3 origin, Vector3 target, float flightSeconds, float blastRadius)
+        {
+            if (settings == null) return;
+            var flat = target - origin;
+            flat.y = 0f;
+            var forward = flat.sqrMagnitude > 0.0001f ? flat.normalized : Vector3.forward;
+            var side = Vector3.Cross(Vector3.up, forward);
+            var launchDir = (forward + Vector3.up * 1.4f).normalized;
+
+            if (!settings.TryGetWeaponVfx("mortar", out var binding) || binding.projectilePrefab == null)
+            {
+                PlayMortarMuzzle(origin, launchDir);
+                return;
+            }
+
+            var count = Mathf.Max(1, settings.mortarBarrageCount);
+            if (count == 1)
+            {
+                SpawnMortarShell(binding, origin, target, 0f, flightSeconds, true, launchDir, 0f);
+                return;
+            }
+
+            var radius = blastRadius > 0f ? blastRadius : 4f;
+            var scatter = radius * settings.mortarBarrageScatter;
+            var impactScale = MortarBurstScale(radius) * settings.mortarBarrageImpactScale;
+            var muzzleEvery = Mathf.Max(1, settings.mortarBarrageMuzzleEvery);
+            for (var i = 0; i < count; i++)
+            {
+                var k = i / (float)(count - 1);
+                var delay = k * settings.mortarBarrageLaunchWindow;
+                var landAt = flightSeconds + (k - 0.5f) * settings.mortarBarrageLandingSpread
+                    + Random.Range(-0.04f, 0.04f);
+                var flight = Mathf.Max(0.35f, landAt - delay);
+
+                var from = origin
+                    + side * Random.Range(-settings.mortarBarrageDeckSpread, settings.mortarBarrageDeckSpread)
+                    + forward * Random.Range(-0.3f, 0.3f);
+                var angle = Random.value * Mathf.PI * 2f;
+                var dist = scatter * Mathf.Sqrt(Random.value);
+                var to = target + new Vector3(Mathf.Cos(angle) * dist, 0f, Mathf.Sin(angle) * dist);
+
+                SpawnMortarShell(binding, from, to, delay, flight, i % muzzleEvery == 0, launchDir, impactScale);
+            }
+        }
+
+        /// <summary>Mortar barrel smoke at a deck point. Yaw-only rotation: the CannonSmoke child already tilts up.</summary>
+        void PlayMortarMuzzle(Vector3 at, Vector3 aimDir)
+        {
+            var prefab = ResolveMuzzlePrefab("mortar");
+            if (prefab == null) return;
+            var flat = aimDir;
+            flat.y = 0f;
+            var rot = flat.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(flat.normalized, Vector3.up) : Quaternion.identity;
+            var scale = Mathf.Max(0.05f, settings.mortarBarrageMuzzleScale);
+            var child = prefab.transform.Find("CannonSmoke");
+            var pos = child != null ? at - rot * (child.localPosition * scale) : at;
+            if (!TryPlayGunChildBurst(prefab, "CannonSmoke", pos, rot, scale, 0.9f, null))
+                PlayVfx(prefab, at, rot, scale, 0.9f);
+        }
+
+        bool IsMortarBarrageActive() =>
+            settings != null
+            && settings.mortarBarrageCount > 1
+            && settings.TryGetWeaponVfx("mortar", out var binding)
+            && binding.projectilePrefab != null;
+
+        float MortarBurstScale(float radius)
+        {
+            var mortarScaleMult = settings.mortarExplosionScaleMult;
+            if (settings.TryGetWeaponVfx("mortar", out var binding) && binding.impactScaleMult > 0f)
+                mortarScaleMult *= binding.impactScaleMult;
+            return settings.weaponExplosionScale * mortarScaleMult * Mathf.Clamp(radius / 11f, 0.18f, 0.34f);
+        }
+
+        void SpawnMortarShell(WeaponJuiceVfxBinding binding, Vector3 from, Vector3 to, float delay, float flightSeconds,
+            bool muzzle, Vector3 muzzleDir, float impactScale)
+        {
+            var prefab = binding.projectilePrefab;
+            _broker ??= JuiceVfxBroker.Instance;
+            var broker = _broker;
+            var pooled = broker != null && broker.Pool != null;
+            var shell = pooled ? broker.Pool.AcquirePublic(prefab) : Instantiate(prefab);
+            if (shell == null) return;
+            if (_root != null) shell.transform.SetParent(_root, true);
+            shell.transform.rotation = Quaternion.LookRotation(muzzleDir, Vector3.up);
+            shell.transform.localScale = prefab.transform.localScale * binding.projectileScaleMult;
+
+            var flight = shell.GetComponent<MortarShellFlight>();
+            if (flight == null) flight = shell.AddComponent<MortarShellFlight>();
+            var burstPrefab = settings.mortarExplosionPrefab != null
+                ? settings.mortarExplosionPrefab
+                : settings.weaponExplosionPrefab;
+
+            System.Action<GameObject> onLaunch = null;
+            if (muzzle) onLaunch = _ => PlayMortarMuzzle(from, muzzleDir);
+
+            flight.Launch(from, to, delay, flightSeconds, onLaunch, go =>
+            {
+                if (impactScale > 0f && burstPrefab != null)
+                {
+                    PlayVfx(burstPrefab, to + Vector3.up * 0.3f, Quaternion.identity, impactScale, 1.05f);
+                    broker?.PlayWaterSplash(to);
+                }
+                if (pooled && broker != null) broker.Pool.ReleasePublic(prefab, go);
+                else Destroy(go);
+            });
         }
 
         bool TryPlayMortarReticle(GameObject sourcePrefab, Vector3 position, float scale, float lifetime)
@@ -369,6 +484,8 @@ namespace HighSeas.VFX
 
         public void OnMortarImpact(Vector3 position, float radius, RunRng rng)
         {
+            // Barrage shells play their own bursts as they land.
+            if (IsMortarBarrageActive()) return;
             var burstPrefab = settings.mortarExplosionPrefab != null
                 ? settings.mortarExplosionPrefab
                 : settings.weaponExplosionPrefab;
