@@ -363,6 +363,11 @@
    "when": "7 Oct",
    "commit": "",
    "what": "Powerups: Battle Signal (+25% damage, 8 s) and Full Sail (+45% speed, 8 s) now drop alongside Powder Rush, Magnetic Tide and Dead Calm; the Unity splash logo is off; the 1024 texture cap on desktop accepted for now."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "b28a8c3d",
+   "what": "<strong>D21 done</strong>: barrel sparkles off; the Knockback card only on the Anchor Flail; Harpoon tar a real slow; minibosses take slows and knockback like the boss; one Luck scale (chests now feel Luck); Admiral on the boss and minibosses; <strong>Squid Ink Pots</strong> replace the Ramming Prow (lobs ink onto the back of the pack, 35% slow, evolution Black Tide, rank milestones); the 1024 texture cap on every web build; plan and art guide updated. Tests: PlayMode 88/88, EditMode all pass after two expected values were updated."
   }
  ],
  "todos": {
@@ -371,6 +376,7 @@
    "<strong>Keep recording voyages</strong> when you play (<em>Download last voyage</em> on the main menu fetches a missed one)."
   ],
   "open": [
+   "Rank 4/8/12 milestones (Q20, keep): only the Squid Ink Pots have them in data; the other new weapons need theirs added (a data job).",
    "PvP draft on phones: tapping a card to read it also picks it (later)."
   ],
   "done": [
@@ -918,6 +924,13 @@
    "check": "Full suites after D20",
    "result": "EditMode 477/477, PlayMode 81/81",
    "evidence": "plan/playtest/tests/editmode-m8z-d20.json, playmode-m8z-d20.json"
+  },
+  {
+   "date": "7 Oct",
+   "phase": "M8z",
+   "check": "Suites after D21",
+   "result": "PlayMode 88/88; EditMode 484/487 then the 2 stale expectations and 1 stale export fixed (classes re-run: pass)",
+   "evidence": "plan/playtest/tests/playmode-d21.json, editmode-d21.json"
   }
  ],
  "phaseResults": {
