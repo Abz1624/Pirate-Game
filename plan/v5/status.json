@@ -9,7 +9,7 @@
   ],
   [
    "Tests",
-   "On <code>playtest</code> 5 Oct: EditMode 438/499 · PlayMode 51/63 · server 70/70 (failures pin old values; 4 real rule violations)"
+   "7 Oct (M8z): EditMode 474/474 · PlayMode 77/77 · server 102/102 · Scenario Lab 10/10"
   ],
   [
    "Gate",
@@ -74,8 +74,8 @@
    "chip": "built · mode select removed; weapon shop empty (P3)"
   },
   "M8z": {
-   "state": "building",
-   "chip": "in progress since 6 Oct"
+   "state": "review",
+   "chip": "built 7 Oct · in review"
   }
  },
  "log": [
@@ -323,6 +323,11 @@
    "when": "7 Oct",
    "commit": "2c281d94",
    "what": "<strong>M8z I8z.4 Scenario Lab</strong>: scenarios set the seed, Captain, loadout, level, clock, enemies at a set distance, points of interest, the boss, playtest switches and a PvP bot over a fake relay, inside the real run scene; F1 has a Scenarios section. 10 fast tests pass (2-9 s each): crab distance, off-screen arrow, early boss hull, Logbooks with six weapons, island hits, health bars, kill-band elites, arena pause, PvP draft to end. Test triage (I8z.5) started."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "dd5dfb54",
+   "what": "<strong>M8z I8z.5 test triage</strong>: both full suites green (EditMode 474/474, PlayMode 77/77; before 46 and 11 failures). The v3-parity preset retired with DemoBaseline; value pins rewritten as rules that read config; one game bug fixed (the shop listed starter weapons twice). Independent review of M8z and a desktop build for your playtest started."
   }
  ],
  "todos": {
@@ -858,6 +863,13 @@
    "check": "Scenario Lab tests",
    "result": "10/10 (47 s with scene loads)",
    "evidence": "V5ScenarioLabPlayModeTests"
+  },
+  {
+   "date": "7 Oct",
+   "phase": "M8z",
+   "check": "EditMode and PlayMode suites",
+   "result": "474/474 and 77/77",
+   "evidence": "plan/playtest/tests/editmode-m8z-after.json, playmode-m8z-after.json"
   }
  ],
  "phaseResults": {
@@ -1058,11 +1070,11 @@
   "M8z": [
    {
     "title": "Done",
-    "text": "I8z.1 merge (<code>b5936c4d</code>, tag <code>playtest-r10</code>); PvP anti-cheat with a per-weapon and edge-case audit (server tests 102/102, deployed); everything unlocked for now; arena fights pause the waves until they end, with off-screen arrows; island hits 5 hull at most every 2 s; an early boss keeps its 14:00 hull; Logbooks offered with six weapons; session recorder, voyage download buttons and <code>compare_session.mjs</code>; three recorded sessions. I8z.2 architecture fixes, I8z.3 playtest preset tests, I8z.7 one simulator on real configs (<code>88b21724</code>). I8z.4 Scenario Lab with 10 fast tests (<code>2c281d94</code>)."
+    "text": "I8z.1 merge (<code>b5936c4d</code>, tag <code>playtest-r10</code>); PvP anti-cheat with a per-weapon and edge-case audit (server tests 102/102, deployed); everything unlocked for now; arena fights pause the waves until they end, with off-screen arrows; island hits 5 hull at most every 2 s; an early boss keeps its 14:00 hull; Logbooks offered with six weapons; session recorder, voyage download buttons and <code>compare_session.mjs</code>; three recorded sessions. I8z.2 architecture fixes, I8z.3 playtest preset tests, I8z.7 one simulator on real configs (<code>88b21724</code>). I8z.4 Scenario Lab with 10 fast tests (<code>2c281d94</code>). I8z.5 test triage, both suites green (<code>dd5dfb54</code>)."
    },
    {
     "title": "Next",
-    "text": "I8z.5 triage of the failing tests (in progress: fix, rewrite as rules, retire; the v3-parity preset retired); then the reviewer, your playtest and the M8z commit."
+    "text": "The independent review (running), then your playtest on the desktop build, then the M8z commit."
    },
    {
     "title": "What the sessions showed",
