@@ -318,6 +318,11 @@
    "when": "7 Oct",
    "commit": "88b21724",
    "what": "<strong>M8z I8z.2, I8z.3, I8z.7 done</strong>: enemy colours and the elite flag in config, card stats through views, the weapon switch-off list in config, online services owned by the app root; tests can run with the shipped playtest settings (4 new PlayMode tests: POIs and the Beacon whirlpool boss, everything unlocked, session recording); one simulator: the JS Monte Carlo reads a Unity export of the real configs (0 fields differ from the file parser), recalibrated on the three sessions (<a href=\"https://claude.ai/artifact/Gg1bmU3cYCQZQ7kxpSnYRQ\">Balance Simulator</a>), the in-engine SimRun retired. Found: XP per kill depends on the graphics quality."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "2c281d94",
+   "what": "<strong>M8z I8z.4 Scenario Lab</strong>: scenarios set the seed, Captain, loadout, level, clock, enemies at a set distance, points of interest, the boss, playtest switches and a PvP bot over a fake relay, inside the real run scene; F1 has a Scenarios section. 10 fast tests pass (2-9 s each): crab distance, off-screen arrow, early boss hull, Logbooks with six weapons, island hits, health bars, kill-band elites, arena pause, PvP draft to end. Test triage (I8z.5) started."
   }
  ],
  "todos": {
@@ -846,6 +851,13 @@
    "check": "Targeted tests (architecture, playtest preset, exporter)",
    "result": "V5PlaytestPresetPlayModeTests 4/4, V5ArchitectureM8zTests 3/3, V5ArchitectureM8zPlayModeTests 1/1, V5MonteCarloExportTests 3/3, PvpDamageCapTests 1/1, content-id and presenter rule tests pass",
    "evidence": "unity-run.ps1 -Filter per class"
+  },
+  {
+   "date": "7 Oct",
+   "phase": "M8z",
+   "check": "Scenario Lab tests",
+   "result": "10/10 (47 s with scene loads)",
+   "evidence": "V5ScenarioLabPlayModeTests"
   }
  ],
  "phaseResults": {
@@ -1046,11 +1058,11 @@
   "M8z": [
    {
     "title": "Done",
-    "text": "I8z.1 merge (<code>b5936c4d</code>, tag <code>playtest-r10</code>); PvP anti-cheat with a per-weapon and edge-case audit (server tests 102/102, deployed); everything unlocked for now; arena fights pause the waves until they end, with off-screen arrows; island hits 5 hull at most every 2 s; an early boss keeps its 14:00 hull; Logbooks offered with six weapons; session recorder, voyage download buttons and <code>compare_session.mjs</code>; three recorded sessions. I8z.2 architecture fixes, I8z.3 playtest preset tests, I8z.7 one simulator on real configs (<code>88b21724</code>)."
+    "text": "I8z.1 merge (<code>b5936c4d</code>, tag <code>playtest-r10</code>); PvP anti-cheat with a per-weapon and edge-case audit (server tests 102/102, deployed); everything unlocked for now; arena fights pause the waves until they end, with off-screen arrows; island hits 5 hull at most every 2 s; an early boss keeps its 14:00 hull; Logbooks offered with six weapons; session recorder, voyage download buttons and <code>compare_session.mjs</code>; three recorded sessions. I8z.2 architecture fixes, I8z.3 playtest preset tests, I8z.7 one simulator on real configs (<code>88b21724</code>). I8z.4 Scenario Lab with 10 fast tests (<code>2c281d94</code>)."
    },
    {
     "title": "Next",
-    "text": "I8z.4 Scenario Lab scene and fast scenario tests; I8z.5 triage of the failing tests (fix, rewrite as rules, retire; the v3-parity preset retired); then the reviewer, your playtest and the M8z commit."
+    "text": "I8z.5 triage of the failing tests (in progress: fix, rewrite as rules, retire; the v3-parity preset retired); then the reviewer, your playtest and the M8z commit."
    },
    {
     "title": "What the sessions showed",
