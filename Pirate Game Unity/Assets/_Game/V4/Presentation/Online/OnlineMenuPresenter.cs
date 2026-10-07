@@ -44,10 +44,33 @@ namespace RoguePirates.V4.Presentation.Online
         {
             var main = FindDeep(canvas, "MainMenuPanel");
             BuildChip(main != null ? main : transform);
+            BuildLastVoyageButton(main != null ? main : transform);
             PvpButton = BuildPvpButton(canvas, main);
             Leaderboard = LeaderboardPanel.Create(canvas);
             Profile = ProfilePanel.Create(canvas);
             Pvp = PvpMenu.Create(canvas, null);
+        }
+
+        /// <summary>V5 M8z (7 Oct, owner): "Download last voyage" under the profile chip, once a voyage was recorded.</summary>
+        void BuildLastVoyageButton(Transform parent)
+        {
+            if (!RoguePirates.V4.Telemetry.SessionFile.HasLast) return;
+            TextMeshProUGUI note = null;
+            var button = OnlineUi.Button(parent, "Download last voyage", () =>
+            {
+                var message = RoguePirates.V4.Telemetry.SessionFile.DownloadLast();
+                if (note != null) note.text = message;
+            });
+            var rt = (RectTransform)button.transform;
+            rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.anchoredPosition = new Vector2(48f, -224f);
+            rt.sizeDelta = new Vector2(420f, OnlineUi.RowHeight);
+            note = OnlineUi.TextAt(parent, "LastVoyageNote", string.Empty, 18, TextAlignmentOptions.TopLeft, OnlineUi.TextColor, new Vector2(0f, 1f), new Vector2(0f, 1f));
+            var nrt = note.rectTransform;
+            nrt.pivot = new Vector2(0f, 1f);
+            nrt.anchoredPosition = new Vector2(48f, -224f - OnlineUi.RowHeight - 6f);
+            nrt.sizeDelta = new Vector2(560f, 40f);
         }
 
         void BuildChip(Transform parent)

@@ -303,6 +303,11 @@
    "when": "7 Oct",
    "commit": "0b67ca95",
    "what": "Gentler island bounce (owner): restitution 0.95 to 0.45, push 6 to 3 m/s, hit damage unchanged; a console snippet recovers the last voyage's session file from the browser (<code>plan/playtest/sessions/recover-last-session.js</code>)."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "",
+   "what": "Third recorded session recovered (11:32, level 40, 12 Logbooks picked: the Logbook fix works; islands still 47% of the damage, before the gentler bounce). \"Download voyage data\" on the results screen and \"Download last voyage\" on the main menu, so a missed download can be fetched again."
   }
  ],
  "todos": {

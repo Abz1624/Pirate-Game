@@ -230,6 +230,9 @@ namespace RoguePirates.V4.Presentation.Hud
             _purchaseGoal = CreateButton("run_results_buy", "Purchase goal", "Spend Rum on selected unlock goal.", new Vector2(115f, 96f), OnPurchaseGoalClicked);
             _selectGoal.gameObject.SetActive(false);
             _purchaseGoal.gameObject.SetActive(false);
+            // V5 M8z (7 Oct, owner): the voyage's recorded data, again, in case the automatic download was missed.
+            CreateButton("run_results_session", "Download voyage data", "Download this voyage's recorded data again.", new Vector2(0f, 96f),
+                () => ShowMessage(RoguePirates.V4.Telemetry.SessionFile.DownloadLast(), 3f));
             _panel.SetActive(false);
         }
 
