@@ -58,6 +58,7 @@ namespace HighSeas.V3
             "grapeshot" => "Grapeshot",
             "harpoon_gun" => "Harpoon Gun",
             "mortar" => "Mortar",
+            "tidal_aura" => "Tidal Aura",
             "boarding_party" => "Boarding Party",
             _ => weaponId.Replace('_', ' ')
         };

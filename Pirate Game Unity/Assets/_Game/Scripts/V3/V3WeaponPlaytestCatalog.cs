@@ -14,7 +14,8 @@ namespace HighSeas.V3
             "long_nine",
             "swivel_guns",
             "harpoon_gun",
-            "mortar"
+            "mortar",
+            "tidal_aura"
         };
 
         public static string GetDisplayLabel(string weaponId) =>

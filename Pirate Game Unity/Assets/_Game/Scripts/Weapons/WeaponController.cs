@@ -1400,18 +1400,47 @@ namespace HighSeas.Weapons
             });
         }
 
+        public const string TidalAuraId = "tidal_aura";
+        /// <summary>Tidal Aura grows this much per weapon level (on top of Size upgrades).</summary>
+        public const float TidalAuraGrowthPerLevel = 0.08f;
+
+        static float AuraRadius(in WeaponInstance w, float statSize)
+        {
+            if (w.def.id == TidalAuraId)
+                return 4f * w.def.size * (1f + TidalAuraGrowthPerLevel * Mathf.Max(0, w.level - 1)) * w.sizeMult * statSize;
+            return 4f * w.sizeMult * statSize;
+        }
+
+        /// <summary>Live damage radius of an equipped aura weapon (for visuals).</summary>
+        public bool TryGetAuraRadius(string weaponId, out float radius)
+        {
+            radius = 0f;
+            var statSize = RunManager.Instance != null && RunManager.Instance.Stats != null ? RunManager.Instance.Stats.Size : 1f;
+            for (var i = 0; i < _weapons.Count; i++)
+            {
+                if (_weapons[i].def == null || _weapons[i].def.id != weaponId) continue;
+                radius = AuraRadius(_weapons[i], statSize);
+                return true;
+            }
+            return false;
+        }
+
         void FireAura(ref WeaponInstance w, PlayerStats stats, RunRng rng)
         {
-            var radius = 4f * w.sizeMult * stats.Size;
+            var tidal = w.def.id == TidalAuraId;
+            var radius = AuraRadius(w, stats.Size);
+            var damageScale = tidal ? 1f : 0.35f;
             var list = _enemies.Agents;
             for (var i = 0; i < list.Length; i++)
             {
                 if (!list[i].active) continue;
                 if (Vector3.Distance(list[i].position, _player.Position) > radius) continue;
-                var dmg = DamageSystem.RollDamageDetailed(w.def.baseDamage * 0.35f, w.damageBonus, stats, list[i].isElite, 0f, rng, w.def.procCoefficient, w.def.id);
+                var dmg = DamageSystem.RollDamageDetailed(w.def.baseDamage * damageScale, w.damageBonus, stats, list[i].isElite, 0f, rng, w.def.procCoefficient, w.def.id);
                 ApplyWeaponDamage(i, w.def.id, dmg, list[i].isElite, list[i].isBoss);
-                Combat.StatusController.Instance?.ApplyStatus(i, Core.StatusType.Curse, 0.4f * w.durationMult);
+                if (!tidal)
+                    Combat.StatusController.Instance?.ApplyStatus(i, Core.StatusType.Curse, 0.4f * w.durationMult);
             }
+            if (tidal) _juice?.OnTidalAuraPulse();
         }
 
         void FireMortar(ref WeaponInstance w, PlayerStats stats, RunRng rng)

@@ -38,7 +38,7 @@ namespace HighSeas.V3
 
             if (CombatExperimentContext.Active.weaponSlotCap >= 6 && IsExperimentalPlaytestWeapon(weaponId))
 
-                return HasCompletedFirstConquest || weaponId is "long_nine" or "swivel_guns";
+                return HasCompletedFirstConquest || weaponId is "long_nine" or "swivel_guns" or "tidal_aura";
 
             return weaponId switch
 
@@ -68,7 +68,7 @@ namespace HighSeas.V3
 
         static bool IsExperimentalPlaytestWeapon(string weaponId) =>
 
-            weaponId is "long_nine" or "swivel_guns" or "harpoon_gun" or "mortar";
+            weaponId is "long_nine" or "swivel_guns" or "harpoon_gun" or "mortar" or "tidal_aura";
 
 
 

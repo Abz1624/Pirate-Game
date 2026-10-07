@@ -19,9 +19,11 @@ namespace HighSeas.Combat
             AddIfMissing(list, CreateSwivelGuns());
             AddIfMissing(list, CreateHarpoonGun());
             AddIfMissing(list, CreateMortar());
+            AddIfMissing(list, CreateTidalAura());
             database.weapons = list.ToArray();
             SyncExperimentalWeapon(database, "mortar", CreateMortar());
             SyncExperimentalWeapon(database, "swivel_guns", CreateSwivelGuns());
+            SyncExperimentalWeapon(database, "tidal_aura", CreateTidalAura());
         }
 
         static void SyncExperimentalWeapon(GameDatabase database, string id, WeaponDefinition template)
@@ -109,6 +111,12 @@ namespace HighSeas.Combat
             "mortar", "Mortar", WeaponPattern.PredictedAoE, TargetingMode.OmniClusterGround,
             damage: 22f, cooldown: 2.6f, range: 18f, arc: 360f, proc: 0.8f,
             tags: Tags("Explosive"), size: 4.25f);
+
+        /// <summary>Aqua-teal ring around the ship; ticks damage on everything inside. Radius grows every level.</summary>
+        static WeaponDefinition CreateTidalAura() => Build(
+            "tidal_aura", "Tidal Aura", WeaponPattern.AuraPulse, TargetingMode.AreaAroundShip,
+            damage: 4f, cooldown: 0.5f, range: 0f, arc: 360f, proc: 0.3f,
+            tags: Tags("Control"), size: 1f);
 
         static WeaponDefinition CreateBoardingParty() => Build(
             "boarding_party", "Boarding Party", WeaponPattern.SummonChase, TargetingMode.NearestElite,

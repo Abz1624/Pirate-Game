@@ -44,6 +44,8 @@ namespace HighSeas.V3
 
                 "mortar" => "Delayed cluster bombardment.",
 
+                "tidal_aura" => "Tidal ring that damages foes inside. Grows every level.",
+
                 "boarding_party" => "Autonomous skiffs chase priority targets.",
 
                 _ => "Automatic ship weapon."

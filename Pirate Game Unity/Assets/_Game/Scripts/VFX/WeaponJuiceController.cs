@@ -89,6 +89,7 @@ namespace HighSeas.VFX
             if (_player == null || _weapons == null || settings == null) return;
 
             SyncCutlasses();
+            SyncTidalAura();
             TickFlamethrower();
         }
 
@@ -628,6 +629,38 @@ namespace HighSeas.VFX
         }
 
         Transform GetCutlassOrbitAnchor() => _player != null ? _player.transform : _root;
+
+        TidalAuraVisual _tidalAura;
+
+        /// <summary>Damage tick from the Tidal Aura weapon.</summary>
+        public void OnTidalAuraPulse()
+        {
+            if (_tidalAura != null) _tidalAura.Pulse();
+        }
+
+        void SyncTidalAura()
+        {
+            if (!_weapons.TryGetAuraRadius(WeaponController.TidalAuraId, out var radius) || settings.tidalAuraPrefab == null)
+            {
+                if (_tidalAura != null) _tidalAura.gameObject.SetActive(false);
+                return;
+            }
+
+            if (_tidalAura == null)
+            {
+                var go = Instantiate(settings.tidalAuraPrefab, _root);
+                go.name = "TidalAura";
+                _tidalAura = go.GetComponent<TidalAuraVisual>();
+                if (_tidalAura == null) _tidalAura = go.AddComponent<TidalAuraVisual>();
+                _tidalAura.SetRadius(radius * 0.6f, true);
+            }
+
+            if (!_tidalAura.gameObject.activeSelf) _tidalAura.gameObject.SetActive(true);
+            var pos = _player.Position;
+            pos.y += settings.tidalAuraHeight;
+            _tidalAura.transform.SetPositionAndRotation(pos, Quaternion.identity);
+            _tidalAura.SetRadius(radius);
+        }
 
         void SyncCutlasses()
         {

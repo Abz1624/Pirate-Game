@@ -48,6 +48,9 @@ MonoBehaviour:
   powderKegExplosionPrefab: {fileID: 5021453304944166231, guid: ef5eb902e84e07b47b07fabe204d36a1, type: 3}
   mortarExplosionPrefab: {fileID: 5021453304944166231, guid: a70395ad4d0003a4aa01336fb1c4bc2b, type: 3}
   mortarExplosionScaleMult: 3
+  tidalAuraPrefab: {fileID: 8304555169675323591, guid: 179c43a48939342cf91b6450663225fa, type: 3}
+  tidalAuraHeight: 0.15
+  mortarFlightSeconds: 1.5
   mortarBarrageCount: 8
   mortarBarrageLaunchWindow: 0.45
   mortarBarrageLandingSpread: 0.5
@@ -55,6 +58,7 @@ MonoBehaviour:
   mortarBarrageDeckSpread: 0.9
   mortarBarrageImpactScale: 0.8
   mortarBarrageMuzzleEvery: 2
+  mortarBarrageMuzzleScale: 1
   flamethrowerStreamPrefab: {fileID: 7948998522927659192, guid: 0e5d3fdb8a56e3e4893951587b18eb1a, type: 3}
   weaponVfxBindings:
   - weaponId: deck_cannons

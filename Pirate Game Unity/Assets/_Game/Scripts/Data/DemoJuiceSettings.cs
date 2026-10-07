@@ -57,6 +57,12 @@ namespace HighSeas.Data
         public GameObject mortarExplosionPrefab;
         [Tooltip("Extra scale on mortar impact bursts (+200% = 3).")]
         [Min(0.1f)] public float mortarExplosionScaleMult = 3f;
+        [Header("Tidal Aura")]
+        [Tooltip("Aqua-teal aura ring that follows the ship (TidalAura_VFX).")]
+        public GameObject tidalAuraPrefab;
+        [Tooltip("Height of the aura ring above the ship pivot (sit it on the water).")]
+        public float tidalAuraHeight = 0.15f;
+
         [Header("Mortar Barrage (raining fire)")]
         [Tooltip("Seconds from firing to impact. Drives shell flight, telegraph and the damage tick.")]
         [Range(0.6f, 3f)] public float mortarFlightSeconds = 1.5f;
