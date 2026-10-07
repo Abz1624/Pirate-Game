@@ -333,11 +333,15 @@
    "when": "7 Oct",
    "commit": "afad2196",
    "what": "<strong>M8z review fixes</strong>: weapon goldens re-recorded with the exact comparison; scenarios run with your playtest settings; new scenario tests (dinghy one-shot, director beats, PvP reconnect); server test harness made reliable (5 runs 102/102); balance version saltwind-playtest-r10; session file capped. Found: the equal level-1 DPS rule no longer holds (round 6 weapon roles); a boss could not be summoned twice after a dev despawn (fixed)."
+  },
+  {
+   "when": "7 Oct",
+   "commit": "",
+   "what": "Your answers (D20): same XP per kill at every graphics quality; the two colours kept; Ironclad into the Logbook pool; session downloads only in playtest builds; every weapon back to the same level-1 DPS. Leftover test files deleted. Implementing now."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Decide (M8z)</strong>: (1) same XP per kill at every graphics quality (suggested); (2) keep the darker red Cutthroat Skiff and greener Needle Sloop?; (3) Ironclad into the Logbook pool now that armor applies?; (4) should shipped (non-playtest) web builds still download a session file at the end of every voyage?; (5) equal level-1 DPS for every weapon, or role bands (round 6 moved weapons off the equal rule)?; (6) commit the WebGL memory and stack-trace settings Unity changed in ProjectSettings?",
    "<strong>Playtest M8z</strong> on the desktop build at http://localhost:8090 once the review fixes are in.",
    "<strong>Keep recording voyages</strong> when you play (the file downloads at the end; <em>Download last voyage</em> on the main menu fetches it again)."
   ],
