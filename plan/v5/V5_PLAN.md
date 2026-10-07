@@ -618,7 +618,8 @@ plausibility, in shadow mode first (D23): verdicts are stored and shown, and the
 
 - C9a.0 Server on .NET 10 LTS with EF Core migrations baselined from the live schema (replacing EnsureCreated); the
   Dockerfile on the 10.0 images; deployed by the agent (D19). Pulled from I10.1 (.NET 8 support ends 10 Nov).
-- C9a.1 Prerequisite: the simulator refit on the recorded sessions, since the plausibility bounds come from it. Done
+- C9a.1 (done 8 Oct, `29e8dc12`: today's balance inside p10-p90 for level, kills and survival; older builds miss on
+  early kills, see `plan/playtest/montecarlo/report.html`) Prerequisite: the simulator refit on the recorded sessions, since the plausibility bounds come from it. Done
   when the model's p10-p90 contains the levels, kills and survival time of every recorded session.
 - I9a.1 Run log: seed, config hash, balance version, build id; per-minute spawns, kills (per weapon), gold, XP, level,
   damage taken and dealt, pickups, chests, points of interest; inputs sampled for disputes; compact, uploaded with

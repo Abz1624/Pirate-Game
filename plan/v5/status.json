@@ -1,6 +1,6 @@
 {
  "updated": "8 Oct 2026",
- "statusLine": "Plan rev 12 (D23): M9 split into M9a, M9b and M9c; M9a (server foundation and run checks in shadow mode) starts next. Stage C (real-time 1v1) now follows M13b.",
+ "statusLine": "M9a in progress: simulator refit done (C9a.1); server upgrade to .NET 10 with migrations (C9a.0) running; then the run log, seeding and the shadow-mode run checks.",
  "statusOk": false,
  "facts": [
   [
@@ -78,8 +78,8 @@
    "chip": "done 8 Oct · playtested"
   },
   "M9a": {
-   "state": "next",
-   "chip": "next: server foundation and run checks"
+   "state": "building",
+   "chip": "started 8 Oct · C9a.1 done, C9a.0 running"
   },
   "M9b": {
    "state": "planned",
@@ -420,6 +420,11 @@
    "when": "8 Oct",
    "commit": "",
    "what": "<strong>Your answers (D24)</strong>: attacking no longer ends your own shield; while run checks are in shadow mode a flagged voyage still pays out, with the flag logged. .NET 10 SDK installed; the M9a server upgrade resumes."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "29e8dc12",
+   "what": "<strong>M9a C9a.1 done: simulator refit</strong> on your five voyages, each replayed on the config it was played on. On today's balance the model's p10-p90 contains your level, kills and survival at every minute (before: level and kills outside at every minute, and the model never sank). Older builds still miss on early kills (you killed 20-35% more; no config difference found) and the model sinks 3-5 min earlier on them. Finding: with a generic build every Captain sinks at a median of about 10:50; with your Logbook-heavy picks Rook lasts about 18:30. C9a.0 (.NET 10 and migrations) restarted after the laptop crash."
   }
  ],
  "todos": {
