@@ -22,7 +22,7 @@ namespace RoguePirates.V4.Presentation.Hud
         const float OnScreenInset = 0.04f; // a threat counts as on screen when inside this much of the viewport's edge
         const float GapSide = 90f;         // spacing between arrows along a left or right edge (labels are short)
         const float GapTopBottom = 190f;   // along the top or bottom edge (labels are wide)
-        const int MaxArrows = 6;
+        const int InitialArrows = 6; // V5 M8z (7 Oct, owner): no cap; every off-screen threat gets an arrow
 
         public static readonly Color BossColor = new Color(0.98f, 0.33f, 0.12f, 0.95f);
         public static readonly Color EliteColor = new Color(1f, 0.78f, 0.15f, 0.95f);
@@ -37,11 +37,11 @@ namespace RoguePirates.V4.Presentation.Hud
 
         IRunViews _views;
         RectTransform _root;
-        readonly List<Arrow> _arrows = new List<Arrow>(MaxArrows);
+        readonly List<Arrow> _arrows = new List<Arrow>(InitialArrows);
         readonly List<ThreatMarker> _threats = new List<ThreatMarker>(8);
-        readonly List<ThreatMarker> _off = new List<ThreatMarker>(MaxArrows);
-        readonly List<Vector2> _points = new List<Vector2>(MaxArrows);
-        readonly List<Vector2> _dirs = new List<Vector2>(MaxArrows);
+        readonly List<ThreatMarker> _off = new List<ThreatMarker>(InitialArrows);
+        readonly List<Vector2> _points = new List<Vector2>(InitialArrows);
+        readonly List<Vector2> _dirs = new List<Vector2>(InitialArrows);
         int _visible;
         float _pulse;
 
@@ -82,7 +82,6 @@ namespace RoguePirates.V4.Presentation.Hud
                 var screen = new Vector2(Screen.width, Screen.height);
                 foreach (var t in _threats)
                 {
-                    if (_off.Count >= MaxArrows) break;
                     var vp = cam.WorldToViewportPoint(t.position);
                     if (IsOnScreen(vp, OnScreenInset)) continue;
                     _points.Add(EdgePoint(vp, screen, box, out var dir));
