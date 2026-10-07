@@ -626,7 +626,7 @@ plausibility, in shadow mode first (D23): verdicts are stored and shown, and the
   POST /api/runs.
 - I9a.2 (done 8 Oct, `3a6997b2`) Seeding: every gameplay draw on the run's seeded streams; the seed injectable from outside (server-issued from
   M10); a source-scan test.
-- I9a.3 Plausibility rules v1 in **shadow mode** (D23): every verdict stored with a reason code, the rule id, the rules
+- I9a.3 (done 8 Oct, `60922664`; 0.05% false positives) Plausibility rules v1 in **shadow mode** (D23): every verdict stored with a reason code, the rule id, the rules
   version and the client build; the weekly board shows a "checked" flag; no run is rejected until the owner enforces;
   a flagged run still pays out (D24).
   Rules exported from config to JSON and read by both the client and the API. Ready for enforcement: rate bounds per
