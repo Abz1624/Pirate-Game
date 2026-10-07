@@ -621,10 +621,10 @@ plausibility, in shadow mode first (D23): verdicts are stored and shown, and the
 - C9a.1 (done 8 Oct, `29e8dc12`: today's balance inside p10-p90 for level, kills and survival; older builds miss on
   early kills, see `plan/playtest/montecarlo/report.html`) Prerequisite: the simulator refit on the recorded sessions, since the plausibility bounds come from it. Done
   when the model's p10-p90 contains the levels, kills and survival time of every recorded session.
-- I9a.1 Run log: seed, config hash, balance version, build id; per-minute spawns, kills (per weapon), gold, XP, level,
+- I9a.1 (done 8 Oct, `3a6997b2`) Run log: seed, config hash, balance version, build id; per-minute spawns, kills (per weapon), gold, XP, level,
   damage taken and dealt, pickups, chests, points of interest; inputs sampled for disputes; compact, uploaded with
   POST /api/runs.
-- I9a.2 Seeding: every gameplay draw on the run's seeded streams; the seed injectable from outside (server-issued from
+- I9a.2 (done 8 Oct, `3a6997b2`) Seeding: every gameplay draw on the run's seeded streams; the seed injectable from outside (server-issued from
   M10); a source-scan test.
 - I9a.3 Plausibility rules v1 in **shadow mode** (D23): every verdict stored with a reason code, the rule id, the rules
   version and the client build; the weekly board shows a "checked" flag; no run is rejected until the owner enforces;

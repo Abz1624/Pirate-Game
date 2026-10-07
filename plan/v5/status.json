@@ -1,6 +1,6 @@
 {
  "updated": "8 Oct 2026",
- "statusLine": "M9a in progress: simulator refit (C9a.1) and the .NET 10 server with migrations (C9a.0, live) done; next the run log, seeding and the shadow-mode run checks.",
+ "statusLine": "M9a in progress: C9a.0, C9a.1, I9a.1 and I9a.2 done; the shadow-mode run checks (I9a.3) are being built.",
  "statusOk": false,
  "facts": [
   [
@@ -79,7 +79,7 @@
   },
   "M9a": {
    "state": "building",
-   "chip": "building · C9a.0 and C9a.1 done"
+   "chip": "building · 4 of 5 items done"
   },
   "M9b": {
    "state": "planned",
@@ -435,6 +435,11 @@
    "when": "8 Oct",
    "commit": "",
    "what": "You set the Railway workspace limits: $15 hard limit, $10 alert (D23)."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "3a6997b2",
+   "what": "<strong>M9a I9a.1 and I9a.2 done</strong>: every voyage now records a small per-minute run log (about 9-12 KB for 15-20 minutes) uploaded with the run; the server rejects malformed or mismatched logs and stores the rest. Every gameplay random draw now follows the run's seed (a source-scan test guards it; the same seed and inputs give the same log). Server 142/142, EditMode 577/577, PlayMode 90/90. Not deployed yet (one deploy after I9a.3). Next: the shadow-mode run checks (I9a.3)."
   }
  ],
  "todos": {
