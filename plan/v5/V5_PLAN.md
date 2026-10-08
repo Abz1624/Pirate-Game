@@ -657,6 +657,8 @@ sinking; the client sends inputs.
   API lobby; a kinematic ship with client prediction and reconciliation. Railway terminates TLS at its edge: the server
   listens on plain WS on `$PORT` behind Railway's proxy and the browser connects with secure WebSockets
   (`WithSecureClientParameters(serverName)`). No Unity Relay (D22).
+  Images are built and tested in local Docker; the Railway test service runs the finished image pulled from the
+  GitHub container registry, so Railway never builds it (owner, 8 Oct: avoid build cost).
 - D9b.1 Single-ship measurements (`phase-09b-netcode/REPORT.md`): down and up bandwidth per client; server tick p95
   (<= 8 ms for a single-player voyage on Railway); client steady 60 fps on desktop WebGL while connected; prediction
   error <= 0.5 m and no correction above 0.5 m within a single frame at 150 ms RTT and 2% loss; a dropped socket

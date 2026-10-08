@@ -485,10 +485,16 @@
    "when": "8 Oct",
    "commit": "",
    "what": "<strong>M9b started</strong> (Netcode server voyage, single ship). Part 1 in the Editor: Netcode for GameObjects with WebSockets, a server-only composition of the game, client prediction, enemies as compact batched messages, signed join tickets, in-process tests with 150 ms lag and 2% loss. The Unity Linux Dedicated Server module is installing for part 2 (the server on a Railway test service)."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "Unity Linux Dedicated Server module and Docker Desktop installed. Your call: the match server image is built and tested in local Docker and pushed to the GitHub container registry; the Railway test service only runs it."
   }
  ],
  "todos": {
   "next": [
+   "<strong>Open Docker Desktop once</strong> and accept its terms (then sign out and in, or restart, if it asks), so local server builds can run.",
    "<strong>Keep recording voyages</strong> when you play.",
    "Later: a balance pass (early dinghy damage, late elite HP, Doubloons in the simulator)."
   ],
