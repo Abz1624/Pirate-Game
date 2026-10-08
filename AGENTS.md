@@ -51,6 +51,7 @@ The old V3 game is gone. The game lives under `Pirate Game Unity/Assets/_Game/V4
 | `Runtime/` | `RoguePirates.V4` | Modules, contracts, the frame pipeline; `Runtime/Ports/` is the one boundary to the Foundation MonoBehaviours. |
 | `Presentation/` | `RoguePirates.V4.Presentation` | Presenters on the view pool; read views and events only. |
 | `DevTools/` | `RoguePirates.V4.DevTools` | Tuning Console, trace harness, autopilot (Editor and development builds only). |
+| `../V5/Net/` | `RoguePirates.V5.Net` | V5 M9b match server and client (Netcode for GameObjects 2.13.3, Unity Transport 2.7.4, WebSockets); scene `V5/Net/Scenes/V5NetSpike`. Compiled only in the Editor or with the `V5_NET` define, so release builds leave it out. |
 | `Editor/` | `RoguePirates.V4.Editor` | Build settings, trace build, island authoring tools. |
 
 Scenes: `Assets/_Game/Scenes/V4/` (`V4Boot` first in the build). Tests: `Assets/_Game/Tests/V4/` (EditMode, PlayMode) and `Assets/_Game/Tests/RoguePirates/` (simulation).

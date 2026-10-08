@@ -1,0 +1,29 @@
+{
+    "name": "RoguePirates.V5.Net.Tests.EditMode",
+    "rootNamespace": "RoguePirates.V5.Net.Tests",
+    "references": [
+        "RoguePirates.V5.Net",
+        "RoguePirates.V4",
+        "RoguePirates.V4.Config",
+        "RoguePirates.V4.Foundation",
+        "Unity.Netcode.Runtime",
+        "Unity.Networking.Transport",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

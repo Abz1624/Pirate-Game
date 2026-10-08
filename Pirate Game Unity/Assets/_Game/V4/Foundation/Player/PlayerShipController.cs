@@ -259,16 +259,16 @@ namespace RoguePirates.V4.Foundation.Player
         {
             var s = IslandImpact;
             if (!s.Enabled || normal == Vector3.zero || inwardSpeed < Mathf.Max(0.01f, s.MinSpeed)) return;
-            if (Time.time < _nextIslandImpactAt) return;
-            _nextIslandImpactAt = Time.time + Mathf.Max(0f, s.Cooldown);
+            if (IslandClock < _nextIslandImpactAt) return;
+            _nextIslandImpactAt = IslandClock + Mathf.Max(0f, s.Cooldown);
             // The resolver already took the inward speed out; push back off the shore (a fading push, see FixedUpdate).
             var push = inwardSpeed * s.Restitution + s.PushSpeed;
             _knockback = normal * push;
             _knockbackDecay = push / Mathf.Max(0.05f, s.BounceSeconds);
             IslandImpactCount++;
             IslandImpacted?.Invoke(inwardSpeed);
-            if (s.Damage <= 0f || Time.time < _nextIslandDamageAt) return;
-            _nextIslandDamageAt = Time.time + Mathf.Max(0f, s.DamageCooldown);
+            if (s.Damage <= 0f || IslandClock < _nextIslandDamageAt) return;
+            _nextIslandDamageAt = IslandClock + Mathf.Max(0f, s.DamageCooldown);
             IslandDamageCount++;
             var contact = at - normal * GetHullWorldRadius();
             if (IslandImpactDamage != null) IslandImpactDamage(contact, s.Damage);
@@ -383,6 +383,7 @@ namespace RoguePirates.V4.Foundation.Player
 
             var moveMult = _slowMultiplier * _moveEffectMultiplier;
             var dt = Time.fixedDeltaTime;
+            _stepTime += dt;
             var input = ReadShipInput();
             LastSteerThrottle = new Vector2(input.steer, input.throttle);
             var forward = GetShipForward();
@@ -449,7 +450,7 @@ namespace RoguePirates.V4.Foundation.Player
                 var deltaYaw = _yawRate * coastScale * dt;
                 var deltaRotation = Quaternion.Euler(0f, deltaYaw, 0f);
                 _velocity = deltaRotation * _velocity;
-                _body.MoveRotation(_body.rotation * deltaRotation);
+                RotateBody(_body.rotation * deltaRotation);
             }
 
             _lastSteerInput = input.steer;
@@ -523,7 +524,7 @@ namespace RoguePirates.V4.Foundation.Player
 
             nextPosition.y = _body.position.y;
 
-            _body.MovePosition(nextPosition);
+            MoveBody(nextPosition);
             if (!_body.isKinematic)
             {
                 _body.linearVelocity = Vector3.zero;
@@ -538,6 +539,111 @@ namespace RoguePirates.V4.Foundation.Player
             _currentRoll = Mathf.Lerp(_currentRoll, _targetRoll, 1f - Mathf.Exp(-maxRollDegreesPerSecond * Time.deltaTime));
             var rollAxis = modelForwardIsNegativeZ ? Vector3.back : Vector3.forward;
             visualModel.localRotation = _visualBaseLocalRotation * Quaternion.AngleAxis(_currentRoll, rollAxis);
+        }
+
+        /// <summary>
+        /// V5 M9b (I9b.1): the net layer steps the ship itself (the server at its fixed 30 Hz, the client's prediction when it
+        /// replays inputs): every step writes the body and the transform at once instead of through the physics step's
+        /// MovePosition/MoveRotation, so several steps in one frame each start from the last. Off by default (the voyage).
+        /// </summary>
+        public bool DirectStep
+        {
+            get => _directStep;
+            set
+            {
+                if (_directStep == value) return;
+                _directStep = value;
+                _nextIslandImpactAt = _nextIslandDamageAt = float.NegativeInfinity; // the cooldowns change clocks
+            }
+        }
+        bool _directStep;
+
+        float _stepTime;
+        /// <summary>The island cooldowns' clock: the frame clock in the voyage; with <see cref="DirectStep"/> the ship's own
+        /// step clock (part of <see cref="MotionState"/>), so a replayed step meets the same cooldowns as the server's.</summary>
+        float IslandClock => DirectStep ? _stepTime : Time.time;
+
+        void MoveBody(Vector3 position)
+        {
+            if (!DirectStep) { _body.MovePosition(position); return; }
+            _body.position = position;
+            transform.position = position;
+        }
+
+        void RotateBody(Quaternion rotation)
+        {
+            if (!DirectStep) { _body.MoveRotation(rotation); return; }
+            _body.rotation = rotation;
+            transform.rotation = rotation;
+        }
+
+        /// <summary>V5 M9b (I9b.1): everything one movement step reads and writes, so the client's prediction can rewind to
+        /// the server's state and replay its inputs on this same code (no copy of the handling).</summary>
+        [System.Serializable]
+        public struct MotionState
+        {
+            public Vector3 position;
+            public Quaternion rotation;
+            public Vector3 velocity, knockback;
+            public float knockbackDecay, yawRate, steerCommit, lastSteer, reverseTurnTimer;
+            public float slowMultiplier, slowTimer, moveEffectMultiplier, moveEffectTimer;
+            public float moveSpeedMultiplier, turnRateMultiplier, runSpeedMultiplier, targetRoll;
+            public float stepTime, nextIslandImpactAt, nextIslandDamageAt;
+            public bool movementEnabled;
+        }
+
+        public MotionState CaptureMotion() => new MotionState
+        {
+            position = _body != null ? _body.position : transform.position,
+            rotation = _body != null ? _body.rotation : transform.rotation,
+            velocity = _velocity,
+            knockback = _knockback,
+            knockbackDecay = _knockbackDecay,
+            yawRate = _yawRate,
+            steerCommit = _steerCommit,
+            lastSteer = _lastSteerInput,
+            reverseTurnTimer = _reverseTurnTimer,
+            slowMultiplier = _slowMultiplier,
+            slowTimer = _slowTimer,
+            moveEffectMultiplier = _moveEffectMultiplier,
+            moveEffectTimer = _moveEffectTimer,
+            moveSpeedMultiplier = _moveSpeedMultiplier,
+            turnRateMultiplier = _turnRateMultiplier,
+            runSpeedMultiplier = RunSpeedMultiplier,
+            targetRoll = _targetRoll,
+            stepTime = _stepTime,
+            nextIslandImpactAt = _nextIslandImpactAt,
+            nextIslandDamageAt = _nextIslandDamageAt,
+            movementEnabled = _movementEnabled,
+        };
+
+        public void RestoreMotion(in MotionState s)
+        {
+            transform.SetPositionAndRotation(s.position, s.rotation);
+            if (_body != null)
+            {
+                _body.position = s.position;
+                _body.rotation = s.rotation;
+            }
+            _velocity = s.velocity;
+            _knockback = s.knockback;
+            _knockbackDecay = s.knockbackDecay;
+            _yawRate = s.yawRate;
+            _steerCommit = s.steerCommit;
+            _lastSteerInput = s.lastSteer;
+            _reverseTurnTimer = s.reverseTurnTimer;
+            _slowMultiplier = s.slowMultiplier;
+            _slowTimer = s.slowTimer;
+            _moveEffectMultiplier = s.moveEffectMultiplier;
+            _moveEffectTimer = s.moveEffectTimer;
+            _moveSpeedMultiplier = s.moveSpeedMultiplier;
+            _turnRateMultiplier = s.turnRateMultiplier;
+            RunSpeedMultiplier = s.runSpeedMultiplier;
+            _targetRoll = s.targetRoll;
+            _stepTime = s.stepTime;
+            _nextIslandImpactAt = s.nextIslandImpactAt;
+            _nextIslandDamageAt = s.nextIslandDamageAt;
+            _movementEnabled = s.movementEnabled;
         }
 
         public void TickMovement(float dt)

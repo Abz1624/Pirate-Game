@@ -20,7 +20,7 @@ namespace RoguePirates.V4.DevTools
 
         static void OnRunStarted(V4Game game)
         {
-            if (TraceBoot.Active != null || game == null) return;
+            if (TraceBoot.Active != null || game == null || RunRequest.Headless) return; // V5 M9b: nor on a net server's run
             // Own object, not /Systems: the legacy EnemyViewPool uses /Systems as its pool root and deactivates it
             // around every new enemy view (R-72), which would close the console each time.
             var console = Object.FindFirstObjectByType<TuningConsole>();

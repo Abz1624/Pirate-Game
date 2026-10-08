@@ -1,0 +1,24 @@
+{
+    "name": "RoguePirates.V5.Net",
+    "rootNamespace": "RoguePirates.V5.Net",
+    "references": [
+        "RoguePirates.V4",
+        "RoguePirates.V4.Config",
+        "RoguePirates.V4.Foundation",
+        "Unity.Netcode.Runtime",
+        "Unity.Networking.Transport",
+        "Unity.Collections",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_EDITOR || V5_NET"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -63,7 +63,7 @@ namespace RoguePirates.V4.Presentation
 
         static void OnRunStarted(V4Game game)
         {
-            if (game == null) return;
+            if (game == null || RunRequest.Headless) return; // V5 M9b: a net server's run has no presenters
             var root = FindFirstObjectByType<V4PresentationRoot>();
             if (root == null) root = new GameObject("V4Presentation").AddComponent<V4PresentationRoot>();
             root.Bind(game);

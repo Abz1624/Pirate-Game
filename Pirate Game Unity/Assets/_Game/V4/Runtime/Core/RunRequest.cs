@@ -29,6 +29,12 @@ namespace RoguePirates.V4
         /// <summary>Config preset JSON to apply before the next run starts (applies from t=0); null for defaults.</summary>
         public static string PresetJson { get; private set; }
 
+        /// <summary>
+        /// V5 M9b (I9b.1): the runs of this session are a net server's composition: the same modules, no presenters and
+        /// no console (the server renders nothing; its clients render the state it sends). Set by RoguePirates.V5.Net only.
+        /// </summary>
+        public static bool Headless { get; set; }
+
         public static void RequestSeed(int seed)
         {
             Seed = seed;
