@@ -1,6 +1,6 @@
 {
  "updated": "8 Oct 2026",
- "statusLine": "M9a: built, reviewed, fixed and deployed. Desktop build for your playtest in progress.",
+ "statusLine": "M9a: done, deployed and playtested; rules v2 fixed the playtest false alarm. Waiting for your OK to close M9a; M9b (the Netcode match server spike) is next.",
  "statusOk": false,
  "facts": [
   [
@@ -79,7 +79,7 @@
   },
   "M9a": {
    "state": "building",
-   "chip": "playtested · fixing a false alarm"
+   "chip": "ready to close · your OK"
   },
   "M9b": {
    "state": "planned",
@@ -470,6 +470,11 @@
    "when": "8 Oct",
    "commit": "",
    "what": "<strong>Your M9a playtest</strong> (Rook, sunk at 8:36, 1,227 kills, level 26, Cursed Doubloons build): the run uploaded with its log and ranks #2 on the weekly board, but the shadow-mode checks flagged it (kills in minute 4: 200 over a limit of 194). That is a false alarm on real play, which is what shadow mode is for: the kill limits dip mid-run and the simulator under-counts Doubloon-heavy builds. Fixing the rules (v2) before closing M9a."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "c72f188d",
+   "what": "<strong>Run checks v2 deployed</strong>: limits no longer dip mid-run, and the strongest simulated play style now kills everything that spawns, as you do. Your playtest voyage and the previous one both pass (the closest call: 81% of the minute-4 kill limit); false alarms still 0.05%. The live board rescored 17 runs: your run now shows 'checked'. M9a is ready to close on your OK."
   }
  ],
  "todos": {
