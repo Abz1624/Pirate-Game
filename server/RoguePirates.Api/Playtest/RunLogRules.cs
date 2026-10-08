@@ -7,9 +7,11 @@ namespace RoguePirates.Api.Playtest;
 /// <summary>
 /// V5 M9a (I9a.1): the run log's format (<c>rp-runlog</c> version 1, written by the game's
 /// <c>RoguePirates.V4.Telemetry.RunLogBuilder</c>) and its structural checks. Structural only: a log that is malformed,
-/// oversized, missing its seed or config hash, or whose sums disagree with the summary fields is rejected with 400.
-/// Whether the numbers are believable (rate bounds per minute, the survival-time bound) is the plausibility checker's
-/// job (I9a.3), which reads the stored log.
+/// oversized, missing its seed or config hash, or whose sums disagree with the summary fields fails <see cref="Check"/>.
+/// In shadow mode (owner decision of 8 Oct) such a run is still accepted and ranks: <see cref="Reject"/> keeps the raw log
+/// (capped at <see cref="MaxLogBytes"/>) with its reason code, and the run's verdict is <c>log_rejected</c>. Only an
+/// oversized request body is refused (413, <see cref="MaxRequestBodyBytes"/>). Whether the numbers are believable (rate
+/// bounds per minute, the survival-time bound) is the plausibility checker's job (I9a.3), which reads the stored log.
 ///
 /// Format (one JSON object):
 /// <code>
@@ -31,6 +33,8 @@ public static partial class RunLogRules
     public const int Version = 1;
     /// <summary>The largest log accepted (UTF-8 bytes of the log object). A 15-20 minute voyage is about 12-16 KB.</summary>
     public const int MaxLogBytes = 64 * 1024;
+    /// <summary>The largest POST /api/runs body accepted (413 above it): the largest log plus room for the summary.</summary>
+    public const int MaxRequestBodyBytes = 96 * 1024;
     public const int MinuteSeconds = 60;
     public const int MaxWeapons = 32, MaxInputSamples = 2000, MaxMinutes = RunService.MaxRunSeconds / MinuteSeconds + 2;
 
@@ -49,7 +53,13 @@ public static partial class RunLogRules
     /// <summary>A log that passed the checks: its header and its JSON as stored.</summary>
     public sealed record Checked(Header Header, string Json, int Bytes);
 
-    /// <summary>Checks a log against the run's summary. Null when there is none (older clients); throws 400 when it fails.</summary>
+    /// <summary>A log that failed the checks (shadow mode: kept for diagnosis, the run still ranks). <see cref="Json"/> is the
+    /// raw log cut to <see cref="MaxLogBytes"/> (then no longer valid JSON; <see cref="Truncated"/>), <see cref="Bytes"/> its
+    /// full size; the header holds what could be read (defaults otherwise).</summary>
+    public sealed record Rejected(string Code, string Reason, Header Header, string Json, int Bytes, bool Truncated);
+
+    /// <summary>Checks a log against the run's summary. Null when there is none (older clients); throws an
+    /// <see cref="ApiException"/> naming the structural problem when it fails (see <see cref="Reject"/>).</summary>
     public static Checked? Check(JsonElement? log, SubmitRunRequest summary)
     {
         if (log == null || log.Value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined) return null;
@@ -156,6 +166,33 @@ public static partial class RunLogRules
         }
 
         return new Checked(new Header(v, seed, seedSource, configHash!, balanceVersion, buildId, runId), json, bytes);
+    }
+
+    /// <summary>The rejected form of a log that failed <see cref="Check"/> with <paramref name="failure"/>: the raw JSON capped at
+    /// <see cref="MaxLogBytes"/> UTF-8 bytes and the header fields read leniently (clipped to their columns).</summary>
+    public static Rejected Reject(JsonElement log, ApiException failure)
+    {
+        var json = log.GetRawText();
+        var bytes = Encoding.UTF8.GetByteCount(json);
+        var truncated = bytes > MaxLogBytes;
+        if (truncated)
+        {
+            var cut = Encoding.UTF8.GetBytes(json);
+            var n = MaxLogBytes;
+            while (n > 0 && (cut[n] & 0xC0) == 0x80) n--; // never split a UTF-8 sequence
+            json = Encoding.UTF8.GetString(cut, 0, n);
+        }
+        var o = log.ValueKind == JsonValueKind.Object ? log : default;
+        string? S(string name, int max)
+        {
+            if (o.ValueKind != JsonValueKind.Object || !o.TryGetProperty(name, out var v) || v.ValueKind != JsonValueKind.String) return null;
+            var s = v.GetString()!;
+            return s.Length <= max ? s : s[..max];
+        }
+        int I(string name) => o.ValueKind == JsonValueKind.Object && o.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var n) ? n : 0;
+        var header = new Header(I("v"), I("seed"), S("seedSource", 16) ?? "", S("configHash", 128) ?? "", S("balanceVersion", 64), S("buildId", 64), S("runId", 64));
+        var reason = failure.Message.Length <= 256 ? failure.Message : failure.Message[..256];
+        return new Rejected(failure.Code, reason, header, json, bytes, truncated);
     }
 
     static ApiException Bad(string code, string message) => new(400, code, message);

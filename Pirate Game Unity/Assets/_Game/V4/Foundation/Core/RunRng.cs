@@ -89,9 +89,12 @@ namespace RoguePirates.V4.Foundation.Core
     }
 
     /// <summary>
-    /// V5 M9a (I9a.2): a module's own seeded stream (the elite lever, barks, the leash, pickups, the practice bot), the
-    /// same sequence as the <c>System.Random(seed)</c> each used before, so behaviour is unchanged. Construct it from the
-    /// run seed mixed with the module's salt; never from the clock.
+    /// V5 M9a (I9a.2): a module's own seeded stream (the elite lever, barks, the leash, pickups, the practice bot). It is
+    /// the same generator as the <c>System.Random(seed)</c> each used before: a module that was already seeded from the run
+    /// seed (the elite lever, barks, pickups, the practice bot) draws the same sequence as before. The enemy leash was not:
+    /// it used a fixed <c>System.Random(0x1EA5)</c> for every run and now follows the run seed (run seed ^ 0x1EA5), so its
+    /// draws (where a leashed enemy reappears) differ from before by design. Construct it from the run seed mixed with the
+    /// module's salt; never from the clock.
     /// </summary>
     public sealed class RunStream
     {

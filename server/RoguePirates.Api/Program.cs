@@ -32,6 +32,8 @@ builder.Services.AddScoped<RunService>();
 builder.Services.AddSingleton(_ => RoguePirates.Api.Plausibility.PlausibilityRuleSet.LoadEmbedded());
 builder.Services.AddSingleton<RoguePirates.Api.Plausibility.PlausibilityService>();
 builder.Services.AddHostedService<RoguePirates.Api.Plausibility.PlausibilityRescorer>();
+// V5 M9a (review): run logs older than RUNLOG_RETENTION_DAYS (default 56) are deleted unless the run was flagged or its log rejected.
+builder.Services.AddHostedService<RunLogRetention>();
 builder.Services.AddScoped<LobbyService>();
 builder.Services.AddScoped<MatchService>();
 builder.Services.AddSingleton<LobbyBroadcaster>();
@@ -74,9 +76,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(o =>
     o.ForwardLimit = 1;
 });
 
-// Existing V5 placeholders (in-memory; replaced in M10).
-builder.Services.AddSingleton<RoguePirates.Api.Services.RunLeaseService>();
-builder.Services.AddSingleton<RoguePirates.Api.Services.LedgerService>();
+// Existing V5 placeholders (in-memory; replaced in M10). The unauthenticated stub endpoints (/accounts/guest, /runs/lease,
+// /ledger/collect) and their services were retired in M9a.
 builder.Services.AddSingleton<RoguePirates.Api.Services.CrewService>();
 builder.Services.AddSingleton<RoguePirates.Api.Services.EventStandingService>();
 builder.Services.AddSingleton<RoguePirates.Api.Services.PrizeGrantService>();
@@ -112,29 +113,27 @@ app.Use(async (ctx, next) =>
     }
 });
 
+// V5 M9a (review): an endpoint's body-size limit (RequestSizeLimitAttribute metadata; POST /api/runs) answered as a 413
+// with a JSON error when the declared length is over it. Kestrel also enforces the limit while reading (chunked bodies);
+// in-memory test servers do not, so the declared-length check here is what the tests see.
+app.Use(async (ctx, next) =>
+{
+    if (ctx.GetEndpoint()?.Metadata.GetMetadata<Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata>()?.MaxRequestBodySize is long max)
+    {
+        if (ctx.Request.ContentLength > max)
+        {
+            ctx.Response.StatusCode = StatusCodes.Status413PayloadTooLarge;
+            await ctx.Response.WriteAsJsonAsync(new { error = "body_too_large", message = $"The request body is larger than {max} bytes." });
+            return;
+        }
+        var size = ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
+        if (size is { IsReadOnly: false }) size.MaxRequestBodySize = max;
+    }
+    await next();
+});
+
 app.MapPlaytestApi();
 
-app.MapPost("/accounts/guest", (RoguePirates.Api.Services.RunLeaseService leases) =>
-{
-    var accountId = leases.CreateGuestAccount();
-    return Results.Ok(new { accountId });
-});
-
-app.MapPost("/runs/lease", (RoguePirates.Api.Services.RunLeaseService leases, RunLeaseRequest req) =>
-{
-    var result = leases.AcquireLease(req.AccountId, req.IdempotencyKey);
-    return result.Success ? Results.Ok(result) : Results.Conflict(result);
-});
-
-app.MapPost("/ledger/collect", (RoguePirates.Api.Services.LedgerService ledger, LedgerCollectRequest req) =>
-{
-    var ok = ledger.TryCollectProduction(req.AccountId, req.BuildingId, req.IdempotencyKey);
-    return ok ? Results.Ok(new { collected = true }) : Results.Conflict(new { collected = false });
-});
-
 app.Run();
-
-public sealed record RunLeaseRequest(string AccountId, string IdempotencyKey);
-public sealed record LedgerCollectRequest(string AccountId, string BuildingId, string IdempotencyKey);
 
 public partial class Program { }

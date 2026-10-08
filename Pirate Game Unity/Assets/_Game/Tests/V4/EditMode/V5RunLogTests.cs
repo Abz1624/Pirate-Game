@@ -7,6 +7,7 @@ using RoguePirates.V4.Events;
 using RoguePirates.V4.Online;
 using RoguePirates.V4.Telemetry;
 using UnityEngine;
+using RunState = RoguePirates.V4.Foundation.Core.RunState;
 
 namespace RoguePirates.V4.Tests
 {
@@ -235,9 +236,11 @@ namespace RoguePirates.V4.Tests
                 events.EndTick();
                 rec.Tick(new SimTick(i, 1f / 30f, t));
             }
+            Assert.IsNull(rec.Closed, "the view shows no log while the run is going");
             var result = rec.Close();
             Assert.IsNotNull(result);
             Assert.AreSame(result, rec.Close(), "closing twice changes nothing");
+            Assert.AreSame(result, rec.Closed, "the view shows the closed log");
             rec.Detach();
             var log = Parse(result.Json);
             Assert.AreEqual(kills, result.Kills);
@@ -257,11 +260,55 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(18, rec.Log.InputCount, "one sample every 5 s");
         }
 
+        /// <summary>
+        /// V5 M9a (review): the runtime closes the log at the run's end, on the tick batch that carries the run-ended state
+        /// (after counting the whole batch), so presentation only reads it (IRunLogSource.Closed) and never changes it.
+        /// </summary>
+        [Test]
+        public void Recorder_ClosesItselfOnTheRunEndedBatch_BeforeAnyPresenterReadsIt()
+        {
+            foreach (var endState in new[] { RunState.PlayerDead, RunState.RunComplete })
+            {
+                var events = new CombatEvents();
+                var context = new RunContext(new RunClock(), events);
+                float t = 0f;
+                var kills = 0;
+                var rec = new RunLogRecorder
+                {
+                    RunTime = () => t, Seed = () => 5, Kills = () => kills, Level = () => 2, ConfigHash = () => "cfg-x", BuildId = () => "b1",
+                    HullKnown = () => true, Hull = () => 50f, MaxHull = () => 100f,
+                };
+                rec.Initialize(context);
+                RunLogResult seenByPresenter = null;
+                events.TickPublished += batch => { if (batch.Count > 0 && batch[batch.Count - 1].Kind == CombatEventKind.RunState) seenByPresenter = ((IRunLogSource)rec).Closed; };
+                rec.BeginRun(new RunStart(5, false));
+                for (var i = 0; i < 100; i++)
+                {
+                    t = i / 30f;
+                    rec.Tick(new SimTick(i, 1f / 30f, t));
+                    events.EndTick();
+                }
+                Assert.IsNull(((IRunLogSource)rec).Closed, endState + ": still open while the run is going");
+                kills = 3;
+                events.Publish(new CombatEvent(CombatEventKind.Spawned, 100, t));
+                events.Publish(new CombatEvent(CombatEventKind.Killed, 100, t));
+                events.Publish(new CombatEvent(CombatEventKind.RunState, 100, t, a: (int)endState));
+                events.EndTick();
+                Assert.IsNotNull(seenByPresenter, endState + ": the presenter reading the same batch sees the closed log");
+                Assert.AreEqual(3, seenByPresenter.Kills);
+                StringAssert.Contains("\"spawns\":1", seenByPresenter.Json, "the batch was counted before closing");
+                StringAssert.Contains(endState == RunState.PlayerDead ? "\"end\":\"sunk\"" : "\"end\":", seenByPresenter.Json);
+                rec.EndRun(new RunEnd(t, false));
+                Assert.AreSame(seenByPresenter, ((IRunLogSource)rec).Closed, "EndRun after that changes nothing");
+                rec.Detach();
+            }
+        }
+
         sealed class FixedLog : IRunLogSource
         {
             public RunLogResult Result;
-            public int Closes;
-            public RunLogResult Close() { Closes++; return Result; }
+            public int Reads;
+            public RunLogResult Closed { get { Reads++; return Result; } }
         }
 
         [Test]
@@ -272,7 +319,7 @@ namespace RoguePirates.V4.Tests
             var request = new RunSubmitRequest { kills = 1, runSeconds = 1, level = 1, captain = "rook", mapId = "saltwind", buildHash = "h", clientVersion = "0.5.0" };
             var source = new FixedLog { Result = new RunLogResult { Json = json, Kills = b.TotalKills(), Level = b.LastLevel, Seconds = b.Seconds } };
             RoguePirates.V4.Presentation.Online.RunSubmitter.AttachLog(request, source);
-            Assert.AreEqual(1, source.Closes);
+            Assert.AreEqual(1, source.Reads);
             Assert.AreEqual(b.TotalKills(), request.kills, "the summary's kills are the log's");
             Assert.AreEqual(Mathf.FloorToInt(b.Seconds), request.runSeconds);
             Assert.AreEqual(b.LastLevel, request.level);

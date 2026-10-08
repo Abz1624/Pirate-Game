@@ -38,8 +38,22 @@ namespace RoguePirates.V4.Tests
 
         /// <summary>UnityEngine.Random's static members reached through <c>using UnityEngine;</c>.</summary>
         static readonly Regex BareUnityRandom = new Regex(@"(?<![\w.])Random\s*\.\s*(Range|value|insideUnitCircle|insideUnitSphere|onUnitSphere|rotation|rotationUniform|InitState|state|ColorHSV)\b");
-        /// <summary>A member named Random (an IRunRandom/IPickupRandom field or property): then "Random.Range" is that member.</summary>
-        static readonly Regex RandomMember = new Regex(@"\b[\w<>.\[\]]+\s+Random\s*(=|;|\{)");
+        /// <summary>
+        /// A member named Random (an IRunRandom/IPickupRandom field or property): inside the type that declares it (and its
+        /// nested types), "Random.Range" is that member. V5 M9a (review): the exemption covers only that type's body, not the
+        /// whole file, so another type in the same file using UnityEngine's bare <c>Random.</c> is still found.
+        /// </summary>
+        static readonly Regex RandomMember = new Regex(@"\b(?!(?:return|new|else|case|throw|await|yield|in|out|ref|is|as|using|goto)\b)[\w<>.\[\]]+\s+Random\s*(=|;|\{)");
+        static readonly Regex TypeDeclaration = new Regex(@"\b(class|struct|record|interface)\s+\w+[^{;]*\{");
+
+        /// <summary>
+        /// V5 M9a (review): a clock or GUID used as a seed (a run's draws must come from its seed, which only RunSeeds in
+        /// RunRng.cs may pick). Found per clause (the code split at ; , { }): a clause naming one of these sources and a seed
+        /// (any identifier containing "seed", a RunStream or RunRng, InitState, a Random constructor, GetHashCode or .Ticks).
+        /// Timestamps and ids (DateTime.Now.ToString, Guid.NewGuid().ToString) are not seeds.
+        /// </summary>
+        static readonly Regex ClockOrGuid = new Regex(@"\bEnvironment\s*\.\s*TickCount(64)?\b|\bDateTime(Offset)?\s*\.\s*(Now|UtcNow)\b|\bGuid\s*\.\s*NewGuid\s*\(");
+        static readonly Regex SeedUse = new Regex(@"(?i:seed)|\bRunStream\b|\bRunRng\b|\bInitState\b|\bRandom\s*\(|\bGetHashCode\s*\(|\.\s*Ticks\b");
 
         static string GameRoot => Path.Combine(Application.dataPath, "_Game");
 
@@ -54,16 +68,45 @@ namespace RoguePirates.V4.Tests
             return source;
         }
 
-        /// <summary>The direct draws in one file's code (empty when none).</summary>
+        /// <summary>The direct draws (and clock or GUID seeds) in one file's code (empty when none).</summary>
         internal static List<string> Violations(string source)
         {
             var code = StripCommentsAndStrings(source);
             var found = new List<string>();
             foreach (var r in Direct)
                 foreach (Match m in r.Matches(code)) found.Add(m.Value);
-            if (!RandomMember.IsMatch(code))
-                foreach (Match m in BareUnityRandom.Matches(code)) found.Add(m.Value);
+            var exempt = RandomMemberScopes(code);
+            foreach (Match m in BareUnityRandom.Matches(code))
+                if (!exempt.Any(span => m.Index > span.start && m.Index < span.end)) found.Add(m.Value);
+            foreach (var clause in code.Split(';', ',', '{', '}'))
+                if (ClockOrGuid.IsMatch(clause) && SeedUse.IsMatch(clause))
+                    found.Add("seed from " + ClockOrGuid.Match(clause).Value.Trim() + ": " + Regex.Replace(clause.Trim(), @"\s+", " "));
             return found;
+        }
+
+        /// <summary>The bodies (opening and closing brace index) of the types that declare a member named Random.</summary>
+        static List<(int start, int end)> RandomMemberScopes(string code)
+        {
+            var types = new List<(int start, int end)>();
+            foreach (Match t in TypeDeclaration.Matches(code))
+            {
+                var open = t.Index + t.Length - 1;
+                var depth = 0;
+                for (var i = open; i < code.Length; i++)
+                {
+                    if (code[i] == '{') depth++;
+                    else if (code[i] == '}' && --depth == 0) { types.Add((open, i)); break; }
+                }
+            }
+            var scopes = new List<(int start, int end)>();
+            foreach (Match m in RandomMember.Matches(code))
+            {
+                (int start, int end)? inner = null; // the innermost type body around the declaration
+                foreach (var span in types)
+                    if (m.Index > span.start && m.Index < span.end && (inner == null || span.end - span.start < inner.Value.end - inner.Value.start)) inner = span;
+                if (inner != null) scopes.Add(inner.Value);
+            }
+            return scopes;
         }
 
         static IEnumerable<string> ScannedFiles() =>
@@ -115,6 +158,20 @@ namespace RoguePirates.V4.Tests
             Assert.IsEmpty(Violations("class A { public IRunRandom Random; float F() => Random.DirectorFloat(); }"));
             Assert.IsEmpty(Violations("class A { public IPickupRandom Random = null; float F() => Random.Range(0f, 1f); }"));
             Assert.IsEmpty(Violations("class A { RunStream _r = new RunStream(5); }"));
+
+            // V5 M9a (review): a member named Random exempts only its own type's body (and nested types), not the whole file
+            Assert.IsEmpty(Violations("using UnityEngine; class A { public IPickupRandom Random; class N { float F() => Random.Range(0f, 1f); } float G() => Random.Range(0f, 1f); }"));
+            Assert.IsNotEmpty(Violations("using UnityEngine; class A { public IPickupRandom Random; } class B { float F() => Random.Range(0f, 1f); }"));
+            Assert.IsNotEmpty(Violations("using UnityEngine; class A { float F() => Random.value; } class B { public IRunRandom Random { get; set; } }"));
+            Assert.IsNotEmpty(Violations("using UnityEngine; class A { object G() { return Random; } float F() => Random.Range(0f, 1f); }"), "return Random; is not a declaration");
+
+            // V5 M9a (review): clocks and GUIDs as seeds
+            Assert.IsNotEmpty(Violations("class A { int seed = System.Environment.TickCount; }"));
+            Assert.IsNotEmpty(Violations("class A { RunStream _r = new RunStream(DateTime.Now.Millisecond); }"));
+            Assert.IsNotEmpty(Violations("class A { void F() { RunSeed = Guid.NewGuid().GetHashCode(); } }"));
+            Assert.IsNotEmpty(Violations("class A { void F() { UnityEngine.Random.InitState((int)DateTime.UtcNow.Ticks); } }"));
+            Assert.IsNotEmpty(Violations("class A { void F() { Begin(seed: (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds()); } }"));
+            Assert.IsEmpty(Violations("class A { void F() { RunId = Guid.NewGuid().ToString(\"N\"); var s = DateTime.Now.ToString(\"o\"); var r = new X { seed = _seed, at = DateTime.UtcNow.ToString(\"o\") }; } }"));
         }
 
         [Test]

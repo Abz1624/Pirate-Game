@@ -12,6 +12,9 @@ public static class Verdicts
     public const string Flagged = "flagged";
     /// <summary>No log, another log version, or a config the rules were not made for (an older or newer build).</summary>
     public const string OutdatedClient = "outdated_client";
+    /// <summary>The log failed the structural checks (RunLogRules; owner decision of 8 Oct): the run is accepted and ranks
+    /// unchecked, the reason code is the structural one, the raw log is kept (capped) for diagnosis.</summary>
+    public const string LogRejected = "log_rejected";
 }
 
 /// <summary>One broken rule: its reason code, the rule id, and where it broke (the minute index, the value and the bound).</summary>

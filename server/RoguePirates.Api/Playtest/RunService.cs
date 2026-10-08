@@ -61,16 +61,21 @@ public sealed partial class RunService
             throw new ApiException(422, "implausible_run", reason);
         }
 
-        // V5 M9a (I9a.1): the run log, when the client sent one (older clients do not): structural checks only (400).
-        RunLogRules.Checked? log;
+        // V5 M9a (I9a.1): the run log, when the client sent one (older clients do not), structural checks only. Shadow mode
+        // (owner decision of 8 Oct): a log that fails them does not refuse the run; it is accepted and ranks, its verdict is
+        // log_rejected with the reason code, and the raw log is kept (capped) for diagnosis. Only an oversized request body is
+        // refused (413, before this runs: RunLogRules.MaxRequestBodyBytes on the endpoint).
+        RunLogRules.Checked? log = null;
+        RunLogRules.Rejected? rejected = null;
         try { log = RunLogRules.Check(req.Log, req); }
         catch (ApiException ex)
         {
-            _log.LogWarning("Rejected run log from player {PlayerId}: {Code} {Reason} (kills {Kills}, seconds {Seconds}, level {Level}, client {Client})",
-                player.Id, ex.Code, ex.Message, req.Kills, req.RunSeconds, req.Level, clientVersion);
-            throw;
+            rejected = RunLogRules.Reject(req.Log!.Value, ex);
+            _log.LogWarning("Run log of player {PlayerId} failed the structural checks (shadow mode, run accepted as log_rejected): {Code} {Reason} (kills {Kills}, seconds {Seconds}, level {Level}, client {Client}, {Bytes} bytes)",
+                player.Id, ex.Code, ex.Message, req.Kills, req.RunSeconds, req.Level, clientVersion, rejected.Bytes);
         }
 
+        var header = log?.Header ?? rejected?.Header;
         var now = _clock.UtcNow;
         var week = WeekMath.WeekStart(now);
         RunVerdict verdict;
@@ -87,19 +92,20 @@ public sealed partial class RunService
             {
                 _db.Runs.Add(run);
                 await _db.SaveChangesAsync();
-                if (log != null)
+                if (header != null)
                 {
-                    var h = log.Header;
                     _db.RunLogs.Add(new RunLog
                     {
-                        RunId = run.Id, Version = h.Version, Seed = h.Seed, SeedSource = h.SeedSource, ConfigHash = h.ConfigHash,
-                        BalanceVersion = h.BalanceVersion, BuildId = h.BuildId, ClientRunId = h.ClientRunId, Bytes = log.Bytes, Json = log.Json,
+                        RunId = run.Id, Version = header.Version, Seed = header.Seed, SeedSource = header.SeedSource, ConfigHash = header.ConfigHash,
+                        BalanceVersion = header.BalanceVersion, BuildId = header.BuildId, ClientRunId = header.ClientRunId,
+                        Bytes = log?.Bytes ?? rejected!.Bytes, Json = log?.Json ?? rejected!.Json,
+                        RejectCode = rejected?.Code, RejectReason = rejected?.Reason,
                     });
                     await _db.SaveChangesAsync();
                 }
                 // V5 M9a (I9a.3): the run checks' verdict, in shadow mode (D23): stored, never a reason to reject; a flagged
                 // run still counts on the board and still pays out (D24).
-                verdict = _checks.Score(run, log?.Json, log?.Header.BuildId, log?.Header.ConfigHash, now);
+                verdict = _checks.Score(run, log?.Json, header?.BuildId, header?.ConfigHash, now, rejected?.Code);
                 _db.RunVerdicts.Add(verdict);
                 await _db.SaveChangesAsync();
                 await tx.CommitAsync(); // the run, its log and its verdict together
@@ -130,8 +136,10 @@ public sealed partial class RunService
                 weekStart = week,
                 weekEnd = week.AddDays(7),
                 isNewWeeklyBest = isNewBest,
-                logStored = log != null,
+                logStored = header != null,
                 @checked = verdict.Status == Verdicts.Pass,
+                verdict = verdict.Status,
+                logRejected = rejected?.Code,
                 weeklyBest = new { kills = best.Kills, runSeconds = best.RunSeconds, level = best.Level, captain = best.Captain },
             };
         }

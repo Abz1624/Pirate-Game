@@ -61,6 +61,10 @@ namespace RoguePirates.V4.Online
     {
         public bool accepted; public long runId; public string weekStart; public string weekEnd;
         public bool isNewWeeklyBest; public RunBest weeklyBest;
+        /// <summary>V5 M9a: the run passed the server's run checks; <see cref="verdict"/> names the status (pass, flagged,
+        /// outdated_client, log_rejected); <see cref="logRejected"/> the structural reason a log was rejected (the run still
+        /// ranks in shadow mode).</summary>
+        public bool @checked; public string verdict; public string logRejected;
     }
 
     [Serializable]

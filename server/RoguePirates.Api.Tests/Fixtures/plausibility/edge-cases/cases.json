@@ -1,0 +1,175 @@
+{
+ "format": "rp-plausibility-edge-cases",
+ "rules": "rules.json",
+ "note": "Every checker (plan/playtest/montecarlo/plausibility.mjs --edge-cases, server PlausibilityRules.cs, Unity RunLogPlausibility.cs) must give these verdicts and reasons (rule, minute, value and bound rounded to 0.1). Hand-made: change a case here, in its log file and nowhere else.",
+ "cases": [
+  {
+   "name": "minute_at_bound",
+   "what": "minute 1 exactly at its bound (20) and the run total exactly at its bound (5 + 20 = 25): equal is not over",
+   "file": "minute_at_bound.log.json",
+   "expect": "pass",
+   "reasons": []
+  },
+  {
+   "name": "minute_over_bound",
+   "what": "minute 1 one kill over its bound (21 > 20); the run total stays at its bound (4 + 21 = 25)",
+   "file": "minute_over_bound.log.json",
+   "expect": "flagged",
+   "reasons": [
+    {
+     "rule": "PR-KILLS-MIN",
+     "minute": 1,
+     "value": 21,
+     "bound": 20
+    }
+   ]
+  },
+  {
+   "name": "minute_beyond_bounds_uses_last",
+   "what": "minute 4, past the bounds array: the last bound (30) applies; 31 is over",
+   "file": "minute_beyond_bounds_uses_last.log.json",
+   "expect": "flagged",
+   "reasons": [
+    {
+     "rule": "PR-KILLS-MIN",
+     "minute": 4,
+     "value": 31,
+     "bound": 30
+    }
+   ]
+  },
+  {
+   "name": "minute_edge_trailing_empty_minute",
+   "what": "a run ending exactly on a minute's edge (120.0 s) keeps its last empty minute open; it uses its own bound index",
+   "file": "minute_edge_trailing_empty_minute.log.json",
+   "expect": "pass",
+   "reasons": []
+  },
+  {
+   "name": "total_over_at_minute_edge",
+   "what": "the run total crosses its bound at minute 1 (10 + 16 = 26 > 25) with every minute inside its own bound",
+   "file": "total_over_at_minute_edge.log.json",
+   "expect": "flagged",
+   "reasons": [
+    {
+     "rule": "PR-KILLS-RUN",
+     "minute": 1,
+     "value": 26,
+     "bound": 25
+    }
+   ]
+  },
+  {
+   "name": "hull_at_tolerance",
+   "what": "50 hull, 20 taken: expected 30, allowed 30 + 5 + 10% of 100 = 45; 45 is not over",
+   "file": "hull_at_tolerance.log.json",
+   "expect": "pass",
+   "reasons": []
+  },
+  {
+   "name": "hull_over_tolerance",
+   "what": "the same minute with 45.1 hull: over the allowed 45",
+   "file": "hull_over_tolerance.log.json",
+   "expect": "flagged",
+   "reasons": [
+    {
+     "rule": "PR-HULL",
+     "minute": 1,
+     "value": 45.1,
+     "bound": 45
+    }
+   ]
+  },
+  {
+   "name": "hull_max_grows_at_tolerance",
+   "what": "max hull 100 -> 120 (the growth counts as hull): expected 50 - 20 + 20 = 50, allowed 50 + 5 + 12 = 67",
+   "file": "hull_max_grows_at_tolerance.log.json",
+   "expect": "pass",
+   "reasons": []
+  },
+  {
+   "name": "hull_heal_at_tolerance",
+   "what": "healed 30 then taken 10 from 50: expected 70, allowed 70 + 5 + 10 = 85",
+   "file": "hull_heal_at_tolerance.log.json",
+   "expect": "pass",
+   "reasons": []
+  },
+  {
+   "name": "hull_first_minute_free",
+   "what": "the first minute has no previous minute: never checked",
+   "file": "hull_first_minute_free.log.json",
+   "expect": "pass",
+   "reasons": []
+  },
+  {
+   "name": "overtime_at_limit",
+   "what": "1020 s: 120 s past the 900 s deadline, exactly the bound",
+   "file": "overtime_at_limit.log.json",
+   "expect": "pass",
+   "reasons": []
+  },
+  {
+   "name": "overtime_over_limit",
+   "what": "1020.5 s: 120.5 s past the deadline, over the bound (reported on the last minute)",
+   "file": "overtime_over_limit.log.json",
+   "expect": "flagged",
+   "reasons": [
+    {
+     "rule": "PR-OVERTIME",
+     "minute": 17,
+     "value": 120.5,
+     "bound": 120
+    }
+   ]
+  },
+  {
+   "name": "level_one_without_xp",
+   "what": "level 1 with no XP: the XP level is 0, counted as 1",
+   "file": "level_one_without_xp.log.json",
+   "expect": "pass",
+   "reasons": []
+  },
+  {
+   "name": "level_equals_xp_level",
+   "what": "30 XP is exactly level 2 (10 + 20): level 2 is not over",
+   "file": "level_equals_xp_level.log.json",
+   "expect": "pass",
+   "reasons": []
+  },
+  {
+   "name": "level_one_xp_short",
+   "what": "29 XP is level 1: level 2 is over",
+   "file": "level_one_xp_short.log.json",
+   "expect": "flagged",
+   "reasons": [
+    {
+     "rule": "PR-LEVEL-XP",
+     "minute": 0,
+     "value": 2,
+     "bound": 1
+    }
+   ]
+  },
+  {
+   "name": "level_equals_xp_level_past_table",
+   "what": "the table continued past its end (its last steps, 10 a level: 40 from level 3): 100 XP is exactly level 4",
+   "file": "level_equals_xp_level_past_table.log.json",
+   "expect": "pass",
+   "reasons": []
+  },
+  {
+   "name": "level_xp_past_table_short",
+   "what": "99 XP: level 3 (level 4 needs 100), so level 4 is over",
+   "file": "level_xp_past_table_short.log.json",
+   "expect": "flagged",
+   "reasons": [
+    {
+     "rule": "PR-LEVEL-XP",
+     "minute": 1,
+     "value": 4,
+     "bound": 3
+    }
+   ]
+  }
+ ]
+}

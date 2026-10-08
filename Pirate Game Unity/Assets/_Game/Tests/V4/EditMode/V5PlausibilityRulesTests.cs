@@ -54,6 +54,40 @@ namespace RoguePirates.V4.Tests
                 Assert.IsTrue(r.bounds.All(b => b > 0), r.id + ": upper bounds only");
         }
 
+        [Serializable] sealed class EdgeReason { public string rule; public int minute; public double value, bound; }
+        [Serializable] sealed class EdgeCase { public string name, file, expect; public EdgeReason[] reasons; }
+        [Serializable] sealed class EdgeCases { public string rules; public EdgeCase[] cases; }
+
+        /// <summary>
+        /// V5 M9a (review): the shared edge-case fixture (server/RoguePirates.Api.Tests/Fixtures/plausibility/edge-cases:
+        /// synthetic rules and logs on the minute edges, the hull-ledger tolerance, the overtime limit and the level against
+        /// the XP level). The API's PlausibilityTests and the generator (node plausibility.mjs --edge-cases) assert the same
+        /// verdicts and reasons, so the three checkers agree at every boundary.
+        /// </summary>
+        [Test]
+        public void GameChecker_GivesTheSharedEdgeCaseVerdicts()
+        {
+            var dir = Path.Combine(FixtureDir, "edge-cases");
+            var spec = JsonUtility.FromJson<EdgeCases>(File.ReadAllText(Path.Combine(dir, "cases.json")));
+            var rules = RunLogPlausibility.ParseRules(File.ReadAllText(Path.Combine(dir, spec.rules)));
+            Assert.GreaterOrEqual(spec.cases.Length, 15, "the fixture has its cases");
+            foreach (var c in spec.cases)
+            {
+                var v = RunLogPlausibility.Evaluate(rules, File.ReadAllText(Path.Combine(dir, c.file)));
+                var want = c.reasons ?? Array.Empty<EdgeReason>();
+                Assert.AreEqual(c.expect, v.Status, $"{c.name}: {v}");
+                Assert.AreEqual(want.Length, v.Reasons.Count, $"{c.name}: {v}");
+                for (var i = 0; i < want.Length; i++)
+                {
+                    var got = v.Reasons[i];
+                    Assert.AreEqual(want[i].rule, got.Rule, c.name);
+                    Assert.AreEqual(want[i].minute, got.Minute, c.name);
+                    Assert.AreEqual(want[i].value, got.Value, 1e-9, c.name + " value");
+                    Assert.AreEqual(want[i].bound, got.Bound, 1e-9, c.name + " bound");
+                }
+            }
+        }
+
         [Test]
         public void GameChecker_GivesTheApisVerdicts_OnTheRecordedVoyages()
         {

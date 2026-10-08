@@ -46,12 +46,12 @@ namespace RoguePirates.V4.Tests
         }
 
         /// <summary>A short voyage: waves on, the scripted phases as the game runs them, the ship cannot sink, no cards.</summary>
-        static ScenarioConfig Voyage(int seed)
+        static ScenarioConfig Voyage(int seed, bool invulnerable = true)
         {
             var s = ScriptableObject.CreateInstance<ScenarioConfig>();
             s.name = "runlog_voyage_" + seed;
             s.seed = seed;
-            s.invulnerable = true;
+            s.invulnerable = invulnerable;
             s.skipLevelUpCards = true;
             s.ambientSpawning = true;
             s.scriptedPhases = ScenarioConfig.ScriptedPhaseMode.AsTheGame;
@@ -60,16 +60,17 @@ namespace RoguePirates.V4.Tests
         }
 
         /// <summary>Loads the voyage, flies the wander pilot at a fixed frame time until <paramref name="seconds"/> of run time.</summary>
-        static IEnumerator Play(int seed, float seconds)
+        static IEnumerator Play(int seed, float seconds, bool invulnerable = true)
         {
             Time.captureDeltaTime = FrameSeconds;
-            yield return Scenario.Load(Voyage(seed));
+            yield return Scenario.Load(Voyage(seed, invulnerable));
             Assert.IsNotNull(Scenario.Current, "the scenario loaded");
             CollectionAssert.IsEmpty(Scenario.Current.Errors);
             Scenario.Current.Ship.ConfigureBotControl(new ScriptedPilot());
             var deadline = Time.realtimeSinceStartup + 600f;
-            while (RunManager.Instance != null && RunManager.Instance.ElapsedSeconds < seconds && Time.realtimeSinceStartup < deadline) yield return null;
-            Assert.GreaterOrEqual(RunManager.Instance.ElapsedSeconds, seconds, "the voyage reached its time");
+            while (RunManager.Instance != null && RunManager.Instance.ElapsedSeconds < seconds && !RunManager.Instance.IsRunEnded && Time.realtimeSinceStartup < deadline) yield return null;
+            if (invulnerable) Assert.GreaterOrEqual(RunManager.Instance.ElapsedSeconds, seconds, "the voyage reached its time");
+            else Assert.IsTrue(RunManager.Instance.IsRunEnded || RunManager.Instance.ElapsedSeconds >= seconds, "the voyage reached its time or sank");
         }
 
         [UnityTest]
@@ -81,6 +82,8 @@ namespace RoguePirates.V4.Tests
             Assert.AreEqual(1, game.RunLog.Log.MinuteCount - 1, "one minute closed so far");
 
             var views = game.Context.Get<IRunViews>();
+            Assert.IsNull(RunSubmitter.Build(views).logJson, "the presentation does not close a running voyage's log");
+            game.RunLog.Close(); // what the run's end does (the runtime closes the log; presentation only reads it)
             var request = RunSubmitter.Build(views);
             Assert.IsNotNull(request.logJson, "the upload carries the log");
             var log = game.RunLog.Result;
@@ -140,6 +143,32 @@ namespace RoguePirates.V4.Tests
             var spawns = 0;
             foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(log.Json, "\"spawns\":(\\d+)")) spawns += int.Parse(m.Groups[1].Value);
             Assert.LessOrEqual(log.Kills, spawns, "every kill was of a spawn the log counted");
+        }
+
+        /// <summary>
+        /// V5 M9a (review): a voyage with damage on (the ship can be hit and can sink): its log, closed by the runtime (at the
+        /// sinking, or by the test at 130 s), passes every shipped rule, PR-HULL (the hull against damage taken and heals)
+        /// included, and records real damage.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator DamageOnVoyage_PassesTheRunChecks_IncludingTheHullLedger()
+        {
+            yield return Play(7373, 130f, invulnerable: false);
+            var recorder = Scenario.Current.Game.RunLog;
+            var sank = RunManager.Instance.IsRunEnded;
+            if (sank) for (var i = 0; i < 5 && recorder.Closed == null; i++) yield return null; // the runtime closes it at the run's end
+            var log = sank ? recorder.Closed : recorder.Close();
+            Assert.IsNotNull(log, "the voyage closed its log");
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "..", "server", "RoguePirates.Api", "Plausibility", "plausibility-rules.json"));
+            var rules = RunLogPlausibility.ParseRules(System.IO.File.ReadAllText(path));
+            var verdict = RunLogPlausibility.Evaluate(rules, log.Json);
+            var taken = 0.0;
+            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(log.Json, "\"taken\":([0-9.eE+-]+)"))
+                taken += double.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+            Debug.Log($"[V5 M9a] damage-on voyage: {(sank ? "sank" : "afloat")} at {log.Seconds:0.0} s, {log.Kills} kills, level {log.Level}, damage taken {taken:0.#}; run checks: {verdict}");
+            Assert.Greater(taken, 0.0, "the ship took damage (damage on)");
+            Assert.AreEqual(RunLogPlausibility.Pass, verdict.Status, verdict.ToString());
+            if (sank) StringAssert.Contains("\"end\":\"sunk\"", log.Json);
         }
 
         /// <summary>Closes the log at exactly 70 s of run time (the first frame past it) and returns its minutes.</summary>

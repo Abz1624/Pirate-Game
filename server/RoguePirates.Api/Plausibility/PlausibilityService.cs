@@ -7,7 +7,7 @@ namespace RoguePirates.Api.Plausibility;
 
 /// <summary>
 /// V5 M9a (I9a.3): the run checks in shadow mode (D23). Every uploaded run gets a verdict (pass, flagged or
-/// outdated_client) with its reason codes, rule ids, the rules version and the client build; nothing is rejected or
+/// outdated_client; log_rejected when the log failed the structural checks) with its reason codes, rule ids, the rules version and the client build; nothing is rejected or
 /// withheld because of it, and a flagged run still counts and still pays out (D24). The weekly board shows the verdict as
 /// a "checked" flag. When the rules version changes, the stored runs are re-scored (<see cref="RescoreAsync"/>, run by
 /// <see cref="PlausibilityRescorer"/> at startup).
@@ -24,11 +24,17 @@ public sealed class PlausibilityService
 
     public PlausibilityRuleSet Rules { get; }
 
-    /// <summary>The verdict row for a run and its stored log JSON (null when the client sent no log).</summary>
-    public RunVerdict Score(RunRecord run, string? logJson, string? logBuildId, string? logConfigHash, DateTime now)
+    /// <summary>The rule id of a structurally rejected log's verdict.</summary>
+    public const string LogRule = "PR-LOG";
+
+    /// <summary>The verdict row for a run and its stored log JSON (null when the client sent no log).
+    /// <paramref name="logRejectCode"/> set (the log failed the structural checks) gives <c>log_rejected</c> with that code.</summary>
+    public RunVerdict Score(RunRecord run, string? logJson, string? logBuildId, string? logConfigHash, DateTime now, string? logRejectCode = null)
     {
         PlausibilityVerdict v;
-        try { v = Rules.Evaluate(logJson); }
+        if (logRejectCode != null)
+            v = new PlausibilityVerdict(Verdicts.LogRejected, new[] { new PlausibilityReason(logRejectCode, LogRule) }, Rules.RulesVersion);
+        else try { v = Rules.Evaluate(logJson); }
         catch (Exception ex) // never let the checker fail an upload (shadow mode)
         {
             _log.LogError(ex, "Plausibility check failed on run {RunId}", run.Id);
@@ -84,7 +90,7 @@ public sealed class PlausibilityService
                 foreach (var run in runs)
                 {
                     logs.TryGetValue(run.Id, out var log);
-                    var fresh = Score(run, log?.Json, log?.BuildId, log?.ConfigHash, now);
+                    var fresh = Score(run, log?.Json, log?.BuildId, log?.ConfigHash, now, log?.RejectCode);
                     if (verdicts.TryGetValue(run.Id, out var row))
                     {
                         row.Status = fresh.Status; row.ReasonCodes = fresh.ReasonCodes; row.RuleIds = fresh.RuleIds; row.DetailsJson = fresh.DetailsJson;

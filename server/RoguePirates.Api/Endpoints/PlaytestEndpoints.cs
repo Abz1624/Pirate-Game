@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
 using Microsoft.EntityFrameworkCore;
 using RoguePirates.Api.Data;
@@ -42,8 +43,10 @@ public static class PlaytestEndpoints
             Results.Ok(await runs.StatsAsync(await auth.RequireAsync(ctx))));
 
         // ---- runs and weekly leaderboard ----
+        // V5 M9a (review): the body is capped (413 above it); a log that fails the structural checks inside it is accepted.
         app.MapPost("/api/runs", async (HttpContext ctx, SubmitRunRequest req, PlayerAuth auth, RunService runs) =>
-            Results.Ok(await runs.SubmitAsync(await auth.RequireAsync(ctx), req)));
+            Results.Ok(await runs.SubmitAsync(await auth.RequireAsync(ctx), req)))
+            .WithMetadata(new RequestSizeLimitAttribute(RunLogRules.MaxRequestBodyBytes));
 
         app.MapGet("/api/leaderboard/weekly", async (HttpContext ctx, string? mapId, int? limit, PlayerAuth auth, RunService runs, IClock clock) =>
             Results.Ok(await runs.LeaderboardAsync(WeekMath.WeekStart(clock.UtcNow), mapId, limit, await auth.TryGetAsync(ctx))));

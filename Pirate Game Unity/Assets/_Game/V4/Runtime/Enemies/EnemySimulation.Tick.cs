@@ -870,7 +870,8 @@ namespace RoguePirates.V4.Enemies
         const float LeashDistance = 45f, LeashReturnDistance = 26f, LeashCheckSeconds = 0.5f;
         float _leashTimer;
         const int LeashStreamSalt = 0x1EA5;
-        // V5 M9a (I9a.2): the leash's own stream, seeded from the run seed at the run start (was a fixed System.Random(0x1EA5)).
+        // V5 M9a (I9a.2): the leash's own stream, seeded from the run seed at the run start (was a fixed System.Random(0x1EA5)
+        // for every run, so where a leashed enemy reappears now differs from before and from run to run, by design).
         RoguePirates.V4.Foundation.Core.RunStream _leashRandom = new RoguePirates.V4.Foundation.Core.RunStream(LeashStreamSalt);
 
         /// <summary>V5 M9a (I9a.2): seeds the run's own streams of the enemy world (the leash) from the run seed.</summary>

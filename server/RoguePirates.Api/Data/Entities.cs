@@ -47,9 +47,16 @@ public sealed class RunLog
     public string? BuildId { get; set; }
     /// <summary>The client's own run id (RunManager.RunId).</summary>
     public string? ClientRunId { get; set; }
-    /// <summary>UTF-8 size of <see cref="Json"/>.</summary>
+    /// <summary>UTF-8 size of the log as uploaded (for a rejected log larger than the cap, more than <see cref="Json"/> holds).</summary>
     public int Bytes { get; set; }
+    /// <summary>The log as uploaded; for a rejected log, cut to <c>RunLogRules.MaxLogBytes</c> (then not valid JSON).</summary>
     public string Json { get; set; } = "";
+    /// <summary>Owner decision of 8 Oct (shadow mode): null for a log that passed the structural checks; otherwise the
+    /// reason code it failed with (malformed_log, log_mismatch, log_too_large, ...). The run is still accepted and ranks,
+    /// with the verdict <c>log_rejected</c>; the header columns hold what could be read.</summary>
+    public string? RejectCode { get; set; }
+    /// <summary>The structural check's message for a rejected log (null otherwise).</summary>
+    public string? RejectReason { get; set; }
 }
 
 /// <summary>
@@ -61,7 +68,7 @@ public sealed class RunVerdict
 {
     /// <summary>The run's id (<see cref="RunRecord.Id"/>).</summary>
     public long RunId { get; set; }
-    /// <summary>pass, flagged or outdated_client (<c>Plausibility.Verdicts</c>).</summary>
+    /// <summary>pass, flagged, outdated_client or log_rejected (<c>Plausibility.Verdicts</c>).</summary>
     public string Status { get; set; } = "";
     /// <summary>The reason codes, comma separated (empty on a pass).</summary>
     public string ReasonCodes { get; set; } = "";

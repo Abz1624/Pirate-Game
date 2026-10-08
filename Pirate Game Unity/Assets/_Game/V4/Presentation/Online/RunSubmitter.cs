@@ -43,17 +43,18 @@ namespace RoguePirates.V4.Presentation.Online
         }
 
         /// <summary>
-        /// V5 M9a (I9a.1): closes the run log and sends it with the run. The summary's kills, run time and level are the
-        /// ones the log was closed with, so the API finds them equal to the log's sums (both read the same counters).
+        /// V5 M9a (I9a.1): sends the run log the runtime closed at the run's end with the run. Read only (presentation never
+        /// changes run state): the summary's kills, run time and level are taken from the closed log, so the API finds them
+        /// equal to the log's sums. No closed log (the run has not ended, or it kept none): the run goes without one.
         /// </summary>
         public static void AttachLog(RunSubmitRequest request, RoguePirates.V4.Telemetry.IRunLogSource source)
         {
             if (request == null || source == null) return;
             RoguePirates.V4.Telemetry.RunLogResult log;
-            try { log = source.Close(); }
+            try { log = source.Closed; }
             catch (Exception e)
             {
-                Debug.LogWarning("RunSubmitter: run log not closed: " + e.Message);
+                Debug.LogWarning("RunSubmitter: run log not read: " + e.Message);
                 return;
             }
             if (log == null || string.IsNullOrEmpty(log.Json)) return;

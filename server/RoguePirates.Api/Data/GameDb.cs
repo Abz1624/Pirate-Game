@@ -47,6 +47,8 @@ public abstract class GameDb : DbContext
             e.Property(x => x.BalanceVersion).HasMaxLength(64);
             e.Property(x => x.BuildId).HasMaxLength(64);
             e.Property(x => x.ClientRunId).HasMaxLength(64);
+            e.Property(x => x.RejectCode).HasMaxLength(32);
+            e.Property(x => x.RejectReason).HasMaxLength(256);
         });
         b.Entity<RunVerdict>(e =>
         {

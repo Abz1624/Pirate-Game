@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using RoguePirates.Api.Data;
+using RoguePirates.Api.Plausibility;
 using RoguePirates.Api.Playtest;
 using Xunit;
 
@@ -14,8 +15,10 @@ namespace RoguePirates.Api.Tests;
 
 /// <summary>
 /// V5 M9a (I9a.1): the run log uploaded with POST /api/runs. Older clients (no log) are still accepted; a log is stored
-/// with its run; malformed, oversized or inconsistent logs (sums that disagree with the summary, no seed or config hash)
-/// are rejected with 400 and nothing is stored. Structural checks only (plausibility is I9a.3).
+/// with its run. Shadow mode (owner decision of 8 Oct): a malformed, oversized or inconsistent log (sums that disagree
+/// with the summary, no seed or config hash) does not refuse the run: it is accepted and ranks, its verdict is
+/// log_rejected with the structural reason code, and the raw log is kept (capped at RunLogRules.MaxLogBytes). Only a
+/// request body over RunLogRules.MaxRequestBodyBytes is refused (413). Structural checks only (plausibility is I9a.3).
 /// </summary>
 public sealed class RunLogTests : IDisposable
 {
@@ -147,43 +150,150 @@ public sealed class RunLogTests : IDisposable
         new object[] { "seed_source", (Action<JsonObject>)(l => l["seedSource"] = "server"), "malformed_log" },
     };
 
+    async Task<(RunLog log, RunVerdict verdict, WeeklyBest? best)> Stored(long runId)
+    {
+        using var scope = _api.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<GameDb>();
+        return (await db.RunLogs.AsNoTracking().SingleAsync(l => l.RunId == runId),
+                await db.RunVerdicts.AsNoTracking().SingleAsync(v => v.RunId == runId),
+                await db.WeeklyBests.AsNoTracking().SingleOrDefaultAsync(b => b.RunId == runId));
+    }
+
+    /// <summary>Asserts the shadow-mode answer to a structurally bad log: 200, accepted, not checked, log_rejected with the
+    /// code; the run on the board; the raw log stored with the code. Returns the stored log.</summary>
+    async Task<RunLog> AssertAcceptedAsRejected(string name, JsonObject run, string code)
+    {
+        var (res, body) = await Post(run);
+        Assert.True(res.StatusCode == HttpStatusCode.OK, $"{name}: {(int)res.StatusCode} {body}");
+        Assert.True(body.GetProperty("accepted").GetBoolean(), name);
+        Assert.False(body.GetProperty("checked").GetBoolean(), name);
+        Assert.Equal(Verdicts.LogRejected, body.GetProperty("verdict").GetString());
+        Assert.Equal(code, body.GetProperty("logRejected").GetString());
+        Assert.True(body.GetProperty("logStored").GetBoolean(), name);
+        var (log, verdict, best) = await Stored(body.GetProperty("runId").GetInt64());
+        Assert.Equal((Verdicts.LogRejected, code, PlausibilityService.LogRule), (verdict.Status, verdict.ReasonCodes, verdict.RuleIds));
+        Assert.Equal(code, log.RejectCode);
+        Assert.False(string.IsNullOrEmpty(log.RejectReason), name);
+        Assert.NotNull(best); // it ranks
+        Assert.Equal(run["kills"]!.GetValue<int>(), best!.Kills);
+        return log;
+    }
+
     [Theory]
     [MemberData(nameof(Broken))]
-    public async Task BrokenLog_Is400_AndNothingIsStored(string name, Action<JsonObject> edit, string code)
+    public async Task BrokenLog_IsAccepted_Ranked_AsLogRejected_WithItsReason_AndTheRawLogKept(string name, Action<JsonObject> edit, string code)
     {
         var log = Log();
         edit(log);
-        var (res, body) = await Post(Run(log));
-        Assert.True(res.StatusCode == HttpStatusCode.BadRequest, $"{name}: {(int)res.StatusCode} {body}");
-        Assert.Equal(code, body.GetProperty("error").GetString());
-        Assert.Equal((0, 0), await Counts());
+        var stored = await AssertAcceptedAsRejected(name, Run(log), code);
+        Assert.Equal(log.ToJsonString(), JsonNode.Parse(stored.Json)!.ToJsonString()); // small: kept whole, as uploaded
+        Assert.Equal(System.Text.Encoding.UTF8.GetByteCount(stored.Json), stored.Bytes);
+        Assert.Equal((1, 1), await Counts());
+    }
+
+    /// <summary>The header columns of a rejected log hold what could be read (here: a mismatch keeps them all).</summary>
+    [Fact]
+    public async Task MismatchedLog_KeepsItsHeader()
+    {
+        var log = Log();
+        log["minutes"]![0]!["kills"] = log["minutes"]![0]!["kills"]!.GetValue<int>() + 1;
+        var stored = await AssertAcceptedAsRejected("kills_sum", Run(log), "log_mismatch");
+        Assert.Equal((1, 4242, "local", "cfg-hash-1", "0.5.0", "abc123"), (stored.Version, stored.Seed, stored.SeedSource, stored.ConfigHash, stored.BuildId, stored.ClientRunId));
+        Assert.Contains("disagree", stored.RejectReason);
     }
 
     [Theory]
     [InlineData("\"a log\"")]
     [InlineData("[1,2,3]")]
     [InlineData("42")]
-    public async Task LogThatIsNotAnObject_Is400(string raw)
+    public async Task LogThatIsNotAnObject_IsAccepted_AsLogRejected(string raw)
     {
         var run = Run(null);
         run["log"] = JsonNode.Parse(raw);
-        var (res, body) = await Post(run);
-        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
-        Assert.Equal("malformed_log", body.GetProperty("error").GetString());
+        var stored = await AssertAcceptedAsRejected(raw, run, "malformed_log");
+        Assert.Equal(raw, stored.Json);
+        Assert.Equal((0, ""), (stored.Seed, stored.ConfigHash));
     }
 
-    [Fact]
-    public async Task OversizedLog_Is400()
+    static JsonObject Padded(JsonObject log, int inputRows)
     {
-        var log = Log();
         log["captain"] = new string('x', 100);
         var inputs = log["inputs"]!.AsArray();
-        while (inputs.Count < 1900) inputs.Add(new JsonArray(610, 123.456789, -123.456789, 359.123456, -100, 100, 1));
-        Assert.True(JsonSerializer.SerializeToUtf8Bytes(log).Length > RunLogRules.MaxLogBytes);
-        var (res, body) = await Post(Run(log));
-        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
-        Assert.Equal("log_too_large", body.GetProperty("error").GetString());
+        while (inputs.Count < inputRows) inputs.Add(new JsonArray(610, 123.456789, -123.456789, 359.123456, -100, 100, 1));
+        return log;
+    }
+
+    /// <summary>A log over the log cap but inside the body cap: accepted as log_rejected, stored cut to the cap.</summary>
+    [Fact]
+    public async Task OversizedLog_IsAccepted_AsLogRejected_AndStoredCapped()
+    {
+        var log = Padded(Log(), 1900);
+        var size = System.Text.Encoding.UTF8.GetByteCount(log.ToJsonString());
+        Assert.True(size > RunLogRules.MaxLogBytes && size < RunLogRules.MaxRequestBodyBytes - 1024, $"{size} bytes");
+        var stored = await AssertAcceptedAsRejected("too_large", Run(log), "log_too_large");
+        Assert.True(stored.Bytes > RunLogRules.MaxLogBytes, $"{stored.Bytes}"); // the full size is recorded
+        Assert.Equal(RunLogRules.MaxLogBytes, System.Text.Encoding.UTF8.GetByteCount(stored.Json)); // the text is capped
+        Assert.StartsWith("{\"format\":\"rp-runlog\"", stored.Json);
+    }
+
+    /// <summary>Only an oversized request body is refused: 413, nothing stored.</summary>
+    [Fact]
+    public async Task OversizedBody_Is413_AndNothingIsStored()
+    {
+        var run = Run(Padded(Log(), 3000));
+        Assert.True(System.Text.Encoding.UTF8.GetByteCount(run.ToJsonString()) > RunLogRules.MaxRequestBodyBytes);
+        var p = await _api.NewPlayerAsync();
+        // with its length declared, as the game sends it (a byte-array body); Kestrel also stops a chunked body at the limit
+        var res = await p.Http.PostAsync("/api/runs", new StringContent(run.ToJsonString(), System.Text.Encoding.UTF8, "application/json"));
+        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, res.StatusCode);
+        Assert.Equal("body_too_large", (await res.ReadJson()).GetProperty("error").GetString());
         Assert.Equal((0, 0), await Counts());
+
+        // just under the limit is read (and, with a log over the log cap, accepted as log_rejected)
+        var near = Run(Padded(Log(), 1900));
+        var ok = await p.Http.PostAsync("/api/runs", new StringContent(near.ToJsonString(), System.Text.Encoding.UTF8, "application/json"));
+        Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
+    }
+
+    /// <summary>V5 M9a (review): run-log retention deletes logs older than the period (default 8 weeks) unless the run was
+    /// flagged or its log rejected; the runs and verdicts stay; younger logs stay.</summary>
+    [Fact]
+    public async Task Retention_DeletesOldLogs_ButKeepsFlaggedAndRejected()
+    {
+        var settings = _api.Services.GetRequiredService<ApiSettings>();
+        Assert.Equal(56, settings.RunLogRetentionDays);
+        Assert.Equal(7, ApiSettings.From(Microsoft.Extensions.Configuration.MemoryConfigurationBuilderExtensions.AddInMemoryCollection(
+            new Microsoft.Extensions.Configuration.ConfigurationBuilder(), new Dictionary<string, string?> { ["RUNLOG_RETENTION_DAYS"] = "7" }).Build()).RunLogRetentionDays);
+
+        var (_, plain) = await Post(Run(Log()));                       // outdated_client (cfg-hash-1 is not in the rules): purged
+        var broken = Log();
+        broken["seed"] = 0;
+        var (_, rejected) = await Post(Run(broken));                   // log_rejected: kept
+        var (_, flagged) = await Post(Run(Log(seed: 99)));             // marked flagged below: kept
+        long Id(JsonElement b) => b.GetProperty("runId").GetInt64();
+        var flaggedId = Id(flagged);
+        using (var scope = _api.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GameDb>();
+            var v = await db.RunVerdicts.SingleAsync(x => x.RunId == flaggedId);
+            v.Status = Verdicts.Flagged;
+            await db.SaveChangesAsync();
+        }
+
+        _api.Clock.Advance(TimeSpan.FromDays(57));
+        var (_, young) = await Post(Run(Log(seed: 7)));                 // submitted now: kept
+
+        using (var scope = _api.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GameDb>();
+            Assert.Equal(1, await RunLogRetention.PurgeAsync(db, _api.Clock.UtcNow, TimeSpan.FromDays(settings.RunLogRetentionDays)));
+            var left = await db.RunLogs.Select(l => l.RunId).OrderBy(x => x).ToListAsync();
+            Assert.Equal(new[] { Id(rejected), Id(flagged), Id(young) }, left);
+            Assert.Equal(4, await db.Runs.CountAsync());
+            Assert.Equal(4, await db.RunVerdicts.CountAsync());
+            Assert.Equal(0, await RunLogRetention.PurgeAsync(db, _api.Clock.UtcNow, TimeSpan.FromDays(56))); // idempotent
+            Assert.Equal(1, await RunLogRetention.PurgeAsync(db, _api.Clock.UtcNow.AddDays(57), TimeSpan.FromDays(56))); // the young one, later
+        }
     }
 
     /// <summary>The summary's own sanity checks still answer 422 before the log is read.</summary>
@@ -211,5 +321,23 @@ public sealed class RunLogTests : IDisposable
         Assert.Contains("FOREIGN KEY (\"RunId\") REFERENCES \"Runs\" (\"Id\") ON DELETE CASCADE", script);
         Assert.DoesNotContain("DROP", script);
         Assert.DoesNotContain("ALTER TABLE \"Runs\"", script);
+    }
+
+    /// <summary>V5 M9a (review): AddRunLogRejection only adds two nullable columns to RunLogs, for both providers.</summary>
+    [Theory]
+    [InlineData("postgres")]
+    [InlineData("sqlite")]
+    public void AddRunLogRejectionMigration_OnlyAddsNullableColumns(string provider)
+    {
+        using GameDb db = provider == "postgres"
+            ? new PostgresGameDb(new DbContextOptionsBuilder<PostgresGameDb>().UseNpgsql("Host=localhost;Database=unused").Options)
+            : new SqliteGameDb(new DbContextOptionsBuilder<SqliteGameDb>().UseSqlite("Data Source=:memory:").Options);
+        var migrations = db.Database.GetMigrations().ToList();
+        var add = Assert.Single(migrations, m => m.EndsWith("_AddRunLogRejection", StringComparison.Ordinal));
+        var script = db.GetService<IMigrator>().GenerateScript(fromMigration: migrations[migrations.IndexOf(add) - 1], toMigration: add);
+        Assert.Contains("ALTER TABLE \"RunLogs\" ADD \"RejectCode\"", script);
+        Assert.Contains("ALTER TABLE \"RunLogs\" ADD \"RejectReason\"", script);
+        Assert.DoesNotContain("NOT NULL", script);
+        Assert.DoesNotContain("DROP", script);
     }
 }

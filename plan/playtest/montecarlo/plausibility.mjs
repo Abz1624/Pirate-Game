@@ -11,6 +11,9 @@
 //   node plausibility.mjs                 regenerate the rules from data.json (then run the check below)
 //   node plausibility.mjs --check         the false-positive budget: 10,000 more strongest-personality voyages (other
 //                                         seeds) against the rules; at most 0.1% may be flagged
+//   node plausibility.mjs --edge-cases    the shared edge-case fixture (Fixtures/plausibility/edge-cases: minute edges, the
+//                                         hull-ledger tolerance, the overtime limit, the level against the XP level): this
+//                                         evaluator must give its verdicts, as the API's and the game's tests check theirs
 //   node plausibility.mjs --sessions      write the recorded voyages (plan/playtest/sessions) as run logs to the API
 //                                         tests' fixtures, with every verdict, and show them against the rules
 //
@@ -398,9 +401,24 @@ async function sessions() {
   console.log('wrote', FIXTURES);
 }
 
+/** V5 M9a (review): the shared edge-case fixture; returns the mismatches (empty when every verdict and reason agrees). */
+export function edgeCases(dir = path.join(FIXTURES, 'edge-cases')) {
+  const spec = readJson(path.join(dir, 'cases.json')), rules = readJson(path.join(dir, spec.rules)), bad = [];
+  for (const c of spec.cases) {
+    const v = evaluate(rules, readJson(path.join(dir, c.file)));
+    const got = v.reasons.map(r => ({ rule: r.rule, minute: r.minute, value: r.value, bound: r.bound }));
+    const ok = v.status === c.expect && got.length === c.reasons.length &&
+      c.reasons.every((e, i) => e.rule === got[i].rule && e.minute === got[i].minute && e.value === got[i].value && e.bound === got[i].bound);
+    console.log(`${ok ? 'ok  ' : 'FAIL'} ${c.name.padEnd(36)} ${v.status}${got.length ? ' ' + JSON.stringify(got) : ''}`);
+    if (!ok) bad.push({ name: c.name, expected: { status: c.expect, reasons: c.reasons }, got: { status: v.status, reasons: got } });
+  }
+  return bad;
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const a = process.argv.slice(2);
   if (a.includes('--check')) check();
+  else if (a.includes('--edge-cases')) { const bad = edgeCases(); if (bad.length) { console.error(JSON.stringify(bad, null, 1)); process.exit(1); } console.log('edge cases: all agree'); }
   else if (a.includes('--sessions')) await sessions();
   else generate();
 }

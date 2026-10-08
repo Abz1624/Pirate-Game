@@ -233,8 +233,11 @@ namespace RoguePirates.V4.Online
                     if (r.IsOffline) return outcome;
                     if (!r.Ok || r.Data == null)
                     {
+                        // V5 M9a: a log that fails the server's structural checks is accepted (shadow mode); only an
+                        // oversized body is refused (413)
                         outcome.Line = r.Status == 422
                             ? (run.runSeconds < 10 ? "Not ranked: run too short" : "Not ranked: run not accepted")
+                            : r.Status == 413 ? "Not ranked: run log too large"
                             : "Not ranked: " + (r.Message ?? "server error");
                         return outcome;
                     }

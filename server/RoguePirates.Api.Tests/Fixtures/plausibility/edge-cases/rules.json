@@ -1,0 +1,85 @@
+{
+ "format": "rp-plausibility-rules",
+ "rulesVersion": 1,
+ "mode": "shadow",
+ "logFormat": "rp-runlog",
+ "logVersion": 1,
+ "minuteSeconds": 60,
+ "configHash": "edge-config",
+ "configHashes": [
+  "edge-config"
+ ],
+ "setId": "edge-cases",
+ "startLevel": 0,
+ "xpToNext": [
+  10,
+  20,
+  30
+ ],
+ "note": "V5 M9a (review): synthetic rules for the shared edge-case fixture; read by plausibility.mjs (--edge-cases), the API's PlausibilityTests and the game's V5PlausibilityRulesTests. Not the shipped rules.",
+ "rules": [
+  {
+   "id": "PR-KILLS-MIN",
+   "kind": "minute",
+   "field": "kills",
+   "reason": "kills_per_minute",
+   "bounds": [
+    10,
+    20,
+    30
+   ]
+  },
+  {
+   "id": "PR-KILLS-RUN",
+   "kind": "total",
+   "field": "kills",
+   "reason": "kills_run_total",
+   "bounds": [
+    10,
+    25,
+    50
+   ]
+  },
+  {
+   "id": "PR-LEVEL",
+   "kind": "level",
+   "field": "level",
+   "reason": "level",
+   "bounds": [
+    5,
+    8,
+    10
+   ]
+  },
+  {
+   "id": "PR-LEVEL-XP",
+   "kind": "levelFromXp",
+   "field": "level",
+   "reason": "level_above_xp",
+   "tolerance": 0
+  },
+  {
+   "id": "PR-KILLS-SPAWNS",
+   "kind": "killsWithinSpawns",
+   "field": "kills",
+   "reason": "kills_above_spawns",
+   "margin": 2
+  },
+  {
+   "id": "PR-HULL",
+   "kind": "hullLedger",
+   "field": "hull",
+   "reason": "hull_above_damage_and_heals",
+   "absolute": 5,
+   "fractionOfMaxHull": 0.1
+  },
+  {
+   "id": "PR-OVERTIME",
+   "kind": "overtimeSurvival",
+   "field": "seconds",
+   "reason": "overtime_survival",
+   "deadline": 900,
+   "bound": 120
+  }
+ ]
+}

@@ -17,19 +17,25 @@ namespace RoguePirates.V4.Telemetry
         public string ConfigHash;
     }
 
-    /// <summary>V5 M9a (I9a.1): where the results screen's upload gets the run log (null when the run keeps none).</summary>
+    /// <summary>
+    /// V5 M9a (I9a.1): where the results screen's upload gets the run log (null when the run keeps none). Read only: the
+    /// runtime closes the log at the run's end (<see cref="RunLogRecorder"/>); presentation never changes run state.
+    /// </summary>
     public interface IRunLogSource
     {
-        /// <summary>Closes the log now (if still open) and returns it with its totals; null when there is no usable log.</summary>
-        RunLogResult Close();
+        /// <summary>The log the run's end closed, with its totals; null while the run is still going or when there is no
+        /// usable log (no seed or config hash).</summary>
+        RunLogResult Closed { get; }
     }
 
     /// <summary>
     /// V5 M9a (I9a.1): records every voyage's run log (<see cref="RunLogBuilder"/>), whatever the playtest switches (the
     /// <see cref="SessionRecorder"/> is the playtest's larger file; this is the compact log the API stores). Reads the run's
     /// counters through delegates and the combat events (spawns, kinds of kills, damage taken, chests, points of interest);
-    /// per-weapon kills and damage come from the <see cref="RunTelemetry"/> ledger. Closed at the run's end or when the
-    /// results screen uploads it, whichever comes first, so the uploaded summary and the log agree.
+    /// per-weapon kills and damage come from the <see cref="RunTelemetry"/> ledger. Closed by the runtime at the run's end:
+    /// on the tick batch that carries the run-ended state (PlayerDead or RunComplete, before any presenter reads that batch,
+    /// since this module subscribes at initialization), and again by <see cref="EndRun"/> (a no-op once closed). The upload
+    /// reads <see cref="Closed"/> and takes its summary from it, so the uploaded summary and the log agree.
     /// </summary>
     public sealed class RunLogRecorder : IRunModule, IRunLogSource
     {
@@ -60,9 +66,11 @@ namespace RoguePirates.V4.Telemetry
         bool _began, _sunk, _bossAlive;
         float _prevHull = -1f, _prevMax = -1f;
         RunLogResult _result;
+        bool _closed;
 
         public RunLogBuilder Log => _log;
         public RunLogResult Result => _result;
+        public RunLogResult Closed => _closed ? _result : null;
 
         public void Initialize(RunContext context)
         {
@@ -77,6 +85,7 @@ namespace RoguePirates.V4.Telemetry
             _sunk = _bossAlive = false;
             _prevHull = _prevMax = -1f;
             _result = null;
+            _closed = false;
             var origin = SeedOrigin != null ? SeedOrigin() : default;
             var profile = Safe(() => StageProfile?.Invoke(), null);
             var seed = Safe(() => Seed != null ? Seed() : 0, 0);
@@ -125,10 +134,13 @@ namespace RoguePirates.V4.Telemetry
             if (state == RunState.PlayerDead) _sunk = true;
         }
 
+        /// <summary>Closes the log now (runtime only: the run's end, or a test standing in for it) and returns it with its
+        /// totals; null when there is no usable log. Closing again returns the same result.</summary>
         public RunLogResult Close()
         {
             if (!_began) return null;
-            if (_result != null) return _result;
+            if (_closed) return _result;
+            _closed = true;
             var t = Now;
             TrackHeal();
             ReadWeapons();
@@ -180,6 +192,7 @@ namespace RoguePirates.V4.Telemetry
         void OnEvents(IReadOnlyList<CombatEvent> batch)
         {
             if (!_began || _log.Closed) return;
+            var ended = false;
             for (var i = 0; i < batch.Count; i++)
             {
                 var e = batch[i];
@@ -196,9 +209,11 @@ namespace RoguePirates.V4.Telemetry
                         break;
                     case CombatEventKind.RunState:
                         if (e.A == (int)RunState.PlayerDead) _sunk = true;
+                        if (e.A == (int)RunState.PlayerDead || e.A == (int)RunState.RunComplete) ended = true;
                         break;
                 }
             }
+            if (ended) Close(); // the whole batch counted first; the results screen reads this batch after us
         }
 
         /// <summary>The game build's id: the version, plus "+editor" in the Editor or the build GUID's first 12 characters.</summary>

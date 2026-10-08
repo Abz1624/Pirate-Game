@@ -17,6 +17,10 @@ public sealed class ApiSettings
     public int SweepSeconds { get; init; } = 30;
     /// <summary>How often the 1v1 relay ticks (countdown, barrels, storm end, disconnect forfeits).</summary>
     public int ArenaTickMs { get; init; } = 100;
+    /// <summary>V5 M9a (review): how long run logs are kept (days); flagged and log_rejected runs keep theirs.</summary>
+    public int RunLogRetentionDays { get; init; } = 56;
+    /// <summary>How often the run-log retention sweep runs (hours; the first sweep runs at startup).</summary>
+    public int RunLogRetentionSweepHours { get; init; } = 24;
 
     public bool UsePostgres => !string.IsNullOrWhiteSpace(DatabaseUrl);
     public string DbKind => UsePostgres ? "postgres" : "sqlite";
@@ -34,6 +38,8 @@ public sealed class ApiSettings
         RateLimitPerMinute = int.TryParse(c["RATE_LIMIT_PER_MINUTE"], out var r) && r > 0 ? r : 60,
         SweepSeconds = int.TryParse(c["SWEEP_SECONDS"], out var s) && s > 0 ? s : 30,
         ArenaTickMs = int.TryParse(c["ARENA_TICK_MS"], out var t) && t > 0 ? t : 100,
+        RunLogRetentionDays = int.TryParse(c["RUNLOG_RETENTION_DAYS"], out var rd) && rd > 0 ? rd : 56,
+        RunLogRetentionSweepHours = int.TryParse(c["RUNLOG_RETENTION_SWEEP_HOURS"], out var rh) && rh > 0 ? rh : 24,
     };
 
     static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();

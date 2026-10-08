@@ -132,6 +132,35 @@ public sealed class PlausibilityTests : IDisposable
         Assert.True(v.Status == Verdicts.Pass, string.Join(", ", v.Reasons.Select(r => $"{r.Code} minute {r.Minute} {r.Value} > {r.Bound}")));
     }
 
+    // ---- the shared edge cases ------------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// V5 M9a (review): the shared edge-case fixture (Fixtures/plausibility/edge-cases: synthetic rules and logs on the
+    /// minute edges, the hull-ledger tolerance, the overtime limit and the level against the XP level, with their expected
+    /// verdicts). The generator (<c>node plausibility.mjs --edge-cases</c>) and the game (V5PlausibilityRulesTests) assert
+    /// the same file, so the three checkers agree at every boundary.
+    /// </summary>
+    [Fact]
+    public void EdgeCases_GiveTheExpectedVerdicts_TheSameInEveryChecker()
+    {
+        var dir = Path.Combine(FixtureDir, "edge-cases");
+        var spec = JsonDocument.Parse(File.ReadAllText(Path.Combine(dir, "cases.json"))).RootElement;
+        var rules = PlausibilityRuleSet.Parse(File.ReadAllText(Path.Combine(dir, spec.GetProperty("rules").GetString()!)));
+        var count = 0;
+        foreach (var c in spec.GetProperty("cases").EnumerateArray())
+        {
+            var name = c.GetProperty("name").GetString()!;
+            var v = rules.Evaluate(File.ReadAllText(Path.Combine(dir, c.GetProperty("file").GetString()!)));
+            var got = string.Join("; ", v.Reasons.Select(r => $"{r.Rule} m{r.Minute} {r.Value} > {r.Bound}"));
+            var want = string.Join("; ", c.GetProperty("reasons").EnumerateArray().Select(r =>
+                $"{r.GetProperty("rule").GetString()} m{r.GetProperty("minute").GetInt32()} {r.GetProperty("value").GetDouble()} > {r.GetProperty("bound").GetDouble()}"));
+            Assert.True(c.GetProperty("expect").GetString() == v.Status && want == got, $"{name}: expected {c.GetProperty("expect").GetString()} [{want}], got {v.Status} [{got}]");
+            _out.WriteLine($"{name,-36} {v.Status} {got}");
+            count++;
+        }
+        Assert.True(count >= 15, "the fixture has its cases");
+    }
+
     // ---- edited logs and forgeries ------------------------------------------------------------------------------------
 
     [Fact]
@@ -278,6 +307,10 @@ public sealed class PlausibilityTests : IDisposable
         var a = (await (await p.Http.PostAsJsonAsync("/api/runs", Upload(TodaysVoyage()))).ReadJson()).GetProperty("runId").GetInt64();
         var b = (await (await p.Http.PostAsJsonAsync("/api/runs", new { kills = 10, runSeconds = 60, level = 2, captain = "rook", mapId = "saltwind" })).ReadJson()).GetProperty("runId").GetInt64();
         Assert.Equal(Verdicts.Pass, (await VerdictOf(a)).Status);
+        var broken = TodaysVoyage();
+        broken["seed"] = 0; // fails the structural checks: accepted as log_rejected (owner decision of 8 Oct)
+        var c = (await (await p.Http.PostAsJsonAsync("/api/runs", Upload(broken))).ReadJson()).GetProperty("runId").GetInt64();
+        Assert.Equal((Verdicts.LogRejected, "log_missing_seed"), ((await VerdictOf(c)).Status, (await VerdictOf(c)).ReasonCodes));
 
         using var scope = _api.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<GameDb>();
@@ -292,13 +325,15 @@ public sealed class PlausibilityTests : IDisposable
             if (r!["id"]!.GetValue<string>() == "PR-KILLS-MIN")
                 r["bounds"] = new JsonArray(r["bounds"]!.AsArray().Select(x => (JsonNode?)JsonValue.Create(Math.Max(1, Math.Floor(x!.GetValue<double>() / 2)))).ToArray());
         var next = new PlausibilityService(PlausibilityRuleSet.Parse(node.ToJsonString()), NullLogger<PlausibilityService>.Instance);
-        Assert.Equal(2, await next.RescoreAsync(db, clock));
+        Assert.Equal(3, await next.RescoreAsync(db, clock));
 
         var va = await VerdictOf(a);
         Assert.Equal((Verdicts.Flagged, Shipped.RulesVersion + 1), (va.Status, va.RulesVersion));
         Assert.Contains("PR-KILLS-MIN", va.RuleIds);
         var vb = await VerdictOf(b);
         Assert.Equal((Verdicts.OutdatedClient, Shipped.RulesVersion + 1), (vb.Status, vb.RulesVersion));
+        var vc = await VerdictOf(c); // a rejected log stays rejected under any rules version
+        Assert.Equal((Verdicts.LogRejected, "log_missing_seed", "PR-LOG", Shipped.RulesVersion + 1), (vc.Status, vc.ReasonCodes, vc.RuleIds, vc.RulesVersion));
         Assert.Equal(0, await next.RescoreAsync(db, clock)); // idempotent
 
         var board = await (await p.Http.GetAsync("/api/leaderboard/weekly?mapId=saltwind")).ReadJson();
