@@ -1,6 +1,6 @@
 {
  "updated": "8 Oct 2026",
- "statusLine": "M9a: all five items built (C9a.0 live). Full Unity suites and the independent review running; then one server deploy and your M9a playtest.",
+ "statusLine": "M9a: review passed with fixes (no blockers); fixes in progress, then the server deploy, a desktop build and your M9a playtest.",
  "statusOk": false,
  "facts": [
   [
@@ -79,7 +79,7 @@
   },
   "M9a": {
    "state": "building",
-   "chip": "building · all items built, review running"
+   "chip": "review fixes · then deploy and playtest"
   },
   "M9b": {
    "state": "planned",
@@ -445,6 +445,11 @@
    "when": "8 Oct",
    "commit": "60922664",
    "what": "<strong>M9a I9a.3 done: run checks in shadow mode</strong>. Rules come from 30,000 simulated runs of the strongest play style (bound = p99.9 x 1.25): kills, XP, gold and damage per minute and per run, level vs XP, kills vs spawns, a hull ledger and an overtime bound. 5 of 10,000 fresh strong runs flagged (0.05%, budget 0.1%); all your recorded voyages pass on the balance they were played on; edited logs and a x2 forgery are flagged. Every run gets a verdict; flagged runs still rank and pay out; the weekly board shows a green 'checked'. Server 151/151. Now: full Unity suites and the independent review, then one deploy."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "Full Unity suites on the M9a code: EditMode 580/580, PlayMode 91/91. <strong>Your answers (D25)</strong>: bad logs accepted and flagged in shadow mode; the refit closes on today's balance; deploy without a backup; the no-log question waits for enforcement. Review fixes in progress."
   }
  ],
  "todos": {
@@ -2255,6 +2260,11 @@
   {
    "title": "M8z final check (8 Oct)",
    "summary": "<strong>No blockers.</strong> Close after: suites re-run on the final code, the evidence README updated, the working tree clean. Fixing now: kill credit for orbit/strike/whirlpool weapons (Lantern, Doubloons, Anchor Flail showed 0 kills), a save alias for the removed Ramming Prow, three weak assertions, an echo validator, stale comments. Carried into M9: the simulator refit.",
+   "rows": []
+  },
+  {
+   "title": "M9a review (8 Oct)",
+   "summary": "<strong>Pass with fixes, no blockers.</strong> Money rules hold: no run rejected or withheld for plausibility, flagged runs rank, the new migrations only add tables. Fixing: retire the unauthenticated stub endpoints, accept bad logs as 'log rejected' (your call, D25), a request size limit, the run log closed by the game not the HUD, a stricter seeding scan, a shared edge-case fixture for the three checkers, a damage-on PlayMode voyage, log retention (8 weeks, flagged kept), the phase evidence folder.",
    "rows": []
   }
  ]
