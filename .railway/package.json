@@ -1,0 +1,9 @@
+{
+  "name": "rogue-pirates-railway-iac",
+  "private": true,
+  "type": "module",
+  "description": "Railway SDK needed by `railway config plan` / `apply` to evaluate railway.ts.",
+  "dependencies": {
+    "railway": "3.13.0"
+  }
+}

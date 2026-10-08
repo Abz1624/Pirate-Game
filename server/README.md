@@ -9,7 +9,8 @@ runs the match instead and the API only handles the lobby around it.
 
 - `RoguePirates.Api/` the API (`Program.cs`, `Endpoints/PlaytestEndpoints.cs`, `Playtest/`, `Data/`)
 - `RoguePirates.Api.Tests/` xUnit tests (in-memory test server, throwaway SQLite file, injected clock)
-- `Dockerfile`, `railway.json` deployment (build context and Railway root directory: `server`)
+- `Dockerfile` deployment (build context and Railway root directory: `server`); the Railway service settings are in
+  [`.railway/railway.ts`](../.railway/railway.ts) at the repository root (see [Service settings](#service-settings-railwayrailwayts))
 
 ## Run locally
 
@@ -53,7 +54,8 @@ come from that process). Keep Railway replicas at 1.
 1. In Railway, **New Project**.
 2. **Add a database: PostgreSQL**. The plugin creates `DATABASE_URL`.
 3. **New service: GitHub repo** (this repository). In the service settings set **Root Directory** to `server`.
-   Railway picks up `server/railway.json` and builds `server/Dockerfile`.
+   Then run `railway config apply` from the repository root to set the build and deploy settings from
+   `.railway/railway.ts` (it builds `server/Dockerfile`).
 4. In the service **Variables**, add a reference to the database: `DATABASE_URL = ${{Postgres.DATABASE_URL}}`
    (the internal URL; no SSL needed inside Railway), and set `ALLOWED_ORIGINS`, for example
    `https://www.roguepirates.fun,https://roguepirates.fun` (add `http://localhost:*` while testing local builds).
@@ -63,6 +65,21 @@ come from that process). Keep Railway replicas at 1.
 6. Optional custom domain: **Custom Domain** `api.roguepirates.fun`, then add the CNAME record Railway shows at your DNS
    provider.
 7. Point the game's API base URL at that domain (`https://...` for HTTP, `wss://...` for the lobby WebSocket).
+
+### Service settings (`.railway/railway.ts`)
+
+The api service's build and deploy settings are Railway Infrastructure as Code in `.railway/railway.ts` (Config as Code,
+the old `server/railway.json`, stops being read on 2026-12-01): Dockerfile builder, `Dockerfile`, health check `/health`
+with a 60 s timeout, restart on failure up to 10 times, one replica. It manages only the `api` service (partial `api`);
+Postgres is untouched. `server/deploy.ps1` runs `railway config apply --yes` before `railway up`, without
+`--confirm-destructive`, so an apply that would delete anything stops the deploy.
+
+- **Variables:** a variable the file does not list is deleted on apply. Existing ones are listed with `preserve()`,
+  which keeps the value Railway holds, so no value lives in the repo. Before adding a variable in the Railway UI, add
+  `NAME: preserve()` to `env` in `railway.ts`.
+- **Check without changing anything:** from the repository root, `railway config plan` (needs `npm ci --prefix .railway`
+  once; on Windows set `$env:_` to `<npm>\node_modules\@railway\cli\bin\railway.exe` first, as `deploy.ps1` does,
+  or the SDK's CLI version check fails).
 
 Note: the repository's root `.gitignore` ignores `*.csproj` (Unity); `server/.gitignore` re-includes them. Make sure
 `server/RoguePirates.Api/RoguePirates.Api.csproj` is committed, or the Railway build cannot restore the project.
