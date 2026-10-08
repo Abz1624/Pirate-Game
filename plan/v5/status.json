@@ -83,7 +83,7 @@
   },
   "M9b": {
    "state": "building",
-   "chip": "part 1 done · part 2 (Linux server, Docker) running"
+   "chip": "parts 1, 2a done · 2b (browser client) running"
   },
   "M9c": {
    "state": "planned",
@@ -495,11 +495,16 @@
    "when": "8 Oct",
    "commit": "68d10502",
    "what": "<strong>M9b part 1 done</strong>: Netcode for GameObjects 2.13.3 over WebSockets, a server-only run of the real game (no HUD), 30 Hz ticks and 15 Hz snapshots, a predicted ship, enemies as compact batched messages, signed one-time join tickets, reconnect in about 0.3 s. At 150 ms lag and 2% loss the ship needs no corrections (boosting still costs one, fixed in part 2). Busy voyage: about 5.7 KB/s down, 0.9 KB/s up, server tick p95 3.7 ms. EditMode 597/597, PlayMode 105/105; the independent review's 3 blockers fixed. Part 2a started: the Linux server in local Docker and the API's ticket endpoint."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "6e6e9b4a",
+   "what": "<strong>M9b part 2a done</strong>: the Linux match server builds (Mono; IL2CPP needs a toolchain fix) and runs in local Docker (image 71 MB compressed). A scripted voyage against it: server tick p95 0.9-1.5 ms, about 3.4 KB/s down and 1.2 KB/s up, 141-150 MB memory, ready 2 s after start, a dropped socket resumes in 0.5 s, stopping the server ends the voyage cleanly. The API issues join tickets (server 160/160). One voyage per server process for now. Part 2b started: the browser client (real visuals and HUD, level-up cards over the network, boost prediction)."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Open Docker Desktop once</strong> and accept its terms (then sign out and in, or restart, if it asks), so local server builds can run.",
+   "<strong>For the Railway test (soon)</strong>: a GitHub token with <code>write:packages</code> so I can push the match server image, or push it yourself; and whether the image may be public (it holds no secrets).",
    "<strong>Keep recording voyages</strong> when you play.",
    "Later: a balance pass (early dinghy damage, late elite HP, Doubloons in the simulator)."
   ],
