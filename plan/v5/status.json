@@ -1,6 +1,6 @@
 {
  "updated": "8 Oct 2026",
- "statusLine": "M9a: done, deployed and playtested; rules v2 fixed the playtest false alarm. Waiting for your OK to close M9a; M9b (the Netcode match server spike) is next.",
+ "statusLine": "M9a closed (8 Oct). Next: M9b, the Netcode match server spike on Railway.",
  "statusOk": false,
  "facts": [
   [
@@ -78,12 +78,12 @@
    "chip": "done 8 Oct · playtested"
   },
   "M9a": {
-   "state": "building",
-   "chip": "ready to close · your OK"
+   "state": "done",
+   "chip": "done 8 Oct · tag v5-m9a"
   },
   "M9b": {
-   "state": "planned",
-   "chip": "planned"
+   "state": "next",
+   "chip": "next: Netcode match server spike"
   },
   "M9c": {
    "state": "planned",
@@ -475,12 +475,17 @@
    "when": "8 Oct",
    "commit": "c72f188d",
    "what": "<strong>Run checks v2 deployed</strong>: limits no longer dip mid-run, and the strongest simulated play style now kills everything that spawns, as you do. Your playtest voyage and the previous one both pass (the closest call: 81% of the minute-4 kill limit); false alarms still 0.05%. The live board rescored 17 runs: your run now shows 'checked'. M9a is ready to close on your OK."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "<strong>M9a closed</strong> on your OK (EditMode 583/583, server 154/154). Balance findings from the playtest (early dinghy damage, tough late elites, the simulator's Doubloons) wait for a later balance pass. Next: M9b, the Netcode match server spike."
   }
  ],
  "todos": {
   "next": [
    "<strong>Keep recording voyages</strong> when you play.",
-   "Nothing else needed until the M9a playtest."
+   "Later: a balance pass (early dinghy damage, late elite HP, Doubloons in the simulator)."
   ],
   "open": [
    "PvP draft on phones: tapping a card to read it also picks it (later)."

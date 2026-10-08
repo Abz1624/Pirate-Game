@@ -1,0 +1,112 @@
+
+// Renders each model asset with the same camera, lights and background into a PNG (off-screen, no scene changes).
+var outDir = @"C:\Kshitij\Work\X2C\web3\GitHub\Pirate-Game\plan\v5\phase-06-art\model-renders";
+System.IO.Directory.CreateDirectory(outDir);
+var assets = new (string slug, string path)[] {
+  ("player-cutlass-sloop","Assets/_Game/Prefabs/Player/CutlassSloop.prefab"),
+  ("enemy-shark","Assets/GameObject/Shark.prefab"),
+  ("enemy-swordfish","Assets/GameObject/SwordFish.prefab"),
+  ("enemy-hammerhead","Assets/GameObject/HammerHead.prefab"),
+  ("enemy-manta-ray","Assets/GameObject/MantaRay.prefab"),
+  ("enemy-kraken","Assets/GameObject/Kraken.prefab"),
+  ("enemy-cannonboat","Assets/GameObject/Cannonboat.prefab"),
+  ("enemy-cannonboat-navy","Assets/GameObject/CannonboatNavy.prefab"),
+  ("enemy-smuggle-boat","Assets/GameObject/SmuggleBoat.prefab"),
+  ("enemy-fire-boat","Assets/GameObject/FireBoat.prefab"),
+  ("enemy-ram-ship","Assets/GameObject/RamShip.prefab"),
+  ("enemy-crab","Assets/GameObject/Crab.prefab"),
+  ("enemy-crab-elite","Assets/GameObject/CrabElite.prefab"),
+  ("cand-pirateship","Assets/3D Models/Ships/Pirate_ship/pirateship.fbx"),
+  ("cand-wooden-boat","Assets/Mesh/Cursed/small_wooden_boat/Wooden Boat.fbx"),
+  ("cand-octopus","Assets/3D Models/Octopus/Octopus.fbx"),
+  ("cand-eel","Assets/GameObject/Eel.prefab"),
+  ("cand-fire-swordfish","Assets/GameObject/FireSwordFish.prefab"),
+  ("weapon-cannonball","Assets/GameObject/Guns/Cannonball.prefab"),
+  ("weapon-deck-cannons","Assets/GameObject/Guns/Deck Cannons.prefab"),
+  ("weapon-flying-cutlasses","Assets/GameObject/Guns/Flying Cutlasses.prefab"),
+  ("weapon-long-nine","Assets/GameObject/Guns/Long Nine.prefab"),
+  ("weapon-mortar","Assets/GameObject/Guns/Mortar.prefab"),
+  ("weapon-swivel-guns","Assets/GameObject/Guns/Swivel Guns.prefab"),
+  ("weapon-harpoon","Assets/GameObject/Guns/Harpoon.prefab"),
+  ("weapon-lightning-mast","Assets/GameObject/Guns/Lightning Mast.prefab"),
+  ("weapon-fire-barrel","Assets/GameObject/FireBarrel.prefab"),
+  ("weapon-spike-ram","Assets/GameObject/Guns/SpikeRam.prefab"),
+  ("weapon-blunt-ram","Assets/GameObject/Guns/BluntRam.prefab"),
+  ("weapon-fish-bell","Assets/GameObject/fish_bell.prefab"),
+  ("weapon-harpoon-launcher","Assets/GameObject/HarpoonLauncher.prefab"),
+  ("weapon-cursed-cannon","Assets/Mesh/Cursed/Cannon/cannon.fbx"),
+  ("pickup-xp-crystal","Assets/Prefabs/VFX/04_XPCrystal.prefab"),
+  ("pickup-gold-coin","Assets/Prefabs/VFX/03_GoldCoin.prefab"),
+  ("pickup-loot-barrel","Assets/GameObject/LootBarrel.prefab"),
+  ("pickup-gem-barrel","Assets/GameObject/GemBarrel.prefab"),
+  ("pickup-health-barrel","Assets/GameObject/HealthBarrel.prefab"),
+  ("poi-treasure-chest","Assets/GameObject/Treasure_chest.prefab"),
+  ("poi-salvage-chest-light","Assets/Prefabs/VFX/SalvageChest.prefab"),
+  ("poi-signal-buoy","Assets/Prefabs/VFX/TrialBuoy.prefab"),
+  ("poi-repair-wreck","Assets/GameObject/repair_wreck.prefab"),
+  ("poi-powder-cache-tombstone","Assets/GameObject/pirate_tombstone.prefab"),
+  ("poi-treasure-map","Assets/GameObject/Treasure map.prefab"),
+  ("poi-lighthouse","Assets/3D Models/light_house/light_house.fbx"),
+  ("poi-stone-arch","Assets/Mesh/Cursed/stone-arch/storn_arch.fbx"),
+  ("island-tropical-1","Assets/GameObject/Islands/Island_Tropical_1.prefab"),
+  ("island-tropical-4","Assets/GameObject/Islands/Island_Tropical_4.prefab"),
+  ("island-tropical-7","Assets/GameObject/Islands/Island_Tropical_7.prefab"),
+  ("island-vulcano","Assets/GameObject/Islands/Island_Vulcano.prefab"),
+  ("prop-tree-01","Assets/3D Models/Tree/Tree_01.prefab"),
+  ("prop-rock-large","Assets/3D Models/Rocks/Rock_Large.prefab"),
+  ("prop-coral-reef-1","Assets/GameObject/CoralReef_1.prefab"),
+  ("prop-mermaid-statue","Assets/GameObject/MermaidStatue.prefab"),
+  ("prop-shipwreck","Assets/GameObject/Shipwreck.prefab"),
+  ("prop-tower-windward","Assets/GameObject/Tower_Windward.prefab"),
+  ("prop-cliffs-tropical-1","Assets/GameObject/Cliffs_Tropical 1.prefab"),
+  ("prop-wooden-bridge","Assets/Mesh/Cursed/wooden_bridge/wooden_bridge.fbx"),
+  ("prop-barrel","Assets/Mesh/Cursed/Baral/Baral.fbx"),
+};
+var log = new System.Text.StringBuilder();
+var pru = new UnityEditor.PreviewRenderUtility();
+try {
+  var cam = pru.camera;
+  cam.fieldOfView = 30f;
+  cam.clearFlags = CameraClearFlags.SolidColor;
+  cam.backgroundColor = new Color(0.87f, 0.91f, 0.94f, 1f);
+  cam.nearClipPlane = 0.01f; cam.farClipPlane = 5000f;
+  pru.lights[0].intensity = 1.25f; pru.lights[0].transform.rotation = Quaternion.Euler(50f, 210f, 0f);
+  pru.lights[1].intensity = 0.55f; pru.lights[1].transform.rotation = Quaternion.Euler(20f, 40f, 0f);
+  pru.ambientColor = new Color(0.45f, 0.47f, 0.5f);
+  foreach (var (slug, path) in assets) {
+    var src = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
+    if (src == null) { log.AppendLine($"MISSING\t{slug}\t{path}"); continue; }
+    var go = pru.InstantiatePrefabInScene(src);
+    go.transform.position = Vector3.zero;
+    foreach (var r in go.GetComponentsInChildren<Renderer>(true))
+      if (!(r is MeshRenderer || r is SkinnedMeshRenderer)) r.enabled = false;
+    foreach (var c in go.GetComponentsInChildren<Canvas>(true)) c.enabled = false;
+    foreach (var lod in go.GetComponentsInChildren<LODGroup>(true)) {
+      var lods = lod.GetLODs();
+      lod.enabled = false;
+      for (int i = 1; i < lods.Length; i++) foreach (var r in lods[i].renderers) if (r) r.enabled = false;
+    }
+    var rends = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Where(go.GetComponentsInChildren<Renderer>(true),r => r.enabled && r.gameObject.activeInHierarchy && (r is MeshRenderer || r is SkinnedMeshRenderer)));
+    if (rends.Length == 0) { log.AppendLine($"NOMESH\t{slug}\t{path}"); UnityEngine.Object.DestroyImmediate(go); continue; }
+    var b = rends[0].bounds; foreach (var r in rends) b.Encapsulate(r.bounds);
+    long tris = 0;
+    foreach (var r in rends) {
+      Mesh m = r is SkinnedMeshRenderer sk ? sk.sharedMesh : r.GetComponent<MeshFilter>()?.sharedMesh;
+      if (m != null) for (int s = 0; s < m.subMeshCount; s++) tris += m.GetIndexCount(s) / 3;
+    }
+    var radius = b.extents.magnitude;
+    var rot = Quaternion.Euler(40f, 225f, 0f);
+    var dist = radius / Mathf.Sin(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) * 1.05f;
+    cam.transform.rotation = rot;
+    cam.transform.position = b.center - rot * Vector3.forward * dist;
+    pru.BeginStaticPreview(new Rect(0, 0, 512, 512));
+    pru.Render(true);
+    var tex = pru.EndStaticPreview();
+    System.IO.File.WriteAllBytes(System.IO.Path.Combine(outDir, slug + ".png"), tex.EncodeToPNG());
+    UnityEngine.Object.DestroyImmediate(tex);
+    UnityEngine.Object.DestroyImmediate(go);
+    log.AppendLine($"OK\t{slug}\t{tris}\t{b.size.x:F1}x{b.size.y:F1}x{b.size.z:F1}\t{path}");
+  }
+} finally { pru.Cleanup(); }
+System.IO.File.WriteAllText(System.IO.Path.Combine(outDir, "renders.tsv"), log.ToString());
+return log.ToString();

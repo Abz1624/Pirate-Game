@@ -16,7 +16,8 @@ Branch `v5-live-game`. Decisions D22, D23, D24, D25.
 
 ## Gate
 
-- Tests on the closing code: server 153/153 (`plan/playtest/tests/server-m9a.trx`), EditMode 582/582
+- Closing run (rules v2): EditMode 583/583 (`editmode-m9a-close.json`), server 154/154.
+- Tests before rules v2: server 153/153 (`plan/playtest/tests/server-m9a.trx`), EditMode 582/582
   (`editmode-m9a-final.json`), PlayMode 92/92 (`playmode-m9a-final.json`).
 - Deploy (8 Oct): migrations AddRunLogs, AddRunVerdicts, AddRunLogRejection applied on Railway; the weekly board serves
   the existing entries, marked unchecked (no log, older builds).
@@ -24,6 +25,12 @@ Branch `v5-live-game`. Decisions D22, D23, D24, D25.
 - Playable check: desktop WebGL build with the run log; a voyage uploads and shows "checked" on the weekly board.
 - Owner playtest: 8 Oct, `plan/playtest/sessions/session-20261008-105707-rook.json` (Rook, sunk 8:36, 1,227 kills). The
   run uploaded with its log; rules v1 flagged it (minute 4: 200 > 194), a false alarm fixed by rules v2; now checked.
+
+## Closed
+
+Closed 8 Oct on the owner's OK. Balance findings from the playtest (deckhand dinghies 27% of early damage, late
+elites at about 3,700-4,900 HP, the simulator's Cursed Doubloons chain strikes) are left for a later balance pass
+(owner, 8 Oct).
 
 ## Notes
 
