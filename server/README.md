@@ -166,6 +166,20 @@ only: per minute and per run kills, XP, gold, damage dealt, chests and points of
 the XP; kills against spawns; the hull against damage and heals; time survived in overtime). When the rules version
 changes, the stored runs are re-scored in the background at startup.
 
+Rules v2 (8 Oct): the per-minute bounds on kills, XP, gold and damage dealt never fall as the run goes on (a running max;
+v1's minute bounds followed the spawn schedule's dips, and the owner's Cursed Doubloons voyage S6 was flagged at minute 4
+with 200 kills against 194 after 186 at minute 1); each simulated voyage draws its build's reach (the share of the wave
+enemies it fights, between the fitted 0.9 and 1); the simulated spawns count the scripted fights and the boss. D25: the
+owner's voyages on the current build (S5 as today's config, S6) must pass the shipped rules.
+
+Regenerating the rules (after any balance change; `V5PlausibilityRulesTests` fails until then), in
+`plan/playtest/montecarlo`, after exporting `data.json` from the Editor (RoguePirates > V5 > Balance: export the Monte
+Carlo data):
+1. `node plausibility.mjs`: the rules (the version goes up by one when their content changes);
+2. `node plausibility.mjs --check`: the false-positive budget (at most 0.1% of 10,000 strongest-personality voyages);
+3. `node plausibility.mjs --sessions`: the recorded voyages as run logs, their expected verdicts and the D25 check;
+4. `node plausibility.mjs --edge-cases`: the shared edge-case fixture (the three checkers agree).
+
 `GET /api/leaderboard/weekly?mapId=saltwind&limit=50` (auth optional; `limit` 1..100, default 50) -> `200`
 ```json
 {"mapId":"saltwind","weekStart":"2026-09-28T00:00:00Z","weekEnd":"2026-10-05T00:00:00Z",

@@ -193,6 +193,10 @@ if (picks.length) {
 const weapons = session.weapons || {};
 const wTotal = Object.values(weapons).reduce((s, w) => s + w.damage, 0);
 if (wTotal > 0) console.log(`Weapons in the game: ${Object.entries(weapons).sort((a, b) => b[1].damage - a[1].damage).map(([k, w]) => `${k} ${f(w.damage / wTotal * 100)}% (${w.kills} kills)`).join(', ')}`);
+// V5 M9a (rules v2): the model's landed damage by weapon to the session's end (sim.mjs dealtBy), as shares.
+{ const by = {}; for (const r of cut) for (const [k, v] of Object.entries(r.dealtBy || {})) by[k] = (by[k] ?? 0) + v;
+  const t = Object.values(by).reduce((a, b) => a + b, 0);
+  if (t > 0) console.log(`Weapons in the model (landed damage share, all runs): ${Object.entries(by).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${f(v / t * 100)}%`).join(', ')}`); }
 
 // ---- mismatches and the constants that move them ----
 // Metrics at the session's last full minute (or its end), each with the game value and the model's runs.

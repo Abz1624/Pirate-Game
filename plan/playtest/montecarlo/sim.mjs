@@ -19,6 +19,12 @@ export const MODEL = {
     chainshot: [1, 1.5, 1, 2], broadside_battery: [1.8, 1.5, 0.6, 1.8], flying_cutlasses: [0.875, 1, 0.35, 3],
     anchor_flail: [1, 3.6, 1, 3], lighthouse_lantern: [1, 6, 1, 4], flamethrower: [9.4, 3.3, 0.28, 3],
     powder_kegs: [0.72, 2.2, 0.72, 3], lightning_mast: [1, 1.8, 1, 3], cursed_doubloons: [1, 2, 1, 3],
+    // Known gap (rules v2 review, 8 Oct): the Doubloons and the Mast are chain strikes in the game (AreaStrikeBehavior.FireChain:
+    // 5 / 4 hits + 1 per quantity bonus, falloff 0.9 / 0.85; the Quantity stat adds no hits), but quantity here multiplies the
+    // first hit (Extra Hands included). That over-count happens to offset an under-count elsewhere: modelled from the chain
+    // numbers alone, the Doubloons' share of the damage drops from 51% to 17% in S6 (game 63%) and 22% to 5% in S5 (game 30%)
+    // and kills do not move (they follow the spawns). Left for the next refit, with the per-weapon accuracy it needs.
+
     // V5 M8z (7 Oct, D21): the Squid Ink Pots replaced the Ramming Prow: a pot on the back of the pack, then a 3 s slick
     // ticking 0.15 x base every 0.5 s (an enemy sails out of it: about half the ticks land); the slow itself is not modelled,
     // as for Chainshot, the Siren Bell and the Harpoon's tar (the model has no enemy speed).
@@ -167,7 +173,7 @@ export function simulateRun(data, params) {
   let spawnAcc = 0, topUpAcc = 0, overtimeAcc = 0, bossDone = false, bossSpawned = false, bossKill = -1, died = false, minHull = 1;
   let releaseUntil = -1, islandReadyAt = 0, arenaSince = -1;
   const pendingReleases = [], hordesDone = new Set(), focusDone = new Set();
-  const minutes = [], focusLog = [], damageBy = {}, killsBy = {}, levelAt = []; // levelAt[i] = second level i + 1 was reached
+  const minutes = [], focusLog = [], damageBy = {}, killsBy = {}, dealtBy = {}, levelAt = []; // levelAt[i] = second level i + 1 was reached
   const bossAt = params.bossAt !== undefined ? params.bossAt : (data.demo && data.demo.autoBossSeconds > 0 ? data.demo.autoBossSeconds : M.bossAtSeconds);
   let now = 0;
   const minuteOf = t => t / 60;
@@ -388,6 +394,9 @@ export function simulateRun(data, params) {
       focusDone.add(f.id);
       const e = E[f.enemy], hp = Math.max(e.hp * hpScale(t) * f.hpMult, gameDps() * (f.arena ? D.ttk.arena : D.ttk.focus));
       focus.push({ id: f.id, phase: f.id, kind: f.arena ? 'arena' : 'focus', hp, maxHp: hp, dmg: e.dmg * (f.dmgMult ?? 1), xp: e.xp, start: t });
+      // V5 M9a (rules v2): the run log counts every Spawned event, scripted phases' too (RunLogRecorder); not the kill band's
+      // spawns here (bandSpawns), so the fitted voyages are unchanged.
+      spawns++;
       if (f.arena && arenaSince < 0) arenaSince = t;
     }
     if (!bossSpawned && bossAt != null && t >= bossAt) {
@@ -397,6 +406,7 @@ export function simulateRun(data, params) {
         const asIf = Math.max(t, D.bossHpAsIfAtSeconds || 0);
         const hp = Math.max(e.hp * hpScale(asIf), gameDps() * D.ttk.boss);
         focus.push({ id, kind: 'boss', hp, maxHp: hp, dmg: e.dmg, xp: e.xp, start: t });
+        spawns++; // the run log's spawns (rules v2)
       }
     }
 
@@ -411,7 +421,10 @@ export function simulateRun(data, params) {
     let crowdDamage = 0, hitWeighted = 0, singleSum = 0;
     for (const w of weapons) {
       const x = weaponNumbers(w);
-      crowdDamage += x.single * accuracy * ((1 - toFocus) + (x.targets - 1) * splash);
+      const toCrowd = x.single * accuracy * ((1 - toFocus) + (x.targets - 1) * splash);
+      crowdDamage += toCrowd;
+      // the weapon's landed damage (crowd and focus targets), for compare_session's weapon table
+      dealtBy[w.id] = (dealtBy[w.id] ?? 0) + (n > 0 ? toCrowd : 0) + x.single * accuracy * toFocus;
       hitWeighted += x.single * x.perHit; singleSum += x.single;
     }
     const single = singleSum;
@@ -527,7 +540,7 @@ export function simulateRun(data, params) {
 
   function finish(t) {
     return { captain: cap.id, end: t / 60, endSeconds: t, died, gold, bossAt: bossSpawned ? bossAt : null, bossKill: bossKill >= 0 ? bossKill / 60 : null, kills, level, dps: singleDps(), gameDps: gameDps(), damageTaken, healed, islandDamage, minHull,
-      weapons: weapons.map(w => w.id), evolved, logbooks: Object.keys(logbooks), items, minutes, focus: focusLog, damageBy, killsBy, spawns, levelAt };
+      weapons: weapons.map(w => w.id), evolved, logbooks: Object.keys(logbooks), items, minutes, focus: focusLog, damageBy, killsBy, dealtBy, spawns, levelAt };
   }
 }
 

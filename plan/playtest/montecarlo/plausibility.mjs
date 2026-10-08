@@ -24,7 +24,13 @@
 //   barrel pickup x (0.5 + pickupGreed); chests All every 90 s, Some and Evolution 105 s, None never; the boss summoned as
 //   the personality does (a minute, the 12:00 hint, the 13:00 marker, never); stops as it does (death, a time, after the
 //   boss); the Powder Cache challenge cleared at a random time between 1:30 and 10:00 when it visits caches. Each voyage
-//   draws a Captain (equal shares).
+//   draws a Captain (equal shares) and (rules v2) its build's reach: engagement between the fitted 0.9 and 1 (every enemy
+//   that spawns is fought; the high-kill builds, S6).
+//
+// Rules v2 (8 Oct): rate bounds never fall over the run (a running max); the build's reach above; the simulated run log's
+// spawns count the scripted fights and the boss, as the game's RunLogRecorder does (sim.mjs). D25: the owner's voyages on the current
+// build (S5 with today's config hash, S6) must pass the shipped rules; --sessions writes them to expected-verdicts.json
+// (currentBuild) with the share of each bound they use.
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -56,7 +62,13 @@ export function personalityParams(data, p, r) {
   const cache = (p.landmarks & 2) !== 0;
   const captains = Object.keys(data.captains);
   const captain = captains[Math.floor(r() * captains.length)];
-  return { model, bossAt, stopAt, stopAfterBoss, powderCacheAt: cache ? 90 + Math.floor(r() * 510) : null, captain, wreck: (p.landmarks & 1) !== 0 };
+  const powderCacheAt = cache ? 90 + Math.floor(r() * 510) : null;
+  // Rules v2: the build's reach. MODEL.engagement (0.9, fitted on S1-S5) lets a tenth of the wave enemies sail past unkilled;
+  // a build that reaches them (S6, 8 Oct: Cursed Doubloons and Squid Ink Pots, enemies alive kept at 1-27) kills what
+  // spawns, and replayed at engagement 1 the model gives that voyage's per-minute kills (at 0.9 it stays 15-25% under).
+  // Each voyage draws its reach between the two, so the bounds cover the high-kill builds.
+  model.engagement = MODEL.engagement + (1 - MODEL.engagement) * r();
+  return { model, bossAt, stopAt, stopAfterBoss, powderCacheAt, captain, wreck: (p.landmarks & 1) !== 0 };
 }
 
 const lcg = seed => { let s = seed >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; };
@@ -94,6 +106,7 @@ export function levelFromXp(table, startLevel, totalXp) {
 }
 
 const FIELDS = ['kills', 'xp', 'gold', 'dealt', 'chests', 'pois'], BARRELS = ['xp', 'gold'];
+const RUNNING_MAX = new Set(['kills', 'xp', 'gold', 'dealt']); // rate bounds that never fall (rules v2)
 const REASON = { kills: 'kills', xp: 'xp', gold: 'gold', dealt: 'damage_dealt', chests: 'chests', pois: 'points_of_interest' };
 const ID = { kills: 'KILLS', xp: 'XP', gold: 'GOLD', dealt: 'DEALT', chests: 'CHESTS', pois: 'POIS' };
 
@@ -133,8 +146,13 @@ function buildRules(data, margins, strongest, logs, screen, baseModel = {}) {
       for (let i = 0; i < L; i++) {
         const src = pooled(rate[f], Math.min(i, lastData));
         const q = src.length ? quantile(src, Q) : 0;
-        // damage dealt: a build's output only grows during a voyage, so its minute bound never falls
-        b.push(Math.max(margins.perMinute[f], Math.ceil(q * K), f === 'dealt' && i > 0 ? b[i - 1] : 0));
+        // Rules v2: a rate bound never falls as the run goes on (a running max over the minutes). A build's output only grows
+        // (damage dealt), and the kills, XP and gold a minute are capped by the spawns, which the simulator's p99.9 follows
+        // minute by minute (rules v1: kills 224 at minute 1, 194 at minute 4, 259 at minute 9). A player whose build
+        // reached a rate early keeps it: the spawn schedule's dips are not a ceiling (the boundaries do not line up with
+        // the waves, a crowd or a horde left alive is cleared a minute later, a strong build kills what a dip lets through,
+        // and XP and gold barrels are collected late). S6 (8 Oct) was flagged at minute 4 (200 > 194) after 186 at minute 1.
+        b.push(Math.max(margins.perMinute[f], Math.ceil(q * K), RUNNING_MAX.has(f) && i > 0 ? b[i - 1] : 0));
       }
       perMinute[f] = b;
     }
@@ -193,7 +211,7 @@ function buildRules(data, margins, strongest, logs, screen, baseModel = {}) {
     logFormat: 'rp-runlog', logVersion: 1, minuteSeconds: MINUTE,
     configHash: data.meta?.configHash, configHashes: [data.meta?.configHash], setId: data.meta?.setId,
     xpToNext: table, startLevel: start,
-    margin: { quantile: Q, multiplier: K, minSamples: nMin, note: 'bound = max(config margin, ceil(p99.9 of the strongest personality x 1.25)); XP and gold minutes: the p99.9 of two minutes of drops (barrels collected a minute late); late minutes with too few voyages use neighbouring minutes (rates) or add the minute bound to the last total' },
+    margin: { quantile: Q, multiplier: K, minSamples: nMin, note: 'bound = max(config margin, ceil(p99.9 of the strongest personality x 1.25)); kills, XP, gold and damage dealt a minute: a running max (never below an earlier minute bound); XP and gold minutes: the p99.9 of two minutes of drops (barrels collected a minute late); late minutes with too few voyages use neighbouring minutes (rates) or add the minute bound to the last total; each voyage draws the reach of its build (engagement) between the fitted 0.9 and 1' },
     simulator: { file: 'plan/playtest/montecarlo/sim.mjs', data: 'plan/playtest/montecarlo/data.json', exported: data.meta?.exported, personality: strongest.id,
       runs: logs.length, maxMinutes: margins.maxMinutes, seeds: `${SEED_RULES} + i * 7919`, screen, modelOverrides: Object.keys(baseModel).length ? baseModel : undefined,
       captains: Object.fromEntries(Object.entries(groups).map(([k, v]) => [k, v.length])), boundPerCaptain: 'the highest of the Captains\' bounds',
@@ -354,6 +372,27 @@ export function sessionToLog(s, sd) {
 }
 const r1 = x => Math.round(x * 10) / 10;
 
+/**
+ * D25: the owner's voyages on the current build, which must pass the shipped rules. S5 was played on daa47525, which
+ * differs from today's config only in the Unlocks asset (no rule reads it), so it is checked as a log naming today's config
+ * (the API tests' TodaysVoyage does the same); S6 was played on today's config.
+ */
+export const CURRENT_BUILD = [
+  { id: 'S5', session: 'session-20261008-001147-rook.json', convert: true },
+  { id: 'S6', session: 'session-20261008-105707-rook.json', convert: false, note: 'M9a playtest, 8 Oct: Cursed Doubloons 692 kills, Squid Ink Pots 320; sunk at 8:36' },
+];
+
+/** The largest share of each bounded rule's bound a log uses (per minute or running total), and the minute it happens. */
+function headroom(rules, log) {
+  const head = {};
+  for (const r of rules.rules.filter(r => r.bounds)) {
+    let run = 0, worst = 0, at = 0;
+    log.minutes.forEach((m, i) => { const v = r.kind === 'total' ? (run += m[r.field]) : m[r.field], b = r.bounds[Math.min(i, r.bounds.length - 1)]; if (v / b > worst) { worst = v / b; at = i; } });
+    head[r.id] = { used: Math.round(worst * 1000) / 10, minute: at };
+  }
+  return head;
+}
+
 async function sessions() {
   const { SESSIONS, loadSessionData } = await import('./session_data.mjs');
   const rules = readJson(RULES_PATH), data = readJson(path.join(here, 'data.json'));
@@ -366,13 +405,19 @@ async function sessions() {
     const s = readJson(path.join(dir, file));
     // the fitted voyage played on the same build (the same config hash): its config snapshot and model settings
     const known = SESSIONS.find(x => x.file === file) || SESSIONS.find(x => String(s.header.configHash).startsWith(x.configHash));
+    const current = CURRENT_BUILD.find(x => x.session === file);
     const snap = known ? loadSessionData(known) : { data, model: {} };
     const sd = { ...snap.data, personalities: snap.data.personalities || data.personalities };
     const log = sessionToLog(s, sd);
     const out = file.replace(/^session-/, 'session-log-');
     fs.writeFileSync(path.join(FIXTURES, out), JSON.stringify(log) + '\n');
-    // the rules of the config it was played on (generated the same way, written next to the logs)
-    const key = known ? known.id : 'today';
+    // the rules of the config it was played on (generated the same way, written next to the logs); a voyage on the shipped
+    // config (S6) has the shipped rules as its own
+    const key = known ? known.id : current ? current.id : 'today';
+    if (!ownRules[key] && s.header.configHash === rules.configHash) {
+      ownRules[key] = { ...rules, note: `test fixture: the shipped rules (v${rules.rulesVersion}): ${key} was played on the config they were made for` };
+      fs.writeFileSync(path.join(FIXTURES, `rules-${key}.json`), stringify(ownRules[key]));
+    }
     if (!ownRules[key]) {
       const t0 = Date.now();
       const own = makeRules({ ...sd, meta: { ...(sd.meta || {}), configHash: s.header.configHash } }, { ...margins, runs: margins.fixtureRuns ?? margins.runs }, snap.model);
@@ -383,21 +428,28 @@ async function sessions() {
       console.log(`rules for ${key} (${String(s.header.configHash).slice(0, 8)}) in ${((Date.now() - t0) / 1000).toFixed(0)} s`);
     }
     const v = evaluate(rules, log), bounds = evaluate(rules, log, { checkConfig: false }), mine = evaluate(ownRules[key], log);
-    expected.push({ file: out, session: file, id: known?.id ?? null, rules: `rules-${key}.json`, ownVerdict: mine.status, ownReasons: mine.reasons,
+    expected.push({ file: out, session: file, id: known?.id ?? current?.id ?? null, rules: `rules-${key}.json`, ownVerdict: mine.status, ownReasons: mine.reasons,
       verdict: v.status, reasons: v.reasons.map(r => r.code), boundsVerdict: bounds.status, boundsReasons: bounds.reasons });
     console.log(`    own config's rules: ${mine.status}${mine.reasons.length ? ' ' + JSON.stringify(mine.reasons) : ''}`);
     const tot = f => log.minutes.reduce((a, m) => a + m[f], 0);
-    console.log(`${(known?.id ?? '--').padEnd(3)} ${file.padEnd(36)} ${String(log.seconds).padStart(6)} s  kills ${tot('kills')}  xp ${tot('xp')}  gold ${tot('gold')}  level ${log.minutes.at(-1).level}  -> ${v.status}; bounds only: ${bounds.status}${bounds.reasons.length ? ' ' + JSON.stringify(bounds.reasons) : ''}`);
+    console.log(`${(known?.id ?? current?.id ?? '--').padEnd(3)} ${file.padEnd(36)} ${String(log.seconds).padStart(6)} s  kills ${tot('kills')}  xp ${tot('xp')}  gold ${tot('gold')}  level ${log.minutes.at(-1).level}  -> ${v.status}; bounds only: ${bounds.status}${bounds.reasons.length ? ' ' + JSON.stringify(bounds.reasons) : ''}`);
     // headroom: the largest share of a bound used, per rule
-    const head = {};
-    for (const r of rules.rules.filter(r => r.bounds)) {
-      let run = 0, worst = 0;
-      log.minutes.forEach((m, i) => { const v2 = r.kind === 'total' ? (run += m[r.field]) : m[r.field]; worst = Math.max(worst, v2 / r.bounds[Math.min(i, r.bounds.length - 1)]); });
-      head[r.id] = Math.round(worst * 100) + '%';
-    }
-    console.log('      most of a bound used:', JSON.stringify(head));
+    console.log('      most of a bound used:', JSON.stringify(Object.fromEntries(Object.entries(headroom(rules, log)).map(([k, h]) => [k, Math.round(h.used) + '%']))));
   }
-  fs.writeFileSync(path.join(FIXTURES, 'expected-verdicts.json'), JSON.stringify({ rulesVersion: rules.rulesVersion, configHash: rules.configHash, sessions: expected }, null, 1) + '\n');
+  // D25: the current build's voyages against the shipped rules (S5 converted to today's config hash)
+  const currentBuild = [];
+  for (const c of CURRENT_BUILD) {
+    const row = expected.find(e => e.session === c.session);
+    if (!row) throw new Error(`${c.session}: not in plan/playtest/sessions`);
+    const log = readJson(path.join(FIXTURES, row.file));
+    if (c.convert) log.configHash = rules.configHash;
+    const v = evaluate(rules, log), head = headroom(rules, log);
+    currentBuild.push({ id: c.id, file: row.file, convertedToShippedConfig: c.convert, verdict: v.status, reasons: v.reasons, headroom: head });
+    console.log(`D25 ${c.id} ${row.file}${c.convert ? ' (as today\'s config)' : ''}: ${v.status}${v.reasons.length ? ' ' + JSON.stringify(v.reasons) : ''}`);
+    console.log('      % of bound used (minute):', Object.entries(head).map(([k, h]) => `${k} ${h.used}% (${h.minute})`).join(', '));
+    if (v.status !== 'pass') process.exitCode = 1;
+  }
+  fs.writeFileSync(path.join(FIXTURES, 'expected-verdicts.json'), JSON.stringify({ rulesVersion: rules.rulesVersion, configHash: rules.configHash, sessions: expected, currentBuild }, null, 1) + '\n');
   console.log('wrote', FIXTURES);
 }
 

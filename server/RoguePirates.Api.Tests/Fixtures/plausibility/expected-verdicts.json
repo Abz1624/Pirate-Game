@@ -1,5 +1,5 @@
 {
- "rulesVersion": 1,
+ "rulesVersion": 2,
  "configHash": "9d5657cf1d5db3d74c959fc496a7e98465d4d4ae21ea9db5510129d923011f38",
  "sessions": [
   {
@@ -20,21 +20,21 @@
      "rule": "PR-XP-MIN",
      "minute": 0,
      "value": 134,
-     "bound": 103
+     "bound": 118
     },
     {
      "code": "xp_run_total",
      "rule": "PR-XP-RUN",
      "minute": 0,
      "value": 134,
-     "bound": 103
+     "bound": 118
     },
     {
      "code": "level",
      "rule": "PR-LEVEL",
      "minute": 1,
      "value": 20,
-     "bound": 18
+     "bound": 19
     }
    ]
   },
@@ -56,21 +56,21 @@
      "rule": "PR-XP-MIN",
      "minute": 0,
      "value": 190,
-     "bound": 103
+     "bound": 118
     },
     {
      "code": "xp_run_total",
      "rule": "PR-XP-RUN",
      "minute": 0,
      "value": 190,
-     "bound": 103
+     "bound": 118
     },
     {
      "code": "level",
      "rule": "PR-LEVEL",
      "minute": 1,
      "value": 20,
-     "bound": 18
+     "bound": 19
     }
    ]
   },
@@ -120,14 +120,14 @@
      "rule": "PR-XP-MIN",
      "minute": 0,
      "value": 201,
-     "bound": 103
+     "bound": 118
     },
     {
      "code": "xp_run_total",
      "rule": "PR-XP-RUN",
      "minute": 0,
      "value": 201,
-     "bound": 103
+     "bound": 118
     }
    ]
   },
@@ -149,14 +149,14 @@
      "rule": "PR-XP-MIN",
      "minute": 0,
      "value": 182,
-     "bound": 103
+     "bound": 118
     },
     {
      "code": "xp_run_total",
      "rule": "PR-XP-RUN",
      "minute": 0,
      "value": 182,
-     "bound": 103
+     "bound": 118
     },
     {
      "code": "level",
@@ -185,7 +185,7 @@
      "rule": "PR-XP-RUN",
      "minute": 2,
      "value": 503,
-     "bound": 405
+     "bound": 423
     }
    ]
   },
@@ -202,6 +202,142 @@
    ],
    "boundsVerdict": "pass",
    "boundsReasons": []
+  },
+  {
+   "file": "session-log-20261008-105707-rook.json",
+   "session": "session-20261008-105707-rook.json",
+   "id": "S6",
+   "rules": "rules-S6.json",
+   "ownVerdict": "pass",
+   "ownReasons": [],
+   "verdict": "pass",
+   "reasons": [],
+   "boundsVerdict": "pass",
+   "boundsReasons": []
+  }
+ ],
+ "currentBuild": [
+  {
+   "id": "S5",
+   "file": "session-log-20261008-001147-rook.json",
+   "convertedToShippedConfig": true,
+   "verdict": "pass",
+   "reasons": [],
+   "headroom": {
+    "PR-KILLS-MIN": {
+     "used": 71.8,
+     "minute": 9
+    },
+    "PR-XP-MIN": {
+     "used": 38.1,
+     "minute": 0
+    },
+    "PR-GOLD-MIN": {
+     "used": 46.7,
+     "minute": 2
+    },
+    "PR-DEALT-MIN": {
+     "used": 15.7,
+     "minute": 4
+    },
+    "PR-CHESTS-MIN": {
+     "used": 66.7,
+     "minute": 2
+    },
+    "PR-POIS-MIN": {
+     "used": 33.3,
+     "minute": 3
+    },
+    "PR-KILLS-RUN": {
+     "used": 58.1,
+     "minute": 9
+    },
+    "PR-XP-RUN": {
+     "used": 49.2,
+     "minute": 2
+    },
+    "PR-GOLD-RUN": {
+     "used": 55.8,
+     "minute": 2
+    },
+    "PR-DEALT-RUN": {
+     "used": 15,
+     "minute": 4
+    },
+    "PR-CHESTS-RUN": {
+     "used": 56.3,
+     "minute": 15
+    },
+    "PR-POIS-RUN": {
+     "used": 50,
+     "minute": 14
+    },
+    "PR-LEVEL": {
+     "used": 63.6,
+     "minute": 2
+    }
+   }
+  },
+  {
+   "id": "S6",
+   "file": "session-log-20261008-105707-rook.json",
+   "convertedToShippedConfig": false,
+   "verdict": "pass",
+   "reasons": [],
+   "headroom": {
+    "PR-KILLS-MIN": {
+     "used": 81,
+     "minute": 4
+    },
+    "PR-XP-MIN": {
+     "used": 42.5,
+     "minute": 1
+    },
+    "PR-GOLD-MIN": {
+     "used": 54.4,
+     "minute": 0
+    },
+    "PR-DEALT-MIN": {
+     "used": 18.4,
+     "minute": 7
+    },
+    "PR-CHESTS-MIN": {
+     "used": 66.7,
+     "minute": 6
+    },
+    "PR-POIS-MIN": {
+     "used": 33.3,
+     "minute": 3
+    },
+    "PR-KILLS-RUN": {
+     "used": 72.8,
+     "minute": 1
+    },
+    "PR-XP-RUN": {
+     "used": 58.9,
+     "minute": 1
+    },
+    "PR-GOLD-RUN": {
+     "used": 54.4,
+     "minute": 0
+    },
+    "PR-DEALT-RUN": {
+     "used": 14.1,
+     "minute": 7
+    },
+    "PR-CHESTS-RUN": {
+     "used": 37.5,
+     "minute": 6
+    },
+    "PR-POIS-RUN": {
+     "used": 25,
+     "minute": 4
+    },
+    "PR-LEVEL": {
+     "used": 68.4,
+     "minute": 1
+    }
+   }
   }
  ]
 }

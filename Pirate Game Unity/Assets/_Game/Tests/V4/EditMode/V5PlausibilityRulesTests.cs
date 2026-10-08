@@ -94,7 +94,7 @@ namespace RoguePirates.V4.Tests
             var shipped = Shipped();
             var expected = JsonUtility.FromJson<Expected>(File.ReadAllText(Path.Combine(FixtureDir, "expected-verdicts.json")));
             Assert.IsNotNull(expected?.sessions);
-            Assert.AreEqual(8, expected.sessions.Length);
+            Assert.AreEqual(9, expected.sessions.Length);
             foreach (var s in expected.sessions)
             {
                 var log = File.ReadAllText(Path.Combine(FixtureDir, s.file));
@@ -109,7 +109,35 @@ namespace RoguePirates.V4.Tests
             }
         }
 
-        [Serializable] sealed class Expected { public int rulesVersion; public string configHash; public Session[] sessions; }
+        /// <summary>
+        /// D25 (rules v2): the owner's voyages on the current build pass the shipped rules in the game's checker too: S5 as a
+        /// log naming today's config (it differs only in the Unlocks asset) and S6 (the M9a playtest, 8 Oct, flagged by rules v1).
+        /// </summary>
+        [Test]
+        public void GameChecker_PassesTheCurrentBuildVoyages()
+        {
+            var shipped = Shipped();
+            var expected = JsonUtility.FromJson<Expected>(File.ReadAllText(Path.Combine(FixtureDir, "expected-verdicts.json")));
+            Assert.IsNotNull(expected?.currentBuild);
+            CollectionAssert.AreEqual(new[] { "S5", "S6" }, expected.currentBuild.Select(c => c.id).ToArray());
+            foreach (var c in expected.currentBuild)
+            {
+                var log = File.ReadAllText(Path.Combine(FixtureDir, c.file));
+                if (c.convertedToShippedConfig)
+                {
+                    var at = log.IndexOf("\"configHash\":\"", StringComparison.Ordinal);
+                    Assert.GreaterOrEqual(at, 0, c.file);
+                    var start = at + "\"configHash\":\"".Length;
+                    log = log.Substring(0, start) + shipped.configHash + log.Substring(log.IndexOf('"', start));
+                }
+                var v = RunLogPlausibility.Evaluate(shipped, log);
+                Assert.AreEqual(RunLogPlausibility.Pass, v.Status, c.id + ": " + v);
+                Assert.AreEqual(c.verdict, v.Status, c.id);
+            }
+        }
+
+        [Serializable] sealed class Expected { public int rulesVersion; public string configHash; public Session[] sessions; public CurrentBuild[] currentBuild; }
+        [Serializable] sealed class CurrentBuild { public string id, file, verdict; public bool convertedToShippedConfig; }
         [Serializable] sealed class Session { public string file, session, id, rules, ownVerdict, verdict, boundsVerdict; public ReasonRow[] boundsReasons; }
         [Serializable] sealed class ReasonRow { public string code, rule; public int minute; public double value, bound; }
 

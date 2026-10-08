@@ -110,11 +110,17 @@ public sealed class PlausibilityTests : IDisposable
             Assert.True(mine.Status == Verdicts.Pass, $"{file}: {string.Join(", ", mine.Reasons.Select(r => $"{r.Code} minute {r.Minute} {r.Value} > {r.Bound}"))}");
             Assert.Equal(s.GetProperty("ownVerdict").GetString(), mine.Status);
 
-            // with the shipped rules: another build's config is outdated_client; the bounds alone as the generator found them
+            // with the shipped rules: another build's config is outdated_client, a voyage on the shipped config (S6) passes;
+            // the bounds alone as the generator found them
             var shipped = Check(log);
             Assert.Equal(s.GetProperty("verdict").GetString(), shipped.Status);
-            Assert.Equal(Verdicts.OutdatedClient, shipped.Status);
-            Assert.Equal("config_not_in_rules", shipped.Reasons.Single().Code);
+            if (Shipped.ConfigHashes.Contains(log["configHash"]!.GetValue<string>()))
+                Assert.Equal(Verdicts.Pass, shipped.Status);
+            else
+            {
+                Assert.Equal(Verdicts.OutdatedClient, shipped.Status);
+                Assert.Equal("config_not_in_rules", shipped.Reasons.Single().Code);
+            }
             var bounds = Shipped.Evaluate(log.ToJsonString(), checkConfig: false);
             Assert.Equal(s.GetProperty("boundsVerdict").GetString(), bounds.Status);
             Assert.Equal(s.GetProperty("boundsReasons").EnumerateArray().Select(r => r.GetProperty("rule").GetString()).ToArray(), bounds.Reasons.Select(r => r.Rule).ToArray());
@@ -122,7 +128,7 @@ public sealed class PlausibilityTests : IDisposable
             _out.WriteLine($"{s.GetProperty("id").GetString(),-4} {file}: own config {mine.Status}; shipped rules, bounds only: {bounds.Status} {string.Join(",", Codes(bounds))}");
             count++;
         }
-        Assert.Equal(8, count);
+        Assert.Equal(9, count);
     }
 
     [Fact]
@@ -130,6 +136,29 @@ public sealed class PlausibilityTests : IDisposable
     {
         var v = Check(TodaysVoyage());
         Assert.True(v.Status == Verdicts.Pass, string.Join(", ", v.Reasons.Select(r => $"{r.Code} minute {r.Minute} {r.Value} > {r.Bound}")));
+    }
+
+    /// <summary>
+    /// D25 (rules v2): the owner's voyages on the current build pass the shipped rules: S5 as a log naming today's config
+    /// (it differs only in the Unlocks asset) and S6 (the M9a playtest, 8 Oct, a Cursed Doubloons build flagged by rules
+    /// v1 at minute 4: 200 kills > 194). The generator's verdicts (expected-verdicts.json, currentBuild) agree.
+    /// </summary>
+    [Fact]
+    public void CurrentBuildVoyages_PassTheShippedRules()
+    {
+        var rows = Expected().GetProperty("currentBuild").EnumerateArray().ToList();
+        Assert.Equal(new[] { "S5", "S6" }, rows.Select(r => r.GetProperty("id").GetString()).ToArray());
+        foreach (var row in rows)
+        {
+            var log = JsonNode.Parse(Fixture(row.GetProperty("file").GetString()!))!.AsObject();
+            if (row.GetProperty("convertedToShippedConfig").GetBoolean()) log["configHash"] = Shipped.ConfigHash;
+            Assert.Contains(log["configHash"]!.GetValue<string>(), Shipped.ConfigHashes);
+            var v = Check(log);
+            Assert.True(v.Status == Verdicts.Pass, $"{row.GetProperty("id").GetString()}: " + string.Join(", ", v.Reasons.Select(r => $"{r.Code} minute {r.Minute} {r.Value} > {r.Bound}")));
+            Assert.Equal(row.GetProperty("verdict").GetString(), v.Status);
+            var used = row.GetProperty("headroom").EnumerateObject().Select(h => $"{h.Name} {h.Value.GetProperty("used").GetDouble()}%");
+            _out.WriteLine($"{row.GetProperty("id").GetString()}: {v.Status}; most of each bound used: {string.Join(", ", used)}");
+        }
     }
 
     // ---- the shared edge cases ------------------------------------------------------------------------------------------
@@ -175,12 +204,12 @@ public sealed class PlausibilityTests : IDisposable
             foreach (var c in codes) Assert.Contains(c, Codes(v));
             _out.WriteLine($"{what}: {string.Join(", ", v.Reasons.Select(r => $"{r.Code} [{r.Rule}] minute {r.Minute}: {r.Value} > {r.Bound}"))}");
         }
-        Expect("kills of minute 5 tripled", l => { var m = Minutes(l)[5]!; m["kills"] = (int)D(m["kills"]) * 3; }, "kills_per_minute", "kills_above_spawns");
+        Expect("kills of minute 5 quadrupled", l => { var m = Minutes(l)[5]!; m["kills"] = (int)D(m["kills"]) * 4; }, "kills_per_minute", "kills_above_spawns");
         Expect("400 kills added to minute 9 (spawns too)", l => { var m = Minutes(l)[9]!; m["kills"] = (int)D(m["kills"]) + 400; m["spawns"] = (int)D(m["spawns"]) + 400; }, "kills_per_minute");
         Expect("gold of minute 3 + 1000", l => { var m = Minutes(l)[3]!; m["gold"] = (int)D(m["gold"]) + 1000; }, "gold_per_minute", "gold_run_total");
         Expect("XP of minute 4 x5", l => { var m = Minutes(l)[4]!; m["xp"] = (int)D(m["xp"]) * 5; }, "xp_per_minute");
         Expect("level of the last minute + 10", l => { var m = Minutes(l)[^1]!; m["level"] = (int)D(m["level"]) + 10; }, "level_above_xp");
-        Expect("damage dealt of minute 6 x10", l => { var m = Minutes(l)[6]!; m["dealt"] = D(m["dealt"]) * 10; }, "damage_dealt_per_minute");
+        Expect("damage dealt of minute 6 x12", l => { var m = Minutes(l)[6]!; m["dealt"] = D(m["dealt"]) * 12; }, "damage_dealt_per_minute");
         Expect("6 chests in minute 2", l => Minutes(l)[2]!["chests"] = 6, "chests_per_minute");
         Expect("damage taken of minute 15 wiped (hull kept)", l =>
         {
