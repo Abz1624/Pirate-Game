@@ -455,6 +455,11 @@
    "when": "8 Oct",
    "commit": "03a72b9f",
    "what": "<strong>M9a review fixes done and deployed</strong>: bad logs accepted as 'log rejected' (D25), the old unauthenticated test endpoints retired, a 96 KB upload limit, the run log closed by the game, a stricter seeding scan, one edge-case fixture all three checkers agree on, a voyage with damage on passing the hull rule, run logs kept 8 weeks (flagged ones kept). Server 153/153, EditMode 582/582, PlayMode 92/92. Railway: three migrations applied, the board serves the old entries as unchecked. Desktop build for your M9a playtest in progress."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "Leaderboard from local builds fixed: the API's Railway ALLOWED_ORIGINS only listed roguepirates.fun; localhost added with your OK (http://localhost:* and http://127.0.0.1:*). Desktop M9a build served at localhost:8090."
   }
  ],
  "todos": {
