@@ -1,0 +1,5 @@
+# The Unity build output is the context: debug symbols and IL2CPP's backup folder stay out of the image.
+*_BackUpThisFolder_ButDontShipItWithYourGame
+*_BurstDebugInformation_DoNotShip
+*.debug
+*.dbg

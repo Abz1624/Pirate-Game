@@ -158,6 +158,15 @@ namespace RoguePirates.V5.Net
             _nextAttemptAt = Time.realtimeSinceStartup + 0.25f;
         }
 
+        /// <summary>
+        /// V5 M9b part 2a: the voyage is over for this client and the game goes back to the lobby: the server ended it
+        /// (<see cref="Ended"/>, e.g. ServerClosing on a redeploy), or the socket dropped and no resume came within
+        /// <see cref="ReconnectWindowSeconds"/> (or there was never a session to resume).
+        /// </summary>
+        public bool SessionOver =>
+            Ended || _stopped ||
+            !Connected && _droppedAt >= 0f && (_resume == null || !AutoReconnect || Time.realtimeSinceStartup - _droppedAt > ReconnectWindowSeconds);
+
         bool ShouldReconnect =>
             AutoReconnect && !_stopped && !Ended && _resume != null && _droppedAt >= 0f &&
             Time.realtimeSinceStartup - _droppedAt <= ReconnectWindowSeconds;

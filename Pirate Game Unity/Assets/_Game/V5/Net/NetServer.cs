@@ -74,6 +74,11 @@ namespace RoguePirates.V5.Net
 
         public Session Current { get; private set; }
 
+        /// <summary>V5 M9b part 2a: a ticket join went through (the player id); the match server's host starts the held run.</summary>
+        public event Action<string> Joined;
+        /// <summary>Set once <see cref="CloseGracefully"/> starts (a docker stop, a Railway redeploy).</summary>
+        public bool Closing { get; private set; }
+
         /// <summary>The kind of session this server runs (a ticket for another mode is refused).</summary>
         public string Mode = "voyage";
         /// <summary>Ship steps applied from inputs: at most one per server tick, whatever the client sends.</summary>
@@ -154,6 +159,24 @@ namespace RoguePirates.V5.Net
             }
         }
 
+        /// <summary>
+        /// V5 M9b part 2a: the server is going down (SIGTERM from docker stop or a Railway redeploy). The connected player
+        /// gets <c>end</c> ServerClosing (no settlement; the client goes back to the lobby), the transport has
+        /// <paramref name="flushSeconds"/> of frames to send it, then the server stops listening.
+        /// </summary>
+        public System.Collections.IEnumerator CloseGracefully(float flushSeconds = 0.5f)
+        {
+            if (Closing) yield break;
+            Closing = true;
+            if (Manager == null || !Manager.IsListening) yield break;
+            if (Current != null && Current.connected && !EndSent) SendEnd(NetProtocol.EndReason.ServerClosing);
+            var until = Time.realtimeSinceStartup + flushSeconds;
+            while (Time.realtimeSinceStartup < until) yield return null;
+            Manager.Shutdown();
+            yield return null;
+            yield return null;
+        }
+
         void OnDestroy()
         {
             if (Manager != null)
@@ -209,6 +232,7 @@ namespace RoguePirates.V5.Net
             session.resumeToken = NewToken();
             Current = session;
             Bind(session, clientId);
+            Joined?.Invoke(claims.sub);
             return null;
         }
 

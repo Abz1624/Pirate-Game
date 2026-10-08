@@ -3,6 +3,7 @@
     "rootNamespace": "RoguePirates.V5.Net.Tests",
     "references": [
         "RoguePirates.V5.Net",
+        "RoguePirates.V5.Net.Editor",
         "RoguePirates.V4",
         "RoguePirates.V4.Config",
         "RoguePirates.V4.Foundation",

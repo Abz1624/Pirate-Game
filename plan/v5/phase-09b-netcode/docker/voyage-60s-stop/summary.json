@@ -1,0 +1,141 @@
+{
+  "utc": "2026-10-08T09:41:10.829312+00:00",
+  "image": "rogue-pirates-match:local",
+  "imageId": "sha256:7661b56d197f36e38125076482c72050553a860676ec73b8fd2b2b6490e132bd",
+  "seconds": 60,
+  "dropAt": 30,
+  "servers": 1,
+  "docker": "29.8.2",
+  "extraChecks": {
+    "secondPlayer": "[V5 NetTest] EXIT failed: join failed: voyage taken",
+    "replayedTicket": "[V5 NetTest] EXIT failed: join failed: ticket Replayed"
+  },
+  "results": [
+    {
+      "server": "rp-match-test-1",
+      "port": 17777,
+      "coldStartSeconds": 1.71,
+      "processStartToListeningSeconds": 0.78,
+      "serverExitCode": "0",
+      "clientExitCode": "0",
+      "dockerStopSeconds": 1.23,
+      "secondsFromDockerStopToClientLobby": 0.268,
+      "serverCloseReason": "SIGTERM (stop file)",
+      "serverReportKind": "final",
+      "serverBackend": "Mono",
+      "serverRssMB": "176.3",
+      "tickMs": {
+        "count": 1900,
+        "mean": 0.905,
+        "p50": 0.728,
+        "p95": 1.479,
+        "max": 35.338
+      },
+      "serverTraffic": [
+        {
+          "clientId": 1,
+          "bytesDownPerSecond": 1237.76,
+          "bytesUpPerSecond": 425.041,
+          "wireDownPerSecondEstimate": 1409.065,
+          "wireUpPerSecondEstimate": 595.588,
+          "messagesDown": 904,
+          "messagesUp": 900
+        },
+        {
+          "clientId": 4,
+          "bytesDownPerSecond": 1790.805,
+          "bytesUpPerSecond": 456.781,
+          "wireDownPerSecondEstimate": 1975.375,
+          "wireUpPerSecondEstimate": 640.025,
+          "messagesDown": 974,
+          "messagesUp": 967
+        }
+      ],
+      "serverSeconds": 63.326,
+      "serverBytesPerSecondAllSockets": {
+        "bytesDownPerSecond": 3028.6,
+        "bytesUpPerSecond": 881.8,
+        "wireDownPerSecondEstimate": 3384.4,
+        "wireUpPerSecondEstimate": 1235.6
+      },
+      "snapshotBytes": {
+        "count": 936,
+        "mean": 204.49,
+        "p50": 207,
+        "p95": 252,
+        "max": 261
+      },
+      "snapshotEnemies": {
+        "count": 936,
+        "mean": 5.721,
+        "p50": 6,
+        "p95": 11,
+        "max": 12
+      },
+      "guessedInputs": 0,
+      "serverResumeSeconds": {
+        "count": 1,
+        "mean": 0.435,
+        "p50": 0.435,
+        "p95": 0.435,
+        "max": 0.435
+      },
+      "dockerMemMB": {
+        "max": 146.7,
+        "mean": 145.5,
+        "samples": 15
+      },
+      "dockerCpuPercent": {
+        "max": 12.7,
+        "mean": 10.5,
+        "samples": 15
+      },
+      "client": {
+        "ok": "true",
+        "outcome": "end ServerClosing",
+        "joinSeconds": "0.376",
+        "resumeSeconds": "0.471",
+        "endedByServer": "true",
+        "endReason": "ServerClosing",
+        "lobbyUtc": "2026-10-08T09:41:09.0668090Z",
+        "snapshots": "935",
+        "kills": "76",
+        "level": "5",
+        "finalHull": "81",
+        "events": "0.66s stage loaded (seed 9200) | 1.04s welcomed in 0.376 s | 31.06s socket dropped (client side) | 31.53s resumed in 0.471 s | 61.04s VOYAGE-DONE snapshots=894 hull=81/100 kills=70 level=4 | 63.78s end ServerClosing received | 63.78s lobby (end ServerClosing) 0.001 s after the server's end showed, at 2026-10-08T09:41:09.0668090Z",
+        "traffic": [
+          {
+            "clientId": 0,
+            "bytesDownPerSecond": 3034.584,
+            "bytesUpPerSecond": 884.737,
+            "wireDownPerSecondEstimate": 3391.255,
+            "wireUpPerSecondEstimate": 1239.697,
+            "messagesDown": 1876,
+            "messagesUp": 1867
+          }
+        ],
+        "predictionErrorMetres": {
+          "count": 931,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "max": 0.014
+        },
+        "correctionMetres": {
+          "count": 935,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "max": 0.025
+        },
+        "inputLagMs": {
+          "count": 931,
+          "mean": 50.806,
+          "p50": 66.667,
+          "p95": 66.667,
+          "max": 100
+        }
+      }
+    }
+  ]
+}

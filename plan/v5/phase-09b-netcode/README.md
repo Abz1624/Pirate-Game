@@ -7,7 +7,8 @@ Branch `v5-live-game`. Decisions D18 P5, D19 (2), D22 (N5, N7), D23. Plan item I
 | Part | What | Status |
 |---|---|---|
 | I9b.1 part 1 | Everything that runs in-process in the Editor: packages, `RoguePirates.V5.Net`, scene `V5NetSpike`, protocol, join ticket check, measurement hook, PlayMode tests | done 8 Oct (this page) |
-| I9b.1 part 2 | Linux Dedicated Server build in Docker (local, then a Railway test service), the API's ticket endpoint, the WebGL client build against Railway | to do |
+| I9b.1 part 2a | Linux Dedicated Server build (`V5_NET`), the image and its scripts, the scripted voyage on local Docker, the API's ticket endpoint | done 8 Oct (section "Part 2a" below); not committed; Railway and GHCR not touched |
+| I9b.1 part 2b | Railway test service (the image from GHCR), the WebGL client build against `wss://`, level-up messages, boost prediction | to do |
 | D9b.1 | Measurements on Railway and desktop WebGL (`REPORT.md`) | to do (part 2); in-process numbers below |
 
 ## Packages (pinned in `Packages/manifest.json`)
@@ -212,3 +213,142 @@ well under the 8 ms p95 target; Railway is part 2.
   enemy views; level-up choices from the client (the server currently runs the scenario's no-card level-ups); boost
   prediction (the boost's ease runs on the server's frame clock, so a boost costs a correction today); client fps on
   desktop WebGL; cold start, memory and sessions per process on Railway; the NGO and UTP size in the WebGL build.
+
+## Part 2a (8 Oct): Linux server, Docker image, local scripted voyage, ticket endpoint
+
+### Server build
+
+`RoguePirates.V5.Net.Editor.V5NetServerBuild` (`Assets/_Game/V5/Net/Editor/`, Editor-only assembly
+`RoguePirates.V5.Net.Editor`; menu RoguePirates > V5 > Build Linux match server): StandaloneLinux64, Server subtarget,
+**Mono**, release, `extraScriptingDefines = V5_NET` on this build only (no build profile, PlayerSettings define or
+build-list change: the WebGL, Windows and Android builds still never compile the net assembly; the exclusion test now also
+checks the Server target, and `ServerBuild_OwnsTheDefineAndBootsTheSpikeScene` checks the build's scenes and define).
+Scenes: `V5NetSpike` (first; batch mode = Server role, `-rpClient` = the test client) and `V4SaltwindRun`. It switches the
+Editor to Linux Server and back to the previous target, and puts back the scripting backend, the log stack traces and the
+package manifest (a Linux build makes Unity add `com.unity.toolchain.win-x86_64-linux` and `com.unity.sdk.linux-x86_64`).
+Command line: `-executeMethod RoguePirates.V5.Net.Editor.V5NetServerBuild.BuildFromCommandLine`.
+
+| | Value (`linux-server-build.json`) |
+|---|---|
+| Build time | 17-75 s player build (the first one 75 s), plus 21-29 s target switch and 14-19 s switch back: 52-123 s in all |
+| Build size | 108.6 MB, 186 files (no debug symbols in a Mono release build) |
+| Image | `debian:bookworm-slim` + ca-certificates + the build: layers 209 MB unpacked (85 base, 10 apt, 114 build), **71 MB compressed** (what a pull moves) |
+
+IL2CPP is not used yet: the Linux IL2CPP build from Windows needs Unity's Linux toolchain packages; Unity added them on
+the first try and the build still found no sysroot ("Unable to find an Linux Sysroot"). An Editor restart with the
+packages in the manifest is the likely fix, untried (`Build(il2cpp: true)`). Mono is far inside the tick budget below.
+
+Server process (`NetServerHost`, added by the spike's Server role): the run is held at time scale 0 until the first
+player joins (an idle server's voyage does not start without its player); listening writes `/tmp/rp-match-ready` and a
+`[V5 Net] READY` line; a stats line every 10 s (tick p50/p95, RSS, Mono heap) and, with `RP_METRICS_DIR`, `server.json`;
+the measurements reset at the first join; SIGTERM (the entry script turns it into the stop file `/tmp/rp-match-stop`) or
+a quit request ends the session cleanly (`NetServer.CloseGracefully`: `end` ServerClosing, 0.5 s for the transport, then
+shutdown, report, exit 0); a voyage that is over (ended, or its player gone past the 30 s resume grace) exits the
+process with 0 after 3 s; a server that cannot listen (no secret) exits with 2. Frame rate capped at 60
+(`RP_SERVER_FPS`). One voyage per process.
+
+### Image and scripts (`server/match/`)
+
+| File | What |
+|---|---|
+| `Dockerfile` | Debian slim, non-root user `rp` (uid 10001), the build root-owned under `/app`, `PORT=7777`, Docker `HEALTHCHECK` on the ready file, the entry script as PID 1, `CMD -rpServer`. Context: `Pirate Game Unity/Builds/LinuxServer`; the entry script comes from the named context `match` |
+| `Dockerfile.dockerignore` | Keeps debug-symbol folders out |
+| `entrypoint.sh` | Starts the server with `-batchmode -nographics -logFile -`, turns SIGTERM/SIGINT into the stop file, exits with the server's code (`.gitattributes` keeps it LF; the image strips CRs anyway) |
+| `build-image.ps1` | Unity build (through the open Editor, else batch mode), then `docker build`, tagged `ghcr.io/x2c-fun/rogue-pirates-match:<12-char git sha>` (`-dirty` with uncommitted changes under `Assets/_Game`, `Packages`, `server/match`) and `rogue-pirates-match:local`; `-SkipUnityBuild` for the image alone |
+| `push-image.ps1` | `docker login ghcr.io` with `GHCR_TOKEN` on stdin, `docker push`, prints the digest, logs out; refuses `-dirty` tags. Not run |
+| `local_voyage_test.py` | The local scripted voyage below (Python: Windows Defender blocked the same harness written as a .ps1 file) |
+
+Environment of the server: `PORT` (7777), `RP_MATCH_TICKET_SECRET` (required, 32+ characters, never logged),
+`RP_MATCH_ID` (optional: only tickets for this match id join), `RP_METRICS_DIR` (optional), `RP_SERVER_FPS` (optional).
+
+### Local scripted voyage (`docker/*/summary.json`, `part2a-local-docker.json`)
+
+`python server/match/local_voyage_test.py --seconds 60 --drop-at 30 [--servers 3]`: a random secret for the run (never
+printed); the API built and run locally on SQLite with `VOYAGE_SERVER_URL` and `VOYAGE_MATCH_ID`, every ticket from
+`POST /api/lobbies/voyage/ticket`; `docker run` of the server with `-e RP_MATCH_TICKET_SECRET -e RP_MATCH_ID
+-e RP_METRICS_DIR=/metrics -v <dir>:/metrics -p 17777:7777`; the client is the same image
+(`-rpClient ws://host.docker.internal:17777/ -rpSeconds 60 -rpDropAt 30`, the ticket in `RP_JOIN_TICKET`): it loads the
+run on the same seed as a still stage (time scale 0; only its islands matter to the prediction ship), joins, sails wide
+S-turns at full throttle, drops its own socket once, prints VOYAGE-DONE, then sails on until the session ends; the
+harness then runs `docker stop`. `docker stats` every 2 s. Host: Windows 11, Docker Desktop 29.8.2, 16 logical CPUs.
+
+| Run | Cold start: `docker run` to READY (in-process) | Server tick ms p50 / p95 / max | Down / up B/s per client (wire est.) | Snapshot bytes p50, enemies max | Container memory (RSS) | CPU (of one core) | Prediction error / correction max (m) | Resume (s) | End |
+|---|---|---|---|---|---|---|---|---|---|
+| voyage-60s-stop | 1.71 s (0.78) | 0.73 / **1.48** / 35 | 3,035 / 885 (3,391 / 1,240) | 207, 12 | 146.7 MB max (176 MB) | 10.5% mean, 12.7% max | 0.014 / 0.025 | 0.47 client, 0.44 server | `docker stop`: end **ServerClosing**, client in the lobby 0.27 s after the stop; server exit 0 in 1.2 s |
+| voyage-60s-3servers (3 processes side by side) | 1.72-1.94 s (0.90-0.93) | 0.56-0.63 / 0.86-1.06 / 17-28 | 3,069-3,088 / 887-894 | 216, 12 | 141.7-142.8 MB each (176 MB) | 7.3-8.2% each | <= 0.003 / 0.006 | 0.42 (server 1) | ServerClosing on all three, lobby 0.23-0.29 s after each stop |
+| voyage-90s-sunk | 2.35 s (0.81) | 0.60 / 0.92 / 33 | 3,319 / 890 (3,677 / 1,246) | 234, 16 | 150.1 MB max (178 MB) | 7.9% mean | 0.002 / 0.002 | 0.50 / 0.46 | the ship sank at 86 s (125 kills, level 7): end **Sunk**, lobby, server exit 0 after its 3 s wait |
+
+Checks on server 1 in every run: a second player's valid ticket is refused (`voyage taken`); the first ticket again is
+refused (`ticket Replayed`). The client's numbers are payload bytes over its own lifetime; the 90 s run predates the
+server's metrics reset at the join (its server-side B/s include the idle wait); its client-side numbers are right.
+
+Against D9b.1: server tick p95 1.06-1.48 ms in the container on Mono at 60 fps (target <= 8 ms on Railway; Railway's
+vCPU is the open question, part 2b); a dropped socket resumes in 0.42-0.50 s (<= 10 s); a server stop ends the session
+cleanly (`end` ServerClosing, no settlement, back to the lobby; the in-process tests `ServerClosing_EndsTheSessionCleanly`
+and `ServerGone_ClientGivesUpAfterTheResumeWindow` cover both paths); prediction error and correction stay under 3 cm on
+a clean local link (the 150 ms / 2% gate is part 1's in-process test; Railway's real link is part 2b); cold start under
+2.4 s; memory about 145 MB a process; **sessions per process: 1** by design (a second ticket is refused); 3 processes
+side by side cost about 3x one (no shared memory), so M9c's multi-ship server is where sessions per process grows.
+Bandwidth (3.0 KB/s down, 0.9 KB/s up with up to 16 enemies near) matches part 1's in-process numbers. Rough Railway cost
+at these numbers (about 0.1 vCPU and 0.15 GB while a voyage runs): under $0.01 per voyage-hour.
+
+### API ticket endpoint
+
+`POST /api/lobbies/voyage/ticket` (bearer token; `server/RoguePirates.Api/Playtest/MatchTickets.cs`): a fresh 128-bit hex
+`tid`, `sub` = the player id, `mid` = `VOYAGE_MATCH_ID` (else a fresh `v-<hex>`), `mode` voyage, `aud` rp-match, `iat` from
+the clock and `exp = iat + MATCH_TICKET_LIFETIME_SECONDS` (default 60, clamped to 10-120), signed with
+`RP_MATCH_TICKET_SECRET`; `Cache-Control: no-store`. Answer: `{ticket, matchServerUrl, matchId, mode, expiresAt}`, with
+`matchServerUrl` from `VOYAGE_SERVER_URL` (a new setting: `MATCH_SERVER_URL` would switch the 1v1 lobbies to a dedicated
+host). 401 without a valid token; 503 `match_tickets_off` while the secret is unset or under 32 characters. Rate limit:
+the API's per-IP write limit. `MatchTicketTests` (6): Unity's `Ticket_ContractVector` reproduced byte for byte (the same
+string Unity's `JoinTicket` gives in the Editor, `v1.eyJ2Ijox...Fi3NPSq_6kPYiUO_C558vn8MIMfcJEscyL5SZoS2aQs`); auth
+required; signature, sub, mid, mode, iat and exp for the caller (60 s); lifetime capped at 120 s; a fresh tid on every call
+and iat following the clock; 503 without (or with a short) secret. `dotnet test`: 160/160 (154 before + 6). The local
+voyages above took every ticket from this endpoint, so the API and the Unity verifier agree end to end.
+
+### Tests (part 2a)
+
+- EditMode `V5NetEditModeTests`: 15/15 (`editmode-v5net-part2a.json`; new `ServerBuild_OwnsTheDefineAndBootsTheSpikeScene`;
+  the exclusion test also checks the Server target).
+- PlayMode `V5NetPlayModeTests`: 15/15 (`playmode-v5net-part2a.json`; new `ServerClosing_EndsTheSessionCleanly` and
+  `ServerGone_ClientGivesUpAfterTheResumeWindow`).
+- `dotnet test` (server): 160/160.
+- Not run here: the full EditMode and PlayMode suites (the change is inside `RoguePirates.V5.Net`, its tests and a new
+  Editor assembly; the game's builds do not compile it).
+
+### For the Railway test (main session; nothing on Railway or GHCR was touched)
+
+1. Commit, then `powershell -NoProfile -ExecutionPolicy Bypass -File server/match/build-image.ps1` (tag = the commit's
+   12-character sha, no `-dirty`).
+2. `$env:GHCR_TOKEN = '<token with write:packages>'; powershell -File server/match/push-image.ps1 -Tag <sha>`. A new GHCR
+   package is private: either make it public (it holds the game's server build and no secret) or give Railway registry
+   credentials (check whether the workspace's plan allows private registry images).
+3. Usage against the month's baseline first (D23).
+4. A new service (for example `match-test`) from the Docker image `ghcr.io/x2c-fun/rogue-pirates-match:<sha>` (or the
+   digest push-image.ps1 prints): variables `RP_MATCH_TICKET_SECRET` (a new random 48+ characters, the same on the API),
+   `RP_MATCH_ID` (for example `m9b-railway-1`), `PORT=7777`; a public domain on target port 7777 (clients connect to
+   `wss://<domain>/`; Railway's edge ends TLS); no HTTP health check path (the server speaks only WebSocket; Docker's own
+   HEALTHCHECK is file-based); restart policy **Always** (the process exits 0 after each voyage so a fresh one starts; On
+   Failure would leave it stopped); 1 replica; `RAILWAY_DEPLOYMENT_DRAINING_SECONDS` about 10 so SIGTERM leaves time for
+   the clean close (about 1 s); a region near the testers. Delete the service after the session (D23).
+5. API: add `RP_MATCH_TICKET_SECRET`, `VOYAGE_SERVER_URL=wss://<domain>/` and `VOYAGE_MATCH_ID=<RP_MATCH_ID>` to
+   `.railway/railway.ts` with `preserve()` **before** setting them (an apply deletes unlisted variables), set them, then
+   `server/deploy.ps1` (the endpoint ships with this change).
+6. The voyage against Railway from this PC: a ticket from the live API (`POST /api/lobbies/voyage/ticket` with a guest
+   token), then `docker run --rm -e RP_JOIN_TICKET -v <dir>:/out rogue-pirates-match:local -rpClient wss://<domain>/
+   -rpSeconds 90 -rpDropAt 45 -rpWaitEnd 60 -rpOut /out/client.json` (the Linux client's wss path is untested). The
+   server's tick p95 and RSS are in its `[V5 Net] stats` log lines every 10 s (`railway logs`); a redeploy during the
+   voyage checks `end` ServerClosing on Railway; Railway's metrics give memory and CPU.
+
+### Part 2b still needs
+
+- The WebGL client build with `V5_NET` (desktop; its own build method like the server's, no build profile) against
+  `wss://` on Railway: a client composition that builds the stage from the welcome's seed (the test client loads the same
+  seed as a still stage and works: prediction error under 3 cm in Docker), the real enemy views from the mirror, the HUD
+  from snapshots; client fps on desktop WebGL; the NGO and UTP size in the WebGL build.
+- Level-up choices as messages (the server's run still takes its level-ups without cards: `AutoLevelUp = () => {}`).
+- Boost prediction (the boost's ease runs on the server's frame clock; part 1's boost test measured a 0.67 m correction).
+- The Railway measurements (tick p95, memory, cold start, the real link's loss and jitter, the WebSocket idle timeout and
+  redeploy behaviour) in `REPORT.md`.
+- Levers seen here: IL2CPP (toolchain set-up), `RP_SERVER_FPS=30` (half the frames), and the run scene's VFX and particle
+  objects, which still instantiate on the server (shader warnings in its log: presentation objects a server does not need).

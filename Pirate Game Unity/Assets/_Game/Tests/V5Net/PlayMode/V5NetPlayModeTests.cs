@@ -261,6 +261,46 @@ namespace RoguePirates.V5.Net.Tests
             Report("reconnect", _server.Metrics, client.Metrics);
         }
 
+        /// <summary>V5 M9b part 2a: a server going down (docker stop, a Railway redeploy) sends end ServerClosing; the client
+        /// does not try to resume and is back in the lobby state.</summary>
+        [UnityTest]
+        public IEnumerator ServerClosing_EndsTheSessionCleanly()
+        {
+            yield return StartVoyage("net_voyage_open_water");
+            var client = NewClient(Ticket());
+            client.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            yield return Join(client);
+            yield return Seconds(1f);
+            Assert.IsFalse(client.SessionOver, "sailing");
+            yield return _server.CloseGracefully();
+            yield return Until(() => client.SessionOver, 5f);
+            Assert.IsTrue(client.Ended, "the client got end (" + client.LastDisconnectReason + ")");
+            Assert.AreEqual(NetProtocol.EndReason.ServerClosing, client.EndReason);
+            Assert.IsFalse(_server.Manager.IsListening, "the server stopped listening");
+            yield return Seconds(1.5f);
+            Assert.IsTrue(client.SessionOver, "back to the lobby");
+            Assert.AreEqual(1, client.Welcomes, "no resume after the server's end");
+        }
+
+        /// <summary>V5 M9b part 2a: a server that dies without a word (a killed process): the client tries to resume for its
+        /// window, then gives up and is back in the lobby state.</summary>
+        [UnityTest]
+        public IEnumerator ServerGone_ClientGivesUpAfterTheResumeWindow()
+        {
+            yield return StartVoyage("net_voyage_open_water");
+            var client = NewClient(Ticket());
+            client.ReconnectWindowSeconds = 2f;
+            yield return Join(client);
+            yield return Seconds(0.5f);
+            _server.Manager.Shutdown(); // no end message
+            yield return Seconds(1f);
+            Assert.IsFalse(client.Connected);
+            Assert.IsFalse(client.SessionOver, "still inside its resume window");
+            yield return Until(() => client.SessionOver, 8f);
+            Assert.IsTrue(client.SessionOver, "gave up after the window");
+            Assert.IsFalse(client.Ended, "no end message came");
+        }
+
         [UnityTest]
         public IEnumerator JoinTicket_ForgedExpiredOrForeign_IsRefused()
         {

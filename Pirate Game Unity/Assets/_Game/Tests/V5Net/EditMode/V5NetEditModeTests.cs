@@ -280,8 +280,22 @@ namespace RoguePirates.V5.Net.Tests
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 StringAssert.DoesNotContain("V5_NET", File.ReadAllText(path), path + " (a build profile) does not define V5_NET");
             }
-            foreach (var target in new[] { UnityEditor.Build.NamedBuildTarget.WebGL, UnityEditor.Build.NamedBuildTarget.Android, UnityEditor.Build.NamedBuildTarget.Standalone })
+            foreach (var target in new[] { UnityEditor.Build.NamedBuildTarget.WebGL, UnityEditor.Build.NamedBuildTarget.Android, UnityEditor.Build.NamedBuildTarget.Standalone, UnityEditor.Build.NamedBuildTarget.Server })
                 StringAssert.DoesNotContain("V5_NET", PlayerSettings.GetScriptingDefineSymbols(target), target.TargetName + " builds do not define V5_NET");
+        }
+
+        /// <summary>V5 M9b part 2a: the Linux match server build gives itself V5_NET (its build options only) and boots the
+        /// spike scene, whose Server role runs the match server and whose Client role is the scripted test client.</summary>
+        [Test]
+        public void ServerBuild_OwnsTheDefineAndBootsTheSpikeScene()
+        {
+            Assert.AreEqual("V5_NET", Editor.V5NetServerBuild.Define);
+            Assert.AreEqual(Editor.V5NetServerBuild.SpikeScenePath, Editor.V5NetServerBuild.Scenes[0], "the server boots the spike scene");
+            CollectionAssert.Contains(Editor.V5NetServerBuild.Scenes, RoguePirates.V4.V4SceneNames.SaltwindRunPath, "and has the run scene to load");
+            foreach (var scene in Editor.V5NetServerBuild.Scenes) FileAssert.Exists(scene);
+            CollectionAssert.DoesNotContain(EditorBuildSettings.scenes.Select(s => s.path).ToArray(), Editor.V5NetServerBuild.SpikeScenePath,
+                "the game's build list stays without the spike scene");
+            StringAssert.EndsWith("Builds" + Path.DirectorySeparatorChar + "LinuxServer", Editor.V5NetServerBuild.OutputFolder);
         }
     }
 }

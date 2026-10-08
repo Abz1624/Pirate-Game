@@ -1,0 +1,118 @@
+{
+  "status": "completed",
+  "duration": 0.81,
+  "summary": {
+    "total": 15,
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Endpoint_LocalWsAndRailwayWss",
+      "Status": "Passed",
+      "Duration": 0.0147151,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Enemies_QuantizedWithinOneCentimetrePerAxis",
+      "Status": "Passed",
+      "Duration": 0.0041035,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Inputs_RoundTripAndExtraBytesAreNotRead",
+      "Status": "Passed",
+      "Duration": 0.0026529,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Mirror_DropsNearEnemiesMissingFromASnapshot",
+      "Status": "Passed",
+      "Duration": 0.0025428,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Mirror_TruncatedSnapshotRemovesNothing",
+      "Status": "Passed",
+      "Duration": 0.0003444,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.NetAssembly_IsKeptOutOfReleaseBuilds",
+      "Status": "Passed",
+      "Duration": 0.095227,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.ServerBuild_OwnsTheDefineAndBootsTheSpikeScene",
+      "Status": "Passed",
+      "Duration": 0.0023978,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.ServerPreset_SetsThe30HzTick",
+      "Status": "Passed",
+      "Duration": 0.2587193,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ship_RoundTripsExactly",
+      "Status": "Passed",
+      "Duration": 0.0020528,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_ContractVector",
+      "Status": "Passed",
+      "Duration": 0.006571,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_MalformedAndNoSecret",
+      "Status": "Passed",
+      "Duration": 0.0007223,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_RefusedJoinDoesNotBurnIt",
+      "Status": "Passed",
+      "Duration": 0.000678,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_TamperedOrWrongKey_BadSignature",
+      "Status": "Passed",
+      "Duration": 0.0003159,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_TimeWindowAndMatch",
+      "Status": "Passed",
+      "Duration": 0.000465,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_ValidOnceThenReplayed",
+      "Status": "Passed",
+      "Duration": 0.0004351,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

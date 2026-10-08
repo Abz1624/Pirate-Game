@@ -41,6 +41,10 @@ dotnet test server/RoguePirates.Api.Tests
 | `RATE_LIMIT_PER_MINUTE` | `60` | Writes (POST/PUT/PATCH) allowed per client IP per minute. Reads and WebSockets are not limited. |
 | `SWEEP_SECONDS` | `30` | How often idle lobbies expire and single-report matches are decided in the background (both also happen on read). |
 | `ARENA_TICK_MS` | `100` | How often the 1v1 relay advances its clock (countdown, barrels, end on time, disconnect forfeits). |
+| `RP_MATCH_TICKET_SECRET` | unset | V5 M9b: the join ticket secret shared with the Netcode match server (32+ characters). Unset: `POST /api/lobbies/voyage/ticket` answers 503. Never logged. |
+| `VOYAGE_SERVER_URL` | unset | V5 M9b: the match server a voyage ticket is for (`wss://...` on Railway), returned as `matchServerUrl`. |
+| `VOYAGE_MATCH_ID` | unset | V5 M9b: the match server's `RP_MATCH_ID`, put in the ticket as `mid`; unset: a fresh id per ticket. |
+| `MATCH_TICKET_LIFETIME_SECONDS` | `60` | V5 M9b: voyage ticket lifetime, clamped to 10-120 s. |
 
 No secrets live in code. The schema is managed with EF Core migrations, applied on startup (an empty database gets
 every table; the database the old `EnsureCreated` built is baselined first, keeping its data). How to add a migration
@@ -270,6 +274,10 @@ JSON object with a string `"t"` (for example `ping`) asks for the lobby state ag
 match protocol below. The server closes the socket after pushing a final `closed` or `expired` state, and after
 `finished` (a refereed match keeps it open 60 s longer for the rematch). Messages over 4 KB are dropped. Rejected
 handshakes: 401 (token), 403 (not seated or origin), 404 (lobby).
+
+### Voyage join ticket (V5 M9b, Netcode match server)
+
+`POST /api/lobbies/voyage/ticket` (bearer token, no body): a signed one-time join ticket for a server-run voyage, `{ticket, matchServerUrl, matchId, mode: "voyage", expiresAt}`. The ticket is `"v1." + b64url(payload) + "." + b64url(HMAC-SHA256(RP_MATCH_TICKET_SECRET, "v1." + b64url(payload)))` with payload `{"v":1,"tid","sub":<player id>,"mid","mode":"voyage","aud":"rp-match","iat","exp"}` (a fresh `tid` each call, lifetime at most 120 s); the match server takes each `tid` once. 401 without a valid token, 503 `match_tickets_off` without the secret. Contract and tests: `plan/v5/phase-09b-netcode/README.md`, `MatchTicketTests`.
 
 ### Matches
 

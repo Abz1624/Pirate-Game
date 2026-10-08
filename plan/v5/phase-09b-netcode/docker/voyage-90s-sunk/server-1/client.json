@@ -1,0 +1,41 @@
+{
+  "report": "V5 net test client (scripted voyage)",
+  "utc": "2026-10-08T09:28:31.6648880Z",
+  "unity": "6000.3.11f1",
+  "editor": false,
+  "joinSeconds": "0.263",
+  "resumeSeconds": "0.501",
+  "endedByServer": "true",
+  "endReason": "Sunk",
+  "lobbyUtc": "2026-10-08T09:28:31.6627570Z",
+  "secondsFromServerEndToLobby": "0.001",
+  "snapshots": "1277",
+  "welcomes": "2",
+  "resyncs": "0",
+  "finalHull": "0",
+  "kills": "125",
+  "level": "7",
+  "url": "ws://host.docker.internal:17777/",
+  "outcome": "end Sunk",
+  "ok": "true",
+  "events": "0.67s stage loaded (seed 9200) | 0.94s welcomed in 0.263 s | 45.95s socket dropped (client side) | 46.45s resumed in 0.501 s | 86.48s VOYAGE-DONE snapshots=1277 hull=0/100 kills=125 level=7 | 86.48s end Sunk received | 86.48s lobby (end Sunk) 0.001 s after the server's end showed, at 2026-10-08T09:28:31.6627570Z",
+  "sections": [
+    {
+      "name": "client",
+      "seconds": 85.806,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 3319.224, "bytesUpPerSecond": 889.589, "wireDownPerSecondEstimate": 3677.242, "wireUpPerSecondEstimate": 1246.208, "messagesDown": 2560, "messagesUp": 2550}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 1273, "mean": 0, "p50": 0, "p95": 0, "max": 0.002},
+      "correctionMetres": {"count": 1277, "mean": 0, "p50": 0, "p95": 0, "max": 0.002},
+      "resumeSeconds": {"count": 1, "mean": 0.501, "p50": 0.501, "p95": 0.501, "max": 0.501},
+      "inputLagMs": {"count": 1273, "mean": 43.231, "p50": 33.333, "p95": 66.667, "max": 133.333},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

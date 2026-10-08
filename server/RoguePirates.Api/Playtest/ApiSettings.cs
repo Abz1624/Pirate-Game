@@ -21,6 +21,16 @@ public sealed class ApiSettings
     public int RunLogRetentionDays { get; init; } = 56;
     /// <summary>How often the run-log retention sweep runs (hours; the first sweep runs at startup).</summary>
     public int RunLogRetentionSweepHours { get; init; } = 24;
+    /// <summary>V5 M9b: the join ticket secret shared with the Netcode match server (RP_MATCH_TICKET_SECRET, 32+ characters).
+    /// Never logged or returned; without it the ticket endpoint answers 503.</summary>
+    public string? MatchTicketSecret { get; init; }
+    /// <summary>V5 M9b: the Netcode voyage server the ticket is for (wss://... on Railway, ws://localhost:7777 locally).
+    /// Separate from <see cref="MatchServerUrl"/>, which switches the 1v1 lobbies to a dedicated host.</summary>
+    public string? VoyageServerUrl { get; init; }
+    /// <summary>V5 M9b: the voyage server's match id (its RP_MATCH_ID); empty: a fresh id per ticket.</summary>
+    public string? VoyageMatchId { get; init; }
+    /// <summary>V5 M9b: join ticket lifetime in seconds (10-120, default 60).</summary>
+    public int MatchTicketLifetimeSeconds { get; init; } = 60;
 
     public bool UsePostgres => !string.IsNullOrWhiteSpace(DatabaseUrl);
     public string DbKind => UsePostgres ? "postgres" : "sqlite";
@@ -40,6 +50,10 @@ public sealed class ApiSettings
         ArenaTickMs = int.TryParse(c["ARENA_TICK_MS"], out var t) && t > 0 ? t : 100,
         RunLogRetentionDays = int.TryParse(c["RUNLOG_RETENTION_DAYS"], out var rd) && rd > 0 ? rd : 56,
         RunLogRetentionSweepHours = int.TryParse(c["RUNLOG_RETENTION_SWEEP_HOURS"], out var rh) && rh > 0 ? rh : 24,
+        MatchTicketSecret = NullIfEmpty(c["RP_MATCH_TICKET_SECRET"]),
+        VoyageServerUrl = NullIfEmpty(c["VOYAGE_SERVER_URL"]),
+        VoyageMatchId = NullIfEmpty(c["VOYAGE_MATCH_ID"]),
+        MatchTicketLifetimeSeconds = int.TryParse(c["MATCH_TICKET_LIFETIME_SECONDS"], out var lt) ? Math.Clamp(lt, 10, MatchTickets.MaxLifetimeSeconds) : 60,
     };
 
     static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();

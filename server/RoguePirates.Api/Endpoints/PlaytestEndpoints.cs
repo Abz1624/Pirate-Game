@@ -60,6 +60,23 @@ public static class PlaytestEndpoints
 
         app.MapGet("/api/lobbies/public", async (LobbyService lobbies) => Results.Ok(await lobbies.ListPublicAsync()));
 
+        // V5 M9b (I9b.1 part 2a): a signed one-time join ticket for a server-run voyage on the Netcode match server
+        // (contract: MatchTickets, plan/v5/phase-09b-netcode/README.md). 503 while RP_MATCH_TICKET_SECRET is unset.
+        app.MapPost("/api/lobbies/voyage/ticket", async (HttpContext ctx, PlayerAuth auth, ApiSettings settings, IClock clock) =>
+        {
+            var player = await auth.RequireAsync(ctx);
+            var key = MatchTickets.KeyFromSecret(settings.MatchTicketSecret);
+            if (key == null)
+                return Results.Json(new { error = "match_tickets_off", message = "The match server is not configured." }, statusCode: 503);
+            var iat = new DateTimeOffset(DateTime.SpecifyKind(clock.UtcNow, DateTimeKind.Utc)).ToUnixTimeSeconds();
+            var exp = iat + settings.MatchTicketLifetimeSeconds;
+            var matchId = settings.VoyageMatchId ?? "v-" + MatchTickets.NewTicketId();
+            var ticket = MatchTickets.Issue(key, new MatchTickets.Payload(1, MatchTickets.NewTicketId(), player.Id.ToString(), matchId,
+                MatchTickets.VoyageMode, MatchTickets.Audience, iat, exp));
+            ctx.Response.Headers.CacheControl = "no-store";
+            return Results.Ok(new { ticket, matchServerUrl = settings.VoyageServerUrl, matchId, mode = MatchTickets.VoyageMode, expiresAt = exp });
+        });
+
         app.MapPost("/api/lobbies/join", async (HttpContext ctx, JoinLobbyRequest req, PlayerAuth auth, LobbyService lobbies) =>
             Results.Ok(await lobbies.JoinAsync(await auth.RequireAsync(ctx), req.Code)));
 

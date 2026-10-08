@@ -16,13 +16,16 @@ namespace RoguePirates.V5.Net
     /// with the keyboard (WASD, Shift to boost); the client's predicted ship and its enemies (spheres) are drawn; F9 writes
     /// the measurement report to Temp/V5Net.</item>
     /// <item><b>Server</b>: a headless server voyage listening on plain WebSockets at $PORT (7777 locally); the join ticket
-    /// key from RP_MATCH_TICKET_SECRET. Part 2 runs this role in the Linux server build.</item>
+    /// key from RP_MATCH_TICKET_SECRET, the match id from RP_MATCH_ID. The Linux Dedicated Server build (part 2a,
+    /// <c>V5NetServerBuild</c>) boots this scene into this role; <see cref="NetServerHost"/> runs the process around it.</item>
+    /// <item><b>Client</b> (<c>-rpClient ws://host:port/</c>): the scripted test voyage's headless client
+    /// (<see cref="NetTestVoyage"/>), from the same server image.</item>
     /// </list>
     /// The client of a remote server (a browser on Railway) is part 2's WebGL build.
     /// </summary>
     public sealed class V5NetSpike : MonoBehaviour
     {
-        public enum Role { InProcess, Server }
+        public enum Role { InProcess, Server, Client }
 
         [SerializeField] Role role = Role.InProcess;
         [SerializeField] int seed = 9200;
@@ -39,14 +42,28 @@ namespace RoguePirates.V5.Net
         void Awake()
         {
             DontDestroyOnLoad(gameObject);
-            if (Application.isBatchMode || System.Environment.GetCommandLineArgs().Contains("-rpServer")) role = Role.Server;
+            var args = System.Environment.GetCommandLineArgs();
+            if (args.Contains("-rpClient")) role = Role.Client;
+            else if (Application.isBatchMode || args.Contains("-rpServer")) role = Role.Server;
+            if (role != Role.InProcess)
+            {
+                // A headless process: no vsync, so cap the frame rate (the net tick is 30 Hz; RP_SERVER_FPS, default 60).
+                QualitySettings.vSyncCount = 0;
+                Application.targetFrameRate = int.TryParse(System.Environment.GetEnvironmentVariable("RP_SERVER_FPS"), out var fps) && fps > 0 ? fps : 60;
+            }
         }
 
         IEnumerator Start()
         {
+            if (role == Role.Client)
+            {
+                gameObject.AddComponent<NetTestVoyage>();
+                _status = "test client";
+                yield break;
+            }
             V4Game game = null;
             yield return NetServerComposition.LoadRun(seed, g => game = g);
-            if (game == null) { _status = "the run did not start"; yield break; }
+            if (game == null) { _status = "the run did not start"; ExitIfServer(3); yield break; }
             byte[] key;
             if (role == Role.Server) key = JoinTicket.KeyFromEnvironment();
             else
@@ -63,9 +80,13 @@ namespace RoguePirates.V5.Net
             Server.Attach(game);
             if (role == Role.InProcess && (sendDelayMs > 0 || sendDropPercent > 0))
                 NetLinkSimulator.Configure(Server.Transport, new NetLinkSimulator.Link { sendDelayMs = sendDelayMs, sendDropPercent = sendDropPercent, seed = 1 });
-            if (!Server.StartListening()) { _status = "the server did not start (see the console)"; yield break; }
+            if (!Server.StartListening()) { _status = "the server did not start (see the console)"; ExitIfServer(2); yield break; }
             _status = $"server on ws port {port}";
-            if (role == Role.Server) yield break;
+            if (role == Role.Server)
+            {
+                gameObject.AddComponent<NetServerHost>().Begin(Server, port);
+                yield break;
+            }
 
             var ticket = new JoinTicketIssuer(key).Issue("spike-player", "spike", JoinTicket.UnixNow());
             var serverShip = game.Shell.Player;
@@ -75,6 +96,14 @@ namespace RoguePirates.V5.Net
                 NetLinkSimulator.Configure(Client.Transport, new NetLinkSimulator.Link { sendDelayMs = sendDelayMs, sendDropPercent = sendDropPercent, seed = 2 });
             Client.Connect();
             _status = "in-process server and client";
+        }
+
+        /// <summary>A server process that cannot serve exits (non-zero), so the container fails visibly instead of idling.</summary>
+        void ExitIfServer(int code)
+        {
+            if (role != Role.Server || Application.isEditor) return;
+            Debug.LogError("[V5 Net] EXIT " + code + ": " + _status);
+            Application.Quit(code);
         }
 
         void Update()

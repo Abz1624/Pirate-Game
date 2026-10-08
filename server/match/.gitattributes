@@ -1,0 +1,2 @@
+# The entry script runs in Linux: keep LF on Windows checkouts (core.autocrlf).
+*.sh text eol=lf
