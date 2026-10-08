@@ -1,6 +1,6 @@
 {
  "updated": "8 Oct 2026",
- "statusLine": "M9a closed (8 Oct). Next: M9b, the Netcode match server spike on Railway.",
+ "statusLine": "M9b in progress: in-process Netcode spike first; then the Linux server on a Railway test service and your playtest.",
  "statusOk": false,
  "facts": [
   [
@@ -82,8 +82,8 @@
    "chip": "done 8 Oct · tag v5-m9a"
   },
   "M9b": {
-   "state": "next",
-   "chip": "next: Netcode match server spike"
+   "state": "building",
+   "chip": "started 8 Oct · in-process Netcode"
   },
   "M9c": {
    "state": "planned",
@@ -480,6 +480,11 @@
    "when": "8 Oct",
    "commit": "",
    "what": "<strong>M9a closed</strong> on your OK (EditMode 583/583, server 154/154). Balance findings from the playtest (early dinghy damage, tough late elites, the simulator's Doubloons) wait for a later balance pass. Next: M9b, the Netcode match server spike."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "<strong>M9b started</strong> (Netcode server voyage, single ship). Part 1 in the Editor: Netcode for GameObjects with WebSockets, a server-only composition of the game, client prediction, enemies as compact batched messages, signed join tickets, in-process tests with 150 ms lag and 2% loss. The Unity Linux Dedicated Server module is installing for part 2 (the server on a Railway test service)."
   }
  ],
  "todos": {
