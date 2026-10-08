@@ -83,7 +83,7 @@
   },
   "M9b": {
    "state": "building",
-   "chip": "started 8 Oct · in-process Netcode"
+   "chip": "part 1 done · part 2 (Linux server, Docker) running"
   },
   "M9c": {
    "state": "planned",
@@ -490,6 +490,11 @@
    "when": "8 Oct",
    "commit": "",
    "what": "Unity Linux Dedicated Server module and Docker Desktop installed. Your call: the match server image is built and tested in local Docker and pushed to the GitHub container registry; the Railway test service only runs it."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "68d10502",
+   "what": "<strong>M9b part 1 done</strong>: Netcode for GameObjects 2.13.3 over WebSockets, a server-only run of the real game (no HUD), 30 Hz ticks and 15 Hz snapshots, a predicted ship, enemies as compact batched messages, signed one-time join tickets, reconnect in about 0.3 s. At 150 ms lag and 2% loss the ship needs no corrections (boosting still costs one, fixed in part 2). Busy voyage: about 5.7 KB/s down, 0.9 KB/s up, server tick p95 3.7 ms. EditMode 597/597, PlayMode 105/105; the independent review's 3 blockers fixed. Part 2a started: the Linux server in local Docker and the API's ticket endpoint."
   }
  ],
  "todos": {
