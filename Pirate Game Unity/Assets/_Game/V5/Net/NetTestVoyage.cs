@@ -147,12 +147,25 @@ namespace RoguePirates.V5.Net
                 ["finalHull"] = Client.Hull.ToString("0", CultureInfo.InvariantCulture),
                 ["kills"] = Client.Last.kills.ToString(),
                 ["level"] = Client.Last.level.ToString(),
+                ["cardSets"] = Client.OffersReceived.ToString(),
+                ["cardsPicked"] = _cardsPicked.ToString(),
             });
         }
 
-        /// <summary>Wide S-turns at full throttle: the ship keeps moving and turning, near its start.</summary>
+        int _pickedSeq = -1;
+        int _cardsPicked;
+
+        /// <summary>Wide S-turns at full throttle: the ship keeps moving and turning, near its start. V5 M9b part 2b: level-up
+        /// cards are answered after 0.4 s with the first card (the server waits for the pick, as a voyage does).</summary>
         void Steer(float t)
         {
+            var offer = Client != null ? Client.PendingOffer : null;
+            if (offer != null && offer.seq != _pickedSeq && Time.realtimeSinceStartup - Client.PendingOfferSince > 0.4f && Client.SendPick(NetProtocol.PickAction.Pick, 0))
+            {
+                _pickedSeq = offer.seq;
+                _cardsPicked++;
+                Log($"level-up card picked ({offer.offers[0].Kind} {offer.offers[0].Id}, set {offer.seq})");
+            }
             var steer = t < 5f ? 0f : Mathf.Sin(t * 0.35f) * 0.8f;
             _script.Value = new Vector2(steer, 1f);
         }

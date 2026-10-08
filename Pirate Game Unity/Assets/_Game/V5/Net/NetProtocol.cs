@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
+using RoguePirates.V4.Config;
 using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.PlayerSystems;
+using RoguePirates.V4.Progression;
 using UnityEngine;
 
 namespace RoguePirates.V5.Net
@@ -13,7 +17,8 @@ namespace RoguePirates.V5.Net
     /// </summary>
     public static class NetProtocol
     {
-        public const byte Version = 1;
+        /// <summary>2 (part 2b): the snapshot carries the boost's timers; level-up messages.</summary>
+        public const byte Version = 2;
 
         /// <summary>The server's fixed simulation rate and the client's input rate (one input per tick).</summary>
         public const int TickRate = 30;
@@ -45,6 +50,18 @@ namespace RoguePirates.V5.Net
         public const string Enemies = "rp9b.enemies";
         public const string Defs = "rp9b.defs";
         public const string End = "rp9b.end";
+        /// <summary>V5 M9b part 2b: the level-up cards the server's run dealt (server to client, reliable).</summary>
+        public const string Offer = "rp9b.offer";
+        /// <summary>The player's choice (client to server, reliable): pick a card, skip or refresh.</summary>
+        public const string Pick = "rp9b.pick";
+        /// <summary>How a card set was resolved and the client tick the ship moves again from (server to client, reliable).</summary>
+        public const string OfferClosed = "rp9b.offerdone";
+
+        /// <summary>A level-up the client leaves unanswered this long (or a client gone) takes the first card (the default
+        /// pick), so a voyage never waits for good.</summary>
+        public const float LevelUpTimeoutSeconds = 30f;
+        public enum PickAction : byte { Pick = 1, Skip = 2, Refresh = 3 }
+        public enum OfferResolution : byte { Picked = 1, Skipped = 2, Refreshed = 3, TimedOut = 4, Cancelled = 5 }
 
         /// <summary>The connection payload's first byte.</summary>
         public const byte ConnectTicket = 1, ConnectResume = 2;
@@ -52,7 +69,7 @@ namespace RoguePirates.V5.Net
 
         public const byte ButtonBoost = 1;
         public const byte EnemyElite = 1, EnemyBoss = 2;
-        public const byte ShipAlive = 1, ShipRunEnded = 2, ShipMovementOn = 4, ShipBoosting = 8;
+        public const byte ShipAlive = 1, ShipRunEnded = 2, ShipMovementOn = 4, ShipBoosting = 8, ShipPaused = 16;
         public enum EndReason : byte { Sunk = 1, RunEnded = 2, ServerClosing = 3, SessionExpired = 4 }
 
         /// <summary>A named message's framing in Netcode (message header and the name's 8-byte hash), for the wire estimate.</summary>
@@ -87,6 +104,8 @@ namespace RoguePirates.V5.Net
         /// <summary>The newest client input tick the server has applied (0: none yet since the welcome).</summary>
         public uint ackTick;
         public PlayerShipController.MotionState motion;
+        /// <summary>V5 M9b part 2b: the boost's timers (the client rewinds them with the motion).</summary>
+        public ShipBoostController.NetState boost;
         public float hull, maxHull, runTime;
         public ushort level;
         public uint kills, gold;
@@ -94,6 +113,38 @@ namespace RoguePirates.V5.Net
 
         public bool Alive => (flags & NetProtocol.ShipAlive) != 0;
         public bool RunEnded => (flags & NetProtocol.ShipRunEnded) != 0;
+        public bool Boosting => (flags & NetProtocol.ShipBoosting) != 0;
+        /// <summary>The server's run is paused (level-up cards).</summary>
+        public bool Paused => (flags & NetProtocol.ShipPaused) != 0;
+    }
+
+    /// <summary>V5 M9b part 2b: a level-up's cards as the server's run dealt them (the real offers).</summary>
+    public sealed class OfferMessage
+    {
+        public ushort seq;
+        /// <summary>The first client input tick the paused run does not move the ship on.</summary>
+        public uint pauseFrom;
+        public byte refreshesRemaining, pendingLevelUps;
+        public float timeoutSeconds;
+        public readonly List<Offer> offers = new List<Offer>();
+    }
+
+    public struct PickMessage
+    {
+        public ushort seq;
+        public NetProtocol.PickAction action;
+        public byte index;
+        /// <summary>The client tick its ship moves again from (a pick or a skip; the server may take a later one).</summary>
+        public uint resumeTick;
+    }
+
+    public struct OfferClosedMessage
+    {
+        public ushort seq;
+        public NetProtocol.OfferResolution how;
+        public byte index;
+        /// <summary>The client tick the ship moves again from; 0 while the run stays paused (more cards follow).</summary>
+        public uint resumeTick;
     }
 
     public struct WelcomeMessage
@@ -196,6 +247,7 @@ namespace RoguePirates.V5.Net
             w.U32(s.serverTick);
             w.U32(s.ackTick);
             WriteMotion(w, s.motion);
+            w.F32(s.boost.boostTimer); w.F32(s.boost.cooldownTimer);
             w.F32(s.hull); w.F32(s.maxHull); w.F32(s.runTime);
             w.U16(s.level);
             w.VarU32(s.kills); w.VarU32(s.gold);
@@ -209,6 +261,7 @@ namespace RoguePirates.V5.Net
             s.serverTick = r.U32();
             s.ackTick = r.U32();
             s.motion = ReadMotion(r);
+            s.boost = new ShipBoostController.NetState { boostTimer = r.F32(), cooldownTimer = r.F32() };
             s.hull = r.F32(); s.maxHull = r.F32(); s.runTime = r.F32();
             s.level = r.U16();
             s.kills = r.VarU32(); s.gold = r.VarU32();
@@ -330,6 +383,105 @@ namespace RoguePirates.V5.Net
             reason = (NetProtocol.EndReason)r.U8();
             runTime = r.F32();
             kills = r.VarU32();
+            return true;
+        }
+
+        // ---- Level-ups (V5 M9b part 2b) ----------------------------------------------------------------------------
+
+        /// <summary>At most this many cards and stat lines a card (a level-up deals 3-4).</summary>
+        public const int MaxOffers = 8, MaxLines = 16;
+
+        public static void WriteOffer(NetWriter w, OfferMessage m)
+        {
+            w.U8(NetProtocol.Version);
+            w.U16(m.seq);
+            w.U32(m.pauseFrom);
+            w.U8(m.refreshesRemaining);
+            w.U8(m.pendingLevelUps);
+            w.F32(m.timeoutSeconds);
+            var n = Math.Min(m.offers.Count, MaxOffers);
+            w.U8((byte)n);
+            for (var i = 0; i < n; i++)
+            {
+                var o = m.offers[i];
+                w.U8((byte)o.Kind);
+                w.Str(o.Id);
+                w.Str(o.EvolutionId);
+                w.U8((byte)Mathf.Clamp(o.Rarity, 0, 255));
+                w.U8((byte)Mathf.Clamp(o.CurrentLevel, 0, 255));
+                w.U8((byte)Mathf.Clamp(o.NextLevel, 0, 255));
+                w.U8((byte)((o.IsWeapon ? 1 : 0) | (o.IsNew ? 2 : 0) | (o.Id == null ? 4 : 0) | (o.EvolutionId == null ? 8 : 0)));
+                var lines = o.Lines != null ? Math.Min(o.Lines.Length, MaxLines) : 0;
+                w.U8((byte)(o.Lines == null ? 255 : lines));
+                for (var j = 0; j < lines; j++) { w.U8((byte)o.Lines[j].Axis); w.F32(o.Lines[j].Value); }
+            }
+        }
+
+        public static bool ReadOffer(NetReader r, out OfferMessage m)
+        {
+            m = null;
+            if (r.Remaining < 1 || r.U8() != NetProtocol.Version) return false;
+            var msg = new OfferMessage { seq = r.U16(), pauseFrom = r.U32(), refreshesRemaining = r.U8(), pendingLevelUps = r.U8(), timeoutSeconds = r.F32() };
+            var n = r.U8();
+            if (n > MaxOffers) return false;
+            for (var i = 0; i < n; i++)
+            {
+                var o = new Offer { Kind = (OfferKind)r.U8(), Id = r.Str(), EvolutionId = r.Str(), Rarity = r.U8(), CurrentLevel = r.U8(), NextLevel = r.U8() };
+                var flags = r.U8();
+                o.IsWeapon = (flags & 1) != 0;
+                o.IsNew = (flags & 2) != 0;
+                if ((flags & 4) != 0) o.Id = null;
+                if ((flags & 8) != 0) o.EvolutionId = null;
+                var lines = r.U8();
+                if (lines != 255)
+                {
+                    if (lines > MaxLines) return false;
+                    o.Lines = new UpgradeLine[lines];
+                    for (var j = 0; j < lines; j++) o.Lines[j] = new UpgradeLine((ConfigEnums.UpgradeAxis)r.U8(), r.F32());
+                }
+                msg.offers.Add(o);
+            }
+            m = msg;
+            return true;
+        }
+
+        public static void WritePick(NetWriter w, in PickMessage m)
+        {
+            w.U8(NetProtocol.Version);
+            w.U16(m.seq);
+            w.U8((byte)m.action);
+            w.U8(m.index);
+            w.U32(m.resumeTick);
+        }
+
+        public static bool ReadPick(NetReader r, out PickMessage m)
+        {
+            m = default;
+            if (r.Remaining < 9 || r.U8() != NetProtocol.Version) return false;
+            m.seq = r.U16();
+            m.action = (NetProtocol.PickAction)r.U8();
+            m.index = r.U8();
+            m.resumeTick = r.U32();
+            return true;
+        }
+
+        public static void WriteOfferClosed(NetWriter w, in OfferClosedMessage m)
+        {
+            w.U8(NetProtocol.Version);
+            w.U16(m.seq);
+            w.U8((byte)m.how);
+            w.U8(m.index);
+            w.U32(m.resumeTick);
+        }
+
+        public static bool ReadOfferClosed(NetReader r, out OfferClosedMessage m)
+        {
+            m = default;
+            if (r.Remaining < 9 || r.U8() != NetProtocol.Version) return false;
+            m.seq = r.U16();
+            m.how = (NetProtocol.OfferResolution)r.U8();
+            m.index = r.U8();
+            m.resumeTick = r.U32();
             return true;
         }
     }

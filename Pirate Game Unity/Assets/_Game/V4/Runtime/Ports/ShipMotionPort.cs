@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using RoguePirates.V4.Foundation.Combat;
+using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Foundation.Platform;
 using RoguePirates.V4.Foundation.Player;
+using RoguePirates.V4.Foundation.PlayerSystems;
 using UnityEngine;
 
 namespace RoguePirates.V4.Ports
@@ -27,7 +29,8 @@ namespace RoguePirates.V4.Ports
             game != null && game.Shell != null && game.Shell.Player != null ? new ShipMotionPort(game.Shell.Player) : null;
 
         public bool Exists => _ship != null;
-        public Vector3 Position => _ship != null ? _ship.Position : Vector3.zero;
+        /// <summary>The simulated position (V5 M9b part 2b: the body's, not the drawn transform's).</summary>
+        public Vector3 Position => _ship != null ? _ship.SimPosition : Vector3.zero;
         public Vector3 Forward => _ship != null ? _ship.MovementForward : Vector3.forward;
         public bool Controlled => _controlled;
         public float Hull => _ship != null && _ship.Damage != null ? _ship.Damage.CurrentHP : 0f;
@@ -35,26 +38,67 @@ namespace RoguePirates.V4.Ports
         public bool Alive => _ship != null && _ship.Damage != null && _ship.Damage.IsAlive;
         public Transform Root => _ship != null ? _ship.transform : null;
 
-        /// <summary>The net layer drives the ship from here on: its own input, no physics-step movement, one step per call.</summary>
+        /// <summary>The net layer drives the ship from here on: its own input, no physics-step movement, one step per call;
+        /// V5 M9b part 2b: the boost too (its own Update off; <see cref="Step(Vector2, bool, float, bool)"/> steps it).</summary>
         public void TakeControl()
         {
             if (_ship == null || _controlled) return;
             _controlled = true;
             _ship.ConfigureDedicatedSteerInput(_input);
             _ship.DirectStep = true;
-            _ship.enabled = false; // no FixedUpdate of its own: the net tick steps it
+            _ship.NetStepped = true; // no FixedUpdate of its own: the net tick steps it (its visual roll keeps running)
+            var boost = Boost;
+            if (boost != null) boost.enabled = false; // no frame-clock boost: the net tick steps it
+        }
+
+        ShipBoostController Boost => _ship != null ? _ship.GetComponent<ShipBoostController>() : null;
+
+        /// <summary>V5 M9b part 2b: the ship is boosting now.</summary>
+        public bool IsBoosting { get { var b = Boost; return b != null && b.IsBoosting; } }
+
+        /// <summary>V5 M9b part 2b: the boost's timers (rewound with the motion).</summary>
+        public ShipBoostController.NetState CaptureBoost()
+        {
+            var b = Boost;
+            return b != null ? b.CaptureNet() : default;
+        }
+
+        public void RestoreBoost(in ShipBoostController.NetState state)
+        {
+            var b = Boost;
+            if (b != null) b.RestoreNet(state);
+        }
+
+        /// <summary>V5 M9b part 2b: the client's ship is for show and prediction: nothing local damages it (the hull shown is
+        /// the server's).</summary>
+        public void IgnoreLocalDamage()
+        {
+            if (_ship != null && _ship.Damage != null) _ship.Damage.SetPlaytestInvulnerable(true);
+            if (_ship != null) _ship.IslandImpactDamage += (_, __) => { };
         }
 
         public PlayerShipController.MotionState Capture() => _ship.CaptureMotion();
         public void Restore(in PlayerShipController.MotionState state) => _ship.RestoreMotion(state);
 
         /// <summary>One movement step of <paramref name="dt"/> seconds on steer (x) and throttle (y).</summary>
-        public void Step(Vector2 steerThrottle, float dt)
+        public void Step(Vector2 steerThrottle, float dt) => Step(steerThrottle, false, dt, true);
+
+        /// <summary>
+        /// V5 M9b part 2b: one net step: the boost (held <paramref name="boost"/> starts it when ready, its ease runs on
+        /// this step's clock), then the movement, as a voyage frame orders them. The server and the client's prediction
+        /// both step through here, so a boost replays exactly. <paramref name="silent"/>: no boost sound (a replay, a server).
+        /// </summary>
+        public void Step(Vector2 steerThrottle, bool boost, float dt, bool silent)
         {
             if (_ship == null) return;
+            if (_ship.Damage != null && !_ship.Damage.IsAlive) return;
+            var b = _controlled ? Boost : null;
+            if (b != null && !RunPaused) b.TickNet(dt, boost, silent);
             _input.Value = steerThrottle;
             _ship.TickMovement(dt);
         }
+
+        static bool RunPaused => RunManager.Instance != null && (RunManager.Instance.IsPaused || RunManager.Instance.IsRunEnded);
 
         /// <summary>The ship's boost (the run's own boost controller; the server's side only).</summary>
         public void RequestBoost()
@@ -82,6 +126,8 @@ namespace RoguePirates.V4.Ports
             copy.SetActive(true);
             SetLayer(copy.transform, 2); // after Awake, which ties the ship's own layer to the islands' collision rule
             var ship = copy.GetComponent<PlayerShipController>();
+            var boost = copy.GetComponent<ShipBoostController>(); // V5 M9b part 2b: kept, so the boost is predicted
+            if (boost != null) boost.Bind(ship);
             ship.IslandImpact = source.IslandImpact;
             ship.IslandImpactDamage += (_, __) => { }; // impacts cost the server's hull, never this copy's
             ship.Damage.Initialize(1f);
@@ -90,6 +136,8 @@ namespace RoguePirates.V4.Ports
             var port = new ShipMotionPort(ship) { _ownsObject = true };
             port.TakeControl();
             port.Restore(source.CaptureMotion());
+            var sourceBoost = source.GetComponent<ShipBoostController>();
+            if (sourceBoost != null) port.RestoreBoost(sourceBoost.CaptureNet());
             return port;
         }
 
@@ -98,7 +146,7 @@ namespace RoguePirates.V4.Ports
             if (_ship != null && _ownsObject) UnityEngine.Object.Destroy(_ship.gameObject);
         }
 
-        static readonly HashSet<Type> Kept = new HashSet<Type> { typeof(PlayerShipController), typeof(DamageReceiver) };
+        static readonly HashSet<Type> Kept = new HashSet<Type> { typeof(PlayerShipController), typeof(DamageReceiver), typeof(ShipBoostController) };
 
         static void Strip(GameObject copy)
         {

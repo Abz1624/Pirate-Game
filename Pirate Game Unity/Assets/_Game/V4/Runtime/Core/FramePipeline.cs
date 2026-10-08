@@ -105,6 +105,10 @@ namespace RoguePirates.V4
     {
         public FramePipeline Pipeline;
 
-        void Update() => Pipeline?.Run(Time.deltaTime, Time.time, Time.frameCount);
+        void Update()
+        {
+            if (RunRequest.RemoteSimulation) return; // V5 M9b part 2b: a net client's stage; the server runs the frame steps
+            Pipeline?.Run(Time.deltaTime, Time.time, Time.frameCount);
+        }
     }
 }

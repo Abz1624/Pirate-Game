@@ -1,0 +1,139 @@
+{
+  "status": "completed",
+  "duration": 1.02,
+  "summary": {
+    "total": 18,
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "results": [
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Endpoint_LocalWsAndRailwayWss",
+      "Status": "Passed",
+      "Duration": 0.0167146,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Enemies_QuantizedWithinOneCentimetrePerAxis",
+      "Status": "Passed",
+      "Duration": 0.0041728,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Inputs_RoundTripAndExtraBytesAreNotRead",
+      "Status": "Passed",
+      "Duration": 0.0021948,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.LevelUpMessages_RoundTrip",
+      "Status": "Passed",
+      "Duration": 0.0032124,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.LevelUps_CheckPicksAndTimeOut",
+      "Status": "Passed",
+      "Duration": 0.0045994,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Mirror_DropsNearEnemiesMissingFromASnapshot",
+      "Status": "Passed",
+      "Duration": 0.0030126,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Mirror_TruncatedSnapshotRemovesNothing",
+      "Status": "Passed",
+      "Duration": 0.0003033,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.NetAssembly_IsKeptOutOfReleaseBuilds",
+      "Status": "Passed",
+      "Duration": 0.0965544,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.ServerBuild_OwnsTheDefineAndBootsTheSpikeScene",
+      "Status": "Passed",
+      "Duration": 0.0022653,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.ServerPreset_SetsThe30HzTick",
+      "Status": "Passed",
+      "Duration": 0.2649601,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ship_RoundTripsExactly",
+      "Status": "Passed",
+      "Duration": 0.0020946,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_ContractVector",
+      "Status": "Passed",
+      "Duration": 0.0060739,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_MalformedAndNoSecret",
+      "Status": "Passed",
+      "Duration": 0.0004656,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_RefusedJoinDoesNotBurnIt",
+      "Status": "Passed",
+      "Duration": 0.0003568,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_TamperedOrWrongKey_BadSignature",
+      "Status": "Passed",
+      "Duration": 0.0002649,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_TimeWindowAndMatch",
+      "Status": "Passed",
+      "Duration": 0.0004179,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.Ticket_ValidOnceThenReplayed",
+      "Status": "Passed",
+      "Duration": 0.0003949,
+      "Message": null,
+      "StackTrace": null
+    },
+    {
+      "FullName": "RoguePirates.V5.Net.Tests.V5NetEditModeTests.WebGLClientBuild_OwnsTheDefineAndTheEntryStaysInTheNetAssembly",
+      "Status": "Passed",
+      "Duration": 0.1928754,
+      "Message": null,
+      "StackTrace": null
+    }
+  ]
+}

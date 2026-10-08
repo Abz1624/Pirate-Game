@@ -60,9 +60,8 @@ namespace RoguePirates.V5.Net
                 if (game != null && game.IsRunning && RunManager.Instance != null && RunManager.Instance.State == RunState.Playing) break;
                 yield return null;
             }
-            // No client can pick a level-up card yet (part 2: a choice message), so a server's own run takes its
-            // level-ups without cards, as the Scenario Lab's skipLevelUpCards does, instead of pausing on them.
-            if (game != null && game.IsRunning && game.Build != null) game.Build.Progression.AutoLevelUp = () => { };
+            // V5 M9b part 2b: the level-up cards go to the player (NetServer.Attach registers NetLevelUps as the run's card
+            // presenter); part 2a's automatic level-ups without cards are gone.
             ready?.Invoke(game != null && game.IsRunning ? game : null);
         }
     }

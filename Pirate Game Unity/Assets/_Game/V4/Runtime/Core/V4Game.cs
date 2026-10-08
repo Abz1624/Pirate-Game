@@ -304,7 +304,8 @@ namespace RoguePirates.V4
             });
             views.Stage = _stage.View;
             // V5 M9a (I9a.1): every voyage keeps its run log (uploaded with the run), whatever the playtest switches.
-            if (!moduleLab && !pvp) views.RunLog = AddRunLog(runState, ship);
+            // V5 M9b part 2b: a net client's stage records nothing (its run is the server's; it never ticks here).
+            if (!moduleLab && !pvp && !RunRequest.RemoteSimulation) views.RunLog = AddRunLog(runState, ship);
             _context.Register<Views.IRunViews>(views);
             _resultsTelemetry = new Telemetry.ResultsTelemetry(_telemetry, _rewards, () => runState.ObjectiveSecured);
             _shell.Rewards = _rewards;
@@ -317,7 +318,7 @@ namespace RoguePirates.V4
             _shipPort = ship;
             // V5 M8z (6 Oct): tests run with DemoMode.Off; they don't write session files.
             // V5 M8z (7 Oct, D20): and only in playtest builds (DemoJuiceSettings.downloadSessionFiles).
-            if (!moduleLab && !pvp && RoguePirates.V4.Foundation.Core.DemoMode.DownloadSessionFiles) AddSessionRecorder(runState, ship, damageSink);
+            if (!moduleLab && !pvp && !RunRequest.RemoteSimulation && RoguePirates.V4.Foundation.Core.DemoMode.DownloadSessionFiles) AddSessionRecorder(runState, ship, damageSink);
             _shell.Awake();
         }
 
@@ -444,6 +445,7 @@ namespace RoguePirates.V4
         void Update()
         {
             if (!_running) return;
+            if (RunRequest.RemoteSimulation) return; // V5 M9b part 2b: a net client's stage; the server runs the simulation
             // Legacy systems tick exactly like V3RunBootstrap.Update (variable dt) until their modules replace them.
             _shell.Tick(Time.deltaTime);
 

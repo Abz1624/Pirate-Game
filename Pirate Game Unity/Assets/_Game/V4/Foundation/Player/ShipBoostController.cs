@@ -41,18 +41,7 @@ namespace RoguePirates.V4.Foundation.PlayerSystems
                 return;
             }
 
-            _cooldownTimer = Mathf.Max(0f, _cooldownTimer - Time.deltaTime);
-            if (_boostTimer > 0f)
-            {
-                var elapsed = boostDuration - _boostTimer;
-                _boostTimer -= Time.deltaTime;
-                var easeIn = easeInSeconds > 0f ? Mathf.Clamp01(elapsed / easeInSeconds) : 1f;
-                var easeOut = easeOutSeconds > 0f ? Mathf.Clamp01(_boostTimer / easeOutSeconds) : 1f;
-                var ease = Mathf.SmoothStep(0f, 1f, Mathf.Min(easeIn, easeOut));
-                _ship.ApplyMoveEffect(Mathf.Lerp(1f, boostMoveMultiplier, ease), 0.05f);
-                if (_boostTimer <= 0f)
-                    _cooldownTimer = boostCooldown;
-            }
+            Advance(Time.deltaTime);
 
             var boostPressed = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
             if (Gamepad.current != null && Gamepad.current.buttonSouth.isPressed)
@@ -70,10 +59,55 @@ namespace RoguePirates.V4.Foundation.PlayerSystems
             StartBoost();
         }
 
-        void StartBoost()
+        void StartBoost(bool silent = false)
         {
             _boostTimer = boostDuration;
-            SfxService.PlayPlaceholder("boost");
+            if (!silent) SfxService.PlayPlaceholder("boost");
+        }
+
+        /// <summary>The timers and the ease for <paramref name="dt"/> seconds (the frame in the voyage, one net tick when stepped).</summary>
+        void Advance(float dt)
+        {
+            _cooldownTimer = Mathf.Max(0f, _cooldownTimer - dt);
+            if (_boostTimer > 0f)
+            {
+                var elapsed = boostDuration - _boostTimer;
+                _boostTimer -= dt;
+                var easeIn = easeInSeconds > 0f ? Mathf.Clamp01(elapsed / easeInSeconds) : 1f;
+                var easeOut = easeOutSeconds > 0f ? Mathf.Clamp01(_boostTimer / easeOutSeconds) : 1f;
+                var ease = Mathf.SmoothStep(0f, 1f, Mathf.Min(easeIn, easeOut));
+                _ship.ApplyMoveEffect(Mathf.Lerp(1f, boostMoveMultiplier, ease), 0.05f);
+                if (_boostTimer <= 0f)
+                    _cooldownTimer = boostCooldown;
+            }
+        }
+
+        /// <summary>
+        /// V5 M9b part 2b: one boost step of <paramref name="dt"/> seconds on a net tick, in the order the frame runs it (the
+        /// timers and the ease, then the button held: a boost starts when it is ready, as in the voyage). The match server
+        /// and the client's prediction both call it before the ship's movement step (the component's own Update is off
+        /// then), so a boost is predicted on the same code and clock as the server's. <paramref name="silent"/>: no sound
+        /// (a replayed step).
+        /// </summary>
+        public void TickNet(float dt, bool pressed, bool silent)
+        {
+            if (_ship == null) return;
+            Advance(dt);
+            if (pressed && CanBoost) StartBoost(silent);
+        }
+
+        /// <summary>V5 M9b part 2b: the boost's state, part of what a net step reads and writes (rewound with the ship's motion).</summary>
+        public struct NetState
+        {
+            public float boostTimer, cooldownTimer;
+        }
+
+        public NetState CaptureNet() => new NetState { boostTimer = _boostTimer, cooldownTimer = _cooldownTimer };
+
+        public void RestoreNet(in NetState state)
+        {
+            _boostTimer = state.boostTimer;
+            _cooldownTimer = state.cooldownTimer;
         }
     }
 }

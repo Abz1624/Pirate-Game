@@ -31,9 +31,26 @@ namespace RoguePirates.V5.Net
         /// <summary>The player's steer and throttle (tests script it; the keyboard when null).</summary>
         public IShipSteerInput Input { get; set; }
         public Func<bool> Boost { get; set; }
-        /// <summary>Makes the prediction ship at the first welcome.</summary>
+        /// <summary>Makes the prediction ship at the first welcome (it may return null: the ship comes later through
+        /// <see cref="AttachShip"/>, once the stage built from the welcome's seed is loaded).</summary>
         public Func<ShipMotionPort> ShipFactory { get; set; }
         public ShipMotionPort Predicted { get; private set; }
+        /// <summary>V5 M9b part 2b: the first welcome (its seed builds the client's stage).</summary>
+        public WelcomeMessage FirstWelcome { get; private set; }
+        public event Action<WelcomeMessage> WelcomeReceived;
+
+        /// <summary>V5 M9b part 2b: the level-up cards up now (null when none), and when they change.</summary>
+        public OfferMessage PendingOffer { get; private set; }
+        public float PendingOfferSince { get; private set; }
+        public event Action<OfferMessage> OfferReceived;
+        public event Action<OfferClosedMessage> OfferResolved;
+        public int OffersReceived { get; private set; }
+        public int PicksSent { get; private set; }
+        public OfferClosedMessage LastResolution { get; private set; }
+        /// <summary>The level-up pause on the client's tick line: from <see cref="_pauseFrom"/> (0: none) until
+        /// <see cref="_resumeAt"/> (0: still paused), the ship holds, as the server's does.</summary>
+        uint _pauseFrom, _resumeAt;
+        bool _resumeConfirmed;
 
         public bool Welcomed { get; private set; }
         public bool Ended { get; private set; }
@@ -120,6 +137,8 @@ namespace RoguePirates.V5.Net
             messages.RegisterNamedMessageHandler(NetProtocol.Enemies, OnEnemies);
             messages.RegisterNamedMessageHandler(NetProtocol.Defs, OnDefs);
             messages.RegisterNamedMessageHandler(NetProtocol.End, OnEnd);
+            messages.RegisterNamedMessageHandler(NetProtocol.Offer, OnOffer);
+            messages.RegisterNamedMessageHandler(NetProtocol.OfferClosed, OnOfferClosed);
             return true;
         }
 
@@ -186,10 +205,13 @@ namespace RoguePirates.V5.Net
         {
             if (!NetCodec.ReadWelcome(Read(reader), out var m)) return;
             _resume = m.resumeToken;
+            var first = Welcomes == 0;
+            if (first) FirstWelcome = m;
             if (Predicted == null) Predicted = ShipFactory?.Invoke();
             if (_droppedAt >= 0f) Metrics.ResumeSeconds.Add(Time.realtimeSinceStartup - _droppedAt);
             _droppedAt = -1f;
             Predicted?.Restore(m.ship.motion);
+            Predicted?.RestoreBoost(m.ship.boost);
             Last = m.ship;
             LastAck = 0;
             _historyStart = Tick + 1; // inputs from here on are the ones the server will apply
@@ -198,6 +220,89 @@ namespace RoguePirates.V5.Net
             Enemies.Clear();
             Welcomed = true;
             Welcomes++;
+            WelcomeReceived?.Invoke(m);
+        }
+
+        /// <summary>
+        /// V5 M9b part 2b: the prediction ship arrives after the welcome (the client's stage was built from its seed). It
+        /// starts from the newest snapshot; the server's ship has waited for the first input since the welcome, so the
+        /// prediction starts in step.
+        /// </summary>
+        public void AttachShip(ShipMotionPort ship)
+        {
+            if (ship == null) throw new ArgumentNullException(nameof(ship));
+            Predicted = ship;
+            ship.Restore(Last.motion);
+            ship.RestoreBoost(Last.boost);
+            LastAck = 0;
+            _historyStart = Tick + 1;
+            _accumulator = 0f;
+            _lastRealtime = -1;
+        }
+
+        // ---- Level-up cards (V5 M9b part 2b) -----------------------------------------------------------------------
+
+        void OnOffer(ulong sender, FastBufferReader reader)
+        {
+            OfferMessage m;
+            try { if (!NetCodec.ReadOffer(Read(reader), out m)) return; }
+            catch (Exception) { return; }
+            PendingOffer = m;
+            PendingOfferSince = Time.realtimeSinceStartup;
+            OffersReceived++;
+            _pauseFrom = m.pauseFrom;
+            _resumeAt = 0; // held until the server says where the ship moves again
+            _resumeConfirmed = false;
+            OfferReceived?.Invoke(m);
+        }
+
+        void OnOfferClosed(ulong sender, FastBufferReader reader)
+        {
+            OfferClosedMessage m;
+            try { if (!NetCodec.ReadOfferClosed(Read(reader), out m)) return; }
+            catch (Exception) { return; }
+            LastResolution = m;
+            if (PendingOffer != null && PendingOffer.seq != m.seq) return; // a newer set is already up (a chained level-up)
+            PendingOffer = null;
+            if (m.resumeTick != 0) { _resumeAt = m.resumeTick; _resumeConfirmed = true; }
+            OfferResolved?.Invoke(m);
+        }
+
+        /// <summary>The player's choice on the cards up: a card (<paramref name="index"/>), a skip or a refresh. The ship
+        /// moves again from the next tick (the server may name a later one).</summary>
+        public bool SendPick(NetProtocol.PickAction action, int index = 0)
+        {
+            var offer = PendingOffer;
+            if (offer == null || !Connected) return false;
+            var resume = Tick + 1;
+            _writer.Clear();
+            NetCodec.WritePick(_writer, new PickMessage { seq = offer.seq, action = action, index = (byte)Mathf.Clamp(index, 0, 255), resumeTick = resume });
+            Send(NetProtocol.Pick, NetworkDelivery.ReliableSequenced);
+            PicksSent++;
+            if (action != NetProtocol.PickAction.Refresh) _resumeAt = resume;
+            return true;
+        }
+
+        /// <summary>Tests: a pick for any card set and index (the server checks it).</summary>
+        public void SendRawPickForTest(ushort seq, NetProtocol.PickAction action, int index)
+        {
+            _writer.Clear();
+            NetCodec.WritePick(_writer, new PickMessage { seq = seq, action = action, index = (byte)Mathf.Clamp(index, 0, 255), resumeTick = Tick + 1 });
+            Send(NetProtocol.Pick, NetworkDelivery.ReliableSequenced);
+        }
+
+        /// <summary>The ship holds on this tick (the level-up pause, as the server holds it).</summary>
+        public bool Holds(uint tick)
+        {
+            if (_pauseFrom == 0 || tick < _pauseFrom) return false;
+            return _resumeAt == 0 || tick < _resumeAt;
+        }
+
+        void Step(uint tick, in NetInput input, bool replay)
+        {
+            if (Holds(tick)) return;
+            if (!Last.Alive || Last.RunEnded) return; // the server's ship sank or the voyage ended: it moves no more
+            Predicted.Step(input.SteerThrottle, input.Boost, NetProtocol.TickSeconds, replay);
         }
 
         void OnSnapshot(ulong sender, FastBufferReader reader)
@@ -269,6 +374,8 @@ namespace RoguePirates.V5.Net
 
         /// <summary>Tests: a forged client clock (this many ticks per real tick, numbered ahead).</summary>
         public int TickScaleForTest { get; set; } = 1;
+        /// <summary>Corrections over 1 m (the first 20 are logged with their context).</summary>
+        public int LargeCorrections { get; private set; }
         /// <summary>Times the client was so far behind that it jumped to the server's tick.</summary>
         public int Resyncs { get; private set; }
         int _lead = 6;
@@ -284,7 +391,7 @@ namespace RoguePirates.V5.Net
             var input = NetInput.From(raw, Boost != null && Boost());
             var slot = (int)(Tick % History);
             _inputs[slot] = input;
-            Predicted.Step(input.SteerThrottle, NetProtocol.TickSeconds); // on the quantized input, as the server will
+            Step(Tick, input, false); // on the quantized input, as the server will
             _predicted[slot] = Predicted.Position;
             SendInputs();
         }
@@ -314,13 +421,14 @@ namespace RoguePirates.V5.Net
                 // the tick ahead of it by the usual lead, predicting those ticks on the last input (the server repeats it).
                 var held = _inputs[Tick % History];
                 Predicted.Restore(s.motion);
+                Predicted.RestoreBoost(s.boost);
                 LastAck = ack;
                 Tick = ack + (uint)_lead;
                 _historyStart = ack + 1;
                 for (var t = ack + 1; t <= Tick; t++)
                 {
                     _inputs[t % History] = held;
-                    Predicted.Step(held.SteerThrottle, NetProtocol.TickSeconds);
+                    Step(t, held, true);
                     _predicted[t % History] = Predicted.Position;
                 }
                 Resyncs++;
@@ -337,15 +445,21 @@ namespace RoguePirates.V5.Net
                 Metrics.InputLagMs.Add((Tick - ack) * NetProtocol.TickSeconds * 1000f);
             }
             Predicted.Restore(s.motion);
+            Predicted.RestoreBoost(s.boost);
+            if (_resumeConfirmed && ack >= _resumeAt) { _pauseFrom = _resumeAt = 0; _resumeConfirmed = false; } // the server has moved past the pause
             var from = ack >= _historyStart ? ack + 1 : _historyStart;
             if (Tick >= from && Tick - from >= History - 1) from = Tick - (History - 2); // far behind: the server's state, then the latest inputs
             for (var t = from; t <= Tick; t++)
             {
-                Predicted.Step(_inputs[t % History].SteerThrottle, NetProtocol.TickSeconds);
+                Step(t, _inputs[t % History], true);
                 _predicted[t % History] = Predicted.Position;
             }
             var after = Predicted.Position;
-            Metrics.Correction.Add(Flat(after - before));
+            var correction = Flat(after - before);
+            Metrics.Correction.Add(correction);
+            if (correction > 1f && LargeCorrections++ < 20)
+                Debug.Log($"[V5 Net] large correction {correction:0.00} m: tick {Tick} ack {ack} from {from} historyStart {_historyStart} pause {_pauseFrom}-{_resumeAt} " +
+                          $"confirmed {_resumeConfirmed} paused {s.Paused} alive {s.Alive} welcomes {Welcomes} predictionError {(ack >= _historyStart ? Flat(_predicted[ack % History] - s.motion.position) : -1f):0.00}");
             VisualOffset += new Vector3(before.x - after.x, 0f, before.z - after.z);
         }
 

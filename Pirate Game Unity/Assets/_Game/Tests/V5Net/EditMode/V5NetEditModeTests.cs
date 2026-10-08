@@ -1,8 +1,10 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 using NUnit.Framework;
 using RoguePirates.V4.Config;
+using RoguePirates.V4.Progression;
 using RoguePirates.V4.Foundation.Player;
 using Unity.Netcode.Transports.UTP;
 using UnityEditor;
@@ -155,7 +157,8 @@ namespace RoguePirates.V5.Net.Tests
                 moveSpeedMultiplier = 1.4f, turnRateMultiplier = 1f, runSpeedMultiplier = 1.625f, stepTime = 33.3f,
                 nextIslandImpactAt = float.NegativeInfinity, nextIslandDamageAt = 12f, movementEnabled = true,
             };
-            var s = new ShipSnapshot { serverTick = 900, ackTick = 870, motion = m, hull = 75.5f, maxHull = 100f, runTime = 61f, level = 7, kills = 300, gold = 12345, flags = 5 };
+            var s = new ShipSnapshot { serverTick = 900, ackTick = 870, motion = m, hull = 75.5f, maxHull = 100f, runTime = 61f, level = 7, kills = 300, gold = 12345, flags = 5,
+                boost = new RoguePirates.V4.Foundation.PlayerSystems.ShipBoostController.NetState { boostTimer = 3.25f, cooldownTimer = 0f } };
             var w = new NetWriter();
             NetCodec.WriteShip(w, s);
             Assert.IsTrue(NetCodec.ReadShip(new NetReader(w.ToArray()), out var back));
@@ -168,7 +171,8 @@ namespace RoguePirates.V5.Net.Tests
             Assert.AreEqual(s.hull, back.hull);
             Assert.AreEqual(s.gold, back.gold);
             Assert.IsTrue(back.motion.movementEnabled);
-            Assert.LessOrEqual(w.Length, 140, "the ship snapshot stays small");
+            Assert.AreEqual(3.25f, back.boost.boostTimer, "part 2b: the boost's timers ride with the motion");
+            Assert.LessOrEqual(w.Length, 148, "the ship snapshot stays small (145 bytes with the boost)");
         }
 
         [Test]
@@ -252,6 +256,98 @@ namespace RoguePirates.V5.Net.Tests
             Assert.AreEqual(1, mirror.Count);
         }
 
+        // ---- Level-up cards (part 2b) ----------------------------------------------------------------------------------
+
+        static List<Offer> Cards() => new List<Offer>
+        {
+            new Offer { Kind = OfferKind.WeaponUpgrade, Id = "cannon", Rarity = 2, CurrentLevel = 2, NextLevel = 3, IsWeapon = true,
+                Lines = new[] { new UpgradeLine(ConfigEnums.UpgradeAxis.Damage, 0.15f), new UpgradeLine(ConfigEnums.UpgradeAxis.Cooldown, -0.1f) } },
+            new Offer { Kind = OfferKind.NewWeapon, Id = "harpoon", IsWeapon = true, IsNew = true, NextLevel = 1 },
+            new Offer { Kind = OfferKind.WeaponEvolution, Id = "cannon", EvolutionId = "broadside", Rarity = 4 },
+        };
+
+        [Test]
+        public void LevelUpMessages_RoundTrip()
+        {
+            var m = new OfferMessage { seq = 513, pauseFrom = 90001, refreshesRemaining = 1, pendingLevelUps = 2, timeoutSeconds = 29.5f };
+            m.offers.AddRange(Cards());
+            var w = new NetWriter();
+            NetCodec.WriteOffer(w, m);
+            Assert.IsTrue(NetCodec.ReadOffer(new NetReader(w.ToArray()), out var back));
+            Assert.AreEqual(513, back.seq);
+            Assert.AreEqual(90001u, back.pauseFrom);
+            Assert.AreEqual(2, back.pendingLevelUps);
+            Assert.AreEqual(3, back.offers.Count);
+            for (var i = 0; i < 3; i++)
+            {
+                Assert.AreEqual(m.offers[i].Key, back.offers[i].Key);
+                Assert.AreEqual(m.offers[i].Rarity, back.offers[i].Rarity);
+                Assert.AreEqual(m.offers[i].IsNew, back.offers[i].IsNew);
+                Assert.AreEqual(m.offers[i].EvolutionId, back.offers[i].EvolutionId, "a null evolution stays null");
+                Assert.AreEqual(m.offers[i].Lines == null, back.offers[i].Lines == null);
+            }
+            Assert.AreEqual(ConfigEnums.UpgradeAxis.Cooldown, back.offers[0].Lines[1].Axis);
+            Assert.AreEqual(-0.1f, back.offers[0].Lines[1].Value);
+
+            w.Clear();
+            NetCodec.WritePick(w, new PickMessage { seq = 513, action = NetProtocol.PickAction.Pick, index = 2, resumeTick = 90050 });
+            Assert.IsTrue(NetCodec.ReadPick(new NetReader(w.ToArray()), out var pick));
+            Assert.AreEqual(NetProtocol.PickAction.Pick, pick.action);
+            Assert.AreEqual(2, pick.index);
+            Assert.AreEqual(90050u, pick.resumeTick);
+            w.Clear();
+            NetCodec.WriteOfferClosed(w, new OfferClosedMessage { seq = 513, how = NetProtocol.OfferResolution.TimedOut, resumeTick = 7 });
+            Assert.IsTrue(NetCodec.ReadOfferClosed(new NetReader(w.ToArray()), out var closed));
+            Assert.AreEqual(NetProtocol.OfferResolution.TimedOut, closed.how);
+            Assert.AreEqual(7u, closed.resumeTick);
+            Assert.IsFalse(NetCodec.ReadPick(new NetReader(new byte[] { NetProtocol.Version, 1 }), out _), "a short pick is malformed");
+        }
+
+        /// <summary>The server side of the cards: the module's callbacks run only for a pick that matches the cards on the
+        /// table; a refused pick changes nothing; an unanswered set takes the first card; the pause holds the ship from the
+        /// next unapplied tick until the resume tick.</summary>
+        [Test]
+        public void LevelUps_CheckPicksAndTimeOut()
+        {
+            uint next = 100;
+            var sent = new List<OfferMessage>();
+            var closed = new List<OfferClosedMessage>();
+            var levelUps = new NetLevelUps { NextInputTick = () => next, Send = sent.Add, SendClosed = closed.Add };
+            var chosen = new List<string>();
+            var skips = 0;
+            IOfferPresenter presenter = levelUps;
+            Assert.IsTrue(presenter.TryShow(Cards(), o => chosen.Add(o.Key), () => skips++, () => { }, 0), "the run pauses on the cards");
+            Assert.AreEqual(1, sent.Count);
+            Assert.AreEqual(100u, sent[0].pauseFrom, "the pause starts at the next unapplied tick");
+            Assert.IsTrue(levelUps.Holds(100) && levelUps.Holds(500), "the ship holds while the cards are up");
+            Assert.IsFalse(levelUps.Holds(99));
+            var seq = levelUps.Seq;
+
+            StringAssert.Contains("stale", levelUps.Apply(new PickMessage { seq = (ushort)(seq + 1), action = NetProtocol.PickAction.Pick }));
+            StringAssert.Contains("no card", levelUps.Apply(new PickMessage { seq = seq, action = NetProtocol.PickAction.Pick, index = 3 }));
+            StringAssert.Contains("refresh", levelUps.Apply(new PickMessage { seq = seq, action = NetProtocol.PickAction.Refresh }));
+            StringAssert.Contains("unknown", levelUps.Apply(new PickMessage { seq = seq, action = (NetProtocol.PickAction)9 }));
+            Assert.AreEqual(4, levelUps.Rejected);
+            CollectionAssert.IsEmpty(chosen, "a refused pick applies nothing");
+            Assert.IsTrue(levelUps.Pending);
+
+            next = 140;
+            Assert.IsNull(levelUps.Apply(new PickMessage { seq = seq, action = NetProtocol.PickAction.Pick, index = 1, resumeTick = 120 }));
+            CollectionAssert.AreEqual(new[] { "NewWeapon:harpoon" }, chosen, "the picked card goes to the module");
+            Assert.AreEqual(140u, closed[0].resumeTick, "a late pick resumes at the next unapplied tick, not in the past");
+            Assert.IsTrue(levelUps.Holds(139));
+            Assert.IsFalse(levelUps.Holds(140), "moving again from the resume tick");
+            Assert.IsNotNull(levelUps.Apply(new PickMessage { seq = seq, action = NetProtocol.PickAction.Pick }), "the same set twice is refused");
+
+            presenter.TryShow(Cards(), o => chosen.Add(o.Key), () => skips++, () => { }, 0);
+            levelUps.ExpireForTest();
+            levelUps.Tick();
+            Assert.AreEqual(1, levelUps.TimedOut);
+            Assert.AreEqual("WeaponUpgrade:cannon", chosen[1], "an unanswered set takes the first card");
+            Assert.AreEqual(NetProtocol.OfferResolution.TimedOut, closed[1].how);
+            Assert.IsFalse(levelUps.Pending);
+        }
+
         // ---- Composition and release exclusion --------------------------------------------------------------------
 
         [Test]
@@ -296,6 +392,27 @@ namespace RoguePirates.V5.Net.Tests
             CollectionAssert.DoesNotContain(EditorBuildSettings.scenes.Select(s => s.path).ToArray(), Editor.V5NetServerBuild.SpikeScenePath,
                 "the game's build list stays without the spike scene");
             StringAssert.EndsWith("Builds" + Path.DirectorySeparatorChar + "LinuxServer", Editor.V5NetServerBuild.OutputFolder);
+        }
+
+        /// <summary>V5 M9b part 2b: the WebGL client build gives itself V5_NET (its build options only, like the server's);
+        /// the game's own builds (V4BuildSettings, the WebGL and Android profiles) never name the define; the server voyage
+        /// entry lives in the net assembly and is off in the Editor unless switched on.</summary>
+        [Test]
+        public void WebGLClientBuild_OwnsTheDefineAndTheEntryStaysInTheNetAssembly()
+        {
+            Assert.AreEqual("V5_NET", Editor.V5NetWebGLBuild.Define);
+            StringAssert.EndsWith("Builds" + Path.DirectorySeparatorChar + "WebGL-Desktop-Net", Editor.V5NetWebGLBuild.OutputFolder);
+            foreach (var file in Directory.GetFiles(Path.Combine(Application.dataPath, "_Game/V4"), "*.cs", SearchOption.AllDirectories))
+                StringAssert.DoesNotContain("\"V5_NET\"", File.ReadAllText(file), file + ": the game's code and build scripts never add V5_NET");
+            Assert.AreEqual("RoguePirates.V5.Net", typeof(NetVoyageEntry).Assembly.GetName().Name, "the entry compiles only with the net assembly");
+            Assert.AreEqual("RoguePirates.V5.Net", typeof(NetVoyageClient).Assembly.GetName().Name);
+            var was = NetVoyageEntry.EditorEnabled;
+            try
+            {
+                NetVoyageEntry.EditorEnabled = false;
+                Assert.IsFalse(NetVoyageEntry.Enabled, "off in the Editor by default");
+            }
+            finally { NetVoyageEntry.EditorEnabled = was; }
         }
     }
 }

@@ -2,7 +2,8 @@
     "name": "RoguePirates.V5.Net.Editor",
     "rootNamespace": "RoguePirates.V5.Net.Editor",
     "references": [
-        "RoguePirates.V4"
+        "RoguePirates.V4",
+        "RoguePirates.V4.Editor"
     ],
     "includePlatforms": [
         "Editor"

@@ -7,6 +7,7 @@ using RoguePirates.V4;
 using RoguePirates.V4.Enemies;
 using RoguePirates.V4.Foundation.Core;
 using RoguePirates.V4.Ports;
+using RoguePirates.V4.Progression;
 using Unity.Collections;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -74,8 +75,16 @@ namespace RoguePirates.V5.Net
 
         public Session Current { get; private set; }
 
-        /// <summary>V5 M9b part 2a: a ticket join went through (the player id); the match server's host starts the held run.</summary>
+        /// <summary>V5 M9b part 2a: a ticket join went through (the player id).</summary>
         public event Action<string> Joined;
+        /// <summary>V5 M9b part 2b: the player's first inputs arrived (its stage is built and it sails): the match server's
+        /// host starts the held run then, so loading the client's stage costs the player nothing.</summary>
+        public event Action SessionStarted;
+        bool _sessionEverStarted;
+
+        /// <summary>V5 M9b part 2b: the run's level-up cards, played with the player over the network.</summary>
+        public NetLevelUps LevelUps { get; private set; }
+        public int RejectedPicks => LevelUps != null ? LevelUps.Rejected : 0;
         /// <summary>Set once <see cref="CloseGracefully"/> starts (a docker stop, a Railway redeploy).</summary>
         public bool Closing { get; private set; }
 
@@ -129,6 +138,16 @@ namespace RoguePirates.V5.Net
             Ship.TakeControl();
             game.Context.TryGet(out _enemies);
             Seed = RunManager.Instance != null ? RunManager.Instance.RunSeed : 0;
+            // V5 M9b part 2b: the run deals its cards to the player through the network (the module pauses the run and waits
+            // for the pick as in a voyage); a run started with automatic level-ups (a test scenario) keeps them.
+            LevelUps = new NetLevelUps
+            {
+                NextInputTick = () => Current == null ? 1u : Current.expectNext != 0 ? Current.expectNext : Current.lastAck + 1,
+                Send = SendOffer,
+                SendClosed = SendOfferClosed,
+                PendingLevelUps = () => game.Build != null ? game.Build.Progression.PendingLevelUps : 0,
+            };
+            game.Context.Replace<IOfferPresenter>(LevelUps);
         }
 
         public bool StartListening()
@@ -145,6 +164,7 @@ namespace RoguePirates.V5.Net
             var messages = Manager.CustomMessagingManager;
             messages.RegisterNamedMessageHandler(NetProtocol.Input, OnInput);
             messages.RegisterNamedMessageHandler(NetProtocol.ClientReport, OnClientReport);
+            messages.RegisterNamedMessageHandler(NetProtocol.Pick, OnPick);
             Metrics.Reset();
             return true;
         }
@@ -272,6 +292,7 @@ namespace RoguePirates.V5.Net
                 ship = BuildShip(s),
             });
             Send(NetProtocol.Welcome, clientId, NetworkDelivery.ReliableSequenced);
+            if (LevelUps != null && LevelUps.Pending) SendOffer(LevelUps.Message()); // the cards still up after a resume
             if (EndSent) SendEnd(LastEndReason);
         }
 
@@ -320,6 +341,41 @@ namespace RoguePirates.V5.Net
             catch (Exception) { /* malformed: dropped */ }
         }
 
+        /// <summary>V5 M9b part 2b: the player's level-up choice, checked against the cards on the table; a refused one
+        /// gets the cards again.</summary>
+        void OnPick(ulong sender, FastBufferReader reader)
+        {
+            var bytes = ReadAll(reader);
+            Metrics.Up(sender, bytes.Length);
+            var s = Current;
+            if (s == null || !s.connected || s.clientId != sender || LevelUps == null) return;
+            PickMessage pick;
+            try { if (!NetCodec.ReadPick(new NetReader(bytes), out pick)) return; }
+            catch (Exception) { return; }
+            var error = LevelUps.Apply(pick);
+            if (error == null) return;
+            Debug.Log("[V5 Net] level-up pick refused: " + error);
+            if (LevelUps.Pending) SendOffer(LevelUps.Message());
+        }
+
+        void SendOffer(OfferMessage m)
+        {
+            var s = Current;
+            if (s == null || !s.connected) return;
+            _writer.Clear();
+            NetCodec.WriteOffer(_writer, m);
+            Send(NetProtocol.Offer, s.clientId, NetworkDelivery.ReliableSequenced);
+        }
+
+        void SendOfferClosed(OfferClosedMessage m)
+        {
+            var s = Current;
+            if (s == null || !s.connected) return;
+            _writer.Clear();
+            NetCodec.WriteOfferClosed(_writer, m);
+            Send(NetProtocol.OfferClosed, s.clientId, NetworkDelivery.ReliableSequenced);
+        }
+
         /// <summary>The playtest relay let clients report their hull and hits; here such a message is dropped unread.</summary>
         void OnClientReport(ulong sender, FastBufferReader reader)
         {
@@ -366,6 +422,7 @@ namespace RoguePirates.V5.Net
         void Tick()
         {
             ServerTick++;
+            LevelUps?.Tick(); // an unanswered card set takes the first card
             var s = Current;
             var run = RunManager.Instance;
             var playing = run != null && !run.IsRunEnded && Ship.Alive;
@@ -392,6 +449,7 @@ namespace RoguePirates.V5.Net
                 // Jitter buffer: start once two inputs are in.
                 if (!Has(s, s.expectNext) || !Has(s, s.expectNext + 1)) return;
                 s.started = true;
+                if (!_sessionEverStarted) { _sessionEverStarted = true; SessionStarted?.Invoke(); }
             }
             TicksWithSession++;
             // One step a tick, never more (a client numbering its ticks fast gains no speed): a backlog beyond the jitter
@@ -421,8 +479,9 @@ namespace RoguePirates.V5.Net
             NetInput input;
             if (Has(s, tick)) input = s.ring[tick % (uint)s.ring.Length];
             else { input = s.last; Metrics.GuessedInputs++; } // not here in time: the last input again
-            if (input.Boost && !s.last.Boost) Ship.RequestBoost();
-            Ship.Step(input.SteerThrottle, NetProtocol.TickSeconds);
+            // V5 M9b part 2b: the boost steps with the ship on the tick (held starts it when ready, as in a voyage), so the
+            // client predicts it; a tick inside the level-up pause holds the ship (the client holds it too).
+            if (LevelUps == null || !LevelUps.Holds(tick)) Ship.Step(input.SteerThrottle, input.Boost, NetProtocol.TickSeconds, true);
             StepsApplied++;
             s.last = input;
             s.lastAck = tick;
@@ -437,6 +496,8 @@ namespace RoguePirates.V5.Net
             byte flags = 0;
             if (Ship.Alive) flags |= NetProtocol.ShipAlive;
             if (run != null && run.IsRunEnded) flags |= NetProtocol.ShipRunEnded;
+            if (Ship.IsBoosting) flags |= NetProtocol.ShipBoosting;
+            if (run != null && run.IsPaused) flags |= NetProtocol.ShipPaused;
             var motion = Ship.Capture();
             if (motion.movementEnabled) flags |= NetProtocol.ShipMovementOn;
             return new ShipSnapshot
@@ -444,6 +505,7 @@ namespace RoguePirates.V5.Net
                 serverTick = ServerTick,
                 ackTick = s != null && s.started ? s.lastAck : 0,
                 motion = motion,
+                boost = Ship.CaptureBoost(),
                 hull = Ship.Hull,
                 maxHull = Ship.MaxHull,
                 runTime = run != null ? run.ElapsedSeconds : 0f,

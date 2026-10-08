@@ -94,6 +94,9 @@ namespace RoguePirates.V4.Foundation.Player
         bool _acceptHumanInput = true;
 
         public Vector3 Position => transform.position;
+        /// <summary>V5 M9b part 2b: the simulated position (the body's; the transform is interpolated between physics steps
+        /// for drawing, so it trails the body on a ship the net tick steps).</summary>
+        public Vector3 SimPosition => _body != null ? _body.position : transform.position;
         public Vector3 Velocity => _velocity + _knockback;
         public DamageReceiver Damage => _damage;
         public Transform VisualModel => visualModel;
@@ -362,6 +365,7 @@ namespace RoguePirates.V4.Foundation.Player
 
         void FixedUpdate()
         {
+            if (NetStepped && !_netStepping) return; // V5 M9b part 2b: only the net tick steps it (TickMovement)
             if (!_movementEnabled) return;
             if (_damage != null && !_damage.IsAlive) return;
             if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
@@ -652,13 +656,23 @@ namespace RoguePirates.V4.Foundation.Player
             try
             {
                 Time.fixedDeltaTime = dt;
+                _netStepping = true;
                 FixedUpdate();
             }
             finally
             {
+                _netStepping = false;
                 Time.fixedDeltaTime = wasFixed;
             }
         }
+
+        /// <summary>
+        /// V5 M9b part 2b: the net layer steps this ship (<see cref="TickMovement"/> once per net tick); the physics step
+        /// does not move it any more. The component stays enabled, so its visual roll (LateUpdate) keeps running on the
+        /// client's ship. Off by default (the voyage).
+        /// </summary>
+        public bool NetStepped { get; set; }
+        bool _netStepping;
 
         Vector3 ApplyLateralGrip(Vector3 velocity, Vector3 forward, float dt)
         {

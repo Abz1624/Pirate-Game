@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa115c363c73ef24fa57f0fbf8fe6509, type: 3}
+  m_Name: net_voyage_levelup
+  m_EditorClassIdentifier: RoguePirates.V4.DevTools::RoguePirates.V4.DevTools.Scenarios.ScenarioConfig
+  description: 'V5 M9b part 2b (8 Oct): net_voyage_open_water with level-up cards on (skipLevelUpCards off): the server run deals the real cards to the client over the network, pauses as a voyage does and applies the pick. The level-up tests grant a level and pick, refuse bad picks and time out.'
+  seed: 9201
+  captain: {fileID: 0}
+  playtest: 1
+  invulnerable: 0
+  skipLevelUpCards: 0
+  clockSeconds: 0
+  scriptedPhases: 2
+  ambientSpawning: 0
+  triggerPhases: []
+  loadout:
+    replaceWeapons: 0
+    weapons: []
+    logbooks: []
+    items: []
+    playerLevel: 0
+    xpIntoLevel: 0
+  shipStart: 0
+  holdIntoShore: 0
+  enemies:
+  - enemyId: deckhand_dinghy
+    count: 1
+    distance: 40
+    bearing: 180
+    spread: 15
+    eliteAffix: 0
+    focus: 0
+    hpMultiplier: 50
+  pointsOfInterest: []
+  boss: 0
+  sinkOtherEnemies: 0
+  configEdits: []
+  pvp:
+    enabled: 0
+    weapons: []
+    logbooks: []
+    countdownSeconds: 1
+    matchSeconds: 6
+    stormStartSeconds: 0

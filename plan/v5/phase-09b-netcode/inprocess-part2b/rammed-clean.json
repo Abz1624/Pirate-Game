@@ -1,0 +1,43 @@
+{
+  "report": "rammed-clean",
+  "utc": "2026-10-08T11:35:37.5366668Z",
+  "unity": "6000.3.11f1",
+  "editor": true,
+  "scenario": "net_voyage_rammed",
+  "sections": [
+    {
+      "name": "server",
+      "seconds": 1.787,
+      "clients": [
+        {"clientId": 1, "bytesDownPerSecond": 3233.486, "bytesUpPerSecond": 809.071, "wireDownPerSecondEstimate": 3596.057, "wireUpPerSecondEstimate": 1151.499, "messagesDown": 54, "messagesUp": 51}
+      ],
+      "tickMs": {"count": 53, "mean": 1.655, "p50": 1.734, "p95": 1.943, "max": 2.201},
+      "snapshotBytes": {"count": 26, "mean": 215, "p50": 215, "p95": 215, "max": 215},
+      "snapshotEnemies": {"count": 26, "mean": 6, "p50": 6, "p95": 6, "max": 6},
+      "predictionErrorMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    },
+    {
+      "name": "client",
+      "seconds": 1.787,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 3233.803, "bytesUpPerSecond": 809.15, "wireDownPerSecondEstimate": 3596.41, "wireUpPerSecondEstimate": 1151.612, "messagesDown": 54, "messagesUp": 51}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 24, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 26, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 24, "mean": 33.333, "p50": 33.333, "p95": 33.333, "max": 33.333},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

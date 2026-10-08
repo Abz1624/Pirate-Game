@@ -8,8 +8,8 @@ Branch `v5-live-game`. Decisions D18 P5, D19 (2), D22 (N5, N7), D23. Plan item I
 |---|---|---|
 | I9b.1 part 1 | Everything that runs in-process in the Editor: packages, `RoguePirates.V5.Net`, scene `V5NetSpike`, protocol, join ticket check, measurement hook, PlayMode tests | done 8 Oct (this page) |
 | I9b.1 part 2a | Linux Dedicated Server build (`V5_NET`), the image and its scripts, the scripted voyage on local Docker, the API's ticket endpoint | done 8 Oct (section "Part 2a" below); not committed; Railway and GHCR not touched |
-| I9b.1 part 2b | Railway test service (the image from GHCR), the WebGL client build against `wss://`, level-up messages, boost prediction | to do |
-| D9b.1 | Measurements on Railway and desktop WebGL (`REPORT.md`) | to do (part 2); in-process numbers below |
+| I9b.1 part 2b | The WebGL client build (`V5_NET`), its client composition, level-up messages, boost prediction, the local end-to-end | done locally 8 Oct (section "Part 2b" below); not committed; the Railway test service and `wss://` are the main session's (steps at the end) |
+| D9b.1 | Measurements on Railway and desktop WebGL (`REPORT.md`) | started: in-process, local Docker and desktop WebGL against local Docker in; Railway rows open |
 
 ## Packages (pinned in `Packages/manifest.json`)
 
@@ -340,7 +340,7 @@ voyages above took every ticket from this endpoint, so the API and the Unity ver
    server's tick p95 and RSS are in its `[V5 Net] stats` log lines every 10 s (`railway logs`); a redeploy during the
    voyage checks `end` ServerClosing on Railway; Railway's metrics give memory and CPU.
 
-### Part 2b still needs
+### Part 2b still needs (as written after part 2a; see "Part 2b" below)
 
 - The WebGL client build with `V5_NET` (desktop; its own build method like the server's, no build profile) against
   `wss://` on Railway: a client composition that builds the stage from the welcome's seed (the test client loads the same
@@ -352,3 +352,143 @@ voyages above took every ticket from this endpoint, so the API and the Unity ver
   redeploy behaviour) in `REPORT.md`.
 - Levers seen here: IL2CPP (toolchain set-up), `RP_SERVER_FPS=30` (half the frames), and the run scene's VFX and particle
   objects, which still instantiate on the server (shader warnings in its log: presentation objects a server does not need).
+
+## Part 2b (8 Oct): browser client, level-ups over the network, boost prediction, local end-to-end
+
+Nothing on Railway or GHCR was touched; nothing committed. Everything below ran locally: the API on SQLite with a random
+per-session secret, the match server image `rogue-pirates-match:local` in Docker, the WebGL client served from this PC.
+
+### WebGL client build (`V5_NET`, desktop)
+
+`RoguePirates.V5.Net.Editor.V5NetWebGLBuild` (menu RoguePirates > V5 > Build WebGL server voyage client): the desktop
+profile of `V5WebGLProfiles` (new `BuildDesktopVariant(name, defines)`: 1 GB ceiling, DXT, 1024 texture cap, Brotli with
+fallback, speed) with `extraScriptingDefines = V5_NET` for this build only, into `Builds/WebGL-Desktop-Net/`; report with
+file sizes and the stripped managed assemblies in `Builds/V5NetWebGL-report.json` (`webgl/net-desktop.json`). The normal
+WebGL, Windows and Android builds still never compile the net assembly: the exclusion test now also checks that no file
+under `Assets/_Game/V4` names `"V5_NET"` (the game's build scripts), and that the entry and the client live in the net
+assembly (`WebGLClientBuild_OwnsTheDefineAndTheEntryStaysInTheNetAssembly`); the normal build's report says
+`netAssemblyInBuild: false`. `NetLinkSimulator` builds on WebGL (no UDP interface in the browser).
+
+Entry, only in this build (`NetVoyageEntry`): a "Server voyage (test)" button on the main menu, or the page's
+`?netvoyage=1` (start at once) / `?netvoyage=auto&seconds=N` (scripted). In the Editor it is off unless the PlayerPrefs
+switch `rp.v5net.voyageEntry` is 1 (`NetVoyageEntry.EditorEnabled`); the Linux server build never shows it.
+
+### Client composition (`NetVoyageClient`, `NetEnemyViews`, `NetVoyageHud`)
+
+1. Ticket: `OnlineComposition.Online` (the guest profile; one is made if none is registered), `POST
+   /api/lobbies/voyage/ticket` with its bearer token; the answer names `matchServerUrl` (ws:// locally, wss:// on
+   Railway; the API comes from `?api=` as for every online feature).
+2. Join, then the stage from the welcome's seed: the run scene loads as usual (islands, ship, presenters, boost meter,
+   card presenter) with the new `RunRequest.RemoteSimulation` on, so `V4Game.Update` and the frame pipeline do not tick
+   (no local spawns, weapons, damage or clock), and the stage records no run log or session file.
+3. The run's own ship is the prediction ship (`ShipMotionPort.TakeControl`, `IgnoreLocalDamage`): real ship visuals,
+   wake, sail look, camera. The server's ship waits for the first input after the welcome, and the match server's host
+   now starts the held run at the first inputs instead of the join (`NetServer.SessionStarted`), so the 1.3-1.8 s stage
+   load costs the player nothing.
+4. Enemies: `NetEnemyViews` drives the run's `EnemyViewPresenter` through `IEnemyViewSink` (the contract the enemy
+   simulation draws through): pooled models, tints, health bars, wakes, VFX trails; definitions matched by content id;
+   drawn one snapshot behind, interpolated; scale from the spawn's own formula (`EnemySimulation.AppearanceScale`, made
+   public, no copy).
+5. HUD (its own canvas): hull bar, hull, level, kills, gold, run time, boost, input delay, fps, enemies near, from the
+   snapshots; the run HUD's parts that would show the stage's zeros (top bar, loadouts, Captain ability) are hidden; the
+   boost meter (the predicted boost) and the card presenter stay.
+6. End: `end` Sunk / RunEnded / ServerClosing / SessionExpired, or a connection that does not come back in 10 s, shows
+   the end screen (no em dashes in its text); "Back to menu" leaves and loads the menu. The client closes its socket at
+   the end, and the server's host now also ends a voyage 10 s after its `end` even if the client stays connected.
+
+Not mirrored yet: the player's and enemies' shots, pickups, chests and the minimap's enemies (the server's world sends
+the ship and the enemies only); the ship's visual correction is not eased (the ship is the predicted body; corrections
+outside the pause entry are 0 on a clean link).
+
+### Level-up choices over the network (`NetLevelUps`, protocol version 2)
+
+The server registers `NetLevelUps` as the run's `IOfferPresenter` (`NetServer.Attach`; part 2a's `AutoLevelUp = () => {}`
+is gone): the progression module deals its real cards and pauses the run as a voyage does; the cards go to the client
+(`rp9b.offer`: set number, the first held input tick, refreshes, timeout, the offers with kind, ids, rarity, levels and
+stat lines). The client shows them with the stage's own card presenter (`LevelUpPresenter`, art cards) and sends
+`rp9b.pick` (pick an index, skip, refresh; the tick its ship moves again from). The server checks the pick against the
+cards on the table (set number, index, refresh left) and refuses anything else (counted, the cards sent again); the
+module applies the card, deals the next set or resumes. A set nobody answers in 30 s takes the first card
+(`LevelUpTimeoutSeconds`). `rp9b.offerdone` names how the set ended and the tick the ship moves again from; the ship holds
+on both sides from the first unapplied tick to that tick. Snapshot flags: Boosting, Paused.
+
+### Boost prediction
+
+`ShipBoostController.TickNet(dt, pressed, silent)` and its state (`CaptureNet` / `RestoreNet`): on a net-stepped ship the
+boost steps on the tick before the movement, held starts it when ready (the voyage's rule), its ease on the tick's
+clock. `ShipMotionPort.Step(steer, boost, dt, silent)` is the one step for the server and the prediction; the snapshot
+carries the boost's two timers (145 bytes, was 137). `PlayerShipController.NetStepped` replaces disabling the component
+(its visual roll keeps running on the client's ship); `ShipMotionPort.Position` is now the body's position (the drawn
+transform is interpolated between physics steps and trailed the body on the browser client).
+
+### Tests (part 2b)
+
+- EditMode `V5NetEditModeTests` 18/18 (`editmode-v5net-part2b.json`): new `LevelUpMessages_RoundTrip`,
+  `LevelUps_CheckPicksAndTimeOut`, `WebGLClientBuild_OwnsTheDefineAndTheEntryStaysInTheNetAssembly`; the ship snapshot
+  test checks the boost timers.
+- PlayMode `V5NetPlayModeTests` 18/18 (`playmode-v5net-part2b.json`): `Boost_PredictedWithinHalfAMetre` (replaces part 1's
+  measured divergence: 150 ms, 2% loss, the boost seen on both sides, top speed above 1.2x cruise, prediction error and
+  correction max **0** over 120 compared), `LevelUp_RealCardsOverTheNetwork_PauseAndPick` (scenario
+  `net_voyage_levelup`, cards off auto: the server's real cards reach the client, the run pauses and the ship holds on
+  both sides, the picked card is the one applied, the run resumes, in step after), `LevelUp_BadPicksRefused_TimeoutTakesTheFirstCard`,
+  `LevelUp_At150ms2Percent_Measured`.
+- Full suites: EditMode 601/601 (`editmode-full-part2b.json`), PlayMode 110/110 (`playmode-full-part2b.json`).
+- Local Docker scripted voyage with the new image (`docker/part2b-voyage-60s/`): 5 card sets dealt and picked over the
+  network, drop and resume, `docker stop` ends it with ServerClosing.
+
+### Local end-to-end (`server/match/local_session.py`)
+
+`python server/match/local_session.py --webgl "Pirate Game Unity/Builds/WebGL-Desktop-Net/RoguePirates" --minutes 60`:
+builds and runs the API (SQLite, random secret, `VOYAGE_SERVER_URL=ws://localhost:17800/`), runs the image with
+`--restart always` (a fresh server after each voyage, as Railway's Always policy will), serves the build on :8090 and
+prints the URL (`http://localhost:8090/?api=http://localhost:18100&netvoyage=1`). Session logs in `session/`.
+
+Played: the Editor client (Play mode, `NetVoyageClient.Begin`) and the WebGL build in desktop Chrome (a separate
+profile, autopilot), each against the image in Docker; the menu button in the Editor. The built-in browser pane ran the
+build too but throttles a hidden pane to about 1 fps, so its frame numbers are not used.
+
+| Run | Result |
+|---|---|
+| WebGL, Chrome, 45 s autopilot then `docker stop` (`webgl/webgl-client-report.json`, `webgl/chrome-...log`) | welcomed 0.20 s after the ticket, stage built 1.32 s; **59.7 fps mean**, 1% low 58.8, 0.41% of frames over 20 ms (the first seconds); 3,080 / 897 B/s down / up; prediction error max 0.38 m, correction max 0.76 m (level-up pause entries; 0 otherwise); 4 card sets picked through the art cards; `docker stop`: "The server closed" end screen 0.26 s later |
+| WebGL, Chrome, 90 s autopilot (earlier build) | 57.9-59.0 fps mean, sank at 0:25 (the scripted route; Sunk end screen) |
+| Editor client, 90 s autopilot | joined, stage 1.5-2.2 s, sank at 0:27 and 0:57 (route dependent), end screen, back to the menu; the restarted server took the next voyage |
+| Docker scripted voyage (headless client) | tick p50 / p95 0.56 / 0.91 ms, 3,152 / 883 B/s, 145 MB, resume 0.43 s, 5 card sets, ServerClosing 0.35 s after the stop |
+
+Build sizes (desktop WebGL, Brotli download):
+
+| Build | Download | wasm | data | Stripped managed: Netcode / Transport / V5.Net |
+|---|---|---|---|---|
+| Before M9b (8 Oct 09:19, M9a code; `webgl/baseline-desktop-before-m9b.txt`) | 118,936,241 B (113.4 MB) | 10,537,124 | 108,199,767 | none |
+| Normal desktop build now (`webgl/normal-desktop-now.json`) | 119,787,231 B (114.2 MB) | 11,189,429 | 108,397,583 | 641,024 / 213,504 / 0 |
+| Server voyage client, `V5_NET` (`webgl/net-desktop.json`) | 119,830,005 B (114.3 MB) | 11,226,581 | 108,403,230 | 641,024 / 213,504 / 116,736 |
+
+The NGO and UTP packages ship in the normal build too (packages cannot be excluded per build; Netcode's and Transport's
+runtime initialisers keep their code alive through stripping): the normal desktop build grew 0.85 MB (wasm +0.65 MB)
+since the build before M9b (that gap also holds M9a's last changes). The net client adds only 42 KB on top
+(`RoguePirates.V5.Net`). Removing the packages from the game's builds would need a separate project or an assembly-only
+package setup: left for I13b.1.
+
+### Measurements so far: `REPORT.md` (D9b.1; local Docker and desktop WebGL in, Railway rows open)
+
+### Part 2b for the Railway test and the owner's playtest (main session)
+
+1. Review and commit (`V5 M9b part 2b: ...`), then `powershell -NoProfile -ExecutionPolicy Bypass -File server/match/build-image.ps1`
+   (a clean tag).
+2. `$env:GHCR_TOKEN = '<token with write:packages>'; powershell -File server/match/push-image.ps1 -Tag <sha>`; make the
+   package public or give Railway registry credentials.
+3. Railway usage against the month's baseline (D23).
+4. Service `match-test` from `ghcr.io/x2c-fun/rogue-pirates-match:<sha>`: `RP_MATCH_TICKET_SECRET` (new, 48+ characters, also
+   on the API), `RP_MATCH_ID`, `PORT=7777`, a public domain on port 7777, restart policy Always, 1 replica,
+   `RAILWAY_DEPLOYMENT_DRAINING_SECONDS=10`, no HTTP health check.
+5. API: `RP_MATCH_TICKET_SECRET`, `VOYAGE_SERVER_URL=wss://<domain>/`, `VOYAGE_MATCH_ID` added to `.railway/railway.ts`
+   with `preserve()` first, set, then `server/deploy.ps1`.
+6. WebGL client against Railway: build it (`V5NetWebGLBuild`, already built locally at `Builds/WebGL-Desktop-Net/`; it takes
+   the API from `?api=`), host it where the owner can open it (the playtest site's folder, or `serve-webgl.py` on this
+   PC), open `<page>/?api=https://<api host>&netvoyage=auto&seconds=120` in desktop Chrome for the scripted numbers, then
+   `?netvoyage=1` (or the menu button) to play; the page's console holds the `[V5 NetClient] stats` lines and the
+   `REPORT` JSON. `wss://` from the browser is untested until then.
+7. During one voyage: a Railway redeploy (expect "The server closed" and the menu), and a dropped Wi-Fi of a few seconds
+   (expect a resume). Fill the Railway column of `REPORT.md` (tick p95 and RSS from `railway logs` `[V5 Net] stats`, the
+   client numbers from the page, cold start, Railway metrics and the usage export), then delete the service (D23).
+8. Owner playtest: one server voyage from desktop Chrome on Railway: does the ship feel the same; do the level-up cards
+   and the boost feel right; is the one take-back when a level-up starts visible.

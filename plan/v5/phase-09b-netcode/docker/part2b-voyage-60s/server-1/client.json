@@ -1,0 +1,43 @@
+{
+  "report": "V5 net test client (scripted voyage)",
+  "utc": "2026-10-08T11:57:14.1718160Z",
+  "unity": "6000.3.11f1",
+  "editor": false,
+  "joinSeconds": "0.267",
+  "resumeSeconds": "0.425",
+  "endedByServer": "true",
+  "endReason": "ServerClosing",
+  "lobbyUtc": "2026-10-08T11:57:14.1683130Z",
+  "secondsFromServerEndToLobby": "0.002",
+  "snapshots": "943",
+  "welcomes": "2",
+  "resyncs": "0",
+  "finalHull": "86",
+  "kills": "78",
+  "level": "5",
+  "cardSets": "5",
+  "cardsPicked": "5",
+  "url": "ws://host.docker.internal:17777/",
+  "outcome": "end ServerClosing",
+  "ok": "true",
+  "events": "0.76s stage loaded (seed 9200) | 1.03s welcomed in 0.267 s | 8.77s level-up card picked (WeaponUpgrade swivel_guns, set 1) | 31.04s socket dropped (client side) | 31.47s resumed in 0.425 s | 34.55s level-up card picked (Logbook admiral, set 2) | 38.97s level-up card picked (WeaponUpgrade swivel_guns, set 3) | 41.94s level-up card picked (Logbook lookouts_glass, set 4) | 47.71s level-up card picked (Logbook plunderer, set 5) | 61.05s VOYAGE-DONE snapshots=896 hull=86/100 kills=70 level=5 | 64.20s end ServerClosing received | 64.20s lobby (end ServerClosing) 0.002 s after the server's end showed, at 2026-10-08T11:57:14.1683130Z",
+  "sections": [
+    {
+      "name": "client",
+      "seconds": 63.442,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 3163.619, "bytesUpPerSecond": 887.541, "wireDownPerSecondEstimate": 3523.194, "wireUpPerSecondEstimate": 1244.279, "messagesDown": 1901, "messagesUp": 1886}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 938, "mean": 0.001, "p50": 0, "p95": 0, "max": 0.758},
+      "correctionMetres": {"count": 942, "mean": 0.001, "p50": 0, "p95": 0, "max": 1.137},
+      "resumeSeconds": {"count": 1, "mean": 0.424, "p50": 0.424, "p95": 0.424, "max": 0.424},
+      "inputLagMs": {"count": 938, "mean": 36.816, "p50": 33.333, "p95": 66.667, "max": 100},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

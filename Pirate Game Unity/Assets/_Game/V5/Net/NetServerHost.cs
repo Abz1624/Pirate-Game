@@ -41,6 +41,7 @@ namespace RoguePirates.V5.Net
         float _nextStopCheck;
         float _overSince = -1f;
         float _joinedAt = -1f;
+        float _endSeenAt = -1f;
         string _closeReason;
 
         public void Begin(NetServer server, ushort port, bool holdUntilJoin = true)
@@ -51,6 +52,7 @@ namespace RoguePirates.V5.Net
             _matchId = Environment.GetEnvironmentVariable(JoinTicketVerifier.MatchIdEnvironmentVariable) ?? "";
             if (holdUntilJoin) Hold(true);
             server.Joined += OnJoined;
+            server.SessionStarted += OnSessionStarted;
             Application.wantsToQuit += WantsToQuit;
             TryDelete(StopFile);
             try { File.WriteAllText(ReadyFile, port.ToString()); } catch (Exception) { /* not a container: no ready file */ }
@@ -65,8 +67,14 @@ namespace RoguePirates.V5.Net
                 _joinedAt = Time.realtimeSinceStartup;
                 _server.Metrics.Reset(); // the measurements cover the voyage, not the idle wait before it
             }
+            Debug.Log("[V5 Net] player joined; the run waits for its first inputs (its stage loading)");
+        }
+
+        /// <summary>V5 M9b part 2b: the player's first inputs (its stage is built): the held run plays from here.</summary>
+        void OnSessionStarted()
+        {
             if (_held) Hold(false);
-            Debug.Log("[V5 Net] player joined; the run plays");
+            Debug.Log($"[V5 Net] first inputs {(_joinedAt >= 0f ? Time.realtimeSinceStartup - _joinedAt : 0f):0.00} s after the join; the run plays");
         }
 
         void Hold(bool hold)
@@ -92,7 +100,10 @@ namespace RoguePirates.V5.Net
                 if (File.Exists(StopFile)) { StartCoroutine(Close("SIGTERM (stop file)")); return; }
             }
             var s = _server.Current;
-            var over = s != null && !s.connected && (_server.EndSent || s.expired);
+            // V5 M9b part 2b: a voyage that ended is over 10 s later even if its client is still connected (an end screen
+            // left open), so the process makes way for the next voyage.
+            if (_server.EndSent && _endSeenAt < 0f) _endSeenAt = now;
+            var over = s != null && (!s.connected && (_server.EndSent || s.expired) || _server.EndSent && now - _endSeenAt > 10f);
             if (!over) { _overSince = -1f; return; }
             if (_overSince < 0f) _overSince = now;
             if (now - _overSince > 3f) StartCoroutine(Close(_server.EndSent ? "voyage ended (" + _server.LastEndReason + ")" : "session expired"));
@@ -123,7 +134,7 @@ namespace RoguePirates.V5.Net
         void OnDestroy()
         {
             Application.wantsToQuit -= WantsToQuit;
-            if (_server != null) _server.Joined -= OnJoined;
+            if (_server != null) { _server.Joined -= OnJoined; _server.SessionStarted -= OnSessionStarted; }
         }
 
         string StatsLine()

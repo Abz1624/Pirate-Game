@@ -1,0 +1,7 @@
+baseline desktop WebGL build before M9b (Builds/WebGL-Desktop, built 8 Oct 09:19 local, before NGO/UTP were added at 14:45-16:00; M9a code)
+result=Succeeded target=WebGL development=False size=113MB time=1359s errors=1 scenes=V4Boot,V4MainMenu,V4SaltwindRun,V4ModuleLab V4 runtime dll=True DevTools dll=False profile=Desktop bench=False wasm2023=False download=113.4MB maxMemory=1024MB textures=DXT textureCap=1024
+total 116152
+-rw-r--r-- 1 shara 197609 108199767 2026-10-08 09:19 RoguePirates.data.unityweb
+-rw-r--r-- 1 shara 197609     81457 2026-10-08 09:19 RoguePirates.framework.js.unityweb
+-rw-r--r-- 1 shara 197609    117893 2026-10-08 09:19 RoguePirates.loader.js
+-rw-r--r-- 1 shara 197609  10537124 2026-10-08 09:14 RoguePirates.wasm.unityweb

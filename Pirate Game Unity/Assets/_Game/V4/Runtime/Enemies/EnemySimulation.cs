@@ -221,11 +221,7 @@ namespace RoguePirates.V4.Enemies
             if (slot < 0) return -1;
 
             var rules = RulesFor(definitionIndex);
-            var v3Scale = _run.EnemyVisualScale;
-            var defVisualScale = def.visualScale > 0.01f ? def.visualScale : 1f;
-            if (def.visualPrefab == null)
-                defVisualScale = _views.FallbackVisualScale(def);
-            var appearanceScale = defVisualScale * v3Scale * GetThreatVisualScaleMultiplier(def, affix);
+            var appearanceScale = AppearanceScale(def, affix != EliteAffix.None, _run.EnemyVisualScale, _views);
             // V5 M3d: a type drawn larger (viewSize) is hit and collides at its drawn size (viewSize 1 is V3's; V5 M8z (7 Oct, review)).
             var gameplayRadius = def.radius * appearanceScale * (def.viewSize > 0f ? def.viewSize : 1f);
             position = PlayBounds.Clamp(position, gameplayRadius + 1f);
@@ -366,11 +362,24 @@ namespace RoguePirates.V4.Enemies
             return slot;
         }
 
-        static float GetThreatVisualScaleMultiplier(EnemyDefinition def, EliteAffix affix)
+        /// <summary>
+        /// An enemy's drawn scale at its spawn (its visual scale, or the fallback model's, times the run's enemy scale and
+        /// the miniboss or elite size). V5 M9b part 2b: public so a net client draws the server's enemies at the same size.
+        /// </summary>
+        public static float AppearanceScale(EnemyDefinition def, bool elite, float runVisualScale, IEnemyViewSink views)
+        {
+            if (def == null) return 1f;
+            var defVisualScale = def.visualScale > 0.01f ? def.visualScale : 1f;
+            if (def.visualPrefab == null && views != null)
+                defVisualScale = views.FallbackVisualScale(def);
+            return defVisualScale * runVisualScale * ThreatVisualScaleMultiplier(def, elite);
+        }
+
+        static float ThreatVisualScaleMultiplier(EnemyDefinition def, bool elite)
         {
             if (def != null && def.isMiniboss)
                 return MinibossVisualScaleMultiplier;
-            if (affix != EliteAffix.None)
+            if (elite)
                 return EliteVisualScaleMultiplier;
             return 1f;
         }

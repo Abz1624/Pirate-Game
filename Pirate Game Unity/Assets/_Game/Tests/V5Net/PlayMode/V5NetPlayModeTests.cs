@@ -435,10 +435,13 @@ namespace RoguePirates.V5.Net.Tests
             Assert.Greater(Flat(_server.Ship.Position, start), 3f, "the new socket's inputs drive the ship");
         }
 
-        /// <summary>Review fix: the hook sees a real divergence: the boost's speed runs on the server's frame clock, which the
-        /// prediction does not model (part 2), so boosting gives prediction errors and corrections; measured and reported.</summary>
+        /// <summary>
+        /// V5 M9b part 2b: the boost is predicted. The boost steps on the net tick on both sides (held starts it when ready,
+        /// its ease on the tick's clock, its timers rewound with the motion), so at 150 ms and 2% loss a boost costs no
+        /// prediction error or correction above 0.5 m (part 1 measured a 0.67 m correction with the boost unpredicted).
+        /// </summary>
         [UnityTest]
-        public IEnumerator Boost_DivergesAndIsCorrected_Measured()
+        public IEnumerator Boost_PredictedWithinHalfAMetre()
         {
             var link = new NetLinkSimulator.Link { sendDelayMs = 75, sendDropPercent = 2, seed = 31 };
             yield return StartVoyage("net_voyage_open_water", link);
@@ -448,18 +451,166 @@ namespace RoguePirates.V5.Net.Tests
             var boost = false;
             client.Boost = () => boost;
             yield return Join(client);
-            yield return Seconds(1.5f);
+            yield return Seconds(2f);
+            var cruise = _server.Ship.Capture().velocity.magnitude;
             client.Metrics.Reset();
             boost = true;
             yield return Seconds(0.5f);
             boost = false;
-            yield return Seconds(5f);
-            Report("boost-150ms-2pct", _server.Metrics, client.Metrics);
-            Assert.Greater(NetMetrics.Max(client.Metrics.PredictionError), 0.01f, "the boost is not predicted: the error shows");
-            yield return Seconds(2f);
-            input.Value = Vector2.zero;
+            bool serverBoosted = false, clientBoosted = false;
+            var top = 0f;
+            var until = Time.realtimeSinceStartup + 6f;
+            while (Time.realtimeSinceStartup < until)
+            {
+                serverBoosted |= _server.Ship.IsBoosting;
+                clientBoosted |= client.Predicted.IsBoosting;
+                top = Mathf.Max(top, _server.Ship.Capture().velocity.magnitude);
+                yield return null;
+            }
+            input.Value = new Vector2(0.6f, 1f); // a turn after the boost
             yield return Seconds(1.5f);
-            Assert.Less(Flat(client.Predicted.Position, _server.Ship.Position), 0.5f, "and reconciliation brings the ship back");
+            Report("boost-150ms-2pct", _server.Metrics, client.Metrics);
+            Assert.IsTrue(serverBoosted, "the server's ship boosted");
+            Assert.IsTrue(clientBoosted, "the client predicted the boost");
+            Assert.Greater(top, cruise * 1.2f, "the boost sped the ship up (cruise " + cruise + ", top " + top + ")");
+            Assert.Greater(client.Metrics.PredictionError.Count, 60);
+            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.PredictionError), 0.5f, "prediction error at most 0.5 m through the boost");
+            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.Correction), 0.5f, "no correction above 0.5 m through the boost");
+        }
+
+        // ---- Level-up cards (part 2b) ------------------------------------------------------------------------------------
+
+        /// <summary>
+        /// V5 M9b part 2b: a level-up on the server's run deals the real cards (the run's offer logic) to the client; the run
+        /// pauses as a voyage does and the ship holds on both sides; the client's pick goes back, the server applies exactly
+        /// that card and resumes, and the ship sails on in step.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator LevelUp_RealCardsOverTheNetwork_PauseAndPick()
+        {
+            yield return StartVoyage("net_voyage_levelup");
+            var client = NewClient(Ticket());
+            var input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            client.Input = input;
+            yield return Join(client);
+            yield return Seconds(1.5f);
+            var progression = _game.Build.Progression;
+            var chosen = new List<string>();
+            progression.OfferChosen += o => chosen.Add(o.Key);
+            var level = progression.Level;
+            progression.GrantLevelUp();
+            Assert.AreEqual(level + 1, progression.Level);
+            Assert.IsTrue(RunManager.Instance.IsPaused, "the server's run pauses on the cards, as a voyage does");
+            Assert.IsTrue(_server.LevelUps.Pending);
+            yield return Until(() => client.PendingOffer != null, 3f);
+            Assert.IsNotNull(client.PendingOffer, "the cards reached the client");
+            var offer = client.PendingOffer;
+            CollectionAssert.AreEqual(_server.LevelUps.Offers.ConvertAll(o => o.Key), offer.offers.ConvertAll(o => o.Key), "the server's real cards");
+            Assert.Greater(offer.offers.Count, 1);
+            yield return Seconds(0.5f);
+            var held = _server.Ship.Position;
+            yield return Seconds(1f);
+            Assert.Less(Flat(_server.Ship.Position, held), 0.01f, "the ship holds while the cards are up (full throttle held)");
+            Assert.Less(Flat(client.Predicted.Position, held), 0.05f, "and the client's prediction holds with it");
+            yield return Until(() => client.Last.Paused, 1f);
+            Assert.IsTrue(client.Last.Paused, "snapshots say the run is paused");
+
+            client.Metrics.Reset();
+            var index = offer.offers.Count - 1;
+            Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, index));
+            yield return Until(() => !RunManager.Instance.IsPaused, 3f);
+            Assert.IsFalse(RunManager.Instance.IsPaused, "the pick resumes the run");
+            CollectionAssert.AreEqual(new[] { offer.offers[index].Key }, chosen, "the server applied exactly the picked card");
+            Assert.AreEqual(1, _server.LevelUps.Picked);
+            yield return Until(() => client.PendingOffer == null && client.LastResolution.how == NetProtocol.OfferResolution.Picked, 2f);
+            Assert.AreEqual(NetProtocol.OfferResolution.Picked, client.LastResolution.how);
+            Assert.Greater(client.LastResolution.resumeTick, 0u);
+            yield return Seconds(2f);
+            Assert.Greater(Flat(_server.Ship.Position, held), 3f, "the ship sails again");
+            Report("levelup-pick-clean", _server.Metrics, client.Metrics);
+            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.PredictionError), 0.5f, "in step after the pause");
+            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.Correction), 0.5f);
+            Assert.AreEqual(0, _server.RejectedPicks);
+        }
+
+        /// <summary>
+        /// V5 M9b part 2b, measured: a level-up at 150 ms and 2% loss. The client cannot know of a level-up before the
+        /// server's cards arrive, so the ticks it predicted after the pause began are taken back once (the pause-entry
+        /// correction: about the ship's speed times the input lead); the resume is exact (the pick names the tick the
+        /// ship moves again from). Reported; asserted: the entry correction stays under the input lead's travel and the
+        /// ship is back in step after the resume (at most one correction there, when a lost packet delays the pick).
+        /// </summary>
+        [UnityTest]
+        public IEnumerator LevelUp_At150ms2Percent_Measured()
+        {
+            yield return StartVoyage("net_voyage_levelup", new NetLinkSimulator.Link { sendDelayMs = 75, sendDropPercent = 2, seed = 41 });
+            var client = NewClient(Ticket(), new NetLinkSimulator.Link { sendDelayMs = 75, sendDropPercent = 2, seed = 42 });
+            client.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            yield return Join(client);
+            yield return Seconds(2f);
+            client.Metrics.Reset();
+            _server.Metrics.Reset();
+            _game.Build.Progression.GrantLevelUp();
+            yield return Until(() => client.PendingOffer != null, 3f);
+            Assert.IsNotNull(client.PendingOffer);
+            yield return Seconds(1f);
+            var entry = NetMetrics.Max(client.Metrics.Correction);
+            client.Metrics.Reset();
+            Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0));
+            yield return Until(() => !RunManager.Instance.IsPaused, 3f);
+            yield return Seconds(3f);
+            Report("levelup-150ms-2pct", _server.Metrics, client.Metrics);
+            Debug.Log($"[V5 Net] level-up at 150 ms / 2%: pause-entry correction {entry:0.000} m; after the resume: prediction error max {NetMetrics.Max(client.Metrics.PredictionError):0.000} m, correction max {NetMetrics.Max(client.Metrics.Correction):0.000} m");
+            var speed = _server.Ship.Capture().velocity.magnitude;
+            Assert.LessOrEqual(entry, speed * 0.4f + 0.5f, "the entry correction is the travel of the input lead at most (speed " + speed + " m/s)");
+            // In one Editor the client's ship copy shares the server's run manager, so it cannot move while the server's run
+            // is still paused (until the pick arrives, 75 ms here): that costs one correction at the resume which a real
+            // client (its own stage, never paused) does not have; in separate processes the resume is exact unless a lost
+            // packet delays the pick. Bounded here; the real link's numbers come from the Docker and WebGL runs.
+            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.Correction), speed * 0.4f + 0.5f, "at most one late-pick correction at the resume");
+            Assert.LessOrEqual(NetMetrics.Percentile(client.Metrics.Correction, 95f), 0.05f, "and in step after it");
+            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.PredictionError), 0.5f, "prediction in step after the resume");
+        }
+
+        /// <summary>V5 M9b part 2b: picks that do not match the cards on the table are refused and change nothing (a stale set,
+        /// a card that is not there, a refresh with none left); a set nobody answers takes the first card after the
+        /// timeout, and the client hears so and sails on.</summary>
+        [UnityTest]
+        public IEnumerator LevelUp_BadPicksRefused_TimeoutTakesTheFirstCard()
+        {
+            yield return StartVoyage("net_voyage_levelup");
+            var client = NewClient(Ticket());
+            client.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            yield return Join(client);
+            yield return Seconds(1f);
+            var progression = _game.Build.Progression;
+            var chosen = new List<string>();
+            progression.OfferChosen += o => chosen.Add(o.Key);
+            progression.GrantLevelUp();
+            yield return Until(() => client.PendingOffer != null, 3f);
+            var offer = client.PendingOffer;
+            Assert.IsNotNull(offer);
+            client.SendRawPickForTest((ushort)(offer.seq + 7), NetProtocol.PickAction.Pick, 0);
+            client.SendRawPickForTest(offer.seq, NetProtocol.PickAction.Pick, 40);
+            var expected = 2;
+            if (_server.LevelUps.RefreshesRemaining == 0) { client.SendRawPickForTest(offer.seq, NetProtocol.PickAction.Refresh, 0); expected++; }
+            yield return Until(() => _server.RejectedPicks >= expected, 3f);
+            Assert.AreEqual(expected, _server.RejectedPicks, "each bad pick refused (" + _server.LevelUps.LastRejectReason + ")");
+            CollectionAssert.IsEmpty(chosen, "nothing applied");
+            Assert.IsTrue(RunManager.Instance.IsPaused, "still on the cards");
+            Assert.IsTrue(_server.LevelUps.Pending);
+
+            _server.LevelUps.ExpireForTest();
+            yield return Until(() => !RunManager.Instance.IsPaused, 2f);
+            Assert.AreEqual(1, _server.LevelUps.TimedOut);
+            CollectionAssert.AreEqual(new[] { offer.offers[0].Key }, chosen, "the default pick is the first card");
+            yield return Until(() => client.LastResolution.how == NetProtocol.OfferResolution.TimedOut, 2f);
+            Assert.AreEqual(NetProtocol.OfferResolution.TimedOut, client.LastResolution.how);
+            Assert.IsNull(client.PendingOffer);
+            var at = _server.Ship.Position;
+            yield return Seconds(1.5f);
+            Assert.Greater(Flat(_server.Ship.Position, at), 2f, "sailing again after the timeout");
+            Assert.Less(Flat(client.Predicted.Position, _server.Ship.Position), 5f, "the client follows");
         }
 
         /// <summary>A worse link than the gate's (jitter that reorders packets, 5% loss): measured and reported; the

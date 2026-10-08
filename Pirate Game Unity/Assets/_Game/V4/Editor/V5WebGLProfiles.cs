@@ -51,6 +51,19 @@ namespace RoguePirates.V4.Editor
             (int)(profile == Profile.Mobile ? WebGLTextureSubtarget.ASTC : WebGLTextureSubtarget.DXT));
 
         /// <summary>
+        /// V5 M9b part 2b: the desktop build with extra scripting defines for that build only (the V5_NET client build:
+        /// RoguePirates.V5.Net.Editor.V5NetWebGLBuild), into Builds/WebGL-Desktop-&lt;name&gt;. Otherwise the desktop profile.
+        /// </summary>
+        public static string BuildDesktopVariant(string name, string[] defines) => WithSettings(() =>
+        {
+            PlayerSettings.WebGL.maximumMemorySize = 1024;
+            EditorUserBuildSettings.overrideMaxTextureSize = TextureCapFor(Profile.Desktop);
+            EditorUserBuildSettings.SetPlatformSettings("WebGL", "CodeOptimization", "RuntimeSpeed");
+            PlayerSettings.WebGL.wasm2023 = false;
+        }, "WebGL-Desktop-" + name, "V5WebGL-Desktop-" + name, $"profile=Desktop variant={name} defines={string.Join(",", defines ?? new string[0])}", defines,
+            (int)WebGLTextureSubtarget.DXT);
+
+        /// <summary>
         /// V5 phone benchmark builds (1 Oct): the mobile profile plus the <c>V5_PHONE_BENCH</c> define (the DevTools pilot
         /// in a release build, see PhoneBench), with the settings that need their own build: the code optimization
         /// ("BuildTimes", "RuntimeSpeed", "RuntimeSpeedLTO", "DiskSize", "DiskSizeLTO"), WebAssembly 2023 and the texture

@@ -54,9 +54,13 @@ namespace RoguePirates.V5.Net
                 packetJitterMs: link.sendJitterMs,
                 packetDropPercentage: link.sendDropPercent,
                 randomSeed: link.seed == 0 ? 1u : link.seed);
+#if UNITY_WEBGL && !UNITY_EDITOR
+            driver = NetworkDriver.Create(new WebSocketNetworkInterface(), settings); // V5 M9b part 2b: the browser has no UDP
+#else
             driver = transport.UseWebSockets
                 ? NetworkDriver.Create(new WebSocketNetworkInterface(), settings)
                 : NetworkDriver.Create(new UDPNetworkInterface(), settings);
+#endif
             transport.GetDefaultPipelineConfigurations(ref driver, out var unreliable, out var unreliableSequenced, out var reliable);
             unreliableFragmentedPipeline = driver.CreatePipeline(WithSimulator(unreliable));
             unreliableSequencedFragmentedPipeline = driver.CreatePipeline(WithSimulator(unreliableSequenced));

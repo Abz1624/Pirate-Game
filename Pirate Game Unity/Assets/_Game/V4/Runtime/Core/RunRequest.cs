@@ -35,6 +35,14 @@ namespace RoguePirates.V4
         /// </summary>
         public static bool Headless { get; set; }
 
+        /// <summary>
+        /// V5 M9b part 2b: the runs of this session are a match server client's stage: the run is built as usual from the
+        /// seed the server sent (islands, map, ship, presenters), but its simulation runs on the server, so its modules and
+        /// frame steps do not tick here; the client feeds the views from the server's snapshots. Set by RoguePirates.V5.Net
+        /// only.
+        /// </summary>
+        public static bool RemoteSimulation { get; set; }
+
         public static void RequestSeed(int seed)
         {
             Seed = seed;
