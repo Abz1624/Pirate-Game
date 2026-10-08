@@ -79,7 +79,7 @@
   },
   "M9a": {
    "state": "building",
-   "chip": "awaiting your playtest"
+   "chip": "playtested · fixing a false alarm"
   },
   "M9b": {
    "state": "planned",
@@ -465,6 +465,11 @@
    "when": "8 Oct",
    "commit": "9bfc1877",
    "what": "<strong>Railway config moved to Infrastructure as Code</strong> (Railway stops reading <code>railway.json</code> on 1 Dec): the API's settings now live in <code>.railway/railway.ts</code> (Dockerfile build, /health check with 60 s timeout, one replica, restart on failure ×10; the three variables kept with <code>preserve()</code>, so no values in the repo). <code>deploy.ps1</code> applies settings only when the plan shows changes. Deployed: same settings in the live deployment, /health ok, deprecation warning gone. Housekeeping; nothing about the service changed."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "",
+   "what": "<strong>Your M9a playtest</strong> (Rook, sunk at 8:36, 1,227 kills, level 26, Cursed Doubloons build): the run uploaded with its log and ranks #2 on the weekly board, but the shadow-mode checks flagged it (kills in minute 4: 200 over a limit of 194). That is a false alarm on real play, which is what shadow mode is for: the kill limits dip mid-run and the simulator under-counts Doubloon-heavy builds. Fixing the rules (v2) before closing M9a."
   }
  ],
  "todos": {
