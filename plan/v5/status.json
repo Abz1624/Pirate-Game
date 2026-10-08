@@ -1,6 +1,6 @@
 {
  "updated": "8 Oct 2026",
- "statusLine": "M9a: review passed with fixes (no blockers); fixes in progress, then the server deploy, a desktop build and your M9a playtest.",
+ "statusLine": "M9a: built, reviewed, fixed and deployed. Desktop build for your playtest in progress.",
  "statusOk": false,
  "facts": [
   [
@@ -79,7 +79,7 @@
   },
   "M9a": {
    "state": "building",
-   "chip": "review fixes · then deploy and playtest"
+   "chip": "awaiting your playtest"
   },
   "M9b": {
    "state": "planned",
@@ -450,6 +450,11 @@
    "when": "8 Oct",
    "commit": "",
    "what": "Full Unity suites on the M9a code: EditMode 580/580, PlayMode 91/91. <strong>Your answers (D25)</strong>: bad logs accepted and flagged in shadow mode; the refit closes on today's balance; deploy without a backup; the no-log question waits for enforcement. Review fixes in progress."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "03a72b9f",
+   "what": "<strong>M9a review fixes done and deployed</strong>: bad logs accepted as 'log rejected' (D25), the old unauthenticated test endpoints retired, a 96 KB upload limit, the run log closed by the game, a stricter seeding scan, one edge-case fixture all three checkers agree on, a voyage with damage on passing the hull rule, run logs kept 8 weeks (flagged ones kept). Server 153/153, EditMode 582/582, PlayMode 92/92. Railway: three migrations applied, the board serves the old entries as unchecked. Desktop build for your M9a playtest in progress."
   }
  ],
  "todos": {
