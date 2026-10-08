@@ -22,10 +22,14 @@ if (-not (Test-Path (Join-Path $iacDir 'node_modules\railway'))) {
 # The Railway SDK checks the CLI version by running $env:_ (else `railway`, which Windows cannot exec as an npm shim).
 $railwayExe = Join-Path (Split-Path (Get-Command railway).Source) 'node_modules\@railway\cli\bin\railway.exe'
 if (Test-Path $railwayExe) { $env:_ = $railwayExe }
+# An apply that changes anything redeploys the service, so it runs only when the plan has changes (exit code 2).
 Push-Location $iacDir
 try {
-    railway config apply --yes
-    if ($LASTEXITCODE -ne 0) { throw "railway config apply failed ($LASTEXITCODE)." }
+    railway config plan --detailed-exit-code
+    if ($LASTEXITCODE -eq 2) {
+        railway config apply --yes
+        if ($LASTEXITCODE -ne 0) { throw "railway config apply failed ($LASTEXITCODE)." }
+    } elseif ($LASTEXITCODE -ne 0) { throw "railway config plan failed ($LASTEXITCODE)." }
 } finally { Pop-Location }
 
 Push-Location $PSScriptRoot

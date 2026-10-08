@@ -70,8 +70,10 @@ come from that process). Keep Railway replicas at 1.
 
 The api service's build and deploy settings are Railway Infrastructure as Code in `.railway/railway.ts` (Config as Code,
 the old `server/railway.json`, stops being read on 2026-12-01): Dockerfile builder, `Dockerfile`, health check `/health`
-with a 60 s timeout, restart on failure up to 10 times, one replica. It manages only the `api` service (partial `api`);
-Postgres is untouched. `server/deploy.ps1` runs `railway config apply --yes` before `railway up`, without
+with a 60 s timeout, one replica; the restart policy is left at Railway's default, which is railway.json's ON_FAILURE
+with 10 retries (Railway reads a declared default back as null, so declaring it makes every apply redeploy). It manages only the `api` service (partial `api`);
+Postgres is untouched. `server/deploy.ps1` runs `railway config apply --yes` before `railway up` when `railway config plan` shows changes
+(an apply that changes anything redeploys the service), without
 `--confirm-destructive`, so an apply that would delete anything stops the deploy.
 
 - **Variables:** a variable the file does not list is deleted on apply. Existing ones are listed with `preserve()`,

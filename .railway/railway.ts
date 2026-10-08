@@ -17,8 +17,9 @@ export default defineRailway(() => {
       numReplicas: 1, // one instance: lobby and match state live in-process (server/README.md)
       healthcheckPath: "/health",
       healthcheckTimeout: 60,
-      restartPolicyType: "ON_FAILURE",
-      restartPolicyMaxRetries: 10,
+      // Restart policy stays at Railway's default, ON_FAILURE with 10 retries (railway.json's values, confirmed in the
+      // deployment manifest). Railway stores the default as null, so declaring it leaves a change in every plan and
+      // every apply would redeploy.
     },
     // Variables the file does not list are DELETED on apply. preserve() keeps the value Railway already holds, so no
     // value (or the DATABASE_URL reference to Postgres) lives in the repo. Add any new variable here before setting it.
