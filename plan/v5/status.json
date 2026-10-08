@@ -83,7 +83,7 @@
   },
   "M9b": {
    "state": "building",
-   "chip": "parts 1, 2a done · 2b (browser client) running"
+   "chip": "parts 1-2b done · review, then Railway test"
   },
   "M9c": {
    "state": "planned",
@@ -500,6 +500,11 @@
    "when": "8 Oct",
    "commit": "6e6e9b4a",
    "what": "<strong>M9b part 2a done</strong>: the Linux match server builds (Mono; IL2CPP needs a toolchain fix) and runs in local Docker (image 71 MB compressed). A scripted voyage against it: server tick p95 0.9-1.5 ms, about 3.4 KB/s down and 1.2 KB/s up, 141-150 MB memory, ready 2 s after start, a dropped socket resumes in 0.5 s, stopping the server ends the voyage cleanly. The API issues join tickets (server 160/160). One voyage per server process for now. Part 2b started: the browser client (real visuals and HUD, level-up cards over the network, boost prediction)."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "6f5d987e",
+   "what": "<strong>M9b part 2b done</strong>: a desktop WebGL test client that plays a server-run voyage with the real ship, enemies and level-up cards (the server offers the cards; your pick is checked), and boost prediction (no correction at 150 ms lag and 2% loss). Locally against Docker: 59.7 fps in Chrome, about 3.1 KB/s down, join in under a second, a clean 'server closed' screen. Netcode adds about 0.85 MB to every build's download (114.2 MB). Known: the ship is pulled back 0.8-1.9 m once when level-up cards appear (hidden behind the cards; your playtest judges it). EditMode 601/601, PlayMode 110/110. Independent review running; then the Railway test."
   }
  ],
  "todos": {
