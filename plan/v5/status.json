@@ -460,6 +460,11 @@
    "when": "8 Oct",
    "commit": "",
    "what": "Leaderboard from local builds fixed: the API's Railway ALLOWED_ORIGINS only listed roguepirates.fun; localhost added with your OK (http://localhost:* and http://127.0.0.1:*). Desktop M9a build served at localhost:8090."
+  },
+  {
+   "when": "8 Oct",
+   "commit": "9bfc1877",
+   "what": "<strong>Railway config moved to Infrastructure as Code</strong> (Railway stops reading <code>railway.json</code> on 1 Dec): the API's settings now live in <code>.railway/railway.ts</code> (Dockerfile build, /health check with 60 s timeout, one replica, restart on failure ×10; the three variables kept with <code>preserve()</code>, so no values in the repo). <code>deploy.ps1</code> applies settings only when the plan shows changes. Deployed: same settings in the live deployment, /health ok, deprecation warning gone. Housekeeping; nothing about the service changed."
   }
  ],
  "todos": {
@@ -471,6 +476,7 @@
    "PvP draft on phones: tapping a card to read it also picks it (later)."
   ],
   "done": [
+   "<strong>Railway config migrated</strong> (8 Oct): <code>railway.json</code> replaced by <code>.railway/railway.ts</code> before Railway's 1 Dec cut-off; deployed, nothing for you to do. New API variables now also need a line in <code>railway.ts</code> (the agent does this).",
    "<strong>Answered P11</strong> (6 Oct): raid economy option B with 4-hour shields (D19); Netcode matches server-authoritative (D19).",
    "<strong>Answered P1-P10</strong> (6 Oct, D18); playtest merged; API deployed.",
    "<strong>Playtest rounds 1-9</strong> (1-6 Oct): see the progress log; notes in <code>plan/playtest/NOTES.md</code> and <code>ROUND8-LOG.md</code>.",
@@ -1029,6 +1035,13 @@
    "check": "Closing suites",
    "result": "EditMode 561/561, PlayMode 88/88",
    "evidence": "plan/playtest/tests/editmode-m8z-close.json, playmode-m8z-close.json"
+  },
+  {
+   "date": "8 Oct",
+   "phase": "Ops",
+   "check": "Railway Config as Code → IaC (a457012d, 9bfc1877)",
+   "result": "plan 0 destroy; deployed; live manifest DOCKERFILE, /health 60 s, 1 replica, ON_FAILURE ×10; variables ALLOWED_ORIGINS, DATABASE_URL, PLAY_URL kept; /health {ok:true, db:postgres}; plan afterwards: up to date; railway status: no warning",
+   "evidence": ".railway/railway.ts, server/deploy.ps1, server/README.md (Service settings)"
   }
  ],
  "phaseResults": {

@@ -11,6 +11,8 @@
 - [x] Answer questions P1-P10 (answered 6-7 Oct: D18, D19, D20).
 - [ ] Answer the open questions in `plan/v5/OPEN-QUESTIONS.md` (17, each with a suggestion).
 - [x] Deploy the API: deploys are done by the agent with `server/deploy.ps1` (D19).
+- [x] Railway config migration (done by the agent, 8 Oct): `server/railway.json` replaced by `.railway/railway.ts`
+      before Railway stops reading it on 1 Dec; deployed with the same settings. Nothing for you to do.
 - [ ] Play a recorded voyage (Editor or the desktop WebGL build); the session file goes to `plan/playtest/sessions/`.
 - [x] Playtest rounds 1-9 (1-6 Oct), see `plan/playtest/NOTES.md` and `ROUND8-LOG.md`.
 
