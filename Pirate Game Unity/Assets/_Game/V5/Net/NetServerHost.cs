@@ -42,7 +42,12 @@ namespace RoguePirates.V5.Net
         float _overSince = -1f;
         float _joinedAt = -1f;
         float _endSeenAt = -1f;
+        bool _started;
         string _closeReason;
+
+        /// <summary>V5 M9b review: a player who joins and sends no input in this long is dropped and the voyage freed
+        /// (the process makes way for a fresh one), so a stuck or idle join cannot hold the server.</summary>
+        public float NoInputTimeoutSeconds = 30f;
 
         public void Begin(NetServer server, ushort port, bool holdUntilJoin = true)
         {
@@ -73,6 +78,7 @@ namespace RoguePirates.V5.Net
         /// <summary>V5 M9b part 2b: the player's first inputs (its stage is built): the held run plays from here.</summary>
         void OnSessionStarted()
         {
+            _started = true;
             if (_held) Hold(false);
             Debug.Log($"[V5 Net] first inputs {(_joinedAt >= 0f ? Time.realtimeSinceStartup - _joinedAt : 0f):0.00} s after the join; the run plays");
         }
@@ -100,6 +106,8 @@ namespace RoguePirates.V5.Net
                 if (File.Exists(StopFile)) { StartCoroutine(Close("SIGTERM (stop file)")); return; }
             }
             var s = _server.Current;
+            if (!_started && _joinedAt >= 0f && s != null && !s.expired && now - _joinedAt > NoInputTimeoutSeconds)
+                _server.ExpireSession($"no input within {NoInputTimeoutSeconds:0} s of joining");
             // V5 M9b part 2b: a voyage that ended is over 10 s later even if its client is still connected (an end screen
             // left open), so the process makes way for the next voyage.
             if (_server.EndSent && _endSeenAt < 0f) _endSeenAt = now;

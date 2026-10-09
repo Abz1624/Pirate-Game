@@ -8,7 +8,7 @@ Railway column is empty** until the Railway test session (steps at the end of `R
 
 | Measure | Target |
 |---|---|
-| Down and up bandwidth per client | measured (M9c's budget at 4 ships: down <= 20 KB/s, p95 <= 30; up <= 2 KB/s) |
+| Down and up bandwidth per client | measured (M9c's budget at 4 ships: down <= 20 KB/s, p95 <= 30; up <= 2 KB/s; judged in M9c with shots, pickups, chests and the minimap mirrored) |
 | Server tick p95 | <= 8 ms for a single-player voyage on Railway |
 | Client frame rate | steady 60 fps on desktop WebGL while connected |
 | Prediction | error <= 0.5 m and no correction above 0.5 m in a frame at 150 ms RTT and 2% loss |
@@ -19,6 +19,11 @@ Railway column is empty** until the Railway test session (steps at the end of `R
 ## Results
 
 `-`: not measured in that setting. **open**: to measure on Railway.
+
+**Bandwidth scope:** every down/up figure here covers the ship's snapshots, the enemies, level-up messages and inputs
+only. Shots (the player's and the enemies'), pickups, chests and the minimap's enemies are not mirrored yet; the owner
+decided on 9 Oct that their mirroring comes in M9c and that M9c's bandwidth go/no-go (D9c.1) is judged with it included,
+so these figures are a lower bound for M9c.
 
 | Measure | In-process (Editor; part 1, 2b) | Local Docker, Mono server image (part 2a, 2b) | Desktop WebGL client in Chrome vs local Docker (part 2b) | Railway |
 |---|---|---|---|---|
@@ -40,15 +45,31 @@ Host for the local numbers: Windows 11, 16 logical CPUs, Docker Desktop 29.8.2, 
 background throttling off), canvas 1200x750. Files: `inprocess-part2b/*.json`, `docker/part2b-voyage-60s/summary.json`,
 `webgl/webgl-client-report.json`, `webgl/chrome-autopilot-45s-then-docker-stop.log`, `session/`.
 
-### Level-up pause entry (outside the sailing gate)
+### Level-up pause entry and resume (fixed 9 Oct, review finding b)
 
-The server's run pauses on level-up cards as a voyage does; the ship holds on both sides from the first input tick the
-server had not applied. The client learns of the level-up only when the cards arrive, so the ticks it predicted after that
-point are taken back once: about the ship's speed times the input lead, 0.76-1.14 m locally (67-100 ms input delay), up to
-1.7 m while boosting; at 150 ms and 2% loss in-process 1.5-1.9 m (`LevelUp_At150ms2Percent_Measured`). The cards cover
-the screen at that moment. The resume is exact in separate processes (the pick names the tick the ship moves again from);
-a pick delayed by a lost packet costs one more take-back there. The owner's playtest decides whether this shows; easing the
-ship's drawn position (as `NetClient.VisualOffset` already computes) would hide it.
+Before the fix the ship held on both sides from the first input tick the server had not applied, so the ticks the client
+had predicted past it were taken back when the cards arrived: 0.76-1.14 m locally, up to 1.7 m while boosting, 1.5-1.9 m
+in-process at 150 ms and 2% loss (part 2b numbers, above the 0.5 m gate). Now (protocol version 3):
+
+- the server keeps applying the client's inputs while the cards travel; the client names its hold tick when they arrive
+  (the tick after the one it has reached, `rp9b.pick` action Hold); the server takes it, clamped to at least the tick the
+  cards were dealt at and at most the newest input received plus 6 ticks, applies the inputs up to there and holds;
+- a hold that arrives late (a lost packet resent) rewinds the server's ship to its state before the hold tick (the run is
+  paused, nothing else moved); a pick that arrives late steps the held ticks on the inputs already received (at most 30
+  ticks back, never before the hold); a pick's resume tick is capped at 12 ticks ahead;
+- the client does not correct against snapshots sent before the server had its hold or pick (snapshot flag HoldPending,
+  or still paused past the client's resume tick); no hold within 1 s holds from the next unapplied tick and tells the
+  client.
+
+| Run (`inprocess-review/*.json`) | Link | Correction max | Prediction error max | Notes |
+|---|---|---|---|---|
+| `LevelUp_At150ms2Percent_NoCorrectionAboveHalfAMetre` (asserts the 0.5 m gate), x4 runs | 75 ms each way, 2% loss | **0** (sailing entry and resume 0; while boosting at 12.9 m/s 0) | **0** | 118-128 snapshots compared each; in 3 of 4 runs the hold arrived late (the 2% loss) and was rewound, still 0 m |
+| `LevelUp_LateHoldAndLatePick_StayExact` (hold and pick 0.3 s late) | clean | **0** | **0** | hold rewound 8 ticks, pick caught up 8-9 ticks |
+| `LevelUp_RealCardsOverTheNetwork_PauseAndPick` | clean | 0 | 0 | |
+| Local Docker scripted voyage (`docker/review-voyage/`), 2 level-ups, one with a socket drop while the cards were up | local | **0** | **0** | 552 snapshots; resume during the cards 0.42 s, the cards and the hold came back |
+
+The desktop WebGL row above (0.38 m / 0.76 m at a level-up entry) predates the fix; the browser build is to be rebuilt for
+protocol 3 before the Railway session.
 
 ## Build sizes (desktop WebGL, Brotli download)
 

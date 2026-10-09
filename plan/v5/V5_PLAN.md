@@ -687,6 +687,9 @@ real-time modes.
   client (p95 <= 30), up <= 2 KB/s; server tick p95 <= 16 ms on Railway; client steady 60 fps on desktop WebGL;
   prediction error as M9b; cost per match-hour. NGO and Unity Transport versions pinned from the result.
   No-go: the relay stays, the owner chooses light-PvE 1v1 or a netcode rethink, and M21-M23 wait (M24 wagers too).
+- From the M9b review (owner, 9 Oct): M9c mirrors the shots, pickups, chests and the minimap's enemies (M9b's bandwidth
+  figures exclude them) and judges D9c.1's bandwidth with them included; a per-session clock and hold instead of the
+  global `Time.timeScale`; level-up cards that do not pause a shared run; several sessions per process (needed by M13b).
 
 Automated check: the 4-client load test on local Docker and on Railway; the full EditMode and PlayMode suites and the
 goldens green.

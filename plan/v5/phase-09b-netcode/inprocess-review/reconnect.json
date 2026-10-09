@@ -1,0 +1,45 @@
+{
+  "report": "reconnect",
+  "utc": "2026-10-09T06:45:27.2706145Z",
+  "unity": "6000.3.11f1",
+  "editor": true,
+  "scenario": "net_voyage_open_water",
+  "sections": [
+    {
+      "name": "server",
+      "seconds": 5.762,
+      "clients": [
+        {"clientId": 1, "bytesDownPerSecond": 504.903, "bytesUpPerSecond": 136.423, "wireDownPerSecondEstimate": 575.718, "wireUpPerSecondEstimate": 196.824, "messagesDown": 34, "messagesUp": 29},
+        {"clientId": 2, "bytesDownPerSecond": 62.31, "bytesUpPerSecond": 0, "wireDownPerSecondEstimate": 70.641, "wireUpPerSecondEstimate": 0, "messagesDown": 4, "messagesUp": 0},
+        {"clientId": 3, "bytesDownPerSecond": 1832.681, "bytesUpPerSecond": 610.257, "wireDownPerSecondEstimate": 2090.947, "wireUpPerSecondEstimate": 860.192, "messagesDown": 124, "messagesUp": 120}
+      ],
+      "tickMs": {"count": 172, "mean": 1.732, "p50": 1.745, "p95": 2.086, "max": 2.451},
+      "snapshotBytes": {"count": 78, "mean": 170, "p50": 170, "p95": 170, "max": 170},
+      "snapshotEnemies": {"count": 78, "mean": 1, "p50": 1, "p95": 1, "max": 1},
+      "predictionErrorMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 2, "mean": 0.297, "p50": 0.297, "p95": 0.304, "max": 0.304},
+      "inputLagMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    },
+    {
+      "name": "client",
+      "seconds": 5.762,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 2370.281, "bytesUpPerSecond": 751.853, "wireDownPerSecondEstimate": 2703.512, "wireUpPerSecondEstimate": 1064.257, "messagesDown": 160, "messagesUp": 150}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 73, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 76, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 2, "mean": 0.304, "p50": 0.304, "p95": 0.305, "max": 0.305},
+      "inputLagMs": {"count": 73, "mean": 33.333, "p50": 33.333, "p95": 33.333, "max": 33.333},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

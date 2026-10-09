@@ -61,12 +61,13 @@ public static class PlaytestEndpoints
         app.MapGet("/api/lobbies/public", async (LobbyService lobbies) => Results.Ok(await lobbies.ListPublicAsync()));
 
         // V5 M9b (I9b.1 part 2a): a signed one-time join ticket for a server-run voyage on the Netcode match server
-        // (contract: MatchTickets, plan/v5/phase-09b-netcode/README.md). 503 while RP_MATCH_TICKET_SECRET is unset.
+        // (contract: MatchTickets, plan/v5/phase-09b-netcode/README.md). 503 while RP_MATCH_TICKET_SECRET or
+        // VOYAGE_SERVER_URL is unset (M9b review: a ticket without a server to take it is useless to the client).
         app.MapPost("/api/lobbies/voyage/ticket", async (HttpContext ctx, PlayerAuth auth, ApiSettings settings, IClock clock) =>
         {
             var player = await auth.RequireAsync(ctx);
             var key = MatchTickets.KeyFromSecret(settings.MatchTicketSecret);
-            if (key == null)
+            if (key == null || string.IsNullOrWhiteSpace(settings.VoyageServerUrl))
                 return Results.Json(new { error = "match_tickets_off", message = "The match server is not configured." }, statusCode: 503);
             var iat = new DateTimeOffset(DateTime.SpecifyKind(clock.UtcNow, DateTimeKind.Utc)).ToUnixTimeSeconds();
             var exp = iat + settings.MatchTicketLifetimeSeconds;

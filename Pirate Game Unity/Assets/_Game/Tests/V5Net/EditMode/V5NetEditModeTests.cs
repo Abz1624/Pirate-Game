@@ -312,7 +312,8 @@ namespace RoguePirates.V5.Net.Tests
             uint next = 100;
             var sent = new List<OfferMessage>();
             var closed = new List<OfferClosedMessage>();
-            var levelUps = new NetLevelUps { NextInputTick = () => next, Send = sent.Add, SendClosed = closed.Add };
+            var catchUps = new List<(uint, uint)>();
+            var levelUps = new NetLevelUps { NextInputTick = () => next, Send = sent.Add, SendClosed = closed.Add, CatchUp = (a, b) => catchUps.Add((a, b)) };
             var chosen = new List<string>();
             var skips = 0;
             IOfferPresenter presenter = levelUps;
@@ -334,9 +335,13 @@ namespace RoguePirates.V5.Net.Tests
             next = 140;
             Assert.IsNull(levelUps.Apply(new PickMessage { seq = seq, action = NetProtocol.PickAction.Pick, index = 1, resumeTick = 120 }));
             CollectionAssert.AreEqual(new[] { "NewWeapon:harpoon" }, chosen, "the picked card goes to the module");
-            Assert.AreEqual(140u, closed[0].resumeTick, "a late pick resumes at the next unapplied tick, not in the past");
-            Assert.IsTrue(levelUps.Holds(139));
-            Assert.IsFalse(levelUps.Holds(140), "moving again from the resume tick");
+            // M9b review: a late pick (its packet resent) names a tick already held: the held ticks since then are stepped
+            // now on the inputs the server has (at most LateTickWindow back), so the resume is exact on both sides.
+            Assert.AreEqual(120u, closed[0].resumeTick, "a late pick keeps its resume tick");
+            CollectionAssert.AreEqual(new[] { (120u, 140u) }, catchUps, "the held ticks since the resume tick are caught up");
+            Assert.AreEqual(1, levelUps.LatePicksCaughtUp);
+            Assert.IsTrue(levelUps.Holds(119));
+            Assert.IsFalse(levelUps.Holds(120), "moving again from the resume tick");
             Assert.IsNotNull(levelUps.Apply(new PickMessage { seq = seq, action = NetProtocol.PickAction.Pick }), "the same set twice is refused");
 
             presenter.TryShow(Cards(), o => chosen.Add(o.Key), () => skips++, () => { }, 0);
@@ -346,6 +351,76 @@ namespace RoguePirates.V5.Net.Tests
             Assert.AreEqual("WeaponUpgrade:cannon", chosen[1], "an unanswered set takes the first card");
             Assert.AreEqual(NetProtocol.OfferResolution.TimedOut, closed[1].how);
             Assert.IsFalse(levelUps.Pending);
+        }
+
+        /// <summary>V5 M9b review (D9b.1 level-up pull-back, fix 5): with a client there, the ship is not held until the client
+        /// names its hold tick (the tick after the one it had reached when the cards arrived); the hold is clamped to at
+        /// least the next unapplied tick and at most the newest input plus the lead; no hold in time holds from the next
+        /// unapplied tick; a pick's resume tick is capped at twice the lead ahead; a refused pick re-sends the cards once a set.</summary>
+        [Test]
+        public void LevelUps_ClientNamesTheHold_ClampedAndBounded()
+        {
+            uint next = 100, newest = 104;
+            var sent = new List<OfferMessage>();
+            var closed = new List<OfferClosedMessage>();
+            var levelUps = new NetLevelUps { NextInputTick = () => next, NewestInputTick = () => newest, ClientCanNameHold = () => true, Send = sent.Add, SendClosed = closed.Add };
+            IOfferPresenter presenter = levelUps;
+            Assert.IsTrue(presenter.TryShow(Cards(), _ => { }, () => { }, () => { }, 0));
+            Assert.IsTrue(levelUps.AwaitingHold);
+            Assert.AreEqual(0u, sent[0].pauseFrom, "the client names the hold tick");
+            Assert.IsFalse(levelUps.Holds(100) || levelUps.Holds(103), "the ship keeps applying the client's inputs until then");
+            Assert.IsNull(levelUps.ApplyHold(105));
+            Assert.AreEqual(105u, levelUps.PauseFrom);
+            Assert.AreEqual(1, sent.Count, "an accepted hold needs no answer");
+            Assert.IsFalse(levelUps.Holds(104));
+            Assert.IsTrue(levelUps.Holds(105) && levelUps.Holds(300));
+            Assert.IsNotNull(levelUps.ApplyHold(110), "a second hold for the same set changes nothing");
+            Assert.AreEqual(105u, levelUps.PauseFrom);
+
+            Assert.IsTrue(levelUps.TakeResendAfterRefusal(), "a refused pick sends the cards again");
+            Assert.IsFalse(levelUps.TakeResendAfterRefusal(), "once a set");
+
+            next = 110;
+            Assert.IsNull(levelUps.Apply(new PickMessage { seq = levelUps.Seq, action = NetProtocol.PickAction.Pick, index = 0, resumeTick = 5000 }));
+            Assert.AreEqual(110u + 2 * NetProtocol.HoldLeadTicks, closed[0].resumeTick, "a far resume tick is capped at twice the lead");
+
+            next = 130; newest = 131;
+            presenter.TryShow(Cards(), _ => { }, () => { }, () => { }, 0);
+            Assert.IsTrue(levelUps.AwaitingHold, "a new pause after the last resume: the client names it again");
+            Assert.IsNull(levelUps.ApplyHold(100000));
+            Assert.AreEqual(131u + NetProtocol.HoldLeadTicks, levelUps.PauseFrom, "a hold past the newest input plus the lead is clamped");
+            Assert.AreEqual(1, levelUps.HoldsClamped);
+            Assert.AreEqual(131u + NetProtocol.HoldLeadTicks, sent[sent.Count - 1].pauseFrom, "and the client is told the tick taken");
+            Assert.IsTrue(levelUps.TakeResendAfterRefusal(), "a new set may re-send again");
+            levelUps.Apply(new PickMessage { seq = levelUps.Seq, action = NetProtocol.PickAction.Skip, resumeTick = 140 });
+
+            next = 160; newest = 165;
+            presenter.TryShow(Cards(), _ => { }, () => { }, () => { }, 0);
+            Assert.IsNull(levelUps.ApplyHold(150));
+            Assert.AreEqual(160u, levelUps.PauseFrom, "a hold before the cards were dealt is moved up to that tick");
+            levelUps.Apply(new PickMessage { seq = levelUps.Seq, action = NetProtocol.PickAction.Skip, resumeTick = 161 });
+
+            next = 170;
+            var rewound = new List<uint>();
+            levelUps.Rewind = rewound.Add;
+            presenter.TryShow(Cards(), _ => { }, () => { }, () => { }, 0);
+            next = 175; // a late hold: the server applied 170-174 meanwhile
+            Assert.IsNull(levelUps.ApplyHold(172));
+            Assert.AreEqual(172u, levelUps.PauseFrom, "a late hold is kept");
+            CollectionAssert.AreEqual(new[] { 172u }, rewound, "and the server's ship goes back to its state before that tick");
+            Assert.AreEqual(1, levelUps.HoldsRewound);
+
+            levelUps.Apply(new PickMessage { seq = levelUps.Seq, action = NetProtocol.PickAction.Skip, resumeTick = 176 });
+            next = 200;
+            levelUps.HoldWaitSeconds = 0f;
+            var before = sent.Count;
+            presenter.TryShow(Cards(), _ => { }, () => { }, () => { }, 0);
+            levelUps.Tick();
+            Assert.IsFalse(levelUps.AwaitingHold);
+            Assert.AreEqual(1, levelUps.HoldsTimedOut);
+            Assert.AreEqual(200u, levelUps.PauseFrom, "no hold named in time: the next unapplied tick");
+            Assert.AreEqual(before + 2, sent.Count, "the cards, then the hold the server took");
+            Assert.AreEqual(200u, sent[sent.Count - 1].pauseFrom);
         }
 
         // ---- Composition and release exclusion --------------------------------------------------------------------

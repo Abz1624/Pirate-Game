@@ -1,0 +1,43 @@
+{
+  "report": "V5 match server (Linux, Docker)",
+  "utc": "2026-10-09T08:20:49.5950860Z",
+  "unity": "6000.3.11f1",
+  "editor": false,
+  "kind": "final",
+  "port": "7777",
+  "matchId": "local-2dd80151",
+  "serverTick": "1215",
+  "stepsApplied": "1097",
+  "rejectedJoins": "2",
+  "lastRejectReason": "ticket Replayed",
+  "endSent": "ServerClosing",
+  "closeReason": "SIGTERM (stop file)",
+  "processSeconds": "41.46",
+  "joinedAtProcessSeconds": "3.27",
+  "rssMB": "177.0",
+  "monoHeapMB": "5.2",
+  "unityReservedMB": "158.6",
+  "platform": "LinuxServer",
+  "scriptingBackend": "Mono",
+  "sections": [
+    {
+      "name": "server",
+      "seconds": 38.192,
+      "clients": [
+        {"clientId": 1, "bytesDownPerSecond": 501.331, "bytesUpPerSecond": 173.988, "wireDownPerSecondEstimate": 573.911, "wireUpPerSecondEstimate": 244.683, "messagesDown": 231, "messagesUp": 225},
+        {"clientId": 2, "bytesDownPerSecond": 1228.808, "bytesUpPerSecond": 400.211, "wireDownPerSecondEstimate": 1391.563, "wireUpPerSecondEstimate": 561.396, "messagesDown": 518, "messagesUp": 513},
+        {"clientId": 5, "bytesDownPerSecond": 1054.636, "bytesUpPerSecond": 284.193, "wireDownPerSecondEstimate": 1171.204, "wireUpPerSecondEstimate": 399.19, "messagesDown": 371, "messagesUp": 366}
+      ],
+      "tickMs": {"count": 1146, "mean": 0.659, "p50": 0.527, "p95": 0.844, "max": 30.494},
+      "snapshotBytes": {"count": 554, "mean": 190.453, "p50": 188, "p95": 260, "max": 269},
+      "snapshotEnemies": {"count": 554, "mean": 3.273, "p50": 3, "p95": 11, "max": 12},
+      "predictionErrorMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 2, "mean": 0.406, "p50": 0.406, "p95": 0.417, "max": 0.419},
+      "inputLagMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

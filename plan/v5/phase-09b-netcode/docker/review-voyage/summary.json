@@ -1,0 +1,150 @@
+{
+  "utc": "2026-10-09T08:20:50.836970+00:00",
+  "image": "rogue-pirates-match:local",
+  "imageId": "sha256:856e30b6257d04670bd6bb3879099478a688105e53fbbed42ee049d46e587376",
+  "seconds": 35,
+  "dropAt": 25,
+  "servers": 1,
+  "docker": "29.8.2",
+  "extraChecks": {
+    "secondPlayer": "[V5 NetTest] EXIT failed: join failed: voyage taken",
+    "replayedTicket": "[V5 NetTest] EXIT failed: join failed: ticket Replayed"
+  },
+  "results": [
+    {
+      "server": "rp-match-test-1",
+      "port": 17777,
+      "coldStartSeconds": 2.11,
+      "processStartToListeningSeconds": 0.9,
+      "serverExitCode": "0",
+      "clientExitCode": "0",
+      "dockerStopSeconds": 1.04,
+      "secondsFromDockerStopToClientLobby": 0.119,
+      "serverCloseReason": "SIGTERM (stop file)",
+      "serverReportKind": "final",
+      "serverBackend": "Mono",
+      "serverRssMB": "177.0",
+      "tickMs": {
+        "count": 1146,
+        "mean": 0.659,
+        "p50": 0.527,
+        "p95": 0.844,
+        "max": 30.494
+      },
+      "serverTraffic": [
+        {
+          "clientId": 1,
+          "bytesDownPerSecond": 501.331,
+          "bytesUpPerSecond": 173.988,
+          "wireDownPerSecondEstimate": 573.911,
+          "wireUpPerSecondEstimate": 244.683,
+          "messagesDown": 231,
+          "messagesUp": 225
+        },
+        {
+          "clientId": 2,
+          "bytesDownPerSecond": 1228.808,
+          "bytesUpPerSecond": 400.211,
+          "wireDownPerSecondEstimate": 1391.563,
+          "wireUpPerSecondEstimate": 561.396,
+          "messagesDown": 518,
+          "messagesUp": 513
+        },
+        {
+          "clientId": 5,
+          "bytesDownPerSecond": 1054.636,
+          "bytesUpPerSecond": 284.193,
+          "wireDownPerSecondEstimate": 1171.204,
+          "wireUpPerSecondEstimate": 399.19,
+          "messagesDown": 371,
+          "messagesUp": 366
+        }
+      ],
+      "serverSeconds": 38.192,
+      "serverBytesPerSecondAllSockets": {
+        "bytesDownPerSecond": 2784.8,
+        "bytesUpPerSecond": 858.4,
+        "wireDownPerSecondEstimate": 3136.7,
+        "wireUpPerSecondEstimate": 1205.3
+      },
+      "snapshotBytes": {
+        "count": 554,
+        "mean": 190.453,
+        "p50": 188,
+        "p95": 260,
+        "max": 269
+      },
+      "snapshotEnemies": {
+        "count": 554,
+        "mean": 3.273,
+        "p50": 3,
+        "p95": 11,
+        "max": 12
+      },
+      "guessedInputs": 0,
+      "serverResumeSeconds": {
+        "count": 2,
+        "mean": 0.406,
+        "p50": 0.406,
+        "p95": 0.417,
+        "max": 0.419
+      },
+      "dockerMemMB": {
+        "max": 147.7,
+        "mean": 145.6,
+        "samples": 7
+      },
+      "dockerCpuPercent": {
+        "max": 9.3,
+        "mean": 8.0,
+        "samples": 7
+      },
+      "client": {
+        "ok": "true",
+        "outcome": "end ServerClosing",
+        "joinSeconds": "0.263",
+        "resumeSeconds": "0.452",
+        "endedByServer": "true",
+        "endReason": "ServerClosing",
+        "lobbyUtc": "2026-10-09T08:20:49.0769900Z",
+        "snapshots": "552",
+        "kills": "25",
+        "level": "2",
+        "finalHull": "90",
+        "events": "0.75s stage loaded (seed 9200) | 1.02s welcomed in 0.263 s | 8.51s socket dropped while the cards were up (set 1) | 8.93s resumed during the cards in 0.421 s | 8.93s the cards came back after the resume (set 1) | 9.33s level-up card picked (WeaponUpgrade swivel_guns, set 1) | 26.02s socket dropped (client side) | 26.47s resumed in 0.452 s | 36.03s VOYAGE-DONE snapshots=512 hull=90/100 kills=20 level=1 | 37.62s level-up card picked (Logbook admiral, set 2) | 38.64s end ServerClosing received | 38.64s lobby (end ServerClosing) 0.001 s after the server's end showed, at 2026-10-09T08:20:49.0769900Z",
+        "traffic": [
+          {
+            "clientId": 0,
+            "bytesDownPerSecond": 2802.24,
+            "bytesUpPerSecond": 865.306,
+            "wireDownPerSecondEstimate": 3156.343,
+            "wireUpPerSecondEstimate": 1214.975,
+            "messagesDown": 1118,
+            "messagesUp": 1104
+          }
+        ],
+        "predictionErrorMetres": {
+          "count": 548,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "correctionMetres": {
+          "count": 552,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "inputLagMs": {
+          "count": 548,
+          "mean": 44.465,
+          "p50": 33.333,
+          "p95": 66.667,
+          "max": 100
+        }
+      }
+    }
+  ]
+}

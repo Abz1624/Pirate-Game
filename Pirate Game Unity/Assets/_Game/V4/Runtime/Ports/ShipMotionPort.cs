@@ -93,12 +93,15 @@ namespace RoguePirates.V4.Ports
             if (_ship == null) return;
             if (_ship.Damage != null && !_ship.Damage.IsAlive) return;
             var b = _controlled ? Boost : null;
-            if (b != null && !RunPaused) b.TickNet(dt, boost, silent);
+            if (b != null && !RunPausedForNet) b.TickNet(dt, boost, silent);
             _input.Value = steerThrottle;
             _ship.TickMovement(dt);
         }
 
-        static bool RunPaused => RunManager.Instance != null && (RunManager.Instance.IsPaused || RunManager.Instance.IsRunEnded);
+        /// <summary>The run stops a net step's boost when it ended or is paused, except for level-up cards: V5 M9b review,
+        /// the net layer holds the ship on those itself (it moves up to the tick the client had reached, then holds).</summary>
+        static bool RunPausedForNet => RunManager.Instance != null &&
+            (RunManager.Instance.IsRunEnded || RunManager.Instance.IsPaused && RunManager.Instance.PauseReason != PauseReason.LevelUp);
 
         /// <summary>The ship's boost (the run's own boost controller; the server's side only).</summary>
         public void RequestBoost()

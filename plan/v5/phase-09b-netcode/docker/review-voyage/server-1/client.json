@@ -1,0 +1,48 @@
+{
+  "report": "V5 net test client (scripted voyage)",
+  "utc": "2026-10-09T08:20:49.0793820Z",
+  "unity": "6000.3.11f1",
+  "editor": false,
+  "joinSeconds": "0.263",
+  "resumeSeconds": "0.452",
+  "endedByServer": "true",
+  "endReason": "ServerClosing",
+  "lobbyUtc": "2026-10-09T08:20:49.0769900Z",
+  "secondsFromServerEndToLobby": "0.001",
+  "snapshots": "552",
+  "welcomes": "3",
+  "resyncs": "0",
+  "finalHull": "90",
+  "kills": "25",
+  "level": "2",
+  "cardSets": "3",
+  "cardsPicked": "2",
+  "holdsSent": "2",
+  "snapshotsSkippedForHoldOrPick": "0",
+  "droppedDuringCards": "true",
+  "resumeDuringCardsSeconds": "0.421",
+  "cardsBackAfterResume": "true",
+  "url": "ws://host.docker.internal:17777/",
+  "outcome": "end ServerClosing",
+  "ok": "true",
+  "events": "0.75s stage loaded (seed 9200) | 1.02s welcomed in 0.263 s | 8.51s socket dropped while the cards were up (set 1) | 8.93s resumed during the cards in 0.421 s | 8.93s the cards came back after the resume (set 1) | 9.33s level-up card picked (WeaponUpgrade swivel_guns, set 1) | 26.02s socket dropped (client side) | 26.47s resumed in 0.452 s | 36.03s VOYAGE-DONE snapshots=512 hull=90/100 kills=20 level=1 | 37.62s level-up card picked (Logbook admiral, set 2) | 38.64s end ServerClosing received | 38.64s lobby (end ServerClosing) 0.001 s after the server's end showed, at 2026-10-09T08:20:49.0769900Z",
+  "sections": [
+    {
+      "name": "client",
+      "seconds": 37.887,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 2802.24, "bytesUpPerSecond": 865.306, "wireDownPerSecondEstimate": 3156.343, "wireUpPerSecondEstimate": 1214.975, "messagesDown": 1118, "messagesUp": 1104}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 548, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 552, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 2, "mean": 0.436, "p50": 0.436, "p95": 0.45, "max": 0.452},
+      "inputLagMs": {"count": 548, "mean": 44.465, "p50": 33.333, "p95": 66.667, "max": 100},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

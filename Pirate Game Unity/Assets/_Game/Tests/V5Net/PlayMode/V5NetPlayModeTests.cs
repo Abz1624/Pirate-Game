@@ -65,6 +65,8 @@ namespace RoguePirates.V5.Net.Tests
             _clients.Clear();
             _server = null;
             NetLinkSimulator.Clear();
+            if (NetVoyageClient.Instance != null) Object.Destroy(NetVoyageClient.Instance.gameObject);
+            RunRequest.RemoteSimulation = false;
             NetServerComposition.EndHeadlessRun();
             yield return SceneManager.LoadSceneAsync(V4SceneNames.Boot, LoadSceneMode.Single);
             yield return null;
@@ -534,42 +536,231 @@ namespace RoguePirates.V5.Net.Tests
         }
 
         /// <summary>
-        /// V5 M9b part 2b, measured: a level-up at 150 ms and 2% loss. The client cannot know of a level-up before the
-        /// server's cards arrive, so the ticks it predicted after the pause began are taken back once (the pause-entry
-        /// correction: about the ship's speed times the input lead); the resume is exact (the pick names the tick the
-        /// ship moves again from). Reported; asserted: the entry correction stays under the input lead's travel and the
-        /// ship is back in step after the resume (at most one correction there, when a lost packet delays the pick).
+        /// V5 M9b review (D9b.1, the level-up pull-back fix): a level-up at 150 ms and 2% loss, once sailing at full speed and
+        /// once while boosting. The client names the tick it had reached when the cards arrived; the server applies its
+        /// inputs up to there, then holds; a late pick's held ticks are caught up on the server. So the gate holds through
+        /// the pause entry and the resume: no correction above 0.5 m in a frame and prediction error at most 0.5 m.
         /// </summary>
         [UnityTest]
-        public IEnumerator LevelUp_At150ms2Percent_Measured()
+        public IEnumerator LevelUp_At150ms2Percent_NoCorrectionAboveHalfAMetre()
         {
             yield return StartVoyage("net_voyage_levelup", new NetLinkSimulator.Link { sendDelayMs = 75, sendDropPercent = 2, seed = 41 });
             var client = NewClient(Ticket(), new NetLinkSimulator.Link { sendDelayMs = 75, sendDropPercent = 2, seed = 42 });
             client.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            var boost = false;
+            client.Boost = () => boost;
             yield return Join(client);
             yield return Seconds(2f);
             client.Metrics.Reset();
             _server.Metrics.Reset();
+            var progression = _game.Build.Progression;
+            var cruise = _server.Ship.Capture().velocity.magnitude;
+
+            // 1. Sailing at full speed.
+            progression.GrantLevelUp();
+            yield return Until(() => client.PendingOffer != null, 3f);
+            Assert.IsNotNull(client.PendingOffer, "the cards reached the client");
+            yield return Seconds(1f);
+            var entrySailing = NetMetrics.Max(client.Metrics.Correction);
+            var held = _server.Ship.Position;
+            yield return Seconds(0.5f);
+            Assert.Less(Flat(_server.Ship.Position, held), 0.01f, "the server's ship holds on the cards");
+            Assert.Less(Flat(client.Predicted.Position, held), 0.05f, "where the client's ship holds");
+            Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0));
+            yield return Until(() => !RunManager.Instance.IsPaused, 3f);
+            Assert.IsFalse(RunManager.Instance.IsPaused, "the pick resumes the run");
+            yield return Seconds(2f);
+            var afterSailing = NetMetrics.Max(client.Metrics.Correction);
+
+            // 2. While boosting.
+            boost = true;
+            yield return Until(() => _server.Ship.IsBoosting, 3f);
+            boost = false;
+            Assert.IsTrue(_server.Ship.IsBoosting, "the server's ship boosts");
+            yield return Until(() => _server.Ship.Capture().velocity.magnitude > cruise * 1.15f || !_server.Ship.IsBoosting, 2f);
+            var boostSpeed = _server.Ship.Capture().velocity.magnitude;
+            var boostingAtLevelUp = _server.Ship.IsBoosting;
+            progression.GrantLevelUp();
+            yield return Until(() => client.PendingOffer != null, 3f);
+            Assert.IsNotNull(client.PendingOffer, "the second cards reached the client");
+            yield return Seconds(1f);
+            Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0));
+            yield return Until(() => !RunManager.Instance.IsPaused, 3f);
+            yield return Seconds(3f);
+
+            Report("levelup-150ms-2pct", _server.Metrics, client.Metrics);
+            var corrMax = NetMetrics.Max(client.Metrics.Correction);
+            var errMax = NetMetrics.Max(client.Metrics.PredictionError);
+            Debug.Log($"[V5 Net] level-up at 150 ms / 2%: cruise {cruise:0.0} m/s, boost {boostSpeed:0.0} m/s (boosting at the level-up: {boostingAtLevelUp}); " +
+                      $"correction max: sailing entry {entrySailing:0.000} m, through the sailing level-up {afterSailing:0.000} m, overall {corrMax:0.000} m; " +
+                      $"prediction error max {errMax:0.000} m; holds named {_server.LevelUps.HoldsNamed} (clamped {_server.LevelUps.HoldsClamped}, timed out {_server.LevelUps.HoldsTimedOut}), " +
+                      $"late holds rewound {_server.LevelUps.HoldsRewound}, late picks caught up {_server.LevelUps.LatePicksCaughtUp}; compared {client.Metrics.PredictionError.Count}");
+            Assert.IsTrue(boostingAtLevelUp, "the second level-up came while boosting");
+            Assert.Greater(boostSpeed, cruise * 1.1f, "the boost was on (cruise " + cruise + ", boost " + boostSpeed + ")");
+            Assert.AreEqual(2, client.HoldsSent, "the client named a hold tick for each set");
+            Assert.AreEqual(2, _server.LevelUps.Picked);
+            Assert.Greater(client.Metrics.PredictionError.Count, 60);
+            Assert.LessOrEqual(corrMax, 0.5f, "D9b.1: no correction above 0.5 m in a frame, through both level-ups");
+            Assert.LessOrEqual(errMax, 0.5f, "D9b.1: prediction error at most 0.5 m");
+        }
+
+        /// <summary>
+        /// V5 M9b review (D9b.1): the hold and the pick arrive 0.3 s late (as a lost packet resent would). The late hold
+        /// rewinds the server's ship to the client's hold tick, the late pick steps the held ticks on the inputs received,
+        /// and the client does not correct against the snapshots sent before the server had them: no correction above 0.5 m.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator LevelUp_LateHoldAndLatePick_StayExact()
+        {
+            yield return StartVoyage("net_voyage_levelup");
+            var client = NewClient(Ticket());
+            client.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            yield return Join(client);
+            yield return Seconds(2f);
+            client.Metrics.Reset();
+            client.DelayLevelUpMessagesForTest = 0.3f;
             _game.Build.Progression.GrantLevelUp();
             yield return Until(() => client.PendingOffer != null, 3f);
             Assert.IsNotNull(client.PendingOffer);
             yield return Seconds(1f);
-            var entry = NetMetrics.Max(client.Metrics.Correction);
-            client.Metrics.Reset();
+            var held = _server.Ship.Position;
+            Assert.Less(Flat(client.Predicted.Position, held), 0.05f, "the server's ship went back to where the client holds");
             Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0));
             yield return Until(() => !RunManager.Instance.IsPaused, 3f);
-            yield return Seconds(3f);
-            Report("levelup-150ms-2pct", _server.Metrics, client.Metrics);
-            Debug.Log($"[V5 Net] level-up at 150 ms / 2%: pause-entry correction {entry:0.000} m; after the resume: prediction error max {NetMetrics.Max(client.Metrics.PredictionError):0.000} m, correction max {NetMetrics.Max(client.Metrics.Correction):0.000} m");
-            var speed = _server.Ship.Capture().velocity.magnitude;
-            Assert.LessOrEqual(entry, speed * 0.4f + 0.5f, "the entry correction is the travel of the input lead at most (speed " + speed + " m/s)");
-            // In one Editor the client's ship copy shares the server's run manager, so it cannot move while the server's run
-            // is still paused (until the pick arrives, 75 ms here): that costs one correction at the resume which a real
-            // client (its own stage, never paused) does not have; in separate processes the resume is exact unless a lost
-            // packet delays the pick. Bounded here; the real link's numbers come from the Docker and WebGL runs.
-            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.Correction), speed * 0.4f + 0.5f, "at most one late-pick correction at the resume");
-            Assert.LessOrEqual(NetMetrics.Percentile(client.Metrics.Correction, 95f), 0.05f, "and in step after it");
-            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.PredictionError), 0.5f, "prediction in step after the resume");
+            Assert.IsFalse(RunManager.Instance.IsPaused);
+            yield return Seconds(2f);
+            Report("levelup-late-messages", _server.Metrics, client.Metrics);
+            Assert.AreEqual(1, _server.LevelUps.HoldsRewound, "the late hold rewound the server's ship");
+            Assert.AreEqual(1, _server.LevelUps.LatePicksCaughtUp, "the late pick's held ticks were caught up");
+            Assert.Greater(client.SkippedSnapshots, 0, "snapshots from before the server had them were not used");
+            Assert.Greater(Flat(_server.Ship.Position, held), 10f, "sailing again");
+            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.Correction), 0.5f, "no correction above 0.5 m");
+            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.PredictionError), 0.5f, "prediction error at most 0.5 m");
+        }
+
+        /// <summary>
+        /// V5 M9b review (fix 1): a resume while the cards are up. Cards still up after the resume come back with their
+        /// hold; cards the server resolved while the socket was down (its 30 s timeout, shortened by the test hook) leave
+        /// no stale cards or hold on the client: it sails on.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator LevelUp_ResumeDuringCards_NoStaleCardsAndSailsOn()
+        {
+            yield return StartVoyage("net_voyage_levelup");
+            var client = NewClient(Ticket());
+            client.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            var resolved = new List<NetProtocol.OfferResolution>();
+            client.OfferResolved += m => resolved.Add(m.how);
+            yield return Join(client);
+            yield return Seconds(1.5f);
+
+            // Cards up across a resume: they come back, and the ship stays held on both sides.
+            _game.Build.Progression.GrantLevelUp();
+            yield return Until(() => client.PendingOffer != null, 3f);
+            Assert.IsNotNull(client.PendingOffer);
+            var seq = client.PendingOffer.seq;
+            yield return Seconds(0.5f);
+            _server.DropConnectionForTest();
+            yield return Until(() => client.Welcomes >= 2 && client.PendingOffer != null, 5f);
+            Assert.AreEqual(2, client.Welcomes, "resumed");
+            Assert.IsNotNull(client.PendingOffer, "the cards still up are sent again");
+            Assert.AreEqual(seq, client.PendingOffer.seq);
+            CollectionAssert.Contains(resolved, NetProtocol.OfferResolution.Cancelled, "the welcome cleared the old cards first");
+            var held = _server.Ship.Position;
+            yield return Seconds(1f);
+            Assert.Less(Flat(_server.Ship.Position, held), 0.01f, "still held on the server");
+            Assert.Less(Flat(client.Predicted.Position, held), 0.05f, "and on the client");
+
+            // The cards time out on the server while the socket is down (the 30 s timeout, shortened here).
+            _server.DropConnectionForTest();
+            yield return Until(() => !_server.Current.connected, 2f);
+            Assert.IsFalse(_server.Current.connected);
+            _server.LevelUps.ExpireForTest();
+            yield return Until(() => !_server.LevelUps.Pending, 2f);
+            Assert.AreEqual(1, _server.LevelUps.TimedOut, "the server took the first card");
+            yield return Until(() => client.Welcomes >= 3 && client.Connected, 5f);
+            Assert.AreEqual(3, client.Welcomes, "resumed again");
+            Assert.AreNotEqual(NetProtocol.OfferResolution.TimedOut, client.LastResolution.how, "the client never heard of the timeout (its socket was down)");
+            yield return Seconds(0.5f);
+            Assert.IsNull(client.PendingOffer, "no stale cards after the resume");
+            client.Metrics.Reset();
+            var serverAt = _server.Ship.Position;
+            var clientAt = client.Predicted.Position;
+            yield return Seconds(2f);
+            Assert.Greater(Flat(_server.Ship.Position, serverAt), 3f, "the server's ship sails");
+            Assert.Greater(Flat(client.Predicted.Position, clientAt), 3f, "the client sails again (no frozen hold)");
+            Assert.Less(Flat(client.Predicted.Position, _server.Ship.Position), 2f, "in step with the server");
+            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.PredictionError), 0.5f, "prediction back within 0.5 m");
+        }
+
+        /// <summary>V5 M9b review (fix 6): a player who joins and never sends an input is dropped after the timeout (30 s on
+        /// the match server; 1 s here): <c>end</c> SessionExpired, the socket let go, and the voyage is free for another
+        /// ticket.</summary>
+        [UnityTest]
+        public IEnumerator JoinWithoutInputs_IsDroppedAndTheVoyageFreed()
+        {
+            yield return StartVoyage("net_voyage_open_water");
+            var host = _server.gameObject.AddComponent<NetServerHost>();
+            host.NoInputTimeoutSeconds = 1f;
+            host.Begin(_server, _port, false);
+            var silent = NetClient.Create(NetEndpoint.Parse($"ws://127.0.0.1:{_port}/"), Ticket(), () => null, "V5NetSilentClient"); // no ship: never ticks
+            _clients.Add(silent);
+            yield return Join(silent);
+            yield return Until(() => silent.Ended, 5f);
+            Assert.IsTrue(silent.Ended, "the server ended the silent session");
+            Assert.AreEqual(NetProtocol.EndReason.SessionExpired, silent.EndReason);
+            Assert.IsTrue(_server.Current.expired);
+            yield return Until(() => !_server.Current.connected, 3f);
+            Assert.IsFalse(_server.Current.connected, "its socket was let go");
+            Object.Destroy(host); // the match server's host would now exit for a fresh process; here the same server takes the next ticket
+            yield return null;
+            var next = NewClient(Ticket("player-2"));
+            next.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            yield return Join(next);
+            Assert.AreEqual("player-2", _server.Current.playerId, "the voyage is free for another player");
+        }
+
+        /// <summary>V5 M9b review (fix 3): <see cref="RunRequest.RemoteSimulation"/> never outlives the net client's stage. A
+        /// stage loaded with it on does not tick or record; the server voyage's client going away and every main menu load
+        /// turn it off; the voyage after that ticks and records its run log.</summary>
+        [UnityTest]
+        public IEnumerator RemoteSimulationStage_ThenANormalVoyage_TicksAndRecords()
+        {
+            RunRequest.RemoteSimulation = true;
+            RunRequest.ClearPvp();
+            RunRequest.RequestSeed(424242);
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.SaltwindRun, LoadSceneMode.Single);
+            V4Game stage = null;
+            yield return Until(() => (stage = Object.FindFirstObjectByType<V4Game>()) != null && stage.IsRunning, 30f);
+            Assert.IsNotNull(stage);
+            Assert.IsTrue(stage.IsRunning, "the net client's stage is built");
+            Assert.IsNull(stage.RunLog, "a net client's stage records no run log");
+            yield return Seconds(1f);
+            Assert.IsFalse(FrameStepsRan(stage), "and its frame steps do not tick (the server runs them)");
+
+            var voyage = NetVoyageClient.Begin();
+            voyage.enabled = false; // no Start: no API call; only its life and end matter here
+            Object.Destroy(voyage.gameObject);
+            yield return null;
+            Assert.IsFalse(RunRequest.RemoteSimulation, "the voyage client going away turns it off");
+
+            RunRequest.RemoteSimulation = true;
+            yield return SceneManager.LoadSceneAsync(V4SceneNames.MainMenu, LoadSceneMode.Single);
+            yield return null;
+            Assert.IsFalse(RunRequest.RemoteSimulation, "the main menu turns it off");
+
+            yield return Scenario.Load("net_voyage_open_water");
+            var game = Scenario.Current.Game;
+            Assert.IsNotNull(game.RunLog, "the next voyage records its run log");
+            yield return Seconds(1f);
+            Assert.IsTrue(FrameStepsRan(game), "and its frame steps tick");
+        }
+
+        static bool FrameStepsRan(V4Game game)
+        {
+            foreach (FrameStep step in System.Enum.GetValues(typeof(FrameStep)))
+                if (game.Frame.Has(step) && game.Frame.FrameAtTick(step) >= 0) return true;
+            return false;
         }
 
         /// <summary>V5 M9b part 2b: picks that do not match the cards on the table are refused and change nothing (a stale set,

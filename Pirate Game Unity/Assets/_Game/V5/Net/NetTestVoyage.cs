@@ -45,6 +45,8 @@ namespace RoguePirates.V5.Net
             return fallback;
         }
 
+        static bool HasArg(string name) => Array.IndexOf(Environment.GetCommandLineArgs(), name) >= 0;
+
         static float ArgFloat(string name, float fallback) =>
             float.TryParse(Arg(name), NumberStyles.Float, CultureInfo.InvariantCulture, out var v) ? v : fallback;
 
@@ -63,6 +65,7 @@ namespace RoguePirates.V5.Net
             var dropAt = ArgFloat("-rpDropAt", 45f);
             var waitEnd = ArgFloat("-rpWaitEnd", 90f);
             var seed = (int)ArgFloat("-rpSeed", 9200);
+            _dropDuringCards = HasArg("-rpDropDuringCards");
             var output = Arg("-rpOut", Path.Combine(Application.temporaryCachePath, "client.json"));
             var ticket = Environment.GetEnvironmentVariable("RP_JOIN_TICKET");
             if (!NetEndpoint.TryParse(url, out var endpoint, out var error)) { Finish(output, "bad url: " + error, false); yield break; }
@@ -149,17 +152,47 @@ namespace RoguePirates.V5.Net
                 ["level"] = Client.Last.level.ToString(),
                 ["cardSets"] = Client.OffersReceived.ToString(),
                 ["cardsPicked"] = _cardsPicked.ToString(),
+                ["holdsSent"] = Client.HoldsSent.ToString(),
+                ["snapshotsSkippedForHoldOrPick"] = Client.SkippedSnapshots.ToString(),
+                ["droppedDuringCards"] = _droppedDuringCards ? "true" : "false",
+                ["resumeDuringCardsSeconds"] = _cardsResumeSeconds.ToString("0.000", CultureInfo.InvariantCulture),
+                ["cardsBackAfterResume"] = _cardsBackAfterResume ? "true" : "false",
             });
         }
 
         int _pickedSeq = -1;
         int _cardsPicked;
+        bool _dropDuringCards, _droppedDuringCards, _cardsBackAfterResume;
+        float _cardsDropAt = -1f, _cardsResumeSeconds = -1f;
+        int _welcomesAtCardsDrop;
 
         /// <summary>Wide S-turns at full throttle: the ship keeps moving and turning, near its start. V5 M9b part 2b: level-up
         /// cards are answered after 0.4 s with the first card (the server waits for the pick, as a voyage does).</summary>
         void Steer(float t)
         {
             var offer = Client != null ? Client.PendingOffer : null;
+            // V5 M9b review: -rpDropDuringCards drops the socket once while the first cards are up; the pick waits for the
+            // resume (the server sends the cards again after its welcome).
+            if (_dropDuringCards && !_droppedDuringCards && offer != null && Time.realtimeSinceStartup - Client.PendingOfferSince > 0.2f)
+            {
+                _droppedDuringCards = true;
+                _welcomesAtCardsDrop = Client.Welcomes;
+                _cardsDropAt = Time.realtimeSinceStartup;
+                Client.DropForTest();
+                Log($"socket dropped while the cards were up (set {offer.seq})");
+                return;
+            }
+            if (_cardsDropAt >= 0f && _cardsResumeSeconds < 0f)
+            {
+                if (Client.Welcomes <= _welcomesAtCardsDrop || !Client.Connected) return;
+                _cardsResumeSeconds = Time.realtimeSinceStartup - _cardsDropAt;
+                Log($"resumed during the cards in {_cardsResumeSeconds:0.000} s");
+            }
+            if (_cardsResumeSeconds >= 0f && !_cardsBackAfterResume && offer != null)
+            {
+                _cardsBackAfterResume = true;
+                Log($"the cards came back after the resume (set {offer.seq})");
+            }
             if (offer != null && offer.seq != _pickedSeq && Time.realtimeSinceStartup - Client.PendingOfferSince > 0.4f && Client.SendPick(NetProtocol.PickAction.Pick, 0))
             {
                 _pickedSeq = offer.seq;

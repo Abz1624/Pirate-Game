@@ -212,6 +212,10 @@ namespace RoguePirates.V5.Net
             _droppedAt = -1f;
             Predicted?.Restore(m.ship.motion);
             Predicted?.RestoreBoost(m.ship.boost);
+            // V5 M9b review: the level-up state before the drop is not trusted across a resume (the server may have resolved
+            // the cards meanwhile, e.g. its 30 s timeout): the cards go and the ship holds no more; if cards are still up,
+            // the server sends them again right after this welcome and the hold comes back with them.
+            ClearOffer();
             Last = m.ship;
             LastAck = 0;
             _historyStart = Tick + 1; // inputs from here on are the ones the server will apply
@@ -247,13 +251,39 @@ namespace RoguePirates.V5.Net
             OfferMessage m;
             try { if (!NetCodec.ReadOffer(Read(reader), out m)) return; }
             catch (Exception) { return; }
+            var again = PendingOffer != null && PendingOffer.seq == m.seq;
             PendingOffer = m;
-            PendingOfferSince = Time.realtimeSinceStartup;
+            if (!again) PendingOfferSince = Time.realtimeSinceStartup;
             OffersReceived++;
-            _pauseFrom = m.pauseFrom;
             _resumeAt = 0; // held until the server says where the ship moves again
             _resumeConfirmed = false;
+            if (m.pauseFrom != 0) _pauseFrom = m.pauseFrom; // the server's hold tick (a chained set, a clamp, a resend)
+            else
+            {
+                // V5 M9b review (D9b.1): the ship holds from the tick after the one this client has reached (its inputs up
+                // to there are sent); the server applies them, then holds, so no predicted tick is taken back.
+                _pauseFrom = Tick + 1;
+                _writer.Clear();
+                NetCodec.WritePick(_writer, new PickMessage { seq = m.seq, action = NetProtocol.PickAction.Hold, resumeTick = _pauseFrom });
+                Send(NetProtocol.Pick, NetworkDelivery.ReliableSequenced);
+                HoldsSent++;
+            }
             OfferReceived?.Invoke(m);
+        }
+
+        /// <summary>V5 M9b review: snapshots not used for a correction because the server had not had the hold or the pick yet.</summary>
+        public int SkippedSnapshots { get; private set; }
+        /// <summary>V5 M9b review: hold ticks this client named (one per new card set).</summary>
+        public int HoldsSent { get; private set; }
+
+        /// <summary>No cards and no hold (a resume: the server sends the cards again if they are still up).</summary>
+        void ClearOffer()
+        {
+            var had = PendingOffer;
+            PendingOffer = null;
+            _pauseFrom = _resumeAt = 0;
+            _resumeConfirmed = false;
+            if (had != null) OfferResolved?.Invoke(new OfferClosedMessage { seq = had.seq, how = NetProtocol.OfferResolution.Cancelled });
         }
 
         void OnOfferClosed(ulong sender, FastBufferReader reader)
@@ -279,7 +309,8 @@ namespace RoguePirates.V5.Net
             NetCodec.WritePick(_writer, new PickMessage { seq = offer.seq, action = action, index = (byte)Mathf.Clamp(index, 0, 255), resumeTick = resume });
             Send(NetProtocol.Pick, NetworkDelivery.ReliableSequenced);
             PicksSent++;
-            if (action != NetProtocol.PickAction.Refresh) _resumeAt = resume;
+            // A refresh, or a pick with more level-ups waiting (the next cards follow at once), keeps the ship held.
+            if (action != NetProtocol.PickAction.Refresh && offer.pendingLevelUps <= 1) _resumeAt = resume;
             return true;
         }
 
@@ -308,6 +339,9 @@ namespace RoguePirates.V5.Net
         void OnSnapshot(ulong sender, FastBufferReader reader)
         {
             if (!NetCodec.ReadShip(Read(reader), out var s)) return;
+            // V5 M9b review: a snapshot that overtakes the resume's welcome (another channel) belongs to the new session but
+            // this client has not restarted its tick line yet: replaying against it would run the whole input history.
+            if (!Welcomed) return;
             if (s.serverTick <= Last.serverTick && Snapshots > 0) return; // late
             Snapshots++;
             Last = s;
@@ -339,6 +373,7 @@ namespace RoguePirates.V5.Net
                 _nextAttemptAt = Time.realtimeSinceStartup + 0.5f;
                 Connect();
             }
+            if (_delayed.Count > 0) FlushDelayedForTest();
             if (VisualOffset != Vector3.zero)
             {
                 VisualOffset *= Mathf.Exp(-12f * Time.deltaTime);
@@ -436,6 +471,15 @@ namespace RoguePirates.V5.Net
                 _lastRealtime = Time.realtimeSinceStartupAsDouble;
                 return;
             }
+            // V5 M9b review: a snapshot from before the server acted on this client's hold or pick (the hold or the pick still
+            // on its way, e.g. a lost packet resent) shows the server's ship past the hold or still held where this client
+            // moves again; the server rewinds or catches up once it arrives (NetLevelUps), so such a snapshot is not used
+            // to correct the prediction.
+            if (_pauseFrom != 0 && ack >= _pauseFrom && (s.HoldPending || !_resumeConfirmed && _resumeAt != 0 && ack >= _resumeAt && s.Paused))
+            {
+                SkippedSnapshots++;
+                return;
+            }
             LastAck = ack;
             if (ack != 0) _lead = Mathf.Clamp((int)(Tick - ack), 2, 60);
             var before = Predicted.Position;
@@ -479,7 +523,35 @@ namespace RoguePirates.V5.Net
         /// <summary>Tests: extra bytes after the next input packet's inputs (a hull value smuggled in an input).</summary>
         public void AppendToNextInput(byte[] bytes) => _appendToNextInput = bytes;
 
+        /// <summary>Tests: level-up messages (holds and picks) leave this many seconds late, as a lost packet resent would.</summary>
+        public float DelayLevelUpMessagesForTest { get; set; }
+        readonly System.Collections.Generic.List<(float at, byte[] bytes)> _delayed = new System.Collections.Generic.List<(float, byte[])>();
+
+        void FlushDelayedForTest()
+        {
+            for (var i = 0; i < _delayed.Count; i++)
+            {
+                if (Time.realtimeSinceStartup < _delayed[i].at) continue;
+                _writer.Clear();
+                _writer.Bytes(_delayed[i].bytes, _delayed[i].bytes.Length);
+                _delayed.RemoveAt(i--);
+                SendNow(NetProtocol.Pick, NetworkDelivery.ReliableSequenced);
+            }
+        }
+
         void Send(string message, NetworkDelivery delivery)
+        {
+            if (message == NetProtocol.Pick && DelayLevelUpMessagesForTest > 0f)
+            {
+                var bytes = new byte[_writer.Length];
+                Array.Copy(_writer.Buffer, bytes, bytes.Length);
+                _delayed.Add((Time.realtimeSinceStartup + DelayLevelUpMessagesForTest, bytes));
+                return;
+            }
+            SendNow(message, delivery);
+        }
+
+        void SendNow(string message, NetworkDelivery delivery)
         {
             if (!Connected) return;
             var length = _writer.Length;

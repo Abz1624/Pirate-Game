@@ -1,0 +1,43 @@
+{
+  "report": "busy-10min-clean",
+  "utc": "2026-10-09T06:45:18.8396797Z",
+  "unity": "6000.3.11f1",
+  "editor": true,
+  "scenario": "net_voyage_busy",
+  "sections": [
+    {
+      "name": "server",
+      "seconds": 15.005,
+      "clients": [
+        {"clientId": 1, "bytesDownPerSecond": 5828.571, "bytesUpPerSecond": 901.696, "wireDownPerSecondEstimate": 6189.249, "wireUpPerSecondEstimate": 1262.375, "messagesDown": 451, "messagesUp": 451}
+      ],
+      "tickMs": {"count": 450, "mean": 3.348, "p50": 3.363, "p95": 4.126, "max": 8.378},
+      "snapshotBytes": {"count": 225, "mean": 388.64, "p50": 404, "p95": 449, "max": 458},
+      "snapshotEnemies": {"count": 225, "mean": 25.293, "p50": 27, "p95": 32, "max": 33},
+      "predictionErrorMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    },
+    {
+      "name": "client",
+      "seconds": 15.006,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 5828.132, "bytesUpPerSecond": 899.629, "wireDownPerSecondEstimate": 6188.784, "wireUpPerSecondEstimate": 1259.481, "messagesDown": 451, "messagesUp": 450}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 225, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 225, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 225, "mean": 33.333, "p50": 33.333, "p95": 33.333, "max": 33.333},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

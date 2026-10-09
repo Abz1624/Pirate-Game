@@ -58,6 +58,21 @@ namespace RoguePirates.V5.Net
 
         public static NetVoyageClient Instance { get; private set; }
 
+        /// <summary>V5 M9b review: the main menu never opens a net client's stage, so every menu load turns
+        /// <see cref="RunRequest.RemoteSimulation"/> off (with <see cref="OnDestroy"/> and <see cref="BackToMenu"/>): the
+        /// next voyage ticks and records as usual.</summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void WatchMenuLoads()
+        {
+            SceneManager.sceneLoaded -= ResetOnMenu;
+            SceneManager.sceneLoaded += ResetOnMenu;
+        }
+
+        internal static void ResetOnMenu(Scene scene, LoadSceneMode mode)
+        {
+            if (scene.name == V4SceneNames.MainMenu) RunRequest.RemoteSimulation = false;
+        }
+
         sealed class Script : RoguePirates.V4.Foundation.Platform.IShipSteerInput
         {
             public Vector2 Value;
@@ -258,6 +273,7 @@ namespace RoguePirates.V5.Net
 
         void OnOfferResolved(OfferClosedMessage m)
         {
+            _shownSeq = -1; // the same set sent again after a resume shows again
             _hud.HideCards();
             if (_cardChoice != null && _cardChoice.IsShowing) _cards?.Hide(); // the server moved on (a timeout): the cards go
         }
@@ -288,6 +304,7 @@ namespace RoguePirates.V5.Net
 
         void OnDestroy()
         {
+            RunRequest.RemoteSimulation = false; // V5 M9b review: never left on for the next run, however this voyage ends
             if (Instance == this) Instance = null;
             if (Client != null)
             {

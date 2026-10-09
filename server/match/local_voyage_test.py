@@ -87,6 +87,7 @@ def main():
     ap.add_argument("--seconds", type=int, default=90)
     ap.add_argument("--drop-at", type=int, default=45)
     ap.add_argument("--servers", type=int, default=1)
+    ap.add_argument("--drop-during-cards", action="store_true", help="server 1's client also drops its socket once while level-up cards are up (M9b review)")
     ap.add_argument("--image", default="rogue-pirates-match:local")
     ap.add_argument("--out", default="")
     ap.add_argument("--base-port", type=int, default=17777)
@@ -170,6 +171,7 @@ def main():
             docker("run", "-d", "--name", cname, "-e", "RP_JOIN_TICKET", "-v", f"{s['dir']}:/out", a.image,
                    "-rpClient", f"ws://host.docker.internal:{s['port']}/", "-rpSeconds", str(a.seconds),
                    "-rpDropAt", str(a.drop_at if s["i"] == 1 else 0), "-rpWaitEnd", "60", "-rpOut", "/out/client.json",
+                   *(["-rpDropDuringCards"] if a.drop_during_cards and s["i"] == 1 else []),
                    env=dict(env, RP_JOIN_TICKET=t["ticket"]))
             containers.append(cname)
 

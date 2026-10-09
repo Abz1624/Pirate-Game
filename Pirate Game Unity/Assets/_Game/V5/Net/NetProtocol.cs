@@ -17,8 +17,9 @@ namespace RoguePirates.V5.Net
     /// </summary>
     public static class NetProtocol
     {
-        /// <summary>2 (part 2b): the snapshot carries the boost's timers; level-up messages.</summary>
-        public const byte Version = 2;
+        /// <summary>2 (part 2b): the snapshot carries the boost's timers; level-up messages. 3 (M9b review): the client names
+        /// the tick its ship holds from when the cards arrive (<see cref="PickAction.Hold"/>).</summary>
+        public const byte Version = 3;
 
         /// <summary>The server's fixed simulation rate and the client's input rate (one input per tick).</summary>
         public const int TickRate = 30;
@@ -60,7 +61,19 @@ namespace RoguePirates.V5.Net
         /// <summary>A level-up the client leaves unanswered this long (or a client gone) takes the first card (the default
         /// pick), so a voyage never waits for good.</summary>
         public const float LevelUpTimeoutSeconds = 30f;
-        public enum PickAction : byte { Pick = 1, Skip = 2, Refresh = 3 }
+        /// <summary>V5 M9b review (D9b.1 level-up pull-back): when cards are dealt the server's ship keeps applying the
+        /// client's inputs until the client names its hold tick (the tick it had reached when the cards arrived), then holds
+        /// from there; so neither side takes ticks back. The hold is clamped to at least the server's next unapplied tick
+        /// and at most the newest input it has received plus <see cref="HoldLeadTicks"/>; a pick's resume tick to at most
+        /// the next unapplied tick plus twice that. No hold named within <see cref="HoldWaitSeconds"/> (a lost client):
+        /// the server holds from its next unapplied tick and tells the client.</summary>
+        public const int HoldLeadTicks = 6;
+        /// <summary>A hold or a pick that arrives late (a lost packet resent) is still exact up to this many ticks back (1 s):
+        /// a late hold rewinds the server's ship (the run is paused), a late pick steps the held ticks on the inputs received.</summary>
+        public const uint LateTickWindow = 30;
+        public const float HoldWaitSeconds = 1f;
+        /// <summary>Hold (M9b review): the client names the tick its ship holds from (in the pick's resume tick).</summary>
+        public enum PickAction : byte { Pick = 1, Skip = 2, Refresh = 3, Hold = 4 }
         public enum OfferResolution : byte { Picked = 1, Skipped = 2, Refreshed = 3, TimedOut = 4, Cancelled = 5 }
 
         /// <summary>The connection payload's first byte.</summary>
@@ -70,6 +83,8 @@ namespace RoguePirates.V5.Net
         public const byte ButtonBoost = 1;
         public const byte EnemyElite = 1, EnemyBoss = 2;
         public const byte ShipAlive = 1, ShipRunEnded = 2, ShipMovementOn = 4, ShipBoosting = 8, ShipPaused = 16;
+        /// <summary>V5 M9b review: the server still waits for the client's hold tick (its ship may be past it).</summary>
+        public const byte ShipHoldPending = 32;
         public enum EndReason : byte { Sunk = 1, RunEnded = 2, ServerClosing = 3, SessionExpired = 4 }
 
         /// <summary>A named message's framing in Netcode (message header and the name's 8-byte hash), for the wire estimate.</summary>
@@ -116,13 +131,16 @@ namespace RoguePirates.V5.Net
         public bool Boosting => (flags & NetProtocol.ShipBoosting) != 0;
         /// <summary>The server's run is paused (level-up cards).</summary>
         public bool Paused => (flags & NetProtocol.ShipPaused) != 0;
+        /// <summary>V5 M9b review: the server has not had the client's hold tick yet.</summary>
+        public bool HoldPending => (flags & NetProtocol.ShipHoldPending) != 0;
     }
 
     /// <summary>V5 M9b part 2b: a level-up's cards as the server's run dealt them (the real offers).</summary>
     public sealed class OfferMessage
     {
         public ushort seq;
-        /// <summary>The first client input tick the paused run does not move the ship on.</summary>
+        /// <summary>The first client input tick the paused run does not move the ship on; 0: not fixed yet, the client names
+        /// it (<see cref="NetProtocol.PickAction.Hold"/>: the tick after the one it has reached).</summary>
         public uint pauseFrom;
         public byte refreshesRemaining, pendingLevelUps;
         public float timeoutSeconds;

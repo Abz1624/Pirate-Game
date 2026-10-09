@@ -65,6 +65,8 @@ namespace RoguePirates.V5.Net
             public uint expectNext;
             public bool started;
             public uint lastAck;
+            /// <summary>V5 M9b review: the newest client input tick received (a named level-up hold is clamped to it).</summary>
+            public uint newestReceived;
             public NetInput last;
             public readonly NetInput[] ring = new NetInput[64];
             public readonly uint[] ringTick = new uint[64];
@@ -143,6 +145,10 @@ namespace RoguePirates.V5.Net
             LevelUps = new NetLevelUps
             {
                 NextInputTick = () => Current == null ? 1u : Current.expectNext != 0 ? Current.expectNext : Current.lastAck + 1,
+                NewestInputTick = () => Current == null ? 0u : Current.newestReceived,
+                ClientCanNameHold = () => Current != null && Current.connected && !Current.expired && Current.started,
+                CatchUp = CatchUpHeldTicks,
+                Rewind = RewindForHold,
                 Send = SendOffer,
                 SendClosed = SendOfferClosed,
                 PendingLevelUps = () => game.Build != null ? game.Build.Progression.PendingLevelUps : 0,
@@ -235,7 +241,7 @@ namespace RoguePirates.V5.Net
                 if (s == null || s.expired || !JoinTicket.SameBytes(token, s.resumeToken)) return "resume refused";
                 // A silent drop: the server may not have noticed the old socket go yet (the transport's timeout); the
                 // resume token proves it is the same player, so the old connection is let go.
-                if (s.connected && s.clientId != clientId) { _kick = s.clientId; _kickPending = true; s.droppedAt = Time.realtimeSinceStartup; }
+                if (s.connected && s.clientId != clientId) { _kick = s.clientId; _kickAt = 0f; _kickPending = true; s.droppedAt = Time.realtimeSinceStartup; }
                 s.resumeToken = NewToken(); // a fresh token in every welcome
                 Bind(s, clientId);
                 return null;
@@ -306,6 +312,23 @@ namespace RoguePirates.V5.Net
             s.last = default; // a detached ship coasts
         }
 
+        /// <summary>
+        /// V5 M9b review: the session ends without a voyage (a client that joined and never sent an input): <c>end</c>
+        /// SessionExpired, the session expired (the voyage is free: the match server's host makes way for a fresh one), and
+        /// the socket let go a moment later.
+        /// </summary>
+        public void ExpireSession(string why)
+        {
+            var s = Current;
+            if (s == null || s.expired) return;
+            Debug.Log("[V5 Net] session dropped: " + why);
+            if (s.connected && !EndSent) SendEnd(NetProtocol.EndReason.SessionExpired);
+            s.expired = true;
+            if (s.connected) { _kick = s.clientId; _kickAt = Time.realtimeSinceStartup + 0.5f; _kickPending = true; }
+        }
+
+        float _kickAt;
+
         /// <summary>Tests: the socket drops (the session stays for its resume token).</summary>
         public void DropConnectionForTest()
         {
@@ -328,6 +351,7 @@ namespace RoguePirates.V5.Net
                 IgnoredInputBytes += ignored;
                 if (count == 0) return;
                 if (s.expectNext == 0) s.expectNext = newest - (uint)(count - 1); // the first input after a welcome
+                if (newest > s.newestReceived) s.newestReceived = newest;
                 for (var i = 0; i < count; i++)
                 {
                     var tick = newest - (uint)i;
@@ -352,10 +376,16 @@ namespace RoguePirates.V5.Net
             PickMessage pick;
             try { if (!NetCodec.ReadPick(new NetReader(bytes), out pick)) return; }
             catch (Exception) { return; }
+            if (pick.action == NetProtocol.PickAction.Hold)
+            {
+                // V5 M9b review: the client's hold tick for the cards just dealt (late or unasked ones change nothing)
+                LevelUps.ApplyHold(pick.resumeTick);
+                return;
+            }
             var error = LevelUps.Apply(pick);
             if (error == null) return;
             Debug.Log("[V5 Net] level-up pick refused: " + error);
-            if (LevelUps.Pending) SendOffer(LevelUps.Message());
+            if (LevelUps.TakeResendAfterRefusal()) SendOffer(LevelUps.Message()); // the cards again, once a set
         }
 
         void SendOffer(OfferMessage m)
@@ -396,7 +426,7 @@ namespace RoguePirates.V5.Net
         void Update()
         {
             if (Manager == null || !Manager.IsServer || Ship == null) return;
-            if (_kickPending)
+            if (_kickPending && Time.realtimeSinceStartup >= _kickAt)
             {
                 _kickPending = false;
                 if (Manager.ConnectedClientsIds.Contains(_kick)) Manager.DisconnectClient(_kick, "resumed elsewhere");
@@ -427,8 +457,7 @@ namespace RoguePirates.V5.Net
             var run = RunManager.Instance;
             var playing = run != null && !run.IsRunEnded && Ship.Alive;
             if (s != null && !s.expired && s.connected && playing) ApplyInputs(s);
-            else if (s != null && !s.connected && playing) Ship.Step(Vector2.zero, NetProtocol.TickSeconds); // detached: coasts
-            else if (s == null && playing) Ship.Step(Vector2.zero, NetProtocol.TickSeconds);
+            else if ((s == null || !s.connected) && playing && !run.IsPaused) Ship.Step(Vector2.zero, NetProtocol.TickSeconds); // detached: coasts (not through a pause)
 
             if (s != null && !s.connected && !s.expired && s.detachedAt >= 0f && Time.realtimeSinceStartup - s.detachedAt > ResumeGraceSeconds)
             {
@@ -473,9 +502,36 @@ namespace RoguePirates.V5.Net
             return n;
         }
 
+        /// <summary>V5 M9b review: a late pick's resume tick has passed: the ticks [from, to) were held here but the client
+        /// moved its ship on them, so they are stepped now on the inputs received for them (bounded by NetLevelUps).</summary>
+        void CatchUpHeldTicks(uint from, uint to)
+        {
+            var s = Current;
+            if (s == null || Ship == null) return;
+            for (var t = from; t < to; t++)
+            {
+                var input = Has(s, t) ? s.ring[t % (uint)s.ring.Length] : s.last;
+                Ship.Step(input.SteerThrottle, input.Boost, NetProtocol.TickSeconds, true);
+            }
+        }
+
+        /// <summary>V5 M9b review: the ship's state before each tick applied while the server waits for the client's hold tick
+        /// (a late hold rewinds to it).</summary>
+        readonly (uint tick, V4.Foundation.Player.PlayerShipController.MotionState motion, V4.Foundation.PlayerSystems.ShipBoostController.NetState boost)[] _beforeTick =
+            new (uint, V4.Foundation.Player.PlayerShipController.MotionState, V4.Foundation.PlayerSystems.ShipBoostController.NetState)[64];
+
+        void RewindForHold(uint tick)
+        {
+            var slot = _beforeTick[tick % (uint)_beforeTick.Length];
+            if (slot.tick != tick || Ship == null) { Debug.LogWarning($"[V5 Net] no ship state kept for tick {tick}: the hold starts later"); return; }
+            Ship.Restore(slot.motion);
+            Ship.RestoreBoost(slot.boost);
+        }
+
         void Consume(Session s)
         {
             var tick = s.expectNext;
+            if (LevelUps != null && LevelUps.AwaitingHold) _beforeTick[tick % (uint)_beforeTick.Length] = (tick, Ship.Capture(), Ship.CaptureBoost());
             NetInput input;
             if (Has(s, tick)) input = s.ring[tick % (uint)s.ring.Length];
             else { input = s.last; Metrics.GuessedInputs++; } // not here in time: the last input again
@@ -498,6 +554,7 @@ namespace RoguePirates.V5.Net
             if (run != null && run.IsRunEnded) flags |= NetProtocol.ShipRunEnded;
             if (Ship.IsBoosting) flags |= NetProtocol.ShipBoosting;
             if (run != null && run.IsPaused) flags |= NetProtocol.ShipPaused;
+            if (LevelUps != null && LevelUps.AwaitingHold) flags |= NetProtocol.ShipHoldPending;
             var motion = Ship.Capture();
             if (motion.movementEnabled) flags |= NetProtocol.ShipMovementOn;
             return new ShipSnapshot

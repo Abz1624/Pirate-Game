@@ -1,0 +1,43 @@
+{
+  "report": "levelup-pick-clean",
+  "utc": "2026-10-09T06:44:50.0229816Z",
+  "unity": "6000.3.11f1",
+  "editor": true,
+  "scenario": "net_voyage_levelup",
+  "sections": [
+    {
+      "name": "server",
+      "seconds": 5.151,
+      "clients": [
+        {"clientId": 1, "bytesDownPerSecond": 2563.012, "bytesUpPerSecond": 866.633, "wireDownPerSecondEstimate": 2926.439, "wireUpPerSecondEstimate": 1223.07, "messagesDown": 156, "messagesUp": 153}
+      ],
+      "tickMs": {"count": 153, "mean": 1.332, "p50": 1.564, "p95": 2.094, "max": 2.486},
+      "snapshotBytes": {"count": 76, "mean": 170, "p50": 170, "p95": 170, "max": 170},
+      "snapshotEnemies": {"count": 76, "mean": 1, "p50": 1, "p95": 1, "max": 1},
+      "predictionErrorMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    },
+    {
+      "name": "client",
+      "seconds": 2.023,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 2526.073, "bytesUpPerSecond": 909.268, "wireDownPerSecondEstimate": 2888, "wireUpPerSecondEstimate": 1277.128, "messagesDown": 61, "messagesUp": 62}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 30, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 30, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 30, "mean": 33.333, "p50": 33.333, "p95": 33.333, "max": 33.333},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

@@ -398,7 +398,9 @@ switch `rp.v5net.voyageEntry` is 1 (`NetVoyageEntry.EditorEnabled`); the Linux s
 
 Not mirrored yet: the player's and enemies' shots, pickups, chests and the minimap's enemies (the server's world sends
 the ship and the enemies only); the ship's visual correction is not eased (the ship is the predicted body; corrections
-outside the pause entry are 0 on a clean link).
+are 0 on a clean link, and since the review fixes also at a level-up). **Every bandwidth figure on this page and in
+`REPORT.md` excludes shots, pickups, chests and the minimap's enemies.** Owner, 9 Oct: their mirroring comes in M9c, and
+M9c's bandwidth go/no-go (D9c.1) is judged with it included (recorded under M9c in `V5_PLAN.md`).
 
 ### Level-up choices over the network (`NetLevelUps`, protocol version 2)
 
@@ -470,18 +472,62 @@ package setup: left for I13b.1.
 
 ### Measurements so far: `REPORT.md` (D9b.1; local Docker and desktop WebGL in, Railway rows open)
 
+## Review fixes (9 Oct, after the independent review of parts 2a and 2b)
+
+Owner decisions of 9 Oct: (a) the image stays private on GHCR and Railway (Pro) pulls it with registry credentials; (b) the
+level-up pull-back is fixed now; (c) shots, pickups, chests and the minimap are mirrored in M9c and M9c's bandwidth
+go/no-go is judged with them; (d) the API's ticket variables are removed after the Railway test.
+
+| # | Fix | Where | Test |
+|---|---|---|---|
+| 1 | A resume while level-up cards are up could freeze the client (its old hold stayed when the server had resolved the cards meanwhile). Every welcome now clears the cards, the hold and the resume tick and fires `OfferResolved` (Cancelled); cards still up come back with the server's re-sent offer and its hold. The voyage client re-shows a re-sent set (`_shownSeq` reset). | `NetClient.OnWelcome`/`ClearOffer`, `NetVoyageClient.OnOfferResolved` | PlayMode `LevelUp_ResumeDuringCards_NoStaleCardsAndSailsOn`: cards up across a server-side drop come back held; then a drop, the server's timeout (test hook) while the socket is down, resume: no stale cards, both ships sail, prediction within 0.5 m |
+| 2 | Level-up pull-back (D9b.1): protocol 3. The client names its hold tick when the cards arrive (`rp9b.pick` action Hold = the tick after the one it reached); the server keeps applying inputs until then, clamps the hold to [tick the cards were dealt at, newest input + 6], then holds. Late hold: the server's ship is rewound to its state before the hold tick (kept per tick while waiting; the run is paused). Late pick: the held ticks since its resume tick are stepped on the inputs received (at most 30 ticks back). Snapshots sent before the server had the hold or pick (flag HoldPending, or paused past the client's resume) are not used for corrections. No hold within 1 s: hold from the next unapplied tick and tell the client. A pick with more level-ups pending keeps the ship held. A net step goes through the run's LevelUp pause (only that reason): the net layer holds the ship itself. | `NetLevelUps`, `NetServer` (Consume, `CatchUpHeldTicks`, `RewindForHold`, snapshot flag), `NetClient` (OnOffer, Reconcile, SendPick), `NetProtocol` (Version 3, `HoldLeadTicks`, `LateTickWindow`, `HoldWaitSeconds`), `PlayerShipController.FixedUpdate`, `ShipMotionPort.Step` | PlayMode `LevelUp_At150ms2Percent_NoCorrectionAboveHalfAMetre` (asserts 0.5 m through a sailing and a boosting level-up), `LevelUp_LateHoldAndLatePick_StayExact`; EditMode `LevelUps_ClientNamesTheHold_ClampedAndBounded`. Numbers in `REPORT.md` |
+| 3 | `RunRequest.RemoteSimulation` is turned off in `NetVoyageClient.OnDestroy` and on every main menu load (a `sceneLoaded` hook in the net assembly), not only by Back to menu. | `NetVoyageClient` | PlayMode `RemoteSimulationStage_ThenANormalVoyage_TicksAndRecords`: a stage with the flag on has no run log and its frame steps never run; the client going away and a menu load each turn it off; the next voyage records its run log and ticks |
+| 4 | Bandwidth figures marked as excluding shots, pickups, chests and the minimap; M9c note in `V5_PLAN.md` (with review finding 10: per-session clock and hold, cards that do not pause a shared run, several sessions per process). | this page, `REPORT.md`, `V5_PLAN.md` M9c | - |
+| 5 | A client's resume tick is capped at the next unapplied tick + 12 (2x the lead); a refused pick re-sends the cards at most once a set. | `NetLevelUps.Resolve`/`TakeResendAfterRefusal`, `NetServer.OnPick` | EditMode `LevelUps_ClientNamesTheHold_ClampedAndBounded` |
+| 6 | A session that sends no input within 30 s of joining is dropped: `end` SessionExpired, the session expired (the voyage is free: the host's over-check then exits the process for a fresh one), the socket let go 0.5 s later. | `NetServerHost.NoInputTimeoutSeconds`, `NetServer.ExpireSession` | PlayMode `JoinWithoutInputs_IsDroppedAndTheVoyageFreed` (1 s in the test; another player's ticket then joins) |
+| 7 | `POST /api/lobbies/voyage/ticket` answers 503 `match_tickets_off` when `VOYAGE_SERVER_URL` is unset. | `PlaytestEndpoints.cs` | `MatchTicketTests.Ticket_Unavailable_WithoutVoyageServerUrl`, `VoyageSettings_LeaveTheLobbyMatchServerNull` (with only `VOYAGE_*` set a started lobby match has `matchServer` null and is not dedicated) |
+| 8 | `dotnet test` output saved as `dotnet-test-review.trx` (162/162). Ticket expiry and replay are verified by the Unity match server (`JoinTicketVerifier`: EditMode `Ticket_*` tests and PlayMode `JoinTicket_ForgedExpiredOrForeign_IsRefused`, `Reconnect_Within10Seconds_Resumes`); the API's tests cover issuing (fresh tid, iat/exp, lifetime cap, auth, 503s) and reproduce the contract vector. | this folder | - |
+| 9 | Image rebuilt, local Docker scripted voyage with level-ups and a drop during cards (`-rpDropDuringCards`, `local_voyage_test.py --drop-during-cards`). | `NetTestVoyage`, `server/match/local_voyage_test.py` | see "Review rerun" below |
+
+Tests after the fixes: EditMode V5 net 19/19 (`editmode-v5net-review.json`), PlayMode V5 net 22/22
+(`playmode-v5net-review.json`, rerun after the last client fix below), full EditMode 602/602 (`editmode-full-review.json`),
+full PlayMode 114/114 (`playmode-full-review.json`), `dotnet test` 162/162 (`dotnet-test-review.trx`). In-process
+reports: `inprocess-review/`.
+
+Found in the Docker rerun and fixed: a snapshot that overtook the resume's welcome (another channel) made the client replay
+its whole input history (a 54 m correction once, right after the drop during cards); `NetClient.OnSnapshot` now ignores
+snapshots until the welcome. The V5 net PlayMode suite was rerun after it (22/22); the full suites ran before this one-line
+guard.
+
+### Review rerun on local Docker (`docker/review-voyage/summary.json`, 9 Oct)
+
+Image rebuilt (`rogue-pirates-match:local`, Mono, protocol 3); `python server/match/local_voyage_test.py --seconds 35
+--drop-at 25 --drop-during-cards`: welcomed 0.26 s; the first cards came up at 8.5 s and the client dropped its socket
+while they were up; resumed in 0.42 s, the server sent the same set again (hold kept), the card was picked and the ship
+sailed on; a second socket drop at 26 s resumed in 0.45 s; a second level-up picked; `docker stop` ended it with
+ServerClosing (client in the lobby 0.12 s after the stop, server exit 0). Prediction error and correction **max 0** over
+548/552 snapshots, both level-ups included (holds named on time, 1-2 ticks ahead of the server). Server tick p50 / p95
+0.53 / 0.84 ms, 145-148 MB container, CPU 8% mean; client 2,802 / 865 B/s down / up (payload; excludes shots, pickups,
+chests, minimap). Second player refused (`voyage taken`), first ticket again refused (`Replayed`). The WebGL local session
+was not rerun (the browser build predates protocol 3 and needs a rebuild).
+
+
 ### Part 2b for the Railway test and the owner's playtest (main session)
 
 1. Review and commit (`V5 M9b part 2b: ...`), then `powershell -NoProfile -ExecutionPolicy Bypass -File server/match/build-image.ps1`
    (a clean tag).
-2. `$env:GHCR_TOKEN = '<token with write:packages>'; powershell -File server/match/push-image.ps1 -Tag <sha>`; make the
-   package public or give Railway registry credentials.
+2. `$env:GHCR_TOKEN = '<token with write:packages>'; powershell -File server/match/push-image.ps1 -Tag <sha>`. Owner, 9 Oct:
+   the image stays **private** on GHCR; the workspace is on Railway Pro, so the service pulls it with private registry
+   credentials (a GHCR token with `read:packages` only, set in the service's registry settings, never in the repo).
 3. Railway usage against the month's baseline (D23).
 4. Service `match-test` from `ghcr.io/x2c-fun/rogue-pirates-match:<sha>`: `RP_MATCH_TICKET_SECRET` (new, 48+ characters, also
    on the API), `RP_MATCH_ID`, `PORT=7777`, a public domain on port 7777, restart policy Always, 1 replica,
    `RAILWAY_DEPLOYMENT_DRAINING_SECONDS=10`, no HTTP health check.
 5. API: `RP_MATCH_TICKET_SECRET`, `VOYAGE_SERVER_URL=wss://<domain>/`, `VOYAGE_MATCH_ID` added to `.railway/railway.ts`
-   with `preserve()` first, set, then `server/deploy.ps1`.
+   with `preserve()` first, set, then `server/deploy.ps1`. Owner, 9 Oct: these three variables are removed again after the
+   Railway test (from the service and from `.railway/railway.ts`); without `VOYAGE_SERVER_URL` the endpoint answers 503
+   `match_tickets_off`.
 6. WebGL client against Railway: build it (`V5NetWebGLBuild`, already built locally at `Builds/WebGL-Desktop-Net/`; it takes
    the API from `?api=`), host it where the owner can open it (the playtest site's folder, or `serve-webgl.py` on this
    PC), open `<page>/?api=https://<api host>&netvoyage=auto&seconds=120` in desktop Chrome for the scripted numbers, then
@@ -491,4 +537,5 @@ package setup: left for I13b.1.
    (expect a resume). Fill the Railway column of `REPORT.md` (tick p95 and RSS from `railway logs` `[V5 Net] stats`, the
    client numbers from the page, cold start, Railway metrics and the usage export), then delete the service (D23).
 8. Owner playtest: one server voyage from desktop Chrome on Railway: does the ship feel the same; do the level-up cards
-   and the boost feel right; is the one take-back when a level-up starts visible.
+   and the boost feel right; does the ship stop cleanly where the cards come up (the take-back is gone since the review
+   fixes).

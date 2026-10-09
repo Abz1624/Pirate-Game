@@ -369,7 +369,9 @@ namespace RoguePirates.V4.Foundation.Player
             if (!_movementEnabled) return;
             if (_damage != null && !_damage.IsAlive) return;
             if (RunManager.Instance != null && RunManager.Instance.IsRunEnded) return;
-            if (RunManager.Instance != null && RunManager.Instance.IsPaused) return;
+            if (RunManager.Instance != null && RunManager.Instance.IsPaused && !(_netStepping && RunManager.Instance.PauseReason == PauseReason.LevelUp)) return;
+            // (V5 M9b review: a net step goes through the run's level-up pause: the net layer holds the ship itself, on the
+            // same client ticks on both sides, from the tick the client had reached when the cards arrived.)
 
             if (_slowTimer > 0f)
             {

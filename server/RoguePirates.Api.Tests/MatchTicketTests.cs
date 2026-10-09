@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -141,5 +142,35 @@ public sealed class MatchTicketTests
         using var weak = Host(new() { ["RP_MATCH_TICKET_SECRET"] = "short-secret" });
         var p2 = await weak.NewPlayerAsync("Grace");
         Assert.Equal(HttpStatusCode.ServiceUnavailable, (await p2.Http.PostAsync(Path, null)).StatusCode);
+    }
+
+    /// <summary>M9b review: no ticket without a voyage server to take it (the secret alone is not enough).</summary>
+    [Fact]
+    public async Task Ticket_Unavailable_WithoutVoyageServerUrl()
+    {
+        using var api = Host(new() { ["VOYAGE_SERVER_URL"] = "" });
+        var player = await api.NewPlayerAsync("Bonny");
+        var res = await player.Http.PostAsync(Path, null);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, res.StatusCode);
+        Assert.Equal("match_tickets_off", (await res.ReadJson()).GetProperty("error").GetString());
+    }
+
+    /// <summary>M9b review: the voyage settings never switch the 1v1 lobbies to a dedicated host. With only VOYAGE_* (and
+    /// the ticket secret) set, a started lobby match has no match server (MATCH_SERVER_URL path, LobbyService) and the API
+    /// relays it as before.</summary>
+    [Fact]
+    public async Task VoyageSettings_LeaveTheLobbyMatchServerNull()
+    {
+        using var api = Host(new() { ["VOYAGE_MATCH_ID"] = "m9b-test" });
+        var host = await api.NewPlayerAsync("Host");
+        var guest = await api.NewPlayerAsync("Guest");
+        var lobby = await (await host.Http.PostAsJsonAsync("/api/lobbies", new { @public = false })).ReadJson();
+        var id = lobby.GetProperty("lobbyId").GetGuid();
+        await guest.Http.PostAsJsonAsync("/api/lobbies/join", new { code = lobby.GetProperty("code").GetString() });
+        await host.Http.PutAsJsonAsync($"/api/lobbies/{id}/status", new { status = "ready", draft = JsonHelpers.Draft("h") });
+        var started = await (await guest.Http.PutAsJsonAsync($"/api/lobbies/{id}/status", new { status = "ready", draft = JsonHelpers.Draft("g") })).ReadJson();
+        var match = started.GetProperty("match");
+        Assert.Equal(JsonValueKind.Null, match.GetProperty("matchServer").ValueKind);
+        Assert.NotEqual("dedicated", match.GetProperty("hostMode").GetString());
     }
 }
