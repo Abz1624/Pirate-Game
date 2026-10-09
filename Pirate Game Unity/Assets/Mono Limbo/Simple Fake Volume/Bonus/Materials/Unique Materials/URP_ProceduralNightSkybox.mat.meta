@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 6e158f74b2b550640a9130133c7b15cc
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 299560
+  packageName: Simple Fake Volume Fog
+  packageVersion: 3.0.0
+  assetPath: Assets/Mono Limbo/Simple Fake Volume/Bonus/Materials/Unique Materials/URP_ProceduralNightSkybox.mat
+  uploadId: 956940

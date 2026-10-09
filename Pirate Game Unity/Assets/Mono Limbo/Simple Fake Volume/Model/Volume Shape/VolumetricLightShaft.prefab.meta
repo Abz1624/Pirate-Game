@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 3999a4c9565ba0043a6cc876ae1e340f
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 299560
+  packageName: Simple Fake Volume Fog
+  packageVersion: 3.0.0
+  assetPath: Assets/Mono Limbo/Simple Fake Volume/Model/Volume Shape/VolumetricLightShaft.prefab
+  uploadId: 956940

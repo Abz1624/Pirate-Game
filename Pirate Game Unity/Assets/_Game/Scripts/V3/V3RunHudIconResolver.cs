@@ -60,6 +60,7 @@ namespace HighSeas.V3
             "mortar" => "Mortar",
             "tidal_aura" => "Tidal Aura",
             "boarding_party" => "Boarding Party",
+            "monkey_buccaneer" => "Monkey Buccaneer",
             _ => weaponId.Replace('_', ' ')
         };
 

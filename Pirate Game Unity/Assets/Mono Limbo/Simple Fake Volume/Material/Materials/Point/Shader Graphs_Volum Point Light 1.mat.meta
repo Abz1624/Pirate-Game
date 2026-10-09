@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 9a86c71dbf9f6cc4badb7831042666d3
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 299560
+  packageName: Simple Fake Volume Fog
+  packageVersion: 3.0.0
+  assetPath: Assets/Mono Limbo/Simple Fake Volume/Material/Materials/Point/Shader
+    Graphs_Volum Point Light 1.mat
+  uploadId: 956940

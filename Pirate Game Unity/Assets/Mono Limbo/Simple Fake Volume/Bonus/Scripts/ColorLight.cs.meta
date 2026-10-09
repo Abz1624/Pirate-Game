@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 0894a6ef4f80a5141bc2fea3eefb0916
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 299560
+  packageName: Simple Fake Volume Fog
+  packageVersion: 3.0.0
+  assetPath: Assets/Mono Limbo/Simple Fake Volume/Bonus/Scripts/ColorLight.cs
+  uploadId: 956940

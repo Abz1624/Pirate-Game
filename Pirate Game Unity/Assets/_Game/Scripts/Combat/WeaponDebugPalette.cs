@@ -22,6 +22,7 @@ namespace HighSeas.Combat
                 "harpoon_gun" => new Color(0.35f, 0.95f, 0.75f),
                 "mortar" => new Color(1f, 0.45f, 0.15f),
                 "boarding_party" => new Color(0.85f, 0.35f, 0.65f),
+                "monkey_buccaneer" => new Color(0.95f, 0.7f, 0.35f),
                 _ => new Color(0.7f, 0.7f, 0.7f)
             };
             rgb.a = alpha;

@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 9ff3c4b09c1da2a448f81a55cf6faef0
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 299560
+  packageName: Simple Fake Volume Fog
+  packageVersion: 3.0.0
+  assetPath: Assets/Mono Limbo/Simple Fake Volume/Bonus/Materials/Shaders/ProceduralNightSkybox.shader
+  uploadId: 956940

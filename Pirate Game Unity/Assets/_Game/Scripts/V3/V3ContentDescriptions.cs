@@ -48,6 +48,8 @@ namespace HighSeas.V3
 
                 "boarding_party" => "Autonomous skiffs chase priority targets.",
 
+                "monkey_buccaneer" => "Drops barrel rafts astern with a monkey gunner that shoots nearby foes.",
+
                 _ => "Automatic ship weapon."
 
             };

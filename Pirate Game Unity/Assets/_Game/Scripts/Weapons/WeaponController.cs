@@ -38,12 +38,17 @@ namespace HighSeas.Weapons
         [SerializeField] PlayerShipController ownerShip;
         [SerializeField] int maxSlots = GameConstants.DefaultWeaponSlots;
         [SerializeField] DemoPacingSettings demoPacing;
+        [Tooltip("Optional override. Falls back to DemoJuiceSettings.monkeyBuccaneerRaftPrefab.")]
+        [SerializeField] GameObject monkeyBuccaneerPrefab;
 
         readonly List<WeaponInstance> _weapons = new();
         readonly List<PowderKeg> _powderKegs = new();
         readonly List<DelayedStrike> _delayedStrikes = new();
         readonly List<BoardingSkiff> _boardingSkiffs = new();
         readonly List<PendingBroadside> _pendingBroadsides = new();
+        readonly List<BuccaneerRaft> _buccaneers = new();
+        Transform _buccaneerRoot;
+        int _buccaneerSpawnSerial;
         readonly List<Vector3> _laneHitScratch = new();
         readonly List<int> _laneIndexScratch = new();
         float _cutlassHitTimer;
@@ -117,6 +122,34 @@ namespace HighSeas.Weapons
             public float procCoefficient;
             public string weaponId;
             public Transform visual;
+        }
+
+        public const string MonkeyBuccaneerId = "monkey_buccaneer";
+        const int MonkeyBuccaneerMaxRafts = 4;
+        const float BuccaneerRaftLife = 8f;
+        const float BuccaneerRaftLifeRank4 = 10f;
+        const float BuccaneerShotInterval = 0.6f;
+        const float BuccaneerSurfaceDuration = 0.45f;
+        const float BuccaneerSinkDuration = 0.6f;
+        const float BuccaneerDropDistance = 3.8f;
+        const float BuccaneerRaftSpacing = 2.2f;
+
+        /// <summary>Monkey Buccaneer barrel raft: dropped astern, surfaces, floats and shoots, then sinks.</summary>
+        sealed class BuccaneerRaft
+        {
+            public Transform root;
+            public Transform visuals;
+            public Transform muzzle;
+            public Vector3 position;
+            public float yaw;
+            public float age;
+            public float maxLife;
+            public bool sinking;
+            public float sinkTimer;
+            public float shotTimer;
+            public int target = -1;
+            public float recoil;
+            public float bobSeed;
         }
 
         struct PendingBroadside
@@ -203,6 +236,7 @@ namespace HighSeas.Weapons
             _boardingSkiffs.Clear();
             _delayedStrikes.Clear();
             _pendingBroadsides.Clear();
+            DestroyAllBuccaneers();
         }
 
         public bool ReplaceWeapon(int index, string weaponId)
@@ -311,7 +345,12 @@ namespace HighSeas.Weapons
                 ResolveOwnerAndServices();
             if (_player == null || _projectiles == null) return;
             if (_enemies == null && !V3RunSession.AllowShipVsShipCombat) return;
-            if (V3PlaytestFlags.DisableShipAutoFire && V3RunContext.IsActive) return;
+            if (V3PlaytestFlags.DisableShipAutoFire && V3RunContext.IsActive)
+            {
+                // Rafts already in the water keep floating / sinking even while auto-fire is disabled.
+                TickMonkeyBuccaneers(Time.deltaTime, RunManager.Instance.Stats, RunManager.Instance.Rng, allowFire: false);
+                return;
+            }
             TickWeapons(Time.deltaTime);
             TickCutlassDamage(Time.deltaTime);
         }
@@ -325,6 +364,7 @@ namespace HighSeas.Weapons
             TickDelayedStrikes(dt, stats, rng);
             TickBoardingSkiffs(dt, stats, rng);
             TickPendingBroadsides(dt, stats, rng);
+            TickMonkeyBuccaneers(dt, stats, rng);
             var itemAttackSpeed = V3RunItemEffects.Instance?.GetAttackSpeedMultiplier() ?? 1f;
             for (var wi = 0; wi < _weapons.Count; wi++)
             {
@@ -358,6 +398,8 @@ namespace HighSeas.Weapons
                     case WeaponPattern.AutoProjectile:
                         if (w.def.id == "swivel_guns")
                             BeginSwivelBurst(ref w, stats, rng);
+                        else if (w.def.id == MonkeyBuccaneerId)
+                            DropBuccaneerRafts(w, stats);
                         else
                             FireProjectile(ref w, stats, rng, 1);
                         break;
@@ -497,6 +539,8 @@ namespace HighSeas.Weapons
                 case WeaponPattern.AutoProjectile:
                     if (w.def.id == "swivel_guns")
                         BeginSwivelBurst(ref w, stats, rng);
+                    else if (w.def.id == MonkeyBuccaneerId)
+                        DropBuccaneerRafts(w, stats);
                     else
                         FireProjectile(ref w, stats, rng, 1);
                     break;
@@ -1483,6 +1527,261 @@ namespace HighSeas.Weapons
             }
 
             return count;
+        }
+
+        // ---------------- Monkey Buccaneer ----------------
+        // Barrel rafts with a monkey gunner, dropped astern. Each floats 8 s (10 s from rank 4) and fires about every
+        // 0.6 s at anything within range. Rank 8 drops two per volley, rank 12 three. At most 4 rafts at once -
+        // dropping past the cap sinks the oldest, so the ship leaves a trail of little forts.
+
+        static int BuccaneerRaftsPerDrop(int level) => level >= 12 ? 3 : level >= 8 ? 2 : 1;
+
+        void TickMonkeyBuccaneers(float dt, PlayerStats stats, RunRng rng, bool allowFire = true)
+        {
+            if (_buccaneers.Count == 0) return;
+            var wi = FindWeaponIndex(MonkeyBuccaneerId);
+            var w = wi >= 0 ? _weapons[wi] : null;
+            var time = Time.time;
+
+            for (var i = _buccaneers.Count - 1; i >= 0; i--)
+            {
+                var r = _buccaneers[i];
+                if (r.root == null)
+                {
+                    _buccaneers.RemoveAt(i);
+                    continue;
+                }
+
+                r.age += dt;
+                if (!r.sinking && (r.age >= r.maxLife || w == null))
+                    BeginRaftSink(r);
+
+                if (r.sinking)
+                {
+                    r.sinkTimer += dt;
+                    if (r.sinkTimer >= BuccaneerSinkDuration)
+                    {
+                        Destroy(r.root.gameObject);
+                        _buccaneers.RemoveAt(i);
+                        continue;
+                    }
+                }
+                else if (w != null && r.age >= BuccaneerSurfaceDuration && _enemies != null)
+                {
+                    var range = w.def.range;
+                    var agents = _enemies.Agents;
+                    var valid = r.target >= 0 && r.target < agents.Length && agents[r.target].active
+                                && FlatDistance(agents[r.target].position, r.position) <= range;
+                    if (!valid && !_enemies.TryGetNearest(r.position, range, out r.target, false))
+                        r.target = -1;
+
+                    if (r.target >= 0)
+                    {
+                        var face = agents[r.target].position - r.position;
+                        face.y = 0f;
+                        if (face.sqrMagnitude > 0.0001f)
+                            r.yaw = Mathf.MoveTowardsAngle(r.yaw, Mathf.Atan2(face.x, face.z) * Mathf.Rad2Deg, 720f * dt);
+                    }
+
+                    r.shotTimer -= dt;
+                    if (allowFire && r.shotTimer <= 0f && r.target >= 0)
+                    {
+                        FireRaftShot(r, w, stats, rng);
+                        r.shotTimer = BuccaneerShotInterval / Mathf.Max(0.1f, stats.AttackSpeed);
+                    }
+                }
+
+                r.recoil = Mathf.MoveTowards(r.recoil, 0f, dt * 5f);
+                UpdateRaftVisual(r, time);
+            }
+        }
+
+        static float FlatDistance(Vector3 a, Vector3 b)
+        {
+            var dx = a.x - b.x;
+            var dz = a.z - b.z;
+            return Mathf.Sqrt(dx * dx + dz * dz);
+        }
+
+        void DropBuccaneerRafts(WeaponInstance w, PlayerStats stats)
+        {
+            if (_player == null) return;
+            var back = _player.Velocity.sqrMagnitude > 0.01f ? -_player.Velocity.normalized : -_player.MovementForward;
+            back.y = 0f;
+            if (back.sqrMagnitude < 0.0001f) back = Vector3.back;
+            back.Normalize();
+            var lateral = Vector3.Cross(Vector3.up, back).normalized;
+            var center = _player.Position + back * BuccaneerDropDistance;
+            center.y = 0f;
+
+            var count = BuccaneerRaftsPerDrop(w.level);
+            var life = (w.level >= 4 ? BuccaneerRaftLifeRank4 : BuccaneerRaftLife) * w.durationMult;
+            for (var i = 0; i < count; i++)
+            {
+                EnforceBuccaneerCap(MonkeyBuccaneerMaxRafts - 1);
+                var pos = center + lateral * ((i - (count - 1) * 0.5f) * BuccaneerRaftSpacing);
+                SpawnBuccaneerRaft(pos, Mathf.Atan2(back.x, back.z) * Mathf.Rad2Deg, life);
+            }
+
+            NotifyFire(w.def, back);
+        }
+
+        /// <summary>Sinks the oldest floating rafts until at most <paramref name="maxFloating"/> remain.</summary>
+        void EnforceBuccaneerCap(int maxFloating)
+        {
+            var floating = 0;
+            for (var i = 0; i < _buccaneers.Count; i++)
+                if (!_buccaneers[i].sinking) floating++;
+            for (var i = 0; i < _buccaneers.Count && floating > maxFloating; i++)
+            {
+                if (_buccaneers[i].sinking) continue;
+                BeginRaftSink(_buccaneers[i]);
+                floating--;
+            }
+        }
+
+        static void BeginRaftSink(BuccaneerRaft r)
+        {
+            r.sinking = true;
+            r.sinkTimer = 0f;
+            r.target = -1;
+        }
+
+        void FireRaftShot(BuccaneerRaft r, WeaponInstance w, PlayerStats stats, RunRng rng)
+        {
+            if (_projectiles == null) return;
+            var enemy = _enemies.Agents[r.target];
+            var toTarget = enemy.position - r.position;
+            toTarget.y = 0f;
+            if (toTarget.sqrMagnitude < 0.0001f) return;
+            var dir = toTarget.normalized;
+
+            r.yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
+            UpdateRaftVisual(r, Time.time);
+
+            var origin = r.muzzle != null ? r.muzzle.position : r.position + dir * 1.1f + Vector3.up * 0.6f;
+            origin.y = Mathf.Max(origin.y, 0.35f);
+            var speed = w.def.projectileSpeed * w.speedMult * stats.ProjectileSpeed;
+            var size = 0.3f * w.sizeMult * stats.Size;
+            var life = Mathf.Max(0.8f, w.def.range * 1.3f / Mathf.Max(1f, speed));
+            var dmg = DamageSystem.RollDamageDetailed(
+                w.def.baseDamage,
+                w.damageBonus * w.level * 0.1f + 1f,
+                stats,
+                enemy.isElite,
+                0f,
+                rng,
+                w.def.procCoefficient,
+                w.def.id);
+            _juice?.OnWeaponFired(w.def.id, origin, dir);
+            _projectiles.TrySpawn(origin, dir, speed, dmg.amount, life, size, 0, dmg.isCrit, w.def.projectileColor, w.def.id, _player);
+            r.recoil = 1f;
+            WeaponDamageLedger.RecordEmission(w.def.id);
+        }
+
+        void UpdateRaftVisual(BuccaneerRaft r, float time)
+        {
+            if (r.root == null) return;
+            float y;
+            var tilt = 0f;
+            if (r.sinking)
+            {
+                var k = Mathf.Clamp01(r.sinkTimer / BuccaneerSinkDuration);
+                y = -1.1f * k * k;
+                tilt = 18f * k;
+            }
+            else if (r.age < BuccaneerSurfaceDuration)
+            {
+                var k = Mathf.Clamp01(r.age / BuccaneerSurfaceDuration);
+                var eased = 1f - (1f - k) * (1f - k);
+                y = Mathf.Lerp(-0.9f, 0f, eased) + Mathf.Sin(k * Mathf.PI) * 0.12f;
+            }
+            else
+            {
+                y = Mathf.Sin(time * 2.1f + r.bobSeed) * 0.05f;
+            }
+
+            r.root.SetPositionAndRotation(new Vector3(r.position.x, y, r.position.z), Quaternion.Euler(0f, r.yaw, 0f));
+            if (r.visuals != null && r.visuals != r.root)
+            {
+                var kick = r.recoil * r.recoil;
+                r.visuals.localPosition = new Vector3(0f, 0f, -0.25f * kick);
+                var roll = Mathf.Sin(time * 1.6f + r.bobSeed * 1.7f) * 3f;
+                r.visuals.localRotation = Quaternion.Euler(-6f * kick + tilt, 0f, roll + tilt * 0.5f);
+            }
+        }
+
+        void SpawnBuccaneerRaft(Vector3 position, float yaw, float life)
+        {
+            if (_buccaneerRoot == null)
+                _buccaneerRoot = new GameObject("MonkeyBuccaneerRafts").transform;
+
+            var prefab = monkeyBuccaneerPrefab != null
+                ? monkeyBuccaneerPrefab
+                : JuiceVfxBroker.Instance?.Settings?.monkeyBuccaneerRaftPrefab;
+            if (prefab == null)
+                prefab = Resources.Load<DemoJuiceSettings>("DemoJuiceSettings")?.monkeyBuccaneerRaftPrefab;
+
+            GameObject go;
+            Transform visuals;
+            if (prefab != null)
+            {
+                go = Instantiate(prefab, _buccaneerRoot);
+                // The prefab carries a drag-and-drop preview driver; gameplay drives the raft from here instead.
+                var preview = go.GetComponent<MonkeyBuccaneerVfx>();
+                if (preview != null)
+                {
+                    preview.enabled = false;
+                    Destroy(preview);
+                }
+                var colliders = go.GetComponentsInChildren<Collider>(true);
+                for (var i = 0; i < colliders.Length; i++)
+                    Destroy(colliders[i]);
+                visuals = go.transform.Find("Visuals");
+            }
+            else
+            {
+                go = new GameObject("MonkeyBuccaneerRaft");
+                go.transform.SetParent(_buccaneerRoot, false);
+                var hull = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                hull.transform.SetParent(go.transform, false);
+                hull.transform.localScale = new Vector3(1.8f, 0.15f, 1.8f);
+                Destroy(hull.GetComponent<Collider>());
+                visuals = hull.transform;
+            }
+
+            go.name = "MonkeyBuccaneerRaft";
+            var raft = new BuccaneerRaft
+            {
+                root = go.transform,
+                visuals = visuals != null ? visuals : go.transform,
+                muzzle = go.transform.Find("Visuals/Muzzle"),
+                position = position,
+                yaw = yaw,
+                maxLife = life,
+                shotTimer = 0.1f,
+                bobSeed = (_buccaneerSpawnSerial++ % 7) * 1.3f
+            };
+            _buccaneers.Add(raft);
+            UpdateRaftVisual(raft, Time.time);
+            JuiceVfxBroker.Instance?.PlayWaterSplash(position + Vector3.up * 0.35f);
+        }
+
+        void DestroyAllBuccaneers()
+        {
+            for (var i = 0; i < _buccaneers.Count; i++)
+            {
+                if (_buccaneers[i].root != null)
+                    Destroy(_buccaneers[i].root.gameObject);
+            }
+            _buccaneers.Clear();
+        }
+
+        void OnDestroy()
+        {
+            DestroyAllBuccaneers();
+            if (_buccaneerRoot != null)
+                Destroy(_buccaneerRoot.gameObject);
         }
 
         void FireBoardingParty(ref WeaponInstance w, PlayerStats stats, RunRng rng)

@@ -15,7 +15,8 @@ namespace HighSeas.V3
             "swivel_guns",
             "harpoon_gun",
             "mortar",
-            "tidal_aura"
+            "tidal_aura",
+            "monkey_buccaneer"
         };
 
         public static string GetDisplayLabel(string weaponId) =>

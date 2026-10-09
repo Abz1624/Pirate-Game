@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 4c78f461df3bf61498f8983b0af1d09d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 299560
+  packageName: Simple Fake Volume Fog
+  packageVersion: 3.0.0
+  assetPath: Assets/Mono Limbo/Simple Fake Volume/Material/Materials/Cone/Shader
+    Graphs_VolumLight 6.mat
+  uploadId: 956940

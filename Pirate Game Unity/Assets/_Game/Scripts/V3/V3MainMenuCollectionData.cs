@@ -51,7 +51,8 @@ namespace HighSeas.V3
             ("grapeshot", "Grapeshot", "Short forward cone."),
             ("harpoon_gun", "Harpoon Gun", "Forward tether control."),
             ("mortar", "Mortar", "Delayed cluster strike."),
-            ("boarding_party", "Boarding Party", "Autonomous skiff chase.")
+            ("boarding_party", "Boarding Party", "Autonomous skiff chase."),
+            ("monkey_buccaneer", "Monkey Buccaneer", "Astern raft turrets.")
         };
 
         public static IReadOnlyList<V3CollectionEntry> GetWeapons(V3CaptainId captain, string profileId = null)
@@ -142,7 +143,7 @@ namespace HighSeas.V3
                     "flying_cutlasses" => "First conquest reward",
                     "lightning_mast" => "First conquest reward",
                     "flamethrower" => "First conquest reward",
-                    "long_nine" or "swivel_guns" or "grapeshot" => "Six-slot combat profile",
+                    "long_nine" or "swivel_guns" or "grapeshot" or "monkey_buccaneer" => "Six-slot combat profile",
                     "harpoon_gun" or "mortar" or "boarding_party" => "Six-slot profile + first conquest",
                     _ => "Starter"
                 };

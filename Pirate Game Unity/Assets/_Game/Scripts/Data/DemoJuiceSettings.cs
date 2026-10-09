@@ -57,6 +57,11 @@ namespace HighSeas.Data
         public GameObject mortarExplosionPrefab;
         [Tooltip("Extra scale on mortar impact bursts (+200% = 3).")]
         [Min(0.1f)] public float mortarExplosionScaleMult = 3f;
+        [Header("Monkey Buccaneer")]
+        [Tooltip("Barrel raft turret (raft + monkey gunner + cannon). Needs a Visuals child with a Muzzle transform.")]
+        [UnityEngine.Serialization.FormerlySerializedAs("monkeyBuccaneerBoatPrefab")]
+        public GameObject monkeyBuccaneerRaftPrefab;
+
         [Header("Tidal Aura")]
         [Tooltip("Aqua-teal aura ring that follows the ship (TidalAura_VFX).")]
         public GameObject tidalAuraPrefab;
