@@ -85,6 +85,30 @@ public sealed class PlausibilityTests : IDisposable
         _out.WriteLine($"rules v{Shipped.RulesVersion}: false positives {fp.GetProperty("flagged").GetInt32()} of {fp.GetProperty("runs").GetInt32()}");
     }
 
+    /// <summary>
+    /// Rules v3 (D27): the config before the Cuttlefish Bone (the Iron Figurehead renamed, same effect) is accepted too, with
+    /// its reason; the generator lists it only when its export equals today's once renamed. A voyage naming it gets the
+    /// same verdict as one naming today's config; any other hash stays outdated_client.
+    /// </summary>
+    [Fact]
+    public void PreviousConfigWithTheSameBounds_IsAccepted_WithItsReason()
+    {
+        const string preD27 = "9d5657cf1d5db3d74c959fc496a7e98465d4d4ae21ea9db5510129d923011f38";
+        var root = JsonDocument.Parse(ShippedJson()).RootElement;
+        var listed = root.GetProperty("sameBoundsConfigs").EnumerateArray().ToList();
+        Assert.Equal(Shipped.ConfigHashes.Where(h => h != Shipped.ConfigHash).ToArray(), listed.Select(c => c.GetProperty("configHash").GetString()).ToArray());
+        Assert.Contains(preD27, Shipped.ConfigHashes);
+        Assert.All(listed, c => Assert.False(string.IsNullOrWhiteSpace(c.GetProperty("note").GetString())));
+
+        var today = TodaysVoyage();
+        var old = TodaysVoyage();
+        old["configHash"] = preD27;
+        Assert.Equal(Verdicts.Pass, Check(old).Status);
+        Assert.Equal(Check(today).Status, Check(old).Status);
+        old["configHash"] = "0000000000000000000000000000000000000000000000000000000000000000";
+        Assert.Equal("config_not_in_rules", Check(old).Reasons.Single().Code);
+    }
+
     [Fact]
     public void LevelFromXp_FollowsTheXpTable()
     {

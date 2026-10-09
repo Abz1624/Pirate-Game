@@ -2980,6 +2980,16 @@
     ["SpawnDensity", 1.18]
    ]
   },
+  "cuttlefish_bone": {
+   "id": "cuttlefish_bone",
+   "name": "Cuttlefish Bone",
+   "rarity": 1,
+   "inChest": true,
+   "mods": [
+    [5, 0, 1.09]
+   ],
+   "effects": []
+  },
   "dead_mans_compass": {
    "id": "dead_mans_compass",
    "name": "Dead Man's Compass",
@@ -3067,16 +3077,6 @@
    "effects": [
     ["AttackSpeedAfterTurn", 1.12]
    ]
-  },
-  "iron_figurehead": {
-   "id": "iron_figurehead",
-   "name": "Iron Figurehead",
-   "rarity": 1,
-   "inChest": true,
-   "mods": [
-    [5, 0, 1.09]
-   ],
-   "effects": []
   },
   "jolly_roger": {
    "id": "jolly_roger",
@@ -3363,7 +3363,7 @@
    "id": "black_tide",
    "name": "Black Tide",
    "weapon": "squid_ink_pots",
-   "item": "iron_figurehead",
+   "item": "cuttlefish_bone",
    "effect": "Empowered",
    "empower": {
     "damage": 1.3,
@@ -4933,9 +4933,9 @@
  "meta": {
   "source": "unity",
   "setId": "saltwind-default",
-  "configHash": "9d5657cf1d5db3d74c959fc496a7e98465d4d4ae21ea9db5510129d923011f38",
+  "configHash": "7539ec3f08315201d9c11ab207188a077adfa940a17a9adeb9367ec96e7b8e9a",
   "preset": null,
-  "exported": "2026-10-07T22:29:38Z",
+  "exported": "2026-10-09T13:49:49Z",
   "unity": "6000.3.11f1"
  }
 }

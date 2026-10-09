@@ -1,6 +1,6 @@
 {
- "rulesVersion": 2,
- "configHash": "9d5657cf1d5db3d74c959fc496a7e98465d4d4ae21ea9db5510129d923011f38",
+ "rulesVersion": 3,
+ "configHash": "7539ec3f08315201d9c11ab207188a077adfa940a17a9adeb9367ec96e7b8e9a",
  "sessions": [
   {
    "file": "session-log-20261006-152859-rook.json",
@@ -237,7 +237,7 @@
      "minute": 2
     },
     "PR-DEALT-MIN": {
-     "used": 15.7,
+     "used": 15.6,
      "minute": 4
     },
     "PR-CHESTS-MIN": {
@@ -249,7 +249,7 @@
      "minute": 3
     },
     "PR-KILLS-RUN": {
-     "used": 58.1,
+     "used": 58,
      "minute": 9
     },
     "PR-XP-RUN": {
@@ -261,7 +261,7 @@
      "minute": 2
     },
     "PR-DEALT-RUN": {
-     "used": 15,
+     "used": 14.5,
      "minute": 4
     },
     "PR-CHESTS-RUN": {
@@ -322,7 +322,7 @@
      "minute": 0
     },
     "PR-DEALT-RUN": {
-     "used": 14.1,
+     "used": 13.5,
      "minute": 7
     },
     "PR-CHESTS-RUN": {

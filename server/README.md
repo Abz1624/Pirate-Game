@@ -176,6 +176,12 @@ with 200 kills against 194 after 186 at minute 1); each simulated voyage draws i
 enemies it fights, between the fitted 0.9 and 1); the simulated spawns count the scripted fights and the boss. D25: the
 owner's voyages on the current build (S5 as today's config, S6) must pass the shipped rules.
 
+Rules v3 (9 Oct, D27): regenerated for the Cuttlefish Bone config (the Iron Figurehead renamed; same rarity, chest pool and
++9% damage). `configHashes` also lists the config before it (`sameBoundsConfigs`, with the reason): the generator lists an
+earlier hash only when that config's committed Monte Carlo export equals today's once the named renames are applied, so
+the simulator's input, and with it every bound, is the same. Voyages from builds before D27 (S6) still pass instead of
+turning `outdated_client`.
+
 Regenerating the rules (after any balance change; `V5PlausibilityRulesTests` fails until then), in
 `plan/playtest/montecarlo`, after exporting `data.json` from the Editor (RoguePirates > V5 > Balance: export the Monte
 Carlo data):

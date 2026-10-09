@@ -31,9 +31,14 @@
 // spawns count the scripted fights and the boss, as the game's RunLogRecorder does (sim.mjs). D25: the owner's voyages on the current
 // build (S5 with today's config hash, S6) must pass the shipped rules; --sessions writes them to expected-verdicts.json
 // (currentBuild) with the share of each bound they use.
+//
+// Rules v3 (9 Oct, D27): regenerated for the Cuttlefish Bone config (the Iron Figurehead renamed, same effect); the rules also
+// accept the previous config hash (SAME_BOUNDS_CONFIGS, checked against its committed export), so the owner's builds from
+// before D27 (S6) still pass instead of turning outdated_client.
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execFileSync } from 'child_process';
 import { simulateRun, MODEL } from './sim.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -272,6 +277,40 @@ function strongestOf(data, margins, baseModel = {}) {
 
 function readJson(p) { return JSON.parse(fs.readFileSync(p, 'utf8')); }
 
+/**
+ * Rules v3 (9 Oct, D27): earlier configs the shipped rules also accept (configHashes), because the simulator's input is the
+ * same. Each entry names the commit whose committed Monte Carlo export has that config hash and the renames between it and
+ * today's export; generate() checks that the old export, with the renames applied, equals data.json in every field (meta
+ * aside) and refuses to list the hash otherwise. Only the item pool's order can differ (keys are sorted by id), which
+ * reorders the simulated chest draws per seed but not their odds: the same model, other samples.
+ */
+export const SAME_BOUNDS_CONFIGS = [
+  { configHash: '9d5657cf1d5db3d74c959fc496a7e98465d4d4ae21ea9db5510129d923011f38', export: '60922664',
+    renames: [['iron_figurehead', 'cuttlefish_bone'], ['Iron Figurehead', 'Cuttlefish Bone']],
+    note: 'D27 (9 Oct): the Iron Figurehead became the Cuttlefish Bone (same rarity, chest pool and +9% damage; Black Tide\'s item); S6 and the owner\'s builds before it' },
+];
+
+const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'
+  ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canonical(v[k])])) : v;
+
+/** The SAME_BOUNDS_CONFIGS whose committed export matches data.json once renamed; throws on any other difference. */
+export function sameBoundsConfigs(data) {
+  const out = [];
+  for (const c of SAME_BOUNDS_CONFIGS) {
+    if (c.configHash === data.meta?.configHash) continue;
+    let text = execFileSync('git', ['show', `${c.export}:plan/playtest/montecarlo/data.json`], { cwd: here, encoding: 'utf8', maxBuffer: 1 << 26 });
+    const old = JSON.parse(text);
+    if (old.meta?.configHash !== c.configHash) throw new Error(`${c.export}'s export has config ${old.meta?.configHash}, not ${c.configHash}`);
+    for (const [a, b] of c.renames) text = text.split(JSON.stringify(a)).join(JSON.stringify(b));
+    const renamed = JSON.parse(text), now = { ...data };
+    delete renamed.meta; delete now.meta;
+    if (JSON.stringify(canonical(renamed)) !== JSON.stringify(canonical(now)))
+      throw new Error(`config ${c.configHash.slice(0, 10)} (${c.export}) differs from data.json beyond its renames: remove it from SAME_BOUNDS_CONFIGS`);
+    out.push({ configHash: c.configHash, export: c.export, renames: c.renames, note: c.note });
+  }
+  return out;
+}
+
 /** The rules for one config (data) and model settings: the strongest personality's voyages, then the bounds. */
 export function makeRules(data, margins, baseModel = {}) {
   const { strongest, screen } = strongestOf(data, margins, baseModel);
@@ -283,7 +322,10 @@ export function makeRules(data, margins, baseModel = {}) {
 function generate() {
   const data = readJson(path.join(here, 'data.json')), margins = readJson(path.join(here, 'plausibility-margins.json'));
   const t0 = Date.now();
+  const previous = sameBoundsConfigs(data); // checked before the long simulation
   const rules = makeRules(data, margins);
+  rules.configHashes = [rules.configHash, ...previous.map(c => c.configHash)];
+  if (previous.length) rules.sameBoundsConfigs = previous;
   console.log('screen (median kills a voyage):', rules.simulator.screen.map(s => `${s.id} ${s.medianKills}`).join(', '));
   const strongest = { id: rules.simulator.personality }, logs = { length: rules.simulator.runs };
   // the version: unchanged when the content is the same, else one more than the file's
@@ -375,11 +417,12 @@ const r1 = x => Math.round(x * 10) / 10;
 /**
  * D25: the owner's voyages on the current build, which must pass the shipped rules. S5 was played on daa47525, which
  * differs from today's config only in the Unlocks asset (no rule reads it), so it is checked as a log naming today's config
- * (the API tests' TodaysVoyage does the same); S6 was played on today's config.
+ * (the API tests' TodaysVoyage does the same); S6 was played on 9d5657cf, the config before D27, which the rules v3 accept
+ * (SAME_BOUNDS_CONFIGS).
  */
 export const CURRENT_BUILD = [
   { id: 'S5', session: 'session-20261008-001147-rook.json', convert: true },
-  { id: 'S6', session: 'session-20261008-105707-rook.json', convert: false, note: 'M9a playtest, 8 Oct: Cursed Doubloons 692 kills, Squid Ink Pots 320; sunk at 8:36' },
+  { id: 'S6', session: 'session-20261008-105707-rook.json', convert: false, note: 'M9a playtest, 8 Oct: Cursed Doubloons 692 kills, Squid Ink Pots 320; sunk at 8:36; played on 9d5657cf, the pre-D27 config the rules v3 also accept' },
 ];
 
 /** The largest share of each bounded rule's bound a log uses (per minute or running total), and the minute it happens. */
@@ -414,7 +457,7 @@ async function sessions() {
     // the rules of the config it was played on (generated the same way, written next to the logs); a voyage on the shipped
     // config (S6) has the shipped rules as its own
     const key = known ? known.id : current ? current.id : 'today';
-    if (!ownRules[key] && s.header.configHash === rules.configHash) {
+    if (!ownRules[key] && rules.configHashes.includes(s.header.configHash)) {
       ownRules[key] = { ...rules, note: `test fixture: the shipped rules (v${rules.rulesVersion}): ${key} was played on the config they were made for` };
       fs.writeFileSync(path.join(FIXTURES, `rules-${key}.json`), stringify(ownRules[key]));
     }
