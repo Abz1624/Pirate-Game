@@ -1,5 +1,5 @@
 {
- "updated": "8 Oct 2026",
+ "updated": "9 Oct 2026",
  "statusLine": "M9b in progress: in-process Netcode spike first; then the Linux server on a Railway test service and your playtest.",
  "statusOk": false,
  "facts": [
@@ -515,6 +515,11 @@
    "when": "9 Oct",
    "commit": "38f46ada",
    "what": "<strong>M9b review fixes done</strong>: the level-up pull-back is gone (0 m at 150 ms lag and 2% loss, also while boosting); a reconnect while cards are up no longer freezes; idle joins expire after 30 s; the ticket endpoint refuses without a server address. A local Docker voyage with two level-ups and a drop during the cards: no corrections, resume 0.4 s. EditMode 602/602, PlayMode 114/114, server 162/162. Now: the clean server image and the browser client build, then the Railway test."
+  },
+  {
+   "when": "9 Oct",
+   "commit": "ca774df3",
+   "what": "<strong>Your answer (D27)</strong>: the Iron Figurehead, the Ramming Prow's old evolution item, is replaced by the <strong>Cuttlefish Bone</strong> (same +9% damage; evolves the Squid Ink Pots into Black Tide). Same asset, new id; never sold and no icon, so no save or art is affected. The Art Guide got its brief and icon prompt, the D21 Squid Ink Pots and Black Tide rows, the chest-pool corrections (all 47 items are in play since playtest round 5) and a change log. Plan rev 16."
   }
  ],
  "todos": {
@@ -1092,6 +1097,13 @@
    "check": "Railway Config as Code → IaC (a457012d, 9bfc1877)",
    "result": "plan 0 destroy; deployed; live manifest DOCKERFILE, /health 60 s, 1 replica, ON_FAILURE ×10; variables ALLOWED_ORIGINS, DATABASE_URL, PLAY_URL kept; /health {ok:true, db:postgres}; plan afterwards: up to date; railway status: no warning",
    "evidence": ".railway/railway.ts, server/deploy.ps1, server/README.md (Service settings)"
+  },
+  {
+   "date": "9 Oct",
+   "phase": "M8z",
+   "check": "D27 Cuttlefish Bone (ca774df3): targeted EditMode V5D21Tests, V5ContentM5Tests, V4HudM6Tests",
+   "result": "29/29 passed (incl. TheInkPots_Evolution_IsBlackTide_WithTheCuttlefishBone); compile clean",
+   "evidence": "Pirate Game Unity/Assets/_Game/Tests/V4/EditMode/V5D21Tests.cs, plan/v5/phase-06-art/ART_GUIDE.md"
   }
  ],
  "phaseResults": {
