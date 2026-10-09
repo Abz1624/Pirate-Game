@@ -83,7 +83,7 @@
   },
   "M9b": {
    "state": "building",
-   "chip": "fixes live · your re-test"
+   "chip": "re-test fixes running"
   },
   "M9c": {
    "state": "planned",
@@ -535,6 +535,11 @@
    "when": "9 Oct",
    "commit": "09afabf8",
    "what": "<strong>Run checks v3 deployed</strong> after your Cuttlefish Bone change (D27): the rename changed the game's config fingerprint, so the rules were regenerated; bounds unchanged apart from sampling noise, false alarms 0.07%, and runs from just before D27 still count as checked."
+  },
+  {
+   "when": "10 Oct",
+   "commit": "",
+   "what": "<strong>Your M9b re-test</strong>: the stutter and the enemy jumps are gone. Still broken: after a level-up plus a tab switch the ship got stuck (the client kept falling behind the server and re-syncing); enemies pause briefly after a card pick; the browser ran at about 40 fps at 1920x1080. Your call (D28): the leash moves far enemies just outside the camera view (about 31 m). Fixes running."
   }
  ],
  "todos": {
