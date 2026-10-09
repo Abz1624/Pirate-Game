@@ -83,7 +83,7 @@
   },
   "M9b": {
    "state": "building",
-   "chip": "review fixes · then Railway test"
+   "chip": "review fixed · building for the Railway test"
   },
   "M9c": {
    "state": "planned",
@@ -510,11 +510,15 @@
    "when": "9 Oct",
    "commit": "",
    "what": "<strong>Your answers (D26)</strong>: the server image stays private (Railway Pro pulls it with registry credentials); fix the level-up pull-back now; the M9b playtest can run without shots, pickups and chests (they come in M9c); remove the ticket settings from the live API after each test. Review fixes running."
+  },
+  {
+   "when": "9 Oct",
+   "commit": "38f46ada",
+   "what": "<strong>M9b review fixes done</strong>: the level-up pull-back is gone (0 m at 150 ms lag and 2% loss, also while boosting); a reconnect while cards are up no longer freezes; idle joins expire after 30 s; the ticket endpoint refuses without a server address. A local Docker voyage with two level-ups and a drop during the cards: no corrections, resume 0.4 s. EditMode 602/602, PlayMode 114/114, server 162/162. Now: the clean server image and the browser client build, then the Railway test."
   }
  ],
  "todos": {
   "next": [
-   "<strong>For the Railway test (soon)</strong>: a GitHub token (classic) with <code>write:packages</code> and <code>read:packages</code> for the private match server image (I push it; Railway pulls it). Put it in the repo's <code>.env</code> as <code>GHCR_TOKEN</code> rather than in chat.",
    "<strong>Keep recording voyages</strong> when you play.",
    "Later: a balance pass (early dinghy damage, late elite HP, Doubloons in the simulator)."
   ],
