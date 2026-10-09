@@ -1,0 +1,48 @@
+{
+  "report": "V5 net test client (scripted voyage)",
+  "utc": "2026-10-09T09:10:46.3034440Z",
+  "unity": "6000.3.11f1",
+  "editor": false,
+  "joinSeconds": "1.398",
+  "resumeSeconds": "-1.000",
+  "endedByServer": "true",
+  "endReason": "Sunk",
+  "lobbyUtc": "2026-10-09T09:10:46.2995260Z",
+  "secondsFromServerEndToLobby": "0.002",
+  "snapshots": "677",
+  "welcomes": "2",
+  "resyncs": "0",
+  "finalHull": "0",
+  "kills": "40",
+  "level": "5",
+  "cardSets": "5",
+  "cardsPicked": "5",
+  "holdsSent": "5",
+  "snapshotsSkippedForHoldOrPick": "0",
+  "droppedDuringCards": "false",
+  "resumeDuringCardsSeconds": "-1.000",
+  "cardsBackAfterResume": "false",
+  "url": "ws://shinkansen.proxy.rlwy.net:13382/",
+  "outcome": "end Sunk",
+  "ok": "true",
+  "events": "1.09s stage loaded (seed 9200) | 2.50s welcomed in 1.398 s | 10.46s level-up card picked (WeaponUpgrade swivel_guns, set 1) | 23.67s level-up card picked (Logbook admiral, set 2) | 32.17s level-up card picked (WeaponUpgrade swivel_guns, set 3) | 38.77s level-up card picked (Logbook lookouts_glass, set 4) | 45.11s level-up card picked (Logbook plunderer, set 5) | 47.52s socket dropped (client side) | 49.03s VOYAGE-DONE snapshots=677 hull=0/100 kills=40 level=5 | 49.03s end Sunk received | 49.03s lobby (end Sunk) 0.002 s after the server's end showed, at 2026-10-09T09:10:46.2995260Z",
+  "sections": [
+    {
+      "name": "client",
+      "seconds": 47.937,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 2917.592, "bytesUpPerSecond": 844.988, "wireDownPerSecondEstimate": 3260.043, "wireUpPerSecondEstimate": 1185.436, "messagesDown": 1368, "messagesUp": 1360}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 671, "mean": 0, "p50": 0, "p95": 0, "max": 0.001},
+      "correctionMetres": {"count": 677, "mean": 0, "p50": 0, "p95": 0, "max": 0.003},
+      "resumeSeconds": {"count": 1, "mean": 1.515, "p50": 1.515, "p95": 1.515, "max": 1.515},
+      "inputLagMs": {"count": 671, "mean": 260.755, "p50": 266.667, "p95": 266.667, "max": 400},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

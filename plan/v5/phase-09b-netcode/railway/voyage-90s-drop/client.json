@@ -1,0 +1,27 @@
+{
+  "report": "V5 net test client (scripted voyage)",
+  "utc": "2026-10-09T08:37:52.0641030Z",
+  "unity": "6000.3.11f1",
+  "editor": false,
+  "url": "wss://match-test-production.up.railway.app:443/",
+  "outcome": "join failed: [Disconnect Event][Client-0][TransportClientId-4294967296][ProtocolError] Gracefully disconnected.",
+  "ok": "false",
+  "events": "4.19s stage loaded (seed 9200)",
+  "sections": [
+    {
+      "name": "client",
+      "seconds": 2.666,
+      "clients": [],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}
