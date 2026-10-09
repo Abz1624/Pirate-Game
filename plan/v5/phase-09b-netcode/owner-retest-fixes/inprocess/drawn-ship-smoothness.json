@@ -1,0 +1,38 @@
+{
+  "report": "drawn-ship-smoothness",
+  "utc": "2026-10-09T17:57:04.2307658Z",
+  "unity": "6000.3.11f1",
+  "editor": true,
+  "frames": "240",
+  "fps": "60.0",
+  "shipSpeedMps": "11.09",
+  "before_shipJitterMeanMps": "19.841",
+  "before_shipJitterP95Mps": "23.517",
+  "before_shipSpeedVariation": "1.029",
+  "after_shipJitterMeanMps": "0.164",
+  "after_shipJitterP95Mps": "0.954",
+  "after_shipSpeedVariation": "0.143",
+  "before_shipStallFrames": "107",
+  "after_shipStallFrames": "0",
+  "drawnBehindSteppedMaxM": "0.379",
+  "link": "135 ms each way, 15 ms jitter, 1% loss",
+  "sections": [
+    {
+      "name": "client",
+      "seconds": 8.495,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 2397.679, "bytesUpPerSecond": 837.681, "wireDownPerSecondEstimate": 2733.882, "wireUpPerSecondEstimate": 1176.709, "messagesDown": 238, "messagesUp": 240}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 113, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 118, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 113, "mean": 332.448, "p50": 333.333, "p95": 333.333, "max": 333.333},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

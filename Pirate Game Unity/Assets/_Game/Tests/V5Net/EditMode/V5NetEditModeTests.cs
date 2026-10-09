@@ -271,7 +271,7 @@ namespace RoguePirates.V5.Net.Tests
         /// <summary>
         /// M9b playtest fixes (B, C): every enemy is drawn at one render time behind the newest snapshot, between the two
         /// snapshots around it (a far-band enemy sent every 3rd snapshot moves evenly, not in a burst then a stop); a late
-        /// snapshot is bridged on the last velocity for at most 6 ticks; a move no enemy can sail between two snapshots (the
+        /// snapshot is bridged on the last velocity for at most 9 ticks (6 before 10 Oct); a move no enemy can sail between two snapshots (the
         /// leash) is a jump: held, then drawn there at once, never slid across the screen.
         /// </summary>
         [Test]
@@ -338,6 +338,107 @@ namespace RoguePirates.V5.Net.Tests
             Assert.IsFalse(mirror.TryGet(2, out _), "the full snapshot drops it");
         }
 
+        static void EnemyBatchAt(NetEnemyMirror mirror, uint tick, double now, bool steady, float x)
+        {
+            var h = new EnemyBatchHeader { serverTick = tick, batchCount = 1, full = true, count = 1 };
+            var w = new NetWriter();
+            NetCodec.WriteBatchHeader(w, h);
+            NetCodec.WriteEnemy(w, h, 1, 1, new Vector3(x, 0f, 0f), new Vector3(1f, 0f, 0f), 1f, 0);
+            mirror.Apply(new NetReader(w.ToArray()), 0f, now, steady);
+        }
+
+        /// <summary>
+        /// V5 M9b owner re-test fixes (10 Oct, issue 2): the server's world tick stands still while the run is paused for the
+        /// cards (protocol 5), and the client's enemy clock stands still while its ship holds: the render time does not move
+        /// through the hold, runs on from the same place after the pick (no jump either way), bridges the round trip until
+        /// the first snapshot after the pick on the enemies' velocity (within the extrapolation cap), and the snapshots the
+        /// paused server repeats are not counted twice.
+        /// </summary>
+        [Test]
+        public void Mirror_EnemyClockHoldsWithTheShip_AndRunsOnFromThereAfterThePick()
+        {
+            var mirror = new NetEnemyMirror();
+            const float dt = NetProtocol.TickSeconds;
+            const double t0 = 50.0;
+            // Unit 1 sails +x at 6 m/s; world ticks 10..40 on time.
+            for (uint tick = 10; tick <= 40; tick += 2) EnemyBatchAt(mirror, tick, t0 + tick * dt, true, 0.2f * (tick - 10));
+            var now = t0 + 40 * dt + 0.01;
+            var before = mirror.RenderTick(now);
+            // The cards: the client's ship holds for 3 s; the paused server repeats world tick 40 meanwhile.
+            var held = mirror.RenderTick(now + 0.02, true);
+            Assert.AreEqual(before, held, 0.02f / dt + 1e-3f, "the hold stops the clock where it was");
+            var completes = mirror.CompleteSnapshots;
+            for (var k = 1; k <= 45; k++)
+            {
+                EnemyBatchAt(mirror, 40, now + k * 0.066, true, 6f);
+                Assert.AreEqual(held, mirror.RenderTick(now + k * 0.066, true), 1e-4f, "still while held");
+            }
+            Assert.AreEqual(completes, mirror.CompleteSnapshots, "the paused server's repeats are not counted again");
+            // The pick at now + 3 s: the clock runs on from the same place, frame by frame, no jump.
+            var lastHeldAt = now + 45 * 0.066;
+            var pick = now + 3.0;
+            var last = mirror.RenderTick(pick, false);
+            Assert.AreEqual(held + (float)((pick - lastHeldAt) / dt), last, 1e-3f, "runs on from where it stopped (by the time since the last held frame)");
+            Assert.IsTrue(mirror.TryGet(1, out var e));
+            e.track.Sample(last, out var lastPos, out _, out _);
+            const double frame = 1.0 / 60.0;
+            var maxStep = 0f;
+            for (var f = 1; f <= 120; f++)
+            {
+                var t = pick + f * frame;
+                // The first snapshot after the pick arrives a 270 ms round trip later (the server resumed at the pick's arrival).
+                var since = t - (pick + 0.27);
+                if (since >= 0 && f % 4 == 0)
+                {
+                    var tick = (uint)(41 + (int)(since / dt));
+                    EnemyBatchAt(mirror, tick, t, true, 0.2f * (tick - 10)); // sailing on as before the pause
+                }
+                var r = mirror.RenderTick(t, false);
+                Assert.Greater(r, last, "the clock moves every frame after the pick");
+                Assert.LessOrEqual(r - last, (float)(frame / dt) * 1.2f, "never jumps ahead");
+                Assert.IsTrue(mirror.TryGet(1, out e));
+                e.track.Sample(r, out var p, out _, out _);
+                maxStep = Mathf.Max(maxStep, Mathf.Abs(p.x - lastPos.x));
+                Assert.Greater(p.x - lastPos.x, 0.03f, $"the enemy moves on every frame after the pick (frame {f})");
+                last = r;
+                lastPos = p;
+            }
+            Assert.Less(maxStep, 6f * (float)frame * 1.5f, "at its own speed (no jump)");
+        }
+
+        /// <summary>V5 M9b owner re-test fixes: a hold that begins after a long frame (a page's first hidden frame comes up to a
+        /// second after it was hidden) first runs the enemy clock up to that frame, then stands still: the enemies are not
+        /// frozen where they were a second before (the server's world ran on until the away reached it), so coming back
+        /// does not jump them forward.</summary>
+        [Test]
+        public void Mirror_HoldAfterALongFrame_RunsTheClockUpToItFirst()
+        {
+            var mirror = new NetEnemyMirror();
+            const float dt = NetProtocol.TickSeconds;
+            for (uint tick = 2; tick <= 60; tick += 2) EnemyBatchAt(mirror, tick, 10.0 + tick * dt, true, tick * 0.2f);
+            var before = mirror.RenderTick(10.0 + 60 * dt);
+            var held = mirror.RenderTick(10.0 + 60 * dt + 1.0, true); // the first hidden frame, a second later
+            Assert.AreEqual(before + 1f / dt, held, 0.6f, "the second before the hold is run first");
+            Assert.AreEqual(held, mirror.RenderTick(10.0 + 60 * dt + 3.0, true), 1e-4f, "then it stands still");
+        }
+
+        /// <summary>V5 M9b owner re-test fixes: batches handled in a slow frame (a hitch, a hidden page's frame) are late because
+        /// the page was; they do not widen the render delay (the owner's 350 ms after a return).</summary>
+        [Test]
+        public void Mirror_ArrivalsInASlowFrame_DoNotWidenTheRenderDelay()
+        {
+            var mirror = new NetEnemyMirror();
+            const float dt = NetProtocol.TickSeconds;
+            for (uint tick = 2; tick <= 30; tick += 2) EnemyBatchAt(mirror, tick, 10.0 + tick * dt, true, tick * 0.2f);
+            Assert.AreEqual(NetEnemyMirror.MinDelaySeconds, mirror.DelaySeconds, 1e-4f);
+            // A one-second hitch: the next second's batches all handled in one late frame.
+            for (uint tick = 32; tick <= 60; tick += 2) EnemyBatchAt(mirror, tick, 10.0 + 60 * dt + 0.05, false, tick * 0.2f);
+            Assert.AreEqual(NetEnemyMirror.MinDelaySeconds, mirror.DelaySeconds, 1e-4f, "the page's own lateness is not the link's");
+            // The same lateness on steady frames (the link) does widen it.
+            for (uint tick = 62; tick <= 70; tick += 2) EnemyBatchAt(mirror, tick, 10.0 + tick * dt + 0.1, true, tick * 0.2f);
+            Assert.Greater(mirror.DelaySeconds, NetEnemyMirror.MinDelaySeconds + 0.05f);
+        }
+
         /// <summary>M9b playtest fixes (B): everything the top-down camera can show is in the every-snapshot band. The run
         /// scene's camera: 25 m above and 20 m behind the ship, looking at it, 50 degree vertical field of view; checked at a
         /// 2.4:1 window (wider than the 16:9 and 21:9 desktops), with the camera's follow lag and an enemy's size on top.
@@ -376,7 +477,7 @@ namespace RoguePirates.V5.Net.Tests
                 Assert.AreEqual(away, back);
             }
             Assert.IsFalse(NetCodec.ReadPresence(new NetReader(new byte[] { NetProtocol.Version }), out _), "a short message is malformed");
-            Assert.AreEqual(4, NetProtocol.Version);
+            Assert.AreEqual(5, NetProtocol.Version, "protocol 5 (10 Oct): enemy batches on the world tick");
         }
 
         /// <summary>M9b playtest fixes (E): while the player is away the card timeout and the hold wait stop; back, they go

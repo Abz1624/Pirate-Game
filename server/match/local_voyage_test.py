@@ -90,6 +90,7 @@ def main():
     ap.add_argument("--drop-during-cards", action="store_true", help="server 1's client also drops its socket once while level-up cards are up (M9b review)")
     ap.add_argument("--away-during-cards", type=int, default=0, help="seconds server 1's client is away (page hidden, says so) while a later card set is up (M9b playtest fixes)")
     ap.add_argument("--hidden-during-cards", type=int, default=0, help="seconds server 1's client runs as a hidden page that never said so (one frame a second) while a later card set is up; over 30 s the server's card timeout fires (M9b playtest fixes)")
+    ap.add_argument("--hide-after-pick", type=int, default=0, help="seconds server 1's client is hidden (says it is away from its first hidden frame, one frame a second) at once after a pick, once the phases above are done (M9b owner re-test fixes)")
     ap.add_argument("--image", default="rogue-pirates-match:local")
     ap.add_argument("--out", default="")
     ap.add_argument("--base-port", type=int, default=17777)
@@ -176,6 +177,7 @@ def main():
                    *(["-rpDropDuringCards"] if a.drop_during_cards and s["i"] == 1 else []),
                    *(["-rpAwayDuringCards", str(a.away_during_cards)] if a.away_during_cards and s["i"] == 1 else []),
                    *(["-rpHiddenDuringCards", str(a.hidden_during_cards)] if a.hidden_during_cards and s["i"] == 1 else []),
+                   *(["-rpHideAfterPick", str(a.hide_after_pick)] if a.hide_after_pick and s["i"] == 1 else []),
                    env=dict(env, RP_JOIN_TICKET=t["ticket"]))
             containers.append(cname)
 
@@ -255,6 +257,7 @@ def main():
                                                        "droppedDuringCards", "resumeDuringCardsSeconds", "cardsBackAfterResume",
                                                        "awayDuringCardsSeconds", "awayWelcomeSeconds", "cardsBackAfterAway",
                                                        "hiddenDuringCardsSeconds", "hiddenCardsResolution", "hiddenControlBackSeconds",
+                                                       "hideAfterPickSeconds", "hideAfterPickWelcomeSeconds", "hideAfterPickControlSeconds", "hideAfterPickResyncs",
                                                        "lateResyncs", "awaysSent", "resyncs", "enemyJumpsMarked", "events")} | {
                     "traffic": csec.get("clients"), "predictionErrorMetres": csec.get("predictionErrorMetres"),
                     "correctionMetres": csec.get("correctionMetres"), "inputLagMs": csec.get("inputLagMs")},

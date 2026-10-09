@@ -68,6 +68,7 @@ namespace RoguePirates.V5.Net
             _dropDuringCards = HasArg("-rpDropDuringCards");
             _awayDuringCards = ArgFloat("-rpAwayDuringCards", 0f);
             _hiddenDuringCards = ArgFloat("-rpHiddenDuringCards", 0f);
+            _hideAfterPick = ArgFloat("-rpHideAfterPick", 0f);
             var output = Arg("-rpOut", Path.Combine(Application.temporaryCachePath, "client.json"));
             var ticket = Environment.GetEnvironmentVariable("RP_JOIN_TICKET");
             if (!NetEndpoint.TryParse(url, out var endpoint, out var error)) { Finish(output, "bad url: " + error, false); yield break; }
@@ -83,7 +84,7 @@ namespace RoguePirates.V5.Net
             Current = State.Joining;
             Client = NetClient.Create(endpoint, ticket, () => ShipMotionPort.CreatePredictionCopy(template), "V5NetTestClient");
             Client.Input = _script;
-            Client.AwaySource = () => _away;
+            Client.AwaySource = () => _away || _pickHidden;
             var joinStart = Time.realtimeSinceStartup;
             if (!Client.Connect()) { Finish(output, "the client did not start", false); yield break; }
             while (!Client.Welcomed && !Client.SessionOver && Time.realtimeSinceStartup - joinStart < 15f) yield return null;
@@ -166,6 +167,10 @@ namespace RoguePirates.V5.Net
                 ["hiddenDuringCardsSeconds"] = _hiddenDuringCards.ToString("0.0", CultureInfo.InvariantCulture),
                 ["hiddenCardsResolution"] = _hiddenResolution,
                 ["hiddenControlBackSeconds"] = _hiddenControlSeconds.ToString("0.000", CultureInfo.InvariantCulture),
+                ["hideAfterPickSeconds"] = _hideAfterPick.ToString("0.0", CultureInfo.InvariantCulture),
+                ["hideAfterPickWelcomeSeconds"] = _pickHideWelcomeSeconds.ToString("0.000", CultureInfo.InvariantCulture),
+                ["hideAfterPickControlSeconds"] = _pickHideControlSeconds.ToString("0.000", CultureInfo.InvariantCulture),
+                ["hideAfterPickResyncs"] = _pickHideResyncs.ToString(),
                 ["lateResyncs"] = Client.LateResyncs.ToString(),
                 ["awaysSent"] = Client.AwaysSent.ToString(),
                 ["enemyJumpsMarked"] = Client.Enemies.Jumps.ToString(),
@@ -186,6 +191,44 @@ namespace RoguePirates.V5.Net
         int _awaySeq = -1, _hiddenSeq = -1, _welcomesAtBack;
         float _awayUntil = -1f, _backAt = -1f, _awayWelcomeSeconds = -1f, _hiddenUntil = -1f, _hiddenControlSeconds = -1f;
         string _hiddenResolution = "";
+        // V5 M9b owner re-test fixes: -rpHideAfterPick S: once the phases above are done, the next pick is followed at once by
+        // the page hidden for S s (it says it is away from its first hidden frame, one a second); back, the welcome resyncs
+        // it and the client must steer within one snapshot, with no resync loop.
+        float _hideAfterPick, _pickHideUntil = -1f, _pickBackAt = -1f, _pickHideWelcomeSeconds = -1f, _pickHideControlSeconds = -1f, _pickWelcomedAt = -1f;
+        bool _pickHidden, _pickHideStarted, _pickHideDone;
+        int _pickHideResyncsAt, _pickHideResyncs = -1, _welcomesAtPickBack;
+        uint _pickHideTick;
+
+        /// <summary>The hide-after-pick phase; true while it keeps the script from acting.</summary>
+        bool HiddenAfterPick()
+        {
+            if (!_pickHideStarted || _pickHideDone) return false;
+            var now = Time.realtimeSinceStartup;
+            if (_pickHidden)
+            {
+                if (now < _pickHideUntil || Client.Throttled) return true;
+                _pickHidden = false;
+                _pickBackAt = now;
+                _welcomesAtPickBack = Client.Welcomes;
+                Log("page back after the pick");
+            }
+            if (Client.Welcomes <= _welcomesAtPickBack)
+            {
+                if (now - _pickBackAt > 5f) { _pickHideDone = true; Log("no welcome 5 s after coming back"); }
+                return true;
+            }
+            if (_pickWelcomedAt < 0f) { _pickWelcomedAt = now; _pickHideWelcomeSeconds = now - _pickBackAt; _pickHideTick = Client.Tick; }
+            if (Client.Tick > _pickHideTick && !Client.Holds(Client.Tick + 1))
+            {
+                _pickHideControlSeconds = now - _pickWelcomedAt;
+                _pickHideResyncs = Client.Resyncs - _pickHideResyncsAt;
+                _pickHideDone = true;
+                Log($"control back {_pickHideControlSeconds:0.000} s after the welcome ({_pickHideWelcomeSeconds:0.000} s after the page came back); resyncs over the hide {_pickHideResyncs}");
+                return false;
+            }
+            if (now - _pickWelcomedAt > 5f) { _pickHideDone = true; Log("no control 5 s after the welcome"); }
+            return true;
+        }
 
         /// <summary>The away and hidden phases; true while they keep the script from picking.</summary>
         bool AwayOrHidden(OfferMessage offer)
@@ -270,11 +313,22 @@ namespace RoguePirates.V5.Net
                 Log($"the cards came back after the resume (set {offer.seq})");
             }
             if (AwayOrHidden(offer)) return;
+            if (HiddenAfterPick()) return;
             if (offer != null && offer.seq != _pickedSeq && Time.realtimeSinceStartup - Client.PendingOfferSince > 0.4f && Client.SendPick(NetProtocol.PickAction.Pick, 0))
             {
                 _pickedSeq = offer.seq;
                 _cardsPicked++;
                 Log($"level-up card picked ({offer.offers[0].Kind} {offer.offers[0].Id}, set {offer.seq})");
+                if (_hideAfterPick > 0f && !_pickHideStarted && (_awayDuringCards <= 0f || _awayDone) && (_hiddenDuringCards <= 0f || _hiddenDone) &&
+                    (!_dropDuringCards || _cardsBackAfterResume))
+                {
+                    _pickHideStarted = _pickHidden = true;
+                    _pickHideUntil = Time.realtimeSinceStartup + _hideAfterPick;
+                    _pickHideResyncsAt = Client.Resyncs;
+                    Client.ThrottleForTest(_hideAfterPick);
+                    Log($"page hidden at once after the pick for {_hideAfterPick:0} s (set {offer.seq})");
+                    return;
+                }
             }
             var steer = t < 5f ? 0f : Mathf.Sin(t * 0.35f) * 0.8f;
             _script.Value = new Vector2(steer, 1f);

@@ -107,3 +107,21 @@ together. Numbers (files in `playtest-fixes/`):
 
 The Railway column above was measured before these fixes; the main session's next Railway session reruns it with the new
 image and client.
+
+## Owner re-test fixes (10 Oct)
+
+After the owner's re-test on Railway (image `e1f56626d9b5`). Causes, fixes and tests: `README.md`, "Owner re-test fixes".
+Protocol version 5; the image and the WebGL client go together. Files in `owner-retest-fixes/`.
+
+| Measure | Before | After | Where |
+|---|---|---|---|
+| Ship held by the server for good after sailing into a chest with gold (the owner's stuck ship) | correction 1.14 m every snapshot, kills frozen (local Chrome, old build) | choice skipped at once, no correction, no gold spent | in-process, local Chrome |
+| Resyncs around tab switches and hitches | 66, in bursts of 9 at each hide (local Chrome, 7 hides) | 3 (one a hide at most); in-process control back 0.005-0.037 s | local Chrome, in-process 270 ms |
+| On-screen enemies after a level-up pick | back over half speed 436 ms after the pick, 24 frames standing still | 0 ms, 0 frames | in-process busy voyage, 270 ms, 60 fps |
+| Client fps, this PC (Intel UHD), 960x600 canvas | 56.8 | 58.0 (normal game: 29.6-32.9) | local Chrome |
+| Client fps, this PC, 1920x1080 canvas (full screen) | - | 42.0, 82% of frames over 20 ms (normal game: 15.0-17.1) | local Chrome |
+| Local Docker voyage: away 20 s during cards / hidden 8 s during cards / pick then hidden 5 s | - | resynced 0.050 s, cards back / control 0.018 s / control 0.034 s after the welcome, 0 resyncs | `docker-voyage/summary.json` |
+
+The 40 fps the owner saw is the full-screen canvas on an integrated GPU, not the net client: the normal game is slower
+at the same canvas. The leash at 31 m (D28) clears the view only straight ahead; the share of leashed enemies placed in view
+and an option are in `README.md` and `TODO-FOR-YOU.md`.

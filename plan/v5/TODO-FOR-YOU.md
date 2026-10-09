@@ -1,5 +1,17 @@
 # Your TODOs — V5 (updated 1 Oct)
 
+# Now (10 Oct): M9b fixes after your re-test
+
+- [ ] Re-test one server voyage from desktop Chrome once the main session has the new image and client on Railway (they go
+      together: protocol 5): switch tabs while the cards are up and right after a pick; sail into a Salvage Chest with
+      gold (the server now skips the chest's choice until M9c mirrors chests: you will not be offered it online); watch
+      the enemies the moment you pick a card. Details: `plan/v5/phase-09b-netcode/README.md`, "Owner re-test fixes".
+- [ ] Decide (leash): 31 m clears the top of the screen only straight ahead. Enemies are put back within 75 degrees of
+      your heading and the camera always looks north, so at 16:9 about 86% of them still land in view when you sail
+      up the screen (37% over all headings; 26 m: 100% and 52%). Options: (a) keep 31 m as decided; (b) put each one
+      just outside the view along its own direction (31 to 44 m at 16:9; the top corners of a 21:9 screen reach 61 m,
+      past the 45 m leash, so wider screens would keep some pop-ins), recommended; (c) narrow the 75 degrees.
+
 # Now (8 Oct): M8z closed, M9a next
 
 - [x] Install the .NET 10 SDK (installed by the agent, 8 Oct) (`winget install Microsoft.DotNet.SDK.10`, then `dotnet --list-sdks` shows 10.0.x) so the

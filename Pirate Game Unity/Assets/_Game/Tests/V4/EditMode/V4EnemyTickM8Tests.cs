@@ -191,6 +191,55 @@ namespace RoguePirates.V4.Tests
             Assert.IsFalse(shared.eliteHammerheadSecondCharge, "the shared combat profile is not latched");
         }
 
+        /// <summary>
+        /// V5 (owner, 10 Oct): the leash puts an ordinary enemy left 45 m behind back ahead of the ship at
+        /// <see cref="RunConfig.enemyLeashReturnDistance"/> (31 m; a 26 m constant before), which is just outside the top of the
+        /// run scene's top-down view: the camera's height, distance back and field of view are read from the scene, and the
+        /// ground it sees ahead of the ship at the top edge of the screen is worked out from them (30.5 m).
+        /// </summary>
+        [Test]
+        public void Leash_PutsEnemiesBackAtTheConfiguredDistance_JustOutsideTheTopOfTheView()
+        {
+            UnityEngine.TestTools.LogAssert.ignoreFailingMessages = true;
+            // The camera, from the run scene (FollowCamera's top-down offset and the camera's vertical field of view).
+            var scene = System.IO.File.ReadAllText("Assets/_Game/Scenes/V4/V4SaltwindRun.unity");
+            var offset = System.Text.RegularExpressions.Regex.Match(scene, @"\n  offset: \{x: ([-\d.]+), y: ([-\d.]+), z: ([-\d.]+)\}");
+            var fov = System.Text.RegularExpressions.Regex.Match(scene, @"field of view: ([\d.]+)");
+            Assert.IsTrue(offset.Success && fov.Success, "the run scene's camera offset and field of view");
+            var height = float.Parse(offset.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
+            var back = -float.Parse(offset.Groups[3].Value, System.Globalization.CultureInfo.InvariantCulture);
+            var halfFov = float.Parse(fov.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) * 0.5f;
+            var pitch = Mathf.Atan2(height, back) * Mathf.Rad2Deg; // the camera looks at the ship
+            var viewAhead = height / Mathf.Tan((pitch - halfFov) * Mathf.Deg2Rad) - back;
+            Assert.AreEqual(30.5f, viewAhead, 0.1f, "the top edge of the view is 30.5 m ahead of the ship (25 m up, 20 m back, 50 degrees)");
+
+            using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
+            var run = config.Single<RunConfig>();
+            Assert.AreEqual(31f, run.enemyLeashReturnDistance, 1e-4f, "the owner's 31 m (10 Oct)");
+            Assert.Greater(run.enemyLeashReturnDistance, viewAhead, "put back outside the view ahead of the ship");
+            Assert.Less(run.enemyLeashReturnDistance, RunConfig.EnemyLeashDistance - 5f, "well inside the leash distance (not leashed again)");
+
+            using var profilePort = new RoguePirates.V4.Ports.StageProfilePort(config);
+            StageBalanceProfileContext.BeginRun(profilePort.Profile);
+            var w = Make(config);
+            w.V4.LeashReturnDistance = () => config.Single<RunConfig>().enemyLeashReturnDistance; // as EnemyWorldModule wires it
+            var dinghy = System.Array.FindIndex(w.Defs, d => d != null && d.id == "deckhand_dinghy");
+            Assert.GreaterOrEqual(dinghy, 0);
+            var slot = w.V4.Spawn(dinghy, new Vector3(0f, 0f, -60f));
+            w.ShipB.transform.position = Vector3.zero;
+            w.V4.Tick(Dt, w.ShipB.Position, w.ShipB.Damage);
+            var p = w.V4.Agents[slot].position;
+            var distance = new Vector2(p.x, p.z).magnitude;
+            Assert.AreEqual(31f, distance, 0.5f, "moved back to the configured distance");
+            Assert.Greater(p.z, 0f, "ahead of the ship (its heading, +z while it stands still)");
+
+            run.enemyLeashReturnDistance = 35f; // a console edit applies at the next check
+            var far = w.V4.Spawn(dinghy, new Vector3(0f, 0f, -70f));
+            for (var i = 0; i < 40 && w.V4.Agents[far].position.z < -60f; i++) w.V4.Tick(Dt, w.ShipB.Position, w.ShipB.Damage);
+            var q = w.V4.Agents[far].position; // right after the check that moved it
+            Assert.AreEqual(35f, new Vector2(q.x, q.z).magnitude, 0.5f, "read from the config at each check");
+        }
+
         sealed class RecordingFeedback : IEnemyFeedback
         {
             public readonly List<string> Log;

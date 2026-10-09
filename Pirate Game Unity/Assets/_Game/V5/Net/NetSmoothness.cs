@@ -16,6 +16,9 @@ namespace RoguePirates.V5.Net
         public readonly List<float> ShipJitter = new List<float>();
         public readonly List<float> ShipSpeed = new List<float>();
         public readonly List<float> EnemyJitter = new List<float>();
+        /// <summary>V5 M9b owner re-test fixes: at most this many samples per list (0: no limit); the browser client keeps the
+        /// newest (a long voyage's lists grew by every on-screen enemy every frame and were sorted every 10 s).</summary>
+        public int MaxSamples;
         /// <summary>Frames an on-screen enemy moved faster than any enemy sails.</summary>
         public int EnemyFastFrames { get; private set; }
         /// <summary>Of those, frames that followed another fast frame of the same enemy (a slide, not one jump).</summary>
@@ -59,9 +62,9 @@ namespace RoguePirates.V5.Net
             if (_haveShip)
             {
                 var speed = Flat(drawn - _ship) / dt;
-                if (_shipSpeed >= 0f) ShipJitter.Add(Mathf.Abs(speed - _shipSpeed));
+                if (_shipSpeed >= 0f) NetMetrics.AddCapped(ShipJitter, Mathf.Abs(speed - _shipSpeed), MaxSamples);
                 if (_shipSpeed > StallFromSpeed && speed < _shipSpeed * StallShare) ShipStallFrames++;
-                ShipSpeed.Add(speed);
+                NetMetrics.AddCapped(ShipSpeed, speed, MaxSamples);
                 _shipSpeed = speed;
             }
             _ship = drawn;
@@ -83,7 +86,7 @@ namespace RoguePirates.V5.Net
                 }
                 else if (last.speed >= 0f && !last.fast)
                 {
-                    EnemyJitter.Add(Mathf.Abs(speed - last.speed));
+                    NetMetrics.AddCapped(EnemyJitter, Mathf.Abs(speed - last.speed), MaxSamples);
                     if (last.speed > StallFromSpeed && speed < last.speed * StallShare) EnemyStallFrames++;
                 }
                 _enemies[unitId] = (drawn, fast ? -1f : speed, Frames, fast);

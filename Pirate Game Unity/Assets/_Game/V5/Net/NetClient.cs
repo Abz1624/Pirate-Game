@@ -260,6 +260,7 @@ namespace RoguePirates.V5.Net
             // the server sends them again right after this welcome and the hold comes back with them.
             ClearOffer();
             Last = m.ship;
+            _hasPendingSnapshot = false; // a snapshot from before the welcome is not reconciled after it
             LastAck = 0;
             _historyStart = Tick + 1; // inputs from here on are the ones the server will apply
             _accumulator = 0f;
@@ -399,15 +400,45 @@ namespace RoguePirates.V5.Net
             // this client has not restarted its tick line yet: replaying against it would run the whole input history.
             if (!Welcomed || _awaitingWelcome) return;
             if (s.serverTick <= Last.serverTick && Snapshots > 0) return; // late
-            UndrawShip();
             Snapshots++;
             Last = s;
-            Reconcile(s);
+            // V5 M9b owner re-test fixes (10 Oct): the prediction is reconciled once a frame, on the newest snapshot
+            // (ApplyPendingSnapshot, early in Update). A page that ran no frame for a while (a tab switch: Chrome runs a hidden
+            // page's first frame up to a second later; a hitch such as the cards' first show) handles a second of snapshots
+            // in one frame; each one reconciled in turn found the server's ack past the client's standing tick and resynced
+            // again (the owner's log: ack 1745, 1755, 1765, 1775, each 10 ticks on, the tick never moving in between).
+            if (_hasPendingSnapshot) SnapshotsCoalesced++;
+            _pendingSnapshot = s;
+            _hasPendingSnapshot = true;
         }
+
+        ShipSnapshot _pendingSnapshot;
+        bool _hasPendingSnapshot;
+        /// <summary>Snapshots that arrived in the same frame as a newer one (only the newest is reconciled).</summary>
+        public int SnapshotsCoalesced { get; private set; }
+
+        void ApplyPendingSnapshot()
+        {
+            if (!_hasPendingSnapshot) return;
+            _hasPendingSnapshot = false;
+            if (!Welcomed || _awaitingWelcome || Away) return; // away: the welcome when back resyncs the ship
+            UndrawShip();
+            Reconcile(_pendingSnapshot);
+        }
+
+        /// <summary>
+        /// V5 M9b owner re-test fixes (10 Oct): the enemies' clock stands still while this client's ship holds for the
+        /// level-up cards (and while the page is away or waits for a welcome), as the whole game stops for the cards in a
+        /// normal voyage; with the pick it runs on from the same place (the server's world tick stood still meanwhile).
+        /// </summary>
+        public bool WorldHeld => Away || _awaitingWelcome || !Welcomed || _pauseFrom != 0 && Holds(Tick + 1);
 
         void OnEnemies(NetReader r)
         {
-            try { Enemies.Apply(r, Predicted != null ? Predicted.Position.y : 0f); }
+            // A batch handled in a slow frame (a hitch, a hidden page) is late because this page was, not the link: its
+            // lateness does not widen the enemies' render delay (the owner's 350 ms after a return).
+            var steady = Time.unscaledDeltaTime <= SlowFrameSeconds && NetFrameClock.Now - _slowFrameAt > SlowFrameQuietSeconds && !Throttled;
+            try { Enemies.Apply(r, Predicted != null ? Predicted.Position.y : 0f, Time.realtimeSinceStartupAsDouble, steady); }
             catch (Exception) { /* malformed batch: dropped */ }
         }
 
@@ -440,6 +471,7 @@ namespace RoguePirates.V5.Net
             if (_delayed.Count > 0) FlushDelayedForTest();
             if (Time.unscaledDeltaTime > SlowFrameSeconds) _slowFrameAt = NetFrameClock.Now;
             UpdatePresence();
+            ApplyPendingSnapshot();
             UndrawShip();
             if (VisualOffset != Vector3.zero)
             {

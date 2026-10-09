@@ -1,0 +1,151 @@
+{
+  "utc": "2026-10-09T18:08:19.211180+00:00",
+  "image": "rogue-pirates-match:local",
+  "imageId": "sha256:d7b209daecdd50ae2021fd508678efa3d640a9dae424d5b5901658b06457a8b0",
+  "seconds": 150,
+  "dropAt": 120,
+  "servers": 1,
+  "docker": "29.8.2",
+  "extraChecks": {
+    "secondPlayer": "[V5 NetTest] EXIT failed: join failed: voyage taken",
+    "replayedTicket": "[V5 NetTest] EXIT failed: join failed: ticket Replayed"
+  },
+  "results": [
+    {
+      "server": "rp-match-test-1",
+      "port": 17777,
+      "coldStartSeconds": 1.86,
+      "processStartToListeningSeconds": 0.8,
+      "serverExitCode": "0",
+      "clientExitCode": "0",
+      "dockerStopSeconds": 1.15,
+      "secondsFromDockerStopToClientLobby": null,
+      "serverCloseReason": "SIGTERM (stop file)",
+      "serverReportKind": "final",
+      "serverBackend": "Mono",
+      "serverRssMB": "177.7",
+      "tickMs": {
+        "count": 2157,
+        "mean": 0.484,
+        "p50": 0.412,
+        "p95": 0.778,
+        "max": 35.178
+      },
+      "serverTraffic": [
+        {
+          "clientId": 1,
+          "bytesDownPerSecond": 1854.268,
+          "bytesUpPerSecond": 448.203,
+          "wireDownPerSecondEstimate": 2084.131,
+          "wireUpPerSecondEstimate": 630.693,
+          "messagesDown": 1378,
+          "messagesUp": 1094
+        }
+      ],
+      "serverSeconds": 71.938,
+      "serverBytesPerSecondAllSockets": {
+        "bytesDownPerSecond": 1854.3,
+        "bytesUpPerSecond": 448.2,
+        "wireDownPerSecondEstimate": 2084.1,
+        "wireUpPerSecondEstimate": 630.7
+      },
+      "snapshotBytes": {
+        "count": 681,
+        "mean": 194.366,
+        "p50": 189,
+        "p95": 252,
+        "max": 270
+      },
+      "snapshotEnemies": {
+        "count": 681,
+        "mean": 3.596,
+        "p50": 3,
+        "p95": 10,
+        "max": 12
+      },
+      "guessedInputs": 268,
+      "serverResumeSeconds": {
+        "count": 0,
+        "mean": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "dockerMemMB": {
+        "max": 147.6,
+        "mean": 144.0,
+        "samples": 17
+      },
+      "dockerCpuPercent": {
+        "max": 9.6,
+        "mean": 6.2,
+        "samples": 17
+      },
+      "client": {
+        "ok": "true",
+        "outcome": "end Sunk",
+        "joinSeconds": "0.251",
+        "resumeSeconds": "-1.000",
+        "endedByServer": "true",
+        "endReason": "Sunk",
+        "lobbyUtc": "2026-10-09T18:08:15.1301280Z",
+        "snapshots": "680",
+        "kills": "25",
+        "level": "4",
+        "finalHull": "0",
+        "cardSets": "5",
+        "cardsPicked": "4",
+        "droppedDuringCards": "false",
+        "resumeDuringCardsSeconds": "-1.000",
+        "cardsBackAfterResume": "false",
+        "awayDuringCardsSeconds": "20.0",
+        "awayWelcomeSeconds": "0.050",
+        "cardsBackAfterAway": "true",
+        "hiddenDuringCardsSeconds": "8.0",
+        "hiddenCardsResolution": "Picked",
+        "hiddenControlBackSeconds": "0.018",
+        "hideAfterPickSeconds": "5.0",
+        "hideAfterPickWelcomeSeconds": "0.034",
+        "hideAfterPickControlSeconds": "0.034",
+        "hideAfterPickResyncs": "0",
+        "lateResyncs": "0",
+        "awaysSent": "2",
+        "resyncs": "8",
+        "enemyJumpsMarked": "30",
+        "events": "0.68s stage loaded (seed 9200) | 0.94s welcomed in 0.251 s | 10.89s page away for 20 s while the cards were up (set 1) | 30.90s page back | 30.95s resynced 0.050 s after coming back | 30.95s the cards came back after the away (set 1); server timeout paused | 31.36s level-up card picked (WeaponUpgrade swivel_guns, set 1) | 37.49s page hidden without telling the server (one frame a second) for 8 s (set 2) | 45.49s level-up card picked (Logbook admiral, set 2) | 45.51s page active again: cards Picked, control back in 0.018 s (late resyncs 0, resyncs 8) | 57.04s level-up card picked (WeaponUpgrade swivel_guns, set 3) | 57.04s page hidden at once after the pick for 5 s (set 3) | 62.05s page back after the pick | 62.12s control back 0.034 s after the welcome (0.034 s after the page came back); resyncs over the hide 0 | 65.82s level-up card picked (Logbook lookouts_glass, set 4) | 70.17s VOYAGE-DONE snapshots=680 hull=0/100 kills=25 level=4 | 70.17s end Sunk received | 70.17s lobby (end Sunk) 0.001 s after the server's end showed, at 2026-10-09T18:08:15.1301280Z",
+        "traffic": [
+          {
+            "clientId": 0,
+            "bytesDownPerSecond": 1916.068,
+            "bytesUpPerSecond": 464.018,
+            "wireDownPerSecondEstimate": 2153.697,
+            "wireUpPerSecondEstimate": 652.946,
+            "messagesDown": 1376,
+            "messagesUp": 1094
+          }
+        ],
+        "predictionErrorMetres": {
+          "count": 537,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "correctionMetres": {
+          "count": 542,
+          "mean": 0.001,
+          "p50": 0,
+          "p95": 0,
+          "max": 0.758
+        },
+        "inputLagMs": {
+          "count": 537,
+          "mean": 49.038,
+          "p50": 33.333,
+          "p95": 66.667,
+          "max": 100
+        }
+      }
+    }
+  ]
+}

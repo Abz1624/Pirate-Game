@@ -1,0 +1,9 @@
+    0.13 opened http://localhost:8092/?bench=desk&short=2
+    5.85 [Bench] armed http://localhost:8092/?bench=desk&short=2 | 
+    5.87 sailing seen
+    7.52 [Bench] {"phase":"info","label":"desk","device":"Chrome 154.0.0.0","gpu":"ANGLE (Intel, Intel(R) UHD Graphics (0x0000A78B) Direct3D11 vs_5_0 ps_5_0, D3D11)","gfx":"OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium))","cores":1,"ramMB":537,"screen":"1920x1080","dpi":96,"quality":"PC","tier":"Mid","renderScale":1,"loadSeconds":1.683,"heapMB":476,"astc":false,"dxt":true,"textures":"RGBA32:43/0.4MB R16:1/0MB Alpha8:61/4.3MB RGBAHalf:1/0MB DXT5:159/0MB R8:9/0MB DXT1:75/0MB RGB24:5/0MB"} | 
+   20.14 canvas 1920x1080 drawing 1920x1080
+   32.24 [Bench] {"phase":"early","label":"desk","frames":250,"seconds":16.706,"fps":14.965,"p50":66,"p95":75,"p99":204,"max":218,"over33":97.2,"over50":96.4,"enemiesAvg":1.258,"enemiesMax":2,"runClock":20.081,"heapMB":476,"cpuMainMs":-1,"cpuRenderMs":-1,"gpuMs":-1,"refreshHz":60} | 
+   67.28 [Bench] {"phase":"peak","label":"desk","frames":428,"seconds":25.046,"fps":17.089,"p50":58,"p95":65,"p99":71,"max":191,"over33":99.533,"over50":99.299,"enemiesAvg":1,"enemiesMax":1,"runClock":250.048,"heapMB":476,"cpuMainMs":-1,"cpuRenderMs":-1,"gpuMs":-1,"refreshHz":60} | 
+   67.29 [Bench] done | 
+  150.21 done

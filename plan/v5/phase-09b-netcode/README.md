@@ -568,7 +568,7 @@ second, the server's messages handled in that frame), `NetClient.AwaySource`; th
 The leash moves an enemy to 26 m ahead of the ship, but the top-down view reaches 30.5 m ahead at the screen's middle, so in
 the normal game too a leashed enemy can appear just inside the top edge. The net client now shows it exactly as the normal
 game does (at once, trails cleared); moving the leash's target out of view changes the shared simulation and its goldens,
-so it is left for the owner.
+so it is left for the owner. (Owner, 10 Oct, D28: 31 m; see "Owner re-test fixes" below.)
 
 ### Measurements (files in `playtest-fixes/`)
 
@@ -591,3 +591,78 @@ so it is left for the owner.
   (`V5MonteCarloExportTests.TheModelsData_IsTheExportOfTheseConfigs`, `V5PlausibilityRulesTests.RulesFile_IsForTheConfigTheGameRunsOn_AndUsesItsXpTable`,
   `V5RunLogPlayModeTests.ScriptedVoyage_PassesTheRunChecks`, `V5RunLogPlayModeTests.DamageOnVoyage_PassesTheRunChecks_IncludingTheHullLedger`:
   `outdated_client: config_not_in_rules`). Fix: re-export the Monte Carlo data and regenerate the rules (not done here).
+
+## Owner re-test fixes (10 Oct, after the owner's re-test on Railway)
+
+The owner's re-test of image `e1f56626d9b5` (desktop Chrome 1920x1080, about 270 ms round trip; evidence in
+`railway/owner-retest/`): stutter and enemy jumps fixed; still wrong: the ship stuck after a level-up and a tab switch, a
+pause of the enemies after a pick, about 40 fps. Owner decision D28: the leash puts enemies back just outside the view
+(about 31 m ahead). **Protocol version 5: the new image and the new WebGL client go together.** Evidence in
+`owner-retest-fixes/`. Nothing on Railway or GHCR was touched; nothing committed.
+
+How it was found: the old client and image were run locally in a real Chrome driven over the DevTools protocol, with the
+tab hidden by opening another tab in front of it on a schedule (`owner-retest-fixes/webgl/cdp-hide.mjs`). Both of the
+owner's symptoms came back there (`webgl/before-e1f56626-chrome-tab-hides-*.log`).
+
+| # | Cause found | Fix (where) | Before / after | Tests |
+|---|---|---|---|---|
+| 1a. Ship stuck, kills frozen | Not the hold: a **chest choice**. With gold for a Salvage Chest, sailing into its range opens Take/Skip and pauses the run (`InteractionModel`, pause reason POIChoice) until the player answers. The server's run did that, but nobody can answer online (chests are not mirrored until M9c): the server's ship held for good (a net step goes through the LevelUp pause only) while the client predicted it sailing on, so every snapshot pulled it back. Old local browser run: `paused True`, `pause 0-0`, a 1.14 m correction on every snapshot until the log cap, kills frozen; the owner's 2.5 m/s ship jitter | The server skips a chest choice at once, as the player's Skip (R) would (no gold spent; the prompt stays closed until the ship leaves the chest), right after the run's frame steps and at each net tick (`NetServer.SkipChestChoice`, `NetServer.cs:600`, called at `:572` and `:843`); counted and logged (`ChestChoicesSkipped`). M9c mirrors the choice with the chests (plan note) | in-process: run paused at most 1 frame, correction max 0.5 m gate kept (0.76 m before the frame-step check: the in-process client shares the run's pause), no gold spent | PlayMode `ChestChoice_OnTheServer_IsSkipped_TheShipSailsOn` |
+| 1b. Resync loop after a tab switch or a hitch | A page runs no frame for up to a second after it is hidden (and a hitch, such as the cards' first show, which took 1.3 s in Chrome, does the same). Its next frame handled a second of snapshots one by one before the client saw anything: each one whose ack passed the client's standing tick resynced it again (ack 1745, 1755, 1765, 1775 in the owner's log, each 10 ticks on, the tick never moving in between; 9-10 resyncs a hide in the old local runs). Harmless for the position, but the owner's "loop", and every one moved the tick line | The prediction is reconciled once a frame, on the newest snapshot (`NetClient.OnSnapshot` keeps it, `ApplyPendingSnapshot` at `NetClient.cs:420`, called early in `Update` at `:474`); an away page does not reconcile (its welcome resyncs it). The cards come back after an away (checked: they no longer seem to vanish) | old local Chrome run (960x600 canvas, 7 tab hides, 2 picks around them): **66 resyncs**, bursts of 9 in one frame; new: **3** (one per hide at most). In-process, 270 ms round trip: control back 0.027-0.034 s after a pick that followed a 3 s hide, 0.037-0.038 s after the welcome when the page hid right after the pick, 0.005-0.035 s after a 1.2 s hitch after the pick (one resync, 16 snapshots coalesced), no guessed inputs after, prediction error p95 0.046 m | PlayMode `LevelUp_PageHiddenAroundThePick_AndAThrottledFrame_SteersAgain_ResyncsBounded` (A: hidden 3 s while the cards are up, B: pick then hidden 2 s, C: pick then a 1.2 s frame; asserts control within one snapshot, at most 2/2/1 resyncs, none after); Docker `--hide-after-pick 5` |
+| 2. Enemies paused after a pick | The server resumes its run when the pick arrives, but the enemy batches carried the server tick, which ran on through the pause: the client drew the pause's standing snapshots for the pick's way to the server, the next snapshot's way back and the render delay (350 ms after a hitch: the page's own lateness widened it) | Protocol 5: enemy batches carry the server's **world tick** (`NetServer.WorldTick`, `NetServer.cs:50`, advanced at `:593` only while the run is not paused or held; batch header `:760`); the client's enemy clock stands still while its ship holds for the cards and runs on from there with the pick (`NetEnemyMirror.RenderTick(now, held)`, `NetEnemyMirror.cs:215`, `NetClient.WorldHeld` `:434`, `NetEnemyViews.cs:68`), bridging the round trip on the enemies' velocity (extrapolation cap 6 to 9 ticks, `:34`), steered back 15% instead of 5% while past the newest snapshot (`:253`), no snap for 3 s after a hold (`:244`); a hold begins only after the clock has run up to that frame (a hidden page's first frame comes a second late; `Advance`, `:236`). Batches handled in a slow frame no longer widen the render delay (`ClockSample(steady)`, `:184`; `NetClient.OnEnemies` `:436`). A paused server's repeated batches are not counted twice (`:286`) | in-process, busy sea, 270 ms, 60 fps, same voyage both ways: on-screen enemies back over half their speed **436 ms after the pick, 24 frames standing still** (old clock) to **0 ms, 0 frames** (new) | PlayMode `LevelUp_EnemiesMoveOnWithThePick_Measured`; EditMode `Mirror_EnemyClockHoldsWithTheShip_AndRunsOnFromThereAfterThePick`, `Mirror_HoldAfterALongFrame_RunsTheClockUpToItFirst`, `Mirror_ArrivalsInASlowFrame_DoNotWidenTheRenderDelay` |
+| 3. Leash (D28) | A 26 m constant | `RunConfig.enemyLeashReturnDistance` = **31 m** (`RunConfig.cs:29`, validated below the 45 m leash distance, which is now `RunConfig.EnemyLeashDistance`), read at every leash check (`EnemySimulation.LeashReturnDistance`, `EnemySimulation.Tick.cs:872/896`; wired in `EnemyWorldModule.cs:115`), so the console can change it; asset `V4/Data/Run/RunConfig.asset` | the view's top edge is 30.5 m ahead of the ship (worked out from the run scene's camera: 25 m up, 20 m back, 50 degrees) | EditMode `V4EnemyTickM8Tests.Leash_PutsEnemiesBackAtTheConfiguredDistance_JustOutsideTheTopOfTheView` (reads the camera from `V4SaltwindRun.unity`, checks 31 > 30.5 and < 40, the relocation lands at 31 m, a console edit to 35 m applies at the next check) |
+| 4. 40 fps | Not the net client: the page's canvas size. The page template draws a 960x600 canvas; full screen at 1920x1080 is 3.6 times the pixels, and this PC's integrated GPU (Intel UHD) is fill-bound there, as the owner's probably is. The net client draws less than the normal game (no shots, pickups or chests yet) | Per-frame and growing work in the net client removed anyway: the HUD sorted every input-delay sample since the start (LINQ, two lists) ten times a second (now the last 150, once a second, on a reused buffer: `NetMetrics.PercentileOfLast` `NetMetrics.cs:68`, `NetVoyageHud.cs:235`); the statistics lists grew by every on-screen enemy every frame and were sorted every 10 s (now capped at 30,000: `AddCapped` `:85`, `NetVoyageClient.cs:216`, `NetSmoothness`); a closure a frame (`NetVoyageClient.cs:251`); the mirror's enumerator boxed a frame | see the table below | - |
+
+Not changed: after D28 a leashed enemy is out of view only straight ahead. The leash places it within 75 degrees of the
+ship's heading, and the camera always looks north (screen up), so at 16:9 the 31 m ring is outside the view only within
+about 15 degrees of screen up (35 m needed at 30 degrees, 43 m at 45-60 degrees, 26.6 m at the sides; at 21:9 the top
+corners reach 61 m, past the 45 m leash distance). Placements on screen, by a direct count of the camera's view: sailing
+screen-up 100% at 26 m, **86% at 31 m**; over all headings 52% and **37%** (16:9). Putting each enemy just outside the view
+along its own bearing (31-44 m at 16:9) would meet D28's intent; it changes where enemies reappear in the shared
+simulation, so it is the owner's call (`TODO-FOR-YOU.md`).
+
+Config hash: the new RunConfig field changes it (`12ee9e8169...`). The Monte Carlo export was redone (`data.json`: only
+`configHash` and `exported` differ; the leash is not in the simulator's input) and the rules regenerated as rules **v4**
+(`server/RoguePirates.Api/Plausibility/plausibility-rules.json`): identical bounds; `configHashes` keeps the pre-D28
+config (`7539ec3f...`, export `09afabf8`, checked equal but for the hash by `plausibility.mjs`'s `SAME_BOUNDS_CONFIGS`)
+and the pre-D27 one. `--check` 0.07% false positives (budget 0.1%), `--sessions` S5 and S6 pass (D25), `--edge-cases`
+agree; the session fixtures under `server/RoguePirates.Api.Tests/Fixtures/plausibility/` regenerated; `dotnet test`
+163/163 (`dotnet-test-retest.trx`). The API must be deployed with the new rules before builds with this config upload runs
+(else `outdated_client`, shadow mode).
+
+### Measurements (`owner-retest-fixes/`)
+
+| Run | Result |
+|---|---|
+| In-process, `inprocess/hidden-around-pick-270ms.json` (two runs) | A: control 0.027 / 0.034 s after the pick, 0 resyncs; B: 0.037 / 0.038 s after the welcome, 0 resyncs; C: 0.005 / 0.035 s after a 1.2 s hitch, 1 resync, 16 snapshots coalesced; after: 0 guessed inputs, 0 resyncs, prediction error p95 0.046 m |
+| In-process, `inprocess/enemies-after-pick.json` | back over half speed 436 ms / 24 still frames after the pick (old clock) to 0 ms / 0 (new); 0 m of server enemy drift while paused; jumps through the pause 5 / 7 (leash) |
+| In-process, `inprocess/enemy-smoothness.json` (rerun) | 0 unexplained fast frames, 0 slides, jitter mean 0.13 m/s, 1 still frame; 70 server relocations (31 m leash) |
+| Local Docker, `docker-voyage/summary.json` (new image, 70 s, sank on the scripted route) | away 20 s during cards: resynced 0.050 s after back, cards back, picked; hidden 8 s during cards (says nothing): picked, control 0.018 s after, one resync a hidden second (8, was one a snapshot); pick then hidden 5 s: welcome 0.034 s after back, control 0.034 s, 0 resyncs; prediction error max 0, correction max 0.76 m (once); tick p50 / p95 0.41 / 0.78 ms; 1.85 KB/s down; 148 MB; a second player and a replayed ticket refused |
+| Local Chrome, new client and image, 960x600 canvas, 7 tab hides (`webgl/after-chrome-tab-hides-canvas-960x600.log`) | 125 s sailing: **58.0 fps**, 1% low 58.8, 0.42% of frames over 20 ms; 7 card sets, 5 picks, 5 aways; **3 resyncs** (old client, same schedule: 66); prediction error max 1.09 m and correction max 1.10 m once (the start-up resync, as before); ship jitter p95 0.24 m/s; 28 on-screen enemy frames faster than any enemy sails (old client: 11), all with server relocations in the in-process measurement (see the leash note) |
+| Local Chrome, old client and image, same schedule (`webgl/before-e1f56626-chrome-tab-hides-canvas-960x600.log`) | 56.8 fps, 1% low 58.8, 0.27% over 20 ms; 66 resyncs in bursts of 9 at each hide |
+
+Frame rate on this PC (Intel UHD integrated GPU, Chrome 154), the same canvas for each pair:
+
+| Canvas | Net client (new) | Normal game (desktop build with the bench harness, `Builds/WebGL-Desktop-Bench`, `?bench=`) |
+|---|---|---|
+| 1920x1080 (full screen; the owner's) | **42.0 fps** mean, 1% low 28.6, 81.9% of frames over 20 ms (`webgl/after-net-client-canvas-1920x1080.log`) | **15.0 fps** early, 17.1 fps at the 4:00 peak (default quality, tier Mid; `webgl/normal-game-bench-canvas-1920x1080.log`) |
+| 960x600 (the page's default) | **58.0 fps** (old client 56.8) | 29.6 fps early, 32.9 at the peak (PC quality, tier High; `webgl/normal-game-bench-pc-high-canvas-960x600.log`); 28.0 at the peak at 1200x750 (125% display scaling, default quality) |
+
+The net client is faster than the normal game at the same canvas (it draws and simulates less); the owner's 40 fps with
+98% of frames over 20 ms matches this PC's 42 fps and 82% at a full-screen 1080p canvas: fill rate, not the net code.
+
+WebGL build: `webgl/net-build.json` (114.3 MB, 119,845,044 B; the new client), server image
+`rogue-pirates-match:local` = `ghcr.io/x2c-fun/rogue-pirates-match:7d4bdc84c2f4-dirty` (Mono, 267 MB unpacked).
+
+### Tests (owner re-test fixes)
+
+- EditMode V5 net 27/27 (`owner-retest-fixes/editmode-v5net.json`; 24 + 3 new; the protocol version test says 5).
+- Full EditMode 610/610 (`owner-retest-fixes/editmode-full.json`, before the last mirror change; V5 net rerun after it),
+  including the Monte Carlo export and plausibility rules tests on the new config.
+- PlayMode V5 net 30/30 (`owner-retest-fixes/playmode-v5net.json`; 27 + 3 new), and again 30/30 inside the full PlayMode
+  suite after the last mirror change: 121/122 (`owner-retest-fixes/playmode-full.json`). The one failure,
+  `V4EnemyPlayModeTests.EnemyContracts_MapTheSimulation_SlotBySlot_AndDevActionsUseTheHitPath` ("the cannonboats fired"
+  within a 4 s real-time window, enemies spawned 12 m away; no leash involved), passed alone and with its class 12/12
+  (`owner-retest-fixes/playmode-v4enemy-rerun.json`): timing in the long suite, not this change.
+- `dotnet test` 163/163 (`dotnet-test-retest.trx`).
+- Headless test client: `-rpHideAfterPick S` (`local_voyage_test.py --hide-after-pick S`): the next pick after the other
+  phases is followed at once by the page hidden for S s; reports the welcome and control-back times and the resyncs.

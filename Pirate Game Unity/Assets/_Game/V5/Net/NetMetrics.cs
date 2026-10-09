@@ -58,14 +58,34 @@ namespace RoguePirates.V5.Net
 
         public float Elapsed => Mathf.Max(0.001f, Time.realtimeSinceStartup - StartedAt);
 
-        public static float Percentile(List<float> values, float p)
+        public static float Percentile(List<float> values, float p) => values == null ? 0f : PercentileOfLast(values, values.Count, p);
+
+        /// <summary>
+        /// The <paramref name="p"/>th percentile of the newest <paramref name="last"/> values. V5 M9b owner re-test fixes: on a
+        /// reused buffer, not a LINQ sort (the browser client's HUD asked for the input delay's median ten times a second
+        /// over every sample since the start, allocating two lists each time and slower as the voyage went on).
+        /// </summary>
+        public static float PercentileOfLast(List<float> values, int last, float p)
         {
-            if (values == null || values.Count == 0) return 0f;
-            var sorted = values.OrderBy(v => v).ToList();
-            var rank = Mathf.Clamp(p / 100f * (sorted.Count - 1), 0f, sorted.Count - 1);
+            if (values == null || values.Count == 0 || last <= 0) return 0f;
+            var n = Math.Min(last, values.Count);
+            if (_scratch.Length < n) _scratch = new float[Mathf.NextPowerOfTwo(n)];
+            values.CopyTo(values.Count - n, _scratch, 0, n);
+            Array.Sort(_scratch, 0, n);
+            var rank = Mathf.Clamp(p / 100f * (n - 1), 0f, n - 1);
             var lo = Mathf.FloorToInt(rank);
             var hi = Mathf.CeilToInt(rank);
-            return Mathf.Lerp(sorted[lo], sorted[hi], rank - lo);
+            return Mathf.Lerp(_scratch[lo], _scratch[hi], rank - lo);
+        }
+
+        static float[] _scratch = new float[256];
+
+        /// <summary>Adds <paramref name="value"/>; past <paramref name="max"/> values (0: no limit) the oldest half goes, so a long
+        /// session's lists stay bounded (the browser client's statistics cover the newest samples).</summary>
+        public static void AddCapped(List<float> values, float value, int max)
+        {
+            if (max > 0 && values.Count >= max) values.RemoveRange(0, values.Count - max / 2);
+            values.Add(value);
         }
 
         public static float Max(List<float> values) => values == null || values.Count == 0 ? 0f : values.Max();

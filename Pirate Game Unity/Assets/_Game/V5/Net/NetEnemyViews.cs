@@ -65,7 +65,7 @@ namespace RoguePirates.V5.Net
         {
             if (_client == null || _sink == null) return;
             var mirror = _client.Enemies;
-            var renderTick = mirror.RenderTick(NetFrameClock.Now);
+            var renderTick = mirror.RenderTick(NetFrameClock.Now, _client.WorldHeld); // owner re-test fixes: still while the ship holds for the cards
             foreach (var e in mirror.All)
             {
                 if (!_drawn.TryGetValue(e.unitId, out var d))

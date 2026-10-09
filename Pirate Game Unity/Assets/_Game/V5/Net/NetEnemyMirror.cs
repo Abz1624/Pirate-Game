@@ -29,8 +29,9 @@ namespace RoguePirates.V5.Net
         /// this between two snapshots is a relocation, not sailing.</summary>
         public const float MaxEnemySpeed = 45f;
         public const float JumpSlackMetres = 1f;
-        /// <summary>How far past its newest snapshot an enemy is drawn on its last velocity when the next one is late.</summary>
-        public const float MaxExtrapolationTicks = 6f;
+        /// <summary>How far past its newest snapshot an enemy is drawn on its last velocity when the next one is late (9 ticks,
+        /// 300 ms: after a level-up hold the first snapshots after the pick arrive a round trip later).</summary>
+        public const float MaxExtrapolationTicks = 9f;
 
         /// <summary>An enemy's newest snapshots (tick, position, heading), oldest first, and where it jumped.</summary>
         public sealed class Track
@@ -138,6 +139,7 @@ namespace RoguePirates.V5.Net
         readonly Dictionary<byte, string> _defs = new Dictionary<byte, string>();
         uint _tick;
         int _batchesIn, _batchCount;
+        ulong _batchMask;
         bool _full, _truncated;
         Vector3 _origin;
 
@@ -147,7 +149,7 @@ namespace RoguePirates.V5.Net
         public int DroppedSnapshots { get; private set; }
         /// <summary>Moves faster than any enemy sails, marked as jumps (relocations drawn at once).</summary>
         public int Jumps { get; private set; }
-        public IEnumerable<Entry> All => _entries.Values;
+        public Dictionary<int, Entry>.ValueCollection All => _entries.Values; // a struct enumerator: no allocation per frame
         public bool TryGet(int unitId, out Entry entry) => _entries.TryGetValue(unitId, out entry);
         public string DefinitionId(byte index) => _defs.TryGetValue(index, out var id) ? id : "?";
         public void SetDefinition(byte index, string id) => _defs[index] = id;
@@ -159,6 +161,7 @@ namespace RoguePirates.V5.Net
             _seen.Clear();
             _tick = 0;
             _batchesIn = _batchCount = 0;
+            _batchMask = 0;
             _renderAt = -1;
         }
 
@@ -178,9 +181,12 @@ namespace RoguePirates.V5.Net
         /// <summary>A new server tick arrived at local time <paramref name="now"/>. The clock follows the earliest arrivals
         /// (the least delayed snapshot; it creeps later by 2% so a lasting change of delay is taken up), and the lateness of
         /// the others decays slowly, so the render delay covers the link's jitter.</summary>
-        void ClockSample(uint tick, double now)
+        void ClockSample(uint tick, double now, bool steady)
         {
             var offset = now - tick * (double)NetProtocol.TickSeconds;
+            // V5 M9b owner re-test fixes: an arrival handled in a slow frame (a hitch, a hidden page's frame) is late because the
+            // page was; it says nothing about the link, so it neither moves the clock nor widens the render delay.
+            if (_haveClock && !steady && Math.Abs(offset - _clockOffset) <= 1.0) { _lastClockSample = now; return; }
             if (!_haveClock || Math.Abs(offset - _clockOffset) > 1.0)
             {
                 _clockOffset = offset;
@@ -197,30 +203,68 @@ namespace RoguePirates.V5.Net
 
         /// <summary>The server tick (fractional) the enemies are drawn at now: the newest snapshot's time less
         /// <see cref="DelaySeconds"/>.</summary>
-        public float RenderTick(double now)
+        public float RenderTick(double now) => RenderTick(now, false);
+
+        /// <summary>
+        /// <paramref name="held"/> (V5 M9b owner re-test fixes, 10 Oct): the client's ship holds for the level-up cards (or its
+        /// page is away): the enemies' clock stands still with it, the clock's offset moving on by the time held, so after
+        /// the pick the render time runs on from the same place. The server's world tick (protocol 5) stood still meanwhile,
+        /// so the snapshots after the pick carry on from where the enemies stopped; the first ones arrive a round trip after
+        /// the pick, and until then the enemies run on their last velocity (they resume as they were).
+        /// </summary>
+        public float RenderTick(double now, bool held)
         {
             if (!_haveClock) return LastCompleteTick;
+            if (held && _holding && _renderAt >= 0)
+            {
+                if (now > _renderAt) _clockOffset += now - _renderAt;
+                _renderAt = now;
+                _heldAt = now;
+                return (float)_render;
+            }
+            // The frame a hold begins still runs the clock up to now first: a page hidden runs no frame for up to a second,
+            // and its first hidden frame (the one that sees it is away) must not freeze the enemies where they were a second
+            // before; the server's world ran on until the away message reached it.
+            var render = Advance(now);
+            _holding = held;
+            if (held) _heldAt = now;
+            return render;
+        }
+
+        bool _holding;
+
+        float Advance(double now)
+        {
             var target = (now - _clockOffset - DelaySeconds) / NetProtocol.TickSeconds;
             // The render time runs at the frame clock's rate and is steered toward its target by at most 5% of that rate (a
             // snapshot arriving early or the jitter allowance changing would otherwise jerk every enemy forward or back
             // at once); it is set outright when it is a quarter of a second off (a start, a stall).
-            if (_renderAt < 0 || Math.Abs(target - _render) > 0.25 / NetProtocol.TickSeconds) { _render = target; _renderAt = now; return (float)_render; }
+            // For a few seconds after a hold the snapshots arrive later by about the round trip (the server's pause lasted that
+            // much longer than the client's hold), and the delay widens to cover it: the render time is steered there, not set.
+            var snapAt = now - _heldAt < 3.0 ? 0.6 : 0.25;
+            if (_renderAt < 0 || Math.Abs(target - _render) > snapAt / NetProtocol.TickSeconds) { _render = target; _renderAt = now; return (float)_render; }
             var elapsed = now - _renderAt;
             if (elapsed <= 0) return (float)_render;
             _renderAt = now;
             var ticks = elapsed / NetProtocol.TickSeconds;
             var error = target - (_render + ticks);
-            var steer = Math.Max(-0.05 * ticks, Math.Min(0.05 * ticks, error * Math.Min(1.0, elapsed / 0.5)));
+            // Past the newest complete snapshot (after a hold: the first snapshots after the pick are a round trip away) it
+            // eases back three times as fast, so the enemies are not drawn on their velocity for long.
+            var rate = error < 0 && _render > LastCompleteTick ? 0.15 : 0.05;
+            var steer = Math.Max(-rate * ticks, Math.Min(rate * ticks, error * Math.Min(1.0, elapsed / 0.5)));
             _render += ticks + steer;
             return (float)_render;
         }
 
-        double _render, _renderAt = -1;
+        double _render, _renderAt = -1, _heldAt = double.NegativeInfinity;
 
         /// <summary>One batch message.</summary>
         public void Apply(NetReader r, float y) => Apply(r, y, Time.realtimeSinceStartupAsDouble);
 
-        public void Apply(NetReader r, float y, double now)
+        public void Apply(NetReader r, float y, double now) => Apply(r, y, now, true);
+
+        /// <param name="steady">False when this batch is handled in a slow frame (its lateness is the page's, not the link's).</param>
+        public void Apply(NetReader r, float y, double now, bool steady)
         {
             if (!NetCodec.ReadBatchHeader(r, out var h)) return;
             if (h.serverTick < _tick || h.serverTick <= LastCompleteTick) return; // older than the one being collected
@@ -229,12 +273,18 @@ namespace RoguePirates.V5.Net
                 if (_tick != 0 && _batchesIn < _batchCount) DroppedSnapshots++; // a batch of the previous one was lost
                 _tick = h.serverTick;
                 _batchesIn = 0;
+                _batchMask = 0;
                 _batchCount = h.batchCount;
                 _full = h.full;
                 _truncated = h.truncated;
                 _seen.Clear();
-                ClockSample(h.serverTick, now);
+                ClockSample(h.serverTick, now, steady);
             }
+            // Protocol 5: while the run is paused the world tick stands still and later snapshots repeat its batches; one
+            // already in is not counted again (a repeat must not complete a tick whose other batch was lost).
+            var bit = 1UL << (h.batchIndex & 63);
+            if ((_batchMask & bit) != 0) return;
+            _batchMask |= bit;
             _origin = new Vector3(h.originX, y, h.originZ);
             for (var i = 0; i < h.count; i++)
             {

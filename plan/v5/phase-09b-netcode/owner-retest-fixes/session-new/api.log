@@ -1,0 +1,18 @@
+info: RoguePirates.Api[0]
+      Database Microsoft.EntityFrameworkCore.Sqlite: empty, creating the schema from migrations
+info: RoguePirates.Api[0]
+      Database Microsoft.EntityFrameworkCore.Sqlite: applying 4 migration(s): 20261007204746_Baseline, 20261007210742_AddRunLogs, 20261007221923_AddRunVerdicts, 20261008012557_AddRunLogRejection
+info: RoguePirates.Api[0]
+      Database Microsoft.EntityFrameworkCore.Sqlite: migrations applied, latest 20261008012557_AddRunLogRejection
+info: RoguePirates.Api[0]
+      Rogue Pirates API using sqlite
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://0.0.0.0:18100
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\shara\AppData\Local\Temp\rp-match-session-api
+info: RoguePirates.Api.Plausibility.PlausibilityRescorer[0]
+      Run checks: rules v4 (shadow mode); 0 stored run(s) scored

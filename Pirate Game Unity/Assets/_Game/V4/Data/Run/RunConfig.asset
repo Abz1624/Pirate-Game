@@ -25,3 +25,4 @@ MonoBehaviour:
   islandImpactCooldown: 0.75
   islandDamageCooldown: 2
   islandBounceSeconds: 0.5
+  enemyLeashReturnDistance: 31

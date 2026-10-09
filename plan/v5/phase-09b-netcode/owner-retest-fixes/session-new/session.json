@@ -1,0 +1,8 @@
+{
+  "api": "http://localhost:18100",
+  "match": "ws://localhost:17800/",
+  "matchId": "local-2071054d",
+  "web": "http://localhost:8090/",
+  "image": "rogue-pirates-match:local",
+  "started": "2026-10-09T21:49:18.905555+00:00"
+}

@@ -196,6 +196,8 @@ namespace RoguePirates.V5.Net
             EnsureEventSystem();
         }
 
+        float _lag, _nextLag;
+
         void Update()
         {
             _frames++;
@@ -230,7 +232,8 @@ namespace RoguePirates.V5.Net
             _hullFill.rectTransform.sizeDelta = new Vector2(728f * (s.maxHull > 0f ? Mathf.Clamp01(s.hull / s.maxHull) : 0f), 18f);
             _stats.text = $"Hull {s.hull:0}/{s.maxHull:0}    Level {s.level}    Kills {s.kills}    Gold {s.gold}    {NetVoyageClient.Clock(s.runTime)}";
             var boost = s.Boosting ? "Boosting" : s.boost.cooldownTimer > 0f ? $"Boost in {Mathf.CeilToInt(s.boost.cooldownTimer)} s" : "Boost ready (Shift)";
-            var lag = NetMetrics.Percentile(client.Metrics.InputLagMs, 50f);
+            if (now >= _nextLag) { _nextLag = now + 1f; _lag = NetMetrics.PercentileOfLast(client.Metrics.InputLagMs, 150, 50f); } // the last 10 s, once a second
+            var lag = _lag;
             _detail.text = $"{boost}    Input delay {lag:0} ms    {_fps:0} fps    {client.Enemies.Count} enemies near";
         }
     }

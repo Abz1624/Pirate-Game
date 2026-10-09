@@ -1,6 +1,6 @@
 {
  "format": "rp-plausibility-rules",
- "rulesVersion": 3,
+ "rulesVersion": 4,
  "mode": "shadow",
  "logFormat": "rp-runlog",
  "logVersion": 1,
@@ -233,6 +233,6 @@
    "configMargin": 90
   }
  ],
- "generated": "2026-10-09T13:55:48.011Z",
+ "generated": "2026-10-09T17:50:33.993Z",
  "note": "test fixture: the rules for the config S1 was played on (its session-data snapshot), made the way the shipped rules are"
 }

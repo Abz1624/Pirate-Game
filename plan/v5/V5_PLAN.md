@@ -697,6 +697,11 @@ real-time modes.
   ends the voyage, end reason Abandoned), as the normal game stops in a hidden tab. A shared run cannot pause for one
   player: in M9c a hidden player's ship holds (no input applied, no card timeout running for them) while the run and the
   other ships go on, and the 10 minute limit removes them.
+- From the owner's M9b re-test (10 Oct): until chests are mirrored, the server voyage skips a chest's Take or Skip choice
+  (it paused the server's run for an answer nobody could give: the owner's stuck ship); M9c mirrors the choice with the
+  chests. The enemy batches run on the server's world tick (protocol 5: it stands still while the run is paused or held)
+  and the client's enemy clock stands still while its ship holds for the cards; in a shared run (cards that do not pause
+  it) the world tick never stops and each client's enemy clock simply runs on.
 
 Automated check: the 4-client load test on local Docker and on Railway; the full EditMode and PlayMode suites and the
 goldens green.

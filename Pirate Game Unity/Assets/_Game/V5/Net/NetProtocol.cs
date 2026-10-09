@@ -20,8 +20,10 @@ namespace RoguePirates.V5.Net
         /// <summary>2 (part 2b): the snapshot carries the boost's timers; level-up messages. 3 (M9b review): the client names
         /// the tick its ship holds from when the cards arrive (<see cref="PickAction.Hold"/>). 4 (M9b playtest fixes, 9 Oct):
         /// the snapshot carries the input margin (<see cref="ShipSnapshot.inputMargin"/>); the away message
-        /// (<see cref="Presence"/>); the end reason Abandoned.</summary>
-        public const byte Version = 4;
+        /// (<see cref="Presence"/>); the end reason Abandoned. 5 (M9b owner re-test fixes, 10 Oct): an enemy batch's tick is
+        /// the server's world tick (<see cref="NetServer.WorldTick"/>: it stands still while the run is paused or held), so
+        /// the client's enemy clock stops with the level-up hold and runs on from the same place after the pick.</summary>
+        public const byte Version = 5;
 
         /// <summary>The server's fixed simulation rate and the client's input rate (one input per tick).</summary>
         public const int TickRate = 30;

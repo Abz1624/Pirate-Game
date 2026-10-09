@@ -114,6 +114,7 @@ namespace RoguePirates.V5.Net
 
         void Awake()
         {
+            Smoothness.MaxSamples = MaxStatsSamples;
             Instance = this;
             _hud = gameObject.AddComponent<NetVoyageHud>();
             _hud.Bind(this);
@@ -212,7 +213,7 @@ namespace RoguePirates.V5.Net
             if (Current != State.Sailing || Client == null) return;
             var run = RunManager.Instance;
             if (run != null && run.IsPaused) run.SetPause(RoguePirates.V4.Foundation.Core.PauseReason.None); // the server's pause is the one that counts
-            if (Client.Connected && Client.Welcomed && !Client.Away) FrameSeconds.Add(Time.unscaledDeltaTime);
+            if (Client.Connected && Client.Welcomed && !Client.Away) NetMetrics.AddCapped(FrameSeconds, Time.unscaledDeltaTime, MaxStatsSamples);
             var now = Time.realtimeSinceStartup;
             if (Autopilot) Drive(now - _sailStart);
             if (now >= _nextStats)
@@ -244,13 +245,22 @@ namespace RoguePirates.V5.Net
             var dt = Time.unscaledDeltaTime;
             Smoothness.BeginFrame();
             Smoothness.Ship(Client.RenderPosition, dt);
-            var cam = Camera.main;
-            if (_views == null || cam == null) return;
-            _views.ForEachDrawn((id, p) =>
-            {
-                var v = cam.WorldToViewportPoint(p);
-                Smoothness.Enemy(id, p, dt, v.z > 0f && v.x >= 0f && v.x <= 1f && v.y >= 0f && v.y <= 1f);
-            });
+            _cam = Camera.main;
+            if (_views == null || _cam == null) return;
+            _frameDt = dt;
+            _views.ForEachDrawn(_measureEnemy ??= MeasureEnemy); // one delegate for the session (was a new closure every frame)
+        }
+
+        /// <summary>V5 M9b owner re-test fixes: the browser client's statistics keep the newest this many samples per list.</summary>
+        public const int MaxStatsSamples = 30000;
+        Camera _cam;
+        float _frameDt;
+        Action<int, Vector3> _measureEnemy;
+
+        void MeasureEnemy(int id, Vector3 p)
+        {
+            var v = _cam.WorldToViewportPoint(p);
+            Smoothness.Enemy(id, p, _frameDt, v.z > 0f && v.x >= 0f && v.x <= 1f && v.y >= 0f && v.y <= 1f);
         }
 
         string Summary()

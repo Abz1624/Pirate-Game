@@ -40,6 +40,27 @@ namespace RoguePirates.V5.Net
         public JoinTicketVerifier Tickets { get; set; }
         public float ResumeGraceSeconds = 30f;
         public uint ServerTick { get; private set; }
+        /// <summary>
+        /// V5 M9b owner re-test fixes (10 Oct, protocol 5): the server's world tick, the enemy batches' clock. It counts the
+        /// server ticks on which the run's world moves (not paused for the level-up cards, not held while the player is
+        /// away or before the first inputs), so it stands still while the enemies do. The client's enemy clock stops with
+        /// its own level-up hold and, after the pick, runs on from where it stopped: the enemies move again on the client
+        /// the moment its ship does, instead of after the pick's round trip plus the render delay standing still.
+        /// </summary>
+        public uint WorldTick { get; private set; } = 1;
+        /// <summary>Tests: false sends the enemy batches on the server tick (protocol 4's clock), to measure both; back on, the
+        /// world tick continues from the server tick (the client's enemy clock never goes back).</summary>
+        public bool EnemyClockIsWorldTick
+        {
+            get => _worldClock;
+            set { if (value && !_worldClock) WorldTick = Math.Max(WorldTick, ServerTick); _worldClock = value; }
+        }
+        bool _worldClock = true;
+        /// <summary>V5 M9b owner re-test fixes (10 Oct): chest choices (the Salvage Chest's and the Rare Treasure Chest's Take or
+        /// Skip, which pause the run until the player answers) skipped by the server: the choice is not mirrored to the
+        /// client yet (M9c), so the paused server run held the ship for good while the client sailed on (the owner's
+        /// stuck ship, kills frozen). Skipped, the chest's prompt stays closed until the ship leaves its range.</summary>
+        public int ChestChoicesSkipped { get; private set; }
         public int Seed { get; private set; }
 
         /// <summary>Client reports (hull, hits) received and dropped unread; input bytes beyond the inputs, dropped.</summary>
@@ -52,6 +73,7 @@ namespace RoguePirates.V5.Net
         public V4Game Game { get; private set; }
         public ShipMotionPort Ship { get; private set; }
         IEnemyWorldView _enemies;
+        RoguePirates.V4.Stage.IStageContent _stage;
 
         public sealed class Session
         {
@@ -144,6 +166,7 @@ namespace RoguePirates.V5.Net
             if (Ship == null) throw new InvalidOperationException("the run has no ship");
             Ship.TakeControl();
             game.Context.TryGet(out _enemies);
+            game.Context.TryGet(out _stage);
             Seed = RunManager.Instance != null ? RunManager.Instance.RunSeed : 0;
             // V5 M9b part 2b: the run deals its cards to the player through the network (the module pauses the run and waits
             // for the pick as in a voyage); a run started with automatic level-ups (a test scenario) keeps them.
@@ -546,6 +569,7 @@ namespace RoguePirates.V5.Net
             LevelUps?.Tick(); // an unanswered card set takes the first card
             var s = Current;
             var run = RunManager.Instance;
+            if (run != null && run.PauseReason == PauseReason.POIChoice) SkipChestChoice(run);
             var playing = run != null && !run.IsRunEnded && Ship.Alive;
             var away = s != null && s.away && !s.expired;
             // M9b playtest fixes: an away player's voyage holds (no input applied, no coasting, no snapshots) until it is back
@@ -565,7 +589,20 @@ namespace RoguePirates.V5.Net
             if (!EndSent && run != null && (run.IsRunEnded || !Ship.Alive))
                 SendEnd(Ship.Alive ? NetProtocol.EndReason.RunEnded : NetProtocol.EndReason.Sunk);
 
+            // The world moved on this tick (the run is not paused for cards, held for an away player or for the first inputs).
+            if (run != null && !run.IsPaused && Time.timeScale > 0f && !away) WorldTick++;
             if (ServerTick % NetProtocol.SnapshotEveryTicks == 0 && s != null && s.connected && !away) SendSnapshot(s);
+        }
+
+        /// <summary>V5 M9b owner re-test fixes: a chest choice paused the run (the player sailed into a chest's range with the
+        /// gold for it). Nobody can answer it on this server yet (M9c mirrors chests), so it is skipped at once, as the
+        /// player's Skip (R) would: the run plays on and the prompt stays closed until the ship leaves the chest.</summary>
+        void SkipChestChoice(RunManager run)
+        {
+            _stage?.SkipChest();
+            if (run.PauseReason == PauseReason.POIChoice) run.SetPause(PauseReason.None); // not the interaction's own pause
+            ChestChoicesSkipped++;
+            if (ChestChoicesSkipped <= 10) Debug.Log($"[V5 Net] chest choice skipped (not mirrored to the client until M9c): {ChestChoicesSkipped} so far");
         }
 
         void ApplyInputs(Session s)
@@ -720,7 +757,7 @@ namespace RoguePirates.V5.Net
                 var count = Mathf.Min(NetProtocol.MaxEnemiesPerBatch, total - from);
                 var header = new EnemyBatchHeader
                 {
-                    serverTick = ServerTick,
+                    serverTick = _worldClock ? WorldTick : ServerTick, // protocol 5: the world's clock (stands still while the run is paused or held)
                     batchIndex = (byte)b,
                     batchCount = (byte)batches,
                     full = full,
@@ -800,6 +837,10 @@ namespace RoguePirates.V5.Net
 
         internal void EndWork()
         {
+            // The run's frame steps (order 10) may have opened a chest choice: skipped before anything else steps a ship this
+            // frame (the in-process test client, at order 50, shares the run's pause).
+            var run = RunManager.Instance;
+            if (Ship != null && run != null && run.PauseReason == PauseReason.POIChoice) SkipChestChoice(run);
             _work.Stop();
             _pendingWorkMs += _work.Elapsed.TotalMilliseconds;
             if (_ticksThisFrame <= 0) return;

@@ -1,0 +1,54 @@
+{
+  "report": "hidden-around-pick-270ms",
+  "utc": "2026-10-09T22:56:21.0189460Z",
+  "unity": "6000.3.11f1",
+  "editor": true,
+  "A_controlAfterPickSeconds": "0.034",
+  "A_resyncs": "0",
+  "B_controlAfterWelcomeSeconds": "0.038",
+  "B_resyncs": "0",
+  "C_controlAfterHitchSeconds": "0.035",
+  "C_resyncs": "1",
+  "C_snapshotsCoalesced": "16",
+  "after_guessedInputs": "0",
+  "after_resyncs": "0",
+  "after_predictionErrorP95": "0.000",
+  "aways": "2",
+  "link": "135 ms each way, 15 ms jitter, 1% loss",
+  "sections": [
+    {
+      "name": "server",
+      "seconds": 18.567,
+      "clients": [
+        {"clientId": 1, "bytesDownPerSecond": 2167.848, "bytesUpPerSecond": 532.173, "wireDownPerSecondEstimate": 2473.547, "wireUpPerSecondEstimate": 755.146, "messagesDown": 473, "messagesUp": 345}
+      ],
+      "tickMs": {"count": 556, "mean": 1.304, "p50": 1.708, "p95": 2.103, "max": 2.389},
+      "snapshotBytes": {"count": 230, "mean": 171, "p50": 171, "p95": 171, "max": 171},
+      "snapshotEnemies": {"count": 230, "mean": 1, "p50": 1, "p95": 1, "max": 1},
+      "predictionErrorMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "guessedInputs": 130,
+      "lateInputs": 40,
+      "catchUpSteps": 0
+    },
+    {
+      "name": "client",
+      "seconds": 1.501,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 2620.827, "bytesUpPerSecond": 899.597, "wireDownPerSecondEstimate": 2988.662, "wireUpPerSecondEstimate": 1259.436, "messagesDown": 46, "messagesUp": 45}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 23, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "correctionMetres": {"count": 23, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "resumeSeconds": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "inputLagMs": {"count": 23, "mean": 340.58, "p50": 333.333, "p95": 366.667, "max": 366.667},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}

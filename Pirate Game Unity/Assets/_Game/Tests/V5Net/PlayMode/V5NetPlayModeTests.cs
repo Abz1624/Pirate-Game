@@ -79,9 +79,16 @@ namespace RoguePirates.V5.Net.Tests
 
         IEnumerator StartVoyage(string scenario, NetLinkSimulator.Link? link = null)
         {
+            var config = Scenario.Find(scenario);
+            Assert.IsNotNull(config, scenario);
+            yield return StartVoyage(config, link);
+        }
+
+        IEnumerator StartVoyage(ScenarioConfig scenario, NetLinkSimulator.Link? link = null)
+        {
             yield return Scenario.Load(scenario);
-            Assert.IsNotNull(Scenario.Current, scenario + " is loaded");
-            CollectionAssert.IsEmpty(Scenario.Current.Errors, scenario + " set up without problems");
+            Assert.IsNotNull(Scenario.Current, scenario.name + " is loaded");
+            CollectionAssert.IsEmpty(Scenario.Current.Errors, scenario.name + " set up without problems");
             _game = Scenario.Current.Game;
             Assert.AreEqual(30f, _game.Config.Single<RunConfig>().tickRate, "the server's run ticks at 30 Hz");
             Assert.IsNull(GameObject.Find("V4Presentation"), "the server's run has no presenters");
@@ -1202,6 +1209,307 @@ namespace RoguePirates.V5.Net.Tests
             Assert.AreEqual(NetProtocol.EndReason.Abandoned, client.EndReason);
             Assert.IsTrue(_server.Current.expired);
             Assert.AreEqual(1f, Time.timeScale, "the hold is released");
+        }
+
+        // ---- M9b owner re-test fixes (10 Oct) -------------------------------------------------------------------------------
+
+        /// <summary>The client steers again: it ticks, its ship does not hold, and its tick is ahead of the server's next
+        /// unapplied one (its inputs arrive before their tick; the test then checks that the server applies them). Seconds from <paramref name="from"/> (-1: not within 4 s).</summary>
+        IEnumerator WaitForControl(NetClient client, float from, float[] seconds)
+        {
+            seconds[0] = -1f;
+            var until = Time.realtimeSinceStartup + 4f;
+            var lastTick = client.Tick;
+            while (Time.realtimeSinceStartup < until)
+            {
+                var ticking = client.Tick > lastTick;
+                lastTick = client.Tick;
+                // Its tick ahead of the server's next unapplied one; just after a welcome the server takes the next input
+                // that arrives as its first (expectNext 0 until then), so any tick is ahead.
+                if (ticking && client.Welcomed && !client.Away && !client.Holds(client.Tick + 1) && (_server.Current.expectNext == 0 || client.Tick >= _server.Current.expectNext))
+                {
+                    seconds[0] = Mathf.Max(0f, Time.realtimeSinceStartup - from);
+                    yield break;
+                }
+                yield return null;
+            }
+        }
+
+        /// <summary>
+        /// V5 M9b owner re-test fixes (10 Oct, issue 1): the owner's tab switches around a level-up pick at a 270 ms round trip.
+        /// A hidden page runs no frame for up to a second, then one a second (Chrome); its first frame handles the snapshots
+        /// that came meanwhile and only then sees the page hidden. Before the fix every one of those snapshots whose ack had
+        /// passed the client's standing tick resynced it again (the owner's ack 1745, 1755, 1765, 1775, 10 ticks apart, the
+        /// tick never moving in between); now the prediction is reconciled once a frame on the newest snapshot. Three cases:
+        /// (A) the page hidden 3 s while the cards are up, back, the cards come back (they do not vanish), the pick;
+        /// (B) the pick, then the page hidden 2 s at once; (C) the pick, then a 1.2 s frame without the page being hidden (a
+        /// hitch: the cards' first show took 1.3 s in the browser). After each the client steers within one snapshot of
+        /// being able to (the pick, or the welcome after the page is back), with at most one resync in the hitch, and the
+        /// server applies the client's own inputs again (none guessed) and answers its keys.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator LevelUp_PageHiddenAroundThePick_AndAThrottledFrame_SteersAgain_ResyncsBounded()
+        {
+            yield return StartVoyage("net_voyage_levelup", Asia);
+            var client = NewClient(Ticket(), AsiaClient);
+            var input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            client.Input = input;
+            var hiddenUntil = -1f;
+            client.AwaySource = () => Time.realtimeSinceStartup < hiddenUntil;
+            yield return Join(client);
+            yield return Seconds(2f);
+            var progression = _game.Build.Progression;
+            var control = new float[1];
+            var limit = NetProtocol.SnapshotEveryTicks * NetProtocol.TickSeconds + 0.05f;
+            var report = new Dictionary<string, string>();
+
+            // (A) Hidden 3 s while the cards are up; back; the cards come back; the pick.
+            progression.GrantLevelUp();
+            yield return Until(() => client.PendingOffer != null, 3f);
+            Assert.IsNotNull(client.PendingOffer, "A: the cards reached the client");
+            var seq = client.PendingOffer.seq;
+            yield return Seconds(0.5f);
+            var resyncs = client.Resyncs;
+            var welcomes = client.Welcomes;
+            hiddenUntil = Time.realtimeSinceStartup + 3f;
+            client.ThrottleForTest(3f);
+            yield return Until(() => !client.Throttled, 5f);
+            yield return Until(() => client.Welcomes > welcomes && client.PendingOffer != null, 3f);
+            Assert.AreEqual(1, _server.AwaysReceived, "A: the server heard the page was hidden");
+            Assert.Greater(client.Welcomes, welcomes, "A: back, a welcome resynced the ship");
+            Assert.IsNotNull(client.PendingOffer, "A: the cards came back (they do not vanish)");
+            Assert.AreEqual(seq, client.PendingOffer.seq);
+            Assert.IsTrue(_server.LevelUps.Pending, "A: still up on the server (its timeout waited)");
+            yield return Seconds(0.3f);
+            Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0));
+            var pickedAt = Time.realtimeSinceStartup;
+            yield return WaitForControl(client, pickedAt, control);
+            report["A_controlAfterPickSeconds"] = control[0].ToString("0.000");
+            report["A_resyncs"] = (client.Resyncs - resyncs).ToString();
+            Assert.GreaterOrEqual(control[0], 0f, "A: the client steers after the pick");
+            Assert.LessOrEqual(control[0], limit, "A: within one snapshot of the pick");
+            Assert.LessOrEqual(client.Resyncs - resyncs, 2, "A: no resync loop");
+            yield return Until(() => !RunManager.Instance.IsPaused, 3f);
+            yield return Seconds(1.5f);
+
+            // (B) The pick, then the page hidden 2 s at once.
+            progression.GrantLevelUp();
+            yield return Until(() => client.PendingOffer != null && client.PendingOffer.seq != seq, 3f);
+            Assert.IsNotNull(client.PendingOffer, "B: the cards reached the client");
+            seq = client.PendingOffer.seq;
+            yield return Seconds(0.8f);
+            resyncs = client.Resyncs;
+            welcomes = client.Welcomes;
+            Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0));
+            hiddenUntil = Time.realtimeSinceStartup + 2f;
+            client.ThrottleForTest(2f);
+            yield return Until(() => !client.Throttled, 4f);
+            yield return Until(() => client.Welcomes > welcomes, 3f);
+            Assert.Greater(client.Welcomes, welcomes, "B: back, a welcome resynced the ship");
+            var welcomedAt = Time.realtimeSinceStartup;
+            yield return WaitForControl(client, welcomedAt, control);
+            report["B_controlAfterWelcomeSeconds"] = control[0].ToString("0.000");
+            report["B_resyncs"] = (client.Resyncs - resyncs).ToString();
+            Assert.AreEqual(2, _server.LevelUps.Picked, "B: the pick sent before the page was hidden was applied");
+            Assert.IsNull(client.PendingOffer, "B: no cards left up");
+            Assert.GreaterOrEqual(control[0], 0f, "B: the client steers after the welcome");
+            Assert.LessOrEqual(control[0], limit, "B: within one snapshot of the welcome");
+            Assert.LessOrEqual(client.Resyncs - resyncs, 2, "B: no resync loop");
+            yield return Seconds(1.5f);
+
+            // (C) The pick, then a 1.2 s frame (a hitch; the page stays visible, nothing tells the server).
+            progression.GrantLevelUp();
+            yield return Until(() => client.PendingOffer != null && client.PendingOffer.seq != seq, 3f);
+            Assert.IsNotNull(client.PendingOffer, "C: the cards reached the client");
+            yield return Seconds(0.8f);
+            resyncs = client.Resyncs;
+            var coalesced = client.SnapshotsCoalesced;
+            Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0));
+            client.ThrottleForTest(1.2f);
+            yield return Until(() => !client.Throttled, 3f);
+            var activeAt = Time.realtimeSinceStartup;
+            input.Value = new Vector2(1f, 1f); // the player steers at once
+            yield return WaitForControl(client, activeAt, control);
+            report["C_controlAfterHitchSeconds"] = control[0].ToString("0.000");
+            report["C_resyncs"] = (client.Resyncs - resyncs).ToString();
+            report["C_snapshotsCoalesced"] = (client.SnapshotsCoalesced - coalesced).ToString();
+            Assert.GreaterOrEqual(control[0], 0f, "C: the client steers after the hitch");
+            Assert.LessOrEqual(control[0], limit, "C: within one snapshot of the frame after the hitch");
+            Assert.LessOrEqual(client.Resyncs - resyncs, 1, "C: one resync at most (it was one per snapshot whose ack passed the standing tick)");
+            Assert.Greater(client.SnapshotsCoalesced - coalesced, 5, "C: the hitch's snapshots were handled in one frame");
+
+            // Afterwards: the server applies the client's own inputs (none guessed) and answers its keys; in step.
+            yield return Seconds(1.5f);
+            var guessed = _server.Metrics.GuessedInputs;
+            resyncs = client.Resyncs;
+            client.Metrics.Reset();
+            yield return Seconds(1.5f);
+            report["after_guessedInputs"] = (_server.Metrics.GuessedInputs - guessed).ToString();
+            report["after_resyncs"] = (client.Resyncs - resyncs).ToString();
+            report["after_predictionErrorP95"] = NetMetrics.Percentile(client.Metrics.PredictionError, 95f).ToString("0.000");
+            report["aways"] = _server.AwaysReceived.ToString();
+            report["link"] = "135 ms each way, 15 ms jitter, 1% loss";
+            var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Temp", "V5Net", "hidden-around-pick-270ms.json"));
+            Debug.Log("[V5 Net] hidden around the pick: " + NetMetrics.WriteReport(path, "hidden-around-pick-270ms", report, _server.Metrics, client.Metrics));
+            Assert.LessOrEqual(_server.Metrics.GuessedInputs - guessed, 2, "the client's inputs arrive in time");
+            Assert.AreEqual(0, client.Resyncs - resyncs, "no resyncs while sailing on");
+            Assert.Less(Mathf.Abs(_server.Ship.Capture().lastSteer - NetInput.From(input.Value, false).SteerThrottle.x), 0.01f, "the server's ship answers the keys");
+            Assert.Less(NetMetrics.Percentile(client.Metrics.PredictionError, 95f), 0.5f, "the prediction is on the server's ship");
+        }
+
+        /// <summary>
+        /// V5 M9b owner re-test fixes (10 Oct, issue 1, the owner's stuck ship): a chest choice (the Salvage Chest's Take or
+        /// Skip, shown when the ship sails into its range with the gold for it) paused the server's run until the player
+        /// answered; nobody can answer it online yet (the client does not see chests until M9c), so the server held the ship
+        /// for good while the client sailed on: a correction back every snapshot (1.14 m in the local browser run), kills
+        /// frozen. Now the server skips the choice at once (as R would): the run plays on, no gold is spent, no correction.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator ChestChoice_OnTheServer_IsSkipped_TheShipSailsOn()
+        {
+            yield return StartVoyage("net_voyage_open_water");
+            var client = NewClient(Ticket());
+            client.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            yield return Join(client);
+            yield return Seconds(1.5f);
+            Assert.IsTrue(_game.Context.TryGet(out RoguePirates.V4.Stage.IStageContent stage), "the stage content");
+            RunManager.Instance.AddGold(100000);
+            var gold = RunManager.Instance.Gold;
+            var heading = _server.Ship.Capture().velocity;
+            heading.y = 0f;
+            Assert.Greater(heading.magnitude, 3f, "sailing");
+            var chest = stage.Module.DevPlacePoi(POIType.SalvageChest, _server.Ship.Position + heading.normalized * 18f);
+            Assert.GreaterOrEqual(chest, 0, "a Salvage Chest ahead");
+            var pausedFrames = 0;
+            var probe = Probe(() => { if (RunManager.Instance != null && RunManager.Instance.PauseReason == PauseReason.POIChoice) pausedFrames++; });
+            client.Metrics.Reset();
+            yield return Until(() => _server.ChestChoicesSkipped > 0, 6f);
+            Assert.Greater(_server.ChestChoicesSkipped, 0, "the ship reached the chest with the gold for it, and its choice was skipped");
+            var serverAt = _server.Ship.Position;
+            var clientAt = client.Predicted.Position;
+            yield return Seconds(2f);
+            Object.Destroy(probe.gameObject);
+            Debug.Log($"[V5 Net] chest choice: skipped {_server.ChestChoicesSkipped}, frames ending paused for it {pausedFrames}, correction max {NetMetrics.Max(client.Metrics.Correction):0.000} m");
+            Assert.IsFalse(RunManager.Instance.IsPaused, "the run plays on");
+            Assert.Greater(Flat(_server.Ship.Position, serverAt), 10f, "the server's ship sails on");
+            Assert.Greater(Flat(client.Predicted.Position, clientAt), 10f, "and the client's");
+            Assert.Less(Flat(client.Predicted.Position, _server.Ship.Position), 3f, "in step");
+            var big = client.Metrics.Correction.FindAll(c => c > 0.2f);
+            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.Correction), 0.5f, $"no correction back to a held ship (paused frames {pausedFrames}, corrections over 0.2 m: {string.Join(", ", big)}, of {client.Metrics.Correction.Count}; skipped {_server.ChestChoicesSkipped})");
+            Assert.AreEqual(gold, RunManager.Instance.Gold, "skipped: no gold spent");
+            Assert.LessOrEqual(pausedFrames, 1, "the pause is lifted at the next net tick");
+        }
+
+        /// <summary>
+        /// V5 M9b owner re-test fixes (10 Oct, issue 2): after a level-up pick the enemies took a noticeable pause before they
+        /// moved again (the client's ship moved at once). The server resumes its run when the pick arrives; with the enemy
+        /// batches on the server tick, the client drew the paused stretch's standing snapshots for a round trip plus the
+        /// render delay after the pick. Now (protocol 5) the batches carry the world tick, which stands still while the run is
+        /// paused, and the client's enemy clock stands still while its ship holds: after the pick it runs on from there.
+        /// Both measured in one voyage (a busy sea at 10:00, 270 ms round trip, 60 fps): first the old clock (server tick, no
+        /// hold), then the new one. Per frame after the pick: the on-screen enemies' mean drawn speed against theirs before the
+        /// cards; the time until it is back over half of that, and the frames it stays under a fifth.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator LevelUp_EnemiesMoveOnWithThePick_Measured()
+        {
+            SixtyFps();
+            try
+            {
+                var busy = Object.Instantiate(Scenario.Find("net_voyage_busy"));
+                busy.name = "net_voyage_busy_cards";
+                busy.skipLevelUpCards = false;
+                yield return StartVoyage(busy, Asia);
+                var client = NewClient(Ticket(), AsiaClient);
+                var input = new ScriptedInput { Value = new Vector2(0.3f, 1f) };
+                client.Input = input;
+                yield return Join(client);
+                yield return Seconds(3f);
+                var useHold = false;
+                var phase = 0; // 0 before the cards, 1 cards up, 2 after the pick
+                var pickAt = 0f;
+                var reference = new List<float>();
+                var after = new List<(float t, float speed)>();
+                var last = new Dictionary<int, Vector3>();
+                var probe = Probe(() =>
+                {
+                    var dt = Time.unscaledDeltaTime;
+                    var mirror = client.Enemies;
+                    var render = mirror.RenderTick(NetFrameClock.Now, useHold && client.WorldHeld);
+                    var ship = client.RenderPosition;
+                    var sum = 0f;
+                    var n = 0;
+                    foreach (var e in mirror.All)
+                    {
+                        if (!e.track.Sample(render, out var p, out _, out _)) continue;
+                        if (OnScreen(ship, p) && last.TryGetValue(e.unitId, out var was) && dt > 1e-4f)
+                        {
+                            var v = Flat(p, was) / dt;
+                            if (v < NetEnemyMirror.MaxEnemySpeed) { sum += v; n++; }
+                        }
+                        last[e.unitId] = p;
+                    }
+                    if (n == 0) return;
+                    if (phase == 0) reference.Add(sum / n);
+                    else if (phase == 2) after.Add((Time.realtimeSinceStartup - pickAt, sum / n));
+                });
+                var results = new Dictionary<string, string>();
+                foreach (var mode in new[] { "before", "after" })
+                {
+                    _server.EnemyClockIsWorldTick = mode == "after";
+                    useHold = mode == "after";
+                    yield return Seconds(2f);
+                    reference.Clear();
+                    after.Clear();
+                    phase = 0;
+                    yield return Seconds(1f);
+                    var jumpsBefore = client.Enemies.Jumps;
+                    _game.Build.Progression.GrantLevelUp();
+                    phase = 1;
+                    yield return Until(() => client.PendingOffer != null, 3f);
+                    Assert.IsNotNull(client.PendingOffer, mode + ": the cards reached the client");
+                    yield return Seconds(0.3f);
+                    _game.Context.TryGet(out RoguePirates.V4.Enemies.IEnemyWorldView world);
+                    var pausedAt = new Dictionary<int, Vector3>();
+                    for (var i = 0; i < world.Capacity; i++) if (world.TryGet(i, out var e)) pausedAt[e.unitId] = e.position;
+                    yield return Seconds(0.7f);
+                    var drift = 0f;
+                    for (var i = 0; i < world.Capacity; i++)
+                        if (world.TryGet(i, out var e) && pausedAt.TryGetValue(e.unitId, out var was)) drift = Mathf.Max(drift, Flat(e.position, was));
+                    results[mode + "_serverEnemyDriftWhilePausedMetres"] = drift.ToString("0.000");
+                    Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0));
+                    pickAt = Time.realtimeSinceStartup;
+                    phase = 2;
+                    yield return Seconds(1.5f);
+                    phase = 3;
+                    var refSpeed = NetSmoothness.Mean(reference);
+                    var resume = -1f;
+                    var still = 0;
+                    foreach (var (t, speed) in after)
+                    {
+                        if (resume < 0f && speed >= 0.5f * refSpeed) resume = t;
+                        if (resume < 0f && speed < 0.2f * refSpeed) still++;
+                    }
+                    results[mode + "_referenceSpeedMps"] = refSpeed.ToString("0.00");
+                    results[mode + "_resumeAfterPickMs"] = (resume * 1000f).ToString("0");
+                    results[mode + "_framesStandingStillAfterPick"] = still.ToString();
+                    results[mode + "_framesMeasured"] = after.Count.ToString();
+                    results[mode + "_jumpsMarkedThroughThePause"] = (client.Enemies.Jumps - jumpsBefore).ToString();
+                    Debug.Log($"[V5 Net] enemies after a pick ({mode}): reference {refSpeed:0.00} m/s, back over half {resume * 1000f:0} ms after the pick, {still} frames standing still, render delay {client.Enemies.DelaySeconds * 1000f:0} ms");
+                    Assert.Greater(refSpeed, 1f, mode + ": enemies sailed on screen before the cards");
+                    Assert.Greater(after.Count, 60, mode + ": on-screen enemies were measured after the pick");
+                    yield return Until(() => !RunManager.Instance.IsPaused, 2f);
+                }
+                Object.Destroy(probe.gameObject);
+                results["link"] = "135 ms each way, 15 ms jitter, 1% loss";
+                var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Temp", "V5Net", "enemies-after-pick.json"));
+                Debug.Log("[V5 Net] enemies after a pick: " + NetMetrics.WriteReport(path, "enemies-after-pick", results, _server.Metrics, client.Metrics));
+                var resumeAfter = float.Parse(results["after_resumeAfterPickMs"]);
+                Assert.GreaterOrEqual(resumeAfter, 0f, "the enemies moved again after the pick");
+                Assert.LessOrEqual(resumeAfter, 50f, "at once (within three frames of the pick)");
+                Assert.LessOrEqual(int.Parse(results["after_framesStandingStillAfterPick"]), 2, "no frames standing still after the pick");
+            }
+            finally { RestoreFps(); }
         }
 
         /// <summary>A worse link than the gate's (jitter that reorders packets, 5% loss): measured and reported; the
