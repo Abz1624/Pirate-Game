@@ -83,7 +83,7 @@
   },
   "M9b": {
    "state": "building",
-   "chip": "re-test fixes running"
+   "chip": "fixes live · your re-test"
   },
   "M9c": {
    "state": "planned",
@@ -540,12 +540,18 @@
    "when": "10 Oct",
    "commit": "",
    "what": "<strong>Your M9b re-test</strong>: the stutter and the enemy jumps are gone. Still broken: after a level-up plus a tab switch the ship got stuck (the client kept falling behind the server and re-syncing); enemies pause briefly after a card pick; the browser ran at about 40 fps at 1920x1080. Your call (D28): the leash moves far enemies just outside the camera view (about 31 m). Fixes running."
+  },
+  {
+   "when": "10 Oct",
+   "commit": "e01a2e87",
+   "what": "<strong>Re-test fixes live</strong> (server image e01a2e874721, run checks v4 on the API). The stuck ship was a Salvage Chest's Take/Skip prompt pausing the server's run with no way to answer it online (the server now skips it); the resync loop came from handling a hidden tab's backlog one snapshot at a time (now once a frame); enemies now carry on the moment you pick a card; the leash puts enemies back at 31 m (D28). The ~40 fps was your 1080p canvas on this kind of GPU (the normal game does 15-17 fps there), not the network client."
   }
  ],
  "todos": {
   "next": [
-   "<strong>Keep recording voyages</strong> when you play.",
-   "Later: a balance pass (early dinghy damage, late elite HP, Doubloons in the simulator)."
+   "<strong>Re-test M9b</strong> at http://localhost:8090/?api=https://api-production-dad8.up.railway.app&amp;netvoyage=1 (hard-refresh first).",
+   "<strong>Leash</strong>: 31 m only clears the view straight ahead; decide whether to place each enemy just outside the view along its own direction.",
+   "<strong>Keep recording voyages</strong> when you play."
   ],
   "open": [
    "PvP draft on phones: tapping a card to read it also picks it (later)."
