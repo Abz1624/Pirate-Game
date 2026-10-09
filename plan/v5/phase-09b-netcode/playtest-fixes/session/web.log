@@ -1,0 +1,12 @@
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /?api=http://localhost:18100&netvoyage=auto&seconds=130 HTTP/1.1" 200 -
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /TemplateData/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /Build/RoguePirates.loader.js HTTP/1.1" 200 -
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /TemplateData/unity-logo-dark.png HTTP/1.1" 200 -
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /TemplateData/unity-logo-title-footer.png HTTP/1.1" 200 -
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /TemplateData/progress-bar-full-dark.png HTTP/1.1" 200 -
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /TemplateData/progress-bar-empty-dark.png HTTP/1.1" 200 -
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /TemplateData/fullscreen-button.png HTTP/1.1" 200 -
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /Build/RoguePirates.data.unityweb HTTP/1.1" 200 -
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /Build/RoguePirates.wasm.unityweb HTTP/1.1" 200 -
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /Build/RoguePirates.framework.js.unityweb HTTP/1.1" 200 -
+127.0.0.1 - - [09/Oct/2026 20:22:56] "GET /TemplateData/favicon.ico HTTP/1.1" 200 -

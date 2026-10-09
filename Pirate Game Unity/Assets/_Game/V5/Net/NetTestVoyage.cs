@@ -66,6 +66,8 @@ namespace RoguePirates.V5.Net
             var waitEnd = ArgFloat("-rpWaitEnd", 90f);
             var seed = (int)ArgFloat("-rpSeed", 9200);
             _dropDuringCards = HasArg("-rpDropDuringCards");
+            _awayDuringCards = ArgFloat("-rpAwayDuringCards", 0f);
+            _hiddenDuringCards = ArgFloat("-rpHiddenDuringCards", 0f);
             var output = Arg("-rpOut", Path.Combine(Application.temporaryCachePath, "client.json"));
             var ticket = Environment.GetEnvironmentVariable("RP_JOIN_TICKET");
             if (!NetEndpoint.TryParse(url, out var endpoint, out var error)) { Finish(output, "bad url: " + error, false); yield break; }
@@ -81,6 +83,7 @@ namespace RoguePirates.V5.Net
             Current = State.Joining;
             Client = NetClient.Create(endpoint, ticket, () => ShipMotionPort.CreatePredictionCopy(template), "V5NetTestClient");
             Client.Input = _script;
+            Client.AwaySource = () => _away;
             var joinStart = Time.realtimeSinceStartup;
             if (!Client.Connect()) { Finish(output, "the client did not start", false); yield break; }
             while (!Client.Welcomed && !Client.SessionOver && Time.realtimeSinceStartup - joinStart < 15f) yield return null;
@@ -157,6 +160,15 @@ namespace RoguePirates.V5.Net
                 ["droppedDuringCards"] = _droppedDuringCards ? "true" : "false",
                 ["resumeDuringCardsSeconds"] = _cardsResumeSeconds.ToString("0.000", CultureInfo.InvariantCulture),
                 ["cardsBackAfterResume"] = _cardsBackAfterResume ? "true" : "false",
+                ["awayDuringCardsSeconds"] = _awayDuringCards.ToString("0.0", CultureInfo.InvariantCulture),
+                ["awayWelcomeSeconds"] = _awayWelcomeSeconds.ToString("0.000", CultureInfo.InvariantCulture),
+                ["cardsBackAfterAway"] = _cardsBackAfterAway ? "true" : "false",
+                ["hiddenDuringCardsSeconds"] = _hiddenDuringCards.ToString("0.0", CultureInfo.InvariantCulture),
+                ["hiddenCardsResolution"] = _hiddenResolution,
+                ["hiddenControlBackSeconds"] = _hiddenControlSeconds.ToString("0.000", CultureInfo.InvariantCulture),
+                ["lateResyncs"] = Client.LateResyncs.ToString(),
+                ["awaysSent"] = Client.AwaysSent.ToString(),
+                ["enemyJumpsMarked"] = Client.Enemies.Jumps.ToString(),
             });
         }
 
@@ -165,6 +177,70 @@ namespace RoguePirates.V5.Net
         bool _dropDuringCards, _droppedDuringCards, _cardsBackAfterResume;
         float _cardsDropAt = -1f, _cardsResumeSeconds = -1f;
         int _welcomesAtCardsDrop;
+        // M9b playtest fixes: -rpAwayDuringCards S: on a later card set the page goes away for S s (the server holds the
+        // voyage and its card timeout), then comes back (a welcome resyncs it, the cards come back, the pick follows).
+        // -rpHiddenDuringCards S: on the set after that the page runs as a hidden tab that never said so (one frame a
+        // second) for S s; past 30 s the server's timeout takes the first card and the client must sail on at once.
+        float _awayDuringCards, _hiddenDuringCards;
+        bool _away, _awayDone, _cardsBackAfterAway, _hiddenDone;
+        int _awaySeq = -1, _hiddenSeq = -1, _welcomesAtBack;
+        float _awayUntil = -1f, _backAt = -1f, _awayWelcomeSeconds = -1f, _hiddenUntil = -1f, _hiddenControlSeconds = -1f;
+        string _hiddenResolution = "";
+
+        /// <summary>The away and hidden phases; true while they keep the script from picking.</summary>
+        bool AwayOrHidden(OfferMessage offer)
+        {
+            var now = Time.realtimeSinceStartup;
+            if (_awayDuringCards > 0f && !_awayDone && _awaySeq < 0 && offer != null && offer.seq != _pickedSeq &&
+                (!_dropDuringCards || _cardsBackAfterResume && offer.seq > 1) && now - Client.PendingOfferSince > 0.2f)
+            {
+                _awaySeq = offer.seq;
+                _away = true;
+                _awayUntil = now + _awayDuringCards;
+                Log($"page away for {_awayDuringCards:0} s while the cards were up (set {offer.seq})");
+            }
+            if (_away)
+            {
+                if (now < _awayUntil) return true;
+                _away = false;
+                _backAt = now;
+                _welcomesAtBack = Client.Welcomes;
+                Log("page back");
+            }
+            if (_backAt >= 0f && !_awayDone)
+            {
+                if (Client.Welcomes <= _welcomesAtBack) return true;
+                if (_awayWelcomeSeconds < 0f) { _awayWelcomeSeconds = now - _backAt; Log($"resynced {_awayWelcomeSeconds:0.000} s after coming back"); }
+                if (offer == null && now - _backAt < 3f) return true;
+                _cardsBackAfterAway = offer != null && offer.seq == _awaySeq;
+                _awayDone = true;
+                Log(_cardsBackAfterAway ? $"the cards came back after the away (set {offer.seq}); server timeout paused" : "no cards after the away");
+            }
+            if (_hiddenDuringCards > 0f && !_hiddenDone && _hiddenSeq < 0 && (_awayDuringCards <= 0f || _awayDone) && offer != null &&
+                offer.seq != _pickedSeq && offer.seq != _awaySeq && now - Client.PendingOfferSince > 0.2f)
+            {
+                _hiddenSeq = offer.seq;
+                _hiddenUntil = now + _hiddenDuringCards;
+                Client.ThrottleForTest(_hiddenDuringCards);
+                Log($"page hidden without telling the server (one frame a second) for {_hiddenDuringCards:0} s (set {offer.seq})");
+                return true;
+            }
+            if (_hiddenSeq >= 0 && !_hiddenDone)
+            {
+                if (Client.Throttled || now < _hiddenUntil) return true;
+                if (Client.PendingOffer == null && !Client.Holds(Client.Tick + 1))
+                {
+                    _hiddenControlSeconds = now - _hiddenUntil;
+                    _hiddenResolution = Client.LastResolution.how.ToString();
+                    _hiddenDone = true;
+                    Log($"page active again: cards {_hiddenResolution}, control back in {_hiddenControlSeconds:0.000} s (late resyncs {Client.LateResyncs}, resyncs {Client.Resyncs})");
+                    return false;
+                }
+                if (now - _hiddenUntil > 5f) { _hiddenDone = true; _hiddenResolution = "no control after 5 s"; Log("page active again: " + _hiddenResolution); }
+                return Client.PendingOffer == null;
+            }
+            return false;
+        }
 
         /// <summary>Wide S-turns at full throttle: the ship keeps moving and turning, near its start. V5 M9b part 2b: level-up
         /// cards are answered after 0.4 s with the first card (the server waits for the pick, as a voyage does).</summary>
@@ -193,6 +269,7 @@ namespace RoguePirates.V5.Net
                 _cardsBackAfterResume = true;
                 Log($"the cards came back after the resume (set {offer.seq})");
             }
+            if (AwayOrHidden(offer)) return;
             if (offer != null && offer.seq != _pickedSeq && Time.realtimeSinceStartup - Client.PendingOfferSince > 0.4f && Client.SendPick(NetProtocol.PickAction.Pick, 0))
             {
                 _pickedSeq = offer.seq;

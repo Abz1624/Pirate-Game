@@ -1,0 +1,291 @@
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=4194304"
+    "memorysetup-bucket-allocator-block-count=1"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=4194304"
+    "memorysetup-profiler-bucket-allocator-block-count=1"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=4194304"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Processor: 13th Gen Intel(R) Core(TM) i5-13450HX, 16 core(s) @ 2611 MHz 
+Available Memory: 7783 MB 
+Linux Kernel and distribution: Linux 6.18 Debian GNU/Linux 12 64bit
+System Language: en
+Keyboard Layout: default
+Mono path[0] = '/app/RoguePirates_Data/Managed'
+Mono config path = '/app/RoguePirates_Data/MonoBleedingEdge/etc'
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+PlayerPrefs - Creating folder: /home/rp/.config/unity3d/DefaultCompany
+PlayerPrefs - Creating folder: /home/rp/.config/unity3d/DefaultCompany/Rogue Pirates
+Unable to load player prefs
+Initialize engine version: 6000.3.11f1 (3000ef702840)
+[Subsystems] Discovering subsystems at path /app/RoguePirates_Data/UnitySubsystems
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  0.080 seconds
+- Finished resetting the current domain, in  0.002 seconds
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+UnloadTime: 0.783149 ms
+OnGUI function detected on MonoBehaviour, but not called, because IMGUI module is stripped.
+Couldn't create a Convex Mesh from source mesh, within the maximum polygons limit (256). The partial hull will be used. Consider simplifying your mesh. Source mesh name: Rock3_low001
+Couldn't create a Convex Mesh from source mesh, within the maximum polygons limit (256). The partial hull will be used. Consider simplifying your mesh. Source mesh name: Rock1_low001
+Couldn't create a Convex Mesh from source mesh, within the maximum polygons limit (256). The partial hull will be used. Consider simplifying your mesh. Source mesh name: Rock2_low001
+Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
+No mesh data available for mesh helix on particle system Trail2. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+UnloadTime: 0.539027 ms
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+No mesh data available for mesh Circle_Half_03 on particle system trail_smoke_outer. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Circle_Half_01 on particle system trail_bright. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Round_01 on particle system smoke_mesh. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Circle_Half_03 on particle system trail_smoke_outer_bright. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Round_01 on particle system smoke_mesh_floor. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh WaterCircle on particle system WaterSplash_Ring. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+No mesh data available for mesh Cylinder on particle system fire1 (1). Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Smoke_14. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Fire_04_2_GREEN. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Fire_05 _2 (1). Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Fire_05 _2. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system fire1 (1). Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Smoke_14. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+StageBuilder: spawned 40 islands (seed=9200, evenSpread=True, target 40, supplemental +0).
+V4Game: run seed=9200 (random), POI rng=9604.
+Unloading 1099 unused Assets to reduce memory usage. Loaded Objects now: 9126.
+Total: 3.936357 ms (FindLiveObjects: 0.485958 ms CreateObjectMapping: 0.156400 ms MarkObjects: 3.050643 ms  DeleteObjects: 0.243104 ms)
+
+[V5 Net] READY listening on ws://0.0.0.0:7777/ match 'local-e17dac8c' after 0.83 s in the process (run held until a player joins: True)
+[V5 Net] stats tick=299 session=none ticksMeasured=299 tickMs p50=0.343 p95=0.551 max=2.120 rssMB=167.5 monoHeapMB=4.9 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=599 session=none ticksMeasured=599 tickMs p50=0.341 p95=0.492 max=7.546 rssMB=168.5 monoHeapMB=5.1 unityReservedMB=154.6 fps=60
+[V5 Net] player joined; the run waits for its first inputs (its stage loading)
+[V5 Net] first inputs 1.83 s after the join; the run plays
+[V5 Net] stats tick=899 session=connected ticksMeasured=233 tickMs p50=0.427 p95=1.632 max=12.366 rssMB=171.5 monoHeapMB=5.3 unityReservedMB=154.6 fps=60
+[V5 Net] hold named 224: next unapplied 222, newest input 223, held from 224
+[V5 Net] cards Picked: held from 224, client resume 255, next unapplied 251, resume 255
+[V5 Net] hold named 466: next unapplied 464, newest input 465, held from 466
+[V5 Net] stats tick=1200 session=connected ticksMeasured=534 tickMs p50=0.457 p95=0.758 max=12.366 rssMB=173.0 monoHeapMB=4.9 unityReservedMB=154.6 fps=60
+[V5 Net] cards Picked: held from 466, client resume 497, next unapplied 495, resume 497
+[V5 Net] stats tick=1500 session=connected ticksMeasured=834 tickMs p50=0.501 p95=0.781 max=12.366 rssMB=174.5 monoHeapMB=5.2 unityReservedMB=156.6 fps=59
+[V5 Net] hold named 870: next unapplied 868, newest input 869, held from 870
+[V5 Net] cards Picked: held from 870, client resume 901, next unapplied 899, resume 901
+[V5 Net] stats tick=1800 session=connected ticksMeasured=1134 tickMs p50=0.512 p95=0.772 max=12.366 rssMB=176.1 monoHeapMB=4.9 unityReservedMB=158.6 fps=60
+[V5 Net] hold named 1116: next unapplied 1114, newest input 1115, held from 1116
+[V5 Net] cards Picked: held from 1116, client resume 1146, next unapplied 1143, resume 1146
+[V5 Net] player away (page hidden): the voyage holds
+[V5 Net] stats tick=2100 session=connected ticksMeasured=1434 tickMs p50=0.528 p95=0.824 max=12.366 rssMB=176.7 monoHeapMB=5.1 unityReservedMB=158.6 fps=60
+[V5 Net] stats tick=2400 session=connected ticksMeasured=1734 tickMs p50=0.537 p95=0.824 max=12.366 rssMB=176.7 monoHeapMB=5.3 unityReservedMB=158.6 fps=60
+[V5 Net] player back after 18.1 s away: the voyage plays on
+[V5 Net] hold named 1328: next unapplied 1327, newest input 1327, held from 1328
+[V5 Net] cards Picked: held from 1328, client resume 1359, next unapplied 1357, resume 1359
+[V5 Net] stats tick=2700 session=connected ticksMeasured=2034 tickMs p50=0.543 p95=0.826 max=12.366 rssMB=177.0 monoHeapMB=5.5 unityReservedMB=158.6 fps=60
+[V5 Net] hold named 1512: next unapplied 1510, newest input 1511, held from 1512
+[V5 Net] cards Picked: held from 1512, client resume 1543, next unapplied 1541, resume 1543
+RunCombatTelemetry exported to /home/rp/.config/unity3d/DefaultCompany/Rogue Pirates/telemetry/combat_D_FULL_COMBAT_V2_9200.json
+Session recorded: /home/rp/.config/unity3d/DefaultCompany/Rogue Pirates/sessions/session-20261009-132420-rook.json
+[V5 Net] closing: voyage ended (Sunk)
+[V5 Net] final tick=2956 session=detached ticksMeasured=2290 tickMs p50=0.535 p95=0.818 max=36.460 rssMB=178.9 monoHeapMB=5.3 unityReservedMB=158.6 fps=60
+[V5 Net] EXIT voyage ended (Sunk)
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[entrypoint] match server exited with 0
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=4194304"
+    "memorysetup-bucket-allocator-block-count=1"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=4194304"
+    "memorysetup-profiler-bucket-allocator-block-count=1"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=4194304"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Processor: 13th Gen Intel(R) Core(TM) i5-13450HX, 16 core(s) @ 2611 MHz 
+Available Memory: 7783 MB 
+Linux Kernel and distribution: Linux 6.18 Debian GNU/Linux 12 64bit
+System Language: en
+Keyboard Layout: default
+Mono path[0] = '/app/RoguePirates_Data/Managed'
+Mono config path = '/app/RoguePirates_Data/MonoBleedingEdge/etc'
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Initialize engine version: 6000.3.11f1 (3000ef702840)
+[Subsystems] Discovering subsystems at path /app/RoguePirates_Data/UnitySubsystems
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  0.080 seconds
+- Finished resetting the current domain, in  0.001 seconds
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+UnloadTime: 0.587873 ms
+OnGUI function detected on MonoBehaviour, but not called, because IMGUI module is stripped.
+Couldn't create a Convex Mesh from source mesh, within the maximum polygons limit (256). The partial hull will be used. Consider simplifying your mesh. Source mesh name: Rock3_low001
+Couldn't create a Convex Mesh from source mesh, within the maximum polygons limit (256). The partial hull will be used. Consider simplifying your mesh. Source mesh name: Rock1_low001
+Couldn't create a Convex Mesh from source mesh, within the maximum polygons limit (256). The partial hull will be used. Consider simplifying your mesh. Source mesh name: Rock2_low001
+Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
+No mesh data available for mesh helix on particle system Trail2. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+UnloadTime: 0.652759 ms
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+No mesh data available for mesh Circle_Half_03 on particle system trail_smoke_outer. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Circle_Half_01 on particle system trail_bright. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Round_01 on particle system smoke_mesh. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Circle_Half_03 on particle system trail_smoke_outer_bright. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Round_01 on particle system smoke_mesh_floor. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh WaterCircle on particle system WaterSplash_Ring. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+No mesh data available for mesh Cylinder on particle system fire1 (1). Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Smoke_14. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Fire_04_2_GREEN. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Fire_05 _2 (1). Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Fire_05 _2. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system fire1 (1). Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+No mesh data available for mesh Cylinder on particle system FX_Smoke_14. Make sure Read/Write Enabled is set in the importer to work on the particle system renderer
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+Trying to access a shader but no shaders were included in the build because Dedicated Server Optimizations is enabled.
+StageBuilder: spawned 40 islands (seed=9200, evenSpread=True, target 40, supplemental +0).
+V4Game: run seed=9200 (random), POI rng=9604.
+Unloading 1099 unused Assets to reduce memory usage. Loaded Objects now: 9126.
+Total: 3.926792 ms (FindLiveObjects: 0.340040 ms CreateObjectMapping: 0.146025 ms MarkObjects: 3.124037 ms  DeleteObjects: 0.316121 ms)
+
+[V5 Net] READY listening on ws://0.0.0.0:7777/ match 'local-e17dac8c' after 0.83 s in the process (run held until a player joins: True)
+[V5 Net] stats tick=299 session=none ticksMeasured=299 tickMs p50=0.349 p95=0.440 max=2.123 rssMB=167.4 monoHeapMB=4.9 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=599 session=none ticksMeasured=599 tickMs p50=0.351 p95=0.440 max=5.923 rssMB=168.4 monoHeapMB=5.1 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=899 session=none ticksMeasured=899 tickMs p50=0.350 p95=0.439 max=5.923 rssMB=168.5 monoHeapMB=5.2 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=1199 session=none ticksMeasured=1199 tickMs p50=0.349 p95=0.438 max=5.923 rssMB=168.5 monoHeapMB=4.8 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=1499 session=none ticksMeasured=1499 tickMs p50=0.349 p95=0.439 max=5.923 rssMB=168.5 monoHeapMB=5.0 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=1799 session=none ticksMeasured=1799 tickMs p50=0.349 p95=0.440 max=5.923 rssMB=168.5 monoHeapMB=5.2 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=2099 session=none ticksMeasured=2099 tickMs p50=0.350 p95=0.440 max=5.923 rssMB=168.6 monoHeapMB=5.5 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=2400 session=none ticksMeasured=2400 tickMs p50=0.350 p95=0.466 max=5.923 rssMB=168.6 monoHeapMB=4.9 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=2700 session=none ticksMeasured=2700 tickMs p50=0.350 p95=0.483 max=5.923 rssMB=168.6 monoHeapMB=5.1 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=3000 session=none ticksMeasured=3000 tickMs p50=0.350 p95=0.498 max=5.923 rssMB=168.7 monoHeapMB=5.3 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=3300 session=none ticksMeasured=3300 tickMs p50=0.348 p95=0.500 max=5.923 rssMB=168.7 monoHeapMB=4.8 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=3600 session=none ticksMeasured=3600 tickMs p50=0.347 p95=0.495 max=5.923 rssMB=168.7 monoHeapMB=5.0 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=3900 session=none ticksMeasured=3900 tickMs p50=0.346 p95=0.492 max=5.923 rssMB=168.7 monoHeapMB=5.3 unityReservedMB=154.6 fps=59
+[V5 Net] stats tick=4201 session=none ticksMeasured=4201 tickMs p50=0.344 p95=0.488 max=5.923 rssMB=168.8 monoHeapMB=4.8 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=4501 session=none ticksMeasured=4501 tickMs p50=0.342 p95=0.484 max=5.923 rssMB=168.8 monoHeapMB=5.1 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=4801 session=none ticksMeasured=4801 tickMs p50=0.342 p95=0.482 max=5.923 rssMB=168.8 monoHeapMB=5.4 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=5101 session=none ticksMeasured=5101 tickMs p50=0.341 p95=0.480 max=5.923 rssMB=168.8 monoHeapMB=4.9 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=5401 session=none ticksMeasured=5401 tickMs p50=0.341 p95=0.489 max=5.923 rssMB=168.9 monoHeapMB=5.2 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=5702 session=none ticksMeasured=5702 tickMs p50=0.342 p95=0.495 max=5.923 rssMB=168.9 monoHeapMB=5.6 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=6002 session=none ticksMeasured=6002 tickMs p50=0.342 p95=0.494 max=5.923 rssMB=168.9 monoHeapMB=5.1 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=6302 session=none ticksMeasured=6302 tickMs p50=0.342 p95=0.500 max=5.923 rssMB=169.0 monoHeapMB=5.4 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=6602 session=none ticksMeasured=6602 tickMs p50=0.342 p95=0.506 max=5.923 rssMB=169.0 monoHeapMB=5.0 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=6903 session=none ticksMeasured=6903 tickMs p50=0.342 p95=0.506 max=5.923 rssMB=169.0 monoHeapMB=5.4 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=7203 session=none ticksMeasured=7203 tickMs p50=0.342 p95=0.506 max=5.923 rssMB=169.2 monoHeapMB=5.8 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=7503 session=none ticksMeasured=7503 tickMs p50=0.342 p95=0.509 max=7.391 rssMB=169.2 monoHeapMB=5.3 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=7804 session=none ticksMeasured=7804 tickMs p50=0.341 p95=0.508 max=7.391 rssMB=169.3 monoHeapMB=5.7 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=8104 session=none ticksMeasured=8104 tickMs p50=0.341 p95=0.506 max=7.391 rssMB=169.4 monoHeapMB=5.3 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=8404 session=none ticksMeasured=8404 tickMs p50=0.342 p95=0.506 max=7.391 rssMB=169.5 monoHeapMB=5.8 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=8704 session=none ticksMeasured=8704 tickMs p50=0.342 p95=0.503 max=7.391 rssMB=169.5 monoHeapMB=5.4 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=9005 session=none ticksMeasured=9005 tickMs p50=0.342 p95=0.513 max=7.391 rssMB=169.6 monoHeapMB=5.8 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=9305 session=none ticksMeasured=9305 tickMs p50=0.343 p95=0.518 max=7.391 rssMB=169.6 monoHeapMB=5.4 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=9605 session=none ticksMeasured=9605 tickMs p50=0.342 p95=0.515 max=7.391 rssMB=169.7 monoHeapMB=5.9 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=9906 session=none ticksMeasured=9906 tickMs p50=0.343 p95=0.515 max=10.168 rssMB=169.7 monoHeapMB=5.4 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=10206 session=none ticksMeasured=10206 tickMs p50=0.343 p95=0.515 max=10.168 rssMB=169.8 monoHeapMB=5.9 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=10506 session=none ticksMeasured=10506 tickMs p50=0.343 p95=0.515 max=10.168 rssMB=169.8 monoHeapMB=5.5 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=10807 session=none ticksMeasured=10807 tickMs p50=0.343 p95=0.512 max=17.164 rssMB=169.8 monoHeapMB=5.2 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=11107 session=none ticksMeasured=11107 tickMs p50=0.343 p95=0.510 max=17.164 rssMB=169.8 monoHeapMB=5.7 unityReservedMB=154.6 fps=60
+[V5 Net] stats tick=11407 session=none ticksMeasured=11407 tickMs p50=0.343 p95=0.509 max=17.164 rssMB=169.9 monoHeapMB=5.5 unityReservedMB=154.6 fps=60

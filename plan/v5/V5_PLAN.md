@@ -691,6 +691,11 @@ real-time modes.
 - From the M9b review (owner, 9 Oct): M9c mirrors the shots, pickups, chests and the minimap's enemies (M9b's bandwidth
   figures exclude them) and judges D9c.1's bandwidth with them included; a per-session clock and hold instead of the
   global `Time.timeScale`; level-up cards that do not pause a shared run; several sessions per process (needed by M13b).
+- From the M9b playtest fixes (9 Oct): a solo server voyage holds while its player's page is hidden (the client's away
+  message; the run's clock, the ship and the card timeout stop; back, a welcome resyncs the ship; away over 10 minutes
+  ends the voyage, end reason Abandoned), as the normal game stops in a hidden tab. A shared run cannot pause for one
+  player: in M9c a hidden player's ship holds (no input applied, no card timeout running for them) while the run and the
+  other ships go on, and the 10 minute limit removes them.
 
 Automated check: the 4-client load test on local Docker and on Railway; the full EditMode and PlayMode suites and the
 goldens green.

@@ -41,6 +41,7 @@ namespace RoguePirates.V5.Net
     /// <c>?netvoyage=auto</c> runs it scripted (S-turns at full throttle, a boost at 45 s and every 35 s after, the first card picked through
     /// the card presenter after 1 s) and logs its measurements (client fps while connected, prediction, bandwidth).
     /// </summary>
+    [DefaultExecutionOrder(100)]
     public sealed class NetVoyageClient : MonoBehaviour
     {
         public enum State { Ticket, Joining, LoadingStage, Sailing, Over }
@@ -55,6 +56,15 @@ namespace RoguePirates.V5.Net
         public string EndDetail { get; private set; }
         /// <summary>Frame times (s) while sailing and connected (the D9b.1 fps measurement).</summary>
         public readonly List<float> FrameSeconds = new List<float>();
+        /// <summary>M9b playtest fixes: how smoothly the drawn ship and the on-screen enemies move (logged and reported).</summary>
+        public readonly NetSmoothness Smoothness = new NetSmoothness();
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+        [System.Runtime.InteropServices.DllImport("__Internal")] static extern int RP_NetPageHidden();
+        static bool PageHidden() => RP_NetPageHidden() != 0;
+#else
+        static bool PageHidden() => false; // the Editor and the tests set NetClient.AwaySource themselves
+#endif
 
         public static NetVoyageClient Instance { get; private set; }
 
@@ -145,6 +155,7 @@ namespace RoguePirates.V5.Net
                 Log("joining " + endpoint.Url + " (match " + reply.Data.matchId + ")");
                 Client = NetClient.Create(endpoint, reply.Data.ticket, () => null, "V5NetVoyageClient");
                 if (Autopilot) Client.Input = _script;
+                Client.AwaySource = PageHidden; // M9b playtest fixes (E): a hidden tab holds the solo voyage
                 Client.Boost = () => Autopilot ? _autoBoost : Keyboard.current != null && (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed);
                 Client.OfferReceived += OnOffer;
                 Client.OfferResolved += OnOfferResolved;
@@ -186,6 +197,7 @@ namespace RoguePirates.V5.Net
                 _nextStats = _sailStart + 10f;
                 _nextAutoBoost = _sailStart + 45f;
                 Client.Metrics.Reset();
+                Smoothness.Reset();
                 if (Client.PendingOffer != null) OnOffer(Client.PendingOffer); // dealt while the stage loaded
             }
             catch (Exception e)
@@ -200,7 +212,7 @@ namespace RoguePirates.V5.Net
             if (Current != State.Sailing || Client == null) return;
             var run = RunManager.Instance;
             if (run != null && run.IsPaused) run.SetPause(RoguePirates.V4.Foundation.Core.PauseReason.None); // the server's pause is the one that counts
-            if (Client.Connected && Client.Welcomed) FrameSeconds.Add(Time.unscaledDeltaTime);
+            if (Client.Connected && Client.Welcomed && !Client.Away) FrameSeconds.Add(Time.unscaledDeltaTime);
             var now = Time.realtimeSinceStartup;
             if (Autopilot) Drive(now - _sailStart);
             if (now >= _nextStats)
@@ -218,9 +230,27 @@ namespace RoguePirates.V5.Net
                     case NetProtocol.EndReason.RunEnded: Over("Voyage complete", Summary()); break;
                     case NetProtocol.EndReason.ServerClosing: Over("The server closed", "The match server shut down (a restart). Nothing was settled. " + Summary()); break;
                     case NetProtocol.EndReason.SessionExpired: Over("Session expired", Summary()); break;
+                    case NetProtocol.EndReason.Abandoned: Over("Voyage abandoned", "You were away for more than 10 minutes, so the voyage ended. " + Summary()); break;
                     default: Over("Connection lost", "The connection did not come back within 10 s. " + Summary()); break;
                 }
             }
+        }
+
+        /// <summary>After the ship and the enemies are drawn (this runs late): the smoothness measurements, while sailing,
+        /// connected and visible.</summary>
+        void LateUpdate()
+        {
+            if (Current != State.Sailing || Client == null || !Client.Connected || !Client.Welcomed || Client.Away) { Smoothness.Break(); return; }
+            var dt = Time.unscaledDeltaTime;
+            Smoothness.BeginFrame();
+            Smoothness.Ship(Client.RenderPosition, dt);
+            var cam = Camera.main;
+            if (_views == null || cam == null) return;
+            _views.ForEachDrawn((id, p) =>
+            {
+                var v = cam.WorldToViewportPoint(p);
+                Smoothness.Enemy(id, p, dt, v.z > 0f && v.x >= 0f && v.x <= 1f && v.y >= 0f && v.y <= 1f);
+            });
         }
 
         string Summary()
@@ -336,11 +366,15 @@ namespace RoguePirates.V5.Net
             var traffic = m.For(Unity.Netcode.NetworkManager.ServerClientId);
             return string.Format(CultureInfo.InvariantCulture,
                 "sailing={0:0}s frames={1} fpsMean={2:0.0} fps1pctLow={3:0.0} fps5pctLow={4:0.0} framesOver20ms={5:0.0}% snapshots={6} enemies={7} drawn={8} " +
-                "downBps={9:0} upBps={10:0} predErrP95={11:0.000} predErrMax={12:0.000} corrMax={13:0.000} inputLagP50={14:0} cardSets={15} picks={16} hull={17:0}/{18:0} level={19} kills={20}",
+                "downBps={9:0} upBps={10:0} predErrP95={11:0.000} predErrMax={12:0.000} corrMax={13:0.000} inputLagP50={14:0} cardSets={15} picks={16} hull={17:0}/{18:0} level={19} kills={20} " +
+                "shipJitterMean={21:0.00} shipJitterP95={22:0.00} enemyJitterMean={23:0.00} enemyJitterP95={24:0.00} enemyFastFrames={25} enemySlideFrames={26} enemyJumps={27} renderDelayMs={28:0} lateResyncs={29} aways={30} leadTrims={31}",
                 Time.realtimeSinceStartup - _sailStart, FrameSeconds.Count, FpsMean, FpsLow(1f), FpsLow(5f), ShareOfFramesOver(0.02f) * 100f, Client.Snapshots,
                 Client.Enemies.Count, _views != null ? _views.Drawn : 0, traffic.bytesDown / m.Elapsed, traffic.bytesUp / m.Elapsed,
                 NetMetrics.Percentile(m.PredictionError, 95f), NetMetrics.Max(m.PredictionError), NetMetrics.Max(m.Correction),
-                NetMetrics.Percentile(m.InputLagMs, 50f), Client.OffersReceived, Client.PicksSent, Client.Hull, Client.MaxHull, Client.Last.level, Client.Last.kills);
+                NetMetrics.Percentile(m.InputLagMs, 50f), Client.OffersReceived, Client.PicksSent, Client.Hull, Client.MaxHull, Client.Last.level, Client.Last.kills,
+                NetSmoothness.Mean(Smoothness.ShipJitter), NetMetrics.Percentile(Smoothness.ShipJitter, 95f), NetSmoothness.Mean(Smoothness.EnemyJitter),
+                NetMetrics.Percentile(Smoothness.EnemyJitter, 95f), Smoothness.EnemyFastFrames, Smoothness.EnemySlideFrames, Client.Enemies.Jumps,
+                Client.Enemies.DelaySeconds * 1000f, Client.LateResyncs, Client.AwaysSent, Client.LeadTrims);
         }
 
         void WriteReport(string why)
@@ -367,6 +401,18 @@ namespace RoguePirates.V5.Net
                 ["unknownEnemyKinds"] = (_views != null ? _views.Unknown : 0).ToString(),
                 ["resyncs"] = Client.Resyncs.ToString(),
                 ["welcomes"] = Client.Welcomes.ToString(),
+                ["lateResyncs"] = Client.LateResyncs.ToString(),
+                ["leadTrims"] = Client.LeadTrims.ToString(),
+                ["aways"] = Client.AwaysSent.ToString(),
+                ["shipJitterMeanMps"] = NetSmoothness.Mean(Smoothness.ShipJitter).ToString("0.000", CultureInfo.InvariantCulture),
+                ["shipJitterP95Mps"] = NetMetrics.Percentile(Smoothness.ShipJitter, 95f).ToString("0.000", CultureInfo.InvariantCulture),
+                ["shipSpeedVariation"] = NetSmoothness.Variation(Smoothness.ShipSpeed).ToString("0.000", CultureInfo.InvariantCulture),
+                ["enemyJitterMeanMps"] = NetSmoothness.Mean(Smoothness.EnemyJitter).ToString("0.000", CultureInfo.InvariantCulture),
+                ["enemyJitterP95Mps"] = NetMetrics.Percentile(Smoothness.EnemyJitter, 95f).ToString("0.000", CultureInfo.InvariantCulture),
+                ["enemyFastFramesOnScreen"] = Smoothness.EnemyFastFrames.ToString(),
+                ["enemySlideFramesOnScreen"] = Smoothness.EnemySlideFrames.ToString(),
+                ["enemyJumpsMarked"] = Client.Enemies.Jumps.ToString(),
+                ["enemyRenderDelayMs"] = (Client.Enemies.DelaySeconds * 1000f).ToString("0", CultureInfo.InvariantCulture),
             };
             var json = NetMetrics.Report("V5 net WebGL client", context, Client.Metrics);
             Debug.Log("[V5 NetClient] REPORT " + json.Replace("\n", " "));

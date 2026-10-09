@@ -32,6 +32,8 @@ namespace RoguePirates.V4.Ports
         /// <summary>The simulated position (V5 M9b part 2b: the body's, not the drawn transform's).</summary>
         public Vector3 Position => _ship != null ? _ship.SimPosition : Vector3.zero;
         public Vector3 Forward => _ship != null ? _ship.MovementForward : Vector3.forward;
+        /// <summary>V5 M9b playtest fixes: the simulated rotation (the body's, not the drawn transform's).</summary>
+        public Quaternion Rotation => Body != null ? Body.rotation : _ship != null ? _ship.transform.rotation : Quaternion.identity;
         public bool Controlled => _controlled;
         public float Hull => _ship != null && _ship.Damage != null ? _ship.Damage.CurrentHP : 0f;
         public float MaxHull => _ship != null && _ship.Damage != null ? _ship.Damage.MaxHP : 0f;
@@ -47,11 +49,37 @@ namespace RoguePirates.V4.Ports
             _ship.ConfigureDedicatedSteerInput(_input);
             _ship.DirectStep = true;
             _ship.NetStepped = true; // no FixedUpdate of its own: the net tick steps it (its visual roll keeps running)
+            // V5 M9b playtest fixes: no physics interpolation of the transform (the net client draws the ship itself,
+            // between its net ticks; the body is written directly at each step).
+            if (Body != null) Body.interpolation = RigidbodyInterpolation.None;
             var boost = Boost;
             if (boost != null) boost.enabled = false; // no frame-clock boost: the net tick steps it
         }
 
         ShipBoostController Boost => _ship != null ? _ship.GetComponent<ShipBoostController>() : null;
+        Rigidbody _body;
+        Rigidbody Body => _body != null ? _body : _ship != null ? _body = _ship.GetComponent<Rigidbody>() : null;
+
+        /// <summary>
+        /// V5 M9b playtest fixes: the net client steps the ship at the 30 Hz net tick but draws it every frame between its
+        /// last two ticks. <see cref="Draw"/> moves only the transform (what is rendered and what the camera follows);
+        /// <see cref="SetSimulatedPose"/> puts the transform and the body back on the simulated pose before the next step
+        /// or rewind reads it (a physics step may have copied the drawn transform into the body meanwhile).
+        /// </summary>
+        public void Draw(Vector3 position, Quaternion rotation)
+        {
+            if (_ship != null) _ship.transform.SetPositionAndRotation(position, rotation);
+        }
+
+        public void SetSimulatedPose(Vector3 position, Quaternion rotation)
+        {
+            if (_ship == null) return;
+            _ship.transform.SetPositionAndRotation(position, rotation);
+            var body = Body;
+            if (body == null) return;
+            body.position = position;
+            body.rotation = rotation;
+        }
 
         /// <summary>V5 M9b part 2b: the ship is boosting now.</summary>
         public bool IsBoosting { get { var b = Boost; return b != null && b.IsBoosting; } }

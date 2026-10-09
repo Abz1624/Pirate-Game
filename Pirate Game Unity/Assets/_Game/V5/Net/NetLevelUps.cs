@@ -123,7 +123,7 @@ namespace RoguePirates.V5.Net
                 pauseFrom = PauseFrom,
                 refreshesRemaining = (byte)Mathf.Clamp(RefreshesRemaining, 0, 255),
                 pendingLevelUps = (byte)Mathf.Clamp(PendingLevelUps != null ? PendingLevelUps() : 1, 0, 255),
-                timeoutSeconds = Mathf.Max(0f, Deadline - Time.realtimeSinceStartup),
+                timeoutSeconds = Mathf.Max(0f, Deadline - (ClockPaused ? _clockPausedAt : Time.realtimeSinceStartup)),
             };
             if (Offers != null) m.offers.AddRange(Offers);
             return m;
@@ -203,10 +203,30 @@ namespace RoguePirates.V5.Net
         /// <summary>Tests: the cards up now time out at the next tick.</summary>
         public void ExpireForTest() => Deadline = Time.realtimeSinceStartup;
 
+        /// <summary>M9b playtest fixes: the card clock stops while the player is away (a hidden tab holds a solo voyage, so
+        /// its cards wait too); back, the timeout and the hold wait go on from where they were.</summary>
+        public bool ClockPaused { get; private set; }
+        float _clockPausedAt;
+
+        public void PauseClock(bool paused)
+        {
+            if (paused == ClockPaused) return;
+            var now = Time.realtimeSinceStartup;
+            if (paused) _clockPausedAt = now;
+            else
+            {
+                var away = now - _clockPausedAt;
+                Deadline += away;
+                _holdDeadline += away;
+            }
+            ClockPaused = paused;
+        }
+
         /// <summary>The server's clock: no hold named in time holds from the next unapplied tick (and tells the client); an
         /// unanswered set takes the first card (the default pick).</summary>
         public void Tick()
         {
+            if (ClockPaused) return;
             if (AwaitingHold && Time.realtimeSinceStartup >= _holdDeadline)
             {
                 FixHold(Next());

@@ -157,7 +157,7 @@ namespace RoguePirates.V5.Net.Tests
                 moveSpeedMultiplier = 1.4f, turnRateMultiplier = 1f, runSpeedMultiplier = 1.625f, stepTime = 33.3f,
                 nextIslandImpactAt = float.NegativeInfinity, nextIslandDamageAt = 12f, movementEnabled = true,
             };
-            var s = new ShipSnapshot { serverTick = 900, ackTick = 870, motion = m, hull = 75.5f, maxHull = 100f, runTime = 61f, level = 7, kills = 300, gold = 12345, flags = 5,
+            var s = new ShipSnapshot { serverTick = 900, ackTick = 870, motion = m, hull = 75.5f, maxHull = 100f, runTime = 61f, level = 7, kills = 300, gold = 12345, flags = 5, inputMargin = -7,
                 boost = new RoguePirates.V4.Foundation.PlayerSystems.ShipBoostController.NetState { boostTimer = 3.25f, cooldownTimer = 0f } };
             var w = new NetWriter();
             NetCodec.WriteShip(w, s);
@@ -172,7 +172,8 @@ namespace RoguePirates.V5.Net.Tests
             Assert.AreEqual(s.gold, back.gold);
             Assert.IsTrue(back.motion.movementEnabled);
             Assert.AreEqual(3.25f, back.boost.boostTimer, "part 2b: the boost's timers ride with the motion");
-            Assert.LessOrEqual(w.Length, 148, "the ship snapshot stays small (145 bytes with the boost)");
+            Assert.AreEqual(-7, back.inputMargin, "M9b playtest fixes: the input margin rides along (negative: the client is late)");
+            Assert.LessOrEqual(w.Length, 149, "the ship snapshot stays small (146 bytes with the boost and the input margin)");
         }
 
         [Test]
@@ -254,6 +255,152 @@ namespace RoguePirates.V5.Net.Tests
             Assert.AreEqual(3, mirror.Count, "a capped snapshot's absences mean nothing");
             Batch(6, false, 1);
             Assert.AreEqual(1, mirror.Count);
+        }
+
+        // ---- M9b playtest fixes (9 Oct) ------------------------------------------------------------------------------------
+
+        static void EnemyBatch(NetEnemyMirror mirror, uint tick, bool full, double now, params (int id, float x, float z)[] enemies)
+        {
+            var h = new EnemyBatchHeader { serverTick = tick, batchCount = 1, full = full, count = (ushort)enemies.Length };
+            var w = new NetWriter();
+            NetCodec.WriteBatchHeader(w, h);
+            foreach (var (id, x, z) in enemies) NetCodec.WriteEnemy(w, h, id, 1, new Vector3(x, 0f, z), new Vector3(1f, 0f, 0f), 1f, 0);
+            mirror.Apply(new NetReader(w.ToArray()), 0f, now);
+        }
+
+        /// <summary>
+        /// M9b playtest fixes (B, C): every enemy is drawn at one render time behind the newest snapshot, between the two
+        /// snapshots around it (a far-band enemy sent every 3rd snapshot moves evenly, not in a burst then a stop); a late
+        /// snapshot is bridged on the last velocity for at most 6 ticks; a move no enemy can sail between two snapshots (the
+        /// leash) is a jump: held, then drawn there at once, never slid across the screen.
+        /// </summary>
+        [Test]
+        public void Mirror_DrawsEnemiesAtOneRenderTime_JumpsAreNotSlid()
+        {
+            var mirror = new NetEnemyMirror();
+            const double t0 = 100.0;
+            const float dt = NetProtocol.TickSeconds;
+            // Unit 1 sails +x at 6 m/s (0.4 m a snapshot); unit 2 is in the far band (every 3rd snapshot, 1.2 m apart).
+            for (uint k = 0; k < 6; k++)
+            {
+                var tick = 10 + 2 * k;
+                if (k % 3 == 0) EnemyBatch(mirror, tick, true, t0 + tick * dt, (1, 0.4f * k, 0f), (2, 100f + 0.4f * k, 0f));
+                else EnemyBatch(mirror, tick, false, t0 + tick * dt, (1, 0.4f * k, 0f));
+            }
+            Assert.AreEqual(2, mirror.Count);
+            Assert.AreEqual(NetEnemyMirror.MinDelaySeconds, mirror.DelaySeconds, 1e-4f, "on time: drawn two snapshot intervals behind");
+            var renderAt = mirror.RenderTick(t0 + 20 * dt);
+            Assert.AreEqual(20f - NetEnemyMirror.MinDelaySeconds / dt, renderAt, 1e-3f);
+            Assert.IsTrue(mirror.TryGet(1, out var one));
+            Assert.IsTrue(mirror.TryGet(2, out var two));
+            // At render tick 17 (between unit 1's snapshots at 16 and 18; just past unit 2's newest, at 16): both at the same time.
+            one.track.Sample(17f, out var p1, out var v1, out _);
+            two.track.Sample(17f, out var p2, out var v2, out _);
+            Assert.AreEqual(0.4f * 3.5f, p1.x, 1e-3f, "between its snapshots");
+            Assert.AreEqual(100f + 0.4f * 3.5f, p2.x, 1e-3f, "the far-band enemy too, by the ticks between its own snapshots");
+            Assert.AreEqual(6f, v1.x, 0.01f);
+            Assert.AreEqual(6f, v2.x, 0.01f, "at the same speed (it covers three intervals' move over three intervals)");
+            // Late: past the newest snapshot it goes on at its velocity for at most 6 ticks.
+            one.track.Sample(22f, out var late, out _, out _);
+            Assert.AreEqual(0.4f * 5 + 6f * 2 * dt, late.x, 1e-3f, "two ticks past its newest");
+            one.track.Sample(60f, out var capped, out _, out _);
+            Assert.AreEqual(0.4f * 5 + 6f * NetEnemyMirror.MaxExtrapolationTicks * dt, capped.x, 1e-3f, "capped");
+            // Before its first snapshot it waits there.
+            one.track.Sample(1f, out var first, out _, out _);
+            Assert.AreEqual(0f, first.x, 1e-3f);
+
+            // The leash moves unit 1 25 m in one snapshot: a jump.
+            EnemyBatch(mirror, 22, false, t0 + 22 * dt, (1, 2f + 25f, 0f));
+            Assert.AreEqual(1, mirror.Jumps);
+            Assert.IsTrue(mirror.TryGet(1, out one));
+            one.track.Sample(21.5f, out var before, out _, out _);
+            Assert.AreEqual(2f, before.x, 1e-3f, "held where it was until the jump's tick (no slide toward it)");
+            one.track.Sample(22f, out var after, out var vAfter, out _);
+            Assert.AreEqual(27f, after.x, 1e-3f, "then drawn there at once");
+            Assert.AreEqual(Vector3.zero, vAfter, "and not carried on at the jump's speed");
+            // A long gap at a normal speed is not a jump (an enemy back in a far-band snapshot, a resume).
+            EnemyBatch(mirror, 52, true, t0 + 52 * dt, (1, 27f + 5f, 0f));
+            Assert.AreEqual(1, mirror.Jumps, "5 m in a second is sailing");
+        }
+
+        /// <summary>M9b playtest fixes (C): a near-only snapshot drops only enemies well inside the near band; one just past
+        /// its edge waits for the next full snapshot (no pop out and back in at the band's edge).</summary>
+        [Test]
+        public void Mirror_KeepsEnemiesAtTheNearBandsEdgeUntilAFullSnapshot()
+        {
+            var mirror = new NetEnemyMirror();
+            var edge = NetProtocol.NearRadius - 2f;
+            EnemyBatch(mirror, 2, true, 1.0, (1, 10f, 0f), (2, edge, 0f), (3, 20f, 0f));
+            EnemyBatch(mirror, 4, false, 1.07, (1, 10.2f, 0f));
+            Assert.IsTrue(mirror.TryGet(2, out _), "an enemy at the band's edge is kept until the next full snapshot");
+            Assert.IsFalse(mirror.TryGet(3, out _), "one well inside it that is not listed is gone");
+            EnemyBatch(mirror, 6, true, 1.13, (1, 10.4f, 0f));
+            Assert.IsFalse(mirror.TryGet(2, out _), "the full snapshot drops it");
+        }
+
+        /// <summary>M9b playtest fixes (B): everything the top-down camera can show is in the every-snapshot band. The run
+        /// scene's camera: 25 m above and 20 m behind the ship, looking at it, 50 degree vertical field of view; checked at a
+        /// 2.4:1 window (wider than the 16:9 and 21:9 desktops), with the camera's follow lag and an enemy's size on top.
+        /// The far band stays off screen; the quantized offsets (int16 x 2 cm) cover it.</summary>
+        [Test]
+        public void InterestBands_CoverTheCamerasView()
+        {
+            var cam = new Vector3(0f, 25f, -20f);
+            var rotation = Quaternion.LookRotation(-cam, Vector3.up);
+            var tan = Mathf.Tan(25f * Mathf.Deg2Rad);
+            var reach = 0f;
+            foreach (var aspect in new[] { 16f / 9f, 21f / 9f, 2.4f })
+                for (var sx = -1; sx <= 1; sx += 2)
+                    for (var sy = -1; sy <= 1; sy += 2)
+                    {
+                        var dir = rotation * new Vector3(sx * tan * aspect, sy * tan, 1f);
+                        Assert.Less(dir.y, 0f, "the corner looks down at the sea");
+                        var hit = cam + dir * (-cam.y / dir.y);
+                        reach = Mathf.Max(reach, new Vector2(hit.x, hit.z).magnitude);
+                    }
+            const float followLag = 2f, enemySize = 5f;
+            Assert.LessOrEqual(reach + followLag + enemySize, NetProtocol.NearRadius, $"the view reaches {reach:0.0} m from the ship");
+            Assert.Greater(NetProtocol.FarRadius, NetProtocol.NearRadius);
+            Assert.Less(NetProtocol.FarRadius * 1.5f, short.MaxValue * NetProtocol.PositionStep, "positions up to 1.5x the far band fit the int16 offsets");
+            Assert.GreaterOrEqual(NetProtocol.NearRadius - NetProtocol.NearDropMargin, reach - 0.5f, "an on-screen enemy a near-only snapshot leaves out is gone at once (a death)");
+        }
+
+        [Test]
+        public void Presence_RoundTrips()
+        {
+            foreach (var away in new[] { true, false })
+            {
+                var w = new NetWriter();
+                NetCodec.WritePresence(w, away);
+                Assert.IsTrue(NetCodec.ReadPresence(new NetReader(w.ToArray()), out var back));
+                Assert.AreEqual(away, back);
+            }
+            Assert.IsFalse(NetCodec.ReadPresence(new NetReader(new byte[] { NetProtocol.Version }), out _), "a short message is malformed");
+            Assert.AreEqual(4, NetProtocol.Version);
+        }
+
+        /// <summary>M9b playtest fixes (E): while the player is away the card timeout and the hold wait stop; back, they go
+        /// on with the time they had left.</summary>
+        [Test]
+        public void LevelUps_ClockPausesWhileAway()
+        {
+            var closed = new List<OfferClosedMessage>();
+            var sent = new List<OfferMessage>();
+            var levelUps = new NetLevelUps { NextInputTick = () => 10, Send = sent.Add, SendClosed = closed.Add, TimeoutSeconds = 0.05f };
+            IOfferPresenter presenter = levelUps;
+            Assert.IsTrue(presenter.TryShow(Cards(), _ => { }, () => { }, () => { }, 0));
+            levelUps.PauseClock(true);
+            var until = Time.realtimeSinceStartup + 0.15f;
+            while (Time.realtimeSinceStartup < until) levelUps.Tick();
+            Assert.IsTrue(levelUps.Pending, "no timeout while away");
+            Assert.AreEqual(0, levelUps.TimedOut);
+            Assert.Greater(levelUps.Message().timeoutSeconds, 0f, "the time left is kept");
+            levelUps.PauseClock(false);
+            Assert.IsTrue(levelUps.Pending, "back: the time left still runs");
+            until = Time.realtimeSinceStartup + 0.15f;
+            while (Time.realtimeSinceStartup < until && levelUps.Pending) levelUps.Tick();
+            Assert.AreEqual(1, levelUps.TimedOut, "then it times out");
+            Assert.AreEqual(NetProtocol.OfferResolution.TimedOut, closed[0].how);
         }
 
         // ---- Level-up cards (part 2b) ----------------------------------------------------------------------------------

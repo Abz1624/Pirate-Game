@@ -86,3 +86,24 @@ stripped managed code still holds Netcode (641 KB IL) and Transport (214 KB IL).
 
 Local only so far: about 0.1 vCPU and 0.15 GB while a voyage runs, under $0.01 per voyage-hour at Railway's rates. The
 Railway usage export, against the month's baseline, goes here after the Railway session (D23).
+
+## Playtest fixes (9 Oct)
+
+After the owner's Railway playtest (stutter, enemy teleports, a hidden tab during the cards left the ship uncontrollable).
+Causes, fixes and tests: `README.md`, section "Playtest fixes". Protocol version 4; the image and the WebGL client go
+together. Numbers (files in `playtest-fixes/`):
+
+| Measure | Before | After | Where |
+|---|---|---|---|
+| Drawn ship, per-frame speed jitter mean / p95 (m/s), 11 m/s, 60 fps | 18.1 / 23.6 | **0.17 / 0.12** | in-process, 270 ms round trip |
+| Drawn ship, frames standing still | 98 of 241 | **0** | same |
+| On-screen enemies, per-frame speed jitter mean / p95 (m/s) | 1.03 / 4.76 | **0.15 / 0.58** | in-process busy voyage, 270 ms, 15 ms jitter, 1% loss |
+| On-screen enemies, frames standing still | 855 | **1** | same |
+| On-screen enemies faster than any enemy sails / sliding | 61 / 20 | **0 / 0** (65 relocations by the server, drawn at once) | same |
+| Control back after the server's card timeout, hidden tab, socket open | never | **0.00 s** in-process, 0.002 s in Docker | 270 ms; Docker local |
+| Away 35 s during cards (solo voyage) | voyage ran on, cards timed out | held, timeout paused, resynced 0.05 s after back | Docker local |
+| WebGL in Chrome (local) | - | 59.6 fps mean, 1% low 58.8; ship jitter 0.10 / 0.14; enemy jitter 0.21 / 0.71; 0 fast or sliding enemies; input delay p50 67 ms | throwaway profile, window minimised 20 s mid-voyage |
+| Down bandwidth with the 75 m near band | 5.7 KB/s (33 enemies, 60 m) | 5.9 KB/s (up to 38 enemies) | in-process busy voyage |
+
+The Railway column above was measured before these fixes; the main session's next Railway session reruns it with the new
+image and client.

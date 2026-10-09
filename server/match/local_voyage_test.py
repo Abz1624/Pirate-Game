@@ -88,6 +88,8 @@ def main():
     ap.add_argument("--drop-at", type=int, default=45)
     ap.add_argument("--servers", type=int, default=1)
     ap.add_argument("--drop-during-cards", action="store_true", help="server 1's client also drops its socket once while level-up cards are up (M9b review)")
+    ap.add_argument("--away-during-cards", type=int, default=0, help="seconds server 1's client is away (page hidden, says so) while a later card set is up (M9b playtest fixes)")
+    ap.add_argument("--hidden-during-cards", type=int, default=0, help="seconds server 1's client runs as a hidden page that never said so (one frame a second) while a later card set is up; over 30 s the server's card timeout fires (M9b playtest fixes)")
     ap.add_argument("--image", default="rogue-pirates-match:local")
     ap.add_argument("--out", default="")
     ap.add_argument("--base-port", type=int, default=17777)
@@ -172,6 +174,8 @@ def main():
                    "-rpClient", f"ws://host.docker.internal:{s['port']}/", "-rpSeconds", str(a.seconds),
                    "-rpDropAt", str(a.drop_at if s["i"] == 1 else 0), "-rpWaitEnd", "60", "-rpOut", "/out/client.json",
                    *(["-rpDropDuringCards"] if a.drop_during_cards and s["i"] == 1 else []),
+                   *(["-rpAwayDuringCards", str(a.away_during_cards)] if a.away_during_cards and s["i"] == 1 else []),
+                   *(["-rpHiddenDuringCards", str(a.hidden_during_cards)] if a.hidden_during_cards and s["i"] == 1 else []),
                    env=dict(env, RP_JOIN_TICKET=t["ticket"]))
             containers.append(cname)
 
@@ -247,7 +251,11 @@ def main():
                 "dockerMemMB": stats_of([m for _, m, _ in samples[s["name"]]]),
                 "dockerCpuPercent": stats_of([c for _, _, c in samples[s["name"]]]),
                 "client": {k: client.get(k) for k in ("ok", "outcome", "joinSeconds", "resumeSeconds", "endedByServer", "endReason",
-                                                       "lobbyUtc", "snapshots", "kills", "level", "finalHull", "events")} | {
+                                                       "lobbyUtc", "snapshots", "kills", "level", "finalHull", "cardSets", "cardsPicked",
+                                                       "droppedDuringCards", "resumeDuringCardsSeconds", "cardsBackAfterResume",
+                                                       "awayDuringCardsSeconds", "awayWelcomeSeconds", "cardsBackAfterAway",
+                                                       "hiddenDuringCardsSeconds", "hiddenCardsResolution", "hiddenControlBackSeconds",
+                                                       "lateResyncs", "awaysSent", "resyncs", "enemyJumpsMarked", "events")} | {
                     "traffic": csec.get("clients"), "predictionErrorMetres": csec.get("predictionErrorMetres"),
                     "correctionMetres": csec.get("correctionMetres"), "inputLagMs": csec.get("inputLagMs")},
             })

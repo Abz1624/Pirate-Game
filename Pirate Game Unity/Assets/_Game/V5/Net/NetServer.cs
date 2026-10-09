@@ -73,6 +73,11 @@ namespace RoguePirates.V5.Net
             public readonly HashSet<int> sentDefs = new HashSet<int>();
             public int snapshots;
             public bool expired;
+            /// <summary>M9b playtest fixes: the player's page is hidden (the solo run holds) since <see cref="awaySince"/>.</summary>
+            public bool away;
+            public float awaySince = -1f;
+            /// <summary>Ticks guessed in a row (the client's input was not there in time).</summary>
+            public int guessRun;
         }
 
         public Session Current { get; private set; }
@@ -171,12 +176,14 @@ namespace RoguePirates.V5.Net
             messages.RegisterNamedMessageHandler(NetProtocol.Input, OnInput);
             messages.RegisterNamedMessageHandler(NetProtocol.ClientReport, OnClientReport);
             messages.RegisterNamedMessageHandler(NetProtocol.Pick, OnPick);
+            messages.RegisterNamedMessageHandler(NetProtocol.Presence, OnPresence);
             Metrics.Reset();
             return true;
         }
 
         public void Stop()
         {
+            ReleaseAwayHold();
             if (Manager == null) return;
             if (Manager.IsListening)
             {
@@ -205,6 +212,7 @@ namespace RoguePirates.V5.Net
 
         void OnDestroy()
         {
+            ReleaseAwayHold();
             if (Manager != null)
             {
                 Manager.OnClientConnectedCallback -= OnConnected;
@@ -276,6 +284,8 @@ namespace RoguePirates.V5.Net
             s.started = false;
             s.expectNext = 0;
             s.lastAck = 0;
+            s.newestReceived = 0;
+            s.guessRun = 0;
             s.last = default;
             Array.Clear(s.ringTick, 0, s.ringTick.Length);
             s.sentDefs.Clear();
@@ -287,6 +297,16 @@ namespace RoguePirates.V5.Net
             if (s == null || s.clientId != clientId) return;
             if (s.droppedAt >= 0f) { Metrics.ResumeSeconds.Add(Time.realtimeSinceStartup - s.droppedAt); s.droppedAt = -1f; }
             s.detachedAt = -1f;
+            // M9b playtest fixes: a (re)connected client is present (it says so again at once if its page is still hidden).
+            if (s.away) SetAway(s, false, false);
+            SendWelcome(s);
+        }
+
+        /// <summary>The session's current state as a welcome (a join, a resume, or a player back from away), then the cards
+        /// still up and the end if it was sent. The ship waits for the client's first input after it.</summary>
+        void SendWelcome(Session s)
+        {
+            var clientId = s.clientId;
             _writer.Clear();
             NetCodec.WriteWelcome(_writer, new WelcomeMessage
             {
@@ -333,6 +353,77 @@ namespace RoguePirates.V5.Net
         public void DropConnectionForTest()
         {
             if (Current != null && Current.connected) Manager.DisconnectClient(Current.clientId, "connection dropped");
+        }
+
+        // ---- Away (M9b playtest fixes) ---------------------------------------------------------------------------------
+
+        /// <summary>An away player who does not come back in this long ends the voyage (Abandoned).</summary>
+        public float AwayMaxSeconds = NetProtocol.AwayMaxSeconds;
+        public int AwaysReceived { get; private set; }
+        public int BacksReceived { get; private set; }
+        public bool AwayHolding => _timeScaleBeforeAway >= 0f;
+        float _timeScaleBeforeAway = -1f;
+
+        void OnPresence(ulong sender, FastBufferReader reader)
+        {
+            var bytes = ReadAll(reader);
+            Metrics.Up(sender, bytes.Length);
+            var s = Current;
+            if (s == null || !s.connected || s.clientId != sender || s.expired) return;
+            bool away;
+            try { if (!NetCodec.ReadPresence(new NetReader(bytes), out away)) return; }
+            catch (Exception) { return; }
+            if (away == s.away) return;
+            SetAway(s, away, true);
+        }
+
+        /// <summary>
+        /// A solo voyage holds while its player's page is hidden, as the normal game stops in a hidden tab: the run's clock
+        /// stops (time scale 0: spawns, enemies, timers; the ship is not stepped), the card timeout waits, no snapshots go
+        /// out, and a dropped socket is kept until the player is back. Back (<paramref name="resync"/>): the ship and the
+        /// cards still up come again in a welcome, and the ship waits for the client's next input, as after a resume.
+        /// A shared run (M9c) cannot hold for one player: it would need a per-session clock and no pause (recorded in the plan).
+        /// </summary>
+        void SetAway(Session s, bool away, bool resync)
+        {
+            s.away = away;
+            if (away)
+            {
+                AwaysReceived++;
+                s.awaySince = Time.realtimeSinceStartup;
+                if (_timeScaleBeforeAway < 0f) { _timeScaleBeforeAway = Time.timeScale; Time.timeScale = 0f; }
+                LevelUps?.PauseClock(true);
+                Debug.Log("[V5 Net] player away (page hidden): the voyage holds");
+                return;
+            }
+            BacksReceived++;
+            var awayFor = s.awaySince >= 0f ? Time.realtimeSinceStartup - s.awaySince : 0f;
+            s.awaySince = -1f;
+            ReleaseAwayHold();
+            LevelUps?.PauseClock(false);
+            Debug.Log($"[V5 Net] player back after {awayFor:0.0} s away: the voyage plays on");
+            if (!resync || !s.connected) return;
+            Bind(s, s.clientId);
+            SendWelcome(s);
+        }
+
+        void ReleaseAwayHold()
+        {
+            if (_timeScaleBeforeAway < 0f) return;
+            Time.timeScale = _timeScaleBeforeAway;
+            _timeScaleBeforeAway = -1f;
+        }
+
+        /// <summary>The away player did not come back within <see cref="AwayMaxSeconds"/>: the voyage ends (Abandoned).</summary>
+        void Abandon(Session s)
+        {
+            Debug.Log($"[V5 Net] player away over {AwayMaxSeconds:0} s: the voyage ends (Abandoned)");
+            s.away = false;
+            ReleaseAwayHold();
+            LevelUps?.PauseClock(false);
+            if (!EndSent) SendEnd(NetProtocol.EndReason.Abandoned);
+            s.expired = true;
+            if (s.connected) { _kick = s.clientId; _kickAt = Time.realtimeSinceStartup + 0.5f; _kickPending = true; }
         }
 
         // ---- Client messages --------------------------------------------------------------------------------------
@@ -456,10 +547,17 @@ namespace RoguePirates.V5.Net
             var s = Current;
             var run = RunManager.Instance;
             var playing = run != null && !run.IsRunEnded && Ship.Alive;
-            if (s != null && !s.expired && s.connected && playing) ApplyInputs(s);
-            else if ((s == null || !s.connected) && playing && !run.IsPaused) Ship.Step(Vector2.zero, NetProtocol.TickSeconds); // detached: coasts (not through a pause)
+            var away = s != null && s.away && !s.expired;
+            // M9b playtest fixes: an away player's voyage holds (no input applied, no coasting, no snapshots) until it is back
+            // or the away limit ends it.
+            if (away && Time.realtimeSinceStartup - s.awaySince > AwayMaxSeconds) { Abandon(s); away = false; }
+            if (!away)
+            {
+                if (s != null && !s.expired && s.connected && playing) ApplyInputs(s);
+                else if ((s == null || !s.connected) && playing && !run.IsPaused) Ship.Step(Vector2.zero, NetProtocol.TickSeconds); // detached: coasts (not through a pause)
+            }
 
-            if (s != null && !s.connected && !s.expired && s.detachedAt >= 0f && Time.realtimeSinceStartup - s.detachedAt > ResumeGraceSeconds)
+            if (s != null && !s.connected && !s.expired && !away && s.detachedAt >= 0f && Time.realtimeSinceStartup - s.detachedAt > ResumeGraceSeconds)
             {
                 s.expired = true;
                 Debug.Log("[V5 Net] session expired (no resume in time)");
@@ -467,7 +565,7 @@ namespace RoguePirates.V5.Net
             if (!EndSent && run != null && (run.IsRunEnded || !Ship.Alive))
                 SendEnd(Ship.Alive ? NetProtocol.EndReason.RunEnded : NetProtocol.EndReason.Sunk);
 
-            if (ServerTick % NetProtocol.SnapshotEveryTicks == 0 && s != null && s.connected) SendSnapshot(s);
+            if (ServerTick % NetProtocol.SnapshotEveryTicks == 0 && s != null && s.connected && !away) SendSnapshot(s);
         }
 
         void ApplyInputs(Session s)
@@ -533,8 +631,14 @@ namespace RoguePirates.V5.Net
             var tick = s.expectNext;
             if (LevelUps != null && LevelUps.AwaitingHold) _beforeTick[tick % (uint)_beforeTick.Length] = (tick, Ship.Capture(), Ship.CaptureBoost());
             NetInput input;
-            if (Has(s, tick)) input = s.ring[tick % (uint)s.ring.Length];
-            else { input = s.last; Metrics.GuessedInputs++; } // not here in time: the last input again
+            if (Has(s, tick)) { input = s.ring[tick % (uint)s.ring.Length]; s.guessRun = 0; }
+            else
+            {
+                // Not here in time: the last input again; M9b playtest fixes: after GuessesBeforeNeutral in a row (a silent
+                // client) a neutral one, so a frozen page's ship drifts to a stop instead of sailing on at full throttle.
+                input = s.guessRun++ < NetProtocol.GuessesBeforeNeutral ? s.last : default;
+                Metrics.GuessedInputs++;
+            }
             // V5 M9b part 2b: the boost steps with the ship on the tick (held starts it when ready, as in a voyage), so the
             // client predicts it; a tick inside the level-up pause holds the ship (the client holds it too).
             if (LevelUps == null || !LevelUps.Holds(tick)) Ship.Step(input.SteerThrottle, input.Boost, NetProtocol.TickSeconds, true);
@@ -570,6 +674,7 @@ namespace RoguePirates.V5.Net
                 kills = (uint)(run != null ? run.KillCount : 0),
                 gold = (uint)(run != null ? Mathf.Max(0, run.Gold) : 0),
                 flags = flags,
+                inputMargin = s != null && s.started ? (sbyte)Mathf.Clamp((int)((long)s.newestReceived - s.lastAck), sbyte.MinValue, sbyte.MaxValue) : (sbyte)0,
             };
         }
 

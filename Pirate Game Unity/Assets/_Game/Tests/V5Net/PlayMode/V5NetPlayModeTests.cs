@@ -804,6 +804,406 @@ namespace RoguePirates.V5.Net.Tests
             Assert.Less(Flat(client.Predicted.Position, _server.Ship.Position), 5f, "the client follows");
         }
 
+        /// <summary>
+        /// M9b playtest fixes (D, the owner's hidden tab, 9 Oct): the cards are up, the player switches tabs and the page
+        /// runs about once a second (Chrome's hidden tab; the socket stays open and nothing tells the server), the server's
+        /// 30 s card timeout takes the first card while the client is not answering. Once the page is active again the
+        /// client drops the cards and the hold, takes the server's resume tick, moves its tick line ahead of the server's
+        /// (its inputs arrive before their tick again) and the ship answers the keys. At 135 ms each way (the owner's
+        /// 270 ms round trip from Asia). Before the fix the client stayed behind the server's tick line for good: every
+        /// input arrived late, the server repeated the last one, and the ship sailed on by itself until it sank.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator LevelUp_TimedOutWhileTheTabWasHidden_ClientSailsAgain()
+        {
+            yield return StartVoyage("net_voyage_levelup", new NetLinkSimulator.Link { sendDelayMs = 135, seed = 51 });
+            var client = NewClient(Ticket(), new NetLinkSimulator.Link { sendDelayMs = 135, seed = 52 });
+            var input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            client.Input = input;
+            yield return Join(client);
+            yield return Seconds(2f);
+            _game.Build.Progression.GrantLevelUp();
+            yield return Until(() => client.PendingOffer != null, 3f);
+            Assert.IsNotNull(client.PendingOffer, "the cards reached the client");
+            yield return Seconds(0.5f);
+
+            client.ThrottleForTest(35f); // the tab is hidden: one frame a second, no pick
+            yield return Until(() => _server.LevelUps.TimedOut > 0, 40f);
+            Assert.AreEqual(1, _server.LevelUps.TimedOut, "the server's 30 s card timeout took the first card");
+            Assert.IsTrue(_server.Current.connected, "the socket stayed open");
+            yield return Until(() => !client.Throttled, 10f);
+            var activeAt = Time.realtimeSinceStartup;
+            input.Value = new Vector2(1f, 1f); // the player steers at once
+
+            // Within one snapshot of being active again: no cards, no hold, and its tick ahead of the server's next tick.
+            float controlAt = -1f;
+            var until = activeAt + 3f;
+            while (Time.realtimeSinceStartup < until && controlAt < 0f)
+            {
+                if (client.PendingOffer == null && !client.Holds(client.Tick + 1) && client.Tick >= _server.Current.expectNext) controlAt = Time.realtimeSinceStartup;
+                else if (Time.frameCount % 10 == 0)
+                    Debug.Log($"[V5 Net] not yet in control: offer {client.PendingOffer != null}, holds {client.Holds(client.Tick + 1)}, tick {client.Tick}, server next {_server.Current.expectNext}, ack {client.LastAck}");
+                yield return null;
+            }
+            var controlSeconds = controlAt < 0f ? -1f : controlAt - activeAt;
+            Debug.Log($"[V5 Net] hidden-tab timeout: control back {controlSeconds:0.000} s after the page was active; resyncs {client.Resyncs}, " +
+                      $"late inputs {_server.Metrics.LateInputs}, guessed {_server.Metrics.GuessedInputs}");
+            Assert.AreEqual(NetProtocol.OfferResolution.TimedOut, client.LastResolution.how, "the client heard of the timeout");
+            Assert.IsNull(client.PendingOffer, "no cards left up");
+            Assert.GreaterOrEqual(controlAt, 0f, "the client took control again");
+            Assert.LessOrEqual(controlSeconds, NetProtocol.SnapshotEveryTicks * NetProtocol.TickSeconds + 0.05f, "within one snapshot of the page being active");
+
+            // The server applies the client's own inputs again (none guessed) and steers as it does.
+            yield return Seconds(1.5f);
+            var guessed = _server.Metrics.GuessedInputs;
+            var ack = client.LastAck;
+            var resyncs = client.Resyncs;
+            yield return Seconds(1f);
+            Assert.Greater(client.LastAck, ack + 20, "the acks move on");
+            Assert.LessOrEqual(_server.Metrics.GuessedInputs - guessed, 2, $"the client's inputs arrive in time (nothing guessed; resyncs meanwhile {client.Resyncs - resyncs}, late {client.LateResyncs})");
+            Assert.Less(Mathf.Abs(_server.Ship.Capture().lastSteer - NetInput.From(input.Value, false).SteerThrottle.x), 0.01f, "the server's ship answers the keys");
+            client.Metrics.Reset();
+            yield return Seconds(1.5f);
+            Assert.Less(NetMetrics.Percentile(client.Metrics.PredictionError, 95f), 0.5f, "the prediction is back on the server's ship");
+            // The lead taken to catch up is given back to what the link needs (a 270 ms round trip and a little).
+            yield return Seconds(4f);
+            client.Metrics.Reset();
+            yield return Seconds(1.5f);
+            var lag = NetMetrics.Percentile(client.Metrics.InputLagMs, 50f);
+            Debug.Log($"[V5 Net] hidden-tab timeout: input lag p50 {lag:0} ms after {client.LeadTrims} lead trims");
+            Assert.LessOrEqual(lag, 270f + 4 * 1000f * NetProtocol.TickSeconds + 1f, "no more input delay than the round trip and the jitter cushion");
+            Report("hidden-tab-card-timeout-270ms", _server.Metrics, client.Metrics);
+        }
+
+        // ---- M9b playtest fixes (9 Oct): smoothness, teleports, away --------------------------------------------------------
+
+        static readonly NetLinkSimulator.Link Asia = new NetLinkSimulator.Link { sendDelayMs = 135, sendJitterMs = 15, sendDropPercent = 1, seed = 61 };
+        static NetLinkSimulator.Link AsiaClient => new NetLinkSimulator.Link { sendDelayMs = 135, sendJitterMs = 15, sendDropPercent = 1, seed = 62 };
+
+        int _targetFrameRate, _vSync;
+
+        void SixtyFps()
+        {
+            _targetFrameRate = Application.targetFrameRate;
+            _vSync = QualitySettings.vSyncCount;
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 60;
+        }
+
+        void RestoreFps()
+        {
+            Application.targetFrameRate = _targetFrameRate;
+            QualitySettings.vSyncCount = _vSync;
+        }
+
+        static LateProbe Probe(System.Action late)
+        {
+            var probe = new GameObject("V5NetLateProbe").AddComponent<LateProbe>();
+            probe.Late = late;
+            return probe;
+        }
+
+        /// <summary>The run scene's top-down camera (25 m up, 20 m behind, looking at the ship, 50 degree vertical field of
+        /// view) at 16:9: whether <paramref name="p"/> is in its view of the sea around the drawn ship.</summary>
+        static bool OnScreen(Vector3 ship, Vector3 p)
+        {
+            var cam = new Vector3(0f, 25f, -20f);
+            var look = Quaternion.LookRotation(-cam, Vector3.up);
+            var local = Quaternion.Inverse(look) * (new Vector3(p.x - ship.x, 0f, p.z - ship.z) - cam);
+            if (local.z <= 0f) return false;
+            var tan = Mathf.Tan(25f * Mathf.Deg2Rad);
+            return Mathf.Abs(local.y / local.z) <= tan && Mathf.Abs(local.x / local.z) <= tan * 16f / 9f;
+        }
+
+        /// <summary>
+        /// M9b playtest fixes (A, the owner's "stuttery"): sailing straight at full speed at a 270 ms round trip and 60 fps,
+        /// the ship drawn at its stepped pose (the drawing before the fix: the 30 Hz net tick's pose, which the camera
+        /// followed) moved on every other frame; drawn between its last two ticks it moves every frame. Measured on the same
+        /// frames: the per-frame speed's jitter (how much it changes from frame to frame) and its variation.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator DrawnShip_MovesEveryFrame_Measured()
+        {
+            SixtyFps();
+            try
+            {
+                yield return StartVoyage("net_voyage_open_water", Asia);
+                var client = NewClient(Ticket(), AsiaClient);
+                client.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+                yield return Join(client);
+                yield return Seconds(4f); // up to cruising speed
+                var stepped = new NetSmoothness();
+                var drawn = new NetSmoothness();
+                var lagMax = 0f;
+                var probe = Probe(() =>
+                {
+                    var dt = Time.unscaledDeltaTime;
+                    stepped.BeginFrame();
+                    drawn.BeginFrame();
+                    stepped.Ship(client.Predicted.Position, dt);
+                    drawn.Ship(client.Predicted.Root.position, dt);
+                    lagMax = Mathf.Max(lagMax, Flat(client.Predicted.Root.position, client.Predicted.Position));
+                });
+                yield return Seconds(4f);
+                Object.Destroy(probe.gameObject);
+                var speed = NetSmoothness.Mean(drawn.ShipSpeed);
+                var fps = drawn.Frames / 4f;
+                var context = new Dictionary<string, string>
+                {
+                    ["frames"] = drawn.Frames.ToString(),
+                    ["fps"] = fps.ToString("0.0"),
+                    ["shipSpeedMps"] = speed.ToString("0.00"),
+                    ["before_shipJitterMeanMps"] = NetSmoothness.Mean(stepped.ShipJitter).ToString("0.000"),
+                    ["before_shipJitterP95Mps"] = NetMetrics.Percentile(stepped.ShipJitter, 95f).ToString("0.000"),
+                    ["before_shipSpeedVariation"] = NetSmoothness.Variation(stepped.ShipSpeed).ToString("0.000"),
+                    ["after_shipJitterMeanMps"] = NetSmoothness.Mean(drawn.ShipJitter).ToString("0.000"),
+                    ["after_shipJitterP95Mps"] = NetMetrics.Percentile(drawn.ShipJitter, 95f).ToString("0.000"),
+                    ["after_shipSpeedVariation"] = NetSmoothness.Variation(drawn.ShipSpeed).ToString("0.000"),
+                    ["before_shipStallFrames"] = stepped.ShipStallFrames.ToString(),
+                    ["after_shipStallFrames"] = drawn.ShipStallFrames.ToString(),
+                    ["drawnBehindSteppedMaxM"] = lagMax.ToString("0.000"),
+                    ["link"] = "135 ms each way, 15 ms jitter, 1% loss",
+                };
+                var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Temp", "V5Net", "drawn-ship-smoothness.json"));
+                Debug.Log("[V5 Net] drawn ship: " + NetMetrics.WriteReport(path, "drawn-ship-smoothness", context, client.Metrics));
+                Assert.Greater(drawn.Frames, 150, "frames measured");
+                Assert.Greater(speed, 8f, "sailing at speed");
+                Assert.Greater(stepped.ShipStallFrames, drawn.Frames / 4, "drawn at its stepped pose the ship stood still on about every other frame (the stutter)");
+                Assert.AreEqual(0, drawn.ShipStallFrames, "drawn between its ticks it moves on every frame");
+                Assert.Less(NetSmoothness.Mean(drawn.ShipJitter), 0.1f * NetSmoothness.Mean(stepped.ShipJitter), "per-frame jitter down by over 90%");
+                Assert.Less(NetSmoothness.Mean(drawn.ShipJitter), 0.05f * speed, "under 5% of its speed");
+                Assert.LessOrEqual(lagMax, speed * NetProtocol.TickSeconds * 1.6f + 0.05f, "drawn at most about a tick behind its stepped pose");
+            }
+            finally { RestoreFps(); }
+        }
+
+        /// <summary>
+        /// M9b playtest fixes (B, C, the owner's "enemies stuttery" and "teleports"): a busy voyage (10:00, ambient spawns)
+        /// at a 270 ms round trip, 15 ms jitter and 1% loss, 60 fps, sailing S-turns at full speed so enemies fall behind and
+        /// the server's leash relocates them. Every frame each mirrored enemy is drawn both ways from the same snapshots:
+        /// before (between its own last two snapshots by the time since the newest snapshot, over one interval) and after
+        /// (the render-time buffer). On screen (the top-down camera's view of the sea around the drawn ship), no enemy may
+        /// move faster than any enemy sails unless the server relocated it then, and a relocation must be one frame (drawn
+        /// at once), never a slide over several.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Enemies_DrawnSmoothly_NoTeleportsOnScreen_Measured()
+        {
+            SixtyFps();
+            try
+            {
+                yield return StartVoyage("net_voyage_busy", Asia);
+                var client = NewClient(Ticket(), AsiaClient);
+                var input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+                client.Input = input;
+                yield return Join(client);
+                _game.Context.TryGet(out RoguePirates.V4.Enemies.IEnemyWorldView world);
+                Assert.IsNotNull(world, "the server's enemy world");
+                yield return Seconds(3f);
+
+                var before = new NetSmoothness();
+                var after = new NetSmoothness();
+                var interval = NetProtocol.SnapshotEveryTicks * NetProtocol.TickSeconds;
+                uint lastComplete = 0;
+                var completeAt = 0f;
+                var serverLast = new Dictionary<int, Vector3>();
+                var relocatedAt = new Dictionary<int, float>();
+                var lastDrawn = new Dictionary<int, (Vector3 p, int frame, bool onScreen, bool fast)>();
+                int frame = 0, relocations = 0, unexplainedFast = 0, snaps = 0, slides = 0, onScreenSamples = 0;
+                var probe = Probe(() =>
+                {
+                    frame++;
+                    var dt = Time.unscaledDeltaTime;
+                    var now = Time.realtimeSinceStartup;
+                    // The server's truth: a unit that moved faster than any enemy sails since the last frame was relocated.
+                    for (var i = 0; i < world.Capacity; i++)
+                    {
+                        if (!world.TryGet(i, out var e)) continue;
+                        if (serverLast.TryGetValue(e.unitId, out var was))
+                        {
+                            var limit = NetEnemyMirror.MaxEnemySpeed * Mathf.Max(dt, NetProtocol.TickSeconds) * 2f + NetEnemyMirror.JumpSlackMetres;
+                            if (Flat(e.position, was) > limit) { relocatedAt[e.unitId] = now; relocations++; }
+                        }
+                        serverLast[e.unitId] = e.position;
+                    }
+                    var mirror = client.Enemies;
+                    if (mirror.LastCompleteTick != lastComplete) { lastComplete = mirror.LastCompleteTick; completeAt = Time.unscaledTime; }
+                    var legacyT = Mathf.Clamp01((Time.unscaledTime - completeAt) / interval);
+                    var renderTick = mirror.RenderTick(NetFrameClock.Now);
+                    var ship = client.RenderPosition;
+                    before.BeginFrame();
+                    after.BeginFrame();
+                    foreach (var e in mirror.All)
+                    {
+                        var old = NetEnemyMirror.Interpolate(e, legacyT);
+                        before.Enemy(e.unitId, old, dt, OnScreen(ship, old));
+                        if (!e.track.Sample(renderTick, out var p, out _, out _)) continue;
+                        var onScreen = OnScreen(ship, p);
+                        after.Enemy(e.unitId, p, dt, onScreen);
+                        if (onScreen) onScreenSamples++;
+                        var fast = false;
+                        if (lastDrawn.TryGetValue(e.unitId, out var last) && last.frame == frame - 1 && last.onScreen && onScreen)
+                        {
+                            fast = Flat(p, last.p) / dt > NetEnemyMirror.MaxEnemySpeed;
+                            if (fast)
+                            {
+                                var relocated = relocatedAt.TryGetValue(e.unitId, out var at) && now - at < 1.5f;
+                                if (!relocated) unexplainedFast++;
+                                else if (last.fast) slides++;
+                                else snaps++;
+                            }
+                        }
+                        lastDrawn[e.unitId] = (p, frame, onScreen, fast);
+                    }
+                });
+                var t0 = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - t0 < 20f)
+                {
+                    var t = Time.realtimeSinceStartup - t0;
+                    input.Value = new Vector2(Mathf.Sin(t * 0.35f) * 0.7f, 1f);
+                    yield return null;
+                }
+                Object.Destroy(probe.gameObject);
+                var context = new Dictionary<string, string>
+                {
+                    ["frames"] = frame.ToString(),
+                    ["fps"] = (frame / 20f).ToString("0.0"),
+                    ["onScreenEnemySamples"] = onScreenSamples.ToString(),
+                    ["before_enemyJitterMeanMps"] = NetSmoothness.Mean(before.EnemyJitter).ToString("0.000"),
+                    ["before_enemyJitterP95Mps"] = NetMetrics.Percentile(before.EnemyJitter, 95f).ToString("0.000"),
+                    ["before_enemyFastFramesOnScreen"] = before.EnemyFastFrames.ToString(),
+                    ["before_enemySlideFramesOnScreen"] = before.EnemySlideFrames.ToString(),
+                    ["before_enemyStallFramesOnScreen"] = before.EnemyStallFrames.ToString(),
+                    ["after_enemyStallFramesOnScreen"] = after.EnemyStallFrames.ToString(),
+                    ["after_enemyJitterMeanMps"] = NetSmoothness.Mean(after.EnemyJitter).ToString("0.000"),
+                    ["after_enemyJitterP95Mps"] = NetMetrics.Percentile(after.EnemyJitter, 95f).ToString("0.000"),
+                    ["after_enemyFastFramesOnScreen"] = after.EnemyFastFrames.ToString(),
+                    ["after_enemySlideFramesOnScreen"] = after.EnemySlideFrames.ToString(),
+                    ["after_unexplainedFastFramesOnScreen"] = unexplainedFast.ToString(),
+                    ["after_relocationsDrawnAtOnceOnScreen"] = snaps.ToString(),
+                    ["after_relocationSlideFramesOnScreen"] = slides.ToString(),
+                    ["serverRelocations"] = relocations.ToString(),
+                    ["mirrorJumpsMarked"] = client.Enemies.Jumps.ToString(),
+                    ["renderDelayMs"] = (client.Enemies.DelaySeconds * 1000f).ToString("0"),
+                    ["enemiesMirroredAtEnd"] = client.Enemies.Count.ToString(),
+                    ["link"] = "135 ms each way, 15 ms jitter, 1% loss",
+                };
+                var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Temp", "V5Net", "enemy-smoothness.json"));
+                Debug.Log("[V5 Net] enemies: " + NetMetrics.WriteReport(path, "enemy-smoothness", context, _server.Metrics, client.Metrics));
+                Assert.Greater(onScreenSamples, 1000, "enemies were on screen");
+                Assert.AreEqual(0, unexplainedFast, "no on-screen enemy moved faster than any enemy sails unless the server relocated it");
+                Assert.AreEqual(0, slides, "a relocation is drawn at once, never slid across the screen");
+                Assert.AreEqual(0, after.EnemySlideFrames);
+                Assert.Less(NetSmoothness.Mean(after.EnemyJitter), 0.5f * NetSmoothness.Mean(before.EnemyJitter), "per-frame enemy jitter at least halved");
+                Assert.Less(NetMetrics.Percentile(after.EnemyJitter, 95f), 0.5f * NetMetrics.Percentile(before.EnemyJitter, 95f), "and its p95");
+                Assert.LessOrEqual(after.EnemyStallFrames, before.EnemyStallFrames / 5, "on-screen enemies stand still for a frame at least 5x less often");
+            }
+            finally { RestoreFps(); }
+        }
+
+        /// <summary>
+        /// M9b playtest fixes (E): a hidden tab during a solo voyage's cards. The client says it is away and stops; the
+        /// server holds the run (its clock, the enemies, the ship) and the card timeout (3 s here) while it is away (5 s);
+        /// back, a welcome resyncs the ship, the cards come back, the pick resumes the voyage and the prediction is in step.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Away_HoldsTheSoloVoyageAndItsCards_BackResyncs()
+        {
+            yield return StartVoyage("net_voyage_levelup", Asia);
+            var client = NewClient(Ticket(), AsiaClient);
+            client.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            var away = false;
+            client.AwaySource = () => away;
+            yield return Join(client);
+            yield return Seconds(1.5f);
+            _server.LevelUps.TimeoutSeconds = 3f;
+            _game.Build.Progression.GrantLevelUp();
+            yield return Until(() => client.PendingOffer != null, 3f);
+            Assert.IsNotNull(client.PendingOffer);
+            var seq = client.PendingOffer.seq;
+            yield return Seconds(0.5f);
+
+            away = true;
+            yield return Until(() => _server.Current.away, 2f);
+            Assert.IsTrue(_server.Current.away, "the server heard the page is hidden");
+            Assert.AreEqual(0f, Time.timeScale, "the solo run holds");
+            yield return Seconds(0.5f);
+            var runTime = RunManager.Instance.ElapsedSeconds;
+            var serverAt = _server.Ship.Position;
+            var clientTick = client.Tick;
+            var snapshots = client.Snapshots;
+            yield return Seconds(5f);
+            Assert.AreEqual(runTime, RunManager.Instance.ElapsedSeconds, 1e-4f, "the run's clock stood still");
+            Assert.Less(Flat(_server.Ship.Position, serverAt), 0.01f, "the ship held");
+            Assert.AreEqual(0, _server.LevelUps.TimedOut, "the 3 s card timeout waited (5 s away)");
+            Assert.IsTrue(_server.LevelUps.Pending);
+            Assert.AreEqual(clientTick, client.Tick, "the away client does not tick");
+            Assert.LessOrEqual(client.Snapshots - snapshots, 1, "no snapshots while away");
+
+            away = false;
+            var backAt = Time.realtimeSinceStartup;
+            var welcomes = client.Welcomes;
+            yield return Until(() => client.Welcomes > welcomes && client.PendingOffer != null, 3f);
+            var resync = Time.realtimeSinceStartup - backAt;
+            Assert.Greater(client.Welcomes, welcomes, "back: a welcome resynced the ship");
+            Assert.IsFalse(_server.Current.away);
+            Assert.AreEqual(1f, Time.timeScale, "the run plays again");
+            Assert.IsNotNull(client.PendingOffer, "the cards came back");
+            Assert.AreEqual(seq, client.PendingOffer.seq);
+            Assert.Less(resync, 1f, "within a round trip and a frame or two");
+            client.Metrics.Reset();
+            Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0));
+            yield return Until(() => !RunManager.Instance.IsPaused, 3f);
+            Assert.AreEqual(1, _server.LevelUps.Picked);
+            var at = _server.Ship.Position;
+            yield return Seconds(2f);
+            Assert.Greater(Flat(_server.Ship.Position, at), 5f, "sailing again");
+            Assert.LessOrEqual(NetMetrics.Max(client.Metrics.PredictionError), 0.5f, "in step after the away");
+            Debug.Log($"[V5 Net] away 5 s during cards: back to the welcome {resync:0.000} s; aways {_server.AwaysReceived}, backs {_server.BacksReceived}");
+        }
+
+        /// <summary>
+        /// M9b playtest fixes (E): a hidden tab can lose its socket (Chrome slows a hidden page's timers to once a minute
+        /// after 5 minutes, and the server counts a socket silent for 5 s as gone). An away session is kept past the 30 s
+        /// resume grace (1 s here); back, the client reconnects with its resume token and sails on. Away past the limit
+        /// (10 minutes; 2 s here) the server ends the voyage cleanly: end Abandoned.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Away_SocketLostWhileAway_Resumes_AndTheAwayLimitAbandons()
+        {
+            yield return StartVoyage("net_voyage_open_water");
+            _server.ResumeGraceSeconds = 1f;
+            var client = NewClient(Ticket());
+            client.Input = new ScriptedInput { Value = new Vector2(0f, 1f) };
+            var away = false;
+            client.AwaySource = () => away;
+            yield return Join(client);
+            yield return Seconds(1f);
+            away = true;
+            yield return Until(() => _server.Current.away, 2f);
+            _server.DropConnectionForTest();
+            yield return Until(() => !client.Connected, 3f);
+            yield return Seconds(2.5f);
+            Assert.IsFalse(_server.Current.expired, "the away session outlives the resume grace");
+            Assert.IsFalse(client.SessionOver, "and the away client does not give up");
+            Assert.IsFalse(client.Connected, "nor reconnect while hidden");
+            away = false;
+            yield return Until(() => client.Connected && client.Welcomes >= 2, 10f);
+            Assert.AreEqual(2, client.Welcomes, "back: resumed with the token");
+            Assert.IsFalse(_server.Current.away, "present again");
+            var at = _server.Ship.Position;
+            yield return Seconds(1.5f);
+            Assert.Greater(Flat(_server.Ship.Position, at), 3f, "sailing again");
+
+            _server.AwayMaxSeconds = 2f;
+            away = true;
+            yield return Until(() => client.Ended, 6f);
+            Assert.IsTrue(client.Ended, "away past the limit ends the voyage");
+            Assert.AreEqual(NetProtocol.EndReason.Abandoned, client.EndReason);
+            Assert.IsTrue(_server.Current.expired);
+            Assert.AreEqual(1f, Time.timeScale, "the hold is released");
+        }
+
         /// <summary>A worse link than the gate's (jitter that reorders packets, 5% loss): measured and reported; the
         /// prediction still has to hold.</summary>
         [UnityTest]
@@ -847,6 +1247,14 @@ namespace RoguePirates.V5.Net.Tests
             Assert.Greater(client.Enemies.Count, 0, "and mirrored");
             Assert.LessOrEqual(NetMetrics.Max(client.Metrics.Correction), 0.5f, "corrections stay small on a clean link");
         }
+    }
+
+    /// <summary>M9b playtest fixes: runs a measurement late in the frame, after the ship and the enemies are drawn.</summary>
+    [DefaultExecutionOrder(1000)]
+    sealed class LateProbe : MonoBehaviour
+    {
+        public System.Action Late;
+        void LateUpdate() => Late?.Invoke();
     }
 
     /// <summary>The save swapped for an in-memory one, and the PlayerPrefs a run touches put back (as the V4 tests do).</summary>

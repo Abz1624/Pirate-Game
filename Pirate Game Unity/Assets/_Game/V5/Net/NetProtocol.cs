@@ -18,8 +18,10 @@ namespace RoguePirates.V5.Net
     public static class NetProtocol
     {
         /// <summary>2 (part 2b): the snapshot carries the boost's timers; level-up messages. 3 (M9b review): the client names
-        /// the tick its ship holds from when the cards arrive (<see cref="PickAction.Hold"/>).</summary>
-        public const byte Version = 3;
+        /// the tick its ship holds from when the cards arrive (<see cref="PickAction.Hold"/>). 4 (M9b playtest fixes, 9 Oct):
+        /// the snapshot carries the input margin (<see cref="ShipSnapshot.inputMargin"/>); the away message
+        /// (<see cref="Presence"/>); the end reason Abandoned.</summary>
+        public const byte Version = 4;
 
         /// <summary>The server's fixed simulation rate and the client's input rate (one input per tick).</summary>
         public const int TickRate = 30;
@@ -34,9 +36,17 @@ namespace RoguePirates.V5.Net
         public const int DisconnectTimeoutMs = 5000;
 
         /// <summary>Interest management: enemies within <see cref="NearRadius"/> of the ship go in every snapshot, those out
-        /// to <see cref="FarRadius"/> in every <see cref="FarEveryNthSnapshot"/>th one (a full set), none beyond.</summary>
-        public const float NearRadius = 60f;
-        public const float FarRadius = 120f;
+        /// to <see cref="FarRadius"/> in every <see cref="FarEveryNthSnapshot"/>th one (a full set), none beyond.
+        /// M9b playtest fixes (9 Oct): the near band was 60 m, but the top-down camera (25 m up, 20 m back, 50 degree
+        /// field of view) sees the sea out to 52 m from the ship at 16:9 and 65 m at 21:9 (the far corners), so enemies at
+        /// the screen's corners moved only every 3rd snapshot and popped in and out at the band's edge. Now everything
+        /// that can be on screen (up to a 2.4:1 window, plus the camera's follow lag and an enemy's size) is in the
+        /// every-snapshot band; the far band (every 3rd) is off screen only.</summary>
+        public const float NearRadius = 75f;
+        public const float FarRadius = 130f;
+        /// <summary>M9b playtest fixes: the client drops an enemy a near-only snapshot did not list only if it was this far
+        /// inside the near band (one leaving the band is kept until the next full snapshot: no pop at the band's edge).</summary>
+        public const float NearDropMargin = 10f;
         public const int FarEveryNthSnapshot = 3;
         public const int MaxEnemiesPerSnapshot = 384;
         /// <summary>Enemies per message, so a batch stays near one packet (a lost fragment loses its batch only).</summary>
@@ -57,6 +67,15 @@ namespace RoguePirates.V5.Net
         public const string Pick = "rp9b.pick";
         /// <summary>How a card set was resolved and the client tick the ship moves again from (server to client, reliable).</summary>
         public const string OfferClosed = "rp9b.offerdone";
+        /// <summary>M9b playtest fixes: the player's page is hidden (1) or back (0) (client to server, reliable). A solo
+        /// voyage holds while the player is away, as the normal game stops in a hidden tab; the card timeout waits too.</summary>
+        public const string Presence = "rp9b.away";
+        /// <summary>An away player who does not come back in this long ends the voyage (<see cref="EndReason.Abandoned"/>).</summary>
+        public const float AwayMaxSeconds = 600f;
+        /// <summary>M9b playtest fixes: a connected client whose inputs stop (a frozen tab that never said it was away)
+        /// gets its last input repeated this many ticks, then a neutral one (no steer, no throttle): the server no longer
+        /// sails a silent player's ship on at full throttle until it sinks.</summary>
+        public const int GuessesBeforeNeutral = 15;
 
         /// <summary>A level-up the client leaves unanswered this long (or a client gone) takes the first card (the default
         /// pick), so a voyage never waits for good.</summary>
@@ -85,7 +104,7 @@ namespace RoguePirates.V5.Net
         public const byte ShipAlive = 1, ShipRunEnded = 2, ShipMovementOn = 4, ShipBoosting = 8, ShipPaused = 16;
         /// <summary>V5 M9b review: the server still waits for the client's hold tick (its ship may be past it).</summary>
         public const byte ShipHoldPending = 32;
-        public enum EndReason : byte { Sunk = 1, RunEnded = 2, ServerClosing = 3, SessionExpired = 4 }
+        public enum EndReason : byte { Sunk = 1, RunEnded = 2, ServerClosing = 3, SessionExpired = 4, Abandoned = 5 }
 
         /// <summary>A named message's framing in Netcode (message header and the name's 8-byte hash), for the wire estimate.</summary>
         public const int NamedMessageOverheadBytes = 12;
@@ -125,6 +144,10 @@ namespace RoguePirates.V5.Net
         public ushort level;
         public uint kills, gold;
         public byte flags;
+        /// <summary>M9b playtest fixes: the newest client input tick the server had received minus the tick it applied
+        /// (clamped to a signed byte). Negative: the client's inputs arrive after their tick (the server guesses them), so
+        /// the client is behind and moves its tick ahead.</summary>
+        public sbyte inputMargin;
 
         public bool Alive => (flags & NetProtocol.ShipAlive) != 0;
         public bool RunEnded => (flags & NetProtocol.ShipRunEnded) != 0;
@@ -270,6 +293,7 @@ namespace RoguePirates.V5.Net
             w.U16(s.level);
             w.VarU32(s.kills); w.VarU32(s.gold);
             w.U8(s.flags);
+            w.I8(s.inputMargin);
         }
 
         public static bool ReadShip(NetReader r, out ShipSnapshot s)
@@ -284,6 +308,7 @@ namespace RoguePirates.V5.Net
             s.level = r.U16();
             s.kills = r.VarU32(); s.gold = r.VarU32();
             s.flags = r.U8();
+            s.inputMargin = r.I8();
             return true;
         }
 
@@ -480,6 +505,21 @@ namespace RoguePirates.V5.Net
             m.action = (NetProtocol.PickAction)r.U8();
             m.index = r.U8();
             m.resumeTick = r.U32();
+            return true;
+        }
+
+        /// <summary>M9b playtest fixes: the player's page hidden (away) or back.</summary>
+        public static void WritePresence(NetWriter w, bool away)
+        {
+            w.U8(NetProtocol.Version);
+            w.U8(away ? (byte)1 : (byte)0);
+        }
+
+        public static bool ReadPresence(NetReader r, out bool away)
+        {
+            away = false;
+            if (r.Remaining < 2 || r.U8() != NetProtocol.Version) return false;
+            away = r.U8() != 0;
             return true;
         }
 

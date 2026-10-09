@@ -68,7 +68,18 @@ namespace RoguePirates.V5.Net
         public float ReconnectWindowSeconds = 10f;
         /// <summary>The view's offset that eases a correction out (the ship drawn at <see cref="RenderPosition"/>).</summary>
         public Vector3 VisualOffset { get; private set; }
-        public Vector3 RenderPosition => Predicted != null ? Predicted.Position + VisualOffset : Vector3.zero;
+        /// <summary>
+        /// V5 M9b playtest fixes (A): where the ship is drawn this frame. The ship is stepped at the 30 Hz net tick; drawn
+        /// at its stepped pose it moved on every other frame of a 60 Hz display (the owner's "stuttery"). It is now drawn
+        /// between its last two ticks by the time since the last one (a tick behind, as a physics body is interpolated), plus
+        /// <see cref="VisualOffset"/>, which eases a correction out over a few frames; the camera follows the drawn ship.
+        /// </summary>
+        public Vector3 RenderPosition { get; private set; }
+        public Quaternion RenderRotation { get; private set; } = Quaternion.identity;
+        /// <summary>Tests: false draws the ship at its stepped pose (the drawing before the fix), to measure both.</summary>
+        public bool InterpolateDrawnShip { get; set; } = true;
+        /// <summary>A correction this large is not eased out: the ship is drawn where it is at once.</summary>
+        public const float SnapCorrectionMetres = 5f;
 
         const int History = 256;
         readonly NetInput[] _inputs = new NetInput[History];
@@ -99,6 +110,7 @@ namespace RoguePirates.V5.Net
             transport.DisconnectTimeoutMS = NetProtocol.DisconnectTimeoutMs;
             transport.MaxConnectAttempts = 5;
             var client = go.AddComponent<NetClient>();
+            go.AddComponent<NetShipDraw>();
             client.Manager = manager;
             client.Transport = transport;
             client.Endpoint = endpoint;
@@ -131,14 +143,13 @@ namespace RoguePirates.V5.Net
             Manager.NetworkConfig.ConnectionData = payload;
             Endpoint.ApplyClient(Transport);
             if (!Manager.StartClient()) return false;
-            var messages = Manager.CustomMessagingManager;
-            messages.RegisterNamedMessageHandler(NetProtocol.Welcome, OnWelcome);
-            messages.RegisterNamedMessageHandler(NetProtocol.Snapshot, OnSnapshot);
-            messages.RegisterNamedMessageHandler(NetProtocol.Enemies, OnEnemies);
-            messages.RegisterNamedMessageHandler(NetProtocol.Defs, OnDefs);
-            messages.RegisterNamedMessageHandler(NetProtocol.End, OnEnd);
-            messages.RegisterNamedMessageHandler(NetProtocol.Offer, OnOffer);
-            messages.RegisterNamedMessageHandler(NetProtocol.OfferClosed, OnOfferClosed);
+            Handle(NetProtocol.Welcome, OnWelcome);
+            Handle(NetProtocol.Snapshot, OnSnapshot);
+            Handle(NetProtocol.Enemies, OnEnemies);
+            Handle(NetProtocol.Defs, OnDefs);
+            Handle(NetProtocol.End, OnEnd);
+            Handle(NetProtocol.Offer, OnOffer);
+            Handle(NetProtocol.OfferClosed, OnOfferClosed);
             return true;
         }
 
@@ -152,6 +163,7 @@ namespace RoguePirates.V5.Net
         void OnDestroy()
         {
             if (Manager != null) Manager.OnClientDisconnectCallback -= OnDisconnected;
+            UndrawShip();
             Predicted?.Destroy();
         }
 
@@ -184,34 +196,65 @@ namespace RoguePirates.V5.Net
         /// </summary>
         public bool SessionOver =>
             Ended || _stopped ||
-            !Connected && _droppedAt >= 0f && (_resume == null || !AutoReconnect || Time.realtimeSinceStartup - _droppedAt > ReconnectWindowSeconds);
+            !Connected && _droppedAt >= 0f && !Away && (_resume == null || !AutoReconnect || Time.realtimeSinceStartup - _droppedAt > ReconnectWindowSeconds);
 
+        // M9b playtest fixes (E): an away page does not reconnect (the server keeps an away session); back, the reconnect
+        // window starts then.
         bool ShouldReconnect =>
-            AutoReconnect && !_stopped && !Ended && _resume != null && _droppedAt >= 0f &&
+            AutoReconnect && !_stopped && !Ended && !Away && _resume != null && _droppedAt >= 0f &&
             Time.realtimeSinceStartup - _droppedAt <= ReconnectWindowSeconds;
 
         // ---- Server messages ----------------------------------------------------------------------------------------
 
-        NetReader Read(FastBufferReader reader)
+        /// <summary>A server message's handler on its bytes. M9b playtest fixes: while a test throttles this client (a
+        /// hidden tab's page runs about once a second) the messages wait in arrival order for its next frame.</summary>
+        void Handle(string message, Action<NetReader> handler)
         {
-            var length = reader.Length - reader.Position;
-            var bytes = new byte[Math.Max(0, length)];
-            if (length > 0) reader.ReadBytesSafe(ref bytes, length);
-            Metrics.Down(NetworkManager.ServerClientId, length);
-            return new NetReader(bytes);
+            Manager.CustomMessagingManager.RegisterNamedMessageHandler(message, (sender, reader) =>
+            {
+                var length = reader.Length - reader.Position;
+                var bytes = new byte[Math.Max(0, length)];
+                if (length > 0) reader.ReadBytesSafe(ref bytes, length);
+                Metrics.Down(NetworkManager.ServerClientId, length);
+                if (_throttleUntil > 0) { _queued.Add((handler, bytes)); return; }
+                handler(new NetReader(bytes));
+            });
         }
 
-        void OnWelcome(ulong sender, FastBufferReader reader)
+        readonly System.Collections.Generic.List<(Action<NetReader> handler, byte[] bytes)> _queued = new System.Collections.Generic.List<(Action<NetReader>, byte[])>();
+        double _throttleUntil, _nextThrottledFrame;
+
+        /// <summary>Tests: for <paramref name="seconds"/> this client runs as a page in a hidden browser tab does (Chrome
+        /// runs it about once a second): one frame a second, the server's messages handled in that frame, its socket open
+        /// (the transport keeps it alive). Nothing tells the server.</summary>
+        public void ThrottleForTest(float seconds)
         {
-            if (!NetCodec.ReadWelcome(Read(reader), out var m)) return;
+            _throttleUntil = Time.realtimeSinceStartupAsDouble + seconds;
+            _nextThrottledFrame = Time.realtimeSinceStartupAsDouble + 1.0;
+        }
+
+        public bool Throttled => _throttleUntil > 0;
+
+        void FlushQueued()
+        {
+            var queued = _queued.ToArray();
+            _queued.Clear();
+            foreach (var (handler, bytes) in queued) handler(new NetReader(bytes));
+        }
+
+        void OnWelcome(NetReader reader)
+        {
+            if (!NetCodec.ReadWelcome(reader, out var m)) return;
             _resume = m.resumeToken;
             var first = Welcomes == 0;
             if (first) FirstWelcome = m;
             if (Predicted == null) Predicted = ShipFactory?.Invoke();
             if (_droppedAt >= 0f) Metrics.ResumeSeconds.Add(Time.realtimeSinceStartup - _droppedAt);
             _droppedAt = -1f;
+            UndrawShip();
             Predicted?.Restore(m.ship.motion);
             Predicted?.RestoreBoost(m.ship.boost);
+            SnapDrawnShip();
             // V5 M9b review: the level-up state before the drop is not trusted across a resume (the server may have resolved
             // the cards meanwhile, e.g. its 30 s timeout): the cards go and the ship holds no more; if cards are still up,
             // the server sends them again right after this welcome and the hold comes back with them.
@@ -221,9 +264,16 @@ namespace RoguePirates.V5.Net
             _historyStart = Tick + 1; // inputs from here on are the ones the server will apply
             _accumulator = 0f;
             _lastRealtime = -1;
-            Enemies.Clear();
+            _resyncNext = false;
+            _lateSnapshots = 0;
+            _behindGuard = Tick;
+            // M9b playtest fixes (C): the enemies stay (a welcome after a resume or an away no longer clears them, which made
+            // every enemy vanish and spawn again with its spawn effect); the next full snapshot drops the ones gone meanwhile.
             Welcomed = true;
             Welcomes++;
+            _awaitingWelcome = false;
+            // M9b playtest fixes (E): a (re)connection counts as present on the server; a page still hidden says so again.
+            if (Away) SendPresence(true);
             WelcomeReceived?.Invoke(m);
         }
 
@@ -238,6 +288,7 @@ namespace RoguePirates.V5.Net
             Predicted = ship;
             ship.Restore(Last.motion);
             ship.RestoreBoost(Last.boost);
+            SnapDrawnShip();
             LastAck = 0;
             _historyStart = Tick + 1;
             _accumulator = 0f;
@@ -246,10 +297,10 @@ namespace RoguePirates.V5.Net
 
         // ---- Level-up cards (V5 M9b part 2b) -----------------------------------------------------------------------
 
-        void OnOffer(ulong sender, FastBufferReader reader)
+        void OnOffer(NetReader reader)
         {
             OfferMessage m;
-            try { if (!NetCodec.ReadOffer(Read(reader), out m)) return; }
+            try { if (!NetCodec.ReadOffer(reader, out m)) return; }
             catch (Exception) { return; }
             var again = PendingOffer != null && PendingOffer.seq == m.seq;
             PendingOffer = m;
@@ -286,15 +337,19 @@ namespace RoguePirates.V5.Net
             if (had != null) OfferResolved?.Invoke(new OfferClosedMessage { seq = had.seq, how = NetProtocol.OfferResolution.Cancelled });
         }
 
-        void OnOfferClosed(ulong sender, FastBufferReader reader)
+        void OnOfferClosed(NetReader reader)
         {
             OfferClosedMessage m;
-            try { if (!NetCodec.ReadOfferClosed(Read(reader), out m)) return; }
+            try { if (!NetCodec.ReadOfferClosed(reader, out m)) return; }
             catch (Exception) { return; }
             LastResolution = m;
             if (PendingOffer != null && PendingOffer.seq != m.seq) return; // a newer set is already up (a chained level-up)
             PendingOffer = null;
             if (m.resumeTick != 0) { _resumeAt = m.resumeTick; _resumeConfirmed = true; }
+            // M9b playtest fixes (D): a set the server resolved without this client's answer (its 30 s timeout while the tab
+            // was hidden, a cancel) means the server's ship and tick line moved on without this client: the next snapshot
+            // is taken as it is (the ship resynced, the tick moved ahead of the server's), so the player sails at once.
+            if (_pickSentSeq != m.seq) _resyncNext = true;
             OfferResolved?.Invoke(m);
         }
 
@@ -309,6 +364,7 @@ namespace RoguePirates.V5.Net
             NetCodec.WritePick(_writer, new PickMessage { seq = offer.seq, action = action, index = (byte)Mathf.Clamp(index, 0, 255), resumeTick = resume });
             Send(NetProtocol.Pick, NetworkDelivery.ReliableSequenced);
             PicksSent++;
+            _pickSentSeq = offer.seq;
             // A refresh, or a pick with more level-ups waiting (the next cards follow at once), keeps the ship held.
             if (action != NetProtocol.PickAction.Refresh && offer.pendingLevelUps <= 1) _resumeAt = resume;
             return true;
@@ -336,30 +392,30 @@ namespace RoguePirates.V5.Net
             Predicted.Step(input.SteerThrottle, input.Boost, NetProtocol.TickSeconds, replay);
         }
 
-        void OnSnapshot(ulong sender, FastBufferReader reader)
+        void OnSnapshot(NetReader reader)
         {
-            if (!NetCodec.ReadShip(Read(reader), out var s)) return;
+            if (!NetCodec.ReadShip(reader, out var s)) return;
             // V5 M9b review: a snapshot that overtakes the resume's welcome (another channel) belongs to the new session but
             // this client has not restarted its tick line yet: replaying against it would run the whole input history.
-            if (!Welcomed) return;
+            if (!Welcomed || _awaitingWelcome) return;
             if (s.serverTick <= Last.serverTick && Snapshots > 0) return; // late
+            UndrawShip();
             Snapshots++;
             Last = s;
             Reconcile(s);
         }
 
-        void OnEnemies(ulong sender, FastBufferReader reader)
+        void OnEnemies(NetReader r)
         {
-            var r = Read(reader);
             try { Enemies.Apply(r, Predicted != null ? Predicted.Position.y : 0f); }
             catch (Exception) { /* malformed batch: dropped */ }
         }
 
-        void OnDefs(ulong sender, FastBufferReader reader) => NetCodec.ReadDefs(Read(reader), Enemies.SetDefinition);
+        void OnDefs(NetReader reader) => NetCodec.ReadDefs(reader, Enemies.SetDefinition);
 
-        void OnEnd(ulong sender, FastBufferReader reader)
+        void OnEnd(NetReader reader)
         {
-            if (!NetCodec.ReadEnd(Read(reader), out var reason, out _, out _)) return;
+            if (!NetCodec.ReadEnd(reader, out var reason, out _, out _)) return;
             Ended = true;
             EndReason = reason;
         }
@@ -368,25 +424,51 @@ namespace RoguePirates.V5.Net
 
         void Update()
         {
+            if (_throttleUntil > 0)
+            {
+                var t = Time.realtimeSinceStartupAsDouble;
+                _slowFrameAt = NetFrameClock.Now; // the emulated page's frames are a second long
+                if (t >= _throttleUntil) { _throttleUntil = 0; FlushQueued(); }
+                else if (t < _nextThrottledFrame) return; // the hidden page's frame has not come yet
+                else { _nextThrottledFrame = t + 1.0; FlushQueued(); }
+            }
             if (ShouldReconnect && Manager != null && !Manager.IsListening && !Manager.ShutdownInProgress && Time.realtimeSinceStartup >= _nextAttemptAt)
             {
                 _nextAttemptAt = Time.realtimeSinceStartup + 0.5f;
                 Connect();
             }
             if (_delayed.Count > 0) FlushDelayedForTest();
+            if (Time.unscaledDeltaTime > SlowFrameSeconds) _slowFrameAt = NetFrameClock.Now;
+            UpdatePresence();
+            UndrawShip();
             if (VisualOffset != Vector3.zero)
             {
-                VisualOffset *= Mathf.Exp(-12f * Time.deltaTime);
+                VisualOffset *= Mathf.Exp(-12f * Time.unscaledDeltaTime);
                 if (VisualOffset.sqrMagnitude < 1e-6f) VisualOffset = Vector3.zero;
             }
-            if (!Welcomed || Ended || Predicted == null || !Connected) { _lastRealtime = -1; return; }
+            if (_awaitingWelcome && Time.realtimeSinceStartup - _backSentAt > 3f) _awaitingWelcome = false; // no welcome came: tick on
+            if (!Welcomed || Ended || Predicted == null || !Connected || Away || _awaitingWelcome)
+            {
+                _lastRealtime = -1;
+                _accumulator = 0f;
+                HoldDrawnShip();
+                return;
+            }
             // Real time (Time.deltaTime is capped at a third of a second): after a hitch the client catches its ticks up,
             // so its tick stays in step with the server's wall clock. A stall over 2 s is dropped; the next snapshot
             // then names a tick ahead of this one and the client jumps to it (Reconcile).
-            var now = Time.realtimeSinceStartupAsDouble;
-            if (_stallUntil > 0 && now < _stallUntil) return; // tests: this side alone freezes
+            var now = NetFrameClock.Now; // M9b playtest fixes: the frame's start, so the drawn ship moves evenly
+            if (_stallUntil > 0 && now < _stallUntil) { _slowFrameAt = now; return; } // tests: this side alone freezes (one long frame, as a hitch is)
             _stallUntil = 0;
-            if (_lastRealtime >= 0) _accumulator += (float)(now - _lastRealtime);
+            if (_lastRealtime >= 0)
+            {
+                // M9b playtest fixes: a lead trimmed (below) is shed by running the tick clock 5% slow for a moment, so the
+                // drawn ship slows imperceptibly instead of standing still for a tick.
+                var elapsed = (float)(now - _lastRealtime);
+                var shed = Mathf.Min(_trimOwed, elapsed * 0.05f);
+                _trimOwed -= shed;
+                _accumulator += elapsed - shed;
+            }
             _lastRealtime = now;
             if (_accumulator > 2f) _accumulator = 0f;
             var steps = 0;
@@ -403,8 +485,8 @@ namespace RoguePirates.V5.Net
         /// <summary>Tests: this client alone stops for <paramref name="seconds"/> (a GC pause, a background tab).</summary>
         public void StallForTest(float seconds)
         {
-            _stallUntil = Time.realtimeSinceStartupAsDouble + seconds;
-            _lastRealtime = Time.realtimeSinceStartupAsDouble;
+            _stallUntil = NetFrameClock.Now + seconds;
+            _lastRealtime = NetFrameClock.Now;
         }
 
         /// <summary>Tests: a forged client clock (this many ticks per real tick, numbered ahead).</summary>
@@ -426,8 +508,12 @@ namespace RoguePirates.V5.Net
             var input = NetInput.From(raw, Boost != null && Boost());
             var slot = (int)(Tick % History);
             _inputs[slot] = input;
+            _drawFromPos = _simPos;
+            _drawFromRot = _simRot;
             Step(Tick, input, false); // on the quantized input, as the server will
             _predicted[slot] = Predicted.Position;
+            _simPos = Predicted.Position;
+            _simRot = Predicted.Rotation;
             SendInputs();
         }
 
@@ -450,15 +536,31 @@ namespace RoguePirates.V5.Net
             if (Predicted == null) return;
             var ack = s.ackTick;
             if (ack != 0 && ack < LastAck) return;
-            if (ack > Tick)
+            // M9b playtest fixes (D): the server says how far ahead of the tick it applied its newest received input was. A
+            // negative margin means this client's inputs arrive after their tick (the server guesses them): its tick line
+            // is behind the server's. Before, only an ack ahead of the client's own tick showed that, and a lead measured
+            // while the server was guessing stayed too short for a 270 ms round trip: every input arrived late, for good.
+            // Not while this page itself runs slowly (a hidden tab's one frame a second, a long hitch, and a second after
+            // it): its inputs are late because it is, and the snapshots in flight still show it; the ack overtaking its
+            // tick catches that up with the lead measured on time.
+            var steady = Time.unscaledDeltaTime <= SlowFrameSeconds && NetFrameClock.Now - _slowFrameAt > SlowFrameQuietSeconds;
+            var late = ack != 0 && s.inputMargin < 0 && ack > _behindGuard && steady;
+            _lateSnapshots = late ? _lateSnapshots + 1 : 0;
+            var behind = late && (s.inputMargin <= -LateTicksToResync || _lateSnapshots >= LateSnapshotsToResync);
+            var resync = ack != 0 && _resyncNext && !s.HoldPending;
+            if (ack > Tick || behind || resync)
             {
-                // This client fell behind the server's input timeline (a long stall): take the server's state and move
-                // the tick ahead of it by the usual lead, predicting those ticks on the last input (the server repeats it).
+                // Take the server's state and move the tick ahead of the server's by enough that the inputs arrive in time
+                // (the lead measured on time, or the lateness plus a margin), predicting those ticks on the last input.
+                var deficit = s.inputMargin < 0 ? -s.inputMargin : 0;
+                var lead = behind ? Mathf.Clamp(Mathf.Max(_lead, (int)((long)Tick - ack) + deficit + ResyncSlackTicks), 2, 60) : _lead;
                 var held = _inputs[Tick % History];
+                var resyncFrom = _simPos;
+                var resyncFromTick = Tick;
                 Predicted.Restore(s.motion);
                 Predicted.RestoreBoost(s.boost);
                 LastAck = ack;
-                Tick = ack + (uint)_lead;
+                Tick = ack + (uint)lead;
                 _historyStart = ack + 1;
                 for (var t = ack + 1; t <= Tick; t++)
                 {
@@ -466,9 +568,19 @@ namespace RoguePirates.V5.Net
                     Step(t, held, true);
                     _predicted[t % History] = Predicted.Position;
                 }
+                if (_resumeConfirmed && ack >= _resumeAt) { _pauseFrom = _resumeAt = 0; _resumeConfirmed = false; }
                 Resyncs++;
+                if (behind) LateResyncs++;
+                if (Resyncs <= 20)
+                    Debug.Log($"[V5 Net] resync ({(behind ? "inputs late" : resync ? "cards resolved by the server" : "behind the server's ack")}): ack {ack}, margin {s.inputMargin}, " +
+                              $"tick {resyncFromTick} -> {Tick} (lead {lead})");
+                _resyncNext = false;
+                _lateSnapshots = 0;
+                _behindGuard = Tick; // the snapshots on the way still show the old lateness
+                _lead = lead;
                 _accumulator = 0f; // the time owed is covered by the jump
-                _lastRealtime = Time.realtimeSinceStartupAsDouble;
+                _lastRealtime = NetFrameClock.Now;
+                Corrected(resyncFrom);
                 return;
             }
             // V5 M9b review: a snapshot from before the server acted on this client's hold or pick (the hold or the pick still
@@ -481,8 +593,11 @@ namespace RoguePirates.V5.Net
                 return;
             }
             LastAck = ack;
-            if (ack != 0) _lead = Mathf.Clamp((int)(Tick - ack), 2, 60);
-            var before = Predicted.Position;
+            // The lead is measured on time only: not from a snapshot the server guessed for, nor while this page runs slowly
+            // (a hidden tab handles a second's snapshots in one frame, its tick standing still while their acks climb).
+            if (ack != 0 && s.inputMargin >= 0 && steady) _lead = Mathf.Clamp((int)(Tick - ack), 2, 60);
+            TrimExcessLead(s, steady);
+            var before = _simPos;
             if (ack >= _historyStart && Tick - ack < History)
             {
                 Metrics.PredictionError.Add(Flat(_predicted[ack % History] - s.motion.position));
@@ -504,7 +619,152 @@ namespace RoguePirates.V5.Net
             if (correction > 1f && LargeCorrections++ < 20)
                 Debug.Log($"[V5 Net] large correction {correction:0.00} m: tick {Tick} ack {ack} from {from} historyStart {_historyStart} pause {_pauseFrom}-{_resumeAt} " +
                           $"confirmed {_resumeConfirmed} paused {s.Paused} alive {s.Alive} welcomes {Welcomes} predictionError {(ack >= _historyStart ? Flat(_predicted[ack % History] - s.motion.position) : -1f):0.00}");
-            VisualOffset += new Vector3(before.x - after.x, 0f, before.z - after.z);
+            Corrected(before);
+        }
+
+        /// <summary>
+        /// M9b playtest fixes: the opposite of late. Inputs that wait at the server longer than the link's jitter needs are
+        /// input delay for nothing (a resync's slack, a lead taken on a slow link that got faster). When the least margin
+        /// over a second of steady snapshots is <see cref="ExcessMarginTicks"/> or more, the tick line moves back a tick.
+        /// </summary>
+        void TrimExcessLead(in ShipSnapshot s, bool steady)
+        {
+            if (!steady || s.ackTick == 0 || Holds(s.ackTick) || _pauseFrom != 0) { _marginWindow = 0; _marginMin = sbyte.MaxValue; return; }
+            _marginMin = Math.Min(_marginMin, (int)s.inputMargin);
+            if (++_marginWindow < MarginWindowSnapshots) return;
+            if (_marginMin >= ExcessMarginTicks && _trimOwed <= 0f) { _trimOwed += NetProtocol.TickSeconds; LeadTrims++; }
+            _marginWindow = 0;
+            _marginMin = sbyte.MaxValue;
+        }
+
+        const int ExcessMarginTicks = 3, MarginWindowSnapshots = 15;
+        int _marginWindow, _marginMin = sbyte.MaxValue;
+        float _trimOwed;
+        /// <summary>Ticks of lead given back because the inputs waited at the server longer than needed.</summary>
+        public int LeadTrims { get; private set; }
+
+        /// <summary>Snapshots in a row showing this client's inputs late before it moves its tick ahead (or at once when
+        /// they were this many ticks late); the extra ticks of lead it then takes.</summary>
+        const int LateSnapshotsToResync = 3, LateTicksToResync = 3, ResyncSlackTicks = 3;
+        /// <summary>A frame longer than this is this page running slowly (not the link); late inputs are not acted on until
+        /// <see cref="SlowFrameQuietSeconds"/> after the last one.</summary>
+        const float SlowFrameSeconds = 0.2f, SlowFrameQuietSeconds = 1f;
+        double _slowFrameAt = double.NegativeInfinity;
+        int _lateSnapshots;
+        uint _behindGuard;
+        bool _resyncNext;
+        int _pickSentSeq = -1;
+        /// <summary>M9b playtest fixes: times the client moved its tick ahead because its inputs arrived late.</summary>
+        public int LateResyncs { get; private set; }
+
+        // ---- The drawn ship (M9b playtest fixes, A) ------------------------------------------------------------------
+
+        Vector3 _simPos, _drawFromPos;
+        Quaternion _simRot = Quaternion.identity, _drawFromRot = Quaternion.identity;
+        bool _drawn, _haveSimPose;
+
+        /// <summary>The simulated pose moved by a rewind and replay from <paramref name="before"/>: the drawn ship keeps its
+        /// place (the tick it is drawn from moves with the correction, the visual offset takes the difference and eases it out);
+        /// a correction over <see cref="SnapCorrectionMetres"/> is drawn at once.</summary>
+        void Corrected(Vector3 before)
+        {
+            var after = Predicted.Position;
+            var afterRot = Predicted.Rotation;
+            var delta = after - before;
+            if (Flat(delta) > SnapCorrectionMetres || !_haveSimPose) { SnapDrawnShip(); return; }
+            _drawFromPos += delta;
+            _drawFromRot = afterRot * Quaternion.Inverse(_simRot) * _drawFromRot;
+            _simPos = after;
+            _simRot = afterRot;
+            VisualOffset += new Vector3(-delta.x, 0f, -delta.z);
+        }
+
+        /// <summary>The drawn ship is where the simulated one is (a welcome, a resync, a large correction).</summary>
+        void SnapDrawnShip()
+        {
+            if (Predicted == null) return;
+            _simPos = _drawFromPos = Predicted.Position;
+            _simRot = _drawFromRot = Predicted.Rotation;
+            VisualOffset = Vector3.zero;
+            _haveSimPose = true;
+        }
+
+        /// <summary>Not ticking (held for a welcome, away): the ship is drawn still at its simulated pose.</summary>
+        void HoldDrawnShip()
+        {
+            if (!_haveSimPose) return;
+            _drawFromPos = _simPos;
+            _drawFromRot = _simRot;
+        }
+
+        /// <summary>The transform and the body back on the simulated pose before anything steps, rewinds or reads it.</summary>
+        void UndrawShip()
+        {
+            if (!_drawn || Predicted == null || !_haveSimPose) return;
+            _drawn = false;
+            Predicted.SetSimulatedPose(_simPos, _simRot);
+        }
+
+        /// <summary>Late in the frame (<see cref="NetShipDraw"/>, before the camera follows): the ship drawn between its last
+        /// two ticks by the time since the last one, plus the easing correction.</summary>
+        internal void DrawShip()
+        {
+            if (Predicted == null || !_haveSimPose) return;
+            var alpha = Mathf.Clamp01(_accumulator / NetProtocol.TickSeconds);
+            var position = Vector3.LerpUnclamped(_drawFromPos, _simPos, alpha) + VisualOffset;
+            var rotation = Quaternion.Slerp(_drawFromRot, _simRot, alpha);
+            if (!InterpolateDrawnShip) { position = _simPos + VisualOffset; rotation = _simRot; }
+            RenderPosition = position;
+            RenderRotation = rotation;
+            Predicted.Draw(position, rotation);
+            _drawn = true;
+        }
+
+        // ---- Away (M9b playtest fixes, E) ----------------------------------------------------------------------------
+
+        /// <summary>Whether the player's page is hidden now (the voyage client reads the browser's visibility; tests set it).
+        /// Away, the client stops ticking and tells the server, which holds the solo voyage; back, it tells the server again
+        /// and waits for the welcome that resyncs its ship (or reconnects first if the socket went meanwhile).</summary>
+        public Func<bool> AwaySource { get; set; }
+        public bool Away { get; private set; }
+        public int AwaysSent { get; private set; }
+        public int BacksSent { get; private set; }
+        public float AwaySince { get; private set; } = -1f;
+        bool _awaitingWelcome;
+        float _backSentAt;
+
+        void UpdatePresence()
+        {
+            var away = AwaySource != null && AwaySource();
+            if (away == Away) return;
+            Away = away;
+            var now = Time.realtimeSinceStartup;
+            if (away)
+            {
+                AwaySince = now;
+                if (Connected && Welcomed) SendPresence(true);
+                return;
+            }
+            AwaySince = -1f;
+            if (Connected && Welcomed)
+            {
+                SendPresence(false);
+                _awaitingWelcome = true; // no ticks until the server's welcome says where the ship is
+                _backSentAt = now;
+            }
+            else if (_droppedAt >= 0f)
+            {
+                _droppedAt = now; // the socket went while away: the reconnect window starts now
+                _nextAttemptAt = now;
+            }
+        }
+
+        void SendPresence(bool away)
+        {
+            _writer.Clear();
+            NetCodec.WritePresence(_writer, away);
+            SendNow(NetProtocol.Presence, NetworkDelivery.ReliableSequenced);
+            if (away) AwaysSent++; else BacksSent++;
         }
 
         static float Flat(Vector3 v) => Mathf.Sqrt(v.x * v.x + v.z * v.z);
