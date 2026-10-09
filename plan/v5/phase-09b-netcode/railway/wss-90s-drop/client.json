@@ -1,0 +1,48 @@
+{
+  "report": "V5 net test client (scripted voyage)",
+  "utc": "2026-10-09T10:41:57.6780460Z",
+  "unity": "6000.3.11f1",
+  "editor": false,
+  "joinSeconds": "1.491",
+  "resumeSeconds": "1.365",
+  "endedByServer": "true",
+  "endReason": "Sunk",
+  "lobbyUtc": "2026-10-09T10:41:57.6747580Z",
+  "secondsFromServerEndToLobby": "0.002",
+  "snapshots": "1441",
+  "welcomes": "2",
+  "resyncs": "0",
+  "finalHull": "0",
+  "kills": "121",
+  "level": "7",
+  "cardSets": "8",
+  "cardsPicked": "7",
+  "holdsSent": "7",
+  "snapshotsSkippedForHoldOrPick": "0",
+  "droppedDuringCards": "false",
+  "resumeDuringCardsSeconds": "-1.000",
+  "cardsBackAfterResume": "false",
+  "url": "wss://match-test-production.up.railway.app:443/",
+  "outcome": "end Sunk",
+  "ok": "true",
+  "events": "0.76s stage loaded (seed 9200) | 2.26s welcomed in 1.491 s | 10.25s level-up card picked (WeaponUpgrade swivel_guns, set 1) | 19.17s level-up card picked (Logbook admiral, set 2) | 32.27s socket dropped (client side) | 33.63s resumed in 1.365 s | 34.03s level-up card picked (WeaponUpgrade swivel_guns, set 3) | 40.69s level-up card picked (Logbook lookouts_glass, set 4) | 56.46s level-up card picked (Logbook plunderer, set 5) | 74.56s level-up card picked (WeaponUpgrade swivel_guns, set 6) | 92.27s VOYAGE-DONE snapshots=1330 hull=23/100 kills=106 level=6 | 98.77s level-up card picked (NewWeapon flying_cutlasses, set 7) | 99.64s end Sunk received | 99.64s lobby (end Sunk) 0.002 s after the server's end showed, at 2026-10-09T10:41:57.6747580Z",
+  "sections": [
+    {
+      "name": "client",
+      "seconds": 98.881,
+      "clients": [
+        {"clientId": 0, "bytesDownPerSecond": 3429.978, "bytesUpPerSecond": 873.046, "wireDownPerSecondEstimate": 3782.522, "wireUpPerSecondEstimate": 1224.133, "messagesDown": 2905, "messagesUp": 2893}
+      ],
+      "tickMs": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotBytes": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "snapshotEnemies": {"count": 0, "mean": 0, "p50": 0, "p95": 0, "max": 0},
+      "predictionErrorMetres": {"count": 1431, "mean": 0, "p50": 0, "p95": 0, "max": 0.201},
+      "correctionMetres": {"count": 1441, "mean": 0.004, "p50": 0, "p95": 0, "max": 3.098},
+      "resumeSeconds": {"count": 1, "mean": 1.365, "p50": 1.365, "p95": 1.365, "max": 1.365},
+      "inputLagMs": {"count": 1431, "mean": 281.155, "p50": 266.667, "p95": 333.333, "max": 733.333},
+      "guessedInputs": 0,
+      "lateInputs": 0,
+      "catchUpSteps": 0
+    }
+  ]
+}
