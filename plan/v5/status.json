@@ -83,7 +83,7 @@
   },
   "M9b": {
    "state": "building",
-   "chip": "playtest fixes · then your re-test"
+   "chip": "fixes live · your re-test"
   },
   "M9c": {
    "state": "planned",
@@ -525,6 +525,16 @@
    "when": "9 Oct",
    "commit": "73fc40ff",
    "what": "<strong>M9b on Railway</strong>: secure WebSockets failed at first because Unity Transport sends the server's IP as the Host header and Railway routes by name (patched in an embedded copy). Then a scripted voyage worked: join 1.5 s, resume 1.4 s, server tick p95 0.68 ms, about 3.8 KB/s down. <strong>Your playtest</strong>: ship handling and cards feel the same; but stuttery, enemies jump, and switching tabs during cards froze the ship (the server's 30 s card timer picked for you and the client never released its hold). Fixing: smooth drawing of the ship and enemies, the jumps, the timeout freeze, and pausing a solo server voyage while the tab is hidden, as the normal game does."
+  },
+  {
+   "when": "9 Oct",
+   "commit": "e1f56626",
+   "what": "<strong>M9b playtest fixes live on Railway</strong> (image e1f56626d9b5): the ship and enemies are drawn smoothly every frame (ship jitter 18 to 0.17 m/s, on-screen enemy jitter 1.0 to 0.15 m/s), network teleports removed (61 impossible moves to 0), the hidden-tab freeze fixed, a solo server voyage pauses while the tab is hidden. Waiting for your re-test."
+  },
+  {
+   "when": "9 Oct",
+   "commit": "09afabf8",
+   "what": "<strong>Run checks v3 deployed</strong> after your Cuttlefish Bone change (D27): the rename changed the game's config fingerprint, so the rules were regenerated; bounds unchanged apart from sampling noise, false alarms 0.07%, and runs from just before D27 still count as checked."
   }
  ],
  "todos": {
