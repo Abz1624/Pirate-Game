@@ -1,0 +1,41 @@
+﻿[V5 Net] player joined; the run waits for its first inputs (its stage loading)
+[V5 Net] stats tick=65432 session=connected ticksMeasured=263 tickMs p50=0.169 p95=0.330 max=6.718 rssMB=211.7 monoHeapMB=7.8 unityReservedMB=166.6 fps=60
+[V5 Net] first inputs 10.98 s after the join; the run plays
+[V5 Net] stats tick=65733 session=connected ticksMeasured=564 tickMs p50=0.201 p95=0.443 max=17.482 rssMB=212.3 monoHeapMB=4.8 unityReservedMB=166.6 fps=60
+[V5 Net] hold named 277: next unapplied 305, newest input 8, held from 278
+[V5 Net] cards Picked: held from 278, client resume 357, next unapplied 364, resume 357
+[V5 Net] stats tick=66033 session=connected ticksMeasured=864 tickMs p50=0.217 p95=0.448 max=17.482 rssMB=212.6 monoHeapMB=4.9 unityReservedMB=166.6 fps=60
+[V5 Net] cards Picked: held from 603, client resume 657, next unapplied 664, resume 657
+[V5 Net] stats tick=66333 session=connected ticksMeasured=1164 tickMs p50=0.230 p95=0.437 max=17.482 rssMB=212.8 monoHeapMB=5.1 unityReservedMB=166.6 fps=60
+[V5 Net] closing: voyage ended (Sunk)
+[V5 Net] final tick=66475 session=detached ticksMeasured=1306 tickMs p50=0.219 p95=0.416 max=36.285 rssMB=214.3 monoHeapMB=5.0 unityReservedMB=166.6 fps=60
+[V5 Net] EXIT voyage ended (Sunk)
+[V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.73 s in the process (run held until a player joins: True)
+[V5 Net] player joined; the run waits for its first inputs (its stage loading)
+[V5 Net] first inputs 1.90 s after the join; the run plays
+[V5 Net] stats tick=4500 session=connected ticksMeasured=74 tickMs p50=0.158 p95=0.252 max=1.451 rssMB=206.4 monoHeapMB=5.1 unityReservedMB=164.6 fps=60
+[V5 Net] hold named 262: next unapplied 263, newest input 261, held from 262
+[V5 Net] stats tick=4800 session=connected ticksMeasured=374 tickMs p50=0.223 p95=0.515 max=12.327 rssMB=207.2 monoHeapMB=5.3 unityReservedMB=164.6 fps=60
+[V5 Net] cards Picked: held from 262, client resume 337, next unapplied 336, resume 337
+[V5 Net] hold named 593: next unapplied 592, newest input 592, held from 593
+[V5 Net] stats tick=5100 session=connected ticksMeasured=674 tickMs p50=0.259 p95=0.655 max=12.327 rssMB=209.3 monoHeapMB=5.5 unityReservedMB=166.6 fps=60
+[V5 Net] cards Picked: held from 593, client resume 650, next unapplied 649, resume 650
+[V5 Net] stats tick=5400 session=connected ticksMeasured=974 tickMs p50=0.287 p95=0.681 max=12.327 rssMB=209.3 monoHeapMB=5.2 unityReservedMB=166.6 fps=60
+[V5 Net] hold named 1009: next unapplied 1008, newest input 1008, held from 1009
+[V5 Net] stats tick=5701 session=connected ticksMeasured=1275 tickMs p50=0.273 p95=0.674 max=12.327 rssMB=209.4 monoHeapMB=5.3 unityReservedMB=166.6 fps=60
+[V5 Net] stats tick=6001 session=connected ticksMeasured=1575 tickMs p50=0.223 p95=0.649 max=12.327 rssMB=209.4 monoHeapMB=5.4 unityReservedMB=166.6 fps=60
+[V5 Net] stats tick=6001 session=connected ticksMeasured=1575 tickMs p50=0.223 p95=0.649 max=12.327 rssMB=209.4 monoHeapMB=5.4 unityReservedMB=166.6 fps=60
+[V5 Net] stats tick=6301 session=connected ticksMeasured=1875 tickMs p50=0.142 p95=0.629 max=12.327 rssMB=209.4 monoHeapMB=5.5 unityReservedMB=166.6 fps=60
+[V5 Net] stats tick=6301 session=connected ticksMeasured=1875 tickMs p50=0.142 p95=0.629 max=12.327 rssMB=209.4 monoHeapMB=5.5 unityReservedMB=166.6 fps=60
+[V5 Net] cards TimedOut: held from 1009, client resume 0, next unapplied 1900, resume 1900
+[V5 Net] stats tick=6601 session=connected ticksMeasured=2175 tickMs p50=0.169 p95=0.636 max=12.327 rssMB=211.4 monoHeapMB=5.7 unityReservedMB=168.6 fps=60
+[V5 Net] stats tick=6901 session=connected ticksMeasured=2475 tickMs p50=0.253 p95=0.661 max=12.327 rssMB=211.5 monoHeapMB=5.3 unityReservedMB=168.6 fps=60
+[V5 Net] stats tick=7201 session=connected ticksMeasured=2775 tickMs p50=0.288 p95=0.686 max=12.327 rssMB=211.5 monoHeapMB=5.6 unityReservedMB=168.6 fps=60
+[V5 Net] stats tick=7501 session=connected ticksMeasured=3075 tickMs p50=0.326 p95=0.724 max=12.327 rssMB=211.6 monoHeapMB=5.8 unityReservedMB=168.6 fps=60
+[V5 Net] stats tick=7801 session=connected ticksMeasured=3375 tickMs p50=0.375 p95=0.731 max=12.327 rssMB=211.6 monoHeapMB=5.4 unityReservedMB=168.6 fps=60
+[V5 Net] stats tick=8101 session=connected ticksMeasured=3675 tickMs p50=0.409 p95=0.732 max=12.327 rssMB=211.6 monoHeapMB=5.6 unityReservedMB=168.6 fps=60
+[V5 Net] stats tick=8401 session=detached ticksMeasured=3975 tickMs p50=0.424 p95=0.722 max=20.502 rssMB=213.0 monoHeapMB=4.9 unityReservedMB=168.6 fps=60
+[V5 Net] closing: voyage ended (Sunk)
+[V5 Net] final tick=8461 session=detached ticksMeasured=4035 tickMs p50=0.417 p95=0.721 max=20.502 rssMB=213.1 monoHeapMB=5.1 unityReservedMB=168.6 fps=60
+[V5 Net] EXIT voyage ended (Sunk)
+[V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.71 s in the process (run held until a player joins: True)

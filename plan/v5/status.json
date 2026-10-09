@@ -83,7 +83,7 @@
   },
   "M9b": {
    "state": "building",
-   "chip": "review fixed · building for the Railway test"
+   "chip": "playtest fixes · then your re-test"
   },
   "M9c": {
    "state": "planned",
@@ -520,6 +520,11 @@
    "when": "9 Oct",
    "commit": "ca774df3",
    "what": "<strong>Your answer (D27)</strong>: the Iron Figurehead, the Ramming Prow's old evolution item, is replaced by the <strong>Cuttlefish Bone</strong> (same +9% damage; evolves the Squid Ink Pots into Black Tide). Same asset, new id; never sold and no icon, so no save or art is affected. The Art Guide got its brief and icon prompt, the D21 Squid Ink Pots and Black Tide rows, the chest-pool corrections (all 47 items are in play since playtest round 5) and a change log. Plan rev 16."
+  },
+  {
+   "when": "9 Oct",
+   "commit": "73fc40ff",
+   "what": "<strong>M9b on Railway</strong>: secure WebSockets failed at first because Unity Transport sends the server's IP as the Host header and Railway routes by name (patched in an embedded copy). Then a scripted voyage worked: join 1.5 s, resume 1.4 s, server tick p95 0.68 ms, about 3.8 KB/s down. <strong>Your playtest</strong>: ship handling and cards feel the same; but stuttery, enemies jump, and switching tabs during cards froze the ship (the server's 30 s card timer picked for you and the client never released its hold). Fixing: smooth drawing of the ship and enemies, the jumps, the timeout freeze, and pausing a solo server voyage while the tab is hidden, as the normal game does."
   }
  ],
  "todos": {
