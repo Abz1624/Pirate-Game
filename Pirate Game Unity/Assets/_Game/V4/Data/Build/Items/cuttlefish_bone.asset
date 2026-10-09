@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b5955df3a89aa96429cea5e68565b8be, type: 3}
-  m_Name: iron_figurehead
+  m_Name: cuttlefish_bone
   m_EditorClassIdentifier: RoguePirates.V4.Config::RoguePirates.V4.Config.ItemConfig
-  configId: item.iron_figurehead
+  configId: item.cuttlefish_bone
   schemaVersion: 1
   balanceVersion: saltwind-v5-m4
-  itemId: iron_figurehead
-  displayName: Iron Figurehead
+  itemId: cuttlefish_bone
+  displayName: Cuttlefish Bone
   description: +9% damage. Evolves Squid Ink Pots into Black Tide at weapon level
     5.
   rarity: 1

@@ -366,12 +366,16 @@ namespace RoguePirates.V4.Tests
         }
 
         [Test]
-        public void TheInkPots_Evolution_IsBlackTide_WithTheIronFigurehead()
+        public void TheInkPots_Evolution_IsBlackTide_WithTheCuttlefishBone()
         {
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
             var evo = config.All<WeaponEvolutionConfig>().Single(e => e.baseWeapon != null && e.baseWeapon.weaponId == InkPots);
             Assert.AreEqual(ConfigEnums.EvolutionEffect.Empowered, evo.effect);
-            Assert.AreEqual("iron_figurehead", evo.requiredItemId, "the Ramming Prow's evolution item, reused");
+            // D21 follow-up (9 Oct, owner): the Prow's Iron Figurehead became the ink-themed Cuttlefish Bone (same stats).
+            Assert.AreEqual("cuttlefish_bone", evo.requiredItemId, "the Ink Pots' own evolution item");
+            var item = config.All<ItemConfig>().Single(i => i.itemId == "cuttlefish_bone");
+            Assert.IsTrue(item.inChestPool, "the Cuttlefish Bone drops from chests");
+            Assert.IsFalse(config.All<ItemConfig>().Any(i => i.itemId == "iron_figurehead"), "the Iron Figurehead is gone");
             Assert.Greater(evo.empower.extraSlow, 0f, "the evolution slows harder");
             Assert.IsFalse(config.All<WeaponConfig>().Any(w => w.weaponId == "ramming_prow"), "the Ramming Prow is gone");
             Assert.IsFalse(config.All<WeaponEvolutionConfig>().Any(e => e.evolutionId == "ironclad_ram"), "and its evolution");

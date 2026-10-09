@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: Black Tide
   description: 'Two pots a volley and a darker, wider ink: the back of the pack crawls.'
   baseWeapon: {fileID: 11400000, guid: 1aea2350d6ed44629011f4baf9d83ce3, type: 2}
-  requiredItemId: iron_figurehead
+  requiredItemId: cuttlefish_bone
   effect: 7
   laneBurst:
     laneArcDegrees: 40

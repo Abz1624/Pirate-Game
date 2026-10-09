@@ -1,6 +1,6 @@
 # Rogue Pirates — V5 Plan (Live Game)
 
-Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 15 (9 Oct): M9b review answers (D26). rev 14 (8 Oct): M9a closed. rev 14 (8 Oct): M9a review answers (D25). rev 13 (8 Oct): attacking keeps your shield; flagged runs pay out in shadow mode (D24). rev 12 (8 Oct): M9 split into M9a/M9b/M9c; stages reordered (1v1 after M13b); run checks start in shadow mode; $15 workspace limit (D23). rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
+Started 29 Sep 2026 on branch `v5-live-game` (from `v4-modular-architecture` at `f1b9a4cf`). Status: **rev 16 (9 Oct): the Cuttlefish Bone replaces the Iron Figurehead (D27). rev 15 (9 Oct): M9b review answers (D26). rev 14 (8 Oct): M9a closed. rev 14 (8 Oct): M9a review answers (D25). rev 13 (8 Oct): attacking keeps your shield; flagged runs pay out in shadow mode (D24). rev 12 (8 Oct): M9 split into M9a/M9b/M9c; stages reordered (1v1 after M13b); run checks start in shadow mode; $15 workspace limit (D23). rev 11 (8 Oct): M8z closed; M9 approved (D22). rev 10 (6 Oct): playtest detour recorded; M8z (playtest integration) added before M9; P1-P11 answered (D18, D19)
 (section 9)**. Explanations of every answer: `plan/v5/ANSWERS.md`.
 
 **Demo interlude (30 Sep, merged at `27a238bc`, V5 resumed at `86724e6b`).** Work paused after M3 for a demo on
@@ -125,6 +125,7 @@ Proposed decisions (P) take effect when the owner approves the plan. Owner-confi
 | D24 | **Owner answers of 8 Oct (after plan rev 12)**: (a) **attacking does not end your own shield**; this changes D19(1), the rest of option B stands (vault 60%, a raid takes 25% of the exposed treasury, half on a partial raid, a 4-hour shield after being raided, a small raid entry fee, no daily loss cap, no new-player protection); (b) **while run checks are in shadow mode, a flagged voyage still pays out its RUM**; the flag and its reason are logged for the owner's review, and enforcement stays the owner's decision (D23). (C) |
 | D25 | **Owner answers of 8 Oct (M9a review)**: (a) in shadow mode a run whose log fails the structure checks is accepted and ranks, with the verdict `log_rejected` and its reason, and the log kept (size-capped) for diagnosis; only oversized requests are refused; (b) C9a.1 closes on today's balance (older builds still miss on early kills); before enforcement a set of the owner's voyages on the current build must pass the shipped rules; (c) the M9a migrations (new tables only) deploy without a database backup, as at C9a.0; (d) whether runs with no log or an unknown balance rank once enforcement starts is decided at the enforcement step. (C) |
 | D26 | **Owner answers of 9 Oct (M9b review)**: (a) the workspace is on Railway Pro, so the match server image stays private on GHCR and Railway pulls it with registry credentials; (b) the level-up pull-back (0.8-1.9 m) is fixed in M9b to meet D9b.1's 0.5 m; (c) the M9b playtest may run without mirrored shots, pickups and chests; mirroring comes in M9c and M9c's bandwidth go/no-go is judged with it; (d) the ticket secret and voyage server settings are removed from the live API after each Railway test. (C) |
+| D27 | **Owner answer of 9 Oct (art guide)**: the Iron Figurehead, the Ramming Prow's evolution item kept for Black Tide in D21, is replaced by the **Cuttlefish Bone**, an ink-themed Uncommon item with the same +9% damage that evolves the Squid Ink Pots into Black Tide at weapon level 5. Same asset (GUID kept), new id `cuttlefish_bone`; it had no icon and was never sold, so no save or art is affected. The art guide carries its brief and icon prompt. (C) |
 
 ---
 
@@ -457,7 +458,7 @@ every existing weapon has an evolution.
   slow) and deals modest damage (17.68 x level factor on landing, 0.15 of it each tick: 14.78 level-1 single-target DPS,
   the D20 rule). Bosses and minibosses take half the slow (at most 20%). Cards: Duration (slick and slow), Slow (+4% a
   card, at most +20%), Size, Cooldown; rank milestones 4 (a second pot on the next pack back), 8 (25% wider slicks),
-  12 (+10% slow); evolution Black Tide with the Iron Figurehead (the Prow's item, reused): one more pot, x1.3 damage,
+  12 (+10% slow); evolution Black Tide with the Cuttlefish Bone (the Prow's Iron Figurehead, replaced by an ink-themed item on 9 Oct, D27; same +9% damage): one more pot, x1.3 damage,
   x0.85 cooldown, x1.3 size, +10% slow. Placeholder look: violet rings on the water. Chosen over a tide wave pushed out
   from the ship because a wave hits the front of the pack first, while a lob reaches the rear directly and lets the
   front still come to the guns. Ghost Cannons is dropped (it reads as an evolution of the cannons).

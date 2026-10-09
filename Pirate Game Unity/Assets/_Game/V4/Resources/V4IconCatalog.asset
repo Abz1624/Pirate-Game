@@ -96,7 +96,7 @@ MonoBehaviour:
     sprite: {fileID: 0}
   - id: siren_scale
     sprite: {fileID: 0}
-  - id: iron_figurehead
+  - id: cuttlefish_bone
     sprite: {fileID: 0}
   - id: whale_oil_barrel
     sprite: {fileID: 0}
