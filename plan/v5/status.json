@@ -83,7 +83,7 @@
   },
   "M9b": {
    "state": "building",
-   "chip": "parts 1-2b done · review, then Railway test"
+   "chip": "review fixes · then Railway test"
   },
   "M9c": {
    "state": "planned",
@@ -505,11 +505,16 @@
    "when": "8 Oct",
    "commit": "6f5d987e",
    "what": "<strong>M9b part 2b done</strong>: a desktop WebGL test client that plays a server-run voyage with the real ship, enemies and level-up cards (the server offers the cards; your pick is checked), and boost prediction (no correction at 150 ms lag and 2% loss). Locally against Docker: 59.7 fps in Chrome, about 3.1 KB/s down, join in under a second, a clean 'server closed' screen. Netcode adds about 0.85 MB to every build's download (114.2 MB). Known: the ship is pulled back 0.8-1.9 m once when level-up cards appear (hidden behind the cards; your playtest judges it). EditMode 601/601, PlayMode 110/110. Independent review running; then the Railway test."
+  },
+  {
+   "when": "9 Oct",
+   "commit": "",
+   "what": "<strong>Your answers (D26)</strong>: the server image stays private (Railway Pro pulls it with registry credentials); fix the level-up pull-back now; the M9b playtest can run without shots, pickups and chests (they come in M9c); remove the ticket settings from the live API after each test. Review fixes running."
   }
  ],
  "todos": {
   "next": [
-   "<strong>For the Railway test (soon)</strong>: a GitHub token with <code>write:packages</code> so I can push the match server image, or push it yourself; and whether the image may be public (it holds no secrets).",
+   "<strong>For the Railway test (soon)</strong>: a GitHub token (classic) with <code>write:packages</code> and <code>read:packages</code> for the private match server image (I push it; Railway pulls it). Put it in the repo's <code>.env</code> as <code>GHCR_TOKEN</code> rather than in chat.",
    "<strong>Keep recording voyages</strong> when you play.",
    "Later: a balance pass (early dinghy damage, late elite HP, Doubloons in the simulator)."
   ],
@@ -2329,6 +2334,11 @@
   {
    "title": "M9a review (8 Oct)",
    "summary": "<strong>Pass with fixes, no blockers.</strong> Money rules hold: no run rejected or withheld for plausibility, flagged runs rank, the new migrations only add tables. Fixing: retire the unauthenticated stub endpoints, accept bad logs as 'log rejected' (your call, D25), a request size limit, the run log closed by the game not the HUD, a stricter seeding scan, a shared edge-case fixture for the three checkers, a damage-on PlayMode voyage, log retention (8 weeks, flagged kept), the phase evidence folder.",
+   "rows": []
+  },
+  {
+   "title": "M9b parts 2a/2b review (9 Oct)",
+   "summary": "<strong>Pass with fixes, no blockers.</strong> Ticket security, release exclusion, the Docker image and server authority are sound. Fixing: a reconnect during level-up cards could freeze the client; the level-up pull-back above the 0.5 m target (your call: fix now); a test for the client mode flag; clamps on client-sent pause ticks and offer re-sends; drop a joined player who never sends input; the ticket endpoint answers 503 without a server URL; evidence files.",
    "rows": []
   }
  ]
