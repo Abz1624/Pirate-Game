@@ -38,11 +38,25 @@ namespace HighSeas.EditorTools
         const float WrapLinkScale = 1.5f;
         const float LinkPitch = 0.2f; // link inner length → links interlock exactly
 
-        // rig placement relative to the Brigg root (bow, starboard side)
-        static readonly Vector3 ChainOriginLocal = new(0.62f, 1.2f, 2.0f);
-        static readonly Vector3 RestLocalPos = new(1.4f, 0.35f, 0.35f);
-        static readonly Vector3 RestLocalFwd = new(0.3f, -0.5f, -1f);
-        static readonly Vector3 RestLocalUp = new(1f, 0.8f, 0f);
+        // Four rigs, one per deck corner, relative to the Brigg root. Each has its own chain origin on the rail,
+        // its own stowed spot on the hull and its own 100° attack sector, so the chains never share a start point.
+        struct Rig
+        {
+            public string name;
+            public Vector3 origin, restPos, restFwd, restUp, sector;
+            public float delay;
+        }
+
+        // all chains leave from one point at deck centre, a bit above the rail so swings clear the hull
+        static readonly Vector3 DeckCentre = new(0f, 1.5f, -0.4f);
+
+        static readonly Rig[] Rigs =
+        {
+            new() { name = "Anchor_BowStarboard",  origin = new(0.62f, 1.2f, 2.0f),   restPos = new(1.4f, 0.35f, 0.35f),   restFwd = new(0.3f, -0.5f, -1f),  restUp = new(1f, 0.8f, 0f),  sector = new(1f, 0f, 1f),   delay = 0f },
+            new() { name = "Anchor_SternStarboard", origin = new(0.85f, 1.7f, -2.3f),  restPos = new(1.45f, 0.4f, -0.75f), restFwd = new(0.3f, -0.5f, 1f),   restUp = new(1f, 0.8f, 0f),  sector = new(1f, 0f, -1f),  delay = 0.15f },
+            new() { name = "Anchor_SternPort",      origin = new(-0.85f, 1.7f, -2.3f), restPos = new(-1.45f, 0.4f, -0.75f), restFwd = new(-0.3f, -0.5f, 1f), restUp = new(-1f, 0.8f, 0f), sector = new(-1f, 0f, -1f), delay = 0.3f },
+            new() { name = "Anchor_BowPort",        origin = new(-0.62f, 1.2f, 2.0f),  restPos = new(-1.4f, 0.35f, 0.35f),  restFwd = new(-0.3f, -0.5f, -1f), restUp = new(-1f, 0.8f, 0f), sector = new(-1f, 0f, 1f),  delay = 0.45f },
+        };
         public const string BrigPrefabPath = "Assets/GameObject/Brigg.prefab";
 
         [MenuItem("Tools/Rogue Pirates/Anchor Flail/Build Prefab")]
@@ -64,81 +78,98 @@ namespace HighSeas.EditorTools
             var sparkMat = AdditiveParticleMaterial("AnchorFlail_Spark", "Assets/Texture2D/glow.png", new Color(GlowSoft.r, GlowSoft.g, GlowSoft.b, 0.6f));
             var ringMat = AdditiveParticleMaterial("AnchorFlail_Ring", "Assets/_Game/VFX/Healing/Textures/T_Heal_Ring.png", new Color(GlowSoft.r, GlowSoft.g, GlowSoft.b, 0.5f));
 
+            // Keep whatever the user tuned on the existing prefab (timings, colours of events, etc.).
+            var previous = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+            var tuning = previous != null ? previous.GetComponentInChildren<AnchorFlailVfx>(true) : null;
+
             var root = new GameObject("Anchor Flail");
             try
             {
-                var flail = root.AddComponent<AnchorFlailVfx>();
+                foreach (var rig in Rigs)
+                {
+                    var rigGo = new GameObject(rig.name);
+                    rigGo.transform.SetParent(root.transform, false);
+                    var flail = rigGo.AddComponent<AnchorFlailVfx>();
+                    if (tuning != null) EditorUtility.CopySerialized(tuning, flail);
 
-                var origin = new GameObject("ChainOrigin").transform;
-                origin.SetParent(root.transform, false);
-                origin.localPosition = ChainOriginLocal;
+                    var origin = new GameObject("ChainOrigin").transform;
+                    origin.SetParent(rigGo.transform, false);
+                    origin.localPosition = DeckCentre;
 
-                var anchor = new GameObject("Anchor").transform;
-                anchor.SetParent(root.transform, false);
-                var restPos = RestLocalPos;
-                var restFwd = RestLocalFwd;
-                anchor.localPosition = restPos;
-                anchor.localRotation = Quaternion.LookRotation(restFwd.normalized, RestLocalUp.normalized);
-                anchor.localScale = Vector3.one * AnchorScale;
+                    var anchor = new GameObject("Anchor").transform;
+                    anchor.SetParent(rigGo.transform, false);
+                    anchor.localPosition = rig.restPos;
+                    anchor.localRotation = Quaternion.LookRotation(rig.restFwd.normalized, rig.restUp.normalized);
+                    anchor.localScale = Vector3.one * AnchorScale;
 
-                var model = new GameObject("Model");
-                model.transform.SetParent(anchor, false);
-                model.AddComponent<MeshFilter>().sharedMesh = anchorMesh;
-                var mr = model.AddComponent<MeshRenderer>();
-                mr.sharedMaterial = iron;
-                mr.shadowCastingMode = ShadowCastingMode.On;
+                    var model = new GameObject("Model");
+                    model.transform.SetParent(anchor, false);
+                    model.AddComponent<MeshFilter>().sharedMesh = anchorMesh;
+                    var mr = model.AddComponent<MeshRenderer>();
+                    mr.sharedMaterial = iron;
+                    mr.shadowCastingMode = ShadowCastingMode.On;
 
-                var glow = new GameObject("Glow");
-                glow.transform.SetParent(anchor, false);
-                glow.AddComponent<MeshFilter>().sharedMesh = anchorGlowMesh;
-                var gr = glow.AddComponent<MeshRenderer>();
-                gr.sharedMaterial = anchorGlow;
-                gr.shadowCastingMode = ShadowCastingMode.Off;
-                gr.receiveShadows = false;
+                    var glow = new GameObject("Glow");
+                    glow.transform.SetParent(anchor, false);
+                    glow.AddComponent<MeshFilter>().sharedMesh = anchorGlowMesh;
+                    var gr = glow.AddComponent<MeshRenderer>();
+                    gr.sharedMaterial = anchorGlow;
+                    gr.shadowCastingMode = ShadowCastingMode.Off;
+                    gr.receiveShadows = false;
 
-                var wrap = new GameObject("ChainWrap");
-                wrap.transform.SetParent(anchor, false);
-                wrap.AddComponent<MeshFilter>().sharedMesh = wrapMesh;
-                var wr = wrap.AddComponent<MeshRenderer>();
-                wr.sharedMaterial = chain;
-                wr.shadowCastingMode = ShadowCastingMode.On;
+                    var wrap = new GameObject("ChainWrap");
+                    wrap.transform.SetParent(anchor, false);
+                    wrap.AddComponent<MeshFilter>().sharedMesh = wrapMesh;
+                    var wr = wrap.AddComponent<MeshRenderer>();
+                    wr.sharedMaterial = chain;
+                    wr.shadowCastingMode = ShadowCastingMode.On;
 
-                var wrapGlow = new GameObject("ChainWrapGlow");
-                wrapGlow.transform.SetParent(anchor, false);
-                wrapGlow.AddComponent<MeshFilter>().sharedMesh = wrapGlowMesh;
-                var wgr = wrapGlow.AddComponent<MeshRenderer>();
-                wgr.sharedMaterial = chainGlow;
-                wgr.shadowCastingMode = ShadowCastingMode.Off;
-                wgr.receiveShadows = false;
+                    var wrapGlow = new GameObject("ChainWrapGlow");
+                    wrapGlow.transform.SetParent(anchor, false);
+                    wrapGlow.AddComponent<MeshFilter>().sharedMesh = wrapGlowMesh;
+                    var wgr = wrapGlow.AddComponent<MeshRenderer>();
+                    wgr.sharedMaterial = chainGlow;
+                    wgr.shadowCastingMode = ShadowCastingMode.Off;
+                    wgr.receiveShadows = false;
 
-                var attach = new GameObject("ChainAttach").transform;
-                attach.SetParent(anchor, false);
-                attach.localPosition = new Vector3(0f, 0f, -(RingCenterY + CrownSpike + RingRadius * 0.6f));
+                    var attach = new GameObject("ChainAttach").transform;
+                    attach.SetParent(anchor, false);
+                    attach.localPosition = new Vector3(0f, 0f, -(RingCenterY + CrownSpike + RingRadius * 0.6f));
 
-                var trail = BuildTrail(anchor, trailMat);
-                var burst = BuildHookBurst(root.transform, sparkMat, ringMat);
+                    var trail = BuildTrail(anchor, trailMat);
+                    var burst = BuildHookBurst(rigGo.transform, sparkMat, ringMat);
 
-                var so = new SerializedObject(flail);
-                so.FindProperty("anchor").objectReferenceValue = anchor;
-                so.FindProperty("chainAttach").objectReferenceValue = attach;
-                so.FindProperty("chainOrigin").objectReferenceValue = origin;
-                so.FindProperty("linkMesh").objectReferenceValue = linkMesh;
-                so.FindProperty("linkGlowMesh").objectReferenceValue = linkGlowMesh;
-                so.FindProperty("linkMaterial").objectReferenceValue = chain;
-                so.FindProperty("linkGlowMaterial").objectReferenceValue = chainGlow;
-                so.FindProperty("hitSparks").objectReferenceValue = burst;
-                so.FindProperty("hitRing").objectReferenceValue = burst.transform.Find("Ring").GetComponent<ParticleSystem>();
-                so.FindProperty("lashTrail").objectReferenceValue = trail;
-                so.FindProperty("restLocalPosition").vector3Value = restPos;
-                so.FindProperty("restLocalForward").vector3Value = restFwd;
-                so.FindProperty("restLocalUp").vector3Value = RestLocalUp;
-                so.FindProperty("restSag").floatValue = 0.2f;
-                so.FindProperty("linkPitch").floatValue = LinkPitch;
-                so.FindProperty("linkScale").floatValue = WrapLinkScale * AnchorScale;
-                so.FindProperty("sweepWidth").floatValue = 2.2f;
-                so.FindProperty("whipBend").floatValue = 0.8f;
-                so.FindProperty("fireWithoutTargets").boolValue = true; // swings even with no enemies around
-                so.ApplyModifiedPropertiesWithoutUndo();
+                    var so = new SerializedObject(flail);
+                    so.FindProperty("anchor").objectReferenceValue = anchor;
+                    so.FindProperty("chainAttach").objectReferenceValue = attach;
+                    so.FindProperty("chainOrigin").objectReferenceValue = origin;
+                    so.FindProperty("linkMesh").objectReferenceValue = linkMesh;
+                    so.FindProperty("linkGlowMesh").objectReferenceValue = linkGlowMesh;
+                    so.FindProperty("linkMaterial").objectReferenceValue = chain;
+                    so.FindProperty("linkGlowMaterial").objectReferenceValue = chainGlow;
+                    so.FindProperty("hitSparks").objectReferenceValue = burst;
+                    so.FindProperty("hitRing").objectReferenceValue = burst.transform.Find("Ring").GetComponent<ParticleSystem>();
+                    so.FindProperty("lashTrail").objectReferenceValue = trail;
+                    so.FindProperty("restLocalPosition").vector3Value = rig.restPos;
+                    so.FindProperty("restLocalForward").vector3Value = rig.restFwd;
+                    so.FindProperty("restLocalUp").vector3Value = rig.restUp;
+                    so.FindProperty("linkPitch").floatValue = LinkPitch;
+                    so.FindProperty("linkScale").floatValue = WrapLinkScale * AnchorScale;
+                    so.FindProperty("useSector").boolValue = true;
+                    so.FindProperty("sectorLocalDir").vector3Value = rig.sector;
+                    so.FindProperty("sectorHalfAngle").floatValue = 50f;
+                    so.FindProperty("fireDelay").floatValue = rig.delay;
+                    so.FindProperty("hideWhenIdle").boolValue = true;
+                    so.FindProperty("retractTime").floatValue = 0.4f;
+                    if (tuning == null)
+                    {
+                        so.FindProperty("restSag").floatValue = 0.2f;
+                        so.FindProperty("sweepWidth").floatValue = 2.2f;
+                        so.FindProperty("whipBend").floatValue = 0.8f;
+                        so.FindProperty("fireWithoutTargets").boolValue = true; // swings even with no enemies around
+                    }
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
 
                 PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             }
@@ -197,9 +228,12 @@ namespace HighSeas.EditorTools
             var flail = (GameObject)PrefabUtility.InstantiatePrefab(prefab, brig.transform);
             flail.transform.localPosition = Vector3.zero;
             flail.transform.localRotation = Quaternion.identity;
-            var so = new SerializedObject(flail.GetComponent<AnchorFlailVfx>());
-            so.FindProperty("fireWithoutTargets").boolValue = true; // no enemies in the preview → strike in rotating directions
-            so.ApplyModifiedPropertiesWithoutUndo();
+            foreach (var rig in flail.GetComponentsInChildren<AnchorFlailVfx>())
+            {
+                var so = new SerializedObject(rig);
+                so.FindProperty("fireWithoutTargets").boolValue = true; // no enemies in the preview → strike anyway
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
 
             EditorSceneManager.SaveScene(scene, DemoScenePath);
             Debug.Log($"[AnchorFlail] Demo scene saved at {DemoScenePath}");

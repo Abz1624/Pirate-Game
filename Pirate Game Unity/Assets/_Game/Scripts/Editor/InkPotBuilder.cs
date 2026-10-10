@@ -9,8 +9,8 @@ using UnityEngine.Rendering;
 namespace HighSeas.EditorTools
 {
     /// <summary>
-    /// Builds the Ink Pot weapon: low-poly clay pot (max 150 tris, split into 4 burst shards), cork, ink gush and
-    /// droplet meshes, hand-painted textures, toon materials, the "Ink Pot" prefab in Assets/GameObject/Guns and a
+    /// Builds the Ink Pot weapon: low-poly square black glass ink bottle (max 150 tris, split into 4 glass shards),
+    /// wooden cork, ink gush and droplet meshes, toon materials, the "Ink Pot" prefab in Assets/GameObject/Guns and a
     /// demo scene (ship lobbing pots at a dummy crowd + a turntable hero pose of the burst).
     /// Menu: Tools/High Seas/Build Ink Pot
     /// </summary>
@@ -26,34 +26,44 @@ namespace HighSeas.EditorTools
         public const string DemoScenePath = Root + "/InkPot_Demo.unity";
         public const string HeroPrefabPath = Root + "/Ink Pot Hero.prefab";
 
-        const int PotSegments = 11;
+        const int BottleSegments = 8;
         const int MaxPotTris = 150;
 
-        // (radius, height) — origin at the bottom centre, pot is 1 unit tall at the lip
-        static readonly Vector2[] PotProfile =
+        // (radius to the flat face, height) — origin at the bottom centre, bottle is ~0.9 tall at the lip.
+        // Square ink bottle with chamfered corners (rings 0-3), sloped shoulder, round neck and lip.
+        static readonly Vector2[] BottleProfile =
         {
             new Vector2(0f, 0f),
-            new Vector2(0.3f, 0f),
-            new Vector2(0.47f, 0.17f),
-            new Vector2(0.5f, 0.4f),
-            new Vector2(0.4f, 0.66f),
-            new Vector2(0.2f, 0.8f),
-            new Vector2(0.255f, 0.88f),
-            new Vector2(0.215f, 0.93f),
+            new Vector2(0.4f, 0f),
+            new Vector2(0.44f, 0.04f),
+            new Vector2(0.44f, 0.5f),
+            new Vector2(0.3f, 0.6f),
+            new Vector2(0.15f, 0.66f),
+            new Vector2(0.15f, 0.8f),
+            new Vector2(0.185f, 0.82f),
+            new Vector2(0.185f, 0.88f),
+            new Vector2(0.12f, 0.9f),
+            new Vector2(0f, 0.9f),
         };
+
+        // 1 = square cross-section, 0 = round
+        static readonly float[] BottleSquareness = { 1f, 1f, 1f, 1f, 0.55f, 0f, 0f, 0f, 0f, 0f, 0f };
 
         static readonly Vector2[] CorkProfile =
         {
             new Vector2(0f, 0f),
-            new Vector2(0.165f, 0f),
-            new Vector2(0.205f, 0.2f),
-            new Vector2(0.19f, 0.245f),
-            new Vector2(0f, 0.265f),
+            new Vector2(0.125f, 0f),
+            new Vector2(0.14f, 0.14f),
+            new Vector2(0.17f, 0.16f),
+            new Vector2(0.175f, 0.24f),
+            new Vector2(0.15f, 0.27f),
+            new Vector2(0f, 0.27f),
         };
 
+        // 4 glass shards, each = one chamfered corner + one flat side
         static readonly int[][] ShardSegments =
         {
-            new[] { 0, 2 }, new[] { 3, 5 }, new[] { 6, 8 }, new[] { 9, 10 },
+            new[] { 0, 1 }, new[] { 2, 3 }, new[] { 4, 5 }, new[] { 6, 7 },
         };
 
         [MenuItem("Tools/High Seas/Build Ink Pot")]
@@ -78,46 +88,43 @@ namespace HighSeas.EditorTools
             EnsureFolder(TexDir);
 
             // ---- meshes
-            float[] potV = ProfileV(PotProfile);
+            float[] potV = ProfileV(BottleProfile);
             int potTris = 0;
             var shardMeshes = new Mesh[ShardSegments.Length];
             for (int i = 0; i < ShardSegments.Length; i++)
             {
-                var m = Lathe(PotProfile, potV, PotSegments, ShardSegments[i][0], ShardSegments[i][1], 0.31f);
+                var m = Lathe(BottleProfile, potV, BottleSquareness, BottleSegments, ShardSegments[i][0], ShardSegments[i][1], true);
                 potTris += m.triangles.Length / 3;
                 shardMeshes[i] = SaveMesh(m, "InkPot_Shard" + i);
             }
-            if (potTris > MaxPotTris) Debug.LogWarning($"[InkPot] Pot mesh is {potTris} tris (budget {MaxPotTris}).");
-            var cork = SaveMesh(Lathe(CorkProfile, ProfileV(CorkProfile), 8, 0, 7, 0f), "InkPot_Cork");
+            if (potTris > MaxPotTris) Debug.LogWarning($"[InkPot] Bottle mesh is {potTris} tris (budget {MaxPotTris}).");
+            var cork = SaveMesh(Lathe(CorkProfile, ProfileV(CorkProfile), null, 8, 0, 7, false), "InkPot_Cork");
             var spill = SaveMesh(BuildInkGush(), "InkPot_InkGush");
             var drop = SaveMesh(BuildDroplet(), "InkPot_Droplet");
             var disc = SaveMesh(BuildDisc(64, 22), "InkPot_SlickDisc");
 
             // ---- textures
-            var clayTex = BuildClayTexture(potV);
             var corkTex = BuildCorkTexture();
-            var tentTex = BuildTentacleTexture();
 
             // ---- materials
             var toon = AssetDatabase.LoadAssetAtPath<Shader>(ToonShaderPath);
-            var clayMat = ToonMat("InkPot_Clay", toon, clayTex, Color.white, new Color(0.86f, 0.76f, 0.68f),
-                0.13f, 0.55f, new Color(1f, 0.97f, 0.9f), new Color(1f, 0.9f, 0.75f), 3f, 0.25f, new Color(0.7f, 0.46f, 0.32f));
+            var glassMat = ToonMat("InkPot_BlackGlass", toon, null, new Color(0.05f, 0.045f, 0.062f), new Color(0.55f, 0.55f, 0.65f),
+                0.2f, 1f, new Color(0.88f, 0.9f, 1f), new Color(0.55f, 0.52f, 0.72f), 2.4f, 0.4f, new Color(0.02f, 0.015f, 0.03f));
             var corkMat = ToonMat("InkPot_Cork", toon, corkTex, Color.white, new Color(0.62f, 0.5f, 0.45f),
                 0.05f, 0.12f, new Color(1f, 0.95f, 0.85f), new Color(1f, 0.85f, 0.6f), 3f, 0.15f, new Color(0.45f, 0.32f, 0.2f));
             var inkMat = ToonMat("InkPot_Ink", toon, null, new Color(0.02f, 0.008f, 0.035f), new Color(0.6f, 0.5f, 0.75f),
                 0.3f, 1.1f, new Color(0.88f, 0.82f, 1f), new Color(0.5f, 0.22f, 0.9f), 3.6f, 0.32f, new Color(0.02f, 0.008f, 0.035f));
             var dropMat = ToonMat("InkPot_Droplet", toon, null, new Color(0.02f, 0.008f, 0.035f), new Color(0.6f, 0.5f, 0.75f),
                 0.38f, 1.15f, new Color(0.88f, 0.82f, 1f), new Color(0.5f, 0.22f, 0.9f), 3.2f, 0.38f, new Color(0.02f, 0.008f, 0.035f));
-            var tentMat = ToonMat("InkPot_Tentacle", toon, tentTex, Color.white, new Color(0.7f, 0.55f, 0.66f),
-                0.22f, 0.6f, new Color(1f, 0.95f, 1f), new Color(1f, 0.75f, 0.9f), 2.6f, 0.3f, new Color(0.5f, 0.3f, 0.4f));
 
             var slickMat = GetOrCreateMaterial("InkPot_Slick", AssetDatabase.LoadAssetAtPath<Shader>(SlickShaderPath));
-            slickMat.SetColor("_InkColor", new Color(0.035f, 0.015f, 0.06f));
+            slickMat.SetColor("_InkColor", new Color(0.012f, 0.006f, 0.02f));
             slickMat.SetColor("_SheenColor", new Color(0.22f, 0.08f, 0.38f));
-            slickMat.SetColor("_GlossColor", new Color(0.86f, 0.78f, 1f));
             slickMat.SetColor("_RimColor", new Color(0.62f, 0.3f, 1f));
             slickMat.SetColor("_RingColor", new Color(0.82f, 0.93f, 1f));
             slickMat.SetFloat("_SlickRadius", 0.62f);
+            // draw after transparent sea shaders (e.g. Stylized Water at 2998) so the pool is never painted over
+            slickMat.renderQueue = 3005;
             slickMat.enableInstancing = true;
             EditorUtility.SetDirty(slickMat);
 
@@ -129,7 +136,7 @@ namespace HighSeas.EditorTools
 
             var shot = new GameObject("Shot").transform;
             shot.SetParent(root.transform, false);
-            var rig = BuildPotRig(shot, shardMeshes, cork, spill, clayMat, corkMat, inkMat, tentMat);
+            var rig = BuildPotRig(shot, shardMeshes, cork, spill, glassMat, corkMat, inkMat);
             var splash = BuildSplash(shot, drop, dropMat);
             shot.gameObject.SetActive(false); // only shown while a pot is in the air
 
@@ -137,7 +144,7 @@ namespace HighSeas.EditorTools
             slick.SetActive(false);
 
             // ---- edit-mode preview: baked mid-air burst so the hero look is visible as soon as the prefab is dropped
-            var preview = BuildBurstPreview(shardMeshes, cork, spill, drop, clayMat, corkMat, inkMat, tentMat, dropMat);
+            var preview = BuildBurstPreview(shardMeshes, cork, spill, drop, glassMat, corkMat, inkMat, dropMat);
             preview.name = "BurstPreview";
             preview.tag = "EditorOnly";
             preview.transform.SetParent(root.transform, false);
@@ -157,7 +164,7 @@ namespace HighSeas.EditorTools
             Object.DestroyImmediate(root);
 
             // ---- standalone static hero asset (no script) for showcase / thumbnails
-            var hero = BuildBurstPreview(shardMeshes, cork, spill, drop, clayMat, corkMat, inkMat, tentMat, dropMat);
+            var hero = BuildBurstPreview(shardMeshes, cork, spill, drop, glassMat, corkMat, inkMat, dropMat);
             hero.name = "Ink Pot Hero";
             PrefabUtility.SaveAsPrefabAsset(hero, HeroPrefabPath);
             Object.DestroyImmediate(hero);
@@ -171,28 +178,22 @@ namespace HighSeas.EditorTools
         {
             public Transform pot, cork, spill;
             public Transform[] shards;
-            public MeshFilter tentacle;
         }
 
         static PotRig BuildPotRig(Transform parent, Mesh[] shardMeshes, Mesh cork, Mesh spill,
-            Material clayMat, Material corkMat, Material inkMat, Material tentMat)
+            Material glassMat, Material corkMat, Material inkMat)
         {
             var r = new PotRig();
             r.pot = new GameObject("Pot").transform;
             r.pot.SetParent(parent, false);
             r.shards = new Transform[shardMeshes.Length];
             for (int i = 0; i < shardMeshes.Length; i++)
-                r.shards[i] = MeshChild("Shard_" + i, r.pot, shardMeshes[i], clayMat).transform;
+                r.shards[i] = MeshChild("Shard_" + i, r.pot, shardMeshes[i], glassMat).transform;
             r.cork = MeshChild("Cork", r.pot, cork, corkMat).transform;
-            r.cork.localPosition = new Vector3(0f, 0.8f, 0f);
+            r.cork.localPosition = new Vector3(0f, 0.78f, 0f);
             r.spill = MeshChild("InkSpill", r.pot, spill, inkMat).transform;
-            r.spill.localPosition = new Vector3(0f, 0.8f, 0f);
+            r.spill.localPosition = new Vector3(0f, 0.84f, 0f);
             r.spill.gameObject.SetActive(false);
-            var tent = MeshChild("Tentacle", r.pot, null, tentMat);
-            tent.transform.localPosition = new Vector3(-0.1f, 0.86f, -0.06f);
-            tent.transform.localRotation = Quaternion.Euler(0f, 210f, 0f) * Quaternion.Euler(0f, 0f, 12f);
-            tent.SetActive(false);
-            r.tentacle = tent.GetComponent<MeshFilter>();
             return r;
         }
 
@@ -204,20 +205,19 @@ namespace HighSeas.EditorTools
             for (int i = 0; i < rig.shards.Length; i++) sp.GetArrayElementAtIndex(i).objectReferenceValue = rig.shards[i];
             so.FindProperty("cork").objectReferenceValue = rig.cork;
             so.FindProperty("inkSpill").objectReferenceValue = rig.spill;
-            so.FindProperty("tentacleFilter").objectReferenceValue = rig.tentacle;
         }
 
         /// <summary>
-        /// Static, script-free mid-air burst: clay shards opening, cork popping, glossy ink gush, curled tentacle
-        /// (baked mesh) and a few teardrop ink droplets flying outward. Posed by the same code the runtime uses.
+        /// Static, script-free mid-air shatter: black glass bottle cracking apart, cork popping, glossy ink gush
+        /// and a few teardrop ink droplets flying outward. Posed by the same code the runtime uses.
         /// </summary>
         static GameObject BuildBurstPreview(Mesh[] shardMeshes, Mesh cork, Mesh spill, Mesh drop,
-            Material clayMat, Material corkMat, Material inkMat, Material tentMat, Material dropMat)
+            Material glassMat, Material corkMat, Material inkMat, Material dropMat)
         {
             const float scale = 1.2f;
             const float t = 0.24f;
             var go = new GameObject("Ink Pot Hero");
-            var rig = BuildPotRig(go.transform, shardMeshes, cork, spill, clayMat, corkMat, inkMat, tentMat);
+            var rig = BuildPotRig(go.transform, shardMeshes, cork, spill, glassMat, corkMat, inkMat);
 
             var tmp = go.AddComponent<InkPotVfx>();
             var so = new SerializedObject(tmp);
@@ -225,14 +225,11 @@ namespace HighSeas.EditorTools
             AssignRig(so, rig);
             so.ApplyModifiedPropertiesWithoutUndo();
             var tilt = Quaternion.AngleAxis(-16f, Vector3.forward) * Quaternion.AngleAxis(10f, Vector3.right);
-            tmp.PoseBurstPreview(t, 1337, tilt, scale, 15f);
-            var tentMesh = tmp.PreviewTentacleMesh;
-            if (tentMesh) rig.tentacle.sharedMesh = SaveMesh(Object.Instantiate(tentMesh), "InkPot_Tentacle_Hero");
+            tmp.PoseBurstPreview(t, 1337, tilt, scale, 18f);
             Object.DestroyImmediate(tmp);
-            if (tentMesh) Object.DestroyImmediate(tentMesh);
 
             // a few individually readable droplets flying out of the opening (deterministic)
-            Vector3 opening = rig.pot.localPosition + rig.pot.localRotation * new Vector3(0f, 0.86f, 0f) * scale;
+            Vector3 opening = rig.pot.localPosition + rig.pot.localRotation * new Vector3(0f, 0.9f, 0f) * scale;
             Vector3 up = rig.pot.localRotation * Vector3.up;
             var drops = new GameObject("Droplets").transform;
             drops.SetParent(go.transform, false);
@@ -410,17 +407,19 @@ namespace HighSeas.EditorTools
         }
 
         /// <summary>
-        /// Lathe a (radius, height) profile around Y for segments seg0..seg1 of <paramref name="segs"/>. Points with
-        /// radius 0 become poles (fans). Normals are analytic so separate shards line up seamlessly.
+        /// Lathe a (radius, height) profile around Y for segments seg0..seg1 (inclusive) of <paramref name="segs"/>.
+        /// Each segment gets its own vertices so the sides read as flat glass facets. With <paramref name="chamferedSquare"/>
+        /// the 8 columns sit at 45°±12° so rings with squareness 1 form a square with small chamfered corners; profile
+        /// radius is then the distance to the flat face. Points with radius 0 become poles (fans).
         /// UV.x = angle 0..1, UV.y = profile length 0..1.
         /// </summary>
-        static Mesh Lathe(Vector2[] prof, float[] profV, int segs, int seg0, int seg1, float angleOffset)
+        static Mesh Lathe(Vector2[] prof, float[] profV, float[] squareness, int segs, int seg0, int seg1, bool chamferedSquare)
         {
-            int cols = seg1 - seg0 + 2;
             int rings = prof.Length;
             var verts = new List<Vector3>();
             var norms = new List<Vector3>();
             var uvs = new List<Vector2>();
+            var cols = new List<Color>();
             var tris = new List<int>();
 
             var n2 = new Vector2[rings];
@@ -430,31 +429,47 @@ namespace HighSeas.EditorTools
                 n2[k] = new Vector2(t.y, -t.x).normalized;
             }
 
-            for (int k = 0; k < rings; k++)
-            for (int c = 0; c < cols; c++)
+            System.Func<int, float> angleOf = col =>
             {
-                int seg = seg0 + c;
-                float u = seg / (float)segs;
-                float a = (u + angleOffset / segs) * Mathf.PI * 2f;
+                if (!chamferedSquare) return col / (float)segs * Mathf.PI * 2f;
+                int corner = col / 2;
+                float deg = 90f * corner + 45f + (col % 2 == 0 ? -12f : 12f);
+                return deg * Mathf.Deg2Rad;
+            };
+            System.Func<int, int, Vector3> pointOf = (k, col) =>
+            {
+                float a = angleOf(col);
                 float ca = Mathf.Cos(a), sa = Mathf.Sin(a);
-                float r = prof[k].x;
-                if (r <= 1e-5f)
-                {
-                    // pole: centre the uv/angle on the segment so the fan reads clean
-                    float ua = (seg + 0.5f + angleOffset) / segs * Mathf.PI * 2f;
-                    ca = Mathf.Cos(ua); sa = Mathf.Sin(ua);
-                }
-                verts.Add(new Vector3(ca * r, prof[k].y, sa * r));
-                norms.Add(new Vector3(ca * n2[k].x, n2[k].y, sa * n2[k].x).normalized);
-                uvs.Add(new Vector2(u, profV[k]));
-            }
+                float sq = squareness != null ? squareness[k] : 0f;
+                float f = Mathf.Lerp(1f, 1f / Mathf.Max(Mathf.Abs(ca), Mathf.Abs(sa)), sq);
+                float r = prof[k].x * f;
+                return new Vector3(ca * r, prof[k].y, sa * r);
+            };
 
-            for (int k = 0; k < rings - 1; k++)
+            for (int j = seg0; j <= seg1; j++)
             {
-                bool poleA = prof[k].x <= 1e-5f, poleB = prof[k + 1].x <= 1e-5f;
-                for (int c = 0; c < cols - 1; c++)
+                int baseIdx = verts.Count;
+                float amid = (angleOf(j) + angleOf(j + 1)) * 0.5f;
+                Vector3 mid = new Vector3(Mathf.Cos(amid), 0f, Mathf.Sin(amid));
+                bool chamfer = chamferedSquare && j % 2 == 0;
+                var tint = chamferedSquare ? (chamfer ? Color.white : new Color(0.8f, 0.8f, 0.84f, 1f)) : Color.white;
+                for (int k = 0; k < rings; k++)
                 {
-                    int a = k * cols + c, b = a + 1, d0 = (k + 1) * cols + c, d1 = d0 + 1;
+                    Vector3 p0 = pointOf(k, j), p1 = pointOf(k, j + 1);
+                    Vector3 edge = p1 - p0; edge.y = 0f;
+                    Vector3 face = edge.sqrMagnitude > 1e-8f ? new Vector3(edge.z, 0f, -edge.x).normalized : mid;
+                    if (Vector3.Dot(face, mid) < 0f) face = -face;
+                    Vector3 n = (face * n2[k].x + Vector3.up * n2[k].y).normalized;
+                    if (prof[k].x <= 1e-5f) { p0 = p1 = new Vector3(0f, prof[k].y, 0f); }
+                    verts.Add(p0); verts.Add(p1);
+                    norms.Add(n); norms.Add(n);
+                    uvs.Add(new Vector2(j / (float)segs, profV[k])); uvs.Add(new Vector2((j + 1) / (float)segs, profV[k]));
+                    cols.Add(tint); cols.Add(tint);
+                }
+                for (int k = 0; k < rings - 1; k++)
+                {
+                    bool poleA = prof[k].x <= 1e-5f, poleB = prof[k + 1].x <= 1e-5f;
+                    int a = baseIdx + k * 2, b = a + 1, d0 = baseIdx + (k + 1) * 2, d1 = d0 + 1;
                     if (poleA) { tris.Add(a); tris.Add(d0); tris.Add(d1); }
                     else if (poleB) { tris.Add(a); tris.Add(d0); tris.Add(b); }
                     else
@@ -470,7 +485,7 @@ namespace HighSeas.EditorTools
             mesh.SetVertices(verts);
             mesh.SetNormals(norms);
             mesh.SetUVs(0, uvs);
-            mesh.SetColors(Whites(verts.Count));
+            mesh.SetColors(cols);
             mesh.SetTriangles(tris, 0);
             mesh.RecalculateBounds();
             return mesh;
@@ -680,50 +695,6 @@ namespace HighSeas.EditorTools
             return t * t * (3f - 2f * t);
         }
 
-        static Texture2D BuildClayTexture(float[] potV)
-        {
-            const int w = 256, h = 128;
-            var px = new Color[w * h];
-            var cream = new Color(0.96f, 0.89f, 0.74f);
-            var warm = new Color(0.93f, 0.8f, 0.62f);
-            var light = new Color(1f, 0.96f, 0.86f);
-            var paint = new Color(0.6f, 0.36f, 0.24f);
-            var paint2 = new Color(0.42f, 0.24f, 0.32f);
-            float vBelly = potV[3], vShoulder = potV[4], vNeck = potV[5];
-            for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-            {
-                float u = x / (float)w, v = y / (float)(h - 1);
-                // soft brush mottling + vertical brush streaks
-                float mott = Fbm(u, v * 0.5f, 6, 3);
-                float streak = Noise(u * 64f, v * 3f, 64, 9);
-                var c = Color.Lerp(warm, cream, SS(0.25f, 0.75f, mott));
-                c = Color.Lerp(c, light, Mathf.Clamp01((streak - 0.6f) * 1.6f) * 0.5f);
-                // painted highlight wash toward the belly, grime at the base
-                c = Color.Lerp(c, light, Mathf.Clamp01(1f - Mathf.Abs(v - vBelly) / 0.12f) * 0.25f);
-                c *= Mathf.Lerp(0.86f, 1f, SS(0.02f, 0.2f, v));
-
-                // hand-painted wobbly band on the shoulder + thin accent line + dots between
-                float wob = (Noise(u * 24f, 1.5f, 24, 21) - 0.5f) * 0.018f;
-                float bandC = Mathf.Lerp(vBelly, vShoulder, 0.62f) + wob;
-                float band = 1f - SS(0.018f, 0.026f, Mathf.Abs(v - bandC));
-                float lineC = Mathf.Lerp(vBelly, vShoulder, 0.25f) + wob * 0.7f;
-                float line = 1f - SS(0.006f, 0.011f, Mathf.Abs(v - lineC));
-                float dotV = (bandC + lineC) * 0.5f;
-                float du = (u * 22f) % 1f - 0.5f;
-                float dot = 1f - SS(0.012f, 0.02f, Mathf.Sqrt(du * du * 0.0016f * 22f + (v - dotV) * (v - dotV)));
-                float brush = 0.85f + 0.15f * Noise(u * 40f, v * 40f, 40, 33);
-                c = Color.Lerp(c, paint * brush, band * 0.92f);
-                c = Color.Lerp(c, paint2 * brush, Mathf.Max(line, dot) * 0.85f);
-
-                // slightly darker glaze pooling at the neck / lip
-                c *= Mathf.Lerp(1f, 0.9f, Mathf.Clamp01(1f - Mathf.Abs(v - vNeck) / 0.06f));
-                c.a = 1f;
-                px[y * w + x] = c;
-            }
-            return SaveTexture("InkPot_Clay_BaseColor", w, h, px, TextureWrapMode.Repeat);
-        }
-
         static Texture2D BuildCorkTexture()
         {
             const int w = 64, h = 64;
@@ -744,36 +715,6 @@ namespace HighSeas.EditorTools
                 px[y * w + x] = c;
             }
             return SaveTexture("InkPot_Cork_BaseColor", w, h, px, TextureWrapMode.Repeat);
-        }
-
-        static Texture2D BuildTentacleTexture()
-        {
-            const int w = 64, h = 128;
-            var px = new Color[w * h];
-            var top = new Color(0.86f, 0.5f, 0.74f);
-            var topDark = new Color(0.62f, 0.32f, 0.6f);
-            var belly = new Color(1f, 0.85f, 0.82f);
-            var sucker = new Color(0.98f, 0.7f, 0.74f);
-            var suckerRim = new Color(0.78f, 0.45f, 0.58f);
-            for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-            {
-                float u = x / (float)w, v = y / (float)(h - 1);
-                float du = Mathf.Min(u, 1f - u); // 0 = inner side of the curl
-                var c = Color.Lerp(top, topDark, SS(0.3f, 0.5f, du) * 0.45f);
-                // freckles on top
-                if (du > 0.25f && Hash(x / 4, y / 4, 5) > 0.9f) c = Color.Lerp(c, topDark, 0.6f);
-                // pale belly with sucker row
-                float bellyM = 1f - SS(0.15f, 0.22f, du);
-                c = Color.Lerp(c, belly, bellyM);
-                float sv = (v * 11f) % 1f - 0.5f;
-                float d = Mathf.Sqrt(du * du * 9f + sv * sv) ;
-                float rad = Mathf.Lerp(0.36f, 0.2f, v);
-                if (d < rad) c = Color.Lerp(suckerRim, sucker, SS(rad * 0.55f, rad * 0.75f, rad - d + rad * 0.5f));
-                c.a = 1f;
-                px[y * w + x] = c;
-            }
-            return SaveTexture("InkPot_Tentacle_BaseColor", w, h, px, TextureWrapMode.Repeat);
         }
 
         static Texture2D SaveTexture(string name, int w, int h, Color[] px, TextureWrapMode wrap)

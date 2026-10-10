@@ -48,6 +48,15 @@ namespace HighSeas.VFX
         [Tooltip("How far past the aimed target the anchor travels.")]
         [SerializeField, Min(0f)] float overshoot = 0.8f;
 
+        [Header("Attack sector (multi-anchor setups)")]
+        [Tooltip("Limit this anchor to one side of the ship. Off = strikes any direction.")]
+        [SerializeField] bool useSector;
+        [Tooltip("Centre of this anchor's sector, local to this object (e.g. (1,0,1) = front-right).")]
+        [SerializeField] Vector3 sectorLocalDir = Vector3.forward;
+        [SerializeField, Range(10f, 180f)] float sectorHalfAngle = 55f;
+        [Tooltip("Extra delay before the first strike — staggers several anchors into a ripple.")]
+        [SerializeField, Min(0f)] float fireDelay;
+
         [Header("Motion")]
         [Tooltip("Short pull-back before the swing, sells the weight.")]
         [SerializeField, Min(0f)] float windupTime = 0.24f;
@@ -57,7 +66,7 @@ namespace HighSeas.VFX
         [SerializeField, Min(0f)] float impactTime = 0.24f;
         [Tooltip("How far the anchor's momentum carries it past the strike point before settling.")]
         [SerializeField, Min(0f)] float impactSettle = 0.35f;
-        [SerializeField, Min(0.01f)] float retractTime = 0.7f;
+        [SerializeField, Min(0.01f)] float retractTime = 0.4f;
         [Tooltip("Sideways bulge of the strike path, so the anchor sweeps across instead of poking straight.")]
         [SerializeField] float sweepWidth = 2.2f;
         [Tooltip("Sideways S-curl of the chain while it whips out.")]
@@ -80,6 +89,10 @@ namespace HighSeas.VFX
         [SerializeField] Vector3 restLocalUp = new(1f, 1f, 0f);
         [SerializeField] float restSwayDegrees = 6f;
         [SerializeField] float restSag = 0.25f;
+        [Tooltip("Hide the anchor while idle: it grows out of the chain origin as it strikes and shrinks back in on return.")]
+        [SerializeField] bool hideWhenIdle;
+        [Tooltip("Part of the swing spent growing from hidden to full size.")]
+        [SerializeField, Range(0.05f, 0.6f)] float emergePortion = 0.25f;
 
         [Header("Chain")]
         [Tooltip("Centre-to-centre link spacing at scale 1 (0.2 = links interlock exactly).")]
@@ -120,6 +133,7 @@ namespace HighSeas.VFX
         Vector3 _retractFrom;
         Quaternion _retractFromRot;
         Vector3 _anchorBaseScale = Vector3.one;
+        float _vis = 1f; // 0 = hidden inside the origin, 1 = full size
 
         readonly List<Transform> _candidates = new();
         readonly HashSet<Transform> _alreadyHit = new();
@@ -136,6 +150,8 @@ namespace HighSeas.VFX
                 _anchorBaseScale = anchor.localScale;
             _phase = Phase.Idle;
             _sag = restSag;
+            _cooldownT = 0.5f + fireDelay;
+            _vis = Application.isPlaying && hideWhenIdle ? 0f : 1f;
             RenderPipelineManager.beginCameraRendering += OnBeginCamera;
         }
 
@@ -186,18 +202,19 @@ namespace HighSeas.VFX
             var dir = flat.normalized;
             _strike = new Vector3(origin.x, aimPoint.y, origin.z) + dir * dist;
 
+            if (hideWhenIdle) anchor.position = ChainStart();
             _from = anchor.position;
             _side = -_side;
             _strikeDir = dir;
             _sweepDir = Vector3.Cross(Vector3.up, dir) * _side;
             // wind-up: drag back toward the hull and away from the swing side
-            _windupPos = _from - dir * windupPullback - _sweepDir * (windupPullback * 0.5f) + Vector3.up * (windupPullback * 0.25f);
+            _windupPos = _from - dir * (windupPullback * 0.5f) - _sweepDir * (windupPullback * 0.4f) + Vector3.up * (windupPullback * 0.45f);
             _windupStartRot = anchor.rotation;
             // cocked pose: faces the strike, yawed back and rolled — the swing unwinds from exactly this
             _windupRot = FlatLook(dir) * Quaternion.Euler(0f, -_side * 35f, _side * lashRoll);
             // only turn part-way during the wind-up; the swing finishes the turn, so no fast spin
             _windupMidRot = Quaternion.Slerp(_windupStartRot, _windupRot, 0.45f);
-            anchor.localScale = _anchorBaseScale;
+            ApplyScale(1f);
 
             GatherCandidates();
             _alreadyHit.Clear();
@@ -219,6 +236,8 @@ namespace HighSeas.VFX
             {
                 case Phase.Idle:
                     PoseRest(Time.time);
+                    if (hideWhenIdle) _vis = 0f;
+                    ApplyScale(1f);
                     _bend = Mathf.MoveTowards(_bend, 0f, dt * 4f);
                     _sag = Mathf.MoveTowards(_sag, restSag, dt * 2f);
                     if (autoFire)
@@ -239,6 +258,7 @@ namespace HighSeas.VFX
                     var e = EaseInOutCubic(k); // eases out of rest and into the cocked pose — no jolt
                     anchor.position = Vector3.LerpUnclamped(_from, _windupPos, e);
                     anchor.rotation = Quaternion.Slerp(_windupStartRot, _windupMidRot, e);
+                    if (hideWhenIdle) { _vis = 0.5f * e; ApplyScale(1f); }
                     _bend = -0.3f * e;
                     _sag = restSag;
                     if (k >= 1f) BeginSwing();
@@ -255,6 +275,7 @@ namespace HighSeas.VFX
                               + Vector3.up * (whipLift * 0.5f * Mathf.Sin(k * Mathf.PI));
                     anchor.position = pos;
                     // unwinds continuously from the cocked pose to facing the strike (no snap on frame one)
+                    if (hideWhenIdle) { _vis = Mathf.Max(_vis, Mathf.SmoothStep(0f, 1f, k / emergePortion)); ApplyScale(1f); }
                     var swingRot = FlatLook(_strikeDir) * Quaternion.Euler(0f, -_side * 35f * (1f - e), _side * lashRoll * (1f - e));
                     anchor.rotation = Quaternion.Slerp(_windupMidRot, swingRot, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(k * 1.5f)));
                     _bend = Mathf.Lerp(-0.3f, 0.2f, Mathf.SmoothStep(0f, 1f, k)) + Mathf.Sin(k * Mathf.PI) * 0.9f;
@@ -267,7 +288,7 @@ namespace HighSeas.VFX
                 case Phase.Impact:
                 {
                     var k = impactTime <= 0f ? 1f : Mathf.Clamp01(_phaseT / impactTime);
-                    anchor.localScale = _anchorBaseScale * (1f + impactPunch * (1f - EaseOutCubic(k)));
+                    ApplyScale(1f + impactPunch * (1f - EaseOutCubic(k)));
                     // momentum carries it a little further, then it settles back (damped)
                     anchor.position = _strike + _strikeDir * (impactSettle * Mathf.Sin(k * Mathf.PI) * (1f - k * 0.5f));
                     _bend = 0.2f * (1f - k) * Mathf.Sin(k * Mathf.PI * 3f);
@@ -287,6 +308,7 @@ namespace HighSeas.VFX
                     anchor.rotation = Quaternion.Slerp(_retractFromRot, restRot, e);
                     _bend = -0.35f * Mathf.Sin(k * Mathf.PI);
                     _sag = restSag * e;
+                    if (hideWhenIdle) { _vis = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.6f, 1f, k)); ApplyScale(1f); }
                     if (k >= 1f)
                     {
                         _cooldownT = cooldown;
@@ -319,7 +341,7 @@ namespace HighSeas.VFX
 
         void EnterRetract()
         {
-            anchor.localScale = _anchorBaseScale;
+            ApplyScale(1f);
             _retractFrom = anchor.position;
             _retractFromRot = anchor.rotation;
             SetPhase(Phase.Retract);
@@ -396,7 +418,7 @@ namespace HighSeas.VFX
                 var d = go.transform.position - origin;
                 d.y = 0f;
                 var sqr = d.sqrMagnitude;
-                if (sqr > bestSqr) continue;
+                if (sqr > bestSqr || !InSector(d)) continue;
                 bestSqr = sqr;
                 best = go.transform;
             }
@@ -405,11 +427,32 @@ namespace HighSeas.VFX
 
         Vector3 NextIdleAimPoint()
         {
-            _idleAimDeg = (_idleAimDeg + 137.5f) % 360f; // golden-angle spread so strikes cover all sides
-            var fwd = Vector3.ProjectOnPlane(transform.forward, Vector3.up);
-            if (fwd.sqrMagnitude < 0.0001f) fwd = Vector3.forward;
-            var dir = Quaternion.AngleAxis(_idleAimDeg, Vector3.up) * fwd.normalized;
+            _idleAimDeg = (_idleAimDeg + 137.5f) % 360f; // golden-angle spread so strikes vary
+            Vector3 dir;
+            if (useSector)
+            {
+                var u = _idleAimDeg / 360f * 2f - 1f; // -1..1
+                dir = Quaternion.AngleAxis(u * sectorHalfAngle * 0.8f, Vector3.up) * SectorDirWorld();
+            }
+            else
+            {
+                var fwd = Vector3.ProjectOnPlane(transform.forward, Vector3.up);
+                if (fwd.sqrMagnitude < 0.0001f) fwd = Vector3.forward;
+                dir = Quaternion.AngleAxis(_idleAimDeg, Vector3.up) * fwd.normalized;
+            }
             return transform.position + dir * (range * 0.85f) + Vector3.up * targetHeightOffset;
+        }
+
+        Vector3 SectorDirWorld()
+        {
+            var d = Vector3.ProjectOnPlane(transform.TransformDirection(sectorLocalDir), Vector3.up);
+            return d.sqrMagnitude > 0.0001f ? d.normalized : Vector3.forward;
+        }
+
+        bool InSector(Vector3 flatOffset)
+        {
+            if (!useSector || flatOffset.sqrMagnitude < 0.0001f) return true;
+            return Vector3.Angle(flatOffset, SectorDirWorld()) <= sectorHalfAngle;
         }
 
         Vector3 TargetPoint(Transform t) => t.position + Vector3.up * targetHeightOffset;
@@ -425,12 +468,24 @@ namespace HighSeas.VFX
 
         void RestPose(float time, out Vector3 pos, out Quaternion rot)
         {
+            if (hideWhenIdle)
+            {
+                pos = ChainStart();
+                rot = FlatLook(useSector ? SectorDirWorld() : transform.forward);
+                return;
+            }
             pos = transform.TransformPoint(restLocalPosition) + Vector3.up * (Mathf.Sin(time * 2.1f) * 0.05f);
             var fwd = transform.TransformDirection(restLocalForward);
             if (fwd.sqrMagnitude < 0.0001f) fwd = -transform.forward;
             var upHint = transform.TransformDirection(restLocalUp);
             if (upHint.sqrMagnitude < 0.0001f) upHint = transform.up;
             rot = Quaternion.LookRotation(fwd.normalized, upHint.normalized) * Quaternion.Euler(0f, Mathf.Sin(time * 1.4f) * restSwayDegrees, 0f);
+        }
+
+        void ApplyScale(float punch)
+        {
+            var s = Mathf.Max(0.0001f, _vis * punch);
+            anchor.localScale = _anchorBaseScale * s;
         }
 
         static Quaternion FlatLook(Vector3 dir)
@@ -479,6 +534,7 @@ namespace HighSeas.VFX
             if (_matrices == null || _matrices.Length != maxLinks)
                 _matrices = new Matrix4x4[maxLinks];
 
+            if (Application.isPlaying && hideWhenIdle && _vis < 0.03f) { _linkCount = 0; return; }
             var a = ChainStart();
             var b = chainAttach != null ? chainAttach.position : anchor.position;
             var d = b - a;
@@ -531,7 +587,20 @@ namespace HighSeas.VFX
         void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(1f, 0.35f, 0.85f, 0.6f);
-            DrawCircle(transform.position, range);
+            var c = chainOrigin != null ? chainOrigin.position : transform.position;
+            if (!useSector) { DrawCircle(transform.position, range); return; }
+            var mid = SectorDirWorld();
+            var l = Quaternion.AngleAxis(-sectorHalfAngle, Vector3.up) * mid;
+            var r = Quaternion.AngleAxis(sectorHalfAngle, Vector3.up) * mid;
+            Gizmos.DrawLine(c, c + l * range);
+            Gizmos.DrawLine(c, c + r * range);
+            var prev = c + l * range;
+            for (var i = 1; i <= 16; i++)
+            {
+                var pt = c + (Quaternion.AngleAxis(-sectorHalfAngle + sectorHalfAngle * 2f * i / 16f, Vector3.up) * mid) * range;
+                Gizmos.DrawLine(prev, pt);
+                prev = pt;
+            }
         }
 
         static void DrawCircle(Vector3 c, float r)

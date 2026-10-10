@@ -7,15 +7,15 @@ using UnityEngine.Serialization;
 namespace HighSeas.VFX
 {
     /// <summary>
-    /// Drag-and-drop "Ink Pot" weapon. Every <see cref="cooldown"/> seconds a round cream clay pot with a cork
-    /// stopper is lobbed along a projectile arc toward the nearest enemy. Just above the water it bursts open in
-    /// mid-air: the cork pops, the clay shards open like petals, glossy black-violet ink gushes out, a small
-    /// cartoon squid tentacle curls out of the opening and a few ink droplets (max 12 particles) fly outward.
-    /// The ink lands as a flat black-violet slick with a pulsing violet rim and code-generated water rings,
+    /// Drag-and-drop "Ink Pot" weapon. Every <see cref="cooldown"/> seconds a square black glass ink bottle with a
+    /// wooden cork is lobbed along a projectile arc toward the nearest enemy. Just above the landing point it
+    /// shatters in mid-air: the cork pops, the glass breaks into shards that fly apart and shrink away, glossy
+    /// black ink gushes out and a few ink droplets (max 12 particles) fly outward.
+    /// The ink lands as a flat circular black pool with a pulsing violet rim and code-generated water rings,
     /// which damages enemies inside it every <see cref="tickInterval"/> seconds, then fades and cleans itself up.
     ///
-    /// Rig convention (made by InkPotBuilder): child "Shot" holding "Pot" (shards "Shard_0..3", "Cork",
-    /// "InkSpill", "Tentacle") and particle system "Splash"; child "Slick" (disc, RoguePirates/InkSlick).
+    /// Rig convention (made by InkPotBuilder): child "Shot" holding "Pot" (glass shards "Shard_0..3", "Cork",
+    /// "InkSpill") and particle system "Splash"; child "Slick" (disc, RoguePirates/InkSlick).
     /// "Shot" and "Slick" are detached to world space at runtime so the ship can sail away; extra slicks are
     /// pooled clones and everything is destroyed with this component.
     ///
@@ -37,7 +37,6 @@ namespace HighSeas.VFX
         [SerializeField] Transform[] shards;
         [SerializeField] Transform cork;
         [SerializeField] Transform inkSpill;
-        [SerializeField] MeshFilter tentacleFilter;
         [SerializeField] ParticleSystem splash;
         [SerializeField] Transform slick;
         [Tooltip("Static baked burst pose shown in edit mode so the hero look is visible when the prefab is dropped in a scene. Hidden in Play mode; tagged EditorOnly so it is stripped from builds.")]
@@ -72,13 +71,10 @@ namespace HighSeas.VFX
         [SerializeField, Min(0.2f)] float burstDuration = 0.95f;
         [SerializeField, Min(0f)] float corkSpeed = 5f;
         [SerializeField] float corkSpin = 900f;
-        [Tooltip("How fast the clay shards fly apart (pot units / s).")]
-        [SerializeField, Min(0f)] float shardSpeed = 0.7f;
-        [SerializeField, Range(0f, 120f)] float shardOpenDegrees = 38f;
+        [Tooltip("How fast the glass shards fly apart (bottle units / s).")]
+        [SerializeField, Min(0f)] float shardSpeed = 1.6f;
+        [SerializeField, Range(0f, 120f)] float shardOpenDegrees = 65f;
         [SerializeField, Min(0.02f)] float spillGrowTime = 0.16f;
-        [Tooltip("Tentacle length in pot units (pot is 1 tall).")]
-        [SerializeField, Min(0.1f)] float tentacleLength = 0.95f;
-        [SerializeField, Range(0f, 1.5f)] float tentacleCurl = 1f;
         [Tooltip("Ink lands and the slick starts spreading this long after the burst.")]
         [SerializeField, Min(0f)] float slickDelay = 0.3f;
 
@@ -166,9 +162,9 @@ namespace HighSeas.VFX
         static readonly int RingSpeedId = Shader.PropertyToID("_RingSpeed");
 
         // pot-local landmarks (pot mesh is 1 unit tall, origin at the bottom centre)
-        static readonly Vector3 PotCenter = new Vector3(0f, 0.45f, 0f);
-        static readonly Vector3 CorkSeat = new Vector3(0f, 0.8f, 0f);
-        static readonly Vector3 Opening = new Vector3(0f, 0.86f, 0f);
+        static readonly Vector3 PotCenter = new Vector3(0f, 0.42f, 0f);
+        static readonly Vector3 CorkSeat = new Vector3(0f, 0.78f, 0f);
+        static readonly Vector3 Opening = new Vector3(0f, 0.9f, 0f);
         const float SlickDiscFraction = 0.62f; // matches InkSlick _SlickRadius
 
         sealed class SlickInstance
@@ -198,17 +194,6 @@ namespace HighSeas.VFX
         Vector3[] _shardDir;
         Quaternion[] _shardBaseRot;
         Vector3[] _shardBasePos;
-
-        // tentacle
-        const int TRings = 12, TSides = 7;
-        Mesh _tentMesh;
-        Vector3[] _tv, _tn;
-        Vector2[] _tuv;
-        Color[] _tc;
-        int[] _tt;
-        bool _flipWinding, _windingChecked;
-        Transform _tentacle;
-        Vector3 _tentBasePos;
 
         // ---------------------------------------------------------------- setup
 
@@ -267,12 +252,6 @@ namespace HighSeas.VFX
                 }
             }
 
-            if (tentacleFilter)
-            {
-                _tentacle = tentacleFilter.transform;
-                _tentBasePos = _tentacle.localPosition;
-                BuildTentacleBuffers();
-            }
         }
 
         /// <summary>
@@ -291,9 +270,6 @@ namespace HighSeas.VFX
             EvaluateBurst(t, true);
         }
 
-        /// <summary>The generated tentacle mesh (valid after <see cref="PoseBurstPreview"/>).</summary>
-        public Mesh PreviewTentacleMesh => _tentMesh;
-
         void Start()
         {
             if (heroPose) StartHero();
@@ -311,7 +287,6 @@ namespace HighSeas.VFX
         {
             if (_ownsShot && shotRoot) Destroy(shotRoot.gameObject);
             foreach (var s in _slicks) if (s.t) Destroy(s.t.gameObject);
-            if (_tentMesh) Destroy(_tentMesh);
         }
 
         // ---------------------------------------------------------------- public API
@@ -460,7 +435,6 @@ namespace HighSeas.VFX
                 cork.gameObject.SetActive(true);
             }
             if (inkSpill) inkSpill.gameObject.SetActive(false);
-            if (_tentacle) _tentacle.gameObject.SetActive(false);
         }
 
         // ---------------------------------------------------------------- burst (deterministic for a given t)
@@ -475,11 +449,11 @@ namespace HighSeas.VFX
             pot.localRotation = _burstRot;
             pot.localPosition = -(_burstRot * PotCenter) * potScale + Vector3.down * fall;
 
-            // clay shards open like petals and drift apart, then shrink away
+            // glass shards break outward and fly apart, then shrink away
             if (shards != null)
             {
                 float open = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / 0.32f), 3f);
-                float shrink = 1f - Smooth01((t - d * 0.6f) / (d * 0.4f));
+                float shrink = 1f - Smooth01((t - d * 0.35f) / (d * 0.4f));
                 for (int i = 0; i < shards.Length; i++)
                 {
                     var s = shards[i];
@@ -521,17 +495,6 @@ namespace HighSeas.VFX
                 inkSpill.gameObject.SetActive(grow * drain > 0.003f);
             }
 
-            // cartoon tentacle curls out, waves, then slips back down
-            if (_tentacle)
-            {
-                float e = 1f - Mathf.Pow(1f - Mathf.Clamp01((t - 0.02f) / 0.2f), 3f);
-                float back = 1f - Smooth01((t - d * 0.62f) / (d * 0.33f));
-                float ext = e * back;
-                float curl = tentacleCurl * Mathf.Lerp(0.15f, 1f, Smooth01((t - 0.04f) / 0.3f));
-                float wave = Mathf.Sin(t * 11f) * 0.35f * e;
-                _tentacle.gameObject.SetActive(ext > 0.01f);
-                if (ext > 0.01f) RebuildTentacle(ext, curl, wave);
-            }
         }
 
         // ---------------------------------------------------------------- hero pose
@@ -566,14 +529,6 @@ namespace HighSeas.VFX
             if (!shotRoot) return;
             _heroYaw += heroSpin * dt;
             shotRoot.localRotation = Quaternion.AngleAxis(_heroYaw, Vector3.up);
-            // keep the tentacle gently alive in the frozen pose
-            float t = heroTime;
-            if (_tentacle && _tentacle.gameObject.activeSelf)
-            {
-                float e = 1f - Mathf.Pow(1f - Mathf.Clamp01((t - 0.02f) / 0.2f), 3f);
-                float curl = tentacleCurl * Mathf.Lerp(0.15f, 1f, Smooth01((t - 0.04f) / 0.3f));
-                RebuildTentacle(e, curl, Mathf.Sin(Time.time * 2.2f) * 0.25f);
-            }
         }
 
         // ---------------------------------------------------------------- slick
@@ -757,97 +712,6 @@ namespace HighSeas.VFX
             if (fwd.sqrMagnitude < 0.01f) fwd = Vector3.forward;
             point = origin + Quaternion.AngleAxis(ang, Vector3.up) * fwd.normalized * previewDistance;
             return true;
-        }
-
-        // ---------------------------------------------------------------- tentacle mesh
-
-        void BuildTentacleBuffers()
-        {
-            int cols = TSides + 1;
-            int vc = TRings * cols + 1;
-            _tv = new Vector3[vc];
-            _tn = new Vector3[vc];
-            _tuv = new Vector2[vc];
-            _tc = new Color[vc];
-            for (int i = 0; i < vc; i++) _tc[i] = Color.white;
-            _tt = new int[(TRings - 1) * TSides * 6 + TSides * 3];
-            int k = 0;
-            for (int r = 0; r < TRings - 1; r++)
-            for (int j = 0; j < TSides; j++)
-            {
-                int a = r * cols + j, b = a + 1, c = a + cols, d = c + 1;
-                _tt[k++] = a; _tt[k++] = c; _tt[k++] = b;
-                _tt[k++] = b; _tt[k++] = c; _tt[k++] = d;
-            }
-            int tip = vc - 1, last = (TRings - 1) * cols;
-            for (int j = 0; j < TSides; j++)
-            {
-                _tt[k++] = last + j; _tt[k++] = tip; _tt[k++] = last + j + 1;
-            }
-            _tentMesh = new Mesh { name = "InkPot_Tentacle (runtime)" };
-            _tentMesh.MarkDynamic();
-            tentacleFilter.sharedMesh = _tentMesh;
-        }
-
-        void RebuildTentacle(float extend, float curl, float wave)
-        {
-            if (_tentMesh == null) return;
-            int cols = TSides + 1;
-            float L = tentacleLength * Mathf.Max(0.02f, extend);
-            float ds = L / (TRings - 1);
-            float r0 = 0.14f * Mathf.Lerp(0.55f, 1f, extend);
-            float phi = 0f;
-            Vector3 p = Vector3.zero;
-            Vector3 tipDir = Vector3.up;
-            for (int i = 0; i < TRings; i++)
-            {
-                float s = i / (float)(TRings - 1);
-                if (i > 0)
-                {
-                    float kappa = curl * (1.6f + 9f * Mathf.Pow(s, 1.6f)) / Mathf.Max(0.3f, tentacleLength) * 0.95f
-                                  + wave * Mathf.Sin(s * 5f) * 2f;
-                    phi += kappa * ds;
-                    p += new Vector3(Mathf.Sin(phi), Mathf.Cos(phi), 0f) * ds;
-                }
-                var T = new Vector3(Mathf.Sin(phi), Mathf.Cos(phi), 0f);
-                var N = new Vector3(Mathf.Cos(phi), -Mathf.Sin(phi), 0f); // inner side of the curl (suckers)
-                var B = Vector3.forward;
-                tipDir = T;
-                float rad = r0 * (1f - 0.8f * s) * (1f + 0.3f * Mathf.Pow(1f - s, 4f));
-                for (int j = 0; j < cols; j++)
-                {
-                    float u = j / (float)TSides;
-                    float a = u * Mathf.PI * 2f;
-                    Vector3 off = N * Mathf.Cos(a) + B * Mathf.Sin(a);
-                    int idx = i * cols + j;
-                    _tv[idx] = p + off * rad;
-                    _tn[idx] = off;
-                    _tuv[idx] = new Vector2(u, s);
-                }
-            }
-            int tip = _tv.Length - 1;
-            _tv[tip] = p + tipDir * (r0 * 0.25f);
-            _tn[tip] = tipDir;
-            _tuv[tip] = new Vector2(0.5f, 1f);
-
-            if (!_windingChecked)
-            {
-                // make sure triangles face outward (normals point away from the tube axis)
-                Vector3 a0 = _tv[_tt[0]], b0 = _tv[_tt[1]], c0 = _tv[_tt[2]];
-                Vector3 fn = Vector3.Cross(b0 - a0, c0 - a0);
-                _flipWinding = Vector3.Dot(fn, _tn[_tt[0]] + _tn[_tt[1]] + _tn[_tt[2]]) < 0f;
-                if (_flipWinding)
-                    for (int i = 0; i < _tt.Length; i += 3) { int x = _tt[i + 1]; _tt[i + 1] = _tt[i + 2]; _tt[i + 2] = x; }
-                _windingChecked = true;
-            }
-
-            _tentMesh.Clear(true);
-            _tentMesh.vertices = _tv;
-            _tentMesh.normals = _tn;
-            _tentMesh.uv = _tuv;
-            _tentMesh.colors = _tc;
-            _tentMesh.triangles = _tt;
-            _tentMesh.RecalculateBounds();
         }
 
         // ---------------------------------------------------------------- utils

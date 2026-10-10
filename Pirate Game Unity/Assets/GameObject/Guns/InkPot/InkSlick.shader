@@ -1,14 +1,12 @@
 Shader "RoguePirates/InkSlick"
 {
     // Flat glossy black-violet ink slick on the water. Mesh = disc, UV.x = angle (0..1), UV.y = radius (0..1).
-    // Wobbly blob edge, toon gloss highlight, pulsing violet rim and code-generated expanding water rings outside.
+    // Circular (optionally wobbly) edge, pulsing violet rim and code-generated expanding water rings outside.
     // Driven per-instance by InkPotVfx through a MaterialPropertyBlock (_Spread, _Fade, _RingTime, _Seed).
     Properties
     {
         _InkColor ("Ink", Color) = (0.035, 0.015, 0.06, 1)
         _SheenColor ("Violet sheen", Color) = (0.22, 0.08, 0.38, 1)
-        _GlossColor ("Gloss", Color) = (0.86, 0.78, 1.0, 1)
-        _GlossStrength ("Gloss strength", Range(0, 1)) = 0.85
         _RimColor ("Pulsing rim", Color) = (0.62, 0.3, 1.0, 1)
         _RimWidth ("Rim width", Range(0.005, 0.15)) = 0.045
         _PulseSpeed ("Pulse speed", Float) = 5
@@ -45,8 +43,6 @@ Shader "RoguePirates/InkSlick"
             CBUFFER_START(UnityPerMaterial)
                 half4 _InkColor;
                 half4 _SheenColor;
-                half4 _GlossColor;
-                half _GlossStrength;
                 half4 _RimColor;
                 half _RimWidth;
                 float _PulseSpeed;
@@ -83,8 +79,7 @@ Shader "RoguePirates/InkSlick"
                 float ang = i.uv.x * 6.2831853;
                 float wob = (sin(ang * 5.0 + _Seed) * 0.045 + sin(ang * 3.0 - _Seed * 1.7) * 0.035 + sin(ang * 9.0 + _Seed * 0.6) * 0.015) * _Wobble;
                 float edge = max(_SlickRadius * _Spread * (1.0 + wob), 0.0001);
-                float2 p = float2(cos(ang), sin(ang)) * r / edge;
-
+                
                 half inside = 1.0 - smoothstep(edge - 0.006, edge, r);
 
                 // ink body: near-black centre, stepped violet sheen toward the edge
@@ -97,10 +92,6 @@ Shader "RoguePirates/InkSlick"
                 half rim = smoothstep(edge - rimW - 0.006, edge - rimW, r);
                 ink = lerp(ink, _RimColor.rgb * (1.0 - 0.3 * _PulseAmount + 0.5 * _PulseAmount * pulse), rim);
 
-                // glossy toon highlights: one long crescent + a small glint
-                half hl = 1.0 - smoothstep(0.17, 0.2, length((p - float2(-0.3, 0.28)) * float2(1.0, 2.1)));
-                half glint = 1.0 - smoothstep(0.055, 0.075, length(p - float2(0.12, 0.42)));
-                ink = lerp(ink, _GlossColor.rgb, saturate(hl + glint) * _GlossStrength);
 
                 // code-generated water rings expanding outward from the slick
                 half ringA = 0;
