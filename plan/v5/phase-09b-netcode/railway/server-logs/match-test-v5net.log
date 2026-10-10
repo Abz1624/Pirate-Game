@@ -1,0 +1,627 @@
+# railway logs --service match-test --json <deployment> (hourly --since/--until windows), [V5 Net] lines only, 9-11 Oct 2026.
+# Columns: Railway log timestamp (UTC), deployment id prefix, message. Idle (session=none) stats lines thinned to one per 10 minutes per deployment;
+# every event, every connected stats line and every final line kept. Full unthinned count: 13622 lines.
+2026-10-09T08:28:51.064 29ebf5f2 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.77 s in the process (run held until a player joins: True)
+2026-10-09T08:29:11.053 29ebf5f2 [V5 Net] stats tick=299 session=none ticksMeasured=299 tickMs p50=0.270 p95=0.442 max=1.862 rssMB=202.5 monoHeapMB=5.0 unityReservedMB=164.6 fps=60
+2026-10-09T08:30:01.087 29ebf5f2 [V5 Net] stats tick=2100 session=none ticksMeasured=2100 tickMs p50=0.251 p95=0.430 max=6.263 rssMB=202.8 monoHeapMB=5.5 unityReservedMB=164.6 fps=60
+2026-10-09T08:40:11.373 29ebf5f2 [V5 Net] stats tick=20110 session=none ticksMeasured=20110 tickMs p50=0.206 p95=0.417 max=15.257 rssMB=206.2 monoHeapMB=5.6 unityReservedMB=166.6 fps=60
+2026-10-09T08:50:01.758 29ebf5f2 [V5 Net] stats tick=38120 session=none ticksMeasured=38120 tickMs p50=0.217 p95=0.426 max=23.553 rssMB=206.3 monoHeapMB=5.4 unityReservedMB=166.6 fps=60
+2026-10-09T09:00:02.295 29ebf5f2 [V5 Net] stats tick=56136 session=none ticksMeasured=56136 tickMs p50=0.222 p95=0.432 max=32.491 rssMB=208.2 monoHeapMB=7.0 unityReservedMB=166.6 fps=60
+2026-10-09T09:10:02.742 29ebf5f2 [V5 Net] stats tick=73850 session=none ticksMeasured=73850 tickMs p50=0.222 p95=0.444 max=38.558 rssMB=208.2 monoHeapMB=7.7 unityReservedMB=166.6 fps=60
+2026-10-09T09:10:02.742 29ebf5f2 [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-09T09:10:02.742 29ebf5f2 [V5 Net] first inputs 0.39 s after the join; the run plays
+2026-10-09T09:10:02.742 29ebf5f2 [V5 Net] stats tick=74151 session=connected ticksMeasured=81 tickMs p50=0.320 p95=2.277 max=18.590 rssMB=210.0 monoHeapMB=5.0 unityReservedMB=166.6 fps=60
+2026-10-09T09:10:07.930 29ebf5f2 [V5 Net] hold named 226: next unapplied 225, newest input 225, held from 226
+2026-10-09T09:10:08.356 29ebf5f2 [V5 Net] cards Picked: held from 226, client resume 239, next unapplied 238, resume 239
+2026-10-09T09:10:12.780 29ebf5f2 [V5 Net] stats tick=74451 session=connected ticksMeasured=381 tickMs p50=0.331 p95=1.130 max=18.590 rssMB=210.4 monoHeapMB=5.2 unityReservedMB=166.6 fps=60
+2026-10-09T09:10:21.218 29ebf5f2 [V5 Net] hold named 623: next unapplied 622, newest input 622, held from 623
+2026-10-09T09:10:21.563 29ebf5f2 [V5 Net] cards Picked: held from 623, client resume 636, next unapplied 634, resume 636
+2026-10-09T09:10:22.769 29ebf5f2 [V5 Net] stats tick=74752 session=connected ticksMeasured=682 tickMs p50=0.323 p95=0.695 max=18.590 rssMB=210.6 monoHeapMB=5.0 unityReservedMB=166.6 fps=60
+2026-10-09T09:10:29.651 29ebf5f2 [V5 Net] hold named 878: next unapplied 877, newest input 877, held from 878
+2026-10-09T09:10:30.059 29ebf5f2 [V5 Net] cards Picked: held from 878, client resume 891, next unapplied 889, resume 891
+2026-10-09T09:10:32.845 29ebf5f2 [V5 Net] stats tick=75052 session=connected ticksMeasured=982 tickMs p50=0.344 p95=0.719 max=18.590 rssMB=212.6 monoHeapMB=5.2 unityReservedMB=168.6 fps=60
+2026-10-09T09:10:36.365 29ebf5f2 [V5 Net] hold named 1076: next unapplied 1075, newest input 1075, held from 1076
+2026-10-09T09:10:36.663 29ebf5f2 [V5 Net] cards Picked: held from 1076, client resume 1089, next unapplied 1087, resume 1089
+2026-10-09T09:10:42.613 29ebf5f2 [V5 Net] hold named 1266: next unapplied 1266, newest input 1265, held from 1266
+2026-10-09T09:10:42.782 29ebf5f2 [V5 Net] stats tick=75352 session=connected ticksMeasured=1282 tickMs p50=0.360 p95=0.698 max=18.590 rssMB=212.7 monoHeapMB=5.0 unityReservedMB=168.6 fps=60
+2026-10-09T09:10:43.022 29ebf5f2 [V5 Net] cards Picked: held from 1266, client resume 1279, next unapplied 1278, resume 1279
+2026-10-09T09:10:49.983 29ebf5f2 [V5 Net] closing: voyage ended (Sunk)
+2026-10-09T09:10:50.542 29ebf5f2 [V5 Net] final tick=75584 session=detached ticksMeasured=1514 tickMs p50=0.344 p95=0.676 max=23.457 rssMB=214.5 monoHeapMB=5.6 unityReservedMB=168.6 fps=60
+2026-10-09T09:10:50.542 29ebf5f2 [V5 Net] EXIT voyage ended (Sunk)
+2026-10-09T09:10:52.097 29ebf5f2 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.77 s in the process (run held until a player joins: True)
+2026-10-09T09:20:02.364 29ebf5f2 [V5 Net] stats tick=16208 session=none ticksMeasured=16208 tickMs p50=0.220 p95=0.429 max=9.992 rssMB=204.4 monoHeapMB=5.3 unityReservedMB=164.6 fps=60
+2026-10-09T09:30:02.685 29ebf5f2 [V5 Net] stats tick=34218 session=none ticksMeasured=34218 tickMs p50=0.213 p95=0.419 max=22.891 rssMB=209.2 monoHeapMB=5.4 unityReservedMB=166.6 fps=60
+2026-10-09T09:40:03.287 29ebf5f2 [V5 Net] stats tick=52535 session=none ticksMeasured=52535 tickMs p50=0.209 p95=0.418 max=29.696 rssMB=211.1 monoHeapMB=4.6 unityReservedMB=166.6 fps=60
+2026-10-09T09:50:13.830 29ebf5f2 [V5 Net] stats tick=70549 session=none ticksMeasured=70549 tickMs p50=0.194 p95=0.408 max=37.587 rssMB=211.2 monoHeapMB=6.8 unityReservedMB=166.6 fps=60
+2026-10-09T10:00:14.324 29ebf5f2 [V5 Net] stats tick=88565 session=none ticksMeasured=88565 tickMs p50=0.182 p95=0.397 max=48.366 rssMB=213.4 monoHeapMB=6.6 unityReservedMB=166.6 fps=60
+2026-10-09T10:10:04.532 29ebf5f2 [V5 Net] stats tick=106275 session=none ticksMeasured=106275 tickMs p50=0.177 p95=0.392 max=48.366 rssMB=214.4 monoHeapMB=6.9 unityReservedMB=166.6 fps=60
+2026-10-09T10:20:15.074 29ebf5f2 [V5 Net] stats tick=124589 session=none ticksMeasured=124589 tickMs p50=0.175 p95=0.389 max=48.366 rssMB=210.7 monoHeapMB=7.2 unityReservedMB=166.6 fps=60
+2026-10-09T10:30:15.705 29ebf5f2 [V5 Net] stats tick=142604 session=none ticksMeasured=142604 tickMs p50=0.174 p95=0.387 max=48.366 rssMB=214.7 monoHeapMB=7.6 unityReservedMB=166.6 fps=60
+2026-10-09T10:40:06.010 29ebf5f2 [V5 Net] stats tick=160616 session=none ticksMeasured=160616 tickMs p50=0.172 p95=0.384 max=48.366 rssMB=214.7 monoHeapMB=7.8 unityReservedMB=166.6 fps=60
+2026-10-09T10:40:25.833 29ebf5f2 [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-09T10:40:25.833 29ebf5f2 [V5 Net] first inputs 0.39 s after the join; the run plays
+2026-10-09T10:40:25.987 29ebf5f2 [V5 Net] stats tick=161217 session=connected ticksMeasured=156 tickMs p50=0.236 p95=1.917 max=10.954 rssMB=215.9 monoHeapMB=8.6 unityReservedMB=166.6 fps=60
+2026-10-09T10:40:28.893 29ebf5f2 [V5 Net] hold named 228: next unapplied 226, newest input 227, held from 228
+2026-10-09T10:40:29.027 29ebf5f2 [V5 Net] cards Picked: held from 228, client resume 240, next unapplied 238, resume 240
+2026-10-09T10:40:36.055 29ebf5f2 [V5 Net] stats tick=161517 session=connected ticksMeasured=456 tickMs p50=0.254 p95=0.633 max=10.954 rssMB=216.4 monoHeapMB=8.8 unityReservedMB=166.6 fps=60
+2026-10-09T10:40:37.653 29ebf5f2 [V5 Net] hold named 495: next unapplied 493, newest input 494, held from 495
+2026-10-09T10:40:38.173 29ebf5f2 [V5 Net] cards Picked: held from 495, client resume 508, next unapplied 505, resume 508
+2026-10-09T10:40:46.002 29ebf5f2 [V5 Net] stats tick=161817 session=connected ticksMeasured=756 tickMs p50=0.261 p95=0.551 max=10.954 rssMB=216.7 monoHeapMB=9.1 unityReservedMB=166.6 fps=60
+2026-10-09T10:40:51.079 29ebf5f2 [V5 Net] hold named 899: next unapplied 897, newest input 898, held from 899
+2026-10-09T10:40:52.800 29ebf5f2 [V5 Net] cards Picked: held from 899, client resume 913, next unapplied 911, resume 913
+2026-10-09T10:40:56.041 29ebf5f2 [V5 Net] stats tick=162117 session=connected ticksMeasured=1056 tickMs p50=0.270 p95=0.585 max=10.954 rssMB=218.8 monoHeapMB=8.7 unityReservedMB=168.6 fps=60
+2026-10-09T10:40:59.084 29ebf5f2 [V5 Net] hold named 1100: next unapplied 1098, newest input 1099, held from 1100
+2026-10-09T10:40:59.525 29ebf5f2 [V5 Net] cards Picked: held from 1100, client resume 1112, next unapplied 1113, resume 1112
+2026-10-09T10:41:06.046 29ebf5f2 [V5 Net] stats tick=162417 session=connected ticksMeasured=1356 tickMs p50=0.290 p95=0.635 max=10.954 rssMB=218.8 monoHeapMB=9.0 unityReservedMB=168.6 fps=60
+2026-10-09T10:41:15.331 29ebf5f2 [V5 Net] hold named 1573: next unapplied 1572, newest input 1572, held from 1573
+2026-10-09T10:41:15.331 29ebf5f2 [V5 Net] cards Picked: held from 1573, client resume 1585, next unapplied 1584, resume 1585
+2026-10-09T10:41:16.389 29ebf5f2 [V5 Net] stats tick=162717 session=connected ticksMeasured=1656 tickMs p50=0.313 p95=0.633 max=10.954 rssMB=219.0 monoHeapMB=8.6 unityReservedMB=168.6 fps=60
+2026-10-09T10:41:25.946 29ebf5f2 [V5 Net] stats tick=163017 session=connected ticksMeasured=1956 tickMs p50=0.333 p95=0.672 max=10.954 rssMB=219.0 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-09T10:41:32.921 29ebf5f2 [V5 Net] hold named 2116: next unapplied 2115, newest input 2115, held from 2116
+2026-10-09T10:41:33.466 29ebf5f2 [V5 Net] cards Picked: held from 2116, client resume 2128, next unapplied 2127, resume 2128
+2026-10-09T10:41:35.995 29ebf5f2 [V5 Net] stats tick=163317 session=connected ticksMeasured=2256 tickMs p50=0.351 p95=0.672 max=10.954 rssMB=219.2 monoHeapMB=9.1 unityReservedMB=168.6 fps=60
+2026-10-09T10:41:55.813 29ebf5f2 [V5 Net] stats tick=163617 session=connected ticksMeasured=2556 tickMs p50=0.366 p95=0.685 max=10.954 rssMB=219.3 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-09T10:41:55.968 29ebf5f2 [V5 Net] stats tick=163918 session=connected ticksMeasured=2857 tickMs p50=0.380 p95=0.681 max=10.954 rssMB=219.3 monoHeapMB=9.0 unityReservedMB=168.6 fps=60
+2026-10-09T10:41:57.337 29ebf5f2 [V5 Net] hold named 2842: next unapplied 2841, newest input 2841, held from 2842
+2026-10-09T10:41:57.541 29ebf5f2 [V5 Net] cards Picked: held from 2842, client resume 2855, next unapplied 2853, resume 2855
+2026-10-09T10:42:01.542 29ebf5f2 [V5 Net] closing: voyage ended (Sunk)
+2026-10-09T10:42:02.033 29ebf5f2 [V5 Net] final tick=164099 session=detached ticksMeasured=3038 tickMs p50=0.375 p95=0.681 max=19.025 rssMB=218.3 monoHeapMB=9.2 unityReservedMB=168.6 fps=60
+2026-10-09T10:42:02.033 29ebf5f2 [V5 Net] EXIT voyage ended (Sunk)
+2026-10-09T10:42:03.542 29ebf5f2 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.74 s in the process (run held until a player joins: True)
+2026-10-09T10:50:03.880 29ebf5f2 [V5 Net] stats tick=14102 session=none ticksMeasured=14102 tickMs p50=0.163 p95=0.347 max=8.834 rssMB=203.9 monoHeapMB=5.0 unityReservedMB=164.6 fps=60
+2026-10-09T11:00:13.847 29ebf5f2 [V5 Net] stats tick=32407 session=none ticksMeasured=32407 tickMs p50=0.159 p95=0.334 max=19.544 rssMB=206.5 monoHeapMB=6.2 unityReservedMB=166.6 fps=60
+2026-10-09T11:10:04.172 29ebf5f2 [V5 Net] stats tick=50119 session=none ticksMeasured=50119 tickMs p50=0.161 p95=0.340 max=30.341 rssMB=208.9 monoHeapMB=7.0 unityReservedMB=166.6 fps=60
+2026-10-09T11:18:24.370 29ebf5f2 [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-09T11:18:24.636 29ebf5f2 [V5 Net] stats tick=65432 session=connected ticksMeasured=263 tickMs p50=0.169 p95=0.330 max=6.718 rssMB=211.7 monoHeapMB=7.8 unityReservedMB=166.6 fps=60
+2026-10-09T11:18:26.938 29ebf5f2 [V5 Net] first inputs 10.98 s after the join; the run plays
+2026-10-09T11:18:34.668 29ebf5f2 [V5 Net] stats tick=65733 session=connected ticksMeasured=564 tickMs p50=0.201 p95=0.443 max=17.482 rssMB=212.3 monoHeapMB=4.8 unityReservedMB=166.6 fps=60
+2026-10-09T11:18:37.226 29ebf5f2 [V5 Net] hold named 277: next unapplied 305, newest input 8, held from 278
+2026-10-09T11:18:38.844 29ebf5f2 [V5 Net] cards Picked: held from 278, client resume 357, next unapplied 364, resume 357
+2026-10-09T11:18:44.808 29ebf5f2 [V5 Net] stats tick=66033 session=connected ticksMeasured=864 tickMs p50=0.217 p95=0.448 max=17.482 rssMB=212.6 monoHeapMB=4.9 unityReservedMB=166.6 fps=60
+2026-10-09T11:18:48.832 29ebf5f2 [V5 Net] cards Picked: held from 603, client resume 657, next unapplied 664, resume 657
+2026-10-09T11:18:54.720 29ebf5f2 [V5 Net] stats tick=66333 session=connected ticksMeasured=1164 tickMs p50=0.230 p95=0.437 max=17.482 rssMB=212.8 monoHeapMB=5.1 unityReservedMB=166.6 fps=60
+2026-10-09T11:18:58.869 29ebf5f2 [V5 Net] closing: voyage ended (Sunk)
+2026-10-09T11:18:59.479 29ebf5f2 [V5 Net] final tick=66475 session=detached ticksMeasured=1306 tickMs p50=0.219 p95=0.416 max=36.285 rssMB=214.3 monoHeapMB=5.0 unityReservedMB=166.6 fps=60
+2026-10-09T11:18:59.480 29ebf5f2 [V5 Net] EXIT voyage ended (Sunk)
+2026-10-09T11:19:00.901 29ebf5f2 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.73 s in the process (run held until a player joins: True)
+2026-10-09T11:20:00.817 29ebf5f2 [V5 Net] stats tick=1499 session=none ticksMeasured=1499 tickMs p50=0.170 p95=0.370 max=5.944 rssMB=203.2 monoHeapMB=5.1 unityReservedMB=164.6 fps=60
+2026-10-09T11:21:30.991 29ebf5f2 [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-09T11:21:30.991 29ebf5f2 [V5 Net] first inputs 1.90 s after the join; the run plays
+2026-10-09T11:21:30.991 29ebf5f2 [V5 Net] stats tick=4500 session=connected ticksMeasured=74 tickMs p50=0.158 p95=0.252 max=1.451 rssMB=206.4 monoHeapMB=5.1 unityReservedMB=164.6 fps=60
+2026-10-09T11:21:39.163 29ebf5f2 [V5 Net] hold named 262: next unapplied 263, newest input 261, held from 262
+2026-10-09T11:21:41.007 29ebf5f2 [V5 Net] stats tick=4800 session=connected ticksMeasured=374 tickMs p50=0.223 p95=0.515 max=12.327 rssMB=207.2 monoHeapMB=5.3 unityReservedMB=164.6 fps=60
+2026-10-09T11:21:41.566 29ebf5f2 [V5 Net] cards Picked: held from 262, client resume 337, next unapplied 336, resume 337
+2026-10-09T11:21:50.314 29ebf5f2 [V5 Net] hold named 593: next unapplied 592, newest input 592, held from 593
+2026-10-09T11:21:50.948 29ebf5f2 [V5 Net] stats tick=5100 session=connected ticksMeasured=674 tickMs p50=0.259 p95=0.655 max=12.327 rssMB=209.3 monoHeapMB=5.5 unityReservedMB=166.6 fps=60
+2026-10-09T11:21:52.023 29ebf5f2 [V5 Net] cards Picked: held from 593, client resume 650, next unapplied 649, resume 650
+2026-10-09T11:22:01.003 29ebf5f2 [V5 Net] stats tick=5400 session=connected ticksMeasured=974 tickMs p50=0.287 p95=0.681 max=12.327 rssMB=209.3 monoHeapMB=5.2 unityReservedMB=166.6 fps=60
+2026-10-09T11:22:04.034 29ebf5f2 [V5 Net] hold named 1009: next unapplied 1008, newest input 1008, held from 1009
+2026-10-09T11:22:10.972 29ebf5f2 [V5 Net] stats tick=5701 session=connected ticksMeasured=1275 tickMs p50=0.273 p95=0.674 max=12.327 rssMB=209.4 monoHeapMB=5.3 unityReservedMB=166.6 fps=60
+2026-10-09T11:22:31.023 29ebf5f2 [V5 Net] stats tick=6001 session=connected ticksMeasured=1575 tickMs p50=0.223 p95=0.649 max=12.327 rssMB=209.4 monoHeapMB=5.4 unityReservedMB=166.6 fps=60
+2026-10-09T11:22:31.023 29ebf5f2 [V5 Net] stats tick=6301 session=connected ticksMeasured=1875 tickMs p50=0.142 p95=0.629 max=12.327 rssMB=209.4 monoHeapMB=5.5 unityReservedMB=166.6 fps=60
+2026-10-09T11:22:33.968 29ebf5f2 [V5 Net] cards TimedOut: held from 1009, client resume 0, next unapplied 1900, resume 1900
+2026-10-09T11:22:41.008 29ebf5f2 [V5 Net] stats tick=6601 session=connected ticksMeasured=2175 tickMs p50=0.169 p95=0.636 max=12.327 rssMB=211.4 monoHeapMB=5.7 unityReservedMB=168.6 fps=60
+2026-10-09T11:23:00.942 29ebf5f2 [V5 Net] stats tick=6901 session=connected ticksMeasured=2475 tickMs p50=0.253 p95=0.661 max=12.327 rssMB=211.5 monoHeapMB=5.3 unityReservedMB=168.6 fps=60
+2026-10-09T11:23:00.978 29ebf5f2 [V5 Net] stats tick=7201 session=connected ticksMeasured=2775 tickMs p50=0.288 p95=0.686 max=12.327 rssMB=211.5 monoHeapMB=5.6 unityReservedMB=168.6 fps=60
+2026-10-09T11:23:21.055 29ebf5f2 [V5 Net] stats tick=7501 session=connected ticksMeasured=3075 tickMs p50=0.326 p95=0.724 max=12.327 rssMB=211.6 monoHeapMB=5.8 unityReservedMB=168.6 fps=60
+2026-10-09T11:23:21.055 29ebf5f2 [V5 Net] stats tick=7801 session=connected ticksMeasured=3375 tickMs p50=0.375 p95=0.731 max=12.327 rssMB=211.6 monoHeapMB=5.4 unityReservedMB=168.6 fps=60
+2026-10-09T11:23:30.986 29ebf5f2 [V5 Net] stats tick=8101 session=connected ticksMeasured=3675 tickMs p50=0.409 p95=0.732 max=12.327 rssMB=211.6 monoHeapMB=5.6 unityReservedMB=168.6 fps=60
+2026-10-09T11:23:41.181 29ebf5f2 [V5 Net] stats tick=8401 session=detached ticksMeasured=3975 tickMs p50=0.424 p95=0.722 max=20.502 rssMB=213.0 monoHeapMB=4.9 unityReservedMB=168.6 fps=60
+2026-10-09T11:23:42.481 29ebf5f2 [V5 Net] closing: voyage ended (Sunk)
+2026-10-09T11:23:43.000 29ebf5f2 [V5 Net] final tick=8461 session=detached ticksMeasured=4035 tickMs p50=0.417 p95=0.721 max=20.502 rssMB=213.1 monoHeapMB=5.1 unityReservedMB=168.6 fps=60
+2026-10-09T11:23:43.000 29ebf5f2 [V5 Net] EXIT voyage ended (Sunk)
+2026-10-09T11:23:44.477 29ebf5f2 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.71 s in the process (run held until a player joins: True)
+2026-10-09T11:30:04.570 29ebf5f2 [V5 Net] stats tick=11102 session=none ticksMeasured=11102 tickMs p50=0.181 p95=0.403 max=8.117 rssMB=203.9 monoHeapMB=5.0 unityReservedMB=164.6 fps=60
+2026-10-09T11:40:14.705 29ebf5f2 [V5 Net] stats tick=29407 session=none ticksMeasured=29407 tickMs p50=0.181 p95=0.385 max=15.449 rssMB=206.3 monoHeapMB=5.5 unityReservedMB=166.6 fps=60
+2026-10-09T11:50:15.181 29ebf5f2 [V5 Net] stats tick=47420 session=none ticksMeasured=47420 tickMs p50=0.195 p95=0.409 max=31.463 rssMB=208.8 monoHeapMB=6.1 unityReservedMB=166.6 fps=60
+2026-10-09T12:00:15.655 29ebf5f2 [V5 Net] stats tick=65436 session=none ticksMeasured=65436 tickMs p50=0.197 p95=0.409 max=43.430 rssMB=208.8 monoHeapMB=6.4 unityReservedMB=166.6 fps=60
+2026-10-09T12:10:16.413 29ebf5f2 [V5 Net] stats tick=83452 session=none ticksMeasured=83452 tickMs p50=0.201 p95=0.415 max=44.297 rssMB=208.8 monoHeapMB=6.5 unityReservedMB=166.6 fps=60
+2026-10-09T12:20:06.661 29ebf5f2 [V5 Net] stats tick=101165 session=none ticksMeasured=101165 tickMs p50=0.199 p95=0.413 max=44.873 rssMB=212.1 monoHeapMB=6.8 unityReservedMB=166.6 fps=60
+2026-10-09T12:30:17.267 29ebf5f2 [V5 Net] stats tick=119482 session=none ticksMeasured=119482 tickMs p50=0.195 p95=0.409 max=44.873 rssMB=208.4 monoHeapMB=7.2 unityReservedMB=166.6 fps=60
+2026-10-09T12:40:17.684 29ebf5f2 [V5 Net] stats tick=137495 session=none ticksMeasured=137495 tickMs p50=0.193 p95=0.408 max=44.873 rssMB=211.8 monoHeapMB=8.0 unityReservedMB=166.6 fps=60
+2026-10-09T12:50:08.229 29ebf5f2 [V5 Net] stats tick=155211 session=none ticksMeasured=155211 tickMs p50=0.191 p95=0.406 max=44.873 rssMB=211.9 monoHeapMB=7.8 unityReservedMB=166.6 fps=60
+2026-10-09T13:00:18.693 29ebf5f2 [V5 Net] stats tick=173526 session=none ticksMeasured=173526 tickMs p50=0.189 p95=0.405 max=44.873 rssMB=212.6 monoHeapMB=9.4 unityReservedMB=166.6 fps=60
+2026-10-09T13:10:19.165 29ebf5f2 [V5 Net] stats tick=191541 session=none ticksMeasured=191541 tickMs p50=0.189 p95=0.404 max=44.873 rssMB=212.6 monoHeapMB=8.3 unityReservedMB=166.6 fps=60
+2026-10-09T13:20:08.897 29ebf5f2 [V5 Net] stats tick=209259 session=none ticksMeasured=209259 tickMs p50=0.188 p95=0.405 max=44.873 rssMB=211.8 monoHeapMB=8.6 unityReservedMB=166.6 fps=60
+2026-10-09T13:30:00.181 29ebf5f2 [V5 Net] stats tick=226971 session=none ticksMeasured=226971 tickMs p50=0.188 p95=0.404 max=44.873 rssMB=211.9 monoHeapMB=9.7 unityReservedMB=166.6 fps=60
+2026-10-09T13:40:00.646 29ebf5f2 [V5 Net] stats tick=245284 session=none ticksMeasured=245284 tickMs p50=0.189 p95=0.405 max=44.873 rssMB=213.0 monoHeapMB=9.1 unityReservedMB=166.6 fps=60
+2026-10-09T13:47:21.124 312ed35f [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 1.00 s in the process (run held until a player joins: True)
+2026-10-09T13:47:31.069 29ebf5f2 [V5 Net] closing: SIGTERM (stop file)
+2026-10-09T13:47:31.069 29ebf5f2 [V5 Net] final tick=258601 session=none ticksMeasured=258601 tickMs p50=0.190 p95=0.407 max=44.873 rssMB=210.8 monoHeapMB=9.3 unityReservedMB=166.6 fps=60
+2026-10-09T13:47:31.069 29ebf5f2 [V5 Net] EXIT SIGTERM (stop file)
+2026-10-09T13:47:41.133 312ed35f [V5 Net] stats tick=299 session=none ticksMeasured=299 tickMs p50=0.501 p95=1.050 max=7.783 rssMB=190.5 monoHeapMB=4.8 unityReservedMB=164.6 fps=60
+2026-10-09T13:47:41.133 312ed35f [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-09T13:47:41.133 312ed35f [V5 Net] first inputs 0.57 s after the join; the run plays
+2026-10-09T13:47:41.139 312ed35f [V5 Net] stats tick=599 session=connected ticksMeasured=106 tickMs p50=0.564 p95=3.818 max=19.091 rssMB=193.4 monoHeapMB=5.0 unityReservedMB=164.6 fps=60
+2026-10-09T13:47:46.062 312ed35f [V5 Net] hold named 235: next unapplied 234, newest input 234, held from 235
+2026-10-09T13:47:46.373 312ed35f [V5 Net] cards Picked: held from 235, client resume 247, next unapplied 246, resume 247
+2026-10-09T13:47:51.152 312ed35f [V5 Net] stats tick=899 session=connected ticksMeasured=406 tickMs p50=0.639 p95=1.799 max=19.091 rssMB=193.5 monoHeapMB=5.2 unityReservedMB=164.6 fps=60
+2026-10-09T13:47:54.502 312ed35f [V5 Net] hold named 491: next unapplied 490, newest input 490, held from 491
+2026-10-09T13:47:54.920 312ed35f [V5 Net] cards Picked: held from 491, client resume 504, next unapplied 502, resume 504
+2026-10-09T13:48:01.161 312ed35f [V5 Net] stats tick=1199 session=connected ticksMeasured=706 tickMs p50=0.702 p95=1.680 max=19.091 rssMB=195.3 monoHeapMB=4.9 unityReservedMB=166.6 fps=60
+2026-10-09T13:48:02.793 312ed35f [V5 Net] hold named 739: next unapplied 738, newest input 738, held from 739
+2026-10-09T13:48:03.209 312ed35f [V5 Net] cards Picked: held from 739, client resume 752, next unapplied 750, resume 752
+2026-10-09T13:48:11.243 312ed35f [V5 Net] stats tick=1500 session=connected ticksMeasured=1007 tickMs p50=0.761 p95=1.568 max=19.091 rssMB=197.7 monoHeapMB=5.2 unityReservedMB=168.6 fps=60
+2026-10-09T13:48:14.294 312ed35f [V5 Net] hold named 1021: next unapplied 1020, newest input 1020, held from 1021
+2026-10-09T13:48:14.562 312ed35f [V5 Net] cards Picked: held from 1021, client resume 1033, next unapplied 1032, resume 1033
+2026-10-09T13:48:21.188 312ed35f [V5 Net] stats tick=1800 session=connected ticksMeasured=1307 tickMs p50=0.807 p95=1.655 max=19.091 rssMB=197.7 monoHeapMB=5.0 unityReservedMB=168.6 fps=60
+2026-10-09T13:48:22.038 312ed35f [V5 Net] hold named 1257: next unapplied 1257, newest input 1256, held from 1257
+2026-10-09T13:48:22.483 312ed35f [V5 Net] cards Picked: held from 1257, client resume 1270, next unapplied 1269, resume 1270
+2026-10-09T13:48:29.489 312ed35f [V5 Net] hold named 1479: next unapplied 1478, newest input 1478, held from 1479
+2026-10-09T13:48:29.812 312ed35f [V5 Net] cards Picked: held from 1479, client resume 1491, next unapplied 1490, resume 1491
+2026-10-09T13:48:31.248 312ed35f [V5 Net] stats tick=2100 session=connected ticksMeasured=1607 tickMs p50=0.841 p95=1.735 max=19.091 rssMB=197.7 monoHeapMB=5.2 unityReservedMB=168.6 fps=60
+2026-10-09T13:48:41.196 312ed35f [V5 Net] stats tick=2401 session=connected ticksMeasured=1908 tickMs p50=0.852 p95=1.703 max=19.091 rssMB=197.7 monoHeapMB=5.4 unityReservedMB=168.6 fps=60
+2026-10-09T13:49:01.182 312ed35f [V5 Net] stats tick=2701 session=connected ticksMeasured=2208 tickMs p50=0.898 p95=1.777 max=19.091 rssMB=197.8 monoHeapMB=5.1 unityReservedMB=168.6 fps=60
+2026-10-09T13:49:01.226 312ed35f [V5 Net] stats tick=3001 session=connected ticksMeasured=2508 tickMs p50=0.933 p95=1.935 max=19.091 rssMB=197.8 monoHeapMB=5.4 unityReservedMB=168.6 fps=60
+2026-10-09T13:49:11.237 312ed35f [V5 Net] stats tick=3302 session=detached ticksMeasured=2809 tickMs p50=0.959 p95=1.967 max=26.349 rssMB=198.8 monoHeapMB=6.0 unityReservedMB=168.6 fps=60
+2026-10-09T13:49:12.803 312ed35f [V5 Net] closing: voyage ended (Sunk)
+2026-10-09T13:49:13.359 312ed35f [V5 Net] final tick=3365 session=detached ticksMeasured=2872 tickMs p50=0.948 p95=1.959 max=26.349 rssMB=198.8 monoHeapMB=5.3 unityReservedMB=168.6 fps=59
+2026-10-09T13:49:13.359 312ed35f [V5 Net] EXIT voyage ended (Sunk)
+2026-10-09T13:49:15.823 312ed35f [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 1.14 s in the process (run held until a player joins: True)
+2026-10-09T13:50:05.856 312ed35f [V5 Net] stats tick=1499 session=none ticksMeasured=1499 tickMs p50=0.507 p95=1.085 max=10.621 rssMB=183.5 monoHeapMB=5.0 unityReservedMB=164.6 fps=60
+2026-10-09T14:00:06.429 312ed35f [V5 Net] stats tick=19216 session=none ticksMeasured=19216 tickMs p50=0.517 p95=1.121 max=24.602 rssMB=186.8 monoHeapMB=6.1 unityReservedMB=166.6 fps=60
+2026-10-09T14:10:16.982 312ed35f [V5 Net] stats tick=37533 session=none ticksMeasured=37533 tickMs p50=0.516 p95=1.118 max=31.169 rssMB=188.2 monoHeapMB=6.3 unityReservedMB=166.6 fps=60
+2026-10-09T14:20:17.483 312ed35f [V5 Net] stats tick=55550 session=none ticksMeasured=55550 tickMs p50=0.514 p95=1.113 max=45.942 rssMB=188.7 monoHeapMB=6.5 unityReservedMB=166.6 fps=60
+2026-10-09T14:30:08.053 312ed35f [V5 Net] stats tick=73564 session=none ticksMeasured=73564 tickMs p50=0.513 p95=1.113 max=45.942 rssMB=187.9 monoHeapMB=5.9 unityReservedMB=166.6 fps=60
+2026-10-09T14:40:18.545 312ed35f [V5 Net] stats tick=91580 session=none ticksMeasured=91580 tickMs p50=0.513 p95=1.112 max=45.942 rssMB=188.3 monoHeapMB=6.5 unityReservedMB=166.6 fps=58
+2026-10-09T14:50:19.087 312ed35f [V5 Net] stats tick=109595 session=none ticksMeasured=109595 tickMs p50=0.512 p95=1.118 max=45.942 rssMB=190.9 monoHeapMB=6.9 unityReservedMB=166.6 fps=60
+2026-10-09T15:00:09.557 312ed35f [V5 Net] stats tick=127310 session=none ticksMeasured=127310 tickMs p50=0.512 p95=1.125 max=45.942 rssMB=187.6 monoHeapMB=7.7 unityReservedMB=166.6 fps=60
+2026-10-09T15:10:10.118 312ed35f [V5 Net] stats tick=145324 session=none ticksMeasured=145324 tickMs p50=0.513 p95=1.137 max=45.942 rssMB=191.0 monoHeapMB=7.5 unityReservedMB=166.6 fps=60
+2026-10-09T15:20:10.578 312ed35f [V5 Net] stats tick=163338 session=none ticksMeasured=163338 tickMs p50=0.514 p95=1.141 max=45.942 rssMB=190.9 monoHeapMB=7.8 unityReservedMB=166.6 fps=60
+2026-10-09T15:30:01.143 312ed35f [V5 Net] stats tick=181054 session=none ticksMeasured=181054 tickMs p50=0.513 p95=1.142 max=45.942 rssMB=191.7 monoHeapMB=8.7 unityReservedMB=166.6 fps=60
+2026-10-09T15:40:11.620 312ed35f [V5 Net] stats tick=199368 session=none ticksMeasured=199368 tickMs p50=0.513 p95=1.144 max=45.942 rssMB=194.4 monoHeapMB=9.1 unityReservedMB=166.6 fps=60
+2026-10-09T15:50:02.195 312ed35f [V5 Net] stats tick=217085 session=none ticksMeasured=217085 tickMs p50=0.513 p95=1.146 max=45.942 rssMB=190.9 monoHeapMB=9.4 unityReservedMB=166.6 fps=60
+2026-10-09T16:00:02.664 312ed35f [V5 Net] stats tick=235100 session=none ticksMeasured=235100 tickMs p50=0.513 p95=1.150 max=45.942 rssMB=195.3 monoHeapMB=11.6 unityReservedMB=166.6 fps=60
+2026-10-09T16:10:13.287 312ed35f [V5 Net] stats tick=253416 session=none ticksMeasured=253416 tickMs p50=0.514 p95=1.159 max=45.942 rssMB=190.0 monoHeapMB=9.2 unityReservedMB=166.6 fps=60
+2026-10-09T16:20:03.758 312ed35f [V5 Net] stats tick=271431 session=none ticksMeasured=271431 tickMs p50=0.514 p95=1.165 max=45.942 rssMB=195.5 monoHeapMB=10.4 unityReservedMB=166.6 fps=60
+2026-10-09T16:30:14.261 312ed35f [V5 Net] stats tick=289445 session=none ticksMeasured=289445 tickMs p50=0.514 p95=1.170 max=45.942 rssMB=191.9 monoHeapMB=10.7 unityReservedMB=166.6 fps=60
+2026-10-09T16:40:14.749 312ed35f [V5 Net] stats tick=307460 session=none ticksMeasured=307460 tickMs p50=0.514 p95=1.176 max=45.942 rssMB=194.2 monoHeapMB=11.0 unityReservedMB=166.6 fps=60
+2026-10-09T16:50:15.275 312ed35f [V5 Net] stats tick=325474 session=none ticksMeasured=325474 tickMs p50=0.514 p95=1.184 max=45.942 rssMB=191.1 monoHeapMB=11.3 unityReservedMB=166.6 fps=59
+2026-10-09T16:59:41.453 312ed35f [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-09T16:59:43.179 312ed35f [V5 Net] first inputs 1.72 s after the join; the run plays
+2026-10-09T16:59:45.442 312ed35f [V5 Net] stats tick=342888 session=connected ticksMeasured=121 tickMs p50=0.555 p95=2.396 max=28.434 rssMB=195.5 monoHeapMB=11.7 unityReservedMB=166.6 fps=60
+2026-10-09T16:59:55.442 312ed35f [V5 Net] stats tick=343188 session=connected ticksMeasured=421 tickMs p50=0.714 p95=1.899 max=28.434 rssMB=196.4 monoHeapMB=11.9 unityReservedMB=166.6 fps=60
+2026-10-09T17:00:04.014 312ed35f [V5 Net] hold named 629: next unapplied 629, newest input 628, held from 629
+2026-10-09T17:00:05.457 312ed35f [V5 Net] stats tick=343488 session=connected ticksMeasured=721 tickMs p50=0.753 p95=1.762 max=28.434 rssMB=197.4 monoHeapMB=12.1 unityReservedMB=166.6 fps=60
+2026-10-09T17:00:07.102 312ed35f [V5 Net] cards Picked: held from 629, client resume 724, next unapplied 721, resume 724
+2026-10-09T17:00:09.521 312ed35f [V5 Net] hold named 796: next unapplied 794, newest input 795, held from 796
+2026-10-09T17:00:11.383 312ed35f [V5 Net] cards Picked: held from 796, client resume 849, next unapplied 847, resume 849
+2026-10-09T17:00:15.490 312ed35f [V5 Net] stats tick=343788 session=connected ticksMeasured=1021 tickMs p50=0.771 p95=1.785 max=28.434 rssMB=198.1 monoHeapMB=6.4 unityReservedMB=166.6 fps=60
+2026-10-09T17:00:17.637 312ed35f [V5 Net] hold named 1039: next unapplied 1037, newest input 1038, held from 1039
+2026-10-09T17:00:20.282 312ed35f [V5 Net] cards Picked: held from 1039, client resume 1119, next unapplied 1117, resume 1119
+2026-10-09T17:00:24.083 312ed35f [V5 Net] hold named 1233: next unapplied 1231, newest input 1232, held from 1233
+2026-10-09T17:00:25.472 312ed35f [V5 Net] stats tick=344088 session=connected ticksMeasured=1321 tickMs p50=0.770 p95=1.872 max=28.434 rssMB=200.4 monoHeapMB=6.6 unityReservedMB=168.6 fps=60
+2026-10-09T17:00:26.217 312ed35f [V5 Net] cards Picked: held from 1233, client resume 1297, next unapplied 1294, resume 1297
+2026-10-09T17:00:34.064 312ed35f [V5 Net] hold named 1533: next unapplied 1530, newest input 1532, held from 1533
+2026-10-09T17:00:35.588 312ed35f [V5 Net] stats tick=344389 session=connected ticksMeasured=1622 tickMs p50=0.799 p95=1.899 max=28.434 rssMB=200.5 monoHeapMB=6.9 unityReservedMB=168.6 fps=60
+2026-10-09T17:00:37.889 312ed35f [V5 Net] cards Picked: held from 1533, client resume 1648, next unapplied 1645, resume 1648
+2026-10-09T17:00:42.277 312ed35f [V5 Net] player away (page hidden): the voyage holds
+2026-10-09T17:00:45.569 312ed35f [V5 Net] stats tick=344689 session=connected ticksMeasured=1922 tickMs p50=0.803 p95=1.865 max=28.434 rssMB=200.5 monoHeapMB=6.5 unityReservedMB=168.6 fps=60
+2026-10-09T17:01:05.455 312ed35f [V5 Net] stats tick=344989 session=connected ticksMeasured=2222 tickMs p50=0.803 p95=1.889 max=28.434 rssMB=200.5 monoHeapMB=6.7 unityReservedMB=168.6 fps=60
+2026-10-09T17:01:05.504 312ed35f [V5 Net] stats tick=345289 session=connected ticksMeasured=2522 tickMs p50=0.796 p95=1.812 max=28.434 rssMB=200.5 monoHeapMB=6.9 unityReservedMB=168.6 fps=60
+2026-10-09T17:01:25.457 312ed35f [V5 Net] stats tick=345589 session=connected ticksMeasured=2822 tickMs p50=0.794 p95=1.777 max=28.434 rssMB=200.5 monoHeapMB=7.1 unityReservedMB=168.6 fps=59
+2026-10-09T17:01:25.510 312ed35f [V5 Net] stats tick=345889 session=connected ticksMeasured=3122 tickMs p50=0.795 p95=1.764 max=28.434 rssMB=200.7 monoHeapMB=6.5 unityReservedMB=168.6 fps=60
+2026-10-09T17:01:28.969 312ed35f [V5 Net] player back after 46.6 s away: the voyage plays on
+2026-10-09T17:01:35.559 312ed35f [V5 Net] stats tick=346190 session=connected ticksMeasured=3423 tickMs p50=0.791 p95=1.738 max=28.434 rssMB=200.7 monoHeapMB=6.7 unityReservedMB=168.6 fps=60
+2026-10-09T17:01:45.514 312ed35f [V5 Net] stats tick=346490 session=connected ticksMeasured=3723 tickMs p50=0.766 p95=1.709 max=28.434 rssMB=200.8 monoHeapMB=7.0 unityReservedMB=168.6 fps=59
+2026-10-09T17:02:05.512 312ed35f [V5 Net] stats tick=346790 session=connected ticksMeasured=4023 tickMs p50=0.742 p95=1.665 max=28.434 rssMB=198.1 monoHeapMB=6.7 unityReservedMB=168.6 fps=60
+2026-10-09T17:02:05.512 312ed35f [V5 Net] player away (page hidden): the voyage holds
+2026-10-09T17:02:05.535 312ed35f [V5 Net] stats tick=347090 session=connected ticksMeasured=4323 tickMs p50=0.719 p95=1.627 max=28.434 rssMB=198.1 monoHeapMB=7.0 unityReservedMB=168.6 fps=60
+2026-10-09T17:02:25.523 312ed35f [V5 Net] stats tick=347391 session=connected ticksMeasured=4624 tickMs p50=0.693 p95=1.583 max=28.434 rssMB=198.2 monoHeapMB=6.6 unityReservedMB=168.6 fps=60
+2026-10-09T17:02:25.564 312ed35f [V5 Net] stats tick=347691 session=connected ticksMeasured=4924 tickMs p50=0.662 p95=1.556 max=28.434 rssMB=198.2 monoHeapMB=6.9 unityReservedMB=168.6 fps=60
+2026-10-09T17:02:45.561 312ed35f [V5 Net] stats tick=347991 session=connected ticksMeasured=5224 tickMs p50=0.622 p95=1.520 max=28.434 rssMB=198.3 monoHeapMB=7.3 unityReservedMB=168.6 fps=60
+2026-10-09T17:02:45.569 312ed35f [V5 Net] stats tick=348291 session=connected ticksMeasured=5524 tickMs p50=0.556 p95=1.496 max=28.434 rssMB=198.3 monoHeapMB=6.8 unityReservedMB=168.6 fps=60
+2026-10-09T17:03:05.440 312ed35f [V5 Net] stats tick=348592 session=connected ticksMeasured=5825 tickMs p50=0.473 p95=1.471 max=28.434 rssMB=198.3 monoHeapMB=7.1 unityReservedMB=168.6 fps=60
+2026-10-09T17:03:05.606 312ed35f [V5 Net] stats tick=348892 session=connected ticksMeasured=6125 tickMs p50=0.353 p95=1.446 max=28.434 rssMB=198.3 monoHeapMB=6.7 unityReservedMB=168.6 fps=60
+2026-10-09T17:03:15.596 312ed35f [V5 Net] stats tick=349192 session=connected ticksMeasured=6425 tickMs p50=0.283 p95=1.426 max=28.434 rssMB=198.3 monoHeapMB=7.1 unityReservedMB=168.6 fps=60
+2026-10-09T17:03:25.594 312ed35f [V5 Net] stats tick=349492 session=connected ticksMeasured=6725 tickMs p50=0.252 p95=1.406 max=28.434 rssMB=191.8 monoHeapMB=6.8 unityReservedMB=168.6 fps=60
+2026-10-09T17:03:45.559 312ed35f [V5 Net] stats tick=349792 session=connected ticksMeasured=7025 tickMs p50=0.236 p95=1.385 max=28.434 rssMB=191.9 monoHeapMB=7.1 unityReservedMB=168.6 fps=60
+2026-10-09T17:03:45.635 312ed35f [V5 Net] stats tick=350093 session=connected ticksMeasured=7326 tickMs p50=0.221 p95=1.369 max=28.434 rssMB=192.0 monoHeapMB=6.9 unityReservedMB=168.6 fps=60
+2026-10-09T17:03:55.620 312ed35f [V5 Net] stats tick=350393 session=connected ticksMeasured=7626 tickMs p50=0.210 p95=1.351 max=28.434 rssMB=192.1 monoHeapMB=7.2 unityReservedMB=168.6 fps=60
+2026-10-09T17:04:15.631 312ed35f [V5 Net] stats tick=350693 session=connected ticksMeasured=7926 tickMs p50=0.202 p95=1.343 max=28.434 rssMB=192.1 monoHeapMB=7.0 unityReservedMB=168.6 fps=60
+2026-10-09T17:04:15.645 312ed35f [V5 Net] stats tick=350994 session=connected ticksMeasured=8227 tickMs p50=0.197 p95=1.339 max=28.434 rssMB=192.1 monoHeapMB=7.3 unityReservedMB=168.6 fps=60
+2026-10-09T17:04:35.638 312ed35f [V5 Net] stats tick=351294 session=connected ticksMeasured=8527 tickMs p50=0.191 p95=1.327 max=28.434 rssMB=192.2 monoHeapMB=7.1 unityReservedMB=168.6 fps=60
+2026-10-09T17:04:35.660 312ed35f [V5 Net] stats tick=351594 session=connected ticksMeasured=8827 tickMs p50=0.189 p95=1.307 max=28.434 rssMB=192.3 monoHeapMB=7.5 unityReservedMB=168.6 fps=60
+2026-10-09T17:04:39.907 312ed35f [V5 Net] player back after 163.6 s away: the voyage plays on
+2026-10-09T17:04:45.700 312ed35f [V5 Net] stats tick=351894 session=detached ticksMeasured=9127 tickMs p50=0.186 p95=1.292 max=28.434 rssMB=193.0 monoHeapMB=7.2 unityReservedMB=168.6 fps=60
+2026-10-09T17:05:05.620 312ed35f [V5 Net] stats tick=352194 session=detached ticksMeasured=9427 tickMs p50=0.183 p95=1.277 max=28.434 rssMB=193.1 monoHeapMB=7.6 unityReservedMB=168.6 fps=50
+2026-10-09T17:05:05.856 312ed35f [V5 Net] stats tick=352495 session=detached ticksMeasured=9728 tickMs p50=0.182 p95=1.269 max=28.434 rssMB=193.0 monoHeapMB=7.3 unityReservedMB=168.6 fps=60
+2026-10-09T17:05:14.471 312ed35f [V5 Net] session expired (no resume in time)
+2026-10-09T17:05:15.865 312ed35f [V5 Net] stats tick=352795 session=detached ticksMeasured=10028 tickMs p50=0.181 p95=1.255 max=28.434 rssMB=193.0 monoHeapMB=7.1 unityReservedMB=168.6 fps=60
+2026-10-09T17:05:17.499 312ed35f [V5 Net] closing: session expired
+2026-10-09T17:05:18.053 312ed35f [V5 Net] final tick=352865 session=detached ticksMeasured=10098 tickMs p50=0.181 p95=1.250 max=28.434 rssMB=193.1 monoHeapMB=7.4 unityReservedMB=168.6 fps=60
+2026-10-09T17:05:18.053 312ed35f [V5 Net] EXIT session expired
+2026-10-09T17:05:20.888 312ed35f [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 1.14 s in the process (run held until a player joins: True)
+2026-10-09T17:05:30.756 312ed35f [V5 Net] stats tick=298 session=none ticksMeasured=298 tickMs p50=0.559 p95=1.719 max=4.324 rssMB=186.9 monoHeapMB=5.0 unityReservedMB=164.6 fps=60
+2026-10-09T17:10:10.806 312ed35f [V5 Net] stats tick=8405 session=none ticksMeasured=8405 tickMs p50=0.564 p95=1.230 max=11.154 rssMB=187.7 monoHeapMB=5.7 unityReservedMB=164.6 fps=60
+2026-10-09T17:20:01.451 312ed35f [V5 Net] stats tick=26120 session=none ticksMeasured=26120 tickMs p50=0.534 p95=1.129 max=33.866 rssMB=190.4 monoHeapMB=5.3 unityReservedMB=166.6 fps=60
+2026-10-09T17:30:01.886 312ed35f [V5 Net] stats tick=44133 session=none ticksMeasured=44133 tickMs p50=0.521 p95=1.083 max=36.630 rssMB=193.0 monoHeapMB=6.3 unityReservedMB=166.6 fps=60
+2026-10-09T17:40:12.328 312ed35f [V5 Net] stats tick=62449 session=none ticksMeasured=62449 tickMs p50=0.519 p95=1.085 max=43.691 rssMB=192.9 monoHeapMB=6.3 unityReservedMB=166.6 fps=60
+2026-10-09T17:50:02.978 312ed35f [V5 Net] stats tick=80464 session=none ticksMeasured=80464 tickMs p50=0.514 p95=1.079 max=43.691 rssMB=193.2 monoHeapMB=6.1 unityReservedMB=166.6 fps=60
+2026-10-09T18:00:13.481 312ed35f [V5 Net] stats tick=98479 session=none ticksMeasured=98479 tickMs p50=0.511 p95=1.074 max=43.691 rssMB=196.0 monoHeapMB=6.4 unityReservedMB=166.6 fps=60
+2026-10-09T18:10:03.943 312ed35f [V5 Net] stats tick=116492 session=none ticksMeasured=116492 tickMs p50=0.509 p95=1.073 max=43.691 rssMB=196.3 monoHeapMB=6.6 unityReservedMB=166.6 fps=60
+2026-10-09T18:20:14.452 312ed35f [V5 Net] stats tick=134506 session=none ticksMeasured=134506 tickMs p50=0.508 p95=1.077 max=43.691 rssMB=196.2 monoHeapMB=7.4 unityReservedMB=166.6 fps=60
+2026-10-09T18:30:04.932 312ed35f [V5 Net] stats tick=152221 session=none ticksMeasured=152221 tickMs p50=0.508 p95=1.084 max=43.691 rssMB=195.9 monoHeapMB=8.3 unityReservedMB=166.6 fps=60
+2026-10-09T18:40:15.424 312ed35f [V5 Net] stats tick=170536 session=none ticksMeasured=170536 tickMs p50=0.506 p95=1.085 max=43.691 rssMB=196.0 monoHeapMB=8.6 unityReservedMB=166.6 fps=60
+2026-10-09T18:50:15.723 312ed35f [V5 Net] stats tick=188548 session=none ticksMeasured=188548 tickMs p50=0.505 p95=1.087 max=43.691 rssMB=199.5 monoHeapMB=8.3 unityReservedMB=166.6 fps=60
+2026-10-09T19:00:06.317 312ed35f [V5 Net] stats tick=206261 session=none ticksMeasured=206261 tickMs p50=0.504 p95=1.088 max=43.691 rssMB=196.2 monoHeapMB=8.5 unityReservedMB=166.6 fps=60
+2026-10-09T19:10:06.843 312ed35f [V5 Net] stats tick=224277 session=none ticksMeasured=224277 tickMs p50=0.503 p95=1.091 max=43.691 rssMB=193.7 monoHeapMB=8.8 unityReservedMB=166.6 fps=57
+2026-10-09T19:20:07.321 312ed35f [V5 Net] stats tick=242591 session=none ticksMeasured=242591 tickMs p50=0.502 p95=1.094 max=43.691 rssMB=198.5 monoHeapMB=10.9 unityReservedMB=166.6 fps=60
+2026-10-09T19:30:07.760 312ed35f [V5 Net] stats tick=260305 session=none ticksMeasured=260305 tickMs p50=0.501 p95=1.100 max=43.691 rssMB=196.4 monoHeapMB=13.3 unityReservedMB=166.6 fps=60
+2026-10-09T19:40:18.405 312ed35f [V5 Net] stats tick=278621 session=none ticksMeasured=278621 tickMs p50=0.500 p95=1.104 max=43.691 rssMB=194.3 monoHeapMB=10.6 unityReservedMB=166.6 fps=60
+2026-10-09T19:50:18.808 312ed35f [V5 Net] stats tick=296635 session=none ticksMeasured=296635 tickMs p50=0.500 p95=1.110 max=43.691 rssMB=194.6 monoHeapMB=10.9 unityReservedMB=166.6 fps=60
+2026-10-09T20:00:19.291 312ed35f [V5 Net] stats tick=314649 session=none ticksMeasured=314649 tickMs p50=0.500 p95=1.119 max=43.691 rssMB=193.7 monoHeapMB=11.2 unityReservedMB=166.6 fps=60
+2026-10-09T20:10:09.836 312ed35f [V5 Net] stats tick=332363 session=none ticksMeasured=332363 tickMs p50=0.500 p95=1.128 max=43.691 rssMB=195.9 monoHeapMB=11.4 unityReservedMB=166.6 fps=60
+2026-10-09T20:20:00.255 312ed35f [V5 Net] stats tick=350076 session=none ticksMeasured=350076 tickMs p50=0.500 p95=1.134 max=48.922 rssMB=196.2 monoHeapMB=11.7 unityReservedMB=166.6 fps=60
+2026-10-09T20:30:10.699 312ed35f [V5 Net] stats tick=368392 session=none ticksMeasured=368392 tickMs p50=0.500 p95=1.139 max=48.922 rssMB=195.4 monoHeapMB=12.0 unityReservedMB=166.6 fps=60
+2026-10-09T20:40:11.241 312ed35f [V5 Net] stats tick=386405 session=none ticksMeasured=386405 tickMs p50=0.500 p95=1.146 max=52.485 rssMB=199.2 monoHeapMB=12.3 unityReservedMB=166.6 fps=60
+2026-10-09T20:50:01.774 312ed35f [V5 Net] stats tick=404420 session=none ticksMeasured=404420 tickMs p50=0.500 p95=1.149 max=52.485 rssMB=196.0 monoHeapMB=12.5 unityReservedMB=166.6 fps=60
+2026-10-09T21:00:12.209 312ed35f [V5 Net] stats tick=422434 session=none ticksMeasured=422434 tickMs p50=0.500 p95=1.154 max=52.485 rssMB=202.0 monoHeapMB=12.8 unityReservedMB=166.6 fps=60
+2026-10-09T21:10:12.886 312ed35f [V5 Net] stats tick=440450 session=none ticksMeasured=440450 tickMs p50=0.500 p95=1.156 max=52.485 rssMB=202.4 monoHeapMB=13.1 unityReservedMB=166.6 fps=60
+2026-10-09T21:20:13.280 312ed35f [V5 Net] stats tick=458465 session=none ticksMeasured=458465 tickMs p50=0.499 p95=1.159 max=59.236 rssMB=202.9 monoHeapMB=13.4 unityReservedMB=166.6 fps=60
+2026-10-09T21:30:03.808 312ed35f [V5 Net] stats tick=476480 session=none ticksMeasured=476480 tickMs p50=0.499 p95=1.163 max=62.458 rssMB=203.4 monoHeapMB=13.6 unityReservedMB=166.6 fps=60
+2026-10-09T21:40:14.186 312ed35f [V5 Net] stats tick=494494 session=none ticksMeasured=494494 tickMs p50=0.499 p95=1.165 max=62.458 rssMB=203.7 monoHeapMB=13.9 unityReservedMB=166.6 fps=60
+2026-10-09T21:50:14.741 312ed35f [V5 Net] stats tick=512508 session=none ticksMeasured=512508 tickMs p50=0.498 p95=1.166 max=62.842 rssMB=206.9 monoHeapMB=14.2 unityReservedMB=166.6 fps=60
+2026-10-09T22:00:15.206 312ed35f [V5 Net] stats tick=530521 session=none ticksMeasured=530521 tickMs p50=0.498 p95=1.167 max=62.842 rssMB=205.6 monoHeapMB=16.5 unityReservedMB=166.6 fps=60
+2026-10-09T22:10:05.670 312ed35f [V5 Net] stats tick=548535 session=none ticksMeasured=548535 tickMs p50=0.497 p95=1.169 max=69.277 rssMB=205.7 monoHeapMB=16.7 unityReservedMB=166.6 fps=59
+2026-10-09T22:20:16.170 312ed35f [V5 Net] stats tick=566549 session=none ticksMeasured=566549 tickMs p50=0.497 p95=1.168 max=69.939 rssMB=205.9 monoHeapMB=17.0 unityReservedMB=166.6 fps=60
+2026-10-09T22:30:16.643 312ed35f [V5 Net] stats tick=584563 session=none ticksMeasured=584563 tickMs p50=0.496 p95=1.170 max=70.374 rssMB=205.9 monoHeapMB=17.3 unityReservedMB=166.6 fps=60
+2026-10-09T22:40:17.028 312ed35f [V5 Net] stats tick=602575 session=none ticksMeasured=602575 tickMs p50=0.496 p95=1.171 max=72.129 rssMB=204.9 monoHeapMB=17.6 unityReservedMB=166.6 fps=60
+2026-10-09T22:50:17.562 312ed35f [V5 Net] stats tick=620588 session=none ticksMeasured=620588 tickMs p50=0.496 p95=1.173 max=75.523 rssMB=205.3 monoHeapMB=17.9 unityReservedMB=166.6 fps=60
+2026-10-09T23:00:08.006 312ed35f [V5 Net] stats tick=638302 session=none ticksMeasured=638302 tickMs p50=0.495 p95=1.174 max=77.987 rssMB=205.7 monoHeapMB=18.1 unityReservedMB=166.6 fps=60
+2026-10-09T23:07:00.360 af5aef4a [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.76 s in the process (run held until a player joins: True)
+2026-10-09T23:07:02.612 312ed35f [V5 Net] closing: SIGTERM (stop file)
+2026-10-09T23:07:03.852 312ed35f [V5 Net] final tick=651072 session=none ticksMeasured=651072 tickMs p50=0.495 p95=1.175 max=79.628 rssMB=214.2 monoHeapMB=18.3 unityReservedMB=166.6 fps=60
+2026-10-09T23:07:03.852 312ed35f [V5 Net] EXIT SIGTERM (stop file)
+2026-10-09T23:07:07.526 af5aef4a [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-09T23:07:07.812 af5aef4a [V5 Net] first inputs 0.39 s after the join; the run plays
+2026-10-09T23:07:10.400 af5aef4a [V5 Net] stats tick=299 session=connected ticksMeasured=90 tickMs p50=0.256 p95=2.623 max=11.462 rssMB=206.1 monoHeapMB=4.9 unityReservedMB=164.6 fps=60
+2026-10-09T23:07:17.696 af5aef4a [V5 Net] hold named 301: next unapplied 299, newest input 300, held from 301
+2026-10-09T23:07:18.231 af5aef4a [V5 Net] cards Picked: held from 301, client resume 313, next unapplied 311, resume 313
+2026-10-09T23:07:20.394 af5aef4a [V5 Net] stats tick=599 session=connected ticksMeasured=390 tickMs p50=0.352 p95=0.984 max=11.462 rssMB=206.4 monoHeapMB=5.1 unityReservedMB=164.6 fps=60
+2026-10-09T23:07:29.739 af5aef4a [V5 Net] hold named 660: next unapplied 658, newest input 659, held from 660
+2026-10-09T23:07:30.073 af5aef4a [V5 Net] cards Picked: held from 660, client resume 673, next unapplied 671, resume 673
+2026-10-09T23:07:30.411 af5aef4a [V5 Net] stats tick=899 session=connected ticksMeasured=690 tickMs p50=0.440 p95=0.823 max=11.462 rssMB=208.4 monoHeapMB=4.8 unityReservedMB=166.6 fps=60
+2026-10-09T23:07:35.470 af5aef4a [V5 Net] hold named 835: next unapplied 833, newest input 834, held from 835
+2026-10-09T23:07:35.870 af5aef4a [V5 Net] cards Picked: held from 835, client resume 847, next unapplied 845, resume 847
+2026-10-09T23:07:40.345 af5aef4a [V5 Net] stats tick=1199 session=connected ticksMeasured=990 tickMs p50=0.416 p95=0.783 max=11.462 rssMB=211.1 monoHeapMB=5.0 unityReservedMB=168.6 fps=60
+2026-10-09T23:07:48.211 af5aef4a [V5 Net] hold named 1165: next unapplied 1164, newest input 1164, held from 1165
+2026-10-09T23:07:48.672 af5aef4a [V5 Net] cards Picked: held from 1165, client resume 1178, next unapplied 1176, resume 1178
+2026-10-09T23:07:50.388 af5aef4a [V5 Net] stats tick=1499 session=connected ticksMeasured=1290 tickMs p50=0.427 p95=0.832 max=11.462 rssMB=211.1 monoHeapMB=5.3 unityReservedMB=168.6 fps=60
+2026-10-09T23:07:58.201 af5aef4a [V5 Net] hold named 1465: next unapplied 1464, newest input 1464, held from 1465
+2026-10-09T23:07:58.637 af5aef4a [V5 Net] cards Picked: held from 1465, client resume 1478, next unapplied 1476, resume 1478
+2026-10-09T23:08:00.394 af5aef4a [V5 Net] stats tick=1799 session=connected ticksMeasured=1590 tickMs p50=0.442 p95=0.907 max=11.462 rssMB=211.2 monoHeapMB=4.9 unityReservedMB=168.6 fps=60
+2026-10-09T23:08:10.373 af5aef4a [V5 Net] stats tick=2099 session=connected ticksMeasured=1890 tickMs p50=0.447 p95=0.906 max=11.462 rssMB=211.2 monoHeapMB=5.1 unityReservedMB=168.6 fps=60
+2026-10-09T23:08:30.355 af5aef4a [V5 Net] stats tick=2400 session=connected ticksMeasured=2191 tickMs p50=0.464 p95=0.907 max=11.462 rssMB=211.2 monoHeapMB=5.3 unityReservedMB=168.6 fps=60
+2026-10-09T23:08:30.382 af5aef4a [V5 Net] stats tick=2700 session=connected ticksMeasured=2491 tickMs p50=0.468 p95=0.898 max=11.462 rssMB=211.3 monoHeapMB=5.0 unityReservedMB=168.6 fps=60
+2026-10-09T23:08:50.289 af5aef4a [V5 Net] stats tick=3000 session=connected ticksMeasured=2791 tickMs p50=0.486 p95=0.895 max=11.462 rssMB=211.3 monoHeapMB=5.2 unityReservedMB=168.6 fps=60
+2026-10-09T23:08:50.393 af5aef4a [V5 Net] stats tick=3300 session=detached ticksMeasured=3091 tickMs p50=0.505 p95=0.903 max=17.643 rssMB=212.1 monoHeapMB=5.7 unityReservedMB=168.6 fps=60
+2026-10-09T23:08:52.696 af5aef4a [V5 Net] closing: voyage ended (Sunk)
+2026-10-09T23:08:53.227 af5aef4a [V5 Net] final tick=3385 session=detached ticksMeasured=3176 tickMs p50=0.498 p95=0.900 max=17.643 rssMB=212.1 monoHeapMB=5.7 unityReservedMB=168.6 fps=60
+2026-10-09T23:08:53.227 af5aef4a [V5 Net] EXIT voyage ended (Sunk)
+2026-10-09T23:08:54.697 af5aef4a [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.73 s in the process (run held until a player joins: True)
+2026-10-09T23:09:14.696 af5aef4a [V5 Net] stats tick=299 session=none ticksMeasured=299 tickMs p50=0.196 p95=0.463 max=1.785 rssMB=202.8 monoHeapMB=4.9 unityReservedMB=164.6 fps=60
+2026-10-09T23:10:04.712 af5aef4a [V5 Net] stats tick=2100 session=none ticksMeasured=2100 tickMs p50=0.188 p95=0.469 max=5.642 rssMB=203.1 monoHeapMB=5.1 unityReservedMB=164.6 fps=60
+2026-10-09T23:20:05.080 af5aef4a [V5 Net] stats tick=19811 session=none ticksMeasured=19811 tickMs p50=0.202 p95=0.480 max=6.445 rssMB=205.7 monoHeapMB=6.0 unityReservedMB=166.6 fps=60
+2026-10-09T23:30:15.427 af5aef4a [V5 Net] stats tick=38122 session=none ticksMeasured=38122 tickMs p50=0.205 p95=0.478 max=14.560 rssMB=205.5 monoHeapMB=5.7 unityReservedMB=166.6 fps=60
+2026-10-09T23:40:15.729 af5aef4a [V5 Net] stats tick=56133 session=none ticksMeasured=56133 tickMs p50=0.202 p95=0.480 max=20.356 rssMB=205.5 monoHeapMB=5.0 unityReservedMB=166.6 fps=60
+2026-10-09T23:50:16.177 af5aef4a [V5 Net] stats tick=74150 session=none ticksMeasured=74150 tickMs p50=0.208 p95=0.478 max=24.717 rssMB=206.3 monoHeapMB=5.7 unityReservedMB=166.6 fps=60
+2026-10-10T00:00:16.940 af5aef4a [V5 Net] stats tick=92167 session=none ticksMeasured=92167 tickMs p50=0.213 p95=0.485 max=36.907 rssMB=205.8 monoHeapMB=5.8 unityReservedMB=166.6 fps=60
+2026-10-10T00:10:07.306 af5aef4a [V5 Net] stats tick=109878 session=none ticksMeasured=109878 tickMs p50=0.214 p95=0.484 max=48.054 rssMB=205.8 monoHeapMB=5.7 unityReservedMB=166.6 fps=60
+2026-10-10T00:20:18.000 af5aef4a [V5 Net] stats tick=128196 session=none ticksMeasured=128196 tickMs p50=0.217 p95=0.487 max=48.054 rssMB=205.8 monoHeapMB=5.9 unityReservedMB=166.6 fps=60
+2026-10-10T00:30:08.407 af5aef4a [V5 Net] stats tick=145912 session=none ticksMeasured=145912 tickMs p50=0.214 p95=0.485 max=48.054 rssMB=206.8 monoHeapMB=6.7 unityReservedMB=166.6 fps=60
+2026-10-10T00:40:18.722 af5aef4a [V5 Net] stats tick=164224 session=none ticksMeasured=164224 tickMs p50=0.212 p95=0.484 max=48.281 rssMB=206.8 monoHeapMB=6.5 unityReservedMB=166.6 fps=60
+2026-10-10T00:50:09.392 af5aef4a [V5 Net] stats tick=181942 session=none ticksMeasured=181942 tickMs p50=0.212 p95=0.483 max=48.281 rssMB=206.8 monoHeapMB=6.7 unityReservedMB=166.6 fps=60
+2026-10-10T01:00:19.843 af5aef4a [V5 Net] stats tick=200256 session=none ticksMeasured=200256 tickMs p50=0.213 p95=0.485 max=48.281 rssMB=206.8 monoHeapMB=6.5 unityReservedMB=166.6 fps=60
+2026-10-10T01:10:10.230 af5aef4a [V5 Net] stats tick=217968 session=none ticksMeasured=217968 tickMs p50=0.211 p95=0.485 max=48.281 rssMB=206.8 monoHeapMB=6.7 unityReservedMB=166.6 fps=60
+2026-10-10T01:20:10.614 af5aef4a [V5 Net] stats tick=235983 session=none ticksMeasured=235983 tickMs p50=0.210 p95=0.484 max=48.281 rssMB=206.8 monoHeapMB=7.1 unityReservedMB=166.6 fps=60
+2026-10-10T01:30:11.207 af5aef4a [V5 Net] stats tick=253998 session=none ticksMeasured=253998 tickMs p50=0.210 p95=0.485 max=48.281 rssMB=206.8 monoHeapMB=6.7 unityReservedMB=166.6 fps=60
+2026-10-10T01:40:01.696 af5aef4a [V5 Net] stats tick=271710 session=none ticksMeasured=271710 tickMs p50=0.210 p95=0.486 max=48.281 rssMB=212.6 monoHeapMB=8.7 unityReservedMB=166.6 fps=60
+2026-10-10T01:50:12.227 af5aef4a [V5 Net] stats tick=290029 session=none ticksMeasured=290029 tickMs p50=0.209 p95=0.485 max=48.281 rssMB=208.9 monoHeapMB=8.4 unityReservedMB=166.6 fps=60
+2026-10-10T02:00:12.873 af5aef4a [V5 Net] stats tick=308040 session=none ticksMeasured=308040 tickMs p50=0.207 p95=0.484 max=48.281 rssMB=209.0 monoHeapMB=8.8 unityReservedMB=166.6 fps=60
+2026-10-10T02:10:03.029 af5aef4a [V5 Net] stats tick=325755 session=none ticksMeasured=325755 tickMs p50=0.207 p95=0.486 max=48.281 rssMB=209.0 monoHeapMB=9.0 unityReservedMB=166.6 fps=60
+2026-10-10T02:20:03.568 af5aef4a [V5 Net] stats tick=343770 session=none ticksMeasured=343770 tickMs p50=0.206 p95=0.486 max=48.281 rssMB=209.0 monoHeapMB=8.6 unityReservedMB=166.6 fps=60
+2026-10-10T02:22:43.690 af5aef4a [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-10T02:22:43.690 af5aef4a [V5 Net] first inputs 1.56 s after the join; the run plays
+2026-10-10T02:22:43.690 af5aef4a [V5 Net] stats tick=348873 session=connected ticksMeasured=73 tickMs p50=0.310 p95=0.488 max=1.631 rssMB=212.0 monoHeapMB=8.6 unityReservedMB=166.6 fps=60
+2026-10-10T02:22:53.601 af5aef4a [V5 Net] stats tick=349173 session=connected ticksMeasured=373 tickMs p50=0.273 p95=0.699 max=11.318 rssMB=212.8 monoHeapMB=8.7 unityReservedMB=166.6 fps=60
+2026-10-10T02:22:54.282 af5aef4a [V5 Net] hold named 349: next unapplied 348, newest input 348, held from 349
+2026-10-10T02:22:58.863 af5aef4a [V5 Net] cards Picked: held from 349, client resume 486, next unapplied 484, resume 486
+2026-10-10T02:23:03.606 af5aef4a [V5 Net] stats tick=349473 session=connected ticksMeasured=673 tickMs p50=0.269 p95=0.702 max=11.318 rssMB=212.9 monoHeapMB=8.9 unityReservedMB=166.6 fps=60
+2026-10-10T02:23:07.704 af5aef4a [V5 Net] hold named 751: next unapplied 749, newest input 750, held from 751
+2026-10-10T02:23:09.450 af5aef4a [V5 Net] cards Picked: held from 751, client resume 805, next unapplied 803, resume 805
+2026-10-10T02:23:12.851 af5aef4a [V5 Net] hold named 906: next unapplied 903, newest input 905, held from 906
+2026-10-10T02:23:13.595 af5aef4a [V5 Net] stats tick=349773 session=connected ticksMeasured=973 tickMs p50=0.285 p95=0.709 max=11.318 rssMB=212.9 monoHeapMB=8.5 unityReservedMB=166.6 fps=60
+2026-10-10T02:23:15.851 af5aef4a [V5 Net] cards Picked: held from 906, client resume 999, next unapplied 996, resume 999
+2026-10-10T02:23:23.615 af5aef4a [V5 Net] stats tick=350073 session=connected ticksMeasured=1273 tickMs p50=0.300 p95=0.697 max=11.318 rssMB=212.9 monoHeapMB=8.6 unityReservedMB=166.6 fps=60
+2026-10-10T02:23:26.337 af5aef4a [V5 Net] hold named 1313: next unapplied 1311, newest input 1312, held from 1313
+2026-10-10T02:23:29.208 af5aef4a [V5 Net] cards Picked: held from 1313, client resume 1395, next unapplied 1392, resume 1395
+2026-10-10T02:23:33.629 af5aef4a [V5 Net] stats tick=350373 session=connected ticksMeasured=1573 tickMs p50=0.317 p95=0.738 max=11.318 rssMB=215.0 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-10T02:23:37.038 af5aef4a [V5 Net] hold named 1634: next unapplied 1632, newest input 1633, held from 1634
+2026-10-10T02:23:41.201 af5aef4a [V5 Net] cards Picked: held from 1634, client resume 1759, next unapplied 1757, resume 1759
+2026-10-10T02:23:43.737 af5aef4a [V5 Net] stats tick=350674 session=connected ticksMeasured=1874 tickMs p50=0.321 p95=0.777 max=11.318 rssMB=215.0 monoHeapMB=9.0 unityReservedMB=168.6 fps=60
+2026-10-10T02:23:51.283 af5aef4a [V5 Net] hold named 2056: next unapplied 2053, newest input 2055, held from 2056
+2026-10-10T02:23:53.500 af5aef4a [V5 Net] cards Picked: held from 2056, client resume 2129, next unapplied 2126, resume 2129
+2026-10-10T02:23:53.652 af5aef4a [V5 Net] stats tick=350974 session=connected ticksMeasured=2174 tickMs p50=0.340 p95=0.772 max=11.318 rssMB=215.0 monoHeapMB=8.6 unityReservedMB=168.6 fps=60
+2026-10-10T02:24:01.100 af5aef4a [V5 Net] hold named 2354: next unapplied 2352, newest input 2353, held from 2354
+2026-10-10T02:24:03.681 af5aef4a [V5 Net] stats tick=351274 session=connected ticksMeasured=2474 tickMs p50=0.348 p95=0.762 max=11.318 rssMB=215.0 monoHeapMB=8.7 unityReservedMB=168.6 fps=60
+2026-10-10T02:24:04.341 af5aef4a [V5 Net] player away (page hidden): the voyage holds
+2026-10-10T02:24:13.632 af5aef4a [V5 Net] stats tick=351574 session=connected ticksMeasured=2774 tickMs p50=0.316 p95=0.738 max=11.318 rssMB=215.0 monoHeapMB=8.7 unityReservedMB=168.6 fps=60
+2026-10-10T02:24:21.296 af5aef4a [V5 Net] player back after 17.0 s away: the voyage plays on
+2026-10-10T02:24:23.547 af5aef4a [V5 Net] cards Picked: held from 2354, client resume 2468, next unapplied 2466, resume 2468
+2026-10-10T02:24:23.682 af5aef4a [V5 Net] stats tick=351874 session=connected ticksMeasured=3074 tickMs p50=0.278 p95=0.720 max=11.318 rssMB=215.0 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-10T02:24:33.657 af5aef4a [V5 Net] stats tick=352174 session=connected ticksMeasured=3374 tickMs p50=0.317 p95=0.741 max=11.318 rssMB=215.2 monoHeapMB=9.0 unityReservedMB=168.6 fps=60
+2026-10-10T02:24:35.902 af5aef4a [V5 Net] hold named 2839: next unapplied 2837, newest input 2838, held from 2839
+2026-10-10T02:24:38.738 af5aef4a [V5 Net] cards Picked: held from 2839, client resume 2920, next unapplied 2919, resume 2920
+2026-10-10T02:24:43.725 af5aef4a [V5 Net] stats tick=352474 session=connected ticksMeasured=3674 tickMs p50=0.332 p95=0.764 max=11.318 rssMB=215.2 monoHeapMB=8.6 unityReservedMB=168.6 fps=60
+2026-10-10T02:24:52.056 af5aef4a [V5 Net] hold named 3319: next unapplied 3318, newest input 3318, held from 3319
+2026-10-10T02:24:53.665 af5aef4a [V5 Net] stats tick=352775 session=connected ticksMeasured=3975 tickMs p50=0.345 p95=0.830 max=11.318 rssMB=215.2 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-10T02:24:53.700 af5aef4a [V5 Net] cards Picked: held from 3319, client resume 3373, next unapplied 3371, resume 3373
+2026-10-10T02:25:02.686 af5aef4a [V5 Net] hold named 3643: next unapplied 3641, newest input 3642, held from 3643
+2026-10-10T02:25:03.656 af5aef4a [V5 Net] stats tick=353075 session=connected ticksMeasured=4275 tickMs p50=0.361 p95=0.882 max=11.318 rssMB=215.3 monoHeapMB=9.0 unityReservedMB=168.6 fps=60
+2026-10-10T02:25:04.330 af5aef4a [V5 Net] cards Picked: held from 3643, client resume 3692, next unapplied 3690, resume 3692
+2026-10-10T02:25:10.811 af5aef4a [V5 Net] chest choice skipped (not mirrored to the client until M9c): 1 so far
+2026-10-10T02:25:13.652 af5aef4a [V5 Net] stats tick=353375 session=connected ticksMeasured=4575 tickMs p50=0.378 p95=0.907 max=11.318 rssMB=215.3 monoHeapMB=8.7 unityReservedMB=168.6 fps=60
+2026-10-10T02:25:15.069 af5aef4a [V5 Net] chest choice skipped (not mirrored to the client until M9c): 2 so far
+2026-10-10T02:25:21.704 af5aef4a [V5 Net] hold named 4206: next unapplied 4204, newest input 4205, held from 4206
+2026-10-10T02:25:23.605 af5aef4a [V5 Net] cards Picked: held from 4206, client resume 4269, next unapplied 4267, resume 4269
+2026-10-10T02:25:23.674 af5aef4a [V5 Net] stats tick=353675 session=connected ticksMeasured=4875 tickMs p50=0.383 p95=0.910 max=11.318 rssMB=215.3 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-10T02:25:26.894 af5aef4a [V5 Net] chest choice skipped (not mirrored to the client until M9c): 3 so far
+2026-10-10T02:25:33.675 af5aef4a [V5 Net] stats tick=353976 session=connected ticksMeasured=5176 tickMs p50=0.397 p95=0.934 max=11.318 rssMB=215.4 monoHeapMB=9.0 unityReservedMB=168.6 fps=60
+2026-10-10T02:25:34.324 af5aef4a [V5 Net] chest choice skipped (not mirrored to the client until M9c): 4 so far
+2026-10-10T02:25:40.804 af5aef4a [V5 Net] chest choice skipped (not mirrored to the client until M9c): 5 so far
+2026-10-10T02:25:43.731 af5aef4a [V5 Net] stats tick=354276 session=connected ticksMeasured=5476 tickMs p50=0.411 p95=0.952 max=11.318 rssMB=215.4 monoHeapMB=8.7 unityReservedMB=168.6 fps=60
+2026-10-10T02:25:46.613 af5aef4a [V5 Net] chest choice skipped (not mirrored to the client until M9c): 6 so far
+2026-10-10T02:25:47.387 af5aef4a [V5 Net] hold named 4983: next unapplied 4982, newest input 4982, held from 4983
+2026-10-10T02:25:51.313 af5aef4a [V5 Net] player away (page hidden): the voyage holds
+2026-10-10T02:25:53.771 af5aef4a [V5 Net] stats tick=354576 session=connected ticksMeasured=5776 tickMs p50=0.406 p95=0.952 max=11.318 rssMB=215.5 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-10T02:26:03.705 af5aef4a [V5 Net] stats tick=354877 session=connected ticksMeasured=6077 tickMs p50=0.392 p95=0.946 max=11.318 rssMB=215.5 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-10T02:26:23.756 af5aef4a [V5 Net] stats tick=355177 session=connected ticksMeasured=6377 tickMs p50=0.377 p95=0.937 max=11.318 rssMB=215.5 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-10T02:26:23.756 af5aef4a [V5 Net] stats tick=355477 session=connected ticksMeasured=6677 tickMs p50=0.359 p95=0.929 max=11.318 rssMB=215.5 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-10T02:26:26.877 af5aef4a [V5 Net] player back after 35.6 s away: the voyage plays on
+2026-10-10T02:26:28.314 af5aef4a [V5 Net] cards Picked: held from 4983, client resume 5092, next unapplied 5090, resume 5092
+2026-10-10T02:26:33.795 af5aef4a [V5 Net] stats tick=355777 session=connected ticksMeasured=6977 tickMs p50=0.359 p95=0.928 max=11.318 rssMB=215.5 monoHeapMB=8.9 unityReservedMB=168.6 fps=60
+2026-10-10T02:26:42.307 af5aef4a [V5 Net] chest choice skipped (not mirrored to the client until M9c): 7 so far
+2026-10-10T02:26:43.719 af5aef4a [V5 Net] stats tick=356077 session=connected ticksMeasured=7277 tickMs p50=0.366 p95=0.922 max=11.318 rssMB=215.5 monoHeapMB=9.1 unityReservedMB=168.6 fps=60
+2026-10-10T02:27:03.743 af5aef4a [V5 Net] stats tick=356377 session=connected ticksMeasured=7577 tickMs p50=0.371 p95=0.928 max=11.318 rssMB=215.5 monoHeapMB=8.7 unityReservedMB=168.6 fps=60
+2026-10-10T02:27:03.743 af5aef4a [V5 Net] stats tick=356677 session=connected ticksMeasured=7877 tickMs p50=0.367 p95=0.922 max=11.318 rssMB=215.5 monoHeapMB=8.9 unityReservedMB=168.6 fps=60
+2026-10-10T02:27:05.785 af5aef4a [V5 Net] hold named 6216: next unapplied 6215, newest input 6215, held from 6216
+2026-10-10T02:27:09.632 af5aef4a [V5 Net] cards Picked: held from 6216, client resume 6332, next unapplied 6330, resume 6332
+2026-10-10T02:27:10.433 af5aef4a [V5 Net] hold named 6355: next unapplied 6354, newest input 6354, held from 6355
+2026-10-10T02:27:13.770 af5aef4a [V5 Net] stats tick=356977 session=connected ticksMeasured=8177 tickMs p50=0.358 p95=0.917 max=11.318 rssMB=215.5 monoHeapMB=9.0 unityReservedMB=168.6 fps=60
+2026-10-10T02:27:16.582 af5aef4a [V5 Net] cards Picked: held from 6355, client resume 6541, next unapplied 6539, resume 6541
+2026-10-10T02:27:22.998 af5aef4a [V5 Net] hold named 6733: next unapplied 6731, newest input 6732, held from 6733
+2026-10-10T02:27:23.845 af5aef4a [V5 Net] stats tick=357277 session=connected ticksMeasured=8477 tickMs p50=0.360 p95=0.914 max=11.318 rssMB=215.4 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-10T02:27:24.603 af5aef4a [V5 Net] cards Picked: held from 6733, client resume 6779, next unapplied 6777, resume 6779
+2026-10-10T02:27:29.191 af5aef4a [V5 Net] chest choice skipped (not mirrored to the client until M9c): 8 so far
+2026-10-10T02:27:33.988 af5aef4a [V5 Net] stats tick=357578 session=connected ticksMeasured=8778 tickMs p50=0.363 p95=0.915 max=11.318 rssMB=215.5 monoHeapMB=8.9 unityReservedMB=168.6 fps=60
+2026-10-10T02:27:34.610 af5aef4a [V5 Net] chest choice skipped (not mirrored to the client until M9c): 9 so far
+2026-10-10T02:27:43.761 af5aef4a [V5 Net] stats tick=357878 session=connected ticksMeasured=9078 tickMs p50=0.371 p95=0.913 max=11.318 rssMB=215.5 monoHeapMB=9.1 unityReservedMB=168.6 fps=60
+2026-10-10T02:27:53.279 af5aef4a [V5 Net] player away (page hidden): the voyage holds
+2026-10-10T02:27:53.760 af5aef4a [V5 Net] stats tick=358178 session=connected ticksMeasured=9378 tickMs p50=0.373 p95=0.914 max=11.318 rssMB=215.5 monoHeapMB=9.2 unityReservedMB=168.6 fps=60
+2026-10-10T02:28:13.853 af5aef4a [V5 Net] stats tick=358779 session=connected ticksMeasured=9979 tickMs p50=0.368 p95=0.906 max=11.318 rssMB=215.6 monoHeapMB=8.8 unityReservedMB=168.6 fps=60
+2026-10-10T02:28:13.853 af5aef4a [V5 Net] stats tick=358478 session=connected ticksMeasured=9678 tickMs p50=0.372 p95=0.910 max=11.318 rssMB=215.5 monoHeapMB=9.3 unityReservedMB=168.6 fps=60
+2026-10-10T02:28:33.742 af5aef4a [V5 Net] stats tick=359079 session=connected ticksMeasured=10279 tickMs p50=0.370 p95=0.902 max=11.318 rssMB=215.6 monoHeapMB=8.9 unityReservedMB=168.6 fps=60
+2026-10-10T02:28:33.742 af5aef4a [V5 Net] player back after 34.9 s away: the voyage plays on
+2026-10-10T02:28:33.811 af5aef4a [V5 Net] stats tick=359379 session=detached ticksMeasured=10579 tickMs p50=0.372 p95=0.908 max=11.318 rssMB=216.0 monoHeapMB=9.0 unityReservedMB=168.6 fps=60
+2026-10-10T02:28:53.780 af5aef4a [V5 Net] stats tick=359679 session=detached ticksMeasured=10879 tickMs p50=0.373 p95=0.906 max=11.318 rssMB=216.0 monoHeapMB=9.2 unityReservedMB=168.6 fps=60
+2026-10-10T02:28:53.798 af5aef4a [V5 Net] stats tick=359979 session=detached ticksMeasured=11179 tickMs p50=0.379 p95=0.907 max=11.318 rssMB=216.0 monoHeapMB=9.4 unityReservedMB=168.6 fps=60
+2026-10-10T02:28:58.797 af5aef4a [V5 Net] session expired (no resume in time)
+2026-10-10T02:29:02.050 af5aef4a [V5 Net] closing: session expired
+2026-10-10T02:29:02.347 af5aef4a [V5 Net] final tick=360235 session=detached ticksMeasured=11435 tickMs p50=0.382 p95=0.914 max=11.318 rssMB=216.2 monoHeapMB=9.5 unityReservedMB=168.6 fps=60
+2026-10-10T02:29:02.347 af5aef4a [V5 Net] EXIT session expired
+2026-10-10T02:29:04.004 af5aef4a [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.73 s in the process (run held until a player joins: True)
+2026-10-10T02:30:14.042 af5aef4a [V5 Net] stats tick=1800 session=none ticksMeasured=1800 tickMs p50=0.191 p95=0.485 max=5.713 rssMB=203.1 monoHeapMB=4.9 unityReservedMB=164.6 fps=60
+2026-10-10T02:40:04.325 af5aef4a [V5 Net] stats tick=19509 session=none ticksMeasured=19509 tickMs p50=0.204 p95=0.499 max=10.579 rssMB=205.4 monoHeapMB=5.8 unityReservedMB=166.6 fps=60
+2026-10-10T02:50:04.475 af5aef4a [V5 Net] stats tick=37518 session=none ticksMeasured=37518 tickMs p50=0.206 p95=0.483 max=11.481 rssMB=205.3 monoHeapMB=5.2 unityReservedMB=166.6 fps=60
+2026-10-10T03:00:04.912 af5aef4a [V5 Net] stats tick=55527 session=none ticksMeasured=55527 tickMs p50=0.203 p95=0.475 max=26.300 rssMB=205.3 monoHeapMB=5.1 unityReservedMB=166.6 fps=60
+2026-10-10T03:10:15.216 af5aef4a [V5 Net] stats tick=73841 session=none ticksMeasured=73841 tickMs p50=0.201 p95=0.474 max=26.922 rssMB=206.0 monoHeapMB=5.4 unityReservedMB=166.6 fps=60
+2026-10-10T03:20:15.864 af5aef4a [V5 Net] stats tick=91857 session=none ticksMeasured=91857 tickMs p50=0.200 p95=0.477 max=32.080 rssMB=205.5 monoHeapMB=5.5 unityReservedMB=166.6 fps=60
+2026-10-10T03:30:15.793 af5aef4a [V5 Net] stats tick=109869 session=none ticksMeasured=109869 tickMs p50=0.196 p95=0.470 max=44.375 rssMB=205.5 monoHeapMB=5.6 unityReservedMB=166.6 fps=59
+2026-10-10T03:40:06.765 af5aef4a [V5 Net] stats tick=127584 session=none ticksMeasured=127584 tickMs p50=0.196 p95=0.471 max=44.375 rssMB=205.5 monoHeapMB=5.5 unityReservedMB=166.6 fps=60
+2026-10-10T03:50:07.504 af5aef4a [V5 Net] stats tick=145603 session=none ticksMeasured=145603 tickMs p50=0.200 p95=0.479 max=46.225 rssMB=206.5 monoHeapMB=6.5 unityReservedMB=166.6 fps=60
+2026-10-10T04:00:17.778 af5aef4a [V5 Net] stats tick=163914 session=none ticksMeasured=163914 tickMs p50=0.198 p95=0.478 max=48.310 rssMB=206.5 monoHeapMB=7.0 unityReservedMB=166.6 fps=60
+2026-10-10T04:10:18.288 af5aef4a [V5 Net] stats tick=181930 session=none ticksMeasured=181930 tickMs p50=0.197 p95=0.476 max=48.310 rssMB=206.5 monoHeapMB=6.7 unityReservedMB=166.6 fps=60
+2026-10-10T04:20:08.687 af5aef4a [V5 Net] stats tick=199646 session=none ticksMeasured=199646 tickMs p50=0.196 p95=0.472 max=48.310 rssMB=206.5 monoHeapMB=6.9 unityReservedMB=166.6 fps=60
+2026-10-10T04:30:09.189 af5aef4a [V5 Net] stats tick=217957 session=none ticksMeasured=217957 tickMs p50=0.194 p95=0.468 max=48.310 rssMB=206.5 monoHeapMB=6.7 unityReservedMB=166.6 fps=60
+2026-10-10T04:40:19.691 af5aef4a [V5 Net] stats tick=235972 session=none ticksMeasured=235972 tickMs p50=0.192 p95=0.465 max=48.310 rssMB=206.6 monoHeapMB=7.1 unityReservedMB=166.6 fps=60
+2026-10-10T04:50:00.171 af5aef4a [V5 Net] stats tick=253387 session=none ticksMeasured=253387 tickMs p50=0.191 p95=0.462 max=48.310 rssMB=206.6 monoHeapMB=6.4 unityReservedMB=166.6 fps=60
+2026-10-10T05:00:00.542 af5aef4a [V5 Net] stats tick=271398 session=none ticksMeasured=271398 tickMs p50=0.190 p95=0.459 max=48.310 rssMB=212.4 monoHeapMB=8.5 unityReservedMB=166.6 fps=60
+2026-10-10T05:10:01.060 af5aef4a [V5 Net] stats tick=289415 session=none ticksMeasured=289415 tickMs p50=0.190 p95=0.457 max=48.310 rssMB=208.6 monoHeapMB=8.9 unityReservedMB=166.6 fps=60
+2026-10-10T05:12:43.770 d8a71191 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.89 s in the process (run held until a player joins: True)
+2026-10-10T05:12:46.223 af5aef4a [V5 Net] closing: SIGTERM (stop file)
+2026-10-10T05:12:46.771 af5aef4a [V5 Net] final tick=294683 session=none ticksMeasured=294683 tickMs p50=0.191 p95=0.457 max=48.310 rssMB=208.7 monoHeapMB=9.0 unityReservedMB=166.6 fps=60
+2026-10-10T05:12:46.771 af5aef4a [V5 Net] EXIT SIGTERM (stop file)
+2026-10-10T05:12:53.489 d8a71191 [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-10T05:12:53.875 d8a71191 [V5 Net] stats tick=299 session=connected ticksMeasured=9 tickMs p50=0.474 p95=1.854 max=2.707 rssMB=191.6 monoHeapMB=4.9 unityReservedMB=164.6 fps=60
+2026-10-10T05:12:53.875 d8a71191 [V5 Net] first inputs 0.37 s after the join; the run plays
+2026-10-10T05:13:03.784 d8a71191 [V5 Net] stats tick=599 session=connected ticksMeasured=309 tickMs p50=0.694 p95=1.567 max=13.891 rssMB=192.4 monoHeapMB=5.1 unityReservedMB=164.6 fps=60
+2026-10-10T05:13:13.217 d8a71191 [V5 Net] hold named 583: next unapplied 582, newest input 582, held from 583
+2026-10-10T05:13:13.623 d8a71191 [V5 Net] cards Picked: held from 583, client resume 595, next unapplied 594, resume 595
+2026-10-10T05:13:13.790 d8a71191 [V5 Net] stats tick=899 session=connected ticksMeasured=609 tickMs p50=0.722 p95=1.299 max=13.891 rssMB=194.6 monoHeapMB=4.8 unityReservedMB=166.6 fps=60
+2026-10-10T05:13:33.760 d8a71191 [V5 Net] stats tick=1199 session=connected ticksMeasured=909 tickMs p50=0.751 p95=1.227 max=13.891 rssMB=194.6 monoHeapMB=5.0 unityReservedMB=166.6 fps=60
+2026-10-10T05:13:33.760 d8a71191 [V5 Net] hold named 991: next unapplied 991, newest input 990, held from 991
+2026-10-10T05:13:33.760 d8a71191 [V5 Net] cards Picked: held from 991, client resume 1004, next unapplied 1003, resume 1004
+2026-10-10T05:13:33.760 d8a71191 [V5 Net] hold named 1079: next unapplied 1078, newest input 1078, held from 1079
+2026-10-10T05:13:33.760 d8a71191 [V5 Net] cards Picked: held from 1079, client resume 1091, next unapplied 1090, resume 1091
+2026-10-10T05:13:33.804 d8a71191 [V5 Net] stats tick=1499 session=connected ticksMeasured=1209 tickMs p50=0.770 p95=1.212 max=13.891 rssMB=196.6 monoHeapMB=5.2 unityReservedMB=168.6 fps=60
+2026-10-10T05:13:53.789 d8a71191 [V5 Net] stats tick=1800 session=connected ticksMeasured=1510 tickMs p50=0.802 p95=1.172 max=13.891 rssMB=196.6 monoHeapMB=4.9 unityReservedMB=168.6 fps=60
+2026-10-10T05:13:53.789 d8a71191 [V5 Net] hold named 1459: next unapplied 1459, newest input 1458, held from 1459
+2026-10-10T05:13:53.789 d8a71191 [V5 Net] cards Picked: held from 1459, client resume 1472, next unapplied 1471, resume 1472
+2026-10-10T05:13:53.829 d8a71191 [V5 Net] stats tick=2100 session=connected ticksMeasured=1810 tickMs p50=0.822 p95=1.168 max=13.891 rssMB=196.6 monoHeapMB=5.1 unityReservedMB=168.6 fps=60
+2026-10-10T05:14:03.828 d8a71191 [V5 Net] stats tick=2400 session=connected ticksMeasured=2110 tickMs p50=0.832 p95=1.199 max=13.891 rssMB=196.6 monoHeapMB=5.3 unityReservedMB=168.6 fps=60
+2026-10-10T05:14:07.965 d8a71191 [V5 Net] closing: voyage ended (Sunk)
+2026-10-10T05:14:08.675 d8a71191 [V5 Net] final tick=2540 session=detached ticksMeasured=2250 tickMs p50=0.826 p95=1.199 max=33.319 rssMB=197.8 monoHeapMB=5.9 unityReservedMB=168.6 fps=60
+2026-10-10T05:14:08.675 d8a71191 [V5 Net] EXIT voyage ended (Sunk)
+2026-10-10T05:14:10.720 d8a71191 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.95 s in the process (run held until a player joins: True)
+2026-10-10T05:14:20.602 d8a71191 [V5 Net] stats tick=298 session=none ticksMeasured=298 tickMs p50=0.498 p95=0.607 max=2.918 rssMB=190.4 monoHeapMB=4.9 unityReservedMB=164.6 fps=60
+2026-10-10T05:20:00.884 d8a71191 [V5 Net] stats tick=10207 session=none ticksMeasured=10207 tickMs p50=0.509 p95=0.639 max=9.155 rssMB=190.8 monoHeapMB=5.6 unityReservedMB=164.6 fps=60
+2026-10-10T05:30:11.481 d8a71191 [V5 Net] stats tick=28525 session=none ticksMeasured=28525 tickMs p50=0.508 p95=0.632 max=14.731 rssMB=192.8 monoHeapMB=5.0 unityReservedMB=166.6 fps=60
+2026-10-10T05:40:12.000 d8a71191 [V5 Net] stats tick=46540 session=none ticksMeasured=46540 tickMs p50=0.503 p95=0.624 max=21.833 rssMB=201.8 monoHeapMB=5.5 unityReservedMB=166.6 fps=60
+2026-10-10T05:50:02.495 d8a71191 [V5 Net] stats tick=64257 session=none ticksMeasured=64257 tickMs p50=0.498 p95=0.616 max=30.409 rssMB=201.8 monoHeapMB=5.4 unityReservedMB=166.6 fps=60
+2026-10-10T06:00:13.069 d8a71191 [V5 Net] stats tick=82572 session=none ticksMeasured=82572 tickMs p50=0.493 p95=0.610 max=40.876 rssMB=202.1 monoHeapMB=5.4 unityReservedMB=166.6 fps=60
+2026-10-10T06:10:03.581 d8a71191 [V5 Net] stats tick=100288 session=none ticksMeasured=100288 tickMs p50=0.495 p95=0.612 max=45.954 rssMB=202.1 monoHeapMB=6.1 unityReservedMB=166.6 fps=60
+2026-10-10T06:20:04.048 d8a71191 [V5 Net] stats tick=118301 session=none ticksMeasured=118301 tickMs p50=0.495 p95=0.612 max=47.388 rssMB=202.1 monoHeapMB=5.5 unityReservedMB=166.6 fps=60
+2026-10-10T06:30:04.477 d8a71191 [V5 Net] stats tick=136314 session=none ticksMeasured=136314 tickMs p50=0.494 p95=0.612 max=47.388 rssMB=204.0 monoHeapMB=6.6 unityReservedMB=166.6 fps=60
+2026-10-10T06:40:15.019 d8a71191 [V5 Net] stats tick=154630 session=none ticksMeasured=154630 tickMs p50=0.494 p95=0.611 max=47.388 rssMB=203.0 monoHeapMB=7.1 unityReservedMB=166.6 fps=60
+2026-10-10T06:50:15.521 d8a71191 [V5 Net] stats tick=172645 session=none ticksMeasured=172645 tickMs p50=0.493 p95=0.611 max=47.388 rssMB=203.0 monoHeapMB=6.8 unityReservedMB=166.6 fps=60
+2026-10-10T07:00:05.941 d8a71191 [V5 Net] stats tick=190359 session=none ticksMeasured=190359 tickMs p50=0.493 p95=0.611 max=47.388 rssMB=203.0 monoHeapMB=7.0 unityReservedMB=166.6 fps=60
+2026-10-10T07:10:06.477 d8a71191 [V5 Net] stats tick=208373 session=none ticksMeasured=208373 tickMs p50=0.494 p95=0.613 max=47.388 rssMB=203.0 monoHeapMB=6.6 unityReservedMB=166.6 fps=59
+2026-10-10T07:20:16.669 d8a71191 [V5 Net] stats tick=226688 session=none ticksMeasured=226688 tickMs p50=0.493 p95=0.613 max=47.388 rssMB=203.0 monoHeapMB=7.1 unityReservedMB=166.6 fps=60
+2026-10-10T07:30:17.443 d8a71191 [V5 Net] stats tick=244702 session=none ticksMeasured=244702 tickMs p50=0.493 p95=0.613 max=47.388 rssMB=203.0 monoHeapMB=6.7 unityReservedMB=166.6 fps=60
+2026-10-10T07:40:07.883 d8a71191 [V5 Net] stats tick=262415 session=none ticksMeasured=262415 tickMs p50=0.493 p95=0.613 max=47.388 rssMB=208.4 monoHeapMB=8.4 unityReservedMB=166.6 fps=60
+2026-10-10T07:50:18.392 d8a71191 [V5 Net] stats tick=280730 session=none ticksMeasured=280730 tickMs p50=0.493 p95=0.614 max=47.388 rssMB=205.2 monoHeapMB=8.9 unityReservedMB=166.6 fps=60
+2026-10-10T08:00:18.763 d8a71191 [V5 Net] stats tick=298740 session=none ticksMeasured=298740 tickMs p50=0.493 p95=0.614 max=47.388 rssMB=205.2 monoHeapMB=8.4 unityReservedMB=166.6 fps=60
+2026-10-10T08:10:19.192 d8a71191 [V5 Net] stats tick=316753 session=none ticksMeasured=316753 tickMs p50=0.493 p95=0.614 max=47.388 rssMB=205.2 monoHeapMB=8.8 unityReservedMB=166.6 fps=60
+2026-10-10T08:20:09.626 d8a71191 [V5 Net] stats tick=334466 session=none ticksMeasured=334466 tickMs p50=0.493 p95=0.615 max=47.388 rssMB=205.2 monoHeapMB=9.0 unityReservedMB=166.6 fps=60
+2026-10-10T08:30:10.007 d8a71191 [V5 Net] stats tick=352479 session=none ticksMeasured=352479 tickMs p50=0.494 p95=0.616 max=47.388 rssMB=205.2 monoHeapMB=8.5 unityReservedMB=166.6 fps=60
+2026-10-10T08:40:00.528 d8a71191 [V5 Net] stats tick=370193 session=none ticksMeasured=370193 tickMs p50=0.494 p95=0.617 max=47.388 rssMB=205.2 monoHeapMB=8.8 unityReservedMB=166.6 fps=60
+2026-10-10T08:50:01.049 d8a71191 [V5 Net] stats tick=388508 session=none ticksMeasured=388508 tickMs p50=0.494 p95=0.618 max=47.388 rssMB=205.2 monoHeapMB=8.4 unityReservedMB=166.6 fps=60
+2026-10-10T09:00:01.700 d8a71191 [V5 Net] stats tick=406223 session=none ticksMeasured=406223 tickMs p50=0.495 p95=0.619 max=47.388 rssMB=205.2 monoHeapMB=8.6 unityReservedMB=166.6 fps=60
+2026-10-10T09:10:11.996 d8a71191 [V5 Net] stats tick=424536 session=none ticksMeasured=424536 tickMs p50=0.495 p95=0.620 max=47.388 rssMB=205.2 monoHeapMB=9.1 unityReservedMB=166.6 fps=60
+2026-10-10T09:20:12.271 d8a71191 [V5 Net] stats tick=442551 session=none ticksMeasured=442551 tickMs p50=0.496 p95=0.622 max=47.388 rssMB=205.2 monoHeapMB=8.6 unityReservedMB=166.6 fps=60
+2026-10-10T09:30:13.012 d8a71191 [V5 Net] stats tick=460566 session=none ticksMeasured=460566 tickMs p50=0.496 p95=0.623 max=47.388 rssMB=205.2 monoHeapMB=8.9 unityReservedMB=166.6 fps=60
+2026-10-10T09:40:13.543 d8a71191 [V5 Net] stats tick=478583 session=none ticksMeasured=478583 tickMs p50=0.497 p95=0.624 max=47.388 rssMB=205.2 monoHeapMB=8.4 unityReservedMB=166.6 fps=60
+2026-10-10T09:50:04.017 d8a71191 [V5 Net] stats tick=496596 session=none ticksMeasured=496596 tickMs p50=0.497 p95=0.625 max=47.388 rssMB=205.2 monoHeapMB=8.8 unityReservedMB=166.6 fps=60
+2026-10-10T10:00:14.408 d8a71191 [V5 Net] stats tick=514607 session=none ticksMeasured=514607 tickMs p50=0.498 p95=0.627 max=47.388 rssMB=205.2 monoHeapMB=9.1 unityReservedMB=166.6 fps=60
+2026-10-10T10:10:14.472 d8a71191 [V5 Net] stats tick=532617 session=none ticksMeasured=532617 tickMs p50=0.499 p95=0.630 max=47.388 rssMB=213.4 monoHeapMB=13.3 unityReservedMB=166.6 fps=60
+2026-10-10T10:20:15.093 d8a71191 [V5 Net] stats tick=550628 session=none ticksMeasured=550628 tickMs p50=0.500 p95=0.633 max=47.388 rssMB=209.5 monoHeapMB=13.1 unityReservedMB=166.6 fps=60
+2026-10-10T10:30:15.394 d8a71191 [V5 Net] stats tick=568642 session=none ticksMeasured=568642 tickMs p50=0.501 p95=0.635 max=47.388 rssMB=209.5 monoHeapMB=12.9 unityReservedMB=166.6 fps=60
+2026-10-10T10:40:15.983 d8a71191 [V5 Net] stats tick=586655 session=none ticksMeasured=586655 tickMs p50=0.501 p95=0.636 max=47.388 rssMB=209.5 monoHeapMB=12.7 unityReservedMB=166.6 fps=60
+2026-10-10T10:50:06.435 d8a71191 [V5 Net] stats tick=604667 session=none ticksMeasured=604667 tickMs p50=0.501 p95=0.637 max=47.388 rssMB=209.5 monoHeapMB=12.5 unityReservedMB=166.6 fps=60
+2026-10-10T11:00:16.888 d8a71191 [V5 Net] stats tick=622682 session=none ticksMeasured=622682 tickMs p50=0.501 p95=0.637 max=47.388 rssMB=209.5 monoHeapMB=13.2 unityReservedMB=166.6 fps=60
+2026-10-10T11:10:07.274 d8a71191 [V5 Net] stats tick=640394 session=none ticksMeasured=640394 tickMs p50=0.501 p95=0.638 max=47.388 rssMB=209.5 monoHeapMB=12.9 unityReservedMB=166.6 fps=60
+2026-10-10T11:20:07.779 d8a71191 [V5 Net] stats tick=658408 session=none ticksMeasured=658408 tickMs p50=0.501 p95=0.639 max=47.388 rssMB=209.5 monoHeapMB=12.6 unityReservedMB=166.6 fps=60
+2026-10-10T11:30:08.232 d8a71191 [V5 Net] stats tick=676421 session=none ticksMeasured=676421 tickMs p50=0.501 p95=0.639 max=47.388 rssMB=209.5 monoHeapMB=12.4 unityReservedMB=166.6 fps=60
+2026-10-10T11:40:08.694 d8a71191 [V5 Net] stats tick=694435 session=none ticksMeasured=694435 tickMs p50=0.501 p95=0.640 max=47.388 rssMB=209.5 monoHeapMB=13.1 unityReservedMB=166.6 fps=60
+2026-10-10T11:50:18.945 d8a71191 [V5 Net] stats tick=712747 session=none ticksMeasured=712747 tickMs p50=0.501 p95=0.641 max=47.388 rssMB=209.5 monoHeapMB=13.0 unityReservedMB=166.6 fps=60
+2026-10-10T12:00:09.581 d8a71191 [V5 Net] stats tick=730760 session=none ticksMeasured=730760 tickMs p50=0.501 p95=0.642 max=47.388 rssMB=209.5 monoHeapMB=12.8 unityReservedMB=166.6 fps=60
+2026-10-10T12:10:10.021 d8a71191 [V5 Net] stats tick=748473 session=none ticksMeasured=748473 tickMs p50=0.501 p95=0.643 max=47.388 rssMB=209.5 monoHeapMB=13.4 unityReservedMB=166.6 fps=60
+2026-10-10T12:20:10.464 d8a71191 [V5 Net] stats tick=766487 session=none ticksMeasured=766487 tickMs p50=0.501 p95=0.644 max=47.388 rssMB=209.5 monoHeapMB=13.1 unityReservedMB=166.6 fps=60
+2026-10-10T12:30:10.896 d8a71191 [V5 Net] stats tick=784499 session=none ticksMeasured=784499 tickMs p50=0.502 p95=0.644 max=47.388 rssMB=209.5 monoHeapMB=12.8 unityReservedMB=166.6 fps=60
+2026-10-10T12:40:11.296 d8a71191 [V5 Net] stats tick=802510 session=none ticksMeasured=802510 tickMs p50=0.502 p95=0.646 max=47.388 rssMB=209.5 monoHeapMB=12.5 unityReservedMB=166.6 fps=60
+2026-10-10T12:50:01.711 d8a71191 [V5 Net] stats tick=820223 session=none ticksMeasured=820223 tickMs p50=0.502 p95=0.647 max=48.428 rssMB=209.5 monoHeapMB=13.1 unityReservedMB=166.6 fps=60
+2026-10-10T13:00:01.939 d8a71191 [V5 Net] stats tick=838236 session=none ticksMeasured=838236 tickMs p50=0.503 p95=0.648 max=48.428 rssMB=209.5 monoHeapMB=12.8 unityReservedMB=166.6 fps=60
+2026-10-10T13:10:02.595 d8a71191 [V5 Net] stats tick=856550 session=none ticksMeasured=856550 tickMs p50=0.503 p95=0.649 max=49.371 rssMB=209.5 monoHeapMB=12.7 unityReservedMB=166.6 fps=60
+2026-10-10T13:20:13.042 d8a71191 [V5 Net] stats tick=874564 session=none ticksMeasured=874564 tickMs p50=0.503 p95=0.650 max=50.604 rssMB=209.5 monoHeapMB=12.4 unityReservedMB=166.6 fps=60
+2026-10-10T13:30:03.586 d8a71191 [V5 Net] stats tick=892277 session=none ticksMeasured=892277 tickMs p50=0.503 p95=0.651 max=52.832 rssMB=209.5 monoHeapMB=12.9 unityReservedMB=166.6 fps=60
+2026-10-10T13:40:13.997 d8a71191 [V5 Net] stats tick=910592 session=none ticksMeasured=910592 tickMs p50=0.504 p95=0.652 max=56.268 rssMB=209.5 monoHeapMB=12.8 unityReservedMB=166.6 fps=60
+2026-10-10T13:50:14.197 d8a71191 [V5 Net] stats tick=928604 session=none ticksMeasured=928604 tickMs p50=0.504 p95=0.653 max=56.268 rssMB=209.5 monoHeapMB=12.5 unityReservedMB=166.6 fps=60
+2026-10-10T14:00:04.742 d8a71191 [V5 Net] stats tick=946315 session=none ticksMeasured=946315 tickMs p50=0.504 p95=0.653 max=56.268 rssMB=209.5 monoHeapMB=13.1 unityReservedMB=166.6 fps=60
+2026-10-10T14:10:05.249 d8a71191 [V5 Net] stats tick=964329 session=none ticksMeasured=964329 tickMs p50=0.504 p95=0.654 max=56.268 rssMB=209.5 monoHeapMB=12.8 unityReservedMB=166.6 fps=60
+2026-10-10T14:20:15.772 d8a71191 [V5 Net] stats tick=982645 session=none ticksMeasured=982645 tickMs p50=0.504 p95=0.656 max=56.962 rssMB=209.5 monoHeapMB=12.6 unityReservedMB=166.6 fps=60
+2026-10-10T14:30:05.907 d8a71191 [V5 Net] stats tick=1000356 session=none ticksMeasured=1000356 tickMs p50=0.505 p95=0.657 max=62.924 rssMB=209.5 monoHeapMB=13.1 unityReservedMB=166.6 fps=60
+2026-10-10T14:40:16.626 d8a71191 [V5 Net] stats tick=1018669 session=none ticksMeasured=1018669 tickMs p50=0.505 p95=0.658 max=62.924 rssMB=209.5 monoHeapMB=12.9 unityReservedMB=166.6 fps=60
+2026-10-10T14:50:06.840 d8a71191 [V5 Net] stats tick=1036380 session=none ticksMeasured=1036380 tickMs p50=0.505 p95=0.658 max=62.924 rssMB=209.5 monoHeapMB=12.5 unityReservedMB=166.6 fps=60
+2026-10-10T15:00:17.384 d8a71191 [V5 Net] stats tick=1054692 session=none ticksMeasured=1054692 tickMs p50=0.505 p95=0.659 max=63.598 rssMB=229.7 monoHeapMB=20.7 unityReservedMB=166.6 fps=60
+2026-10-10T15:10:07.794 d8a71191 [V5 Net] stats tick=1072703 session=none ticksMeasured=1072703 tickMs p50=0.505 p95=0.659 max=63.864 rssMB=218.2 monoHeapMB=21.5 unityReservedMB=166.6 fps=60
+2026-10-10T15:20:08.085 d8a71191 [V5 Net] stats tick=1090415 session=none ticksMeasured=1090415 tickMs p50=0.505 p95=0.659 max=63.864 rssMB=218.2 monoHeapMB=20.9 unityReservedMB=166.6 fps=60
+2026-10-10T15:30:08.587 d8a71191 [V5 Net] stats tick=1108726 session=none ticksMeasured=1108726 tickMs p50=0.505 p95=0.659 max=64.958 rssMB=218.2 monoHeapMB=20.6 unityReservedMB=166.6 fps=60
+2026-10-10T15:40:08.684 d8a71191 [V5 Net] stats tick=1126437 session=none ticksMeasured=1126437 tickMs p50=0.506 p95=0.660 max=70.261 rssMB=218.2 monoHeapMB=21.2 unityReservedMB=166.6 fps=60
+2026-10-10T15:50:09.311 d8a71191 [V5 Net] stats tick=1144448 session=none ticksMeasured=1144448 tickMs p50=0.506 p95=0.660 max=70.261 rssMB=218.2 monoHeapMB=20.8 unityReservedMB=166.6 fps=60
+2026-10-10T16:00:19.735 d8a71191 [V5 Net] stats tick=1162761 session=none ticksMeasured=1162761 tickMs p50=0.505 p95=0.660 max=70.261 rssMB=218.2 monoHeapMB=20.4 unityReservedMB=166.6 fps=60
+2026-10-10T16:10:00.133 d8a71191 [V5 Net] stats tick=1180172 session=none ticksMeasured=1180172 tickMs p50=0.505 p95=0.661 max=70.261 rssMB=218.2 monoHeapMB=20.9 unityReservedMB=166.6 fps=60
+2026-10-10T16:20:10.544 d8a71191 [V5 Net] stats tick=1198484 session=none ticksMeasured=1198484 tickMs p50=0.505 p95=0.661 max=70.261 rssMB=218.2 monoHeapMB=20.6 unityReservedMB=166.6 fps=60
+2026-10-10T16:30:10.918 d8a71191 [V5 Net] stats tick=1216496 session=none ticksMeasured=1216496 tickMs p50=0.505 p95=0.661 max=70.261 rssMB=218.2 monoHeapMB=21.4 unityReservedMB=166.6 fps=60
+2026-10-10T16:40:11.139 d8a71191 [V5 Net] stats tick=1234507 session=none ticksMeasured=1234507 tickMs p50=0.505 p95=0.661 max=70.261 rssMB=218.2 monoHeapMB=20.9 unityReservedMB=166.6 fps=60
+2026-10-10T16:50:01.702 d8a71191 [V5 Net] stats tick=1252218 session=none ticksMeasured=1252218 tickMs p50=0.505 p95=0.661 max=71.737 rssMB=218.2 monoHeapMB=21.6 unityReservedMB=166.6 fps=60
+2026-10-10T17:00:12.090 d8a71191 [V5 Net] stats tick=1270530 session=none ticksMeasured=1270530 tickMs p50=0.505 p95=0.661 max=74.845 rssMB=218.2 monoHeapMB=21.2 unityReservedMB=166.6 fps=60
+2026-10-10T17:10:02.484 d8a71191 [V5 Net] stats tick=1288542 session=none ticksMeasured=1288542 tickMs p50=0.505 p95=0.662 max=74.845 rssMB=218.2 monoHeapMB=20.7 unityReservedMB=166.6 fps=60
+2026-10-10T17:20:12.862 d8a71191 [V5 Net] stats tick=1306553 session=none ticksMeasured=1306553 tickMs p50=0.505 p95=0.662 max=74.845 rssMB=218.2 monoHeapMB=21.5 unityReservedMB=166.6 fps=60
+2026-10-10T17:30:03.220 d8a71191 [V5 Net] stats tick=1324265 session=none ticksMeasured=1324265 tickMs p50=0.505 p95=0.662 max=74.845 rssMB=218.2 monoHeapMB=20.8 unityReservedMB=166.6 fps=60
+2026-10-10T17:40:03.689 d8a71191 [V5 Net] stats tick=1342577 session=none ticksMeasured=1342577 tickMs p50=0.505 p95=0.663 max=77.092 rssMB=218.2 monoHeapMB=20.4 unityReservedMB=166.6 fps=60
+2026-10-10T17:50:14.076 d8a71191 [V5 Net] stats tick=1360588 session=none ticksMeasured=1360588 tickMs p50=0.505 p95=0.663 max=81.270 rssMB=218.2 monoHeapMB=21.2 unityReservedMB=166.6 fps=60
+2026-10-10T18:00:14.169 d8a71191 [V5 Net] stats tick=1378599 session=none ticksMeasured=1378599 tickMs p50=0.505 p95=0.663 max=81.270 rssMB=218.2 monoHeapMB=20.6 unityReservedMB=166.6 fps=60
+2026-10-10T18:10:04.746 d8a71191 [V5 Net] stats tick=1396609 session=none ticksMeasured=1396609 tickMs p50=0.505 p95=0.664 max=81.270 rssMB=218.2 monoHeapMB=21.4 unityReservedMB=166.6 fps=60
+2026-10-10T18:20:05.047 d8a71191 [V5 Net] stats tick=1414321 session=none ticksMeasured=1414321 tickMs p50=0.505 p95=0.664 max=82.502 rssMB=218.2 monoHeapMB=20.7 unityReservedMB=166.6 fps=60
+2026-10-10T18:30:05.591 d8a71191 [V5 Net] stats tick=1432334 session=none ticksMeasured=1432334 tickMs p50=0.505 p95=0.665 max=82.502 rssMB=218.2 monoHeapMB=21.4 unityReservedMB=166.6 fps=60
+2026-10-10T18:40:06.037 d8a71191 [V5 Net] stats tick=1450646 session=none ticksMeasured=1450646 tickMs p50=0.505 p95=0.665 max=82.502 rssMB=218.2 monoHeapMB=21.0 unityReservedMB=166.6 fps=60
+2026-10-10T18:50:16.201 d8a71191 [V5 Net] stats tick=1468656 session=none ticksMeasured=1468656 tickMs p50=0.505 p95=0.665 max=86.438 rssMB=218.2 monoHeapMB=20.5 unityReservedMB=166.6 fps=60
+2026-10-10T19:00:06.414 d8a71191 [V5 Net] stats tick=1486365 session=none ticksMeasured=1486365 tickMs p50=0.505 p95=0.665 max=86.907 rssMB=218.2 monoHeapMB=21.0 unityReservedMB=166.6 fps=60
+2026-10-10T19:10:16.743 d8a71191 [V5 Net] stats tick=1504675 session=none ticksMeasured=1504675 tickMs p50=0.505 p95=0.666 max=86.907 rssMB=218.2 monoHeapMB=20.6 unityReservedMB=166.6 fps=60
+2026-10-10T19:20:07.365 d8a71191 [V5 Net] stats tick=1522388 session=none ticksMeasured=1522388 tickMs p50=0.505 p95=0.666 max=86.907 rssMB=218.2 monoHeapMB=21.2 unityReservedMB=166.6 fps=60
+2026-10-10T19:30:17.933 d8a71191 [V5 Net] stats tick=1540702 session=none ticksMeasured=1540702 tickMs p50=0.505 p95=0.666 max=89.684 rssMB=218.2 monoHeapMB=20.8 unityReservedMB=166.6 fps=60
+2026-10-10T19:40:08.361 d8a71191 [V5 Net] stats tick=1558714 session=none ticksMeasured=1558714 tickMs p50=0.505 p95=0.665 max=91.895 rssMB=218.2 monoHeapMB=21.5 unityReservedMB=166.6 fps=60
+2026-10-10T19:50:08.656 d8a71191 [V5 Net] stats tick=1576425 session=none ticksMeasured=1576425 tickMs p50=0.505 p95=0.666 max=93.757 rssMB=218.2 monoHeapMB=20.8 unityReservedMB=166.6 fps=60
+2026-10-10T20:00:18.867 d8a71191 [V5 Net] stats tick=1594739 session=none ticksMeasured=1594739 tickMs p50=0.504 p95=0.666 max=93.757 rssMB=218.2 monoHeapMB=21.7 unityReservedMB=166.6 fps=60
+2026-10-10T20:10:09.553 d8a71191 [V5 Net] stats tick=1612450 session=none ticksMeasured=1612450 tickMs p50=0.504 p95=0.666 max=93.757 rssMB=218.2 monoHeapMB=20.9 unityReservedMB=166.6 fps=60
+2026-10-10T20:20:00.017 d8a71191 [V5 Net] stats tick=1630464 session=none ticksMeasured=1630464 tickMs p50=0.504 p95=0.666 max=93.757 rssMB=218.2 monoHeapMB=21.7 unityReservedMB=166.6 fps=60
+2026-10-10T20:30:00.166 d8a71191 [V5 Net] stats tick=1648175 session=none ticksMeasured=1648175 tickMs p50=0.504 p95=0.666 max=94.276 rssMB=218.2 monoHeapMB=20.9 unityReservedMB=166.6 fps=60
+2026-10-10T20:40:10.802 d8a71191 [V5 Net] stats tick=1666487 session=none ticksMeasured=1666487 tickMs p50=0.504 p95=0.666 max=103.711 rssMB=218.2 monoHeapMB=20.5 unityReservedMB=166.6 fps=60
+2026-10-10T20:50:11.263 d8a71191 [V5 Net] stats tick=1684500 session=none ticksMeasured=1684500 tickMs p50=0.504 p95=0.666 max=103.711 rssMB=218.2 monoHeapMB=21.1 unityReservedMB=166.6 fps=60
+2026-10-10T21:00:01.627 d8a71191 [V5 Net] stats tick=1702213 session=none ticksMeasured=1702213 tickMs p50=0.504 p95=0.666 max=103.711 rssMB=218.2 monoHeapMB=20.4 unityReservedMB=166.6 fps=60
+2026-10-10T21:07:42.008 d8a71191 [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-10T21:07:42.008 d8a71191 [V5 Net] first inputs 1.99 s after the join; the run plays
+2026-10-10T21:07:42.008 d8a71191 [V5 Net] stats tick=1716321 session=connected ticksMeasured=237 tickMs p50=0.639 p95=0.909 max=16.804 rssMB=219.7 monoHeapMB=20.5 unityReservedMB=166.6 fps=60
+2026-10-10T21:07:48.465 d8a71191 [V5 Net] hold named 396: next unapplied 394, newest input 395, held from 396
+2026-10-10T21:07:50.493 d8a71191 [V5 Net] cards Picked: held from 396, client resume 461, next unapplied 456, resume 461
+2026-10-10T21:07:51.259 d8a71191 [V5 Net] stats tick=1716621 session=connected ticksMeasured=537 tickMs p50=0.686 p95=1.093 max=16.804 rssMB=220.0 monoHeapMB=20.7 unityReservedMB=166.6 fps=60
+2026-10-10T21:07:58.702 d8a71191 [V5 Net] hold named 705: next unapplied 702, newest input 704, held from 705
+2026-10-10T21:08:00.383 d8a71191 [V5 Net] cards Picked: held from 705, client resume 755, next unapplied 753, resume 755
+2026-10-10T21:08:01.300 d8a71191 [V5 Net] stats tick=1716922 session=connected ticksMeasured=838 tickMs p50=0.718 p95=1.195 max=16.804 rssMB=220.0 monoHeapMB=20.9 unityReservedMB=166.6 fps=60
+2026-10-10T21:08:10.029 d8a71191 [V5 Net] hold named 1045: next unapplied 1042, newest input 1044, held from 1045
+2026-10-10T21:08:11.358 d8a71191 [V5 Net] stats tick=1717222 session=connected ticksMeasured=1138 tickMs p50=0.764 p95=1.204 max=16.804 rssMB=220.0 monoHeapMB=21.2 unityReservedMB=166.6 fps=60
+2026-10-10T21:08:11.558 d8a71191 [V5 Net] cards Picked: held from 1045, client resume 1090, next unapplied 1087, resume 1090
+2026-10-10T21:08:15.806 d8a71191 [V5 Net] hold named 1219: next unapplied 1216, newest input 1218, held from 1219
+2026-10-10T21:08:17.410 d8a71191 [V5 Net] cards Picked: held from 1219, client resume 1259, next unapplied 1256, resume 1259
+2026-10-10T21:08:21.407 d8a71191 [V5 Net] stats tick=1717522 session=connected ticksMeasured=1438 tickMs p50=0.796 p95=1.183 max=16.804 rssMB=222.4 monoHeapMB=21.5 unityReservedMB=168.6 fps=60
+2026-10-10T21:08:41.215 d8a71191 [V5 Net] stats tick=1717822 session=connected ticksMeasured=1738 tickMs p50=0.835 p95=1.186 max=16.804 rssMB=222.4 monoHeapMB=20.6 unityReservedMB=168.6 fps=60
+2026-10-10T21:08:41.215 d8a71191 [V5 Net] hold named 1728: next unapplied 1726, newest input 1727, held from 1728
+2026-10-10T21:08:41.215 d8a71191 [V5 Net] player away (page hidden): the voyage holds
+2026-10-10T21:08:41.296 d8a71191 [V5 Net] stats tick=1718122 session=connected ticksMeasured=2038 tickMs p50=0.800 p95=1.158 max=16.804 rssMB=222.4 monoHeapMB=20.7 unityReservedMB=168.6 fps=60
+2026-10-10T21:08:45.845 d8a71191 [V5 Net] player back after 10.0 s away: the voyage plays on
+2026-10-10T21:08:50.580 d8a71191 [V5 Net] cards Picked: held from 1728, client resume 1922, next unapplied 1920, resume 1922
+2026-10-10T21:08:51.306 d8a71191 [V5 Net] stats tick=1718422 session=connected ticksMeasured=2338 tickMs p50=0.756 p95=1.139 max=16.804 rssMB=222.4 monoHeapMB=20.7 unityReservedMB=168.6 fps=60
+2026-10-10T21:09:11.302 d8a71191 [V5 Net] stats tick=1718723 session=connected ticksMeasured=2639 tickMs p50=0.786 p95=1.140 max=16.804 rssMB=222.4 monoHeapMB=20.9 unityReservedMB=168.6 fps=60
+2026-10-10T21:09:11.317 d8a71191 [V5 Net] stats tick=1719023 session=connected ticksMeasured=2939 tickMs p50=0.814 p95=1.148 max=16.804 rssMB=222.4 monoHeapMB=21.2 unityReservedMB=168.6 fps=60
+2026-10-10T21:09:13.355 d8a71191 [V5 Net] hold named 2604: next unapplied 2602, newest input 2603, held from 2604
+2026-10-10T21:09:14.627 d8a71191 [V5 Net] cards Picked: held from 2604, client resume 2643, next unapplied 2641, resume 2643
+2026-10-10T21:09:21.328 d8a71191 [V5 Net] stats tick=1719323 session=detached ticksMeasured=3239 tickMs p50=0.831 p95=1.189 max=16.804 rssMB=222.7 monoHeapMB=21.4 unityReservedMB=168.6 fps=60
+2026-10-10T21:09:41.081 d8a71191 [V5 Net] stats tick=1719624 session=detached ticksMeasured=3540 tickMs p50=0.856 p95=1.290 max=16.804 rssMB=222.7 monoHeapMB=21.6 unityReservedMB=168.6 fps=60
+2026-10-10T21:09:41.411 d8a71191 [V5 Net] stats tick=1719924 session=detached ticksMeasured=3840 tickMs p50=0.882 p95=1.327 max=16.804 rssMB=222.7 monoHeapMB=20.8 unityReservedMB=168.6 fps=60
+2026-10-10T21:09:51.605 d8a71191 [V5 Net] stats tick=1720224 session=detached ticksMeasured=4140 tickMs p50=0.907 p95=1.401 max=16.804 rssMB=222.7 monoHeapMB=20.9 unityReservedMB=168.6 fps=60
+2026-10-10T21:09:51.839 d8a71191 [V5 Net] closing: session expired
+2026-10-10T21:09:52.469 d8a71191 [V5 Net] final tick=1720254 session=detached ticksMeasured=4170 tickMs p50=0.910 p95=1.411 max=16.804 rssMB=223.1 monoHeapMB=20.9 unityReservedMB=168.6 fps=60
+2026-10-10T21:09:52.469 d8a71191 [V5 Net] EXIT session expired
+2026-10-10T21:09:55.570 d8a71191 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 1.40 s in the process (run held until a player joins: True)
+2026-10-10T21:10:05.293 d8a71191 [V5 Net] stats tick=299 session=none ticksMeasured=299 tickMs p50=0.538 p95=0.660 max=3.002 rssMB=186.4 monoHeapMB=5.0 unityReservedMB=164.6 fps=60
+2026-10-10T21:17:49.963 5bcb7080 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.80 s in the process (run held until a player joins: True)
+2026-10-10T21:17:55.626 d8a71191 [V5 Net] closing: SIGTERM (stop file)
+2026-10-10T21:17:55.626 d8a71191 [V5 Net] final tick=14333 session=none ticksMeasured=14333 tickMs p50=0.494 p95=0.615 max=10.286 rssMB=187.5 monoHeapMB=5.3 unityReservedMB=164.6 fps=60
+2026-10-10T21:17:55.626 d8a71191 [V5 Net] EXIT SIGTERM (stop file)
+2026-10-10T21:18:09.843 5bcb7080 [V5 Net] stats tick=299 session=none ticksMeasured=299 tickMs p50=0.381 p95=0.507 max=2.613 rssMB=202.5 monoHeapMB=5.0 unityReservedMB=164.6 fps=60
+2026-10-10T21:19:19.995 5bcb7080 [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-10T21:19:19.995 5bcb7080 [V5 Net] first inputs 0.40 s after the join; the run plays
+2026-10-10T21:19:20.033 5bcb7080 [V5 Net] stats tick=2700 session=connected ticksMeasured=120 tickMs p50=0.490 p95=1.974 max=15.512 rssMB=193.1 monoHeapMB=5.5 unityReservedMB=164.6 fps=60
+2026-10-10T21:19:30.025 5bcb7080 [V5 Net] stats tick=3000 session=connected ticksMeasured=420 tickMs p50=0.544 p95=0.913 max=15.512 rssMB=193.9 monoHeapMB=5.1 unityReservedMB=164.6 fps=60
+2026-10-10T21:19:35.831 5bcb7080 [V5 Net] hold named 586: next unapplied 583, newest input 585, held from 586
+2026-10-10T21:19:36.249 5bcb7080 [V5 Net] cards Picked: held from 586, client resume 598, next unapplied 595, resume 598
+2026-10-10T21:19:40.070 5bcb7080 [V5 Net] stats tick=3301 session=connected ticksMeasured=721 tickMs p50=0.567 p95=0.918 max=15.512 rssMB=196.4 monoHeapMB=5.3 unityReservedMB=166.6 fps=60
+2026-10-10T21:19:47.647 5bcb7080 [V5 Net] hold named 940: next unapplied 938, newest input 939, held from 940
+2026-10-10T21:19:48.065 5bcb7080 [V5 Net] cards Picked: held from 940, client resume 953, next unapplied 950, resume 953
+2026-10-10T21:19:49.820 5bcb7080 [V5 Net] hold named 1006: next unapplied 1003, newest input 1005, held from 1006
+2026-10-10T21:19:50.037 5bcb7080 [V5 Net] stats tick=3601 session=connected ticksMeasured=1021 tickMs p50=0.593 p95=0.952 max=15.512 rssMB=198.5 monoHeapMB=5.6 unityReservedMB=168.6 fps=60
+2026-10-10T21:19:50.217 5bcb7080 [V5 Net] cards Picked: held from 1006, client resume 1018, next unapplied 1015, resume 1018
+2026-10-10T21:19:55.452 5bcb7080 [V5 Net] closing: voyage ended (Sunk)
+2026-10-10T21:19:56.059 5bcb7080 [V5 Net] final tick=3779 session=detached ticksMeasured=1199 tickMs p50=0.577 p95=0.922 max=19.011 rssMB=200.8 monoHeapMB=5.1 unityReservedMB=168.6 fps=60
+2026-10-10T21:19:56.059 5bcb7080 [V5 Net] EXIT voyage ended (Sunk)
+2026-10-10T21:19:57.809 5bcb7080 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.83 s in the process (run held until a player joins: True)
+2026-10-10T21:20:03.193 9c357649 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.88 s in the process (run held until a player joins: True)
+2026-10-10T21:20:05.781 5bcb7080 [V5 Net] closing: SIGTERM (stop file)
+2026-10-10T21:20:06.290 5bcb7080 [V5 Net] final tick=253 session=none ticksMeasured=253 tickMs p50=0.401 p95=0.539 max=2.774 rssMB=202.2 monoHeapMB=4.8 unityReservedMB=164.6 fps=60
+2026-10-10T21:20:06.290 5bcb7080 [V5 Net] EXIT SIGTERM (stop file)
+2026-10-10T21:20:23.219 9c357649 [V5 Net] stats tick=299 session=none ticksMeasured=299 tickMs p50=0.422 p95=0.543 max=2.813 rssMB=177.2 monoHeapMB=4.9 unityReservedMB=164.6 fps=60
+2026-10-10T21:21:23.261 9c357649 [V5 Net] player joined; the run waits for its first inputs (its stage loading)
+2026-10-10T21:21:23.261 9c357649 [V5 Net] first inputs 0.38 s after the join; the run plays
+2026-10-10T21:21:23.261 9c357649 [V5 Net] stats tick=2400 session=connected ticksMeasured=93 tickMs p50=0.428 p95=1.842 max=12.127 rssMB=180.9 monoHeapMB=5.3 unityReservedMB=164.6 fps=60
+2026-10-10T21:21:33.239 9c357649 [V5 Net] stats tick=2700 session=connected ticksMeasured=393 tickMs p50=0.527 p95=0.909 max=12.127 rssMB=181.6 monoHeapMB=4.9 unityReservedMB=164.6 fps=60
+2026-10-10T21:21:42.816 71ecfe49 [V5 Net] READY listening on ws://0.0.0.0:7777/ match 'm9b-railway-1' after 0.74 s in the process (run held until a player joins: True)
+2026-10-10T21:21:53.232 9c357649 [V5 Net] cards Picked: held from 718, client resume 730, next unapplied 729, resume 730
+2026-10-10T21:21:53.232 9c357649 [V5 Net] closing: SIGTERM (stop file)
+2026-10-10T21:21:53.232 9c357649 [V5 Net] final tick=3092 session=detached ticksMeasured=785 tickMs p50=0.557 p95=0.904 max=12.843 rssMB=181.5 monoHeapMB=5.1 unityReservedMB=166.6 fps=60
+2026-10-10T21:21:53.232 9c357649 [V5 Net] EXIT SIGTERM (stop file)
+2026-10-10T21:21:53.232 9c357649 [V5 Net] stats tick=3000 session=connected ticksMeasured=693 tickMs p50=0.551 p95=0.830 max=12.127 rssMB=184.2 monoHeapMB=5.1 unityReservedMB=166.6 fps=60
+2026-10-10T21:21:53.232 9c357649 [V5 Net] hold named 718: next unapplied 716, newest input 717, held from 718
+2026-10-10T21:22:02.775 71ecfe49 [V5 Net] stats tick=299 session=none ticksMeasured=299 tickMs p50=0.181 p95=0.350 max=1.887 rssMB=202.5 monoHeapMB=4.9 unityReservedMB=164.6 fps=60
+2026-10-10T21:30:02.901 71ecfe49 [V5 Net] stats tick=14701 session=none ticksMeasured=14701 tickMs p50=0.188 p95=0.406 max=5.978 rssMB=203.2 monoHeapMB=5.3 unityReservedMB=164.6 fps=60
+2026-10-10T21:40:03.053 71ecfe49 [V5 Net] stats tick=33006 session=none ticksMeasured=33006 tickMs p50=0.195 p95=0.414 max=10.043 rssMB=205.8 monoHeapMB=5.1 unityReservedMB=166.6 fps=60

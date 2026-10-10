@@ -9,7 +9,42 @@ Branch `v5-live-game`. Decisions D18 P5, D19 (2), D22 (N5, N7), D23. Plan item I
 | I9b.1 part 1 | Everything that runs in-process in the Editor: packages, `RoguePirates.V5.Net`, scene `V5NetSpike`, protocol, join ticket check, measurement hook, PlayMode tests | done 8 Oct (this page) |
 | I9b.1 part 2a | Linux Dedicated Server build (`V5_NET`), the image and its scripts, the scripted voyage on local Docker, the API's ticket endpoint | done 8 Oct (section "Part 2a" below); not committed; Railway and GHCR not touched |
 | I9b.1 part 2b | The WebGL client build (`V5_NET`), its client composition, level-up messages, boost prediction, the local end-to-end | done locally 8 Oct (section "Part 2b" below); not committed; the Railway test service and `wss://` are the main session's (steps at the end) |
-| D9b.1 | Measurements on Railway and desktop WebGL (`REPORT.md`) | started: in-process, local Docker and desktop WebGL against local Docker in; Railway rows open |
+| D9b.1 | Measurements on Railway and desktop WebGL (`REPORT.md`) | done 11 Oct: Railway column filled (scripted voyages, owner sessions, server logs of every deployment, metrics); recommendation **GO** for M9c with its risks |
+| Fixes after playtests | Playtest fixes (9 Oct), owner re-test fixes (10 Oct), enemy stutter fix and leash outside the view (10 Oct), redeploy check (11 Oct) | done (sections below) |
+| Close | Tests on HEAD, playable check, owner playtest | see "Close (11 Oct)" below |
+
+### Close (11 Oct)
+
+Gate for `V5 M9b` (plan: automated check, owner playtest):
+
+- **Tests on HEAD `1a8eb0e1`** (the code of `1c84ad2f`; later commits touched only plan files and evidence):
+  EditMode **613/613** (`editmode-close.json`); server `dotnet test` **163/163** (`server-close.trx`); PlayMode
+  **119/123** (`playmode-close.json`). The 4 failures, each rerun alone:
+  - `LevelUp_PageHiddenAroundThePick_AndAThrottledFrame_SteersAgain_ResyncsBounded` (the known timing flake; "the
+    client's inputs arrive in time", 10 guessed): alone **5 of 5 passed**.
+  - `LevelUp_EnemiesMoveOnWithThePick_Measured` (284 ms against 50 ms in the suite): alone **3 of 3 passed**.
+  - `Enemies_StaySmoothAfterPicks_Measured`: alone **1 of 3 passed**. The suite run and run 1 failed only the speed-jump
+    margin (fixed clock after the picks 0.170% / 0.163% of on-screen samples against its baseline + 0.1 point, 0.165 /
+    0.138); run 3 failed a 0.1 bound at 0.469. Everything else in the failing runs is the fix working: jitter after the
+    picks below the baseline (0.207 against 0.230 m/s), 0% drawn past the newest snapshot, 0 frames standing still, and the
+    `e01a2e87` stutter still caught (47.4% past the newest). This session's baselines are noisier than 10 Oct's for every
+    clock (baseline jitter 0.15-0.23 against 0.125), so the speed-jump margin is tighter than the run-to-run noise here;
+    no regression of the fix found (code unchanged since `1c84ad2f`).
+  - `V5RunLogPlayModeTests.SameSeedAndInputs_GiveTheSamePerMinuteLog` (M9a determinism): **new, fails alone 4 of 4**
+    (minute 0 spawns 45-51 between plays of seed 8282). It passed in every earlier full run, last on 10 Oct with the same
+    code. Not explained yet: the plays use `Time.captureDeltaTime`, and a second Unity Editor's WebGL build (another
+    project, `wasm-opt`) was loading this PC during the reruns, though the last rerun at 14% CPU load failed too. Needs a
+    look before the close (bisect or an Editor restart and rerun).
+- **Automated check (scripted server voyage):** local Docker (`docker/`, `owner-retest-fixes/docker-voyage/summary.json`)
+  and Railway (`railway/wss-*/client.json`: 6 voyages, 4 socket drops resumed in 1.37-1.97 s, a redeploy ended with
+  `ServerClosing` and the lobby 0.001 s later). Measurements and the cost estimate in `REPORT.md`.
+- **Playable check:** local Chrome against local Docker at 270 ms (`enemy-stutter-fix/webgl/`), then the owner on
+  Railway.
+- **Owner playtest: done 11 Oct** on Railway (image of `1c84ad2f`, desktop Chrome): "enemies smooth, tab switching fine,
+  no pop-ins". Tracked, not blocking: the ram jolt (1-2.6 m when an enemy rams the ship; `plan/v5/TODO-FOR-YOU.md`).
+- **Still to do for the close:** the independent review of the phase diff (`.claude/agents/v5-reviewer.md`); delete the
+  `match-test` service and remove the ticket secret and voyage settings from the API (D23, D26 d); read the month's
+  Railway usage in the workspace's Usage page (the project token cannot read it); then the commit.
 
 ## Packages (pinned in `Packages/manifest.json`)
 
