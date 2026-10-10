@@ -51,3 +51,8 @@ Decisions I took to keep going (say if you want any changed); questions marked *
 - M9b closes on your 11 Oct re-test (smooth enemies, tab switching fine, no pop-ins); the ram jolt is tracked in TODO.
 - Railway redeploy during a voyage (11 Oct 02:50): the client got `end ServerClosing` and was back in the lobby at once,
   so D9b.1's "a redeploy ends the session cleanly" is met (`plan/v5/phase-09b-netcode/railway/wss-redeploy/`).
+- Railway clean-up (11 Oct, D23/D26): the `match-test` service is deleted and the API's `RP_MATCH_TICKET_SECRET`,
+  `VOYAGE_SERVER_URL` and `VOYAGE_MATCH_ID` are removed (also from `.railway/railway.ts`). The whole M9b Railway test
+  cost about $0.17 (38 metered hours).
+- **Q (small):** Railway's own usage export needs your account (the project token can't read it). If you want it in the
+  M9b memo, download it from the workspace Usage page; otherwise the $0.17 estimate from Railway's metrics stands.

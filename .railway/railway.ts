@@ -27,10 +27,8 @@ export default defineRailway(() => {
       ALLOWED_ORIGINS: preserve(),
       DATABASE_URL: preserve(),
       PLAY_URL: preserve(),
-      // M9b Railway test only (D26): set for the test session, removed afterwards (drop these lines then too).
-      RP_MATCH_TICKET_SECRET: preserve(),
-      VOYAGE_SERVER_URL: preserve(),
-      VOYAGE_MATCH_ID: preserve(),
+      // Match server tests (D26) add RP_MATCH_TICKET_SECRET, VOYAGE_SERVER_URL and VOYAGE_MATCH_ID here with preserve()
+      // before setting them, and remove them again after the session (M9b's were removed on 11 Oct).
     },
   });
   return project("Rogue Pirates", {
