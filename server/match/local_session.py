@@ -12,6 +12,7 @@ RoguePirates.V5.Net.NetVoyageClient.Begin() in Play mode.
 
 Runs until --minutes pass or Ctrl+C; then collects the match server's log into --out and removes the container.
 Usage: python server/match/local_session.py [--webgl "Pirate Game Unity/Builds/WebGL-Desktop-Net/RoguePirates"] [--minutes 30]
+       [--link-delay-ms 135 --link-jitter-ms 15]   (the owner's ~270 ms round trip, through link_delay.py)
 """
 import argparse
 import datetime as dt
@@ -50,6 +51,9 @@ def main():
     ap.add_argument("--webgl", default="")
     ap.add_argument("--minutes", type=float, default=60)
     ap.add_argument("--out", default="")
+    # V5 M9b enemy stutter fix (10 Oct): the owner's link, locally (link_delay.py): every byte delayed this much each way.
+    ap.add_argument("--link-delay-ms", type=float, default=0)
+    ap.add_argument("--link-jitter-ms", type=float, default=0)
     a = ap.parse_args()
 
     os.environ["PATH"] = DOCKER_BIN + os.pathsep + DOTNET_BIN + os.pathsep + os.environ["PATH"]
@@ -85,7 +89,13 @@ def main():
             time.sleep(0.5)
         log(f"API up at {api_url}")
         run(["docker", "rm", "-f", name], check=False)
-        run(["docker", "run", "-d", "--name", name, "--restart", "always", "-p", f"{a.match_port}:7777", "-e", "RP_MATCH_TICKET_SECRET",
+        docker_port = a.match_port + 1 if a.link_delay_ms > 0 else a.match_port
+        if a.link_delay_ms > 0:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import link_delay
+            link_delay.start(a.match_port, docker_port, a.link_delay_ms, a.link_jitter_ms)
+            log(f"link: {a.link_delay_ms:.0f} ms each way (+{a.link_jitter_ms:.0f} ms jitter) on :{a.match_port} -> the container on :{docker_port}")
+        run(["docker", "run", "-d", "--name", name, "--restart", "always", "-p", f"{docker_port}:7777", "-e", "RP_MATCH_TICKET_SECRET",
              "-e", f"RP_MATCH_ID={match_id}", a.image], env=env)
         deadline = time.time() + 120
         while "[V5 Net] READY" not in (run(["docker", "logs", name], check=False).stdout):

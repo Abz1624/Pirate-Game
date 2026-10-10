@@ -199,6 +199,7 @@ namespace RoguePirates.V5.Net
                 _nextAutoBoost = _sailStart + 45f;
                 Client.Metrics.Reset();
                 Smoothness.Reset();
+                Client.Enemies.ResetRenderCounters();
                 if (Client.PendingOffer != null) OnOffer(Client.PendingOffer); // dealt while the stage loaded
             }
             catch (Exception e)
@@ -377,14 +378,17 @@ namespace RoguePirates.V5.Net
             return string.Format(CultureInfo.InvariantCulture,
                 "sailing={0:0}s frames={1} fpsMean={2:0.0} fps1pctLow={3:0.0} fps5pctLow={4:0.0} framesOver20ms={5:0.0}% snapshots={6} enemies={7} drawn={8} " +
                 "downBps={9:0} upBps={10:0} predErrP95={11:0.000} predErrMax={12:0.000} corrMax={13:0.000} inputLagP50={14:0} cardSets={15} picks={16} hull={17:0}/{18:0} level={19} kills={20} " +
-                "shipJitterMean={21:0.00} shipJitterP95={22:0.00} enemyJitterMean={23:0.00} enemyJitterP95={24:0.00} enemyFastFrames={25} enemySlideFrames={26} enemyJumps={27} renderDelayMs={28:0} lateResyncs={29} aways={30} leadTrims={31}",
+                "shipJitterMean={21:0.00} shipJitterP95={22:0.00} enemyJitterMean={23:0.00} enemyJitterP95={24:0.00} enemyFastFrames={25} enemySlideFrames={26} enemyJumps={27} renderDelayMs={28:0} lateResyncs={29} aways={30} leadTrims={31} " +
+                "enemyJitterP99={32:0.00} enemyJerkFrames={33} enemyJerkPct={34:0.00}% renderPastNewestPct={35:0.0}% clockResets={36}",
                 Time.realtimeSinceStartup - _sailStart, FrameSeconds.Count, FpsMean, FpsLow(1f), FpsLow(5f), ShareOfFramesOver(0.02f) * 100f, Client.Snapshots,
                 Client.Enemies.Count, _views != null ? _views.Drawn : 0, traffic.bytesDown / m.Elapsed, traffic.bytesUp / m.Elapsed,
                 NetMetrics.Percentile(m.PredictionError, 95f), NetMetrics.Max(m.PredictionError), NetMetrics.Max(m.Correction),
                 NetMetrics.Percentile(m.InputLagMs, 50f), Client.OffersReceived, Client.PicksSent, Client.Hull, Client.MaxHull, Client.Last.level, Client.Last.kills,
                 NetSmoothness.Mean(Smoothness.ShipJitter), NetMetrics.Percentile(Smoothness.ShipJitter, 95f), NetSmoothness.Mean(Smoothness.EnemyJitter),
                 NetMetrics.Percentile(Smoothness.EnemyJitter, 95f), Smoothness.EnemyFastFrames, Smoothness.EnemySlideFrames, Client.Enemies.Jumps,
-                Client.Enemies.DelaySeconds * 1000f, Client.LateResyncs, Client.AwaysSent, Client.LeadTrims);
+                Client.Enemies.DelaySeconds * 1000f, Client.LateResyncs, Client.AwaysSent, Client.LeadTrims,
+                NetMetrics.Percentile(Smoothness.EnemyJitter, 99f), Smoothness.EnemyJerkFrames, Smoothness.EnemyJerkShare * 100f,
+                Client.Enemies.RenderPastNewestShare * 100f, Client.Enemies.Reanchors);
         }
 
         void WriteReport(string why)
@@ -423,6 +427,11 @@ namespace RoguePirates.V5.Net
                 ["enemySlideFramesOnScreen"] = Smoothness.EnemySlideFrames.ToString(),
                 ["enemyJumpsMarked"] = Client.Enemies.Jumps.ToString(),
                 ["enemyRenderDelayMs"] = (Client.Enemies.DelaySeconds * 1000f).ToString("0", CultureInfo.InvariantCulture),
+                ["enemyJitterP99Mps"] = NetMetrics.Percentile(Smoothness.EnemyJitter, 99f).ToString("0.000", CultureInfo.InvariantCulture),
+                ["enemyJerkFramesOnScreen"] = Smoothness.EnemyJerkFrames.ToString(),
+                ["enemyJerkPercent"] = (Smoothness.EnemyJerkShare * 100f).ToString("0.000", CultureInfo.InvariantCulture),
+                ["enemyRenderPastNewestPercent"] = (Client.Enemies.RenderPastNewestShare * 100f).ToString("0.00", CultureInfo.InvariantCulture),
+                ["enemyClockResetsAfterHolds"] = Client.Enemies.Reanchors.ToString(),
             };
             var json = NetMetrics.Report("V5 net WebGL client", context, Client.Metrics);
             Debug.Log("[V5 NetClient] REPORT " + json.Replace("\n", " "));

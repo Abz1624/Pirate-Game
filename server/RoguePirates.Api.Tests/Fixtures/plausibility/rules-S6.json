@@ -1,15 +1,16 @@
 {
  "format": "rp-plausibility-rules",
- "rulesVersion": 4,
+ "rulesVersion": 5,
  "mode": "shadow",
  "logFormat": "rp-runlog",
  "logVersion": 1,
  "minuteSeconds": 60,
- "configHash": "12ee9e816966e0154d35694ec4c2618f101816617024348348fbadc543724f16",
+ "configHash": "0a96e35a72d7c8660f37cb59c83baef8e5c9518ba29c9c3e0c0b43a7e44fd266",
  "configHashes": [
-  "12ee9e816966e0154d35694ec4c2618f101816617024348348fbadc543724f16",
+  "0a96e35a72d7c8660f37cb59c83baef8e5c9518ba29c9c3e0c0b43a7e44fd266",
   "9d5657cf1d5db3d74c959fc496a7e98465d4d4ae21ea9db5510129d923011f38",
-  "7539ec3f08315201d9c11ab207188a077adfa940a17a9adeb9367ec96e7b8e9a"
+  "7539ec3f08315201d9c11ab207188a077adfa940a17a9adeb9367ec96e7b8e9a",
+  "12ee9e816966e0154d35694ec4c2618f101816617024348348fbadc543724f16"
  ],
  "setId": "saltwind-default",
  "xpToNext": [1,2,2,5,7,8,10,12,13,14,21,25,32,35,38,41,41,42,42,42,42,42,55,60,65,70,72,73,82,83,85,86,122,124,144,146,164,185,188,204,219,234,249,264,279,294,309,324,339,354,369,384,399,414,429,444,459,474,489,504,519,534,549,564,579,594,609,624,639,654,669,684,699,714,729,744,759,774,789,804,819,834,849,864,879,894,909,924,939,954,969,984,999,1014,1029,1044,1059,1074,1089,1104,1119,1134,1149,1164,1179,1194,1209,1224,1239,1254,1269,1284,1299,1314,1329,1344,1359,1374,1389,1404,1419,1434,1449,1464,1479,1494,1509,1524,1539,1554,1569,1584,1599,1614,1629,1644,1659,1674,1689,1704,1719,1734,1749,1764,1779,1794,1809,1824,1839,1854],
@@ -23,7 +24,7 @@
  "simulator": {
   "file": "plan/playtest/montecarlo/sim.mjs",
   "data": "plan/playtest/montecarlo/data.json",
-  "exported": "2026-10-09T17:45:54Z",
+  "exported": "2026-10-10T03:12:21Z",
   "personality": "sea_legend",
   "runs": 30000,
   "maxMinutes": 45,
@@ -252,9 +253,15 @@
    "export": "09afabf8",
    "renames": [],
    "note": "Owner, 10 Oct: the enemy leash puts enemies back 31 m ahead instead of 26 m (RunConfig.enemyLeashReturnDistance, new); the export (the simulator's input) is unchanged but for the config hash, so every bound is the same; the builds from D27 to then"
+  },
+  {
+   "configHash": "12ee9e816966e0154d35694ec4c2618f101816617024348348fbadc543724f16",
+   "export": "e01a2e87",
+   "renames": [],
+   "note": "Owner, 10 Oct (D28 extended): the enemy leash puts enemies back just outside the camera's view along their bearing (RunConfig's leash view fields and margin replace enemyLeashReturnDistance); the export (the simulator's input) is unchanged but for the config hash, so every bound is the same; the builds from e01a2e87 (protocol 5) to then"
   }
  ],
- "generated": "2026-10-09T17:50:33.993Z",
+ "generated": "2026-10-10T03:14:39.979Z",
  "checks": {
   "falsePositive": {
    "runs": 10000,
@@ -270,9 +277,9 @@
     "PR-DEALT-RUN": 2
    },
    "command": "node plan/playtest/montecarlo/plausibility.mjs --check",
-   "at": "2026-10-09T17:51:08.490Z",
-   "seconds": 34
+   "at": "2026-10-10T03:15:18.308Z",
+   "seconds": 38
   }
  },
- "note": "test fixture: the shipped rules (v4): S6 was played on the config they were made for"
+ "note": "test fixture: the shipped rules (v5): S6 was played on the config they were made for"
 }

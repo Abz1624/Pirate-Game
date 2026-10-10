@@ -867,12 +867,20 @@ namespace RoguePirates.V4.Enemies
         // Playtest (3 Oct, owner): on the big map, enemies left far behind (they cannot catch a sailing ship) filled the cap
         // out of sight, so the player saw only a few. Ordinary enemies further than LeashDistance are moved back to just
         // outside the view, ahead of the ship (bosses, minibosses and elites stay where they are).
-        // V5 (owner, 10 Oct): the return distance is RunConfig.enemyLeashReturnDistance (31 m: just outside the top of the
-        // top-down view; was a 26 m constant, inside it), read at each check; the leash distance stays RunConfig's constant.
+        // V5 (owner, 10 Oct, D28): a leashed enemy is put back just outside the run camera's view along its new bearing
+        // (EnemyLeashShape: the view from RunConfig's camera data, swept from the camera's follow lag behind the ship to the
+        // online client's lead ahead of it, and the margin; was 31 m ahead that day, a 26 m constant before, both
+        // inside the view's top corners and sides), and an enemy that could be on screen is never moved.
         const float LeashDistance = RoguePirates.V4.Config.RunConfig.EnemyLeashDistance, LeashCheckSeconds = 0.5f;
-        /// <summary>V5 (owner, 10 Oct): where a leashed enemy is put back (null: RunConfig's default).</summary>
-        public System.Func<float> LeashReturnDistance;
-        float LeashReturn => LeashReturnDistance != null ? LeashReturnDistance() : RoguePirates.V4.Config.RunConfig.EnemyLeashReturnDistanceDefault;
+        /// <summary>V5 (owner, 10 Oct): an enemy is leashed only this far beyond where the leash would put it back along its own
+        /// bearing (so one just put back, sailing in, is not moved again).</summary>
+        public const float LeashHysteresisMetres = 10f;
+        /// <summary>V5 (owner, 10 Oct): the run's config, read at each leash check (null: RunConfig's defaults).</summary>
+        public System.Func<RoguePirates.V4.Config.RunConfig> LeashConfig;
+        /// <summary>Leash relocations so far, and attempts refused because the play area's edge pulled the spot into view.</summary>
+        public int LeashRelocations { get; private set; }
+        public int LeashRefusedInView { get; private set; }
+        readonly EnemyLeashShape _leashShape = new EnemyLeashShape();
         float _leashTimer;
         const int LeashStreamSalt = 0x1EA5;
         // V5 M9a (I9a.2): the leash's own stream, seeded from the run seed at the run start (was a fixed System.Random(0x1EA5)
@@ -893,22 +901,32 @@ namespace RoguePirates.V4.Enemies
             _leashTimer = LeashCheckSeconds;
             playerVelocity.y = 0f;
             var heading = playerVelocity.sqrMagnitude > 1f ? playerVelocity.normalized : Vector3.forward;
-            var returnDistance = LeashReturn;
+            var config = LeashConfig != null ? LeashConfig() : null;
+            var view = _leashShape.Set(config, playerVelocity);
+            var margin = config != null ? config.enemyLeashViewMargin : RoguePirates.V4.Config.RunConfig.EnemyLeashViewMarginDefault;
             for (var i = 0; i < _agents.Length; i++)
             {
                 ref var e = ref _agents[i];
                 if (!e.active || e.isBoss || e.isElite || e.remote) continue;
                 var def = _definitions[e.definitionIndex];
                 if (def == null || def.isMiniboss) continue;
-                if (HorizontalDistance(e.position, playerPos) < LeashDistance) continue;
+                var distance = HorizontalDistance(e.position, playerPos);
+                if (distance < LeashDistance) continue;
+                var clearance = margin + e.radius;
+                var from = new Vector2(e.position.x - playerPos.x, e.position.z - playerPos.z);
+                // Never moved while it could be on screen (it would vanish), nor just outside where it would be put back.
+                if (distance < view.PlacementDistance(from, clearance) + LeashHysteresisMetres) continue;
                 for (var attempt = 0; attempt < 6; attempt++)
                 {
                     var angle = ((float)_leashRandom.NextDouble() * 2f - 1f) * 75f;
-                    var p = playerPos + Quaternion.Euler(0f, angle, 0f) * heading * returnDistance;
+                    var p = playerPos + view.Placement(heading, angle, clearance);
                     p = PlayBounds.Clamp(p, e.radius + 1f);
                     p.y = def.visualHeightOffset;
+                    // The play area's edge can pull the spot back into view: another bearing then.
+                    if (view.DistanceOutside(new Vector2(p.x - playerPos.x, p.z - playerPos.z)) < clearance - 0.01f) { LeashRefusedInView++; continue; }
                     if (IslandObstacles.IsAvailable && IslandObstacles.IsPositionBlocked(p, e.radius + 0.5f)) continue;
                     e.position = p;
+                    LeashRelocations++;
                     if (e.view != null)
                     {
                         e.view.position = p;

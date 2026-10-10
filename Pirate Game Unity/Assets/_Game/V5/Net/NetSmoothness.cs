@@ -28,6 +28,14 @@ namespace RoguePirates.V5.Net
         public int ShipStallFrames { get; private set; }
         public int EnemyStallFrames { get; private set; }
         const float StallFromSpeed = 2f, StallShare = 0.1f;
+        /// <summary>V5 M9b enemy stutter fix (10 Oct): frames an on-screen enemy's per-frame speed changed by more than
+        /// <see cref="JerkMps"/> (an acceleration over 180 m/s2 at 60 fps; no ship turns or charges that hard): an enemy drawn
+        /// on its velocity past its newest snapshot and put back by the next one. The mean jitter hid them among thousands of
+        /// smooth frames; this counts them.</summary>
+        public int EnemyJerkFrames { get; private set; }
+        public int EnemySamples { get; private set; }
+        public const float JerkMps = 3f;
+        public float EnemyJerkShare => EnemySamples > 0 ? EnemyJerkFrames / (float)EnemySamples : 0f;
 
         Vector3 _ship;
         float _shipSpeed = -1f;
@@ -39,7 +47,7 @@ namespace RoguePirates.V5.Net
             ShipJitter.Clear();
             ShipSpeed.Clear();
             EnemyJitter.Clear();
-            EnemyFastFrames = EnemySlideFrames = Frames = ShipStallFrames = EnemyStallFrames = 0;
+            EnemyFastFrames = EnemySlideFrames = Frames = ShipStallFrames = EnemyStallFrames = EnemyJerkFrames = EnemySamples = 0;
             _haveShip = false;
             _shipSpeed = -1f;
             _enemies.Clear();
@@ -86,7 +94,10 @@ namespace RoguePirates.V5.Net
                 }
                 else if (last.speed >= 0f && !last.fast)
                 {
-                    NetMetrics.AddCapped(EnemyJitter, Mathf.Abs(speed - last.speed), MaxSamples);
+                    var jitter = Mathf.Abs(speed - last.speed);
+                    NetMetrics.AddCapped(EnemyJitter, jitter, MaxSamples);
+                    EnemySamples++;
+                    if (jitter > JerkMps) EnemyJerkFrames++;
                     if (last.speed > StallFromSpeed && speed < last.speed * StallShare) EnemyStallFrames++;
                 }
                 _enemies[unitId] = (drawn, fast ? -1f : speed, Frames, fast);

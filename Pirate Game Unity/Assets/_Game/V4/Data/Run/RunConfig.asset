@@ -25,4 +25,10 @@ MonoBehaviour:
   islandImpactCooldown: 0.75
   islandDamageCooldown: 2
   islandBounceSeconds: 0.5
-  enemyLeashReturnDistance: 31
+  enemyLeashViewMargin: 4
+  leashViewCameraHeight: 25
+  leashViewCameraBack: 20
+  leashViewFieldOfView: 50
+  leashViewMaxAspect: 2.4
+  leashViewLagSeconds: 0.125
+  leashViewLeadSeconds: 0.5

@@ -271,7 +271,7 @@ namespace RoguePirates.V5.Net.Tests
         /// <summary>
         /// M9b playtest fixes (B, C): every enemy is drawn at one render time behind the newest snapshot, between the two
         /// snapshots around it (a far-band enemy sent every 3rd snapshot moves evenly, not in a burst then a stop); a late
-        /// snapshot is bridged on the last velocity for at most 9 ticks (6 before 10 Oct); a move no enemy can sail between two snapshots (the
+        /// snapshot is bridged on the last velocity for at most 6 ticks; a move no enemy can sail between two snapshots (the
         /// leash) is a jump: held, then drawn there at once, never slid across the screen.
         /// </summary>
         [Test]
@@ -350,9 +350,10 @@ namespace RoguePirates.V5.Net.Tests
         /// <summary>
         /// V5 M9b owner re-test fixes (10 Oct, issue 2): the server's world tick stands still while the run is paused for the
         /// cards (protocol 5), and the client's enemy clock stands still while its ship holds: the render time does not move
-        /// through the hold, runs on from the same place after the pick (no jump either way), bridges the round trip until
-        /// the first snapshot after the pick on the enemies' velocity (within the extrapolation cap), and the snapshots the
-        /// paused server repeats are not counted twice.
+        /// through the hold and runs on from the same place after the pick, and the snapshots the paused server repeats are
+        /// not counted twice. Enemy stutter fix (10 Oct): until the first snapshot after the pick (a 270 ms round trip later)
+        /// it runs on slowed (0.6 to 0.25 of real time) within the snapshots it has, never more than a tick past the newest
+        /// one, and that snapshot sets the clock; the enemy moves every frame, never faster than it sails.
         /// </summary>
         [Test]
         public void Mirror_EnemyClockHoldsWithTheShip_AndRunsOnFromThereAfterThePick()
@@ -374,16 +375,19 @@ namespace RoguePirates.V5.Net.Tests
                 Assert.AreEqual(held, mirror.RenderTick(now + k * 0.066, true), 1e-4f, "still while held");
             }
             Assert.AreEqual(completes, mirror.CompleteSnapshots, "the paused server's repeats are not counted again");
-            // The pick at now + 3 s: the clock runs on from the same place, frame by frame, no jump.
+            // The pick at now + 3 s: the clock runs on from the same place, slowed, no jump.
             var lastHeldAt = now + 45 * 0.066;
             var pick = now + 3.0;
             var last = mirror.RenderTick(pick, false);
-            Assert.AreEqual(held + (float)((pick - lastHeldAt) / dt), last, 1e-3f, "runs on from where it stopped (by the time since the last held frame)");
+            var heldFor = (float)((pick - lastHeldAt) / dt);
+            Assert.Greater(last, held + 0.2f * heldFor, "runs on from where it stopped (by the time since the last held frame)");
+            Assert.LessOrEqual(last, held + NetEnemyMirror.BridgeMaxRate * heldFor + 1e-3f, "slowed until the world's snapshots come");
             Assert.IsTrue(mirror.TryGet(1, out var e));
             e.track.Sample(last, out var lastPos, out _, out _);
             const double frame = 1.0 / 60.0;
             var maxStep = 0f;
-            for (var f = 1; f <= 120; f++)
+            var pastNewest = 0f;
+            for (var f = 1; f <= 240; f++)
             {
                 var t = pick + f * frame;
                 // The first snapshot after the pick arrives a 270 ms round trip later (the server resumed at the pick's arrival).
@@ -395,15 +399,154 @@ namespace RoguePirates.V5.Net.Tests
                 }
                 var r = mirror.RenderTick(t, false);
                 Assert.Greater(r, last, "the clock moves every frame after the pick");
-                Assert.LessOrEqual(r - last, (float)(frame / dt) * 1.2f, "never jumps ahead");
+                Assert.LessOrEqual(r - last, (float)(frame / dt) * 1.3f, "never jumps ahead");
                 Assert.IsTrue(mirror.TryGet(1, out e));
+                pastNewest = Mathf.Max(pastNewest, r - e.track.NewestTick);
                 e.track.Sample(r, out var p, out _, out _);
                 maxStep = Mathf.Max(maxStep, Mathf.Abs(p.x - lastPos.x));
-                Assert.Greater(p.x - lastPos.x, 0.03f, $"the enemy moves on every frame after the pick (frame {f})");
+                Assert.Greater(p.x - lastPos.x, 0.2f * 6f * (float)frame, $"the enemy moves on every frame after the pick (frame {f}), at a fifth of its speed at least");
                 last = r;
                 lastPos = p;
             }
-            Assert.Less(maxStep, 6f * (float)frame * 1.5f, "at its own speed (no jump)");
+            Assert.Less(maxStep, 6f * (float)frame * 1.35f, "at its own speed at most (no jump)");
+            Assert.LessOrEqual(pastNewest, 1.5f, "never more than a tick and a half past its newest snapshot (not run on its velocity)");
+            Assert.AreEqual(1, mirror.Reanchors, "the first snapshot after the pick set the clock");
+            Assert.AreEqual(NetEnemyMirror.MinDelaySeconds, mirror.DelaySeconds, 0.02f, "the render delay is not widened by the pause");
+        }
+
+        /// <summary>
+        /// V5 M9b enemy stutter fix (10 Oct; the owner: "the enemies seem to be stuttering now a bit" after the re-test
+        /// fixes). A weaving enemy (8 m/s, its heading swinging 60 degrees either way every 2.5 s) over a 270 ms round trip
+        /// with 15 ms of jitter, three level-up holds of 3 s, and the server's pause outlasting each hold by the input delay
+        /// (the pick's way there, two ticks of input lead, the snapshot's way back). With the re-test fixes' clock the pause's
+        /// extra length was taken for lateness: the delay hit its 350 ms cap, short of the 470 ms needed, and the clock crept
+        /// back at 20 ms a second, so the enemies were drawn past their newest snapshot and put back, frame after frame, for
+        /// the rest of the voyage. With the fix the first snapshot after the pick sets the clock: from 1.5 s after each pick
+        /// the drawing is as smooth as before any hold (no frame past the newest snapshot, no speed jumps).
+        /// </summary>
+        [Test]
+        public void Mirror_AfterAHold_TheClockIsSetAgain_NotWidened_NoStutter()
+        {
+            var results = new Dictionary<string, (int pastBase, int framesBase, int jerkBase, float jitterBase, int pastAfter, int framesAfter, int jerkAfter, float jitterAfter, float delay)>();
+            foreach (var reTest in new[] { true, false })
+            {
+                var mirror = new NetEnemyMirror { ReTestClockForTest = reTest };
+                const float dt = NetProtocol.TickSeconds;
+                const double oneWay = 0.135, lead = 2 * dt, hold = 3.0, frame = 1.0 / 60.0;
+                var rng = new System.Random(7);
+                // The server: world time stands still from each level-up until the pick reaches it and its tick comes.
+                var levelUps = new[] { 6.0, 21.0, 36.0 };
+                bool Paused(double t) { foreach (var at in levelUps) if (t >= at && t < at + oneWay + hold + oneWay + lead) return true; return false; }
+                bool Held(double t) { foreach (var at in levelUps) if (t >= at + oneWay && t < at + oneWay + hold) return true; return false; }
+                var path = new List<Vector2> { Vector2.zero };
+                Vector2 At(double worldTime)
+                {
+                    var k = (int)(worldTime / 0.005);
+                    while (path.Count <= k + 1)
+                    {
+                        var h = 60f * Mathf.Deg2Rad * Mathf.Sin(2f * Mathf.PI * (path.Count * 0.005f) / 2.5f);
+                        path.Add(path[path.Count - 1] + new Vector2(Mathf.Sin(h), Mathf.Cos(h)) * 8f * 0.005f);
+                    }
+                    return path[k];
+                }
+                var arrivals = new List<(double at, uint tick, Vector2 p)>();
+                uint world = 0;
+                var worldTime = 0.0;
+                for (var s = 1; s * dt < 50.0; s++)
+                {
+                    var t = s * dt;
+                    if (!Paused(t)) { world++; worldTime += dt; }
+                    if (s % NetProtocol.SnapshotEveryTicks == 0 && rng.NextDouble() >= 0.01)
+                        arrivals.Add((t + oneWay + rng.NextDouble() * 0.015, world, At(worldTime)));
+                }
+                arrivals.Sort((a, b) => a.at.CompareTo(b.at));
+                int next = 0, pastBase = 0, framesBase = 0, jerkBase = 0, pastAfter = 0, framesAfter = 0, jerkAfter = 0;
+                var jitterBase = new List<float>();
+                var jitterAfter = new List<float>();
+                Vector2? lastP = null;
+                var lastSpeed = -1f;
+                for (var f = 0; f * frame < 50.0; f++)
+                {
+                    var now = f * frame;
+                    while (next < arrivals.Count && arrivals[next].at <= now)
+                    {
+                        var a = arrivals[next++];
+                        var h = new EnemyBatchHeader { serverTick = a.tick, batchCount = 1, full = true, count = 1 };
+                        var w = new NetWriter();
+                        NetCodec.WriteBatchHeader(w, h);
+                        NetCodec.WriteEnemy(w, h, 1, 1, new Vector3(a.p.x, 0f, a.p.y), Vector3.zero, 1f, 0);
+                        mirror.Apply(new NetReader(w.ToArray()), 0f, now, true);
+                    }
+                    var held = Held(now);
+                    var render = mirror.RenderTick(now, held);
+                    if (!mirror.TryGet(1, out var e)) continue;
+                    e.track.Sample(render, reTest ? NetEnemyMirror.ReTestExtrapolationTicks : NetEnemyMirror.MaxExtrapolationTicks, out var p3, out _, out _);
+                    var p = new Vector2(p3.x, p3.z);
+                    var sincePick = double.MaxValue;
+                    foreach (var at in levelUps) if (now >= at + oneWay + hold) sincePick = Mathf.Min((float)sincePick, (float)(now - at - oneWay - hold));
+                    var baseline = now > 2.0 && now < levelUps[0];
+                    var after = sincePick >= 1.5 && sincePick < 12.0;
+                    if (!held && lastP.HasValue)
+                    {
+                        var speed = (p - lastP.Value).magnitude / (float)frame;
+                        if (lastSpeed >= 0f)
+                        {
+                            var jitter = Mathf.Abs(speed - lastSpeed);
+                            if (baseline) { framesBase++; jitterBase.Add(jitter); if (jitter > NetSmoothness.JerkMps) jerkBase++; if (render > e.track.NewestTick) pastBase++; }
+                            if (after) { framesAfter++; jitterAfter.Add(jitter); if (jitter > NetSmoothness.JerkMps) jerkAfter++; if (render > e.track.NewestTick) pastAfter++; }
+                        }
+                        lastSpeed = speed;
+                    }
+                    else if (held) lastSpeed = -1f;
+                    lastP = p;
+                }
+                results[reTest ? "re-test clock" : "fixed clock"] = (pastBase, framesBase, jerkBase, NetSmoothness.Mean(jitterBase), pastAfter, framesAfter, jerkAfter, NetSmoothness.Mean(jitterAfter), mirror.DelaySeconds);
+            }
+            var report = string.Join("; ", results.Select(r => $"{r.Key}: before the first hold {r.Value.pastBase}/{r.Value.framesBase} frames past the newest snapshot, " +
+                $"{r.Value.jerkBase} speed jumps, jitter {r.Value.jitterBase:0.000} m/s; 1.5-12 s after the picks {r.Value.pastAfter}/{r.Value.framesAfter} past, " +
+                $"{r.Value.jerkAfter} speed jumps, jitter {r.Value.jitterAfter:0.000} m/s; delay at the end {r.Value.delay * 1000f:0} ms"));
+            Debug.Log("[V5 Net] enemy clock after holds: " + report);
+            var old = results["re-test clock"];
+            var fixedClock = results["fixed clock"];
+            Assert.AreEqual(0, old.pastBase, "before any hold both clocks draw within the snapshots: " + report);
+            Assert.Greater(old.pastAfter, old.framesAfter / 5, "the re-test clock runs past the snapshots after the picks (the regression, caught): " + report);
+            Assert.Greater(old.jitterAfter, 1.5f * old.jitterBase, "and its per-frame speed jitter rises (caught): " + report);
+            Assert.AreEqual(0, fixedClock.pastAfter, "the fixed clock never runs past the snapshots after the picks: " + report);
+            Assert.AreEqual(0, fixedClock.jerkAfter, "no speed jumps: " + report);
+            Assert.Less(fixedClock.jitterAfter, 1.15f * fixedClock.jitterBase + 0.02f, "as smooth as before any hold: " + report);
+            Assert.AreEqual(NetEnemyMirror.MinDelaySeconds, fixedClock.delay, 0.03f, "the render delay is back to the link's own: " + report);
+        }
+
+        /// <summary>
+        /// V5 M9b enemy stutter fix (10 Oct): the server's world stands still at the voyage's start until the page's first
+        /// inputs (and repeats its tick meanwhile). That stand-still is not lateness: the first new tick sets the clock, the
+        /// render delay stays the link's own and the enemies are never drawn past their newest snapshot once they sail. (In the
+        /// local Chrome run at a 270 ms round trip, without this, the delay sat at its 350 ms cap and the render time was past
+        /// the newest snapshot on every frame for the first half minute.)
+        /// </summary>
+        [Test]
+        public void Mirror_WorldStandingStillAtTheStart_IsNotLateness()
+        {
+            var mirror = new NetEnemyMirror();
+            const float dt = NetProtocol.TickSeconds;
+            const double oneWay = 0.135, frame = 1.0 / 60.0;
+            // World tick 5 repeated for 0.8 s (the server waits for the first inputs), then it sails at 6 m/s.
+            var arrivals = new List<(double at, uint tick, float x)>();
+            for (var k = 0; k < 12; k++) arrivals.Add((1.0 + oneWay + k * 2 * dt, 5u, 0f));
+            for (uint tick = 7; tick < 7 + 300; tick += 2) arrivals.Add((1.8 + oneWay + (tick - 5) * dt, tick, 0.2f * (tick - 5)));
+            int next = 0, frames = 0, past = 0;
+            for (var f = 0; f * frame < 10.0; f++)
+            {
+                var now = 1.0 + f * frame;
+                while (next < arrivals.Count && arrivals[next].at <= now) { var a = arrivals[next++]; EnemyBatchAt(mirror, a.tick, now, true, a.x); }
+                var render = mirror.RenderTick(now, false);
+                if (now < 3.5) continue;
+                frames++;
+                if (render > mirror.LastCompleteTick) past++;
+            }
+            Assert.AreEqual(1, mirror.Reanchors, "the first new tick after the stand-still set the clock");
+            Assert.AreEqual(0, past, $"never past the newest snapshot once sailing ({past} of {frames} frames)");
+            Assert.AreEqual(NetEnemyMirror.MinDelaySeconds, mirror.DelaySeconds, 0.02f, "the render delay is the link's own");
         }
 
         /// <summary>V5 M9b owner re-test fixes: a hold that begins after a long frame (a page's first hidden frame comes up to a

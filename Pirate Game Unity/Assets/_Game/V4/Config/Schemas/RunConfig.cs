@@ -21,24 +21,46 @@ namespace RoguePirates.V4.Config
         [Tooltip("Seconds before another impact can cost hull (holding the stick into a shore costs at most this often).")] [AppliesFrom(0, "read when the run starts")] [Min(0f)] public float islandDamageCooldown = 2f;
         [Tooltip("Seconds the bounce's push takes to fade out.")] [AppliesFrom(0, "read when the run starts")] [Min(0.05f)] public float islandBounceSeconds = 0.5f;
 
-        [Header("Enemy leash (V5, owner 10 Oct 2026)")]
-        [Tooltip("Where an ordinary enemy left 45 m or more behind is put back: this far from the ship, ahead of it (within 75 " +
-                 "degrees of its heading), every half second. The top-down camera (25 m up, 20 m back, 50 degree field of view) " +
-                 "sees 30.5 m ahead of the ship at the top of the screen, so 31 m is just outside the view there (owner, 10 Oct; " +
-                 "was a 26 m constant, and leashed enemies popped in just inside the top edge). Below the 45 m leash distance.")]
-        [Min(1f)] public float enemyLeashReturnDistance = EnemyLeashReturnDistanceDefault;
+        [Header("Enemy leash (V5, owner 10 Oct 2026, D28)")]
+        [Tooltip("An ordinary enemy left 45 m or more behind (and out of view) is put back every half second within 75 degrees " +
+                 "of the ship's heading, just outside the run camera's view along that bearing: this far (m) past the view's edge, " +
+                 "plus the enemy's own radius (covers the camera's follow lag, about 2 m at full boost, and the model past its hit " +
+                 "radius). Was 31 m ahead (10 Oct), 26 m before: inside the view's top corners and sides.")]
+        [Min(0f)] public float enemyLeashViewMargin = EnemyLeashViewMarginDefault;
+        [Tooltip("The run camera, as data (the match server has none): its height above the ship (V4SaltwindRun's FollowCamera " +
+                 "offset y). A test checks it against the scene.")]
+        [Min(1f)] public float leashViewCameraHeight = LeashViewCameraHeightDefault;
+        [Tooltip("The run camera's distance behind the ship (minus V4SaltwindRun's FollowCamera offset z); it looks at the ship.")]
+        [Min(0f)] public float leashViewCameraBack = LeashViewCameraBackDefault;
+        [Tooltip("The run camera's vertical field of view (degrees; the scene's camera and BoostCameraZoom's resting value).")]
+        [Range(10f, 100f)] public float leashViewFieldOfView = LeashViewFieldOfViewDefault;
+        [Tooltip("The widest screen the leash keeps enemies out of view on (width over height; 2.4 covers 16:9 to 21:9 " +
+                 "ultrawides at 3440x1440). A narrower screen sees less of the sea.")]
+        [Range(1f, 3f)] public float leashViewMaxAspect = LeashViewMaxAspectDefault;
+        [Tooltip("The follow camera trails the ship by about its speed times this (s; 1 / the scene FollowCamera's position " +
+                 "smoothing): the view is also kept clear around that point.")]
+        [Min(0f)] public float leashViewLagSeconds = LeashViewLagSecondsDefault;
+        [Tooltip("Online, the client draws its predicted ship ahead of the enemies it draws (its input delay plus the enemies' " +
+                 "render delay: about 0.47 s at a 270 ms round trip): the view is also kept clear around the ship this far ahead (s).")]
+        [Min(0f)] public float leashViewLeadSeconds = LeashViewLeadSecondsDefault;
 
-        /// <summary>The leash distance (an ordinary enemy this far from the ship is moved back); the return distance must stay below it.</summary>
+        /// <summary>The leash distance (an ordinary enemy this far from the ship, and out of view, is moved back).</summary>
         public const float EnemyLeashDistance = 45f;
-        public const float EnemyLeashReturnDistanceDefault = 31f;
+        public const float EnemyLeashViewMarginDefault = 4f, LeashViewCameraHeightDefault = 25f, LeashViewCameraBackDefault = 20f,
+            LeashViewFieldOfViewDefault = 50f, LeashViewMaxAspectDefault = 2.4f, LeashViewLagSecondsDefault = 0.125f, LeashViewLeadSecondsDefault = 0.5f;
 
         public override void Validate(ConfigValidationReport report)
         {
             report.Positive(this, nameof(tickRate), tickRate);
             report.Positive(this, nameof(shipSpeedMultiplier), shipSpeedMultiplier);
             if (maxStepsPerFrame < 1) report.Error(this, nameof(maxStepsPerFrame), "must be at least 1");
-            if (enemyLeashReturnDistance <= 0f || enemyLeashReturnDistance >= EnemyLeashDistance)
-                report.Error(this, nameof(enemyLeashReturnDistance), $"must be above 0 and below the leash distance ({EnemyLeashDistance} m)");
+            if (enemyLeashViewMargin < 0f) report.Error(this, nameof(enemyLeashViewMargin), "must not be negative");
+            if (leashViewCameraHeight <= 0f) report.Error(this, nameof(leashViewCameraHeight), "must be above 0");
+            if (leashViewMaxAspect < 1f) report.Error(this, nameof(leashViewMaxAspect), "must be at least 1");
+            // The view must end on the sea (its top edge below the horizon: half the field of view under the camera's pitch),
+            // or no enemy could be put outside it.
+            var pitch = Mathf.Atan2(leashViewCameraHeight, Mathf.Max(0f, leashViewCameraBack)) * Mathf.Rad2Deg;
+            if (leashViewFieldOfView * 0.5f >= pitch - 1f) report.Error(this, nameof(leashViewFieldOfView), "the view's top edge must look down at the sea");
         }
     }
 }

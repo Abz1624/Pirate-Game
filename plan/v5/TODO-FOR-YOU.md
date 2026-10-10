@@ -2,15 +2,14 @@
 
 # Now (10 Oct): M9b fixes after your re-test
 
-- [ ] Re-test one server voyage from desktop Chrome once the main session has the new image and client on Railway (they go
-      together: protocol 5): switch tabs while the cards are up and right after a pick; sail into a Salvage Chest with
-      gold (the server now skips the chest's choice until M9c mirrors chests: you will not be offered it online); watch
-      the enemies the moment you pick a card. Details: `plan/v5/phase-09b-netcode/README.md`, "Owner re-test fixes".
-- [ ] Decide (leash): 31 m clears the top of the screen only straight ahead. Enemies are put back within 75 degrees of
-      your heading and the camera always looks north, so at 16:9 about 86% of them still land in view when you sail
-      up the screen (37% over all headings; 26 m: 100% and 52%). Options: (a) keep 31 m as decided; (b) put each one
-      just outside the view along its own direction (31 to 44 m at 16:9; the top corners of a 21:9 screen reach 61 m,
-      past the 45 m leash, so wider screens would keep some pop-ins), recommended; (c) narrow the 75 degrees.
+- [ ] Re-test one server voyage from desktop Chrome once the main session has the new image and client on Railway (still
+      protocol 5; the API needs the v5 run-check rules first): watch the enemies in normal sailing after a few card picks
+      (the stutter came from the enemy clock after each pick; fixed), and whether any enemy ever appears out of nowhere on
+      screen (the leash now puts them just outside the view). Details: `plan/v5/phase-09b-netcode/README.md`, "Enemy
+      stutter fix and leash outside the view".
+- [x] Decide (leash): (b), each enemy just outside the view along its own direction (owner, 10 Oct, D28 extended). Done: a
+      4 m margin past the view of the widest screen (2.4:1) in `RunConfig`; 0 of 163,080 test placements land in view on
+      4:3 to 2.4:1 screens, standing to full boost, the online lead included.
 
 # Now (8 Oct): M8z closed, M9a next
 

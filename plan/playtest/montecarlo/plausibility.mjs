@@ -290,6 +290,8 @@ export const SAME_BOUNDS_CONFIGS = [
     note: 'D27 (9 Oct): the Iron Figurehead became the Cuttlefish Bone (same rarity, chest pool and +9% damage; Black Tide\'s item); S6 and the owner\'s builds before it' },
   { configHash: '7539ec3f08315201d9c11ab207188a077adfa940a17a9adeb9367ec96e7b8e9a', export: '09afabf8', renames: [],
     note: 'Owner, 10 Oct: the enemy leash puts enemies back 31 m ahead instead of 26 m (RunConfig.enemyLeashReturnDistance, new); the export (the simulator\'s input) is unchanged but for the config hash, so every bound is the same; the builds from D27 to then' },
+  { configHash: '12ee9e816966e0154d35694ec4c2618f101816617024348348fbadc543724f16', export: 'e01a2e87', renames: [],
+    note: 'Owner, 10 Oct (D28 extended): the enemy leash puts enemies back just outside the camera\'s view along their bearing (RunConfig\'s leash view fields and margin replace enemyLeashReturnDistance); the export (the simulator\'s input) is unchanged but for the config hash, so every bound is the same; the builds from e01a2e87 (protocol 5) to then' },
 ];
 
 const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'

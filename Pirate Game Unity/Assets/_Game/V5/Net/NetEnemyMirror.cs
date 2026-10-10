@@ -29,9 +29,12 @@ namespace RoguePirates.V5.Net
         /// this between two snapshots is a relocation, not sailing.</summary>
         public const float MaxEnemySpeed = 45f;
         public const float JumpSlackMetres = 1f;
-        /// <summary>How far past its newest snapshot an enemy is drawn on its last velocity when the next one is late (9 ticks,
-        /// 300 ms: after a level-up hold the first snapshots after the pick arrive a round trip later).</summary>
-        public const float MaxExtrapolationTicks = 9f;
+        /// <summary>How far past its newest snapshot an enemy is drawn on its last velocity when the next one is late (6 ticks).
+        /// V5 M9b enemy stutter fix (10 Oct): back to 6 from the 9 of the owner re-test fixes; after a hold the render time no
+        /// longer runs on past the snapshots (see <see cref="RenderTick(double, bool)"/>), so nothing needs the longer bridge.</summary>
+        public const float MaxExtrapolationTicks = 6f;
+        /// <summary>The owner re-test fixes' cap (9 ticks), kept to measure their clock against (tests only).</summary>
+        public const float ReTestExtrapolationTicks = 9f;
 
         /// <summary>An enemy's newest snapshots (tick, position, heading), oldest first, and where it jumped.</summary>
         public sealed class Track
@@ -79,7 +82,10 @@ namespace RoguePirates.V5.Net
             /// at the older one when the newer one is a jump (then drawn there at once); before its first snapshot, at that
             /// one; past its newest, on its last velocity for at most <see cref="MaxExtrapolationTicks"/>.
             /// </summary>
-            public bool Sample(float renderTick, out Vector3 position, out Vector3 velocity, out byte heading)
+            public bool Sample(float renderTick, out Vector3 position, out Vector3 velocity, out byte heading) =>
+                Sample(renderTick, MaxExtrapolationTicks, out position, out velocity, out heading);
+
+            public bool Sample(float renderTick, float maxExtrapolationTicks, out Vector3 position, out Vector3 velocity, out byte heading)
             {
                 position = velocity = Vector3.zero;
                 heading = 0;
@@ -99,7 +105,7 @@ namespace RoguePirates.V5.Net
                     var span = TickAt(newest) - TickAt(newest - 1);
                     velocity = (position - PositionAt(newest - 1)) / (span * NetProtocol.TickSeconds);
                     velocity.y = 0f;
-                    position += velocity * (Mathf.Min(renderTick - TickAt(newest), MaxExtrapolationTicks) * NetProtocol.TickSeconds);
+                    position += velocity * (Mathf.Min(renderTick - TickAt(newest), maxExtrapolationTicks) * NetProtocol.TickSeconds);
                     return true;
                 }
                 var b = 1;
@@ -163,6 +169,7 @@ namespace RoguePirates.V5.Net
             _batchesIn = _batchCount = 0;
             _batchMask = 0;
             _renderAt = -1;
+            _reanchor = _worldStood = false;
         }
 
         // ---- The server's clock (M9b playtest fixes, B) ------------------------------------------------------------------
@@ -184,6 +191,26 @@ namespace RoguePirates.V5.Net
         void ClockSample(uint tick, double now, bool steady)
         {
             var offset = now - tick * (double)NetProtocol.TickSeconds;
+            // V5 M9b enemy stutter fix (10 Oct): the first snapshot of the world moving again after a hold sets the clock
+            // outright. The server's world stood still longer than this client's hold, by about the input delay (the pick's
+            // way to the server, the server reaching the pick's tick, the next snapshot's way back). Before, that difference
+            // was taken for lateness: the render delay widened to its 350 ms cap (it needed about 470 ms at a 270 ms round
+            // trip) and the clock crept back at 20 ms a second, so for 20 s or more after every pick the enemies were drawn
+            // past their newest snapshot on their velocity and put back by the next one: the owner's stutter.
+            // The same when the server repeated its newest tick (the world stood still: the voyage's start before the first
+            // inputs, a pause this client did not hold for): the stand-still is not lateness either. In the local Chrome run
+            // (270 ms round trip) of the fix without this, the start alone (the world held until the page's first inputs,
+            // under a second) left the delay at its cap and the enemies past their snapshots for the first half minute.
+            var stood = _worldStood && _haveClock && !_holding && !ReTestClockForTest;
+            _worldStood = false;
+            if (_reanchor && !_holding && tick > _releaseTick || stood)
+            {
+                if (tick > _releaseTick) _reanchor = false;
+                _clockOffset = offset;
+                _lastClockSample = now;
+                Reanchors++;
+                return;
+            }
             // V5 M9b owner re-test fixes: an arrival handled in a slow frame (a hitch, a hidden page's frame) is late because the
             // page was; it says nothing about the link, so it neither moves the clock nor widens the render delay.
             if (_haveClock && !steady && Math.Abs(offset - _clockOffset) <= 1.0) { _lastClockSample = now; return; }
@@ -208,9 +235,14 @@ namespace RoguePirates.V5.Net
         /// <summary>
         /// <paramref name="held"/> (V5 M9b owner re-test fixes, 10 Oct): the client's ship holds for the level-up cards (or its
         /// page is away): the enemies' clock stands still with it, the clock's offset moving on by the time held, so after
-        /// the pick the render time runs on from the same place. The server's world tick (protocol 5) stood still meanwhile,
-        /// so the snapshots after the pick carry on from where the enemies stopped; the first ones arrive a round trip after
-        /// the pick, and until then the enemies run on their last velocity (they resume as they were).
+        /// the pick the render time runs on from the same place. The server's world tick (protocol 5) stood still meanwhile.
+        /// V5 M9b enemy stutter fix (10 Oct): the server's world moves again only when the pick reaches it and its tick comes
+        /// (the input delay later), and its first snapshot after that arrives a further half round trip later; until then
+        /// the render time has only the snapshots it already had (its render delay, about 140 ms). So after a hold it runs
+        /// on slowed (at most 0.6 of real time, easing toward a quarter as it nears the newest snapshot) instead of past the
+        /// snapshots on the enemies' velocity; the first snapshot of the moving world then sets the clock
+        /// (<see cref="ClockSample"/>) and the render time eases back to its usual delay within about a second. The
+        /// enemies never stand still (the pick fix) and never run ahead of the snapshots to be put back (the stutter).
         /// </summary>
         public float RenderTick(double now, bool held)
         {
@@ -222,36 +254,94 @@ namespace RoguePirates.V5.Net
                 _heldAt = now;
                 return (float)_render;
             }
+            if (!held && _holding && !ReTestClockForTest)
+            {
+                // The hold ends (the pick, or the welcome after an away): the next new world tick sets the clock.
+                _reanchor = true;
+                _releaseTick = Math.Max(LastCompleteTick, _tick);
+            }
             // The frame a hold begins still runs the clock up to now first: a page hidden runs no frame for up to a second,
             // and its first hidden frame (the one that sees it is away) must not freeze the enemies where they were a second
             // before; the server's world ran on until the away message reached it.
             var render = Advance(now);
             _holding = held;
             if (held) _heldAt = now;
+            else
+            {
+                RenderFrames++;
+                if (render > LastCompleteTick) RenderPastNewestFrames++;
+            }
             return render;
         }
 
-        bool _holding;
+        bool _holding, _reanchor, _worldStood;
+        uint _releaseTick;
+
+        /// <summary>After a hold, until the world's first new snapshot: the render time's rate (of real time) is the snapshots
+        /// it has left ahead of it (ticks, plus one) over <see cref="BridgeGapTicks"/>, between these two.</summary>
+        public const float BridgeMaxRate = 0.6f, BridgeMinRate = 0.25f, BridgeGapTicks = 8f;
+        /// <summary>For this long after a hold the render time is eased to its target (down to 0.4 of real time, up to 1.25) in
+        /// about <see cref="ResumeEaseSeconds"/> (elsewhere it is steered by at most 5%).</summary>
+        public const double ResumeSeconds = 3.0, ResumeEaseSeconds = 0.4;
+        /// <summary>Tests: the owner re-test fixes' clock (no reset after a hold or a stand-still of the world, steered back at
+        /// 15% past the newest snapshot), to measure the enemy stutter against.</summary>
+        public bool ReTestClockForTest;
+        /// <summary>Times the first snapshot after a hold, or after the world stood still, set the clock.</summary>
+        public int Reanchors { get; private set; }
+        /// <summary>Frames the render time was asked for while not held, and of those, frames it was past the newest complete
+        /// snapshot (each such frame draws the enemies on their velocity, to be put back by the next snapshot).</summary>
+        public int RenderFrames { get; private set; }
+        public int RenderPastNewestFrames { get; private set; }
+        public float RenderPastNewestShare => RenderFrames > 0 ? RenderPastNewestFrames / (float)RenderFrames : 0f;
+        public void ResetRenderCounters() { RenderFrames = RenderPastNewestFrames = 0; }
 
         float Advance(double now)
         {
+            if (_reanchor && _renderAt >= 0)
+            {
+                // After a hold, before the world's first new snapshot: slowed, never far past the snapshots it has.
+                var since = now - _renderAt;
+                if (since <= 0) return (float)_render;
+                _renderAt = now;
+                var gap = LastCompleteTick + 1.0 - _render;
+                var bridge = Math.Max(BridgeMinRate, Math.Min(BridgeMaxRate, gap / BridgeGapTicks));
+                _render += since / NetProtocol.TickSeconds * bridge;
+                return (float)_render;
+            }
             var target = (now - _clockOffset - DelaySeconds) / NetProtocol.TickSeconds;
             // The render time runs at the frame clock's rate and is steered toward its target by at most 5% of that rate (a
             // snapshot arriving early or the jitter allowance changing would otherwise jerk every enemy forward or back
-            // at once); it is set outright when it is a quarter of a second off (a start, a stall).
-            // For a few seconds after a hold the snapshots arrive later by about the round trip (the server's pause lasted that
-            // much longer than the client's hold), and the delay widens to cover it: the render time is steered there, not set.
-            var snapAt = now - _heldAt < 3.0 ? 0.6 : 0.25;
-            if (_renderAt < 0 || Math.Abs(target - _render) > snapAt / NetProtocol.TickSeconds) { _render = target; _renderAt = now; return (float)_render; }
+            // at once); it is set outright when it is a quarter of a second off (a start, a stall). For a few seconds after
+            // a hold it is eased back instead (set outright only a second off).
+            var resuming = now - _heldAt < ResumeSeconds;
+            var off = Math.Abs(target - _render);
+            double snapAt = ReTestClockForTest ? (resuming ? 0.6 : 0.25) : resuming ? 1.0 : 0.25;
+            if (_renderAt < 0 || off > snapAt / NetProtocol.TickSeconds) { _render = target; _renderAt = now; return (float)_render; }
             var elapsed = now - _renderAt;
             if (elapsed <= 0) return (float)_render;
             _renderAt = now;
             var ticks = elapsed / NetProtocol.TickSeconds;
             var error = target - (_render + ticks);
-            // Past the newest complete snapshot (after a hold: the first snapshots after the pick are a round trip away) it
-            // eases back three times as fast, so the enemies are not drawn on their velocity for long.
-            var rate = error < 0 && _render > LastCompleteTick ? 0.15 : 0.05;
-            var steer = Math.Max(-rate * ticks, Math.Min(rate * ticks, error * Math.Min(1.0, elapsed / 0.5)));
+            double rate, gain;
+            if (ReTestClockForTest)
+            {
+                rate = error < 0 && _render > LastCompleteTick ? 0.15 : 0.05;
+                gain = Math.Min(1.0, elapsed / 0.5);
+            }
+            else if (resuming)
+            {
+                // Behind its target (the usual case: the server's pause outlasted the hold) it eases back at down to 0.4 of
+                // real time; ahead of it (the first snapshot after the hold was handled in a slow frame and set the clock
+                // late; the next on-time one moves it earlier) it catches up at up to 1.25.
+                rate = error < 0 ? 1.0 - BridgeMaxRate : 0.25;
+                gain = Math.Min(1.0, elapsed / ResumeEaseSeconds);
+            }
+            else
+            {
+                rate = 0.05;
+                gain = Math.Min(1.0, elapsed / 0.5);
+            }
+            var steer = Math.Max(-rate * ticks, Math.Min(rate * ticks, error * gain));
             _render += ticks + steer;
             return (float)_render;
         }
@@ -267,6 +357,9 @@ namespace RoguePirates.V5.Net
         public void Apply(NetReader r, float y, double now, bool steady)
         {
             if (!NetCodec.ReadBatchHeader(r, out var h)) return;
+            // V5 M9b enemy stutter fix: a repeat of the newest tick means the server's world stood still for a snapshot
+            // interval at least (a running world has a new tick in every snapshot): its next new tick sets the clock.
+            if (h.serverTick == LastCompleteTick && h.serverTick == _tick) _worldStood = true;
             if (h.serverTick < _tick || h.serverTick <= LastCompleteTick) return; // older than the one being collected
             if (h.serverTick != _tick)
             {
@@ -283,7 +376,7 @@ namespace RoguePirates.V5.Net
             // Protocol 5: while the run is paused the world tick stands still and later snapshots repeat its batches; one
             // already in is not counted again (a repeat must not complete a tick whose other batch was lost).
             var bit = 1UL << (h.batchIndex & 63);
-            if ((_batchMask & bit) != 0) return;
+            if ((_batchMask & bit) != 0) { _worldStood = true; return; }
             _batchMask |= bit;
             _origin = new Vector3(h.originX, y, h.originZ);
             for (var i = 0; i < h.count; i++)

@@ -192,52 +192,196 @@ namespace RoguePirates.V4.Tests
         }
 
         /// <summary>
-        /// V5 (owner, 10 Oct): the leash puts an ordinary enemy left 45 m behind back ahead of the ship at
-        /// <see cref="RunConfig.enemyLeashReturnDistance"/> (31 m; a 26 m constant before), which is just outside the top of the
-        /// run scene's top-down view: the camera's height, distance back and field of view are read from the scene, and the
-        /// ground it sees ahead of the ship at the top edge of the screen is worked out from them (30.5 m).
+        /// V5 (owner, 10 Oct, D28 extended): the leash puts an ordinary enemy left 45 m behind back just outside the run
+        /// camera's view along its new bearing, so no relocation is ever seen, and never moves one that could be on screen.
+        /// (1) The leash's camera data in RunConfig is the run scene's camera (FollowCamera's offset, the camera's field of view,
+        /// BoostCameraZoom's resting value). (2) The view worked out from that data is the view a real Camera with those
+        /// settings has, at 16:9 and 21:9 (its four corners on the sea within 1 cm). (3) Every placement over every heading
+        /// (3 degree steps), every bearing the leash can pick (1 degree steps over its 150 degrees), the ship standing, at full
+        /// sail and at full boost, and enemy sizes from a dinghy to a large hull lands outside the real camera's view at 4:3,
+        /// 16:10, 16:9, 21:9 (2560x1080 and 3440x1440) and 2.4:1, wherever the camera is between its follow lag behind the
+        /// ship and the online client's lead ahead of it, by the margin past the enemy's hull: 0% in view (the 31 m rule of
+        /// 10 Oct is measured for comparison). (4) Through the simulation: relocated just outside the view, not again while
+        /// sailing in, one 48 m away in the view's top corner is not moved, and a console edit to the margin applies.
         /// </summary>
         [Test]
-        public void Leash_PutsEnemiesBackAtTheConfiguredDistance_JustOutsideTheTopOfTheView()
+        public void Leash_PutsEnemiesBackJustOutsideTheView_AtEveryHeadingAndAspect()
         {
             UnityEngine.TestTools.LogAssert.ignoreFailingMessages = true;
-            // The camera, from the run scene (FollowCamera's top-down offset and the camera's vertical field of view).
+            var inv = System.Globalization.CultureInfo.InvariantCulture;
+            // (1) The camera, from the run scene.
             var scene = System.IO.File.ReadAllText("Assets/_Game/Scenes/V4/V4SaltwindRun.unity");
             var offset = System.Text.RegularExpressions.Regex.Match(scene, @"\n  offset: \{x: ([-\d.]+), y: ([-\d.]+), z: ([-\d.]+)\}");
             var fov = System.Text.RegularExpressions.Regex.Match(scene, @"field of view: ([\d.]+)");
-            Assert.IsTrue(offset.Success && fov.Success, "the run scene's camera offset and field of view");
-            var height = float.Parse(offset.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
-            var back = -float.Parse(offset.Groups[3].Value, System.Globalization.CultureInfo.InvariantCulture);
-            var halfFov = float.Parse(fov.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) * 0.5f;
-            var pitch = Mathf.Atan2(height, back) * Mathf.Rad2Deg; // the camera looks at the ship
-            var viewAhead = height / Mathf.Tan((pitch - halfFov) * Mathf.Deg2Rad) - back;
-            Assert.AreEqual(30.5f, viewAhead, 0.1f, "the top edge of the view is 30.5 m ahead of the ship (25 m up, 20 m back, 50 degrees)");
+            var lookAt = System.Text.RegularExpressions.Regex.Match(scene, @"\n  lookAtOffset: \{x: ([-\d.]+), y: ([-\d.]+), z: ([-\d.]+)\}");
+            Assert.IsTrue(offset.Success && fov.Success && lookAt.Success, "the run scene's camera offset, look-at offset and field of view");
+            Assert.AreEqual(0f, float.Parse(offset.Groups[1].Value, inv), "the camera is straight behind the ship");
+            Assert.AreEqual("0,0,0", $"{lookAt.Groups[1].Value},{lookAt.Groups[2].Value},{lookAt.Groups[3].Value}", "and looks at the ship itself");
+            var sceneHeight = float.Parse(offset.Groups[2].Value, inv);
+            var sceneBack = -float.Parse(offset.Groups[3].Value, inv);
+            var sceneFov = float.Parse(fov.Groups[1].Value, inv);
+            var smoothing = System.Text.RegularExpressions.Regex.Match(scene.Substring(offset.Index), @"\n  positionSmoothing: ([\d.]+)");
+            Assert.IsTrue(smoothing.Success, "the follow camera's position smoothing");
+            var sceneLag = 1f / float.Parse(smoothing.Groups[1].Value, inv);
+            var zoomHost = new GameObject("zoom");
+            _created.Add(zoomHost);
+            var zoom = zoomHost.AddComponent<RoguePirates.V4.Foundation.PlayerSystems.BoostCameraZoom>();
+            var restingFov = (float)typeof(RoguePirates.V4.Foundation.PlayerSystems.BoostCameraZoom).GetField("baseFov", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(zoom);
 
             using var config = new ConfigSetRuntime(AssetDatabase.LoadAssetAtPath<ConfigSet>(SetPath));
             var run = config.Single<RunConfig>();
-            Assert.AreEqual(31f, run.enemyLeashReturnDistance, 1e-4f, "the owner's 31 m (10 Oct)");
-            Assert.Greater(run.enemyLeashReturnDistance, viewAhead, "put back outside the view ahead of the ship");
-            Assert.Less(run.enemyLeashReturnDistance, RunConfig.EnemyLeashDistance - 5f, "well inside the leash distance (not leashed again)");
+            Assert.AreEqual(sceneHeight, run.leashViewCameraHeight, 1e-4f, "the leash's camera height is the scene's");
+            Assert.AreEqual(sceneBack, run.leashViewCameraBack, 1e-4f, "its distance behind the ship");
+            Assert.AreEqual(sceneFov, run.leashViewFieldOfView, 1e-4f, "its field of view");
+            Assert.AreEqual(restingFov, run.leashViewFieldOfView, 1e-4f, "which the boost no longer changes (BoostCameraZoom holds it)");
+            Assert.GreaterOrEqual(run.leashViewMaxAspect, 3440f / 1440f, "the widest screen covers 21:9 ultrawides");
+            Assert.AreEqual(sceneLag, run.leashViewLagSeconds, 1e-4f, "the follow camera's lag (1 / its position smoothing)");
+            Assert.AreEqual(4f, run.enemyLeashViewMargin, 1e-4f);
+            Assert.AreEqual(0.5f, run.leashViewLeadSeconds, 1e-4f);
 
+            // (2) The view from the data is a real camera's view.
+            var camHost = new GameObject("leash-camera");
+            _created.Add(camHost);
+            var cam = camHost.AddComponent<Camera>();
+            cam.fieldOfView = sceneFov;
+            cam.transform.position = new Vector3(0f, sceneHeight, -sceneBack);
+            cam.transform.LookAt(Vector3.zero, Vector3.up);
+            var aspects = new[] { ("4:3", 4f / 3f), ("16:10", 1.6f), ("16:9", 16f / 9f), ("21:9 2560x1080", 64f / 27f), ("21:9 3440x1440", 3440f / 1440f), ("2.4:1", 2.4f) };
+            var real = new Dictionary<string, Vector2[]>();
+            foreach (var (name, aspect) in aspects)
+            {
+                cam.aspect = aspect;
+                var corners = new Vector2[4];
+                var viewport = new[] { new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(1f, 0f), new Vector2(0f, 0f) }; // TL, TR, BR, BL
+                for (var i = 0; i < 4; i++)
+                {
+                    var ray = cam.ViewportPointToRay(new Vector3(viewport[i].x, viewport[i].y, 0f));
+                    Assert.Less(ray.direction.y, 0f, name + ": the corner looks down at the sea");
+                    var hit = ray.origin + ray.direction * (-ray.origin.y / ray.direction.y);
+                    corners[i] = new Vector2(hit.x, hit.z);
+                }
+                real[name] = corners;
+                if (name.StartsWith("16:9") || name.StartsWith("21:9"))
+                {
+                    var data = EnemyLeashView.FromCamera(run.leashViewCameraHeight, run.leashViewCameraBack, run.leashViewFieldOfView, aspect);
+                    Assert.IsTrue(data.Valid);
+                    Assert.AreEqual(0f, (data.TopLeft - corners[0]).magnitude, 0.01f, name + " top left");
+                    Assert.AreEqual(0f, (data.TopRight - corners[1]).magnitude, 0.01f, name + " top right");
+                    Assert.AreEqual(0f, (data.BottomRight - corners[2]).magnitude, 0.01f, name + " bottom right");
+                    Assert.AreEqual(0f, (data.BottomLeft - corners[3]).magnitude, 0.01f, name + " bottom left");
+                }
+            }
+            Assert.AreEqual(30.5f, real["16:9"][0].y, 0.1f, "the view's top edge is 30.5 m ahead of the ship");
+
+            // (3) Every heading, bearing, speed and size, every screen: outside the real camera's view wherever it is between
+            // the follow camera's lag behind the ship and the online client's lead ahead of it.
+            var shape = new EnemyLeashShape();
+            var radii = new[] { 0.6f, 1.5f, 3f };
+            var speeds = new[] { 0f, 11f, 18f }; // standing, full sail, full boost (m/s)
+            var report = new System.Text.StringBuilder();
+            int placements = 0, inView = 0;
+            var minClear = float.MaxValue;
+            float maxDistance = 0f;
+            var oldInView = new Dictionary<string, int>();
+            var oldPlacements = 0;
+            foreach (var (name, _) in aspects) oldInView[name] = 0;
+            for (var headingDeg = 0; headingDeg < 360; headingDeg += 3)
+            {
+                var heading = Quaternion.Euler(0f, headingDeg, 0f) * Vector3.forward;
+                foreach (var speed in speeds)
+                {
+                    var velocity = heading * speed;
+                    shape.Set(run, velocity);
+                    var v2 = new Vector2(velocity.x, velocity.z);
+                    for (var angle = -75; angle <= 75; angle++)
+                        foreach (var radius in radii)
+                        {
+                            var at = shape.Placement(heading, angle, run.enemyLeashViewMargin + radius);
+                            var p = new Vector2(at.x, at.z);
+                            maxDistance = Mathf.Max(maxDistance, p.magnitude);
+                            placements++;
+                            foreach (var (name, _) in aspects)
+                                for (var k = 0; k <= 10; k++)
+                                {
+                                    var centre = v2 * Mathf.Lerp(-run.leashViewLagSeconds, run.leashViewLeadSeconds, k / 10f);
+                                    var clear = Outside(real[name], p - centre) - radius;
+                                    minClear = Mathf.Min(minClear, clear);
+                                    if (clear < 0f) inView++;
+                                }
+                            if (speed == 0f)
+                            {
+                                var dir = Quaternion.Euler(0f, angle, 0f) * heading;
+                                var old = new Vector2(dir.x, dir.z) * 31f;
+                                oldPlacements++;
+                                foreach (var (name, _) in aspects) if (Outside(real[name], old) < radius) oldInView[name]++;
+                            }
+                        }
+                }
+            }
+            report.Append($"placements {placements} (120 headings x 151 bearings x 3 speeds x 3 sizes) x {aspects.Length} screens x 11 camera points; ");
+            report.Append($"with the enemy's hull in view: {inView} ({100f * inView / (placements * aspects.Length * 11f):0.000}%); least clearance past the hull {minClear:0.00} m; ");
+            report.Append($"farthest placement {maxDistance:0.0} m; the 31 m rule of 10 Oct in view (standing):");
+            foreach (var (name, _) in aspects) report.Append($" {name} {100f * oldInView[name] / oldPlacements:0.0}%");
+            Debug.Log("[V5 leash] " + report);
+            var evidence = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "Temp", "V5Net", "leash-coverage.txt"));
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(evidence));
+            System.IO.File.WriteAllText(evidence, report.ToString());
+            Assert.AreEqual(0, inView, "no relocation lands in view on any screen: " + report);
+            Assert.GreaterOrEqual(minClear, run.enemyLeashViewMargin - 0.01f, "the margin clear past the hull everywhere");
+            Assert.Less(maxDistance, 130f, "every placement is in the net client's interest bands (the far one, 130 m)");
+
+            // (4) Through the simulation.
             using var profilePort = new RoguePirates.V4.Ports.StageProfilePort(config);
             StageBalanceProfileContext.BeginRun(profilePort.Profile);
             var w = Make(config);
-            w.V4.LeashReturnDistance = () => config.Single<RunConfig>().enemyLeashReturnDistance; // as EnemyWorldModule wires it
+            w.V4.LeashConfig = () => config.Single<RunConfig>(); // as EnemyWorldModule wires it
             var dinghy = System.Array.FindIndex(w.Defs, d => d != null && d.id == "deckhand_dinghy");
             Assert.GreaterOrEqual(dinghy, 0);
-            var slot = w.V4.Spawn(dinghy, new Vector3(0f, 0f, -60f));
             w.ShipB.transform.position = Vector3.zero;
+            var cornerOne = w.V4.Spawn(dinghy, new Vector3(-40f, 0f, 27f)); // 48 m away, in the 21:9 view's top left corner
+            Assert.Greater(new Vector2(-40f, 27f).magnitude, RunConfig.EnemyLeashDistance);
+            Assert.AreEqual(0f, Outside(real["21:9 3440x1440"], new Vector2(-40f, 27f)), "in view on an ultrawide");
+            var slot = w.V4.Spawn(dinghy, new Vector3(0f, 0f, -60f));
+            var radiusOne = w.V4.Agents[slot].radius;
             w.V4.Tick(Dt, w.ShipB.Position, w.ShipB.Damage);
-            var p = w.V4.Agents[slot].position;
-            var distance = new Vector2(p.x, p.z).magnitude;
-            Assert.AreEqual(31f, distance, 0.5f, "moved back to the configured distance");
-            Assert.Greater(p.z, 0f, "ahead of the ship (its heading, +z while it stands still)");
+            var q = w.V4.Agents[slot].position;
+            var flat = new Vector2(q.x, q.z);
+            Assert.AreEqual(1, w.V4.LeashRelocations, "the one behind was moved");
+            shape.Set(run, Vector3.zero); // the ship stands still
+            Assert.AreEqual(run.enemyLeashViewMargin, shape.DistanceOutside(flat) - radiusOne, 0.2f, "just outside the view by the margin past its hull (less the frame it sailed in after)");
+            Assert.LessOrEqual(Vector2.Angle(Vector2.up, flat), 75.5f, "ahead of the ship (its heading, +z while it stands still)");
+            var c = w.V4.Agents[cornerOne].position;
+            Assert.Less((new Vector2(c.x, c.z) - new Vector2(-40f, 27f)).magnitude, 2f, "the one in view was not moved (it would vanish on screen)");
+            for (var i = 0; i < 70; i++) w.V4.Tick(Dt, w.ShipB.Position, w.ShipB.Damage); // two more checks while it sails in
+            Assert.AreEqual(1, w.V4.LeashRelocations, "a placed enemy is not moved again");
 
-            run.enemyLeashReturnDistance = 35f; // a console edit applies at the next check
+            run.enemyLeashViewMargin = 8f; // a console edit applies at the next check
             var far = w.V4.Spawn(dinghy, new Vector3(0f, 0f, -70f));
             for (var i = 0; i < 40 && w.V4.Agents[far].position.z < -60f; i++) w.V4.Tick(Dt, w.ShipB.Position, w.ShipB.Damage);
-            var q = w.V4.Agents[far].position; // right after the check that moved it
-            Assert.AreEqual(35f, new Vector2(q.x, q.z).magnitude, 0.5f, "read from the config at each check");
+            var r = w.V4.Agents[far].position; // right after the check that moved it
+            Assert.AreEqual(8f, shape.DistanceOutside(new Vector2(r.x, r.z)) - w.V4.Agents[far].radius, 0.2f, "read from the config at each check");
+        }
+
+        /// <summary>How far <paramref name="p"/> is outside the convex view with these corners (clockwise; 0 inside).</summary>
+        static float Outside(Vector2[] corners, Vector2 p)
+        {
+            var inside = true;
+            for (var i = 0; i < 4; i++)
+            {
+                var a = corners[i];
+                var b = corners[(i + 1) & 3];
+                if ((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x) > 0f) inside = false;
+            }
+            if (inside) return 0f;
+            var best = float.MaxValue;
+            for (var i = 0; i < 4; i++)
+            {
+                var a = corners[i];
+                var ab = corners[(i + 1) & 3] - a;
+                var t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / ab.sqrMagnitude);
+                best = Mathf.Min(best, (a + ab * t - p).magnitude);
+            }
+            return best;
         }
 
         sealed class RecordingFeedback : IEnemyFeedback

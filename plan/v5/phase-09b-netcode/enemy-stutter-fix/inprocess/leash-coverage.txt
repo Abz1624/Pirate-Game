@@ -1,0 +1,1 @@
+placements 163080 (120 headings x 151 bearings x 3 speeds x 3 sizes) x 6 screens x 11 camera points; with the enemy's hull in view: 0 (0.000%); least clearance past the hull 4.00 m; farthest placement 80.8 m; the 31 m rule of 10 Oct in view (standing): 4:3 34.5% 16:10 41.0% 16:9 45.6% 21:9 2560x1080 64.4% 21:9 3440x1440 64.9% 2.4:1 65.3%

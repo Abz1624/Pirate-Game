@@ -1100,6 +1100,7 @@ namespace RoguePirates.V5.Net.Tests
                 Assert.Greater(onScreenSamples, 1000, "enemies were on screen");
                 Assert.AreEqual(0, unexplainedFast, "no on-screen enemy moved faster than any enemy sails unless the server relocated it");
                 Assert.AreEqual(0, slides, "a relocation is drawn at once, never slid across the screen");
+                Assert.AreEqual(0, snaps, "V5 (owner, 10 Oct, D28): a relocation is never drawn on screen (put back just outside the view, online too)");
                 Assert.AreEqual(0, after.EnemySlideFrames);
                 Assert.Less(NetSmoothness.Mean(after.EnemyJitter), 0.5f * NetSmoothness.Mean(before.EnemyJitter), "per-frame enemy jitter at least halved");
                 Assert.Less(NetMetrics.Percentile(after.EnemyJitter, 95f), 0.5f * NetMetrics.Percentile(before.EnemyJitter, 95f), "and its p95");
@@ -1508,6 +1509,169 @@ namespace RoguePirates.V5.Net.Tests
                 Assert.GreaterOrEqual(resumeAfter, 0f, "the enemies moved again after the pick");
                 Assert.LessOrEqual(resumeAfter, 50f, "at once (within three frames of the pick)");
                 Assert.LessOrEqual(int.Parse(results["after_framesStandingStillAfterPick"]), 2, "no frames standing still after the pick");
+            }
+            finally { RestoreFps(); }
+        }
+
+        /// <summary>
+        /// V5 M9b enemy stutter fix (10 Oct; the owner's re-test of e01a2e87: "the enemies seem to be stuttering now a bit",
+        /// after e1f56626 had them smooth). The busy sea at a 270 ms round trip (15 ms jitter, 1% loss), 60 fps, level-up
+        /// cards picked a second after they come, the same voyage drawn three ways in turn: e1f56626's clock (enemy batches
+        /// on the server tick, no hold), e01a2e87's (the world tick, the hold, no clock reset after it) and the fixed one.
+        /// For each: on-screen enemies before the first pick (baseline), in the 1.5 s after each pick, and from 1.5 s after
+        /// a pick on (normal sailing): per-frame speed jitter (mean, p95, p99), speed jumps (over 3 m/s in a frame), frames
+        /// the render time was past the newest snapshot, and frames the on-screen enemies stood still after a pick.
+        /// Asserts the measurement catches e01a2e87's stutter (past the newest snapshot on more than a tenth of the frames,
+        /// jitter up) and that the fixed clock sails as smoothly after picks as before them, with no frame standing still.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Enemies_StaySmoothAfterPicks_Measured()
+        {
+            SixtyFps();
+            try
+            {
+                var busy = Object.Instantiate(Scenario.Find("net_voyage_busy"));
+                busy.name = "net_voyage_busy_cards";
+                busy.skipLevelUpCards = false;
+                yield return StartVoyage(busy, Asia);
+                var client = NewClient(Ticket(), AsiaClient);
+                var input = new ScriptedInput { Value = new Vector2(0.3f, 1f) };
+                client.Input = input;
+                yield return Join(client);
+                yield return Seconds(2f);
+
+                var modes = new[] { "e01a2e87", "e1f56626", "fixed" };
+                var windows = new[] { "baseline", "pick", "after" };
+                var smooth = new Dictionary<string, NetSmoothness>();
+                var frames = new Dictionary<string, int>();
+                var past = new Dictionary<string, int>();
+                var still = new Dictionary<string, int>();
+                var speeds = new Dictionary<string, List<float>>();
+                foreach (var m in modes)
+                    foreach (var w in windows)
+                    {
+                        smooth[m + "_" + w] = new NetSmoothness();
+                        frames[m + "_" + w] = past[m + "_" + w] = still[m + "_" + w] = 0;
+                        speeds[m + "_" + w] = new List<float>();
+                    }
+                string mode = null;
+                var measuring = false;
+                var picksInMode = 0;
+                var lastPickAt = -100f;
+                var baselineSpeed = 0f;
+                var last = new Dictionary<int, Vector3>();
+                var probe = Probe(() =>
+                {
+                    if (mode == null) return;
+                    var dt = Time.unscaledDeltaTime;
+                    var mirror = client.Enemies;
+                    var held = mode != "e1f56626" && client.WorldHeld;
+                    var render = mirror.RenderTick(NetFrameClock.Now, held);
+                    if (!measuring || held) { last.Clear(); return; }
+                    var since = Time.realtimeSinceStartup - lastPickAt;
+                    var window = picksInMode == 0 ? "baseline" : since < 1.5f ? "pick" : "after";
+                    var key = mode + "_" + window;
+                    var sm = smooth[key];
+                    sm.BeginFrame();
+                    frames[key]++;
+                    if (render > mirror.LastCompleteTick) past[key]++;
+                    var cap = mode == "e01a2e87" ? NetEnemyMirror.ReTestExtrapolationTicks : NetEnemyMirror.MaxExtrapolationTicks;
+                    var ship = client.RenderPosition;
+                    float sum = 0f;
+                    var n = 0;
+                    foreach (var e in mirror.All)
+                    {
+                        if (!e.track.Sample(render, cap, out var p, out _, out _)) continue;
+                        var onScreen = OnScreen(ship, p);
+                        sm.Enemy(e.unitId, p, dt, onScreen);
+                        if (onScreen && last.TryGetValue(e.unitId, out var was) && dt > 1e-4f)
+                        {
+                            var v = Flat(p, was) / dt;
+                            if (v < NetEnemyMirror.MaxEnemySpeed) { sum += v; n++; }
+                        }
+                        last[e.unitId] = p;
+                    }
+                    if (n > 0)
+                    {
+                        speeds[key].Add(sum / n);
+                        if (window == "pick" && baselineSpeed > 1f && sum / n < 0.2f * baselineSpeed) still[key]++;
+                    }
+                });
+
+                foreach (var m in modes)
+                {
+                    _server.EnemyClockIsWorldTick = m != "e1f56626";
+                    client.Enemies.ReTestClockForTest = m == "e01a2e87";
+                    mode = m;
+                    measuring = false;
+                    picksInMode = 0;
+                    yield return Seconds(3f); // the clock settles (a switch of the batches' clock resets it)
+                    measuring = true;
+                    yield return Seconds(4f);
+                    baselineSpeed = NetSmoothness.Mean(speeds[m + "_baseline"]);
+                    for (var level = 0; level < 2; level++)
+                    {
+                        _game.Build.Progression.GrantLevelUp();
+                        var end = Time.realtimeSinceStartup + 8.5f;
+                        // Every card set (this one, and any the voyage's own kills bring) is picked a second after it comes.
+                        while (Time.realtimeSinceStartup < end)
+                        {
+                            if (client.PendingOffer != null && Time.realtimeSinceStartup - client.PendingOfferSince > 1f)
+                            {
+                                Assert.IsTrue(client.SendPick(NetProtocol.PickAction.Pick, 0), m + ": picked");
+                                lastPickAt = Time.realtimeSinceStartup;
+                                picksInMode++;
+                                yield return Until(() => client.PendingOffer == null, 2f);
+                            }
+                            yield return null;
+                        }
+                    }
+                    Assert.GreaterOrEqual(picksInMode, 2, m + ": two card sets picked");
+                    measuring = false;
+                    yield return Until(() => client.PendingOffer == null && !RunManager.Instance.IsPaused, 3f);
+                    if (client.PendingOffer != null) { client.SendPick(NetProtocol.PickAction.Pick, 0); yield return Seconds(1f); }
+                }
+                Object.Destroy(probe.gameObject);
+
+                var results = new Dictionary<string, string> { ["link"] = "135 ms each way, 15 ms jitter, 1% loss; 60 fps; cards picked 1 s after they come" };
+                foreach (var key in smooth.Keys)
+                {
+                    var sm = smooth[key];
+                    results[key + "_frames"] = frames[key].ToString();
+                    results[key + "_onScreenSamples"] = sm.EnemySamples.ToString();
+                    results[key + "_jitterMeanMps"] = NetSmoothness.Mean(sm.EnemyJitter).ToString("0.000");
+                    results[key + "_jitterP95Mps"] = NetMetrics.Percentile(sm.EnemyJitter, 95f).ToString("0.000");
+                    results[key + "_jitterP99Mps"] = NetMetrics.Percentile(sm.EnemyJitter, 99f).ToString("0.000");
+                    results[key + "_speedJumpPercent"] = (sm.EnemyJerkShare * 100f).ToString("0.000");
+                    results[key + "_renderPastNewestPercent"] = (frames[key] > 0 ? 100f * past[key] / frames[key] : 0f).ToString("0.0");
+                    results[key + "_meanOnScreenSpeedMps"] = NetSmoothness.Mean(speeds[key]).ToString("0.00");
+                    if (key.EndsWith("_pick")) results[key + "_framesStandingStill"] = still[key].ToString();
+                }
+                results["clockResetsAfterHolds"] = client.Enemies.Reanchors.ToString();
+                var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Temp", "V5Net", "enemies-after-picks.json"));
+                Debug.Log("[V5 Net] enemies after picks: " + NetMetrics.WriteReport(path, "enemies-after-picks", results, _server.Metrics, client.Metrics));
+
+                float F(string k) => float.Parse(results[k]);
+                foreach (var m in modes)
+                {
+                    Assert.Greater(int.Parse(results[m + "_baseline_onScreenSamples"]), 500, m + ": enemies on screen before the picks");
+                    Assert.Greater(int.Parse(results[m + "_after_onScreenSamples"]), 2000, m + ": and after them");
+                }
+                // The measurement catches the re-test clock's stutter.
+                Assert.Greater(F("e01a2e87_after_renderPastNewestPercent"), 10f, "e01a2e87: drawn past the newest snapshot after the picks");
+                Assert.Greater(F("e01a2e87_after_jitterMeanMps"), 1.3f * F("e01a2e87_baseline_jitterMeanMps"), "e01a2e87: jitter up after the picks");
+                // The fixed clock: as smooth after the picks as before them.
+                Assert.LessOrEqual(F("fixed_after_renderPastNewestPercent"), 1f, "fixed: not drawn past the newest snapshot after the picks");
+                Assert.LessOrEqual(F("fixed_baseline_renderPastNewestPercent"), 1f, "fixed: nor before");
+                Assert.Less(F("fixed_after_jitterMeanMps"), 1.3f * F("fixed_baseline_jitterMeanMps") + 0.05f, "fixed: jitter after the picks as before them");
+                Assert.Less(F("fixed_after_jitterP95Mps"), 1.3f * F("fixed_baseline_jitterP95Mps") + 0.1f, "fixed: and its p95");
+                Assert.LessOrEqual(F("fixed_after_speedJumpPercent"), F("fixed_baseline_speedJumpPercent") + 0.1f, "fixed: no more speed jumps than before the picks");
+                Assert.Less(F("fixed_after_jitterMeanMps"), F("e01a2e87_after_jitterMeanMps"), "fixed: smoother than e01a2e87 after the picks");
+                // The pick fix stays: no frame standing still after a pick (e1f56626 stood still there).
+                // (A frame counts when the on-screen enemies' mean speed is under a fifth of the baseline's; with a few enemies
+                // on screen one slow turner can make one, so up to 3; e1f56626's pause gives dozens.)
+                Assert.LessOrEqual(int.Parse(results["fixed_pick_framesStandingStill"]), 3, "fixed: the enemies move on with the pick");
+                Assert.Greater(int.Parse(results["e1f56626_pick_framesStandingStill"]), 20, "e1f56626: they stood still (the measurement sees a pause)");
             }
             finally { RestoreFps(); }
         }
