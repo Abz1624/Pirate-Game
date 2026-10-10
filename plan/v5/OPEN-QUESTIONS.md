@@ -43,3 +43,11 @@ suggestions").
 the playtest's 108); 3, 10 (overtime follows the playtest's Drowned Pursuit ramp); 13 (D19: an early boss keeps its 14:00
 hull); 15 (bars on elites, minibosses and the boss); 18, 29, 36 (D18: everything free for now); 22 (D20 retuned offers);
 30, 31 (armor and gold gain apply); 35 (desktop is the main build); 39, 41, 43, 45 (answered 2 Oct).
+
+## While you were away (11 Oct): decisions taken and questions
+
+Decisions I took to keep going (say if you want any changed); questions marked **Q** need your answer.
+
+- M9b closes on your 11 Oct re-test (smooth enemies, tab switching fine, no pop-ins); the ram jolt is tracked in TODO.
+- Railway redeploy during a voyage (11 Oct 02:50): the client got `end ServerClosing` and was back in the lobby at once,
+  so D9b.1's "a redeploy ends the session cleanly" is met (`plan/v5/phase-09b-netcode/railway/wss-redeploy/`).

@@ -1,8 +1,11 @@
 # Your TODOs — V5 (updated 1 Oct)
 
-# Now (10 Oct): M9b fixes after your re-test
+# Now (11 Oct): M9b closing, M9c next
 
-- [ ] Re-test one server voyage from desktop Chrome once the main session has the new image and client on Railway (still
+- [ ] Ram jolt (online): your ship can jolt 1 to 2.6 m when an enemy rams it. The server's knockback isn't predicted on
+      your side yet. Tell me if it bothers you (owner asked to track it, 11 Oct).
+- [ ] Answer the open questions in `plan/v5/OPEN-QUESTIONS.md` that are marked for you (added while you were away).
+- [x] Re-test one server voyage (done 11 Oct: enemies smooth, tab switching fine, no pop-ins). Was: Re-test one server voyage from desktop Chrome once the main session has the new image and client on Railway (still
       protocol 5; the API needs the v5 run-check rules first): watch the enemies in normal sailing after a few card picks
       (the stutter came from the enemy clock after each pick; fixed), and whether any enemy ever appears out of nowhere on
       screen (the leash now puts them just outside the view). Details: `plan/v5/phase-09b-netcode/README.md`, "Enemy
