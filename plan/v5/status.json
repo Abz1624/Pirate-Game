@@ -550,6 +550,11 @@
    "when": "10 Oct",
    "commit": "",
    "what": "<strong>Your M9b re-test</strong>: switching tabs during the cards now resumes smoothly. The chest prompt not showing online is expected until M9c mirrors chests (the server skips it so you don't get stuck). New: enemies stutter a little again (a regression from the pick fix); fixing it with a stricter smoothness measurement. Your call (D28 extended): each leashed enemy is placed just outside the view along its own direction."
+  },
+  {
+   "when": "10 Oct",
+   "commit": "1c84ad2f",
+   "what": "<strong>Enemy stutter regression fixed and live</strong> (image 1c84ad2f76db, run checks v5 on the API). Cause: after a card pick the server's world stays paused longer than your client's hold, so the client misread the gap as lag and drew enemies ahead of the newest update, then snapped them back for 20+ seconds. The enemy clock now resets after a hold; a stricter test catches this. Leash (D28): each enemy goes just outside the camera view along its own direction; 0 of 163,080 test placements landed in view at any heading or screen shape."
   }
  ],
  "todos": {
