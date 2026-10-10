@@ -1,6 +1,6 @@
 {
  "updated": "9 Oct 2026",
- "statusLine": "M9b in progress: in-process Netcode spike first; then the Linux server on a Railway test service and your playtest.",
+ "statusLine": "M9b closing (GO for M9c); you are away, so I continue through M9c and later phases and log decisions and questions in OPEN-QUESTIONS.md.",
  "statusOk": false,
  "facts": [
   [
@@ -83,7 +83,7 @@
   },
   "M9b": {
    "state": "building",
-   "chip": "fixes live · your re-test"
+   "chip": "closing · determinism fix and review"
   },
   "M9c": {
    "state": "planned",
@@ -555,6 +555,11 @@
    "when": "10 Oct",
    "commit": "1c84ad2f",
    "what": "<strong>Enemy stutter regression fixed and live</strong> (image 1c84ad2f76db, run checks v5 on the API). Cause: after a card pick the server's world stays paused longer than your client's hold, so the client misread the gap as lag and drew enemies ahead of the newest update, then snapped them back for 20+ seconds. The enemy clock now resets after a hold; a stricter test catches this. Leash (D28): each enemy goes just outside the camera view along its own direction; 0 of 163,080 test placements landed in view at any heading or screen shape."
+  },
+  {
+   "when": "11 Oct",
+   "commit": "49f26ad2",
+   "what": "<strong>M9b closing</strong>: your 11 Oct re-test passed (enemies smooth, tab switching fine, no pop-ins); a Railway redeploy mid-voyage ends it cleanly. Final memo: <strong>GO for M9c</strong> (server tick p95 0.4-2 ms vs 8 ms, corrections under 0.1 m except enemy rams, resume 1.4-2 s, about $0.007 per voyage-hour; the whole Railway test cost about $0.17). Test service deleted and test settings removed (D26). Before the close: a determinism test broke (same seed giving different spawns), being fixed, and the independent review is running."
   }
  ],
  "todos": {
