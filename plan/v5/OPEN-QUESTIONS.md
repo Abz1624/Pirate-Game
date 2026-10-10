@@ -56,3 +56,15 @@ Decisions I took to keep going (say if you want any changed); questions marked *
   cost about $0.17 (38 metered hours).
 - **Q (small):** Railway's own usage export needs your account (the project token can't read it). If you want it in the
   M9b memo, download it from the workspace Usage page; otherwise the $0.17 estimate from Railway's metrics stands.
+- M9b independent review (11 Oct): fail as it stood, pass with fixes. Being fixed: the determinism test (likely the
+  shark and treasure-raider timers reading frame time inside the simulation, which also made those phases last about
+  twice as long on the server), timing-free gate tests, a steer clamp, leash settings in config with a safe fallback.
+- **Q:** do you accept M9b's frame-rate target as met at the page's normal size (58-60 fps; full-screen 1080p is 40-42 on
+  this kind of laptop GPU, where the normal game does 15-17), and the 0.5 m correction target with enemy rams excepted
+  (the ram jolt to-do)? My default: yes, recorded as D29 (provisional until you confirm).
+- **Q:** ticket replay across server restarts: a ticket caught within its 2-minute life could be replayed on the next
+  server process. Nothing of value moves yet. My default: fix it in M13b (each server process gets its own match id from
+  the API), not M9c.
+- **Q:** the Unity Transport fix is a local patch to Unity's package (Unity's licence says Unity owns the modified copy,
+  which is fine for us). Should I report the bug to Unity publicly (a forum post or bug report under your account)?
+  My default: no public post until you say so; the patch file makes re-applying it easy.

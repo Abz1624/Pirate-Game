@@ -1,0 +1,60 @@
+--- a/Runtime/WebSocket/WebSocket.cs
++++ b/Runtime/WebSocket/WebSocket.cs
+@@ -50,7 +50,7 @@
+             Client = 1, // outgoing (active) connection
+         }
+ 
+-        public static unsafe void Connect(ref Buffer buffer, ref NetworkEndpoint remoteEndpoint, ref Keys keys, ref FixedString128Bytes path)
++        public static unsafe void Connect(ref Buffer buffer, ref NetworkEndpoint remoteEndpoint, ref Keys keys, ref FixedString128Bytes path, ref FixedString512Bytes hostName)
+         {
+             FixedString32Bytes end = "\r\n";
+             FixedString512Bytes handshake = "GET ";
+@@ -64,7 +64,16 @@
+             handshake.Append(end);
+             FixedString128Bytes host = "Host: ";
+             handshake.Append(host);
+-            handshake.Append(remoteEndpoint.ToFixedString512Bytes());
++            // Rogue Pirates patch: name the server's host, not the resolved IP. A reverse proxy that routes by
++            // Host (Railway's edge, any virtual-hosted TLS front) answers 404 to "Host: <ip>:<port>".
++            if (hostName.IsEmpty)
++                handshake.Append(remoteEndpoint.ToFixedString512Bytes());
++            else
++            {
++                handshake.Append(hostName);
++                handshake.Append(':');
++                handshake.Append(remoteEndpoint.Port);
++            }
+             handshake.Append(end);
+             handshake.Append(end);
+ 
+@@ -555,6 +564,8 @@
+         public struct Settings
+         {
+             public FixedString128Bytes Path;
++            // Rogue Pirates patch: the server's hostname (from the secure client parameters) for the Host header.
++            public FixedString512Bytes Host;
+             public int ConnectTimeoutMS;
+             public int DisconnectTimeoutMS;
+             public int HeartbeatTimeoutMS;
+--- a/Runtime/Layers/WebSocketLayer.cs
++++ b/Runtime/Layers/WebSocketLayer.cs
+@@ -81,6 +81,10 @@
+                 HeartbeatTimeoutMS = Math.Max(0, networkConfigParameters.heartbeatTimeoutMS)
+             };
+ 
++            // Rogue Pirates patch: a secure client's server name is also its WebSocket Host header.
++            if (settings.TryGet<TLS.SecureNetworkProtocolParameter>(out var secure))
++                m_Settings.Host = secure.Hostname;
++
+             if (connectionList.IsCreated)
+                 m_UnderlyingConnectionList = connectionList;
+ 
+@@ -351,7 +355,7 @@
+                                     connectionData.Keys.Key[3] = Rand.NextUInt();
+                                     connectionData.CreateTimeStamp = Time;
+ 
+-                                    WebSocket.Connect(ref connectionData.SendBuffer, ref remoteEndpoint, ref connectionData.Keys, ref Settings.Path);
++                                    WebSocket.Connect(ref connectionData.SendBuffer, ref remoteEndpoint, ref connectionData.Keys, ref Settings.Path, ref Settings.Host);
+                                 }
+                                 break;
+                                 // If this is a active (client) connection for which an HTTP UPGARDE has already

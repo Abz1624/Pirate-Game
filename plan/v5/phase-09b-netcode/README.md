@@ -42,9 +42,9 @@ Gate for `V5 M9b` (plan: automated check, owner playtest):
   Railway.
 - **Owner playtest: done 11 Oct** on Railway (image of `1c84ad2f`, desktop Chrome): "enemies smooth, tab switching fine,
   no pop-ins". Tracked, not blocking: the ram jolt (1-2.6 m when an enemy rams the ship; `plan/v5/TODO-FOR-YOU.md`).
-- **Still to do for the close:** the independent review of the phase diff (`.claude/agents/v5-reviewer.md`); delete the
-  `match-test` service and remove the ticket secret and voyage settings from the API (D23, D26 d); read the month's
-  Railway usage in the workspace's Usage page (the project token cannot read it); then the commit.
+- **Independent review (11 Oct):** fail as it stood, pass with fixes; 1 blocker (the determinism test) and its Majors are being fixed (timing-free gate tests, simulation dt for the shark and treasure-raider timers, steer clamp, leash config and fallback); owner decisions logged in `plan/v5/OPEN-QUESTIONS.md` (11 Oct).
+- **Railway clean-up done (11 Oct):** `match-test` deleted, the API's ticket settings removed, `.railway/railway.ts` in sync (`railway/cleanup-proof.md`). Railway's usage export needs the owner's login (estimate about $0.17 from metrics).
+- **Unity Transport patch:** the embedded `Packages/com.unity.transport` is 2.7.4 with two patched files (the WebSocket Host header for native clients; browsers are unaffected). The exact change is `utp-host-header.patch` (made against the pristine 2.7.4 tarball): on a Unity Transport update, take the new package and re-apply it with `git apply`, or drop the fork if Unity fixes the bug. Licence: the package stays under the Unity Companion License (`LICENSE.md` kept); under its section 3 Unity owns the modified copy, and it may only be used with Unity content, which this is.
 
 ## Packages (pinned in `Packages/manifest.json`)
 

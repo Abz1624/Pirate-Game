@@ -66,8 +66,8 @@ runtime and the 4-ship go/no-go), carrying these risks into it:
    at the end of a 16 h idle process). Railway's CPU for an idle process climbed from about 0.02 to 0.11 vCPU over 16 h and
    dropped at each restart, which fits this (not confirmed). Cap the list, as the client does (`NetMetrics.AddCapped`),
    before long-running servers in M13b.
-7. **Test service still up.** Deployment `71ecfe49` of `match-test` is running idle (since 10 Oct 21:21 UTC); D23 deletes
-   test services after each session (owner or main session; this report did not change Railway).
+7. **Test service removed (11 Oct).** `match-test` is deleted and the API's ticket settings are removed (D23, D26 d);
+   proof in `railway/cleanup-proof.md`. A later Railway test adds them again (README, Railway steps).
 
 ## Targets (D9b.1)
 
